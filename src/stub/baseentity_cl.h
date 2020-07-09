@@ -11,6 +11,7 @@ class ClientHandleBase : public CBaseHandle
 protected:
 	/* replacement for CBaseHandle::Get */
 	IHandleEntity *ClientGet() const;
+	ClientHandleBase(const CBaseHandle& handle) : CBaseHandle(handle) {}
 };
 
 template<typename T>
@@ -19,7 +20,7 @@ class ClientHandle : public ClientHandleBase
 public:
 	ClientHandle()                                                {}
 	ClientHandle(int iEntry, int iSerialNumber)                   { this->Init(iEntry, iSerialNumber); }
-	ClientHandle(const CBaseHandle& handle) : CBaseHandle(handle) {}
+	ClientHandle(const CBaseHandle& handle) : ClientHandleBase(handle) {}
 	ClientHandle(T *pObj)                                         { this->Term(); this->Set(pObj); }
 	
 	T *Get() const          { return (T *)this->ClientGet(); }

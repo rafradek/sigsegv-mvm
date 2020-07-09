@@ -23,6 +23,8 @@ MemberFuncThunk<CBaseAnimating *, int, CStudioHdr *, const char *> CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_GetPoseParameter_int("CBaseAnimating::GetPoseParameter [int]");
 MemberFuncThunk<CBaseAnimating *, float, const char *>             CBaseAnimating::ft_GetPoseParameter_str("CBaseAnimating::GetPoseParameter [str]");
 MemberFuncThunk<CBaseAnimating *, void, int, matrix3x4_t&>         CBaseAnimating::ft_GetBoneTransform    ("CBaseAnimating::GetBoneTransform");
+MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupBone          ("CBaseAnimating::LookupBone");
+MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimating::ft_GetBonePosition     ("CBaseAnimating::GetBonePosition");
 
 
 IMPL_SENDPROP(bool, CEconEntity, m_bValidatedAttachedEntity, CEconEntity);

@@ -46,6 +46,7 @@ MemberFuncThunk<      CBaseEntity *, bool, const char *                         
 MemberFuncThunk<      CBaseEntity *, bool, const char *                                     > CBaseEntity::ft_ClassMatchesComplex        ("CBaseEntity::ClassMatchesComplex");
 MemberFuncThunk<      CBaseEntity *, void, const Vector&                                    > CBaseEntity::ft_SetAbsOrigin               ("CBaseEntity::SetAbsOrigin");
 MemberFuncThunk<      CBaseEntity *, void, const QAngle&                                    > CBaseEntity::ft_SetAbsAngles               ("CBaseEntity::SetAbsAngles");
+MemberFuncThunk<      CBaseEntity *, void, const Vector&                                    > CBaseEntity::ft_SetAbsVelocity             ("CBaseEntity::SetAbsVelocity");
 MemberFuncThunk<      CBaseEntity *, void, const char *, float, float *                     > CBaseEntity::ft_EmitSound_member1          ("CBaseEntity::EmitSound [member: normal]");
 MemberFuncThunk<      CBaseEntity *, void, const char *, HSOUNDSCRIPTHANDLE&, float, float *> CBaseEntity::ft_EmitSound_member2          ("CBaseEntity::EmitSound [member: normal + handle]");
 MemberFuncThunk<      CBaseEntity *, float, const char *                                    > CBaseEntity::ft_GetNextThink               ("CBaseEntity::GetNextThink");
@@ -61,6 +62,8 @@ MemberFuncThunk<      CBaseEntity *, BASEPTR, BASEPTR, float, const char *      
 MemberFuncThunk<      CBaseEntity *, int                                                    > CBaseEntity::ft_DispatchUpdateTransmitState("CBaseEntity::DispatchUpdateTransmitState");
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_SetEffects                 ("CBaseEntity::SetEffects");
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_AddEffects                 ("CBaseEntity::AddEffects");
+MemberFuncThunk<      CBaseEntity *, bool, const char *, const char *                       > CBaseEntity::ft_KeyValue                   ("CBaseEntity::KeyValue");
+MemberFuncThunk<      CBaseEntity *, bool, const char *, char *, int                        > CBaseEntity::ft_GetKeyValue                ("CBaseEntity::GetKeyValue");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");

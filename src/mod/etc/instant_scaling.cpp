@@ -4,10 +4,11 @@
 
 namespace Mod::Etc::Instant_Scaling
 {
+	ConVar cvar_scalespeed  ("sig_mvm_body_scale_speed",   "1", FCVAR_NONE, "Body scale speed mult");
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHandScaleSpeed)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
-			return FLT_MAX;
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)() * cvar_scalespeed.GetFloat();
 		}
 		
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)();
@@ -16,7 +17,7 @@ namespace Mod::Etc::Instant_Scaling
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHeadScaleSpeed)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
-			return FLT_MAX;
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)() * cvar_scalespeed.GetFloat();
 		}
 		
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)();
@@ -25,7 +26,7 @@ namespace Mod::Etc::Instant_Scaling
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetTorsoScaleSpeed)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
-			return FLT_MAX;
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)() * cvar_scalespeed.GetFloat();
 		}
 		
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)();

@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_SIGSEGV_STUB_TFBOT_H_
 #define _INCLUDE_SIGSEGV_STUB_TFBOT_H_
 
+#define ADD_EXTATTR
 
 #include "prop.h"
 #include "stub/tfplayer.h"
@@ -169,7 +170,7 @@ public:
 	};
 	SIZE_CHECK(EventChangeAttributes_t, 0x6c);
 	
-#if 0
+#ifdef ADD_EXTATTR
 	/* custom */
 	class ExtraData
 	{
@@ -210,10 +211,22 @@ public:
 	const ExtraData& Ext() const;
 #endif
 	
-#if 0
+#ifdef ADD_EXTATTR
+
+	
+
 	class ExtendedAttr
 	{
 	public:
+		
+		enum ExtAttr : uint8_t
+		{
+			ALWAYS_FIRE_WEAPON_ALT = 0,
+			TARGET_STICKIES = 1,
+			BUILD_DISPENSER_SG = 2,
+			BUILD_DISPENSER_TP = 3
+		};
+
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;
 		
 		void Zero() { this->m_nBits = 0; }
@@ -225,7 +238,7 @@ public:
 		bool operator[](ExtAttr attr)       { return ((this->m_nBits & (1U << (int)attr)) != 0); }
 		bool operator[](ExtAttr attr) const { return ((this->m_nBits & (1U << (int)attr)) != 0); }
 		
-		void Dump() const { DevMsg("CTFBot::ExtendedAttr::Dump %08x\n", this->m_nBits); }
+		void Dump() const { /*DevMsg("CTFBot::ExtendedAttr::Dump %08x\n", this->m_nBits);*/ }
 		
 	private:
 		uint32_t m_nBits = 0;
@@ -261,8 +274,10 @@ public:
 	void EquipRequiredWeapon()                                         {        ft_EquipRequiredWeapon         (this); }
 	CTFPlayer *SelectRandomReachableEnemy()                            { return ft_SelectRandomReachableEnemy  (this); }
 	bool ShouldAutoJump()                                              { return ft_ShouldAutoJump              (this); }
-	
-#if 0
+	const EventChangeAttributes_t *GetEventChangeAttributes(const char *name) const { return ft_GetEventChangeAttributes              (this,name); }
+	void OnEventChangeAttributes(const EventChangeAttributes_t *ecattr) { return ft_OnEventChangeAttributes              (this,ecattr); }
+
+#ifdef ADD_EXTATTR
 	/* custom: extended attributes */
 	ExtendedAttr& ExtAttr()
 	{
@@ -275,7 +290,11 @@ public:
 	DECL_EXTRACT(CUtlVector<CFmtStr>, m_Tags);
 #endif
 	DECL_EXTRACT(AttributeType,       m_nBotAttrs);
-	
+	/*uint8_t of[0x3D0];// +0x2830
+	float m_flScale; // +0x2bf4
+	uint8_t of[0x3D0];// +0x2830
+	CHandle<CBaseEntity> m_hSBTarget; // +0x2c00*/
+
 private:
 	DECL_EXTRACT(MissionType,         m_nMission);
 	
@@ -302,8 +321,10 @@ private:
 	static MemberFuncThunk<      CTFBot *, void                              > ft_EquipRequiredWeapon;
 	static MemberFuncThunk<      CTFBot *, CTFPlayer *                       > ft_SelectRandomReachableEnemy;
 	static MemberFuncThunk<      CTFBot *, bool                              > ft_ShouldAutoJump;
+	static MemberFuncThunk<const CTFBot *, const EventChangeAttributes_t*, const char*   > ft_GetEventChangeAttributes;
+    static MemberFuncThunk<      CTFBot *, void, const EventChangeAttributes_t*          > ft_OnEventChangeAttributes;
 	
-#if 0
+#ifdef ADD_EXTATTR
 	static std::map<CHandle<CTFBot>, ExtendedAttr> s_ExtAttrs;
 #endif
 };

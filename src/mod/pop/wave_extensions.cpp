@@ -9,7 +9,8 @@
 #include "stub/team.h"
 #include "util/scope.h"
 #include "util/iterate.h"
-
+#include "stub/strings.h"
+#include "mod/pop/pointtemplate.h"
 
 namespace Mod::Pop::Wave_Extensions
 {
@@ -55,27 +56,40 @@ namespace Mod::Pop::Wave_Extensions
 		CHandle<CHalloweenBaseBoss> boss;
 	};
 	
+
 	struct WaveData
 	{
 		std::vector<std::string>   explanation;
 		std::vector<SentryGunInfo> sentryguns;
 		std::vector<BossInfo>      bosses;
-		std::vector<std::string>   sound_loops;
+		std::map<std::string,float>   sound_loops;
+		std::vector<PointTemplateInfo>   templ;
+		std::vector<PointTemplateInstance *>   templ_inst;
+		std::vector<ETFCond>  addconds;
 		
 		bool red_team_wipe_causes_wave_loss = false;
-		
+		bool defined_class_attributes = false;
+		std::map<std::string,float> player_attributes_class[10] = {};
+		std::map<std::string,float> player_attributes;
+		float sound_time_end = 0.f;
 		IntervalTimer t_wavestart;
 	};
 	
 	
 	std::map<CWave *, WaveData> waves;
 	
-	
+	void WaveCleanup(CWave *wave){
+		for (auto inst : waves[wave].templ_inst) {
+			if (inst != nullptr)
+				inst->OnKilledParent(false);
+		}
+	}
 	DETOUR_DECL_MEMBER(void, CWave_dtor0)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
 		
 //		DevMsg("CWave %08x: dtor0\n", (uintptr_t)wave);
+		WaveCleanup(wave);
 		waves.erase(wave);
 		
 		DETOUR_MEMBER_CALL(CWave_dtor0)();
@@ -84,7 +98,7 @@ namespace Mod::Pop::Wave_Extensions
 	DETOUR_DECL_MEMBER(void, CWave_dtor2)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
-		
+		WaveCleanup(wave);
 //		DevMsg("CWave %08x: dtor2\n", (uintptr_t)wave);
 		waves.erase(wave);
 		
@@ -92,7 +106,7 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	
 	
-	static bool FindSentryHint(const char *name, std::vector<CHandle<CTFBotHintSentrygun>>& hints)
+	bool FindSentryHint(const char *name, std::vector<CHandle<CTFBotHintSentrygun>>& hints)
 	{
 		ForEachEntityByClassname("bot_hint_sentrygun", [&](CBaseEntity *ent){
 			if (FStrEq(STRING(ent->GetEntityName()), name)) {
@@ -107,7 +121,7 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	
 	
-	static void Parse_Explanation(CWave *wave, KeyValues *kv)
+	void Parse_Explanation(CWave *wave, KeyValues *kv)
 	{
 		waves[wave].explanation.clear();
 		
@@ -116,7 +130,7 @@ namespace Mod::Pop::Wave_Extensions
 		}
 	}
 	
-	static void Parse_SentryGun(CWave *wave, KeyValues *kv)
+	void Parse_SentryGun(CWave *wave, KeyValues *kv)
 	{
 		SentryGunInfo info;
 		
@@ -179,7 +193,7 @@ namespace Mod::Pop::Wave_Extensions
 		waves[wave].sentryguns.push_back(info);
 	}
 	
-	static void Parse_HalloweenBoss(CWave *wave, KeyValues *kv)
+	void Parse_HalloweenBoss(CWave *wave, KeyValues *kv)
 	{
 		BossInfo info;
 		
@@ -248,7 +262,7 @@ namespace Mod::Pop::Wave_Extensions
 		waves[wave].bosses.push_back(info);
 	}
 	
-	static void Parse_SoundLoop(CWave *wave, KeyValues *kv)
+	void Parse_SoundLoop(CWave *wave, KeyValues *kv)
 	{
 		if (!waves[wave].sound_loops.empty()) {
 			Warning("Multiple \'SoundLoop\' blocks found in the same Wave!\n");
@@ -259,13 +273,62 @@ namespace Mod::Pop::Wave_Extensions
 			const char *name = subkey->GetName();
 			
 			if (FStrEq(name, "SoundFile")) {
-				waves[wave].sound_loops.push_back(subkey->GetString());
+				waves[wave].sound_loops[subkey->GetString()]=0;
 			} else {
-				Warning("Unknown key \'%s\' in SoundLoop block.\n", name);
+				waves[wave].sound_loops[name]=subkey->GetFloat();
 			}
 		}
 	}
 	
+	void Parse_PlayerAttributes(CWave *wave, KeyValues *kv)
+	{
+		FOR_EACH_SUBKEY(kv, subkey) {
+			int classname = 0;
+			for(int i=1; i < 10; i++){
+				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
+					classname=i;
+					break;
+				}
+			}
+			if (classname == 0) {
+				if (GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()) != nullptr) {
+					waves[wave].player_attributes[subkey->GetName()] = subkey->GetFloat();
+					DevMsg("Parsed attribute %s %f\n", subkey->GetName(),subkey->GetFloat());
+				}
+			}
+			else {
+				waves[wave].defined_class_attributes = true;
+				FOR_EACH_SUBKEY(subkey, subkey2) {
+					if (GetItemSchema()->GetAttributeDefinitionByName(subkey2->GetName()) != nullptr) {
+						waves[wave].player_attributes_class[classname][subkey2->GetName()] = subkey2->GetFloat();
+						DevMsg("Parsed attribute %s %f\n", subkey2->GetName(),subkey2->GetFloat());
+					}
+				}
+			}
+			
+		}
+		
+		DevMsg("Parsed attributes\n");
+	}
+	void Parse_PlayerAddCond(CWave *wave, KeyValues *kv)
+	{
+		FOR_EACH_SUBKEY(kv, subkey) {
+			const char *name = subkey->GetName();
+			if (FStrEq(name, "Index")) {
+				waves[wave].addconds.push_back((ETFCond)subkey->GetInt());
+			} else if (FStrEq(name, "Name")) {
+				ETFCond cond = GetTFConditionFromName(subkey->GetString());
+				if (cond != -1) {
+					waves[wave].addconds.push_back(cond);
+				} else {
+					Warning("Unrecognized condition name \"%s\" in AddCond block.\n", subkey->GetString());
+				}
+			}
+		}
+		
+		DevMsg("Parsed addcond\n");
+	}
+
 	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
@@ -285,8 +348,16 @@ namespace Mod::Pop::Wave_Extensions
 				Parse_HalloweenBoss(wave, subkey);
 			} else if (FStrEq(name, "SoundLoop")) {
 				Parse_SoundLoop(wave, subkey);
+			} else if (FStrEq(name, "PlayerAttributes")) {
+				Parse_PlayerAttributes(wave, subkey);
 			} else if (FStrEq(name, "RedTeamWipeCausesWaveLoss")) {
 				waves[wave].red_team_wipe_causes_wave_loss = subkey->GetBool();
+			} else if (FStrEq(name, "SpawnTemplate")) {
+				PointTemplateInfo info =Parse_SpawnTemplate(subkey);
+				if (info.templ != nullptr)
+					waves[wave].templ.push_back(info);
+			} else if (FStrEq(name, "PlayerAddCond")) {
+				Parse_PlayerAddCond(wave, subkey);
 			} else {
 				del = false;
 			}
@@ -309,7 +380,7 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	
 	
-	static void PrintToChatAll(const char *str)
+	void PrintToChatAll(const char *str)
 	{
 		int msg_type = usermessages->LookupUserMessage("SayText2");
 		if (msg_type == -1) return;
@@ -325,8 +396,27 @@ namespace Mod::Pop::Wave_Extensions
 		
 		engine->MessageEnd();
 	}
-	
-	static void ParseColorsAndPrint(const char *line)
+
+	void PrintToChat(const char *str, CTFPlayer *player)
+	{
+		int msg_type = usermessages->LookupUserMessage("SayText2");
+		if (msg_type == -1) return;
+		
+		CRecipientFilter filter;
+		filter.AddRecipient(player);
+		filter.MakeReliable();
+
+		bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+		if (msg == nullptr) return;
+		
+		msg->WriteByte(0x00);
+		msg->WriteByte(0x00);
+		msg->WriteString(str);
+		
+		engine->MessageEnd();
+	}
+
+	void ParseColorsAndPrint(const char *line, CTFPlayer* player = nullptr)
 	{
 		std::vector<char> output;
 		
@@ -390,10 +480,13 @@ namespace Mod::Pop::Wave_Extensions
 		output.push_back('\n');
 		output.push_back('\0');
 		
-		PrintToChatAll(output.data());
+		if (!player)
+			PrintToChatAll(output.data());
+		else
+			PrintToChat(output.data(), player);
 	}
 	
-	static void ShowWaveExplanation()
+	void ShowWaveExplanation(CTFPlayer *player = nullptr)
 	{
 		/* wave will be null after game is won and in other corner cases */
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
@@ -401,10 +494,18 @@ namespace Mod::Pop::Wave_Extensions
 		
 		const auto& explanation = waves[wave].explanation;
 		for (const auto& line : explanation) {
-			ParseColorsAndPrint(line.c_str());
+			ParseColorsAndPrint(line.c_str(), player);
 		}
 	}
-	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		bool show_wave_expl = !player->IsBot() && player->m_Shared->InState(TF_STATE_WELCOME);
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		if (show_wave_expl)
+			ShowWaveExplanation(player);
+	}
 	
 	RefCount rc_JumpToWave;
 	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
@@ -418,6 +519,9 @@ namespace Mod::Pop::Wave_Extensions
 	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
 	{
 	//	DevMsg("[%8.3f] WaveEnd\n", gpGlobals->curtime);
+		CWave *wave = g_pPopulationManager->GetCurrentWave();
+		if (wave != nullptr)
+			WaveCleanup(wave);
 		DETOUR_MEMBER_CALL(CPopulationManager_WaveEnd)(b1);
 		ShowWaveExplanation();
 	}
@@ -432,7 +536,7 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	
 	
-	static CObjectSentrygun *SpawnSentryGun(const Vector& origin, const QAngle& angles, int teamnum, int level)
+	CObjectSentrygun *SpawnSentryGun(const Vector& origin, const QAngle& angles, int teamnum, int level)
 	{
 		auto sentry = rtti_cast<CObjectSentrygun *>(CreateEntityByName("obj_sentrygun"));
 		if (sentry == nullptr) {
@@ -459,7 +563,7 @@ namespace Mod::Pop::Wave_Extensions
 		return sentry;
 	}
 	
-	static void SpawnSentryGuns(SentryGunInfo& info)
+	void SpawnSentryGuns(SentryGunInfo& info)
 	{
 		info.spawned = true;
 		
@@ -478,7 +582,7 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	
 	
-	static void SpawnBoss(BossInfo& info)
+	void SpawnBoss(BossInfo& info)
 	{
 		info.spawned = true;
 		
@@ -496,6 +600,44 @@ namespace Mod::Pop::Wave_Extensions
 		info.boss = boss;
 	}
 	
+	std::string soundloop_active;
+
+	void StopSoundLoop()
+	{
+		ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "[SoundLoop] StopSoundLoop \"%s\"\n", soundloop_active.c_str());
+		
+		if (TFGameRules() != nullptr) {
+			TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, soundloop_active.c_str(), SND_STOP);
+		}
+		
+		soundloop_active.clear();
+	}
+	
+	void StartSoundLoop(const std::string& filename)
+	{
+		if (!soundloop_active.empty()) {
+			StopSoundLoop();
+		}
+		
+		ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[SoundLoop] StartSoundLoop \"%s\"\n", filename.c_str());
+		
+		/* if filename is explicitly "", then don't play anything */
+		if (TFGameRules() != nullptr && filename != "") {
+			TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, filename.c_str(), SND_NOFLAGS);
+			soundloop_active = filename;
+		}
+	}
+
+	void SelectLoopSound(WaveData &data) {
+		if (!data.sound_loops.empty()) {
+			auto sound_loop = select_random(data.sound_loops.begin(),data.sound_loops.end());
+			StartSoundLoop(sound_loop->first);
+			if (sound_loop->second > 0.0f)
+				data.sound_time_end = data.t_wavestart.GetElapsedTime() + sound_loop->second;
+			else
+				data.sound_time_end = data.t_wavestart.GetElapsedTime() + 99999;
+		}
+	}
 	
 	DETOUR_DECL_MEMBER(void, CWave_ActiveWaveUpdate)
 	{
@@ -510,6 +652,7 @@ namespace Mod::Pop::Wave_Extensions
 		
 		if (!data.t_wavestart.HasStarted()) {
 			data.t_wavestart.Start();
+
 		}
 		
 		/* since we are pre-detour and ActiveWaveUpdate only happens in RND_RUNNING, we are safe to skip the check */
@@ -536,6 +679,27 @@ namespace Mod::Pop::Wave_Extensions
 			}
 		}
 		
+		if (data.defined_class_attributes || data.player_attributes.size() > 0 || data.addconds.size() > 0)
+			ForEachTFPlayer([&](CTFPlayer *player){
+				if (player->GetTeamNumber() != TF_TEAM_RED) return;
+				if (!player->IsAlive()) return;
+				for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
+					
+					player->AddCustomAttribute(it->first.c_str(),it->second, 1.0f);
+				}
+				int classname = player->GetPlayerClass()->GetClassIndex();
+
+				for(auto it = data.player_attributes_class[classname].begin(); it != data.player_attributes_class[classname].end(); ++it){
+						player->AddCustomAttribute(it->first.c_str(),it->second, 7200.0f);
+					}
+				for(auto cond : data.addconds){
+					if (!player->m_Shared->InCond(cond)){
+						player->m_Shared->AddCond(cond,-1.0f);
+					}
+				}
+			});
+			
+
 		// ^^^^   PRE-DETOUR ===================================================
 		
 		DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
@@ -552,6 +716,16 @@ namespace Mod::Pop::Wave_Extensions
 			if (!info.spawned && !data.t_wavestart.IsLessThen(info.delay)) {
 				SpawnBoss(info);
 			}
+		}
+		for (auto it1 = data.templ.begin(); it1 != data.templ.end(); ++it1) {
+			if(!data.t_wavestart.IsLessThen(it1->delay)){
+				data.templ_inst.push_back(it1->SpawnTemplate(nullptr));
+				data.templ.erase(it1);
+				it1--;
+			}
+		}
+		if (!data.t_wavestart.IsLessThen(data.sound_time_end)) {
+			SelectLoopSound(data);
 		}
 	}
 	
@@ -574,38 +748,7 @@ namespace Mod::Pop::Wave_Extensions
 		
 		return done;
 	}
-	
-	
-	std::string soundloop_active;
-	
-	
-	static void StopSoundLoop()
-	{
-		ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "[SoundLoop] StopSoundLoop \"%s\"\n", soundloop_active.c_str());
-		
-		if (TFGameRules() != nullptr) {
-			TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, soundloop_active.c_str(), SND_STOP);
-		}
-		
-		soundloop_active.clear();
-	}
-	
-	static void StartSoundLoop(const std::string& filename)
-	{
-		if (!soundloop_active.empty()) {
-			StopSoundLoop();
-		}
-		
-		ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[SoundLoop] StartSoundLoop \"%s\"\n", filename.c_str());
-		
-		/* if filename is explicitly "", then don't play anything */
-		if (TFGameRules() != nullptr && filename != "") {
-			TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, filename.c_str(), SND_NOFLAGS);
-			soundloop_active = filename;
-		}
-	}
-	
-	
+	CWave *last_wave;
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_State_Enter, gamerules_roundstate_t newState)
 	{
 		auto oldState = TeamplayRoundBasedRules()->State_Get();
@@ -616,17 +759,38 @@ namespace Mod::Pop::Wave_Extensions
 		
 		if (oldState != GR_STATE_RND_RUNNING && newState == GR_STATE_RND_RUNNING) {
 			if (TFGameRules()->IsMannVsMachineMode()) {
-				auto it = waves.find(g_pPopulationManager->GetCurrentWave());
+				last_wave = g_pPopulationManager->GetCurrentWave();
+				auto it = waves.find(last_wave);
 				if (it != waves.end()) {
 					WaveData& data = (*it).second;
-					
-					if (!data.sound_loops.empty()) {
-						std::string sound_loop = *select_random(data.sound_loops);
-						StartSoundLoop(sound_loop);
-					}
+					SelectLoopSound(data);
 				}
 			}
 		} else if (oldState == GR_STATE_RND_RUNNING && newState != GR_STATE_RND_RUNNING) {
+			if (last_wave != nullptr) {
+				auto it = waves.find(last_wave); 
+				if (it != waves.end()) {
+					WaveData& data = (*it).second;
+
+					if (data.defined_class_attributes || data.player_attributes.size() > 0 || data.addconds.size() > 0) {
+						ForEachTFPlayer([&](CTFPlayer *player){
+							for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
+								player->RemoveCustomAttribute(it->first.c_str());
+							}
+							int classname = player->GetPlayerClass()->GetClassIndex();
+
+							for(auto it = data.player_attributes_class[classname].begin(); it != data.player_attributes_class[classname].end(); ++it){
+									player->RemoveCustomAttribute(it->first.c_str());
+								}
+							for(auto cond : data.addconds){
+								if (player->m_Shared->InCond(cond)){
+									player->m_Shared->RemoveCond(cond);
+								}
+							}
+						});
+					}
+				}
+			}
 			StopSoundLoop();
 		}
 		
@@ -652,6 +816,7 @@ namespace Mod::Pop::Wave_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWave_IsDoneWithNonSupportWaves, "CWave::IsDoneWithNonSupportWaves");
 			
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter, "CTeamplayRoundBasedRules::State_Enter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ChangeTeam,                  "CTFPlayer::ChangeTeam");
 		}
 		
 		virtual void OnUnload() override

@@ -15,7 +15,7 @@ constexpr long double operator"" _deg(unsigned long long deg) { return (long dou
 template<typename T,
 	typename U = std::remove_reference_t<T>,
 	typename = std::enable_if_t<std::is_array_v<U>>>
-constexpr size_t countof()
+constexpr size_t countof(T &arr)
 {
 	constexpr size_t extent = std::extent_v<U>;
 	static_assert(extent > 0, "zero- or unknown-size array");

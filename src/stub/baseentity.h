@@ -111,6 +111,7 @@ public:
 	int GetFlags() const                          { return this->m_fFlags; }
 	int GetCollisionGroup() const                 { return this->m_CollisionGroup; }
 	SolidType_t GetSolid() const                  { return this->CollisionProp()->GetSolid(); }
+	//void SetSolid(SolidType_t solid)              { return this->CollisionProp()->SetSolid(solid); }
 	model_t *GetModel() const                     { return const_cast<model_t *>(modelinfo->GetModel(this->GetModelIndex())); }
 	bool IsTransparent() const                    { return (this->m_nRenderMode != kRenderNormal); }
 	MoveType_t GetMoveType() const                { return (MoveType_t)(unsigned char)this->m_MoveType; }
@@ -142,6 +143,7 @@ public:
 	bool ClassMatchesComplex(const char *pszClassOrWildcard)                                                                { return ft_ClassMatchesComplex           (this, pszClassOrWildcard); }
 	void SetAbsOrigin(const Vector& absOrigin)                                                                              {        ft_SetAbsOrigin                  (this, absOrigin); }
 	void SetAbsAngles(const QAngle& absAngles)                                                                              {        ft_SetAbsAngles                  (this, absAngles); }
+	void SetAbsVelocity(const Vector& absVelocity)                                                                          {        ft_SetAbsVelocity                (this, absVelocity); }
 	void EmitSound(const char *soundname, float soundtime = 0.0f, float *duration = nullptr)                                {        ft_EmitSound_member1             (this, soundname, soundtime, duration); }
 	void EmitSound(const char *soundname, HSOUNDSCRIPTHANDLE& handle, float soundtime = 0.0f, float *duration = nullptr)    {        ft_EmitSound_member2             (this, soundname, handle, soundtime, duration); }
 	float GetNextThink(const char *szContext)                                                                               { return ft_GetNextThink                  (this, szContext); }
@@ -155,6 +157,8 @@ public:
 	int DispatchUpdateTransmitState()                                                                                       { return ft_DispatchUpdateTransmitState   (this); }
 	void SetEffects(int nEffects)                                                                                           {        ft_SetEffects                    (this, nEffects); }
 	void AddEffects(int nEffects)                                                                                           {        ft_AddEffects                    (this, nEffects); }
+	bool KeyValue(const char *key, const char *value)                                                                       { return ft_KeyValue                      (this, key, value); }
+	bool GetKeyValue(const char *key, char *value, int maxlen)                                                              { return ft_GetKeyValue                   (this, key, value, maxlen); }
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
 	void SetOwnerEntity(CBaseEntity *pOwner)                                                                                {        vt_SetOwnerEntity                (this, pOwner); }
@@ -255,6 +259,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, bool, const char *>                                      ft_ClassMatchesComplex;
 	static MemberFuncThunk<      CBaseEntity *, void, const Vector&>                                     ft_SetAbsOrigin;
 	static MemberFuncThunk<      CBaseEntity *, void, const QAngle&>                                     ft_SetAbsAngles;
+	static MemberFuncThunk<      CBaseEntity *, void, const Vector&>                                     ft_SetAbsVelocity;
 	static MemberFuncThunk<      CBaseEntity *, void, const char *, float, float *>                      ft_EmitSound_member1;
 	static MemberFuncThunk<      CBaseEntity *, void, const char *, HSOUNDSCRIPTHANDLE&, float, float *> ft_EmitSound_member2;
 	static MemberFuncThunk<      CBaseEntity *, float, const char *>                                     ft_GetNextThink;
@@ -270,6 +275,8 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, int>                                                     ft_DispatchUpdateTransmitState;
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_SetEffects;
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_AddEffects;
+	static MemberFuncThunk<      CBaseEntity *, bool, const char*, const char*>                          ft_KeyValue;
+	static MemberFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                     ft_GetKeyValue;
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;

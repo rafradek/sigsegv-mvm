@@ -197,8 +197,9 @@ namespace Mod::Util::Make_Item
 		item_view->GetAttributeList().AddAttribute(attr); // <-- this calls the copy ctor of the CEconItemAttribute; so DO NOT deallocate the attr afterwards!
 	//	CEconItemAttribute::Destroy(&attr);
 		
-		std::string valstr = attr_def->ConvertValueToString(value);
-		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), valstr.c_str());
+		char buf[1024];
+		attr_def->ConvertValueToString(value, buf, sizeof(buf));
+		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), buf);
 	}
 	
 	
@@ -322,16 +323,17 @@ namespace Mod::Util::Make_Item
 				attr_name_len_max = Max(attr_name_len_max, strlen(attr.GetStaticData()->GetName()));
 			}
 			
+			char buf[1024];
 			int attr_num = 1;
 			
 			ClientMsg(player, "[%s] Created item \"%s\" with the following %d attributes:\n", cmd_name, item_view->GetStaticData()->GetName(), item_view->GetAttributeList().Attributes().Count());
 			for (CEconItemAttribute& attr : item_view->GetAttributeList().Attributes()) {
 				CEconItemAttributeDefinition *attr_def = attr.GetStaticData();
 				
-				std::string valstr = attr_def->ConvertValueToString(*(attr.GetValuePtr()));
+				attr_def->ConvertValueToString(*(attr.GetValuePtr()), buf, sizeof(buf));
 				int pad = ((int)attr_name_len_max - (int)strlen(attr_def->GetName()));
 				
-				ClientMsg(player, "[%s]   [%2d] \"%s\"%*s \"%s\"\n", cmd_name, attr_num, attr_def->GetName(), pad, "", valstr.c_str());
+				ClientMsg(player, "[%s]   [%2d] \"%s\"%*s \"%s\"\n", cmd_name, attr_num, attr_def->GetName(), pad, "", buf);
 				++attr_num;
 			}
 			ClientMsg(player, "[%s] And gave it to player \"%s\".\n\n", cmd_name, recipient->GetPlayerName());

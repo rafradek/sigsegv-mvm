@@ -9,12 +9,23 @@
 #include "re/path.h"
 #include "stub/tfbot_behavior.h"
 #include "util/iterate.h"
+#include "mod/pop/pointtemplate.h"
+#include "stub/usermessages_sv.h"
+#include "stub/misc.h"
+#include "util/clientmsg.h"
+#include <ctime>
 
+static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
+
+bool TeleportNearVictim(CTFBot *spy, CTFPlayer *victim, int dist) {return ft_TeleportNearVictim(spy,victim,dist);};
 
 namespace Mod::Pop::TFBot_Extensions
 {
+
+	std::unordered_map<CTFBot*, CBaseEntity*> targets_sentrybuster;
+
 	/* mobber AI, based on CTFBotAttackFlagDefenders */
-	class CTFBotMobber final : public IHotplugAction
+	class CTFBotMobber : public IHotplugAction
 	{
 	public:
 		CTFBotMobber()
@@ -91,8 +102,38 @@ namespace Mod::Pop::TFBot_Extensions
 		ETFCond cond   = (ETFCond)-1;
 		float duration = -1.0f;
 		float delay    =  0.0f;
+		int health_below = 0;
+		int health_above = 0;
 	};
-	
+
+	enum PeriodicTaskType {
+		TASK_TAUNT,
+		TASK_GIVE_SPELL,
+		TASK_VOICE_COMMAND,
+		TASK_FIRE_WEAPON,
+		TASK_CHANGE_ATTRIBUTES,
+		TASK_SPAWN_TEMPLATE,
+		TASK_FIRE_INPUT
+	};
+
+	class PeriodicTaskImpl {
+	public:
+		float when = 10;
+		float cooldown = 10;
+		int repeats = -1;
+		PeriodicTaskType type;
+		int spell_type = 0;
+		int spell_count = 1;
+		int max_spells = 0;
+		float duration = 0.1f;
+		bool if_target = false;
+		int health_below = 0;
+		int health_above = 0;
+		std::string attrib_name;
+		std::string input_name;
+		std::string param;
+	};
+
 	struct HomingRockets
 	{
 		bool enable                 = false;
@@ -110,30 +151,48 @@ namespace Mod::Pop::TFBot_Extensions
 		// built-in
 		ACTION_FetchFlag,
 		ACTION_PushToCapturePoint,
+		ACTION_BotSpyInfiltrate,
+		ACTION_MedicHeal,
+		ACTION_SniperLurk,
+		ACTION_DestroySentries,
 		
 		// custom
 		ACTION_Mobber,
 	};
-	
+	struct EventChangeAttributesData
+	{
+		std::map<std::string,std::map<std::string, float>> custom_attrs;
+	};
+
 	struct SpawnerData
 	{
 		std::vector<AddCond> addconds;
 		std::vector<AddCond> dmgappliesconds;
-		
+
+		std::vector<PeriodicTaskImpl> periodic_tasks;
+
 		std::map<int, float> weapon_resists;
 		
 		std::map<std::string, color32> item_colors;
+		std::map<std::string, std::string> item_models;
 		
 		bool use_human_model  = false;
 		bool use_buster_model = false;
+		bool force_romevision_cosmetics = false;
+
 		std::string use_custom_model;
-		
+
+		std::string death_sound = "DEF";
+		std::string pain_sound = "DEF";
+
 		std::map<int, std::string> custom_weapon_models;
 		
 		std::string rocket_custom_model;
 		std::string rocket_custom_particle;
 		
 		float ring_of_fire = -1.0f;
+
+		float scale_speed = 1.0f;
 		
 		HomingRockets homing_rockets;
 		
@@ -142,7 +201,17 @@ namespace Mod::Pop::TFBot_Extensions
 		bool use_melee_threat_prioritization = false;
 		
 		bool suppress_timed_fetchflag = false;
+
+		bool no_bomb_upgrade = false;
+
+		bool always_glow = false;
 		
+		bool use_best_weapon = false;
+
+		std::vector<PointTemplateInfo> templ;
+		std::map<void *, EventChangeAttributesData> event_change_atttributes_data;
+		//std::vector<PointTemplateInfo> periodic_templ;
+
 #ifdef ENABLE_BROKEN_STUFF
 		bool drop_weapon = false;
 #endif
@@ -153,18 +222,147 @@ namespace Mod::Pop::TFBot_Extensions
 	
 	std::map<CHandle<CTFBot>, CTFBotSpawner *> spawner_of_bot;
 	
-	
 	struct DelayedAddCond
 	{
 		CHandle<CTFBot> bot;
 		float when;
 		ETFCond cond;
 		float duration;
+		int health_below = 0;
+		int health_above = 0;
+		
 	};
 	std::vector<DelayedAddCond> delayed_addconds;
+
+
 	
-	
-	static void UpdateDelayedAddConds()
+	struct PeriodicTask
+	{
+		CHandle<CTFBot> bot;
+		PeriodicTaskType type;
+		float when = 10;
+		float cooldown = 10;
+		int repeats = 0;
+		float duration = 0.1;
+		bool if_target = false;
+		std::string attrib_name;
+		std::string input_name;
+		std::string param;
+
+		int spell_type=0;
+		int spell_count=1;
+		int max_spells=0;
+
+		int health_below = 0;
+		int health_above = 0;
+	};
+	std::vector<PeriodicTask> pending_periodic_tasks;
+
+	int SPELL_TYPE_COUNT=12;
+	int SPELL_TYPE_COUNT_ALL=15;
+	int INPUT_TYPE_COUNT=7;
+	const char *INPUT_TYPE[] = {
+		"Primary",
+		"Secondary",
+		"Special",
+		"Reload",
+		"Jump",
+		"Crouch",
+		"Action"
+	};
+
+	const char *SPELL_TYPE[] = {
+		"Fireball",
+		"Ball O' Bats",
+		"Healing Aura",
+		"Pumpkin MIRV",
+		"Superjump",
+		"Invisibility",
+		"Teleport",
+		"Tesla Bolt",
+		"Minify",
+		"Summon Monoculus",
+		"Meteor Shower",
+		"Summon Skeletons",
+		"Common",
+		"Rare",
+		"All"
+	};
+	const char *ROMEVISON_MODELS[] = {
+		"",
+		"",
+		"models/workshop/player/items/scout/tw_scoutbot_armor/tw_scoutbot_armor.mdl",
+		"models/workshop/player/items/scout/tw_scoutbot_hat/tw_scoutbot_hat.mdl",
+		"models/workshop/player/items/sniper/tw_sniperbot_armor/tw_sniperbot_armor.mdl",
+		"models/workshop/player/items/sniper/tw_sniperbot_helmet/tw_sniperbot_helmet.mdl",
+		"models/workshop/player/items/soldier/tw_soldierbot_armor/tw_soldierbot_armor.mdl",
+		"models/workshop/player/items/soldier/tw_soldierbot_helmet/tw_soldierbot_helmet.mdl",
+		"models/workshop/player/items/demo/tw_demobot_armor/tw_demobot_armor.mdl",
+		"models/workshop/player/items/demo/tw_demobot_helmet/tw_demobot_helmet.mdl",
+		"models/workshop/player/items/medic/tw_medibot_chariot/tw_medibot_chariot.mdl",
+		"models/workshop/player/items/medic/tw_medibot_hat/tw_medibot_hat.mdl"
+		"models/workshop/player/items/heavy/tw_heavybot_armor/tw_heavybot_armor.mdl",
+		"models/workshop/player/items/heavy/tw_heavybot_helmet/tw_heavybot_helmet.mdl",
+		"models/workshop/player/items/pyro/tw_pyrobot_armor/tw_pyrobot_armor.mdl",
+		"models/workshop/player/items/pyro/tw_pyrobot_helmet/tw_pyrobot_helmet.mdl",
+		"models/workshop/player/items/spy/tw_spybot_armor/tw_spybot_armor.mdl",
+		"models/workshop/player/items/spy/tw_spybot_hood/tw_spybot_hood.mdl"
+		"models/workshop/player/items/engineer/tw_engineerbot_armor/tw_engineerbot_armor.mdl",
+		"models/workshop/player/items/engineer/tw_engineerbot_helmet/tw_engineerbot_helmet.mdl",
+		"models/workshop/player/items/demo/tw_sentrybuster/tw_sentrybuster.mdl"
+	};
+	int GetResponseFor(const char *text) {
+		if (FStrEq(text,"Medic"))
+			return MP_CONCEPT_PLAYER_MEDIC;
+		else if (FStrEq(text,"Help"))
+			return MP_CONCEPT_PLAYER_HELP;
+		else if (FStrEq(text,"Go"))
+			return MP_CONCEPT_PLAYER_GO;
+		else if (FStrEq(text,"Move up"))
+			return MP_CONCEPT_PLAYER_MOVEUP;
+		else if (FStrEq(text,"Left"))
+			return MP_CONCEPT_PLAYER_LEFT;
+		else if (FStrEq(text,"Right"))
+			return MP_CONCEPT_PLAYER_RIGHT;
+		else if (FStrEq(text,"Yes"))
+			return MP_CONCEPT_PLAYER_YES;
+		else if (FStrEq(text,"No"))
+			return MP_CONCEPT_PLAYER_NO;
+		else if (FStrEq(text,"Taunt"))
+			return MP_CONCEPT_PLAYER_TAUNT;
+		else if (FStrEq(text,"Incoming"))
+			return MP_CONCEPT_PLAYER_INCOMING;
+		else if (FStrEq(text,"Spy"))
+			return MP_CONCEPT_PLAYER_CLOAKEDSPY;
+		else if (FStrEq(text,"Thanks"))
+			return MP_CONCEPT_PLAYER_THANKS;
+		else if (FStrEq(text,"Jeers"))
+			return MP_CONCEPT_PLAYER_JEERS;
+		else if (FStrEq(text,"Battle cry"))
+			return MP_CONCEPT_PLAYER_BATTLECRY;
+		else if (FStrEq(text,"Cheers"))
+			return MP_CONCEPT_PLAYER_CHEERS;
+		else if (FStrEq(text,"Sentry here"))
+			return MP_CONCEPT_PLAYER_SENTRYHERE;
+		else if (FStrEq(text,"Dispenser here"))
+			return MP_CONCEPT_PLAYER_DISPENSERHERE;
+		else if (FStrEq(text,"Teleporter here"))
+			return MP_CONCEPT_PLAYER_TELEPORTERHERE;
+		else if (FStrEq(text,"Good job"))
+			return MP_CONCEPT_PLAYER_GOODJOB;
+		else if (FStrEq(text,"Sentry ahead"))
+			return MP_CONCEPT_PLAYER_SENTRYAHEAD;
+		else if (FStrEq(text,"Positive"))
+			return MP_CONCEPT_PLAYER_POSITIVE;
+		else if (FStrEq(text,"Negative"))
+			return MP_CONCEPT_PLAYER_NEGATIVE;
+		else if (FStrEq(text,"Nice shot"))
+			return MP_CONCEPT_PLAYER_NICESHOT;
+		return -1;
+	}
+
+
+	void UpdateDelayedAddConds()
 	{
 		for (auto it = delayed_addconds.begin(); it != delayed_addconds.end(); ) {
 			const auto& info = *it;
@@ -174,7 +372,7 @@ namespace Mod::Pop::TFBot_Extensions
 				continue;
 			}
 			
-			if (gpGlobals->curtime >= info.when) {
+			if (gpGlobals->curtime >= info.when && (info.health_below == 0 || info.bot->GetHealth() <= info.health_below)) {
 				info.bot->m_Shared->AddCond(info.cond, info.duration);
 				
 				it = delayed_addconds.erase(it);
@@ -185,16 +383,176 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	}
 	
+	void UpdatePeriodicTasks()
+	{
+		for (auto it = pending_periodic_tasks.begin(); it != pending_periodic_tasks.end(); ) {
+			auto& pending_task = *it;
+
+			if (pending_task.bot == nullptr || !pending_task.bot->IsAlive()) {
+				it = pending_periodic_tasks.erase(it);
+				continue;
+			}
+			
+			if (gpGlobals->curtime >= pending_task.when && (pending_task.health_below == 0 || pending_task.bot->GetHealth() <= pending_task.health_below)) {
+				const CKnownEntity *threat = pending_task.bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
+				if ((pending_task.health_above > 0 && pending_task.bot->GetHealth() <= pending_task.health_above) || (
+						pending_task.if_target && (threat == nullptr || threat->GetEntity() == nullptr || !threat->IsVisibleRecently()))) {
+					if (pending_task.health_below > 0)
+						pending_task.when = gpGlobals->curtime;
+
+					pending_task.when+=pending_task.cooldown;
+					continue;
+				}
+				if (pending_task.type==TASK_TAUNT) {
+					const char * commandn = "taunt";
+					CCommand command = CCommand();
+					command.Tokenize(commandn);
+					ToTFPlayer(pending_task.bot)->ClientCommand(command);
+				}
+				else if (pending_task.type==TASK_GIVE_SPELL) {
+					CTFPlayer *ply = ToTFPlayer(pending_task.bot);
+					for (int i = 0; i < MAX_WEAPONS; ++i) {
+						CBaseCombatWeapon *weapon = ply->GetWeapon(i);
+						if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) continue;
+						
+						CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+						if (pending_task.spell_type < SPELL_TYPE_COUNT){
+							spellbook->m_iSelectedSpellIndex=pending_task.spell_type;
+						}
+						else{
+							if (pending_task.spell_type == 12) //common spell
+								spellbook->m_iSelectedSpellIndex=RandomInt(0,6);
+							else if (pending_task.spell_type == 13) //rare spell
+								spellbook->m_iSelectedSpellIndex=RandomInt(7,11);
+							else if (pending_task.spell_type == 14) //all spells
+								spellbook->m_iSelectedSpellIndex=RandomInt(0,11);
+						}
+						spellbook->m_iSpellCharges+=pending_task.spell_count;
+						if (spellbook->m_iSpellCharges > pending_task.max_spells)
+							spellbook->m_iSpellCharges = pending_task.max_spells;
+						
+							
+						DevMsg("Weapon %d %s\n",i , weapon -> GetClassname());
+						break;
+					}
+					DevMsg("Spell task executed %d\n", pending_task.spell_type);
+				}
+				else if (pending_task.type==TASK_VOICE_COMMAND) {
+					ToTFPlayer(pending_task.bot)->SpeakConceptIfAllowed(pending_task.spell_type);
+					/*const char * commandn3= "voicemenu 0 0";
+					CCommand command3 = CCommand();
+					command3.Tokenize(commandn3);
+					DevMsg("Command test 1 %d\n", command3.ArgC());
+					for (int i = 0; i < command3.ArgC(); i++){
+						DevMsg("%d. Argument %s\n",i, command3[i]);
+					}
+
+					DevMsg("\n");
+					ToTFPlayer(pending_task.bot)->ClientCommand(command);*/
+					DevMsg("Voice command executed %d\n", pending_task.spell_type);
+				}
+				else if (pending_task.type==TASK_FIRE_WEAPON) {
+
+					switch (pending_task.spell_type) {
+					case 0:
+						pending_task.bot->ReleaseFireButton();
+						break;
+					case 1:
+						pending_task.bot->ReleaseAltFireButton();
+						break;
+					case 2:
+						pending_task.bot->ReleaseSpecialFireButton();
+						break;
+					case 3:
+						pending_task.bot->ReleaseReloadButton();
+						break;
+					case 4:
+						pending_task.bot->ReleaseJumpButton();
+						break;
+					case 5:
+						pending_task.bot->ReleaseCrouchButton();
+						break;
+					case 6:
+						pending_task.bot->UseActionSlotItemReleased();
+						break;
+					}
+					if (pending_task.duration >= 0){
+						switch (pending_task.spell_type) {
+						case 0:
+							pending_task.bot->PressFireButton(pending_task.duration);
+							break;
+						case 1:
+							pending_task.bot->PressAltFireButton(pending_task.duration);
+							break;
+						case 2:
+							pending_task.bot->PressSpecialFireButton(pending_task.duration);
+							break;
+						case 3:
+							pending_task.bot->PressReloadButton(pending_task.duration);
+							break;
+						case 4:
+							pending_task.bot->PressJumpButton(pending_task.duration);
+							break;
+						case 5:
+							pending_task.bot->PressCrouchButton(pending_task.duration);
+							break;
+						}
+					}
+					if (pending_task.spell_type == 6) {
+						pending_task.bot->UseActionSlotItemPressed();
+					}
+					
+					DevMsg("FIRE_WEAPON_ %d\n", pending_task.spell_type);
+				}
+				else if (pending_task.type==TASK_CHANGE_ATTRIBUTES) {
+					
+					const CTFBot::EventChangeAttributes_t *attrib = pending_task.bot->GetEventChangeAttributes(pending_task.attrib_name.c_str());
+					if (attrib != nullptr){
+						DevMsg("Attribute exists %s\n", pending_task.attrib_name.c_str());
+						pending_task.bot->OnEventChangeAttributes(attrib);
+					}
+					DevMsg("Attribute changed %s\n", pending_task.attrib_name.c_str());
+				}
+				else if (pending_task.type==TASK_FIRE_INPUT) {
+					variant_t variant1;
+					string_t m_iParameter = AllocPooledString(pending_task.param.c_str());
+						variant1.SetString(m_iParameter);
+					CEventQueue &que = g_EventQueue;
+					que.AddEvent(STRING(AllocPooledString(pending_task.attrib_name.c_str())),STRING(AllocPooledString(pending_task.input_name.c_str())),variant1,0,pending_task.bot,pending_task.bot,-1);
+					std::string targetname = STRING(pending_task.bot->GetEntityName());
+					int findamp = targetname.find('&');
+					if (findamp != -1){
+						que.AddEvent(STRING(AllocPooledString((pending_task.attrib_name+targetname.substr(findamp)).c_str())),STRING(AllocPooledString(pending_task.input_name.c_str())),variant1,0,pending_task.bot,pending_task.bot,-1);
+					}
+
+					//trigger->AcceptInput("trigger", this->parent, this->parent ,variant1,-1);
+				}
+				//info.Execute(pending_task.bot);
+				DevMsg("Periodic task executed %f, %f\n", pending_task.when,gpGlobals->curtime);
+				if (--pending_task.repeats == 0) {
+					it =  pending_periodic_tasks.erase(it);
+					continue;
+				}
+				else{
+					pending_task.when+=pending_task.cooldown;
+				}
+			}
+			
+			++it;
+		}
+	}
 	
-	static void ClearAllData()
+	void ClearAllData()
 	{
 		spawners.clear();
 		spawner_of_bot.clear();
 		delayed_addconds.clear();
+		pending_periodic_tasks.clear();
+		targets_sentrybuster.clear();
 	}
 	
 	
-	static void RemoveSpawner(CTFBotSpawner *spawner)
+	void RemoveSpawner(CTFBotSpawner *spawner)
 	{
 		for (auto it = spawner_of_bot.begin(); it != spawner_of_bot.end(); ) {
 			if ((*it).second == spawner) {
@@ -229,7 +587,7 @@ namespace Mod::Pop::TFBot_Extensions
 	}
 	
 	
-	static const char *GetStateName(int nState)
+	const char *GetStateName(int nState)
 	{
 		switch (nState) {
 		case TF_STATE_ACTIVE:   return "ACTIVE";
@@ -241,13 +599,21 @@ namespace Mod::Pop::TFBot_Extensions
 	}
 	
 	
-	static void ClearDataForBot(CTFBot *bot)
+	void ClearDataForBot(CTFBot *bot)
 	{
 		spawner_of_bot.erase(bot);
 		
 		for (auto it = delayed_addconds.begin(); it != delayed_addconds.end(); ) {
 			if ((*it).bot == bot) {
 				it = delayed_addconds.erase(it);
+			} else {
+				++it;
+			}
+		}
+
+		for (auto it = pending_periodic_tasks.begin(); it != pending_periodic_tasks.end(); ) {
+			if ((*it).bot == bot) {
+				it = pending_periodic_tasks.erase(it);
 			} else {
 				++it;
 			}
@@ -262,7 +628,7 @@ namespace Mod::Pop::TFBot_Extensions
 		auto it1 = spawner_of_bot.find(bot);
 		if (it1 == spawner_of_bot.end()) return nullptr;
 		CTFBotSpawner *spawner = (*it1).second;
-		
+
 		auto it2 = spawners.find(spawner);
 		if (it2 == spawners.end()) return nullptr;
 		SpawnerData& data = (*it2).second;
@@ -328,7 +694,7 @@ namespace Mod::Pop::TFBot_Extensions
 	}
 	
 	
-	static void Parse_AddCond(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_AddCond(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		AddCond addcond;
 		
@@ -356,7 +722,12 @@ namespace Mod::Pop::TFBot_Extensions
 			} else if (FStrEq(name, "Delay")) {
 				addcond.delay = subkey->GetFloat();
 				got_delay = true;
-			} else {
+			} else if (FStrEq(name, "IfHealthBelow")) {
+				addcond.health_below = subkey->GetInt();
+			} else if (FStrEq(name, "IfHealthAbove")) {
+				addcond.health_above = subkey->GetInt();
+			}
+			 else {
 				Warning("Unknown key \'%s\' in AddCond block.\n", name);
 			}
 		}
@@ -370,7 +741,85 @@ namespace Mod::Pop::TFBot_Extensions
 		spawners[spawner].addconds.push_back(addcond);
 	}
 	
-	static void Parse_DamageAppliesCond(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_PeriodicTask(CTFBotSpawner *spawner, KeyValues *kv, PeriodicTaskType type)
+	{
+		PeriodicTaskImpl task;
+		task.type = type;
+		FOR_EACH_SUBKEY(kv, subkey) {
+			const char *name = subkey->GetName();
+			
+			if (FStrEq(name, "Cooldown")) {
+				task.cooldown = subkey->GetFloat();
+			} else if (FStrEq(name, "Repeats")) {
+				task.repeats = subkey->GetInt();
+			} else if (FStrEq(name, "Delay")) {
+				task.when = subkey->GetFloat();
+			}
+			else if (FStrEq(name, "Type")) {
+				task.spell_type=subkey->GetInt();
+
+				if (type == TASK_GIVE_SPELL){
+					const char *typen =subkey->GetString();
+					for (int i = 0; i < SPELL_TYPE_COUNT_ALL; i++) {
+						if(FStrEq(typen,SPELL_TYPE[i])){
+							task.spell_type = i;
+						}	
+					}
+				}
+				else if (type == TASK_VOICE_COMMAND){
+					const char *typen =subkey->GetString();
+					int resp = GetResponseFor(typen);
+					if (resp >= 0)
+						task.spell_type = resp;
+				}
+				else if (type == TASK_FIRE_WEAPON){
+					const char *typen =subkey->GetString();
+					for (int i = 0; i < INPUT_TYPE_COUNT; i++) {
+						if(FStrEq(typen,INPUT_TYPE[i])){
+							task.spell_type = i;
+						}	
+					}
+				}
+			}
+			else if (FStrEq(name, "Limit")) {
+				task.max_spells=subkey->GetInt();
+			}
+			else if (FStrEq(name, "Charges")) {
+				task.spell_count=subkey->GetInt();
+			}
+			else if (FStrEq(name, "Duration")) {
+				task.duration=subkey->GetFloat();
+			}
+			else if (FStrEq(name, "IfSeeTarget")) {
+				task.if_target=subkey->GetBool();
+			}
+			else if (FStrEq(name, "Name") || FStrEq(name, "Target")) {
+				task.attrib_name=subkey->GetString();
+			}
+			else if (FStrEq(name, "Action")) {
+				task.input_name=subkey->GetString();
+			}
+			else if (FStrEq(name, "Param")) {
+				task.param=subkey->GetString();
+			}
+			else if (FStrEq(name, "IfHealthBelow")) {
+				task.health_below=subkey->GetInt();
+			}
+			else if (FStrEq(name, "IfHealthAbove")) {
+				task.health_above=subkey->GetInt();
+			}
+			//else if (FStrEq(name, "SpawnTemplate")) {
+			//	spawners[spawner].periodic_templ.push_back(Parse_SpawnTemplate(subkey));
+			//	task.spell_type = spawners[spawner].periodic_templ.size()-1;
+			//}
+		}
+		if (task.max_spells == 0)
+			task.max_spells = task.spell_count;
+		DevMsg("CTFBotSpawner %08x: add periodic(%f, %f)\n", (uintptr_t)spawner, task.cooldown, task.when);
+		spawners[spawner].periodic_tasks.push_back(task);
+	}
+
+	void Parse_DamageAppliesCond(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		AddCond addcond;
 		
@@ -394,6 +843,10 @@ namespace Mod::Pop::TFBot_Extensions
 			} else if (FStrEq(name, "Duration")) {
 				addcond.duration = subkey->GetFloat();
 				got_duration = true;
+			} else if (FStrEq(name, "IfHealthBelow")) {
+				addcond.health_below = subkey->GetInt();
+			} else if (FStrEq(name, "IfHealthAbove")) {
+				addcond.health_above = subkey->GetInt();
 			} else {
 				Warning("Unknown key \'%s\' in DamageAppliesCond block.\n", name);
 			}
@@ -408,7 +861,7 @@ namespace Mod::Pop::TFBot_Extensions
 		spawners[spawner].dmgappliesconds.push_back(addcond);
 	}
 	
-	static void Parse_Action(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_Action(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		const char *value = kv->GetString();
 		
@@ -420,12 +873,20 @@ namespace Mod::Pop::TFBot_Extensions
 			spawners[spawner].action = ACTION_PushToCapturePoint;
 		} else if (FStrEq(value, "Mobber")) {
 			spawners[spawner].action = ACTION_Mobber;
+		} else if (FStrEq(value, "Spy")) {
+			spawners[spawner].action = ACTION_BotSpyInfiltrate;
+		} else if (FStrEq(value, "Medic")) {
+			spawners[spawner].action = ACTION_MedicHeal;
+		} else if (FStrEq(value, "Sniper")) {
+			spawners[spawner].action = ACTION_SniperLurk;
+		} else if (FStrEq(value, "SuicideBomber")) {
+			spawners[spawner].action = ACTION_DestroySentries;
 		} else {
 			Warning("Unknown value \'%s\' for TFBot Action.\n", value);
 		}
 	}
 	
-	static void Parse_WeaponResist(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_WeaponResist(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
@@ -441,7 +902,7 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	}
 	
-	static void Parse_ItemColor(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_ItemColor(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		const char *item_name = "";
 		int color_r           = 0x00;
@@ -495,7 +956,7 @@ namespace Mod::Pop::TFBot_Extensions
 		spawners[spawner].item_colors[item_name] = { color_r, color_g, color_b, 0xff };
 	}
 	
-	static void Parse_HomingRockets(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_HomingRockets(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		HomingRockets& hr = spawners[spawner].homing_rockets;
 		hr.enable = true;
@@ -530,7 +991,43 @@ namespace Mod::Pop::TFBot_Extensions
 			hr.speed, hr.turn_power, hr.min_dot_product);
 	}
 	
-	static void Parse_CustomWeaponModel(CTFBotSpawner *spawner, KeyValues *kv)
+	void Parse_ItemModel(CTFBotSpawner *spawner, KeyValues *kv)
+	{
+		const char *item_name = "";
+		const char *model_name = "";
+		
+		bool got_name  = false;
+		bool got_model = false;
+		
+		FOR_EACH_SUBKEY(kv, subkey) {
+			const char *name = subkey->GetName();
+			
+			if (FStrEq(name, "ItemName")) {
+				item_name = subkey->GetString();
+				got_name = true;
+			} else if (FStrEq(name, "Model")) {
+				model_name = subkey->GetString();
+				got_model = true;
+			} else {
+				Warning("Unknown key \'%s\' in ItemModel block.\n", name);
+			}
+		}
+		
+		if (!got_name) {
+			Warning("No ItemName specified in ItemModel block.\n");
+			return;
+		}
+		
+		if (!got_model) {
+			Warning("No Model value specified in ItemModel block.\n");
+			return;
+		}
+		
+		DevMsg("CTFBotSpawner %08x: add ItemModel(\"%s\", \"%s\")\n", (uintptr_t)spawner, item_name, model_name);
+		spawners[spawner].item_models[item_name] = model_name;
+	}
+
+	void Parse_CustomWeaponModel(CTFBotSpawner *spawner, KeyValues *kv)
 	{
 		int slot = -1;
 		const char *path = "";
@@ -576,11 +1073,12 @@ namespace Mod::Pop::TFBot_Extensions
 			(uintptr_t)spawner, slot, path);
 		spawners[spawner].custom_weapon_models[slot] = path;
 	}
-	
+	CTFBotSpawner *current_spawner = nullptr;
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Parse, KeyValues *kv_orig)
 	{
 		auto spawner = reinterpret_cast<CTFBotSpawner *>(this);
 		
+		current_spawner = spawner;
 		// make a temporary copy of the KV subtree for this spawner
 		// the reason for this: `kv_orig` *might* be a ptr to a shared template KV subtree
 		// we'll be deleting our custom keys after we parse them so that the Valve code doesn't see them
@@ -600,22 +1098,42 @@ namespace Mod::Pop::TFBot_Extensions
 				Parse_AddCond(spawner, subkey);
 			} else if (FStrEq(name, "DamageAppliesCond")) {
 				Parse_DamageAppliesCond(spawner, subkey);
+			} else if (FStrEq(name, "Taunt")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_TAUNT);
+			} else if (FStrEq(name, "Spell")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_GIVE_SPELL);
+			} else if (FStrEq(name, "VoiceCommand")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_VOICE_COMMAND);
+			} else if (FStrEq(name, "FireWeapon")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_FIRE_WEAPON);
+			} else if (FStrEq(name, "ChangeAttributes")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_CHANGE_ATTRIBUTES);
+			} else if (FStrEq(name, "FireInput")) {
+				Parse_PeriodicTask(spawner, subkey, TASK_FIRE_INPUT);
 			} else if (FStrEq(name, "Action")) {
 				Parse_Action(spawner, subkey);
 			} else if (FStrEq(name, "WeaponResist")) {
 				Parse_WeaponResist(spawner, subkey);
 			} else if (FStrEq(name, "ItemColor")) {
 				Parse_ItemColor(spawner, subkey);
+			} else if (FStrEq(name, "ItemModel")) {
+				Parse_ItemModel(spawner, subkey);
 			} else if (FStrEq(name, "HomingRockets")) {
 				Parse_HomingRockets(spawner, subkey);
 			} else if (FStrEq(name, "CustomWeaponModel")) {
 				Parse_CustomWeaponModel(spawner, subkey);
+			} else if (FStrEq(name, "ForceRomeVision")) {
+				spawners[spawner].force_romevision_cosmetics = subkey->GetBool();
 			} else if (FStrEq(name, "UseHumanModel")) {
 				spawners[spawner].use_human_model = subkey->GetBool();
 			} else if (FStrEq(name, "UseBusterModel")) {
 				spawners[spawner].use_buster_model = subkey->GetBool();
 			} else if (FStrEq(name, "UseCustomModel")) {
 				spawners[spawner].use_custom_model = subkey->GetString();
+			} else if (FStrEq(name, "DeathSound")) {
+				spawners[spawner].death_sound = subkey->GetString();
+			} else if (FStrEq(name, "PainSound")) {
+				spawners[spawner].pain_sound = subkey->GetString();
 			} else if (FStrEq(name, "RocketCustomModel")) {
 				spawners[spawner].rocket_custom_model = subkey->GetString();
 			} else if (FStrEq(name, "RocketCustomParticle")) {
@@ -626,9 +1144,19 @@ namespace Mod::Pop::TFBot_Extensions
 				spawners[spawner].use_melee_threat_prioritization = subkey->GetBool();
 			} else if (FStrEq(name, "SuppressTimedFetchFlag")) {
 				spawners[spawner].suppress_timed_fetchflag = subkey->GetBool();
+			} else if (FStrEq(name, "NoBombUpgrades")) {
+				spawners[spawner].no_bomb_upgrade = subkey->GetBool();
+			} else if (FStrEq(name, "SpawnTemplate")) {
+				spawners[spawner].templ.push_back(Parse_SpawnTemplate(subkey));
+			} else if (FStrEq(name, "AlwaysGlow")) {
+				spawners[spawner].always_glow = subkey->GetBool();
+			} else if (FStrEq(name, "UseBestWeapon")) {
+				spawners[spawner].use_best_weapon = subkey->GetBool();
+			} else if (FStrEq(name, "BodyPartScaleSpeed")) {
+				spawners[spawner].scale_speed = subkey->GetFloat();
 #ifdef ENABLE_BROKEN_STUFF
 			} else if (FStrEq(name, "DropWeapon")) {
-				spawners[spawner].drop_weapon = subkey->GetBool();
+				spawners[spawner].drop_weapon = subkey->GetBool();}
 #endif
 			} else {
 				del = false;
@@ -670,18 +1198,27 @@ namespace Mod::Pop::TFBot_Extensions
 		return result;
 	}
 	
-	
+	// DETOUR_DECL_STATIC(void, FireEvent, EventInfo *info, const char *name)
+	// {
+	// 	DevMsg("Fired eventbef");
+	// 	DevMsg("Fired event");
+	// 	DETOUR_STATIC_CALL(FireEvent)(info, name);
+	// }
+
 	RefCount rc_CTFBotSpawner_Spawn;
-	CTFBotSpawner *current_spawner = nullptr;
+	clock_t start_time_spawn;
 	DETOUR_DECL_MEMBER(int, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		auto spawner = reinterpret_cast<CTFBotSpawner *>(this);
 		
 		SCOPED_INCREMENT(rc_CTFBotSpawner_Spawn);
 		current_spawner = spawner;
-		
+		clock_t start = clock() ;
+		start_time_spawn = start;
 		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
-		
+		clock_t endn = clock() ;
+		float timespent = ((endn-start) / (float)CLOCKS_PER_SEC);
+		DevMsg("native spawning took %f\n",timespent);
 	//	DevMsg("\nCTFBotSpawner %08x: SPAWNED\n", (uintptr_t)spawner);
 	//	DevMsg("  [classicon \"%s\"] [miniboss %d]\n", STRING(spawner->GetClassIcon(0)), spawner->IsMiniBoss(0));
 	//	DevMsg("- result: %d\n", result);
@@ -697,14 +1234,14 @@ namespace Mod::Pop::TFBot_Extensions
 			auto it = spawners.find(spawner);
 			if (it != spawners.end()) {
 				SpawnerData& data = (*it).second;
-				
+				CTFBot *bot_leader = ToTFBot(ents->Head());
 				CTFBot *bot = ToTFBot(ents->Tail());
 				if (bot != nullptr) {
 					spawner_of_bot[bot] = spawner;
 					
 				//	DevMsg("CTFBotSpawner %08x: found %u AddCond's\n", (uintptr_t)spawner, data.addconds.size());
 					for (auto addcond : data.addconds) {
-						if (addcond.delay == 0.0f) {
+						if (addcond.delay == 0.0f && addcond.health_below == 0) {
 							DevMsg("CTFBotSpawner %08x: applying AddCond(%d, %f)\n", (uintptr_t)spawner, addcond.cond, addcond.duration);
 							bot->m_Shared->AddCond(addcond.cond, addcond.duration);
 						} else {
@@ -713,10 +1250,41 @@ namespace Mod::Pop::TFBot_Extensions
 								gpGlobals->curtime + addcond.delay,
 								addcond.cond,
 								addcond.duration,
+								addcond.health_below,
+								addcond.health_above
 							});
 						}
 					}
 					
+					for (auto task_spawner : data.periodic_tasks) {
+						PeriodicTask ptask;
+						ptask.bot=bot;
+						ptask.type = task_spawner.type;
+						ptask.when = task_spawner.when + gpGlobals->curtime;
+						ptask.repeats = task_spawner.repeats;
+						ptask.cooldown = task_spawner.cooldown;
+						ptask.spell_type = task_spawner.spell_type;
+						ptask.spell_count = task_spawner.spell_count;
+						ptask.max_spells = task_spawner.max_spells;
+						ptask.duration = task_spawner.duration;
+						ptask.if_target = task_spawner.if_target;
+						ptask.attrib_name = task_spawner.attrib_name;
+						ptask.health_below = task_spawner.health_below;
+						ptask.health_above = task_spawner.health_above;
+						ptask.input_name = task_spawner.input_name;
+						ptask.param = task_spawner.param;
+						pending_periodic_tasks.push_back(ptask);
+					}
+
+					for (auto templ : data.templ) {
+						templ.SpawnTemplate(bot);
+						//if (Point_Templates().find(templ) != Point_Templates().end())
+						//	Point_Templates()[templ].SpawnTemplate(bot);
+					}
+					if (!data.use_custom_model.empty()) {
+
+					}
+					static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
 					if (!data.use_custom_model.empty()) {
 						DevMsg("CTFBotSpawner %08x: applying UseCustomModel(\"%s\") on bot #%d\n", (uintptr_t)spawner, data.use_custom_model.c_str(), ENTINDEX(bot));
 						
@@ -735,7 +1303,7 @@ namespace Mod::Pop::TFBot_Extensions
 						
 						// TODO: filter-out addition of Romevision cosmetics to UseBusterModel bots
 						// TODO: manually add Romevision cosmetic for SentryBuster to UseBusterModel bots
-					} else if (data.use_human_model) {
+					} else if (data.use_human_model || sig_mvm_bots_are_humans.GetBool()) {
 						DevMsg("CTFBotSpawner %08x: applying UseHumanModel on bot #%d\n", (uintptr_t)spawner, ENTINDEX(bot));
 						
 						// calling SetCustomModel with a nullptr string *seems* to reset the model
@@ -807,7 +1375,62 @@ namespace Mod::Pop::TFBot_Extensions
 						}
 					#endif
 					}
+
+					for (const auto& pair : data.item_models) {
+						const char *item_name     = pair.first.c_str();
+						const char *item_model = pair.second.c_str();
+						
+						CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
+						if (item_def == nullptr) continue;
+						
+						for (int i = 0; i < bot->GetNumWearables(); ++i) {
+							CEconWearable *wearable = bot->GetWearable(i);
+							if (wearable == nullptr) continue;
+							
+							CEconItemView *item_view = wearable->GetItem();
+							if (item_view == nullptr) continue;
+							
+							if (item_view->GetItemDefIndex() == item_def->m_iItemDefIndex) {
+								
+								CBaseEntity::PrecacheModel(item_model);
+								wearable->SetModelIndex(modelinfo->GetModelIndex(item_model));
+								for (int i = 0; i < MAX_VISION_MODES; ++i) {
+									wearable->SetModelIndexOverride(i, modelinfo->GetModelIndex(item_model));
+								}
+							}
+						}
+						
+						for (int i = 0; i < bot->WeaponCount(); ++i) {
+							CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+							if (weapon == nullptr) continue;
+							
+							CEconItemView *item_view = weapon->GetItem();
+							if (item_view == nullptr) continue;
+							
+							if (item_view->GetItemDefIndex() == item_def->m_iItemDefIndex) {
+								
+								CBaseEntity::PrecacheModel(item_model);
+								weapon->SetModelIndex(modelinfo->GetModelIndex(item_model));
+								for (int i = 0; i < MAX_VISION_MODES; ++i) {
+									weapon->SetModelIndexOverride(i, modelinfo->GetModelIndex(item_model));
+								}
+							}
+						}
+					}
 					
+					CTFWearable *pActionSlotEntity = bot->GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_ACTION );
+					if ( pActionSlotEntity  != nullptr) {
+
+						// get the equipped item and see what it is
+						CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
+						if (pPowerupBottle  != nullptr) {
+							int val=0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(pPowerupBottle, val, powerup_charges);
+							DevMsg("Poweup Bottles %d\n",val);
+							pPowerupBottle->m_usNumCharges = val;
+						}
+					}
+
 					for (const auto& pair : data.custom_weapon_models) {
 						int slot         = pair.first;
 						const char *path = pair.second.c_str();
@@ -831,14 +1454,594 @@ namespace Mod::Pop::TFBot_Extensions
 							item->SetModelIndexOverride(i, modelinfo->GetModelIndex(path));
 						}
 					}
+
+					if (data.force_romevision_cosmetics) {
+						for (int i = 0; i < 2; i++) {
+							CEconItemView *item_view= CEconItemView::Create();
+							item_view->Init(152, 6, 9999, 0);
+							CEconWearable *wearable = rtti_cast<CEconWearable *>(ItemGeneration()->GenerateItemFromScriptData(item_view,Vector(0,0,0), QAngle(0,0,0),"tf_wearable"));
+							if (wearable) {
+								
+								wearable->m_bValidatedAttachedEntity = true;
+								wearable->GiveTo(bot);
+								DevMsg("Created wearable\n");
+								bot->EquipWearable(wearable);
+								const char *path = ROMEVISON_MODELS[bot->GetPlayerClass()->GetClassIndex()*2 + i];
+								CBaseEntity::PrecacheModel(path);
+								wearable->SetModelIndex(modelinfo->GetModelIndex(path));
+								for (int i = 0; i < MAX_VISION_MODES; ++i) {
+									wearable->SetModelIndexOverride(i, modelinfo->GetModelIndex(path));
+								}
+							}
+						}
+					}
+
+					DevMsg("Dests %d\n",Teleport_Destination().size());
+					if (!(bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT) && !Teleport_Destination().empty()) {
+						bool done = false;
+						CBaseEntity *destination = nullptr;
+
+						if (Teleport_Destination().find("small") != Teleport_Destination().end() && !bot_leader->IsMiniBoss()) {
+							destination = Teleport_Destination().find("small")->second;
+						}
+						else if (Teleport_Destination().find("giants") != Teleport_Destination().end() && bot_leader->IsMiniBoss()) {
+							destination = Teleport_Destination().find("giants")->second;
+						}
+						else if (Teleport_Destination().find("all") != Teleport_Destination().end()) {
+							destination = Teleport_Destination().find("all")->second;
+						}
+						else {
+							ForEachEntityByClassname("info_player_teamspawn", [&](CBaseEntity *ent){
+								if (done)
+									return;
+
+								auto vec = ent->WorldSpaceCenter();
+								
+								auto area = TheNavMesh->GetNearestNavArea(vec);
+
+								if (area != nullptr) {
+									vec = area->GetCenter();
+								}
+
+								float dist = vec.DistToSqr(bot->GetAbsOrigin());
+								DevMsg("Dist %f %s\n",dist, ent->GetEntityName());
+								if (dist < 1000) {
+									auto dest = Teleport_Destination().find(STRING(ent->GetEntityName()));
+									if(dest != Teleport_Destination().end() && dest->second != nullptr){
+										destination = dest->second;
+										done = true;
+									}
+								}
+							});
+						}
+						if (destination != nullptr)
+						{
+							auto vec = destination->WorldSpaceCenter();
+							vec.z += destination->CollisionProp()->OBBMaxs().z;
+							if (IsSpaceToSpawnHere(vec)){
+								bot->Teleport(&(vec),&(destination->GetAbsAngles()),&(bot->GetAbsVelocity()));
+								bot->EmitSound("MVM.Robot_Teleporter_Deliver");
+								bot->m_Shared->AddCond(TF_COND_INVULNERABLE_CARD_EFFECT,1.5f);
+							}
+						}
+						
+					}
 				}
 			}
 		}
 		
+		clock_t end = clock() ;
+		timespent = ((end-endn) / (float)CLOCKS_PER_SEC);
+		DevMsg("detour spawning took %f",timespent);
+
 		return result;
 	}
+	void TeleportToHint(CTFBot *actor,bool force) {
+		if (!force && actor->IsPlayerClass(TF_CLASS_ENGINEER))
+			return;
+
+		CHandle<CTFBotHintEngineerNest> h_nest;
+		DevMsg("Teleport to hint \n");
+		CTFBotMvMEngineerHintFinder::FindHint(true, false, &h_nest);
+		
+		if (h_nest == nullptr)
+			return;
+		//if (h_nest != nullptr) {
+		//	TFGameRules()->PushAllPlayersAway(h_nest->GetAbsOrigin(),
+		//		400.0f, 500.0f, TF_TEAM_RED, nullptr);
 	
+		DevMsg("Teleport to hint found\n");
+		Vector tele_pos = h_nest->GetAbsOrigin();
+		QAngle tele_ang = h_nest->GetAbsAngles();
+		
+		actor->Teleport(&tele_pos, &tele_ang, &vec3_origin);
+		DevMsg("Teleporting\n");
+		CPVSFilter filter(tele_pos);
+		
+		TE_TFParticleEffect(filter, 0.0f, "teleported_blue", tele_pos, vec3_angle);
+		TE_TFParticleEffect(filter, 0.0f, "player_sparkles_blue", tele_pos, vec3_angle);
+		
+		if (true) {
+			TE_TFParticleEffect(filter, 0.0f, "teleported_mvm_bot", tele_pos, vec3_angle);
+			actor->EmitSound("Engineer.MvM_BattleCry07");
+			h_nest->EmitSound("MvM.Robot_Engineer_Spawn");
+			
+			/*if (g_pPopulationManager != nullptr) {
+				CWave *wave = g_pPopulationManager->GetCurrentWave();
+				if (wave != nullptr) {
+					if (wave->m_iEngiesTeleportedIn == 0) {
+						TFGameRules()->BroadcastSound(255,
+							"Announcer.MvM_First_Engineer_Teleport_Spawned");
+					} else {
+						TFGameRules()->BroadcastSound(255,
+							"Announcer.MvM_Another_Engineer_Teleport_Spawned");
+					}
+					++wave->m_iEngiesTeleportedIn;
+				}
+			}*/
+		}
+		DevMsg("Effects\n");
+	}
+
+	void SpyInitAction(CTFBot *actor) {
+		ToTFPlayer(actor)->m_Shared->AddCond(TF_COND_STEALTHED_USER_BUFF, 2.0f);
+				
+		CUtlVector<CTFPlayer *> enemies;
+		CollectPlayers<CTFPlayer>(&enemies, GetEnemyTeam(actor), true, false);
+		//CUtlVector<CTFPlayer *> enemies2 = enemies;
+
+		if (enemies.Count() > 1) {
+			enemies.Shuffle();
+		}
+
+		bool success;
+		int range = 0;
+		while(!success && range < 3) {
+			range++;
+			FOR_EACH_VEC(enemies, i) {
+				CTFPlayer *enemy = enemies[i];
+				if(TeleportNearVictim(actor, enemy, range)){
+					success = true;
+					break;
+				}
+			}
+		}
+	}
+	// DETOUR_DECL_MEMBER(bool, CTFPlayer_IsMiniBoss)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("IsMiniBoss %f\n",timespent);
+	// 	}
+	// 	return DETOUR_MEMBER_CALL(CTFPlayer_IsMiniBoss)();
+	// }
+
 	
+	// DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("JoinClass %f\n",timespent);
+	// 	}
+	// 	DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+	// }
+	// DETOUR_DECL_MEMBER(void, CBaseCombatCharacter_SetBloodColor, int color)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("SetBloodColor %d %f\n",color, timespent);
+	// 	}
+	// 	DETOUR_MEMBER_CALL(CBaseCombatCharacter_SetBloodColor)(color);
+	// }
+	// DETOUR_DECL_MEMBER(void, CBaseAnimating_SetModelScale, float scale, float changeduration)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("SetModelScale %f %f\n",scale, timespent);
+	// 	}
+	// 	DETOUR_MEMBER_CALL(CBaseAnimating_SetModelScale)(scale, changeduration);
+	// }
+	
+	// DETOUR_DECL_MEMBER(void, CTFBot_StartIdleSound)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("StartIdleSound %f\n",timespent);
+	// 	}
+	// 	DETOUR_MEMBER_CALL(CTFBot_StartIdleSound)();
+	// }
+	// DETOUR_DECL_MEMBER(void, CTFBot_AddEventChangeAttributes, CTFBot::EventChangeAttributes_t * ecattr)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("AddEventChangeAttributes %f\n",timespent);
+	// 	}
+	// 	DETOUR_MEMBER_CALL(CTFBot_AddEventChangeAttributes)(ecattr);
+	// }
+	// DETOUR_DECL_MEMBER(CTFBot::EventChangeAttributes_t *, CTFBot_GetEventChangeAttributes)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("GetEventChangeAttributes %f\n",timespent);
+	// 	}
+	// 	return DETOUR_MEMBER_CALL(CTFBot_GetEventChangeAttributes)();
+	// }
+	// DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang)
+	// {
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("GenerateRandomItem %f\n",timespent);
+	// 	}
+	// 	void* ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang);
+	// 	if (rc_CTFBotSpawner_Spawn > 0) {
+	// 		clock_t endn = clock();
+	// 		float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+	// 		DevMsg("GenerateRandomItem end %f\n",timespent);
+	// 	}
+	// 	return ret;
+	// }
+
+	ConVar cvar_no_romevision("sig_no_romevision_cosmetics", "0", FCVAR_NONE,
+		"Disable romevision cosmetics");
+	ConVar cvar_creators_custom_item("sig_creators_custom_item", "0", FCVAR_NONE,
+		"Enable fallback to creators custom item");
+
+	const char *TranslateWeaponEntForClass_improved(const char *name, int classnum)
+	{
+		DevMsg("classname %s\n",name);
+		if (strncasecmp(name, "tf_weapon_", 10) == 0)
+		{
+			DevMsg("is translated %s\n",name+10);
+			if (strcasecmp(name+10, "shotgun") == 0) {
+				DevMsg("is shotgun\n");
+				switch (classnum) {
+				case TF_CLASS_SOLDIER:
+					return "tf_weapon_shotgun_soldier";
+				case TF_CLASS_PYRO:
+					return "tf_weapon_shotgun_pyro";
+				case TF_CLASS_HEAVYWEAPONS:
+					return "tf_weapon_shotgun_hwg";
+				case TF_CLASS_ENGINEER:
+					return "tf_weapon_shotgun_primary";
+				default:
+					return "tf_weapon_shotgun_pyro";
+				}
+			}
+		
+			if (strcasecmp(name+10, "throwable") == 0) {
+				switch (classnum) {
+				case TF_CLASS_MEDIC:
+					return "tf_weapon_throwable_primary";
+				default:
+					return "tf_weapon_throwable_secondary";
+				}
+			}
+			
+			if (strcasecmp(name+10, "parachute") == 0) {
+				switch (classnum) {
+				case TF_CLASS_SOLDIER:
+					return "tf_weapon_parachute_secondary";
+				case TF_CLASS_DEMOMAN:
+					return "tf_weapon_parachute_primary";
+				default:
+					return "tf_weapon_parachute";
+				}
+			}
+			
+			if (strcasecmp(name+10, "revolver") == 0) {
+				switch (classnum) {
+				case TF_CLASS_ENGINEER:
+					return "tf_weapon_revolver_secondary";
+				case TF_CLASS_SPY:
+					return "tf_weapon_revolver";
+				default:
+					return "tf_weapon_revolver";
+				}
+			}
+			if (strcasecmp(name+10, "pistol") == 0) {
+				switch (classnum) {
+				case TF_CLASS_SCOUT:
+					return "tf_weapon_pistol_scout";
+				case TF_CLASS_ENGINEER:
+					return "tf_weapon_pistol";
+				default:
+					return "tf_weapon_pistol";
+				}
+			}
+			
+			if (strcasecmp(name+10, "shovel") == 0 || strcasecmp(name+10, "bottle") == 0) {
+				switch (classnum) {
+				case TF_CLASS_SOLDIER:
+					return "tf_weapon_shovel";
+				case TF_CLASS_DEMOMAN:
+					return "tf_weapon_bottle";
+				}
+			}
+		}
+		else if (strcasecmp(name, "saxxy") == 0) {
+			switch (classnum) {
+			case TF_CLASS_SCOUT:
+				return "tf_weapon_bat";
+			case TF_CLASS_SOLDIER:
+				return "tf_weapon_shovel";
+			case TF_CLASS_PYRO:
+				return "tf_weapon_fireaxe";
+			case TF_CLASS_DEMOMAN:
+				return "tf_weapon_bottle";
+			case TF_CLASS_HEAVYWEAPONS:
+				return "tf_weapon_fireaxe";
+			case TF_CLASS_ENGINEER:
+				return "tf_weapon_wrench";
+			case TF_CLASS_MEDIC:
+				return "tf_weapon_bonesaw";
+			case TF_CLASS_SNIPER:
+				return "tf_weapon_club";
+			case TF_CLASS_SPY:
+				return "tf_weapon_knife";
+			}
+		}
+		
+		/* if not handled: return original entity name, not an empty string */
+		return name;
+	}
+
+	RefCount rc_CTFBot_AddItem;
+	RefCount rc_CTFBot_OnEventChangeAttributes;
+	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	{
+		CTFItemDefinition *item_def=reinterpret_cast<CTFItemDefinition *>(this);
+		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		if (rc_CTFBot_OnEventChangeAttributes) {
+			DevMsg("Get loadoutslot %d\n", rc_CTFBot_AddItem);
+			const char *name = item_def->GetItemClass();
+			if (rc_CTFBot_AddItem && (FStrEq(name,"tf_weapon_buff_item") || FStrEq(name,"tf_weapon_parachute") || FStrEq(name,"tf_wearable_demoshield") || FStrEq(name,"tf_wearable")))
+				return slot;
+			
+			if (slot == -1){
+				if(FStrEq(name,"tf_weapon_revolver"))
+					slot = 0;
+				else
+					slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+			}
+		}
+		return slot;
+	}
+
+	std::unordered_map<std::string,CTFItemDefinition*> item_defs;
+	std::unordered_map<std::string,std::string> item_custom_remap;
+	bool is_revolver;
+	const char *classname_gl;
+	const char *item_name;
+	CTFBot *bot_additem;
+	int bot_classnum = TF_CLASS_UNDEFINED;
+	DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang)
+	{
+		if (rc_CTFBot_AddItem > 0) {
+
+			auto it = item_defs.find(item_name);
+			CTFItemDefinition *item_def;
+			
+			void *ret = nullptr;
+			if (it != item_defs.end()){
+				item_def = it->second;
+			}
+			else {
+				item_def = rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(item_name));
+				item_defs[item_name] = item_def;
+			}
+
+			if (item_def != nullptr) {
+				//No romevision cosmetics
+				if (item_def->m_iItemDefIndex >= 30143 && item_def->m_iItemDefIndex <= 30161 && cvar_no_romevision.GetBool())
+					return nullptr;
+
+				const char *classname = item_def->GetItemClass();
+				CEconItemView *item_view= CEconItemView::Create();
+				item_view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+				ret = ItemGeneration()->GenerateItemFromScriptData(item_view,vec, ang,classname);
+			}
+
+			if (ret == nullptr){
+				if (cvar_creators_custom_item.GetBool() && bot_additem ) {
+					DevMsg("equip custom ctf item %s\n", item_name);
+					engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(bot_additem), item_name));
+					engine->ServerExecute();
+
+					// static ConVarRef ce_mvm_equip_itemname_cvar("sig_mvm_set_credit_team");
+					// if (sig_mvm_set_credit_team.IsValid() && sig_mvm_set_credit_team.GetBool()) {
+					// 	return sig_mvm_set_credit_team.GetInt();
+					// }
+
+					bot_additem = nullptr;
+				}
+
+				else
+					ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang);
+			}
+			if (ret != nullptr) {
+
+			}
+
+			return ret;
+		}
+		return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang);
+	}
+	DETOUR_DECL_MEMBER(void, CTFBot_OnEventChangeAttributes, void *ecattr)
+	{
+		SCOPED_INCREMENT(rc_CTFBot_OnEventChangeAttributes);
+		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
+
+		CTFBot *bot = reinterpret_cast<CTFBot *>(this);
+		auto data = GetDataForBot(bot);
+		if (data == nullptr)
+			data = &(spawners[current_spawner]);
+		DevMsg("OnEventChange %d %d\n",bot != nullptr, data != nullptr);
+		
+		if (data != nullptr) {
+
+			DevMsg("size: %d\n",data->event_change_atttributes_data.size());
+			auto it = data->event_change_atttributes_data.find(ecattr);
+			if (it != data->event_change_atttributes_data.end()) {
+				EventChangeAttributesData &event_data = it->second;
+				
+				DevMsg("has ecattr, size %d\n",event_data.custom_attrs.size());
+				for(auto ititem = event_data.custom_attrs.begin(); ititem != event_data.custom_attrs.end(); ititem++) {
+					for (int i = 0; i < bot->GetNumWearables(); ++i) {
+						CEconWearable *wearable = bot->GetWearable(i);
+						if (wearable == nullptr) continue;
+						
+						CEconItemView *item_view = wearable->GetItem();
+						if (item_view == nullptr) continue;
+						DevMsg("Compare item to name %s %s\n",item_view->GetStaticData()->GetName(), ititem->first.c_str());
+						if (FStrEq(item_view->GetStaticData()->GetName(), ititem->first.c_str())) {
+							DevMsg("Custom attrib count %d\n ",ititem->second.size());
+							for(auto itattr = ititem->second.begin(); itattr != ititem->second.end(); itattr++) {
+								DevMsg("Added custom attribute %s\n",itattr->first.c_str());
+								engine->ServerCommand(CFmtStr("ce_mvm_set_attribute %d \"%s\" %f\n", ENTINDEX(wearable), itattr->first.c_str(), itattr->second));
+								engine->ServerExecute();
+							}
+						}
+					}
+					
+					for (int i = 0; i < bot->WeaponCount(); ++i) {
+						CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+						if (weapon == nullptr) continue;
+						
+						CEconItemView *item_view = weapon->GetItem();
+						if (item_view == nullptr) continue;
+						
+						DevMsg("Compare item to name %s %s\n",item_view->GetStaticData()->GetName(), ititem->first.c_str());
+						if (FStrEq(item_view->GetStaticData()->GetName(), ititem->first.c_str())) {
+							
+							for(auto itattr = ititem->second.begin(); itattr != ititem->second.end(); itattr++) {
+								DevMsg("Added custom attribute %s\n",itattr->first.c_str());
+								engine->ServerCommand(CFmtStr("ce_mvm_set_attribute %d \"%s\" %f\n", ENTINDEX(weapon), itattr->first.c_str(), itattr->second));
+								engine->ServerExecute();
+							}
+						}
+					}
+				}
+			}
+		}
+		
+	}
+
+	#warning __gcc_regcall detours considered harmful!
+	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, ParseDynamicAttributes, void *ecattr, KeyValues *kv)
+	{
+		if (!cvar_creators_custom_item.GetBool())
+			return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
+
+		//DevMsg("ParseDynamicAttributesTFBot: \"%s\" \"%s\"\n", kv->GetName(), kv->GetString());
+		
+		if (V_stricmp(kv->GetName(), "ItemAttributes") == 0) {
+			DevMsg("Item Attributes\n");
+			std::map<std::string, float> attribs;
+			std::string item_name = "";
+			FOR_EACH_SUBKEY( kv, subkey )
+			{
+				if (V_stricmp(subkey->GetName(), "ItemName") == 0)
+				{
+					item_name = subkey->GetString();
+					DevMsg("Item Name %s\n",item_name.c_str());
+					auto it = item_defs.find(item_name);
+					CTFItemDefinition *item_def;
+					if (it != item_defs.end()) {
+						item_def = it->second;
+					}
+					else {
+						item_def = rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(item_name.c_str()));
+						item_defs[item_name] = item_def;
+					}
+
+					if (item_def == nullptr) {
+						auto it_remap = item_custom_remap.find(item_name);
+						if (it_remap != item_custom_remap.end()) {
+							subkey->SetStringValue(it_remap->second.c_str());
+							DevMsg("Found item %s as %s\n",item_name.c_str(), it_remap->second.c_str());
+							item_name = it_remap->second.c_str(); 
+						}
+						else {
+							engine->ServerCommand(CFmtStr("ce_mvm_get_itemdef_id \"%s\"\n", item_name.c_str()));
+							engine->ServerExecute();
+							engine->ServerExecute();
+
+							static ConVarRef ce_mvm_check_itemname_cvar("ce_mvm_check_itemname_cvar");
+							DevMsg("Custom item name %s\n",item_name.c_str());
+							if (ce_mvm_check_itemname_cvar.IsValid() && ce_mvm_check_itemname_cvar.GetInt() != -1) {
+								item_def = rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(ce_mvm_check_itemname_cvar.GetInt()));
+								std::string newname = item_def->GetName("");
+								item_custom_remap[item_name] = newname;
+								
+								DevMsg("Added custom item %s to reg %s\n",item_name.c_str(), newname.c_str());
+								subkey->SetStringValue(newname.c_str());
+								item_name = newname;
+
+							}
+							else{
+								DevMsg("Not found item %s, shown %d\n",item_name.c_str(),ce_mvm_check_itemname_cvar.GetInt());
+								item_custom_remap[item_name] = "";
+							}
+						}
+					}
+				}
+				else
+				{
+					DevMsg("attribute Name %s\n",subkey->GetName());
+					if (current_spawner != nullptr && GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()) == nullptr) {
+						DevMsg("Found unknown attribute %s\n",subkey->GetName());
+						attribs[subkey->GetName()] = subkey->GetFloat();
+					}
+				}
+			}
+			spawners[current_spawner].event_change_atttributes_data[ecattr].custom_attrs[item_name] = attribs;
+			DevMsg("put event changed attributes data %s %d\n",item_name.c_str(), attribs.size());
+		}
+		
+		//DevMsg("  Passing through to actual ParseDynamicAttributes\n");
+		return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
+	}
+
+	DETOUR_DECL_MEMBER(CEconItemDefinition *, CEconItemSchema_GetItemDefinitionByName, const char *name)
+	{
+		DevMsg("GetItemDefinitionByName %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
+		return DETOUR_MEMBER_CALL(CEconItemSchema_GetItemDefinitionByName)(name);
+	}
+	// DETOUR_DECL_MEMBER(void *, CSchemaFieldHandle_CEconItemDefinition, const char* name) {
+	// 	DevMsg("CShemaItemDefHandle 1 %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
+	// 	return DETOUR_MEMBER_CALL(CSchemaFieldHandle_CEconItemDefinition)(name);
+	// }
+	// DETOUR_DECL_MEMBER(void *, CSchemaFieldHandle_CEconItemDefinition2, const char* name) {
+	// 	DevMsg("CShemaItemDefHandle 2 %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
+	// 	return DETOUR_MEMBER_CALL(CSchemaFieldHandle_CEconItemDefinition2)(name);
+	// }
+	
+	DETOUR_DECL_MEMBER(void, CTFBot_AddItem, const char *item)
+	{
+		SCOPED_INCREMENT(rc_CTFBot_AddItem);
+		//clock_t start = clock();
+		item_name = item;
+		bot_additem = reinterpret_cast<CTFBot *>(this);
+		bot_classnum = bot_additem->GetPlayerClass()->GetClassIndex();
+		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
+	}
+	
+	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
+	{
+		if (rc_CTFBot_AddItem > 0) {
+			return DETOUR_STATIC_CALL(CreateEntityByName)(TranslateWeaponEntForClass_improved(className,bot_classnum), iForceEdictIndex);
+		}
+		return DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+	}
+
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotScenarioMonitor_DesiredScenarioAndClassAction, CTFBot *actor)
 	{
 		auto data = GetDataForBot(actor);
@@ -859,11 +2062,52 @@ namespace Mod::Pop::TFBot_Extensions
 			case ACTION_Mobber:
 				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Mobber\n", ENTINDEX(actor), actor->GetPlayerName());
 				return new CTFBotMobber();
-			
+
+			case ACTION_BotSpyInfiltrate:
+				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to SpyInfiltrate\n", ENTINDEX(actor), actor->GetPlayerName());
+				SpyInitAction(actor);
+				return CTFBotSpyInfiltrate::New();
+			case ACTION_SniperLurk:
+				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Sniper\n", ENTINDEX(actor), actor->GetPlayerName());
+				actor->SetMission(CTFBot::MISSION_SNIPER);
+				break;
+			case ACTION_DestroySentries:
+				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to DestroySentries\n", ENTINDEX(actor), actor->GetPlayerName());
+				CBaseEntity *target = actor->SelectRandomReachableEnemy();
+					
+				if (target == nullptr) {
+					CBaseEntity *target = servertools->FindEntityByClassname(nullptr, "obj_sentrygun");
+				}
+				if (target != nullptr) {
+					//float m_flScale; // +0x2bf4
+					targets_sentrybuster[actor]=target;
+					//float scale = *(float *)((uintptr_t)actor+ 0x2bf4);
+					//*(CHandle<CBaseEntity>*)((uintptr_t)actor+ 0x2c00) = target;
+				}
+				actor->SetMission(CTFBot::MISSION_DESTROY_SENTRIES);
+				break;
 			}
 		}
-		
-		return DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_DesiredScenarioAndClassAction)(actor);
+		if (actor->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT)
+			TeleportToHint(actor,data != nullptr && data->action != ACTION_Default);
+		Action<CTFBot> *action = DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_DesiredScenarioAndClassAction)(actor);
+
+		/*if (data != nullptr && action != nullptr && data->action == ACTION_DestroySentries) {
+			DevMsg("CTFBotSpawner: got bomber \n");
+			auto bomber = reinterpret_cast<CTFBotMissionSuicideBomber *>(action);
+			if (bomber != nullptr) {
+				DevMsg("CTFBotSpawner: success getting class \n");
+				CBaseEntity *target = actor->SelectRandomReachableEnemy();
+				if (target != nullptr) {
+					DevMsg("CTFBotSpawner: getting reachable enemy #%d - we are \n", ENTINDEX(target));
+					*(CHandle<CBaseEntity>*)((uintptr_t)actor+ 0x2c00) = target;
+					bomber->m_vecDetonatePos = target->GetAbsOrigin();
+					bomber->m_hTarget = target;
+					
+				}
+			}
+		}*/
+		return action;
 	}
 	
 	
@@ -877,6 +2121,11 @@ namespace Mod::Pop::TFBot_Extensions
 	RefCount rc_CTFBot_GetFlagToFetch;
 	DETOUR_DECL_MEMBER(CCaptureFlag *, CTFBot_GetFlagToFetch)
 	{
+		// if (rc_CTFBotSpawner_Spawn > 0) {
+		// 	clock_t endn = clock();
+		// 	float timespent = ((endn-start_time_spawn) / (float)CLOCKS_PER_SEC);
+		// 	DevMsg("GetFlagToFetch %f\n",timespent);
+		// }
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		/* for SuppressTimedFetchFlag, we carefully ensure that we only spoof
@@ -932,7 +2181,36 @@ namespace Mod::Pop::TFBot_Extensions
 		return result;
 	}
 	
-	
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMissionSuicideBomber_OnStart, CTFBot *actor, Action<CTFBot> *action)
+	{
+		auto me = reinterpret_cast<CTFBotMissionSuicideBomber *>(this);
+		DevMsg("executed suicide bomber%d %d\n",me->m_bDetReachedGoal, me->m_bDetonating );
+		
+		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnStart)(actor, action);
+		if (me->m_hTarget == nullptr && targets_sentrybuster.find(actor) != targets_sentrybuster.end()){
+			CBaseEntity *target = targets_sentrybuster[actor];
+			me->m_hTarget = target;
+			if (target != nullptr && target->GetAbsOrigin().IsValid() && ENTINDEX(target) > 0){
+				me->m_hTarget = target;
+				me->m_vecDetonatePos = target->GetAbsOrigin();
+			}
+			targets_sentrybuster.erase(actor);
+		}
+		DevMsg("reached goal %d,detonating %d, %d %f\n",me->m_bDetReachedGoal, me->m_bDetonating ,ENTINDEX(me->m_hTarget), me->m_vecDetonatePos.x);
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMissionSuicideBomber_Update, CTFBot *actor, float dt)
+	{
+		auto me = reinterpret_cast<CTFBotMissionSuicideBomber *>(this);
+		if (me->m_hTarget != nullptr && me->m_hTarget->IsAlive() && !me->m_hTarget->IsBaseObject() && RandomInt(0,2) == 0)
+			me->m_nConsecutivePathFailures = 0;
+		//DevMsg("\n[Update]\n");
+		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Update)(actor, dt);
+		//DevMsg("reached goal %d,detonating %d,failures %d, %d %f\n",me->m_bDetReachedGoal, me->m_bDetonating ,me->m_nConsecutivePathFailures,ENTINDEX(me->m_hTarget), me->m_vecDetonatePos.x);
+		return result;
+	}
+
 	DETOUR_DECL_MEMBER(CCaptureZone *, CTFBot_GetFlagCaptureZone)
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
@@ -1012,12 +2290,13 @@ namespace Mod::Pop::TFBot_Extensions
 			auto data = GetDataForBot(attacker);
 			if (data != nullptr) {
 				for (const auto& addcond : data->dmgappliesconds) {
+					if ((addcond.health_below == 0 || addcond.health_below >= attacker->GetHealth()) &&
+						(addcond.health_above == 0 || addcond.health_above < attacker->GetHealth()))
 					victim->m_Shared->AddCond(addcond.cond, addcond.duration, attacker);
 				}
 			}
 		}
 	}
-	
 	
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
 	{
@@ -1032,7 +2311,105 @@ namespace Mod::Pop::TFBot_Extensions
 			}
 		}
 	}
+	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
+	{
+		auto data = GetDataForBot(bot);
+		if (data != nullptr && data->no_bomb_upgrade) {
+			return false;
+		}
+		return DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+	}
+
+	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHandScaleSpeed)
+	{
+		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
+		if (data != nullptr) {
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)() * data->scale_speed;
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)();
+	}
 	
+	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHeadScaleSpeed)
+	{
+		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
+		if (data != nullptr) {
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)() * data->scale_speed;
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)();
+	}
+	
+	DETOUR_DECL_MEMBER(float, CTFPlayer_GetTorsoScaleSpeed)
+	{
+		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
+		if (data != nullptr) {
+			return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)() * data->scale_speed;
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)();
+	}
+
+	bool IsRangeLessThan( CBaseEntity *bot, const Vector &pos, float range)
+	{
+		Vector to = pos - bot->GetAbsOrigin();
+		return to.IsLengthLessThan(range);
+	}
+
+	bool IsRangeGreaterThan( CBaseEntity *bot, const Vector &pos, float range)
+	{
+		Vector to = pos - bot->GetAbsOrigin();
+		return to.IsLengthGreaterThan(range);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBot_EquipBestWeaponForThreat, const CKnownEntity * threat)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		
+		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
+		
+		bool use_best_weapon = false;
+
+		auto data = GetDataForBot(bot);
+		if (data != nullptr && data->use_best_weapon) {
+			use_best_weapon = true;
+		}
+
+		if (use_best_weapon)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+
+		CTFWeaponBase *secondary = rtti_cast< CTFWeaponBase *>( bot->Weapon_GetSlot( TF_WPN_TYPE_SECONDARY ) );
+		bool set = false;
+		if (secondary != nullptr && threat && IsRangeLessThan(bot, *(threat->GetLastKnownPosition()), 800)) {
+			if (secondary->HasAmmo() && (secondary->GetWeaponID() == TF_WEAPON_JAR || secondary->GetWeaponID() == TF_WEAPON_JAR_MILK || secondary->GetWeaponID() == TF_WEAPON_JAR_GAS || secondary->GetWeaponID() == TF_WEAPON_CLEAVER)) {
+				bot->Weapon_Switch( secondary );	
+				set = true;
+			}
+		}
+
+		for (int i = 0; i < MAX_WEAPONS; i++) {
+			CTFWeaponBase  *actionItem = rtti_cast< CTFWeaponBase *>( bot->GetWeapon( i ));
+			if (actionItem != nullptr) {
+				
+				if (actionItem->GetWeaponID() == TF_WEAPON_GRAPPLINGHOOK && threat && (!bot->GetGrapplingHookTarget() || RandomFloat(0.0f,1.0f) > 0.05f || bot->GetGrapplingHookTarget()->IsPlayer()) &&
+				 IsRangeGreaterThan(bot, *(threat->GetLastKnownPosition()), 200)) {
+					bot->Weapon_Switch( actionItem );
+					set = true;
+				}
+				else if (actionItem->GetWeaponID() == TF_WEAPON_SPELLBOOK && rtti_cast< CTFSpellBook* >( actionItem )->m_iSpellCharges > 0)
+				{
+					bot->Weapon_Switch( actionItem );	
+					set = true;
+				}
+			}
+		}
+
+		if (!set)
+			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+
+		if (use_best_weapon)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
+	}
 //	std::string GetStrForEntity(CBaseEntity *ent)
 //	{
 //		if (ent == nullptr) {
@@ -1203,7 +2580,23 @@ namespace Mod::Pop::TFBot_Extensions
 //	}
 	
 	
-	static void UpdateRingOfFire()
+
+	void UpdateAlwaysGlow()
+	{
+		if (gpGlobals->tickcount % 3 == 0) {
+			ForEachTFBot([](CTFBot *bot){	
+				if (!bot->IsAlive()) return;
+				
+				auto data = GetDataForBot(bot);
+				if (data != nullptr && data->always_glow) {
+					if (!bot->IsGlowEffectActive()){
+						bot->AddGlowEffect();
+					}
+				}
+			});
+		}
+	}
+	void UpdateRingOfFire()
 	{
 		static int ring_of_fire_tick_interval = (int)(0.500f / (float)gpGlobals->interval_per_tick);
 		if (gpGlobals->tickcount % ring_of_fire_tick_interval == 0) {
@@ -1264,7 +2657,37 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CTFBotMainAction_SelectMoreDangerousThreatInternal)(nextbot, them, threat1, threat2);
 	}
 	
-	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PainSound, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto data = GetDataForBot(player);
+			if (data != nullptr) {
+				if (data->pain_sound != "DEF") {
+					player->EmitSound(data->pain_sound.c_str());
+					return;
+				}
+			}
+
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_PainSound)(info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto data = GetDataForBot(player);
+			if (data != nullptr) {
+				if (data->death_sound != "DEF") {
+					player->EmitSound(data->death_sound.c_str());
+					return;
+				}
+			}
+
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+	}
 #ifdef ENABLE_BROKEN_STUFF
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
 	{
@@ -1316,6 +2739,7 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		return result;
 	}
+
 #endif
 	
 	
@@ -1356,6 +2780,8 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectMoreDangerousThreatInternal, "CTFBotMainAction::SelectMoreDangerousThreatInternal");
 			
+			//MOD_ADD_DETOUR_STATIC(FireEvent,           "FireEvent");
+			
 #ifdef ENABLE_BROKEN_STUFF
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldDropAmmoPack, "CTFPlayer::ShouldDropAmmoPack");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropAmmoPack,       "CTFPlayer::DropAmmoPack");
@@ -1363,6 +2789,31 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_STATIC(CTFAmmoPack_Create,           "CTFAmmoPack::Create");
 #endif
 			
+			MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_OnStart,       "CTFBotMissionSuicideBomber::OnStart");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,        "CTFBotMissionSuicideBomber::Update");
+			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime,        "CTFBotDeliverFlag::UpgradeOverTime");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound,        "CTFPlayer::DeathSound");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PainSound,        "CTFPlayer::PainSound");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_EquipBestWeaponForThreat, "CTFBot::EquipBestWeaponForThreat");
+
+			MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,     "CTFBot::AddItem");
+			MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot,     "CTFItemDefinition::GetLoadoutSlot");
+			MOD_ADD_DETOUR_STATIC(CreateEntityByName, "CreateEntityByName");
+			MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
+			MOD_ADD_DETOUR_STATIC(ParseDynamicAttributes,         "ParseDynamicAttributes");
+			//MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetItemDefinitionByName,        "CEconItemSchema::GetItemDefinitionByName");
+			//MOD_ADD_DETOUR_MEMBER(CSchemaFieldHandle_CEconItemDefinition, "CSchemaFieldHandle<CEconItemDefinition>::CSchemaFieldHandle");
+			//MOD_ADD_DETOUR_MEMBER(CSchemaFieldHandle_CEconItemDefinition2, "CSchemaFieldHandle<CEconItemDefinition>::CSchemaFieldHandle2");
+			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleCommand_JoinClass,        "CTFPlayer::HandleCommand_JoinClass");
+			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsMiniBoss,        "CTFPlayer::IsMiniBoss");
+			//MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_SetBloodColor,        "CBaseCombatCharacter::SetBloodColor");
+			//MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetModelScale,        "CBaseAnimating::SetModelScale");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_OnEventChangeAttributes,        "CTFBot::OnEventChangeAttributes");
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_GetEventChangeAttributes,        "CTFBot::GetEventChangeAttributes");
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddEventChangeAttributes,        "CTFBot::AddEventChangeAttributes");
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_StartIdleSound,        "CTFBot::StartIdleSound");
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
+			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!
 //			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOverrideStepSound, "CTFPlayer::GetOverrideStepSound");
 //			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken,   "CTFPlayer::GetSceneSoundToken");
@@ -1393,7 +2844,9 @@ namespace Mod::Pop::TFBot_Extensions
 		virtual void FrameUpdatePostEntityThink() override
 		{
 			UpdateDelayedAddConds();
+			UpdatePeriodicTasks();
 			UpdateRingOfFire();
+			UpdateAlwaysGlow();
 		}
 	};
 	CMod s_Mod;
@@ -1415,6 +2868,8 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	};
 	CKVCond_TFBot cond;
+
+	
 }
 
 /*
@@ -1435,3 +2890,51 @@ Current UseHumanModel mod:
 
 // voices:
 // server detour of CTFPlayer::GetSceneSoundToken
+
+
+/*bool TeleportNearVictim(CTFBot *spy, CTFPlayer *victim, int dist)
+{
+	VPROF_BUDGET("CTFBotSpyLeaveSpawnRoom::TeleportNearVictim", "NextBot");
+	
+	if (victim == nullptr || victim->GetLastKnownArea() == nullptr) {
+		return false;
+	}
+	
+	float dist_limit = Min((500.0f * dist) + 1500.0f, 6000.0f);
+	
+	CUtlVector<CTFNavArea *> good_areas;
+	
+	CUtlVector<CNavArea *> near_areas;
+	
+	float StepHeight = spy->GetLocomotionInterface()->GetStepHeight();
+	CollectSurroundingAreas(&near_areas, victim->GetLastKnownArea(), dist_limit,
+		StepHeight, StepHeight);
+	
+	FOR_EACH_VEC(near_areas, i) {
+		CTFNavArea *area = static_cast<CTFNavArea *>(near_areas[i]);
+		
+		if (area->IsValidForWanderingPopulation() &&
+			!area->IsPotentiallyVisibleToTeam(victim->GetTeamNumber())) {
+			good_areas.AddToTail(area);
+		}
+	}
+	
+	int limit = Max(good_areas.Count(), 10);
+	for (int i = 0; i < limit; ++i) {
+		CTFNavArea *area = good_areas.Random();
+		
+		Vector pos = {
+			.x = area->GetCenter().x,
+			.y = area->GetCenter().y,
+			.z = area->GetCenter().z + StepHeight,
+		};
+		
+		if (IsSpaceToSpawnHere(pos)) {
+			spy->Teleport(pos, vec3_angle, vec3_origin);
+			return true;
+		}
+	}
+	
+	return false;
+}
+*/

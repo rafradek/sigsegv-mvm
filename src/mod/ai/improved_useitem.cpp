@@ -2,6 +2,8 @@
 #include "stub/tfweaponbase.h"
 #include "re/nextbot.h"
 #include "stub/tfbot.h"
+#include "stub/gamerules.h"
+#include "stub/projectiles.h"
 
 
 namespace Mod::AI::Improved_UseItem
@@ -137,7 +139,21 @@ namespace Mod::AI::Improved_UseItem
 		}
 	};
 	
-	
+	class CTFBotUseThrowableItem : public CTFBotUseItemImproved
+	{
+	public:
+		CTFBotUseThrowableItem(CTFWeaponBase *item) :
+			CTFBotUseItemImproved(item) {}
+		
+		virtual const char *GetName() const override { return "UseThrowableItem"; }
+		
+	private:
+		virtual bool IsDone(CTFBot *actor) override
+		{
+			return true;
+		}
+	};
+
 	class CTFBotUseLunchBoxItem : public CTFBotUseItemImproved
 	{
 	public:
@@ -189,9 +205,10 @@ namespace Mod::AI::Improved_UseItem
 		TauntState m_TauntState;
 	};
 	
-	
+	CEconItemView *item_noisemaker = nullptr;
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBot_OpportunisticallyUseWeaponAbilities)
 	{
+		
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		CTFBotUseItem *result = reinterpret_cast<CTFBotUseItem *>(DETOUR_MEMBER_CALL(CTFBot_OpportunisticallyUseWeaponAbilities)());
@@ -218,17 +235,133 @@ namespace Mod::AI::Improved_UseItem
 				}
 			}
 		}
-		
+		else
+		{
+			CTFWearable *pActionSlotEntity = bot->GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_ACTION );
+			if ( pActionSlotEntity  != nullptr) {
+
+				// get the equipped item and see what it is
+				CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
+
+				const CKnownEntity *threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
+				if ( pPowerupBottle  != nullptr && threat != nullptr && threat->GetEntity() != nullptr && threat->IsVisibleRecently() 
+					&& bot->GetIntentionInterface()->ShouldAttack(rtti_cast<INextBot *>(bot), threat) == QueryResponse::YES)
+				{
+					if ( bot->IsLineOfFireClear( threat->GetEntity()->EyePosition() ) || bot->IsLineOfFireClear( threat->GetEntity()->WorldSpaceCenter() ) || 
+						bot->IsLineOfFireClear( threat->GetEntity()->GetAbsOrigin() ))
+					{
+						bot->UseActionSlotItemPressed();
+						bot->UseActionSlotItemReleased();
+					}
+				
+				}
+
+				int iNoiseMaker = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, iNoiseMaker, enable_misc2_noisemaker );
+				DevMsg("Has noise maker %d\n",iNoiseMaker);
+				if (iNoiseMaker != 0) {
+					
+					item_noisemaker = pActionSlotEntity->GetItem();
+					bot->UseActionSlotItemPressed();
+
+					item_noisemaker = nullptr;
+
+					bot->UseActionSlotItemReleased();
+				}
+			}
+			/*for ( int w=0; w<MAX_WEAPONS; ++w )
+			{
+				CTFWeaponBase *weapon = ( CTFWeaponBase * )bot->GetWeapon( w );
+				if ( !weapon )
+					continue;
+
+				if ( weapon->GetWeaponID() == TF_WEAPON_JAR || weapon->GetWeaponID() == TF_WEAPON_JAR_MILK || weapon->GetWeaponID() == TF_WEAPON_JAR_GAS || weapon->GetWeaponID() == TF_WEAPON_CLEAVER)
+				{
+					const CKnownEntity *threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
+					if ( weapon->HasAmmo() && threat != nullptr && threat->GetEntity() != nullptr && threat->IsVisibleInFOVNow())
+					{
+						if (CTFBotUseItemImproved::IsPossible(bot)) {
+							return new CTFBotUseThrowableItem(weapon);
+						} else {
+							return nullptr;
+						}
+					}
+				}
+				if ( weapon->GetWeaponID() == TF_WEAPON_SPELLBOOK || strcmp(weapon->GetClassname(), "tf_powerup_bottle") == 0)
+				{
+					if (strcmp(weapon->GetClassname(), "tf_powerup_bottle") == 0) {
+						reinterpret_cast<CTFItem *>(this);
+					}
+					bot->UseActionSlotItemPressed();
+					bot->UseActionSlotItemReleased();
+				}
+			}*/
+		}
 		return result;
 	}
+
+	DETOUR_DECL_MEMBER(void *, CPlayerInventory_GetInventoryItemByItemID, unsigned long long param1, int* itemid)
+	{
+		
+		if (item_noisemaker != nullptr) {
+			return item_noisemaker;
+		}
+		return DETOUR_MEMBER_CALL(CPlayerInventory_GetInventoryItemByItemID)(param1, itemid);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFProjectile_Rocket_IsDeflectable)
+	{
+		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
+
+		if (strcmp(ent->GetClassname(), "tf_projectile_balloffire") == 0) {
+			return false;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFProjectile_Rocket_IsDeflectable)();
+	}
+
+	std::vector<bool> stack_m_bPlayingMannVsMachine;
+	void Quirk_MvM_Pre()
+	{
+		stack_m_bPlayingMannVsMachine.push_back(TFGameRules()->IsMannVsMachineMode());
+		
+		TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+	}
+	void Quirk_MvM_Post()
+	{
+		assert(!stack_m_bPlayingMannVsMachine.empty());
+		
+		TFGameRules()->Set_m_bPlayingMannVsMachine(stack_m_bPlayingMannVsMachine.back());
+		stack_m_bPlayingMannVsMachine.pop_back();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBot_EquipLongRangeWeapon)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		
+		//Quirk_MvM_Pre();
+		
+		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
+		TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+
+		auto result = DETOUR_MEMBER_CALL(CTFBot_EquipLongRangeWeapon)();
+
+		TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
+		//Quirk_MvM_Post();
+		return result;
+	}
+
 	
-	
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("AI:Improved_UseItem")
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFBot_OpportunisticallyUseWeaponAbilities, "CTFBot::OpportunisticallyUseWeaponAbilities");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_IsDeflectable, "CTFProjectile_Rocket::IsDeflectable");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_EquipLongRangeWeapon, "CTFBot::EquipLongRangeWeapon");
+			MOD_ADD_DETOUR_MEMBER(CPlayerInventory_GetInventoryItemByItemID, "CPlayerInventory::GetInventoryItemByItemID");
 		}
 	};
 	CMod s_Mod;

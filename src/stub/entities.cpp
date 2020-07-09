@@ -120,6 +120,12 @@ using CExtract_CTeamControlPointMaster_m_ControlPoints = IExtractStub;
 
 IMPL_DATAMAP(int, CPathTrack, m_eOrientationType);
 
+IMPL_DATAMAP(string_t,             CEnvEntityMaker, m_iszTemplate);
+IMPL_DATAMAP(QAngle,               CEnvEntityMaker,   m_angPostSpawnDirection);
+IMPL_DATAMAP(float,                CEnvEntityMaker,   m_flPostSpawnDirectionVariance);
+IMPL_DATAMAP(float,                CEnvEntityMaker,   m_flPostSpawnSpeed);
+IMPL_DATAMAP(bool,                 CEnvEntityMaker,   m_bPostSpawnUseAngles);
+
 MemberFuncThunk<CPathTrack *, CPathTrack *> CPathTrack::ft_GetNext("CPathTrack::GetNext");
 
 
@@ -129,6 +135,8 @@ IMPL_DATAMAP(Vector,               CItem, m_vOriginalSpawnOrigin);
 IMPL_DATAMAP(QAngle,               CItem, m_vOriginalSpawnAngles);
 IMPL_DATAMAP(IPhysicsConstraint *, CItem, m_pConstraint);
 
+
+IMPL_SENDPROP(int,                CTFPowerupBottle, m_usNumCharges, CTFPowerupBottle);
 
 IMPL_DATAMAP(bool,     CTFPowerup, m_bDisabled);
 IMPL_DATAMAP(bool,     CTFPowerup, m_bAutoMaterialize);
@@ -177,6 +185,8 @@ IMPL_DATAMAP(bool, CBaseTrigger, m_bDisabled);
 
 
 MemberFuncThunk<const CUpgrades *, const char *, int> CUpgrades::ft_GetUpgradeAttributeName("CUpgrades::GetUpgradeAttributeName");
+MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > CUpgrades::ft_GrantOrRemoveAllUpgrades("CUpgrades::GrantOrRemoveAllUpgrades");
+
 GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity("g_hUpgradeEntity");
 
 

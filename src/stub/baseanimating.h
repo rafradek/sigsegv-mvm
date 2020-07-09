@@ -33,6 +33,8 @@ public:
 	float GetPoseParameter(int iParameter)                                 { return ft_GetPoseParameter_int(this, iParameter); }
 	float GetPoseParameter(const char *szName)                             { return ft_GetPoseParameter_str(this, szName); }
 	void GetBoneTransform(int iBone, matrix3x4_t& pBoneToWorld)            { return ft_GetBoneTransform    (this, iBone, pBoneToWorld); }
+	int LookupBone(const char *name)                                       { return ft_LookupBone          (this, name); }
+	void GetBonePosition(int id, Vector& vec, QAngle& ang)                 { return ft_GetBonePosition     (this, id, vec, ang); }
 	
 	DECL_SENDPROP   (int,   m_nSkin);
 	DECL_SENDPROP   (int,   m_nBody);
@@ -57,6 +59,8 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, float, int>                      ft_GetPoseParameter_int;
 	static MemberFuncThunk<CBaseAnimating *, float, const char *>             ft_GetPoseParameter_str;
 	static MemberFuncThunk<CBaseAnimating *, void, int, matrix3x4_t&>         ft_GetBoneTransform;
+	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupBone;
+	static MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     ft_GetBonePosition;
 };
 
 class CBaseAnimatingOverlay : public CBaseAnimating {};

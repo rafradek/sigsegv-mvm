@@ -194,6 +194,7 @@ class ExtensionConfig(object):
     cxx.cflags += ['-Wno-array-bounds']
     cxx.cflags += ['-msse']
     cxx.cflags += ['-m32']
+    cxx.cflags += ['-Winvalid-constexpr']
     cxx.cflags += ['-fvisibility=hidden']
     cxx.cflags += ['-fdiagnostics-color=always']
     cxx.cflags += ['-fno-omit-frame-pointer']
@@ -205,6 +206,7 @@ class ExtensionConfig(object):
     cxx.cflags += ['-gsplit-dwarf']
 #   cxx.cflags += ['-feliminate-dwarf2-dups']
     cxx.cflags += ['-gz']
+    cxx.cflags += ['-arch i386']
     if use_gold:
       cxx.cflags += ['-fpic']
     
@@ -223,6 +225,10 @@ class ExtensionConfig(object):
 #   cxx.cxxflags += ['-Wno-non-virtual-dtor']
     cxx.cxxflags += ['-fvisibility-inlines-hidden']
     cxx.cxxflags += ['-Wno-invalid-offsetof']
+    cxx.cxxflags += ['-fpermissive']
+    cxx.cxxflags += ['-ferror-limit=100']
+    cxx.cxxflags += ['-arch i386']
+    cxx.cxxflags += ['-Wno-invalid-constexpr']
 #   cxx.cxxflags += ['-Wabi']
 #   cxx.cxxflags += ['-Wabi-tag']
 #   cxx.cxxflags += ['-fabi-version=0']        # always latest
@@ -368,6 +374,7 @@ class ExtensionConfig(object):
     cxx.linkflags += [
       '-Wl,--exclude-libs,ALL',
       '-lm',
+      '-arch', 'i386',
     #  '-lpthread',
       '-ldl',
     ]
@@ -513,7 +520,7 @@ class ExtensionConfig(object):
         compiler.linkflags.append(compiler.Dep(lib_path))
 
     for library in dynamic_libs:
-      source_path = os.path.join('/pool/Game/SteamCMD/tf2/bin', library)
+      source_path = os.path.join('/opt/tfserver/alliedmodders/hl2sdk-sdk2013/lib/public/linux32', library)
       #source_path = os.path.join(lib_folder, library)
       output_path = os.path.join(binary.localFolder, library)
 

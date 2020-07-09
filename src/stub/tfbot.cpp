@@ -226,8 +226,10 @@ MemberFuncThunk<      CTFBot *, void, const CKnownEntity *               > CTFBo
 MemberFuncThunk<      CTFBot *, void                                     > CTFBot::ft_EquipRequiredWeapon         ("CTFBot::EquipRequiredWeapon");
 MemberFuncThunk<      CTFBot *, CTFPlayer *                              > CTFBot::ft_SelectRandomReachableEnemy  ("CTFBot::SelectRandomReachableEnemy");
 MemberFuncThunk<      CTFBot *, bool                                     > CTFBot::ft_ShouldAutoJump              ("CTFBot::ShouldAutoJump");
+MemberFuncThunk<const CTFBot *, const CTFBot::EventChangeAttributes_t *, const char*     > CTFBot::ft_GetEventChangeAttributes    ("CTFBot::GetEventChangeAttributes");
+MemberFuncThunk<      CTFBot *, void, const CTFBot::EventChangeAttributes_t *            > CTFBot::ft_OnEventChangeAttributes     ("CTFBot::OnEventChangeAttributes");
 
-#if 0
+#ifdef ADD_EXTATTR
 std::map<CHandle<CTFBot>, CTFBot::ExtendedAttr> CTFBot::s_ExtAttrs;
 #endif
 

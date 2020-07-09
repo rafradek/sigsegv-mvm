@@ -6,12 +6,12 @@ namespace Mod::Pop::ExtAttr::AlwaysFireWeaponAlt
 {
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_FireWeaponAtEnemy, CTFBot *actor)
 	{
-		DevMsg("DETOUR: CTFBotMainAction::FireWeaponAtEnemy\n");
-		DevMsg("  actor %08x\n", (uintptr_t)actor);
+		//DevMsg("DETOUR: CTFBotMainAction::FireWeaponAtEnemy\n");
+		//DevMsg("  actor %08x\n", (uintptr_t)actor);
 		actor->ExtAttr().Dump();
 		
-		if (actor != nullptr && actor->ExtAttr()[ExtAttr::ALWAYS_FIRE_WEAPON_ALT]) {
-			DevMsg("  actor has ExtAttr::ALWAYS_FIRE_WEAPON_ALT, pressing alt fire\n");
+		if (actor != nullptr && actor->ExtAttr()[CTFBot::ExtendedAttr::ALWAYS_FIRE_WEAPON_ALT]) {
+			//DevMsg("  actor has ExtAttr::ALWAYS_FIRE_WEAPON_ALT, pressing alt fire\n");
 			actor->PressAltFireButton();
 		}
 		

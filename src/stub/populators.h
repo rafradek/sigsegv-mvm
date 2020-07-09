@@ -17,6 +17,7 @@ public:
 	void ResetMap()                    {        ft_ResetMap      (this); }
 	
 	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots) { return ft_CollectMvMBots(mvm_bots); }
+	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -26,6 +27,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, bool, KeyValues *> ft_LoadMvMMission;
 	static MemberFuncThunk<CPopulationManager *, CWave *>           ft_GetCurrentWave;
 	static MemberFuncThunk<CPopulationManager *, void>              ft_ResetMap;
+	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 };
@@ -115,6 +117,7 @@ public:
 	CUtlStringList m_TeleportWhere;
 	CTFBot::EventChangeAttributes_t m_DefaultAttrs;
 	CUtlVector<CTFBot::EventChangeAttributes_t> m_ECAttrs;
+	
 };
 
 class CSquadSpawner : public IPopulationSpawner
@@ -130,5 +133,9 @@ public:
 	CUtlVector<int> m_Indexes;
 };
 
-
+struct EventInfo
+{
+	CFmtStrN<256> target; // +0x000
+	CFmtStrN<256> action; // +0x10c
+};
 #endif

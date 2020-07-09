@@ -5,6 +5,7 @@
 #include "link/link.h"
 #include "prop.h"
 #include "stub/baseplayer.h"
+#include "stub/tfplayer.h"
 #include "stub/tf_shareddefs.h"
 
 
@@ -25,6 +26,15 @@ private:
 	static MemberFuncThunk<CPathTrack *, CPathTrack *> ft_GetNext;
 };
 
+class CEnvEntityMaker : public CPointEntity
+{
+public:
+	DECL_DATAMAP(string_t,               m_iszTemplate);
+	DECL_DATAMAP(QAngle,                 m_angPostSpawnDirection);
+	DECL_DATAMAP(float,                  m_flPostSpawnDirectionVariance);
+	DECL_DATAMAP(float,                  m_flPostSpawnSpeed);
+	DECL_DATAMAP(bool,                   m_bPostSpawnUseAngles);
+};
 
 class CTFDroppedWeapon : public CBaseAnimating {};
 
@@ -118,7 +128,11 @@ class CTFWearable : public CEconWearable, public IHasGenericMeter {};
 class CTFWearableDemoShield : public CTFWearable {};
 class CTFWearableRobotArm   : public CTFWearable {};
 class CTFWearableRazorback  : public CTFWearable {};
-class CTFPowerupBottle      : public CTFWearable {};
+class CTFPowerupBottle      : public CTFWearable {
+	
+public:
+	DECL_SENDPROP(int, m_usNumCharges);
+};
 
 
 class CBaseTFBotHintEntity : public CPointEntity {};
@@ -243,9 +257,12 @@ class CUpgrades : public CBaseTrigger
 {
 public:
 	const char *GetUpgradeAttributeName(int index) const { return ft_GetUpgradeAttributeName(this, index); }
+	void GrantOrRemoveAllUpgrades(CTFPlayer *player, bool remove = false, bool refund = true) const { ft_GrantOrRemoveAllUpgrades(this, player, remove, refund); };
+
 	
 private:
 	static MemberFuncThunk<const CUpgrades *, const char *, int> ft_GetUpgradeAttributeName;
+	static MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > ft_GrantOrRemoveAllUpgrades;
 };
 extern GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity;
 

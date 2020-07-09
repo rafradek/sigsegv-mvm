@@ -9,6 +9,8 @@
 #include "stub/gamerules.h"
 #include "stub/econ.h"
 
+#include "stub/tfbot_behavior.h"
+
 
 //#define TRACE_ENABLE 1
 #define TRACE_TERSE  0
@@ -284,13 +286,27 @@ namespace Mod::AI::EngieBot_Dispensers
 		
 		if (result.transition == ActionTransition::SUSPEND_FOR && result.action != nullptr) {
 			if (strcmp(result.action->GetName(), "MvMEngineerBuildSentryGun") == 0 && hint_sg != nullptr) {
-				delete result.action;
-				result.action = new CTFBotMvMEngineerBuildSGDispenser(hint_sg);
-				hint_sg = nullptr;
+
+				actor->ExtAttr().Dump();
+				if (actor != nullptr && !(actor->ExtAttr()[CTFBot::ExtendedAttr::BUILD_DISPENSER_TP]) && actor->ExtAttr()[CTFBot::ExtendedAttr::BUILD_DISPENSER_SG]) {
+					DevMsg("  actor has ExtAttr::BUILD_DISPENSER\n");
+					delete result.action;
+					result.action = new CTFBotMvMEngineerBuildSGDispenser(hint_sg);
+					hint_sg = nullptr;
+				}
+
+				
+				
 			} else if (strcmp(result.action->GetName(), "MvMEngineerBuildTeleportExit") == 0 && hint_te != nullptr) {
-				delete result.action;
-				result.action = new CTFBotMvMEngineerBuildTEDispenser(hint_te);
-				hint_te = nullptr;
+
+				actor->ExtAttr().Dump();
+				if (actor != nullptr && actor->ExtAttr()[CTFBot::ExtendedAttr::BUILD_DISPENSER_TP]) {
+					DevMsg("  actor has ExtAttr::BUILD_DISPENSER\n");
+					actor->PressAltFireButton();
+					delete result.action;
+					result.action = new CTFBotMvMEngineerBuildTEDispenser(hint_te);
+					hint_te = nullptr;
+				}
 			}
 		}
 		

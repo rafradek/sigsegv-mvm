@@ -80,6 +80,7 @@ using CExtract_CPopulationManager_m_bAllocatedBots = IExtractStub;
 MemberFuncThunk<CPopulationManager *, bool, KeyValues *> CPopulationManager::ft_LoadMvMMission("CPopulationManager::LoadMvMMission");
 MemberFuncThunk<CPopulationManager *, CWave *>           CPopulationManager::ft_GetCurrentWave("CPopulationManager::GetCurrentWave");
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_ResetMap      ("CPopulationManager::ResetMap");
+MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
 

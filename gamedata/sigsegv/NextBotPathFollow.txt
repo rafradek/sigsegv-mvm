@@ -34,6 +34,26 @@
 					type "sym"
 					sym  "_ZN12PathFollower23SetMinLookAheadDistanceEf"
 				}
+				"PathFollower::FindBlocker"
+				{
+					type "sym"
+					sym  "_ZN12PathFollower11FindBlockerEP8INextBot"
+				}
+				"PathFollower::Avoid"
+				{
+					type "sym"
+					sym  "_ZZN12PathFollower5AvoidEP8INextBotRK6VectorS4_S4_E6tm_fmt"
+				}
+				"PathFollower::Climbing"
+				{
+					type "sym"
+					sym  "_ZZN12PathFollower8ClimbingEP8INextBotPKN4Path7SegmentERK6VectorS8_fE6tm_fmt"
+				}
+				"PathFollower::Climbing0"
+				{
+					type "sym"
+					sym  "_ZZN12PathFollower8ClimbingEP8INextBotPKN4Path7SegmentERK6VectorS8_fE6tm_fmt_0"
+				}
 			}
 		}
 	}

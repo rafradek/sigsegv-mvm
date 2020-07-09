@@ -433,6 +433,16 @@
 					sym  "_ZN11CBaseEntity11EyePositionEv"
 				}
 				
+				"CBaseEntity::KeyValue"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity8KeyValueEPKcS1_"
+				}
+				"CBaseEntity::GetKeyValue"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity11GetKeyValueEPKcPci"
+				}
 				"CBaseEntity::SetOwnerEntity"
 				{
 					type "sym"
@@ -449,7 +459,11 @@
 					type "sym"
 					sym  "_ZN11CBaseEntity12SetAbsAnglesERK6QAngle"
 				}
-				
+				"CBaseEntity::SetAbsVelocity"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14SetAbsVelocityERK6Vector"
+				}
 				"CBaseEntity::Spawn"
 				{
 					type "sym"
@@ -769,7 +783,11 @@
 					type "sym"
 					sym  "_ZNK9CUpgrades23GetUpgradeAttributeNameEi"
 				}
-				
+				"CUpgrades::GrantOrRemoveAllUpgrades"
+				{
+					type "sym"
+					sym  "_ZN9CUpgrades24GrantOrRemoveAllUpgradesEP9CTFPlayerbb"
+				}
 				"GetItemSchema"
 				{
 					type "sym"
@@ -892,6 +910,11 @@
 				{
 					type "sym"
 					sym  "_ZN11CTFTankBoss13TankBossThinkEv"
+				}
+				"CTFTankBoss::Event_Killed"
+				{
+					type "sym"
+					sym  "_ZN11CTFTankBoss12Event_KilledERK15CTakeDamageInfo"
 				}
 				
 				"CPathTrack::GetNext"
@@ -1556,7 +1579,36 @@
 					type "sym"
 					sym  "_ZNK17CBaseCombatWeapon11GetMaxClip2Ev"
 				}
-				
+				"CBaseCombatWeapon::PrimaryAttack"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon13PrimaryAttackEv"
+				}
+				"CBaseCombatWeapon::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon13SecondaryAttackEv"
+				}
+				"CBaseCombatWeapon::CanPerformSecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZNK17CBaseCombatWeapon25CanPerformSecondaryAttackEv"
+				}
+				"CTFWeaponBase::CanPerformSecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase25CanPerformSecondaryAttackEv"
+				}
+				"CTFWeaponBase::PrimaryAttack"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase13PrimaryAttackEv"
+				}
+				"CTFWeaponBase::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase15SecondaryAttackEv"
+				}
 				"CBaseEntity::DrawDebugGeometryOverlays"
 				{
 					type "sym"
@@ -1919,7 +1971,61 @@
 					type "sym"
 					sym  "_ZN16CTFWeaponBaseGun10FireRocketEP9CTFPlayeri"
 				}
-				
+				"CTFWeaponBaseGun::FireFlameRocket"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun15FireFlameRocketEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::FireArrow"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun9FireArrowEP9CTFPlayer16ProjectileType_t"
+				}
+				"CTFWeaponBaseGun::FireFlare"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun9FireFlareEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::FireJar"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun7FireJarEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::FireProjectile"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::FireNail"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun8FireNailEP9CTFPlayeri"
+				}
+				"CTFJar::FireJar"
+				{
+					type "sym"
+					sym  "_ZN6CTFJar7FireJarEP9CTFPlayer"
+				}
+				"CTFJar::CreateJarProjectile"
+				{
+					type "sym"
+					sym  "_ZN6CTFJar19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFJarMilk::CreateJarProjectile"
+				{
+					type "sym"
+					sym  "_ZN10CTFJarMilk19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFJarGas::CreateJarProjectile"
+				{
+					type "sym"
+					sym  "_ZN9CTFJarGas19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFCleaver::CreateJarProjectile"
+				{
+					type "sym"
+					sym  "_ZN10CTFCleaver19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
 				"CBaseEntity::SetModel"
 				{
 					type "sym"
@@ -2783,12 +2889,121 @@
 					type "sym"
 					sym  "_ZN11CBasePlayer10ChangeTeamEibbb"
 				}
-				
 				"Cbuf_Execute"
 				{
 					type "sym"
 					sym  "_Z12Cbuf_Executev"
 					lib  "engine"
+				}
+				"PrecachePointTemplates"
+				{
+					type "sym"
+					sym  "_Z22PrecachePointTemplatesv"
+				}
+				"CEnvEntityMaker::SpawnEntity"
+				{
+					type "sym"
+					sym  "_ZN15CEnvEntityMaker11SpawnEntityE6Vector6QAngle"
+				}
+				"CEnvEntityMaker::InputForceSpawn"
+				{
+					type "sym"
+					sym  "_ZN15CEnvEntityMaker15InputForceSpawnER11inputdata_t"
+				}
+				"CEnvEntityMaker::InputForceSpawnAtEntityOrigin"
+				{
+					type "sym"
+					sym  "_ZN15CEnvEntityMaker29InputForceSpawnAtEntityOriginER11inputdata_t"
+				}
+				"CEventQueue::AddEvent"
+				{
+					type "sym"
+					sym  "_ZN11CEventQueue8AddEventEPKcS1_9variant_tfP11CBaseEntityS4_i"
+				}
+				"CBaseAnimating::LookupBone"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating10LookupBoneEPKc"
+				}
+				"CBaseAnimating::GetBonePosition"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating15GetBonePositionEiR6VectorR6QAngle"
+				}
+				"CTFBotMvMEngineerHintFinder::FindHint"
+				{
+					type "sym"
+					sym  "_ZN27CTFBotMvMEngineerHintFinder8FindHintEbbP7CHandleI22CTFBotHintEngineerNestE"
+				}
+				"TE_TFParticleEffect"
+				{
+					type "sym"
+					sym  "_Z19TE_TFParticleEffectR16IRecipientFilterfPKc6Vector6QAngleP11CBaseEntity20ParticleAttachment_t"
+				}
+				"DoTeleporterOverride"
+				{
+					type "sym"
+					sym  "_Z20DoTeleporterOverrideP11CBaseEntityR6Vectorb"
+				}
+				"CTFGameRules::OnPlayerSpawned"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules15OnPlayerSpawnedEP9CTFPlayer"
+				}
+				"CVoteController::Spawn"
+				{
+					type "sym"
+					sym  "_ZN15CVoteController5SpawnEv"
+				}
+				"CBaseIssue::CBaseIssue"
+				{
+					type "sym"
+					sym  "_ZN10CBaseIssueC1EPKc"
+				}
+				"UserMessageBegin"
+				{
+					type "sym"
+					sym  "_Z16UserMessageBeginR16IRecipientFilterPKc"
+				}
+				"MessageWriteString"
+				{
+					type "sym"
+					sym  "_Z18MessageWriteStringPKc"
+				}
+				"CVoteController::RegisterIssue"
+				{
+					type "sym"
+					sym  "_ZN15CVoteController13RegisterIssueEP10CBaseIssue"
+				}
+				"CTFProjectile_Rocket::IsDeflectable"
+				{
+					type "sym"
+					sym  "_ZN20CTFProjectile_Rocket13IsDeflectableEv"
+				}
+				"CPlayerInventory::GetInventoryItemByItemID"
+				{
+					type "sym"
+					sym  "_ZN16CPlayerInventory24GetInventoryItemByItemIDEyPi"
+				}
+				"IPopulationSpawner::HasAttribute"
+				{
+					type "sym"
+					sym  "_ZN18IPopulationSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
+				}
+				"IPopulationSpawner::HasAttribute"
+				{
+					type "sym"
+					sym  "_ZN18IPopulationSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
+				}
+				"CSchemaFieldHandle<CEconItemDefinition>::CSchemaFieldHandle"
+				{
+					type "sym"
+					sym  "_ZN18CSchemaFieldHandleI19CEconItemDefinitionEC1EPKc"
+				}
+				"CSchemaFieldHandle<CEconItemDefinition>::CSchemaFieldHandle2"
+				{
+					type "sym"
+					sym  "_ZN18CSchemaFieldHandleI19CEconItemDefinitionEC2EPKc"
 				}
 			}
 			

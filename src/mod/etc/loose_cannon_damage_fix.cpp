@@ -44,8 +44,7 @@ namespace Mod::Etc::Loose_Cannon_Damage_Fix
 		
 		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 	}
-	
-	
+
 //	DETOUR_DECL_MEMBER(void, CBaseGrenade_SetDamage, float flDamage)
 //	{
 //		auto grenade = reinterpret_cast<CBaseGrenade *>(this);

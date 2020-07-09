@@ -116,6 +116,8 @@ public:
 	void ForceButtons(int nButtons)                                                    {        ft_ForceButtons  (this, nButtons); }
 	void UnforceButtons(int nButtons)                                                  {        ft_UnforceButtons(this, nButtons); }
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
+	void Weapon_Equip(CBaseCombatWeapon *pWeapon)                               { ft_Weapon_Equip     	      (this, pWeapon); }
+	void EquipWearable(CEconWearable *wearable)									{ ft_EquipWearable     (this, wearable); }
 	
 	bool IsBot() const                                                   { return vt_IsBot               (this); }
 	void CommitSuicide(bool bExplode = false, bool bForce = false)       {        vt_CommitSuicide       (this, bExplode, bForce); }
@@ -151,6 +153,8 @@ private:
 	static MemberFuncThunk<CBasePlayer *, void, int>                          ft_ForceButtons;
 	static MemberFuncThunk<CBasePlayer *, void, int>                          ft_UnforceButtons;
 	static MemberFuncThunk<CBasePlayer *, void, const QAngle&>                ft_SnapEyeAngles;
+	static MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          ft_Weapon_Equip;
+	static MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              ft_EquipWearable;
 	
 	static MemberVFuncThunk<const CBasePlayer *, bool>                        vt_IsBot;
 	static MemberVFuncThunk<      CBasePlayer *, void, bool, bool>            vt_CommitSuicide;

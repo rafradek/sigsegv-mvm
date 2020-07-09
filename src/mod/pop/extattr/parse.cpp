@@ -7,7 +7,7 @@ namespace Mod::Pop::ExtAttr::Parse
 	#warning __gcc_regcall detours considered harmful!
 	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, ParseDynamicAttributes, void *ecattr, KeyValues *kv)
 	{
-		DevMsg("ParseDynamicAttributes: \"%s\" \"%s\"\n", kv->GetName(), kv->GetString());
+		//DevMsg("ParseDynamicAttributes: \"%s\" \"%s\"\n", kv->GetName(), kv->GetString());
 		
 		if (V_stricmp(kv->GetName(), "ExtAttr") == 0) {
 			auto ext = reinterpret_cast<CTFBot::ExtendedAttr *>((uintptr_t)ecattr + 0x10);
@@ -15,10 +15,16 @@ namespace Mod::Pop::ExtAttr::Parse
 			const char *val = kv->GetString();
 			if (V_stricmp(val, "AlwaysFireWeaponAlt") == 0) {
 				DevMsg("  found: ExtAttr AlwaysFireWeaponAlt\n");
-				ext->TurnOn(ExtAttr::ALWAYS_FIRE_WEAPON_ALT);
+				ext->TurnOn(CTFBot::ExtendedAttr::ALWAYS_FIRE_WEAPON_ALT);
 			} else if (V_stricmp(val, "TargetStickies") == 0) {
 				DevMsg("  found: ExtAttr TargetStickies\n");
-				ext->TurnOn(ExtAttr::TARGET_STICKIES);
+				ext->TurnOn(CTFBot::ExtendedAttr::TARGET_STICKIES);
+			} else if (V_stricmp(val, "BuildDispenserAsSentryGun") == 0) {
+				DevMsg("  found: ExtAttr BuildDispenserAsSentryGun\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::BUILD_DISPENSER_SG);
+			} else if (V_stricmp(val, "BuildDispenserAsTeleporter") == 0) {
+				DevMsg("  found: ExtAttr BuildDispenserAsTeleporter\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::BUILD_DISPENSER_TP);
 			} else {
 				Warning("TFBotSpawner: Invalid extended attribute '%s'\n", val);
 			}
@@ -27,7 +33,7 @@ namespace Mod::Pop::ExtAttr::Parse
 			return true;
 		}
 		
-		DevMsg("  Passing through to actual ParseDynamicAttributes\n");
+		//DevMsg("  Passing through to actual ParseDynamicAttributes\n");
 		return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
 	}
 	

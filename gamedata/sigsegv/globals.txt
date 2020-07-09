@@ -76,6 +76,9 @@
 				"g_TeamVisualSections" "g_TeamVisualSections"
 				
 				"s_TFTeamManager" "s_TFTeamManager"
+				
+				"g_EventQueue" "g_EventQueue"
+				"g_voteController" "g_voteController"
 			}
 			
 			"addrs_group"

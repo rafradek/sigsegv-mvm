@@ -53,6 +53,7 @@ namespace Mod::Visualize::Explosive_Headshot
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_ExplosiveHeadShot,            "CTFSniperRifle::ExplosiveHeadShot");
 			MOD_ADD_DETOUR_MEMBER(ISpatialPartition_EnumerateElementsInSphere, "ISpatialPartition::EnumerateElementsInSphere");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
 		}
 	};
 	CMod s_Mod;

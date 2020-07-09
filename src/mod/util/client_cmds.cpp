@@ -46,7 +46,7 @@ namespace Mod::Util::Client_Cmds
 		ClientMsg(player, "[sig_setplayermodel] Set model of player %s to \"%s\".\n", player->GetPlayerName(), model_path);
 	}
 	
-	
+
 	// TODO: another version that allows resetting a different player's model...?
 	void CC_ResetPlayerModel(CTFPlayer *player, const CCommand& args)
 	{

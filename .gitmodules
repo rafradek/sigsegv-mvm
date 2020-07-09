@@ -1,20 +1,20 @@
 [submodule "libs/capstone"]
 	path                   = libs/capstone
-	url                    = git@github.com:sigsegv-mvm/capstone.git
+	url                    = https://github.com/sigsegv-mvm/capstone.git
 	branch                 = sigsegv-mvm
 	fetchRecurseSubmodules = true
 #	ignore                 = ???
 
 [submodule "libs/distorm"]
 	path                   = libs/distorm
-	url                    = git@github.com:sigsegv-mvm/distorm.git
+	url                    = https://github.com/sigsegv-mvm/distorm.git
 	branch                 = sigsegv-mvm
 	fetchRecurseSubmodules = true
 #	ignore                 = ???
 
 [submodule "libs/udis86"]
 	path                   = libs/udis86
-	url                    = git@github.com:sigsegv-mvm/udis86.git
+	url                    = https://github.com/sigsegv-mvm/udis86.git
 	branch                 = sigsegv-mvm
 	fetchRecurseSubmodules = true
 #	ignore                 = ???

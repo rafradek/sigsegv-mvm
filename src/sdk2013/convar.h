@@ -45,7 +45,10 @@ class ConVar;
 class CCommand;
 class ConCommand;
 class ConCommandBase;
-struct characterset_t;
+
+struct characterset_t {
+	char set[256];
+};
 
 
 

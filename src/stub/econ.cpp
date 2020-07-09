@@ -5,9 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#ifdef __GNUC__
 #include <strcompat.h>
-#endif
 
 
 using const_char_ptr = const char *;
@@ -180,25 +178,20 @@ MemberVFuncThunk<const CEconItemView *, int> CEconItemView::vt_GetItemDefIndex(T
 IMPL_SENDPROP(CEconItemView, CAttributeContainer, m_Item, CEconEntity);
 
 
-std::string CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& value)
+void CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& value, char *buf, size_t buf_len)
 {
 	/* if BConvertStringToEconAttributeValue was called with b1 = true, then
 	 * calling ConvertEconAttributeValueToString will render the stored-as-float
 	 * value as an integer, which looks horribly wrong */
 	if (this->IsStoredAsInteger() && this->IsType<CSchemaAttributeType_Default>()) {
-		return std::to_string(RoundFloatToInt(value.m_Float));
+		snprintf(buf, buf_len, "%d", RoundFloatToInt(value.m_Float));
+		return;
 	}
 	
-	/* we only actually need to use the strcompat workaround on GCC Linux builds */
-#ifdef __GNUC__
-	string_compat str;
-	this->GetType()->ConvertEconAttributeValueToString(this, value, str.compat_ptr());
-	return str.get();
-#else
-	std::string str;
-	this->GetType()->ConvertEconAttributeValueToString(this, value, &str);
-	return str;
-#endif
+	void *str = strcompat_alloc();
+	this->GetType()->ConvertEconAttributeValueToString(this, value, reinterpret_cast<std::string *>(str));
+	strcompat_get(str, buf, buf_len);
+	strcompat_free(str);
 }
 
 
@@ -219,6 +212,8 @@ CTFItemSchema *GetItemSchema() { return ft_GetItemSchema(); }
 static StaticFuncThunk<CItemGeneration *> ft_ItemGeneration("ItemGeneration");
 CItemGeneration *ItemGeneration() { return ft_ItemGeneration(); }
 
+MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_SpawnItem("CItemGeneration::SpawnItem");
+MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_GenerateItemFromScriptData("CItemGeneration::GenerateItemFromScriptData");
 
 static StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput("CopyStringAttributeValueToCharPointerOutput");
 void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr) { ft_CopyStringAttributeValueToCharPointerOutput(attr_str, p_cstr); }
@@ -235,7 +230,7 @@ static const auto& GetLoadoutSlotNameMap()
 		for (int i = LOADOUT_POSITION_INVALID; i < LOADOUT_POSITION_COUNT; ++i) {
 			auto slot = static_cast<loadout_positions_t>(i);
 			
-			s_Map.emplace(slot, boost::to_lower_copy(std::string(GetLoadoutPositionName(i) + strlen("LOADOUT_POSITION_"))));
+			s_Map.emplace(slot, boost::algorithm::to_lower_copy(std::string(GetLoadoutPositionName(i) + strlen("LOADOUT_POSITION_"))));
 		}
 	}
 	

@@ -195,11 +195,11 @@ public:
 	// TODO: accessor for m_iszClassIcon
 	// TODO: accessor for m_iszCustomModel
 	
+	DECL_SENDPROP(bool,                 m_bUseClassAnimations);
 private:
 	DECL_SENDPROP(int,      m_iClass);
 	DECL_SENDPROP(string_t, m_iszClassIcon);
 	DECL_SENDPROP(string_t, m_iszCustomModel);
-	
 	static MemberFuncThunk<CTFPlayerClassShared *, void, const char *, bool> ft_SetCustomModel;
 };
 class CTFPlayerClass : public CTFPlayerClassShared {};
@@ -275,10 +275,12 @@ public:
 	bool IsMiniBoss() const     { return this->m_bIsMiniBoss; }
 	int GetCurrency() const     { return this->m_nCurrency; }
 	void SetMiniBoss(bool boss) { this->m_bIsMiniBoss = boss; }
+	CBaseEntity *GetGrapplingHookTarget() const {return this->m_hGrapplingHookTarget;}
 	
 	CTFWeaponBase *GetActiveTFWeapon() const;
 	
 	void ForceChangeTeam(int team, bool b1)                      {        ft_ForceChangeTeam                  (this, team, b1); }
+	void ClientCommand(CCommand& command)                        {        ft_ClientCommand                    (this, command); }
 	void StartBuildingObjectOfType(int iType, int iMode)         {        ft_StartBuildingObjectOfType        (this, iType, iMode); }
 	bool HasTheFlag(ETFFlagType *p1 = nullptr, int i1 = 0) const { return ft_HasTheFlag                       (this, p1, i1); }
 	int GetAutoTeam(int team)                                    { return ft_GetAutoTeam                      (this, team); }
@@ -290,6 +292,7 @@ public:
 	CBaseObject *GetObjectOfType(int iType, int iMode)           { return ft_GetObjectOfType                  (this, iType, iMode); }
 	int GetMaxAmmo(int iAmmoIndex, int iClassNumber = -1)        { return ft_GetMaxAmmo                       (this, iAmmoIndex, iClassNumber); }
 	CTFWearable *GetEquippedWearableForLoadoutSlot(int iSlot)    { return ft_GetEquippedWearableForLoadoutSlot(this, iSlot); }
+	CBaseEntity *GetEntityForLoadoutSlot(int iSlot)    { return ft_GetEntityForLoadoutSlot(this, iSlot); }
 	
 	void HandleCommand_JoinTeam(const char *pTeamName)                   { ft_HandleCommand_JoinTeam        (this, pTeamName); }
 	void HandleCommand_JoinTeam_NoMenus(const char *pTeamName)           { ft_HandleCommand_JoinTeam_NoMenus(this, pTeamName); }
@@ -298,7 +301,10 @@ public:
 	void AddCustomAttribute(const char *s1, float f1, float f2) { ft_AddCustomAttribute       (this, s1, f1, f2); }
 	void RemoveCustomAttribute(const char *s1)                  { ft_RemoveCustomAttribute    (this, s1); }
 	void RemoveAllCustomAttributes()                            { ft_RemoveAllCustomAttributes(this); }
+	void ReapplyPlayerUpgrades()                              { ft_ReapplyPlayerUpgrades  (this); }
 	
+	void UseActionSlotItemPressed()								{ ft_UseActionSlotItemPressed  (this); }
+	void UseActionSlotItemReleased()								{ ft_UseActionSlotItemReleased  (this); }
 	CBaseEntity *GiveNamedItem(const char *pszName, int iSubType, CEconItemView *pItem, bool bDontTranslateForClass) { return vt_GiveNamedItem(this, pszName, iSubType, pItem, bDontTranslateForClass); }
 	
 //	typedef int taunts_t;
@@ -308,6 +314,8 @@ public:
 	DECL_SENDPROP   (float,                m_flMvMLastDamageTime);
 	DECL_RELATIVE   (CTFPlayerAnimState *, m_PlayerAnimState);
 	DECL_EXTRACT    (bool,                 m_bFeigningDeath);
+	DECL_SENDPROP   (CHandle<CBaseEntity>,                m_hGrapplingHookTarget);
+	
 	
 private:
 	DECL_SENDPROP_RW(CTFPlayerClass,   m_PlayerClass);
@@ -316,6 +324,7 @@ private:
 	DECL_SENDPROP   (int,              m_nCurrency);
 	
 	static MemberFuncThunk<      CTFPlayer *, void, int, bool                 > ft_ForceChangeTeam;
+	static MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > ft_ClientCommand;
 	static MemberFuncThunk<      CTFPlayer *, void, int, int                  > ft_StartBuildingObjectOfType;
 	static MemberFuncThunk<const CTFPlayer *, bool, ETFFlagType *, int        > ft_HasTheFlag;
 	static MemberFuncThunk<      CTFPlayer *, int, int                        > ft_GetAutoTeam;
@@ -327,15 +336,19 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, CBaseObject *, int, int         > ft_GetObjectOfType;
 	static MemberFuncThunk<      CTFPlayer *, int, int, int                   > ft_GetMaxAmmo;
 	static MemberFuncThunk<      CTFPlayer *, CTFWearable *, int              > ft_GetEquippedWearableForLoadoutSlot;
+	static MemberFuncThunk<      CTFPlayer *, CBaseEntity *, int              > ft_GetEntityForLoadoutSlot;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *              > ft_HandleCommand_JoinTeam;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *              > ft_HandleCommand_JoinTeam_NoMenus;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *, bool        > ft_HandleCommand_JoinClass;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *, float, float> ft_AddCustomAttribute;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *              > ft_RemoveCustomAttribute;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_RemoveAllCustomAttributes;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ReapplyPlayerUpgrades;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemPressed;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemReleased;
 //	static MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > ft_Taunt;
 	
-	static MemberVFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
+	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 };
 
 class CTFPlayerSharedUtils

@@ -17,6 +17,7 @@ namespace Mod::MvM::Robot_Limit
 			CUtlVector<CTFPlayer *> mvm_bots;
 			CPopulationManager::CollectMvMBots(&mvm_bots);
 			CheckForMaxInvadersAndKickExtras(mvm_bots);
+			DevMsg("Changed\n");
 		});
 	
 	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
@@ -41,7 +42,8 @@ namespace Mod::MvM::Robot_Limit
 		
 		if (mvm_bots.Count() > GetMvMInvaderLimit()) {
 			CUtlVector<CTFPlayer *> bots_to_kick;
-			int need_to_kick = (GetMvMInvaderLimit() - mvm_bots.Count());
+			int need_to_kick = (mvm_bots.Count() - GetMvMInvaderLimit());
+			DevMsg("Need to kick %d bots\n", need_to_kick);
 			
 			/* pass 1: nominate bots on TEAM_SPECTATOR to be kicked */
 			for (auto bot : mvm_bots) {
@@ -124,7 +126,7 @@ namespace Mod::MvM::Robot_Limit
 			/* ensure that the original code won't do its own bots-over-quota logic */
 			mvm_bots->RemoveAll();
 		}
-		
+		DevMsg("Collect MVM resulted in %d bots\n", mvm_bots->Count());
 		return mvm_bots->Count();
 	}
 	

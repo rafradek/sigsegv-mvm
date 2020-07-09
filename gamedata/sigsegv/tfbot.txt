@@ -117,7 +117,31 @@
 					type "sym"
 					sym  "_ZN6CTFBot23OnEventChangeAttributesEPKNS_23EventChangeAttributes_tE"
 				}
-				
+				"CTFBot::AddEventChangeAttributes"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot24AddEventChangeAttributesEPKNS_23EventChangeAttributes_tE"
+				}
+				"CItemGeneration::GenerateRandomItem"
+				{
+					type "sym"
+					sym  "_ZN15CItemGeneration18GenerateRandomItemEP22CItemSelectionCriteriaRK6VectorRK6QAngle"
+				}
+				"CItemGeneration::GenerateItemFromScriptData"
+				{
+					type "sym"
+					sym  "_ZN15CItemGeneration26GenerateItemFromScriptDataEPK13CEconItemViewRK6VectorRK6QAnglePKc"
+				}
+				"CItemGeneration::SpawnItem"
+				{
+					type "sym"
+					sym  "_ZN15CItemGeneration9SpawnItemEPK13CEconItemViewRK6VectorRK6QAnglePKc"
+				}
+				"CTFBot::StartIdleSound"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot14StartIdleSoundEv"
+				}
 				"CTFBot::IsLineOfFireClear_vec"
 				{
 					type "fixed"

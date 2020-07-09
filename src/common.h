@@ -448,6 +448,7 @@ WARN_RESTORE()
 #define DECLARE_PREDICTABLE()
 #include <collisionproperty.h>
 
+
 // can't include game/shared/particle_property.h because it tries to include "particles_new.h" which is in game/client
 // so we'll just put what we need here... sigh
 #define INVALID_PARTICLE_ATTACHMENT -1

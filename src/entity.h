@@ -47,8 +47,8 @@ public:
 	
 	static void UninstallAll()
 	{
-		#error TODO: UTIL_RemoveImmediate all entities created by hotplug factories (so we need factories to track entity ptrs they have created)
-		#error TODO: iterate over the AutoList and remove the factories from EntityFactoryDictionary()->m_Factories
+		//#error TODO: UTIL_RemoveImmediate all entities created by hotplug factories (so we need factories to track entity ptrs they have created)
+		//#error TODO: iterate over the AutoList and remove the factories from EntityFactoryDictionary()->m_Factories
 	}
 }
 
@@ -59,13 +59,13 @@ class CEntityFactory : public IHotplugEntityFactory
 public:
 	CEntityFactory(const char *pClassName)
 	{
-		#error TODO
+		//#error TODO
 		EntityFactoryDictionary()->InstallFactory(this, pClassName);
 	}
 	
 	virtual IServerNetworkable *Create(const char *pClassName) override
 	{
-		#error TODO
+		//#error TODO
 		T *pEnt = _CreateEntityTemplate<T>(nullptr, pClassName);
 		return pEnt->NetworkProp();
 	}

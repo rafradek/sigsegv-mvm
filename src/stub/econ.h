@@ -96,11 +96,6 @@ public:
 };
 
 
-/* WARNING WARNING WARNING:
- * on GCC, be EXTREMELY careful about passing std::string instances across ABI
- * boundaries! this means you should use libstdcompat as an intermediary layer
- * and never directly touch the std::string instances yourself! */
-
 class ISchemaAttributeType
 {
 	// TODO: use vfunc thunks instead of relying on vtable matching up forever
@@ -109,9 +104,9 @@ protected:
 public:
 	virtual int GetTypeUniqueIdentifier() const = 0;
 	virtual void LoadEconAttributeValue(CEconItem *pItem, const CEconItemAttributeDefinition *pAttrDef, const attribute_data_union_t& value) const = 0;
-	virtual void ConvertEconAttributeValueToByteStream(const attribute_data_union_t& value, std::string *pString) const = 0;
+	virtual std::string *ConvertEconAttributeValueToByteStream(const attribute_data_union_t& value, std::string *pString) const = 0;
 	virtual bool BConvertStringToEconAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const char *pString, attribute_data_union_t *pValue, bool b1 = true) const = 0;
-	virtual void ConvertEconAttributeValueToString(const CEconItemAttributeDefinition *pAttrDef, const attribute_data_union_t& value, std::string *pString) const = 0;
+	virtual std::string *ConvertEconAttributeValueToString(const CEconItemAttributeDefinition *pAttrDef, const attribute_data_union_t& value, std::string *pString) const = 0;
 	virtual void LoadByteStreamToEconAttributeValue(CEconItem *pItem, const CEconItemAttributeDefinition *pAttrDef, const std::string& string) const = 0;
 	virtual void InitializeNewEconAttributeValue(attribute_data_union_t *pValue) const = 0;
 	virtual void UnloadEconAttributeValue(attribute_data_union_t *pValue) const = 0;
@@ -264,11 +259,6 @@ public:
 	CTFItemDefinition *GetStaticData() const                                                          { return ft_GetStaticData(this); }
 	CTFItemDefinition *GetItemDefinition() const                                                      { return ft_GetStaticData(this); }
 	
-	int GetItemDefIndex() const { return vt_GetItemDefIndex(this); }
-	
-private:
-	virtual ~CEconItemView() { assert(false); }
-	
 	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
 	DECL_DATAMAP(int,            m_iEntityLevel);
@@ -277,6 +267,12 @@ private:
 	DECL_DATAMAP(CAttributeList, m_AttributeList);
 	DECL_DATAMAP(CAttributeList, m_NetworkedDynamicAttributesForDemos);
 	DECL_DATAMAP(bool,           m_bOnlyIterateItemViewAttributes);
+	
+	int GetItemDefIndex() const { return vt_GetItemDefIndex(this); }
+	
+private:
+	virtual ~CEconItemView() { assert(false); }
+	
 	
 	static MemberFuncThunk<      CEconItemView *, void>                              ft_ctor;
 	static MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> ft_Init;
@@ -301,7 +297,7 @@ public:
 	
 	/* do all the libstrcompat junk automatically;
 	 * and handle "stored_as_integer" properly when BConvertStringToEconAttributeValue was called with b1 = true */
-	std::string ConvertValueToString(attribute_data_union_t& value);
+	void ConvertValueToString(attribute_data_union_t& value, char *buf, size_t buf_len);
 	
 private:
 	bool GetKVBool(const char *key, bool fallback) const
@@ -359,7 +355,7 @@ class CAttributeContainer : public CAttributeManager
 {
 public:
 	CEconItemView *GetItem() { return &this->m_Item; }
-	
+	//void SetItem(CEconItemView &view) { this->m_Item = view; }
 private:
 	DECL_SENDPROP_RW(CEconItemView, m_Item);
 };
@@ -406,10 +402,13 @@ CTFItemSchema *GetItemSchema();
 class CItemGeneration
 {
 public:
-	// TODO
+	CBaseEntity *SpawnItem(CEconItemView const* view, Vector const& vec, QAngle const& ang, char const* clname)                         { return ft_SpawnItem          (this, view, vec, ang, clname); }
+	CBaseEntity *GenerateItemFromScriptData(CEconItemView const* view, Vector const& vec, QAngle const& ang, char const* clname)                         { return ft_GenerateItemFromScriptData          (this, view, vec, ang, clname); }
 	
 private:
-	// TODO
+	
+	static MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> ft_SpawnItem;
+	static MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> ft_GenerateItemFromScriptData;
 };
 
 

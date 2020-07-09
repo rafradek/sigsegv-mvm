@@ -21,6 +21,10 @@ public:
 	const char *GetViewModel(int viewmodelindex = 0) const { return vt_GetViewModel (this, viewmodelindex); }
 	const char *GetWorldModel() const                      { return vt_GetWorldModel(this); }
 	void SetViewModel()                                    {        vt_SetViewModel (this); }
+	void PrimaryAttack()                                   {        vt_PrimaryAttack (this); }
+	void SecondaryAttack()                                 {        vt_SecondaryAttack (this); }
+	//void CanPerformPrimaryAttack()                                   {        vt_CanPerformPrimaryAttack (this); }
+	void CanPerformSecondaryAttack()                                 {        vt_CanPerformSecondaryAttack (this); }
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
 	DECL_SENDPROP(float, m_flNextSecondaryAttack);
@@ -46,6 +50,10 @@ private:
 	static MemberVFuncThunk<const CBaseCombatWeapon *, const char *, int>            vt_GetViewModel;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, const char *>                 vt_GetWorldModel;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_SetViewModel;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_PrimaryAttack;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_SecondaryAttack;
+	//static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformPrimaryAttack;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformSecondaryAttack;
 };
 
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter
@@ -76,6 +84,12 @@ class CTFWeaponBaseGun : public CTFWeaponBase {};
 class CTFPipebombLauncher : public CTFWeaponBaseGun {};
 
 class CTFGrenadeLauncher : public CTFWeaponBaseGun {};
+
+class CTFSpellBook : public CTFWeaponBaseGun {
+public:
+	DECL_SENDPROP(int, m_iSelectedSpellIndex);
+	DECL_SENDPROP(int, m_iSpellCharges);
+};
 
 class CTFCompoundBow : public CTFPipebombLauncher
 {

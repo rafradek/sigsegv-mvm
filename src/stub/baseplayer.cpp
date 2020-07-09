@@ -86,6 +86,8 @@ MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_ForceButtons  ("CBasePlayer::ForceButtons");
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_UnforceButtons("CBasePlayer::UnforceButtons");
 MemberFuncThunk<CBasePlayer *, void, const QAngle&>                CBasePlayer::ft_SnapEyeAngles ("CBasePlayer::SnapEyeAngles");
+MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          CBasePlayer::ft_Weapon_Equip (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
+MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              CBasePlayer::ft_EquipWearable (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
 
 MemberVFuncThunk<const CBasePlayer *, bool>                        CBasePlayer::vt_IsBot               (TypeName<CBasePlayer>(), "CBasePlayer::IsBot");
 MemberVFuncThunk<      CBasePlayer *, void, bool, bool>            CBasePlayer::vt_CommitSuicide       (TypeName<CBasePlayer>(), "CBasePlayer::CommitSuicide");

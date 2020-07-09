@@ -4,7 +4,7 @@
 
 namespace Mod::Pop::KV_Conditional
 {
-	static bool IsSigsegv()
+	bool IsSigsegv()
 	{
 		for (auto cond : AutoList<IKVCond>::List()) {
 			if ((*cond)()) return true;

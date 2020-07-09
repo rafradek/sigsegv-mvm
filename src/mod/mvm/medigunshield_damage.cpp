@@ -1,8 +1,15 @@
 #include "mod.h"
+#include "util/scope.h"
+#include "stub/entities.h"
+#include "util/rtti.h"
+#include "re/nextbot.h"
+#include "stub/tfbot.h"
+#include "util/clientmsg.h"
 
 
 namespace Mod::MvM::MedigunShield_Damage
 {
+	
 	constexpr uint8_t s_Buf[] = {
 		0x89, 0x34, 0x24,                   // +0000  mov [esp],esi
 		0xe8, 0xe8, 0x2f, 0x16, 0x00,       // +0003  call CBaseEntity::GetTeamNumber
@@ -40,6 +47,7 @@ namespace Mod::MvM::MedigunShield_Damage
 			return true;
 		}
 	};
+	
 	
 	
 	class CMod : public IMod

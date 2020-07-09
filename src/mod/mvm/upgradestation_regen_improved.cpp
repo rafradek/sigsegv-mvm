@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/tfplayer.h"
+#include "stub/entities.h"
 #include "util/scope.h"
 
 
@@ -10,6 +11,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	{
 		SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, slot, tier, sell, free, b3);
+		
 	}
 	
 	/* disallow GiveDefaultItems, if we're in this function because of the upgrade station:

@@ -13,16 +13,11 @@
 		{
 			"addrs"
 			{
-//				"ILocomotion::TraceHull"
-//				{
-//					type "sym"
-//					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace"
-//				}
-//				"ILocomotion::TraceHull"
-//				{
-//					type "sym regex"
-//					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace.\\isra\\..*"
-//				}
+				"ILocomotion::TraceHull"
+				{
+					type "sym regex"
+					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace.\\isra\\..*"
+				}
 				
 				"NextBotGroundLocomotion::GetMaxYawRate"
 				{

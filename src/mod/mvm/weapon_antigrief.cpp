@@ -2,6 +2,7 @@
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
 #include "util/scope.h"
+#include "stub/tfweaponbase.h"
 
 
 namespace Mod::MvM::Weapon_AntiGrief
@@ -9,6 +10,9 @@ namespace Mod::MvM::Weapon_AntiGrief
 	ConVar cvar_scorchshot  ("sig_mvm_weapon_antigrief_scorchshot",   "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Scorch Shot");
 	ConVar cvar_loosecannon ("sig_mvm_weapon_antigrief_loosecannon",  "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Loose Cannon");
 	ConVar cvar_forceanature("sig_mvm_weapon_antigrief_forceanature", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Force-A-Nature");
+	ConVar cvar_moonshot    ("sig_mvm_weapon_antigrief_moonshot", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Moonshot");
+	ConVar cvar_eh_nerf    ("sig_mvm_explosiveheadshot_nerf", "1", FCVAR_NOTIFY, "Nerf from explosive headshots");
+	ConVar cvar_stunball    ("sig_mvm_stunball_stun", "1", FCVAR_NOTIFY, "Balls now stun players");
 	
 	
 	static inline bool BotIsAGiant(const CTFPlayer *player)
@@ -62,6 +66,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	
 	static inline bool ShouldBlock_ScorchShot()  { return (cvar_scorchshot .GetBool() && rc_ScorchShot  > 0); }
 	static inline bool ShouldBlock_LooseCannon() { return (cvar_loosecannon.GetBool() && rc_LooseCannon > 0); }
+	static inline bool ShouldBlock_Moonshot(int flags) { return (flags == 11 && cvar_moonshot.GetBool()); }
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
 	{
@@ -76,9 +81,29 @@ namespace Mod::MvM::Weapon_AntiGrief
 		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse);
 	}
 	
+	bool HasStunAttribute(CTFPlayer *attacker)
+	{
+		CTFWeaponBase *weapon = attacker->GetActiveTFWeapon();
+		if (weapon != nullptr) {
+			CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
+			auto attr = attrlist.GetAttributeByName("mod bat launches balls");
+			if (attr != nullptr) {
+				float value = attr->GetValuePtr()->m_Float;
+				return value >= 1.f;
+			}
+		}
+		return false;
+	}
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
 	{
-		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon()) {
+		//DevMsg("Stun ball %f %f %d\n",duration, slowdown, flags);
+		if (flags == 257 && slowdown == 0.5f && (cvar_stunball.GetBool() || HasStunAttribute(attacker))) {
+			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+			auto player = shared->GetOuter();
+			if (!(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())))
+				flags = TF_STUNFLAGS_SMALLBONK;
+		}
+		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon() || ShouldBlock_Moonshot(flags)) {
 			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 			auto player = shared->GetOuter();
 			
@@ -90,7 +115,53 @@ namespace Mod::MvM::Weapon_AntiGrief
 		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
 	}
 	
+	RefCount rc_CTFSniperRifle_ExplosiveHeadShot;
+	CTFSniperRifle *sniperrifle = nullptr;
+	DETOUR_DECL_MEMBER(void, CTFSniperRifle_ExplosiveHeadShot, CTFPlayer *player1, CTFPlayer *player2)
+	{
+		SCOPED_INCREMENT_IF(rc_CTFSniperRifle_ExplosiveHeadShot,cvar_eh_nerf.GetBool());
+		sniperrifle = reinterpret_cast<CTFSniperRifle *>(this);
+		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
+	}
 	
+	/* UTIL_EntitiesInSphere forwards call to partition->EnumerateElementsInSphere */
+	RefCount rc_EnumerateElementsInSphere;
+	float radius_eh = 0.f;
+	float radius_eh_sqr = 0.f;
+	const Vector *origin_eh = nullptr;
+	DETOUR_DECL_MEMBER(void, ISpatialPartition_EnumerateElementsInSphere, SpatialPartitionListMask_t listMask, const Vector& origin, float radius, bool coarseTest, IPartitionEnumerator *pIterator)
+	{
+		SCOPED_INCREMENT(rc_EnumerateElementsInSphere);
+		if (rc_CTFSniperRifle_ExplosiveHeadShot > 0 && rc_EnumerateElementsInSphere <= 1) {
+			//DevMsg("he radius: %f\n",radius);
+			float chargedmg = sniperrifle->m_flChargedDamage;
+			chargedmg -= 50.f;
+			chargedmg *= 0.01f;
+			radius_eh = radius*(0.64f+chargedmg*0.23f);
+			radius_eh_sqr = radius_eh*0.7f;
+			radius_eh_sqr *= radius_eh_sqr;
+			origin_eh = &origin;
+			
+			return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius_eh, coarseTest, pIterator);
+		}
+		
+		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
+	}
+
+	/*DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, const CTakeDamageInfo& inputInfo)
+	{
+		DevMsg("takedamege\n");
+		if (rc_CTFSniperRifle_ExplosiveHeadShot > 0){
+			auto ent = reinterpret_cast<CBaseEntity *>(this);
+			float distanceSq = origin_eh->DistToSqr(ent->GetAbsOrigin());
+			CTakeDamageInfo newInfo = inputInfo;
+			if (distanceSq >= radius_eh_sqr)
+				newInfo.ScaleDamage(0.6f);
+			DevMsg("Damage after: %f %f %f %d %d\n",radius_eh,distanceSq, inputInfo.GetDamage(), inputInfo.GetDamageCustom(), inputInfo.GetDamageType());
+			return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(newInfo);
+		}
+		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(inputInfo);
+	}*/
 	class CMod : public IMod
 	{
 	public:
@@ -106,6 +177,9 @@ namespace Mod::MvM::Weapon_AntiGrief
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyGenericPushbackImpulse, "CTFPlayer::ApplyGenericPushbackImpulse");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer,            "CTFPlayerShared::StunPlayer");
+			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_ExplosiveHeadShot,            "CTFSniperRifle::ExplosiveHeadShot");
+			MOD_ADD_DETOUR_MEMBER(ISpatialPartition_EnumerateElementsInSphere, "ISpatialPartition::EnumerateElementsInSphere");
+			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage");
 		}
 	};
 	CMod s_Mod;

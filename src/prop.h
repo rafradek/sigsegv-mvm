@@ -381,6 +381,7 @@ public:
 	#endif
 	template<typename A> auto operator[](const A& idx) const { return this->Get()[idx]; }
 	
+	template<typename A> void SetArray(const A val, int index)                            { this->Set(static_cast<const typename std::remove_extent<T>::type>(val),index);}
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<( RW2 && std::is_array_v<T2>),       T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<(!RW2 && std::is_array_v<T2>), const T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<( RW2 && std::is_array_v<T2>),       decltype(std::declval<T>()[0])&> operator[](ptrdiff_t idx) const { return this->Get_RW()[idx]; }
@@ -415,7 +416,32 @@ protected:
 			return (this->GetRW() = val);
 		}
 	}
-	
+
+	void Set(typename std::remove_extent<T>::type val, int index)
+	{
+		if (NET) {
+			if (memcmp((this->GetPtrRO()+index), &val, sizeof(typename std::remove_extent<T>::type)) != 0) {
+				PROP->StateChanged(reinterpret_cast<void *>(this->GetInstanceBaseAddr()), this->GetPtrRW()+index);
+				(this->GetRW()[index] = val);
+			} else {
+				this->GetRO();
+			}
+		} else {
+			(this->GetRW()[index] = val);
+		}
+	}
+	/*void Set(typename std::remove_extent<T>::type val, int index)
+	{
+		if (NET) {
+			if (memcmp((this->GetPtrRO()+index), &val, sizeof(T)) != 0) {
+				PROP->StateChanged(reinterpret_cast<void *>(this->GetInstanceBaseAddr()), (this->GetPtrRW()+index));
+				*(this->GetPtrRW()+index) = val;
+			}
+		} else {
+			*(this->GetPtrRW()+index) = val;
+		}
+	}*/
+
 	/* reference getters */
 	RefRO_t GetRO() const { return *this->GetPtrRO(); }
 	RefRW_t GetRW() const { return *this->GetPtrRW(); }

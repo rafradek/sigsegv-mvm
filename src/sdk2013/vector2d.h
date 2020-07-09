@@ -549,7 +549,7 @@ constexpr vec_t Vector2DNormalize( Vector2D& v )
 //-----------------------------------------------------------------------------
 constexpr vec_t Vector2D::DistTo(const Vector2D &vOther) const
 {
-	Vector2D delta;
+	Vector2D delta = Vector2D();
 	Vector2DSubtract( *this, vOther, delta );
 	return delta.Length();
 }

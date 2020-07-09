@@ -108,6 +108,7 @@ MemberFuncThunk<CMultiplayerAnimState *, void> CMultiplayerAnimState::ft_OnNewMo
 IMPL_SENDPROP(int,      CTFPlayerClassShared, m_iClass,         CTFPlayer);
 IMPL_SENDPROP(string_t, CTFPlayerClassShared, m_iszClassIcon,   CTFPlayer);
 IMPL_SENDPROP(string_t, CTFPlayerClassShared, m_iszCustomModel, CTFPlayer);
+IMPL_SENDPROP(bool,     CTFPlayerClassShared, m_bUseClassAnimations, CTFPlayer);
 
 MemberFuncThunk<CTFPlayerClassShared *, void, const char *, bool> CTFPlayerClassShared::ft_SetCustomModel("CTFPlayerClassShared::SetCustomModel");
 
@@ -149,8 +150,9 @@ IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,         CTFPlayer)
 IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,               CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsMiniBoss,         CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_nCurrency,           CTFPlayer);
-
+IMPL_SENDPROP(CHandle<CBaseEntity> ,CTFPlayer, m_hGrapplingHookTarget,CTFPlayer);
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
+MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
 MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_StartBuildingObjectOfType        ("CTFPlayer::StartBuildingObjectOfType");
 MemberFuncThunk<const CTFPlayer *, bool, ETFFlagType *, int        > CTFPlayer::ft_HasTheFlag                       ("CTFPlayer::HasTheFlag");
 MemberFuncThunk<      CTFPlayer *, int, int                        > CTFPlayer::ft_GetAutoTeam                      ("CTFPlayer::GetAutoTeam");
@@ -168,8 +170,12 @@ MemberFuncThunk<      CTFPlayer *, void, const char *, bool        > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void, const char *, float, float> CTFPlayer::ft_AddCustomAttribute               ("CTFPlayer::AddCustomAttribute");
 MemberFuncThunk<      CTFPlayer *, void, const char *              > CTFPlayer::ft_RemoveCustomAttribute            ("CTFPlayer::RemoveCustomAttribute");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_RemoveAllCustomAttributes        ("CTFPlayer::RemoveAllCustomAttributes");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ReapplyPlayerUpgrades            ("CTFPlayer::ReapplyPlayerUpgrades");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemPressed            ("CTFPlayer::UseActionSlotItemPressed");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemReleased            ("CTFPlayer::UseActionSlotItemReleased");
+MemberFuncThunk<      CTFPlayer *, CBaseEntity *, int              > CTFPlayer::ft_GetEntityForLoadoutSlot            ("CTFPlayer::GetEntityForLoadoutSlot");
 
-MemberVFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem(TypeName<CTFPlayer>(), "CTFPlayer::GiveNamedItem");
+MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");
 
 
 StaticFuncThunk<CEconItemView *, CTFPlayer *, int, CEconEntity **> CTFPlayerSharedUtils::ft_GetEconItemViewByLoadoutSlot("CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");

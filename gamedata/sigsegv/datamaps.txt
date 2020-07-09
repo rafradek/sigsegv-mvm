@@ -33,6 +33,7 @@
 				"CSpellPickup"         "_ZN12CSpellPickup9m_DataMapE"
 				"CTFPowerup"           "_ZN10CTFPowerup9m_DataMapE"
 				"CTFTeamSpawn"         "_ZN12CTFTeamSpawn9m_DataMapE"
+				"CEnvEntityMaker"      "_ZN15CEnvEntityMaker9m_DataMapE"
 			}
 		}
 	}

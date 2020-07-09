@@ -5,27 +5,34 @@
 #include "stub/strings.h"
 #include "stub/misc.h"
 #include "util/scope.h"
-
+#include "mod/pop/pointtemplate.h"
+#include "stub/tf_objective_resource.h"
 
 namespace Mod::Pop::Tank_Extensions
 {
+
 	struct SpawnerData
 	{
 		bool disable_smokestack =  false;
 		float scale             =  1.00f;
 		bool force_romevision   =  false;
 		float max_turn_rate     =    NAN;
-		std::string icon        = "tank";
+		std::string icon        = "";
 		bool is_miniboss        =   true;
+		bool is_crit           	=  false;
+		bool disable_models     =   false;
+		bool immobile          =   false;
+		std::string custom_model=   "";
 		
 		std::vector<CHandle<CTFTankBoss>> tanks;
+		std::vector<PointTemplateInfo> attachements;
 	};
 	
 	
 	std::map<CTankSpawner *, SpawnerData> spawners;
 	
 	
-	static SpawnerData *FindSpawnerDataForTank(const CTFTankBoss *tank)
+	SpawnerData *FindSpawnerDataForTank(const CTFTankBoss *tank)
 	{
 		if (tank == nullptr) return nullptr;
 		
@@ -40,7 +47,7 @@ namespace Mod::Pop::Tank_Extensions
 		
 		return nullptr;
 	}
-	static SpawnerData *FindSpawnerDataForBoss(const CTFBaseBoss *boss)
+	SpawnerData *FindSpawnerDataForBoss(const CTFBaseBoss *boss)
 	{
 		/* FindSpawnerDataForTank doesn't do anything special, just a ptr comparison,
 		 * so there's no need to do an expensive rtti_cast or anything if we have a CTFBaseBoss ptr */
@@ -53,6 +60,7 @@ namespace Mod::Pop::Tank_Extensions
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
 		
 	//	DevMsg("CTankSpawner %08x: dtor0\n", (uintptr_t)spawner);
+		
 		spawners.erase(spawner);
 		
 		DETOUR_MEMBER_CALL(CTankSpawner_dtor0)();
@@ -63,12 +71,13 @@ namespace Mod::Pop::Tank_Extensions
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
 		
 	//	DevMsg("CTankSpawner %08x: dtor2\n", (uintptr_t)spawner);
+
 		spawners.erase(spawner);
 		
 		DETOUR_MEMBER_CALL(CTankSpawner_dtor2)();
 	}
 	
-	
+
 	DETOUR_DECL_MEMBER(bool, CTankSpawner_Parse, KeyValues *kv)
 	{
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
@@ -92,12 +101,28 @@ namespace Mod::Pop::Tank_Extensions
 			} else if (FStrEq(name, "MaxTurnRate")) {
 			//	DevMsg("Got \"MaxTurnRate\" = %f\n", subkey->GetFloat());
 				spawners[spawner].max_turn_rate = subkey->GetFloat();
-			} else if (FStrEq(name, "IconOverride")) {
+			} else if (FStrEq(name, "ClassIcon")) {
 			//	DevMsg("Got \"IconOverride\" = \"%s\"\n", subkey->GetString());
 				spawners[spawner].icon = subkey->GetString();
+			} else if (FStrEq(name, "IsCrit")) {
+			//	DevMsg("Got \"IconOverride\" = \"%s\"\n", subkey->GetString());
+				spawners[spawner].is_crit = subkey->GetBool();
 			} else if (FStrEq(name, "IsMiniBoss")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].is_miniboss = subkey->GetBool();
+			} else if (FStrEq(name, "Model")) {
+			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
+				spawners[spawner].custom_model = subkey->GetString();
+			} else if (FStrEq(name, "DisableChildModels")) {
+			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
+				spawners[spawner].disable_models = subkey->GetBool();
+			} else if (FStrEq(name, "Immobile")) {
+			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
+				spawners[spawner].immobile = subkey->GetBool();
+			} else if (FStrEq(name, "SpawnTemplate")) {
+			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
+				spawners[spawner].attachements.push_back(Parse_SpawnTemplate(subkey));
+				//Parse_PointTemplate(spawner, subkey);
 			} else {
 				del = false;
 			}
@@ -119,8 +144,8 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_MEMBER_CALL(CTankSpawner_Parse)(kv);
 	}
 	
-	
-	static void ForceRomeVisionModels(CTFTankBoss *tank)
+
+	void ForceRomeVisionModels(CTFTankBoss *tank, bool romevision)
 	{
 		auto l_print_model_array = [](auto& array, const char *name){
 			DevMsg("\n");
@@ -141,6 +166,7 @@ namespace Mod::Pop::Tank_Extensions
 		};
 		
 		auto l_copy_rome_to_all_overrides = [](CBaseEntity *ent){
+			
 			for (int i = 0; i < MAX_VISION_MODES; ++i) {
 				if (i == VISION_MODE_ROME) continue;
 				ent->SetModelIndexOverride(i, ent->m_nModelIndexOverrides[VISION_MODE_ROME]);
@@ -156,6 +182,9 @@ namespace Mod::Pop::Tank_Extensions
 		l_print_overrides(tank, "[BEFORE]");
 		
 		// primary method
+		
+		int mode_to_use = romevision ? VISION_MODE_ROME : VISION_MODE_NONE;
+		
 		for (int i = 0; i < MAX_VISION_MODES; ++i) {
 			tank->SetModelIndexOverride(i, modelinfo->GetModelIndex(s_TankModelRome[tank->m_iModelIndex]));
 		}
@@ -183,6 +212,7 @@ namespace Mod::Pop::Tank_Extensions
 	}
 	
 	
+
 	RefCount rc_CTankSpawner_Spawn;
 	CTankSpawner *current_spawner = nullptr;
 	DETOUR_DECL_MEMBER(int, CTankSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
@@ -196,6 +226,7 @@ namespace Mod::Pop::Tank_Extensions
 		
 		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
 		
+
 		if (ents != nullptr) {
 			auto it = spawners.find(spawner);
 			if (it != spawners.end()) {
@@ -215,9 +246,40 @@ namespace Mod::Pop::Tank_Extensions
 							
 							tank->SetModelScale(data.scale);
 						}
+						static ConVarRef sig_no_romevision_cosmetics("sig_no_romevision_cosmetics");
+						if (data.force_romevision || sig_no_romevision_cosmetics.GetBool()) {
+							ForceRomeVisionModels(tank, data.force_romevision);
+						}
+
 						
-						if (data.force_romevision) {
-							ForceRomeVisionModels(tank);
+						if (data.disable_models) {
+							for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
+								if (!child->ClassMatches("prop_dynamic")) continue;
+								child->AddEffects(32);
+							}
+						}
+
+						if (!data.custom_model.empty()) {
+							//tank->SetModel( data.custom_model.c_str());
+							CBaseEntity::PrecacheModel(data.custom_model.c_str());
+							for (int i = 0; i < MAX_VISION_MODES; ++i) {
+								tank->SetModelIndexOverride(i, modelinfo->GetModelIndex(data.custom_model.c_str()));
+							}
+							DevMsg("Vision node: %d",modelinfo->GetModelIndex(data.custom_model.c_str()));
+							/*CBaseEntity *prop = CreateEntityByName("prop_dynamic");
+							prop->KeyValue("model", data.custom_model.c_str());
+							prop->SetAbsOrigin(tank->GetAbsOrigin());
+							prop->SetAbsAngles(tank->GetAbsAngles());
+							variant_t variant1;
+							variant1.SetString(MAKE_STRING("!activator"));
+							prop->AcceptInput("setparent", tank, tank,variant1,-1);
+							DispatchSpawn(prop);
+							prop->Activate();
+							tank->AddEffects(32);*/
+						}
+
+						for (auto it1 = data.attachements.begin(); it1 != data.attachements.end(); ++it1) {
+							it1->SpawnTemplate(tank);
 						}
 					}
 				}
@@ -228,6 +290,7 @@ namespace Mod::Pop::Tank_Extensions
 	}
 	
 	
+	
 	CTFTankBoss *thinking_tank      = nullptr;
 	SpawnerData *thinking_tank_data = nullptr;
 	
@@ -235,16 +298,33 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(void, CTFTankBoss_TankBossThink)
 	{
 		auto tank = reinterpret_cast<CTFTankBoss *>(this);
-		
+		Vector vec;
+		QAngle ang;
 		SpawnerData *data = FindSpawnerDataForTank(tank);
+		CPathTrack *node = tank->m_hCurrentNode;
 		if (data != nullptr) {
 			thinking_tank      = tank;
 			thinking_tank_data = data;
+			vec = tank->GetAbsOrigin();
+			ang = tank->GetAbsAngles();
+			
 		}
-		
 		SCOPED_INCREMENT(rc_CTFTankBoss_TankBossThink);
 		DETOUR_MEMBER_CALL(CTFTankBoss_TankBossThink)();
+
+		if (data != nullptr && data->immobile) {
+			tank->SetAbsOrigin(vec);
+			tank->SetAbsAngles(ang);
+			tank->m_hCurrentNode  = nullptr;
+		}
 		
+		if (node != nullptr && tank->m_hCurrentNode == nullptr && data != nullptr && !data->attachements.size() > 0) {
+			variant_t variant;
+			variant.SetString(MAKE_STRING(""));
+			tank->AcceptInput("FireUser4",tank,tank,variant,-1);
+		}
+
+		node = tank->m_hCurrentNode;
 		thinking_tank      = nullptr;
 		thinking_tank_data = nullptr;
 	}
@@ -256,18 +336,25 @@ namespace Mod::Pop::Tank_Extensions
 		if (rc_CTFTankBoss_TankBossThink > 0 && thinking_tank != nullptr && thinking_tank_data != nullptr) {
 			CTFTankBoss *tank = thinking_tank;
 			SpawnerData *data = thinking_tank_data;
-			
-			if (data->force_romevision) {
+			static ConVarRef sig_no_romevision_cosmetics("sig_no_romevision_cosmetics");
+			if (data->force_romevision || sig_no_romevision_cosmetics.GetBool()) {
 			//	DevMsg("SetModelIndexOverride(%d, %d) for ent #%d \"%s\" \"%s\"\n", index, nValue, ENTINDEX(ent), ent->GetClassname(), STRING(ent->GetModelName()));
 				
 				if (ent == tank) {
-					if (index == VISION_MODE_ROME) {
+					if (data->force_romevision && index == VISION_MODE_ROME || (sig_no_romevision_cosmetics.GetBool() && index == VISION_MODE_NONE)) {
 						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_NONE, nValue);
 						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_ROME, nValue);
 					}
 					return;
 				}
+			}
+			if (!data->custom_model.empty()) {
+			//	DevMsg("SetModelIndexOverride(%d, %d) for ent #%d \"%s\" \"%s\"\n", index, nValue, ENTINDEX(ent), ent->GetClassname(), STRING(ent->GetModelName()));
 				
+				if (ent == tank) {
+						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_NONE, modelinfo->GetModelIndex(data->custom_model.c_str()));
+						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_ROME, modelinfo->GetModelIndex(data->custom_model.c_str()));
+				}
 			//	if (ent->GetMoveParent() == tank && ent->ClassMatches("prop_dynamic")) {
 			//		DevMsg("Blocking SetModelIndexOverride(%d, %d) for tank %d prop %d \"%s\"\n", index, nValue, ENTINDEX(tank), ENTINDEX(ent), STRING(ent->GetModelName()));
 			//		return;
@@ -324,22 +411,60 @@ namespace Mod::Pop::Tank_Extensions
 	
 	DETOUR_DECL_MEMBER(string_t, CTankSpawner_GetClassIcon, int index)
 	{
-		auto tank = reinterpret_cast<CTFTankBoss *>(this);
+		auto tank = reinterpret_cast<CTankSpawner *>(this);
 		
-		SpawnerData *data = FindSpawnerDataForTank(tank);
-		if (data != nullptr) {
+		SpawnerData *data = &spawners[tank];
+		DevMsg("Tank data found icon %d", data != nullptr);
+		if (data != nullptr && data->icon.size() > 0) {
 			return AllocPooledString(data->icon.c_str());
 		}
 		
 		return DETOUR_MEMBER_CALL(CTankSpawner_GetClassIcon)(index);
 	}
-	
-	
-	DETOUR_DECL_MEMBER(bool, CTankSpawner_IsMiniBoss, int index)
+
+	DETOUR_DECL_MEMBER(void, CTFTankBoss_Event_Killed, CTakeDamageInfo &info)
 	{
 		auto tank = reinterpret_cast<CTFTankBoss *>(this);
 		
 		SpawnerData *data = FindSpawnerDataForTank(tank);
+		DevMsg("Tank killed way 2 %d", data != nullptr);
+		if (data != nullptr && data->icon.size() > 0) {
+			const char *name = data->icon.c_str();
+			CTFObjectiveResource *res = TFObjectiveResource();
+			bool found = false;
+			for (int i = 0; i < 12; ++i) {
+				if (FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames[i]))) {
+					res->m_nMannVsMachineWaveClassCounts.SetArray(res->m_nMannVsMachineWaveClassCounts[i]-1,i);
+					if (res->m_nMannVsMachineWaveClassCounts[i] < 0) {
+						res->m_nMannVsMachineWaveClassCounts.SetArray(0,i);
+						res->m_bMannVsMachineWaveClassActive.SetArray(false,i);
+					}
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found)
+				for (int i = 0; i < 12; ++i) {
+					if (FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames2[i]))) {
+						res->m_nMannVsMachineWaveClassCounts2.SetArray(res->m_nMannVsMachineWaveClassCounts2[i]-1,i);
+						if (res->m_nMannVsMachineWaveClassCounts2[i] < 0) {
+							res->m_nMannVsMachineWaveClassCounts2.SetArray(0,i);
+							res->m_bMannVsMachineWaveClassActive2.SetArray(false,i);
+						}
+					}
+				}
+		}
+		
+		DETOUR_MEMBER_CALL(CTFTankBoss_Event_Killed)(info);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTankSpawner_IsMiniBoss, int index)
+	{
+		auto tank = reinterpret_cast<CTankSpawner *>(this);
+		
+		SpawnerData *data = &spawners[tank];
+		DevMsg("Tank data found mini boss%d", data != nullptr);
 		if (data != nullptr) {
 			return data->is_miniboss;
 		}
@@ -347,7 +472,22 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_MEMBER_CALL(CTankSpawner_IsMiniBoss)(index);
 	}
 	
-	
+	DETOUR_DECL_MEMBER(bool, IPopulationSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
+	{
+		if (attr == CTFBot::ATTR_ALWAYS_CRIT) {
+			auto tank = reinterpret_cast<CTankSpawner *>(this);
+			if (tank) {
+				SpawnerData *data = &spawners[tank];
+				DevMsg("Tank data found crit %d", data != nullptr);
+				if (data != nullptr) {
+					return data->is_crit;
+				}
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(IPopulationSpawner_HasAttribute)(attr, index);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -370,6 +510,8 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_GetClassIcon, "CTankSpawner::GetClassIcon");
 			
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_IsMiniBoss, "CTankSpawner::IsMiniBoss");
+			MOD_ADD_DETOUR_MEMBER(IPopulationSpawner_HasAttribute, "IPopulationSpawner::HasAttribute");
+			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_Event_Killed, "CTFTankBoss::Event_Killed");
 		}
 		
 		virtual void OnUnload() override

@@ -35,11 +35,12 @@ namespace Mod::Util::Console_Send
 			fprintf(stderr, "DEBUG: reentrancy_guard is held\n");
 		}*/
 		
-		if (LocalSpewOutputFunc != nullptr) {
+		/*if (LocalSpewOutputFunc != nullptr) {
 			return LocalSpewOutputFunc(type, pMsg);
 		} else {
 			return DefaultSpewFunc(type, pMsg);
-		}
+		}*/
+		return SPEW_ABORT;
 	}
 	
 	

@@ -793,6 +793,7 @@ static CAddr_RCONClient addr_RCONClient;
 
 // HACK: we already included tier0/memalloc.h with NO_MALLOC_OVERRIDE, so we don't get IMemAlloc or g_pMemAlloc
 #ifdef NO_MALLOC_OVERRIDE
+#define MEM_INTERFACE
 class IMemAlloc
 {
 public:

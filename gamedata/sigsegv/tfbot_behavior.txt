@@ -367,6 +367,12 @@
 					type "sym"
 					sym  "_ZN13CTFBotUseItemD2Ev"
 				}
+				"CTFBotDeliverFlag::UpgradeOverTime"
+				{
+					type "sym"
+					sym  "_ZN17CTFBotDeliverFlag15UpgradeOverTimeEP6CTFBot"
+				}
+				
 			}
 		}
 	}

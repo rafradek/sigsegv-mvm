@@ -97,15 +97,16 @@ SIZE_CHECK(CTFBotPushToCapturePoint, 0x4818);
 class CTFBotMedicHeal : public ActionStub
 {
 public:
-#if TOOLCHAIN_FIXES
+//#if TOOLCHAIN_FIXES
 	static CTFBotMedicHeal *New();
-#endif
+//#endif
 	
 protected:
 	CTFBotMedicHeal() = delete;
 	
 private:
-	ChasePath m_ChasePath;         // +0x0034
+	//ChasePath m_ChasePath;         // +0x0034
+	uint8_t pad_34[0x4800];
 	CountdownTimer m_ctUnknown1;   // +0x4834
 	CountdownTimer m_ctUnknown2;   // +0x4840
 	CHandle<CTFPlayer> m_hPatient; // +0x484c
@@ -122,12 +123,12 @@ SIZE_CHECK(CTFBotMedicHeal, 0x9058);
 class CTFBotSniperLurk : public ActionStub
 {
 public:
-#if TOOLCHAIN_FIXES
+//#if TOOLCHAIN_FIXES
 	static CTFBotSniperLurk *New();
-#endif
+//#endif
 	
 protected:
-	CTFBotSniperLurk() = delete;
+	CTFBotSniperLurk() = default;
 	
 private:
 	CountdownTimer m_ctUnknown1; // +0x0034
@@ -213,5 +214,19 @@ private:
 };
 // TODO: SIZE_CHECK etc
 
+struct CTFBotMissionSuicideBomber : public Action<CTFBot>
+	{
+		CHandle<CBaseEntity> m_hTarget;
+		Vector m_vecTargetPos;
+		PathFollower m_PathFollower;
+		CountdownTimer m_ctRecomputePath;
+		CountdownTimer m_ctPlaySound;
+		CountdownTimer m_ctDetonation;
+		bool m_bDetonating;
+		bool m_bDetReachedGoal;
+		bool m_bDetLostAllHealth;
+		int m_nConsecutivePathFailures;
+		Vector m_vecDetonatePos;
+	};
 
 #endif

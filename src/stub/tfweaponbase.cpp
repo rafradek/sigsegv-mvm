@@ -23,6 +23,10 @@ MemberVFuncThunk<      CBaseCombatWeapon *, void, const Vector&>          CBaseC
 MemberVFuncThunk<const CBaseCombatWeapon *, const char *, int>            CBaseCombatWeapon::vt_GetViewModel (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetViewModel");
 MemberVFuncThunk<const CBaseCombatWeapon *, const char *>                 CBaseCombatWeapon::vt_GetWorldModel(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetWorldModel");
 MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_SetViewModel (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::SetViewModel");
+MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_PrimaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::PrimaryAttack");
+MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_SecondaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::SecondaryAttack");
+//MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformPrimaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformPrimaryAttack");
+MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformSecondaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformSecondaryAttack");
 
 
 IMPL_SENDPROP(float,                CTFWeaponBase, m_flLastFireTime,          CTFWeaponBase);
@@ -48,6 +52,8 @@ IMPL_SENDPROP(CTFMinigun::MinigunState_t, CTFMinigun, m_iWeaponState, CTFMinigun
 
 IMPL_SENDPROP(float, CTFSniperRifle, m_flChargedDamage, CTFSniperRifle);
 
+IMPL_SENDPROP(int, CTFSpellBook, m_iSelectedSpellIndex, CTFSpellBook);
+IMPL_SENDPROP(int, CTFSpellBook, m_iSpellCharges, CTFSpellBook);
 
 MemberFuncThunk<CTFSniperRifleDecap *, int> CTFSniperRifleDecap::ft_GetCount("CTFSniperRifleDecap::GetCount");
 

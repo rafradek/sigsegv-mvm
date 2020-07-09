@@ -34,12 +34,12 @@ namespace Mod::Pop::EventPopfile_Improvements
 	{
 		DETOUR_MEMBER_CALL(CPopulationManager_UpdateObjectiveResource)();
 		
-		ConVarRef tf_forced_holiday("tf_forced_holiday");
-		if (TFObjectiveResource()->m_nMvMEventPopfileType != 0u) {
-			tf_forced_holiday.SetValue(kHoliday_Halloween);
-		} else {
-			tf_forced_holiday.SetValue(kHoliday_None);
-		}
+		// ConVarRef tf_forced_holiday("tf_forced_holiday");
+		// if (TFObjectiveResource()->m_nMvMEventPopfileType != 0u) {
+		// 	tf_forced_holiday.SetValue(kHoliday_Halloween);
+		// } else {
+		// 	tf_forced_holiday.SetValue(kHoliday_None);
+		// }
 	}
 	
 	

@@ -4,8 +4,8 @@
 #include "stub/projectiles.h"
 #include "util/scope.h"
 
-
-#if defined EXPERIMENTAL
+#define TARGET_STICKIES_MOD
+#if defined TARGET_STICKIES_MOD
 
 namespace Mod::Pop::ExtAttr::TargetStickies
 {
@@ -242,7 +242,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		}
 #endif
 		
-		if (actor->ExtAttr()[ExtAttr::TARGET_STICKIES]) {
+		if (actor->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
 			return new CTFBotChaseStickies();
 		}
 		
@@ -262,7 +262,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 	//		DevMsg("CTFBotVision::IsIgnored classname \"%s\" mission %d\n", ent->GetClassname(), actor->GetMission());
 			bool is_sticky = (strcmp(ent->GetClassname(), "tf_projectile_pipe_remote") == 0);
 			
-			if (actor->ExtAttr()[ExtAttr::TARGET_STICKIES]) {
+			if (actor->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
 				/* ignore everything except stickies */
 				return !is_sticky;
 			} else {

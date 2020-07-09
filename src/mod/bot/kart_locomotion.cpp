@@ -58,7 +58,7 @@ namespace Mod::Bot::Kart_Locomotion
 				bot->PressBackwardButton();
 			}*/
 			
-			constexpr float cos_3deg = std::cos(DEG2RAD(3.0f));
+			const float cos_3deg = std::cos(DEG2RAD(3.0f));
 			
 			if (fwd > 0.0f && fwd < cos_3deg) {
 				if (side > 0.0f) {
