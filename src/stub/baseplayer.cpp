@@ -46,6 +46,7 @@ MemberFuncThunk<CBaseCombatCharacter *, bool, const CBaseEntity *, CBaseCombatCh
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatCharacter *, CBaseCombatCharacter::FieldOfViewCheckType> CBaseCombatCharacter::ft_IsAbleToSee_bcc   ("CBaseCombatCharacter::IsAbleToSee [CBaseCombatCharacter *]");
 MemberFuncThunk<CBaseCombatCharacter *, void, int>                                                                CBaseCombatCharacter::ft_SetBloodColor     ("CBaseCombatCharacter::SetBloodColor");
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_Weapon_Detach     ("CBaseCombatCharacter::Weapon_Detach");
+MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_SwitchToNextBestWeapon     ("CBaseCombatCharacter::SwitchToNextBestWeapon");
 
 MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       CBaseCombatCharacter::vt_Weapon_GetSlot     (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_GetSlot");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      CBaseCombatCharacter::vt_Weapon_CanSwitchTo (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_CanSwitchTo");

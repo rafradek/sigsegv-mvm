@@ -6,21 +6,59 @@
 namespace Mod::Etc::Melee_Ignore_Teammates
 {
 	CTFWeaponBaseMelee *melee = nullptr;
-	CTFPlayer *owner = nullptr;
-	bool is_whip = false;
-	
+	CTFPlayer *attacker = nullptr;
+	bool enemy_attack_pass = false;
+
 	RefCount rc_CTFWeaponBaseMelee_DoSwingTraceInternal;
+	RefCount rc_CTFWeaponBaseMelee_Smack;
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
+	{
+		SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_Smack);
+ 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+	}
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBaseMelee_DoSwingTraceInternal, CGameTrace& tr, bool cleave_attack, CUtlVector<CGameTrace> *traces)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseMelee *>(this);
 		
+		auto team = weapon->GetOwner()->GetTeamNumber();
+
 		bool result;
+		//DevMsg("swing time %f \n",*(float *)(*((char *)weapon + 0x7dc) + /*offsets*/0x72c + 0)  );
+				                    //                 *(undefined4 *)
+                                    //(*(int *)(this + 0x7dc) + 0x70c + *(int *)(this + 0x6a8) * 0x40)
+		if (!cleave_attack && team != TF_TEAM_BLUE) {
+			attacker = weapon->GetTFPlayerOwner();
+			//is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
+			SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_DoSwingTraceInternal);
+			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+			if (tr.m_pEnt != nullptr && tr.m_pEnt->GetTeamNumber() == attacker->GetTeamNumber()) {
+				CGameTrace newtrace;
+
+				enemy_attack_pass = true;
+				bool newresult = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(newtrace, cleave_attack, traces);
+				enemy_attack_pass = false;
+
+				if(newtrace.m_pEnt != nullptr && newtrace.m_pEnt->GetTeamNumber() != attacker->GetTeamNumber()) {
+					tr = newtrace;
+				}
+			}
+			attacker = nullptr;
+			//is_whip = false;
+		}
+		else {
+			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+		}
+
+		//weapon->GetOwner()->SetTeamNumber(team);
+
+		/*bool result;
 		if (!cleave_attack) {
 			melee   = weapon;
 			owner   = (weapon != nullptr ? weapon->GetTFPlayerOwner() : nullptr);
 			is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
 			
-			SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_DoSwingTraceInternal);
+			
 			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
 			
 			melee   = nullptr;
@@ -28,13 +66,30 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			is_whip = false;
 		} else {
 			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
-		}
+		}*/
 		
 		return result;
 	}
-	
-	
-	RefCount rc_FindHullIntersection;
+	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
+	{
+		if (rc_CTFWeaponBaseMelee_Smack > 0 && V_stricmp(attr, "melee_cleave_attack") == 0) {
+			return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, "projectile_penetration", ent, vec, b1);
+		}
+		
+		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
+	{
+		if (rc_CTFWeaponBaseMelee_DoSwingTraceInternal && enemy_attack_pass) {
+			CBaseEntity *entity = EntityFromEntityHandle(pServerEntity);
+			if (entity->IsPlayer() && entity->GetTeamNumber() == attacker->GetTeamNumber())
+				return false;
+		}
+		return DETOUR_MEMBER_CALL(CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity)(pServerEntity, contentsMask);
+			
+	}
+	/*RefCount rc_FindHullIntersection;
 	DETOUR_DECL_STATIC(void, FindHullIntersection, const Vector& vecSrc, trace_t& tr, const Vector& mins, const Vector& maxs, CBaseEntity *pEntity)
 	{
 		SCOPED_INCREMENT(rc_FindHullIntersection);
@@ -67,7 +122,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		
 		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
 	}
-	
+	*/
 	
 	class CMod : public IMod
 	{
@@ -75,10 +130,14 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		CMod() : IMod("Etc:Melee_Ignore_Teammates")
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_DoSwingTraceInternal, "CTFWeaponBaseMelee::DoSwingTraceInternal");
+			MOD_ADD_DETOUR_MEMBER(CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity, "CTraceFilterIgnoreFriendlyCombatItems::ShouldHitEntity");
+			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_int, "CAttributeManager::AttribHookValue<int>");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_GetSmackTime, "CTFWeaponBaseMelee::GetSmackTime");
 			
-			MOD_ADD_DETOUR_STATIC(FindHullIntersection, "FindHullIntersection");
+			//MOD_ADD_DETOUR_STATIC(FindHullIntersection, "FindHullIntersection");
 			
-			MOD_ADD_DETOUR_MEMBER(IEngineTrace_TraceRay, "IEngineTrace::TraceRay");
+			//MOD_ADD_DETOUR_MEMBER(IEngineTrace_TraceRay, "IEngineTrace::TraceRay");
 		}
 	};
 	CMod s_Mod;

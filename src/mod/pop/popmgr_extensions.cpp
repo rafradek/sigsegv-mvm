@@ -12,45 +12,14 @@
 #include "mod/pop/pointtemplate.h"
 #include "stub/strings.h"
 #include "stub/usermessages_sv.h"
+#include "stub/objects.h"
+#include "stub/tf_objective_resource.h"
 WARN_IGNORE__REORDER()
 #include <../server/vote_controller.h>
 WARN_RESTORE()
 #define UNW_LOCAL_ONLY
 #include <cxxabi.h>
-#include <libunwind.h>
 
-void backtrace() {
-  unw_cursor_t cursor;
-  unw_context_t context;
-
-  // Initialize cursor to current frame for local unwinding.
-  unw_getcontext(&context);
-  unw_init_local(&cursor, &context);
-
-  // Unwind frames one by one, going up the frame stack.
-  while (unw_step(&cursor) > 0) {
-    unw_word_t offset, pc;
-    unw_get_reg(&cursor, UNW_REG_IP, &pc);
-    if (pc == 0) {
-      break;
-    }
-    Msg("0x%lx:", pc);
-
-    char sym[256];
-    if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
-      char* nameptr = sym;
-      int status;
-      char* demangled = abi::__cxa_demangle(sym, nullptr, nullptr, &status);
-      if (status == 0) {
-        nameptr = demangled;
-      }
-      Msg(" (%s+0x%lx)\n", nameptr, offset);
-      std::free(demangled);
-    } else {
-      Msg(" -- error: unable to obtain symbol name for this frame\n");
-    }
-  }
-}
 
 enum SpawnResult
 {
@@ -62,41 +31,7 @@ enum SpawnResult
 namespace Mod::Pop::PopMgr_Extensions
 {
 
-	void PrintToChatAll(const char *str)
-	{
-		int msg_type = usermessages->LookupUserMessage("SayText2");
-		if (msg_type == -1) return;
-		
-		CReliableBroadcastRecipientFilter filter;
-		
-		bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-		if (msg == nullptr) return;
-		
-		msg->WriteByte(0x00);
-		msg->WriteByte(0x00);
-		msg->WriteString(str);
-		
-		engine->MessageEnd();
-	}
-
-	void PrintToChat(const char *str, CTFPlayer *player)
-	{
-		int msg_type = usermessages->LookupUserMessage("SayText2");
-		if (msg_type == -1) return;
-		
-		CRecipientFilter filter;
-		filter.AddRecipient(player);
-		filter.MakeReliable();
-
-		bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-		if (msg == nullptr) return;
-		
-		msg->WriteByte(0x00);
-		msg->WriteByte(0x00);
-		msg->WriteString(str);
-		
-		engine->MessageEnd();
-	}
+	
 
 	void ResendUpgradeFile(bool force);
 
@@ -113,6 +48,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		"Disable most mods",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 		});	
+	
 		
 	std::string last_custom_upgrades = "";
 	bool received_message_tick = false;
@@ -154,7 +90,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				TFGameRules()->SetCustomUpgradesFile(convalue.c_str());
 				if (force && last_custom_upgrades != convalue) {
 					received_message_tick = true;
-					PrintToChatAll("\x07""ffb200This mission uses custom upgrades. If you only see regular upgrades, enable downloads in options (Download all files or Don't download sound files)");
+					PrintToChatAll("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)");
 				}
 				last_custom_upgrades = convalue;
 			}
@@ -452,7 +388,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SandmanStuns      	  ("sig_mvm_stunball_stun"),
 			m_StandableHeads      	  ("sig_robot_standable_heads"),
 			m_MedigunShieldDamage     ("sig_mvm_medigunshield_damage"),
-			m_NoRomevisionCosmetics   ("sig_no_romevision_cosmetics")
+			m_NoRomevisionCosmetics   ("sig_no_romevision_cosmetics"),
+			m_CreditsBetterRadiusCollection   ("sig_credits_better_radius_collection"),
+			m_AimTrackingIntervalMultiplier   ("sig_head_tracking_interval_multiplier"),
+			m_ImprovedAirblast   ("sig_bot_improved_airblast")
+			
 			
 		{
 			this->Reset();
@@ -475,6 +415,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bDeclaredClassAttrib    = false;
 			this->m_bFixSetCustomModelInput = false;
 			this->m_bSendBotsToSpectatorImmediately = false;
+			this->m_bBotRandomCrits = false;
+			this->m_bSingleClassAllowed = -1;
+			this->m_bNoHolidayHealthPack = false;
+			this->m_bSpyNoSapUnownedBuildings = false;
+			this->m_bFixedRespawnWaveTimeBlue = false;
+			this->m_flRespawnWaveTimeBlue = -1.0f;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -505,6 +451,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_StandableHeads   .Reset();
 			this->m_MedigunShieldDamage   .Reset();
 			this->m_NoRomevisionCosmetics   .Reset();
+			this->m_CreditsBetterRadiusCollection   .Reset();
+			this->m_AimTrackingIntervalMultiplier   .Reset();
+			this->m_ImprovedAirblast   .Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			
@@ -551,6 +500,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bDeclaredClassAttrib;
 		bool m_bFixSetCustomModelInput;
 		bool m_bSendBotsToSpectatorImmediately;
+		bool m_bBotRandomCrits;
+		int m_bSingleClassAllowed;
+		bool m_bNoHolidayHealthPack;
+		bool m_bSpyNoSapUnownedBuildings;
+		float m_flRespawnWaveTimeBlue;
+		float m_bFixedRespawnWaveTimeBlue;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -581,9 +536,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_MedigunShieldDamage;
 		CPopOverride_ConVar<bool> m_StandableHeads;
 		CPopOverride_ConVar<bool> m_NoRomevisionCosmetics;
+		CPopOverride_ConVar<bool> m_CreditsBetterRadiusCollection;
+		CPopOverride_ConVar<float> m_AimTrackingIntervalMultiplier;
+		CPopOverride_ConVar<bool> m_ImprovedAirblast;
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CPopOverride_ConVar<std::string> m_CustomUpgradesFile;
+		
+		std::vector<PointTemplateInfo>				m_SpawnTemplates;
 		std::set<std::string>                       m_DisableSounds;
 		std::map<std::string,std::string>           m_OverrideSounds;
 		std::vector<std::unique_ptr<ItemListEntry>> m_ItemWhitelist;
@@ -717,11 +677,19 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFSniperRifle_CanFireCriticalShot)(bIsHeadshot, ent1);
 	}
 	
+	RefCount rc_CTFRevolver_CanFireCriticalShot;
+	DETOUR_DECL_MEMBER(bool, CTFRevolver_CanFireCriticalShot, bool bIsHeadshot, CBaseEntity *ent1)
+	{
+		SCOPED_INCREMENT(rc_CTFRevolver_CanFireCriticalShot);
+		return DETOUR_MEMBER_CALL(CTFRevolver_CanFireCriticalShot)(bIsHeadshot, ent1);
+	}
+	
+
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CanFireCriticalShot, bool bIsHeadshot, CBaseEntity *ent1)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		
-		if (state.m_bSniperAllowHeadshots && rc_CTFSniperRifle_CanFireCriticalShot > 0 && TFGameRules()->IsMannVsMachineMode()) {
+		if (state.m_bSniperAllowHeadshots && (rc_CTFSniperRifle_CanFireCriticalShot > 0 || rc_CTFRevolver_CanFireCriticalShot > 0) && TFGameRules()->IsMannVsMachineMode()) {
 			CTFPlayer *owner = weapon->GetTFPlayerOwner();
 			if (owner != nullptr && owner->GetTeamNumber() == TF_TEAM_BLUE) {
 				return true;
@@ -738,12 +706,23 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_StrikeTarget)(bbox, ent);
 	}
 	
+	RefCount rc_CTFWeaponBase_CalcIsAttackCritical;
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_CalcIsAttackCritical)
+	{
+		SCOPED_INCREMENT(rc_CTFWeaponBase_CalcIsAttackCritical);
+		DETOUR_MEMBER_CALL(CTFWeaponBase_CalcIsAttackCritical)();
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_IsPVEModeControlled, CBaseEntity *ent)
 	{
-		if (state.m_bSniperAllowHeadshots && rc_CTFProjectile_Arrow_StrikeTarget > 0 && TFGameRules()->IsMannVsMachineMode()) {
+		if ( rc_CTFProjectile_Arrow_StrikeTarget && state.m_bSniperAllowHeadshots && TFGameRules()->IsMannVsMachineMode()) {
 			return false;
 		}
 		
+		if ( rc_CTFWeaponBase_CalcIsAttackCritical && state.m_bBotRandomCrits && TFGameRules()->IsMannVsMachineMode()) {
+			return false;
+		}
+
 		return DETOUR_MEMBER_CALL(CTFGameRules_IsPVEModeControlled)(ent);
 	}
 	
@@ -868,7 +847,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
 		/* this only applies to red team, for what essentially amounts to "legacy" reasons */
-		if (TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() == TF_TEAM_RED) {
+		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot()/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
 			/* only enforce the whitelist/blacklist if they are non-empty */
 			
 			if (!state.m_ItemWhitelist.empty()) {
@@ -901,59 +880,103 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			
 		}
+
+		// Disable cosmetics on robots
+		if (item_view != nullptr && item_view->GetItemDefinition() != nullptr && !player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
+				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
+			const char *item_slot = item_view->GetItemDefinition()->GetKeyValues()->GetString("item_slot", "");
+			if (FStrEq(item_slot, "head") || FStrEq(item_slot, "misc")) {
+				return nullptr;
+			}
+		}
 		
 	//	DevMsg("[%s] GiveNamedItem(\"%s\"): provisionally allowed\n", player->GetPlayerName(), classname);
 		CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
 		
 		return entity;
 	}
+
+	void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player) {
+		DevMsg("ReapplyItemUpgrades\n");
+		bool found = false;
+		const char *classname = item_view->GetItemDefinition()->GetItemClass();
+		std::map<std::string, std::string> *attribs;
+		for (auto& entry : state.m_ItemAttributes) {
+			if (entry.first->Matches(classname, item_view)) {
+				attribs = &(entry.second);
+				found = true;
+				break;
+			}
+		}
+		if (found && attribs != nullptr) {
+			CEconItemView *view = item_view;
+			for (auto& entry : *attribs) {
+				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str());
+				
+				if (attr_def == nullptr) {
+					DevMsg("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", entry.first.c_str());
+					continue;
+				}
+				
+				const char *value_str = STRING(AllocPooledString(entry.second.c_str()));
+				
+				attribute_data_union_t value;
+				// TODO: maybe make a wrapper class for this or something, so that if we return early, we still do the proper
+				// UnloadEconAttributeValue call to avoid leaking memory
+				attr_def->GetType()->InitializeNewEconAttributeValue(&value);
+				if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str, &value, true)) {
+					DevMsg("[popmgr_extensions] Error: couldn't parse attribute value \"%s\".\n", entry.second.c_str());
+					attr_def->GetType()->UnloadEconAttributeValue(&value);
+					continue;
+				}
+				view->GetAttributeList().RemoveAttribute(attr_def);
+
+				CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
+				*attr->GetValuePtr() = value;
+				view->GetAttributeList().AddAttribute(attr); // <-- this calls the copy ctor of the CEconItemAttribute; so DO NOT deallocate the attr afterwards!
+			//	CEconItemAttribute::Destroy(&attr);
+				
+				char buf[1024];
+				attr_def->ConvertValueToString(value, buf, sizeof(buf));
+				DevMsg("[%s] GiveNamedItem(\"%s\"): added weapon attribute\n", player->GetPlayerName(), classname);
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
+	{
+
+		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
+		
+		if (remove && !state.m_ItemAttributes.empty()) {
+			for (int i = 0; i < player->GetNumWearables(); ++i) {
+				CEconWearable *wearable = player->GetWearable(i);
+				if (wearable == nullptr) continue;
+				
+				CEconItemView *item_view = wearable->GetItem();
+				if (item_view == nullptr) continue;
+				ApplyItemAttributes(item_view, player);
+			}
+			
+			for (int i = 0; i < player->WeaponCount(); ++i) {
+				CBaseCombatWeapon *weapon = player->GetWeapon(i);
+				if (weapon == nullptr) continue;
+				
+				CEconItemView *item_view = weapon->GetItem();
+				if (item_view == nullptr) continue;
+				
+				ApplyItemAttributes(item_view, player);
+			}
+		}
+	}
+	
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() == TF_TEAM_RED) {
+		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot() /*player->GetTeamNumber() == TF_TEAM_RED*/) {
 			if (!state.m_ItemAttributes.empty()) {
-				DevMsg("ReapplyItemUpgrades\n");
-				bool found = false;
-				const char *classname = item_view->GetItemDefinition()->GetItemClass();
-				std::map<std::string, std::string> *attribs;
-				for (auto& entry : state.m_ItemAttributes) {
-					if (entry.first->Matches(classname, item_view)) {
-						attribs = &(entry.second);
-						found = true;
-						break;
-					}
-				}
-				if (found && attribs != nullptr) {
-					CEconItemView *view = item_view;
-					for (auto& entry : *attribs) {
-						CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str());
-						
-						if (attr_def == nullptr) {
-							DevMsg("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", entry.first.c_str());
-							continue;
-						}
-						
-						const char *value_str = STRING(AllocPooledString(entry.second.c_str()));
-						
-						attribute_data_union_t value;
-						// TODO: maybe make a wrapper class for this or something, so that if we return early, we still do the proper
-						// UnloadEconAttributeValue call to avoid leaking memory
-						attr_def->GetType()->InitializeNewEconAttributeValue(&value);
-						if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str, &value, true)) {
-							DevMsg("[popmgr_extensions] Error: couldn't parse attribute value \"%s\".\n", entry.second.c_str());
-							attr_def->GetType()->UnloadEconAttributeValue(&value);
-							continue;
-						}
-						CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
-						*attr->GetValuePtr() = value;
-						view->GetAttributeList().AddAttribute(attr); // <-- this calls the copy ctor of the CEconItemAttribute; so DO NOT deallocate the attr afterwards!
-					//	CEconItemAttribute::Destroy(&attr);
-						
-						char buf[1024];
-						attr_def->ConvertValueToString(value, buf, sizeof(buf));
-						DevMsg("[%s] GiveNamedItem(\"%s\"): added weapon attribute\n", player->GetPlayerName(), classname);
-					}
-				}
+				ApplyItemAttributes(item_view, player);
 			}
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
@@ -1022,6 +1045,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 #endif
 	
+	bool rc_CTeamplayRoundBasedRules_State_Enter = false;
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_State_Enter, gamerules_roundstate_t newState)
 	{
 		/* the CTeamplayRoundBasedRules ctor calls State_Enter BEFORE the CTFGameRules ctor has had a chance to run yet
@@ -1032,7 +1056,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[State] MvM:%d Reverse:%d oldState:%d newState:%d\n",
 		//		TFGameRules()->IsMannVsMachineMode(), state.m_bReverseWinConditions, oldState, newState);
 			
-			if (TFGameRules()->IsMannVsMachineMode() && state.m_bReverseWinConditions && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
+			if (TFGameRules()->IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
+				rc_CTeamplayRoundBasedRules_State_Enter = true;
 				ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "GR_STATE_TEAM_WIN --> GR_STATE_PREROUND\n");
 				
 				CWave *wave = g_pPopulationManager->GetCurrentWave();
@@ -1055,15 +1080,29 @@ namespace Mod::Pop::PopMgr_Extensions
 				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::WaveCompleteUpdate\n");
 				wave->WaveCompleteUpdate();
 				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::WaveCompleteUpdate\n");
-				
+				if ( TFObjectiveResource()->m_nMannVsMachineWaveCount == TFObjectiveResource()->m_nMannVsMachineMaxWaveCount) {
+				//TFGameRules()->SetForceMapReset(true);
 				// TODO(?): for all human players on TF_TEAM_BLUE: if !IsAlive(), then call ForceRespawn()
 				
-				return;
+					return;
+				}
 			}
 		}
 		
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
+		rc_CTeamplayRoundBasedRules_State_Enter = false;
 	}
+	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
+	{
+		if (state.m_bReverseWinConditions && TFGameRules()->GetWinningTeam() != TF_TEAM_RED) {
+			DevMsg("State_Enter %d\n", rc_CTeamplayRoundBasedRules_State_Enter);
+			DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(true);
+			return;
+		}
+		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+
+	}
+
 	CBaseEntity *templateTargetEntity = nullptr;
 	bool SpawnOurTemplate(CEnvEntityMaker* maker, Vector vector, QAngle angles)
 	{
@@ -1156,31 +1195,38 @@ namespace Mod::Pop::PopMgr_Extensions
 		});
 
 		if (state.m_DisallowedClasses[plclass] <= taken_slots[plclass]){
-			for (int i=1; i < 10; i++){
-				if(state.m_DisallowedClasses[i] == -1 || taken_slots[i] < state.m_DisallowedClasses[i]){
-					const char *sound = g_sSounds[plclass];
-					DevMsg("sound, %s\n",sound);
+			if (state.m_bSingleClassAllowed != -1) {
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",classname,"class is allowed in this mission"));
+				player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 
-					CRecipientFilter filter;
-					filter.AddRecipient(player);
-					CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
+			}
+			else {
+				for (int i=1; i < 10; i++){
+					if(state.m_DisallowedClasses[i] == -1 || taken_slots[i] < state.m_DisallowedClasses[i]){
+						const char *sound = g_sSounds[plclass];
+						DevMsg("sound, %s\n",sound);
 
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
-					player->HandleCommand_JoinClass(g_aRawPlayerClassNames[i]);
-					
-					int msg_type = usermessages->LookupUserMessage("VGUIMenu");
-					if (msg_type == -1) return;
-					
-					bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-					if (msg == nullptr) return;
-					
-					msg->WriteString("class_red");
-					msg->WriteByte(0x01);
-					msg->WriteByte(0x00);
+						CRecipientFilter filter;
+						filter.AddRecipient(player);
+						CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
 
-					engine->MessageEnd();
-					
-					break;
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
+						player->HandleCommand_JoinClass(g_aRawPlayerClassNames[i]);
+						
+						int msg_type = usermessages->LookupUserMessage("VGUIMenu");
+						if (msg_type == -1) return;
+						
+						bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+						if (msg == nullptr) return;
+						
+						msg->WriteString("class_red");
+						msg->WriteByte(0x01);
+						msg->WriteByte(0x00);
+
+						engine->MessageEnd();
+						
+						break;
+					}
 				}
 			}
 		}
@@ -1197,6 +1243,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
 		CheckPlayerClassLimit(player);
 	}
+
+	//extern GlobalThunk<CTETFParticleEffect> g_TETFParticleEffect;
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
 		if (!player->IsBot())
@@ -1204,7 +1252,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_PlayerUpgradeSend.insert(player);
 				ResendUpgradeFile(false);
 				if (!received_message_tick)
-				PrintToChat("\x07""ffb200This mission uses custom upgrades. If you only see regular upgrades, enable downloads in options (Download all files or Don't download sound files)",player);
+				PrintToChat("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)",player);
 			}
 
 		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
@@ -1220,6 +1268,31 @@ namespace Mod::Pop::PopMgr_Extensions
 			player->GetPlayerClass()->SetCustomModel(model, true);
 			player->UpdateModel();
 			player->SetBloodColor(DONT_BLEED);
+
+			//Vector vColor = Vector( 255, 180, 36 );
+
+			//StopParticleEffects(player);
+
+			//CRecipientFilter filter;
+			//ForEachTFPlayer([&](CTFPlayer *playerin){
+				//if (playerin != player)
+			//		filter.AddRecipient(playerin);
+			///});
+
+			//int nAttachement = player->LookupAttachment( "eye_1" );
+			//if ( nAttachement > 0 )
+			//{
+			//	engine->PlaybackTempEntity();
+				//TE_TFParticleEffectComplex(filter,0.0f, "halloween_rockettrail", vec3_origin, vec3_angle, nullptr, nullptr, player, PATTACH_POINT_FOLLOW, vec3_origin);
+				//DispatchParticleEffect("halloween_rockettrail", PATTACH_POINT_FOLLOW, player, "eye_1", vColor, vColor, true, false);
+			//}
+
+			//nAttachement = player->LookupAttachment( "eye_2" );
+			//if ( nAttachement > 0 )
+			//{
+				//DispatchParticleEffect("halloween_rockettrail", PATTACH_POINT_FOLLOW, player, "eye_2", vColor, vColor, true, false);
+			//}
+
 			//}
 		}
 	}
@@ -1235,34 +1308,110 @@ namespace Mod::Pop::PopMgr_Extensions
 			player->GetPlayerClass()->m_bUseClassAnimations=true;
 		}
 	}
-		DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetOverrideStepSound, const char *pszBaseStepSoundName)
-		{
-			auto player = reinterpret_cast<CTFPlayer *>(this);
-			if (!player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
-					(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
-				return "MVM.BotStep";
-			}
-			else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) || cvar_bots_are_humans.GetBool()) {
-				return pszBaseStepSoundName;
-			}
-			return DETOUR_MEMBER_CALL( CTFPlayer_GetOverrideStepSound)(pszBaseStepSoundName);
+	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetOverrideStepSound, const char *pszBaseStepSoundName)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
+				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
+			return "MVM.BotStep";
 		}
-		
-		DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
-		{
-			auto player = reinterpret_cast<CTFPlayer *>(this);
-			if (!player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
-					(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
-				return "MVM_";
-			}
-			else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) || cvar_bots_are_humans.GetBool()) {
-				return "";
-			}
-			//const char *token=DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
-			//DevMsg("CTFPlayer::GetSceneSoundToken %s\n", token);
-			return DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) || cvar_bots_are_humans.GetBool()) {
+			return pszBaseStepSoundName;
 		}
+		return DETOUR_MEMBER_CALL( CTFPlayer_GetOverrideStepSound)(pszBaseStepSoundName);
+	}
 	
+	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
+				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
+			return "MVM_";
+		}
+		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) || cvar_bots_are_humans.GetBool()) {
+			return "";
+		}
+		//const char *token=DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+		//DevMsg("CTFPlayer::GetSceneSoundToken %s\n", token);
+		return DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+	}
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!player->IsBot()) {
+			auto teamnum = player->GetTeamNumber();
+			if (state.m_bRedPlayersRobots && teamnum == TF_TEAM_RED) {
+				player->SetTeamNumber(TF_TEAM_BLUE);
+			}
+			else if (!state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE) {
+				player->SetTeamNumber(TF_TEAM_RED);
+			}
+			DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+			player->SetTeamNumber(teamnum);
+		}
+		else
+			DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPowerup_Spawn)
+	{
+		DETOUR_MEMBER_CALL(CTFPowerup_Spawn)();
+		if (state.m_bNoHolidayHealthPack) {
+			auto powerup = reinterpret_cast<CBaseAnimating *>(this);
+			powerup->SetModelIndexOverride( VISION_MODE_PYRO, 0 );
+			powerup->SetModelIndexOverride( VISION_MODE_HALLOWEEN, 0 );
+		}
+	}
+
+	DETOUR_DECL_MEMBER(CBaseObject *, CTFBot_GetNearestKnownSappableTarget)
+	{
+		CBaseObject *ret = DETOUR_MEMBER_CALL(CTFBot_GetNearestKnownSappableTarget)();
+
+		if (ret != nullptr && (ret->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && ret->GetBuilder() == nullptr))) {
+			return nullptr;
+		}
+		return ret;
+	}
+
+	/*DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *ent, Vector *vec)
+	{
+		DevMsg ("abletosee1\n");
+		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(ent,vec);
+
+		if (ret && ent != nullptr) {
+			CTFBot *bot = ToTFBot(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
+			if (bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && ent->IsBaseObject() && (ent->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && rtti_cast<CBaseObject *>(ent)->GetBuilder() == nullptr))) {
+				return false;
+			}
+		}
+		return ret;
+	}*/
+	
+	DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee2, CBaseEntity *ent, IVision::FieldOfViewCheckType fov, Vector *vec)
+	{
+		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee2)(ent,fov, vec);
+
+		if (ret && ent != nullptr) {
+			CTFBot *bot = ToTFBot(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
+			if (bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && ent->IsBaseObject() && (ent->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && rtti_cast<CBaseObject *>(ent)->GetBuilder() == nullptr))) {
+				return false;
+			}
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(void, CPopulationManager_AdjustMinPlayerSpawnTime)
+	{
+		DETOUR_MEMBER_CALL(CPopulationManager_AdjustMinPlayerSpawnTime)();
+		if (state.m_flRespawnWaveTimeBlue >= 0.0f) {
+			float time = state.m_flRespawnWaveTimeBlue;
+
+			if (!state.m_bFixedRespawnWaveTimeBlue)
+				time = std::min( state.m_flRespawnWaveTimeBlue, 2.0f * TFObjectiveResource()->m_nMannVsMachineWaveCount + 2.0f);
+			TFGameRules()->SetTeamRespawnWaveTime(TF_TEAM_BLUE, time);
+		}
+	}
+
 	// DETOUR_DECL_STATIC(void, UserMessageBegin,IRecipientFilter &filter,const char *name)
 	// {
 	// 	DevMsg("UserMessage %s\n",name);
@@ -1368,18 +1517,31 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 	void Parse_ClassBlacklist(KeyValues *kv)
 	{
+		int amount_classes_blacklisted = 0;
+		int class_not_blacklisted = 0;
 		FOR_EACH_SUBKEY(kv, subkey) {
 			for(int i=1; i < 10; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
+					if (state.m_DisallowedClasses[i] != 0 && subkey->GetInt() == 0) {
+						amount_classes_blacklisted+=1;
+					}
 					state.m_DisallowedClasses[i]=subkey->GetInt();
+					
+					if (state.m_DisallowedClasses[i] != 0) {
+						class_not_blacklisted = i;
+					}
 					break;
 				}
 			}
 		}
-		for(int i=1; i < 10; i++){
-			DevMsg("%d ",state.m_DisallowedClasses[i]);
+
+		if (amount_classes_blacklisted == 8) {
+			state.m_bSingleClassAllowed = class_not_blacklisted;
 		}
-		DevMsg("\n");
+		//for(int i=1; i < 10; i++){
+		//	DevMsg("%d ",state.m_DisallowedClasses[i]);
+		//}
+		//DevMsg("\n");
 		ForEachTFPlayer([&](CTFPlayer *player){
 			if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
 				CheckPlayerClassLimit(player);
@@ -1626,12 +1788,15 @@ namespace Mod::Pop::PopMgr_Extensions
 
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					const char *name = subkey2->GetName();
+					if (FStrEq(name,"classname")){
+						keyvalues.erase(name);
+					}
 					if (FStrEq(name,"connections")){
 						FOR_EACH_SUBKEY(subkey2, subkey3) {
 							keyvalues.insert({subkey3->GetName(),subkey3->GetString()});
 						}
 					}
-					else if (!FStrEq(name,"editor"))
+					else if (subkey2->GetFirstSubKey() == NULL)
 						keyvalues.insert({name,subkey2->GetString()});
 				}
 
@@ -1645,10 +1810,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		if (!onspawn.empty()){
 			onspawn.insert({"classname", "logic_relay"});
-			onspawn.insert({"targetname", "trigger_spawn_relay"});
+			onspawn.insert({"targetname", "trigger_spawn_relay_inter"});
 			onspawn.insert({"spawnflags", "2"});
 			templ.entities.push_back(onspawn);
-			entity_names.insert(onspawn.find("targetname")->second);
+			//entity_names.insert(onspawn.find("targetname")->second);
 		}
 		if (!templ.no_fixup) {
 			for (auto it = templ.on_kill_triggers.begin(); it != templ.on_kill_triggers.end(); ++it){
@@ -1660,7 +1825,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					
 					if (!hasParentSpecialName && str.find("!parent") != -1)
 						hasParentSpecialName = true;
-					
+						
 					InsertFixupPattern(str, entity_names);
 					it2->second = str;
 				}
@@ -1741,6 +1906,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
 			state.m_OverrideSounds[subkey->GetName()]=subkey->GetString();
+			if (!enginesound->PrecacheSound(subkey->GetString(), true))
+				CBaseEntity::PrecacheScriptSound(subkey->GetString());
 		}
 		
 		DevMsg("Parsed addcond\n");
@@ -1773,7 +1940,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		state.Reset();
 		
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
-		return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+
+		for(auto it = state.m_SpawnTemplates.begin(); it != state.m_SpawnTemplates.end(); it++) {
+			it->SpawnTemplate(nullptr);
+		}
+		state.m_SpawnTemplates.clear();
+		
+
+		return ret;
 	}
 	
 	RefCount rc_KeyValues_LoadFromFile;
@@ -1878,6 +2053,12 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_StandableHeads.Set(subkey->GetBool());
 				} else if (FStrEq(name, "NoRomevisionCosmetics")) {
 					state.m_NoRomevisionCosmetics.Set(subkey->GetBool());
+				} else if (FStrEq(name, "CreditsBetterRadiusCollection")) {
+					state.m_CreditsBetterRadiusCollection.Set(subkey->GetBool());
+				} else if (FStrEq(name, "AimTrackingIntervalMultiplier")) {
+					state.m_AimTrackingIntervalMultiplier.Set(subkey->GetFloat());
+				} else if (FStrEq(name, "ImprovedAirblast")) {
+					state.m_ImprovedAirblast.Set(subkey->GetBool());
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
@@ -1894,6 +2075,16 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_DisableSounds.emplace(subkey->GetString());
 				} else if (FStrEq(name, "SendBotsToSpectatorImmediately")) {
 					state.m_bSendBotsToSpectatorImmediately = subkey->GetBool();
+				} else if (FStrEq(name, "BotsRandomCrit")) {
+					state.m_bBotRandomCrits = subkey->GetBool();
+				} else if (FStrEq(name, "NoHolidayPickups")) {
+					state.m_bNoHolidayHealthPack = subkey->GetBool();
+				} else if (FStrEq(name, "NoSapUnownedBuildings")) {
+					state.m_bSpyNoSapUnownedBuildings = subkey->GetBool();
+				} else if (FStrEq(name, "RespawnWaveTimeBlue")) {
+					state.m_flRespawnWaveTimeBlue = subkey->GetFloat();
+				} else if (FStrEq(name, "FixedRespawnWaveTimeBlue")) {
+					state.m_bFixedRespawnWaveTimeBlue = subkey->GetBool();
 				} else if (FStrEq(name, "ItemWhitelist")) {
 					Parse_ItemWhitelist(subkey);
 				} else if (FStrEq(name, "ItemBlacklist")) {
@@ -1919,13 +2110,20 @@ namespace Mod::Pop::PopMgr_Extensions
 				} else if (FStrEq(name, "OverrideSounds")) {
 					Parse_OverrideSounds(subkey);
 				} else if (FStrEq(name, "SpawnTemplate")) {
-					Parse_SpawnTemplate(subkey).SpawnTemplate(nullptr);
+					auto templ_info = Parse_SpawnTemplate(subkey);
+					if (templ_info.templ == nullptr)
+					{
+						state.m_SpawnTemplates.push_back(templ_info);
+					}
+					else
+						templ_info.SpawnTemplate(nullptr);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
 				} else if (FStrEq(name, "PrecacheSound"))        { enginesound->PrecacheSound       (subkey->GetString(), false);
 				} else if (FStrEq(name, "PrecacheModel"))        { engine     ->PrecacheModel       (subkey->GetString(), false);
 				} else if (FStrEq(name, "PrecacheSentenceFile")) { engine     ->PrecacheSentenceFile(subkey->GetString(), false);
 				} else if (FStrEq(name, "PrecacheDecal"))        { engine     ->PrecacheDecal       (subkey->GetString(), false);
 				} else if (FStrEq(name, "PrecacheGeneric"))      { engine     ->PrecacheGeneric     (subkey->GetString(), false);
+				} else if (FStrEq(name, "PrecacheParticle"))     { PrecacheParticleSystem( subkey->GetString() );
 				} else if (FStrEq(name, "PreloadSound"))         { enginesound->PrecacheSound       (subkey->GetString(), true);
 				} else if (FStrEq(name, "PreloadModel"))         { engine     ->PrecacheModel       (subkey->GetString(), true);
 				} else if (FStrEq(name, "PreloadSentenceFile"))  { engine     ->PrecacheSentenceFile(subkey->GetString(), true);
@@ -1952,12 +2150,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		return result;
 	}
-	
-	void Handler(int sig) {
-		fprintf(stderr,"sigsegv error %d",sig);
-		backtrace();
-		exit(0);
-	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1994,8 +2187,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ctor,                    "CTFGameRules::CTFGameRules [C1]");
 		//	MOD_ADD_DETOUR_MEMBER(CTFGameRules_SetWinningTeam,          "CTFGameRules::SetWinningTeam");
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter, "CTeamplayRoundBasedRules::State_Enter");
-		//	MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent,           "CTFGameRules::FireGameEvent");
+			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd,        "CMannVsMachineStats::RoundEvent_WaveEnd");
+			
+			
+			//MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent,           "CTFGameRules::FireGameEvent");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ChangeTeam,                 "CTFPlayer::ChangeTeam");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CalcIsAttackCritical,   "CTFWeaponBase::CalcIsAttackCritical");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades,   "CUpgrades::GrantOrRemoveAllUpgrades");
+			MOD_ADD_DETOUR_MEMBER(CTFPowerup_Spawn,   "CTFPowerup::Spawn");
 			//MOD_ADD_DETOUR_STATIC(UserMessageBegin,                 "UserMessageBegin");
 			//MOD_ADD_DETOUR_STATIC(MessageWriteString,                 "MessageWriteString");
 			
@@ -2006,7 +2205,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOverrideStepSound, "CTFPlayer::GetOverrideStepSound");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InputSetCustomModel, "CTFPlayer::InputSetCustomModel");
-			signal(SIGSEGV, Handler);
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
+			MOD_ADD_DETOUR_MEMBER(CTFRevolver_CanFireCriticalShot, "CTFRevolver::CanFireCriticalShot");
+
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_AdjustMinPlayerSpawnTime, "CPopulationManager::AdjustMinPlayerSpawnTime");
+
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_GetNearestKnownSappableTarget, "CTFBot::GetNearestKnownSappableTarget");
+			//MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee");
+			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee2, "IVision::IsAbleToSee2");
 		}
 		
 		virtual void OnUnload() override
@@ -2023,6 +2229,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void LevelInitPreEntity() override
 		{
+			
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
 		}
@@ -2048,7 +2255,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			if (state.m_PlayerAttributes.size() > 0 || state.m_PlayerAddCond.size() > 0 || state.m_bDeclaredClassAttrib)
 				ForEachTFPlayer([&](CTFPlayer *player){
-					if (player->GetTeamNumber() != TF_TEAM_RED) return;
+					if (player->IsBot()) return;
+					//if (player->GetTeamNumber() != TF_TEAM_RED) return;
 					if (!player->IsAlive()) return;
 					int classname = player->GetPlayerClass()->GetClassIndex();
 					for(auto it = state.m_PlayerAttributes.begin(); it != state.m_PlayerAttributes.end(); ++it){
@@ -2077,6 +2285,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				});
 				bot_killed_check = need_check_again;
 			}
+			
 			received_message_tick = false;
 			Update_Point_Templates();
 		}

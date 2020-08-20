@@ -38,6 +38,7 @@ IMPL_SENDPROP(color32,              CBaseEntity, m_clrRender,            CBaseEn
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecVelocity,          CBaseGrenade);
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecOrigin,            CBaseEntity);
 IMPL_SENDPROP(QAngle,               CBaseEntity, m_angRotation,          CBaseEntity);
+IMPL_SENDPROP(int,                  CBaseEntity, m_fEffects,             CBaseEntity);
 
 MemberFuncThunk<      CBaseEntity *, void                                                   > CBaseEntity::ft_Remove                     ("CBaseEntity::Remove");
 MemberFuncThunk<      CBaseEntity *, void                                                   > CBaseEntity::ft_CalcAbsolutePosition       ("CBaseEntity::CalcAbsolutePosition");
@@ -96,6 +97,7 @@ MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, cons
 MemberVFuncThunk<const CBaseEntity *, int                                                             > CBaseEntity::vt_GetMaxHealth                  (TypeName<CBaseEntity>(), "CBaseEntity::GetMaxHealth");
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsAlive                       (TypeName<CBaseEntity>(), "CBaseEntity::IsAlive");
 MemberVFuncThunk<const CBaseEntity *, float                                                           > CBaseEntity::vt_GetDefaultItemChargeMeterValue(TypeName<CBaseEntity>(), "CBaseEntity::GetDefaultItemChargeMeterValue");
+MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsDeflectable                 (TypeName<CBaseEntity>(), "CBaseEntity::IsDeflectable");
 
 StaticFuncThunk<int, const char *, bool>                                                                         CBaseEntity::ft_PrecacheModel      ("CBaseEntity::PrecacheModel");
 StaticFuncThunk<bool, const char *>                                                                              CBaseEntity::ft_PrecacheSound      ("CBaseEntity::PrecacheSound");

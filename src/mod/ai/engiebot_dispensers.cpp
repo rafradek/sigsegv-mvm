@@ -255,7 +255,38 @@ namespace Mod::AI::EngieBot_Dispensers
 		DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_ctor)(hint);
 	}
 	
-	
+	std::unordered_map<Action<CTFBot> *, IHotplugAction *> build_actions;
+
+	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor0)
+	{
+		auto action = reinterpret_cast<Action<CTFBot> *>(this);
+		if (build_actions.find(action) != build_actions.end()) {
+			delete build_actions[action];
+			build_actions.erase(action);
+		}
+		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor0)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor1)
+	{
+		auto action = reinterpret_cast<Action<CTFBot> *>(this);
+		if (build_actions.find(action) != build_actions.end()) {
+			delete build_actions[action];
+			build_actions.erase(action);
+		}
+		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor1)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor2)
+	{
+		auto action = reinterpret_cast<Action<CTFBot> *>(this);
+		if (build_actions.find(action) != build_actions.end()) {
+			delete build_actions[action];
+			build_actions.erase(action);
+		}
+		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor2)();
+	}
+
 	RefCount rc_CTFBotMvMEngineerIdle_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMvMEngineerIdle_Update, CTFBot *actor, float dt)
 	{
@@ -263,25 +294,37 @@ namespace Mod::AI::EngieBot_Dispensers
 		
 		TRACE();
 		
-		static IntervalTimer last_ask;
-		constexpr float ask_interval = 20.0f;
-		constexpr float ask_minwait  =  3.0f;
-		if (RandomFloat(0.0f, 1.0f) < (dt / ask_interval)) {
-			if (last_ask.GetElapsedTime() > ask_minwait) {
-				last_ask.Start();
+		// static IntervalTimer last_ask;
+		// constexpr float ask_interval = 20.0f;
+		// constexpr float ask_minwait  =  3.0f;
+		// if (RandomFloat(0.0f, 1.0f) < (dt / ask_interval)) {
+		// 	if (last_ask.GetElapsedTime() > ask_minwait) {
+		// 		last_ask.Start();
 				
-				switch (RandomInt(0, 2)) {
-				case 0:
-				case 1:
-					actor->SpeakConceptIfAllowed(MP_CONCEPT_PLAYER_TELEPORTERHERE);
-					break;
-				case 2:
-					actor->SpeakConceptIfAllowed(MP_CONCEPT_PLAYER_SENTRYHERE);
-					break;
-				}
+		// 		switch (RandomInt(0, 2)) {
+		// 		case 0:
+		// 		case 1:
+		// 			actor->SpeakConceptIfAllowed(MP_CONCEPT_PLAYER_TELEPORTERHERE);
+		// 			break;
+		// 		case 2:
+		// 			actor->SpeakConceptIfAllowed(MP_CONCEPT_PLAYER_SENTRYHERE);
+		// 			break;
+		// 		}
+		// 	}
+		// }
+		
+		auto action = reinterpret_cast<Action<CTFBot> *>(this);
+
+		if (build_actions.find(action) != build_actions.end()) {
+			ActionResult<CTFBot> result = build_actions[action]->Update(actor, dt);
+			if (result.transition != ActionTransition::DONE)
+				return ActionResult<CTFBot>::Continue();
+			else {
+				delete build_actions[action];
+				build_actions.erase(action);
 			}
 		}
-		
+
 		auto result = DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_Update)(actor, dt);
 		
 		if (result.transition == ActionTransition::SUSPEND_FOR && result.action != nullptr) {
@@ -291,7 +334,9 @@ namespace Mod::AI::EngieBot_Dispensers
 				if (actor != nullptr && !(actor->ExtAttr()[CTFBot::ExtendedAttr::BUILD_DISPENSER_TP]) && actor->ExtAttr()[CTFBot::ExtendedAttr::BUILD_DISPENSER_SG]) {
 					DevMsg("  actor has ExtAttr::BUILD_DISPENSER\n");
 					delete result.action;
-					result.action = new CTFBotMvMEngineerBuildSGDispenser(hint_sg);
+					result.action = nullptr;
+					result.transition = ActionTransition::CONTINUE;
+					build_actions[action] = new CTFBotMvMEngineerBuildSGDispenser(hint_sg);
 					hint_sg = nullptr;
 				}
 
@@ -304,7 +349,9 @@ namespace Mod::AI::EngieBot_Dispensers
 					DevMsg("  actor has ExtAttr::BUILD_DISPENSER\n");
 					actor->PressAltFireButton();
 					delete result.action;
-					result.action = new CTFBotMvMEngineerBuildTEDispenser(hint_te);
+					result.action = nullptr;
+					result.transition = ActionTransition::CONTINUE;
+					build_actions[action] = new CTFBotMvMEngineerBuildTEDispenser(hint_te);
 					hint_te = nullptr;
 				}
 			}
@@ -313,7 +360,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		return result;
 	}
 	
-	
+
 	/* CTFBotMvMEngineerIdle::Update static_cast's the owner of the sentry hint
 	 * to a CObjectSentrygun and calls GetTurretAngles, which doesn't exist for
 	 * CObjectDispenser; this tweak should avoid the problem */
@@ -346,7 +393,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		DETOUR_MEMBER_CALL(CTFBotHintEngineerNest_HintTeleporterThink)();
 		
 		auto nest = reinterpret_cast<CTFBotHintEngineerNest *>(this);
-		nest->m_bHasActiveTeleporter = false;
+		nest->m_bHasActiveTeleporter = true;
 	}
 	
 	
@@ -379,8 +426,12 @@ namespace Mod::AI::EngieBot_Dispensers
 			MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetAvailableMetal, "CObjectDispenser::GetAvailableMetal");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed, "CTFPlayer::SpeakConceptIfAllowed");
+
+			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_dtor0, "~CTFBotMvMEngineerIdle [D0]");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_dtor1, "~CTFBotMvMEngineerIdle [D1]");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_dtor2, "~CTFBotMvMEngineerIdle [D2]");
 			
-			MOD_ADD_DETOUR_MEMBER(CTFBotHintEngineerNest_HintTeleporterThink, "CTFBotHintEngineerNest::HintTeleporterThink");
+			//MOD_ADD_DETOUR_MEMBER(CTFBotHintEngineerNest_HintTeleporterThink, "CTFBotHintEngineerNest::HintTeleporterThink");
 		}
 		
 		virtual void OnUnload() override

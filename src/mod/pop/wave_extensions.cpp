@@ -32,7 +32,13 @@ namespace Mod::Pop::Wave_Extensions
 		float delay = 0.0f;
 		int level   = 0;
 		
+		bool is_mini = false;
+		int health = -1;
 		bool spawned = false;
+
+		int skin = 0;
+		int bodygroup = 0;
+		
 		CHandle<CObjectSentrygun> sentry;
 	};
 	
@@ -68,6 +74,7 @@ namespace Mod::Pop::Wave_Extensions
 		std::vector<ETFCond>  addconds;
 		
 		bool red_team_wipe_causes_wave_loss = false;
+		bool blue_team_wipe_causes_wave_loss = false;
 		bool defined_class_attributes = false;
 		std::map<std::string,float> player_attributes_class[10] = {};
 		std::map<std::string,float> player_attributes;
@@ -83,6 +90,7 @@ namespace Mod::Pop::Wave_Extensions
 			if (inst != nullptr)
 				inst->OnKilledParent(false);
 		}
+		waves[wave].templ_inst.clear();
 	}
 	DETOUR_DECL_MEMBER(void, CWave_dtor0)
 	{
@@ -150,6 +158,18 @@ namespace Mod::Pop::Wave_Extensions
 			//	DevMsg("Delay \"%s\" --> %.1f\n", subkey->GetString(), info.delay);
 			} else if (FStrEq(name, "Level")) {
 				info.level = Clamp(subkey->GetInt(), 1, 3);
+			//	DevMsg("Level \"%s\" --> %d\n", subkey->GetString(), info.level);
+			} else if (FStrEq(name, "IsMini")) {
+				info.is_mini = subkey->GetBool();
+			//	DevMsg("Level \"%s\" --> %d\n", subkey->GetString(), info.level);
+			} else if (FStrEq(name, "Health")) {
+				info.health = subkey->GetInt();
+			//	DevMsg("Level \"%s\" --> %d\n", subkey->GetString(), info.level);
+			} else if (FStrEq(name, "Bodygroup")) {
+				info.bodygroup = subkey->GetInt();
+			//	DevMsg("Level \"%s\" --> %d\n", subkey->GetString(), info.level);
+			} else if (FStrEq(name, "Skin")) {
+				info.skin = subkey->GetInt();
 			//	DevMsg("Level \"%s\" --> %d\n", subkey->GetString(), info.level);
 			} else if (FStrEq(name, "Position")) {
 				FOR_EACH_SUBKEY(subkey, subsub) {
@@ -352,6 +372,8 @@ namespace Mod::Pop::Wave_Extensions
 				Parse_PlayerAttributes(wave, subkey);
 			} else if (FStrEq(name, "RedTeamWipeCausesWaveLoss")) {
 				waves[wave].red_team_wipe_causes_wave_loss = subkey->GetBool();
+			} else if (FStrEq(name, "BlueTeamWipeCausesWaveLoss")) {
+				waves[wave].blue_team_wipe_causes_wave_loss = subkey->GetBool();
 			} else if (FStrEq(name, "SpawnTemplate")) {
 				PointTemplateInfo info =Parse_SpawnTemplate(subkey);
 				if (info.templ != nullptr)
@@ -485,13 +507,35 @@ namespace Mod::Pop::Wave_Extensions
 		else
 			PrintToChat(output.data(), player);
 	}
-	
+	float last_explanation_time = 0.0f;
+
+	std::set<CTFPlayer *> saw_explanation;
 	void ShowWaveExplanation(CTFPlayer *player = nullptr)
 	{
-		/* wave will be null after game is won and in other corner cases */
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
 		if (wave == nullptr) return;
+
+		if (player == nullptr) {
+			if (gpGlobals->curtime - last_explanation_time < 0.5f )
+				return;
+			else
+				last_explanation_time = gpGlobals->curtime;
+				
+			saw_explanation.clear();
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				if (!playerl->IsFakeClient()) {
+					saw_explanation.insert(playerl);
+				}
+			});
+		}
+		/* wave will be null after game is won and in other corner cases */
 		
+		if (player != nullptr && saw_explanation.find(player) != saw_explanation.end()) return;
+		
+		if (player != nullptr) {
+			saw_explanation.insert(player);
+		}
+
 		const auto& explanation = waves[wave].explanation;
 		for (const auto& line : explanation) {
 			ParseColorsAndPrint(line.c_str(), player);
@@ -511,14 +555,14 @@ namespace Mod::Pop::Wave_Extensions
 	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
 	{
 		SCOPED_INCREMENT(rc_JumpToWave);
-	//	DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
+		//DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
 		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
 		ShowWaveExplanation();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
 	{
-	//	DevMsg("[%8.3f] WaveEnd\n", gpGlobals->curtime);
+		//DevMsg("[%8.3f] WaveEnd\n", gpGlobals->curtime);
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
 		if (wave != nullptr)
 			WaveCleanup(wave);
@@ -530,13 +574,13 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 		if (!success && rc_JumpToWave == 0) {
-		//	DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
+			//DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
 			ShowWaveExplanation();
 		}
 	}
 	
 	
-	CObjectSentrygun *SpawnSentryGun(const Vector& origin, const QAngle& angles, int teamnum, int level)
+	CObjectSentrygun *SpawnSentryGun(const Vector& origin, const QAngle& angles, int teamnum, int level, bool is_mini, int health, int skin, int bodygroup)
 	{
 		auto sentry = rtti_cast<CObjectSentrygun *>(CreateEntityByName("obj_sentrygun"));
 		if (sentry == nullptr) {
@@ -555,7 +599,22 @@ namespace Mod::Pop::Wave_Extensions
 		sentry->ChangeTeam(teamnum);
 		sentry->m_nDefaultUpgradeLevel = level - 1;
 		
+		if (is_mini) {
+			sentry->SetModelScale(0.75f);
+			sentry->m_bMiniBuilding = true;
+			sentry->m_nSkin += 2;
+		}
+		
 		sentry->InitializeMapPlacedObject();
+
+		sentry->m_nBody = bodygroup;
+
+		sentry->m_nSkin = skin;
+
+		if (health != -1) {
+			sentry->SetMaxHealth(health);
+			sentry->SetHealth((float)health);
+		}
 		
 		DevMsg("SpawnSentryGun: #%d, %08x, level %d, health %d, maxhealth %d\n",
 			ENTINDEX(sentry), (uintptr_t)sentry, level, sentry->GetHealth(), sentry->GetMaxHealth());
@@ -574,10 +633,10 @@ namespace Mod::Pop::Wave_Extensions
 		
 		if (info.use_hint) {
 			for (const auto& hint : info.hints) {
-				info.sentry = SpawnSentryGun(hint->GetAbsOrigin(), hint->GetAbsAngles(), info.teamnum, info.level);
+				info.sentry = SpawnSentryGun(hint->GetAbsOrigin(), hint->GetAbsAngles(), info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
 			}
 		} else {
-			info.sentry = SpawnSentryGun(info.origin, info.angles, info.teamnum, info.level);
+			info.sentry = SpawnSentryGun(info.origin, info.angles, info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
 		}
 	}
 	
@@ -679,9 +738,32 @@ namespace Mod::Pop::Wave_Extensions
 			}
 		}
 		
+		if (data.blue_team_wipe_causes_wave_loss/* && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING*/) {
+			CTFTeam *team_blue = TFTeamMgr()->GetTeam(TF_TEAM_BLUE);
+			if (team_blue != nullptr && team_blue->GetNumPlayers() != 0) {
+				int num_blue_humans       = 0;
+				int num_blue_humans_alive = 0;
+				
+				ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_BLUE), [&](CTFPlayer *player){
+					if (player->IsBot()) return;
+					
+					++num_blue_humans;
+					if (player->IsAlive()) {
+						++num_blue_humans_alive;
+					}
+				});
+				
+				/* if red team actually contains zero humans, then don't do anything */
+				if (num_blue_humans > 0 && num_blue_humans_alive == 0) {
+					/* not entirely sure what effect the win reason parameter has (if it even has an effect at all) */
+					TFGameRules()->SetWinningTeam(TF_TEAM_RED, WINREASON_OPPONENTS_DEAD, true, false);
+				}
+			}
+		}
+
 		if (data.defined_class_attributes || data.player_attributes.size() > 0 || data.addconds.size() > 0)
 			ForEachTFPlayer([&](CTFPlayer *player){
-				if (player->GetTeamNumber() != TF_TEAM_RED) return;
+				if (player->IsBot()) return;
 				if (!player->IsAlive()) return;
 				for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
 					
@@ -719,7 +801,11 @@ namespace Mod::Pop::Wave_Extensions
 		}
 		for (auto it1 = data.templ.begin(); it1 != data.templ.end(); ++it1) {
 			if(!data.t_wavestart.IsLessThen(it1->delay)){
-				data.templ_inst.push_back(it1->SpawnTemplate(nullptr));
+				auto templ_inst = it1->SpawnTemplate(nullptr);
+				if (templ_inst != nullptr) {
+					templ_inst->is_wave_spawned = true;
+					data.templ_inst.push_back(templ_inst);
+				}
 				data.templ.erase(it1);
 				it1--;
 			}
@@ -774,6 +860,7 @@ namespace Mod::Pop::Wave_Extensions
 
 					if (data.defined_class_attributes || data.player_attributes.size() > 0 || data.addconds.size() > 0) {
 						ForEachTFPlayer([&](CTFPlayer *player){
+							if (player->IsBot()) return;
 							for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
 								player->RemoveCustomAttribute(it->first.c_str());
 							}
@@ -837,6 +924,7 @@ namespace Mod::Pop::Wave_Extensions
 		{
 			waves.clear();
 			StopSoundLoop();
+			last_explanation_time = 0.0f;
 		}
 		
 		virtual void LevelShutdownPostEntity() override

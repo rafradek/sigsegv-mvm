@@ -26,6 +26,7 @@ public:
 	//void CanPerformPrimaryAttack()                                   {        vt_CanPerformPrimaryAttack (this); }
 	void CanPerformSecondaryAttack()                                 {        vt_CanPerformSecondaryAttack (this); }
 	
+	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
 	DECL_SENDPROP(float, m_flNextSecondaryAttack);
 	DECL_SENDPROP(float, m_flTimeWeaponIdle);
@@ -65,18 +66,21 @@ public:
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
+	void GetProjectileFireSetup(CTFPlayer *player, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammaates, float flEndDist) {        vt_GetProjectileFireSetup (this, player, vecOffset, vecSrc, angForward, bHitTeammaates, flEndDist); }
 	
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
 	DECL_SENDPROP(float,                m_flEnergy);
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearable);
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearableViewModel);
+
 	
 private:
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_IsSilentKiller;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;
+	static MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   vt_GetProjectileFireSetup;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {};
@@ -218,9 +222,11 @@ class CTFFlameThrower : public CTFWeaponBaseGun
 public:
 	Vector GetVisualMuzzlePos() { return ft_GetMuzzlePosHelper(this, true);  }
 	Vector GetFlameOriginPos()  { return ft_GetMuzzlePosHelper(this, false); }
+	float GetDeflectionRadius()  { return ft_GetDeflectionRadius(this); }
 	
 private:
 	static MemberFuncThunk<CTFFlameThrower *, Vector, bool> ft_GetMuzzlePosHelper;
+	static MemberFuncThunk<CTFFlameThrower *, float> ft_GetDeflectionRadius;
 };
 
 class CTFWeaponBuilder : public CTFWeaponBase {};

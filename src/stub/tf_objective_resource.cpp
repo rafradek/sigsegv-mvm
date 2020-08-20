@@ -23,3 +23,5 @@ IMPL_SENDPROP(string_t,         CTFObjectiveResource, m_iszMvMPopfileName,      
 IMPL_SENDPROP(unsigned int,     CTFObjectiveResource, m_nMvMEventPopfileType,            CTFObjectiveResource);
 
 GlobalThunk<CBaseTeamObjectiveResource *> g_pObjectiveResource("g_pObjectiveResource");
+
+MemberFuncThunk<CTFObjectiveResource *, void, string_t, unsigned int > CTFObjectiveResource::ft_DecrementMannVsMachineWaveClassCount ("CTFObjectiveResource::DecrementMannVsMachineWaveClassCount");

@@ -203,6 +203,7 @@ MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, int>            
 MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, const char *>          CEconItemSchema::ft_GetItemDefinitionByName     ("CEconItemSchema::GetItemDefinitionByName");
 MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, int>          CEconItemSchema::ft_GetAttributeDefinition      ("CEconItemSchema::GetAttributeDefinition");
 MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, const char *> CEconItemSchema::ft_GetAttributeDefinitionByName("CEconItemSchema::GetAttributeDefinitionByName");
+MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *>  CEconItemSchema::ft_BInitAttributes			   ("CEconItemSchema::BInitAttributes");
 
 
 static StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema("GetItemSchema");

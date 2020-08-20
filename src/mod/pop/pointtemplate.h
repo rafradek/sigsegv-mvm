@@ -58,8 +58,10 @@ class PointTemplateInstance
 		CHandle<CBaseEntity> parent_helper;
 		bool has_parent = false;
 		bool mark_delete = false;
-		void OnKilledParent(bool clearing);
 		int attachment=0;
+		bool is_wave_spawned = false;
+		
+		void OnKilledParent(bool clearing);
 	};
 static PointTemplateInstance PointTemplateInstance_Invalid = PointTemplateInstance();
 
@@ -67,15 +69,11 @@ struct PointTemplateInfo
 {
 	Vector translation = Vector();
 	QAngle rotation = QAngle();
-	PointTemplate *templ;
+	PointTemplate *templ = nullptr;
 	float delay =0.0f;
 	std::string attachment;
-	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent) {
-		if (templ != nullptr)
-			return templ->SpawnTemplate(parent,translation,rotation,true,attachment.c_str());
-		else
-			return nullptr;
-	}
+	std::string template_name;
+	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent);
 };
 
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
@@ -89,6 +87,16 @@ void Update_Point_Templates();
 extern StaticFuncThunk<void> ft_PrecachePointTemplates;
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
 extern StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect;
+extern StaticFuncThunk<void, IRecipientFilter&,
+	float,
+	const char *,
+	Vector,
+	QAngle,
+	te_tf_particle_effects_colors_t *,
+	te_tf_particle_effects_control_point_t *,
+	CBaseEntity *,
+	ParticleAttachment_t,
+	Vector> ft_TE_TFParticleEffectComplex;
 
 inline void PrecachePointTemplates()
 {
@@ -99,6 +107,24 @@ inline void TE_TFParticleEffect(IRecipientFilter& recipement, float value, char 
 {
 	ft_TE_TFParticleEffect(recipement,value,name,vector,angles,entity,attach);
 }
+
+inline void TE_TFParticleEffectComplex
+(
+	IRecipientFilter &filter,
+	float flDelay,
+	const char *pszParticleName,
+	Vector vecOrigin,
+	QAngle vecAngles,
+	te_tf_particle_effects_colors_t *pOptionalColors /*= NULL*/,
+	te_tf_particle_effects_control_point_t *pOptionalControlPoint1 /*= NULL*/,
+	CBaseEntity *pEntity /*= NULL*/,
+	ParticleAttachment_t eAttachType /*= PATTACH_CUSTOMORIGIN*/,
+	Vector vecStart /* = vec3_origin */
+)
+{
+	ft_TE_TFParticleEffectComplex(filter,flDelay,pszParticleName,vecOrigin,vecAngles,pOptionalColors,pOptionalControlPoint1, pEntity, eAttachType, vecStart);
+}
+
 
 inline bool IsSpaceToSpawnHere(const Vector& pos)
 {

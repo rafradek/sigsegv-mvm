@@ -75,3 +75,42 @@ const char *CSteamID::Render(uint64 ulSteamID) { return ft_CSteamID_Render_stati
 
 static MemberFuncThunk<const CSteamID *, const char *> ft_CSteamID_Render_member("CSteamID::Render [member]");
 const char *CSteamID::Render() const { return ft_CSteamID_Render_member(this); }
+
+static StaticFuncThunk<void, const char *> ft_PrecacheParticleSystem("PrecacheParticleSystem");
+void PrecacheParticleSystem(const char *name) { ft_PrecacheParticleSystem(name); }
+
+void PrintToChatAll(const char *str)
+{
+	int msg_type = usermessages->LookupUserMessage("SayText2");
+	if (msg_type == -1) return;
+	
+	CReliableBroadcastRecipientFilter filter;
+	
+	bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+	if (msg == nullptr) return;
+	
+	msg->WriteByte(0x00);
+	msg->WriteByte(0x00);
+	msg->WriteString(str);
+	
+	engine->MessageEnd();
+}
+
+void PrintToChat(const char *str, CTFPlayer *player)
+{
+	int msg_type = usermessages->LookupUserMessage("SayText2");
+	if (msg_type == -1) return;
+	
+	CRecipientFilter filter;
+	filter.AddRecipient(player);
+	filter.MakeReliable();
+
+	bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+	if (msg == nullptr) return;
+	
+	msg->WriteByte(0x00);
+	msg->WriteByte(0x00);
+	msg->WriteString(str);
+	
+	engine->MessageEnd();
+}

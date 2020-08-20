@@ -112,14 +112,20 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	{
 		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
 		
-		auto ent = reinterpret_cast<CBaseEntity *>(this);
-		ent->SetMoveType(MOVETYPE_CUSTOM);
+		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
+		if (ent->GetLauncher() != nullptr) {
+			float power = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(ent->GetLauncher(), power, mod_projectile_heat_seek_power);
+			if (power != 0.0f) {
+				ent->SetMoveType(MOVETYPE_CUSTOM);
+			}
+		}
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseEntity_PerformCustomPhysics, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity)
 	{
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
-		if (!ent->ClassMatches("tf_projectile_rocket")) {
+		if (!ent->ClassMatches("tf_projectile_rocket") || !ent->ClassMatches("tf_projectile_sentryrocket")) {
 			DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
 			return;
 		}
@@ -141,7 +147,11 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				// TODO: invisibility stuff
 				
 				Vector delta = player->WorldSpaceCenter() - proj->WorldSpaceCenter();
-				if (DotProduct(delta.Normalized(), pNewVelocity->Normalized()) < -0.25f) return;
+
+				float mindotproduct = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), mindotproduct, mod_projectile_heat_aim_error);
+				mindotproduct = FastCos(DEG2RAD(Clamp(mindotproduct, 0.0f, 180.0f)));
+				if (DotProduct(delta.Normalized(), pNewVelocity->Normalized()) < mindotproduct) return;
 				
 				float distsqr = proj->WorldSpaceCenter().DistToSqr(player->WorldSpaceCenter());
 				if (distsqr < target_distsqr) {
@@ -159,8 +169,9 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				QAngle angToTarget;
 				VectorAngles(target_player->WorldSpaceCenter() - proj->WorldSpaceCenter(), angToTarget);
 				
-				float power = cvar_power.GetFloat();
-				
+				float power = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), power, mod_projectile_heat_seek_power);
+
 				pNewAngVelocity->x = Clamp(Approach(AngleDiff(angToTarget.x, pNewAngles->x) * 4.0f, pNewAngVelocity->x, power), -360.0f, 360.0f);
 				pNewAngVelocity->y = Clamp(Approach(AngleDiff(angToTarget.y, pNewAngles->y) * 4.0f, pNewAngVelocity->y, power), -360.0f, 360.0f);
 				pNewAngVelocity->z = Clamp(Approach(AngleDiff(angToTarget.z, pNewAngles->z) * 4.0f, pNewAngVelocity->z, power), -360.0f, 360.0f);
@@ -171,7 +182,9 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 		
 		Vector vecOrientation;
 		AngleVectors(*pNewAngles, &vecOrientation);
-		*pNewVelocity = vecOrientation * 1100.0f;//proj->GetAbsVelocity();
+		float speed = 1100.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), speed, mult_projectile_speed);//proj->GetAbsVelocity();
+		*pNewVelocity = vecOrientation * speed;
 		
 		*pNewPosition += (*pNewVelocity * gpGlobals->frametime);
 		

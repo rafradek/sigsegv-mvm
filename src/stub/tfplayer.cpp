@@ -123,6 +123,7 @@ IMPL_SENDPROP(int,         CTFPlayerShared, m_iCritMult,               CTFPlayer
 IMPL_SENDPROP(bool,        CTFPlayerShared, m_bInUpgradeZone,          CTFPlayer);
 IMPL_SENDPROP(float,       CTFPlayerShared, m_flStealthNoAttackExpire, CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nPlayerState,            CTFPlayer);
+IMPL_SENDPROP(int,         CTFPlayerShared, m_iAirDash,                CTFPlayer);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
@@ -140,6 +141,7 @@ MemberFuncThunk<      CTFPlayerShared *, bool                                > C
 MemberFuncThunk<const CTFPlayerShared *, bool                                > CTFPlayerShared::ft_IsLoserStateStunned       ("CTFPlayerShared::IsLoserStateStunned");
 MemberFuncThunk<      CTFPlayerShared *, void                                > CTFPlayerShared::ft_SetDefaultItemChargeMeters("CTFPlayerShared::SetDefaultItemChargeMeters");
 MemberFuncThunk<      CTFPlayerShared *, void, loadout_positions_t, float    > CTFPlayerShared::ft_SetItemChargeMeter        ("CTFPlayerShared::SetItemChargeMeter");
+MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > CTFPlayerShared::ft_Burn 					 ("CTFPlayerShared::Burn");
 
 
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,              CTFPlayer);
@@ -150,6 +152,7 @@ IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,         CTFPlayer)
 IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,               CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsMiniBoss,         CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_nCurrency,           CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_nBotSkill,           CTFPlayer);
 IMPL_SENDPROP(CHandle<CBaseEntity> ,CTFPlayer, m_hGrapplingHookTarget,CTFPlayer);
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
@@ -174,6 +177,7 @@ MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemPressed            ("CTFPlayer::UseActionSlotItemPressed");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemReleased            ("CTFPlayer::UseActionSlotItemReleased");
 MemberFuncThunk<      CTFPlayer *, CBaseEntity *, int              > CTFPlayer::ft_GetEntityForLoadoutSlot            ("CTFPlayer::GetEntityForLoadoutSlot");
+MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_DoAnimationEvent            ("CTFPlayer::DoAnimationEvent");
 
 MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");
 

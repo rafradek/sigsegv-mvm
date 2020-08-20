@@ -11,6 +11,9 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 	{
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		
+		if (ToTFPlayer(bow->GetOwner())->IsBot())
+			return DETOUR_MEMBER_CALL(CTFCompoundBow_GetProjectileDamage)();
+
 		float flBaseDamage;
 		float flChargeDamage;
 		
@@ -53,7 +56,22 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 		return flDamage;
 	}
 	
-	
+	ConVar cvar_huntsman_charge_time("sig_huntsman_charge_time_upgrade_ratio", "1", FCVAR_NOTIFY,
+		"Charge time upgrade ratio");
+	DETOUR_DECL_MEMBER(float, CTFCompoundBow_GetChargeMaxTime)
+	{
+		float normal_time = 1.0f;
+
+		float actual_charge = DETOUR_MEMBER_CALL(CTFCompoundBow_GetChargeMaxTime)();
+
+		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
+		
+		if (ToTFPlayer(bow->GetOwner())->IsBot())
+			return actual_charge;
+
+		return RemapVal( cvar_huntsman_charge_time.GetFloat(), 0, 1, normal_time, actual_charge );
+	}
+
 	class CMod : public IMod
 	{
 	public:
@@ -61,6 +79,7 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFCompoundBow_GetProjectileDamage,   "CTFCompoundBow::GetProjectileDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_GetProjectileDamage, "CTFWeaponBaseGun::GetProjectileDamage");
+			MOD_ADD_DETOUR_MEMBER(CTFCompoundBow_GetChargeMaxTime, "CTFCompoundBow::GetChargeMaxTime");
 		}
 	};
 	CMod s_Mod;

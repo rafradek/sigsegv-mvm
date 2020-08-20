@@ -10,13 +10,17 @@ class CBaseProjectile : public CBaseAnimating
 {
 public:
 	CBaseEntity *GetOriginalLauncher() const { return this->m_hOriginalLauncher; }
-	
+
 	int GetProjectileType() const            { return vt_GetProjectileType(this); }
+	bool IsDestroyable() const            { return vt_IsDestroyable(this); }
+	void Destroy(bool blinkOut = true, bool breakRocket = false) const            { return vt_Destroy(this, blinkOut, breakRocket); }
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOriginalLauncher);
 	
 	static MemberVFuncThunk<const CBaseProjectile *, int> vt_GetProjectileType;
+	static MemberVFuncThunk<const CBaseProjectile *, bool> vt_IsDestroyable;
+	static MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> vt_Destroy;
 };
 
 class CBaseGrenade : public CBaseProjectile {};

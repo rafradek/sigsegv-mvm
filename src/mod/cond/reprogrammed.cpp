@@ -285,7 +285,8 @@ namespace Mod::Cond::Reprogrammed
 		}
 	}
 	
-	
+	bool stop_auto_assignment = false;
+
 	void OnAddReprogrammed(CTFPlayer *player)
 	{
 		DevMsg("OnAddReprogrammed(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
@@ -295,17 +296,49 @@ namespace Mod::Cond::Reprogrammed
 		}
 		
 		/* added this check to prevent problems */
-		if (player->GetTeamNumber() == TF_TEAM_BLUE) {
-			DevMsg("  currently on TF_TEAM_BLUE: calling ForceChangeTeam(TF_TEAM_RED)\n");
-			player->ForceChangeTeam(TF_TEAM_RED, false);
-		} else {
-			DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
+		
+		if (player->IsBot()) {
+			if (player->GetTeamNumber() == TF_TEAM_BLUE) {
+				DevMsg("  currently on TF_TEAM_BLUE: calling ForceChangeTeam(TF_TEAM_RED)\n");
+				player->ForceChangeTeam(TF_TEAM_RED, false);
+			} else {
+				DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
+			}
+			if (cvar_hellmet.GetBool()) {
+				ChangeWeaponAndWearableTeam(player, TF_TEAM_RED);
+			}
+			if (cvar_hellmet.GetBool()) {
+				CTFBot *bot = ToTFBot(player);
+				if (bot != nullptr) {
+					bot->GetVisionInterface()->ForgetAllKnownEntities();
+				}
+			}
+		}
+		else {
+			
+			stop_auto_assignment = true;
+			if (player->GetTeamNumber() == TF_TEAM_BLUE) {
+				
+				player->ForceChangeTeam(TF_TEAM_RED, false);
+
+				if (cvar_hellmet.GetBool()) {
+					ChangeWeaponAndWearableTeam(player, TF_TEAM_RED);
+				}
+			}
+			else {
+
+				player->ForceChangeTeam(TF_TEAM_BLUE, false);
+
+				if (cvar_hellmet.GetBool()) {
+					ChangeWeaponAndWearableTeam(player, TF_TEAM_BLUE);
+				}
+			}
+			
+			stop_auto_assignment = false;
 		}
 		
 		/* ensure that all weapons and wearables have their colors updated */
-		if (cvar_hellmet.GetBool()) {
-			ChangeWeaponAndWearableTeam(player, TF_TEAM_RED);
-		}
+		
 		
 		/* this used to be in CTFPlayerShared::OnAddReprogrammed on the client
 		 * side, but we now have to do it from the server side */
@@ -313,12 +346,7 @@ namespace Mod::Cond::Reprogrammed
 			DispatchParticleEffect("sapper_sentry1_fx", PATTACH_POINT_FOLLOW, player, "head");
 		}
 		
-		if (cvar_hellmet.GetBool()) {
-			CTFBot *bot = ToTFBot(player);
-			if (bot != nullptr) {
-				bot->GetVisionInterface()->ForgetAllKnownEntities();
-			}
-		}
+		
 	}
 	
 	void OnRemoveReprogrammed(CTFPlayer *player)
@@ -326,11 +354,53 @@ namespace Mod::Cond::Reprogrammed
 		DevMsg("OnRemoveReprogrammed(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
 		
 		/* added this check to prevent problems */
-		if (player->GetTeamNumber() == TF_TEAM_RED) {
-			DevMsg("  currently on TF_TEAM_RED: calling ForceChangeTeam(TF_TEAM_BLUE)\n");
-			player->ForceChangeTeam(TF_TEAM_BLUE, false);
-		} else {
-			DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
+		if (player->IsBot()) {
+			if (player->GetTeamNumber() == TF_TEAM_RED) {
+				DevMsg("  currently on TF_TEAM_RED: calling ForceChangeTeam(TF_TEAM_BLUE)\n");
+				player->ForceChangeTeam(TF_TEAM_BLUE, false);
+			} else {
+				DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
+			}
+			if (cvar_hellmet.GetBool()) {
+				if (player->m_lifeState == LIFE_DYING) {
+					// hack hack hack: make wearable gibs be red
+					player->m_nSkin = 0;
+				} else {
+					ChangeWeaponAndWearableTeam(player, TF_TEAM_BLUE);
+				}
+			}
+			if (cvar_hellmet.GetBool()) {
+				CTFBot *bot = ToTFBot(player);
+				if (bot != nullptr) {
+					bot->GetVisionInterface()->ForgetAllKnownEntities();
+				}
+			}
+		}
+		else {
+			stop_auto_assignment = true;
+			if (player->GetTeamNumber() == TF_TEAM_RED) {
+				player->ForceChangeTeam(TF_TEAM_BLUE, false);
+				if (cvar_hellmet.GetBool()) {
+					if (player->m_lifeState == LIFE_DYING) {
+						// hack hack hack: make wearable gibs be red
+						player->m_nSkin = 0;
+					} else {
+						ChangeWeaponAndWearableTeam(player, TF_TEAM_BLUE);
+					}
+				}
+			}
+			else if (player->GetTeamNumber() == TF_TEAM_BLUE) {
+				player->ForceChangeTeam(TF_TEAM_RED, false);
+				if (cvar_hellmet.GetBool()) {
+					if (player->m_lifeState == LIFE_DYING) {
+						// hack hack hack: make wearable gibs be red
+						player->m_nSkin = 1;
+					} else {
+						ChangeWeaponAndWearableTeam(player, TF_TEAM_RED);
+					}
+				}
+			}
+			stop_auto_assignment = false;
 		}
 		
 		/* ensure that all weapons and wearables have their colors updated;
@@ -338,14 +408,7 @@ namespace Mod::Cond::Reprogrammed
 		 * CTFPlayer::Event_Killed calls CTFPlayerShared::RemoveAllCond, and we
 		 * end up making the ragdoll wearables and dropped hats etc the wrong
 		 * color compared to the player ragdoll itself */
-		if (cvar_hellmet.GetBool()) {
-			if (player->m_lifeState == LIFE_DYING) {
-				// hack hack hack: make wearable gibs be red
-				player->m_nSkin = 0;
-			} else {
-				ChangeWeaponAndWearableTeam(player, TF_TEAM_BLUE);
-			}
-		}
+		
 		
 		/* this is far from ideal; we can only remove ALL particle effects from
 		 * the server side */
@@ -353,15 +416,26 @@ namespace Mod::Cond::Reprogrammed
 			StopParticleEffects(player);
 		}
 		
-		if (cvar_hellmet.GetBool()) {
-			CTFBot *bot = ToTFBot(player);
-			if (bot != nullptr) {
-				bot->GetVisionInterface()->ForgetAllKnownEntities();
-			}
-		}
+		
+		
 	}
 	
-	
+	void OnAddMVMBotRadiowave(CTFPlayer *player)
+	{
+		DevMsg("Why only %f\n",player->m_Shared->GetConditionDuration(TF_COND_MVM_BOT_STUN_RADIOWAVE));
+		if (!player->IsBot() )
+			player->m_Shared->StunPlayer( 5.0f, 1.0f, 1 | 2 | 32 , nullptr); //movement control noeffect
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFGameRules_GetTeamAssignmentOverride, CTFPlayer *pPlayer, int iWantedTeam, bool b1)
+	{
+		if (stop_auto_assignment) {
+			return iWantedTeam;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionAdded, ETFCond cond)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
@@ -372,6 +446,9 @@ namespace Mod::Cond::Reprogrammed
 		}
 		
 		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionAdded)(cond);
+		if (cond == TF_COND_MVM_BOT_STUN_RADIOWAVE) {
+			OnAddMVMBotRadiowave(shared->GetOuter());
+		}
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionRemoved, ETFCond cond)
@@ -382,7 +459,6 @@ namespace Mod::Cond::Reprogrammed
 			OnRemoveReprogrammed(shared->GetOuter());
 			return;
 		}
-		
 		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionRemoved)(cond);
 	}
 	
@@ -459,8 +535,56 @@ namespace Mod::Cond::Reprogrammed
 			});
 		}
 	}
+
+	//Red giant backstab instakill fix
+	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage) {
+		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
+
+		if (pTarget->IsPlayer() && ret == pTarget->GetHealth() * 2 && ToTFPlayer(pTarget)->IsMiniBoss()) {
+			CTFKnife *weapon = reinterpret_cast<CTFKnife *>(this);
+			if (ToTFPlayer(weapon->GetOwner())->IsBot()) {
+				float flBonusDmg = 1.f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, flBonusDmg, mult_dmg );
+				float flBaseDamage = 250.f * flBonusDmg; 
+
+				// Minibosses:  Adjust damage when backstabbing based on level of armor piercing
+				// Base amount is 25% of normal damage.  Each level adds 25% to a cap of 125%.
+				float flArmorPiercing = 25.f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon->GetOwner(), flArmorPiercing, armor_piercing );
+				flBaseDamage *= clamp( flArmorPiercing / 100.0f, 0.25f, 1.25f );	
+				return flBaseDamage;
+			}
+		}
+		return ret;
+	}
 	
-	
+	//Red giant sentry buster instakill fix
+	RefCount rc_CTFBotMissionSuicideBomber_Detonate;
+	DETOUR_DECL_MEMBER(void, CTFBotMissionSuicideBomber_Detonate, CTFBot *actor)
+	{
+		SCOPED_INCREMENT(rc_CTFBotMissionSuicideBomber_Detonate);
+		DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Detonate)(actor);
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, const CTakeDamageInfo& info)
+	{
+
+		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFBotMissionSuicideBomber_Detonate) {
+			auto player = reinterpret_cast<CTFPlayer *>(this);
+			
+			CBaseEntity *pAttacker = info.GetAttacker();
+			CTFBot *pTFAttackerBot = ToTFBot( pAttacker );
+			if ( pTFAttackerBot && player->IsMiniBoss() && (info.GetDamageType() & DMG_BLAST) && info.GetDamage() > 600.0f )
+			{
+				CTakeDamageInfo newinfo = info;
+				newinfo.SetDamage( 600.f );
+				return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(newinfo);
+			}
+		
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+	}
+
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMedicHeal_Update, CTFBot *actor, float dt)
 	{
 		auto result = DETOUR_MEMBER_CALL(CTFBotMedicHeal_Update)(actor, dt);
@@ -505,7 +629,6 @@ namespace Mod::Cond::Reprogrammed
 	}
 #endif
 	
-	
 	class CMod : public IMod
 	{
 	public:
@@ -529,6 +652,14 @@ namespace Mod::Cond::Reprogrammed
 			/* fix: make medic bots on red team in MvM mode handle "everyone is gone" less stupidly */
 			MOD_ADD_DETOUR_MEMBER(CTFBotMedicHeal_Update, "CTFBotMedicHeal::Update");
 			
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
+
+			MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Detonate, "CTFBotMissionSuicideBomber::Detonate");
+			
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_GetMeleeDamage, "CTFKnife::GetMeleeDamage");
+
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride");
+
 			/* fix: make mission populators aware of red-team mission bots */
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMission());
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMissionDestroySentries());

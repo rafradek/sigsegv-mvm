@@ -1,7 +1,8 @@
 #include "mod.h"
 #include "prop.h"
 #include "stub/gamerules.h"
-
+#include "stub/econ.h"
+#include "stub/tfplayer.h"
 
 namespace Mod::Bot::Medieval_NonMelee
 {
@@ -51,13 +52,31 @@ namespace Mod::Bot::Medieval_NonMelee
 		}
 	};
 	
-	
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemIsAllowed, CEconItemView *item_view)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		bool medieval = TFGameRules()->IsInMedievalMode();
+
+		if (TFGameRules()->IsMannVsMachineMode() && player->IsBot()) {
+			TFGameRules()->Set_m_bPlayingMedieval(false);
+		}
+
+		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemIsAllowed)(item_view);
+		
+		if (TFGameRules()->IsMannVsMachineMode() && player->IsBot()) {
+			TFGameRules()->Set_m_bPlayingMedieval(medieval);
+		}
+
+		return ret;
+	}
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Bot:Medieval_NonMelee")
 		{
 			this->AddPatch(new CPatch_CTFBot_EquipRequiredWeapon());
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
 		}
 	};
 	CMod s_Mod;

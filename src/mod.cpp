@@ -236,8 +236,14 @@ void CModManager::Unload()
 		} \
 	}
 
-void CModManager::LevelInitPreEntity()         { INVOKE_CALLBACK_FOR_ALL_ELIGIBLE_MODS(LevelInitPreEntity);         }
-void CModManager::LevelInitPostEntity()        { INVOKE_CALLBACK_FOR_ALL_ELIGIBLE_MODS(LevelInitPostEntity);        }
+//Mods are always in disabled state during level init
+#define INVOKE_CALLBACK_FOR_ALL_MODS(CALLBACK) \
+	for (auto listener : AutoList<IModCallbackListener>::List()) { \
+		listener->CALLBACK(); \
+	}
+
+void CModManager::LevelInitPreEntity()         { INVOKE_CALLBACK_FOR_ALL_MODS(LevelInitPreEntity);         }
+void CModManager::LevelInitPostEntity()        { INVOKE_CALLBACK_FOR_ALL_MODS(LevelInitPostEntity);        }
 void CModManager::LevelShutdownPreEntity()     { INVOKE_CALLBACK_FOR_ALL_ELIGIBLE_MODS(LevelShutdownPreEntity);     }
 void CModManager::LevelShutdownPostEntity()    { INVOKE_CALLBACK_FOR_ALL_ELIGIBLE_MODS(LevelShutdownPostEntity);    }
 void CModManager::FrameUpdatePreEntityThink()  { INVOKE_CALLBACK_FOR_ALL_ELIGIBLE_MODS(FrameUpdatePreEntityThink);  }

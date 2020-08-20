@@ -28,13 +28,15 @@ IMPL_SENDPROP(bool[33],               CTeamplayRoundBasedRules, m_bPlayerReady, 
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> CTeamplayRoundBasedRules::ft_BroadcastSound              ("CTeamplayRoundBasedRules::BroadcastSound");
 MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         CTeamplayRoundBasedRules::ft_GetMinTimeWhenPlayerMaySpawn("CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn");
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> CTeamplayRoundBasedRules::ft_State_Transition            ("CTeamplayRoundBasedRules::State_Transition");
-
-MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *> CTeamplayRoundBasedRules::vt_GetNextRespawnWave(TypeName<CTeamplayRoundBasedRules>(), "CTeamplayRoundBasedRules::GetNextRespawnWave");
+MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   CTeamplayRoundBasedRules::ft_SetForceMapReset            ("CTeamplayRoundBasedRules::SetForceMapReset");
+MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, float>             CTeamplayRoundBasedRules::ft_SetTeamRespawnWaveTime      ("CTeamplayRoundBasedRules::SetTeamRespawnWaveTime");
+MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *>   CTeamplayRoundBasedRules::vt_GetNextRespawnWave(TypeName<CTeamplayRoundBasedRules>(), "CTeamplayRoundBasedRules::GetNextRespawnWave");
 
 
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMedieval,      CTFGameRulesProxy);
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMannVsMachine, CTFGameRulesProxy);
 IMPL_SENDPROP(char[MAX_PATH], CTFGameRules, m_pszCustomUpgradesFile, CTFGameRulesProxy);
+IMPL_SENDPROP(float,           CTFGameRules, m_flRestartRoundTime, CTFGameRulesProxy);
 
 MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *, int, unsigned short, CMannVsMachineUpgrades *> CTFGameRules::ft_CanUpgradeWithAttrib               ("CTFGameRules::CanUpgradeWithAttrib");
 MemberFuncThunk<CTFGameRules *, int, CMannVsMachineUpgrades *, int, int, CTFPlayer *>             CTFGameRules::ft_GetCostForUpgrade                  ("CTFGameRules::GetCostForUpgrade");

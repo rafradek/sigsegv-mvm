@@ -70,7 +70,6 @@ namespace Mod::MvM::Human_Death_Yells
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		
 		DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
 		
 		/* these checks are essentially in reverse order */

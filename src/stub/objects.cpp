@@ -9,6 +9,8 @@ IMPL_SENDPROP(int,                CBaseObject, m_iObjectMode,         CBaseObjec
 IMPL_SENDPROP(CHandle<CTFPlayer>, CBaseObject, m_hBuilder,            CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bMiniBuilding,       CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bDisposableBuilding, CBaseObject);
+IMPL_SENDPROP(bool,               CBaseObject, m_bBuilding, CBaseObject);
+IMPL_SENDPROP(bool,               CBaseObject, m_bDisabled, CBaseObject);
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");
@@ -27,3 +29,5 @@ GlobalThunk<CUtlVector<IBaseObjectAutoList *>> IBaseObjectAutoList::m_IBaseObjec
 
 
 MemberVFuncThunk<CObjectDispenser *, float> CObjectDispenser::vt_GetDispenserRadius(TypeName<CObjectDispenser>(), "CObjectDispenser::GetDispenserRadius");
+
+MemberVFuncThunk<CObjectSentrygun *, QAngle &> CObjectSentrygun::vt_GetTurretAngles(TypeName<CObjectSentrygun>(), "CObjectSentrygun::GetTurretAngles");

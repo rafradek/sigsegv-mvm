@@ -168,6 +168,64 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 		
 		return result;
 	}
+	ConVar cvar_heal_rage_from_upgrades_ratio("sig_heal_rage_from_upgrades_ratio", "1", FCVAR_NOTIFY,
+		"Heal rage from upgrades ratio");
+
+	ConVar cvar_heal_rage_ratio("sig_heal_rage_ratio", "1", FCVAR_NOTIFY,
+		"Heal rage ratio");
+	RefCount rc_HandleRageGain;
+	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
+	{
+		SCOPED_INCREMENT_IF(rc_HandleRageGain, (0x10 /*kRageBuffFlag_OnHeal*/ & iRequiredBuffFlags) && !pPlayer->IsBot() && pPlayer->IsPlayerClass( TF_CLASS_MEDIC ) && 
+			(cvar_heal_rage_from_upgrades_ratio.GetFloat() != 1.0f || cvar_heal_rage_ratio.GetFloat() != -1.0f));
+		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ModifyRage, float delta)
+	{
+		if (rc_HandleRageGain > 0) {
+			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+			CTFPlayer *player = shared->GetOuter();
+			
+			float healrate = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( player, healrate, mult_medigun_healrate );
+			float bonus = Max(1.0f, healrate - 0.5f);
+
+			int iHealingMastery = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( player, iHealingMastery, healing_mastery );
+			if ( iHealingMastery )
+			{
+				bonus *= RemapValClamped( (float)iHealingMastery, 1.f, 4.f, 1.25f, 2.0f );
+			}
+
+			delta = (delta / bonus) * (1.0f + ((bonus - 1.0f) * cvar_heal_rage_from_upgrades_ratio.GetFloat())) * cvar_heal_rage_ratio.GetFloat();
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayerShared_ModifyRage)(delta);
+	}
+
+	ConVar cvar_ubersaw_uber_decrease("sig_ubersaw_uber_decrease", "0", FCVAR_NOTIFY,
+		"Ubersaw uber on hit decrease if rage scale attribute is present");
+	
+	RefCount rc_CTFWeaponBase_ApplyOnHitAttributes;
+	CBaseEntity *victim;
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
+	{
+		SCOPED_INCREMENT_IF(rc_CTFWeaponBase_ApplyOnHitAttributes, cvar_ubersaw_uber_decrease.GetBool());
+		victim = ent;
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		victim = nullptr;
+	}
+
+	DETOUR_DECL_MEMBER(void, CWeaponMedigun_AddCharge, float val)
+	{
+		if (rc_CTFWeaponBase_ApplyOnHitAttributes && victim->IsPlayer()) {
+			float ragescale = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( victim, ragescale, rage_giving_scale );
+			val *= ragescale;
+		}
+		DETOUR_MEMBER_CALL(CWeaponMedigun_AddCharge)(val);
+	}
 
 	class CMod : public IMod
 	{
@@ -178,6 +236,11 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 			//MOD_ADD_DETOUR_MEMBER(ILocomotion_TraceHull,                         "ILocomotion::TraceHull");
 			MOD_ADD_DETOUR_MEMBER(NextBotTraversableTraceFilter_ShouldHitEntity, "NextBotTraversableTraceFilter::ShouldHitEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFBotLocomotion_IsEntityTraversable,          "CTFBotLocomotion::IsEntityTraversable");
+			MOD_ADD_DETOUR_STATIC(HandleRageGain,          "HandleRageGain");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_ModifyRage,          "CTFPlayerShared::ModifyRage");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_AddCharge,          "CWeaponMedigun::AddCharge");
+
 		}
 	};
 	CMod s_Mod;

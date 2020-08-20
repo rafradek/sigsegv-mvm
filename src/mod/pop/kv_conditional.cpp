@@ -4,13 +4,16 @@
 
 namespace Mod::Pop::KV_Conditional
 {
+
+	ConVar cvar_always_enable_conditional("sig_always_enable_conditional", "0", FCVAR_NOTIFY, "");
+
 	bool IsSigsegv()
 	{
 		for (auto cond : AutoList<IKVCond>::List()) {
 			if ((*cond)()) return true;
 		}
 		
-		return false;
+		return cvar_always_enable_conditional.GetBool();
 	}
 	
 	

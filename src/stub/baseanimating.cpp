@@ -24,6 +24,7 @@ MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, float, const char *>             CBaseAnimating::ft_GetPoseParameter_str("CBaseAnimating::GetPoseParameter [str]");
 MemberFuncThunk<CBaseAnimating *, void, int, matrix3x4_t&>         CBaseAnimating::ft_GetBoneTransform    ("CBaseAnimating::GetBoneTransform");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupBone          ("CBaseAnimating::LookupBone");
+MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupAttachment    ("CBaseAnimating::LookupAttachment");
 MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimating::ft_GetBonePosition     ("CBaseAnimating::GetBonePosition");
 
 

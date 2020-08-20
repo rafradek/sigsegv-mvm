@@ -27,6 +27,8 @@ public:
 	bool IsAbleToSee(CBaseCombatCharacter *pBCC, FieldOfViewCheckType checkFOV) { return ft_IsAbleToSee_bcc   (this, pBCC, checkFOV); }
 	void SetBloodColor(int nBloodColor)                                         {        ft_SetBloodColor     (this, nBloodColor); }
 	bool Weapon_Detach(CBaseCombatWeapon *pWeapon)                              { return ft_Weapon_Detach     (this, pWeapon); }
+	bool SwitchToNextBestWeapon(CBaseCombatWeapon *weapon)                      { return ft_SwitchToNextBestWeapon(this, weapon); }
+	
 	
 	CBaseCombatWeapon *Weapon_GetSlot(int slot) const                      { return vt_Weapon_GetSlot     (this, slot); }
 	bool Weapon_CanSwitchTo(CBaseCombatWeapon *pWeapon)                    { return vt_Weapon_CanSwitchTo (this, pWeapon); }
@@ -37,7 +39,7 @@ public:
 	int GetAmmoCount(int iAmmoIndex) const                                 { return vt_GetAmmoCount       (this, iAmmoIndex); }
 	bool ShouldGib(const CTakeDamageInfo& info)                            { return vt_ShouldGib          (this, info); }
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
-	
+
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>,              m_hActiveWeapon);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], m_hMyWeapons);
@@ -49,6 +51,7 @@ private:
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatCharacter *, FieldOfViewCheckType> ft_IsAbleToSee_bcc;
 	static MemberFuncThunk<CBaseCombatCharacter *, void, int>                                          ft_SetBloodColor;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_Weapon_Detach;
+	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_SwitchToNextBestWeapon;
 	
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       vt_Weapon_GetSlot;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      vt_Weapon_CanSwitchTo;

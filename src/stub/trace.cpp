@@ -14,7 +14,7 @@ bool CFlaggedEntitiesEnum::AddToList( CBaseEntity *pEntity )
 {
 	if ( m_count >= m_listMax )
 	{
-		AssertMsgOnce( 0, "reached enumerated list limit.  Increase limit, decrease radius, or make it so entity flags will work for you" );
+		//AssertMsgOnce( 0, "reached enumerated list limit.  Increase limit, decrease radius, or make it so entity flags will work for you" );
 		return false;
 	}
 	m_pList[m_count] = pEntity;

@@ -17,7 +17,7 @@ namespace Mod::Pop::Tank_Extensions
 		float scale             =  1.00f;
 		bool force_romevision   =  false;
 		float max_turn_rate     =    NAN;
-		std::string icon        = "";
+		string_t icon           = MAKE_STRING("tank");
 		bool is_miniboss        =   true;
 		bool is_crit           	=  false;
 		bool disable_models     =   false;
@@ -103,7 +103,7 @@ namespace Mod::Pop::Tank_Extensions
 				spawners[spawner].max_turn_rate = subkey->GetFloat();
 			} else if (FStrEq(name, "ClassIcon")) {
 			//	DevMsg("Got \"IconOverride\" = \"%s\"\n", subkey->GetString());
-				spawners[spawner].icon = subkey->GetString();
+				spawners[spawner].icon = AllocPooledString(subkey->GetString());
 			} else if (FStrEq(name, "IsCrit")) {
 			//	DevMsg("Got \"IconOverride\" = \"%s\"\n", subkey->GetString());
 				spawners[spawner].is_crit = subkey->GetBool();
@@ -179,19 +179,26 @@ namespace Mod::Pop::Tank_Extensions
 	//	l_print_model_array(s_TankModel    .GetRef(), "s_TankModel");
 	//	l_print_model_array(s_TankModelRome.GetRef(), "s_TankModelRome");
 		
-		l_print_overrides(tank, "[BEFORE]");
+		//l_print_overrides(tank, "[BEFORE]");
 		
 		// primary method
 		
 		int mode_to_use = romevision ? VISION_MODE_ROME : VISION_MODE_NONE;
 		
-		for (int i = 0; i < MAX_VISION_MODES; ++i) {
-			tank->SetModelIndexOverride(i, modelinfo->GetModelIndex(s_TankModelRome[tank->m_iModelIndex]));
+		if (romevision) {
+			for (int i = 0; i < MAX_VISION_MODES; ++i) {
+				tank->SetModelIndexOverride(i, modelinfo->GetModelIndex(s_TankModelRome[tank->m_iModelIndex]));
+			}
+		}
+		else {
+			for (int i = 0; i < MAX_VISION_MODES; ++i) {
+				tank->SetModelIndexOverride(i, modelinfo->GetModelIndex(s_TankModel[tank->m_iModelIndex]));
+			}
 		}
 		// alternative method (probably less reliable than the one above)
 	//	l_copy_rome_to_all_overrides(tank);
 		
-		l_print_overrides(tank, "[AFTER] ");
+		//l_print_overrides(tank, "[AFTER] ");
 		
 		
 		for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
@@ -200,14 +207,14 @@ namespace Mod::Pop::Tank_Extensions
 			DevMsg("\n");
 			DevMsg("  child [classname \"%s\"] [model \"%s\"]\n", child->GetClassname(), STRING(child->GetModelName()));
 			
-			l_print_overrides(child, "[BEFORE]");
+			//l_print_overrides(child, "[BEFORE]");
 			
 			for (int i = 0; i < MAX_VISION_MODES; ++i) {
-				if (i == VISION_MODE_ROME) continue;
-				child->SetModelIndexOverride(i, child->m_nModelIndexOverrides[VISION_MODE_ROME]);
+				if (i == mode_to_use) continue;
+				child->SetModelIndexOverride(i, child->m_nModelIndexOverrides[mode_to_use]);
 			}
 			
-			l_print_overrides(child, "[AFTER] ");
+			//l_print_overrides(child, "[AFTER] ");
 		}
 	}
 	
@@ -341,7 +348,7 @@ namespace Mod::Pop::Tank_Extensions
 			//	DevMsg("SetModelIndexOverride(%d, %d) for ent #%d \"%s\" \"%s\"\n", index, nValue, ENTINDEX(ent), ent->GetClassname(), STRING(ent->GetModelName()));
 				
 				if (ent == tank) {
-					if (data->force_romevision && index == VISION_MODE_ROME || (sig_no_romevision_cosmetics.GetBool() && index == VISION_MODE_NONE)) {
+					if ((data->force_romevision && index == VISION_MODE_ROME) || (sig_no_romevision_cosmetics.GetBool() && index == VISION_MODE_NONE)) {
 						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_NONE, nValue);
 						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_ROME, nValue);
 					}
@@ -415,8 +422,9 @@ namespace Mod::Pop::Tank_Extensions
 		
 		SpawnerData *data = &spawners[tank];
 		DevMsg("Tank data found icon %d", data != nullptr);
-		if (data != nullptr && data->icon.size() > 0) {
-			return AllocPooledString(data->icon.c_str());
+		if (data != nullptr) {
+
+			return data->icon;
 		}
 		
 		return DETOUR_MEMBER_CALL(CTankSpawner_GetClassIcon)(index);
@@ -428,17 +436,24 @@ namespace Mod::Pop::Tank_Extensions
 		
 		SpawnerData *data = FindSpawnerDataForTank(tank);
 		DevMsg("Tank killed way 2 %d", data != nullptr);
-		if (data != nullptr && data->icon.size() > 0) {
-			const char *name = data->icon.c_str();
+		if (data != nullptr) {
+			const char *name = STRING(data->icon);
+			DevMsg("Tank killed icon %s", name);
 			CTFObjectiveResource *res = TFObjectiveResource();
+			res->DecrementMannVsMachineWaveClassCount(data->icon, 1 | 8);
+			/*
 			bool found = false;
 			for (int i = 0; i < 12; ++i) {
+				DevMsg("Compare %s %s %d\n", name,STRING(res->m_iszMannVsMachineWaveClassNames[i]), FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames[i])));
 				if (FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames[i]))) {
-					res->m_nMannVsMachineWaveClassCounts.SetArray(res->m_nMannVsMachineWaveClassCounts[i]-1,i);
-					if (res->m_nMannVsMachineWaveClassCounts[i] < 0) {
+					int val = res->m_nMannVsMachineWaveClassCounts[i];
+					DevMsg("Val pre %d %d", res->m_nMannVsMachineWaveClassCounts[i], res->m_bMannVsMachineWaveClassActive[i]);
+					res->m_nMannVsMachineWaveClassCounts.SetArray(val-1,i);
+					if (val <= 1) {
 						res->m_nMannVsMachineWaveClassCounts.SetArray(0,i);
 						res->m_bMannVsMachineWaveClassActive.SetArray(false,i);
 					}
+					DevMsg("Val post %d %d\n", res->m_nMannVsMachineWaveClassCounts[i], res->m_bMannVsMachineWaveClassActive[i]);
 					found = true;
 					break;
 				}
@@ -446,14 +461,22 @@ namespace Mod::Pop::Tank_Extensions
 			
 			if (!found)
 				for (int i = 0; i < 12; ++i) {
+					DevMsg("Compare2 %s %s %d\n", name,STRING(res->m_iszMannVsMachineWaveClassNames2[i]), FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames2[i])));
 					if (FStrEq(name,STRING(res->m_iszMannVsMachineWaveClassNames2[i]))) {
-						res->m_nMannVsMachineWaveClassCounts2.SetArray(res->m_nMannVsMachineWaveClassCounts2[i]-1,i);
-						if (res->m_nMannVsMachineWaveClassCounts2[i] < 0) {
+						
+						int val = res->m_nMannVsMachineWaveClassCounts2[i];
+						
+						DevMsg("Val pre %d %d", res->m_nMannVsMachineWaveClassCounts2[i], res->m_bMannVsMachineWaveClassActive2[i]);
+						res->m_nMannVsMachineWaveClassCounts2.SetArray(val-1,i);
+						
+						if (val <= 1) {
 							res->m_nMannVsMachineWaveClassCounts2.SetArray(0,i);
 							res->m_bMannVsMachineWaveClassActive2.SetArray(false,i);
 						}
+						DevMsg("Val post %d %d \n", res->m_nMannVsMachineWaveClassCounts2[i], res->m_bMannVsMachineWaveClassActive2[i]);
 					}
 				}
+				*/
 		}
 		
 		DETOUR_MEMBER_CALL(CTFTankBoss_Event_Killed)(info);

@@ -33,6 +33,8 @@ public:
 	DECL_SENDPROP(int,                m_iUpgradeLevel);
 	DECL_SENDPROP(bool,               m_bMiniBuilding);
 	DECL_SENDPROP(bool,               m_bDisposableBuilding);
+	DECL_SENDPROP(bool,               m_bBuilding);
+	DECL_SENDPROP(bool,               m_bDisabled);
 	
 private:
 	DECL_SENDPROP(int,                m_iObjectType);
@@ -78,7 +80,12 @@ class CBaseObjectUpgrade : public CBaseObject {};
 class CObjectSapper : public CBaseObjectUpgrade {};
 
 
-class CObjectSentrygun : public CBaseObject {};
+class CObjectSentrygun : public CBaseObject {
+public:
+	QAngle &GetTurretAngles()         { return vt_GetTurretAngles  (this); }
+private:
+	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
+};
 
 
 class CObjectTeleporter : public CBaseObject {};

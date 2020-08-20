@@ -271,11 +271,12 @@ public:
 	void AddItem(const char *name)                                     {        ft_AddItem                     (this, name); }
 	float GetDesiredAttackRange() const                                { return ft_GetDesiredAttackRange       (this); }
 	void EquipBestWeaponForThreat(const CKnownEntity *threat)          {        ft_EquipBestWeaponForThreat    (this, threat); }
-	void EquipRequiredWeapon()                                         {        ft_EquipRequiredWeapon         (this); }
+	bool EquipRequiredWeapon()                                         { return ft_EquipRequiredWeapon         (this); }
 	CTFPlayer *SelectRandomReachableEnemy()                            { return ft_SelectRandomReachableEnemy  (this); }
 	bool ShouldAutoJump()                                              { return ft_ShouldAutoJump              (this); }
 	const EventChangeAttributes_t *GetEventChangeAttributes(const char *name) const { return ft_GetEventChangeAttributes              (this,name); }
 	void OnEventChangeAttributes(const EventChangeAttributes_t *ecattr) { return ft_OnEventChangeAttributes              (this,ecattr); }
+	float TransientlyConsistentRandomValue(float time = 1.0f, int seed = 0) { return ft_TransientlyConsistentRandomValue              (this,time,seed); }
 
 #ifdef ADD_EXTATTR
 	/* custom: extended attributes */
@@ -318,11 +319,12 @@ private:
 	static MemberFuncThunk<      CTFBot *, void, const char *                > ft_AddItem;
 	static MemberFuncThunk<const CTFBot *, float                             > ft_GetDesiredAttackRange;
 	static MemberFuncThunk<      CTFBot *, void, const CKnownEntity *        > ft_EquipBestWeaponForThreat;
-	static MemberFuncThunk<      CTFBot *, void                              > ft_EquipRequiredWeapon;
+	static MemberFuncThunk<      CTFBot *, bool                              > ft_EquipRequiredWeapon;
 	static MemberFuncThunk<      CTFBot *, CTFPlayer *                       > ft_SelectRandomReachableEnemy;
 	static MemberFuncThunk<      CTFBot *, bool                              > ft_ShouldAutoJump;
 	static MemberFuncThunk<const CTFBot *, const EventChangeAttributes_t*, const char*   > ft_GetEventChangeAttributes;
     static MemberFuncThunk<      CTFBot *, void, const EventChangeAttributes_t*          > ft_OnEventChangeAttributes;
+    static MemberFuncThunk<      CTFBot *, float, float, int          > ft_TransientlyConsistentRandomValue;
 	
 #ifdef ADD_EXTATTR
 	static std::map<CHandle<CTFBot>, ExtendedAttr> s_ExtAttrs;

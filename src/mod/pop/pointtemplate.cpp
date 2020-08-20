@@ -3,6 +3,7 @@
 #include "stub/tfplayer.h"
 #include "mod/pop/pointtemplate.h"
 #include "util/misc.h"
+#include "util/backtrace.h"
 #include "stub/misc.h"
 int Template_Increment;
 std::vector<PointTemplateInstance *> Template_Instances;
@@ -25,7 +26,7 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname) {
 
 PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector &translation, QAngle &rotation, bool autoparent, const char *attachment) {
 
-	DevMsg("Spawning from template %s",this->name.c_str());
+	//DevMsg("Spawning from template %s",this->name.c_str());
 	Template_Increment +=1;
 	if (Template_Increment > 99999)
 		Template_Increment = 0;
@@ -58,7 +59,7 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 		//if (bone != -1)
 		//	animating->GetBonePosition(bone,parentpos,parentang);
 
- 		if(parent->IsPlayer()){
+ 		if(parent->IsPlayer() && autoparent){
 			// parent_helper = CreateEntityByName("prop_dynamic");
 			// parent_helper->SetModel("models/weapons/w_models/w_rocket.mdl");
 			parent_helper = CreateEntityByName("point_teleport");
@@ -80,37 +81,36 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 	}
 	
 	std::unordered_map<std::string,CBaseEntity*> spawned;
-	CBaseEntity *spawn_trigger;
-
+	
 	for (auto it = this->entities.begin(); it != this->entities.end(); ++it){
 		std::multimap<std::string,std::string> &keys = *it;
-		DevMsg("Spawning entity %s, keys %d",keys.find("classname")->second.c_str(),keys.size());
+		//DevMsg("Spawning entity %s, keys %d",keys.find("classname")->second.c_str(),keys.size());
 		CBaseEntity *entity = CreateEntityByName(keys.find("classname")->second.c_str());
 		if (entity != nullptr) {
 			
-			DevMsg("Entity not null\n");
+			//DevMsg("Entity not null\n");
 			for (auto it1 = keys.begin(); it1 != keys.end(); ++it1){
 				std::string val = it1->second;
 				
 				if (it1->first == "TeleportWhere"){
-					DevMsg("Setting teleportwhere");
+					//DevMsg("Setting teleportwhere");
 					Teleport_Destination().insert({val,entity});
 					continue;
 				}
 
-				DevMsg("keyvaluepre %s %s\n",it1->first.c_str(), val.c_str());
+				//DevMsg("keyvaluepre %s %s\n",it1->first.c_str(), val.c_str());
 				if (!this->no_fixup)
 					FixupKeyvalue(val,Template_Increment,parentname);
 
 				entity->KeyValue(it1->first.c_str(), val.c_str());
-				DevMsg("keyvalue %s %s\n",it1->first.c_str(), val.c_str());
+				//DevMsg("keyvalue %s %s\n",it1->first.c_str(), val.c_str());
 			}
 
 			auto itname = keys.find("targetname");
 			if (itname != keys.end()){
 				
 				spawned[itname->second]=entity;
-				DevMsg("targetname found\n");
+				//DevMsg("targetname found\n");
 			}
 			
 			Vector translated=Vector();
@@ -119,7 +119,7 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 			VectorAdd(entity->GetAbsAngles(),rotation,rotated);
 			if (parent != nullptr && autoparent) {
 						
-				DevMsg("vector %f %f %f",translation.x, translation.y, translation.z);
+				//DevMsg("vector %f %f %f",translation.x, translation.y, translation.z);
 				VMatrix matEntityToWorld,matNewTemplateToWorld, matStoredLocalToWorld;
 				matEntityToWorld.SetupMatrixOrgAngles( translated, rotated );
 				matNewTemplateToWorld.SetupMatrixOrgAngles( parent->GetAbsOrigin(), parent->GetAbsAngles() );
@@ -132,14 +132,14 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 				entity->SetAbsOrigin(origin);
 				entity->SetAbsAngles(angles);
 
-				DevMsg("has parent pre %d",entity->GetMoveParent() != nullptr);
+				//DevMsg("has parent pre %d",entity->GetMoveParent() != nullptr);
 				if (keys.find("parentname") == keys.end()){
 					variant_t variant1;
 					variant1.SetString(MAKE_STRING("!activator"));
 					entity->AcceptInput("setparent", parent_helper, parent_helper,variant1,-1);
 				}
 				
-				DevMsg("has parent post %d",entity->GetMoveParent() != nullptr);
+				//DevMsg("has parent post %d",entity->GetMoveParent() != nullptr);
 			}
 			else
 			{
@@ -151,19 +151,18 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 				std::string parstr = keys.find("parentname")->second;
 				//parstr.append(std::to_string(Template_Increment));
 				CBaseEntity *parentlocal = spawned[parstr];
-				DevMsg("parent %d %s",spawned.find(parstr) != spawned.end(), parstr.c_str());
+				//DevMsg("parent %d %s",spawned.find(parstr) != spawned.end(), parstr.c_str());
 				if (parentlocal != nullptr) {
 					variant_t variant1;
 					variant1.SetString(MAKE_STRING("!activator"));
 					entity->AcceptInput("setparent", parentlocal, parentlocal,variant1,-1);
-					DevMsg("found local ent\n");
+					//DevMsg("found local ent\n");
 				}
-				else
-					DevMsg("not found local ent\n");
+				//else
+					//DevMsg("not found local ent\n");
 			}
 			
 			servertools->DispatchSpawn(entity);
-			entity->Activate();
 			templ_inst->entities.push_back(entity);
 			
 			
@@ -178,7 +177,7 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 			// 	}
 			// }
 			//To make brush entities working
-			DevMsg("wth");
+			//DevMsg("wth");
 			if (keys.find("mins") != keys.end() && keys.find("maxs") != keys.end()){
 
 				entity->SetModel("models/weapons/w_models/w_rocket.mdl");
@@ -186,24 +185,31 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 				entity->KeyValue("mins", keys.find("mins")->second.c_str());
 				entity->KeyValue("maxs", keys.find("maxs")->second.c_str());
 				entity->AddEffects(32); //DONT RENDER
-				DevMsg("solid type %d",entity->GetSolid());
+				//DevMsg("solid type %d",entity->GetSolid());
 
 			}
 			
-			DevMsg("wth\n");
-			DevMsg("range %f %f\n",entity->CollisionProp()->OBBMaxs().x,entity->CollisionProp()->OBBMins().x);
-			DevMsg("Entity spawned %s\n",keys.find("classname")->second.c_str());
+			//DevMsg("wth\n");
+			//DevMsg("range %f %f\n",entity->CollisionProp()->OBBMaxs().x,entity->CollisionProp()->OBBMins().x);
+			//DevMsg("Entity spawned %s\n",keys.find("classname")->second.c_str());
 		}
 		
 	}
-	if(spawned.find("trigger_spawn_relay&") != spawned.end()){
+	
+	for (auto it = spawned.begin(); it != spawned.end(); it++) {
+		it->second->Activate();
+	}
+
+	if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
 		variant_t variant;
 		variant.SetString(MAKE_STRING(""));
+		CBaseEntity *spawn_trigger = spawned.find("trigger_spawn_relay_inter")->second;
+		
 		if (parent != nullptr)
-			spawned.find("trigger_spawn_relay&")->second->AcceptInput("Trigger",parent,parent,variant,-1);
+			spawn_trigger->AcceptInput("Trigger",parent,parent,variant,-1);
 		else
-			spawned.find("trigger_spawn_relay&")->second->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
-		servertools->RemoveEntity(spawned.find("trigger_spawn_relay&")->second);
+			spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
+		servertools->RemoveEntity(spawn_trigger);
 	}
 	/*for (auto it = this->onspawn_inputs.begin(); it != this->onspawn_inputs.end(); ++it){
 		variant_t variant1;
@@ -244,6 +250,17 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, Vector 
 	return templ_inst;
 }
 
+PointTemplateInstance *PointTemplateInfo::SpawnTemplate(CBaseEntity *parent){
+	if (templ == nullptr && template_name.size() > 0 && Point_Templates().find(template_name) != Point_Templates().end())
+		templ = &Point_Templates()[template_name];
+	//DevMsg("Is templ null %d\n",templ == nullptr);
+	
+	if (templ != nullptr)
+		return templ->SpawnTemplate(parent,translation,rotation,true,attachment.c_str());
+	else
+		return nullptr;
+}
+
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
 	DevMsg("Parse SpawnTemplate Pre\n");
 	PointTemplateInfo info;
@@ -253,6 +270,7 @@ PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
 		hasname = true;
 		const char *name = subkey->GetName();
 		if (FStrEq(name, "Name")){
+			info.template_name = subkey->GetString();
 			auto it = Point_Templates().find(subkey->GetString()) ;
 			if(it != Point_Templates().end())
 				info.templ = &(it->second);
@@ -271,20 +289,30 @@ PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
 		}
 	}
 	if (!hasname){
+		DevMsg("Crash1\n");
+		info.template_name = kv->GetString();
+		DevMsg("Crash2\n");
 		if (Point_Templates().find(kv->GetString()) != Point_Templates().end())
 			info.templ = &Point_Templates()[kv->GetString()];
 	}
 
-	DevMsg("Parse SpawnTemplate Post\n");
+	DevMsg("Parse SpawnTemplate Post %d\n",info.templ == nullptr);
 	return info;
 }
 
 
 void PointTemplateInstance::OnKilledParent(bool cleared) {
-
-	//DevMsg("init %d %d\n", cleared, this->templ->has_on_kill_trigger);
+	//DevMsg("init 1%d %d\n", cleared, (uintptr_t) this);
+	//BACKTRACE();
+	if (this->templ == nullptr || this->mark_delete) {
+		this->mark_delete = true;
+		DevMsg("template null or deleted\n");
+		return;
+	}
+	//DevMsg("initsom %d \n", this->templ == nullptr);
+	//DevMsg("init2 %d %d\n", cleared, this->templ->has_on_kill_trigger);
 	if (!cleared && this->templ->has_on_kill_trigger) {
-		DevMsg("Firing output onkill\n");
+		//DevMsg("Firing output onkill\n");
 		CBaseEntity *trigger = CreateEntityByName("logic_relay");
 		variant_t variant1;
 		variant1.SetString(MAKE_STRING(""));
@@ -294,12 +322,12 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 			if (!this->templ->no_fixup)
 				FixupKeyvalue(val,this->id,"");
 			trigger->KeyValue("ontrigger",val.c_str());
-			DevMsg("With value %s\n",val.c_str());
+			//DevMsg("With value %s\n",val.c_str());
 		}
 		trigger->KeyValue("spawnflags", "2");
 		servertools->DispatchSpawn(trigger);
 		trigger->Activate();
-		if (this->parent->IsPlayer() && this->parent != nullptr)
+		if (this->parent != nullptr && this->parent->IsPlayer())
 			trigger->AcceptInput("trigger", this->parent, this->parent ,variant1,-1);
 		else
 			trigger->AcceptInput("trigger", UTIL_EntityByIndex(0),UTIL_EntityByIndex(0),variant1,-1);
@@ -327,6 +355,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 	}
 	//DevMsg("Renaming\n");
 	if (this->templ->has_parent_name && this->parent != nullptr && this->parent->IsPlayer()){
+		//DevMsg("Start rename\n");
 		std::string str = STRING(this->parent->GetEntityName());
 		
 		int pos = str.find('&');
@@ -336,6 +365,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 		}
 		//DevMsg("Unsetted targetname %s\n",this->parent->GetEntityName());
 	}
+	//DevMsg("Complete\n");
 	this->parent = nullptr;
 	this->has_parent = false;
 	this->mark_delete = !this->templ->keep_alive || cleared;
@@ -358,6 +388,7 @@ void Clear_Point_Templates()
 		auto inst = *(it);
 		inst->OnKilledParent(true);
 		delete inst;
+		inst = nullptr;
 	}
 	Template_Instances.clear();
 	Point_Templates().clear();
@@ -375,29 +406,33 @@ void Update_Point_Templates()
 	}
 	for(auto it = Template_Instances.begin(); it != Template_Instances.end(); it++){
 		auto inst = *(it);
-		if (inst->has_parent && (inst->parent == nullptr || !(inst->parent->IsAlive()))) {
-			inst->OnKilledParent(false);
-		}
-		if (!inst->has_parent) {
-			bool hasalive = false;
-			for(auto it = inst->entities.begin(); it != inst->entities.end(); it++){
-				CHandle<CBaseEntity> &ent = *(it);
-				if (ent != nullptr && ent->IsAlive()){
-					hasalive = true;
-					break;
-				}
+		if (!inst->mark_delete) {
+			if (inst->has_parent && (inst->parent == nullptr || !(inst->parent->IsAlive()))) {
+				inst->OnKilledParent(false);
 			}
-			if (!hasalive)
-			{
-				inst->OnKilledParent(true);
+			if (!inst->has_parent && !inst->is_wave_spawned) {
+				bool hasalive = false;
+				for(auto it = inst->entities.begin(); it != inst->entities.end(); it++){
+					CHandle<CBaseEntity> &ent = *(it);
+					if (ent != nullptr){
+						hasalive = true;
+						break;
+					}
+				}
+				if (!hasalive)
+				{
+					inst->OnKilledParent(true);
+				}
 			}
 		}
 		if (inst->mark_delete) {
 			Template_Instances.erase(it);
 			delete inst;
 			it--;
+			inst = nullptr;
 			continue;
 		}
+
 		if (inst->parent_helper != nullptr && inst->parent != nullptr) {
 			//DevMsg("Setting parent helper pos %f, parent pos %f\n",it->parent_helper->GetAbsOrigin().x, it->parent->GetAbsOrigin().x);
 			Vector pos;
@@ -430,3 +465,13 @@ MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float,
 StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *> CTFBotMvMEngineerHintFinder::ft_FindHint("CTFBotMvMEngineerHintFinder::FindHint");
 StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
 StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere("IsSpaceToSpawnHere");
+StaticFuncThunk<void, IRecipientFilter&,
+	float,
+	const char *,
+	Vector,
+	QAngle,
+	te_tf_particle_effects_colors_t *,
+	te_tf_particle_effects_control_point_t *,
+	CBaseEntity *,
+	ParticleAttachment_t,
+	Vector> ft_TE_TFParticleEffectComplex("TE_TFParticleEffectComplex");

@@ -39,6 +39,7 @@ MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeap
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");
+MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   CTFWeaponBase::vt_GetProjectileFireSetup(TypeName<CTFWeaponBase>(),"CTFWeaponBase::GetProjectileFireSetup");
 
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
@@ -76,6 +77,7 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CWeaponMedigun, m_hHealingTarget, CWeaponMed
 
 
 MemberFuncThunk<CTFFlameThrower *, Vector, bool> CTFFlameThrower::ft_GetMuzzlePosHelper("CTFFlameThrower::GetMuzzlePosHelper");
+MemberFuncThunk<CTFFlameThrower *, float> CTFFlameThrower::ft_GetDeflectionRadius("CTFFlameThrower::GetDeflectionRadius");
 
 
 IMPL_SENDPROP(int,                        CBaseViewModel, m_nViewModelIndex, CBaseViewModel);

@@ -29,6 +29,9 @@ private:
 class CTFObjectiveResource : public CBaseTeamObjectiveResource
 {
 public:
+
+	void DecrementMannVsMachineWaveClassCount(string_t iconName, unsigned int flags) {ft_DecrementMannVsMachineWaveClassCount(this, iconName, flags);};
+
 	DECL_SENDPROP(unsigned int,     m_nMannVsMachineMaxWaveCount);
 	DECL_SENDPROP(unsigned int,     m_nMannVsMachineWaveCount);
 	DECL_SENDPROP(unsigned int,     m_nMannVsMachineWaveEnemyCount);
@@ -49,6 +52,10 @@ public:
 	DECL_SENDPROP(int,              m_iChallengeIndex);
 	DECL_SENDPROP(string_t,         m_iszMvMPopfileName);
 	DECL_SENDPROP(unsigned int,     m_nMvMEventPopfileType);
+
+private:
+	static MemberFuncThunk<CTFObjectiveResource *, void, string_t, unsigned int > ft_DecrementMannVsMachineWaveClassCount;
+
 };
 
 

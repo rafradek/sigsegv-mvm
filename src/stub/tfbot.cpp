@@ -223,12 +223,12 @@ MemberFuncThunk<      CTFBot *, void, CTFPlayer *                        > CTFBo
 MemberFuncThunk<      CTFBot *, void, const char *                       > CTFBot::ft_AddItem                     ("CTFBot::AddItem");
 MemberFuncThunk<const CTFBot *, float                                    > CTFBot::ft_GetDesiredAttackRange       ("CTFBot::GetDesiredAttackRange");
 MemberFuncThunk<      CTFBot *, void, const CKnownEntity *               > CTFBot::ft_EquipBestWeaponForThreat    ("CTFBot::EquipBestWeaponForThreat");
-MemberFuncThunk<      CTFBot *, void                                     > CTFBot::ft_EquipRequiredWeapon         ("CTFBot::EquipRequiredWeapon");
+MemberFuncThunk<      CTFBot *, bool                                     > CTFBot::ft_EquipRequiredWeapon         ("CTFBot::EquipRequiredWeapon");
 MemberFuncThunk<      CTFBot *, CTFPlayer *                              > CTFBot::ft_SelectRandomReachableEnemy  ("CTFBot::SelectRandomReachableEnemy");
 MemberFuncThunk<      CTFBot *, bool                                     > CTFBot::ft_ShouldAutoJump              ("CTFBot::ShouldAutoJump");
 MemberFuncThunk<const CTFBot *, const CTFBot::EventChangeAttributes_t *, const char*     > CTFBot::ft_GetEventChangeAttributes    ("CTFBot::GetEventChangeAttributes");
 MemberFuncThunk<      CTFBot *, void, const CTFBot::EventChangeAttributes_t *            > CTFBot::ft_OnEventChangeAttributes     ("CTFBot::OnEventChangeAttributes");
-
+MemberFuncThunk<      CTFBot *, float, float, int          > CTFBot::ft_TransientlyConsistentRandomValue ("CTFBot::TransientlyConsistentRandomValue");
 #ifdef ADD_EXTATTR
 std::map<CHandle<CTFBot>, CTFBot::ExtendedAttr> CTFBot::s_ExtAttrs;
 #endif

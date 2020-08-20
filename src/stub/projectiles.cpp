@@ -54,6 +54,8 @@ using CExtract_CTFProjectile_Arrow_ArrowTouch = IExtractStub;
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseProjectile, m_hOriginalLauncher, CBaseProjectile);
 
 MemberVFuncThunk<const CBaseProjectile *, int> CBaseProjectile::vt_GetProjectileType(TypeName<CBaseProjectile>(), "CBaseProjectile::GetProjectileType");
+MemberVFuncThunk<const CBaseProjectile *, bool> CBaseProjectile::vt_IsDestroyable(TypeName<CBaseProjectile>(), "CBaseProjectile::IsDestroyable");
+MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> CBaseProjectile::vt_Destroy(TypeName<CBaseProjectile>(), "CBaseProjectile::Destroy");
 
 
 IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRocket);

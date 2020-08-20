@@ -48,13 +48,25 @@ namespace Mod::MvM::MedigunShield_Damage
 		}
 	};
 	
-	
+	DETOUR_DECL_STATIC(CTFMedigunShield *, CTFMedigunShield_Create, CTFPlayer *player)
+	{
+		CTFMedigunShield *shield = DETOUR_STATIC_CALL(CTFMedigunShield_Create)(player);
+		float damage = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, damage, mult_dmg_vs_players);
+		if (damage > 0.0f) {
+			shield->SetRenderColorR(255);
+			shield->SetRenderColorG(0);
+			shield->SetRenderColorB(255);
+		}
+		return shield;
+	}
 	
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("MvM:MedigunShield_Damage")
 		{
+			MOD_ADD_DETOUR_STATIC(CTFMedigunShield_Create,              "CTFMedigunShield::Create");
 			this->AddPatch(new CPatch_CTFMedigunShield_ShieldTouch());
 		}
 	};

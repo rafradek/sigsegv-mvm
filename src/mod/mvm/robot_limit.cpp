@@ -7,21 +7,22 @@
 namespace Mod::MvM::Robot_Limit
 {
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots);
+	int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots, bool collect_red);
 	
-	
+	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
+		"Mod: fix problems with enforcement of the MvM robot limit when bots are on red team");
+
 	ConVar cvar_override("sig_mvm_robot_limit_override", "22", FCVAR_NOTIFY,
 		"Mod: override the max number of MvM robots that are allowed to be spawned at once (normally 22)",
 		true, 0, false, 0,
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			/* ensure that slots are cleared up when this convar is decreased */
 			CUtlVector<CTFPlayer *> mvm_bots;
-			CPopulationManager::CollectMvMBots(&mvm_bots);
+			CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
 			CheckForMaxInvadersAndKickExtras(mvm_bots);
 			DevMsg("Changed\n");
 		});
 	
-	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
-		"Mod: fix problems with enforcement of the MvM robot limit when bots are on red team");
 	
 	
 	int GetMvMInvaderLimit() { return cvar_override.GetInt(); }
@@ -33,12 +34,6 @@ namespace Mod::MvM::Robot_Limit
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots)
 	{
 		if (mvm_bots.Count() < GetMvMInvaderLimit()) return;
-		
-		extern RefCount rc_CTFBotSpawner_Spawn;
-		static ConVarRef tf_populator_debug("tf_populator_debug");
-		if (rc_CTFBotSpawner_Spawn > 0 && tf_populator_debug.GetBool()) {
-			DevMsg("CTFBotSpawner: %3.2f: *** Can't spawn. Max number invaders already spawned.\n", gpGlobals->curtime);
-		}
 		
 		if (mvm_bots.Count() > GetMvMInvaderLimit()) {
 			CUtlVector<CTFPlayer *> bots_to_kick;
@@ -55,17 +50,7 @@ namespace Mod::MvM::Robot_Limit
 				}
 			}
 			
-			/* pass 2: nominate bots on TF_TEAM_BLUE to be kicked */
-			for (auto bot : mvm_bots) {
-				if (need_to_kick <= 0) break;
-				
-				if (bot->GetTeamNumber() == TF_TEAM_BLUE) {
-					bots_to_kick.AddToTail(bot);
-					--need_to_kick;
-				}
-			}
-			
-			/* pass 3: nominate bots on TF_TEAM_RED to be kicked */
+			/* pass 2: nominate bots on TF_TEAM_RED to be kicked */
 			if (cvar_fix_red.GetBool()) {
 				for (auto bot : mvm_bots) {
 					if (need_to_kick <= 0) break;
@@ -76,7 +61,25 @@ namespace Mod::MvM::Robot_Limit
 					}
 				}
 			}
-			
+			/* pass 3: nominate dead bots to be kicked */
+			for (auto bot : mvm_bots) {
+				if (need_to_kick <= 0) break;
+				
+				if (!bot->IsAlive()) {
+					bots_to_kick.AddToTail(bot);
+					--need_to_kick;
+				}
+			}
+			/* pass 4: nominate bots on TF_TEAM_BLUE to be kicked */
+			for (auto bot : mvm_bots) {
+				if (need_to_kick <= 0) break;
+				
+				if (bot->GetTeamNumber() == TF_TEAM_BLUE) {
+					bots_to_kick.AddToTail(bot);
+					--need_to_kick;
+				}
+			}
+
 			/* now, kick the bots we nominated */
 			for (auto bot : bots_to_kick) {
 				engine->ServerCommand(CFmtStr("kickid %d\n", bot->GetUserID()));
@@ -85,21 +88,15 @@ namespace Mod::MvM::Robot_Limit
 	}
 	
 	
-	RefCount rc_CTFBotSpawner_Spawn;
-	DETOUR_DECL_MEMBER(int, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
-	{
-		SCOPED_INCREMENT(rc_CTFBotSpawner_Spawn);
-		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
-	}
-	
 	// rewrite this function entirely, with some changes:
 	// - rather than including any CTFPlayer that IsBot, only count TFBots
 	// - don't exclude bots who are on TF_TEAM_RED if they have TF_COND_REPROGRAMMED
 	// ALSO, do a hacky thing at the end so we can redo the MvM bots-over-quota logic ourselves
-	DETOUR_DECL_STATIC(int, CPopulationManager_CollectMvMBots, CUtlVector<CTFPlayer *> *mvm_bots)
-	{
+
+	// Returns red bots collected
+	int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots, bool collect_red) {
 		mvm_bots->RemoveAll();
-		
+		int count_red = 0;
 		for (int i = 1; i <= gpGlobals->maxClients; ++i) {
 			CTFBot *bot = ToTFBot(UTIL_PlayerByIndex(i));
 			if (bot == nullptr)      continue;
@@ -108,18 +105,25 @@ namespace Mod::MvM::Robot_Limit
 			if (!bot->IsConnected()) continue;
 			
 			if (bot->GetTeamNumber() == TF_TEAM_RED) {
-				if (cvar_fix_red.GetBool() && bot->m_Shared->InCond(TF_COND_REPROGRAMMED)) {
-					/* include */
+				if (collect_red && bot->m_Shared->InCond(TF_COND_REPROGRAMMED)) {
+					count_red += 1;
 				} else {
 					/* exclude */
 					continue;
 				}
 			}
-			
+
 			mvm_bots->AddToTail(bot);
 		}
+		return count_red;
+	}
+
+	RefCount rc_CPopulationManager_CollectMvMBots;
+	DETOUR_DECL_STATIC(int, CPopulationManager_CollectMvMBots, CUtlVector<CTFPlayer *> *mvm_bots)
+	{
+		CollectMvMBots(mvm_bots, cvar_fix_red.GetBool());
 		
-		if (rc_CTFBotSpawner_Spawn > 0) {
+		if (rc_CPopulationManager_CollectMvMBots == 0) {
 			/* do the bots-over-quota logic ourselves */
 			CheckForMaxInvadersAndKickExtras(*mvm_bots);
 			
@@ -132,8 +136,10 @@ namespace Mod::MvM::Robot_Limit
 	
 	// rewrite this function entirely, with some changes:
 	// - use the overridden max bot count, rather than a hardcoded 22
+
 	DETOUR_DECL_MEMBER(void, CPopulationManager_AllocateBots)
 	{
+		SCOPED_INCREMENT(rc_CPopulationManager_CollectMvMBots);
 		auto popmgr = reinterpret_cast<CPopulationManager *>(this);
 		
 		if (popmgr->m_bAllocatedBots) return;
@@ -157,15 +163,67 @@ namespace Mod::MvM::Robot_Limit
 		popmgr->m_bAllocatedBots = true;
 	}
 	
+	//Restore the original max bot counts
+	RefCount rc_JumpToWave;
+	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
+	{
+		SCOPED_INCREMENT(rc_JumpToWave);
+		//DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
+		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
+		
+		CUtlVector<CTFPlayer *> mvm_bots;
+		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
+		CheckForMaxInvadersAndKickExtras(mvm_bots);
+	}
 	
+	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
+	{
+		//DevMsg("[%8.3f] WaveEnd\n", gpGlobals->curtime);
+		DETOUR_MEMBER_CALL(CPopulationManager_WaveEnd)(b1);
+
+		CUtlVector<CTFPlayer *> mvm_bots;
+		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
+		CheckForMaxInvadersAndKickExtras(mvm_bots);
+	}
+	
+	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
+	{
+		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+		if (!success && rc_JumpToWave == 0) {
+			//DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
+			CUtlVector<CTFPlayer *> mvm_bots;
+			CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
+			CheckForMaxInvadersAndKickExtras(mvm_bots);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(ActionResult< CTFBot >, CTFBotDead_Update, CTFBot *bot, float interval)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFBotDead_Update)(bot,interval);
+		if (result.transition == ActionTransition::DONE) {
+			CUtlVector<CTFPlayer *> mvm_bots;
+			CollectMvMBots(&mvm_bots, true);
+			if (mvm_bots.Count() > GetMvMInvaderLimit()) {
+				engine->ServerCommand(CFmtStr("kickid %d\n", bot->GetUserID()));
+			}
+		}
+		return result;
+	}
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("MvM:Robot_Limit")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn,               "CTFBotSpawner::Spawn");
+			//MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn,               "CTFBotSpawner::Spawn");
 			MOD_ADD_DETOUR_STATIC(CPopulationManager_CollectMvMBots, "CPopulationManager::CollectMvMBots");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_AllocateBots,   "CPopulationManager::AllocateBots");
+
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,          "CPopulationManager::JumpToWave");
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_WaveEnd,             "CPopulationManager::WaveEnd");
+			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
+
+			MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
 		}
 	};
 	CMod s_Mod;

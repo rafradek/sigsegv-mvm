@@ -2,11 +2,14 @@
 #include "stub/tfplayer.h"
 #include "stub/entities.h"
 #include "util/scope.h"
-
+#include "stub/tfweaponbase.h"
 
 namespace Mod::MvM::UpgradeStation_Regen_Improved
 {
 	RefCount rc_CUpgrades_PlayerPurchasingUpgrade;
+	ConVar cvar_only_creators("sig_mvm_upgradestation_creators", "0", FCVAR_NOTIFY,
+		"The mod only affects creators.tf weapons");
+
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int slot, int tier, bool sell, bool free, bool b3)
 	{
 		SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
@@ -21,7 +24,41 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	DETOUR_DECL_MEMBER(void, CTFPlayer_GiveDefaultItems)
 	{
 		if (rc_CUpgrades_PlayerPurchasingUpgrade > 0) {
-			return;
+			if (cvar_only_creators.GetBool()) {
+				// Creator tf weapons have their alpha set to 0, cosmetics have item id == 2048
+				bool found_creators_weapon = false;
+
+				CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+				for (int i = 0; i < player->GetNumWearables(); ++i) {
+					CEconWearable *wearable = player->GetWearable(i);
+					
+					if (wearable == nullptr) continue;
+					int64 itemid = wearable->GetItem()->m_iItemID;
+					int defid = wearable->GetItem()->m_iItemDefinitionIndex;
+					DevMsg("Itemid %d %d %d %d\n", itemid == 2048, wearable->GetEffects(), defid, wearable->GetRenderMode());
+					if (itemid == 2048) {
+						found_creators_weapon = true;
+						break;
+					}
+				}
+				
+				if (!found_creators_weapon) {
+					for (int i = 0; i < player->WeaponCount(); ++i) {
+						CBaseCombatWeapon *weapon = player->GetWeapon(i);
+						if (weapon == nullptr) continue;
+						int64 itemid = (int) (weapon->GetItem()->m_iItemID);
+
+						if (itemid == 0 || itemid == 2048) {
+							found_creators_weapon = true;
+							break;
+						} 
+					}
+				}
+				if (found_creators_weapon)
+					return;
+			}
+			else
+				return;
 		}
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();

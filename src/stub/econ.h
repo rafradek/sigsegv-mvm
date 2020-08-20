@@ -382,12 +382,14 @@ public:
 		unsigned int m_nMask;
 	};
 	
+	bool BInitAttributes(KeyValues *pKVAttributes, CUtlVector<CUtlString> *pVecErrors) { return ft_BInitAttributes             (this, pKVAttributes, pVecErrors); }
 	CEconItemDefinition *GetItemDefinition(int def_idx) const                          { return ft_GetItemDefinition           (this, def_idx); }
 	CEconItemDefinition *GetItemDefinitionByName(const char *name) const               { return ft_GetItemDefinitionByName     (this, name); }
 	CEconItemAttributeDefinition *GetAttributeDefinition(int def_idx) const            { return ft_GetAttributeDefinition      (this, def_idx); }
 	CEconItemAttributeDefinition *GetAttributeDefinitionByName(const char *name) const { return ft_GetAttributeDefinitionByName(this, name); }
 	
 private:
+	static MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *>  ft_BInitAttributes;
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, int>                   ft_GetItemDefinition;
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, const char *>          ft_GetItemDefinitionByName;
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, int>          ft_GetAttributeDefinition;

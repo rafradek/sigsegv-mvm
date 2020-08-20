@@ -230,7 +230,7 @@ public:
 	bool IsLoserStateStunned() const                                                    { return ft_IsLoserStateStunned       (this); }
 	void SetDefaultItemChargeMeters()                                                   {        ft_SetDefaultItemChargeMeters(this); }
 	void SetItemChargeMeter(loadout_positions_t slot, float value)                      {        ft_SetItemChargeMeter        (this, slot, value); }
-	
+	void Burn(CTFPlayer *igniter, CTFWeaponBase *weapon, float duration = 10.0f)                      {        ft_Burn        (this, igniter, weapon, duration); }
 	DECL_SENDPROP(float,       m_flCloakMeter);
 	DECL_SENDPROP(float,       m_flEnergyDrinkMeter);
 	DECL_SENDPROP(float,       m_flHypeMeter);
@@ -240,6 +240,7 @@ public:
 	DECL_SENDPROP(int,         m_iCritMult);
 	DECL_SENDPROP(bool,        m_bInUpgradeZone);
 	DECL_SENDPROP(float,       m_flStealthNoAttackExpire);
+	DECL_SENDPROP(int,         m_iAirDash);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
@@ -260,6 +261,7 @@ private:
 	static MemberFuncThunk<const CTFPlayerShared *, bool                                > ft_IsLoserStateStunned;
 	static MemberFuncThunk<      CTFPlayerShared *, void                                > ft_SetDefaultItemChargeMeters;
 	static MemberFuncThunk<      CTFPlayerShared *, void, loadout_positions_t, float    > ft_SetItemChargeMeter;
+	static MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > ft_Burn;
 };
 
 class CTFPlayer : public CBaseMultiplayerPlayer
@@ -293,6 +295,7 @@ public:
 	int GetMaxAmmo(int iAmmoIndex, int iClassNumber = -1)        { return ft_GetMaxAmmo                       (this, iAmmoIndex, iClassNumber); }
 	CTFWearable *GetEquippedWearableForLoadoutSlot(int iSlot)    { return ft_GetEquippedWearableForLoadoutSlot(this, iSlot); }
 	CBaseEntity *GetEntityForLoadoutSlot(int iSlot)    { return ft_GetEntityForLoadoutSlot(this, iSlot); }
+	void DoAnimationEvent( int event, int nData )				 {        ft_DoAnimationEvent       (this, event, nData); }
 	
 	void HandleCommand_JoinTeam(const char *pTeamName)                   { ft_HandleCommand_JoinTeam        (this, pTeamName); }
 	void HandleCommand_JoinTeam_NoMenus(const char *pTeamName)           { ft_HandleCommand_JoinTeam_NoMenus(this, pTeamName); }
@@ -315,6 +318,7 @@ public:
 	DECL_RELATIVE   (CTFPlayerAnimState *, m_PlayerAnimState);
 	DECL_EXTRACT    (bool,                 m_bFeigningDeath);
 	DECL_SENDPROP   (CHandle<CBaseEntity>,                m_hGrapplingHookTarget);
+	DECL_SENDPROP(int,       m_nBotSkill);
 	
 	
 private:
@@ -346,6 +350,7 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ReapplyPlayerUpgrades;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemPressed;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemReleased;
+	static MemberFuncThunk<      CTFPlayer *, void, int, int                   > ft_DoAnimationEvent;
 //	static MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > ft_Taunt;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

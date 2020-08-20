@@ -3,6 +3,7 @@
 #include "stub/gamerules.h"
 #include "util/scope.h"
 #include "stub/tfweaponbase.h"
+#include "stub/projectiles.h"
 
 
 namespace Mod::MvM::Weapon_AntiGrief
@@ -97,7 +98,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
 	{
 		//DevMsg("Stun ball %f %f %d\n",duration, slowdown, flags);
-		if (flags == 257 && slowdown == 0.5f && (cvar_stunball.GetBool() || HasStunAttribute(attacker))) {
+		if (flags == 257 && slowdown == 0.5f && duration != 5.0f && (cvar_stunball.GetBool() || HasStunAttribute(attacker))) {
 			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 			auto player = shared->GetOuter();
 			if (!(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())))
@@ -148,6 +149,22 @@ namespace Mod::MvM::Weapon_AntiGrief
 		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
 	}
 
+	ConVar healing_arrow_headshot    ("sig_healing_arrow_headshot", "0", FCVAR_NOTIFY, "Healing arrow can headshot if no headshot attribute is disabled");
+
+	DETOUR_DECL_MEMBER(bool, CTFProjectile_HealingBolt_CanHeadshot)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_HealingBolt *>(this);
+		CBaseEntity *shooter = arrow->GetOriginalLauncher();
+
+		if (shooter != nullptr) {
+			int headshot = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(shooter, headshot, set_weapon_mode);
+			if (headshot == 0)
+				return true;
+			DevMsg("Headshot bolt: %d\n",headshot);
+		}
+		return DETOUR_MEMBER_CALL(CTFProjectile_HealingBolt_CanHeadshot)();
+	}
 	/*DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, const CTakeDamageInfo& inputInfo)
 	{
 		DevMsg("takedamege\n");
@@ -179,6 +196,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer,            "CTFPlayerShared::StunPlayer");
 			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_ExplosiveHeadShot,            "CTFSniperRifle::ExplosiveHeadShot");
 			MOD_ADD_DETOUR_MEMBER(ISpatialPartition_EnumerateElementsInSphere, "ISpatialPartition::EnumerateElementsInSphere");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_HealingBolt_CanHeadshot, "CTFProjectile_HealingBolt::CanHeadshot");
 			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage");
 		}
 	};

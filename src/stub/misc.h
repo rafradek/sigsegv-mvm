@@ -3,6 +3,8 @@
 
 
 #include "link/link.h"
+#include "stub/usermessages_sv.h"
+#include "stub/tfplayer.h"
 
 
 class CTFBotMvMEngineerTeleportSpawn;
@@ -67,5 +69,10 @@ private:
 
 extern GlobalThunk<CMapListManager> g_MapListMgr;
 
+void PrecacheParticleSystem(const char *name);
+
+void PrintToChatAll(const char *str);
+
+void PrintToChat(const char *str, CTFPlayer *player);
 
 #endif

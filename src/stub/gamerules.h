@@ -137,6 +137,8 @@ public:
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
 	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
 	void State_Transition(gamerules_roundstate_t newState)                           { NULL_RET(    );        ft_State_Transition            (this, newState); }
+	void SetForceMapReset(bool reset)                                                { NULL_RET(    );        ft_SetForceMapReset            (this, reset); }
+	void SetTeamRespawnWaveTime(int team, float time)                                { NULL_RET(    );        ft_SetTeamRespawnWaveTime      (this, team, time); }
 	
 	float GetNextRespawnWave(int iTeam, CBasePlayer *pPlayer) { NULL_RET(0.0f); return vt_GetNextRespawnWave(this, iTeam, pPlayer); }
 	
@@ -148,7 +150,8 @@ private:
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         ft_GetMinTimeWhenPlayerMaySpawn;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> ft_State_Transition;
-	
+	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   ft_SetForceMapReset;
+	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, float>             ft_SetTeamRespawnWaveTime;
 	static MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *> vt_GetNextRespawnWave;
 };
 
@@ -167,7 +170,7 @@ public:
 	void PlayerReadyStatus_UpdatePlayerState(CTFPlayer *player, bool state)                                      { NULL_RET(     ); return ft_PlayerReadyStatus_UpdatePlayerState(this, player, state); }
 	void DistributeCurrencyAmount(int amount, CTFPlayer *player, bool b1, bool b2, bool b3)                      { NULL_RET(     );        ft_DistributeCurrencyAmount           (this, amount, player, b1, b2, b3); }
 	void SetCustomUpgradesFile(inputdata_t& inputdata)                                                           { NULL_RET(     );        ft_SetCustomUpgradesFile              (this, inputdata); }
-	
+
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
 	void Set_m_bPlayingMedieval(bool val)      { NULL_RET(); this->m_bPlayingMedieval      = val; }
@@ -177,6 +180,8 @@ private:
 	DECL_SENDPROP(bool,           m_bPlayingMedieval);
 	DECL_SENDPROP(bool,           m_bPlayingMannVsMachine);
 	DECL_SENDPROP(char[MAX_PATH], m_pszCustomUpgradesFile);
+	DECL_SENDPROP(float,           m_flRestartRoundTime);
+	
 	
 	static MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *, int, unsigned short, CMannVsMachineUpgrades *> ft_CanUpgradeWithAttrib;
 	static MemberFuncThunk<CTFGameRules *, int, CMannVsMachineUpgrades *, int, int, CTFPlayer *>             ft_GetCostForUpgrade;

@@ -242,13 +242,24 @@ namespace Mod::AI::Improved_UseItem
 
 				// get the equipped item and see what it is
 				CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
+				CTFBot *bot_acting = bot;
+				if (bot->IsPlayerClass(TF_CLASS_MEDIC)) {
+					auto medigun = rtti_cast<CWeaponMedigun *>(bot->GetActiveWeapon());
+					if (medigun != nullptr) {
+						CTFBot *patient = ToTFBot(medigun->GetHealTarget());
+						if (patient != nullptr) {
+							
+							bot_acting = patient;
+						}
+					}
+				}
 
-				const CKnownEntity *threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
+				const CKnownEntity *threat = bot_acting->GetVisionInterface()->GetPrimaryKnownThreat(false);
 				if ( pPowerupBottle  != nullptr && threat != nullptr && threat->GetEntity() != nullptr && threat->IsVisibleRecently() 
-					&& bot->GetIntentionInterface()->ShouldAttack(rtti_cast<INextBot *>(bot), threat) == QueryResponse::YES)
+					&& bot_acting->GetIntentionInterface()->ShouldAttack(rtti_cast<INextBot *>(bot_acting), threat) == QueryResponse::YES)
 				{
-					if ( bot->IsLineOfFireClear( threat->GetEntity()->EyePosition() ) || bot->IsLineOfFireClear( threat->GetEntity()->WorldSpaceCenter() ) || 
-						bot->IsLineOfFireClear( threat->GetEntity()->GetAbsOrigin() ))
+					if ( bot_acting->IsLineOfFireClear( threat->GetEntity()->EyePosition() ) || bot_acting->IsLineOfFireClear( threat->GetEntity()->WorldSpaceCenter() ) || 
+						bot_acting->IsLineOfFireClear( threat->GetEntity()->GetAbsOrigin() ))
 					{
 						bot->UseActionSlotItemPressed();
 						bot->UseActionSlotItemReleased();
@@ -258,7 +269,7 @@ namespace Mod::AI::Improved_UseItem
 
 				int iNoiseMaker = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, iNoiseMaker, enable_misc2_noisemaker );
-				DevMsg("Has noise maker %d\n",iNoiseMaker);
+				//DevMsg("Has noise maker %d\n",iNoiseMaker);
 				if (iNoiseMaker != 0) {
 					
 					item_noisemaker = pActionSlotEntity->GetItem();

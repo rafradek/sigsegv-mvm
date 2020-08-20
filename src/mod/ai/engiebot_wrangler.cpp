@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "re/nextbot.h"
 #include "re/path.h"
+#include "stub/objects.h"
 
 
 class CTFBotMvMEngineerIdle : public Action<CTFBot> {};
@@ -58,6 +59,23 @@ namespace Mod::AI::EngieBot_Wrangler
 					actor->PressFireButton(0.1f);
 					actor->PressAltFireButton(0.1f);
 				}
+
+				INextBot *nextbot = rtti_cast<INextBot *>(actor);
+				if ( m_repathTimer.IsElapsed() )
+				{
+					CObjectSentrygun *sentry = rtti_cast<CObjectSentrygun *>(actor->GetObjectOfType(OBJ_SENTRYGUN, 0));
+					m_repathTimer.Start( RandomFloat( 1.0f, 2.0f ) );
+
+					Vector mySentryForward;
+					AngleVectors( sentry->GetTurretAngles(), &mySentryForward );
+
+					Vector behindSentrySpot = sentry->GetAbsOrigin() - 50.0f * mySentryForward;
+
+					CTFBotPathCost cost( actor, SAFEST_ROUTE );
+					m_PathFollower.Compute( nextbot, behindSentrySpot, cost, 0.0f, true);
+				}
+
+				m_PathFollower.Update(nextbot);
 			}
 			
 			return ActionResult<CTFBot>::Continue();
@@ -106,12 +124,14 @@ namespace Mod::AI::EngieBot_Wrangler
 		{
 			if (!actor->IsPlayerClass(TF_CLASS_ENGINEER))                     return false;
 			if (actor->Weapon_OwnsThisID(TF_WEAPON_LASER_POINTER) == nullptr) return false;
-			if (actor->GetObjectOfType(OBJ_SENTRYGUN, 0) == nullptr)          return false;
+			if (actor->GetObjectOfType(OBJ_SENTRYGUN, 0) == nullptr || actor->GetObjectOfType(OBJ_SENTRYGUN, 0)->m_bBuilding || actor->GetObjectOfType(OBJ_SENTRYGUN, 0)->m_bDisabled)          return false;
 			
 			return true;
 		}
 		
 	private:
+		CountdownTimer m_repathTimer;
+
 		CountdownTimer m_ctInitialHoldoff;
 		
 		PathFollower m_PathFollower;
@@ -144,6 +164,13 @@ namespace Mod::AI::EngieBot_Wrangler
 	// - hopefully we can call StopParticleEffects on the laser dot entity itself and not the player entity!
 	
 	
+	DETOUR_DECL_MEMBER(void, CTFLaserPointer_CreateLaserDot)
+	{
+		auto weapon = reinterpret_cast<CBaseEntity *>(this);
+
+		if (weapon->GetTeamNumber() != TF_TEAM_BLUE)
+			DETOUR_MEMBER_CALL(CTFLaserPointer_CreateLaserDot)();
+	}
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, Action_CTFBot_OnCommandString, CTFBot *actor, const char *cmd)
 	{
 		if (V_stricmp(cmd, "wrangle") == 0) {
@@ -159,14 +186,24 @@ namespace Mod::AI::EngieBot_Wrangler
 		
 		return DETOUR_MEMBER_CALL(Action_CTFBot_OnCommandString)(actor, cmd);
 	}
-	
-	
+	DETOUR_DECL_MEMBER(ActionResult< CTFBot >, CTFBotMvMEngineerIdle_Update, CTFBot *actor, float interval)
+	{
+		
+		auto action = reinterpret_cast<Action<CTFBot> *>(this);
+		if (CTFBotMvMEngineerDisableAutopilot::IsPossible(actor) && actor->GetVisionInterface()->GetPrimaryKnownThreat(false) != nullptr) {
+			return ActionResult< CTFBot >::SuspendFor(new CTFBotMvMEngineerDisableAutopilot(), "This thing ain't on autopilot, son!");
+		}
+		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_Update)(actor, interval);
+	}
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("AI:EngieBot_Wrangler")
 		{
 			MOD_ADD_DETOUR_MEMBER(Action_CTFBot_OnCommandString, "Action<CTFBot>::OnCommandString");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_Update, "CTFBotMvMEngineerIdle::Update");
+			//MOD_ADD_DETOUR_MEMBER(CTFLaserPointer_CreateLaserDot, "CTFLaserPointer::CreateLaserDot");
 		}
 	};
 	CMod s_Mod;

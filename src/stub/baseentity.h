@@ -102,6 +102,7 @@ public:
 	ICollideable *GetCollideable() const          { return &this->m_Collision; }
 	CCollisionProperty *CollisionProp() const     { return &this->m_Collision; }
 	int GetTeamNumber() const                     { return this->m_iTeamNum; }
+	void SetTeamNumber(int number)                { this->m_iTeamNum = number; }
 	void SetMaxHealth(int amt)                    { this->m_iMaxHealth = amt; }
 	int GetHealth() const                         { return this->m_iHealth; }
 	void SetHealth(int amt)                       { this->m_iHealth = amt; }
@@ -114,6 +115,7 @@ public:
 	//void SetSolid(SolidType_t solid)              { return this->CollisionProp()->SetSolid(solid); }
 	model_t *GetModel() const                     { return const_cast<model_t *>(modelinfo->GetModel(this->GetModelIndex())); }
 	bool IsTransparent() const                    { return (this->m_nRenderMode != kRenderNormal); }
+	int GetRenderMode() const                     { return this->m_nRenderMode; }
 	MoveType_t GetMoveType() const                { return (MoveType_t)(unsigned char)this->m_MoveType; }
 	MoveCollide_t GetMoveCollide() const          { return (MoveCollide_t)(unsigned char)this->m_MoveCollide; }
 	void SetMoveCollide(MoveCollide_t val)        { this->m_MoveCollide = val; }
@@ -126,6 +128,8 @@ public:
 	void SetRenderColorB(byte b)                  { this->m_clrRender->b = b; }
 	void SetRenderColorA(byte a)                  { this->m_clrRender->a = a; }
 	bool IsMarkedForDeletion() const              { return ((this->m_iEFlags & EFL_KILLME) != 0); }
+	bool BlocksLOS() const              		  { return ((this->m_iEFlags & EFL_DONTBLOCKLOS) == 0); }
+	void SetBlocksLOS(bool val)                   { if (val) this->m_iEFlags = this->m_iEFlags & ~EFL_DONTBLOCKLOS; else this->m_iEFlags = this->m_iEFlags | EFL_DONTBLOCKLOS;}
 	float GetGravity() const                      { return this->m_flGravity; }
 	void SetGravity(float gravity)                { this->m_flGravity = gravity; }
 	const Vector& GetLocalVelocity() const        { return this->m_vecVelocity; }
@@ -189,6 +193,7 @@ public:
 	int GetMaxHealth() const                                                                                                { return vt_GetMaxHealth                  (this); }
 	bool IsAlive()                                                                                                          { return vt_IsAlive                       (this); }
 	float GetDefaultItemChargeMeterValue() const                                                                            { return vt_GetDefaultItemChargeMeterValue(this); }
+	bool IsDeflectable()																									{ return vt_IsDeflectable                 (this); }
 	
 	/* static */
 	static int PrecacheModel(const char *name, bool bPreload = true)                                                                                                                                      { return ft_PrecacheModel      (name, bPreload); }
@@ -309,6 +314,7 @@ private:
 	static MemberVFuncThunk<const CBaseEntity *, int>                                                              vt_GetMaxHealth;
 	static MemberVFuncThunk<      CBaseEntity *, bool>                                                             vt_IsAlive;
 	static MemberVFuncThunk<const CBaseEntity *, float>                                                            vt_GetDefaultItemChargeMeterValue;
+	static MemberVFuncThunk<      CBaseEntity *, bool>                                                             vt_IsDeflectable;
 	
 	static StaticFuncThunk<int, const char *, bool>                                                                         ft_PrecacheModel;
 	static StaticFuncThunk<bool, const char *>                                                                              ft_PrecacheSound;
