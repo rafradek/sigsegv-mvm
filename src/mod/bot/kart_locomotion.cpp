@@ -4,10 +4,34 @@
 
 namespace Mod::Bot::Kart_Locomotion
 {
+	struct NextBotData
+    {
+        int vtable;
+        INextBotComponent *m_ComponentList;              // +0x04
+        PathFollower *m_CurrentPath;                     // +0x08
+        int m_iManagerIndex;                             // +0x0c
+        bool m_bScheduledForNextTick;                    // +0x10
+        int m_iLastUpdateTick;                           // +0x14
+        int m_Dword18;                                   // +0x18 (reset to 0 in INextBot::Reset)
+        int m_iDebugTextOffset;                          // +0x1c
+        Vector m_vecLastPosition;                        // +0x20
+        CountdownTimer m_ctImmobileCheck;                // +0x2c
+        IntervalTimer m_itImmobileEpoch;                 // +0x38
+        ILocomotion *m_LocoInterface;                    // +0x3c
+        IBody *m_BodyInterface;                          // +0x40
+        IIntention *m_IntentionInterface;                // +0x44
+        IVision *m_VisionInterface;                      // +0x48
+        CUtlVector<void *> m_DebugLines; // +0x4c
+        int off;
+        int inputButtons;
+        int prevInputButtons;
+
+    };
+
 	/* don't do dodge strafing */
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_Dodge, CTFBot *actor)
 	{
-		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART)) {
+		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING)) {
 			return;
 		}
 		
@@ -17,7 +41,7 @@ namespace Mod::Bot::Kart_Locomotion
 	/* don't strafe and jump around when stuck */
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMainAction_OnStuck, CTFBot *actor)
 	{
-		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART)) {
+		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING)) {
 			return EventDesiredResult<CTFBot>::Continue();
 		}
 		
@@ -34,6 +58,7 @@ namespace Mod::Bot::Kart_Locomotion
 		DETOUR_MEMBER_CALL(PlayerLocomotion_Approach)(dst, f1);
 		
 		if (bot != nullptr && bot->m_Shared->InCond(TF_COND_HALLOWEEN_KART)) {
+
 			bot->ReleaseForwardButton();
 			bot->ReleaseBackwardButton();
 			bot->ReleaseLeftButton();
@@ -73,6 +98,7 @@ namespace Mod::Bot::Kart_Locomotion
 					bot->PressRightButton();
 				}
 			}
+
 		}
 	}
 	

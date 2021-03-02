@@ -89,6 +89,7 @@ sourceFiles += [
   'src/mod/ai/puppet.cpp',
   'src/mod/ai/rocketjump.cpp',
   'src/mod/ai/wrapassassin_altfire.cpp',
+  'src/mod/ai/improved_targeting.cpp',
   
 #  'src/mod/ai/mvm_defender_bots.cpp',
 #  'src/mod/ai/mvm_defender_bots/actions/attack_tank.cpp',
@@ -126,7 +127,7 @@ sourceFiles += [
   'src/mod/bot/kill_before_forcespec.cpp',
   'src/mod/bot/medieval_nonmelee.cpp',
   'src/mod/bot/multiclass_weapon.cpp',
-#  'src/mod/bot/runfast.cpp',
+  'src/mod/bot/runfast.cpp',
   'src/mod/bot/spy_medicheal.cpp',
   'src/mod/bot/spy_selectrandomreachableenemy.cpp',
   
@@ -156,10 +157,14 @@ sourceFiles += [
   'src/mod/etc/mm_spoof.cpp',
   'src/mod/etc/nav_updateblocked.cpp',
   'src/mod/etc/override_move_speed.cpp',
+  'src/mod/etc/player_bullet_boundingbox_fix.cpp',
   'src/mod/etc/ratelimit_exclude.cpp',
   'src/mod/etc/release_source_mutex.cpp',
   'src/mod/etc/suppress_nb_event_messages.cpp',
   'src/mod/etc/target_changegravity_improved.cpp',
+  'src/mod/etc/weapon_mimic_teamnum.cpp',
+  'src/mod/etc/trigger_filter_fix.cpp',
+  'src/mod/etc/misc.cpp',
   
   'src/mod/mvm/changebotattributes_crash_fix.cpp',
   'src/mod/mvm/changeclass_anytime.cpp',
@@ -171,6 +176,7 @@ sourceFiles += [
   'src/mod/mvm/explosive_headshot_on_everything.cpp',
   'src/mod/mvm/friendlyfire.cpp',
   'src/mod/mvm/gib_improvements.cpp',
+  'src/mod/mvm/go_back_in_time.cpp',
   'src/mod/mvm/human_death_yells.cpp',
   'src/mod/mvm/jointeam_blue_allow.cpp',
   'src/mod/mvm/medigunshield_damage.cpp',
@@ -184,14 +190,22 @@ sourceFiles += [
   'src/mod/mvm/set_credit_team.cpp',
   'src/mod/mvm/upgradestation_regen_improved.cpp',
   'src/mod/mvm/weapon_antigrief.cpp',
+  'src/mod/mvm/weapon_balancing.cpp',
   'src/mod/mvm/yer_unnerf.cpp',
   'src/mod/mvm/upgrade_disallow.cpp',
+  'src/mod/mvm/red_robot_eye_glow.cpp',
+  'src/mod/mvm/extended_upgrades.cpp',
+  'src/mod/mvm/teleporter_aggro.cpp',
+  'src/mod/mvm/refund_usermsg_overflow_fix.cpp',
   
   'src/mod/perf/flame_breakable_collision.cpp',
   'src/mod/perf/medigun_shield_damage_events.cpp',
   'src/mod/perf/medigun_shield_damage_interval.cpp',
   'src/mod/perf/mvm_load_popfile.cpp',
   'src/mod/perf/smokestack_fs_thrash.cpp',
+  'src/mod/perf/hltv_optimize.cpp',
+  'src/mod/perf/attributes_optimize.cpp',
+  'src/mod/perf/squad_escort_optimize.cpp',
   
   'src/mod/pop/ecattr_extensions.cpp',
   'src/mod/pop/eventpopfile_improvements.cpp',
@@ -205,12 +219,14 @@ sourceFiles += [
   'src/mod/pop/wave_extensions.cpp',
   'src/mod/pop/wavespawn_extensions.cpp',
   'src/mod/pop/extattr/alwaysfireweaponalt.cpp',
+  'src/mod/pop/extattr/ignoretargets.cpp',
   'src/mod/pop/extattr/parse.cpp',
   'src/mod/pop/extattr/targetstickies.cpp',
   
 #  'src/mod/prof/attr_munge.cpp',
   'src/mod/prof/debug_overlay.cpp',
   'src/mod/prof/flame_breakable_collision.cpp',
+  'src/mod/prof/frame_prof.cpp',
   'src/mod/prof/mvm_shield_events.cpp',
   'src/mod/prof/popfile_load.cpp',
   'src/mod/prof/tier2_renderutils.cpp',
@@ -430,11 +446,15 @@ binary.compiler.cflags += [ '-include', 'common.h' ]
 
 binary.compiler.linkflags += [
   '-liberty',
-  '-lunwind',
-  '-lunwind-x86',
 #  os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'libcapstone.a'),
   os.path.join(builder.currentSourcePath, 'libs', 'ann', 'lib', 'libANN.a'),
 ]
+
+if builder.options.debug == '1':
+  binary.compiler.linkflags += [
+    '-lunwind',
+    '-lunwind-x86',
+  ]
 
 binary.compiler.includes += [
   os.path.join(builder.buildPath), # for autogen.h
@@ -447,14 +467,14 @@ binary.compiler.includes += [
 ]
 
 # add libstrcompat dependency (for Linux only)
-if builder.target.platform == 'linux':
-  binary.compiler.includes += [
-    os.path.join(builder.currentSourcePath, 'libs', 'strcompat'),
-  ]
-  binary.compiler.linkflags += [
-    '-lstrcompat',
-    '-L' + os.path.join(builder.currentSourcePath, 'libs', 'strcompat'), '-Wl,-rpath=./tf/addons/sourcemod/extensions',
-  ]
+# if builder.target.platform == 'linux':
+#   binary.compiler.includes += [
+#     os.path.join(builder.currentSourcePath, 'libs', 'strcompat'),
+#   ]
+#   binary.compiler.linkflags += [
+#     '-lstrcompat',
+#     '-L' + os.path.join(builder.currentSourcePath, 'libs', 'strcompat'), '-Wl,-rpath=./tf/addons/sourcemod/extensions',
+#   ]
 
 # use NASM to assemble src/mem/wrapper.s into wrapper.o
 # (TODO: find a better way to do this that's less of an ugly hack)

@@ -379,9 +379,9 @@ public:
 	#ifdef __GNUC__
 	//#warning TODO: ensure that operator[] returns reference types and that their constness is correct
 	#endif
-	template<typename A> auto operator[](const A& idx) const { return this->Get()[idx]; }
+	template<typename A> inline auto operator[](const A& idx) const { return this->Get()[idx]; }
 	
-	template<typename A> void SetArray(const A val, int index)                            { this->Set(static_cast<const typename std::remove_extent<T>::type>(val),index);}
+	template<typename A> inline void SetArray(const A val, int index)                            { this->Set(static_cast<const typename std::remove_extent<T>::type>(val),index);}
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<( RW2 && std::is_array_v<T2>),       T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<(!RW2 && std::is_array_v<T2>), const T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<( RW2 && std::is_array_v<T2>),       decltype(std::declval<T>()[0])&> operator[](ptrdiff_t idx) const { return this->Get_RW()[idx]; }
@@ -403,7 +403,7 @@ public:
 //	template<typename... ARGS> auto operator->*(ARGS...) = delete; // TODO
 	
 protected:
-	RefRO_t Set(RefRO_t val)
+	inline RefRO_t Set(RefRO_t val)
 	{
 		if (NET) {
 			if (memcmp(this->GetPtrRO(), &val, sizeof(T)) != 0) {
@@ -417,7 +417,7 @@ protected:
 		}
 	}
 
-	void Set(typename std::remove_extent<T>::type val, int index)
+	inline void Set(typename std::remove_extent<T>::type val, int index)
 	{
 		if (NET) {
 			if (memcmp((this->GetPtrRO()+index), &val, sizeof(typename std::remove_extent<T>::type)) != 0) {
@@ -430,17 +430,6 @@ protected:
 			(this->GetRW()[index] = val);
 		}
 	}
-	/*void Set(typename std::remove_extent<T>::type val, int index)
-	{
-		if (NET) {
-			if (memcmp((this->GetPtrRO()+index), &val, sizeof(T)) != 0) {
-				PROP->StateChanged(reinterpret_cast<void *>(this->GetInstanceBaseAddr()), (this->GetPtrRW()+index));
-				*(this->GetPtrRW()+index) = val;
-			}
-		} else {
-			*(this->GetPtrRW()+index) = val;
-		}
-	}*/
 
 	/* reference getters */
 	RefRO_t GetRO() const { return *this->GetPtrRO(); }
@@ -456,7 +445,7 @@ private:
 	uintptr_t GetInstanceBaseAddr() const { return (reinterpret_cast<uintptr_t>(this) - *ADJUST); }
 	uintptr_t GetInstanceVarAddr() const  { return (this->GetInstanceBaseAddr() + this->GetCachedVarOffset()); }
 	
-	ptrdiff_t GetCachedVarOffset() const
+	inline ptrdiff_t GetCachedVarOffset() const
 	{
 		static ptrdiff_t s_CachedVarOff = PROP->GetOffsetAssert();
 		return s_CachedVarOff;
@@ -468,8 +457,8 @@ struct CPropAccessorHandle : public CPropAccessorBase<CHandle<U>, T_ARGS>
 {
 	using CPropAccessorBase<CHandle<U>, T_ARGS>::operator=;
 	
-	operator U*() const   { return this->GetRO().Get(); }
-	U* operator->() const { return this->GetRO().Get(); }
+	inline operator U*() const   { return this->GetRO().Get(); }
+	inline U* operator->() const { return this->GetRO().Get(); }
 };
 
 

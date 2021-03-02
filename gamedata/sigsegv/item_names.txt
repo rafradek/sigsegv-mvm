@@ -1,0 +1,578 @@
+0 Bat
+1 Bottle
+2 Fire Axe
+3 Kukri
+4 Knife
+5 Fists
+6 Shovel
+7 Wrench
+8 Bonesaw
+9 Shotgun
+10 Shotgun
+11 Shotgun
+12 Shotgun
+13 Scattergun
+14 Sniper Rifle
+15 Minigun
+16 SMG
+17 Syringe Gun
+18 Rocket Launcher
+19 Grenade Launcher
+20 Stickybomb Launcher
+21 Flame Thrower
+22 Pistol
+23 Pistol
+24 Revolver
+25 Construction PDA
+26 Destruction PDA
+27 Disguise Kit
+28 PDA
+29 Medi Gun
+30 Invis Watch
+35 Kritzkrieg
+36 Blutsauger
+37 Ubersaw
+38 Axtinguisher
+39 Flare Gun
+40 Backburner
+41 Natascha
+42 Sandvich
+43 Killing Gloves of Boxing
+44 Sandman
+45 Force-A-Nature
+46 Bonk! Atomic Punch
+56 Huntsman
+57 Razorback
+58 Jarate
+59 Dead Ringer
+60 Cloak and Dagger
+61 Ambassador
+127 Direct Hit
+128 Equalizer
+129 Buff Banner
+130 Scottish Resistance
+131 Chargin' Targe
+132 Eyelander
+133 Gunboats
+140 Wrangler
+141 Frontier Justice
+142 Gunslinger
+153 Homewrecker
+154 Pain Train
+155 Southern Hospitality
+159 Dalokohs Bar
+160 Lugermorph
+161 Big Kill
+163 Crit-a-Cola
+169 Golden Wrench
+171 Tribalman's Shiv
+172 Scotsman's Skullcutter
+173 Vita-Saw
+190 Bat
+191 Bottle
+192 Fire Axe
+193 Kukri
+194 Knife
+195 Fists
+196 Shovel
+197 Wrench
+198 Bonesaw
+199 Shotgun
+200 Scattergun
+201 Sniper Rifle
+202 Minigun
+203 SMG
+204 Syringe Gun
+205 Rocket Launcher
+206 Grenade Launcher
+207 Stickybomb Launcher
+208 Flame Thrower
+209 Pistol
+210 Revolver
+211 Medi Gun
+212 Invis Watch
+214 Powerjack
+215 Degreaser
+220 Shortstop
+221 Holy Mackerel
+222 Mad Milk
+224 L'Etranger
+225 Your Eternal Reward
+226 Battalion's Backup
+228 Black Box
+230 Sydney Sleeper
+231 Darwin's Danger Shield
+232 Bushwacka
+233 Secret Saxton
+234 Pile o' Gifts
+237 Rocket Jumper
+239 Gloves of Running Urgently
+241 Dueling Mini-Game
+265 Sticky Jumper
+266 Horseless Headless Horsemann's Headtaker
+280 Noise Maker - Black Cat
+281 Noise Maker - Gremlin
+282 Noise Maker - Werewolf
+283 Noise Maker - Witch
+284 Noise Maker - Banshee
+286 Noise Maker - Crazy Laugh
+288 Noise Maker - Stabby
+294 Lugermorph
+297 Enthusiast's Timepiece
+298 Iron Curtain
+304 Amputator
+305 Crusader's Crossbow
+307 Ullapool Caber
+308 Loch-n-Load
+310 Warrior's Spirit
+311 Buffalo Steak Sandvich
+312 Brass Beast
+317 Candy Cane
+325 Boston Basher
+326 Back Scratcher
+327 Claidheamh Mòr
+329 Jag
+331 Fists of Steel
+348 Sharpened Volcano Fragment
+349 Sun-on-a-Stick
+351 Detonator
+354 Concheror
+355 Fan O'War
+356 Conniver's Kunai
+357 Half-Zatoichi
+362 Noise Maker - Bell
+364 Noise Maker - Gong
+365 Noise Maker - Koto
+401 Shahanshah
+402 Bazaar Bargain
+404 Persian Persuader
+405 Ali Baba's Wee Booties
+406 Splendid Screen
+411 Quick-Fix
+412 Overdose
+413 Solemn Vow
+414 Liberty Launcher
+415 Reserve Shooter
+416 Market Gardener
+424 Tomislav
+425 Family Business
+426 Eviction Notice
+433 Fishcake
+441 Cow Mangler 5000
+442 Righteous Bison
+444 Mantreads
+447 Disciplinary Action
+448 Soda Popper
+449 Winger
+450 Atomizer
+452 Three-Rune Blade
+457 Postal Pummeler
+460 Enforcer
+461 Big Earner
+466 Maul
+482 Nessie's Nine Iron
+489 Power Up Canteen
+493 Noise Maker - Fireworks
+513 Original
+525 Diamondback
+526 Machina
+527 Widowmaker
+528 Short Circuit
+536 Noise Maker - TF Birthday
+542 Noise Maker - Vuvuzela
+572 Unarmed Combat
+574 Wanga Prick
+577 Antique Halloween Goodie Cauldron
+587 Apoco-Fists
+588 Pomson 6000
+589 Eureka Effect
+593 Third Degree
+594 Phlogistinator
+595 Manmelter
+599 Manniversary Package
+608 Bootlegger
+609 Scottish Handshake
+638 Sharp Dresser
+642 Cozy Camper
+648 Wrap Assassin
+649 Spy-cicle
+654 Festive Minigun
+656 Holiday Punch
+658 Festive Rocket Launcher
+659 Festive Flame Thrower
+660 Festive Bat
+661 Festive Stickybomb Launcher
+662 Festive Wrench
+663 Festive Medi Gun
+664 Festive Sniper Rifle
+665 Festive Knife
+669 Festive Scattergun
+673 Noise Maker - Winter Holiday
+727 Black Rose
+729 Mann Co. Store Package
+730 Beggar's Bazooka
+735 Sapper
+736 Sapper
+737 Construction PDA
+739 Lollichop
+740 Scorch Shot
+741 Rainblower
+751 Cleaner's Carbine
+752 Hitman's Heatmaker
+772 Baby Face's Blaster
+773 Pretty Boy's Pocket Pistol
+775 Escape Plan
+790 What's in the Sandvich Box?
+791 What's in the Companion Square Box?
+792 Silver Botkiller Sniper Rifle Mk.I
+793 Silver Botkiller Minigun Mk.I
+794 Silver Botkiller Knife Mk.I
+795 Silver Botkiller Wrench Mk.I
+796 Silver Botkiller Medi Gun Mk.I
+797 Silver Botkiller Stickybomb Launcher Mk.I
+798 Silver Botkiller Flame Thrower Mk.I
+799 Silver Botkiller Scattergun Mk.I
+800 Silver Botkiller Rocket Launcher Mk.I
+801 Gold Botkiller Sniper Rifle Mk.I
+802 Gold Botkiller Minigun Mk.I
+803 Gold Botkiller Knife Mk.I
+804 Gold Botkiller Wrench Mk.I
+805 Gold Botkiller Medi Gun Mk.I
+806 Gold Botkiller Stickybomb Launcher Mk.I
+807 Gold Botkiller Flame Thrower Mk.I
+808 Gold Botkiller Scattergun Mk.I
+809 Gold Botkiller Rocket Launcher Mk.I
+810 Red-Tape Recorder
+811 Huo-Long Heater
+812 Flying Guillotine
+813 Neon Annihilator
+831 Red-Tape Recorder
+832 Huo-Long Heater
+833 Flying Guillotine
+834 Neon Annihilator
+839 Mann Co. Store Package
+850 Deflector
+851 AWPer Hand
+863 Robo-Sandvich
+881 Rust Botkiller Sniper Rifle Mk.I
+882 Rust Botkiller Minigun Mk.I
+883 Rust Botkiller Knife Mk.I
+884 Rust Botkiller Wrench Mk.I
+885 Rust Botkiller Medi Gun Mk.I
+886 Rust Botkiller Stickybomb Launcher Mk.I
+887 Rust Botkiller Flame Thrower Mk.I
+888 Rust Botkiller Scattergun Mk.I
+889 Rust Botkiller Rocket Launcher Mk.I
+890 Blood Botkiller Sniper Rifle Mk.I
+891 Blood Botkiller Minigun Mk.I
+892 Blood Botkiller Knife Mk.I
+893 Blood Botkiller Wrench Mk.I
+894 Blood Botkiller Medi Gun Mk.I
+895 Blood Botkiller Stickybomb Launcher Mk.I
+896 Blood Botkiller Flame Thrower Mk.I
+897 Blood Botkiller Scattergun Mk.I
+898 Blood Botkiller Rocket Launcher Mk.I
+899 Carbonado Botkiller Sniper Rifle Mk.I
+900 Carbonado Botkiller Minigun Mk.I
+901 Carbonado Botkiller Knife Mk.I
+902 Carbonado Botkiller Wrench Mk.I
+903 Carbonado Botkiller Medi Gun Mk.I
+904 Carbonado Botkiller Stickybomb Launcher Mk.I
+905 Carbonado Botkiller Flame Thrower Mk.I
+906 Carbonado Botkiller Scattergun Mk.I
+907 Carbonado Botkiller Rocket Launcher Mk.I
+908 Diamond Botkiller Sniper Rifle Mk.I
+909 Diamond Botkiller Minigun Mk.I
+910 Diamond Botkiller Knife Mk.I
+911 Diamond Botkiller Wrench Mk.I
+912 Diamond Botkiller Medi Gun Mk.I
+913 Diamond Botkiller Stickybomb Launcher Mk.I
+914 Diamond Botkiller Flame Thrower Mk.I
+915 Diamond Botkiller Scattergun Mk.I
+916 Diamond Botkiller Rocket Launcher Mk.I
+928 What's in the Portal 2 Soundtrack Box?
+933 Ap-Sap
+947 Quäckenbirdt
+957 Silver Botkiller Sniper Rifle Mk.II
+958 Silver Botkiller Minigun Mk.II
+959 Silver Botkiller Knife Mk.II
+960 Silver Botkiller Wrench Mk.II
+961 Silver Botkiller Medi Gun Mk.II
+962 Silver Botkiller Stickybomb Launcher Mk.II
+963 Silver Botkiller Flame Thrower Mk.II
+964 Silver Botkiller Scattergun Mk.II
+965 Silver Botkiller Rocket Launcher Mk.II
+966 Gold Botkiller Sniper Rifle Mk.II
+967 Gold Botkiller Minigun Mk.II
+968 Gold Botkiller Knife Mk.II
+969 Gold Botkiller Wrench Mk.II
+970 Gold Botkiller Medi Gun Mk.II
+971 Gold Botkiller Stickybomb Launcher Mk.II
+972 Gold Botkiller Flame Thrower Mk.II
+973 Gold Botkiller Scattergun Mk.II
+974 Gold Botkiller Rocket Launcher Mk.II
+996 Loose Cannon
+997 Rescue Ranger
+998 Vaccinator
+999 Festive Holy Mackerel
+1000 Festive Axtinguisher
+1001 Festive Buff Banner
+1002 Festive Sandvich
+1003 Festive Ubersaw
+1004 Festive Frontier Justice
+1005 Festive Huntsman
+1006 Festive Ambassador
+1007 Festive Grenade Launcher
+1027 Mann Co. Painting Set
+1037 Pallet of Crates
+1069 Fancy Spellbook
+1070 Spellbook Magazine
+1078 Festive Force-A-Nature
+1079 Festive Crusader's Crossbow
+1080 Festive Sapper
+1081 Festive Flare Gun
+1082 Festive Eyelander
+1083 Festive Jarate
+1084 Festive Gloves of Running Urgently
+1085 Festive Black Box
+1086 Festive Wrangler
+1092 Fortified Compound
+1098 Classic
+1099 Tide Turner
+1100 Bread Bite
+1101 B.A.S.E. Jumper
+1102 Snack Attack
+1103 Back Scatter
+1104 Air Strike
+1105 Self-Aware Beauty Mark
+1121 Mutated Milk
+1126 Duck Journal
+1132 Spellbook Magazine
+1141 Festive Shotgun
+1142 Festive Revolver
+1143 Festive Bonesaw
+1144 Festive Chargin' Targe
+1145 Festive Bonk! Atomic Punch
+1146 Festive Backburner
+1149 Festive SMG
+1150 Quickiebomb Launcher
+1151 Iron Bomber
+1152 Grappling Hook
+1153 Panic Attack
+1155 
+1163 Power Up Canteen
+1176 What's in the Team Fortress 2 Soundtrack Box?
+1178 Dragon's Fury
+1179 Thermal Thruster
+1180 Gas Passer
+1181 Hot Hand
+1184 Gloves of Running Urgently
+1190 Second Banana
+1195 Halloween Package
+5086 Summer Starter Kit
+5087 Summer Adventure Pack
+5605 Fireproof Secret Diary
+5607 Pile Of Ash
+5626 Pile Of Curses
+5637 Pile of Robo Community Crate Key Gifts
+5638 A Random Robo Community Crate Key Gift
+5639 Summer Claim Check
+5658 Pile of Summer Cooler Key Gifts
+5659 A Random Summer Cooler Key Gift
+5718 Gift-Stuffed Stocking
+5741 Bread Box
+5763 Unlocked Creepy Scout Crate
+5764 Unlocked Creepy Pyro Crate
+5765 Unlocked Creepy Heavy Crate
+5766 Unlocked Creepy Engineer Crate
+5767 Unlocked Creepy Spy Crate
+5768 Unlocked Creepy Sniper Crate
+5769 Unlocked Creepy Soldier Crate
+5770 Unlocked Creepy Medic Crate
+5771 Unlocked Creepy Demo Crate
+5772 Halloween Gift Cauldron
+5773 Halloween Gift Cauldron
+5776 Pile of End of the Line Key Gifts
+5777 A Random End of the Line Key Gift
+5779 Pile of Duck Token Gifts
+5780 A Random Duck Token Gift
+5850 Unlocked Cosmetic Crate Scout
+5851 Unlocked Cosmetic Crate Sniper
+5852 Unlocked Cosmetic Crate Soldier
+5853 Unlocked Cosmetic Crate Demo
+5854 Unlocked Cosmetic Crate Medic
+5855 Unlocked Cosmetic Crate Heavy
+5856 Unlocked Cosmetic Crate Pyro
+5857 Unlocked Cosmetic Crate Spy
+5858 Unlocked Cosmetic Crate Engineer
+5860 Unlocked Cosmetic Crate Multi-Class
+5869 Jungle Inferno ConTracker
+5886 Gift-Stuffed Stocking 2017
+5900 Gift-Stuffed Stocking 2018
+5910 Gift-Stuffed Stocking 2019
+5923 Gift-Stuffed Stocking 2020
+15000 Sniper Rifle
+15001 SMG
+15002 Scattergun
+15003 Shotgun
+15004 Minigun
+15005 Flame Thrower
+15006 Rocket Launcher
+15007 Sniper Rifle
+15008 Medi Gun
+15009 Stickybomb Launcher
+15010 Medi Gun
+15011 Revolver
+15012 Stickybomb Launcher
+15013 Pistol
+15014 Rocket Launcher
+15015 Scattergun
+15016 Shotgun
+15017 Flame Thrower
+15018 Pistol
+15019 Sniper Rifle
+15020 Minigun
+15021 Scattergun
+15022 SMG
+15023 Sniper Rifle
+15024 Stickybomb Launcher
+15025 Medi Gun
+15026 Minigun
+15027 Revolver
+15028 Rocket Launcher
+15029 Scattergun
+15030 Flame Thrower
+15031 Minigun
+15032 SMG
+15033 Sniper Rifle
+15034 Flame Thrower
+15035 Pistol
+15036 Scattergun
+15037 SMG
+15038 Stickybomb Launcher
+15039 Medi Gun
+15040 Minigun
+15041 Pistol
+15042 Revolver
+15043 Rocket Launcher
+15044 Shotgun
+15045 Stickybomb Launcher
+15046 Pistol
+15047 Shotgun
+15048 Stickybomb Launcher
+15049 Flame Thrower
+15050 Medi Gun
+15051 Revolver
+15052 Rocket Launcher
+15053 Scattergun
+15054 Flame Thrower
+15055 Minigun
+15056 Pistol
+15057 Rocket Launcher
+15058 SMG
+15059 Sniper Rifle
+15060 Pistol
+15061 Pistol
+15062 Revolver
+15063 Revolver
+15064 Revolver
+15065 Scattergun
+15066 Flame Thrower
+15067 Flame Thrower
+15068 Flame Thrower
+15069 Scattergun
+15070 Sniper Rifle
+15071 Sniper Rifle
+15072 Sniper Rifle
+15073 Wrench
+15074 Wrench
+15075 Wrench
+15076 SMG
+15077 Grenade Launcher
+15078 Medi Gun
+15079 Grenade Launcher
+15080 Knife
+15081 Rocket Launcher
+15082 Stickybomb Launcher
+15083 Stickybomb Launcher
+15084 Stickybomb Launcher
+15085 Shotgun
+15086 Minigun
+15087 Minigun
+15088 Minigun
+15089 Flame Thrower
+15090 Flame Thrower
+15091 Grenade Launcher
+15092 Grenade Launcher
+15094 Knife
+15095 Knife
+15096 Knife
+15097 Medi Gun
+15098 Minigun
+15099 Minigun
+15100 Pistol
+15101 Pistol
+15102 Pistol
+15103 Revolver
+15104 Rocket Launcher
+15105 Rocket Launcher
+15106 Scattergun
+15107 Scattergun
+15108 Scattergun
+15109 Shotgun
+15110 SMG
+15111 Sniper Rifle
+15112 Sniper Rifle
+15113 Stickybomb Launcher
+15114 Wrench
+15115 Flame Thrower
+15116 Grenade Launcher
+15117 Grenade Launcher
+15118 Knife
+15119 Knife
+15120 Medi Gun
+15121 Medi Gun
+15122 Medi Gun
+15123 Minigun
+15124 Minigun
+15125 Minigun
+15126 Pistol
+15127 Revolver
+15128 Revolver
+15129 Rocket Launcher
+15130 Rocket Launcher
+15131 Scattergun
+15132 Shotgun
+15133 Shotgun
+15134 SMG
+15135 Sniper Rifle
+15136 Sniper Rifle
+15137 Stickybomb Launcher
+15138 Stickybomb Launcher
+15139 Wrench
+15140 Wrench
+15141 Flame Thrower
+15142 Grenade Launcher
+15143 Knife
+15144 Knife
+15145 Medi Gun
+15146 Medi Gun
+15147 Minigun
+15148 Pistol
+15149 Revolver
+15150 Rocket Launcher
+15151 Scattergun
+15152 Shotgun
+15153 SMG
+15154 Sniper Rifle
+15155 Stickybomb Launcher
+15156 Wrench
+15157 Scattergun
+15158 Grenade Launcher
+30015 Battery Canteens
+30474 Nostromo Napalmer
+30535 Kritz or Treat Canteen
+30665 Shooting Star
+30666 C.A.P.P.E.R
+30667 Batsaber
+30668 Giger Counter

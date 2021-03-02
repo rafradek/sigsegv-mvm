@@ -5,7 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <strcompat.h>
+// #include <strcompat.h>
 
 
 using const_char_ptr = const char *;
@@ -143,10 +143,18 @@ using CExtract_CEconItemDefinition_m_nEquipRegionMask    = IExtractStub;
 
 #endif
 
+MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> CEconItemDefinition::ft_BInitFromKV("CEconItemDefinition::BInitFromKV");
+
+MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeFloatWrapper("CAttributeManager::ApplyAttributeFloatWrapper");
+MemberFuncThunk<const CAttributeManager *, int> CAttributeManager::ft_GetGlobalCacheVersion("CAttributeManager::GetGlobalCacheVersion");
+
+MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloatWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloatWrapper");
+MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloat(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloat");
 
 StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool>     CAttributeManager::ft_AttribHookValue_int  ("CAttributeManager::AttribHookValue<int>");
 StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool> CAttributeManager::ft_AttribHookValue_float("CAttributeManager::AttribHookValue<float>");
 
+IMPL_SENDPROP(CHandle<CBaseEntity>, CAttributeManager, m_hOuter, CEconEntity);
 
 IMPL_EXTRACT(const char *[NUM_SHOOT_SOUND_TYPES], perteamvisuals_t, m_Sounds, new CExtract_perteamvisuals_t_m_Sounds());
 
@@ -171,6 +179,7 @@ IMPL_DATAMAP(bool,           CEconItemView, m_bOnlyIterateItemViewAttributes);
 MemberFuncThunk<      CEconItemView *, void>                              CEconItemView::ft_ctor         ("CEconItemView::CEconItemView [C1]");
 MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> CEconItemView::ft_Init         ("CEconItemView::Init");
 MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               CEconItemView::ft_GetStaticData("CEconItemView::GetStaticData");
+MemberFuncThunk<const CEconItemView *, CEconItem *>                       CEconItemView::ft_GetSOCData   ("CEconItemView::GetSOCData");
 
 MemberVFuncThunk<const CEconItemView *, int> CEconItemView::vt_GetItemDefIndex(TypeName<CEconItemView>(), "CEconItemView::GetItemDefIndex");
 
@@ -183,15 +192,28 @@ void CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& 
 	/* if BConvertStringToEconAttributeValue was called with b1 = true, then
 	 * calling ConvertEconAttributeValueToString will render the stored-as-float
 	 * value as an integer, which looks horribly wrong */
-	if (this->IsStoredAsInteger() && this->IsType<CSchemaAttributeType_Default>()) {
-		snprintf(buf, buf_len, "%d", RoundFloatToInt(value.m_Float));
-		return;
+	if (this->IsType<CSchemaAttributeType_Default>()) {
+		DevMsg("Type def\n");
+		if (this->IsStoredAsInteger())
+			snprintf(buf, buf_len, "%d", RoundFloatToInt(value.m_Float));
+		else
+			snprintf(buf, buf_len, "%f", value.m_Float);
+	}
+	else if (this->IsType<CSchemaAttributeType_Float>()) {
+		DevMsg("Type fl\n");
+		snprintf(buf, buf_len, "%f", value.m_Float);
+	}
+	else if (this->IsType<CSchemaAttributeType_String>()) {
+		DevMsg("Type str\n");
+		const char *pstr;
+		CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+		V_strncpy(buf, pstr, buf_len);
 	}
 	
-	void *str = strcompat_alloc();
-	this->GetType()->ConvertEconAttributeValueToString(this, value, reinterpret_cast<std::string *>(str));
-	strcompat_get(str, buf, buf_len);
-	strcompat_free(str);
+	//void *str = strcompat_alloc();
+	//this->GetType()->ConvertEconAttributeValueToString(this, value, &str/*reinterpret_cast<std::string *>(str)*/);
+	//strcompat_get(str, buf, buf_len);
+	//strcompat_free(str);
 }
 
 
@@ -199,21 +221,26 @@ MemberFuncThunk<      CEconItemAttribute *, void>                           CEco
 MemberFuncThunk<const CEconItemAttribute *, CEconItemAttributeDefinition *> CEconItemAttribute::ft_GetStaticData("CEconItemAttribute::GetStaticData");
 
 
+
 MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, int>                   CEconItemSchema::ft_GetItemDefinition           ("CEconItemSchema::GetItemDefinition");
 MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, const char *>          CEconItemSchema::ft_GetItemDefinitionByName     ("CEconItemSchema::GetItemDefinitionByName");
 MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, int>          CEconItemSchema::ft_GetAttributeDefinition      ("CEconItemSchema::GetAttributeDefinition");
 MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, const char *> CEconItemSchema::ft_GetAttributeDefinitionByName("CEconItemSchema::GetAttributeDefinitionByName");
-MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *>  CEconItemSchema::ft_BInitAttributes			   ("CEconItemSchema::BInitAttributes");
+MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *>        CEconItemSchema::ft_BInitAttributes			   ("CEconItemSchema::BInitAttributes");
+MemberFuncThunk<CEconItemSchema *, void, int, int, KeyValues *>                        CEconItemSchema::ft_ItemTesting_CreateTestDefinition("CEconItemSchema::ItemTesting_CreateTestDefinition");
 
 
 static StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema("GetItemSchema");
 CTFItemSchema *GetItemSchema() { return ft_GetItemSchema(); }
+
+MemberFuncThunk<CEconItem *, attribute_t &>                       CEconItem::ft_AddDynamicAttributeInternal("CEconItem::AddDynamicAttributeInternal");
 
 
 static StaticFuncThunk<CItemGeneration *> ft_ItemGeneration("ItemGeneration");
 CItemGeneration *ItemGeneration() { return ft_ItemGeneration(); }
 
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_SpawnItem("CItemGeneration::SpawnItem");
+MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle const&, int, int, char const*> CItemGeneration::ft_SpawnItem_defid("CItemGeneration::SpawnItem [defIndex]");
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_GenerateItemFromScriptData("CItemGeneration::GenerateItemFromScriptData");
 
 static StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput("CopyStringAttributeValueToCharPointerOutput");
@@ -299,3 +326,34 @@ CInventoryManager *InventoryManager() { return ft_InventoryManager(); }
 
 static StaticFuncThunk<CTFInventoryManager *> ft_TFInventoryManager("TFInventoryManager");
 CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
+
+void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, std::string value_str)
+{
+	//Pool of previously added string values
+	static std::map<std::string, attribute_data_union_t> attribute_string_values;
+
+	attribute_data_union_t value;
+
+	auto entry = attribute_string_values.find(value_str);
+
+	if (entry == attribute_string_values.end()) {
+		//const char *value_cstr = STRING(AllocPooledString(value_str.c_str()));
+		
+		attr_def->GetType()->InitializeNewEconAttributeValue(&value);
+		if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str.c_str(), &value, true)) {
+			attr_def->GetType()->UnloadEconAttributeValue(&value);
+			return;
+		}
+		attribute_string_values[value_str] = value;
+	}
+	else {
+		value = attribute_string_values[value_str];
+	}
+
+	this->RemoveAttribute(attr_def);
+
+	CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
+	*attr->GetValuePtr() = value;
+	this->AddAttribute(attr);
+	CEconItemAttribute::Destroy(attr);
+}

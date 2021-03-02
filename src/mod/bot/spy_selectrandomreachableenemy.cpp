@@ -3,6 +3,7 @@
 #include "stub/tf_shareddefs.h"
 #include "stub/entities.h"
 #include "util/iterate.h"
+#include "stub/tfbot_behavior.h"
 
 
 namespace Mod::Bot::Spy_SelectRandomReachableEnemy
@@ -33,84 +34,57 @@ namespace Mod::Bot::Spy_SelectRandomReachableEnemy
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-	
-	
-	bool IsSpyUndetectible(CTFPlayer *pPlayer, CTFPlayer *pSpy)
-	{
-		// return false if any of these are true:
-		// - InCond(TF_COND_STEALTHED_BLINK)
-		// - InCond(TF_COND_BURNING)
-		// - InCond(TF_COND_BLEEDING)
-		// - InCond(TF_COND_URINE)
-		// - milked?
-		// - wet?
-		// - TODO: look thru entire cond list
-		// ^^^^^ hang on, wait a sec, don't these only matter when stealthed, and not matter when disguised?
-		
-		// return true if both of these are true:
-		// - IsStealthed()
-		// - GetPercentInvisible() >= 0.75f
-		
-		// return true if any of these are true:
-		// - InCond(TF_COND_DISGUISING)
-		// - !InCond(TF_COND_DISGUISED)
-		// - GetDisguiseTeam() != pPlayer->GetTeamNumber()
-		
-		
-		// TODO:
-		// - probably split this out into two separate functions:
-		//   - IsSpyFullyStealthed
-		//   - IsSpyFullyDisguised
-	}
-	
-	
-	
-	
-	
-	bool ShouldBotNoticePlayer(CTFBot *bot, CTFPlayer *player)
-	{
-		/* teammates are always noticed */
-		if (bot->GetTeamNumber() != player->GetTeamNumber()) return true;
-		
-		if (player->IsPlayerClass(TF_CLASS_SPY)) {
-			
-		}
-		
-		return true;
-	}
-	
-	
+
+	CTFBot *bot;
 	DETOUR_DECL_MEMBER(CTFPlayer *, CTFBot_SelectRandomReachableEnemy)
 	{
-		auto bot = reinterpret_cast<CTFBot *>(this);
-		
-		
+		bot = reinterpret_cast<CTFBot *>(this);
+		auto result = DETOUR_MEMBER_CALL(CTFBot_SelectRandomReachableEnemy)();
+		bot = nullptr;
+
+		return result;
 	}
-	
-	
+
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotAttackFlagDefenders_Update, CTFBot *actor, float dt)
+	{
+		
+		auto action = reinterpret_cast<CTFBotAttackFlagDefenders *>(this);
+		CTFPlayer *player = action->m_chasePlayer;
+		if (player != nullptr && actor->GetVisionInterface()->IsIgnored(player))
+			action->m_chasePlayer = nullptr;
+		auto result = DETOUR_MEMBER_CALL(CTFBotAttackFlagDefenders_Update)(actor, dt);
+		return result;
+	}
+
+	DETOUR_DECL_STATIC(int, CollectPlayers_CTFPlayer, CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
+	{
+		if (bot != nullptr) {
+			CUtlVector<CTFPlayer *> tempVector;
+			DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(&tempVector, team, isAlive, shouldAppend);
+			
+			for (auto player : tempVector) {
+				if (!bot->GetVisionInterface()->IsIgnored(player))
+					playerVector->AddToTail(player);
+			}
+
+			return playerVector->Count();
+		}
+		return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);
+	}
+
 	// ISSUE: the callers of SelectRandomReachableEnemy may hang onto the enemy
 	// they choose for a while; so if a spy is visible when a bot begins an AI
 	// action, and then goes invisible, they might still get chased
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Bot:Spy_SelectRandomReachableEnemy")
 		{
-			
-		}
-		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
-		
-		virtual void FrameUpdatePostEntityThink() override
-		{
-			static long frame = 0;
-			if (++frame % 2 == 0) return;
-			
-		//	ForEachTFPlayer([](CTFPlayer *player){
-		//		
-		//	});
+			MOD_ADD_DETOUR_MEMBER(CTFBot_SelectRandomReachableEnemy, "CTFBot::SelectRandomReachableEnemy");
+			MOD_ADD_DETOUR_MEMBER(CTFBotAttackFlagDefenders_Update,   "CTFBotAttackFlagDefenders::Update");
+			MOD_ADD_DETOUR_STATIC(CollectPlayers_CTFPlayer,   "CollectPlayers<CTFPlayer>");
 		}
 	};
 	CMod s_Mod;

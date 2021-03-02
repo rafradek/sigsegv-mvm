@@ -1,5 +1,40 @@
 #include "stub/tfweaponbase.h"
 
+static constexpr uint8_t s_Buf_CTFWeaponBaseMelee_Holster[] = {
+	0x55, 
+	0x89, 0xE5 ,
+	0x57, 
+	0x56,
+	0x53, 
+	0x83, 0xEC, 0x7C, 
+	0x8B, 0x7D, 0x08,
+	0xC7, 0x87, 0xE0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x80, 0xBF //0c
+};
+
+struct CExtract_CTFWeaponBaseMelee_Holster : public IExtract<float *>
+{
+	using T = float *;
+	
+	CExtract_CTFWeaponBaseMelee_Holster() : IExtract<T>(sizeof(s_Buf_CTFWeaponBaseMelee_Holster)) {}
+	
+	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
+	{
+		buf.CopyFrom(s_Buf_CTFWeaponBaseMelee_Holster);
+		
+		//buf.SetDword(0x0c + 1, (uint32_t)AddrManager::GetAddr("gpGlobals"));
+		
+		mask.SetRange(0x0c + 2, 4, 0x00);
+		//mask.SetRange(0x24 + 3, 4, 0x00);
+		//mask.SetRange(0x2b + 2, 4, 0x00);
+		
+		return true;
+	}
+	
+	virtual const char *GetFuncName() const override   { return "CTFWeaponBaseMelee::Holster"; }
+	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
+	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+	virtual uint32_t GetExtractOffset() const override { return 0x000c + 2; }
+};
 
 IMPL_SENDPROP(float,                         CBaseCombatWeapon, m_flNextPrimaryAttack,   CBaseCombatWeapon);
 IMPL_SENDPROP(float,                         CBaseCombatWeapon, m_flNextSecondaryAttack, CBaseCombatWeapon);
@@ -36,11 +71,17 @@ IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearable,          CT
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearableViewModel, CTFWeaponBase);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
+MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");
 MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   CTFWeaponBase::vt_GetProjectileFireSetup(TypeName<CTFWeaponBase>(),"CTFWeaponBase::GetProjectileFireSetup");
 
+MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileGravity(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileGravity") ;
+MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileSpeed(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileSpeed") ;
+MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileDamage(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileDamage") ;
+MemberVFuncThunk<const CTFWeaponBaseGun *, int> CTFWeaponBaseGun::vt_GetWeaponProjectileType(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetWeaponProjectileType") ;
+MemberVFuncThunk<CTFWeaponBaseGun *, void, CBaseAnimating *> CTFWeaponBaseGun::vt_ModifyProjectile(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ModifyProjectile") ;
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");
@@ -50,6 +91,10 @@ MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetCurrentCharge(  
 
 IMPL_SENDPROP(CTFMinigun::MinigunState_t, CTFMinigun, m_iWeaponState, CTFMinigun);
 
+MemberFuncThunk<CTFSniperRifle *, void, CTFPlayer *, CTFPlayer *> CTFSniperRifle::ft_ExplosiveHeadShot            ("CTFSniperRifle::ExplosiveHeadShot");
+MemberFuncThunk<CTFSniperRifle *, void, float &>                  CTFSniperRifle::ft_ApplyChargeSpeedModifications("CTFSniperRifle::ApplyChargeSpeedModifications");
+
+MemberVFuncThunk<CTFSniperRifle *, float> CTFSniperRifle::vt_SniperRifleChargeRateMod(TypeName<CTFSniperRifle>(), "CTFSniperRifle::SniperRifleChargeRateMod");
 
 IMPL_SENDPROP(float, CTFSniperRifle, m_flChargedDamage, CTFSniperRifle);
 
@@ -58,6 +103,7 @@ IMPL_SENDPROP(int, CTFSpellBook, m_iSpellCharges, CTFSpellBook);
 
 MemberFuncThunk<CTFSniperRifleDecap *, int> CTFSniperRifleDecap::ft_GetCount("CTFSniperRifleDecap::GetCount");
 
+IMPL_EXTRACT(float, CTFWeaponBaseMelee, m_flSmackTime, new CExtract_CTFWeaponBaseMelee_Holster());
 
 MemberVFuncThunk<CTFWeaponBaseMelee *, int>            CTFWeaponBaseMelee::vt_GetSwingRange(TypeName<CTFWeaponBaseMelee>(), "CTFWeaponBaseMelee::GetSwingRange");
 MemberVFuncThunk<CTFWeaponBaseMelee *, bool, trace_t&> CTFWeaponBaseMelee::vt_DoSwingTrace (TypeName<CTFWeaponBaseMelee>(), "CTFWeaponBaseMelee::DoSwingTrace");
@@ -73,7 +119,10 @@ IMPL_SENDPROP(bool, CTFBottle, m_bBroken, CTFBottle);
 IMPL_SENDPROP(CHandle<CTFWearableRobotArm>, CTFRobotArm, m_hRobotArm, CTFRobotArm);
 
 
+MemberVFuncThunk<CWeaponMedigun *, float> CWeaponMedigun::vt_GetHealRate(TypeName<CWeaponMedigun>(), "CWeaponMedigun::GetHealRate");
+
 IMPL_SENDPROP(CHandle<CBaseEntity>, CWeaponMedigun, m_hHealingTarget, CWeaponMedigun);
+IMPL_SENDPROP(float, CWeaponMedigun, m_flChargeLevel, CWeaponMedigun);
 
 
 MemberFuncThunk<CTFFlameThrower *, Vector, bool> CTFFlameThrower::ft_GetMuzzlePosHelper("CTFFlameThrower::GetMuzzlePosHelper");
@@ -97,3 +146,58 @@ int GetWeaponId(const char *name) { return ft_GetWeaponId(name); }
 
 static StaticFuncThunk<const char *, int> ft_WeaponIdToAlias("WeaponIdToAlias");
 const char *WeaponIdToAlias(int weapon_id) { return ft_WeaponIdToAlias(weapon_id); }
+
+float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon) {
+	if (weapon == nullptr)
+		return 0.0f;
+		
+	float speed = 0.0f;
+
+	int weaponid = weapon->GetWeaponID();
+	int projid = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, projid, override_projectile_type);
+
+	if (projid == 0) {
+		projid = weapon->GetWeaponProjectileType();
+	}
+
+	if (projid == TF_PROJECTILE_ROCKET) {
+		speed = 1100.0f;
+	}
+	else if (projid == TF_PROJECTILE_FLARE) {
+		speed = 2000.0f;
+	}
+	else if (projid == TF_PROJECTILE_SYRINGE) {
+		speed = 1000.0f;
+	}
+	else if (projid == TF_PROJECTILE_ENERGY_RING) {
+		int penetrate = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, penetrate, energy_weapon_penetration);
+
+		speed = penetrate ? 840.0f : 1200.0f;
+	}
+	else if (projid == TF_PROJECTILE_BALLOFFIRE) {
+		speed = 3000.0f;
+	}
+	else {
+		speed = weapon->GetProjectileSpeed();
+	}
+
+	// Grenade launcher has mult_projectile_speed defined in getprojectilespeed
+	if (weaponid != TF_WEAPON_GRENADELAUNCHER && weaponid != TF_WEAPON_CANNON
+		&& weaponid != TF_WEAPON_CROSSBOW && weaponid != TF_WEAPON_COMPOUND_BOW
+		&& weaponid != TF_WEAPON_GRAPPLINGHOOK && weaponid != TF_WEAPON_SHOTGUN_BUILDING_RESCUE){
+
+		float mult_speed = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
+		speed *= mult_speed;
+	}
+
+	if (projid == TF_PROJECTILE_ROCKET) {
+		int specialist = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, specialist, rocket_specialist);
+		speed *= RemapVal(specialist, 1.f, 4.f, 1.15f, 1.6f);
+	}
+
+	return speed;
+}

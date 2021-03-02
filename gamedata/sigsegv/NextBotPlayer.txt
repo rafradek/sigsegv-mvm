@@ -169,7 +169,11 @@
 					type "sym"
 					sym  "_ZN13NextBotPlayerI9CTFPlayerE14SetButtonScaleEff"
 				}
-				
+				"NextBotPlayer<CTFPlayer>::GetEntity"
+				{
+					type "sym"
+					sym  "_ZNK13NextBotPlayerI9CTFPlayerE9GetEntityEv"
+				}
 				"NextBotCreatePlayerBot<CTFBot>"
 				{
 					type "sym"

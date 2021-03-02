@@ -21,6 +21,19 @@ class CBasePlayer;
 
 CRConClient& RCONClient();
 
+typedef struct hudtextparms_s
+{
+	float		x;
+	float		y;
+	int			effect;
+	byte		r1, g1, b1, a1;
+	byte		r2, g2, b2, a2;
+	float		fadeinTime;
+	float		fadeoutTime;
+	float		holdTime;
+	float		fxTime;
+	int			channel;
+} hudtextparms_t;
 
 #define DECL_FT_WRAPPER(name) \
 	template<typename... ARGS> \
@@ -71,8 +84,18 @@ extern GlobalThunk<CMapListManager> g_MapListMgr;
 
 void PrecacheParticleSystem(const char *name);
 
+void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message);
+
 void PrintToChatAll(const char *str);
 
 void PrintToChat(const char *str, CTFPlayer *player);
 
+class CEventQueue {
+public:
+	void AddEvent( const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID ) {ft_AddEvent(this,target,targetInput,Value,fireDelay,pActivator,pCaller,outputID);}
+private:
+	static MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   ft_AddEvent;
+};
+
+extern GlobalThunk<CEventQueue> g_EventQueue;
 #endif

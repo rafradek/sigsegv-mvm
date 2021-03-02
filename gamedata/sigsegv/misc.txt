@@ -187,6 +187,7 @@
 					type "pattern"
 					sym  "_ZN17CAttributeManager15AttribHookValueIfEET_S1_PKcPK11CBaseEntityP10CUtlVectorIPS4_10CUtlMemoryIS8_iEEb"
 					seg  "text"
+					
 					seek "558bec83ec288b0d8cc26a105333db895dd8895ddc8b4108895dec895df05685c0743e6894106f1068b8106f106890806c1068481e92106a7768c8106f10535353538d4dd85150"
 					mask "ffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffffffffffff00000000ff00000000ff00000000ff00000000ffffff00000000ffffffffffffffffff"
 				}
@@ -1290,6 +1291,12 @@
 				{
 					type "sym"
 					sym  "_ZN15CTFFlameThrower17GetFlameOriginPosEv"
+				}
+				
+				"CTFFlameThrower::GetDeflectionRadius"
+				{
+					type "sym"
+					sym  "_ZNK15CTFFlameThrower19GetDeflectionRadiusEv"
 				}
 				
 				"CTFFlameEntity::Create"
@@ -2940,6 +2947,12 @@
 					type "sym"
 					sym  "_Z19TE_TFParticleEffectR16IRecipientFilterfPKc6Vector6QAngleP11CBaseEntity20ParticleAttachment_t"
 				}
+				"TE_TFParticleEffectComplex"
+				{
+					type "sym"
+					sym  "_Z26TE_TFParticleEffectComplexR16IRecipientFilterfPKc6Vector6QAngleP31te_tf_particle_effects_colors_tP38te_tf_particle_effects_control_point_tP11CBaseEntity20ParticleAttachment_tS3_"
+				}
+				
 				"DoTeleporterOverride"
 				{
 					type "sym"
@@ -3005,6 +3018,1003 @@
 					type "sym"
 					sym  "_ZN18CSchemaFieldHandleI19CEconItemDefinitionEC2EPKc"
 				}
+				"CTFMedigunShield::Create"
+				{
+					type "sym"
+					sym  "_ZN16CTFMedigunShield6CreateEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun18GetProjectileSpeedEv"
+				}
+				"CTFWeaponBase::GetProjectileFireSetup"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase22GetProjectileFireSetupEP9CTFPlayer6VectorPS2_P6QAnglebf"
+				}
+				"CTFFlameManager::GetFlameDamageScale"
+				{
+					type "sym"
+					sym  "_ZNK15CTFFlameManager19GetFlameDamageScaleEPK10tf_point_tP9CTFPlayer"
+				}
+				"CTFFlameManager::OnCollide"
+				{
+					type "sym"
+					sym  "_ZN15CTFFlameManager9OnCollideEP11CBaseEntityi"
+				}
+				"CTFObjectiveResource::DecrementMannVsMachineWaveClassCount"
+				{
+					type "sym"
+					sym  "_ZN20CTFObjectiveResource36DecrementMannVsMachineWaveClassCountE8string_tj"
+				}
+				"CTFWeaponBase::CalcIsAttackCritical"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase20CalcIsAttackCriticalEv"
+				}
+				"CTFProjectile_HealingBolt::CanHeadshot"
+				{
+					type "sym"
+					sym  "_ZN25CTFProjectile_HealingBolt11CanHeadshotEv"
+				}
+				"CTFWeaponBase::GetShootSound"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase13GetShootSoundEi"
+				}
+				"CBaseProjectile::Spawn"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile5SpawnEv"
+				}
+				"CWeaponMedigun::AddCharge"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun9AddChargeEf"
+				}
+				"CTraceFilterIgnoreFriendlyCombatItems::ShouldHitEntity"
+				{
+					type "sym"
+					sym  "_ZN37CTraceFilterIgnoreFriendlyCombatItems15ShouldHitEntityEP13IHandleEntityi"
+				}
+				"CTFWeaponBaseMelee::Smack"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee5SmackEv"
+				}
+				"CTFWeaponBaseMelee::GetSmackTime"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee12GetSmackTimeEi"
+				}
+				"CTFLaserPointer::CreateLaserDot"
+				{
+					type "sym"
+					sym  "_ZN15CTFLaserPointer14CreateLaserDotEv"
+				}
+				"CTFRevolver::CanFireCriticalShot"
+				{
+					type "sym"
+					sym  "_ZN11CTFRevolver19CanFireCriticalShotEbP11CBaseEntity"
+				}
+				"CBaseProjectile::IsDestroyable"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile13IsDestroyableEb"
+				}
+				"CBaseProjectile::Destroy"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile7DestroyEbb"
+				}
+				"CTFPlayerShared::OnAddMVMBotRadiowave"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared20OnAddMVMBotRadiowaveEv"
+				
+				}
+				"CTFGameRules::ClientConnected"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules15ClientConnectedEP7edict_tPKcS3_Pci"
+				}
+				"CAmmoPack::Precache"
+				{
+					type "sym"
+					sym  "_ZN9CAmmoPack8PrecacheEv"
+				}
+				"CTFPowerup::Spawn"
+				{
+					type "sym"
+					sym  "_ZN10CTFPowerup5SpawnEv"
+				}
+				"CEconItemSchema::BInitAttributes"
+				{
+					type "sym"
+					sym  "_ZN15CEconItemSchema15BInitAttributesEP9KeyValuesP10CUtlVectorI10CUtlString10CUtlMemoryIS3_iEE"
+				}
+				"PrecacheParticleSystem"
+				{
+					type "sym"
+					sym  "_Z22PrecacheParticleSystemPKc"
+				}
+				"CBaseCombatCharacter::SwitchToNextBestWeapon"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter22SwitchToNextBestWeaponEP17CBaseCombatWeapon"
+				}
+				"CTeamplayRoundBasedRules::SetForceMapReset"
+				{
+					type "sym"
+					sym  "_ZN24CTeamplayRoundBasedRules16SetForceMapResetEb"
+				}
+				"CTeamplayRoundBasedRules::SetTeamRespawnWaveTime"
+				{
+					type "sym"
+					sym  "_ZN24CTeamplayRoundBasedRules22SetTeamRespawnWaveTimeEif"
+				}
+				"CGameEventManager::CreateEvent"
+				{
+					type "sym"
+					sym  "_ZN17CGameEventManager11CreateEventEPKcb"
+				}
+				"CGameEventManager::FireEventIntern"
+				{
+					type "sym"
+					sym  "_ZN17CGameEventManager15FireEventInternEP10IGameEventbb"
+				}
+				"ReadEncryptedKVFile"
+				{
+					type "sym"
+					sym  "_Z19ReadEncryptedKVFileP11IFileSystemPKcPKhb"
+				}
+				"CTFProjectile_Arrow::Create"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow6CreateERK6VectorRK6QAngleff16ProjectileType_tP11CBaseEntityS8_"
+				}
+				"CTFWeaponBaseGun::GetProjectileGravity"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun20GetProjectileGravityEv"
+				}
+				"CTFWeaponBaseGun::GetWeaponProjectileType"
+				{
+					type "sym"
+					sym  "_ZNK16CTFWeaponBaseGun23GetWeaponProjectileTypeEv"
+				}
+				"CBaseProjectile::SetLauncher"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile11SetLauncherEP11CBaseEntity"
+				}
+				"CTFBaseProjectile::SetDamage"
+				{
+					type "sym"
+					sym  "_ZN17CTFBaseProjectile9SetDamageEf"
+				}
+				"CTFCompoundBow::LaunchGrenade"
+				{
+					type "sym"
+					sym  "_ZN14CTFCompoundBow13LaunchGrenadeEv"
+				}
+				"CWeaponMedigun::HealTargetThink"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun15HealTargetThinkEv"
+				}
+				"CWeaponMedigun::GetHealRate"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun11GetHealRateEv"
+				}
+				"CEconItem::AddDynamicAttributeInternal"
+				{
+					type "sym"
+					sym  "_ZN9CEconItem27AddDynamicAttributeInternalEv"
+				}
+				"CEconItemView::GetSOCData"
+				{
+					type "sym"
+					sym  "_ZNK13CEconItemView10GetSOCDataEv"
+				}
+				"CTFWeaponBaseMelee::Holster"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee7HolsterEP17CBaseCombatWeapon"
+				}
+				"CTFWeaponBaseMelee::Swing"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee5SwingEP9CTFPlayer"
+				}
+				"CBaseObject::OnTakeDamage"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject12OnTakeDamageERK15CTakeDamageInfo"
+				}
+				"CTFStickBomb::Smack"
+				{
+					type "sym"
+					sym  "_ZN12CTFStickBomb5SmackEv"
+				}
+				"CTFGameMovement::CheckJumpButton"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement15CheckJumpButtonEv"
+				}
+				"CEconEntity::UpdateModelToClass"
+				{
+					type "sym"
+					sym  "_ZN11CEconEntity18UpdateModelToClassEv"
+				}
+				"CTFTankBoss::UpdatePingSound"
+				{
+					type "sym"
+					sym  "_ZN11CTFTankBoss15UpdatePingSoundEv"
+				}
+				"CTFTankBoss::Spawn"
+				{
+					type "sym"
+					sym  "_ZN11CTFTankBoss5SpawnEv"
+				}
+				"TE_TFExplosion"
+				{
+					type "sym"
+					sym  "_Z14TE_TFExplosionR16IRecipientFilterfRK6VectorS3_iiiii"
+				}
+				"CTFWeaponBaseGun::ModifyProjectile"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun16ModifyProjectileEP11CBaseEntity"
+				}
+				"GetParticleSystemIndex"
+				{
+					type "sym"
+					sym  "_Z22GetParticleSystemIndexPKc"
+				}
+				"UTIL_SetSize"
+				{
+					type "sym"
+					sym  "_Z12UTIL_SetSizeP11CBaseEntityRK6VectorS3_"
+				}
+				"CTFCompoundBow::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN14CTFCompoundBow18GetProjectileSpeedEv"
+				}
+				"CTFRaygun::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN9CTFRaygun18GetProjectileSpeedEv"
+				}
+				"CTFCrossbow::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN11CTFCrossbow18GetProjectileSpeedEv"
+				}
+				"CTFProjectile_EnergyRing::GetInitialVelocity"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyRing18GetInitialVelocityEv"
+				}
+				"CTFWeaponBaseGun::FireEnergyBall"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun14FireEnergyBallEP9CTFPlayerb"
+				}
+				"CTFWeaponBaseMelee::OnSwingHit"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee10OnSwingHitER10CGameTrace"
+				}
+				"CTFGrapplingHook::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN16CTFGrapplingHook18GetProjectileSpeedEv"
+				}
+				"CTFShotgunBuildingRescue::GetProjectileSpeed"
+				{
+					type "sym"
+					sym  "_ZN24CTFShotgunBuildingRescue18GetProjectileSpeedEv"
+				}
+				"CTFBaseRocket::Explode"
+				{
+					type "sym"
+					sym  "_ZN13CTFBaseRocket7ExplodeEP10CGameTraceP11CBaseEntity"
+				}
+				"TE_DispatchEffect"
+				{
+					type "sym"
+					sym  "_Z17TE_DispatchEffectR16IRecipientFilterfRK6VectorPKcRK11CEffectData"
+				}
+				"CTempEntsSystem::DispatchEffect"
+				{
+					type "sym"
+					sym  "_ZN15CTempEntsSystem14DispatchEffectER16IRecipientFilterfRK6VectorPKcRK11CEffectData"
+				}
+				"CRecipientFilter::IgnorePredictionCull"
+				{
+					type "sym"
+					sym  "_ZNK16CRecipientFilter20IgnorePredictionCullEv"
+				}
+				"CTFWeaponBase::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase13GetDamageTypeEv"
+				}
+				"CMatchInfo::GetNumActiveMatchPlayers"
+				{
+					type "sym"
+					sym  "_ZNK10CMatchInfo24GetNumActiveMatchPlayersEv"
+				}
+				"CTFGCServerSystem::PreClientUpdate"
+				{
+					type "sym"
+					sym  "_ZN17CTFGCServerSystem15PreClientUpdateEv"
+				}
+				"CTFGameRules::PlayerReadyStatus_ShouldStartCountdown"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules38PlayerReadyStatus_ShouldStartCountdownEv"
+				}
+				"CTFBaseBoss::OnTakeDamage"
+				{
+					type "sym"
+					sym  "_ZN11CTFBaseBoss12OnTakeDamageERK15CTakeDamageInfo"
+				}
+				"DispatchEffect"
+				{
+					type "sym"
+					sym  "_Z14DispatchEffectPKcRK11CEffectDataR16CRecipientFilter"
+				}
+				"UTIL_HudMessage"
+				{
+					type "sym"
+					sym  "_Z15UTIL_HudMessageP11CBasePlayerRK14hudtextparms_sPKc"
+				}
+				"CGameText::KeyValue"
+				{
+					type "sym"
+					sym  "_ZN9CGameText8KeyValueEPKcS1_"
+				}
+				"CTFPlayer::RemoveAmmo"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer10RemoveAmmoEii"
+				}
+				"CObjectSapper::IsValidRoboSapperTarget"
+				{
+					type "sym"
+					sym  "_ZN13CObjectSapper23IsValidRoboSapperTargetEP9CTFPlayer"
+				}
+				"CTFMinigun::CanHolster"
+				{
+					type "sym"
+					sym  "_ZNK10CTFMinigun10CanHolsterEv"
+				}
+				"CObjectTeleporter::DeterminePlaybackRate"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter21DeterminePlaybackRateEv"
+				}
+				"CBaseObject::ShouldQuickBuild"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject16ShouldQuickBuildEv"
+				}
+				"CTFBotVision::UpdatePotentiallyVisibleNPCVector"
+				{
+					type "sym"
+					sym  "_ZN12CTFBotVision33UpdatePotentiallyVisibleNPCVectorEv"
+				}
+				"CObjectSapper::ApplyRoboSapperEffects"
+				{
+					type "sym"
+					sym  "_ZN13CObjectSapper22ApplyRoboSapperEffectsEP9CTFPlayerf"
+				}
+				"CTFKnife::DisguiseOnKill"
+				{
+					type "sym"
+					sym  "_ZN8CTFKnife14DisguiseOnKillEv"
+				}
+				"CTFPlayerShared::Disguise"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
+				}
+				"CObjectSapper::IsParentValid"
+				{
+					type "sym"
+					sym  "_ZN13CObjectSapper13IsParentValidEv"
+				}
+				"CBaseCombatWeapon::SetWeaponVisible"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon16SetWeaponVisibleEb"
+				}
+				"CBaseEntity::StopSound"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity9StopSoundEPKc"
+				}
+				"CTFGameRules::ShouldRespawnQuickly"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules20ShouldRespawnQuicklyEP11CBasePlayer"
+				}
+				"CBaseEntity::SetParent"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity9SetParentEPS_i"
+				}
+				"CBaseEntity::UpdateOnRemove"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14UpdateOnRemoveEv"
+				}
+				"TE_PlayerAnimEvent"
+				{
+					type "sym"
+					sym  "_Z18TE_PlayerAnimEventP11CBasePlayer17PlayerAnimEvent_ti"
+				}
+				"CBaseTempEntity::Create"
+				{
+					type "sym"
+					sym  "_ZN15CBaseTempEntity6CreateER16IRecipientFilterf"
+				}
+				"CBaseTempEntity::GetServerClass"
+				{
+					type "sym"
+					sym  "_ZN15CBaseTempEntity6CreateER16IRecipientFilterf"
+				}
+				"CAttributeList::SetRuntimeAttributeValue"
+				{
+					type "sym"
+					sym  "_ZN14CAttributeList24SetRuntimeAttributeValueEPK28CEconItemAttributeDefinitionf"
+				}
+				"CTFWeaponBase::Deploy"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase6DeployEv"
+				}
+				"CTFWeaponBase::Holster"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase7HolsterEP17CBaseCombatWeapon"
+				}
+				"CTFBaseRocket::SetDamage"
+				{
+					type "sym"
+					sym  "_ZN13CTFBaseRocket9SetDamageEf"
+				}
+				"CObjectSentrygun::FireRocket"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun10FireRocketEv"
+				}
+				"TF_IsHolidayActive"
+				{
+					type "sym"
+					sym  "_Z18TF_IsHolidayActivei"
+				}
+				"CTFProjectile_SentryRocket::Create"
+				{
+					type "sym"
+					sym  "_ZN26CTFProjectile_SentryRocket6CreateERK6VectorRK6QAngleP11CBaseEntityS7_"
+				}
+				"CTFPointWeaponMimic::Fire"
+				{
+					type "sym"
+					sym  "_ZN19CTFPointWeaponMimic4FireEv"
+				}
+				"CTFProjectile_Rocket::Create"
+				{
+					type "sym"
+					sym  "_ZN20CTFProjectile_Rocket6CreateEP11CBaseEntityRK6VectorRK6QAngleS1_S1_"
+				}
+				"CCaptureFlag::PickUp"
+				{
+					type "sym"
+					sym  "_ZN12CCaptureFlag6PickUpEP9CTFPlayerb"
+				}
+				"CBaseObject::CanBeUpgraded"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject13CanBeUpgradedEP9CTFPlayer"
+				}
+				"CBaseObject::StartUpgrading"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject14StartUpgradingEv"
+				}
+				"CBaseObject::GetMaxUpgradeLevel"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject18GetMaxUpgradeLevelEv"
+				}
+				"CObjectSentrygun::SentryThink"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun11SentryThinkEv"
+				}
+				"CTeam::AddPlayer"
+				{
+					type "sym"
+					sym  "_ZN5CTeam9AddPlayerEP11CBasePlayer"
+				}
+				"CObjectSentrygun::FindTarget"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun10FindTargetEv"
+				}
+				"CTFProjectile_EnergyRing::CanHeadshot"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyRing11CanHeadshotEv"
+				}
+				"CTFProjectile_Arrow::CanHeadshot"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow11CanHeadshotEv"
+				}
+				"CTFProjectile_GrapplingHook::CanHeadshot"
+				{
+					type "sym"
+					sym  "_ZN27CTFProjectile_GrapplingHook11CanHeadshotEv"
+				}
+				"CTFProjectile_EnergyBall::CanHeadshot"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyBall11CanHeadshotEv"
+				}
+				"ApplyUpgrade_Default"
+				{
+					type "sym"
+					sym  "_ZL20ApplyUpgrade_DefaultRK22CMannVsMachineUpgradesP9CTFPlayerP13CEconItemViewib"
+				}
+				"CMannVsMachineUpgradeManager::LoadUpgradesFileFromPath"
+				{
+					type "sym"
+					sym  "_ZN28CMannVsMachineUpgradeManager24LoadUpgradesFileFromPathEPKc"
+				}
+				"CUpgrades::ApplyUpgradeToItem"
+				{
+					type "sym"
+					sym  "_ZN9CUpgrades18ApplyUpgradeToItemEP9CTFPlayerP13CEconItemViewiibb"
+				}
+				"GetUpgradeStepData"
+				{
+					type "sym"
+					sym  "_Z18GetUpgradeStepDataP9CTFPlayeriiRiRb"
+				}
+				"GetUpgradeStepData"
+				{
+					type "sym"
+					sym  "_ZNK25CVGUILocalizationProvider20ConvertLoccharToANSIEPKwPci"
+				}
+				"CEconItemSchema::ItemTesting_CreateTestDefinition"
+				{
+					type "sym"
+					sym  "_ZN15CEconItemSchema32ItemTesting_CreateTestDefinitionEiiP9KeyValues"
+				}
+				"CItemGeneration::SpawnItem [defIndex]"
+				{
+					type "sym"
+					sym  "_ZN15CItemGeneration9SpawnItemEiRK6VectorRK6QAngleiiPKc"
+				}
+				"CTFGrenadePipebombProjectile::VPhysicsCollision"
+				{
+					type "sym"
+					sym  "_ZN28CTFGrenadePipebombProjectile17VPhysicsCollisionEiP21gamevcollisionevent_t"
+				}
+				"PropDynamic_CollidesWithGrenades"
+				{
+					type "sym"
+					sym  "_Z32PropDynamic_CollidesWithGrenadesP11CBaseEntity"
+				}
+				"CTFProjectile_Flare::PerformCustomPhysics"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Flare20PerformCustomPhysicsEP6VectorS1_P6QAngleS3_"
+				}
+				"CBaseClient::SendNetMsg"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseClient10SendNetMsgER11INetMessageb"
+				}
+				"CMannVsMachineStats::PlayerEvent_Upgraded"
+				{
+					type "sym"
+					sym  "_ZN19CMannVsMachineStats20PlayerEvent_UpgradedEP9CTFPlayertthsb"
+				}
+				"CMannVsMachineStats::NotifyTargetPlayerEvent"
+				{
+					type "sym"
+					sym  "_ZN19CMannVsMachineStats23NotifyTargetPlayerEventEP9CTFPlayerj19eMannVsMachineEventi"
+				}
+				"CTFPistol_ScoutPrimary::Push"
+				{
+					type "sym"
+					sym  "_ZN22CTFPistol_ScoutPrimary4PushEv"
+				}
+				"static_attrib_t::BInitFromKV_SingleLine"
+				{
+					type "sym"
+					sym  "_ZN15static_attrib_t22BInitFromKV_SingleLineEPKcP9KeyValuesP10CUtlVectorI10CUtlString10CUtlMemoryIS5_iEEb"
+				}
+				"CTFTankBoss::Explode"
+				{
+					type "sym"
+					sym  "_ZN11CTFTankBoss7ExplodeEv"
+				}
+				"CTFTankBoss::UpdateOnRemove"
+				{
+					type "sym"
+					sym  "_ZN11CTFTankBoss14UpdateOnRemoveEv"
+				}
+				"CBaseEntity::IsPlayer"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity8IsPlayerEv"
+				}
+				"CBaseEntity::IsBaseObject"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity12IsBaseObjectEv"
+				}
+				"CTraceFilterObject::ShouldHitEntity"
+				{
+					type "sym"
+					sym  "_ZN18CTraceFilterObject15ShouldHitEntityEP13IHandleEntityi"
+				}
+				"ToTFBot"
+				{
+					type "sym"
+					sym  "_Z7ToTFBotP11CBaseEntity"
+				}
+				"CGameClient::ShouldSendMessages"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CGameClient18ShouldSendMessagesEv"
+				}
+				"SV_ComputeClientPacks"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z21SV_ComputeClientPacksiPP11CGameClientP14CFrameSnapshot"
+				}
+				"CHLTVServer::RunFrame"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer8RunFrameEv"
+				}
+				"CGameServer::SetHibernating"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CGameServer14SetHibernatingEb"
+				}
+				"CHLTVServer::StartMaster"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer11StartMasterEP11CGameClient"
+				}
+				"CBaseServer::CreateFakeClient"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseServer16CreateFakeClientEPKc"
+				}
+				"CBaseClient::ShouldSendMessages"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseClient18ShouldSendMessagesEv"
+				}
+				"CClientFrameManager::DeleteClientFrames"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CClientFrameManager18DeleteClientFramesEi"
+				}
+				"CBasePlayer::IsFakeClient"
+				{
+					type "sym"
+					sym  "_ZNK11CBasePlayer12IsFakeClientEv"
+				}
+				"CTFRobotArm::Smack"
+				{
+					type "sym"
+					sym  "_ZN11CTFRobotArm5SmackEv"
+				}
+				"CTFWeaponBaseMelee::DoSwingTrace"
+				{
+					type "sym"
+					sym  "_ZN18CTFWeaponBaseMelee12DoSwingTraceER10CGameTrace"
+				}
+				"CTFWeaponBase::GetTFPlayerOwner"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase16GetTFPlayerOwnerEv"
+				}
+				"CBaseEntity::GetTransmitState"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity16GetTransmitStateEv"
+				}
+				"CServerGameEnts::CheckTransmit"
+				{
+					type "sym"
+					sym  "_ZN15CServerGameEnts13CheckTransmitEP18CCheckTransmitInfoPKti"
+				}
+				"SendTable_CalcDelta"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z19SendTable_CalcDeltaPK9SendTablePKviS3_iPiii"
+				}
+				"CEconEntity::GetAttributeManager"
+				{
+					type "sym"
+					sym  "_ZN11CEconEntity19GetAttributeManagerEv"
+				}
+				"CAttributeManager::GetGlobalCacheVersion"
+				{
+					type "sym"
+					sym  "_ZNK17CAttributeManager21GetGlobalCacheVersionEv"
+				}
+				"CAttributeManager::ClearCache"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager10ClearCacheEv"
+				}
+				"CAttributeManager::~CAttributeManager [D2]"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManagerD2Ev"
+				}
+				"CAttributeManager::~CAttributeManager [D0]"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManagerD0Ev"
+				}
+				"CAttributeManager::ApplyAttributeFloat"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager19ApplyAttributeFloatEfP11CBaseEntity8string_tP10CUtlVectorIS1_10CUtlMemoryIS1_iEE"
+				}
+				"CEconEntity::UpdateOnRemove"
+				{
+					type "sym"
+					sym  "_ZN11CEconEntity14UpdateOnRemoveEv"
+				}
+				"SV_PackEntity"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZL13SV_PackEntityiP7edict_tP11ServerClassP14CFrameSnapshot"
+				}
+				"CEngine::Frame"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN7CEngine5FrameEv"
+				}
+				"_Host_RunFrame_Server"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z21_Host_RunFrame_Serverb"
+				}
+				"_Host_RunFrame"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z14_Host_RunFramef"
+				}
+				"CBaseAnimating::RefreshCollisionBounds"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating22RefreshCollisionBoundsEv"
+				}
+				"CCollisionProperty::SetSurroundingBoundsType"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty24SetSurroundingBoundsTypeE23SurroundingBoundsType_tPK6VectorS3_"
+				}
+				"FX_FireBullets"
+				{
+					type "sym"
+					sym  "_Z14FX_FireBulletsP13CTFWeaponBaseiRK6VectorRK6QAngleiiiffb"
+				}
+				"FindAttribute_UnsafeBitwiseCast<uint, float, CAttributeList>"
+				{
+					type "sym"
+					sym  "_Z31FindAttribute_UnsafeBitwiseCastIjf14CAttributeListEbPKT1_PK28CEconItemAttributeDefinitionPT0_"
+				}
+				"FindAttribute_UnsafeBitwiseCast<uint, float, CTFItemDefinition>"
+				{
+					type "sym"
+					sym  "_Z31FindAttribute_UnsafeBitwiseCastIjf17CTFItemDefinitionEbPKT1_PK28CEconItemAttributeDefinitionPT0_"
+				}
+				"CCollisionProperty::MarkPartitionHandleDirty"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty24MarkPartitionHandleDirtyEv"
+				}
+				"CBasePlayer::IsBotOfType"
+				{
+					type "sym"
+					sym  "_ZNK11CBasePlayer11IsBotOfTypeEi"
+				}
+				"CTFWeaponBaseGun::RemoveProjectileAmmo"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun20RemoveProjectileAmmoEP9CTFPlayer"
+				}
+				"CTFWeaponBaseGun::UpdatePunchAngles"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun17UpdatePunchAnglesEP9CTFPlayer"
+				}
+				"CBaseEntity::MyCombatWeaponPointer"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity21MyCombatWeaponPointerEv"
+				}
+				"INextBotComponent::GetBot"
+				{
+					type "sym"
+					sym  "_ZNK17INextBotComponent6GetBotEv"
+				}
+				"CTFGameRules::GetKillingWeaponName"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules20GetKillingWeaponNameERK15CTakeDamageInfoP9CTFPlayerPi"
+				}
+				"CUpgrades::Spawn"
+				{
+					type "sym"
+					sym  "_ZN9CUpgrades5SpawnEv"
+				}
+				"CBaseEntity::GetParametersForSound"
+				{
+					type "sym"
+					sym  "CBaseEntity::GetParametersForSound"
+				}
+				"CBaseCombatWeapon::WeaponSound"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon11WeaponSoundE13WeaponSound_tf"
+				}
+				"CTFGrenadePipebombProjectile::IsDeflectable"
+				{
+					type "sym"
+					sym  "_ZN28CTFGrenadePipebombProjectile13IsDeflectableEv"
+				}
+				"CTFProjectile_Arrow::IsDeflectable"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow13IsDeflectableEv"
+				}
+				"CTFProjectile_Flare::IsDeflectable"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Flare13IsDeflectableEv"
+				}
+				"CTFProjectile_EnergyBall::IsDeflectable"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyBall13IsDeflectableEv"
+				}
+				"CHLTVServer::IsTVRelay"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer9IsTVRelayEv"
+				}
+				"CTFPlayerShared::OnAddHalloweenTiny"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared18OnAddHalloweenTinyEv"
+				}
+				"CTFPlayerShared::OnRemoveHalloweenTiny"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared21OnRemoveHalloweenTinyEv"
+				}
+				"CBaseEntity::InSameTeam"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity10InSameTeamEPKS_"
+				}
+				"CBaseTrigger::PassesTriggerFilters"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger20PassesTriggerFiltersEP11CBaseEntity"
+				}
+				"CBaseTrigger::InputStartTouch"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger15InputStartTouchER11inputdata_t"
+				}
+				"CBaseTrigger::InputEndTouch"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger13InputEndTouchER11inputdata_t"
+				}
+				"CBaseFilter::PassesFilter"
+				{
+					type "sym"
+					sym  "_ZN11CBaseFilter12PassesFilterEP11CBaseEntityS1_"
+				}
+				"CBaseFilter::InputTestActivator"
+				{
+					type "sym"
+					sym  "_ZN11CBaseFilter18InputTestActivatorER11inputdata_t"
+				}
+				"CTFSniperRifle::SniperRifleChargeRateMod"
+				{
+					type "sym"
+					sym  "_ZN14CTFSniperRifle24SniperRifleChargeRateModEv"
+				}
+				"CTFSniperRifle::ApplyChargeSpeedModifications"
+				{
+					type "sym"
+					sym  "_ZN14CTFSniperRifle29ApplyChargeSpeedModificationsERf"
+				}
+				"CTFProjectile_MechanicalArmOrb::CheckForProjectiles"
+				{
+					type "sym"
+					sym  "_ZN30CTFProjectile_MechanicalArmOrb19CheckForProjectilesEv"
+				}
+				"CServerGameDLL::SetServerHibernation"
+				{
+					type "sym"
+					sym  "_ZN14CServerGameDLL20SetServerHibernationEb"
+				}
+				"CTFGCServerSystem::SetHibernation"
+				{
+					type "sym"
+					sym  "_ZN17CTFGCServerSystem14SetHibernationEb"
+				}
+				"CTFBaseRocket::CheckForStunOnImpact"
+				{
+					type "sym"
+					sym  "_ZN13CTFBaseRocket20CheckForStunOnImpactEP9CTFPlayer"
+				}
+				"CTFBaseBossLocomotion::FaceTowards"
+				{
+					type "sym"
+					sym  "_ZN21CTFBaseBossLocomotion11FaceTowardsERK6Vector"
+				}
+				"CAttributeManager::OnAttributeValuesChanged"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager24OnAttributeValuesChangedEv"
+				}
+				"CAttributeContainer::OnAttributeValuesChanged"
+				{
+					type "sym"
+					sym  "_ZN19CAttributeContainer24OnAttributeValuesChangedEv"
+				}
+				"CAttributeContainerPlayer::OnAttributeValuesChanged"
+				{
+					type "sym"
+					sym  "_ZN25CAttributeContainerPlayer24OnAttributeValuesChangedEv"
+				}
+				"CTFPlayerShared::OnAddBalloonHead"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared16OnAddBalloonHeadEv"
+				}
+				
 			}
 			
 			"addrs_group"
@@ -3025,6 +4035,7 @@
 				
 				"CBaseEntity::ThinkSet"                       "_ZN11CBaseEntity8ThinkSetEMS_FvvEfPKc"
 				"CBaseEntity::GetMaxHealth"                   "_ZNK11CBaseEntity12GetMaxHealthEv"
+				"CBaseEntity::IsDeflectable"				  "_ZN11CBaseEntity13IsDeflectableEv"
 				"CBaseEntity::IsAlive"                        "_ZN11CBaseEntity7IsAliveEv"
 				"CBaseEntity::GetDefaultItemChargeMeterValue" "_ZNK11CBaseEntity30GetDefaultItemChargeMeterValueEv"
 				"CBaseEntity::DispatchUpdateTransmitState"    "_ZN11CBaseEntity27DispatchUpdateTransmitStateEv"

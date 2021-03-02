@@ -2,7 +2,7 @@
 #define _INCLUDE_SIGSEGV_UTIL_BACKTRACE_H_
 
 
-#if defined _LINUX || defined _OSX
+#if defined DEBUG && (defined _LINUX || defined _OSX)
 
 void print_backtrace();
 

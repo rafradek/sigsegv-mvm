@@ -2,7 +2,9 @@
 #include "util/scope.h"
 #include "stub/populators.h"
 #include "stub/gamerules.h"
-
+#include "stub/trace.h"
+#include <gamemovement.h>
+#include "util/clientmsg.h"
 
 namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 {
@@ -33,6 +35,8 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	ConVar cvar_debug("sig_bot_isspacetospawnhere_scale_debug", "0", FCVAR_NOTIFY,
 		"Mod: Spew debug information when doing spawn trace");
 	
+	ConVar cvar_botspawnfix("sig_bot_isspacetospawnhere_scale_bot_spawn", "0", FCVAR_NOTIFY,
+		"Mod: prevent spawning miniboss bots in places where its not applicable");
 	
 	CTFBotSpawner *the_spawner = nullptr;
 	float the_bot_scale = 1.0f;
@@ -47,7 +51,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		the_bot_scale = (spawner->IsMiniBoss(-1) ? tf_mvm_miniboss_scale.GetFloat() : 1.0f);
 		if (spawner->m_flScale != -1.0f) the_bot_scale = spawner->m_flScale;
 		
-		SCOPED_INCREMENT_IF(rc_CTFBotSpawner_Spawn, the_bot_scale != 1.0f);
+		SCOPED_INCREMENT_IF(rc_CTFBotSpawner_Spawn, the_bot_scale != 1.0f && cvar_botspawnfix.GetBool());
 		
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
 	}
@@ -79,7 +83,111 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		return result;
 	}
 	
+	CBasePlayer *stuck_player = nullptr;
+	CMoveData *stuck_player_move = nullptr;
+	bool stuck_player_red = false;
+	DETOUR_DECL_MEMBER(int, CTFGameMovement_CheckStuck)
+	{
+		CBasePlayer *player = reinterpret_cast<CGameMovement *>(this)->player;
+		
+		if (player->IsAlive() && player->GetModelScale() > 1.0f) {
+			stuck_player = player;
+			stuck_player_move = reinterpret_cast<CGameMovement *>(this)->GetMoveData();
+		}
+
+		bool isplayermvm = !player->IsBot() && TFGameRules()->IsMannVsMachineMode();
+
+		if (!isplayermvm)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+
+		int result = DETOUR_MEMBER_CALL(CTFGameMovement_CheckStuck)();
+
+		if (!isplayermvm)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+
+		stuck_player = nullptr;
+
+		return result;
+	}
 	
+	std::map<CHandle<CTFPlayer>, float> old_scale_map;
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnRemoveHalloweenTiny)
+	{
+		CTFPlayerShared *shared = reinterpret_cast<CTFPlayerShared *>(this);
+		
+		CTFPlayer *player = shared->GetOuter();
+		
+		player->GetAttributeList()->RemoveAttribute(GetItemSchema()->GetAttributeDefinitionByName("head scale"));
+		player->GetAttributeList()->RemoveAttribute(GetItemSchema()->GetAttributeDefinitionByName("voice pitch scale"));
+
+		float old_scale = 1.0f;
+
+		for (auto it = old_scale_map.begin(); it != old_scale_map.end(); ) {
+			//Clear old entries
+			if (it->first == nullptr || !(it->first->IsAlive())) {
+				it = old_scale_map.erase(it);	
+			}
+			else if (it->first == player) {
+				old_scale = it->second;
+				it = old_scale_map.erase(it);
+			}
+			else {
+				it++;
+			}
+		}
+
+		player->SetModelScale(old_scale);
+
+		const Vector& vOrigin = player->GetAbsOrigin();
+		const QAngle& qAngle = player->GetAbsAngles();
+		const Vector& vHullMins = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MIN : VEC_HULL_MIN) * player->GetModelScale();
+		const Vector& vHullMaxs = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MAX : VEC_HULL_MAX) * player->GetModelScale();
+
+		trace_t result;
+		CTraceFilterIgnoreTeammates filter(player, COLLISION_GROUP_NONE);
+		UTIL_TraceHull(vOrigin, vOrigin, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result);
+		// am I stuck? try to resolve it
+		if ( result.DidHit() )
+		{
+			float flPlayerHeight = vHullMaxs.z - vHullMins.z;
+			float flExtraHeight = 10;
+			float flSpaceMove = old_scale * 24;
+
+			static Vector vTest[] =
+			{
+				Vector( flSpaceMove, flSpaceMove, flExtraHeight ),
+				Vector( -flSpaceMove, -flSpaceMove, flExtraHeight ),
+				Vector( -flSpaceMove, flSpaceMove, flExtraHeight ),
+				Vector( flSpaceMove, -flSpaceMove, flExtraHeight ),
+				Vector( 0, 0, flPlayerHeight * 0.5 + flExtraHeight ),
+				Vector( 0, 0, -flPlayerHeight - flExtraHeight )
+			};
+			for ( int i=0; i<ARRAYSIZE( vTest ); ++i )
+			{
+				Vector vTestPos = vOrigin + vTest[i];
+				UTIL_TraceHull(vTestPos, vTestPos, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result);
+				if (!result.DidHit())
+				{
+					player->Teleport(&vTestPos, &qAngle, NULL);
+					return;
+				}
+			}
+
+			player->CommitSuicide( false, true );
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnAddHalloweenTiny)
+	{
+		CTFPlayerShared *shared = reinterpret_cast<CTFPlayerShared *>(this);
+		
+		CTFPlayer *player = shared->GetOuter();
+		
+		old_scale_map[player] = player->GetModelScale();
+
+		DETOUR_MEMBER_CALL(CTFPlayerShared_OnAddHalloweenTiny)();
+	}
+
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
 		if (rc_IsSpaceToSpawnHere > 0 && the_pos != nullptr) {
@@ -153,7 +261,53 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 				return;
 			}
 		}
-		
+
+		if (stuck_player != nullptr) {
+			DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+
+			//Hit world entity, teleporting player away if possible
+			if (pTrace->startsolid && (pTrace->m_pEnt == nullptr || ENTINDEX(pTrace->m_pEnt) == 0)) {
+				float flPlayerHeight = ray.m_Extents.z * 2.0f;
+				float flExtraHeight = 10;
+				Ray_t ray_alt = ray;
+				static Vector vTest[] =
+				{
+					Vector( 40, 40, flExtraHeight ),
+					Vector( -40, -40, flExtraHeight ),
+					Vector( -40, 40, flExtraHeight ),
+					Vector( 40, -40, flExtraHeight ),
+					Vector( 0, 0, flPlayerHeight + flExtraHeight ),
+					Vector( 0, 0, -flPlayerHeight - flExtraHeight )
+				};
+				for ( int i=0; i<ARRAYSIZE( vTest ); ++i )
+				{
+					Vector vTestPos = stuck_player->GetAbsOrigin() + vTest[i];
+					ray_alt.m_Start = ray.m_Start + vTest[i];
+					
+					trace_t trace_alt;
+					DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray_alt, fMask, pTraceFilter, &trace_alt);
+
+					if ( !(trace_alt.startsolid && (trace_alt.m_pEnt == nullptr || ENTINDEX(trace_alt.m_pEnt) == 0)) )
+					{
+						// The real offset of abs origin of CMoveData is 4 bytes away
+						Vector *move_ptr = (Vector *)((uintptr_t)(&stuck_player_move->GetAbsOrigin())+4);
+
+						*move_ptr += vTest[i];
+
+						*pTrace = trace_alt;
+						return;
+					}
+					else
+					{
+
+					}
+				}
+			}
+
+			stuck_player = nullptr;
+			return;
+		}
+
 		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
 	}
 	
@@ -163,11 +317,18 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	public:
 		CMod() : IMod("Bot:IsSpaceToSpawnHere_Scale")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
+			// If bots spawn cant fit a miniboss, its more of a map issue
+			// MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			
 			MOD_ADD_DETOUR_STATIC(TeleportNearVictim, "TeleportNearVictim");
 			
 			MOD_ADD_DETOUR_STATIC(IsSpaceToSpawnHere, "IsSpaceToSpawnHere");
+
+			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_CheckStuck, "CTFGameMovement::CheckStuck");
+
+			// Fix tiny spell being too suicidal, also restore to the original scale
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnRemoveHalloweenTiny, "CTFPlayerShared::OnRemoveHalloweenTiny");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnAddHalloweenTiny, "CTFPlayerShared::OnAddHalloweenTiny");
 			
 			MOD_ADD_DETOUR_MEMBER(IEngineTrace_TraceRay, "IEngineTrace::TraceRay");
 		}

@@ -123,7 +123,21 @@
 					type "sym"
 					sym  "_ZN21CTFBotMvMEngineerIdle6UpdateEP6CTFBotf"
 				}
-				
+				"~CTFBotMvMEngineerIdle [D0]"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotMvMEngineerIdleD0Ev"
+				}
+				"~CTFBotMvMEngineerIdle [D1]"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotMvMEngineerIdleD1Ev"
+				}
+				"~CTFBotMvMEngineerIdle [D2]"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotMvMEngineerIdleD2Ev"
+				}
 				"CTFBotMvMEngineerBuildSentryGun::CTFBotMvMEngineerBuildSentryGun [C1]"
 				{
 					type "sym"
@@ -293,6 +307,11 @@
 					type "sym"
 					sym  "_ZN21CTFBotTacticalMonitor16OnNavAreaChangedEP6CTFBotP8CNavAreaS3_"
 				}
+				"CTFBotTacticalMonitor::AvoidBumpingEnemies"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotTacticalMonitor19AvoidBumpingEnemiesEP6CTFBot"
+				}
 				
 				"CTFBotSpyAttack::Update"
 				{
@@ -372,7 +391,71 @@
 					type "sym"
 					sym  "_ZN17CTFBotDeliverFlag15UpgradeOverTimeEP6CTFBot"
 				}
-				
+				"CTFBotMainAction::SelectTargetPoint"
+				{
+					type "sym"
+					sym  "_ZNK16CTFBotMainAction17SelectTargetPointEPK8INextBotPK20CBaseCombatCharacter"
+				}
+				"CTFBotDead::Update"
+				{
+					type "sym"
+					sym  "_ZN10CTFBotDead6UpdateEP6CTFBotf"
+				}
+				"CTFBotSpySap::CTFBotSpySap [C1]"
+				{
+					type "sym"
+					sym  "_ZN12CTFBotSpySapC1EP11CBaseObject"
+				}
+				"CTFBotSpySap::CTFBotSpySap [C2]"
+				{
+					type "sym"
+					sym  "_ZN12CTFBotSpySapC2EP11CBaseObject"
+				}
+				"CTFBotEscortFlagCarrier::Update"
+				{
+					type "sym"
+					sym  "_ZN23CTFBotEscortFlagCarrier6UpdateEP6CTFBotf"
+				}
+				"GetBotEscortCount"
+				{
+					type "sym"
+					sym  "_Z17GetBotEscortCounti"
+				}
+				"CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport"
+				{
+					type "sym"
+					sym  "_ZNK21CTFBotTacticalMonitor31ShouldOpportunisticallyTeleportEP6CTFBot"
+				}
+				"CTFBotMainAction::GetHealerOfThreat"
+				{
+					type "sym"
+					sym  "_ZNK16CTFBotMainAction17GetHealerOfThreatEPK12CKnownEntity"
+				}
+				"IIntention::IsHindrance"
+				{
+					type "sym"
+					sym  "_ZNK10IIntention11IsHindranceEPK8INextBotP11CBaseEntity"
+				}
+				"CTFBotEscortSquadLeader::Update"
+				{
+					type "sym"
+					sym  "_ZN23CTFBotEscortSquadLeader6UpdateEP6CTFBotf"
+				}
+				"CTFBotEscortSquadLeader::OnEnd"
+				{
+					type "sym"
+					sym  "_ZN23CTFBotEscortSquadLeader5OnEndEP6CTFBotP6ActionIS0_E"
+				}
+				"CTFBotEscortSquadLeader::~CTFBotEscortSquadLeader [D0]"
+				{
+					type "sym"
+					sym  "_ZN23CTFBotEscortSquadLeaderD0Ev"
+				}
+				"CTFBotEscortSquadLeader::~CTFBotEscortSquadLeader [D2]"
+				{
+					type "sym"
+					sym  "_ZN23CTFBotEscortSquadLeaderD2Ev"
+				}
 			}
 		}
 	}

@@ -8,22 +8,17 @@
 
 namespace Mod::Pop::EventPopfile_Improvements
 {
-	RefCount rc_CTFBotSpawner_Spawn;
-	IPopulationSpawner *spawner = nullptr;
-	DETOUR_DECL_MEMBER(int, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	RefCount rc_CMissionPopulator_UpdateMissionDestroySentries;
+	DETOUR_DECL_MEMBER(int, CMissionPopulator_UpdateMissionDestroySentries, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
-		spawner = reinterpret_cast<IPopulationSpawner *>(this);
-		SCOPED_INCREMENT(rc_CTFBotSpawner_Spawn);
-		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		SCOPED_INCREMENT(rc_CMissionPopulator_UpdateMissionDestroySentries);
+		return DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)(where, ents);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_AddItem, const char *item)
 	{
-		if (rc_CTFBotSpawner_Spawn > 0 && strncmp(item, "Zombie ", strlen("Zombie ")) == 0 && spawner != nullptr) {
-			auto populator = rtti_cast<CMissionPopulator *>(spawner->m_Populator);
-			if (populator != nullptr && populator->m_Objective == CTFBot::MISSION_DESTROY_SENTRIES) {
+		if (rc_CMissionPopulator_UpdateMissionDestroySentries > 0 && strncmp(item, "Zombie ", strlen("Zombie ")) == 0) {
 				return;
-			}
 		}
 		
 		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
@@ -45,7 +40,7 @@ namespace Mod::Pop::EventPopfile_Improvements
 	
 	DETOUR_DECL_STATIC(bool, UTIL_IsHolidayActive, int holiday)
 	{
-		if (holiday == kHoliday_HalloweenOrFullMoonOrValentines && rc_CTFBotSpawner_Spawn > 0) {
+		if (holiday == kHoliday_HalloweenOrFullMoonOrValentines && rc_CMissionPopulator_UpdateMissionDestroySentries > 0) {
 			return true;
 		}
 		
@@ -58,7 +53,7 @@ namespace Mod::Pop::EventPopfile_Improvements
 	public:
 		CMod() : IMod("Pop:EventPopfile_Improvements")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CMissionPopulator_UpdateMissionDestroySentries, "CMissionPopulator::UpdateMissionDestroySentries");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,      "CTFBot::AddItem");
 			
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_UpdateObjectiveResource, "CPopulationManager::UpdateObjectiveResource");

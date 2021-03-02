@@ -4,6 +4,7 @@
 
 #include "util/misc.h"
 #include "link/link.h"
+#include "stub/econ.h"
 
 
 struct CMannVsMachineUpgrades
@@ -39,5 +40,17 @@ private:
 };
 SIZE_CHECK(CMannVsMachineUpgradeManager, 0x3c);
 
+extern StaticFuncThunk<attrib_definition_index_t, const CMannVsMachineUpgrades&, CTFPlayer *, CEconItemView *, int, bool> ft_ApplyUpgrade_Default;
+extern StaticFuncThunk<int, CTFPlayer *, int, int, int&, bool&> ft_GetUpgradeStepData;
+
+inline int GetUpgradeStepData( CTFPlayer *pPlayer, int nWeaponSlot, int nUpgradeIndex, int &nCurrentStep, bool &bOverCap )
+{
+	return ft_GetUpgradeStepData(pPlayer, nWeaponSlot, nUpgradeIndex, nCurrentStep, bOverCap);
+}
+
+inline attrib_definition_index_t ApplyUpgrade_Default( const CMannVsMachineUpgrades& upgrade, CTFPlayer *pTFPlayer, CEconItemView *pEconItemView, int nCost, bool bDowngrade )
+{
+	return ft_ApplyUpgrade_Default(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
+}
 
 #endif

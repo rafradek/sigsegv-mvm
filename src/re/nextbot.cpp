@@ -16,7 +16,7 @@ void IHotplugAction::UnloadAll()
 	Msg("IHotplugAction::UnloadAll: calling Reset() on %zu TFBot intention interfaces\n", bots.size());
 	
 	for (auto bot : bots) {
-		rtti_cast<INextBot *>(bot)->GetIntentionInterface()->Reset();
+		bot->MyNextBotPointer()->GetIntentionInterface()->Reset();
 	}
 	
 	assert(AutoList<IHotplugAction>::List().empty());

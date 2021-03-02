@@ -95,7 +95,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 				should_repath = true;
 			}
 			
-			INextBot *nextbot = rtti_cast<INextBot *>(actor);
+			INextBot *nextbot = actor->MyNextBotPointer();
 			
 			if (should_repath) {
 				DevMsg("  repathing\n");
@@ -253,7 +253,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		IVision *vision = reinterpret_cast<IVision *>(this);
-		CTFBot *actor = rtti_cast<CTFBot *>(vision->GetBot());
+		CTFBot *actor = ToTFBot(vision->GetBot()->GetEntity());
 		
 	//	DevMsg("CTFBotVision::IsIgnored INextBot %08x CTFBot %08x\n", (uintptr_t)vision->GetBot(), (uintptr_t)actor);
 	//	DevMsg("CTFBotVision::IsIgnored actor %08x ent %08x\n", (uintptr_t)actor, (uintptr_t)ent);
@@ -288,12 +288,16 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		SCOPED_INCREMENT(rc_CTFBotVision_CollectPotentiallyVisibleEntities);
 		DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
 		
-		for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
-			auto proj = rtti_cast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
-			assert(proj != nullptr);
-			
-			if (strcmp(proj->GetClassname(), "tf_projectile_pipe_remote") == 0) {
-				ents->AddToTail(proj);
+		auto &list = IBaseProjectileAutoList::AutoList();
+		int list_count = list.Count();
+		if (list_count != 0 && static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
+			for (int i = 0; i < list_count; ++i) {
+				auto proj = rtti_cast<CBaseProjectile *>(list[i]);
+				assert(proj != nullptr);
+				
+				if (strcmp(proj->GetClassname(), "tf_projectile_pipe_remote") == 0) {
+					ents->AddToTail(proj);
+				}
 			}
 		}
 	}

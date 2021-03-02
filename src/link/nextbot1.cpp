@@ -7,6 +7,14 @@
 #define AR   ActionResult<CTFBot>
 #define EDR  EventDesiredResult<CTFBot>
 
+/* INextBot */
+static MemberFuncThunk<const INextBot *, bool, CBaseEntity *, float> ft_INextBot_IsRangeLessThan(                 "INextBot::IsRangeLessThan");
+static MemberFuncThunk<const INextBot *, bool, CBaseEntity *, float> ft_INextBot_IsRangeGreaterThan(              "INextBot::IsRangeGreaterThan");
+
+static MemberVFuncThunk<const INextBot *, CBaseCombatCharacter *> vt_INextBot_GetEntity(TypeName<NextBotPlayer<CTFPlayer>>(), "NextBotPlayer<CTFPlayer>::GetEntity");
+
+/* INextBotComponent */
+static MemberFuncThunk<const INextBotComponent *, INextBot *> vt_INextBotComponent_GetBot( "INextBotComponent::GetBot");
 
 /* CKnownEntity */
 static MemberFuncThunk<      CKnownEntity *, void>                      ft_CKnownEntity_Destroy(                     "CKnownEntity::Destroy");
@@ -195,6 +203,11 @@ static MemberFuncThunk<const CTFBotPathCost *, float, CNavArea *, CNavArea *, co
 static MemberFuncThunk<NextBotManager *, void, CUtlVector<INextBot *> *> ft_NextBotManager_CollectAllBots("NextBotManager::CollectAllBots");
 static StaticFuncThunk<NextBotManager&> ft_TheNextBots("TheNextBots");
 
+bool INextBot::IsRangeLessThan(CBaseEntity *ent, float radius) const    { return ft_INextBot_IsRangeLessThan(this, ent, radius);          }
+bool INextBot::IsRangeGreaterThan(CBaseEntity *ent, float radius) const { return ft_INextBot_IsRangeGreaterThan(this, ent, radius);       }
+CBaseCombatCharacter *INextBot::GetEntity() const                       { return vt_INextBot_GetEntity(this);          }
+
+INextBot *INextBotComponent::GetBot() const { return vt_INextBotComponent_GetBot(this);       }
 
 void CKnownEntity::Destroy()                                  {        ft_CKnownEntity_Destroy                     (this);          }
 void CKnownEntity::UpdatePosition()                           {        ft_CKnownEntity_UpdatePosition              (this);          }

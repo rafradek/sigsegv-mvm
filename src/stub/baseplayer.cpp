@@ -87,16 +87,19 @@ MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_ForceButtons  ("CBasePlayer::ForceButtons");
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_UnforceButtons("CBasePlayer::UnforceButtons");
 MemberFuncThunk<CBasePlayer *, void, const QAngle&>                CBasePlayer::ft_SnapEyeAngles ("CBasePlayer::SnapEyeAngles");
-MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          CBasePlayer::ft_Weapon_Equip (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
-MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              CBasePlayer::ft_EquipWearable (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
+MemberFuncThunk<      CBasePlayer *, void, int, bool, bool, bool>  CBasePlayer::ft_ChangeTeam_base    ("CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 
+MemberVFuncThunk<const CBasePlayer *, bool>                        CBasePlayer::vt_IsFakeClient        (TypeName<CBasePlayer>(), "CBasePlayer::IsFakeClient");
 MemberVFuncThunk<const CBasePlayer *, bool>                        CBasePlayer::vt_IsBot               (TypeName<CBasePlayer>(), "CBasePlayer::IsBot");
+MemberVFuncThunk<const CBasePlayer *, bool, int>                   CBasePlayer::vt_IsBotOfType         (TypeName<CBasePlayer>(), "CBasePlayer::IsBotOfType");
 MemberVFuncThunk<      CBasePlayer *, void, bool, bool>            CBasePlayer::vt_CommitSuicide       (TypeName<CBasePlayer>(), "CBasePlayer::CommitSuicide");
 MemberVFuncThunk<      CBasePlayer *, void>                        CBasePlayer::vt_ForceRespawn        (TypeName<CTFPlayer>(),   "CTFPlayer::ForceRespawn");
 MemberVFuncThunk<      CBasePlayer *, Vector>                      CBasePlayer::vt_Weapon_ShootPosition(TypeName<CBasePlayer>(), "CBasePlayer::Weapon_ShootPosition");
 MemberVFuncThunk<      CBasePlayer *, float>                       CBasePlayer::vt_GetPlayerMaxSpeed   (TypeName<CBasePlayer>(), "CBasePlayer::GetPlayerMaxSpeed");
 MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       CBasePlayer::vt_RemoveWearable      (TypeName<CBasePlayer>(), "CBasePlayer::RemoveWearable");
 MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> CBasePlayer::vt_ChangeTeam_bool3    (TypeName<CBasePlayer>(), "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
+MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          CBasePlayer::vt_Weapon_Equip (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
+MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              CBasePlayer::vt_EquipWearable (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");

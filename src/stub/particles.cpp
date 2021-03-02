@@ -1,4 +1,4 @@
-//#include "stub/particles.h"
+#include "stub/particles.h"
 #include "link/link.h"
 
 
@@ -48,4 +48,77 @@ static StaticFuncThunk<void, CBaseEntity *> ft_StopParticleEffects("StopParticle
 void StopParticleEffects(CBaseEntity *pEntity)
 {
 	ft_StopParticleEffects(pEntity);
+}
+
+//static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");
+//void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID = -1, int nSound = 11 /*SPECIAL1*/, int iCustomParticle = INVALID_STRING_INDEX )
+//{
+//	ft_TE_TFExplosion(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
+//}
+
+//static StaticFuncThunk<int, const char *> ft_GetParticleSystemIndex("GetParticleSystemIndex");
+//int GetParticleSystemIndex( const char * name)
+//{
+//	return ft_GetParticleSystemIndex(name);
+//}
+
+void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter)
+{
+	int iAttachment = -1;
+	if ( pEntity )
+	{
+		CBaseAnimating *animating = rtti_cast<CBaseAnimating *>(pEntity);
+		if (animating != nullptr) {
+			// Find the attachment point index
+			iAttachment =animating->LookupAttachment( pszAttachmentName );
+			if ( iAttachment <= 0 )
+			{
+				return;
+			}
+		}
+	}
+
+	CEffectData	data;
+
+	data.m_nHitBox = GetParticleSystemIndex( pszParticleName );
+	if ( pEntity )
+	{
+		data.m_nEntIndex = pEntity->entindex();
+		data.m_fFlags |= PARTICLE_DISPATCH_FROM_ENTITY;
+		data.m_vOrigin = pEntity->GetAbsOrigin();
+	}
+	data.m_nDamageType = iAttachType;
+	data.m_nAttachmentIndex = iAttachment;
+
+	if ( bResetAllParticlesOnEntity )
+	{
+		data.m_fFlags |= PARTICLE_DISPATCH_RESET_PARTICLES;
+	}
+
+	if ( bUseColors )
+	{
+		data.m_bCustomColors = true;
+		data.m_CustomColors.m_vecColor1 = vecColor1;
+		data.m_CustomColors.m_vecColor2 = vecColor2;
+	}
+	if (controlPoint != nullptr) {
+		data.m_bControlPoint1 = true;
+		data.m_ControlPoint1.m_eParticleAttachment = controlPoint->m_eParticleAttachment;
+		data.m_ControlPoint1.m_vecOffset = controlPoint->m_vecOffset;
+	}
+
+	if (pFilter != nullptr) {
+		TE_DispatchEffect( *pFilter, 0.0f, data.m_vOrigin, "ParticleEffect", data);
+	}
+	else if ( ( data.m_fFlags & PARTICLE_DISPATCH_FROM_ENTITY ) != 0 &&
+		 ( iAttachType == PATTACH_ABSORIGIN_FOLLOW || iAttachType == PATTACH_POINT_FOLLOW || iAttachType == PATTACH_ROOTBONE_FOLLOW ) )
+	{
+		CReliableBroadcastRecipientFilter filter;
+		TE_DispatchEffect( filter, 0.0f, data.m_vOrigin, "ParticleEffect", data);
+	}
+	else
+	{
+		CPASFilter filter(data.m_vOrigin);
+		TE_DispatchEffect( filter, 0.0f, data.m_vOrigin, "ParticleEffect", data);
+	}
 }

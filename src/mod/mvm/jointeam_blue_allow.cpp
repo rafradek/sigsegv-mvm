@@ -1,10 +1,13 @@
 #include "mod.h"
 #include "stub/gamerules.h"
 #include "stub/tfbot.h"
+#include "stub/objects.h"
 #include "stub/tf_shareddefs.h"
+#include "stub/misc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
 #include "util/iterate.h"
+#include "stub/populators.h"
 
 // TODO: move to common.h
 #include <igamemovement.h>
@@ -21,7 +24,6 @@ namespace Mod::Pop::PopMgr_Extensions
 namespace Mod::MvM::JoinTeam_Blue_Allow
 {
 	using CollectPlayersFunc_t = int (*)(CUtlVector<CTFPlayer *> *, int, bool, bool);
-	
 	
 	constexpr uint8_t s_Buf_CollectPlayers_Caller1[] = {
 		0xc7, 0x44, 0x24, 0x0c, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [esp+0xc],<bool:shouldAppend>
@@ -89,10 +91,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			/* put the relative offset into place */
 			buf.SetDword(0x3e + 1, off);
 			
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] BUF DUMP:\n");
+			DevMsg("[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
+			DevMsg("[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
+			DevMsg("[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
+			DevMsg("[CPatch_CollectPlayers_Caller1::AdjustPatchInfo] BUF DUMP:\n");
 			buf.Dump();
 			
 			return true;
@@ -172,10 +174,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			/* put the relative offset into place */
 			buf.SetDword(0x43 + 1, off);
 			
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] BUF DUMP:\n");
+			DevMsg("[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
+			DevMsg("[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
+			DevMsg("[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
+			DevMsg("[CPatch_CollectPlayers_Caller2::AdjustPatchInfo] BUF DUMP:\n");
 			buf.Dump();
 			
 			return true;
@@ -253,10 +255,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			/* put the relative offset into place */
 			buf.SetDword(0x2d + 1, off);
 			
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] BUF DUMP:\n");
+			DevMsg("[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] src: 0x%08x\n", (uintptr_t)src);
+			DevMsg("[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] dst: 0x%08x\n", (uintptr_t)dst);
+			DevMsg("[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] off: 0x%08x\n", (uintptr_t)off);
+			DevMsg("[CPatch_CollectPlayers_Caller3::AdjustPatchInfo] BUF DUMP:\n");
 			buf.Dump();
 			
 			return true;
@@ -332,8 +334,17 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		"Blue humans in MvM: enable infinite spy cloak meter");
 	ConVar cvar_infinite_cloak_deadringer("sig_mvm_bluhuman_infinite_cloak_deadringer", "0", FCVAR_NOTIFY,
 		"Blue humans in MvM: enable infinite spy cloak meter (Dead Ringer)");
+
+	ConVar cvar_infinite_ammo("sig_mvm_bluhuman_infinite_ammo", "1", FCVAR_NOTIFY,
+		"Blue humans in MvM: infinite ammo");
+
+	ConVar cvar_teleport("sig_mvm_bluhuman_teleport", "0", FCVAR_NOTIFY,
+		"Blue humans in MvM: teleport to engiebot teleport");
+
+	ConVar cvar_teleport_player("sig_mvm_bluhuman_teleport_player", "0", FCVAR_NOTIFY,
+		"Blue humans in MvM: teleport bots and players to player teleport exit");
 	
-	
+	std::map<CHandle<CTFPlayer>, float> player_deploy_time; 
 	// TODO: probably need to add in a check for TF_COND_REPROGRAMMED here and:
 	// - exclude humans on TF_TEAM_BLUE who are in TF_COND_REPROGRAMMED
 	// - include humans on TF_TEAM_RED who are in TF_COND_REPROGRAMMED
@@ -368,7 +379,15 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		return (area != nullptr && area->HasTFAttributes(BLUE_SPAWN_ROOM));
 	}
 	
-	
+	static int CollectPlayers_EnemyTeam(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
+	{
+		extern ConVar cvar_force;
+		if (cvar_force.GetBool()) 
+			return CollectPlayers(playerVector, TF_TEAM_RED,  isAlive, shouldAppend);
+		else
+			return CollectPlayers(playerVector, TF_TEAM_BLUE, isAlive, true);
+	}
+
 	static int CollectPlayers_RedAndBlue(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
 	{
 		(void) CollectPlayers(playerVector, TF_TEAM_RED,  isAlive, shouldAppend);
@@ -427,16 +446,22 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			BACKTRACE();
 		}
 		
-		if (TFGameRules()->IsMannVsMachineMode() && !pPlayer->IsBot() && iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) {
+		extern ConVar cvar_force;
+		//DevMsg("Get team assignment %d %d %d\n", iWantedTeam, cvar_force.GetBool());
+
+		if (TFGameRules()->IsMannVsMachineMode() && !pPlayer->IsFakeClient() && !pPlayer->IsBot() 
+			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
 			// NOTE: if the pop file had custom param 'AllowJoinTeamBlue 1', then disregard admin-only restrictions
 			extern ConVar cvar_adminonly;
-			if (Mod::Pop::PopMgr_Extensions::PopFileIsOverridingJoinTeamBlueConVarOn() ||
+			if (cvar_force.GetBool() || Mod::Pop::PopMgr_Extensions::PopFileIsOverridingJoinTeamBlueConVarOn() ||
 				!cvar_adminonly.GetBool() || PlayerIsSMAdmin(pPlayer)) {
 				if (cvar_max.GetInt() < 0 || GetMvMBlueHumanCount() < cvar_max.GetInt()) {
 					DevMsg("Player #%d \"%s\" requested team %d but was forced onto team %d; overriding to allow them to join team %d.\n",
 						ENTINDEX(pPlayer), pPlayer->GetPlayerName(), iWantedTeam, iResult, iWantedTeam);
-					iResult = iWantedTeam;
+					iResult = TF_TEAM_BLUE;
 				} else {
+					if (cvar_force.GetBool())
+						iResult = TEAM_SPECTATOR;
 					DevMsg("Player #%d \"%s\" requested team %d but was forced onto team %d; would have overridden to allow joining team %d but limit has been met.\n",
 						ENTINDEX(pPlayer), pPlayer->GetPlayerName(), iWantedTeam, iResult, iWantedTeam);
 					ClientMsg(pPlayer, "Cannot join team blue: the maximum number of human players on blue team has already been met.\n");
@@ -445,6 +470,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				ClientMsg(pPlayer, "You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n");
 			}
 		}
+		
+		//DevMsg("Get team assignment result %d\n", iResult);
 		
 		return iResult;
 	}
@@ -466,7 +493,13 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		
 		if (FStrEq(args[0], "upgrade")) {
 			if (IsMvMBlueHuman(player) && IsInBlueSpawnRoom(player)) {
-				player->m_Shared->m_bInUpgradeZone = true;
+				int cannotUpgrade = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
+				if (cannotUpgrade) {
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
+				}
+				else
+					player->m_Shared->m_bInUpgradeZone = true;
 			}
 			
 			return true;
@@ -536,12 +569,30 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			// skipping flag->m_nType check out of laziness
 			
 			if (!TFGameRules()->FlagsMayBeCapped()) return;
-			
-			#warning Should have flag->IsCaptured() check in here
-		//	if (flag->IsCaptured() || zone->GetTeamNumber() == TEAM_UNASSIGNED || player->GetTeamNumber() == TEAM_UNASSIGNED || zone->GetTeamNumber() == player->GetTeamNumber()) {
 			if (zone->GetTeamNumber() == TEAM_UNASSIGNED || player->GetTeamNumber() == TEAM_UNASSIGNED || zone->GetTeamNumber() == player->GetTeamNumber()) {
-				zone->Capture(player);
+				
+				bool wasTaunting = player->m_Shared->InCond(TF_COND_FREEZE_INPUT);
+				//if (!wasTaunting) {
+				//	 //Taunt(TAUNT_BASE_WEAPON,0);
+				//}
+				player->m_Shared->AddCond(TF_COND_FREEZE_INPUT, 0.7f);
+				if (player_deploy_time.find(player) == player_deploy_time.end() || !wasTaunting || gpGlobals->curtime - player_deploy_time[player] > 2.2f) {
+					player_deploy_time[player] = gpGlobals->curtime;
+					player->SetAbsVelocity(vec3_origin);
+					player->PlaySpecificSequence("primary_deploybomb");
+				}
+				else {
+					if (!wasTaunting)
+						player_deploy_time.erase(player);
+					else if (gpGlobals->curtime - player_deploy_time[player] >= 1.9f) {
+						#warning Should have flag->IsCaptured() check in here
+						//	if (flag->IsCaptured() || zone->GetTeamNumber() == TEAM_UNASSIGNED || player->GetTeamNumber() == TEAM_UNASSIGNED || zone->GetTeamNumber() == player->GetTeamNumber()) {
+						zone->Capture(player);
+						player_deploy_time.erase(player);
+					}
+				}
 			}
+			//player->m_Shared->StunPlayer(1.0f, 1.0f, TF_STUNFLAGS_CONTROL | TF_STUNFLAGS_CONTROL, nullptr);
 		}();
 		
 		DETOUR_MEMBER_CALL(CCaptureZone_ShimTouch)(pOther);
@@ -664,15 +715,209 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 	}
 	
+	DETOUR_DECL_MEMBER(bool, CTFGameRules_PlayerReadyStatus_ShouldStartCountdown)
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFGameRules_PlayerReadyStatus_ShouldStartCountdown)();
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			bool notReadyPlayerBlue = false;
+			bool notReadyPlayerRed = false;
+			bool hasPlayer = false;
+			ForEachTFPlayer([&](CTFPlayer *player){
+				if (notReadyPlayerRed || notReadyPlayerBlue) return;
+				if (player->GetTeamNumber() < 2) return;
+				if (player->IsBot()) return;
+				if (player->IsFakeClient()) return;
+				hasPlayer = true;
+				if (!TFGameRules()->IsPlayerReady(ENTINDEX(player))) {
+					if (player->GetTeamNumber() == TF_TEAM_BLUE)
+						notReadyPlayerBlue = true;
+					else
+						notReadyPlayerRed = true;
+					return;
+				}
+			});
+			
+			return hasPlayer && !notReadyPlayerRed && !notReadyPlayerBlue;
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFBaseBoss_OnTakeDamage, CTakeDamageInfo &info)
+	{
+		float damage = DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
+		if (info.GetAttacker()->GetTeamNumber() == reinterpret_cast<CBaseEntity *>(this)->GetTeamNumber())
+			return 0;
+		return damage;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
+	{
+		bool result = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		if (!result) {
+			auto vision = reinterpret_cast<IVision *>(this);
+			CBaseEntity *ent_bot = vision->GetBot()->GetEntity();
+			if (ent_bot->GetTeamNumber() == TF_TEAM_RED) {
+				CTFBot *bot = ToTFBot(ent_bot);
+				if (bot != nullptr && (bot->GetActiveWeapon()) != nullptr && ent->IsBaseObject()) {
+					CBaseObject *obj = ToBaseObject(ent);
+					if (obj != nullptr && obj->GetType() == OBJ_TELEPORTER) {
+						return true;
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAmmo, int count, const char *name)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		bool change = player->GetTeamNumber() == TF_TEAM_BLUE && !cvar_infinite_ammo.GetBool() && !player->IsBot();
+
+		if (change)
+			player->SetTeamNumber(TF_TEAM_RED);
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAmmo)(count, name);
+
+		if (change)
+			player->SetTeamNumber(TF_TEAM_BLUE);
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SentryThink)
+	{
+		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
+		CTFPlayer *owner = obj->GetBuilder();
+		bool stopammo = TFGameRules()->IsMannVsMachineMode() && !cvar_infinite_ammo.GetBool() && IsMvMBlueHuman(owner);
+		if (stopammo)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+
+		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
+
+		if (stopammo)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CBaseObject_ShouldQuickBuild)
+	{
+		CBaseObject *obj = reinterpret_cast<CBaseObject *>(this);
+		CTFPlayer *builder = ToTFPlayer(obj->GetBuilder());
+		bool changedteam = builder != nullptr && IsMvMBlueHuman(builder);
+		
+		if (changedteam)
+			obj->SetTeamNumber(TF_TEAM_RED);
+
+		bool ret = DETOUR_MEMBER_CALL(CBaseObject_ShouldQuickBuild)();
+
+		if (changedteam)
+			obj->SetTeamNumber(TF_TEAM_BLUE);
+
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_DeterminePlaybackRate)
+	{
+		CBaseObject *obj = reinterpret_cast<CBaseObject *>(this);
+		CTFPlayer *builder = ToTFPlayer(obj->GetBuilder());
+		bool changedteam = !cvar_teleport_player.GetBool() && builder != nullptr && IsMvMBlueHuman(builder);
+		
+		if (changedteam)
+			obj->SetTeamNumber(TF_TEAM_RED);
+
+		DETOUR_MEMBER_CALL(CObjectTeleporter_DeterminePlaybackRate)();
+
+		if (changedteam)
+			obj->SetTeamNumber(TF_TEAM_BLUE);
+
+	}
 	
-	// TODO: fix fast engie re-deploy only working on red
+	DETOUR_DECL_MEMBER(bool, CTFGameRules_ShouldRespawnQuickly, CTFPlayer *player)
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFGameRules_ShouldRespawnQuickly)(player);
+		ret |= TFGameRules()->IsMannVsMachineMode() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_SCOUT && !player->IsBot();
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
+
+		if ( !ret && TFGameRules() && TFGameRules()->IsMannVsMachineMode() && target->GetTeamNumber() == TF_TEAM_RED )
+		{
+			if ( target->m_Shared->InCond( TF_COND_MVM_BOT_STUN_RADIOWAVE ) )
+				return true;
+
+			if ( target->m_Shared->InCond( TF_COND_SAPPED ) && !target->IsMiniBoss() )
+				return true;
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
+	{
+		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
+		bool bluhuman = IsMvMBlueHuman(player);
+		CTFPlayer *playerbot = ToTFBot(player);
+		if ((bluhuman && cvar_teleport.GetBool()) || cvar_teleport_player.GetBool()) {
+			float distanceToBomb = std::numeric_limits<float>::max();
+			CObjectTeleporter *teleOut = nullptr;
+			CBaseEntity *zone = nullptr;
+
+			for (auto elem : ICaptureZoneAutoList::AutoList()) {
+				zone = rtti_cast<CBaseEntity *>(elem);
+				if (zone != nullptr)
+					break;
+			}
+			if (zone == nullptr)
+				return;
+
+			for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+				auto tele = rtti_cast<CObjectTeleporter *>(IBaseObjectAutoList::AutoList()[i]);
+				if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && !tele->m_bBuilding && !tele->m_bDisabled && !tele->m_bCarried) {
+					if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetOwnerEntity()) == nullptr) || 
+							(playerbot == nullptr && (tele->GetOwnerEntity() == nullptr || ToTFBot(tele->GetOwnerEntity()) != nullptr))) ) {
+						float dist = tele->WorldSpaceCenter().DistToSqr(zone->WorldSpaceCenter());
+						if ( dist < distanceToBomb) {
+							teleOut = tele;
+							distanceToBomb = dist;
+						}
+					}
+				}
+			}
+
+			if (teleOut != nullptr) {
+				auto vec = teleOut->WorldSpaceCenter();
+				vec.z += teleOut->CollisionProp()->OBBMaxs().z;
+				bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
+				if (!is_space_to_spawn)
+					vec.z += 50.0f;
+				if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
+					player->Teleport(&(vec),&(teleOut->GetAbsAngles()),&(player->GetAbsVelocity()));
+					player->EmitSound("MVM.Robot_Teleporter_Deliver");
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Touch, CBaseEntity *toucher)
+	{
+		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->IsMiniBoss() && toucher->IsBaseObject()) {
+			CBaseObject *obj = ToBaseObject(toucher);
+			if (obj != nullptr && (obj->GetType() != OBJ_SENTRYGUN || obj->m_bDisposableBuilding || obj->m_bMiniBuilding)) {
+
+				CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, 4.0f * std::max(obj->GetMaxHealth(), obj->GetHealth()), DMG_BLAST);
+				obj->TakeDamage(info);
+			}
+		}
+	}
+
 	
 	// TODO: on mod disable, force blue humans back onto red team
 	// - use IsMvMBlueHuman
 	// - beware of the call order between IMod::OnDisable and when the patches/detours are actually disabled...
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("MvM:JoinTeam_Blue_Allow")
@@ -684,7 +929,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create, "CTFReviveMarker::Create");
 			
 			/* enable upgrading in blue spawn zones via "upgrade" client command */
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,                "CTFPlayer::ClientCommand");
+		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,                "CTFPlayer::ClientCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged,             "CTFPlayer::OnNavAreaChanged");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ClientCommandKeyValues,    "CTFGameRules::ClientCommandKeyValues");
 			
@@ -699,6 +944,28 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent, "CTFGameRules::FireGameEvent");
 			MOD_ADD_DETOUR_STATIC(CollectPlayers_CTFPlayer,   "CollectPlayers<CTFPlayer>");
 			
+			// Allow blue players to ready up
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerReadyStatus_ShouldStartCountdown,   "CTFGameRules::PlayerReadyStatus_ShouldStartCountdown");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_OnTakeDamage,   "CTFBaseBoss::OnTakeDamage");
+			// Ignore blue teleporters
+			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
+
+			// Disable infinite ammo for players unless toggled
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAmmo, "CTFPlayer::RemoveAmmo");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SentryThink,                  "CObjectSentrygun::SentryThink");
+
+			// Stop blue player teleporters from spinning when disabled
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_DeterminePlaybackRate, "CObjectTeleporter::DeterminePlaybackRate");
+
+			// Enable fast redeploy for engineers
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_ShouldQuickBuild, "CBaseObject::ShouldQuickBuild");
+
+			// Allow scouts to spawn faster
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldRespawnQuickly, "CTFGameRules::ShouldRespawnQuickly");
+
+			// Red sapped robots can be backstabbed from any range
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
+
 			/* fix hardcoded teamnum check when clearing MvM checkpoints */
 			this->AddPatch(new CPatch_CollectPlayers_Caller2<0x0000, 0x0100, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue>("CPopulationManager::ClearCheckpoint"));
 			
@@ -710,6 +977,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			
 			/* fix hardcoded teamnum check when respawning dead players and resetting their sentry stats at wave end */
 			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0000, 0x0400, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue_NotBot>("CWave::WaveCompleteUpdate"));
+
+			// Show only spy bots on the enemy team
+			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0500, 0x0800, TF_TEAM_BLUE, true, false, CollectPlayers_EnemyTeam>("CTFBot::Event_Killed"));
 			
 			/* fix hardcoded teamnum checks in the radius spy scan ability */
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_RadiusSpyScan, "CTFPlayerShared::RadiusSpyScan");
@@ -718,9 +988,15 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			
 			/* this is purely for debugging the blue-robots-spawning-between-waves situation */
 			MOD_ADD_DETOUR_MEMBER(CTFBot_Spawn, "CTFBot::Spawn");
+			// Teleport to bot logic
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned,                  "CTFGameRules::OnPlayerSpawned");
+
+			// Player minigiant stomp logic
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch,                  "CTFPlayer::Touch");
+			
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{
@@ -729,8 +1005,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;
 					if (player->IsBot())                         return;
 					
-					if (cvar_spawn_protection.GetBool()) {
-						if (IsInBlueSpawnRoom(player)) {
+					if (gpGlobals->tickcount % 3 == 1 && cvar_spawn_protection.GetBool() ) {
+						if (PointInRespawnRoom(player, player->WorldSpaceCenter(), true)) {
 							player->m_Shared->AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED, 0.500f);
 							
 							if (cvar_spawn_no_shoot.GetBool()) {
@@ -738,8 +1014,27 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 								// alternative method: set m_Shared->m_bFeignDeathReady to true
 							}
 						}
+						else if (player->m_Shared->m_flStealthNoAttackExpire <= gpGlobals->curtime){
+							player->m_Shared->RemoveCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED);
+						}
+
 					}
-					
+
+					// Add self blast penalty for flag bearing players
+					if (!player->IsMiniBoss() && player->GetActiveTFWeapon() != nullptr) {
+						ConVarRef intel_speed("tf_mvm_bot_flag_carrier_movement_penalty");
+						static CEconItemAttributeDefinition *attr_def = nullptr;
+						if (attr_def == nullptr)
+							attr_def = GetItemSchema()->GetAttributeDefinitionByName("self dmg push force decreased");
+						
+						auto attr = player->GetActiveTFWeapon()->GetItem()->GetAttributeList().GetAttributeByID(attr_def->GetIndex());
+						float desiredSpeed = (intel_speed.GetFloat() + 1.0f) * 0.5f;
+						if (attr == nullptr && player->HasItem())
+							player->GetActiveTFWeapon()->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attr_def, desiredSpeed);
+						else if (attr != nullptr && !player->HasItem() && attr->GetValuePtr()->m_Float == desiredSpeed)
+							player->GetActiveTFWeapon()->GetItem()->GetAttributeList().RemoveAttribute(attr_def);
+					}
+
 					if (cvar_infinite_cloak.GetBool()) {
 						bool should_refill_cloak = true;
 						
@@ -754,6 +1049,27 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 						if (should_refill_cloak) {
 							player->m_Shared->m_flCloakMeter = 100.0f;
 						}
+					}
+
+					if (gpGlobals->tickcount % 5 == 0) {
+						hudtextparms_t textparam;
+						textparam.channel = 1;
+						textparam.x = 0.042f;
+						textparam.y = 0.93f;
+						textparam.effect = 0;
+						textparam.r1 = 255;
+						textparam.r2 = 255;
+						textparam.b1 = 255;
+						textparam.b2 = 255;
+						textparam.g1 = 255;
+						textparam.g2 = 255;
+						textparam.a1 = 0;
+						textparam.a2 = 0; 
+						textparam.fadeinTime = 0.f;
+						textparam.fadeoutTime = 0.f;
+						textparam.holdTime = 0.5f;
+						textparam.fxTime = 1.0f;
+						UTIL_HudMessage(player, textparam, CFmtStr("$%d", player->GetCurrency()));
 					}
 				});
 			}
@@ -774,4 +1090,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	ConVar cvar_adminonly("sig_mvm_jointeam_blue_allow_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Mod: restrict this mod's functionality to SM admins only"
 		" [NOTE: missions with WaveSchedule param AllowJoinTeamBlue 1 will OVERRIDE this and allow non-admins for the duration of the mission]");
+
+	// force blue team joining, also loads the mod if not loaded
+	ConVar cvar_force("sig_mvm_jointeam_blue_allow_force", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
+		"Mod: force players to join blue team",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			if (static_cast<ConVar *>(pConVar)->GetBool())
+				s_Mod.Toggle(true);
+			else
+				s_Mod.Toggle(cvar_enable.GetBool());
+		});
 }

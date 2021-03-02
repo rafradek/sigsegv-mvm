@@ -126,6 +126,10 @@ IMPL_DATAMAP(float,                CEnvEntityMaker,   m_flPostSpawnDirectionVari
 IMPL_DATAMAP(float,                CEnvEntityMaker,   m_flPostSpawnSpeed);
 IMPL_DATAMAP(bool,                 CEnvEntityMaker,   m_bPostSpawnUseAngles);
 
+StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &, const char *, const CEconItemView *> CTFDroppedWeapon::ft_Create("CTFDroppedWeapon::Create");
+
+IMPL_SENDPROP(CEconItemView, CTFDroppedWeapon, m_Item,   CTFDroppedWeapon);
+
 MemberFuncThunk<CPathTrack *, CPathTrack *> CPathTrack::ft_GetNext("CPathTrack::GetNext");
 
 
@@ -186,6 +190,7 @@ IMPL_DATAMAP(bool, CBaseTrigger, m_bDisabled);
 
 MemberFuncThunk<const CUpgrades *, const char *, int> CUpgrades::ft_GetUpgradeAttributeName("CUpgrades::GetUpgradeAttributeName");
 MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > CUpgrades::ft_GrantOrRemoveAllUpgrades("CUpgrades::GrantOrRemoveAllUpgrades");
+MemberFuncThunk<CUpgrades *, void, CTFPlayer *, int , int, bool, bool, bool > CUpgrades::ft_PlayerPurchasingUpgrade("CUpgrades::PlayerPurchasingUpgrade");
 
 GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity("g_hUpgradeEntity");
 

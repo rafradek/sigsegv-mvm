@@ -5,7 +5,6 @@
 #include "stub/tfplayer.h"
 #include "stub/entities.h"
 
-
 class CBaseCombatWeapon : public CEconEntity
 {
 public:
@@ -60,7 +59,7 @@ private:
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter
 {
 public:
-	CTFPlayer *GetTFPlayerOwner() const { return ToTFPlayer(this->GetOwner()); }
+	CTFPlayer *GetTFPlayerOwner() const { return ft_GetTFPlayerOwner(this); }
 	
 	bool IsSilentKiller() { return ft_IsSilentKiller(this); }
 	
@@ -76,6 +75,7 @@ public:
 
 	
 private:
+	static MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> ft_GetTFPlayerOwner;
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_IsSilentKiller;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
@@ -83,7 +83,21 @@ private:
 	static MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   vt_GetProjectileFireSetup;
 };
 
-class CTFWeaponBaseGun : public CTFWeaponBase {};
+class CTFWeaponBaseGun : public CTFWeaponBase {
+public:
+	float GetProjectileGravity() {return vt_GetProjectileGravity(this);}
+	float GetProjectileSpeed()  {return vt_GetProjectileSpeed(this);}
+	int GetWeaponProjectileType() const {return vt_GetWeaponProjectileType(this);}
+	float GetProjectileDamage() { return vt_GetProjectileDamage(this); }
+	void ModifyProjectile(CBaseAnimating * anim) { return vt_ModifyProjectile(this, anim); }
+	
+private:
+	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileGravity;
+	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileSpeed;
+	static MemberVFuncThunk<const CTFWeaponBaseGun *, int> vt_GetWeaponProjectileType;
+	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileDamage;
+	static MemberVFuncThunk<CTFWeaponBaseGun *, void, CBaseAnimating *> vt_ModifyProjectile;
+};
 
 class CTFPipebombLauncher : public CTFWeaponBaseGun {};
 
@@ -135,7 +149,18 @@ public:
 class CTFSniperRifle : public CTFWeaponBaseGun
 {
 public:
+	void ExplosiveHeadShot(CTFPlayer *attacker, CTFPlayer *victim) { ft_ExplosiveHeadShot(this, attacker, victim); }
+	void ApplyChargeSpeedModifications(float &value)               { ft_ApplyChargeSpeedModifications(this, value); }
+
+	float SniperRifleChargeRateMod() { return vt_SniperRifleChargeRateMod(this); }
+	
 	DECL_SENDPROP(float, m_flChargedDamage);
+
+private:
+	static MemberFuncThunk<CTFSniperRifle *, void, CTFPlayer *, CTFPlayer *> ft_ExplosiveHeadShot;
+	static MemberFuncThunk<CTFSniperRifle *, void, float &> ft_ApplyChargeSpeedModifications;
+
+	static MemberVFuncThunk<CTFSniperRifle *, float> vt_SniperRifleChargeRateMod;
 };
 
 class CTFSniperRifleClassic : public CTFSniperRifle {};
@@ -153,6 +178,8 @@ private:
 class CTFWeaponBaseMelee : public CTFWeaponBase
 {
 public:
+
+	DECL_EXTRACT(float, m_flSmackTime);
 	int GetSwingRange()            { return vt_GetSwingRange(this); }
 	bool DoSwingTrace(trace_t& tr) { return vt_DoSwingTrace (this, tr); }
 	
@@ -212,9 +239,14 @@ class CWeaponMedigun : public CTFWeaponBase
 {
 public:
 	CBaseEntity *GetHealTarget() const { return this->m_hHealingTarget; }
+	float GetHealRate() { return vt_GetHealRate(this); }
+	float GetCharge() const { return this->m_flChargeLevel; }
+	void SetCharge(float charge) { this->m_flChargeLevel = charge; }
 	
 private:
+	static MemberVFuncThunk<CWeaponMedigun *, float> vt_GetHealRate;
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hHealingTarget);
+	DECL_SENDPROP(float, m_flChargeLevel);
 };
 
 class CTFFlameThrower : public CTFWeaponBaseGun
@@ -248,6 +280,12 @@ private:
 
 class CTFViewModel : public CBaseViewModel {};
 
+inline CBaseCombatWeapon *ToBaseCombatWeapon(CBaseEntity *pEntity)
+{
+	if (pEntity == nullptr)   return nullptr;
+	
+	return pEntity->MyCombatWeaponPointer();
+}
 
 bool WeaponID_IsSniperRifle(int id);
 bool WeaponID_IsSniperRifleOrBow(int id);
@@ -256,5 +294,14 @@ bool WeaponID_IsSniperRifleOrBow(int id);
 int GetWeaponId(const char *name);
 const char *WeaponIdToAlias(int weapon_id);
 
+float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon);
+
+inline CEconEntity *GetEconEntityAtLoadoutSlot(CTFPlayer *player, int slot) {
+	CEconEntity *item = player->Weapon_GetSlot(slot); 
+	if (item == nullptr)
+		return player->GetEquippedWearableForLoadoutSlot(slot);
+	else
+		return item;
+}
 
 #endif

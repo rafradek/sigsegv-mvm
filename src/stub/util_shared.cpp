@@ -16,6 +16,24 @@ float UTIL_VecToYaw( const Vector &vec )
 	return yaw;
 }
 
+float UTIL_VecToPitch( const Vector &vec )
+{
+	if (vec.y == 0 && vec.x == 0)
+	{
+		if (vec.z < 0)
+			return 180.0;
+		else
+			return -180.0;
+	}
+
+	float dist = vec.Length2D();
+	float pitch = atan2( -vec.z, dist );
+
+	pitch = RAD2DEG(pitch);
+
+	return pitch;
+}
+
 Vector UTIL_YawToVector( float yaw )
 {
 	Vector ret;

@@ -102,19 +102,9 @@ namespace Mod::Util::Make_Item
 		state.erase(it);
 	}
 	
-	
-	void CC_Start(CTFPlayer *player, const CCommand& args)
+
+	void Start(CTFPlayer *player, const char *name, const CSteamID *steamid)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Start", player);
-		if (steamid == nullptr) return;
-		
-		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_makeitem_start] Usage: any of the following:\n"
-				"  sig_makeitem_start <item_name>      | item names that include spaces need quotes\n"
-				"  sig_makeitem_start <item_def_index> | item definition indexes can be found in the item schema\n");
-			return;
-		}
-		
 		auto it = state.find(*steamid);
 		if (it != state.end()) {
 			CEconItemView *item_view = (*it).second;
@@ -126,16 +116,16 @@ namespace Mod::Util::Make_Item
 		}
 		
 		/* attempt lookup first by item name, then by item definition index */
-		auto item_def = rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(args[1]));
+		auto item_def = rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(name));
 		if (item_def == nullptr) {
 			int idx = -1;
-			if (StringToIntStrict(args[1], idx)) {
+			if (StringToIntStrict(name, idx)) {
 				item_def = FilterOutDefaultItemDef(rtti_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(idx)));
 			}
 		}
 		
 		if (item_def == nullptr) {
-			ClientMsg(player, "[sig_makeitem_start] Error: couldn't find any items in the item schema matching \"%s\".\n", args[1]);
+			ClientMsg(player, "[sig_makeitem_start] Error: couldn't find any items in the item schema matching \"%s\".\n", name);
 			return;
 		}
 		
@@ -146,18 +136,24 @@ namespace Mod::Util::Make_Item
 		ClientMsg(player, "\n[sig_makeitem_start] Started making item \"%s\".\n\n", item_def->GetName());
 	}
 	
+	void CC_Start(CTFPlayer *player, const CCommand& args)
+	{
+		const CSteamID *steamid = GetCommandClientSteamID("CC_Start", player);
+		if (steamid == nullptr) return;
+		if (args.ArgC() != 2) {
+			ClientMsg(player, "[sig_makeitem_start] Usage: any of the following:\n"
+				"  sig_makeitem_start <item_name>      | item names that include spaces need quotes\n"
+				"  sig_makeitem_start <item_def_index> | item definition indexes can be found in the item schema\n");
+			return;
+		}
+		Start(player, args[1], steamid);
+	} 
 	
-	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
+	void AddAttr(CTFPlayer *player, const char *name, const char *value)
 	{
 		const CSteamID *steamid = GetCommandClientSteamID("CC_AddAttr", player);
 		if (steamid == nullptr) return;
 		
-		if (args.ArgC() != 3) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Usage: any of the following:\n"
-				"  sig_makeitem_add_attr <attr_name> <value>      | attribute names that include spaces need quotes\n"
-				"  sig_makeitem_add_attr <attr_def_index> <value> | attribute definition indexes can be found in the item schema\n");
-			return;
-		}
 		
 		auto it = state.find(*steamid);
 		if (it == state.end()) {
@@ -168,60 +164,40 @@ namespace Mod::Util::Make_Item
 		CEconItemView *item_view = (*it).second;
 		
 		/* attempt lookup first by attr name, then by attr definition index */
-		CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(args[1]);
+		CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(name);
 		if (attr_def == nullptr) {
 			int idx = -1;
-			if (StringToIntStrict(args[1], idx)) {
+			if (StringToIntStrict(name, idx)) {
 				attr_def = GetItemSchema()->GetAttributeDefinition(idx);
 			}
 		}
 		
 		if (attr_def == nullptr) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", args[1]);
+			ClientMsg(player, "[sig_makeitem_add_attr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", name);
 			return;
 		}
-		
-		const char *value_str = STRING(AllocPooledString(args[2]));
-		
-		attribute_data_union_t value;
-		// TODO: maybe make a wrapper class for this or something, so that if we return early, we still do the proper
-		// UnloadEconAttributeValue call to avoid leaking memory
-		attr_def->GetType()->InitializeNewEconAttributeValue(&value);
-		if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str, &value, true)) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Error: couldn't parse attribute value \"%s\".\n", args[2]);
-			attr_def->GetType()->UnloadEconAttributeValue(&value);
-			return;
-		}
-		CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
-		*attr->GetValuePtr() = value;
-		item_view->GetAttributeList().AddAttribute(attr); // <-- this calls the copy ctor of the CEconItemAttribute; so DO NOT deallocate the attr afterwards!
-	//	CEconItemAttribute::Destroy(&attr);
-		
-		char buf[1024];
-		attr_def->ConvertValueToString(value, buf, sizeof(buf));
-		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), buf);
+		item_view->GetAttributeList().AddStringAttribute(attr_def, value);
+
+		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), value);
 	}
 	
-	
-	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool no_remove)
+	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
+	{
+
+		if (args.ArgC() != 3) {
+			ClientMsg(player, "[sig_makeitem_add_attr] Usage: any of the following:\n"
+				"  sig_makeitem_add_attr <attr_name> <value>      | attribute names that include spaces need quotes\n"
+				"  sig_makeitem_add_attr <attr_def_index> <value> | attribute definition indexes can be found in the item schema\n");
+			return;
+		}
+		AddAttr(player, args[1], args[2]);
+	}
+
+	void Give_Common(CTFPlayer *player, CTFPlayer *recipient, const char *cmd_name, const CSteamID *steamid, bool no_remove)
 	{
 		// possible ways to use this command:
 		// - 0 args: give to me
 		// - 1 args: give to steam ID, or user ID, or player name exact match, or player name unique-partial-match
-		CTFPlayer *recipient = nullptr;
-		if (args.ArgC() == 1) {
-			recipient = player;
-		} else if (args.ArgC() == 2) {
-			ClientMsg(player, "[%s] UNIMPLEMENTED: 1-arg variants!\n", cmd_name);
-			return;
-			
-			// TODO: implement 1-arg version of this command
-			
-			if (recipient == nullptr) {
-				ClientMsg(player, "[%s] Error: couldn't find any potential recipient player matching \"%s\".\n", cmd_name, args[1]);
-				return;
-			}
-		}
 		
 		auto it = state.find(*steamid);
 		if (it == state.end()) {
@@ -267,7 +243,7 @@ namespace Mod::Util::Make_Item
 				
 				if (old_econ_entity != nullptr) {
 					if (old_econ_entity->IsBaseCombatWeapon()) {
-						auto old_weapon = rtti_cast<CBaseCombatWeapon *>(old_econ_entity);
+						auto old_weapon = ToBaseCombatWeapon(old_econ_entity);
 						
 						ClientMsg(player, "[%s] Removing old weapon \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_weapon->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), slot, GetLoadoutSlotName(slot));
 						recipient->Weapon_Detach(old_weapon);
@@ -306,7 +282,6 @@ namespace Mod::Util::Make_Item
 						weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
 					}
 				}
-				
 				econ_ent->GiveTo(recipient);
 			} else {
 				ClientMsg(player, "[%s] Failure: GiveNamedItem returned a non-CEconEntity!\n", cmd_name);
@@ -322,8 +297,8 @@ namespace Mod::Util::Make_Item
 			for (CEconItemAttribute& attr : item_view->GetAttributeList().Attributes()) {
 				attr_name_len_max = Max(attr_name_len_max, strlen(attr.GetStaticData()->GetName()));
 			}
-			
-			char buf[1024];
+			char buf[256];
+			//const char *buf = nullptr;
 			int attr_num = 1;
 			
 			ClientMsg(player, "[%s] Created item \"%s\" with the following %d attributes:\n", cmd_name, item_view->GetStaticData()->GetName(), item_view->GetAttributeList().Attributes().Count());
@@ -331,6 +306,7 @@ namespace Mod::Util::Make_Item
 				CEconItemAttributeDefinition *attr_def = attr.GetStaticData();
 				
 				attr_def->ConvertValueToString(*(attr.GetValuePtr()), buf, sizeof(buf));
+				//CopyStringAttributeValueToCharPointerOutput(attr.GetValuePtr()->m_String, &buf);
 				int pad = ((int)attr_name_len_max - (int)strlen(attr_def->GetName()));
 				
 				ClientMsg(player, "[%s]   [%2d] \"%s\"%*s \"%s\"\n", cmd_name, attr_num, attr_def->GetName(), pad, "", buf);
@@ -341,9 +317,23 @@ namespace Mod::Util::Make_Item
 			ClientMsg(player, "[%s] Created item \"%s\" with 0 attributes and gave it to player \"%s\".\n\n", cmd_name, item_view->GetStaticData()->GetName(), recipient->GetPlayerName());
 		}
 		
-		state.erase(it);
+		
 	}
 	
+	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool no_remove)
+	{
+		if (args.ArgC() == 1)
+			Give_Common(player, player, cmd_name, steamid, no_remove);
+		else if (args.ArgC() == 2) {
+			std::vector<CBasePlayer *> vec;
+			GetSMTargets(player, args[1], vec);
+			for(CBasePlayer *target : vec) {
+				Give_Common(player, ToTFPlayer(target), cmd_name, steamid, no_remove);
+			}
+		}
+		state.erase(*steamid);
+	}
+
 	void CC_Give(CTFPlayer *player, const CCommand& args)
 	{
 		const CSteamID *steamid = GetCommandClientSteamID("CC_Give", player);
@@ -378,8 +368,55 @@ namespace Mod::Util::Make_Item
 		
 		CC_Give_Common(player, args, "sig_makeitem_give_noremove", steamid, true);
 	}
+
+	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool noremove)
+	{
+		state.erase(*steamid);
+
+		ClientMsg(player, "\n");
+		
+		std::vector<CBasePlayer *> vec;
+
+		
+		if (args.ArgC() > 2) { 
+			GetSMTargets(player, args[1], vec);
+			if (vec.empty())
+				return;
+			
+			Start(player, args[2], steamid);
+		}
+		else {
+			vec.push_back(player);
+			Start(player, args[1], steamid);
+		}
+
+
+
+		if (args.ArgC() > 3) {
+			for (int i = 3; i < args.ArgC()-1; i += 2) {
+				AddAttr(player, args[i], args[i+1]);
+			}
+		}
+		
+		for(CBasePlayer *target : vec) {
+			Give_Common(player, ToTFPlayer(target), "sig_makeitem", steamid, noremove);
+		}
+		state.erase(*steamid);
+	}
+
+	void CC_Give_OneLine(CTFPlayer *player, const CCommand& args)
+	{
+		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
+		if (steamid == nullptr) return;
+		Give_OneLine(player, args, "sig_makeitem", steamid, false);
+	}
 	
-	
+	void CC_Give_OneLine_NoRemove(CTFPlayer *player, const CCommand& args)
+	{
+		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine_NoRemove", player);
+		if (steamid == nullptr) return;
+		Give_OneLine(player, args, "sig_makeitem_noremove", steamid, true);
+	}
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Client_Cmds)
 	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
@@ -389,6 +426,8 @@ namespace Mod::Util::Make_Item
 		{ "sig_makeitem_add_attr",      CC_AddAttr       },
 		{ "sig_makeitem_give",          CC_Give          },
 		{ "sig_makeitem_give_noremove", CC_Give_NoRemove },
+		{ "sig_makeitem",               CC_Give_OneLine },
+		{ "sig_makeitem_noremove",      CC_Give_OneLine_NoRemove },
 	};
 	
 	

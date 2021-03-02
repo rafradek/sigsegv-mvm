@@ -386,6 +386,7 @@ enum : uint32_t
 	DMG_IGNITE             = DMG_PLASMA,
 	DMG_USEDISTANCEMOD     = DMG_SLOWBURN,
 	DMG_NOCLOSEDISTANCEMOD = DMG_POISON,
+	DMG_DONT_COUNT_DAMAGE_TOWARDS_CRIT_RATE = DMG_DISSOLVE,
 	
 	/* for TakeHealth() calls only: */
 	DMG_IGNORE_MAXHEALTH   = DMG_BULLET,
@@ -438,6 +439,14 @@ enum : int32_t
 	kHoliday_AprilFools                      = 11,
 };
 
+enum taunts_t
+{
+	TAUNT_BASE_WEAPON,
+	TAUNT_MISC_ITEM,
+	TAUNT_SHOW_ITEM,
+	TAUNT_LONG,
+	TAUNT_SPECIAL,
+};
 
 #define TF_FLAGINFO_NONE		0
 #define TF_FLAGINFO_STOLEN		(1<<0)

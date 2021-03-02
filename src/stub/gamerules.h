@@ -68,6 +68,7 @@ class CBaseMultiplayerPlayer;
 class CTFPlayer;
 struct VoiceCommandMenuItem_t;
 struct CMannVsMachineUpgrades;
+struct CTFRadiusDamageInfo;
 
 
 class CGameRulesProxy : public CBaseEntity
@@ -133,6 +134,8 @@ public:
 	gamerules_roundstate_t State_Get() { NULL_RET(GR_STATE_INIT); return this->m_iRoundState; }
 	int GetWinningTeam()               { NULL_RET(TEAM_INVALID ); return this->m_iWinningTeam; }
 	bool IsPlayerReady(int iIndex)     { NULL_RET(false        ); return this->m_bPlayerReady[iIndex]; }
+	bool IsTeamReady(int iIndex)       { NULL_RET(false        ); return this->m_bTeamReady[iIndex]; }
+	void SetTeamReady(int iIndex, bool ready)       { NULL_RET( ); this->m_bTeamReady.SetArray(ready,iIndex); }
 	
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
 	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
@@ -146,6 +149,7 @@ private:
 	DECL_SENDPROP(gamerules_roundstate_t, m_iRoundState);
 	DECL_SENDPROP(int,                    m_iWinningTeam);
 	DECL_SENDPROP(bool[33],               m_bPlayerReady);
+	DECL_SENDPROP_RW(bool[33],               m_bTeamReady);
 	
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         ft_GetMinTimeWhenPlayerMaySpawn;
@@ -170,6 +174,8 @@ public:
 	void PlayerReadyStatus_UpdatePlayerState(CTFPlayer *player, bool state)                                      { NULL_RET(     ); return ft_PlayerReadyStatus_UpdatePlayerState(this, player, state); }
 	void DistributeCurrencyAmount(int amount, CTFPlayer *player, bool b1, bool b2, bool b3)                      { NULL_RET(     );        ft_DistributeCurrencyAmount           (this, amount, player, b1, b2, b3); }
 	void SetCustomUpgradesFile(inputdata_t& inputdata)                                                           { NULL_RET(     );        ft_SetCustomUpgradesFile              (this, inputdata); }
+	void RadiusDamage(CTFRadiusDamageInfo& radiusdamage)                                                         { NULL_RET(     );        ft_RadiusDamage              (this, radiusdamage); }
+	bool IsPVEModeControlled(CBaseEntity *entity)                                                                { NULL_RET(false); return ft_IsPVEModeControlled              (this, entity); }
 
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
@@ -190,6 +196,8 @@ private:
 	static MemberFuncThunk<CTFGameRules *, void, CTFPlayer *, bool>                                          ft_PlayerReadyStatus_UpdatePlayerState;
 	static MemberFuncThunk<CTFGameRules *, void, int, CTFPlayer *, bool, bool, bool>                         ft_DistributeCurrencyAmount;
 	static MemberFuncThunk<CTFGameRules *, void, inputdata_t&>                                               ft_SetCustomUpgradesFile;
+	static MemberFuncThunk<CTFGameRules *, void, CTFRadiusDamageInfo&>                                       ft_RadiusDamage;
+	static MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                                       ft_IsPVEModeControlled;
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };

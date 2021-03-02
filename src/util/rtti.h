@@ -69,31 +69,49 @@ inline TO rtti_cast(const FROM ptr)
 	if (ptr == nullptr) {
 		return nullptr;
 	}
-	
 	static_assert(std::is_pointer_v<FROM>, "rtti_cast FROM parameter isn't a pointer type");
 	static_assert(std::is_pointer_v<TO>,   "rtti_cast TO parameter isn't a pointer type");
-	
-	auto rtti_from = RTTI::GetRTTI<std::remove_pointer_t<FROM>>();
-	auto rtti_to   = RTTI::GetRTTI<std::remove_pointer_t<TO>>();
-	
-	assert(rtti_from != nullptr);
-	assert(rtti_to   != nullptr);
+
+	static bool init = false;
+	static const rtti_t *rtti_from;
+	static const rtti_t *rtti_to;
+#if defined __GNUC__
+	static bool upcast_success = false;
+	static uintptr_t upcast_offset;
+#endif
+
+	if (!init) {
+		init = true;	
+		rtti_from = RTTI::GetRTTI<std::remove_pointer_t<FROM>>();
+		rtti_to   = RTTI::GetRTTI<std::remove_pointer_t<TO>>();
+		
+		assert(rtti_from != nullptr);
+		assert(rtti_to   != nullptr);
 	
 #if defined __GNUC__
 	/* GCC's __dynamic_cast is grumpy and won't do up-casts at runtime, so we
 	 * have to manually take care of up-casting ourselves */
-	void *result = (void *)ptr;
-	if (!static_cast<const std::type_info *>(rtti_from)->__do_upcast(rtti_to, &result)) {
-		result = abi::__dynamic_cast(result, rtti_from, rtti_to, -1);
+	 	
+		void *upcast_ptr = (void *)ptr;
+		upcast_success = static_cast<const std::type_info *>(rtti_from)->__do_upcast(rtti_to, &upcast_ptr);
+		upcast_offset = (uintptr_t)upcast_ptr - (uintptr_t)ptr;
+#endif
 	}
+
+#if defined __GNUC__
+	void *result = (void *)ptr;
+	if (!upcast_success)
+		result = abi::__dynamic_cast(result, rtti_from, rtti_to, -1);
+	else
+		result = (void *) ((uintptr_t)result + upcast_offset);
+
 #elif defined _MSC_VER
 	/* MSVC's __RTDynamicCast will happily do runtime up-casts and down-casts */
 	void *result = __RTDynamicCast((void *)ptr, 0, (void *)rtti_from, (void *)rtti_to, false);
 #endif
-	
+
 	return reinterpret_cast<TO>(result);
 }
-
 
 #if 0
 template<class TO, class FROM>

@@ -5,6 +5,7 @@
 #include "stub/baseentity.h"
 
 
+class CAttributeManager;
 class CAttributeContainer;
 class CEconItemView;
 
@@ -35,10 +36,14 @@ public:
 	void GetBoneTransform(int iBone, matrix3x4_t& pBoneToWorld)            { return ft_GetBoneTransform    (this, iBone, pBoneToWorld); }
 	int LookupBone(const char *name)                                       { return ft_LookupBone          (this, name); }
 	int LookupAttachment(const char *name)                                 { return ft_LookupAttachment    (this, name); }
+	int LookupSequence(const char *name)                                   { return ft_LookupSequence      (this, name); }
 	void GetBonePosition(int id, Vector& vec, QAngle& ang)                 { return ft_GetBonePosition     (this, id, vec, ang); }
+
+	void RefreshCollisionBounds()                                          {        vt_RefreshCollisionBounds       (this); }
 	
 	DECL_SENDPROP   (int,   m_nSkin);
 	DECL_SENDPROP   (int,   m_nBody);
+	DECL_SENDPROP   (int,   m_nSequence);
 	
 private:
 	DECL_SENDPROP   (float, m_flModelScale);
@@ -63,6 +68,10 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupBone;
 	static MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     ft_GetBonePosition;
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupAttachment;
+	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupSequence;
+
+	static MemberVFuncThunk<CBaseAnimating *, void>               vt_RefreshCollisionBounds;
+
 };
 
 class CBaseAnimatingOverlay : public CBaseAnimating {};
@@ -74,6 +83,7 @@ public:
 	void DebugDescribe() { ft_DebugDescribe(this); }
 	
 	// GetAttributeContainer really ought to be in IHasAttributes...
+	CAttributeManager *GetAttributeManager()	 { return vt_GetAttributeManager  (this); }
 	CAttributeContainer *GetAttributeContainer() { return vt_GetAttributeContainer(this); }
 	void GiveTo(CBaseEntity *ent)                {        vt_GiveTo(this, ent); }
 	
@@ -85,8 +95,14 @@ private:
 	static MemberFuncThunk<CEconEntity *, void> ft_DebugDescribe;
 	
 	static MemberVFuncThunk<CEconEntity *, CAttributeContainer *> vt_GetAttributeContainer;
+	static MemberVFuncThunk<CEconEntity *, CAttributeManager *>   vt_GetAttributeManager;
 	static MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   vt_GiveTo;
 };
 
+extern StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize;
+inline void UTIL_SetSize( CBaseEntity * entity, const Vector * min, const Vector * max )
+{
+	ft_UTIL_SetSize(entity, min, max);
+}
 
 #endif

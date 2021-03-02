@@ -14,6 +14,7 @@ public:
 	int GetProjectileType() const            { return vt_GetProjectileType(this); }
 	bool IsDestroyable() const            { return vt_IsDestroyable(this); }
 	void Destroy(bool blinkOut = true, bool breakRocket = false) const            { return vt_Destroy(this, blinkOut, breakRocket); }
+	void SetLauncher(CBaseEntity *launcher)  { vt_SetLauncher(this, launcher); }
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOriginalLauncher);
@@ -21,6 +22,7 @@ private:
 	static MemberVFuncThunk<const CBaseProjectile *, int> vt_GetProjectileType;
 	static MemberVFuncThunk<const CBaseProjectile *, bool> vt_IsDestroyable;
 	static MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> vt_Destroy;
+	static MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> vt_SetLauncher;
 };
 
 class CBaseGrenade : public CBaseProjectile {};
@@ -30,7 +32,12 @@ class CBaseGrenadeConcussion : public CBaseGrenade {};
 class CBaseGrenadeContact : public CBaseGrenade {};
 class CBaseGrenadeTimed : public CBaseGrenade {};
 
-class CTFBaseProjectile : public CBaseProjectile {};
+class CTFBaseProjectile : public CBaseProjectile {
+public:
+	void SetDamage(float damage) { vt_SetDamage(this, damage); }
+private:
+	static MemberVFuncThunk<CTFBaseProjectile *, void, float> vt_SetDamage;
+};
 
 class CTFBaseRocket  : public CBaseProjectile
 {
@@ -51,7 +58,16 @@ private:
 class CTFFlameRocket : public CTFBaseRocket {};
 
 class CTFProjectile_Syringe : public CTFBaseProjectile {};
-class CTFProjectile_EnergyRing : public CTFBaseProjectile {};
+
+class CTFProjectile_EnergyRing : public CTFBaseProjectile
+{
+public:
+	float GetInitialVelocity()  { return ft_GetInitialVelocity(this); }
+
+private:
+	static MemberFuncThunk<CTFProjectile_EnergyRing *, float> ft_GetInitialVelocity;
+};
+
 class CTFProjectile_Rocket : public CTFBaseRocket {};
 class CTFProjectile_SentryRocket : public CTFProjectile_Rocket {};
 class CTFProjectile_Flare : public CTFBaseRocket {};
@@ -60,7 +76,18 @@ class CTFProjectile_EnergyBall : public CTFBaseRocket {};
 class CTFProjectile_Arrow : public CTFBaseRocket
 {
 public:
+
+	//bool CanPenetrate() const { return ft_CanPenetrate(this); }
+	//void SetPenetrate(bool penetrate) { ft_SetPenetrate(this, penetrate); }
+
 	DECL_EXTRACT(float, m_flTimeInit);
+	DECL_SENDPROP(bool, m_bCritical);
+
+	static CTFProjectile_Arrow *Create(const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer) {return ft_Create(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);}
+private:
+	static StaticFuncThunk<CTFProjectile_Arrow *,const Vector &, const QAngle &, const float, const float, int, CBaseEntity *, CBaseEntity *> ft_Create;
+	//static MemberFuncThunk<const CTFProjectile_Arrow *, bool> ft_CanPenetrate;
+	//static MemberFuncThunk<CTFProjectile_Arrow *, void, bool> ft_SetPenetrate;
 };
 
 class CTFProjectile_HealingBolt : public CTFProjectile_Arrow {};

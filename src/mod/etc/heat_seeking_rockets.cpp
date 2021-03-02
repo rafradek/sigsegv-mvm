@@ -2,6 +2,8 @@
 #include "stub/projectiles.h"
 #include "stub/tfplayer.h"
 #include "util/iterate.h"
+#include "util/clientmsg.h"
+#include "stub/tfweaponbase.h"
 
 
 namespace Mod::Etc::Heat_Seeking_Rockets
@@ -104,11 +106,112 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	}
 #endif
 	
+	struct HomingRockets
+	{
+		bool enable                 = false;
+		bool ignore_disguised_spies = true;
+		bool ignore_stealthed_spies = true;
+		bool follow_crosshair       = false;
+		float speed                 = 1.0f;
+		float turn_power            = 0.0f;
+		float min_dot_product       = -0.25f;
+		float aim_time              = 9999.0f;
+		float acceleration          = 0.0f;
+		float acceleration_time     = 9999.0f;
+		float acceleration_start    = 0.0f;
+		float gravity               = 0.0f;
+	};
 	
-	ConVar cvar_power("sig_etc_heat_seeking_rockets_power", "1.0", FCVAR_NOTIFY,
-		"Stand-in for attribute mod_projectile_heat_seek_power");
+	std::map<CHandle<CBaseEntity>, HomingRockets> player_homing_cache;
+
+	CBaseEntity *disallow_movetype = nullptr;
+	int disallow_movetype_tick = 0;
+	DETOUR_DECL_MEMBER(void, CBaseProjectile_SetLauncher, CBaseEntity *launcher)
+	{
+		DETOUR_MEMBER_CALL(CBaseProjectile_SetLauncher)(launcher);
+		
+		if (launcher != nullptr) {
+			auto proj = reinterpret_cast<CBaseProjectile *>(this);
+			auto weapon = static_cast<CTFWeaponBaseGun *>(launcher->MyCombatWeaponPointer());
+			if (weapon != nullptr && weapon->GetOwnerEntity() != nullptr && weapon->GetOwnerEntity()->IsPlayer()) {
+
+				HomingRockets homing;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.turn_power, mod_projectile_heat_seek_power);
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.acceleration, projectile_acceleration);
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.gravity, projectile_gravity);
+				if (homing.turn_power != 0.0f || homing.acceleration != 0.0f || homing.gravity != 0.0f) {
+
+					proj->SetMoveType(MOVETYPE_CUSTOM, proj->GetMoveCollide());
+					disallow_movetype = proj;
+					disallow_movetype_tick = gpGlobals->tickcount;
+
+					homing.enable = true;
+					float min_dot_product = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, min_dot_product, mod_projectile_heat_aim_error);
+					if (min_dot_product != 0.0f)
+						homing.min_dot_product = FastCos(DEG2RAD(Clamp(min_dot_product, 0.0f, 180.0f)));
+
+					float aim_time = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aim_time, mod_projectile_heat_aim_time);
+					if (aim_time != 0.0f)
+						homing.aim_time = aim_time;
+
+					float acceleration_time = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, acceleration_time, projectile_acceleration_time);
+					if (acceleration_time != 0.0f)
+						homing.acceleration_time = acceleration_time;
+
+					float acceleration_start = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, acceleration_start, projectile_acceleration_start_time);
+					if (acceleration_start != 0.0f)
+						homing.acceleration_start = acceleration_start;
+
+					int follow_crosshair = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, follow_crosshair, mod_projectile_heat_follow_crosshair);
+					if (follow_crosshair != 0)
+						homing.follow_crosshair = true;
+					
+					homing.speed = CalculateProjectileSpeed(weapon);
+
+					if (homing.speed < 0) {
+						homing.speed = -homing.speed;
+					}
+				}
+				else
+					homing.enable = false;
+
+				player_homing_cache[weapon] = homing;
+			}
+		}
+		
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseEntity_SetMoveType, MoveType_t val, MoveCollide_t collide)
+	{
+		if (disallow_movetype_tick == gpGlobals->tickcount && disallow_movetype == reinterpret_cast<CBaseEntity *>(this)) {
+			val = MOVETYPE_CUSTOM;
+		}
+
+		DETOUR_MEMBER_CALL(CBaseEntity_SetMoveType)(val, collide);
+
+		//if (setmovetype_energyring) {
+		//	reinterpret_cast<CTFProjectile_EnergyRing>(this)->SetMoveType(MOVETYPE_CUSTOM);
+		//	setmovetype_energyring = false;
+		//}
+
+	}
 	
-	DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
+	/*DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
+	{
+		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
+		if (setmovetype_rocket) {
+			reinterpret_cast<CTFProjectile_Rocket_Spawn>(this)->SetMoveType(MOVETYPE_CUSTOM);
+			setmovetype_energyring = false;
+		}
+
+	}*/
+
+	/*DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
 	{
 		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
 		
@@ -120,105 +223,169 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				ent->SetMoveType(MOVETYPE_CUSTOM);
 			}
 		}
-	}
-	
-	DETOUR_DECL_MEMBER(void, CBaseEntity_PerformCustomPhysics, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity)
-	{
-		auto ent = reinterpret_cast<CBaseEntity *>(this);
-		if (!ent->ClassMatches("tf_projectile_rocket") || !ent->ClassMatches("tf_projectile_sentryrocket")) {
-			DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
-			return;
-		}
+	}*/
+	inline bool PerformCustomPhysics(CBaseEntity *ent, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity) {
 		
-		auto proj = rtti_cast<CTFProjectile_Rocket *>(ent);
-		assert(proj != nullptr);
+		if (strncmp(ent->GetClassname(), "tf_projectile", strlen("tf_projectile")) != 0){
+			return false;
+		}
+
+		//Assume all "tf_projectile" entities are projectiles, for better performance
+		
+		auto proj = static_cast<CBaseProjectile *>(ent);
+		float seek = 0.0f;
+		if (proj == nullptr || proj->GetOriginalLauncher() == nullptr) {
+			return false;
+		}
+
+		auto homing_entry = player_homing_cache.find(proj->GetOriginalLauncher());
+		if (homing_entry == player_homing_cache.end()) {
+			return false;
+		}
+
+		HomingRockets &homing = homing_entry->second;
+
+		if (!homing.enable) {
+			return false;
+		}
 		
 		constexpr float interval = 0.25f;
-		if (gpGlobals->tickcount % (int)(interval / gpGlobals->interval_per_tick) == 0) {
-			CTFPlayer *target_player = nullptr;
-			float target_distsqr     = FLT_MAX;
-			
-			ForEachTFPlayer([&](CTFPlayer *player){
-				if (!player->IsAlive())                               return;
-				if (player->GetTeamNumber() == TEAM_SPECTATOR)        return;
-				if (player->GetTeamNumber() == proj->GetTeamNumber()) return;
-				
-				// TODO: disguise     stuff
-				// TODO: invisibility stuff
-				
-				Vector delta = player->WorldSpaceCenter() - proj->WorldSpaceCenter();
 
-				float mindotproduct = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), mindotproduct, mod_projectile_heat_aim_error);
-				mindotproduct = FastCos(DEG2RAD(Clamp(mindotproduct, 0.0f, 180.0f)));
-				if (DotProduct(delta.Normalized(), pNewVelocity->Normalized()) < mindotproduct) return;
-				
-				float distsqr = proj->WorldSpaceCenter().DistToSqr(player->WorldSpaceCenter());
-				if (distsqr < target_distsqr) {
-					trace_t tr;
-					UTIL_TraceLine(player->WorldSpaceCenter(), proj->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
-					
-					if (!tr.DidHit() || tr.m_pEnt == proj) {
-						target_player  = player;
-						target_distsqr = distsqr;
-					}
+		float time = (float)(ent->m_flSimulationTime) - (float)(ent->m_flAnimTime);
+
+		float speed_calculated = homing.speed + homing.acceleration * Clamp(time - homing.acceleration_start, 0.0f, homing.acceleration_time);
+		
+		if (homing.turn_power != 0.0f && time < homing.aim_time && gpGlobals->tickcount % (int)(interval / gpGlobals->interval_per_tick) == 0) {
+			
+			Vector target_vec = vec3_origin;
+
+			if (homing.follow_crosshair) {
+				CBaseEntity *owner = proj->GetOwnerEntity();
+				if (owner != nullptr) {
+					Vector forward;
+					AngleVectors(owner->EyeAngles(), &forward);
+
+					trace_t result;
+					UTIL_TraceLine(owner->EyePosition(), owner->EyePosition() + 4000.0f * forward, MASK_SHOT, owner, COLLISION_GROUP_NONE, &result);
+
+					target_vec = result.endpos;
 				}
-			});
-			
-			if (target_player != nullptr) {
-				QAngle angToTarget;
-				VectorAngles(target_player->WorldSpaceCenter() - proj->WorldSpaceCenter(), angToTarget);
+			}
+			else {
+			//	float target_distsqr     = FLT_MAX;
 				
-				float power = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), power, mod_projectile_heat_seek_power);
+				float target_dotproduct  = FLT_MIN;
+				CTFPlayer *target_player = nullptr;
 
-				pNewAngVelocity->x = Clamp(Approach(AngleDiff(angToTarget.x, pNewAngles->x) * 4.0f, pNewAngVelocity->x, power), -360.0f, 360.0f);
-				pNewAngVelocity->y = Clamp(Approach(AngleDiff(angToTarget.y, pNewAngles->y) * 4.0f, pNewAngVelocity->y, power), -360.0f, 360.0f);
-				pNewAngVelocity->z = Clamp(Approach(AngleDiff(angToTarget.z, pNewAngles->z) * 4.0f, pNewAngVelocity->z, power), -360.0f, 360.0f);
+				ForEachTFPlayer([&](CTFPlayer *player){
+					if (!player->IsAlive())                               return;
+					if (player->GetTeamNumber() == TEAM_SPECTATOR)        return;
+					if (player->GetTeamNumber() == proj->GetTeamNumber()) return;
+					
+					if (homing.ignore_disguised_spies) {
+						if (player->m_Shared->InCond(TF_COND_DISGUISED) && player->m_Shared->GetDisguiseTeam() == proj->GetTeamNumber()) {
+							return;
+						}
+					}
+					
+					if (homing.ignore_stealthed_spies) {
+						if (player->m_Shared->IsStealthed() && player->m_Shared->GetPercentInvisible() >= 0.75f &&
+							!player->m_Shared->InCond(TF_COND_STEALTHED_BLINK) && !player->m_Shared->InCond(TF_COND_BURNING) && !player->m_Shared->InCond(TF_COND_URINE) && !player->m_Shared->InCond(TF_COND_BLEEDING)) {
+							return;
+						}
+					}
+					
+					Vector delta = player->WorldSpaceCenter() - proj->WorldSpaceCenter();
+
+					float mindotproduct = homing.min_dot_product;
+					float dotproduct = DotProduct(delta.Normalized(), pNewVelocity->Normalized());
+					if (dotproduct < mindotproduct) return;
+					
+					
+
+				//	float distsqr = proj->WorldSpaceCenter().DistToSqr(player->WorldSpaceCenter());
+				//	if (distsqr < target_distsqr) {
+					if (dotproduct > target_dotproduct) {
+						trace_t tr;
+						UTIL_TraceLine(player->WorldSpaceCenter(), proj->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
+						
+						if (!tr.DidHit() || tr.m_pEnt == proj) {
+							target_player  = player;
+							target_dotproduct = dotproduct;
+						}
+					}
+				});
+				if (target_player != nullptr) {
+					target_vec = target_player->WorldSpaceCenter();
+				}
+			}
+			
+			if (target_vec != vec3_origin) {
+				QAngle angToTarget;
+				VectorAngles(target_vec - proj->WorldSpaceCenter(), angToTarget);
+
+				pNewAngVelocity->x = Clamp(Approach(AngleDiff(angToTarget.x, pNewAngles->x) * 4.0f, pNewAngVelocity->x, homing.turn_power), -360.0f, 360.0f);
+				pNewAngVelocity->y = Clamp(Approach(AngleDiff(angToTarget.y, pNewAngles->y) * 4.0f, pNewAngVelocity->y, homing.turn_power), -360.0f, 360.0f);
+				pNewAngVelocity->z = Clamp(Approach(AngleDiff(angToTarget.z, pNewAngles->z) * 4.0f, pNewAngVelocity->z, homing.turn_power), -360.0f, 360.0f);
 			}
 		}
-		
-		*pNewAngles += (*pNewAngVelocity * gpGlobals->frametime);
+
+		if (time < homing.aim_time)
+			*pNewAngles += (*pNewAngVelocity * gpGlobals->frametime);
 		
 		Vector vecOrientation;
 		AngleVectors(*pNewAngles, &vecOrientation);
-		float speed = 1100.0f;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetLauncher(), speed, mult_projectile_speed);//proj->GetAbsVelocity();
-		*pNewVelocity = vecOrientation * speed;
+		*pNewVelocity = vecOrientation * (speed_calculated) + Vector(0,0,-homing.gravity * (time));
 		
+	//	if (homing.gravity != 0) {
+	//		VectorAngles(*pNewVelocity, *pNewAngles);
+	//	}
 		*pNewPosition += (*pNewVelocity * gpGlobals->frametime);
-		
-		if (gpGlobals->tickcount % 2 == 0) {
-			NDebugOverlay::EntityText(ENTINDEX(proj), -2, CFmtStr("  AngVel: % 6.1f % 6.1f % 6.1f", VectorExpand(*pNewAngVelocity)), 0.030f);
-			NDebugOverlay::EntityText(ENTINDEX(proj), -1, CFmtStr("  Angles: % 6.1f % 6.1f % 6.1f", VectorExpand(*pNewAngles)),      0.030f);
-			NDebugOverlay::EntityText(ENTINDEX(proj),  1, CFmtStr("Velocity: % 6.1f % 6.1f % 6.1f", VectorExpand(*pNewVelocity)),    0.030f);
-			NDebugOverlay::EntityText(ENTINDEX(proj),  2, CFmtStr("Position: % 6.1f % 6.1f % 6.1f", VectorExpand(*pNewPosition)),    0.030f);
+		return true;
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseEntity_PerformCustomPhysics, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity)
+	{
+		auto ent = reinterpret_cast<CBaseEntity *>(this);
+		if (!PerformCustomPhysics(ent, pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity)) {
+			return DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
 		}
-		
-	//	DevMsg("[%d] PerformCustomPhysics: #%d %s\n", gpGlobals->tickcount, ENTINDEX(ent), ent->GetClassname());
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_PerformCustomPhysics, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity)
+	{
+		auto ent = reinterpret_cast<CBaseEntity *>(this);
+		if (!PerformCustomPhysics(ent, pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity)) {
+			return DETOUR_MEMBER_CALL(CTFProjectile_Flare_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
+		}
 	}
 	
-	
-	class CMod : public IMod/*, public IFrameUpdateListener*/
+	class CMod : public IMod , public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Etc:Heat_Seeking_Rockets")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_Spawn,       "CTFProjectile_Rocket::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetMoveType,       "CBaseEntity::SetMoveType");
+			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_SetLauncher,      "CBaseProjectile::SetLauncher");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_PerformCustomPhysics, "CBaseEntity::PerformCustomPhysics");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_PerformCustomPhysics, "CTFProjectile_Flare::PerformCustomPhysics");
 		}
 		
-	//	virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
-	//	
-	//	virtual void FrameUpdatePostEntityThink() override
-	//	{
-	//		static long frame = 0;
-	//		if (++frame % 2 == 0) return;
-	//		
-	//		ForEachEntityByRTTI<CTFProjectile_Rocket>([](CTFProjectile_Rocket *projectile){
-	//			DevMsg("#%d: movetype %d movecollide %d\n", ENTINDEX(projectile), projectile->GetMoveType(), projectile->GetMoveCollide());
-	//		});
-	//	}
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+		
+		virtual void FrameUpdatePostEntityThink() override
+		{
+			static long frame = 0;
+			if (++frame % 145 != 0) return;
+
+			//Clear out removed weapons
+			for(auto it = player_homing_cache.begin(); it != player_homing_cache.end(); ) {
+				if (it->first == nullptr)
+					it = player_homing_cache.erase(it);
+				else
+					it++;
+			}
+		}
 	};
 	CMod s_Mod;
 	

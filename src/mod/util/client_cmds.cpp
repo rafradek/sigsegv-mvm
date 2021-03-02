@@ -1,12 +1,20 @@
 #include "mod.h"
 #include "stub/econ.h"
+#include "stub/projectiles.h"
 #include "stub/tfplayer.h"
+#include "stub/tfbot.h"
 #include "stub/tfweaponbase.h"
 #include "stub/objects.h"
+#include "stub/misc.h"
+#include "stub/gamerules.h"
 #include "util/admin.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "util/iterate.h"
 
+class IHasAttributes {
+
+};
 
 namespace Mod::Util::Client_Cmds
 {
@@ -553,6 +561,554 @@ namespace Mod::Util::Client_Cmds
 		player->SetHealth(player->GetHealth() - hp);
 	}
 	
+	void CC_Animation(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() != 3) {
+			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
+			return;
+		}
+			//int sequence = playerl->LookupSequence(args[1]);
+			
+			//int arg1;
+			//int arg2;
+			//StringToIntStrict(args[1], arg1);
+			//StringToIntStrict(args[2], arg2);
+			//playerl->GetPlayerClass()->m_bUseClassAnimations = false;
+			//playerl->ResetSequence(sequence);
+			//playerl->GetPlayerClass() // //playerl->PlaySpecificSequence(args[1]);
+			//TE_PlayerAnimEvent( playerl, 21 /*PLAYERANIMEVENT_SPAWN*/, sequence );
+			player->PlaySpecificSequence(args[1]);
+		
+	}
+
+	void CC_Reset_Animation(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() != 1) {
+			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
+			return;
+		}
+		ForEachTFPlayer([&](CTFPlayer *playerl){
+			playerl->DoAnimationEvent( 17 /*PLAYERANIMEVENT_SPAWN*/, 0 );
+			
+		});
+		
+	}
+
+	void ChangeWeaponAndWearableTeam(CTFPlayer *player, int team)
+	{
+		
+		for (int i = player->WeaponCount() - 1; i >= 0; --i) {
+			CBaseCombatWeapon *weapon = player->GetWeapon(i);
+			if (weapon == nullptr) continue;
+			
+			int pre_team = weapon->GetTeamNumber();
+			int pre_skin = weapon->m_nSkin;
+
+			weapon->ChangeTeam(team);
+			weapon->m_nSkin = (team == TF_TEAM_BLUE ? 1 : 0);
+			
+			int post_team = weapon->GetTeamNumber();
+			int post_skin = weapon->m_nSkin;
+			
+		}
+		
+		for (int i = player->GetNumWearables() - 1; i >= 0; --i) {
+			CEconWearable *wearable = player->GetWearable(i);
+			if (wearable == nullptr) continue;
+			
+			int pre_team = wearable->GetTeamNumber();
+			int pre_skin = wearable->m_nSkin;
+			
+			wearable->ChangeTeam(team);
+			wearable->m_nSkin = (team == TF_TEAM_BLUE ? 1 : 0);
+			
+			int post_team = wearable->GetTeamNumber();
+			int post_skin = wearable->m_nSkin;
+		}
+	}
+
+	void CC_Team(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() < 2) {
+			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
+			return;
+		}
+		int teamnum;
+		StringToIntStrict(args[1], teamnum);
+		if (args.ArgC() == 2) {
+			player->SetTeamNumber(teamnum);
+			ChangeWeaponAndWearableTeam(player, teamnum);
+		}
+		else
+		{
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				if (playerl->IsBot()) {
+					playerl->SetTeamNumber(teamnum);
+					ChangeWeaponAndWearableTeam(playerl, teamnum);
+				}
+				
+			});
+		}
+
+		
+		//player->StateTransition(TF_STATE_ACTIVE);
+	}
+
+	void CC_GiveItem(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() < 2) {
+			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
+			return;
+		}
+		engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
+		engine->ServerExecute();
+	}
+
+	CTFPlayer *playertrg = nullptr;
+	std::string displaystr = "";
+	void CC_Benchmark(CTFPlayer *player, const CCommand& args)
+	{
+		
+		if (args.ArgC() < 3) {
+			return;
+		}
+		int times = 0;
+		StringToIntStrict(args[1], times);
+		
+		bool check = false;
+
+		CFastTimer timer;
+		timer.Start(); 
+		for(int i = 0; i < times; i++) {
+			asm ("");
+		}
+		timer.End();
+		displaystr = "";
+		displaystr += CFmtStr("loop time: %.9f", timer.GetDuration().GetSeconds());
+
+		if (strcmp(args[2], "testplayer") == 0) {
+			CBaseEntity *target = player;
+			if (args.ArgC() == 4)
+				target = servertools->FindEntityByClassname(nullptr, "tf_gamerules");
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				check = (rtti_cast<const CBasePlayer *>(target) != nullptr);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("rtti cast time: %.9f", timer.GetDuration().GetSeconds());
+		
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				check = target->IsPlayer();
+			}
+			timer.End();
+			displaystr += CFmtStr("virtual check time timer: %.9f", timer.GetDuration().GetSeconds());
+			
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				check = target->IsPlayer();
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("virtual check time: %.9f", timer.GetDuration().GetSeconds());
+
+			
+		}
+		else if (strcmp(args[2], "totfbot") == 0) {
+			
+			CBaseEntity *bot = nullptr;
+
+			for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+				bot = ToTFBot(UTIL_PlayerByIndex(i));
+				if (bot != nullptr)
+					break;
+			}
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				check = bot != nullptr && bot->IsPlayer() && rtti_cast<INextBot *>(bot);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("rtti cast time: %.9f", timer.GetDuration().GetSeconds());
+			
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				check = bot != nullptr && bot->IsPlayer() && rtti_cast<CTFBot *>(bot);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("rtti downcast cast time: %.9f", timer.GetDuration().GetSeconds());
+
+			//timer.Start(); 
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				check = ToTFBot(bot) != nullptr;
+			}
+			timer.End();
+			//timer.End();
+			//
+			displaystr += CFmtStr("virtual check time: %.9f", timer.GetDuration().GetSeconds());
+
+			IVision *vision = bot != nullptr ? bot->MyNextBotPointer()->GetVisionInterface() : nullptr;
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				check = vision != nullptr && static_cast<CTFBot *>(vision->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES];
+			}
+			timer.End();
+			//timer.End();
+			//
+			displaystr += CFmtStr("virtual check time: %.9f", timer.GetDuration().GetSeconds());
+
+		}
+		else if (strcmp(args[2], "attributes") == 0) {
+			playertrg = player;
+			CBaseEntity *bot = nullptr;
+			CBaseEntity *bot2 = nullptr;
+			CBaseEntity *bot3 = nullptr;
+
+			for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+				if (bot == nullptr)
+					bot = ToTFBot(UTIL_PlayerByIndex(i));
+				else if (bot2 == nullptr)
+					bot2 = ToTFBot(UTIL_PlayerByIndex(i));
+				else if (bot3 == nullptr)
+					bot3 = ToTFBot(UTIL_PlayerByIndex(i));
+			}
+			CAttributeManager *mgr = player->GetAttributeManager();
+
+			timer.Start(); 
+			string_t poolstr = AllocPooledString_StaticConstantStringPointer("mult_dmg");
+			mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr);
+			//CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", player, nullptr, true);
+			timer.End();
+			
+			displaystr += CFmtStr("attr init: %.9f", timer.GetDuration().GetSeconds());
+
+			CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", player, nullptr, true);
+			CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", player, nullptr, true);
+			
+			mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr);
+			mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr );
+			mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr );
+
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr );
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("attr single time wrap: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			
+			for(int i = 0; i < times; i++) {
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", player, nullptr, true);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("attr single time: %.9f", timer.GetDuration().GetSeconds());
+
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", player, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_sniper_charge_per_sec", bot, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "set_turn_to_ice", bot2, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "use_large_smoke_explosion", bot3, nullptr, true);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("attr multi time: %.9f", timer.GetDuration().GetSeconds());
+
+			auto weapon = player->GetActiveTFWeapon();
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				float attr = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, attr, mult_dmg);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("wep single time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_sniper_charge_per_sec", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "set_turn_to_ice", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "use_large_smoke_explosion", weapon, nullptr, true);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("wep multi time: %.9f", timer.GetDuration().GetSeconds());
+			playertrg = nullptr;
+		}
+		else if (strcmp(args[2], "isfakeclient") == 0) {
+			
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				check = player->IsFakeClient();
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("virtual time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				check = playerinfomanager->GetPlayerInfo(player->edict())->IsFakeClient();
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("playerinfo time: %.9f", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "pooledstring") == 0) {
+			
+			AllocPooledString_StaticConstantStringPointer("Pooled str");
+			AllocPooledString("Pooled str");
+			FindPooledString("Pooled str");
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				AllocPooledString_StaticConstantStringPointer("Pooled str");
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("alloc pooled constant time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				AllocPooledString("Pooled str");
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("alloc pooled time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				FindPooledString("Pooled str");
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("find pooled time: %.9f", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "rtticast") == 0) {
+			
+			float timespent_getrtti = 0.0f;
+			float timespent_cast = 0.0f;
+			CBaseEntity *testent = player;
+			CTFPlayer *resultplayer = nullptr;
+			CBaseObject *resultobj = nullptr;
+			CBaseEntity *gamerules = servertools->FindEntityByClassname(nullptr, "tf_gamerules");
+
+			auto rtti_base_entity = RTTI::GetRTTI<CBaseEntity>();
+			auto rtti_tf_player   = RTTI::GetRTTI<CTFPlayer>();
+			auto rtti_base_object = RTTI::GetRTTI<CBaseObject>();
+			auto rtti_has_attributes = RTTI::GetRTTI<IHasAttributes>();
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				rtti_cast<CBaseEntity *>(player);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("player to entity time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				rtti_cast<CTFPlayer *>(testent);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("entity to player time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start();
+			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
+				auto proj = rtti_cast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+			}
+			timer.End();
+
+			displaystr += CFmtStr("projectile cast: %.9f", timer.GetDuration().GetSeconds());
+
+			displaystr += CFmtStr("\n\nrtti_cast casting tests: \n\n");
+			displaystr += CFmtStr("(tfplayer)entity->player %d | ", rtti_cast<CTFPlayer *>(testent));
+			displaystr += CFmtStr("(gamerules)entity->player %d | ", rtti_cast<CTFPlayer *>(gamerules));
+			displaystr += CFmtStr("(gamerules)player->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CTFPlayer *>(gamerules)));
+			displaystr += CFmtStr("(tfplayer)player->entity %d | ", rtti_cast<CBaseEntity *>(player));
+			displaystr += CFmtStr("(tfplayer)player->hasattributes %d | ", rtti_cast<IHasAttributes *>(player));
+			displaystr += CFmtStr("(gamerules)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(gamerules));
+			displaystr += CFmtStr("(tfplayer)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(testent));
+			displaystr += CFmtStr("(tfplayer)object->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CBaseObject *>(testent)));
+			displaystr += CFmtStr("(tfplayer)entity->object %d | ", rtti_cast<CBaseObject *>(testent));
+			displaystr += CFmtStr("(tfplayer)player->object %d | ", rtti_cast<CBaseObject *>(player));
+
+			ClientMsg(player, "%s", displaystr.c_str());
+			displaystr = "";
+			displaystr += CFmtStr("\n\nrtti_cast casting tests: \n\n");
+			displaystr += CFmtStr("(tfplayer)entity->player %d | ", rtti_cast<CTFPlayer *>(testent));
+			displaystr += CFmtStr("(gamerules)entity->player %d | ", rtti_cast<CTFPlayer *>(gamerules));
+			displaystr += CFmtStr("(tfplayer)player->entity %d | ", rtti_cast<CBaseEntity *>(player));
+			displaystr += CFmtStr("(tfplayer)player->hasattributes %d | ", rtti_cast<IHasAttributes *>(player));
+			displaystr += CFmtStr("(gamerules)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(gamerules));
+			displaystr += CFmtStr("(tfplayer)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(testent));
+			displaystr += CFmtStr("(tfplayer)object->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CBaseObject *>(testent)));
+			displaystr += CFmtStr("(tfplayer)entity->object %d | ", rtti_cast<CBaseObject *>(testent));
+			displaystr += CFmtStr("(tfplayer)player->object %d | ", rtti_cast<CBaseObject *>(player));
+
+			ClientMsg(player, "%s", displaystr.c_str());
+			displaystr = "";
+			displaystr += CFmtStr("\n\nupcast casting tests: \n\n");
+			displaystr += CFmtStr("(tfplayer)entity->player %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_tf_player, (void **)&testent));
+			displaystr += CFmtStr("(gamerules)entity->player %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_tf_player, (void **)&gamerules));
+			displaystr += CFmtStr("(tfplayer)player->entity %d | ", static_cast<const std::type_info *>(rtti_tf_player)->__do_upcast(rtti_base_entity, (void **)&testent));
+			displaystr += CFmtStr("(tfplayer)player->hasattributes %d | ", static_cast<const std::type_info *>(rtti_tf_player)->__do_upcast(rtti_has_attributes, (void **)&testent));
+			displaystr += CFmtStr("(gamerules)entity->hasattributes %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_has_attributes, (void **)&gamerules));
+			displaystr += CFmtStr("(tfplayer)entity->hasattributes %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_has_attributes, (void **)&testent));
+			displaystr += CFmtStr("(tfplayer)object->entity %d | ", static_cast<const std::type_info *>(rtti_base_object)->__do_upcast(rtti_base_entity, (void **)&testent));
+			displaystr += CFmtStr("(tfplayer)entity->object %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_base_object, (void **)&testent));
+			displaystr += CFmtStr("(tfplayer)player->object %d | ", static_cast<const std::type_info *>(rtti_tf_player)->__do_upcast(rtti_base_object, (void **)&testent));
+
+		}
+		else if (strcmp(args[2], "rtticastscorer") == 0) {
+			
+			/*CTFBot *bot = nullptr;
+
+			for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+				bot = ToTFBot(UTIL_PlayerByIndex(i));
+				if (bot != nullptr)
+					break;
+			}*/
+
+			//if (bot != nullptr) {
+				displaystr += CFmtStr("rtti_cast %d | ", rtti_cast<IHasAttributes *>(player));
+				displaystr += CFmtStr("rtti_cast2 %d | ", rtti_cast<CBaseEntity *>(player));
+				displaystr += CFmtStr("player %d | ", player);
+			//}
+
+
+		}
+		ClientMsg(player, "%s", displaystr.c_str());
+	}
+
+	void CC_Taunt(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() < 2) {
+			ClientMsg(player, "[sig_taunt] Usage: any of the following:\n"
+				"  sig_taunt <tauntname>    | start taunt of name\n");
+			return;
+		}
+
+		static std::unordered_map<std::string, CEconItemView *> taunt_item_view;
+
+		CEconItemView *view = taunt_item_view[args[2]];
+						
+		if (view == nullptr) {
+			auto item_def = GetItemSchema()->GetItemDefinitionByName(args[2]);
+			if (item_def != nullptr) {
+				view = CEconItemView::Create();
+				view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+				taunt_item_view[args[2]] = view;
+			}
+		}
+
+		if (view != nullptr) {
+			
+			std::vector<CBasePlayer *> vec;
+			GetSMTargets(player, args[1], vec);
+			if (vec.empty()) {
+				ClientMsg(player, "[sig_taunt] Error: no matching target found for \"%s\".\n", args[1]);
+				return;
+			}
+			for (CBasePlayer *target : vec) {
+				ToTFPlayer(target)->PlayTauntSceneFromItem(view);
+			}
+		}
+	}
+	
+	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() < 4) {
+			ClientMsg(player, "[sig_addattr] Usage: any of the following:\n"
+				"  sig_addattr <target> <attribute> <value> [slot]   | add attribute to held item\n");
+			return;
+		}
+
+		int slot = -1;
+		if (args.ArgC() == 5) 
+			StringToIntStrict(args[4], (int&)slot);
+
+		std::vector<CBasePlayer *> vec;
+		GetSMTargets(player, args[1], vec);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_addattr] Error: no matching target found for \"%s\".\n", args[1]);
+			return;
+		}
+
+		for (CBasePlayer *target : vec) {
+			CAttributeList *list;
+			if (slot != -1) {
+				CEconEntity *item = GetEconEntityAtLoadoutSlot(ToTFPlayer(target), slot);
+				if (item != nullptr) {
+					list = &item->GetItem()->GetAttributeList();
+				}
+			}
+			else {
+				list = ToTFPlayer(target)->GetAttributeList();
+			}
+
+			if (list != nullptr) {
+				
+				/* attempt lookup first by attr name, then by attr definition index */
+				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(args[2]);
+				if (attr_def == nullptr) {
+					int idx = -1;
+					if (StringToIntStrict(args[2], idx)) {
+						attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+					}
+				}
+				
+				if (attr_def == nullptr) {
+					ClientMsg(player, "[sig_addattr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", args[2]);
+					return;
+				}
+				list->AddStringAttribute(attr_def, args[3]);
+			}
+			else {
+				ClientMsg(player, "[sig_addattr] Error: couldn't find any item in slot\"%d\".\n", slot);
+			}
+		}
+	}
+
+	bool allow_create_dropped_weapon = false;
+	void CC_DropItem(CTFPlayer *player, const CCommand& args)
+	{
+		std::vector<CBasePlayer *> vec;
+		GetSMTargets(player, args[1], vec);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_dropitem] Error: no matching target found for \"%s\".\n", args[1]);
+			return;
+		}
+
+		for (CBasePlayer *target : vec) {
+			CTFWeaponBase *item = ToTFPlayer(target)->GetActiveTFWeapon();
+
+			if (item != nullptr) {
+				CEconItemView *item_view = item->GetItem();
+
+				allow_create_dropped_weapon = true;
+				CTFDroppedWeapon::Create(ToTFPlayer(target), player->EyePosition(), vec3_angle, item->GetWorldModel(), item_view);
+				allow_create_dropped_weapon = false;
+			}
+			else {
+				ClientMsg(player, "[sig_dropitem] Error: couldn't find any item.\n");
+			}
+		}
+	}
 	
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
@@ -567,9 +1123,16 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_sethealth",        CC_SetHealth        },
 		{ "sig_addhealth",        CC_AddHealth        },
 		{ "sig_subhealth",        CC_SubHealth        },
+		{ "sig_animation",        CC_Animation        },
+		{ "sig_resetanim",        CC_Reset_Animation  },
+		{ "sig_teamset",          CC_Team             },
+		{ "sig_giveitemcreator",  CC_GiveItem         },
+		{ "sig_benchmark",        CC_Benchmark        },
+		{ "sig_taunt",            CC_Taunt            },
+		{ "sig_addattr",          CC_AddAttr          },
+		{ "sig_dropitem",         CC_DropItem         },
 	};
-	
-	
+
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -591,13 +1154,34 @@ namespace Mod::Util::Client_Cmds
 		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
 	}
 	
+	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner, const char *pszModelName, const CEconItemView *pItemView)
+	{
+		// this is really ugly... we temporarily override m_bPlayingMannVsMachine
+		// because the alternative would be to make a patch
+		
+		bool is_mvm_mode = TFGameRules()->IsMannVsMachineMode();
+
+		if (allow_create_dropped_weapon) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		}
+		
+		auto result = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
+		
+		if (allow_create_dropped_weapon) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(is_mvm_mode);
+		}
+		
+		return result;
+	}
 	
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Util:Client_Cmds")
 		{
+			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
+			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
 		}
 	};
 	CMod s_Mod;

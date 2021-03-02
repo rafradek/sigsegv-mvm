@@ -164,10 +164,19 @@ enum ETFCond : int32_t
 	TF_COND_ROCKETPACK                       = 125,
 	TF_COND_LOST_FOOTING                     = 126,
 	TF_COND_AIR_CURRENT                      = 127,
-	
+	TF_COND_HALLOWEEN_HELL_HEAL              = 128,
+	TF_COND_POWERUPMODE_DOMINANT             = 129,
 	TF_COND_COUNT,
 };
 
+struct condition_source_t
+{
+	int datatable;
+	int	m_nPreventedDamageFromCondition;
+	float m_flExpireTime;
+	float m_pProvider;
+	bool m_bPrevActive;
+};
 
 class CMultiplayerAnimState
 {
@@ -194,6 +203,7 @@ public:
 	void SetCustomModel(const char *pszModelPath, bool bUseClassAnimations = true) { ft_SetCustomModel(this, pszModelPath, bUseClassAnimations); }
 	// TODO: accessor for m_iszClassIcon
 	// TODO: accessor for m_iszCustomModel
+	const char *GetCustomModel() { return STRING((string_t)this->m_iszCustomModel);}
 	
 	DECL_SENDPROP(bool,                 m_bUseClassAnimations);
 private:
@@ -241,6 +251,7 @@ public:
 	DECL_SENDPROP(bool,        m_bInUpgradeZone);
 	DECL_SENDPROP(float,       m_flStealthNoAttackExpire);
 	DECL_SENDPROP(int,         m_iAirDash);
+	DECL_EXTRACT (CUtlVector<condition_source_t>, m_ConditionData);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
@@ -277,6 +288,10 @@ public:
 	bool IsMiniBoss() const     { return this->m_bIsMiniBoss; }
 	int GetCurrency() const     { return this->m_nCurrency; }
 	void SetMiniBoss(bool boss) { this->m_bIsMiniBoss = boss; }
+	void SetForcedSkin(int skin){ this->m_bForcedSkin = true; this->m_nForcedSkin = skin; }
+	int GetForcedSkin()         { return this->m_nForcedSkin; }
+	void ResetForcedSkin()      { this->m_bForcedSkin = false; this->m_nForcedSkin = 0; }
+
 	CBaseEntity *GetGrapplingHookTarget() const {return this->m_hGrapplingHookTarget;}
 	
 	CTFWeaponBase *GetActiveTFWeapon() const;
@@ -296,7 +311,11 @@ public:
 	CTFWearable *GetEquippedWearableForLoadoutSlot(int iSlot)    { return ft_GetEquippedWearableForLoadoutSlot(this, iSlot); }
 	CBaseEntity *GetEntityForLoadoutSlot(int iSlot)    { return ft_GetEntityForLoadoutSlot(this, iSlot); }
 	void DoAnimationEvent( int event, int nData )				 {        ft_DoAnimationEvent       (this, event, nData); }
-	
+	void PlaySpecificSequence (const char *sequence)             {        ft_PlaySpecificSequence   (this, sequence); }
+	CBaseObject *GetObject(int id)                               { return ft_GetObject                      (this, id); }
+	int GetObjectCount()                                         { return ft_GetObjectCount                 (this); }
+	void StateTransition(int state)                              {        ft_StateTransition                (this, state); }
+
 	void HandleCommand_JoinTeam(const char *pTeamName)                   { ft_HandleCommand_JoinTeam        (this, pTeamName); }
 	void HandleCommand_JoinTeam_NoMenus(const char *pTeamName)           { ft_HandleCommand_JoinTeam_NoMenus(this, pTeamName); }
 	void HandleCommand_JoinClass(const char *pClassName, bool b1 = true) { ft_HandleCommand_JoinClass       (this, pClassName, b1); }
@@ -304,28 +323,37 @@ public:
 	void AddCustomAttribute(const char *s1, float f1, float f2) { ft_AddCustomAttribute       (this, s1, f1, f2); }
 	void RemoveCustomAttribute(const char *s1)                  { ft_RemoveCustomAttribute    (this, s1); }
 	void RemoveAllCustomAttributes()                            { ft_RemoveAllCustomAttributes(this); }
-	void ReapplyPlayerUpgrades()                              { ft_ReapplyPlayerUpgrades  (this); }
+	void ReapplyPlayerUpgrades()                                { ft_ReapplyPlayerUpgrades  (this); }
 	
-	void UseActionSlotItemPressed()								{ ft_UseActionSlotItemPressed  (this); }
-	void UseActionSlotItemReleased()								{ ft_UseActionSlotItemReleased  (this); }
+	void UseActionSlotItemPressed()								{ ft_UseActionSlotItemPressed  (this);  }
+	void UseActionSlotItemReleased()							{ ft_UseActionSlotItemReleased  (this); }
+	void RemoveCurrency(int currency)                           { ft_RemoveCurrency  (this, currency);  }
+
+	CAttributeList *GetAttributeList()								{ return ft_GetAttributeList  (this); }
+	CAttributeManager *GetAttributeManager()						{ return ft_GetAttributeManager  (this); }
 	CBaseEntity *GiveNamedItem(const char *pszName, int iSubType, CEconItemView *pItem, bool bDontTranslateForClass) { return vt_GiveNamedItem(this, pszName, iSubType, pItem, bDontTranslateForClass); }
+
+	void Taunt(taunts_t taunt, int concept)                                       { ft_Taunt                   (this, taunt, concept); }
+	void PlayTauntSceneFromItem(CEconItemView *view)                              { ft_PlayTauntSceneFromItem  (this, view); }
 	
-//	typedef int taunts_t;
-//	void Taunt(taunts_t, int);
 	
 	DECL_SENDPROP_RW(CTFPlayerShared,      m_Shared);
 	DECL_SENDPROP   (float,                m_flMvMLastDamageTime);
 	DECL_RELATIVE   (CTFPlayerAnimState *, m_PlayerAnimState);
 	DECL_EXTRACT    (bool,                 m_bFeigningDeath);
-	DECL_SENDPROP   (CHandle<CBaseEntity>,                m_hGrapplingHookTarget);
-	DECL_SENDPROP(int,       m_nBotSkill);
-	
+	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hGrapplingHookTarget);
+	DECL_SENDPROP   (int,        m_nBotSkill);
+	DECL_SENDPROP   (bool,       m_bAllowMoveDuringTaunt);
+	DECL_SENDPROP   (float,      m_flCurrentTauntMoveSpeed);
+	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	
 private:
 	DECL_SENDPROP_RW(CTFPlayerClass,   m_PlayerClass);
 	DECL_SENDPROP   (CHandle<CTFItem>, m_hItem);
 	DECL_SENDPROP   (bool,             m_bIsMiniBoss);
 	DECL_SENDPROP   (int,              m_nCurrency);
+	DECL_SENDPROP   (bool,             m_bForcedSkin);
+	DECL_SENDPROP   (int,              m_nForcedSkin);
 	
 	static MemberFuncThunk<      CTFPlayer *, void, int, bool                 > ft_ForceChangeTeam;
 	static MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > ft_ClientCommand;
@@ -350,8 +378,16 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ReapplyPlayerUpgrades;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemPressed;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemReleased;
-	static MemberFuncThunk<      CTFPlayer *, void, int, int                   > ft_DoAnimationEvent;
-//	static MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > ft_Taunt;
+	static MemberFuncThunk<      CTFPlayer *, CAttributeList *                > ft_GetAttributeList;
+	static MemberFuncThunk<      CTFPlayer *, CAttributeManager *             > ft_GetAttributeManager;
+	static MemberFuncThunk<      CTFPlayer *, void, int, int                  > ft_DoAnimationEvent;
+	static MemberFuncThunk<      CTFPlayer *, void, const char *              > ft_PlaySpecificSequence;
+	static MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > ft_Taunt;
+	static MemberFuncThunk<      CTFPlayer *, void, CEconItemView*            > ft_PlayTauntSceneFromItem;
+	static MemberFuncThunk<      CTFPlayer *, CBaseObject *, int              > ft_GetObject;
+	static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetObjectCount;
+	static MemberFuncThunk<      CTFPlayer *, void, int                       > ft_StateTransition;
+	static MemberFuncThunk<      CTFPlayer *, void, int                       > ft_RemoveCurrency;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 };
@@ -359,7 +395,7 @@ private:
 class CTFPlayerSharedUtils
 {
 public:
-	static CEconItemView *GetEconItemViewByLoadoutSlot(CTFPlayer *player, int slot, CEconEntity **ent = nullptr) { return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); }
+	static CEconItemView *GetEconItemViewByLoadoutSlot(CTFPlayer *player, int slot, CEconEntity **ent = nullptr);
 	
 private:
 	static StaticFuncThunk<CEconItemView *, CTFPlayer *, int, CEconEntity **> ft_GetEconItemViewByLoadoutSlot;
@@ -399,9 +435,11 @@ inline CTFPlayer *ToTFPlayer(CBaseEntity *pEntity)
 	if (pEntity == nullptr)   return nullptr;
 	if (!pEntity->IsPlayer()) return nullptr;
 	
-	return rtti_cast<CTFPlayer *>(pEntity);
-}
+	// Its not really probable for a player not to be an instance of CTFPlayer
+	return static_cast<CTFPlayer *>(pEntity);
 
+	// return rtti_cast<CTFPlayer *>(pEntity);
+}
 
 int GetNumberOfTFConds();
 
@@ -411,9 +449,11 @@ ETFCond ClampTFConditionNumber(int num);
 const char *GetTFConditionName(ETFCond cond);
 ETFCond GetTFConditionFromName(const char *name);
 
-
 extern StaticFuncThunk<int, CUtlVector<CTFPlayer *> *, int, bool, bool> ft_CollectPlayers_CTFPlayer;
 template<> inline int CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend) { return ft_CollectPlayers_CTFPlayer(playerVector, team, isAlive, shouldAppend); }
 
+extern StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent;
+inline void TE_PlayerAnimEvent(CBasePlayer *player, int anim, int data) { ft_TE_PlayerAnimEvent(player, anim, data); }
 
+bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name);
 #endif

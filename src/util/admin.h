@@ -9,6 +9,8 @@ static_assert(ADMFLAG_ALL == 0x001fffff); // this check is based on the SM admin
 
 AdminId GetPlayerSMAdminID(CBasePlayer *player);
 
+int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlayer *> &vec, char *target_name = nullptr, int target_name_size = 0, int flags = 0);
+
 bool PlayerIsSMAdmin     (CBasePlayer *player);
 bool PlayerIsSMAdminOrBot(CBasePlayer *player);
 

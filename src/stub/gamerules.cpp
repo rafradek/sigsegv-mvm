@@ -24,6 +24,7 @@ MemberVFuncThunk<CTeamplayRules *, void, int, bool, bool>                  CTeam
 IMPL_SENDPROP(gamerules_roundstate_t, CTeamplayRoundBasedRules, m_iRoundState,  CTeamplayRoundBasedRulesProxy);
 IMPL_SENDPROP(int,                    CTeamplayRoundBasedRules, m_iWinningTeam, CTeamplayRoundBasedRulesProxy);
 IMPL_SENDPROP(bool[33],               CTeamplayRoundBasedRules, m_bPlayerReady, CTeamplayRoundBasedRulesProxy);
+IMPL_SENDPROP(bool[33],               CTeamplayRoundBasedRules, m_bTeamReady,   CTeamplayRoundBasedRulesProxy);
 
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> CTeamplayRoundBasedRules::ft_BroadcastSound              ("CTeamplayRoundBasedRules::BroadcastSound");
 MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         CTeamplayRoundBasedRules::ft_GetMinTimeWhenPlayerMaySpawn("CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn");
@@ -45,6 +46,8 @@ MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *, int, int>                    
 MemberFuncThunk<CTFGameRules *, void, CTFPlayer *, bool>                                          CTFGameRules::ft_PlayerReadyStatus_UpdatePlayerState("CTFGameRules::PlayerReadyStatus_UpdatePlayerState");
 MemberFuncThunk<CTFGameRules *, void, int, CTFPlayer *, bool, bool, bool>                         CTFGameRules::ft_DistributeCurrencyAmount           ("CTFGameRules::DistributeCurrencyAmount");
 MemberFuncThunk<CTFGameRules *, void, inputdata_t&>                                               CTFGameRules::ft_SetCustomUpgradesFile              ("CTFGameRules::SetCustomUpgradesFile");
+MemberFuncThunk<CTFGameRules *, void, CTFRadiusDamageInfo&>                                       CTFGameRules::ft_RadiusDamage                       ("CTFGameRules::RadiusDamage");
+MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                                              CTFGameRules::ft_IsPVEModeControlled                ("CTFGameRules::IsPVEModeControlled");
 
 MemberVFuncThunk<CTFGameRules *, bool> CTFGameRules::vt_FlagsMayBeCapped(TypeName<CTFGameRules>(), "CTFGameRules::FlagsMayBeCapped");
 

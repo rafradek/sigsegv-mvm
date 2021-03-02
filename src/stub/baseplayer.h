@@ -103,7 +103,6 @@ public:
 	bool IsConnected() const               { return this->GetPlayerInfo()->IsConnected(); }
 	bool IsHLTV() const                    { return this->GetPlayerInfo()->IsHLTV(); }
 	bool IsReplay() const                  { return this->GetPlayerInfo()->IsReplay(); }
-	bool IsFakeClient() const              { return this->GetPlayerInfo()->IsFakeClient(); }
 	bool IsDead() const                    { return this->GetPlayerInfo()->IsDead(); }
 	bool IsObserver() const                { return this->GetPlayerInfo()->IsObserver(); }
 	const Vector GetPlayerMins() const     { return this->GetPlayerInfo()->GetPlayerMins(); }
@@ -119,16 +118,19 @@ public:
 	void ForceButtons(int nButtons)                                                    {        ft_ForceButtons  (this, nButtons); }
 	void UnforceButtons(int nButtons)                                                  {        ft_UnforceButtons(this, nButtons); }
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
-	void Weapon_Equip(CBaseCombatWeapon *pWeapon)                               { ft_Weapon_Equip     	      (this, pWeapon); }
-	void EquipWearable(CEconWearable *wearable)									{ ft_EquipWearable     (this, wearable); }
+	void Weapon_Equip(CBaseCombatWeapon *pWeapon)                               { vt_Weapon_Equip     	      (this, pWeapon); }
+	void EquipWearable(CEconWearable *wearable)									{ vt_EquipWearable     (this, wearable); }
 	
 	bool IsBot() const                                                   { return vt_IsBot               (this); }
+	bool IsBotOfType(int type) const                                     { return vt_IsBotOfType         (this, type); }
+	bool IsFakeClient() const                                            { return vt_IsFakeClient        (this); }
 	void CommitSuicide(bool bExplode = false, bool bForce = false)       {        vt_CommitSuicide       (this, bExplode, bForce); }
 	void ForceRespawn()                                                  {        vt_ForceRespawn        (this); }
 	Vector Weapon_ShootPosition()                                        { return vt_Weapon_ShootPosition(this); }
 	float GetPlayerMaxSpeed()                                            { return vt_GetPlayerMaxSpeed   (this); }
 	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
 	void ChangeTeam(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {        vt_ChangeTeam_bool3    (this, iTeamNum, bAutoTeam, bSilent, b3); }
+	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	
 	
 	DECL_SENDPROP(CPlayerLocalData, m_Local);
@@ -156,16 +158,19 @@ private:
 	static MemberFuncThunk<CBasePlayer *, void, int>                          ft_ForceButtons;
 	static MemberFuncThunk<CBasePlayer *, void, int>                          ft_UnforceButtons;
 	static MemberFuncThunk<CBasePlayer *, void, const QAngle&>                ft_SnapEyeAngles;
-	static MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          ft_Weapon_Equip;
-	static MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              ft_EquipWearable;
+	static MemberFuncThunk<      CBasePlayer *, void, int, bool, bool, bool>  ft_ChangeTeam_base;
 	
+	static MemberVFuncThunk<const CBasePlayer *, bool>                        vt_IsFakeClient;
 	static MemberVFuncThunk<const CBasePlayer *, bool>                        vt_IsBot;
+	static MemberVFuncThunk<const CBasePlayer *, bool, int>                   vt_IsBotOfType;
 	static MemberVFuncThunk<      CBasePlayer *, void, bool, bool>            vt_CommitSuicide;
 	static MemberVFuncThunk<      CBasePlayer *, void>                        vt_ForceRespawn;
 	static MemberVFuncThunk<      CBasePlayer *, Vector>                      vt_Weapon_ShootPosition;
 	static MemberVFuncThunk<      CBasePlayer *, float>                       vt_GetPlayerMaxSpeed;
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_RemoveWearable;
 	static MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> vt_ChangeTeam_bool3;
+	static MemberVFuncThunk<      CBasePlayer *, void, CBaseCombatWeapon *>   vt_Weapon_Equip;
+	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_EquipWearable;
 };
 
 class CBaseMultiplayerPlayer : public CBasePlayer
@@ -193,7 +198,7 @@ inline CBasePlayer *ToBasePlayer(CBaseEntity *pEntity)
 	if (pEntity == nullptr)   return nullptr;
 	if (!pEntity->IsPlayer()) return nullptr;
 	
-	return rtti_cast<CBasePlayer *>(pEntity);
+	return static_cast<CBasePlayer *>(pEntity);
 }
 
 inline CBaseMultiplayerPlayer *ToBaseMultiplayerPlayer(CBaseEntity *pEntity)
@@ -219,7 +224,28 @@ inline CBasePlayer *UTIL_PlayerByIndex(int playerIndex)
 	return pPlayer;
 }
 
-
+inline CBasePlayer *UTIL_PlayerByUserId(int userID)
+	{
+		CBasePlayer *match = nullptr;
+		
+		for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+			edict_t *edict = INDEXENT(i);
+			if (edict == nullptr) {
+			//	Warning("UTIL_PlayerByUserId(%d): #%d: INDEXENT returned nullptr\n", userID, i);
+				continue;
+			}
+			
+			int id = engine->GetPlayerUserId(edict);
+			if (id == userID) {
+			//	Warning("UTIL_PlayerByUserId(%d): #%d: user ID matches!\n", userID, i);
+				match = reinterpret_cast<CBasePlayer *>(GetContainingEntity(edict));
+			} else {
+			//	Warning("UTIL_PlayerByUserId(%d): #%d: non-matching ID: %d\n", userID, i, id);
+			}
+		}
+		
+		return match;
+	}
 template<typename T>
 int CollectPlayers(CUtlVector<T *> *playerVector, int team = TEAM_ANY, bool isAlive = false, bool shouldAppend = false);
 

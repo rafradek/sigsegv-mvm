@@ -5,6 +5,7 @@
 
 #if defined _LINUX || defined _OSX
 
+#ifdef DEBUG 
 
 static void sym_get_proc_name(unw_cursor_t *cp, char *bufp, size_t len, unw_word_t *offp)
 {
@@ -123,6 +124,7 @@ void print_backtrace()
 	}
 }
 
+#endif
 
 extern "C"
 {

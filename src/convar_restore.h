@@ -8,6 +8,10 @@ namespace ConVar_Restore
 	
 	void Save();
 	void Load();
+	void Reset();
+
+	void OnExtLoad();
+	void OnExtUnload();
 }
 
 

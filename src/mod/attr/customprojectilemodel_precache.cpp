@@ -8,6 +8,8 @@
 
 namespace Mod::Attr::CustomProjectileModel_Precache
 {
+	std::map<CHandle<CBaseAnimating>, float> projs;
+
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_GetCustomProjectileModel, CAttribute_String *attr_str)
 	{
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_GetCustomProjectileModel)(attr_str);
@@ -23,10 +25,22 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 		CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
 		auto attr = attrlist.GetAttributeByName("custom projectile model");
 		if (attr != nullptr) {
-			char modelname[255];
-			GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->ConvertValueToString(*(attr->GetValuePtr()),modelname,255);
+			const char *modelname = nullptr;
+			//GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->ConvertValueToString(*(attr->GetValuePtr()),modelname,255);
+			CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &modelname);
 			proj->SetModel(modelname);
-			DevMsg("Setting custom projectile model to %s \n",modelname);
+			// DevMsg("Setting custom projectile model to %s \n",modelname);
+		}
+		float modelscale = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, modelscale, mult_projectile_scale);
+		if (modelscale != 1.0f)
+			proj->SetModelScale(modelscale);
+		float collscale = 0.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, collscale, custom_projectile_size);
+		if (collscale != 0.0f) {
+			Vector min = Vector(-collscale, -collscale, -collscale);
+			Vector max = Vector(collscale, collscale, collscale);
+			UTIL_SetSize(proj, &min, &max);
 		}
 	}
 	
@@ -75,7 +89,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	}
 	
 	
-	class CMod : public IMod
+	class CMod : public IMod//, public IModCallbackListener
 	{
 	public:
 		CMod() : IMod("Attr:CustomProjectileModel_Precache")
@@ -88,6 +102,26 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireNail,     "CTFWeaponBaseGun::FireNail");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile,     "CTFWeaponBaseGun::FireProjectile");
 		}
+
+		/*virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+		
+		virtual void FrameUpdatePostEntityThink() override
+		{
+			for (auto it = projs.begin(); it != projs.end(); it++) {
+				if (it->first != nullptr) {
+					if (it->second > 0.f)
+						it->second = -(it.second);
+					else {
+						it->first->UpdateCollisionBounds();
+						it->first->SetModelScale(-(it->second));
+						it = projs.erase(it);
+					}
+
+				}
+				else
+					it = projs.erase(it);
+			}
+		}*/
 	};
 	CMod s_Mod;
 	

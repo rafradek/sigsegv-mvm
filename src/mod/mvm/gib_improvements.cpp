@@ -128,13 +128,17 @@ namespace Mod::MvM::Gib_Improvements
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGib, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		
+
+		//Allow player miniboss to be gibbed
+		if (player->IsMiniBoss())
+			return true;
 		/* explosive headshot gibbing :) */
 		if (eh_tick == gpGlobals->tickcount && eh_victims.count(player) != 0) {
 			return true;
 		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGib)(info);
+		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ShouldGib)(info);
+		DevMsg("damage info %d %d\n", ret, info.GetDamageType());
+		return ret;
 	}
 	
 	

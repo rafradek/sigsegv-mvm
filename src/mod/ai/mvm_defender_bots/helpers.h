@@ -43,7 +43,7 @@ inline CCaptureZone *GetCaptureZone()
 	/* return the first blu CCaptureZone (same as CTFBot::GetFlagCaptureZone) */
 	
 	for (auto elem : ICaptureZoneAutoList::AutoList()) {
-		auto zone = rtti_cast<CCaptureZone *>(elem);
+		auto zone = static_cast<CCaptureZone *>(elem);
 		if (zone == nullptr) continue;
 		
 		if (zone->GetTeamNumber() == TF_TEAM_BLUE) return zone;

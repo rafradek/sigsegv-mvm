@@ -9,7 +9,7 @@ namespace Mod::Bot::Spy_MedicHeal
 	
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Bot:Spy_MedicHeal")
@@ -17,7 +17,7 @@ namespace Mod::Bot::Spy_MedicHeal
 			
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

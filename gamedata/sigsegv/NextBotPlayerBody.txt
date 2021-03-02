@@ -13,6 +13,16 @@
 		{
 			"addrs"
 			{
+				"PlayerBody::GetMaxHeadAngularVelocity"
+				{
+					type "sym"
+					sym  "_ZNK10PlayerBody25GetMaxHeadAngularVelocityEv"
+				}
+				"PlayerBody::GetHullWidth"
+				{
+					type "sym"
+					sym  "_ZNK10PlayerBody12GetHullWidthEv"
+				}
 				
 			}
 		}

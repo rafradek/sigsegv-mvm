@@ -62,7 +62,7 @@ public:
 		return true;
 	}
 	
-	RET operator()(PARAMS... args) const
+	inline RET operator()(PARAMS... args) const
 	{
 		assert(this->GetFuncPtr() != nullptr);
 		return (*this->GetFuncPtr())(args...);
@@ -78,11 +78,11 @@ private:
 	FPtr m_pFuncPtr = nullptr;
 };
 
-template<class C, typename RET, typename... PARAMS>
+//template<class C, typename RET, typename... PARAMS>
 class MemberFuncThunkBase : public ILinkage
 {
 public:
-	using RetType = RET;
+	//using RetType = RET;
 	
 	MemberFuncThunkBase(const char *n_func) :
 		m_pszFuncName(n_func) {}
@@ -113,24 +113,24 @@ private:
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk : public MemberFuncThunkBase<C, RET, PARAMS...>
+class MemberFuncThunk : public MemberFuncThunkBase//<C, RET, PARAMS...>
 {
 public:
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase<C, RET, PARAMS...>(n_func) {}
+		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk<C *, RET, PARAMS...> : public MemberFuncThunkBase<C, RET, PARAMS...>
+class MemberFuncThunk<C *, RET, PARAMS...> : public MemberFuncThunkBase//<C, RET, PARAMS...>
 {
 public:
 	using FPtr = RET (C::*)(PARAMS...);
 	
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase<C, RET, PARAMS...>(n_func) {}
+		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
 	
-	RET operator()(const C *obj, PARAMS... args) const = delete;
-	RET operator()(      C *obj, PARAMS... args) const
+	inline RET operator()(const C *obj, PARAMS... args) const = delete;
+	inline RET operator()(      C *obj, PARAMS... args) const
 	{
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
 		
@@ -142,16 +142,16 @@ public:
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk<const C *, RET, PARAMS...> : public MemberFuncThunkBase<C, RET, PARAMS...>
+class MemberFuncThunk<const C *, RET, PARAMS...> : public MemberFuncThunkBase//<C, RET, PARAMS...>
 {
 public:
 	using FPtr = RET (C::*)(PARAMS...) const;
 	
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase<C, RET, PARAMS...>(n_func) {}
+		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
 	
-	RET operator()(      C *obj, PARAMS... args) const = delete;
-	RET operator()(const C *obj, PARAMS... args) const
+	inline RET operator()(      C *obj, PARAMS... args) const = delete;
+	inline RET operator()(const C *obj, PARAMS... args) const
 	{
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
 		
@@ -238,8 +238,8 @@ public:
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
 		MemberVFuncThunkBase(n_vtable, n_func) {}
 	
-	RET operator()(const C *obj, PARAMS... args) const = delete;
-	RET operator()(      C *obj, PARAMS... args) const
+	inline RET operator()(const C *obj, PARAMS... args) const = delete;
+	inline RET operator()(      C *obj, PARAMS... args) const
 	{
 		int vt_index = this->GetVTableIndex();
 		
@@ -262,8 +262,8 @@ public:
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
 		MemberVFuncThunkBase(n_vtable, n_func) {}
 	
-	RET operator()(      C *obj, PARAMS... args) const = delete;
-	RET operator()(const C *obj, PARAMS... args) const
+	inline RET operator()(      C *obj, PARAMS... args) const = delete;
+	inline RET operator()(const C *obj, PARAMS... args) const
 	{
 		int vt_index = this->GetVTableIndex();
 		

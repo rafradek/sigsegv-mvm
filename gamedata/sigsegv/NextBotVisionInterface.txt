@@ -38,6 +38,21 @@
 					type "sym"
 					sym  "_ZN7IVision22ForgetAllKnownEntitiesEv"
 				}
+				"IVision::IsLineOfSightClear"
+				{
+					type "sym"
+					sym  "_ZNK7IVision18IsLineOfSightClearERK6Vector"
+				}
+				"IVision::IsAbleToSee"
+				{
+					type "sym"
+					sym  "_ZZNK7IVision11IsAbleToSeeEP11CBaseEntityNS_20FieldOfViewCheckTypeEP6VectorE6tm_fmt"
+				}
+				"IVision::IsAbleToSee2"
+				{
+					type "sym"
+					sym  "_ZNK7IVision11IsAbleToSeeEP11CBaseEntityNS_20FieldOfViewCheckTypeEP6Vector"
+				}
 			}
 		}
 	}

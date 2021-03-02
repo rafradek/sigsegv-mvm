@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/tfbot.h"
 #include "stub/populators.h"
+#include "stub/gamerules.h"
 #include "util/scope.h"
 
 
@@ -8,7 +9,7 @@ namespace Mod::MvM::Robot_Limit
 {
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots);
 	int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots, bool collect_red);
-	
+
 	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
 		"Mod: fix problems with enforcement of the MvM robot limit when bots are on red team");
 
@@ -136,20 +137,26 @@ namespace Mod::MvM::Robot_Limit
 	
 	// rewrite this function entirely, with some changes:
 	// - use the overridden max bot count, rather than a hardcoded 22
+	bool allocate_round_start = false;
+	bool hibernated = false;
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_AllocateBots)
 	{
-		SCOPED_INCREMENT(rc_CPopulationManager_CollectMvMBots);
-		auto popmgr = reinterpret_cast<CPopulationManager *>(this);
 		
-		if (popmgr->m_bAllocatedBots) return;
+		auto popmgr = reinterpret_cast<CPopulationManager *>(this);
+
+		SCOPED_INCREMENT(rc_CPopulationManager_CollectMvMBots);
+		
+		if (!allocate_round_start) return;
 		
 		CUtlVector<CTFPlayer *> mvm_bots;
 		int num_bots = CPopulationManager::CollectMvMBots(&mvm_bots);
 		
-		if (num_bots > 0) {
+		if (num_bots > 0 && !allocate_round_start) {
 			Warning("%d bots were already allocated some how before CPopulationManager::AllocateBots was called\n", num_bots);
 		}
+		
+		CheckForMaxInvadersAndKickExtras(mvm_bots);
 		
 		while (num_bots < GetMvMInvaderLimit()) {
 			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
@@ -162,18 +169,25 @@ namespace Mod::MvM::Robot_Limit
 		
 		popmgr->m_bAllocatedBots = true;
 	}
-	
 	//Restore the original max bot counts
 	RefCount rc_JumpToWave;
+
+	THINK_FUNC_DECL(SpawnBots)
+	{
+		allocate_round_start = true;
+		g_pPopulationManager->AllocateBots();
+		allocate_round_start = false;
+	}
+
 	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
 	{
 		SCOPED_INCREMENT(rc_JumpToWave);
-		//DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
+		//DevMsg("[%8.3f] JumpToWaveRobotlimit\n", gpGlobals->curtime);
 		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
 		
-		CUtlVector<CTFPlayer *> mvm_bots;
-		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
-		CheckForMaxInvadersAndKickExtras(mvm_bots);
+
+		THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
+
 	}
 	
 	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
@@ -210,6 +224,21 @@ namespace Mod::MvM::Robot_Limit
 		return result;
 	}
 
+	DETOUR_DECL_MEMBER(void, CPopulationManager_StartCurrentWave)
+	{
+		DETOUR_MEMBER_CALL(CPopulationManager_StartCurrentWave)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CGameServer_SetHibernating, bool hibernate)
+	{
+		if (!hibernate && hibernated)
+		{
+			THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
+		}
+		hibernated = hibernate;
+		DETOUR_MEMBER_CALL(CGameServer_SetHibernating)(hibernate);
+	}
+
 	class CMod : public IMod
 	{
 	public:
@@ -224,6 +253,8 @@ namespace Mod::MvM::Robot_Limit
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
 			MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
+
+			MOD_ADD_DETOUR_MEMBER(CGameServer_SetHibernating, "CGameServer::SetHibernating");
 		}
 	};
 	CMod s_Mod;

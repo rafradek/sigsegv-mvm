@@ -181,34 +181,41 @@ public:
 	virtual void LevelShutdownPostEntity() {}
 	
 	// NOTE: these frame-based callbacks are for the SERVER SIDE only; see IGameSystemPerFrame definition for details!
-	virtual void FrameUpdatePreEntityThink() {}
-	virtual void FrameUpdatePostEntityThink() {}
-	virtual void PreClientUpdate() {}
 	
 protected:
 	IModCallbackListener() {}
 };
 
 // DEPRECATED: use IModCallbackListener instead!
-class IFrameUpdateListener : public IModCallbackListener
+class IFrameUpdatePreEntityThinkListener : public AutoList<IFrameUpdatePreEntityThinkListener>
 {
 public:
-	virtual bool ShouldReceiveCallbacks() const override final { return this->ShouldReceiveFrameEvents(); }
-	
-	// implementing these callbacks is disallowed
-	virtual void LevelInitPreEntity() override final {}
-	virtual void LevelInitPostEntity() override final {}
-	
-	// implementing these callbacks is disallowed
-	virtual void LevelShutdownPreEntity() override final {}
-	virtual void LevelShutdownPostEntity() override final {}
-	
-	virtual bool ShouldReceiveFrameEvents() const = 0;
-	
+	virtual bool ShouldReceiveCallbacks() const = 0;
+
+	virtual void FrameUpdatePreEntityThink() {}
 protected:
-	IFrameUpdateListener() {}
+	IFrameUpdatePreEntityThinkListener() {}
 };
 
+class IFrameUpdatePostEntityThinkListener : public AutoList<IFrameUpdatePostEntityThinkListener>
+{
+public:
+	virtual bool ShouldReceiveCallbacks() const = 0;
+
+	virtual void FrameUpdatePostEntityThink() {}
+protected:
+	IFrameUpdatePostEntityThinkListener() {}
+};
+
+class IPreClientUpdateListener : public AutoList<IPreClientUpdateListener>
+{
+public:
+	virtual bool ShouldReceiveCallbacks() const = 0;
+
+	virtual void PreClientUpdate() {}
+protected:
+	IPreClientUpdateListener() {}
+};
 
 #define MOD_ADD_DETOUR_MEMBER(detour, addr) \
 	this->AddDetour(new CDetour(addr, GET_MEMBER_CALLBACK(detour), GET_MEMBER_INNERPTR(detour)))

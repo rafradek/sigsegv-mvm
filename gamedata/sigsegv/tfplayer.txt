@@ -553,6 +553,18 @@
 					type "sym"
 					sym  "_ZNK15CTFPlayerShared17GetActiveTFWeaponEv"
 				}
+
+				"CTFPlayerShared::MakeBleed"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
+				}
+
+				"CTFPlayerShared::OnRemovePhase"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared13OnRemovePhaseEv"
+				}
 				
 				"CTFPlayerClassShared::SetCustomModel"
 				{
@@ -611,6 +623,142 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer23GetEntityForLoadoutSlotEib"
 				}
+				"CTFPlayerShared::Burn"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
+				}
+				"CTFPlayer::DoAnimationEvent"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16DoAnimationEventE17PlayerAnimEvent_ti"
+				}
+				"CTFPlayer::CanAirDash"
+				{
+					type "sym"
+					sym  "_ZNK9CTFPlayer10CanAirDashEv"
+				}
+				"HandleRageGain"
+				{
+					type "sym"
+					sym  "_Z14HandleRageGainP9CTFPlayerjff"
+				}
+				"CTFPlayer::GetAttributeList"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16GetAttributeListEv"
+				}
+				"CTFPlayer::IsAllowedToTaunt"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16IsAllowedToTauntEv"
+				}
+				"CTFPlayer::PlaySpecificSequence"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20PlaySpecificSequenceEPKc"
+				}
+				"CTFPlayer::ModifyOrAppendCriteria"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer22ModifyOrAppendCriteriaER14AI_CriteriaSet"
+				}
+				"SendProxy_PlayerObjectList"
+				{
+					type "sym"
+					sym  "_Z26SendProxy_PlayerObjectListPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxyArrayLength_PlayerObjects"
+				{
+					type "sym"
+					sym  "_Z34SendProxyArrayLength_PlayerObjectsPKvi"
+				}
+				"CTFPlayer::GetObjectCount"
+				{
+					type "sym"
+					sym  "_ZNK9CTFPlayer14GetObjectCountEv"
+				}
+				"CTFPlayer::GetObject"
+				{
+					type "sym"
+					sym  "_ZNK9CTFPlayer9GetObjectEi"
+				}
+				"CTFPlayer::StartedBuildingObject"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer21StartedBuildingObjectEi"
+				}
+				"CTFPlayer::AddObject"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer9AddObjectEP11CBaseObject"
+				}
+				"CTFPlayer::StartBuildingObjectOfType"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer25StartBuildingObjectOfTypeEii"
+				}
+				"CTFPlayer::Touch"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer5TouchEP11CBaseEntity"
+				}
+				"CTFPlayer::StateTransition"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer15StateTransitionEi"
+				}
+				"CTFPlayer::RemoveCurrency"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer14RemoveCurrencyEi"
+				}
+				"CTFPlayer::ShouldTransmit"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer14ShouldTransmitEPK18CCheckTransmitInfo"
+				}
+				"CTFPlayer::GetAttributeManager"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer19GetAttributeManagerEv"
+				}
+				"CTFPlayer::UpdateOnRemove"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer14UpdateOnRemoveEv"
+				}
+				"CTFPlayer::PlayTauntSceneFromItem"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer22PlayTauntSceneFromItemEPK13CEconItemView"
+				}
+				"CTFPlayer::CanMoveDuringTaunt"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer18CanMoveDuringTauntEv"
+				}
+				"CTFPlayer::RegenThink"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer10RegenThinkEv"
+				}
+				"CTFPlayer::ParseSharedTauntDataFromEconItemView"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer36ParseSharedTauntDataFromEconItemViewEPK13CEconItemView"
+				}
+				"CTFPlayer::CancelTaunt"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer11CancelTauntEv"
+				}
+				"CTFPlayer::IsAllowedToInitiateTauntWithPartner"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer35IsAllowedToInitiateTauntWithPartnerEPK13CEconItemViewPci"
+				}
+				
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

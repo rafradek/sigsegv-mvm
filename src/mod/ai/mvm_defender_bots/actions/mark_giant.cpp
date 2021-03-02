@@ -101,7 +101,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			return ActionResult<CTFBot>::Done("Mark target is no longer markable.");
 		}
 		
-		auto nextbot = rtti_cast<INextBot *>(actor);
+		auto nextbot = actor->MyNextBotPointer();
 		
 		if (this->m_ctRecomputePath.IsElapsed()) {
 			this->m_ctRecomputePath.Start(RandomFloat(0.4f, 0.6f));

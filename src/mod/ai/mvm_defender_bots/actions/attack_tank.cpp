@@ -45,7 +45,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		NDebugOverlay::EntityText(ENTINDEX(actor), 3, CFmtStrN<64>("ACTUAL: %.0f HU", dist_to_tank), 0.1f, 0xff, 0xff, 0xff, 0xff);
 		
 		if (!actor->IsLineOfFireClear(this->m_hTarget) || dist_to_tank > this->GetIdealTankRange()) {
-			auto nextbot = rtti_cast<INextBot *>(actor);
+			auto nextbot = actor->MyNextBotPointer();
 			
 			if (this->m_ctRecomputePath.IsElapsed()) {
 				this->m_ctRecomputePath.Start(RandomFloat(0.3f, 0.4f));

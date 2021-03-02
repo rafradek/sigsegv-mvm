@@ -77,7 +77,7 @@ namespace Mod::AI::EngieBot_Dispensers
 				return ActionResult<CTFBot>::Done("No hint entity");
 			}
 			
-			INextBot *nextbot = rtti_cast<INextBot *>(actor);
+			INextBot *nextbot = actor->MyNextBotPointer();
 			
 			float range_to_hint = nextbot->GetRangeTo(this->m_hHint->GetAbsOrigin());
 			
@@ -180,7 +180,7 @@ namespace Mod::AI::EngieBot_Dispensers
 				return ActionResult<CTFBot>::Done("No hint entity");
 			}
 			
-			INextBot *nextbot = rtti_cast<INextBot *>(actor);
+			INextBot *nextbot = actor->MyNextBotPointer();
 			
 			if (nextbot->IsRangeGreaterThan(this->m_hHint->GetAbsOrigin(), 25.0f)) {
 				TRACE_MSG("range_to_hint > 25: pathing\n");

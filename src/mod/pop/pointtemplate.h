@@ -14,16 +14,6 @@ private:
 	static StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *>ft_FindHint;
 };
 
-class CEventQueue {
-public:
-	void AddEvent( const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID ) {ft_AddEvent(this,target,targetInput,Value,fireDelay,pActivator,pCaller,outputID);}
-private:
-	static MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   ft_AddEvent;
-};
-
-static Vector defv=Vector();
-static QAngle defa=QAngle();
-
 struct InputInfoTemplate
 {
 	std::string target;
@@ -31,61 +21,82 @@ struct InputInfoTemplate
 	std::string param;
 	float delay;
 };
-class PointTemplate
-	{
-	public:
-		std::string name;
-		int id = 0;
-		std::vector<std::multimap<std::string,std::string>> entities;
-		std::set<std::string> fixup_names;
-		bool has_parent_name = false;
-		bool keep_alive = false;
-		bool has_on_kill_trigger = false;
-		bool no_fixup = false;
-		std::vector<std::string> on_kill_triggers = std::vector<std::string>();
 
-		PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, Vector &translation = defv, QAngle &rotation = defa, bool autoparent = true, const char *attachment=nullptr);
-	};
+class PointTemplate
+{
+public:
+	std::string name;
+	int id = 0;
+	std::vector<std::multimap<std::string,std::string>> entities;
+	std::set<std::string> fixup_names;
+	bool has_parent_name = false;
+	bool keep_alive = false;
+	bool has_on_kill_trigger = false;
+	bool no_fixup = false;
+	std::vector<std::string> on_kill_triggers = std::vector<std::string>();
+
+	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr);
+};
 
 
 class PointTemplateInstance
-	{
-	public:
-		int id;
-		PointTemplate *templ;
-		std::vector<CHandle<CBaseEntity>> entities;
-		CHandle<CBaseEntity> parent;
-		CHandle<CBaseEntity> parent_helper;
-		bool has_parent = false;
-		bool mark_delete = false;
-		int attachment=0;
-		bool is_wave_spawned = false;
-		
-		void OnKilledParent(bool clearing);
-	};
+{
+public:
+	int id;
+	PointTemplate *templ;
+	std::vector<CHandle<CBaseEntity>> entities;
+	CHandle<CBaseEntity> parent;
+	CHandle<CBaseEntity> parent_helper;
+	bool has_parent = false;
+	bool mark_delete = false;
+	int attachment=0;
+	bool is_wave_spawned = false;
+	
+	void OnKilledParent(bool clearing);
+};
 static PointTemplateInstance PointTemplateInstance_Invalid = PointTemplateInstance();
 
 struct PointTemplateInfo
 {
-	Vector translation = Vector();
-	QAngle rotation = QAngle();
+	Vector translation = vec3_origin;
+	QAngle rotation = vec3_angle;
 	PointTemplate *templ = nullptr;
 	float delay =0.0f;
 	std::string attachment;
 	std::string template_name;
-	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent);
+	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, bool autoparent = true);
+};
+
+class ShootTemplateData
+{
+public:
+	bool Shoot(CTFPlayer *player, CTFWeaponBase *weapon);
+
+	PointTemplate *templ = nullptr;
+	float speed = 1000.0f;
+	float spread = 0.0f;
+	bool override_shoot = false;
+	Vector offset = Vector(0,0,0);
+	QAngle angles = QAngle(0,0,0);
+	bool parent_to_projectile = false;
+	std::string weapon = "";
+	std::string weapon_classname = "";
 };
 
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
+bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 
+PointTemplate *FindPointTemplate(std::string &str);
 std::unordered_map<std::string, PointTemplate> &Point_Templates();
 std::unordered_multimap<std::string, CHandle<CBaseEntity>> &Teleport_Destination();
+extern std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
+extern std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
+extern std::vector<PointTemplateInstance *> g_templateInstances;
 
 void Clear_Point_Templates();
 void Update_Point_Templates();
 
 extern StaticFuncThunk<void> ft_PrecachePointTemplates;
-extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
 extern StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect;
 extern StaticFuncThunk<void, IRecipientFilter&,
 	float,
@@ -125,10 +136,4 @@ inline void TE_TFParticleEffectComplex
 	ft_TE_TFParticleEffectComplex(filter,flDelay,pszParticleName,vecOrigin,vecAngles,pOptionalColors,pOptionalControlPoint1, pEntity, eAttachType, vecStart);
 }
 
-
-inline bool IsSpaceToSpawnHere(const Vector& pos)
-{
-	return ft_IsSpaceToSpawnHere(pos);
-}
-extern GlobalThunk<CEventQueue> g_EventQueue;
 #endif

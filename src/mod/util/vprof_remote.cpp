@@ -241,7 +241,7 @@ namespace Mod::Util::VProf_Remote_Test
 	void WriteRemoteVProfData() { ft_WriteRemoteVProfData(); }
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:VProf_Remote_Test")
@@ -249,7 +249,7 @@ namespace Mod::Util::VProf_Remote_Test
 			MOD_ADD_DETOUR_MEMBER(CServerRemoteAccess_SendVProfData, "CServerRemoteAccess::SendVProfData");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

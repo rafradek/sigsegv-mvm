@@ -84,7 +84,7 @@ namespace Mod::Etc::Override_Move_Speed
 	}
 	
 	
-	ConVar cvar_limit("sig_etc_override_speed_limit_value", "-1", FCVAR_NOTIFY | FCVAR_REPLICATED,
+	ConVar cvar_limit("sig_etc_override_speed_limit_value", "-1", FCVAR_NOTIFY,
 		"Etc: player movement speed limit when overridden (use -1 for no limit)");
 	
 	

@@ -87,7 +87,13 @@ namespace Mod::Debug::UserMsg_Overflow
 		return result;
 	}
 	
-	
+	DETOUR_DECL_STATIC(void, UserMessageBegin,IRecipientFilter &filter,const char *name)
+	{
+		DevMsg("UserMessage %s\n",name);
+		//BACKTRACE();
+		DETOUR_STATIC_CALL(UserMessageBegin)(filter,name);
+	}
+
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_SendUpgradesToPlayer, CTFPlayer *player, CUtlVector<CUpgradeInfo> *upgrades)
 	{
 		DevMsg("CMannVsMachineStats::SendUpgradesToPlayer BEGIN\n");
@@ -96,7 +102,7 @@ namespace Mod::Debug::UserMsg_Overflow
 		DevMsg("CMannVsMachineStats::SendUpgradesToPlayer END\n");
 	}
 	
-	
+
 	class CMod : public IMod
 	{
 	public:
@@ -109,6 +115,8 @@ namespace Mod::Debug::UserMsg_Overflow
 			MOD_ADD_DETOUR_MEMBER(SVC_UserMessage_ReadFromBuffer, "SVC_UserMessage::ReadFromBuffer");
 			
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_SendUpgradesToPlayer, "CMannVsMachineStats::SendUpgradesToPlayer");
+
+			MOD_ADD_DETOUR_STATIC(UserMessageBegin,                 "UserMessageBegin");
 		}
 	};
 	CMod s_Mod;

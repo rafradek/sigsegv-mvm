@@ -76,7 +76,7 @@ namespace Mod::Util::VProf_Send
 	// pause profiling while we serialize/transmit, then resume it
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:VProf_Send") {}
@@ -99,7 +99,7 @@ namespace Mod::Util::VProf_Send
 			this->m_Buffer.clear();
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

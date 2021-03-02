@@ -251,7 +251,12 @@ using namespace std::literals;
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#ifdef DEBUG
+
 #include <libunwind.h>
+
+#endif
+
 #define HAVE_DECL_BASENAME 1
 #include <libiberty/demangle.h>
 #include <libelf.h>
@@ -379,6 +384,7 @@ WARN_RESTORE()
 #include "sdk2013/imaterialsystem_V081.h"
 #include <materialsystem/imaterial.h>
 #include <particle_parse.h>
+#include <effect_dispatch_data.h>
 #include <SoundEmitterSystem/isoundemittersystembase.h>
 #include <IEngineSound.h>
 #include <igamesystem.h>

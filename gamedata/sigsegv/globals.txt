@@ -79,6 +79,9 @@
 				
 				"g_EventQueue" "g_EventQueue"
 				"g_voteController" "g_voteController"
+
+				"g_TETFParticleEffect" "_ZL20g_TETFParticleEffect"
+				"g_pFullFileSystem" "g_pFullFileSystem"
 			}
 			
 			"addrs_group"

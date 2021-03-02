@@ -77,7 +77,14 @@ static MemberFuncThunk<const CSteamID *, const char *> ft_CSteamID_Render_member
 const char *CSteamID::Render() const { return ft_CSteamID_Render_member(this); }
 
 static StaticFuncThunk<void, const char *> ft_PrecacheParticleSystem("PrecacheParticleSystem");
+
 void PrecacheParticleSystem(const char *name) { ft_PrecacheParticleSystem(name); }
+
+static StaticFuncThunk<void, CBasePlayer *, hudtextparms_t &, const char *> ft_UTIL_HudMessage("UTIL_HudMessage");
+
+void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message) { ft_UTIL_HudMessage(player, params, message); }
+
+GlobalThunk<CEventQueue> g_EventQueue("g_EventQueue");
 
 void PrintToChatAll(const char *str)
 {

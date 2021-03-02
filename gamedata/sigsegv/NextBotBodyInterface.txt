@@ -18,6 +18,11 @@
 					type "sym"
 					sym  "_ZN5IBody6UpdateEv"
 				}
+				"PlayerBody::GetEntity"
+				{
+					type "sym"
+					sym  "_ZN10PlayerBody9GetEntityEv"
+				}
 			}
 		}
 	}

@@ -73,12 +73,12 @@ namespace Mod::Etc::Nav_UpdateBlocked
 
 namespace Mod::Etc::Nav_UpdateBlocked_Visualize
 {
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Etc:Nav_UpdateBlocked_Visualize") {}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

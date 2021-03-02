@@ -138,7 +138,7 @@ namespace Mod::Util::VProf_Recv
 		"Trace vprof messages as they are received");
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:VProf_Recv") {}
@@ -165,7 +165,7 @@ namespace Mod::Util::VProf_Recv
 			// then the stuff we put in the tree might point into segfault land
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

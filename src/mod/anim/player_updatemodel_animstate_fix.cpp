@@ -40,7 +40,7 @@ namespace Mod::Anim::Player_UpdateModel_AnimState_Fix
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Anim:Player_UpdateModel_AnimState_Fix")
@@ -48,7 +48,7 @@ namespace Mod::Anim::Player_UpdateModel_AnimState_Fix
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_UpdateModel, "CTFPlayer::UpdateModel");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

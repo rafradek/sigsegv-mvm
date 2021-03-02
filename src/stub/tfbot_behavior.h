@@ -38,6 +38,15 @@ private:
 };
 SIZE_CHECK(CTFBotAttack, 0x9014);
 
+class CTFBotAttackFlagDefenders : public CTFBotAttack
+{
+public:
+	CountdownTimer m_minDurationTimer;
+	CountdownTimer m_watchFlagTimer;
+	CHandle< CTFPlayer > m_chasePlayer;
+	PathFollower m_path;
+	CountdownTimer m_repathTimer;
+};
 
 class CTFBotSeekAndDestroy : public ActionStub
 {
@@ -212,7 +221,34 @@ protected:
 private:
 	static MemberFuncThunk<const CTFBotMainAction *, const CKnownEntity *, CTFBot *, const CKnownEntity *, const CKnownEntity *> ft_SelectCloserThreat;
 };
+
+class CTFBotMeleeAttack : public ActionStub
+{
+private:
+	float m_giveUpRange;			// if non-negative and if threat is farther than this, give up our melee attack
+	ChasePath m_path;
+};
+
 // TODO: SIZE_CHECK etc
+
+class CTFBotEscortSquadLeader : public Action<CTFBot>
+{
+public:
+	ActionResult< CTFBot >	Update( CTFBot *me, float interval ) { return vt_Update(this, me, interval); }
+
+	CTFBot *GetActorPublic() { return this->GetActor(); }
+protected:
+	CTFBotEscortSquadLeader() = delete;
+
+private:
+	static MemberVFuncThunk<CTFBotEscortSquadLeader *, ActionResult<CTFBot>, CTFBot*, float> vt_Update;
+	
+public:
+	Action< CTFBot > *m_actionToDoAfterSquadDisbands;
+	CTFBotMeleeAttack m_meleeAttackAction;
+
+	PathFollower m_formationPath;
+};
 
 struct CTFBotMissionSuicideBomber : public Action<CTFBot>
 	{

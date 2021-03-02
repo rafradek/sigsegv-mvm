@@ -49,6 +49,17 @@ inline void ForEachEntityByClassname(const char *classname, const FUNCTOR& func)
 }
 
 template<typename T, typename FUNCTOR>
+inline void ForEachEntityByClassnameRTTI(const char *classname, const FUNCTOR& func)
+{
+	for (CBaseEntity *ent = servertools->FindEntityByClassname(nullptr, classname); ent != nullptr; ent = servertools->FindEntityByClassname(ent, classname)) {
+		T *sub = rtti_cast<T *>(ent);
+		if (sub == nullptr) continue;
+		
+		if (!CALL_FUNCTOR(T *)(func, sub)) break;
+	}
+}
+
+template<typename T, typename FUNCTOR>
 inline void ForEachEntityByRTTI(const FUNCTOR& func)
 {
 	for (CBaseEntity *ent = servertools->FirstEntity(); ent != nullptr; ent = servertools->NextEntity(ent)) {

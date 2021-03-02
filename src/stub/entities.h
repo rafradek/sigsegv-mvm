@@ -36,7 +36,14 @@ public:
 	DECL_DATAMAP(bool,                   m_bPostSpawnUseAngles);
 };
 
-class CTFDroppedWeapon : public CBaseAnimating {};
+class CTFDroppedWeapon : public CBaseAnimating {
+public:
+	static CTFDroppedWeapon *Create(CTFPlayer *pLastOwner, const Vector &vecOrigin, const QAngle &vecAngles, const char *pszModelName, const CEconItemView *pItem) { return ft_Create(pLastOwner, vecOrigin, vecAngles, pszModelName, pItem); }
+	
+	DECL_SENDPROP(CEconItemView, m_Item);
+private:
+	static StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &, const char *, const CEconItemView *> ft_Create;
+};
 
 
 class CItem : public CBaseAnimating
@@ -258,11 +265,13 @@ class CUpgrades : public CBaseTrigger
 public:
 	const char *GetUpgradeAttributeName(int index) const { return ft_GetUpgradeAttributeName(this, index); }
 	void GrantOrRemoveAllUpgrades(CTFPlayer *player, bool remove = false, bool refund = true) const { ft_GrantOrRemoveAllUpgrades(this, player, remove, refund); };
+	void PlayerPurchasingUpgrade(CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool refund) { ft_PlayerPurchasingUpgrade(this, player, itemslot, upgradeslot, sell, free, refund); };
 
 	
 private:
 	static MemberFuncThunk<const CUpgrades *, const char *, int> ft_GetUpgradeAttributeName;
 	static MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > ft_GrantOrRemoveAllUpgrades;
+	static MemberFuncThunk<CUpgrades *, void, CTFPlayer *, int , int, bool, bool, bool > ft_PlayerPurchasingUpgrade;
 };
 extern GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity;
 

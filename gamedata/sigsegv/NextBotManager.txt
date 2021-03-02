@@ -24,6 +24,13 @@
 					type "sym"
 					sym  "_ZN14NextBotManager14CollectAllBotsEP10CUtlVectorIP8INextBot10CUtlMemoryIS2_iEE"
 				}
+
+				"NextBotManager::Update"
+				{
+					type "sym"
+					sym  "_ZN14NextBotManager6UpdateEv"
+				}
+				
 			}
 		}
 	}

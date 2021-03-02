@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/tfweaponbase.h"
 #include "util/scope.h"
+#include "util/iterate.h"
 
 
 namespace Mod::Etc::Melee_Ignore_Teammates
@@ -27,6 +28,19 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		//DevMsg("swing time %f \n",*(float *)(*((char *)weapon + 0x7dc) + /*offsets*/0x72c + 0)  );
 				                    //                 *(undefined4 *)
                                     //(*(int *)(this + 0x7dc) + 0x70c + *(int *)(this + 0x6a8) * 0x40)
+		
+		// Make cleave attack target NPC such as tanks
+		std::vector<CBaseEntity *> altered_flags;
+		if (cleave_attack) {
+			ForEachEntity([&](CBaseEntity *ent){
+				int flags = ent->m_fFlags;
+				if ((flags & FL_NPC || ent->IsCombatCharacter()) && !(flags & FL_OBJECT || flags & FL_CLIENT)) {
+					ent->m_fFlags |= FL_OBJECT;
+					altered_flags.push_back(ent);
+				}
+			});
+		}
+
 		if (!cleave_attack && team != TF_TEAM_BLUE) {
 			attacker = weapon->GetTFPlayerOwner();
 			//is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
@@ -50,6 +64,11 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
 		}
 
+		if (cleave_attack) {
+			for (auto ent : altered_flags) {
+				ent->m_fFlags &= ~FL_OBJECT;
+			}
+		}
 		//weapon->GetOwner()->SetTeamNumber(team);
 
 		/*bool result;
@@ -70,6 +89,14 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		
 		return result;
 	}
+
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBaseMelee_OnSwingHit, trace_t &trace )
+	{
+		if (trace.m_pEnt == nullptr)
+			return false;
+ 		return DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_OnSwingHit)(trace);
+	}
+
 	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
 		if (rc_CTFWeaponBaseMelee_Smack > 0 && V_stricmp(attr, "melee_cleave_attack") == 0) {
@@ -89,6 +116,8 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		return DETOUR_MEMBER_CALL(CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity)(pServerEntity, contentsMask);
 			
 	}
+
+
 	/*RefCount rc_FindHullIntersection;
 	DETOUR_DECL_STATIC(void, FindHullIntersection, const Vector& vecSrc, trace_t& tr, const Vector& mins, const Vector& maxs, CBaseEntity *pEntity)
 	{
@@ -133,6 +162,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			MOD_ADD_DETOUR_MEMBER(CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity, "CTraceFilterIgnoreFriendlyCombatItems::ShouldHitEntity");
 			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_int, "CAttributeManager::AttribHookValue<int>");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_OnSwingHit, "CTFWeaponBaseMelee::OnSwingHit");
 			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_GetSmackTime, "CTFWeaponBaseMelee::GetSmackTime");
 			
 			//MOD_ADD_DETOUR_STATIC(FindHullIntersection, "FindHullIntersection");
@@ -143,7 +173,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_etc_melee_ignore_teammates", "0", FCVAR_NOTIFY,
+ConVar cvar_enable("sig_etc_melee_ignore_teammates", "0", FCVAR_NOTIFY,
 		"Mod: allow melee traces to pass through teammates (for anyone, not just MvM blu team players)",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

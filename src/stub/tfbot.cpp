@@ -201,6 +201,7 @@ IMPL_EXTRACT(CTFBot::MissionType,   CTFBot, m_nMission,  new CExtract_CTFBot_m_n
 IMPL_EXTRACT(CUtlVector<CFmtStr>,   CTFBot, m_Tags,      new CExtract_CTFBot_m_Tags());
 #endif
 IMPL_EXTRACT(CTFBot::AttributeType, CTFBot, m_nBotAttrs, new CExtract_CTFBot_m_nBotAttrs());
+IMPL_RELATIVE(int, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, -0x04);
 #endif
 
 MemberFuncThunk<const CTFBot *, ILocomotion *                            > CTFBot::ft_GetLocomotionInterface      ("CTFBot::GetLocomotionInterface");
@@ -233,6 +234,7 @@ MemberFuncThunk<      CTFBot *, float, float, int          > CTFBot::ft_Transien
 std::map<CHandle<CTFBot>, CTFBot::ExtendedAttr> CTFBot::s_ExtAttrs;
 #endif
 
+StaticFuncThunk<CTFBot *, CBaseEntity *> ft_ToTFBot("ToTFBot");
 
 StaticFuncThunk<CTFBot *, const char *, bool> ft_NextBotCreatePlayerBot_CTFBot("NextBotCreatePlayerBot<CTFBot>");
 template<> CTFBot *NextBotCreatePlayerBot<CTFBot>(const char *name, bool fake_client) { return ft_NextBotCreatePlayerBot_CTFBot(name, fake_client); }

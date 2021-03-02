@@ -20,6 +20,10 @@ IMPL_DATAMAP(CHandle<CBaseEntity>,   CBaseEntity, m_hMovePeer);
 IMPL_DATAMAP(CHandle<CBaseEntity>,   CBaseEntity, m_hMoveParent);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flGravity);
 IMPL_DATAMAP(QAngle,                 CBaseEntity, m_vecAngVelocity);
+IMPL_DATAMAP(float,                  CBaseEntity, m_flLocalTime);
+IMPL_DATAMAP(float,                  CBaseEntity, m_flAnimTime);
+IMPL_DATAMAP(float,                  CBaseEntity, m_flSimulationTime);
+IMPL_DATAMAP(float,                  CBaseEntity, m_flVPhysicsUpdateLocalTime);
 
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTeamNum,             CBaseEntity);
@@ -50,6 +54,7 @@ MemberFuncThunk<      CBaseEntity *, void, const QAngle&                        
 MemberFuncThunk<      CBaseEntity *, void, const Vector&                                    > CBaseEntity::ft_SetAbsVelocity             ("CBaseEntity::SetAbsVelocity");
 MemberFuncThunk<      CBaseEntity *, void, const char *, float, float *                     > CBaseEntity::ft_EmitSound_member1          ("CBaseEntity::EmitSound [member: normal]");
 MemberFuncThunk<      CBaseEntity *, void, const char *, HSOUNDSCRIPTHANDLE&, float, float *> CBaseEntity::ft_EmitSound_member2          ("CBaseEntity::EmitSound [member: normal + handle]");
+MemberFuncThunk<      CBaseEntity *, void, const char *                                     > CBaseEntity::ft_StopSound                  ("CBaseEntity::StopSound");
 MemberFuncThunk<      CBaseEntity *, float, const char *                                    > CBaseEntity::ft_GetNextThink               ("CBaseEntity::GetNextThink");
 MemberFuncThunk<      CBaseEntity *, void, const Vector&, Vector *                          > CBaseEntity::ft_EntityToWorldSpace         ("CBaseEntity::EntityToWorldSpace");
 MemberFuncThunk<const CBaseEntity *, bool                                                   > CBaseEntity::ft_IsBSPModel                 ("CBaseEntity::IsBSPModel");
@@ -80,6 +85,7 @@ MemberVFuncThunk<      CBaseEntity *, void, int                                 
 MemberVFuncThunk<const CBaseEntity *, int                                                             > CBaseEntity::vt_GetModelIndex                 (TypeName<CBaseEntity>(), "CBaseEntity::GetModelIndex");
 MemberVFuncThunk<const CBaseEntity *, string_t                                                        > CBaseEntity::vt_GetModelName                  (TypeName<CBaseEntity>(), "CBaseEntity::GetModelName");
 MemberVFuncThunk<      CBaseEntity *, CBaseCombatCharacter *                                          > CBaseEntity::vt_MyCombatCharacterPointer      (TypeName<CBaseEntity>(), "CBaseEntity::MyCombatCharacterPointer");
+MemberVFuncThunk<      CBaseEntity *, CBaseCombatWeapon *                                             > CBaseEntity::vt_MyCombatWeaponPointer         (TypeName<CBaseEntity>(), "CBaseEntity::MyCombatWeaponPointer");
 MemberVFuncThunk<const CBaseEntity *, bool, int, int                                                  > CBaseEntity::vt_ShouldCollide                 (TypeName<CBaseEntity>(), "CBaseEntity::ShouldCollide");
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_DrawDebugGeometryOverlays     (TypeName<CBaseEntity>(), "CBaseEntity::DrawDebugGeometryOverlays");
 MemberVFuncThunk<      CBaseEntity *, void, int                                                       > CBaseEntity::vt_ChangeTeam                    (TypeName<CBaseEntity>(), "CBaseEntity::ChangeTeam");
@@ -98,6 +104,9 @@ MemberVFuncThunk<const CBaseEntity *, int                                       
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsAlive                       (TypeName<CBaseEntity>(), "CBaseEntity::IsAlive");
 MemberVFuncThunk<const CBaseEntity *, float                                                           > CBaseEntity::vt_GetDefaultItemChargeMeterValue(TypeName<CBaseEntity>(), "CBaseEntity::GetDefaultItemChargeMeterValue");
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsDeflectable                 (TypeName<CBaseEntity>(), "CBaseEntity::IsDeflectable");
+MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *, int                                        > CBaseEntity::vt_SetParent                     (TypeName<CBaseEntity>(), "CBaseEntity::SetParent");
+MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsPlayer                      (TypeName<CBaseEntity>(), "CBaseEntity::IsPlayer");
+MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsBaseObject                  (TypeName<CBaseEntity>(), "CBaseEntity::IsBaseObject");
 
 StaticFuncThunk<int, const char *, bool>                                                                         CBaseEntity::ft_PrecacheModel      ("CBaseEntity::PrecacheModel");
 StaticFuncThunk<bool, const char *>                                                                              CBaseEntity::ft_PrecacheSound      ("CBaseEntity::PrecacheSound");
@@ -107,16 +116,26 @@ StaticFuncThunk<void, IRecipientFilter&, int, const char *, HSOUNDSCRIPTHANDLE&,
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                CBaseEntity::ft_EmitSound_static3  ("CBaseEntity::EmitSound [static: emitsound]");
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           CBaseEntity::ft_EmitSound_static4  ("CBaseEntity::EmitSound [static: emitsound + handle]");
 
+MemberFuncThunk<CCollisionProperty *, void, SurroundingBoundsType_t, const Vector *, const Vector *> ft_SetSurroundingBoundsType("CCollisionProperty::SetSurroundingBoundsType");
+MemberFuncThunk<CCollisionProperty *, void> ft_MarkPartitionHandleDirty("CCollisionProperty::MarkPartitionHandleDirty");
 
-bool CBaseEntity::IsPlayer() const
-{
-	return (rtti_cast<const CBasePlayer *>(this) != nullptr);
+void CCollisionProperty::SetSurroundingBoundsType(SurroundingBoundsType_t type, const Vector *pMins, const Vector *pMaxs) {
+	ft_SetSurroundingBoundsType(this, type, pMins, pMaxs);
 }
 
-bool CBaseEntity::IsBaseObject() const
-{
-	return (rtti_cast<const CBaseObject *>(this) != nullptr);
+void CCollisionProperty::MarkPartitionHandleDirty() {
+	ft_MarkPartitionHandleDirty(this);
 }
+
+// bool CBaseEntity::IsPlayer() const
+// {
+// 	return (rtti_cast<const CBasePlayer *>(this) != nullptr);
+// }
+
+// bool CBaseEntity::IsBaseObject() const
+// {
+// 	return (rtti_cast<const CBaseObject *>(this) != nullptr);
+// }
 
 
 void CCollisionProperty::CalcNearestPoint(const Vector& vecWorldPt, Vector *pVecNearestWorldPt) const

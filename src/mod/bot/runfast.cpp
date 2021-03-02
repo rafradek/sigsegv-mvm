@@ -1,18 +1,18 @@
 #include "mod.h"
 #include "re/nextbot.h"
 #include "stub/tfplayer.h"
-
+#include "stub/tfbot.h"
 
 namespace Mod::Bot::RunFast
 {
 	constexpr uint8_t s_Buf_Verify[] = {
-		0xe8, 0x08, 0x73, 0xfe, 0xff,                   // +0000  call Path::Compute<CTFBotPathCost>
-		0xc7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x40, // +0005  mov dword ptr [esp+0x4],2.0f
-		0xc7, 0x04, 0x24, 0x00, 0x00, 0x80, 0x3f,       // +000D  mov dword ptr [esp],1.0f
-		0xe8, 0xdc, 0xd8, 0xae, 0x00,                   // +0014  call RandomFloat
+		0xff, 0x51, 0x54,                   // +0000  call Path::Compute<CTFBotPathCost>
+		0xc7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x40, // +0003  mov dword ptr [esp+0x4],2.0f
+		0xc7, 0x04, 0x24, 0x00, 0x00, 0x80, 0x3f,       // +000B  mov dword ptr [esp],1.0f
+		0xe8, 0xdc, 0xd8, 0xae, 0x00,                   // +0012  call RandomFloat
 	};
 	constexpr uint8_t s_Buf_Patch[] = {
-		0xe8, 0x08, 0x73, 0xfe, 0xff, // +0000  call Path::Compute<CTFBotPathCost>
+		0xff, 0x51, 0x54, // +0000  call Path::Compute<CTFBotPathCost>
 		0xd9, 0xee,                   // +0005  fldz
 		0x90, 0x90, 0x90, 0x90, 0x90, // +0007  nop nop nop nop nop
 		0x90, 0x90, 0x90, 0x90, 0x90, // +000C  nop nop nop nop nop
@@ -26,15 +26,15 @@ namespace Mod::Bot::RunFast
 		CPatch_CTFBotPushToCapturePoint_Update() : CPatch(sizeof(s_Buf_Verify)) {}
 		
 		virtual const char *GetFuncName() const override { return "CTFBotPushToCapturePoint::Update"; }
-		virtual uint32_t GetFuncOffMin() const override { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override { return 0x0240; } // @ 0x01d3
+		virtual uint32_t GetFuncOffMin() const override { return 0x0400; }
+		virtual uint32_t GetFuncOffMax() const override { return 0x0680; } // @ 0x01d3
 		
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_Verify);
 			
-			mask.SetRange(0x00 + 1, 4, 0x00);
-			mask.SetRange(0x14 + 1, 4, 0x00);
+			mask.SetRange(0x00 + 1, 2, 0x00);
+			mask.SetRange(0x12 + 1, 4, 0x00);
 			
 			return true;
 		}
@@ -44,32 +44,60 @@ namespace Mod::Bot::RunFast
 			buf.CopyFrom(s_Buf_Patch);
 			
 			mask.SetAll(0xff);
-			mask.SetRange(0x00, 5, 0x00);
+			mask.SetRange(0x00, 3, 0x00);
 			
 			return true;
 		}
 	};
 	
+	struct NextBotData
+    {
+        int vtable;
+        INextBotComponent *m_ComponentList;              // +0x04
+        PathFollower *m_CurrentPath;                     // +0x08
+        int m_iManagerIndex;                             // +0x0c
+        bool m_bScheduledForNextTick;                    // +0x10
+        int m_iLastUpdateTick;                           // +0x14
+    };
 	
 	DETOUR_DECL_MEMBER(float, CTFBotLocomotion_GetRunSpeed)
 	{
 		auto loco = reinterpret_cast<ILocomotion *>(this);
-		CTFPlayer *bot = ToTFPlayer(loco->GetBot()->GetEntity());
+		CTFBot *bot = ToTFBot(loco->GetBot()->GetEntity());
 		
 		if (bot != nullptr) {
-			return bot->TeamFortress_CalculateMaxSpeed();
+			return bot->MaxSpeed();
 		} else {
 			Warning("Can't determine actual max speed in detour for CTFBotLocomotion::GetRunSpeed!\n");
 			return 3200.0f;
 		}
 	}
-	
-	
-	DETOUR_DECL_MEMBER(void, PlayerLocomotion_Jump)
+
+	ConVar cvar_fast_update("sig_bot_runfast_fast_update", "0", FCVAR_NONE,
+		"Etc: player movement speed limit when overridden (use -1 for no limit)");
+
+	RefCount rc_CTFBotMainAction_Update;
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMainAction_Update, CTFBot *actor, float dt)
 	{
-		/* don't let bots try to jump, it just slows them down */
+		SCOPED_INCREMENT(rc_CTFBotMainAction_Update); 
+
+		// Force update for fast bots
+		if (cvar_fast_update.GetBool() && actor->MaxSpeed() >= (actor->IsMiniBoss() ? 350.0f : 520.0f) ) {
+			reinterpret_cast<NextBotData *>(actor->MyNextBotPointer())->m_bScheduledForNextTick = true;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
 	}
 	
+	ConVar cvar_jump("sig_bot_runfast_allowjump", "0", FCVAR_NONE,
+		"Etc: player movement speed limit when overridden (use -1 for no limit)");
+
+	DETOUR_DECL_MEMBER(void, PlayerLocomotion_Jump)
+	{
+		/* don't let bots try to jump without autojump, it just slows them down */
+		if ( rc_CTFBotMainAction_Update || cvar_jump.GetBool() || reinterpret_cast<ILocomotion *>(this)->GetRunSpeed() < 350.0f)
+			DETOUR_MEMBER_CALL(PlayerLocomotion_Jump)();
+	}
 	
 	class CMod : public IMod
 	{
@@ -78,6 +106,7 @@ namespace Mod::Bot::RunFast
 		{
 			this->AddPatch(new CPatch_CTFBotPushToCapturePoint_Update());
 			MOD_ADD_DETOUR_MEMBER(CTFBotLocomotion_GetRunSpeed, "CTFBotLocomotion::GetRunSpeed");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_Update,      "CTFBotMainAction::Update");
 			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_Jump,        "PlayerLocomotion::Jump");
 		}
 	};

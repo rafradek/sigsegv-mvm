@@ -12,6 +12,7 @@ public:
 	int GetType() const               { return this->m_iObjectType; }
 	int GetObjectMode() const         { return this->m_iObjectMode; }
 	CTFPlayer *GetBuilder() const     { return this->m_hBuilder; }
+	CBaseEntity *GetBuiltOnEntity() const     { return this->m_hBuiltOnEntity; }
 	
 	// avoid situations where we accidentally do the wrong thing
 	void SetHealth(int amt) = delete;
@@ -35,11 +36,13 @@ public:
 	DECL_SENDPROP(bool,               m_bDisposableBuilding);
 	DECL_SENDPROP(bool,               m_bBuilding);
 	DECL_SENDPROP(bool,               m_bDisabled);
+	DECL_SENDPROP(bool,               m_bCarried);
 	
 private:
 	DECL_SENDPROP(int,                m_iObjectType);
 	DECL_SENDPROP(int,                m_iObjectMode);
 	DECL_SENDPROP(CHandle<CTFPlayer>, m_hBuilder);
+	DECL_SENDPROP(CHandle<CBaseEntity>, m_hBuiltOnEntity);
 	
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetHealth;
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetPlasmaDisabled;
@@ -83,8 +86,11 @@ class CObjectSapper : public CBaseObjectUpgrade {};
 class CObjectSentrygun : public CBaseObject {
 public:
 	QAngle &GetTurretAngles()         { return vt_GetTurretAngles  (this); }
+	void SentryThink()         { ft_SentryThink  (this); }
+	DECL_EXTRACT(float, m_flNextRocketFire);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
+	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;
 };
 
 
@@ -120,5 +126,12 @@ public:
 	virtual int			FindObjectOnBuildPoint( CBaseObject *pObject ) = 0;
 };
 
+inline CBaseObject *ToBaseObject(CBaseEntity *pEntity)
+{
+	if (pEntity == nullptr)   return nullptr;
+	if (!pEntity->IsBaseObject()) return nullptr;
+	
+	return static_cast<CBaseObject *>(pEntity);
+}
 
 #endif

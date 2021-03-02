@@ -184,7 +184,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			return ActionResult<CTFBot>::ChangeTo(new CTFBotPurchaseUpgrades(), "Reached upgrade station; buying upgrades.");
 		}
 		
-		auto nextbot = rtti_cast<INextBot *>(actor);
+		auto nextbot = actor->MyNextBotPointer();
 		
 		if (this->m_ctRecomputePath.IsElapsed()) {
 			this->m_ctRecomputePath.Start(RandomFloat(1.0f, 2.0f));

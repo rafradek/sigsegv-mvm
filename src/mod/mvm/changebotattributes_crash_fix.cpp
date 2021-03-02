@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/tfbot.h"
 #include "util/scope.h"
+#include "stub/misc.h"
 
 
 namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
@@ -12,17 +13,29 @@ namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
 		DETOUR_MEMBER_CALL(CPointPopulatorInterface_InputChangeBotAttributes)(inputdata);
 	}
 	
-	DETOUR_DECL_MEMBER(CTFBot::EventChangeAttributes_t *, CTFBot_GetEventChangeAttributes)
+	DETOUR_DECL_MEMBER(CTFBot::EventChangeAttributes_t *, CTFBot_GetEventChangeAttributes, const char *name)
 	{
 		auto player = reinterpret_cast<CBasePlayer *>(this);
 		if (ToTFBot(player) == nullptr) {
 			return nullptr;
 		}
-		
-		return DETOUR_MEMBER_CALL(CTFBot_GetEventChangeAttributes)();
+		else if (name == nullptr) {
+			PrintToChatAll("Invalid changebotattributes name");
+			return nullptr;
+		}
+		return DETOUR_MEMBER_CALL(CTFBot_GetEventChangeAttributes)(name);
 	}
 	
-	
+	DETOUR_DECL_MEMBER(void, CTFBot_AddEventChangeAttributes, CTFBot::EventChangeAttributes_t * ecattr)
+	{
+	 	if (ecattr == nullptr || ecattr->m_strName == nullptr ) {
+			PrintToChatAll("Bot spawned with invalid event change attributes");
+			return;
+		}
+
+	 	DETOUR_MEMBER_CALL(CTFBot_AddEventChangeAttributes)(ecattr);
+	}
+
 	class CMod : public IMod
 	{
 	public:
@@ -30,6 +43,7 @@ namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
 		{
 			MOD_ADD_DETOUR_MEMBER(CPointPopulatorInterface_InputChangeBotAttributes, "CPointPopulatorInterface::InputChangeBotAttributes");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_GetEventChangeAttributes,                   "CTFBot::GetEventChangeAttributes");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_AddEventChangeAttributes,        "CTFBot::AddEventChangeAttributes");
 		}
 	};
 	CMod s_Mod;

@@ -51,7 +51,7 @@ namespace Mod::AI::Puppet
 	
 	ActionResult<CTFBot> CTFBotPuppet::Update(CTFBot *actor, float dt)
 	{
-		auto nextbot = rtti_cast<INextBot *>(actor);
+		auto nextbot = actor->MyNextBotPointer();
 		
 		Vector vel = actor->GetAbsVelocity();
 		nextbot->DisplayDebugText(CFmtStr("|v| = % 7.1f", vel.Length()));
@@ -131,7 +131,7 @@ namespace Mod::AI::Puppet
 				PuppetMsg("[OnCommandString] trace did hit; computing path to tr.endpos\n");
 				
 				CTFBotPathCost path_cost(actor, rtype);
-				if (this->m_PathFollower->Compute(rtti_cast<INextBot *>(actor), tr.endpos, path_cost, 0.0f, true)) {
+				if (this->m_PathFollower->Compute(actor->MyNextBotPointer(), tr.endpos, path_cost, 0.0f, true)) {
 					PuppetMsg("[OnCommandString] path computation succeeded\n");
 					NDebugOverlay::Cross3D(tr.endpos, 5.0f, 0x00, 0xff, 0x00, false, 10.0f);
 				} else {

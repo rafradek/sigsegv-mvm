@@ -106,5 +106,45 @@ private:
 	bool m_bNoChain;
 };
 
+/*void TryUnstuck(CBaseEntity *player) {
+	const Vector& vOrigin = player->GetAbsOrigin();
+	const QAngle& qAngle = player->GetAbsAngles();
+	const Vector& vHullMins = player->GetCollisionProp()->OBBMins();
+	const Vector& vHullMaxs = player->GetCollisionProp()->OBBMaxs();
+
+	trace_t result;
+	CTraceFilterIgnoreTeammates filter( player, COLLISION_GROUP_NONE, player->GetTeamNumber() );
+	UTIL_TraceHull( vOrigin, vOrigin, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result );
+
+	if ( result.DidHit() )
+	{
+		float flPlayerHeight = vHullMaxs.z - vHullMins.z;
+		float flExtraHeight = 10;
+		static Vector vTest[] =
+		{
+			Vector( 32, 32, flExtraHeight ),
+			Vector( -32, -32, flExtraHeight ),
+			Vector( -32, 32, flExtraHeight ),
+			Vector( 32, -32, flExtraHeight ),
+			Vector( 0, 0, flPlayerHeight + flExtraHeight ),
+			Vector( 0, 0, -flPlayerHeight - flExtraHeight )
+		};
+		for ( int i=0; i<ARRAYSIZE( vTest ); ++i )
+		{
+			Vector vTestPos = vOrigin + vTest[i];
+			UTIL_TraceHull( vOrigin, vTestPos, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result );
+			if ( !result.DidHit() )
+			{
+
+				player->Teleport( &vTestPos, &qAngle, NULL );
+				return;
+			}
+			else
+			{
+
+			}
+		}
+	}
+}*/
 
 #endif

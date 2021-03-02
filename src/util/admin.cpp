@@ -8,6 +8,27 @@ static IGamePlayer *GetSMPlayer(CBasePlayer *player)
 	return playerhelpers->GetGamePlayer(player->edict());
 }
 
+int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlayer *> &vec, char *target_name, int target_name_size, int flags)
+{
+	if (pattern == nullptr) return 0;
+
+	cell_t targets[34];
+	cmd_target_info_t target_info;
+	target_info.admin = ENTINDEX(caller);
+	target_info.pattern = pattern;
+	target_info.targets = targets;
+	target_info.max_targets = 34;
+	target_info.target_name = target_name;
+	target_info.target_name_maxlength = target_name_size;
+	target_info.flags = flags;
+
+	playerhelpers->ProcessCommandTarget(&target_info);
+	for (int i = 0; i < target_info.num_targets; i++) {
+		vec.push_back(UTIL_PlayerByIndex(target_info.targets[i]));
+	}
+
+	return target_info.reason;
+}
 
 AdminId GetPlayerSMAdminID(CBasePlayer *player)
 {

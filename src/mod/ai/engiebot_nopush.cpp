@@ -25,18 +25,30 @@ namespace Mod::AI::EngieBot_NoPush
 		SCOPED_INCREMENT(rc_BuildTele_Update);
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_Update)(actor, dt);
 	}
-	
+
+	ConVar cvar_reducerange("sig_ai_engiebot_pushrange", "0", FCVAR_NOTIFY,
+		"Mod: reduce push range");
+
 	/* would prefer to detour CTFGameRules::PushAllPlayersAway, but it's hard to reliably locate on Windows */
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
 	{
-		if (rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) {
+		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() == 0.0f) {
 			return;
 		}
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
 	}
 	
-	
+	DETOUR_DECL_MEMBER(void, CTFGameRules_PushAllPlayersAway, const Vector& vFromThisPoint, float flRange, float flForce, int nTeam, CUtlVector< CTFPlayer* > *pPushedPlayers)
+	{
+		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() > 0.0f) {
+			flRange = cvar_reducerange.GetFloat();
+			
+		}
+		
+		DETOUR_MEMBER_CALL(CTFGameRules_PushAllPlayersAway)(vFromThisPoint, flRange, flForce, nTeam, pPushedPlayers);
+	}
+
 	class CMod : public IMod
 	{
 	public:
@@ -46,6 +58,7 @@ namespace Mod::AI::EngieBot_NoPush
 			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerBuildSentryGun_Update,    "CTFBotMvMEngineerBuildSentryGun::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerBuildTeleportExit_Update, "CTFBotMvMEngineerBuildTeleportExit::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyAbsVelocityImpulse,         "CTFPlayer::ApplyAbsVelocityImpulse");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PushAllPlayersAway,         "CTFGameRules::PushAllPlayersAway");
 		}
 	};
 	CMod s_Mod;

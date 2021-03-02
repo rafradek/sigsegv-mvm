@@ -77,6 +77,7 @@ IClientMode *g_pClientMode = nullptr;
 
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+
 	ColorSpew::Enable();
 	
 	if (gameeventmanager != nullptr) {
@@ -104,7 +105,9 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_ModManager.Load();
 	
 	IGameSystem::Add(this);
-	
+
+	ConVar_Restore::Load();
+	ConVar_Restore::OnExtLoad();
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
 //	}
@@ -118,8 +121,9 @@ fail:
 
 void CExtSigsegv::SDK_OnUnload()
 {
+	ConVar_Restore::OnExtUnload();
 	ConVar_Restore::Save();
-	
+
 	IGameSystem::Remove(this);
 	
 	IHotplugAction::UnloadAll();

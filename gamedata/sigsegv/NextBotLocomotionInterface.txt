@@ -30,6 +30,42 @@
 					type "sym"
 					sym  "_ZN21CTFBaseBossLocomotion11FaceTowardsERK6Vector"
 				}
+				"NextBotGroundLocomotion::GetGravity"
+				{
+					type "sym"
+					sym  "_ZNK23NextBotGroundLocomotion10GetGravityEv"
+				}
+				"NextBotGroundLocomotion::IsOnGround"
+				{
+					type "sym"
+					sym  "_ZNK23NextBotGroundLocomotion10IsOnGroundEv"
+				}
+				"NextBotGroundLocomotion::DetectCollision"
+				{
+					type "sym"
+					sym  "_ZN23NextBotGroundLocomotion15DetectCollisionEP10CGameTraceRiRK6VectorS5_S5_S5_"
+				}
+				"NextBotGroundLocomotion::Approach"
+				{
+					type "sym"
+					sym  "_ZN23NextBotGroundLocomotion8ApproachERK6Vectorf"
+				}
+				"NextBotGroundLocomotion::Update"
+				{
+					type "sym"
+					sym  "_ZN23NextBotGroundLocomotion6UpdateEv"
+				}
+				"CTFBaseBossLocomotion::GetStepHeight"
+				{
+					type "sym"
+					sym  "_ZNK21CTFBaseBossLocomotion13GetStepHeightEv"
+				}
+				"NextBotGroundLocomotion::GetGroundNormal"
+				{
+					type "sym"
+					sym  "_ZNK23NextBotGroundLocomotion15GetGroundNormalEv"
+				}
+				
 			}
 		}
 	}

@@ -94,10 +94,42 @@ struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<bool *>
 	}
 };
 
+static constexpr uint8_t s_Buf_CTFPlayerShared_m_ConditionData[] = {
+	0x8B, 0x56, 0x08,
+	0x8D, 0x04, 0x9B,
+	0x8D, 0x04, 0x82,
+	0xF3, 0x0F, 0x10, 0x40, 0x08,
+};
+
+struct CExtract_CTFPlayerShared_m_ConditionData : public IExtract<CUtlVector<condition_source_t>*>
+{
+	using T = CUtlVector<condition_source_t>*;
+
+	CExtract_CTFPlayerShared_m_ConditionData() : IExtract<T>(sizeof(s_Buf_CTFPlayerShared_m_ConditionData)) {}
+	
+	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
+	{
+		buf.CopyFrom(s_Buf_CTFPlayerShared_m_ConditionData);
+		
+		mask.SetRange(0x00 + 2, 1, 0x00);
+		mask.SetRange(0x09 + 4, 1, 0x00);
+		return true;
+	}
+	
+	virtual const char *GetFuncName() const override   { return "CTFPlayerShared::GetConditionDuration"; }
+	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
+	virtual uint32_t GetFuncOffMax() const override    { return 0x0060; }
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val & 0x000000ff); }
+};
+
+
 #elif defined _WINDOWS
 
 using CExtract_CTFPlayerShared_m_pOuter   = IExtractStub;
 using CExtract_CTFPlayer_m_bFeigningDeath = IExtractStub;
+using CExtract_CTFPlayerShared_m_ConditionData = IExtractStub;
 
 #endif
 
@@ -125,6 +157,7 @@ IMPL_SENDPROP(float,       CTFPlayerShared, m_flStealthNoAttackExpire, CTFPlayer
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nPlayerState,            CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iAirDash,                CTFPlayer);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
+IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");
@@ -144,16 +177,21 @@ MemberFuncThunk<      CTFPlayerShared *, void, loadout_positions_t, float    > C
 MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > CTFPlayerShared::ft_Burn 					 ("CTFPlayerShared::Burn");
 
 
-IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,              CTFPlayer);
-IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime, CTFPlayer);
-IMPL_RELATIVE(CTFPlayerAnimState *, CTFPlayer, m_PlayerAnimState,     m_hItem, -0x18); // 20170116a
-IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,      new CExtract_CTFPlayer_m_bFeigningDeath());
-IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,         CTFPlayer);
-IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,               CTFPlayer);
-IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsMiniBoss,         CTFPlayer);
-IMPL_SENDPROP(int,                  CTFPlayer, m_nCurrency,           CTFPlayer);
-IMPL_SENDPROP(int,                  CTFPlayer, m_nBotSkill,           CTFPlayer);
-IMPL_SENDPROP(CHandle<CBaseEntity> ,CTFPlayer, m_hGrapplingHookTarget,CTFPlayer);
+IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime,    CTFPlayer);
+IMPL_RELATIVE(CTFPlayerAnimState *, CTFPlayer, m_PlayerAnimState,        m_hItem, -0x18); // 20170116a
+IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
+IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,            CTFPlayer);
+IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,                  CTFPlayer);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsMiniBoss,            CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_nCurrency,              CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_nBotSkill,              CTFPlayer);
+IMPL_SENDPROP(CHandle<CBaseEntity> ,CTFPlayer, m_hGrapplingHookTarget,   CTFPlayer);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_bAllowMoveDuringTaunt,  CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flCurrentTauntMoveSpeed,CTFPlayer);
+IMPL_SENDPROP(short,                CTFPlayer, m_iTauntItemDefIndex  ,   CTFPlayer);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
 MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_StartBuildingObjectOfType        ("CTFPlayer::StartBuildingObjectOfType");
@@ -176,8 +214,18 @@ MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ReapplyPlayerUpgrades            ("CTFPlayer::ReapplyPlayerUpgrades");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemPressed            ("CTFPlayer::UseActionSlotItemPressed");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UseActionSlotItemReleased            ("CTFPlayer::UseActionSlotItemReleased");
+MemberFuncThunk<      CTFPlayer *, CAttributeManager *             > CTFPlayer::ft_GetAttributeManager              ("CTFPlayer::GetAttributeManager");
+MemberFuncThunk<      CTFPlayer *, CAttributeList*                 > CTFPlayer::ft_GetAttributeList                    ("CTFPlayer::GetAttributeList");
 MemberFuncThunk<      CTFPlayer *, CBaseEntity *, int              > CTFPlayer::ft_GetEntityForLoadoutSlot            ("CTFPlayer::GetEntityForLoadoutSlot");
 MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_DoAnimationEvent            ("CTFPlayer::DoAnimationEvent");
+MemberFuncThunk<      CTFPlayer *, void, const char *              > CTFPlayer::ft_PlaySpecificSequence        ("CTFPlayer::PlaySpecificSequence");
+MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > CTFPlayer::ft_Taunt                       ("CTFPlayer::Taunt");
+MemberFuncThunk<      CTFPlayer *, void, CEconItemView*            > CTFPlayer::ft_PlayTauntSceneFromItem      ("CTFPlayer::PlayTauntSceneFromItem");
+MemberFuncThunk<      CTFPlayer *, CBaseObject *, int              > CTFPlayer::ft_GetObject                   ("CTFPlayer::GetObject");
+MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::ft_GetObjectCount              ("CTFPlayer::GetObjectCount");
+MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::ft_StateTransition             ("CTFPlayer::StateTransition");
+MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::ft_RemoveCurrency              ("CTFPlayer::RemoveCurrency");
+
 
 MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");
 
@@ -201,7 +249,9 @@ bool CTFPlayer::IsPlayerClass(int iClass) const
 
 CTFWeaponBase *CTFPlayer::GetActiveTFWeapon() const
 {
-	return rtti_cast<CTFWeaponBase *>(this->GetActiveWeapon());
+	// The game implementation just statically casts the weapon so
+	// return rtti_cast<CTFWeaponBase *>(this->GetActiveWeapon());
+	return static_cast<CTFWeaponBase *>(this->GetActiveWeapon());
 }
 
 
@@ -261,9 +311,126 @@ ETFCond GetTFConditionFromName(const char *name)
 			return static_cast<ETFCond>(i);
 		}
 	}
+	if (FStrEq("TF_COND_REPROGRAMMED_NEUTRAL", name))
+		return TF_COND_HALLOWEEN_HELL_HEAL;
 	
 	return TF_COND_INVALID;
 }
 
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *, int, bool, bool> ft_CollectPlayers_CTFPlayer("CollectPlayers<CTFPlayer>");
+StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent("TE_PlayerAnimEvent");
+
+CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *player, int slot, CEconEntity **ent)
+{ 
+	//also search invalid class weapons
+	
+	int classindex = player->GetPlayerClass()->GetClassIndex();
+	for(int i = 0; i < MAX_WEAPONS; i++) {
+		CEconEntity *weapon = player->GetWeapon(i);
+		if (weapon == nullptr)
+			continue;
+
+		CEconItemView *view= weapon->GetItem();
+		if (view == nullptr)
+			continue;
+
+		int weapon_slot = view->GetStaticData()->GetLoadoutSlot(classindex);
+		if (weapon_slot == -1)
+		{
+			weapon_slot = view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		}
+		if (weapon_slot == slot)
+		{
+			if (ent)
+			{
+				*ent = weapon;
+			}
+			return view;
+		}
+	}
+	return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); 
+}
+
+namespace Mod::Pop::PopMgr_Extensions
+{
+	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
+}
+
+bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name)
+{
+	if (entity == nullptr)
+		return false;
+
+	CEconItemView *view = entity->GetItem();
+	int slot = view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+	if (slot == -1) {
+		if (force_give) {
+			return false;
+		}
+		slot = view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+	}
+
+    DevMsg("Give item %s %d\n", item_name, no_remove);
+	if (!no_remove) {
+		
+
+		if (IsLoadoutSlot_Cosmetic(static_cast<loadout_positions_t>(slot))) {
+			/* equip-region-conflict-based old item removal */
+			
+			unsigned int mask1 = view->GetStaticData()->GetEquipRegionMask();
+			
+			for (int i = player->GetNumWearables() - 1; i >= 0; --i) {
+				CEconWearable *wearable = player->GetWearable(i);
+				if (wearable == nullptr) continue;
+				
+				unsigned int mask2 = wearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetEquipRegionMask();
+				
+				if ((mask1 & mask2) != 0) {
+					player->RemoveWearable(wearable);
+				}
+			}
+		} else {
+			/* slot-based old item removal */
+			
+			CEconEntity *old_econ_entity = nullptr;
+			(void)CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(player, slot, &old_econ_entity);
+			
+			if (old_econ_entity != nullptr) {
+				if (old_econ_entity->IsBaseCombatWeapon()) {
+					auto old_weapon = ToBaseCombatWeapon(old_econ_entity);
+					
+					player->Weapon_Detach(old_weapon);
+					DevMsg("Remove old weapon\n");
+					old_weapon->Remove();
+				} else if (old_econ_entity->IsWearable()) {
+					auto old_wearable = rtti_cast<CEconWearable *>(old_econ_entity);
+					
+					player->RemoveWearable(old_wearable);
+				} else {
+					old_econ_entity->Remove();
+					
+				}
+			} else {
+			//	Msg("No old entity in slot %d\n", slot);
+			}
+		}
+	}
+	/* make the model visible for other players */
+	entity->m_bValidatedAttachedEntity = true;
+	
+	/* make any extra wearable models visible for other players */
+	auto weapon = rtti_cast<CTFWeaponBase *>(entity);
+	if (weapon != nullptr) {
+		if (weapon->m_hExtraWearable != nullptr) {
+			weapon->m_hExtraWearable->m_bValidatedAttachedEntity = true;
+		}
+		if (weapon->m_hExtraWearableViewModel != nullptr) {
+			weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
+		}
+	}
+	Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, entity->GetItem());
+	
+	entity->GiveTo(player);
+	return true;
+}

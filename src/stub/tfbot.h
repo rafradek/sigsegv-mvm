@@ -11,12 +11,12 @@
 #include "re/nextbot.h"
 #include "util/rtti.h"
 
+#define TF_BOT_TYPE	1337
 
 class ILocomotion;
 class IBody;
 class IVision;
 class IIntention;
-
 
 template<typename T>
 class NextBotPlayer : public T
@@ -224,7 +224,12 @@ public:
 			ALWAYS_FIRE_WEAPON_ALT = 0,
 			TARGET_STICKIES = 1,
 			BUILD_DISPENSER_SG = 2,
-			BUILD_DISPENSER_TP = 3
+			BUILD_DISPENSER_TP = 3,
+			HOLD_CANTEENS = 4,
+			JUMP_STOMP = 5,
+			IGNORE_PLAYERS = 6,
+			IGNORE_BUILDINGS = 7,
+			IGNORE_NPC = 8,
 		};
 
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;
@@ -247,6 +252,7 @@ public:
 #endif
 	
 	bool HasAttribute(AttributeType attr) const { return ((this->m_nBotAttrs & attr) != 0); }
+	void SetAttribute(AttributeType attr)       {        this->m_nBotAttrs = this->m_nBotAttrs | attr; }
 	MissionType GetMission() const   { return this->m_nMission; }
 	void SetMission(MissionType val) { this->m_nMission = val; }
 	
@@ -285,12 +291,16 @@ public:
 		CHandle<CTFBot> h_this = this;
 		return s_ExtAttrs[h_this];
 	}
+	static void ClearExtAttr() {
+		s_ExtAttrs.clear();
+	}
 #endif
 	
 #if TOOLCHAIN_FIXES
 	DECL_EXTRACT(CUtlVector<CFmtStr>, m_Tags);
 #endif
 	DECL_EXTRACT(AttributeType,       m_nBotAttrs);
+	DECL_RELATIVE(int, m_iWeaponRestrictionFlags);
 	/*uint8_t of[0x3D0];// +0x2830
 	float m_flScale; // +0x2bf4
 	uint8_t of[0x3D0];// +0x2830
@@ -331,18 +341,26 @@ private:
 #endif
 };
 
+// inline CTFBot *ToTFBot(CBaseEntity *pEntity)
+// {
+// 	if (pEntity == nullptr)   return nullptr;
+// 	if (!pEntity->IsPlayer()) return nullptr;
+	
+// 	/* not actually correct, but to do this the "right" way we'd need to do an
+// 	 * rtti_cast to CBasePlayer before we can call IsBotOfType, and then we'd
+// 	 * need to do another rtti_cast after that... may as well just do this */
+// 	return rtti_cast<CTFBot *>(pEntity);
+// }
+
+extern StaticFuncThunk<CTFBot *, CBaseEntity *> ft_ToTFBot;
 
 inline CTFBot *ToTFBot(CBaseEntity *pEntity)
 {
-	if (pEntity == nullptr)   return nullptr;
-	if (!pEntity->IsPlayer()) return nullptr;
-	
-	/* not actually correct, but to do this the "right" way we'd need to do an
-	 * rtti_cast to CBasePlayer before we can call IsBotOfType, and then we'd
-	 * need to do another rtti_cast after that... may as well just do this */
-	return rtti_cast<CTFBot *>(pEntity);
-}
+	if (pEntity == nullptr || !pEntity->IsPlayer() || !static_cast<CBasePlayer *>(pEntity)->IsBotOfType(TF_BOT_TYPE))
+		return nullptr;
 
+	return static_cast<CTFBot *>(pEntity);
+}
 
 template<typename T> T *NextBotCreatePlayerBot(const char *name, bool fake_client = true);
 template<> CTFBot *NextBotCreatePlayerBot<CTFBot>(const char *name, bool fake_client);

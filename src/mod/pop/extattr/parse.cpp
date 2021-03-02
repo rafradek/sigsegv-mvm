@@ -25,6 +25,21 @@ namespace Mod::Pop::ExtAttr::Parse
 			} else if (V_stricmp(val, "BuildDispenserAsTeleporter") == 0) {
 				DevMsg("  found: ExtAttr BuildDispenserAsTeleporter\n");
 				ext->TurnOn(CTFBot::ExtendedAttr::BUILD_DISPENSER_TP);
+			} else if (V_stricmp(val, "SuppressCanteenUse") == 0) {
+				DevMsg("  found: ExtAttr SuppressCanteenUse\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::HOLD_CANTEENS);
+			} else if (V_stricmp(val, "JumpStomp") == 0) {
+				DevMsg("  found: ExtAttr JumpStomp\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::JUMP_STOMP);
+			} else if (V_stricmp(val, "IgnoreBuildings") == 0) {
+				DevMsg("  found: ExtAttr IgnoreBuildings\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_BUILDINGS);
+			} else if (V_stricmp(val, "IgnorePlayers") == 0) {
+				DevMsg("  found: ExtAttr IgnoreBuildings\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_PLAYERS);
+			} else if (V_stricmp(val, "IgnoreNPC") == 0) {
+				DevMsg("  found: ExtAttr IgnoreNPT\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_NPC);
 			} else {
 				Warning("TFBotSpawner: Invalid extended attribute '%s'\n", val);
 			}
@@ -51,7 +66,7 @@ namespace Mod::Pop::ExtAttr::Parse
 	}
 	
 	
-	class CMod : public IMod
+	class CMod : public IMod, IModCallbackListener
 	{
 	public:
 		CMod() : IMod("Pop:ExtAttr:Parse")
@@ -59,10 +74,13 @@ namespace Mod::Pop::ExtAttr::Parse
 			MOD_ADD_DETOUR_STATIC(ParseDynamicAttributes,         "ParseDynamicAttributes");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_OnEventChangeAttributes, "CTFBot::OnEventChangeAttributes");
 		}
-		
-		// TODO: should we clear the ext attr map at
-		// - mod load?
-		// - mod unload?
+
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+		virtual void LevelInitPreEntity() override
+		{
+			CTFBot::ClearExtAttr();
+		}
 	};
 	CMod s_Mod;
 	

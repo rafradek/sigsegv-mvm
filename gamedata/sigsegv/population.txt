@@ -48,6 +48,11 @@
 				"CPopulationManager::Update"                                      "_ZN18CPopulationManager6UpdateEv"
 				"CPopulationManager::UpdateObjectiveResource"                     "_ZN18CPopulationManager23UpdateObjectiveResourceEv"
 				"CPopulationManager::WaveEnd"                                     "_ZN18CPopulationManager7WaveEndEb"
+				"CPopulationManager::AdjustMinPlayerSpawnTime"                    "_ZN18CPopulationManager24AdjustMinPlayerSpawnTimeEv"
+				"CPopulationManager::PauseSpawning"                               "_ZN18CPopulationManager13PauseSpawningEv"
+				"CPopulationManager::UnpauseSpawning"                             "_ZN18CPopulationManager15UnpauseSpawningEv"
+				"CPopulationManager::StartCurrentWave"                            "_ZN18CPopulationManager16StartCurrentWaveEv"
+				
 				
 				"CMissionPopulator::~CMissionPopulator [D0]"      "_ZN17CMissionPopulatorD0Ev"
 				"CMissionPopulator::~CMissionPopulator [D2]"      "_ZN17CMissionPopulatorD2Ev"
@@ -68,7 +73,10 @@
 				"CWaveSpawnPopulator::~CWaveSpawnPopulator [D0]" "_ZN19CWaveSpawnPopulatorD0Ev"
 				"CWaveSpawnPopulator::~CWaveSpawnPopulator [D2]" "_ZN19CWaveSpawnPopulatorD2Ev"
 				"CWaveSpawnPopulator::Parse"                     "_ZN19CWaveSpawnPopulator5ParseEP9KeyValues"
+				"CWaveSpawnPopulator::SetState"                  "_ZN19CWaveSpawnPopulator8SetStateENS_17InternalStateTypeE"
+				"CWaveSpawnPopulator::Update"                    "_ZN19CWaveSpawnPopulator6UpdateEv"
 				
+
 				"IPopulationSpawner::GetClassIcon" "_ZN18IPopulationSpawner12GetClassIconEi"
 				"IPopulationSpawner::HasAttribute" "_ZN18IPopulationSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
 				"IPopulationSpawner::IsMiniBoss"   "_ZN18IPopulationSpawner10IsMiniBossEi"

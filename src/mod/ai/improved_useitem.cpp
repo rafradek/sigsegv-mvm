@@ -238,7 +238,7 @@ namespace Mod::AI::Improved_UseItem
 		else
 		{
 			CTFWearable *pActionSlotEntity = bot->GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_ACTION );
-			if ( pActionSlotEntity  != nullptr) {
+			if (!bot->ExtAttr()[CTFBot::ExtendedAttr::HOLD_CANTEENS] && pActionSlotEntity  != nullptr) {
 
 				// get the equipped item and see what it is
 				CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
@@ -254,9 +254,10 @@ namespace Mod::AI::Improved_UseItem
 					}
 				}
 
+				
 				const CKnownEntity *threat = bot_acting->GetVisionInterface()->GetPrimaryKnownThreat(false);
 				if ( pPowerupBottle  != nullptr && threat != nullptr && threat->GetEntity() != nullptr && threat->IsVisibleRecently() 
-					&& bot_acting->GetIntentionInterface()->ShouldAttack(rtti_cast<INextBot *>(bot_acting), threat) == QueryResponse::YES)
+					&& bot_acting->GetIntentionInterface()->ShouldAttack(bot_acting->MyNextBotPointer(), threat) == QueryResponse::YES)
 				{
 					if ( bot_acting->IsLineOfFireClear( threat->GetEntity()->EyePosition() ) || bot_acting->IsLineOfFireClear( threat->GetEntity()->WorldSpaceCenter() ) || 
 						bot_acting->IsLineOfFireClear( threat->GetEntity()->GetAbsOrigin() ))
@@ -270,7 +271,7 @@ namespace Mod::AI::Improved_UseItem
 				int iNoiseMaker = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, iNoiseMaker, enable_misc2_noisemaker );
 				//DevMsg("Has noise maker %d\n",iNoiseMaker);
-				if (iNoiseMaker != 0) {
+				if (!bot->ExtAttr()[CTFBot::ExtendedAttr::HOLD_CANTEENS] && iNoiseMaker != 0) {
 					
 					item_noisemaker = pActionSlotEntity->GetItem();
 					bot->UseActionSlotItemPressed();
@@ -319,18 +320,6 @@ namespace Mod::AI::Improved_UseItem
 		}
 		return DETOUR_MEMBER_CALL(CPlayerInventory_GetInventoryItemByItemID)(param1, itemid);
 	}
-
-	DETOUR_DECL_MEMBER(bool, CTFProjectile_Rocket_IsDeflectable)
-	{
-		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
-
-		if (strcmp(ent->GetClassname(), "tf_projectile_balloffire") == 0) {
-			return false;
-		}
-
-		return DETOUR_MEMBER_CALL(CTFProjectile_Rocket_IsDeflectable)();
-	}
-
 	std::vector<bool> stack_m_bPlayingMannVsMachine;
 	void Quirk_MvM_Pre()
 	{
@@ -370,7 +359,6 @@ namespace Mod::AI::Improved_UseItem
 		CMod() : IMod("AI:Improved_UseItem")
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFBot_OpportunisticallyUseWeaponAbilities, "CTFBot::OpportunisticallyUseWeaponAbilities");
-			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_IsDeflectable, "CTFProjectile_Rocket::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_EquipLongRangeWeapon, "CTFBot::EquipLongRangeWeapon");
 			MOD_ADD_DETOUR_MEMBER(CPlayerInventory_GetInventoryItemByItemID, "CPlayerInventory::GetInventoryItemByItemID");
 		}

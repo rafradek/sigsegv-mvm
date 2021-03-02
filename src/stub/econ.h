@@ -8,17 +8,34 @@
 class CEconItem;
 
 
+	
 class CAttributeManager
 {
 public:
 	void NetworkStateChanged()           {}
 	void NetworkStateChanged(void *pVar) {}
 	
+	
+	float ApplyAttributeFloatWrapper(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return vt_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
+	float ApplyAttributeFloat( float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = NULL ) { return vt_ApplyAttributeFloat(this, flValue, pInitiator, iszAttribHook, pItemList);}
+	int GetGlobalCacheVersion( ) const                                  { return ft_GetGlobalCacheVersion(this);}
+
+	float ApplyAttributeFloatWrapperFunc(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return ft_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
+	
 	template<typename T>
 	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool b1 = true);
 	
+	//The function is virtual originally, but since there are no derivates it should be safe to make it a regular function link, for speed
+	static MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeFloatWrapper;
+	static MemberFuncThunk<const CAttributeManager *, int> ft_GetGlobalCacheVersion;
+	
+	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloatWrapper;
+	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloat;
+
 	static StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool>     ft_AttribHookValue_int;
 	static StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool> ft_AttribHookValue_float;
+
+	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOuter);
 };
 
 template<> inline int CAttributeManager::AttribHookValue<int>(int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
@@ -26,7 +43,7 @@ template<> inline int CAttributeManager::AttribHookValue<int>(int value, const c
 template<> inline float CAttributeManager::AttribHookValue<float>(float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 { return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, vec, b1); }
 
-template<typename T> void _CallAttribHookRef(T& value, const char *pszClass, const CBaseEntity *pEntity) { value = CAttributeManager::AttribHookValue<T>(value, pszClass, pEntity); }
+template<typename T> inline void _CallAttribHookRef(T& value, const char *pszClass, const CBaseEntity *pEntity) { value = CAttributeManager::AttribHookValue<T>(value, pszClass, pEntity); }
 #define CALL_ATTRIB_HOOK_INT(                value, name) _CallAttribHookRef<int>  (value, #name, this)
 #define CALL_ATTRIB_HOOK_INT_ON_OTHER(  ent, value, name) _CallAttribHookRef<int>  (value, #name, ent )
 #define CALL_ATTRIB_HOOK_FLOAT(              value, name) _CallAttribHookRef<float>(value, #name, this)
@@ -77,6 +94,14 @@ struct static_attrib_t
 };
 static_assert(sizeof(static_attrib_t) == 0x8);
 
+typedef unsigned short attrib_definition_index_t;
+const attrib_definition_index_t INVALID_ATTRIB_DEF_INDEX = ((attrib_definition_index_t)-1);
+
+struct attribute_t
+{
+	attrib_definition_index_t m_unDefinitionIndex;			// stored as ints here for memory efficiency on the GC
+	attribute_data_union_t m_value;
+};
 
 class CEconItemAttributeDefinition;
 
@@ -155,8 +180,9 @@ public:
 	void RemoveAttribute(const CEconItemAttributeDefinition *pAttrDef) {        ft_RemoveAttribute       (this, pAttrDef); }
 	void RemoveAttributeByIndex(int index)                             {        ft_RemoveAttributeByIndex(this, index); }
 	void DestroyAllAttributes()                                        {        ft_DestroyAllAttributes  (this); }
-	
+	void SetRuntimeAttributeValue(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeValue  (this, pAttrDef, value); }
 	CUtlVector<CEconItemAttribute>& Attributes() { return this->m_Attributes; }
+	void AddStringAttribute(CEconItemAttributeDefinition *pAttrDef, std::string value);
 	
 private:
 	int vtable;
@@ -170,9 +196,18 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void, const CEconItemAttributeDefinition *> ft_RemoveAttribute       { "CAttributeList::RemoveAttribute"        };
 	static inline MemberFuncThunk<      CAttributeList *, void, int>                                  ft_RemoveAttributeByIndex{ "CAttributeList::RemoveAttributeByIndex" };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_DestroyAllAttributes  { "CAttributeList::DestroyAllAttributes"   };
+	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeValue  { "CAttributeList::SetRuntimeAttributeValue"   };
+
 };
 static_assert(sizeof(CAttributeList) == 0x1c);
 
+template<typename TypeOut, typename AttributeHolder>
+bool FindAttribute(const AttributeHolder *holder, const CEconItemAttributeDefinition *attrDef, TypeOut *out); 
+
+static inline StaticFuncThunk<bool, const CAttributeList *, const CEconItemAttributeDefinition *, float *>    ft_FindAttribute_CAttributeList { "FindAttribute_UnsafeBitwiseCast<uint, float, CAttributeList>" };
+
+template<> inline bool FindAttribute<float, CAttributeList>(const CAttributeList *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
+{ return ft_FindAttribute_CAttributeList(attrList, attrDef, out); }
 
 constexpr int NUM_SHOOT_SOUND_TYPES = 15;
 constexpr int NUM_VISUALS_BLOCKS    = 5;
@@ -213,6 +248,8 @@ public:
 	const char *GetItemName (const char *fallback = nullptr) const { return this->GetKVString("item_name",  fallback); }
 	const char *GetName     (const char *fallback = nullptr) const { return this->GetKVString("name",       fallback); }
 	const char *GetItemClass(const char *fallback = nullptr) const { return this->GetKVString("item_class", fallback); }
+
+	bool BInitFromKV(KeyValues *keyvalues, CUtlVector<CUtlString> *errors) { return ft_BInitFromKV(this, keyvalues, errors); }
 	
 private:
 	const char *GetKVString(const char *str, const char *fallback) const
@@ -223,6 +260,8 @@ private:
 	
 	DECL_EXTRACT(unsigned int, m_nEquipRegionBitMask);
 	DECL_EXTRACT(unsigned int, m_nEquipRegionMask);
+
+	static MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> ft_BInitFromKV;
 };
 
 class CTFItemDefinition : public CEconItemDefinition
@@ -233,6 +272,11 @@ public:
 private:
 	static MemberFuncThunk<const CTFItemDefinition *, int, int> ft_GetLoadoutSlot;
 };
+
+static inline StaticFuncThunk<bool, const CTFItemDefinition *, const CEconItemAttributeDefinition *, float *> ft_FindAttribute_CTFItemDefinition { "FindAttribute_UnsafeBitwiseCast<uint, float, CTFItemDefinition>" };
+
+template<> inline bool FindAttribute<float, CTFItemDefinition>(const CTFItemDefinition *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
+{ return ft_FindAttribute_CTFItemDefinition(attrList, attrDef, out); }
 
 class CEconItemView // DT_ScriptCreatedItem
 {
@@ -258,6 +302,7 @@ public:
 	void Init(int iItemDefIndex, int iQuality = 9999, int iLevel = 9999, unsigned int iAccountID = 0) {        ft_Init         (this, iItemDefIndex, iQuality, iLevel, iAccountID); }
 	CTFItemDefinition *GetStaticData() const                                                          { return ft_GetStaticData(this); }
 	CTFItemDefinition *GetItemDefinition() const                                                      { return ft_GetStaticData(this); }
+	CEconItem *GetSOCData() const                                                      				  { return ft_GetSOCData(this); }
 	
 	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
@@ -277,11 +322,18 @@ private:
 	static MemberFuncThunk<      CEconItemView *, void>                              ft_ctor;
 	static MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> ft_Init;
 	static MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               ft_GetStaticData;
+	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;
 	
 	static MemberVFuncThunk<const CEconItemView *, int> vt_GetItemDefIndex;
 };
 
-
+class CEconItem
+{
+public:
+	attribute_t &AddDynamicAttributeInternal()                                                      				  { return ft_AddDynamicAttributeInternal(this); }
+private:
+	static MemberFuncThunk<CEconItem *, attribute_t &>                       ft_AddDynamicAttributeInternal;
+};
 class CEconItemAttributeDefinition
 {
 public:
@@ -289,9 +341,10 @@ public:
 	unsigned short GetIndex() const       { return this->m_iIndex; }
 	ISchemaAttributeType *GetType() const { return this->m_pAttributeType; }
 	
-	const char *GetName          (const char *fallback = nullptr) const { return this->GetKVString("name",              fallback); }
-	const char *GetAttributeClass(const char *fallback = nullptr) const { return this->GetKVString("attribute_class",   fallback); }
-	bool        IsStoredAsInteger(bool        fallback = false)   const { return this->GetKVBool  ("stored_as_integer", fallback); }
+	const char *GetName             (const char *fallback = nullptr) const { return this->GetKVString("name",               fallback); }
+	const char *GetAttributeClass   (const char *fallback = nullptr) const { return this->GetKVString("attribute_class",    fallback); }
+	const char *GetDescriptionFormat(const char *fallback = nullptr) const { return this->GetKVString("description_format", fallback); }
+	bool        IsStoredAsInteger   (bool        fallback = false)   const { return this->GetKVBool  ("stored_as_integer",  fallback); }
 	
 	template<typename T> bool IsType() const { return (dynamic_cast<T *>(this->GetType()) != nullptr); }
 	
@@ -382,11 +435,12 @@ public:
 		unsigned int m_nMask;
 	};
 	
-	bool BInitAttributes(KeyValues *pKVAttributes, CUtlVector<CUtlString> *pVecErrors) { return ft_BInitAttributes             (this, pKVAttributes, pVecErrors); }
-	CEconItemDefinition *GetItemDefinition(int def_idx) const                          { return ft_GetItemDefinition           (this, def_idx); }
-	CEconItemDefinition *GetItemDefinitionByName(const char *name) const               { return ft_GetItemDefinitionByName     (this, name); }
-	CEconItemAttributeDefinition *GetAttributeDefinition(int def_idx) const            { return ft_GetAttributeDefinition      (this, def_idx); }
-	CEconItemAttributeDefinition *GetAttributeDefinitionByName(const char *name) const { return ft_GetAttributeDefinitionByName(this, name); }
+	bool BInitAttributes(KeyValues *pKVAttributes, CUtlVector<CUtlString> *pVecErrors)    { return ft_BInitAttributes             (this, pKVAttributes, pVecErrors); }
+	CEconItemDefinition *GetItemDefinition(int def_idx) const                             { return ft_GetItemDefinition           (this, def_idx); }
+	CEconItemDefinition *GetItemDefinitionByName(const char *name) const                  { return ft_GetItemDefinitionByName     (this, name); }
+	CEconItemAttributeDefinition *GetAttributeDefinition(int def_idx) const               { return ft_GetAttributeDefinition      (this, def_idx); }
+	CEconItemAttributeDefinition *GetAttributeDefinitionByName(const char *name) const    { return ft_GetAttributeDefinitionByName(this, name); }
+	void ItemTesting_CreateTestDefinition(int originalId, int newId, KeyValues* kv)       { ft_ItemTesting_CreateTestDefinition   (this, originalId, newId, kv); }
 	
 private:
 	static MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *>  ft_BInitAttributes;
@@ -394,6 +448,7 @@ private:
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemDefinition *, const char *>          ft_GetItemDefinitionByName;
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, int>          ft_GetAttributeDefinition;
 	static MemberFuncThunk<const CEconItemSchema *, CEconItemAttributeDefinition *, const char *> ft_GetAttributeDefinitionByName;
+	static MemberFuncThunk<CEconItemSchema *, void, int, int, KeyValues *> ft_ItemTesting_CreateTestDefinition;
 };
 class CTFItemSchema : public CEconItemSchema {};
 
@@ -405,11 +460,13 @@ class CItemGeneration
 {
 public:
 	CBaseEntity *SpawnItem(CEconItemView const* view, Vector const& vec, QAngle const& ang, char const* clname)                         { return ft_SpawnItem          (this, view, vec, ang, clname); }
-	CBaseEntity *GenerateItemFromScriptData(CEconItemView const* view, Vector const& vec, QAngle const& ang, char const* clname)                         { return ft_GenerateItemFromScriptData          (this, view, vec, ang, clname); }
+	CBaseEntity *SpawnItem(int defId, Vector const& vec, QAngle const& ang, int itemLevel, int quality, char const* clname)             { return ft_SpawnItem_defid    (this, defId, vec, ang, itemLevel, quality, clname); }
+	CBaseEntity *GenerateItemFromScriptData(CEconItemView const* view, Vector const& vec, QAngle const& ang, char const* clname)        { return ft_GenerateItemFromScriptData          (this, view, vec, ang, clname); }
 	
 private:
 	
 	static MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> ft_SpawnItem;
+	static MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle const&, int, int, char const*> ft_SpawnItem_defid;
 	static MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> ft_GenerateItemFromScriptData;
 };
 

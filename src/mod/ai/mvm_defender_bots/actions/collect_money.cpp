@@ -56,7 +56,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			return ActionResult<CTFBot>::Done("Currency pack is gone.");
 		}
 		
-		auto nextbot = rtti_cast<INextBot *>(actor);
+		auto nextbot = actor->MyNextBotPointer();
 		
 		if (this->m_ctRecomputePath.IsElapsed()) {
 			this->m_ctRecomputePath.Start(RandomFloat(0.4f, 0.6f));

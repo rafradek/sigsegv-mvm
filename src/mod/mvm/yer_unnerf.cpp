@@ -1,6 +1,8 @@
 #include "mod.h"
 #include "prop.h"
-
+#include "stub/econ.h"
+#include "stub/tfplayer.h"
+#include "stub/tfweaponbase.h"
 
 namespace Mod::MvM::YER_Unnerf
 {
@@ -54,12 +56,28 @@ namespace Mod::MvM::YER_Unnerf
 		}
 	};
 	
-	
+	//Yer nerf: -20% damage vs giants
+	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage)
+	{
+		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
+		if (*piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss()) {
+			auto knife = reinterpret_cast<CTFKnife *>(this);
+
+			int disguise_backstab = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( knife, disguise_backstab, set_disguise_on_backstab);
+			
+			if (disguise_backstab != 0)
+				ret *= 0.9f;
+		}
+		return ret;
+	}
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("MvM:YER_Unnerf")
 		{
+		//	MOD_ADD_DETOUR_MEMBER(CTFKnife_GetMeleeDamage, "CTFKnife::GetMeleeDamage");
 			this->AddPatch(new CPatch_CTFKnife_PrimaryAttack());
 		}
 	};

@@ -344,6 +344,39 @@
 					type "sym"
 					sym  "_ZNK14CTFBotPathCostclEP8CNavAreaS1_PK10CNavLadderPK13CFuncElevatorf"
 				}
+
+				"CTFBot::IsBarrageAndReloadWeapon"
+				{
+					type "sym"
+					sym  "_ZNK6CTFBot24IsBarrageAndReloadWeaponEP13CTFWeaponBase"
+				}
+				"CTFBot::TransientlyConsistentRandomValue"
+				{
+					type "sym"
+					sym  "_ZNK6CTFBot32TransientlyConsistentRandomValueEfi"
+				}
+				"CTFBot::GetNearestKnownSappableTarget"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot29GetNearestKnownSappableTargetEv"
+				}
+				"CTFBot::IsDormantWhenDead"
+				{
+					type "sym"
+					sym  "_ZNK6CTFBot17IsDormantWhenDeadEv"
+				}
+				"CTFBot::PhysicsSimulate"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot15PhysicsSimulateEv"
+				}
+				"CTFBot::IsExplosiveProjectileWeapon"
+				{
+					type "sym"
+					sym  "_ZNK6CTFBot27IsExplosiveProjectileWeaponEP13CTFWeaponBase"
+				}
+
+				
 			}
 		}
 	}

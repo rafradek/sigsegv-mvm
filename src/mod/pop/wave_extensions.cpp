@@ -10,7 +10,9 @@
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "stub/strings.h"
+#include "stub/misc.h"
 #include "mod/pop/pointtemplate.h"
+#include "mod/pop/common.h"
 
 namespace Mod::Pop::Wave_Extensions
 {
@@ -72,14 +74,20 @@ namespace Mod::Pop::Wave_Extensions
 		std::vector<PointTemplateInfo>   templ;
 		std::vector<PointTemplateInstance *>   templ_inst;
 		std::vector<ETFCond>  addconds;
+		std::vector<ETFCond>  addconds_class[10] = {};
 		
 		bool red_team_wipe_causes_wave_loss = false;
 		bool blue_team_wipe_causes_wave_loss = false;
+		bool finishing_wave_causes_wave_loss = false;
+		bool finishing_wave_and_player_wipe_causes_wave_loss = false;
 		bool defined_class_attributes = false;
 		std::map<std::string,float> player_attributes_class[10] = {};
 		std::map<std::string,float> player_attributes;
 		float sound_time_end = 0.f;
 		IntervalTimer t_wavestart;
+		IntervalTimer t_waveinit;
+
+		CBaseEntity *explanation_text;
 	};
 	
 	
@@ -333,15 +341,40 @@ namespace Mod::Pop::Wave_Extensions
 	void Parse_PlayerAddCond(CWave *wave, KeyValues *kv)
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
-			const char *name = subkey->GetName();
-			if (FStrEq(name, "Index")) {
-				waves[wave].addconds.push_back((ETFCond)subkey->GetInt());
-			} else if (FStrEq(name, "Name")) {
-				ETFCond cond = GetTFConditionFromName(subkey->GetString());
-				if (cond != -1) {
-					waves[wave].addconds.push_back(cond);
-				} else {
+			int classname = 0;
+			for(int i=1; i < 10; i++){
+				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
+					classname=i;
+					break;
+				}
+			}
+			if (classname == 0) {
+				const char *name = subkey->GetName();
+				ETFCond cond = (ETFCond)-1;
+				if (FStrEq(name, "Index"))
+					cond = (ETFCond)subkey->GetInt();
+				else if (FStrEq(name, "Name"))
+					cond = GetTFConditionFromName(subkey->GetString());
+
+				if (cond == -1)
 					Warning("Unrecognized condition name \"%s\" in AddCond block.\n", subkey->GetString());
+				else
+					waves[wave].addconds.push_back(cond);
+			}
+			else {
+				waves[wave].defined_class_attributes = true;
+				FOR_EACH_SUBKEY(subkey, subkey2) {
+					const char *name = subkey2->GetName();
+					ETFCond cond = (ETFCond)-1;
+					if (FStrEq(name, "Index"))
+						cond = (ETFCond)subkey2->GetInt();
+					else if (FStrEq(name, "Name"))
+						cond = GetTFConditionFromName(subkey2->GetString());
+
+					if (cond == -1)
+						Warning("Unrecognized condition name \"%s\" in AddCond block.\n", subkey2->GetString());
+					else
+						waves[wave].addconds_class[classname].push_back(cond);
 				}
 			}
 		}
@@ -374,6 +407,10 @@ namespace Mod::Pop::Wave_Extensions
 				waves[wave].red_team_wipe_causes_wave_loss = subkey->GetBool();
 			} else if (FStrEq(name, "BlueTeamWipeCausesWaveLoss")) {
 				waves[wave].blue_team_wipe_causes_wave_loss = subkey->GetBool();
+			} else if (FStrEq(name, "FinishingWaveCausesWaveLoss")) {
+				waves[wave].finishing_wave_causes_wave_loss = subkey->GetBool();
+			} else if (FStrEq(name, "FinishingWaveAndPlayerWipeCausesWaveLoss")) {
+				waves[wave].finishing_wave_and_player_wipe_causes_wave_loss = subkey->GetBool();
 			} else if (FStrEq(name, "SpawnTemplate")) {
 				PointTemplateInfo info =Parse_SpawnTemplate(subkey);
 				if (info.templ != nullptr)
@@ -401,47 +438,18 @@ namespace Mod::Pop::Wave_Extensions
 		return DETOUR_MEMBER_CALL(CWave_Parse)(kv);
 	}
 	
-	
-	void PrintToChatAll(const char *str)
-	{
-		int msg_type = usermessages->LookupUserMessage("SayText2");
-		if (msg_type == -1) return;
-		
-		CReliableBroadcastRecipientFilter filter;
-		
-		bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-		if (msg == nullptr) return;
-		
-		msg->WriteByte(0x00);
-		msg->WriteByte(0x00);
-		msg->WriteString(str);
-		
-		engine->MessageEnd();
-	}
-
-	void PrintToChat(const char *str, CTFPlayer *player)
-	{
-		int msg_type = usermessages->LookupUserMessage("SayText2");
-		if (msg_type == -1) return;
-		
-		CRecipientFilter filter;
-		filter.AddRecipient(player);
-		filter.MakeReliable();
-
-		bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-		if (msg == nullptr) return;
-		
-		msg->WriteByte(0x00);
-		msg->WriteByte(0x00);
-		msg->WriteString(str);
-		
-		engine->MessageEnd();
-	}
-
-	void ParseColorsAndPrint(const char *line, CTFPlayer* player = nullptr)
+	ConVar sig_text_print_speed("sig_text_print_speed", "4");
+	void ParseColorsAndPrint(const char *line, float gameTextDelay, int &linenum, CTFPlayer* player = nullptr)
 	{
 		std::vector<char> output;
+
+		std::vector<char> output_nocolor;
+		int color = 0xFFFFFF;
+
+		char num[7];
+		int colorcode_idx=0;
 		
+		bool hasText = false;
 		/* always start with reset so that colors will work properly */
 		output.push_back('\x01');
 		
@@ -451,6 +459,8 @@ namespace Mod::Pop::Wave_Extensions
 		int i = 0;
 		char c;
 		while ((c = line[i]) != '\0') {
+			hasText |= isalnum(c);
+
 			if (in_braces) {
 				if (c == '}') {
 					const char *brace_str = line + brace_idx;
@@ -460,16 +470,22 @@ namespace Mod::Pop::Wave_Extensions
 						output.push_back('\x01');
 					} else if (V_strnicmp(brace_str, "Blue", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', '9', '9', 'c', 'c', 'f', 'f'});
+						color = 0x99ccff;
 					} else if (V_strnicmp(brace_str, "Red", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', 'f', 'f', '3', 'f', '3', 'f'});
+						color = 0xff3f3f;
 					} else if (V_strnicmp(brace_str, "Green", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', '9', '9', 'f', 'f', '9', '9'});
+						color = 0x99ff99;
 					} else if (V_strnicmp(brace_str, "DarkGreen", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', '4', '0', 'f', 'f', '4', '0'});
+						color = 0x40ff40;
 					} else if (V_strnicmp(brace_str, "Yellow", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', 'f', 'f', 'b', '2', '0', '0'});
+						color = 0xffb200;
 					} else if (V_strnicmp(brace_str, "Grey", brace_len) == 0) {
 						output.insert(output.end(), {'\x07', 'c', 'c', 'c', 'c', 'c', 'c'});
+						color = 0xcccccc;
 					} else {
 						/* RGB hex code */
 						if (brace_len >= 6) {
@@ -480,6 +496,8 @@ namespace Mod::Pop::Wave_Extensions
 							output.push_back(brace_str[3]);
 							output.push_back(brace_str[4]);
 							output.push_back(brace_str[5]);
+							memcpy(num, brace_str,6);
+							color = strtol(num, nullptr, 16);
 						}
 					}
 					
@@ -491,9 +509,25 @@ namespace Mod::Pop::Wave_Extensions
 					brace_idx = i + 1;
 				} else {
 					output.push_back(c);
+					if (c == '\x07')
+						colorcode_idx = i+1;
+
+					if (colorcode_idx != 0) {
+						if (i >= colorcode_idx) {
+							if (i - colorcode_idx < 6) {
+								num[i - colorcode_idx] = c;
+							}
+							else {
+								color = strtol(num, nullptr, 16);
+								colorcode_idx = 0;
+							}
+						}
+					}
+					else
+						output_nocolor.push_back(c);
 				}
 			}
-			
+
 			++i;
 		}
 		
@@ -501,7 +535,59 @@ namespace Mod::Pop::Wave_Extensions
 		output.push_back(' ');
 		output.push_back('\n');
 		output.push_back('\0');
-		
+		output_nocolor.push_back('\0');
+		if (hasText && sig_text_print_speed.GetFloat() > 0.0f) {
+			// The first line is always drawn before others so it makes sense to only then create a new game_text entity if its missing
+			if (linenum == 0 && servertools->FindEntityByName(nullptr, "wave_explanation_text") == nullptr) {
+				CBaseEntity *textent = CreateEntityByName("game_text");
+				servertools->SetKeyValue(textent, "targetname", "wave_explanation_text");
+				servertools->SetKeyValue(textent, "channel", "0");
+				servertools->SetKeyValue(textent, "effect", "2");
+				servertools->SetKeyValue(textent, "fadeout", "0.5");
+				servertools->SetKeyValue(textent, "fxtime", "0.5");
+				servertools->SetKeyValue(textent, "holdtime", "2.5");
+				servertools->SetKeyValue(textent, "x", "-1");
+				servertools->SetKeyValue(textent, "y", "0.25");
+				servertools->SetKeyValue(textent, "spawnflags", "0");
+				textent->Spawn();
+				textent->Activate();
+			}
+			//textent->AcceptInput("Display",player,player,variant,-1);
+			CEventQueue &que = g_EventQueue;
+
+			variant_t variant;
+			
+			//servertools->SetKeyValue(textent, "color", CFmtStr("%d %d %d", ((color >> 16) & 255), ((color >> 8) & 255), (color & 255)));
+			//servertools->SetKeyValue(textent, "color2", CFmtStr("%d %d %d", ((color >> 16) & 255), ((color >> 8) & 255), (color & 255)));
+			bool hasPlayer = player != nullptr;
+			float delay = gameTextDelay + linenum * sig_text_print_speed.GetFloat() + (hasPlayer ? 0.5f : 0.0f);
+			variant.SetString(AllocPooledString(CFmtStr("color %d %d %d", ((color >> 16) & 255), ((color >> 8) & 255), (color & 255))));
+			que.AddEvent("wave_explanation_text","addoutput",variant,delay, player,player,-1);
+			
+			variant.SetString(AllocPooledString(CFmtStr("color2 %d %d %d", ((color >> 16) & 255), ((color >> 8) & 255), (color & 255))));
+			que.AddEvent("wave_explanation_text","addoutput",variant,delay, player,player,-1);
+
+			variant.SetString(AllocPooledString(CFmtStr("message %s", output_nocolor.data())));
+			que.AddEvent("wave_explanation_text","addoutput",variant,delay, player,player,-1);
+
+			variant.SetString(AllocPooledString(CFmtStr("fadein %f", 1.0f/output_nocolor.size() * sig_text_print_speed.GetFloat() * 0.25f)));
+			que.AddEvent("wave_explanation_text","addoutput",variant,delay, player,player,-1);
+
+			variant.SetString(AllocPooledString(CFmtStr("holdtime %f", 0.75f * sig_text_print_speed.GetFloat() - 0.5f )));
+			que.AddEvent("wave_explanation_text","addoutput",variant,delay, player,player,-1);
+
+			if (!hasPlayer)
+			for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+				CBasePlayer *baseplayer = UTIL_PlayerByIndex(i);
+
+				que.AddEvent("wave_explanation_text","display",variant,delay + 0.01f, baseplayer,baseplayer,-1);
+			}
+
+			que.AddEvent("wave_explanation_text","display",variant,delay + 0.01f, player,player,-1);
+
+			linenum++;
+		}
+
 		if (!player)
 			PrintToChatAll(output.data());
 		else
@@ -509,9 +595,10 @@ namespace Mod::Pop::Wave_Extensions
 	}
 	float last_explanation_time = 0.0f;
 
-	std::set<CTFPlayer *> saw_explanation;
-	void ShowWaveExplanation(CTFPlayer *player = nullptr)
+	std::set<CHandle<CTFPlayer>> saw_explanation;
+	void ShowWaveExplanation(bool success, CTFPlayer *player = nullptr)
 	{
+		
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
 		if (wave == nullptr) return;
 
@@ -537,27 +624,54 @@ namespace Mod::Pop::Wave_Extensions
 		}
 
 		const auto& explanation = waves[wave].explanation;
-		for (const auto& line : explanation) {
-			ParseColorsAndPrint(line.c_str(), player);
+
+		if (explanation.size() > 0) {
+
+			int linenum = 0;
+			for (const auto& line : explanation) {
+				ParseColorsAndPrint(line.c_str(), success ? 15.0f : 1.0f, linenum, player);
+			}
 		}
 	}
-	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		bool show_wave_expl = !player->IsBot() && player->m_Shared->InState(TF_STATE_WELCOME);
-		
-		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
-		if (show_wave_expl)
-			ShowWaveExplanation(player);
+		bool show_wave_expl = !player->IsBot() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED;
+		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+		if (show_wave_expl && TFGameRules()->IsMannVsMachineMode())
+			ShowWaveExplanation(false, player);
 	}
-	
-	RefCount rc_JumpToWave;
+
+	void OnWaveBegin(bool success) {
+		CWave *wave = g_pPopulationManager->GetCurrentWave();
+		if (wave == nullptr)
+			return;
+
+		ShowWaveExplanation(success);
+
+		auto data = waves[wave];
+		if (!data.t_waveinit.HasStarted()) {
+			data.t_waveinit.Start();
+		}
+
+		// Remove old force items
+		/*ForEachTFPlayer([&](CTFPlayer *player) {
+			if (player->IsBot() || !player->IsAlive())
+				return;
+			
+			player->
+		}*/
+	}
+	int rc_JumpToWave = 0;
 	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
 	{
-		SCOPED_INCREMENT(rc_JumpToWave);
-		//DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
+		DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
+
+		rc_JumpToWave++;
 		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
-		ShowWaveExplanation();
+		rc_JumpToWave--;
+
+		OnWaveBegin(false);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
@@ -567,7 +681,7 @@ namespace Mod::Pop::Wave_Extensions
 		if (wave != nullptr)
 			WaveCleanup(wave);
 		DETOUR_MEMBER_CALL(CPopulationManager_WaveEnd)(b1);
-		ShowWaveExplanation();
+		OnWaveBegin(true);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
@@ -575,7 +689,7 @@ namespace Mod::Pop::Wave_Extensions
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 		if (!success && rc_JumpToWave == 0) {
 			//DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
-			ShowWaveExplanation();
+			OnWaveBegin(false);
 		}
 	}
 	
@@ -779,6 +893,11 @@ namespace Mod::Pop::Wave_Extensions
 						player->m_Shared->AddCond(cond,-1.0f);
 					}
 				}
+				for(auto cond : data.addconds_class[classname]){
+					if (!player->m_Shared->InCond(cond)){
+						player->m_Shared->AddCond(cond,-1.0f);
+					}
+				}
 			});
 			
 
@@ -830,6 +949,29 @@ namespace Mod::Pop::Wave_Extensions
 					return false;
 				}
 			}
+
+			if (done && (data.finishing_wave_causes_wave_loss || data.finishing_wave_and_player_wipe_causes_wave_loss)) {
+				if (!data.finishing_wave_causes_wave_loss) {
+					
+					int playercount = 0;
+					int aliveplayercount = 0;
+					ForEachTFPlayer([&](CTFPlayer *playerl){
+						if (!playerl->IsFakeClient() && playerl->GetTeamNumber() > 1) {
+							playercount +=1;
+							if (playerl->IsAlive())
+								aliveplayercount +=1;
+						}
+					});
+					if (playercount > 0 && aliveplayercount == 0) {
+						TFGameRules()->SetWinningTeam(TF_TEAM_RED, WINREASON_OPPONENTS_DEAD, true, false);
+						done = false;
+					}
+				}
+				else{
+					TFGameRules()->SetWinningTeam(TF_TEAM_RED, WINREASON_OPPONENTS_DEAD, true, false);
+					done = false;
+				}
+			}
 		}
 		
 		return done;
@@ -842,6 +984,7 @@ namespace Mod::Pop::Wave_Extensions
 		ConColorMsg(Color(0xff, 0x00, 0xff, 0xff),
 			"[SoundLoop] CTeamplayRoundBasedRules: %s -> %s\n",
 			GetRoundStateName(oldState), GetRoundStateName(newState));
+		
 		
 		if (oldState != GR_STATE_RND_RUNNING && newState == GR_STATE_RND_RUNNING) {
 			if (TFGameRules()->IsMannVsMachineMode()) {
@@ -874,6 +1017,11 @@ namespace Mod::Pop::Wave_Extensions
 									player->m_Shared->RemoveCond(cond);
 								}
 							}
+							for(auto cond : data.addconds_class[classname]){
+								if (player->m_Shared->InCond(cond)){
+									player->m_Shared->RemoveCond(cond);
+								}
+							}
 						});
 					}
 				}
@@ -883,7 +1031,6 @@ namespace Mod::Pop::Wave_Extensions
 		
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
 	}
-	
 	
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -903,7 +1050,8 @@ namespace Mod::Pop::Wave_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWave_IsDoneWithNonSupportWaves, "CWave::IsDoneWithNonSupportWaves");
 			
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter, "CTeamplayRoundBasedRules::State_Enter");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ChangeTeam,                  "CTFPlayer::ChangeTeam");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleCommand_JoinClass,                  "CTFPlayer::HandleCommand_JoinClass");
+			
 		}
 		
 		virtual void OnUnload() override
@@ -912,6 +1060,10 @@ namespace Mod::Pop::Wave_Extensions
 			StopSoundLoop();
 		}
 		
+		virtual void OnEnable() override
+		{
+		}
+
 		virtual void OnDisable() override
 		{
 			waves.clear();
@@ -932,6 +1084,26 @@ namespace Mod::Pop::Wave_Extensions
 			waves.clear();
 			StopSoundLoop();
 		}
+
+		/*virtual void FrameUpdatePostEntityThink() override
+		{
+			if(g_pPopulationManager != nullptr) {
+				CWave *wave = g_pPopulationManager->GetCurrentWave();
+				if (wave != nullptr) {
+					for (int i = 0; i < 32; i++) {
+						CBasePlayer *player = UTIL_PlayerByIndex(i);
+						if (player == nullptr) continue;
+						if (player->IsBot()) continue;
+						
+						float &progress = waves[wave].player_explanation_progress[i];
+						
+						if (progress > 0) {
+							
+						}
+					}
+				}
+			}
+		}*/
 	};
 	CMod s_Mod;
 	

@@ -60,7 +60,7 @@ namespace Mod::AI::EngieBot_Wrangler
 					actor->PressAltFireButton(0.1f);
 				}
 
-				INextBot *nextbot = rtti_cast<INextBot *>(actor);
+				INextBot *nextbot = actor->MyNextBotPointer();
 				if ( m_repathTimer.IsElapsed() )
 				{
 					CObjectSentrygun *sentry = rtti_cast<CObjectSentrygun *>(actor->GetObjectOfType(OBJ_SENTRYGUN, 0));

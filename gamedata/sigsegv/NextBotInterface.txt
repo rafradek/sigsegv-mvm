@@ -23,6 +23,21 @@
 					type "sym"
 					sym  "_ZNK8INextBot16DisplayDebugTextEPKc"
 				}
+				"INextBot::Upkeep"
+				{
+					type "sym"
+					sym  "_ZN8INextBot6UpkeepEv"
+				}
+				"INextBot::IsRangeLessThan"
+				{
+					type "sym"
+					sym  "_ZNK8INextBot15IsRangeLessThanEP11CBaseEntityf"
+				}
+				"INextBot::IsRangeGreaterThan"
+				{
+					type "sym"
+					sym  "_ZNK8INextBot18IsRangeGreaterThanERK6Vectorf"
+				}
 			}
 		}
 	}

@@ -4,6 +4,7 @@
 
 IMPL_SENDPROP(int,   CBaseAnimating, m_nSkin,        CBaseAnimating);
 IMPL_SENDPROP(int,   CBaseAnimating, m_nBody,        CBaseAnimating);
+IMPL_SENDPROP(int,   CBaseAnimating, m_nSequence,    CBaseAnimating);
 IMPL_SENDPROP(float, CBaseAnimating, m_flModelScale, CBaseAnimating);
 IMPL_SENDPROP(float, CBaseAnimating, m_flCycle,      CBaseAnimating);
 IMPL_SENDPROP(int,   CBaseAnimating, m_nHitboxSet,   CBaseAnimating);
@@ -25,14 +26,17 @@ MemberFuncThunk<CBaseAnimating *, float, const char *>             CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, void, int, matrix3x4_t&>         CBaseAnimating::ft_GetBoneTransform    ("CBaseAnimating::GetBoneTransform");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupBone          ("CBaseAnimating::LookupBone");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupAttachment    ("CBaseAnimating::LookupAttachment");
+MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupSequence      ("CBaseAnimating::LookupSequence");
 MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimating::ft_GetBonePosition     ("CBaseAnimating::GetBonePosition");
 
+MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_RefreshCollisionBounds(TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");
 
 IMPL_SENDPROP(bool, CEconEntity, m_bValidatedAttachedEntity, CEconEntity);
 
 MemberFuncThunk<CEconEntity *, void> CEconEntity::ft_DebugDescribe("CEconEntity::DebugDescribe");
 
 MemberVFuncThunk<CEconEntity *, CAttributeContainer *> CEconEntity::vt_GetAttributeContainer(TypeName<CEconEntity>(), "CEconEntity::GetAttributeContainer");
+MemberVFuncThunk<CEconEntity *, CAttributeManager *>   CEconEntity::vt_GetAttributeManager  (TypeName<CEconEntity>(), "CEconEntity::GetAttributeManager");
 MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   CEconEntity::vt_GiveTo               (TypeName<CEconEntity>(), "CEconEntity::GiveTo");
 
 
@@ -43,3 +47,5 @@ CEconItemView *CEconEntity::GetItem()
 	
 	return attr_container->GetItem();
 }
+
+StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize("UTIL_SetSize");
