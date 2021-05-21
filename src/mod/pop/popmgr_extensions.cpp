@@ -2997,6 +2997,17 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto kv = reinterpret_cast<KeyValues *>(this);
 			
 			std::vector<KeyValues *> del_kv;
+			
+			// Parse PointTemplates first
+			FOR_EACH_SUBKEY(kv, subkey) {
+				const char *name = subkey->GetName();
+				
+				if (FStrEq(name, "PointTemplates")) {
+					Parse_PointTemplates(subkey);
+					del_kv.push_back(subkey);
+				}
+			}
+			
 			FOR_EACH_SUBKEY(kv, subkey) {
 				const char *name = subkey->GetName();
 				
@@ -3215,8 +3226,6 @@ namespace Mod::Pop::PopMgr_Extensions
 					Parse_ExtraSpawnPoint(subkey);
 				} else if (FStrEq(name, "ExtraTankPath")) {
 					Parse_ExtraTankPath(subkey);
-				} else if (FStrEq(name, "PointTemplates")) {
-					Parse_PointTemplates(subkey);
 				} else if (FStrEq(name, "PlayerAttributes")) {
 					Parse_PlayerAttributes(subkey);
 				} else if (FStrEq(name, "PlayerAddCond")) {
