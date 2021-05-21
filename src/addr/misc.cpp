@@ -1,4 +1,5 @@
 #include "addr/addr.h"
+#include "mem/extract.h"
 #include "mem/scan.h"
 #include "prop.h"
 #include "stub/gamerules.h"
@@ -792,8 +793,7 @@ static CAddr_RCONClient addr_RCONClient;
 
 
 // HACK: we already included tier0/memalloc.h with NO_MALLOC_OVERRIDE, so we don't get IMemAlloc or g_pMemAlloc
-#ifdef NO_MALLOC_OVERRIDE
-#define MEM_INTERFACE
+/*#ifdef NO_MALLOC_OVERRIDE
 class IMemAlloc
 {
 public:
@@ -820,7 +820,7 @@ static CAddr_IMemAlloc addr_IMemAlloc_Free   ("Free",    0x05);
 static CAddr_IMemAlloc addr_IMemAlloc_Alloc  ("Alloc",   GetVIdxOfMemberFunc<IMemAlloc, void *, size_t>        (&IMemAlloc::Alloc));
 static CAddr_IMemAlloc addr_IMemAlloc_Realloc("Realloc", GetVIdxOfMemberFunc<IMemAlloc, void *, void *, size_t>(&IMemAlloc::Realloc));
 static CAddr_IMemAlloc addr_IMemAlloc_Free   ("Free",    GetVIdxOfMemberFunc<IMemAlloc, void, void *>          (&IMemAlloc::Free));
-#endif
+#endif*/
 
 
 #if 0

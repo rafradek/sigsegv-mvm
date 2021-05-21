@@ -5,12 +5,12 @@ PATHS="--hl2sdk-root=/opt/tfserver/alliedmodders --mms-path=/opt/tfserver/allied
 
 mkdir -p build
 cd build
- 	CC=clang CXX=clang++ $CONFIGURE $PATHS --sdks=tf2 --enable-debug --enable-optimize --exclude-mods-visualize
+ 	$CONFIGURE $PATHS --sdks=tf2 --enable-debug --exclude-mods-debug --enable-optimize --exclude-mods-visualize
 cd ..
 
 mkdir -p build/release
 pushd build/release
-	CC=clang CXX=clang++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize
+	$CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
 popd
 
 # mkdir -p build/clang

@@ -7,6 +7,7 @@
 #include "util/scope.h"
 #include "mod/pop/pointtemplate.h"
 #include "stub/tf_objective_resource.h"
+#include "stub/particles.h"
 
 
 class NextBotGroundLocomotion : public ILocomotion
@@ -282,10 +283,18 @@ namespace Mod::Pop::Tank_Extensions
 		}
 	}
 
+	bool load_from_template = false;
 	DETOUR_DECL_MEMBER(bool, CTankSpawner_Parse, KeyValues *kv)
 	{
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
 		
+		auto orig_kv = kv;
+
+		bool loaded_from_template = load_from_template;
+		if (load_from_template) {
+			kv = orig_kv->MakeCopy();
+		}
+
 		std::vector<KeyValues *> del_kv;
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
@@ -332,8 +341,11 @@ namespace Mod::Pop::Tank_Extensions
 				KeyValues *templates = g_pPopulationManager->m_pTemplates;
 				if (templates != nullptr) {
 					KeyValues *tmpl = templates->FindKey(subkey->GetString());
-					if (tmpl != nullptr)
+					if (tmpl != nullptr) {
+						load_from_template = true;
 						spawner->Parse(tmpl);
+						load_from_template = false;
+					}
 				}
 			} else if (FStrEq(name, "PingSound")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
@@ -397,7 +409,13 @@ namespace Mod::Pop::Tank_Extensions
 			subkey->deleteThis();
 		}
 
-		return DETOUR_MEMBER_CALL(CTankSpawner_Parse)(kv);
+		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Parse)(kv);
+
+		if (loaded_from_template) {
+			kv->deleteThis();
+		}
+
+		return result;
 	}
 
 	void ForceRomeVisionModels(CTFTankBoss *tank, bool romevision)
@@ -602,7 +620,7 @@ namespace Mod::Pop::Tank_Extensions
 		
 		if (node != nullptr && tank->m_hCurrentNode == nullptr && data != nullptr && data->attachements.size() != 0) {
 			variant_t variant;
-			variant.SetString(MAKE_STRING(""));
+			variant.SetString(NULL_STRING);
 			tank->AcceptInput("FireUser4",tank,tank,variant,-1);
 		}
 
@@ -718,7 +736,9 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(void, NextBotGroundLocomotion_Update)
 	{
 		float prev_pitch = NAN;
+		float prev_posz = NAN;
 		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr) {
+			prev_posz = thinking_tank->GetAbsOrigin().z;
 			if (thinking_tank_data->offsetz != 0.0f) {
 				Vector offset = thinking_tank->GetAbsOrigin() - Vector(0, 0, thinking_tank_data->offsetz);
 				thinking_tank->SetAbsOrigin(offset);
@@ -728,6 +748,7 @@ namespace Mod::Pop::Tank_Extensions
 			{
 				auto loco = reinterpret_cast<NextBotGroundLocomotion *>(this);
 				Vector move = loco->GetApproachPos();
+
 				move.NormalizeInPlace();
 				
 				Vector right, up;
@@ -735,10 +756,20 @@ namespace Mod::Pop::Tank_Extensions
 				loco->SetGroundNormal(up);
 				
 				prev_pitch = thinking_tank->GetLocalAngles().x;
+
+				prev_posz += move.z * loco->GetRunSpeed() * loco->GetUpdateInterval();
 			}
 		}
 		DETOUR_MEMBER_CALL(NextBotGroundLocomotion_Update)();
 		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr) {
+			
+			if (thinking_tank_data->gravity == 0.0f)
+			{
+				Vector tank_pos = thinking_tank->GetAbsOrigin();
+				tank_pos.z = prev_posz;
+				thinking_tank->SetAbsOrigin(tank_pos);
+			}
+
 			if (thinking_tank_data->offsetz != 0.0f) {
 				Vector offset = thinking_tank->GetAbsOrigin() + Vector(0, 0, thinking_tank_data->offsetz);
 				thinking_tank->SetAbsOrigin(offset);
@@ -945,6 +976,29 @@ namespace Mod::Pop::Tank_Extensions
 		DETOUR_MEMBER_CALL(CTFTankBoss_UpdateOnRemove)();
 	}
 
+	CBaseEntity *entityOnFireCollide;
+	DETOUR_DECL_MEMBER(float, CTFFlameManager_GetFlameDamageScale, void * point, CTFPlayer * player)
+	{
+		float ret = DETOUR_MEMBER_CALL(CTFFlameManager_GetFlameDamageScale)(point, player);
+		bool istank = entityOnFireCollide != nullptr && strcmp(entityOnFireCollide->GetClassname(),"tank_boss") == 0;
+		if (istank) {
+			ret+=0.04f;
+			if (ret > 1.0f)
+				ret = 1.0f;
+			if (ret < 0.77f) {
+				ret = 0.77f;
+			}
+		}
+		return ret;
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFFlameManager_OnCollide, CBaseEntity* entity, int value)
+	{
+		entityOnFireCollide = entity;
+		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
+		entityOnFireCollide = nullptr;
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -981,6 +1035,10 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFTankDestruction_Spawn,      "CTFTankDestruction::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_Explode, "CTFTankBoss::Explode");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_UpdateOnRemove, "CTFTankBoss::UpdateOnRemove");
+
+			// Tank flame damage fix
+			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");
+			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_OnCollide,        "CTFFlameManager::OnCollide");
 		}
 		
 		virtual void OnUnload() override

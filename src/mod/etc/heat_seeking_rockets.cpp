@@ -180,7 +180,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				else
 					homing.enable = false;
 
-				player_homing_cache[weapon] = homing;
+				player_homing_cache[proj] = homing;
 			}
 		}
 		
@@ -226,19 +226,18 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	}*/
 	inline bool PerformCustomPhysics(CBaseEntity *ent, Vector *pNewPosition, Vector *pNewVelocity, QAngle *pNewAngles, QAngle *pNewAngVelocity) {
 		
-		if (strncmp(ent->GetClassname(), "tf_projectile", strlen("tf_projectile")) != 0){
-			return false;
-		}
+		//if (strncmp(ent->GetClassname(), "tf_projectile", strlen("tf_projectile")) != 0){
+		//	return false;
+		//}
 
 		//Assume all "tf_projectile" entities are projectiles, for better performance
-		
 		auto proj = static_cast<CBaseProjectile *>(ent);
 		float seek = 0.0f;
-		if (proj == nullptr || proj->GetOriginalLauncher() == nullptr) {
+		if (proj == nullptr) {
 			return false;
 		}
 
-		auto homing_entry = player_homing_cache.find(proj->GetOriginalLauncher());
+		auto homing_entry = player_homing_cache.find(proj);
 		if (homing_entry == player_homing_cache.end()) {
 			return false;
 		}
@@ -276,7 +275,6 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				
 				float target_dotproduct  = FLT_MIN;
 				CTFPlayer *target_player = nullptr;
-
 				ForEachTFPlayer([&](CTFPlayer *player){
 					if (!player->IsAlive())                               return;
 					if (player->GetTeamNumber() == TEAM_SPECTATOR)        return;
@@ -317,6 +315,8 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				});
 				if (target_player != nullptr) {
 					target_vec = target_player->WorldSpaceCenter();
+					float target_distance = proj->WorldSpaceCenter().DistTo(target_player->WorldSpaceCenter());
+					target_vec += target_player->GetAbsVelocity() * target_distance / speed_calculated;
 				}
 			}
 			

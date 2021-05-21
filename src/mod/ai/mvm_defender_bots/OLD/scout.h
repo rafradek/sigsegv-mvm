@@ -10,7 +10,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* run around and do scout stuff */
-	class CTFBotMvMDefenderScout : public IHotplugAction
+	class CTFBotMvMDefenderScout : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMvMDefenderScout() {}
@@ -30,7 +30,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	
 	
 	/* mark giants for death */
-	class CTFBotMarkGiants : public IHotplugAction
+	class CTFBotMarkGiants : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMarkGiants() {}

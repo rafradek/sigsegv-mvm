@@ -14,7 +14,7 @@
 
 template<typename... ARGS>
 //[[gnu::format(printf, 2, 3)]]
-void ClientMsg(CBasePlayer *player, const char *fmt, ARGS... args)
+void ClientMsg(CBasePlayer *player, const char *fmt, ARGS&&... args)
 {
 	CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
 	
@@ -23,7 +23,7 @@ void ClientMsg(CBasePlayer *player, const char *fmt, ARGS... args)
 
 template<typename... ARGS>
 //[[gnu::format(printf, 1, 2)]]
-void ClientMsgAll(const char *fmt, ARGS... args)
+void ClientMsgAll(const char *fmt, ARGS&&... args)
 {
 	CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
 	

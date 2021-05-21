@@ -299,6 +299,8 @@ public:
 		RunScan(&this->m_Scanner);
 	}
 	
+	SCANNER& GetScanner() { return this->m_Scanner; }
+	
 	const std::vector<const void *>& Matches() const { return this->m_Scanner.Matches(); }
 	const void *FirstMatch() const                   { return this->m_Scanner.FirstMatch(); }
 	bool ExactlyOneMatch() const                     { return this->m_Scanner.ExactlyOneMatch(); }
@@ -332,6 +334,8 @@ public:
 		
 		this->RunMultiScan();
 	}
+	
+	auto& GetScanners() { return this->m_Scanners; }
 	
 	const std::vector<const void *>& Matches(size_t idx) const { return this->m_Scanners[idx]->Matches(); }
 	const void *FirstMatch(size_t idx) const                   { return this->m_Scanners[idx]->FirstMatch(); }

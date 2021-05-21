@@ -340,7 +340,7 @@ namespace Mod::Debug::Proj_Energy_Ball
 //	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Proj_Energy_Ball")
@@ -369,7 +369,7 @@ namespace Mod::Debug::Proj_Energy_Ball
 		//	MOD_ADD_DETOUR_MEMBER(CBaseEntity_TakeDamage,            "CBaseEntity::TakeDamage");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

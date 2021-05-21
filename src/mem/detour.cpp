@@ -6,6 +6,7 @@
 #include "mem/wrapper.h"
 #include "util/backtrace.h"
 #include "util/demangle.h"
+#include "util/misc.h"
 
 #include <udis86.h>
 
@@ -85,7 +86,7 @@ static bool UD86_insn_is_call_rel_imm32(struct ud *ud, const uint8_t **call_targ
 }
 
 /* detect instruction: 'mov e[acdb]x,[esp]' */
-static bool UD86_insn_is_mov_r32_rtnval(struct ud *ud, X86Instr::Reg *dest_reg = nullptr)
+static bool UD86_insn_is_mov_r32_rtnval(struct ud *ud, Reg *dest_reg = nullptr)
 {
 	auto mnemonic = ud_insn_mnemonic(ud);
 	if (mnemonic != UD_Imov) return false;
@@ -97,12 +98,12 @@ static bool UD86_insn_is_mov_r32_rtnval(struct ud *ud, X86Instr::Reg *dest_reg =
 	if (op0->type != UD_OP_REG) return false;
 	if (op0->size != 32)        return false;
 	
-	X86Instr::Reg reg;
+	Reg reg;
 	switch (op0->base) {
-	case UD_R_EAX: reg = X86Instr::REG_AX; break;
-	case UD_R_ECX: reg = X86Instr::REG_CX; break;
-	case UD_R_EDX: reg = X86Instr::REG_DX; break;
-	case UD_R_EBX: reg = X86Instr::REG_BX; break;
+	case UD_R_EAX: reg = REG_AX; break;
+	case UD_R_ECX: reg = REG_CX; break;
+	case UD_R_EDX: reg = REG_DX; break;
+	case UD_R_EBX: reg = REG_BX; break;
 	default: return false;
 	}
 	
@@ -136,7 +137,7 @@ static bool UD86_insn_is_ret(struct ud *ud)
 
 
 /* detect whether an instruction is a call to __i686.get_pc_thunk.(ax|cx|dx|bx) */
-static bool UD86_insn_is_call_to_get_pc_thunk(struct ud *ud, X86Instr::Reg *dest_reg = nullptr)
+static bool UD86_insn_is_call_to_get_pc_thunk(struct ud *ud, Reg *dest_reg = nullptr)
 {
 	const uint8_t *call_target;
 	if (!UD86_insn_is_call_rel_imm32(ud, &call_target)) return false;
@@ -194,7 +195,7 @@ static size_t Trampoline_CopyAndFixUpFuncBytes(size_t len_min, const uint8_t *fu
 		
 		/* detect calls to __i686.get_pc_thunk.(ax|cx|dx|bx);
 		 * convert them into direct-register-load operations */
-		X86Instr::Reg reg;
+		Reg reg;
 		if (UD86_insn_is_call_to_get_pc_thunk(&ud, &reg)) {
 			uint32_t pc_value = (ud_insn_off(&ud) + ud_insn_len(&ud) + (trampoline - func));
 			MovRegImm32(dest, reg, pc_value).Write();
@@ -644,12 +645,16 @@ void CDetouredFunc::CreateWrapper()
 		auto p_mov_funcaddr_2 = this->m_pWrapper + Wrapper::Offset_MOV_FuncAddr_2();
 		auto p_call_post      = this->m_pWrapper + Wrapper::Offset_CALL_Post();
 		
-		MovRegImm32      (p_mov_funcaddr_1, X86Instr::REG_CX, (uint32_t)this->m_pFunc)         .Write();
-		CallIndirectMem32(p_call_pre,                         (uint32_t)&this->m_pWrapperPre)  .Write();
-		CallIndirectMem32(p_call_inner,                       (uint32_t)&this->m_pWrapperInner).Write();
-		MovRegImm32      (p_mov_funcaddr_2, X86Instr::REG_CX, (uint32_t)this->m_pFunc)         .Write();
-		CallIndirectMem32(p_call_post,                        (uint32_t)&this->m_pWrapperPost) .Write();
+		MovRegImm32      (p_mov_funcaddr_1, REG_CX, (uint32_t)this->m_pFunc)         .Write();
+		CallIndirectMem32(p_call_pre,               (uint32_t)&this->m_pWrapperPre)  .Write();
+		CallIndirectMem32(p_call_inner,             (uint32_t)&this->m_pWrapperInner).Write();
+		MovRegImm32      (p_mov_funcaddr_2, REG_CX, (uint32_t)this->m_pFunc)         .Write();
+		CallIndirectMem32(p_call_post,              (uint32_t)&this->m_pWrapperPost) .Write();
 	}
+	
+	assert(this->m_WrapperCheck.empty());
+	this->m_WrapperCheck.resize(Wrapper::Size());
+	memcpy(this->m_WrapperCheck.data(), this->m_pWrapper, Wrapper::Size());
 #endif
 }
 
@@ -659,6 +664,8 @@ void CDetouredFunc::DestroyWrapper()
 	
 #if !defined _WINDOWS
 	if (this->m_pWrapper != nullptr) {
+		this->ValidateWrapper();
+		
 		TheExecMemManager()->FreeWrapper(this->m_pWrapper);
 		this->m_pWrapper = nullptr;
 	}
@@ -680,15 +687,19 @@ void CDetouredFunc::CreateTrampoline()
 	this->m_pTrampoline = TheExecMemManager()->AllocTrampoline(len_trampoline);
 	TRACE_MSG("trampoline @ %08x\n", (uintptr_t)this->m_pTrampoline);
 	
-	assert(!this->IsPrologueValid());
-	this->m_Prologue.resize(len_prologue);
-	memcpy(this->m_Prologue.data(), this->m_pFunc, len_prologue);
+	assert(this->m_OriginalPrologue.empty());
+	this->m_OriginalPrologue.resize(len_prologue);
+	memcpy(this->m_OriginalPrologue.data(), this->m_pFunc, len_prologue);
 	
 	{
 		MemProtModifier_RX_RWX(this->m_pTrampoline, len_trampoline);
 		assert(Trampoline_CopyAndFixUpFuncBytes(JmpRelImm32::Size(), this->m_pFunc, this->m_pTrampoline) == len_prologue);
 		JmpRelImm32(this->m_pTrampoline + len_prologue, (uint32_t)this->m_pFunc + len_prologue).Write();
 	}
+	
+	assert(this->m_TrampolineCheck.empty());
+	this->m_TrampolineCheck.resize(len_trampoline);
+	memcpy(this->m_TrampolineCheck.data(), this->m_pTrampoline, len_trampoline);
 }
 
 void CDetouredFunc::DestroyTrampoline()
@@ -696,6 +707,8 @@ void CDetouredFunc::DestroyTrampoline()
 	TRACE("[this: %08x]", (uintptr_t)this);
 	
 	if (this->m_pTrampoline != nullptr) {
+		this->ValidateTrampoline();
+		
 		TheExecMemManager()->FreeTrampoline(this->m_pTrampoline);
 		this->m_pTrampoline = nullptr;
 	}
@@ -705,6 +718,9 @@ void CDetouredFunc::DestroyTrampoline()
 void CDetouredFunc::Reconfigure()
 {
 	TRACE("[this: %08x] with %zu detour(s)", (uintptr_t)this, this->m_Detours.size());
+	
+	this->ValidateWrapper();
+	this->ValidateTrampoline();
 	
 	this->UninstallJump();
 	
@@ -762,21 +778,65 @@ void CDetouredFunc::InstallJump(void *target)
 {
 	TRACE("[this: %08x] [target: %08x]", (uintptr_t)this, (uintptr_t)target);
 	
-	{
-		MemProtModifier_RX_RWX(this->m_pFunc, this->m_Prologue.size());
-		JmpRelImm32(this->m_pFunc, (uint32_t)target).WritePadded(this->m_Prologue.size());
+	/* already installed */
+	if (this->m_bJumpInstalled) {
+		this->ValidateCurrentPrologue();
+		return;
 	}
+	
+	this->ValidateOriginalPrologue();
+	
+	assert(!this->m_OriginalPrologue.empty());
+	
+	{
+		MemProtModifier_RX_RWX(this->m_pFunc, this->m_OriginalPrologue.size());
+		JmpRelImm32(this->m_pFunc, (uint32_t)target).WritePadded(this->m_OriginalPrologue.size());
+	}
+	
+	this->m_CurrentPrologue.resize(this->m_OriginalPrologue.size());
+	memcpy(this->m_CurrentPrologue.data(), this->m_pFunc, this->m_CurrentPrologue.size());
+	
+	this->m_bJumpInstalled = true;
 }
 
 void CDetouredFunc::UninstallJump()
 {
 	TRACE("[this: %08x]", (uintptr_t)this);
 	
-	assert(this->IsPrologueValid());
+	/* already uninstalled */
+	if (!this->m_bJumpInstalled) {
+		this->ValidateOriginalPrologue();
+		return;
+	}
+	
+	this->ValidateCurrentPrologue();
+	
+	assert(!this->m_OriginalPrologue.empty());
 	
 	{
-		MemProtModifier_RX_RWX(this->m_pFunc, this->m_Prologue.size());
-		memcpy(this->m_pFunc, this->m_Prologue.data(), this->m_Prologue.size());
+		MemProtModifier_RX_RWX(this->m_pFunc, this->m_OriginalPrologue.size());
+		memcpy(this->m_pFunc, this->m_OriginalPrologue.data(), this->m_OriginalPrologue.size());
+	}
+	
+	this->m_bJumpInstalled = false;
+}
+
+
+void CDetouredFunc::Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller)
+{
+	const uint8_t *check_ptr = vec.data();
+	size_t         check_len = vec.size();
+	
+	if (memcmp(ptr, check_ptr, check_len) != 0) {
+		const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
+		if (func_name == nullptr) func_name = "???";
+		
+		/*Warning("CDetouredFunc::%s [func: \"%s\"]: validation failure!\n"
+			"Expected:\n%s"
+			"Actual:\n%s",
+			caller, func_name,
+			HexDump(check_ptr, check_len).c_str(),
+			HexDump(      ptr, check_len).c_str());*/
 	}
 }
 

@@ -35,5 +35,21 @@ extern GlobalThunk<const char *[4]> s_TankModelRome;
 extern GlobalThunk<char_0x104[10]> g_szRomePromoItems_Hat;
 extern GlobalThunk<char_0x104[10]> g_szRomePromoItems_Misc;
 
+inline int GetClassIndexFromString(const char *pClassName)
+{
+	for (int i = 1; i <= 10; ++i) {
+		// compare first N characters to allow matching both "heavy" and "heavyweapons"
+		int classnameLength = V_strlen(g_aPlayerClassNames_NonLocalized[i]);
+
+		if (V_strlen(pClassName) < classnameLength)
+			continue;
+
+		if (!V_strnicmp(g_aPlayerClassNames_NonLocalized[i], pClassName, classnameLength)) {
+			return i;
+		}
+	}
+
+	return TF_CLASS_UNDEFINED;
+}
 
 #endif

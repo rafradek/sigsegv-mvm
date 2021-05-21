@@ -182,7 +182,7 @@ namespace Mod::Debug::Tele_Sapper
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Tele_Sapper")
@@ -195,7 +195,7 @@ namespace Mod::Debug::Tele_Sapper
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_SetPlasmaDisabled, "CBaseObject::SetPlasmaDisabled");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

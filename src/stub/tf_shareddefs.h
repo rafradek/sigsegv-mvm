@@ -487,5 +487,4 @@ inline bool IsLoadoutSlot_Cosmetic(loadout_positions_t slot)
 	}
 }
 
-
 #endif

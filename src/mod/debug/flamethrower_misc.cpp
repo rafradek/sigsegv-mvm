@@ -12,12 +12,12 @@ namespace Mod::Debug::Flamethrower_Misc
 	ConVar cvar_off4("sig_debug_flamethrower_misc_off4", "+0.0 +0.0 +0.0", 0);
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Flamethrower_Misc") {}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

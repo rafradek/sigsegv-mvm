@@ -2,9 +2,11 @@
 #define _INCLUDE_SIGSEGV_ABI_H_
 
 
-#if defined __GNUC__
+#if defined __clang__
+#error TODO
+#elif defined __GNUC__
 #include <cxxabi.h>
-#else
+#elif defined _MSC_VER
 namespace abi
 {
 	typedef void __class_type_info;
@@ -95,12 +97,12 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTDynamicCast (
 /* calling conventions */
 
 /* common naming for fastcall */
-#if !defined __fastcall && defined __GNUC__
+#if !defined __fastcall && defined __GNUC__ && !defined __clang__
 #define __fastcall [[gnu::fastcall]]
 #endif
 
 /* use EAX/EDX/ECX register calling convention in GCC build ONLY */
-#if defined __GNUC__
+#if defined __GNUC__ && !defined __clang__
 #define __gcc_regcall [[gnu::regparm(3)]]
 #else
 #define __gcc_regcall
@@ -122,7 +124,11 @@ template<class C, typename RET, typename... PARAMS> using MemberPtrTypeConst = R
 template<class C, typename RET, typename... PARAMS> using MemberPtrTypeVa      = RET (C::*)(PARAMS..., ...);
 template<class C, typename RET, typename... PARAMS> using MemberPtrTypeVaConst = RET (C::*)(PARAMS..., ...) const;
 
-#if defined __GNUC__
+#if defined __clang__
+
+#error TODO
+
+#elif defined __GNUC__
 
 template<class C, typename RET, typename... PARAMS>
 union MemberPtrUnion

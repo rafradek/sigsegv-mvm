@@ -1,5 +1,5 @@
 #include "stub/projectiles.h"
-
+#include "mem/extract.h"
 
 #if defined _LINUX
 
@@ -58,7 +58,7 @@ MemberVFuncThunk<const CBaseProjectile *, bool> CBaseProjectile::vt_IsDestroyabl
 MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> CBaseProjectile::vt_Destroy(TypeName<CBaseProjectile>(), "CBaseProjectile::Destroy");
 MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> CBaseProjectile::vt_SetLauncher(TypeName<CBaseProjectile>(), "CBaseProjectile::SetLauncher");
 
-MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CBaseProjectile>(), "CTFBaseProjectile::SetDamage");
+MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::SetDamage");
 
 IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRocket);
 IMPL_SENDPROP(int,                  CTFBaseRocket, m_iDeflected,       CTFBaseRocket);
@@ -67,6 +67,8 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFBaseRocket, m_hLauncher,        CTFBaseRo
 MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwnerPlayer("CTFBaseRocket::GetOwnerPlayer");
 
 MemberFuncThunk<CTFProjectile_EnergyRing *, float> CTFProjectile_EnergyRing::ft_GetInitialVelocity("CTFProjectile_EnergyRing::GetInitialVelocity");
+
+IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
 
 IMPL_EXTRACT(float, CTFProjectile_Arrow, m_flTimeInit, new CExtract_CTFProjectile_Arrow_ArrowTouch());
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bCritical, CTFProjectile_Arrow);

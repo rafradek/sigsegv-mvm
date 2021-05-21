@@ -20,6 +20,7 @@ public:
 	}
 	void Decrement(const char *file = nullptr, int line = 0)
 	{
+#ifdef DEBUG
 		if (this->m_iCount > 0) {
 			--this->m_iCount;
 		} else {
@@ -31,6 +32,9 @@ public:
 			
 			this->m_iCount = 0;
 		}
+#else
+		--this->m_iCount;
+#endif
 	}
 	
 private:
@@ -53,7 +57,10 @@ public:
 	
 	void Increment()
 	{
+		
+#ifdef DEBUG
 		assert(!this->m_bIncremented);
+#endif
 		this->m_RefCount.Increment();
 		this->m_bIncremented = true;
 	}

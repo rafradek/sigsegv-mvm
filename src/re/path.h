@@ -8,13 +8,17 @@
 
 
 #include "util/misc.h"
-#include "stub/tfbot.h"
 
 
 class CBaseObject;
 class CNavLadder;
 class CFuncElevator;
+class CNavArea;
+class INextBot;
+class CBaseCombatCharacter;
+class CTFBot;
 enum NavDirType : int32_t;
+
 
 
 #include "../mvm-reversed/server/NextBot/Path/NextBotPath.h"
@@ -25,7 +29,7 @@ enum NavDirType : int32_t;
 SIZE_CHECK(Path,         0x4754);
 SIZE_CHECK(PathFollower, 0x47d4);
 SIZE_CHECK(ChasePath,    0x4800);
-SIZE_CHECK(IPathCost,    0x04);
+SIZE_CHECK(IPathCost,    0x0004);
 
 
 /* from game/server/nav_pathfind.h */
@@ -56,21 +60,7 @@ private:
 };
 SIZE_CHECK(CTFBotPathCost, 0x2c);
 
-
-inline CTFBotPathCost::CTFBotPathCost(CTFBot *actor, RouteType rtype) :
-	m_Actor(actor), m_iRouteType(rtype)
-{
-	this->m_flStepHeight      = actor->GetLocomotionInterface()->GetStepHeight();
-	this->m_flMaxJumpHeight   = actor->GetLocomotionInterface()->GetMaxJumpHeight();
-	this->m_flDeathDropHeight = actor->GetLocomotionInterface()->GetDeathDropHeight();
-	
-	if (actor->IsPlayerClass(TF_CLASS_SPY)) {
-		TheNavMesh->CollectBuiltObjects(&this->m_EnemyObjects, GetEnemyTeam(actor));
-	} else {
-		this->m_EnemyObjects.RemoveAll();
-	}
-}
-
+#warning REMOVE ME / MOVE ME ELSEWHERE!
 inline CTFBotPathCost::~CTFBotPathCost() {}
 
 

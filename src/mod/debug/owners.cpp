@@ -70,12 +70,12 @@ namespace Mod::Debug::Owners
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Owners") {}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

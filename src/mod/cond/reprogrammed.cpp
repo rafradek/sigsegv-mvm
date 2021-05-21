@@ -616,7 +616,7 @@ namespace Mod::Cond::Reprogrammed
 				// Base amount is 25% of normal damage.  Each level adds 25% to a cap of 125%.
 				float flArmorPiercing = 25.f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon->GetOwner(), flArmorPiercing, armor_piercing );
-				flBaseDamage *= clamp( flArmorPiercing / 100.0f, 0.25f, 1.25f );	
+				flBaseDamage *= Clamp( flArmorPiercing / 100.0f, 0.25f, 1.25f );	
 				return flBaseDamage;
 			}
 		}

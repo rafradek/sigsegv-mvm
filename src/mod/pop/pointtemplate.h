@@ -33,9 +33,10 @@ public:
 	bool keep_alive = false;
 	bool has_on_kill_trigger = false;
 	bool no_fixup = false;
+
 	std::vector<std::string> on_kill_triggers = std::vector<std::string>();
 
-	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr);
+	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr, bool ignore_parent_alive_state = false);
 };
 
 
@@ -53,6 +54,7 @@ public:
 	bool is_wave_spawned = false;
 	
 	void OnKilledParent(bool clearing);
+	bool ignore_parent_alive_state = false;
 };
 static PointTemplateInstance PointTemplateInstance_Invalid = PointTemplateInstance();
 
@@ -64,6 +66,7 @@ struct PointTemplateInfo
 	float delay =0.0f;
 	std::string attachment;
 	std::string template_name;
+	bool ignore_parent_alive_state = false;
 	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, bool autoparent = true);
 };
 

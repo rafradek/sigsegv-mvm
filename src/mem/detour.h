@@ -226,13 +226,17 @@ private:
 	void CreateTrampoline();
 	void DestroyTrampoline();
 	
-	void StorePrologue();
-	bool IsPrologueValid() { return !this->m_Prologue.empty(); }
-	
 	void Reconfigure();
 	
 	void InstallJump(void *target);
 	void UninstallJump();
+	
+	/* validation: ensuring that nothing else (e.g. SourceHook) has meddled with our bytes while we weren't looking */
+	void Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller);
+	void ValidateOriginalPrologue() { this->Validate(this->m_pFunc,       this->m_OriginalPrologue, "ValidateOriginalPrologue"); }
+	void ValidateCurrentPrologue()  { this->Validate(this->m_pFunc,       this->m_CurrentPrologue,  "ValidateCurrentPrologue" ); }
+	void ValidateWrapper()          { this->Validate(this->m_pWrapper,    this->m_WrapperCheck,     "ValidateWrapper"         ); }
+	void ValidateTrampoline()       { this->Validate(this->m_pTrampoline, this->m_TrampolineCheck,  "ValidateTrampoline"      ); }
 	
 #if !defined _WINDOWS
 	void FuncPre();
@@ -244,7 +248,12 @@ private:
 	std::vector<CDetour *> m_Detours;
 	std::vector<ITrace *> m_Traces;
 	
-	std::vector<uint8_t> m_Prologue;
+	bool m_bJumpInstalled = false;
+	
+	std::vector<uint8_t> m_OriginalPrologue; // backup of the original unmodified function prologue
+	std::vector<uint8_t> m_CurrentPrologue;  // FOR VALIDATION: copy of what we believe the current hooked prologue should be
+	std::vector<uint8_t> m_WrapperCheck;     // FOR VALIDATION: copy of what we believe the wrapper contents should be
+	std::vector<uint8_t> m_TrampolineCheck;  // FOR VALIDATION: copy of what we believe the trampoline contents should be
 	
 	uint8_t *m_pWrapper    = nullptr;
 	uint8_t *m_pTrampoline = nullptr;

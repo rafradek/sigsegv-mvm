@@ -40,12 +40,12 @@ namespace Mod::Debug::GetPlayerMaxSpeed
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:GetPlayerMaxSpeed") {}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

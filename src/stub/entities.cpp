@@ -1,5 +1,5 @@
 #include "stub/entities.h"
-
+#include "mem/extract.h"
 
 #if defined _LINUX
 
@@ -117,7 +117,6 @@ using CExtract_CTeamControlPointMaster_m_ControlPoints = IExtractStub;
 
 #endif
 
-
 IMPL_DATAMAP(int, CPathTrack, m_eOrientationType);
 
 IMPL_DATAMAP(string_t,             CEnvEntityMaker, m_iszTemplate);
@@ -200,6 +199,7 @@ IMPL_DATAMAP(string_t, CFuncNavPrerequisite, m_taskEntityName);
 IMPL_DATAMAP(float,    CFuncNavPrerequisite, m_taskValue);
 IMPL_DATAMAP(bool,     CFuncNavPrerequisite, m_isDisabled);
 
+IMPL_DATAMAP(CBaseEntityOutput, CLogicCase, m_OnDefault);
 
 IMPL_REL_BEFORE(CUtlStringList, CFilterTFBotHasTag, m_TagList, m_iszTags);
 IMPL_DATAMAP   (string_t,       CFilterTFBotHasTag, m_iszTags);
@@ -263,3 +263,8 @@ GlobalThunk<CUtlVector<ITFFlameEntityAutoList *>> ITFFlameEntityAutoList::m_ITFF
 
 IMPL_DATAMAP (string_t, CSmokeStack, m_strMaterialModel);
 IMPL_SENDPROP(int,      CSmokeStack, m_iMaterialModel, CSmokeStack);
+
+IMPL_DATAMAP (bool, CTFPointWeaponMimic, m_bCrits);
+IMPL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits, 0x04);
+
+IMPL_DATAMAP (CHandle<CBasePlayer>, CGameUI, m_player);

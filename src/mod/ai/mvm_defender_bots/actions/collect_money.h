@@ -11,7 +11,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* collect a currency pack */
-	class CTFBotCollectMoney : public IHotplugAction
+	class CTFBotCollectMoney : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotCollectMoney() {}

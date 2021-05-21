@@ -37,7 +37,7 @@ sourceFiles += [
   'src/library.cpp',
   'src/mod.cpp',
   'src/prop.cpp',
-  'src/sizeof.cpp',
+# 'src/sizeof.cpp',
   'src/util_commands.cpp',
   'src/version.c',
   
@@ -60,9 +60,9 @@ sourceFiles += [
   'src/util/firehose_base.cpp',
   'src/util/firehose_recv.cpp',
   'src/util/firehose_send.cpp',
+  'src/util/misc.cpp',
   'src/util/rtti.cpp',
   'src/util/socket_old.cpp',
-  'src/util/vgui.cpp',
   
   'src/stub/__merge.cpp',
   
@@ -71,7 +71,6 @@ sourceFiles += [
   'src/link/nextbot1.cpp',
   'src/link/nextbot2.cpp',
   
-  'src/re/nextbot.cpp',
   'src/re/path.cpp',
   
 #  'src/entity/trigger_gravity_improved.cpp',
@@ -152,6 +151,7 @@ sourceFiles += [
   'src/mod/etc/laserdot_fix.cpp',
   'src/mod/etc/limp_projectiles.cpp',
   'src/mod/etc/loose_cannon_damage_fix.cpp',
+  'src/mod/etc/mapentity_additions.cpp',
   'src/mod/etc/medicgun_beam_machinery.cpp',
   'src/mod/etc/melee_ignore_teammates.cpp',
   'src/mod/etc/mm_spoof.cpp',
@@ -160,6 +160,7 @@ sourceFiles += [
   'src/mod/etc/player_bullet_boundingbox_fix.cpp',
   'src/mod/etc/ratelimit_exclude.cpp',
   'src/mod/etc/release_source_mutex.cpp',
+  'src/mod/etc/server_allow_wait_command.cpp',
   'src/mod/etc/suppress_nb_event_messages.cpp',
   'src/mod/etc/target_changegravity_improved.cpp',
   'src/mod/etc/weapon_mimic_teamnum.cpp',
@@ -198,15 +199,17 @@ sourceFiles += [
   'src/mod/mvm/teleporter_aggro.cpp',
   'src/mod/mvm/refund_usermsg_overflow_fix.cpp',
   
+  'src/mod/perf/attributes_optimize.cpp',
+  'src/mod/perf/hltv_optimize.cpp',
   'src/mod/perf/flame_breakable_collision.cpp',
   'src/mod/perf/medigun_shield_damage_events.cpp',
   'src/mod/perf/medigun_shield_damage_interval.cpp',
   'src/mod/perf/mvm_load_popfile.cpp',
+  'src/mod/perf/sendprop_optimize.cpp',
   'src/mod/perf/smokestack_fs_thrash.cpp',
-  'src/mod/perf/hltv_optimize.cpp',
-  'src/mod/perf/attributes_optimize.cpp',
   'src/mod/perf/squad_escort_optimize.cpp',
   
+  'src/mod/pop/common.cpp',
   'src/mod/pop/ecattr_extensions.cpp',
   'src/mod/pop/eventpopfile_improvements.cpp',
   'src/mod/pop/kv_conditional.cpp',
@@ -280,8 +283,6 @@ sourceFiles += [
   'src/mod/util/vprof_recv.cpp',
   'src/mod/util/vprof_send.cpp',
 #  'src/mod/util/vprof_remote.cpp',
-  
-  'src/mod/vgui/test.cpp',
 ]
 
 if 'mods_debug' not in Extension.exclude:
@@ -394,6 +395,12 @@ if 'mods_visualize' not in Extension.exclude:
     'src/mod/visualize/taunt_attacks.cpp',
   ]
 
+if 'mods_vgui' not in Extension.exclude:
+  sourceFiles += [
+    'src/util/vgui.cpp',
+    'src/mod/vgui/test.cpp',
+  ]
+
 NO_MODS_WHATSOEVER = False
 if NO_MODS_WHATSOEVER:
   sourceFiles = [file for file in sourceFiles if not file.startswith('src/mod/')]
@@ -439,8 +446,8 @@ binary.compiler.sourcedeps += autogen
 
 
 # PCH for GCC only (breaks Clang autogen.h dependency detection)
-if 'gcc' in binary.compiler.version.vendor_name:
-  project.sources = [ 'src/common.h' ] + project.sources
+#if 'gcc' in binary.compiler.version.vendor_name:
+#  project.sources = [ 'src/common.h' ] + project.sources
 
 binary.compiler.cflags += [ '-include', 'common.h' ]
 

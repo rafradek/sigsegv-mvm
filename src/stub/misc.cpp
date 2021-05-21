@@ -77,12 +77,19 @@ static MemberFuncThunk<const CSteamID *, const char *> ft_CSteamID_Render_member
 const char *CSteamID::Render() const { return ft_CSteamID_Render_member(this); }
 
 static StaticFuncThunk<void, const char *> ft_PrecacheParticleSystem("PrecacheParticleSystem");
-
 void PrecacheParticleSystem(const char *name) { ft_PrecacheParticleSystem(name); }
 
-static StaticFuncThunk<void, CBasePlayer *, hudtextparms_t &, const char *> ft_UTIL_HudMessage("UTIL_HudMessage");
+static StaticFuncThunk<bool, CRC32_t *, const char *> ft_CRC_File("CRC_File");
+bool CRC_File(CRC32_t *crcvalue, const char *pszFileName) { return ft_CRC_File(crcvalue, pszFileName); }
 
+static StaticFuncThunk<void, CBasePlayer *, hudtextparms_t &, const char *> ft_UTIL_HudMessage("UTIL_HudMessage");
 void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message) { ft_UTIL_HudMessage(player, params, message); }
+
+static StaticFuncThunk<void, CGameTrace *, int> ft_UTIL_PlayerDecalTrace("UTIL_PlayerDecalTrace");
+void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid) { ft_UTIL_PlayerDecalTrace(tr, playerid); }
+
+static StaticFuncThunk<void, IRecipientFilter &, float, const Vector *, int, int> ft_TE_PlayerDecal("TE_PlayerDecal");
+void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity) { ft_TE_PlayerDecal(filter, delay, pos, player, entity); }
 
 GlobalThunk<CEventQueue> g_EventQueue("g_EventQueue");
 

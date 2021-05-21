@@ -13,6 +13,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	ConVar cvar_forceanature ("sig_mvm_weapon_antigrief_forceanature", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Force-A-Nature");
 	ConVar cvar_shortstop    ("sig_mvm_weapon_antigrief_shortstop", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Shortstop");
 	ConVar cvar_moonshot     ("sig_mvm_weapon_antigrief_moonshot", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Moonshot");
+	ConVar cvar_stunonhit    ("sig_mvm_weapon_antigrief_stunonhit", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from stun on hit attributes");
 	ConVar cvar_airborne_rage("sig_mvm_weapon_antigrief_airborne_rage", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from minigun rage when airborne");
 	ConVar cvar_stunball     ("sig_mvm_stunball_stun", "1", FCVAR_NOTIFY, "Balls now stun players");
 	
@@ -75,10 +76,16 @@ namespace Mod::MvM::Weapon_AntiGrief
 		return DETOUR_STATIC_CALL(CanScatterGunKnockBack)(scattergun, damage, distsqr);
 	}
 	
-	
+	RefCount rc_StunOnHit;
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
+	{
+		SCOPED_INCREMENT(rc_StunOnHit);
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+	}
 	static inline bool ShouldBlock_ScorchShot()  { return (cvar_scorchshot .GetBool() && rc_ScorchShot  > 0); }
 	static inline bool ShouldBlock_LooseCannon() { return (cvar_loosecannon.GetBool() && rc_LooseCannon > 0); }
 	static inline bool ShouldBlock_ShortStop()   { return (cvar_shortstop.GetBool()   && rc_ShortStop > 0); }
+	static inline bool ShouldBlock_StunOnHit()   { return (cvar_stunonhit.GetBool()   && rc_StunOnHit > 0); }
 	static inline bool ShouldBlock_Moonshot(int flags) { return ((flags & 9) == 9 && cvar_moonshot.GetBool()); }
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
@@ -118,7 +125,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			if (!(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())))
 				flags = TF_STUNFLAGS_SMALLBONK;
 		}
-		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon() || ShouldBlock_Moonshot(flags)) {
+		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon() || ShouldBlock_StunOnHit() || ShouldBlock_Moonshot(flags)) {
 			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 			auto player = shared->GetOuter();
 			
@@ -143,6 +150,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			MOD_ADD_DETOUR_MEMBER(CTFScatterGun_ApplyPostHitEffects, "CTFScatterGun::ApplyPostHitEffects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyPushFromDamage,     "CTFPlayer::ApplyPushFromDamage");
 			MOD_ADD_DETOUR_STATIC(CanScatterGunKnockBack,            "CanScatterGunKnockBack");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyGenericPushbackImpulse,       "CTFPlayer::ApplyGenericPushbackImpulse");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer,                  "CTFPlayerShared::StunPlayer");

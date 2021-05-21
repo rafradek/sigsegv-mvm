@@ -11,7 +11,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* attack a tank */
-	class CTFBotAttackTank : public IHotplugAction
+	class CTFBotAttackTank : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotAttackTank() {}

@@ -1,5 +1,5 @@
 #include "stub/baseentity_cl.h"
-
+#include "mem/extract.h"
 
 //#if defined _LINUX
 //

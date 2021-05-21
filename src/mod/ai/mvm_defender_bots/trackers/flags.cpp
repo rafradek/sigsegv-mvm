@@ -127,7 +127,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	void ForEachFlag(const std::function<void(CCaptureFlag *, bool&)>& functor)
 	{
 		for (int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i) {
-			auto flag = rtti_cast<CCaptureFlag *>(ICaptureFlagAutoList::AutoList()[i]);
+			auto flag = rtti_scast<CCaptureFlag *>(ICaptureFlagAutoList::AutoList()[i]);
 			if (flag == nullptr) continue;
 			
 			bool done = false;

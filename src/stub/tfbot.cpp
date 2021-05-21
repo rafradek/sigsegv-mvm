@@ -1,5 +1,5 @@
 #include "stub/tfbot.h"
-
+#include "mem/extract.h"
 
 #if defined _LINUX
 
@@ -201,7 +201,7 @@ IMPL_EXTRACT(CTFBot::MissionType,   CTFBot, m_nMission,  new CExtract_CTFBot_m_n
 IMPL_EXTRACT(CUtlVector<CFmtStr>,   CTFBot, m_Tags,      new CExtract_CTFBot_m_Tags());
 #endif
 IMPL_EXTRACT(CTFBot::AttributeType, CTFBot, m_nBotAttrs, new CExtract_CTFBot_m_nBotAttrs());
-IMPL_RELATIVE(int, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, -0x04);
+IMPL_RELATIVE(CTFBot::WeaponRestriction, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, -0x04);
 #endif
 
 MemberFuncThunk<const CTFBot *, ILocomotion *                            > CTFBot::ft_GetLocomotionInterface      ("CTFBot::GetLocomotionInterface");

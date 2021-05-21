@@ -486,7 +486,7 @@ namespace Mod::Visualize::Taunt_Attacks
 	
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Visualize:Taunt_Attacks")
@@ -498,7 +498,7 @@ namespace Mod::Visualize::Taunt_Attacks
 			MOD_ADD_DETOUR_MEMBER(CEntitySphereQuery_ctor,                  "CEntitySphereQuery::CEntitySphereQuery [C1]");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

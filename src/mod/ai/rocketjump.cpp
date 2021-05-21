@@ -8,7 +8,7 @@
 namespace Mod::AI::RocketJump
 {
 	/* base class */
-	class CTFBotRocketJump : public IHotplugAction
+	class CTFBotRocketJump : public IHotplugAction<CTFBot>
 	{
 	protected:
 		CTFBotRocketJump() {}

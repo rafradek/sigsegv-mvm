@@ -45,7 +45,7 @@ namespace Mod::Credits::Better_Radius_Collection
 	//	}
 		
 		for (int i = 0; i < ICurrencyPackAutoList::AutoList().Count(); ++i) {
-			auto pack = rtti_cast<CCurrencyPack *>(ICurrencyPackAutoList::AutoList()[i]);
+			auto pack = rtti_scast<CCurrencyPack *>(ICurrencyPackAutoList::AutoList()[i]);
 			if (pack == nullptr) continue;
 			
 			if ( pack->GetAbsOrigin().DistToSqr(player_pos) > radius_sqr) continue;

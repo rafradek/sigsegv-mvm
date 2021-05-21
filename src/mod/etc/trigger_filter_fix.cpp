@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/baseentity.h"
+#include "stub/entities.h"
 
 
 namespace Mod::Etc::Trigger_Filter_Fix
@@ -37,6 +38,20 @@ namespace Mod::Etc::Trigger_Filter_Fix
 
         DETOUR_MEMBER_CALL(CBaseFilter_InputTestActivator)(data);
 	}
+
+	DETOUR_DECL_MEMBER(void, CGameUI_Deactivate, CBaseEntity *pActivator)
+	{
+		CGameUI *ent = reinterpret_cast<CGameUI *>(this);
+
+		if (ent->m_player == nullptr) return;
+
+		if (pActivator == nullptr) {
+			pActivator = UTIL_EntityByIndex(0);
+		}
+
+        DETOUR_MEMBER_CALL(CGameUI_Deactivate)(pActivator);
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -45,6 +60,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 			MOD_ADD_DETOUR_MEMBER(CBaseTrigger_InputStartTouch, "CBaseTrigger::InputStartTouch");
 			MOD_ADD_DETOUR_MEMBER(CBaseTrigger_InputEndTouch, "CBaseTrigger::InputEndTouch");
 			MOD_ADD_DETOUR_MEMBER(CBaseFilter_InputTestActivator, "CBaseFilter::InputTestActivator");
+			MOD_ADD_DETOUR_MEMBER(CGameUI_Deactivate, "CGameUI::Deactivate");
 		}
 	};
 	CMod s_Mod;

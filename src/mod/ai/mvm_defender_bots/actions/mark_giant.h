@@ -11,7 +11,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* mark a giant for death */
-	class CTFBotMarkGiant : public IHotplugAction
+	class CTFBotMarkGiant : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMarkGiant() {}

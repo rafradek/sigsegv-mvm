@@ -11,7 +11,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* defend a gate */
-	class CTFBotDefendGate : public IHotplugAction
+	class CTFBotDefendGate : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotDefendGate() {}

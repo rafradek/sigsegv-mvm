@@ -3,7 +3,8 @@
 #include "stub/entities.h"
 #include "stub/strings.h"
 #include "util/misc.h"
-
+#include "mem/extract.h"
+#include "util/iterate.h"
 
 #if defined _LINUX
 
@@ -180,7 +181,9 @@ MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, floa
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime,    CTFPlayer);
 IMPL_RELATIVE(CTFPlayerAnimState *, CTFPlayer, m_PlayerAnimState,        m_hItem, -0x18); // 20170116a
-IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
+//IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
+IMPL_RELATIVE(bool,                 CTFPlayer, m_bFeigningDeath,         m_bArenaSpectator, -0x14);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_bArenaSpectator,        CTFPlayer);
 IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,            CTFPlayer);
 IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,                  CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsMiniBoss,            CTFPlayer);
@@ -217,7 +220,8 @@ MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, CAttributeManager *             > CTFPlayer::ft_GetAttributeManager              ("CTFPlayer::GetAttributeManager");
 MemberFuncThunk<      CTFPlayer *, CAttributeList*                 > CTFPlayer::ft_GetAttributeList                    ("CTFPlayer::GetAttributeList");
 MemberFuncThunk<      CTFPlayer *, CBaseEntity *, int              > CTFPlayer::ft_GetEntityForLoadoutSlot            ("CTFPlayer::GetEntityForLoadoutSlot");
-MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_DoAnimationEvent            ("CTFPlayer::DoAnimationEvent");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_RemoveInvisibility               ("CTFPlayer::RemoveInvisibility");
+MemberFuncThunk<      CTFPlayer *, void, PlayerAnimEvent_t, int    > CTFPlayer::ft_DoAnimationEvent            ("CTFPlayer::DoAnimationEvent");
 MemberFuncThunk<      CTFPlayer *, void, const char *              > CTFPlayer::ft_PlaySpecificSequence        ("CTFPlayer::PlaySpecificSequence");
 MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > CTFPlayer::ft_Taunt                       ("CTFPlayer::Taunt");
 MemberFuncThunk<      CTFPlayer *, void, CEconItemView*            > CTFPlayer::ft_PlayTauntSceneFromItem      ("CTFPlayer::PlayTauntSceneFromItem");
@@ -365,7 +369,7 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 	CEconItemView *view = entity->GetItem();
 	int slot = view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
 	if (slot == -1) {
-		if (force_give) {
+		if (!force_give) {
 			return false;
 		}
 		slot = view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
@@ -401,7 +405,6 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 					auto old_weapon = ToBaseCombatWeapon(old_econ_entity);
 					
 					player->Weapon_Detach(old_weapon);
-					DevMsg("Remove old weapon\n");
 					old_weapon->Remove();
 				} else if (old_econ_entity->IsWearable()) {
 					auto old_wearable = rtti_cast<CEconWearable *>(old_econ_entity);
@@ -418,7 +421,6 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 	}
 	/* make the model visible for other players */
 	entity->m_bValidatedAttachedEntity = true;
-	
 	/* make any extra wearable models visible for other players */
 	auto weapon = rtti_cast<CTFWeaponBase *>(entity);
 	if (weapon != nullptr) {
@@ -433,4 +435,38 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 	
 	entity->GiveTo(player);
 	return true;
+}
+
+CEconEntity *CTFPlayer::GetEconEntityByName(const char *name)
+{
+	CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(name);
+	if (item_def == nullptr) return nullptr;
+
+	CEconEntity *value = nullptr;
+	ForEachTFPlayerEconEntity(this, [&](CEconEntity *entity) {
+		CEconItemView *item_view = entity->GetItem();
+		//DevMsg("item name %s\n", item_view->GetItemDefinition()->GetItemName());
+		if (item_view->GetItemDefIndex() == item_def->m_iItemDefIndex) {
+			value = entity;
+			return false;
+		}
+		return true;
+	});
+
+	return value;
+}
+
+CEconEntity *CTFPlayer::GetEconEntityById(int id)
+{
+	CEconEntity *value = nullptr;
+	ForEachTFPlayerEconEntity(this, [&](CEconEntity *entity) {
+		CEconItemView *item_view = entity->GetItem();
+		if (item_view->GetItemDefIndex() == id) {
+			value = entity;
+			return false;
+		}
+		return true;
+	});
+
+	return value;
 }

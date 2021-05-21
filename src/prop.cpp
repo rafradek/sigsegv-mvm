@@ -1,4 +1,5 @@
 #include "prop.h"
+#include "mem/extract.h"
 #include "stub/baseentity.h"
 #include "util/misc.h"
 #include "util/demangle.h"
@@ -193,7 +194,7 @@ namespace Prop
 }
 
 
-bool CPropBase_SendProp::CalcOffset(int& off) const
+bool CProp_SendProp::CalcOffset(int& off) const
 {
 	ServerClass *sv_class = this->FindServerClass();
 	if (sv_class == nullptr) {
@@ -209,7 +210,7 @@ bool CPropBase_SendProp::CalcOffset(int& off) const
 	return true;
 }
 
-ServerClass *CPropBase_SendProp::FindServerClass() const
+ServerClass *CProp_SendProp::FindServerClass() const
 {
 	for (ServerClass *sv_class = gamedll->GetAllServerClasses(); sv_class != nullptr; sv_class = sv_class->m_pNext) {
 		if (strcmp(sv_class->GetName(), this->m_pszServerClass) == 0) {
@@ -220,7 +221,7 @@ ServerClass *CPropBase_SendProp::FindServerClass() const
 	return nullptr;
 }
 
-bool CPropBase_SendProp::FindSendProp(int& off, SendTable *s_table) const
+bool CProp_SendProp::FindSendProp(int& off, SendTable *s_table) const
 {
 	for (int i = 0; i < s_table->GetNumProps(); ++i) {
 		SendProp *s_prop = s_table->GetProp(i);
@@ -242,7 +243,7 @@ bool CPropBase_SendProp::FindSendProp(int& off, SendTable *s_table) const
 	return false;
 }
 
-bool CPropBase_SendProp::IsSendPropUtlVector(int& off, SendProp *q_prop) const
+bool CProp_SendProp::IsSendPropUtlVector(int& off, SendProp *q_prop) const
 {
 	SendTable *s_table = q_prop->GetDataTable();
 	if (s_table == nullptr) return false;
@@ -266,7 +267,7 @@ bool CPropBase_SendProp::IsSendPropUtlVector(int& off, SendProp *q_prop) const
 	return false;
 }
 
-const char *CPropBase_SendProp::GetSendPropMemberName() const
+const char *CProp_SendProp::GetSendPropMemberName() const
 {
 	if (this->m_pszRemoteName != nullptr) {
 		return this->m_pszRemoteName;
@@ -276,7 +277,7 @@ const char *CPropBase_SendProp::GetSendPropMemberName() const
 }
 
 
-bool CPropBase_DataMap::CalcOffset(int& off) const
+bool CProp_DataMap::CalcOffset(int& off) const
 {
 	char str_DataMap[1024];
 	V_sprintf_safe(str_DataMap, "%s::m_DataMap", this->GetObjectName());
@@ -311,32 +312,38 @@ bool CPropBase_DataMap::CalcOffset(int& off) const
 }
 
 
-bool CPropBase_Extract::CalcOffset(int& off) const
+CProp_Extract::~CProp_Extract()
 {
-	/* this is not the entirety of CalcOffset; the final step is in the function override in CProp_Extract itself */
-	
-	IExtractBase *extractor = this->GetExtractor();
-	
-	if (extractor == nullptr) {
+	if (this->m_Extractor != nullptr) {
+		delete this->m_Extractor;
+	}
+}
+
+
+bool CProp_Extract::CalcOffset(int& off) const
+{
+	if (this->m_Extractor == nullptr) {
 		Warning("CProp_Extract: %s::%s FAIL: no extractor provided (nullptr)\n", this->GetObjectName(), this->GetMemberName());
 		return false;
 	}
 	
-	if (!extractor->Init()) {
+	if (!this->m_Extractor->Init()) {
 		Warning("CProp_Extract: %s::%s FAIL: in extractor Init\n", this->GetObjectName(), this->GetMemberName());
 		return false;
 	}
 	
-	if (!extractor->Check()) {
+	if (!this->m_Extractor->Check()) {
 		Warning("CProp_Extract: %s::%s FAIL: in extractor Check\n", this->GetObjectName(), this->GetMemberName());
 		return false;
 	}
+	
+	off = (int)this->m_Extractor->ExtractPtrAsInt();
 	
 	return true;
 }
 
 
-bool CPropBase_Relative::CalcOffset(int& off) const
+bool CProp_Relative::CalcOffset(int& off) const
 {
 	int base_off = 0;
 	

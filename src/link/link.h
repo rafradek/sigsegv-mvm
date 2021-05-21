@@ -58,7 +58,6 @@ public:
 			}
 		}
 		
-//		DevMsg("StaticFuncThunk::Link OK 0x%08x \"%s\"\n", (uintptr_t)this->m_pFuncPtr, this->m_pszFuncName);
 		return true;
 	}
 	
@@ -348,13 +347,16 @@ public:
 	{
 		auto rtti = RTTI::GetRTTI(this->m_pszName);
 		if (rtti == nullptr) {
+			static_assert((SIZE % 4) == 0);
+			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
+			
 			DevMsg("TypeInfoThunk::Link FAIL \"%s\": can't find RTTI\n", this->m_pszName);
 			return false;
 		}
 		
 		memcpy(m_pDest, rtti, SIZE);
 		
-//		DevMsg("TypeInfoThunk::Link OK \"%s\"\n", this->m_pszName);
+		DevMsg("TypeInfoThunk::Link OK \"%s\"\n", this->m_pszName);
 		return true;
 	}
 	
@@ -377,19 +379,24 @@ public:
 	{
 		auto vt = RTTI::GetVTable(this->m_pszName);
 		if (vt == nullptr) {
+			static_assert((SIZE % 4) == 0);
+			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
+			
 			DevMsg("VTableThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszName);
 			return false;
 		}
 		
-#if defined __GNUC__
+#if defined __clang__
+		#error TODO
+#elif defined __GNUC__
 		ptrdiff_t adj = -offsetof(vtable, vfptrs);
-#else
+#elif defined _MSC_VER
 		ptrdiff_t adj = 0;
 #endif
 		
 		memcpy(m_pDest, (void *)((uintptr_t)vt + adj), SIZE);
 		
-//		DevMsg("VTableThunk::Link OK \"%s\"\n", this->m_pszName);
+		DevMsg("VTableThunk::Link OK \"%s\"\n", this->m_pszName);
 		return true;
 	}
 	

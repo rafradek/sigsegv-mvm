@@ -45,10 +45,7 @@ class ConVar;
 class CCommand;
 class ConCommand;
 class ConCommandBase;
-
-struct characterset_t {
-	char set[256];
-};
+struct characterset_t;
 
 
 
@@ -510,10 +507,14 @@ public:
 
 	const char *GetDefault() const;
 
-	// sigsegv: non-standard stuff added by me
-	int&  Ref_Flags()  const { return m_pConVarState->m_pParent->m_nFlags;  }
-	bool& Ref_HasMin() const { return m_pConVarState->m_pParent->m_bHasMin; }
-	bool& Ref_HasMax() const { return m_pConVarState->m_pParent->m_bHasMax; }
+	// sigsegv: non-standard stuff added by me (DANGEROUS: USE WITH EXTREME CAUTION!)
+	int&   Ref_Flags()    const { return m_pConVarState->m_pParent->m_nFlags;  }
+	float& Ref_FloatVal() const { return m_pConVarState->m_pParent->m_fValue;  }
+	int&   Ref_IntVal()   const { return m_pConVarState->m_pParent->m_nValue;  }
+	bool&  Ref_HasMin()   const { return m_pConVarState->m_pParent->m_bHasMin; }
+	bool&  Ref_HasMax()   const { return m_pConVarState->m_pParent->m_bHasMax; }
+	float& Ref_MinVal()   const { return m_pConVarState->m_pParent->m_fMinVal; }
+	float& Ref_MaxVal()   const { return m_pConVarState->m_pParent->m_fMaxVal; }
 
 private:
 	// High-speed method to read convar data

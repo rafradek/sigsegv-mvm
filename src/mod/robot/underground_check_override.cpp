@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "stub/tfbot.h"
-
+#include "mem/extract.h"
 
 namespace Mod::Robot::Underground_Check_Override
 {

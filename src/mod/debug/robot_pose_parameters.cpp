@@ -197,7 +197,7 @@ namespace Mod::Debug::Robot_Pose_Parameters
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Robot_Pose_Parameters")
@@ -206,7 +206,7 @@ namespace Mod::Debug::Robot_Pose_Parameters
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldDropAmmoPack, "CTFPlayer::ShouldDropAmmoPack");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

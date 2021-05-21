@@ -2,6 +2,7 @@
 #include "addr/addr.h"
 #include "stub/strings.h"
 #include "util/misc.h"
+#include "mem/extract.h"
 
 #include <boost/algorithm/string.hpp>
 

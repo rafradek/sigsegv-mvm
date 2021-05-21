@@ -72,9 +72,13 @@ public:
 	DECL_SENDPROP(bool,  m_bDucking);
 	DECL_SENDPROP(bool,  m_bInDuckJump);
 	DECL_SENDPROP(float, m_flDucktime);
-	DECL_SENDPROP(float, m_flDuckJumpTime);
-};
+	DECL_SENDPROP(Vector, m_vecPunchAngle);
+	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
+	
+	inline void NetworkStateChanged()           { }
+	inline void NetworkStateChanged(void *pVar) { }
 
+};
 
 enum PlayerPhysFlag_e : uint32_t
 {
@@ -135,6 +139,7 @@ public:
 	
 	DECL_SENDPROP(CPlayerLocalData, m_Local);
 	DECL_SENDPROP(int, m_nTickBase);
+	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

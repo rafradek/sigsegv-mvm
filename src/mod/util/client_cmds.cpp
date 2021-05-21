@@ -7,6 +7,7 @@
 #include "stub/objects.h"
 #include "stub/misc.h"
 #include "stub/gamerules.h"
+#include "stub/strings.h"
 #include "util/admin.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
@@ -664,8 +665,65 @@ namespace Mod::Util::Client_Cmds
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
-		engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
-		engine->ServerExecute();
+		auto item_def = GetItemSchema()->GetItemDefinitionByName(args[1]);
+		if (item_def != nullptr) {
+			const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
+			
+			CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+			ClientMsg(player, "item %d", entity);
+			DispatchSpawn(entity);
+
+
+			if (entity != nullptr) {
+				
+				GiveItemToPlayer(player, entity, false, true, args[1]);
+			}
+		}
+		//engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
+		//engine->ServerExecute();
+	}
+
+	void CC_GetMissingBones(CTFPlayer *player, const CCommand& args)
+	{
+		for (int i = 1; i < 10; i++) {
+			const char *robot_model = g_szBotModels[i];
+			const char *player_model = CFmtStr("models/player/%s.mdl", g_aRawPlayerClassNamesShort[i]);
+			studiohdr_t *studio_player = mdlcache->GetStudioHdr(mdlcache->FindMDL(player_model));
+			studiohdr_t *studio_robot = mdlcache->GetStudioHdr(mdlcache->FindMDL(robot_model));
+			//anim_robot->SetModel(robot_model);
+			//anim_player->SetModel(player_model);
+
+			if (studio_robot == nullptr) {
+				ClientMsg(player, "%s is null\n", robot_model);
+				break;
+			}
+			else if (studio_player == nullptr) {
+				ClientMsg(player, "%s is null\n", player_model);
+				break;
+			}
+
+			int numbones_robot = studio_robot->numbones;
+			int numbones_player = studio_player->numbones;
+
+			std::set<std::string> bones;
+
+			for (int j = 0; j < numbones_player; j++) {
+				auto *bone = studio_player->pBone(j);
+				bones.insert(bone->pszName());
+			}
+
+			for (int j = 0; j < numbones_robot; j++) {
+				auto *bone = studio_robot->pBone(j);
+				bones.erase(bone->pszName());
+			}
+
+			Msg("Missing bones on class %d\n", i);
+			for (auto &string : bones) {
+				Msg("%s\n", string);
+			}
+		}
+		//engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
+		//engine->ServerExecute();
 	}
 
 	CTFPlayer *playertrg = nullptr;
@@ -911,6 +969,7 @@ namespace Mod::Util::Client_Cmds
 			auto rtti_base_object = RTTI::GetRTTI<CBaseObject>();
 			auto rtti_has_attributes = RTTI::GetRTTI<IHasAttributes>();
 
+			
 			timer.Start();
 			for(int i = 0; i < times; i++) {
 				rtti_cast<CBaseEntity *>(player);
@@ -919,6 +978,7 @@ namespace Mod::Util::Client_Cmds
 			
 			displaystr += CFmtStr("player to entity time: %.9f", timer.GetDuration().GetSeconds());
 
+			
 			timer.Start();
 			for(int i = 0; i < times; i++) {
 				rtti_cast<CTFPlayer *>(testent);
@@ -928,24 +988,20 @@ namespace Mod::Util::Client_Cmds
 			displaystr += CFmtStr("entity to player time: %.9f", timer.GetDuration().GetSeconds());
 
 			timer.Start();
+			for(int i = 0; i < times; i++) {
+				rtti_scast<CTFPlayer *>(testent);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("entity to player static time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start();
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
-				auto proj = rtti_cast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
 			}
 			timer.End();
 
 			displaystr += CFmtStr("projectile cast: %.9f", timer.GetDuration().GetSeconds());
-
-			displaystr += CFmtStr("\n\nrtti_cast casting tests: \n\n");
-			displaystr += CFmtStr("(tfplayer)entity->player %d | ", rtti_cast<CTFPlayer *>(testent));
-			displaystr += CFmtStr("(gamerules)entity->player %d | ", rtti_cast<CTFPlayer *>(gamerules));
-			displaystr += CFmtStr("(gamerules)player->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CTFPlayer *>(gamerules)));
-			displaystr += CFmtStr("(tfplayer)player->entity %d | ", rtti_cast<CBaseEntity *>(player));
-			displaystr += CFmtStr("(tfplayer)player->hasattributes %d | ", rtti_cast<IHasAttributes *>(player));
-			displaystr += CFmtStr("(gamerules)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(gamerules));
-			displaystr += CFmtStr("(tfplayer)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(testent));
-			displaystr += CFmtStr("(tfplayer)object->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CBaseObject *>(testent)));
-			displaystr += CFmtStr("(tfplayer)entity->object %d | ", rtti_cast<CBaseObject *>(testent));
-			displaystr += CFmtStr("(tfplayer)player->object %d | ", rtti_cast<CBaseObject *>(player));
 
 			ClientMsg(player, "%s", displaystr.c_str());
 			displaystr = "";
@@ -954,7 +1010,11 @@ namespace Mod::Util::Client_Cmds
 			displaystr += CFmtStr("(gamerules)entity->player %d | ", rtti_cast<CTFPlayer *>(gamerules));
 			displaystr += CFmtStr("(tfplayer)player->entity %d | ", rtti_cast<CBaseEntity *>(player));
 			displaystr += CFmtStr("(tfplayer)player->hasattributes %d | ", rtti_cast<IHasAttributes *>(player));
+			displaystr += CFmtStr("(tfplayer)player->hasattributes (static) %d | ", rtti_scast<IHasAttributes *>(player));
+			displaystr += CFmtStr("(tfplayer)player->iscorer %d | ", rtti_cast<IScorer *>(player));
+			displaystr += CFmtStr("(tfplayer)player->iscorer (static) %d | ", rtti_scast<IScorer *>(player));
 			displaystr += CFmtStr("(gamerules)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(gamerules));
+			displaystr += CFmtStr("(gamerules)entity->hasattributes (static) %d | ", rtti_scast<IHasAttributes *, CTFPlayer *>(gamerules));
 			displaystr += CFmtStr("(tfplayer)entity->hasattributes %d | ", rtti_cast<IHasAttributes *>(testent));
 			displaystr += CFmtStr("(tfplayer)object->entity %d | ", rtti_cast<CBaseEntity *>(reinterpret_cast<CBaseObject *>(testent)));
 			displaystr += CFmtStr("(tfplayer)entity->object %d | ", rtti_cast<CBaseObject *>(testent));
@@ -1042,8 +1102,9 @@ namespace Mod::Util::Client_Cmds
 		if (args.ArgC() == 5) 
 			StringToIntStrict(args[4], (int&)slot);
 
+		char target_names[64];
 		std::vector<CBasePlayer *> vec;
-		GetSMTargets(player, args[1], vec);
+		GetSMTargets(player, args[1], vec, target_names, 64);
 		if (vec.empty()) {
 			ClientMsg(player, "[sig_addattr] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
@@ -1080,8 +1141,10 @@ namespace Mod::Util::Client_Cmds
 			}
 			else {
 				ClientMsg(player, "[sig_addattr] Error: couldn't find any item in slot\"%d\".\n", slot);
+				return;
 			}
 		}
+		ClientMsg(player, "[sig_addattr] Successfully added attribute %s = %s to %s.\n", args[2], args[3], target_names);
 	}
 
 	bool allow_create_dropped_weapon = false;
@@ -1109,6 +1172,61 @@ namespace Mod::Util::Client_Cmds
 			}
 		}
 	}
+
+	void CC_GiveEveryItem(CTFPlayer *player, const CCommand& args)
+	{
+		std::vector<CBasePlayer *> vec;
+		GetSMTargets(player, args[1], vec);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_giveeveryitem] Error: no matching target found for \"%s\".\n", args[1]);
+			return;
+		}
+		int items = 0;
+		std::map<std::string, int> modelmap;
+		std::map<std::string, int> modelmapmedal;
+		
+		for (int i = 0; i < 60000; i++) {
+			auto item_def = GetItemSchema()->GetItemDefinition(i);
+			if (item_def != nullptr && strncmp(item_def->GetItemClass(), "tf_wearable", sizeof("tf_wearable")) == 0) {
+				if (args.ArgC() == 2 || item_def->GetKeyValues()->FindKey("used_by_classes")->GetInt(args[2], 0) == 1) {
+					const char *model = item_def->GetKeyValues()->GetString("model_player", nullptr);
+					if (model == nullptr) {
+						auto kv_perclass = item_def->GetKeyValues()->FindKey("model_player_per_class");
+						if (kv_perclass != nullptr && kv_perclass->GetFirstSubKey() != nullptr) {
+							model = kv_perclass->GetFirstSubKey()->GetString();
+						}
+					}
+					if (model != nullptr) {
+						//if (modelmap.find(model) == modelmap.end())
+							//Msg("item: %s\n", model);
+							
+						if (strcmp(item_def->GetKeyValues()->GetString("equip_region", ""), "medal") != 0)
+							modelmap[model] = i;
+						else
+							modelmapmedal[model] = i;
+					}
+				}
+			}
+			
+		}
+
+		ClientMsg(player, "items: %d\n", modelmap.size());
+		ClientMsg(player, "items medals: %d\n", modelmapmedal.size());
+		for (CBasePlayer *target : vec) {
+			for (auto &pair : modelmap) {
+				if (engine->GetEntityCount() > 1920)
+					break;
+
+				CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(pair.second, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+				if (wearable != nullptr) {
+					
+					wearable->m_bValidatedAttachedEntity = true;
+					wearable->GiveTo(target);
+					target->EquipWearable(wearable);
+				}
+			}
+		}
+	}
 	
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
@@ -1131,6 +1249,8 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_taunt",            CC_Taunt            },
 		{ "sig_addattr",          CC_AddAttr          },
 		{ "sig_dropitem",         CC_DropItem         },
+		{ "sig_giveeveryitem",    CC_GiveEveryItem    },
+		{ "sig_getmissingbones",  CC_GetMissingBones  },
 	};
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)

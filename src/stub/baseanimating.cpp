@@ -17,6 +17,7 @@ MemberFuncThunk<CBaseAnimating *, const char *, int>               CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_FindBodygroupByName ("CBaseAnimating::FindBodygroupByName");
 MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimating::ft_GetBodygroupCount   ("CBaseAnimating::GetBodygroupCount");
 MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimating::ft_GetNumBodyGroups    ("CBaseAnimating::GetNumBodyGroups");
+MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimating::ft_GetNumBones         ("CBaseAnimating::GetNumBones");
 MemberFuncThunk<CBaseAnimating *, void>                            CBaseAnimating::ft_ResetSequenceInfo   ("CBaseAnimating::ResetSequenceInfo");
 MemberFuncThunk<CBaseAnimating *, void, int>                       CBaseAnimating::ft_ResetSequence       ("CBaseAnimating::ResetSequence");
 MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    CBaseAnimating::ft_GetModelPtr         ("CBaseAnimating::GetModelPtr");

@@ -107,7 +107,7 @@ namespace Mod::Debug::SentryBuster_Mannhattan
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:SentryBuster_Mannhattan")
@@ -116,7 +116,7 @@ namespace Mod::Debug::SentryBuster_Mannhattan
 			MOD_ADD_DETOUR_MEMBER(CBaseTrigger_PassesTriggerFilters,      "CBaseTrigger::PassesTriggerFilters");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

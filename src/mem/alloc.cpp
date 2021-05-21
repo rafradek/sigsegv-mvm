@@ -120,7 +120,7 @@ template<size_t BLOCK_SIZE, size_t CHUNK_SIZE>
 	uint8_t *chunk_ptr = block->Alloc();
 	{
 		MemProtModifier_RX_RWX(chunk_ptr, CHUNK_SIZE);
-		std::fill_n(chunk_ptr, CHUNK_SIZE, X86Instr::OP_INT3);
+		std::fill_n(chunk_ptr, CHUNK_SIZE, OPCODE_INT3);
 	}
 	
 	this->PostUpdate();

@@ -48,7 +48,7 @@ namespace Mod::AI::EngieBot_Dispensers
 	}
 	
 	
-	class CTFBotMvMEngineerBuildSGDispenser : public IHotplugAction
+	class CTFBotMvMEngineerBuildSGDispenser : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMvMEngineerBuildSGDispenser(CTFBotHintSentrygun *hint) :
@@ -153,7 +153,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		bool m_bNearHint = false;
 	};
 	
-	class CTFBotMvMEngineerBuildTEDispenser : public IHotplugAction
+	class CTFBotMvMEngineerBuildTEDispenser : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMvMEngineerBuildTEDispenser(CTFBotHintTeleporterExit *hint) :
@@ -255,7 +255,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_ctor)(hint);
 	}
 	
-	std::unordered_map<Action<CTFBot> *, IHotplugAction *> build_actions;
+	std::unordered_map<Action<CTFBot> *, IHotplugAction<CTFBot> *> build_actions;
 
 	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor0)
 	{
@@ -437,7 +437,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		virtual void OnUnload() override
 		{
 			for (int i = 0; i < ITFBotHintEntityAutoList::AutoList().Count(); ++i) {
-				auto hint = rtti_cast<CBaseTFBotHintEntity *>(ITFBotHintEntityAutoList::AutoList()[i]);
+				auto hint = rtti_scast<CBaseTFBotHintEntity *>(ITFBotHintEntityAutoList::AutoList()[i]);
 				if (hint != nullptr) {
 					CBaseEntity *owner = hint->GetOwnerEntity();
 					if (owner != nullptr && rtti_cast<CObjectDispenser *>(owner) != nullptr) {

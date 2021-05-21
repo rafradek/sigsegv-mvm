@@ -175,7 +175,8 @@ namespace Mod::MvM::Robot_Limit
 	THINK_FUNC_DECL(SpawnBots)
 	{
 		allocate_round_start = true;
-		g_pPopulationManager->AllocateBots();
+		if (!hibernated)
+			g_pPopulationManager->AllocateBots();
 		allocate_round_start = false;
 	}
 
@@ -233,7 +234,8 @@ namespace Mod::MvM::Robot_Limit
 	{
 		if (!hibernate && hibernated)
 		{
-			THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
+			if (g_pPopulationManager != nullptr)
+				THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
 		}
 		hibernated = hibernate;
 		DETOUR_MEMBER_CALL(CGameServer_SetHibernating)(hibernate);
@@ -252,7 +254,7 @@ namespace Mod::MvM::Robot_Limit
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_WaveEnd,             "CPopulationManager::WaveEnd");
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
-			MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
+			//MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
 
 			MOD_ADD_DETOUR_MEMBER(CGameServer_SetHibernating, "CGameServer::SetHibernating");
 		}

@@ -9,7 +9,7 @@
 
 namespace Mod::AI::Puppet
 {
-	class CTFBotPuppet : public IHotplugAction
+	class CTFBotPuppet : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotPuppet();

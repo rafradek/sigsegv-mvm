@@ -15,13 +15,14 @@ constexpr long double operator"" _deg(unsigned long long deg) { return (long dou
 template<typename T,
 	typename U = std::remove_reference_t<T>,
 	typename = std::enable_if_t<std::is_array_v<U>>>
-constexpr size_t countof(T &arr)
+constexpr size_t countof()
 {
 	constexpr size_t extent = std::extent_v<U>;
 	static_assert(extent > 0, "zero- or unknown-size array");
 	
 	return extent;
 }
+#define countof(x) countof<decltype(x)>()
 
 
 template<typename T, T BASE = 10>
@@ -107,6 +108,10 @@ template<typename T>
 	val += (mult - 1);
 	return (val & ~(mult - 1));
 }
+
+
+std::string HexDump(const void *ptr, size_t len, bool absolute = false);
+void HexDumpToSpewFunc(void (*func)(const char *, ...), const void *ptr, size_t len, bool absolute = false);
 
 
 /* use this when you want to do e.g. multiple calls to console spew functions
@@ -249,7 +254,7 @@ inline bool StringToFloatStrict(const char *str, float& out)
 
 
 template<int SIZE_BUF = FMTSTR_STD_LEN, typename... ARGS>
-std::string CFmtStdStr(ARGS... args)
+std::string CFmtStdStr(ARGS&&... args)
 {
 	return CFmtStrN<SIZE_BUF>(std::forward<ARGS>(args)...).Get();
 }

@@ -876,7 +876,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Flamethrower_Mojo")
@@ -912,7 +912,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_PhysicsDispatchThink,    "CBaseEntity::PhysicsDispatchThink");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

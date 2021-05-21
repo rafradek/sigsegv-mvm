@@ -214,7 +214,7 @@ namespace Mod::Debug::Sound_Leak
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Sound_Leak")
@@ -257,7 +257,7 @@ namespace Mod::Debug::Sound_Leak
 			}
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink()
 		{

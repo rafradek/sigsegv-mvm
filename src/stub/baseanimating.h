@@ -27,6 +27,7 @@ public:
 	int FindBodygroupByName(const char *name)                              { return ft_FindBodygroupByName (this, name); }
 	int GetBodygroupCount(int iGroup)                                      { return ft_GetBodygroupCount   (this, iGroup); }
 	int GetNumBodyGroups()                                                 { return ft_GetNumBodyGroups    (this); }
+	int GetNumBones()                                                      { return ft_GetNumBones         (this); }
 	void ResetSequenceInfo()                                               {        ft_ResetSequenceInfo   (this); }
 	void ResetSequence(int nSequence)                                      {        ft_ResetSequence       (this, nSequence); }
 	CStudioHdr *GetModelPtr()                                              { return ft_GetModelPtr         (this); }
@@ -58,6 +59,7 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_FindBodygroupByName;
 	static MemberFuncThunk<CBaseAnimating *, int, int>                        ft_GetBodygroupCount;
 	static MemberFuncThunk<CBaseAnimating *, int>                             ft_GetNumBodyGroups;
+	static MemberFuncThunk<CBaseAnimating *, int>                             ft_GetNumBones;
 	static MemberFuncThunk<CBaseAnimating *, void>                            ft_ResetSequenceInfo;
 	static MemberFuncThunk<CBaseAnimating *, void, int>                       ft_ResetSequence;
 	static MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    ft_GetModelPtr;

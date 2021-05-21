@@ -24,6 +24,7 @@
 #include "stub/tfplayer.cpp"
 #include "stub/tfweaponbase.cpp"
 #include "stub/trace.cpp"
+#include "stub/server.cpp"
 #include "stub/upgrades.cpp"
 #include "stub/usermessages.cpp"
 #include "stub/util_shared.cpp"

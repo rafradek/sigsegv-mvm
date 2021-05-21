@@ -102,7 +102,7 @@ private:
 
 
 
-#ifdef DEBUG  // stop crashing edit-and-continue
+/*#ifdef DEBUG  // stop crashing edit-and-continue
 constexpr FORCEINLINE float clamp( float val, float minVal, float maxVal )
 {
 	if ( maxVal < minVal )
@@ -130,7 +130,7 @@ FORCEINLINE float clamp( float val, float minVal, float maxVal )
 #endif
 	return val;
 }
-#endif // DEBUG
+#endif // DEBUG*/
 
 //
 // Returns a clamped value in the range [min, max].
@@ -362,12 +362,12 @@ constexpr FORCEINLINE void VectorClear(vec_t *a)
 
 constexpr FORCEINLINE float VectorMaximum(const vec_t *v)
 {
-	return max( v[0], max( v[1], v[2] ) );
+	return Max( v[0], Max( v[1], v[2] ) );
 }
 
 constexpr FORCEINLINE float VectorMaximum(const Vector& v)
 {
-	return max( v.x, max( v.y, v.z ) );
+	return Max( v.x, Max( v.y, v.z ) );
 }
 
 constexpr FORCEINLINE void VectorScale (const float* in, vec_t scale, float* out)
@@ -1493,7 +1493,7 @@ FORCEINLINE unsigned char LinearToLightmap( float f )
 
 constexpr FORCEINLINE void ColorClamp( Vector& color )
 {
-	float maxc = max( color.x, max( color.y, color.z ) );
+	float maxc = Max( color.x, Max( color.y, color.z ) );
 	if ( maxc > 1.0f )
 	{
 		float ooMax = 1.0f / maxc;
@@ -1989,10 +1989,10 @@ FORCEINLINE unsigned int * PackNormal_SHORT2( float nx, float ny, float nz, unsi
 	ny *= 16384.0f;
 
 	// '0' and '32768' values are invalid encodings
-	nx = max( nx, 1.0f );		// Make sure there are no zero values
-	ny = max( ny, 1.0f );
-	nx = min( nx, 32767.0f );	// Make sure there are no 32768 values
-	ny = min( ny, 32767.0f );
+	nx = Max( nx, 1.0f );		// Make sure there are no zero values
+	ny = Max( ny, 1.0f );
+	nx = Min( nx, 32767.0f );	// Make sure there are no 32768 values
+	ny = Min( ny, 32767.0f );
 
 	if ( nz < 0.0f )
 		nx = -nx;				// Set the sign bit for z
@@ -2170,7 +2170,7 @@ constexpr bool CloseEnough( const Vector &a, const Vector &b, float epsilon = EQ
 // Fast compare
 // maxUlps is the maximum error in terms of Units in the Last Place. This 
 // specifies how big an error we are willing to accept in terms of the value
-// of the least significant digit of the floating point number’s 
+// of the least significant digit of the floating point numberï¿½s 
 // representation. maxUlps can also be interpreted in terms of how many 
 // representable floats we are willing to accept between A and B. 
 // This function will allow maxUlps-1 floats between A and B.

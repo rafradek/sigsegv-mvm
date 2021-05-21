@@ -131,6 +131,8 @@ class ExtensionConfig(object):
       self.exclude += ['mods_debug']
     if builder.options.exclude_mods_visualize:
       self.exclude += ['mods_visualize']
+    if builder.options.exclude_mods_vgui:
+      self.exclude += ['mods_vgui']
     
     cxx = builder.DetectCxx()
 
@@ -181,6 +183,7 @@ class ExtensionConfig(object):
     cxx.defines += ['HAVE_STDINT_H']
     cxx.defines += ['HAVE_STRING_H']
     cxx.defines += ['GNUC']
+    cxx.defines += ['PLATFORM_X86']
     
     ############################################################################
     # C & C++ COMPILER #########################################################
@@ -194,19 +197,19 @@ class ExtensionConfig(object):
     cxx.cflags += ['-Wno-array-bounds']
     cxx.cflags += ['-msse']
     cxx.cflags += ['-m32']
-    cxx.cflags += ['-Winvalid-constexpr']
+#   cxx.cflags += ['-Winvalid-constexpr']
     cxx.cflags += ['-fvisibility=hidden']
     cxx.cflags += ['-fdiagnostics-color=always']
     cxx.cflags += ['-fno-omit-frame-pointer']
 #   cxx.cflags += ['-masm=intel']
 #   cxx.cflags += ['-Q']
-    cxx.cflags += ['-Winvalid-pch']
+#   cxx.cflags += ['-Winvalid-pch']
     cxx.cflags += ['-Wno-unknown-pragmas']
     cxx.cflags += ['-pthread']
     cxx.cflags += ['-gsplit-dwarf']
 #   cxx.cflags += ['-feliminate-dwarf2-dups']
     cxx.cflags += ['-gz']
-    cxx.cflags += ['-arch i386']
+#   cxx.cflags += ['-arch i386']
     if use_gold:
       cxx.cflags += ['-fpic']
     
@@ -226,9 +229,9 @@ class ExtensionConfig(object):
     cxx.cxxflags += ['-fvisibility-inlines-hidden']
     cxx.cxxflags += ['-Wno-invalid-offsetof']
     cxx.cxxflags += ['-fpermissive']
-    cxx.cxxflags += ['-ferror-limit=100']
-    cxx.cxxflags += ['-arch i386']
-    cxx.cxxflags += ['-Wno-invalid-constexpr']
+#   cxx.cxxflags += ['-ferror-limit=100']
+#   cxx.cxxflags += ['-arch i386']
+#   cxx.cxxflags += ['-Wno-invalid-constexpr']
 #   cxx.cxxflags += ['-Wabi']
 #   cxx.cxxflags += ['-Wabi-tag']
 #   cxx.cxxflags += ['-fabi-version=0']        # always latest
@@ -277,7 +280,7 @@ class ExtensionConfig(object):
     # OPTIMIZE #################################################################
     ############################################################################
     if builder.options.opt == '1':
-      cxx.cflags    += ['-Os']
+      cxx.cflags    += ['-O2']
       cxx.linkflags += ['-Wl,-O2']
       cxx.linkflags += ['-Wl,--gc-sections']
     else:
@@ -374,7 +377,6 @@ class ExtensionConfig(object):
     cxx.linkflags += [
       '-Wl,--exclude-libs,ALL',
       '-lm',
-      '-arch', 'i386',
     #  '-lpthread',
       '-ldl',
     ]

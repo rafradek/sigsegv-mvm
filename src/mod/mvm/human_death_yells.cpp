@@ -66,14 +66,21 @@ namespace Mod::MvM::Human_Death_Yells
 		}
 	};
 	
+	RefCount rc_CTFPlayer_SpyDeadRingerDeath;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_SpyDeadRingerDeath, const CTakeDamageInfo& info)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_SpyDeadRingerDeath);
+		DETOUR_MEMBER_CALL(CTFPlayer_SpyDeadRingerDeath)(info);
 	
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
 		
 		/* these checks are essentially in reverse order */
-		if (TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() != TF_TEAM_BLUE && !player->m_bFeigningDeath) {
+		if (TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() != TF_TEAM_BLUE && !rc_CTFPlayer_SpyDeadRingerDeath) {
 			CTFPlayer *attacker = ToTFPlayer(info.GetAttacker());
 			if (attacker != nullptr) {
 				CTFWeaponBase *weapon = attacker->GetActiveTFWeapon();
@@ -97,6 +104,7 @@ namespace Mod::MvM::Human_Death_Yells
 			this->AddPatch(new CPatch_CTFPlayer_DeathSound());
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
 		}
 	};
 	CMod s_Mod;

@@ -14,6 +14,7 @@ public:
 	static void Load();
 	
 	static void *GetAddr(const char *name);
+	static const char *ReverseLookup(const void *ptr);
 	
 	static void CC_ListAddrs(const CCommand& cmd);
 	
@@ -21,6 +22,7 @@ private:
 	AddrManager() {}
 	
 	static inline std::map<std::string, IAddr *> s_Addrs;
+	static inline std::unordered_multimap<const void *, std::string> s_ReverseAddrs;
 	static inline bool s_bLoading = false;
 };
 

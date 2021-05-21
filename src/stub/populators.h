@@ -154,8 +154,16 @@ struct EventInfo
 };
 
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
+extern StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes;
+
+
 inline bool IsSpaceToSpawnHere(const Vector& pos)
 {
 	return ft_IsSpaceToSpawnHere(pos);
+}
+
+inline bool ParseDynamicAttributes(CTFBot::EventChangeAttributes_t &event, KeyValues *kv)
+{
+	return ft_ParseDynamicAttributes(event, kv);
 }
 #endif

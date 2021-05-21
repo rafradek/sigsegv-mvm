@@ -57,7 +57,7 @@ namespace Mod::Debug::Damage_Overlay
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener, public IGameEventListener2
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener, public IGameEventListener2
 	{
 	public:
 		CMod() : IMod("Debug:Damage_Overlay")
@@ -75,7 +75,7 @@ namespace Mod::Debug::Damage_Overlay
 			gameeventmanager->RemoveListener(this);
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

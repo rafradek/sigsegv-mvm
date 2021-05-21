@@ -2,6 +2,7 @@
 #include "util/scope.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
+#include "stub/tfbot.h"
 #include "stub/tfweaponbase.h"
 #include "re/nextbot.h"
 #include "re/path.h"

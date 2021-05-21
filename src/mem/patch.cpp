@@ -4,11 +4,6 @@
 #include "util/rtti.h"
 
 
-#warning POSSIBLY PROBLEMATIC: NO PROTECTIONS AGAINST MULTI-PATCHING THE SAME FUNC/AREA!
-// i.e. we need an analogous mechanism to CDetouredFunc; CPatchedFunc or whatever
-// ...and we'd probably want to check for funcs that are detoured+patched as well, as that's potentially problematic too
-
-
 bool CPatch::Init()
 {
 	this->m_pszFuncName = this->GetFuncName();

@@ -148,7 +148,7 @@ namespace Mod::Debug::Building_Status
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Building_Status")
@@ -158,7 +158,7 @@ namespace Mod::Debug::Building_Status
 			MOD_ADD_DETOUR_MEMBER(CTFBotVision_CollectPotentiallyVisibleEntities, "CTFBotVision::CollectPotentiallyVisibleEntities");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

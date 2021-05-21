@@ -18,6 +18,14 @@
 // - make IsPowerOfTwo constexpr
 // - make ClampedArray(Index|Element) constexpr
 
+// sigsegv: evil workaround for reinterpret_cast being illegal in constexpr
+#define _CONSTEXPR_RETURN_TYPE_PUN(_THAT) \
+	union {                               \
+		decltype(this) pThis;             \
+		_THAT         *pThat;             \
+	} u = { this };                       \
+	return *u.pThat
+
 #include "tier0/platform.h"
 
 // -------------------------------------------------------

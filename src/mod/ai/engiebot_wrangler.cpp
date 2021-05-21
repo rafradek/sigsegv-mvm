@@ -2,6 +2,7 @@
 #include "re/nextbot.h"
 #include "re/path.h"
 #include "stub/objects.h"
+#include "stub/tfbot.h"
 
 
 class CTFBotMvMEngineerIdle : public Action<CTFBot> {};
@@ -9,7 +10,7 @@ class CTFBotMvMEngineerIdle : public Action<CTFBot> {};
 
 namespace Mod::AI::EngieBot_Wrangler
 {
-	class CTFBotMvMEngineerDisableAutopilot : public IHotplugAction
+	class CTFBotMvMEngineerDisableAutopilot : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMvMEngineerDisableAutopilot() {}
@@ -63,7 +64,7 @@ namespace Mod::AI::EngieBot_Wrangler
 				INextBot *nextbot = actor->MyNextBotPointer();
 				if ( m_repathTimer.IsElapsed() )
 				{
-					CObjectSentrygun *sentry = rtti_cast<CObjectSentrygun *>(actor->GetObjectOfType(OBJ_SENTRYGUN, 0));
+					CObjectSentrygun *sentry = rtti_scast<CObjectSentrygun *>(actor->GetObjectOfType(OBJ_SENTRYGUN, 0));
 					m_repathTimer.Start( RandomFloat( 1.0f, 2.0f ) );
 
 					Vector mySentryForward;

@@ -61,6 +61,12 @@ bool IExtractBase::Check()
 		return false;
 	}
 	
+	if (!this->Validate((const uint8_t *)scan.FirstMatch())) {
+		DevMsg("IExtract::Check: FAIL: \"%s\": found 1 matching region (+0x%04x), but it was rejected by Validate()\n",
+			this->m_pszFuncName, ((uintptr_t)scan.FirstMatch() - (uintptr_t)this->m_pFuncAddr));
+		return false;
+	}
+	
 	this->m_bFoundOffset = true;
 	this->m_iFuncOffActual = (uintptr_t)scan.FirstMatch() - (uintptr_t)this->m_pFuncAddr;
 	

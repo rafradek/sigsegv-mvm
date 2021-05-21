@@ -36,7 +36,6 @@
 #include <sys/mman.h>
 
 #define PAGE_SIZE			4096
-#define PLATFORM_X86 1
 #define PAGE_ALIGN_UP(x)	((x + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
 #endif
 
@@ -419,16 +418,19 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #elif defined PLATFORM_LINUX
 
+
 #ifdef PLATFORM_X86
 	typedef Elf32_Ehdr ElfHeader;
 	typedef Elf32_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS32;
 	const uint16_t ELF_MACHINE = EM_386;
+	Msg("32 bit\n");
 #else
 	typedef Elf64_Ehdr ElfHeader;
 	typedef Elf64_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS64;
 	const uint16_t ELF_MACHINE = EM_X86_64;
+	Msg("64 bit\n");
 #endif
 
 	Dl_info info;

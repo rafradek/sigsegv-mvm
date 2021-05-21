@@ -1,4 +1,5 @@
 #include "stub/baseplayer.h"
+#include "mem/extract.h"
 #include "stub/tfplayer.h"
 
 
@@ -64,11 +65,13 @@ MemberVFuncThunk<      CBaseCombatCharacter *, int>                            C
 //IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
 //IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
 //IMPL_SENDPROP(float, CPlayerLocalData, m_flDuckJumpTime, CBasePlayer);
-
+IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngle, CBasePlayer);
+IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
 IMPL_DATAMAP(unsigned int, CBasePlayer, m_afPhysicsFlags);
+IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 
 IMPL_SENDPROP(float,                              CBasePlayer, m_flDeathTime,   CBasePlayer);

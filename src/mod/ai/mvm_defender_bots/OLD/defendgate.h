@@ -9,7 +9,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* defend the gate(s) */
-	class CTFBotMvMDefendGate : public IHotplugAction
+	class CTFBotMvMDefendGate : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotMvMDefendGate() {}

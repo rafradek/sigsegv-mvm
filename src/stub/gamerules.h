@@ -135,7 +135,9 @@ public:
 	int GetWinningTeam()               { NULL_RET(TEAM_INVALID ); return this->m_iWinningTeam; }
 	bool IsPlayerReady(int iIndex)     { NULL_RET(false        ); return this->m_bPlayerReady[iIndex]; }
 	bool IsTeamReady(int iIndex)       { NULL_RET(false        ); return this->m_bTeamReady[iIndex]; }
-	void SetTeamReady(int iIndex, bool ready)       { NULL_RET( ); this->m_bTeamReady.SetArray(ready,iIndex); }
+	void SetTeamReady(int iIndex, bool ready)       { NULL_RET( ); this->m_bTeamReady.SetIndex(ready, iIndex); }
+	bool InSetup()                     { NULL_RET(false        ); return this->m_bInSetup; }
+	void SetInSetup(bool setup)        { NULL_RET( );             m_bInSetup = setup; }
 	
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
 	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
@@ -146,10 +148,12 @@ public:
 	float GetNextRespawnWave(int iTeam, CBasePlayer *pPlayer) { NULL_RET(0.0f); return vt_GetNextRespawnWave(this, iTeam, pPlayer); }
 	
 private:
+
 	DECL_SENDPROP(gamerules_roundstate_t, m_iRoundState);
 	DECL_SENDPROP(int,                    m_iWinningTeam);
 	DECL_SENDPROP(bool[33],               m_bPlayerReady);
-	DECL_SENDPROP_RW(bool[33],               m_bTeamReady);
+	DECL_SENDPROP_RW(bool[33],            m_bTeamReady);
+	DECL_SENDPROP(bool,                   m_bInSetup);
 	
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         ft_GetMinTimeWhenPlayerMaySpawn;

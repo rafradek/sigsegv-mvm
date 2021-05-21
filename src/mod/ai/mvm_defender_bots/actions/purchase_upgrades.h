@@ -24,7 +24,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	
 	
 	/* stand at an upgrade station and purchase upgrades */
-	class CTFBotPurchaseUpgrades : public IHotplugAction
+	class CTFBotPurchaseUpgrades : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotPurchaseUpgrades() {}

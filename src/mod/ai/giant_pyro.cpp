@@ -13,7 +13,7 @@ namespace Mod::AI::Giant_Pyro
 	ConVar cvar_eye_z("sig_ai_giant_pyro_eye_z", "0", FCVAR_NOTIFY, "");
 	
 	
-	class CTFBotGiantPyro : public IHotplugAction
+	class CTFBotGiantPyro : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotGiantPyro() {}

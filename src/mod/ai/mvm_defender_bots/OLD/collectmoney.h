@@ -14,7 +14,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	
 	
 	/* find and collect credits */
-	class CTFBotCollectMoney : public IHotplugAction
+	class CTFBotCollectMoney : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotCollectMoney() {}

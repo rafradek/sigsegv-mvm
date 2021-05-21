@@ -7,7 +7,7 @@
 #include "stub/baseplayer.h"
 #include "stub/tfplayer.h"
 #include "stub/tf_shareddefs.h"
-
+#include "stub/projectiles.h"
 
 class CPointEntity : public CBaseEntity {};
 
@@ -296,6 +296,13 @@ public:
 class CServerOnlyEntity : public CBaseEntity {};
 class CLogicalEntity : public CServerOnlyEntity {};
 
+class CLogicCase : public CLogicalEntity
+{
+public:
+	DECL_DATAMAP(CBaseEntityOutput, m_OnDefault);
+
+};
+
 class CBaseFilter : public CLogicalEntity
 {
 public:
@@ -427,6 +434,18 @@ public:
 	DECL_SENDPROP(int,      m_iMaterialModel);
 };
 
+class CTFPointWeaponMimic : public CPointEntity
+{
+public:
+	DECL_DATAMAP (bool, m_bCrits);
+	DECL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>,      m_Pipebombs);
+};
+
+class CGameUI : public CBaseEntity
+{
+public:
+	DECL_DATAMAP (CHandle<CBasePlayer>, m_player);
+};
 
 // 20151007a
 

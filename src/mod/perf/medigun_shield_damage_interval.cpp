@@ -123,16 +123,17 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 		
 		if (result && cvar_override_trace.GetBool()) {
 			CBaseEntity *ent = EntityFromEntityHandle(pEntity);
-			if (ENTINDEX(ent) > 64) {
-				auto shield = rtti_cast<CTFMedigunShield *>(ent);
-				if (shield != nullptr) {
+			if (ENTINDEX(ent) > 33) {
+				//auto shield = rtti_cast<CTFMedigunShield *>(ent);
+				//if (shield != nullptr) {
 					/*ClientMsgAll("  NextBotTraversableTraceFilter::ShouldHitEntity: %5s for CTFMedigunShield #%d on team %d\n",
 						(result ? "TRUE" : "FALSE"),
 						ENTINDEX(shield),
 						shield->GetTeamNumber());*/
 						//ClientMsgAll("    [!!] overriding ShouldHitEntity result to FALSE\n");
-						return false;
-				}
+						//return false;
+				//}
+				return !ent->IsCombatItem();
 			}
 		}
 		
@@ -145,10 +146,10 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 	DETOUR_DECL_MEMBER(bool, CTFBotLocomotion_IsEntityTraversable, CBaseEntity *ent, ILocomotion::TraverseWhenType ttype)
 	{
 		auto result = DETOUR_MEMBER_CALL(CTFBotLocomotion_IsEntityTraversable)(ent, ttype);
-		if (!result && cvar_override_traversable.GetBool() && ENTINDEX(ent) > 64) {
-			auto shield = rtti_cast<CTFMedigunShield *>(ent);
-			if (shield != nullptr) {
-				auto loco = reinterpret_cast<ILocomotion *>(this);
+		if (!result && cvar_override_traversable.GetBool() && ENTINDEX(ent) > 33) {
+			//auto shield = rtti_cast<CTFMedigunShield *>(ent);
+			//if (shield != nullptr) {
+				//auto loco = reinterpret_cast<ILocomotion *>(this);
 				//auto bot = rtti_cast<CTFBot *>(loco->GetBot());
 				//if (bot != nullptr) {
 					/*ClientMsgAll("CTFBotLocomotion::IsEntityTraversable(bot #%d): %5s for CTFMedigunShield #%d on team %d\n",
@@ -157,13 +158,15 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 						ENTINDEX(shield),
 						shield->GetTeamNumber());*/
 					
-						return true;
+				//		return true;
 					
 				//	if (shield->GetTeamNumber() == bot->GetTeamNumber()) {
 				//		return true;
 				//	}
 				//}
-			}
+			//}
+			return !ent->IsCombatItem();
+			
 		}
 		
 		return result;

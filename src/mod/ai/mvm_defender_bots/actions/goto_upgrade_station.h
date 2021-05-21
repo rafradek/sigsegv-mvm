@@ -11,7 +11,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* find a func_upgradestation and path toward it */
-	class CTFBotGoToUpgradeStation : public IHotplugAction
+	class CTFBotGoToUpgradeStation : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotGoToUpgradeStation() {}

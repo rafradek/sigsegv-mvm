@@ -157,7 +157,7 @@ namespace Mod::Visualize::Engie_Nests
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Visualize:Engie_Nests")
@@ -169,7 +169,7 @@ namespace Mod::Visualize::Engie_Nests
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PushAllPlayersAway, "CTFGameRules::PushAllPlayersAway");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

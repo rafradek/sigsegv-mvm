@@ -62,6 +62,14 @@ class CBaseCombatCharacter;
 class CBaseCombatWeapon;
 class INextBot;
 
+class CBaseEntityOutput
+{
+public:
+	void FireOutput( variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay = 0 ) { ft_FireOutput(this, Value, pActivator, pCaller, fDelay); }
+
+private:
+	static MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireOutput;
+};
 
 class CServerNetworkProperty : public IServerNetworkable
 {
@@ -97,7 +105,7 @@ public:
 	/* getter/setter */
 	IServerNetworkable *GetNetworkable() const    { return &this->m_Network; }
 	CServerNetworkProperty *NetworkProp() const   { return &this->m_Network; }
-	const char *GetClassname() const              { return STRING((string_t)this->m_iClassname); }
+	inline const char *GetClassname() const              { return STRING((string_t)this->m_iClassname); }
 	string_t GetEntityName() const                { return this->m_iName; }
 	void SetName(string_t newName)                { this->m_iName = newName; }
 	ICollideable *GetCollideable() const          { return &this->m_Collision; }
@@ -145,7 +153,6 @@ public:
 	void SetLocalAngularVelocity( QAngle &ang)    { this->m_vecAngVelocity = ang; }
 	int GetEffects() const                        { return this->m_fEffects; }
 	bool IsEffectActive(int nEffects) const       { return ((this->m_fEffects & nEffects) != 0); }
-	
 	/* thunk */
 	void Remove()                                                                                                           {        ft_Remove                        (this); }
 	void CalcAbsolutePosition()                                                                                             {        ft_CalcAbsolutePosition          (this); }
@@ -169,8 +176,8 @@ public:
 	int DispatchUpdateTransmitState()                                                                                       { return ft_DispatchUpdateTransmitState   (this); }
 	void SetEffects(int nEffects)                                                                                           {        ft_SetEffects                    (this, nEffects); }
 	void AddEffects(int nEffects)                                                                                           {        ft_AddEffects                    (this, nEffects); }
-	bool KeyValue(const char *key, const char *value)                                                                       { return ft_KeyValue                      (this, key, value); }
-	bool GetKeyValue(const char *key, char *value, int maxlen)                                                              { return ft_GetKeyValue                   (this, key, value, maxlen); }
+	bool ReadKeyField(const char *name, variant_t *var)                                                                     { return ft_ReadKeyField                  (this, name, var); }
+	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
 	void SetOwnerEntity(CBaseEntity *pOwner)                                                                                {        vt_SetOwnerEntity                (this, pOwner); }
@@ -206,8 +213,12 @@ public:
 	void SetParent(CBaseEntity *entity, int attachment)                                                                     {        vt_SetParent                     (this, entity, attachment); }
 	bool IsPlayer()	const																									{ return vt_IsPlayer                      (this); }
 	bool IsBaseObject() const																								{ return vt_IsBaseObject                  (this); }
+	bool KeyValue(const char *key, const char *value)                                                                       { return vt_KeyValue                      (this, key, value); }
+	bool GetKeyValue(const char *key, char *value, int maxlen)                                                              { return vt_GetKeyValue                   (this, key, value, maxlen); }
 	
 	/* static */
+	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
+	static CBaseEntity *CreateNoSpawn(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                { return ft_CreateNoSpawn      (szName, vecOrigin, vecAngles, pOwner); }
 	static int PrecacheModel(const char *name, bool bPreload = true)                                                                                                                                      { return ft_PrecacheModel      (name, bPreload); }
 	static bool PrecacheSound(const char *name)                                                                                                                                                           { return ft_PrecacheSound      (name); }
 	static HSOUNDSCRIPTHANDLE PrecacheScriptSound(const char *soundname)                                                                                                                                  { return ft_PrecacheScriptSound(soundname); }
@@ -240,6 +251,12 @@ public:
 	DECL_DATAMAP(float,      m_flAnimTime);
 	DECL_DATAMAP(float,      m_flSimulationTime);
 	DECL_DATAMAP(float,      m_flVPhysicsUpdateLocalTime);
+	DECL_DATAMAP(bool,       m_spawnflags);
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser1);
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser2);
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser3);
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser4);
+	
 	
 	
 private:
@@ -298,8 +315,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, int>                                                     ft_DispatchUpdateTransmitState;
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_SetEffects;
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_AddEffects;
-	static MemberFuncThunk<      CBaseEntity *, bool, const char*, const char*>                          ft_KeyValue;
-	static MemberFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                           ft_GetKeyValue;
+	static MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *>                         ft_ReadKeyField;
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;
@@ -337,7 +353,11 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *, int>                                         vt_SetParent;
 	static MemberVFuncThunk<const CBaseEntity *, bool>                                                             vt_IsPlayer;
 	static MemberVFuncThunk<const CBaseEntity *, bool>                                                             vt_IsBaseObject;
-	
+	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, const char*>                                   vt_KeyValue;
+	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                                    vt_GetKeyValue;
+
+	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
+	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_CreateNoSpawn;
 	static StaticFuncThunk<int, const char *, bool>                                                                         ft_PrecacheModel;
 	static StaticFuncThunk<bool, const char *>                                                                              ft_PrecacheSound;
 	static StaticFuncThunk<HSOUNDSCRIPTHANDLE, const char *>                                                                ft_PrecacheScriptSound;
@@ -346,6 +366,7 @@ private:
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                ft_EmitSound_static3;
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           ft_EmitSound_static4;
 };
+
 
 inline CBaseEntity *GetContainingEntity(edict_t *pent)
 {

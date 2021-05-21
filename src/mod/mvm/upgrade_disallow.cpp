@@ -11,6 +11,8 @@ namespace Mod::MvM::Upgrade_Disallow
 		"Should explode on ignite be enabled");
 	ConVar cvar_medigun_shield("sig_mvm_upgrade_allow_medigun_shield", "1", FCVAR_NOTIFY,
 		"Should medigun shield be enabled");
+	ConVar cvar_upgrade_over_cap("sig_mvm_upgrade_over_cap_exploit_fix", "0", FCVAR_NOTIFY,
+		"Fix for upgrade over cap exploit");
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
@@ -53,6 +55,42 @@ namespace Mod::MvM::Upgrade_Disallow
 		
 	}
 	
+	inline bool BIsAttributeValueWithDeltaOverCap(float flCurAttributeValue, float flAttrDeltaValue, float flCap)
+	{
+		return AlmostEqual( flCurAttributeValue, flCap )
+			|| ( flAttrDeltaValue > 0 && flCurAttributeValue >= flCap )
+			|| ( flAttrDeltaValue < 0 && flCurAttributeValue <= flCap );
+	}
+
+	#warning __gcc_regcall detours considered harmful!
+	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, attrib_definition_index_t, ApplyUpgrade_Default, const CMannVsMachineUpgrades& upgrade, CTFPlayer *pTFPlayer, CEconItemView *pEconItemView, int nCost, bool bDowngrade)
+	{
+		
+		if (upgrade.m_iUIGroup == 0 && cvar_upgrade_over_cap.GetBool())
+		{
+			const CEconItemAttributeDefinition *pAttrDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade.m_szAttribute);
+			if (!pAttrDef)
+				return INVALID_ATTRIB_DEF_INDEX;
+
+			float fDefaultValue = FLT_MAX;
+
+			// If we're trying to attach to an item and we don't have an item to attach to, give up.
+			if ( !pEconItemView )
+				return INVALID_ATTRIB_DEF_INDEX;
+
+			FindAttribute<float>(pEconItemView->GetItemDefinition(), pAttrDef, &fDefaultValue);
+
+			if (fDefaultValue != FLT_MAX && BIsAttributeValueWithDeltaOverCap(fDefaultValue, upgrade.m_flIncrement, upgrade.m_flCap))
+			{
+				return INVALID_ATTRIB_DEF_INDEX;
+			}
+		}
+
+		auto result = DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
+		DevMsg("defindex %d\n", result);
+		return result;
+	}
+
 	
 	/* NOTE: GiveDefaultItems also does this:
 		CTFPlayerShared::RemoveCond(&this->m_Shared, TF_COND_OFFENSEBUFF, 0);
@@ -70,6 +108,7 @@ namespace Mod::MvM::Upgrade_Disallow
 		CMod() : IMod("MvM:Upgrade_Disallow")
 		{
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_STATIC(ApplyUpgrade_Default, "ApplyUpgrade_Default");
 		}
 	};
 	CMod s_Mod;

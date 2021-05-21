@@ -40,9 +40,8 @@ void SpawnEntity(CBaseEntity *entity) {
 	//lifetime.SetValue(30.0f);
 }
 
-PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment) {
+PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
 
-	//DevMsg("Spawning from template %s",this->name.c_str());
 	Template_Increment +=1;
 	if (Template_Increment > 99999)
 		Template_Increment = 0;
@@ -50,10 +49,11 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 	
 	auto templ_inst = new PointTemplateInstance();
 	g_templateInstances.push_back(templ_inst);
-	templ_inst->templ=this;
-	templ_inst->parent=parent;
-	templ_inst->id=Template_Increment;
-	templ_inst->has_parent=parent != nullptr;
+	templ_inst->templ = this;
+	templ_inst->parent = parent;
+	templ_inst->id = Template_Increment;
+	templ_inst->has_parent = parent != nullptr;
+	templ_inst->ignore_parent_alive_state = ignore_parent_alive_state;
 
 	if (this->has_parent_name && parent != nullptr){
 		const char *str = STRING(parent->GetEntityName());
@@ -63,28 +63,22 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 	const char *parentname;
 	CBaseEntity* parent_helper = parent;
 
-	//Vector parentpos({0,0,0});
-	//QAngle parentang({0,0,0});
-
 	if (parent != nullptr){
-		CBaseAnimating *animating = rtti_cast<CBaseAnimating *>(parent);
+
 		int bone = -1;
-		if (attachment != nullptr)
-			bone=animating->LookupBone(attachment);
-		templ_inst->attachment=bone;
-		//if (bone != -1)
-		//	animating->GetBonePosition(bone,parentpos,parentang);
+		if (attachment != nullptr) {
+			CBaseAnimating *animating = rtti_cast<CBaseAnimating *>(parent);
+			if (animating != nullptr)
+				bone = animating->LookupBone(attachment);
+		}
+		templ_inst->attachment = bone;
 
  		if(parent->IsPlayer() && autoparent){
-			// parent_helper = CreateEntityByName("prop_dynamic");
-			// parent_helper->SetModel("models/weapons/w_models/w_rocket.mdl");
 			parent_helper = CreateEntityByName("point_teleport");
 			parent_helper->SetAbsOrigin(parent->GetAbsOrigin());
 			parent_helper->SetAbsAngles(parent->GetAbsAngles());
 			parent_helper->Spawn();
 			parent_helper->Activate();
-			//parent_helper->AddEffects(32);
-			//parent_helper->KeyValue("Solid", "0");
 			templ_inst->entities.push_back(parent_helper);
 			templ_inst->parent_helper = parent_helper;
 		}
@@ -102,33 +96,27 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 
 	for (auto it = this->entities.begin(); it != this->entities.end(); ++it){
 		std::multimap<std::string,std::string> &keys = *it;
-		//DevMsg("Spawning entity %s, keys %d",keys.find("classname")->second.c_str(),keys.size());
 		CBaseEntity *entity = CreateEntityByName(keys.find("classname")->second.c_str());
 		if (entity != nullptr) {
 			spawned_list.push_back(entity);
-			//DevMsg("Entity not null\n");
 			for (auto it1 = keys.begin(); it1 != keys.end(); ++it1){
 				std::string val = it1->second;
 				
 				if (it1->first == "TeleportWhere"){
-					//DevMsg("Setting teleportwhere");
 					Teleport_Destination().insert({val,entity});
 					continue;
 				}
 
-				//DevMsg("keyvaluepre %s %s\n",it1->first.c_str(), val.c_str());
 				if (!this->no_fixup)
 					FixupKeyvalue(val,Template_Increment,parentname);
 
 				servertools->SetKeyValue(entity, it1->first.c_str(), val.c_str());
-				//DevMsg("keyvalue %s %s\n",it1->first.c_str(), val.c_str());
 			}
 
 			auto itname = keys.find("targetname");
 			if (itname != keys.end()){
 				
 				spawned[itname->second]=entity;
-				//DevMsg("targetname found\n");
 			}
 			
 			Vector translated = vec3_origin;
@@ -137,7 +125,6 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 			VectorAdd(entity->GetAbsAngles(),rotation,rotated);
 			if (parent != nullptr && autoparent) {
 						
-				//DevMsg("vector %f %f %f",translation.x, translation.y, translation.z);
 				VMatrix matEntityToWorld,matNewTemplateToWorld, matStoredLocalToWorld;
 				matEntityToWorld.SetupMatrixOrgAngles( translated, rotated );
 				matNewTemplateToWorld.SetupMatrixOrgAngles( parent->GetAbsOrigin(), parent->GetAbsAngles() );
@@ -150,35 +137,21 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 				entity->SetAbsOrigin(origin);
 				entity->SetAbsAngles(angles);
 
-				//DevMsg("has parent pre %d",entity->GetMoveParent() != nullptr);
 				if (keys.find("parentname") == keys.end()){
-					//variant_t variant1;
-					//variant1.SetString(MAKE_STRING("!activator"));
-					entity->SetParent(parent_helper, -1);//->AcceptInput("setparent", parent_helper, parent_helper,variant1,-1);
+					entity->SetParent(parent_helper, -1);
 				}
-				
-				//DevMsg("has parent post %d",entity->GetMoveParent() != nullptr);
 			}
 			else
 			{
 				entity->Teleport(&translated,&rotated,&vec3_origin);
-				//entity->SetAbsAngles(rotated);
 			}
 
 			if (keys.find("parentname") != keys.end()) {
 				std::string parstr = keys.find("parentname")->second;
-				//parstr.append(std::to_string(Template_Increment));
 				CBaseEntity *parentlocal = spawned[parstr];
-				//DevMsg("parent %d %s",spawned.find(parstr) != spawned.end(), parstr.c_str());
 				if (parentlocal != nullptr) {
-					//variant_t variant1;
-					//variant1.SetString(MAKE_STRING("!activator"));
-					//entity->AcceptInput("setparent", parentlocal, parentlocal,variant1,-1);
 					entity->SetParent(parentlocal, -1);
-					//DevMsg("found local ent\n");
 				}
-				//else
-					//DevMsg("not found local ent\n");
 			}
 			
 			SpawnEntity(entity);
@@ -186,16 +159,6 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 			templ_inst->entities.push_back(entity);
 			g_pointTemplateChild.insert(entity);
 			
-			//CObjectTeleporter+0xaec: CUtlStringList m_TeleportWhere
-			// if (keys.find("where") != keys.end()) {
-			// 	DevMsg("Finding spawner\n");
-			// 	CUtlStringList* list = ((CUtlStringList*)((uintptr_t)entity+0xaec));
-			// 	list->CopyAndAddToTail(keys.find("where")->second.c_str());
-				
-			// 	FOR_EACH_VEC((*list), j) {
-			// 		DevMsg("Found spawner %s\n",(*list)[j]);
-			// 	}
-			// }
 			//To make brush entities working
 			if (keys.find("mins") != keys.end() && keys.find("maxs") != keys.end()){
 
@@ -217,7 +180,7 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 
 	if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
 		variant_t variant;
-		variant.SetString(MAKE_STRING(""));
+		variant.SetString(NULL_STRING);
 		CBaseEntity *spawn_trigger = spawned.find("trigger_spawn_relay_inter")->second;
 		
 		if (parent != nullptr)
@@ -226,42 +189,6 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 			spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
 		servertools->RemoveEntity(spawn_trigger);
 	}
-	/*for (auto it = this->onspawn_inputs.begin(); it != this->onspawn_inputs.end(); ++it){
-		variant_t variant1;
-
-		std::string arg = it->param;
-		int parpos = 0;
-		while((parpos = arg.find("!parent",parpos)) != -1){
-			arg.replace(parpos,7,parentname);
-		}
-
-		int amperpos = 0;
-		while((amperpos = arg.find('&',amperpos)) != -1){
-			amperpos+=1;
-			arg.insert(amperpos,std::to_string(Template_Increment));
-			DevMsg("amp %d\n",amperpos);
-		}
-
-		std::string target = it->target;
-		parpos = 0;
-		while((parpos = target.find("!parent",parpos)) != -1){
-			target.replace(parpos,7,parentname);
-		}
-
-		amperpos = 0;
-		while((amperpos = target.find('&',amperpos)) != -1){
-			amperpos+=1;
-			target.insert(amperpos,std::to_string(Template_Increment));
-			DevMsg("amp %d\n",amperpos);
-		}
-
-		DevMsg("Executing onspawn %s %s %s %f\n",target.c_str(),it->input.c_str(),arg.c_str(),it->delay);
-		//if (!arg.empty())
-		string_t m_iParameter = AllocPooledString(arg.c_str());
-			variant1.SetString(m_iParameter);
-		CEventQueue &que = g_EventQueue;
-		que.AddEvent(it->target.c_str(),it->input.c_str(),variant1,it->delay,parent,parent,-1);
-	}*/
 	return templ_inst;
 }
 
@@ -269,9 +196,8 @@ PointTemplateInstance *PointTemplateInfo::SpawnTemplate(CBaseEntity *parent, boo
 	if (templ == nullptr && template_name.size() > 0)
 		templ = FindPointTemplate(template_name);
 	//DevMsg("Is templ null %d\n",templ == nullptr);
-	
 	if (templ != nullptr)
-		return templ->SpawnTemplate(parent,translation,rotation,autoparent,attachment.c_str());
+		return templ->SpawnTemplate(parent,translation,rotation,autoparent,attachment.c_str(), ignore_parent_alive_state);
 	else
 		return nullptr;
 }
@@ -412,7 +338,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 
 		CBaseEntity *trigger = CreateEntityByName("logic_relay");
 		variant_t variant1;
-		variant1.SetString(MAKE_STRING(""));
+		variant1.SetString(NULL_STRING);
 
 		for(auto it = this->templ->on_kill_triggers.begin(); it != this->templ->on_kill_triggers.end(); it++){
 			std::string val = *(it); 
@@ -493,9 +419,7 @@ void Clear_Point_Templates()
 void Update_Point_Templates()
 {
 	for(auto it = Teleport_Destination().begin(); it != Teleport_Destination().end();it++){
-		//DevMsg("Remove teleportwhere1");
 		if (it->second == nullptr) {
-			DevMsg("Remove teleportwhere");
 			Teleport_Destination().erase(it);
 			break;
 		}
@@ -503,7 +427,7 @@ void Update_Point_Templates()
 	for(auto it = g_templateInstances.begin(); it != g_templateInstances.end(); it++){
 		auto inst = *(it);
 		if (!inst->mark_delete) {
-			if (inst->has_parent && (inst->parent == nullptr || inst->parent->IsMarkedForDeletion() || !(inst->parent->IsAlive()) )) {
+			if (inst->has_parent && (inst->parent == nullptr || inst->parent->IsMarkedForDeletion() || !(inst->parent->IsAlive() && !inst->ignore_parent_alive_state) )) {
 				inst->OnKilledParent(false);
 			}
 			if (!inst->has_parent && !inst->is_wave_spawned) {
@@ -535,7 +459,7 @@ void Update_Point_Templates()
 			QAngle ang;
 			CBaseEntity *parent =inst->parent;
 			if (inst->attachment != -1){
-				CBaseAnimating *anim =rtti_cast<CBaseAnimating *>(parent);
+				CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
 				anim->GetBonePosition(inst->attachment,pos,ang);
 			}
 			else{

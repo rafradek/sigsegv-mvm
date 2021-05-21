@@ -74,7 +74,6 @@ IMDLCache *mdlcache = nullptr;
 
 IClientMode *g_pClientMode = nullptr;
 
-
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 
@@ -108,6 +107,7 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	ConVar_Restore::Load();
 	ConVar_Restore::OnExtLoad();
+
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
 //	}
@@ -126,7 +126,7 @@ void CExtSigsegv::SDK_OnUnload()
 
 	IGameSystem::Remove(this);
 	
-	IHotplugAction::UnloadAll();
+	IHotplugActionBase::UnloadAll();
 //	IHotplugEntity::UninstallAll();
 	
 	g_ModManager.Unload();
@@ -292,4 +292,31 @@ void CExtSigsegv::LoadSoundOverrides()
 CON_COMMAND(sig_build, "")
 {
 	Msg("%s %s\n", GetBuildDate(), GetBuildTime());
+}
+
+CON_COMMAND(sig_memory_stats, "")
+{
+    char buffer[1024] = "";
+
+    FILE* file = fopen("/proc/self/status", "r");
+
+	while (fscanf(file, " %1023s", buffer) == 1) {
+
+        if (strcmp(buffer, "VmRSS:") == 0) {
+            fscanf(file, " %s", buffer);
+			Msg("Current Real Memory: %s KB\n", buffer);
+        }
+        if (strcmp(buffer, "VmHWM:") == 0) {
+            fscanf(file, " %s", buffer);
+			Msg("Peak Real Memory: %s KB\n", buffer);
+        }
+        if (strcmp(buffer, "VmSize:") == 0) {
+            fscanf(file, " %s", buffer);
+			Msg("Current Virtual Memory: %s KB\n", buffer);
+        }
+        if (strcmp(buffer, "VmPeak:") == 0) {
+            fscanf(file, " %s", buffer);
+			Msg("Peak Virtual Memory: %s KB\n", buffer);
+        }
+    }
 }

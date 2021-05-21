@@ -178,7 +178,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 	// 20140828a: stickybomb launcher bugged
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Sticky_Detonation_Delay")
@@ -196,7 +196,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemBusyFrame, "CTFWeaponBase::ItemBusyFrame");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

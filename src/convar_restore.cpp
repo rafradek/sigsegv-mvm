@@ -1,5 +1,5 @@
 #include "convar_restore.h"
-
+#include "mem/detour.h"
 
 class CEmptyConVar : public ConVar {};
 
@@ -7,6 +7,7 @@ class CEmptyConVar : public ConVar {};
 namespace ConVar_Restore
 {
 	ConCommand ccmd_save("sig_cvar_save", &Save, "Save the values of this mod's ConVars");
+	ConCommand ccmd_savenondefault("sig_cvar_save_non_default", &SaveNonDefault, "Save the values of this mod's ConVars, excluding default values");
 	ConCommand ccmd_load("sig_cvar_load", &Load, "Load the previously saved ConVar values of this mod");
 	ConCommand ccmd_reset("sig_cvar_reset", &Reset, "Reset ConVars to default values");
 	ConVar cvar_autosave("sig_cvar_autosave", "0", FCVAR_NONE, "Should ConVar values automatically be saved on disk during mod unload");
@@ -29,8 +30,7 @@ namespace ConVar_Restore
 		}
 	}
 	
-	
-	void Save()
+	void SaveActual(bool no_default, const char *path)
 	{
 	//	DevMsg("ConVar_Restore::Save\n");
 		
@@ -41,8 +41,9 @@ namespace ConVar_Restore
 		// auto kv = new KeyValues("SigsegvConVars");
 		// kv->UsesEscapeSequences(true);
 		
-		file.PutString("SigsegvConVars\n{\n");
+		//file.PutString("SigsegvConVars\n{\n");
 
+		file.PutString("\n//-------------\n//These are default values for convars added by sigsegv extension. Changed values should be added into sigsegv_convars.cfg file\n//-------------\n\n");
 		for (auto var : s_ConVars) {
 		//	DevMsg("  %s\n", var->GetName());
 			
@@ -55,12 +56,11 @@ namespace ConVar_Restore
 				continue;
 			}
 			
-			/*if (strcmp(var->GetString(), var->GetDefault()) == 0) {
+			if (no_default && strcmp(var->GetString(), var->GetDefault()) == 0) {
 		//		DevMsg("    default: skip\n");
 				continue;
-			}*/
+			}
 			
-			file.PutChar('	');
 			file.PutString(var->GetName());
 			file.PutString("	\"");
 			file.PutString(var->GetString());
@@ -79,48 +79,61 @@ namespace ConVar_Restore
 		//	kv->AddSubKey(subkey);
 		}
 
-		file.PutChar('}');
-		if (!filesystem->WriteFile("cfg/sigsegv_convars.cfg","GAME", file)) {
-			Warning("ConVar_Restore::Save: Could not save KeyValues to \"cfg/sigsegv_convars.cfg\".\n");
+		//file.PutChar('}');
+		if (!filesystem->WriteFile(path,"GAME", file)) {
+			Warning("ConVar_Restore::Save: Could not save Ke27020yValues to \"cfg/sigsegv_convars.cfg\".\n");
 		}
 		
 		//kv->deleteThis();
+	}
+
+	void Save()
+	{
+		SaveActual(false, "cfg/sigsegv_convars.cfg");
+	}
+
+	void SaveNonDefault()
+	{
+		SaveActual(true, "cfg/sigsegv_convars.cfg");
 	}
 	
 	void Load()
 	{
 	//	DevMsg("ConVar_Restore::Load\n");
 		
-		auto kv = new KeyValues("SigsegvConVars");
-		kv->UsesEscapeSequences(true);
+		engine->ServerCommand("exec sigsegv_convars.cfg\n");
+		engine->ServerExecute();
 		
-		if (kv->LoadFromFile(filesystem, "cfg/sigsegv_convars.cfg")) {
-			FOR_EACH_VALUE(kv, subkey) {
-				const char *name  = subkey->GetName();
-				const char *value = subkey->GetString();
-				
-				ConCommandBase *base = icvar->FindCommandBase(name);
-				if (base == nullptr) {
-					Warning("ConVar_Restore::Load: ConVar \"%s\" doesn't exist\n", name);
-					continue;
-				}
-				if (base->IsCommand()) {
-					Warning("ConVar_Restore::Load: ConVar \"%s\" is actually a ConCommand\n", name);
-					continue;
-				}
-				if (base->IsFlagSet(FCVAR_NEVER_AS_STRING)) {
-					Warning("ConVar_Restore::Load: ConVar \"%s\" has unsupported flag FCVAR_NEVER_AS_STRING\n", name);
-					continue;
-				}
-				
-				auto var = static_cast<ConVar *>(base);
-				var->SetValue(value);
-			}
-		} else {
-			Warning("ConVar_Restore::Load: Could not load KeyValues from \"cfg/sigsegv_convars.cfg\".\n");
-		}
+		// auto kv = new KeyValues("SigsegvConVars");
+		// kv->UsesEscapeSequences(true);
 		
-		kv->deleteThis();
+		// if (kv->LoadFromFile(filesystem, "cfg/sigsegv_convars.cfg")) {
+		// 	FOR_EACH_VALUE(kv, subkey) {
+		// 		const char *name  = subkey->GetName();
+		// 		const char *value = subkey->GetString();
+				
+		// 		ConCommandBase *base = icvar->FindCommandBase(name);
+		// 		if (base == nullptr) {
+		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" doesn't exist\n", name);
+		// 			continue;
+		// 		}
+		// 		if (base->IsCommand()) {
+		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" is actually a ConCommand\n", name);
+		// 			continue;
+		// 		}
+		// 		if (base->IsFlagSet(FCVAR_NEVER_AS_STRING)) {
+		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" has unsupported flag FCVAR_NEVER_AS_STRING\n", name);
+		// 			continue;
+		// 		}
+				
+		// 		auto var = static_cast<ConVar *>(base);
+		// 		var->SetValue(value);
+		// 	}
+		// } else {
+		// 	Warning("ConVar_Restore::Load: Could not load KeyValues from \"cfg/sigsegv_convars.cfg\".\n");
+		// }
+		
+		// kv->deleteThis();
 	}
 
 	void Reset()
@@ -128,21 +141,22 @@ namespace ConVar_Restore
 		for (auto var : s_ConVars) {
 			var->SetValue(var->GetDefault());
 		}
+		CDetouredFunc::CleanUp();
 	}
 
 	void OnExtLoad()
 	{
 		Load();
 
-		if (!filesystem->FileExists("cfg/sigsegv_convars.cfg", "GAME")) {
-			Msg("ConVar_Restore: Default ConVar values saved in cfg/sigsegv_convars.cfg");
-			Save();
+		if (!filesystem->FileExists("cfg/sigsegv_convars_default.cfg", "GAME")) {
+			Msg("ConVar_Restore: Default ConVar values saved in cfg/sigsegv_convars_default.cfg\n");
+			SaveActual(false, "cfg/sigsegv_convars_default.cfg");
 		}
 	}
 
 	void OnExtUnload()
 	{
 		if (cvar_autosave.GetBool())
-			Save();
+			SaveActual(false, "cfg/sigsegv_convars.cfg");
 	}
 }

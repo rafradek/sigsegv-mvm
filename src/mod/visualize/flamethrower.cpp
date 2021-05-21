@@ -264,7 +264,7 @@ namespace Mod::Visualize::Flamethrower
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Visualize:Flamethrower")
@@ -278,7 +278,7 @@ namespace Mod::Visualize::Flamethrower
 			MOD_ADD_DETOUR_MEMBER(CTFFlameEntity_OnCollide, "CTFFlameEntity::OnCollide");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

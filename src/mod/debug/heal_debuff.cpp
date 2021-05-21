@@ -20,7 +20,7 @@ namespace Mod::Debug::Heal_Debuff
 	ConVar cvar_critheal("sig_debug_heal_debuff_critheal", "0", FCVAR_NONE, "Debug: Enable crit heals?");
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePreEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Heal_Debuff")
@@ -28,7 +28,7 @@ namespace Mod::Debug::Heal_Debuff
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePreEntityThink() override
 		{

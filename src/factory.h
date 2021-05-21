@@ -8,6 +8,7 @@ inline CreateInterfaceFn FileSystemFactory() { return g_SMAPI->GetFileSystemFact
 inline CreateInterfaceFn ServerFactory()     { return g_SMAPI->GetServerFactory    (false); }
 
 
+CreateInterfaceFn CreateInterface();
 CreateInterfaceFn ClientFactory();
 CreateInterfaceFn SoundEmitterSystemFactory();
 CreateInterfaceFn MaterialSystemFactory();

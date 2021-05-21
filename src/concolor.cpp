@@ -260,6 +260,19 @@ namespace ColorSpew
 			s_SpewOutputBackup = nullptr;
 		}
 	}
+
+	ConVar cvar_enable("sig_color_console", "1", FCVAR_NOTIFY,
+		"Enable color console output",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			static bool enabled = true;
+			bool value = static_cast<ConVar *>(pConVar)->GetBool();
+			if (value && !enabled) {
+				Enable();
+			}
+			else if (!value && enabled) {
+				Disable();
+			}
+		});
 #else
 	void Enable() {}
 	void Disable() {}

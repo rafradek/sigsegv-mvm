@@ -181,8 +181,8 @@ public:
 	constexpr vec_t	Length2D(void) const;					
 	constexpr vec_t	Length2DSqr(void) const;					
 
-	constexpr operator VectorByValue &()				{ return *((VectorByValue *)(this)); }
-	constexpr operator const VectorByValue &() const	{ return *((const VectorByValue *)(this)); }
+	constexpr operator VectorByValue &();
+	constexpr operator const VectorByValue &() const;
 
 #ifndef VECTOR_NO_SLOW_OPERATIONS
 	// copy constructors
@@ -235,8 +235,8 @@ public:
 
 
 #if USE_M64S
-	constexpr __m64 &AsM64() { return *(__m64*)&x; }
-	constexpr const __m64 &AsM64() const { return *(const __m64*)&x; } 
+	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(__m64); }
+	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m64); }
 #endif
 
 	// Setter
@@ -294,8 +294,8 @@ public:
 	constexpr void Init(int ix = 0, int iy = 0, int iz = 0, int iw = 0 );
 
 #if USE_M64S
-	constexpr __m64 &AsM64() { return *(__m64*)&x; }
-	constexpr const __m64 &AsM64() const { return *(const __m64*)&x; } 
+	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(__m64); }
+	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m64); }
 #endif
 
 	// Setter
@@ -352,6 +352,10 @@ public:
 };
 
 
+constexpr Vector::operator VectorByValue &()				{ return *(static_cast<VectorByValue *>(this)); }
+constexpr Vector::operator const VectorByValue &() const	{ return *(static_cast<const VectorByValue *>(this)); }
+
+
 //-----------------------------------------------------------------------------
 // Utility to simplify table construction. No constructor means can use
 // traditional C-style initialization
@@ -361,22 +365,28 @@ class TableVector
 public:
 	vec_t x, y, z;
 
-	constexpr operator Vector &()				{ return *((Vector *)(this)); }
-	constexpr operator const Vector &() const	{ return *((const Vector *)(this)); }
+	constexpr operator Vector &()				{ _CONSTEXPR_RETURN_TYPE_PUN(Vector); }
+	constexpr operator const Vector &() const	{ _CONSTEXPR_RETURN_TYPE_PUN(const Vector); }
 
 	// array access...
 	constexpr vec_t& operator[](int i)
 	{
 		Assert( (i >= 0) && (i < 3) );
-		return ((vec_t*)this)[i];
+		static_assert(offsetof(TableVector, x) == 0);
+		return (&x)[i];
 	}
 
 	constexpr vec_t operator[](int i) const
 	{
 		Assert( (i >= 0) && (i < 3) );
-		return ((vec_t*)this)[i];
+		static_assert(offsetof(TableVector, x) == 0);
+		return (&x)[i];
 	}
 };
+
+static_assert(offsetof(TableVector, x) == offsetof(Vector, x));
+static_assert(offsetof(TableVector, y) == offsetof(Vector, y));
+static_assert(offsetof(TableVector, z) == offsetof(Vector, z));
 
 
 //-----------------------------------------------------------------------------
@@ -597,13 +607,13 @@ constexpr Vector& Vector::operator=(const Vector &vOther)
 constexpr vec_t& Vector::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 constexpr vec_t Vector::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 
@@ -612,12 +622,14 @@ constexpr vec_t Vector::operator[](int i) const
 //-----------------------------------------------------------------------------
 constexpr vec_t* Vector::Base()
 {
-	return (vec_t*)this;
+	static_assert(offsetof(Vector, x) == 0);
+	return &x;
 }
 
 constexpr vec_t const* Vector::Base() const
 {
-	return (vec_t const*)this;
+	static_assert(offsetof(Vector, x) == 0);
+	return &x;
 }
 
 //-----------------------------------------------------------------------------
@@ -626,12 +638,16 @@ constexpr vec_t const* Vector::Base() const
 
 constexpr Vector2D& Vector::AsVector2D()
 {
-	return *(Vector2D*)this;
+	static_assert(offsetof(Vector, x) == offsetof(Vector2D, x));
+	static_assert(offsetof(Vector, y) == offsetof(Vector2D, y));
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector2D);
 }
 
 constexpr const Vector2D& Vector::AsVector2D() const
 {
-	return *(const Vector2D*)this;
+	static_assert(offsetof(Vector, x) == offsetof(Vector2D, x));
+	static_assert(offsetof(Vector, y) == offsetof(Vector2D, y));
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector2D);
 }
 
 //-----------------------------------------------------------------------------
@@ -820,13 +836,13 @@ constexpr FORCEINLINE void ShortVector::Set( const short ix, const short iy, con
 constexpr short ShortVector::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((short*)this)[i];
+	return Base()[i];
 }
 
 constexpr short& ShortVector::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((short*)this)[i];
+	return Base()[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -834,12 +850,14 @@ constexpr short& ShortVector::operator[](int i)
 //-----------------------------------------------------------------------------
 constexpr short* ShortVector::Base()
 {
-	return (short*)this;
+	static_assert(offsetof(ShortVector, x) == 0);
+	return &x;
 }
 
 constexpr short const* ShortVector::Base() const
 {
-	return (short const*)this;
+	static_assert(offsetof(ShortVector, x) == 0);
+	return &x;
 }
 
 
@@ -969,13 +987,13 @@ constexpr FORCEINLINE void IntVector4D::Set( const int ix, const int iy, const i
 constexpr int IntVector4D::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((int*)this)[i];
+	return Base()[i];
 }
 
 constexpr int& IntVector4D::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((int*)this)[i];
+	return Base()[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -983,12 +1001,14 @@ constexpr int& IntVector4D::operator[](int i)
 //-----------------------------------------------------------------------------
 constexpr int* IntVector4D::Base()
 {
-	return (int*)this;
+	static_assert(offsetof(IntVector4D, x) == 0);
+	return &x;
 }
 
 constexpr int const* IntVector4D::Base() const
 {
-	return (int const*)this;
+	static_assert(offsetof(IntVector4D, x) == 0);
+	return &x;
 }
 
 
@@ -1570,8 +1590,8 @@ public:
 	constexpr bool operator==( const Quaternion &src ) const;
 	constexpr bool operator!=( const Quaternion &src ) const;
 
-	constexpr vec_t* Base() { return (vec_t*)this; }
-	constexpr const vec_t* Base() const { return (vec_t*)this; }
+	constexpr vec_t* Base() { static_assert(offsetof(Quaternion, x) == 0); return &x; }
+	constexpr const vec_t* Base() const { static_assert(offsetof(Quaternion, x) == 0); return &x; }
 
 	// array access...
 	constexpr vec_t operator[](int i) const;
@@ -1587,13 +1607,13 @@ public:
 constexpr vec_t& Quaternion::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 constexpr vec_t Quaternion::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 
@@ -1758,13 +1778,15 @@ constexpr void RadianEuler::Invalidate()
 constexpr vec_t& RadianEuler::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	static_assert(offsetof(RadianEuler, x) == 0);
+	return (&x)[i];
 }
 
 constexpr vec_t RadianEuler::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	static_assert(offsetof(RadianEuler, x) == 0);
+	return (&x)[i];
 }
 
 
@@ -1789,8 +1811,8 @@ public:
 //	constexpr QAngle(RadianEuler const &angles);	// evil auto type promotion!!!
 
 	// Allow pass-by-value
-	constexpr operator QAngleByValue &()				{ return *((QAngleByValue *)(this)); }
-	constexpr operator const QAngleByValue &() const	{ return *((const QAngleByValue *)(this)); }
+	constexpr operator QAngleByValue &();
+	constexpr operator const QAngleByValue &() const;
 
 	// Initialization
 	constexpr void Init(vec_t ix=0.0f, vec_t iy=0.0f, vec_t iz=0.0f);
@@ -1864,6 +1886,10 @@ public:
 	constexpr QAngleByValue(vec_t X, vec_t Y, vec_t Z) : QAngle( X, Y, Z ) {}
 	constexpr QAngleByValue(const QAngleByValue& vOther) { *this = vOther; }
 };
+
+
+constexpr QAngle::operator QAngleByValue &()				{ return *(static_cast<QAngleByValue *>(this)); }
+constexpr QAngle::operator const QAngleByValue &() const	{ return *(static_cast<const QAngleByValue *>(this)); }
 
 
 inline void VectorAdd( const QAngle& a, const QAngle& b, QAngle& result )
@@ -1967,13 +1993,13 @@ constexpr QAngle& QAngle::operator=(const QAngle &vOther)
 constexpr vec_t& QAngle::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 constexpr vec_t QAngle::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 3) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 
@@ -1982,12 +2008,14 @@ constexpr vec_t QAngle::operator[](int i) const
 //-----------------------------------------------------------------------------
 constexpr vec_t* QAngle::Base()
 {
-	return (vec_t*)this;
+	static_assert(offsetof(QAngle, x) == 0);
+	return &x;
 }
 
 constexpr vec_t const* QAngle::Base() const
 {
-	return (vec_t const*)this;
+	static_assert(offsetof(QAngle, x) == 0);
+	return &x;
 }
 
 

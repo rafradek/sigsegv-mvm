@@ -68,7 +68,15 @@ private:
 	static MemberFuncThunk<CTFProjectile_EnergyRing *, float> ft_GetInitialVelocity;
 };
 
-class CTFProjectile_Rocket : public CTFBaseRocket {};
+class CTFProjectile_Rocket : public CTFBaseRocket
+{
+public:
+	bool IsCritical() const          { return this->m_bCritical; }
+	void SetCritical(bool bCritical) { this->m_bCritical = bCritical; }
+	
+private:
+	DECL_SENDPROP(bool, m_bCritical);
+};
 class CTFProjectile_SentryRocket : public CTFProjectile_Rocket {};
 class CTFProjectile_Flare : public CTFBaseRocket {};
 class CTFProjectile_EnergyBall : public CTFBaseRocket {};
@@ -114,7 +122,7 @@ public:
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
 };
-
+class CTFProjectile_MechanicalArmOrb : public CTFProjectile_Rocket {};
 class CTFWeaponBaseMerasmusGrenade : public CTFWeaponBaseGrenadeProj {};
 
 class CTFProjectile_Jar : public CTFGrenadePipebombProjectile {};

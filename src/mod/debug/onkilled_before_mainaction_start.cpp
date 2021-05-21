@@ -273,7 +273,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:OnKilled_Before_MainAction_Start")
@@ -289,7 +289,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			MOD_ADD_DETOUR_MEMBER(INextBot_DisplayDebugText, "INextBot::DisplayDebugText");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

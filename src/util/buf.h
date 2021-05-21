@@ -27,7 +27,8 @@ public:
 	
 	size_t GetSize() const { return this->m_iSize; }
 	
-	const uint8_t *GetBufPtr() const { return this->m_Buf; }
+	const uint8_t *CPtr() const { return this->m_Buf; }
+	      uint8_t *MPtr() const { return this->m_Buf; } // unsafe!
 	
 private:
 	const size_t m_iSize;

@@ -3,6 +3,7 @@
 #include "stub/projectiles.h"
 #include "stub/objects.h"
 #include "util/backtrace.h"
+#include "tier1/CommandBuffer.h"
 
 
 namespace Mod::Etc::Misc
@@ -19,14 +20,45 @@ namespace Mod::Etc::Misc
 		return DETOUR_MEMBER_CALL(CTFProjectile_Rocket_IsDeflectable)();
 	}
 
+	bool AllowHit(CBaseEntity *proj, CBaseEntity *other)
+	{
+		bool penetrates = proj->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER);
+		if (penetrates && !(other->entindex() == 0 || other->MyCombatCharacterPointer() != nullptr || other->IsCombatItem())) {
+			Vector start = proj->GetAbsOrigin();
+			Vector vel = proj->GetAbsVelocity();
+			trace_t tr;
+			UTIL_TraceLine( start, start + vel * gpGlobals->frametime, CONTENTS_MONSTER|CONTENTS_SOLID, other, COLLISION_GROUP_NONE, &tr );
+			if (tr.m_pEnt == nullptr) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_ArrowTouch, CBaseEntity *pOther)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		
+		if (AllowHit(arrow, pOther))
+			DETOUR_MEMBER_CALL(CTFProjectile_Arrow_ArrowTouch)(pOther);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_BallOfFire_RocketTouch, CBaseEntity *pOther)
+	{
+		auto arrow = reinterpret_cast<CBaseEntity *>(this);
+		
+		if (AllowHit(arrow, pOther))
+			DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
+	}
+	
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Explode, trace_t *pTrace, CBaseEntity *pOther)
 	{
 		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
 
-		if (proj->GetOwnerEntity() != nullptr) {
-			IScorer *scorer = rtti_cast<IScorer *>(proj->GetOwnerEntity());
+		auto owner = proj->GetOwnerEntity();
+		if (owner != nullptr && owner->IsBaseObject()) {
 
-			if (scorer != nullptr && scorer->GetScorer() == nullptr) {
+			if (ToBaseObject(owner)->GetBuilder() == nullptr) {
 				proj->SetOwnerEntity(GetContainingEntity(INDEXENT(0)));
 			}
 		}
@@ -96,7 +128,6 @@ namespace Mod::Etc::Misc
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_StartBuildingObjectOfType)(type, mode);
 	}
-
     class CMod : public IMod
 	{
 	public:
@@ -108,11 +139,14 @@ namespace Mod::Etc::Misc
 			// Make unowned sentry rocket deal damage
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Explode,    "CTFBaseRocket::Explode");
 
+			// Makes penetration arrows not collide with
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_ArrowTouch, "CTFProjectile_Arrow::ArrowTouch");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
+
 			// Allow to construct disposable sentries by destroying the oldest ones
 			MOD_ADD_DETOUR_STATIC(SendProxy_PlayerObjectList,    "SendProxy_PlayerObjectList");
 			MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerObjects,    "SendProxyArrayLength_PlayerObjects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StartBuildingObjectOfType, "CTFPlayer::StartBuildingObjectOfType");
-			
 		}
 	};
 	CMod s_Mod;

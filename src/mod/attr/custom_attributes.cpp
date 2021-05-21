@@ -106,11 +106,11 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	float GetRandomSpreadOffset( CTFCompoundBow *bow, int iLevel )
+	float GetRandomSpreadOffset( CTFCompoundBow *bow, int iLevel, float angle )
 	{
 		float flMaxRandomSpread = 2.5f;// sv_arrow_max_random_spread_angle.GetFloat();
 		float flRandom = RemapValClamped( bow->GetCurrentCharge(), 0.f, bow->GetChargeMaxTime(), RandomFloat( -flMaxRandomSpread, flMaxRandomSpread ), 0.f );
-		return 5.0f/*sv_arrow_spread_angle.GetFloat()*/ * iLevel + flRandom;
+		return angle/*sv_arrow_spread_angle.GetFloat()*/ * iLevel + flRandom;
 	}
 
 	CBaseAnimating *projectile_arrow = nullptr;
@@ -168,7 +168,59 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 	}
-	
+
+	CBaseAnimating *SpawnCustomProjectile(const char *name, CTFWeaponBaseGun *weapon, CTFPlayer *player)
+	{
+		CBaseAnimating *retval = nullptr;
+		
+		Vector vecSrc;
+		QAngle angForward;
+		Vector vecOffset( 23.5f, 12.0f, -3.0f );
+		if ( player->GetFlags() & FL_DUCKING )
+		{
+			vecOffset.z = 8.0f;
+		}
+		weapon->GetProjectileFireSetup( player, vecOffset, &vecSrc, &angForward, false ,2000);
+
+		if (strcmp(name, "mechanicalarmorb") == 0) {
+
+			auto projectile = rtti_cast<CTFProjectile_MechanicalArmOrb *>(CBaseEntity::CreateNoSpawn("tf_projectile_mechanicalarmorb", vecSrc, player->EyeAngles(), player));
+			if (projectile != nullptr) {
+				projectile->SetOwnerEntity(player);
+				projectile->SetLauncher   (weapon);
+				
+				float mult_speed = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
+
+				Vector eye_angles_fwd;
+				AngleVectors(angForward, &eye_angles_fwd);
+				projectile->SetAbsVelocity(mult_speed * 700.0f * eye_angles_fwd);
+				
+				projectile->ChangeTeam(player->GetTeamNumber());
+				
+				if (projectile->IsCritical()) {
+					projectile->SetCritical(false);
+				}
+				
+				DispatchSpawn(projectile);
+			}
+		}
+		
+		if (weapon->ShouldPlayFireAnim()) {
+			player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
+		}
+		
+		weapon->RemoveProjectileAmmo(player);
+		weapon->m_flLastFireTime = gpGlobals->curtime;
+		weapon->DoFireEffects();
+		weapon->UpdatePunchAngles(player);
+		
+		if (player->m_Shared->IsStealthed() && weapon->ShouldRemoveInvisibilityOnPrimaryAttack()) {
+			player->RemoveInvisibility();
+		}
+		return retval;
+	}	
+
 	THINK_FUNC_DECL(ProjectileLifetime) {
 		this->Remove();
 	};
@@ -183,8 +235,19 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseAnimating *proj = nullptr;
 		for (int i = 0; i < attr_projectile_count; i++) {
 
+
+			const char *projectilename = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "override projectile type extra");
+
 			fire_projectile_multi = i != 0;
-			proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+
+			if (projectilename != nullptr) {
+				proj = SpawnCustomProjectile(projectilename, weapon, player);
+				
+			}
+			else {
+				proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+			}
+			
 			fire_projectile_multi = false;
 
 			if (proj != nullptr) {
@@ -248,20 +311,25 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( bow, attib_arrow_mastery, arrow_mastery );
 
-		if (attib_arrow_mastery >= 0 && projectile_arrow != nullptr) {
+		if (attib_arrow_mastery != 0 && projectile_arrow != nullptr) {
 
 			Vector vecMainVelocity = projectile_arrow->GetAbsVelocity();
 			float flMainSpeed = vecMainVelocity.Length();
 
 			CTFProjectile_Arrow *arrow = static_cast<CTFProjectile_Arrow *>(projectile_arrow);
 
+			float angle = attib_arrow_mastery > 0 ? 5.0f : - 360.0f / (attib_arrow_mastery - 1);
+
+			int count = attib_arrow_mastery > 0 ? attib_arrow_mastery : -attib_arrow_mastery;
 			if (arrow != nullptr) {
-				for (int i = 0; i < attib_arrow_mastery; i++) {
+				for (int i = 0; i < count; i++) {
 					
-					QAngle qOffset1 = projectile_arrow->GetAbsAngles() + QAngle( 0, GetRandomSpreadOffset( bow, i + 1 ), 0 );
+					QAngle qOffset1 = projectile_arrow->GetAbsAngles() + QAngle( 0, GetRandomSpreadOffset( bow, i + 1, angle ), 0 );
 					CreateExtraArrow( bow, arrow, qOffset1, flMainSpeed );
-					QAngle qOffset2 = projectile_arrow->GetAbsAngles() + QAngle( 0, -GetRandomSpreadOffset( bow, i + 1 ), 0 );
-					CreateExtraArrow( bow, arrow, qOffset2, flMainSpeed );
+					if (attib_arrow_mastery > 0 ) {
+						QAngle qOffset2 = projectile_arrow->GetAbsAngles() + QAngle( 0, -GetRandomSpreadOffset( bow, i + 1, angle ), 0 );
+						CreateExtraArrow( bow, arrow, qOffset2, flMainSpeed );
+					}
 
 				}
 			}
@@ -323,6 +391,13 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 	void GetExplosionParticle(CTFPlayer *player, CTFWeaponBase *weapon, int &particle) {
+		int no_particle = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, no_particle, no_explosion_particles);
+		if (no_particle) {
+			particle = -1;
+			return;
+		}
+
 		const char *particlename = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "explosion particle");
 		if (particlename != nullptr) {
 			if (precached.find(particlename) == precached.end()) {
@@ -491,12 +566,9 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
-		auto econent = rtti_cast<CEconEntity *>(ent);
-		if (econent != nullptr) {
-			const char *attachmentname = GetStringAttribute(econent->GetItem()->GetAttributeList(), "attachment name");
-			if (attachmentname != nullptr) {
-				econent->SetEffects(econent->GetEffects() & ~(EF_BONEMERGE));
-			}
+		const char *attachmentname = GetStringAttribute(ent->GetItem()->GetAttributeList(), "attachment name");
+		if (attachmentname != nullptr) {
+			ent->SetEffects(ent->GetEffects() & ~(EF_BONEMERGE));
 		}
 	}
 	
@@ -505,8 +577,13 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use = 0;
 		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
 		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
-		if (launcher != nullptr)
+		if (launcher != nullptr) {
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
+			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
+			if (sound != nullptr) {
+				proj->EmitSound(sound);
+			}
+		}
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
 		particle_to_use = 0;
 	}
@@ -516,9 +593,15 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use = 0;
 		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
 		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
-		if (launcher != nullptr)
+		if (launcher != nullptr) {
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
+			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
+			if (sound != nullptr) {
+				proj->EmitSound(sound);
+			}
+		}
 		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
+
 		particle_to_use = 0;
 	}
 
@@ -528,6 +611,9 @@ namespace Mod::Attr::Custom_Attributes
 		//if (nEntIndex > 0 && (playerbase = UTIL_PlayerByIndex(nEntIndex)) != nullptr) {
 		if (particle_to_use != 0)
 			iCustomParticle = particle_to_use;
+
+		if (particle_to_use == -1) return;
+
 		DETOUR_STATIC_CALL(TE_TFExplosion)(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
 	}
 
@@ -535,12 +621,18 @@ namespace Mod::Attr::Custom_Attributes
 	CBasePlayer *weapon_sound_override_owner = nullptr;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
-		if ((index == 1 || index == 5)) {
+		if ((index == 1 || index == 5 || index == 6)) {
 			auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
-			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom weapon fire sound");
+			const char *attr_name = nullptr;
+
+			switch (index) {
+				case 1: case 5: attr_name = "custom weapon fire sound"; break;
+				case 6: attr_name = "custom weapon reload sound"; break;
+			}
+
+			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
-				DevMsg("Sound %s\n", modelname);
 				if (precached.find(modelname) == precached.end()) {
 					if (!enginesound->PrecacheSound(modelname, true))
 						CBaseEntity::PrecacheScriptSound(modelname);
@@ -561,7 +653,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (weapon_sound_override != nullptr) {
 			//reinterpret_cast<CRecipientFilter &>(filter).AddRecipient(weapon_sound_override_owner);
-			DevMsg("%s\n",weapon_sound_override);
 			sound = weapon_sound_override;
 		}
 		DETOUR_STATIC_CALL(CBaseEntity_EmitSound)(filter, iEntIndex, sound, pOrigin, start, duration);
@@ -593,8 +684,16 @@ namespace Mod::Attr::Custom_Attributes
 		//int predamage = info.GetDamageType();
 
 		if (rc_CTFPlayer_FireBullet > 0 && ptr != nullptr && rc_CTFGameRules_RadiusDamage == 0 && (ptr->surface.flags & SURF_SKY) == 0) {
-			if (info.GetWeapon() != nullptr) {
-				auto weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon());
+			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
+			if (weapon != nullptr) {
+				
+				const char *sound = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom impact sound");
+				if (sound != nullptr) {
+					CRecipientFilter filter;
+					filter.AddRecipientsByPAS(ptr->endpos);
+					CBaseEntity::EmitSound(filter, ENTINDEX(ent), sound, &ptr->endpos);
+				}
+
 				int attr_explode_bullet = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attr_explode_bullet, explosive_bullets);
 				if (weapon && attr_explode_bullet != 0) {
@@ -840,20 +939,57 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
+		if (info.GetWeapon() != nullptr) {
+			float dmg = info.GetDamage();
+			
+			float iDmgCurrentHealth = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
+			if (iDmgCurrentHealth != 0.0f)
+			{
+				dmg += pVictim->GetHealth() * iDmgCurrentHealth;
+			}
+
+			float iDmgMaxHealth = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgMaxHealth, dmg_max_health);
+			if (iDmgMaxHealth != 0.0f)
+			{
+				dmg += pVictim->GetMaxHealth() * iDmgMaxHealth;
+			}
+
+			float iDmgMissingHealth = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgMissingHealth, dmg_missing_health);
+			if (iDmgMissingHealth != 0.0f)
+			{
+				dmg += (pVictim->GetMaxHealth() - pVictim->GetHealth()) * iDmgMissingHealth;
+			}
+
+			if (pVictim->IsPlayer() && ToTFPlayer(pVictim)->IsMiniBoss()) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_giants);
+				dmg *= dmg_mult;
+			}
+			else if (pVictim->MyNextBotPointer() != nullptr && !pVictim->IsPlayer()) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_npc);
+				dmg *= dmg_mult;
+
+				if (pVictim->ClassMatches("tank_boss")) {
+					float dmg_mult = 1.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_tanks);
+					dmg *= dmg_mult;
+				}
+			}
+			info.SetDamage(dmg);
+		}
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
 		if ((info.GetDamageType() & DMG_CRITICAL) && info.GetWeapon() != nullptr) {
-			auto weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon());
-			if (weapon != nullptr) {
-				float crit = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, crit, mult_crit_dmg);
-				float dmg = info.GetDamage();
-				info.SetDamageBonus(dmg * crit - (dmg - info.GetDamageBonus()));
-				info.SetDamage(dmg * crit);
-			}
-			
+			float crit = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), crit, mult_crit_dmg);
+			float dmg = info.GetDamage();
+			info.SetDamageBonus(dmg * crit - (dmg - info.GetDamageBonus()));
+			info.SetDamage(dmg * crit);
 		}
-
 		return ret;
 	}
 
@@ -1043,6 +1179,42 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void, CBaseObject_StartPlacement, CTFPlayer *builder)
+	{
+		DETOUR_MEMBER_CALL(CBaseObject_StartPlacement)(builder);
+		auto obj = reinterpret_cast<CBaseObject *>(this);
+		if (builder != nullptr) {
+			
+			int color = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( builder, color, building_color_rgb);
+			if (color != 0) {
+				obj->SetRenderColorR(color >> 16);
+				obj->SetRenderColorG((color >> 8) & 255);
+				obj->SetRenderColorB(color & 255);
+			}
+			float scale = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( builder, scale, building_scale);
+			if (scale != 1.0f) {
+				obj->SetModelScale(scale);
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_RecieveTeleportingPlayer, CTFPlayer *player)
+	{
+		auto tele = reinterpret_cast<CObjectTeleporter *>(this);
+		if ( player == nullptr || tele->IsMarkedForDeletion() )
+			return;
+
+		Vector prepos = player->GetAbsOrigin();
+		DETOUR_MEMBER_CALL(CObjectTeleporter_RecieveTeleportingPlayer)(player);
+		Vector postpos = player->GetAbsOrigin();
+		if (tele->GetModelScale() != 1.0f && prepos != postpos) {
+			postpos.z = tele->WorldSpaceCenter().z + tele->CollisionProp()->OBBMaxs().z + 1.0f;
+			player->Teleport(&postpos, &(player->GetAbsAngles()), &(player->GetAbsVelocity()));
+		}
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_FPlayerCanTakeDamage, CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo& info)
 	{
 		if (pPlayer != nullptr && pAttacker != nullptr && pPlayer->GetTeamNumber() == pAttacker->GetTeamNumber()) {
@@ -1151,7 +1323,7 @@ namespace Mod::Attr::Custom_Attributes
 		//Non sniper rifle explosive headshot
 		auto weapon = info.GetWeapon();
 		if (weapon != nullptr && info.GetAttacker() != nullptr && (info.GetDamageCustom() == TF_DMG_CUSTOM_HEADSHOT || info.GetDamageCustom() == TF_DMG_CUSTOM_HEADSHOT_DECAPITATION)) {
-			auto tfweapon = rtti_cast<CTFWeaponBase *>(weapon);
+			auto tfweapon = rtti_cast<CTFWeaponBase *>(weapon->MyCombatWeaponPointer());
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			auto attacker = ToTFPlayer(info.GetAttacker());
 
@@ -1284,8 +1456,8 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(const char *, CTFGameRules_GetKillingWeaponName, const CTakeDamageInfo &info, CTFPlayer *pVictim, int *iWeaponID)
 	{
 		if (info.GetWeapon() != nullptr && info.GetAttacker() != nullptr && info.GetAttacker()->IsPlayer()) {
-			CTFWeaponBase *weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon()->MyCombatWeaponPointer());
-			if (weapon != nullptr) {
+			CBaseCombatWeapon *weapon = info.GetWeapon()->MyCombatWeaponPointer();
+			if (weapon != nullptr && weapon->GetItem() != nullptr) {
 				const char *str = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom kill icon");
 				if (str != nullptr)
 					return str;
@@ -1447,7 +1619,62 @@ namespace Mod::Attr::Custom_Attributes
 			player->SetGravity(gravity);
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
+	{
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		
+		auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
+		if (ent != nullptr && weapon != nullptr) {
+			const char *str = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom hit sound");
+			if (str != nullptr) {
+				ent->EmitSound(str);
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_MakeScaledBuilding, CTFPlayer *player)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		//DevMsg("sentry deploy %d %d\n", sentry->m_bCarryDeploy + 0, sentry->m_bCarried + 0);
+		if (sentry->m_bCarried)
+			return;
+		DETOUR_MEMBER_CALL(CObjectSentrygun_MakeScaledBuilding)(player);
+		
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_TeleporterTouch, CBaseEntity *player)
+	{
+		auto tele = reinterpret_cast<CObjectTeleporter *>(this);
+		
+		if (player->IsPlayer()) {
+			int iCannotTeleport = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, iCannotTeleport, cannot_be_teleported);
+			if (iCannotTeleport != 0)
+				return;
+		}
+		DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterTouch)(player);
+	}
+
+	DETOUR_DECL_MEMBER(float, CWeaponMedigun_GetTargetRange)
+	{
+		auto weapon = reinterpret_cast<CWeaponMedigun *>(this);
+		
+		float range = DETOUR_MEMBER_CALL(CWeaponMedigun_GetTargetRange)();
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, range, mult_medigun_range);
+		return range;
+	}
 	
+	DETOUR_DECL_MEMBER(bool, CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport, CTFPlayer *bot)
+	{
+		bool result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport)(bot);
+		if (result) {
+			int iCannotTeleport = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, iCannotTeleport, cannot_be_teleported);
+			result = iCannotTeleport == 0;
+		}
+		return result;
+	}
+
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
 		CBaseEntity *outer = mgr->m_hOuter;
@@ -1531,6 +1758,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_CanBeUpgraded, "CBaseObject::CanBeUpgraded");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SentryThink, "CObjectSentrygun::SentryThink");
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_StartBuilding, "CBaseObject::StartBuilding");
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_StartPlacement, "CBaseObject::StartPlacement");
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_RecieveTeleportingPlayer, "CObjectTeleporter::RecieveTeleportingPlayer");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_WantsLagCompensationOnEntity, "CTFPlayer::WantsLagCompensationOnEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FPlayerCanTakeDamage, "CTFGameRules::FPlayerCanTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer, "CTFPlayerShared::StunPlayer");
@@ -1562,6 +1791,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_IsDeflectable, "CTFGrenadePipebombProjectile::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_InSameTeam, "CBaseEntity::InSameTeam");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnAddBalloonHead, "CTFPlayerShared::OnAddBalloonHead");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_TeleporterTouch,          "CObjectTeleporter::TeleporterTouch");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_GetTargetRange,          "CWeaponMedigun::GetTargetRange");
+			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport, "CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport");
+
 			//MOD_ADD_DETOUR_MEMBER(CAttributeManager_OnAttributeValuesChanged, "CAttributeManager::OnAttributeValuesChanged");
 			//MOD_ADD_DETOUR_MEMBER(CAttributeManager_OnAttributeValuesChanged, "CAttributeManager::OnAttributeValuesChanged");
 			//MOD_ADD_DETOUR_MEMBER(CAttributeContainer_OnAttributeValuesChanged, "CAttributeContainer::OnAttributeValuesChanged");
@@ -1576,17 +1810,12 @@ namespace Mod::Attr::Custom_Attributes
 		//	Allow set bonus attributes on items, with the help of custom attributes
 			MOD_ADD_DETOUR_MEMBER(static_attrib_t_BInitFromKV_SingleLine, "static_attrib_t::BInitFromKV_SingleLine");
 			
-			this->Toggle(true);
+		//	Fix build small sentries attribute reaplly max health on redeploy bug
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_MakeScaledBuilding, "CObjectSentrygun::MakeScaledBuilding");
 		}
 
-		virtual void LevelInitPostEntity() override
+		void LoadAttributes()
 		{
-			precached.clear();
-		}
-		
-		virtual void LevelInitPreEntity() override
-		{
-			precached.clear();
 			KeyValues *kv = new KeyValues("attributes");
 			char path[PLATFORM_MAX_PATH];
 			g_pSM->BuildPath(Path_SM,path,sizeof(path),"gamedata/sigsegv/custom_attributes.txt");
@@ -1595,6 +1824,24 @@ namespace Mod::Attr::Custom_Attributes
 				CUtlVector<CUtlString> err;
 				GetItemSchema()->BInitAttributes(kv, &err);
 			}
+		}
+
+		virtual bool OnLoad() override
+		{
+			if (GetItemSchema() != nullptr)
+				LoadAttributes();
+			return true;
+		}
+
+		virtual void LevelInitPostEntity() override
+		{
+			precached.clear();
+		}
+
+		virtual void LevelInitPreEntity() override
+		{
+			precached.clear();
+			LoadAttributes();
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return true; }
 

@@ -145,8 +145,23 @@ public:
 		float m_flWhen;
 	};
 	
-	enum DifficultyType : int32_t;
-	enum WeaponRestriction : uint32_t;
+	enum DifficultyType
+	{
+		EASY = 0,
+		NORMAL = 1,
+		HARD = 2,
+		EXPERT = 3,
+	};
+
+	enum WeaponRestriction
+	{
+		ANY_WEAPON		= 0,
+		MELEE_ONLY		= 0x0001,
+		PRIMARY_ONLY	= 0x0002,
+		SECONDARY_ONLY	= 0x0004,
+		PDA_ONLY		= 0x0008,
+		BUILDING_ONLY	= 0x00016,
+	};
 	
 	struct EventChangeAttributes_t
 	{
@@ -155,6 +170,57 @@ public:
 			CUtlString m_strItemName;                    // +0x00
 			CCopyableUtlVector<static_attrib_t> m_Attrs; // +0x04
 		};
+
+		EventChangeAttributes_t()
+		{
+			Reset();
+		}
+
+		EventChangeAttributes_t( const EventChangeAttributes_t& copy )
+		{
+			Reset();
+
+			m_strName = copy.m_strName;
+
+			m_iSkill = copy.m_iSkill;
+			m_nWeaponRestrict = copy.m_nWeaponRestrict;
+			m_nMission = copy.m_nMission;
+			pad_10 = copy.pad_10;
+			m_nBotAttrs = copy.m_nBotAttrs;
+			m_flVisionRange = copy.m_flVisionRange;
+
+			for (int i=0; i<copy.m_ItemNames.Count(); ++i)
+			{
+				m_ItemNames.CopyAndAddToTail(copy.m_ItemNames[i]);
+			}
+
+			m_ItemAttrs = copy.m_ItemAttrs;
+			m_CharAttrs = copy.m_CharAttrs;
+
+			for (int i=0; i<copy.m_Tags.Count(); ++i)
+			{
+				m_Tags.CopyAndAddToTail(copy.m_Tags[i]);
+			}
+		}
+
+		void Reset()
+		{
+			m_strName = "default";
+			
+			m_iSkill = EASY;
+			m_nWeaponRestrict = ANY_WEAPON;
+			m_nMission = CTFBot::MissionType::MISSION_NONE;
+			pad_10 = m_nMission;
+			m_nBotAttrs = ATTR_NONE;
+			m_flVisionRange = -1.f;
+
+			m_ItemNames.RemoveAll();
+			
+			m_ItemAttrs.RemoveAll();
+			m_CharAttrs.RemoveAll();
+			m_Tags.RemoveAll();
+		}
+		
 		
 		CUtlString m_strName;                      // +0x00
 		DifficultyType m_iSkill;                   // +0x04
@@ -300,7 +366,7 @@ public:
 	DECL_EXTRACT(CUtlVector<CFmtStr>, m_Tags);
 #endif
 	DECL_EXTRACT(AttributeType,       m_nBotAttrs);
-	DECL_RELATIVE(int, m_iWeaponRestrictionFlags);
+	DECL_RELATIVE(WeaponRestriction, m_iWeaponRestrictionFlags);
 	/*uint8_t of[0x3D0];// +0x2830
 	float m_flScale; // +0x2bf4
 	uint8_t of[0x3D0];// +0x2830

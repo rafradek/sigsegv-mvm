@@ -59,7 +59,7 @@ namespace Mod::Pop::Wave_Extensions
 		int teamnum = TF_TEAM_HALLOWEEN_BOSS;
 		int health  = -1;
 		float delay = 0.0f;
-		
+		float lifetime = FLT_MAX;
 		bool spawned = false;
 		CHandle<CHalloweenBaseBoss> boss;
 	};
@@ -100,6 +100,40 @@ namespace Mod::Pop::Wave_Extensions
 		}
 		waves[wave].templ_inst.clear();
 	}
+
+	WaveData *GetWaveData(CWave *wave)
+	{
+		if (!TFGameRules()->IsMannVsMachineMode())
+			return nullptr;
+
+		if (wave == nullptr)
+			return nullptr;
+		
+		auto it = waves.find(wave);
+		if (it != waves.end()) {
+			return &(it->second);
+		}
+
+		return nullptr;
+	}
+
+	WaveData *GetCurrentWaveData()
+	{
+		if (!TFGameRules()->IsMannVsMachineMode())
+			return nullptr;
+
+		CWave *wave = g_pPopulationManager->GetCurrentWave();
+		if (wave == nullptr)
+			return nullptr;
+		
+		auto it = waves.find(wave);
+		if (it != waves.end()) {
+			return &(it->second);
+		}
+
+		return nullptr;
+	}
+
 	DETOUR_DECL_MEMBER(void, CWave_dtor0)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
@@ -247,6 +281,9 @@ namespace Mod::Pop::Wave_Extensions
 			//	DevMsg("Health \"%s\" --> %d\n", subkey->GetString(), info.health);
 			} else if (FStrEq(name, "Delay")) {
 				info.delay = Max(0.0f, subkey->GetFloat());
+			//	DevMsg("Delay \"%s\" --> %.1f\n", subkey->GetString(), info.delay);
+			} else if (FStrEq(name, "Lifetime")) {
+				info.lifetime = Max(0.0f, subkey->GetFloat());
 			//	DevMsg("Delay \"%s\" --> %.1f\n", subkey->GetString(), info.delay);
 			} else if (FStrEq(name, "Position")) {
 				FOR_EACH_SUBKEY(subkey, subsub) {
@@ -623,7 +660,10 @@ namespace Mod::Pop::Wave_Extensions
 			saw_explanation.insert(player);
 		}
 
-		const auto& explanation = waves[wave].explanation;
+		auto data = GetWaveData(wave);
+		if (data == nullptr) return;
+
+		const auto& explanation = data->explanation;
 
 		if (explanation.size() > 0) {
 
@@ -643,15 +683,12 @@ namespace Mod::Pop::Wave_Extensions
 	}
 
 	void OnWaveBegin(bool success) {
-		CWave *wave = g_pPopulationManager->GetCurrentWave();
-		if (wave == nullptr)
-			return;
 
 		ShowWaveExplanation(success);
 
-		auto data = waves[wave];
-		if (!data.t_waveinit.HasStarted()) {
-			data.t_waveinit.Start();
+		auto data = GetCurrentWaveData();
+		if (data != nullptr && !data->t_waveinit.HasStarted()) {
+			data->t_waveinit.Start();
 		}
 
 		// Remove old force items
@@ -759,12 +796,24 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		info.spawned = true;
 		
+		static ConVarRef tf_merasmus_lifetime("tf_merasmus_lifetime");
+		static ConVarRef tf_eyeball_boss_lifetime("tf_eyeball_boss_lifetime");
+		float tf_merasmus_lifetime_old = tf_merasmus_lifetime.GetFloat();
+		float tf_eyeball_boss_lifetime_old = tf_eyeball_boss_lifetime.GetFloat();
+		
+		tf_merasmus_lifetime.SetValue(info.lifetime);
+		tf_eyeball_boss_lifetime.SetValue(info.lifetime);
+
+		DevMsg("lifetime %f\n", tf_merasmus_lifetime.GetFloat());
 		CHalloweenBaseBoss *boss = CHalloweenBaseBoss::SpawnBossAtPos(info.type, info.origin, info.teamnum, nullptr);
 		if (boss == nullptr) {
 			Warning("SpawnBoss: CHalloweenBaseBoss::SpawnBossAtPos(type %d, teamnum %d) failed\n", info.type, info.teamnum);
 			return;
 		}
 		
+		tf_merasmus_lifetime.SetValue(tf_merasmus_lifetime_old);
+		tf_eyeball_boss_lifetime.SetValue(tf_eyeball_boss_lifetime_old);
+
 		if (info.health > 0) {
 			boss->SetMaxHealth(info.health);
 			boss->SetHealth   (info.health);
@@ -989,35 +1038,31 @@ namespace Mod::Pop::Wave_Extensions
 		if (oldState != GR_STATE_RND_RUNNING && newState == GR_STATE_RND_RUNNING) {
 			if (TFGameRules()->IsMannVsMachineMode()) {
 				last_wave = g_pPopulationManager->GetCurrentWave();
-				auto it = waves.find(last_wave);
-				if (it != waves.end()) {
-					WaveData& data = (*it).second;
-					SelectLoopSound(data);
-				}
+				WaveData *data = GetWaveData(last_wave);
+				if (data != nullptr)
+					SelectLoopSound(*data);
 			}
 		} else if (oldState == GR_STATE_RND_RUNNING && newState != GR_STATE_RND_RUNNING) {
 			if (last_wave != nullptr) {
-				auto it = waves.find(last_wave); 
-				if (it != waves.end()) {
-					WaveData& data = (*it).second;
-
-					if (data.defined_class_attributes || data.player_attributes.size() > 0 || data.addconds.size() > 0) {
+				WaveData *data = GetWaveData(last_wave);
+				if (data != nullptr) {
+					if (data->defined_class_attributes || data->player_attributes.size() > 0 || data->addconds.size() > 0) {
 						ForEachTFPlayer([&](CTFPlayer *player){
 							if (player->IsBot()) return;
-							for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
+							for(auto it = data->player_attributes.begin(); it != data->player_attributes.end(); ++it){
 								player->RemoveCustomAttribute(it->first.c_str());
 							}
 							int classname = player->GetPlayerClass()->GetClassIndex();
 
-							for(auto it = data.player_attributes_class[classname].begin(); it != data.player_attributes_class[classname].end(); ++it){
+							for(auto it = data->player_attributes_class[classname].begin(); it != data->player_attributes_class[classname].end(); ++it){
 									player->RemoveCustomAttribute(it->first.c_str());
 								}
-							for(auto cond : data.addconds){
+							for(auto cond : data->addconds){
 								if (player->m_Shared->InCond(cond)){
 									player->m_Shared->RemoveCond(cond);
 								}
 							}
-							for(auto cond : data.addconds_class[classname]){
+							for(auto cond : data->addconds_class[classname]){
 								if (player->m_Shared->InCond(cond)){
 									player->m_Shared->RemoveCond(cond);
 								}
@@ -1032,6 +1077,56 @@ namespace Mod::Pop::Wave_Extensions
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
 	}
 	
+	BossInfo *GetBossInfo(CBaseEntity *entity)
+	{
+		WaveData *data = GetCurrentWaveData();
+		if (data == nullptr) return nullptr;
+
+		for (auto &bossinfo : data->bosses) {
+			if (bossinfo.boss == entity)
+				return &bossinfo;
+		}
+		return nullptr;
+	}
+
+	/* block attempts by MONOCULUS to switch to CEyeballBossTeleport */
+	DETOUR_DECL_MEMBER(ActionResult<CEyeballBoss>, CEyeballBossIdle_Update, CEyeballBoss *actor, float dt)
+	{
+		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_Update)(actor, dt);
+		
+		if (result.transition == ActionTransition::CHANGE_TO && strcmp(result.reason, "Moving...") == 0) {
+			if (TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr) {
+				delete result.action;
+				
+				result.transition = ActionTransition::CONTINUE;
+				result.action     = nullptr;
+				result.reason     = nullptr;
+			}
+		}
+		
+		return result;
+	}
+	
+	
+	RefCount rc_CEyeballBossDead_Update__and_is_from_spawner;
+	DETOUR_DECL_MEMBER(ActionResult<CEyeballBoss>, CEyeballBossDead_Update, CEyeballBoss *actor, float dt)
+	{
+		SCOPED_INCREMENT_IF(rc_CEyeballBossDead_Update__and_is_from_spawner,
+			(TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr));
+		
+		return DETOUR_MEMBER_CALL(CEyeballBossDead_Update)(actor, dt);
+	}
+	
+	/* prevent MONOCULUS's death from spawning a teleport vortex */
+	DETOUR_DECL_STATIC(CBaseEntity *, CBaseEntity_Create, const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner)
+	{
+		if (rc_CEyeballBossDead_Update__and_is_from_spawner > 0 && strcmp(szName, "teleport_vortex") == 0) {
+			return nullptr;
+		}
+		
+		return DETOUR_STATIC_CALL(CBaseEntity_Create)(szName, vecOrigin, vecAngles, pOwner);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1052,6 +1147,10 @@ namespace Mod::Pop::Wave_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter, "CTeamplayRoundBasedRules::State_Enter");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleCommand_JoinClass,                  "CTFPlayer::HandleCommand_JoinClass");
 			
+			MOD_ADD_DETOUR_MEMBER(CEyeballBossIdle_Update, "CEyeballBossIdle::Update");
+			
+			MOD_ADD_DETOUR_MEMBER(CEyeballBossDead_Update, "CEyeballBossDead::Update");
+			MOD_ADD_DETOUR_STATIC(CBaseEntity_Create,      "CBaseEntity::Create");
 		}
 		
 		virtual void OnUnload() override

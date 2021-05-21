@@ -2,6 +2,7 @@
 #include "re/nextbot.h"
 #include "re/path.h"
 #include "stub/projectiles.h"
+#include "stub/tfbot.h"
 #include "util/scope.h"
 
 #define TARGET_STICKIES_MOD
@@ -161,7 +162,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 			CUtlVector<CBaseProjectile *> stickies;
 			
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
-				auto proj = rtti_cast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
 				assert(proj != nullptr);
 				
 				if (strcmp(proj->GetClassname(), "tf_projectile_pipe_remote") == 0) {
@@ -292,7 +293,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		int list_count = list.Count();
 		if (list_count != 0 && static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
 			for (int i = 0; i < list_count; ++i) {
-				auto proj = rtti_cast<CBaseProjectile *>(list[i]);
+				auto proj = rtti_scast<CBaseProjectile *>(list[i]);
 				assert(proj != nullptr);
 				
 				if (strcmp(proj->GetClassname(), "tf_projectile_pipe_remote") == 0) {

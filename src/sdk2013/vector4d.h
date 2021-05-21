@@ -136,6 +136,13 @@ public:
 	constexpr Vector4D& operator=( Vector4D const& src );
 };
 
+static_assert(offsetof(Vector4D, x) == offsetof(Vector, x));
+static_assert(offsetof(Vector4D, y) == offsetof(Vector, y));
+static_assert(offsetof(Vector4D, z) == offsetof(Vector, z));
+
+static_assert(offsetof(Vector4D, x) == offsetof(Vector2D, x));
+static_assert(offsetof(Vector4D, y) == offsetof(Vector2D, y));
+
 //-----------------------------------------------------------------------------
 // SSE optimized routines
 //-----------------------------------------------------------------------------
@@ -149,8 +156,8 @@ public:
 	constexpr void Set( vec_t X, vec_t Y, vec_t Z, vec_t W );
 	void InitZero( void );
 
-	constexpr __m128 &AsM128() { return *(__m128*)&x; }
-	constexpr const __m128 &AsM128() const { return *(const __m128*)&x; } 
+	constexpr __m128 &AsM128() { _CONSTEXPR_RETURN_TYPE_PUN(__m128); }
+	constexpr const __m128 &AsM128() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m128); }
 
 private:
 	// No copy constructors allowed if we're in optimal mode
@@ -276,13 +283,13 @@ constexpr Vector4D& Vector4D::operator=(const Vector4D &vOther)
 constexpr vec_t& Vector4D::operator[](int i)
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 constexpr vec_t Vector4D::operator[](int i) const
 {
 	Assert( (i >= 0) && (i < 4) );
-	return ((vec_t*)this)[i];
+	return Base()[i];
 }
 
 //-----------------------------------------------------------------------------
@@ -291,22 +298,22 @@ constexpr vec_t Vector4D::operator[](int i) const
 
 constexpr Vector& Vector4D::AsVector3D()
 {
-	return *(Vector*)this;
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector);
 }
 
 constexpr Vector const& Vector4D::AsVector3D() const
 {
-	return *(Vector const*)this;
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector);
 }
 
 constexpr Vector2D& Vector4D::AsVector2D()
 {
-	return *(Vector2D*)this;
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector2D);
 }
 
 constexpr Vector2D const& Vector4D::AsVector2D() const
 {
-	return *(Vector2D const*)this;
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector2D);
 }
 
 //-----------------------------------------------------------------------------
@@ -315,12 +322,14 @@ constexpr Vector2D const& Vector4D::AsVector2D() const
 
 constexpr vec_t* Vector4D::Base()
 {
-	return (vec_t*)this;
+	static_assert(offsetof(Vector4D, x) == 0);
+	return &x;
 }
 
 constexpr vec_t const* Vector4D::Base() const
 {
-	return (vec_t const*)this;
+	static_assert(offsetof(Vector4D, x) == 0);
+	return &x;
 }
 
 //-----------------------------------------------------------------------------
@@ -585,15 +594,15 @@ constexpr vec_t Vector4DNormalize( Vector4D& v )
 
 constexpr vec_t Vector4D::DistTo(const Vector4D &vOther) const
 {
-	Vector4D delta;
-	Vector4DSubtract( *this, vOther, delta );
+	Vector4D delta = *this;
+	delta -= vOther;
 	return delta.Length();
 }
 
 constexpr vec_t Vector4D::DistToSqr(const Vector4D &vOther) const
 {
-	Vector4D delta;
-	Vector4DSubtract( *this, vOther, delta );
+	Vector4D delta = *this;
+	delta -= vOther;
 	return delta.LengthSqr();
 }
 

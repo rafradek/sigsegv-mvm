@@ -37,7 +37,6 @@ enum SpawnResult
 
 namespace Mod::Pop::PopMgr_Extensions
 {
-
 	
 	int iGetTeamAssignmentOverride = 6;
 	#if defined _LINUX
@@ -535,6 +534,26 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::map<CEconItemAttributeDefinition *, std::string> attributes;
 	};
 
+	struct SprayDecal
+	{
+		CRC32_t texture;
+		Vector pos;
+		QAngle angle;
+	};
+
+	struct PlayerPointTemplateInfo
+	{
+		PointTemplateInfo info;
+		int class_index = 0;
+	};
+
+	struct WeaponPointTemplateInfo
+	{
+		PointTemplateInfo info;
+		std::vector<std::unique_ptr<ItemListEntry>> weapons;
+
+	};
+
 	struct PopState
 	{
 		PopState() :
@@ -590,7 +609,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_VacNumCharges                   ("weapon_medigun_resist_num_chunks"),
 			m_DoubleDonkWindow                ("tf_double_donk_window"),
 			m_ConchSpeedBoost                 ("tf_whip_speed_increase"),
-			m_StealthDamageReduction          ("tf_stealth_damage_reduction")
+			m_StealthDamageReduction          ("tf_stealth_damage_reduction"),
+			m_AllowFlagCarrierToFight         ("tf_mvm_bot_allow_flag_carrier_to_fight")
 			
 			
 			
@@ -684,6 +704,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_DoubleDonkWindow.Reset();
 			this->m_ConchSpeedBoost.Reset();
 			this->m_StealthDamageReduction.Reset();
+			this->m_AllowFlagCarrierToFight.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -696,6 +717,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_PlayerAttributes.clear();
 			this->m_PlayerAddCond   .clear();
 			this->m_CustomWeapons   .clear();
+			this->m_SprayDecals     .clear();
 			this->m_Player_anim_cosmetics.clear();
 
 			for (int i=0; i < 10; i++)
@@ -726,7 +748,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_ExtraTankPaths.clear();
 
 			this->m_PlayerSpawnTemplates.clear();
+			this->m_PlayerSpawnOnceTemplates.clear();
+			this->m_PlayerSpawnOnceTemplatesAppliedTo.clear();
 			this->m_ShootTemplates.clear();
+			this->m_WeaponSpawnTemplates.clear();
+			this->m_ItemEquipTemplates.clear();
 			Clear_Point_Templates();
 
 		}
@@ -816,18 +842,24 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_DoubleDonkWindow;
 		CPopOverride_ConVar<float> m_ConchSpeedBoost;
 		CPopOverride_ConVar<float> m_StealthDamageReduction;
+		CPopOverride_ConVar<bool> m_AllowFlagCarrierToFight;
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CPopOverride_ConVar<std::string> m_CustomUpgradesFile;
 		
 		std::vector<PointTemplateInfo>				m_SpawnTemplates;
-		std::vector<PointTemplateInfo>              m_PlayerSpawnTemplates;
+		std::vector<PlayerPointTemplateInfo>        m_PlayerSpawnTemplates;
+		std::vector<PointTemplateInfo>              m_PlayerSpawnOnceTemplates;
+		std::unordered_set<CTFPlayer*>              m_PlayerSpawnOnceTemplatesAppliedTo;
 		std::vector<ShootTemplateData>              m_ShootTemplates;
+		std::vector<WeaponPointTemplateInfo>        m_WeaponSpawnTemplates;
+
 		std::set<std::string>                       m_DisableSounds;
 		std::map<std::string,std::string>           m_OverrideSounds;
 		std::vector<std::unique_ptr<ItemListEntry>> m_ItemWhitelist;
 		std::vector<std::unique_ptr<ItemListEntry>> m_ItemBlacklist;
 		std::vector<ItemAttributes>                 m_ItemAttributes;
+		std::vector<SprayDecal>                     m_SprayDecals;
 	//	std::set<int>                               m_DisallowedItems;
 		
 		std::map<std::string, int> m_FlagResetTimes;
@@ -846,13 +878,73 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<ETFCond> m_PlayerAddCondClass[10] = {};
 		ForceItems m_ForceItems;
 
+
 		std::map<std::string, CustomWeapon> m_CustomWeapons;
 
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
+		std::unordered_map<CBaseEntity *, PointTemplateInstance *> m_ItemEquipTemplates;
+
+		std::unordered_set<std::string> m_MissingRobotBones[10];
+		string_t m_CachedRobotModelIndex[20];
 	};
 	PopState state;
 	
+	bool PlayerUsesRobotModel(CTFPlayer *player)
+	{
+		auto class_shared = player->GetPlayerClass();
+		int class_index = class_shared->GetClassIndex();
+		string_t player_model = MAKE_STRING(class_shared->GetCustomModel());
+		return player_model == state.m_CachedRobotModelIndex[class_index] || player_model == state.m_CachedRobotModelIndex[class_index + 10];
+	}
+
+	std::list<CHandle<CBaseAnimating>> item_loading_queue;
+
+	bool IsItemApplicableToRobotModel(CTFPlayer *parent, CBaseAnimating *model_entity, bool check_load)
+	{
+		if (check_load) {
+			int numbones_entity = model_entity->GetNumBones();
+			if (modelinfo->IsDynamicModelLoading(model_entity->GetModelIndex()) || numbones_entity == 0) {
+				item_loading_queue.push_front(model_entity);
+				//THINK_FUNC_SET(model_entity, ItemApplicableCheckDelay, gpGlobals->curtime);
+				//model_load_callback.AddCallback(model_entity);
+				return true;
+			}
+		}
+		CFastTimer timer;
+		timer.Start();
+		int class_index = parent->GetPlayerClass()->GetClassIndex();
+
+
+		std::unordered_set<std::string> &bones = state.m_MissingRobotBones[class_index];
+
+		bool is_missing_bone = false;
+
+		for (auto &str : bones) {
+			if (model_entity->LookupBone(str.c_str()) != -1) {
+				is_missing_bone = true;
+				break;
+			}
+		}
+		
+		timer.End();
+
+		return !is_missing_bone;
+	}
 	
+	/*bool IsItemApplicableToRobotModel(CTFPlayer *parent, CBaseAnimating *entity)
+	{
+		if (entity->GetModel() == nullptr)
+			return true;
+
+		studiohdr_t *pStudioHdr = modelinfo->GetStudiomodel( entity->GetModel() );
+
+		if (pStudioHdr == nullptr) {
+			DevMsg("studiohdrnull\n");
+			return true;
+		}
+
+		return IsItemApplicableToRobotModel(parent, mdlcache->GetStudioHdr(modelinfo->GetCacheHandle(entity->GetModel())));
+	}*/
 	
 
 	/* HACK: allow MvM:JoinTeam_Blue_Allow to force-off its admin-only functionality if the pop file explicitly set
@@ -864,7 +956,11 @@ namespace Mod::Pop::PopMgr_Extensions
 	
 	const char *GetCustomWeaponNameOverride(const char *name)
 	{
-		if (!state.m_CustomWeapons.empty()) {
+		if (name == nullptr)
+		{
+			DevMsg("null name\n");
+		}
+		if (!state.m_CustomWeapons.empty() && name != nullptr) {
 			std::string namestr = name;
 			auto entry = state.m_CustomWeapons.find(namestr);
 			if (entry != state.m_CustomWeapons.end()) {
@@ -1084,7 +1180,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				edict_t *edict = INDEXENT( iEntIndex );
 				if ( edict && !edict->IsFree() )
 				{
-					CTFPlayer *player = rtti_cast<CTFPlayer *>(GetContainingEntity(edict));
+					CTFPlayer *player = ToTFPlayer(GetContainingEntity(edict));
 					if (player != nullptr && !player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
 							(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
 						//CBaseEntity_EmitSound_static_emitsound
@@ -1197,20 +1293,22 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 		}
 
-		// Disable cosmetics on robots, if player animations are not enabled
-		if (!state.m_bPlayerRobotUsePlayerAnimation && item_view != nullptr && item_view->GetItemDefinition() != nullptr 
-				&& !player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) 
-				|| (state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
-
-			const char *item_slot = item_view->GetItemDefinition()->GetKeyValues()->GetString("item_slot", "");
-			if (FStrEq(item_slot, "head") || FStrEq(item_slot, "misc")) {
-				return nullptr;
-			}
-		}
+		
 		
 	//	DevMsg("[%s] GiveNamedItem(\"%s\"): provisionally allowed\n", player->GetPlayerName(), classname);
 		CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
-		
+
+		// Disable cosmetics on robots, if player animations are not enabled
+		/*if (PlayerUsesRobotModel(player) && item_view != nullptr && item_view->GetItemDefinition() != nullptr) {
+
+			Msg("GiveItem %d\n", player->GetPlayerClass()->GetClassIndex());
+			const char *item_slot = item_view->GetItemDefinition()->GetKeyValues()->GetString("item_slot", "");
+			if ((FStrEq(item_slot, "head") || FStrEq(item_slot, "misc")) && !IsItemApplicableToRobotModel(player, static_cast<CBaseAnimating *>(entity))) {
+				entity->Remove();
+				return nullptr;
+			}
+		}*/
+
 		return entity;
 	}
 
@@ -1248,24 +1346,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
 		
 		if (remove && !state.m_ItemAttributes.empty()) {
-			for (int i = 0; i < player->GetNumWearables(); ++i) {
-				CEconWearable *wearable = player->GetWearable(i);
-				if (wearable == nullptr) continue;
-				
-				CEconItemView *item_view = wearable->GetItem();
-				if (item_view == nullptr) continue;
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+
+				CEconItemView *item_view = entity->GetItem();
+				if (item_view == nullptr) return;
 				ApplyItemAttributes(item_view, player);
-			}
-			
-			for (int i = 0; i < player->WeaponCount(); ++i) {
-				CBaseCombatWeapon *weapon = player->GetWeapon(i);
-				if (weapon == nullptr) continue;
-				
-				CEconItemView *item_view = weapon->GetItem();
-				if (item_view == nullptr) continue;
-				
-				ApplyItemAttributes(item_view, player);
-			}
+			});
 		}
 	}
 	
@@ -1491,72 +1577,105 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	void CheckPlayerClassLimit(CTFPlayer *player)
+	bool CheckPlayerClassLimit(CTFPlayer *player, int plclass, bool do_switch)
 	{
-		int plclass = player->GetPlayerClass()->GetClassIndex();
 		const char* classname = g_aRawPlayerClassNames[plclass];
 		if (player->IsBot() || state.m_DisallowedClasses[plclass] == -1)
-			return;
+			return false;
 
 		int taken_slots[10];
 		for (int i=0; i < 10; i++)
 			taken_slots[i] = 0;
 
 		ForEachTFPlayer([&](CTFPlayer *playerin){
-			if(player != playerin && playerin->GetTeamNumber() == TF_TEAM_RED && !playerin->IsBot()){
+			if(player != playerin && playerin->GetTeamNumber() == player->GetTeamNumber() && !playerin->IsBot()){
 				int classnum = playerin->GetPlayerClass()->GetClassIndex();
 				taken_slots[classnum]+=1;
 			}
 		});
 
 		if (state.m_DisallowedClasses[plclass] <= taken_slots[plclass]){
+			
+			bool insetup = TFGameRules()->InSetup();
+			TFGameRules()->SetInSetup(true);
 			if (state.m_bSingleClassAllowed != -1) {
 				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",classname,"class is allowed in this mission"));
+
 				player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 
 			}
 			else {
-				for (int i=1; i < 10; i++){
-					if(state.m_DisallowedClasses[i] == -1 || taken_slots[i] < state.m_DisallowedClasses[i]){
-						const char *sound = g_sSounds[plclass];
-						DevMsg("sound, %s\n",sound);
+				const char *sound = g_sSounds[plclass];
 
-						CRecipientFilter filter;
-						filter.AddRecipient(player);
-						CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
+				CRecipientFilter filter;
+				filter.AddRecipient(player);
+				CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
 
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
-						player->HandleCommand_JoinClass(g_aRawPlayerClassNames[i]);
-						
-						int msg_type = usermessages->LookupUserMessage("VGUIMenu");
-						if (msg_type == -1) return;
-						
-						bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-						if (msg == nullptr) return;
-						
-						msg->WriteString("class_red");
-						msg->WriteByte(0x01);
-						msg->WriteByte(0x00);
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
 
-						engine->MessageEnd();
-						
-						break;
+				if (do_switch) {
+					for (int i=1; i < 10; i++){
+						if(state.m_DisallowedClasses[i] == -1 || taken_slots[i] < state.m_DisallowedClasses[i]){
+							player->HandleCommand_JoinClass(g_aRawPlayerClassNames[i]);
+							break;
+						}
 					}
 				}
+
+				int msg_type = usermessages->LookupUserMessage("VGUIMenu");
+				if (msg_type == -1) return;
+				
+				bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+				if (msg == nullptr) return;
+				
+				msg->WriteString("class_red");
+				msg->WriteByte(0x01);
+				msg->WriteByte(0x00);
+
+				engine->MessageEnd();
 			}
+			TFGameRules()->SetInSetup(insetup);
+			return true;
 		}
+		return false;
 	}
+
+	bool CheckPlayerClassLimit(CTFPlayer *player)
+	{
+		return CheckPlayerClassLimit(player, player->GetPlayerClass()->GetClassIndex(), true);
+	}
+
+	RefCount rc_CTFPlayer_HandleCommand_JoinClass;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
+		SCOPED_INCREMENT(rc_CTFPlayer_HandleCommand_JoinClass);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		if (rc_CTFPlayer_HandleCommand_JoinClass <= 1 && !player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED) {
+			int class_index = 0;
+			for (int i = 0; i < 10; i++) {
+				if (FStrEq(pClassName, g_aRawPlayerClassNames[i])) {
+					class_index = i;
+					break;
+				}
+			}
+			if (CheckPlayerClassLimit(player, class_index, false)) {
+				return;
+			}
+		}
+
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
-		CheckPlayerClassLimit(player);
+
+		// Avoid infinite loop
+		if (rc_CTFPlayer_HandleCommand_JoinClass < 10 && player->GetTeamNumber() >= TF_TEAM_RED)
+			CheckPlayerClassLimit(player);
 	}
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
-		CheckPlayerClassLimit(player);
+		if (player->GetTeamNumber() >= TF_TEAM_RED)
+			CheckPlayerClassLimit(player);
 	}
 
 	void ApplyPlayerAttributes(CTFPlayer *player) {
@@ -1630,20 +1749,24 @@ namespace Mod::Pop::PopMgr_Extensions
 				if (sound != nullptr){}
 					player->EmitSound(sound);
 			}*/
-			if ( g_pointTemplateParent.find(player) != g_pointTemplateParent.end()) {
-				for (auto templ : g_templateInstances) {
-					if (templ->parent == player) {
-						templ->OnKilledParent(false);
-					}
+			
+
+			for (auto &templ : state.m_PlayerSpawnTemplates) {
+				if (templ.class_index == 0 || templ.class_index == player->GetPlayerClass()->GetClassIndex())
+					templ.info.SpawnTemplate(player);
+			}
+
+			// Templates that only spawn the first time the player joins on the mission
+			if (state.m_PlayerSpawnOnceTemplatesAppliedTo.find(player) == state.m_PlayerSpawnOnceTemplatesAppliedTo.end()) {
+				for (auto &templ : state.m_PlayerSpawnOnceTemplates) {
+					templ.SpawnTemplate(player);
 				}
 			}
-			for (auto &templ : state.m_PlayerSpawnTemplates) {
-				templ.SpawnTemplate(player);
-			}
+
 			if (playerScale != 1.0f)
 				player->SetModelScale(playerScale);
 			else if (player->IsMiniBoss()) {
-				ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
+				static ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
 				player->SetModelScale(miniboss_scale.GetFloat());
 			}
 
@@ -1689,6 +1812,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 		}
 	}
+	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -1716,7 +1840,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			player->GetPlayerClass()->m_bUseClassAnimations=true;
 		}
+		
 	}
+
 	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetOverrideStepSound, const char *pszBaseStepSoundName)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -1898,7 +2024,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		if (TFGameRules()->IsMannVsMachineMode() && !player->IsFakeClient()) {
 			bool stopproj = false;
-			auto weapon = reinterpret_cast<CTFWeaponBase*>(this);
+			auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
 			for(auto it = state.m_ShootTemplates.begin(); it != state.m_ShootTemplates.end(); it++) {
 				ShootTemplateData &temp_data = *it;
 				if (temp_data.weapon_classname != "" && !FStrEq(weapon->GetClassname(), temp_data.weapon_classname.c_str()))
@@ -1921,7 +2047,18 @@ namespace Mod::Pop::PopMgr_Extensions
 				stopproj = temp_data.Shoot(player, weapon) | stopproj;
 			}
 			if (stopproj) {
-				player->DoAnimationEvent(0,0);
+				if (weapon->ShouldPlayFireAnim()) {
+					player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
+				}
+				
+				weapon->RemoveProjectileAmmo(player);
+				weapon->m_flLastFireTime = gpGlobals->curtime;
+				weapon->DoFireEffects();
+				weapon->UpdatePunchAngles(player);
+				
+				if (player->m_Shared->IsStealthed() && weapon->ShouldRemoveInvisibilityOnPrimaryAttack()) {
+					player->RemoveInvisibility();
+				}
 				return nullptr;
 			}
 		}
@@ -1941,15 +2078,138 @@ namespace Mod::Pop::PopMgr_Extensions
 	}*/
 
 
+	bool IsInvalidWearableForModel(CTFPlayer *player, CTFWearable *wearable) 
+	{
+		auto item_view = wearable->GetItem();
+		if (item_view != nullptr && item_view->GetItemDefinition() != nullptr) {
+
+			const char *item_slot = item_view->GetItemDefinition()->GetKeyValues()->GetString("item_slot", "");
+			int level = wearable->GetItem()->m_iEntityLevel;
+			int itemid = item_view->m_iItemDefinitionIndex;
+			
+			if ((!player->IsBot() && ((FStrEq(item_slot, "head") || FStrEq(item_slot, "misc")) || itemid == -1)) && !IsItemApplicableToRobotModel(player, wearable, true)) {
+				
+				return true;
+			}
+		}
+		return false;
+	}
+
+	THINK_FUNC_DECL(RemoveCosmeticDelay)
+	{
+		auto player = ToTFPlayer(this->GetOwnerEntity());
+		// Disable cosmetics on robots, if player animations are not enabled
+		if (player != nullptr && PlayerUsesRobotModel(player) && IsInvalidWearableForModel(player, reinterpret_cast<CTFWearable *>(this)))
+			this->Remove();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *player)
+	{
+		CTFWearable *wearable = reinterpret_cast<CTFWearable *>(this); 
+		
+		THINK_FUNC_SET(wearable, RemoveCosmeticDelay, gpGlobals->curtime);
+		DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
+		
+		if (ToTFBot(player) == nullptr) {
+			for (auto &info : state.m_WeaponSpawnTemplates) {
+				for (auto &entry : info.weapons) {
+					if (entry->Matches(wearable->GetClassname(), wearable->GetItem())) {
+						state.m_ItemEquipTemplates[wearable] = info.info.SpawnTemplate(player);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
+	{
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
+		if (ToTFBot(owner) == nullptr) {
+			for (auto &info : state.m_WeaponSpawnTemplates) {
+				DevMsg("weapon spawn template %d %d\n", info.info.template_name, info.weapons.size());
+				for (auto &entry : info.weapons) {
+					DevMsg("entry\n");
+					if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
+						DevMsg("weapon match\n");
+						state.m_ItemEquipTemplates[ent] = info.info.SpawnTemplate(owner);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerClassShared_SetCustomModel, const char *s1, bool b1)
+	{
+		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
+		if (s1 != nullptr) {
+			CTFPlayer *player = reinterpret_cast<CTFPlayerClassShared *>(this)->GetOuter();
+			if (PlayerUsesRobotModel(player)) {
+				int numwearables = player->GetNumWearables();
+				for (int i = 0; i < numwearables; i++) {
+					auto *wearable = player->GetWearable(i);
+					if (wearable != nullptr && IsInvalidWearableForModel(player, wearable)) {
+						wearable->Remove();
+					}
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
+
+		if (ToTFBot(player) == nullptr) {
+			if ( g_pointTemplateParent.find(player) != g_pointTemplateParent.end()) {
+				for (auto templ : g_templateInstances) {
+					if (templ->parent == player && !templ->ignore_parent_alive_state) {
+						templ->OnKilledParent(false);
+					}
+				}
+			}
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+				for (auto &info : state.m_WeaponSpawnTemplates) {
+					for (auto &entry : info.weapons) {
+						if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
+							state.m_ItemEquipTemplates[entity] = info.info.SpawnTemplate(player);
+							break;
+						}
+					}
+				}
+			});
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
+	{
+		
+		auto entity = reinterpret_cast<CEconEntity *>(this);
+		auto find = state.m_ItemEquipTemplates.find(entity);
+		if (find != state.m_ItemEquipTemplates.end()) {
+			find->second->OnKilledParent(false);
+		}
+        DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
+    }
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
+
+		CTFPlayer *player = nullptr;
 		virtual void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 		{
 			if (pFilter->GetRecipientCount() > 0) {
-				DevMsg("GotLoadoutMessage\n");
 				int id = pFilter->GetRecipientIndex(0);
-				CTFPlayer *player = ToTFPlayer(UTIL_PlayerByIndex(id));
+				player = ToTFPlayer(UTIL_PlayerByIndex(id));
+			}
+		}
+		virtual void OnPostUserMessage(int msg_id, bool sent)
+		{
+			if (sent && player != nullptr) {
 				if (!player->IsBot())
 					ApplyForceItems(state.m_ForceItems, player, false);
 			}
@@ -1989,42 +2249,63 @@ namespace Mod::Pop::PopMgr_Extensions
 //		DETOUR_MEMBER_CALL(CPopulationManager_PostInitialize)();
 //	}
 	
+	PlayerPointTemplateInfo Parse_PlayerSpawnTemplate(KeyValues *kv) {
+		PlayerPointTemplateInfo info;
+		info.info = Parse_SpawnTemplate(kv);
+		FOR_EACH_SUBKEY(kv, subkey) {
+			if (FStrEq(subkey->GetName(), "Class")) {
+				info.class_index = GetClassIndexFromString(subkey->GetString());
+			}
+		}
+		return info;
+	}
 	
+	bool Parse_ItemListEntry(KeyValues *kv, std::vector<std::unique_ptr<ItemListEntry>> &list, const char *name) 
+	{
+		if (FStrEq(kv->GetName(), "Classname")) {
+			DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
+			list.push_back(std::make_unique<ItemListEntry_Classname>(kv->GetString()));
+		} else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName")) {
+			DevMsg("%s: Add Name entry: \"%s\"\n", name, kv->GetString());
+			list.push_back(std::make_unique<ItemListEntry_Name>(kv->GetString()));
+		} else if (FStrEq(kv->GetName(), "DefIndex")) {
+			DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
+			list.push_back(std::make_unique<ItemListEntry_DefIndex>(kv->GetInt()));
+		} else {
+			DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
+			list.push_back(std::make_unique<ItemListEntry_Classname>(kv->GetString()));
+		}
+		return true;
+	}
+
+	void Parse_PlayerItemEquipSpawnTemplate(WeaponPointTemplateInfo &info, KeyValues *kv) {
+		info.info = Parse_SpawnTemplate(kv);
+		FOR_EACH_SUBKEY(kv, subkey) {
+			if (FStrEq(subkey->GetName(), "Classname")) {
+				DevMsg("PlayerItemEquipSpawnTemplate: Add Classname entry: \"%s\"\n", subkey->GetString());
+				info.weapons.push_back(std::make_unique<ItemListEntry_Classname>(subkey->GetString()));
+			} else if (FStrEq(subkey->GetName(), "ItemName")) {
+				DevMsg("PlayerItemEquipSpawnTemplate: Add Name entry: \"%s\"\n", subkey->GetString());
+				info.weapons.push_back(std::make_unique<ItemListEntry_Name>(subkey->GetString()));
+			} else if (FStrEq(subkey->GetName(), "DefIndex")) {
+				DevMsg("PlayerItemEquipSpawnTemplate: Add DefIndex entry: %d\n", subkey->GetInt());
+				info.weapons.push_back(std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt()));
+			}
+		}
+		return info;
+	}
+
 	void Parse_ItemWhitelist(KeyValues *kv)
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
-			if (FStrEq(subkey->GetName(), "Classname")) {
-				DevMsg("ItemWhitelist: Add Classname entry: \"%s\"\n", subkey->GetString());
-				state.m_ItemWhitelist.push_back(std::make_unique<ItemListEntry_Classname>(subkey->GetString()));
-			} else if (FStrEq(subkey->GetName(), "Name")) {
-				DevMsg("ItemWhitelist: Add Name entry: \"%s\"\n", subkey->GetString());
-				state.m_ItemWhitelist.push_back(std::make_unique<ItemListEntry_Name>(subkey->GetString()));
-			} else if (FStrEq(subkey->GetName(), "DefIndex")) {
-				DevMsg("ItemWhitelist: Add DefIndex entry: %d\n", subkey->GetInt());
-				state.m_ItemWhitelist.push_back(std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt()));
-			} else {
-				DevMsg("ItemWhitelist: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", subkey->GetName(), subkey->GetString());
-				state.m_ItemWhitelist.push_back(std::make_unique<ItemListEntry_Classname>(subkey->GetString()));
-			}
+			Parse_ItemListEntry(subkey, state.m_ItemWhitelist, "ItemWhitelist");
 		}
 	}
-	
+
 	void Parse_ItemBlacklist(KeyValues *kv)
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
-			if (FStrEq(subkey->GetName(), "Classname")) {
-				DevMsg("ItemBlacklist: Add Classname entry: \"%s\"\n", subkey->GetString());
-				state.m_ItemBlacklist.push_back(std::make_unique<ItemListEntry_Classname>(subkey->GetString()));
-			} else if (FStrEq(subkey->GetName(), "Name")) {
-				DevMsg("ItemBlacklist: Add Name entry: \"%s\"\n", subkey->GetString());
-				state.m_ItemBlacklist.push_back(std::make_unique<ItemListEntry_Name>(subkey->GetString()));
-			} else if (FStrEq(subkey->GetName(), "DefIndex")) {
-				DevMsg("ItemBlacklist: Add DefIndex entry: %d\n", subkey->GetInt());
-				state.m_ItemBlacklist.push_back(std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt()));
-			} else {
-				DevMsg("ItemBlacklist: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", subkey->GetName(), subkey->GetString());
-				state.m_ItemBlacklist.push_back(std::make_unique<ItemListEntry_Classname>(subkey->GetString()));
-			}
+			Parse_ItemListEntry(subkey, state.m_ItemBlacklist, "ItemBlackList");
 		}
 	}
 	void Parse_ItemAttributes(KeyValues *kv)
@@ -2050,10 +2331,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
 				
 				if (attr_def == nullptr) {
-					DevMsg("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
+					Warning("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
 				}
 				else
-					item_attributes.attributes[attr_def]=subkey->GetString();
+					item_attributes.attributes[attr_def] = subkey->GetString();
 			}
 		}
 		if (hasname) {
@@ -2496,6 +2777,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		DevMsg("Parsed addcond\n");
 	}
+					
 	void Parse_CustomWeapon(KeyValues *kv)
 	{
 		CustomWeapon weapon;
@@ -2510,7 +2792,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
 				
 				if (attr_def == nullptr) {
-					DevMsg("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
+					Warning("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
 				}
 				else
 					weapon.attributes[attr_def] = subkey->GetString();
@@ -2520,6 +2802,39 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_CustomWeapons[weapon.name] = weapon;
 		}
 	}
+	/*void Parse_SprayDecal(KeyValues *kv)
+	{
+		if (state.m_SprayDecals.size() >= 22) {
+			Warning("[popmgr_extensions] There can only be up to 22 SprayDecal blocks working properly.\n");
+		}
+
+		SprayDecal decal;
+		bool has_decal = false;
+		FOR_EACH_SUBKEY(kv, subkey) {
+			if (FStrEq(subkey->GetName(), "Texture")) {
+				CRC32_t value;
+				if (LoadUserDataFile(value, kv->GetString())) {
+					decal.texture = value;
+					has_decal = true;
+				}
+				else {
+					Warning("[popmgr_extensions] Error: There is no texture named \"%s\" in SprayDecal.\n", subkey->GetName());
+				}
+			}
+			else if (FStrEq(subkey->GetName(), "Origin")){
+				sscanf(subkey->GetString(), "%f %f %f", &decal.pos.x, &decal.pos.y, &decal.pos.z);
+			}
+			else if (FStrEq(subkey->GetName(), "Angles")){
+				sscanf(subkey->GetString(), "%f %f %f", &decal.angle.x, &decal.angle.y, &decal.angle.z);
+			}
+		}
+		if (has_decal) {
+			state.m_SprayDecals.push_back(decal);
+		}
+		else {
+			Warning("[popmgr_extensions] Error: Missing texture key in SprayDecal.\n");
+		}
+	}*/
 	/*DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyPlayerUpgrades)
 	{
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyPlayerUpgrades)();
@@ -2584,6 +2899,28 @@ namespace Mod::Pop::PopMgr_Extensions
 	ConVar cvar_parse_errors("sig_mvm_print_parse_errors", "1", FCVAR_NOTIFY,
 		"Print mission parse errors in console");	
 
+	/*THINK_FUNC_DECL(DoSprayDecal) {
+		std::vector<CTFBot *> bots;
+		ForEachTFBot([&](CTFBot *bot) {
+			if (bots.size() < state.m_SprayDecals.size()) {
+				bots.push_back(bot);
+			}
+		});
+
+		for (int i = 0; i < bots.size(); i++) {
+			auto bot = bots[i];
+			auto &decal = state.m_SprayDecals[i];
+			Vector forward;
+			trace_t	tr;	
+
+			AngleVectors(decal.angle, &forward);
+			UTIL_TraceLine(decal.pos, decal.pos + forward * 2048, 
+				MASK_SOLID_BRUSHONLY, bot, COLLISION_GROUP_NONE, & tr);
+
+			UTIL_PlayerDecalTrace( &tr, ENTINDEX(bot) );
+		}
+	};*/
+
 	RefCount rc_CPopulationManager_Parse;
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
@@ -2641,6 +2978,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		state.m_SpawnTemplates.clear();
 		
+//		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
 	}
 
@@ -2803,6 +3141,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_ConchSpeedBoost.Set(subkey->GetFloat());
 				} else if (FStrEq(name, "StealthDamageReduction")) {
 					state.m_StealthDamageReduction.Set(subkey->GetFloat());
+				} else if (FStrEq(name, "AllowFlagCarrierToFight")) {
+					state.m_AllowFlagCarrierToFight.Set(subkey->GetBool());
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
@@ -2823,6 +3163,12 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_bBotRandomCrits = subkey->GetBool();
 				} else if (FStrEq(name, "NoHolidayPickups")) {
 					state.m_bNoHolidayHealthPack = subkey->GetBool();
+					if (state.m_bNoHolidayHealthPack) {
+						ForEachEntityByRTTI<CTFPowerup>([&](CTFPowerup *powerup){
+							powerup->SetModelIndexOverride( VISION_MODE_PYRO, 0 );
+							powerup->SetModelIndexOverride( VISION_MODE_HALLOWEEN, 0 );
+						});
+					}
 				} else if (FStrEq(name, "NoSapUnownedBuildings")) {
 					state.m_bSpyNoSapUnownedBuildings = subkey->GetBool();
 				} else if (FStrEq(name, "RespawnWaveTimeBlue")) {
@@ -2892,14 +3238,24 @@ namespace Mod::Pop::PopMgr_Extensions
 					else
 						templ_info.SpawnTemplate(nullptr);
 				} else if (FStrEq(name, "PlayerSpawnTemplate")) {
-					PointTemplateInfo info = Parse_SpawnTemplate(subkey);
+					PlayerPointTemplateInfo info = Parse_PlayerSpawnTemplate(subkey);
 					state.m_PlayerSpawnTemplates.push_back(info);
+				} else if (FStrEq(name, "PlayerItemEquipSpawnTemplate")) {
+					state.m_WeaponSpawnTemplates.emplace_back();
+					WeaponPointTemplateInfo &info = state.m_WeaponSpawnTemplates.back();//
+					Parse_PlayerItemEquipSpawnTemplate(info, subkey);
+				} else if (FStrEq(name, "PlayerSpawnOnceTemplate")) {
+					PointTemplateInfo info = Parse_SpawnTemplate(subkey);
+					info.ignore_parent_alive_state = true;
+					state.m_PlayerSpawnOnceTemplates.push_back(info);
 				} else if (FStrEq(name, "PlayerShootTemplate")) {
 					ShootTemplateData data;
 					if (Parse_ShootTemplate(data, subkey))
 						state.m_ShootTemplates.push_back(data);
 				} else if (FStrEq(name, "CustomWeapon")) {
 					Parse_CustomWeapon(subkey);
+				// } else if (FStrEq(name, "SprayDecal")) {
+				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
 				} else if (FStrEq(name, "PrecacheSound"))        { enginesound->PrecacheSound       (subkey->GetString(), false);
 				} else if (FStrEq(name, "PrecacheModel"))        { engine     ->PrecacheModel       (subkey->GetString(), false);
@@ -3009,12 +3365,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (cvar_max_red_players.GetInt() > 0)
 			max = cvar_max_red_players.GetInt();
 		
-		ConVarRef sig_mvm_jointeam_blue_allow("sig_mvm_jointeam_blue_allow");
-		ConVarRef sig_mvm_jointeam_blue_allow_max("sig_mvm_jointeam_blue_allow_max");
+		static ConVarRef sig_mvm_jointeam_blue_allow("sig_mvm_jointeam_blue_allow");
+		static ConVarRef sig_mvm_jointeam_blue_allow_max("sig_mvm_jointeam_blue_allow_max");
 		if (sig_mvm_jointeam_blue_allow.GetInt() != 0 && sig_mvm_jointeam_blue_allow_max.GetInt() > 0)
 			max += sig_mvm_jointeam_blue_allow_max.GetInt();
 		
-		ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
+		static ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
 		if (sig_mvm_jointeam_blue_allow_force.GetInt() != 0 && sig_mvm_jointeam_blue_allow_max.GetInt() > 0)
 			max = sig_mvm_jointeam_blue_allow_max.GetInt();
 		return max;
@@ -3092,7 +3448,13 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport,                  "CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile,        "CTFWeaponBaseGun::FireProjectile");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,        "CPopulationManager::JumpToWave");
+			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,        "CTFWearable::Equip");
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerClassShared_SetCustomModel,        "CTFPlayerClassShared::SetCustomModel");
 			MOD_ADD_DETOUR_STATIC(GetBotEscortCount,        "GetBotEscortCount");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn,          "CTFPlayer::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove");
+			
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
@@ -3118,12 +3480,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void OnEnable() override
 		{
-			usermsgs->HookUserMessage(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
+			usermsgs->HookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
 		}
 
 		virtual void OnDisable() override
 		{
-			usermsgs->UnhookUserMessage(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
+			usermsgs->UnhookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
 			state.Reset();
 		}
 		
@@ -3135,11 +3497,55 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
 		}
-		
+
+		virtual void LevelInitPostEntity() override
+		{
+			// Precache bones that are not available on robot models
+			for (int i = 1; i < 10; i++) {
+				state.m_CachedRobotModelIndex[i] = AllocPooledString(g_szBotModels[i]);
+				state.m_CachedRobotModelIndex[i+10] = AllocPooledString(g_szBotBossModels[i]);
+				const char *robot_model = g_szBotModels[i];
+				const char *player_model = CFmtStr("models/player/%s.mdl", g_aRawPlayerClassNamesShort[i]);
+
+				studiohdr_t *studio_player = mdlcache->GetStudioHdr(mdlcache->FindMDL(player_model));
+				studiohdr_t *studio_robot = mdlcache->GetStudioHdr(mdlcache->FindMDL(robot_model));
+				//anim_robot->SetModel(robot_model);
+				//anim_player->SetModel(player_model);
+
+				if (studio_robot == nullptr) {
+					Msg("%s is null\n", robot_model);
+					break;
+				}
+				else if (studio_player == nullptr) {
+					Msg("%s is null\n", player_model);
+					break;
+				}
+
+				int numbones_robot = studio_robot->numbones;
+				int numbones_player = studio_player->numbones;
+
+				std::unordered_set<std::string> &bones = state.m_MissingRobotBones[i];
+
+				for (int j = 0; j < numbones_player; j++) {
+					auto *bone = studio_player->pBone(j);
+					bones.insert(bone->pszName());
+				}
+
+				for (int j = 0; j < numbones_robot; j++) {
+					auto *bone = studio_robot->pBone(j);
+					if (bone->flags != 0)
+						bones.erase(bone->pszName());
+				}
+			}
+		}
+
 		virtual void LevelShutdownPostEntity() override
 		{
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
+			
+			for (int i = 0; i < 10; i++)
+				state.m_MissingRobotBones[i].clear();
 		}
 		
 		virtual void FrameUpdatePostEntityThink() override
@@ -3194,7 +3600,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				bool need_check_again = false;
 				ForEachTFPlayer([&](CTFPlayer *player){
 					if (!player->IsAlive() && player->IsBot() && player->GetTeamNumber() > 1){
-						if(gpGlobals->curtime - player->GetDeathTime() > 0.1f)
+						if(gpGlobals->curtime - player->GetDeathTime() > 0.2f)
 							player->ForceChangeTeam(TEAM_SPECTATOR, false);
 						else
 							need_check_again = true;
@@ -3203,7 +3609,25 @@ namespace Mod::Pop::PopMgr_Extensions
 				bot_killed_check = need_check_again;
 			}
 			
-			
+			for (auto it = item_loading_queue.begin(); it != item_loading_queue.end(); ) {
+				CBaseAnimating *entity = *it;
+				if (entity == nullptr) {
+					it = item_loading_queue.erase(it);
+					continue;
+				}
+
+				if (entity->GetNumBones() == 0) {
+					it++;
+				}
+				else {
+					CTFPlayer *owner = ToTFPlayer(entity->GetOwnerEntity());
+					if (owner != nullptr && !IsItemApplicableToRobotModel(owner, entity, false))
+						entity->Remove();
+
+					it = item_loading_queue.erase(it);
+				}
+			}
+
 			received_message_tick = false;
 		}
 	private:

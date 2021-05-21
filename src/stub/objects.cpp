@@ -1,4 +1,5 @@
 #include "stub/objects.h"
+#include "mem/extract.h"
 
 #if defined _LINUX
 
@@ -59,6 +60,7 @@ IMPL_SENDPROP(bool,               CBaseObject, m_bDisposableBuilding, CBaseObjec
 IMPL_SENDPROP(bool,               CBaseObject, m_bBuilding, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bDisabled, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarried, CBaseObject);
+IMPL_SENDPROP(bool,               CBaseObject, m_bCarryDeploy, CBaseObject);
 
 IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSentrygun_FireRocket());
 

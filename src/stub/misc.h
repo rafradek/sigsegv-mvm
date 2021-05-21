@@ -64,7 +64,6 @@ extern StaticFuncThunk<const char *, const char *, int> TranslateWeaponEntForCla
 // TODO: move to common.h
 #include <gamestringpool.h>
 
-
 class CMapListManager
 {
 public:
@@ -84,7 +83,13 @@ extern GlobalThunk<CMapListManager> g_MapListMgr;
 
 void PrecacheParticleSystem(const char *name);
 
+bool CRC_File(CRC32_t *crcvalue, const char *pszFileName);
+
 void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message);
+
+void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid);
+
+void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity);
 
 void PrintToChatAll(const char *str);
 

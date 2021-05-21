@@ -1,46 +1,46 @@
 #include "mod.h"
 #include "util/scope.h"
+#include "util/clientmsg.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
+#include "stub/server.h"
+#include "stub/tfweaponbase.h"
 
-
-class CHLTVServer
+class CNetworkStringTable  : public INetworkStringTable
 {
 public:
-    void StartMaster(IClient *client)                      {        ft_StartMaster(this, client); }
-    
-private:
-    static MemberFuncThunk<CHLTVServer *, void, IClient *>              ft_StartMaster;
+	virtual			~CNetworkStringTable( void );
+	virtual void	Dump( void );
+	virtual void	Lock( bool bLock );
+
+	TABLEID					m_id;
+	char					*m_pszTableName;
+	// Must be a power of 2, so encoding can determine # of bits to use based on log2
+	int						m_nMaxEntries;
+	int						m_nEntryBits;
+	int						m_nTickCount;
+	int						m_nLastChangedTick;
+	bool					m_bChangeHistoryEnabled : 1;
+	bool					m_bLocked : 1;
+	bool					m_bAllowClientSideAddString : 1;
+	bool					m_bUserDataFixedSize : 1;
+	bool					m_bIsFilenames : 1;
+	int						m_nUserDataSize;
+	int						m_nUserDataSizeBits;
+	pfnStringChanged		m_changeFunc;
+	void					*m_pObject;
+	CNetworkStringTable		*m_pMirrorTable;
 };
-
-class CBaseServer
-{
-public:
-    IClient *CreateFakeClient(const char *name)                      { return ft_CreateFakeClient(this, name); }
-    
-private:
-    static MemberFuncThunk<CBaseServer *, IClient *, const char *>              ft_CreateFakeClient;
-};
-
-class CGameClient 
-{
-public:
-    bool ShouldSendMessages()                      { return ft_ShouldSendMessages(this); }
-    
-private:
-    static MemberFuncThunk<CGameClient *, bool>              ft_ShouldSendMessages;
-};
-
-
-MemberFuncThunk<CHLTVServer *, void, IClient *> CHLTVServer::ft_StartMaster("CHLTVServer::StartMaster");
-MemberFuncThunk<CBaseServer *, IClient *, const char *> CBaseServer::ft_CreateFakeClient("CBaseServer::CreateFakeClient");
-MemberFuncThunk<CGameClient *, bool>              CGameClient::ft_ShouldSendMessages("CGameClient::ShouldSendMessages");
 
 namespace Mod::Perf::HLTV_Optimize
 {
+
     ConVar cvar_rate_between_rounds("sig_perf_hltv_rate_between_rounds", "8", FCVAR_NOTIFY,
 		"Source TV snapshotrate between rounds");
+
+    bool hltvServerEmpty = false;
+    bool recording = false;
 
     DETOUR_DECL_MEMBER(bool, CHLTVServer_IsTVRelay)
 	{
@@ -51,14 +51,20 @@ namespace Mod::Perf::HLTV_Optimize
     RefCount rc_CHLTVServer_RunFrame;
 	DETOUR_DECL_MEMBER(void, CHLTVServer_RunFrame)
 	{
+        SCOPED_INCREMENT(rc_CHLTVServer_RunFrame);
+        CHLTVServer *hltvserver = reinterpret_cast<CHLTVServer *>(this);
+        
         static ConVarRef tv_enable("tv_enable");
+        static ConVarRef tv_maxclients("tv_maxclients");
         bool tv_enabled = tv_enable.GetBool();
 
-        bool hasplayer = false;
+        hltvServerEmpty = hltvserver->GetNumClients() == 0;
+
+        bool hasplayer = tv_maxclients.GetInt() != 0;
         IClient * hltvclient = nullptr;
 
-
-        for ( int i=0 ; i< sv->GetClientCount() ; i++ )
+        int clientCount = sv->GetClientCount();
+        for ( int i=0 ; i < clientCount ; i++ )
         {
             IClient *pClient = sv->GetClient( i );
 
@@ -70,9 +76,9 @@ namespace Mod::Perf::HLTV_Optimize
                 else if (hltvclient == nullptr && pClient->IsHLTV()) {
                     hltvclient = pClient;
                 }
-                if ((hasplayer || !tv_enabled) && hltvclient != nullptr)
-                    break;
             }
+            if ((hasplayer || !tv_enabled) && hltvclient != nullptr)
+                break;
         }
 
         if (!hasplayer && hltvclient != nullptr) {
@@ -88,13 +94,13 @@ namespace Mod::Perf::HLTV_Optimize
                 reinterpret_cast<CHLTVServer *>(this)->StartMaster(client);
             }
         }
-        
         if (hasplayer && hltvclient != nullptr) {
-            static ConVarRef tv_maxclients("tv_maxclients");
-            if (tv_maxclients.GetInt() == 0) {
-                static ConVarRef snapshotrate("tv_snapshotrate");
-                int tickcount = 4.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
-                SCOPED_INCREMENT(rc_CHLTVServer_RunFrame);
+            static ConVarRef snapshotrate("tv_snapshotrate");
+            if (hltvServerEmpty) {
+                int tickcount = 32.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
+                int framec = hltvserver->CountClientFrames() - 2;
+                for (int i = 0; i < framec; i++)
+                    hltvserver->RemoveOldestFrame();
                 //DevMsg("SendNow %d\n", gpGlobals->tickcount % tickcount == 0/*reinterpret_cast<CGameClient *>(hltvclient)->ShouldSendMessages()*/);
                 if (gpGlobals->tickcount % tickcount != 0)
                     return;
@@ -103,11 +109,67 @@ namespace Mod::Perf::HLTV_Optimize
 		DETOUR_MEMBER_CALL(CHLTVServer_RunFrame)();
 	}
 
+    DETOUR_DECL_MEMBER(void, CHLTVServer_UpdateTick)
+	{
+        if (!hltvServerEmpty) {
+            CHLTVServer *hltvserver = reinterpret_cast<CHLTVServer *>(this);
+            static ConVarRef snapshotrate("tv_snapshotrate");
+            static ConVarRef delay("tv_delay");
+            int tickcount = 32.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
+            if (delay.GetInt() <= 0) {
+                int framec = hltvserver->CountClientFrames() - 2;
+                for (int i = 0; i < framec; i++)
+                    hltvserver->RemoveOldestFrame();
+            }
+            //DevMsg("SendNow %d\n", gpGlobals->tickcount % tickcount == 0/*reinterpret_cast<CGameClient *>(hltvclient)->ShouldSendMessages()*/);
+            if (gpGlobals->tickcount % tickcount != 0)
+                return;
+        }
+		DETOUR_MEMBER_CALL(CHLTVServer_UpdateTick)();
+    }
+
+    int last_restore_tick = -1;
+    //Do not delay stringtables in demo recording
+    DETOUR_DECL_MEMBER(void, CHLTVServer_RestoreTick, int time)
+	{
+        //static ConVarRef delay("tv_delay");
+        //if (hltvServerEmpty)
+            //return;
+        CFastTimer timer;
+        timer.Start();
+        DETOUR_MEMBER_CALL(CHLTVServer_RestoreTick)(time);
+        timer.End();
+        last_restore_tick = time;
+    }
+
+    //Do not delay stringtables in demo recording
+
+    DETOUR_DECL_MEMBER(void, CNetworkStringTable_RestoreTick, int tick)
+	{
+        auto table = reinterpret_cast<CNetworkStringTable *>(this);
+        int last_change = table->m_nLastChangedTick;
+
+        if (tick == 0 || (last_change > last_restore_tick && last_change <= tick)) {
+            DETOUR_MEMBER_CALL(CNetworkStringTable_RestoreTick)(tick);
+            table->m_nLastChangedTick = last_change;
+        }
+        
+    }
+
+    
+    DETOUR_DECL_MEMBER(void, CNetworkStringTable_UpdateMirrorTable, int tick)
+    {
+        DETOUR_MEMBER_CALL(CNetworkStringTable_UpdateMirrorTable)(tick);
+        auto table = reinterpret_cast<CNetworkStringTable *>(this);
+        
+        if (table->m_pMirrorTable != nullptr) {
+            table->m_pMirrorTable->m_nLastChangedTick = tick;
+        }
+    }
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_State_Enter, gamerules_roundstate_t newState)
 	{
-        static ConVarRef tv_maxclients("tv_maxclients");
-        if (newState != GR_STATE_RND_RUNNING && tv_maxclients.GetInt() == 0) {
-            static ConVarRef snapshotrate("tv_snapshotrate");
+        static ConVarRef snapshotrate("tv_snapshotrate");
+        if (newState != GR_STATE_RND_RUNNING && hltvServerEmpty) {
             if (snapshotrate.GetFloat() != cvar_rate_between_rounds.GetFloat()) {
                 old_snapshotrate = snapshotrate.GetFloat();
                 snapshotrate.SetValue(cvar_rate_between_rounds.GetFloat());
@@ -115,111 +177,12 @@ namespace Mod::Perf::HLTV_Optimize
         }
         else
         {
-            static ConVarRef snapshotrate("tv_snapshotrate");
             if (snapshotrate.GetFloat() == cvar_rate_between_rounds.GetFloat()) {
                 snapshotrate.SetValue(old_snapshotrate);
             }
         }
         DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
     }
-
-    RefCount rc_CServerGameEnts_CheckTransmit;
-    DETOUR_DECL_MEMBER(int, CTFPlayer_ShouldTransmit, CCheckTransmitInfo *info)
-	{
-        auto result = DETOUR_MEMBER_CALL(CTFPlayer_ShouldTransmit)(info);
-        //DevMsg("from %d", rc_CServerGameEnts_CheckTransmit);
-        DevMsg("transmitted %d\n", info->m_pTransmitEdict->Get( reinterpret_cast<CBaseEntity *>(this)->entindex()));
-        if (result != FL_EDICT_DONTSEND) {
-            if (gpGlobals->tickcount % 66 == 0)
-                return result;
-
-            CBaseEntity *ent = GetContainingEntity(info->m_pClientEnt);
-
-            if (ent != nullptr && ent != reinterpret_cast<CBaseEntity *>(this) && ent->IsPlayer()) {
-                //DevMsg("Setting dont send \n");
-                return FL_EDICT_DONTSEND;
-            }
-        }
-		return result;
-	}
-    
-    std::unordered_set<CBaseEntity *> just_spawned_set;
-
-    DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
-	{
-        just_spawned_set.insert(player);
-		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
-    }
-    
-    int last_tick_transmit;
-    ConVar cvar_frame_update_skip("sig_perf_frame_update_skip", "1", FCVAR_NOTIFY,
-		"Mod: frame skipping for bots");
-
-    DETOUR_DECL_MEMBER(void, CServerGameEnts_CheckTransmit, CCheckTransmitInfo *info, unsigned short *indices, int edictsnum)
-	{
-        DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(info, indices, edictsnum);
-        if (last_tick_transmit != gpGlobals->tickcount) {
-            for (int i = 1; i < edictsnum; i++) {
-                int iEdict = indices[i];
-
-                if (iEdict <= gpGlobals->maxClients) {
-                    edict_t *edict = INDEXENT(iEdict);
-                    //DevMsg( "notful ");
-                    if (edict->m_fStateFlags & (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED)) {
-
-                        CBasePlayer *ent = reinterpret_cast<CBasePlayer *>(GetContainingEntity(edict));
-                        bool isalive = ent->IsAlive();
-                        if (ent->GetFlags() & FL_FAKECLIENT && ((!isalive && ent->GetDeathTime() + 1.0f < gpGlobals->curtime)
-                            || (isalive && gpGlobals->tickcount % cvar_frame_update_skip.GetInt() != 0 && just_spawned_set.find(ent) == just_spawned_set.end()))) {
-                            edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
-                        }
-                    }
-                
-                }
-                else if (iEdict > gpGlobals->maxClients) {
-                    break;
-                }
-            }
-            last_tick_transmit = gpGlobals->tickcount;
-            just_spawned_set.clear();
-        }
-	}
-
-    /*int count_tick;
-    int last_tick;
-    DETOUR_DECL_STATIC(void, SV_PackEntity, int edictnum, edict_t *edict, ServerClass *serverclass, void *snapshot)
-	{
-        if (last_tick != gpGlobals->tickcount) {
-            DevMsg("pack calls: %d\n", count_tick);
-            count_tick = 0;
-            last_tick = gpGlobals->tickcount;
-        }
-        count_tick ++;
-        DETOUR_STATIC_CALL(SV_PackEntity)(edictnum, edict, serverclass, snapshot);
-    }*/
-
-    DETOUR_DECL_STATIC(int, SendTable_CalcDelta, const SendTable *pTable,
-	
-	const void *pFromState,
-	const int nFromBits,
-
-	const void *pToState,
-	const int nToBits,
-
-	int *pDeltaProps,
-	int nMaxDeltaProps,
-
-	const int objectID)
-	{
-        int result = DETOUR_STATIC_CALL(SendTable_CalcDelta)(pTable, pFromState, nFromBits, pToState, nToBits, pDeltaProps, nMaxDeltaProps, objectID);
-        if (result != 0 && objectID > 0 && objectID <= gpGlobals->maxClients) {
-            edict_t *edict = INDEXENT(objectID);
-            if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
-                edict->m_fStateFlags |= FL_EDICT_CHANGED;
-            }
-        }
-        return result;
-	}
 
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PhysicsSimulate)
 	{
@@ -230,7 +193,19 @@ namespace Mod::Perf::HLTV_Optimize
 		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PhysicsSimulate)();
 	}
 
-	class CMod : public IMod
+    DETOUR_DECL_MEMBER(void, CBasePlayer_PhysicsSimulate)
+	{
+		auto player = reinterpret_cast<CBasePlayer *>(this);
+
+		if (player->IsHLTV()) {
+			return;
+        }
+            
+		DETOUR_MEMBER_CALL(CBasePlayer_PhysicsSimulate)();
+	}
+
+
+	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
 		CMod() : IMod("Perf:HLTV_Optimize")
@@ -238,17 +213,26 @@ namespace Mod::Perf::HLTV_Optimize
             // Prevent the server from assuming its tv relay when sourcetv client is missing
             MOD_ADD_DETOUR_MEMBER(CHLTVServer_IsTVRelay,   "CHLTVServer::IsTVRelay");
 
-			MOD_ADD_DETOUR_MEMBER(CHLTVServer_RunFrame,                     "CHLTVServer::RunFrame");
-			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter,     "CTeamplayRoundBasedRules::State_Enter");
+			MOD_ADD_DETOUR_MEMBER(CHLTVServer_RunFrame,                      "CHLTVServer::RunFrame");
+			MOD_ADD_DETOUR_MEMBER(CHLTVServer_UpdateTick,                      "CHLTVServer::UpdateTick");
+			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter,        "CTeamplayRoundBasedRules::State_Enter");
+			MOD_ADD_DETOUR_MEMBER(CHLTVServer_RestoreTick,                     "CHLTVServer::RestoreTick");
+			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_UpdateMirrorTable,                     "CNetworkStringTable::UpdateMirrorTable");
+            
+			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_RestoreTick, "CNetworkStringTable::RestoreTick");
+            
+			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
-
-			MOD_ADD_DETOUR_MEMBER(CServerGameEnts_CheckTransmit,               "CServerGameEnts::CheckTransmit");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned,               "CTFGameRules::OnPlayerSpawned");
-
-            MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
-			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate, "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
-            //MOD_ADD_DETOUR_STATIC(SV_PackEntity,   "SV_PackEntity");
+            //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
 		}
+
+        virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+        virtual void LevelInitPreEntity() override
+		{
+            last_restore_tick = -1;
+        }
 	};
 	CMod s_Mod;
 	

@@ -36,25 +36,6 @@ struct IVerify_CTFBotSeekAndDestroy : public IVerify
 #endif
 
 
-template<typename T>
-static uint32_t FindAdditionalVTable(const void **vt, ptrdiff_t diff)
-{
-	using VTScanner = CBasicScanner<ScanDir::FORWARD, ScanResults::ALL, 0x4>;
-	
-	const rtti_t *rtti = RTTI::GetRTTI<T>();
-	
-	uint32_t seek[2] = {
-		diff,
-		(uint32_t)rtti,
-	};
-	
-	CScan<VTScanner> scan(CAddrAddrBounds((void *)vt, (void *)((uintptr_t)vt + 0x2000)), seek, sizeof(seek));
-	assert(scan.ExactlyOneMatch());
-	
-	return (uint32_t)scan.FirstMatch() + 0x8;
-}
-
-
 static MemberFuncThunk<CTFBotAttack *, void> ft_CTFBotAttack_ctor("CTFBotAttack::CTFBotAttack [C1]");
 CTFBotAttack *CTFBotAttack::New()
 {
@@ -103,18 +84,20 @@ CTFBotPushToCapturePoint *CTFBotPushToCapturePoint::New(Action<CTFBot> *done_act
 }
 
 
-static MemberVFuncThunk<CTFBotMedicHeal *, void> ft_CTFBotMedicHeal_ctor(TypeName<CTFBotMedicHeal>(),"CTFBotMedicHeal::CTFBotMedicHeal [C1]");
-//#if TOOLCHAIN_FIXES
+//static MemberVFuncThunk<CTFBotMedicHeal *, void> ft_CTFBotMedicHeal_ctor(TypeName<CTFBotMedicHeal>(),"CTFBotMedicHeal::CTFBotMedicHeal [C1]");
+#if TOOLCHAIN_FIXES
 CTFBotMedicHeal *CTFBotMedicHeal::New()
 {
 	// TODO: verify sizeof(CTFBotMedicHeal) in the game code at runtime
 	// TODO: verify that the addr for the ctor actually exists
 	
-	auto action = reinterpret_cast<CTFBotMedicHeal *>(::operator new(sizeof(CTFBotMedicHeal)));
-	ft_CTFBotMedicHeal_ctor(action);
+	auto action = new CTFBotMedicHeal();
+	
+	/* overwrite vtable pointers */
+	action->OverwriteVTPtrs<CTFBotMedicHeal, CTFBotMedicHeal, IContextualQuery>();
 	return action;
 }
-//#endif
+#endif
 
 
 CTFBotMedicRetreat *CTFBotMedicRetreat::New()
@@ -125,16 +108,13 @@ CTFBotMedicRetreat *CTFBotMedicRetreat::New()
 	auto action = new CTFBotMedicRetreat();
 	
 	/* overwrite vtable pointers */
-	auto vt = RTTI::GetVTable<CTFBotMedicRetreat>();
-	*(uint32_t *)((uintptr_t)action + 0x0000) = (uintptr_t)vt;
-	*(uint32_t *)((uintptr_t)action + 0x0004) = FindAdditionalVTable<CTFBotMedicRetreat>(vt, -0x4);
-	
+	action->OverwriteVTPtrs<CTFBotMedicRetreat, CTFBotMedicRetreat, IContextualQuery>();
 	return action;
 }
 
 
 static MemberFuncThunk<CTFBotSniperLurk *, void> ft_CTFBotSniperLurk_ctor("CTFBotSniperLurk::CTFBotSniperLurk [C1]");
-//#if TOOLCHAIN_FIXES
+#if TOOLCHAIN_FIXES
 CTFBotSniperLurk *CTFBotSniperLurk::New()
 {
 	// TODO: verify sizeof(CTFBotSniperLurk) in the game code at runtime
@@ -144,7 +124,7 @@ CTFBotSniperLurk *CTFBotSniperLurk::New()
 	ft_CTFBotSniperLurk_ctor(action);
 	return action;
 }
-//#endif
+#endif
 
 
 CTFBotSpyInfiltrate *CTFBotSpyInfiltrate::New()
@@ -153,12 +133,7 @@ CTFBotSpyInfiltrate *CTFBotSpyInfiltrate::New()
 	// TODO: verify that the addr for the vtable actually exists
 	
 	auto action = new CTFBotSpyInfiltrate();
-	
-	/* overwrite vtable pointers */
-	auto vt = RTTI::GetVTable<CTFBotSpyInfiltrate>();
-	*(uint32_t *)((uintptr_t)action + 0x0000) = (uintptr_t)vt;
-	*(uint32_t *)((uintptr_t)action + 0x0004) = FindAdditionalVTable<CTFBotSpyInfiltrate>(vt, -0x4);
-	
+	action->OverwriteVTPtrs<CTFBotSpyInfiltrate, CTFBotSpyInfiltrate, IContextualQuery>();
 	return action;
 }
 
@@ -169,12 +144,7 @@ CTFBotEngineerBuild *CTFBotEngineerBuild::New()
 	// TODO: verify that the addr for the vtable actually exists
 	
 	auto action = new CTFBotEngineerBuild();
-	
-	/* overwrite vtable pointers */
-	auto vt = RTTI::GetVTable<CTFBotEngineerBuild>();
-	*(uint32_t *)((uintptr_t)action + 0x0000) = (uintptr_t)vt;
-	*(uint32_t *)((uintptr_t)action + 0x0004) = FindAdditionalVTable<CTFBotEngineerBuild>(vt, -0x4);
-	
+	action->OverwriteVTPtrs<CTFBotEngineerBuild, CTFBotEngineerBuild, IContextualQuery>();
 	return action;
 }
 
@@ -185,12 +155,7 @@ CTFBotDead *CTFBotDead::New()
 	// TODO: verify that the addr for the vtable actually exists
 	
 	auto action = new CTFBotDead();
-	
-	/* overwrite vtable pointers */
-	auto vt = RTTI::GetVTable<CTFBotDead>();
-	*(uint32_t *)((uintptr_t)action + 0x0000) = (uintptr_t)vt;
-	*(uint32_t *)((uintptr_t)action + 0x0004) = FindAdditionalVTable<CTFBotDead>(vt, -0x4);
-	
+	action->OverwriteVTPtrs<CTFBotDead, CTFBotDead, IContextualQuery>();
 	return action;
 }
 

@@ -9,7 +9,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* do pre-wave stuff */
-	class CTFBotPreWave : public IHotplugAction
+	class CTFBotPreWave : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotPreWave() {}

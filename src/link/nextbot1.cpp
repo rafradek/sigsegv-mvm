@@ -1,6 +1,7 @@
 #include "link/link.h"
 #include "re/nextbot.h"
 #include "re/path.h"
+#include "stub/tfbot.h"
 
 
 #define INER INextBotEventResponder
@@ -92,12 +93,21 @@ static MemberFuncThunk<const IContextualQuery *, const CKnownEntity *, const INe
 
 /* Path */
 static MemberFuncThunk<const Path *, bool>                                                                   ft_Path_IsValid                       ("Path::IsValid");
+static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&>                                        ft_Path_ComputePathDetails            ("Path::ComputePathDetails");
 static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&, CTFBotPathCost&, float, bool>          ft_Path_Compute_CTFBotPathCost_goal   ("Path::Compute<CTFBotPathCost> [goal]");
 static MemberFuncThunk<      Path *, bool, INextBot *, CBaseCombatCharacter *, CTFBotPathCost&, float, bool> ft_Path_Compute_CTFBotPathCost_subject("Path::Compute<CTFBotPathCost> [subject]");
+static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&>                                        ft_Path_BuildTrivialPath              ("Path::BuildTrivialPath");
+static MemberFuncThunk<      Path *, void, INextBot *>                                                       ft_Path_Optimize                      ("Path::Optimize");
+static MemberFuncThunk<      Path *, void>                                                                   ft_Path_PostProcess                   ("Path::PostProcess");
 
 /* PathFollower */
 static MemberFuncThunk<PathFollower *, void, INextBot *> ft_PathFollower_Update                 ("PathFollower::Update");
 static MemberFuncThunk<PathFollower *, void, float>      ft_PathFollower_SetMinLookAheadDistance("PathFollower::SetMinLookAheadDistance");
+
+/* ChasePath */
+
+/* CTFBotPathCost */
+static MemberFuncThunk<const CTFBotPathCost *, float, CNavArea *, CNavArea *, const CNavLadder *, const CFuncElevator *, float> ft_CTFBotPathCost_op_func("CTFBotPathCost::operator()");
 
 /* Behavior<CTFBot> */
 static MemberFuncThunk<const Behavior<CTFBot> *, INER *> ft_Behavior_FirstContainedResponder("Behavior<CTFBot>::FirstContainedResponder");
@@ -195,9 +205,9 @@ static MemberFuncThunk<const Action<CTFBot> *, bool,             const INextBot 
 static MemberFuncThunk<      Action<CTFBot> *, Action<CTFBot> *, CTFBot *, Behavior<CTFBot> *, AR>                              ft_Action_ApplyResult(                        "Action<CTFBot>::ApplyResult");
 static MemberFuncThunk<      Action<CTFBot> *, void,             CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnEnd(                        "Action<CTFBot>::InvokeOnEnd");
 static MemberFuncThunk<      Action<CTFBot> *, AR,               CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnResume(                     "Action<CTFBot>::InvokeOnResume");
-
-/* CTFBotPathCost */
-static MemberFuncThunk<const CTFBotPathCost *, float, CNavArea *, CNavArea *, const CNavLadder *, const CFuncElevator *, float> ft_CTFBotPathCost_op_func("CTFBotPathCost::operator()");
+static MemberFuncThunk<const Action<CTFBot> *, char *,           char[256], const Action<CTFBot> *>                             ft_Action_BuildDecoratedName(                 "Action<CTFBot>::BuildDecoratedName");
+static MemberFuncThunk<const Action<CTFBot> *, char *>                                                                          ft_Action_DebugString(                        "Action<CTFBot>::DebugString");
+static MemberFuncThunk<const Action<CTFBot> *, void>                                                                            ft_Action_PrintStateToConsole(                "Action<CTFBot>::PrintStateToConsole");
 
 /* NextBotManager */
 static MemberFuncThunk<NextBotManager *, void, CUtlVector<INextBot *> *> ft_NextBotManager_CollectAllBots("NextBotManager::CollectAllBots");
@@ -209,6 +219,7 @@ CBaseCombatCharacter *INextBot::GetEntity() const                       { return
 
 INextBot *INextBotComponent::GetBot() const { return vt_INextBotComponent_GetBot(this);       }
 
+/* CKnownEntity */
 void CKnownEntity::Destroy()                                  {        ft_CKnownEntity_Destroy                     (this);          }
 void CKnownEntity::UpdatePosition()                           {        ft_CKnownEntity_UpdatePosition              (this);          }
 CBaseEntity *CKnownEntity::GetEntity() const                  { return ft_CKnownEntity_GetEntity                   (this);          }
@@ -229,6 +240,7 @@ bool CKnownEntity::IsObsolete() const                         { return ft_CKnown
 bool CKnownEntity::operator==(const CKnownEntity& that) const { return ft_CKnownEntity_op_equal                    (this, that);    }
 bool CKnownEntity::Is(CBaseEntity *ent) const                 { return ft_CKnownEntity_Is                          (this, ent);     }
 
+/* INextBotEventResponder */
 INextBotEventResponder *INextBotEventResponder::FirstContainedResponder() const                               { return ft_INextBotEventResponder_FirstContainedResponder       (this);                    }
 INextBotEventResponder *INextBotEventResponder::NextContainedResponder(INextBotEventResponder *prev) const    { return ft_INextBotEventResponder_NextContainedResponder        (this, prev);              }
 void INextBotEventResponder::OnLeaveGround(CBaseEntity *ent)                                                  {        ft_INextBotEventResponder_OnLeaveGround                 (this, ent);               }
@@ -271,6 +283,7 @@ void INextBotEventResponder::OnTerritoryLost(int i1)                            
 void INextBotEventResponder::OnWin()                                                                          {        ft_INextBotEventResponder_OnWin                         (this);                    }
 void INextBotEventResponder::OnLose()                                                                         {        ft_INextBotEventResponder_OnLose                        (this);                    }
 
+/* IContextualQuery */
 QueryResponse IContextualQuery::ShouldPickUp(const INextBot *nextbot, CBaseEntity *it) const                                                                                               { return ft_IContextualQuery_ShouldPickUp             (this, nextbot, it);                     }
 QueryResponse IContextualQuery::ShouldHurry(const INextBot *nextbot) const                                                                                                                 { return ft_IContextualQuery_ShouldHurry              (this, nextbot);                         }
 QueryResponse IContextualQuery::ShouldRetreat(const INextBot *nextbot) const                                                                                                               { return ft_IContextualQuery_ShouldRetreat            (this, nextbot);                         }
@@ -280,17 +293,30 @@ Vector IContextualQuery::SelectTargetPoint(const INextBot *nextbot, const CBaseC
 QueryResponse IContextualQuery::IsPositionAllowed(const INextBot *nextbot, const Vector& v1) const                                                                                         { return ft_IContextualQuery_IsPositionAllowed        (this, nextbot, v1);                     }
 const CKnownEntity *IContextualQuery::SelectMoreDangerousThreat(const INextBot *nextbot, const CBaseCombatCharacter *them, const CKnownEntity *threat1, const CKnownEntity *threat2) const { return ft_IContextualQuery_SelectMoreDangerousThreat(this, nextbot, them, threat1, threat2); }
 
+/* Path */
 bool Path::IsValid() const                                                                                                                           { return ft_Path_IsValid                       (this); }
+bool Path::ComputePathDetails(INextBot *nextbot, const Vector& vec)                                                                                  { return ft_Path_ComputePathDetails            (this, nextbot, vec); }
 #if TOOLCHAIN_FIXES
 template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, const Vector& vec, CTFBotPathCost& cost_func, float maxPathLength, bool b1)         { return ft_Path_Compute_CTFBotPathCost_goal   (this, nextbot, vec, cost_func, maxPathLength, b1); }
 template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, CBaseCombatCharacter *who, CTFBotPathCost& cost_func, float maxPathLength, bool b1) { return ft_Path_Compute_CTFBotPathCost_subject(this, nextbot, who, cost_func, maxPathLength, b1); }
 #endif
+bool Path::BuildTrivialPath(INextBot *nextbot, const Vector& dest)                                                                                   { return ft_Path_BuildTrivialPath              (this, nextbot, dest); }
+void Path::Optimize(INextBot *nextbot)                                                                                                               {        ft_Path_Optimize                      (this, nextbot); }
+void Path::PostProcess()                                                                                                                             {        ft_Path_PostProcess                   (this); }
 
+/* PathFollower */
 void PathFollower::Update(INextBot *nextbot)           { ft_PathFollower_Update                 (this, nextbot); }
 void PathFollower::SetMinLookAheadDistance(float dist) { ft_PathFollower_SetMinLookAheadDistance(this, dist); }
 
+/* ChasePath */
+
+/* CTFBotPathCost */
+float CTFBotPathCost::operator()(CNavArea *area1, CNavArea *area2, const CNavLadder *ladder, const CFuncElevator *elevator, float f1) const { return ft_CTFBotPathCost_op_func(this, area1, area2, ladder, elevator, f1); }
+
+/* Behavior<CTFBot> */
 template<> INextBotEventResponder *Behavior<CTFBot>::FirstContainedResponder() const { return ft_Behavior_FirstContainedResponder(this); }
 
+/* Action<CTFBot> */
 template<> INextBotEventResponder *Action<CTFBot>::FirstContainedResponder() const                                                                    { return ft_Action_INER_FirstContainedResponder       (this);                           }
 template<> INextBotEventResponder *Action<CTFBot>::NextContainedResponder(INextBotEventResponder *prev) const                                         { return ft_Action_INER_NextContainedResponder        (this, prev);                     }
 template<> void Action<CTFBot>::OnLeaveGround(CBaseEntity *ent)                                                                                       {        ft_Action_INER_OnLeaveGround                 (this, ent);                      }
@@ -381,12 +407,12 @@ template<> EventDesiredResult<CTFBot> Action<CTFBot>::OnWin(CTFBot *actor)      
 template<> EventDesiredResult<CTFBot> Action<CTFBot>::OnLose(CTFBot *actor)                                                                           { return ft_Action_OnLose                             (this, actor);                    }
 template<> bool Action<CTFBot>::IsAbleToBlockMovementOf(const INextBot *nextbot) const                                                                { return ft_Action_IsAbleToBlockMovementOf            (this, nextbot);                  }
 template<> Action<CTFBot> *Action<CTFBot>::ApplyResult(CTFBot *actor, Behavior<CTFBot> *behavior, ActionResult<CTFBot> result)                        { return ft_Action_ApplyResult                        (this, actor, behavior, result);  }
-#if TOOLCHAIN_FIXES
 template<> void Action<CTFBot>::InvokeOnEnd(CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *action)                                        {        ft_Action_InvokeOnEnd                        (this, actor, behavior, action);  }
-#endif
 template<> ActionResult<CTFBot> Action<CTFBot>::InvokeOnResume(CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *action)                     { return ft_Action_InvokeOnResume                     (this, actor, behavior, action);  }
+template<> char *Action<CTFBot>::BuildDecoratedName(char buf[256], const Action<CTFBot> *action) const                                                { return ft_Action_BuildDecoratedName                 (this, buf, action);              }
+template<> char *Action<CTFBot>::DebugString() const                                                                                                  { return ft_Action_DebugString                        (this);                           }
+template<> void Action<CTFBot>::PrintStateToConsole() const                                                                                           {        ft_Action_PrintStateToConsole                (this);                           }
 
-float CTFBotPathCost::operator()(CNavArea *area1, CNavArea *area2, const CNavLadder *ladder, const CFuncElevator *elevator, float f1) const { return ft_CTFBotPathCost_op_func(this, area1, area2, ladder, elevator, f1); }
-
+/* NextBotManager */
 void NextBotManager::CollectAllBots(CUtlVector<INextBot *> *nextbots) {        ft_NextBotManager_CollectAllBots(this, nextbots); }
 NextBotManager& TheNextBots()                                         { return ft_TheNextBots                  (); }

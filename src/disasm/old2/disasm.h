@@ -19,7 +19,7 @@ private:
 	using Base = CX86Disasm86;
 	
 public:
-	template<typename... ARGS> Disassembler(ARGS... args) : Base(std::forward<ARGS>(args)...)
+	template<typename... ARGS> Disassembler(ARGS&&... args) : Base(std::forward<ARGS>(args)...)
 	{
 		this->SetSyntax  (cs_opt_value::CS_OPT_SYNTAX_INTEL);
 		this->SetDetail  (cs_opt_value::CS_OPT_ON);
@@ -39,7 +39,7 @@ public:
 	bool HasError()        { return (this->GetError() != CS_ERR_OK); }
 	const char *ErrorStr() { return Base::ErrToStr(this->GetError()); }
 	
-	template<typename... ARGS> std::unique_ptr<ins_holder_t> Disasm(ARGS... args)
+	template<typename... ARGS> std::unique_ptr<ins_holder_t> Disasm(ARGS&&... args)
 	{
 		return std::unique_ptr<ins_holder_t>(Base::Disasm(std::forward<ARGS>(args)...));
 	}

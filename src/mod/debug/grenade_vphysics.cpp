@@ -270,7 +270,7 @@ namespace Mod::Debug::Grenade_VPhysics
 	}
 	
 	
-	class CMod : public IMod, public IFrameUpdateListener
+	class CMod : public IMod, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Debug:Grenade_VPhysics")
@@ -290,7 +290,7 @@ namespace Mod::Debug::Grenade_VPhysics
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_CreateNoSpawn, "CBaseEntity::CreateNoSpawn");
 		}
 		
-		virtual bool ShouldReceiveFrameEvents() const override { return this->IsEnabled(); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{

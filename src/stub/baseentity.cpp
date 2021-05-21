@@ -24,6 +24,11 @@ IMPL_DATAMAP(float,                  CBaseEntity, m_flLocalTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flAnimTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flSimulationTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flVPhysicsUpdateLocalTime);
+IMPL_DATAMAP(bool,                   CBaseEntity, m_spawnflags);
+IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser1);
+IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser2);
+IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser3);
+IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
 
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTeamNum,             CBaseEntity);
@@ -68,8 +73,7 @@ MemberFuncThunk<      CBaseEntity *, BASEPTR, BASEPTR, float, const char *      
 MemberFuncThunk<      CBaseEntity *, int                                                    > CBaseEntity::ft_DispatchUpdateTransmitState("CBaseEntity::DispatchUpdateTransmitState");
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_SetEffects                 ("CBaseEntity::SetEffects");
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_AddEffects                 ("CBaseEntity::AddEffects");
-MemberFuncThunk<      CBaseEntity *, bool, const char *, const char *                       > CBaseEntity::ft_KeyValue                   ("CBaseEntity::KeyValue");
-MemberFuncThunk<      CBaseEntity *, bool, const char *, char *, int                        > CBaseEntity::ft_GetKeyValue                ("CBaseEntity::GetKeyValue");
+MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *                        > CBaseEntity::ft_ReadKeyField               ("CBaseEntity::ReadKeyField");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");
@@ -107,7 +111,13 @@ MemberVFuncThunk<      CBaseEntity *, bool                                      
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *, int                                        > CBaseEntity::vt_SetParent                     (TypeName<CBaseEntity>(), "CBaseEntity::SetParent");
 MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsPlayer                      (TypeName<CBaseEntity>(), "CBaseEntity::IsPlayer");
 MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsBaseObject                  (TypeName<CBaseEntity>(), "CBaseEntity::IsBaseObject");
+MemberVFuncThunk<      CBaseEntity *, bool, const char *, const char *                                > CBaseEntity::vt_KeyValue                      (TypeName<CBaseEntity>(), "CBaseEntity::KeyValue");
+MemberVFuncThunk<      CBaseEntity *, bool, const char *, char *, int                                 > CBaseEntity::vt_GetKeyValue                   (TypeName<CBaseEntity>(), "CBaseEntity::GetKeyValue");
 
+MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
+
+StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_Create             ("CBaseEntity::Create");
+StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_CreateNoSpawn      ("CBaseEntity::CreateNoSpawn");
 StaticFuncThunk<int, const char *, bool>                                                                         CBaseEntity::ft_PrecacheModel      ("CBaseEntity::PrecacheModel");
 StaticFuncThunk<bool, const char *>                                                                              CBaseEntity::ft_PrecacheSound      ("CBaseEntity::PrecacheSound");
 StaticFuncThunk<HSOUNDSCRIPTHANDLE, const char *>                                                                CBaseEntity::ft_PrecacheScriptSound("CBaseEntity::PrecacheScriptSound");
@@ -144,4 +154,71 @@ void CCollisionProperty::CalcNearestPoint(const Vector& vecWorldPt, Vector *pVec
 	WorldToCollisionSpace(vecWorldPt, &localPt);
 	CalcClosestPointOnAABB(this->m_vecMins.Get(), this->m_vecMaxs.Get(), localPt, localClosestPt);
 	CollisionToWorldSpace(localClosestPt, pVecNearestWorldPt);
+}
+
+const char *variant_t::ToString( void ) const
+{
+	COMPILE_TIME_ASSERT( sizeof(string_t) == sizeof(int) );
+
+	static char szBuf[512];
+
+	switch (fieldType)
+	{
+	case FIELD_STRING:
+		{
+			return(STRING(iszVal));
+		}
+
+	case FIELD_BOOLEAN:
+		{
+			if (bVal == 0)
+			{
+				Q_strncpy(szBuf, "false",sizeof(szBuf));
+			}
+			else
+			{
+				Q_strncpy(szBuf, "true",sizeof(szBuf));
+			}
+			return(szBuf);
+		}
+
+	case FIELD_INTEGER:
+		{
+			Q_snprintf( szBuf, sizeof( szBuf ), "%i", iVal );
+			return(szBuf);
+		}
+
+	case FIELD_FLOAT:
+		{
+			Q_snprintf(szBuf,sizeof(szBuf), "%g", flVal);
+			return(szBuf);
+		}
+
+	case FIELD_COLOR32:
+		{
+			Q_snprintf(szBuf,sizeof(szBuf), "%d %d %d %d", (int)rgbaVal.r, (int)rgbaVal.g, (int)rgbaVal.b, (int)rgbaVal.a);
+			return(szBuf);
+		}
+
+	case FIELD_VECTOR:
+		{
+			Q_snprintf(szBuf,sizeof(szBuf), "[%g %g %g]", (double)vecVal[0], (double)vecVal[1], (double)vecVal[2]);
+			return(szBuf);
+		}
+
+	case FIELD_VOID:
+		{
+			szBuf[0] = '\0';
+			return(szBuf);
+		}
+
+	case FIELD_EHANDLE:
+		{
+			const char *pszName = (Entity()) ? STRING(Entity()->GetEntityName()) : "<<null entity>>";
+			Q_strncpy( szBuf, pszName, 512 );
+			return (szBuf);
+		}
+	}
+
+	return("No conversion to string");
 }

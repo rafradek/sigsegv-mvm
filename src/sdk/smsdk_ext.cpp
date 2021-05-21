@@ -40,6 +40,7 @@
  */
 
 IExtension *myself = NULL;				/**< Ourself */
+IExtensionManager *smexts = NULL;
 IShareSys *g_pShareSys = NULL;			/**< Share system */
 IShareSys *sharesys = NULL;				/**< Share system */
 ISourceMod *g_pSM = NULL;				/**< SourceMod helpers */
@@ -119,6 +120,7 @@ SDKExtension::SDKExtension()
 
 bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late)
 {
+	Msg("Extension load\n");
 	g_pShareSys = sharesys = sys;
 	myself = me;
 
@@ -310,11 +312,19 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 /** Exposes the extension to Metamod */
 SMM_API ISmmPlugin *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
+	Msg("Is null %d\n", g_pExtensionIface);
 	return g_pExtensionIface;
 }
 
 SMM_API void UnloadInterface_MMS()
 {
+}
+
+void *CreateInterface(const char *pName, int *pReturnCode)
+{
+	Msg("CreateInterface %s %d\n", pName, g_pExtensionIface);
+	if (strcmp(pName, "ISmmPlugin") == 0)
+		return g_pExtensionIface;
 }
 
 bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)

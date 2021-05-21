@@ -251,6 +251,7 @@ private:
 
 extern SDKExtension *g_pExtensionIface;
 extern IExtension *myself;
+extern IExtensionManager *smexts;
 
 extern IShareSys *g_pShareSys;
 extern IShareSys *sharesys;				/* Note: Newer name */

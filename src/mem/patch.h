@@ -2,6 +2,14 @@
 #define _INCLUDE_SIGSEGV_MEM_PATCH_H_
 
 
+#warning TODO: add patch validation code, like we just did with detours!
+
+
+#warning POSSIBLY PROBLEMATIC: NO PROTECTIONS AGAINST MULTI-PATCHING THE SAME FUNC/AREA!
+// i.e. we need an analogous mechanism to CDetouredFunc; CPatchedFunc or whatever
+// ...and we'd probably want to check for funcs that are detoured+patched as well, as that's potentially problematic too
+
+
 #include "util/buf.h"
 #include "addr/addr.h"
 

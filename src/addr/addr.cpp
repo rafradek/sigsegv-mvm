@@ -56,6 +56,10 @@ void AddrManager::Load()
 	/* main pass */
 	for (auto addr : AutoList<IAddr>::List()) {
 		addr->Init();
+		
+		if (addr->GetState() == IAddr::State::OK && addr->GetAddr() != nullptr) {
+			s_ReverseAddrs.emplace(addr->GetAddr(), addr->GetName());
+		}
 	}
 	
 	s_bLoading = false;
@@ -89,6 +93,18 @@ void *AddrManager::GetAddr(const char *name)
 	}
 	
 	return addr->GetAddr();
+}
+
+const char *AddrManager::ReverseLookup(const void *ptr)
+{
+	auto [begin, end] = s_ReverseAddrs.equal_range(ptr);
+	auto count = std::distance(begin, end);
+	
+	if (count == 1) {
+		return begin->second.c_str();
+	} else {
+		return nullptr;
+	}
 }
 
 

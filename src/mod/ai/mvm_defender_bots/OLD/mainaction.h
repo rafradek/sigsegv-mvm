@@ -9,7 +9,7 @@
 namespace Mod::AI::MvM_Defender_Bots
 {
 	/* main parent action for MvM defender bots */
-	class CTFBotMvMDefender : public IHotplugAction
+	class CTFBotMvMDefender : public IHotplugAction<CTFBot>
 	{
 	public:
 		enum class Objective

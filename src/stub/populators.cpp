@@ -1,5 +1,5 @@
 #include "stub/populators.h"
-
+#include "mem/extract.h"
 
 #if defined _LINUX
 
@@ -170,3 +170,4 @@ MemberVFuncThunk<IPopulationSpawner *, bool, CTFBot::AttributeType, int> IPopula
 MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > IPopulationSpawner::vt_Parse       (TypeName<CWaveSpawnPopulator>(), "CWaveSpawnPopulator::Parse");
 
 StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere("IsSpaceToSpawnHere");
+StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes("ParseDynamicAttributes");

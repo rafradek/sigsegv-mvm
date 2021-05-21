@@ -7,6 +7,7 @@ namespace ConVar_Restore
 	void Register(ConCommandBase *pCommand);
 	
 	void Save();
+	void SaveNonDefault();
 	void Load();
 	void Reset();
 

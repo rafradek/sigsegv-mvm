@@ -11,16 +11,16 @@ template<typename RET>
 struct IterateInternals
 {
 	template<typename FUNCTOR, typename... ARGS>
-	static bool CallFunc(const FUNCTOR& functor, ARGS... args);
+	static bool CallFunc(const FUNCTOR& functor, ARGS&&... args);
 };
 template<> template<typename FUNCTOR, typename... ARGS>
-inline bool IterateInternals<void>::CallFunc(const FUNCTOR& func, ARGS... args)
+inline bool IterateInternals<void>::CallFunc(const FUNCTOR& func, ARGS&&... args)
 {
 	func(std::forward<ARGS>(args)...);
 	return true;
 }
 template<> template<typename FUNCTOR, typename... ARGS>
-inline bool IterateInternals<bool>::CallFunc(const FUNCTOR& func, ARGS... args)
+inline bool IterateInternals<bool>::CallFunc(const FUNCTOR& func, ARGS&&... args)
 {
 	return func(std::forward<ARGS>(args)...);
 }
@@ -129,6 +129,27 @@ inline void ForEachTFPlayer(const FUNCTOR& func)
 		if (!CALL_FUNCTOR(T *)(func, player)) break;
 	}
 }
+
+#ifdef _INCLUDE_SIGSEGV_STUB_ENTITIES_H_
+template<typename FUNCTOR>
+inline void ForEachTFPlayerEconEntity(CTFPlayer *player, const FUNCTOR& func)
+{
+	using T = CEconEntity;
+	
+	for (int i = 0; i < player->GetNumWearables(); i++) {
+		CEconWearable *wearable = player->GetWearable(i);
+		if (wearable == nullptr) continue;
+		
+		if (!CALL_FUNCTOR(T *)(func, wearable)) break;
+	}
+	for (int i = 0; i < player->WeaponCount(); i++) {
+		CBaseCombatWeapon *weapon = player->GetWeapon(i);
+		if (weapon == nullptr) continue;
+		
+		if (!CALL_FUNCTOR(T *)(func, weapon)) break;
+	}
+}
+#endif
 
 #ifdef _INCLUDE_SIGSEGV_STUB_TEAM_H_
 template<typename FUNCTOR>

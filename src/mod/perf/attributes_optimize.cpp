@@ -10,15 +10,6 @@
 
 namespace Mod::Perf::Attributes_Optimize
 {
-    struct NextBotData
-    {
-        int vtable;
-        INextBotComponent *m_ComponentList;              // +0x04
-        PathFollower *m_CurrentPath;                     // +0x08
-        int m_iManagerIndex;                             // +0x0c
-        bool m_bScheduledForNextTick;                    // +0x10
-        int m_iLastUpdateTick;                           // +0x14
-    };
 
     struct AttribCache
     {

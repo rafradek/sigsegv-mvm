@@ -1,4 +1,5 @@
 #include "stub/tfweaponbase.h"
+#include "mem/extract.h"
 
 static constexpr uint8_t s_Buf_CTFWeaponBaseMelee_Holster[] = {
 	0x55, 
@@ -76,12 +77,18 @@ MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlaye
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");
 MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   CTFWeaponBase::vt_GetProjectileFireSetup(TypeName<CTFWeaponBase>(),"CTFWeaponBase::GetProjectileFireSetup");
+MemberVFuncThunk<const CTFWeaponBase *, bool> CTFWeaponBase::vt_ShouldRemoveInvisibilityOnPrimaryAttack(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack");
 
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileGravity(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileGravity") ;
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileSpeed(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileSpeed") ;
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileDamage(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileDamage") ;
 MemberVFuncThunk<const CTFWeaponBaseGun *, int> CTFWeaponBaseGun::vt_GetWeaponProjectileType(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetWeaponProjectileType") ;
 MemberVFuncThunk<CTFWeaponBaseGun *, void, CBaseAnimating *> CTFWeaponBaseGun::vt_ModifyProjectile(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ModifyProjectile") ;
+MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::ft_UpdatePunchAngles("CTFWeaponBaseGun::UpdatePunchAngles");
+
+MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::vt_RemoveProjectileAmmo(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::RemoveProjectileAmmo");
+MemberVFuncThunk<CTFWeaponBaseGun *, void>              CTFWeaponBaseGun::vt_DoFireEffects       (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::DoFireEffects");
+MemberVFuncThunk<CTFWeaponBaseGun *, bool>              CTFWeaponBaseGun::vt_ShouldPlayFireAnim  (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ShouldPlayFireAnim");
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");
@@ -200,4 +207,103 @@ float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon) {
 	}
 
 	return speed;
+}
+
+const char *TranslateWeaponEntForClass_improved(const char *name, int classnum)
+{
+	DevMsg("classname %s\n",name);
+	if (strncasecmp(name, "tf_weapon_", 10) == 0)
+	{
+		DevMsg("is translated %s\n",name+10);
+		if (strcasecmp(name+10, "shotgun") == 0) {
+			DevMsg("is shotgun\n");
+			switch (classnum) {
+			case TF_CLASS_SOLDIER:
+				return "tf_weapon_shotgun_soldier";
+			case TF_CLASS_PYRO:
+				return "tf_weapon_shotgun_pyro";
+			case TF_CLASS_HEAVYWEAPONS:
+				return "tf_weapon_shotgun_hwg";
+			case TF_CLASS_ENGINEER:
+				return "tf_weapon_shotgun_primary";
+			default:
+				return "tf_weapon_shotgun_pyro";
+			}
+		}
+	
+		if (strcasecmp(name+10, "throwable") == 0) {
+			switch (classnum) {
+			case TF_CLASS_MEDIC:
+				return "tf_weapon_throwable_primary";
+			default:
+				return "tf_weapon_throwable_secondary";
+			}
+		}
+		
+		if (strcasecmp(name+10, "parachute") == 0) {
+			switch (classnum) {
+			case TF_CLASS_SOLDIER:
+				return "tf_weapon_parachute_secondary";
+			case TF_CLASS_DEMOMAN:
+				return "tf_weapon_parachute_primary";
+			default:
+				return "tf_weapon_parachute";
+			}
+		}
+		
+		if (strcasecmp(name+10, "revolver") == 0) {
+			switch (classnum) {
+			case TF_CLASS_ENGINEER:
+				return "tf_weapon_revolver_secondary";
+			case TF_CLASS_SPY:
+				return "tf_weapon_revolver";
+			default:
+				return "tf_weapon_revolver";
+			}
+		}
+		if (strcasecmp(name+10, "pistol") == 0) {
+			switch (classnum) {
+			case TF_CLASS_SCOUT:
+				return "tf_weapon_pistol_scout";
+			case TF_CLASS_ENGINEER:
+				return "tf_weapon_pistol";
+			default:
+				return "tf_weapon_pistol";
+			}
+		}
+		
+		if (strcasecmp(name+10, "shovel") == 0 || strcasecmp(name+10, "bottle") == 0) {
+			switch (classnum) {
+			case TF_CLASS_SOLDIER:
+				return "tf_weapon_shovel";
+			case TF_CLASS_DEMOMAN:
+				return "tf_weapon_bottle";
+			}
+		}
+	}
+	else if (strcasecmp(name, "saxxy") == 0) {
+		switch (classnum) {
+		case TF_CLASS_SCOUT:
+			return "tf_weapon_bat";
+		case TF_CLASS_SOLDIER:
+			return "tf_weapon_shovel";
+		case TF_CLASS_PYRO:
+			return "tf_weapon_fireaxe";
+		case TF_CLASS_DEMOMAN:
+			return "tf_weapon_bottle";
+		case TF_CLASS_HEAVYWEAPONS:
+			return "tf_weapon_fireaxe";
+		case TF_CLASS_ENGINEER:
+			return "tf_weapon_wrench";
+		case TF_CLASS_MEDIC:
+			return "tf_weapon_bonesaw";
+		case TF_CLASS_SNIPER:
+			return "tf_weapon_club";
+		case TF_CLASS_SPY:
+			return "tf_weapon_knife";
+		}
+	}
+	
+	/* if not handled: return original entity name, not an empty string */
+	return name;
 }

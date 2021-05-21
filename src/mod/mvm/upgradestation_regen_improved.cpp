@@ -25,7 +25,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	{
 		if (rc_CUpgrades_PlayerPurchasingUpgrade > 0) {
 			if (cvar_only_creators.GetBool()) {
-				// Creator tf weapons have their alpha set to 0, cosmetics have item id == 2048
+				// Creator tf items have item level set to -1
 				bool found_creators_weapon = false;
 
 				CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
@@ -33,10 +33,9 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 					CEconWearable *wearable = player->GetWearable(i);
 					
 					if (wearable == nullptr) continue;
-					int64 itemid = wearable->GetItem()->m_iItemID;
-					int defid = wearable->GetItem()->m_iItemDefinitionIndex;
-					DevMsg("Itemid %d %d %d %d\n", itemid == 2048, wearable->GetEffects(), defid, wearable->GetRenderMode());
-					if (itemid == 2048) {
+					int level = wearable->GetItem()->m_iEntityLevel;
+					
+					if (level == 255) {
 						found_creators_weapon = true;
 						break;
 					}
@@ -46,9 +45,9 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 					for (int i = 0; i < player->WeaponCount(); ++i) {
 						CBaseCombatWeapon *weapon = player->GetWeapon(i);
 						if (weapon == nullptr) continue;
-						int64 itemid = (int) (weapon->GetItem()->m_iItemID);
+						int level = (int) (weapon->GetItem()->m_iEntityLevel);
 
-						if (itemid == 0 || itemid == 2048) {
+						if (level == 255) {
 							found_creators_weapon = true;
 							break;
 						} 

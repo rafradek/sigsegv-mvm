@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_SIGSEGV_UTIL_AUTOLIST_H_
 #define _INCLUDE_SIGSEGV_UTIL_AUTOLIST_H_
 
-
+#
 template<typename T>
 class AutoList
 {
@@ -15,7 +15,6 @@ public:
 	{
 		if (s_List != nullptr) {
 			s_List->remove(static_cast<T *>(this));
-			
 			if (s_List->empty()) {
 				delete s_List;
 				s_List = nullptr;
@@ -37,9 +36,8 @@ private:
 		}
 	}
 	
-	static std::list<T *> *s_List;
+	static inline std::list<T *> *s_List = nullptr;
 };
-template<typename T> std::list<T *> *AutoList<T>::s_List = nullptr;
 
 
 template<typename T, typename K>

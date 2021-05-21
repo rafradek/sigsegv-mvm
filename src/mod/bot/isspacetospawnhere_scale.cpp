@@ -86,6 +86,8 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	CBasePlayer *stuck_player = nullptr;
 	CMoveData *stuck_player_move = nullptr;
 	bool stuck_player_red = false;
+	bool isbotmvm = false;
+
 	DETOUR_DECL_MEMBER(int, CTFGameMovement_CheckStuck)
 	{
 		CBasePlayer *player = reinterpret_cast<CGameMovement *>(this)->player;
@@ -95,15 +97,13 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 			stuck_player_move = reinterpret_cast<CGameMovement *>(this)->GetMoveData();
 		}
 
-		bool isplayermvm = !player->IsBot() && TFGameRules()->IsMannVsMachineMode();
-
-		if (!isplayermvm)
-			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		bool isbotmvm = player->IsBot() && TFGameRules()->IsMannVsMachineMode();
 
 		int result = DETOUR_MEMBER_CALL(CTFGameMovement_CheckStuck)();
 
-		if (!isplayermvm)
+		if (isbotmvm)
 			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+		isbotmvm = false;
 
 		stuck_player = nullptr;
 
@@ -305,10 +305,15 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 			}
 
 			stuck_player = nullptr;
+			if (isbotmvm)
+				TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 			return;
 		}
 
 		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		
+		if (isbotmvm)
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 	}
 	
 	

@@ -13,6 +13,59 @@ class CTFItem;
 class CTFWearable;
 enum ETFFlagType : int32_t;
 
+enum PlayerAnimEvent_t : int32_t
+{
+	PLAYERANIMEVENT_ATTACK_PRIMARY          =  0,
+	PLAYERANIMEVENT_ATTACK_SECONDARY        =  1,
+	PLAYERANIMEVENT_ATTACK_GRENADE          =  2,
+	PLAYERANIMEVENT_RELOAD                  =  3,
+	PLAYERANIMEVENT_RELOAD_LOOP             =  4,
+	PLAYERANIMEVENT_RELOAD_END              =  5,
+	PLAYERANIMEVENT_JUMP                    =  6,
+	PLAYERANIMEVENT_SWIM                    =  7,
+	PLAYERANIMEVENT_DIE                     =  8,
+	PLAYERANIMEVENT_FLINCH_CHEST            =  9,
+	PLAYERANIMEVENT_FLINCH_HEAD             = 10,
+	PLAYERANIMEVENT_FLINCH_LEFTARM          = 11,
+	PLAYERANIMEVENT_FLINCH_RIGHTARM         = 12,
+	PLAYERANIMEVENT_FLINCH_LEFTLEG          = 13,
+	PLAYERANIMEVENT_FLINCH_RIGHTLEG         = 14,
+	PLAYERANIMEVENT_DOUBLEJUMP              = 15,
+	PLAYERANIMEVENT_CANCEL                  = 16,
+	PLAYERANIMEVENT_SPAWN                   = 17,
+	PLAYERANIMEVENT_SNAP_YAW                = 18,
+	PLAYERANIMEVENT_CUSTOM                  = 19,
+	PLAYERANIMEVENT_CUSTOM_GESTURE          = 20,
+	PLAYERANIMEVENT_CUSTOM_SEQUENCE         = 21,
+	PLAYERANIMEVENT_CUSTOM_GESTURE_SEQUENCE = 22,
+	PLAYERANIMEVENT_ATTACK_PRE              = 23,
+	PLAYERANIMEVENT_ATTACK_POST             = 24,
+	PLAYERANIMEVENT_GRENADE1_DRAW           = 25,
+	PLAYERANIMEVENT_GRENADE2_DRAW           = 26,
+	PLAYERANIMEVENT_GRENADE1_THROW          = 27,
+	PLAYERANIMEVENT_GRENADE2_THROW          = 28,
+	PLAYERANIMEVENT_VOICE_COMMAND_GESTURE   = 29,
+	PLAYERANIMEVENT_DOUBLEJUMP_CROUCH       = 30,
+	PLAYERANIMEVENT_STUN_BEGIN              = 31,
+	PLAYERANIMEVENT_STUN_MIDDLE             = 32,
+	PLAYERANIMEVENT_STUN_END                = 33,
+	PLAYERANIMEVENT_PASSTIME_THROW_BEGIN    = 34,
+	PLAYERANIMEVENT_PASSTIME_THROW_MIDDLE   = 35,
+	PLAYERANIMEVENT_PASSTIME_THROW_END      = 36,
+	
+	/* this seems to have been removed */
+//	PLAYERANIMEVENT_PASSTIME_THROW_CANCEL,
+	
+	/* these seem to have been added (note: unofficial names) */
+	PLAYERANIMEVENT_CYOA_PDA_INTRO          = 37,
+	PLAYERANIMEVENT_CYOA_PDA_IDLE           = 38,
+	PLAYERANIMEVENT_CYOA_PDA_OUTRO          = 39,
+	
+	/* this had its number bumped, since it remained at the end of the list */
+	PLAYERANIMEVENT_ATTACK_PRIMARY_SUPER    = 40,
+	
+	PLAYERANIMEVENT_COUNT,
+};
 
 enum : int32_t
 {
@@ -310,7 +363,8 @@ public:
 	int GetMaxAmmo(int iAmmoIndex, int iClassNumber = -1)        { return ft_GetMaxAmmo                       (this, iAmmoIndex, iClassNumber); }
 	CTFWearable *GetEquippedWearableForLoadoutSlot(int iSlot)    { return ft_GetEquippedWearableForLoadoutSlot(this, iSlot); }
 	CBaseEntity *GetEntityForLoadoutSlot(int iSlot)    { return ft_GetEntityForLoadoutSlot(this, iSlot); }
-	void DoAnimationEvent( int event, int nData )				 {        ft_DoAnimationEvent       (this, event, nData); }
+	void RemoveInvisibility()                                    {        ft_RemoveInvisibility               (this); }
+	void DoAnimationEvent(PlayerAnimEvent_t event, int nData = 0){        ft_DoAnimationEvent                 (this, event, nData); }
 	void PlaySpecificSequence (const char *sequence)             {        ft_PlaySpecificSequence   (this, sequence); }
 	CBaseObject *GetObject(int id)                               { return ft_GetObject                      (this, id); }
 	int GetObjectCount()                                         { return ft_GetObjectCount                 (this); }
@@ -336,11 +390,13 @@ public:
 	void Taunt(taunts_t taunt, int concept)                                       { ft_Taunt                   (this, taunt, concept); }
 	void PlayTauntSceneFromItem(CEconItemView *view)                              { ft_PlayTauntSceneFromItem  (this, view); }
 	
-	
+	CEconEntity *GetEconEntityByName(const char *name);
+	CEconEntity *GetEconEntityById(int id);
+
 	DECL_SENDPROP_RW(CTFPlayerShared,      m_Shared);
 	DECL_SENDPROP   (float,                m_flMvMLastDamageTime);
 	DECL_RELATIVE   (CTFPlayerAnimState *, m_PlayerAnimState);
-	DECL_EXTRACT    (bool,                 m_bFeigningDeath);
+	DECL_RELATIVE   (bool,                 m_bFeigningDeath);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hGrapplingHookTarget);
 	DECL_SENDPROP   (int,        m_nBotSkill);
 	DECL_SENDPROP   (bool,       m_bAllowMoveDuringTaunt);
@@ -354,6 +410,7 @@ private:
 	DECL_SENDPROP   (int,              m_nCurrency);
 	DECL_SENDPROP   (bool,             m_bForcedSkin);
 	DECL_SENDPROP   (int,              m_nForcedSkin);
+	DECL_SENDPROP   (bool,             m_bArenaSpectator);
 	
 	static MemberFuncThunk<      CTFPlayer *, void, int, bool                 > ft_ForceChangeTeam;
 	static MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > ft_ClientCommand;
@@ -380,7 +437,8 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UseActionSlotItemReleased;
 	static MemberFuncThunk<      CTFPlayer *, CAttributeList *                > ft_GetAttributeList;
 	static MemberFuncThunk<      CTFPlayer *, CAttributeManager *             > ft_GetAttributeManager;
-	static MemberFuncThunk<      CTFPlayer *, void, int, int                  > ft_DoAnimationEvent;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_RemoveInvisibility;
+	static MemberFuncThunk<      CTFPlayer *, void, PlayerAnimEvent_t, int    > ft_DoAnimationEvent;
 	static MemberFuncThunk<      CTFPlayer *, void, const char *              > ft_PlaySpecificSequence;
 	static MemberFuncThunk<      CTFPlayer *, void, taunts_t, int             > ft_Taunt;
 	static MemberFuncThunk<      CTFPlayer *, void, CEconItemView*            > ft_PlayTauntSceneFromItem;
@@ -456,4 +514,6 @@ extern StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent;
 inline void TE_PlayerAnimEvent(CBasePlayer *player, int anim, int data) { ft_TE_PlayerAnimEvent(player, anim, data); }
 
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name);
+
+
 #endif
