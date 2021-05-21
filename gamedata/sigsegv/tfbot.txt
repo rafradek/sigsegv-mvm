@@ -385,6 +385,11 @@
 					type "sym"
 					sym  "_ZN6CTFBot29UpdateLookingAroundForEnemiesEv"
 				}
+				"CTFBot::LeaveSquad"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot10LeaveSquadEv"
+				}
 				
 			}
 		}

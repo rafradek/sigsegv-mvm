@@ -96,9 +96,13 @@
 				"CTFBotSpawner::Spawn"                      "_ZN13CTFBotSpawner5SpawnERK6VectorP10CUtlVectorI7CHandleI11CBaseEntityE10CUtlMemoryIS6_iEE"
 				"CTFBotSpawner::ParseEventChangeAttributes" "_ZN13CTFBotSpawner26ParseEventChangeAttributesEP9KeyValues"
 				
+				"CSquadSpawner::~CSquadSpawner [D0]"        "_ZN13CSquadSpawnerD0Ev"
+				"CSquadSpawner::~CSquadSpawner [D2]"        "_ZN13CSquadSpawnerD2Ev"
 				"CSquadSpawner::GetClassIcon" "_ZN13CSquadSpawner12GetClassIconEi"
 				"CSquadSpawner::IsMiniBoss"   "_ZN13CSquadSpawner10IsMiniBossEi"
 				"CSquadSpawner::HasAttribute" "_ZN13CSquadSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
+				"CSquadSpawner::Parse" "_ZN13CSquadSpawner5ParseEP9KeyValues"
+				"CSquadSpawner::Spawn" "_ZN13CSquadSpawner5SpawnERK6VectorP10CUtlVectorI7CHandleI11CBaseEntityE10CUtlMemoryIS6_iEE"
 				
 				"CRandomChoiceSpawner::GetClassIcon" "_ZN20CRandomChoiceSpawner12GetClassIconEi"
 				"CRandomChoiceSpawner::IsMiniBoss"   "_ZN20CRandomChoiceSpawner10IsMiniBossEi"

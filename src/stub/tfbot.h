@@ -349,6 +349,7 @@ public:
 	const EventChangeAttributes_t *GetEventChangeAttributes(const char *name) const { return ft_GetEventChangeAttributes              (this,name); }
 	void OnEventChangeAttributes(const EventChangeAttributes_t *ecattr) { return ft_OnEventChangeAttributes              (this,ecattr); }
 	float TransientlyConsistentRandomValue(float time = 1.0f, int seed = 0) { return ft_TransientlyConsistentRandomValue              (this,time,seed); }
+	void LeaveSquad()                                                  { return ft_LeaveSquad                  (this); }
 
 #ifdef ADD_EXTATTR
 	/* custom: extended attributes */
@@ -401,6 +402,7 @@ private:
 	static MemberFuncThunk<const CTFBot *, const EventChangeAttributes_t*, const char*   > ft_GetEventChangeAttributes;
     static MemberFuncThunk<      CTFBot *, void, const EventChangeAttributes_t*          > ft_OnEventChangeAttributes;
     static MemberFuncThunk<      CTFBot *, float, float, int          > ft_TransientlyConsistentRandomValue;
+    static MemberFuncThunk<      CTFBot *, void                       > ft_LeaveSquad;
 	
 #ifdef ADD_EXTATTR
 	static std::map<CHandle<CTFBot>, ExtendedAttr> s_ExtAttrs;

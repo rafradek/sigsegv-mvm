@@ -4350,6 +4350,16 @@
 					type "sym"
 					sym  "_ZN14CWeaponMedigun14GetTargetRangeEv"
 				}
+				"CTFBotSquad::Leave"
+				{
+					type "sym"
+					sym  "_ZN11CTFBotSquad5LeaveEP6CTFBot"
+				}
+				"CTFBotSquad::ShouldSquadLeaderWaitForFormation"
+				{
+					type "sym"
+					sym  "_ZNK11CTFBotSquad33ShouldSquadLeaderWaitForFormationEv"
+				}
 				
 			}
 			"addrs_group"

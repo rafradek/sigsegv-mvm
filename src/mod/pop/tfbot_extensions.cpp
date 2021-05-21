@@ -176,6 +176,8 @@ namespace Mod::Pop::TFBot_Extensions
 //#ifdef ENABLE_BROKEN_STUFF
 		bool drop_weapon = false;
 //#endif
+		bool no_wait_for_formation = false;
+		bool no_formation = false;
 	};
 
 	std::unordered_map<CTFBotSpawner *, SpawnerData> spawners;
@@ -1540,6 +1542,85 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnCommandString)(actor, cmd);
 	}
 
+	DETOUR_DECL_MEMBER(bool, CSquadSpawner_Parse, KeyValues *kv_orig)
+	{
+		auto spawner = reinterpret_cast<CSquadSpawner *>(this);
+
+		std::vector<KeyValues *> del_kv;
+
+        bool no_wait_for_formation = false;
+		bool no_formation = false;
+		FOR_EACH_SUBKEY(kv_orig, subkey) {
+			const char *name = subkey->GetName();
+			bool del = true;
+			if (FStrEq(name, "NoWaitForFormation")) {
+				no_wait_for_formation = subkey->GetBool();
+			} else if (FStrEq(name, "NoFormation")) {
+				no_formation = subkey->GetBool();
+			} else {
+				del = false;
+			}
+			
+			if (del) {
+				del_kv.push_back(subkey);
+			} else {
+			}
+		}
+		
+		for (auto subkey : del_kv) {
+			kv_orig->RemoveSubKey(subkey);
+			subkey->deleteThis();
+		}
+
+		auto result = DETOUR_MEMBER_CALL(CSquadSpawner_Parse)(kv_orig);
+
+		for (auto bot_spawner : spawner->m_SubSpawners) {
+			auto find = spawners.find(static_cast<CTFBotSpawner *>(bot_spawner));
+			if (find != spawners.end()) {
+				auto &data = find->second;
+				data.no_wait_for_formation = no_wait_for_formation;
+				data.no_formation = no_formation;
+			}
+		}
+		return result;
+	}
+
+    CTFBot *bot_tactical_monitor = nullptr;
+    DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotTacticalMonitor_Update, CTFBot *actor, float dt)
+	{
+        bot_tactical_monitor = actor;
+		auto result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_Update)(actor, dt);
+        bot_tactical_monitor = nullptr;
+		return result;
+	}
+
+    DETOUR_DECL_MEMBER(bool, CTFBotSquad_ShouldSquadLeaderWaitForFormation)
+	{
+        if (bot_tactical_monitor != nullptr) {
+            auto data = GetDataForBot(bot_tactical_monitor);
+            if (data != nullptr && data->no_wait_for_formation)
+                return false;
+        }
+        return DETOUR_MEMBER_CALL(CTFBotSquad_ShouldSquadLeaderWaitForFormation)();
+    }
+
+	DETOUR_DECL_MEMBER(bool, CSquadSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	{
+		auto spawner = reinterpret_cast<CSquadSpawner *>(this);
+		auto result = DETOUR_MEMBER_CALL(CSquadSpawner_Spawn)(where, ents);
+		if (result) {
+            for (int i = 0; i < ents->Count(); i++) {
+                CTFBot *bot = ToTFBot(ents->Element(i));
+				auto data = GetDataForBot(bot);
+                if (bot != nullptr && data != nullptr) {
+                    if (data->no_formation)
+                        bot->LeaveSquad();
+                }
+            }
+		}
+		return result;
+	}
+
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
@@ -1700,8 +1781,11 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Fix disband action memory leak
 			MOD_ADD_DETOUR_MEMBER(CTFBotEscortSquadLeader_OnEnd, "CTFBotEscortSquadLeader::OnEnd");
-
 			
+			MOD_ADD_DETOUR_MEMBER(CSquadSpawner_Parse, "CSquadSpawner::Parse");
+			MOD_ADD_DETOUR_MEMBER(CSquadSpawner_Spawn, "CSquadSpawner::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_Update,     "CTFBotTacticalMonitor::Update");
+            MOD_ADD_DETOUR_MEMBER(CTFBotSquad_ShouldSquadLeaderWaitForFormation, "CTFBotSquad::ShouldSquadLeaderWaitForFormation");
 
 			//MOD_ADD_DETOUR_MEMBER(Action_CTFBot_InvokeOnEnd, "Action<CTFBot>::InvokeOnEnd");
 			

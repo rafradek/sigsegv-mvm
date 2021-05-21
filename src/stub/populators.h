@@ -138,6 +138,9 @@ class CSquadSpawner : public IPopulationSpawner
 {
 public:
 	CUtlVector<IPopulationSpawner *> m_SubSpawners;
+
+	float m_formationSize;
+	char m_bShouldPreserveSquad;
 };
 
 class CRandomChoiceSpawner : public IPopulationSpawner

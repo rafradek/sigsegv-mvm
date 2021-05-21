@@ -230,6 +230,7 @@ MemberFuncThunk<      CTFBot *, bool                                     > CTFBo
 MemberFuncThunk<const CTFBot *, const CTFBot::EventChangeAttributes_t *, const char*     > CTFBot::ft_GetEventChangeAttributes    ("CTFBot::GetEventChangeAttributes");
 MemberFuncThunk<      CTFBot *, void, const CTFBot::EventChangeAttributes_t *            > CTFBot::ft_OnEventChangeAttributes     ("CTFBot::OnEventChangeAttributes");
 MemberFuncThunk<      CTFBot *, float, float, int          > CTFBot::ft_TransientlyConsistentRandomValue ("CTFBot::TransientlyConsistentRandomValue");
+MemberFuncThunk<      CTFBot *, void                       > CTFBot::ft_LeaveSquad                       ("CTFBot::LeaveSquad");
 #ifdef ADD_EXTATTR
 std::map<CHandle<CTFBot>, CTFBot::ExtendedAttr> CTFBot::s_ExtAttrs;
 #endif
