@@ -466,12 +466,6 @@
 					type "sym"
 					sym  "_ZN21CTFBotTacticalMonitor15OnCommandStringEP6CTFBotPKc"
 				}
-				"CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport"
-				{
-					type "sym"
-					sym  "_ZNK21CTFBotTacticalMonitor31ShouldOpportunisticallyTeleportEP6CTFBot"
-				}
-				
 			}
 		}
 	}

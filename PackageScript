@@ -15,6 +15,7 @@ folder_list = [
 #  'addons/sourcemod/configs',
   'custom/sigsegv/resource',
   'custom/sigsegv/scripts',
+  'cfg'
 ]
 
 # Create the distribution folder hierarchy.
@@ -42,36 +43,38 @@ def CopyFiles(src, dest, files):
 # GameData files
 CopyFiles('gamedata/sigsegv', 'addons/sourcemod/gamedata/sigsegv',
   [
+    'client.txt',
+    'convars.txt',
+    'custom_attributes.txt',
     'datamaps.txt',
+    'debugoverlay.txt',
     'globals.txt',
-    'NextBotKnownEntity.txt',
+    'item_names.txt',
+    'misc.txt',
+    'nav.txt',
+    'NextBotBehavior.txt',
+    'NextBotBodyInterface.txt',
+    'NextBotChasePath.txt',
     'NextBotContextualQueryInterface.txt',
     'NextBotEventResponderInterface.txt',
     'NextBotInterface.txt',
-    'NextBotBodyInterface.txt',
-    'NextBotLocomotionInterface.txt',
-    'NextBotVisionInterface.txt',
     'NextBotIntentionInterface.txt',
-    'NextBotBehavior.txt',
+    'NextBotKnownEntity.txt',
+    'NextBotLocomotionInterface.txt',
+    'NextBotManager.txt',
     'NextBotPlayer.txt',
     'NextBotPlayerBody.txt',
     'NextBotPlayerLocomotion.txt',
     'NextBotPath.txt',
     'NextBotPathFollow.txt',
-    'NextBotChasePath.txt',
-    'NextBotManager.txt',
+    'NextBotVisionInterface.txt',
     'population.txt',
-    'nav.txt',
     'tfplayer.txt',
     'tfbot.txt',
     'tfbot_body.txt',
     'tfbot_locomotion.txt',
     'tfbot_vision.txt',
     'tfbot_behavior.txt',
-    'misc.txt',
-    'debugoverlay.txt',
-    'client.txt',
-    'convars.txt',
   ]
 )
 
@@ -96,6 +99,8 @@ CopyFiles('scripts', 'custom/sigsegv/scripts',
   ]
 )
 
+builder.AddCopy('cfg/sigsegv_convars.cfg', folder_map['cfg'])
+
 # Copy binaries.
 for cxx_task in Extension.extensions:
   src = os.path.join('..', cxx_task.binary.path)
@@ -108,11 +113,11 @@ for cxx_task in Extension.extensions:
 #  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 
 # Copy libstrcompat (Linux only)
-if builder.target.platform == 'linux':
-  src = os.path.join(builder.sourcePath, 'libs', 'strcompat', 'libstrcompat.so')
-  dst = os.path.join('addons', 'sourcemod', 'extensions', 'libstrcompat.so')
-  builder.AddCommand(
-    inputs  = [ src ],
-    argv    = [ 'cp', '--remove-destination', src, dst ],
-    outputs = [ dst ],
-  )
+# if builder.target.platform == 'linux':
+#   src = os.path.join(builder.sourcePath, 'libs', 'strcompat', 'libstrcompat.so')
+#   dst = os.path.join('addons', 'sourcemod', 'extensions', 'libstrcompat.so')
+#   builder.AddCommand(
+#     inputs  = [ src ],
+#     argv    = [ 'cp', '--remove-destination', src, dst ],
+#     outputs = [ dst ],
+#   )
