@@ -80,6 +80,8 @@
 				"IPopulationSpawner::GetClassIcon" "_ZN18IPopulationSpawner12GetClassIconEi"
 				"IPopulationSpawner::HasAttribute" "_ZN18IPopulationSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
 				"IPopulationSpawner::IsMiniBoss"   "_ZN18IPopulationSpawner10IsMiniBossEi"
+				"IPopulationSpawner::ParseSpawner" "_ZN18IPopulationSpawner12ParseSpawnerEP10IPopulatorP9KeyValues"
+				
 				
 				"CTankSpawner::~CTankSpawner [D0]" "_ZN12CTankSpawnerD0Ev"
 				"CTankSpawner::~CTankSpawner [D2]" "_ZN12CTankSpawnerD2Ev"
@@ -88,10 +90,11 @@
 				"CTankSpawner::Parse"              "_ZN12CTankSpawner5ParseEP9KeyValues"
 				"CTankSpawner::Spawn"              "_ZN12CTankSpawner5SpawnERK6VectorP10CUtlVectorI7CHandleI11CBaseEntityE10CUtlMemoryIS6_iEE"
 				
-				"CTFBotSpawner::~CTFBotSpawner [D0]" "_ZN13CTFBotSpawnerD0Ev"
-				"CTFBotSpawner::~CTFBotSpawner [D2]" "_ZN13CTFBotSpawnerD2Ev"
-				"CTFBotSpawner::Parse"               "_ZN13CTFBotSpawner5ParseEP9KeyValues"
-				"CTFBotSpawner::Spawn"               "_ZN13CTFBotSpawner5SpawnERK6VectorP10CUtlVectorI7CHandleI11CBaseEntityE10CUtlMemoryIS6_iEE"
+				"CTFBotSpawner::~CTFBotSpawner [D0]"        "_ZN13CTFBotSpawnerD0Ev"
+				"CTFBotSpawner::~CTFBotSpawner [D2]"        "_ZN13CTFBotSpawnerD2Ev"
+				"CTFBotSpawner::Parse"                      "_ZN13CTFBotSpawner5ParseEP9KeyValues"
+				"CTFBotSpawner::Spawn"                      "_ZN13CTFBotSpawner5SpawnERK6VectorP10CUtlVectorI7CHandleI11CBaseEntityE10CUtlMemoryIS6_iEE"
+				"CTFBotSpawner::ParseEventChangeAttributes" "_ZN13CTFBotSpawner26ParseEventChangeAttributesEP9KeyValues"
 				
 				"CSquadSpawner::GetClassIcon" "_ZN13CSquadSpawner12GetClassIconEi"
 				"CSquadSpawner::IsMiniBoss"   "_ZN13CSquadSpawner10IsMiniBossEi"
@@ -100,6 +103,7 @@
 				"CRandomChoiceSpawner::GetClassIcon" "_ZN20CRandomChoiceSpawner12GetClassIconEi"
 				"CRandomChoiceSpawner::IsMiniBoss"   "_ZN20CRandomChoiceSpawner10IsMiniBossEi"
 				"CRandomChoiceSpawner::HasAttribute" "_ZN20CRandomChoiceSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
+				"CRandomChoiceSpawner::Parse"        "_ZN20CRandomChoiceSpawner5ParseEP9KeyValues"
 				
 				"CSpawnLocation::Parse" "_ZN14CSpawnLocation5ParseEP9KeyValues"
 				

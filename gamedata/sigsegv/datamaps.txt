@@ -34,6 +34,9 @@
 				"CTFPowerup"           "_ZN10CTFPowerup9m_DataMapE"
 				"CTFTeamSpawn"         "_ZN12CTFTeamSpawn9m_DataMapE"
 				"CEnvEntityMaker"      "_ZN15CEnvEntityMaker9m_DataMapE"
+				"CTFPointWeaponMimic"  "_ZN19CTFPointWeaponMimic9m_DataMapE"
+				"CLogicCase"           "_ZN10CLogicCase9m_DataMapE"
+				"CGameUI"              "_ZN7CGameUI9m_DataMapE"
 			}
 		}
 	}

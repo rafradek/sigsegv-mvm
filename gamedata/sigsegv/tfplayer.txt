@@ -758,6 +758,21 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer35IsAllowedToInitiateTauntWithPartnerEPK13CEconItemViewPci"
 				}
+				"CTFPlayer::InputIgnitePlayer"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer17InputIgnitePlayerER11inputdata_t"
+				}
+				"CTFPlayer::RemoveObject"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer12RemoveObjectEP11CBaseObject"
+				}
+				"CTFPlayer::Spawn"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer5SpawnEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{
@@ -779,6 +794,7 @@
 					lib  "server"
 				}
 				
+				"CTFPlayer::RemoveInvisibility" "_ZN9CTFPlayer18RemoveInvisibilityEv"
 				"CTFPlayer::CheckBlockBackstab" "_ZN9CTFPlayer18CheckBlockBackstabEPS_"
 				
 				"CTFPlayerShared::SetDefaultItemChargeMeters" "_ZN15CTFPlayerShared26SetDefaultItemChargeMetersEv"

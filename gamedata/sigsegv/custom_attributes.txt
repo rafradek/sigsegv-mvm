@@ -1344,4 +1344,138 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    //Projectile acceleration start time
+    "4451"
+    {
+        "name"	"mult dmg vs giants"
+        "attribute_class"	"mult_dmg_vs_giants"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Projectile acceleration start time
+    "4452"
+    {
+        "name"	"mult dmg vs npc"
+        "attribute_class"	"mult_dmg_vs_npc"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Projectile acceleration start time
+    "4453"
+    {
+        "name"	"mult dmg vs tanks"
+        "attribute_class"	"mult_dmg_vs_tanks"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Projectile acceleration start time
+    "4454"
+    {
+        "name" "custom hit sound"
+        "attribute_class"	"custom_hit_sound"
+		"attribute_type"	"string"
+        "description_string"	"#Attrib_CallingCardOnKill"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Custom impact sound
+    "4455"
+    {
+        "name" "custom impact sound"
+        "attribute_class"	"custom_impact_sound"
+		"attribute_type"	"string"
+        "description_string"	"#Attrib_CallingCardOnKill"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Custom reload sound
+    "4456"
+    {
+        "name" "custom weapon reload sound"
+        "attribute_class"	"custom_weapon_reload_sound"
+		"attribute_type"	"string"
+        "description_string"	"#Attrib_CallingCardOnKill"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Disable explosion particle
+    "4457"
+    {
+        "name"	"no explosion particles"
+        "attribute_class"	"no_explosion_particles"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Override projectile type extra
+    "4458"
+    {
+        "name"	"override projectile type extra"
+        "attribute_class"	"override_projectile_type_extra"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Override projectile type extra
+    "4459"
+    {
+        "name"	"dmg current health"
+        "attribute_class"	"dmg_current_health"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Override projectile type extra
+    "4460"
+    {
+        "name"	"dmg max health"
+        "attribute_class"	"dmg_max_health"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Override projectile type extra
+    "4461"
+    {
+        "name"	"dmg missing health"
+        "attribute_class"	"dmg_missing_health"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Cannot be teleported
+    "4462"
+    {
+        "name"	"cannot be teleported"
+        "attribute_class"	"cannot_be_teleported"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Medigun range multipier
+    "4463"
+    {
+        "name"	"mult medigun range"
+        "attribute_class"	"mult_medigun_range"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

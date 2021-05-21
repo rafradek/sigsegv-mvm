@@ -456,6 +456,22 @@
 					type "sym"
 					sym  "_ZN23CTFBotEscortSquadLeaderD2Ev"
 				}
+				"CTFBotDeliverFlag::OnEnd"
+				{
+					type "sym"
+					sym  "_ZN17CTFBotDeliverFlag5OnEndEP6CTFBotP6ActionIS0_E"
+				}
+				"CTFBotTacticalMonitor::OnCommandString"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotTacticalMonitor15OnCommandStringEP6CTFBotPKc"
+				}
+				"CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport"
+				{
+					type "sym"
+					sym  "_ZNK21CTFBotTacticalMonitor31ShouldOpportunisticallyTeleportEP6CTFBot"
+				}
+				
 			}
 		}
 	}

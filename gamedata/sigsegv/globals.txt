@@ -82,6 +82,11 @@
 
 				"g_TETFParticleEffect" "_ZL20g_TETFParticleEffect"
 				"g_pFullFileSystem" "g_pFullFileSystem"
+
+				"CSceneEntity::m_pcvSndMixahead" "_ZN12CSceneEntity16m_pcvSndMixaheadE"
+
+				"DT_TFPlayer::g_SendTable" "_ZN11DT_TFPlayer11g_SendTableE"
+				"g_CTFPlayer_ClassReg" "_ZL20g_CTFPlayer_ClassReg"
 			}
 			
 			"addrs_group"
@@ -91,8 +96,12 @@
 					type "sym"
 					lib  "engine"
 				}
+				"g_PropTypeFns" "g_PropTypeFns"
 				
 				"g_MapListMgr" "g_MapListMgr"
+				"g_FrameSnapshotManager" "_ZL22g_FrameSnapshotManager"
+				"g_SharedEdictChangeInfo" "g_SharedEdictChangeInfo"
+				"hltv" "hltv"
 			}
 		}
 	}

@@ -743,6 +743,11 @@
 					type "sym"
 					sym  "_ZN11CBaseEntity13CreateNoSpawnEPKcRK6VectorRK6QAnglePS_"
 				}
+				"CBaseEntity::Create"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity6CreateEPKcRK6VectorRK6QAnglePS_"
+				}
 				
 				"WeaponID_IsSniperRifle"
 				{
@@ -4014,9 +4019,339 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared16OnAddBalloonHeadEv"
 				}
+				"CTFPointWeaponMimic::~CTFPointWeaponMimic [D0]"
+				{
+					type "sym"
+					sym  "_ZN19CTFPointWeaponMimicD0Ev"
+				}
+				"CTFPointWeaponMimic::~CTFPointWeaponMimic [D2]"
+				{
+					type "sym"
+					sym  "_ZN19CTFPointWeaponMimicD2Ev"
+				}
+				"TE_MetalSparks"
+				{
+					type "sym"
+					sym  "_Z14TE_MetalSparksR16IRecipientFilterfPK6VectorS3_"
+				}
+				"CTFProjectile_BallOfFire::RocketTouch"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_BallOfFire11RocketTouchEP11CBaseEntity"
+				}
+				"CTFGameRules::CleanUpMap"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules10CleanUpMapEv"
+				}
+				"CBaseEntity::ReadKeyField"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity12ReadKeyFieldEPKcP9variant_t"
+				}
+				"CGameUI::Deactivate"
+				{
+					type "sym"
+					sym  "_ZN7CGameUI10DeactivateEP11CBaseEntity"
+				}
+				"CBaseEntityOutput::FireOutput"
+				{
+					type "sym"
+					sym  "_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				}
+				"CRC_File"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z8CRC_FilePjPKc"
+				}
+				"CTFMedigunShield::RemoveShield"
+				{
+					type "sym"
+					sym  "_ZN16CTFMedigunShield12RemoveShieldEv"
+				}
+				"CTFMedigunShield::UpdateShieldPosition"
+				{
+					type "sym"
+					sym  "_ZN16CTFMedigunShield20UpdateShieldPositionEv"
+				}
+				"CTFMedigunShield::ShieldThink"
+				{
+					type "sym"
+					sym  "_ZN16CTFMedigunShield11ShieldThinkEv"
+				}
+				"UTIL_PlayerDecalTrace"
+				{
+					type "sym"
+					sym  "_Z21UTIL_PlayerDecalTraceP10CGameTracei"
+				}
+				"TE_PlayerDecal"
+				{
+					type "sym"
+					sym  "_Z14TE_PlayerDecalR16IRecipientFilterfPK6Vectorii"
+				}
+				"CBaseClient::FillUserInfo"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseClient12FillUserInfoER13player_info_s"
+				}
+				"CBaseServer::UserInfoChanged"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseServer15UserInfoChangedEi"
+				}
+				"GetClassIndexFromString"
+				{
+					type "sym"
+					sym  "_Z23GetClassIndexFromStringPKci"
+				}
+				"CTFWearable::Equip"
+				{
+					type "sym"
+					sym  "_ZN11CTFWearable5EquipEP11CBasePlayer"
+				}
+				"CBaseAnimating::GetNumBones"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating11GetNumBonesEv"
+				}
+				"CObjectSentrygun::MakeScaledBuilding"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun18MakeScaledBuildingEP9CTFPlayer"
+				}
+				"CParallelProcessor<PackWork_t>::Run"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN18CParallelProcessorI10PackWork_t21CFuncJobItemProcessorIS0_EE3RunEPS0_jiP11IThreadPool"
+				}
+				"CFrameSnapshotManager::GetPreviouslySentPacket"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN21CFrameSnapshotManager23GetPreviouslySentPacketEii"
+				}
+				"CVEngineServer::GetChangeAccessor"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN14CVEngineServer17GetChangeAccessorEPK7edict_t"
+				}
+				"PackWork_t::Process"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN10PackWork_t7ProcessERS_"
+				}
+				"CFrameSnapshotManager::UsePreviouslySentPacket"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN21CFrameSnapshotManager23UsePreviouslySentPacketEP14CFrameSnapshotii"
+				}
+				"CFrameSnapshotManager::CreatePackedEntity"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN21CFrameSnapshotManager18CreatePackedEntityEP14CFrameSnapshoti"
+				}
+				"CBaseEdict::GetChangeAccessor"
+				{
+					type "sym"
+					sym  "_ZN10CBaseEdict17GetChangeAccessorEv"
+				}
+				"CHLTVDemoRecorder::StartRecording"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN17CHLTVDemoRecorder14StartRecordingEPKcb"
+				}
+				"CHLTVDemoRecorder::StopRecording"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN17CHLTVDemoRecorder13StopRecordingEv"
+				}
+				"CClientFrameManager::DeleteClientFrames"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CClientFrameManager18DeleteClientFramesEi"
+				}
+				"CClientFrameManager::CountClientFrames"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CClientFrameManager17CountClientFramesEv"
+				}
+				"CClientFrameManager::RemoveOldestFrame"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CClientFrameManager17RemoveOldestFrameEv"
+				}
+				"CHLTVServer::RestoreTick"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer11RestoreTickEi"
+				}
+				"SendTable_Encode"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z16SendTable_EncodePK9SendTablePKvP8bf_writeiP10CUtlMemoryI20CSendProxyRecipientsiEb"
+				}
+				"CDatatableStack::Init"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN15CDatatableStack4InitEb"
+				}
+				"CMultiPlayerAnimState::AddToGestureSlot"
+				{
+					type "sym"
+					sym  "_ZN21CMultiPlayerAnimState16AddToGestureSlotEi8Activityb"
+				}
+				"CAnimationLayer::StudioFrameAdvance"
+				{
+					type "sym"
+					sym  "_ZN15CAnimationLayer18StudioFrameAdvanceEfP14CBaseAnimating"
+				}
+				"CBaseAnimatingOverlay::StudioFrameAdvance"
+				{
+					type "sym"
+					sym  "_ZN21CBaseAnimatingOverlay18StudioFrameAdvanceEv"
+				}
+				"AllocChangeFrameList"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z20AllocChangeFrameListii"
+				}
+				"CMultiPlayerAnimState::RestartGesture"
+				{
+					type "sym"
+					sym  "_ZN21CMultiPlayerAnimState14RestartGestureEi8Activityb"
+				}
+				"PackEntities_Normal"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z19PackEntities_NormaliPP11CGameClientP14CFrameSnapshot"
+				}
+				"CAttributeManager::ClearCache [clone]"
+				{
+					type "sym regex"
+					sym  "_ZN17CAttributeManager10ClearCacheEv\\.part\\..*"
+				}
+				"SV_EnsureInstanceBaseline"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z25SV_EnsureInstanceBaselineP11ServerClassiPKvi"
+				}
+				"PackedEntity::GetPropsChangedAfterTick"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN12PackedEntity24GetPropsChangedAfterTickEiPii"
+				}
+				"SendTable_WriteAllDeltaProps"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z28SendTable_WriteAllDeltaPropsPK9SendTablePKviS3_iiP8bf_write"
+				}
+				"SendTable_WritePropList"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z23SendTable_WritePropListPK9SendTablePKviP8bf_writeiPKii"
+				}
+				"CBaseServer::WriteDeltaEntities"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseServer18WriteDeltaEntitiesEP11CBaseClientP12CClientFrameS3_R8bf_write"
+				}
+				"CBaseServer::UncompressPackedEntity"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CBaseServer22UncompressPackedEntityEP12PackedEntityRi"
+				}
+				"SendTable_CullPropsFromProxies"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_Z30SendTable_CullPropsFromProxiesPK9SendTablePKiiiPK20CSendProxyRecipientsiS6_iPii"
+				}
+				"CCommandBuffer::AddText"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN14CCommandBuffer7AddTextEPKci"
+				}
+				"CBasePlayer::PhysicsSimulate"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer15PhysicsSimulateEv"
+				}
+				"CHLTVServer::UpdateTick"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN11CHLTVServer10UpdateTickEv"
+				}
+				"CNetworkStringTableContainer::EnableRollback"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN28CNetworkStringTableContainer14EnableRollbackEb"
+				}
+				"CNetworkStringTable::RestoreTick"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CNetworkStringTable11RestoreTickEi"
+				}
+				"CNetworkStringTable::UpdateMirrorTable"
+				{
+					type "sym"
+					lib  "engine"
+					sym  "_ZN19CNetworkStringTable17UpdateMirrorTableEi"
+				}
+				"CObjectTeleporter::PlayerCanBeTeleported"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
+				}
+				"SendProxy_SendHealersDataTable"
+				{
+					type "sym"
+					sym  "_Z30SendProxy_SendHealersDataTablePK8SendPropPKvS3_P20CSendProxyRecipientsi"
+				}
+				"SendProxy_SendPredictableId"
+				{
+					type "sym"
+					sym  "_ZL27SendProxy_SendPredictableIdPK8SendPropPKvS3_P20CSendProxyRecipientsi_0"
+				}
+				"CObjectTeleporter::TeleporterTouch"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter15TeleporterTouchEP11CBaseEntity"
+				}
+				"CWeaponMedigun::GetTargetRange"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun14GetTargetRangeEv"
+				}
 				
 			}
-			
 			"addrs_group"
 			{
 				"[common]"
@@ -4062,6 +4397,21 @@
 				
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
 				
+				"CEyeballBossIdle::OnStart" "_ZN16CEyeballBossIdle7OnStartEP12CEyeballBossP6ActionIS0_E
+				"CEyeballBossIdle::OnStart" "_ZN16CEyeballBossIdle7OnStartEP12CEyeballBossP6ActionIS0_E"
+				"CEyeballBossIdle::Update"  "_ZN16CEyeballBossIdle6UpdateEP12CEyeballBossf"
+
+				"CEyeballBossDead::Update" "_ZN16CEyeballBossDead6UpdateEP12CEyeballBossf"
+
+				"CZombie::Spawn"      "_ZN7CZombie5SpawnEv"
+				"CZombie::SpawnAtPos" "_ZN7CZombie10SpawnAtPosERK6VectorfiP11CBaseEntityNS_14SkeletonType_tE"
+
+				"IZombieAutoList::m_IZombieAutoListAutoList" "_ZN15IZombieAutoList25m_IZombieAutoListAutoListE"
+
+				"CZombieBehavior::OnKilled" "_ZN15CZombieBehavior8OnKilledEP7CZombieRK15CTakeDamageInfo"
+
+				"CTeamplayRoundBasedRules::SetTeamRespawnWaveTime" "_ZN24CTeamplayRoundBasedRules22SetTeamRespawnWaveTimeEif"
+
 				"CAttributeList::GetAttributeByID"       "_ZNK14CAttributeList16GetAttributeByIDEi"
 				"CAttributeList::GetAttributeByName"     "_ZNK14CAttributeList18GetAttributeByNameEPKc"
 				"CAttributeList::IterateAttributes"      "_ZNK14CAttributeList17IterateAttributesEP26IEconItemAttributeIterator"
@@ -4088,6 +4438,32 @@
 				
 				"InventoryManager"   "_Z16InventoryManagerv"
 				"TFInventoryManager" "_Z18TFInventoryManagerv"
+
+				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
+				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
+				
+				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
+				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
+				"CTFWeaponBaseGun::RemoveProjectileAmmo" "_ZN16CTFWeaponBaseGun20RemoveProjectileAmmoEP9CTFPlayer"
+				"CTFWeaponBaseGun::ShouldPlayFireAnim"   "_ZN16CTFWeaponBaseGun18ShouldPlayFireAnimEv"
+				"CTFWeaponBaseGun::UpdatePunchAngles"    "_ZN16CTFWeaponBaseGun17UpdatePunchAnglesEP9CTFPlayer"
+				
+			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym"
+					lib  "engine"
+				}
+				
+				"Int_CompareDeltas"	"_Z17Int_CompareDeltasPK8SendPropP7bf_readS3_"
+				"Float_CompareDeltas"	"_Z19Float_CompareDeltasPK8SendPropP7bf_readS3_"
+				"VectorXY_CompareDeltas"	"_Z22VectorXY_CompareDeltasPK8SendPropP7bf_readS3_"
+				"Array_CompareDeltas"	"_Z19Array_CompareDeltasPK8SendPropP7bf_readS3_"
+				"Vector_CompareDeltas"	"_Z20Vector_CompareDeltasPK8SendPropP7bf_readS3_"
+				"String_CompareDeltas"	"_Z20String_CompareDeltasPK8SendPropP7bf_readS3_"
+				"Int64_CompareDeltas"	"_Z19Int64_CompareDeltasPK8SendPropP7bf_readS3_"
 			}
 		}
 	}
