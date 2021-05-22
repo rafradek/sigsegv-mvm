@@ -753,6 +753,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_ShootTemplates.clear();
 			this->m_WeaponSpawnTemplates.clear();
 			this->m_ItemEquipTemplates.clear();
+
+			this->m_SpellBookNormalRoll.clear();
+			this->m_SpellBookRareRoll.clear();
+			this->m_SpellBookNextRollTier.clear();
+
 			Clear_Point_Templates();
 
 		}
@@ -886,6 +891,10 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		std::unordered_set<std::string> m_MissingRobotBones[10];
 		string_t m_CachedRobotModelIndex[20];
+
+		std::vector<std::pair<int, int>> m_SpellBookNormalRoll;
+		std::vector<std::pair<int, int>> m_SpellBookRareRoll;
+		std::unordered_map<CBaseEntity *, int> m_SpellBookNextRollTier;
 	};
 	PopState state;
 	
@@ -2195,6 +2204,43 @@ namespace Mod::Pop::PopMgr_Extensions
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
     }
 
+	RefCount rc_CTFSpellBook_RollNewSpell;
+	DETOUR_DECL_MEMBER(void, CTFSpellBook_RollNewSpell, int tier, bool forceReroll)
+	{
+		SCOPED_INCREMENT(rc_CTFSpellBook_RollNewSpell);
+		auto entity = reinterpret_cast<CTFSpellBook *>(this);
+		state.m_SpellBookNextRollTier[entity] = tier;
+        DETOUR_MEMBER_CALL(CTFSpellBook_RollNewSpell)(tier, forceReroll);
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFSpellBook_SetSelectedSpell, int spell)
+	{
+		if (rc_CTFSpellBook_RollNewSpell) {
+			DETOUR_MEMBER_CALL(CTFSpellBook_SetSelectedSpell)(spell);
+			return;
+		}
+
+		auto entity = reinterpret_cast<CTFSpellBook *>(this);
+		int tier = state.m_SpellBookNextRollTier[entity];
+		if (tier == 0 && !state.m_SpellBookNormalRoll.empty()) {
+			spell = RandomInt(0, state.m_SpellBookNormalRoll.size() - 1);
+
+        	//DETOUR_MEMBER_CALL(CTFSpellBook_SetSelectedSpell)(state.m_SpellBookRareRoll[spell].first);
+			entity->m_iSelectedSpellIndex = state.m_SpellBookNormalRoll[spell].first;
+			entity->m_iSpellCharges = state.m_SpellBookNormalRoll[spell].second;
+		}
+		else if (tier == 1 && !state.m_SpellBookRareRoll.empty()) {
+			spell = RandomInt(0, state.m_SpellBookRareRoll.size() - 1);
+        	//DETOUR_MEMBER_CALL(CTFSpellBook_SetSelectedSpell)(state.m_SpellBookRareRoll[spell].first);
+			entity->m_iSelectedSpellIndex = state.m_SpellBookRareRoll[spell].first;
+			entity->m_iSpellCharges = state.m_SpellBookRareRoll[spell].second;
+		}
+		else {
+        	DETOUR_MEMBER_CALL(CTFSpellBook_SetSelectedSpell)(spell);
+		}
+		state.m_SpellBookNextRollTier.erase(entity);
+    }
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -2802,6 +2848,19 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_CustomWeapons[weapon.name] = weapon;
 		}
 	}
+
+	void Parse_SpellBookRoll(KeyValues *kv, std::vector<std::pair<int, int>> &spell_roll)
+	{
+		FOR_EACH_SUBKEY(kv, subkey) {
+			for (int i = 0; i < SPELL_TYPE_COUNT; i++) {
+				if (FStrEq(subkey->GetName(), SPELL_TYPE[i])) {
+					spell_roll.push_back({i, subkey->GetInt()});
+					break;
+				}
+			}
+		}
+	}
+
 	/*void Parse_SprayDecal(KeyValues *kv)
 	{
 		if (state.m_SprayDecals.size() >= 22) {
@@ -3263,6 +3322,10 @@ namespace Mod::Pop::PopMgr_Extensions
 						state.m_ShootTemplates.push_back(data);
 				} else if (FStrEq(name, "CustomWeapon")) {
 					Parse_CustomWeapon(subkey);
+				} else if (FStrEq(name, "SpellBookNormalRoll")) {
+					Parse_SpellBookRoll(subkey, state.m_SpellBookNormalRoll);
+				} else if (FStrEq(name, "SpellBookRareRoll")) {
+					Parse_SpellBookRoll(subkey, state.m_SpellBookRareRoll);
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -3463,6 +3526,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_STATIC(GetBotEscortCount,        "GetBotEscortCount");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn,          "CTFPlayer::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_RollNewSpell,              "CTFSpellBook::RollNewSpell");
+			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_SetSelectedSpell,          "CTFSpellBook::SetSelectedSpell");
 			
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");

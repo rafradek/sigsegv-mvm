@@ -12,6 +12,21 @@
 namespace Mod::Etc::Mapentity_Additions
 {
 
+    static const char *SPELL_TYPE[] = {
+        "Fireball",
+        "Ball O' Bats",
+        "Healing Aura",
+        "Pumpkin MIRV",
+        "Superjump",
+        "Invisibility",
+        "Teleport",
+        "Tesla Bolt",
+        "Minify",
+        "Meteor Shower",
+        "Summon Monoculus",
+        "Summon Skeletons"
+    };
+
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
     {
         variant_t variant;
@@ -199,6 +214,62 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                     return true;
                 }
+                else if (stricmp(szInputName, "$RollCommonSpell") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                    
+                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+
+                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                    spellbook->RollNewSpell(0);
+
+                    return true;
+                }
+                else if (stricmp(szInputName, "$SetSpell") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                    
+                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+                    
+                    const char *str = Value.String();
+                    int index = strtol(str, nullptr, 10);
+                    for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                        if (FStrEq(str, SPELL_TYPE[i])) {
+                            index = i;
+                        }
+                    }
+
+                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                    spellbook->m_iSelectedSpellIndex = index;
+                    spellbook->m_iSpellCharges = 1;
+
+                    return true;
+                }
+                else if (stricmp(szInputName, "$AddSpell") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    
+                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                    
+                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+                    
+                    const char *str = Value.String();
+                    int index = strtol(str, nullptr, 10);
+                    for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                        if (FStrEq(str, SPELL_TYPE[i])) {
+                            index = i;
+                        }
+                    }
+
+                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                    if (spellbook->m_iSelectedSpellIndex != index) {
+                        spellbook->m_iSpellCharges = 0;
+                    }
+                    spellbook->m_iSelectedSpellIndex = index;
+                    spellbook->m_iSpellCharges += 1;
+
+                    return true;
+                }
+                
             }
 
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {

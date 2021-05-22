@@ -4360,6 +4360,21 @@
 					type "sym"
 					sym  "_ZNK11CTFBotSquad33ShouldSquadLeaderWaitForFormationEv"
 				}
+				"CCaptureFlag::Drop"
+				{
+					type "sym"
+					sym  "_ZN12CCaptureFlag4DropEP9CTFPlayerbbb"
+				}
+				"CTFSpellBook::RollNewSpell"
+				{
+					type "sym"
+					sym  "_ZN12CTFSpellBook12RollNewSpellEib"
+				}
+				"CTFSpellBook::SetSelectedSpell"
+				{
+					type "sym"
+					sym  "_ZN12CTFSpellBook16SetSelectedSpellEi"
+				}
 				
 			}
 			"addrs_group"

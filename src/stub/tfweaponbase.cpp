@@ -105,6 +105,9 @@ MemberVFuncThunk<CTFSniperRifle *, float> CTFSniperRifle::vt_SniperRifleChargeRa
 
 IMPL_SENDPROP(float, CTFSniperRifle, m_flChargedDamage, CTFSniperRifle);
 
+
+MemberFuncThunk<CTFSpellBook *, void, int>                  CTFSpellBook::ft_RollNewSpell("CTFSpellBook::RollNewSpell");
+
 IMPL_SENDPROP(int, CTFSpellBook, m_iSelectedSpellIndex, CTFSpellBook);
 IMPL_SENDPROP(int, CTFSpellBook, m_iSpellCharges, CTFSpellBook);
 

@@ -1300,20 +1300,17 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_RegenThink);
 		DETOUR_MEMBER_CALL(CTFPlayer_RegenThink)();
-	}
+		
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 
-	DETOUR_DECL_MEMBER(float, CTFGameRules_ApplyOnDamageAliveModifyRules, CTakeDamageInfo &info, CBaseEntity *entity, void *extras)
-	{
-		if (rc_CTFPlayer_RegenThink) {
-			
-			int iSuicideCounter = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER ( entity, iSuicideCounter, is_suicide_counter );
-			if (iSuicideCounter != 0) {
-				info.AddDamageType(DMG_PREVENT_PHYSICS_FORCE);
-				return info.GetDamage();
-			}
+		int iSuicideCounter = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER ( player, iSuicideCounter, is_suicide_counter );
+		if (iSuicideCounter != 0) {
+			Vector pos = player->GetAbsOrigin();
+			CTakeDamageInfo info = CTakeDamageInfo(player, player, nullptr, vec3_origin, pos, iSuicideCounter, DMG_PREVENT_PHYSICS_FORCE, 0, &pos);
+			info.SetDamageCustom(TF_DMG_CUSTOM_TELEFRAG);
+			player->TakeDamage(info);
 		}
-		return DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageAliveModifyRules)(info, entity, extras);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
@@ -1774,7 +1771,6 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_STATIC(PropDynamic_CollidesWithGrenades, "PropDynamic_CollidesWithGrenades");
 			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RegenThink, "CTFPlayer::RegenThink");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageAliveModifyRules, "CTFGameRules::ApplyOnDamageAliveModifyRules");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CancelTaunt, "CTFPlayer::CancelTaunt");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsAllowedToInitiateTauntWithPartner, "CTFPlayer::IsAllowedToInitiateTauntWithPartner");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_DeflectEntity, "CTFWeaponBase::DeflectEntity");

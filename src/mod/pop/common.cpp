@@ -121,8 +121,6 @@ EventDesiredResult<CTFBot> CTFBotMoveTo::OnCommandString(CTFBot *actor, const ch
     return EventDesiredResult<CTFBot>::Continue();
 }
 
-int SPELL_TYPE_COUNT=12;
-int SPELL_TYPE_COUNT_ALL=15;
 int INPUT_TYPE_COUNT=7;
 const char *INPUT_TYPE[] = {
     "Primary",
@@ -132,24 +130,6 @@ const char *INPUT_TYPE[] = {
     "Jump",
     "Crouch",
     "Action"
-};
-
-const char *SPELL_TYPE[] = {
-    "Fireball",
-    "Ball O' Bats",
-    "Healing Aura",
-    "Pumpkin MIRV",
-    "Superjump",
-    "Invisibility",
-    "Teleport",
-    "Tesla Bolt",
-    "Minify",
-    "Meteor Shower",
-    "Summon Monoculus",
-    "Summon Skeletons",
-    "Common",
-    "Rare",
-    "All"
 };
 
 int GetResponseFor(const char *text) {

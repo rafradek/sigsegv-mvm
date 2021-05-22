@@ -7,6 +7,27 @@
 
 #include "re/path.h"
 
+
+static int SPELL_TYPE_COUNT=12;
+static int SPELL_TYPE_COUNT_ALL=15;
+static const char *SPELL_TYPE[] = {
+    "Fireball",
+    "Ball O' Bats",
+    "Healing Aura",
+    "Pumpkin MIRV",
+    "Superjump",
+    "Invisibility",
+    "Teleport",
+    "Tesla Bolt",
+    "Minify",
+    "Meteor Shower",
+    "Summon Monoculus",
+    "Summon Skeletons",
+    "Common",
+    "Rare",
+    "All"
+};
+
 struct ForceItems
 {
 	std::vector<std::pair<std::string, CEconItemDefinition *>> items[11] = {};

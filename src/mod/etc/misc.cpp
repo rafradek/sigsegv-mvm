@@ -2,6 +2,9 @@
 #include "stub/baseentity.h"
 #include "stub/projectiles.h"
 #include "stub/objects.h"
+#include "stub/entities.h"
+#include "stub/gamerules.h"
+#include "stub/nav.h"
 #include "util/backtrace.h"
 #include "tier1/CommandBuffer.h"
 
@@ -128,6 +131,27 @@ namespace Mod::Etc::Misc
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_StartBuildingObjectOfType)(type, mode);
 	}
+
+	DETOUR_DECL_MEMBER(void, CCaptureFlag_Drop, CTFPlayer *pPlayer, bool bVisible, bool bThrown, bool bMessage)
+	{
+		DETOUR_MEMBER_CALL(CCaptureFlag_Drop)(pPlayer, bVisible, bThrown, bMessage);
+		auto flag = reinterpret_cast<CCaptureFlag *>(this);
+		if ( TFGameRules()->IsMannVsMachineMode() )
+		{
+			Vector pos = flag->GetAbsOrigin();
+			if (pPlayer != nullptr && TheNavMesh->GetNavArea(pos, 99999.9f ) == nullptr) {
+				CNavArea *area = pPlayer->GetLastKnownArea();
+				if (area != nullptr) {
+					area->GetClosestPointOnArea( pos, &pos );
+					pos.z += 5.0f;
+
+					flag->SetAbsOrigin( pos );
+				}
+			}
+		}
+
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -139,7 +163,7 @@ namespace Mod::Etc::Misc
 			// Make unowned sentry rocket deal damage
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Explode,    "CTFBaseRocket::Explode");
 
-			// Makes penetration arrows not collide with
+			// Makes penetration arrows not collide with bounding boxes of various entities
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_ArrowTouch, "CTFProjectile_Arrow::ArrowTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
 
@@ -147,6 +171,9 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_STATIC(SendProxy_PlayerObjectList,    "SendProxy_PlayerObjectList");
 			MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerObjects,    "SendProxyArrayLength_PlayerObjects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StartBuildingObjectOfType, "CTFPlayer::StartBuildingObjectOfType");
+
+			// Drop flag to last bot nav area
+			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
 		}
 	};
 	CMod s_Mod;
