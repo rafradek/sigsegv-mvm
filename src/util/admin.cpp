@@ -23,7 +23,7 @@ int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlay
 	target_info.flags = flags;
 
 	playerhelpers->ProcessCommandTarget(&target_info);
-	for (int i = 0; i < target_info.num_targets; i++) {
+	for (uint i = 0; i < target_info.num_targets; i++) {
 		vec.push_back(UTIL_PlayerByIndex(target_info.targets[i]));
 	}
 

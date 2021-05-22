@@ -7,9 +7,10 @@ constexpr FlagBits ADMFLAG_ALL = ((FlagBits)(1 << AdminFlags_TOTAL) - 1);
 static_assert(ADMFLAG_ALL == 0x001fffff); // this check is based on the SM admin flags as of 20180405
 
 
+static char default_target_name[64];
 AdminId GetPlayerSMAdminID(CBasePlayer *player);
 
-int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlayer *> &vec, char *target_name = nullptr, int target_name_size = 0, int flags = 0);
+int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlayer *> &vec, char *target_name = default_target_name, int target_name_size = 64, int flags = 0);
 
 bool PlayerIsSMAdmin     (CBasePlayer *player);
 bool PlayerIsSMAdminOrBot(CBasePlayer *player);

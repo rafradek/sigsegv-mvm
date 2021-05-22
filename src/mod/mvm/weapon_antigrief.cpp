@@ -90,7 +90,10 @@ namespace Mod::MvM::Weapon_AntiGrief
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
 	{
-		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon() || ShouldBlock_ShortStop()) {
+		if (ShouldBlock_ScorchShot() && TFGameRules()->IsMannVsMachineMode())
+			return;
+			
+		if (ShouldBlock_LooseCannon() || ShouldBlock_ShortStop()) {
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			
 			if (BotIsAGiant(player) && TFGameRules()->IsMannVsMachineMode()) {
