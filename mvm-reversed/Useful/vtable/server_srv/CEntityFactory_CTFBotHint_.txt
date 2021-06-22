@@ -1,0 +1,5 @@
+CEntityFactory<CTFBotHint>
+
++0x0000:  00c7bf60  CEntityFactory<CTFBotHint>::Create(char const*)
++0x0004:  00c7bee0  CEntityFactory<CTFBotHint>::Destroy(IServerNetworkable*)
++0x0008:  00c7bf00  CEntityFactory<CTFBotHint>::GetEntitySize()

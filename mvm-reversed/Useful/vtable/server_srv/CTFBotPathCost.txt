@@ -1,0 +1,3 @@
+CTFBotPathCost
+
++0x0000:  00c27eb0  CTFBotPathCost::operator()(CNavArea*, CNavArea*, CNavLadder const*, CFuncElevator const*, float) const

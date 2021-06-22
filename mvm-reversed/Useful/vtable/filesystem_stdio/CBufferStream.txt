@@ -1,0 +1,5 @@
+CBufferStream
+
++0x0000:  0000b710  CBufferStream::Put(void const*, int)
++0x0004:  0000b740  CBufferStream::Tell()
++0x0008:  00000008  (unknown)

@@ -1,0 +1,5 @@
+CEntityFactory<CObjectSapper>
+
++0x0000:  00da7810  CEntityFactory<CObjectSapper>::Create(char const*)
++0x0004:  00da77e0  CEntityFactory<CObjectSapper>::Destroy(IServerNetworkable*)
++0x0008:  00da7800  CEntityFactory<CObjectSapper>::GetEntitySize()

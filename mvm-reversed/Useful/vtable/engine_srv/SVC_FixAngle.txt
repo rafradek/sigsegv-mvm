@@ -1,0 +1,15 @@
+SVC_FixAngle
+
++0x0000:  0008be20  SVC_FixAngle::~SVC_FixAngle()
++0x0004:  0008c100  SVC_FixAngle::~SVC_FixAngle()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b810  SVC_FixAngle::Process()
++0x0014:  00085550  SVC_FixAngle::ReadFromBuffer(bf_read&)
++0x0018:  000809c0  SVC_FixAngle::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b7f0  SVC_FixAngle::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b800  SVC_FixAngle::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d850  SVC_FixAngle::ToString() const

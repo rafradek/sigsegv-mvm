@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellLightningOrb>
+
++0x0000:  007499e0  CEntityFactory<CTFProjectile_SpellLightningOrb>::Create(char const*)
++0x0004:  00748f40  CEntityFactory<CTFProjectile_SpellLightningOrb>::Destroy(IServerNetworkable*)
++0x0008:  00748f60  CEntityFactory<CTFProjectile_SpellLightningOrb>::GetEntitySize()

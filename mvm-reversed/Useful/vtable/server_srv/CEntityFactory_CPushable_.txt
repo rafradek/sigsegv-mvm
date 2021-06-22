@@ -1,0 +1,5 @@
+CEntityFactory<CPushable>
+
++0x0000:  00a669d0  CEntityFactory<CPushable>::Create(char const*)
++0x0004:  00a66810  CEntityFactory<CPushable>::Destroy(IServerNetworkable*)
++0x0008:  00a66830  CEntityFactory<CPushable>::GetEntitySize()

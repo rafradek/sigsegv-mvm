@@ -1,0 +1,22 @@
+CMsgApplyStrangeRestriction
+
++0x0000:  004dd8b0  CMsgApplyStrangeRestriction::~CMsgApplyStrangeRestriction()
++0x0004:  004dd8f0  CMsgApplyStrangeRestriction::~CMsgApplyStrangeRestriction()
++0x0008:  00000000  
++0x000c:  00503bb0  CMsgApplyStrangeRestriction::New() const
++0x0010:  004e4200  CMsgApplyStrangeRestriction::Clear()
++0x0014:  004dae20  CMsgApplyStrangeRestriction::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f5000  CMsgApplyStrangeRestriction::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e87d0  CMsgApplyStrangeRestriction::ByteSize() const
++0x0028:  004e14e0  CMsgApplyStrangeRestriction::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f0c90  CMsgApplyStrangeRestriction::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520890  CMsgApplyStrangeRestriction::GetCachedSize() const
++0x0034:  004dadd0  CMsgApplyStrangeRestriction::CopyFrom(google::protobuf::Message const&)
++0x0038:  00503d90  CMsgApplyStrangeRestriction::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dadc0  CMsgApplyStrangeRestriction::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ede90  CMsgApplyStrangeRestriction::GetMetadata() const

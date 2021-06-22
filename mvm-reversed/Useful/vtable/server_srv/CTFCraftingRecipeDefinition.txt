@@ -1,0 +1,6 @@
+CTFCraftingRecipeDefinition
+
++0x0000:  007ba290  CTFCraftingRecipeDefinition::~CTFCraftingRecipeDefinition()
++0x0004:  007ba490  CTFCraftingRecipeDefinition::~CTFCraftingRecipeDefinition()
++0x0008:  00684080  CEconCraftingRecipeDefinition::CopyPolymorphic(CEconCraftingRecipeDefinition const*)
++0x000c:  007b8a10  CTFCraftingRecipeDefinition::ItemListMatchesInputs(CUtlVector<CEconItem*, CUtlMemory<CEconItem*, int> >*, KeyValues*, bool, CUtlVector<unsigned long long, CUtlMemory<unsigned long long, int> >*) const

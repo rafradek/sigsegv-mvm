@@ -5,6 +5,7 @@
 #include "stub/gamerules.h"
 #include "util/iterate.h"
 #include "util/misc.h"
+#include "mod/pop/common.h"
 #include "stub/upgrades.h"
 #include "stub/entities.h"
 #include "stub/strings.h"
@@ -151,8 +152,6 @@ namespace Mod::MvM::Extended_Upgrades
     std::map<CHandle<CTFPlayer>, IBaseMenu *> select_type_menus;
 
     int extended_upgrades_start_index = -1;
-
-    std::map<int, std::string> itemnames;
 
     bool BuyUpgrade(UpgradeInfo *upgrade,/* CEconEntity *item*/ int slot, CTFPlayer *player, bool free, bool downgrade);
 
@@ -712,7 +711,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (slot == -1)
             menu->SetDefaultTitle("Player Upgrades");
         else {
-            menu->SetDefaultTitle(CFmtStr("Upgrades for %s", itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str()));
+            menu->SetDefaultTitle(CFmtStr("Upgrades for %s", g_Itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str()));
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 
@@ -790,7 +789,7 @@ namespace Mod::MvM::Extended_Upgrades
 		}) {
             CEconEntity *item = GetEconEntityAtLoadoutSlot(player, (int)slot);
             if (item != nullptr) {
-                ItemDrawInfo info2(itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str(), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                ItemDrawInfo info2(g_Itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str(), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
                 menu->AppendItem(CFmtStr("%d", (int)slot), info2);
             }
         }
@@ -854,6 +853,29 @@ namespace Mod::MvM::Extended_Upgrades
         return result;
     }
 
+    RefCount rc_CUpgrades_PlayerPurchasingUpgrade;
+    RefCount rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot;
+    DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	{
+		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
+		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && rc_CUpgrades_PlayerPurchasingUpgrade && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
+			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		return slot;
+	}
+
+    DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CBaseEntity &entity)
+	{
+        SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
+		DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+	}
+
+    DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+	{
+        SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
+		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -864,6 +886,8 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetCostForUpgrade, "CTFGameRules::GetCostForUpgrade");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
+            MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
+            MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -914,34 +938,15 @@ namespace Mod::MvM::Extended_Upgrades
             
 		}
 
+        virtual void OnEnable() override
+        {
+            
+            LoadItemNames();
+        }
+
         virtual void LevelInitPreEntity() override
 		{
-            if (itemnames.empty()) {
-                char path_sm[PLATFORM_MAX_PATH];
-                g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"gamedata/sigsegv/item_names.txt");
-
-                CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );
-
-                if (filesystem->ReadFile(path_sm, "GAME", file)) {
-                    while (file.IsValid()) {
-                        int id = file.GetInt();
-                        file.EatWhiteSpace();
-
-                        /*int charnum = 0;
-                        char curchar;
-                        char name[256];
-                        while ((curchar = file.GetChar()) != '\n') {
-                            name[charnum] = curchar;
-                            charnum++;
-                        }*/
-                        char name[256];
-                        file.GetLine(name, 256);
-                        name[strlen(name)-1] = '\x0';
-
-                        itemnames[id] = name;
-                    }
-                }
-            }
+            
 
             ClearUpgrades();
 		}
@@ -953,39 +958,6 @@ namespace Mod::MvM::Extended_Upgrades
 
 	};
 	CMod s_Mod;
-	
-	void GenerateItemNames() {
-        KeyValues *kvin = new KeyValues("Lang");
-        kvin->UsesEscapeSequences(true);
-        
-        if (kvin->LoadFromFile( filesystem, "resource/set.txt")/**/) {
-            KeyValues *tokens = kvin->FindKey("Tokens");
-            
-            //DevMsg("Read file %d\n", file.TellPut());
-            for (int i = 0; i < 40000; i++)
-            {
-                CEconItemDefinition *def = GetItemSchema()->GetItemDefinition(i);
-                if (def != nullptr && !FStrEq(def->GetItemName(""), "#TF_Default_ItemDef") && strncmp(def->GetItemClass(), "tf_", 3) == 0) {
-                    const char *item_slot = def->GetKeyValues()->GetString("item_slot", nullptr);
-                    if (item_slot != nullptr && !FStrEq(item_slot, "misc") && !FStrEq(item_slot, "hat") && !FStrEq(item_slot, "head")) {
-                        std::string name = tokens->GetString(def->GetItemName("#")+1);
-                        itemnames[i] = name;
-                    }
-                }
-            }
-
-            CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );
-            for (auto entry : itemnames) {
-                file.PutInt(entry.first);
-                file.PutChar(' ');
-                file.PutString(entry.second.c_str());
-                file.PutChar('\n');
-            }
-            filesystem->WriteFile("item_names.txt","GAME", file);
-
-        }
-        kvin->deleteThis();
-    }
 
 	ConVar cvar_enable("sig_mvm_extended_upgrades", "0", FCVAR_NOTIFY,
 		"Mod: enable extended upgrades",

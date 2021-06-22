@@ -1,0 +1,15 @@
+CLC_ClientInfo
+
++0x0000:  0008bef0  CLC_ClientInfo::~CLC_ClientInfo()
++0x0004:  0008bf60  CLC_ClientInfo::~CLC_ClientInfo()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b180  CLC_ClientInfo::Process()
++0x0014:  000832a0  CLC_ClientInfo::ReadFromBuffer(bf_read&)
++0x0018:  00080db0  CLC_ClientInfo::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b160  CLC_ClientInfo::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b170  CLC_ClientInfo::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d6c0  CLC_ClientInfo::ToString() const

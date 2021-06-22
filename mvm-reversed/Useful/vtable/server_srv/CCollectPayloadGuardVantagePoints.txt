@@ -1,0 +1,8 @@
+CCollectPayloadGuardVantagePoints
+
++0x0000:  00c50690  CCollectPayloadGuardVantagePoints::~CCollectPayloadGuardVantagePoints()
++0x0004:  00c506e0  CCollectPayloadGuardVantagePoints::~CCollectPayloadGuardVantagePoints()
++0x0008:  00c50730  CCollectPayloadGuardVantagePoints::operator()(CNavArea*, CNavArea*, float)
++0x000c:  00c46ad0  ISearchSurroundingAreasFunctor::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c46b00  ISearchSurroundingAreasFunctor::PostSearch()

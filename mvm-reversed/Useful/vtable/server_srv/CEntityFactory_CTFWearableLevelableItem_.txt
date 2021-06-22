@@ -1,0 +1,5 @@
+CEntityFactory<CTFWearableLevelableItem>
+
++0x0000:  00895d00  CEntityFactory<CTFWearableLevelableItem>::Create(char const*)
++0x0004:  00895be0  CEntityFactory<CTFWearableLevelableItem>::Destroy(IServerNetworkable*)
++0x0008:  00895c00  CEntityFactory<CTFWearableLevelableItem>::GetEntitySize()

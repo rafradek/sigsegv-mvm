@@ -1,0 +1,5 @@
+CEntityFactory<CRopeKeyframe>
+
++0x0000:  00bb7220  CEntityFactory<CRopeKeyframe>::Create(char const*)
++0x0004:  00bb71d0  CEntityFactory<CRopeKeyframe>::Destroy(IServerNetworkable*)
++0x0008:  00bb71f0  CEntityFactory<CRopeKeyframe>::GetEntitySize()

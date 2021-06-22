@@ -1,0 +1,5 @@
+CEntityFactory<CTFShovel>
+
++0x0000:  00887d90  CEntityFactory<CTFShovel>::Create(char const*)
++0x0004:  00887640  CEntityFactory<CTFShovel>::Destroy(IServerNetworkable*)
++0x0008:  00887660  CEntityFactory<CTFShovel>::GetEntitySize()

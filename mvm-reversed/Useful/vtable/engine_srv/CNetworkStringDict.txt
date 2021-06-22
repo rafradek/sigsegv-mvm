@@ -1,0 +1,12 @@
+CNetworkStringDict
+
++0x0000:  0015b8d0  CNetworkStringDict::~CNetworkStringDict()
++0x0004:  0015b9b0  CNetworkStringDict::~CNetworkStringDict()
++0x0008:  0015aa70  CNetworkStringDict::Count()
++0x000c:  0015b950  CNetworkStringDict::Purge()
++0x0010:  0015aa80  CNetworkStringDict::String(int)
++0x0014:  0015aaa0  CNetworkStringDict::IsValidIndex(int)
++0x0018:  0015d760  CNetworkStringDict::Insert(char const*)
++0x001c:  0015abd0  CNetworkStringDict::Find(char const*)
++0x0020:  0015aae0  CNetworkStringDict::Element(int)
++0x0024:  0015ab00  CNetworkStringDict::Element(int) const

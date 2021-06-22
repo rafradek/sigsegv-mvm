@@ -1,0 +1,5 @@
+CEntityFactory<CWaterBullet>
+
++0x0000:  00e6b7e0  CEntityFactory<CWaterBullet>::Create(char const*)
++0x0004:  00e6b760  CEntityFactory<CWaterBullet>::Destroy(IServerNetworkable*)
++0x0008:  00e6b780  CEntityFactory<CWaterBullet>::GetEntitySize()

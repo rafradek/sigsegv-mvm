@@ -1,0 +1,61 @@
+// IBotController (base, ?)
+// IBotManager (base, ?)
+
+BOSS STUFF:
+CEyeballBoss
+- CHalloweenBaseBoss
+  - NextBotCombatCharacter
+  - INextBot
+CTFBaseBoss
+- NextBotCombatCharacter
+- INextBot
+CTFTankBoss
+- CTFBaseBoss
+
+TANK STUFF:
+CTFTankDestruction
+- CBaseAnimating
+CTankTargetChange
+- CPointEntity
+CTankTrainAI
+- CPointEntity
+CFuncTankTrain
+- CBaseEntity
+
+search: '.*Path.*'
+search: '.*Nav.*'
+search: '.*Behavior.*'
+search: '.*Action.*'
+search: '.*Bot.*'
+
+
+need header with all the enums we know of
+(from libtf2mod, source sdk const.h, etc)
+
+copy over the in-progress bot spy detection code
+(make separate dirs for the 20130214 version and the current version)
+
+create skeletons for classes:
+tf_revive
+bomb hatch
+upgrade station
+
+
+also RE all the nb_, tf_bot_, bot_ cvars
+
+make a GIGANTIC awesome flowgraph, basically a finite state machine diagram
+- nodes are the actions
+- edges are CHANGE_TO, SUSPEND_FOR, DONE (hrm, that may be hard...)
+
+for each CTFBot action, document whether it is ever used in MvM mode
+
+change enum QueryResponse to existing three-state enum (ThreeState_t) in basetypes.h
+convert all scoped enums into unscoped (C style) enums
+
+find/replace:
+- TF_TEAM_RED  -> TF_TEAM_PVE_DEFENDERS
+- TF_TEAM_BLUE -> TF_TEAM_PVE_INVADERS
+
+use these known names:
+CTFBot::m_iSkill -> CTFBot::m_skill
+CTFBot::m_nBotAttrs -> CTFBot::m_attributes (not 100% sure)

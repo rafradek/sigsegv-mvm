@@ -1,0 +1,8 @@
+CCollectReachableObjects
+
++0x0000:  00c8c760  CCollectReachableObjects::~CCollectReachableObjects()
++0x0004:  00c8d530  CCollectReachableObjects::~CCollectReachableObjects()
++0x0008:  00c8f730  CCollectReachableObjects::operator()(CNavArea*, CNavArea*, float)
++0x000c:  00c8db80  CCollectReachableObjects::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c46b00  ISearchSurroundingAreasFunctor::PostSearch()

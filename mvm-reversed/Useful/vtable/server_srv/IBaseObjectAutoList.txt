@@ -1,0 +1,4 @@
+IBaseObjectAutoList
+
++0x0000:  00d8fba0  IBaseObjectAutoList::~IBaseObjectAutoList()
++0x0004:  00d8fb30  IBaseObjectAutoList::~IBaseObjectAutoList()

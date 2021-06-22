@@ -1,0 +1,5 @@
+CEntityFactory<CTFSpellBook>
+
++0x0000:  0074e810  CEntityFactory<CTFSpellBook>::Create(char const*)
++0x0004:  00749150  CEntityFactory<CTFSpellBook>::Destroy(IServerNetworkable*)
++0x0008:  00749170  CEntityFactory<CTFSpellBook>::GetEntitySize()

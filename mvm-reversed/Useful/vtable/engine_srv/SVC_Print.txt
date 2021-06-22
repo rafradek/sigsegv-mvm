@@ -1,0 +1,15 @@
+SVC_Print
+
++0x0000:  0008be80  SVC_Print::~SVC_Print()
++0x0004:  0008c040  SVC_Print::~SVC_Print()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b480  SVC_Print::Process()
++0x0014:  000840e0  SVC_Print::ReadFromBuffer(bf_read&)
++0x0018:  0007db70  SVC_Print::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b460  SVC_Print::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b470  SVC_Print::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d4a0  SVC_Print::ToString() const

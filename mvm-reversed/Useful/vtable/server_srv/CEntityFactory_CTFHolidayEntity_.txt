@@ -1,0 +1,5 @@
+CEntityFactory<CTFHolidayEntity>
+
++0x0000:  007a8440  CEntityFactory<CTFHolidayEntity>::Create(char const*)
++0x0004:  0079be10  CEntityFactory<CTFHolidayEntity>::Destroy(IServerNetworkable*)
++0x0008:  0079be30  CEntityFactory<CTFHolidayEntity>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellMeteorShower>
+
++0x0000:  00749bc0  CEntityFactory<CTFProjectile_SpellMeteorShower>::Create(char const*)
++0x0004:  00748fa0  CEntityFactory<CTFProjectile_SpellMeteorShower>::Destroy(IServerNetworkable*)
++0x0008:  00748fc0  CEntityFactory<CTFProjectile_SpellMeteorShower>::GetEntitySize()

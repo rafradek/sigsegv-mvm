@@ -1,0 +1,5 @@
+CEntityFactory<CInfoCameraLink>
+
++0x0000:  00a8ee00  CEntityFactory<CInfoCameraLink>::Create(char const*)
++0x0004:  00a8e8d0  CEntityFactory<CInfoCameraLink>::Destroy(IServerNetworkable*)
++0x0008:  00a8e8f0  CEntityFactory<CInfoCameraLink>::GetEntitySize()

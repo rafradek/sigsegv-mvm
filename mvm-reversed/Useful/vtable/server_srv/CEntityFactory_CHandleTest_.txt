@@ -1,0 +1,5 @@
+CEntityFactory<CHandleTest>
+
++0x0000:  00731b40  CEntityFactory<CHandleTest>::Create(char const*)
++0x0004:  00731930  CEntityFactory<CHandleTest>::Destroy(IServerNetworkable*)
++0x0008:  00731950  CEntityFactory<CHandleTest>::GetEntitySize()

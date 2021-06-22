@@ -1,0 +1,5 @@
+CEntityFactory<FilterTeam>
+
++0x0000:  00a4fed0  CEntityFactory<FilterTeam>::Create(char const*)
++0x0004:  00a4f930  CEntityFactory<FilterTeam>::Destroy(IServerNetworkable*)
++0x0008:  00a4f950  CEntityFactory<FilterTeam>::GetEntitySize()

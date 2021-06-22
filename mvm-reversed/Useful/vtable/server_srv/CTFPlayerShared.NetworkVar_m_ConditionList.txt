@@ -1,0 +1,4 @@
+CTFPlayerShared::NetworkVar_m_ConditionList
+
++0x0000:  008024f0  CTFPlayerShared::NetworkVar_m_ConditionList::NetworkStateChanged()
++0x0004:  00802510  CTFPlayerShared::NetworkVar_m_ConditionList::NetworkStateChanged(void*)

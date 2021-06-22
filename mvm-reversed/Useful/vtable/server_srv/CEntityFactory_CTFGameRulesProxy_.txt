@@ -1,0 +1,5 @@
+CEntityFactory<CTFGameRulesProxy>
+
++0x0000:  007a08b0  CEntityFactory<CTFGameRulesProxy>::Create(char const*)
++0x0004:  0079c000  CEntityFactory<CTFGameRulesProxy>::Destroy(IServerNetworkable*)
++0x0008:  0079c020  CEntityFactory<CTFGameRulesProxy>::GetEntitySize()

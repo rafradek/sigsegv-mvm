@@ -1,0 +1,5 @@
+CEntityFactory<CPhysConstraintSystem>
+
++0x0000:  00b2f180  CEntityFactory<CPhysConstraintSystem>::Create(char const*)
++0x0004:  00b2f0c0  CEntityFactory<CPhysConstraintSystem>::Destroy(IServerNetworkable*)
++0x0008:  00b2f0e0  CEntityFactory<CPhysConstraintSystem>::GetEntitySize()

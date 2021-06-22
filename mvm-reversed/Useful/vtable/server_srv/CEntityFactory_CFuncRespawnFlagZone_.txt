@@ -1,0 +1,5 @@
+CEntityFactory<CFuncRespawnFlagZone>
+
++0x0000:  00cc7b70  CEntityFactory<CFuncRespawnFlagZone>::Create(char const*)
++0x0004:  00cc7b40  CEntityFactory<CFuncRespawnFlagZone>::Destroy(IServerNetworkable*)
++0x0008:  00cc7b60  CEntityFactory<CFuncRespawnFlagZone>::GetEntitySize()

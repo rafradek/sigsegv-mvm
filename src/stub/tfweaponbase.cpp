@@ -70,6 +70,7 @@ IMPL_SENDPROP(float,                CTFWeaponBase, m_flEffectBarRegenTime,    CT
 IMPL_SENDPROP(float,                CTFWeaponBase, m_flEnergy,                CTFWeaponBase);
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearable,          CTFWeaponBase);
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearableViewModel, CTFWeaponBase);
+IMPL_SENDPROP(bool                , CTFWeaponBase, m_bBeingRepurposedForTaunt,CTFWeaponBase);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
 MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");
@@ -214,10 +215,8 @@ float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon) {
 
 const char *TranslateWeaponEntForClass_improved(const char *name, int classnum)
 {
-	DevMsg("classname %s\n",name);
 	if (strncasecmp(name, "tf_weapon_", 10) == 0)
 	{
-		DevMsg("is translated %s\n",name+10);
 		if (strcasecmp(name+10, "shotgun") == 0) {
 			DevMsg("is shotgun\n");
 			switch (classnum) {

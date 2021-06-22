@@ -1,0 +1,3 @@
+CFourWheelVehiclePhysics
+
++0x0000:  00a5c7b0  CFourWheelVehiclePhysics::GetDataDescMap()

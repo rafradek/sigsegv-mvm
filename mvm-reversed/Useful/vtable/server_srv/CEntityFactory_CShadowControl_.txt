@@ -1,0 +1,5 @@
+CEntityFactory<CShadowControl>
+
++0x0000:  00bd2520  CEntityFactory<CShadowControl>::Create(char const*)
++0x0004:  00bd2480  CEntityFactory<CShadowControl>::Destroy(IServerNetworkable*)
++0x0008:  00bd24a0  CEntityFactory<CShadowControl>::GetEntitySize()

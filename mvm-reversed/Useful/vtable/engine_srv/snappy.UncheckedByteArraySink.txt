@@ -1,0 +1,6 @@
+snappy::UncheckedByteArraySink
+
++0x0000:  00202910  snappy::UncheckedByteArraySink::~UncheckedByteArraySink()
++0x0004:  00202970  snappy::UncheckedByteArraySink::~UncheckedByteArraySink()
++0x0008:  00202930  snappy::UncheckedByteArraySink::Append(char const*, unsigned int)
++0x000c:  00202920  snappy::UncheckedByteArraySink::GetAppendBuffer(unsigned int, char*)

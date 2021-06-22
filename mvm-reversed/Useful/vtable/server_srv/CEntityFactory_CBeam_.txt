@@ -1,0 +1,5 @@
+CEntityFactory<CBeam>
+
++0x0000:  00648df0  CEntityFactory<CBeam>::Create(char const*)
++0x0004:  00648ad0  CEntityFactory<CBeam>::Destroy(IServerNetworkable*)
++0x0008:  00648af0  CEntityFactory<CBeam>::GetEntitySize()

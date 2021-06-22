@@ -1,0 +1,3 @@
+CBrushBSPIterator
+
++0x0000:  00151a90  CBrushBSPIterator::EnumerateLeaf(int, int)

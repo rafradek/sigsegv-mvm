@@ -1,0 +1,6 @@
+CEconTool_ItemDynamicRecipe::CBaseRecipeComponent
+
++0x0000:  006ac080  CEconTool_ItemDynamicRecipe::CBaseRecipeComponent::~CBaseRecipeComponent()
++0x0004:  006ac2e0  CEconTool_ItemDynamicRecipe::CBaseRecipeComponent::~CBaseRecipeComponent()
++0x0008:  006ac880  CEconTool_ItemDynamicRecipe::CBaseRecipeComponent::ParseKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  006aabe0  CEconTool_ItemDynamicRecipe::CBaseRecipeComponent::BFinishInitialization_Internal(CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*, CUtlVector<CEconItemAttributeDefinition const*, CUtlMemory<CEconItemAttributeDefinition const*, int> >*)

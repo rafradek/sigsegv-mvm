@@ -1,0 +1,5 @@
+CEntityFactory<CConstraintAnchor>
+
++0x0000:  00b2f1e0  CEntityFactory<CConstraintAnchor>::Create(char const*)
++0x0004:  00b2f0f0  CEntityFactory<CConstraintAnchor>::Destroy(IServerNetworkable*)
++0x0008:  00b2f110  CEntityFactory<CConstraintAnchor>::GetEntitySize()

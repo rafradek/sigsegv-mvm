@@ -1,0 +1,4 @@
+IFuncRespawnRoomAutoList
+
++0x0000:  00cc86f0  IFuncRespawnRoomAutoList::~IFuncRespawnRoomAutoList()
++0x0004:  00cc8760  IFuncRespawnRoomAutoList::~IFuncRespawnRoomAutoList()

@@ -1,0 +1,14 @@
+CVoxelTree
+
++0x0000:  00195880  CVoxelTree::~CVoxelTree()
++0x0004:  00195ae0  CVoxelTree::~CVoxelTree()
++0x0008:  001957a0  CVoxelTree::Init(CSpatialPartition*, int, Vector const&, Vector const&)
++0x000c:  00196440  CVoxelTree::ElementMoved(unsigned short, Vector const&, Vector const&)
++0x0010:  00191f00  CVoxelTree::EnumerateElementsInBox(int, Vector const&, Vector const&, bool, IPartitionEnumerator*)
++0x0014:  0018fe00  CVoxelTree::EnumerateElementsInSphere(int, Vector const&, float, bool, IPartitionEnumerator*)
++0x0018:  001937b0  CVoxelTree::EnumerateElementsAlongRay(int, Ray_t const&, bool, IPartitionEnumerator*)
++0x001c:  00190a20  CVoxelTree::EnumerateElementsAtPoint(int, Vector const&, bool, IPartitionEnumerator*)
++0x0020:  001910a0  CVoxelTree::RenderAllObjectsInTree(float)
++0x0024:  00191560  CVoxelTree::RenderObjectsInPlayerLeafs(Vector const&, Vector const&, float)
++0x0028:  00190cc0  CVoxelTree::ReportStats(char const*)
++0x002c:  00191000  CVoxelTree::DrawDebugOverlays()

@@ -1,0 +1,7 @@
+CBaseFileSystem
+
++0x0000:  0001bec0  CTier1AppSystem<IFileSystem, 0>::Connect(void* (*)(char const*, int*))
++0x0004:  0001bf00  CTier1AppSystem<IFileSystem, 0>::Disconnect()
++0x0008:  0000cbf0  CBaseFileSystem::QueryInterface(char const*)
++0x000c:  0000cc30  CBaseFileSystem::Init()
++0x0010:  0000ce30  CBaseFileSystem::Shutdown()

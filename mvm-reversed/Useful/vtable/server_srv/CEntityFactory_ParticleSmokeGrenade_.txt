@@ -1,0 +1,5 @@
+CEntityFactory<ParticleSmokeGrenade>
+
++0x0000:  00b28880  CEntityFactory<ParticleSmokeGrenade>::Create(char const*)
++0x0004:  00b28800  CEntityFactory<ParticleSmokeGrenade>::Destroy(IServerNetworkable*)
++0x0008:  00b28820  CEntityFactory<ParticleSmokeGrenade>::GetEntitySize()

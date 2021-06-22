@@ -1,0 +1,5 @@
+CEntityFactory<CCommentaryViewPosition>
+
++0x0000:  00a15310  CEntityFactory<CCommentaryViewPosition>::Create(char const*)
++0x0004:  00a15090  CEntityFactory<CCommentaryViewPosition>::Destroy(IServerNetworkable*)
++0x0008:  00a150b0  CEntityFactory<CCommentaryViewPosition>::GetEntitySize()

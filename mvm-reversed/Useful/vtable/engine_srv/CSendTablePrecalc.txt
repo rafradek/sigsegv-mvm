@@ -1,0 +1,4 @@
+CSendTablePrecalc
+
++0x0000:  000ffdb0  CSendTablePrecalc::~CSendTablePrecalc()
++0x0004:  00100040  CSendTablePrecalc::~CSendTablePrecalc()

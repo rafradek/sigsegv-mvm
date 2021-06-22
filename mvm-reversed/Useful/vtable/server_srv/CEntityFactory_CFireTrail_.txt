@@ -1,0 +1,5 @@
+CEntityFactory<CFireTrail>
+
++0x0000:  00bdc370  CEntityFactory<CFireTrail>::Create(char const*)
++0x0004:  00bdc0a0  CEntityFactory<CFireTrail>::Destroy(IServerNetworkable*)
++0x0008:  00bdc0c0  CEntityFactory<CFireTrail>::GetEntitySize()

@@ -1,0 +1,14 @@
+CNotifyList
+
++0x0000:  00a31860  CNotifyList::AddEntity(CBaseEntity*, CBaseEntity*)
++0x0004:  00a30a80  CNotifyList::RemoveEntity(CBaseEntity*, CBaseEntity*)
++0x0008:  00a2ee70  CNotifyList::ReportNamedEvent(CBaseEntity*, char const*)
++0x000c:  00a2efa0  CNotifyList::ReportSystemEvent(CBaseEntity*, notify_system_event_t, notify_system_event_params_t const&)
++0x0010:  00a30a10  CNotifyList::ClearEntity(CBaseEntity*)
++0x0014:  00a2ef20  CNotifyList::OnEntityCreated(CBaseEntity*)
++0x0018:  00a2ef40  CNotifyList::OnEntityDeleted(CBaseEntity*)
++0x001c:  fffffffc  (unknown)
++0x0020:  01165b00  typeinfo for CNotifyList
++0x0024:  00a2ef10  non-virtual thunk to CNotifyList::OnEntityCreated(CBaseEntity*)
++0x0028:  006eb520  IEntityListener::OnEntitySpawned(CBaseEntity*)
++0x002c:  00a2ef30  non-virtual thunk to CNotifyList::OnEntityDeleted(CBaseEntity*)

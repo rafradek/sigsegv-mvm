@@ -1,0 +1,6 @@
+CResourcePreloadAnonymous
+
++0x0000:  00087c80  CResourcePreloadAnonymous::CreateResource(char const*)
++0x0004:  00082a90  CResourcePreloadAnonymous::PurgeUnreferencedResources()
++0x0008:  00082aa0  CResourcePreloadAnonymous::OnEndMapLoading(bool)
++0x000c:  00082ab0  CResourcePreloadAnonymous::PurgeAll()

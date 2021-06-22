@@ -1,0 +1,5 @@
+CEntityFactory<CMonsterResource>
+
++0x0000:  00d49750  CEntityFactory<CMonsterResource>::Create(char const*)
++0x0004:  00d496d0  CEntityFactory<CMonsterResource>::Destroy(IServerNetworkable*)
++0x0008:  00d496f0  CEntityFactory<CMonsterResource>::GetEntitySize()

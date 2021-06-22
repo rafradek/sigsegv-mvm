@@ -1,0 +1,4 @@
+CEntityWriteInfo
+
++0x0000:  001a3320  CEntityWriteInfo::~CEntityWriteInfo()
++0x0004:  001a33c0  CEntityWriteInfo::~CEntityWriteInfo()

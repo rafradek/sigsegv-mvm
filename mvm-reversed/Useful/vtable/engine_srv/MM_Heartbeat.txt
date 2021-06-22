@@ -1,0 +1,15 @@
+MM_Heartbeat
+
++0x0000:  0008bd10  MM_Heartbeat::~MM_Heartbeat()
++0x0004:  0008c320  MM_Heartbeat::~MM_Heartbeat()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008bae0  MM_Heartbeat::Process()
++0x0014:  0007c940  MM_Heartbeat::ReadFromBuffer(bf_read&)
++0x0018:  0007c890  MM_Heartbeat::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008bac0  MM_Heartbeat::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008bad0  MM_Heartbeat::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cbf0  MM_Heartbeat::ToString() const

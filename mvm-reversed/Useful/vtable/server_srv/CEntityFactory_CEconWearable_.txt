@@ -1,0 +1,5 @@
+CEntityFactory<CEconWearable>
+
++0x0000:  006b3050  CEntityFactory<CEconWearable>::Create(char const*)
++0x0004:  006b2f80  CEntityFactory<CEconWearable>::Destroy(IServerNetworkable*)
++0x0008:  006b2fa0  CEntityFactory<CEconWearable>::GetEntitySize()

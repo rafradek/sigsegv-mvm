@@ -1,0 +1,4 @@
+CWaterTraceFilter
+
++0x0000:  00e59750  CWaterTraceFilter::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0061fa80  CTraceFilter::GetTraceType() const

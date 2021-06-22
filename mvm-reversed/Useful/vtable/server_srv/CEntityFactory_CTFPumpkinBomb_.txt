@@ -1,0 +1,5 @@
+CEntityFactory<CTFPumpkinBomb>
+
++0x0000:  00807bb0  CEntityFactory<CTFPumpkinBomb>::Create(char const*)
++0x0004:  00807830  CEntityFactory<CTFPumpkinBomb>::Destroy(IServerNetworkable*)
++0x0008:  00807850  CEntityFactory<CTFPumpkinBomb>::GetEntitySize()

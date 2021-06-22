@@ -1,0 +1,7 @@
+CEntityDataInstantiator<ModelScale>
+
++0x0000:  006e6480  CEntityDataInstantiator<ModelScale>::~CEntityDataInstantiator()
++0x0004:  006e6500  CEntityDataInstantiator<ModelScale>::~CEntityDataInstantiator()
++0x0008:  006e46f0  CEntityDataInstantiator<ModelScale>::GetDataObject(CBaseEntity const*)
++0x000c:  006e9910  CEntityDataInstantiator<ModelScale>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e45e0  CEntityDataInstantiator<ModelScale>::DestroyDataObject(CBaseEntity const*)

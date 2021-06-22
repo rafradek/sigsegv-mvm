@@ -1,0 +1,4 @@
+CPlayerLocalData::NetworkVar_m_audio
+
++0x0000:  00b80a80  CPlayerLocalData::NetworkVar_m_audio::NetworkStateChanged()
++0x0004:  00b80aa0  CPlayerLocalData::NetworkVar_m_audio::NetworkStateChanged(void*)

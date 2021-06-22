@@ -1,0 +1,22 @@
+CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment
+
++0x0000:  00523340  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::~CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment()
++0x0004:  00523380  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::~CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment()
++0x0008:  00000000  
++0x000c:  00529af0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::New() const
++0x0010:  00524840  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::Clear()
++0x0014:  00521a20  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00528b60  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005258f0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::ByteSize() const
++0x0028:  00523f80  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005267b0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533b90  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::GetCachedSize() const
++0x0034:  005219d0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::CopyFrom(google::protobuf::Message const&)
++0x0038:  00529f50  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005219c0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  005276e0  CMsgEconPlayerStrangeCountAdjustment_CStrangeCountAdjustment::GetMetadata() const

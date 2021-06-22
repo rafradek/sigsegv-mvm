@@ -1,0 +1,22 @@
+CMsgGameServerKickingLobby
+
++0x0000:  005d8700  CMsgGameServerKickingLobby::~CMsgGameServerKickingLobby()
++0x0004:  005d8750  CMsgGameServerKickingLobby::~CMsgGameServerKickingLobby()
++0x0008:  00000000  
++0x000c:  005c4ae0  CMsgGameServerKickingLobby::New() const
++0x0010:  00584b80  CMsgGameServerKickingLobby::Clear()
++0x0014:  00577350  CMsgGameServerKickingLobby::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005d8c20  CMsgGameServerKickingLobby::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005780c0  CMsgGameServerKickingLobby::ByteSize() const
++0x0028:  0057ee50  CMsgGameServerKickingLobby::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00590560  CMsgGameServerKickingLobby::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcee0  CMsgGameServerKickingLobby::GetCachedSize() const
++0x0034:  00577300  CMsgGameServerKickingLobby::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c4c60  CMsgGameServerKickingLobby::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005772f0  CMsgGameServerKickingLobby::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e920  CMsgGameServerKickingLobby::GetMetadata() const

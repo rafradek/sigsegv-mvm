@@ -1,0 +1,22 @@
+CSOEconItemAttribute
+
++0x0000:  005044b0  CSOEconItemAttribute::~CSOEconItemAttribute()
++0x0004:  00504500  CSOEconItemAttribute::~CSOEconItemAttribute()
++0x0008:  00000000  
++0x000c:  00504400  CSOEconItemAttribute::New() const
++0x0010:  004e53c0  CSOEconItemAttribute::Clear()
++0x0014:  004daf00  CSOEconItemAttribute::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f7bd0  CSOEconItemAttribute::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e9110  CSOEconItemAttribute::ByteSize() const
++0x0028:  004e38b0  CSOEconItemAttribute::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f0b70  CSOEconItemAttribute::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005208b0  CSOEconItemAttribute::GetCachedSize() const
++0x0034:  004daeb0  CSOEconItemAttribute::CopyFrom(google::protobuf::Message const&)
++0x0038:  00504660  CSOEconItemAttribute::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004daea0  CSOEconItemAttribute::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ede10  CSOEconItemAttribute::GetMetadata() const

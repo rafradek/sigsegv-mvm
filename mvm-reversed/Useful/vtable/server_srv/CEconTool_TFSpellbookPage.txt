@@ -1,0 +1,8 @@
+CEconTool_TFSpellbookPage
+
++0x0000:  007b9cb0  CEconTool_TFSpellbookPage::~CEconTool_TFSpellbookPage()
++0x0004:  007b9cc0  CEconTool_TFSpellbookPage::~CEconTool_TFSpellbookPage()
++0x0008:  0067c520  IEconTool::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  0067c540  IEconTool::BFinishInitialization()

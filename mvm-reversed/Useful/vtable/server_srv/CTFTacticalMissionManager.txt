@@ -1,0 +1,11 @@
+CTFTacticalMissionManager
+
++0x0000:  00e27200  CTFTacticalMissionManager::~CTFTacticalMissionManager()
++0x0004:  00e27280  CTFTacticalMissionManager::~CTFTacticalMissionManager()
++0x0008:  00beaa60  CTacticalMissionManager::FireGameEvent(IGameEvent*)
++0x000c:  00e26e50  CTFTacticalMissionManager::OnServerActivate()
++0x0010:  00e26f30  CTFTacticalMissionManager::OnRoundRestart()
++0x0014:  00bead50  CTacticalMissionManager::Register(CTacticalMission*)
++0x0018:  00bea960  CTacticalMissionManager::Unregister(CTacticalMission*)
++0x001c:  00bea9e0  CTacticalMissionManager::GetMission(char const*)
++0x0020:  00bea8c0  CTacticalMissionManager::ForEachMission(CTacticalMissionManager::IForEachMission&)

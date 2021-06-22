@@ -1,0 +1,5 @@
+CEntityFactory<CExtraMapEntity_Rocket>
+
++0x0000:  00d7fd90  CEntityFactory<CExtraMapEntity_Rocket>::Create(char const*)
++0x0004:  00d7f570  CEntityFactory<CExtraMapEntity_Rocket>::Destroy(IServerNetworkable*)
++0x0008:  00d7f590  CEntityFactory<CExtraMapEntity_Rocket>::GetEntitySize()

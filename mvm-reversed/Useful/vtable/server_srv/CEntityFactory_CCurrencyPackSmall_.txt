@@ -1,0 +1,5 @@
+CEntityFactory<CCurrencyPackSmall>
+
++0x0000:  00cb77b0  CEntityFactory<CCurrencyPackSmall>::Create(char const*)
++0x0004:  00cb72f0  CEntityFactory<CCurrencyPackSmall>::Destroy(IServerNetworkable*)
++0x0008:  00cb7310  CEntityFactory<CCurrencyPackSmall>::GetEntitySize()

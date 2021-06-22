@@ -1,0 +1,6 @@
+TSListTests::CQueueOps
+
++0x0000:  000144d0  TSListTests::CQueueOps::Push(int)
++0x0004:  00014200  TSListTests::CQueueOps::Pop(int*)
++0x0008:  000140f0  TSListTests::CQueueOps::Validate()
++0x000c:  00014100  TSListTests::CQueueOps::IsEmpty()

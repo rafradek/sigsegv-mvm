@@ -1,0 +1,5 @@
+CEntityFactory<CSlideshowDisplay>
+
++0x0000:  00bd4f20  CEntityFactory<CSlideshowDisplay>::Create(char const*)
++0x0004:  00bd4c60  CEntityFactory<CSlideshowDisplay>::Destroy(IServerNetworkable*)
++0x0008:  00bd4c80  CEntityFactory<CSlideshowDisplay>::GetEntitySize()

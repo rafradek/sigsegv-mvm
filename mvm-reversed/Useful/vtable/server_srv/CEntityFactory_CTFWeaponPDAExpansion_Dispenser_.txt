@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponPDAExpansion_Dispenser>
+
++0x0000:  0087b8f0  CEntityFactory<CTFWeaponPDAExpansion_Dispenser>::Create(char const*)
++0x0004:  0087b820  CEntityFactory<CTFWeaponPDAExpansion_Dispenser>::Destroy(IServerNetworkable*)
++0x0008:  0087b840  CEntityFactory<CTFWeaponPDAExpansion_Dispenser>::GetEntitySize()

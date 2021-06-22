@@ -1,0 +1,5 @@
+CEntityFactory<CBaseGrenadeConcussion>
+
++0x0000:  009f77b0  CEntityFactory<CBaseGrenadeConcussion>::Create(char const*)
++0x0004:  009f7740  CEntityFactory<CBaseGrenadeConcussion>::Destroy(IServerNetworkable*)
++0x0008:  009f7760  CEntityFactory<CBaseGrenadeConcussion>::GetEntitySize()

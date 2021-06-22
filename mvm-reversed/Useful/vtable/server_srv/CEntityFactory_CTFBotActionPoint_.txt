@@ -1,0 +1,5 @@
+CEntityFactory<CTFBotActionPoint>
+
++0x0000:  00c7b460  CEntityFactory<CTFBotActionPoint>::Create(char const*)
++0x0004:  00c7b350  CEntityFactory<CTFBotActionPoint>::Destroy(IServerNetworkable*)
++0x0008:  00c7b370  CEntityFactory<CTFBotActionPoint>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CDecal>
+
++0x0000:  00e71410  CEntityFactory<CDecal>::Create(char const*)
++0x0004:  00e71340  CEntityFactory<CDecal>::Destroy(IServerNetworkable*)
++0x0008:  00e71360  CEntityFactory<CDecal>::GetEntitySize()

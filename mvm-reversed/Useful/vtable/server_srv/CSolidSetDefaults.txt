@@ -1,0 +1,4 @@
+CSolidSetDefaults
+
++0x0000:  006f2e50  CSolidSetDefaults::ParseKeyValue(void*, char const*, char const*)
++0x0004:  006f2d70  CSolidSetDefaults::SetDefaults(void*)

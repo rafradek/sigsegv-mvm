@@ -1,0 +1,5 @@
+CEntityFactory<CTFKnife>
+
++0x0000:  00867ed0  CEntityFactory<CTFKnife>::Create(char const*)
++0x0004:  00867dc0  CEntityFactory<CTFKnife>::Destroy(IServerNetworkable*)
++0x0008:  00867de0  CEntityFactory<CTFKnife>::GetEntitySize()

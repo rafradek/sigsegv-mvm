@@ -1,0 +1,6 @@
+TargetScan<CBaseCombatCharacter>
+
++0x0000:  00afc8d0  TargetScan<CBaseCombatCharacter>::operator()(CBaseCombatCharacter*)
++0x0004:  00afbfc0  TargetScan<CBaseCombatCharacter>::ViewDot(Vector const&) const
++0x0008:  00afc000  TargetScan<CBaseCombatCharacter>::IsTargetVisible(CBaseCombatCharacter*) const
++0x000c:  00afbfb0  TargetScan<CBaseCombatCharacter>::IsPotentialTarget(CBaseCombatCharacter*) const

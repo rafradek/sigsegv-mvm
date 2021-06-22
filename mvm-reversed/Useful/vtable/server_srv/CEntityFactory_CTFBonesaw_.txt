@@ -1,0 +1,5 @@
+CEntityFactory<CTFBonesaw>
+
++0x0000:  0084c110  CEntityFactory<CTFBonesaw>::Create(char const*)
++0x0004:  0084c0e0  CEntityFactory<CTFBonesaw>::Destroy(IServerNetworkable*)
++0x0008:  0084c100  CEntityFactory<CTFBonesaw>::GetEntitySize()

@@ -1,0 +1,4 @@
+CTeamplayRoundBasedRules::CleanUpMap()::CTeamplayMapEntityFilter
+
++0x0000:  007234c0  CTeamplayRoundBasedRules::CleanUpMap()::CTeamplayMapEntityFilter::ShouldCreateEntity(char const*)
++0x0004:  00723440  CTeamplayRoundBasedRules::CleanUpMap()::CTeamplayMapEntityFilter::CreateNextEntity(char const*)

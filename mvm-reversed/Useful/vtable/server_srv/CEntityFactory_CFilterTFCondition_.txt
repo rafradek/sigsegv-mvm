@@ -1,0 +1,5 @@
+CEntityFactory<CFilterTFCondition>
+
++0x0000:  00d80bc0  CEntityFactory<CFilterTFCondition>::Create(char const*)
++0x0004:  00d80610  CEntityFactory<CFilterTFCondition>::Destroy(IServerNetworkable*)
++0x0008:  00d80630  CEntityFactory<CFilterTFCondition>::GetEntitySize()

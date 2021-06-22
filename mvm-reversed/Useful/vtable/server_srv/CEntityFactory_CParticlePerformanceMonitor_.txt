@@ -1,0 +1,5 @@
+CEntityFactory<CParticlePerformanceMonitor>
+
++0x0000:  00be6860  CEntityFactory<CParticlePerformanceMonitor>::Create(char const*)
++0x0004:  00be6810  CEntityFactory<CParticlePerformanceMonitor>::Destroy(IServerNetworkable*)
++0x0008:  00be6830  CEntityFactory<CParticlePerformanceMonitor>::GetEntitySize()

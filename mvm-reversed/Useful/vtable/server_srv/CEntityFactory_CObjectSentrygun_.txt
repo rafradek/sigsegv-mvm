@@ -1,0 +1,5 @@
+CEntityFactory<CObjectSentrygun>
+
++0x0000:  00dafde0  CEntityFactory<CObjectSentrygun>::Create(char const*)
++0x0004:  00dafc70  CEntityFactory<CObjectSentrygun>::Destroy(IServerNetworkable*)
++0x0008:  00dafc90  CEntityFactory<CObjectSentrygun>::GetEntitySize()

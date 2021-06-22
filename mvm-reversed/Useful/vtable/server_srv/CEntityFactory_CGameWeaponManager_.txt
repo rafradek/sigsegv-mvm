@@ -1,0 +1,5 @@
+CEntityFactory<CGameWeaponManager>
+
++0x0000:  00a7cbc0  CEntityFactory<CGameWeaponManager>::Create(char const*)
++0x0004:  00a7c7a0  CEntityFactory<CGameWeaponManager>::Destroy(IServerNetworkable*)
++0x0008:  00a7c7c0  CEntityFactory<CGameWeaponManager>::GetEntitySize()

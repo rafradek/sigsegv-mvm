@@ -1,0 +1,3 @@
+CServerGameTags
+
++0x0000:  00a72500  CServerGameTags::GetTaggedConVarList(KeyValues*)

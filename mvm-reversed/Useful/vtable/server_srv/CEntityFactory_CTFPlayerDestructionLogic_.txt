@@ -1,0 +1,5 @@
+CEntityFactory<CTFPlayerDestructionLogic>
+
++0x0000:  007ca500  CEntityFactory<CTFPlayerDestructionLogic>::Create(char const*)
++0x0004:  007c9c10  CEntityFactory<CTFPlayerDestructionLogic>::Destroy(IServerNetworkable*)
++0x0008:  007c9c30  CEntityFactory<CTFPlayerDestructionLogic>::GetEntitySize()

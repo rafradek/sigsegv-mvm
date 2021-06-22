@@ -1,0 +1,5 @@
+CEntityFactory<CSprayCan>
+
++0x0000:  00b7cfb0  CEntityFactory<CSprayCan>::Create(char const*)
++0x0004:  00b7cd00  CEntityFactory<CSprayCan>::Destroy(IServerNetworkable*)
++0x0008:  00b7cd20  CEntityFactory<CSprayCan>::GetEntitySize()

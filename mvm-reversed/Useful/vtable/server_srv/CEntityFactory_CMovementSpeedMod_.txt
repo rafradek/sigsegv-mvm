@@ -1,0 +1,5 @@
+CEntityFactory<CMovementSpeedMod>
+
++0x0000:  00b7cfd0  CEntityFactory<CMovementSpeedMod>::Create(char const*)
++0x0004:  00b7cc70  CEntityFactory<CMovementSpeedMod>::Destroy(IServerNetworkable*)
++0x0008:  00b7cc90  CEntityFactory<CMovementSpeedMod>::GetEntitySize()

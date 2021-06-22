@@ -1,0 +1,68 @@
+
+[+] CBaseAppSystem<IInputSystem>
+ |  [+] IInputSystem
+ |   |  [-] IAppSystem
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CInputSystem
+ |  [+] CTier2AppSystem<IInputSystem, 0>
+ |   |  [+] CTier1AppSystem<IInputSystem, 0>
+ |   |   |  [+] CTier0AppSystem<IInputSystem>
+ |   |   |   |  [+] CBaseAppSystem<IInputSystem>
+ |   |   |   |   |  [+] IInputSystem
+ |   |   |   |   |   |  [-] IAppSystem
+
+[+] CTier0AppSystem<IInputSystem>
+ |  [+] CBaseAppSystem<IInputSystem>
+ |   |  [+] IInputSystem
+ |   |   |  [-] IAppSystem
+
+[+] CTier1AppSystem<IInputSystem, 0>
+ |  [+] CTier0AppSystem<IInputSystem>
+ |   |  [+] CBaseAppSystem<IInputSystem>
+ |   |   |  [+] IInputSystem
+ |   |   |   |  [-] IAppSystem
+
+[+] CTier2AppSystem<IInputSystem, 0>
+ |  [+] CTier1AppSystem<IInputSystem, 0>
+ |   |  [+] CTier0AppSystem<IInputSystem>
+ |   |   |  [+] CBaseAppSystem<IInputSystem>
+ |   |   |   |  [+] IInputSystem
+ |   |   |   |   |  [-] IAppSystem
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[-] IAppSystem
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[+] IInputSystem
+ |  [-] IAppSystem

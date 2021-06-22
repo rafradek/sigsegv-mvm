@@ -1,0 +1,5 @@
+CEntityFactory<CMultiSource>
+
++0x0000:  00a99450  CEntityFactory<CMultiSource>::Create(char const*)
++0x0004:  00a98ae0  CEntityFactory<CMultiSource>::Destroy(IServerNetworkable*)
++0x0008:  00a98b00  CEntityFactory<CMultiSource>::GetEntitySize()

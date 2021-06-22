@@ -1,0 +1,10 @@
+CWaveSpawnPopulator
+
++0x0000:  00d5aeb0  CWaveSpawnPopulator::~CWaveSpawnPopulator()
++0x0004:  00d5aff0  CWaveSpawnPopulator::~CWaveSpawnPopulator()
++0x0008:  00d5c0a0  CWaveSpawnPopulator::Parse(KeyValues*)
++0x000c:  00d60000  IPopulator::PostInitialize()
++0x0010:  00d5d020  CWaveSpawnPopulator::Update()
++0x0014:  00d60020  IPopulator::UnpauseSpawning()
++0x0018:  00d5aa60  CWaveSpawnPopulator::OnPlayerKilled(CTFPlayer*)
++0x001c:  00d60040  IPopulator::HasEventChangeAttributes(char const*) const

@@ -1,0 +1,5 @@
+CEntityFactory<CWorldItem>
+
++0x0000:  00a91100  CEntityFactory<CWorldItem>::Create(char const*)
++0x0004:  00a91080  CEntityFactory<CWorldItem>::Destroy(IServerNetworkable*)
++0x0008:  00a910a0  CEntityFactory<CWorldItem>::GetEntitySize()

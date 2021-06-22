@@ -1,0 +1,5 @@
+CEntityFactory<CPlasma>
+
++0x0000:  00b61960  CEntityFactory<CPlasma>::Create(char const*)
++0x0004:  00b61930  CEntityFactory<CPlasma>::Destroy(IServerNetworkable*)
++0x0008:  00b61950  CEntityFactory<CPlasma>::GetEntitySize()

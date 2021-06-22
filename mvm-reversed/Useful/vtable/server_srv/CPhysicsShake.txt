@@ -1,0 +1,3 @@
+CPhysicsShake
+
++0x0000:  00a3d380  CPhysicsShake::Simulate(IPhysicsMotionController*, IPhysicsObject*, float, Vector&, Vector&)

@@ -1,0 +1,5 @@
+CEntityFactory<CPropDoorRotating>
+
++0x0000:  00bad8d0  CEntityFactory<CPropDoorRotating>::Create(char const*)
++0x0004:  00bab790  CEntityFactory<CPropDoorRotating>::Destroy(IServerNetworkable*)
++0x0008:  00bab7b0  CEntityFactory<CPropDoorRotating>::GetEntitySize()

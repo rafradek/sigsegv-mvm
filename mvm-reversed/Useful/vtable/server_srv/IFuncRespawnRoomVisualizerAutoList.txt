@@ -1,0 +1,4 @@
+IFuncRespawnRoomVisualizerAutoList
+
++0x0000:  00cc8680  IFuncRespawnRoomVisualizerAutoList::~IFuncRespawnRoomVisualizerAutoList()
++0x0004:  00cc8220  IFuncRespawnRoomVisualizerAutoList::~IFuncRespawnRoomVisualizerAutoList()

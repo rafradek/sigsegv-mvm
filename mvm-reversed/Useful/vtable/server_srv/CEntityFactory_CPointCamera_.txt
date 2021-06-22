@@ -1,0 +1,5 @@
+CEntityFactory<CPointCamera>
+
++0x0000:  00b8fcc0  CEntityFactory<CPointCamera>::Create(char const*)
++0x0004:  00b8fc60  CEntityFactory<CPointCamera>::Destroy(IServerNetworkable*)
++0x0008:  00b8fc80  CEntityFactory<CPointCamera>::GetEntitySize()

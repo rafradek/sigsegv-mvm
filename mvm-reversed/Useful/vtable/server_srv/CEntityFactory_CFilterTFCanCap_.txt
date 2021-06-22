@@ -1,0 +1,5 @@
+CEntityFactory<CFilterTFCanCap>
+
++0x0000:  00d80dd0  CEntityFactory<CFilterTFCanCap>::Create(char const*)
++0x0004:  00d806a0  CEntityFactory<CFilterTFCanCap>::Destroy(IServerNetworkable*)
++0x0008:  00d806c0  CEntityFactory<CFilterTFCanCap>::GetEntitySize()

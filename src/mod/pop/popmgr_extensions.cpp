@@ -17,6 +17,7 @@
 #include "stub/objects.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/team.h"
+#include "stub/upgrades.h"
 #include "util/admin.h"
 WARN_IGNORE__REORDER()
 #include <../server/vote_controller.h>
@@ -34,6 +35,11 @@ enum SpawnResult
 	SPAWN_NORMAL   = 1,
 	SPAWN_TELEPORT = 2,
 };
+
+namespace Mod::Pop::Wave_Extensions
+{
+	std::vector<std::string> *GetWaveExplanation(int wave);
+}
 
 namespace Mod::Pop::PopMgr_Extensions
 {
@@ -398,58 +404,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 	};
-
-	class ItemListEntry
-	{
-	public:
-		virtual ~ItemListEntry() = default;
-		virtual bool Matches(const char *classname, const CEconItemView *item_view) const = 0;
-	};
-	
-	class ItemListEntry_Classname : public ItemListEntry
-	{
-	public:
-		ItemListEntry_Classname(const char *classname) : m_strClassname(classname) {}
-		
-		virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
-		{
-			if (classname == nullptr) return false;
-			return FStrEq(this->m_strClassname.c_str(), classname);
-		}
-		
-	private:
-		std::string m_strClassname;
-	};
-	
-	class ItemListEntry_Name : public ItemListEntry
-	{
-	public:
-		ItemListEntry_Name(const char *name) : m_strName(name) {}
-		
-		virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
-		{
-			if (item_view == nullptr) return false;
-			return FStrEq(this->m_strName.c_str(), item_view->GetStaticData()->GetName(""));
-		}
-		
-	private:
-		std::string m_strName;
-	};
-	
-	class ItemListEntry_DefIndex : public ItemListEntry
-	{
-	public:
-		ItemListEntry_DefIndex(int def_index) : m_iDefIndex(def_index) {}
-		
-		virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
-		{
-			if (item_view == nullptr) return false;
-			return (this->m_iDefIndex == item_view->GetItemDefIndex());
-		}
-		
-	private:
-		int m_iDefIndex;
-	};
 	
 	
 	class ExtraTankPath
@@ -528,12 +482,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::map<CEconItemAttributeDefinition *, std::string> attributes;
 	};
 
-	struct ItemAttributes
-	{
-		std::unique_ptr<ItemListEntry> entry;
-		std::map<CEconItemAttributeDefinition *, std::string> attributes;
-	};
-
 	struct SprayDecal
 	{
 		CRC32_t texture;
@@ -552,6 +500,22 @@ namespace Mod::Pop::PopMgr_Extensions
 		PointTemplateInfo info;
 		std::vector<std::unique_ptr<ItemListEntry>> weapons;
 
+	};
+
+	struct ItemReplace
+	{
+		CEconItemDefinition *item_def;
+		std::unique_ptr<ItemListEntry> entry;
+		CEconItemView *item;
+		std::string name;
+	};
+
+	struct ExtraLoadoutItem
+	{
+		int class_index;
+		int loadout_slot;
+		CEconItemView *item;
+		std::string name;
 	};
 
 	struct PopState
@@ -610,7 +574,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_DoubleDonkWindow                ("tf_double_donk_window"),
 			m_ConchSpeedBoost                 ("tf_whip_speed_increase"),
 			m_StealthDamageReduction          ("tf_stealth_damage_reduction"),
-			m_AllowFlagCarrierToFight         ("tf_mvm_bot_allow_flag_carrier_to_fight")
+			m_AllowFlagCarrierToFight         ("tf_mvm_bot_allow_flag_carrier_to_fight"),
+			m_HealOnKillOverhealMelee         ("sig_attr_healonkill_overheal_melee"),
+			m_MaxActiveZombie                 ("tf_max_active_zombie")
+			
 			
 			
 			
@@ -650,6 +617,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iPlayerMiniBossMinRespawnTime = -1;
 			this->m_bPlayerRobotUsePlayerAnimation = false;
 			this->m_iEscortBotCountOffset = 0;
+			this->m_bNoThrillerTaunt = false;
+			this->m_bNoCritPumpkin = false;
+			this->m_bNoMissionInfo = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -705,6 +675,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_ConchSpeedBoost.Reset();
 			this->m_StealthDamageReduction.Reset();
 			this->m_AllowFlagCarrierToFight.Reset();
+			this->m_HealOnKillOverhealMelee.Reset();
+			this->m_MaxActiveZombie.Reset();
+			
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -758,6 +731,21 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SpellBookRareRoll.clear();
 			this->m_SpellBookNextRollTier.clear();
 
+			this->m_DisallowedUpgrades.clear();
+
+			for (auto &replace : this->m_ItemReplace) {
+				CEconItemView::Destroy(replace.item);
+			}
+			this->m_ItemReplace.clear();
+			this->m_Description.clear();
+			
+			for (auto &item : this->m_ExtraLoadoutItems) {
+				CEconItemView::Destroy(item.item);
+			}
+			this->m_ExtraLoadoutItems.clear();
+
+			this->m_PlayerMissionInfoSend.clear();
+
 			Clear_Point_Templates();
 
 		}
@@ -792,6 +780,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iPlayerMiniBossMinRespawnTime;
 		bool m_bPlayerRobotUsePlayerAnimation;
 		int m_iEscortBotCountOffset;
+		bool m_bNoThrillerTaunt;
+		bool m_bNoCritPumpkin;
+		bool m_bNoMissionInfo;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -848,6 +839,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_ConchSpeedBoost;
 		CPopOverride_ConVar<float> m_StealthDamageReduction;
 		CPopOverride_ConVar<bool> m_AllowFlagCarrierToFight;
+		CPopOverride_ConVar<bool> m_HealOnKillOverhealMelee;
+		CPopOverride_ConVar<int> m_MaxActiveZombie;
+		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CPopOverride_ConVar<std::string> m_CustomUpgradesFile;
@@ -887,7 +881,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::map<std::string, CustomWeapon> m_CustomWeapons;
 
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
-		std::unordered_map<CBaseEntity *, PointTemplateInstance *> m_ItemEquipTemplates;
+		std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_ItemEquipTemplates;
 
 		std::unordered_set<std::string> m_MissingRobotBones[10];
 		string_t m_CachedRobotModelIndex[20];
@@ -895,6 +889,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::pair<int, int>> m_SpellBookNormalRoll;
 		std::vector<std::pair<int, int>> m_SpellBookRareRoll;
 		std::unordered_map<CBaseEntity *, int> m_SpellBookNextRollTier;
+
+		std::vector<std::string> m_DisallowedUpgrades;
+		std::vector<ItemReplace> m_ItemReplace;
+		std::vector<std::string> m_Description;
+		std::vector<ExtraLoadoutItem> m_ExtraLoadoutItems;
+		std::unordered_map<CTFPlayer *, std::set<int>> m_SelectedLoadoutItems;
+
+		std::unordered_set<CTFPlayer*> m_PlayerMissionInfoSend;
 	};
 	PopState state;
 	
@@ -919,10 +921,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return true;
 			}
 		}
-		CFastTimer timer;
-		timer.Start();
 		int class_index = parent->GetPlayerClass()->GetClassIndex();
-
 
 		std::unordered_set<std::string> &bones = state.m_MissingRobotBones[class_index];
 
@@ -934,8 +933,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				break;
 			}
 		}
-		
-		timer.End();
 
 		return !is_missing_bone;
 	}
@@ -1179,8 +1176,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_BroadcastSound)(iTeam, sound, iAdditionalSoundFlags);
 	}
+	
+	void ModifyEmitSound(EmitSound_t& params)
+	{
+		if (params.m_pSoundName && params.m_pSoundName[0] == '=') {
+			char *pos;
+			params.m_SoundLevel = (int) strtol(params.m_pSoundName + 1, &pos, 10);
+			params.m_pSoundName = pos + 1;
+		}
+	}
+
 	bool callfrom=false;
-	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound, IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params)
+	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound, IRecipientFilter& filter, int iEntIndex, EmitSound_t& params)
 	{
 		if (!callfrom && TFGameRules()->IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
@@ -1217,6 +1224,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				es.m_SoundLevel = params.m_SoundLevel;
 				es.m_nFlags = params.m_nFlags;
 				es.m_nPitch = params.m_nPitch;
+				ModifyEmitSound(es);
 				//CBaseEntity::EmitSound(filter,iEntIndex,es);
 				
 				DETOUR_STATIC_CALL(CBaseEntity_EmitSound_static_emitsound)(filter, iEntIndex, es);
@@ -1224,22 +1232,23 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 			}
 		}
+		ModifyEmitSound(params);
 		DETOUR_STATIC_CALL(CBaseEntity_EmitSound_static_emitsound)(filter, iEntIndex, params);
 		callfrom = false;
 	}
 	
-	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound_handle, IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params, HSOUNDSCRIPTHANDLE& handle)
+	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound_handle, IRecipientFilter& filter, int iEntIndex, EmitSound_t& params, HSOUNDSCRIPTHANDLE& handle)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
 			
 			//DevMsg("CBaseEntity::EmitSound(#%d, \"%s\", 0x%04x)\n", iEntIndex, sound, (uint16_t)handle);
 			
-			if (sound != nullptr && state.m_DisableSounds.count(std::string(sound)) != 0) {
+			if (sound != nullptr && state.m_DisableSounds.find(sound) != state.m_DisableSounds.end()) {
 				DevMsg("Blocked sound \"%s\" via CBaseEntity::EmitSound\n", sound);
 				return;
 			}
-			else if (sound != nullptr && state.m_OverrideSounds.count(std::string(sound)) != 0) {
+			else if (sound != nullptr && state.m_OverrideSounds.find(sound) != state.m_OverrideSounds.end()) {
 				EmitSound_t es;
 				es.m_nChannel = params.m_nChannel;
 				es.m_pSoundName = state.m_OverrideSounds[sound].c_str();
@@ -1247,12 +1256,13 @@ namespace Mod::Pop::PopMgr_Extensions
 				es.m_SoundLevel = params.m_SoundLevel;
 				es.m_nFlags = params.m_nFlags;
 				es.m_nPitch = params.m_nPitch;
+				ModifyEmitSound(es);
 				DETOUR_STATIC_CALL(CBaseEntity_EmitSound_static_emitsound_handle)(filter, iEntIndex, es, handle);
 				DevMsg("Blocked sound \"%s\" via CBaseEntity::EmitSound\n", sound);
 				return;
 			}
 		}
-		
+		ModifyEmitSound(params);
 		DETOUR_STATIC_CALL(CBaseEntity_EmitSound_static_emitsound_handle)(filter, iEntIndex, params, handle);
 	}
 	
@@ -1262,50 +1272,128 @@ namespace Mod::Pop::PopMgr_Extensions
 //		SCOPED_INCREMENT(rc_CTFPlayer_GiveDefaultItems);
 //		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 //	}
-	
-	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GiveNamedItem, const char *classname, int i1, const CEconItemView *item_view, bool b1)
+	RefCount rc_CTFPlayer_ManageRegularWeapons;
+	CEconItemDefinition *is_item_replacement = nullptr;
+	DETOUR_DECL_MEMBER(void , CTFPlayer_ManageRegularWeapons, void *data)
 	{
+		SCOPED_INCREMENT(rc_CTFPlayer_ManageRegularWeapons);
+		DETOUR_MEMBER_CALL(CTFPlayer_ManageRegularWeapons)(data);
+		is_item_replacement = nullptr;
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	{
+		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
+		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		if (rc_CTFPlayer_ManageRegularWeapons && is_item_replacement == item_def && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
+			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		return slot;
+	}
+
+	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayer_GetLoadoutItem, int pclass, int slot, bool b1)
+	{
+		static auto default_item = CEconItemView::Create();
+
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		
+		auto result = DETOUR_MEMBER_CALL(CTFPlayer_GetLoadoutItem)(pclass, slot, b1);
+
 		/* this only applies to red team, for what essentially amounts to "legacy" reasons */
-		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot()/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
-			/* only enforce the whitelist/blacklist if they are non-empty */
+		if (result != nullptr && result->GetItemDefinition() != nullptr && TFGameRules()->IsMannVsMachineMode() && !player->IsBot()/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
 			
+			auto find_loadout = state.m_SelectedLoadoutItems.find(player);
+			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
+				for(int itemnum : find_loadout->second) {
+					auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
+					if (extraitem.item != nullptr && (extraitem.class_index == pclass || extraitem.class_index == 0) && extraitem.loadout_slot == slot) {
+						is_item_replacement = extraitem.item->GetItemDefinition();
+						return extraitem.item;
+					}
+				}
+			}
+			
+			/* only enforce the whitelist/blacklist if they are non-empty */
+
 			if (!state.m_ItemWhitelist.empty()) {
+				const char *classname = result->GetItemDefinition()->GetKeyValues()->GetString("item_class");
 				bool found = false;
 				for (const auto& entry : state.m_ItemWhitelist) {
-					if (entry->Matches(classname, item_view)) {
+					if (entry->Matches(classname, result)) {
 						found = true;
 						break;
 					}
 				}
 				if (!found) {
-					DevMsg("[%s] GiveNamedItem(\"%s\"): denied by whitelist\n", player->GetPlayerName(), classname);
-					return nullptr;
+					result = TFInventoryManager()->GetBaseItemForClass(pclass, slot);
+					if (result != nullptr && result->GetItemDefinition() != nullptr) {
+						found = false;
+						classname = result->GetItemDefinition()->GetKeyValues()->GetString("item_class");
+						for (const auto& entry : state.m_ItemWhitelist) {
+							if (entry->Matches(classname, result)) {
+								found = true;
+								break;
+							}
+						}
+					}
+					if (!found) {
+						DevMsg("[%s] GiveNamedItem(\"%s\"): denied by whitelist\n", player->GetPlayerName(), classname);
+						return default_item;
+					}
 				}
 			}
 			
 			if (!state.m_ItemBlacklist.empty()) {
+				const char *classname = result->GetItemDefinition()->GetKeyValues()->GetString("item_class");
 				bool found = false;
 				for (const auto& entry : state.m_ItemBlacklist) {
-					if (entry->Matches(classname, item_view)) {
+					if (entry->Matches(classname, result)) {
 						found = true;
 						break;
 					}
 				}
 				if (found) {
-					DevMsg("[%s] GiveNamedItem(\"%s\"): denied by blacklist\n", player->GetPlayerName(), classname);
-					return nullptr;
+					result = TFInventoryManager()->GetBaseItemForClass(pclass, slot);
+					if (result != nullptr && result->GetItemDefinition() != nullptr) {
+						found = false;
+						classname = result->GetItemDefinition()->GetKeyValues()->GetString("item_class");
+						for (const auto& entry : state.m_ItemWhitelist) {
+							if (entry->Matches(classname, result)) {
+								found = true;
+								break;
+							}
+						}
+					}
+					if (found) {
+						DevMsg("[%s] GiveNamedItem(\"%s\"): denied by blacklist\n", player->GetPlayerName(), classname);
+						return default_item;
+					}
 				}
 			}
 
+			if (!state.m_ItemReplace.empty()) {
+				const char *classname = TranslateWeaponEntForClass_improved(result->GetItemDefinition()->GetKeyValues()->GetString("item_class"), pclass);
+				bool found = false;
+				CEconItemDefinition *item_def = nullptr;
+				CEconItemView *view = nullptr;
+				for (const auto& entry : state.m_ItemReplace) {
+					if (entry.entry->Matches(classname, result)) {
+						found = true;
+						item_def = entry.item_def;
+						view = entry.item;
+						break;
+					}
+				}
+				if (found) {
+					is_item_replacement = item_def;
+					return view;
+				}
+			}
 			
 		}
 
 		
 		
 	//	DevMsg("[%s] GiveNamedItem(\"%s\"): provisionally allowed\n", player->GetPlayerName(), classname);
-		CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
+		//CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
 
 		// Disable cosmetics on robots, if player animations are not enabled
 		/*if (PlayerUsesRobotModel(player) && item_view != nullptr && item_view->GetItemDefinition() != nullptr) {
@@ -1317,36 +1405,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				return nullptr;
 			}
 		}*/
-
-		return entity;
-	}
-
-	void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player) {
-
-		// Item attributes are ignored when picking up dropped weapons
-		float dropped_weapon_attr = 0.0f;
-		FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("is dropped weapon"), &dropped_weapon_attr);
-		if (dropped_weapon_attr != 0.0f)
-			return;
-
-		DevMsg("ReapplyItemUpgrades %f\n", dropped_weapon_attr);
-
-		bool found = false;
-		const char *classname = item_view->GetItemDefinition()->GetItemClass();
-		std::map<CEconItemAttributeDefinition *, std::string> *attribs;
-		for (auto& item_attributes : state.m_ItemAttributes) {
-			if (item_attributes.entry->Matches(classname, item_view)) {
-				attribs = &(item_attributes.attributes);
-				found = true;
-				break;
-			}
-		}
-		if (found && attribs != nullptr) {
-			CEconItemView *view = item_view;
-			for (auto& entry : *attribs) {
-				view->GetAttributeList().AddStringAttribute(entry.first, entry.second);
-			}
-		}
+		
+		return result;
 	}
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
@@ -1359,7 +1419,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 				CEconItemView *item_view = entity->GetItem();
 				if (item_view == nullptr) return;
-				ApplyItemAttributes(item_view, player);
+				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
 			});
 		}
 	}
@@ -1370,7 +1430,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot() /*player->GetTeamNumber() == TF_TEAM_RED*/) {
 			if (!state.m_ItemAttributes.empty()) {
-				ApplyItemAttributes(item_view, player);
+				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
 			}
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
@@ -1425,7 +1485,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			ForEachTFPlayer([](CTFPlayer *player){
 				if (!player->IsAlive())                     return;
-				if (player->GetTeamNumber() != TF_TEAM_RED) return;
+				if (!player->IsBot()) return;
 				
 				player->CommitSuicide(true, false);
 			});
@@ -1457,6 +1517,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			if (TFGameRules()->IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
 				
+				int wave_pre = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 				//int GetTotalCurrency() return {}
 				
 				rc_CTeamplayRoundBasedRules_State_Enter = true;
@@ -1488,7 +1549,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::WaveCompleteUpdate\n");
 				wave->WaveCompleteUpdate();
 				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::WaveCompleteUpdate\n");
-				if ( TFObjectiveResource()->m_nMannVsMachineWaveCount == TFObjectiveResource()->m_nMannVsMachineMaxWaveCount) {
+
+				if ( wave_pre == TFObjectiveResource()->m_nMannVsMachineMaxWaveCount) {
 				//TFGameRules()->SetForceMapReset(true);
 				// TODO(?): for all human players on TF_TEAM_BLUE: if !IsAlive(), then call ForceRespawn()
 				
@@ -1520,7 +1582,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		PointTemplate *tmpl = FindPointTemplate(src);
 		if (tmpl != nullptr) {
 			DevMsg("Spawning template placeholder\n");
-			PointTemplateInstance *inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
+			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
 			for (auto entity : inst->entities) {
 				if ( entity->GetMoveType() == MOVETYPE_NONE )
 					continue;
@@ -1731,6 +1793,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	//std::vector<CHandle<CTFBot>> spawned_bots_first_tick;
 	//std::vector<CHandle<CTFPlayer>> spawned_players_first_tick;
 	//extern GlobalThunk<CTETFParticleEffect> g_TETFParticleEffect;
+
+	bool received_mission_message_tick = false;
+
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
 		
@@ -1766,10 +1831,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			// Templates that only spawn the first time the player joins on the mission
-			if (state.m_PlayerSpawnOnceTemplatesAppliedTo.find(player) == state.m_PlayerSpawnOnceTemplatesAppliedTo.end()) {
+			if (!state.m_PlayerSpawnOnceTemplatesAppliedTo.count(player)) {
 				for (auto &templ : state.m_PlayerSpawnOnceTemplates) {
 					templ.SpawnTemplate(player);
 				}
+				state.m_PlayerSpawnOnceTemplatesAppliedTo.insert(player);
 			}
 
 			if (playerScale != 1.0f)
@@ -1779,12 +1845,56 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->SetModelScale(miniboss_scale.GetFloat());
 			}
 
-			if(state.m_PlayerUpgradeSend.find(player) == state.m_PlayerUpgradeSend.end()){
+			if(!state.m_PlayerUpgradeSend.count(player)) {
 				state.m_PlayerUpgradeSend.insert(player);
 				ResendUpgradeFile(false);
-				if (!received_message_tick)
-				PrintToChat("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)",player);
+				if (!received_message_tick) {
+					PrintToChat("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)\n",player);
+					
+				}
 			}
+
+			if (!state.m_PlayerMissionInfoSend.count(player)) {
+				state.m_PlayerMissionInfoSend.insert(player);
+				if (!received_mission_message_tick) {
+
+					if (!state.m_ExtraLoadoutItems.empty())
+						PrintToChat("\x07""7fd4ffThis mission allows you to equip custom items. Type !missionitems in chat to see available items for your class\n",player);
+
+					//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
+					
+					bool player_empty = state.m_PlayerAttributes.empty();
+					for (int i = 0; i < 10; i++) {
+						if (!state.m_PlayerAttributesClass[i].empty()) {
+							player_empty = false;
+							break;
+						}
+					}
+
+					if (!state.m_bNoMissionInfo && (
+						//(explanation != nullptr && !explanation->empty()) ||
+						!state.m_ItemWhitelist.empty() ||
+						!state.m_ItemBlacklist.empty() ||
+						!state.m_ItemAttributes.empty() ||
+						!player_empty ||
+						!state.m_DisallowedUpgrades.empty() ||
+						!state.m_ItemReplace.empty() ||
+						!state.m_ExtraLoadoutItems.empty() ||
+						state.m_ForceItems.parsed ||
+						state.m_bSniperAllowHeadshots ||
+						state.m_bSniperHideLasers ||
+						!state.m_RespecEnabled.GetValue() ||
+						state.m_RespecLimit.GetValue() ||
+						state.m_ImprovedAirblast.GetValue() ||
+						state.m_SandmanStuns.GetValue() ||
+						state.m_bNoReanimators
+					)) { 
+						PrintToChat("\x07""7fd4ffType !missioninfo in chat to check custom mission information\n",player);
+					}
+				}
+				received_mission_message_tick = true;
+			}
+			
 		}
 
 		if (!player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
@@ -1831,7 +1941,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			for(int i = 0; i < player->GetNumWearables(); i++) {
 				CEconWearable *wearable = player->GetWearable(i);
-				if (wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
+				if (wearable != nullptr && wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
 					int model_index = wearable->m_nModelIndexOverrides[0];
 					player->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
 					wearable->Remove();
@@ -2047,7 +2157,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					if (proj != nullptr) {
 						Vector vec = temp_data.offset;
 						QAngle ang = temp_data.angles;
-						PointTemplateInstance *inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
+						auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
 					}
 					
 					return proj;
@@ -2133,15 +2243,12 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
 		if (ToTFBot(owner) == nullptr) {
 			for (auto &info : state.m_WeaponSpawnTemplates) {
-				DevMsg("weapon spawn template %d %d\n", info.info.template_name, info.weapons.size());
 				for (auto &entry : info.weapons) {
-					DevMsg("entry\n");
 					if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
-						DevMsg("weapon match\n");
 						state.m_ItemEquipTemplates[ent] = info.info.SpawnTemplate(owner);
 						break;
 					}
@@ -2240,6 +2347,807 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		state.m_SpellBookNextRollTier.erase(entity);
     }
+	
+	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+	{
+		if (!sell && !b3) {
+			auto upgrade = reinterpret_cast<CUpgrades *>(this);
+			
+			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
+				const char *upgradename = upgrade->GetUpgradeAttributeName(upgradeslot);
+				for (std::string &str : state.m_DisallowedUpgrades)
+				{
+					if (strtol(str.c_str(), nullptr, 0) == upgradeslot + 1)
+					{	
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+						return;
+					}
+					else if (FStrEq(upgradename, str.c_str())) {
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+						return;
+					}
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+	}
+
+	void DisplayMainMissionInfo(CTFPlayer *player);
+	void DisplayWhitelistInfo(CTFPlayer *player);
+	void DisplayBlacklistInfo(CTFPlayer *player);
+	void DisplayItemAttributeInfo(CTFPlayer *player);
+	void DisplayItemAttributeListInfo(CTFPlayer *player, int id);
+	void DisplayPlayerAttributeInfo(CTFPlayer *player);
+	void DisplayPlayerAttributeListInfo(CTFPlayer *player, int id);
+	void DisplayDescriptionInfo(CTFPlayer *player);
+	void DisplayItemReplaceInfo(CTFPlayer *player);
+	void DisplayDisallowedUpgradesInfo(CTFPlayer *player);
+	void DisplayExtraLoadoutItemsClassInfo(CTFPlayer *player);
+	void DisplayExtraLoadoutItemsInfo(CTFPlayer *player, int id);
+	void DisplayForcedItemsClassInfo(CTFPlayer *player);
+	void DisplayForcedItemsInfo(CTFPlayer *player, int id);
+
+	void DisplayExtraLoadoutItems(CTFPlayer *player);
+
+	class SelectMainMissionInfoHandler : public IMenuHandler
+    {
+    public:
+
+        SelectMainMissionInfoHandler(CTFPlayer * pPlayer) : IMenuHandler() {
+            this->player = pPlayer;
+            
+        }
+
+        virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+            const char *info = menu->GetItemInfo(item, nullptr);
+            if (FStrEq(info, "whitelist")) {
+				DisplayWhitelistInfo(player);
+			}
+			else if (FStrEq(info, "blacklist")) {
+				DisplayBlacklistInfo(player);
+			}
+			else if (FStrEq(info, "itemattributes")) {
+				DisplayItemAttributeInfo(player);
+			}
+			else if (FStrEq(info, "playerattributes")) {
+				DisplayPlayerAttributeInfo(player);
+			}
+			else if (FStrEq(info, "description")) {
+				DisplayDescriptionInfo(player);
+			}
+			else if (FStrEq(info, "disallowedupgrades")) {
+				DisplayDisallowedUpgradesInfo(player);
+			}
+			else if (FStrEq(info, "itemreplace")) {
+				DisplayItemReplaceInfo(player);
+			}
+			else if (FStrEq(info, "extraloadoutitems")) {
+				DisplayExtraLoadoutItemsClassInfo(player);
+			}
+			else if (FStrEq(info, "forceditems")) {
+				DisplayForcedItemsClassInfo(player);
+			}
+        }
+
+        virtual void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+
+        CHandle<CTFPlayer> player;
+    };
+
+	class SelectMissionInfoHandler : public IMenuHandler
+    {
+    public:
+
+        SelectMissionInfoHandler(CTFPlayer * pPlayer) : IMenuHandler() {
+            this->player = pPlayer;
+            
+        }
+
+        virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+
+        }
+
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+            if (reason == MenuEnd_ExitBack || reason == MenuEnd_Exit) {
+                GoBack();
+            }
+		}
+
+        virtual void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+
+		virtual void GoBack() {
+            DisplayMainMissionInfo(player);
+		}
+
+        CHandle<CTFPlayer> player;
+    };
+
+	class SelectItemAttributeHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectItemAttributeHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+        virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			DisplayItemAttributeListInfo(player, id);
+        }
+
+		virtual void GoBack() {
+            DisplayMainMissionInfo(player);
+		}
+    };
+
+	class SelectItemAttributeListHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectItemAttributeListHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void GoBack() {
+            DisplayItemAttributeInfo(player);
+		}
+    };
+
+	class SelectPlayerAttributeHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectPlayerAttributeHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+        virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			DisplayPlayerAttributeListInfo(player, id);
+        }
+
+		virtual void GoBack() {
+            DisplayMainMissionInfo(player);
+		}
+    };
+
+	class SelectPlayerAttributeListHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectPlayerAttributeListHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void GoBack() {
+            DisplayPlayerAttributeInfo(player);
+		}
+    };
+	
+	class SelectExtraLoadoutItemsClassInfoHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectExtraLoadoutItemsClassInfoHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			DisplayExtraLoadoutItemsInfo(player, id);
+        }
+
+		virtual void GoBack() {
+            DisplayMainMissionInfo(player);
+		}
+    };
+	
+
+	class SelectExtraLoadoutItemsInfoHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectExtraLoadoutItemsInfoHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void GoBack() {
+            DisplayExtraLoadoutItemsClassInfo(player);
+		}
+    };
+
+	class SelectForcedItemsClassInfoHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectForcedItemsClassInfoHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			DisplayForcedItemsInfo(player, id);
+        }
+
+		virtual void GoBack() {
+            DisplayMainMissionInfo(player);
+		}
+    };
+	
+
+	class SelectForcedItemsInfoHandler : public SelectMissionInfoHandler
+    {
+    public:
+        SelectForcedItemsInfoHandler(CTFPlayer *pPlayer) : SelectMissionInfoHandler(pPlayer) {}
+
+		virtual void GoBack() {
+            DisplayForcedItemsClassInfo(player);
+		}
+    };
+
+	class SelectExtraLoadoutItemsHandler : public IMenuHandler
+    {
+    public:
+
+        SelectExtraLoadoutItemsHandler(CTFPlayer * pPlayer) : IMenuHandler() {
+            this->player = pPlayer;
+            
+        }
+
+        virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			
+			auto &set = state.m_SelectedLoadoutItems[player];
+			auto find = set.find(id);
+			if (find != set.end()) {
+				set.erase(find);
+			}
+			else {
+				auto &item = state.m_ExtraLoadoutItems[id];
+
+				for (auto it = set.begin(); it != set.end(); ) {
+					auto &item_compare = state.m_ExtraLoadoutItems[*it];
+					if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
+						it = set.erase(it);
+					}
+					else {
+						it++;
+					}
+				}
+				set.insert(id);
+			}
+			
+			if (this->player->IsAlive() && PointInRespawnRoom(this->player, this->player->WorldSpaceCenter(), false))
+			{
+				player->ForceRegenerateAndRespawn();
+			}
+			
+			DisplayExtraLoadoutItems(player);
+        }
+
+        virtual void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+
+        CHandle<CTFPlayer> player;
+    };
+
+	void DisplayMainMissionInfo(CTFPlayer *player)
+	{
+		SelectMainMissionInfoHandler *handler = new SelectMainMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+		DevMsg("Mission Menu\n");
+        menu->SetDefaultTitle("Mission info menu");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		if (!state.m_bNoMissionInfo) {
+			auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
+			if (explanation != nullptr && !explanation->empty()) {
+				ItemDrawInfo info1("Mission Description", ITEMDRAW_DEFAULT);
+				menu->AppendItem("description", info1);
+			}
+			if (!state.m_ItemWhitelist.empty()) {
+				ItemDrawInfo info1("Item Whitelist", ITEMDRAW_DEFAULT);
+				menu->AppendItem("whitelist", info1);
+			}
+			if (!state.m_ItemBlacklist.empty()) {
+				ItemDrawInfo info1("Item Blacklist", ITEMDRAW_DEFAULT);
+				menu->AppendItem("blacklist", info1);
+			}
+			if (!state.m_ItemAttributes.empty()) {
+				ItemDrawInfo info1("Item Attributes", ITEMDRAW_DEFAULT);
+				menu->AppendItem("itemattributes", info1);
+			}
+			bool player_empty = state.m_PlayerAttributes.empty();
+			for (int i = 0; i < 10; i++) {
+				if (!state.m_PlayerAttributesClass[i].empty()) {
+					player_empty = false;
+					break;
+				}
+			}
+			if (!player_empty) {
+				ItemDrawInfo info1("Player Attributes", ITEMDRAW_DEFAULT);
+				menu->AppendItem("playerattributes", info1);
+			}
+			if (!state.m_DisallowedUpgrades.empty()) {
+				ItemDrawInfo info1("Disallowed Upgrades", ITEMDRAW_DEFAULT);
+				menu->AppendItem("disallowedupgrades", info1);
+			}
+			if (!state.m_ItemReplace.empty()) {
+				ItemDrawInfo info1("Item Replacement", ITEMDRAW_DEFAULT);
+				menu->AppendItem("itemreplace", info1);
+			}
+			if (!state.m_ExtraLoadoutItems.empty()) {
+				ItemDrawInfo info1("Extra Loadout Items", ITEMDRAW_DEFAULT);
+				menu->AppendItem("extraloadoutitems", info1);
+			}
+			if (state.m_ForceItems.parsed) {
+				ItemDrawInfo info1("Forced Items", ITEMDRAW_DEFAULT);
+				menu->AppendItem("forceditems", info1);
+			}
+			if (state.m_bSniperAllowHeadshots) {
+				ItemDrawInfo info1("Sniper bots can headshot", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (state.m_bSniperHideLasers) {
+				ItemDrawInfo info1("No laser on Sniper bots", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (!state.m_RespecEnabled.GetValue()) {
+				ItemDrawInfo info1("Upgrade refunding disabled", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (state.m_RespecLimit.GetValue() != 0) {
+				static ConVarRef tf_mvm_respec_credit_goal("tf_mvm_respec_credit_goal");
+				ItemDrawInfo info1(CFmtStr("Collect %d credits to earn an upgrade refund, up to %d times", tf_mvm_respec_credit_goal.GetInt(), state.m_RespecLimit.GetValue()), ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (state.m_ImprovedAirblast.GetValue()) {
+				ItemDrawInfo info1("Pyro bots can airblast grenades and arrows", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (state.m_SandmanStuns.GetValue()) {
+				ItemDrawInfo info1("Sandman balls can stun enemy targets", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			if (state.m_bNoReanimators) {
+				ItemDrawInfo info1("No reanimators", ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+			
+		}
+		DevMsg("Item Count %d\n", menu->GetItemCount());
+		if (menu->GetItemCount() == 1) {
+            ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info1);
+        }
+		else if (menu->GetItemCount() == 0) {
+            ItemDrawInfo info1("No custom mission information available", ITEMDRAW_DISABLED);
+            menu->AppendItem(" ", info1);
+            ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info2);
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+	
+	void DisplayWhitelistInfo(CTFPlayer *player)
+	{
+		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Whitelisted Items");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (const auto& entry : state.m_ItemWhitelist) {
+			const char *str = entry->GetInfo();
+			ItemDrawInfo info1(str, ITEMDRAW_DISABLED);
+			menu->AppendItem("attr", info1);
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayBlacklistInfo(CTFPlayer *player)
+	{
+		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Blacklisted Items");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (const auto& entry : state.m_ItemBlacklist) {
+			const char *str = entry->GetInfo();
+			ItemDrawInfo info1(str, ITEMDRAW_DISABLED);
+			menu->AppendItem("attr", info1);
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayItemReplaceInfo(CTFPlayer *player)
+	{
+		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Item Replacement");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (const auto& entry : state.m_ItemReplace) {
+			const char *from_str = entry.entry->GetInfo();
+			const char *to_str = entry.name.c_str();
+			ItemDrawInfo info1(CFmtStr("%s -> %s", from_str, to_str), ITEMDRAW_DISABLED);
+			menu->AppendItem("attr", info1);
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+
+	void DisplayDescriptionInfo(CTFPlayer *player)
+	{
+		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Description");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		auto res = TFObjectiveResource();
+		int wave_count = res->m_nMannVsMachineWaveCount;
+		for (int i = 0; i < wave_count; i++) {
+			auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(i);
+			if (explanation != nullptr && !explanation->empty()) {
+				for (const auto& entry : *explanation) {
+					std::string str = entry;
+					
+					int pos = 0;
+					while ((pos = str.find('{', pos)) != -1) {
+						int posend = str.find('}', pos);
+						if (posend == -1) {
+							posend = str.size() - 1;
+						}
+						str.replace(pos, posend - pos + 1, "");
+					}
+
+					ItemDrawInfo info1(str.c_str(), ITEMDRAW_DISABLED);
+					menu->AppendItem("info", info1);
+				}
+			}
+		}
+
+		
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayDisallowedUpgradesInfo(CTFPlayer *player)
+	{
+		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Disallowed Upgrades");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (const auto& entry : state.m_DisallowedUpgrades) {
+			int id = strtol(entry.c_str(),nullptr,10);
+			
+			if (id > 0 && g_hUpgradeEntity.GetRef() != nullptr && id < CMannVsMachineUpgradeManager::Upgrades().Count()) {
+
+				ItemDrawInfo info1(g_hUpgradeEntity->GetUpgradeAttributeName(id), ITEMDRAW_DISABLED);
+				menu->AppendItem("info", info1);
+			}
+			else {
+				ItemDrawInfo info1(entry.c_str(), ITEMDRAW_DISABLED);
+				menu->AppendItem("info", info1);
+			}
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayItemAttributeInfo(CTFPlayer *player)
+	{
+		SelectItemAttributeHandler *handler = new SelectItemAttributeHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Item Attributes");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		int i = 0;
+		for (const auto& entry : state.m_ItemAttributes) {
+			const char *str = entry.entry->GetInfo();
+			ItemDrawInfo info1(str, ITEMDRAW_DEFAULT);
+			std::string num = std::to_string(i);
+			menu->AppendItem(num.c_str(), info1);
+			i++;
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayItemAttributeListInfo(CTFPlayer *player, int id)
+	{
+		SelectItemAttributeListHandler *handler = new SelectItemAttributeListHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle(CFmtStr("%s Attributes", state.m_ItemAttributes[id].entry->GetInfo()));
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		if (id < state.m_ItemAttributes.size()) {
+			auto &attribs = state.m_ItemAttributes[id].attributes;
+			for (auto &entry : attribs) {
+				attribute_data_union_t value;
+				auto attr_def = entry.first;
+				attr_def->GetType()->InitializeNewEconAttributeValue(&value);
+				if (attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, entry.second.c_str(), &value, true)) {
+					std::string str;
+					if (FormatAttributeString(str, attr_def, value)) {
+						ItemDrawInfo info1(str.c_str(), ITEMDRAW_DISABLED);
+						menu->AppendItem("", info1);
+					}
+				}
+				attr_def->GetType()->UnloadEconAttributeValue(&value);
+			}
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayPlayerAttributeInfo(CTFPlayer *player)
+	{
+		SelectPlayerAttributeHandler *handler = new SelectPlayerAttributeHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Player Attributes");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		if (!state.m_PlayerAttributes.empty())
+		{
+			ItemDrawInfo info1("All player classes", ITEMDRAW_DEFAULT);
+			menu->AppendItem("0", info1);
+		}
+
+		for (int i = 0; i < 10; i++) {
+			if (!state.m_PlayerAttributesClass[i].empty()) {
+				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				std::string num = std::to_string(i);
+				menu->AppendItem(num.c_str(), info1);
+			}
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+
+	void DisplayPlayerAttributeListInfo(CTFPlayer *player, int id)
+	{
+		SelectPlayerAttributeListHandler *handler = new SelectPlayerAttributeListHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+		if (id == 0) {
+			menu->SetDefaultTitle("All Class Attributes");
+		}
+		else {
+        	menu->SetDefaultTitle(CFmtStr("%s Attributes", g_aPlayerClassNames_NonLocalized[id]));
+		}
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		std::map<std::string, float> *map;
+
+		if (id == 0) {
+			map = &state.m_PlayerAttributes;
+		}
+		else {
+			map = &state.m_PlayerAttributesClass[id];
+		}
+		for (auto &entry : *map) {
+			attribute_data_union_t value;
+			value.m_Float = entry.second;
+			std::string str;
+			if (FormatAttributeString(str, GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str()), value)) {
+				ItemDrawInfo info1(str.c_str(), ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+		}
+
+        menu->Display(ENTINDEX(player), 0);
+	}
+	
+	void DisplayForcedItemsClassInfo(CTFPlayer *player)
+	{
+		SelectForcedItemsClassInfoHandler *handler = new SelectForcedItemsClassInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Forced items");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		bool has_class[11] = {0};
+
+		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
+			for (int i = 0; i < 11; i++) {
+				auto &vec = items_class[i]; 
+				if (!vec.empty()) {
+					has_class[i] = true;
+					if (i == 0 || i == 10) {
+						for (int j = 1; j < 10; j++) {
+							has_class[j] = true;
+						}
+					}
+				}
+			}
+		}
+		for (int i = 1; i < 10; i++) {
+			if (has_class[i]) {
+				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				std::string num = std::to_string(i);
+				menu->AppendItem(num.c_str(), info1);
+			}
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+
+	void DisplayForcedItemsInfo(CTFPlayer *player, int id)
+	{
+		SelectForcedItemsInfoHandler *handler = new SelectForcedItemsInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle(CFmtStr("Forced items (%s)", g_aPlayerClassNames_NonLocalized[id]));
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
+			for (auto &vec : {items_class[id], items_class[0], items_class[10]}) {
+				for (int i = 0; i < vec.size(); i++) {
+					auto &item = vec[i];
+					char buf[256];
+					snprintf(buf, sizeof(buf), "%s", item.first.c_str());
+					ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
+					menu->AppendItem("", info1);
+				}
+			}
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+
+	void DisplayExtraLoadoutItemsClassInfo(CTFPlayer *player)
+	{
+		SelectExtraLoadoutItemsClassInfoHandler *handler = new SelectExtraLoadoutItemsClassInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Extra loadout items");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		bool has_class[10] = {0};
+
+		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+			
+			if (item.class_index == 0) {
+				for (int j = 0; j < 10; j++) {
+					has_class[j] = true;
+				}
+			}
+			else {
+				has_class[item.class_index] = true;
+			}
+		}
+		for (int i = 1; i < 10; i++) {
+			if (has_class[i]) {
+				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				std::string num = std::to_string(i);
+				menu->AppendItem(num.c_str(), info1);
+			}
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+
+	void DisplayExtraLoadoutItemsInfo(CTFPlayer *player, int id)
+	{
+		SelectExtraLoadoutItemsInfoHandler *handler = new SelectExtraLoadoutItemsInfoHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[id]));
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+
+			if (id == item.class_index || item.class_index == 0) {
+				char buf[256];
+				snprintf(buf, sizeof(buf), "%s: %s", g_szLoadoutStrings[item.loadout_slot], item.name.c_str());
+				ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
+				menu->AppendItem("", info1);
+			}
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+
+	void DisplayExtraLoadoutItems(CTFPlayer *player)
+	{
+		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[player->GetPlayerClass()->GetClassIndex()]));
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+
+			int class_index = player->GetPlayerClass()->GetClassIndex();
+			if (class_index == item.class_index || item.class_index == 0) {
+
+				bool selected = state.m_SelectedLoadoutItems[player].count(i);
+				
+				char buf[256];
+				snprintf(buf, sizeof(buf), "%s: %s %s", g_szLoadoutStrings[item.loadout_slot], item.name.c_str(), selected ? "(selected)" : "");
+				ItemDrawInfo info1(buf, ITEMDRAW_DEFAULT);
+				std::string num = std::to_string(i);
+				menu->AppendItem(num.c_str(), info1);
+			}
+		}
+		if (menu->GetItemCount() == 1) {
+            ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info1);
+        }
+		else if (menu->GetItemCount() == 0) {
+            ItemDrawInfo info1(CFmtStr("No extra loadout items available for %s", g_aPlayerClassNames_NonLocalized[player->GetPlayerClass()->GetClassIndex()]), ITEMDRAW_DISABLED);
+            menu->AppendItem(" ", info1);
+            ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info2);
+		}
+		
+        menu->Display(ENTINDEX(player), 10);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player != nullptr) {
+			if (strcmp(args[0], "sig_missioninfo") == 0) {
+				DisplayMainMissionInfo(player);
+				return true;
+			}
+			else if (strcmp(args[0], "sig_missionitems") == 0) {
+				DisplayExtraLoadoutItems(player);
+				return true;
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
+	}
+	
+	DETOUR_DECL_STATIC(void, Host_Say, edict_t *edict, const CCommand& args, bool team )
+	{
+		CBaseEntity *entity = GetContainingEntity(edict);
+		if (edict != nullptr) {
+			const char *p = args.ArgS();
+			int len = strlen(p);
+			if (*p == '"')
+			{
+				p++;
+				len -=2;
+			}
+			if (strncmp(p, "!missioninfo",len) == 0 || strncmp(p, "/missioninfo",len) == 0) {
+				DisplayMainMissionInfo(ToTFPlayer(entity));
+				return nullptr;
+			}
+			if (strncmp(p, "!missionitems",len) == 0 || strncmp(p, "/missionitems",len) == 0) {
+				DisplayExtraLoadoutItems(ToTFPlayer(entity));
+				return nullptr;
+			}
+		}
+		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
+	}
+	
+	RefCount rc_CTFPlayer_ModifyOrAppendCriteria;
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ModifyOrAppendCriteria, void *criteria)
+	{
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, TFGameRules()->IsMannVsMachineMode() && state.m_bNoThrillerTaunt);
+		DETOUR_MEMBER_CALL(CTFPlayer_ModifyOrAppendCriteria)(criteria);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFAmmoPack_InitAmmoPack, CTFPlayer * player, CTFWeaponBase *weapon, int i1, bool b1, bool b2, float f1)
+	{
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, TFGameRules()->IsMannVsMachineMode() && state.m_bNoCritPumpkin);
+		DETOUR_MEMBER_CALL(CTFAmmoPack_InitAmmoPack)(player, weapon, i1, b1, b2, f1);
+	}
+
+	DETOUR_DECL_STATIC(bool, TF_IsHolidayActive)
+	{
+		
+		if (rc_CTFPlayer_ModifyOrAppendCriteria)
+			return false;
+		else
+			return DETOUR_STATIC_CALL(TF_IsHolidayActive)();
+	}
 
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
@@ -2305,10 +3213,27 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return info;
 	}
-	
-	bool Parse_ItemListEntry(KeyValues *kv, std::vector<std::unique_ptr<ItemListEntry>> &list, const char *name) 
+	std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name) 
 	{
 		if (FStrEq(kv->GetName(), "Classname")) {
+			DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
+			return std::make_unique<ItemListEntry_Classname>(kv->GetString());
+		} else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName") || FStrEq(kv->GetName(), "Item")) {
+			DevMsg("%s: Add Name entry: \"%s\"\n", name, kv->GetString());
+			return std::make_unique<ItemListEntry_Name>(kv->GetString());
+		} else if (FStrEq(kv->GetName(), "DefIndex")) {
+			DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
+			return std::make_unique<ItemListEntry_DefIndex>(kv->GetInt());
+		} else {
+			DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
+			return std::make_unique<ItemListEntry_Classname>(kv->GetString());
+		}
+	}
+
+	bool Parse_ItemListEntry(KeyValues *kv, std::vector<std::unique_ptr<ItemListEntry>> &list, const char *name) 
+	{
+		list.push_back(Parse_ItemListEntry(kv, name));
+		/*if (FStrEq(kv->GetName(), "Classname")) {
 			DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
 			list.push_back(std::make_unique<ItemListEntry_Classname>(kv->GetString()));
 		} else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName")) {
@@ -2320,7 +3245,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		} else {
 			DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
 			list.push_back(std::make_unique<ItemListEntry_Classname>(kv->GetString()));
-		}
+		}*/
 		return true;
 	}
 
@@ -2354,38 +3279,95 @@ namespace Mod::Pop::PopMgr_Extensions
 			Parse_ItemListEntry(subkey, state.m_ItemBlacklist, "ItemBlackList");
 		}
 	}
-	void Parse_ItemAttributes(KeyValues *kv)
+
+	void Parse_ItemReplacement(KeyValues *kv)
 	{
-		ItemAttributes item_attributes;// = state.m_ItemAttributes.emplace_back();
-		bool hasname = false;
-
 		FOR_EACH_SUBKEY(kv, subkey) {
-			//std::unique_ptr<ItemListEntry> key=std::make_unique<ItemListEntry_Classname>("");
-			if (FStrEq(subkey->GetName(), "Classname")) {
-				DevMsg("ItemAttrib: Add Classname entry: \"%s\"\n", subkey->GetString());
-				hasname = true;
-				item_attributes.entry = std::make_unique<ItemListEntry_Classname>(subkey->GetString());
-			} else if (FStrEq(subkey->GetName(), "ItemName")) {
-				hasname = true;
-				DevMsg("ItemAttrib: Add Name entry: \"%s\"\n", subkey->GetString());
-				item_attributes.entry = std::make_unique<ItemListEntry_Name>(subkey->GetString());
-			} else if (FStrEq(subkey->GetName(), "DefIndex")) {
-				hasname = true;
-				DevMsg("ItemAttrib: Add DefIndex entry: %d\n", subkey->GetInt());
-				item_attributes.entry = std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt());
-			} else {
-				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
-				
-				if (attr_def == nullptr) {
-					Warning("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
-				}
-				else
-					item_attributes.attributes[attr_def] = subkey->GetString();
-			}
-		}
-		if (hasname) {
+			CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey->GetName());
+			if (item_def != nullptr) {
+				FOR_EACH_SUBKEY(subkey, subkey2) {
+					CEconItemView *view = CEconItemView::Create();
+					view->Init(item_def->m_iItemDefIndex);
+					
+					std::string name;
+					if (state.m_CustomWeapons.find(subkey->GetString()) != state.m_CustomWeapons.end()) {
+						name = subkey->GetString();
+					}
+					else {
+						name = GetItemName(item_def->m_iItemDefIndex);
+					}
 
-			state.m_ItemAttributes.push_back(std::move(item_attributes));//erase(item_attributes);
+					Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(subkey->GetName(), view);
+					if (state.m_CustomWeapons.find(subkey->GetName()) != state.m_CustomWeapons.end())
+					state.m_ItemReplace.push_back({item_def, Parse_ItemListEntry(subkey2,"ItemReplacement"), view, name});
+				}
+			}
+			
+		}
+	}
+	
+	int GetSlotFromString(const char *string) {
+        int slot = -1;
+        if (V_stricmp(string, "Primary") == 0)
+            slot = 0;
+        else if (V_stricmp(string, "Secondary") == 0)
+            slot = 1;
+        else if (V_stricmp(string, "Melee") == 0)
+            slot = 2;
+        else if (V_stricmp(string, "PDA") == 0)
+            slot = 5;
+        else if (V_stricmp(string, "PDA2") == 0)
+            slot = 6;
+        else if (V_stricmp(string, "Head") == 0)
+            slot = 7;
+        else if (V_stricmp(string, "Misc") == 0)
+            slot = 8;
+        else if (V_stricmp(string, "Action") == 0)
+            slot = 9;
+        else if (V_stricmp(string, "Misc2") == 0)
+            slot = 10;
+        else
+            slot = strtol(string, nullptr, 10);
+        return slot;
+    }
+
+	void Parse_ExtraLoadoutItemsClass(KeyValues *subkey2, int classname)
+	{
+		CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetString());
+		if (item_def != nullptr) {
+			CEconItemView *view = CEconItemView::Create();
+			view->Init(item_def->m_iItemDefIndex);
+			std::string name;
+			if (state.m_CustomWeapons.find(subkey2->GetString()) != state.m_CustomWeapons.end()) {
+				name = subkey2->GetString();
+			}
+			else {
+				name = GetItemName(item_def->m_iItemDefIndex);
+			}
+			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(subkey2->GetString(), view);
+			state.m_ExtraLoadoutItems.push_back({classname, GetSlotFromString(subkey2->GetName()), view, name});
+		}
+	}
+
+	void Parse_ExtraLoadoutItems(KeyValues *kv)
+	{
+		FOR_EACH_SUBKEY(kv, subkey) {
+			int classname = 0;
+			for(int i=1; i < 10; i++){
+				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
+					classname=i;
+					break;
+				}
+			}
+			
+			if (classname != 0) {
+				FOR_EACH_SUBKEY(subkey, subkey2) {
+					Parse_ExtraLoadoutItemsClass(subkey2, classname);
+				}
+			}
+			else {
+				Parse_ExtraLoadoutItemsClass(subkey, classname);
+			}
 		}
 	}
 
@@ -2625,7 +3607,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		FOR_EACH_SUBKEY(kv, subkey) {
 
 			const char *cname = subkey->GetName();
-			if (FStrEq(cname, "OnSpawnOutput") || FStrEq(cname, "OnParentKilledOutput")){
+			if (FStrEq(cname, "OnSpawnOutput") || FStrEq(cname, "OnParentKilledOutput") || FStrEq(cname, "OnAllKilledOutput")){
 				
 				//auto input = templ.onspawn_inputs.emplace(templ.onspawn_inputs.end());
 				std::string target;
@@ -2652,7 +3634,11 @@ namespace Mod::Pop::PopMgr_Extensions
 				
 				if (FStrEq(cname, "OnSpawnOutput"))
 					onspawn.insert({"ontrigger",trig});
-				else{
+				else if (FStrEq(cname, "OnParentKilledOutput")) {
+					templ.has_on_kill_parent_trigger = true;
+					templ.on_parent_kill_triggers.push_back(trig);
+				}
+				else if (FStrEq(cname, "OnAllKilledOutput")) {
 					templ.has_on_kill_trigger = true;
 					templ.on_kill_triggers.push_back(trig);
 				}
@@ -2664,6 +3650,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			else if (FStrEq(cname, "KeepAlive")){
 				templ.keep_alive = subkey->GetBool();
+			}
+			else if (FStrEq(cname, "RemoveIfKilled")){
+				templ.remove_if_killed = subkey->GetString();
 			}
 			else {
 				std::multimap<std::string,std::string> keyvalues;
@@ -2700,9 +3689,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			//entity_names.insert(onspawn.find("targetname")->second);
 		}
 		if (!templ.no_fixup) {
-			for (auto it = templ.on_kill_triggers.begin(); it != templ.on_kill_triggers.end(); ++it){
+			for (auto it = templ.on_parent_kill_triggers.begin(); it != templ.on_parent_kill_triggers.end(); ++it){
 				InsertFixupPattern(*it, entity_names);
 			}
+			InsertFixupPattern(templ.remove_if_killed, entity_names);
+			
 			for (auto it = templ.entities.begin(); it != templ.entities.end(); ++it){
 				for (auto it2 = it->begin(); it2 != it->end(); ++it2){
 					std::string str=it2->second;
@@ -3213,6 +4204,10 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_StealthDamageReduction.Set(subkey->GetFloat());
 				} else if (FStrEq(name, "AllowFlagCarrierToFight")) {
 					state.m_AllowFlagCarrierToFight.Set(subkey->GetBool());
+				} else if (FStrEq(name, "HealOnKillOverhealMelee")) {
+					state.m_HealOnKillOverhealMelee.Set(subkey->GetBool());
+				} else if (FStrEq(name, "MaxActiveSkeletons")) {
+					state.m_MaxActiveZombie.Set(subkey->GetInt());
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
@@ -3274,7 +4269,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				} else if (FStrEq(name, "ItemBlacklist")) {
 					Parse_ItemBlacklist(subkey);
 				} else if (FStrEq(name, "ItemAttributes")) {
-					Parse_ItemAttributes(subkey);
+					Parse_ItemAttributes(subkey, state.m_ItemAttributes);
 				} else if (FStrEq(name, "ClassLimit")) {
 					Parse_ClassBlacklist(subkey);
 			//	} else if (FStrEq(name, "DisallowedItems")) {
@@ -3326,6 +4321,20 @@ namespace Mod::Pop::PopMgr_Extensions
 					Parse_SpellBookRoll(subkey, state.m_SpellBookNormalRoll);
 				} else if (FStrEq(name, "SpellBookRareRoll")) {
 					Parse_SpellBookRoll(subkey, state.m_SpellBookRareRoll);
+				} else if (FStrEq(name, "DisallowUpgrade")) {
+					state.m_DisallowedUpgrades.push_back(subkey->GetString());
+				} else if (FStrEq(name, "Description")) {
+					state.m_Description.push_back(subkey->GetString());
+				} else if (FStrEq(name, "NoThrillerTaunt")) {
+					state.m_bNoThrillerTaunt = subkey->GetBool();
+				} else if (FStrEq(name, "NoCritPumpkin")) {
+					state.m_bNoCritPumpkin = subkey->GetBool();
+				} else if (FStrEq(name, "NoMissionInfo")) {
+					state.m_bNoMissionInfo = subkey->GetBool();
+				} else if (FStrEq(name, "ItemReplacement")) {
+					Parse_ItemReplacement(subkey);
+				} else if (FStrEq(name, "ExtraLoadoutItems")) {
+					Parse_ExtraLoadoutItems(subkey);
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -3474,7 +4483,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_EmitSound_static_emitsound,        "CBaseEntity::EmitSound [static: emitsound]");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_EmitSound_static_emitsound_handle, "CBaseEntity::EmitSound [static: emitsound + handle]");
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveDefaultItems,                    "CTFPlayer::GiveDefaultItems");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveNamedItem,                       "CTFPlayer::GiveNamedItem");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ManageRegularWeapons,                "CTFPlayer::ManageRegularWeapons");
+			MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot,              "CTFItemDefinition::GetLoadoutSlot");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetLoadoutItem,                      "CTFPlayer::GetLoadoutItem");
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_GetMaxReturnTime,                 "CCaptureFlag::GetMaxReturnTime");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
@@ -3522,13 +4533,24 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,        "CPopulationManager::JumpToWave");
 			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,        "CTFWearable::Equip");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
+			
+			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerClassShared_SetCustomModel,        "CTFPlayerClassShared::SetCustomModel");
 			MOD_ADD_DETOUR_STATIC(GetBotEscortCount,        "GetBotEscortCount");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn,          "CTFPlayer::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_RollNewSpell,              "CTFSpellBook::RollNewSpell");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_SetSelectedSpell,          "CTFSpellBook::SetSelectedSpell");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade,          "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,          "CTFPlayer::ClientCommand");
+			MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
 			
+			
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ModifyOrAppendCriteria, "CTFPlayer::ModifyOrAppendCriteria");
+			MOD_ADD_DETOUR_MEMBER(CTFAmmoPack_InitAmmoPack, "CTFAmmoPack::InitAmmoPack");
+			
+			MOD_ADD_DETOUR_STATIC(TF_IsHolidayActive, "TF_IsHolidayActive");
+
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
@@ -3555,6 +4577,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		virtual void OnEnable() override
 		{
 			usermsgs->HookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
+			LoadItemNames();
 		}
 
 		virtual void OnDisable() override
@@ -3703,6 +4726,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			received_message_tick = false;
+			received_mission_message_tick = false;
 		}
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;

@@ -1,0 +1,5 @@
+CEntityFactory<CTFHalloweenMinigame_FallingPlatforms>
+
++0x0000:  007c7680  CEntityFactory<CTFHalloweenMinigame_FallingPlatforms>::Create(char const*)
++0x0004:  007c62c0  CEntityFactory<CTFHalloweenMinigame_FallingPlatforms>::Destroy(IServerNetworkable*)
++0x0008:  007c62e0  CEntityFactory<CTFHalloweenMinigame_FallingPlatforms>::GetEntitySize()

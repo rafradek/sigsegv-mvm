@@ -1,0 +1,14 @@
+CRandomChoiceSpawner
+
++0x0000:  00d624d0  CRandomChoiceSpawner::~CRandomChoiceSpawner()
++0x0004:  00d625b0  CRandomChoiceSpawner::~CRandomChoiceSpawner()
++0x0008:  00d62f40  CRandomChoiceSpawner::Parse(KeyValues*)
++0x000c:  00d627d0  CRandomChoiceSpawner::Spawn(Vector const&, CUtlVector<CHandle<CBaseEntity>, CUtlMemory<CHandle<CBaseEntity>, int> >*)
++0x0010:  00d66c20  IPopulationSpawner::IsWhereRequired() const
++0x0014:  00d66c90  CRandomChoiceSpawner::IsVarious()
++0x0018:  00d62690  CRandomChoiceSpawner::GetClass(int)
++0x001c:  00d62cd0  CRandomChoiceSpawner::GetClassIcon(int)
++0x0020:  00d62b90  CRandomChoiceSpawner::GetHealth(int)
++0x0024:  00d62a50  CRandomChoiceSpawner::IsMiniBoss(int)
++0x0028:  00d628f0  CRandomChoiceSpawner::HasAttribute(CTFBot::AttributeType, int)
++0x002c:  00d61080  CRandomChoiceSpawner::HasEventChangeAttributes(char const*) const

@@ -1,0 +1,4 @@
+CPluginBotManager
+
++0x0000:  00b7e9d0  CPluginBotManager::GetBotController(edict_t*)
++0x0004:  00b7e870  CPluginBotManager::CreateBot(char const*)

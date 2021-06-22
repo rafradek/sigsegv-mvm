@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<thinkfunc_t, CUtlMemory<thinkfunc_t, int> >, 10>
+
++0x0000:  009e35b0  CUtlVectorDataOps<CUtlVector<thinkfunc_t, CUtlMemory<thinkfunc_t, int> >, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  009eb7f0  CUtlVectorDataOps<CUtlVector<thinkfunc_t, CUtlMemory<thinkfunc_t, int> >, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  009e3680  CUtlVectorDataOps<CUtlVector<thinkfunc_t, CUtlMemory<thinkfunc_t, int> >, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  009eb7d0  CUtlVectorDataOps<CUtlVector<thinkfunc_t, CUtlMemory<thinkfunc_t, int> >, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

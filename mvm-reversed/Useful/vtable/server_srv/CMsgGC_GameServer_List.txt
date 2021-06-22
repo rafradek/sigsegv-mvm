@@ -1,0 +1,22 @@
+CMsgGC_GameServer_List
+
++0x0000:  00579c70  CMsgGC_GameServer_List::~CMsgGC_GameServer_List()
++0x0004:  00579cb0  CMsgGC_GameServer_List::~CMsgGC_GameServer_List()
++0x0008:  00000000  
++0x000c:  005afd50  CMsgGC_GameServer_List::New() const
++0x0010:  005830c0  CMsgGC_GameServer_List::Clear()
++0x0014:  005758a0  CMsgGC_GameServer_List::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00598f90  CMsgGC_GameServer_List::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00589230  CMsgGC_GameServer_List::ByteSize() const
++0x0028:  0057c2b0  CMsgGC_GameServer_List::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00593770  CMsgGC_GameServer_List::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcb10  CMsgGC_GameServer_List::GetCachedSize() const
++0x0034:  00575850  CMsgGC_GameServer_List::CopyFrom(google::protobuf::Message const&)
++0x0038:  005aff00  CMsgGC_GameServer_List::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575840  CMsgGC_GameServer_List::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f860  CMsgGC_GameServer_List::GetMetadata() const

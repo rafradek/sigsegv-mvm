@@ -1,0 +1,8 @@
+CEconTool_KillStreakifier
+
++0x0000:  006ad9a0  CEconTool_KillStreakifier::~CEconTool_KillStreakifier()
++0x0004:  006ada20  CEconTool_KillStreakifier::~CEconTool_KillStreakifier()
++0x0008:  006ab8d0  CEconTool_KillStreakifier::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  0067c540  IEconTool::BFinishInitialization()

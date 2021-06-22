@@ -1,0 +1,22 @@
+CMsgAMGetUserGameStatsResponse_Achievement_Blocks
+
++0x0000:  005388d0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::~CMsgAMGetUserGameStatsResponse_Achievement_Blocks()
++0x0004:  00538910  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::~CMsgAMGetUserGameStatsResponse_Achievement_Blocks()
++0x0008:  00000000  
++0x000c:  005572e0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::New() const
++0x0010:  0053c9b0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::Clear()
++0x0014:  00535480  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0054ccd0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00541620  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::ByteSize() const
++0x0028:  0053c0e0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00548120  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572950  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::GetCachedSize() const
++0x0034:  00535430  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::CopyFrom(google::protobuf::Message const&)
++0x0038:  005579f0  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00535420  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545790  CMsgAMGetUserGameStatsResponse_Achievement_Blocks::GetMetadata() const

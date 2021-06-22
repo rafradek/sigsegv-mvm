@@ -1,0 +1,6 @@
+CEconTool_ItemDynamicRecipe::CDynamicRecipeComponentLootList
+
++0x0000:  006ac240  CEconTool_ItemDynamicRecipe::CDynamicRecipeComponentLootList::~CDynamicRecipeComponentLootList()
++0x0004:  006ac260  CEconTool_ItemDynamicRecipe::CDynamicRecipeComponentLootList::~CDynamicRecipeComponentLootList()
++0x0008:  006ad150  CEconTool_ItemDynamicRecipe::CDynamicRecipeComponentLootList::ParseKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  006aac50  CEconTool_ItemDynamicRecipe::CDynamicRecipeComponentLootList::BFinishInitialization_Internal(CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*, CUtlVector<CEconItemAttributeDefinition const*, CUtlMemory<CEconItemAttributeDefinition const*, int> >*)

@@ -1,0 +1,4 @@
+ITFPumpkinBomb
+
++0x0000:  00806490  ITFPumpkinBomb::~ITFPumpkinBomb()
++0x0004:  00806500  ITFPumpkinBomb::~ITFPumpkinBomb()

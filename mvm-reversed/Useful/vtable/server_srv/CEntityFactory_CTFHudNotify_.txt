@@ -1,0 +1,5 @@
+CEntityFactory<CTFHudNotify>
+
++0x0000:  00cb8020  CEntityFactory<CTFHudNotify>::Create(char const*)
++0x0004:  00cb7fd0  CEntityFactory<CTFHudNotify>::Destroy(IServerNetworkable*)
++0x0008:  00cb7ff0  CEntityFactory<CTFHudNotify>::GetEntitySize()

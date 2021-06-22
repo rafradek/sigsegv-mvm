@@ -1,0 +1,7 @@
+CEntityDataInstantiator<vphysicsupdateai_t>
+
++0x0000:  006e6a50  CEntityDataInstantiator<vphysicsupdateai_t>::~CEntityDataInstantiator()
++0x0004:  006e6ad0  CEntityDataInstantiator<vphysicsupdateai_t>::~CEntityDataInstantiator()
++0x0008:  006e4310  CEntityDataInstantiator<vphysicsupdateai_t>::GetDataObject(CBaseEntity const*)
++0x000c:  006eaaf0  CEntityDataInstantiator<vphysicsupdateai_t>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e4200  CEntityDataInstantiator<vphysicsupdateai_t>::DestroyDataObject(CBaseEntity const*)

@@ -1,0 +1,5 @@
+CEntityFactory<CTFBat_Giftwrap>
+
++0x0000:  0084b0b0  CEntityFactory<CTFBat_Giftwrap>::Create(char const*)
++0x0004:  0084ae10  CEntityFactory<CTFBat_Giftwrap>::Destroy(IServerNetworkable*)
++0x0008:  0084ae30  CEntityFactory<CTFBat_Giftwrap>::GetEntitySize()

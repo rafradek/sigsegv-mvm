@@ -1,0 +1,5 @@
+CMemoryFileBacking
+
++0x0000:  0001ee50  CMemoryFileBacking::~CMemoryFileBacking()
++0x0004:  0001eea0  CMemoryFileBacking::~CMemoryFileBacking()
++0x0008:  0001c030  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

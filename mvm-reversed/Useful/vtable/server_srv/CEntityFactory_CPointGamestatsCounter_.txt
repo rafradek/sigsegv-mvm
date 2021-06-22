@@ -1,0 +1,5 @@
+CEntityFactory<CPointGamestatsCounter>
+
++0x0000:  006cd250  CEntityFactory<CPointGamestatsCounter>::Create(char const*)
++0x0004:  006cd0f0  CEntityFactory<CPointGamestatsCounter>::Destroy(IServerNetworkable*)
++0x0008:  006cd110  CEntityFactory<CPointGamestatsCounter>::GetEntitySize()

@@ -1,0 +1,14 @@
+CSaveRestoreBlockSet
+
++0x0000:  0070b960  CSaveRestoreBlockSet::GetBlockName()
++0x0004:  0070c9c0  CSaveRestoreBlockSet::PreSave(CSaveRestoreData*)
++0x0008:  0070b970  CSaveRestoreBlockSet::Save(ISave*)
++0x000c:  0070c740  CSaveRestoreBlockSet::WriteSaveHeaders(ISave*)
++0x0010:  0070c0a0  CSaveRestoreBlockSet::PostSave()
++0x0014:  0070ba00  CSaveRestoreBlockSet::PreRestore()
++0x0018:  0070bd30  CSaveRestoreBlockSet::ReadRestoreHeaders(IRestore*)
++0x001c:  0070ba40  CSaveRestoreBlockSet::Restore(IRestore*, bool)
++0x0020:  0070c050  CSaveRestoreBlockSet::PostRestore()
++0x0024:  0070c4a0  CSaveRestoreBlockSet::AddBlockHandler(ISaveRestoreBlockHandler*)
++0x0028:  0070bcb0  CSaveRestoreBlockSet::RemoveBlockHandler(ISaveRestoreBlockHandler*)
++0x002c:  0070bbf0  CSaveRestoreBlockSet::CallBlockHandlerRestore(ISaveRestoreBlockHandler*, int, IRestore*, bool)

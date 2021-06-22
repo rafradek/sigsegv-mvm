@@ -1,0 +1,10 @@
+CDedicatedAppSystemGroup
+
++0x0000:  000933f0  CDedicatedAppSystemGroup::Create()
++0x0004:  000934c0  CDedicatedAppSystemGroup::PreInit()
++0x0008:  00093250  CDedicatedAppSystemGroup::Main()
++0x000c:  00093480  CDedicatedAppSystemGroup::PostShutdown()
++0x0010:  000931b0  CDedicatedAppSystemGroup::Destroy()
++0x0014:  000b2600  CAppSystemGroup::Startup()
++0x0018:  000b2800  CAppSystemGroup::Shutdown()
++0x001c:  000b1e70  CSteamAppSystemGroup::LoadModuleDLL(char const*)

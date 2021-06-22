@@ -1,0 +1,5 @@
+CEntityFactory<CTFKatana>
+
++0x0000:  0088def0  CEntityFactory<CTFKatana>::Create(char const*)
++0x0004:  0088dd30  CEntityFactory<CTFKatana>::Destroy(IServerNetworkable*)
++0x0008:  0088dd50  CEntityFactory<CTFKatana>::GetEntitySize()

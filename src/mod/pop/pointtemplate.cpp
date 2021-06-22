@@ -13,6 +13,7 @@ int Template_Increment;
 #define TEMPLATE_BRUSH_MODEL "models/weapons/w_models/w_rocket.mdl"
 
 
+std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> g_entityToTemplate;
 
 void FixupKeyvalue(std::string &val,int id, const char *parentname) {
 	int amperpos = 0;
@@ -40,14 +41,14 @@ void SpawnEntity(CBaseEntity *entity) {
 	//lifetime.SetValue(30.0f);
 }
 
-PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
+std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
 
 	Template_Increment +=1;
-	if (Template_Increment > 99999)
+	if (Template_Increment > 999999)
 		Template_Increment = 0;
 
 	
-	auto templ_inst = new PointTemplateInstance();
+	auto templ_inst = std::make_shared<PointTemplateInstance>();
 	g_templateInstances.push_back(templ_inst);
 	templ_inst->templ = this;
 	templ_inst->parent = parent;
@@ -115,7 +116,9 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 
 			auto itname = keys.find("targetname");
 			if (itname != keys.end()){
-				
+				if (this->remove_if_killed != "" && itname->second == this->remove_if_killed) {
+					g_entityToTemplate[entity] = templ_inst;
+				}
 				spawned[itname->second]=entity;
 			}
 			
@@ -192,7 +195,7 @@ PointTemplateInstance *PointTemplate::SpawnTemplate(CBaseEntity *parent, const V
 	return templ_inst;
 }
 
-PointTemplateInstance *PointTemplateInfo::SpawnTemplate(CBaseEntity *parent, bool autoparent){
+std::shared_ptr<PointTemplateInstance> PointTemplateInfo::SpawnTemplate(CBaseEntity *parent, bool autoparent){
 	if (templ == nullptr && template_name.size() > 0)
 		templ = FindPointTemplate(template_name);
 	//DevMsg("Is templ null %d\n",templ == nullptr);
@@ -216,7 +219,7 @@ bool ShootTemplateData::Shoot(CTFPlayer *player, CTFWeaponBase *weapon) {
 	
 	angForward += this->angles;
 
-	PointTemplateInstance *inst = this->templ->SpawnTemplate(player, vecSrc, angForward, false, nullptr);
+	auto inst = this->templ->SpawnTemplate(player, vecSrc, angForward, false, nullptr);
 	for (auto entity : inst->entities) {
 		Vector vForward,vRight,vUp;
 		QAngle angSpawnDir( angForward );
@@ -244,7 +247,6 @@ bool ShootTemplateData::Shoot(CTFPlayer *player, CTFWeaponBase *weapon) {
 }
 
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
-	DevMsg("Parse SpawnTemplate Pre\n");
 	PointTemplateInfo info;
 	bool hasname = false;
 	
@@ -267,14 +269,21 @@ PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
 			info.attachment = subkey->GetString();
 		}
 	}
-	if (!hasname){
+	if (!hasname && kv->GetString() != nullptr) {
 		info.template_name = kv->GetString();
+	}
+
+	if (info.template_name == "") {
+		Warning("Parse_SpawnTemplate: missing template name\n");
 	}
 
 	//To lowercase
 	info.templ = FindPointTemplate(info.template_name);
 
-	DevMsg("Parse SpawnTemplate Post %d\n",info.templ == nullptr);
+	if (info.templ == nullptr) {
+		Warning("Parse_SpawnTemplate: template (%s) does not exist\n", info.template_name.c_str());
+	}
+
 	return info;
 }
 
@@ -326,6 +335,30 @@ PointTemplate *FindPointTemplate(std::string &str) {
 	return nullptr;
 }
 
+void TriggerList(CBaseEntity *activator, std::vector<std::string> &triggers, PointTemplateInstance *inst)
+{
+	CBaseEntity *trigger = CreateEntityByName("logic_relay");
+	variant_t variant1;
+	variant1.SetString(NULL_STRING);
+
+	for(auto it = triggers.begin(); it != triggers.end(); it++){
+		std::string val = *(it); 
+		if (!inst->templ->no_fixup)
+			FixupKeyvalue(val,inst->id,"");
+		trigger->KeyValue("ontrigger",val.c_str());
+
+	}
+
+	trigger->KeyValue("spawnflags", "2");
+	servertools->DispatchSpawn(trigger);
+	trigger->Activate();
+	if (activator != nullptr && activator->IsPlayer())
+		trigger->AcceptInput("trigger", activator, activator ,variant1,-1);
+	else
+		trigger->AcceptInput("trigger", UTIL_EntityByIndex(0),UTIL_EntityByIndex(0),variant1,-1);
+	servertools->RemoveEntity(trigger);
+}
+
 void PointTemplateInstance::OnKilledParent(bool cleared) {
 
 	if (this->templ == nullptr || this->mark_delete) {
@@ -334,28 +367,8 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 		return;
 	}
 
-	if (!cleared && this->templ->has_on_kill_trigger) {
-
-		CBaseEntity *trigger = CreateEntityByName("logic_relay");
-		variant_t variant1;
-		variant1.SetString(NULL_STRING);
-
-		for(auto it = this->templ->on_kill_triggers.begin(); it != this->templ->on_kill_triggers.end(); it++){
-			std::string val = *(it); 
-			if (!this->templ->no_fixup)
-				FixupKeyvalue(val,this->id,"");
-			trigger->KeyValue("ontrigger",val.c_str());
-
-		}
-
-		trigger->KeyValue("spawnflags", "2");
-		servertools->DispatchSpawn(trigger);
-		trigger->Activate();
-		if (this->parent != nullptr && this->parent->IsPlayer())
-			trigger->AcceptInput("trigger", this->parent, this->parent ,variant1,-1);
-		else
-			trigger->AcceptInput("trigger", UTIL_EntityByIndex(0),UTIL_EntityByIndex(0),variant1,-1);
-		servertools->RemoveEntity(trigger);
+	if (!cleared && this->templ->has_on_kill_parent_trigger) {
+		TriggerList(this->parent, this->templ->on_parent_kill_triggers, this);
 	}
 
 	for(auto it = this->entities.begin(); it != this->entities.end(); it++){
@@ -384,10 +397,16 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 		}
 	}
 
+	this->mark_delete = !this->templ->keep_alive || cleared;
+	
+	if (this->mark_delete && on_kill_callback != nullptr) {
+		(*on_kill_callback)(this);
+	}
+	
 	this->parent = nullptr;
 	this->has_parent = false;
-	this->mark_delete = !this->templ->keep_alive || cleared;
 }
+
 std::unordered_map<std::string, PointTemplate> &Point_Templates()
 {
 	static std::unordered_map<std::string, PointTemplate> templ;
@@ -402,15 +421,13 @@ std::unordered_multimap<std::string, CHandle<CBaseEntity>> &Teleport_Destination
 
 std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
 std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
-std::vector<PointTemplateInstance *> g_templateInstances;
+std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 
 void Clear_Point_Templates()
 {
 	for(auto it = g_templateInstances.begin(); it != g_templateInstances.end(); it++){
 		auto inst = *(it);
 		inst->OnKilledParent(true);
-		delete inst;
-		inst = nullptr;
 	}
 	g_templateInstances.clear();
 	Point_Templates().clear();
@@ -427,10 +444,10 @@ void Update_Point_Templates()
 	for(auto it = g_templateInstances.begin(); it != g_templateInstances.end(); it++){
 		auto inst = *(it);
 		if (!inst->mark_delete) {
-			if (inst->has_parent && (inst->parent == nullptr || inst->parent->IsMarkedForDeletion() || !(inst->parent->IsAlive() && !inst->ignore_parent_alive_state) )) {
+			if (inst->has_parent && (inst->parent == nullptr || inst->parent->IsMarkedForDeletion() || !(inst->parent->IsAlive() || inst->ignore_parent_alive_state) )) {
 				inst->OnKilledParent(false);
 			}
-			if (!inst->has_parent && !inst->is_wave_spawned) {
+			if (!inst->all_entities_killed) {
 				bool hasalive = false;
 				for(auto it = inst->entities.begin(); it != inst->entities.end(); it++){
 					CHandle<CBaseEntity> &ent = *(it);
@@ -441,15 +458,17 @@ void Update_Point_Templates()
 				}
 				if (!hasalive)
 				{
-					inst->OnKilledParent(true);
+					inst->all_entities_killed = true;
+					TriggerList(inst->parent, inst->templ->on_kill_triggers, inst.get());
 				}
+			}
+			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && inst->templ->has_on_kill_parent_trigger)) {
+				inst->OnKilledParent(true);
 			}
 		}
 		if (inst->mark_delete) {
 			g_templateInstances.erase(it);
-			delete inst;
 			it--;
-			inst = nullptr;
 			continue;
 		}
 
@@ -496,7 +515,6 @@ void Update_Point_Templates()
 
 StaticFuncThunk<void> ft_PrecachePointTemplates("PrecachePointTemplates");
 MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   CEventQueue::ft_AddEvent("CEventQueue::AddEvent");
-StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *> CTFBotMvMEngineerHintFinder::ft_FindHint("CTFBotMvMEngineerHintFinder::FindHint");
 StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
 
 StaticFuncThunk<void, IRecipientFilter&,
@@ -544,6 +562,18 @@ namespace Mod::Pop::PointTemplate
 
 			for (auto childToRemove : childrenToRemove) {
 				childToRemove->SetParent(nullptr, -1);
+			}
+		}
+		if (!g_entityToTemplate.empty())
+		{
+			auto it = g_entityToTemplate.find(entity);
+			if (it != g_entityToTemplate.end()) {
+				auto inst = it->second;
+				for (auto entityinst : inst->entities) {
+					if (entityinst != nullptr && entityinst != entity)
+						entityinst->Remove();
+				}
+				g_entityToTemplate.erase(it);
 			}
 		}
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();

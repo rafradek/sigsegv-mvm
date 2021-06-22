@@ -1,0 +1,24 @@
+CChangeLevelIssue
+
++0x0000:  005f5d80  CChangeLevelIssue::~CChangeLevelIssue()
++0x0004:  005f6140  CChangeLevelIssue::~CChangeLevelIssue()
++0x0008:  005f5be0  CBaseIssue::GetTypeStringLocalized()
++0x000c:  005f29f0  CChangeLevelIssue::GetDetailsString()
++0x0010:  005fbe00  CBaseIssue::SetIssueDetails(char const*)
++0x0014:  005fd5c0  CBaseIssue::OnVoteFailed(int)
++0x0018:  005f5bf0  CBaseIssue::OnVoteStarted()
++0x001c:  005f3950  CChangeLevelIssue::IsEnabled()
++0x0020:  005f29c0  CChangeLevelIssue::CanTeamCallVote(int) const
++0x0024:  005f3810  CChangeLevelIssue::CanCallVote(int, char const*, vote_create_failed_t&, int&)
++0x0028:  005f5c40  CChangeLevelIssue::IsTeamRestrictedVote()
++0x002c:  005f29d0  CChangeLevelIssue::GetDisplayString()
++0x0030:  005f5890  CChangeLevelIssue::ExecuteCommand()
++0x0034:  005f31f0  CChangeLevelIssue::ListIssueDetails(CBasePlayer*)
++0x0038:  005f29e0  CChangeLevelIssue::GetVotePassedString()
++0x003c:  005fce00  CBaseIssue::CountPotentialVoters()
++0x0040:  005fbda0  CBaseIssue::GetNumberVoteOptions()
++0x0044:  005f2a00  CChangeLevelIssue::IsYesNoVote()
++0x0048:  005fbdc0  CBaseIssue::SetYesNoVoteCount(int, int, int)
++0x004c:  005fd6d0  CBaseIssue::GetVoteOptions(CUtlVector<char const*, CUtlMemory<char const*, int> >&)
++0x0050:  005f5c10  CBaseIssue::BRecordVoteFailureEventForEntity(int) const
++0x0054:  005fbdf0  CBaseIssue::GetQuorumRatio()

@@ -1,0 +1,6 @@
+CWheelOfDoom::WOD_LowGravityEffect
+
++0x0000:  00895d70  CWheelOfDoom::WOD_BaseEffect::InitEffect(float)
++0x0004:  00895fc0  CWheelOfDoom::WOD_LowGravityEffect::ActivateEffect(CWheelOfDoom::EffectData_t&)
++0x0008:  00899d00  CWheelOfDoom::WOD_BaseEffect::UpdateEffect(CWheelOfDoom::EffectData_t&)
++0x000c:  008962a0  CWheelOfDoom::WOD_LowGravityEffect::DeactivateEffect(CWheelOfDoom::EffectData_t&)

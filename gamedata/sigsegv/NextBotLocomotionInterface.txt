@@ -65,6 +65,36 @@
 					type "sym"
 					sym  "_ZNK23NextBotGroundLocomotion15GetGroundNormalEv"
 				}
+				"CZombieLocomotion::GetRunSpeed"
+				{
+					type "sym"
+					sym  "_ZNK17CZombieLocomotion11GetRunSpeedEv"
+				}
+				"CHeadlessHatmanLocomotion::GetRunSpeed"
+				{
+					type "sym"
+					sym  "_ZNK25CHeadlessHatmanLocomotion11GetRunSpeedEv"
+				}
+				"CMerasmusLocomotion::GetRunSpeed"
+				{
+					type "sym"
+					sym  "_ZNK19CMerasmusLocomotion11GetRunSpeedEv"
+				}
+				"CEyeballBossLocomotion::Approach"
+				{
+					type "sym"
+					sym  "_ZN22CEyeballBossLocomotion8ApproachERK6Vectorf"
+				}
+				"NextBotGroundLocomotion::GetMaxAcceleration"
+				{
+					type "sym"
+					sym  "_ZNK23NextBotGroundLocomotion18GetMaxAccelerationEv"
+				}
+				"NextBotGroundLocomotion::GetMaxDeceleration"
+				{
+					type "sym"
+					sym  "_ZNK23NextBotGroundLocomotion18GetMaxDecelerationEv"
+				}
 				
 			}
 		}

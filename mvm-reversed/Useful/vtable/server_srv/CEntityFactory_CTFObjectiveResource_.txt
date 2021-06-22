@@ -1,0 +1,5 @@
+CEntityFactory<CTFObjectiveResource>
+
++0x0000:  00da1a40  CEntityFactory<CTFObjectiveResource>::Create(char const*)
++0x0004:  00da1a10  CEntityFactory<CTFObjectiveResource>::Destroy(IServerNetworkable*)
++0x0008:  00da1a30  CEntityFactory<CTFObjectiveResource>::GetEntitySize()

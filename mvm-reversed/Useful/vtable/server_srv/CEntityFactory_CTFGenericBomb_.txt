@@ -1,0 +1,5 @@
+CEntityFactory<CTFGenericBomb>
+
++0x0000:  007ad990  CEntityFactory<CTFGenericBomb>::Create(char const*)
++0x0004:  007ad520  CEntityFactory<CTFGenericBomb>::Destroy(IServerNetworkable*)
++0x0008:  007ad540  CEntityFactory<CTFGenericBomb>::GetEntitySize()

@@ -1,0 +1,4 @@
+CCopyableUtlVector<MvMTourMission_t, CUtlMemory<MvMTourMission_t, int> >
+
++0x0000:  006aa590  CCopyableUtlVector<MvMTourMission_t, CUtlMemory<MvMTourMission_t, int> >::~CCopyableUtlVector()
++0x0004:  006aa5d0  CCopyableUtlVector<MvMTourMission_t, CUtlMemory<MvMTourMission_t, int> >::~CCopyableUtlVector()

@@ -1,0 +1,5 @@
+CEntityFactory<CTFRocketLauncher>
+
++0x0000:  00883300  CEntityFactory<CTFRocketLauncher>::Create(char const*)
++0x0004:  008830a0  CEntityFactory<CTFRocketLauncher>::Destroy(IServerNetworkable*)
++0x0008:  008830c0  CEntityFactory<CTFRocketLauncher>::GetEntitySize()

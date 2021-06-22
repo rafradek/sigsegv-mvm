@@ -1,0 +1,10 @@
+IServerGameEnts
+
++0x0000:  00a78040  IServerGameEnts::~IServerGameEnts()
++0x0004:  00a78110  IServerGameEnts::~IServerGameEnts()
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  00000000  
++0x0018:  00000000  
++0x001c:  00000000  

@@ -1,0 +1,3 @@
+CUtlCStringConversion
+
++0x0000:  000a3c80  CUtlCStringConversion::FindConversion(char const*, int*)

@@ -1,0 +1,4 @@
+CMaterialProxyFactory
+
++0x0000:  00144410  CMaterialProxyFactory::CreateProxy(char const*)
++0x0004:  00144420  CMaterialProxyFactory::DeleteProxy(IMaterialProxy*)

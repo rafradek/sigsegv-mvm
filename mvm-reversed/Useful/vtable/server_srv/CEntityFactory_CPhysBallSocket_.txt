@@ -1,0 +1,5 @@
+CEntityFactory<CPhysBallSocket>
+
++0x0000:  00b30580  CEntityFactory<CPhysBallSocket>::Create(char const*)
++0x0004:  00b2f060  CEntityFactory<CPhysBallSocket>::Destroy(IServerNetworkable*)
++0x0008:  00b2f080  CEntityFactory<CPhysBallSocket>::GetEntitySize()

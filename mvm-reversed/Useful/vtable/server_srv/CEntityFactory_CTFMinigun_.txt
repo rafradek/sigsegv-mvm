@@ -1,0 +1,5 @@
+CEntityFactory<CTFMinigun>
+
++0x0000:  008752b0  CEntityFactory<CTFMinigun>::Create(char const*)
++0x0004:  00875280  CEntityFactory<CTFMinigun>::Destroy(IServerNetworkable*)
++0x0008:  008752a0  CEntityFactory<CTFMinigun>::GetEntitySize()

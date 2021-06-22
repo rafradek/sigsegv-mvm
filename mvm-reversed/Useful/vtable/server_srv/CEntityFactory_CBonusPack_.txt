@@ -1,0 +1,5 @@
+CEntityFactory<CBonusPack>
+
++0x0000:  007349e0  CEntityFactory<CBonusPack>::Create(char const*)
++0x0004:  00734660  CEntityFactory<CBonusPack>::Destroy(IServerNetworkable*)
++0x0008:  00734680  CEntityFactory<CBonusPack>::GetEntitySize()

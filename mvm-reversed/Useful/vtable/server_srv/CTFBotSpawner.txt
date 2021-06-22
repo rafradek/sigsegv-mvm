@@ -1,0 +1,14 @@
+CTFBotSpawner
+
++0x0000:  00d67560  CTFBotSpawner::~CTFBotSpawner()
++0x0004:  00d67860  CTFBotSpawner::~CTFBotSpawner()
++0x0008:  00d64340  CTFBotSpawner::Parse(KeyValues*)
++0x000c:  00d647d0  CTFBotSpawner::Spawn(Vector const&, CUtlVector<CHandle<CBaseEntity>, CUtlMemory<CHandle<CBaseEntity>, int> >*)
++0x0010:  00d66c20  IPopulationSpawner::IsWhereRequired() const
++0x0014:  00d66c30  IPopulationSpawner::IsVarious()
++0x0018:  00d610d0  CTFBotSpawner::GetClass(int)
++0x001c:  00d61390  CTFBotSpawner::GetClassIcon(int)
++0x0020:  00d610e0  CTFBotSpawner::GetHealth(int)
++0x0024:  00d610f0  CTFBotSpawner::IsMiniBoss(int)
++0x0028:  00d61100  CTFBotSpawner::HasAttribute(CTFBot::AttributeType, int)
++0x002c:  00d61310  CTFBotSpawner::HasEventChangeAttributes(char const*) const

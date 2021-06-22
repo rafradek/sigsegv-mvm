@@ -1,0 +1,22 @@
+CMsgGCBannedWordListRequest
+
++0x0000:  004de210  CMsgGCBannedWordListRequest::~CMsgGCBannedWordListRequest()
++0x0004:  004de250  CMsgGCBannedWordListRequest::~CMsgGCBannedWordListRequest()
++0x0008:  00000000  
++0x000c:  005105c0  CMsgGCBannedWordListRequest::New() const
++0x0010:  004e4910  CMsgGCBannedWordListRequest::Clear()
++0x0014:  004dc010  CMsgGCBannedWordListRequest::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f3b40  CMsgGCBannedWordListRequest::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e7950  CMsgGCBannedWordListRequest::ByteSize() const
++0x0028:  004de930  CMsgGCBannedWordListRequest::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004ef050  CMsgGCBannedWordListRequest::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520b20  CMsgGCBannedWordListRequest::GetCachedSize() const
++0x0034:  004dbfc0  CMsgGCBannedWordListRequest::CopyFrom(google::protobuf::Message const&)
++0x0038:  00510780  CMsgGCBannedWordListRequest::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dbfb0  CMsgGCBannedWordListRequest::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed450  CMsgGCBannedWordListRequest::GetMetadata() const

@@ -1,0 +1,11 @@
+CAI_SaveRestoreBlockHandler
+
++0x0000:  00997b90  CAI_SaveRestoreBlockHandler::GetBlockName()
++0x0004:  0060e770  CDefSaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  00997c20  CAI_SaveRestoreBlockHandler::Save(ISave*)
++0x000c:  00997ba0  CAI_SaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  0060e7a0  CDefSaveRestoreBlockHandler::PostSave()
++0x0014:  0060e7b0  CDefSaveRestoreBlockHandler::PreRestore()
++0x0018:  00997bd0  CAI_SaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  00997dc0  CAI_SaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  00997c10  CAI_SaveRestoreBlockHandler::PostRestore()

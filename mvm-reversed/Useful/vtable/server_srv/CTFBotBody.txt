@@ -1,0 +1,86 @@
+CTFBotBody
+
++0x0000:  00c914b0  CTFBotBody::~CTFBotBody()
++0x0004:  00c914d0  CTFBotBody::~CTFBotBody()
++0x0008:  005e7c50  INextBotEventResponder::FirstContainedResponder() const
++0x000c:  005e7c60  INextBotEventResponder::NextContainedResponder(INextBotEventResponder*) const
++0x0010:  005e7c70  INextBotEventResponder::OnLeaveGround(CBaseEntity*)
++0x0014:  005e7cc0  INextBotEventResponder::OnLandOnGround(CBaseEntity*)
++0x0018:  005e7d10  INextBotEventResponder::OnContact(CBaseEntity*, CGameTrace*)
++0x001c:  005e7d60  INextBotEventResponder::OnMoveToSuccess(Path const*)
++0x0020:  005e7db0  INextBotEventResponder::OnMoveToFailure(Path const*, MoveToFailureType)
++0x0024:  005e7e00  INextBotEventResponder::OnStuck()
++0x0028:  005e7e50  INextBotEventResponder::OnUnStuck()
++0x002c:  005e7ea0  INextBotEventResponder::OnPostureChanged()
++0x0030:  005e7ef0  INextBotEventResponder::OnAnimationActivityComplete(int)
++0x0034:  005e7f40  INextBotEventResponder::OnAnimationActivityInterrupted(int)
++0x0038:  005e7f90  INextBotEventResponder::OnAnimationEvent(animevent_t*)
++0x003c:  005e7fe0  INextBotEventResponder::OnIgnite()
++0x0040:  005e8030  INextBotEventResponder::OnInjured(CTakeDamageInfo const&)
++0x0044:  005e8080  INextBotEventResponder::OnKilled(CTakeDamageInfo const&)
++0x0048:  005e80d0  INextBotEventResponder::OnOtherKilled(CBaseCombatCharacter*, CTakeDamageInfo const&)
++0x004c:  005e8120  INextBotEventResponder::OnSight(CBaseEntity*)
++0x0050:  005e8170  INextBotEventResponder::OnLostSight(CBaseEntity*)
++0x0054:  005e81c0  INextBotEventResponder::OnSound(CBaseEntity*, Vector const&, KeyValues*)
++0x0058:  005e8220  INextBotEventResponder::OnSpokeConcept(CBaseCombatCharacter*, char const*, AI_Response*)
++0x005c:  005e8280  INextBotEventResponder::OnWeaponFired(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0060:  005e82d0  INextBotEventResponder::OnNavAreaChanged(CNavArea*, CNavArea*)
++0x0064:  005e8320  INextBotEventResponder::OnModelChanged()
++0x0068:  005e8370  INextBotEventResponder::OnPickUp(CBaseEntity*, CBaseCombatCharacter*)
++0x006c:  005e83c0  INextBotEventResponder::OnDrop(CBaseEntity*)
++0x0070:  005e8410  INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter*, int)
++0x0074:  005e8500  INextBotEventResponder::OnCommandAttack(CBaseEntity*)
++0x0078:  005e8550  INextBotEventResponder::OnCommandApproach(Vector const&, float)
++0x007c:  005e85a0  INextBotEventResponder::OnCommandApproach(CBaseEntity*)
++0x0080:  005e85f0  INextBotEventResponder::OnCommandRetreat(CBaseEntity*, float)
++0x0084:  005e8650  INextBotEventResponder::OnCommandPause(float)
++0x0088:  005e86a0  INextBotEventResponder::OnCommandResume()
++0x008c:  005e86f0  INextBotEventResponder::OnCommandString(char const*)
++0x0090:  005e8460  INextBotEventResponder::OnShoved(CBaseEntity*)
++0x0094:  005e84b0  INextBotEventResponder::OnBlinded(CBaseEntity*)
++0x0098:  005e8740  INextBotEventResponder::OnTerritoryContested(int)
++0x009c:  005e8790  INextBotEventResponder::OnTerritoryCaptured(int)
++0x00a0:  005e87e0  INextBotEventResponder::OnTerritoryLost(int)
++0x00a4:  005e8830  INextBotEventResponder::OnWin()
++0x00a8:  005e8880  INextBotEventResponder::OnLose()
++0x00ac:  00b0e950  PlayerBody::Reset()
++0x00b0:  00af1d30  IBody::Update()
++0x00b4:  00b0f980  PlayerBody::Upkeep()
++0x00b8:  005e8910  INextBotComponent::GetBot() const
++0x00bc:  00b0f780  PlayerBody::SetPosition(Vector const&)
++0x00c0:  00b0ea20  PlayerBody::GetEyePosition() const
++0x00c4:  00b0f740  PlayerBody::GetViewVector() const
++0x00c8:  00b0f2b0  PlayerBody::AimHeadTowards(Vector const&, IBody::LookAtPriorityType, float, INextBotReply*, char const*)
++0x00cc:  00b0ee70  PlayerBody::AimHeadTowards(CBaseEntity*, IBody::LookAtPriorityType, float, INextBotReply*, char const*)
++0x00d0:  00b108f0  PlayerBody::IsHeadAimingOnTarget() const
++0x00d4:  00b0ea70  PlayerBody::IsHeadSteady() const
++0x00d8:  00b0f930  PlayerBody::GetHeadSteadyDuration() const
++0x00dc:  00af1d90  IBody::GetHeadAimSubjectLeadTime() const
++0x00e0:  00c91420  CTFBotBody::GetHeadAimTrackingInterval() const
++0x00e4:  00b0ea90  PlayerBody::ClearPendingAimReply()
++0x00e8:  00b0eab0  PlayerBody::GetMaxHeadAngularVelocity() const
++0x00ec:  00b0eac0  PlayerBody::StartActivity(Activity, unsigned int)
++0x00f0:  00af1dd0  IBody::SelectAnimationSequence(Activity) const
++0x00f4:  00b0ead0  PlayerBody::GetActivity() const
++0x00f8:  00b0eae0  PlayerBody::IsActivity(Activity) const
++0x00fc:  00b0eaf0  PlayerBody::HasActivityType(unsigned int) const
++0x0100:  00b0eb00  PlayerBody::SetDesiredPosture(IBody::PostureType)
++0x0104:  00b0eb10  PlayerBody::GetDesiredPosture() const
++0x0108:  00b0eb20  PlayerBody::IsDesiredPosture(IBody::PostureType) const
++0x010c:  00b0eb40  PlayerBody::IsInDesiredPosture() const
++0x0110:  00b0eb50  PlayerBody::GetActualPosture() const
++0x0114:  00b0eb60  PlayerBody::IsActualPosture(IBody::PostureType) const
++0x0118:  00b0eb80  PlayerBody::IsPostureMobile() const
++0x011c:  00b0eb90  PlayerBody::IsPostureChanging() const
++0x0120:  00b0eba0  PlayerBody::SetArousal(IBody::ArousalType)
++0x0124:  00b0ebb0  PlayerBody::GetArousal() const
++0x0128:  00b0ebc0  PlayerBody::IsArousal(IBody::ArousalType) const
++0x012c:  00b0ebe0  PlayerBody::GetHullWidth() const
++0x0130:  00b0f8d0  PlayerBody::GetHullHeight() const
++0x0134:  00b0ec60  PlayerBody::GetStandHullHeight() const
++0x0138:  00b0ece0  PlayerBody::GetCrouchHullHeight() const
++0x013c:  00b0ed30  PlayerBody::GetHullMins() const
++0x0140:  00b0eda0  PlayerBody::GetHullMaxs() const
++0x0144:  00b0f900  PlayerBody::GetSolidMask() const
++0x0148:  00af1ee0  IBody::GetCollisionGroup() const
++0x014c:  00b0ea60  PlayerBody::GetEntity()

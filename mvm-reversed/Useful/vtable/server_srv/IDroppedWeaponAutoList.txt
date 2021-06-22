@@ -1,0 +1,4 @@
+IDroppedWeaponAutoList
+
++0x0000:  007589c0  IDroppedWeaponAutoList::~IDroppedWeaponAutoList()
++0x0004:  00758a30  IDroppedWeaponAutoList::~IDroppedWeaponAutoList()

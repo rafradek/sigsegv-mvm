@@ -1,0 +1,5 @@
+CEntityFactory<CCaptureFlagReturnIcon>
+
++0x0000:  0073e370  CEntityFactory<CCaptureFlagReturnIcon>::Create(char const*)
++0x0004:  0073d9a0  CEntityFactory<CCaptureFlagReturnIcon>::Destroy(IServerNetworkable*)
++0x0008:  0073d9c0  CEntityFactory<CCaptureFlagReturnIcon>::GetEntitySize()

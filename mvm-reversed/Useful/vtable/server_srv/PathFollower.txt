@@ -1,0 +1,34 @@
+PathFollower
+
++0x0000:  00b07ae0  PathFollower::~PathFollower()
++0x0004:  00b07b60  PathFollower::~PathFollower()
++0x0008:  005e8a50  Path::GetLength() const
++0x000c:  00b04a70  Path::GetPosition(float, Path::Segment const*) const
++0x0010:  00b045f0  Path::GetClosestPosition(Vector const&, Path::Segment const*, float) const
++0x0014:  005e8c60  Path::GetStartPosition() const
++0x0018:  005e8c90  Path::GetEndPosition() const
++0x001c:  005e8cd0  Path::GetSubject() const
++0x0020:  00b01d50  PathFollower::GetCurrentGoal() const
++0x0024:  005e9f10  Path::GetAge() const
++0x0028:  00b047e0  Path::MoveCursorToClosestPosition(Vector const&, Path::SeekType, float) const
++0x002c:  005e8d10  Path::MoveCursorToStart()
++0x0030:  005e8d30  Path::MoveCursorToEnd()
++0x0034:  005e8d60  Path::MoveCursor(float, Path::MoveCursorType)
++0x0038:  005e8e00  Path::GetCursorPosition() const
++0x003c:  00b04200  Path::GetCursorData() const
++0x0040:  005e8a80  Path::IsValid() const
++0x0044:  00b07720  PathFollower::Invalidate()
++0x0048:  00b077e0  PathFollower::Draw(Path::Segment const*) const
++0x004c:  00b04c00  Path::DrawInterpolated(float, float)
++0x0050:  005e8b20  Path::FirstSegment() const
++0x0054:  005e8b50  Path::NextSegment(Path::Segment const*) const
++0x0058:  005e8bc0  Path::PriorSegment(Path::Segment const*) const
++0x005c:  005e8c20  Path::LastSegment() const
++0x0060:  00b077c0  PathFollower::OnPathChanged(INextBot*, Path::ResultType)
++0x0064:  00b04d60  Path::Copy(INextBot*, Path const&)
++0x0068:  005eb140  Path::ComputeWithOpenGoal(INextBot*, IPathCost const&, IPathOpenGoalSelector const&, float)
++0x006c:  00b045c0  Path::ComputeAreaCrossing(INextBot*, CNavArea const*, Vector const&, CNavArea const*, NavDirType, Vector*) const
++0x0070:  00b0d800  PathFollower::Update(INextBot*)
++0x0074:  00b01d60  PathFollower::SetMinLookAheadDistance(float)
++0x0078:  00b01d80  PathFollower::GetHindrance() const
++0x007c:  00b07b80  PathFollower::IsDiscontinuityAhead(INextBot*, Path::SegmentType, float) const

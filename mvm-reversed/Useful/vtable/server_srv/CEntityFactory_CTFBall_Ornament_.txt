@@ -1,0 +1,5 @@
+CEntityFactory<CTFBall_Ornament>
+
++0x0000:  0084b170  CEntityFactory<CTFBall_Ornament>::Create(char const*)
++0x0004:  0084adb0  CEntityFactory<CTFBall_Ornament>::Destroy(IServerNetworkable*)
++0x0008:  0084add0  CEntityFactory<CTFBall_Ornament>::GetEntitySize()

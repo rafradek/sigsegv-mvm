@@ -241,6 +241,45 @@ namespace Mod::MvM::Robot_Limit
 		DETOUR_MEMBER_CALL(CGameServer_SetHibernating)(hibernate);
 	}
 
+	CWaveSpawnPopulator *populator_parse = nullptr;
+	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
+	{
+		populator_parse = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv_orig);
+		populator_parse = nullptr;
+		
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Parse, KeyValues *kv_orig)
+	{
+		if (populator_parse != nullptr) {
+			// Unused variable, now used to tell if the wavespawn contains a tfbot spawner
+			populator_parse->m_nClassCounts = 1;
+		}
+		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
+	}
+
+	GlobalThunkRW<int> CWaveSpawnPopulator_m_reservedPlayerSlotCount("CWaveSpawnPopulator::m_reservedPlayerSlotCount");
+	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
+	{
+		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		int old_slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
+		int &slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
+		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING) {
+			if (wavespawn->m_nClassCounts == 1) {
+				// Override hardcoded 22 blue bot limit
+				slots = old_slots + (GetMvMInvaderLimit() - 22);
+			}
+			else {
+				// Do not restrict non bot spawners 
+				slots = -9999;
+			}
+		}
+		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+		slots = old_slots;
+	}
+
 	class CMod : public IMod
 	{
 	public:
@@ -253,6 +292,10 @@ namespace Mod::MvM::Robot_Limit
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,          "CPopulationManager::JumpToWave");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_WaveEnd,             "CPopulationManager::WaveEnd");
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
+
+			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse,  "CWaveSpawnPopulator::Parse");
+			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Parse,        "CTFBotSpawner::Parse");
+			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
 

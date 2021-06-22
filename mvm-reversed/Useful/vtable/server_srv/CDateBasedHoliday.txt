@@ -1,0 +1,5 @@
+CDateBasedHoliday
+
++0x0000:  00659df0  CDateBasedHoliday::~CDateBasedHoliday()
++0x0004:  00659e90  CDateBasedHoliday::~CDateBasedHoliday()
++0x0008:  00659dc0  CDateBasedHoliday::IsActive(CRTime const&)

@@ -1,0 +1,22 @@
+CMsgGC_GameServer_CreateIdentity
+
++0x0000:  00579c10  CMsgGC_GameServer_CreateIdentity::~CMsgGC_GameServer_CreateIdentity()
++0x0004:  00579c50  CMsgGC_GameServer_CreateIdentity::~CMsgGC_GameServer_CreateIdentity()
++0x0008:  00000000  
++0x000c:  005af440  CMsgGC_GameServer_CreateIdentity::New() const
++0x0010:  00583000  CMsgGC_GameServer_CreateIdentity::Clear()
++0x0014:  005757c0  CMsgGC_GameServer_CreateIdentity::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005990a0  CMsgGC_GameServer_CreateIdentity::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005892a0  CMsgGC_GameServer_CreateIdentity::ByteSize() const
++0x0028:  0057c320  CMsgGC_GameServer_CreateIdentity::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005937f0  CMsgGC_GameServer_CreateIdentity::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcaf0  CMsgGC_GameServer_CreateIdentity::GetCachedSize() const
++0x0034:  00575770  CMsgGC_GameServer_CreateIdentity::CopyFrom(google::protobuf::Message const&)
++0x0038:  005af5f0  CMsgGC_GameServer_CreateIdentity::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575760  CMsgGC_GameServer_CreateIdentity::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f8e0  CMsgGC_GameServer_CreateIdentity::GetMetadata() const

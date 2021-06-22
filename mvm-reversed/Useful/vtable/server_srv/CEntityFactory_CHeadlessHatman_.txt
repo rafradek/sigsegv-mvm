@@ -1,0 +1,5 @@
+CEntityFactory<CHeadlessHatman>
+
++0x0000:  00d05270  CEntityFactory<CHeadlessHatman>::Create(char const*)
++0x0004:  00d04670  CEntityFactory<CHeadlessHatman>::Destroy(IServerNetworkable*)
++0x0008:  00d04690  CEntityFactory<CHeadlessHatman>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerAddTFPlayerCondition>
+
++0x0000:  00e2ac10  CEntityFactory<CTriggerAddTFPlayerCondition>::Create(char const*)
++0x0004:  00e2aab0  CEntityFactory<CTriggerAddTFPlayerCondition>::Destroy(IServerNetworkable*)
++0x0008:  00e2aad0  CEntityFactory<CTriggerAddTFPlayerCondition>::GetEntitySize()

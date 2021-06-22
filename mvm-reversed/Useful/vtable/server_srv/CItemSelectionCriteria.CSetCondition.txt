@@ -1,0 +1,10 @@
+CItemSelectionCriteria::CSetCondition
+
++0x0000:  006b4630  CItemSelectionCriteria::CSetCondition::~CSetCondition()
++0x0004:  006b44f0  CItemSelectionCriteria::CSetCondition::~CSetCondition()
++0x0008:  006b37b0  CItemSelectionCriteria::CCondition::BItemDefinitionPassesCriteria(CEconItemDefinition const*) const
++0x000c:  006b4450  CItemSelectionCriteria::CCondition::GetEOp() const
++0x0010:  006b44e0  CItemSelectionCriteria::CCondition::GetField() const
++0x0014:  006b4460  CItemSelectionCriteria::CCondition::GetValue() const
++0x0018:  006b33d0  CItemSelectionCriteria::CSetCondition::BSerializeToMsg(CSOItemCriteriaCondition&) const
++0x001c:  006b3150  CItemSelectionCriteria::CSetCondition::BInternalEvaluate(KeyValues*) const

@@ -1,0 +1,3 @@
+CEntityClassList<CPhysicsNPCSolver>
+
++0x0000:  00b4e910  CEntityClassList<CPhysicsNPCSolver>::LevelShutdownPostEntity()

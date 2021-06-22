@@ -1,0 +1,11 @@
+COverlayMgr
+
++0x0000:  00177cd0  COverlayMgr::LoadOverlays()
++0x0004:  00177a10  COverlayMgr::UnloadOverlays()
++0x0008:  001775f0  COverlayMgr::CreateFragments()
++0x000c:  00173cd0  COverlayMgr::ReSortMaterials()
++0x0010:  00173ce0  COverlayMgr::ClearRenderLists()
++0x0014:  00173c30  COverlayMgr::ClearRenderLists(int)
++0x0018:  00174030  COverlayMgr::AddFragmentListToRenderList(int, unsigned short, bool)
++0x001c:  00173ca0  COverlayMgr::RenderOverlays(int)
++0x0020:  00173cb0  COverlayMgr::SetOverlayBindProxy(int, void*)

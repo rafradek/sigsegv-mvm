@@ -1,0 +1,5 @@
+CSceneCache
+
++0x0000:  0070cd30  CSceneCache::Save(CUtlBuffer&)
++0x0004:  0070d010  CSceneCache::Restore(CUtlBuffer&)
++0x0008:  0070d3f0  CSceneCache::Rebuild(char const*)

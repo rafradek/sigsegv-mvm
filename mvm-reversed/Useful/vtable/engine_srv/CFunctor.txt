@@ -1,0 +1,7 @@
+CFunctor
+
++0x0000:  00000000  
++0x0004:  00000000  
++0x0008:  0013c660  CFunctor::~CFunctor()
++0x000c:  0013c800  CFunctor::~CFunctor()
++0x0010:  00000000  

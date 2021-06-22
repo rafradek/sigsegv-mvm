@@ -1,0 +1,5 @@
+CEntityFactory<CRopeAnchor>
+
++0x0000:  009322d0  CEntityFactory<CRopeAnchor>::Create(char const*)
++0x0004:  00932260  CEntityFactory<CRopeAnchor>::Destroy(IServerNetworkable*)
++0x0008:  00932280  CEntityFactory<CRopeAnchor>::GetEntitySize()

@@ -1,0 +1,5 @@
+CCyclicalHoliday
+
++0x0000:  00659e10  CCyclicalHoliday::~CCyclicalHoliday()
++0x0004:  00659e50  CCyclicalHoliday::~CCyclicalHoliday()
++0x0008:  00659d70  CCyclicalHoliday::IsActive(CRTime const&)

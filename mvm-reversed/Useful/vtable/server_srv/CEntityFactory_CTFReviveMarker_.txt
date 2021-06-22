@@ -1,0 +1,5 @@
+CEntityFactory<CTFReviveMarker>
+
++0x0000:  00811420  CEntityFactory<CTFReviveMarker>::Create(char const*)
++0x0004:  00811080  CEntityFactory<CTFReviveMarker>::Destroy(IServerNetworkable*)
++0x0008:  008110a0  CEntityFactory<CTFReviveMarker>::GetEntitySize()

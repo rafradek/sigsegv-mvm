@@ -1,0 +1,6 @@
+IHandleEntity
+
++0x0000:  009e3410  IHandleEntity::~IHandleEntity()
++0x0004:  009e36e0  IHandleEntity::~IHandleEntity()
++0x0008:  00000000  
++0x000c:  00000000  

@@ -1,0 +1,5 @@
+CEntityFactory<CEnvFunnel>
+
++0x0000:  00a28000  CEntityFactory<CEnvFunnel>::Create(char const*)
++0x0004:  00a278f0  CEntityFactory<CEnvFunnel>::Destroy(IServerNetworkable*)
++0x0008:  00a27910  CEntityFactory<CEnvFunnel>::GetEntitySize()

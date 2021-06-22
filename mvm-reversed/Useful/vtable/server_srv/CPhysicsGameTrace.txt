@@ -1,0 +1,5 @@
+CPhysicsGameTrace
+
++0x0000:  006f2f40  CPhysicsGameTrace::VehicleTraceRay(Ray_t const&, void*, CGameTrace*)
++0x0004:  006f2ea0  CPhysicsGameTrace::VehicleTraceRayWithWater(Ray_t const&, void*, CGameTrace*)
++0x0008:  006f2df0  CPhysicsGameTrace::VehiclePointInWater(Vector const&)

@@ -1,0 +1,5 @@
+DelayedSchemaData_GCDirectData
+
++0x0000:  006a91d0  DelayedSchemaData_GCDirectData::~DelayedSchemaData_GCDirectData()
++0x0004:  006a9180  DelayedSchemaData_GCDirectData::~DelayedSchemaData_GCDirectData()
++0x0008:  006aa480  DelayedSchemaData_GCDirectData::InitializeSchema(CEconItemSchema*)

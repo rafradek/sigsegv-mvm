@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerPasstimeBall>
+
++0x0000:  00e323f0  CEntityFactory<CTriggerPasstimeBall>::Create(char const*)
++0x0004:  00e32350  CEntityFactory<CTriggerPasstimeBall>::Destroy(IServerNetworkable*)
++0x0008:  00e32370  CEntityFactory<CTriggerPasstimeBall>::GetEntitySize()

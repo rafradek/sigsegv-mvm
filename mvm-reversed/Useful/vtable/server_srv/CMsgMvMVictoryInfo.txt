@@ -1,0 +1,22 @@
+CMsgMvMVictoryInfo
+
++0x0000:  005dc310  CMsgMvMVictoryInfo::~CMsgMvMVictoryInfo()
++0x0004:  005dc380  CMsgMvMVictoryInfo::~CMsgMvMVictoryInfo()
++0x0008:  00000000  
++0x000c:  005c2420  CMsgMvMVictoryInfo::New() const
++0x0010:  00585950  CMsgMvMVictoryInfo::Clear()
++0x0014:  00577040  CMsgMvMVictoryInfo::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005c1bd0  CMsgMvMVictoryInfo::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058c530  CMsgMvMVictoryInfo::ByteSize() const
++0x0028:  0057d5b0  CMsgMvMVictoryInfo::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00595b40  CMsgMvMVictoryInfo::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dce70  CMsgMvMVictoryInfo::GetCachedSize() const
++0x0034:  00576ff0  CMsgMvMVictoryInfo::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c2760  CMsgMvMVictoryInfo::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576fe0  CMsgMvMVictoryInfo::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058eae0  CMsgMvMVictoryInfo::GetMetadata() const

@@ -1,0 +1,4 @@
+IFuncNoBuildAutoList
+
++0x0000:  00cc2d80  IFuncNoBuildAutoList::~IFuncNoBuildAutoList()
++0x0004:  00cc2d10  IFuncNoBuildAutoList::~IFuncNoBuildAutoList()

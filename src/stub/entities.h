@@ -61,6 +61,7 @@ class CTFPowerup : public CItem
 {
 public:
 	float GetLifeTime() { return vt_GetLifeTime(this); }
+	void DropSingleInstance(Vector &vecLaunchVel, CBaseCombatCharacter *pThrower, float flThrowerTouchDelay, float flResetTime = 0.1f) { return ft_DropSingleInstance(this, vecLaunchVel, pThrower, flThrowerTouchDelay, flResetTime); }
 	
 	DECL_DATAMAP(bool,     m_bDisabled);
 	DECL_DATAMAP(bool,     m_bAutoMaterialize);
@@ -68,6 +69,8 @@ public:
 	
 private:
 	static MemberVFuncThunk<CTFPowerup *, float> vt_GetLifeTime;
+
+	static MemberFuncThunk<CTFPowerup *, void, Vector &, CBaseCombatCharacter *, float, float> ft_DropSingleInstance;
 };
 
 class CSpellPickup : public CTFPowerup
@@ -130,7 +133,11 @@ private:
 	static MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> vt_UnEquip;
 };
 
-class CTFWearable : public CEconWearable, public IHasGenericMeter {};
+class CTFWearable : public CEconWearable, public IHasGenericMeter
+{
+public:
+	DECL_SENDPROP(CHandle<CBaseEntity *>, m_hWeaponAssociatedWith);
+};
 
 class CTFWearableDemoShield : public CTFWearable {};
 class CTFWearableRobotArm   : public CTFWearable {};
@@ -204,53 +211,7 @@ private:
 	static GlobalThunk<CUtlVector<ICaptureFlagAutoList *>> m_ICaptureFlagAutoListAutoList;
 };
 
-
-class NextBotCombatCharacter : public CBaseCombatCharacter {};
-
-
-class CTFBaseBoss : public NextBotCombatCharacter
-{
-public:
-	void UpdateCollisionBounds() { vt_UpdateCollisionBounds(this); }
-	
-private:
-	static MemberVFuncThunk<CTFBaseBoss *, void> vt_UpdateCollisionBounds;
-};
-
 class IBody;
-class CTFTankBoss : public CTFBaseBoss
-{
-public:
-	DECL_EXTRACT (IBody *,             m_pBodyInterface);
-	DECL_RELATIVE(CHandle<CPathTrack>, m_hCurrentNode);
-	DECL_RELATIVE(CUtlVector<float>,   m_NodeDists);
-	DECL_RELATIVE(float,               m_flTotalDistance);
-	DECL_RELATIVE(int,                 m_iCurrentNode);
-	DECL_RELATIVE(int,                 m_iModelIndex);
-};
-
-
-class CHalloweenBaseBoss : public NextBotCombatCharacter
-{
-public:
-	enum HalloweenBossType : int32_t
-	{
-		INVALID         = 0,
-		HEADLESS_HATMAN = 1,
-		EYEBALL_BOSS    = 2,
-		MERASMUS        = 3,
-	};
-	
-	static CHalloweenBaseBoss *SpawnBossAtPos(HalloweenBossType type, const Vector& pos, int team, CBaseEntity *owner) { return ft_SpawnBossAtPos(type, pos, team, owner); }
-	
-private:
-	static StaticFuncThunk<CHalloweenBaseBoss *, HalloweenBossType, const Vector&, int, CBaseEntity *> ft_SpawnBossAtPos;
-};
-
-class CHeadlessHatman : public CHalloweenBaseBoss {};
-class CMerasmus       : public CHalloweenBaseBoss {};
-class CEyeballBoss    : public CHalloweenBaseBoss {};
-
 
 class CBaseToggle : public CBaseEntity {};
 
@@ -332,8 +293,9 @@ public:
 	bool IsBeingPulled() const  { return this->m_bPulled; }
 	bool IsDistributed() const  { return this->m_bDistributed; }
 	int GetAmount() const       { return this->m_nAmount; }
-	
+
 	void SetDistributed(bool val) { this->m_bDistributed = val; }
+	void SetAmount(int amount)    { this->m_nAmount = amount; }
 	
 	bool AffectedByRadiusCollection() const { return vt_AffectedByRadiusCollection(this); }
 	
@@ -346,6 +308,10 @@ private:
 	static MemberVFuncThunk<const CCurrencyPack *, bool> vt_AffectedByRadiusCollection;
 };
 
+class CCurrencyPackCustom : public CCurrencyPack
+{
+
+};
 
 class ICurrencyPackAutoList
 {
@@ -446,6 +412,16 @@ class CGameUI : public CBaseEntity
 public:
 	DECL_DATAMAP (CHandle<CBasePlayer>, m_player);
 };
+
+class CMonsterResource : public CBaseEntity
+{
+public:
+	DECL_SENDPROP(int, m_iBossHealthPercentageByte);
+	DECL_SENDPROP(int, m_iBossStunPercentageByte);
+	DECL_SENDPROP(int, m_iBossState);
+};
+
+extern GlobalThunk<CHandle<CMonsterResource>> g_pMonsterResource;
 
 // 20151007a
 

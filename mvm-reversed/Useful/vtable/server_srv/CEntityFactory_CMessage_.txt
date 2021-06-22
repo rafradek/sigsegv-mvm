@@ -1,0 +1,5 @@
+CEntityFactory<CMessage>
+
++0x0000:  00a3ac30  CEntityFactory<CMessage>::Create(char const*)
++0x0004:  00a3aae0  CEntityFactory<CMessage>::Destroy(IServerNetworkable*)
++0x0008:  00a3ab00  CEntityFactory<CMessage>::GetEntitySize()

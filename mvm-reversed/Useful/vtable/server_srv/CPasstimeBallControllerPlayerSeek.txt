@@ -1,0 +1,12 @@
+CPasstimeBallControllerPlayerSeek
+
++0x0000:  00d46c20  CPasstimeBallControllerPlayerSeek::~CPasstimeBallControllerPlayerSeek()
++0x0004:  00d46c60  CPasstimeBallControllerPlayerSeek::~CPasstimeBallControllerPlayerSeek()
++0x0008:  00d46b90  CPasstimeBallControllerPlayerSeek::Apply(CPasstimeBall*)
++0x000c:  00d46c10  CPasstimeBallControllerPlayerSeek::IsActive() const
++0x0010:  00d45bd0  CPasstimeBallController::OnBallCollision(CPasstimeBall*, int, gamevcollisionevent_t*)
++0x0014:  00d45be0  CPasstimeBallController::OnBallPickedUp(CPasstimeBall*, CTFPlayer*)
++0x0018:  00d45bf0  CPasstimeBallController::OnBallDamaged(CPasstimeBall*)
++0x001c:  00d46730  CPasstimeBallControllerPlayerSeek::OnBallSpawned(CPasstimeBall*)
++0x0020:  00d45c10  CPasstimeBallController::OnEnabled()
++0x0024:  00d46c40  CPasstimeBallControllerPlayerSeek::OnDisabled()

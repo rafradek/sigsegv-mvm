@@ -1,0 +1,34 @@
+CTFQuestEventListener
+
++0x0000:  0080a0f0  CTFQuestEventListener::~CTFQuestEventListener()
++0x0004:  0080a190  CTFQuestEventListener::~CTFQuestEventListener()
++0x0008:  00756db0  CTFQuestEvaluator::GetBaseName() const
++0x000c:  008090e0  CTFQuestEventListener::GetConditionName() const
++0x0010:  008090f0  CTFQuestEventListener::GetValueString() const
++0x0014:  0080dac0  CTFQuestEventListener::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x0018:  00807e30  CTFQuestCondition::PrintDebugText() const
++0x001c:  00807c10  CTFQuestCondition::GetQuestOwner() const
++0x0020:  0080b460  CTFQuestEventListener::IsValidForPlayer(CTFPlayer const*, CBitVec<6>&) const
++0x0024:  00756d10  CTFQuestCondition::IsRestriction() const
++0x0028:  00756d20  CTFQuestCondition::IsOperator() const
++0x002c:  00756dc0  CTFQuestEvaluator::IsEvaluator() const
++0x0030:  0080bb60  CTFQuestEventListener::AddChildByName(char const*)
++0x0034:  0080f240  CTFQuestEventListener::GetChildren(CUtlVector<CTFQuestCondition*, CUtlMemory<CTFQuestCondition*, int> >&)
++0x0038:  00809ea0  CTFQuestEventListener::RemoveAndDeleteChild(CTFQuestCondition*)
++0x003c:  0080b840  CTFQuestEventListener::GetRequiredParamKeys(KeyValues*)
++0x0040:  00809880  CTFQuestEventListener::GetOutputKeyValues(KeyValues*)
++0x0044:  00807c60  CTFQuestEvaluator::GetTypeNameCount() const
++0x0048:  00807c70  CTFQuestEvaluator::GetTypeName(int) const
++0x004c:  00809130  CTFQuestEventListener::GetValidChildrenTypeCount() const
++0x0050:  00809140  CTFQuestEventListener::GetValidChildrenType(int) const
++0x0054:  00809170  CTFQuestEventListener::GetMaxInputCount() const
++0x0058:  00809150  CTFQuestEventListener::GetEventName() const
++0x005c:  00809160  CTFQuestEventListener::SetEventName(char const*)
++0x0060:  00809100  CTFQuestEventListener::EvaluateCondition(CTFQuestEvaluator*, int)
++0x0064:  00809120  CTFQuestEventListener::ResetCondition()
++0x0068:  0080a330  CTFQuestEventListener::FireGameEvent(IGameEvent*)
++0x006c:  fffffff0  (unknown)
++0x0070:  010e6c80  typeinfo for CTFQuestEventListener
++0x0074:  0080a0e0  non-virtual thunk to CTFQuestEventListener::~CTFQuestEventListener()
++0x0078:  0080a180  non-virtual thunk to CTFQuestEventListener::~CTFQuestEventListener()
++0x007c:  0080a320  non-virtual thunk to CTFQuestEventListener::FireGameEvent(IGameEvent*)

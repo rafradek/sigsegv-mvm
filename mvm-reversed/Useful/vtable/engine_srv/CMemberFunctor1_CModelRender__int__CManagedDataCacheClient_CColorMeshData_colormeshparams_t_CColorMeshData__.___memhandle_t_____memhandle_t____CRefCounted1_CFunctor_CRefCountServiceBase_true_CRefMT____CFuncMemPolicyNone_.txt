@@ -1,0 +1,12 @@
+CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+
++0x0000:  0013c8c0  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  0013c850  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  0013c720  CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x000c:  0013c830  CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0010:  0013c740  CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::operator()()
++0x0014:  fffffff8  (unknown)
++0x0018:  00243960  typeinfo for CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
++0x001c:  0013c710  non-virtual thunk to CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0020:  0013c820  non-virtual thunk to CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0024:  0013c780  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

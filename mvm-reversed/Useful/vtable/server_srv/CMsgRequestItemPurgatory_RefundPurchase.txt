@@ -1,0 +1,22 @@
+CMsgRequestItemPurgatory_RefundPurchase
+
++0x0000:  00523400  CMsgRequestItemPurgatory_RefundPurchase::~CMsgRequestItemPurgatory_RefundPurchase()
++0x0004:  00523440  CMsgRequestItemPurgatory_RefundPurchase::~CMsgRequestItemPurgatory_RefundPurchase()
++0x0008:  00000000  
++0x000c:  0052acb0  CMsgRequestItemPurgatory_RefundPurchase::New() const
++0x0010:  005248d0  CMsgRequestItemPurgatory_RefundPurchase::Clear()
++0x0014:  00521be0  CMsgRequestItemPurgatory_RefundPurchase::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00526d40  CMsgRequestItemPurgatory_RefundPurchase::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00522830  CMsgRequestItemPurgatory_RefundPurchase::ByteSize() const
++0x0028:  00522f20  CMsgRequestItemPurgatory_RefundPurchase::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00522b60  CMsgRequestItemPurgatory_RefundPurchase::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533bd0  CMsgRequestItemPurgatory_RefundPurchase::GetCachedSize() const
++0x0034:  00521b90  CMsgRequestItemPurgatory_RefundPurchase::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052ae60  CMsgRequestItemPurgatory_RefundPurchase::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00521b80  CMsgRequestItemPurgatory_RefundPurchase::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  005275e0  CMsgRequestItemPurgatory_RefundPurchase::GetMetadata() const

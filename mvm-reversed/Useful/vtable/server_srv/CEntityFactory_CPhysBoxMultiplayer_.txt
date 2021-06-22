@@ -1,0 +1,5 @@
+CEntityFactory<CPhysBoxMultiplayer>
+
++0x0000:  00bb07d0  CEntityFactory<CPhysBoxMultiplayer>::Create(char const*)
++0x0004:  00bab730  CEntityFactory<CPhysBoxMultiplayer>::Destroy(IServerNetworkable*)
++0x0008:  00bab750  CEntityFactory<CPhysBoxMultiplayer>::GetEntitySize()

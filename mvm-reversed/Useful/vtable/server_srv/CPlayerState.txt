@@ -1,0 +1,6 @@
+CPlayerState
+
++0x0000:  00b7cc00  CPlayerState::NetworkStateChanged()
++0x0004:  00b7cc10  CPlayerState::NetworkStateChanged(void*)
++0x0008:  00b7cc20  CPlayerState::~CPlayerState()
++0x000c:  00b7cd70  CPlayerState::~CPlayerState()

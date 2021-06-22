@@ -1,0 +1,5 @@
+CEntityFactory<CTeleportVortex>
+
++0x0000:  00742410  CEntityFactory<CTeleportVortex>::Create(char const*)
++0x0004:  007422c0  CEntityFactory<CTeleportVortex>::Destroy(IServerNetworkable*)
++0x0008:  007422e0  CEntityFactory<CTeleportVortex>::GetEntitySize()

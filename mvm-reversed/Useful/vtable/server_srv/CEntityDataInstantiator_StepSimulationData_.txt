@@ -1,0 +1,7 @@
+CEntityDataInstantiator<StepSimulationData>
+
++0x0000:  006e6290  CEntityDataInstantiator<StepSimulationData>::~CEntityDataInstantiator()
++0x0004:  006e6310  CEntityDataInstantiator<StepSimulationData>::~CEntityDataInstantiator()
++0x0008:  006e47d0  CEntityDataInstantiator<StepSimulationData>::GetDataObject(CBaseEntity const*)
++0x000c:  006e9330  CEntityDataInstantiator<StepSimulationData>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e48b0  CEntityDataInstantiator<StepSimulationData>::DestroyDataObject(CBaseEntity const*)

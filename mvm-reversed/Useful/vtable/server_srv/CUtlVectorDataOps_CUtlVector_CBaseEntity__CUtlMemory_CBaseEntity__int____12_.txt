@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CBaseEntity*, CUtlMemory<CBaseEntity*, int> >, 12>
+
++0x0000:  00b96bd0  CUtlVectorDataOps<CUtlVector<CBaseEntity*, CUtlMemory<CBaseEntity*, int> >, 12>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00b972a0  CUtlVectorDataOps<CUtlVector<CBaseEntity*, CUtlMemory<CBaseEntity*, int> >, 12>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00b96ca0  CUtlVectorDataOps<CUtlVector<CBaseEntity*, CUtlMemory<CBaseEntity*, int> >, 12>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00b97280  CUtlVectorDataOps<CUtlVector<CBaseEntity*, CUtlMemory<CBaseEntity*, int> >, 12>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

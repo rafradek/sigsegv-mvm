@@ -1,0 +1,5 @@
+CCallResult<CUGCFileRequest, RemoteStorageDownloadUGCResult_t>
+
++0x0000:  008a8170  CCallResult<CUGCFileRequest, RemoteStorageDownloadUGCResult_t>::Run(void*)
++0x0004:  008a8260  CCallResult<CUGCFileRequest, RemoteStorageDownloadUGCResult_t>::Run(void*, bool, unsigned long long)
++0x0008:  008a81c0  CCallResult<CUGCFileRequest, RemoteStorageDownloadUGCResult_t>::GetCallbackSizeBytes()

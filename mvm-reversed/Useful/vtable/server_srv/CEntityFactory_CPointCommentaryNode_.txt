@@ -1,0 +1,5 @@
+CEntityFactory<CPointCommentaryNode>
+
++0x0000:  00a15210  CEntityFactory<CPointCommentaryNode>::Create(char const*)
++0x0004:  00a150c0  CEntityFactory<CPointCommentaryNode>::Destroy(IServerNetworkable*)
++0x0008:  00a150e0  CEntityFactory<CPointCommentaryNode>::GetEntitySize()

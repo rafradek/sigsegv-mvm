@@ -1,0 +1,4 @@
+ITFTeleportLocationAutoList
+
++0x0000:  0076b820  ITFTeleportLocationAutoList::~ITFTeleportLocationAutoList()
++0x0004:  0076b7b0  ITFTeleportLocationAutoList::~ITFTeleportLocationAutoList()

@@ -1,0 +1,5 @@
+CEntityFactory<CSceneEntity>
+
++0x0000:  00bc5120  CEntityFactory<CSceneEntity>::Create(char const*)
++0x0004:  00bc3b10  CEntityFactory<CSceneEntity>::Destroy(IServerNetworkable*)
++0x0008:  00bc3b30  CEntityFactory<CSceneEntity>::GetEntitySize()

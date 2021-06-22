@@ -1,0 +1,4 @@
+PressFireButtonReply
+
++0x0000:  00b0f870  PressFireButtonReply::OnSuccess(INextBot*)
++0x0004:  00b108e0  INextBotReply::OnFail(INextBot*, INextBotReply::FailureReason)

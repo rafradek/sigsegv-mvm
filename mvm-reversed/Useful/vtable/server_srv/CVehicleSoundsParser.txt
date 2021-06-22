@@ -1,0 +1,4 @@
+CVehicleSoundsParser
+
++0x0000:  00e66ce0  CVehicleSoundsParser::ParseKeyValue(void*, char const*, char const*)
++0x0004:  00e65b20  CVehicleSoundsParser::SetDefaults(void*)

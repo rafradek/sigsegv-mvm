@@ -1,0 +1,5 @@
+CEntityFactory<CRobotDispenser>
+
++0x0000:  00823ef0  CEntityFactory<CRobotDispenser>::Create(char const*)
++0x0004:  008179a0  CEntityFactory<CRobotDispenser>::Destroy(IServerNetworkable*)
++0x0008:  008179c0  CEntityFactory<CRobotDispenser>::GetEntitySize()

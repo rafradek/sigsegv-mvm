@@ -29,8 +29,9 @@ namespace Mod::Etc::Misc
 		if (penetrates && !(other->entindex() == 0 || other->MyCombatCharacterPointer() != nullptr || other->IsCombatItem())) {
 			Vector start = proj->GetAbsOrigin();
 			Vector vel = proj->GetAbsVelocity();
+			Vector end = start + vel * gpGlobals->frametime;
 			trace_t tr;
-			UTIL_TraceLine( start, start + vel * gpGlobals->frametime, CONTENTS_MONSTER|CONTENTS_SOLID, other, COLLISION_GROUP_NONE, &tr );
+			UTIL_TraceLine( start, end, MASK_SOLID, proj, COLLISION_GROUP_NONE, &tr );
 			if (tr.m_pEnt == nullptr) {
 				return false;
 			}

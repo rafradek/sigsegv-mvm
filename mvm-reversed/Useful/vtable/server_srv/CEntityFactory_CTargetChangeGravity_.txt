@@ -1,0 +1,5 @@
+CEntityFactory<CTargetChangeGravity>
+
++0x0000:  00a17d50  CEntityFactory<CTargetChangeGravity>::Create(char const*)
++0x0004:  00a17cb0  CEntityFactory<CTargetChangeGravity>::Destroy(IServerNetworkable*)
++0x0008:  00a17cd0  CEntityFactory<CTargetChangeGravity>::GetEntitySize()

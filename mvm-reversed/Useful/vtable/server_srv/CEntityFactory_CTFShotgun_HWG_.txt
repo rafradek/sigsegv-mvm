@@ -1,0 +1,5 @@
+CEntityFactory<CTFShotgun_HWG>
+
++0x0000:  008864d0  CEntityFactory<CTFShotgun_HWG>::Create(char const*)
++0x0004:  00885760  CEntityFactory<CTFShotgun_HWG>::Destroy(IServerNetworkable*)
++0x0008:  00885780  CEntityFactory<CTFShotgun_HWG>::GetEntitySize()

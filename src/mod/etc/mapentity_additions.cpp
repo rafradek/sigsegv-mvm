@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/baseentity.h"
 #include "stub/entities.h"
+#include "stub/gamerules.h"
 #include "stub/tfbot.h"
 #include "stub/tf_shareddefs.h"
 #include "stub/misc.h"
@@ -60,6 +61,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     const char *logic_case_classname;
+    const char *tf_gamerules_classname;
     const char *player_classname;
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
     {
@@ -139,6 +141,32 @@ namespace Mod::Etc::Mapentity_Additions
                         variant.SetString(AllocPooledString(cvref.GetString()));
                         logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
                     }
+                    return true;
+                }
+            }
+            else if (ent->GetClassname() == tf_gamerules_classname) {
+                if (stricmp(szInputName, "$StopVO") == 0) {
+                    TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, Value.String(), SND_STOP);
+                    return true;
+                }
+                else if (stricmp(szInputName, "$StopVORed") == 0) {
+                    TFGameRules()->BroadcastSound(TF_TEAM_RED, Value.String(), SND_STOP);
+                    return true;
+                }
+                else if (stricmp(szInputName, "$StopVOBlue") == 0) {
+                    TFGameRules()->BroadcastSound(TF_TEAM_BLUE, Value.String(), SND_STOP);
+                    return true;
+                }
+                else if (stricmp(szInputName, "$SetBossHealthPercentage") == 0) {
+                    float val = atof(Value.String());
+                    if (g_pMonsterResource.GetRef() != nullptr)
+                        g_pMonsterResource->m_iBossHealthPercentageByte = (int) (val * 255.0f);
+                    return true;
+                }
+                else if (stricmp(szInputName, "$SetBossState") == 0) {
+                    int val = atoi(Value.String());
+                    if (g_pMonsterResource.GetRef() != nullptr)
+                        g_pMonsterResource->m_iBossState = val;
                     return true;
                 }
             }
@@ -269,7 +297,121 @@ namespace Mod::Etc::Mapentity_Additions
 
                     return true;
                 }
-                
+                else if (stricmp(szInputName, "$AddCond") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    int index = 0;
+                    float duration = -1.0f;
+                    sscanf(Value.String(), "%d %f", &index, &duration);
+                    if (player != nullptr) {
+                        player->m_Shared->AddCond(index, duration);
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$RemoveCond") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    int index = strtol(Value.String(), nullptr, 10);
+                    if (player != nullptr) {
+                        player->m_Shared->RemoveCond(index);
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$AddPlayerAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    char param_tokenized[256];
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    
+                    char *attr = strtok(param_tokenized,"|");
+                    char *value = strtok(NULL,"|");
+
+                    if (player != nullptr) {
+                        player->AddCustomAttribute(attr, atof(value), -1.0f);
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$RemovePlayerAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    if (player != nullptr) {
+                        player->RemoveCustomAttribute(Value.String());
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$AddItemAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    char param_tokenized[256];
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    
+                    char *attr = strtok(param_tokenized,"|");
+                    char *value = strtok(NULL,"|");
+                    char *slot = strtok(NULL,"|");
+
+                    if (player != nullptr) {
+                        CEconEntity *item = nullptr;
+                        if (slot != nullptr) {
+                            item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
+                        }
+                        else {
+                            item = player->GetActiveTFWeapon();
+                        }
+                        if (item != nullptr) {
+                            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
+                            if (attr_def == nullptr) {
+                                int idx = -1;
+                                if (StringToIntStrict(attr, idx)) {
+                                    attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+                                }
+                            }
+				            item->GetItem()->GetAttributeList().AddStringAttribute(attr_def, value);
+
+                        }
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$RemoveItemAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    char param_tokenized[256];
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    
+                    char *attr = strtok(param_tokenized,"|");
+                    char *slot = strtok(NULL,"|");
+
+                    if (player != nullptr) {
+                        CEconEntity *item = nullptr;
+                        if (slot != nullptr) {
+                            item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
+                        }
+                        else {
+                            item = player->GetActiveTFWeapon();
+                        }
+                        if (item != nullptr) {
+                            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
+                            if (attr_def == nullptr) {
+                                int idx = -1;
+                                if (StringToIntStrict(attr, idx)) {
+                                    attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+                                }
+                            }
+				            item->GetItem()->GetAttributeList().RemoveAttribute(attr_def);
+
+                        }
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$PlaySoundToSelf") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    CRecipientFilter filter;
+		            filter.AddRecipient(player);
+                    
+                    if (!enginesound->PrecacheSound(Value.String(), true))
+						CBaseEntity::PrecacheScriptSound(Value.String());
+
+                    EmitSound_t params;
+                    params.m_pSoundName = Value.String();
+                    params.m_flSoundTime = 0.0f;
+                    params.m_pflSoundDuration = nullptr;
+                    params.m_bWarnOnDirectWaveReference = true;
+                    CBaseEntity::EmitSound(filter, ENTINDEX(player), params);
+                return true;
+                }
             }
 
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
@@ -303,6 +445,11 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$SetModel") == 0) {
+                CBaseEntity::PrecacheModel(Value.String());
+                ent->SetModel(Value.String());
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetModelSpecial") == 0) {
                 int replace_model = CBaseEntity::PrecacheModel(Value.String());
                 if (replace_model != -1) {
                     ent->SetModelIndex(replace_model);
@@ -320,6 +467,72 @@ namespace Mod::Etc::Mapentity_Additions
                 variant_t variant;
                 ent->ReadKeyField(Value.String(), &variant);
                 ent->m_OnUser1->FireOutput(variant, pActivator, ent);
+                return true;
+            }
+            else if (stricmp(szInputName, "$InheritOwner") == 0) {
+                auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (owner != nullptr) {
+                    ent->SetOwnerEntity(owner->GetOwnerEntity());
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$MoveType") == 0) {
+                variant_t variant;
+                int val1=0;
+                int val2=MOVECOLLIDE_DEFAULT;
+
+                sscanf(Value.String(), "%d,%d", &val1, &val2);
+                ent->SetMoveType(val1, val2);
+                return true;
+            }
+            else if (stricmp(szInputName, "$PlaySound") == 0) {
+                
+                if (!enginesound->PrecacheSound(Value.String(), true))
+                    CBaseEntity::PrecacheScriptSound(Value.String());
+
+                ent->EmitSound(Value.String());
+                return true;
+            }
+            else if (stricmp(szInputName, "$StopSound") == 0) {
+                ent->StopSound(Value.String());
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetLocalOrigin") == 0) {
+                Vector vec;
+                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
+                ent->SetLocalOrigin(vec);
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetLocalAngles") == 0) {
+                QAngle vec;
+                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
+                ent->SetLocalAngles(vec);
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetLocalVelocity") == 0) {
+                Vector vec;
+                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
+                ent->SetLocalVelocity(vec);
+                return true;
+            }
+            else if (stricmp(szInputName, "$TeleportToEntity") == 0) {
+                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                Vector targetpos = target->GetAbsOrigin();
+                ent->Teleport(&targetpos, nullptr, nullptr);
+                return true;
+            }
+            else if (stricmp(szInputName, "$MoveRelative") == 0) {
+                Vector vec;
+                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
+                vec += ent->GetLocalOrigin();
+                ent->SetLocalOrigin(vec);
+                return true;
+            }
+            else if (stricmp(szInputName, "$RotateRelative") == 0) {
+                QAngle vec;
+                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
+                vec += ent->GetLocalAngles();
+                ent->SetLocalAngles(vec);
                 return true;
             }
         }
@@ -401,6 +614,7 @@ namespace Mod::Etc::Mapentity_Additions
 		{
             ActivateLoadedInput();
             logic_case_classname = STRING(AllocPooledString("logic_case"));
+            tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
 			return true;
 		}
@@ -409,6 +623,7 @@ namespace Mod::Etc::Mapentity_Additions
         virtual void LevelInitPreEntity() override
         {
             logic_case_classname = STRING(AllocPooledString("logic_case"));
+            tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
         }
 	};

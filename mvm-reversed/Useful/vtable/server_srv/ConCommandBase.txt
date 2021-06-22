@@ -1,0 +1,13 @@
+ConCommandBase
+
++0x0000:  00e775a0  ConCommandBase::~ConCommandBase()
++0x0004:  00e77870  ConCommandBase::~ConCommandBase()
++0x0008:  00e775b0  ConCommandBase::IsCommand() const
++0x000c:  00e77670  ConCommandBase::IsFlagSet(int) const
++0x0010:  00e77690  ConCommandBase::AddFlags(int)
++0x0014:  00e77660  ConCommandBase::GetName() const
++0x0018:  00e776a0  ConCommandBase::GetHelpText() const
++0x001c:  00e776b0  ConCommandBase::IsRegistered() const
++0x0020:  00e775c0  ConCommandBase::GetDLLIdentifier() const
++0x0024:  00e775d0  ConCommandBase::CreateBase(char const*, char const*, int)
++0x0028:  00e77640  ConCommandBase::Init()

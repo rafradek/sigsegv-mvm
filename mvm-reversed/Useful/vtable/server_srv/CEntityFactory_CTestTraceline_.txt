@@ -1,0 +1,5 @@
+CEntityFactory<CTestTraceline>
+
++0x0000:  00c06cb0  CEntityFactory<CTestTraceline>::Create(char const*)
++0x0004:  00c06c60  CEntityFactory<CTestTraceline>::Destroy(IServerNetworkable*)
++0x0008:  00c06c80  CEntityFactory<CTestTraceline>::GetEntitySize()

@@ -1,0 +1,3 @@
+CBulletPenetrateEnum
+
++0x0000:  00802fb0  CBulletPenetrateEnum::EnumEntity(IHandleEntity*)

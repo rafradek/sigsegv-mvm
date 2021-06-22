@@ -1,0 +1,11 @@
+CAchievementSaveRestoreBlockHandler
+
++0x0000:  0060e7f0  CAchievementSaveRestoreBlockHandler::GetBlockName()
++0x0004:  0060e770  CDefSaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  0060e890  CAchievementSaveRestoreBlockHandler::Save(ISave*)
++0x000c:  0060e800  CAchievementSaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  0060e7a0  CDefSaveRestoreBlockHandler::PostSave()
++0x0014:  0060e7b0  CDefSaveRestoreBlockHandler::PreRestore()
++0x0018:  0060e830  CAchievementSaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  0060ea50  CAchievementSaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  0060e7e0  CDefSaveRestoreBlockHandler::PostRestore()

@@ -1,0 +1,9 @@
+CBaseTempEntity
+
++0x0000:  009fc3f0  CBaseTempEntity::GetServerClass()
++0x0004:  009fc400  CBaseTempEntity::YouForgotToImplementOrDeclareServerClass()
++0x0008:  009fc430  CBaseTempEntity::~CBaseTempEntity()
++0x000c:  009fc4c0  CBaseTempEntity::~CBaseTempEntity()
++0x0010:  009fc4e0  CBaseTempEntity::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

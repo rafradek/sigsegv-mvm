@@ -1,0 +1,4 @@
+HidingSpot
+
++0x0000:  00aeb160  HidingSpot::~HidingSpot()
++0x0004:  00aeb270  HidingSpot::~HidingSpot()

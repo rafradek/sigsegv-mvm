@@ -1,0 +1,5 @@
+CEntityFactory<CTFWrench>
+
++0x0000:  00893bc0  CEntityFactory<CTFWrench>::Create(char const*)
++0x0004:  00893b30  CEntityFactory<CTFWrench>::Destroy(IServerNetworkable*)
++0x0008:  00893b50  CEntityFactory<CTFWrench>::GetEntitySize()

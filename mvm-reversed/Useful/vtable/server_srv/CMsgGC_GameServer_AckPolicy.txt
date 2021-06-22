@@ -1,0 +1,22 @@
+CMsgGC_GameServer_AckPolicy
+
++0x0000:  00579d30  CMsgGC_GameServer_AckPolicy::~CMsgGC_GameServer_AckPolicy()
++0x0004:  00579d70  CMsgGC_GameServer_AckPolicy::~CMsgGC_GameServer_AckPolicy()
++0x0008:  00000000  
++0x000c:  005b1520  CMsgGC_GameServer_AckPolicy::New() const
++0x0010:  00583250  CMsgGC_GameServer_AckPolicy::Clear()
++0x0014:  00575ad0  CMsgGC_GameServer_AckPolicy::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005790a0  CMsgGC_GameServer_AckPolicy::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00578340  CMsgGC_GameServer_AckPolicy::ByteSize() const
++0x0028:  00578970  CMsgGC_GameServer_AckPolicy::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00582400  CMsgGC_GameServer_AckPolicy::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcb60  CMsgGC_GameServer_AckPolicy::GetCachedSize() const
++0x0034:  00575a80  CMsgGC_GameServer_AckPolicy::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b16b0  CMsgGC_GameServer_AckPolicy::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575a70  CMsgGC_GameServer_AckPolicy::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f720  CMsgGC_GameServer_AckPolicy::GetMetadata() const

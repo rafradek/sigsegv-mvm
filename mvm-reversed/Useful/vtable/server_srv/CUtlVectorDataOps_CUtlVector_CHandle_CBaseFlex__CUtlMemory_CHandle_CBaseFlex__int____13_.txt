@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CHandle<CBaseFlex>, CUtlMemory<CHandle<CBaseFlex>, int> >, 13>
+
++0x0000:  00bc38a0  CUtlVectorDataOps<CUtlVector<CHandle<CBaseFlex>, CUtlMemory<CHandle<CBaseFlex>, int> >, 13>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00bc7590  CUtlVectorDataOps<CUtlVector<CHandle<CBaseFlex>, CUtlMemory<CHandle<CBaseFlex>, int> >, 13>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00bc3970  CUtlVectorDataOps<CUtlVector<CHandle<CBaseFlex>, CUtlMemory<CHandle<CBaseFlex>, int> >, 13>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00bc7570  CUtlVectorDataOps<CUtlVector<CHandle<CBaseFlex>, CUtlMemory<CHandle<CBaseFlex>, int> >, 13>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

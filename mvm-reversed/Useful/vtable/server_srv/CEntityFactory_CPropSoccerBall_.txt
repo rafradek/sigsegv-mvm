@@ -1,0 +1,5 @@
+CEntityFactory<CPropSoccerBall>
+
++0x0000:  00e25b30  CEntityFactory<CPropSoccerBall>::Create(char const*)
++0x0004:  00e25550  CEntityFactory<CPropSoccerBall>::Destroy(IServerNetworkable*)
++0x0008:  00e25570  CEntityFactory<CPropSoccerBall>::GetEntitySize()

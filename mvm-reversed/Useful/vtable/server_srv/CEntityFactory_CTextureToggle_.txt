@@ -1,0 +1,5 @@
+CEntityFactory<CTextureToggle>
+
++0x0000:  00a4a440  CEntityFactory<CTextureToggle>::Create(char const*)
++0x0004:  00a4a3f0  CEntityFactory<CTextureToggle>::Destroy(IServerNetworkable*)
++0x0008:  00a4a410  CEntityFactory<CTextureToggle>::GetEntitySize()

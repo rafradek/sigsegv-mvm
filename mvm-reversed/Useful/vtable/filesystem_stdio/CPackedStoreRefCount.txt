@@ -1,0 +1,5 @@
+CPackedStoreRefCount
+
++0x0000:  0001bff0  CPackedStoreRefCount::~CPackedStoreRefCount()
++0x0004:  0001c010  CPackedStoreRefCount::~CPackedStoreRefCount()
++0x0008:  0001c030  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

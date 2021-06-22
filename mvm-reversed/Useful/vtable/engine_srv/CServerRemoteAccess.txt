@@ -1,0 +1,8 @@
+CServerRemoteAccess
+
++0x0000:  001bd010  CServerRemoteAccess::~CServerRemoteAccess()
++0x0004:  001bd0e0  CServerRemoteAccess::~CServerRemoteAccess()
++0x0008:  001bcf00  CServerRemoteAccess::WriteDataRequest(unsigned int, void const*, int)
++0x000c:  001bbaa0  CServerRemoteAccess::ReadDataResponse(unsigned int, void*, int)
++0x0010:  001bbb80  CServerRemoteAccess::GetNextListenerID(bool, netadr_s const*)
++0x0014:  001bcf40  CServerRemoteAccess::RegisterAdminUIID(unsigned int)

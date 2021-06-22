@@ -1,0 +1,15 @@
+MM_RegisterResponse
+
++0x0000:  0008bcf0  MM_RegisterResponse::~MM_RegisterResponse()
++0x0004:  0008c360  MM_RegisterResponse::~MM_RegisterResponse()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008bb60  MM_RegisterResponse::Process()
++0x0014:  0007ca00  MM_RegisterResponse::ReadFromBuffer(bf_read&)
++0x0018:  0007c950  MM_RegisterResponse::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008bb40  MM_RegisterResponse::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008bb50  MM_RegisterResponse::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cb70  MM_RegisterResponse::ToString() const

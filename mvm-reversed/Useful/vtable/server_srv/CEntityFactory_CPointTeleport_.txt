@@ -1,0 +1,5 @@
+CEntityFactory<CPointTeleport>
+
++0x0000:  00b8ee30  CEntityFactory<CPointTeleport>::Create(char const*)
++0x0004:  00b8edb0  CEntityFactory<CPointTeleport>::Destroy(IServerNetworkable*)
++0x0008:  00b8edd0  CEntityFactory<CPointTeleport>::GetEntitySize()

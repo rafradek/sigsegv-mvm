@@ -1,0 +1,5 @@
+CEntityFactory<CEnvTonemapController>
+
++0x0000:  00a4c010  CEntityFactory<CEnvTonemapController>::Create(char const*)
++0x0004:  00a4bfc0  CEntityFactory<CEnvTonemapController>::Destroy(IServerNetworkable*)
++0x0008:  00a4bfe0  CEntityFactory<CEnvTonemapController>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CRagdollManager>
+
++0x0000:  00bb1ee0  CEntityFactory<CRagdollManager>::Create(char const*)
++0x0004:  00bb1e60  CEntityFactory<CRagdollManager>::Destroy(IServerNetworkable*)
++0x0008:  00bb1e80  CEntityFactory<CRagdollManager>::GetEntitySize()

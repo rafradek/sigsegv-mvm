@@ -1,0 +1,14 @@
+CTextConsole
+
++0x0000:  00091a70  CTextConsole::~CTextConsole()
++0x0004:  00091aa0  CTextConsole::~CTextConsole()
++0x0008:  00091a50  CTextConsole::Init()
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  00000000  
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00000000  
++0x0024:  00000000  
++0x0028:  00091a80  CTextConsole::SetVisible(bool)
++0x002c:  00091a90  CTextConsole::IsVisible()

@@ -1,0 +1,5 @@
+CEntityFactory<CFireSmoke>
+
++0x0000:  00a56c70  CEntityFactory<CFireSmoke>::Create(char const*)
++0x0004:  00a56c40  CEntityFactory<CFireSmoke>::Destroy(IServerNetworkable*)
++0x0008:  00a56c60  CEntityFactory<CFireSmoke>::GetEntitySize()

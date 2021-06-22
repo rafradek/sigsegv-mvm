@@ -1,0 +1,5 @@
+CEntityFactory<CPhysExplosion>
+
++0x0000:  00b5cb60  CEntityFactory<CPhysExplosion>::Create(char const*)
++0x0004:  00b5c960  CEntityFactory<CPhysExplosion>::Destroy(IServerNetworkable*)
++0x0008:  00b5c980  CEntityFactory<CPhysExplosion>::GetEntitySize()

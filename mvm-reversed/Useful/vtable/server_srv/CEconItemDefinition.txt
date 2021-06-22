@@ -1,0 +1,13 @@
+CEconItemDefinition
+
++0x0000:  00668bf0  CEconItemDefinition::~CEconItemDefinition()
++0x0004:  00669030  CEconItemDefinition::~CEconItemDefinition()
++0x0008:  00679370  CEconItemDefinition::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  00672630  CEconItemDefinition::BInitFromTestItemKVs(int, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x0010:  0066e8a0  CEconItemDefinition::GeneratePrecacheModelStrings(bool, CUtlVector<char const*, CUtlMemory<char const*, int> >*) const
++0x0014:  0066e580  CEconItemDefinition::GeneratePrecacheSoundStrings(bool, CUtlVector<char const*, CUtlMemory<char const*, int> >*) const
++0x0018:  006a3f10  CEconItemDefinition::CopyPolymorphic(CEconItemDefinition const*)
++0x001c:  0067c550  CEconItemDefinition::GetBundleItemCount() const
++0x0020:  0067c570  CEconItemDefinition::GetBundleItem(int) const
++0x0024:  006684d0  CEconItemDefinition::GetIconDisplayModel() const
++0x0028:  006640b0  CEconItemDefinition::IsContentStreamable() const

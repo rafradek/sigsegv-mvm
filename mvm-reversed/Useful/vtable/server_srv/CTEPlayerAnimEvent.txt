@@ -1,0 +1,9 @@
+CTEPlayerAnimEvent
+
++0x0000:  00dbee60  CTEPlayerAnimEvent::GetServerClass()
++0x0004:  00dbee70  CTEPlayerAnimEvent::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00e0a8e0  CTEPlayerAnimEvent::~CTEPlayerAnimEvent()
++0x000c:  00e0a900  CTEPlayerAnimEvent::~CTEPlayerAnimEvent()
++0x0010:  009fc4e0  CBaseTempEntity::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

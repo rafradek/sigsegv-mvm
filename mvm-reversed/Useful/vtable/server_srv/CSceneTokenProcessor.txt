@@ -1,0 +1,6 @@
+CSceneTokenProcessor
+
++0x0000:  0070d4b0  CSceneTokenProcessor::CurrentToken()
++0x0004:  0070d4c0  CSceneTokenProcessor::GetToken(bool)
++0x0008:  0070d500  CSceneTokenProcessor::TokenAvailable()
++0x000c:  0070d550  CSceneTokenProcessor::Error(char const*, ...)

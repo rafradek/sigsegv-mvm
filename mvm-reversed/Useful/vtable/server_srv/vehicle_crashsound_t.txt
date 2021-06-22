@@ -1,0 +1,3 @@
+vehicle_crashsound_t
+
++0x0000:  00e5fa40  vehicle_crashsound_t::GetDataDescMap()

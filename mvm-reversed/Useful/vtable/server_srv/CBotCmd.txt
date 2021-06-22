@@ -1,0 +1,4 @@
+CBotCmd
+
++0x0000:  00b7cc30  CBotCmd::~CBotCmd()
++0x0004:  00b7cd50  CBotCmd::~CBotCmd()

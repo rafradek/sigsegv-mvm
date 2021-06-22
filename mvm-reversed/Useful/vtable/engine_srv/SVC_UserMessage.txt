@@ -1,0 +1,15 @@
+SVC_UserMessage
+
++0x0000:  0008bdd0  SVC_UserMessage::~SVC_UserMessage()
++0x0004:  0008c1a0  SVC_UserMessage::~SVC_UserMessage()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b920  SVC_UserMessage::Process()
++0x0014:  00082670  SVC_UserMessage::ReadFromBuffer(bf_read&)
++0x0018:  0007fe30  SVC_UserMessage::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b900  SVC_UserMessage::GetType() const
++0x0024:  0008b940  SVC_UserMessage::GetGroup() const
++0x0028:  0008b910  SVC_UserMessage::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d150  SVC_UserMessage::ToString() const

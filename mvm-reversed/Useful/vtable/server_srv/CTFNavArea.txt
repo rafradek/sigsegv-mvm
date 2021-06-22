@@ -1,0 +1,39 @@
+CTFNavArea
+
++0x0000:  00d3c230  CTFNavArea::~CTFNavArea()
++0x0004:  00d3c310  CTFNavArea::~CTFNavArea()
++0x0008:  00d3adb0  CTFNavArea::OnServerActivate()
++0x000c:  00d3ad60  CTFNavArea::OnRoundRestart()
++0x0010:  00ab9510  CNavArea::OnRoundRestartPreEntity()
++0x0014:  00ab9520  CNavArea::OnEnter(CBaseCombatCharacter*, CNavArea*)
++0x0018:  00ab9530  CNavArea::OnExit(CBaseCombatCharacter*, CNavArea*)
++0x001c:  00aa9000  CNavArea::OnDestroyNotify(CNavArea*)
++0x0020:  00aab320  CNavArea::OnDestroyNotify(CNavLadder*)
++0x0024:  00ab9540  CNavArea::OnEditCreateNotify(CNavArea*)
++0x0028:  00ab9550  CNavArea::OnEditDestroyNotify(CNavArea*)
++0x002c:  00ab9560  CNavArea::OnEditDestroyNotify(CNavLadder*)
++0x0030:  00d3aff0  CTFNavArea::Save(CUtlBuffer&, unsigned int) const
++0x0034:  00d3ae80  CTFNavArea::Load(CUtlBuffer&, unsigned int, unsigned int)
++0x0038:  00acbd30  CNavArea::PostLoad()
++0x003c:  00adfad0  CNavArea::SaveToSelectedSet(KeyValues*) const
++0x0040:  00adfb40  CNavArea::RestoreFromSelectedSet(KeyValues*)
++0x0044:  00d3c1f0  CTFNavArea::UpdateBlocked(bool, int)
++0x0048:  00d3adf0  CTFNavArea::IsBlocked(int, bool) const
++0x004c:  00ab9580  CNavArea::GetDangerDecayRate() const
++0x0050:  00d3b2e0  CTFNavArea::Draw() const
++0x0054:  00aa9cb0  CNavArea::DrawFilled(int, int, int, int, float, bool, float) const
++0x0058:  00aa9a90  CNavArea::DrawSelectedSet(Vector const&) const
++0x005c:  00aafa10  CNavArea::ComputeHidingSpots()
++0x0060:  00ab0310  CNavArea::ComputeSniperSpots()
++0x0064:  00ab8bf0  CNavArea::ComputeSpotEncounters()
++0x0068:  00acc1b0  CNavArea::ComputeEarliestOccupyTimes()
++0x006c:  00d3ad50  CTFNavArea::CustomAnalysis(bool)
++0x0070:  00aacce0  CNavArea::ComputeLighting()
++0x0074:  00ad10d0  CNavArea::IsAbleToMergeWith(CNavArea*) const
++0x0078:  00aa8e60  CNavArea::InheritAttributes(CNavArea*, CNavArea*)
++0x007c:  00aa9780  CNavArea::IsEntirelyVisible(Vector const&, CBaseEntity const*) const
++0x0080:  00aa9ec0  CNavArea::IsPartiallyVisible(Vector const&, CBaseEntity const*) const
++0x0084:  00aa94b0  CNavArea::IsPotentiallyVisible(CNavArea const*) const
++0x0088:  00d3c200  CTFNavArea::IsPotentiallyVisibleToTeam(int) const
++0x008c:  00aa91e0  CNavArea::IsCompletelyVisible(CNavArea const*) const
++0x0090:  00aaa3d0  CNavArea::IsCompletelyVisibleToTeam(int) const

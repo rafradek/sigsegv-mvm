@@ -1,0 +1,5 @@
+CEntityFactory<CTFBotHintSentrygun>
+
++0x0000:  00c7d930  CEntityFactory<CTFBotHintSentrygun>::Create(char const*)
++0x0004:  00c7d7b0  CEntityFactory<CTFBotHintSentrygun>::Destroy(IServerNetworkable*)
++0x0008:  00c7d7d0  CEntityFactory<CTFBotHintSentrygun>::GetEntitySize()

@@ -1,0 +1,4 @@
+CTFDamageEvent
+
++0x0000:  00802410  CTFDamageEvent::NetworkStateChanged()
++0x0004:  00802420  CTFDamageEvent::NetworkStateChanged(void*)

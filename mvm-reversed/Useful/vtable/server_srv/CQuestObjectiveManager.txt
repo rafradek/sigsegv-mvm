@@ -1,0 +1,17 @@
+CQuestObjectiveManager
+
++0x0000:  00752490  CQuestObjectiveManager::SOCreated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0004:  007524a0  CQuestObjectiveManager::PreSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0008:  00752480  CQuestObjectiveManager::SOUpdated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x000c:  007524b0  CQuestObjectiveManager::PostSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0010:  00752470  CQuestObjectiveManager::SODestroyed(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0014:  007524c0  CQuestObjectiveManager::SOCacheSubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0018:  00751c20  CQuestObjectiveManager::SOCacheUnsubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x001c:  00751af0  CQuestObjectiveManager::~CQuestObjectiveManager()
++0x0020:  00751c00  CQuestObjectiveManager::~CQuestObjectiveManager()
++0x0024:  00752100  CQuestObjectiveManager::FireGameEvent(IGameEvent*)
++0x0028:  fffffffc  (unknown)
++0x002c:  010cc540  typeinfo for CQuestObjectiveManager
++0x0030:  00751ae0  non-virtual thunk to CQuestObjectiveManager::~CQuestObjectiveManager()
++0x0034:  00751bf0  non-virtual thunk to CQuestObjectiveManager::~CQuestObjectiveManager()
++0x0038:  007520f0  non-virtual thunk to CQuestObjectiveManager::FireGameEvent(IGameEvent*)

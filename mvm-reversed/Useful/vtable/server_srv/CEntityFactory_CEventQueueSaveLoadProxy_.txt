@@ -1,0 +1,5 @@
+CEntityFactory<CEventQueueSaveLoadProxy>
+
++0x0000:  00a08a10  CEntityFactory<CEventQueueSaveLoadProxy>::Create(char const*)
++0x0004:  00a089c0  CEntityFactory<CEventQueueSaveLoadProxy>::Destroy(IServerNetworkable*)
++0x0008:  00a089e0  CEntityFactory<CEventQueueSaveLoadProxy>::GetEntitySize()

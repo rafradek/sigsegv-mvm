@@ -1,0 +1,3 @@
+CUtlNoEscConversion
+
++0x0000:  00086270  CUtlNoEscConversion::FindConversion(char const*, int*)

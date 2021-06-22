@@ -1,0 +1,5 @@
+CEntityFactory<CTFBat_Fish>
+
++0x0000:  0084aff0  CEntityFactory<CTFBat_Fish>::Create(char const*)
++0x0004:  0084ae70  CEntityFactory<CTFBat_Fish>::Destroy(IServerNetworkable*)
++0x0008:  0084ae90  CEntityFactory<CTFBat_Fish>::GetEntitySize()

@@ -1,0 +1,4 @@
+CTraceFilterPlayersNPCsPhysicsProps
+
++0x0000:  00a37870  CTraceFilterPlayersNPCsPhysicsProps::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  00a37760  CTraceFilterPlayersNPCsPhysicsProps::GetTraceType() const

@@ -1,0 +1,9 @@
+CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>
+
++0x0000:  000a3000  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::Lock()
++0x0004:  000a2fa0  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::TryLock()
++0x0008:  000a3080  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::Unlock()
++0x000c:  000a2f60  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::~CDataManager()
++0x0010:  000a30c0  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::~CDataManager()
++0x0014:  000a3750  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::DestroyResourceStorage(void*)
++0x0018:  000a2f40  CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>::GetRealSize(void*)

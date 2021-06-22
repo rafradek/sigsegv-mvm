@@ -1,0 +1,16 @@
+ISchemaAttributeTypeBase<unsigned long long>
+
++0x0000:  0067c720  ISchemaAttributeTypeBase<unsigned long long>::~ISchemaAttributeTypeBase()
++0x0004:  0067d2f0  ISchemaAttributeTypeBase<unsigned long long>::~ISchemaAttributeTypeBase()
++0x0008:  0067d620  ISchemaAttributeTypeBase<unsigned long long>::GetTypeUniqueIdentifier() const
++0x000c:  0067f0a0  ISchemaAttributeTypeBase<unsigned long long>::LoadEconAttributeValue(CEconItem*, CEconItemAttributeDefinition const*, attribute_data_union_t const&) const
++0x0010:  0067ca30  ISchemaAttributeTypeBase<unsigned long long>::ConvertEconAttributeValueToByteStream(attribute_data_union_t const&, std::string*) const
++0x0014:  00000000  
++0x0018:  00000000  
++0x001c:  0067deb0  ISchemaAttributeTypeBase<unsigned long long>::LoadByteStreamToEconAttributeValue(CEconItem*, CEconItemAttributeDefinition const*, std::string const&) const
++0x0020:  0067db90  ISchemaAttributeTypeBase<unsigned long long>::InitializeNewEconAttributeValue(attribute_data_union_t*) const
++0x0024:  0067d590  ISchemaAttributeTypeBase<unsigned long long>::UnloadEconAttributeValue(attribute_data_union_t*) const
++0x0028:  0067ca50  ISchemaAttributeTypeBase<unsigned long long>::OnIterateAttributeValue(IEconItemAttributeIterator*, CEconItemAttributeDefinition const*, attribute_data_union_t const&) const
++0x002c:  0067c5b0  ISchemaAttributeType::BSupportsGameplayModificationAndNetworking() const
++0x0030:  00000000  
++0x0034:  00000000  

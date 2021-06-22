@@ -1,0 +1,5 @@
+CEntityFactory<CTFRobotDestructionLogic>
+
++0x0000:  007d3c10  CEntityFactory<CTFRobotDestructionLogic>::Create(char const*)
++0x0004:  007d0ef0  CEntityFactory<CTFRobotDestructionLogic>::Destroy(IServerNetworkable*)
++0x0008:  007d0f10  CEntityFactory<CTFRobotDestructionLogic>::GetEntitySize()

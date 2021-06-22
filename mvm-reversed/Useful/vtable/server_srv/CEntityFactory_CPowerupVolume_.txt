@@ -1,0 +1,5 @@
+CEntityFactory<CPowerupVolume>
+
++0x0000:  00cc6be0  CEntityFactory<CPowerupVolume>::Create(char const*)
++0x0004:  00cc6650  CEntityFactory<CPowerupVolume>::Destroy(IServerNetworkable*)
++0x0008:  00cc6670  CEntityFactory<CPowerupVolume>::GetEntitySize()

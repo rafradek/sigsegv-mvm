@@ -1,0 +1,9 @@
+CTEBeamSpline
+
++0x0000:  00c0ccc0  CTEBeamSpline::GetServerClass()
++0x0004:  00c0ccd0  CTEBeamSpline::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c0cd10  CTEBeamSpline::~CTEBeamSpline()
++0x000c:  00c0cd30  CTEBeamSpline::~CTEBeamSpline()
++0x0010:  00c0cd60  CTEBeamSpline::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

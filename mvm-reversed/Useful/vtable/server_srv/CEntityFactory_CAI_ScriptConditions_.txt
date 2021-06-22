@@ -1,0 +1,5 @@
+CEntityFactory<CAI_ScriptConditions>
+
++0x0000:  0099b6c0  CEntityFactory<CAI_ScriptConditions>::Create(char const*)
++0x0004:  0099afd0  CEntityFactory<CAI_ScriptConditions>::Destroy(IServerNetworkable*)
++0x0008:  0099aff0  CEntityFactory<CAI_ScriptConditions>::GetEntitySize()

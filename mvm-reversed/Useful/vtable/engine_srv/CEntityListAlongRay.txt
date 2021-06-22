@@ -1,0 +1,3 @@
+CEntityListAlongRay
+
++0x0000:  00116310  CEntityListAlongRay::EnumElement(IHandleEntity*)

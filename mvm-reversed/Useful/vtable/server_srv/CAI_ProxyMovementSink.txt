@@ -1,0 +1,11 @@
+CAI_ProxyMovementSink
+
++0x0000:  0063b3e0  CAI_ProxyMovementSink::CalcYawSpeed()
++0x0004:  0063b410  CAI_ProxyMovementSink::OnCalcBaseMove(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0008:  0063b450  CAI_ProxyMovementSink::OnObstructionPreSteer(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x000c:  0063b490  CAI_ProxyMovementSink::OnFailedSteer(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0010:  0063b4d0  CAI_ProxyMovementSink::OnFailedLocalNavigation(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0014:  0063b510  CAI_ProxyMovementSink::OnInsufficientStopDist(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0018:  0063b5c0  CAI_ProxyMovementSink::OnMoveBlocked(AIMoveResult_t*)
++0x001c:  0063b550  CAI_ProxyMovementSink::OnMoveStalled(AILocalMoveGoal_t const&)
++0x0020:  0063b580  CAI_ProxyMovementSink::OnMoveExecuteFailed(AILocalMoveGoal_t const&, AIMoveTrace_t const&, AIMotorMoveResult_t, AIMoveResult_t*)

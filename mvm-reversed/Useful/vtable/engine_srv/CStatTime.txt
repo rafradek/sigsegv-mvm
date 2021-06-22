@@ -1,0 +1,3 @@
+CStatTime
+
++0x0000:  00113430  CStatTime::GetTime()

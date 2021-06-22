@@ -1,0 +1,5 @@
+CEntityFactory<CSpotlightEnd>
+
++0x0000:  00be5bf0  CEntityFactory<CSpotlightEnd>::Create(char const*)
++0x0004:  00be5b70  CEntityFactory<CSpotlightEnd>::Destroy(IServerNetworkable*)
++0x0008:  00be5b90  CEntityFactory<CSpotlightEnd>::GetEntitySize()

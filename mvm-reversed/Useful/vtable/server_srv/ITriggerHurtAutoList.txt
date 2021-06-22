@@ -1,0 +1,4 @@
+ITriggerHurtAutoList
+
++0x0000:  00e40320  ITriggerHurtAutoList::~ITriggerHurtAutoList()
++0x0004:  00e40390  ITriggerHurtAutoList::~ITriggerHurtAutoList()

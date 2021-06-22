@@ -156,6 +156,15 @@ void CCollisionProperty::CalcNearestPoint(const Vector& vecWorldPt, Vector *pVec
 	CollisionToWorldSpace(localClosestPt, pVecNearestWorldPt);
 }
 
+bool CCollisionProperty::IsPointInBounds( const Vector &vecWorldPt ) const
+{
+	Vector vecLocalSpace;
+	WorldToCollisionSpace( vecWorldPt, &vecLocalSpace );
+	return ( ( vecLocalSpace.x >= m_vecMins.Get().x && vecLocalSpace.x <= m_vecMaxs.Get().x ) &&
+			( vecLocalSpace.y >= m_vecMins.Get().y && vecLocalSpace.y <= m_vecMaxs.Get().y ) &&
+			( vecLocalSpace.z >= m_vecMins.Get().z && vecLocalSpace.z <= m_vecMaxs.Get().z ) );
+}
+
 const char *variant_t::ToString( void ) const
 {
 	COMPILE_TIME_ASSERT( sizeof(string_t) == sizeof(int) );

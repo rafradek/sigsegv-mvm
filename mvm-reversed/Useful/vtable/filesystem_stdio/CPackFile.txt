@@ -1,0 +1,5 @@
+CPackFile
+
++0x0000:  0002f850  CPackFile::~CPackFile()
++0x0004:  0002f860  CPackFile::~CPackFile()
++0x0008:  0001c030  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

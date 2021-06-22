@@ -1,0 +1,10 @@
+IInventoryUpdateListener
+
++0x0000:  00c8c450  IInventoryUpdateListener::SOCreated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0004:  00c8c470  IInventoryUpdateListener::PreSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0008:  00c8c480  IInventoryUpdateListener::SOUpdated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x000c:  00c8c490  IInventoryUpdateListener::PostSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0010:  00c8c4b0  IInventoryUpdateListener::SODestroyed(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0014:  00c8c4d0  IInventoryUpdateListener::SOCacheSubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0018:  00c8c4f0  IInventoryUpdateListener::SOCacheUnsubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x001c:  00000000  

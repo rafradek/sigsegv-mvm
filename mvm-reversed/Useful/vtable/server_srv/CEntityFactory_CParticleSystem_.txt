@@ -1,0 +1,5 @@
+CEntityFactory<CParticleSystem>
+
++0x0000:  00b29c80  CEntityFactory<CParticleSystem>::Create(char const*)
++0x0004:  00b29c00  CEntityFactory<CParticleSystem>::Destroy(IServerNetworkable*)
++0x0008:  00b29c20  CEntityFactory<CParticleSystem>::GetEntitySize()

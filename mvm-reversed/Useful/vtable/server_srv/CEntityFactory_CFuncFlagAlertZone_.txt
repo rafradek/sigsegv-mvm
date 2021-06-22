@@ -1,0 +1,5 @@
+CEntityFactory<CFuncFlagAlertZone>
+
++0x0000:  00cc1820  CEntityFactory<CFuncFlagAlertZone>::Create(char const*)
++0x0004:  00cc17f0  CEntityFactory<CFuncFlagAlertZone>::Destroy(IServerNetworkable*)
++0x0008:  00cc1810  CEntityFactory<CFuncFlagAlertZone>::GetEntitySize()

@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CHandle<CSceneListManager>, CUtlMemory<CHandle<CSceneListManager>, int> >, 13>
+
++0x0000:  00bc37b0  CUtlVectorDataOps<CUtlVector<CHandle<CSceneListManager>, CUtlMemory<CHandle<CSceneListManager>, int> >, 13>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00bc8cf0  CUtlVectorDataOps<CUtlVector<CHandle<CSceneListManager>, CUtlMemory<CHandle<CSceneListManager>, int> >, 13>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00bc3880  CUtlVectorDataOps<CUtlVector<CHandle<CSceneListManager>, CUtlMemory<CHandle<CSceneListManager>, int> >, 13>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00bc8cd0  CUtlVectorDataOps<CUtlVector<CHandle<CSceneListManager>, CUtlMemory<CHandle<CSceneListManager>, int> >, 13>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

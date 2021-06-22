@@ -1,0 +1,4 @@
+CTraceFilterCollisionArrows
+
++0x0000:  00e20230  CTraceFilterCollisionArrows::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0063b3b0  CTraceFilterEntitiesOnly::GetTraceType() const

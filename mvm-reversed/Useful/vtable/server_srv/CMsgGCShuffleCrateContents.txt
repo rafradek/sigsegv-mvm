@@ -1,0 +1,22 @@
+CMsgGCShuffleCrateContents
+
++0x0000:  0052f6c0  CMsgGCShuffleCrateContents::~CMsgGCShuffleCrateContents()
++0x0004:  0052f710  CMsgGCShuffleCrateContents::~CMsgGCShuffleCrateContents()
++0x0008:  00000000  
++0x000c:  0052f610  CMsgGCShuffleCrateContents::New() const
++0x0010:  00524c20  CMsgGCShuffleCrateContents::Clear()
++0x0014:  005223c0  CMsgGCShuffleCrateContents::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00526a70  CMsgGCShuffleCrateContents::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00525280  CMsgGCShuffleCrateContents::ByteSize() const
++0x0028:  005242a0  CMsgGCShuffleCrateContents::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00525fd0  CMsgGCShuffleCrateContents::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533cf0  CMsgGCShuffleCrateContents::GetCachedSize() const
++0x0034:  00522370  CMsgGCShuffleCrateContents::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052f860  CMsgGCShuffleCrateContents::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00522360  CMsgGCShuffleCrateContents::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527160  CMsgGCShuffleCrateContents::GetMetadata() const

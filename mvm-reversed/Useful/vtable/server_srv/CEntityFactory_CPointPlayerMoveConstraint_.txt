@@ -1,0 +1,5 @@
+CEntityFactory<CPointPlayerMoveConstraint>
+
++0x0000:  00b90fd0  CEntityFactory<CPointPlayerMoveConstraint>::Create(char const*)
++0x0004:  00b90fa0  CEntityFactory<CPointPlayerMoveConstraint>::Destroy(IServerNetworkable*)
++0x0008:  00b90fc0  CEntityFactory<CPointPlayerMoveConstraint>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerTimerDoor>
+
++0x0000:  00e2ae10  CEntityFactory<CTriggerTimerDoor>::Create(char const*)
++0x0004:  00e2ab10  CEntityFactory<CTriggerTimerDoor>::Destroy(IServerNetworkable*)
++0x0008:  00e2ab30  CEntityFactory<CTriggerTimerDoor>::GetEntitySize()

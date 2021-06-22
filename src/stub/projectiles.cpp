@@ -59,6 +59,7 @@ MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> CBaseProjectile::vt_
 MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> CBaseProjectile::vt_SetLauncher(TypeName<CBaseProjectile>(), "CBaseProjectile::SetLauncher");
 
 MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::SetDamage");
+MemberVFuncThunk<CTFBaseProjectile *, float> CTFBaseProjectile::vt_GetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::GetDamage");
 
 IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRocket);
 IMPL_SENDPROP(int,                  CTFBaseRocket, m_iDeflected,       CTFBaseRocket);
@@ -72,6 +73,7 @@ IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
 
 IMPL_EXTRACT(float, CTFProjectile_Arrow, m_flTimeInit, new CExtract_CTFProjectile_Arrow_ArrowTouch());
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bCritical, CTFProjectile_Arrow);
+IMPL_RELATIVE(CUtlVector<int>, CTFProjectile_Arrow, m_HitEntities, m_flTimeInit, -sizeof(CUtlVector<int>));
 
 //MemberFuncThunk<const CTFProjectile_Arrow *, bool> CTFProjectile_Arrow::ft_CanPenetrate("CTFBaseRocket::GetOwnerPlayer");
 //MemberFuncThunk<CTFProjectile_Arrow *, void, bool> CTFProjectile_Arrow::ft_SetPenetrate("CTFBaseRocket::GetOwnerPlayer");
@@ -84,8 +86,12 @@ IMPL_SENDPROP(Vector, CTFWeaponBaseGrenadeProj, m_vInitialVelocity, CTFWeaponBas
 
 MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> CTFWeaponBaseGrenadeProj::vt_GetWeaponID(TypeName<CTFWeaponBaseGrenadeProj>(), "CTFWeaponBaseGrenadeProj::GetWeaponID");
 
+MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> CTFWeaponBaseGrenadeProj::ft_SetDetonateTimerLength("CTFWeaponBaseGrenadeProj::SetDetonateTimerLength");
+
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrenadePipebombProjectile, m_hLauncher, CTFGrenadePipebombProjectile);
+IMPL_SENDPROP(bool, CTFGrenadePipebombProjectile, m_bTouched, CTFGrenadePipebombProjectile);
+IMPL_SENDPROP(int, CTFGrenadePipebombProjectile, m_iType, CTFGrenadePipebombProjectile);
 
 
 GlobalThunk<CUtlVector<IBaseProjectileAutoList *>> IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList("IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList");

@@ -28,10 +28,14 @@ static const char *SPELL_TYPE[] = {
     "All"
 };
 
+extern std::map<int, std::string> g_Itemnames;
+extern std::map<int, std::string> g_Attribnames;
+
 struct ForceItems
 {
 	std::vector<std::pair<std::string, CEconItemDefinition *>> items[11] = {};
 	std::vector<std::pair<std::string, CEconItemDefinition *>> items_no_remove[11] = {};
+    bool parsed = false;
 };
 
 struct AddCond
@@ -185,6 +189,111 @@ private:
     CountdownTimer m_ctDoneAction;
 };
 
+const char *GetItemName(int item_defid);
+
+class ItemListEntry
+{
+public:
+    virtual ~ItemListEntry() = default;
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const = 0;
+    virtual const char *GetInfo() const = 0;
+};
+
+class ItemListEntry_Classname : public ItemListEntry
+{
+public:
+    ItemListEntry_Classname(const char *classname) : m_strClassname(classname) 
+    {
+        wildcard = !m_strClassname.empty() && m_strClassname[m_strClassname.size() - 1] == '*';
+    }
+    
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
+    {
+        if (classname == nullptr) return false;
+        if (wildcard)
+            return strnicmp(classname, m_strClassname.c_str(), m_strClassname.size() - 1) == 0;
+        else
+            return FStrEq(this->m_strClassname.c_str(), classname);
+    }
+    
+    virtual const char *GetInfo() const override
+    {
+        static char buf[64];
+        if (strnicmp(m_strClassname.c_str(), "tf_weapon_", strlen("tf_weapon_")) == 0) {
+            snprintf(buf, sizeof(buf), "Weapon type: %s", m_strClassname.c_str() + strlen("tf_weapon_"));
+        }
+        else {
+            snprintf(buf, sizeof(buf), "Item type: %s", m_strClassname.c_str());
+        }
+        
+        return buf;
+    }
+
+private:
+    bool wildcard;
+    std::string m_strClassname;
+};
+
+class ItemListEntry_Name : public ItemListEntry
+{
+public:
+    ItemListEntry_Name(const char *name) : m_strName(name) {}
+    
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
+    {
+        if (item_view == nullptr) return false;
+        return FStrEq(this->m_strName.c_str(), item_view->GetStaticData()->GetName(""));
+    }
+
+    virtual const char *GetInfo() const override
+    {
+        auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strName.c_str());
+        
+        if (item_def != nullptr) {
+            auto find = g_Itemnames.find(item_def->m_iItemDefIndex);
+            if (find != g_Itemnames.end()) {
+                return find->second.c_str();
+            }
+        }
+        return m_strName.c_str();
+    }
+    
+private:
+    std::string m_strName;
+};
+
+class ItemListEntry_DefIndex : public ItemListEntry
+{
+public:
+    ItemListEntry_DefIndex(int def_index) : m_iDefIndex(def_index) {}
+    
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
+    {
+        if (item_view == nullptr) return false;
+        return (this->m_iDefIndex == item_view->GetItemDefIndex());
+    }
+    
+    virtual const char *GetInfo() const override
+    {
+        static char buf[6];
+        const char *name = GetItemName(m_iDefIndex);
+        if (name != nullptr) {
+            return name;
+        }
+        snprintf(buf, sizeof(buf), "%d", m_iDefIndex);
+        return buf;
+    }
+    
+private:
+    int m_iDefIndex;
+};
+
+struct ItemAttributes
+{
+    std::unique_ptr<ItemListEntry> entry;
+    std::map<CEconItemAttributeDefinition *, std::string> attributes;
+};
+
 void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds);
 void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks);
 
@@ -221,7 +330,7 @@ static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mar
 
 static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremove)
 {
-    
+    force_items.parsed = true;
     if (kv->GetString() != nullptr)
     {
         CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(kv->GetString());
@@ -253,10 +362,78 @@ static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremov
     DevMsg("Parsed attributes\n");
 }
 
+static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &attibs)
+{
+    ItemAttributes item_attributes;// = state.m_ItemAttributes.emplace_back();
+    bool hasname = false;
+
+    FOR_EACH_SUBKEY(kv, subkey) {
+        //std::unique_ptr<ItemListEntry> key=std::make_unique<ItemListEntry_Classname>("");
+        if (FStrEq(subkey->GetName(), "Classname")) {
+            DevMsg("ItemAttrib: Add Classname entry: \"%s\"\n", subkey->GetString());
+            hasname = true;
+            item_attributes.entry = std::make_unique<ItemListEntry_Classname>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "ItemName")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add Name entry: \"%s\"\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_Name>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "DefIndex")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add DefIndex entry: %d\n", subkey->GetInt());
+            item_attributes.entry = std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt());
+        } else {
+            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
+            
+            if (attr_def == nullptr) {
+                Warning("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
+            }
+            else
+                item_attributes.attributes[attr_def] = subkey->GetString();
+        }
+    }
+    if (hasname) {
+
+        attibs.push_back(std::move(item_attributes));//erase(item_attributes);
+    }
+}
+
+static void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player, std::vector<ItemAttributes> &item_attribs_vec) {
+
+    // Item attributes are ignored when picking up dropped weapons
+    float dropped_weapon_attr = 0.0f;
+    FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("is dropped weapon"), &dropped_weapon_attr);
+    if (dropped_weapon_attr != 0.0f)
+        return;
+
+    DevMsg("ReapplyItemUpgrades %f\n", dropped_weapon_attr);
+
+    bool found = false;
+    const char *classname = item_view->GetItemDefinition()->GetItemClass();
+    std::map<CEconItemAttributeDefinition *, std::string> *attribs;
+    for (auto& item_attributes : item_attribs_vec) {
+        if (item_attributes.entry->Matches(classname, item_view)) {
+            attribs = &(item_attributes.attributes);
+            found = true;
+            break;
+        }
+    }
+    if (found && attribs != nullptr) {
+        CEconItemView *view = item_view;
+        for (auto& entry : *attribs) {
+            view->GetAttributeList().AddStringAttribute(entry.first, entry.second);
+        }
+    }
+}
+
 void Parse_AddCond(std::vector<AddCond> &addconds, KeyValues *kv);
 bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues *kv, const char *type_name);
 void ApplyPendingTask(CTFBot *bot, std::vector<PeriodicTaskImpl> &periodic_tasks, std::vector<PeriodicTask> &pending_periodic_tasks);
 void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<DelayedAddCond> &delayed_addconds);
 
 bool LoadUserDataFile(CRC32_t &value, const char *filename);
+
+void LoadItemNames();
+bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
+
+
 #endif

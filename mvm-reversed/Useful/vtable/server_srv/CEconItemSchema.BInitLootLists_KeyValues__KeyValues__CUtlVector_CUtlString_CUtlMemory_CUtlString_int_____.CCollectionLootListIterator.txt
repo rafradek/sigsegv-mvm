@@ -1,0 +1,5 @@
+CEconItemSchema::BInitLootLists(KeyValues*, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)::CCollectionLootListIterator
+
++0x0000:  006640c0  CEconItemSchema::BInitLootLists(KeyValues*, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)::CCollectionLootListIterator::~CCollectionLootListIterator()
++0x0004:  006640d0  CEconItemSchema::BInitLootLists(KeyValues*, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)::CCollectionLootListIterator::~CCollectionLootListIterator()
++0x0008:  00668720  CEconItemSchema::BInitLootLists(KeyValues*, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)::CCollectionLootListIterator::OnIterate(unsigned short)

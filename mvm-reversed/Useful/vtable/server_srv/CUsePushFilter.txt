@@ -1,0 +1,4 @@
+CUsePushFilter
+
++0x0000:  0063b650  CUsePushFilter::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0063b3b0  CTraceFilterEntitiesOnly::GetTraceType() const

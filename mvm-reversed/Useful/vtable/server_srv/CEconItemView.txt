@@ -1,0 +1,28 @@
+CEconItemView
+
++0x0000:  006b13f0  CEconItemView::~CEconItemView()
++0x0004:  006b1540  CEconItemView::~CEconItemView()
++0x0008:  006555d0  CEconItemView::GetCustomPainkKitDefinition() const
++0x000c:  0065ec30  IEconItemInterface::GetCustomPaintKitWear(float&) const
++0x0010:  0065eae0  IEconItemInterface::IsTradable() const
++0x0014:  0065f8c0  IEconItemInterface::GetUntradabilityFlags() const
++0x0018:  0065eb00  IEconItemInterface::IsCommodity() const
++0x001c:  0065f040  IEconItemInterface::IsUsableInCrafting() const
++0x0020:  0065f990  IEconItemInterface::IsMarketable() const
++0x0024:  00655970  CEconItemView::GetItemDefinition() const
++0x0028:  00655590  CEconItemView::GetID() const
++0x002c:  006555c0  CEconItemView::GetAccountID() const
++0x0030:  006af1c0  CEconItemView::GetQuality() const
++0x0034:  006af580  CEconItemView::GetStyle() const
++0x0038:  006af180  CEconItemView::GetFlags() const
++0x003c:  006af140  CEconItemView::GetOrigin() const
++0x0040:  006af0b0  CEconItemView::GetQuantity() const
++0x0044:  006555b0  CEconItemView::GetItemLevel() const
++0x0048:  00655930  CEconItemView::GetInUse() const
++0x004c:  006af100  CEconItemView::GetCustomName() const
++0x0050:  006af0c0  CEconItemView::GetCustomDesc() const
++0x0054:  006b03b0  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const
++0x0058:  006555a0  CEconItemView::GetItemDefIndex() const
++0x005c:  006b1c60  CEconItemView::NetworkStateChanged()
++0x0060:  006b1c70  CEconItemView::NetworkStateChanged(void*)
++0x0064:  006ae1c0  CEconItemView::GetDataDescMap()

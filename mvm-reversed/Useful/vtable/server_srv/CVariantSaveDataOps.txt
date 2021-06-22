@@ -1,0 +1,7 @@
+CVariantSaveDataOps
+
++0x0000:  00a08cb0  CVariantSaveDataOps::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00a08a70  CVariantSaveDataOps::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00a08960  CVariantSaveDataOps::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00a089b0  CVariantSaveDataOps::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

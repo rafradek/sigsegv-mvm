@@ -1,0 +1,7 @@
+CThinkContextsSaveDataOps
+
++0x0000:  009e3b50  CThinkContextsSaveDataOps::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  009e39d0  CThinkContextsSaveDataOps::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  009e3470  CThinkContextsSaveDataOps::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  009e3490  CThinkContextsSaveDataOps::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

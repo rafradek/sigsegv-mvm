@@ -1,0 +1,4 @@
+CUtlCachedFileData<CModelSoundsCache>
+
++0x0000:  009e6500  CUtlCachedFileData<CModelSoundsCache>::~CUtlCachedFileData()
++0x0004:  009e6610  CUtlCachedFileData<CModelSoundsCache>::~CUtlCachedFileData()

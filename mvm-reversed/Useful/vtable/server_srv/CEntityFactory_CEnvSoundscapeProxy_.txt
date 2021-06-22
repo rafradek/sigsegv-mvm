@@ -1,0 +1,5 @@
+CEntityFactory<CEnvSoundscapeProxy>
+
++0x0000:  00be3330  CEntityFactory<CEnvSoundscapeProxy>::Create(char const*)
++0x0004:  00be3260  CEntityFactory<CEnvSoundscapeProxy>::Destroy(IServerNetworkable*)
++0x0008:  00be3280  CEntityFactory<CEnvSoundscapeProxy>::GetEntitySize()

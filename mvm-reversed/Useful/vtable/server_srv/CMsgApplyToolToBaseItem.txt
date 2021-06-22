@@ -1,0 +1,22 @@
+CMsgApplyToolToBaseItem
+
++0x0000:  004de3f0  CMsgApplyToolToBaseItem::~CMsgApplyToolToBaseItem()
++0x0004:  004de430  CMsgApplyToolToBaseItem::~CMsgApplyToolToBaseItem()
++0x0008:  00000000  
++0x000c:  00512380  CMsgApplyToolToBaseItem::New() const
++0x0010:  004e4a70  CMsgApplyToolToBaseItem::Clear()
++0x0014:  004dc320  CMsgApplyToolToBaseItem::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f4710  CMsgApplyToolToBaseItem::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e76c0  CMsgApplyToolToBaseItem::ByteSize() const
++0x0028:  004e0a50  CMsgApplyToolToBaseItem::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004eed50  CMsgApplyToolToBaseItem::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520b90  CMsgApplyToolToBaseItem::GetCachedSize() const
++0x0034:  004dc2d0  CMsgApplyToolToBaseItem::CopyFrom(google::protobuf::Message const&)
++0x0038:  00512540  CMsgApplyToolToBaseItem::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dc2c0  CMsgApplyToolToBaseItem::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed290  CMsgApplyToolToBaseItem::GetMetadata() const

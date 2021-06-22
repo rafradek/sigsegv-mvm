@@ -1,0 +1,5 @@
+CEntityFactory<CAI_RadialLinkController>
+
++0x0000:  00943cc0  CEntityFactory<CAI_RadialLinkController>::Create(char const*)
++0x0004:  00943b70  CEntityFactory<CAI_RadialLinkController>::Destroy(IServerNetworkable*)
++0x0008:  00943b90  CEntityFactory<CAI_RadialLinkController>::GetEntitySize()

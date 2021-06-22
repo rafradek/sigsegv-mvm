@@ -1,0 +1,16 @@
+CSchemaAttributeTypeBase<float>
+
++0x0000:  0067c710  CSchemaAttributeTypeBase<float>::~CSchemaAttributeTypeBase()
++0x0004:  0067d310  CSchemaAttributeTypeBase<float>::~CSchemaAttributeTypeBase()
++0x0008:  0067d680  ISchemaAttributeTypeBase<float>::GetTypeUniqueIdentifier() const
++0x000c:  0067e000  ISchemaAttributeTypeBase<float>::LoadEconAttributeValue(CEconItem*, CEconItemAttributeDefinition const*, attribute_data_union_t const&) const
++0x0010:  0067ca80  ISchemaAttributeTypeBase<float>::ConvertEconAttributeValueToByteStream(attribute_data_union_t const&, std::string*) const
++0x0014:  00000000  
++0x0018:  00000000  
++0x001c:  0067ef60  ISchemaAttributeTypeBase<float>::LoadByteStreamToEconAttributeValue(CEconItem*, CEconItemAttributeDefinition const*, std::string const&) const
++0x0020:  0067ca90  ISchemaAttributeTypeBase<float>::InitializeNewEconAttributeValue(attribute_data_union_t*) const
++0x0024:  0067cab0  ISchemaAttributeTypeBase<float>::UnloadEconAttributeValue(attribute_data_union_t*) const
++0x0028:  0067cad0  ISchemaAttributeTypeBase<float>::OnIterateAttributeValue(IEconItemAttributeIterator*, CEconItemAttributeDefinition const*, attribute_data_union_t const&) const
++0x002c:  0067c5b0  ISchemaAttributeType::BSupportsGameplayModificationAndNetworking() const
++0x0030:  00000000  
++0x0034:  00000000  

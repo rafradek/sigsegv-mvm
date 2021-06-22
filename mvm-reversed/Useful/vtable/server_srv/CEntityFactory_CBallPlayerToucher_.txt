@@ -1,0 +1,5 @@
+CEntityFactory<CBallPlayerToucher>
+
++0x0000:  00dba390  CEntityFactory<CBallPlayerToucher>::Create(char const*)
++0x0004:  00dba360  CEntityFactory<CBallPlayerToucher>::Destroy(IServerNetworkable*)
++0x0008:  00dba380  CEntityFactory<CBallPlayerToucher>::GetEntitySize()

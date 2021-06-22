@@ -1,0 +1,5 @@
+CEntityFactory<CFuncNavBlocker>
+
++0x0000:  00ac9850  CEntityFactory<CFuncNavBlocker>::Create(char const*)
++0x0004:  00ac9650  CEntityFactory<CFuncNavBlocker>::Destroy(IServerNetworkable*)
++0x0008:  00ac9670  CEntityFactory<CFuncNavBlocker>::GetEntitySize()

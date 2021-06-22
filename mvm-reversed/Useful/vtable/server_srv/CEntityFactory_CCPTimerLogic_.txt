@@ -1,0 +1,5 @@
+CEntityFactory<CCPTimerLogic>
+
++0x0000:  007a82b0  CEntityFactory<CCPTimerLogic>::Create(char const*)
++0x0004:  0079bdb0  CEntityFactory<CCPTimerLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079bdd0  CEntityFactory<CCPTimerLogic>::GetEntitySize()

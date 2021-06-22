@@ -1,0 +1,5 @@
+CEntityFactory<CAI_ChangeHintGroup>
+
++0x0000:  00e49460  CEntityFactory<CAI_ChangeHintGroup>::Create(char const*)
++0x0004:  00e48e80  CEntityFactory<CAI_ChangeHintGroup>::Destroy(IServerNetworkable*)
++0x0008:  00e48ea0  CEntityFactory<CAI_ChangeHintGroup>::GetEntitySize()

@@ -1,0 +1,5 @@
+CTFQuestObjectiveDefinition
+
++0x0000:  007b3090  CTFQuestObjectiveDefinition::~CTFQuestObjectiveDefinition()
++0x0004:  007b30b0  CTFQuestObjectiveDefinition::~CTFQuestObjectiveDefinition()
++0x0008:  007b3260  CTFQuestObjectiveDefinition::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)

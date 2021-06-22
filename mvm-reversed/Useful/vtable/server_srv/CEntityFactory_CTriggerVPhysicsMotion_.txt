@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerVPhysicsMotion>
+
++0x0000:  00e49580  CEntityFactory<CTriggerVPhysicsMotion>::Create(char const*)
++0x0004:  00e48d30  CEntityFactory<CTriggerVPhysicsMotion>::Destroy(IServerNetworkable*)
++0x0008:  00e48d50  CEntityFactory<CTriggerVPhysicsMotion>::GetEntitySize()

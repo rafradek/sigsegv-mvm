@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerPlayerRespawnOverride>
+
++0x0000:  00e2aba0  CEntityFactory<CTriggerPlayerRespawnOverride>::Create(char const*)
++0x0004:  00e2aa80  CEntityFactory<CTriggerPlayerRespawnOverride>::Destroy(IServerNetworkable*)
++0x0008:  00e2aaa0  CEntityFactory<CTriggerPlayerRespawnOverride>::GetEntitySize()

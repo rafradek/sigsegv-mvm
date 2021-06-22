@@ -1,0 +1,7 @@
+CPureServerWhitelist
+
++0x0000:  0017c710  CPureServerWhitelist::AddRef()
++0x0004:  0017ea00  CPureServerWhitelist::Release()
++0x0008:  0017d070  CPureServerWhitelist::GetFileClass(char const*)
++0x000c:  0017c6c0  CPureServerWhitelist::GetTrustedKeyCount() const
++0x0010:  0017c6d0  CPureServerWhitelist::GetTrustedKey(int, int*) const

@@ -1,0 +1,12 @@
+CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+
++0x0000:  00700ff0  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00701200  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  009673b0  CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x000c:  009675a0  CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0010:  00967400  CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::operator()()
++0x0014:  fffffff8  (unknown)
++0x0018:  01146b34  typeinfo for CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
++0x001c:  009673a0  non-virtual thunk to CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0020:  00967590  non-virtual thunk to CMemberFunctor1<CAI_Navigator*, bool (CAI_Navigator::*)(Vector const&), Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>::~CMemberFunctor1()
++0x0024:  00700f60  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

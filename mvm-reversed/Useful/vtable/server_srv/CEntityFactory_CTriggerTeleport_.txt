@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerTeleport>
+
++0x0000:  00e49c90  CEntityFactory<CTriggerTeleport>::Create(char const*)
++0x0004:  00e48fa0  CEntityFactory<CTriggerTeleport>::Destroy(IServerNetworkable*)
++0x0008:  00e48fc0  CEntityFactory<CTriggerTeleport>::GetEntitySize()

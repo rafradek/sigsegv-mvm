@@ -1,0 +1,8 @@
+CEconTool_GiftWrap
+
++0x0000:  006ad450  CEconTool_GiftWrap::~CEconTool_GiftWrap()
++0x0004:  006ad490  CEconTool_GiftWrap::~CEconTool_GiftWrap()
++0x0008:  006aa9c0  CEconTool_GiftWrap::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  006ad3f0  CEconTool_GiftWrap::RequiresToolEscrowPeriod() const
++0x0014:  006aa930  CEconTool_GiftWrap::BFinishInitialization()

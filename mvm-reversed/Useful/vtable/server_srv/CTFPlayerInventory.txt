@@ -1,0 +1,25 @@
+CTFPlayerInventory
+
++0x0000:  007afdf0  CTFPlayerInventory::SOCreated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0004:  00662430  CPlayerInventory::PreSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0008:  007afc20  CTFPlayerInventory::SOUpdated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x000c:  00662440  CPlayerInventory::PostSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0010:  006603e0  CPlayerInventory::SODestroyed(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0014:  00661880  CPlayerInventory::SOCacheSubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0018:  006619e0  CPlayerInventory::SOCacheUnsubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x001c:  007afcc0  CTFPlayerInventory::CanPurchaseItems(int) const
++0x0020:  007af9f0  CTFPlayerInventory::GetMaxItemCount() const
++0x0024:  007b0cb0  CTFPlayerInventory::GetItemInLoadout(int, int)
++0x0028:  006623d0  CPlayerInventory::ItemShouldBeIncluded(int)
++0x002c:  007afa50  CTFPlayerInventory::DumpInventoryToConsole(bool)
++0x0030:  007b11f0  CTFPlayerInventory::ExtractInventorySortPosition(unsigned int)
++0x0034:  007afa30  CTFPlayerInventory::GetPreviewItemDef() const
++0x0038:  00660bd0  CPlayerInventory::SOClear()
++0x003c:  007b11e0  CTFPlayerInventory::NotifyHasNewItems()
++0x0040:  00661f00  CPlayerInventory::AddEconItem(CEconItem*, bool, bool, bool)
++0x0044:  00660460  CPlayerInventory::RemoveItem(unsigned long long)
++0x0048:  007af800  CTFPlayerInventory::OnHasNewItems()
++0x004c:  00662420  CPlayerInventory::OnItemChangedPosition(CEconItemView*, unsigned int)
++0x0050:  007afc10  CTFPlayerInventory::ValidateInventoryPositions()
++0x0054:  007af810  CTFPlayerInventory::ItemHasBeenUpdated(CEconItemView*, bool, bool)
++0x0058:  007afd20  CTFPlayerInventory::ItemIsBeingRemoved(CEconItemView*)

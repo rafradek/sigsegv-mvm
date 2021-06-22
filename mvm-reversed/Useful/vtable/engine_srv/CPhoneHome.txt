@@ -1,0 +1,6 @@
+CPhoneHome
+
++0x0000:  00135230  CPhoneHome::Init()
++0x0004:  00135200  CPhoneHome::Shutdown()
++0x0008:  00136040  CPhoneHome::Message(unsigned char, char const*)
++0x000c:  00135400  CPhoneHome::IsExternalBuild()

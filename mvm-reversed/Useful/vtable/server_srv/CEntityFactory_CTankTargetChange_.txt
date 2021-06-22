@@ -1,0 +1,5 @@
+CEntityFactory<CTankTargetChange>
+
++0x0000:  00bec790  CEntityFactory<CTankTargetChange>::Create(char const*)
++0x0004:  00bec6a0  CEntityFactory<CTankTargetChange>::Destroy(IServerNetworkable*)
++0x0008:  00bec6c0  CEntityFactory<CTankTargetChange>::GetEntitySize()

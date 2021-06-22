@@ -1,0 +1,5 @@
+CEntityFactory<CTFGrenadeLauncher>
+
++0x0000:  0085cd50  CEntityFactory<CTFGrenadeLauncher>::Create(char const*)
++0x0004:  0085ccb0  CEntityFactory<CTFGrenadeLauncher>::Destroy(IServerNetworkable*)
++0x0008:  0085ccd0  CEntityFactory<CTFGrenadeLauncher>::GetEntitySize()

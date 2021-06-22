@@ -1,0 +1,4 @@
+IFuncPasstimeGoalAutoList
+
++0x0000:  00cc3860  IFuncPasstimeGoalAutoList::~IFuncPasstimeGoalAutoList()
++0x0004:  00cc38d0  IFuncPasstimeGoalAutoList::~IFuncPasstimeGoalAutoList()

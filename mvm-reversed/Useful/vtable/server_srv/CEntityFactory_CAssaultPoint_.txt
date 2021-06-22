@@ -1,0 +1,5 @@
+CEntityFactory<CAssaultPoint>
+
++0x0000:  0091dc40  CEntityFactory<CAssaultPoint>::Create(char const*)
++0x0004:  0091dab0  CEntityFactory<CAssaultPoint>::Destroy(IServerNetworkable*)
++0x0008:  0091dad0  CEntityFactory<CAssaultPoint>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellSpawnHorde>
+
++0x0000:  00749d90  CEntityFactory<CTFProjectile_SpellSpawnHorde>::Create(char const*)
++0x0004:  00749090  CEntityFactory<CTFProjectile_SpellSpawnHorde>::Destroy(IServerNetworkable*)
++0x0008:  007490b0  CEntityFactory<CTFProjectile_SpellSpawnHorde>::GetEntitySize()

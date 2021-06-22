@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_HealingBolt>
+
++0x0000:  00e20330  CEntityFactory<CTFProjectile_HealingBolt>::Create(char const*)
++0x0004:  00e201d0  CEntityFactory<CTFProjectile_HealingBolt>::Destroy(IServerNetworkable*)
++0x0008:  00e201f0  CEntityFactory<CTFProjectile_HealingBolt>::GetEntitySize()

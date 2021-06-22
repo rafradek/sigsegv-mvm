@@ -1,0 +1,5 @@
+IVoiceGameMgrHelper
+
++0x0000:  0079bcd0  IVoiceGameMgrHelper::~IVoiceGameMgrHelper()
++0x0004:  0079c050  IVoiceGameMgrHelper::~IVoiceGameMgrHelper()
++0x0008:  00000000  

@@ -1,0 +1,5 @@
+CEntityFactory<DustTrail>
+
++0x0000:  00bdc520  CEntityFactory<DustTrail>::Create(char const*)
++0x0004:  00bdc070  CEntityFactory<DustTrail>::Destroy(IServerNetworkable*)
++0x0008:  00bdc090  CEntityFactory<DustTrail>::GetEntitySize()

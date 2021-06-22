@@ -1,0 +1,4 @@
+CShowZone
+
++0x0000:  00beade0  CShowZone::Inspect(CNavArea const*)
++0x0004:  00beadb0  IForEachNavArea::PostIteration(bool)

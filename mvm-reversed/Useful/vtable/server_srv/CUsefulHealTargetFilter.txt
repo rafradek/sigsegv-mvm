@@ -1,0 +1,3 @@
+CUsefulHealTargetFilter
+
++0x0000:  00c3dec0  CUsefulHealTargetFilter::IsAllowed(CBaseEntity*) const

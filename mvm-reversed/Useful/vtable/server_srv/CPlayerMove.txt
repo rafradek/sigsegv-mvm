@@ -1,0 +1,7 @@
+CPlayerMove
+
++0x0000:  00b83a00  CPlayerMove::~CPlayerMove()
++0x0004:  00b83a10  CPlayerMove::~CPlayerMove()
++0x0008:  00b80fd0  CPlayerMove::SetupMove(CBasePlayer*, CUserCmd*, IMoveHelper*, CMoveData*)
++0x000c:  00b80d40  CPlayerMove::FinishMove(CBasePlayer*, CUserCmd*, CMoveData*)
++0x0010:  00b80b30  CPlayerMove::StartCommand(CBasePlayer*, CUserCmd*)

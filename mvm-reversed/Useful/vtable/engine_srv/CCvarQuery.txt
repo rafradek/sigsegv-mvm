@@ -1,0 +1,8 @@
+CCvarQuery
+
++0x0000:  000edf40  CCvarQuery::Connect(void* (*)(char const*, int*))
++0x0004:  000edfd0  CBaseAppSystem<ICvarQuery>::Disconnect()
++0x0008:  000edfe0  CCvarQuery::QueryInterface(char const*)
++0x000c:  000edf80  CCvarQuery::Init()
++0x0010:  000edfb0  CCvarQuery::Shutdown()
++0x0014:  000ee010  CCvarQuery::AreConVarsLinkable(ConVar const*, ConVar const*)

@@ -1,0 +1,5 @@
+CEntityFactory<CTFLaserPointer>
+
++0x0000:  00869270  CEntityFactory<CTFLaserPointer>::Create(char const*)
++0x0004:  00869220  CEntityFactory<CTFLaserPointer>::Destroy(IServerNetworkable*)
++0x0008:  00869240  CEntityFactory<CTFLaserPointer>::GetEntitySize()

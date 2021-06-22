@@ -1,0 +1,3 @@
+CTriggerMoved
+
++0x0000:  001d9db0  CTriggerMoved::EnumElement(IHandleEntity*)

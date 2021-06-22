@@ -1,0 +1,5 @@
+CEntityFactory<CPointAngleSensor>
+
++0x0000:  00b8c0e0  CEntityFactory<CPointAngleSensor>::Create(char const*)
++0x0004:  00b8bf00  CEntityFactory<CPointAngleSensor>::Destroy(IServerNetworkable*)
++0x0008:  00b8bf20  CEntityFactory<CPointAngleSensor>::GetEntitySize()

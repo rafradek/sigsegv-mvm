@@ -1,0 +1,5 @@
+CEntityFactory<CGibShooter>
+
++0x0000:  00a281a0  CEntityFactory<CGibShooter>::Create(char const*)
++0x0004:  00a279e0  CEntityFactory<CGibShooter>::Destroy(IServerNetworkable*)
++0x0008:  00a27a00  CEntityFactory<CGibShooter>::GetEntitySize()

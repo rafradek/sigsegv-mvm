@@ -1,0 +1,5 @@
+CEntityFactory<CRobotDestructionVaultTrigger>
+
++0x0000:  007d12c0  CEntityFactory<CRobotDestructionVaultTrigger>::Create(char const*)
++0x0004:  007d0ec0  CEntityFactory<CRobotDestructionVaultTrigger>::Destroy(IServerNetworkable*)
++0x0008:  007d0ee0  CEntityFactory<CRobotDestructionVaultTrigger>::GetEntitySize()

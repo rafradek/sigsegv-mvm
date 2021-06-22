@@ -1,0 +1,4 @@
+CTraceFilterPlayersNPCs
+
++0x0000:  00a378f0  CTraceFilterPlayersNPCs::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  00a37750  CTraceFilterPlayersNPCs::GetTraceType() const

@@ -1,0 +1,22 @@
+CMsgConVarValue
+
++0x0000:  00508c10  CMsgConVarValue::~CMsgConVarValue()
++0x0004:  00508c60  CMsgConVarValue::~CMsgConVarValue()
++0x0008:  00000000  
++0x000c:  005088b0  CMsgConVarValue::New() const
++0x0010:  004e5920  CMsgConVarValue::Clear()
++0x0014:  004db3d0  CMsgConVarValue::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004e6840  CMsgConVarValue::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e9b60  CMsgConVarValue::ByteSize() const
++0x0028:  004df810  CMsgConVarValue::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f0460  CMsgConVarValue::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520960  CMsgConVarValue::GetCachedSize() const
++0x0034:  004db380  CMsgConVarValue::CopyFrom(google::protobuf::Message const&)
++0x0038:  00508de0  CMsgConVarValue::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004db370  CMsgConVarValue::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004edb50  CMsgConVarValue::GetMetadata() const

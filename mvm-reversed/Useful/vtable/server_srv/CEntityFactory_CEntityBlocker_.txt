@@ -1,0 +1,5 @@
+CEntityFactory<CEntityBlocker>
+
++0x0000:  00a298f0  CEntityFactory<CEntityBlocker>::Create(char const*)
++0x0004:  00a29870  CEntityFactory<CEntityBlocker>::Destroy(IServerNetworkable*)
++0x0008:  00a29890  CEntityFactory<CEntityBlocker>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CEnvFade>
+
++0x0000:  00a37f50  CEntityFactory<CEnvFade>::Create(char const*)
++0x0004:  00a37ed0  CEntityFactory<CEnvFade>::Destroy(IServerNetworkable*)
++0x0008:  00a37ef0  CEntityFactory<CEnvFade>::GetEntitySize()

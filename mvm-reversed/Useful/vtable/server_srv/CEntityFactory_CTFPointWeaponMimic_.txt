@@ -1,0 +1,5 @@
+CEntityFactory<CTFPointWeaponMimic>
+
++0x0000:  00d4f160  CEntityFactory<CTFPointWeaponMimic>::Create(char const*)
++0x0004:  00d4f130  CEntityFactory<CTFPointWeaponMimic>::Destroy(IServerNetworkable*)
++0x0008:  00d4f150  CEntityFactory<CTFPointWeaponMimic>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTargetCDAudioRep>
+
++0x0000:  00a17db0  CEntityFactory<CTargetCDAudioRep>::Create(char const*)
++0x0004:  00a17ce0  CEntityFactory<CTargetCDAudioRep>::Destroy(IServerNetworkable*)
++0x0008:  00a17d00  CEntityFactory<CTargetCDAudioRep>::GetEntitySize()

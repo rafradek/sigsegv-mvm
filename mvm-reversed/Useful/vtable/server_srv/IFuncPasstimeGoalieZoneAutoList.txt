@@ -1,0 +1,4 @@
+IFuncPasstimeGoalieZoneAutoList
+
++0x0000:  00cc4e30  IFuncPasstimeGoalieZoneAutoList::~IFuncPasstimeGoalieZoneAutoList()
++0x0004:  00cc4dc0  IFuncPasstimeGoalieZoneAutoList::~IFuncPasstimeGoalieZoneAutoList()

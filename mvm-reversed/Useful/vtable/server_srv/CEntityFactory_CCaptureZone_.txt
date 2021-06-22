@@ -1,0 +1,5 @@
+CEntityFactory<CCaptureZone>
+
++0x0000:  00cc0b70  CEntityFactory<CCaptureZone>::Create(char const*)
++0x0004:  00cbfc20  CEntityFactory<CCaptureZone>::Destroy(IServerNetworkable*)
++0x0008:  00cbfc40  CEntityFactory<CCaptureZone>::GetEntitySize()

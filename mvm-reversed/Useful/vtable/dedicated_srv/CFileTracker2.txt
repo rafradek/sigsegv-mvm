@@ -1,0 +1,5 @@
+CFileTracker2
+
++0x0000:  0006e730  CFileTracker2::SubmitThreadedMD5Request(unsigned char*, int, int, int, int)
++0x0004:  0006e740  CFileTracker2::BlockUntilMD5RequestComplete(int, MD5Value_t*)
++0x0008:  0006e750  CFileTracker2::IsMD5RequestComplete(int, MD5Value_t*)

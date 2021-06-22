@@ -1,0 +1,4 @@
+CFogController::NetworkVar_m_fog
+
++0x0000:  00a5c5c0  CFogController::NetworkVar_m_fog::NetworkStateChanged()
++0x0004:  00a5c610  CFogController::NetworkVar_m_fog::NetworkStateChanged(void*)

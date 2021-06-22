@@ -1,0 +1,5 @@
+CEntityFactory<CAI_ChangeTarget>
+
++0x0000:  00e494c0  CEntityFactory<CAI_ChangeTarget>::Create(char const*)
++0x0004:  00e48eb0  CEntityFactory<CAI_ChangeTarget>::Destroy(IServerNetworkable*)
++0x0008:  00e48ed0  CEntityFactory<CAI_ChangeTarget>::GetEntitySize()

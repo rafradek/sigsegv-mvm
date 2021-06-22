@@ -1,0 +1,3 @@
+CRobotPathCost
+
++0x0000:  00818b40  CRobotPathCost::operator()(CNavArea*, CNavArea*, CNavLadder const*, CFuncElevator const*, float) const

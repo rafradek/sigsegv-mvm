@@ -1,0 +1,5 @@
+CEntityFactory<CTFMerasmusTrickOrTreatProp>
+
++0x0000:  00d266b0  CEntityFactory<CTFMerasmusTrickOrTreatProp>::Create(char const*)
++0x0004:  00d26390  CEntityFactory<CTFMerasmusTrickOrTreatProp>::Destroy(IServerNetworkable*)
++0x0008:  00d263b0  CEntityFactory<CTFMerasmusTrickOrTreatProp>::GetEntitySize()

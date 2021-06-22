@@ -1,0 +1,5 @@
+CCallback<CTFMapsWorkshop, ItemInstalled_t, true>
+
++0x0000:  005f9a20  CCallback<CTFMapsWorkshop, ItemInstalled_t, true>::Run(void*)
++0x0004:  005f9a50  CCallbackImpl<12>::Run(void*, bool, unsigned long long)
++0x0008:  005f9a60  CCallbackImpl<12>::GetCallbackSizeBytes()

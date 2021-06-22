@@ -93,7 +93,7 @@ public:
 	constexpr void	Negate(); 
 
 	// Get the Vector4D's magnitude.
-	constexpr vec_t	Length() const;
+	inline vec_t	Length() const;
 
 	// Get the Vector4D's magnitude squared.
 	constexpr vec_t	LengthSqr(void) const;
@@ -108,7 +108,7 @@ public:
 	}
 
 	// Get the distance from this Vector4D to the other one.
-	constexpr vec_t	DistTo(const Vector4D &vOther) const;
+	inline vec_t	DistTo(const Vector4D &vOther) const;
 
 	// Get the distance from this Vector4D to the other one squared.
 	constexpr vec_t	DistToSqr(const Vector4D &vOther) const;		
@@ -193,10 +193,10 @@ constexpr void Vector4DMultiplyAligned( Vector4DAligned const& a, vec_t b, Vecto
 #define Vector4DExpand( v ) (v).x, (v).y, (v).z, (v).w
 
 // Normalization
-constexpr vec_t Vector4DNormalize( Vector4D& v );
+inline vec_t Vector4DNormalize( Vector4D& v );
 
 // Length
-constexpr vec_t Vector4DLength( Vector4D const& v );
+inline vec_t Vector4DLength( Vector4D const& v );
 
 // Dot Product
 constexpr vec_t DotProduct4D(Vector4D const& a, Vector4D const& b);
@@ -550,7 +550,7 @@ constexpr vec_t Vector4D::Dot( Vector4D const& vOther ) const
 // length
 //-----------------------------------------------------------------------------
 
-constexpr vec_t Vector4DLength( Vector4D const& v )
+inline vec_t Vector4DLength( Vector4D const& v )
 {				   
 	Assert( v.IsValid() );
 	return (vec_t)FastSqrt(v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w);		
@@ -562,7 +562,7 @@ constexpr vec_t Vector4D::LengthSqr(void) const
 	return (x*x + y*y + z*z + w*w);		
 }
 
-constexpr vec_t Vector4D::Length(void) const	
+inline vec_t Vector4D::Length(void) const	
 {
 	return Vector4DLength( *this );
 }
@@ -573,7 +573,7 @@ constexpr vec_t Vector4D::Length(void) const
 //-----------------------------------------------------------------------------
 
 // FIXME: Can't use until we're un-macroed in mathlib.h
-constexpr vec_t Vector4DNormalize( Vector4D& v )
+inline vec_t Vector4DNormalize( Vector4D& v )
 {
 	Assert( v.IsValid() );
 	vec_t l = v.Length();
@@ -592,7 +592,7 @@ constexpr vec_t Vector4DNormalize( Vector4D& v )
 // Get the distance from this Vector4D to the other one 
 //-----------------------------------------------------------------------------
 
-constexpr vec_t Vector4D::DistTo(const Vector4D &vOther) const
+inline vec_t Vector4D::DistTo(const Vector4D &vOther) const
 {
 	Vector4D delta = *this;
 	delta -= vOther;

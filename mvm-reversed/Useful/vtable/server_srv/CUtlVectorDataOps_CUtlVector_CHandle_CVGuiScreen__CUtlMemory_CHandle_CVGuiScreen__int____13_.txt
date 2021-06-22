@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CHandle<CVGuiScreen>, CUtlMemory<CHandle<CVGuiScreen>, int> >, 13>
+
++0x0000:  009fca70  CUtlVectorDataOps<CUtlVector<CHandle<CVGuiScreen>, CUtlMemory<CHandle<CVGuiScreen>, int> >, 13>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  009fcc40  CUtlVectorDataOps<CUtlVector<CHandle<CVGuiScreen>, CUtlMemory<CHandle<CVGuiScreen>, int> >, 13>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  009fcb40  CUtlVectorDataOps<CUtlVector<CHandle<CVGuiScreen>, CUtlMemory<CHandle<CVGuiScreen>, int> >, 13>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  009fcc20  CUtlVectorDataOps<CUtlVector<CHandle<CVGuiScreen>, CUtlMemory<CHandle<CVGuiScreen>, int> >, 13>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

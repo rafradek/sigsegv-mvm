@@ -1,0 +1,8 @@
+CFileAsyncJob
+
++0x0000:  00024390  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  000243b0  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00024880  CFileAsyncJob::~CFileAsyncJob()
++0x000c:  000248d0  CFileAsyncJob::~CFileAsyncJob()
++0x0010:  000246f0  CJob::Describe()
++0x0014:  000244a0  CJob::SetDescription(char const*)

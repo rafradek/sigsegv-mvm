@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellBats>
+
++0x0000:  00749340  CEntityFactory<CTFProjectile_SpellBats>::Create(char const*)
++0x0004:  007490f0  CEntityFactory<CTFProjectile_SpellBats>::Destroy(IServerNetworkable*)
++0x0008:  00749110  CEntityFactory<CTFProjectile_SpellBats>::GetEntitySize()

@@ -1,0 +1,3 @@
+CPhysicsWind
+
++0x0000:  00e49620  CPhysicsWind::Simulate(IPhysicsMotionController*, IPhysicsObject*, float, Vector&, Vector&)

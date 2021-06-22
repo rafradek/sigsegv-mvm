@@ -28,6 +28,13 @@ sourceFiles += [
 ]
 
 sourceFiles += [
+  'src/sdk2013/mathlib_base.cpp',
+  'src/sdk2013/color_conversion.cpp',
+	'src/sdk2013/vmatrix.cpp',
+	'src/sdk2013/strtools.cpp'
+]
+
+sourceFiles += [
   'src/common.cpp',
   'src/concolor.cpp',
   'src/convar_restore.cpp',

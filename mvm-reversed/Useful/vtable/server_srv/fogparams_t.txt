@@ -1,0 +1,4 @@
+fogparams_t
+
++0x0000:  00a5c520  fogparams_t::NetworkStateChanged()
++0x0004:  00a5c530  fogparams_t::NetworkStateChanged(void*)

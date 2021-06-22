@@ -1,0 +1,22 @@
+CMsgLookupMultipleAccountNamesResponse_Account
+
++0x0000:  0052e640  CMsgLookupMultipleAccountNamesResponse_Account::~CMsgLookupMultipleAccountNamesResponse_Account()
++0x0004:  0052e690  CMsgLookupMultipleAccountNamesResponse_Account::~CMsgLookupMultipleAccountNamesResponse_Account()
++0x0008:  00000000  
++0x000c:  0052e340  CMsgLookupMultipleAccountNamesResponse_Account::New() const
++0x0010:  00524b30  CMsgLookupMultipleAccountNamesResponse_Account::Clear()
++0x0014:  00522200  CMsgLookupMultipleAccountNamesResponse_Account::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005289b0  CMsgLookupMultipleAccountNamesResponse_Account::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00525440  CMsgLookupMultipleAccountNamesResponse_Account::ByteSize() const
++0x0028:  00524340  CMsgLookupMultipleAccountNamesResponse_Account::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00526210  CMsgLookupMultipleAccountNamesResponse_Account::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533cb0  CMsgLookupMultipleAccountNamesResponse_Account::GetCachedSize() const
++0x0034:  005221b0  CMsgLookupMultipleAccountNamesResponse_Account::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052e7e0  CMsgLookupMultipleAccountNamesResponse_Account::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005221a0  CMsgLookupMultipleAccountNamesResponse_Account::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527260  CMsgLookupMultipleAccountNamesResponse_Account::GetMetadata() const

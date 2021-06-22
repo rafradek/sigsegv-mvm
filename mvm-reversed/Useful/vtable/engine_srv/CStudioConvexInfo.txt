@@ -1,0 +1,3 @@
+CStudioConvexInfo
+
++0x0000:  00116350  CStudioConvexInfo::GetContents(int)

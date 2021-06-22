@@ -1,0 +1,5 @@
+CEntityFactory<CPointBonusMapsAccessor>
+
++0x0000:  006f82f0  CEntityFactory<CPointBonusMapsAccessor>::Create(char const*)
++0x0004:  006f82a0  CEntityFactory<CPointBonusMapsAccessor>::Destroy(IServerNetworkable*)
++0x0008:  006f82c0  CEntityFactory<CPointBonusMapsAccessor>::GetEntitySize()

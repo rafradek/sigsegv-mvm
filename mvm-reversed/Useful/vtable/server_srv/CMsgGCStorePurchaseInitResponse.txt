@@ -1,0 +1,22 @@
+CMsgGCStorePurchaseInitResponse
+
++0x0000:  004dd1c0  CMsgGCStorePurchaseInitResponse::~CMsgGCStorePurchaseInitResponse()
++0x0004:  004dd200  CMsgGCStorePurchaseInitResponse::~CMsgGCStorePurchaseInitResponse()
++0x0008:  00000000  
++0x000c:  004fb110  CMsgGCStorePurchaseInitResponse::New() const
++0x0010:  004e3ce0  CMsgGCStorePurchaseInitResponse::Clear()
++0x0014:  004da250  CMsgGCStorePurchaseInitResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f65a0  CMsgGCStorePurchaseInitResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004eac80  CMsgGCStorePurchaseInitResponse::ByteSize() const
++0x0028:  004e2e70  CMsgGCStorePurchaseInitResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f2c20  CMsgGCStorePurchaseInitResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005206e0  CMsgGCStorePurchaseInitResponse::GetCachedSize() const
++0x0034:  004da200  CMsgGCStorePurchaseInitResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  004fb2d0  CMsgGCStorePurchaseInitResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004da1f0  CMsgGCStorePurchaseInitResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee550  CMsgGCStorePurchaseInitResponse::GetMetadata() const

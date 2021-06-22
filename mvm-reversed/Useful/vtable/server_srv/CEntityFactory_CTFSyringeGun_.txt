@@ -1,0 +1,5 @@
+CEntityFactory<CTFSyringeGun>
+
++0x0000:  0088e9f0  CEntityFactory<CTFSyringeGun>::Create(char const*)
++0x0004:  0088e990  CEntityFactory<CTFSyringeGun>::Destroy(IServerNetworkable*)
++0x0008:  0088e9b0  CEntityFactory<CTFSyringeGun>::GetEntitySize()

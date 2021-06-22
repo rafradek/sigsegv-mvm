@@ -1,0 +1,5 @@
+CHLTVFrame
+
++0x0000:  00121a80  CHLTVFrame::~CHLTVFrame()
++0x0004:  00121ac0  CHLTVFrame::~CHLTVFrame()
++0x0008:  00125ed0  CHLTVFrame::IsMemPoolAllocated()

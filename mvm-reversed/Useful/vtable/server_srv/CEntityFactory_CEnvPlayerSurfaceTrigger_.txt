@@ -1,0 +1,5 @@
+CEntityFactory<CEnvPlayerSurfaceTrigger>
+
++0x0000:  00a44a10  CEntityFactory<CEnvPlayerSurfaceTrigger>::Create(char const*)
++0x0004:  00a449e0  CEntityFactory<CEnvPlayerSurfaceTrigger>::Destroy(IServerNetworkable*)
++0x0008:  00a44a00  CEntityFactory<CEnvPlayerSurfaceTrigger>::GetEntitySize()

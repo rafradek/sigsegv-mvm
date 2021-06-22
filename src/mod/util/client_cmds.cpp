@@ -8,6 +8,7 @@
 #include "stub/misc.h"
 #include "stub/gamerules.h"
 #include "stub/strings.h"
+#include "stub/server.h"
 #include "util/admin.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
@@ -1228,6 +1229,76 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 	
+	void CC_DumpInventory(CTFPlayer *player, const CCommand& args)
+	{
+	}
+
+	void CC_DumpItems(CTFPlayer *player, const CCommand& args)
+	{
+		std::vector<CBasePlayer *> vec;
+		GetSMTargets(player, args[1], vec);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_listitemattr] Error: no matching target found for \"%s\".\n", args[1]);
+			return;
+		}
+		std::string displaystr;
+		for (CBasePlayer *target : vec) {
+			ForEachTFPlayerEconEntity(ToTFPlayer(target), [&](CEconEntity *entity) {
+				CEconItemView *view = entity->GetItem();
+				if (view != nullptr) {
+					auto &attrs = view->GetAttributeList().Attributes();
+
+					ClientMsg(player, "Item %s:\n", view->GetItemDefinition()->GetName());
+
+					class Wrapper : public IEconItemAttributeIterator
+					{
+					public:
+						Wrapper(CTFPlayer *player) : m_player(player) {}
+
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
+						{
+							attribute_data_union_t valueu;
+							valueu.m_UInt = value;
+							ClientMsg(m_player, "%s = %f (%d) (%.17en)\n", pAttrDef->GetName(), valueu.m_Float, valueu.m_UInt, valueu.m_Float);
+							return true;
+						}
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, float                                    value) const { return true; }
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const uint64&                            value) const { return true; }
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String&                 value) const
+						{
+							const char *pstr;
+							CopyStringAttributeValueToCharPointerOutput(&value, &pstr);
+							ClientMsg(m_player, "%s = %s\n", pAttrDef->GetName(), pstr);
+							return true;
+						}
+
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_DynamicRecipeComponent& value) const { return true; }
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_ItemSlotCriteria&       value) const { return true; }
+						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_WorldItemPlacement&     value) const { return true; }
+
+					private:
+						CTFPlayer *m_player;
+					};
+
+					Wrapper wrapper(player);
+					view->IterateAttributes(&wrapper);
+					ClientMsg(player, "\n");
+				}
+			});
+		}
+		ClientMsg(player, "%s", displaystr.c_str());
+	}
+
+	void CC_Sprays(CTFPlayer *player, const CCommand& args)
+	{
+		for (int i = 0; i < sv->GetClientCount(); i++) {
+			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(i));
+			if (client != nullptr) {
+				DevMsg("Spray apply %x %d %d\n", client->m_nCustomFiles[0].crc, client->m_nClientSlot, client->m_nEntityIndex);
+			}
+		}
+	}
+
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
 	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
@@ -1251,6 +1322,8 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_dropitem",         CC_DropItem         },
 		{ "sig_giveeveryitem",    CC_GiveEveryItem    },
 		{ "sig_getmissingbones",  CC_GetMissingBones  },
+		{ "sig_listitemattr",     CC_DumpItems        },
+		{ "sig_sprays",           CC_Sprays           },
 	};
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)

@@ -1,0 +1,22 @@
+CAttribute_ItemSlotCriteria
+
++0x0000:  005c8370  CAttribute_ItemSlotCriteria::~CAttribute_ItemSlotCriteria()
++0x0004:  005c83c0  CAttribute_ItemSlotCriteria::~CAttribute_ItemSlotCriteria()
++0x0008:  00000000  
++0x000c:  005c82c0  CAttribute_ItemSlotCriteria::New() const
++0x0010:  00584510  CAttribute_ItemSlotCriteria::Clear()
++0x0014:  00577820  CAttribute_ItemSlotCriteria::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005867d0  CAttribute_ItemSlotCriteria::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058a8e0  CAttribute_ItemSlotCriteria::ByteSize() const
++0x0028:  0057ccb0  CAttribute_ItemSlotCriteria::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005911e0  CAttribute_ItemSlotCriteria::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcf90  CAttribute_ItemSlotCriteria::GetCachedSize() const
++0x0034:  005777d0  CAttribute_ItemSlotCriteria::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c84f0  CAttribute_ItemSlotCriteria::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005777c0  CAttribute_ItemSlotCriteria::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e660  CAttribute_ItemSlotCriteria::GetMetadata() const

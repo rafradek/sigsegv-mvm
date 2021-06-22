@@ -1,0 +1,5 @@
+CEntityFactory<CAI_StandoffGoal>
+
++0x0000:  00938860  CEntityFactory<CAI_StandoffGoal>::Create(char const*)
++0x0004:  00935c60  CEntityFactory<CAI_StandoffGoal>::Destroy(IServerNetworkable*)
++0x0008:  00935c80  CEntityFactory<CAI_StandoffGoal>::GetEntitySize()

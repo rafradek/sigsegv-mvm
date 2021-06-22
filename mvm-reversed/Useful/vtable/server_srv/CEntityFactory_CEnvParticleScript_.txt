@@ -1,0 +1,5 @@
+CEntityFactory<CEnvParticleScript>
+
++0x0000:  00a44480  CEntityFactory<CEnvParticleScript>::Create(char const*)
++0x0004:  00a44400  CEntityFactory<CEnvParticleScript>::Destroy(IServerNetworkable*)
++0x0008:  00a44420  CEntityFactory<CEnvParticleScript>::GetEntitySize()

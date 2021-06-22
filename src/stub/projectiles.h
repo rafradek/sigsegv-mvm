@@ -35,8 +35,10 @@ class CBaseGrenadeTimed : public CBaseGrenade {};
 class CTFBaseProjectile : public CBaseProjectile {
 public:
 	void SetDamage(float damage) { vt_SetDamage(this, damage); }
+	float GetDamage() { return vt_GetDamage(this); }
 private:
 	static MemberVFuncThunk<CTFBaseProjectile *, void, float> vt_SetDamage;
+	static MemberVFuncThunk<CTFBaseProjectile *, float> vt_GetDamage;
 };
 
 class CTFBaseRocket  : public CBaseProjectile
@@ -90,6 +92,7 @@ public:
 
 	DECL_EXTRACT(float, m_flTimeInit);
 	DECL_SENDPROP(bool, m_bCritical);
+	DECL_RELATIVE(CUtlVector<int>, m_HitEntities);
 
 	static CTFProjectile_Arrow *Create(const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer) {return ft_Create(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);}
 private:
@@ -105,6 +108,8 @@ class CTFWeaponBaseGrenadeProj : public CBaseGrenade
 {
 public:
 	int GetWeaponID() const { return vt_GetWeaponID(this); }
+
+	void SetDetonateTimerLength(float time) const { ft_SetDetonateTimerLength(this, time); }
 	
 	DECL_SENDPROP(int,    m_iDeflected);
 	DECL_SENDPROP(bool,   m_bCritical);
@@ -112,12 +117,17 @@ public:
 	
 private:
 	static MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> vt_GetWeaponID;
+
+	static MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> ft_SetDetonateTimerLength;
 };
 
 class CTFGrenadePipebombProjectile : public CTFWeaponBaseGrenadeProj
 {
 public:
 	CBaseEntity *GetLauncher() const { return this->m_hLauncher; }
+
+	DECL_SENDPROP(bool, m_bTouched);
+	DECL_SENDPROP(int, m_iType);
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);

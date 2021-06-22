@@ -1,0 +1,5 @@
+CEntityFactory<CTFSodaPopper>
+
++0x0000:  00886380  CEntityFactory<CTFSodaPopper>::Create(char const*)
++0x0004:  008856a0  CEntityFactory<CTFSodaPopper>::Destroy(IServerNetworkable*)
++0x0008:  008856c0  CEntityFactory<CTFSodaPopper>::GetEntitySize()

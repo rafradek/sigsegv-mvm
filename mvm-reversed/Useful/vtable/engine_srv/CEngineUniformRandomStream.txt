@@ -1,0 +1,6 @@
+CEngineUniformRandomStream
+
++0x0000:  0018a240  CEngineUniformRandomStream::SetSeed(int)
++0x0004:  0018a290  CEngineUniformRandomStream::RandomFloat(float, float)
++0x0008:  0018a250  CEngineUniformRandomStream::RandomInt(int, int)
++0x000c:  0018a270  CEngineUniformRandomStream::RandomFloatExp(float, float, float)

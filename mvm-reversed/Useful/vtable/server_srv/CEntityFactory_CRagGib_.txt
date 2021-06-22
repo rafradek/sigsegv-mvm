@@ -1,0 +1,5 @@
+CEntityFactory<CRagGib>
+
++0x0000:  00a84a20  CEntityFactory<CRagGib>::Create(char const*)
++0x0004:  00a84930  CEntityFactory<CRagGib>::Destroy(IServerNetworkable*)
++0x0008:  00a84950  CEntityFactory<CRagGib>::GetEntitySize()

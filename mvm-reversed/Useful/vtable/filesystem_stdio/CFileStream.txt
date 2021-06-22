@@ -1,0 +1,4 @@
+CFileStream
+
++0x0000:  0000b750  CFileStream::Put(void const*, int)
++0x0004:  0000b790  CFileStream::Tell()

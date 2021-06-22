@@ -1,0 +1,11 @@
+CNetworkStringTableContainer
+
++0x0000:  00158c80  CNetworkStringTableContainer::~CNetworkStringTableContainer()
++0x0004:  00158d10  CNetworkStringTableContainer::~CNetworkStringTableContainer()
++0x0008:  0015a9e0  CNetworkStringTableContainer::CreateStringTable(char const*, int, int, int)
++0x000c:  00156de0  CNetworkStringTableContainer::RemoveAllTables()
++0x0010:  00156ec0  CNetworkStringTableContainer::FindTable(char const*) const
++0x0014:  00156da0  CNetworkStringTableContainer::GetTable(int) const
++0x0018:  00156dd0  CNetworkStringTableContainer::GetNumTables() const
++0x001c:  0015a860  CNetworkStringTableContainer::CreateStringTableEx(char const*, int, int, int, bool)
++0x0020:  00157500  CNetworkStringTableContainer::SetAllowClientSideAddString(INetworkStringTable*, bool)

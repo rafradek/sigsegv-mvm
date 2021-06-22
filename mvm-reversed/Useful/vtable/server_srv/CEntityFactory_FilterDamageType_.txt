@@ -1,0 +1,5 @@
+CEntityFactory<FilterDamageType>
+
++0x0000:  00a4fd90  CEntityFactory<FilterDamageType>::Create(char const*)
++0x0004:  00a4f8d0  CEntityFactory<FilterDamageType>::Destroy(IServerNetworkable*)
++0x0008:  00a4f8f0  CEntityFactory<FilterDamageType>::GetEntitySize()

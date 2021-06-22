@@ -1,0 +1,4 @@
+CBaseEntityList
+
++0x0000:  006b54f0  CBaseEntityList::OnAddEntity(IHandleEntity*, CBaseHandle)
++0x0004:  006b5500  CBaseEntityList::OnRemoveEntity(IHandleEntity*, CBaseHandle)

@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerCamera>
+
++0x0000:  00e493d0  CEntityFactory<CTriggerCamera>::Create(char const*)
++0x0004:  00e48e50  CEntityFactory<CTriggerCamera>::Destroy(IServerNetworkable*)
++0x0008:  00e48e70  CEntityFactory<CTriggerCamera>::GetEntitySize()

@@ -1,0 +1,107 @@
+PlayerLocomotion
+
++0x0000:  00b132a0  PlayerLocomotion::~PlayerLocomotion()
++0x0004:  00b132c0  PlayerLocomotion::~PlayerLocomotion()
++0x0008:  005e7c50  INextBotEventResponder::FirstContainedResponder() const
++0x000c:  005e7c60  INextBotEventResponder::NextContainedResponder(INextBotEventResponder*) const
++0x0010:  00afa330  ILocomotion::OnLeaveGround(CBaseEntity*)
++0x0014:  00afa340  ILocomotion::OnLandOnGround(CBaseEntity*)
++0x0018:  005e7d10  INextBotEventResponder::OnContact(CBaseEntity*, CGameTrace*)
++0x001c:  005e7d60  INextBotEventResponder::OnMoveToSuccess(Path const*)
++0x0020:  005e7db0  INextBotEventResponder::OnMoveToFailure(Path const*, MoveToFailureType)
++0x0024:  005e7e00  INextBotEventResponder::OnStuck()
++0x0028:  005e7e50  INextBotEventResponder::OnUnStuck()
++0x002c:  005e7ea0  INextBotEventResponder::OnPostureChanged()
++0x0030:  005e7ef0  INextBotEventResponder::OnAnimationActivityComplete(int)
++0x0034:  005e7f40  INextBotEventResponder::OnAnimationActivityInterrupted(int)
++0x0038:  005e7f90  INextBotEventResponder::OnAnimationEvent(animevent_t*)
++0x003c:  005e7fe0  INextBotEventResponder::OnIgnite()
++0x0040:  005e8030  INextBotEventResponder::OnInjured(CTakeDamageInfo const&)
++0x0044:  005e8080  INextBotEventResponder::OnKilled(CTakeDamageInfo const&)
++0x0048:  005e80d0  INextBotEventResponder::OnOtherKilled(CBaseCombatCharacter*, CTakeDamageInfo const&)
++0x004c:  005e8120  INextBotEventResponder::OnSight(CBaseEntity*)
++0x0050:  005e8170  INextBotEventResponder::OnLostSight(CBaseEntity*)
++0x0054:  005e81c0  INextBotEventResponder::OnSound(CBaseEntity*, Vector const&, KeyValues*)
++0x0058:  005e8220  INextBotEventResponder::OnSpokeConcept(CBaseCombatCharacter*, char const*, AI_Response*)
++0x005c:  005e8280  INextBotEventResponder::OnWeaponFired(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0060:  005e82d0  INextBotEventResponder::OnNavAreaChanged(CNavArea*, CNavArea*)
++0x0064:  005e8320  INextBotEventResponder::OnModelChanged()
++0x0068:  005e8370  INextBotEventResponder::OnPickUp(CBaseEntity*, CBaseCombatCharacter*)
++0x006c:  005e83c0  INextBotEventResponder::OnDrop(CBaseEntity*)
++0x0070:  005e8410  INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter*, int)
++0x0074:  005e8500  INextBotEventResponder::OnCommandAttack(CBaseEntity*)
++0x0078:  005e8550  INextBotEventResponder::OnCommandApproach(Vector const&, float)
++0x007c:  005e85a0  INextBotEventResponder::OnCommandApproach(CBaseEntity*)
++0x0080:  005e85f0  INextBotEventResponder::OnCommandRetreat(CBaseEntity*, float)
++0x0084:  005e8650  INextBotEventResponder::OnCommandPause(float)
++0x0088:  005e86a0  INextBotEventResponder::OnCommandResume()
++0x008c:  005e86f0  INextBotEventResponder::OnCommandString(char const*)
++0x0090:  005e8460  INextBotEventResponder::OnShoved(CBaseEntity*)
++0x0094:  005e84b0  INextBotEventResponder::OnBlinded(CBaseEntity*)
++0x0098:  005e8740  INextBotEventResponder::OnTerritoryContested(int)
++0x009c:  005e8790  INextBotEventResponder::OnTerritoryCaptured(int)
++0x00a0:  005e87e0  INextBotEventResponder::OnTerritoryLost(int)
++0x00a4:  005e8830  INextBotEventResponder::OnWin()
++0x00a8:  005e8880  INextBotEventResponder::OnLose()
++0x00ac:  00b10ce0  PlayerLocomotion::Reset()
++0x00b0:  00b12cc0  PlayerLocomotion::Update()
++0x00b4:  005e8900  INextBotComponent::Upkeep()
++0x00b8:  005e8910  INextBotComponent::GetBot() const
++0x00bc:  00b10e70  PlayerLocomotion::Approach(Vector const&, float)
++0x00c0:  00b10c10  PlayerLocomotion::DriveTo(Vector const&)
++0x00c4:  00b13080  PlayerLocomotion::ClimbUpToLedge(Vector const&, Vector const&, CBaseEntity const*)
++0x00c8:  00b10910  PlayerLocomotion::JumpAcrossGap(Vector const&, Vector const&)
++0x00cc:  00b10b90  PlayerLocomotion::Jump()
++0x00d0:  00b10dd0  PlayerLocomotion::IsClimbingOrJumping() const
++0x00d4:  00b10990  PlayerLocomotion::IsClimbingUpToLedge() const
++0x00d8:  00b109a0  PlayerLocomotion::IsJumpingAcrossGap() const
++0x00dc:  00818af0  ILocomotion::IsScrambling() const
++0x00e0:  00b13150  PlayerLocomotion::Run()
++0x00e4:  00b13180  PlayerLocomotion::Walk()
++0x00e8:  00b131b0  PlayerLocomotion::Stop()
++0x00ec:  00b131d0  PlayerLocomotion::IsRunning() const
++0x00f0:  00b131e0  PlayerLocomotion::SetDesiredSpeed(float)
++0x00f4:  00b132f0  PlayerLocomotion::GetDesiredSpeed() const
++0x00f8:  008171c0  ILocomotion::SetSpeedLimit(float)
++0x00fc:  00afa320  ILocomotion::GetSpeedLimit() const
++0x0100:  00b10b70  PlayerLocomotion::IsOnGround() const
++0x0104:  00b10b50  PlayerLocomotion::GetGround() const
++0x0108:  00b10d60  PlayerLocomotion::GetGroundNormal() const
++0x010c:  00af64a0  ILocomotion::GetGroundSpeed() const
++0x0110:  00817200  ILocomotion::GetGroundMotionVector() const
++0x0114:  00b109b0  PlayerLocomotion::ClimbLadder(CNavLadder const*, CNavArea const*)
++0x0118:  00b109e0  PlayerLocomotion::DescendLadder(CNavLadder const*, CNavArea const*)
++0x011c:  00b10a10  PlayerLocomotion::IsUsingLadder() const
++0x0120:  00b13280  PlayerLocomotion::IsAscendingOrDescendingLadder() const
++0x0124:  00b13240  PlayerLocomotion::IsAbleToAutoCenterOnLadder() const
++0x0128:  00b10a30  PlayerLocomotion::FaceTowards(Vector const&)
++0x012c:  00b130f0  PlayerLocomotion::SetDesiredLean(QAngle const&)
++0x0130:  00b13330  PlayerLocomotion::GetDesiredLean() const
++0x0134:  008171e0  ILocomotion::IsAbleToJumpAcrossGaps() const
++0x0138:  008171f0  ILocomotion::IsAbleToClimb() const
++0x013c:  00b10e40  PlayerLocomotion::GetFeet() const
++0x0140:  00b13100  PlayerLocomotion::GetStepHeight() const
++0x0144:  00b13110  PlayerLocomotion::GetMaxJumpHeight() const
++0x0148:  00b13120  PlayerLocomotion::GetDeathDropHeight() const
++0x014c:  00b10ad0  PlayerLocomotion::GetRunSpeed() const
++0x0150:  00b10af0  PlayerLocomotion::GetWalkSpeed() const
++0x0154:  00b13130  PlayerLocomotion::GetMaxAcceleration() const
++0x0158:  00b13140  PlayerLocomotion::GetMaxDeceleration() const
++0x015c:  00b10b20  PlayerLocomotion::GetVelocity() const
++0x0160:  00817210  ILocomotion::GetSpeed() const
++0x0164:  00817220  ILocomotion::GetMotionVector() const
++0x0168:  00af8300  ILocomotion::IsAreaTraversable(CNavArea const*) const
++0x016c:  00817230  ILocomotion::GetTraversableSlopeLimit() const
++0x0170:  00af9ca0  ILocomotion::IsPotentiallyTraversable(Vector const&, Vector const&, ILocomotion::TraverseWhenType, float*) const
++0x0174:  00af9410  ILocomotion::HasPotentialGap(Vector const&, Vector const&, float*) const
++0x0178:  00af9860  ILocomotion::IsGap(Vector const&, Vector const&) const
++0x017c:  00af8ba0  ILocomotion::IsEntityTraversable(CBaseEntity*, ILocomotion::TraverseWhenType) const
++0x0180:  00817240  ILocomotion::IsStuck() const
++0x0184:  00819290  ILocomotion::GetStuckDuration() const
++0x0188:  00af81f0  ILocomotion::ClearStuckStatus(char const*)
++0x018c:  00819250  ILocomotion::IsAttemptingToMove() const
++0x0190:  00af6490  ILocomotion::ShouldCollideWith(CBaseEntity const*) const
++0x0194:  00b10c50  PlayerLocomotion::AdjustPosture(Vector const&)
++0x0198:  00af85d0  ILocomotion::StuckMonitor()
++0x019c:  00b13200  PlayerLocomotion::SetMinimumSpeedLimit(float)
++0x01a0:  00b13220  PlayerLocomotion::SetMaximumSpeedLimit(float)

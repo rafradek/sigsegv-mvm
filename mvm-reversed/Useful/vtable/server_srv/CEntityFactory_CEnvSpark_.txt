@@ -1,0 +1,5 @@
+CEntityFactory<CEnvSpark>
+
++0x0000:  00a3dd50  CEntityFactory<CEnvSpark>::Create(char const*)
++0x0004:  00a3dc70  CEntityFactory<CEnvSpark>::Destroy(IServerNetworkable*)
++0x0008:  00a3dc90  CEntityFactory<CEnvSpark>::GetEntitySize()

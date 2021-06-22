@@ -1,0 +1,3 @@
+CDefaultAccessor
+
++0x0000:  001e1af0  CDefaultAccessor::RegisterConCommandBase(ConCommandBase*)

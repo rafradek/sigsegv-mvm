@@ -1,0 +1,11 @@
+CEconItemHandle
+
++0x0000:  006617c0  CEconItemHandle::SOCreated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0004:  00662350  CEconItemHandle::PreSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0008:  00661750  CEconItemHandle::SOUpdated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x000c:  00662360  CEconItemHandle::PostSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0010:  00661620  CEconItemHandle::SODestroyed(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0014:  00662370  CEconItemHandle::SOCacheSubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0018:  00661610  CEconItemHandle::SOCacheUnsubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x001c:  00661830  CEconItemHandle::~CEconItemHandle()
++0x0020:  00661850  CEconItemHandle::~CEconItemHandle()

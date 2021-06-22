@@ -1,0 +1,20 @@
+CServerGameClients
+
++0x0000:  00d83020  CServerGameClients::GetPlayerLimits(int&, int&, int&) const
++0x0004:  00a72410  CServerGameClients::ClientConnect(edict_t*, char const*, char const*, char*, int)
++0x0008:  00a77380  CServerGameClients::ClientActive(edict_t*, bool)
++0x000c:  00a750d0  CServerGameClients::ClientDisconnect(edict_t*)
++0x0010:  00a72e10  CServerGameClients::ClientPutInServer(edict_t*, char const*)
++0x0014:  00a72dc0  CServerGameClients::ClientCommand(edict_t*, CCommand const&)
++0x0018:  00a724a0  CServerGameClients::SetCommandClient(int)
++0x001c:  00a728f0  CServerGameClients::ClientSettingsChanged(edict_t*)
++0x0020:  00a725b0  CServerGameClients::ClientSetupVisibility(edict_t*, edict_t*, unsigned char*, int)
++0x0024:  00a748f0  CServerGameClients::ProcessUsercmds(edict_t*, bf_read*, int, int, int, bool, bool)
++0x0028:  00a72490  CServerGameClients::PostClientMessagesSent_DEPRECIATED()
++0x002c:  00a75400  CServerGameClients::GetPlayerState(edict_t*)
++0x0030:  00a74860  CServerGameClients::ClientEarPosition(edict_t*, Vector*)
++0x0034:  00a747e0  CServerGameClients::GetReplayDelay(edict_t*, int&)
++0x0038:  00a745f0  CServerGameClients::GetBugReportInfo(char*, int)
++0x003c:  00a724b0  CServerGameClients::NetworkIDValidated(char const*, char const*)
++0x0040:  00a724c0  CServerGameClients::ClientCommandKeyValues(edict_t*, KeyValues*)
++0x0044:  00a72460  CServerGameClients::ClientSpawned(edict_t*)

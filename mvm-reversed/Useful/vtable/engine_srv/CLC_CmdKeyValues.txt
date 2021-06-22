@@ -1,0 +1,15 @@
+CLC_CmdKeyValues
+
++0x0000:  0008c420  CLC_CmdKeyValues::~CLC_CmdKeyValues()
++0x0004:  0008c440  CLC_CmdKeyValues::~CLC_CmdKeyValues()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b400  CLC_CmdKeyValues::Process()
++0x0014:  00089750  CLC_CmdKeyValues::ReadFromBuffer(bf_read&)
++0x0018:  000898c0  CLC_CmdKeyValues::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b3e0  CLC_CmdKeyValues::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b3f0  CLC_CmdKeyValues::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007f090  CLC_CmdKeyValues::ToString() const

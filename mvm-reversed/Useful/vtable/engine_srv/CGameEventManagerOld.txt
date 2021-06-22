@@ -1,0 +1,15 @@
+CGameEventManagerOld
+
++0x0000:  0011a050  CGameEventManagerOld::~CGameEventManagerOld()
++0x0004:  0011a060  CGameEventManagerOld::~CGameEventManagerOld()
++0x0008:  0011a010  CGameEventManagerOld::LoadEventsFromFile(char const*)
++0x000c:  0011a030  CGameEventManagerOld::Reset()
++0x0010:  00119da0  CGameEventManagerOld::GetEvent(char const*)
++0x0014:  00119df0  CGameEventManagerOld::AddListener(IGameEventListener*, char const*, bool)
++0x0018:  00119e70  CGameEventManagerOld::AddListener(IGameEventListener*, bool)
++0x001c:  00119dd0  CGameEventManagerOld::RemoveListener(IGameEventListener*)
++0x0020:  00119fd0  CGameEventManagerOld::FireEvent(KeyValues*)
++0x0024:  00119f70  CGameEventManagerOld::FireEventServerOnly(KeyValues*)
++0x0028:  00119fa0  CGameEventManagerOld::FireEventClientOnly(KeyValues*)
++0x002c:  00119d80  CGameEventManagerOld::SerializeKeyValues(KeyValues*, bf_write*, CGameEvent*)
++0x0030:  00119d60  CGameEventManagerOld::UnserializeKeyValue(bf_read*)

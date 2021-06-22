@@ -1,0 +1,4 @@
+CSceneFindMarkFilter
+
++0x0000:  00bc4320  CSceneFindMarkFilter::ShouldFindEntity(CBaseEntity*)
++0x0004:  00bc36c0  CSceneFindMarkFilter::GetFilterResult()

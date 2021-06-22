@@ -1,0 +1,15 @@
+SVC_SetView
+
++0x0000:  0008be30  SVC_SetView::~SVC_SetView()
++0x0004:  0008c0e0  SVC_SetView::~SVC_SetView()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b7d0  SVC_SetView::Process()
++0x0014:  000852e0  SVC_SetView::ReadFromBuffer(bf_read&)
++0x0018:  0007c620  SVC_SetView::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b7b0  SVC_SetView::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b7c0  SVC_SetView::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d2c0  SVC_SetView::ToString() const

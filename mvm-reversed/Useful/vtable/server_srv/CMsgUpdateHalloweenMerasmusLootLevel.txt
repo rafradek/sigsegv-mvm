@@ -1,0 +1,22 @@
+CMsgUpdateHalloweenMerasmusLootLevel
+
++0x0000:  005dc550  CMsgUpdateHalloweenMerasmusLootLevel::~CMsgUpdateHalloweenMerasmusLootLevel()
++0x0004:  005dc5b0  CMsgUpdateHalloweenMerasmusLootLevel::~CMsgUpdateHalloweenMerasmusLootLevel()
++0x0008:  00000000  
++0x000c:  005c6eb0  CMsgUpdateHalloweenMerasmusLootLevel::New() const
++0x0010:  00585b10  CMsgUpdateHalloweenMerasmusLootLevel::Clear()
++0x0014:  00577660  CMsgUpdateHalloweenMerasmusLootLevel::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005c6830  CMsgUpdateHalloweenMerasmusLootLevel::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058a1e0  CMsgUpdateHalloweenMerasmusLootLevel::ByteSize() const
++0x0028:  0057ca30  CMsgUpdateHalloweenMerasmusLootLevel::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00595270  CMsgUpdateHalloweenMerasmusLootLevel::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcf50  CMsgUpdateHalloweenMerasmusLootLevel::GetCachedSize() const
++0x0034:  00577610  CMsgUpdateHalloweenMerasmusLootLevel::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c70b0  CMsgUpdateHalloweenMerasmusLootLevel::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00577600  CMsgUpdateHalloweenMerasmusLootLevel::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e760  CMsgUpdateHalloweenMerasmusLootLevel::GetMetadata() const

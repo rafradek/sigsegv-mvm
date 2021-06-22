@@ -1,0 +1,3 @@
+CGameDLL_ConVarAccessor
+
++0x0000:  00a720b0  CGameDLL_ConVarAccessor::RegisterConCommandBase(ConCommandBase*)

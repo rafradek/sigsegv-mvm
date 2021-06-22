@@ -1,0 +1,5 @@
+IIsHolidayActive
+
++0x0000:  00659d50  IIsHolidayActive::~IIsHolidayActive()
++0x0004:  00659ed0  IIsHolidayActive::~IIsHolidayActive()
++0x0008:  00000000  

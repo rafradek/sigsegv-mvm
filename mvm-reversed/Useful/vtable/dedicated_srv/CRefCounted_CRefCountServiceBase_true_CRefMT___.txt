@@ -1,0 +1,5 @@
+CRefCounted<CRefCountServiceBase<true, CRefMT> >
+
++0x0000:  0006e7f0  CRefCounted<CRefCountServiceBase<true, CRefMT> >::~CRefCounted()
++0x0004:  0006e930  CRefCounted<CRefCountServiceBase<true, CRefMT> >::~CRefCounted()
++0x0008:  0006e820  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

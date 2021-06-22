@@ -1,0 +1,5 @@
+CEntityFactory<CAI_SpeechFilter>
+
++0x0000:  009a3280  CEntityFactory<CAI_SpeechFilter>::Create(char const*)
++0x0004:  009a3230  CEntityFactory<CAI_SpeechFilter>::Destroy(IServerNetworkable*)
++0x0008:  009a3250  CEntityFactory<CAI_SpeechFilter>::GetEntitySize()

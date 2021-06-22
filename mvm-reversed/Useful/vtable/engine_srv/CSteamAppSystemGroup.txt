@@ -1,0 +1,10 @@
+CSteamAppSystemGroup
+
++0x0000:  00000000  
++0x0004:  00000000  
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  00203180  CAppSystemGroup::Startup()
++0x0018:  00203380  CAppSystemGroup::Shutdown()
++0x001c:  002029f0  CSteamAppSystemGroup::LoadModuleDLL(char const*)

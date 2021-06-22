@@ -1,0 +1,4 @@
+ITFTeamSpawnAutoList
+
++0x0000:  00cbc9d0  ITFTeamSpawnAutoList::~ITFTeamSpawnAutoList()
++0x0004:  00cbc180  ITFTeamSpawnAutoList::~ITFTeamSpawnAutoList()

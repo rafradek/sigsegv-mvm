@@ -1,0 +1,13 @@
+CEconItemPerClassPresetData
+
++0x0000:  00663e30  CEconItemPerClassPresetData::~CEconItemPerClassPresetData()
++0x0004:  00663ea0  CEconItemPerClassPresetData::~CEconItemPerClassPresetData()
++0x0008:  00663de0  CEconItemPerClassPresetData::GetTypeID() const
++0x000c:  00663bb0  CEconItemPerClassPresetData::BParseFromMessage(CUtlBuffer const&)
++0x0010:  00663b30  CEconItemPerClassPresetData::BParseFromMessage(std::string const&)
++0x0014:  00663b00  CEconItemPerClassPresetData::BUpdateFromNetwork(GCSDK::CSharedObject const&)
++0x0018:  00663ae0  CEconItemPerClassPresetData::BIsKeyLess(GCSDK::CSharedObject const&) const
++0x001c:  00663d40  CEconItemPerClassPresetData::Copy(GCSDK::CSharedObject const&)
++0x0020:  00663b20  CEconItemPerClassPresetData::Dump() const
++0x0024:  0065d510  GCSDK::CSharedObject::BShouldDeleteByCache() const
++0x0028:  0065d830  GCSDK::CSharedObject::GetDebugString() const

@@ -8,11 +8,18 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 {
     CBaseEntity *projectile = nullptr;
     RefCount rc_CTFPointWeaponMimic_Fire;
+	CBaseEntity *scorer = nullptr;
+	bool grenade = false;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
 		CBaseEntity *mimic = reinterpret_cast<CBaseEntity *>(this);
         projectile = nullptr;
+		grenade = false;
+		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
+			scorer = mimic->GetOwnerEntity();
+		}
+
         DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
         if (projectile != nullptr) {
             if (mimic->GetTeamNumber() != 0) {
@@ -21,23 +28,37 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				if (anim->m_nSkin == 1 && mimic->GetTeamNumber() == 2)
 					anim->m_nSkin = 0;
 			}
+			if (grenade) {
+				projectile->SetOwnerEntity(scorer);
+			}
         }
+		scorer = nullptr;
 	}
 
     DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Rocket_Create, CBaseEntity *pLauncher, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
 	{
+		if (scorer != nullptr) {
+			pScorer = scorer;
+		}
         projectile = DETOUR_STATIC_CALL(CTFProjectile_Rocket_Create)(pLauncher, vecOrigin, vecAngles, pOwner, pScorer);
         return projectile;
 	}
 
     DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Arrow_Create, const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer)
 	{
+		if (scorer != nullptr) {
+			pScorer = scorer;
+		}
         projectile = DETOUR_STATIC_CALL(CTFProjectile_Arrow_Create)(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);
         return projectile;
 	}
 	
     DETOUR_DECL_STATIC(CBaseEntity *, CBaseEntity_CreateNoSpawn, const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner)
 	{
+		if (scorer != nullptr) {
+			grenade = true;
+			pOwner = scorer;
+		}
         projectile = DETOUR_STATIC_CALL(CBaseEntity_CreateNoSpawn)(szName, vecOrigin, vecAngles, pOwner);
         return projectile;
 	}

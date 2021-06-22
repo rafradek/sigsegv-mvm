@@ -1,0 +1,8 @@
+COM_IOReadBinary
+
++0x0000:  0018ed30  COM_IOReadBinary::open(char const*)
++0x0004:  0018ede0  COM_IOReadBinary::read(void*, int, int)
++0x0008:  0018eec0  COM_IOReadBinary::close(int)
++0x000c:  0018ee20  COM_IOReadBinary::seek(int, int)
++0x0010:  0018ee60  COM_IOReadBinary::tell(int)
++0x0014:  0018ee90  COM_IOReadBinary::size(int)

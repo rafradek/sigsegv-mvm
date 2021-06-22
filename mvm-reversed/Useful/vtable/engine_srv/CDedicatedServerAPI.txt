@@ -1,0 +1,13 @@
+CDedicatedServerAPI
+
++0x0000:  001c5170  CDedicatedServerAPI::Connect(void* (*)(char const*, int*))
++0x0004:  001c4e30  CDedicatedServerAPI::Disconnect()
++0x0008:  001c4670  CDedicatedServerAPI::QueryInterface(char const*)
++0x000c:  001c5c60  CTier2AppSystem<IDedicatedServerAPI, 0>::Init()
++0x0010:  001c5c30  CTier2AppSystem<IDedicatedServerAPI, 0>::Shutdown()
++0x0014:  001c5340  CDedicatedServerAPI::ModInit(ModInfo_t&)
++0x0018:  001c5960  CDedicatedServerAPI::ModShutdown()
++0x001c:  001c4860  CDedicatedServerAPI::RunFrame()
++0x0020:  001c45b0  CDedicatedServerAPI::AddConsoleText(char*)
++0x0024:  001c4570  CDedicatedServerAPI::UpdateStatus(float*, int*, int*, char*, int)
++0x0028:  001c4890  CDedicatedServerAPI::UpdateHostname(char*, int)

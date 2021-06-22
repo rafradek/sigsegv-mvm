@@ -1,0 +1,4 @@
+CPlayerLocalData::NetworkVar_m_skybox3d
+
++0x0000:  00b80a00  CPlayerLocalData::NetworkVar_m_skybox3d::NetworkStateChanged()
++0x0004:  00b80a20  CPlayerLocalData::NetworkVar_m_skybox3d::NetworkStateChanged(void*)

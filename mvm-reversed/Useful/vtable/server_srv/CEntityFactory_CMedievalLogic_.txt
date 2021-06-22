@@ -1,0 +1,5 @@
+CEntityFactory<CMedievalLogic>
+
++0x0000:  0079db20  CEntityFactory<CMedievalLogic>::Create(char const*)
++0x0004:  0079be40  CEntityFactory<CMedievalLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079be60  CEntityFactory<CMedievalLogic>::GetEntitySize()

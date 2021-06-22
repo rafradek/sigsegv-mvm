@@ -1,0 +1,13 @@
+CPackFile
+
++0x0000:  0007d650  CPackFile::~CPackFile()
++0x0004:  0007d750  CPackFile::~CPackFile()
++0x0008:  0006e820  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  00000000  
++0x0018:  00000000  
++0x001c:  0007f330  CPackFile::SetupPreloadData()
++0x0020:  0007f340  CPackFile::DiscardPreloadData()
++0x0024:  00000000  
++0x0028:  00000000  

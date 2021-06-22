@@ -1,0 +1,9 @@
+CItemSelectionCriteria::ICondition
+
++0x0000:  006b4400  CItemSelectionCriteria::ICondition::~ICondition()
++0x0004:  006b4470  CItemSelectionCriteria::ICondition::~ICondition()
++0x0008:  00000000  
++0x000c:  006b4410  CItemSelectionCriteria::ICondition::GetEOp() const
++0x0010:  006b4420  CItemSelectionCriteria::ICondition::GetField() const
++0x0014:  006b4430  CItemSelectionCriteria::ICondition::GetValue() const
++0x0018:  006b4440  CItemSelectionCriteria::ICondition::BSerializeToMsg(CSOItemCriteriaCondition&) const

@@ -1,0 +1,4 @@
+CVCRTrace
+
++0x0000:  00015a20  CVCRTrace::ReadEvent()
++0x0004:  00015a50  CVCRTrace::Read(void*, int)

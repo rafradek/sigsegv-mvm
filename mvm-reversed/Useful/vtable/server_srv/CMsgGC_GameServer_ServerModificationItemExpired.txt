@@ -1,0 +1,22 @@
+CMsgGC_GameServer_ServerModificationItemExpired
+
++0x0000:  00579f10  CMsgGC_GameServer_ServerModificationItemExpired::~CMsgGC_GameServer_ServerModificationItemExpired()
++0x0004:  00579f50  CMsgGC_GameServer_ServerModificationItemExpired::~CMsgGC_GameServer_ServerModificationItemExpired()
++0x0008:  00000000  
++0x000c:  005b2d10  CMsgGC_GameServer_ServerModificationItemExpired::New() const
++0x0010:  005833f0  CMsgGC_GameServer_ServerModificationItemExpired::Clear()
++0x0014:  00575d70  CMsgGC_GameServer_ServerModificationItemExpired::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059b780  CMsgGC_GameServer_ServerModificationItemExpired::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058cd00  CMsgGC_GameServer_ServerModificationItemExpired::ByteSize() const
++0x0028:  0057b8a0  CMsgGC_GameServer_ServerModificationItemExpired::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00596780  CMsgGC_GameServer_ServerModificationItemExpired::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcbc0  CMsgGC_GameServer_ServerModificationItemExpired::GetCachedSize() const
++0x0034:  00575d20  CMsgGC_GameServer_ServerModificationItemExpired::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b2ec0  CMsgGC_GameServer_ServerModificationItemExpired::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575d10  CMsgGC_GameServer_ServerModificationItemExpired::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f5a0  CMsgGC_GameServer_ServerModificationItemExpired::GetMetadata() const

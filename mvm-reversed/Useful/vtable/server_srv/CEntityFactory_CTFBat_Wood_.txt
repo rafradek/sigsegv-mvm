@@ -1,0 +1,5 @@
+CEntityFactory<CTFBat_Wood>
+
++0x0000:  0084b120  CEntityFactory<CTFBat_Wood>::Create(char const*)
++0x0004:  0084ae40  CEntityFactory<CTFBat_Wood>::Destroy(IServerNetworkable*)
++0x0008:  0084ae60  CEntityFactory<CTFBat_Wood>::GetEntitySize()

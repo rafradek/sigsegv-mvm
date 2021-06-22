@@ -1,0 +1,9 @@
+IEconLootList
+
++0x0000:  0065d410  IEconLootList::~IEconLootList()
++0x0004:  0065d810  IEconLootList::~IEconLootList()
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  00000000  
++0x0018:  00000000  

@@ -1,0 +1,4 @@
+CPathfindNearestNodeFilter
+
++0x0000:  00978a20  CPathfindNearestNodeFilter::IsValid(CAI_Node*)
++0x0004:  00978990  CPathfindNearestNodeFilter::ShouldContinue()

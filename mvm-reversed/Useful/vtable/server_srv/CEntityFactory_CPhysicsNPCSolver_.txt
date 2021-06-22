@@ -1,0 +1,5 @@
+CEntityFactory<CPhysicsNPCSolver>
+
++0x0000:  00b4ead0  CEntityFactory<CPhysicsNPCSolver>::Create(char const*)
++0x0004:  00b4e920  CEntityFactory<CPhysicsNPCSolver>::Destroy(IServerNetworkable*)
++0x0008:  00b4e940  CEntityFactory<CPhysicsNPCSolver>::GetEntitySize()

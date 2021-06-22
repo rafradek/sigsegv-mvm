@@ -1,0 +1,15 @@
+CLC_FileMD5Check
+
++0x0000:  0008bea0  CLC_FileMD5Check::~CLC_FileMD5Check()
++0x0004:  0008c000  CLC_FileMD5Check::~CLC_FileMD5Check()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b3c0  CLC_FileMD5Check::Process()
++0x0014:  00083c90  CLC_FileMD5Check::ReadFromBuffer(bf_read&)
++0x0018:  000810a0  CLC_FileMD5Check::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b3a0  CLC_FileMD5Check::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b3b0  CLC_FileMD5Check::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d560  CLC_FileMD5Check::ToString() const

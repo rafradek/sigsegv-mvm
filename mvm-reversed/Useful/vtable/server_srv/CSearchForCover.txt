@@ -1,0 +1,8 @@
+CSearchForCover
+
++0x0000:  00c722b0  CSearchForCover::~CSearchForCover()
++0x0004:  00c72300  CSearchForCover::~CSearchForCover()
++0x0008:  00c72350  CSearchForCover::operator()(CNavArea*, CNavArea*, float)
++0x000c:  00c71f00  CSearchForCover::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c71f70  CSearchForCover::PostSearch()

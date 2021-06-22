@@ -1,0 +1,12 @@
+NextBotManager
+
++0x0000:  00afbb90  NextBotManager::~NextBotManager()
++0x0004:  00afbc50  NextBotManager::~NextBotManager()
++0x0008:  00afa4d0  NextBotManager::Update()
++0x000c:  00afb620  NextBotManager::OnMapLoaded()
++0x0010:  00afb610  NextBotManager::OnRoundRestart()
++0x0014:  00afa4c0  NextBotManager::OnBeginChangeLevel()
++0x0018:  00afb180  NextBotManager::OnKilled(CBaseCombatCharacter*, CTakeDamageInfo const&)
++0x001c:  00afb000  NextBotManager::OnSound(CBaseEntity*, Vector const&, KeyValues*)
++0x0020:  00afaf20  NextBotManager::OnSpokeConcept(CBaseCombatCharacter*, char const*, AI_Response*)
++0x0024:  00afae50  NextBotManager::OnWeaponFired(CBaseCombatCharacter*, CBaseCombatWeapon*)

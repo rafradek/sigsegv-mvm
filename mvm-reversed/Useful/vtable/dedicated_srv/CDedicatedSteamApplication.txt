@@ -1,0 +1,10 @@
+CDedicatedSteamApplication
+
++0x0000:  000931c0  CDedicatedSteamApplication::Create()
++0x0004:  000b4780  CSteamApplication::PreInit()
++0x0008:  000b47d0  CSteamApplication::Main()
++0x000c:  000b4790  CSteamApplication::PostShutdown()
++0x0010:  000b4770  CSteamApplication::Destroy()
++0x0014:  000b48c0  CSteamApplication::Startup()
++0x0018:  000b47a0  CSteamApplication::Shutdown()
++0x001c:  000b1ea0  CAppSystemGroup::LoadModuleDLL(char const*)

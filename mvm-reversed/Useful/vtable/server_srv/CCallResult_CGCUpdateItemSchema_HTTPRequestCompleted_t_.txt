@@ -1,0 +1,5 @@
+CCallResult<CGCUpdateItemSchema, HTTPRequestCompleted_t>
+
++0x0000:  006a8ee0  CCallResult<CGCUpdateItemSchema, HTTPRequestCompleted_t>::Run(void*)
++0x0004:  006a9020  CCallResult<CGCUpdateItemSchema, HTTPRequestCompleted_t>::Run(void*, bool, unsigned long long)
++0x0008:  006a8f30  CCallResult<CGCUpdateItemSchema, HTTPRequestCompleted_t>::GetCallbackSizeBytes()

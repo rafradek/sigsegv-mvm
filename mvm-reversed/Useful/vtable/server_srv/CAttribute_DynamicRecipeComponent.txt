@@ -1,0 +1,22 @@
+CAttribute_DynamicRecipeComponent
+
++0x0000:  005c7830  CAttribute_DynamicRecipeComponent::~CAttribute_DynamicRecipeComponent()
++0x0004:  005c7880  CAttribute_DynamicRecipeComponent::~CAttribute_DynamicRecipeComponent()
++0x0008:  00000000  
++0x000c:  005c7780  CAttribute_DynamicRecipeComponent::New() const
++0x0010:  005843b0  CAttribute_DynamicRecipeComponent::Clear()
++0x0014:  00577740  CAttribute_DynamicRecipeComponent::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005a0bb0  CAttribute_DynamicRecipeComponent::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058ac10  CAttribute_DynamicRecipeComponent::ByteSize() const
++0x0028:  0057cf20  CAttribute_DynamicRecipeComponent::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00591580  CAttribute_DynamicRecipeComponent::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcf70  CAttribute_DynamicRecipeComponent::GetCachedSize() const
++0x0034:  005776f0  CAttribute_DynamicRecipeComponent::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c7a10  CAttribute_DynamicRecipeComponent::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005776e0  CAttribute_DynamicRecipeComponent::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e6e0  CAttribute_DynamicRecipeComponent::GetMetadata() const

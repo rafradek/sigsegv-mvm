@@ -1,0 +1,20 @@
+CTFItemSchema
+
++0x0000:  007bbae0  CTFItemSchema::~CTFItemSchema()
++0x0004:  007bbce0  CTFItemSchema::~CTFItemSchema()
++0x0008:  00669f40  CEconItemSchema::BInit(char const*, char const*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  0067c5c0  CEconItemSchema::GetRarityDefinitionCount() const
++0x0010:  00668320  CEconItemSchema::GetRarityName(unsigned char)
++0x0014:  006682e0  CEconItemSchema::GetRarityLocKey(unsigned char)
++0x0018:  006682a0  CEconItemSchema::GetRarityColor(unsigned char)
++0x001c:  00667590  CEconItemSchema::GetRarityIndex(char const*)
++0x0020:  0067c5d0  CEconItemSchema::GetItemSeriesDefinitionCount() const
++0x0024:  007b2fe0  CTFItemSchema::GetCustomExpirationDate(char const*) const
++0x0028:  007b9d50  CTFItemSchema::CreateEconItemDefinition()
++0x002c:  007b9d00  CTFItemSchema::CreateCraftingRecipeDefinition()
++0x0030:  007ba680  CTFItemSchema::CreateEconStyleInfo()
++0x0034:  007b9db0  CTFItemSchema::CreateQuestDefinition()
++0x0038:  007b2ec0  CTFItemSchema::CreateEconToolImpl(char const*, char const*, char const*, item_capabilities_t, KeyValues*)
++0x003c:  007b33b0  CTFItemSchema::BCanStrangeFilterApplyToStrangeSlotInItem(unsigned int, unsigned int, IEconItemInterface const*, int, unsigned int*) const
++0x0040:  007b7090  CTFItemSchema::Reset()
++0x0044:  007b7b50  CTFItemSchema::BInitSchema(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)

@@ -1,0 +1,11 @@
+CZipPackFileHandle
+
++0x0000:  00030ee0  CZipPackFileHandle::~CZipPackFileHandle()
++0x0004:  00030ef0  CZipPackFileHandle::~CZipPackFileHandle()
++0x0008:  0002f880  CZipPackFileHandle::Read(void*, int, int)
++0x000c:  0002f8f0  CZipPackFileHandle::Seek(int, int)
++0x0010:  00031830  CZipPackFileHandle::Tell()
++0x0014:  00031820  CZipPackFileHandle::Size()
++0x0018:  00030f10  CZipPackFileHandle::SetBufferSize(int)
++0x001c:  00030f50  CZipPackFileHandle::GetSectorSize()
++0x0020:  00030f90  CZipPackFileHandle::AbsoluteBaseOffset()

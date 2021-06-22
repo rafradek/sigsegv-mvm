@@ -1,0 +1,6 @@
+CWheelOfDoom::WOD_BigHeadEffect
+
++0x0000:  00895d70  CWheelOfDoom::WOD_BaseEffect::InitEffect(float)
++0x0004:  00897130  CWheelOfDoom::WOD_BigHeadEffect::ActivateEffect(CWheelOfDoom::EffectData_t&)
++0x0008:  00899d00  CWheelOfDoom::WOD_BaseEffect::UpdateEffect(CWheelOfDoom::EffectData_t&)
++0x000c:  008972e0  CWheelOfDoom::WOD_BigHeadEffect::DeactivateEffect(CWheelOfDoom::EffectData_t&)

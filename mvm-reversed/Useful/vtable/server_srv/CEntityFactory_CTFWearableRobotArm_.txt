@@ -1,0 +1,5 @@
+CEntityFactory<CTFWearableRobotArm>
+
++0x0000:  00893b60  CEntityFactory<CTFWearableRobotArm>::Create(char const*)
++0x0004:  00893ad0  CEntityFactory<CTFWearableRobotArm>::Destroy(IServerNetworkable*)
++0x0008:  00893af0  CEntityFactory<CTFWearableRobotArm>::GetEntitySize()

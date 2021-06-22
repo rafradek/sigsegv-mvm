@@ -1,0 +1,5 @@
+CEntityFactory<CTeamplayRoundWin>
+
++0x0000:  00cb9db0  CEntityFactory<CTeamplayRoundWin>::Create(char const*)
++0x0004:  00cb9cd0  CEntityFactory<CTeamplayRoundWin>::Destroy(IServerNetworkable*)
++0x0008:  00cb9cf0  CEntityFactory<CTeamplayRoundWin>::GetEntitySize()

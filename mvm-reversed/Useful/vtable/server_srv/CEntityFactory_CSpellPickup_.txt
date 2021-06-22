@@ -1,0 +1,5 @@
+CEntityFactory<CSpellPickup>
+
++0x0000:  00d26dd0  CEntityFactory<CSpellPickup>::Create(char const*)
++0x0004:  00d26cb0  CEntityFactory<CSpellPickup>::Destroy(IServerNetworkable*)
++0x0008:  00d26cd0  CEntityFactory<CSpellPickup>::GetEntitySize()

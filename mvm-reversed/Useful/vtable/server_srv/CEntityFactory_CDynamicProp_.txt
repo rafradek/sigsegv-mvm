@@ -1,0 +1,5 @@
+CEntityFactory<CDynamicProp>
+
++0x0000:  00bad580  CEntityFactory<CDynamicProp>::Create(char const*)
++0x0004:  00bab820  CEntityFactory<CDynamicProp>::Destroy(IServerNetworkable*)
++0x0008:  00bab840  CEntityFactory<CDynamicProp>::GetEntitySize()

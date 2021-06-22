@@ -1,0 +1,5 @@
+CEntityFactory<CTimerEntity>
+
++0x0000:  00a99790  CEntityFactory<CTimerEntity>::Create(char const*)
++0x0004:  00a98bd0  CEntityFactory<CTimerEntity>::Destroy(IServerNetworkable*)
++0x0008:  00a98bf0  CEntityFactory<CTimerEntity>::GetEntitySize()

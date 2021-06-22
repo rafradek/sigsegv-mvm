@@ -1,0 +1,11 @@
+CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>
+
++0x0000:  0067cd30  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::~CAttributeIterator_GetTypedAttributeValue()
++0x0004:  0067cfd0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::~CAttributeIterator_GetTypedAttributeValue()
++0x0008:  0067cdb0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  0067cdc0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  0067cdd0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  0067cde0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  0067cdf0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  0067d8b0  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  0067ce00  CAttributeIterator_GetTypedAttributeValue<CAttribute_ItemSlotCriteria, CAttribute_ItemSlotCriteria>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

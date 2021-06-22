@@ -1,0 +1,8 @@
+CEconTool_StrangePartRestriction
+
++0x0000:  006ad440  CEconTool_StrangePartRestriction::~CEconTool_StrangePartRestriction()
++0x0004:  006ad4b0  CEconTool_StrangePartRestriction::~CEconTool_StrangePartRestriction()
++0x0008:  006aaae0  CEconTool_StrangePartRestriction::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  006aaa30  CEconTool_StrangePartRestriction::BFinishInitialization()

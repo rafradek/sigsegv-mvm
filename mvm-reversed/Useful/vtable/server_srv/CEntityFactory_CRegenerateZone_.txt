@@ -1,0 +1,5 @@
+CEntityFactory<CRegenerateZone>
+
++0x0000:  00cc73b0  CEntityFactory<CRegenerateZone>::Create(char const*)
++0x0004:  00cc7380  CEntityFactory<CRegenerateZone>::Destroy(IServerNetworkable*)
++0x0008:  00cc73a0  CEntityFactory<CRegenerateZone>::GetEntitySize()

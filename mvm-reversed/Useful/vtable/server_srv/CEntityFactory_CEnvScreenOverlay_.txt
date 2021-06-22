@@ -1,0 +1,5 @@
+CEntityFactory<CEnvScreenOverlay>
+
++0x0000:  00a49e80  CEntityFactory<CEnvScreenOverlay>::Create(char const*)
++0x0004:  00a49cf0  CEntityFactory<CEnvScreenOverlay>::Destroy(IServerNetworkable*)
++0x0008:  00a49d10  CEntityFactory<CEnvScreenOverlay>::GetEntitySize()

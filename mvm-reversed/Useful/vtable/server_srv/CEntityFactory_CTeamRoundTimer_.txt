@@ -1,0 +1,5 @@
+CEntityFactory<CTeamRoundTimer>
+
++0x0000:  00731250  CEntityFactory<CTeamRoundTimer>::Create(char const*)
++0x0004:  00731190  CEntityFactory<CTeamRoundTimer>::Destroy(IServerNetworkable*)
++0x0008:  007311b0  CEntityFactory<CTeamRoundTimer>::GetEntitySize()

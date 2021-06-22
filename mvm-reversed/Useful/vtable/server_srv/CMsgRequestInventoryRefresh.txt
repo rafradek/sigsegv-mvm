@@ -1,0 +1,22 @@
+CMsgRequestInventoryRefresh
+
++0x0000:  004ddaf0  CMsgRequestInventoryRefresh::~CMsgRequestInventoryRefresh()
++0x0004:  004ddb30  CMsgRequestInventoryRefresh::~CMsgRequestInventoryRefresh()
++0x0008:  00000000  
++0x000c:  00508530  CMsgRequestInventoryRefresh::New() const
++0x0010:  004e43c0  CMsgRequestInventoryRefresh::Clear()
++0x0014:  004db360  CMsgRequestInventoryRefresh::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004dcf00  CMsgRequestInventoryRefresh::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004dca80  CMsgRequestInventoryRefresh::ByteSize() const
++0x0028:  004dcde0  CMsgRequestInventoryRefresh::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004e3be0  CMsgRequestInventoryRefresh::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520950  CMsgRequestInventoryRefresh::GetCachedSize() const
++0x0034:  004db310  CMsgRequestInventoryRefresh::CopyFrom(google::protobuf::Message const&)
++0x0038:  005086c0  CMsgRequestInventoryRefresh::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004db300  CMsgRequestInventoryRefresh::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004edb90  CMsgRequestInventoryRefresh::GetMetadata() const

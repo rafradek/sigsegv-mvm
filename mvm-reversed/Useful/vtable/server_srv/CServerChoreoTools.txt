@@ -1,0 +1,8 @@
+CServerChoreoTools
+
++0x0000:  00a34370  CServerChoreoTools::~CServerChoreoTools()
++0x0004:  00a34380  CServerChoreoTools::~CServerChoreoTools()
++0x0008:  00a34470  CServerChoreoTools::NextChoreoEntity(void*)
++0x000c:  00a34420  CServerChoreoTools::GetSceneFile(void*)
++0x0010:  00a34340  CServerChoreoTools::GetEntIndex(void*)
++0x0014:  00a344a0  CServerChoreoTools::ReloadSceneFromDisk(int)

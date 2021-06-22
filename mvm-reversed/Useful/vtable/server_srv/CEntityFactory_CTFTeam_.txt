@@ -1,0 +1,5 @@
+CEntityFactory<CTFTeam>
+
++0x0000:  00e29360  CEntityFactory<CTFTeam>::Create(char const*)
++0x0004:  00e29140  CEntityFactory<CTFTeam>::Destroy(IServerNetworkable*)
++0x0008:  00e29160  CEntityFactory<CTFTeam>::GetEntitySize()

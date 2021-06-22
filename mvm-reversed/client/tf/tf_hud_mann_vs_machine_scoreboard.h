@@ -1,0 +1,2 @@
+// CMvMScoreboardEnemyInfo
+// CTFHudMannVsMachineScoreboard

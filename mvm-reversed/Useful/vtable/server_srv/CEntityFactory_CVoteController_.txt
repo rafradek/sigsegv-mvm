@@ -1,0 +1,5 @@
+CEntityFactory<CVoteController>
+
++0x0000:  00606410  CEntityFactory<CVoteController>::Create(char const*)
++0x0004:  005ff010  CEntityFactory<CVoteController>::Destroy(IServerNetworkable*)
++0x0008:  005ff030  CEntityFactory<CVoteController>::GetEntitySize()

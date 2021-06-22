@@ -1,0 +1,5 @@
+CEntityFactory<CTesla>
+
++0x0000:  00c05ec0  CEntityFactory<CTesla>::Create(char const*)
++0x0004:  00c05e40  CEntityFactory<CTesla>::Destroy(IServerNetworkable*)
++0x0008:  00c05e60  CEntityFactory<CTesla>::GetEntitySize()

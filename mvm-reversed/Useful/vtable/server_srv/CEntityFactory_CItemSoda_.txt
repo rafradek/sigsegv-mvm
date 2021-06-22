@@ -1,0 +1,5 @@
+CEntityFactory<CItemSoda>
+
++0x0000:  00a282e0  CEntityFactory<CItemSoda>::Create(char const*)
++0x0004:  00a27890  CEntityFactory<CItemSoda>::Destroy(IServerNetworkable*)
++0x0008:  00a278b0  CEntityFactory<CItemSoda>::GetEntitySize()

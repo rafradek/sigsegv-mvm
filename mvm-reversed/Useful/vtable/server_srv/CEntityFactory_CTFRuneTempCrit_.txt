@@ -1,0 +1,5 @@
+CEntityFactory<CTFRuneTempCrit>
+
++0x0000:  00cbbbc0  CEntityFactory<CTFRuneTempCrit>::Create(char const*)
++0x0004:  00cbb5f0  CEntityFactory<CTFRuneTempCrit>::Destroy(IServerNetworkable*)
++0x0008:  00cbb610  CEntityFactory<CTFRuneTempCrit>::GetEntitySize()

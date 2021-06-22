@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponBaseMelee>
+
++0x0000:  008457d0  CEntityFactory<CTFWeaponBaseMelee>::Create(char const*)
++0x0004:  008455c0  CEntityFactory<CTFWeaponBaseMelee>::Destroy(IServerNetworkable*)
++0x0008:  008455e0  CEntityFactory<CTFWeaponBaseMelee>::GetEntitySize()

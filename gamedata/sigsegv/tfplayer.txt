@@ -578,6 +578,42 @@
 					sym  "_ZN20CTFPlayerSharedUtils28GetEconItemViewByLoadoutSlotEP9CTFPlayeriPP11CEconEntity"
 				}
 				
+				"CTFPlayerShared::SetRevengeCrits"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared15SetRevengeCritsEi"
+				}
+
+				"CTFPlayerShared::SetChargeEffect"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared15SetChargeEffectE20medigun_charge_typesbbRK16MedigunEffects_tfP9CTFPlayer"
+				}
+				
+				"CTFPlayerShared::PulseMedicRadiusHeal"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared20PulseMedicRadiusHealEv"
+				}
+
+				"CTFPlayerShared::TestAndExpireChargeEffect"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared25TestAndExpireChargeEffectE20medigun_charge_types"
+				}
+
+				"CTFPlayerShared::GetMaxBuffedHealth"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared18GetMaxBuffedHealthEbb"
+				}
+
+				"CTFPlayerShared::OnRemoveTaunting"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared16OnRemoveTauntingEv"
+				}
+				
 				"CTFPlayerMove::StartCommand"
 				{
 					type "sym"
@@ -773,7 +809,28 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer5SpawnEv"
 				}
+				"CTFPlayer::InspectButtonPressed"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20InspectButtonPressedEv"
+				}
+				"CTFPlayer::CheckInstantLoadoutRespawn"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer26CheckInstantLoadoutRespawnEv"
+				}
+				"CTFPlayer::ForceRegenerateAndRespawn"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer25ForceRegenerateAndRespawnEv"
+				}
+				"CTFPlayer::GiveAmmo"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer8GiveAmmoEiib11EAmmoSource"
+				}
 				
+
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

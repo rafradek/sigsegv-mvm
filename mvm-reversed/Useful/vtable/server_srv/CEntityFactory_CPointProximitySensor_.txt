@@ -1,0 +1,5 @@
+CEntityFactory<CPointProximitySensor>
+
++0x0000:  00b8c050  CEntityFactory<CPointProximitySensor>::Create(char const*)
++0x0004:  00b8bed0  CEntityFactory<CPointProximitySensor>::Destroy(IServerNetworkable*)
++0x0008:  00b8bef0  CEntityFactory<CPointProximitySensor>::GetEntitySize()

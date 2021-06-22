@@ -1,0 +1,5 @@
+CEntityFactory<CTest_ProxyToggle_Networkable>
+
++0x0000:  00c07440  CEntityFactory<CTest_ProxyToggle_Networkable>::Create(char const*)
++0x0004:  00c073a0  CEntityFactory<CTest_ProxyToggle_Networkable>::Destroy(IServerNetworkable*)
++0x0008:  00c073c0  CEntityFactory<CTest_ProxyToggle_Networkable>::GetEntitySize()

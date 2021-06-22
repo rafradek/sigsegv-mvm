@@ -1,0 +1,5 @@
+CEntityFactory<CMerasmusDancer>
+
++0x0000:  00d25970  CEntityFactory<CMerasmusDancer>::Create(char const*)
++0x0004:  00d25940  CEntityFactory<CMerasmusDancer>::Destroy(IServerNetworkable*)
++0x0008:  00d25960  CEntityFactory<CMerasmusDancer>::GetEntitySize()

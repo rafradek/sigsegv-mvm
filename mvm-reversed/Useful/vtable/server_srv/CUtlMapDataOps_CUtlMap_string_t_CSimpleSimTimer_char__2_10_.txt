@@ -1,0 +1,7 @@
+CUtlMapDataOps<CUtlMap<string_t, CSimpleSimTimer, char>, 2, 10>
+
++0x0000:  00984bd0  CUtlMapDataOps<CUtlMap<string_t, CSimpleSimTimer, char>, 2, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00984640  CUtlMapDataOps<CUtlMap<string_t, CSimpleSimTimer, char>, 2, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00980bf0  CUtlMapDataOps<CUtlMap<string_t, CSimpleSimTimer, char>, 2, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  009816a0  CUtlMapDataOps<CUtlMap<string_t, CSimpleSimTimer, char>, 2, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

@@ -1,0 +1,39 @@
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CSoundEmitterSystemBase
+ |  [+] ISoundEmitterSystemBase
+ |   |  [-] IAppSystem
+
+[+] CSoundEmitterUniformRandomStream
+ |  [-] IUniformRandomStream
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[-] IAppSystem
+
+[-] IConVar
+
+[+] ISoundEmitterSystemBase
+ |  [-] IAppSystem
+
+[-] IUniformRandomStream

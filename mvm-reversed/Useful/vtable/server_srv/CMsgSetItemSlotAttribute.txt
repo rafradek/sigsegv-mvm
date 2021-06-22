@@ -1,0 +1,22 @@
+CMsgSetItemSlotAttribute
+
++0x0000:  0057aa80  CMsgSetItemSlotAttribute::~CMsgSetItemSlotAttribute()
++0x0004:  0057aac0  CMsgSetItemSlotAttribute::~CMsgSetItemSlotAttribute()
++0x0008:  00000000  
++0x000c:  005c8780  CMsgSetItemSlotAttribute::New() const
++0x0010:  00584580  CMsgSetItemSlotAttribute::Clear()
++0x0014:  00577890  CMsgSetItemSlotAttribute::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00599b50  CMsgSetItemSlotAttribute::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00587cb0  CMsgSetItemSlotAttribute::ByteSize() const
++0x0028:  0057bba0  CMsgSetItemSlotAttribute::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005910e0  CMsgSetItemSlotAttribute::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcfa0  CMsgSetItemSlotAttribute::GetCachedSize() const
++0x0034:  00577840  CMsgSetItemSlotAttribute::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c8960  CMsgSetItemSlotAttribute::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00577830  CMsgSetItemSlotAttribute::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e620  CMsgSetItemSlotAttribute::GetMetadata() const

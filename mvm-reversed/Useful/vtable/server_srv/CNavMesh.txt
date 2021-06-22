@@ -1,0 +1,40 @@
+CNavMesh
+
++0x0000:  00ae9300  CNavMesh::~CNavMesh()
++0x0004:  00ae9540  CNavMesh::~CNavMesh()
++0x0008:  00ae3fb0  CNavMesh::FireGameEvent(IGameEvent*)
++0x000c:  00aeb170  CNavMesh::PreLoadAreas(int)
++0x0010:  00aeb290  CNavMesh::CreateArea() const
++0x0014:  00aeb240  CNavMesh::DestroyArea(CNavArea*) const
++0x0018:  00ae7880  CNavMesh::CreateHidingSpot() const
++0x001c:  00ae9220  CNavMesh::Reset()
++0x0020:  00ae8590  CNavMesh::Update()
++0x0024:  00ace900  CNavMesh::Load()
++0x0028:  00acf050  CNavMesh::PostLoad(unsigned int)
++0x002c:  00aeb180  CNavMesh::IsAuthoritative() const
++0x0030:  00acc2e0  CNavMesh::Save() const
++0x0034:  00aeb230  CNavMesh::GetSubVersionNumber() const
++0x0038:  00aeb190  CNavMesh::SaveCustomData(CUtlBuffer&) const
++0x003c:  00aeb1a0  CNavMesh::LoadCustomData(CUtlBuffer&, unsigned int)
++0x0040:  00aeb1b0  CNavMesh::SaveCustomDataPreArea(CUtlBuffer&) const
++0x0044:  00aeb1c0  CNavMesh::LoadCustomDataPreArea(CUtlBuffer&, unsigned int)
++0x0048:  00ae2cc0  CNavMesh::OnServerActivate()
++0x004c:  00aea0d0  CNavMesh::OnRoundRestart()
++0x0050:  00ae2d00  CNavMesh::OnRoundRestartPreEntity()
++0x0054:  00aeb1d0  CNavMesh::OnBreakableCreated(CBaseEntity*)
++0x0058:  00aeb1e0  CNavMesh::OnBreakableBroken(CBaseEntity*)
++0x005c:  00aea660  CNavMesh::OnAreaBlocked(CNavArea*)
++0x0060:  00ae84c0  CNavMesh::OnAreaUnblocked(CNavArea*)
++0x0064:  00aea9a0  CNavMesh::OnAvoidanceObstacleEnteredArea(CNavArea*)
++0x0068:  00ae84a0  CNavMesh::OnAvoidanceObstacleLeftArea(CNavArea*)
++0x006c:  00ac01d0  CNavMesh::OnEditCreateNotify(CNavArea*)
++0x0070:  00ac03c0  CNavMesh::OnEditDestroyNotify(CNavArea*)
++0x0074:  00ac0220  CNavMesh::OnEditDestroyNotify(CNavLadder*)
++0x0078:  00aeb1f0  CNavMesh::OnNodeAdded(CNavNode*)
++0x007c:  00ad9b10  CNavMesh::AddWalkableSeeds()
++0x0080:  00aeb260  CNavMesh::GetGenerationTraceMask() const
++0x0084:  00ac1370  CNavMesh::CommandNavFloodSelect(CCommand const&)
++0x0088:  00aeb200  CNavMesh::PostCustomAnalysis()
++0x008c:  00aea7b0  CNavMesh::RemoveNavArea(CNavArea*)
++0x0090:  00aeb210  CNavMesh::BeginCustomAnalysis(bool)
++0x0094:  00aeb220  CNavMesh::EndCustomAnalysis()

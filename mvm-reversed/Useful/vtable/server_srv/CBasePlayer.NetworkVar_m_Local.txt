@@ -1,0 +1,4 @@
+CBasePlayer::NetworkVar_m_Local
+
++0x0000:  00b7d140  CBasePlayer::NetworkVar_m_Local::NetworkStateChanged()
++0x0004:  00b7d1e0  CBasePlayer::NetworkVar_m_Local::NetworkStateChanged(void*)

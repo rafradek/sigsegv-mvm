@@ -1,0 +1,5 @@
+CEntityFactory<CHealthKit>
+
++0x0000:  00cb8d30  CEntityFactory<CHealthKit>::Create(char const*)
++0x0004:  00cb8c40  CEntityFactory<CHealthKit>::Destroy(IServerNetworkable*)
++0x0008:  00cb8c60  CEntityFactory<CHealthKit>::GetEntitySize()

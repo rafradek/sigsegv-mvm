@@ -1,0 +1,5 @@
+CCallbackImpl<4>
+
++0x0000:  00000000  
++0x0004:  00f26060  CCallbackImpl<4>::Run(void*, bool, unsigned long long)
++0x0008:  00f26070  CCallbackImpl<4>::GetCallbackSizeBytes()

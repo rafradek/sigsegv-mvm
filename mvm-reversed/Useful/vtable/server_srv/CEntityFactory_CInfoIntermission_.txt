@@ -1,0 +1,5 @@
+CEntityFactory<CInfoIntermission>
+
++0x0000:  00a8f480  CEntityFactory<CInfoIntermission>::Create(char const*)
++0x0004:  00a8f430  CEntityFactory<CInfoIntermission>::Destroy(IServerNetworkable*)
++0x0008:  00a8f450  CEntityFactory<CInfoIntermission>::GetEntitySize()

@@ -1,0 +1,11 @@
+CEntitySaveRestoreBlockHandler
+
++0x0000:  00705730  CEntitySaveRestoreBlockHandler::GetBlockName()
++0x0004:  0070b5e0  CEntitySaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  0070a200  CEntitySaveRestoreBlockHandler::Save(ISave*)
++0x000c:  00705740  CEntitySaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  007057f0  CEntitySaveRestoreBlockHandler::PostSave()
++0x0014:  00705820  CEntitySaveRestoreBlockHandler::PreRestore()
++0x0018:  00705e30  CEntitySaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  0070a4a0  CEntitySaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  00705830  CEntitySaveRestoreBlockHandler::PostRestore()

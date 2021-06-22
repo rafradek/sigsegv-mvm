@@ -1,0 +1,5 @@
+CEntityFactory<CParticleFire>
+
++0x0000:  00b27520  CEntityFactory<CParticleFire>::Create(char const*)
++0x0004:  00b274a0  CEntityFactory<CParticleFire>::Destroy(IServerNetworkable*)
++0x0008:  00b274c0  CEntityFactory<CParticleFire>::GetEntitySize()

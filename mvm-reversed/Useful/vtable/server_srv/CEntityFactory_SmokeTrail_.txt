@@ -1,0 +1,5 @@
+CEntityFactory<SmokeTrail>
+
++0x0000:  00bdc3e0  CEntityFactory<SmokeTrail>::Create(char const*)
++0x0004:  00bdc160  CEntityFactory<SmokeTrail>::Destroy(IServerNetworkable*)
++0x0008:  00bdc180  CEntityFactory<SmokeTrail>::GetEntitySize()

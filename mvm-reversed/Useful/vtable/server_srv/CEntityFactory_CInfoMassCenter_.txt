@@ -1,0 +1,5 @@
+CEntityFactory<CInfoMassCenter>
+
++0x0000:  00b5cfb0  CEntityFactory<CInfoMassCenter>::Create(char const*)
++0x0004:  00b5c840  CEntityFactory<CInfoMassCenter>::Destroy(IServerNetworkable*)
++0x0008:  00b5c860  CEntityFactory<CInfoMassCenter>::GetEntitySize()

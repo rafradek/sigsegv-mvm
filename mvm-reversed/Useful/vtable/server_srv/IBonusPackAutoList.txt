@@ -1,0 +1,4 @@
+IBonusPackAutoList
+
++0x0000:  00734070  IBonusPackAutoList::~IBonusPackAutoList()
++0x0004:  00734000  IBonusPackAutoList::~IBonusPackAutoList()

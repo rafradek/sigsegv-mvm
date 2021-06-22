@@ -1,0 +1,12 @@
+CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+
++0x0000:  00082c50  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00082e90  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00082b50  CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x000c:  00082c70  CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0010:  00082ba0  CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::operator()()
++0x0014:  fffffff8  (unknown)
++0x0018:  001cfc00  typeinfo for CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
++0x001c:  00082b40  non-virtual thunk to CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0020:  00082c60  non-virtual thunk to CFunctor4<void (*)(FileJob_t*, void*, int, LoaderError_t), FileJob_t*, void*, int, LoaderError_t, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0024:  0006e820  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

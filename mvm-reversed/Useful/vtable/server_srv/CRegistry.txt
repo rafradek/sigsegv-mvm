@@ -1,0 +1,15 @@
+CRegistry
+
++0x0000:  008c41d0  CRegistry::~CRegistry()
++0x0004:  008c42a0  CRegistry::~CRegistry()
++0x0008:  008c4250  CRegistry::Init(char const*)
++0x000c:  008c4230  CRegistry::Shutdown()
++0x0010:  008c41e0  CRegistry::ReadInt(char const*, int)
++0x0014:  008c41f0  CRegistry::WriteInt(char const*, int)
++0x0018:  008c4200  CRegistry::ReadString(char const*, char const*)
++0x001c:  008c4210  CRegistry::WriteString(char const*, char const*)
++0x0020:  008c4440  CRegistry::ReadInt(char const*, char const*, int)
++0x0024:  008c43c0  CRegistry::WriteInt(char const*, char const*, int)
++0x0028:  008c4340  CRegistry::ReadString(char const*, char const*, char const*)
++0x002c:  008c42c0  CRegistry::WriteString(char const*, char const*, char const*)
++0x0030:  008c4220  CRegistry::DirectInit(char const*)

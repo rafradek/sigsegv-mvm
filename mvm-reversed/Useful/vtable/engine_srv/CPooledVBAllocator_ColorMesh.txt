@@ -1,0 +1,11 @@
+CPooledVBAllocator_ColorMesh
+
++0x0000:  0013bc10  CPooledVBAllocator_ColorMesh::~CPooledVBAllocator_ColorMesh()
++0x0004:  0013bc50  CPooledVBAllocator_ColorMesh::~CPooledVBAllocator_ColorMesh()
++0x0008:  0013bc70  CPooledVBAllocator_ColorMesh::Init(unsigned long long, int)
++0x000c:  00138890  CPooledVBAllocator_ColorMesh::Clear()
++0x0010:  0013c680  CPooledVBAllocator_ColorMesh::GetSharedMesh()
++0x0014:  0013c690  CPooledVBAllocator_ColorMesh::GetVertexBufferBase()
++0x0018:  0013c6a0  CPooledVBAllocator_ColorMesh::GetNumVertsAllocated()
++0x001c:  00138630  CPooledVBAllocator_ColorMesh::Allocate(int)
++0x0020:  001386c0  CPooledVBAllocator_ColorMesh::Deallocate(int, int)

@@ -1,0 +1,5 @@
+CCallResult<CTFWorkshopMap, SteamUGCQueryCompleted_t>
+
++0x0000:  005f9b20  CCallResult<CTFWorkshopMap, SteamUGCQueryCompleted_t>::Run(void*)
++0x0004:  005f9bf0  CCallResult<CTFWorkshopMap, SteamUGCQueryCompleted_t>::Run(void*, bool, unsigned long long)
++0x0008:  005f9b70  CCallResult<CTFWorkshopMap, SteamUGCQueryCompleted_t>::GetCallbackSizeBytes()

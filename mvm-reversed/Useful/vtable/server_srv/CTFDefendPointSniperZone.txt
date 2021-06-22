@@ -1,0 +1,4 @@
+CTFDefendPointSniperZone
+
++0x0000:  00bea920  CTacticalMissionZone::SelectArea(CBasePlayer*) const
++0x0004:  00bea860  CTacticalMissionZone::ForEachArea(IForEachNavArea&) const

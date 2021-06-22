@@ -1,0 +1,27 @@
+CTFRDScoreTypeRestriction
+
++0x0000:  00809290  CTFRDScoreTypeRestriction::~CTFRDScoreTypeRestriction()
++0x0004:  008093c0  CTFRDScoreTypeRestriction::~CTFRDScoreTypeRestriction()
++0x0008:  00808c40  CTFQuestRestriction::GetBaseName() const
++0x000c:  00808f10  CTFRDScoreTypeRestriction::GetConditionName() const
++0x0010:  00809c10  CTFRDScoreTypeRestriction::GetValueString() const
++0x0014:  0080e110  CTFRDScoreTypeRestriction::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x0018:  00807e30  CTFQuestCondition::PrintDebugText() const
++0x001c:  00807c10  CTFQuestCondition::GetQuestOwner() const
++0x0020:  00807f80  CTFQuestCondition::IsValidForPlayer(CTFPlayer const*, CBitVec<6>&) const
++0x0024:  00808c50  CTFQuestRestriction::IsRestriction() const
++0x0028:  00756d20  CTFQuestCondition::IsOperator() const
++0x002c:  00808c10  CTFQuestCondition::IsEvaluator() const
++0x0030:  00756d30  CTFQuestCondition::AddChildByName(char const*)
++0x0034:  00756d40  CTFQuestCondition::GetChildren(CUtlVector<CTFQuestCondition*, CUtlMemory<CTFQuestCondition*, int> >&)
++0x0038:  00756d50  CTFQuestCondition::RemoveAndDeleteChild(CTFQuestCondition*)
++0x003c:  0080c1e0  CTFRDScoreTypeRestriction::GetRequiredParamKeys(KeyValues*)
++0x0040:  0080a6d0  CTFRDScoreTypeRestriction::GetOutputKeyValues(KeyValues*)
++0x0044:  00807c40  CTFQuestRestriction::GetTypeNameCount() const
++0x0048:  00807c50  CTFQuestRestriction::GetTypeName(int) const
++0x004c:  00756d60  CTFQuestCondition::GetValidChildrenTypeCount() const
++0x0050:  00756d70  CTFQuestCondition::GetValidChildrenType(int) const
++0x0054:  00756d80  CTFQuestCondition::GetMaxInputCount() const
++0x0058:  00808c70  CTFQuestRestriction::GetEventName() const
++0x005c:  00808c60  CTFQuestRestriction::SetEventName(char const*)
++0x0060:  00808f20  CTFRDScoreTypeRestriction::PassesRestrictions(IGameEvent*) const

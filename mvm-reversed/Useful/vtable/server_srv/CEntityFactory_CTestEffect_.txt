@@ -1,0 +1,5 @@
+CEntityFactory<CTestEffect>
+
++0x0000:  00a28060  CEntityFactory<CTestEffect>::Create(char const*)
++0x0004:  00a27950  CEntityFactory<CTestEffect>::Destroy(IServerNetworkable*)
++0x0008:  00a27970  CEntityFactory<CTestEffect>::GetEntitySize()

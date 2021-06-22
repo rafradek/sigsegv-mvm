@@ -1,0 +1,5 @@
+CReplayFrame
+
++0x0000:  0018c2f0  CReplayFrame::~CReplayFrame()
++0x0004:  0018c330  CReplayFrame::~CReplayFrame()
++0x0008:  0018df90  CReplayFrame::IsMemPoolAllocated()

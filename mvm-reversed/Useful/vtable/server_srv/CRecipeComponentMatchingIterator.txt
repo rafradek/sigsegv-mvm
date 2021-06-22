@@ -1,0 +1,11 @@
+CRecipeComponentMatchingIterator
+
++0x0000:  00657b30  CRecipeComponentMatchingIterator::~CRecipeComponentMatchingIterator()
++0x0004:  00657ba0  CRecipeComponentMatchingIterator::~CRecipeComponentMatchingIterator()
++0x0008:  00655520  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  00655530  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  00655540  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  00655550  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  00656c00  CRecipeComponentMatchingIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  00655570  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  00655580  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

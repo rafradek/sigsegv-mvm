@@ -1,0 +1,4 @@
+ITriggerAreaCaptureAutoList
+
++0x0000:  00e4e040  ITriggerAreaCaptureAutoList::~ITriggerAreaCaptureAutoList()
++0x0004:  00e4e0b0  ITriggerAreaCaptureAutoList::~ITriggerAreaCaptureAutoList()

@@ -1,0 +1,22 @@
+CMsgGCRequestStoreSalesData
+
++0x0000:  005234c0  CMsgGCRequestStoreSalesData::~CMsgGCRequestStoreSalesData()
++0x0004:  00523500  CMsgGCRequestStoreSalesData::~CMsgGCRequestStoreSalesData()
++0x0008:  00000000  
++0x000c:  0052b780  CMsgGCRequestStoreSalesData::New() const
++0x0010:  00524950  CMsgGCRequestStoreSalesData::Clear()
++0x0014:  00521d30  CMsgGCRequestStoreSalesData::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00528090  CMsgGCRequestStoreSalesData::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00525780  CMsgGCRequestStoreSalesData::ByteSize() const
++0x0028:  00523e00  CMsgGCRequestStoreSalesData::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00526600  CMsgGCRequestStoreSalesData::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533c00  CMsgGCRequestStoreSalesData::GetCachedSize() const
++0x0034:  00521ce0  CMsgGCRequestStoreSalesData::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052b940  CMsgGCRequestStoreSalesData::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00521cd0  CMsgGCRequestStoreSalesData::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527520  CMsgGCRequestStoreSalesData::GetMetadata() const

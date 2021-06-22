@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerWind>
+
++0x0000:  00e49360  CEntityFactory<CTriggerWind>::Create(char const*)
++0x0004:  00e48dc0  CEntityFactory<CTriggerWind>::Destroy(IServerNetworkable*)
++0x0008:  00e48de0  CEntityFactory<CTriggerWind>::GetEntitySize()

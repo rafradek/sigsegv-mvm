@@ -1,0 +1,14 @@
+CTFItemDefinition
+
++0x0000:  007ba900  CTFItemDefinition::~CTFItemDefinition()
++0x0004:  007baac0  CTFItemDefinition::~CTFItemDefinition()
++0x0008:  007b8fa0  CTFItemDefinition::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  007b5640  CTFItemDefinition::BInitFromTestItemKVs(int, KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x0010:  007b4bd0  CTFItemDefinition::GeneratePrecacheModelStrings(bool, CUtlVector<char const*, CUtlMemory<char const*, int> >*) const
++0x0014:  0066e580  CEconItemDefinition::GeneratePrecacheSoundStrings(bool, CUtlVector<char const*, CUtlMemory<char const*, int> >*) const
++0x0018:  007b7dd0  CTFItemDefinition::CopyPolymorphic(CEconItemDefinition const*)
++0x001c:  0067c550  CEconItemDefinition::GetBundleItemCount() const
++0x0020:  0067c570  CEconItemDefinition::GetBundleItem(int) const
++0x0024:  006684d0  CEconItemDefinition::GetIconDisplayModel() const
++0x0028:  007b3c90  CTFItemDefinition::IsContentStreamable() const
++0x002c:  007b9c80  CTFItemDefinition::GetPlayerDisplayModelAlt(int) const

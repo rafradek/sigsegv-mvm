@@ -1,0 +1,18 @@
+CFileAsyncJob
+
++0x0000:  00075e70  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00075fd0  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00076280  CFileAsyncJob::~CFileAsyncJob()
++0x000c:  000763a0  CFileAsyncJob::~CFileAsyncJob()
++0x0010:  00075d10  CJob::Describe()
++0x0014:  00075eb0  CJob::SetDescription(char const*)
++0x0018:  00000000  
++0x001c:  00075d30  CJob::DoAbort(bool)
++0x0020:  00075d40  CJob::DoCleanup()
++0x0024:  00075d50  CFileAsyncJob::GetResult(void**, int*)
++0x0028:  00075d70  CFileAsyncJob::IsWrite() const
++0x002c:  fffffffc  (unknown)
++0x0030:  001ce2e8  typeinfo for CFileAsyncJob
++0x0034:  00076270  non-virtual thunk to CFileAsyncJob::~CFileAsyncJob()
++0x0038:  00076390  non-virtual thunk to CFileAsyncJob::~CFileAsyncJob()
++0x003c:  0006e820  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

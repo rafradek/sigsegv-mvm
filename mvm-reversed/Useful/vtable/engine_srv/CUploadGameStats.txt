@@ -1,0 +1,9 @@
+CUploadGameStats
+
++0x0000:  001c2a90  CUploadGameStats::UploadGameStats(char const*, unsigned int, unsigned int, void const*)
++0x0004:  001c2780  CUploadGameStats::InitConnection()
++0x0008:  001c2440  CUploadGameStats::UpdateConnection()
++0x000c:  001c2410  CUploadGameStats::IsGameStatsLoggingEnabled()
++0x0010:  001c23b0  CUploadGameStats::GetPseudoUniqueId(char*, unsigned int)
++0x0014:  001c2390  CUploadGameStats::IsCyberCafeUser()
++0x0018:  001c23a0  CUploadGameStats::IsHDREnabled()

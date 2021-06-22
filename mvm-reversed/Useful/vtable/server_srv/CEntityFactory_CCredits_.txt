@@ -1,0 +1,5 @@
+CEntityFactory<CCredits>
+
++0x0000:  00a3abb0  CEntityFactory<CCredits>::Create(char const*)
++0x0004:  00a3aab0  CEntityFactory<CCredits>::Destroy(IServerNetworkable*)
++0x0008:  00a3aad0  CEntityFactory<CCredits>::GetEntitySize()

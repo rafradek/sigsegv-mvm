@@ -1,0 +1,5 @@
+CEntityFactory<CLogicRelay>
+
++0x0000:  00a9acf0  CEntityFactory<CLogicRelay>::Create(char const*)
++0x0004:  00a9abc0  CEntityFactory<CLogicRelay>::Destroy(IServerNetworkable*)
++0x0008:  00a9abe0  CEntityFactory<CLogicRelay>::GetEntitySize()

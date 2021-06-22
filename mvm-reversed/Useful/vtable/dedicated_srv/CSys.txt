@@ -1,0 +1,17 @@
+CSys
+
++0x0000:  00093f50  CSys::~CSys()
++0x0004:  00093fb0  CSys::~CSys()
++0x0008:  00094210  CSys::LoadModules(CDedicatedAppSystemGroup*)
++0x000c:  000941f0  CSys::Sleep(int)
++0x0010:  00094070  CSys::GetExecutableName(char*)
++0x0014:  00094040  CSys::ErrorMessage(int, char const*)
++0x0018:  00093f80  CSys::WriteStatusText(char*)
++0x001c:  00093f70  CSys::UpdateStatus(int)
++0x0020:  000940d0  CSys::LoadLibrary(char*)
++0x0024:  000940b0  CSys::FreeLibrary(long)
++0x0028:  00093f90  CSys::CreateConsoleWindow()
++0x002c:  00093fa0  CSys::DestroyConsoleWindow()
++0x0030:  00094030  CSys::ConsoleOutput(char*)
++0x0034:  00093fd0  CSys::ConsoleInput(int, char*, int)
++0x0038:  00093fe0  CSys::Printf(char const*, ...)

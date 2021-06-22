@@ -1,0 +1,4 @@
+CCopyableUtlVector<static_attrib_t, CUtlMemory<static_attrib_t, int> >
+
++0x0000:  00d670e0  CCopyableUtlVector<static_attrib_t, CUtlMemory<static_attrib_t, int> >::~CCopyableUtlVector()
++0x0004:  00d67090  CCopyableUtlVector<static_attrib_t, CUtlMemory<static_attrib_t, int> >::~CCopyableUtlVector()

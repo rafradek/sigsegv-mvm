@@ -1,0 +1,74 @@
+CNetChan
+
++0x0000:  0015e0f0  CNetChan::GetName() const
++0x0004:  0015e640  CNetChan::GetAddress() const
++0x0008:  0015e430  CNetChan::GetTime() const
++0x000c:  0015e170  CNetChan::GetTimeConnected() const
++0x0010:  0015e2d0  CNetChan::GetBufferSize() const
++0x0014:  0015e160  CNetChan::GetDataRate() const
++0x0018:  0015e680  CNetChan::IsLoopback() const
++0x001c:  0015e770  CNetChan::IsTimingOut() const
++0x0020:  0015e110  CNetChan::IsPlayback() const
++0x0024:  0015e3b0  CNetChan::GetLatency(int) const
++0x0028:  0015e3f0  CNetChan::GetAvgLatency(int) const
++0x002c:  0015e410  CNetChan::GetAvgLoss(int) const
++0x0030:  0015e3d0  CNetChan::GetAvgChoke(int) const
++0x0034:  0015e240  CNetChan::GetAvgData(int) const
++0x0038:  0015e260  CNetChan::GetAvgPackets(int) const
++0x003c:  0015e280  CNetChan::GetTotalData(int) const
++0x0040:  0015e2a0  CNetChan::GetSequenceNr(int) const
++0x0044:  0015e2e0  CNetChan::IsValidPacket(int, int) const
++0x0048:  0015e300  CNetChan::GetPacketTime(int, int) const
++0x004c:  0015e470  CNetChan::GetPacketBytes(int, int, int) const
++0x0050:  0015ee00  CNetChan::GetStreamProgress(int, int*, int*) const
++0x0054:  0015e1e0  CNetChan::GetTimeSinceLastReceived() const
++0x0058:  0015e450  CNetChan::GetCommandInterpolationAmount(int, int) const
++0x005c:  0015e320  CNetChan::GetPacketResponseLatency(int, int, int*, int*) const
++0x0060:  0015e380  CNetChan::GetRemoteFramerate(float*, float*) const
++0x0064:  0015e1d0  CNetChan::GetTimeoutSeconds() const
++0x0068:  00163f90  CNetChan::~CNetChan()
++0x006c:  00164120  CNetChan::~CNetChan()
++0x0070:  0015e690  CNetChan::SetDataRate(float)
++0x0074:  00165720  CNetChan::RegisterMessage(INetMessage*)
++0x0078:  0015eed0  CNetChan::StartStreaming(unsigned int)
++0x007c:  0015e000  CNetChan::ResetStreaming()
++0x0080:  0015e6d0  CNetChan::SetTimeout(float)
++0x0084:  0015e090  CNetChan::SetDemoRecorder(IDemoRecorder*)
++0x0088:  0015e020  CNetChan::SetChallengeNr(unsigned int)
++0x008c:  0015e5b0  CNetChan::Reset()
++0x0090:  00160470  CNetChan::Clear()
++0x0094:  00163da0  CNetChan::Shutdown(char const*)
++0x0098:  0015e130  CNetChan::ProcessPlayback()
++0x009c:  00163560  CNetChan::ProcessStream()
++0x00a0:  001635e0  CNetChan::ProcessPacket(netpacket_s*, bool)
++0x00a4:  0015e880  CNetChan::SendNetMsg(INetMessage&, bool, bool)
++0x00a8:  0015e7b0  CNetChan::SendData(bf_write&, bool)
++0x00ac:  00164730  CNetChan::SendFile(char const*, unsigned int)
++0x00b0:  0015efa0  CNetChan::DenyFile(char const*, unsigned int)
++0x00b4:  0015e6c0  CNetChan::RequestFile_OLD(char const*, unsigned int)
++0x00b8:  0015e120  CNetChan::SetChoked()
++0x00bc:  00164cf0  CNetChan::SendDatagram(bf_write*)
++0x00c0:  0015e600  CNetChan::Transmit(bool)
++0x00c4:  0015e1b0  CNetChan::GetRemoteAddress() const
++0x00c8:  0015e1c0  CNetChan::GetMsgHandler() const
++0x00cc:  0015e100  CNetChan::GetDropNumber() const
++0x00d0:  0015e230  CNetChan::GetSocket() const
++0x00d4:  0015e040  CNetChan::GetChallengeNr() const
++0x00d8:  0015e050  CNetChan::GetSequenceData(int&, int&, int&)
++0x00dc:  0015e070  CNetChan::SetSequenceData(int, int, int)
++0x00e0:  0015e4d0  CNetChan::UpdateMessageStats(int, int)
++0x00e4:  0015e970  CNetChan::CanPacket() const
++0x00e8:  0015e220  CNetChan::IsOverflowed() const
++0x00ec:  0015e730  CNetChan::IsTimedOut() const
++0x00f0:  0015e9f0  CNetChan::HasPendingReliableData()
++0x00f4:  0015e0b0  CNetChan::SetFileTransmissionMode(bool)
++0x00f8:  0015e0d0  CNetChan::SetCompressionMode(bool)
++0x00fc:  0015f130  CNetChan::RequestFile(char const*)
++0x0100:  00163be0  CNetChan::SetMaxBufferSize(bool, int, bool)
++0x0104:  0015e660  CNetChan::IsNull() const
++0x0108:  0015e140  CNetChan::GetNumBitsWritten(bool)
++0x010c:  0015e500  CNetChan::SetInterpolationAmount(float)
++0x0110:  0015e520  CNetChan::SetRemoteFramerate(float, float)
++0x0114:  0015e560  CNetChan::SetMaxRoutablePayloadSize(int)
++0x0118:  0015e540  CNetChan::GetMaxRoutablePayloadSize()
++0x011c:  0015e550  CNetChan::GetProtocolVersion()

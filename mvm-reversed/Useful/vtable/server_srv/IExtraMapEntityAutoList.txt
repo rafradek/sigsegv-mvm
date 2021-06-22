@@ -1,0 +1,4 @@
+IExtraMapEntityAutoList
+
++0x0000:  00d7ed90  IExtraMapEntityAutoList::~IExtraMapEntityAutoList()
++0x0004:  00d7ee00  IExtraMapEntityAutoList::~IExtraMapEntityAutoList()

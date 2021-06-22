@@ -1,0 +1,5 @@
+CEntityFactory<CTFCompoundBow>
+
++0x0000:  00850380  CEntityFactory<CTFCompoundBow>::Create(char const*)
++0x0004:  008502c0  CEntityFactory<CTFCompoundBow>::Destroy(IServerNetworkable*)
++0x0008:  008502e0  CEntityFactory<CTFCompoundBow>::GetEntitySize()

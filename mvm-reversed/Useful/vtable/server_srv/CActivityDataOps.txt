@@ -1,0 +1,7 @@
+CActivityDataOps
+
++0x0000:  006180c0  CActivityDataOps::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00618030  CActivityDataOps::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00617fd0  CActivityDataOps::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00617ff0  CActivityDataOps::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

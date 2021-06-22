@@ -1,0 +1,5 @@
+CEntityFactory<CEnvQuadraticBeam>
+
++0x0000:  00a27e90  CEntityFactory<CEnvQuadraticBeam>::Create(char const*)
++0x0004:  00a27710  CEntityFactory<CEnvQuadraticBeam>::Destroy(IServerNetworkable*)
++0x0008:  00a27730  CEntityFactory<CEnvQuadraticBeam>::GetEntitySize()

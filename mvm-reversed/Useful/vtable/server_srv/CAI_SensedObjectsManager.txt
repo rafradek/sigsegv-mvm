@@ -1,0 +1,6 @@
+CAI_SensedObjectsManager
+
++0x0000:  006eb510  IEntityListener::OnEntityCreated(CBaseEntity*)
++0x0004:  0099ce00  CAI_SensedObjectsManager::OnEntitySpawned(CBaseEntity*)
++0x0008:  0099c530  CAI_SensedObjectsManager::OnEntityDeleted(CBaseEntity*)
++0x000c:  0099ceb0  CAI_SensedObjectsManager::AddEntity(CBaseEntity*)

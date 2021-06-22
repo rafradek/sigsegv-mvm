@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerBotTag>
+
++0x0000:  00e2acd0  CEntityFactory<CTriggerBotTag>::Create(char const*)
++0x0004:  00e2aae0  CEntityFactory<CTriggerBotTag>::Destroy(IServerNetworkable*)
++0x0008:  00e2ab00  CEntityFactory<CTriggerBotTag>::GetEntitySize()

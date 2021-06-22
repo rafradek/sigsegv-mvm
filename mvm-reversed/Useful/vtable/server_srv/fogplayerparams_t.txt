@@ -1,0 +1,4 @@
+fogplayerparams_t
+
++0x0000:  00b80940  fogplayerparams_t::NetworkStateChanged()
++0x0004:  00b80950  fogplayerparams_t::NetworkStateChanged(void*)

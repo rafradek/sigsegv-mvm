@@ -1,0 +1,4 @@
+CMemoryFileHandle
+
++0x0000:  0006eca0  CMemoryFileHandle::~CMemoryFileHandle()
++0x0004:  0006ed10  CMemoryFileHandle::~CMemoryFileHandle()

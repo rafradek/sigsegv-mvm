@@ -1,0 +1,5 @@
+CEntityFactory<CPointAngularVelocitySensor>
+
++0x0000:  00b8e010  CEntityFactory<CPointAngularVelocitySensor>::Create(char const*)
++0x0004:  00b8dc70  CEntityFactory<CPointAngularVelocitySensor>::Destroy(IServerNetworkable*)
++0x0008:  00b8dc90  CEntityFactory<CPointAngularVelocitySensor>::GetEntitySize()

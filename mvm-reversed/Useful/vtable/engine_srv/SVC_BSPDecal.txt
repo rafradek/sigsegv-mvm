@@ -1,0 +1,15 @@
+SVC_BSPDecal
+
++0x0000:  0008be40  SVC_BSPDecal::~SVC_BSPDecal()
++0x0004:  0008c0c0  SVC_BSPDecal::~SVC_BSPDecal()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b890  SVC_BSPDecal::Process()
++0x0014:  00084ee0  SVC_BSPDecal::ReadFromBuffer(bf_read&)
++0x0018:  00082320  SVC_BSPDecal::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b870  SVC_BSPDecal::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b880  SVC_BSPDecal::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d310  SVC_BSPDecal::ToString() const

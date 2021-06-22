@@ -1,0 +1,3 @@
+CBaseEntityModelLoadProxy::Handler
+
++0x0000:  009de740  CBaseEntityModelLoadProxy::Handler::OnModelLoadComplete(model_t const*)

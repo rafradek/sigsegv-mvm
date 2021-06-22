@@ -1,0 +1,22 @@
+CSOItemCriteriaCondition
+
++0x0000:  005003a0  CSOItemCriteriaCondition::~CSOItemCriteriaCondition()
++0x0004:  005003f0  CSOItemCriteriaCondition::~CSOItemCriteriaCondition()
++0x0008:  00000000  
++0x000c:  004ffbd0  CSOItemCriteriaCondition::New() const
++0x0010:  004e5790  CSOItemCriteriaCondition::Clear()
++0x0014:  004daa30  CSOItemCriteriaCondition::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f8dd0  CSOItemCriteriaCondition::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004eab80  CSOItemCriteriaCondition::ByteSize() const
++0x0028:  004e2d60  CSOItemCriteriaCondition::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f2940  CSOItemCriteriaCondition::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520800  CSOItemCriteriaCondition::GetCachedSize() const
++0x0034:  004da9e0  CSOItemCriteriaCondition::CopyFrom(google::protobuf::Message const&)
++0x0038:  005005a0  CSOItemCriteriaCondition::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004da9d0  CSOItemCriteriaCondition::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee0d0  CSOItemCriteriaCondition::GetMetadata() const

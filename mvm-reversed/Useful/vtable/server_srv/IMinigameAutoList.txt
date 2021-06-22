@@ -1,0 +1,4 @@
+IMinigameAutoList
+
++0x0000:  007c2550  IMinigameAutoList::~IMinigameAutoList()
++0x0004:  007c25c0  IMinigameAutoList::~IMinigameAutoList()

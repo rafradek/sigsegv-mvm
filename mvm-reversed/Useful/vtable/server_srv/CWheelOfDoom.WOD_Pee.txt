@@ -1,0 +1,6 @@
+CWheelOfDoom::WOD_Pee
+
++0x0000:  00895d70  CWheelOfDoom::WOD_BaseEffect::InitEffect(float)
++0x0004:  00899710  CWheelOfDoom::WOD_Pee::ActivateEffect(CWheelOfDoom::EffectData_t&)
++0x0008:  00896300  CWheelOfDoom::WOD_Pee::UpdateEffect(CWheelOfDoom::EffectData_t&)
++0x000c:  00899d10  CWheelOfDoom::WOD_BaseEffect::DeactivateEffect(CWheelOfDoom::EffectData_t&)

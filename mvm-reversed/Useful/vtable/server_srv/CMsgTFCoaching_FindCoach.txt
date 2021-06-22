@@ -1,0 +1,22 @@
+CMsgTFCoaching_FindCoach
+
++0x0000:  005797f0  CMsgTFCoaching_FindCoach::~CMsgTFCoaching_FindCoach()
++0x0004:  00579830  CMsgTFCoaching_FindCoach::~CMsgTFCoaching_FindCoach()
++0x0008:  00000000  
++0x000c:  005aa440  CMsgTFCoaching_FindCoach::New() const
++0x0010:  00582a90  CMsgTFCoaching_FindCoach::Clear()
++0x0014:  00574fe0  CMsgTFCoaching_FindCoach::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00599680  CMsgTFCoaching_FindCoach::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00589a50  CMsgTFCoaching_FindCoach::ByteSize() const
++0x0028:  0057c580  CMsgTFCoaching_FindCoach::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00594340  CMsgTFCoaching_FindCoach::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dc9d0  CMsgTFCoaching_FindCoach::GetCachedSize() const
++0x0034:  00574f90  CMsgTFCoaching_FindCoach::CopyFrom(google::protobuf::Message const&)
++0x0038:  005aa5f0  CMsgTFCoaching_FindCoach::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00574f80  CMsgTFCoaching_FindCoach::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058fd60  CMsgTFCoaching_FindCoach::GetMetadata() const

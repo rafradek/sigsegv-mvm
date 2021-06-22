@@ -1,0 +1,15 @@
+NET_StringCmd
+
++0x0000:  0008be70  NET_StringCmd::~NET_StringCmd()
++0x0004:  0008c060  NET_StringCmd::~NET_StringCmd()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b0a0  NET_StringCmd::Process()
++0x0014:  00084310  NET_StringCmd::ReadFromBuffer(bf_read&)
++0x0018:  0007daa0  NET_StringCmd::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b080  NET_StringCmd::GetType() const
++0x0024:  0008b0c0  NET_StringCmd::GetGroup() const
++0x0028:  0008b090  NET_StringCmd::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d450  NET_StringCmd::ToString() const

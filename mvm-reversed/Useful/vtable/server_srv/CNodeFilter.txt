@@ -1,0 +1,4 @@
+CNodeFilter
+
++0x0000:  00968d90  CNodeFilter::NodeIsValid(CAI_Node&)
++0x0004:  00968cd0  CNodeFilter::NodeDistanceSqr(CAI_Node&)

@@ -1,0 +1,5 @@
+CMemoryFileHandle
+
++0x0000:  0001f470  CMemoryFileHandle::~CMemoryFileHandle()
++0x0004:  0001f480  CMemoryFileHandle::~CMemoryFileHandle()
++0x0008:  00000008  (unknown)

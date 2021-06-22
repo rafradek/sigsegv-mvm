@@ -1,0 +1,5 @@
+CEntityFactory<COrnamentProp>
+
++0x0000:  00bad510  CEntityFactory<COrnamentProp>::Create(char const*)
++0x0004:  00bab7f0  CEntityFactory<COrnamentProp>::Destroy(IServerNetworkable*)
++0x0008:  00bab810  CEntityFactory<COrnamentProp>::GetEntitySize()

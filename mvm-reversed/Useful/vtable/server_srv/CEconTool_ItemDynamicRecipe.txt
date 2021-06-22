@@ -1,0 +1,9 @@
+CEconTool_ItemDynamicRecipe
+
++0x0000:  006abf40  CEconTool_ItemDynamicRecipe::~CEconTool_ItemDynamicRecipe()
++0x0004:  006ac060  CEconTool_ItemDynamicRecipe::~CEconTool_ItemDynamicRecipe()
++0x0008:  006abe60  CEconTool_ItemDynamicRecipe::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  006abda0  CEconTool_ItemDynamicRecipe::BFinishInitialization()
++0x0018:  006ac740  CEconTool_ItemDynamicRecipe::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)

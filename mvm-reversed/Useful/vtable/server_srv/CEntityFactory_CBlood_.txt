@@ -1,0 +1,5 @@
+CEntityFactory<CBlood>
+
++0x0000:  00a28730  CEntityFactory<CBlood>::Create(char const*)
++0x0004:  00a27920  CEntityFactory<CBlood>::Destroy(IServerNetworkable*)
++0x0008:  00a27940  CEntityFactory<CBlood>::GetEntitySize()

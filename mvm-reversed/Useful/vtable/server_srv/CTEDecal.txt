@@ -1,0 +1,9 @@
+CTEDecal
+
++0x0000:  00c10c90  CTEDecal::GetServerClass()
++0x0004:  00c10ca0  CTEDecal::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c10ce0  CTEDecal::~CTEDecal()
++0x000c:  00c10d00  CTEDecal::~CTEDecal()
++0x0010:  00c10d30  CTEDecal::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

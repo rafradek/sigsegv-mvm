@@ -1,0 +1,3 @@
+ISpatialLeafEnumerator
+
++0x0000:  00000000  

@@ -1,0 +1,5 @@
+CEntityFactory<MovieExplosion>
+
++0x0000:  00aa8ce0  CEntityFactory<MovieExplosion>::Create(char const*)
++0x0004:  00aa8c60  CEntityFactory<MovieExplosion>::Destroy(IServerNetworkable*)
++0x0008:  00aa8c80  CEntityFactory<MovieExplosion>::GetEntitySize()

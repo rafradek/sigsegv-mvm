@@ -1,0 +1,5 @@
+CModelSoundsCache
+
++0x0000:  006d3880  CModelSoundsCache::Save(CUtlBuffer&)
++0x0004:  006d3e90  CModelSoundsCache::Restore(CUtlBuffer&)
++0x0008:  006d3d80  CModelSoundsCache::Rebuild(char const*)

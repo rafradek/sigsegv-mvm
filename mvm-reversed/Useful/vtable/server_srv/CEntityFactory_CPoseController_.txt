@@ -1,0 +1,5 @@
+CEntityFactory<CPoseController>
+
++0x0000:  006fac30  CEntityFactory<CPoseController>::Create(char const*)
++0x0004:  006faa80  CEntityFactory<CPoseController>::Destroy(IServerNetworkable*)
++0x0008:  006faaa0  CEntityFactory<CPoseController>::GetEntitySize()

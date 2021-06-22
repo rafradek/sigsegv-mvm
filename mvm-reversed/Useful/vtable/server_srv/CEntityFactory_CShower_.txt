@@ -1,0 +1,5 @@
+CEntityFactory<CShower>
+
++0x0000:  00a4e7c0  CEntityFactory<CShower>::Create(char const*)
++0x0004:  00a4e6d0  CEntityFactory<CShower>::Destroy(IServerNetworkable*)
++0x0008:  00a4e6f0  CEntityFactory<CShower>::GetEntitySize()

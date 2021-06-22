@@ -1,0 +1,5 @@
+CAimTargetManager
+
++0x0000:  00a31900  CAimTargetManager::OnEntityCreated(CBaseEntity*)
++0x0004:  006eb520  IEntityListener::OnEntitySpawned(CBaseEntity*)
++0x0008:  00a31d20  CAimTargetManager::OnEntityDeleted(CBaseEntity*)

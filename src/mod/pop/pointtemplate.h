@@ -1,18 +1,16 @@
 #ifndef _INCLUDE_SIGSEGV_MOD_POP_POINTTEMPLATE_H_
 #define _INCLUDE_SIGSEGV_MOD_POP_POINTTEMPLATE_H_
 
+#include "stub/tfplayer.h"
+#include "stub/tfweaponbase.h"
+
 #include "link/link.h"
 #include "prop.h"
 
-class PointTemplateInstance;
 
-class CTFBotMvMEngineerHintFinder
-{
-public:
-	static bool FindHint(bool box_check, bool out_of_range_ok, CHandle<CTFBotHintEngineerNest> *the_hint) {return ft_FindHint(box_check,out_of_range_ok,the_hint);}
-private:
-	static StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *>ft_FindHint;
-};
+
+class PointTemplateInstance;
+typedef void ( *PointTemplateKilledCallback )( PointTemplateInstance * );
 
 struct InputInfoTemplate
 {
@@ -31,18 +29,22 @@ public:
 	std::set<std::string> fixup_names;
 	bool has_parent_name = false;
 	bool keep_alive = false;
+	bool has_on_kill_parent_trigger = false;
 	bool has_on_kill_trigger = false;
 	bool no_fixup = false;
+	std::string remove_if_killed = "";
 
+	std::vector<std::string> on_parent_kill_triggers = std::vector<std::string>();
 	std::vector<std::string> on_kill_triggers = std::vector<std::string>();
 
-	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr, bool ignore_parent_alive_state = false);
+	std::shared_ptr<PointTemplateInstance> SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr, bool ignore_parent_alive_state = false);
 };
 
 
 class PointTemplateInstance
 {
 public:
+
 	int id;
 	PointTemplate *templ;
 	std::vector<CHandle<CBaseEntity>> entities;
@@ -55,6 +57,10 @@ public:
 	
 	void OnKilledParent(bool clearing);
 	bool ignore_parent_alive_state = false;
+	bool all_entities_killed = false;
+	PointTemplateKilledCallback on_kill_callback = nullptr;
+
+
 };
 static PointTemplateInstance PointTemplateInstance_Invalid = PointTemplateInstance();
 
@@ -67,7 +73,7 @@ struct PointTemplateInfo
 	std::string attachment;
 	std::string template_name;
 	bool ignore_parent_alive_state = false;
-	PointTemplateInstance *SpawnTemplate(CBaseEntity *parent, bool autoparent = true);
+	std::shared_ptr<PointTemplateInstance> SpawnTemplate(CBaseEntity *parent, bool autoparent = true);
 };
 
 class ShootTemplateData
@@ -94,7 +100,7 @@ std::unordered_map<std::string, PointTemplate> &Point_Templates();
 std::unordered_multimap<std::string, CHandle<CBaseEntity>> &Teleport_Destination();
 extern std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
 extern std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
-extern std::vector<PointTemplateInstance *> g_templateInstances;
+extern std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 
 void Clear_Point_Templates();
 void Update_Point_Templates();

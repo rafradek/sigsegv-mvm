@@ -1,0 +1,5 @@
+CEntityFactory<CFuncMonitor>
+
++0x0000:  00a877c0  CEntityFactory<CFuncMonitor>::Create(char const*)
++0x0004:  00a87770  CEntityFactory<CFuncMonitor>::Destroy(IServerNetworkable*)
++0x0008:  00a87790  CEntityFactory<CFuncMonitor>::GetEntitySize()

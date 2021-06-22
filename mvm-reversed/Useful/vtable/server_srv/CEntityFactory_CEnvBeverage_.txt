@@ -1,0 +1,5 @@
+CEntityFactory<CEnvBeverage>
+
++0x0000:  00a27fa0  CEntityFactory<CEnvBeverage>::Create(char const*)
++0x0004:  00a278c0  CEntityFactory<CEnvBeverage>::Destroy(IServerNetworkable*)
++0x0008:  00a278e0  CEntityFactory<CEnvBeverage>::GetEntitySize()

@@ -1,0 +1,4 @@
+IZombieAutoList
+
++0x0000:  00d27320  IZombieAutoList::~IZombieAutoList()
++0x0004:  00d27390  IZombieAutoList::~IZombieAutoList()

@@ -1,0 +1,13 @@
+CAI_Pathfinder
+
++0x0000:  009789c0  CAI_Pathfinder::~CAI_Pathfinder()
++0x0004:  009789d0  CAI_Pathfinder::~CAI_Pathfinder()
++0x0008:  0063b3d0  CAI_Component::SetOuter(CAI_BaseNPC*)
++0x000c:  0063b5f0  CAI_Component::TaskFail(int)
++0x0010:  0063b630  CAI_Component::TaskComplete(bool)
++0x0014:  00978700  CAI_Pathfinder::BuildNodeRoute(Vector const&, Vector const&, int, float)
++0x0018:  00975410  CAI_Pathfinder::BuildLocalRoute(Vector const&, Vector const&, CBaseEntity const*, int, int, int, float)
++0x001c:  00973fb0  CAI_Pathfinder::BuildRadialRoute(Vector const&, Vector const&, Vector const&, float, float, float, bool, float, bool)
++0x0020:  009785d0  CAI_Pathfinder::BuildTriangulationRoute(Vector const&, Vector const&, CBaseEntity const*, int, int, float, float, Navigation_t)
++0x0024:  00975970  CAI_Pathfinder::BuildOBBAvoidanceRoute(Vector const&, Vector const&, CBaseEntity const*, CBaseEntity const*, Navigation_t)
++0x0028:  00978980  CAI_Pathfinder::CanUseLocalNavigation()

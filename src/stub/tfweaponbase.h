@@ -73,6 +73,8 @@ public:
 	DECL_SENDPROP(float,                m_flEnergy);
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearable);
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearableViewModel);
+	DECL_SENDPROP(bool, m_bBeingRepurposedForTaunt);
+	
 
 	
 private:

@@ -1,0 +1,4 @@
+CTraceFilterDoor
+
++0x0000:  00baba10  CTraceFilterDoor::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0063b3b0  CTraceFilterEntitiesOnly::GetTraceType() const

@@ -1,0 +1,9 @@
+CTETFParticleEffect
+
++0x0000:  00d81770  CTETFParticleEffect::GetServerClass()
++0x0004:  00d81780  CTETFParticleEffect::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00d82f90  CTETFParticleEffect::~CTETFParticleEffect()
++0x000c:  00d82fe0  CTETFParticleEffect::~CTETFParticleEffect()
++0x0010:  009fc4e0  CBaseTempEntity::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

@@ -1,0 +1,7 @@
+CEngineBSPTree
+
++0x0000:  0011a320  CEngineBSPTree::LeafCount() const
++0x0004:  0011a8d0  CEngineBSPTree::EnumerateLeavesAtPoint(Vector const&, ISpatialLeafEnumerator*, int)
++0x0008:  0011a7f0  CEngineBSPTree::EnumerateLeavesInBox(Vector const&, Vector const&, ISpatialLeafEnumerator*, int)
++0x000c:  0011af10  CEngineBSPTree::EnumerateLeavesInSphere(Vector const&, float, ISpatialLeafEnumerator*, int)
++0x0010:  0011a910  CEngineBSPTree::EnumerateLeavesAlongRay(Ray_t const&, ISpatialLeafEnumerator*, int)

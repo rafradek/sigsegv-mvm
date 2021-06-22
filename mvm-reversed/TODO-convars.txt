@@ -1,0 +1,155 @@
+TODO: convars
+
+
+nav_add_to_selected_set                  : cmd      : , "sv", "cheat"  : Add current area to the selected set.
+nav_add_to_selected_set_by_id            : cmd      : , "sv", "cheat"  : Add specified area id to the selected set.
+nav_analyze                              : cmd      : , "sv", "cheat"  : Re-analyze the current Navigation Mesh and save it to disk.
+nav_analyze_scripted                     : cmd      : , "sv", "cheat", "matsys" : commandline hook to run a nav_analyze and then quit.
+nav_area_bgcolor                         : 0 0 0 30 : , "sv", "cheat"  : RGBA color to draw as the background color for nav areas while editing.
+nav_area_max_size                        : 50       : , "sv", "cheat"  : Max area size created in nav generation
+nav_avoid                                : cmd      : , "sv", "cheat"  : Toggles the 'avoid this area when possible' flag used by the AI system.
+nav_begin_area                           : cmd      : , "sv", "cheat"  : Defines a corner of a new Area or Ladder. To complete the Area or Ladder, drag the opposite corner to the desired location and issue a 'nav_end_area' command.
+nav_begin_deselecting                    : cmd      : , "sv", "cheat"  : Start continuously removing from the selected set.
+nav_begin_drag_deselecting               : cmd      : , "sv", "cheat"  : Start dragging a selection area.
+nav_begin_drag_selecting                 : cmd      : , "sv", "cheat"  : Start dragging a selection area.
+nav_begin_selecting                      : cmd      : , "sv", "cheat"  : Start continuously adding to the selected set.
+nav_begin_shift_xy                       : cmd      : , "sv", "cheat"  : Begin shifting the Selected Set.
+nav_build_ladder                         : cmd      : , "sv", "cheat"  : Attempts to build a nav ladder on the climbable surface under the cursor.
+nav_check_file_consistency               : cmd      : , "sv", "cheat"  : Scans the maps directory and reports any missing/out-of-date navigation files.
+nav_check_floor                          : cmd      : , "sv"           : Updates the blocked/unblocked status for every nav area.
+nav_check_stairs                         : cmd      : , "sv", "cheat"  : Update the nav mesh STAIRS attribute
+nav_chop_selected                        : cmd      : , "sv", "cheat"  : Chops all selected areas into their component 1x1 areas
+nav_clear_attribute                      : cmd      : , "sv", "cheat"  : Remove given nav attribute from all areas in the selected set.
+nav_clear_selected_set                   : cmd      : , "sv", "cheat"  : Clear the selected set.
+nav_clear_walkable_marks                 : cmd      : , "sv", "cheat"  : Erase any previously placed walkable positions.
+nav_compress_id                          : cmd      : , "sv", "cheat"  : Re-orders area and ladder ID's so they are continuous.
+nav_connect                              : cmd      : , "sv", "cheat"  : To connect two Areas, mark the first Area, highlight the second Area, then invoke the connect command. Note that this creates a ONE-WAY connection from the first to the second Area. To make a two-way connection, also connect the second area to the first.
+nav_coplanar_slope_limit                 : 0.99     : , "sv", "cheat"  : 
+nav_coplanar_slope_limit_displacement    : 0.7      : , "sv", "cheat"  : 
+nav_corner_adjust_adjacent               : 18       : , "sv", "cheat"  : radius used to raise/lower corners in nearby areas when raising/lowering corners.
+nav_corner_lower                         : cmd      : , "sv", "cheat"  : Lower the selected corner of the currently marked Area.
+nav_corner_place_on_ground               : cmd      : , "sv", "cheat"  : Places the selected corner of the currently marked Area on the ground.
+nav_corner_raise                         : cmd      : , "sv", "cheat"  : Raise the selected corner of the currently marked Area.
+nav_corner_select                        : cmd      : , "sv", "cheat"  : Select a corner of the currently marked Area. Use multiple times to access all four corners.
+nav_create_area_at_feet                  : 0        : , "sv", "cheat"  : Anchor nav_begin_area Z to editing player's feet
+nav_create_place_on_ground               : 0        : , "sv", "cheat"  : If true, nav areas will be placed flush with the ground when created by hand.
+nav_crouch                               : cmd      : , "sv", "cheat"  : Toggles the 'must crouch in this area' flag used by the AI system.
+nav_debug_blocked                        : 0        : , "sv", "cheat"  : 
+nav_delete                               : cmd      : , "sv", "cheat"  : Deletes the currently highlighted Area.
+nav_delete_marked                        : cmd      : , "sv", "cheat"  : Deletes the currently marked Area (if any).
+nav_disconnect                           : cmd      : , "sv", "cheat"  : To disconnect two Areas, mark an Area, highlight a second Area, then invoke the disconnect command. This will remove all connections between the two Areas.
+nav_disconnect_outgoing_oneways          : cmd      : , "sv", "cheat"  : For each area in the selected set, disconnect all outgoing one-way connections.
+nav_displacement_test                    : 10000    : , "sv", "cheat"  : Checks for nodes embedded in displacements (useful for in-development maps)
+nav_dont_hide                            : cmd      : , "sv", "cheat"  : Toggles the 'area is not suitable for hiding spots' flag used by the AI system.
+nav_drag_selection_volume_zmax_offset    : 32       : , "sv", "rep"    : The offset of the nav drag volume top from center
+nav_drag_selection_volume_zmin_offset    : 32       : , "sv", "rep"    : The offset of the nav drag volume bottom from center
+nav_draw_limit                           : 500      : , "sv", "cheat"  : The maximum number of areas to draw in edit mode
+nav_dump_selected_set_positions          : cmd      : , "sv", "cheat"  : Write the (x,y,z) coordinates of the centers of all selected nav areas to a file.
+nav_edit                                 : 0        : , "sv", "cheat"  : Set to one to interactively edit the Navigation Mesh. Set to zero to leave edit mode.
+nav_end_area                             : cmd      : , "sv", "cheat"  : Defines the second corner of a new Area or Ladder and creates it.
+nav_end_deselecting                      : cmd      : , "sv", "cheat"  : Stop continuously removing from the selected set.
+nav_end_drag_deselecting                 : cmd      : , "sv", "cheat"  : Stop dragging a selection area.
+nav_end_drag_selecting                   : cmd      : , "sv", "cheat"  : Stop dragging a selection area.
+nav_end_selecting                        : cmd      : , "sv", "cheat"  : Stop continuously adding to the selected set.
+nav_end_shift_xy                         : cmd      : , "sv", "cheat"  : Finish shifting the Selected Set.
+nav_flood_select                         : cmd      : , "sv", "cheat"  : Selects the current Area and all Areas connected to it, recursively. To clear a selection, use this command again.
+nav_gen_cliffs_approx                    : cmd      : , "sv", "cheat"  : Mark cliff areas, post-processing approximation
+nav_generate                             : cmd      : , "sv", "cheat"  : Generate a Navigation Mesh for the current map and save it to disk.
+nav_generate_fencetops                   : 1        : , "sv", "cheat"  : Autogenerate nav areas on fence and obstacle tops
+nav_generate_fixup_jump_areas            : 1        : , "sv", "cheat"  : Convert obsolete jump areas into 2-way connections
+nav_generate_incremental                 : cmd      : , "sv", "cheat"  : Generate a Navigation Mesh for the current map and save it to disk.
+nav_generate_incremental_range           : 2000     : , "sv", "cheat"  : 
+nav_generate_incremental_tolerance       : 0        : , "sv", "cheat"  : Z tolerance for adding new nav areas.
+nav_jump                                 : cmd      : , "sv", "cheat"  : Toggles the 'traverse this area by jumping' flag used by the AI system.
+nav_ladder_flip                          : cmd      : , "sv", "cheat"  : Flips the selected ladder's direction.
+nav_load                                 : cmd      : , "sv", "cheat"  : Loads the Navigation Mesh for the current map.
+nav_lower_drag_volume_max                : cmd      : , "sv", "cheat"  : Lower the top of the drag select volume.
+nav_lower_drag_volume_min                : cmd      : , "sv", "cheat"  : Lower the bottom of the drag select volume.
+nav_make_sniper_spots                    : cmd      : , "sv", "cheat"  : Chops the marked area into disconnected sub-areas suitable for sniper spots.
+nav_mark                                 : cmd      : , "sv", "cheat"  : Marks the Area or Ladder under the cursor for manipulation by subsequent editing commands.
+nav_mark_attribute                       : cmd      : , "sv", "cheat"  : Set nav attribute for all areas in the selected set.
+nav_mark_unnamed                         : cmd      : , "sv", "cheat"  : Mark an Area with no Place name. Useful for finding stray areas missed when Place Painting.
+nav_mark_walkable                        : cmd      : , "sv", "cheat"  : Mark the current location as a walkable position. These positions are used as seed locations when sampling the map to generate a Navigation Mesh.
+nav_max_view_distance                    : 6000     : , "sv", "cheat"  : Maximum range for precomputed nav mesh visibility (0 = default 1500 units)
+nav_max_vis_delta_list_length            : 64       : , "sv", "cheat"  : 
+nav_merge                                : cmd      : , "sv", "cheat"  : To merge two Areas into one, mark the first Area, highlight the second by pointing your cursor at it, and invoke the merge command.
+nav_merge_mesh                           : cmd      : , "sv", "cheat"  : Merges a saved selected set into the current mesh.
+nav_no_hostages                          : cmd      : , "sv", "cheat"  : Toggles the 'hostages cannot use this area' flag used by the AI system.
+nav_no_jump                              : cmd      : , "sv", "cheat"  : Toggles the 'dont jump in this area' flag used by the AI system.
+nav_place_floodfill                      : cmd      : , "sv", "cheat"  : Sets the Place of the Area under the cursor to the curent Place, and 'flood-fills' the Place to all adjacent Areas. Flood-filling stops when it hits an Area with the same Place, or a different Place than that of the initial Area.
+nav_place_list                           : cmd      : , "sv", "cheat"  : Lists all place names used in the map.
+nav_place_pick                           : cmd      : , "sv", "cheat"  : Sets the current Place to the Place of the Area under the cursor.
+nav_place_replace                        : cmd      : , "sv", "cheat"  : Replaces all instances of the first place with the second place.
+nav_place_set                            : cmd      : , "sv", "cheat"  : Sets the Place of all selected areas to the current Place.
+nav_potentially_visible_dot_tolerance    : 0.98     : , "sv", "cheat"  : 
+nav_precise                              : cmd      : , "sv", "cheat"  : Toggles the 'dont avoid obstacles' flag used by the AI system.
+nav_quicksave                            : 1        : , "sv", "cheat"  : Set to one to skip the time consuming phases of the analysis.  Useful for data collection and testing.
+nav_raise_drag_volume_max                : cmd      : , "sv", "cheat"  : Raise the top of the drag select volume.
+nav_raise_drag_volume_min                : cmd      : , "sv", "cheat"  : Raise the bottom of the drag select volume.
+nav_recall_selected_set                  : cmd      : , "sv", "cheat"  : Re-selects the stored selected set.
+nav_remove_from_selected_set             : cmd      : , "sv", "cheat"  : Remove current area from the selected set.
+nav_remove_jump_areas                    : cmd      : , "sv", "cheat"  : Removes legacy jump areas, replacing them with connections.
+nav_run                                  : cmd      : , "sv", "cheat"  : Toggles the 'traverse this area by running' flag used by the AI system.
+nav_save                                 : cmd      : , "sv", "cheat"  : Saves the current Navigation Mesh to disk.
+nav_save_selected                        : cmd      : , "sv", "cheat"  : Writes the selected set to disk for merging into another mesh via nav_merge_mesh.
+nav_select_blocked_areas                 : cmd      : , "sv", "cheat"  : Adds all blocked areas to the selected set
+nav_select_damaging_areas                : cmd      : , "sv", "cheat"  : Adds all damaging areas to the selected set
+nav_select_half_space                    : cmd      : , "sv", "cheat"  : Selects any areas that intersect the given half-space.
+nav_select_invalid_areas                 : cmd      : , "sv", "cheat"  : Adds all invalid areas to the Selected Set.
+nav_select_larger_than                   : cmd      : , "sv", "cheat"  : Select nav areas where both dimensions are larger than the given size.
+nav_select_obstructed_areas              : cmd      : , "sv", "cheat"  : Adds all obstructed areas to the selected set
+nav_select_orphans                       : cmd      : , "sv", "cheat"  : Adds all orphan areas to the selected set (highlight a valid area first).
+nav_select_overlapping                   : cmd      : , "sv"           : Selects nav areas that are overlapping others.
+nav_select_radius                        : cmd      : , "sv", "cheat"  : Adds all areas in a radius to the selection set
+nav_select_stairs                        : cmd      : , "sv", "cheat"  : Adds all stairway areas to the selected set
+nav_selected_set_border_color            : 100 100 0 255 : , "sv", "cheat"  : Color used to draw the selected set borders while editing.
+nav_selected_set_color                   : 255 255 200 96 : , "sv", "cheat"  : Color used to draw the selected set background while editing.
+nav_set_place_mode                       : cmd      : , "sv", "cheat"  : Sets the editor into or out of Place mode. Place mode allows labelling of Area with Place names.
+nav_shift                                : cmd      : , "sv", "cheat"  : Shifts the selected areas by the specified amount
+nav_show_approach_points                 : 0        : , "sv", "cheat"  : Show Approach Points in the Navigation Mesh.
+nav_show_area_info                       : 0.5      : , "sv", "cheat"  : Duration in seconds to show nav area ID and attributes while editing
+nav_show_compass                         : 0        : , "sv", "cheat"  : 
+nav_show_continguous                     : 0        : , "sv", "cheat"  : Highlight non-contiguous connections
+nav_show_danger                          : 0        : , "sv", "cheat"  : Show current 'danger' levels.
+nav_show_dumped_positions                : cmd      : , "sv", "cheat"  : Show the (x,y,z) coordinate positions of the given dump file.
+nav_show_func_nav_avoid                  : 0        : , "sv", "cheat"  : Show areas of designer-placed bot avoidance due to func_nav_avoid entities
+nav_show_func_nav_prefer                 : 0        : , "sv", "cheat"  : Show areas of designer-placed bot preference due to func_nav_prefer entities
+nav_show_func_nav_prerequisite           : 0        : , "sv", "cheat"  : Show areas of designer-placed bot preference due to func_nav_prerequisite entities
+nav_show_light_intensity                 : 0        : , "sv", "cheat"  : 
+nav_show_node_grid                       : 0        : , "sv", "cheat"  : 
+nav_show_node_id                         : 0        : , "sv", "cheat"  : 
+nav_show_nodes                           : 0        : , "sv", "cheat"  : 
+nav_show_player_counts                   : 0        : , "sv", "cheat"  : Show current player counts in each area.
+nav_show_potentially_visible             : 0        : , "sv", "cheat"  : Show areas that are potentially visible from the current nav area
+nav_simplify_selected                    : cmd      : , "sv", "cheat"  : Chops all selected areas into their component 1x1 areas and re-merges them together into larger areas
+nav_slope_limit                          : 0.7      : , "sv", "cheat"  : The ground unit normal's Z component must be greater than this for nav areas to be generated.
+nav_slope_tolerance                      : 0.1      : , "sv", "cheat"  : The ground unit normal's Z component must be this close to the nav area's Z component to be generated.
+nav_snap_to_grid                         : 0        : , "sv", "cheat"  : Snap to the nav generation grid when creating new nav areas
+nav_solid_props                          : 0        : , "sv", "cheat"  : Make props solid to nav generation/editing
+nav_splice                               : cmd      : , "sv", "cheat"  : To splice, mark an area, highlight a second area, then invoke the splice command to create a new, connected area between them.
+nav_split                                : cmd      : , "sv", "cheat"  : To split an Area into two, align the split line using your cursor and invoke the split command.
+nav_split_place_on_ground                : 0        : , "sv", "cheat"  : If true, nav areas will be placed flush with the ground when split.
+nav_stand                                : cmd      : , "sv", "cheat"  : Toggles the 'stand while hiding' flag used by the AI system.
+nav_stop                                 : cmd      : , "sv", "cheat"  : Toggles the 'must stop when entering this area' flag used by the AI system.
+nav_store_selected_set                   : cmd      : , "sv", "cheat"  : Stores the current selected set for later retrieval.
+nav_strip                                : cmd      : , "sv", "cheat"  : Strips all Hiding Spots, Approach Points, and Encounter Spots from the current Area.
+nav_subdivide                            : cmd      : , "sv", "cheat"  : Subdivides all selected areas.
+nav_test_node                            : 0        : , "sv", "cheat"  : 
+nav_test_node_crouch                     : 0        : , "sv", "cheat"  : 
+nav_test_node_crouch_dir                 : 4        : , "sv", "cheat"  : 
+nav_test_stairs                          : cmd      : , "sv", "cheat"  : Test the selected set for being on stairs
+nav_toggle_deselecting                   : cmd      : , "sv", "cheat"  : Start or stop continuously removing from the selected set.
+nav_toggle_in_selected_set               : cmd      : , "sv", "cheat"  : Remove current area from the selected set.
+nav_toggle_place_mode                    : cmd      : , "sv", "cheat"  : Toggle the editor into and out of Place mode. Place mode allows labelling of Area with Place names.
+nav_toggle_place_painting                : cmd      : , "sv", "cheat"  : Toggles Place Painting mode. When Place Painting, pointing at an Area will 'paint' it with the current Place.
+nav_toggle_selected_set                  : cmd      : , "sv", "cheat"  : Toggles all areas into/out of the selected set.
+nav_toggle_selecting                     : cmd      : , "sv", "cheat"  : Start or stop continuously adding to the selected set.
+nav_transient                            : cmd      : , "sv", "cheat"  : Toggles the 'area is transient and may become blocked' flag used by the AI system.
+nav_unmark                               : cmd      : , "sv", "cheat"  : Clears the marked Area or Ladder.
+nav_update_blocked                       : cmd      : , "sv"           : Updates the blocked/unblocked status for every nav area.
+nav_update_lighting                      : cmd      : , "sv", "cheat"  : Recomputes lighting values
+nav_update_visibility_on_edit            : 0        : , "sv", "cheat"  : If nonzero editing the mesh will incrementally recompue visibility
+nav_use_place                            : cmd      : , "sv", "cheat"  : If used without arguments, all available Places will be listed. If a Place argument is given, the current Place is set.
+nav_walk                                 : cmd      : , "sv", "cheat"  : Toggles the 'traverse this area by walking' flag used by the AI system.
+nav_warp_to_mark                         : cmd      : , "sv", "cheat"  : Warps the player to the marked area.
+nav_world_center                         : cmd      : , "sv", "cheat"  : Centers the nav mesh in the world

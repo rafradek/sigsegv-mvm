@@ -1,0 +1,5 @@
+CEntityFactory<CEyeballBoss>
+
++0x0000:  00ce27a0  CEntityFactory<CEyeballBoss>::Create(char const*)
++0x0004:  00ce1f30  CEntityFactory<CEyeballBoss>::Destroy(IServerNetworkable*)
++0x0008:  00ce1f50  CEntityFactory<CEyeballBoss>::GetEntitySize()

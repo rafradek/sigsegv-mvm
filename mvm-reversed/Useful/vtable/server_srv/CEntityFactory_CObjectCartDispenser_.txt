@@ -1,0 +1,5 @@
+CEntityFactory<CObjectCartDispenser>
+
++0x0000:  00da5550  CEntityFactory<CObjectCartDispenser>::Create(char const*)
++0x0004:  00da50a0  CEntityFactory<CObjectCartDispenser>::Destroy(IServerNetworkable*)
++0x0008:  00da50c0  CEntityFactory<CObjectCartDispenser>::GetEntitySize()

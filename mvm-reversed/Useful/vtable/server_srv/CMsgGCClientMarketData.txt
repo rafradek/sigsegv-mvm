@@ -1,0 +1,22 @@
+CMsgGCClientMarketData
+
++0x0000:  00520100  CMsgGCClientMarketData::~CMsgGCClientMarketData()
++0x0004:  00520160  CMsgGCClientMarketData::~CMsgGCClientMarketData()
++0x0008:  00000000  
++0x000c:  00511b60  CMsgGCClientMarketData::New() const
++0x0010:  004e4ed0  CMsgGCClientMarketData::Clear()
++0x0014:  004dc240  CMsgGCClientMarketData::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00511530  CMsgGCClientMarketData::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e7860  CMsgGCClientMarketData::ByteSize() const
++0x0028:  004df250  CMsgGCClientMarketData::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004eef40  CMsgGCClientMarketData::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520b70  CMsgGCClientMarketData::GetCachedSize() const
++0x0034:  004dc1f0  CMsgGCClientMarketData::CopyFrom(google::protobuf::Message const&)
++0x0038:  00511d40  CMsgGCClientMarketData::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dc1e0  CMsgGCClientMarketData::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed310  CMsgGCClientMarketData::GetMetadata() const

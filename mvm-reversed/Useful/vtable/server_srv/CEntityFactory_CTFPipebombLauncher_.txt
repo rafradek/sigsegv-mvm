@@ -1,0 +1,5 @@
+CEntityFactory<CTFPipebombLauncher>
+
++0x0000:  0087d830  CEntityFactory<CTFPipebombLauncher>::Create(char const*)
++0x0004:  0087d800  CEntityFactory<CTFPipebombLauncher>::Destroy(IServerNetworkable*)
++0x0008:  0087d820  CEntityFactory<CTFPipebombLauncher>::GetEntitySize()

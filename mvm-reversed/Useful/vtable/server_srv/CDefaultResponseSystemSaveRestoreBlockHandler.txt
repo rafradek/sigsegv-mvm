@@ -1,0 +1,11 @@
+CDefaultResponseSystemSaveRestoreBlockHandler
+
++0x0000:  0098be60  CDefaultResponseSystemSaveRestoreBlockHandler::GetBlockName()
++0x0004:  0060e770  CDefSaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  0098bee0  CDefaultResponseSystemSaveRestoreBlockHandler::Save(ISave*)
++0x000c:  0098be70  CDefaultResponseSystemSaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  0060e7a0  CDefSaveRestoreBlockHandler::PostSave()
++0x0014:  0060e7b0  CDefSaveRestoreBlockHandler::PreRestore()
++0x0018:  0098bea0  CDefaultResponseSystemSaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  0098ce30  CDefaultResponseSystemSaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  0060e7e0  CDefSaveRestoreBlockHandler::PostRestore()

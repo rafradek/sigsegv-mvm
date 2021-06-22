@@ -1,0 +1,8 @@
+CEconTool_PaintCan
+
++0x0000:  0067c920  CEconTool_PaintCan::~CEconTool_PaintCan()
++0x0004:  0067d4d0  CEconTool_PaintCan::~CEconTool_PaintCan()
++0x0008:  0067c520  IEconTool::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  0067c540  IEconTool::BFinishInitialization()

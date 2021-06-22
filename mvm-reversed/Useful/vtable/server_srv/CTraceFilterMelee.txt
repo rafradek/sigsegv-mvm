@@ -1,0 +1,4 @@
+CTraceFilterMelee
+
++0x0000:  009c0560  CTraceFilterMelee::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0063b3b0  CTraceFilterEntitiesOnly::GetTraceType() const

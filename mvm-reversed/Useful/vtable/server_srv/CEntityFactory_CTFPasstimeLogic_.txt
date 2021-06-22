@@ -1,0 +1,5 @@
+CEntityFactory<CTFPasstimeLogic>
+
++0x0000:  00dbecb0  CEntityFactory<CTFPasstimeLogic>::Create(char const*)
++0x0004:  00dbec10  CEntityFactory<CTFPasstimeLogic>::Destroy(IServerNetworkable*)
++0x0008:  00dbec30  CEntityFactory<CTFPasstimeLogic>::GetEntitySize()

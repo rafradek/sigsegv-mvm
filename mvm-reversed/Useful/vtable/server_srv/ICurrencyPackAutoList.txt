@@ -1,0 +1,4 @@
+ICurrencyPackAutoList
+
++0x0000:  00cb6650  ICurrencyPackAutoList::~ICurrencyPackAutoList()
++0x0004:  00cb67e0  ICurrencyPackAutoList::~ICurrencyPackAutoList()

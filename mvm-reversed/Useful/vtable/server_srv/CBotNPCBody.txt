@@ -1,0 +1,85 @@
+CBotNPCBody
+
++0x0000:  00ca5f50  CBotNPCBody::~CBotNPCBody()
++0x0004:  00ca5fa0  CBotNPCBody::~CBotNPCBody()
++0x0008:  005e7c50  INextBotEventResponder::FirstContainedResponder() const
++0x000c:  005e7c60  INextBotEventResponder::NextContainedResponder(INextBotEventResponder*) const
++0x0010:  005e7c70  INextBotEventResponder::OnLeaveGround(CBaseEntity*)
++0x0014:  005e7cc0  INextBotEventResponder::OnLandOnGround(CBaseEntity*)
++0x0018:  005e7d10  INextBotEventResponder::OnContact(CBaseEntity*, CGameTrace*)
++0x001c:  005e7d60  INextBotEventResponder::OnMoveToSuccess(Path const*)
++0x0020:  005e7db0  INextBotEventResponder::OnMoveToFailure(Path const*, MoveToFailureType)
++0x0024:  005e7e00  INextBotEventResponder::OnStuck()
++0x0028:  005e7e50  INextBotEventResponder::OnUnStuck()
++0x002c:  005e7ea0  INextBotEventResponder::OnPostureChanged()
++0x0030:  005e7ef0  INextBotEventResponder::OnAnimationActivityComplete(int)
++0x0034:  005e7f40  INextBotEventResponder::OnAnimationActivityInterrupted(int)
++0x0038:  005e7f90  INextBotEventResponder::OnAnimationEvent(animevent_t*)
++0x003c:  005e7fe0  INextBotEventResponder::OnIgnite()
++0x0040:  005e8030  INextBotEventResponder::OnInjured(CTakeDamageInfo const&)
++0x0044:  005e8080  INextBotEventResponder::OnKilled(CTakeDamageInfo const&)
++0x0048:  005e80d0  INextBotEventResponder::OnOtherKilled(CBaseCombatCharacter*, CTakeDamageInfo const&)
++0x004c:  005e8120  INextBotEventResponder::OnSight(CBaseEntity*)
++0x0050:  005e8170  INextBotEventResponder::OnLostSight(CBaseEntity*)
++0x0054:  005e81c0  INextBotEventResponder::OnSound(CBaseEntity*, Vector const&, KeyValues*)
++0x0058:  005e8220  INextBotEventResponder::OnSpokeConcept(CBaseCombatCharacter*, char const*, AI_Response*)
++0x005c:  005e8280  INextBotEventResponder::OnWeaponFired(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0060:  005e82d0  INextBotEventResponder::OnNavAreaChanged(CNavArea*, CNavArea*)
++0x0064:  005e8320  INextBotEventResponder::OnModelChanged()
++0x0068:  005e8370  INextBotEventResponder::OnPickUp(CBaseEntity*, CBaseCombatCharacter*)
++0x006c:  005e83c0  INextBotEventResponder::OnDrop(CBaseEntity*)
++0x0070:  005e8410  INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter*, int)
++0x0074:  005e8500  INextBotEventResponder::OnCommandAttack(CBaseEntity*)
++0x0078:  005e8550  INextBotEventResponder::OnCommandApproach(Vector const&, float)
++0x007c:  005e85a0  INextBotEventResponder::OnCommandApproach(CBaseEntity*)
++0x0080:  005e85f0  INextBotEventResponder::OnCommandRetreat(CBaseEntity*, float)
++0x0084:  005e8650  INextBotEventResponder::OnCommandPause(float)
++0x0088:  005e86a0  INextBotEventResponder::OnCommandResume()
++0x008c:  005e86f0  INextBotEventResponder::OnCommandString(char const*)
++0x0090:  005e8460  INextBotEventResponder::OnShoved(CBaseEntity*)
++0x0094:  005e84b0  INextBotEventResponder::OnBlinded(CBaseEntity*)
++0x0098:  005e8740  INextBotEventResponder::OnTerritoryContested(int)
++0x009c:  005e8790  INextBotEventResponder::OnTerritoryCaptured(int)
++0x00a0:  005e87e0  INextBotEventResponder::OnTerritoryLost(int)
++0x00a4:  005e8830  INextBotEventResponder::OnWin()
++0x00a8:  005e8880  INextBotEventResponder::OnLose()
++0x00ac:  00af1d10  IBody::Reset()
++0x00b0:  00ca5500  CBotNPCBody::Update()
++0x00b4:  005e8900  INextBotComponent::Upkeep()
++0x00b8:  005e8910  INextBotComponent::GetBot() const
++0x00bc:  00af1cc0  IBody::SetPosition(Vector const&)
++0x00c0:  00af1bd0  IBody::GetEyePosition() const
++0x00c4:  00af1c50  IBody::GetViewVector() const
++0x00c8:  00ca53e0  CBotNPCBody::AimHeadTowards(Vector const&, IBody::LookAtPriorityType, float, INextBotReply*, char const*)
++0x00cc:  00ca5460  CBotNPCBody::AimHeadTowards(CBaseEntity*, IBody::LookAtPriorityType, float, INextBotReply*, char const*)
++0x00d0:  00af1bc0  IBody::IsHeadAimingOnTarget() const
++0x00d4:  00af1d70  IBody::IsHeadSteady() const
++0x00d8:  00af1d80  IBody::GetHeadSteadyDuration() const
++0x00dc:  00af1d90  IBody::GetHeadAimSubjectLeadTime() const
++0x00e0:  00af1da0  IBody::GetHeadAimTrackingInterval() const
++0x00e4:  00af1d40  IBody::ClearPendingAimReply()
++0x00e8:  00af1db0  IBody::GetMaxHeadAngularVelocity() const
++0x00ec:  00ca5b70  CBotNPCBody::StartActivity(Activity, unsigned int)
++0x00f0:  00af1dd0  IBody::SelectAnimationSequence(Activity) const
++0x00f4:  00ca5f60  CBotNPCBody::GetActivity() const
++0x00f8:  00ca5f70  CBotNPCBody::IsActivity(Activity) const
++0x00fc:  00af1e00  IBody::HasActivityType(unsigned int) const
++0x0100:  00af1d50  IBody::SetDesiredPosture(IBody::PostureType)
++0x0104:  00af1e10  IBody::GetDesiredPosture() const
++0x0108:  00af1e20  IBody::IsDesiredPosture(IBody::PostureType) const
++0x010c:  00af1e30  IBody::IsInDesiredPosture() const
++0x0110:  00af1e40  IBody::GetActualPosture() const
++0x0114:  00af1e50  IBody::IsActualPosture(IBody::PostureType) const
++0x0118:  00af1e60  IBody::IsPostureMobile() const
++0x011c:  00af1e70  IBody::IsPostureChanging() const
++0x0120:  00af1d60  IBody::SetArousal(IBody::ArousalType)
++0x0124:  00af1e80  IBody::GetArousal() const
++0x0128:  00af1e90  IBody::IsArousal(IBody::ArousalType) const
++0x012c:  00af1ea0  IBody::GetHullWidth() const
++0x0130:  00af2010  IBody::GetHullHeight() const
++0x0134:  00af1eb0  IBody::GetStandHullHeight() const
++0x0138:  00af1ec0  IBody::GetCrouchHullHeight() const
++0x013c:  00af1f90  IBody::GetHullMins() const
++0x0140:  00af1f10  IBody::GetHullMaxs() const
++0x0144:  00ca53d0  CBotNPCBody::GetSolidMask() const
++0x0148:  00ca5f90  CBotNPCBody::GetCollisionGroup() const

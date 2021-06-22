@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerPlayerMovement>
+
++0x0000:  00e49940  CEntityFactory<CTriggerPlayerMovement>::Create(char const*)
++0x0004:  00e48d60  CEntityFactory<CTriggerPlayerMovement>::Destroy(IServerNetworkable*)
++0x0008:  00e48d80  CEntityFactory<CTriggerPlayerMovement>::GetEntitySize()

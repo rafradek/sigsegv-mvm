@@ -1,0 +1,7 @@
+CEntFireAutoCompletionFunctor
+
++0x0000:  009e3740  CEntFireAutoCompletionFunctor::CommandCallback(CCommand const&)
++0x0004:  009e85c0  CEntFireAutoCompletionFunctor::CommandCompletionCallback(char const*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >&)
++0x0008:  fffffffc  (unknown)
++0x000c:  011546a0  typeinfo for CEntFireAutoCompletionFunctor
++0x0010:  009e85b0  non-virtual thunk to CEntFireAutoCompletionFunctor::CommandCompletionCallback(char const*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >&)

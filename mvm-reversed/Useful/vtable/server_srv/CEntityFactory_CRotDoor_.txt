@@ -1,0 +1,5 @@
+CEntityFactory<CRotDoor>
+
++0x0000:  00a1c550  CEntityFactory<CRotDoor>::Create(char const*)
++0x0004:  00a1c190  CEntityFactory<CRotDoor>::Destroy(IServerNetworkable*)
++0x0008:  00a1c1b0  CEntityFactory<CRotDoor>::GetEntitySize()

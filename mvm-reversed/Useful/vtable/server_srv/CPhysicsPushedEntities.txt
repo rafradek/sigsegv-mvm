@@ -1,0 +1,5 @@
+CPhysicsPushedEntities
+
++0x0000:  00b461e0  CPhysicsPushedEntities::SpeculativelyCheckRotPush(CPhysicsPushedEntities::RotatingPushMove_t const&, CBaseEntity*)
++0x0004:  00b46170  CPhysicsPushedEntities::SpeculativelyCheckLinearPush(Vector const&)
++0x0008:  00b45750  CPhysicsPushedEntities::FinishRotPushedEntity(CBaseEntity*, CPhysicsPushedEntities::RotatingPushMove_t const&)

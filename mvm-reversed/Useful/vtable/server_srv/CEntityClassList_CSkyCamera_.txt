@@ -1,0 +1,3 @@
+CEntityClassList<CSkyCamera>
+
++0x0000:  00bd2ac0  CEntityClassList<CSkyCamera>::LevelShutdownPostEntity()

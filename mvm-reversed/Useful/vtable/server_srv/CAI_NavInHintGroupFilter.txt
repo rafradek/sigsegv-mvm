@@ -1,0 +1,4 @@
+CAI_NavInHintGroupFilter
+
++0x0000:  00967370  CAI_NavInHintGroupFilter::IsValid(CAI_Node*)
++0x0004:  00967390  CAI_NavInHintGroupFilter::ShouldContinue()

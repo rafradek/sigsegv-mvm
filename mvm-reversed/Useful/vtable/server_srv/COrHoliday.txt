@@ -1,0 +1,5 @@
+COrHoliday
+
++0x0000:  00659e00  COrHoliday::~COrHoliday()
++0x0004:  00659e70  COrHoliday::~COrHoliday()
++0x0008:  00659ef0  COrHoliday::IsActive(CRTime const&)

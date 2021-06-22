@@ -28,6 +28,12 @@
 					type "sym"
 					sym  "_ZNK16CTFBotLocomotion11GetRunSpeedEv"
 				}
+				"CTFBotLocomotion::Update"
+				{
+					type "sym"
+					sym  "_ZN16CTFBotLocomotion6UpdateEv"
+				}
+				
 			}
 		}
 	}

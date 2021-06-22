@@ -163,3 +163,5 @@ CTFBotDead *CTFBotDead::New()
 MemberFuncThunk<const CTFBotMainAction *, const CKnownEntity *, CTFBot *, const CKnownEntity *, const CKnownEntity *> CTFBotMainAction::ft_SelectCloserThreat("CTFBotMainAction::SelectCloserThreat");
 
 MemberVFuncThunk<CTFBotEscortSquadLeader *, ActionResult<CTFBot>, CTFBot*, float> CTFBotEscortSquadLeader::vt_Update(TypeName<CTFBotEscortSquadLeader>(),"CTFBotEscortSquadLeader::Update");
+
+StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *> CTFBotMvMEngineerHintFinder::ft_FindHint("CTFBotMvMEngineerHintFinder::FindHint");

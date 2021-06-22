@@ -1,0 +1,5 @@
+CEntityFactory<CEntityFlame>
+
++0x0000:  00a2ed30  CEntityFactory<CEntityFlame>::Create(char const*)
++0x0004:  00a2ecb0  CEntityFactory<CEntityFlame>::Destroy(IServerNetworkable*)
++0x0008:  00a2ecd0  CEntityFactory<CEntityFlame>::GetEntitySize()

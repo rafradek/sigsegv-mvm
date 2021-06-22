@@ -1,0 +1,15 @@
+CEffectsServer
+
++0x0000:  00a288a0  CEffectsServer::~CEffectsServer()
++0x0004:  00a288d0  CEffectsServer::~CEffectsServer()
++0x0008:  00a28a00  CEffectsServer::Beam(Vector const&, Vector const&, int, int, unsigned char, unsigned char, float, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char, unsigned char)
++0x000c:  00a288f0  CEffectsServer::Smoke(Vector const&, int, float, float)
++0x0010:  00a290d0  CEffectsServer::Sparks(Vector const&, int, int, Vector const*)
++0x0014:  00a28fd0  CEffectsServer::Dust(Vector const&, Vector const&, float, float)
++0x0018:  00a28ed0  CEffectsServer::MuzzleFlash(Vector const&, QAngle const&, float, int)
++0x001c:  00a28de0  CEffectsServer::MetalSparks(Vector const&, Vector const&)
++0x0020:  00a28ce0  CEffectsServer::EnergySplash(Vector const&, Vector const&, bool)
++0x0024:  00a28bf0  CEffectsServer::Ricochet(Vector const&, Vector const&)
++0x0028:  00a288b0  CEffectsServer::Time()
++0x002c:  00a288c0  CEffectsServer::IsServer()
++0x0030:  00a29220  CEffectsServer::SuppressEffectsSounds(bool)

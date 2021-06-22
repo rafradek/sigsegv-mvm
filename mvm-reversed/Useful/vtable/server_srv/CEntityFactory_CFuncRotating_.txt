@@ -1,0 +1,5 @@
+CEntityFactory<CFuncRotating>
+
++0x0000:  00a00740  CEntityFactory<CFuncRotating>::Create(char const*)
++0x0004:  00a00450  CEntityFactory<CFuncRotating>::Destroy(IServerNetworkable*)
++0x0008:  00a00470  CEntityFactory<CFuncRotating>::GetEntitySize()

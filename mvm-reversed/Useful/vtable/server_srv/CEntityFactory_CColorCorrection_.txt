@@ -1,0 +1,5 @@
+CEntityFactory<CColorCorrection>
+
++0x0000:  00a0f5c0  CEntityFactory<CColorCorrection>::Create(char const*)
++0x0004:  00a0f520  CEntityFactory<CColorCorrection>::Destroy(IServerNetworkable*)
++0x0008:  00a0f540  CEntityFactory<CColorCorrection>::GetEntitySize()

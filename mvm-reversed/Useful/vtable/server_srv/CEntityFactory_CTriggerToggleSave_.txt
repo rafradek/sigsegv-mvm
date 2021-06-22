@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerToggleSave>
+
++0x0000:  00e49bd0  CEntityFactory<CTriggerToggleSave>::Create(char const*)
++0x0004:  00e48f40  CEntityFactory<CTriggerToggleSave>::Destroy(IServerNetworkable*)
++0x0008:  00e48f60  CEntityFactory<CTriggerToggleSave>::GetEntitySize()

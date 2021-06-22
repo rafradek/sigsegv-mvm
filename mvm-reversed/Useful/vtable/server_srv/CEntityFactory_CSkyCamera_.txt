@@ -1,0 +1,5 @@
+CEntityFactory<CSkyCamera>
+
++0x0000:  00bd2af0  CEntityFactory<CSkyCamera>::Create(char const*)
++0x0004:  00bd2a90  CEntityFactory<CSkyCamera>::Destroy(IServerNetworkable*)
++0x0008:  00bd2ab0  CEntityFactory<CSkyCamera>::GetEntitySize()

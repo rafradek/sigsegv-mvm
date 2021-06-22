@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_JarMilk>
+
++0x0000:  008663b0  CEntityFactory<CTFProjectile_JarMilk>::Create(char const*)
++0x0004:  00865e90  CEntityFactory<CTFProjectile_JarMilk>::Destroy(IServerNetworkable*)
++0x0008:  00865eb0  CEntityFactory<CTFProjectile_JarMilk>::GetEntitySize()

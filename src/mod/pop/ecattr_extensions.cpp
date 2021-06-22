@@ -104,6 +104,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		bool always_glow = false;
 		
+		bool no_glow = false;
+		
 		bool no_bomb_upgrade = false;
 		
 		bool use_best_weapon = false;
@@ -111,6 +113,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		bool fast_update = false;
 
 		bool no_pushaway = false;
+
+		bool no_crouch_button_release = false;
 
 		float scale_speed = 1.0f;
 
@@ -766,6 +770,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.use_human_animations = kv->GetBool();
 		} else if (FStrEq(name, "AlwaysGlow")) {
 			data.always_glow = kv->GetBool();
+		} else if (FStrEq(name, "NoGlow")) {
+			data.always_glow = kv->GetBool();
 		} else if (FStrEq(name, "UseBestWeapon")) {
 			data.use_best_weapon = kv->GetBool();
 		} else if (FStrEq(name, "RingOfFire")) {
@@ -814,6 +820,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.no_pushaway = kv->GetBool();
 		} else if (FStrEq(name, "BodyPartScaleSpeed")) {
 			data.scale_speed = kv->GetFloat();
+		} else if (FStrEq(name, "NoCrouchButtonRelease")) {
+			data.no_crouch_button_release = kv->GetBool();
 		} else if (FStrEq(name, "StripItemSlot")) {
 			int val = GetLoadoutSlotByName(kv->GetString());
 			data.strip_item_slot.push_back(val == -1 ? kv->GetInt() : val);
@@ -1620,6 +1628,11 @@ namespace Mod::Pop::ECAttr_Extensions
 						bot->AddGlowEffect();
 					}
 				}
+				if (data != nullptr && data->no_glow) {
+					if (bot->IsGlowEffectActive()){
+						bot->RemoveGlowEffect();
+					}
+				}
 			});
 		}
 	}
@@ -1819,13 +1832,9 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		if ((strcmp(classname, "tf_projectile_rocket") != 0 || strcmp(classname, "tf_projectile_sentryrocket") != 0)) {
 			rocket = static_cast<CTFProjectile_Rocket *>(ent);
-			auto weapon = rocket->GetOriginalLauncher();
-
-			if (weapon != nullptr) {
-				auto data = GetDataForBot(weapon->GetOwnerEntity());
-				if (data != nullptr) {
-					hr = &data->homing_rockets;
-				}
+			auto data = GetDataForBot(rtti_scast<IScorer *>(rocket)->GetScorer());
+			if (data != nullptr) {
+				hr = &data->homing_rockets;
 			}
 		} 
 		if (hr == nullptr || !hr->enable) {
@@ -1945,7 +1954,7 @@ namespace Mod::Pop::ECAttr_Extensions
 						if (proj != nullptr) {
 							Vector vec = temp_data.offset;
 							QAngle ang = temp_data.angles;
-							PointTemplateInstance *inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
+							auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
 						}
 						return proj;
 					}
@@ -2047,6 +2056,28 @@ namespace Mod::Pop::ECAttr_Extensions
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)();
 	}
 
+	RefCount rc_CTFBotLocomotion_Update;
+	DETOUR_DECL_MEMBER(void, CTFBotLocomotion_Update)
+	{
+		auto data = GetDataForBot(reinterpret_cast<ILocomotion *>(this)->GetBot()->GetEntity());
+		SCOPED_INCREMENT_IF(rc_CTFBotLocomotion_Update, data != nullptr && data->no_crouch_button_release);
+		DETOUR_MEMBER_CALL(CTFBotLocomotion_Update)();
+	}
+	
+	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PressCrouchButton, float time)
+	{
+		if (rc_CTFBotLocomotion_Update)
+			return;
+		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PressCrouchButton)(time);
+	}
+
+	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_ReleaseCrouchButton)
+	{
+		if (rc_CTFBotLocomotion_Update)
+			return;
+		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_ReleaseCrouchButton)();
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2101,6 +2132,10 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetHandScaleSpeed, "CTFPlayer::GetHandScaleSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetHeadScaleSpeed, "CTFPlayer::GetHeadScaleSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetTorsoScaleSpeed, "CTFPlayer::GetTorsoScaleSpeed");
+
+			MOD_ADD_DETOUR_MEMBER(CTFBotLocomotion_Update, "CTFBotLocomotion::Update");
+			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PressCrouchButton, "NextBotPlayer<CTFPlayer>::PressCrouchButton");
+			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_ReleaseCrouchButton, "NextBotPlayer<CTFPlayer>::ReleaseCrouchButton");
 		}
 
 		virtual bool OnLoad() override

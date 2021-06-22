@@ -1,0 +1,3 @@
+CPluginHelpersCheck
+
++0x0000:  00b8a890  CPluginHelpersCheck::CreateMessage(char const*, edict_t*, DIALOG_TYPE, KeyValues*)

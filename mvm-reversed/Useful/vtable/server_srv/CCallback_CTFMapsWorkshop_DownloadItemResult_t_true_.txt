@@ -1,0 +1,5 @@
+CCallback<CTFMapsWorkshop, DownloadItemResult_t, true>
+
++0x0000:  005f9a70  CCallback<CTFMapsWorkshop, DownloadItemResult_t, true>::Run(void*)
++0x0004:  005f9aa0  CCallbackImpl<16>::Run(void*, bool, unsigned long long)
++0x0008:  005f9ab0  CCallbackImpl<16>::GetCallbackSizeBytes()

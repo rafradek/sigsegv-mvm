@@ -1,0 +1,5 @@
+CEntityFactory<CMomentaryRotButton>
+
++0x0000:  00a05010  CEntityFactory<CMomentaryRotButton>::Create(char const*)
++0x0004:  00a04c90  CEntityFactory<CMomentaryRotButton>::Destroy(IServerNetworkable*)
++0x0008:  00a04cb0  CEntityFactory<CMomentaryRotButton>::GetEntitySize()

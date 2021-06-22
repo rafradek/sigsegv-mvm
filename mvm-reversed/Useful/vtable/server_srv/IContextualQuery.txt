@@ -1,0 +1,12 @@
+IContextualQuery
+
++0x0000:  005e8920  IContextualQuery::~IContextualQuery()
++0x0004:  005e8f40  IContextualQuery::~IContextualQuery()
++0x0008:  005e8930  IContextualQuery::ShouldPickUp(INextBot const*, CBaseEntity*) const
++0x000c:  005e8940  IContextualQuery::ShouldHurry(INextBot const*) const
++0x0010:  005e8950  IContextualQuery::ShouldRetreat(INextBot const*) const
++0x0014:  005e8960  IContextualQuery::ShouldAttack(INextBot const*, CKnownEntity const*) const
++0x0018:  005e8970  IContextualQuery::IsHindrance(INextBot const*, CBaseEntity*) const
++0x001c:  005e8980  IContextualQuery::SelectTargetPoint(INextBot const*, CBaseCombatCharacter const*) const
++0x0020:  005e89b0  IContextualQuery::IsPositionAllowed(INextBot const*, Vector const&) const
++0x0024:  005e89c0  IContextualQuery::SelectMoreDangerousThreat(INextBot const*, CBaseCombatCharacter const*, CKnownEntity const*, CKnownEntity const*) const

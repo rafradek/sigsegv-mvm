@@ -1,0 +1,11 @@
+CLZMAZipPackFileHandle
+
++0x0000:  00031260  CLZMAZipPackFileHandle::~CLZMAZipPackFileHandle()
++0x0004:  00031270  CLZMAZipPackFileHandle::~CLZMAZipPackFileHandle()
++0x0008:  00031290  CLZMAZipPackFileHandle::Read(void*, int, int)
++0x000c:  00031570  CLZMAZipPackFileHandle::Seek(int, int)
++0x0010:  000316e0  CLZMAZipPackFileHandle::Tell()
++0x0014:  000316f0  CLZMAZipPackFileHandle::Size()
++0x0018:  00030f10  CZipPackFileHandle::SetBufferSize(int)
++0x001c:  00030f50  CZipPackFileHandle::GetSectorSize()
++0x0020:  00030f90  CZipPackFileHandle::AbsoluteBaseOffset()

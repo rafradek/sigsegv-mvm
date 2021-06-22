@@ -1,0 +1,5 @@
+CEntityFactory<CFlagDetectionZone>
+
++0x0000:  00cc0d00  CEntityFactory<CFlagDetectionZone>::Create(char const*)
++0x0004:  00cbfbf0  CEntityFactory<CFlagDetectionZone>::Destroy(IServerNetworkable*)
++0x0008:  00cbfc10  CEntityFactory<CFlagDetectionZone>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CAI_DynamicLinkController>
+
++0x0000:  00943d20  CEntityFactory<CAI_DynamicLinkController>::Create(char const*)
++0x0004:  00943bd0  CEntityFactory<CAI_DynamicLinkController>::Destroy(IServerNetworkable*)
++0x0008:  00943bf0  CEntityFactory<CAI_DynamicLinkController>::GetEntitySize()

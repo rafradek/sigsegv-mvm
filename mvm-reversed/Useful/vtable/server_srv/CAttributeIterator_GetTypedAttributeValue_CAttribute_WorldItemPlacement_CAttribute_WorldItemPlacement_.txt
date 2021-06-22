@@ -1,0 +1,11 @@
+CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>
+
++0x0000:  0067cd20  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::~CAttributeIterator_GetTypedAttributeValue()
++0x0004:  0067cff0  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::~CAttributeIterator_GetTypedAttributeValue()
++0x0008:  0067ce10  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  0067ce20  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  0067ce30  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  0067ce40  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  0067ce50  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  0067ce60  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  0067d860  CAttributeIterator_GetTypedAttributeValue<CAttribute_WorldItemPlacement, CAttribute_WorldItemPlacement>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

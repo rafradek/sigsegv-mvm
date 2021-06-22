@@ -1,0 +1,10 @@
+CGC_GameServer_Duel_Request
+
++0x0000:  00d3a3c0  CGC_GameServer_Duel_Request::~CGC_GameServer_Duel_Request()
++0x0004:  00d3a5e0  CGC_GameServer_Duel_Request::~CGC_GameServer_Duel_Request()
++0x0008:  005dff90  GCSDK::CGCClientJob::BYieldingRunJob(void*)
++0x000c:  005dffc0  GCSDK::CGCClientJob::BYieldingRunJobFromMsg(GCSDK::IMsgNetPacket*)
++0x0010:  005df9d0  GCSDK::CGCClientJob::CHeartbeatsBeforeTimeout()
++0x0014:  00d3a4f0  CGC_GameServer_Duel_Request::BYieldingRunGCJob(GCSDK::IMsgNetPacket*)
++0x0018:  005df9b0  GCSDK::CGCClientJob::BYieldingRunGCJob()
++0x001c:  005df9c0  GCSDK::CGCClientJob::GetServerType()

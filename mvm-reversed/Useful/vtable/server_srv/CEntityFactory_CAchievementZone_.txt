@@ -1,0 +1,5 @@
+CEntityFactory<CAchievementZone>
+
++0x0000:  00cbd790  CEntityFactory<CAchievementZone>::Create(char const*)
++0x0004:  00cbd760  CEntityFactory<CAchievementZone>::Destroy(IServerNetworkable*)
++0x0008:  00cbd780  CEntityFactory<CAchievementZone>::GetEntitySize()

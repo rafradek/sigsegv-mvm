@@ -1,0 +1,5 @@
+CQuestObjectiveDefinition
+
++0x0000:  006640a0  CQuestObjectiveDefinition::~CQuestObjectiveDefinition()
++0x0004:  006640f0  CQuestObjectiveDefinition::~CQuestObjectiveDefinition()
++0x0008:  0066ab10  CQuestObjectiveDefinition::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)

@@ -1,0 +1,5 @@
+CEntityFactory<CGamePlayerEquip>
+
++0x0000:  00a9faf0  CEntityFactory<CGamePlayerEquip>::Create(char const*)
++0x0004:  00a9f680  CEntityFactory<CGamePlayerEquip>::Destroy(IServerNetworkable*)
++0x0008:  00a9f6a0  CEntityFactory<CGamePlayerEquip>::GetEntitySize()

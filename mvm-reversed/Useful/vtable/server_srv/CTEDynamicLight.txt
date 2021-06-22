@@ -1,0 +1,9 @@
+CTEDynamicLight
+
++0x0000:  00c11470  CTEDynamicLight::GetServerClass()
++0x0004:  00c11480  CTEDynamicLight::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c114c0  CTEDynamicLight::~CTEDynamicLight()
++0x000c:  00c114e0  CTEDynamicLight::~CTEDynamicLight()
++0x0010:  00c11510  CTEDynamicLight::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

@@ -1,0 +1,5 @@
+CEntityFactory<CDispenserTouchTrigger>
+
++0x0000:  00da5130  CEntityFactory<CDispenserTouchTrigger>::Create(char const*)
++0x0004:  00da50d0  CEntityFactory<CDispenserTouchTrigger>::Destroy(IServerNetworkable*)
++0x0008:  00da50f0  CEntityFactory<CDispenserTouchTrigger>::GetEntitySize()

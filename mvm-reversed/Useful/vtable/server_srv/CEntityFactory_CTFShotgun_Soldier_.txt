@@ -1,0 +1,5 @@
+CEntityFactory<CTFShotgun_Soldier>
+
++0x0000:  00886540  CEntityFactory<CTFShotgun_Soldier>::Create(char const*)
++0x0004:  00885790  CEntityFactory<CTFShotgun_Soldier>::Destroy(IServerNetworkable*)
++0x0008:  008857b0  CEntityFactory<CTFShotgun_Soldier>::GetEntitySize()

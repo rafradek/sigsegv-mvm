@@ -1,0 +1,5 @@
+CEntityFactory<CEntityBird>
+
++0x0000:  00cb5f00  CEntityFactory<CEntityBird>::Create(char const*)
++0x0004:  00cb5e80  CEntityFactory<CEntityBird>::Destroy(IServerNetworkable*)
++0x0008:  00cb5ea0  CEntityFactory<CEntityBird>::GetEntitySize()

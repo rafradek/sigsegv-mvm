@@ -1,0 +1,9 @@
+CTEClientProjectile
+
++0x0000:  00c105e0  CTEClientProjectile::GetServerClass()
++0x0004:  00c105f0  CTEClientProjectile::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c10630  CTEClientProjectile::~CTEClientProjectile()
++0x000c:  00c10650  CTEClientProjectile::~CTEClientProjectile()
++0x0010:  00c10680  CTEClientProjectile::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

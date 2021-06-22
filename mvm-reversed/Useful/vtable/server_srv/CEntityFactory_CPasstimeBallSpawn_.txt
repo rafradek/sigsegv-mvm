@@ -1,0 +1,5 @@
+CEntityFactory<CPasstimeBallSpawn>
+
++0x0000:  00cb9a00  CEntityFactory<CPasstimeBallSpawn>::Create(char const*)
++0x0004:  00cb95e0  CEntityFactory<CPasstimeBallSpawn>::Destroy(IServerNetworkable*)
++0x0008:  00cb9600  CEntityFactory<CPasstimeBallSpawn>::GetEntitySize()

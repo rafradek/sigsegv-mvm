@@ -1,0 +1,22 @@
+CMsgRemovePlayerFromLobby
+
++0x0000:  0057a8a0  CMsgRemovePlayerFromLobby::~CMsgRemovePlayerFromLobby()
++0x0004:  0057a8e0  CMsgRemovePlayerFromLobby::~CMsgRemovePlayerFromLobby()
++0x0008:  00000000  
++0x000c:  005c5240  CMsgRemovePlayerFromLobby::New() const
++0x0010:  00584130  CMsgRemovePlayerFromLobby::Clear()
++0x0014:  00577430  CMsgRemovePlayerFromLobby::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059c130  CMsgRemovePlayerFromLobby::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058c2d0  CMsgRemovePlayerFromLobby::ByteSize() const
++0x0028:  0057dd80  CMsgRemovePlayerFromLobby::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005957e0  CMsgRemovePlayerFromLobby::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcf00  CMsgRemovePlayerFromLobby::GetCachedSize() const
++0x0034:  005773e0  CMsgRemovePlayerFromLobby::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c5400  CMsgRemovePlayerFromLobby::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005773d0  CMsgRemovePlayerFromLobby::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e8a0  CMsgRemovePlayerFromLobby::GetMetadata() const

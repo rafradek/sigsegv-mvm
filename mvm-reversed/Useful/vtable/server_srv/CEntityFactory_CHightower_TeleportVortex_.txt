@@ -1,0 +1,5 @@
+CEntityFactory<CHightower_TeleportVortex>
+
++0x0000:  007423b0  CEntityFactory<CHightower_TeleportVortex>::Create(char const*)
++0x0004:  00742290  CEntityFactory<CHightower_TeleportVortex>::Destroy(IServerNetworkable*)
++0x0008:  007422b0  CEntityFactory<CHightower_TeleportVortex>::GetEntitySize()

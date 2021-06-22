@@ -1,0 +1,4 @@
+IInfoPowerupSpawnAutoList
+
++0x0000:  00cbaba0  IInfoPowerupSpawnAutoList::~IInfoPowerupSpawnAutoList()
++0x0004:  00cba4f0  IInfoPowerupSpawnAutoList::~IInfoPowerupSpawnAutoList()

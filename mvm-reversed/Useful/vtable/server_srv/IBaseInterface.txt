@@ -1,0 +1,4 @@
+IBaseInterface
+
++0x0000:  00a34310  IBaseInterface::~IBaseInterface()
++0x0004:  00a34400  IBaseInterface::~IBaseInterface()

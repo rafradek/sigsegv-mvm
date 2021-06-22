@@ -1,0 +1,6 @@
+CResourcePreloadModel
+
++0x0000:  00155660  CResourcePreloadModel::CreateResource(char const*)
++0x0004:  001530c0  CResourcePreloadModel::PurgeUnreferencedResources()
++0x0008:  00151b30  CResourcePreloadModel::OnEndMapLoading(bool)
++0x000c:  00152e30  CResourcePreloadModel::PurgeAll()

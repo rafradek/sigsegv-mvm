@@ -1,0 +1,5 @@
+CEntityFactory<CWC_UpdateIgnoreList>
+
++0x0000:  00e6e700  CEntityFactory<CWC_UpdateIgnoreList>::Create(char const*)
++0x0004:  00e6e680  CEntityFactory<CWC_UpdateIgnoreList>::Destroy(IServerNetworkable*)
++0x0008:  00e6e6a0  CEntityFactory<CWC_UpdateIgnoreList>::GetEntitySize()

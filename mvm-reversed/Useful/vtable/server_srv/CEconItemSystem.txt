@@ -1,0 +1,5 @@
+CEconItemSystem
+
++0x0000:  006a8a50  CEconItemSystem::~CEconItemSystem()
++0x0004:  006a8e90  CEconItemSystem::~CEconItemSystem()
++0x0008:  006a8ec0  CEconItemSystem::GenerateBaseItem(baseitemcriteria_t*)

@@ -1,0 +1,9 @@
+CCopyRecipientFilter
+
++0x0000:  00717820  CCopyRecipientFilter::~CCopyRecipientFilter()
++0x0004:  007177d0  CCopyRecipientFilter::~CCopyRecipientFilter()
++0x0008:  00717350  CCopyRecipientFilter::IsReliable() const
++0x000c:  00717390  CCopyRecipientFilter::IsInitMessage() const
++0x0010:  00717360  CCopyRecipientFilter::GetRecipientCount() const
++0x0014:  00717370  CCopyRecipientFilter::GetRecipientIndex(int) const
++0x0018:  00717b40  CCopyRecipientFilter::AddRecipient(CBasePlayer*)

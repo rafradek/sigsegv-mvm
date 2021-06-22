@@ -1,0 +1,9 @@
+CAttributeLineItemLootList
+
++0x0000:  0067c8c0  CAttributeLineItemLootList::~CAttributeLineItemLootList()
++0x0004:  0067d050  CAttributeLineItemLootList::~CAttributeLineItemLootList()
++0x0008:  0067c5f0  CAttributeLineItemLootList::BPublicListContents() const
++0x000c:  00664070  CAttributeLineItemLootList::GetLootListHeaderLocalizationKey() const
++0x0010:  00667b00  CAttributeLineItemLootList::GetLootListFooterLocalizationKey() const
++0x0014:  00664080  CAttributeLineItemLootList::GetLootListCollectionReference() const
++0x0018:  00667a40  CAttributeLineItemLootList::EnumerateUserFacingPotentialDrops(IEconLootList::IEconLootListIterator*) const

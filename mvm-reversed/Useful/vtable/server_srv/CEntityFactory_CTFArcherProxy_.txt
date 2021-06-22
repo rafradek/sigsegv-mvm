@@ -1,0 +1,5 @@
+CEntityFactory<CTFArcherProxy>
+
++0x0000:  00d47c60  CEntityFactory<CTFArcherProxy>::Create(char const*)
++0x0004:  00d47be0  CEntityFactory<CTFArcherProxy>::Destroy(IServerNetworkable*)
++0x0008:  00d47c00  CEntityFactory<CTFArcherProxy>::GetEntitySize()

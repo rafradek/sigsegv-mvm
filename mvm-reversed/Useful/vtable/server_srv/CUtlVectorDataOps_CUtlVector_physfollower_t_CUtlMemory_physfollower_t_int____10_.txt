@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<physfollower_t, CUtlMemory<physfollower_t, int> >, 10>
+
++0x0000:  00b3fc50  CUtlVectorDataOps<CUtlVector<physfollower_t, CUtlMemory<physfollower_t, int> >, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00b3ffe0  CUtlVectorDataOps<CUtlVector<physfollower_t, CUtlMemory<physfollower_t, int> >, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00b3fd20  CUtlVectorDataOps<CUtlVector<physfollower_t, CUtlMemory<physfollower_t, int> >, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00b3ffc0  CUtlVectorDataOps<CUtlVector<physfollower_t, CUtlMemory<physfollower_t, int> >, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

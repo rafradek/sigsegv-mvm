@@ -1,0 +1,5 @@
+CEntityFactory<CSteamJet>
+
++0x0000:  00be7c10  CEntityFactory<CSteamJet>::Create(char const*)
++0x0004:  00be7b90  CEntityFactory<CSteamJet>::Destroy(IServerNetworkable*)
++0x0008:  00be7bb0  CEntityFactory<CSteamJet>::GetEntitySize()

@@ -1,0 +1,4 @@
+CEntityParticleTrail::NetworkVar_m_Info
+
++0x0000:  00a335a0  CEntityParticleTrail::NetworkVar_m_Info::NetworkStateChanged()
++0x0004:  00a335f0  CEntityParticleTrail::NetworkVar_m_Info::NetworkStateChanged(void*)

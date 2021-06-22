@@ -1,0 +1,7 @@
+CVoiceServer
+
++0x0000:  001cf020  CVoiceServer::~CVoiceServer()
++0x0004:  001cf030  CVoiceServer::~CVoiceServer()
++0x0008:  001ceec0  CVoiceServer::GetClientListening(int, int)
++0x000c:  001cef20  CVoiceServer::SetClientListening(int, int, bool)
++0x0010:  001cefa0  CVoiceServer::SetClientProximity(int, int, bool)

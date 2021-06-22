@@ -1,0 +1,5 @@
+CEntityFactory<CBaseGrenade>
+
++0x0000:  006365d0  CEntityFactory<CBaseGrenade>::Create(char const*)
++0x0004:  00635e30  CEntityFactory<CBaseGrenade>::Destroy(IServerNetworkable*)
++0x0008:  00635e50  CEntityFactory<CBaseGrenade>::GetEntitySize()

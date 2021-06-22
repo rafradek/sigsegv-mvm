@@ -1,0 +1,5 @@
+CEntityFactory<CNPC_Furniture>
+
++0x0000:  00a81930  CEntityFactory<CNPC_Furniture>::Create(char const*)
++0x0004:  00a81160  CEntityFactory<CNPC_Furniture>::Destroy(IServerNetworkable*)
++0x0008:  00a81180  CEntityFactory<CNPC_Furniture>::GetEntitySize()

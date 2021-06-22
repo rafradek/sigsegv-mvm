@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponBaseMerasmusGrenade>
+
++0x0000:  00845c20  CEntityFactory<CTFWeaponBaseMerasmusGrenade>::Create(char const*)
++0x0004:  00845bb0  CEntityFactory<CTFWeaponBaseMerasmusGrenade>::Destroy(IServerNetworkable*)
++0x0008:  00845bd0  CEntityFactory<CTFWeaponBaseMerasmusGrenade>::GetEntitySize()

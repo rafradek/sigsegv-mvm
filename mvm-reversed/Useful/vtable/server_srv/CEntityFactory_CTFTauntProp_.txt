@@ -1,0 +1,5 @@
+CEntityFactory<CTFTauntProp>
+
++0x0000:  00e27aa0  CEntityFactory<CTFTauntProp>::Create(char const*)
++0x0004:  00e27a20  CEntityFactory<CTFTauntProp>::Destroy(IServerNetworkable*)
++0x0008:  00e27a40  CEntityFactory<CTFTauntProp>::GetEntitySize()

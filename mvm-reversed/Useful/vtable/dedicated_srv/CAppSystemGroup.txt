@@ -1,0 +1,10 @@
+CAppSystemGroup
+
++0x0000:  00000000  
++0x0004:  00000000  
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  000b2600  CAppSystemGroup::Startup()
++0x0018:  000b2800  CAppSystemGroup::Shutdown()
++0x001c:  000b1ea0  CAppSystemGroup::LoadModuleDLL(char const*)

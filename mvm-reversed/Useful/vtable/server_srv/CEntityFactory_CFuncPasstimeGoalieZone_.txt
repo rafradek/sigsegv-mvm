@@ -1,0 +1,5 @@
+CEntityFactory<CFuncPasstimeGoalieZone>
+
++0x0000:  00cc5830  CEntityFactory<CFuncPasstimeGoalieZone>::Create(char const*)
++0x0004:  00cc52f0  CEntityFactory<CFuncPasstimeGoalieZone>::Destroy(IServerNetworkable*)
++0x0008:  00cc5310  CEntityFactory<CFuncPasstimeGoalieZone>::GetEntitySize()

@@ -1,0 +1,3 @@
+CEntityClassList<CPointCamera>
+
++0x0000:  00b8fc90  CEntityClassList<CPointCamera>::LevelShutdownPostEntity()

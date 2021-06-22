@@ -1,0 +1,15 @@
+SVC_PacketEntities
+
++0x0000:  0008bd30  SVC_PacketEntities::~SVC_PacketEntities()
++0x0004:  0008c2e0  SVC_PacketEntities::~SVC_PacketEntities()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b9c0  SVC_PacketEntities::Process()
++0x0014:  000883b0  SVC_PacketEntities::ReadFromBuffer(bf_read&)
++0x0018:  00080030  SVC_PacketEntities::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b9a0  SVC_PacketEntities::GetType() const
++0x0024:  0008b9e0  SVC_PacketEntities::GetGroup() const
++0x0028:  0008b9b0  SVC_PacketEntities::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cc80  SVC_PacketEntities::ToString() const

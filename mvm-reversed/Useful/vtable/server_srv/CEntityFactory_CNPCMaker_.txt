@@ -1,0 +1,5 @@
+CEntityFactory<CNPCMaker>
+
++0x0000:  00aa6a70  CEntityFactory<CNPCMaker>::Create(char const*)
++0x0004:  00aa6380  CEntityFactory<CNPCMaker>::Destroy(IServerNetworkable*)
++0x0008:  00aa63a0  CEntityFactory<CNPCMaker>::GetEntitySize()

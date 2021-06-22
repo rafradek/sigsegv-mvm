@@ -1,0 +1,11 @@
+CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper
+
++0x0000:  006ae1d0  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::~CEconItemAttributeIterator_EconItemViewWrapper()
++0x0004:  006ae210  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::~CEconItemAttributeIterator_EconItemViewWrapper()
++0x0008:  006b0880  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  006b0810  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  006b07a0  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  006b0730  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  006b06c0  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  006b0650  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  006b05e0  CEconItemView::IterateAttributes(IEconItemAttributeIterator*) const::CEconItemAttributeIterator_EconItemViewWrapper::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

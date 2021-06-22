@@ -1,0 +1,5 @@
+CEntityFactory<CEnvSoundscapeTriggerable>
+
++0x0000:  00be33d0  CEntityFactory<CEnvSoundscapeTriggerable>::Create(char const*)
++0x0004:  00be3200  CEntityFactory<CEnvSoundscapeTriggerable>::Destroy(IServerNetworkable*)
++0x0008:  00be3220  CEntityFactory<CEnvSoundscapeTriggerable>::GetEntitySize()

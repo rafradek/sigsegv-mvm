@@ -1,0 +1,8 @@
+CSelectDefenseAreaForPoint
+
++0x0000:  00c46b20  CSelectDefenseAreaForPoint::~CSelectDefenseAreaForPoint()
++0x0004:  00c46b30  CSelectDefenseAreaForPoint::~CSelectDefenseAreaForPoint()
++0x0008:  00c46e50  CSelectDefenseAreaForPoint::operator()(CNavArea*, CNavArea*, float)
++0x000c:  00c46bf0  CSelectDefenseAreaForPoint::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c46b00  ISearchSurroundingAreasFunctor::PostSearch()

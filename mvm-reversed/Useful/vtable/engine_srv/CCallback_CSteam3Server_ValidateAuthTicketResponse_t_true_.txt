@@ -1,0 +1,5 @@
+CCallback<CSteam3Server, ValidateAuthTicketResponse_t, true>
+
++0x0000:  001bfcc0  CCallback<CSteam3Server, ValidateAuthTicketResponse_t, true>::Run(void*)
++0x0004:  001bfcf0  CCallbackImpl<20>::Run(void*, bool, unsigned long long)
++0x0008:  001bfd00  CCallbackImpl<20>::GetCallbackSizeBytes()

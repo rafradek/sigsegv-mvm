@@ -1,0 +1,15 @@
+CLC_FileCRCCheck
+
++0x0000:  0008beb0  CLC_FileCRCCheck::~CLC_FileCRCCheck()
++0x0004:  0008bfe0  CLC_FileCRCCheck::~CLC_FileCRCCheck()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b380  CLC_FileCRCCheck::Process()
++0x0014:  000899b0  CLC_FileCRCCheck::ReadFromBuffer(bf_read&)
++0x0018:  00081440  CLC_FileCRCCheck::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b360  CLC_FileCRCCheck::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b370  CLC_FileCRCCheck::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d5b0  CLC_FileCRCCheck::ToString() const

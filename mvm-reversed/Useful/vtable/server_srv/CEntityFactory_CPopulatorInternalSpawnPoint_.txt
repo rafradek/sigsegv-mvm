@@ -1,0 +1,5 @@
+CEntityFactory<CPopulatorInternalSpawnPoint>
+
++0x0000:  00d66e10  CEntityFactory<CPopulatorInternalSpawnPoint>::Create(char const*)
++0x0004:  00d66d20  CEntityFactory<CPopulatorInternalSpawnPoint>::Destroy(IServerNetworkable*)
++0x0008:  00d66d40  CEntityFactory<CPopulatorInternalSpawnPoint>::GetEntitySize()

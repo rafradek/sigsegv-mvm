@@ -1,0 +1,5 @@
+CNoHoliday
+
++0x0000:  00659e20  CNoHoliday::~CNoHoliday()
++0x0004:  00659e30  CNoHoliday::~CNoHoliday()
++0x0008:  00659d60  CNoHoliday::IsActive(CRTime const&)

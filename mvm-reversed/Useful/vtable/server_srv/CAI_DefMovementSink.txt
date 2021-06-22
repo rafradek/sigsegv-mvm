@@ -1,0 +1,11 @@
+CAI_DefMovementSink
+
++0x0000:  009061c0  CAI_DefMovementSink::CalcYawSpeed()
++0x0004:  009061d0  CAI_DefMovementSink::OnCalcBaseMove(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0008:  009061e0  CAI_DefMovementSink::OnObstructionPreSteer(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x000c:  008dbe30  CAI_DefMovementSink::OnFailedSteer(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0010:  008dbe40  CAI_DefMovementSink::OnFailedLocalNavigation(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0014:  008dbe50  CAI_DefMovementSink::OnInsufficientStopDist(AILocalMoveGoal_t*, float, AIMoveResult_t*)
++0x0018:  008dbe60  CAI_DefMovementSink::OnMoveBlocked(AIMoveResult_t*)
++0x001c:  008dbe70  CAI_DefMovementSink::OnMoveStalled(AILocalMoveGoal_t const&)
++0x0020:  008dbe80  CAI_DefMovementSink::OnMoveExecuteFailed(AILocalMoveGoal_t const&, AIMoveTrace_t const&, AIMotorMoveResult_t, AIMoveResult_t*)

@@ -1,0 +1,5 @@
+CEntityFactory<CTFSpawner>
+
++0x0000:  00c7f4e0  CEntityFactory<CTFSpawner>::Create(char const*)
++0x0004:  00c7f4b0  CEntityFactory<CTFSpawner>::Destroy(IServerNetworkable*)
++0x0008:  00c7f4d0  CEntityFactory<CTFSpawner>::GetEntitySize()

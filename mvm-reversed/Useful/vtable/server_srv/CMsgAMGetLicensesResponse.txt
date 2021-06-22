@@ -1,0 +1,22 @@
+CMsgAMGetLicensesResponse
+
++0x0000:  00570070  CMsgAMGetLicensesResponse::~CMsgAMGetLicensesResponse()
++0x0004:  005700d0  CMsgAMGetLicensesResponse::~CMsgAMGetLicensesResponse()
++0x0008:  00000000  
++0x000c:  00556760  CMsgAMGetLicensesResponse::New() const
++0x0010:  0053d380  CMsgAMGetLicensesResponse::Clear()
++0x0014:  00535330  CMsgAMGetLicensesResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005560d0  CMsgAMGetLicensesResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00541820  CMsgAMGetLicensesResponse::ByteSize() const
++0x0028:  00538070  CMsgAMGetLicensesResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00549310  CMsgAMGetLicensesResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572920  CMsgAMGetLicensesResponse::GetCachedSize() const
++0x0034:  005352e0  CMsgAMGetLicensesResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  00556960  CMsgAMGetLicensesResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005352d0  CMsgAMGetLicensesResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545850  CMsgAMGetLicensesResponse::GetMetadata() const

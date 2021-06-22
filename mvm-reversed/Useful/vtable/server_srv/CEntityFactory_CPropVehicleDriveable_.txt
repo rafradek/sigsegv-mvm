@@ -1,0 +1,5 @@
+CEntityFactory<CPropVehicleDriveable>
+
++0x0000:  00e5f9e0  CEntityFactory<CPropVehicleDriveable>::Create(char const*)
++0x0004:  00e5f560  CEntityFactory<CPropVehicleDriveable>::Destroy(IServerNetworkable*)
++0x0008:  00e5f580  CEntityFactory<CPropVehicleDriveable>::GetEntitySize()

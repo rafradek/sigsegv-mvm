@@ -1,0 +1,4 @@
+CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>
+
++0x0000:  0013c8d0  CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::HandleCacheNotification(DataCacheNotification_t const&)
++0x0004:  0013c650  CDefaultDataCacheClient::GetItemName(unsigned int, void const*, char*, unsigned int)

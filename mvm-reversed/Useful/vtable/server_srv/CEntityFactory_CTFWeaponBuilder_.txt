@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponBuilder>
+
++0x0000:  00e30250  CEntityFactory<CTFWeaponBuilder>::Create(char const*)
++0x0004:  00e300b0  CEntityFactory<CTFWeaponBuilder>::Destroy(IServerNetworkable*)
++0x0008:  00e300d0  CEntityFactory<CTFWeaponBuilder>::GetEntitySize()

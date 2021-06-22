@@ -1,0 +1,4 @@
+CEntityReadInfo
+
++0x0000:  0011ec10  CEntityReadInfo::~CEntityReadInfo()
++0x0004:  0011ec20  CEntityReadInfo::~CEntityReadInfo()

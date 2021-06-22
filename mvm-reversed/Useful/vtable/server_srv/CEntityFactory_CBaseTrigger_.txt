@@ -1,0 +1,5 @@
+CEntityFactory<CBaseTrigger>
+
++0x0000:  00e49fc0  CEntityFactory<CBaseTrigger>::Create(char const*)
++0x0004:  00e49150  CEntityFactory<CBaseTrigger>::Destroy(IServerNetworkable*)
++0x0008:  00e49170  CEntityFactory<CBaseTrigger>::GetEntitySize()

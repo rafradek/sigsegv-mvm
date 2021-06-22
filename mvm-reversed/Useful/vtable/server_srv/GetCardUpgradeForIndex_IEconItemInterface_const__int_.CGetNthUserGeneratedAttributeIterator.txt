@@ -1,0 +1,12 @@
+GetCardUpgradeForIndex(IEconItemInterface const*, int)::CGetNthUserGeneratedAttributeIterator
+
++0x0000:  0065df90  GetCardUpgradeForIndex(IEconItemInterface const*, int)::CGetNthUserGeneratedAttributeIterator::~CGetNthUserGeneratedAttributeIterator()
++0x0004:  0065dfa0  GetCardUpgradeForIndex(IEconItemInterface const*, int)::CGetNthUserGeneratedAttributeIterator::~CGetNthUserGeneratedAttributeIterator()
++0x0008:  0065d420  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  0065d430  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  0065d440  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  0065d450  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  0065d460  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  0065d470  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  0065d480  IEconItemUntypedAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)
++0x0024:  0065df50  GetCardUpgradeForIndex(IEconItemInterface const*, int)::CGetNthUserGeneratedAttributeIterator::OnIterateAttributeValueUntyped(CEconItemAttributeDefinition const*)

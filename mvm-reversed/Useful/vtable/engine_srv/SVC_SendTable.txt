@@ -1,0 +1,15 @@
+SVC_SendTable
+
++0x0000:  0008bd50  SVC_SendTable::~SVC_SendTable()
++0x0004:  0008c2a0  SVC_SendTable::~SVC_SendTable()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b510  SVC_SendTable::Process()
++0x0014:  00087d10  SVC_SendTable::ReadFromBuffer(bf_read&)
++0x0018:  000803c0  SVC_SendTable::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b4f0  SVC_SendTable::GetType() const
++0x0024:  0008b530  SVC_SendTable::GetGroup() const
++0x0028:  0008b500  SVC_SendTable::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cd80  SVC_SendTable::ToString() const

@@ -1,0 +1,10 @@
+CServerGameEnts
+
++0x0000:  00a78090  CServerGameEnts::~CServerGameEnts()
++0x0004:  00a780f0  CServerGameEnts::~CServerGameEnts()
++0x0008:  00a723c0  CServerGameEnts::SetDebugEdictBase(edict_t*)
++0x000c:  00a746e0  CServerGameEnts::MarkEntitiesAsTouching(edict_t*, edict_t*)
++0x0010:  00a72e70  CServerGameEnts::FreeContainingEntity(edict_t*)
++0x0014:  00a723d0  CServerGameEnts::BaseEntityToEdict(CBaseEntity*)
++0x0018:  00a753d0  CServerGameEnts::EdictToBaseEntity(edict_t*)
++0x001c:  00a74c70  CServerGameEnts::CheckTransmit(CCheckTransmitInfo*, unsigned short const*, int)

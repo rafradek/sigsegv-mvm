@@ -1,0 +1,146 @@
+CStaticProp
+
++0x0000:  00199120  CStaticProp::~CStaticProp()
++0x0004:  00199180  CStaticProp::~CStaticProp()
++0x0008:  00197cb0  CStaticProp::SetRefEHandle(CBaseHandle const&)
++0x000c:  00197cc0  CStaticProp::GetRefEHandle() const
++0x0010:  0019b4f0  CStaticProp::GetCollideable()
++0x0014:  0019b500  CStaticProp::GetClientNetworkable()
++0x0018:  0019b510  CStaticProp::GetClientRenderable()
++0x001c:  0019b520  CStaticProp::GetIClientEntity()
++0x0020:  0019b530  CStaticProp::GetBaseEntity()
++0x0024:  0019b540  CStaticProp::GetClientThinkable()
++0x0028:  0019b4e0  CStaticProp::GetIClientUnknown()
++0x002c:  0019b560  CStaticProp::OBBMinsPreScaled() const
++0x0030:  0019b580  CStaticProp::OBBMaxsPreScaled() const
++0x0034:  001989e0  CStaticProp::OBBMins() const
++0x0038:  00198810  CStaticProp::OBBMaxs() const
++0x003c:  00197ef0  CStaticProp::TestCollision(Ray_t const&, unsigned int, CGameTrace&)
++0x0040:  00197f10  CStaticProp::TestHitboxes(Ray_t const&, unsigned int, CGameTrace&)
++0x0044:  00197f30  CStaticProp::GetCollisionModelIndex()
++0x0048:  00197f50  CStaticProp::GetCollisionModel()
++0x004c:  00197f70  CStaticProp::GetCollisionOrigin() const
++0x0050:  00197f90  CStaticProp::GetCollisionAngles() const
++0x0054:  00197fd0  CStaticProp::CollisionToWorldTransform() const
++0x0058:  00197ff0  CStaticProp::GetSolid() const
++0x005c:  00198010  CStaticProp::GetSolidFlags() const
++0x0060:  0019b5a0  CStaticProp::GetEntityHandle()
++0x0064:  0019b5c0  CStaticProp::GetCollisionGroup() const
++0x0068:  00197ce0  CStaticProp::WorldSpaceTriggerBounds(Vector*, Vector*) const
++0x006c:  00197d00  CStaticProp::WorldSpaceSurroundingBounds(Vector*, Vector*)
++0x0070:  0019b5e0  CStaticProp::ShouldTouchTrigger(int) const
++0x0074:  0019b600  CStaticProp::GetRootParentToWorldTransform() const
++0x0078:  0019b620  CStaticProp::GetBody()
++0x007c:  0019b640  CStaticProp::GetSkin()
++0x0080:  00197d60  CStaticProp::GetRenderOrigin()
++0x0084:  00197d80  CStaticProp::GetRenderAngles()
++0x0088:  00197e20  CStaticProp::ShouldDraw()
++0x008c:  001987a0  CStaticProp::IsTransparent()
++0x0090:  00197df0  CStaticProp::IsTwoPass()
++0x0094:  0019b660  CStaticProp::OnThreadedDrawSetup()
++0x0098:  00197e80  CStaticProp::GetModel() const
++0x009c:  001981a0  CStaticProp::DrawModel(int)
++0x00a0:  00199e70  CStaticProp::ComputeFxBlend()
++0x00a4:  00197ea0  CStaticProp::GetFxBlend()
++0x00a8:  00197ec0  CStaticProp::GetColorModulation(float*)
++0x00ac:  0019b680  CStaticProp::LODTest()
++0x00b0:  00198720  CStaticProp::SetupBones(matrix3x4_t*, int, int, float)
++0x00b4:  00197e40  CStaticProp::SetupWeights(matrix3x4_t const*, int, float*, float*)
++0x00b8:  0019b6a0  CStaticProp::UsesFlexDelayedWeights()
++0x00bc:  00197e60  CStaticProp::DoAnimationEvents()
++0x00c0:  001980a0  CStaticProp::GetPVSNotifyInterface()
++0x00c4:  001980c0  CStaticProp::GetRenderBounds(Vector&, Vector&)
++0x00c8:  00198110  CStaticProp::GetRenderBoundsWorldspace(Vector&, Vector&)
++0x00cc:  00198180  CStaticProp::ShouldCacheRenderInfo()
++0x00d0:  00198170  CStaticProp::ShouldReceiveProjectedTextures(int)
++0x00d4:  0019b6c0  CStaticProp::GetShadowCastDistance(float*, ShadowType_t) const
++0x00d8:  0019b6e0  CStaticProp::GetShadowCastDirection(Vector*, ShadowType_t) const
++0x00dc:  00198030  CStaticProp::UsesPowerOfTwoFrameBufferTexture()
++0x00e0:  00198060  CStaticProp::UsesFullFrameBufferTexture()
++0x00e4:  0019b700  CStaticProp::GetShadowHandle() const
++0x00e8:  00198080  CStaticProp::RenderHandle()
++0x00ec:  0019b720  CStaticProp::RecordToolMessage()
++0x00f0:  0019b740  CStaticProp::GetShadowRenderBounds(Vector&, Vector&, ShadowType_t)
++0x00f4:  0019b770  CStaticProp::IsShadowDirty()
++0x00f8:  0019b790  CStaticProp::MarkShadowDirty(bool)
++0x00fc:  0019b7b0  CStaticProp::GetShadowParent()
++0x0100:  0019b7d0  CStaticProp::FirstShadowChild()
++0x0104:  0019b7f0  CStaticProp::NextShadowPeer()
++0x0108:  0019b810  CStaticProp::ShadowCastType()
++0x010c:  0019b830  CStaticProp::CreateModelInstance()
++0x0110:  0019b8d0  CStaticProp::GetModelInstance()
++0x0114:  0019b850  CStaticProp::LookupAttachment(char const*)
++0x0118:  00197da0  CStaticProp::GetAttachment(int, Vector&, QAngle&)
++0x011c:  00198760  CStaticProp::GetAttachment(int, matrix3x4_t&)
++0x0120:  0019b870  CStaticProp::IgnoresZBuffer() const
++0x0124:  0019b890  CStaticProp::GetRenderClipPlane()
++0x0128:  0019b8b0  CStaticProp::RenderableToWorldTransform()
++0x012c:  fffffffc  (unknown)
++0x0130:  0024bc60  typeinfo for CStaticProp
++0x0134:  0019b4d0  non-virtual thunk to CStaticProp::GetIClientUnknown()
++0x0138:  00197d50  non-virtual thunk to CStaticProp::GetRenderOrigin()
++0x013c:  00197d70  non-virtual thunk to CStaticProp::GetRenderAngles()
++0x0140:  00197e10  non-virtual thunk to CStaticProp::ShouldDraw()
++0x0144:  00198790  non-virtual thunk to CStaticProp::IsTransparent()
++0x0148:  00198020  non-virtual thunk to CStaticProp::UsesPowerOfTwoFrameBufferTexture()
++0x014c:  00198050  non-virtual thunk to CStaticProp::UsesFullFrameBufferTexture()
++0x0150:  0019b6f0  non-virtual thunk to CStaticProp::GetShadowHandle() const
++0x0154:  00198070  non-virtual thunk to CStaticProp::RenderHandle()
++0x0158:  00197e70  non-virtual thunk to CStaticProp::GetModel() const
++0x015c:  00198190  non-virtual thunk to CStaticProp::DrawModel(int)
++0x0160:  0019b610  non-virtual thunk to CStaticProp::GetBody()
++0x0164:  00199e60  non-virtual thunk to CStaticProp::ComputeFxBlend()
++0x0168:  00197e90  non-virtual thunk to CStaticProp::GetFxBlend()
++0x016c:  00197eb0  non-virtual thunk to CStaticProp::GetColorModulation(float*)
++0x0170:  0019b670  non-virtual thunk to CStaticProp::LODTest()
++0x0174:  00198710  non-virtual thunk to CStaticProp::SetupBones(matrix3x4_t*, int, int, float)
++0x0178:  00197e30  non-virtual thunk to CStaticProp::SetupWeights(matrix3x4_t const*, int, float*, float*)
++0x017c:  00197e50  non-virtual thunk to CStaticProp::DoAnimationEvents()
++0x0180:  00198090  non-virtual thunk to CStaticProp::GetPVSNotifyInterface()
++0x0184:  001980b0  non-virtual thunk to CStaticProp::GetRenderBounds(Vector&, Vector&)
++0x0188:  00198100  non-virtual thunk to CStaticProp::GetRenderBoundsWorldspace(Vector&, Vector&)
++0x018c:  0019b730  non-virtual thunk to CStaticProp::GetShadowRenderBounds(Vector&, Vector&, ShadowType_t)
++0x0190:  00198160  non-virtual thunk to CStaticProp::ShouldReceiveProjectedTextures(int)
++0x0194:  0019b6b0  non-virtual thunk to CStaticProp::GetShadowCastDistance(float*, ShadowType_t) const
++0x0198:  0019b6d0  non-virtual thunk to CStaticProp::GetShadowCastDirection(Vector*, ShadowType_t) const
++0x019c:  0019b760  non-virtual thunk to CStaticProp::IsShadowDirty()
++0x01a0:  0019b780  non-virtual thunk to CStaticProp::MarkShadowDirty(bool)
++0x01a4:  0019b7a0  non-virtual thunk to CStaticProp::GetShadowParent()
++0x01a8:  0019b7c0  non-virtual thunk to CStaticProp::FirstShadowChild()
++0x01ac:  0019b7e0  non-virtual thunk to CStaticProp::NextShadowPeer()
++0x01b0:  0019b800  non-virtual thunk to CStaticProp::ShadowCastType()
++0x01b4:  0019b820  non-virtual thunk to CStaticProp::CreateModelInstance()
++0x01b8:  0019b8c0  non-virtual thunk to CStaticProp::GetModelInstance()
++0x01bc:  0019b8a0  non-virtual thunk to CStaticProp::RenderableToWorldTransform()
++0x01c0:  0019b840  non-virtual thunk to CStaticProp::LookupAttachment(char const*)
++0x01c4:  00197d90  non-virtual thunk to CStaticProp::GetAttachment(int, Vector&, QAngle&)
++0x01c8:  00198750  non-virtual thunk to CStaticProp::GetAttachment(int, matrix3x4_t&)
++0x01cc:  0019b880  non-virtual thunk to CStaticProp::GetRenderClipPlane()
++0x01d0:  0019b630  non-virtual thunk to CStaticProp::GetSkin()
++0x01d4:  00197de0  non-virtual thunk to CStaticProp::IsTwoPass()
++0x01d8:  0019b650  non-virtual thunk to CStaticProp::OnThreadedDrawSetup()
++0x01dc:  0019b690  non-virtual thunk to CStaticProp::UsesFlexDelayedWeights()
++0x01e0:  0019b710  non-virtual thunk to CStaticProp::RecordToolMessage()
++0x01e4:  0019b860  non-virtual thunk to CStaticProp::IgnoresZBuffer() const
++0x01e8:  fffffff8  (unknown)
++0x01ec:  0024bc60  typeinfo for CStaticProp
++0x01f0:  0019b590  non-virtual thunk to CStaticProp::GetEntityHandle()
++0x01f4:  0019b550  non-virtual thunk to CStaticProp::OBBMinsPreScaled() const
++0x01f8:  0019b570  non-virtual thunk to CStaticProp::OBBMaxsPreScaled() const
++0x01fc:  001989d0  non-virtual thunk to CStaticProp::OBBMins() const
++0x0200:  00198800  non-virtual thunk to CStaticProp::OBBMaxs() const
++0x0204:  00197cd0  non-virtual thunk to CStaticProp::WorldSpaceTriggerBounds(Vector*, Vector*) const
++0x0208:  00197ee0  non-virtual thunk to CStaticProp::TestCollision(Ray_t const&, unsigned int, CGameTrace&)
++0x020c:  00197f00  non-virtual thunk to CStaticProp::TestHitboxes(Ray_t const&, unsigned int, CGameTrace&)
++0x0210:  00197f20  non-virtual thunk to CStaticProp::GetCollisionModelIndex()
++0x0214:  00197f40  non-virtual thunk to CStaticProp::GetCollisionModel()
++0x0218:  00197f60  non-virtual thunk to CStaticProp::GetCollisionOrigin() const
++0x021c:  00197f80  non-virtual thunk to CStaticProp::GetCollisionAngles() const
++0x0220:  00197fc0  non-virtual thunk to CStaticProp::CollisionToWorldTransform() const
++0x0224:  00197fe0  non-virtual thunk to CStaticProp::GetSolid() const
++0x0228:  00198000  non-virtual thunk to CStaticProp::GetSolidFlags() const
++0x022c:  0019b4c0  non-virtual thunk to CStaticProp::GetIClientUnknown()
++0x0230:  0019b5b0  non-virtual thunk to CStaticProp::GetCollisionGroup() const
++0x0234:  00197cf0  non-virtual thunk to CStaticProp::WorldSpaceSurroundingBounds(Vector*, Vector*)
++0x0238:  0019b5d0  non-virtual thunk to CStaticProp::ShouldTouchTrigger(int) const
++0x023c:  0019b5f0  non-virtual thunk to CStaticProp::GetRootParentToWorldTransform() const

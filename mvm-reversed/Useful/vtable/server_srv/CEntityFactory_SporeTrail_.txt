@@ -1,0 +1,5 @@
+CEntityFactory<SporeTrail>
+
++0x0000:  00bdc480  CEntityFactory<SporeTrail>::Create(char const*)
++0x0004:  00bdc100  CEntityFactory<SporeTrail>::Destroy(IServerNetworkable*)
++0x0008:  00bdc120  CEntityFactory<SporeTrail>::GetEntitySize()

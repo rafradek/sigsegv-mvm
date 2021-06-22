@@ -1,0 +1,4 @@
+CCountedStringPool
+
++0x0000:  00e85ae0  CCountedStringPool::~CCountedStringPool()
++0x0004:  00e85b50  CCountedStringPool::~CCountedStringPool()

@@ -1,0 +1,5 @@
+CEntityFactory<CWeaponIFMBaseCamera>
+
++0x0000:  008a43d0  CEntityFactory<CWeaponIFMBaseCamera>::Create(char const*)
++0x0004:  008a4330  CEntityFactory<CWeaponIFMBaseCamera>::Destroy(IServerNetworkable*)
++0x0008:  008a4350  CEntityFactory<CWeaponIFMBaseCamera>::GetEntitySize()

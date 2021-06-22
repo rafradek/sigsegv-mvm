@@ -1,0 +1,4 @@
+IFuncPowerupVolumeAutoList
+
++0x0000:  00cc6480  IFuncPowerupVolumeAutoList::~IFuncPowerupVolumeAutoList()
++0x0004:  00cc64f0  IFuncPowerupVolumeAutoList::~IFuncPowerupVolumeAutoList()

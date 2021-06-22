@@ -1,0 +1,9 @@
+CTESmoke
+
++0x0000:  00c17f20  CTESmoke::GetServerClass()
++0x0004:  00c17f30  CTESmoke::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c17f70  CTESmoke::~CTESmoke()
++0x000c:  00c17f90  CTESmoke::~CTESmoke()
++0x0010:  00c17fc0  CTESmoke::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

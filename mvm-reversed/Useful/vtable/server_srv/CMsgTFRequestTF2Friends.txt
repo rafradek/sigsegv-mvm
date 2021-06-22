@@ -1,0 +1,22 @@
+CMsgTFRequestTF2Friends
+
++0x0000:  005d6c30  CMsgTFRequestTF2Friends::~CMsgTFRequestTF2Friends()
++0x0004:  005d6c80  CMsgTFRequestTF2Friends::~CMsgTFRequestTF2Friends()
++0x0008:  00000000  
++0x000c:  005a7870  CMsgTFRequestTF2Friends::New() const
++0x0010:  00584d20  CMsgTFRequestTF2Friends::Clear()
++0x0014:  00574aa0  CMsgTFRequestTF2Friends::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005d7680  CMsgTFRequestTF2Friends::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005877a0  CMsgTFRequestTF2Friends::ByteSize() const
++0x0028:  0057c6d0  CMsgTFRequestTF2Friends::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005903a0  CMsgTFRequestTF2Friends::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dc910  CMsgTFRequestTF2Friends::GetCachedSize() const
++0x0034:  00574a50  CMsgTFRequestTF2Friends::CopyFrom(google::protobuf::Message const&)
++0x0038:  005a79e0  CMsgTFRequestTF2Friends::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00574a40  CMsgTFRequestTF2Friends::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00590060  CMsgTFRequestTF2Friends::GetMetadata() const

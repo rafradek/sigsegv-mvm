@@ -1,0 +1,4 @@
+PressFireButtonIfValidBuildPositionReply
+
++0x0000:  00c31f60  PressFireButtonIfValidBuildPositionReply::OnSuccess(INextBot*)
++0x0004:  00b108e0  INextBotReply::OnFail(INextBot*, INextBotReply::FailureReason)

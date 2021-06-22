@@ -1,0 +1,9 @@
+CTESparks
+
++0x0000:  00c18590  CTESparks::GetServerClass()
++0x0004:  00c185a0  CTESparks::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c18770  CTESparks::~CTESparks()
++0x000c:  00c18790  CTESparks::~CTESparks()
++0x0010:  00c185e0  CTESparks::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

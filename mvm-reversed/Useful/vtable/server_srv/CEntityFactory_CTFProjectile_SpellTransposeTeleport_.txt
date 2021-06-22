@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellTransposeTeleport>
+
++0x0000:  00749b20  CEntityFactory<CTFProjectile_SpellTransposeTeleport>::Create(char const*)
++0x0004:  00748f70  CEntityFactory<CTFProjectile_SpellTransposeTeleport>::Destroy(IServerNetworkable*)
++0x0008:  00748f90  CEntityFactory<CTFProjectile_SpellTransposeTeleport>::GetEntitySize()

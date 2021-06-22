@@ -1,0 +1,9 @@
+CChangeFrameList
+
++0x0000:  000db740  CChangeFrameList::Release()
++0x0004:  000db760  CChangeFrameList::GetNumProps()
++0x0008:  000db770  CChangeFrameList::SetChangeTick(int const*, int, int)
++0x000c:  000db7b0  CChangeFrameList::GetPropsChangedAfterTick(int, int*, int)
++0x0010:  000db960  CChangeFrameList::Copy()
++0x0014:  000db820  CChangeFrameList::~CChangeFrameList()
++0x0018:  000db870  CChangeFrameList::~CChangeFrameList()

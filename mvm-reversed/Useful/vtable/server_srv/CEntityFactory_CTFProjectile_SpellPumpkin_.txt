@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellPumpkin>
+
++0x0000:  00749d10  CEntityFactory<CTFProjectile_SpellPumpkin>::Create(char const*)
++0x0004:  00749060  CEntityFactory<CTFProjectile_SpellPumpkin>::Destroy(IServerNetworkable*)
++0x0008:  00749080  CEntityFactory<CTFProjectile_SpellPumpkin>::GetEntitySize()

@@ -1,0 +1,8 @@
+CBroadcastRecipientFilter
+
++0x0000:  005ff040  CBroadcastRecipientFilter::~CBroadcastRecipientFilter()
++0x0004:  005ff060  CBroadcastRecipientFilter::~CBroadcastRecipientFilter()
++0x0008:  00bb1f30  CRecipientFilter::IsReliable() const
++0x000c:  00bb1fb0  CRecipientFilter::IsInitMessage() const
++0x0010:  00bb1f40  CRecipientFilter::GetRecipientCount() const
++0x0014:  00bb1f50  CRecipientFilter::GetRecipientIndex(int) const

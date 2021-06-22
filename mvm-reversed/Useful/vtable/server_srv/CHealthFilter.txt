@@ -1,0 +1,3 @@
+CHealthFilter
+
++0x0000:  00c6f010  CHealthFilter::IsSelected(CBaseEntity const*) const

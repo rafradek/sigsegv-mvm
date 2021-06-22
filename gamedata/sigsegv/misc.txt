@@ -4375,6 +4375,167 @@
 					type "sym"
 					sym  "_ZN12CTFSpellBook16SetSelectedSpellEi"
 				}
+				"CTFProjectile_BallOfFire::Burn"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_BallOfFire4BurnEP11CBaseEntity"
+				}
+				"CTFProjectile_EnergyRing::ProjectileTouch"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyRing15ProjectileTouchEP11CBaseEntity"
+				}
+				"CTFFlameManager::ShouldCollide"
+				{
+					type "sym"
+					sym  "_ZNK15CTFFlameManager13ShouldCollideEP11CBaseEntity"
+				}
+				"CTFFlameManager::BCanBurnEntityThisFrame"
+				{
+					type "sym"
+					sym  "_ZNK15CTFFlameManager23BCanBurnEntityThisFrameEP11CBaseEntity"
+				}
+				
+				"CTFPlayerShared::PulseRageBuff"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared13PulseRageBuffENS_13ERageBuffSlotE"
+				}
+				"CTFSodaPopper::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN13CTFSodaPopper15SecondaryAttackEv"
+				}
+				"JarExplode"
+				{
+					type "sym"
+					sym  "_Z10JarExplodeiP9CTFPlayerP11CBaseEntityS2_RK6Vectorif7ETFCondfPKcS8_"
+				}
+				"CTFFlareGun_Revenge::Deploy"
+				{
+					type "sym"
+					sym  "_ZN19CTFFlareGun_Revenge6DeployEv"
+				}
+				"CTFShotgun_Revenge::Deploy"
+				{
+					type "sym"
+					sym  "_ZN18CTFShotgun_Revenge6DeployEv"
+				}
+				"CTFRevolver::Deploy"
+				{
+					type "sym"
+					sym  "_ZN11CTFRevolver6DeployEv"
+				}
+				"CTFFlareGun_Revenge::Holster"
+				{
+					type "sym"
+					sym  "_ZN19CTFFlareGun_Revenge7HolsterEP17CBaseCombatWeapon"
+				}
+				"CTFShotgun_Revenge::Holster"
+				{
+					type "sym"
+					sym  "_ZN18CTFShotgun_Revenge7HolsterEP17CBaseCombatWeapon"
+				}
+				"CTFRevolver::Holster"
+				{
+					type "sym"
+					sym  "_ZN11CTFRevolver7HolsterEP17CBaseCombatWeapon"
+				}
+				"CTFChargedSMG::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN13CTFChargedSMG15SecondaryAttackEv"
+				}
+				"CTFInventoryManager::GetBaseItemForClass"
+				{
+					type "sym"
+					sym  "_ZN19CTFInventoryManager19GetBaseItemForClassEii"
+				}
+				"CTFGasManager::OnCollide"
+				{
+					type "sym"
+					sym  "_ZN13CTFGasManager9OnCollideEP11CBaseEntityi"
+				}
+				"CTFAmmoPack::InitAmmoPack"
+				{
+					type "sym"
+					sym  "_ZN11CTFAmmoPack12InitAmmoPackEP9CTFPlayerP13CTFWeaponBaseibbf"
+				}
+				"CBaseEntity::OnTakeDamage"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
+				}
+				"CTFPowerup::DropSingleInstance"
+				{
+					type "sym"
+					sym  "_ZN10CTFPowerup18DropSingleInstanceER6VectorP20CBaseCombatCharacterff"
+				}
+				"CTFBaseProjectile::GetDamage"
+				{
+					type "sym"
+					sym  "_ZN17CTFBaseProjectile9GetDamageEv"
+				}
+				"CPlayerInventory::GetItemByPosition"
+				{
+					type "sym"
+					sym  "_ZN16CPlayerInventory17GetItemByPositionEiPi"
+				}
+				"CheckChatText"
+				{
+					type "sym"
+					sym  "_Z13CheckChatTextP11CBasePlayerPc"
+				}
+				"Host_Say"
+				{
+					type "sym"
+					sym  "_Z8Host_SayP7edict_tRK8CCommandb"
+				}
+				"CEconItemView::IterateAttributes"
+				{
+					type "sym"
+					sym  "_ZNK13CEconItemView17IterateAttributesEP26IEconItemAttributeIterator"
+				}
+				"CObjectDispenser::DispenseMetal"
+				{
+					type "sym"
+					sym  "_ZN16CObjectDispenser13DispenseMetalEP9CTFPlayer"
+				}
+				"CBaseAnimating::SetModel"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating8SetModelEPKc"
+				}
+				"CTeam::RemovePlayer"
+				{
+					type "sym"
+					sym  "_ZN5CTeam12RemovePlayerEP11CBasePlayer"
+				}
+				"CEyeballBossApproachTarget::Update"
+				{
+					type "sym"
+					sym  "_ZN26CEyeballBossApproachTarget6UpdateEP12CEyeballBossf"
+				}
+				"CEyeballBossLaunchRockets::Update"
+				{
+					type "sym"
+					sym  "_ZN25CEyeballBossLaunchRockets6UpdateEP12CEyeballBossf"
+				}
+				"CTFGrenadePipebombProjectile::StickybombTouch"
+				{
+					type "sym"
+					sym  "_ZN28CTFGrenadePipebombProjectile15StickybombTouchEP11CBaseEntity"
+				}
+				"CZombie::OnTakeDamage_Alive"
+				{
+					type "sym"
+					sym  "_ZN7CZombie18OnTakeDamage_AliveERK15CTakeDamageInfo"
+				}
+				"CTFWeaponBaseGrenadeProj::SetDetonateTimerLength"
+				{
+					type "sym"
+					sym  "_ZN24CTFWeaponBaseGrenadeProj22SetDetonateTimerLengthEf"
+				}
 				
 			}
 			"addrs_group"

@@ -1,0 +1,3 @@
+CTFPlayertPathCost
+
++0x0000:  00e0adb0  CTFPlayertPathCost::operator()(CNavArea*, CNavArea*, CNavLadder const*, CFuncElevator const*, float) const

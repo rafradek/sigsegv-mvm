@@ -1,0 +1,4 @@
+IPasstimeBallSpawnAutoList
+
++0x0000:  00cb9300  IPasstimeBallSpawnAutoList::~IPasstimeBallSpawnAutoList()
++0x0004:  00cb9370  IPasstimeBallSpawnAutoList::~IPasstimeBallSpawnAutoList()

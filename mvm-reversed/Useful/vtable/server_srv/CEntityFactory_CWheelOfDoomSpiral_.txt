@@ -1,0 +1,5 @@
+CEntityFactory<CWheelOfDoomSpiral>
+
++0x0000:  00899dd0  CEntityFactory<CWheelOfDoomSpiral>::Create(char const*)
++0x0004:  00899d20  CEntityFactory<CWheelOfDoomSpiral>::Destroy(IServerNetworkable*)
++0x0008:  00899d40  CEntityFactory<CWheelOfDoomSpiral>::GetEntitySize()

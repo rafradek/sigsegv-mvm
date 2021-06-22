@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_Jar>
+
++0x0000:  00866420  CEntityFactory<CTFProjectile_Jar>::Create(char const*)
++0x0004:  00865ec0  CEntityFactory<CTFProjectile_Jar>::Destroy(IServerNetworkable*)
++0x0008:  00865ee0  CEntityFactory<CTFProjectile_Jar>::GetEntitySize()

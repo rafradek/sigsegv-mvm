@@ -1,0 +1,22 @@
+CMsgRequestItemPurgatory_FinalizePurchase
+
++0x0000:  00532cd0  CMsgRequestItemPurgatory_FinalizePurchase::~CMsgRequestItemPurgatory_FinalizePurchase()
++0x0004:  00532d20  CMsgRequestItemPurgatory_FinalizePurchase::~CMsgRequestItemPurgatory_FinalizePurchase()
++0x0008:  00000000  
++0x000c:  0052a5d0  CMsgRequestItemPurgatory_FinalizePurchase::New() const
++0x0010:  005247b0  CMsgRequestItemPurgatory_FinalizePurchase::Clear()
++0x0014:  00521b00  CMsgRequestItemPurgatory_FinalizePurchase::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00533350  CMsgRequestItemPurgatory_FinalizePurchase::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005228a0  CMsgRequestItemPurgatory_FinalizePurchase::ByteSize() const
++0x0028:  00522fa0  CMsgRequestItemPurgatory_FinalizePurchase::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00522be0  CMsgRequestItemPurgatory_FinalizePurchase::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533bb0  CMsgRequestItemPurgatory_FinalizePurchase::GetCachedSize() const
++0x0034:  00521ab0  CMsgRequestItemPurgatory_FinalizePurchase::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052a740  CMsgRequestItemPurgatory_FinalizePurchase::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00521aa0  CMsgRequestItemPurgatory_FinalizePurchase::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527660  CMsgRequestItemPurgatory_FinalizePurchase::GetMetadata() const

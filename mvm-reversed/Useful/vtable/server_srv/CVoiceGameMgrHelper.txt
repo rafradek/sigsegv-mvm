@@ -1,0 +1,5 @@
+CVoiceGameMgrHelper
+
++0x0000:  0079bd00  CVoiceGameMgrHelper::~CVoiceGameMgrHelper()
++0x0004:  0079c030  CVoiceGameMgrHelper::~CVoiceGameMgrHelper()
++0x0008:  007a0900  CVoiceGameMgrHelper::CanPlayerHearPlayer(CBasePlayer*, CBasePlayer*, bool&)

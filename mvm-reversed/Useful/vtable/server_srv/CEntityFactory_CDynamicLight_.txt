@@ -1,0 +1,5 @@
+CEntityFactory<CDynamicLight>
+
++0x0000:  00a1e040  CEntityFactory<CDynamicLight>::Create(char const*)
++0x0004:  00a1dfc0  CEntityFactory<CDynamicLight>::Destroy(IServerNetworkable*)
++0x0008:  00a1dfe0  CEntityFactory<CDynamicLight>::GetEntitySize()

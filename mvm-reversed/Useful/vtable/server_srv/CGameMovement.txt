@@ -1,0 +1,58 @@
+CGameMovement
+
++0x0000:  006bacc0  CGameMovement::~CGameMovement()
++0x0004:  006bb160  CGameMovement::~CGameMovement()
++0x0008:  006baf30  CGameMovement::ProcessMovement(CBasePlayer*, CMoveData*)
++0x000c:  006bb060  CGameMovement::StartTrackPredictionErrors(CBasePlayer*)
++0x0010:  006bb070  CGameMovement::FinishTrackPredictionErrors(CBasePlayer*)
++0x0014:  006bacb0  CGameMovement::DiffPrint(char const*, ...)
++0x0018:  006bca70  CGameMovement::GetPlayerMins(bool) const
++0x001c:  006bc9c0  CGameMovement::GetPlayerMaxs(bool) const
++0x0020:  006bc910  CGameMovement::GetPlayerViewOffset(bool) const
++0x0024:  006bf180  CGameMovement::TracePlayerBBox(Vector const&, Vector const&, unsigned int, int, CGameTrace&)
++0x0028:  006becf0  CGameMovement::TryTouchGround(Vector const&, Vector const&, Vector const&, Vector const&, unsigned int, int, CGameTrace&)
++0x002c:  006bacd0  CGameMovement::PlayerSolidMask(bool)
++0x0030:  006c5ee0  CGameMovement::PlayerMove()
++0x0034:  006bb520  CGameMovement::CalcRoll(QAngle const&, Vector const&, float, float)
++0x0038:  006bcdc0  CGameMovement::DecayPunchAngle()
++0x003c:  006bc2a0  CGameMovement::CheckWaterJump()
++0x0040:  006bbc60  CGameMovement::WaterMove()
++0x0044:  006bcb50  CGameMovement::AirAccelerate(Vector&, float, float)
++0x0048:  006bb5e0  CGameMovement::AirMove()
++0x004c:  006c77e0  CGameMovement::GetAirSpeedCap()
++0x0050:  006bcb20  CGameMovement::CanAccelerate()
++0x0054:  006bc7e0  CGameMovement::Accelerate(Vector&, float, float)
++0x0058:  006c0b20  CGameMovement::WalkMove()
++0x005c:  006c2240  CGameMovement::FullWalkMove()
++0x0060:  006c77f0  CGameMovement::OnJump(float)
++0x0064:  006c7800  CGameMovement::OnLand(float)
++0x0068:  006c7810  CGameMovement::OnTryPlayerMoveCollision(CGameTrace&)
++0x006c:  006bacf0  CGameMovement::GetPlayerMins() const
++0x0070:  006bae10  CGameMovement::GetPlayerMaxs() const
++0x0074:  006bc730  CGameMovement::GetCheckInterval(CGameMovement::IntervalType_t)
++0x0078:  006c1d50  CGameMovement::CheckJumpButton()
++0x007c:  006c7240  CGameMovement::FullTossMove()
++0x0080:  006bb080  CGameMovement::FullLadderMove()
++0x0084:  006c27f0  CGameMovement::TryPlayerMove(Vector*, CGameTrace*)
++0x0088:  006be2f0  CGameMovement::LadderMove()
++0x008c:  006c7880  CGameMovement::OnLadder(CGameTrace&)
++0x0090:  006c7820  CGameMovement::LadderDistance() const
++0x0094:  006c7830  CGameMovement::LadderMask() const
++0x0098:  006c7840  CGameMovement::ClimbSpeed() const
++0x009c:  006c7850  CGameMovement::LadderLateralMultiplier() const
++0x00a0:  006c3410  CGameMovement::CheckStuck()
++0x00a4:  006c3820  CGameMovement::CheckWater()
++0x00a8:  006c4db0  CGameMovement::CategorizePosition()
++0x00ac:  006c03e0  CGameMovement::CheckParameters()
++0x00b0:  006bd8c0  CGameMovement::ReduceTimers()
++0x00b4:  006bdf60  CGameMovement::CheckFalling()
++0x00b8:  006bcc70  CGameMovement::PlayerRoughLandingEffects(float)
++0x00bc:  006c6750  CGameMovement::Duck()
++0x00c0:  006bc890  CGameMovement::HandleDuckingSpeedCrop()
++0x00c4:  006bd420  CGameMovement::FinishUnDuck()
++0x00c8:  006c5240  CGameMovement::FinishDuck()
++0x00cc:  006bb840  CGameMovement::CanUnduck()
++0x00d0:  006bdcf0  CGameMovement::TestPlayerPosition(Vector const&, int, CGameTrace&)
++0x00d4:  006bfe10  CGameMovement::SetGroundEntity(CGameTrace*)
++0x00d8:  006bb180  CGameMovement::StepMove(Vector&, CGameTrace&)
++0x00dc:  006bb150  CGameMovement::GameHasLadders() const

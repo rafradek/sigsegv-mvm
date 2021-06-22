@@ -1,0 +1,8 @@
+CEconTool_UpgradeCard
+
++0x0000:  006adc20  CEconTool_UpgradeCard::~CEconTool_UpgradeCard()
++0x0004:  006adc90  CEconTool_UpgradeCard::~CEconTool_UpgradeCard()
++0x0008:  006aa800  CEconTool_UpgradeCard::CanApplyTo(IEconItemInterface const*, IEconItemInterface const*) const
++0x000c:  006ab140  IEconTool::ShouldDisplayQuantity(IEconItemInterface const*) const
++0x0010:  0067c530  IEconTool::RequiresToolEscrowPeriod() const
++0x0014:  006ad390  CEconTool_UpgradeCard::BFinishInitialization()

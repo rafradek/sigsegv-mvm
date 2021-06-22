@@ -1,0 +1,5 @@
+CRConServer
+
++0x0000:  001b8070  CRConServer::ShouldAcceptSocket(int, netadr_s const&)
++0x0004:  001b7fa0  CRConServer::OnSocketAccepted(int, netadr_s const&, void**)
++0x0008:  001b8390  CRConServer::OnSocketClosed(int, netadr_s const&, void*)

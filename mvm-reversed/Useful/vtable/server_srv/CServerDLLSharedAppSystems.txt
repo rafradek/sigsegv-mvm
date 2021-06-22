@@ -1,0 +1,5 @@
+CServerDLLSharedAppSystems
+
++0x0000:  00a780a0  CServerDLLSharedAppSystems::Count()
++0x0004:  00a780b0  CServerDLLSharedAppSystems::GetDllName(int)
++0x0008:  00a780d0  CServerDLLSharedAppSystems::GetInterfaceName(int)

@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponInvis>
+
++0x0000:  00861650  CEntityFactory<CTFWeaponInvis>::Create(char const*)
++0x0004:  008615f0  CEntityFactory<CTFWeaponInvis>::Destroy(IServerNetworkable*)
++0x0008:  00861610  CEntityFactory<CTFWeaponInvis>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CFilterTFBotHasTag>
+
++0x0000:  00d80c60  CEntityFactory<CFilterTFBotHasTag>::Create(char const*)
++0x0004:  00d80640  CEntityFactory<CFilterTFBotHasTag>::Destroy(IServerNetworkable*)
++0x0008:  00d80660  CEntityFactory<CFilterTFBotHasTag>::GetEntitySize()

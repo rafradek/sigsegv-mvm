@@ -1,0 +1,65 @@
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[-] CDllDemandLoader
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CKeyValuesDumpContextAsDevMsg
+ |  [+] IKeyValuesDumpContextAsText
+ |   |  [-] IKeyValuesDumpContext
+
+[+] CSoundEmitterSystemBase
+ |  [+] ISoundEmitterSystemBase
+ |   |  [-] IAppSystem
+
+[+] CSoundEmitterUniformRandomStream
+ |  [-] IUniformRandomStream
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[+] ConVar_ServerBounded
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[-] IAppSystem
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[-] IKeyValuesDumpContext
+
+[+] IKeyValuesDumpContextAsText
+ |  [-] IKeyValuesDumpContext
+
+[+] ISoundEmitterSystemBase
+ |  [-] IAppSystem
+
+[-] IUniformRandomStream

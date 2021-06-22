@@ -1,0 +1,4 @@
+CTFPlayerShared::NetworkVar_m_ScoreData
+
++0x0000:  00802470  CTFPlayerShared::NetworkVar_m_ScoreData::NetworkStateChanged()
++0x0004:  00802490  CTFPlayerShared::NetworkVar_m_ScoreData::NetworkStateChanged(void*)

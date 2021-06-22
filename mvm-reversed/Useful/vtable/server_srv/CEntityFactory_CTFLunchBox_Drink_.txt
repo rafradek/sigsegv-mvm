@@ -1,0 +1,5 @@
+CEntityFactory<CTFLunchBox_Drink>
+
++0x0000:  0086a410  CEntityFactory<CTFLunchBox_Drink>::Create(char const*)
++0x0004:  0086a280  CEntityFactory<CTFLunchBox_Drink>::Destroy(IServerNetworkable*)
++0x0008:  0086a2a0  CEntityFactory<CTFLunchBox_Drink>::GetEntitySize()

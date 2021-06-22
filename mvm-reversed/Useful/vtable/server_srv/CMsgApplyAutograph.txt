@@ -1,0 +1,22 @@
+CMsgApplyAutograph
+
++0x0000:  005232e0  CMsgApplyAutograph::~CMsgApplyAutograph()
++0x0004:  00523320  CMsgApplyAutograph::~CMsgApplyAutograph()
++0x0008:  00000000  
++0x000c:  005296d0  CMsgApplyAutograph::New() const
++0x0010:  005247f0  CMsgApplyAutograph::Clear()
++0x0014:  005219b0  CMsgApplyAutograph::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00526e60  CMsgApplyAutograph::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00522910  CMsgApplyAutograph::ByteSize() const
++0x0028:  00523020  CMsgApplyAutograph::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00522c60  CMsgApplyAutograph::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533b80  CMsgApplyAutograph::GetCachedSize() const
++0x0034:  00521960  CMsgApplyAutograph::CopyFrom(google::protobuf::Message const&)
++0x0038:  005298a0  CMsgApplyAutograph::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00521950  CMsgApplyAutograph::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527720  CMsgApplyAutograph::GetMetadata() const

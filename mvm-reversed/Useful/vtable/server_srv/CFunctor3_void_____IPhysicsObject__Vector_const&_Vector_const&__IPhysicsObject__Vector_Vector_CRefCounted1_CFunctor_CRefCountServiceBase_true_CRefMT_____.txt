@@ -1,0 +1,12 @@
+CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+
++0x0000:  00700ff0  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00701200  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00b3a160  CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor3()
++0x000c:  00b3a270  CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor3()
++0x0010:  00b3a1d0  CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::operator()()
++0x0014:  fffffff8  (unknown)
++0x0018:  0119bd80  typeinfo for CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
++0x001c:  00b3a150  non-virtual thunk to CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor3()
++0x0020:  00b3a260  non-virtual thunk to CFunctor3<void (*)(IPhysicsObject*, Vector const&, Vector const&), IPhysicsObject*, Vector, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor3()
++0x0024:  00700f60  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

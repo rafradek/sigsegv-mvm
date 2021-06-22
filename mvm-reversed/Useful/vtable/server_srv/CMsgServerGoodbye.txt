@@ -1,0 +1,22 @@
+CMsgServerGoodbye
+
++0x0000:  004dd3a0  CMsgServerGoodbye::~CMsgServerGoodbye()
++0x0004:  004dd3e0  CMsgServerGoodbye::~CMsgServerGoodbye()
++0x0008:  00000000  
++0x000c:  004fd7a0  CMsgServerGoodbye::New() const
++0x0010:  004e3e30  CMsgServerGoodbye::Clear()
++0x0014:  004da640  CMsgServerGoodbye::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f5830  CMsgServerGoodbye::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004ea790  CMsgServerGoodbye::ByteSize() const
++0x0028:  004e3a00  CMsgServerGoodbye::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f2ae0  CMsgServerGoodbye::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520770  CMsgServerGoodbye::GetCachedSize() const
++0x0034:  004da5f0  CMsgServerGoodbye::CopyFrom(google::protobuf::Message const&)
++0x0038:  004fd950  CMsgServerGoodbye::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004da5e0  CMsgServerGoodbye::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee310  CMsgServerGoodbye::GetMetadata() const

@@ -1,0 +1,9 @@
+CTEGlowSprite
+
++0x0000:  00c147b0  CTEGlowSprite::GetServerClass()
++0x0004:  00c147c0  CTEGlowSprite::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c14800  CTEGlowSprite::~CTEGlowSprite()
++0x000c:  00c14820  CTEGlowSprite::~CTEGlowSprite()
++0x0010:  00c14850  CTEGlowSprite::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

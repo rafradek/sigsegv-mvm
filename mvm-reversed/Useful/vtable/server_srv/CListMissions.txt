@@ -1,0 +1,3 @@
+CListMissions
+
++0x0000:  00beae30  CListMissions::Inspect(CTacticalMission const&)

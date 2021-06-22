@@ -1,0 +1,5 @@
+CEntityFactory<CTFShotgun_Revenge>
+
++0x0000:  00886600  CEntityFactory<CTFShotgun_Revenge>::Create(char const*)
++0x0004:  008856d0  CEntityFactory<CTFShotgun_Revenge>::Destroy(IServerNetworkable*)
++0x0008:  008856f0  CEntityFactory<CTFShotgun_Revenge>::GetEntitySize()

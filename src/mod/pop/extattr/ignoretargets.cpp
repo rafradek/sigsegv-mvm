@@ -34,7 +34,7 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 	public:
 		CMod() : IMod("Pop:ExtAttr:IgnoreTargets")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored", HIGH);
 		}
 	};
 	CMod s_Mod;

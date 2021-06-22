@@ -194,18 +194,15 @@ void CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& 
 	 * calling ConvertEconAttributeValueToString will render the stored-as-float
 	 * value as an integer, which looks horribly wrong */
 	if (this->IsType<CSchemaAttributeType_Default>()) {
-		DevMsg("Type def\n");
 		if (this->IsStoredAsInteger())
 			snprintf(buf, buf_len, "%d", RoundFloatToInt(value.m_Float));
 		else
 			snprintf(buf, buf_len, "%f", value.m_Float);
 	}
 	else if (this->IsType<CSchemaAttributeType_Float>()) {
-		DevMsg("Type fl\n");
 		snprintf(buf, buf_len, "%f", value.m_Float);
 	}
 	else if (this->IsType<CSchemaAttributeType_String>()) {
-		DevMsg("Type str\n");
 		const char *pstr;
 		CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
 		V_strncpy(buf, pstr, buf_len);
@@ -318,8 +315,11 @@ loadout_positions_t GetLoadoutPositionByName(const char *name) { return ft_GetLo
 MemberVFuncThunk<      CPlayerInventory *, void, bool> CPlayerInventory::vt_DumpInventoryToConsole(TypeName<CPlayerInventory>(), "CPlayerInventory::DumpInventoryToConsole");
 MemberVFuncThunk<const CPlayerInventory *, int>        CPlayerInventory::vt_GetMaxItemCount       (TypeName<CPlayerInventory>(), "CPlayerInventory::GetMaxItemCount");
 
+MemberFuncThunk< CPlayerInventory *, CEconItemView *, int, int *>         CPlayerInventory::ft_GetItemByPosition("CPlayerInventory::_GetItemByPosition");
+
 
 MemberFuncThunk<CTFInventoryManager *, CTFPlayerInventory *, const CSteamID&> CTFInventoryManager::ft_GetInventoryForPlayer("CTFInventoryManager::GetInventoryForPlayer");
+MemberFuncThunk<CTFInventoryManager *, CEconItemView *, int, int> CTFInventoryManager::ft_GetBaseItemForClass("CTFInventoryManager::GetBaseItemForClass");
 
 
 static StaticFuncThunk<CInventoryManager *> ft_InventoryManager("InventoryManager");

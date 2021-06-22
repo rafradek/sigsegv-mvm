@@ -54,8 +54,73 @@ public:
 
 class CRandomPlacementPopulator : public IPopulator {};
 class CPeriodicSpawnPopulator   : public IPopulator {};
-class CWaveSpawnPopulator       : public IPopulator {
+
+class CSpawnLocation
+{
+	int m_relative;
+	CUtlVector< CHandle< CTFTeamSpawn > > m_teamSpawnVector;
+
+	int m_nSpawnCount;
+	int m_nRandomSeed;
+	bool m_bClosestPointOnNav;
+};
+
+class CWaveSpawnPopulator       : public IPopulator 
+{
+public:
+	//void **vtable;
+	CSpawnLocation m_where;
+	int m_totalCount;
+	int m_remainingCount;
+	int m_nClassCounts;
+	int m_maxActive;						
+	int m_spawnCount;						
+	float m_waitBeforeStarting;
+	float m_waitBetweenSpawns;				
+	bool m_bWaitBetweenSpawnAfterDeath;
+
+	CFmtStr m_startWaveWarningSound;
+	void *m_startWaveOutput;
+
+	CFmtStr m_firstSpawnWarningSound;
+	void *m_firstSpawnOutput;
+
+	CFmtStr m_lastSpawnWarningSound;
+	void *m_lastSpawnOutput;
+
+	CFmtStr m_doneWarningSound;
+	void *m_doneOutput;
+
+	int		m_totalCurrency;
+	int		m_unallocatedCurrency;
+
+	CUtlString m_name;
+	CUtlString m_waitForAllSpawned;
+	CUtlString m_waitForAllDead;
+	CountdownTimer m_timer;
+	CUtlVector<CHandle<CBaseEntity>> m_activeVector;
+	int m_countSpawnedSoFar;
+	int m_myReservedSlotCount;
 	
+	bool m_bSupportWave;
+	bool m_bLimitedSupport;
+	CWave *m_pParent;
+	
+	enum InternalStateType
+	{
+		PENDING,
+		PRE_SPAWN_DELAY,
+		SPAWNING,
+		WAIT_FOR_ALL_DEAD,
+		DONE
+	};
+	InternalStateType m_state;
+	
+	int GetCurrencyAmountPerDeath()                                       { return ft_GetCurrencyAmountPerDeath(this); }
+
+private:
+	static MemberFuncThunk<CWaveSpawnPopulator *, int> ft_GetCurrencyAmountPerDeath;
+
 };
 
 class CWave : public IPopulator
@@ -93,12 +158,30 @@ private:
 class IPopulationSpawner
 {
 public:
-	string_t GetClassIcon(int index)                         { return vt_GetClassIcon(this, index); }
-	bool IsMiniBoss(int index)                               { return vt_IsMiniBoss  (this, index); }
-	bool HasAttribute(CTFBot::AttributeType attr, int index) { return vt_HasAttribute(this, attr, index); }
-	bool Parse(KeyValues *kv)                                { return vt_Parse(this, kv); }
+	virtual ~IPopulationSpawner()
+	{
+	}
 
-	void **vtable;
+	IPopulationSpawner( IPopulator *populator )
+	{
+		m_Populator = populator;
+	}
+
+	virtual bool Parse( KeyValues *data ) = 0;
+	virtual bool Spawn( const Vector &here, CUtlVector<CHandle<CBaseEntity>> *ents = NULL ) = 0;
+	virtual bool IsWhereRequired( void ) const		// does this spawner need a valid Where parameter?
+	{
+		return true;
+	}
+	
+	virtual bool IsVarious( void ) { return false; }
+	virtual int GetClass( int nSpawnNum = -1 ) { return TF_CLASS_UNDEFINED; }
+	virtual string_t GetClassIcon( int nSpawnNum = -1 ) { return NULL_STRING; }
+	virtual int GetHealth( int nSpawnNum = -1  ){ return 0; }
+	virtual bool IsMiniBoss( int nSpawnNum = -1 ) { return false; }
+	virtual bool HasAttribute( CTFBot::AttributeType type, int nSpawnNum = -1 ) { return false; }
+	virtual bool HasEventChangeAttributes( const char* pszEventName ) const = 0;
+
 	IPopulator *m_Populator;
 	
 private:

@@ -1,0 +1,5 @@
+CEntityFactory<CServerRagdollTrigger>
+
++0x0000:  00e498e0  CEntityFactory<CServerRagdollTrigger>::Create(char const*)
++0x0004:  00e48d00  CEntityFactory<CServerRagdollTrigger>::Destroy(IServerNetworkable*)
++0x0008:  00e48d20  CEntityFactory<CServerRagdollTrigger>::GetEntitySize()

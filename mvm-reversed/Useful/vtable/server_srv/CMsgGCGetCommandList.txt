@@ -1,0 +1,22 @@
+CMsgGCGetCommandList
+
++0x0000:  00558290  CMsgGCGetCommandList::~CMsgGCGetCommandList()
++0x0004:  005582e0  CMsgGCGetCommandList::~CMsgGCGetCommandList()
++0x0008:  00000000  
++0x000c:  005581e0  CMsgGCGetCommandList::New() const
++0x0010:  0053dbb0  CMsgGCGetCommandList::Clear()
++0x0014:  00535560  CMsgGCGetCommandList::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0054b930  CMsgGCGetCommandList::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00542f40  CMsgGCGetCommandList::ByteSize() const
++0x0028:  0053a2f0  CMsgGCGetCommandList::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00548050  CMsgGCGetCommandList::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572970  CMsgGCGetCommandList::GetCachedSize() const
++0x0034:  00535510  CMsgGCGetCommandList::CopyFrom(google::protobuf::Message const&)
++0x0038:  00558430  CMsgGCGetCommandList::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00535500  CMsgGCGetCommandList::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545710  CMsgGCGetCommandList::GetMetadata() const

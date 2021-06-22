@@ -1,0 +1,7 @@
+CServerBenchmarkHook
+
++0x0000:  005dd990  CServerBenchmarkHook::StartBenchmark()
++0x0004:  005dd9a0  CServerBenchmarkHook::UpdateBenchmark()
++0x0008:  005dd9b0  CServerBenchmarkHook::EndBenchmark()
++0x000c:  00000000  
++0x0010:  00000000  

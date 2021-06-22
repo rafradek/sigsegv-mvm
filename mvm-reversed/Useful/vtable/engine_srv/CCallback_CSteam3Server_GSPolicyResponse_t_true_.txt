@@ -1,0 +1,5 @@
+CCallback<CSteam3Server, GSPolicyResponse_t, true>
+
++0x0000:  001bfd10  CCallback<CSteam3Server, GSPolicyResponse_t, true>::Run(void*)
++0x0004:  001bfd40  CCallbackImpl<1>::Run(void*, bool, unsigned long long)
++0x0008:  001bfd50  CCallbackImpl<1>::GetCallbackSizeBytes()

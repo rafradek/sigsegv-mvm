@@ -1,0 +1,5 @@
+CDmgAccumulator
+
++0x0000:  00629800  CDmgAccumulator::Start()
++0x0004:  006293e0  CDmgAccumulator::AccumulateMultiDamage(CTakeDamageInfo const&, CBaseEntity*)
++0x0008:  00628de0  CDmgAccumulator::Process()

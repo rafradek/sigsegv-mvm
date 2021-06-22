@@ -1,0 +1,5 @@
+CEntityFactory<CBubbling>
+
++0x0000:  00a28200  CEntityFactory<CBubbling>::Create(char const*)
++0x0004:  00a27a40  CEntityFactory<CBubbling>::Destroy(IServerNetworkable*)
++0x0008:  00a27a60  CEntityFactory<CBubbling>::GetEntitySize()

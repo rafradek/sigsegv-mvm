@@ -1,0 +1,22 @@
+CMsgSOMultipleObjects
+
++0x0000:  00f6d6d0  CMsgSOMultipleObjects::~CMsgSOMultipleObjects()
++0x0004:  00f6d760  CMsgSOMultipleObjects::~CMsgSOMultipleObjects()
++0x0008:  00000000  
++0x000c:  00f64120  CMsgSOMultipleObjects::New() const
++0x0010:  00f5cfd0  CMsgSOMultipleObjects::Clear()
++0x0014:  00f59880  CMsgSOMultipleObjects::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00f63790  CMsgSOMultipleObjects::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00f5dc70  CMsgSOMultipleObjects::ByteSize() const
++0x0028:  00f5b770  CMsgSOMultipleObjects::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00f5fb00  CMsgSOMultipleObjects::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00f6faa0  CMsgSOMultipleObjects::GetCachedSize() const
++0x0034:  00f59830  CMsgSOMultipleObjects::CopyFrom(google::protobuf::Message const&)
++0x0038:  00f64400  CMsgSOMultipleObjects::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00f59820  CMsgSOMultipleObjects::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00f5fa00  CMsgSOMultipleObjects::GetMetadata() const

@@ -1,0 +1,5 @@
+CEntityFactory<CTFParachute_Secondary>
+
++0x0000:  008758e0  CEntityFactory<CTFParachute_Secondary>::Create(char const*)
++0x0004:  00875820  CEntityFactory<CTFParachute_Secondary>::Destroy(IServerNetworkable*)
++0x0008:  00875840  CEntityFactory<CTFParachute_Secondary>::GetEntitySize()

@@ -1,0 +1,7 @@
+CEntityFactoryDictionary
+
++0x0000:  00e59710  CEntityFactoryDictionary::InstallFactory(IEntityFactory*, char const*)
++0x0004:  00e51670  CEntityFactoryDictionary::Create(char const*)
++0x0008:  00e51610  CEntityFactoryDictionary::Destroy(char const*, IServerNetworkable*)
++0x000c:  00e591d0  CEntityFactoryDictionary::FindFactory(char const*)
++0x0010:  00e591a0  CEntityFactoryDictionary::GetCannonicalName(char const*)

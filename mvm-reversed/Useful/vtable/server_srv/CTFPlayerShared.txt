@@ -1,0 +1,7 @@
+CTFPlayerShared
+
++0x0000:  00802840  CTFPlayerShared::~CTFPlayerShared()
++0x0004:  00802a30  CTFPlayerShared::~CTFPlayerShared()
++0x0008:  007e1e80  CTFPlayerShared::FireGameEvent(IGameEvent*)
++0x000c:  00802450  CTFPlayerShared::NetworkStateChanged()
++0x0010:  00802460  CTFPlayerShared::NetworkStateChanged(void*)

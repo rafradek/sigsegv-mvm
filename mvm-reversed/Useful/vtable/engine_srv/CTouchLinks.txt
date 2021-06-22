@@ -1,0 +1,3 @@
+CTouchLinks
+
++0x0000:  001da030  CTouchLinks::EnumElement(IHandleEntity*)

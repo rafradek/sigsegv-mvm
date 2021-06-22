@@ -1,0 +1,7 @@
+CEntityDataInstantiator<groundlink_t>
+
++0x0000:  006e60a0  CEntityDataInstantiator<groundlink_t>::~CEntityDataInstantiator()
++0x0004:  006e6120  CEntityDataInstantiator<groundlink_t>::~CEntityDataInstantiator()
++0x0008:  006e4500  CEntityDataInstantiator<groundlink_t>::GetDataObject(CBaseEntity const*)
++0x000c:  006e8da0  CEntityDataInstantiator<groundlink_t>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e43f0  CEntityDataInstantiator<groundlink_t>::DestroyDataObject(CBaseEntity const*)

@@ -1,0 +1,5 @@
+CEntityFactory<CPhysHinge>
+
++0x0000:  00b305e0  CEntityFactory<CPhysHinge>::Create(char const*)
++0x0004:  00b2f090  CEntityFactory<CPhysHinge>::Destroy(IServerNetworkable*)
++0x0008:  00b2f0b0  CEntityFactory<CPhysHinge>::GetEntitySize()

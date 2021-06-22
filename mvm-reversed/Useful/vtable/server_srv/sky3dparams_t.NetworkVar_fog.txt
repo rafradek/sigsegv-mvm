@@ -1,0 +1,4 @@
+sky3dparams_t::NetworkVar_fog
+
++0x0000:  00b80980  sky3dparams_t::NetworkVar_fog::NetworkStateChanged()
++0x0004:  00b809a0  sky3dparams_t::NetworkVar_fog::NetworkStateChanged(void*)

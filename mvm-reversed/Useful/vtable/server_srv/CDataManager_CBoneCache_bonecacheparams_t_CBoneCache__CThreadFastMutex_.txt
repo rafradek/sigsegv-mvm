@@ -1,0 +1,9 @@
+CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>
+
++0x0000:  008b8f30  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::Lock()
++0x0004:  008b8ed0  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::TryLock()
++0x0008:  008b8fc0  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::Unlock()
++0x000c:  008b8e40  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::~CDataManager()
++0x0010:  008b9000  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::~CDataManager()
++0x0014:  008b8fb0  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::DestroyResourceStorage(void*)
++0x0018:  008b8e30  CDataManager<CBoneCache, bonecacheparams_t, CBoneCache*, CThreadFastMutex>::GetRealSize(void*)

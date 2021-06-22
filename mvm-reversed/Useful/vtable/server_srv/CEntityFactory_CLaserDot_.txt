@@ -1,0 +1,5 @@
+CEntityFactory<CLaserDot>
+
++0x0000:  008692c0  CEntityFactory<CLaserDot>::Create(char const*)
++0x0004:  008691f0  CEntityFactory<CLaserDot>::Destroy(IServerNetworkable*)
++0x0008:  00869210  CEntityFactory<CLaserDot>::GetEntitySize()

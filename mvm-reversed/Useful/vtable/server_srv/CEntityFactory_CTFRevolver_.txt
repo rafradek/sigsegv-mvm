@@ -1,0 +1,5 @@
+CEntityFactory<CTFRevolver>
+
++0x0000:  008810f0  CEntityFactory<CTFRevolver>::Create(char const*)
++0x0004:  00881050  CEntityFactory<CTFRevolver>::Destroy(IServerNetworkable*)
++0x0008:  00881070  CEntityFactory<CTFRevolver>::GetEntitySize()

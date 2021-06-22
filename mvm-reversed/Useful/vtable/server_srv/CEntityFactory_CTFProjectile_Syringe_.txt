@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_Syringe>
+
++0x0000:  00806000  CEntityFactory<CTFProjectile_Syringe>::Create(char const*)
++0x0004:  00805f90  CEntityFactory<CTFProjectile_Syringe>::Destroy(IServerNetworkable*)
++0x0008:  00805fb0  CEntityFactory<CTFProjectile_Syringe>::GetEntitySize()

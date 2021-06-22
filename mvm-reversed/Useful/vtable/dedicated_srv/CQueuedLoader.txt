@@ -1,0 +1,27 @@
+CQueuedLoader
+
++0x0000:  00082dc0  CTier2AppSystem<IQueuedLoader, 0>::Connect(void* (*)(char const*, int*))
++0x0004:  00082d80  CTier2AppSystem<IQueuedLoader, 0>::Disconnect()
++0x0008:  00082bd0  CBaseAppSystem<IQueuedLoader>::QueryInterface(char const*)
++0x000c:  0007fa10  CQueuedLoader::Init()
++0x0010:  0007fa50  CQueuedLoader::Shutdown()
++0x0014:  0007f6c0  CQueuedLoader::InstallLoader(ResourcePreload_t, IResourcePreload*)
++0x0018:  0007f6e0  CQueuedLoader::InstallProgress(ILoaderProgress*)
++0x001c:  0007f760  CQueuedLoader::BeginMapLoading(char const*, bool, bool)
++0x0020:  00081e70  CQueuedLoader::EndMapLoading(bool)
++0x0024:  000825d0  CQueuedLoader::AddJob(LoaderJob_t const*)
++0x0028:  0007f8a0  CQueuedLoader::AddMapResource(char const*)
++0x002c:  00081d40  CQueuedLoader::DynamicLoadMapResource(char const*, void (*)(char const*, void*, void*), void*, void*)
++0x0030:  00082110  CQueuedLoader::QueueDynamicLoadFunctor(CFunctor*)
++0x0034:  00080af0  CQueuedLoader::CompleteDynamicLoad()
++0x0038:  000824a0  CQueuedLoader::ClaimAnonymousJob(char const*, void (*)(void*, void*, void const*, int, LoaderError_t), void*, void*)
++0x003c:  00082380  CQueuedLoader::ClaimAnonymousJob(char const*, void**, int*, LoaderError_t*)
++0x0040:  0007f770  CQueuedLoader::IsMapLoading() const
++0x0044:  0007f780  CQueuedLoader::IsSameMapLoading() const
++0x0048:  0007f7a0  CQueuedLoader::IsFinished() const
++0x004c:  0007f7d0  CQueuedLoader::IsBatching() const
++0x0050:  0007f7e0  CQueuedLoader::IsDynamic() const
++0x0054:  0007f7f0  CQueuedLoader::GetSpewDetail() const
++0x0058:  0007f700  CQueuedLoader::PurgeAll()
++0x005c:  00081180  CQueuedLoader::~CQueuedLoader()
++0x0060:  00081410  CQueuedLoader::~CQueuedLoader()

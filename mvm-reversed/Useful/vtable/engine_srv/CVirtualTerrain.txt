@@ -1,0 +1,5 @@
+CVirtualTerrain
+
++0x0000:  000e9b60  CVirtualTerrain::GetVirtualMesh(void*, virtualmeshlist_t*)
++0x0004:  000e9ab0  CVirtualTerrain::GetWorldspaceBounds(void*, Vector*, Vector*)
++0x0008:  000e9b10  CVirtualTerrain::GetTrianglesInSphere(void*, Vector const&, float, virtualmeshtrianglelist_t*)

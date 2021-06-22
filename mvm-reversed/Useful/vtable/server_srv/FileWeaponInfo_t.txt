@@ -1,0 +1,3 @@
+FileWeaponInfo_t
+
++0x0000:  008a47c0  FileWeaponInfo_t::Parse(KeyValues*, char const*)

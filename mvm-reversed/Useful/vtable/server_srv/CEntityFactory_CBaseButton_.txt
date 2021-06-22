@@ -1,0 +1,5 @@
+CEntityFactory<CBaseButton>
+
++0x0000:  00a04f10  CEntityFactory<CBaseButton>::Create(char const*)
++0x0004:  00a04cf0  CEntityFactory<CBaseButton>::Destroy(IServerNetworkable*)
++0x0008:  00a04d10  CEntityFactory<CBaseButton>::GetEntitySize()

@@ -1,0 +1,59 @@
+Base32DecoderTKS
+
++0x0000:  000d9050  Base32DecoderTKS::~Base32DecoderTKS()
++0x0004:  000d8ec0  Base32DecoderTKS::~Base32DecoderTKS()
++0x0008:  000d57d0  CryptoPP::Clonable::Clone() const
++0x000c:  000d4fb0  CryptoPP::Algorithm::AlgorithmName() const
++0x0010:  000d2c10  CryptoPP::BufferedTransformation::CreatePutSpace(unsigned int&)
++0x0014:  000d2c20  CryptoPP::BufferedTransformation::CanModifyInput() const
++0x0018:  000dfe86  CryptoPP::BaseN_Decoder::Put2(unsigned char const*, unsigned int, int, bool)
++0x001c:  000d2c30  CryptoPP::BufferedTransformation::PutModifiable2(unsigned char*, unsigned int, int, bool)
++0x0020:  000e1e6a  CryptoPP::BufferedTransformation::GetMaxWaitObjectCount() const
++0x0024:  000e1e9a  CryptoPP::BufferedTransformation::GetWaitObjects(CryptoPP::WaitObjectContainer&, CryptoPP::CallStack const&)
++0x0028:  000df630  CryptoPP::Base32Decoder::IsolatedInitialize(CryptoPP::NameValuePairs const&)
++0x002c:  000d3b90  CryptoPP::Unflushable<CryptoPP::Filter>::IsolatedFlush(bool, bool)
++0x0030:  000d2c50  CryptoPP::BufferedTransformation::IsolatedMessageSeriesEnd(bool)
++0x0034:  0013b7aa  CryptoPP::Filter::Initialize(CryptoPP::NameValuePairs const&, int)
++0x0038:  000d4fe0  CryptoPP::Unflushable<CryptoPP::Filter>::Flush(bool, int, bool)
++0x003c:  0013bf80  CryptoPP::Filter::MessageSeriesEnd(int, bool)
++0x0040:  000d2c60  CryptoPP::BufferedTransformation::SetAutoSignalPropagation(int)
++0x0044:  000d2c70  CryptoPP::BufferedTransformation::GetAutoSignalPropagation() const
++0x0048:  000e4dc8  CryptoPP::BufferedTransformation::MaxRetrievable() const
++0x004c:  000e1faa  CryptoPP::BufferedTransformation::AnyRetrievable() const
++0x0050:  000e1ff6  CryptoPP::BufferedTransformation::Get(unsigned char&)
++0x0054:  000e5084  CryptoPP::BufferedTransformation::Get(unsigned char*, unsigned int)
++0x0058:  000e204c  CryptoPP::BufferedTransformation::Peek(unsigned char&) const
++0x005c:  000e51c8  CryptoPP::BufferedTransformation::Peek(unsigned char*, unsigned int) const
++0x0060:  000e4cb8  CryptoPP::BufferedTransformation::Skip(unsigned long long)
++0x0064:  000e20a2  CryptoPP::BufferedTransformation::TotalBytesRetrievable() const
++0x0068:  000e4bcc  CryptoPP::BufferedTransformation::NumberOfMessages() const
++0x006c:  000e20e2  CryptoPP::BufferedTransformation::AnyMessages() const
++0x0070:  000e2128  CryptoPP::BufferedTransformation::GetNextMessage()
++0x0074:  000e5816  CryptoPP::BufferedTransformation::SkipMessages(unsigned int)
++0x0078:  000e215e  CryptoPP::BufferedTransformation::SkipAll()
++0x007c:  000d2c80  CryptoPP::BufferedTransformation::GetNextMessageSeries()
++0x0080:  000d2c90  CryptoPP::BufferedTransformation::NumberOfMessagesInThisSeries() const
++0x0084:  000d2ca0  CryptoPP::BufferedTransformation::NumberOfMessageSeries() const
++0x0088:  00137a7a  CryptoPP::Filter::TransferTo2(CryptoPP::BufferedTransformation&, unsigned long long&, std::string const&, bool)
++0x008c:  00137a20  CryptoPP::Filter::CopyRangeTo2(CryptoPP::BufferedTransformation&, unsigned long long&, unsigned long long, std::string const&, bool) const
++0x0090:  000e32d2  CryptoPP::BufferedTransformation::ChannelCreatePutSpace(std::string const&, unsigned int&)
++0x0094:  000e3474  CryptoPP::BufferedTransformation::ChannelPut2(std::string const&, unsigned char const*, unsigned int, int, bool)
++0x0098:  000e1f2e  CryptoPP::BufferedTransformation::ChannelPutModifiable2(std::string const&, unsigned char*, unsigned int, int, bool)
++0x009c:  000d7cc0  CryptoPP::Unflushable<CryptoPP::Filter>::ChannelFlush(std::string const&, bool, int, bool)
++0x00a0:  000e3630  CryptoPP::BufferedTransformation::ChannelMessageSeriesEnd(std::string const&, int, bool)
++0x00a4:  000e21c2  CryptoPP::BufferedTransformation::SetRetrievalChannel(std::string const&)
++0x00a8:  000d2eb0  CryptoPP::Filter::Attachable()
++0x00ac:  0013797a  CryptoPP::Filter::AttachedTransformation()
++0x00b0:  001379ba  CryptoPP::Filter::AttachedTransformation() const
++0x00b4:  001379fa  CryptoPP::Filter::Detach(CryptoPP::BufferedTransformation*)
++0x00b8:  000e21fe  CryptoPP::BufferedTransformation::Attach(CryptoPP::BufferedTransformation*)
++0x00bc:  00138712  CryptoPP::Filter::NewDefaultAttachment() const
++0x00c0:  000d2ec0  CryptoPP::Filter::ShouldPropagateMessageEnd() const
++0x00c4:  000d2ed0  CryptoPP::Filter::ShouldPropagateMessageSeriesEnd() const
++0x00c8:  000d3ba0  CryptoPP::Unflushable<CryptoPP::Filter>::InputBufferIsEmpty() const
++0x00cc:  fffffffc  (unknown)
++0x00d0:  001d8814  typeinfo for Base32DecoderTKS
++0x00d4:  000d9040  non-virtual thunk to Base32DecoderTKS::~Base32DecoderTKS()
++0x00d8:  000d8eb0  non-virtual thunk to Base32DecoderTKS::~Base32DecoderTKS()
++0x00dc:  000e1e90  non-virtual thunk to CryptoPP::BufferedTransformation::GetMaxWaitObjectCount() const
++0x00e0:  000e1eca  non-virtual thunk to CryptoPP::BufferedTransformation::GetWaitObjects(CryptoPP::WaitObjectContainer&, CryptoPP::CallStack const&)

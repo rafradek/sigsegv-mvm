@@ -1,0 +1,5 @@
+CEntityFactory<CBreakable>
+
++0x0000:  00a66910  CEntityFactory<CBreakable>::Create(char const*)
++0x0004:  00a66840  CEntityFactory<CBreakable>::Destroy(IServerNetworkable*)
++0x0008:  00a66860  CEntityFactory<CBreakable>::GetEntitySize()

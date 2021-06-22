@@ -1,0 +1,4 @@
+CVCRHelpers
+
++0x0000:  000936c0  CVCRHelpers::ErrorMessage(char const*)
++0x0004:  000936b0  CVCRHelpers::GetMainWindow()

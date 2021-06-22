@@ -1,0 +1,5 @@
+CEntityFactory<CTFMiniGame>
+
++0x0000:  007c7720  CEntityFactory<CTFMiniGame>::Create(char const*)
++0x0004:  007c6320  CEntityFactory<CTFMiniGame>::Destroy(IServerNetworkable*)
++0x0008:  007c6340  CEntityFactory<CTFMiniGame>::GetEntitySize()

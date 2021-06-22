@@ -1,0 +1,5 @@
+CEntityFactory<CLogicCollisionPair>
+
++0x0000:  00a990b0  CEntityFactory<CLogicCollisionPair>::Create(char const*)
++0x0004:  00a98990  CEntityFactory<CLogicCollisionPair>::Destroy(IServerNetworkable*)
++0x0008:  00a989b0  CEntityFactory<CLogicCollisionPair>::GetEntitySize()

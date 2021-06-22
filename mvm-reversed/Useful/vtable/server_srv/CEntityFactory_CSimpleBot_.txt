@@ -1,0 +1,5 @@
+CEntityFactory<CSimpleBot>
+
++0x0000:  00b20560  CEntityFactory<CSimpleBot>::Create(char const*)
++0x0004:  00b14620  CEntityFactory<CSimpleBot>::Destroy(IServerNetworkable*)
++0x0008:  00b14640  CEntityFactory<CSimpleBot>::GetEntitySize()

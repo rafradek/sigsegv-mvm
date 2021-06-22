@@ -1,0 +1,22 @@
+CMsgGCToGCGetUserServerMembersResponse
+
++0x0000:  00533820  CMsgGCToGCGetUserServerMembersResponse::~CMsgGCToGCGetUserServerMembersResponse()
++0x0004:  00533870  CMsgGCToGCGetUserServerMembersResponse::~CMsgGCToGCGetUserServerMembersResponse()
++0x0008:  00000000  
++0x000c:  0052dcd0  CMsgGCToGCGetUserServerMembersResponse::New() const
++0x0010:  00524e90  CMsgGCToGCGetUserServerMembersResponse::Clear()
++0x0014:  00522120  CMsgGCToGCGetUserServerMembersResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00528d90  CMsgGCToGCGetUserServerMembersResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00524fc0  CMsgGCToGCGetUserServerMembersResponse::ByteSize() const
++0x0028:  00523b40  CMsgGCToGCGetUserServerMembersResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00525c80  CMsgGCToGCGetUserServerMembersResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533c90  CMsgGCToGCGetUserServerMembersResponse::GetCachedSize() const
++0x0034:  005220d0  CMsgGCToGCGetUserServerMembersResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052de40  CMsgGCToGCGetUserServerMembersResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005220c0  CMsgGCToGCGetUserServerMembersResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  005272e0  CMsgGCToGCGetUserServerMembersResponse::GetMetadata() const

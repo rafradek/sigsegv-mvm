@@ -1,0 +1,9 @@
+CEconLootListDefinition
+
++0x0000:  00668b80  CEconLootListDefinition::~CEconLootListDefinition()
++0x0004:  00668bd0  CEconLootListDefinition::~CEconLootListDefinition()
++0x0008:  0067c510  CEconLootListDefinition::BPublicListContents() const
++0x000c:  0067c4e0  CEconLootListDefinition::GetLootListHeaderLocalizationKey() const
++0x0010:  0067c4f0  CEconLootListDefinition::GetLootListFooterLocalizationKey() const
++0x0014:  0067c500  CEconLootListDefinition::GetLootListCollectionReference() const
++0x0018:  006647b0  CEconLootListDefinition::EnumerateUserFacingPotentialDrops(IEconLootList::IEconLootListIterator*) const

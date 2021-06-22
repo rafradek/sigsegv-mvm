@@ -1,0 +1,9 @@
+CTETFBlood
+
++0x0000:  00d71100  CTETFBlood::GetServerClass()
++0x0004:  00d71110  CTETFBlood::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00d714e0  CTETFBlood::~CTETFBlood()
++0x000c:  00d71500  CTETFBlood::~CTETFBlood()
++0x0010:  00d714d0  CTETFBlood::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

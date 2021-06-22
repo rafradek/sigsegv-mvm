@@ -1,0 +1,5 @@
+CBasePlayer::NetworkVar_m_AttributeList
+
++0x0000:  00b7d190  CBasePlayer::NetworkVar_m_AttributeList::NetworkStateChanged()
++0x0004:  00b7d330  CBasePlayer::NetworkVar_m_AttributeList::NetworkStateChanged(void*)
++0x0008:  006ae180  CAttributeList::GetDataDescMap()

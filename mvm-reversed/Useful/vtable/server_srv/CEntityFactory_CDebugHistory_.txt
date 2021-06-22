@@ -1,0 +1,5 @@
+CEntityFactory<CDebugHistory>
+
++0x0000:  00a3e4c0  CEntityFactory<CDebugHistory>::Create(char const*)
++0x0004:  00a3e440  CEntityFactory<CDebugHistory>::Destroy(IServerNetworkable*)
++0x0008:  00a3e460  CEntityFactory<CDebugHistory>::GetEntitySize()

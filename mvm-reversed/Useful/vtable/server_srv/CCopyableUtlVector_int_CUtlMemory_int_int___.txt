@@ -1,0 +1,4 @@
+CCopyableUtlVector<int, CUtlMemory<int, int> >
+
++0x0000:  006aa050  CCopyableUtlVector<int, CUtlMemory<int, int> >::~CCopyableUtlVector()
++0x0004:  006aa000  CCopyableUtlVector<int, CUtlMemory<int, int> >::~CCopyableUtlVector()

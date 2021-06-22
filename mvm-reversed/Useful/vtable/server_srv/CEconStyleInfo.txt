@@ -1,0 +1,6 @@
+CEconStyleInfo
+
++0x0000:  00680d90  CEconStyleInfo::~CEconStyleInfo()
++0x0004:  00680e10  CEconStyleInfo::~CEconStyleInfo()
++0x0008:  0066e6d0  CEconStyleInfo::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  0066e840  CEconStyleInfo::GeneratePrecacheModelStringsForStyle(CUtlVector<char const*, CUtlMemory<char const*, int> >*) const

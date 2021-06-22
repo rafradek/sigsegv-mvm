@@ -1,0 +1,5 @@
+CEntityFactory<CTFShotgun_Pyro>
+
++0x0000:  00886460  CEntityFactory<CTFShotgun_Pyro>::Create(char const*)
++0x0004:  00885730  CEntityFactory<CTFShotgun_Pyro>::Destroy(IServerNetworkable*)
++0x0008:  00885750  CEntityFactory<CTFShotgun_Pyro>::GetEntitySize()

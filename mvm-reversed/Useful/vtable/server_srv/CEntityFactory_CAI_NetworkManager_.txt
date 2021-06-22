@@ -1,0 +1,5 @@
+CEntityFactory<CAI_NetworkManager>
+
++0x0000:  00971b10  CEntityFactory<CAI_NetworkManager>::Create(char const*)
++0x0004:  00971940  CEntityFactory<CAI_NetworkManager>::Destroy(IServerNetworkable*)
++0x0008:  00971960  CEntityFactory<CAI_NetworkManager>::GetEntitySize()

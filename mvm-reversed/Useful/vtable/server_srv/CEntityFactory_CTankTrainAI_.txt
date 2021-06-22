@@ -1,0 +1,5 @@
+CEntityFactory<CTankTrainAI>
+
++0x0000:  00bec810  CEntityFactory<CTankTrainAI>::Create(char const*)
++0x0004:  00bec670  CEntityFactory<CTankTrainAI>::Destroy(IServerNetworkable*)
++0x0008:  00bec690  CEntityFactory<CTankTrainAI>::GetEntitySize()

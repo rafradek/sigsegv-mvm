@@ -1,0 +1,4 @@
+CRespawnEntitiesFilter
+
++0x0000:  00a31930  CRespawnEntitiesFilter::ShouldCreateEntity(char const*)
++0x0004:  00a31950  CRespawnEntitiesFilter::CreateNextEntity(char const*)

@@ -1,0 +1,3 @@
+CEnumerationFilter
+
++0x0000:  001162d0  CEnumerationFilter::EnumElement(IHandleEntity*)

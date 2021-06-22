@@ -1,0 +1,22 @@
+CMsgMvMVictoryInfo_Player
+
++0x0000:  005dc200  CMsgMvMVictoryInfo_Player::~CMsgMvMVictoryInfo_Player()
++0x0004:  005dc260  CMsgMvMVictoryInfo_Player::~CMsgMvMVictoryInfo_Player()
++0x0008:  00000000  
++0x000c:  005c1b90  CMsgMvMVictoryInfo_Player::New() const
++0x0010:  005858b0  CMsgMvMVictoryInfo_Player::Clear()
++0x0014:  00576fd0  CMsgMvMVictoryInfo_Player::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005c10b0  CMsgMvMVictoryInfo_Player::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058c410  CMsgMvMVictoryInfo_Player::ByteSize() const
++0x0028:  00580860  CMsgMvMVictoryInfo_Player::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005959c0  CMsgMvMVictoryInfo_Player::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dce60  CMsgMvMVictoryInfo_Player::GetCachedSize() const
++0x0034:  00576f80  CMsgMvMVictoryInfo_Player::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c2170  CMsgMvMVictoryInfo_Player::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576f70  CMsgMvMVictoryInfo_Player::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058eb20  CMsgMvMVictoryInfo_Player::GetMetadata() const

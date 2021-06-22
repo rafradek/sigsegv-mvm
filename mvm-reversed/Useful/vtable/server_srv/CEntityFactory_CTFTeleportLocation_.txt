@@ -1,0 +1,5 @@
+CEntityFactory<CTFTeleportLocation>
+
++0x0000:  007a1ea0  CEntityFactory<CTFTeleportLocation>::Create(char const*)
++0x0004:  0079bfc0  CEntityFactory<CTFTeleportLocation>::Destroy(IServerNetworkable*)
++0x0008:  0079bfe0  CEntityFactory<CTFTeleportLocation>::GetEntitySize()

@@ -1,0 +1,8 @@
+CTFDefendPointMission
+
++0x0000:  00e270d0  CTFDefendPointMission::~CTFDefendPointMission()
++0x0004:  00e27130  CTFDefendPointMission::~CTFDefendPointMission()
++0x0008:  00e26e20  CTFDefendPointMission::GetDeployZone(CBasePlayer*) const
++0x000c:  00e26e30  CTFDefendPointMission::GetObjectiveZone() const
++0x0010:  00e26e40  CTFDefendPointMission::GetEnemyZone() const
++0x0014:  00e27150  CTFDefendPointMission::GetName() const

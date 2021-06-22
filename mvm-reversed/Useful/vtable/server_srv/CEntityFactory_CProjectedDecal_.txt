@@ -1,0 +1,5 @@
+CEntityFactory<CProjectedDecal>
+
++0x0000:  00e713b0  CEntityFactory<CProjectedDecal>::Create(char const*)
++0x0004:  00e71310  CEntityFactory<CProjectedDecal>::Destroy(IServerNetworkable*)
++0x0008:  00e71330  CEntityFactory<CProjectedDecal>::GetEntitySize()

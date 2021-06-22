@@ -1,0 +1,7 @@
+IVoiceServer
+
++0x0000:  001ceeb0  IVoiceServer::~IVoiceServer()
++0x0004:  001cf050  IVoiceServer::~IVoiceServer()
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  

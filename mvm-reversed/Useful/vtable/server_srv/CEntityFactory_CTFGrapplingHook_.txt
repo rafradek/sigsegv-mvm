@@ -1,0 +1,5 @@
+CEntityFactory<CTFGrapplingHook>
+
++0x0000:  0085b7b0  CEntityFactory<CTFGrapplingHook>::Create(char const*)
++0x0004:  0085b690  CEntityFactory<CTFGrapplingHook>::Destroy(IServerNetworkable*)
++0x0008:  0085b6b0  CEntityFactory<CTFGrapplingHook>::GetEntitySize()

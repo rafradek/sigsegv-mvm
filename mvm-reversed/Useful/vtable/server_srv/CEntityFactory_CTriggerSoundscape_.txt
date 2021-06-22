@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerSoundscape>
+
++0x0000:  00be3420  CEntityFactory<CTriggerSoundscape>::Create(char const*)
++0x0004:  00be31d0  CEntityFactory<CTriggerSoundscape>::Destroy(IServerNetworkable*)
++0x0008:  00be31f0  CEntityFactory<CTriggerSoundscape>::GetEntitySize()

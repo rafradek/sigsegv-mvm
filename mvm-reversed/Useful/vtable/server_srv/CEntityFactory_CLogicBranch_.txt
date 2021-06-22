@@ -1,0 +1,5 @@
+CEntityFactory<CLogicBranch>
+
++0x0000:  00a98fe0  CEntityFactory<CLogicBranch>::Create(char const*)
++0x0004:  00a98a20  CEntityFactory<CLogicBranch>::Destroy(IServerNetworkable*)
++0x0008:  00a98a40  CEntityFactory<CLogicBranch>::GetEntitySize()

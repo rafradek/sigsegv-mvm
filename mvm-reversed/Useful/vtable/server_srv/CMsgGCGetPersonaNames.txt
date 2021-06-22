@@ -1,0 +1,22 @@
+CMsgGCGetPersonaNames
+
++0x0000:  0056edd0  CMsgGCGetPersonaNames::~CMsgGCGetPersonaNames()
++0x0004:  0056ee20  CMsgGCGetPersonaNames::~CMsgGCGetPersonaNames()
++0x0008:  00000000  
++0x000c:  00561e10  CMsgGCGetPersonaNames::New() const
++0x0010:  0053d1b0  CMsgGCGetPersonaNames::Clear()
++0x0014:  00536280  CMsgGCGetPersonaNames::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0056f620  CMsgGCGetPersonaNames::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00536fa0  CMsgGCGetPersonaNames::ByteSize() const
++0x0028:  00537920  CMsgGCGetPersonaNames::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00537220  CMsgGCGetPersonaNames::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572b50  CMsgGCGetPersonaNames::GetCachedSize() const
++0x0034:  00536230  CMsgGCGetPersonaNames::CopyFrom(google::protobuf::Message const&)
++0x0038:  00561f80  CMsgGCGetPersonaNames::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00536220  CMsgGCGetPersonaNames::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00544f90  CMsgGCGetPersonaNames::GetMetadata() const

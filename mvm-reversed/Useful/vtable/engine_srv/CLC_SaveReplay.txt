@@ -1,0 +1,15 @@
+CLC_SaveReplay
+
++0x0000:  0008be90  CLC_SaveReplay::~CLC_SaveReplay()
++0x0004:  0008c020  CLC_SaveReplay::~CLC_SaveReplay()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b300  CLC_SaveReplay::Process()
++0x0014:  0007f750  CLC_SaveReplay::ReadFromBuffer(bf_read&)
++0x0018:  0007f810  CLC_SaveReplay::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b2e0  CLC_SaveReplay::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b2f0  CLC_SaveReplay::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d4f0  CLC_SaveReplay::ToString() const

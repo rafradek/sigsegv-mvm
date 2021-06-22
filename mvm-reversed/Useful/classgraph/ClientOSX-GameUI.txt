@@ -1,0 +1,1593 @@
+
+[+] (anonymous namespace)::CaptionGripPanel
+ |  [+] (anonymous namespace)::GripPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] (anonymous namespace)::GripPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] (anonymous namespace)::ScrollBarButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] BlankImage
+ |  [-] vgui::IImage
+
+[+] CAchievementDialogItemPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CAchievementsDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CAsyncCtxOnDeviceAttached
+ |  [-] CBasePanel::CAsyncJobContext
+
+[+] CAsyncCtxSaveGame
+ |  [-] CBasePanel::CAsyncJobContext
+
+[+] CBackgroundMenuButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBasePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] CBasePanel::CAsyncJobContext
+
+[+] CBaseSaveGameDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBenchmarkDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBenchmarkResultsDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBitmapImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBonusMapPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBonusMapsDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBoolProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CBuildModeNavCombo
+ |  [+] vgui::ComboBox
+ |   |  [+] vgui::TextEntry
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CCommandItem
+ |  [+] CMenuItem
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCommentaryDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCommentaryExplanationDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCommentaryItemPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CControllerDialog
+ |  [+] COptionsDialogXbox
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CControllerMap
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCreateMultiplayerGameBotPage
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCreateMultiplayerGameDialog
+ |  [+] vgui::PropertyDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCreateMultiplayerGameGameplayPage
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCreateMultiplayerGameServerPage
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCvarNegateCheckButton
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCvarSlider
+ |  [+] vgui::Slider
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCvarToggleCheckButton
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[-] CDescription
+
+[+] CDialogMenu
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDragDropHelperPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CFloatProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[-] CFmtStrN<256, false>
+
+[+] CFooterPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameChapterPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameConsole
+ |  [+] IGameConsole
+ |   |  [-] IBaseInterface
+
+[+] CGameConsoleDialog
+ |  [+] vgui::CConsoleDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameMenu
+ |  [+] vgui::Menu
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameMenuItem
+ |  [+] vgui::MenuItem
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameSavePanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CGameUI
+ |  [-] IGameUI
+
+[+] CGammaDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CHFontProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CInfoDescription
+ |  [-] CDescription
+
+[+] CInlineEditPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CIntProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CLabeledCommandComboBox
+ |  [+] vgui::ComboBox
+ |   |  [+] vgui::TextEntry
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CLeaderboardDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CLoadCommentaryDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CLoadGameDialog
+ |  [+] CBaseSaveGameDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CLoadGameDialogXbox
+ |  [+] CSaveGameBrowserDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CLoadingDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMainMenuGameLogo
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMatchmakingBasePanel
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMenuItem
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMessageDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMouseMessageForwardingPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMultiplayerAdvancedDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CNewGameDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CNewGamePlayButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CNonFocusableMenu
+ |  [+] vgui::Menu
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsDialog
+ |  [+] vgui::PropertyDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsDialogXbox
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsItem
+ |  [+] CMenuItem
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubAudio
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubAudioThirdPartyCreditsDlg
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubDifficulty
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubKeyboard
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubKeyboardAdvancedDlg
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubMouse
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubMultiplayer
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubPortal
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubVideo
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubVideoAdvancedDlg
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubVideoThirdPartyCreditsDlg
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COptionsSubVoice
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPanelListPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPauseDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPlayerItem
+ |  [+] CCommandItem
+ |   |  [+] CMenuItem
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPlayerListDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPostCommentaryDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPropertyLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CProportionalFloatProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntWithScreenspacePropertyX
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntWithScreenspacePropertyY
+ |  [+] CProportionalIntWithScreenspacePropertyX
+ |   |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CQuitQueryBox
+ |  [+] vgui::QueryBox
+ |   |  [+] vgui::MessageBox
+ |   |   |  [+] vgui::Frame
+ |   |   |   |  [+] vgui::EditablePanel
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CRunGameEngine
+ |  [+] IRunGameEngine
+ |   |  [-] IBaseInterface
+
+[+] CSaveBeforeQuitQueryDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSaveGameBrowserDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSaveGameDialog
+ |  [+] CBaseSaveGameDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSaveGameDialogXbox
+ |  [+] CSaveGameBrowserDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSaveGamePanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CScenarioInfoPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CScriptObject
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSectionedItem
+ |  [+] CCommandItem
+ |   |  [+] CMenuItem
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSelectionOverlayPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CServerDescription
+ |  [-] CDescription
+
+[+] CSessionBrowserDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSessionLobbyDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSessionOptionsDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSmallTextEntry
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CStringProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CTGAImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CTextureIdProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[+] CVGuiSystemModuleLoader
+ |  [+] IVGuiModuleLoader
+ |   |  [-] IBaseInterface
+
+[+] CWelcomeDialog
+ |  [+] CBaseDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] ColumnButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[+] ConVar_ServerBounded
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CrosshairImagePanelAdvanced
+ |  [+] CrosshairImagePanelBase
+ |   |  [+] vgui::ImagePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CrosshairImagePanelBase
+ |  [+] vgui::ImagePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CrosshairImagePanelCS
+ |  [+] CrosshairImagePanelBase
+ |   |  [+] vgui::ImagePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CrosshairImagePanelSimple
+ |  [+] CrosshairImagePanelBase
+ |   |  [+] vgui::ImagePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] Dragger
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] IBaseInterface
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[-] IConsoleDisplayFunc
+
+[+] IGameConsole
+ |  [-] IBaseInterface
+
+[-] IGameUI
+
+[+] IRunGameEngine
+ |  [-] IBaseInterface
+
+[+] IVGuiModuleLoader
+ |  [-] IBaseInterface
+
+[+] MenuItemCheckImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] TabCatchingTextEntry
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] VControlsListPanel
+ |  [+] vgui::SectionedListPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] VScrollBarReversedButtons
+ |  [+] vgui::ScrollBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] mpcontrol_t
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::AnalogBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::AnimatingImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::AnimationController
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::BaseInputDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::BaseTooltip
+
+[-] vgui::BuildGroup
+
+[+] vgui::BuildModeDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Button
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CBitmapImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CConsoleDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] vgui::CConsolePanel
+ 0: +000000 public
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+ 1: +000158 public
+ |  [-] IConsoleDisplayFunc
+
+[+] vgui::CItemButton
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CTreeViewListControl
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CheckButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CheckImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] vgui::CircularProgressBar
+ |  [+] vgui::ProgressBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ClickPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ComboBox
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ComboBoxButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ContextLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ContinuousAnalogBar
+ |  [+] vgui::AnalogBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ContinuousProgressBar
+ |  [+] vgui::ProgressBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CvarToggleCheckButton<ConVarRef>
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Divider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::EditablePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ExpandButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileCompletionEdit
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileCompletionMenu
+ |  [+] vgui::Menu
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileOpenDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::FocusNavGroup
+
+[+] vgui::Frame
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FrameButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FrameSystemButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::GraphPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::IClientPanel
+
+[-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::IImage
+
+[-] vgui::IPanelAnimationPropertyConverter
+
+[+] vgui::Image
+ |  [-] vgui::IImage
+
+[+] vgui::ImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::InputDialog
+ |  [+] vgui::BaseInputDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Label
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListViewItem
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListViewPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Menu
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuItem
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuSeparator
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MessageBox
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PageTab
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] vgui::Panel
+ 0: +000000 public
+ |  [-] vgui::IClientPanel
+ 1: +fffffff4 virtual
+ |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PanelListPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ProgressBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertyDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertyPage
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertySheet
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::QueryBox
+ |  [+] vgui::MessageBox
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RadioButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RadioImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] vgui::RichText
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RichTextInterior
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScalableImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScrollBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScrollBarSlider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::SectionedListPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::SectionedListPanelHeader
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Slider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TextEntry
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TextImage
+ |  [+] vgui::Image
+ |   |  [-] vgui::IImage
+
+[+] vgui::TextTooltip
+ |  [-] vgui::BaseTooltip
+
+[+] vgui::ToggleButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ToolWindow
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNode
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNodeImage
+ |  [+] vgui::ImagePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNodeText
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeView
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeViewSubPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::URLButton
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::URLLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel

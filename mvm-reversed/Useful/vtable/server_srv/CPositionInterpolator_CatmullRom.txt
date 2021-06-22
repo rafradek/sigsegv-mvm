@@ -1,0 +1,7 @@
+CPositionInterpolator_CatmullRom
+
++0x0000:  008c3860  CPositionInterpolator_CatmullRom::Release()
++0x0004:  008c3870  CPositionInterpolator_CatmullRom::GetDetails(char**, int*, int*)
++0x0008:  008c3890  CPositionInterpolator_CatmullRom::SetKeyPosition(int, Vector const&)
++0x000c:  008c3b60  CPositionInterpolator_CatmullRom::InterpolatePosition(float, Vector&)
++0x0010:  008c4030  CPositionInterpolator_CatmullRom::ProcessKey(char const*, char const*)

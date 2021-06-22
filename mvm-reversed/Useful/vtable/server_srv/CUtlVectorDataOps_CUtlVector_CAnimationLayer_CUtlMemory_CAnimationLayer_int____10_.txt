@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CAnimationLayer, CUtlMemory<CAnimationLayer, int> >, 10>
+
++0x0000:  009befe0  CUtlVectorDataOps<CUtlVector<CAnimationLayer, CUtlMemory<CAnimationLayer, int> >, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  009bf220  CUtlVectorDataOps<CUtlVector<CAnimationLayer, CUtlMemory<CAnimationLayer, int> >, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  009bf0b0  CUtlVectorDataOps<CUtlVector<CAnimationLayer, CUtlMemory<CAnimationLayer, int> >, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  009bf200  CUtlVectorDataOps<CUtlVector<CAnimationLayer, CUtlMemory<CAnimationLayer, int> >, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

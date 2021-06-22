@@ -1,0 +1,5 @@
+CEntityFactory<CMathColorBlend>
+
++0x0000:  00a99600  CEntityFactory<CMathColorBlend>::Create(char const*)
++0x0004:  00a98b40  CEntityFactory<CMathColorBlend>::Destroy(IServerNetworkable*)
++0x0008:  00a98b60  CEntityFactory<CMathColorBlend>::GetEntitySize()

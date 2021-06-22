@@ -1,0 +1,5 @@
+CEntityFactory<CTFPEPBrawlerBlaster>
+
++0x0000:  00886310  CEntityFactory<CTFPEPBrawlerBlaster>::Create(char const*)
++0x0004:  00885670  CEntityFactory<CTFPEPBrawlerBlaster>::Destroy(IServerNetworkable*)
++0x0008:  00885690  CEntityFactory<CTFPEPBrawlerBlaster>::GetEntitySize()

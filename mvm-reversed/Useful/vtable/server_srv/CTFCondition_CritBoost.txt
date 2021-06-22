@@ -1,0 +1,11 @@
+CTFCondition_CritBoost
+
++0x0000:  00758560  CTFCondition_CritBoost::~CTFCondition_CritBoost()
++0x0004:  00758570  CTFCondition_CritBoost::~CTFCondition_CritBoost()
++0x0008:  00757b50  CTFCondition::Add(float)
++0x000c:  00757af0  CTFCondition_CritBoost::OnAdded()
++0x0010:  00757b00  CTFCondition_CritBoost::OnRemoved()
++0x0014:  00757b10  CTFCondition_CritBoost::OnThink()
++0x0018:  00757b20  CTFCondition_CritBoost::OnServerThink()
++0x001c:  00758540  CTFCondition_CritBoost::IsHealable()
++0x0020:  00758550  CTFCondition_CritBoost::UsesMinDuration()

@@ -1,0 +1,5 @@
+CEntityFactory<CEnableMotionFixup>
+
++0x0000:  00bab950  CEntityFactory<CEnableMotionFixup>::Create(char const*)
++0x0004:  00bab850  CEntityFactory<CEnableMotionFixup>::Destroy(IServerNetworkable*)
++0x0008:  00bab870  CEntityFactory<CEnableMotionFixup>::GetEntitySize()

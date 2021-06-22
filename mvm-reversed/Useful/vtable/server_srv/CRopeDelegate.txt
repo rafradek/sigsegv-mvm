@@ -1,0 +1,4 @@
+CRopeDelegate
+
++0x0000:  008c38c0  CRopeDelegate::GetNodeForces(CSimplePhysics::CNode*, int, Vector*)
++0x0004:  008c38e0  CRopeDelegate::ApplyConstraints(CSimplePhysics::CNode*, int)

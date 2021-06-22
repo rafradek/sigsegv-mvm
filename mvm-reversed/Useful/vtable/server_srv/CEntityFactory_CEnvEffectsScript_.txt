@@ -1,0 +1,5 @@
+CEntityFactory<CEnvEffectsScript>
+
++0x0000:  00a41ea0  CEntityFactory<CEnvEffectsScript>::Create(char const*)
++0x0004:  00a41e70  CEntityFactory<CEnvEffectsScript>::Destroy(IServerNetworkable*)
++0x0008:  00a41e90  CEntityFactory<CEnvEffectsScript>::GetEntitySize()

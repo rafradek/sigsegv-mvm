@@ -1,0 +1,4 @@
+CEconItemAttribute
+
++0x0000:  006b1c40  CEconItemAttribute::NetworkStateChanged()
++0x0004:  006b1c50  CEconItemAttribute::NetworkStateChanged(void*)

@@ -815,17 +815,23 @@ namespace Mod::Cond::Reprogrammed
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		std::vector<CBasePlayer *> spec_players;
-		ForEachPlayer([&](CBasePlayer *bot) {
-			if (bot->IsBot() && bot->IsAlive() && bot->GetTeamNumber() == TEAM_SPECTATOR) {
-				bot->SetTeamNumber(TF_TEAM_BLUE);
+		CTeam *team_spec = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+		for (int i = 0; i < team_spec->GetNumPlayers(); i++) {
+			CBasePlayer *bot = team_spec->GetPlayer(i);
+		//ForEachPlayer([&](CBasePlayer *bot) {
+			if (bot->IsBot() && bot->IsAlive()) {
+				
 				spec_players.push_back(bot);
 			}
+		}
+		for (CBasePlayer *bot : spec_players) {
+			team_spec->RemovePlayerNonVirtual(bot);
+		}
 
-		});
 		bool result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
 		
 		for (CBasePlayer *bot : spec_players) {
-			bot->SetTeamNumber(TEAM_SPECTATOR);
+			team_spec->AddPlayerNonVirtual(bot);
 		}
 
 		return result;

@@ -1,0 +1,5 @@
+CEntityFactory<CEnvMuzzleFlash>
+
++0x0000:  00a286d0  CEntityFactory<CEnvMuzzleFlash>::Create(char const*)
++0x0004:  00a277a0  CEntityFactory<CEnvMuzzleFlash>::Destroy(IServerNetworkable*)
++0x0008:  00a277c0  CEntityFactory<CEnvMuzzleFlash>::GetEntitySize()

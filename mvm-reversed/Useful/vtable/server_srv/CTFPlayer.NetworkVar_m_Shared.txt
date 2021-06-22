@@ -1,0 +1,7 @@
+CTFPlayer::NetworkVar_m_Shared
+
++0x0000:  00e0cf50  CTFPlayer::NetworkVar_m_Shared::~NetworkVar_m_Shared()
++0x0004:  00e0cd60  CTFPlayer::NetworkVar_m_Shared::~NetworkVar_m_Shared()
++0x0008:  007e1e80  CTFPlayerShared::FireGameEvent(IGameEvent*)
++0x000c:  00e0ad60  CTFPlayer::NetworkVar_m_Shared::NetworkStateChanged()
++0x0010:  00e0b2e0  CTFPlayer::NetworkVar_m_Shared::NetworkStateChanged(void*)

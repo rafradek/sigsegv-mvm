@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_GrapplingHook>
+
++0x0000:  00e202e0  CEntityFactory<CTFProjectile_GrapplingHook>::Create(char const*)
++0x0004:  00e201a0  CEntityFactory<CTFProjectile_GrapplingHook>::Destroy(IServerNetworkable*)
++0x0008:  00e201c0  CEntityFactory<CTFProjectile_GrapplingHook>::GetEntitySize()

@@ -1,0 +1,29 @@
+CEmptyConVar
+
++0x0000:  00e79310  CEmptyConVar::~CEmptyConVar()
++0x0004:  00e79330  CEmptyConVar::~CEmptyConVar()
++0x0008:  00e77790  ConVar::IsCommand() const
++0x000c:  00e79300  CEmptyConVar::IsFlagSet(int) const
++0x0010:  00e77740  ConVar::AddFlags(int)
++0x0014:  00e792e0  CEmptyConVar::GetName() const
++0x0018:  00e77730  ConVar::GetHelpText() const
++0x001c:  00e77760  ConVar::IsRegistered() const
++0x0020:  00e775c0  ConCommandBase::GetDLLIdentifier() const
++0x0024:  00e775d0  ConCommandBase::CreateBase(char const*, char const*, int)
++0x0028:  00e777a0  ConVar::Init()
++0x002c:  00e79280  CEmptyConVar::SetValue(char const*)
++0x0030:  00e792a0  CEmptyConVar::SetValue(float)
++0x0034:  00e792c0  CEmptyConVar::SetValue(int)
++0x0038:  00e77980  ConVar::InternalSetValue(char const*)
++0x003c:  00e77890  ConVar::InternalSetFloatValue(float)
++0x0040:  00e77d90  ConVar::InternalSetIntValue(int)
++0x0044:  00e77d50  ConVar::ClampValue(float&)
++0x0048:  00e77c00  ConVar::ChangeStringValue(char const*, float)
++0x004c:  00e77aa0  ConVar::Create(char const*, char const*, int, char const*, bool, float, bool, float, void (*)(IConVar*, char const*, float))
++0x0050:  ffffffe8  (unknown)
++0x0054:  01223d04  typeinfo for CEmptyConVar
++0x0058:  00e79270  non-virtual thunk to CEmptyConVar::SetValue(char const*)
++0x005c:  00e79290  non-virtual thunk to CEmptyConVar::SetValue(float)
++0x0060:  00e792b0  non-virtual thunk to CEmptyConVar::SetValue(int)
++0x0064:  00e792d0  non-virtual thunk to CEmptyConVar::GetName() const
++0x0068:  00e792f0  non-virtual thunk to CEmptyConVar::IsFlagSet(int) const

@@ -1,0 +1,5 @@
+CEntityFactory<CFuncWall>
+
++0x0000:  00a008c0  CEntityFactory<CFuncWall>::Create(char const*)
++0x0004:  00a00540  CEntityFactory<CFuncWall>::Destroy(IServerNetworkable*)
++0x0008:  00a00560  CEntityFactory<CFuncWall>::GetEntitySize()

@@ -1,0 +1,16 @@
+CGameEvent
+
++0x0000:  00117000  CGameEvent::~CGameEvent()
++0x0004:  00117040  CGameEvent::~CGameEvent()
++0x0008:  00116fe0  CGameEvent::GetName() const
++0x000c:  00116fb0  CGameEvent::IsReliable() const
++0x0010:  00116fa0  CGameEvent::IsLocal() const
++0x0014:  00117110  CGameEvent::IsEmpty(char const*)
++0x0018:  001170e0  CGameEvent::GetBool(char const*, bool)
++0x001c:  001170c0  CGameEvent::GetInt(char const*, int)
++0x0020:  00117170  CGameEvent::GetFloat(char const*, float)
++0x0024:  00117060  CGameEvent::GetString(char const*, char const*)
++0x0028:  001170a0  CGameEvent::SetBool(char const*, bool)
++0x002c:  00117080  CGameEvent::SetInt(char const*, int)
++0x0030:  00117150  CGameEvent::SetFloat(char const*, float)
++0x0034:  00117130  CGameEvent::SetString(char const*, char const*)

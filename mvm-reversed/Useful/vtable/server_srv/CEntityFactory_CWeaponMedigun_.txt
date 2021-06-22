@@ -1,0 +1,5 @@
+CEntityFactory<CWeaponMedigun>
+
++0x0000:  00872bd0  CEntityFactory<CWeaponMedigun>::Create(char const*)
++0x0004:  00872960  CEntityFactory<CWeaponMedigun>::Destroy(IServerNetworkable*)
++0x0008:  00872980  CEntityFactory<CWeaponMedigun>::GetEntitySize()

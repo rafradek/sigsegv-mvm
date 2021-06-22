@@ -1,0 +1,10 @@
+CVProfExport
+
++0x0000:  001d11d0  CVProfExport::AddListener()
++0x0004:  001d1200  CVProfExport::RemoveListener()
++0x0008:  001d1480  CVProfExport::PauseProfile()
++0x000c:  001d14e0  CVProfExport::ResumeProfile()
++0x0010:  001d1220  CVProfExport::SetBudgetFlagsFilter(int)
++0x0014:  001d1230  CVProfExport::GetNumBudgetGroups()
++0x0018:  001d1360  CVProfExport::GetBudgetGroupInfos(IVProfExport::CExportedBudgetGroupInfo*)
++0x001c:  001d12b0  CVProfExport::GetBudgetGroupTimes(float*)

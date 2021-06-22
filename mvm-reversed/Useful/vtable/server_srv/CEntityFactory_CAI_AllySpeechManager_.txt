@@ -1,0 +1,5 @@
+CEntityFactory<CAI_AllySpeechManager>
+
++0x0000:  00980d90  CEntityFactory<CAI_AllySpeechManager>::Create(char const*)
++0x0004:  00980c10  CEntityFactory<CAI_AllySpeechManager>::Destroy(IServerNetworkable*)
++0x0008:  00980c30  CEntityFactory<CAI_AllySpeechManager>::GetEntitySize()

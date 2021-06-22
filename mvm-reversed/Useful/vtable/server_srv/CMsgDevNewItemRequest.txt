@@ -1,0 +1,22 @@
+CMsgDevNewItemRequest
+
++0x0000:  004dd700  CMsgDevNewItemRequest::~CMsgDevNewItemRequest()
++0x0004:  004dd770  CMsgDevNewItemRequest::~CMsgDevNewItemRequest()
++0x0008:  00000000  
++0x000c:  00501eb0  CMsgDevNewItemRequest::New() const
++0x0010:  004e5eb0  CMsgDevNewItemRequest::Clear()
++0x0014:  004dab80  CMsgDevNewItemRequest::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005008d0  CMsgDevNewItemRequest::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004eb000  CMsgDevNewItemRequest::ByteSize() const
++0x0028:  004e1c40  CMsgDevNewItemRequest::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f3130  CMsgDevNewItemRequest::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520830  CMsgDevNewItemRequest::GetCachedSize() const
++0x0034:  004dab30  CMsgDevNewItemRequest::CopyFrom(google::protobuf::Message const&)
++0x0038:  00502080  CMsgDevNewItemRequest::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dab20  CMsgDevNewItemRequest::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee010  CMsgDevNewItemRequest::GetMetadata() const

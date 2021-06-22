@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<CPassengerInfo, CUtlMemory<CPassengerInfo, int> >, 10>
+
++0x0000:  00e67220  CUtlVectorDataOps<CUtlVector<CPassengerInfo, CUtlMemory<CPassengerInfo, int> >, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00e68150  CUtlVectorDataOps<CUtlVector<CPassengerInfo, CUtlMemory<CPassengerInfo, int> >, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00e672f0  CUtlVectorDataOps<CUtlVector<CPassengerInfo, CUtlMemory<CPassengerInfo, int> >, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00e68130  CUtlVectorDataOps<CUtlVector<CPassengerInfo, CUtlMemory<CPassengerInfo, int> >, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

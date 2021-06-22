@@ -1,0 +1,15 @@
+SVC_ServerInfo
+
++0x0000:  0008be60  SVC_ServerInfo::~SVC_ServerInfo()
++0x0004:  0008c080  SVC_ServerInfo::~SVC_ServerInfo()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b4c0  SVC_ServerInfo::Process()
++0x0014:  00084540  SVC_ServerInfo::ReadFromBuffer(bf_read&)
++0x0018:  00080b20  SVC_ServerInfo::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b4a0  SVC_ServerInfo::GetType() const
++0x0024:  0008b4e0  SVC_ServerInfo::GetGroup() const
++0x0028:  0008b4b0  SVC_ServerInfo::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d3e0  SVC_ServerInfo::ToString() const

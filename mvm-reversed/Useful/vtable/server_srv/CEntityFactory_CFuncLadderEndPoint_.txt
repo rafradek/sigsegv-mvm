@@ -1,0 +1,5 @@
+CEntityFactory<CFuncLadderEndPoint>
+
++0x0000:  00a6e9c0  CEntityFactory<CFuncLadderEndPoint>::Create(char const*)
++0x0004:  00a6e940  CEntityFactory<CFuncLadderEndPoint>::Destroy(IServerNetworkable*)
++0x0008:  00a6e960  CEntityFactory<CFuncLadderEndPoint>::GetEntitySize()

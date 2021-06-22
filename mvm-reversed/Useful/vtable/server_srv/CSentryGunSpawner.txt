@@ -1,0 +1,14 @@
+CSentryGunSpawner
+
++0x0000:  00d66d10  CSentryGunSpawner::~CSentryGunSpawner()
++0x0004:  00d66d50  CSentryGunSpawner::~CSentryGunSpawner()
++0x0008:  00d61270  CSentryGunSpawner::Parse(KeyValues*)
++0x000c:  00d66620  CSentryGunSpawner::Spawn(Vector const&, CUtlVector<CHandle<CBaseEntity>, CUtlMemory<CHandle<CBaseEntity>, int> >*)
++0x0010:  00d66c20  IPopulationSpawner::IsWhereRequired() const
++0x0014:  00d66c30  IPopulationSpawner::IsVarious()
++0x0018:  00d66c40  IPopulationSpawner::GetClass(int)
++0x001c:  00d66c50  IPopulationSpawner::GetClassIcon(int)
++0x0020:  00d66c60  IPopulationSpawner::GetHealth(int)
++0x0024:  00d66c70  IPopulationSpawner::IsMiniBoss(int)
++0x0028:  00d66c80  IPopulationSpawner::HasAttribute(CTFBot::AttributeType, int)
++0x002c:  00d66cf0  CSentryGunSpawner::HasEventChangeAttributes(char const*) const

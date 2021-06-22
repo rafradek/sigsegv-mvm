@@ -1,0 +1,5 @@
+CEntityFactory<CGhost>
+
++0x0000:  00cf0ef0  CEntityFactory<CGhost>::Create(char const*)
++0x0004:  00ce5820  CEntityFactory<CGhost>::Destroy(IServerNetworkable*)
++0x0008:  00ce5840  CEntityFactory<CGhost>::GetEntitySize()

@@ -1,0 +1,10 @@
+CPeriodicSpawnPopulator
+
++0x0000:  00d60240  CPeriodicSpawnPopulator::~CPeriodicSpawnPopulator()
++0x0004:  00d602a0  CPeriodicSpawnPopulator::~CPeriodicSpawnPopulator()
++0x0008:  00d5c700  CPeriodicSpawnPopulator::Parse(KeyValues*)
++0x000c:  00d59630  CPeriodicSpawnPopulator::PostInitialize()
++0x0010:  00d5cda0  CPeriodicSpawnPopulator::Update()
++0x0014:  00d595d0  CPeriodicSpawnPopulator::UnpauseSpawning()
++0x0018:  00d60030  IPopulator::OnPlayerKilled(CTFPlayer*)
++0x001c:  00d60040  IPopulator::HasEventChangeAttributes(char const*) const

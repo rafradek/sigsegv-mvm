@@ -472,6 +472,11 @@ WARN_RESTORE()
  * we can verify that OUR version of the header was encountered first and took precedence, not the original one
  * (if our version did not take precedence, then these static_assert's won't even fail per se, they'll just encounter an
  * undefined name that they can't deal with and the compiler will become angry) */
+
+#ifdef _LINUX
+#define LINUX 1
+#endif
+
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);

@@ -1,0 +1,7 @@
+CChoreoEvent
+
++0x0000:  00ef8ce0  CChoreoEvent::~CChoreoEvent()
++0x0004:  00ef90d0  CChoreoEvent::~CChoreoEvent()
++0x0008:  00ef1c90  CChoreoEvent::GetDuration()
++0x000c:  00ef1c60  CChoreoEvent::CurveHasEndTime()
++0x0010:  00ef1c80  CChoreoEvent::GetDefaultCurveType()

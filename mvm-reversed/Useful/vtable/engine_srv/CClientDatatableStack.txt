@@ -1,0 +1,3 @@
+CClientDatatableStack
+
++0x0000:  00108590  CClientDatatableStack::RecurseAndCallProxies(CSendNode*, unsigned char*)

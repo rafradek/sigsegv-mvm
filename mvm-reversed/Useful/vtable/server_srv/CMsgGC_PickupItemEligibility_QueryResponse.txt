@@ -1,0 +1,22 @@
+CMsgGC_PickupItemEligibility_QueryResponse
+
++0x0000:  0057a150  CMsgGC_PickupItemEligibility_QueryResponse::~CMsgGC_PickupItemEligibility_QueryResponse()
++0x0004:  0057a190  CMsgGC_PickupItemEligibility_QueryResponse::~CMsgGC_PickupItemEligibility_QueryResponse()
++0x0008:  00000000  
++0x000c:  005b4760  CMsgGC_PickupItemEligibility_QueryResponse::New() const
++0x0010:  00582540  CMsgGC_PickupItemEligibility_QueryResponse::Clear()
++0x0014:  00576080  CMsgGC_PickupItemEligibility_QueryResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059dc40  CMsgGC_PickupItemEligibility_QueryResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00588f00  CMsgGC_PickupItemEligibility_QueryResponse::ByteSize() const
++0x0028:  0057f4c0  CMsgGC_PickupItemEligibility_QueryResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00593190  CMsgGC_PickupItemEligibility_QueryResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcc30  CMsgGC_PickupItemEligibility_QueryResponse::GetCachedSize() const
++0x0034:  00576030  CMsgGC_PickupItemEligibility_QueryResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b4930  CMsgGC_PickupItemEligibility_QueryResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576020  CMsgGC_PickupItemEligibility_QueryResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f3e0  CMsgGC_PickupItemEligibility_QueryResponse::GetMetadata() const

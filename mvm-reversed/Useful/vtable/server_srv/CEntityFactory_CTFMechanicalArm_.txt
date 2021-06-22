@@ -1,0 +1,5 @@
+CEntityFactory<CTFMechanicalArm>
+
++0x0000:  0086ba70  CEntityFactory<CTFMechanicalArm>::Create(char const*)
++0x0004:  0086ba40  CEntityFactory<CTFMechanicalArm>::Destroy(IServerNetworkable*)
++0x0008:  0086ba60  CEntityFactory<CTFMechanicalArm>::GetEntitySize()

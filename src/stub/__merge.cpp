@@ -12,6 +12,7 @@
 #include "stub/lagcompensation.cpp"
 #include "stub/misc.cpp"
 #include "stub/nav.cpp"
+#include "stub/nextbot_cc.cpp"
 #include "stub/objects.cpp"
 #include "stub/particles.cpp"
 #include "stub/populators.cpp"

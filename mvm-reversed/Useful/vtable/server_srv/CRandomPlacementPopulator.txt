@@ -1,0 +1,10 @@
+CRandomPlacementPopulator
+
++0x0000:  00d60070  CRandomPlacementPopulator::~CRandomPlacementPopulator()
++0x0004:  00d600a0  CRandomPlacementPopulator::~CRandomPlacementPopulator()
++0x0008:  00d59430  CRandomPlacementPopulator::Parse(KeyValues*)
++0x000c:  00d5bad0  CRandomPlacementPopulator::PostInitialize()
++0x0010:  00d60010  IPopulator::Update()
++0x0014:  00d60020  IPopulator::UnpauseSpawning()
++0x0018:  00d60030  IPopulator::OnPlayerKilled(CTFPlayer*)
++0x001c:  00d60040  IPopulator::HasEventChangeAttributes(char const*) const

@@ -1,0 +1,3 @@
+CFmtStrN<256, false>
+
++0x0000:  000f3450  CFmtStrN<256, false>::InitQuietTruncation()

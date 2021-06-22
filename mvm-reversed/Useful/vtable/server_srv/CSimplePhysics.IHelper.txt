@@ -1,0 +1,4 @@
+CSimplePhysics::IHelper
+
++0x0000:  00000000  
++0x0004:  00000000  

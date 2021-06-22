@@ -1,0 +1,5 @@
+CEntityFactory<CBoneFollower>
+
++0x0000:  00b3fdc0  CEntityFactory<CBoneFollower>::Create(char const*)
++0x0004:  00b3fd40  CEntityFactory<CBoneFollower>::Destroy(IServerNetworkable*)
++0x0008:  00b3fd60  CEntityFactory<CBoneFollower>::GetEntitySize()

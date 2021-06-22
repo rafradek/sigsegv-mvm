@@ -1,0 +1,15 @@
+SVC_SetPause
+
++0x0000:  0008bdc0  SVC_SetPause::~SVC_SetPause()
++0x0004:  0008c1c0  SVC_SetPause::~SVC_SetPause()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b5b0  SVC_SetPause::Process()
++0x0014:  000863f0  SVC_SetPause::ReadFromBuffer(bf_read&)
++0x0018:  00080890  SVC_SetPause::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b590  SVC_SetPause::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b5a0  SVC_SetPause::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d0f0  SVC_SetPause::ToString() const

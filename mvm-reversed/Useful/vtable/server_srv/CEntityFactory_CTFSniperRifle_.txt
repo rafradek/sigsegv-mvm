@@ -1,0 +1,5 @@
+CEntityFactory<CTFSniperRifle>
+
++0x0000:  0088cae0  CEntityFactory<CTFSniperRifle>::Create(char const*)
++0x0004:  0088ca40  CEntityFactory<CTFSniperRifle>::Destroy(IServerNetworkable*)
++0x0008:  0088ca60  CEntityFactory<CTFSniperRifle>::GetEntitySize()

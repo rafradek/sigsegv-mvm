@@ -1,0 +1,5 @@
+CEntityFactory<CRallyPoint>
+
++0x0000:  0091de20  CEntityFactory<CRallyPoint>::Create(char const*)
++0x0004:  0091dae0  CEntityFactory<CRallyPoint>::Destroy(IServerNetworkable*)
++0x0008:  0091db00  CEntityFactory<CRallyPoint>::GetEntitySize()

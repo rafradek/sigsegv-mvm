@@ -1,0 +1,15 @@
+SVC_UpdateStringTable
+
++0x0000:  0008bdb0  SVC_UpdateStringTable::~SVC_UpdateStringTable()
++0x0004:  0008c1e0  SVC_UpdateStringTable::~SVC_UpdateStringTable()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b640  SVC_UpdateStringTable::Process()
++0x0014:  00086640  SVC_UpdateStringTable::ReadFromBuffer(bf_read&)
++0x0018:  00081db0  SVC_UpdateStringTable::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b620  SVC_UpdateStringTable::GetType() const
++0x0024:  0008b660  SVC_UpdateStringTable::GetGroup() const
++0x0028:  0008b630  SVC_UpdateStringTable::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d080  SVC_UpdateStringTable::ToString() const

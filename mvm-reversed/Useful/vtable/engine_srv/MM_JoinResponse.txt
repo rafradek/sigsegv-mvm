@@ -1,0 +1,15 @@
+MM_JoinResponse
+
++0x0000:  0008c770  MM_JoinResponse::~MM_JoinResponse()
++0x0004:  0008c7e0  MM_JoinResponse::~MM_JoinResponse()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008bc20  MM_JoinResponse::Process()
++0x0014:  0008ac20  MM_JoinResponse::ReadFromBuffer(bf_read&)
++0x0018:  0007ec20  MM_JoinResponse::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008bc00  MM_JoinResponse::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008bc10  MM_JoinResponse::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007caa0  MM_JoinResponse::ToString() const

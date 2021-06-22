@@ -1,0 +1,124 @@
+CBaseClient
+
++0x0000:  000cae30  CBaseClient::~CBaseClient()
++0x0004:  000caef0  CBaseClient::~CBaseClient()
++0x0008:  000c7fc0  CBaseClient::FireGameEvent(IGameEvent*)
++0x000c:  000cc2f0  CBaseClient::GetPlayerSlot() const
++0x0010:  000cc310  CBaseClient::GetUserID() const
++0x0014:  000c79c0  CBaseClient::GetNetworkID() const
++0x0018:  000cc330  CBaseClient::GetClientName() const
++0x001c:  000cc350  CBaseClient::GetNetChannel()
++0x0020:  000cc370  CBaseClient::GetServer()
++0x0024:  000c85b0  CBaseClient::GetUserSetting(char const*) const
++0x0028:  000ca9e0  CBaseClient::GetNetworkIDString() const
++0x002c:  000c8300  CBaseClient::Connect(char const*, int, INetChannel*, bool, int)
++0x0030:  000c8fe0  CBaseClient::Inactivate()
++0x0034:  000c7c60  CBaseClient::Reconnect()
++0x0038:  000c81f0  CBaseClient::Disconnect(char const*, ...)
++0x003c:  000c77d0  CBaseClient::SetRate(int, bool)
++0x0040:  000c7820  CBaseClient::GetRate() const
++0x0044:  000c7860  CBaseClient::SetUpdateRate(int, bool)
++0x0048:  000c78b0  CBaseClient::GetUpdateRate() const
++0x004c:  000c90f0  CBaseClient::Clear()
++0x0050:  000c79a0  CBaseClient::DemoRestart()
++0x0054:  000c7a40  CBaseClient::GetMaxAckTickCount() const
++0x0058:  000c8550  CBaseClient::ExecuteStringCommand(char const*)
++0x005c:  000cb1e0  CBaseClient::SendNetMsg(INetMessage&, bool)
++0x0060:  000c7ad0  CBaseClient::ClientPrintf(char const*, ...)
++0x0064:  000cc390  CBaseClient::IsConnected() const
++0x0068:  000cc3c0  CBaseClient::IsSpawned() const
++0x006c:  000cc3f0  CBaseClient::IsActive() const
++0x0070:  000cc420  CBaseClient::IsFakeClient() const
++0x0074:  000cc440  CBaseClient::IsHLTV() const
++0x0078:  000cc460  CBaseClient::IsReplay() const
++0x007c:  000cc480  CBaseClient::IsHearingClient(int) const
++0x0080:  000cc4a0  CBaseClient::IsProximityHearingClient(int) const
++0x0084:  000c7a00  CBaseClient::SetMaxRoutablePayloadSize(int)
++0x0088:  000cc4b0  CBaseClient::IsSplitScreenUser() const
++0x008c:  000c7910  CBaseClient::ProcessTick(NET_Tick*)
++0x0090:  000c7970  CBaseClient::ProcessStringCmd(NET_StringCmd*)
++0x0094:  000ca2b0  CBaseClient::ProcessSetConVar(NET_SetConVar*)
++0x0098:  000c8490  CBaseClient::ProcessSignonState(NET_SignonState*)
++0x009c:  000c7dd0  CBaseClient::ProcessClientInfo(CLC_ClientInfo*)
++0x00a0:  000c92b0  CBaseClient::ProcessBaselineAck(CLC_BaselineAck*)
++0x00a4:  000c7d00  CBaseClient::ProcessListenEvents(CLC_ListenEvents*)
++0x00a8:  000c7a80  CBaseClient::ProcessCmdKeyValues(CLC_CmdKeyValues*)
++0x00ac:  000c8bf0  CBaseClient::ConnectionStart(INetChannel*)
++0x00b0:  000ca630  CBaseClient::UpdateAcknowledgedFramecount(int)
++0x00b4:  000c8960  CBaseClient::ShouldSendMessages()
++0x00b8:  000c87d0  CBaseClient::UpdateSendState()
++0x00bc:  000c8630  CBaseClient::FillUserInfo(player_info_s&)
++0x00c0:  000c7b70  CBaseClient::UpdateUserSettings()
++0x00c4:  000ca7f0  CBaseClient::SetSignonState(int, int)
++0x00c8:  000c78f0  CBaseClient::WriteGameSounds(bf_write&)
++0x00cc:  000c78e0  CBaseClient::GetDeltaFrame(int)
++0x00d0:  000cb5b0  CBaseClient::SendSnapshot(CClientFrame*)
++0x00d4:  000caa30  CBaseClient::SendServerInfo()
++0x00d8:  000c8a50  CBaseClient::SendSignonData()
++0x00dc:  000c7eb0  CBaseClient::SpawnPlayer()
++0x00e0:  000c8420  CBaseClient::ActivatePlayer()
++0x00e4:  000c97e0  CBaseClient::SetName(char const*)
++0x00e8:  000ca210  CBaseClient::SetUserCVar(char const*, char const*)
++0x00ec:  000c8b30  CBaseClient::FreeBaselines()
++0x00f0:  000c7a90  CBaseClient::IgnoreTempEntity(CEventInfo*)
++0x00f4:  fffffffc  (unknown)
++0x00f8:  00235760  typeinfo for CBaseClient
++0x00fc:  000cae20  non-virtual thunk to CBaseClient::~CBaseClient()
++0x0100:  000caee0  non-virtual thunk to CBaseClient::~CBaseClient()
++0x0104:  000c8be0  non-virtual thunk to CBaseClient::ConnectionStart(INetChannel*)
++0x0108:  00000000  
++0x010c:  00000000  
++0x0110:  00000000  
++0x0114:  00000000  
++0x0118:  00000000  
++0x011c:  00000000  
++0x0120:  00000000  
++0x0124:  00000000  
++0x0128:  000c82f0  non-virtual thunk to CBaseClient::Connect(char const*, int, INetChannel*, bool, int)
++0x012c:  000c8fd0  non-virtual thunk to CBaseClient::Inactivate()
++0x0130:  000c7c50  non-virtual thunk to CBaseClient::Reconnect()
++0x0134:  000c81e0  non-virtual thunk to CBaseClient::Disconnect(char const*, ...)
++0x0138:  000cc2e0  non-virtual thunk to CBaseClient::GetPlayerSlot() const
++0x013c:  000cc300  non-virtual thunk to CBaseClient::GetUserID() const
++0x0140:  000c79b0  non-virtual thunk to CBaseClient::GetNetworkID() const
++0x0144:  000cc320  non-virtual thunk to CBaseClient::GetClientName() const
++0x0148:  000cc340  non-virtual thunk to CBaseClient::GetNetChannel()
++0x014c:  000cc360  non-virtual thunk to CBaseClient::GetServer()
++0x0150:  000c85a0  non-virtual thunk to CBaseClient::GetUserSetting(char const*) const
++0x0154:  000ca9d0  non-virtual thunk to CBaseClient::GetNetworkIDString() const
++0x0158:  000c77c0  non-virtual thunk to CBaseClient::SetRate(int, bool)
++0x015c:  000c7810  non-virtual thunk to CBaseClient::GetRate() const
++0x0160:  000c7850  non-virtual thunk to CBaseClient::SetUpdateRate(int, bool)
++0x0164:  000c78a0  non-virtual thunk to CBaseClient::GetUpdateRate() const
++0x0168:  000c90e0  non-virtual thunk to CBaseClient::Clear()
++0x016c:  000c7a30  non-virtual thunk to CBaseClient::GetMaxAckTickCount() const
++0x0170:  000c8540  non-virtual thunk to CBaseClient::ExecuteStringCommand(char const*)
++0x0174:  000cb1d0  non-virtual thunk to CBaseClient::SendNetMsg(INetMessage&, bool)
++0x0178:  000c7ac0  non-virtual thunk to CBaseClient::ClientPrintf(char const*, ...)
++0x017c:  000cc380  non-virtual thunk to CBaseClient::IsConnected() const
++0x0180:  000cc3b0  non-virtual thunk to CBaseClient::IsSpawned() const
++0x0184:  000cc3e0  non-virtual thunk to CBaseClient::IsActive() const
++0x0188:  000cc410  non-virtual thunk to CBaseClient::IsFakeClient() const
++0x018c:  000cc430  non-virtual thunk to CBaseClient::IsHLTV() const
++0x0190:  000cc450  non-virtual thunk to CBaseClient::IsReplay() const
++0x0194:  000cc470  non-virtual thunk to CBaseClient::IsHearingClient(int) const
++0x0198:  000cc490  non-virtual thunk to CBaseClient::IsProximityHearingClient(int) const
++0x019c:  000c79f0  non-virtual thunk to CBaseClient::SetMaxRoutablePayloadSize(int)
++0x01a0:  fffffff8  (unknown)
++0x01a4:  00235760  typeinfo for CBaseClient
++0x01a8:  000cae10  non-virtual thunk to CBaseClient::~CBaseClient()
++0x01ac:  000caed0  non-virtual thunk to CBaseClient::~CBaseClient()
++0x01b0:  000c7900  non-virtual thunk to CBaseClient::ProcessTick(NET_Tick*)
++0x01b4:  000c7960  non-virtual thunk to CBaseClient::ProcessStringCmd(NET_StringCmd*)
++0x01b8:  000ca2a0  non-virtual thunk to CBaseClient::ProcessSetConVar(NET_SetConVar*)
++0x01bc:  000c8480  non-virtual thunk to CBaseClient::ProcessSignonState(NET_SignonState*)
++0x01c0:  000c7dc0  non-virtual thunk to CBaseClient::ProcessClientInfo(CLC_ClientInfo*)
++0x01c4:  00000000  
++0x01c8:  00000000  
++0x01cc:  000c92a0  non-virtual thunk to CBaseClient::ProcessBaselineAck(CLC_BaselineAck*)
++0x01d0:  000c7cf0  non-virtual thunk to CBaseClient::ProcessListenEvents(CLC_ListenEvents*)
++0x01d4:  00000000  
++0x01d8:  00000000  
++0x01dc:  00000000  
++0x01e0:  00000000  
++0x01e4:  000c7a70  non-virtual thunk to CBaseClient::ProcessCmdKeyValues(CLC_CmdKeyValues*)

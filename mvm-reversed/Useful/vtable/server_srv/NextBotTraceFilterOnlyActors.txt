@@ -1,0 +1,6 @@
+NextBotTraceFilterOnlyActors
+
++0x0000:  00b0e660  NextBotTraceFilterOnlyActors::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  00b0e650  NextBotTraceFilterOnlyActors::GetTraceType() const
++0x0008:  0061fa90  CTraceFilterSimple::SetPassEntity(IHandleEntity const*)
++0x000c:  0061faa0  CTraceFilterSimple::SetCollisionGroup(int)

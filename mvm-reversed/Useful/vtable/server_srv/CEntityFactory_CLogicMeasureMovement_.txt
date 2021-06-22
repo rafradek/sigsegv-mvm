@@ -1,0 +1,5 @@
+CEntityFactory<CLogicMeasureMovement>
+
++0x0000:  00a9baf0  CEntityFactory<CLogicMeasureMovement>::Create(char const*)
++0x0004:  00a9baa0  CEntityFactory<CLogicMeasureMovement>::Destroy(IServerNetworkable*)
++0x0008:  00a9bac0  CEntityFactory<CLogicMeasureMovement>::GetEntitySize()

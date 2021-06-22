@@ -422,7 +422,7 @@ constexpr FORCEINLINE void VectorMA( const Vector& start, float scale, const Vec
 
 int VectorCompare (const float *v1, const float *v2);
 
-constexpr float VectorLength(const float *v)
+inline float VectorLength(const float *v)
 {
 	return FastSqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + FLT_EPSILON );
 }
@@ -1151,14 +1151,14 @@ float SmoothCurve_Tweak( float x, float flPeakPos=0.5, float flPeakSharpness=0.5
 //float ExponentialDecay( float decayTo, float decayTime, float dt );
 
 // halflife is time for value to reach 50%
-constexpr float ExponentialDecay( float halflife, float dt )
+inline float ExponentialDecay( float halflife, float dt )
 {
 	// log(0.5) == -0.69314718055994530941723212145818
 	return expf( -0.69314718f / halflife * dt);
 }
 
 // decayTo is factor the value should decay to in decayTime
-constexpr float ExponentialDecay( float decayTo, float decayTime, float dt )
+inline float ExponentialDecay( float decayTo, float decayTime, float dt )
 {
 	return expf( logf( decayTo ) / decayTime * dt);
 }
@@ -1166,7 +1166,7 @@ constexpr float ExponentialDecay( float decayTo, float decayTime, float dt )
 // Get the integrated distanced traveled
 // decayTo is factor the value should decay to in decayTime
 // dt is the time relative to the last velocity update
-constexpr float ExponentialDecayIntegral( float decayTo, float decayTime, float dt  )
+inline float ExponentialDecayIntegral( float decayTo, float decayTime, float dt  )
 {
 	return (powf( decayTo, dt / decayTime) * decayTime - decayTime) / logf( decayTo );
 }

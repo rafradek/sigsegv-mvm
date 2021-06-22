@@ -1,0 +1,5 @@
+CEntityFactory<CFish>
+
++0x0000:  00a5a550  CEntityFactory<CFish>::Create(char const*)
++0x0004:  00a5a520  CEntityFactory<CFish>::Destroy(IServerNetworkable*)
++0x0008:  00a5a540  CEntityFactory<CFish>::GetEntitySize()

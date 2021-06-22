@@ -1,0 +1,6 @@
+CWheelOfDoom::WOD_Dance
+
++0x0000:  00899810  CWheelOfDoom::WOD_Dance::InitEffect(float)
++0x0004:  00899cf0  CWheelOfDoom::WOD_BaseEffect::ActivateEffect(CWheelOfDoom::EffectData_t&)
++0x0008:  00896020  CWheelOfDoom::WOD_Dance::UpdateEffect(CWheelOfDoom::EffectData_t&)
++0x000c:  008974f0  CWheelOfDoom::WOD_Dance::DeactivateEffect(CWheelOfDoom::EffectData_t&)

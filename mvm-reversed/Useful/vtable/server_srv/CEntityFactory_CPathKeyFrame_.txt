@@ -1,0 +1,5 @@
+CEntityFactory<CPathKeyFrame>
+
++0x0000:  00aa8940  CEntityFactory<CPathKeyFrame>::Create(char const*)
++0x0004:  00aa8890  CEntityFactory<CPathKeyFrame>::Destroy(IServerNetworkable*)
++0x0008:  00aa88b0  CEntityFactory<CPathKeyFrame>::GetEntitySize()

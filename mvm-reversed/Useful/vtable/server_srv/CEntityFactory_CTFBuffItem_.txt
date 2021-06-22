@@ -1,0 +1,5 @@
+CEntityFactory<CTFBuffItem>
+
++0x0000:  0084e870  CEntityFactory<CTFBuffItem>::Create(char const*)
++0x0004:  0084e4c0  CEntityFactory<CTFBuffItem>::Destroy(IServerNetworkable*)
++0x0008:  0084e4e0  CEntityFactory<CTFBuffItem>::GetEntitySize()

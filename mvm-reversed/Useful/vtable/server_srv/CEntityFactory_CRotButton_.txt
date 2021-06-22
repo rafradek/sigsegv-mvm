@@ -1,0 +1,5 @@
+CEntityFactory<CRotButton>
+
++0x0000:  00a04e10  CEntityFactory<CRotButton>::Create(char const*)
++0x0004:  00a04cc0  CEntityFactory<CRotButton>::Destroy(IServerNetworkable*)
++0x0008:  00a04ce0  CEntityFactory<CRotButton>::GetEntitySize()

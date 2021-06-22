@@ -1,0 +1,58 @@
+CStaticPropMgr
+
++0x0000:  001981b0  CStaticPropMgr::Init()
++0x0004:  001987e0  CStaticPropMgr::Shutdown()
++0x0008:  0019aa50  CStaticPropMgr::LevelInit()
++0x000c:  001981c0  CStaticPropMgr::LevelInitClient()
++0x0010:  00198940  CStaticPropMgr::LevelShutdownClient()
++0x0014:  00199e90  CStaticPropMgr::LevelShutdown()
++0x0018:  00198370  CStaticPropMgr::RecomputeStaticLighting()
++0x001c:  00198670  CStaticPropMgr::IsPropInPVS(IHandleEntity*, unsigned char const*) const
++0x0020:  001981d0  CStaticPropMgr::GetStaticProp(IHandleEntity*)
++0x0024:  001983c0  CStaticPropMgr::GetLightCacheHandleForStaticProp(IHandleEntity*)
++0x0028:  001982b0  CStaticPropMgr::IsStaticProp(IHandleEntity*) const
++0x002c:  00198300  CStaticPropMgr::IsStaticProp(CBaseHandle) const
++0x0030:  00198320  CStaticPropMgr::GetStaticPropIndex(IHandleEntity*) const
++0x0034:  00198340  CStaticPropMgr::PropHasBakedLightingDisabled(IHandleEntity*) const
++0x0038:  00199f80  CStaticPropMgr::~CStaticPropMgr()
++0x003c:  0019a0a0  CStaticPropMgr::~CStaticPropMgr()
++0x0040:  00198260  CStaticPropMgr::GetStaticPropByIndex(int)
++0x0044:  00198430  CStaticPropMgr::ComputePropOpacity(Vector const&, float)
++0x0048:  00198480  CStaticPropMgr::TraceRayAgainstStaticProp(Ray_t const&, int, CGameTrace&)
++0x004c:  001984a0  CStaticPropMgr::AddDecalToStaticProp(Vector const&, Vector const&, int, int, bool, CGameTrace&)
++0x0050:  00198500  CStaticPropMgr::AddColorDecalToStaticProp(Vector const&, Vector const&, int, int, bool, CGameTrace&, bool, Color)
++0x0054:  00198520  CStaticPropMgr::AddShadowToStaticProp(unsigned short, IClientRenderable*)
++0x0058:  00198540  CStaticPropMgr::RemoveAllShadowsFromStaticProp(IClientRenderable*)
++0x005c:  00198560  CStaticPropMgr::GetStaticPropMaterialColorAndLighting(CGameTrace*, int, Vector&, Vector&)
++0x0060:  001993f0  CStaticPropMgr::CreateVPhysicsRepresentations(IPhysicsEnvironment*, IVPhysicsKeyHandler*, void*)
++0x0064:  0019b410  CStaticPropMgr::GetAllStaticProps(CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x0068:  0019b310  CStaticPropMgr::GetAllStaticPropsInAABB(Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x006c:  0019aa90  CStaticPropMgr::GetAllStaticPropsInOBB(Vector const&, Vector const&, Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x0070:  00199840  CStaticPropMgr::DrawStaticProps(IClientRenderable**, int, bool, bool)
++0x0074:  fffffffc  (unknown)
++0x0078:  0024bca0  typeinfo for CStaticPropMgr
++0x007c:  001993e0  non-virtual thunk to CStaticPropMgr::CreateVPhysicsRepresentations(IPhysicsEnvironment*, IVPhysicsKeyHandler*, void*)
++0x0080:  00198470  non-virtual thunk to CStaticPropMgr::TraceRayAgainstStaticProp(Ray_t const&, int, CGameTrace&)
++0x0084:  001982a0  non-virtual thunk to CStaticPropMgr::IsStaticProp(IHandleEntity*) const
++0x0088:  001982f0  non-virtual thunk to CStaticPropMgr::IsStaticProp(CBaseHandle) const
++0x008c:  00198250  non-virtual thunk to CStaticPropMgr::GetStaticPropByIndex(int)
++0x0090:  00198420  non-virtual thunk to CStaticPropMgr::ComputePropOpacity(Vector const&, float)
++0x0094:  00198490  non-virtual thunk to CStaticPropMgr::AddDecalToStaticProp(Vector const&, Vector const&, int, int, bool, CGameTrace&)
++0x0098:  00198510  non-virtual thunk to CStaticPropMgr::AddShadowToStaticProp(unsigned short, IClientRenderable*)
++0x009c:  00198530  non-virtual thunk to CStaticPropMgr::RemoveAllShadowsFromStaticProp(IClientRenderable*)
++0x00a0:  00198550  non-virtual thunk to CStaticPropMgr::GetStaticPropMaterialColorAndLighting(CGameTrace*, int, Vector&, Vector&)
++0x00a4:  0019b400  non-virtual thunk to CStaticPropMgr::GetAllStaticProps(CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x00a8:  0019b300  non-virtual thunk to CStaticPropMgr::GetAllStaticPropsInAABB(Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x00ac:  0019aa80  non-virtual thunk to CStaticPropMgr::GetAllStaticPropsInOBB(Vector const&, Vector const&, Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x00b0:  00199830  non-virtual thunk to CStaticPropMgr::DrawStaticProps(IClientRenderable**, int, bool, bool)
++0x00b4:  001984f0  non-virtual thunk to CStaticPropMgr::AddColorDecalToStaticProp(Vector const&, Vector const&, int, int, bool, CGameTrace&, bool, Color)
++0x00b8:  fffffff8  (unknown)
++0x00bc:  0024bca0  typeinfo for CStaticPropMgr
++0x00c0:  001993d0  non-virtual thunk to CStaticPropMgr::CreateVPhysicsRepresentations(IPhysicsEnvironment*, IVPhysicsKeyHandler*, void*)
++0x00c4:  00198460  non-virtual thunk to CStaticPropMgr::TraceRayAgainstStaticProp(Ray_t const&, int, CGameTrace&)
++0x00c8:  00198290  non-virtual thunk to CStaticPropMgr::IsStaticProp(IHandleEntity*) const
++0x00cc:  001982e0  non-virtual thunk to CStaticPropMgr::IsStaticProp(CBaseHandle) const
++0x00d0:  00198240  non-virtual thunk to CStaticPropMgr::GetStaticPropByIndex(int)
++0x00d4:  0019b3f0  non-virtual thunk to CStaticPropMgr::GetAllStaticProps(CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x00d8:  0019b2f0  non-virtual thunk to CStaticPropMgr::GetAllStaticPropsInAABB(Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)
++0x00dc:  0019aa70  non-virtual thunk to CStaticPropMgr::GetAllStaticPropsInOBB(Vector const&, Vector const&, Vector const&, Vector const&, CUtlVector<ICollideable*, CUtlMemory<ICollideable*, int> >*)

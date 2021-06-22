@@ -1,0 +1,5 @@
+CEntityFactory<CFuncVPhysicsClip>
+
++0x0000:  00a00920  CEntityFactory<CFuncVPhysicsClip>::Create(char const*)
++0x0004:  00a00420  CEntityFactory<CFuncVPhysicsClip>::Destroy(IServerNetworkable*)
++0x0008:  00a00440  CEntityFactory<CFuncVPhysicsClip>::GetEntitySize()

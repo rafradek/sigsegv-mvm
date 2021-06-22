@@ -20,12 +20,18 @@ public:
 	const char *GetName()              { return vt_GetName      (this); }
 	int GetNumPlayers()                { return vt_GetNumPlayers(this); }
 	CBasePlayer *GetPlayer(int iIndex) { return vt_GetPlayer    (this, iIndex); }
+
+	void AddPlayerNonVirtual(CBasePlayer *player)    { ft_AddPlayer                 (this, player); }
+	void RemovePlayerNonVirtual(CBasePlayer *player) { ft_RemovePlayer              (this, player); }
 	
 private:
 	static MemberVFuncThunk<const CTeam *, int>                vt_GetTeamNumber;
 	static MemberVFuncThunk<      CTeam *, const char *>       vt_GetName;
 	static MemberVFuncThunk<      CTeam *, int>                vt_GetNumPlayers;
 	static MemberVFuncThunk<      CTeam *, CBasePlayer *, int> vt_GetPlayer;
+
+	static MemberFuncThunk<      CTeam *, void, CBasePlayer *> ft_AddPlayer;
+	static MemberFuncThunk<      CTeam *, void, CBasePlayer *> ft_RemovePlayer;
 };
 
 

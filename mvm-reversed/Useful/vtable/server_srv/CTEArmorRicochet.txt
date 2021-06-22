@@ -1,0 +1,9 @@
+CTEArmorRicochet
+
++0x0000:  00c08260  CTEArmorRicochet::GetServerClass()
++0x0004:  00c08270  CTEArmorRicochet::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c08910  CTEArmorRicochet::~CTEArmorRicochet()
++0x000c:  00c08930  CTEArmorRicochet::~CTEArmorRicochet()
++0x0010:  00c08300  CTEMetalSparks::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

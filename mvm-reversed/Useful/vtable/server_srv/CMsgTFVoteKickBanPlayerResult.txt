@@ -1,0 +1,22 @@
+CMsgTFVoteKickBanPlayerResult
+
++0x0000:  00579490  CMsgTFVoteKickBanPlayerResult::~CMsgTFVoteKickBanPlayerResult()
++0x0004:  005794d0  CMsgTFVoteKickBanPlayerResult::~CMsgTFVoteKickBanPlayerResult()
++0x0008:  00000000  
++0x000c:  005a7040  CMsgTFVoteKickBanPlayerResult::New() const
++0x0010:  005827f0  CMsgTFVoteKickBanPlayerResult::Clear()
++0x0014:  005749c0  CMsgTFVoteKickBanPlayerResult::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005a1b80  CMsgTFVoteKickBanPlayerResult::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00589c90  CMsgTFVoteKickBanPlayerResult::ByteSize() const
++0x0028:  0057fc70  CMsgTFVoteKickBanPlayerResult::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005946a0  CMsgTFVoteKickBanPlayerResult::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dc8f0  CMsgTFVoteKickBanPlayerResult::GetCachedSize() const
++0x0034:  00574970  CMsgTFVoteKickBanPlayerResult::CopyFrom(google::protobuf::Message const&)
++0x0038:  005a7260  CMsgTFVoteKickBanPlayerResult::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00574960  CMsgTFVoteKickBanPlayerResult::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  005900e0  CMsgTFVoteKickBanPlayerResult::GetMetadata() const

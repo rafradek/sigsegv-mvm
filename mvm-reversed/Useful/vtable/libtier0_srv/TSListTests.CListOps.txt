@@ -1,0 +1,6 @@
+TSListTests::CListOps
+
++0x0000:  00014350  TSListTests::CListOps::Push(int)
++0x0004:  00014160  TSListTests::CListOps::Pop(int*)
++0x0008:  00014110  TSListTests::CListOps::Validate()
++0x000c:  00014120  TSListTests::CListOps::IsEmpty()

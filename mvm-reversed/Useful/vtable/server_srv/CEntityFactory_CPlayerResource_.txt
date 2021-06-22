@@ -1,0 +1,5 @@
+CEntityFactory<CPlayerResource>
+
++0x0000:  00b8a860  CEntityFactory<CPlayerResource>::Create(char const*)
++0x0004:  00b8a240  CEntityFactory<CPlayerResource>::Destroy(IServerNetworkable*)
++0x0008:  00b8a260  CEntityFactory<CPlayerResource>::GetEntitySize()

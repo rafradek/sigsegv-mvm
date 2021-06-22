@@ -1,0 +1,5 @@
+CEntityFactory<CHalloweenPickup>
+
++0x0000:  00740880  CEntityFactory<CHalloweenPickup>::Create(char const*)
++0x0004:  00740710  CEntityFactory<CHalloweenPickup>::Destroy(IServerNetworkable*)
++0x0008:  00740730  CEntityFactory<CHalloweenPickup>::GetEntitySize()

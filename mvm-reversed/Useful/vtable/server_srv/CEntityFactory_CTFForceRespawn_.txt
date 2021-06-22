@@ -1,0 +1,5 @@
+CEntityFactory<CTFForceRespawn>
+
++0x0000:  00cb7d80  CEntityFactory<CTFForceRespawn>::Create(char const*)
++0x0004:  00cb7ca0  CEntityFactory<CTFForceRespawn>::Destroy(IServerNetworkable*)
++0x0008:  00cb7cc0  CEntityFactory<CTFForceRespawn>::GetEntitySize()

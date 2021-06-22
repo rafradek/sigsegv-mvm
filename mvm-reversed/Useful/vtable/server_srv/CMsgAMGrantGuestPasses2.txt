@@ -1,0 +1,22 @@
+CMsgAMGrantGuestPasses2
+
++0x0000:  00538c30  CMsgAMGrantGuestPasses2::~CMsgAMGrantGuestPasses2()
++0x0004:  00538c70  CMsgAMGrantGuestPasses2::~CMsgAMGrantGuestPasses2()
++0x0008:  00000000  
++0x000c:  00560760  CMsgAMGrantGuestPasses2::New() const
++0x0010:  0053ccd0  CMsgAMGrantGuestPasses2::Clear()
++0x0014:  005360c0  CMsgAMGrantGuestPasses2::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0054c080  CMsgAMGrantGuestPasses2::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00544630  CMsgAMGrantGuestPasses2::ByteSize() const
++0x0028:  0053b1a0  CMsgAMGrantGuestPasses2::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  0054a240  CMsgAMGrantGuestPasses2::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572b10  CMsgAMGrantGuestPasses2::GetCachedSize() const
++0x0034:  00536070  CMsgAMGrantGuestPasses2::CopyFrom(google::protobuf::Message const&)
++0x0038:  00560960  CMsgAMGrantGuestPasses2::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00536060  CMsgAMGrantGuestPasses2::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545090  CMsgAMGrantGuestPasses2::GetMetadata() const

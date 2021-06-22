@@ -1,0 +1,15 @@
+NET_SetConVar
+
++0x0000:  0008c570  NET_SetConVar::~NET_SetConVar()
++0x0004:  0008c5c0  NET_SetConVar::~NET_SetConVar()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b050  NET_SetConVar::Process()
++0x0014:  0008a2a0  NET_SetConVar::ReadFromBuffer(bf_read&)
++0x0018:  0007e2b0  NET_SetConVar::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b030  NET_SetConVar::GetType() const
++0x0024:  0008b070  NET_SetConVar::GetGroup() const
++0x0028:  0008b040  NET_SetConVar::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d960  NET_SetConVar::ToString() const

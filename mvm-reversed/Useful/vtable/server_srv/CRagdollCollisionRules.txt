@@ -1,0 +1,4 @@
+CRagdollCollisionRules
+
++0x0000:  00704cb0  CRagdollCollisionRules::ParseKeyValue(void*, char const*, char const*)
++0x0004:  00704af0  CRagdollCollisionRules::SetDefaults(void*)

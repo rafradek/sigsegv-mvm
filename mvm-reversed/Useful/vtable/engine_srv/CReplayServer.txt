@@ -1,0 +1,115 @@
+CReplayServer
+
++0x0000:  0018dc90  CReplayServer::~CReplayServer()
++0x0004:  0018de60  CReplayServer::~CReplayServer()
++0x0008:  0018d480  CReplayServer::FireGameEvent(IGameEvent*)
++0x000c:  0018dfb0  CReplayServer::IsMultiplayer() const
++0x0010:  0018dfd0  CReplayServer::IsReplay() const
++0x0014:  0018b780  CReplayServer::Init(bool)
++0x0018:  0018c360  CReplayServer::Clear()
++0x001c:  0018b6b0  CReplayServer::Shutdown()
++0x0020:  0018b7c0  CReplayServer::FillServerInfo(SVC_ServerInfo&)
++0x0024:  0018b750  CReplayServer::GetNetStats(float&, float&)
++0x0028:  0018b5d0  CReplayServer::GetChallengeType(netadr_s&)
++0x002c:  0018b810  CReplayServer::GetName() const
++0x0030:  0018b5f0  CReplayServer::GetPassword() const
++0x0034:  0018b610  CReplayServer::ConnectClient(netadr_s&, int, int, int, int, char const*, char const*, char const*, int)
++0x0038:  0018b630  CReplayServer::ReplyChallenge(netadr_s&, int)
++0x003c:  0018b650  CReplayServer::ReplyServerChallenge(netadr_s&)
++0x0040:  0018b670  CReplayServer::RejectConnection(netadr_s const&, int, char const*)
++0x0044:  0018b690  CReplayServer::CreateFakeClient(char const*)
++0x0048:  0018b5b0  CReplayServer::GetBaseServer()
++0x004c:  0018dff0  CReplayServer::GetDirector()
++0x0050:  0018b500  CReplayServer::GetReplaySlot()
++0x0054:  0018b520  CReplayServer::GetOnlineTime()
++0x0058:  0018e010  CReplayServer::BroadcastEvent(IGameEvent*)
++0x005c:  0018e050  CReplayServer::IsRecording()
++0x0060:  0018bac0  CReplayServer::StartRecording()
++0x0064:  0018ba70  CReplayServer::StopRecording()
++0x0068:  0018b4c0  CReplayServer::SetMaxClients(int)
++0x006c:  0018b590  CReplayServer::UserInfoChanged(int)
++0x0070:  0018b570  CReplayServer::ShouldUpdateMasterServer()
++0x0074:  fffffffc  (unknown)
++0x0078:  0024ac20  typeinfo for CReplayServer
++0x007c:  0018dc80  non-virtual thunk to CReplayServer::~CReplayServer()
++0x0080:  0018de50  non-virtual thunk to CReplayServer::~CReplayServer()
++0x0084:  000d6bf0  CBaseServer::ProcessConnectionlessPacket(netpacket_s*)
++0x0088:  000d2e60  CBaseServer::GetNumClients() const
++0x008c:  000d2eb0  CBaseServer::GetNumProxies() const
++0x0090:  000d2e10  CBaseServer::GetNumFakeClients() const
++0x0094:  000d9170  CBaseServer::GetMaxClients() const
++0x0098:  000d9180  CBaseServer::GetClient(int)
++0x009c:  000d91b0  CBaseServer::GetClientCount() const
++0x00a0:  000d9320  CBaseServer::GetUDPPort() const
++0x00a4:  000d30f0  CBaseServer::GetTime() const
++0x00a8:  000d91c0  CBaseServer::GetTick() const
++0x00ac:  000d91d0  CBaseServer::GetTickInterval() const
++0x00b0:  0018b800  non-virtual thunk to CReplayServer::GetName() const
++0x00b4:  000d91e0  CBaseServer::GetMapName() const
++0x00b8:  000d91f0  CBaseServer::GetSpawnCount() const
++0x00bc:  000d9200  CBaseServer::GetNumClasses() const
++0x00c0:  000d9210  CBaseServer::GetClassBits() const
++0x00c4:  0018b740  non-virtual thunk to CReplayServer::GetNetStats(float&, float&)
++0x00c8:  000d2f50  CBaseServer::GetNumPlayers()
++0x00cc:  000d49e0  CBaseServer::GetPlayerInfo(int, player_info_s*)
++0x00d0:  000d9230  CBaseServer::IsActive() const
++0x00d4:  000d9240  CBaseServer::IsLoading() const
++0x00d8:  000d9250  CBaseServer::IsDedicated() const
++0x00dc:  000d9260  CBaseServer::IsPaused() const
++0x00e0:  0018dfa0  non-virtual thunk to CReplayServer::IsMultiplayer() const
++0x00e4:  000d9290  CBaseServer::IsPausable() const
++0x00e8:  000d92a0  CBaseServer::IsHLTV() const
++0x00ec:  0018dfc0  non-virtual thunk to CReplayServer::IsReplay() const
++0x00f0:  0018b5e0  non-virtual thunk to CReplayServer::GetPassword() const
++0x00f4:  000d42c0  CBaseServer::SetPaused(bool)
++0x00f8:  000d4130  CBaseServer::SetPassword(char const*)
++0x00fc:  000d31c0  CBaseServer::BroadcastMessage(INetMessage&, bool, bool)
++0x0100:  000d4350  CBaseServer::BroadcastMessage(INetMessage&, IRecipientFilter&)
++0x0104:  000d3110  CBaseServer::DisconnectClient(IClient*, char const*)
++0x0108:  000d9220  CBaseServer::GetCPUUsage()
++0x010c:  000d33f0  CBaseServer::BroadcastPrintf(char const*, ...)
++0x0110:  0018b4b0  non-virtual thunk to CReplayServer::SetMaxClients(int)
++0x0114:  001a1300  CBaseServer::WriteDeltaEntities(CBaseClient*, CClientFrame*, CClientFrame*, bf_write&)
++0x0118:  000d8810  CBaseServer::WriteTempEntities(CBaseClient*, CFrameSnapshot*, CFrameSnapshot*, bf_write&, int)
++0x011c:  0018b770  non-virtual thunk to CReplayServer::Init(bool)
++0x0120:  0018c350  non-virtual thunk to CReplayServer::Clear()
++0x0124:  0018b6a0  non-virtual thunk to CReplayServer::Shutdown()
++0x0128:  0018b680  non-virtual thunk to CReplayServer::CreateFakeClient(char const*)
++0x012c:  000d92c0  CBaseServer::RemoveClientFromGame(CBaseClient*)
++0x0130:  000d4bc0  CBaseServer::SendClientMessages(bool)
++0x0134:  0018b7b0  non-virtual thunk to CReplayServer::FillServerInfo(SVC_ServerInfo&)
++0x0138:  0018b580  non-virtual thunk to CReplayServer::UserInfoChanged(int)
++0x013c:  0018b660  non-virtual thunk to CReplayServer::RejectConnection(netadr_s const&, int, char const*)
++0x0140:  000d4260  CBaseServer::CheckIPRestrictions(netadr_s const&, int)
++0x0144:  0018b600  non-virtual thunk to CReplayServer::ConnectClient(netadr_s&, int, int, int, int, char const*, char const*, char const*, int)
++0x0148:  000d86a0  CBaseServer::GetFreeClient(netadr_s&)
++0x014c:  000d92d0  CBaseServer::CreateNewClient(int)
++0x0150:  000d92e0  CBaseServer::FinishCertificateCheck(netadr_s&, int, char const*, int)
++0x0154:  000d3d10  CBaseServer::GetChallengeNr(netadr_s&)
++0x0158:  0018b5c0  non-virtual thunk to CReplayServer::GetChallengeType(netadr_s&)
++0x015c:  000d40e0  CBaseServer::CheckProtocol(netadr_s&, int, int)
++0x0160:  000d4170  CBaseServer::CheckChallengeNr(netadr_s&, int)
++0x0164:  000d3810  CBaseServer::CheckChallengeType(CBaseClient*, int, netadr_s&, int, char const*, int, int)
++0x0168:  000d3780  CBaseServer::CheckPassword(netadr_s&, char const*, char const*)
++0x016c:  000d3480  CBaseServer::CheckIPConnectionReuse(netadr_s&)
++0x0170:  0018b620  non-virtual thunk to CReplayServer::ReplyChallenge(netadr_s&, int)
++0x0174:  0018b640  non-virtual thunk to CReplayServer::ReplyServerChallenge(netadr_s&)
++0x0178:  000d3a70  CBaseServer::CalculateCPUUsage()
++0x017c:  0018b560  non-virtual thunk to CReplayServer::ShouldUpdateMasterServer()
++0x0180:  000d92f0  CBaseServer::UpdateMasterServerPlayers()
++0x0184:  fffffe60  (unknown)
++0x0188:  0024ac20  typeinfo for CReplayServer
++0x018c:  0018dc70  non-virtual thunk to CReplayServer::~CReplayServer()
++0x0190:  0018de40  non-virtual thunk to CReplayServer::~CReplayServer()
++0x0194:  fffffe20  (unknown)
++0x0198:  0024ac20  typeinfo for CReplayServer
++0x019c:  0018dc60  non-virtual thunk to CReplayServer::~CReplayServer()
++0x01a0:  0018de30  non-virtual thunk to CReplayServer::~CReplayServer()
++0x01a4:  0018b5a0  non-virtual thunk to CReplayServer::GetBaseServer()
++0x01a8:  0018dfe0  non-virtual thunk to CReplayServer::GetDirector()
++0x01ac:  0018b4f0  non-virtual thunk to CReplayServer::GetReplaySlot()
++0x01b0:  0018b510  non-virtual thunk to CReplayServer::GetOnlineTime()
++0x01b4:  0018e000  non-virtual thunk to CReplayServer::BroadcastEvent(IGameEvent*)
++0x01b8:  0018e040  non-virtual thunk to CReplayServer::IsRecording()
++0x01bc:  0018bab0  non-virtual thunk to CReplayServer::StartRecording()
++0x01c0:  0018ba60  non-virtual thunk to CReplayServer::StopRecording()

@@ -1,0 +1,5 @@
+CEntityFactory<CFuncSmokeVolume>
+
++0x0000:  00a71fc0  CEntityFactory<CFuncSmokeVolume>::Create(char const*)
++0x0004:  00a71f40  CEntityFactory<CFuncSmokeVolume>::Destroy(IServerNetworkable*)
++0x0008:  00a71f60  CEntityFactory<CFuncSmokeVolume>::GetEntitySize()

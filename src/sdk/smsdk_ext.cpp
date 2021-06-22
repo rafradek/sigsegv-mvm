@@ -310,21 +310,13 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 #endif
 
 /** Exposes the extension to Metamod */
-SMM_API ISmmPlugin *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
+DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
-	Msg("Is null %d\n", g_pExtensionIface);
 	return g_pExtensionIface;
 }
 
-SMM_API void UnloadInterface_MMS()
+DLL_EXPORT void UnloadInterface_MMS()
 {
-}
-
-void *CreateInterface(const char *pName, int *pReturnCode)
-{
-	Msg("CreateInterface %s %d\n", pName, g_pExtensionIface);
-	if (strcmp(pName, "ISmmPlugin") == 0)
-		return g_pExtensionIface;
 }
 
 bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)

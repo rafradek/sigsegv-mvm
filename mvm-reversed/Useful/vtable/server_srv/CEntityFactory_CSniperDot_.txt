@@ -1,0 +1,5 @@
+CEntityFactory<CSniperDot>
+
++0x0000:  0088cc10  CEntityFactory<CSniperDot>::Create(char const*)
++0x0004:  0088c9b0  CEntityFactory<CSniperDot>::Destroy(IServerNetworkable*)
++0x0008:  0088c9d0  CEntityFactory<CSniperDot>::GetEntitySize()

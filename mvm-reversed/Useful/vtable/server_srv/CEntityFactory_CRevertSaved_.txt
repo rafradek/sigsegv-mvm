@@ -1,0 +1,5 @@
+CEntityFactory<CRevertSaved>
+
++0x0000:  00b7d030  CEntityFactory<CRevertSaved>::Create(char const*)
++0x0004:  00b7cca0  CEntityFactory<CRevertSaved>::Destroy(IServerNetworkable*)
++0x0008:  00b7ccc0  CEntityFactory<CRevertSaved>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTeamTrainWatcher>
+
++0x0000:  00c03f20  CEntityFactory<CTeamTrainWatcher>::Create(char const*)
++0x0004:  00c03ca0  CEntityFactory<CTeamTrainWatcher>::Destroy(IServerNetworkable*)
++0x0008:  00c03cc0  CEntityFactory<CTeamTrainWatcher>::GetEntitySize()

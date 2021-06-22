@@ -1,0 +1,4 @@
+VStdAllocator
+
++0x0000:  000b56f0  VStdAllocator::Alloc(unsigned long)
++0x0004:  000b56e0  VStdAllocator::Free(void*)

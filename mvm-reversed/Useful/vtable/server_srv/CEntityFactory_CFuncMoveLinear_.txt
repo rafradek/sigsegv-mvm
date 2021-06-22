@@ -1,0 +1,5 @@
+CEntityFactory<CFuncMoveLinear>
+
++0x0000:  00a705c0  CEntityFactory<CFuncMoveLinear>::Create(char const*)
++0x0004:  00a70510  CEntityFactory<CFuncMoveLinear>::Destroy(IServerNetworkable*)
++0x0008:  00a70530  CEntityFactory<CFuncMoveLinear>::GetEntitySize()

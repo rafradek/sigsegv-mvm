@@ -1,0 +1,9 @@
+CTEBeamRing
+
++0x0000:  00c0bb00  CTEBeamRing::GetServerClass()
++0x0004:  00c0bb10  CTEBeamRing::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c0bb50  CTEBeamRing::~CTEBeamRing()
++0x000c:  00c0bb70  CTEBeamRing::~CTEBeamRing()
++0x0010:  00c0bba0  CTEBeamRing::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

@@ -1,0 +1,5 @@
+CEntityFactory<CFuncVehicleClip>
+
++0x0000:  00a00800  CEntityFactory<CFuncVehicleClip>::Create(char const*)
++0x0004:  00a004e0  CEntityFactory<CFuncVehicleClip>::Destroy(IServerNetworkable*)
++0x0008:  00a00500  CEntityFactory<CFuncVehicleClip>::GetEntitySize()

@@ -1,0 +1,15 @@
+SVC_Sounds
+
++0x0000:  0008bd90  SVC_Sounds::~SVC_Sounds()
++0x0004:  0008c220  SVC_Sounds::~SVC_Sounds()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b730  SVC_Sounds::Process()
++0x0014:  00087030  SVC_Sounds::ReadFromBuffer(bf_read&)
++0x0018:  00082040  SVC_Sounds::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b710  SVC_Sounds::GetType() const
++0x0024:  0008b750  SVC_Sounds::GetGroup() const
++0x0028:  0008b720  SVC_Sounds::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cf70  SVC_Sounds::ToString() const

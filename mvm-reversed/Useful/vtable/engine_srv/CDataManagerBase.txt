@@ -1,0 +1,9 @@
+CDataManagerBase
+
++0x0000:  001e2d50  CDataManagerBase::Lock()
++0x0004:  001e2d60  CDataManagerBase::TryLock()
++0x0008:  001e2d70  CDataManagerBase::Unlock()
++0x000c:  001e1e50  CDataManagerBase::~CDataManagerBase()
++0x0010:  001e1e70  CDataManagerBase::~CDataManagerBase()
++0x0014:  00000000  
++0x0018:  00000000  

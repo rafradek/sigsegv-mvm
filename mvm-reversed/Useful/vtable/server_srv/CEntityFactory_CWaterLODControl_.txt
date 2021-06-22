@@ -1,0 +1,5 @@
+CEntityFactory<CWaterLODControl>
+
++0x0000:  00e6c660  CEntityFactory<CWaterLODControl>::Create(char const*)
++0x0004:  00e6c5c0  CEntityFactory<CWaterLODControl>::Destroy(IServerNetworkable*)
++0x0008:  00e6c5e0  CEntityFactory<CWaterLODControl>::GetEntitySize()

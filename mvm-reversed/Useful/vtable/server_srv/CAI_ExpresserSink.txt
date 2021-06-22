@@ -1,0 +1,5 @@
+CAI_ExpresserSink
+
++0x0000:  008dc560  CAI_ExpresserSink::OnSpokeConcept(char const*, AI_Response*)
++0x0004:  008dc570  CAI_ExpresserSink::OnStartSpeaking()
++0x0008:  008dc580  CAI_ExpresserSink::UseSemaphore()

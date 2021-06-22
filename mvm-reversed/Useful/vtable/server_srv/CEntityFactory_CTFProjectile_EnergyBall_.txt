@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_EnergyBall>
+
++0x0000:  00e219e0  CEntityFactory<CTFProjectile_EnergyBall>::Create(char const*)
++0x0004:  00e219b0  CEntityFactory<CTFProjectile_EnergyBall>::Destroy(IServerNetworkable*)
++0x0008:  00e219d0  CEntityFactory<CTFProjectile_EnergyBall>::GetEntitySize()

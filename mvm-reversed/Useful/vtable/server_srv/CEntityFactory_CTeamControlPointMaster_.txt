@@ -1,0 +1,5 @@
+CEntityFactory<CTeamControlPointMaster>
+
++0x0000:  00bf64f0  CEntityFactory<CTeamControlPointMaster>::Create(char const*)
++0x0004:  00bf64c0  CEntityFactory<CTeamControlPointMaster>::Destroy(IServerNetworkable*)
++0x0008:  00bf64e0  CEntityFactory<CTeamControlPointMaster>::GetEntitySize()

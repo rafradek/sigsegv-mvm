@@ -1,0 +1,22 @@
+CMsgGCMsgSetOptions_MessageRange
+
++0x0000:  00539200  CMsgGCMsgSetOptions_MessageRange::~CMsgGCMsgSetOptions_MessageRange()
++0x0004:  00539240  CMsgGCMsgSetOptions_MessageRange::~CMsgGCMsgSetOptions_MessageRange()
++0x0008:  00000000  
++0x000c:  00567a10  CMsgGCMsgSetOptions_MessageRange::New() const
++0x0010:  0053d0c0  CMsgGCMsgSetOptions_MessageRange::Clear()
++0x0014:  00536bc0  CMsgGCMsgSetOptions_MessageRange::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0054ab30  CMsgGCMsgSetOptions_MessageRange::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00540ff0  CMsgGCMsgSetOptions_MessageRange::ByteSize() const
++0x0028:  00537520  CMsgGCMsgSetOptions_MessageRange::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00546170  CMsgGCMsgSetOptions_MessageRange::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572ca0  CMsgGCMsgSetOptions_MessageRange::GetCachedSize() const
++0x0034:  00536b70  CMsgGCMsgSetOptions_MessageRange::CopyFrom(google::protobuf::Message const&)
++0x0038:  00567fd0  CMsgGCMsgSetOptions_MessageRange::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00536b60  CMsgGCMsgSetOptions_MessageRange::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00544a90  CMsgGCMsgSetOptions_MessageRange::GetMetadata() const

@@ -1,0 +1,5 @@
+CEntityFactory<CHybridMap_CTF_CP>
+
++0x0000:  0079db80  CEntityFactory<CHybridMap_CTF_CP>::Create(char const*)
++0x0004:  0079be70  CEntityFactory<CHybridMap_CTF_CP>::Destroy(IServerNetworkable*)
++0x0008:  0079be90  CEntityFactory<CHybridMap_CTF_CP>::GetEntitySize()

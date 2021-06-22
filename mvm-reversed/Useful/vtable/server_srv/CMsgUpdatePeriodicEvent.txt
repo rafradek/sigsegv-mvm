@@ -1,0 +1,22 @@
+CMsgUpdatePeriodicEvent
+
++0x0000:  004dde50  CMsgUpdatePeriodicEvent::~CMsgUpdatePeriodicEvent()
++0x0004:  004dde90  CMsgUpdatePeriodicEvent::~CMsgUpdatePeriodicEvent()
++0x0008:  00000000  
++0x000c:  0050dba0  CMsgUpdatePeriodicEvent::New() const
++0x0010:  004e4660  CMsgUpdatePeriodicEvent::Clear()
++0x0014:  004dbb40  CMsgUpdatePeriodicEvent::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f7140  CMsgUpdatePeriodicEvent::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e7da0  CMsgUpdatePeriodicEvent::ByteSize() const
++0x0028:  004deb90  CMsgUpdatePeriodicEvent::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004ef560  CMsgUpdatePeriodicEvent::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520a70  CMsgUpdatePeriodicEvent::GetCachedSize() const
++0x0034:  004dbaf0  CMsgUpdatePeriodicEvent::CopyFrom(google::protobuf::Message const&)
++0x0038:  0050dd70  CMsgUpdatePeriodicEvent::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dbae0  CMsgUpdatePeriodicEvent::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed710  CMsgUpdatePeriodicEvent::GetMetadata() const

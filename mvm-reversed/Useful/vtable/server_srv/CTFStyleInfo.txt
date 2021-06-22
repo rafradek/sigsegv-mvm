@@ -1,0 +1,6 @@
+CTFStyleInfo
+
++0x0000:  007ba840  CTFStyleInfo::~CTFStyleInfo()
++0x0004:  007ba7c0  CTFStyleInfo::~CTFStyleInfo()
++0x0008:  007b30e0  CTFStyleInfo::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x000c:  007b4b30  CTFStyleInfo::GeneratePrecacheModelStringsForStyle(CUtlVector<char const*, CUtlMemory<char const*, int> >*) const

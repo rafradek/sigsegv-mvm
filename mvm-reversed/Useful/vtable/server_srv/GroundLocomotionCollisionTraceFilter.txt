@@ -1,0 +1,6 @@
+GroundLocomotionCollisionTraceFilter
+
++0x0000:  00af64f0  GroundLocomotionCollisionTraceFilter::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0061fa80  CTraceFilter::GetTraceType() const
++0x0008:  0061fa90  CTraceFilterSimple::SetPassEntity(IHandleEntity const*)
++0x000c:  0061faa0  CTraceFilterSimple::SetCollisionGroup(int)

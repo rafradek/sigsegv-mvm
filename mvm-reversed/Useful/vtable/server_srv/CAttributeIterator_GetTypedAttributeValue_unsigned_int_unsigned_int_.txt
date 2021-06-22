@@ -1,0 +1,11 @@
+CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>
+
++0x0000:  006578d0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::~CAttributeIterator_GetTypedAttributeValue()
++0x0004:  00657a10  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::~CAttributeIterator_GetTypedAttributeValue()
++0x0008:  00657950  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  00657990  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  006579a0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  006579b0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  006579c0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  006579d0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  006579e0  CAttributeIterator_GetTypedAttributeValue<unsigned int, unsigned int>::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

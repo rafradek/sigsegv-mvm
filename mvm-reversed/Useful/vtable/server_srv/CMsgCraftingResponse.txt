@@ -1,0 +1,22 @@
+CMsgCraftingResponse
+
++0x0000:  00532c60  CMsgCraftingResponse::~CMsgCraftingResponse()
++0x0004:  00532cb0  CMsgCraftingResponse::~CMsgCraftingResponse()
++0x0008:  00000000  
++0x000c:  0052b450  CMsgCraftingResponse::New() const
++0x0010:  00524e10  CMsgCraftingResponse::Clear()
++0x0014:  00521cc0  CMsgCraftingResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00533120  CMsgCraftingResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005227c0  CMsgCraftingResponse::ByteSize() const
++0x0028:  00522ea0  CMsgCraftingResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00522ae0  CMsgCraftingResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00533bf0  CMsgCraftingResponse::GetCachedSize() const
++0x0034:  00521c70  CMsgCraftingResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  0052b5c0  CMsgCraftingResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00521c60  CMsgCraftingResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00527560  CMsgCraftingResponse::GetMetadata() const

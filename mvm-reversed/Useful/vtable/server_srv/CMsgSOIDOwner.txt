@@ -1,0 +1,22 @@
+CMsgSOIDOwner
+
++0x0000:  00f5a8f0  CMsgSOIDOwner::~CMsgSOIDOwner()
++0x0004:  00f5a930  CMsgSOIDOwner::~CMsgSOIDOwner()
++0x0008:  00000000  
++0x000c:  00f623b0  CMsgSOIDOwner::New() const
++0x0010:  00f5c660  CMsgSOIDOwner::Clear()
++0x0014:  00f59730  CMsgSOIDOwner::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00f60c40  CMsgSOIDOwner::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00f5d340  CMsgSOIDOwner::ByteSize() const
++0x0028:  00f5bb10  CMsgSOIDOwner::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00f5ec00  CMsgSOIDOwner::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00f6fa70  CMsgSOIDOwner::GetCachedSize() const
++0x0034:  00f596e0  CMsgSOIDOwner::CopyFrom(google::protobuf::Message const&)
++0x0038:  00f62f00  CMsgSOIDOwner::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00f596d0  CMsgSOIDOwner::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00f5fac0  CMsgSOIDOwner::GetMetadata() const

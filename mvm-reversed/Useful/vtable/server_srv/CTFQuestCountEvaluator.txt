@@ -1,0 +1,29 @@
+CTFQuestCountEvaluator
+
++0x0000:  0080cec0  CTFQuestCountEvaluator::~CTFQuestCountEvaluator()
++0x0004:  0080cf70  CTFQuestCountEvaluator::~CTFQuestCountEvaluator()
++0x0008:  00756db0  CTFQuestEvaluator::GetBaseName() const
++0x000c:  00809180  CTFQuestCountEvaluator::GetConditionName() const
++0x0010:  00756d00  CTFQuestCondition::GetValueString() const
++0x0014:  0080f470  CTFQuestCountEvaluator::BInitFromKV(KeyValues*, CUtlVector<CUtlString, CUtlMemory<CUtlString, int> >*)
++0x0018:  00807e30  CTFQuestCondition::PrintDebugText() const
++0x001c:  00807c10  CTFQuestCondition::GetQuestOwner() const
++0x0020:  0080b7e0  CTFQuestCountEvaluator::IsValidForPlayer(CTFPlayer const*, CBitVec<6>&) const
++0x0024:  00756d10  CTFQuestCondition::IsRestriction() const
++0x0028:  00756d20  CTFQuestCondition::IsOperator() const
++0x002c:  00756dc0  CTFQuestEvaluator::IsEvaluator() const
++0x0030:  0080f420  CTFQuestCountEvaluator::AddChildByName(char const*)
++0x0034:  0080f1e0  CTFQuestCountEvaluator::GetChildren(CUtlVector<CTFQuestCondition*, CUtlMemory<CTFQuestCondition*, int> >&)
++0x0038:  0080a020  CTFQuestCountEvaluator::RemoveAndDeleteChild(CTFQuestCondition*)
++0x003c:  008099a0  CTFQuestCountEvaluator::GetRequiredParamKeys(KeyValues*)
++0x0040:  00809840  CTFQuestCountEvaluator::GetOutputKeyValues(KeyValues*)
++0x0044:  00807c60  CTFQuestEvaluator::GetTypeNameCount() const
++0x0048:  00807c70  CTFQuestEvaluator::GetTypeName(int) const
++0x004c:  008091e0  CTFQuestCountEvaluator::GetValidChildrenTypeCount() const
++0x0050:  008091f0  CTFQuestCountEvaluator::GetValidChildrenType(int) const
++0x0054:  00809200  CTFQuestCountEvaluator::GetMaxInputCount() const
++0x0058:  00756d90  CTFQuestCondition::GetEventName() const
++0x005c:  00756da0  CTFQuestCondition::SetEventName(char const*)
++0x0060:  0080a410  CTFQuestCountEvaluator::EvaluateCondition(CTFQuestEvaluator*, int)
++0x0064:  00809190  CTFQuestCountEvaluator::ResetCondition()
++0x0068:  008091d0  CTFQuestCountEvaluator::GetChildrenSubTypeCount() const

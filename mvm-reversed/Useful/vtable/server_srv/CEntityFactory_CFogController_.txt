@@ -1,0 +1,5 @@
+CEntityFactory<CFogController>
+
++0x0000:  00a5c760  CEntityFactory<CFogController>::Create(char const*)
++0x0004:  00a5c540  CEntityFactory<CFogController>::Destroy(IServerNetworkable*)
++0x0008:  00a5c560  CEntityFactory<CFogController>::GetEntitySize()

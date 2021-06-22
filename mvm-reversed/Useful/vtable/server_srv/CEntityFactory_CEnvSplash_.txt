@@ -1,0 +1,5 @@
+CEntityFactory<CEnvSplash>
+
++0x0000:  00a28670  CEntityFactory<CEnvSplash>::Create(char const*)
++0x0004:  00a27770  CEntityFactory<CEnvSplash>::Destroy(IServerNetworkable*)
++0x0008:  00a27790  CEntityFactory<CEnvSplash>::GetEntitySize()

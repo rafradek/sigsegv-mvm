@@ -1,0 +1,5 @@
+CEntityFactory<CEnvLaser>
+
++0x0000:  00a3a030  CEntityFactory<CEnvLaser>::Create(char const*)
++0x0004:  00a39fe0  CEntityFactory<CEnvLaser>::Destroy(IServerNetworkable*)
++0x0008:  00a3a000  CEntityFactory<CEnvLaser>::GetEntitySize()

@@ -1,0 +1,5 @@
+FileListToUnloadForWhitelistChange
+
++0x0000:  0002f0a0  FileListToUnloadForWhitelistChange::IsFileInList(char const*)
++0x0004:  0002f130  FileListToUnloadForWhitelistChange::Release()
++0x0008:  00000008  (unknown)

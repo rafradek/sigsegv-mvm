@@ -1,0 +1,4 @@
+EntityParticleTrailInfo_t
+
++0x0000:  006b5dc0  EntityParticleTrailInfo_t::NetworkStateChanged()
++0x0004:  006b5dd0  EntityParticleTrailInfo_t::NetworkStateChanged(void*)

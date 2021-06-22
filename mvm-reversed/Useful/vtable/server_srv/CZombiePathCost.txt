@@ -1,0 +1,3 @@
+CZombiePathCost
+
++0x0000:  00d37ca0  CZombiePathCost::operator()(CNavArea*, CNavArea*, CNavLadder const*, CFuncElevator const*, float) const

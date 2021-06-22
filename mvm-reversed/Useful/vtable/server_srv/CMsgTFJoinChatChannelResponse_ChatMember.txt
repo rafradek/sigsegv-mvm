@@ -1,0 +1,22 @@
+CMsgTFJoinChatChannelResponse_ChatMember
+
++0x0000:  005bc490  CMsgTFJoinChatChannelResponse_ChatMember::~CMsgTFJoinChatChannelResponse_ChatMember()
++0x0004:  005bc4e0  CMsgTFJoinChatChannelResponse_ChatMember::~CMsgTFJoinChatChannelResponse_ChatMember()
++0x0008:  00000000  
++0x000c:  005bbfb0  CMsgTFJoinChatChannelResponse_ChatMember::New() const
++0x0010:  00583af0  CMsgTFJoinChatChannelResponse_ChatMember::Clear()
++0x0014:  00576a20  CMsgTFJoinChatChannelResponse_ChatMember::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00587300  CMsgTFJoinChatChannelResponse_ChatMember::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058afd0  CMsgTFJoinChatChannelResponse_ChatMember::ByteSize() const
++0x0028:  0057e160  CMsgTFJoinChatChannelResponse_ChatMember::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00592c90  CMsgTFJoinChatChannelResponse_ChatMember::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcd90  CMsgTFJoinChatChannelResponse_ChatMember::GetCachedSize() const
++0x0034:  005769d0  CMsgTFJoinChatChannelResponse_ChatMember::CopyFrom(google::protobuf::Message const&)
++0x0038:  005bc630  CMsgTFJoinChatChannelResponse_ChatMember::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005769c0  CMsgTFJoinChatChannelResponse_ChatMember::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058ee60  CMsgTFJoinChatChannelResponse_ChatMember::GetMetadata() const

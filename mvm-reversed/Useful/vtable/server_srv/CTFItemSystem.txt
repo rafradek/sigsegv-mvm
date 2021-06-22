@@ -1,0 +1,5 @@
+CTFItemSystem
+
++0x0000:  007bf5d0  CTFItemSystem::~CTFItemSystem()
++0x0004:  007bf5f0  CTFItemSystem::~CTFItemSystem()
++0x0008:  007bf460  CTFItemSystem::GenerateBaseItem(baseitemcriteria_t*)

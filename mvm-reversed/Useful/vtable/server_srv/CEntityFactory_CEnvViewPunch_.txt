@@ -1,0 +1,5 @@
+CEntityFactory<CEnvViewPunch>
+
++0x0000:  00a28590  CEntityFactory<CEnvViewPunch>::Create(char const*)
++0x0004:  00a276e0  CEntityFactory<CEnvViewPunch>::Destroy(IServerNetworkable*)
++0x0008:  00a27700  CEntityFactory<CEnvViewPunch>::GetEntitySize()

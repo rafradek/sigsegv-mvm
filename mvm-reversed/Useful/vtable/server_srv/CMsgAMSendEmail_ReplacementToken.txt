@@ -1,0 +1,22 @@
+CMsgAMSendEmail_ReplacementToken
+
++0x0000:  0055e5f0  CMsgAMSendEmail_ReplacementToken::~CMsgAMSendEmail_ReplacementToken()
++0x0004:  0055e640  CMsgAMSendEmail_ReplacementToken::~CMsgAMSendEmail_ReplacementToken()
++0x0008:  00000000  
++0x000c:  0055e4e0  CMsgAMSendEmail_ReplacementToken::New() const
++0x0010:  0053e370  CMsgAMSendEmail_ReplacementToken::Clear()
++0x0014:  00535e20  CMsgAMSendEmail_ReplacementToken::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0053f630  CMsgAMSendEmail_ReplacementToken::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00542920  CMsgAMSendEmail_ReplacementToken::ByteSize() const
++0x0028:  0053a160  CMsgAMSendEmail_ReplacementToken::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00547150  CMsgAMSendEmail_ReplacementToken::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572ab0  CMsgAMSendEmail_ReplacementToken::GetCachedSize() const
++0x0034:  00535dd0  CMsgAMSendEmail_ReplacementToken::CopyFrom(google::protobuf::Message const&)
++0x0038:  0055e7c0  CMsgAMSendEmail_ReplacementToken::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00535dc0  CMsgAMSendEmail_ReplacementToken::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545210  CMsgAMSendEmail_ReplacementToken::GetMetadata() const

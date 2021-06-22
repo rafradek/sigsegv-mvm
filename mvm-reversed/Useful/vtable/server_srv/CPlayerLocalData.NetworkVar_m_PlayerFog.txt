@@ -1,0 +1,4 @@
+CPlayerLocalData::NetworkVar_m_PlayerFog
+
++0x0000:  00b80a40  CPlayerLocalData::NetworkVar_m_PlayerFog::NetworkStateChanged()
++0x0004:  00b80a60  CPlayerLocalData::NetworkVar_m_PlayerFog::NetworkStateChanged(void*)

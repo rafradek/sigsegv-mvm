@@ -87,7 +87,6 @@ namespace Mod::MvM::Upgrade_Disallow
 		}
 
 		auto result = DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
-		DevMsg("defindex %d\n", result);
 		return result;
 	}
 

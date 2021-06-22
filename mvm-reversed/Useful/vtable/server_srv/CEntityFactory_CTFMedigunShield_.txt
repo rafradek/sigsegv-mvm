@@ -1,0 +1,5 @@
+CEntityFactory<CTFMedigunShield>
+
++0x0000:  00872a00  CEntityFactory<CTFMedigunShield>::Create(char const*)
++0x0004:  00872930  CEntityFactory<CTFMedigunShield>::Destroy(IServerNetworkable*)
++0x0008:  00872950  CEntityFactory<CTFMedigunShield>::GetEntitySize()

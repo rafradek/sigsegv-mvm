@@ -1,0 +1,3 @@
+CMotorController
+
++0x0000:  00b5e1c0  CMotorController::Simulate(IPhysicsMotionController*, IPhysicsObject*, float, Vector&, Vector&)

@@ -1,0 +1,17 @@
+CStdioFile
+
++0x0000:  0007b480  CStdioFile::~CStdioFile()
++0x0004:  0007b490  CStdioFile::~CStdioFile()
++0x0008:  0007a170  CStdioFile::FS_setbufsize(unsigned int)
++0x000c:  0007ac10  CStdioFile::FS_fclose()
++0x0010:  0007a7b0  CStdioFile::FS_fseek(long long, int)
++0x0014:  0007a790  CStdioFile::FS_ftell()
++0x0018:  0007a770  CStdioFile::FS_feof()
++0x001c:  0007a5d0  CStdioFile::FS_fread(void*, unsigned int, unsigned int)
++0x0020:  0007a3b0  CStdioFile::FS_fwrite(void const*, unsigned int)
++0x0024:  0007a180  CStdioFile::FS_setmode(FileMode_t)
++0x0028:  0007a200  CStdioFile::FS_vfprintf(char const*, char*)
++0x002c:  0007a1e0  CStdioFile::FS_ferror()
++0x0030:  0007a1c0  CStdioFile::FS_fflush()
++0x0034:  0007a1a0  CStdioFile::FS_fgets(char*, int)
++0x0038:  0007b450  CStdFilesystemFile::FS_GetSectorSize()

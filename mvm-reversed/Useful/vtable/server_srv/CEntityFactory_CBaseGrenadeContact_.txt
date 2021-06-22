@@ -1,0 +1,5 @@
+CEntityFactory<CBaseGrenadeContact>
+
++0x0000:  009f7c30  CEntityFactory<CBaseGrenadeContact>::Create(char const*)
++0x0004:  009f7bc0  CEntityFactory<CBaseGrenadeContact>::Destroy(IServerNetworkable*)
++0x0008:  009f7be0  CEntityFactory<CBaseGrenadeContact>::GetEntitySize()

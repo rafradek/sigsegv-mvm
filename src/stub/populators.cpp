@@ -160,6 +160,7 @@ MemberFuncThunk<CWave *, void>                              CWave::ft_ActiveWave
 MemberFuncThunk<CWave *, void>                              CWave::ft_WaveCompleteUpdate("CWave::WaveCompleteUpdate");
 MemberFuncThunk<CWave *, bool>                              CWave::ft_IsDoneWithNonSupportWaves("CWave::IsDoneWithNonSupportWaves");
 
+MemberFuncThunk<CWaveSpawnPopulator *, int> CWaveSpawnPopulator::ft_GetCurrencyAmountPerDeath("CWaveSpawnPopulator::GetCurrencyAmountPerDeath");
 
 MemberFuncThunk<CMissionPopulator *, bool, int> CMissionPopulator::ft_UpdateMission("CMissionPopulator::UpdateMission");
 

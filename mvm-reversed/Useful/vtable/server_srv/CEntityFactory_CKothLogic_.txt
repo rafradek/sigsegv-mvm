@@ -1,0 +1,5 @@
+CEntityFactory<CKothLogic>
+
++0x0000:  0079e8c0  CEntityFactory<CKothLogic>::Create(char const*)
++0x0004:  0079bde0  CEntityFactory<CKothLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079be00  CEntityFactory<CKothLogic>::GetEntitySize()

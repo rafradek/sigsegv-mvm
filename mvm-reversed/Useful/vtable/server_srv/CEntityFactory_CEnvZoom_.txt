@@ -1,0 +1,5 @@
+CEntityFactory<CEnvZoom>
+
++0x0000:  00a4c3a0  CEntityFactory<CEnvZoom>::Create(char const*)
++0x0004:  00a4c350  CEntityFactory<CEnvZoom>::Destroy(IServerNetworkable*)
++0x0008:  00a4c370  CEntityFactory<CEnvZoom>::GetEntitySize()

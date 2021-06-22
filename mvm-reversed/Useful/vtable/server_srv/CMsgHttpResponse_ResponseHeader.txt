@@ -1,0 +1,22 @@
+CMsgHttpResponse_ResponseHeader
+
++0x0000:  005545e0  CMsgHttpResponse_ResponseHeader::~CMsgHttpResponse_ResponseHeader()
++0x0004:  00554630  CMsgHttpResponse_ResponseHeader::~CMsgHttpResponse_ResponseHeader()
++0x0008:  00000000  
++0x000c:  005541a0  CMsgHttpResponse_ResponseHeader::New() const
++0x0010:  0053e140  CMsgHttpResponse_ResponseHeader::Clear()
++0x0014:  00535020  CMsgHttpResponse_ResponseHeader::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0053f9b0  CMsgHttpResponse_ResponseHeader::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00543230  CMsgHttpResponse_ResponseHeader::ByteSize() const
++0x0028:  0053a5a0  CMsgHttpResponse_ResponseHeader::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005487d0  CMsgHttpResponse_ResponseHeader::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005728b0  CMsgHttpResponse_ResponseHeader::GetCachedSize() const
++0x0034:  00534fd0  CMsgHttpResponse_ResponseHeader::CopyFrom(google::protobuf::Message const&)
++0x0038:  005547b0  CMsgHttpResponse_ResponseHeader::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00534fc0  CMsgHttpResponse_ResponseHeader::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545a10  CMsgHttpResponse_ResponseHeader::GetMetadata() const

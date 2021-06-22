@@ -1,0 +1,6 @@
+CCoreDispInfo
+
++0x0000:  0008fb30  CCoreDispInfo::GetPowerInfo() const
++0x0004:  0008fad0  CCoreDispInfo::GetEdgeNeighbor(int)
++0x0008:  0008faf0  CCoreDispInfo::GetCornerNeighbors(int)
++0x000c:  0008fb10  CCoreDispInfo::GetDispUtilsByIndex(int)

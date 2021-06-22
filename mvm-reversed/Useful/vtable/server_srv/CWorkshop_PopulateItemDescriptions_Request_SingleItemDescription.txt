@@ -1,0 +1,22 @@
+CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription
+
++0x0000:  005146a0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::~CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription()
++0x0004:  005146f0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::~CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription()
++0x0008:  00000000  
++0x000c:  00514340  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::New() const
++0x0010:  004e56a0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::Clear()
++0x0014:  004dc630  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f5b10  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e94a0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::ByteSize() const
++0x0028:  004df6d0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004eeac0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520c00  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::GetCachedSize() const
++0x0034:  004dc5e0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::CopyFrom(google::protobuf::Message const&)
++0x0038:  00514840  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dc5d0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed0d0  CWorkshop_PopulateItemDescriptions_Request_SingleItemDescription::GetMetadata() const

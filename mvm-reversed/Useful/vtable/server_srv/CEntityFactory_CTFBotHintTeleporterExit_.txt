@@ -1,0 +1,5 @@
+CEntityFactory<CTFBotHintTeleporterExit>
+
++0x0000:  00c7dbb0  CEntityFactory<CTFBotHintTeleporterExit>::Create(char const*)
++0x0004:  00c7daa0  CEntityFactory<CTFBotHintTeleporterExit>::Destroy(IServerNetworkable*)
++0x0008:  00c7dac0  CEntityFactory<CTFBotHintTeleporterExit>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CPopulationManager>
+
++0x0000:  00d57860  CEntityFactory<CPopulationManager>::Create(char const*)
++0x0004:  00d56d40  CEntityFactory<CPopulationManager>::Destroy(IServerNetworkable*)
++0x0008:  00d56d60  CEntityFactory<CPopulationManager>::GetEntitySize()

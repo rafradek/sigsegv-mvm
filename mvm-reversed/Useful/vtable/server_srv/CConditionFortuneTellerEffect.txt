@@ -1,0 +1,5 @@
+CConditionFortuneTellerEffect
+
++0x0000:  007c6480  CConditionFortuneTellerEffect::~CConditionFortuneTellerEffect()
++0x0004:  007c64d0  CConditionFortuneTellerEffect::~CConditionFortuneTellerEffect()
++0x0008:  007c6390  CConditionFortuneTellerEffect::FireGameEvent(IGameEvent*)

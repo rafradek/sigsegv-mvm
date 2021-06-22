@@ -1,0 +1,5 @@
+CEntityFactory<CZombie>
+
++0x0000:  00d34c50  CEntityFactory<CZombie>::Create(char const*)
++0x0004:  00d29370  CEntityFactory<CZombie>::Destroy(IServerNetworkable*)
++0x0008:  00d29390  CEntityFactory<CZombie>::GetEntitySize()

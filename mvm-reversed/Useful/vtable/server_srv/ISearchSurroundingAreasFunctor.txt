@@ -1,0 +1,8 @@
+ISearchSurroundingAreasFunctor
+
++0x0000:  00c46ac0  ISearchSurroundingAreasFunctor::~ISearchSurroundingAreasFunctor()
++0x0004:  00c46b50  ISearchSurroundingAreasFunctor::~ISearchSurroundingAreasFunctor()
++0x0008:  00000000  
++0x000c:  00c46ad0  ISearchSurroundingAreasFunctor::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c46b00  ISearchSurroundingAreasFunctor::PostSearch()

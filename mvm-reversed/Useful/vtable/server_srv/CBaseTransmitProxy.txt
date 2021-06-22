@@ -1,0 +1,5 @@
+CBaseTransmitProxy
+
++0x0000:  009fcd10  CBaseTransmitProxy::~CBaseTransmitProxy()
++0x0004:  009fcd70  CBaseTransmitProxy::~CBaseTransmitProxy()
++0x0008:  009fcd60  CBaseTransmitProxy::ShouldTransmit(CCheckTransmitInfo const*, int)

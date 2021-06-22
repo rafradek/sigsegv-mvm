@@ -1,0 +1,4 @@
+PlaceStickyBombReply
+
++0x0000:  00c1b490  PlaceStickyBombReply::OnSuccess(INextBot*)
++0x0004:  00c1aa50  PlaceStickyBombReply::OnFail(INextBot*, INextBotReply::FailureReason)

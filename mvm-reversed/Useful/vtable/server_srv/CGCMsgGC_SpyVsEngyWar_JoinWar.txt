@@ -1,0 +1,22 @@
+CGCMsgGC_SpyVsEngyWar_JoinWar
+
++0x0000:  0057aba0  CGCMsgGC_SpyVsEngyWar_JoinWar::~CGCMsgGC_SpyVsEngyWar_JoinWar()
++0x0004:  0057abe0  CGCMsgGC_SpyVsEngyWar_JoinWar::~CGCMsgGC_SpyVsEngyWar_JoinWar()
++0x0008:  00000000  
++0x000c:  005ca0b0  CGCMsgGC_SpyVsEngyWar_JoinWar::New() const
++0x0010:  00584720  CGCMsgGC_SpyVsEngyWar_JoinWar::Clear()
++0x0014:  00577ac0  CGCMsgGC_SpyVsEngyWar_JoinWar::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005989b0  CGCMsgGC_SpyVsEngyWar_JoinWar::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00587b20  CGCMsgGC_SpyVsEngyWar_JoinWar::ByteSize() const
++0x0028:  0057bb30  CGCMsgGC_SpyVsEngyWar_JoinWar::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00590cd0  CGCMsgGC_SpyVsEngyWar_JoinWar::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcff0  CGCMsgGC_SpyVsEngyWar_JoinWar::GetCachedSize() const
++0x0034:  00577a70  CGCMsgGC_SpyVsEngyWar_JoinWar::CopyFrom(google::protobuf::Message const&)
++0x0038:  005ca260  CGCMsgGC_SpyVsEngyWar_JoinWar::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00577a60  CGCMsgGC_SpyVsEngyWar_JoinWar::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e4e0  CGCMsgGC_SpyVsEngyWar_JoinWar::GetMetadata() const

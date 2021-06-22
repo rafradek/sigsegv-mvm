@@ -1,0 +1,7 @@
+CAI_TacticalServices
+
++0x0000:  009062e0  CAI_TacticalServices::~CAI_TacticalServices()
++0x0004:  00906560  CAI_TacticalServices::~CAI_TacticalServices()
++0x0008:  0063b3d0  CAI_Component::SetOuter(CAI_BaseNPC*)
++0x000c:  0063b5f0  CAI_Component::TaskFail(int)
++0x0010:  0063b630  CAI_Component::TaskComplete(bool)

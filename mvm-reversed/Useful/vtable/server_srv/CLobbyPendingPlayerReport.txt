@@ -1,0 +1,22 @@
+CLobbyPendingPlayerReport
+
++0x0000:  0057a2a0  CLobbyPendingPlayerReport::~CLobbyPendingPlayerReport()
++0x0004:  0057a2e0  CLobbyPendingPlayerReport::~CLobbyPendingPlayerReport()
++0x0008:  00000000  
++0x000c:  005b8310  CLobbyPendingPlayerReport::New() const
++0x0010:  005837c0  CLobbyPendingPlayerReport::Clear()
++0x0014:  00576470  CLobbyPendingPlayerReport::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00599d80  CLobbyPendingPlayerReport::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00588db0  CLobbyPendingPlayerReport::ByteSize() const
++0x0028:  00581860  CLobbyPendingPlayerReport::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00592ed0  CLobbyPendingPlayerReport::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dccc0  CLobbyPendingPlayerReport::GetCachedSize() const
++0x0034:  00576420  CLobbyPendingPlayerReport::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b84d0  CLobbyPendingPlayerReport::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576410  CLobbyPendingPlayerReport::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f1a0  CLobbyPendingPlayerReport::GetMetadata() const

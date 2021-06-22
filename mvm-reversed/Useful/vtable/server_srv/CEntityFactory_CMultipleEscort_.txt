@@ -1,0 +1,5 @@
+CEntityFactory<CMultipleEscort>
+
++0x0000:  0079dbe0  CEntityFactory<CMultipleEscort>::Create(char const*)
++0x0004:  0079bea0  CEntityFactory<CMultipleEscort>::Destroy(IServerNetworkable*)
++0x0008:  0079bec0  CEntityFactory<CMultipleEscort>::GetEntitySize()

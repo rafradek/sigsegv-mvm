@@ -1,0 +1,11 @@
+CEconItemAttributeIterator_ApplyAttributeFloat
+
++0x0000:  00655740  CEconItemAttributeIterator_ApplyAttributeFloat::~CEconItemAttributeIterator_ApplyAttributeFloat()
++0x0004:  00655880  CEconItemAttributeIterator_ApplyAttributeFloat::~CEconItemAttributeIterator_ApplyAttributeFloat()
++0x0008:  00656390  CEconItemAttributeIterator_ApplyAttributeFloat::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned int)
++0x000c:  00655530  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, float)
++0x0010:  00655540  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, unsigned long long const&)
++0x0014:  00655550  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_String const&)
++0x0018:  00655560  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_DynamicRecipeComponent const&)
++0x001c:  00655570  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_ItemSlotCriteria const&)
++0x0020:  00655580  CEconItemSpecificAttributeIterator::OnIterateAttributeValue(CEconItemAttributeDefinition const*, CAttribute_WorldItemPlacement const&)

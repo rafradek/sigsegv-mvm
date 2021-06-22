@@ -1,0 +1,4 @@
+ITFTargetDummy
+
++0x0000:  00829b60  ITFTargetDummy::~ITFTargetDummy()
++0x0004:  00829af0  ITFTargetDummy::~ITFTargetDummy()

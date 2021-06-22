@@ -1,0 +1,5 @@
+CEntityFactory<CNoGrenadesZone>
+
++0x0000:  00cc29d0  CEntityFactory<CNoGrenadesZone>::Create(char const*)
++0x0004:  00cc29a0  CEntityFactory<CNoGrenadesZone>::Destroy(IServerNetworkable*)
++0x0008:  00cc29c0  CEntityFactory<CNoGrenadesZone>::GetEntitySize()

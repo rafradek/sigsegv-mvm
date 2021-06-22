@@ -1,0 +1,5 @@
+CEntityFactory<CPrecipitation>
+
++0x0000:  00a28840  CEntityFactory<CPrecipitation>::Create(char const*)
++0x0004:  00a27860  CEntityFactory<CPrecipitation>::Destroy(IServerNetworkable*)
++0x0008:  00a27880  CEntityFactory<CPrecipitation>::GetEntitySize()

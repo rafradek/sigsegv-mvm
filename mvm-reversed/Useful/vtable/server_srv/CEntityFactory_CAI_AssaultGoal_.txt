@@ -1,0 +1,5 @@
+CEntityFactory<CAI_AssaultGoal>
+
++0x0000:  0091e770  CEntityFactory<CAI_AssaultGoal>::Create(char const*)
++0x0004:  0091da50  CEntityFactory<CAI_AssaultGoal>::Destroy(IServerNetworkable*)
++0x0008:  0091da70  CEntityFactory<CAI_AssaultGoal>::GetEntitySize()

@@ -1,0 +1,22 @@
+CMsgHalloween_Merasmus2012
+
++0x0000:  0057a9c0  CMsgHalloween_Merasmus2012::~CMsgHalloween_Merasmus2012()
++0x0004:  0057aa00  CMsgHalloween_Merasmus2012::~CMsgHalloween_Merasmus2012()
++0x0008:  00000000  
++0x000c:  005c5f60  CMsgHalloween_Merasmus2012::New() const
++0x0010:  00584230  CMsgHalloween_Merasmus2012::Clear()
++0x0014:  00577580  CMsgHalloween_Merasmus2012::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005a3fa0  CMsgHalloween_Merasmus2012::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00587d70  CMsgHalloween_Merasmus2012::ByteSize() const
++0x0028:  00581260  CMsgHalloween_Merasmus2012::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00591800  CMsgHalloween_Merasmus2012::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcf30  CMsgHalloween_Merasmus2012::GetCachedSize() const
++0x0034:  00577530  CMsgHalloween_Merasmus2012::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c6470  CMsgHalloween_Merasmus2012::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00577520  CMsgHalloween_Merasmus2012::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058e7e0  CMsgHalloween_Merasmus2012::GetMetadata() const

@@ -1,0 +1,4 @@
+CClientFrameManager
+
++0x0000:  000dd090  CClientFrameManager::~CClientFrameManager()
++0x0004:  000dd0e0  CClientFrameManager::~CClientFrameManager()

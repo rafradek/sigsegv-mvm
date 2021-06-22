@@ -1,0 +1,5 @@
+CEntityFactory<CEnvProjectedTexture>
+
++0x0000:  00a48020  CEntityFactory<CEnvProjectedTexture>::Create(char const*)
++0x0004:  00a47fa0  CEntityFactory<CEnvProjectedTexture>::Destroy(IServerNetworkable*)
++0x0008:  00a47fc0  CEntityFactory<CEnvProjectedTexture>::GetEntitySize()

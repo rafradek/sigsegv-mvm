@@ -1,0 +1,12 @@
+CDefaultPlayerPickupVPhysics
+
++0x0000:  00635d10  CDefaultPlayerPickupVPhysics::OnAttemptPhysGunPickup(CBasePlayer*, PhysGunPickup_t)
++0x0004:  00635d20  CDefaultPlayerPickupVPhysics::OnFailedPhysGunPickup(Vector)
++0x0008:  00635d30  CDefaultPlayerPickupVPhysics::OnPhysGunPickup(CBasePlayer*, PhysGunPickup_t)
++0x000c:  00635d40  CDefaultPlayerPickupVPhysics::OnPhysGunDrop(CBasePlayer*, PhysGunDrop_t)
++0x0010:  00635d50  CDefaultPlayerPickupVPhysics::HasPreferredCarryAnglesForPlayer(CBasePlayer*)
++0x0014:  00635d60  CDefaultPlayerPickupVPhysics::PreferredCarryAngles()
++0x0018:  00635d90  CDefaultPlayerPickupVPhysics::ForcePhysgunOpen(CBasePlayer*)
++0x001c:  00635f00  CDefaultPlayerPickupVPhysics::PhysGunLaunchAngularImpulse()
++0x0020:  00635da0  CDefaultPlayerPickupVPhysics::ShouldPuntUseLaunchForces(PhysGunForce_t)
++0x0024:  00635ed0  CDefaultPlayerPickupVPhysics::PhysGunLaunchVelocity(Vector const&, float)

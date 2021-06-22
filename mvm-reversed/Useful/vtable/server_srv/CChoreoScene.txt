@@ -1,0 +1,7 @@
+CChoreoScene
+
++0x0000:  00f01400  CChoreoScene::~CChoreoScene()
++0x0004:  00f01720  CChoreoScene::~CChoreoScene()
++0x0008:  00f05920  CChoreoScene::GetDuration()
++0x000c:  00efcfd0  CChoreoScene::CurveHasEndTime()
++0x0010:  00efcfe0  CChoreoScene::GetDefaultCurveType()

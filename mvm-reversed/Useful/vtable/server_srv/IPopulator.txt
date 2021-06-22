@@ -1,0 +1,10 @@
+IPopulator
+
++0x0000:  00d5ffd0  IPopulator::~IPopulator()
++0x0004:  00d600e0  IPopulator::~IPopulator()
++0x0008:  00000000  
++0x000c:  00d60000  IPopulator::PostInitialize()
++0x0010:  00d60010  IPopulator::Update()
++0x0014:  00d60020  IPopulator::UnpauseSpawning()
++0x0018:  00d60030  IPopulator::OnPlayerKilled(CTFPlayer*)
++0x001c:  00d60040  IPopulator::HasEventChangeAttributes(char const*) const

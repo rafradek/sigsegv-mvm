@@ -1,0 +1,19 @@
+CNetworkStringTable
+
++0x0000:  00156e40  CNetworkStringTable::~CNetworkStringTable()
++0x0004:  00156ea0  CNetworkStringTable::~CNetworkStringTable()
++0x0008:  00156c80  CNetworkStringTable::GetTableName() const
++0x000c:  00156c60  CNetworkStringTable::GetTableId() const
++0x0010:  00156d80  CNetworkStringTable::GetNumStrings() const
++0x0014:  00156c70  CNetworkStringTable::GetMaxStrings() const
++0x0018:  00156c90  CNetworkStringTable::GetEntryBits() const
++0x001c:  00156ca0  CNetworkStringTable::SetTick(int)
++0x0020:  00156cf0  CNetworkStringTable::ChangedSinceTick(int) const
++0x0024:  00157c00  CNetworkStringTable::AddString(bool, char const*, int, void const*)
++0x0028:  00156d10  CNetworkStringTable::GetString(int)
++0x002c:  00157b60  CNetworkStringTable::SetStringUserData(int, int, void const*)
++0x0030:  00157020  CNetworkStringTable::GetStringUserData(int, int*)
++0x0034:  00157060  CNetworkStringTable::FindStringIndex(char const*)
++0x0038:  00156cd0  CNetworkStringTable::SetStringChangedCallback(void*, void (*)(void*, INetworkStringTable*, int, char const*, void const*))
++0x003c:  00156f40  CNetworkStringTable::Dump()
++0x0040:  00156cb0  CNetworkStringTable::Lock(bool)

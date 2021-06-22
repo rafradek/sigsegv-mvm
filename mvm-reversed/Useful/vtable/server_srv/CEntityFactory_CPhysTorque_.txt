@@ -1,0 +1,5 @@
+CEntityFactory<CPhysTorque>
+
++0x0000:  00b607d0  CEntityFactory<CPhysTorque>::Create(char const*)
++0x0004:  00b60660  CEntityFactory<CPhysTorque>::Destroy(IServerNetworkable*)
++0x0008:  00b60680  CEntityFactory<CPhysTorque>::GetEntitySize()

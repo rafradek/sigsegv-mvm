@@ -1,0 +1,10 @@
+CMissionPopulator
+
++0x0000:  00d601e0  CMissionPopulator::~CMissionPopulator()
++0x0004:  00d60310  CMissionPopulator::~CMissionPopulator()
++0x0008:  00d5c8a0  CMissionPopulator::Parse(KeyValues*)
++0x000c:  00d60000  IPopulator::PostInitialize()
++0x0010:  00d5fc80  CMissionPopulator::Update()
++0x0014:  00d59690  CMissionPopulator::UnpauseSpawning()
++0x0018:  00d60030  IPopulator::OnPlayerKilled(CTFPlayer*)
++0x001c:  00d60040  IPopulator::HasEventChangeAttributes(char const*) const

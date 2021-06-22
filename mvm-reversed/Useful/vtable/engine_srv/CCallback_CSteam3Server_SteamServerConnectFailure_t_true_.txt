@@ -1,0 +1,5 @@
+CCallback<CSteam3Server, SteamServerConnectFailure_t, true>
+
++0x0000:  001bfdb0  CCallback<CSteam3Server, SteamServerConnectFailure_t, true>::Run(void*)
++0x0004:  001bfd90  CCallbackImpl<4>::Run(void*, bool, unsigned long long)
++0x0008:  001bfda0  CCallbackImpl<4>::GetCallbackSizeBytes()

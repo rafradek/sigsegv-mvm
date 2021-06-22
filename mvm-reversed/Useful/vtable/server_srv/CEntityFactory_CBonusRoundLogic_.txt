@@ -1,0 +1,5 @@
+CEntityFactory<CBonusRoundLogic>
+
++0x0000:  007a80a0  CEntityFactory<CBonusRoundLogic>::Create(char const*)
++0x0004:  0079bd30  CEntityFactory<CBonusRoundLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079bd50  CEntityFactory<CBonusRoundLogic>::GetEntitySize()

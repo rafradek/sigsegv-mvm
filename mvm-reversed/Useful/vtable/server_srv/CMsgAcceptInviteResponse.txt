@@ -1,0 +1,22 @@
+CMsgAcceptInviteResponse
+
++0x0000:  0057a420  CMsgAcceptInviteResponse::~CMsgAcceptInviteResponse()
++0x0004:  0057a460  CMsgAcceptInviteResponse::~CMsgAcceptInviteResponse()
++0x0008:  00000000  
++0x000c:  005b9ff0  CMsgAcceptInviteResponse::New() const
++0x0010:  005838c0  CMsgAcceptInviteResponse::Clear()
++0x0014:  005766a0  CMsgAcceptInviteResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059b300  CMsgAcceptInviteResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058be50  CMsgAcceptInviteResponse::ByteSize() const
++0x0028:  00580eb0  CMsgAcceptInviteResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00596180  CMsgAcceptInviteResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcd10  CMsgAcceptInviteResponse::GetCachedSize() const
++0x0034:  00576650  CMsgAcceptInviteResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  005ba1a0  CMsgAcceptInviteResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576640  CMsgAcceptInviteResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f060  CMsgAcceptInviteResponse::GetMetadata() const

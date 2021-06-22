@@ -1,0 +1,22 @@
+CMsgApplyStrangePart
+
++0x0000:  004dd850  CMsgApplyStrangePart::~CMsgApplyStrangePart()
++0x0004:  004dd890  CMsgApplyStrangePart::~CMsgApplyStrangePart()
++0x0008:  00000000  
++0x000c:  00503790  CMsgApplyStrangePart::New() const
++0x0010:  004e41b0  CMsgApplyStrangePart::Clear()
++0x0014:  004dadb0  CMsgApplyStrangePart::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004ec0e0  CMsgApplyStrangePart::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e00a0  CMsgApplyStrangePart::ByteSize() const
++0x0028:  004e15b0  CMsgApplyStrangePart::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004e06f0  CMsgApplyStrangePart::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520880  CMsgApplyStrangePart::GetCachedSize() const
++0x0034:  004dad60  CMsgApplyStrangePart::CopyFrom(google::protobuf::Message const&)
++0x0038:  00503960  CMsgApplyStrangePart::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dad50  CMsgApplyStrangePart::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004eded0  CMsgApplyStrangePart::GetMetadata() const

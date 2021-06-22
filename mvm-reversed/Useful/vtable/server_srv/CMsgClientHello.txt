@@ -1,0 +1,22 @@
+CMsgClientHello
+
++0x0000:  004dd220  CMsgClientHello::~CMsgClientHello()
++0x0004:  004dd260  CMsgClientHello::~CMsgClientHello()
++0x0008:  00000000  
++0x000c:  004fc3f0  CMsgClientHello::New() const
++0x0010:  004e3d30  CMsgClientHello::Clear()
++0x0014:  004da410  CMsgClientHello::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f4600  CMsgClientHello::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e8f90  CMsgClientHello::ByteSize() const
++0x0028:  004defb0  CMsgClientHello::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f1710  CMsgClientHello::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520720  CMsgClientHello::GetCachedSize() const
++0x0034:  004da3c0  CMsgClientHello::CopyFrom(google::protobuf::Message const&)
++0x0038:  004fc5a0  CMsgClientHello::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004da3b0  CMsgClientHello::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee450  CMsgClientHello::GetMetadata() const

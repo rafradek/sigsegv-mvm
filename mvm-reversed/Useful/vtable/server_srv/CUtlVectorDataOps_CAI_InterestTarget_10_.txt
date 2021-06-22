@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CAI_InterestTarget, 10>
+
++0x0000:  008dc620  CUtlVectorDataOps<CAI_InterestTarget, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  008df240  CUtlVectorDataOps<CAI_InterestTarget, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  008dc6f0  CUtlVectorDataOps<CAI_InterestTarget, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  008df3e0  CUtlVectorDataOps<CAI_InterestTarget, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

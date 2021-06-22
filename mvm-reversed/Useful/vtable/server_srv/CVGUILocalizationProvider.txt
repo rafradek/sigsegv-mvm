@@ -1,0 +1,10 @@
+CVGUILocalizationProvider
+
++0x0000:  006b48d0  CVGUILocalizationProvider::Find(char const*) const
++0x0004:  006b4a90  CVGUILocalizationProvider::ConvertLoccharToANSI(wchar_t const*, CUtlConstStringBase<char>*) const
++0x0008:  006b4970  CVGUILocalizationProvider::ConvertLoccharToUnicode(wchar_t const*, CUtlConstStringBase<wchar_t>*) const
++0x000c:  006b49c0  CVGUILocalizationProvider::ConvertUTF8ToLocchar(char const*, CUtlConstStringBase<wchar_t>*) const
++0x0010:  006b4920  CVGUILocalizationProvider::ConvertLoccharToANSI(wchar_t const*, char*, int) const
++0x0014:  006b48f0  CVGUILocalizationProvider::ConvertLoccharToUnicode(wchar_t const*, wchar_t*, int) const
++0x0018:  006b4940  CVGUILocalizationProvider::ConvertUTF8ToLocchar(char const*, wchar_t*, int) const
++0x001c:  006b4ad0  CVGUILocalizationProvider::GetELang() const

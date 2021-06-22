@@ -1,0 +1,4 @@
+IFuncForceFieldAutoList
+
++0x0000:  00cc1c50  IFuncForceFieldAutoList::~IFuncForceFieldAutoList()
++0x0004:  00cc1cc0  IFuncForceFieldAutoList::~IFuncForceFieldAutoList()

@@ -1,0 +1,22 @@
+CMsgTFQuickplay_PlayerJoining
+
++0x0000:  00579bb0  CMsgTFQuickplay_PlayerJoining::~CMsgTFQuickplay_PlayerJoining()
++0x0004:  00579bf0  CMsgTFQuickplay_PlayerJoining::~CMsgTFQuickplay_PlayerJoining()
++0x0008:  00000000  
++0x000c:  005add10  CMsgTFQuickplay_PlayerJoining::New() const
++0x0010:  00582df0  CMsgTFQuickplay_PlayerJoining::Clear()
++0x0014:  00575590  CMsgTFQuickplay_PlayerJoining::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005991b0  CMsgTFQuickplay_PlayerJoining::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005893b0  CMsgTFQuickplay_PlayerJoining::ByteSize() const
++0x0028:  0057c390  CMsgTFQuickplay_PlayerJoining::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00593a90  CMsgTFQuickplay_PlayerJoining::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcaa0  CMsgTFQuickplay_PlayerJoining::GetCachedSize() const
++0x0034:  00575540  CMsgTFQuickplay_PlayerJoining::CopyFrom(google::protobuf::Message const&)
++0x0038:  005adec0  CMsgTFQuickplay_PlayerJoining::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575530  CMsgTFQuickplay_PlayerJoining::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058fa20  CMsgTFQuickplay_PlayerJoining::GetMetadata() const

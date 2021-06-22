@@ -1,0 +1,5 @@
+CLog
+
++0x0000:  001acaf0  CLog::~CLog()
++0x0004:  001acb80  CLog::~CLog()
++0x0008:  001ac070  CLog::FireGameEvent(IGameEvent*)

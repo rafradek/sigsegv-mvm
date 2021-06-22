@@ -1,0 +1,5 @@
+CEntityFactory<CIntroViewpoint>
+
++0x0000:  00e0a9e0  CEntityFactory<CIntroViewpoint>::Create(char const*)
++0x0004:  00e0a850  CEntityFactory<CIntroViewpoint>::Destroy(IServerNetworkable*)
++0x0008:  00e0a870  CEntityFactory<CIntroViewpoint>::GetEntitySize()

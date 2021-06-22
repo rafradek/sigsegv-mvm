@@ -1,0 +1,11 @@
+CTemplate_SaveRestoreBlockHandler
+
++0x0000:  00c04d60  CTemplate_SaveRestoreBlockHandler::GetBlockName()
++0x0004:  0060e770  CDefSaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  00c04d70  CTemplate_SaveRestoreBlockHandler::Save(ISave*)
++0x000c:  00c04e10  CTemplate_SaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  0060e7a0  CDefSaveRestoreBlockHandler::PostSave()
++0x0014:  0060e7b0  CDefSaveRestoreBlockHandler::PreRestore()
++0x0018:  00c04e40  CTemplate_SaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  00c050d0  CTemplate_SaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  0060e7e0  CDefSaveRestoreBlockHandler::PostRestore()

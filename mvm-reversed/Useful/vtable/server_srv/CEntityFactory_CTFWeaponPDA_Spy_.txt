@@ -1,0 +1,5 @@
+CEntityFactory<CTFWeaponPDA_Spy>
+
++0x0000:  0087bae0  CEntityFactory<CTFWeaponPDA_Spy>::Create(char const*)
++0x0004:  0087b760  CEntityFactory<CTFWeaponPDA_Spy>::Destroy(IServerNetworkable*)
++0x0008:  0087b780  CEntityFactory<CTFWeaponPDA_Spy>::GetEntitySize()

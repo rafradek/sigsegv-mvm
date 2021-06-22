@@ -1,0 +1,5 @@
+CEntityFactory<CGenericFlexCycler>
+
++0x0000:  009f3fd0  CEntityFactory<CGenericFlexCycler>::Create(char const*)
++0x0004:  009f3ee0  CEntityFactory<CGenericFlexCycler>::Destroy(IServerNetworkable*)
++0x0008:  009f3f00  CEntityFactory<CGenericFlexCycler>::GetEntitySize()

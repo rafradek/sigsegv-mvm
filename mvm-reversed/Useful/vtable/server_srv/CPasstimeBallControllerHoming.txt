@@ -1,0 +1,12 @@
+CPasstimeBallControllerHoming
+
++0x0000:  00d466a0  CPasstimeBallControllerHoming::~CPasstimeBallControllerHoming()
++0x0004:  00d466f0  CPasstimeBallControllerHoming::~CPasstimeBallControllerHoming()
++0x0008:  00d46370  CPasstimeBallControllerHoming::Apply(CPasstimeBall*)
++0x000c:  00d45f80  CPasstimeBallControllerHoming::IsActive() const
++0x0010:  00d462b0  CPasstimeBallControllerHoming::OnBallCollision(CPasstimeBall*, int, gamevcollisionevent_t*)
++0x0014:  00d46240  CPasstimeBallControllerHoming::OnBallPickedUp(CPasstimeBall*, CTFPlayer*)
++0x0018:  00d461a0  CPasstimeBallControllerHoming::OnBallDamaged(CPasstimeBall*)
++0x001c:  00d46190  CPasstimeBallControllerHoming::OnBallSpawned(CPasstimeBall*)
++0x0020:  00d45c10  CPasstimeBallController::OnEnabled()
++0x0024:  00d46110  CPasstimeBallControllerHoming::OnDisabled()

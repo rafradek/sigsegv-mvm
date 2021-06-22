@@ -580,8 +580,12 @@ void CDetouredFunc::AddDetour(CDetour *detour)
 	TRACE("[this: %08x] [detour: %08x \"%s\"]", (uintptr_t)this, (uintptr_t)detour, detour->GetName());
 	
 	assert(std::count(this->m_Detours.begin(), this->m_Detours.end(), detour) == 0);
+
 	this->m_Detours.push_back(detour);
-	
+	std::sort(this->m_Detours.begin(), this->m_Detours.end(), [](CDetour *&a, CDetour *&b) {
+		return a->GetPriority() > b->GetPriority();
+	});
+
 	this->Reconfigure();
 }
 
@@ -727,6 +731,7 @@ void CDetouredFunc::Reconfigure()
 	void *jump_to = nullptr;
 	
 	if (!this->m_Detours.empty()) {
+
 		CDetour *first = this->m_Detours.front();
 		CDetour *last  = this->m_Detours.back();
 		

@@ -1,0 +1,5 @@
+CEntityFactory<CHalloweenSoulPack>
+
++0x0000:  007af370  CEntityFactory<CHalloweenSoulPack>::Create(char const*)
++0x0004:  007af340  CEntityFactory<CHalloweenSoulPack>::Destroy(IServerNetworkable*)
++0x0008:  007af360  CEntityFactory<CHalloweenSoulPack>::GetEntitySize()

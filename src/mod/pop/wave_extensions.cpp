@@ -3,6 +3,7 @@
 #include "mod/pop/kv_conditional.h"
 #include "stub/usermessages_sv.h"
 #include "stub/entities.h"
+#include "stub/nextbot_cc_behavior.h"
 #include "stub/objects.h"
 #include "stub/gamerules.h"
 #include "stub/tfplayer.h"
@@ -72,9 +73,11 @@ namespace Mod::Pop::Wave_Extensions
 		std::vector<BossInfo>      bosses;
 		std::map<std::string,float>   sound_loops;
 		std::vector<PointTemplateInfo>   templ;
-		std::vector<PointTemplateInstance *>   templ_inst;
+		std::vector<std::shared_ptr<PointTemplateInstance>>   templ_inst;
 		std::vector<ETFCond>  addconds;
 		std::vector<ETFCond>  addconds_class[10] = {};
+		std::vector<ItemAttributes> item_attributes;
+		ForceItems force_items;
 		
 		bool red_team_wipe_causes_wave_loss = false;
 		bool blue_team_wipe_causes_wave_loss = false;
@@ -92,13 +95,52 @@ namespace Mod::Pop::Wave_Extensions
 	
 	
 	std::map<CWave *, WaveData> waves;
+	std::vector<CWave *> waves_vec;
 	
 	void WaveCleanup(CWave *wave){
-		for (auto inst : waves[wave].templ_inst) {
+		auto &data = waves[wave];
+		for (auto inst : data.templ_inst) {
 			if (inst != nullptr)
 				inst->OnKilledParent(false);
 		}
-		waves[wave].templ_inst.clear();
+		ForEachTFPlayer([&](CTFPlayer *player) {
+			if (player->IsBot()) return;
+
+			bool respawn = false;
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+				CEconItemView *item_view = entity->GetItem();
+				if (item_view == nullptr) return;
+				
+				bool found = false;
+				const char *classname = item_view->GetItemDefinition()->GetItemClass();
+				std::map<CEconItemAttributeDefinition *, std::string> *attribs;
+				for (auto& item_attributes : data.item_attributes) {
+					if (item_attributes.entry->Matches(classname, item_view)) {
+						attribs = &(item_attributes.attributes);
+						found = true;
+						break;
+					}
+				}
+				if (found && attribs != nullptr) {
+					CEconItemView *view = item_view;
+					for (auto& entry : *attribs) {
+						view->GetAttributeList().RemoveAttribute(entry.first);
+					}
+				}
+				
+				int forced = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_forced_item);
+				if (forced != 0) {
+					respawn = true;
+				}
+			});
+			if (respawn) {
+				player->ForceRegenerateAndRespawn();
+			}
+
+		});
+
+		data.templ_inst.clear();
 	}
 
 	WaveData *GetWaveData(CWave *wave)
@@ -419,12 +461,19 @@ namespace Mod::Pop::Wave_Extensions
 		DevMsg("Parsed addcond\n");
 	}
 
+	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
+	{
+		waves_vec.clear();
+        return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+    }
+
 	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
 		
 	//	DevMsg("CWave::Parse\n");
-		
+		waves_vec.push_back(wave);
+			
 		std::vector<KeyValues *> del_kv;
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
@@ -440,6 +489,12 @@ namespace Mod::Pop::Wave_Extensions
 				Parse_SoundLoop(wave, subkey);
 			} else if (FStrEq(name, "PlayerAttributes")) {
 				Parse_PlayerAttributes(wave, subkey);
+			} else if (FStrEq(name, "ItemAttributes")) {
+				Parse_ItemAttributes(subkey, waves[wave].item_attributes);
+			} else if (FStrEq(name, "ForceItem")) {
+				Parse_ForceItem(subkey, waves[wave].force_items, false);
+			} else if (FStrEq(name, "ForceItemNoRemove")) {
+				Parse_ForceItem(subkey, waves[wave].force_items, true);
 			} else if (FStrEq(name, "RedTeamWipeCausesWaveLoss")) {
 				waves[wave].red_team_wipe_causes_wave_loss = subkey->GetBool();
 			} else if (FStrEq(name, "BlueTeamWipeCausesWaveLoss")) {
@@ -475,6 +530,18 @@ namespace Mod::Pop::Wave_Extensions
 		return DETOUR_MEMBER_CALL(CWave_Parse)(kv);
 	}
 	
+	std::vector<std::string> *GetWaveExplanation(int wave)
+	{
+		if (waves_vec.empty())
+			return nullptr;
+
+		WaveData *data = GetWaveData(waves_vec[wave]);
+		if (data != nullptr) {
+			return &data->explanation;
+		}
+		return nullptr;
+	}
+
 	ConVar sig_text_print_speed("sig_text_print_speed", "4");
 	void ParseColorsAndPrint(const char *line, float gameTextDelay, int &linenum, CTFPlayer* player = nullptr)
 	{
@@ -689,6 +756,21 @@ namespace Mod::Pop::Wave_Extensions
 		auto data = GetCurrentWaveData();
 		if (data != nullptr && !data->t_waveinit.HasStarted()) {
 			data->t_waveinit.Start();
+		}
+
+
+		if (data != nullptr) {
+			ForEachTFPlayer([&](CTFPlayer *player) {
+				if (player->IsBot()) return;
+
+				ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+					CEconItemView *item_view = entity->GetItem();
+					if (item_view == nullptr) return;
+					ApplyItemAttributes(item_view, player, data->item_attributes);
+				});
+				
+				ApplyForceItems(data->force_items, player, true);
+			});
 		}
 
 		// Remove old force items
@@ -1127,6 +1209,80 @@ namespace Mod::Pop::Wave_Extensions
 		return DETOUR_STATIC_CALL(CBaseEntity_Create)(szName, vecOrigin, vecAngles, pOwner);
 	}
 
+	/* set MONOCULUS's lifetime from the spawner parameter instead of from the global convars */
+	DETOUR_DECL_MEMBER(ActionResult<CEyeballBoss>, CEyeballBossIdle_OnStart, CEyeballBoss *actor, Action<CEyeballBoss> *action)
+	{
+		auto me = reinterpret_cast<CEyeballBossIdle *>(this);
+		
+		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_OnStart)(actor, action);
+		
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto *info = GetBossInfo(actor);
+			if (info != nullptr) {
+				me->m_ctLifetime.Start(info->lifetime);
+			}
+		}
+		
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
+	{
+		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
+		
+		WaveData *data = GetCurrentWaveData();
+		if (data == nullptr) return;
+
+		if (remove && !data->item_attributes.empty()) {
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+
+				CEconItemView *item_view = entity->GetItem();
+				if (item_view == nullptr) return;
+				ApplyItemAttributes(item_view, player, data->item_attributes);
+			});
+		}
+	}
+	
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot()) {
+			
+			WaveData *data = GetCurrentWaveData();
+			if (data != nullptr) {
+
+				if (!data->item_attributes.empty()) {
+					ApplyItemAttributes(item_view, player, data->item_attributes);
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
+	}
+
+	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
+	{
+	public:
+
+		CTFPlayer *player = nullptr;
+		virtual void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+		{
+			if (pFilter->GetRecipientCount() > 0) {
+				int id = pFilter->GetRecipientIndex(0);
+				player = ToTFPlayer(UTIL_PlayerByIndex(id));
+			}
+		}
+		virtual void OnPostUserMessage(int msg_id, bool sent)
+		{
+			if (sent && player != nullptr) {
+				auto data = GetCurrentWaveData();
+				if (data != nullptr && !player->IsBot())
+					ApplyForceItems(data->force_items, player, false);
+			}
+		}
+	};
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1135,6 +1291,7 @@ namespace Mod::Pop::Wave_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWave_dtor0, "CWave::~CWave [D0]");
 			MOD_ADD_DETOUR_MEMBER(CWave_dtor2, "CWave::~CWave [D2]");
 			
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_Parse, "CPopulationManager::Parse");
 			MOD_ADD_DETOUR_MEMBER(CWave_Parse, "CWave::Parse");
 			
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,          "CPopulationManager::JumpToWave");
@@ -1151,6 +1308,12 @@ namespace Mod::Pop::Wave_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CEyeballBossDead_Update, "CEyeballBossDead::Update");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_Create,      "CBaseEntity::Create");
+			MOD_ADD_DETOUR_MEMBER(CEyeballBossIdle_OnStart, "CEyeballBossIdle::OnStart");
+			
+			
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades,   "CUpgrades::GrantOrRemoveAllUpgrades");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ReapplyItemUpgrades,                 "CTFPlayer::ReapplyItemUpgrades");
+			
 		}
 		
 		virtual void OnUnload() override
@@ -1161,10 +1324,12 @@ namespace Mod::Pop::Wave_Extensions
 		
 		virtual void OnEnable() override
 		{
+			usermsgs->HookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
 		}
 
 		virtual void OnDisable() override
 		{
+			usermsgs->UnhookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
 			waves.clear();
 			StopSoundLoop();
 		}
@@ -1203,6 +1368,8 @@ namespace Mod::Pop::Wave_Extensions
 				}
 			}
 		}*/
+	private:
+		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
 	CMod s_Mod;
 	

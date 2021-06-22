@@ -1,0 +1,15 @@
+CLC_RespondCvarValue
+
++0x0000:  0008bec0  CLC_RespondCvarValue::~CLC_RespondCvarValue()
++0x0004:  0008bfc0  CLC_RespondCvarValue::~CLC_RespondCvarValue()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b340  CLC_RespondCvarValue::Process()
++0x0014:  00083a00  CLC_RespondCvarValue::ReadFromBuffer(bf_read&)
++0x0018:  0007dc40  CLC_RespondCvarValue::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b320  CLC_RespondCvarValue::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008b330  CLC_RespondCvarValue::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d600  CLC_RespondCvarValue::ToString() const

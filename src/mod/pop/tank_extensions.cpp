@@ -4,6 +4,7 @@
 #include "stub/populators.h"
 #include "stub/strings.h"
 #include "stub/misc.h"
+#include "stub/nextbot_cc.h"
 #include "util/scope.h"
 #include "mod/pop/pointtemplate.h"
 #include "stub/tf_objective_resource.h"
@@ -546,7 +547,7 @@ namespace Mod::Pop::Tank_Extensions
 
 						if (!data.custom_model.empty()) {
 							if (data.replace_model_col)
-								tank->SetModelIndex(data.custom_model[0]);
+								tank->SetModel(modelinfo->GetModelName(modelinfo->GetModel(data.custom_model[0])));
 
 							tank->SetModelIndexOverride(VISION_MODE_NONE, data.custom_model[0]);
 							tank->SetModelIndexOverride(VISION_MODE_ROME, data.custom_model[0]);

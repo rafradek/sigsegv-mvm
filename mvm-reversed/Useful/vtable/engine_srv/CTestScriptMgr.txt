@@ -1,0 +1,4 @@
+CTestScriptMgr
+
++0x0000:  001c83b0  CTestScriptMgr::~CTestScriptMgr()
++0x0004:  001c8430  CTestScriptMgr::~CTestScriptMgr()

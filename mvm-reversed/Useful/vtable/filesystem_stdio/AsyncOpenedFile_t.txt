@@ -1,0 +1,5 @@
+AsyncOpenedFile_t
+
++0x0000:  00023830  AsyncOpenedFile_t::~AsyncOpenedFile_t()
++0x0004:  00023840  AsyncOpenedFile_t::~AsyncOpenedFile_t()
++0x0008:  00023850  CRefCountServiceBase<false, CRefMT>::OnFinalRelease()

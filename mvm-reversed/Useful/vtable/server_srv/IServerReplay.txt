@@ -1,0 +1,5 @@
+IServerReplay
+
++0x0000:  00a721b0  IServerReplay::~IServerReplay()
++0x0004:  00a721f0  IServerReplay::~IServerReplay()
++0x0008:  00000000  

@@ -1,0 +1,3 @@
+CPropMapStack
+
++0x0000:  00108660  CPropMapStack::RecurseAndCallProxies(CSendNode*, unsigned char*)

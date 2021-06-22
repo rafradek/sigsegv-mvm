@@ -1,0 +1,7 @@
+CEntityDataInstantiator<touchlink_t>
+
++0x0000:  006e5eb0  CEntityDataInstantiator<touchlink_t>::~CEntityDataInstantiator()
++0x0004:  006e5f30  CEntityDataInstantiator<touchlink_t>::~CEntityDataInstantiator()
++0x0008:  006e4120  CEntityDataInstantiator<touchlink_t>::GetDataObject(CBaseEntity const*)
++0x000c:  006e8800  CEntityDataInstantiator<touchlink_t>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e4010  CEntityDataInstantiator<touchlink_t>::DestroyDataObject(CBaseEntity const*)

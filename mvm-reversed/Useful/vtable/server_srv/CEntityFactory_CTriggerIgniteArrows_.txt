@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerIgniteArrows>
+
++0x0000:  00e2ac70  CEntityFactory<CTriggerIgniteArrows>::Create(char const*)
++0x0004:  00e2ab40  CEntityFactory<CTriggerIgniteArrows>::Destroy(IServerNetworkable*)
++0x0008:  00e2ab60  CEntityFactory<CTriggerIgniteArrows>::GetEntitySize()

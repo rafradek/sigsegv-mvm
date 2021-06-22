@@ -126,7 +126,7 @@ public:
 	constexpr void	Negate(); 
 
 	// Get the vector's magnitude.
-	constexpr vec_t	Length() const;
+	inline vec_t	Length() const;
 
 	// Get the vector's magnitude squared.
 	constexpr FORCEINLINE vec_t LengthSqr(void) const
@@ -152,7 +152,7 @@ public:
 	constexpr FORCEINLINE bool WithinAABox( Vector const &boxmin, Vector const &boxmax);
  
 	// Get the distance from this vector to the other one.
-	constexpr vec_t	DistTo(const Vector &vOther) const;
+	inline vec_t	DistTo(const Vector &vOther) const;
 
 	// Get the distance from this vector to the other one squared.
 	// NJS: note, VC wasn't inlining it correctly in several deeply nested inlines due to being an 'out of line' inline.  
@@ -178,7 +178,7 @@ public:
 	constexpr Vector& operator=(const Vector &vOther);
 
 	// 2d
-	constexpr vec_t	Length2D(void) const;					
+	inline vec_t	Length2D(void) const;					
 	constexpr vec_t	Length2DSqr(void) const;					
 
 	constexpr operator VectorByValue &();
@@ -462,7 +462,7 @@ constexpr bool VectorsAreEqual( const Vector& src1, const Vector& src2, float to
 //constexpr vec_t VectorNormalize( Vector& v );
 
 // Length
-constexpr vec_t VectorLength( const Vector& v );
+inline vec_t VectorLength( const Vector& v );
 
 // Dot Product
 constexpr FORCEINLINE vec_t DotProduct(const Vector& a, const Vector& b);
@@ -1265,14 +1265,14 @@ constexpr vec_t DotProductAbs( const Vector &v0, const float *v1 )
 // length
 //-----------------------------------------------------------------------------
 
-constexpr vec_t VectorLength( const Vector& v )
+inline vec_t VectorLength( const Vector& v )
 {
 	CHECK_VALID(v);
 	return (vec_t)FastSqrt(v.x*v.x + v.y*v.y + v.z*v.z);		
 }
 
 
-constexpr vec_t Vector::Length(void) const	
+inline vec_t Vector::Length(void) const	
 {
 	CHECK_VALID(*this);
 	return VectorLength( *this );
@@ -1317,7 +1317,7 @@ constexpr bool Vector::WithinAABox( Vector const &boxmin, Vector const &boxmax)
 //-----------------------------------------------------------------------------
 // Get the distance from this vector to the other one 
 //-----------------------------------------------------------------------------
-constexpr vec_t Vector::DistTo(const Vector &vOther) const
+inline vec_t Vector::DistTo(const Vector &vOther) const
 {
 	return (*this - vOther).Length();
 }
@@ -1467,7 +1467,7 @@ constexpr Vector Vector::Cross(const Vector& vOther) const
 // 2D
 //-----------------------------------------------------------------------------
 
-constexpr vec_t Vector::Length2D(void) const
+inline vec_t Vector::Length2D(void) const
 { 
 	return (vec_t)FastSqrt(x*x + y*y); 
 }
@@ -1841,7 +1841,7 @@ public:
 	constexpr QAngle&	operator/=(float s);
 
 	// Get the vector's magnitude.
-	constexpr vec_t	Length() const;
+	inline vec_t	Length() const;
 	constexpr vec_t	LengthSqr() const;
 
 	// negate the QAngle components
@@ -2113,7 +2113,7 @@ constexpr QAngle& QAngle::operator/=(float fl)
 //-----------------------------------------------------------------------------
 // length
 //-----------------------------------------------------------------------------
-constexpr vec_t QAngle::Length( ) const
+inline vec_t QAngle::Length( ) const
 {
 	CHECK_VALID(*this);
 	return (vec_t)FastSqrt( LengthSqr( ) );		

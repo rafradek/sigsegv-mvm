@@ -1,0 +1,9 @@
+CEngineSingleUserFilter
+
++0x0000:  001b1fd0  CEngineSingleUserFilter::~CEngineSingleUserFilter()
++0x0004:  001b20b0  CEngineSingleUserFilter::~CEngineSingleUserFilter()
++0x0008:  001b1f80  CEngineSingleUserFilter::IsReliable() const
++0x000c:  001b1fc0  CEngineSingleUserFilter::IsInitMessage() const
++0x0010:  001b1f90  CEngineSingleUserFilter::GetRecipientCount() const
++0x0014:  001b1fa0  CEngineSingleUserFilter::GetRecipientIndex(int) const
++0x0018:  001b1fb0  CEngineSingleUserFilter::IsBroadcastMessage() const

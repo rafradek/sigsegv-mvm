@@ -1,0 +1,5 @@
+CEntityFactory<CNPC_VehicleDriver>
+
++0x0000:  00b27110  CEntityFactory<CNPC_VehicleDriver>::Create(char const*)
++0x0004:  00b270e0  CEntityFactory<CNPC_VehicleDriver>::Destroy(IServerNetworkable*)
++0x0008:  00b27100  CEntityFactory<CNPC_VehicleDriver>::GetEntitySize()

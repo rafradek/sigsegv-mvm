@@ -1,0 +1,4 @@
+CEntityInfo
+
++0x0000:  0011ec00  CEntityInfo::~CEntityInfo()
++0x0004:  0011ec40  CEntityInfo::~CEntityInfo()

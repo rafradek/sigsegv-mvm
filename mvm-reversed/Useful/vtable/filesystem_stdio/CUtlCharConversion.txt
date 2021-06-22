@@ -1,0 +1,4 @@
+CUtlCharConversion
+
++0x0000:  00084a50  CUtlCharConversion::FindConversion(char const*, int*)
++0x0004:  00000008  (unknown)

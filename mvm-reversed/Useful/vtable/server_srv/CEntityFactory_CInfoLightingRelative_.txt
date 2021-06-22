@@ -1,0 +1,5 @@
+CEntityFactory<CInfoLightingRelative>
+
++0x0000:  009bb330  CEntityFactory<CInfoLightingRelative>::Create(char const*)
++0x0004:  009bb2b0  CEntityFactory<CInfoLightingRelative>::Destroy(IServerNetworkable*)
++0x0008:  009bb2d0  CEntityFactory<CInfoLightingRelative>::GetEntitySize()

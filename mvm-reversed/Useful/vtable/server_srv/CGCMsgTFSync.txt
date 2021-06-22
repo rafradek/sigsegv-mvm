@@ -1,0 +1,22 @@
+CGCMsgTFSync
+
++0x0000:  005c2e20  CGCMsgTFSync::~CGCMsgTFSync()
++0x0004:  005c2e70  CGCMsgTFSync::~CGCMsgTFSync()
++0x0008:  00000000  
++0x000c:  005c2d10  CGCMsgTFSync::New() const
++0x0010:  00583ef0  CGCMsgTFSync::Clear()
++0x0014:  00577120  CGCMsgTFSync::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059a8a0  CGCMsgTFSync::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058a3b0  CGCMsgTFSync::ByteSize() const
++0x0028:  00580ba0  CGCMsgTFSync::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005923d0  CGCMsgTFSync::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dce90  CGCMsgTFSync::GetCachedSize() const
++0x0034:  005770d0  CGCMsgTFSync::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c3020  CGCMsgTFSync::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005770c0  CGCMsgTFSync::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058ea60  CGCMsgTFSync::GetMetadata() const

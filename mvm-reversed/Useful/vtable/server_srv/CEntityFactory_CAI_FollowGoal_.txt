@@ -1,0 +1,5 @@
+CEntityFactory<CAI_FollowGoal>
+
++0x0000:  00928bb0  CEntityFactory<CAI_FollowGoal>::Create(char const*)
++0x0004:  00928b70  CEntityFactory<CAI_FollowGoal>::Destroy(IServerNetworkable*)
++0x0008:  00928b90  CEntityFactory<CAI_FollowGoal>::GetEntitySize()

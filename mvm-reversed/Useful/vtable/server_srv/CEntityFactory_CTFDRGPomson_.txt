@@ -1,0 +1,5 @@
+CEntityFactory<CTFDRGPomson>
+
++0x0000:  0087f690  CEntityFactory<CTFDRGPomson>::Create(char const*)
++0x0004:  0087f1c0  CEntityFactory<CTFDRGPomson>::Destroy(IServerNetworkable*)
++0x0008:  0087f1e0  CEntityFactory<CTFDRGPomson>::GetEntitySize()

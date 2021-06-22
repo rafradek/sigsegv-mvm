@@ -1,0 +1,5 @@
+CEntityFactory<CGunTarget>
+
++0x0000:  00a866f0  CEntityFactory<CGunTarget>::Create(char const*)
++0x0004:  00a86670  CEntityFactory<CGunTarget>::Destroy(IServerNetworkable*)
++0x0008:  00a86690  CEntityFactory<CGunTarget>::GetEntitySize()

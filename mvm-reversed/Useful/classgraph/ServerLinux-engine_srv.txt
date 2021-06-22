@@ -1,0 +1,1011 @@
+
+[+] Base_CmdKeyValues
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CAppSystemGroup
+ |  [-] IAppSystemGroup
+
+[#] CBSPTreeData
+ 0: +000000 public
+ |  [-] IBSPTreeData
+ 1: +000004 public
+ |  [-] ISpatialLeafEnumerator
+
+[+] CBaseAppSystem<ICvarQuery>
+ |  [+] ICvarQuery
+ |   |  [-] IAppSystem
+
+[+] CBaseAppSystem<IDedicatedServerAPI>
+ |  [+] IDedicatedServerAPI
+ |   |  [-] IAppSystem
+
+[#] CBaseClient
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] IClient
+ |   |  [-] INetChannelHandler
+ 2: +000008 public
+ |  [+] IClientMessageHandler
+ |   |  [-] INetMessageHandler
+
+[#] CBaseClientState
+ 0: +000000 public
+ |  [-] INetChannelHandler
+ 1: +000004 public
+ |  [-] IConnectionlessPacketHandler
+ 2: +000008 public
+ |  [+] IServerMessageHandler
+ |   |  [-] INetMessageHandler
+
+[+] CBaseServer
+ |  [+] IServer
+ |   |  [-] IConnectionlessPacketHandler
+
+[-] CBlockingUDPSocket
+
+[+] CBrushBSPIterator
+ |  [-] ISpatialLeafEnumerator
+
+[+] CBrushConvexInfo
+ |  [-] IConvexInfo
+
+[+] CCallback<CSteam3Server, ComputeNewPlayerCompatibilityResult_t, true>
+ |  [#] CCallbackImpl<24>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, GSPolicyResponse_t, true>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServerConnectFailure_t, true>
+ |  [#] CCallbackImpl<4>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServersConnected_t, true>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServersDisconnected_t, true>
+ |  [#] CCallbackImpl<4>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, ValidateAuthTicketResponse_t, true>
+ |  [#] CCallbackImpl<20>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[-] CCallbackBase
+
+[#] CCallbackImpl<1>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<20>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<24>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<4>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[+] CChangeFrameList
+ |  [-] IChangeFrameList
+
+[+] CClientDatatableStack
+ |  [-] CDatatableStack
+
+[+] CClientEngineTools
+ |  [+] IClientEngineTools
+ |   |  [-] IBaseInterface
+
+[-] CClientFrame
+
+[-] CClientFrameManager
+
+[#] CClientState
+ 0: +000000 public
+ |  [#] CBaseClientState
+ |   0: +000000 public
+ |   |  [-] INetChannelHandler
+ |   1: +000004 public
+ |   |  [-] IConnectionlessPacketHandler
+ |   2: +000008 public
+ |   |  [+] IServerMessageHandler
+ |   |   |  [-] INetMessageHandler
+ 1: +004ac4 public
+ |  [-] CClientFrameManager
+
+[+] CCoreDispInfo
+ |  [-] CDispUtilsHelper
+
+[+] CCvarQuery
+ |  [+] CBaseAppSystem<ICvarQuery>
+ |   |  [+] ICvarQuery
+ |   |   |  [-] IAppSystem
+
+[+] CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>
+ |  [-] CDataManagerBase
+
+[-] CDataManagerBase
+
+[-] CDatatableStack
+
+[+] CDedicatedServerAPI
+ |  [+] CTier3AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |   |   |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |   |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |   |   |  [-] IAppSystem
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[+] CDefaultDataCacheClient
+ |  [-] IDataCacheClient
+
+[-] CDispCollTree
+
+[#] CDispInfo
+ 0: +000000 public
+ |  [-] IDispInfo
+ 1: +000004 public
+ |  [-] CDispUtilsHelper
+
+[-] CDispUtilsHelper
+
+[-] CDllDemandLoader
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CEncodeInfo
+ |  [+] CServerDatatableStack
+ |   |  [-] CDatatableStack
+
+[+] CEngine
+ |  [-] IEngine
+
+[+] CEngineBSPTree
+ |  [+] IEngineSpatialQuery
+ |   |  [-] ISpatialQuery
+
+[+] CEngineRecipientFilter
+ |  [-] IRecipientFilter
+
+[+] CEngineReplay
+ |  [+] IEngineReplay
+ |   |  [-] IBaseInterface
+
+[+] CEngineSingleUserFilter
+ |  [-] IRecipientFilter
+
+[+] CEngineSoundServer
+ |  [-] IEngineSound
+
+[+] CEngineTrace
+ |  [-] IEngineTrace
+
+[+] CEngineTraceServer
+ |  [+] CEngineTrace
+ |   |  [-] IEngineTrace
+
+[+] CEngineUniformRandomStream
+ |  [-] IUniformRandomStream
+
+[-] CEntityInfo
+
+[+] CEntityListAlongRay
+ |  [-] IPartitionEnumerator
+
+[+] CEntityReadInfo
+ |  [-] CEntityInfo
+
+[+] CEntityWriteInfo
+ |  [-] CEntityInfo
+
+[+] CEnumerationFilter
+ |  [-] IPartitionEnumerator
+
+[-] CFileTransferMgr
+
+[-] CFmtStrN<128, false>
+
+[-] CFmtStrN<256, false>
+
+[-] CFrameSnapshotManager
+
+[+] CFunctor
+ |  [-] IRefCounted
+
+[+] CFunctor2<void (*)(bool, bool), bool, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CGame
+ |  [-] IGame
+
+[#] CGameClient
+ 0: +000000 public
+ |  [#] CBaseClient
+ |   0: +000000 public
+ |   |  [-] IGameEventListener2
+ |   1: +000004 public
+ |   |  [+] IClient
+ |   |   |  [-] INetChannelHandler
+ |   2: +000008 public
+ |   |  [+] IClientMessageHandler
+ |   |   |  [-] INetMessageHandler
+ 1: +027354 public
+ |  [-] CClientFrameManager
+
+[+] CGameEvent
+ |  [-] IGameEvent
+
+[+] CGameEventManager
+ |  [+] IGameEventManager2
+ |   |  [-] IBaseInterface
+
+[+] CGameEventManagerOld
+ |  [+] IGameEventManager
+ |   |  [-] IBaseInterface
+
+[+] CGameServer
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+
+[+] CHLTVClient
+ |  [#] CBaseClient
+ |   0: +000000 public
+ |   |  [-] IGameEventListener2
+ |   1: +000004 public
+ |   |  [+] IClient
+ |   |   |  [-] INetChannelHandler
+ |   2: +000008 public
+ |   |  [+] IClientMessageHandler
+ |   |   |  [-] INetMessageHandler
+
+[+] CHLTVClientState
+ |  [#] CBaseClientState
+ |   0: +000000 public
+ |   |  [-] INetChannelHandler
+ |   1: +000004 public
+ |   |  [-] IConnectionlessPacketHandler
+ |   2: +000008 public
+ |   |  [+] IServerMessageHandler
+ |   |   |  [-] INetMessageHandler
+
+[+] CHLTVDemoRecorder
+ |  [-] IDemoRecorder
+
+[+] CHLTVFrame
+ |  [-] CClientFrame
+
+[#] CHLTVServer
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+ 2: +0001a0 public
+ |  [-] CClientFrameManager
+ 3: +0001e0 public
+ |  [+] IHLTVServer
+ |   |  [-] IBaseInterface
+ 4: +0001e4 public
+ |  [-] IDemoPlayer
+
+[+] CKeyValuesDumpContextAsDevMsg
+ |  [+] IKeyValuesDumpContextAsText
+ |   |  [-] IKeyValuesDumpContext
+
+[+] CLC_BaselineAck
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_ClientInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_CmdKeyValues
+ |  [+] Base_CmdKeyValues
+ |   |  [+] CNetMessage
+ |   |   |  [-] INetMessage
+
+[+] CLC_FileCRCCheck
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_FileMD5Check
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_ListenEvents
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_Move
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_RespondCvarValue
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_SaveReplay
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_VoiceData
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLog
+ |  [-] IGameEventListener2
+
+[+] CMDLCacheNotify
+ |  [-] IMDLCacheNotify
+
+[+] CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>
+ |  [+] CDefaultDataCacheClient
+ |   |  [-] IDataCacheClient
+
+[+] CMaterialProxyFactory
+ |  [-] IMaterialProxyFactory
+
+[+] CMemberFunctor0<CParallelProcessor<CGameClient*, CFuncJobItemProcessor<CGameClient*> >*, void (CParallelProcessor<CGameClient*, CFuncJobItemProcessor<CGameClient*> >::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<CParallelProcessor<PackWork_t, CFuncJobItemProcessor<PackWork_t> >*, void (CParallelProcessor<PackWork_t, CFuncJobItemProcessor<PackWork_t> >::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CModAppSystemGroup
+ |  [+] CAppSystemGroup
+ |   |  [-] IAppSystemGroup
+
+[+] CModelInfo
+ |  [+] IVModelInfoClient
+ |   |  [-] IVModelInfo
+
+[+] CModelInfoServer
+ |  [+] CModelInfo
+ |   |  [+] IVModelInfoClient
+ |   |   |  [-] IVModelInfo
+
+[+] CModelLoader
+ |  [-] IModelLoader
+
+[#] CModelRender
+ 0: +000000 public
+ |  [-] IVModelRender
+ 1: +000004 public
+ |  [+] CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>
+ |   |  [+] CDefaultDataCacheClient
+ |   |   |  [-] IDataCacheClient
+
+[+] CNetChan
+ |  [+] INetChannel
+ |   |  [-] INetChannelInfo
+
+[+] CNetMessage
+ |  [-] INetMessage
+
+[+] CNetworkStringDict
+ |  [-] INetworkStringDict
+
+[+] CNetworkStringFilenameDict
+ |  [-] INetworkStringDict
+
+[+] CNetworkStringTable
+ |  [-] INetworkStringTable
+
+[+] CNetworkStringTableContainer
+ |  [-] INetworkStringTableContainer
+
+[+] COM_IOReadBinary
+ |  [-] IFileReadBinary
+
+[+] COcclusionSystem
+ |  [-] IOcclusionSystem
+
+[+] COverlayMgr
+ |  [-] IOverlayMgr
+
+[+] CPhoneHome
+ |  [-] IPhoneHome
+
+[+] CPointContentsEnum
+ |  [-] IPartitionEnumerator
+
+[+] CPooledVBAllocator_ColorMesh
+ |  [-] IPooledVBAllocator
+
+[+] CPropCullStack
+ |  [-] CDatatableStack
+
+[+] CPropMapStack
+ |  [-] CDatatableStack
+
+[+] CPureServerWhitelist
+ |  [-] IPureServerWhitelist
+
+[#] CQueuedPacketSender
+ 0: +000000 public
+ 1: +000104 public
+ |  [-] IQueuedPacketSender
+
+[+] CRConServer
+ |  [-] ISocketCreatorListener
+
+[-] CRefCountServiceBase<true, CRefMT>
+
+[#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ 0: +000000 public
+ |  [+] CFunctor
+ |   |  [-] IRefCounted
+ 1: +000008 public
+ |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CRegistry
+ |  [-] IRegistry
+
+[+] CReplayDemoRecorder
+ |  [-] IDemoRecorder
+
+[+] CReplayFrame
+ |  [-] CClientFrame
+
+[#] CReplayServer
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+ 2: +0001a0 public
+ |  [-] CClientFrameManager
+ 3: +0001e0 public
+ |  [+] IReplayServer
+ |   |  [-] IBaseInterface
+
+[+] CResourcePreload
+ |  [-] IResourcePreload
+
+[+] CResourcePreloadModel
+ |  [+] CResourcePreload
+ |   |  [-] IResourcePreload
+
+[-] CSendTablePrecalc
+
+[+] CServerDatatableStack
+ |  [-] CDatatableStack
+
+[+] CServerEngineTools
+ |  [+] IServerEngineTools
+ |   |  [-] IBaseInterface
+
+[+] CServerPlugin
+ |  [-] IServerPluginHelpers
+
+[+] CServerRemoteAccess
+ |  [+] IGameServerData
+ |   |  [-] IBaseInterface
+
+[+] CSpatialPartition
+ |  [+] ISpatialPartitionInternal
+ |   |  [-] ISpatialPartition
+
+[+] CStatTime
+ |  [-] IClientStatsTime
+
+[#] CStaticProp
+ 0: +000000 public
+ |  [+] IClientUnknown
+ |   |  [-] IHandleEntity
+ 1: +000004 public
+ |  [-] IClientRenderable
+ 2: +000008 public
+ |  [-] ICollideable
+
+[#] CStaticPropMgr
+ 0: +000000 public
+ |  [-] IStaticPropMgrEngine
+ 1: +000004 public
+ |  [+] IStaticPropMgrClient
+ |   |  [-] IStaticPropMgr
+ 2: +000008 public
+ |  [+] IStaticPropMgrServer
+ |   |  [-] IStaticPropMgr
+
+[+] CSteamAppSystemGroup
+ |  [+] CAppSystemGroup
+ |   |  [-] IAppSystemGroup
+
+[+] CStudioConvexInfo
+ |  [-] IConvexInfo
+
+[-] CTestScriptMgr
+
+[+] CTier0AppSystem<IDedicatedServerAPI>
+ |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |  [+] IDedicatedServerAPI
+ |   |   |  [-] IAppSystem
+
+[+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |  [-] IAppSystem
+
+[+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |  [-] IAppSystem
+
+[+] CTier3AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |   |  [-] IAppSystem
+
+[+] CToolFrameworkInternal
+ |  [+] IToolFrameworkInternal
+ |   |  [-] IAppSystem
+
+[+] CTouchLinks
+ |  [-] IPartitionEnumerator
+
+[+] CTraceFilter
+ |  [-] ITraceFilter
+
+[+] CTraceFilterHitAll
+ |  [+] CTraceFilter
+ |   |  [-] ITraceFilter
+
+[+] CTraceFilterWorldAndPropsOnly
+ |  [-] ITraceFilter
+
+[+] CTriggerMoved
+ |  [-] IPartitionEnumerator
+
+[+] CUploadGameStats
+ |  [-] IUploadGameStats
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[+] CVEngineServer
+ |  [-] IVEngineServer
+
+[+] CVEngineServer22
+ |  [+] CVEngineServer
+ |   |  [-] IVEngineServer
+
+[+] CVProfExport
+ |  [-] IVProfExport
+
+[+] CVirtualTerrain
+ |  [-] IVirtualMeshEvent
+
+[+] CVoiceServer
+ |  [-] IVoiceServer
+
+[-] CVoxelTree
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[+] ConVar_ServerBounded
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[-] IAppSystem
+
+[-] IAppSystemGroup
+
+[-] IBSPTreeData
+
+[-] IBaseInterface
+
+[-] IChangeFrameList
+
+[+] IClient
+ |  [-] INetChannelHandler
+
+[+] IClientEngineTools
+ |  [-] IBaseInterface
+
+[+] IClientMessageHandler
+ |  [-] INetMessageHandler
+
+[-] IClientRenderable
+
+[-] IClientStatsTime
+
+[+] IClientUnknown
+ |  [-] IHandleEntity
+
+[-] ICollideable
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[-] IConnectionlessPacketHandler
+
+[-] IConvexInfo
+
+[+] ICvarQuery
+ |  [-] IAppSystem
+
+[-] IDataCacheClient
+
+[+] IDedicatedServerAPI
+ |  [-] IAppSystem
+
+[-] IDemoPlayer
+
+[-] IDemoRecorder
+
+[-] IDispInfo
+
+[-] IEngine
+
+[+] IEngineReplay
+ |  [-] IBaseInterface
+
+[-] IEngineSound
+
+[+] IEngineSpatialQuery
+ |  [-] ISpatialQuery
+
+[-] IEngineTrace
+
+[-] IFileReadBinary
+
+[-] IGame
+
+[-] IGameEvent
+
+[-] IGameEventListener2
+
+[+] IGameEventManager
+ |  [-] IBaseInterface
+
+[+] IGameEventManager2
+ |  [-] IBaseInterface
+
+[+] IGameServerData
+ |  [-] IBaseInterface
+
+[+] IHLTVServer
+ |  [-] IBaseInterface
+
+[-] IHandleEntity
+
+[-] IKeyValuesDumpContext
+
+[+] IKeyValuesDumpContextAsText
+ |  [-] IKeyValuesDumpContext
+
+[-] IMDLCacheNotify
+
+[-] IMaterialProxyFactory
+
+[-] IModelLoader
+
+[+] INetChannel
+ |  [-] INetChannelInfo
+
+[-] INetChannelHandler
+
+[-] INetChannelInfo
+
+[-] INetMessage
+
+[-] INetMessageHandler
+
+[-] INetworkStringDict
+
+[-] INetworkStringTable
+
+[-] INetworkStringTableContainer
+
+[-] IOcclusionSystem
+
+[-] IOverlayMgr
+
+[-] IPartitionEnumerator
+
+[-] IPhoneHome
+
+[-] IPooledVBAllocator
+
+[-] IPureServerWhitelist
+
+[-] IQueuedPacketSender
+
+[-] IRecipientFilter
+
+[-] IRefCounted
+
+[-] IRegistry
+
+[+] IReplayServer
+ |  [-] IBaseInterface
+
+[-] IResourcePreload
+
+[+] IServer
+ |  [-] IConnectionlessPacketHandler
+
+[+] IServerEngineTools
+ |  [-] IBaseInterface
+
+[+] IServerMessageHandler
+ |  [-] INetMessageHandler
+
+[-] IServerPluginHelpers
+
+[-] ISocketCreatorListener
+
+[-] ISpatialLeafEnumerator
+
+[-] ISpatialPartition
+
+[+] ISpatialPartitionInternal
+ |  [-] ISpatialPartition
+
+[-] ISpatialQuery
+
+[-] IStaticPropMgr
+
+[+] IStaticPropMgrClient
+ |  [-] IStaticPropMgr
+
+[-] IStaticPropMgrEngine
+
+[+] IStaticPropMgrServer
+ |  [-] IStaticPropMgr
+
+[+] IToolFrameworkInternal
+ |  [-] IAppSystem
+
+[-] ITraceFilter
+
+[-] IUniformRandomStream
+
+[-] IUploadGameStats
+
+[-] IVEngineServer
+
+[-] IVModelInfo
+
+[+] IVModelInfoClient
+ |  [-] IVModelInfo
+
+[-] IVModelRender
+
+[-] IVProfExport
+
+[-] IVirtualMeshEvent
+
+[-] IVoiceServer
+
+[+] MM_Checkpoint
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_ClientInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Heartbeat
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_JoinResponse
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Migrate
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Mutelist
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_RegisterResponse
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_SetConVar
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_SignonState
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_StringCmd
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_Tick
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_BSPDecal
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_ClassInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_CmdKeyValues
+ |  [+] Base_CmdKeyValues
+ |   |  [+] CNetMessage
+ |   |   |  [-] INetMessage
+
+[+] SVC_CreateStringTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_CrosshairAngle
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_EntityMessage
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_FixAngle
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GameEvent
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GameEventList
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GetCvarValue
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Menu
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_PacketEntities
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Prefetch
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Print
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SendTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_ServerInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SetPause
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SetView
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Sounds
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_TempEntities
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_UpdateStringTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_UserMessage
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_VoiceData
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_VoiceInit
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[-] SendProp
+
+[-] VAllocator
+
+[+] VStdAllocator
+ |  [-] VAllocator
+
+[+] snappy::ByteArraySource
+ |  [-] snappy::Source
+
+[-] snappy::Sink
+
+[-] snappy::Source
+
+[+] snappy::UncheckedByteArraySink
+ |  [-] snappy::Sink

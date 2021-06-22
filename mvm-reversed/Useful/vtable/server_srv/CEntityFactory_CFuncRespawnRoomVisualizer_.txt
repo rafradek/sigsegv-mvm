@@ -1,0 +1,5 @@
+CEntityFactory<CFuncRespawnRoomVisualizer>
+
++0x0000:  00cca430  CEntityFactory<CFuncRespawnRoomVisualizer>::Create(char const*)
++0x0004:  00cc9820  CEntityFactory<CFuncRespawnRoomVisualizer>::Destroy(IServerNetworkable*)
++0x0008:  00cc9840  CEntityFactory<CFuncRespawnRoomVisualizer>::GetEntitySize()

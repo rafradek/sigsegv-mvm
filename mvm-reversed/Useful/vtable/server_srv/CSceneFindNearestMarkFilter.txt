@@ -1,0 +1,4 @@
+CSceneFindNearestMarkFilter
+
++0x0000:  00bc3dd0  CSceneFindNearestMarkFilter::ShouldFindEntity(CBaseEntity*)
++0x0004:  00bc3700  CSceneFindNearestMarkFilter::GetFilterResult()

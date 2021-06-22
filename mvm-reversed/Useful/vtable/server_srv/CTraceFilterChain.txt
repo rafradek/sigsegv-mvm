@@ -1,0 +1,4 @@
+CTraceFilterChain
+
++0x0000:  0089f060  CTraceFilterChain::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0061fa80  CTraceFilter::GetTraceType() const

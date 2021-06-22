@@ -1,0 +1,8 @@
+COcclusionSystem
+
++0x0000:  0016f650  COcclusionSystem::ActivateOccluder(int, bool)
++0x0004:  0016f460  COcclusionSystem::SetView(Vector const&, float, VMatrix const&, VMatrix const&, VPlane const&)
++0x0008:  00172560  COcclusionSystem::IsOccluded(Vector const&, Vector const&)
++0x000c:  0016f3f0  COcclusionSystem::SetOcclusionParameters(float, float)
++0x0010:  0016f440  COcclusionSystem::MinOccluderArea() const
++0x0014:  0016f450  COcclusionSystem::DrawDebugOverlays()

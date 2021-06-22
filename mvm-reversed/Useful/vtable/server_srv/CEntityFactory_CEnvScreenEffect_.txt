@@ -1,0 +1,5 @@
+CEntityFactory<CEnvScreenEffect>
+
++0x0000:  00a49d60  CEntityFactory<CEnvScreenEffect>::Create(char const*)
++0x0004:  00a49cc0  CEntityFactory<CEnvScreenEffect>::Destroy(IServerNetworkable*)
++0x0008:  00a49ce0  CEntityFactory<CEnvScreenEffect>::GetEntitySize()

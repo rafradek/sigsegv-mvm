@@ -1,0 +1,16 @@
+TODO: classes
+
+
+UNCATEGORIZED
+CMannVsMachineStats (CBaseEntity)
+CMannVsMachineUpgradeManager (CAutoGameSystem)
+CMannVsMachineWaveStats (base class)
+CUpgrades (CBaseTrigger, CGameEventListener)
+CTFGameRules (CTeamplayBasedRoundRules)
+CTFBotRoster
+CTFBotManager
+CTFBaseBoss
+CTFTankBoss
+CTFPowerupBottle
+CTFBotProxy
+CMannVsMachineUpgrades

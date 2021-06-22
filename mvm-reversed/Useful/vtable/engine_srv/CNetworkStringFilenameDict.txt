@@ -1,0 +1,12 @@
+CNetworkStringFilenameDict
+
++0x0000:  0015b190  CNetworkStringFilenameDict::~CNetworkStringFilenameDict()
++0x0004:  0015b0e0  CNetworkStringFilenameDict::~CNetworkStringFilenameDict()
++0x0008:  0015aa20  CNetworkStringFilenameDict::Count()
++0x000c:  0015b0b0  CNetworkStringFilenameDict::Purge()
++0x0010:  0015ab80  CNetworkStringFilenameDict::String(int)
++0x0014:  0015ae10  CNetworkStringFilenameDict::IsValidIndex(int)
++0x0018:  0015d640  CNetworkStringFilenameDict::Insert(char const*)
++0x001c:  0015ac80  CNetworkStringFilenameDict::Find(char const*)
++0x0020:  0015aa30  CNetworkStringFilenameDict::Element(int)
++0x0024:  0015aa50  CNetworkStringFilenameDict::Element(int) const

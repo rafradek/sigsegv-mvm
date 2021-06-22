@@ -1,0 +1,5 @@
+CEntityFactory<CObjectTeleporter>
+
++0x0000:  00db5940  CEntityFactory<CObjectTeleporter>::Create(char const*)
++0x0004:  00db5910  CEntityFactory<CObjectTeleporter>::Destroy(IServerNetworkable*)
++0x0008:  00db5930  CEntityFactory<CObjectTeleporter>::GetEntitySize()

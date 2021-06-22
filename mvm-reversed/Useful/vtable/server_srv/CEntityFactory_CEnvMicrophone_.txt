@@ -1,0 +1,5 @@
+CEntityFactory<CEnvMicrophone>
+
++0x0000:  00a3c200  CEntityFactory<CEnvMicrophone>::Create(char const*)
++0x0004:  00a3c1d0  CEntityFactory<CEnvMicrophone>::Destroy(IServerNetworkable*)
++0x0008:  00a3c1f0  CEntityFactory<CEnvMicrophone>::GetEntitySize()

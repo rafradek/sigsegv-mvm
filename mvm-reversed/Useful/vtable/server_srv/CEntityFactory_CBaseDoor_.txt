@@ -1,0 +1,5 @@
+CEntityFactory<CBaseDoor>
+
++0x0000:  00a1c3a0  CEntityFactory<CBaseDoor>::Create(char const*)
++0x0004:  00a1c1c0  CEntityFactory<CBaseDoor>::Destroy(IServerNetworkable*)
++0x0008:  00a1c1e0  CEntityFactory<CBaseDoor>::GetEntitySize()

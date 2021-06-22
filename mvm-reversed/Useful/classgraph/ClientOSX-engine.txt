@@ -1,0 +1,3153 @@
+
+[+] (anonymous namespace)::CaptionGripPanel
+ |  [+] (anonymous namespace)::GripPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] (anonymous namespace)::GripPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] (anonymous namespace)::ScrollBarButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] Base_CmdKeyValues
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] BlankImage
+ |  [-] vgui::IImage
+
+[+] CAppSystemGroup
+ |  [-] IAppSystemGroup
+
+[+] CAreaPortalsUIPanel
+ |  [+] CPerfUIChildPanel
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CAskConnectPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CAsyncWavDataCache
+ 0: +000000 public
+ |  [-] IAsyncWavDataCache
+ 1: +000004 public
+ |  [+] CManagedDataCacheClient<CAsyncWaveData, asyncwaveparams_t, CAsyncWaveData*>
+ |   |  [+] CDefaultDataCacheClient
+ |   |   |  [-] IDataCacheClient
+
+[+] CAudioDeviceAudioQueue
+ |  [+] CAudioDeviceBase
+ |   |  [-] IAudioDevice
+
+[+] CAudioDeviceBase
+ |  [-] IAudioDevice
+
+[+] CAudioDeviceNull
+ |  [+] CAudioDeviceBase
+ |   |  [-] IAudioDevice
+
+[+] CAudioDeviceOpenAL
+ |  [+] CAudioDeviceBase
+ |   |  [-] IAudioDevice
+
+[-] CAudioMixer
+
+[+] CAudioMixerWave
+ |  [-] CAudioMixer
+
+[+] CAudioMixerWave16Mono
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+
+[+] CAudioMixerWave16Stereo
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+
+[+] CAudioMixerWave8Mono
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+
+[+] CAudioMixerWave8Stereo
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+
+[+] CAudioMixerWaveADPCM
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+
+[#] CAudioMixerWaveMP3
+ 0: +000000 public
+ |  [+] CAudioMixerWave
+ |   |  [-] CAudioMixer
+ 1: +000028 public
+ |  [-] IAudioStreamEvent
+
+[-] CAudioSource
+
+[+] CAudioSourceCache
+ |  [-] IAudioSourceCache
+
+[+] CAudioSourceCache::SearchPathCache
+ |  [-] CUtlCachedFileData<CAudioSourceCachedInfo>
+
+[+] CAudioSourceCachedInfo
+ |  [-] IBaseCacheInfo
+
+[+] CAudioSourceMP3
+ |  [-] CAudioSource
+
+[+] CAudioSourceMP3Cache
+ |  [+] CAudioSourceMP3
+ |   |  [-] CAudioSource
+
+[+] CAudioSourceMemWave
+ |  [+] CAudioSourceWave
+ |   |  [-] CAudioSource
+
+[#] CAudioSourceStreamMP3
+ 0: +000000 public
+ |  [+] CAudioSourceMP3
+ |   |  [-] CAudioSource
+ 1: +000028 public
+ |  [-] IWaveStreamSource
+
+[#] CAudioSourceStreamWave
+ 0: +000000 public
+ |  [+] CAudioSourceWave
+ |   |  [-] CAudioSource
+ 1: +000058 public
+ |  [-] IWaveStreamSource
+
+[+] CAudioSourceVoice
+ |  [+] CAudioSourceWave
+ |   |  [-] CAudioSource
+
+[+] CAudioSourceVoice::CWaveDataVoice
+ |  [-] IWaveData
+
+[+] CAudioSourceWave
+ |  [-] CAudioSource
+
+[+] CBaseActionCDTrackStartDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionChangePlaybackRateDialog
+ |  [+] CBaseActionWithStopTimeDialog
+ |   |  [+] CBaseActionEditDialog
+ |   |   |  [+] vgui::Frame
+ |   |   |   |  [+] vgui::EditablePanel
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionEditDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionPauseDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionPlayCommandsDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionPlaySoundStartDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionScreenFadeStartDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionSkipAheadDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionStopPlaybackDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionTextMessageStartDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionWithStopTimeDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseActionZoomDialog
+ |  [+] CBaseActionEditDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseAppSystem<ICvarQuery>
+ |  [+] ICvarQuery
+ |   |  [-] IAppSystem
+
+[+] CBaseAppSystem<IDedicatedServerAPI>
+ |  [+] IDedicatedServerAPI
+ |   |  [-] IAppSystem
+
+[+] CBaseAppSystem<IEngineAPI>
+ |  [+] IEngineAPI
+ |   |  [-] IAppSystem
+
+[+] CBaseBudgetPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CBaseClient
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] IClient
+ |   |  [-] INetChannelHandler
+ 2: +000008 public
+ |  [+] IClientMessageHandler
+ |   |  [-] INetMessageHandler
+
+[#] CBaseClientState
+ 0: +000000 public
+ |  [-] INetChannelHandler
+ 1: +000004 public
+ |  [-] IConnectionlessPacketHandler
+ 2: +000008 public
+ |  [+] IServerMessageHandler
+ |   |  [-] INetMessageHandler
+
+[-] CBaseDemoAction
+
+[+] CBaseDemoActionWithStopTime
+ |  [-] CBaseDemoAction
+
+[+] CBasePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBaseServer
+ |  [+] IServer
+ |   |  [-] IConnectionlessPacketHandler
+
+[-] CBlockingUDPSocket
+
+[+] CBoolProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CBoundedCvar_CmdRate
+ |  [+] ConVar_ServerBounded
+ |   |  [#] ConVar
+ |   |   0: +000000 public
+ |   |   |  [-] ConCommandBase
+ |   |   1: +000018 public
+ |   |   |  [-] IConVar
+
+[+] CBoundedCvar_Rate
+ |  [+] ConVar_ServerBounded
+ |   |  [#] ConVar
+ |   |   0: +000000 public
+ |   |   |  [-] ConCommandBase
+ |   |   1: +000018 public
+ |   |   |  [-] IConVar
+
+[+] CBoundedCvar_UpdateRate
+ |  [+] ConVar_ServerBounded
+ |   |  [#] ConVar
+ |   |   0: +000000 public
+ |   |   |  [-] ConCommandBase
+ |   |   1: +000018 public
+ |   |   |  [-] IConVar
+
+[+] CBrushBSPIterator
+ |  [-] ISpatialLeafEnumerator
+
+[+] CBrushConvexInfo
+ |  [-] IConvexInfo
+
+[+] CBrushSurface
+ |  [-] IBrushSurface
+
+[+] CBudgetBarGraphPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBudgetHistoryPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBudgetPanelEngine
+ |  [+] CBudgetPanelShared
+ |   |  [+] CBaseBudgetPanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBudgetPanelShared
+ |  [+] CBaseBudgetPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBugReportFinishedDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBugReportUploadProgressDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBugUIPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CBuildModeNavCombo
+ |  [+] vgui::ComboBox
+ |   |  [+] vgui::TextEntry
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCallback<CSteam3Client, ClientGameServerDeny_t, false>
+ |  [#] CCallbackImpl<16>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Client, GameOverlayActivated_t, false>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Client, GameServerChangeRequested_t, false>
+ |  [#] CCallbackImpl<128>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Client, LowBatteryPower_t, false>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Client, PersonaStateChange_t, false>
+ |  [#] CCallbackImpl<12>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, ComputeNewPlayerCompatibilityResult_t, true>
+ |  [#] CCallbackImpl<24>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, GSPolicyResponse_t, true>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServerConnectFailure_t, true>
+ |  [#] CCallbackImpl<4>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServersConnected_t, true>
+ |  [#] CCallbackImpl<1>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, SteamServersDisconnected_t, true>
+ |  [#] CCallbackImpl<4>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[+] CCallback<CSteam3Server, ValidateAuthTicketResponse_t, true>
+ |  [#] CCallbackImpl<20>
+ |   0: +000000 
+ |   |  [-] CCallbackBase
+
+[-] CCallbackBase
+
+[#] CCallbackImpl<128>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<12>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<16>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<1>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<20>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<24>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[#] CCallbackImpl<4>
+ 0: +000000 
+ |  [-] CCallbackBase
+
+[+] CChangeFrameList
+ |  [-] IChangeFrameList
+
+[+] CClientDatatableStack
+ |  [-] CDatatableStack
+
+[+] CClientEngineTools
+ |  [+] IClientEngineTools
+ |   |  [-] IBaseInterface
+
+[-] CClientFrame
+
+[-] CClientFrameManager
+
+[#] CClientState
+ 0: +000000 public
+ |  [#] CBaseClientState
+ |   0: +000000 public
+ |   |  [-] INetChannelHandler
+ |   1: +000004 public
+ |   |  [-] IConnectionlessPacketHandler
+ |   2: +000008 public
+ |   |  [+] IServerMessageHandler
+ |   |   |  [-] INetMessageHandler
+ 1: +004ac4 public
+ |  [-] CClientFrameManager
+
+[+] CColorBalanceOperation
+ |  [-] IColorOperation
+
+[+] CColorBalanceUIPanel
+ |  [+] CColorCorrectionUIChildPanel
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorCorrectionTools
+ |  [-] IColorCorrectionTools
+
+[+] CColorCorrectionUIChildPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorCorrectionUIPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorCurvesEditPanel
+ |  [+] CCurveEditorPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorCurvesUIPanel
+ |  [+] CColorCorrectionUIChildPanel
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorHistogramPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorLevelsUIPanel
+ |  [+] CColorCorrectionUIChildPanel
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorLookupOperation
+ |  [-] IColorOperation
+
+[+] CColorLookupUIPanel
+ |  [+] CColorCorrectionUIChildPanel
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorOperationListPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CColorProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CColorSlider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CConCommandMemberAccessor<CEngineVGui>
+ 0: +000000 public
+ |  [+] ConCommand
+ |   |  [-] ConCommandBase
+ 1: +000024 public
+ |  [-] ICommandCallback
+ 2: +000028 public
+ |  [-] ICommandCompletionCallback
+
+[#] CConCommandMemberAccessor<CTextureBudgetPanel>
+ 0: +000000 public
+ |  [+] ConCommand
+ |   |  [-] ConCommandBase
+ 1: +000024 public
+ |  [-] ICommandCallback
+ 2: +000028 public
+ |  [-] ICommandCompletionCallback
+
+[+] CConPanel
+ |  [+] CBasePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CConVarCheckButton
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CCopyableUtlVector<CConPanel::CNotifyText, CUtlMemory<CConPanel::CNotifyText, int> >
+ 0: +000004 public
+ |  [-] CUtlVector<CConPanel::CNotifyText, CUtlMemory<CConPanel::CNotifyText, int> >
+
+[+] CCoreDispInfo
+ |  [-] CDispUtilsHelper
+
+[+] CCurveEditorPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CCurvesColorOperation
+ |  [-] IColorOperation
+
+[+] CCvarQuery
+ |  [+] CBaseAppSystem<ICvarQuery>
+ |   |  [+] ICvarQuery
+ |   |   |  [-] IAppSystem
+
+[+] CDataManager<CDispCollTree, CDispCollTree*, bool, CThreadFastMutex>
+ |  [-] CDataManagerBase
+
+[-] CDataManagerBase
+
+[-] CDatatableStack
+
+[+] CDebugCommandButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugCommandCheckbox
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugIncrementCVarButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugMenuButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugOptionsPage
+ |  [+] vgui::PropertyPage
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugOptionsPanel
+ |  [+] vgui::PropertyDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDebugSystemPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDedicatedServerAPI
+ |  [+] CTier3AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |   |   |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |   |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |   |   |  [-] IAppSystem
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[+] CDefaultDataCacheClient
+ |  [-] IDataCacheClient
+
+[+] CDemoActionCDTrackStart
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionCDTrackStop
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionChangePlaybackRate
+ |  [+] CBaseDemoActionWithStopTime
+ |   |  [-] CBaseDemoAction
+
+[+] CDemoActionManager
+ |  [-] IDemoActionManager
+
+[+] CDemoActionPausePlayback
+ |  [+] CBaseDemoActionWithStopTime
+ |   |  [-] CBaseDemoAction
+
+[+] CDemoActionPlayCommands
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionPlaySoundStart
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionScreenFadeStart
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionSkipAhead
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionStopPlayback
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionTextMessageStart
+ |  [-] CBaseDemoAction
+
+[+] CDemoActionZoom
+ |  [-] CBaseDemoAction
+
+[+] CDemoEditorPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDemoPlayer
+ |  [-] IDemoPlayer
+
+[+] CDemoRecorder
+ |  [-] IDemoRecorder
+
+[+] CDemoSmootherPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDemoUIPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDemoUIPanel2
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] CDispCollTree
+
+[#] CDispInfo
+ 0: +000000 public
+ |  [-] IDispInfo
+ 1: +000004 public
+ |  [-] CDispUtilsHelper
+
+[-] CDispUtilsHelper
+
+[-] CDownloadManager
+
+[+] CDownloadSystem
+ |  [+] IDownloadSystem
+ |   |  [-] IBaseInterface
+
+[+] CDragDropHelperPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDrawTreeFrame
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CDummySfx
+ |  [-] CSfxTable
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CEncodeInfo
+ |  [+] CServerDatatableStack
+ |   |  [-] CDatatableStack
+
+[+] CEngine
+ |  [-] IEngine
+
+[+] CEngineAPI
+ |  [+] CTier3AppSystem<IEngineAPI, 0>
+ |   |  [+] CTier2AppSystem<IEngineAPI, 0>
+ |   |   |  [+] CTier1AppSystem<IEngineAPI, 0>
+ |   |   |   |  [+] CTier0AppSystem<IEngineAPI>
+ |   |   |   |   |  [+] CBaseAppSystem<IEngineAPI>
+ |   |   |   |   |   |  [+] IEngineAPI
+ |   |   |   |   |   |   |  [-] IAppSystem
+
+[+] CEngineBSPTree
+ |  [+] IEngineSpatialQuery
+ |   |  [-] ISpatialQuery
+
+[+] CEngineBugReporter
+ |  [-] IEngineBugReporter
+
+[+] CEngineClient
+ |  [+] IVEngineClient
+ |   |  [-] IVEngineClient013
+
+[+] CEngineClientReplay
+ |  [+] IEngineClientReplay
+ |   |  [-] IBaseInterface
+
+[+] CEnginePanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CEnginePerfTools
+ |  [-] IEnginePerfTools
+
+[+] CEngineRecipientFilter
+ |  [-] IRecipientFilter
+
+[+] CEngineReplay
+ |  [+] IEngineReplay
+ |   |  [-] IBaseInterface
+
+[+] CEngineSingleUserFilter
+ |  [-] IRecipientFilter
+
+[+] CEngineSoundClient
+ |  [-] IEngineSound
+
+[+] CEngineSoundServer
+ |  [-] IEngineSound
+
+[+] CEngineSoundServices
+ |  [-] ISoundServices
+
+[+] CEngineTool
+ |  [+] IEngineToolInternal
+ |   |  [+] IEngineTool
+ |   |   |  [+] IEngineToolFramework
+ |   |   |   |  [-] IBaseInterface
+
+[+] CEngineTrace
+ |  [-] IEngineTrace
+
+[+] CEngineTraceClient
+ |  [+] CEngineTrace
+ |   |  [-] IEngineTrace
+
+[+] CEngineTraceServer
+ |  [+] CEngineTrace
+ |   |  [-] IEngineTrace
+
+[+] CEngineUniformRandomStream
+ |  [-] IUniformRandomStream
+
+[+] CEngineVGui
+ |  [+] IEngineVGuiInternal
+ |   |  [-] IEngineVGui
+
+[-] CEntityInfo
+
+[+] CEntityListAlongRay
+ |  [-] IPartitionEnumerator
+
+[+] CEntityReadInfo
+ |  [-] CEntityInfo
+
+[+] CEntityReportPanel
+ |  [+] CBasePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CEntityWriteInfo
+ |  [-] CEntityInfo
+
+[+] CEnumerationFilter
+ |  [-] IPartitionEnumerator
+
+[+] CFixEdgeButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CFloatProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[-] CFmtStrN<1024, false>
+
+[-] CFmtStrN<128, false>
+
+[-] CFmtStrN<256, false>
+
+[+] CFocusOverlayPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CFogUIPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] CFrameSnapshotManager
+
+[+] CFullScreenSelectionPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CFunctor
+ |  [-] IRefCounted
+
+[+] CFunctor0<void (*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor1<void (*)(char const*), CUtlEnvelope<char const*>, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor1<void (*)(int), int, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor2<void (*)(bool, bool), bool, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor2<void (*)(msurface2_t*, Vector), msurface2_t*, Vector, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor6<void (*)(dlight_t*, msurface2_t*, matrix3x4_t const&, unsigned int, bool, bool), dlight_t*, msurface2_t*, matrix3x4_t, unsigned int, bool, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctor9<void (*)(bool, int, Vector, int, decal_t**, int, int, int, float), bool, int, Vector, int, decal_t**, int, int, int, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CFunctorJob
+ |  [+] CJob
+ |   |  [#] CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >
+ |   |   0: +000000 public
+ |   |   |  [-] IRefCounted
+ |   |   1: +000004 public
+ |   |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CGame
+ |  [-] IGame
+
+[#] CGameClient
+ 0: +000000 public
+ |  [#] CBaseClient
+ |   0: +000000 public
+ |   |  [-] IGameEventListener2
+ |   1: +000004 public
+ |   |  [+] IClient
+ |   |   |  [-] INetChannelHandler
+ |   2: +000008 public
+ |   |  [+] IClientMessageHandler
+ |   |   |  [-] INetMessageHandler
+ 1: +027354 public
+ |  [-] CClientFrameManager
+
+[+] CGameEvent
+ |  [-] IGameEvent
+
+[+] CGameEventManager
+ |  [+] IGameEventManager2
+ |   |  [-] IBaseInterface
+
+[+] CGameEventManagerOld
+ |  [+] IGameEventManager
+ |   |  [-] IBaseInterface
+
+[+] CGameServer
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+
+[+] CGameUIFuncs
+ |  [-] IGameUIFuncs
+
+[+] CHFontProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CHLTVClient
+ |  [#] CBaseClient
+ |   0: +000000 public
+ |   |  [-] IGameEventListener2
+ |   1: +000004 public
+ |   |  [+] IClient
+ |   |   |  [-] INetChannelHandler
+ |   2: +000008 public
+ |   |  [+] IClientMessageHandler
+ |   |   |  [-] INetMessageHandler
+
+[+] CHLTVClientState
+ |  [#] CBaseClientState
+ |   0: +000000 public
+ |   |  [-] INetChannelHandler
+ |   1: +000004 public
+ |   |  [-] IConnectionlessPacketHandler
+ |   2: +000008 public
+ |   |  [+] IServerMessageHandler
+ |   |   |  [-] INetMessageHandler
+
+[+] CHLTVDemoRecorder
+ |  [-] IDemoRecorder
+
+[+] CHLTVFrame
+ |  [-] CClientFrame
+
+[#] CHLTVServer
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+ 2: +0001a0 public
+ |  [-] CClientFrameManager
+ 3: +0001e0 public
+ |  [+] IHLTVServer
+ |   |  [-] IBaseInterface
+ 4: +0001e4 public
+ |  [-] IDemoPlayer
+
+[#] CIVDebugOverlay
+ 0: +000000 public
+ |  [-] IVDebugOverlay
+ 1: +000004 public
+ |  [-] IVPhysicsDebugOverlay
+
+[+] CIntProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CJob
+ |  [#] CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [-] IRefCounted
+ |   1: +000004 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CLC_BaselineAck
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_ClientInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_CmdKeyValues
+ |  [+] Base_CmdKeyValues
+ |   |  [+] CNetMessage
+ |   |   |  [-] INetMessage
+
+[+] CLC_FileCRCCheck
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_FileMD5Check
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_ListenEvents
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_Move
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_RespondCvarValue
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_SaveReplay
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLC_VoiceData
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] CLevelsColorOperation
+ |  [-] IColorOperation
+
+[+] CLoaderProgress
+ |  [-] ILoaderProgress
+
+[+] CLog
+ |  [-] IGameEventListener2
+
+[+] CLookupViewPanel
+ |  [#] CProceduralTexturePanel
+ |   0: +000000 public
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+ |   1: +000158 public
+ |   |  [-] ITextureRegenerator
+
+[+] CLookupViewWindow
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMDLCacheNotify
+ |  [-] IMDLCacheNotify
+
+[-] CMPAException
+
+[+] CManagedDataCacheClient<CAsyncWaveData, asyncwaveparams_t, CAsyncWaveData*>
+ |  [+] CDefaultDataCacheClient
+ |   |  [-] IDataCacheClient
+
+[+] CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>
+ |  [+] CDefaultDataCacheClient
+ |   |  [-] IDataCacheClient
+
+[#] CMatchmaking
+ 0: +000000 public
+ |  [-] IMatchmaking
+ 1: +000004 public
+ |  [+] IMatchmakingMessageHandler
+ |   |  [-] INetMessageHandler
+ 2: +000008 public
+ |  [+] IClientMessageHandler
+ |   |  [-] INetMessageHandler
+ 3: +00000c public
+ |  [-] INetChannelHandler
+ 4: +000010 public
+ |  [-] IConnectionlessPacketHandler
+
+[+] CMaterialProxyFactory
+ |  [-] IMaterialProxyFactory
+
+[+] CMemberFunctor0<CCallQueue*, void (CCallQueueT<CTSQueue<CFunctor*, false> >::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<CParallelProcessor<CGameClient*, CFuncJobItemProcessor<CGameClient*> >*, void (CParallelProcessor<CGameClient*, CFuncJobItemProcessor<CGameClient*> >::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<CParallelProcessor<PackWork_t, CFuncJobItemProcessor<PackWork_t> >*, void (CParallelProcessor<PackWork_t, CFuncJobItemProcessor<PackWork_t> >::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<CSaveRestore*, void (CSaveRestore::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<IFileSystem*, void (IFileSystem::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<IMaterialSystem*, void (IMaterialSystem::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor0<IXboxSystem*, void (IXboxSystem::*)(), CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor1<CModelRender*, int (CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>::*)(memhandle_t__*), memhandle_t__*, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor1<CSaveRestore*, void (CSaveRestore::*)(bool), bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor3<CBugUIPanel*, bool (CBugUIPanel::*)(char const*, char const*, bool), CUtlEnvelope<char const*>, CUtlEnvelope<char const*>, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor3<CSaveRestore*, void (CSaveRestore::*)(char const*, char const*, bool), CUtlEnvelope<char const*>, CUtlEnvelope<char const*>, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor3<CSaveRestore*, void (CSaveRestore::*)(char const*, int, bool), CUtlEnvelope<char const*>, int, bool, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor6<ISaveRestoreFileSystem*, FSAsyncStatus_t (ISaveRestoreFileSystem::*)(char const*, void const*, int, bool, bool, FSAsyncControl_t__**), CUtlEnvelope<char const*>, void*, int, bool, bool, FSAsyncControl_t__**, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMemberFunctor6<ISaveRestoreFileSystem*, FSAsyncStatus_t (ISaveRestoreFileSystem::*)(char const*, void const*, int, bool, bool, FSAsyncControl_t__**), CUtlEnvelope<char const*>, void*, unsigned int, bool, bool, FSAsyncControl_t__**, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >, CFuncMemPolicyNone>
+ |  [#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] CFunctor
+ |   |   |  [-] IRefCounted
+ |   1: +000008 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CMessage
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CMixerControls
+ |  [-] IMixerControls
+
+[+] CModAppSystemGroup
+ |  [+] CAppSystemGroup
+ |   |  [-] IAppSystemGroup
+
+[+] CModelInfo
+ |  [+] IVModelInfoClient
+ |   |  [-] IVModelInfo
+
+[+] CModelInfoClient
+ |  [+] CModelInfo
+ |   |  [+] IVModelInfoClient
+ |   |   |  [-] IVModelInfo
+
+[+] CModelInfoServer
+ |  [+] CModelInfo
+ |   |  [+] IVModelInfoClient
+ |   |   |  [-] IVModelInfo
+
+[+] CModelLoader
+ |  [-] IModelLoader
+
+[#] CModelRender
+ 0: +000000 public
+ |  [-] IVModelRender
+ 1: +000004 public
+ |  [+] CManagedDataCacheClient<CColorMeshData, colormeshparams_t, CColorMeshData*>
+ |   |  [+] CDefaultDataCacheClient
+ |   |   |  [-] IDataCacheClient
+
+[+] CNetChan
+ |  [+] INetChannel
+ |   |  [-] INetChannelInfo
+
+[+] CNetMessage
+ |  [-] INetMessage
+
+[+] CNetworkStringDict
+ |  [-] INetworkStringDict
+
+[+] CNetworkStringFilenameDict
+ |  [-] INetworkStringDict
+
+[+] CNetworkStringTable
+ |  [-] INetworkStringTable
+
+[+] CNetworkStringTableContainer
+ |  [-] INetworkStringTableContainer
+
+[+] CNewActionButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CNewOperationDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COM_IOReadBinary
+ |  [-] IFileReadBinary
+
+[+] COcclusionSystem
+ |  [-] IOcclusionSystem
+
+[+] COcclusionUIPanel
+ |  [+] CPerfUIChildPanel
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COperationListPanel
+ |  [+] vgui::ListPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] COverlayMgr
+ |  [-] IOverlayMgr
+
+[-] CP4File
+
+[+] CP4File_Dummy
+ |  [-] CP4File
+
+[+] CPerfUIChildPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPerfUIPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPhoneHome
+ |  [-] IPhoneHome
+
+[+] CPluginGameUIDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPluginHudMessage
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPluginMenu
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPluginUIManager
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPointContentsEnum
+ |  [-] IPartitionEnumerator
+
+[+] CPooledVBAllocator_ColorMesh
+ |  [-] IPooledVBAllocator
+
+[+] CPrecisionSlider
+ |  [+] vgui::Slider
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CProceduralTexturePanel
+ 0: +000000 public
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+ 1: +000158 public
+ |  [-] ITextureRegenerator
+
+[+] CProfileHierarchyPanel
+ |  [+] vgui::CTreeViewListControl
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CProfileTree
+ |  [+] vgui::TreeView
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPropCullStack
+ |  [-] CDatatableStack
+
+[+] CPropFadeUIPanel
+ |  [+] CPerfUIChildPanel
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CPropMapStack
+ |  [-] CDatatableStack
+
+[+] CProportionalFloatProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntWithScreenspacePropertyX
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CProportionalIntWithScreenspacePropertyY
+ |  [+] CProportionalIntWithScreenspacePropertyX
+ |   |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CPureServerWhitelist
+ |  [-] IPureServerWhitelist
+
+[#] CQueuedPacketSender
+ 0: +000000 public
+ 1: +000120 public
+ |  [-] IQueuedPacketSender
+
+[+] CRConClient
+ |  [-] ISocketCreatorListener
+
+[+] CRConServer
+ |  [-] ISocketCreatorListener
+
+[#] CRConVProfExport
+ 0: +000000 public
+ |  [-] IVProfExport
+ 1: +000004 public
+ |  [-] IVProfData
+
+[-] CRefCountServiceBase<true, CRefMT>
+
+[#] CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >
+ 0: +000000 public
+ |  [+] CFunctor
+ |   |  [-] IRefCounted
+ 1: +000008 public
+ |  [-] CRefCountServiceBase<true, CRefMT>
+
+[#] CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >
+ 0: +000000 public
+ |  [-] IRefCounted
+ 1: +000004 public
+ |  [-] CRefCountServiceBase<true, CRefMT>
+
+[#] CRefCounted1<IWorldRenderList, CRefCountServiceBase<true, CRefMT> >
+ 0: +000000 public
+ |  [+] IWorldRenderList
+ |   |  [-] IRefCounted
+ 1: +000004 public
+ |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CRegistry
+ |  [-] IRegistry
+
+[+] CRender
+ |  [-] IRender
+
+[+] CRenderTextureEditor
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CRenderTexturesListViewPanel
+ |  [+] vgui::TileViewPanelEx
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CReplayDemoPlayer
+ 0: +000000 public
+ |  [+] CDemoPlayer
+ |   |  [-] IDemoPlayer
+ 1: +000728 public
+ |  [+] IReplayDemoPlayer
+ |   |  [-] IBaseInterface
+
+[+] CReplayDemoRecorder
+ |  [-] IDemoRecorder
+
+[+] CReplayFrame
+ |  [-] CClientFrame
+
+[#] CReplayServer
+ 0: +000000 public
+ |  [-] IGameEventListener2
+ 1: +000004 public
+ |  [+] CBaseServer
+ |   |  [+] IServer
+ |   |   |  [-] IConnectionlessPacketHandler
+ 2: +0001a0 public
+ |  [-] CClientFrameManager
+ 3: +0001e0 public
+ |  [+] IReplayServer
+ |   |  [-] IBaseInterface
+
+[+] CResourcePreload
+ |  [-] IResourcePreload
+
+[+] CResourcePreloadModel
+ |  [+] CResourcePreload
+ |   |  [-] IResourcePreload
+
+[+] CResourcePreloadSound
+ |  [+] CResourcePreload
+ |   |  [-] IResourcePreload
+
+[+] CSaveRestore
+ |  [-] ISaveRestore
+
+[+] CSaveRestoreFileSystem
+ |  [-] ISaveRestoreFileSystem
+
+[+] CSaveRestoreFileSystemPassthrough
+ |  [-] ISaveRestoreFileSystem
+
+[+] CSelectedHSVOperation
+ |  [-] IColorOperation
+
+[+] CSelectedHSVUIPanel
+ |  [+] CColorCorrectionUIChildPanel
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] CSendTablePrecalc
+
+[+] CSentenceMixer
+ |  [-] CAudioMixer
+
+[+] CServerDatatableStack
+ |  [-] CDatatableStack
+
+[+] CServerEngineTools
+ |  [+] IServerEngineTools
+ |   |  [-] IBaseInterface
+
+[+] CServerPlugin
+ |  [-] IServerPluginHelpers
+
+[+] CServerRemoteAccess
+ |  [+] IGameServerData
+ |   |  [-] IBaseInterface
+
+[-] CSfxTable
+
+[#] CShadowMgr
+ 0: +000000 public
+ |  [+] IShadowMgrInternal
+ |   |  [-] IShadowMgr
+ 1: +000004 
+ |  [-] ISpatialLeafEnumerator
+
+[+] CSmallTextEntry
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSmoothingTypeButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CSpatialPartition
+ |  [+] ISpatialPartitionInternal
+ |   |  [-] ISpatialPartition
+
+[+] CStaticPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CStaticProp
+ 0: +000000 public
+ |  [+] IClientUnknown
+ |   |  [-] IHandleEntity
+ 1: +000004 public
+ |  [-] IClientRenderable
+ 2: +000008 public
+ |  [-] ICollideable
+
+[#] CStaticPropMgr
+ 0: +000000 public
+ |  [-] IStaticPropMgrEngine
+ 1: +000004 public
+ |  [+] IStaticPropMgrClient
+ |   |  [-] IStaticPropMgr
+ 2: +000008 public
+ |  [+] IStaticPropMgrServer
+ |   |  [-] IStaticPropMgr
+
+[+] CStringProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CStudioConvexInfo
+ |  [-] IConvexInfo
+
+[-] CTestScriptMgr
+
+[+] CTextureBudgetPanel
+ |  [+] CBaseBudgetPanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CTextureIdProperty
+ |  [-] vgui::IPanelAnimationPropertyConverter
+
+[+] CTextureListPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CTier0AppSystem<IDedicatedServerAPI>
+ |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |  [+] IDedicatedServerAPI
+ |   |   |  [-] IAppSystem
+
+[+] CTier0AppSystem<IEngineAPI>
+ |  [+] CBaseAppSystem<IEngineAPI>
+ |   |  [+] IEngineAPI
+ |   |   |  [-] IAppSystem
+
+[+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |  [-] IAppSystem
+
+[+] CTier1AppSystem<IEngineAPI, 0>
+ |  [+] CTier0AppSystem<IEngineAPI>
+ |   |  [+] CBaseAppSystem<IEngineAPI>
+ |   |   |  [+] IEngineAPI
+ |   |   |   |  [-] IAppSystem
+
+[+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |  [-] IAppSystem
+
+[+] CTier2AppSystem<IEngineAPI, 0>
+ |  [+] CTier1AppSystem<IEngineAPI, 0>
+ |   |  [+] CTier0AppSystem<IEngineAPI>
+ |   |   |  [+] CBaseAppSystem<IEngineAPI>
+ |   |   |   |  [+] IEngineAPI
+ |   |   |   |   |  [-] IAppSystem
+
+[+] CTier3AppSystem<IDedicatedServerAPI, 0>
+ |  [+] CTier2AppSystem<IDedicatedServerAPI, 0>
+ |   |  [+] CTier1AppSystem<IDedicatedServerAPI, 0>
+ |   |   |  [+] CTier0AppSystem<IDedicatedServerAPI>
+ |   |   |   |  [+] CBaseAppSystem<IDedicatedServerAPI>
+ |   |   |   |   |  [+] IDedicatedServerAPI
+ |   |   |   |   |   |  [-] IAppSystem
+
+[+] CTier3AppSystem<IEngineAPI, 0>
+ |  [+] CTier2AppSystem<IEngineAPI, 0>
+ |   |  [+] CTier1AppSystem<IEngineAPI, 0>
+ |   |   |  [+] CTier0AppSystem<IEngineAPI>
+ |   |   |   |  [+] CBaseAppSystem<IEngineAPI>
+ |   |   |   |   |  [+] IEngineAPI
+ |   |   |   |   |   |  [-] IAppSystem
+
+[+] CToolFrameworkInternal
+ |  [+] IToolFrameworkInternal
+ |   |  [-] IAppSystem
+
+[+] CTouchLinks
+ |  [-] IPartitionEnumerator
+
+[+] CTraceFilter
+ |  [-] ITraceFilter
+
+[+] CTraceFilterDAS
+ |  [-] ITraceFilter
+
+[+] CTraceFilterHitAll
+ |  [+] CTraceFilter
+ |   |  [-] ITraceFilter
+
+[+] CTraceFilterWorldAndProps
+ |  [-] ITraceFilter
+
+[+] CTraceFilterWorldAndPropsOnly
+ |  [-] ITraceFilter
+
+[+] CTraceFilterWorldOnly
+ |  [-] ITraceFilter
+
+[+] CTriggerMoved
+ |  [-] IPartitionEnumerator
+
+[+] CUncorrectedImagePanel
+ |  [#] CProceduralTexturePanel
+ |   0: +000000 public
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+ |   1: +000158 public
+ |   |  [-] ITextureRegenerator
+
+[+] CUploadGameStats
+ |  [-] IUploadGameStats
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCachedFileData<CAudioSourceCachedInfo>
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlVector<CConPanel::CNotifyText, CUtlMemory<CConPanel::CNotifyText, int> >
+
+[+] CVEfx
+ |  [-] IVEfx
+
+[+] CVEngineServer
+ |  [-] IVEngineServer
+
+[+] CVEngineServer22
+ |  [+] CVEngineServer
+ |   |  [-] IVEngineServer
+
+[+] CVGuiTree
+ |  [+] vgui::TreeView
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CVProfExport
+ |  [-] IVProfExport
+
+[+] CVProfGraphPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CVProfLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CVProfPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] CVRenderView
+ 0: +000000 public
+ |  [-] IVRenderView
+ 1: +000004 public
+ |  [-] ISpatialLeafEnumerator
+
+[+] CVTFTexture
+ |  [-] IVTFTexture
+
+[+] CVideoMode_Common
+ |  [-] IVideoMode
+
+[+] CVideoMode_MaterialSystem
+ |  [+] CVideoMode_Common
+ |   |  [-] IVideoMode
+
+[+] CVirtualTerrain
+ |  [-] IVirtualMeshEvent
+
+[+] CVmtTextEntry
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] CVoiceServer
+ |  [-] IVoiceServer
+
+[+] CVoiceSfx
+ |  [-] CSfxTable
+
+[-] CVoxelTree
+
+[+] CWaveDataMemoryAsync
+ |  [-] IWaveData
+
+[+] CWaveDataStreamAsync
+ |  [-] IWaveData
+
+[+] CWorldRenderList
+ |  [#] CRefCounted1<IWorldRenderList, CRefCountServiceBase<true, CRefMT> >
+ |   0: +000000 public
+ |   |  [+] IWorldRenderList
+ |   |   |  [-] IRefCounted
+ |   1: +000004 public
+ |   |  [-] CRefCountServiceBase<true, CRefMT>
+
+[+] CXboxSystem
+ |  [-] IXboxSystem
+
+[+] ColumnButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[+] ConVar_ServerBounded
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CreateDirectoryDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] Dragger
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] IAppSystem
+
+[-] IAppSystemGroup
+
+[-] IAsyncWavDataCache
+
+[-] IAudioDevice
+
+[-] IAudioSourceCache
+
+[-] IAudioStreamEvent
+
+[-] IBaseCacheInfo
+
+[-] IBaseInterface
+
+[-] IBrushSurface
+
+[-] IChangeFrameList
+
+[+] IClient
+ |  [-] INetChannelHandler
+
+[+] IClientEngineTools
+ |  [-] IBaseInterface
+
+[+] IClientMessageHandler
+ |  [-] INetMessageHandler
+
+[-] IClientRenderable
+
+[+] IClientUnknown
+ |  [-] IHandleEntity
+
+[-] ICollideable
+
+[-] IColorCorrectionTools
+
+[-] IColorOperation
+
+[-] ICommandCallback
+
+[-] ICommandCompletionCallback
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[-] IConnectionlessPacketHandler
+
+[-] IConvexInfo
+
+[+] ICvarQuery
+ |  [-] IAppSystem
+
+[-] IDataCacheClient
+
+[+] IDedicatedServerAPI
+ |  [-] IAppSystem
+
+[-] IDemoActionManager
+
+[-] IDemoPlayer
+
+[-] IDemoRecorder
+
+[-] IDispInfo
+
+[+] IDownloadSystem
+ |  [-] IBaseInterface
+
+[-] IEngine
+
+[+] IEngineAPI
+ |  [-] IAppSystem
+
+[-] IEngineBugReporter
+
+[+] IEngineClientReplay
+ |  [-] IBaseInterface
+
+[-] IEnginePerfTools
+
+[+] IEngineReplay
+ |  [-] IBaseInterface
+
+[-] IEngineSound
+
+[+] IEngineSpatialQuery
+ |  [-] ISpatialQuery
+
+[+] IEngineTool
+ |  [+] IEngineToolFramework
+ |   |  [-] IBaseInterface
+
+[+] IEngineToolFramework
+ |  [-] IBaseInterface
+
+[+] IEngineToolInternal
+ |  [+] IEngineTool
+ |   |  [+] IEngineToolFramework
+ |   |   |  [-] IBaseInterface
+
+[-] IEngineTrace
+
+[-] IEngineVGui
+
+[+] IEngineVGuiInternal
+ |  [-] IEngineVGui
+
+[-] IFileReadBinary
+
+[-] IGame
+
+[-] IGameEvent
+
+[-] IGameEventListener2
+
+[+] IGameEventManager
+ |  [-] IBaseInterface
+
+[+] IGameEventManager2
+ |  [-] IBaseInterface
+
+[+] IGameServerData
+ |  [-] IBaseInterface
+
+[-] IGameUIFuncs
+
+[+] IHLTVServer
+ |  [-] IBaseInterface
+
+[-] IHandleEntity
+
+[-] ILoaderProgress
+
+[-] IMDLCacheNotify
+
+[-] IMatchmaking
+
+[+] IMatchmakingMessageHandler
+ |  [-] INetMessageHandler
+
+[-] IMaterialProxyFactory
+
+[-] IMixerControls
+
+[-] IModelLoader
+
+[+] INetChannel
+ |  [-] INetChannelInfo
+
+[-] INetChannelHandler
+
+[-] INetChannelInfo
+
+[-] INetMessage
+
+[-] INetMessageHandler
+
+[-] INetworkStringDict
+
+[-] INetworkStringTable
+
+[-] INetworkStringTableContainer
+
+[-] IOcclusionSystem
+
+[-] IOverlayMgr
+
+[-] IPartitionEnumerator
+
+[-] IPhoneHome
+
+[-] IPooledVBAllocator
+
+[-] IPureServerWhitelist
+
+[-] IQueuedPacketSender
+
+[-] IRecipientFilter
+
+[-] IRefCounted
+
+[-] IRegistry
+
+[-] IRender
+
+[+] IReplayDemoPlayer
+ |  [-] IBaseInterface
+
+[+] IReplayServer
+ |  [-] IBaseInterface
+
+[-] IResourcePreload
+
+[-] ISaveRestore
+
+[-] ISaveRestoreFileSystem
+
+[+] IServer
+ |  [-] IConnectionlessPacketHandler
+
+[+] IServerEngineTools
+ |  [-] IBaseInterface
+
+[+] IServerMessageHandler
+ |  [-] INetMessageHandler
+
+[-] IServerPluginHelpers
+
+[-] IShadowMgr
+
+[+] IShadowMgrInternal
+ |  [-] IShadowMgr
+
+[-] ISocketCreatorListener
+
+[-] ISoundServices
+
+[-] ISpatialLeafEnumerator
+
+[-] ISpatialPartition
+
+[+] ISpatialPartitionInternal
+ |  [-] ISpatialPartition
+
+[-] ISpatialQuery
+
+[-] IStaticPropMgr
+
+[+] IStaticPropMgrClient
+ |  [-] IStaticPropMgr
+
+[-] IStaticPropMgrEngine
+
+[+] IStaticPropMgrServer
+ |  [-] IStaticPropMgr
+
+[-] ITextureRegenerator
+
+[+] IToolFrameworkInternal
+ |  [-] IAppSystem
+
+[-] ITraceFilter
+
+[-] IUniformRandomStream
+
+[-] IUploadGameStats
+
+[-] IVDebugOverlay
+
+[-] IVEfx
+
+[+] IVEngineClient
+ |  [-] IVEngineClient013
+
+[-] IVEngineClient013
+
+[-] IVEngineServer
+
+[-] IVModelInfo
+
+[+] IVModelInfoClient
+ |  [-] IVModelInfo
+
+[-] IVModelRender
+
+[-] IVPhysicsDebugOverlay
+
+[-] IVProfData
+
+[-] IVProfExport
+
+[-] IVRenderView
+
+[-] IVTFTexture
+
+[-] IVideoMode
+
+[-] IVirtualMeshEvent
+
+[-] IVoiceRecord
+
+[-] IVoiceServer
+
+[-] IWaveData
+
+[-] IWaveStreamSource
+
+[+] IWorldRenderList
+ |  [-] IRefCounted
+
+[-] IXboxSystem
+
+[+] MM_Checkpoint
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_ClientInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Heartbeat
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_JoinResponse
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Migrate
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_Mutelist
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MM_RegisterResponse
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] MarkStaticPropLightsEmumerator
+ |  [-] IPartitionEnumerator
+
+[+] MenuItemCheckImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] NET_SetConVar
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_SignonState
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_StringCmd
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] NET_Tick
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_BSPDecal
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_ClassInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_CmdKeyValues
+ |  [+] Base_CmdKeyValues
+ |   |  [+] CNetMessage
+ |   |   |  [-] INetMessage
+
+[+] SVC_CreateStringTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_CrosshairAngle
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_EntityMessage
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_FixAngle
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GameEvent
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GameEventList
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_GetCvarValue
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Menu
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_PacketEntities
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Prefetch
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Print
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SendTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_ServerInfo
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SetPause
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_SetView
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_Sounds
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_TempEntities
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_UpdateStringTable
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_UserMessage
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_VoiceData
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[+] SVC_VoiceInit
+ |  [+] CNetMessage
+ |   |  [-] INetMessage
+
+[-] SendProp
+
+[+] TxViewPanel
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] VoiceRecord_AudioQueue
+ |  [-] IVoiceRecord
+
+[+] VoiceRecord_OpenAL
+ |  [-] IVoiceRecord
+
+[+] snappy::ByteArraySource
+ |  [-] snappy::Source
+
+[-] snappy::Sink
+
+[-] snappy::Source
+
+[+] snappy::UncheckedByteArraySink
+ |  [-] snappy::Sink
+
+[+] vgui::AnimatingImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::AnimationController
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::BaseInputDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::BaseTooltip
+
+[-] vgui::BuildGroup
+
+[+] vgui::BuildModeDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Button
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CBitmapImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CTreeViewListControl
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CheckButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CheckImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] vgui::CircularProgressBar
+ |  [+] vgui::ProgressBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ClickPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ComboBox
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ComboBoxButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ContextLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ContinuousProgressBar
+ |  [+] vgui::ProgressBar
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::CvarToggleCheckButton<ConVarRef>
+ |  [+] vgui::CheckButton
+ |   |  [+] vgui::ToggleButton
+ |   |   |  [+] vgui::Button
+ |   |   |   |  [+] vgui::Label
+ |   |   |   |   |  [#] vgui::Panel
+ |   |   |   |   |   0: +000000 public
+ |   |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::DirectorySelectDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::DirectoryTreeView
+ |  [+] vgui::TreeView
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Divider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::EditablePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ExpandButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileCompletionEdit
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileCompletionMenu
+ |  [+] vgui::Menu
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FileOpenDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::FocusNavGroup
+
+[+] vgui::Frame
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FrameButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::FrameSystemButton
+ |  [+] vgui::MenuButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::GraphPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::IClientPanel
+
+[-] vgui::IForceVirtualInheritancePanel
+
+[-] vgui::IImage
+
+[-] vgui::IPanelAnimationPropertyConverter
+
+[+] vgui::Image
+ |  [-] vgui::IImage
+
+[+] vgui::ImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::InputDialog
+ |  [+] vgui::BaseInputDialog
+ |   |  [+] vgui::Frame
+ |   |   |  [+] vgui::EditablePanel
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Label
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListViewItem
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ListViewPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Menu
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuItem
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MenuSeparator
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::MessageBox
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PageTab
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[#] vgui::Panel
+ 0: +000000 public
+ |  [-] vgui::IClientPanel
+ 1: +fffffff4 virtual
+ |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PanelListPanel
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ProgressBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertyDialog
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertyPage
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::PropertySheet
+ |  [+] vgui::EditablePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RadioButton
+ |  [+] vgui::ToggleButton
+ |   |  [+] vgui::Button
+ |   |   |  [+] vgui::Label
+ |   |   |   |  [#] vgui::Panel
+ |   |   |   |   0: +000000 public
+ |   |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   |   1: +fffffff4 virtual
+ |   |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RadioImage
+ |  [+] vgui::TextImage
+ |   |  [+] vgui::Image
+ |   |   |  [-] vgui::IImage
+
+[+] vgui::RichText
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::RichTextInterior
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScalableImagePanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScrollBar
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ScrollBarSlider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::Slider
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TextEntry
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TextImage
+ |  [+] vgui::Image
+ |   |  [-] vgui::IImage
+
+[+] vgui::TextTooltip
+ |  [-] vgui::BaseTooltip
+
+[+] vgui::TileViewPanelEx
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ToggleButton
+ |  [+] vgui::Button
+ |   |  [+] vgui::Label
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::ToolWindow
+ |  [+] vgui::Frame
+ |   |  [+] vgui::EditablePanel
+ |   |   |  [#] vgui::Panel
+ |   |   |   0: +000000 public
+ |   |   |   |  [-] vgui::IClientPanel
+ |   |   |   1: +fffffff4 virtual
+ |   |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNode
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNodeImage
+ |  [+] vgui::ImagePanel
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeNodeText
+ |  [+] vgui::TextEntry
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeView
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::TreeViewSubPanel
+ |  [#] vgui::Panel
+ |   0: +000000 public
+ |   |  [-] vgui::IClientPanel
+ |   1: +fffffff4 virtual
+ |   |  [-] vgui::IForceVirtualInheritancePanel
+
+[+] vgui::URLLabel
+ |  [+] vgui::Label
+ |   |  [#] vgui::Panel
+ |   |   0: +000000 public
+ |   |   |  [-] vgui::IClientPanel
+ |   |   1: +fffffff4 virtual
+ |   |   |  [-] vgui::IForceVirtualInheritancePanel

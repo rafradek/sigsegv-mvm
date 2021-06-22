@@ -1,0 +1,9 @@
+CTEPhysicsProp
+
++0x0000:  00c162a0  CTEPhysicsProp::GetServerClass()
++0x0004:  00c162b0  CTEPhysicsProp::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c16310  CTEPhysicsProp::~CTEPhysicsProp()
++0x000c:  00c16330  CTEPhysicsProp::~CTEPhysicsProp()
++0x0010:  00c16360  CTEPhysicsProp::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  00c162f0  CTEPhysicsProp::Precache()

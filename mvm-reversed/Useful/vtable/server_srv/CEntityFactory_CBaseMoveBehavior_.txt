@@ -1,0 +1,5 @@
+CEntityFactory<CBaseMoveBehavior>
+
++0x0000:  00aa88e0  CEntityFactory<CBaseMoveBehavior>::Create(char const*)
++0x0004:  00aa8860  CEntityFactory<CBaseMoveBehavior>::Destroy(IServerNetworkable*)
++0x0008:  00aa8880  CEntityFactory<CBaseMoveBehavior>::GetEntitySize()

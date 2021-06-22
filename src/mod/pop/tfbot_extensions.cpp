@@ -1772,7 +1772,7 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			// Random choise spawner crash on parse fail fix
 			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_Parse, "CRandomChoiceSpawner::Parse");
-			MOD_ADD_DETOUR_STATIC(IPopulationSpawner_ParseSpawner, "IPopulationSpawner::ParseSpawner");
+			MOD_ADD_DETOUR_STATIC_PRIORITY(IPopulationSpawner_ParseSpawner, "IPopulationSpawner::ParseSpawner", HIGHEST);
 
 			// Suppress fire removal when flag is dropped fix
 			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_OnEnd, "CTFBotDeliverFlag::OnEnd");

@@ -1,0 +1,5 @@
+CEntityFactory<CFunc_DustCloud>
+
++0x0000:  00a6e6e0  CEntityFactory<CFunc_DustCloud>::Create(char const*)
++0x0004:  00a6e4e0  CEntityFactory<CFunc_DustCloud>::Destroy(IServerNetworkable*)
++0x0008:  00a6e500  CEntityFactory<CFunc_DustCloud>::GetEntitySize()

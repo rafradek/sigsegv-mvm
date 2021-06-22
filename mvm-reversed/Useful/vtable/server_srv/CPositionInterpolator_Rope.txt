@@ -1,0 +1,7 @@
+CPositionInterpolator_Rope
+
++0x0000:  008c3940  CPositionInterpolator_Rope::Release()
++0x0004:  008c3920  CPositionInterpolator_Rope::GetDetails(char**, int*, int*)
++0x0008:  008c3d10  CPositionInterpolator_Rope::SetKeyPosition(int, Vector const&)
++0x000c:  008c39a0  CPositionInterpolator_Rope::InterpolatePosition(float, Vector&)
++0x0010:  008c3c00  CPositionInterpolator_Rope::ProcessKey(char const*, char const*)

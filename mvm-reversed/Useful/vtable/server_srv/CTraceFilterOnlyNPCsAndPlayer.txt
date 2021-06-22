@@ -1,0 +1,6 @@
+CTraceFilterOnlyNPCsAndPlayer
+
++0x0000:  0089fc30  CTraceFilterOnlyNPCsAndPlayer::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  008a1890  CTraceFilterOnlyNPCsAndPlayer::GetTraceType() const
++0x0008:  0061fa90  CTraceFilterSimple::SetPassEntity(IHandleEntity const*)
++0x000c:  0061faa0  CTraceFilterSimple::SetCollisionGroup(int)

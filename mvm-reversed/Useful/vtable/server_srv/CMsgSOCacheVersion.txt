@@ -1,0 +1,22 @@
+CMsgSOCacheVersion
+
++0x0000:  00f5aa40  CMsgSOCacheVersion::~CMsgSOCacheVersion()
++0x0004:  00f5aa80  CMsgSOCacheVersion::~CMsgSOCacheVersion()
++0x0008:  00000000  
++0x000c:  00f66080  CMsgSOCacheVersion::New() const
++0x0010:  00f5c870  CMsgSOCacheVersion::Clear()
++0x0014:  00f59b90  CMsgSOCacheVersion::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00f604f0  CMsgSOCacheVersion::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00f5a550  CMsgSOCacheVersion::ByteSize() const
++0x0028:  00f5b040  CMsgSOCacheVersion::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00f5a700  CMsgSOCacheVersion::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00f6fb10  CMsgSOCacheVersion::GetCachedSize() const
++0x0034:  00f59b40  CMsgSOCacheVersion::CopyFrom(google::protobuf::Message const&)
++0x0038:  00f66230  CMsgSOCacheVersion::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00f59b30  CMsgSOCacheVersion::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00f5f840  CMsgSOCacheVersion::GetMetadata() const

@@ -106,6 +106,9 @@ namespace Mod::AI::Improved_Targeting
 
 	bool callingfromhere = false;
 	 
+	void OnContactPart1(CTFBot *actor, CBaseEntity *ent, CGameTrace *trace) {
+
+	}
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMainAction_OnContact, CTFBot *actor, CBaseEntity *ent, CGameTrace *trace)
 	{
 		if (gpGlobals->tickcount % 7 == 0 && ent != nullptr && ent != actor && ENTINDEX(ent) != 0 

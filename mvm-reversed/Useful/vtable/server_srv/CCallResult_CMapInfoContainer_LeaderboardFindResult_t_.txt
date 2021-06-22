@@ -1,0 +1,5 @@
+CCallResult<CMapInfoContainer, LeaderboardFindResult_t>
+
++0x0000:  007dc720  CCallResult<CMapInfoContainer, LeaderboardFindResult_t>::Run(void*)
++0x0004:  007dc8d0  CCallResult<CMapInfoContainer, LeaderboardFindResult_t>::Run(void*, bool, unsigned long long)
++0x0008:  007dc770  CCallResult<CMapInfoContainer, LeaderboardFindResult_t>::GetCallbackSizeBytes()

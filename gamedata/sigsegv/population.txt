@@ -75,6 +75,8 @@
 				"CWaveSpawnPopulator::Parse"                     "_ZN19CWaveSpawnPopulator5ParseEP9KeyValues"
 				"CWaveSpawnPopulator::SetState"                  "_ZN19CWaveSpawnPopulator8SetStateENS_17InternalStateTypeE"
 				"CWaveSpawnPopulator::Update"                    "_ZN19CWaveSpawnPopulator6UpdateEv"
+				"CWaveSpawnPopulator::GetCurrencyAmountPerDeath" "_ZN19CWaveSpawnPopulator25GetCurrencyAmountPerDeathEv"
+				"CWaveSpawnPopulator::m_reservedPlayerSlotCount" "_ZN19CWaveSpawnPopulator25m_reservedPlayerSlotCountE"
 				
 
 				"IPopulationSpawner::GetClassIcon" "_ZN18IPopulationSpawner12GetClassIconEi"

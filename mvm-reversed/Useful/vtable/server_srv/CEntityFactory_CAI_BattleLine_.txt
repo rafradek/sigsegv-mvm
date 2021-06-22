@@ -1,0 +1,5 @@
+CEntityFactory<CAI_BattleLine>
+
++0x0000:  00935d10  CEntityFactory<CAI_BattleLine>::Create(char const*)
++0x0004:  00935c90  CEntityFactory<CAI_BattleLine>::Destroy(IServerNetworkable*)
++0x0008:  00935cb0  CEntityFactory<CAI_BattleLine>::GetEntitySize()

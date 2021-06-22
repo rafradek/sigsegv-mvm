@@ -1,0 +1,5 @@
+IEconLootList::IEconLootListIterator
+
++0x0000:  0067c4d0  IEconLootList::IEconLootListIterator::~IEconLootListIterator()
++0x0004:  0067d3b0  IEconLootList::IEconLootListIterator::~IEconLootListIterator()
++0x0008:  00000000  

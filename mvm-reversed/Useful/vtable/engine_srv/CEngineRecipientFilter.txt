@@ -1,0 +1,8 @@
+CEngineRecipientFilter
+
++0x0000:  001120b0  CEngineRecipientFilter::~CEngineRecipientFilter()
++0x0004:  00112100  CEngineRecipientFilter::~CEngineRecipientFilter()
++0x0008:  00112090  CEngineRecipientFilter::IsReliable() const
++0x000c:  001120a0  CEngineRecipientFilter::IsInitMessage() const
++0x0010:  00111be0  CEngineRecipientFilter::GetRecipientCount() const
++0x0014:  00111bf0  CEngineRecipientFilter::GetRecipientIndex(int) const

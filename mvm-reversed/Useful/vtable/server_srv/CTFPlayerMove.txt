@@ -1,0 +1,7 @@
+CTFPlayerMove
+
++0x0000:  00e14c30  CTFPlayerMove::~CTFPlayerMove()
++0x0004:  00e14c40  CTFPlayerMove::~CTFPlayerMove()
++0x0008:  00e14a60  CTFPlayerMove::SetupMove(CBasePlayer*, CUserCmd*, IMoveHelper*, CMoveData*)
++0x000c:  00e14a50  CTFPlayerMove::FinishMove(CBasePlayer*, CUserCmd*, CMoveData*)
++0x0010:  00e14c10  CTFPlayerMove::StartCommand(CBasePlayer*, CUserCmd*)

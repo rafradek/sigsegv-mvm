@@ -1,0 +1,5 @@
+CEconItemView::NetworkVar_m_NetworkedDynamicAttributesForDemos
+
++0x0000:  006b1cc0  CEconItemView::NetworkVar_m_NetworkedDynamicAttributesForDemos::NetworkStateChanged()
++0x0004:  006b1ce0  CEconItemView::NetworkVar_m_NetworkedDynamicAttributesForDemos::NetworkStateChanged(void*)
++0x0008:  006ae180  CAttributeList::GetDataDescMap()

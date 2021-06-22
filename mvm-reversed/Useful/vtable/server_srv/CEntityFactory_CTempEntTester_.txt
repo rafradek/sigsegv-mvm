@@ -1,0 +1,5 @@
+CEntityFactory<CTempEntTester>
+
++0x0000:  00a4d0b0  CEntityFactory<CTempEntTester>::Create(char const*)
++0x0004:  00a4d060  CEntityFactory<CTempEntTester>::Destroy(IServerNetworkable*)
++0x0008:  00a4d080  CEntityFactory<CTempEntTester>::GetEntitySize()

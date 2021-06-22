@@ -1,0 +1,3 @@
+CBrushConvexInfo
+
++0x0000:  001162b0  CBrushConvexInfo::GetContents(int)

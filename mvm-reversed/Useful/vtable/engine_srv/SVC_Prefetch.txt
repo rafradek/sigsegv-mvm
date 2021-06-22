@@ -1,0 +1,15 @@
+SVC_Prefetch
+
++0x0000:  0008bd80  SVC_Prefetch::~SVC_Prefetch()
++0x0004:  0008c240  SVC_Prefetch::~SVC_Prefetch()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b780  SVC_Prefetch::Process()
++0x0014:  00087400  SVC_Prefetch::ReadFromBuffer(bf_read&)
++0x0018:  0007c750  SVC_Prefetch::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b760  SVC_Prefetch::GetType() const
++0x0024:  0008b7a0  SVC_Prefetch::GetGroup() const
++0x0028:  0008b770  SVC_Prefetch::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007cf10  SVC_Prefetch::ToString() const

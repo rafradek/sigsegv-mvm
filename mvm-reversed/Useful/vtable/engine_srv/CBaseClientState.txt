@@ -1,0 +1,89 @@
+CBaseClientState
+
++0x0000:  000cd2e0  CBaseClientState::~CBaseClientState()
++0x0004:  000cd370  CBaseClientState::~CBaseClientState()
++0x0008:  000ccb90  CBaseClientState::ConnectionStart(INetChannel*)
++0x000c:  000cc810  CBaseClientState::ConnectionClosing(char const*)
++0x0010:  000cc790  CBaseClientState::ConnectionCrashed(char const*)
++0x0014:  000d2d40  CBaseClientState::PacketStart(int, int)
++0x0018:  000d2d50  CBaseClientState::PacketEnd()
++0x001c:  000cc8a0  CBaseClientState::FileRequested(char const*, unsigned int)
++0x0020:  000cc910  CBaseClientState::FileReceived(char const*, unsigned int)
++0x0024:  000cc900  CBaseClientState::FileDenied(char const*, unsigned int)
++0x0028:  000cc890  CBaseClientState::FileSent(char const*, unsigned int)
++0x002c:  000ceb50  CBaseClientState::ProcessConnectionlessPacket(netpacket_s*)
++0x0030:  000cfdc0  CBaseClientState::ProcessTick(NET_Tick*)
++0x0034:  000d0020  CBaseClientState::ProcessStringCmd(NET_StringCmd*)
++0x0038:  000d06b0  CBaseClientState::ProcessSetConVar(NET_SetConVar*)
++0x003c:  000ce6a0  CBaseClientState::ProcessSignonState(NET_SignonState*)
++0x0040:  000ce480  CBaseClientState::ProcessPrint(SVC_Print*)
++0x0044:  000d2020  CBaseClientState::ProcessServerInfo(SVC_ServerInfo*)
++0x0048:  000ce230  CBaseClientState::ProcessSendTable(SVC_SendTable*)
++0x004c:  000d0e70  CBaseClientState::ProcessClassInfo(SVC_ClassInfo*)
++0x0050:  000cdc10  CBaseClientState::ProcessSetPause(SVC_SetPause*)
++0x0054:  000cf8f0  CBaseClientState::ProcessCreateStringTable(SVC_CreateStringTable*)
++0x0058:  000ce8d0  CBaseClientState::ProcessUpdateStringTable(SVC_UpdateStringTable*)
++0x005c:  000cda00  CBaseClientState::ProcessSetView(SVC_SetView*)
++0x0060:  000cf620  CBaseClientState::ProcessPacketEntities(SVC_PacketEntities*)
++0x0064:  000cde20  CBaseClientState::ProcessMenu(SVC_Menu*)
++0x0068:  000ce010  CBaseClientState::ProcessGameEventList(SVC_GameEventList*)
++0x006c:  000d0290  CBaseClientState::ProcessGetCvarValue(SVC_GetCvarValue*)
++0x0070:  000cc780  CBaseClientState::ProcessCmdKeyValues(SVC_CmdKeyValues*)
++0x0074:  000cc760  CBaseClientState::GetDemoProtocolVersion() const
++0x0078:  000d2640  CBaseClientState::Clear()
++0x007c:  000cc920  CBaseClientState::FullConnect(netadr_s&)
++0x0080:  000ccaa0  CBaseClientState::Connect(char const*, char const*)
++0x0084:  000cd480  CBaseClientState::SetSignonState(int, int)
++0x0088:  000cd550  CBaseClientState::Disconnect(char const*, bool)
++0x008c:  000d1460  CBaseClientState::SendConnectPacket(int, int, unsigned long long, bool)
++0x0090:  000d2d60  CBaseClientState::GetCDKeyHash()
++0x0094:  000d09c0  CBaseClientState::RunFrame()
++0x0098:  000cd9b0  CBaseClientState::CheckForResend()
++0x009c:  000d2d70  CBaseClientState::InstallStringTableCallback(char const*)
++0x00a0:  000d2d80  CBaseClientState::HookClientStringTable(char const*)
++0x00a4:  000d1ea0  CBaseClientState::LinkClasses()
++0x00a8:  000d2d90  CBaseClientState::GetConnectionRetryNumber() const
++0x00ac:  000d2de0  CBaseClientState::GetClientName()
++0x00b0:  00000000  
++0x00b4:  00000000  
++0x00b8:  00000000  
++0x00bc:  00000000  
++0x00c0:  00000000  
++0x00c4:  fffffffc  (unknown)
++0x00c8:  00236940  typeinfo for CBaseClientState
++0x00cc:  000cd2d0  non-virtual thunk to CBaseClientState::~CBaseClientState()
++0x00d0:  000cd360  non-virtual thunk to CBaseClientState::~CBaseClientState()
++0x00d4:  000ceb40  non-virtual thunk to CBaseClientState::ProcessConnectionlessPacket(netpacket_s*)
++0x00d8:  fffffff8  (unknown)
++0x00dc:  00236940  typeinfo for CBaseClientState
++0x00e0:  000cd2c0  non-virtual thunk to CBaseClientState::~CBaseClientState()
++0x00e4:  000cd350  non-virtual thunk to CBaseClientState::~CBaseClientState()
++0x00e8:  000cfdb0  non-virtual thunk to CBaseClientState::ProcessTick(NET_Tick*)
++0x00ec:  000d0010  non-virtual thunk to CBaseClientState::ProcessStringCmd(NET_StringCmd*)
++0x00f0:  000d06a0  non-virtual thunk to CBaseClientState::ProcessSetConVar(NET_SetConVar*)
++0x00f4:  000ce690  non-virtual thunk to CBaseClientState::ProcessSignonState(NET_SignonState*)
++0x00f8:  000cc750  non-virtual thunk to CBaseClientState::GetDemoProtocolVersion() const
++0x00fc:  000ce470  non-virtual thunk to CBaseClientState::ProcessPrint(SVC_Print*)
++0x0100:  000d2010  non-virtual thunk to CBaseClientState::ProcessServerInfo(SVC_ServerInfo*)
++0x0104:  000ce220  non-virtual thunk to CBaseClientState::ProcessSendTable(SVC_SendTable*)
++0x0108:  000d0e60  non-virtual thunk to CBaseClientState::ProcessClassInfo(SVC_ClassInfo*)
++0x010c:  000cdc00  non-virtual thunk to CBaseClientState::ProcessSetPause(SVC_SetPause*)
++0x0110:  000cf8e0  non-virtual thunk to CBaseClientState::ProcessCreateStringTable(SVC_CreateStringTable*)
++0x0114:  000ce8c0  non-virtual thunk to CBaseClientState::ProcessUpdateStringTable(SVC_UpdateStringTable*)
++0x0118:  00000000  
++0x011c:  00000000  
++0x0120:  00000000  
++0x0124:  000cd9f0  non-virtual thunk to CBaseClientState::ProcessSetView(SVC_SetView*)
++0x0128:  00000000  
++0x012c:  00000000  
++0x0130:  00000000  
++0x0134:  00000000  
++0x0138:  00000000  
++0x013c:  00000000  
++0x0140:  000cf610  non-virtual thunk to CBaseClientState::ProcessPacketEntities(SVC_PacketEntities*)
++0x0144:  00000000  
++0x0148:  00000000  
++0x014c:  000cde10  non-virtual thunk to CBaseClientState::ProcessMenu(SVC_Menu*)
++0x0150:  000ce000  non-virtual thunk to CBaseClientState::ProcessGameEventList(SVC_GameEventList*)
++0x0154:  000d0280  non-virtual thunk to CBaseClientState::ProcessGetCvarValue(SVC_GetCvarValue*)
++0x0158:  000cc770  non-virtual thunk to CBaseClientState::ProcessCmdKeyValues(SVC_CmdKeyValues*)

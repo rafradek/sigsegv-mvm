@@ -1,0 +1,5 @@
+CEntityFactory<CSun>
+
++0x0000:  00bea810  CEntityFactory<CSun>::Create(char const*)
++0x0004:  00bea790  CEntityFactory<CSun>::Destroy(IServerNetworkable*)
++0x0008:  00bea7b0  CEntityFactory<CSun>::GetEntitySize()

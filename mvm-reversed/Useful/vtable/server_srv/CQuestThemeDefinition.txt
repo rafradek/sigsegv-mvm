@@ -1,0 +1,4 @@
+CQuestThemeDefinition
+
++0x0000:  007b3210  CQuestThemeDefinition::~CQuestThemeDefinition()
++0x0004:  007b3240  CQuestThemeDefinition::~CQuestThemeDefinition()

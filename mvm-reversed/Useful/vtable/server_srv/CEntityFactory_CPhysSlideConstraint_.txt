@@ -1,0 +1,5 @@
+CEntityFactory<CPhysSlideConstraint>
+
++0x0000:  00b30520  CEntityFactory<CPhysSlideConstraint>::Create(char const*)
++0x0004:  00b2f030  CEntityFactory<CPhysSlideConstraint>::Destroy(IServerNetworkable*)
++0x0008:  00b2f050  CEntityFactory<CPhysSlideConstraint>::GetEntitySize()

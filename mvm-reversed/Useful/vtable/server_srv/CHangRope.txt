@@ -1,0 +1,4 @@
+CHangRope
+
++0x0000:  00705150  CHangRope::GetNodeForces(CSimplePhysics::CNode*, int, Vector*)
++0x0004:  00705170  CHangRope::ApplyConstraints(CSimplePhysics::CNode*, int)

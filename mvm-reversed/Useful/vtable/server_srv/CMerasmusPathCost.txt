@@ -1,0 +1,3 @@
+CMerasmusPathCost
+
++0x0000:  00d1eaa0  CMerasmusPathCost::operator()(CNavArea*, CNavArea*, CNavLadder const*, CFuncElevator const*, float) const

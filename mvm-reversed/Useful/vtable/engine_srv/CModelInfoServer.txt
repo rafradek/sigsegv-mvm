@@ -1,0 +1,64 @@
+CModelInfoServer
+
++0x0000:  00146ee0  CModelInfoServer::~CModelInfoServer()
++0x0004:  00146e30  CModelInfoServer::~CModelInfoServer()
++0x0008:  001468a0  CModelInfoServer::GetModel(int)
++0x000c:  00145e70  CModelInfo::GetModelIndex(char const*) const
++0x0010:  00145610  CModelInfo::GetModelName(model_t const*) const
++0x0014:  00145b20  CModelInfo::GetVCollide(model_t const*)
++0x0018:  001459a0  CModelInfo::GetVCollide(int)
++0x001c:  00145640  CModelInfo::GetModelBounds(model_t const*, Vector&, Vector&) const
++0x0020:  00145cd0  CModelInfo::GetModelRenderBounds(model_t const*, Vector&, Vector&) const
++0x0024:  001456c0  CModelInfo::GetModelFrameCount(model_t const*) const
++0x0028:  00146490  CModelInfo::GetModelType(model_t const*) const
++0x002c:  00145750  CModelInfo::GetModelExtraData(model_t const*)
++0x0030:  00145850  CModelInfo::ModelHasMaterialProxy(model_t const*) const
++0x0034:  00145870  CModelInfo::IsTranslucent(model_t const*) const
++0x0038:  001458b0  CModelInfo::IsTranslucentTwoPass(model_t const*) const
++0x003c:  00145aa0  CModelInfo::RecomputeTranslucency(model_t const*, int, int, void*, float)
++0x0040:  00145a80  CModelInfo::GetModelMaterialCount(model_t const*) const
++0x0044:  00145a50  CModelInfo::GetModelMaterials(model_t const*, int, IMaterial**)
++0x0048:  00145890  CModelInfo::IsModelVertexLit(model_t const*) const
++0x004c:  00145e20  CModelInfo::GetModelKeyValueText(model_t const*)
++0x0050:  00145f80  CModelInfo::GetModelKeyValue(model_t const*, CUtlBuffer&)
++0x0054:  001458d0  CModelInfo::GetModelRadius(model_t const*)
++0x0058:  00145770  CModelInfo::FindModel(studiohdr_t const*, void**, char const*) const
++0x005c:  001457c0  CModelInfo::FindModel(void*) const
++0x0060:  001457e0  CModelInfo::GetVirtualModel(studiohdr_t const*) const
++0x0064:  00145810  CModelInfo::GetAnimBlock(studiohdr_t const*, int) const
++0x0068:  00145940  CModelInfoServer::GetModelMaterialColorAndLighting(model_t const*, Vector const&, QAngle const&, CGameTrace*, Vector&, Vector&)
++0x006c:  00145c40  CModelInfo::GetIlluminationPoint(model_t const*, IClientRenderable*, Vector const&, QAngle const&, Vector*)
++0x0070:  00145be0  CModelInfo::GetModelContents(int)
++0x0074:  00145af0  CModelInfo::GetStudiomodel(model_t const*)
++0x0078:  00145680  CModelInfo::GetModelSpriteWidth(model_t const*) const
++0x007c:  001456a0  CModelInfo::GetModelSpriteHeight(model_t const*) const
++0x0080:  00146aa0  CModelInfo::SetLevelScreenFadeRange(float, float)
++0x0084:  00146ab0  CModelInfo::GetLevelScreenFadeRange(float*, float*) const
++0x0088:  00146ad0  CModelInfo::SetViewScreenFadeRange(float, float)
++0x008c:  00146ae0  CModelInfo::ComputeLevelScreenFade(Vector const&, float, float) const
++0x0090:  00146af0  CModelInfo::ComputeViewScreenFade(Vector const&, float, float) const
++0x0094:  00145830  CModelInfo::GetAutoplayList(studiohdr_t const*, unsigned short**) const
++0x0098:  00145990  CModelInfo::GetCollideForVirtualTerrain(int)
++0x009c:  001460a0  CModelInfo::IsUsingFBTexture(model_t const*, int, int, void*) const
++0x00a0:  00145910  CModelInfoServer::FindOrLoadModel(char const*)
++0x00a4:  00146bd0  IVModelInfo::InitDynamicModels()
++0x00a8:  00146bc0  IVModelInfo::ShutdownDynamicModels()
++0x00ac:  00146bb0  IVModelInfo::AddDynamicModel(char const*, int)
++0x00b0:  00146ba0  IVModelInfo::ReferenceModel(int)
++0x00b4:  00146b90  IVModelInfo::UnreferenceModel(int)
++0x00b8:  00146b80  IVModelInfo::CleanupDynamicModels(bool)
++0x00bc:  00146b00  CModelInfo::GetCacheHandle(model_t const*) const
++0x00c0:  00145960  CModelInfo::GetBrushModelPlaneCount(model_t const*) const
++0x00c4:  00145f10  CModelInfo::GetBrushModelPlane(model_t const*, int, cplane_t&, Vector*) const
++0x00c8:  00146b70  CModelInfo::GetSurfacepropsForVirtualTerrain(int)
++0x00cc:  00146390  CModelInfo::OnLevelChange()
++0x00d0:  001463d0  CModelInfo::GetModelClientSideIndex(char const*) const
++0x00d4:  00146590  CModelInfoServer::RegisterDynamicModel(char const*, bool)
++0x00d8:  00146970  CModelInfo::IsDynamicModelLoading(int)
++0x00dc:  00146920  CModelInfo::AddRefDynamicModel(int)
++0x00e0:  001468d0  CModelInfo::ReleaseDynamicModel(int)
++0x00e4:  00145560  CModelInfo::RegisterModelLoadCallback(int, IModelLoadCallback*, bool)
++0x00e8:  001469d0  CModelInfo::UnregisterModelLoadCallback(int, IModelLoadCallback*)
++0x00ec:  00145900  CModelInfoServer::OnDynamicModelsStringTableChange(int, char const*, void const*)
++0x00f0:  001458f0  CModelInfoServer::GetDynamicModelStringTable() const
++0x00f4:  00145950  CModelInfoServer::LookupPrecachedModelIndex(char const*) const

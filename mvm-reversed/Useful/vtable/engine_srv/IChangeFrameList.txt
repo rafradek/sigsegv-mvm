@@ -1,0 +1,9 @@
+IChangeFrameList
+
++0x0000:  00000000  
++0x0004:  00000000  
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00000000  
++0x0014:  000db730  IChangeFrameList::~IChangeFrameList()
++0x0018:  000db800  IChangeFrameList::~IChangeFrameList()

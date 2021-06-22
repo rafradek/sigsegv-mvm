@@ -1,0 +1,5 @@
+CEntityFactory<CEntityParticleTrail>
+
++0x0000:  00a33510  CEntityFactory<CEntityParticleTrail>::Create(char const*)
++0x0004:  00a33490  CEntityFactory<CEntityParticleTrail>::Destroy(IServerNetworkable*)
++0x0008:  00a334b0  CEntityFactory<CEntityParticleTrail>::GetEntitySize()

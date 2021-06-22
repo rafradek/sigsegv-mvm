@@ -1,0 +1,5 @@
+CEntityFactory<CTFPlayerResource>
+
++0x0000:  00e19260  CEntityFactory<CTFPlayerResource>::Create(char const*)
++0x0004:  00e190f0  CEntityFactory<CTFPlayerResource>::Destroy(IServerNetworkable*)
++0x0008:  00e19110  CEntityFactory<CTFPlayerResource>::GetEntitySize()

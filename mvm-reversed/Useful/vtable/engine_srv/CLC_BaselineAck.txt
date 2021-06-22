@@ -1,0 +1,15 @@
+CLC_BaselineAck
+
++0x0000:  0008bee0  CLC_BaselineAck::~CLC_BaselineAck()
++0x0004:  0008bf80  CLC_BaselineAck::~CLC_BaselineAck()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008b260  CLC_BaselineAck::Process()
++0x0014:  00083730  CLC_BaselineAck::ReadFromBuffer(bf_read&)
++0x0018:  0007e8e0  CLC_BaselineAck::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008b240  CLC_BaselineAck::GetType() const
++0x0024:  0008b280  CLC_BaselineAck::GetGroup() const
++0x0028:  0008b250  CLC_BaselineAck::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007d670  CLC_BaselineAck::ToString() const

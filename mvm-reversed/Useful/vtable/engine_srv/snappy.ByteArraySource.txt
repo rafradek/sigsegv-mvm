@@ -1,0 +1,7 @@
+snappy::ByteArraySource
+
++0x0000:  002028b0  snappy::ByteArraySource::~ByteArraySource()
++0x0004:  002029b0  snappy::ByteArraySource::~ByteArraySource()
++0x0008:  002028c0  snappy::ByteArraySource::Available() const
++0x000c:  002028d0  snappy::ByteArraySource::Peek(unsigned int*)
++0x0010:  002028f0  snappy::ByteArraySource::Skip(unsigned int)

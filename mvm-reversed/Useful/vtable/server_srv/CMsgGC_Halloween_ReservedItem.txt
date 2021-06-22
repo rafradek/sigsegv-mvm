@@ -1,0 +1,22 @@
+CMsgGC_Halloween_ReservedItem
+
++0x0000:  005d7f70  CMsgGC_Halloween_ReservedItem::~CMsgGC_Halloween_ReservedItem()
++0x0004:  005d7fd0  CMsgGC_Halloween_ReservedItem::~CMsgGC_Halloween_ReservedItem()
++0x0008:  00000000  
++0x000c:  005b34d0  CMsgGC_Halloween_ReservedItem::New() const
++0x0010:  00584d60  CMsgGC_Halloween_ReservedItem::Clear()
++0x0014:  00575e50  CMsgGC_Halloween_ReservedItem::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005d80b0  CMsgGC_Halloween_ReservedItem::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00589140  CMsgGC_Halloween_ReservedItem::ByteSize() const
++0x0028:  0057e920  CMsgGC_Halloween_ReservedItem::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00593450  CMsgGC_Halloween_ReservedItem::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcbe0  CMsgGC_Halloween_ReservedItem::GetCachedSize() const
++0x0034:  00575e00  CMsgGC_Halloween_ReservedItem::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b36c0  CMsgGC_Halloween_ReservedItem::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575df0  CMsgGC_Halloween_ReservedItem::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f520  CMsgGC_Halloween_ReservedItem::GetMetadata() const

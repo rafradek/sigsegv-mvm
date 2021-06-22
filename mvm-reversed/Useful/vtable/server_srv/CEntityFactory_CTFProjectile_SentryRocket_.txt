@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SentryRocket>
+
++0x0000:  00dafd90  CEntityFactory<CTFProjectile_SentryRocket>::Create(char const*)
++0x0004:  00dafc40  CEntityFactory<CTFProjectile_SentryRocket>::Destroy(IServerNetworkable*)
++0x0008:  00dafc60  CEntityFactory<CTFProjectile_SentryRocket>::GetEntitySize()

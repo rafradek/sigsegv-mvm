@@ -1,0 +1,5 @@
+CEntityFactory<CVGuiScreen>
+
++0x0000:  00e6ad60  CEntityFactory<CVGuiScreen>::Create(char const*)
++0x0004:  00e6ace0  CEntityFactory<CVGuiScreen>::Destroy(IServerNetworkable*)
++0x0008:  00e6ad00  CEntityFactory<CVGuiScreen>::GetEntitySize()

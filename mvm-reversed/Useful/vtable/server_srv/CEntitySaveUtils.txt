@@ -1,0 +1,5 @@
+CEntitySaveUtils
+
++0x0000:  00705700  CEntitySaveUtils::AddLevelTransitionSaveDependency(CBaseEntity*, CBaseEntity*)
++0x0004:  007056c0  CEntitySaveUtils::GetEntityDependencyCount(CBaseEntity*)
++0x0008:  007056e0  CEntitySaveUtils::GetEntityDependencies(CBaseEntity*, int, CBaseEntity**)

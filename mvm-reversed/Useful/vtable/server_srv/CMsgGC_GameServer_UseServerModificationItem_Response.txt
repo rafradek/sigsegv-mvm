@@ -1,0 +1,22 @@
+CMsgGC_GameServer_UseServerModificationItem_Response
+
++0x0000:  00579eb0  CMsgGC_GameServer_UseServerModificationItem_Response::~CMsgGC_GameServer_UseServerModificationItem_Response()
++0x0004:  00579ef0  CMsgGC_GameServer_UseServerModificationItem_Response::~CMsgGC_GameServer_UseServerModificationItem_Response()
++0x0008:  00000000  
++0x000c:  005b2950  CMsgGC_GameServer_UseServerModificationItem_Response::New() const
++0x0010:  005833b0  CMsgGC_GameServer_UseServerModificationItem_Response::Clear()
++0x0014:  00575d00  CMsgGC_GameServer_UseServerModificationItem_Response::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059bd30  CMsgGC_GameServer_UseServerModificationItem_Response::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058cd80  CMsgGC_GameServer_UseServerModificationItem_Response::ByteSize() const
++0x0028:  0057b910  CMsgGC_GameServer_UseServerModificationItem_Response::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00596820  CMsgGC_GameServer_UseServerModificationItem_Response::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcbb0  CMsgGC_GameServer_UseServerModificationItem_Response::GetCachedSize() const
++0x0034:  00575cb0  CMsgGC_GameServer_UseServerModificationItem_Response::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b2b10  CMsgGC_GameServer_UseServerModificationItem_Response::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575ca0  CMsgGC_GameServer_UseServerModificationItem_Response::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f5e0  CMsgGC_GameServer_UseServerModificationItem_Response::GetMetadata() const

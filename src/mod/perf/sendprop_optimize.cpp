@@ -1850,7 +1850,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,   "CAttributeManager::ClearCache [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
             MOD_ADD_DETOUR_STATIC(PackEntities_Normal,   "PackEntities_Normal");
             MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,   "SendTable_WritePropList");
             MOD_ADD_DETOUR_STATIC(AllocChangeFrameList,   "AllocChangeFrameList");

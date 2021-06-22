@@ -1,0 +1,22 @@
+CGCMsgGetSystemStatsResponse
+
++0x0000:  0055df50  CGCMsgGetSystemStatsResponse::~CGCMsgGetSystemStatsResponse()
++0x0004:  0055dfa0  CGCMsgGetSystemStatsResponse::~CGCMsgGetSystemStatsResponse()
++0x0008:  00000000  
++0x000c:  0055dea0  CGCMsgGetSystemStatsResponse::New() const
++0x0010:  0053e780  CGCMsgGetSystemStatsResponse::Clear()
++0x0014:  00535db0  CGCMsgGetSystemStatsResponse::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  00550560  CGCMsgGetSystemStatsResponse::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  005418d0  CGCMsgGetSystemStatsResponse::ByteSize() const
++0x0028:  0053b7b0  CGCMsgGetSystemStatsResponse::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00547240  CGCMsgGetSystemStatsResponse::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572aa0  CGCMsgGetSystemStatsResponse::GetCachedSize() const
++0x0034:  00535d60  CGCMsgGetSystemStatsResponse::CopyFrom(google::protobuf::Message const&)
++0x0038:  0055e1d0  CGCMsgGetSystemStatsResponse::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00535d50  CGCMsgGetSystemStatsResponse::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545250  CGCMsgGetSystemStatsResponse::GetMetadata() const

@@ -1,0 +1,9 @@
+CTEBeamPoints
+
++0x0000:  00c0b100  CTEBeamPoints::GetServerClass()
++0x0004:  00c0b110  CTEBeamPoints::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c0b500  CTEBeamPoints::~CTEBeamPoints()
++0x000c:  00c0b520  CTEBeamPoints::~CTEBeamPoints()
++0x0010:  00c0b150  CTEBeamPoints::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

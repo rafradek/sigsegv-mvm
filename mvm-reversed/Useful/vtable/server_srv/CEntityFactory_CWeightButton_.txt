@@ -1,0 +1,5 @@
+CEntityFactory<CWeightButton>
+
++0x0000:  00e6ebc0  CEntityFactory<CWeightButton>::Create(char const*)
++0x0004:  00e6eb20  CEntityFactory<CWeightButton>::Destroy(IServerNetworkable*)
++0x0008:  00e6eb40  CEntityFactory<CWeightButton>::GetEntitySize()

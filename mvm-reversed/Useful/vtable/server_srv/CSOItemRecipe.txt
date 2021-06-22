@@ -1,0 +1,22 @@
+CSOItemRecipe
+
++0x0000:  0051d6a0  CSOItemRecipe::~CSOItemRecipe()
++0x0004:  0051d740  CSOItemRecipe::~CSOItemRecipe()
++0x0008:  00000000  
++0x000c:  00501190  CSOItemRecipe::New() const
++0x0010:  004e5f10  CSOItemRecipe::Clear()
++0x0014:  004dab10  CSOItemRecipe::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0051e700  CSOItemRecipe::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004eb0b0  CSOItemRecipe::ByteSize() const
++0x0028:  004e3200  CSOItemRecipe::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f31f0  CSOItemRecipe::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520820  CSOItemRecipe::GetCachedSize() const
++0x0034:  004daac0  CSOItemRecipe::CopyFrom(google::protobuf::Message const&)
++0x0038:  00501d00  CSOItemRecipe::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004daab0  CSOItemRecipe::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee050  CSOItemRecipe::GetMetadata() const

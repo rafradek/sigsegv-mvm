@@ -1,0 +1,9 @@
+CNetAPI
+
++0x0000:  0005e290  CNetAPI::NetAdrToSockAddr(netadr_s*, sockaddr*)
++0x0004:  0005e220  CNetAPI::SockAddrToNetAdr(sockaddr*, netadr_s*)
++0x0008:  0005e300  CNetAPI::AdrToString(netadr_s*)
++0x000c:  0005e3b0  CNetAPI::StringToAdr(char const*, netadr_s*)
++0x0010:  0005e190  CNetAPI::GetSocketAddress(int, netadr_s*)
++0x0014:  0005e250  CNetAPI::CompareAdr(netadr_s*, netadr_s*)
++0x0018:  0005e130  CNetAPI::GetLocalIP(netadr_s*)

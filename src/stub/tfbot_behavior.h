@@ -7,6 +7,14 @@
 #include "stub/tfbot.h"
 
 
+class CTFBotMvMEngineerHintFinder
+{
+public:
+	static bool FindHint(bool box_check, bool out_of_range_ok, CHandle<CTFBotHintEngineerNest> *the_hint) {return ft_FindHint(box_check,out_of_range_ok,the_hint);}
+private:
+	static StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *>ft_FindHint;
+};
+
 class CTFBotHint;
 
 

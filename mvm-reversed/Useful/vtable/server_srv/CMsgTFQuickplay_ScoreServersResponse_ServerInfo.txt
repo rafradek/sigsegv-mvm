@@ -1,0 +1,22 @@
+CMsgTFQuickplay_ScoreServersResponse_ServerInfo
+
++0x0000:  00579b50  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::~CMsgTFQuickplay_ScoreServersResponse_ServerInfo()
++0x0004:  00579b90  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::~CMsgTFQuickplay_ScoreServersResponse_ServerInfo()
++0x0008:  00000000  
++0x000c:  005ad260  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::New() const
++0x0010:  00582d90  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::Clear()
++0x0014:  005754b0  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0059fbe0  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00589420  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::ByteSize() const
++0x0028:  0057ea20  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00593b10  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dca80  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::GetCachedSize() const
++0x0034:  00575460  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::CopyFrom(google::protobuf::Message const&)
++0x0038:  005ad6b0  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00575450  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058faa0  CMsgTFQuickplay_ScoreServersResponse_ServerInfo::GetMetadata() const

@@ -1,0 +1,14 @@
+CSquadSpawner
+
++0x0000:  00d625d0  CSquadSpawner::~CSquadSpawner()
++0x0004:  00d62670  CSquadSpawner::~CSquadSpawner()
++0x0008:  00d62e30  CSquadSpawner::Parse(KeyValues*)
++0x000c:  00d66040  CSquadSpawner::Spawn(Vector const&, CUtlVector<CHandle<CBaseEntity>, CUtlMemory<CHandle<CBaseEntity>, int> >*)
++0x0010:  00d66c20  IPopulationSpawner::IsWhereRequired() const
++0x0014:  00d66d00  CSquadSpawner::IsVarious()
++0x0018:  00d615e0  CSquadSpawner::GetClass(int)
++0x001c:  00d61550  CSquadSpawner::GetClassIcon(int)
++0x0020:  00d614e0  CSquadSpawner::GetHealth(int)
++0x0024:  00d61470  CSquadSpawner::IsMiniBoss(int)
++0x0028:  00d613e0  CSquadSpawner::HasAttribute(CTFBot::AttributeType, int)
++0x002c:  00d61120  CSquadSpawner::HasEventChangeAttributes(char const*) const

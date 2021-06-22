@@ -1,0 +1,5 @@
+CEntityFactory<CWindowPane>
+
++0x0000:  00a6c540  CEntityFactory<CWindowPane>::Create(char const*)
++0x0004:  00a6c4c0  CEntityFactory<CWindowPane>::Destroy(IServerNetworkable*)
++0x0008:  00a6c4e0  CEntityFactory<CWindowPane>::GetEntitySize()

@@ -1,0 +1,5 @@
+CCallback<CAchievementMgr, UserStatsStored_t, false>
+
++0x0000:  0060a0f0  CCallback<CAchievementMgr, UserStatsStored_t, false>::Run(void*)
++0x0004:  005f9a50  CCallbackImpl<12>::Run(void*, bool, unsigned long long)
++0x0008:  005f9a60  CCallbackImpl<12>::GetCallbackSizeBytes()

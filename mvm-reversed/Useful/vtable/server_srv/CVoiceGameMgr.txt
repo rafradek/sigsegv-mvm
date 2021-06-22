@@ -1,0 +1,4 @@
+CVoiceGameMgr
+
++0x0000:  008a2700  CVoiceGameMgr::~CVoiceGameMgr()
++0x0004:  008a2710  CVoiceGameMgr::~CVoiceGameMgr()

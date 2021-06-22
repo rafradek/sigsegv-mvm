@@ -10,6 +10,16 @@
 class IDetour
 {
 public:
+
+	enum DetourPriority : int
+	{
+		LOWEST = -2,
+		LOW = -1,
+		NORMAL = 0,
+		HIGH = 1,
+		HIGHEST = 2
+	};
+
 	virtual ~IDetour() {}
 	
 	virtual const char *GetName() const = 0;
@@ -24,6 +34,9 @@ public:
 	void Toggle(bool enable);
 	void Enable();
 	void Disable();
+
+	DetourPriority GetPriority() const { return this->m_Priority; }
+	void SetPriority(DetourPriority priority) { this->m_Priority = priority; }
 	
 protected:
 	IDetour() {}
@@ -37,6 +50,7 @@ protected:
 private:
 	bool m_bLoaded = false;
 	bool m_bActive = false;
+	DetourPriority m_Priority = NORMAL;
 };
 
 
@@ -91,11 +105,11 @@ class CDetour : public IDetour_SymNormal
 {
 public:
 	/* by pointer */
-	CDetour(const char *name, void *func_ptr, void *callback, void **inner_ptr) :
-		IDetour_SymNormal(name, func_ptr), m_pCallback(callback), m_pInner(inner_ptr) {}
+	CDetour(const char *name, void *func_ptr, void *callback, void **inner_ptr, DetourPriority priority = NORMAL) :
+		IDetour_SymNormal(name, func_ptr), m_pCallback(callback), m_pInner(inner_ptr) { SetPriority(priority); }
 	/* by addr name */
-	CDetour(const char *func_name, void *callback, void **inner_ptr) :
-		IDetour_SymNormal(func_name, func_name), m_pCallback(callback), m_pInner(inner_ptr) {}
+	CDetour(const char *func_name, void *callback, void **inner_ptr, DetourPriority priority = NORMAL) :
+		IDetour_SymNormal(func_name, func_name), m_pCallback(callback), m_pInner(inner_ptr) { SetPriority(priority); }
 	
 private:
 	virtual bool DoLoad() override;
@@ -273,7 +287,7 @@ private:
 };
 
 
-#define DETOUR_MEMBER_CALL(name) (this->*name##_Actual)
+#define DETOUR_MEMBER_CALL(name) (this->*Actual)
 #define DETOUR_STATIC_CALL(name) (Actual_##name)
 
 #define __DETOUR_DECL_STATIC(prefix, name, ...) \
@@ -286,18 +300,18 @@ private:
 	__DETOUR_DECL_STATIC(cc static ret, name, ##__VA_ARGS__)
 
 #define DETOUR_DECL_MEMBER(ret, name, ...) \
-	static CDetour *detour_##name = nullptr; \
 	class Detour_##name \
 	{ \
 	public: \
-		ret name(__VA_ARGS__); \
-		static ret (Detour_##name::* name##_Actual)(__VA_ARGS__); \
+		ret callback(__VA_ARGS__); \
+		static ret (Detour_##name::* Actual)(__VA_ARGS__); \
 	}; \
-	ret (Detour_##name::* Detour_##name::name##_Actual)(__VA_ARGS__) = nullptr; \
-	ret Detour_##name::name(__VA_ARGS__)
+	static CDetour *detour_##name = nullptr; \
+	ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	ret Detour_##name::callback(__VA_ARGS__)
 
-#define GET_MEMBER_CALLBACK(name) GetAddrOfMemberFunc(&Detour_##name::name)
-#define GET_MEMBER_INNERPTR(name) reinterpret_cast<void **>(&Detour_##name::name##_Actual)
+#define GET_MEMBER_CALLBACK(name) GetAddrOfMemberFunc(&Detour_##name::callback)
+#define GET_MEMBER_INNERPTR(name) reinterpret_cast<void **>(&Detour_##name::Actual)
 
 #define GET_STATIC_CALLBACK(name) reinterpret_cast<void *>(&Detour_##name)
 #define GET_STATIC_INNERPTR(name) reinterpret_cast<void **>(&Actual_##name)

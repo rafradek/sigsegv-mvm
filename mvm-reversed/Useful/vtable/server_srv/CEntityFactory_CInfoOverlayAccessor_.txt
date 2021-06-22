@@ -1,0 +1,5 @@
+CEntityFactory<CInfoOverlayAccessor>
+
++0x0000:  00a8f190  CEntityFactory<CInfoOverlayAccessor>::Create(char const*)
++0x0004:  00a8f140  CEntityFactory<CInfoOverlayAccessor>::Destroy(IServerNetworkable*)
++0x0008:  00a8f160  CEntityFactory<CInfoOverlayAccessor>::GetEntitySize()

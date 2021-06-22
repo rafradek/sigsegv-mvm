@@ -1,0 +1,11 @@
+CResponseSystem
+
++0x0000:  00989510  CResponseSystem::~CResponseSystem()
++0x0004:  00989600  CResponseSystem::~CResponseSystem()
++0x0008:  00988b80  CResponseSystem::FindBestResponse(AI_CriteriaSet const&, AI_Response&, IResponseFilter*)
++0x000c:  00989680  CResponseSystem::GetAllResponses(CUtlVector<AI_Response*, CUtlMemory<AI_Response*, int> >*)
++0x0010:  0098bdf0  CResponseSystem::PrecacheResponses(bool)
++0x0014:  00000000  
++0x0018:  00985e90  CResponseSystem::DumpRules()
++0x001c:  00985ee0  CResponseSystem::Precache()
++0x0020:  00000000  

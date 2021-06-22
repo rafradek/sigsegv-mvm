@@ -1,0 +1,4 @@
+CAI_LeadBehaviorHandler
+
++0x0000:  0092f250  CAI_LeadBehaviorHandler::OnEvent(int)
++0x0004:  0092f260  CAI_LeadBehaviorHandler::GetConceptModifiers(char const*)

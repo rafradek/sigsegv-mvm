@@ -1,0 +1,10 @@
+CServerBenchmark
+
++0x0000:  005ddbb0  CServerBenchmark::StartBenchmark()
++0x0004:  005de050  CServerBenchmark::UpdateBenchmark()
++0x0008:  005dda80  CServerBenchmark::EndBenchmark()
++0x000c:  005dda10  CServerBenchmark::IsBenchmarkRunning()
++0x0010:  005dd9c0  CServerBenchmark::IsLocalBenchmarkPlayer(CBasePlayer*)
++0x0014:  005dda60  CServerBenchmark::RandomInt(int, int)
++0x0018:  005dda20  CServerBenchmark::RandomFloat(float, float)
++0x001c:  005ddb80  CServerBenchmark::GetTickOffset()

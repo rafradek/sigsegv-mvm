@@ -1,0 +1,5 @@
+CEntityFactory<CFlextalkActor>
+
++0x0000:  00a7f690  CEntityFactory<CFlextalkActor>::Create(char const*)
++0x0004:  00a7f630  CEntityFactory<CFlextalkActor>::Destroy(IServerNetworkable*)
++0x0008:  00a7f650  CEntityFactory<CFlextalkActor>::GetEntitySize()

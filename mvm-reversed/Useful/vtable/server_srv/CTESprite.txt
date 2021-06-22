@@ -1,0 +1,9 @@
+CTESprite
+
++0x0000:  00c18b40  CTESprite::GetServerClass()
++0x0004:  00c18b50  CTESprite::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c18bb0  CTESprite::~CTESprite()
++0x000c:  00c18bd0  CTESprite::~CTESprite()
++0x0010:  00c18c00  CTESprite::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  00c18b90  CTESprite::Precache()

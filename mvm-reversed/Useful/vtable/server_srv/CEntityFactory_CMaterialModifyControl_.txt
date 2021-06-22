@@ -1,0 +1,5 @@
+CEntityFactory<CMaterialModifyControl>
+
++0x0000:  00aa1920  CEntityFactory<CMaterialModifyControl>::Create(char const*)
++0x0004:  00aa1880  CEntityFactory<CMaterialModifyControl>::Destroy(IServerNetworkable*)
++0x0008:  00aa18a0  CEntityFactory<CMaterialModifyControl>::GetEntitySize()

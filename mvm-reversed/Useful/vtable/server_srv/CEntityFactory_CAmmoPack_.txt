@@ -1,0 +1,5 @@
+CEntityFactory<CAmmoPack>
+
++0x0000:  00cb4ec0  CEntityFactory<CAmmoPack>::Create(char const*)
++0x0004:  00cb4dd0  CEntityFactory<CAmmoPack>::Destroy(IServerNetworkable*)
++0x0008:  00cb4df0  CEntityFactory<CAmmoPack>::GetEntitySize()

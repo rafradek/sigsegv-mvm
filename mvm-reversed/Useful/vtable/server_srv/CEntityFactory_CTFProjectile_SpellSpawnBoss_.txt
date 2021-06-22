@@ -1,0 +1,5 @@
+CEntityFactory<CTFProjectile_SpellSpawnBoss>
+
++0x0000:  00749c30  CEntityFactory<CTFProjectile_SpellSpawnBoss>::Create(char const*)
++0x0004:  00749000  CEntityFactory<CTFProjectile_SpellSpawnBoss>::Destroy(IServerNetworkable*)
++0x0008:  00749020  CEntityFactory<CTFProjectile_SpellSpawnBoss>::GetEntitySize()

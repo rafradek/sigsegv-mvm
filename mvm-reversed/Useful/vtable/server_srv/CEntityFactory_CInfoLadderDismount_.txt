@@ -1,0 +1,5 @@
+CEntityFactory<CInfoLadderDismount>
+
++0x0000:  006ba8d0  CEntityFactory<CInfoLadderDismount>::Create(char const*)
++0x0004:  006ba820  CEntityFactory<CInfoLadderDismount>::Destroy(IServerNetworkable*)
++0x0008:  006ba840  CEntityFactory<CInfoLadderDismount>::GetEntitySize()

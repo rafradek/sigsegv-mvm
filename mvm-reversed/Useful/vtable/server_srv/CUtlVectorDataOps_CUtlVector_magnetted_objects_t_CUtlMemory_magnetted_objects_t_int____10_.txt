@@ -1,0 +1,7 @@
+CUtlVectorDataOps<CUtlVector<magnetted_objects_t, CUtlMemory<magnetted_objects_t, int> >, 10>
+
++0x0000:  00b5c720  CUtlVectorDataOps<CUtlVector<magnetted_objects_t, CUtlMemory<magnetted_objects_t, int> >, 10>::Save(SaveRestoreFieldInfo_t const&, ISave*)
++0x0004:  00b5d880  CUtlVectorDataOps<CUtlVector<magnetted_objects_t, CUtlMemory<magnetted_objects_t, int> >, 10>::Restore(SaveRestoreFieldInfo_t const&, IRestore*)
++0x0008:  00b5c7f0  CUtlVectorDataOps<CUtlVector<magnetted_objects_t, CUtlMemory<magnetted_objects_t, int> >, 10>::IsEmpty(SaveRestoreFieldInfo_t const&)
++0x000c:  00b5d860  CUtlVectorDataOps<CUtlVector<magnetted_objects_t, CUtlMemory<magnetted_objects_t, int> >, 10>::MakeEmpty(SaveRestoreFieldInfo_t const&)
++0x0010:  00617fc0  CDefSaveRestoreOps::Parse(SaveRestoreFieldInfo_t const&, char const*)

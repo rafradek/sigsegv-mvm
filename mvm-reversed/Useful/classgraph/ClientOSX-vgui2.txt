@@ -1,0 +1,146 @@
+
+[+] CBaseAppSystem<vgui::IVGui>
+ |  [+] vgui::IVGui
+ |   |  [-] IAppSystem
+
+[+] CDefaultAccessor
+ |  [-] IConCommandBaseAccessor
+
+[+] CEmptyConVar
+ |  [#] ConVar
+ |   0: +000000 public
+ |   |  [-] ConCommandBase
+ |   1: +000018 public
+ |   |  [-] IConVar
+
+[+] CInputSystem
+ |  [+] vgui::IInputInternal
+ |   |  [+] vgui::IInput
+ |   |   |  [-] IBaseInterface
+
+[+] CLocalizedStringTable
+ |  [+] vgui::ILocalize
+ |   |  [-] ILocalize
+
+[+] CScheme
+ |  [+] vgui::IScheme
+ |   |  [-] IBaseInterface
+
+[+] CSchemeManager
+ |  [+] vgui::ISchemeManager
+ |   |  [-] IBaseInterface
+
+[+] CSystem
+ |  [+] vgui::ISystem
+ |   |  [-] IBaseInterface
+
+[+] CTier0AppSystem<vgui::IVGui>
+ |  [+] CBaseAppSystem<vgui::IVGui>
+ |   |  [+] vgui::IVGui
+ |   |   |  [-] IAppSystem
+
+[+] CTier1AppSystem<vgui::IVGui, 0>
+ |  [+] CTier0AppSystem<vgui::IVGui>
+ |   |  [+] CBaseAppSystem<vgui::IVGui>
+ |   |   |  [+] vgui::IVGui
+ |   |   |   |  [-] IAppSystem
+
+[+] CTier2AppSystem<vgui::IVGui, 0>
+ |  [+] CTier1AppSystem<vgui::IVGui, 0>
+ |   |  [+] CTier0AppSystem<vgui::IVGui>
+ |   |   |  [+] CBaseAppSystem<vgui::IVGui>
+ |   |   |   |  [+] vgui::IVGui
+ |   |   |   |   |  [-] IAppSystem
+
+[+] CTier3AppSystem<vgui::IVGui, 0>
+ |  [+] CTier2AppSystem<vgui::IVGui, 0>
+ |   |  [+] CTier1AppSystem<vgui::IVGui, 0>
+ |   |   |  [+] CTier0AppSystem<vgui::IVGui>
+ |   |   |   |  [+] CBaseAppSystem<vgui::IVGui>
+ |   |   |   |   |  [+] vgui::IVGui
+ |   |   |   |   |   |  [-] IAppSystem
+
+[+] CUtlCStringConversion
+ |  [-] CUtlCharConversion
+
+[-] CUtlCharConversion
+
+[+] CUtlNoEscConversion
+ |  [-] CUtlCharConversion
+
+[+] CVGui
+ |  [+] CTier3AppSystem<vgui::IVGui, 0>
+ |   |  [+] CTier2AppSystem<vgui::IVGui, 0>
+ |   |   |  [+] CTier1AppSystem<vgui::IVGui, 0>
+ |   |   |   |  [+] CTier0AppSystem<vgui::IVGui>
+ |   |   |   |   |  [+] CBaseAppSystem<vgui::IVGui>
+ |   |   |   |   |   |  [+] vgui::IVGui
+ |   |   |   |   |   |   |  [-] IAppSystem
+
+[+] ConCommand
+ |  [-] ConCommandBase
+
+[-] ConCommandBase
+
+[#] ConVar
+ 0: +000000 public
+ |  [-] ConCommandBase
+ 1: +000018 public
+ |  [-] IConVar
+
+[-] IAppSystem
+
+[-] IBaseInterface
+
+[-] IConCommandBaseAccessor
+
+[-] IConVar
+
+[-] ILocalize
+
+[+] ImageBorder
+ |  [-] vgui::IBorder
+
+[+] ScalableImageBorder
+ |  [-] vgui::IBorder
+
+[+] VPanelWrapper
+ |  [+] vgui::IPanel
+ |   |  [-] IBaseInterface
+
+[+] vgui::Bitmap
+ |  [-] vgui::IImage
+
+[+] vgui::Border
+ |  [-] vgui::IBorder
+
+[-] vgui::IBorder
+
+[-] vgui::IImage
+
+[+] vgui::IInput
+ |  [-] IBaseInterface
+
+[+] vgui::IInputInternal
+ |  [+] vgui::IInput
+ |   |  [-] IBaseInterface
+
+[+] vgui::ILocalize
+ |  [-] ILocalize
+
+[+] vgui::IPanel
+ |  [-] IBaseInterface
+
+[+] vgui::IScheme
+ |  [-] IBaseInterface
+
+[+] vgui::ISchemeManager
+ |  [-] IBaseInterface
+
+[+] vgui::ISystem
+ |  [-] IBaseInterface
+
+[+] vgui::IVGui
+ |  [-] IAppSystem
+
+[-] vgui::VPanel

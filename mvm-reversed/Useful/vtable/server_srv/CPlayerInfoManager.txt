@@ -1,0 +1,4 @@
+CPlayerInfoManager
+
++0x0000:  00b7e970  CPlayerInfoManager::GetPlayerInfo(edict_t*)
++0x0004:  00b7e840  CPlayerInfoManager::GetGlobalVars()

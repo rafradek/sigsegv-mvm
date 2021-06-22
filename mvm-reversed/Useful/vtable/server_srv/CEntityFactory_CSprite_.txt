@@ -1,0 +1,5 @@
+CEntityFactory<CSprite>
+
++0x0000:  0071bd40  CEntityFactory<CSprite>::Create(char const*)
++0x0004:  0071bbe0  CEntityFactory<CSprite>::Destroy(IServerNetworkable*)
++0x0008:  0071bc00  CEntityFactory<CSprite>::GetEntitySize()

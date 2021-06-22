@@ -1,0 +1,22 @@
+CMsgGCHUpdateSession_ExtraField
+
++0x0000:  00568d50  CMsgGCHUpdateSession_ExtraField::~CMsgGCHUpdateSession_ExtraField()
++0x0004:  00568da0  CMsgGCHUpdateSession_ExtraField::~CMsgGCHUpdateSession_ExtraField()
++0x0008:  00000000  
++0x000c:  00568620  CMsgGCHUpdateSession_ExtraField::New() const
++0x0010:  0053e520  CMsgGCHUpdateSession_ExtraField::Clear()
++0x0014:  00536d00  CMsgGCHUpdateSession_ExtraField::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0053f470  CMsgGCHUpdateSession_ExtraField::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00541de0  CMsgGCHUpdateSession_ExtraField::ByteSize() const
++0x0028:  00539770  CMsgGCHUpdateSession_ExtraField::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00546080  CMsgGCHUpdateSession_ExtraField::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00572cc0  CMsgGCHUpdateSession_ExtraField::GetCachedSize() const
++0x0034:  00536cb0  CMsgGCHUpdateSession_ExtraField::CopyFrom(google::protobuf::Message const&)
++0x0038:  00568f20  CMsgGCHUpdateSession_ExtraField::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00536ca0  CMsgGCHUpdateSession_ExtraField::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00544a10  CMsgGCHUpdateSession_ExtraField::GetMetadata() const

@@ -1,0 +1,5 @@
+CEntityFactory<FilterDamagedByWeaponInSlot>
+
++0x0000:  00d80d30  CEntityFactory<FilterDamagedByWeaponInSlot>::Create(char const*)
++0x0004:  00d80670  CEntityFactory<FilterDamagedByWeaponInSlot>::Destroy(IServerNetworkable*)
++0x0008:  00d80690  CEntityFactory<FilterDamagedByWeaponInSlot>::GetEntitySize()

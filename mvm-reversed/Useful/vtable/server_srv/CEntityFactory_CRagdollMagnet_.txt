@@ -1,0 +1,5 @@
+CEntityFactory<CRagdollMagnet>
+
++0x0000:  00a186f0  CEntityFactory<CRagdollMagnet>::Create(char const*)
++0x0004:  00a186a0  CEntityFactory<CRagdollMagnet>::Destroy(IServerNetworkable*)
++0x0008:  00a186c0  CEntityFactory<CRagdollMagnet>::GetEntitySize()

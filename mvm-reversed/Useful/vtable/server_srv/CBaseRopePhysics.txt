@@ -1,0 +1,4 @@
+CBaseRopePhysics
+
++0x0000:  008c46f0  CBaseRopePhysics::GetNodeForces(CSimplePhysics::CNode*, int, Vector*)
++0x0004:  008c4580  CBaseRopePhysics::ApplyConstraints(CSimplePhysics::CNode*, int)

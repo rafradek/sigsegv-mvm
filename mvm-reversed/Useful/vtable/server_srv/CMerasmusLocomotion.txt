@@ -1,0 +1,112 @@
+CMerasmusLocomotion
+
++0x0000:  00d0e570  CMerasmusLocomotion::~CMerasmusLocomotion()
++0x0004:  00d0e590  CMerasmusLocomotion::~CMerasmusLocomotion()
++0x0008:  005e7c50  INextBotEventResponder::FirstContainedResponder() const
++0x000c:  005e7c60  INextBotEventResponder::NextContainedResponder(INextBotEventResponder*) const
++0x0010:  00af2820  NextBotGroundLocomotion::OnLeaveGround(CBaseEntity*)
++0x0014:  00af26e0  NextBotGroundLocomotion::OnLandOnGround(CBaseEntity*)
++0x0018:  005e7d10  INextBotEventResponder::OnContact(CBaseEntity*, CGameTrace*)
++0x001c:  00af2240  NextBotGroundLocomotion::OnMoveToSuccess(Path const*)
++0x0020:  00af2280  NextBotGroundLocomotion::OnMoveToFailure(Path const*, MoveToFailureType)
++0x0024:  005e7e00  INextBotEventResponder::OnStuck()
++0x0028:  005e7e50  INextBotEventResponder::OnUnStuck()
++0x002c:  005e7ea0  INextBotEventResponder::OnPostureChanged()
++0x0030:  005e7ef0  INextBotEventResponder::OnAnimationActivityComplete(int)
++0x0034:  005e7f40  INextBotEventResponder::OnAnimationActivityInterrupted(int)
++0x0038:  005e7f90  INextBotEventResponder::OnAnimationEvent(animevent_t*)
++0x003c:  005e7fe0  INextBotEventResponder::OnIgnite()
++0x0040:  005e8030  INextBotEventResponder::OnInjured(CTakeDamageInfo const&)
++0x0044:  005e8080  INextBotEventResponder::OnKilled(CTakeDamageInfo const&)
++0x0048:  005e80d0  INextBotEventResponder::OnOtherKilled(CBaseCombatCharacter*, CTakeDamageInfo const&)
++0x004c:  005e8120  INextBotEventResponder::OnSight(CBaseEntity*)
++0x0050:  005e8170  INextBotEventResponder::OnLostSight(CBaseEntity*)
++0x0054:  005e81c0  INextBotEventResponder::OnSound(CBaseEntity*, Vector const&, KeyValues*)
++0x0058:  005e8220  INextBotEventResponder::OnSpokeConcept(CBaseCombatCharacter*, char const*, AI_Response*)
++0x005c:  005e8280  INextBotEventResponder::OnWeaponFired(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0060:  005e82d0  INextBotEventResponder::OnNavAreaChanged(CNavArea*, CNavArea*)
++0x0064:  005e8320  INextBotEventResponder::OnModelChanged()
++0x0068:  005e8370  INextBotEventResponder::OnPickUp(CBaseEntity*, CBaseCombatCharacter*)
++0x006c:  005e83c0  INextBotEventResponder::OnDrop(CBaseEntity*)
++0x0070:  005e8410  INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter*, int)
++0x0074:  005e8500  INextBotEventResponder::OnCommandAttack(CBaseEntity*)
++0x0078:  005e8550  INextBotEventResponder::OnCommandApproach(Vector const&, float)
++0x007c:  005e85a0  INextBotEventResponder::OnCommandApproach(CBaseEntity*)
++0x0080:  005e85f0  INextBotEventResponder::OnCommandRetreat(CBaseEntity*, float)
++0x0084:  005e8650  INextBotEventResponder::OnCommandPause(float)
++0x0088:  005e86a0  INextBotEventResponder::OnCommandResume()
++0x008c:  005e86f0  INextBotEventResponder::OnCommandString(char const*)
++0x0090:  005e8460  INextBotEventResponder::OnShoved(CBaseEntity*)
++0x0094:  005e84b0  INextBotEventResponder::OnBlinded(CBaseEntity*)
++0x0098:  005e8740  INextBotEventResponder::OnTerritoryContested(int)
++0x009c:  005e8790  INextBotEventResponder::OnTerritoryCaptured(int)
++0x00a0:  005e87e0  INextBotEventResponder::OnTerritoryLost(int)
++0x00a4:  005e8830  INextBotEventResponder::OnWin()
++0x00a8:  005e8880  INextBotEventResponder::OnLose()
++0x00ac:  00af24b0  NextBotGroundLocomotion::Reset()
++0x00b0:  00d07ba0  CMerasmusLocomotion::Update()
++0x00b4:  005e8900  INextBotComponent::Upkeep()
++0x00b8:  005e8910  INextBotComponent::GetBot() const
++0x00bc:  00af23f0  NextBotGroundLocomotion::Approach(Vector const&, float)
++0x00c0:  00af48a0  NextBotGroundLocomotion::DriveTo(Vector const&)
++0x00c4:  00af20d0  NextBotGroundLocomotion::ClimbUpToLedge(Vector const&, Vector const&, CBaseEntity const*)
++0x00c8:  00af2890  NextBotGroundLocomotion::JumpAcrossGap(Vector const&, Vector const&)
++0x00cc:  00af2740  NextBotGroundLocomotion::Jump()
++0x00d0:  00817340  NextBotGroundLocomotion::IsClimbingOrJumping() const
++0x00d4:  00817350  NextBotGroundLocomotion::IsClimbingUpToLedge() const
++0x00d8:  00817360  NextBotGroundLocomotion::IsJumpingAcrossGap() const
++0x00dc:  00818af0  ILocomotion::IsScrambling() const
++0x00e0:  00af20e0  NextBotGroundLocomotion::Run()
++0x00e4:  00af2110  NextBotGroundLocomotion::Walk()
++0x00e8:  00af2140  NextBotGroundLocomotion::Stop()
++0x00ec:  00817370  NextBotGroundLocomotion::IsRunning() const
++0x00f0:  00817310  NextBotGroundLocomotion::SetDesiredSpeed(float)
++0x00f4:  00817330  NextBotGroundLocomotion::GetDesiredSpeed() const
++0x00f8:  008171c0  ILocomotion::SetSpeedLimit(float)
++0x00fc:  00af2670  NextBotGroundLocomotion::GetSpeedLimit() const
++0x0100:  00af23d0  NextBotGroundLocomotion::IsOnGround() const
++0x0104:  00817280  NextBotGroundLocomotion::GetGround() const
++0x0108:  008172c0  NextBotGroundLocomotion::GetGroundNormal() const
++0x010c:  00af64a0  ILocomotion::GetGroundSpeed() const
++0x0110:  00817200  ILocomotion::GetGroundMotionVector() const
++0x0114:  00af4790  NextBotGroundLocomotion::ClimbLadder(CNavLadder const*, CNavArea const*)
++0x0118:  00af4610  NextBotGroundLocomotion::DescendLadder(CNavLadder const*, CNavArea const*)
++0x011c:  00af2160  NextBotGroundLocomotion::IsUsingLadder() const
++0x0120:  00af2180  NextBotGroundLocomotion::IsAscendingOrDescendingLadder() const
++0x0124:  008171d0  ILocomotion::IsAbleToAutoCenterOnLadder() const
++0x0128:  00af22c0  NextBotGroundLocomotion::FaceTowards(Vector const&)
++0x012c:  008172d0  NextBotGroundLocomotion::SetDesiredLean(QAngle const&)
++0x0130:  00817300  NextBotGroundLocomotion::GetDesiredLean() const
++0x0134:  008171e0  ILocomotion::IsAbleToJumpAcrossGaps() const
++0x0138:  008171f0  ILocomotion::IsAbleToClimb() const
++0x013c:  00af21a0  NextBotGroundLocomotion::GetFeet() const
++0x0140:  00d07920  CMerasmusLocomotion::GetStepHeight() const
++0x0144:  00d07930  CMerasmusLocomotion::GetMaxJumpHeight() const
++0x0148:  008173b0  NextBotGroundLocomotion::GetDeathDropHeight() const
++0x014c:  00d07910  CMerasmusLocomotion::GetRunSpeed() const
++0x0150:  008173c0  NextBotGroundLocomotion::GetWalkSpeed() const
++0x0154:  008173d0  NextBotGroundLocomotion::GetMaxAcceleration() const
++0x0158:  008173e0  NextBotGroundLocomotion::GetMaxDeceleration() const
++0x015c:  00af2230  NextBotGroundLocomotion::GetVelocity() const
++0x0160:  00817210  ILocomotion::GetSpeed() const
++0x0164:  00817220  ILocomotion::GetMotionVector() const
++0x0168:  00af8300  ILocomotion::IsAreaTraversable(CNavArea const*) const
++0x016c:  00817230  ILocomotion::GetTraversableSlopeLimit() const
++0x0170:  00af9ca0  ILocomotion::IsPotentiallyTraversable(Vector const&, Vector const&, ILocomotion::TraverseWhenType, float*) const
++0x0174:  00af9410  ILocomotion::HasPotentialGap(Vector const&, Vector const&, float*) const
++0x0178:  00af9860  ILocomotion::IsGap(Vector const&, Vector const&) const
++0x017c:  00af8ba0  ILocomotion::IsEntityTraversable(CBaseEntity*, ILocomotion::TraverseWhenType) const
++0x0180:  00817240  ILocomotion::IsStuck() const
++0x0184:  00819290  ILocomotion::GetStuckDuration() const
++0x0188:  00af81f0  ILocomotion::ClearStuckStatus(char const*)
++0x018c:  00819250  ILocomotion::IsAttemptingToMove() const
++0x0190:  00d07950  CMerasmusLocomotion::ShouldCollideWith(CBaseEntity const*) const
++0x0194:  00af8ce0  ILocomotion::AdjustPosture(Vector const&)
++0x0198:  00af85d0  ILocomotion::StuckMonitor()
++0x019c:  00af21d0  NextBotGroundLocomotion::GetAcceleration() const
++0x01a0:  00af21e0  NextBotGroundLocomotion::SetAcceleration(Vector const&)
++0x01a4:  00af2200  NextBotGroundLocomotion::SetVelocity(Vector const&)
++0x01a8:  00817250  NextBotGroundLocomotion::GetGravity() const
++0x01ac:  00817260  NextBotGroundLocomotion::GetFrictionForward() const
++0x01b0:  00817270  NextBotGroundLocomotion::GetFrictionSideways() const
++0x01b4:  00d07940  CMerasmusLocomotion::GetMaxYawRate() const

@@ -1,0 +1,9 @@
+CTEShatterSurface
+
++0x0000:  00c13b10  CTEShatterSurface::GetServerClass()
++0x0004:  00c13b20  CTEShatterSurface::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c14760  CTEShatterSurface::~CTEShatterSurface()
++0x000c:  00c14780  CTEShatterSurface::~CTEShatterSurface()
++0x0010:  00c13b60  CTEShatterSurface::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

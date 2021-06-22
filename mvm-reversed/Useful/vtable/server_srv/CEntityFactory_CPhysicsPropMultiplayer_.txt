@@ -1,0 +1,5 @@
+CEntityFactory<CPhysicsPropMultiplayer>
+
++0x0000:  00bae3e0  CEntityFactory<CPhysicsPropMultiplayer>::Create(char const*)
++0x0004:  00bab700  CEntityFactory<CPhysicsPropMultiplayer>::Destroy(IServerNetworkable*)
++0x0008:  00bab720  CEntityFactory<CPhysicsPropMultiplayer>::GetEntitySize()

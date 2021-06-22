@@ -1,0 +1,4 @@
+CChoreoStringPool
+
++0x0000:  00bc3690  CChoreoStringPool::FindOrAddString(char const*)
++0x0004:  00bc3bd0  CChoreoStringPool::GetString(short, char*, int)

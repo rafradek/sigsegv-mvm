@@ -1,0 +1,4 @@
+CGlobalEntityList
+
++0x0000:  00a2edb0  CGlobalEntityList::OnAddEntity(IHandleEntity*, CBaseHandle)
++0x0004:  00a2ee40  CGlobalEntityList::OnRemoveEntity(IHandleEntity*, CBaseHandle)

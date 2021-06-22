@@ -1,0 +1,8 @@
+CTFServerBenchmark
+
++0x0000:  005de9f0  CTFServerBenchmark::StartBenchmark()
++0x0004:  005dea60  CTFServerBenchmark::UpdateBenchmark()
++0x0008:  005dd9b0  CServerBenchmarkHook::EndBenchmark()
++0x000c:  005df0c0  CTFServerBenchmark::GetPhysicsModelNames(CUtlVector<char*, CUtlMemory<char*, int> >&)
++0x0010:  005de930  CTFServerBenchmark::CreateBot()
++0x0014:  005df250  CTFServerBenchmark::GetBlueSpawnPoint(bool)

@@ -1,0 +1,5 @@
+CEntityFactory<CFuncReflectiveGlass>
+
++0x0000:  00a713d0  CEntityFactory<CFuncReflectiveGlass>::Create(char const*)
++0x0004:  00a71380  CEntityFactory<CFuncReflectiveGlass>::Destroy(IServerNetworkable*)
++0x0008:  00a713a0  CEntityFactory<CFuncReflectiveGlass>::GetEntitySize()

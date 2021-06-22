@@ -1,0 +1,5 @@
+CEntityFactory<CTFCrossbow>
+
++0x0000:  00883220  CEntityFactory<CTFCrossbow>::Create(char const*)
++0x0004:  00883010  CEntityFactory<CTFCrossbow>::Destroy(IServerNetworkable*)
++0x0008:  00883030  CEntityFactory<CTFCrossbow>::GetEntitySize()

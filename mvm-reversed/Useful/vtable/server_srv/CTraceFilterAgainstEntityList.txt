@@ -1,0 +1,4 @@
+CTraceFilterAgainstEntityList
+
++0x0000:  00b4ccd0  CTraceFilterAgainstEntityList::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  00b4cd30  CTraceFilterAgainstEntityList::GetTraceType() const

@@ -1,0 +1,9 @@
+CDedicatedExports
+
++0x0000:  00093150  CBaseAppSystem<IDedicatedExports>::Connect(void* (*)(char const*, int*))
++0x0004:  00093160  CBaseAppSystem<IDedicatedExports>::Disconnect()
++0x0008:  00093170  CBaseAppSystem<IDedicatedExports>::QueryInterface(char const*)
++0x000c:  00093180  CBaseAppSystem<IDedicatedExports>::Init()
++0x0010:  00093190  CBaseAppSystem<IDedicatedExports>::Shutdown()
++0x0014:  00093120  CDedicatedExports::Sys_Printf(char*)
++0x0018:  000931a0  CDedicatedExports::RunServer()

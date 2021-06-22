@@ -1,0 +1,5 @@
+CEntityFactory<CTrainingAnnotation>
+
++0x0000:  00cbd2b0  CEntityFactory<CTrainingAnnotation>::Create(char const*)
++0x0004:  00cbd230  CEntityFactory<CTrainingAnnotation>::Destroy(IServerNetworkable*)
++0x0008:  00cbd250  CEntityFactory<CTrainingAnnotation>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CTFPistol_ScoutPrimary>
+
++0x0000:  0087e8e0  CEntityFactory<CTFPistol_ScoutPrimary>::Create(char const*)
++0x0004:  0087e7b0  CEntityFactory<CTFPistol_ScoutPrimary>::Destroy(IServerNetworkable*)
++0x0008:  0087e7d0  CEntityFactory<CTFPistol_ScoutPrimary>::GetEntitySize()

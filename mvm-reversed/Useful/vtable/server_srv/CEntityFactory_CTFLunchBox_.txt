@@ -1,0 +1,5 @@
+CEntityFactory<CTFLunchBox>
+
++0x0000:  0086a3c0  CEntityFactory<CTFLunchBox>::Create(char const*)
++0x0004:  0086a2b0  CEntityFactory<CTFLunchBox>::Destroy(IServerNetworkable*)
++0x0008:  0086a2d0  CEntityFactory<CTFLunchBox>::GetEntitySize()

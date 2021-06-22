@@ -1,0 +1,5 @@
+CEntityFactory<CPhysicsSpring>
+
++0x0000:  00b5d5c0  CEntityFactory<CPhysicsSpring>::Create(char const*)
++0x0004:  00b5c9c0  CEntityFactory<CPhysicsSpring>::Destroy(IServerNetworkable*)
++0x0008:  00b5c9e0  CEntityFactory<CPhysicsSpring>::GetEntitySize()

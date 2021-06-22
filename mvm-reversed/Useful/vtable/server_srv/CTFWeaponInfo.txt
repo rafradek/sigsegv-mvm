@@ -1,0 +1,3 @@
+CTFWeaponInfo
+
++0x0000:  00875b50  CTFWeaponInfo::Parse(KeyValues*, char const*)

@@ -1,0 +1,12 @@
+CPasstimeBallController
+
++0x0000:  00d45c30  CPasstimeBallController::~CPasstimeBallController()
++0x0004:  00d45ca0  CPasstimeBallController::~CPasstimeBallController()
++0x0008:  00000000  
++0x000c:  00000000  
++0x0010:  00d45bd0  CPasstimeBallController::OnBallCollision(CPasstimeBall*, int, gamevcollisionevent_t*)
++0x0014:  00d45be0  CPasstimeBallController::OnBallPickedUp(CPasstimeBall*, CTFPlayer*)
++0x0018:  00d45bf0  CPasstimeBallController::OnBallDamaged(CPasstimeBall*)
++0x001c:  00d45c00  CPasstimeBallController::OnBallSpawned(CPasstimeBall*)
++0x0020:  00d45c10  CPasstimeBallController::OnEnabled()
++0x0024:  00d45c20  CPasstimeBallController::OnDisabled()

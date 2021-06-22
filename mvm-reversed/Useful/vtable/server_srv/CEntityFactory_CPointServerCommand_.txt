@@ -1,0 +1,5 @@
+CEntityFactory<CPointServerCommand>
+
++0x0000:  00a0d300  CEntityFactory<CPointServerCommand>::Create(char const*)
++0x0004:  00a0d260  CEntityFactory<CPointServerCommand>::Destroy(IServerNetworkable*)
++0x0008:  00a0d280  CEntityFactory<CPointServerCommand>::GetEntitySize()

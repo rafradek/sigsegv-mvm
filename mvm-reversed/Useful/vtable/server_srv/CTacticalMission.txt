@@ -1,0 +1,8 @@
+CTacticalMission
+
++0x0000:  006ca070  CTacticalMission::~CTacticalMission()
++0x0004:  006ca0b0  CTacticalMission::~CTacticalMission()
++0x0008:  006ca080  CTacticalMission::GetDeployZone(CBasePlayer*) const
++0x000c:  006ca090  CTacticalMission::GetObjectiveZone() const
++0x0010:  006ca0a0  CTacticalMission::GetEnemyZone() const
++0x0014:  00000000  

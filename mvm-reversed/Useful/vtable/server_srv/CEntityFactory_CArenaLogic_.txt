@@ -1,0 +1,5 @@
+CEntityFactory<CArenaLogic>
+
++0x0000:  0079dc40  CEntityFactory<CArenaLogic>::Create(char const*)
++0x0004:  0079bf30  CEntityFactory<CArenaLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079bf50  CEntityFactory<CArenaLogic>::GetEntitySize()

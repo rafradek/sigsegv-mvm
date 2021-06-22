@@ -1,0 +1,4 @@
+CFileHandle
+
++0x0000:  000629d0  CFileHandle::~CFileHandle()
++0x0004:  00062a30  CFileHandle::~CFileHandle()

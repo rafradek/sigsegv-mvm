@@ -1,0 +1,3 @@
+CFireSphere
+
++0x0000:  00a50aa0  CFireSphere::EnumElement(IHandleEntity*)

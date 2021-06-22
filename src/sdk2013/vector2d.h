@@ -84,7 +84,7 @@ public:
 	constexpr void	Negate(); 
 
 	// Get the Vector2D's magnitude.
-	constexpr vec_t	Length() const;
+	inline vec_t	Length() const;
 
 	// Get the Vector2D's magnitude squared.
 	constexpr vec_t	LengthSqr(void) const;
@@ -97,14 +97,14 @@ public:
 	}
 
 	// Normalize in place and return the old length.
-	constexpr vec_t	NormalizeInPlace();
+	inline vec_t	NormalizeInPlace();
 
 	// Compare length.
 	constexpr bool	IsLengthGreaterThan( float val ) const;
 	constexpr bool	IsLengthLessThan( float val ) const;
 
 	// Get the distance from this Vector2D to the other one.
-	constexpr vec_t	DistTo(const Vector2D &vOther) const;
+	inline vec_t	DistTo(const Vector2D &vOther) const;
 
 	// Get the distance from this Vector2D to the other one squared.
 	constexpr vec_t	DistToSqr(const Vector2D &vOther) const;		
@@ -178,10 +178,10 @@ constexpr void Vector2DMax( const Vector2D &a, const Vector2D &b, Vector2D &resu
 #define Vector2DExpand( v ) (v).x, (v).y
 
 // Normalization
-constexpr vec_t Vector2DNormalize( Vector2D& v );
+inline vec_t Vector2DNormalize( Vector2D& v );
 
 // Length
-constexpr vec_t Vector2DLength( const Vector2D& v );
+inline vec_t Vector2DLength( const Vector2D& v );
 
 // Dot Product
 constexpr vec_t DotProduct2D(const Vector2D& a, const Vector2D& b);
@@ -480,7 +480,7 @@ constexpr vec_t Vector2D::Dot( const Vector2D& vOther ) const
 //-----------------------------------------------------------------------------
 // length
 //-----------------------------------------------------------------------------
-constexpr vec_t Vector2DLength( const Vector2D& v )
+inline vec_t Vector2DLength( const Vector2D& v )
 {
 	Assert( v.IsValid() );
 	return (vec_t)FastSqrt(v.x*v.x + v.y*v.y);		
@@ -492,7 +492,7 @@ constexpr vec_t Vector2D::LengthSqr(void) const
 	return (x*x + y*y);		
 }
 
-constexpr vec_t Vector2D::NormalizeInPlace()
+inline vec_t Vector2D::NormalizeInPlace()
 {
 	return Vector2DNormalize( *this );
 }
@@ -507,7 +507,7 @@ constexpr bool Vector2D::IsLengthLessThan( float val ) const
 	return LengthSqr() < val*val;
 }
 
-constexpr vec_t Vector2D::Length(void) const	
+inline vec_t Vector2D::Length(void) const	
 {
 	return Vector2DLength( *this );
 }
@@ -530,7 +530,7 @@ constexpr void Vector2DMax( const Vector2D &a, const Vector2D &b, Vector2D &resu
 //-----------------------------------------------------------------------------
 // Normalization
 //-----------------------------------------------------------------------------
-constexpr vec_t Vector2DNormalize( Vector2D& v )
+inline vec_t Vector2DNormalize( Vector2D& v )
 {
 	Assert( v.IsValid() );
 	vec_t l = v.Length();
@@ -549,7 +549,7 @@ constexpr vec_t Vector2DNormalize( Vector2D& v )
 //-----------------------------------------------------------------------------
 // Get the distance from this Vector2D to the other one 
 //-----------------------------------------------------------------------------
-constexpr vec_t Vector2D::DistTo(const Vector2D &vOther) const
+inline vec_t Vector2D::DistTo(const Vector2D &vOther) const
 {
 	return (*this - vOther).Length();
 }

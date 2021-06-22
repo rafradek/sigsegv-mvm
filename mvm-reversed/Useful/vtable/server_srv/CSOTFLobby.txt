@@ -1,0 +1,22 @@
+CSOTFLobby
+
++0x0000:  005dbd30  CSOTFLobby::~CSOTFLobby()
++0x0004:  005dbdc0  CSOTFLobby::~CSOTFLobby()
++0x0008:  00000000  
++0x000c:  005b8c40  CSOTFLobby::New() const
++0x0010:  00585340  CSOTFLobby::Clear()
++0x0014:  00576550  CSOTFLobby::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005da270  CSOTFLobby::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058d6f0  CSOTFLobby::ByteSize() const
++0x0028:  005819f0  CSOTFLobby::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00597ae0  CSOTFLobby::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dcce0  CSOTFLobby::GetCachedSize() const
++0x0034:  00576500  CSOTFLobby::CopyFrom(google::protobuf::Message const&)
++0x0038:  005b9690  CSOTFLobby::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  005764f0  CSOTFLobby::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058f120  CSOTFLobby::GetMetadata() const

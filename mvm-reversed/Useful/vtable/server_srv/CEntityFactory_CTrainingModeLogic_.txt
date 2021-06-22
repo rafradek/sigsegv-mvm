@@ -1,0 +1,5 @@
+CEntityFactory<CTrainingModeLogic>
+
++0x0000:  007a86e0  CEntityFactory<CTrainingModeLogic>::Create(char const*)
++0x0004:  0079bed0  CEntityFactory<CTrainingModeLogic>::Destroy(IServerNetworkable*)
++0x0008:  0079bef0  CEntityFactory<CTrainingModeLogic>::GetEntitySize()

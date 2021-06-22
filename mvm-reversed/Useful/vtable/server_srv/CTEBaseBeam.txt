@@ -1,0 +1,9 @@
+CTEBaseBeam
+
++0x0000:  00c08960  CTEBaseBeam::GetServerClass()
++0x0004:  00c08970  CTEBaseBeam::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c089b0  CTEBaseBeam::~CTEBaseBeam()
++0x000c:  00c089d0  CTEBaseBeam::~CTEBaseBeam()
++0x0010:  00000000  
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

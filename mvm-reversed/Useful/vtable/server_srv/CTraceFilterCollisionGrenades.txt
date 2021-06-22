@@ -1,0 +1,4 @@
+CTraceFilterCollisionGrenades
+
++0x0000:  0083ec40  CTraceFilterCollisionGrenades::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0063b3b0  CTraceFilterEntitiesOnly::GetTraceType() const

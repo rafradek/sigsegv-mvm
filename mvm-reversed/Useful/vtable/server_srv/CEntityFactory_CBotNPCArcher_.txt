@@ -1,0 +1,5 @@
+CEntityFactory<CBotNPCArcher>
+
++0x0000:  00ca3170  CEntityFactory<CBotNPCArcher>::Create(char const*)
++0x0004:  00c970f0  CEntityFactory<CBotNPCArcher>::Destroy(IServerNetworkable*)
++0x0008:  00c97110  CEntityFactory<CBotNPCArcher>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CUpgrades>
+
++0x0000:  00d70d00  CEntityFactory<CUpgrades>::Create(char const*)
++0x0004:  00d70cd0  CEntityFactory<CUpgrades>::Destroy(IServerNetworkable*)
++0x0008:  00d70cf0  CEntityFactory<CUpgrades>::GetEntitySize()

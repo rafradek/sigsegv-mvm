@@ -1,0 +1,144 @@
+CGameRules
+
++0x0000:  006c9ce0  CGameRules::Name()
++0x0004:  005f99b0  CBaseGameSystemPerFrame::Init()
++0x0008:  005f99c0  CBaseGameSystemPerFrame::PostInit()
++0x000c:  005f99d0  CBaseGameSystemPerFrame::Shutdown()
++0x0010:  005f99e0  CBaseGameSystemPerFrame::LevelInitPreEntity()
++0x0014:  005e7ac0  CBaseGameSystemPerFrame::LevelInitPostEntity()
++0x0018:  005e7ad0  CBaseGameSystemPerFrame::LevelShutdownPreClearSteamAPIContext()
++0x001c:  005e7ae0  CBaseGameSystemPerFrame::LevelShutdownPreEntity()
++0x0020:  005f99f0  CBaseGameSystemPerFrame::LevelShutdownPostEntity()
++0x0024:  005e7af0  CBaseGameSystemPerFrame::OnSave()
++0x0028:  005e7b00  CBaseGameSystemPerFrame::OnRestore()
++0x002c:  005e7b10  CBaseGameSystemPerFrame::SafeRemoveIfDesired()
++0x0030:  005e7b20  CBaseGameSystemPerFrame::IsPerFrame()
++0x0034:  006c8560  CGameRules::~CGameRules()
++0x0038:  006c8580  CGameRules::~CGameRules()
++0x003c:  005e7b30  CBaseGameSystemPerFrame::FrameUpdatePreEntityThink()
++0x0040:  006c85a0  CGameRules::FrameUpdatePostEntityThink()
++0x0044:  005f9a00  CBaseGameSystemPerFrame::PreClientUpdate()
++0x0048:  00000000  
++0x004c:  00000000  
++0x0050:  00000000  
++0x0054:  00000000  
++0x0058:  00000000  
++0x005c:  00000000  
++0x0060:  00000000  
++0x0064:  00000000  
++0x0068:  00000000  
++0x006c:  00000000  
++0x0070:  006c79a0  CGameRules::SwitchToNextBestWeapon(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0074:  006c79b0  CGameRules::GetNextBestWeapon(CBaseCombatCharacter*, CBaseCombatWeapon*)
++0x0078:  006c79c0  CGameRules::ShouldCollide(int, int)
++0x007c:  006c9cf0  CGameRules::DefaultFOV()
++0x0080:  006c7b20  CGameRules::GetViewVectors() const
++0x0084:  006c7ef0  CGameRules::GetAmmoDamage(CBaseEntity*, CBaseEntity*, int)
++0x0088:  006c9d00  CGameRules::GetDamageMultiplier()
++0x008c:  00000000  
++0x0090:  006c9d10  CGameRules::GetEncryptionKey()
++0x0094:  006c9d20  CGameRules::InRoundRestart()
++0x0098:  006c9d30  CGameRules::AllowThirdPersonCamera()
++0x009c:  006c9d40  CGameRules::ClientCommandKeyValues(edict_t*, KeyValues*)
++0x00a0:  006c9d50  CGameRules::IsConnectedUserInfoChangeAllowed(CBasePlayer*)
++0x00a4:  006c9d60  CGameRules::Status(void (*)(char const*, ...))
++0x00a8:  006c9d70  CGameRules::GetTaggedConVarList(KeyValues*)
++0x00ac:  006c7c20  CGameRules::CheckHaptics(CBasePlayer*)
++0x00b0:  006c9d80  CGameRules::LevelShutdown()
++0x00b4:  006c9d90  CGameRules::Precache()
++0x00b8:  006c8150  CGameRules::RefreshSkillData(bool)
++0x00bc:  00000000  
++0x00c0:  00000000  
++0x00c4:  006c7fd0  CGameRules::EndGameFrame()
++0x00c8:  006c9da0  CGameRules::IsSkillLevel(int)
++0x00cc:  006c9dc0  CGameRules::GetSkillLevel()
++0x00d0:  006c9dd0  CGameRules::OnSkillLevelChanged(int)
++0x00d4:  006ca0f0  CGameRules::SetSkillLevel(int)
++0x00d8:  00000000  
++0x00dc:  00000000  
++0x00e0:  00000000  
++0x00e4:  006c9de0  CGameRules::IsTeamplay()
++0x00e8:  00000000  
++0x00ec:  006c9df0  CGameRules::GetGameDescription()
++0x00f0:  00000000  
++0x00f4:  00000000  
++0x00f8:  00000000  
++0x00fc:  00000000  
++0x0100:  006c9e00  CGameRules::FPlayerCanTakeDamage(CBasePlayer*, CBaseEntity*, CTakeDamageInfo const&)
++0x0104:  006c9e10  CGameRules::ShouldAutoAim(CBasePlayer*, edict_t*)
++0x0108:  006c9e20  CGameRules::GetAutoAimScale(CBasePlayer*)
++0x010c:  006c9e30  CGameRules::GetAutoAimMode()
++0x0110:  006c9e40  CGameRules::ShouldUseRobustRadiusDamage(CBaseEntity*)
++0x0114:  006c8aa0  CGameRules::RadiusDamage(CTakeDamageInfo const&, Vector const&, float, int, CBaseEntity*)
++0x0118:  006c9e50  CGameRules::FlPlayerFallDeathDoesScreenFade(CBasePlayer*)
++0x011c:  00000000  
++0x0120:  00000000  
++0x0124:  00000000  
++0x0128:  00000000  
++0x012c:  00000000  
++0x0130:  006c8210  CGameRules::GetPlayerSpawnSpot(CBasePlayer*)
++0x0134:  006c8510  CGameRules::IsSpawnPointValid(CBaseEntity*, CBasePlayer*)
++0x0138:  006c9e60  CGameRules::AllowAutoTargetCrosshair()
++0x013c:  006c8100  CGameRules::ClientCommand(CBaseEntity*, CCommand const&)
++0x0140:  006c7ca0  CGameRules::ClientSettingsChanged(CBasePlayer*)
++0x0144:  00000000  
++0x0148:  00000000  
++0x014c:  00000000  
++0x0150:  006c9e70  CGameRules::GetDamageCustomString(CTakeDamageInfo const&)
++0x0154:  006c9e80  CGameRules::AdjustPlayerDamageInflicted(float)
++0x0158:  006c9e90  CGameRules::AdjustPlayerDamageTaken(CTakeDamageInfo*)
++0x015c:  006c7930  CGameRules::CanHavePlayerItem(CBasePlayer*, CBaseCombatWeapon*)
++0x0160:  00000000  
++0x0164:  00000000  
++0x0168:  00000000  
++0x016c:  00000000  
++0x0170:  00000000  
++0x0174:  00000000  
++0x0178:  00000000  
++0x017c:  00000000  
++0x0180:  00000000  
++0x0184:  00000000  
++0x0188:  006c83e0  CGameRules::CanHaveAmmo(CBaseCombatCharacter*, int)
++0x018c:  006c8390  CGameRules::CanHaveAmmo(CBaseCombatCharacter*, char const*)
++0x0190:  00000000  
++0x0194:  006c9ea0  CGameRules::GetAmmoQuantityScale(int)
++0x0198:  006c9eb0  CGameRules::InitDefaultAIRelationships()
++0x019c:  006c9ec0  CGameRules::AIClassText(int)
++0x01a0:  00000000  
++0x01a4:  006c9ed0  CGameRules::FlHEVChargerRechargeTime()
++0x01a8:  00000000  
++0x01ac:  00000000  
++0x01b0:  00000000  
++0x01b4:  00000000  
++0x01b8:  00000000  
++0x01bc:  006c9ee0  CGameRules::CheckChatText(CBasePlayer*, char*)
++0x01c0:  006c9ef0  CGameRules::GetTeamIndex(char const*)
++0x01c4:  006c9f00  CGameRules::GetIndexedTeamName(int)
++0x01c8:  006c9f10  CGameRules::IsValidTeam(char const*)
++0x01cc:  006c9f20  CGameRules::ChangePlayerTeam(CBasePlayer*, char const*, bool, bool)
++0x01d0:  006c9f30  CGameRules::SetDefaultPlayerTeam(CBasePlayer*)
++0x01d4:  006c9f40  CGameRules::UpdateClientData(CBasePlayer*)
++0x01d8:  006c9f50  CGameRules::PlayTextureSounds()
++0x01dc:  006c9f60  CGameRules::PlayFootstepSounds(CBasePlayer*)
++0x01e0:  00000000  
++0x01e4:  006c9f70  CGameRules::EndMultiplayerGame()
++0x01e8:  006c7f90  CGameRules::WeaponTraceEntity(CBaseEntity*, Vector const&, Vector const&, unsigned int, CGameTrace*)
++0x01ec:  006c7f50  CGameRules::CreateStandardEntities()
++0x01f0:  006c7b30  CGameRules::GetChatPrefix(bool, CBasePlayer*)
++0x01f4:  006c9f80  CGameRules::GetChatLocation(bool, CBasePlayer*)
++0x01f8:  006c9f90  CGameRules::GetChatFormat(bool, CBasePlayer*)
++0x01fc:  006c9fa0  CGameRules::ShouldBurningPropsEmitLight()
++0x0200:  006c9fb0  CGameRules::CanEntityBeUsePushed(CBaseEntity*)
++0x0204:  006c9fc0  CGameRules::CreateCustomNetworkStringTables()
++0x0208:  006c7940  CGameRules::MarkAchievement(IRecipientFilter&, char const*)
++0x020c:  006c9fd0  CGameRules::ResetMapCycleTimeStamp()
++0x0210:  006c9fe0  CGameRules::OnNavMeshLoad()
++0x0214:  006c7be0  CGameRules::TacticalMissionManagerFactory()
++0x0218:  006c9ff0  CGameRules::ProcessVerboseLogOutput()
++0x021c:  006ca000  CGameRules::GetGameTypeName()
++0x0220:  006ca010  CGameRules::GetGameType()
++0x0224:  006ca020  CGameRules::ShouldDrawHeadLabels()
++0x0228:  006ca030  CGameRules::ClientSpawned(edict_t*)
++0x022c:  006ca040  CGameRules::OnFileReceived(char const*, unsigned int)
++0x0230:  006ca050  CGameRules::IsHolidayActive(int) const
++0x0234:  006ca060  CGameRules::IsManualMapChangeOkay(char const**)

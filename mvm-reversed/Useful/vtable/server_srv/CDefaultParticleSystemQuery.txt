@@ -1,0 +1,18 @@
+CDefaultParticleSystemQuery
+
++0x0000:  006dd1c0  CBaseAppSystem<IParticleSystemQuery>::Connect(void* (*)(char const*, int*))
++0x0004:  006dd1d0  CBaseAppSystem<IParticleSystemQuery>::Disconnect()
++0x0008:  006dd1e0  CBaseAppSystem<IParticleSystemQuery>::QueryInterface(char const*)
++0x000c:  006dd1f0  CBaseAppSystem<IParticleSystemQuery>::Init()
++0x0010:  006dd200  CBaseAppSystem<IParticleSystemQuery>::Shutdown()
++0x0014:  00f21790  CDefaultParticleSystemQuery::GetLightingAtPoint(Vector const&, Color&)
++0x0018:  00f217b0  CDefaultParticleSystemQuery::TraceLine(Vector const&, Vector const&, unsigned int, IHandleEntity const*, int, CBaseTrace*)
++0x001c:  00f21650  IParticleSystemQuery::MovePointInsideControllingObject(CParticleCollection*, void*, Vector*)
++0x0020:  00f21660  IParticleSystemQuery::IsPointInControllingObjectHitBox(CParticleCollection*, int, Vector, bool)
++0x0024:  00f21670  IParticleSystemQuery::GetCollisionGroupFromName(char const*)
++0x0028:  00f217c0  CDefaultParticleSystemQuery::GetRandomPointsOnControllingObjectHitBox(CParticleCollection*, int, int, float, int, Vector*, Vector, Vector*, int*)
++0x002c:  00f21680  IParticleSystemQuery::GetControllingObjectHitBoxInfo(CParticleCollection*, int, int, ModelHitBoxInfo_t*)
++0x0030:  00f21690  IParticleSystemQuery::GetLocalPlayerPos()
++0x0034:  00f216c0  IParticleSystemQuery::GetLocalPlayerEyeVectors(Vector*, Vector*, Vector*)
++0x0038:  00f21850  CDefaultParticleSystemQuery::GetPixelVisibility(int*, Vector const&, float)
++0x003c:  00f21720  IParticleSystemQuery::SetUpLightingEnvironment(Vector const&)

@@ -1,0 +1,5 @@
+CEntityFactory<CStripWeapons>
+
++0x0000:  00b7d090  CEntityFactory<CStripWeapons>::Create(char const*)
++0x0004:  00b7ccd0  CEntityFactory<CStripWeapons>::Destroy(IServerNetworkable*)
++0x0008:  00b7ccf0  CEntityFactory<CStripWeapons>::GetEntitySize()

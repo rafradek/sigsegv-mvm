@@ -1,0 +1,5 @@
+CEntityFactory<CTriggerCDAudio>
+
++0x0000:  00e49ab0  CEntityFactory<CTriggerCDAudio>::Create(char const*)
++0x0004:  00e48e20  CEntityFactory<CTriggerCDAudio>::Destroy(IServerNetworkable*)
++0x0008:  00e48e40  CEntityFactory<CTriggerCDAudio>::GetEntitySize()

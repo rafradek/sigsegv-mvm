@@ -1,0 +1,6 @@
+snappy::Sink
+
++0x0000:  00202890  snappy::Sink::~Sink()
++0x0004:  00202990  snappy::Sink::~Sink()
++0x0008:  00000000  
++0x000c:  002028a0  snappy::Sink::GetAppendBuffer(unsigned int, char*)

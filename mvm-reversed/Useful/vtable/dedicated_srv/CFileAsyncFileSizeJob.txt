@@ -1,0 +1,18 @@
+CFileAsyncFileSizeJob
+
++0x0000:  00075e70  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00075fd0  CRefCounted1<IRefCounted, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00079600  CFileAsyncFileSizeJob::~CFileAsyncFileSizeJob()
++0x000c:  00079d20  CFileAsyncFileSizeJob::~CFileAsyncFileSizeJob()
++0x0010:  00075d80  CFileAsyncReadJob::Describe()
++0x0014:  00075eb0  CJob::SetDescription(char const*)
++0x0018:  00076710  CFileAsyncFileSizeJob::DoExecute()
++0x001c:  00075d30  CJob::DoAbort(bool)
++0x0020:  00075d40  CJob::DoCleanup()
++0x0024:  00075d90  CFileAsyncReadJob::GetResult(void**, int*)
++0x0028:  00075d70  CFileAsyncJob::IsWrite() const
++0x002c:  fffffffc  (unknown)
++0x0030:  001ce568  typeinfo for CFileAsyncFileSizeJob
++0x0034:  000795f0  non-virtual thunk to CFileAsyncFileSizeJob::~CFileAsyncFileSizeJob()
++0x0038:  00079d10  non-virtual thunk to CFileAsyncFileSizeJob::~CFileAsyncFileSizeJob()
++0x003c:  0006e820  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

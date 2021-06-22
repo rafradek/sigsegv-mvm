@@ -1,0 +1,32 @@
+ISchemaAttributeType [base]
+ISchemaAttributeTypeBase<T> : public ISchemaAttributeType
+CSchemaAttributeTypeBase<T> : public ISchemaAttributeTypeBase<T>
+
+
+CEconItemAttribute [base]
+
+CEconItemHandle : public GCSDK::ISharedObjectListener
+CEconItemViewHandle
+
+CEconItem::attribute_t [???]
+
+
+IHasAttributes [base]
+
+
+IEconItemAttributeIterator [base]
+
+IEconItemUntypedAttributeIterator : public IEconItemAttributeIterator
+
+CAttributeIterator_GetTypedAttributeValue<T, U> : public IEconItemAttributeIterator
+
+CAttributeIterator_HasAttribute : public IEconItemUntypedAttributeIterator
+
+CEconItemSpecificAttributeIterator : public IEconItemAttributeIterator
+
+CEconItemAttributeIterator_ApplyAttributeFloat : public CEconItemSpecificAttributeIterator
+CEconItemAttributeIterator_ApplyAttributeString : public CEconItemSpecificAttributeIterator
+
+
+FindAttribute<T>
+FindAttribute_UnsafeBitwiseCast<T, U, V>

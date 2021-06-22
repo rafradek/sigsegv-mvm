@@ -1,0 +1,5 @@
+CEntityFactory<SporeExplosion>
+
++0x0000:  00bdc4d0  CEntityFactory<SporeExplosion>::Create(char const*)
++0x0004:  00bdc0d0  CEntityFactory<SporeExplosion>::Destroy(IServerNetworkable*)
++0x0008:  00bdc0f0  CEntityFactory<SporeExplosion>::GetEntitySize()

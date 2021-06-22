@@ -1,0 +1,4 @@
+CTraceFilterWorldAndPropsOnly
+
++0x0000:  0019b490  CTraceFilterWorldAndPropsOnly::ShouldHitEntity(IHandleEntity*, int)
++0x0004:  0019b4a0  CTraceFilterWorldAndPropsOnly::GetTraceType() const

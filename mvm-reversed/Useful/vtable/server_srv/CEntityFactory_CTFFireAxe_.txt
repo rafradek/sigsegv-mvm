@@ -1,0 +1,5 @@
+CEntityFactory<CTFFireAxe>
+
++0x0000:  008505b0  CEntityFactory<CTFFireAxe>::Create(char const*)
++0x0004:  00850580  CEntityFactory<CTFFireAxe>::Destroy(IServerNetworkable*)
++0x0008:  008505a0  CEntityFactory<CTFFireAxe>::GetEntitySize()

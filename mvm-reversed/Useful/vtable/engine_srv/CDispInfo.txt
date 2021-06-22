@@ -1,0 +1,30 @@
+CDispInfo
+
++0x0000:  000fc1e0  CDispInfo::~CDispInfo()
++0x0004:  000fc290  CDispInfo::~CDispInfo()
++0x0008:  000f81e0  CDispInfo::GetIntersectingSurfaces(GetIntersectingSurfaces_Struct*)
++0x000c:  000f8500  CDispInfo::RenderWireframeInLightmapPage(int)
++0x0010:  000f8510  CDispInfo::GetBoundingBox(Vector&, Vector&)
++0x0014:  000f8550  CDispInfo::SetParent(msurface2_t*)
++0x0018:  000f8570  CDispInfo::GetParent()
++0x001c:  000f8590  CDispInfo::AddDynamicLights(dlight_t*, unsigned int)
++0x0020:  000f8580  CDispInfo::ComputeDynamicLightMask(dlight_t*)
++0x0024:  000f92b0  CDispInfo::NotifyAddDecal(decal_t*, float)
++0x0028:  000f8f90  CDispInfo::NotifyRemoveDecal(unsigned short)
++0x002c:  000f9580  CDispInfo::AddShadowDecal(unsigned short)
++0x0030:  000f9120  CDispInfo::RemoveShadowDecal(unsigned short)
++0x0034:  000f87f0  CDispInfo::ComputeShadowFragments(unsigned short, int&, int&)
++0x0038:  000f8880  CDispInfo::GetTag()
++0x003c:  000f88a0  CDispInfo::SetTag()
++0x0040:  000f6060  CDispInfo::TestRay(Ray_t const&, float, float, float&, Vector2D*, Vector2D*)
++0x0044:  000f6050  CDispInfo::ComputeLightmapAndTextureCoordinate(RayDispOutput_t const&, Vector2D*, Vector2D*)
++0x0048:  000f6230  CDispInfo::GetPowerInfo() const
++0x004c:  000f6250  CDispInfo::GetEdgeNeighbor(int)
++0x0050:  000f6280  CDispInfo::GetCornerNeighbors(int)
++0x0054:  000f62b0  CDispInfo::GetDispUtilsByIndex(int)
++0x0058:  fffffffc  (unknown)
++0x005c:  0023af80  typeinfo for CDispInfo
++0x0060:  000f6220  non-virtual thunk to CDispInfo::GetPowerInfo() const
++0x0064:  000f6240  non-virtual thunk to CDispInfo::GetEdgeNeighbor(int)
++0x0068:  000f6270  non-virtual thunk to CDispInfo::GetCornerNeighbors(int)
++0x006c:  000f62a0  non-virtual thunk to CDispInfo::GetDispUtilsByIndex(int)

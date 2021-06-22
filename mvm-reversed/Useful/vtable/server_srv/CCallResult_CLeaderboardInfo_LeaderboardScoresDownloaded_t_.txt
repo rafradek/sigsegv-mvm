@@ -1,0 +1,5 @@
+CCallResult<CLeaderboardInfo, LeaderboardScoresDownloaded_t>
+
++0x0000:  007dc780  CCallResult<CLeaderboardInfo, LeaderboardScoresDownloaded_t>::Run(void*)
++0x0004:  007dc960  CCallResult<CLeaderboardInfo, LeaderboardScoresDownloaded_t>::Run(void*, bool, unsigned long long)
++0x0008:  007dc7d0  CCallResult<CLeaderboardInfo, LeaderboardScoresDownloaded_t>::GetCallbackSizeBytes()

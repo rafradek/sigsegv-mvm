@@ -1,0 +1,5 @@
+CEntityFactory<CTFScatterGun>
+
++0x0000:  008863f0  CEntityFactory<CTFScatterGun>::Create(char const*)
++0x0004:  00885700  CEntityFactory<CTFScatterGun>::Destroy(IServerNetworkable*)
++0x0008:  00885720  CEntityFactory<CTFScatterGun>::GetEntitySize()

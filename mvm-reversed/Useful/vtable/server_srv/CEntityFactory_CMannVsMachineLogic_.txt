@@ -1,0 +1,5 @@
+CEntityFactory<CMannVsMachineLogic>
+
++0x0000:  00d4d280  CEntityFactory<CMannVsMachineLogic>::Create(char const*)
++0x0004:  00d4d230  CEntityFactory<CMannVsMachineLogic>::Destroy(IServerNetworkable*)
++0x0008:  00d4d250  CEntityFactory<CMannVsMachineLogic>::GetEntitySize()

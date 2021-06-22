@@ -1,0 +1,22 @@
+CMsgGameServerMatchmakingStatus
+
++0x0000:  005dc0e0  CMsgGameServerMatchmakingStatus::~CMsgGameServerMatchmakingStatus()
++0x0004:  005dc150  CMsgGameServerMatchmakingStatus::~CMsgGameServerMatchmakingStatus()
++0x0008:  00000000  
++0x000c:  005c01d0  CMsgGameServerMatchmakingStatus::New() const
++0x0010:  00585740  CMsgGameServerMatchmakingStatus::Clear()
++0x0014:  00576e80  CMsgGameServerMatchmakingStatus::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005bef90  CMsgGameServerMatchmakingStatus::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058dc30  CMsgGameServerMatchmakingStatus::ByteSize() const
++0x0028:  00580450  CMsgGameServerMatchmakingStatus::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00598250  CMsgGameServerMatchmakingStatus::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dce30  CMsgGameServerMatchmakingStatus::GetCachedSize() const
++0x0034:  00576e30  CMsgGameServerMatchmakingStatus::CopyFrom(google::protobuf::Message const&)
++0x0038:  005c0700  CMsgGameServerMatchmakingStatus::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00576e20  CMsgGameServerMatchmakingStatus::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058ebe0  CMsgGameServerMatchmakingStatus::GetMetadata() const

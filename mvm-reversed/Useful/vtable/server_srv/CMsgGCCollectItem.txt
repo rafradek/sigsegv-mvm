@@ -1,0 +1,22 @@
+CMsgGCCollectItem
+
++0x0000:  004de270  CMsgGCCollectItem::~CMsgGCCollectItem()
++0x0004:  004de2b0  CMsgGCCollectItem::~CMsgGCCollectItem()
++0x0008:  00000000  
++0x000c:  00510d20  CMsgGCCollectItem::New() const
++0x0010:  004e4950  CMsgGCCollectItem::Clear()
++0x0014:  004dc0f0  CMsgGCCollectItem::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004eb8e0  CMsgGCCollectItem::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004dfde0  CMsgGCCollectItem::ByteSize() const
++0x0028:  004e0ba0  CMsgGCCollectItem::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004e0390  CMsgGCCollectItem::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520b40  CMsgGCCollectItem::GetCachedSize() const
++0x0034:  004dc0a0  CMsgGCCollectItem::CopyFrom(google::protobuf::Message const&)
++0x0038:  00510ef0  CMsgGCCollectItem::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004dc090  CMsgGCCollectItem::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ed3d0  CMsgGCCollectItem::GetMetadata() const

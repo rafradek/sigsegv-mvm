@@ -303,7 +303,8 @@ public:
 	CTFItemDefinition *GetStaticData() const                                                          { return ft_GetStaticData(this); }
 	CTFItemDefinition *GetItemDefinition() const                                                      { return ft_GetStaticData(this); }
 	CEconItem *GetSOCData() const                                                      				  { return ft_GetSOCData(this); }
-	
+	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
+
 	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
 	DECL_DATAMAP(int,            m_iEntityLevel);
@@ -322,7 +323,9 @@ private:
 	static MemberFuncThunk<      CEconItemView *, void>                              ft_ctor;
 	static MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> ft_Init;
 	static MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               ft_GetStaticData;
-	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;
+	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;;
+
+	static inline MemberFuncThunk<const CEconItemView *, void, IEconItemAttributeIterator *>         ft_IterateAttributes     { "CEconItemView::IterateAttributes"      };
 	
 	static MemberVFuncThunk<const CEconItemView *, int> vt_GetItemDefIndex;
 };
@@ -512,10 +515,14 @@ class CPlayerInventory
 public:
 	void DumpInventoryToConsole(bool b1 = true) {        vt_DumpInventoryToConsole(this, b1); }
 	int GetMaxItemCount() const                 { return vt_GetMaxItemCount(this); }
+
+	CEconItemView *GetItemByPosition(int position, int *index) { return ft_GetItemByPosition(this, position, index); }
 	
 private:
 	static MemberVFuncThunk<      CPlayerInventory *, void, bool> vt_DumpInventoryToConsole;
 	static MemberVFuncThunk<const CPlayerInventory *, int>        vt_GetMaxItemCount;
+	
+	static MemberFuncThunk< CPlayerInventory *, CEconItemView *, int, int *>        ft_GetItemByPosition;
 };
 
 class CTFPlayerInventory : public CPlayerInventory
@@ -539,9 +546,11 @@ class CTFInventoryManager : public CInventoryManager
 {
 public:
 	CTFPlayerInventory *GetInventoryForPlayer(const CSteamID& steamid) { return ft_GetInventoryForPlayer(this, steamid); }
+	CEconItemView *GetBaseItemForClass(int iClass, int iSlot) { return ft_GetBaseItemForClass(this, iClass, iSlot); }
 	
 private:
 	static MemberFuncThunk<CTFInventoryManager *, CTFPlayerInventory *, const CSteamID&> ft_GetInventoryForPlayer;
+	static MemberFuncThunk<CTFInventoryManager *, CEconItemView *, int, int> ft_GetBaseItemForClass;
 };
 
 

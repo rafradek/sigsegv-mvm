@@ -1,0 +1,68 @@
+CBaseServer
+
++0x0000:  000d85f0  CBaseServer::~CBaseServer()
++0x0004:  000d8680  CBaseServer::~CBaseServer()
++0x0008:  000d6bf0  CBaseServer::ProcessConnectionlessPacket(netpacket_s*)
++0x000c:  000d2e60  CBaseServer::GetNumClients() const
++0x0010:  000d2eb0  CBaseServer::GetNumProxies() const
++0x0014:  000d2e10  CBaseServer::GetNumFakeClients() const
++0x0018:  000d9170  CBaseServer::GetMaxClients() const
++0x001c:  000d9180  CBaseServer::GetClient(int)
++0x0020:  000d91b0  CBaseServer::GetClientCount() const
++0x0024:  000d9320  CBaseServer::GetUDPPort() const
++0x0028:  000d30f0  CBaseServer::GetTime() const
++0x002c:  000d91c0  CBaseServer::GetTick() const
++0x0030:  000d91d0  CBaseServer::GetTickInterval() const
++0x0034:  000d4660  CBaseServer::GetName() const
++0x0038:  000d91e0  CBaseServer::GetMapName() const
++0x003c:  000d91f0  CBaseServer::GetSpawnCount() const
++0x0040:  000d9200  CBaseServer::GetNumClasses() const
++0x0044:  000d9210  CBaseServer::GetClassBits() const
++0x0048:  000d3000  CBaseServer::GetNetStats(float&, float&)
++0x004c:  000d2f50  CBaseServer::GetNumPlayers()
++0x0050:  000d49e0  CBaseServer::GetPlayerInfo(int, player_info_s*)
++0x0054:  000d9230  CBaseServer::IsActive() const
++0x0058:  000d9240  CBaseServer::IsLoading() const
++0x005c:  000d9250  CBaseServer::IsDedicated() const
++0x0060:  000d9260  CBaseServer::IsPaused() const
++0x0064:  000d9270  CBaseServer::IsMultiplayer() const
++0x0068:  000d9290  CBaseServer::IsPausable() const
++0x006c:  000d92a0  CBaseServer::IsHLTV() const
++0x0070:  000d92b0  CBaseServer::IsReplay() const
++0x0074:  000d4690  CBaseServer::GetPassword() const
++0x0078:  000d42c0  CBaseServer::SetPaused(bool)
++0x007c:  000d4130  CBaseServer::SetPassword(char const*)
++0x0080:  000d31c0  CBaseServer::BroadcastMessage(INetMessage&, bool, bool)
++0x0084:  000d4350  CBaseServer::BroadcastMessage(INetMessage&, IRecipientFilter&)
++0x0088:  000d3110  CBaseServer::DisconnectClient(IClient*, char const*)
++0x008c:  000d9220  CBaseServer::GetCPUUsage()
++0x0090:  000d33f0  CBaseServer::BroadcastPrintf(char const*, ...)
++0x0094:  000d3160  CBaseServer::SetMaxClients(int)
++0x0098:  001a1300  CBaseServer::WriteDeltaEntities(CBaseClient*, CClientFrame*, CClientFrame*, bf_write&)
++0x009c:  000d8810  CBaseServer::WriteTempEntities(CBaseClient*, CFrameSnapshot*, CFrameSnapshot*, bf_write&, int)
++0x00a0:  000d3570  CBaseServer::Init(bool)
++0x00a4:  000d4700  CBaseServer::Clear()
++0x00a8:  000d4550  CBaseServer::Shutdown()
++0x00ac:  000d50c0  CBaseServer::CreateFakeClient(char const*)
++0x00b0:  000d92c0  CBaseServer::RemoveClientFromGame(CBaseClient*)
++0x00b4:  000d4bc0  CBaseServer::SendClientMessages(bool)
++0x00b8:  000d3f10  CBaseServer::FillServerInfo(SVC_ServerInfo&)
++0x00bc:  000d3ff0  CBaseServer::UserInfoChanged(int)
++0x00c0:  000d36c0  CBaseServer::RejectConnection(netadr_s const&, int, char const*)
++0x00c4:  000d4260  CBaseServer::CheckIPRestrictions(netadr_s const&, int)
++0x00c8:  000d59c0  CBaseServer::ConnectClient(netadr_s&, int, int, int, int, char const*, char const*, char const*, int)
++0x00cc:  000d86a0  CBaseServer::GetFreeClient(netadr_s&)
++0x00d0:  000d92d0  CBaseServer::CreateNewClient(int)
++0x00d4:  000d92e0  CBaseServer::FinishCertificateCheck(netadr_s&, int, char const*, int)
++0x00d8:  000d3d10  CBaseServer::GetChallengeNr(netadr_s&)
++0x00dc:  000d2ff0  CBaseServer::GetChallengeType(netadr_s&)
++0x00e0:  000d40e0  CBaseServer::CheckProtocol(netadr_s&, int, int)
++0x00e4:  000d4170  CBaseServer::CheckChallengeNr(netadr_s&, int)
++0x00e8:  000d3810  CBaseServer::CheckChallengeType(CBaseClient*, int, netadr_s&, int, char const*, int, int)
++0x00ec:  000d3780  CBaseServer::CheckPassword(netadr_s&, char const*, char const*)
++0x00f0:  000d3480  CBaseServer::CheckIPConnectionReuse(netadr_s&)
++0x00f4:  000d3d70  CBaseServer::ReplyChallenge(netadr_s&, int)
++0x00f8:  000d3600  CBaseServer::ReplyServerChallenge(netadr_s&)
++0x00fc:  000d3a70  CBaseServer::CalculateCPUUsage()
++0x0100:  000d3130  CBaseServer::ShouldUpdateMasterServer()
++0x0104:  000d92f0  CBaseServer::UpdateMasterServerPlayers()

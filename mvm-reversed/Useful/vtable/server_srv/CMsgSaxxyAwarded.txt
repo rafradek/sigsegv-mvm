@@ -1,0 +1,22 @@
+CMsgSaxxyAwarded
+
++0x0000:  005d7b30  CMsgSaxxyAwarded::~CMsgSaxxyAwarded()
++0x0004:  005d7b90  CMsgSaxxyAwarded::~CMsgSaxxyAwarded()
++0x0008:  00000000  
++0x000c:  005a8d60  CMsgSaxxyAwarded::New() const
++0x0010:  00584f10  CMsgSaxxyAwarded::Clear()
++0x0014:  00574d40  CMsgSaxxyAwarded::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  005a0260  CMsgSaxxyAwarded::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  0058a130  CMsgSaxxyAwarded::ByteSize() const
++0x0028:  0057d520  CMsgSaxxyAwarded::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  00594cd0  CMsgSaxxyAwarded::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005dc970  CMsgSaxxyAwarded::GetCachedSize() const
++0x0034:  00574cf0  CMsgSaxxyAwarded::CopyFrom(google::protobuf::Message const&)
++0x0038:  005a8f50  CMsgSaxxyAwarded::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00574ce0  CMsgSaxxyAwarded::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  0058fee0  CMsgSaxxyAwarded::GetMetadata() const

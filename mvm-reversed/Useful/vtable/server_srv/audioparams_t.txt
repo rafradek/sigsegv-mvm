@@ -1,0 +1,4 @@
+audioparams_t
+
++0x0000:  00b809c0  audioparams_t::NetworkStateChanged()
++0x0004:  00b809d0  audioparams_t::NetworkStateChanged(void*)

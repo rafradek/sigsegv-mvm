@@ -1,0 +1,5 @@
+CEntityFactory<CKeepUpright>
+
++0x0000:  00b60890  CEntityFactory<CKeepUpright>::Create(char const*)
++0x0004:  00b60600  CEntityFactory<CKeepUpright>::Destroy(IServerNetworkable*)
++0x0008:  00b60620  CEntityFactory<CKeepUpright>::GetEntitySize()

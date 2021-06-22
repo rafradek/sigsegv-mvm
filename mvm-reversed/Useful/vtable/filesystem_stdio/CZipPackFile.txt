@@ -1,0 +1,13 @@
+CZipPackFile
+
++0x0000:  00030cc0  CZipPackFile::~CZipPackFile()
++0x0004:  00030d50  CZipPackFile::~CZipPackFile()
++0x0008:  0001c030  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()
++0x000c:  0002f930  CZipPackFile::OpenFile(char const*, char const*)
++0x0010:  00030180  CZipPackFile::ContainsFile(char const*)
++0x0014:  000302a0  CZipPackFile::Prepare(long long, long long)
++0x0018:  00030110  CZipPackFile::IndexToFilename(int, char*, int)
++0x001c:  000301d0  CZipPackFile::SetupPreloadData()
++0x0020:  00030270  CZipPackFile::DiscardPreloadData()
++0x0024:  00031860  CZipPackFile::GetPackFileBaseOffset()
++0x0028:  0002fce0  CZipPackFile::ReadFromPack(int, void*, int, int, long long)

@@ -1,0 +1,5 @@
+CDummyProgress
+
++0x0000:  00035640  CDummyProgress::BeginProgress()
++0x0004:  00035650  CDummyProgress::EndProgress()
++0x0008:  00035660  CDummyProgress::UpdateProgress(float)

@@ -1,0 +1,7 @@
+CEntityDataInstantiator<physicspushlist_t>
+
++0x0000:  006e6860  CEntityDataInstantiator<physicspushlist_t>::~CEntityDataInstantiator()
++0x0004:  006e68e0  CEntityDataInstantiator<physicspushlist_t>::~CEntityDataInstantiator()
++0x0008:  006e4ad0  CEntityDataInstantiator<physicspushlist_t>::GetDataObject(CBaseEntity const*)
++0x000c:  006ea450  CEntityDataInstantiator<physicspushlist_t>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e49c0  CEntityDataInstantiator<physicspushlist_t>::DestroyDataObject(CBaseEntity const*)

@@ -1,0 +1,22 @@
+CMsgNotifyWatchdog
+
++0x0000:  00555800  CMsgNotifyWatchdog::~CMsgNotifyWatchdog()
++0x0004:  00555850  CMsgNotifyWatchdog::~CMsgNotifyWatchdog()
++0x0008:  00000000  
++0x000c:  00555750  CMsgNotifyWatchdog::New() const
++0x0010:  0053db20  CMsgNotifyWatchdog::Clear()
++0x0014:  005351e0  CMsgNotifyWatchdog::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  0054e8e0  CMsgNotifyWatchdog::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  00542fe0  CMsgNotifyWatchdog::ByteSize() const
++0x0028:  0053a390  CMsgNotifyWatchdog::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  005484f0  CMsgNotifyWatchdog::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  005728f0  CMsgNotifyWatchdog::GetCachedSize() const
++0x0034:  00535190  CMsgNotifyWatchdog::CopyFrom(google::protobuf::Message const&)
++0x0038:  005559f0  CMsgNotifyWatchdog::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  00535180  CMsgNotifyWatchdog::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  00545910  CMsgNotifyWatchdog::GetMetadata() const

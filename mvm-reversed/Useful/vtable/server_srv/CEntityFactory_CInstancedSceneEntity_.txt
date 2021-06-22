@@ -1,0 +1,5 @@
+CEntityFactory<CInstancedSceneEntity>
+
++0x0000:  00bc50b0  CEntityFactory<CInstancedSceneEntity>::Create(char const*)
++0x0004:  00bc3ae0  CEntityFactory<CInstancedSceneEntity>::Destroy(IServerNetworkable*)
++0x0008:  00bc3b00  CEntityFactory<CInstancedSceneEntity>::GetEntitySize()

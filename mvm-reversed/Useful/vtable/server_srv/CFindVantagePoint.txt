@@ -1,0 +1,8 @@
+CFindVantagePoint
+
++0x0000:  00c8c770  CFindVantagePoint::~CFindVantagePoint()
++0x0004:  00c8d510  CFindVantagePoint::~CFindVantagePoint()
++0x0008:  00c8dad0  CFindVantagePoint::operator()(CNavArea*, CNavArea*, float)
++0x000c:  00c46ad0  ISearchSurroundingAreasFunctor::ShouldSearch(CNavArea*, CNavArea*, float)
++0x0010:  00c46c90  ISearchSurroundingAreasFunctor::IterateAdjacentAreas(CNavArea*, CNavArea*, float)
++0x0014:  00c46b00  ISearchSurroundingAreasFunctor::PostSearch()

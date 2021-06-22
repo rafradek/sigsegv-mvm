@@ -1,0 +1,55 @@
+CEconItem
+
++0x0000:  0065beb0  CEconItem::~CEconItem()
++0x0004:  0065bf40  CEconItem::~CEconItem()
++0x0008:  0065d520  CEconItem::GetTypeID() const
++0x000c:  0065d070  CEconItem::BParseFromMessage(CUtlBuffer const&)
++0x0010:  0065cff0  CEconItem::BParseFromMessage(std::string const&)
++0x0014:  0065c4f0  CEconItem::BUpdateFromNetwork(GCSDK::CSharedObject const&)
++0x0018:  0065a140  CEconItem::BIsKeyLess(GCSDK::CSharedObject const&) const
++0x001c:  0065c4e0  CEconItem::Copy(GCSDK::CSharedObject const&)
++0x0020:  0065b7c0  CEconItem::Dump() const
++0x0024:  0065d510  GCSDK::CSharedObject::BShouldDeleteByCache() const
++0x0028:  0065a180  CEconItem::GetDebugString() const
++0x002c:  0065a2b0  CEconItem::GetItemDefinition() const
++0x0030:  0065ad40  CEconItem::IterateAttributes(IEconItemAttributeIterator*) const
++0x0034:  0065d540  CEconItem::GetID() const
++0x0038:  0065d560  CEconItem::GetAccountID() const
++0x003c:  0065d580  CEconItem::GetItemLevel() const
++0x0040:  0065d5a0  CEconItem::GetQuality() const
++0x0044:  0065a100  CEconItem::GetQuantity() const
++0x0048:  0065d5c0  CEconItem::GetFlags() const
++0x004c:  0065d5e0  CEconItem::GetOrigin() const
++0x0050:  0065a560  CEconItem::GetStyle() const
++0x0054:  0065a320  CEconItem::GetCustomName() const
++0x0058:  0065a440  CEconItem::GetCustomDesc() const
++0x005c:  0065a130  CEconItem::GetInUse() const
++0x0060:  0065a280  CEconItem::IsTradable() const
++0x0064:  0065a250  CEconItem::IsMarketable() const
++0x0068:  0065a220  CEconItem::IsCommodity() const
++0x006c:  0065a1f0  CEconItem::IsUsableInCrafting() const
++0x0070:  fffffffc  (unknown)
++0x0074:  010a9580  typeinfo for CEconItem
++0x0078:  0065bea0  non-virtual thunk to CEconItem::~CEconItem()
++0x007c:  0065bf30  non-virtual thunk to CEconItem::~CEconItem()
++0x0080:  0065d4d0  IEconItemInterface::GetCustomPainkKitDefinition() const
++0x0084:  0065ec30  IEconItemInterface::GetCustomPaintKitWear(float&) const
++0x0088:  0065a270  non-virtual thunk to CEconItem::IsTradable() const
++0x008c:  0065f8c0  IEconItemInterface::GetUntradabilityFlags() const
++0x0090:  0065a210  non-virtual thunk to CEconItem::IsCommodity() const
++0x0094:  0065a1e0  non-virtual thunk to CEconItem::IsUsableInCrafting() const
++0x0098:  0065a240  non-virtual thunk to CEconItem::IsMarketable() const
++0x009c:  0065a2a0  non-virtual thunk to CEconItem::GetItemDefinition() const
++0x00a0:  0065d530  non-virtual thunk to CEconItem::GetID() const
++0x00a4:  0065d550  non-virtual thunk to CEconItem::GetAccountID() const
++0x00a8:  0065d590  non-virtual thunk to CEconItem::GetQuality() const
++0x00ac:  0065a550  non-virtual thunk to CEconItem::GetStyle() const
++0x00b0:  0065d5b0  non-virtual thunk to CEconItem::GetFlags() const
++0x00b4:  0065d5d0  non-virtual thunk to CEconItem::GetOrigin() const
++0x00b8:  0065a0f0  non-virtual thunk to CEconItem::GetQuantity() const
++0x00bc:  0065d570  non-virtual thunk to CEconItem::GetItemLevel() const
++0x00c0:  0065a120  non-virtual thunk to CEconItem::GetInUse() const
++0x00c4:  0065a310  non-virtual thunk to CEconItem::GetCustomName() const
++0x00c8:  0065a430  non-virtual thunk to CEconItem::GetCustomDesc() const
++0x00cc:  0065ad30  non-virtual thunk to CEconItem::IterateAttributes(IEconItemAttributeIterator*) const
++0x00d0:  0065d870  IEconItemInterface::GetItemDefIndex() const

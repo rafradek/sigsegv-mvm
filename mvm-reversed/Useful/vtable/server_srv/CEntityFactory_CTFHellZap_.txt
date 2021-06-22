@@ -1,0 +1,5 @@
+CEntityFactory<CTFHellZap>
+
++0x0000:  00749410  CEntityFactory<CTFHellZap>::Create(char const*)
++0x0004:  00748f10  CEntityFactory<CTFHellZap>::Destroy(IServerNetworkable*)
++0x0008:  00748f30  CEntityFactory<CTFHellZap>::GetEntitySize()

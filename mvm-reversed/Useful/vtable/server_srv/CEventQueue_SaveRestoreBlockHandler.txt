@@ -1,0 +1,11 @@
+CEventQueue_SaveRestoreBlockHandler
+
++0x0000:  00a088e0  CEventQueue_SaveRestoreBlockHandler::GetBlockName()
++0x0004:  0060e770  CDefSaveRestoreBlockHandler::PreSave(CSaveRestoreData*)
++0x0008:  00a09010  CEventQueue_SaveRestoreBlockHandler::Save(ISave*)
++0x000c:  00a088f0  CEventQueue_SaveRestoreBlockHandler::WriteSaveHeaders(ISave*)
++0x0010:  0060e7a0  CDefSaveRestoreBlockHandler::PostSave()
++0x0014:  0060e7b0  CDefSaveRestoreBlockHandler::PreRestore()
++0x0018:  00a08920  CEventQueue_SaveRestoreBlockHandler::ReadRestoreHeaders(IRestore*)
++0x001c:  00a09060  CEventQueue_SaveRestoreBlockHandler::Restore(IRestore*, bool)
++0x0020:  0060e7e0  CDefSaveRestoreBlockHandler::PostRestore()

@@ -1,0 +1,25 @@
+CPlayerInventory
+
++0x0000:  00660060  CPlayerInventory::SOCreated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0004:  00662430  CPlayerInventory::PreSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0008:  00660f10  CPlayerInventory::SOUpdated(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x000c:  00662440  CPlayerInventory::PostSOUpdate(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0010:  006603e0  CPlayerInventory::SODestroyed(CSteamID const&, GCSDK::CSharedObject const*, GCSDK::ESOCacheEvent)
++0x0014:  00661880  CPlayerInventory::SOCacheSubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x0018:  006619e0  CPlayerInventory::SOCacheUnsubscribed(CSteamID const&, GCSDK::ESOCacheEvent)
++0x001c:  00662380  CPlayerInventory::CanPurchaseItems(int) const
++0x0020:  006623b0  CPlayerInventory::GetMaxItemCount() const
++0x0024:  006623c0  CPlayerInventory::GetItemInLoadout(int, int)
++0x0028:  006623d0  CPlayerInventory::ItemShouldBeIncluded(int)
++0x002c:  00660230  CPlayerInventory::DumpInventoryToConsole(bool)
++0x0030:  006623e0  CPlayerInventory::ExtractInventorySortPosition(unsigned int)
++0x0034:  006623f0  CPlayerInventory::GetPreviewItemDef() const
++0x0038:  00660bd0  CPlayerInventory::SOClear()
++0x003c:  00662400  CPlayerInventory::NotifyHasNewItems()
++0x0040:  00661f00  CPlayerInventory::AddEconItem(CEconItem*, bool, bool, bool)
++0x0044:  00660460  CPlayerInventory::RemoveItem(unsigned long long)
++0x0048:  00662410  CPlayerInventory::OnHasNewItems()
++0x004c:  00662420  CPlayerInventory::OnItemChangedPosition(CEconItemView*, unsigned int)
++0x0050:  00660210  CPlayerInventory::ValidateInventoryPositions()
++0x0054:  00660220  CPlayerInventory::ItemHasBeenUpdated(CEconItemView*, bool, bool)
++0x0058:  00662450  CPlayerInventory::ItemIsBeingRemoved(CEconItemView*)

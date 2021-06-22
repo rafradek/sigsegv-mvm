@@ -1,0 +1,15 @@
+MM_Migrate
+
++0x0000:  0008bcd0  MM_Migrate::~MM_Migrate()
++0x0004:  0008c3a0  MM_Migrate::~MM_Migrate()
++0x0008:  0008b010  CNetMessage::SetNetChannel(INetChannel*)
++0x000c:  0008aff0  CNetMessage::SetReliable(bool)
++0x0010:  0008bc60  MM_Migrate::Process()
++0x0014:  0007dd40  MM_Migrate::ReadFromBuffer(bf_read&)
++0x0018:  0007e550  MM_Migrate::WriteToBuffer(bf_write&)
++0x001c:  0008b000  CNetMessage::IsReliable() const
++0x0020:  0008bc40  MM_Migrate::GetType() const
++0x0024:  0008afd0  CNetMessage::GetGroup() const
++0x0028:  0008bc50  MM_Migrate::GetName() const
++0x002c:  0008afe0  CNetMessage::GetNetChannel() const
++0x0030:  0007ca70  MM_Migrate::ToString() const

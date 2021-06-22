@@ -1,0 +1,22 @@
+CMsgInviteToParty
+
++0x0000:  004dd400  CMsgInviteToParty::~CMsgInviteToParty()
++0x0004:  004dd440  CMsgInviteToParty::~CMsgInviteToParty()
++0x0008:  00000000  
++0x000c:  004fdb70  CMsgInviteToParty::New() const
++0x0010:  004e3e70  CMsgInviteToParty::Clear()
++0x0014:  004da6b0  CMsgInviteToParty::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004f6c70  CMsgInviteToParty::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e8d30  CMsgInviteToParty::ByteSize() const
++0x0028:  004e2430  CMsgInviteToParty::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f1420  CMsgInviteToParty::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520780  CMsgInviteToParty::GetCachedSize() const
++0x0034:  004da660  CMsgInviteToParty::CopyFrom(google::protobuf::Message const&)
++0x0038:  004fdd60  CMsgInviteToParty::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004da650  CMsgInviteToParty::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004ee2d0  CMsgInviteToParty::GetMetadata() const

@@ -1,0 +1,24 @@
+CRestartGameIssue
+
++0x0000:  005f5d40  CRestartGameIssue::~CRestartGameIssue()
++0x0004:  005f6020  CRestartGameIssue::~CRestartGameIssue()
++0x0008:  005f5be0  CBaseIssue::GetTypeStringLocalized()
++0x000c:  005fbd60  CBaseIssue::GetDetailsString()
++0x0010:  005fbe00  CBaseIssue::SetIssueDetails(char const*)
++0x0014:  005fd5c0  CBaseIssue::OnVoteFailed(int)
++0x0018:  005f5bf0  CBaseIssue::OnVoteStarted()
++0x001c:  005f39d0  CRestartGameIssue::IsEnabled()
++0x0020:  005fbd90  CBaseIssue::CanTeamCallVote(int) const
++0x0024:  005f2f10  CRestartGameIssue::CanCallVote(int, char const*, vote_create_failed_t&, int&)
++0x0028:  005f5c20  CRestartGameIssue::IsTeamRestrictedVote()
++0x002c:  005f2910  CRestartGameIssue::GetDisplayString()
++0x0030:  005f3a10  CRestartGameIssue::ExecuteCommand()
++0x0034:  005f32f0  CRestartGameIssue::ListIssueDetails(CBasePlayer*)
++0x0038:  005f2920  CRestartGameIssue::GetVotePassedString()
++0x003c:  005fce00  CBaseIssue::CountPotentialVoters()
++0x0040:  005fbda0  CBaseIssue::GetNumberVoteOptions()
++0x0044:  005fbdb0  CBaseIssue::IsYesNoVote()
++0x0048:  005fbdc0  CBaseIssue::SetYesNoVoteCount(int, int, int)
++0x004c:  005fd6d0  CBaseIssue::GetVoteOptions(CUtlVector<char const*, CUtlMemory<char const*, int> >&)
++0x0050:  005f5c10  CBaseIssue::BRecordVoteFailureEventForEntity(int) const
++0x0054:  005fbdf0  CBaseIssue::GetQuorumRatio()

@@ -1,0 +1,8 @@
+CChildOperatorDefinition
+
++0x0000:  00f21730  CChildOperatorDefinition::GetName() const
++0x0004:  00f21740  CChildOperatorDefinition::CreateInstance(UniqueId_t const&) const
++0x0008:  00f21750  CChildOperatorDefinition::GetUnpackStructure() const
++0x000c:  00f21760  CChildOperatorDefinition::GetId() const
++0x0010:  00f21770  CChildOperatorDefinition::IsObsolete() const
++0x0014:  00f21780  CChildOperatorDefinition::GetClassSize() const

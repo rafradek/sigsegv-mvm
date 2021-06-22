@@ -1,0 +1,4 @@
+CMapLoadEntityFilter
+
++0x0000:  00a78050  CMapLoadEntityFilter::ShouldCreateEntity(char const*)
++0x0004:  00a78720  CMapLoadEntityFilter::CreateNextEntity(char const*)

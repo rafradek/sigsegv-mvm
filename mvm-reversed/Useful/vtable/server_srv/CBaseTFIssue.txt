@@ -1,0 +1,24 @@
+CBaseTFIssue
+
++0x0000:  005f5d20  CBaseTFIssue::~CBaseTFIssue()
++0x0004:  005f5e40  CBaseTFIssue::~CBaseTFIssue()
++0x0008:  005f5be0  CBaseIssue::GetTypeStringLocalized()
++0x000c:  005fbd60  CBaseIssue::GetDetailsString()
++0x0010:  005fbe00  CBaseIssue::SetIssueDetails(char const*)
++0x0014:  005fd5c0  CBaseIssue::OnVoteFailed(int)
++0x0018:  005f5bf0  CBaseIssue::OnVoteStarted()
++0x001c:  005f5c00  CBaseIssue::IsEnabled()
++0x0020:  005fbd90  CBaseIssue::CanTeamCallVote(int) const
++0x0024:  005fc190  CBaseIssue::CanCallVote(int, char const*, vote_create_failed_t&, int&)
++0x0028:  005fbd70  CBaseIssue::IsTeamRestrictedVote()
++0x002c:  00000000  
++0x0030:  00000000  
++0x0034:  00000000  
++0x0038:  005fbd80  CBaseIssue::GetVotePassedString()
++0x003c:  005fce00  CBaseIssue::CountPotentialVoters()
++0x0040:  005fbda0  CBaseIssue::GetNumberVoteOptions()
++0x0044:  005fbdb0  CBaseIssue::IsYesNoVote()
++0x0048:  005fbdc0  CBaseIssue::SetYesNoVoteCount(int, int, int)
++0x004c:  005fd6d0  CBaseIssue::GetVoteOptions(CUtlVector<char const*, CUtlMemory<char const*, int> >&)
++0x0050:  005f5c10  CBaseIssue::BRecordVoteFailureEventForEntity(int) const
++0x0054:  005fbdf0  CBaseIssue::GetQuorumRatio()

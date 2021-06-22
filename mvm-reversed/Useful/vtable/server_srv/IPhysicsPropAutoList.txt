@@ -1,0 +1,4 @@
+IPhysicsPropAutoList
+
++0x0000:  00b99ce0  IPhysicsPropAutoList::~IPhysicsPropAutoList()
++0x0004:  00b99d50  IPhysicsPropAutoList::~IPhysicsPropAutoList()

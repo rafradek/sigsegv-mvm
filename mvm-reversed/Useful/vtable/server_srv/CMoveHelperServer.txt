@@ -1,0 +1,17 @@
+CMoveHelperServer
+
++0x0000:  00aa7010  CMoveHelperServer::GetName(CBaseHandle) const
++0x0004:  00aa6b00  CMoveHelperServer::ResetTouchList()
++0x0008:  00aa7460  CMoveHelperServer::AddToTouched(CGameTrace const&, Vector const&)
++0x000c:  00aa6e80  CMoveHelperServer::ProcessImpacts()
++0x0010:  00aa6d90  CMoveHelperServer::Con_NPrintf(int, char const*, ...)
++0x0014:  00aa71f0  CMoveHelperServer::StartSound(Vector const&, int, char const*, float, soundlevel_t, int, int)
++0x0018:  00aa6df0  CMoveHelperServer::StartSound(Vector const&, char const*)
++0x001c:  00aa6b10  CMoveHelperServer::PlaybackEventFull(int, int, unsigned short, float, Vector&, Vector&, float, float, int, int, int, int)
++0x0020:  00aa6bf0  CMoveHelperServer::PlayerFallingDamage()
++0x0024:  00aa6b30  CMoveHelperServer::PlayerSetAnimation(PLAYER_ANIM)
++0x0028:  00aa6b20  CMoveHelperServer::GetSurfaceProps()
++0x002c:  00aa6b50  CMoveHelperServer::IsWorldEntity(CBaseHandle const&)
++0x0030:  00aa73f0  CMoveHelperServer::~CMoveHelperServer()
++0x0034:  00aa7440  CMoveHelperServer::~CMoveHelperServer()
++0x0038:  00aa6ae0  CMoveHelperServer::SetHost(CBasePlayer*)

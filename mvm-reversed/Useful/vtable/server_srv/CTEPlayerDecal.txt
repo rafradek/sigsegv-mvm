@@ -1,0 +1,9 @@
+CTEPlayerDecal
+
++0x0000:  00c16c70  CTEPlayerDecal::GetServerClass()
++0x0004:  00c16c80  CTEPlayerDecal::YouForgotToImplementOrDeclareServerClass()
++0x0008:  00c16cc0  CTEPlayerDecal::~CTEPlayerDecal()
++0x000c:  00c16ce0  CTEPlayerDecal::~CTEPlayerDecal()
++0x0010:  00c16d10  CTEPlayerDecal::Test(Vector const&, QAngle const&)
++0x0014:  009fc450  CBaseTempEntity::Create(IRecipientFilter&, float)
++0x0018:  009fc440  CBaseTempEntity::Precache()

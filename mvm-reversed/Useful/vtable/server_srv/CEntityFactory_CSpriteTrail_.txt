@@ -1,0 +1,5 @@
+CEntityFactory<CSpriteTrail>
+
++0x0000:  0071fa40  CEntityFactory<CSpriteTrail>::Create(char const*)
++0x0004:  0071f9c0  CEntityFactory<CSpriteTrail>::Destroy(IServerNetworkable*)
++0x0008:  0071f9e0  CEntityFactory<CSpriteTrail>::GetEntitySize()

@@ -1,0 +1,13 @@
+CInstancedResponseSystem
+
++0x0000:  0098ed00  CInstancedResponseSystem::~CInstancedResponseSystem()
++0x0004:  0098ed30  CInstancedResponseSystem::~CInstancedResponseSystem()
++0x0008:  00988b80  CResponseSystem::FindBestResponse(AI_CriteriaSet const&, AI_Response&, IResponseFilter*)
++0x000c:  00989680  CResponseSystem::GetAllResponses(CUtlVector<AI_Response*, CUtlMemory<AI_Response*, int> >*)
++0x0010:  0098bdf0  CResponseSystem::PrecacheResponses(bool)
++0x0014:  0098ea00  CInstancedResponseSystem::Release()
++0x0018:  00985e90  CResponseSystem::DumpRules()
++0x001c:  00985ee0  CResponseSystem::Precache()
++0x0020:  0098be10  CInstancedResponseSystem::GetScriptFile()
++0x0024:  00996c20  CInstancedResponseSystem::Init()
++0x0028:  0098c520  CInstancedResponseSystem::LevelInitPostEntity()

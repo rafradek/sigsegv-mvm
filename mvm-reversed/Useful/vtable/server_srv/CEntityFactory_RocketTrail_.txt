@@ -1,0 +1,5 @@
+CEntityFactory<RocketTrail>
+
++0x0000:  00bdc430  CEntityFactory<RocketTrail>::Create(char const*)
++0x0004:  00bdc130  CEntityFactory<RocketTrail>::Destroy(IServerNetworkable*)
++0x0008:  00bdc150  CEntityFactory<RocketTrail>::GetEntitySize()

@@ -219,8 +219,12 @@ protected:
 
 #define MOD_ADD_DETOUR_MEMBER(detour, addr) \
 	this->AddDetour(new CDetour(addr, GET_MEMBER_CALLBACK(detour), GET_MEMBER_INNERPTR(detour)))
+#define MOD_ADD_DETOUR_MEMBER_PRIORITY(detour, addr, priority) \
+	this->AddDetour(new CDetour(addr, GET_MEMBER_CALLBACK(detour), GET_MEMBER_INNERPTR(detour), IDetour::priority))
 #define MOD_ADD_DETOUR_STATIC(detour, addr) \
 	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour)))
+#define MOD_ADD_DETOUR_STATIC_PRIORITY(detour, addr, priority) \
+	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour), IDetour::priority))
 
 
 #endif

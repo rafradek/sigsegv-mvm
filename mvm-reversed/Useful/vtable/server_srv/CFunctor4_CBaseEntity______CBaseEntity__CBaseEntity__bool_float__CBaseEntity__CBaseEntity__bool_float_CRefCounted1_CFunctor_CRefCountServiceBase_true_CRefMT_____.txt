@@ -1,0 +1,12 @@
+CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
+
++0x0000:  00700ff0  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::AddRef()
++0x0004:  00701200  CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> >::Release()
++0x0008:  00b3a190  CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x000c:  00b3a240  CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0010:  00b3a200  CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::operator()()
++0x0014:  fffffff8  (unknown)
++0x0018:  0119bd68  typeinfo for CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >
++0x001c:  00b3a180  non-virtual thunk to CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0020:  00b3a230  non-virtual thunk to CFunctor4<CBaseEntity* (*)(CBaseEntity*, CBaseEntity*, bool, float), CBaseEntity*, CBaseEntity*, bool, float, CRefCounted1<CFunctor, CRefCountServiceBase<true, CRefMT> > >::~CFunctor4()
++0x0024:  00700f60  CRefCountServiceBase<true, CRefMT>::OnFinalRelease()

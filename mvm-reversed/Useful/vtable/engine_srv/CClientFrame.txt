@@ -1,0 +1,5 @@
+CClientFrame
+
++0x0000:  000dcae0  CClientFrame::~CClientFrame()
++0x0004:  000dcb30  CClientFrame::~CClientFrame()
++0x0008:  000dd160  CClientFrame::IsMemPoolAllocated()

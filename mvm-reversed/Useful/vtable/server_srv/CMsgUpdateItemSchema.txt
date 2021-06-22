@@ -1,0 +1,22 @@
+CMsgUpdateItemSchema
+
++0x0000:  00507bd0  CMsgUpdateItemSchema::~CMsgUpdateItemSchema()
++0x0004:  00507c20  CMsgUpdateItemSchema::~CMsgUpdateItemSchema()
++0x0008:  00000000  
++0x000c:  00507a60  CMsgUpdateItemSchema::New() const
++0x0010:  004e5840  CMsgUpdateItemSchema::Clear()
++0x0014:  004db280  CMsgUpdateItemSchema::IsInitialized() const
++0x0018:  00000000  
++0x001c:  00000000  
++0x0020:  004e6b20  CMsgUpdateItemSchema::MergePartialFromCodedStream(google::protobuf::io::CodedInputStream*)
++0x0024:  004e9d20  CMsgUpdateItemSchema::ByteSize() const
++0x0028:  004e35d0  CMsgUpdateItemSchema::SerializeWithCachedSizes(google::protobuf::io::CodedOutputStream*) const
++0x002c:  004f0680  CMsgUpdateItemSchema::SerializeWithCachedSizesToArray(unsigned char*) const
++0x0030:  00520930  CMsgUpdateItemSchema::GetCachedSize() const
++0x0034:  004db230  CMsgUpdateItemSchema::CopyFrom(google::protobuf::Message const&)
++0x0038:  00507e00  CMsgUpdateItemSchema::MergeFrom(google::protobuf::Message const&)
++0x003c:  00000000  
++0x0040:  00000000  
++0x0044:  004db220  CMsgUpdateItemSchema::SetCachedSize(int) const
++0x0048:  005206a0  google::protobuf::Message::GetReflection() const
++0x004c:  004edc10  CMsgUpdateItemSchema::GetMetadata() const

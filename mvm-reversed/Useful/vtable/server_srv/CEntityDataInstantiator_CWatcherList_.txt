@@ -1,0 +1,7 @@
+CEntityDataInstantiator<CWatcherList>
+
++0x0000:  006e6670  CEntityDataInstantiator<CWatcherList>::~CEntityDataInstantiator()
++0x0004:  006e66f0  CEntityDataInstantiator<CWatcherList>::~CEntityDataInstantiator()
++0x0008:  006e3f30  CEntityDataInstantiator<CWatcherList>::GetDataObject(CBaseEntity const*)
++0x000c:  006e9ec0  CEntityDataInstantiator<CWatcherList>::CreateDataObject(CBaseEntity const*)
++0x0010:  006e5910  CEntityDataInstantiator<CWatcherList>::DestroyDataObject(CBaseEntity const*)

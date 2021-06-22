@@ -1,0 +1,5 @@
+CEntityFactory<CEnvFireSensor>
+
++0x0000:  00a54510  CEntityFactory<CEnvFireSensor>::Create(char const*)
++0x0004:  00a54350  CEntityFactory<CEnvFireSensor>::Destroy(IServerNetworkable*)
++0x0008:  00a54370  CEntityFactory<CEnvFireSensor>::GetEntitySize()

@@ -1,0 +1,5 @@
+CEntityFactory<CArmor>
+
++0x0000:  00cb5530  CEntityFactory<CArmor>::Create(char const*)
++0x0004:  00cb5500  CEntityFactory<CArmor>::Destroy(IServerNetworkable*)
++0x0008:  00cb5520  CEntityFactory<CArmor>::GetEntitySize()

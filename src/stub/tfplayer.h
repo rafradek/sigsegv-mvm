@@ -389,6 +389,10 @@ public:
 
 	void Taunt(taunts_t taunt, int concept)                                       { ft_Taunt                   (this, taunt, concept); }
 	void PlayTauntSceneFromItem(CEconItemView *view)                              { ft_PlayTauntSceneFromItem  (this, view); }
+
+	void CheckInstantLoadoutRespawn()                              { ft_CheckInstantLoadoutRespawn  (this); }
+	void ForceRegenerateAndRespawn()                               { ft_ForceRegenerateAndRespawn  (this); }
+	
 	
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
@@ -446,6 +450,8 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetObjectCount;
 	static MemberFuncThunk<      CTFPlayer *, void, int                       > ft_StateTransition;
 	static MemberFuncThunk<      CTFPlayer *, void, int                       > ft_RemoveCurrency;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_CheckInstantLoadoutRespawn;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ForceRegenerateAndRespawn;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 };

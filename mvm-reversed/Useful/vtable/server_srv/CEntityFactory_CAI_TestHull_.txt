@@ -1,0 +1,5 @@
+CEntityFactory<CAI_TestHull>
+
++0x0000:  0094eb00  CEntityFactory<CAI_TestHull>::Create(char const*)
++0x0004:  0094ea70  CEntityFactory<CAI_TestHull>::Destroy(IServerNetworkable*)
++0x0008:  0094ea90  CEntityFactory<CAI_TestHull>::GetEntitySize()

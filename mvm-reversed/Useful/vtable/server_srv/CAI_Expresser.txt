@@ -1,0 +1,8 @@
+CAI_Expresser
+
++0x0000:  0099f410  CAI_Expresser::~CAI_Expresser()
++0x0004:  0099f530  CAI_Expresser::~CAI_Expresser()
++0x0008:  0099d660  CAI_Expresser::IsValidResponse(ResponseType_t, char const*)
++0x000c:  0099e650  CAI_Expresser::SpeakRawSentence(char const*, float, float, soundlevel_t, CBaseEntity*)
++0x0010:  0099e330  CAI_Expresser::IsSpeaking()
++0x0014:  009a0430  CAI_Expresser::SetOuter(CBaseFlex*)

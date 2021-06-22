@@ -1,0 +1,3 @@
+CUtlCharConversion
+
++0x0000:  000a3cc0  CUtlCharConversion::FindConversion(char const*, int*)
