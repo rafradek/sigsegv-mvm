@@ -7,6 +7,8 @@ How to run a TF2 server on Windows using WSL: https://github.com/rafradek/sigseg
 
 # How to build
 
+On Ubuntu 20.04:
+
 1. Install packages:
 ```
 autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32stdc++-7-dev lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib python2 python-is-python2
