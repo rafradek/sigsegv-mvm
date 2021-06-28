@@ -15,7 +15,7 @@ dpkg --add-architecture i386
 apt update
 ```
 
-2. Follow this guide, stop after finishing Downloading Source and Dependencies section. In checkout-deps.sh, you can remove mysql and sdks that are not tf2 and sdk2013 to save space : https://wiki.alliedmods.net/Building_SourceMod
+2. Follow this guide, stop after finishing Downloading Source and Dependencies section. When cloning SourceMod, use 1.10-dev branch `git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.10-dev` . In checkout-deps.sh, you can remove mysql and sdks that are not tf2 and sdk2013 to save space : https://wiki.alliedmods.net/Building_SourceMod
 
 3. Install packages:
 ```
