@@ -215,6 +215,7 @@ public:
 	bool IsBaseObject() const																								{ return vt_IsBaseObject                  (this); }
 	bool KeyValue(const char *key, const char *value)                                                                       { return vt_KeyValue                      (this, key, value); }
 	bool GetKeyValue(const char *key, char *value, int maxlen)                                                              { return vt_GetKeyValue                   (this, key, value, maxlen); }
+	void FireBullets(const FireBulletsInfo_t &info)                                                                         {        vt_FireBullets                   (this, info); }
 	
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
@@ -355,6 +356,7 @@ private:
 	static MemberVFuncThunk<const CBaseEntity *, bool>                                                             vt_IsBaseObject;
 	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, const char*>                                   vt_KeyValue;
 	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                                    vt_GetKeyValue;
+	static MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &>                                  vt_FireBullets;
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_CreateNoSpawn;

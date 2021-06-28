@@ -32,8 +32,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 		CBaseEntity *ent = data.pActivator;
 
 		if (ent == nullptr) {
-			data.pActivator = GetContainingEntity(INDEXENT(0));
-			//return;
+			return;
 		}
 
         DETOUR_MEMBER_CALL(CBaseFilter_InputTestActivator)(data);

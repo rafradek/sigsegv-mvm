@@ -1785,4 +1785,14 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    //Projectile gravity native
+    "4493"
+    {
+        "name"	"collect currency on kill"
+        "attribute_class"	"collect_currency_on_kill"
+        "description_string"	"Automatically collects currency from destroyed robots"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

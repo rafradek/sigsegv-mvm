@@ -389,6 +389,7 @@ namespace Mod::Attr::Custom_Attributes
 		return damage;
 	}
 
+	CBaseEntity *killer_weapon = nullptr;
 	bool is_ice = false;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
@@ -402,7 +403,10 @@ namespace Mod::Attr::Custom_Attributes
 		else
 			is_ice = false;
 			
+		killer_weapon = info.GetWeapon();
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		killer_weapon = nullptr;
+
 		is_ice = false;
 	}
 
@@ -2416,6 +2420,21 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_StickybombTouch)(other);
 	}
 	
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DropCurrencyPack, int pack, int amount, bool forcedistribute, CTFPlayer *moneymaker )
+	{
+		if (killer_weapon != nullptr) {
+			int distribute = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(killer_weapon, distribute, collect_currency_on_kill);
+			if (distribute != 0) {
+				forcedistribute = true;
+				moneymaker = ToTFPlayer(killer_weapon->GetOwnerEntity());
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_DropCurrencyPack)(pack, amount, forcedistribute, moneymaker);
+
+	}
+
 	std::vector<std::string> attribute_info_strings[33];
 	float attribute_info_display_time[33];
 
@@ -2469,14 +2488,23 @@ namespace Mod::Attr::Custom_Attributes
 		DisplayAttributeString(reinterpret_cast<CTFPlayer *>(this), 6);
 	}
 
-	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, int item_def)
+	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, int item_def, bool display_stock)
 	{
 		bool added_item_name = false;
+		int slot = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+		DevMsg("Slot for display %d %d\n", item_def, slot);
+		if (display_stock && (item_def == -1 || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
+			added_item_name = true;
+			if (item_def != -1)
+				attribute_info_vec.back() += CFmtStr("\n%s:\n\n", GetItemName(item_def));
+			else
+				attribute_info_vec.back() += "\nCharacter Attributes:\n\n";
+		}
 		for (int i = 0; i < attrs.Count(); i++) {
 			CEconItemAttribute &attr = attrs[i];
 			CEconItemAttributeDefinition *attr_def = attr.GetStaticData();
 			
-			if (attr_def == nullptr || attr_def->GetIndex() < 4000)
+			if ((!display_stock && attr_def->GetIndex() < 4000) || attr_def == nullptr)
 				continue;
 
 			std::string format_str;
@@ -2491,10 +2519,8 @@ namespace Mod::Attr::Custom_Attributes
 				space_pos = format_str.find(" ", space_pos);
 				if (space_pos == -1) {
 					space_pos = format_str.size();
-					DevMsg("space pos 2%d %d\n", space_pos, last_space_pos);
 				}
 				if (space_pos - find_newline_pos > 28 /*25*/) {
-					DevMsg("space pos %d %d\n", space_pos, last_space_pos);
 					format_str.insert(last_space_pos - 1, "\n");
 					space_pos++;
 					find_newline_pos = last_space_pos;
@@ -2532,17 +2558,12 @@ namespace Mod::Attr::Custom_Attributes
 				break;
 
 			attribute_info_vec.back() += format_str + '\n';
-			
-			if (item_def != -1)
-				DevMsg("inspecting attr %d %s | %s\n", item_def, GetItemName(item_def), format_str.c_str());
-			else
-				DevMsg("inspecting attr %d | %s\n", item_def, format_str.c_str());
-			DevMsg("inspecting attr size %d %d\n", attribute_info_vec.back().size(), attribute_info_vec.size());
 		}
 	}
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot)
 	{
+		bool display_stock = player != target;
 
 		CTFWeaponBase *weapon = target->GetActiveTFWeapon();
 		CEconItemView *view = nullptr;
@@ -2566,24 +2587,30 @@ namespace Mod::Attr::Custom_Attributes
 		attribute_info_display_time[ENTINDEX(player) - 1] = gpGlobals->curtime;
 
 		attribute_info_vec.push_back("");
+
+		if (display_stock) {
+			attribute_info_vec.back() += "Inspecting " ;
+			attribute_info_vec.back() += target->GetPlayerName();
+			attribute_info_vec.back() += "\n";
+		}
 		int indexstr = 0;
 
 		if (slot == -1) {
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), player, -1);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
 			
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), player, view->m_iItemDefinitionIndex);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
 		}
 		else {
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), player, view->m_iItemDefinitionIndex);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
 
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), player, -1);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
 			if (entity->GetItem() != nullptr && entity->GetItem() != view) {
-				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), player, entity->GetItem()->m_iItemDefinitionIndex);
+				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem()->m_iItemDefinitionIndex, display_stock);
 			}
 		});
 		
@@ -2623,6 +2650,10 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	THINK_FUNC_DECL(HideInvalidTarget)
+	{
+		gamehelpers->TextMsg(ENTINDEX(this), TEXTMSG_DEST_CENTER, " ");
+	}
 	DETOUR_DECL_MEMBER(void, CTFPlayer_InspectButtonPressed)
 	{
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
@@ -2637,10 +2668,13 @@ namespace Mod::Attr::Custom_Attributes
 		if (target == nullptr || target->GetTeamNumber() != player->GetTeamNumber()) {
 			target = player;
 		}
+		else {
+			THINK_FUNC_SET(player, HideInvalidTarget, gpGlobals->curtime + 0.05f);
+		}
 		InspectAttributes(target, player, false);
-		
 
 		DETOUR_MEMBER_CALL(CTFPlayer_InspectButtonPressed)();
+
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
@@ -2802,6 +2836,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CObjectDispenser_DispenseMetal ,"CObjectDispenser::DispenseMetal");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveAmmo ,"CTFPlayer::GiveAmmo");
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_StickybombTouch ,"CTFGrenadePipebombProjectile::StickybombTouch");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropCurrencyPack ,"CTFPlayer::DropCurrencyPack");
+			
 			
 			
 			//Inspect custom attributes

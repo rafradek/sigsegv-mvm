@@ -1,37 +1,12 @@
 #include "mod.h"
 #include "util/scope.h"
 #include "util/clientmsg.h"
+#include "util/misc.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/tfweaponbase.h"
-
-class CNetworkStringTable  : public INetworkStringTable
-{
-public:
-	virtual			~CNetworkStringTable( void );
-	virtual void	Dump( void );
-	virtual void	Lock( bool bLock );
-
-	TABLEID					m_id;
-	char					*m_pszTableName;
-	// Must be a power of 2, so encoding can determine # of bits to use based on log2
-	int						m_nMaxEntries;
-	int						m_nEntryBits;
-	int						m_nTickCount;
-	int						m_nLastChangedTick;
-	bool					m_bChangeHistoryEnabled : 1;
-	bool					m_bLocked : 1;
-	bool					m_bAllowClientSideAddString : 1;
-	bool					m_bUserDataFixedSize : 1;
-	bool					m_bIsFilenames : 1;
-	int						m_nUserDataSize;
-	int						m_nUserDataSizeBits;
-	pfnStringChanged		m_changeFunc;
-	void					*m_pObject;
-	CNetworkStringTable		*m_pMirrorTable;
-};
 
 namespace Mod::Perf::HLTV_Optimize
 {
@@ -115,7 +90,7 @@ namespace Mod::Perf::HLTV_Optimize
             CHLTVServer *hltvserver = reinterpret_cast<CHLTVServer *>(this);
             static ConVarRef snapshotrate("tv_snapshotrate");
             static ConVarRef delay("tv_delay");
-            int tickcount = 32.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
+            int tickcount = 1.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
             if (delay.GetInt() <= 0) {
                 int framec = hltvserver->CountClientFrames() - 2;
                 for (int i = 0; i < framec; i++)
@@ -223,6 +198,7 @@ namespace Mod::Perf::HLTV_Optimize
             
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
+            
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
 		}
@@ -235,8 +211,7 @@ namespace Mod::Perf::HLTV_Optimize
         }
 	};
 	CMod s_Mod;
-	
-	
+    
 	ConVar cvar_enable("sig_perf_hltv_optimize", "0", FCVAR_NOTIFY,
 		"Mod: improve HLTV performance",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){

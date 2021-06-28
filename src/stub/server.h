@@ -41,7 +41,7 @@ typedef struct CustomFile_s
 	unsigned int	reqID;	// download request ID
 } CustomFile_t;
 
-class CBaseClient : public IGameEventListener2, public IClient {
+class CBaseClient : public IGameEventListener2, public IClient, public IClientMessageHandler {
 public:
 	virtual void UpdateUserSettings();
 	int				pad;
@@ -73,6 +73,36 @@ public:
 
 	// a client can have couple of cutomized files distributed to all other players
 	CustomFile_t	m_nCustomFiles[MAX_CUSTOM_FILES];
+};
+
+class CHLTVClient : public CBaseClient {
+
+};
+
+class CNetworkStringTable  : public INetworkStringTable
+{
+public:
+	virtual			~CNetworkStringTable( void );
+	virtual void	Dump( void );
+	virtual void	Lock( bool bLock );
+
+	TABLEID					m_id;
+	char					*m_pszTableName;
+	// Must be a power of 2, so encoding can determine # of bits to use based on log2
+	int						m_nMaxEntries;
+	int						m_nEntryBits;
+	int						m_nTickCount;
+	int						m_nLastChangedTick;
+	bool					m_bChangeHistoryEnabled : 1;
+	bool					m_bLocked : 1;
+	bool					m_bAllowClientSideAddString : 1;
+	bool					m_bUserDataFixedSize : 1;
+	bool					m_bIsFilenames : 1;
+	int						m_nUserDataSize;
+	int						m_nUserDataSizeBits;
+	pfnStringChanged		m_changeFunc;
+	void					*m_pObject;
+	CNetworkStringTable		*m_pMirrorTable;
 };
 
 extern GlobalThunk<CHLTVServer *> hltv;

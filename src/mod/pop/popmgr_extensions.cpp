@@ -590,6 +590,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bGiantsDropRareSpells   = false;
 			this->m_flSpellDropRateCommon   = 1.00f;
 			this->m_flSpellDropRateGiant    = 1.00f;
+			this->m_iSpellDropForTeam       = 0;
 			this->m_bNoReanimators          = false;
 			this->m_bNoMvMDeathTune         = false;
 			this->m_bSniperHideLasers       = false;
@@ -753,6 +754,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool  m_bGiantsDropRareSpells;
 		float m_flSpellDropRateCommon;
 		float m_flSpellDropRateGiant;
+		int   m_iSpellDropForTeam;
 		bool  m_bNoReanimators;
 		bool  m_bNoMvMDeathTune;
 		bool  m_bSniperHideLasers;
@@ -1019,7 +1021,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			CTFBot *bot = ToTFBot(killed);
 			if (bot == nullptr) return false;
 			if (!state.m_SpellsEnabled.Get()) return false;
-			
+			if (state.m_iSpellDropForTeam != 0 && bot->GetTeamNumber() != state.m_iSpellDropForTeam) return false;
+
 			float rnd  = RandomFloat(0.0f, 1.0f);
 			float rate = (bot->IsMiniBoss() ? state.m_flSpellDropRateGiant : state.m_flSpellDropRateCommon);
 			
@@ -1355,7 +1358,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					if (result != nullptr && result->GetItemDefinition() != nullptr) {
 						found = false;
 						classname = result->GetItemDefinition()->GetKeyValues()->GetString("item_class");
-						for (const auto& entry : state.m_ItemWhitelist) {
+						for (const auto& entry : state.m_ItemBlacklist) {
 							if (entry->Matches(classname, result)) {
 								found = true;
 								break;
@@ -1794,7 +1797,47 @@ namespace Mod::Pop::PopMgr_Extensions
 	//std::vector<CHandle<CTFPlayer>> spawned_players_first_tick;
 	//extern GlobalThunk<CTETFParticleEffect> g_TETFParticleEffect;
 
-	bool received_mission_message_tick = false;
+	bool received_mission_message_tick[33] = {false};
+
+	THINK_FUNC_DECL(DelayMissionInfoSend)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DevMsg("Pass send\n");
+
+		if (!state.m_ExtraLoadoutItems.empty())
+			PrintToChat("\x07""7fd4ffThis mission allows you to equip custom items. Type !missionitems in chat to see available items for your class\n",player);
+
+		//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
+		
+		bool player_empty = state.m_PlayerAttributes.empty();
+		for (int i = 0; i < 10; i++) {
+			if (!state.m_PlayerAttributesClass[i].empty()) {
+				player_empty = false;
+				break;
+			}
+		}
+
+		if (!state.m_bNoMissionInfo && (
+			//(explanation != nullptr && !explanation->empty()) ||
+			!state.m_ItemWhitelist.empty() ||
+			!state.m_ItemBlacklist.empty() ||
+			!state.m_ItemAttributes.empty() ||
+			!player_empty ||
+			!state.m_DisallowedUpgrades.empty() ||
+			!state.m_ItemReplace.empty() ||
+			!state.m_ExtraLoadoutItems.empty() ||
+			state.m_ForceItems.parsed ||
+			state.m_bSniperAllowHeadshots ||
+			state.m_bSniperHideLasers ||
+			!state.m_RespecEnabled.GetValue() ||
+			state.m_RespecLimit.GetValue() ||
+			state.m_ImprovedAirblast.GetValue() ||
+			state.m_SandmanStuns.GetValue() ||
+			state.m_bNoReanimators
+		)) { 
+			PrintToChat("\x07""7fd4ffType !missioninfo in chat to check custom mission information\n",player);
+		}
+	}
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
@@ -1804,8 +1847,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		//CTFBot *bot = ToTFBot(player);
 		//if (bot != nullptr)
 		//	spawned_bots_first_tick.push_back(bot);
-		
-		if (!player->IsBot()) {
+		IClient *pClient = sv->GetClient( ENTINDEX(player)-1 );
+
+		if (!player->IsBot() && !pClient->IsFakeClient()) {
 		//	spawned_players_first_tick.push_back(player);
 			ApplyPlayerAttributes(player);
 			player->SetHealth(player->GetMaxHealth());
@@ -1845,7 +1889,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->SetModelScale(miniboss_scale.GetFloat());
 			}
 
-			if(!state.m_PlayerUpgradeSend.count(player)) {
+			if(player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED && !state.m_PlayerUpgradeSend.count(player)) {
 				state.m_PlayerUpgradeSend.insert(player);
 				ResendUpgradeFile(false);
 				if (!received_message_tick) {
@@ -1853,46 +1897,13 @@ namespace Mod::Pop::PopMgr_Extensions
 					
 				}
 			}
-
+	
 			if (!state.m_PlayerMissionInfoSend.count(player)) {
 				state.m_PlayerMissionInfoSend.insert(player);
-				if (!received_mission_message_tick) {
+				DevMsg("Try send\n");
 
-					if (!state.m_ExtraLoadoutItems.empty())
-						PrintToChat("\x07""7fd4ffThis mission allows you to equip custom items. Type !missionitems in chat to see available items for your class\n",player);
-
-					//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
-					
-					bool player_empty = state.m_PlayerAttributes.empty();
-					for (int i = 0; i < 10; i++) {
-						if (!state.m_PlayerAttributesClass[i].empty()) {
-							player_empty = false;
-							break;
-						}
-					}
-
-					if (!state.m_bNoMissionInfo && (
-						//(explanation != nullptr && !explanation->empty()) ||
-						!state.m_ItemWhitelist.empty() ||
-						!state.m_ItemBlacklist.empty() ||
-						!state.m_ItemAttributes.empty() ||
-						!player_empty ||
-						!state.m_DisallowedUpgrades.empty() ||
-						!state.m_ItemReplace.empty() ||
-						!state.m_ExtraLoadoutItems.empty() ||
-						state.m_ForceItems.parsed ||
-						state.m_bSniperAllowHeadshots ||
-						state.m_bSniperHideLasers ||
-						!state.m_RespecEnabled.GetValue() ||
-						state.m_RespecLimit.GetValue() ||
-						state.m_ImprovedAirblast.GetValue() ||
-						state.m_SandmanStuns.GetValue() ||
-						state.m_bNoReanimators
-					)) { 
-						PrintToChat("\x07""7fd4ffType !missioninfo in chat to check custom mission information\n",player);
-					}
-				}
-				received_mission_message_tick = true;
+				THINK_FUNC_SET(player, DelayMissionInfoSend, gpGlobals->curtime + 1.0f);
+				
 			}
 			
 		}
@@ -1905,14 +1916,16 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			if (state.m_bPlayerRobotUsePlayerAnimation) {
 				
-				CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-				DevMsg("Use human anims %d\n", wearable != nullptr);
+				auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+
+				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+				//DevMsg("Use human anims %d\n", wearable != nullptr);
 				if (wearable != nullptr) {
+					wearable->Spawn();
 					wearable->m_bValidatedAttachedEntity = true;
 					wearable->GiveTo(player);
 					servertools->SetKeyValue(player, "rendermode", "1");
 					player->SetRenderColorA(0);
-					player->EquipWearable(wearable);
 					int model_index = CBaseEntity::PrecacheModel(model);
 					wearable->SetModelIndex(model_index);
 					for (int j = 0; j < MAX_VISION_MODES; ++j) {
@@ -1939,12 +1952,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (state.m_bPlayerRobotUsePlayerAnimation && !player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
 				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
 			
-			for(int i = 0; i < player->GetNumWearables(); i++) {
-				CEconWearable *wearable = player->GetWearable(i);
-				if (wearable != nullptr && wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
-					int model_index = wearable->m_nModelIndexOverrides[0];
+			auto find = state.m_Player_anim_cosmetics.find(player);
+			if (find != state.m_Player_anim_cosmetics.end()) {
+				if (find->second != nullptr) {
+					int model_index = find->second->m_nModelIndexOverrides[0];
 					player->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
-					wearable->Remove();
+					find->second->Remove();
 				}
 			}
 		}
@@ -2092,7 +2105,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
 		
-		if (event != nullptr && FStrEq(event->GetName(), "player_death") && (event->GetInt( "death_flags" ) & 0x0200 /*TF_DEATH_MINIBOSS*/) == 0) {
+		if (event != nullptr && strcmp(event->GetName(), "player_death") && (event->GetInt( "death_flags" ) & 0x0200 /*TF_DEATH_MINIBOSS*/) == 0) {
 			auto player = UTIL_PlayerByUserId(event->GetInt("userid"));
 			if (player != nullptr && player->GetTeamNumber() == TF_TEAM_BLUE && (!player->IsBot() || state.m_bDisplayRobotDeathNotice) )
 				event->SetInt("death_flags", (event->GetInt( "death_flags" ) | 0x0200));
@@ -4070,6 +4083,16 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_flSpellDropRateCommon = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
 				} else if (FStrEq(name, "SpellDropRateGiant")) {
 					state.m_flSpellDropRateGiant = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
+				} else if (FStrEq(name, "SpellDropForBotsInTeam")) {
+					if (FStrEq(subkey->GetString(), "Red")) {
+						state.m_iSpellDropForTeam = 2;
+					}
+					else if (FStrEq(subkey->GetString(), "Blue")) {
+						state.m_iSpellDropForTeam = 3;
+					}
+					else {
+						state.m_iSpellDropForTeam = atoi(subkey->GetString());
+					}
 				} else if (FStrEq(name, "NoReanimators")) {
 					state.m_bNoReanimators = subkey->GetBool();
 				} else if (FStrEq(name, "NoMvMDeathTune")) {
@@ -4726,7 +4749,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			received_message_tick = false;
-			received_mission_message_tick = false;
+			for (int i = 0 ; i < 33; i++)
+				received_mission_message_tick[i] = false;
 		}
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;

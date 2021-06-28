@@ -979,7 +979,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0000, 0x0400, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue_NotBot>("CWave::WaveCompleteUpdate"));
 
 			// Show only spy bots on the enemy team
-			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0500, 0x0800, TF_TEAM_BLUE, true, false, CollectPlayers_EnemyTeam>("CTFBot::Event_Killed"));
+			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0500, 0x0930, TF_TEAM_BLUE, true, false, CollectPlayers_EnemyTeam>("CTFBot::Event_Killed"));
 			
 			/* fix hardcoded teamnum checks in the radius spy scan ability */
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_RadiusSpyScan, "CTFPlayerShared::RadiusSpyScan");

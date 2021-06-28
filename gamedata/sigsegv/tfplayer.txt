@@ -829,6 +829,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer8GiveAmmoEiib11EAmmoSource"
 				}
+				"CTFPlayer::DropCurrencyPack"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16DropCurrencyPackE17CurrencyRewards_tibP11CBasePlayer"
+				}
 				
 
 			//	"GetTFConditionName"

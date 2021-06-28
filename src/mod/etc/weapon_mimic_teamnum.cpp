@@ -2,6 +2,7 @@
 #include "stub/baseentity.h"
 #include "stub/projectiles.h"
 #include "stub/entities.h"
+#include "util/misc.h"
 
 
 namespace Mod::Etc::Weapon_Mimic_Teamnum
@@ -10,17 +11,54 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
     RefCount rc_CTFPointWeaponMimic_Fire;
 	CBaseEntity *scorer = nullptr;
 	bool grenade = false;
+	bool do_crits = false;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
-		CBaseEntity *mimic = reinterpret_cast<CBaseEntity *>(this);
+		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
         projectile = nullptr;
 		grenade = false;
 		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
 			scorer = mimic->GetOwnerEntity();
 		}
+		if (mimic->m_nWeaponType == 4) {
+			FireBulletsInfo_t info;
 
-        DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
+			QAngle vFireAngles = mimic->GetFiringAngles();
+			Vector vForward;
+			AngleVectors( vFireAngles, &vForward, nullptr, nullptr);
+
+			info.m_vecSrc = mimic->GetAbsOrigin();
+			info.m_vecDirShooting = vForward;
+			info.m_iTracerFreq = 1;
+			info.m_iShots = 1;
+			info.m_pAttacker = mimic->GetOwnerEntity();
+			if (info.m_pAttacker == nullptr) {
+				info.m_pAttacker = mimic;
+			}
+
+			info.m_vecSpread = vec3_origin;
+
+			if (mimic->m_flSpeedMax != 0.0f) {
+				info.m_flDistance = mimic->m_flSpeedMax;
+			}
+			else {
+				info.m_flDistance = 8192.0f;
+			}
+			info.m_iAmmoType = 1;//m_iAmmoType;
+			info.m_flDamage = mimic->m_flDamage;
+			info.m_flDamageForceScale = mimic->m_flSplashRadius;
+
+			do_crits = mimic->m_bCrits;
+			mimic->FireBullets(info);
+			do_crits = false;
+			projectile = nullptr;
+			
+		}
+		else {
+        	DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
+		}
+
         if (projectile != nullptr) {
             if (mimic->GetTeamNumber() != 0) {
 				CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(projectile);
@@ -31,8 +69,23 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			if (grenade) {
 				projectile->SetOwnerEntity(scorer);
 			}
+			string_t str = mimic->m_pzsFireParticles;
+			if (FStrEq(STRING(str), "Callback")) {
+				variant_t variant;
+            	variant.SetString(NULL_STRING);
+                mimic->m_OnUser4->FireOutput(variant, projectile, mimic);
+			}
         }
 		scorer = nullptr;
+	}
+
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_ModifyFireBulletsDamage, CTakeDamageInfo* dmgInfo)
+	{
+		if (do_crits) {
+			dmgInfo->SetDamageType(dmgInfo->GetDamageType() | DMG_CRITICAL);
+		}
+        DETOUR_MEMBER_CALL(CBaseEntity_ModifyFireBulletsDamage)(dmgInfo);
 	}
 
     DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Rocket_Create, CBaseEntity *pLauncher, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
@@ -95,6 +148,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		CMod() : IMod("Etc:Weapon_Mimic_Teamnum")
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Fire, "CTFPointWeaponMimic::Fire");
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_ModifyFireBulletsDamage, "CBaseEntity::ModifyFireBulletsDamage");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Rocket_Create,  "CTFProjectile_Rocket::Create");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Arrow_Create,  "CTFProjectile_Arrow::Create");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_CreateNoSpawn,  "CBaseEntity::CreateNoSpawn");

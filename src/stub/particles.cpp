@@ -65,7 +65,7 @@ void StopParticleEffects(CBaseEntity *pEntity)
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter)
 {
 	int iAttachment = -1;
-	if ( pEntity )
+	if ( pEntity && pszAttachmentName != nullptr)
 	{
 		CBaseAnimating *animating = rtti_cast<CBaseAnimating *>(pEntity);
 		if (animating != nullptr) {

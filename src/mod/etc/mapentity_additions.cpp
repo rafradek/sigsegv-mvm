@@ -103,13 +103,13 @@ namespace Mod::Etc::Mapentity_Additions
                     ent->m_OnUser1->FireOutput(Value, pActivator, pCaller);
                     return true;
                 }
-                else if (FStrEq(szInputName, "$StringToInt")) {
+                else if (FStrEq(szInputName, "$ToInt")) {
                     variant_t convert;
                     convert.SetInt(strtol(Value.String(), nullptr, 10));
                     logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
                     return true;
                 }
-                else if (FStrEq(szInputName, "$StringToFloat")) {
+                else if (FStrEq(szInputName, "$ToFloat")) {
                     variant_t convert;
                     convert.SetFloat(strtof(Value.String(), nullptr));
                     logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
@@ -431,7 +431,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$TakeDamage") == 0) {
-                CTakeDamageInfo info(pActivator, pActivator, nullptr, vec3_origin, ent->GetAbsOrigin(), strtol(Value.String(), nullptr, 10), DMG_PREVENT_PHYSICS_FORCE, 0 );
+                CTakeDamageInfo info(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, ent->GetAbsOrigin(), strtol(Value.String(), nullptr, 10), DMG_PREVENT_PHYSICS_FORCE, 0 );
                 ent->TakeDamage(info);
                 return true;
             }
@@ -473,6 +473,13 @@ namespace Mod::Etc::Mapentity_Additions
                 auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
                 if (owner != nullptr) {
                     ent->SetOwnerEntity(owner->GetOwnerEntity());
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$InheritParent") == 0) {
+                auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (owner != nullptr) {
+                    ent->SetParent(owner->GetMoveParent(), -1);
                 }
                 return true;
             }
@@ -535,6 +542,39 @@ namespace Mod::Etc::Mapentity_Additions
                 ent->SetLocalAngles(vec);
                 return true;
             }
+            else if (stricmp(szInputName, "$TestEntity") == 0) {
+                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+
+                if (target != nullptr) {
+                    auto filter = rtti_cast<CBaseFilter *>(ent);
+                    if (filter != nullptr && filter->PassesFilter(pCaller, target)) {
+                        filter->m_OnPass->FireOutput(Value, pActivator, target);
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$StartTouchEntity") == 0) {
+                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+
+                if (target != nullptr) {
+                    auto filter = rtti_cast<CBaseTrigger *>(ent);
+                    if (filter != nullptr) {
+                        filter->StartTouch(target);
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$EndTouchEntity") == 0) {
+                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+
+                if (target != nullptr) {
+                    auto filter = rtti_cast<CBaseTrigger *>(ent);
+                    if (filter != nullptr) {
+                        filter->EndTouch(target);
+                    }
+                }
+                return true;
+            }
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
     }
@@ -595,6 +635,26 @@ namespace Mod::Etc::Mapentity_Additions
         
 		DETOUR_MEMBER_CALL(CTFMedigunShield_ShieldThink)();
 	}
+    
+    RefCount rc_CTriggerHurt_HurtEntity;
+    DETOUR_DECL_MEMBER(bool, CTriggerHurt_HurtEntity, CBaseEntity *other, float damage)
+	{
+        SCOPED_INCREMENT(rc_CTriggerHurt_HurtEntity);
+		return DETOUR_MEMBER_CALL(CTriggerHurt_HurtEntity)(other, damage);
+	}
+
+    DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
+	{
+		//DevMsg("Take damage damage %f\n", info.GetDamage());
+        if (rc_CTriggerHurt_HurtEntity) {
+            auto owner = info.GetAttacker()->GetOwnerEntity();
+            if (owner != nullptr && owner->IsPlayer()) {
+                info.SetAttacker(owner);
+                info.SetInflictor(owner);
+            }
+        }
+		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+	}
 
     class CMod : public IMod, IModCallbackListener
 	{
@@ -605,6 +665,9 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
+			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity");
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGHEST);
+    
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");

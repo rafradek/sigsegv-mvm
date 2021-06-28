@@ -218,7 +218,14 @@ class CBaseToggle : public CBaseEntity {};
 class CBaseTrigger : public CBaseToggle
 {
 public:
+	void StartTouch(CBaseEntity *entity) { return vt_StartTouch(this, entity); }
+	void EndTouch(CBaseEntity *entity) { return vt_EndTouch(this, entity); }
+	
 	DECL_DATAMAP(bool, m_bDisabled);
+
+private:
+	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_StartTouch;
+	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_EndTouch;
 };
 
 class CUpgrades : public CBaseTrigger
@@ -267,7 +274,13 @@ public:
 class CBaseFilter : public CLogicalEntity
 {
 public:
-	// TODO
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnPass);
+	DECL_DATAMAP(CBaseEntityOutput,      m_OnFail);
+
+	bool PassesFilter(CBaseEntity *caller, CBaseEntity *entity) { return ft_PassesFilter(this, caller, entity); }
+
+private:
+	static MemberFuncThunk<CBaseFilter *, bool, CBaseEntity *, CBaseEntity *> ft_PassesFilter;
 };
 
 class CFilterMultiple : public CBaseFilter
@@ -403,8 +416,22 @@ public:
 class CTFPointWeaponMimic : public CPointEntity
 {
 public:
+
+	QAngle GetFiringAngles() const { return ft_GetFiringAngles(this); }
+
 	DECL_DATAMAP (bool, m_bCrits);
+	DECL_DATAMAP (float, m_flSpreadAngle);
+	DECL_DATAMAP (float, m_flDamage);
+	DECL_DATAMAP (float, m_flSpeedMax);
+	DECL_DATAMAP (float, m_flSplashRadius);
+	DECL_DATAMAP (string_t, m_pzsFireParticles);
+	
+	DECL_DATAMAP (int, m_nWeaponType);
+	
 	DECL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>,      m_Pipebombs);
+
+private:
+	static MemberFuncThunk<const CTFPointWeaponMimic *, QAngle> ft_GetFiringAngles;
 };
 
 class CGameUI : public CBaseEntity

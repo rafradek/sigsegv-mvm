@@ -113,6 +113,7 @@ MemberVFuncThunk<const CBaseEntity *, bool                                      
 MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsBaseObject                  (TypeName<CBaseEntity>(), "CBaseEntity::IsBaseObject");
 MemberVFuncThunk<      CBaseEntity *, bool, const char *, const char *                                > CBaseEntity::vt_KeyValue                      (TypeName<CBaseEntity>(), "CBaseEntity::KeyValue");
 MemberVFuncThunk<      CBaseEntity *, bool, const char *, char *, int                                 > CBaseEntity::vt_GetKeyValue                   (TypeName<CBaseEntity>(), "CBaseEntity::GetKeyValue");
+MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &                                 > CBaseEntity::vt_FireBullets                   (TypeName<CBaseEntity>(), "CBaseEntity::FireBullets");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 

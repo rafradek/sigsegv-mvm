@@ -151,6 +151,9 @@ GlobalThunk<CUtlVector<ICaptureFlagAutoList *>> ICaptureFlagAutoList::m_ICapture
 
 IMPL_DATAMAP(bool, CBaseTrigger, m_bDisabled);
 
+MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_StartTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::StartTouch");
+MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_EndTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::EndTouch");
+
 
 MemberFuncThunk<const CUpgrades *, const char *, int> CUpgrades::ft_GetUpgradeAttributeName("CUpgrades::GetUpgradeAttributeName");
 MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > CUpgrades::ft_GrantOrRemoveAllUpgrades("CUpgrades::GrantOrRemoveAllUpgrades");
@@ -165,6 +168,13 @@ IMPL_DATAMAP(float,    CFuncNavPrerequisite, m_taskValue);
 IMPL_DATAMAP(bool,     CFuncNavPrerequisite, m_isDisabled);
 
 IMPL_DATAMAP(CBaseEntityOutput, CLogicCase, m_OnDefault);
+
+
+IMPL_DATAMAP(CBaseEntityOutput, CBaseFilter, m_OnPass);
+IMPL_DATAMAP(CBaseEntityOutput, CBaseFilter, m_OnFail);
+
+MemberFuncThunk<CBaseFilter *, bool, CBaseEntity *, CBaseEntity *> CBaseFilter::ft_PassesFilter("CBaseFilter::PassesFilter");
+
 
 IMPL_REL_BEFORE(CUtlStringList, CFilterTFBotHasTag, m_TagList, m_iszTags);
 IMPL_DATAMAP   (string_t,       CFilterTFBotHasTag, m_iszTags);
@@ -216,7 +226,15 @@ IMPL_DATAMAP (string_t, CSmokeStack, m_strMaterialModel);
 IMPL_SENDPROP(int,      CSmokeStack, m_iMaterialModel, CSmokeStack);
 
 IMPL_DATAMAP (bool, CTFPointWeaponMimic, m_bCrits);
+IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flSpreadAngle);
+IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flDamage);
+IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flSpeedMax);
+IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flSplashRadius);
+IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsFireParticles);
+IMPL_DATAMAP (int, CTFPointWeaponMimic, m_nWeaponType);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits, 0x04);
+
+MemberFuncThunk<const CTFPointWeaponMimic *, QAngle> CTFPointWeaponMimic::ft_GetFiringAngles("CTFPointWeaponMimic::GetFiringAngles");
 
 IMPL_DATAMAP (CHandle<CBasePlayer>, CGameUI, m_player);
 

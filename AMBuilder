@@ -152,6 +152,7 @@ sourceFiles += [
   'src/mod/etc/debug_mission_change_crash.cpp',
   'src/mod/etc/deflect_rocket_spew.cpp',
   'src/mod/etc/heat_seeking_rockets.cpp',
+  'src/mod/etc/hltv_client_interact.cpp',
   'src/mod/etc/holiday_items_allow.cpp',
   'src/mod/etc/huntsman_damage_fix.cpp',
   'src/mod/etc/instant_scaling.cpp',
@@ -161,6 +162,7 @@ sourceFiles += [
   'src/mod/etc/mapentity_additions.cpp',
   'src/mod/etc/medicgun_beam_machinery.cpp',
   'src/mod/etc/melee_ignore_teammates.cpp',
+  'src/mod/etc/misc.cpp',
   'src/mod/etc/mm_spoof.cpp',
   'src/mod/etc/nav_updateblocked.cpp',
   'src/mod/etc/override_move_speed.cpp',
@@ -172,7 +174,6 @@ sourceFiles += [
   'src/mod/etc/target_changegravity_improved.cpp',
   'src/mod/etc/weapon_mimic_teamnum.cpp',
   'src/mod/etc/trigger_filter_fix.cpp',
-  'src/mod/etc/misc.cpp',
   
   'src/mod/mvm/changebotattributes_crash_fix.cpp',
   'src/mod/mvm/changeclass_anytime.cpp',

@@ -118,6 +118,10 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		float scale_speed = 1.0f;
 
+		float spell_drop_rate_common = 0.0f;
+		float spell_drop_rate_rare = 0.0f;
+		bool spell_drop = false;
+
 		std::string death_sound = "DEF";
 		std::string pain_sound = "DEF";
 
@@ -827,6 +831,13 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.strip_item_slot.push_back(val == -1 ? kv->GetInt() : val);
 		} else if (FStrEq(name, "SprayFile")) {
 			Parse_SprayFile(data, kv);
+		} else if (FStrEq(name, "SpellDropRateCommon")) {
+			data.spell_drop_rate_common = Clamp(kv->GetFloat(), 0.0f, 1.0f);
+			data.spell_drop = true;
+		} else if (FStrEq(name, "SpellDropRateRare")) {
+			data.spell_drop_rate_rare = Clamp(kv->GetFloat(), 0.0f, 1.0f);
+			data.spell_drop = true;
+
 		} else {
 			
 			found = false;
@@ -2078,6 +2089,45 @@ namespace Mod::Pop::ECAttr_Extensions
 		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_ReleaseCrouchButton)();
 	}
 
+	RefCount rc_CTFGameRules_PlayerKilled;
+	CBasePlayer *killed = nullptr;
+	DETOUR_DECL_MEMBER(void, CTFGameRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
+	{
+	//	DevMsg("CTFGameRules::PlayerKilled\n");
+		killed = pVictim;
+		SCOPED_INCREMENT(rc_CTFGameRules_PlayerKilled);
+		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto *data = GetDataForBot(killed);
+			if (data != nullptr && (data->spell_drop)) {
+				float rnd  = RandomFloat(0.0f, 1.0f);
+				float rate_rare = data->spell_drop_rate_rare;
+				float rate_common = rate_rare + data->spell_drop_rate_common;
+				
+				if (rnd < rate_rare) {
+					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 0);
+				}
+				else if (rnd < rate_common) {
+					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 1);
+				}
+			}
+		}
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CTFGameRules_ShouldDropSpellPickup)
+	{
+	//	DevMsg("CTFGameRules::ShouldDropSpellPickup\n");
+		
+		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
+			auto *data = GetDataForBot(killed);
+			if (data != nullptr && (data->spell_drop)) {
+				return false;
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFGameRules_ShouldDropSpellPickup)();
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2136,6 +2186,9 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBotLocomotion_Update, "CTFBotLocomotion::Update");
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PressCrouchButton, "NextBotPlayer<CTFPlayer>::PressCrouchButton");
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_ReleaseCrouchButton, "NextBotPlayer<CTFPlayer>::ReleaseCrouchButton");
+			
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup", HIGH);
 		}
 
 		virtual bool OnLoad() override
