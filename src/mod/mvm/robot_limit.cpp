@@ -269,7 +269,7 @@ namespace Mod::MvM::Robot_Limit
 		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING) {
 			if (wavespawn->m_nClassCounts == 1) {
 				// Override hardcoded 22 blue bot limit
-				slots = old_slots + (GetMvMInvaderLimit() - 22);
+				slots = old_slots - (GetMvMInvaderLimit() - 22);
 			}
 			else {
 				// Do not restrict non bot spawners 
