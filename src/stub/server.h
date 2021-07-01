@@ -44,7 +44,6 @@ typedef struct CustomFile_s
 class CBaseClient : public IGameEventListener2, public IClient, public IClientMessageHandler {
 public:
 	virtual void UpdateUserSettings();
-	int				pad;
 	int				m_nClientSlot;	
 	// entity index of this client (different from clientSlot+1 in HLTV and Replay mode):
 	int				m_nEntityIndex;	

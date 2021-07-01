@@ -178,6 +178,8 @@ namespace Mod::Pop::TFBot_Extensions
 //#endif
 		bool no_wait_for_formation = false;
 		bool no_formation = false;
+
+		bool no_idle_sound = false;
 	};
 
 	std::unordered_map<CTFBotSpawner *, SpawnerData> spawners;
@@ -515,6 +517,8 @@ namespace Mod::Pop::TFBot_Extensions
 				spawners[spawner].templ.push_back(Parse_SpawnTemplate(subkey));
 			} else if (FStrEq(name, "Neutral")) {
 				spawners[spawner].neutral = subkey->GetBool();
+			} else if (FStrEq(name, "NoIdleSound")) {
+				spawners[spawner].no_idle_sound = subkey->GetBool();
 //#ifdef ENABLE_BROKEN_STUFF
 			} else if (FStrEq(name, "DropWeapon")) {
 				spawners[spawner].drop_weapon = subkey->GetBool();
@@ -1621,6 +1625,15 @@ namespace Mod::Pop::TFBot_Extensions
 		return result;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFBot_StartIdleSound)
+	{
+		
+        if (spawners[current_spawner].no_idle_sound)
+			return;
+
+		DETOUR_MEMBER_CALL(CTFBot_StartIdleSound)();
+	}
+
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
@@ -1792,7 +1805,7 @@ namespace Mod::Pop::TFBot_Extensions
 			//MOD_ADD_DETOUR_MEMBER(GetWeaponId, "Global::GetWeaponID");
 			//MOD_ADD_DETOUR_MEMBER(ISpatialPartition_EnumerateElementsInSphere, "ISpatialPartition::EnumerateElementsInSphere");
 
-			//MOD_ADD_DETOUR_MEMBER(CTFBot_StartIdleSound,        "CTFBot::StartIdleSound");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_StartIdleSound,        "CTFBot::StartIdleSound");
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

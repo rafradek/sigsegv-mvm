@@ -1795,4 +1795,25 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    //Override step sound special
+    "4494"
+    {
+        "name"	"override step sound string"
+        "attribute_class"	"override_step_sound_string"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Projectile gravity native
+    "4495"
+    {
+        "name"	"stomp player force"
+        "attribute_class"	"stomp_player_force"
+        "description_string"	"Touched enemy players are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

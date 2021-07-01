@@ -169,6 +169,7 @@ public:
 	bool IsInMedievalMode() const                { NULL_RET(false); return this->m_bPlayingMedieval; }
 	bool IsMannVsMachineMode() const             { NULL_RET(false); return this->m_bPlayingMannVsMachine; }
 	const char *GetCustomUpgradesFile() const    { NULL_RET(""   ); return this->m_pszCustomUpgradesFile; }
+	float GetRestartRoundTime()                  { NULL_RET(    0); return this->m_flRestartRoundTime; }
 	void SetCustomUpgradesFile(const char *path);
 	
 	bool CanUpgradeWithAttrib(CTFPlayer *player, int slot, unsigned short attr, CMannVsMachineUpgrades *upgrade) { NULL_RET(false); return ft_CanUpgradeWithAttrib               (this, player, slot, attr, upgrade); }
@@ -186,6 +187,7 @@ public:
 	
 	void Set_m_bPlayingMedieval(bool val)      { NULL_RET(); this->m_bPlayingMedieval      = val; }
 	void Set_m_bPlayingMannVsMachine(bool val) { NULL_RET(); this->m_bPlayingMannVsMachine = val; }
+	void SetRestartRoundTime(float time)       { NULL_RET(); this->m_flRestartRoundTime    = time; }
 	
 private:
 	DECL_SENDPROP(bool,           m_bPlayingMedieval);

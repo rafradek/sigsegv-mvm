@@ -150,6 +150,9 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		std::vector<PeriodicTaskImpl> periodic_tasks;
 
+		bool has_override_step_sound;
+		std::string override_step_sound;
+
 		CRC32_t spray_file;
 	};
 
@@ -233,7 +236,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (data != nullptr && data->use_human_animations) {
 				for(int i = 0; i < bot->GetNumWearables(); i++) {
 					CEconWearable *wearable = bot->GetWearable(i);
-					if (wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
+					if (wearable != nullptr && wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
 						int model_index = wearable->m_nModelIndexOverrides[0];
 						bot->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
 						wearable->Remove();
@@ -837,9 +840,12 @@ namespace Mod::Pop::ECAttr_Extensions
 		} else if (FStrEq(name, "SpellDropRateRare")) {
 			data.spell_drop_rate_rare = Clamp(kv->GetFloat(), 0.0f, 1.0f);
 			data.spell_drop = true;
-
+		} else if (FStrEq(name, "AdditionalStepSound")) {
+			data.override_step_sound = kv->GetString();
+			data.has_override_step_sound = true;
+			if (!enginesound->PrecacheSound(kv->GetString(), true))
+				CBaseEntity::PrecacheScriptSound(kv->GetString());
 		} else {
-			
 			found = false;
 		}
 		
@@ -1152,6 +1158,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 
 			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(bot) - 1));
+			DevMsg("Client data %d %d %d %d\n",client->m_nClientSlot, client->m_Server, sv, client->m_nCustomFiles[0].crc );
 			client->m_nCustomFiles[0].crc = data->spray_file;
 		}
 	}
@@ -1216,6 +1223,9 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		if (!rc_CTFBotSpawner_Spawn)
 			ApplyCurrentEventChangeAttributes(bot);
+		else
+			// Reset model to default (prevent sentry buster model lingering on common bots on halloween missions)
+			bot->GetPlayerClass()->SetCustomModel("", true);
 
 		//DevMsg("OnEventChange %d %d %d %d\n",bot != nullptr, data != nullptr, ecattr, current_spawner);
 		
@@ -1461,7 +1471,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		auto data = GetDataForBot(bot);
 
-		if (data != nullptr && ShouldRocketJump(bot, data, false)) {
+		if (data != nullptr && bot != nullptr && ShouldRocketJump(bot, data, false)) {
 			mult *= 2.5f;
 		}
 
@@ -1482,7 +1492,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data != nullptr && data->rocket_jump_type > 0) {
 			auto weapon = actor->GetActiveTFWeapon();
 			const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
-			if ((data->rocket_jump_type == 1 || weapon->m_iClip1 >= weapon->GetMaxClip1()) && threat != nullptr && threat->GetEntity() != nullptr && actor->IsLineOfFireClear( threat->GetEntity()->EyePosition() )/*&& ShouldRocketJump(actor, weapon, data, true)*//*weapon != nullptr*/) {
+			if (weapon != nullptr && (data->rocket_jump_type == 1 || weapon->m_iClip1 >= weapon->GetMaxClip1()) && threat != nullptr && threat->GetEntity() != nullptr && actor->IsLineOfFireClear( threat->GetEntity()->EyePosition() )/*&& ShouldRocketJump(actor, weapon, data, true)*//*weapon != nullptr*/) {
 				
 				if (actor->GetFlags() & FL_ONGROUND ) {
 					actor->ReleaseFireButton();
@@ -1841,7 +1851,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
 		const char *classname = ent->GetClassname();
 
-		if ((strcmp(classname, "tf_projectile_rocket") != 0 || strcmp(classname, "tf_projectile_sentryrocket") != 0)) {
+		if ((strcmp(classname, "tf_projectile_rocket") == 0 || strcmp(classname, "tf_projectile_sentryrocket") == 0)) {
 			rocket = static_cast<CTFProjectile_Rocket *>(ent);
 			auto data = GetDataForBot(rtti_scast<IScorer *>(rocket)->GetScorer());
 			if (data != nullptr) {
@@ -2127,6 +2137,18 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		return DETOUR_MEMBER_CALL(CTFGameRules_ShouldDropSpellPickup)();
 	}
+	
+	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayStepSound, Vector& vecOrigin, surfacedata_t *psurface, float fvol, bool force)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto *data = GetDataForBot(player);
+			if (data != nullptr && data->has_override_step_sound) {
+				player->EmitSound(data->override_step_sound.c_str());
+			}
+		}
+		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2189,6 +2211,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup", HIGH);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBasePlayer_PlayStepSound,                     "CBasePlayer::PlayStepSound",     HIGH);
 		}
 
 		virtual bool OnLoad() override

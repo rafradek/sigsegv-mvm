@@ -4584,8 +4584,11 @@
 					lib  "engine"
 					sym  "_ZN11CHLTVServer13ConnectClientER8netadr_siiiiPKcS3_S3_i"
 				}
-				
-				
+				"CTFGameRules::BetweenRounds_Think"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules19BetweenRounds_ThinkEv"
+				}
 			}
 			"addrs_group"
 			{

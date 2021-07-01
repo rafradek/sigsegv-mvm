@@ -1665,6 +1665,16 @@ namespace Mod::Attr::Custom_Attributes
 				CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 				toucher->TakeDamage(info);
 			}
+
+			float knockback = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, knockback, stomp_player_force );
+			if (knockback != 0.0f) {
+				Vector vec = toucher->GetAbsOrigin() - player->GetAbsOrigin();
+				vec.NormalizeInPlace();
+				vec.z = 1.0f;
+				vec *= knockback;
+				ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec);
+			}
 		}
 	}
 
@@ -1702,10 +1712,12 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+		bool no_upgrade = false;
 		if (item_view != nullptr) {
 			auto attr = item_view->GetAttributeList().GetAttributeByName("cannot be upgraded");
-			SCOPED_INCREMENT_IF(rc_CTFPlayer_ReapplyItemUpgrades, attr != nullptr && attr->GetValuePtr()->m_Float > 0.0f);
+			no_upgrade = attr != nullptr && attr->GetValuePtr()->m_Float > 0.0f;
 		}
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ReapplyItemUpgrades, no_upgrade);
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
 	}
 
@@ -2492,7 +2504,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		bool added_item_name = false;
 		int slot = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
-		DevMsg("Slot for display %d %d\n", item_def, slot);
 		if (display_stock && (item_def == -1 || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
 			if (item_def != -1)

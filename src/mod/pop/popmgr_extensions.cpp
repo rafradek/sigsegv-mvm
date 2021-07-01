@@ -4,6 +4,7 @@
 #include "stub/tfbot.h"
 #include "stub/gamerules.h"
 #include "stub/populators.h"
+#include "stub/server.h"
 #include "stub/misc.h"
 #include "util/iterate.h"
 #include "util/scope.h"
@@ -621,6 +622,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bNoThrillerTaunt = false;
 			this->m_bNoCritPumpkin = false;
 			this->m_bNoMissionInfo = false;
+			this->m_flRestartRoundTime = -1.0f;
+			this->m_bNoCountdownSounds = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -785,6 +788,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bNoThrillerTaunt;
 		bool m_bNoCritPumpkin;
 		bool m_bNoMissionInfo;
+		float m_flRestartRoundTime;
+		bool m_bNoCountdownSounds;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1189,9 +1194,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	bool callfrom=false;
 	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound, IRecipientFilter& filter, int iEntIndex, EmitSound_t& params)
 	{
+		static bool callfrom = false;
 		if (!callfrom && TFGameRules()->IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
 			if (iEntIndex > 0 && iEntIndex < 34 && strncmp(sound,"mvm/player/footsteps/robostep",26) == 0){
@@ -1200,8 +1205,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				if ( edict && !edict->IsFree() )
 				{
 					CTFPlayer *player = ToTFPlayer(GetContainingEntity(edict));
-					if (player != nullptr && !player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
-							(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
+					if (player != nullptr && !player->IsBot() &&((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) //|| 
+							/*(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE)*/)) {
 						//CBaseEntity_EmitSound_static_emitsound
 						callfrom = true;
 						//DevMsg("CBaseEntity::ModEmitSound(#%d, \"%s\")\n", iEntIndex, sound);
@@ -1849,6 +1854,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	spawned_bots_first_tick.push_back(bot);
 		IClient *pClient = sv->GetClient( ENTINDEX(player)-1 );
 
+		
+		CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(player) - 1));
+		DevMsg("Client data %d %d %d %s %d %d %d %d\n",client->m_nClientSlot,client->m_nEntityIndex, client->m_UserID, client->m_Name, client->m_Server, sv, client->m_bIsHLTV, client->m_nCustomFiles[0].crc );
+
 		if (!player->IsBot() && !pClient->IsFakeClient()) {
 		//	spawned_players_first_tick.push_back(player);
 			ApplyPlayerAttributes(player);
@@ -2252,6 +2261,22 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
+	}
+
+	THINK_FUNC_DECL(EquipDelaySetHidden)
+	{
+		PrintToChatAll(CFmtStr("Set Hidden %d\n", this->GetEffects()));
+		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+		if (weapon->GetOwner() != nullptr && weapon != weapon->GetOwner()->GetActiveWeapon()) {
+			weapon->GetOwner()->Weapon_Switch(weapon);
+			//this->SetEffects(this->GetEffects() | EF_NODRAW);
+		}
+	}
+	
+	THINK_FUNC_DECL(EquipDelaySetVisible)
+	{
+		PrintToChatAll("Set Visible\n");
+		//this->SetEffects(this->GetEffects() & ~(EF_NODRAW));
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
@@ -3162,6 +3187,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			return DETOUR_STATIC_CALL(TF_IsHolidayActive)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFGameRules_BetweenRounds_Think)
+	{
+		float time_to_start = TFGameRules()->GetRestartRoundTime();
+		DETOUR_MEMBER_CALL(CTFGameRules_BetweenRounds_Think)();
+		if (state.m_flRestartRoundTime != -1.0f && TFGameRules()->GetRestartRoundTime() != -1.0f && TFGameRules()->GetRestartRoundTime() != time_to_start) {
+			TFGameRules()->SetRestartRoundTime(gpGlobals->curtime + state.m_flRestartRoundTime);
+		}
+	}
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -3990,6 +4024,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	//	DevMsg("CPopulationManager::Parse\n");
 		ForEachTFPlayer([&](CTFPlayer *player){
 					if (!player->IsAlive()) return;
+					
 					if (state.m_bRedPlayersRobots || state.m_bBluPlayersRobots){
 						
 						// Restore changes made by player animations on robot models
@@ -4283,6 +4318,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
 				} else if (FStrEq(name, "FlagEscortCountOffset")) {
 					state.m_iEscortBotCountOffset = subkey->GetInt();
+				} else if (FStrEq(name, "WaveStartCountdown")) {
+					state.m_flRestartRoundTime = subkey->GetFloat();
 				} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 				} else if (FStrEq(name, "MaxSpectators")) {
@@ -4573,6 +4610,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFAmmoPack_InitAmmoPack, "CTFAmmoPack::InitAmmoPack");
 			
 			MOD_ADD_DETOUR_STATIC(TF_IsHolidayActive, "TF_IsHolidayActive");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_BetweenRounds_Think, "CTFGameRules::BetweenRounds_Think");
+			
 
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");

@@ -998,6 +998,17 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
+		virtual void OnDisable() override
+		{
+			if (TFGameRules()->IsMannVsMachineMode()) {
+				ForEachTFPlayer([](CTFPlayer *player){
+					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;
+					if (player->IsBot())                         return;
+					player->ForceChangeTeam(TF_TEAM_RED, true);
+				});
+			}
+		}
+
 		virtual void FrameUpdatePostEntityThink() override
 		{
 			if (TFGameRules()->IsMannVsMachineMode()) {

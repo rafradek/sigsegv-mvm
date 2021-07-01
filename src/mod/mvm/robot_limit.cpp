@@ -176,7 +176,7 @@ namespace Mod::MvM::Robot_Limit
 	{
 		allocate_round_start = true;
 		if (!hibernated)
-			g_pPopulationManager->AllocateBots();
+			reinterpret_cast<CPopulationManager *>(this)->AllocateBots();
 		allocate_round_start = false;
 	}
 

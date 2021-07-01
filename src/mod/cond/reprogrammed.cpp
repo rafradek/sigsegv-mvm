@@ -853,13 +853,10 @@ namespace Mod::Cond::Reprogrammed
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
-		CBaseEntity *entityme = const_cast< CBaseEntity * >(EntityFromEntityHandle(reinterpret_cast<CTraceFilterSimple*>(this)->GetPassEntity()));
-		CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
+		CTFPlayer *entityme = ToTFPlayer(const_cast< CBaseEntity * >(EntityFromEntityHandle(reinterpret_cast<CTraceFilterSimple*>(this)->GetPassEntity())));
+		CTFPlayer *entityhit = ToTFPlayer(EntityFromEntityHandle(pServerEntity));
 
-		bool entityme_player = entityme->IsPlayer();
-		bool entityhit_player = entityhit->IsPlayer();
-
-		if (entityme_player && entityhit_player && entityme->GetTeamNumber() == TEAM_SPECTATOR) {
+		if (entityme != nullptr && entityhit != nullptr && entityme->GetTeamNumber() == TEAM_SPECTATOR) {
 			return entityme->GetTeamNumber() != entityhit->GetTeamNumber();
 		}
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
