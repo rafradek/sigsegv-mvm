@@ -431,7 +431,18 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$TakeDamage") == 0) {
-                CTakeDamageInfo info(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, ent->GetAbsOrigin(), strtol(Value.String(), nullptr, 10), DMG_PREVENT_PHYSICS_FORCE, 0 );
+                int damage = strtol(Value.String(), nullptr, 10);
+                CBaseEntity *attacker = ent;
+                
+                CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
+                ent->TakeDamage(info);
+                return true;
+            }
+            else if (stricmp(szInputName, "$TakeDamageFromActivator") == 0) {
+                int damage = strtol(Value.String(), nullptr, 10);
+                CBaseEntity *attacker = pActivator;
+                
+                CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
                 ent->TakeDamage(info);
                 return true;
             }
@@ -524,21 +535,23 @@ namespace Mod::Etc::Mapentity_Additions
             }
             else if (stricmp(szInputName, "$TeleportToEntity") == 0) {
                 auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                Vector targetpos = target->GetAbsOrigin();
-                ent->Teleport(&targetpos, nullptr, nullptr);
+                if (target != nullptr) {
+                    Vector targetpos = target->GetAbsOrigin();
+                    ent->Teleport(&targetpos, nullptr, nullptr);
+                }
                 return true;
             }
             else if (stricmp(szInputName, "$MoveRelative") == 0) {
                 Vector vec;
                 sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                vec += ent->GetLocalOrigin();
+                vec = vec + ent->GetLocalOrigin();
                 ent->SetLocalOrigin(vec);
                 return true;
             }
             else if (stricmp(szInputName, "$RotateRelative") == 0) {
                 QAngle vec;
                 sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                vec += ent->GetLocalAngles();
+                vec = vec + ent->GetLocalAngles();
                 ent->SetLocalAngles(vec);
                 return true;
             }

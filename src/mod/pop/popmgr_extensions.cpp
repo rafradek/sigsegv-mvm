@@ -624,6 +624,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bNoMissionInfo = false;
 			this->m_flRestartRoundTime = -1.0f;
 			this->m_bNoCountdownSounds = false;
+			this->m_bNoCritNoWin = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -790,6 +791,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bNoMissionInfo;
 		float m_flRestartRoundTime;
 		bool m_bNoCountdownSounds;
+		bool m_bNoCritNoWin;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1484,28 +1486,22 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_MEMBER_CALL(CTFGameRules_ctor)();
 	}
 	
-#if 0
+	RefCount rc_CTFGameRules_SetWinningTeam;
 	DETOUR_DECL_MEMBER(void, CTFGameRules_SetWinningTeam, int team, int iWinReason, bool bForceMapReset, bool bSwitchTeams, bool bDontAddScore, bool bFinal)
 	{
-		if (TFGameRules()->IsMannVsMachineMode() && state.m_bReverseWinConditions && team == TF_TEAM_BLUE) {
-			// don't forward the call to SetWinningTeam
-			// instead, imitate what is done when a wave is completed
-			
-			ForEachTFPlayer([](CTFPlayer *player){
-				if (!player->IsAlive())                     return;
-				if (!player->IsBot()) return;
-				
-				player->CommitSuicide(true, false);
-			});
-			
-			// ...
-			
-			return;
-		}
-		
+
+		SCOPED_INCREMENT(rc_CTFGameRules_SetWinningTeam);
 		DETOUR_MEMBER_CALL(CTFGameRules_SetWinningTeam)(team, iWinReason, bForceMapReset, bSwitchTeams, bDontAddScore, bFinal);
 	}
-#endif
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
+	{
+		if (rc_CTFGameRules_SetWinningTeam && nCond == TF_COND_CRITBOOSTED_BONUS_TIME)
+        {
+			return;
+        }
+		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+	}
 	
 	bool rc_CTeamplayRoundBasedRules_State_Enter = false;
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_State_Enter, gamerules_roundstate_t newState)
@@ -4556,7 +4552,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,                        "CTFPlayer::Event_Killed");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ctor,                    "CTFGameRules::CTFGameRules [C1]");
-		//	MOD_ADD_DETOUR_MEMBER(CTFGameRules_SetWinningTeam,          "CTFGameRules::SetWinningTeam");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_SetWinningTeam,          "CTFGameRules::SetWinningTeam");
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter, "CTeamplayRoundBasedRules::State_Enter");
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd,        "CMannVsMachineStats::RoundEvent_WaveEnd");
 			
@@ -4611,6 +4607,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			MOD_ADD_DETOUR_STATIC(TF_IsHolidayActive, "TF_IsHolidayActive");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_BetweenRounds_Think, "CTFGameRules::BetweenRounds_Think");
+
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
+			
 			
 
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");

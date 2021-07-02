@@ -745,7 +745,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	DETOUR_DECL_MEMBER(int, CTFBaseBoss_OnTakeDamage, CTakeDamageInfo &info)
 	{
 		float damage = DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
-		if (info.GetAttacker()->GetTeamNumber() == reinterpret_cast<CBaseEntity *>(this)->GetTeamNumber())
+		if (info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == reinterpret_cast<CBaseEntity *>(this)->GetTeamNumber())
 			return 0;
 		return damage;
 	}
