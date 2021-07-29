@@ -296,6 +296,8 @@ public:
 			IGNORE_PLAYERS = 6,
 			IGNORE_BUILDINGS = 7,
 			IGNORE_NPC = 8,
+			IGNORE_REAL_PLAYERS = 9,
+			IGNORE_BOTS = 10,
 		};
 
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;

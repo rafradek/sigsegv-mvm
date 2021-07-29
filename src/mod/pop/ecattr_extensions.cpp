@@ -7,6 +7,7 @@
 #include "stub/tfbot_behavior.h"
 #include "stub/misc.h"
 #include "stub/server.h"
+#include "stub/particles.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
 #include "mod/pop/pointtemplate.h"
@@ -34,6 +35,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	CTFItemDefinition *GetCustomWeaponItemDef(std::string name);
 	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
 	const char *GetCustomWeaponNameOverride(const char *name);
+	int GetEventPopfile();
 }
 
 class PlayerBody : public IBody {
@@ -93,7 +95,10 @@ namespace Mod::Pop::ECAttr_Extensions
 		float tracking_interval = -1.0f;
 
 		std::string use_custom_model;
-		bool use_human_model  = false;
+
+		// 1 - No sap attribute
+		// 2 - Can be sapped
+		int use_human_model  = 0;
 		bool use_buster_model = false;
 
 		bool use_human_animations = false;
@@ -122,6 +127,11 @@ namespace Mod::Pop::ECAttr_Extensions
 		float spell_drop_rate_rare = 0.0f;
 		bool spell_drop = false;
 
+		bool eye_particle_color = false;
+		uint8 eye_particle_r = 0;
+		uint8 eye_particle_g = 0;
+		uint8 eye_particle_b = 0;
+
 		std::string death_sound = "DEF";
 		std::string pain_sound = "DEF";
 
@@ -134,6 +144,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		std::string rocket_custom_model;
 		std::string rocket_custom_particle;
+
+		std::string custom_eye_particle = "";
 		
 		HomingRockets homing_rockets;
 
@@ -772,7 +784,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		} else if (FStrEq(name, "UseCustomModel")) {
 			data.use_custom_model = kv->GetString();
 		} else if (FStrEq(name, "UseHumanModel")) {
-			data.use_human_model = kv->GetBool();
+			data.use_human_model = kv->GetInt();
 		} else if (FStrEq(name, "UseHumanAnimations")) {
 			data.use_human_animations = kv->GetBool();
 		} else if (FStrEq(name, "AlwaysGlow")) {
@@ -829,6 +841,11 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.scale_speed = kv->GetFloat();
 		} else if (FStrEq(name, "NoCrouchButtonRelease")) {
 			data.no_crouch_button_release = kv->GetBool();
+		} else if (FStrEq(name, "CustomEyeParticle")) {
+			data.custom_eye_particle = kv->GetString();
+		} else if (FStrEq(name, "CustomEyeGlowColor")) {
+			data.eye_particle_color = true;
+			sscanf(kv->GetString(), "%d %d %d", &data.eye_particle_r, &data.eye_particle_g, &data.eye_particle_b);
 		} else if (FStrEq(name, "StripItemSlot")) {
 			int val = GetLoadoutSlotByName(kv->GetString());
 			data.strip_item_slot.push_back(val == -1 ? kv->GetInt() : val);
@@ -983,6 +1000,70 @@ namespace Mod::Pop::ECAttr_Extensions
 		return result;
 	}
 
+	bool HasRobotBlood(CTFPlayer *player) {
+		static ConVarRef sig_mvm_bots_bleed("sig_mvm_bots_bleed");
+		//static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
+
+		if (*(player->GetPlayerClass()->GetCustomModel()) == 0 )
+			return true;
+
+		if (sig_mvm_bots_bleed.GetBool())
+			return true;
+
+		auto data = GetDataForBot(player);
+		if (data != nullptr && data->use_human_model)
+			return true;
+
+		return false;
+	}
+
+	void SetEyeColorForDiff(Vector &vec, int difficulty) {
+        switch (difficulty) {
+            case 0: vec.Init( 0, 240, 255 ); break;
+            case 1: vec.Init( 0, 120, 255 ); break;
+            case 2: vec.Init( 255, 100, 36); break;
+            case 3: vec.Init( 255, 180, 36); break;
+            default: vec.Init( 0, 240, 255 );
+        }
+    }
+
+    THINK_FUNC_DECL(EyeParticle)
+    {
+		auto player = reinterpret_cast<CTFBot *>(this);
+		auto data = GetDataForBot(player);
+        
+        StopParticleEffects(player);
+
+		Vector vColor;
+		SetEyeColorForDiff(vColor, player->m_nBotSkill);
+
+		if (data->eye_particle_color) {
+			vColor.x = data->eye_particle_r;
+			vColor.y = data->eye_particle_g;
+			vColor.z = data->eye_particle_b;
+		}
+        Vector vColorL = vColor / 255;
+
+        const char *particle = "bot_eye_glow";
+        if (!data->custom_eye_particle.empty())
+			particle = data->custom_eye_particle.c_str();
+
+        CReliableBroadcastRecipientFilter filter;
+        te_tf_particle_effects_control_point_t cp = { PATTACH_ABSORIGIN, vColor };
+
+        const char *eye1 = player->IsMiniBoss() ? "eye_boss_1" : "eye_1";
+        if (player->LookupAttachment(eye1) == 0)
+            eye1 = "eyeglow_L";
+        
+        DispatchParticleEffect(particle, PATTACH_POINT_FOLLOW, player, eye1, vec3_origin, true, vColorL, vColorL, true, false, &cp, &filter);
+
+        const char *eye2 = player->IsMiniBoss() ? "eye_boss_2" : "eye_2";
+        if (player->LookupAttachment(eye2) == 0)
+            eye2 = "eyeglow_R";
+
+        DispatchParticleEffect(particle, PATTACH_POINT_FOLLOW, player, eye2, vec3_origin, true, vColorL, vColorL, true, false, &cp, &filter);
+	}
+
 	void ApplyCurrentEventChangeAttributes(CTFBot *bot)
 	{
 		auto data = GetDataForBot(bot);
@@ -1022,6 +1103,7 @@ namespace Mod::Pop::ECAttr_Extensions
 
 			
 			static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
+			static ConVarRef sig_mvm_bots_bleed("sig_mvm_bots_bleed");
 			if (!data->use_custom_model.empty()) {
 				
 				bot->GetPlayerClass()->SetCustomModel(data->use_custom_model.c_str(), true);
@@ -1038,8 +1120,9 @@ namespace Mod::Pop::ECAttr_Extensions
 				
 				// TODO: filter-out addition of Romevision cosmetics to UseBusterModel bots
 				// TODO: manually add Romevision cosmetic for SentryBuster to UseBusterModel bots
-			} else if (data->use_human_model || sig_mvm_bots_are_humans.GetBool()) {
+			} else if (data->use_human_model != 0 || sig_mvm_bots_are_humans.GetBool()) {
 				
+				bool can_be_sapped = data->use_human_model == 2 || sig_mvm_bots_are_humans.GetInt() == 2;
 				// calling SetCustomModel with a nullptr string *seems* to reset the model
 				// dunno what the bool parameter should be; I think it doesn't matter for the nullptr case
 				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
@@ -1047,11 +1130,17 @@ namespace Mod::Pop::ECAttr_Extensions
 				bot->SetBloodColor(BLOOD_COLOR_RED);
 				
 				//Cannot be sapped custom attribute
-				auto sap_def = GetItemSchema()->GetAttributeDefinitionByName("cannot be sapped");
-				if (sap_def != nullptr)
-					bot->GetAttributeList()->SetRuntimeAttributeValue(sap_def, 1.0f);
+				if (!can_be_sapped) {
+					auto sap_def = GetItemSchema()->GetAttributeDefinitionByName("cannot be sapped");
+					if (sap_def != nullptr)
+						bot->GetAttributeList()->SetRuntimeAttributeValue(sap_def, 1.0f);
+				}
 				
 				// TODO: filter-out addition of Romevision cosmetics to UseHumanModel bots
+			}
+
+			if (HasRobotBlood(bot)) {
+				bot->SetBloodColor(BLOOD_COLOR_RED);
 			}
 
 			if (data->use_human_animations) {
@@ -1112,7 +1201,6 @@ namespace Mod::Pop::ECAttr_Extensions
 				if (pPowerupBottle  != nullptr) {
 					int val=0;
 					CALL_ATTRIB_HOOK_INT_ON_OTHER(pPowerupBottle, val, powerup_charges);
-					DevMsg("Poweup Bottles %d\n",val);
 					pPowerupBottle->m_usNumCharges = val;
 				}
 			}
@@ -1157,8 +1245,11 @@ namespace Mod::Pop::ECAttr_Extensions
 				DevMsg("Group %s %d %d\n", name, value, group);
 			}
 
+			if (data->custom_eye_particle != "" || data->eye_particle_color) {
+				THINK_FUNC_SET(bot, EyeParticle, gpGlobals->curtime + 0.1f);
+			}
+
 			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(bot) - 1));
-			DevMsg("Client data %d %d %d %d\n",client->m_nClientSlot, client->m_Server, sv, client->m_nCustomFiles[0].crc );
 			client->m_nCustomFiles[0].crc = data->spray_file;
 		}
 	}
@@ -1775,6 +1866,36 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 	}
+	
+	bool HasRobotHumanVoice(CTFPlayer *player) {
+		static ConVarRef sig_mvm_human_bots_robot_voice("sig_mvm_human_bots_robot_voice");
+		static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
+
+		if (sig_mvm_human_bots_robot_voice.GetBool())
+			return false;
+
+		if (sig_mvm_bots_are_humans.GetBool())
+			return true;
+
+		auto data = GetDataForBot(player);
+		if (data != nullptr && data->use_human_model) {
+			return true;
+		}
+
+		return false;
+	}
+
+	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->IsBot() && HasRobotHumanVoice(player)) {
+			return "";
+		}
+		//const char *token=DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+		//DevMsg("CTFPlayer::GetSceneSoundToken %s\n", token);
+		return DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+	}
+
 //	std::string GetStrForEntity(CBaseEntity *ent)
 //	{
 //		if (ent == nullptr) {
@@ -2121,6 +2242,9 @@ namespace Mod::Pop::ECAttr_Extensions
 					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 1);
 				}
 			}
+			if (data != nullptr && data->custom_eye_particle != "") {
+				StopParticleEffects(killed);
+			}
 		}
 	}
 	
@@ -2148,6 +2272,61 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+	}
+
+	RefCount rc_CTFPlayer_OnTakeDamage_Alive;
+	bool was_bleed = false;
+	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage_Alive, const CTakeDamageInfo &info)
+	{
+		
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_OnTakeDamage_Alive, HasRobotBlood(player));
+		auto result = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage_Alive)(info);
+		if (was_bleed) {
+			Vector vDamagePos = info.GetDamagePosition();
+
+			if (vDamagePos == vec3_origin) {
+				vDamagePos = player->WorldSpaceCenter();
+			}
+
+			Vector vecDir = vec3_origin;
+			if (info.GetInflictor()) {
+				vecDir = info.GetInflictor()->WorldSpaceCenter() - Vector(0.0f, 0.0f, 10.0f) - player->WorldSpaceCenter();
+				VectorNormalize(vecDir);
+			}
+
+			CPVSFilter filter(vDamagePos);
+			TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, player->entindex() );
+			
+		}
+		was_bleed = false;
+
+		return result;
+	}
+
+	RefCount rc_CTFPlayer_Event_Killed;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_Event_Killed, HasRobotBlood(player));
+		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+	}
+	
+	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
+	{
+		if (rc_CTFPlayer_OnTakeDamage_Alive && (strcmp(name, "bot_impact_light") == 0 || strcmp(name, "bot_impact_heavy") == 0)) {
+			was_bleed = true;
+			return;
+		}
+		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
+	}
+
+	DETOUR_DECL_STATIC(void, TE_TFParticleEffect, IRecipientFilter& recipement, float value, char const* name, Vector vector, QAngle angles, CBaseEntity* entity, ParticleAttachment_t attach)
+	{
+		if (rc_CTFPlayer_Event_Killed && strcmp(name, "bot_death") == 0) {
+			return;
+		}
+		DETOUR_STATIC_CALL(TE_TFParticleEffect)(recipement, value, name, vector, angles, entity, attach);
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
@@ -2212,6 +2391,12 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup", HIGH);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBasePlayer_PlayStepSound,                     "CBasePlayer::PlayStepSound",     HIGH);
+
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage_Alive, "CTFPlayer::OnTakeDamage_Alive");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,                        "CTFPlayer::Event_Killed");
+			MOD_ADD_DETOUR_STATIC(DispatchParticleEffect, "DispatchParticleEffect [overload 3]");
+			MOD_ADD_DETOUR_STATIC(TE_TFParticleEffect, "TE_TFParticleEffect");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
 		}
 
 		virtual bool OnLoad() override

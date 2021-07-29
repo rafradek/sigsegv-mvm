@@ -6,6 +6,7 @@
 #include "stub/tf_shareddefs.h"
 #include "stub/misc.h"
 #include "stub/strings.h"
+#include "stub/objects.h"
 #include "util/scope.h"
 #include "util/misc.h"
 
@@ -57,7 +58,8 @@ namespace Mod::Etc::Mapentity_Additions
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_InputIgnitePlayer, inputdata_t &inputdata)
     {
-        reinterpret_cast<CTFPlayer *>(this)->m_Shared->Burn(inputdata.pActivator->IsPlayer() ? ToTFPlayer(inputdata.pActivator) : reinterpret_cast<CTFPlayer *>(this), nullptr, inputdata.value.Float());
+        CTFPlayer *activator = inputdata.pActivator != nullptr && inputdata.pActivator->IsPlayer() ? ToTFPlayer(inputdata.pActivator) : reinterpret_cast<CTFPlayer *>(this);
+        reinterpret_cast<CTFPlayer *>(this)->m_Shared->Burn(activator, nullptr, 10.0f);
     }
 
     const char *logic_case_classname;
@@ -190,6 +192,26 @@ namespace Mod::Etc::Mapentity_Additions
                         else {
                             player->HandleCommand_JoinClass(Value.String());
                         }
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$SwitchClassInPlace") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    
+                    if (player != nullptr) {
+                        Vector pos = player->GetAbsOrigin();
+                        QAngle ang = player->GetAbsAngles();
+                        Vector vel = player->GetAbsVelocity();
+
+                        int index = strtol(Value.String(), nullptr, 10);
+                        if (index > 0 && index < 10) {
+                            player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
+                        }
+                        else {
+                            player->HandleCommand_JoinClass(Value.String());
+                        }
+                        player->ForceRespawn();
+                        player->Teleport(&pos, &ang, &vel);
                     }
                     return true;
                 }
@@ -410,7 +432,18 @@ namespace Mod::Etc::Mapentity_Additions
                     params.m_pflSoundDuration = nullptr;
                     params.m_bWarnOnDirectWaveReference = true;
                     CBaseEntity::EmitSound(filter, ENTINDEX(player), params);
-                return true;
+                    return true;
+                }
+                else if (stricmp(szInputName, "$IgnitePlayerDuration") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    CTFPlayer *activator = pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : player;
+                    player->m_Shared->Burn(activator, nullptr, atof(Value.String()));
+                    return true;
+                }
+                else if (stricmp(szInputName, "$WeaponSwitchSlot") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    player->Weapon_Switch(player->Weapon_GetSlot(atoi(Value.String())));
+                    return true;
                 }
             }
 
@@ -556,9 +589,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$TestEntity") == 0) {
-                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-
-                if (target != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseFilter *>(ent);
                     if (filter != nullptr && filter->PassesFilter(pCaller, target)) {
                         filter->m_OnPass->FireOutput(Value, pActivator, target);
@@ -567,9 +598,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$StartTouchEntity") == 0) {
-                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-
-                if (target != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseTrigger *>(ent);
                     if (filter != nullptr) {
                         filter->StartTouch(target);
@@ -578,9 +607,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$EndTouchEntity") == 0) {
-                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-
-                if (target != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseTrigger *>(ent);
                     if (filter != nullptr) {
                         filter->EndTouch(target);
@@ -610,6 +637,102 @@ namespace Mod::Etc::Mapentity_Additions
 		DETOUR_MEMBER_CALL(CTFGameRules_CleanUpMap)();
         ActivateLoadedInput();
 	}
+
+    CBaseEntity *DoSpecialParsing(const char *szName, CBaseEntity *pStartEntity, const std::function<CBaseEntity *(CBaseEntity *, const char *)>& functor)
+    {
+        if (szName[0] == '@' && szName[1] != '\0') {
+            if (szName[2] == '@') {
+                const char *realname = szName + 3;
+                CBaseEntity *nextentity = pStartEntity;
+                // Find parent of entity
+                if (szName[1] == 'p') {
+                    static CBaseEntity *last_parent = nullptr;
+                    if (pStartEntity == nullptr)
+                        last_parent = nullptr;
+
+                    while (true) {
+                        last_parent = functor(last_parent, realname); 
+                        nextentity = last_parent;
+                        if (nextentity != nullptr) {
+                            if (nextentity->GetMoveParent() != nullptr) {
+                                return nextentity->GetMoveParent();
+                            }
+                            else {
+                                continue;
+                            }
+                        }
+                        else {
+                            return nullptr;
+                        }
+                    }
+                }
+                // Find children of entity
+                else if (szName[1] == 'c') {
+                    bool skipped = false;
+                    while (true) {
+                        if (pStartEntity != nullptr && !skipped ) {
+                            if (pStartEntity->NextMovePeer() != nullptr) {
+                                return pStartEntity->NextMovePeer();
+                            }
+                            else{
+                                pStartEntity = pStartEntity->GetMoveParent();
+                            }
+                        }
+                        pStartEntity = functor(pStartEntity, realname); 
+                        if (pStartEntity == nullptr) {
+                            return nullptr;
+                        }
+                        else {
+                            if (pStartEntity->FirstMoveChild() != nullptr) {
+                                return pStartEntity->FirstMoveChild();
+                            }
+                            else {
+                                skipped = true;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (szName[1] == 'b' && szName[2] == 'b') {
+                Vector min;
+                Vector max;
+                int scannum = sscanf(szName+3, "%f %f %f %f %f %f", &min.x, &min.y, &min.z, &max.x, &max.y, &max.z);
+                if (scannum == 6) {
+                    const char *realname = strchr(szName + 3, '@');
+                    if (realname != nullptr) {
+                        realname += 1;
+                        while (true) {
+                            pStartEntity = functor(pStartEntity, realname); 
+                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox(min, max)) {
+                                continue;
+                            }
+                            else {
+                                return pStartEntity;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return functor(pStartEntity, szName);
+    }
+
+    DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName)
+	{
+        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(entity, realname);});
+
+		//return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
+    }
+
+    DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByName, CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pSearchingEntity, CBaseEntity *pActivator, CBaseEntity *pCaller, IEntityFindFilter *pFilter)
+	{
+        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
+        
+		//return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
+	}
+
     int getspawnflags(CBaseEntity *ent) 
     {
         return ent->m_spawnflags;
@@ -655,7 +778,7 @@ namespace Mod::Etc::Mapentity_Additions
         SCOPED_INCREMENT(rc_CTriggerHurt_HurtEntity);
 		return DETOUR_MEMBER_CALL(CTriggerHurt_HurtEntity)(other, damage);
 	}
-
+    
     DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
@@ -669,6 +792,25 @@ namespace Mod::Etc::Mapentity_Additions
 		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 	}
 
+    DETOUR_DECL_MEMBER(void, CBaseObject_InitializeMapPlacedObject)
+	{
+        DETOUR_MEMBER_CALL(CBaseObject_InitializeMapPlacedObject)();
+    
+        auto sentry = reinterpret_cast<CBaseObject *>(this);
+        variant_t variant;
+        sentry->ReadKeyField("spawnflags", &variant);
+		int spawnflags = variant.Int();
+
+        if (spawnflags & 64) {
+			sentry->SetModelScale(0.75f);
+			sentry->m_bMiniBuilding = true;
+	        sentry->SetHealth(sentry->GetHealth() * 0.66f);
+            sentry->SetMaxHealth(sentry->GetMaxHealth() * 0.66f);
+            sentry->m_nSkin += 2;
+            sentry->SetBodygroup( sentry->FindBodygroupByName( "mini_sentry_light" ), 1 );
+		}
+	}
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -679,7 +821,10 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
 			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity");
+			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByName, "CGlobalEntityList::FindEntityByName");
+			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByClassname, "CGlobalEntityList::FindEntityByClassname");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGHEST);
+            MOD_ADD_DETOUR_MEMBER(CBaseObject_InitializeMapPlacedObject, "CBaseObject::InitializeMapPlacedObject");
     
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");

@@ -38,8 +38,14 @@ namespace Mod::Pop::ExtAttr::Parse
 				DevMsg("  found: ExtAttr IgnoreBuildings\n");
 				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_PLAYERS);
 			} else if (V_stricmp(val, "IgnoreNPC") == 0) {
-				DevMsg("  found: ExtAttr IgnoreNPT\n");
+				DevMsg("  found: ExtAttr IgnoreNPC\n");
 				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_NPC);
+			} else if (V_stricmp(val, "IgnoreBots") == 0) {
+				DevMsg("  found: ExtAttr IgnoreBots\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_BOTS);
+			} else if (V_stricmp(val, "IgnoreRealPlayers") == 0) {
+				DevMsg("  found: ExtAttr IgnoreRealPlayers\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_REAL_PLAYERS);
 			} else {
 				Warning("TFBotSpawner: Invalid extended attribute '%s'\n", val);
 			}

@@ -122,7 +122,6 @@ fail:
 void CExtSigsegv::SDK_OnUnload()
 {
 	ConVar_Restore::OnExtUnload();
-	ConVar_Restore::Save();
 
 	IGameSystem::Remove(this);
 	

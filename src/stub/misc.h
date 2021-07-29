@@ -89,6 +89,9 @@ void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *m
 
 void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid);
 
+void UTIL_ParticleTracer(const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, 
+				 int iEntIndex, int iAttachment, bool bWhiz);
+
 void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity);
 
 void PrintToChatAll(const char *str);

@@ -7,7 +7,13 @@
 #include "link/link.h"
 #include "prop.h"
 
-
+struct HierarchicalSpawn_t
+{
+	CHandle<CBaseEntity> m_hEntity;
+	int			m_nDepth;
+	CBaseEntity	*m_pDeferredParent;			// attachment parents can't be set until the parents are spawned
+	const char	*m_pDeferredParentAttachment; // so defer setting them up until the second pass
+};
 
 class PointTemplateInstance;
 typedef void ( *PointTemplateKilledCallback )( PointTemplateInstance * );
@@ -106,6 +112,7 @@ void Clear_Point_Templates();
 void Update_Point_Templates();
 
 extern StaticFuncThunk<void> ft_PrecachePointTemplates;
+extern StaticFuncThunk<void, int, HierarchicalSpawn_t *, bool> ft_SpawnHierarchicalList;
 extern StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect;
 extern StaticFuncThunk<void, IRecipientFilter&,
 	float,
@@ -143,6 +150,11 @@ inline void TE_TFParticleEffectComplex
 )
 {
 	ft_TE_TFParticleEffectComplex(filter,flDelay,pszParticleName,vecOrigin,vecAngles,pOptionalColors,pOptionalControlPoint1, pEntity, eAttachType, vecStart);
+}
+
+inline void SpawnHierarchicalList(int nEntities, HierarchicalSpawn_t *pSpawnList, bool bActivateEntities)
+{
+	ft_SpawnHierarchicalList(nEntities, pSpawnList, bActivateEntities);
 }
 
 #endif

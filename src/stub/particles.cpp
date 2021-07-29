@@ -61,8 +61,12 @@ void StopParticleEffects(CBaseEntity *pEntity)
 //{
 //	return ft_GetParticleSystemIndex(name);
 //}
-
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter)
+{
+	DispatchParticleEffect(pszParticleName, iAttachType, pEntity, pszAttachmentName, vec3_origin, false, vecColor1, vecColor2, bUseColors, bResetAllParticlesOnEntity, controlPoint, pFilter);
+}
+
+void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecOrigin, bool hasOrigin, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter)
 {
 	int iAttachment = -1;
 	if ( pEntity && pszAttachmentName != nullptr)
@@ -81,11 +85,16 @@ void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t i
 	CEffectData	data;
 
 	data.m_nHitBox = GetParticleSystemIndex( pszParticleName );
+
+	if (hasOrigin)
+		data.m_vOrigin = vecOrigin;
+
 	if ( pEntity )
 	{
 		data.m_nEntIndex = pEntity->entindex();
 		data.m_fFlags |= PARTICLE_DISPATCH_FROM_ENTITY;
-		data.m_vOrigin = pEntity->GetAbsOrigin();
+		if (!hasOrigin)
+			data.m_vOrigin = pEntity->GetAbsOrigin();
 	}
 	data.m_nDamageType = iAttachType;
 	data.m_nAttachmentIndex = iAttachment;

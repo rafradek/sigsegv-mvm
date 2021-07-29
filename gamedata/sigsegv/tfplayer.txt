@@ -834,8 +834,37 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer16DropCurrencyPackE17CurrencyRewards_tibP11CBasePlayer"
 				}
+				"CTFPlayer::ManageBuilderWeapons"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20ManageBuilderWeaponsEP19TFPlayerClassData_t"
+				}
+				"CTFPlayer::IsReadyToSpawn"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer14IsReadyToSpawnEv"
+				}
+				"CTFPlayer::ShouldGainInstantSpawn"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer22ShouldGainInstantSpawnEv"
+				}
+				"CTFPlayer::OnTakeDamage_Alive"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer18OnTakeDamage_AliveERK15CTakeDamageInfo"
+				}
+				"CTFPlayer::PickupWeaponFromOther"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer21PickupWeaponFromOtherEP16CTFDroppedWeapon"
+				}
+				"CTFPlayer::BeginPurchasableUpgrades"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer24BeginPurchasableUpgradesEv"
+				}
 				
-
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

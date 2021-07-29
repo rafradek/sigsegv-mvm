@@ -38,6 +38,8 @@ public:
 	DECL_SENDPROP(bool,               m_bDisabled);
 	DECL_SENDPROP(bool,               m_bCarried);
 	DECL_SENDPROP(bool,               m_bCarryDeploy);
+	DECL_SENDPROP(int,                m_iKills);
+	
 	
 private:
 	DECL_SENDPROP(int,                m_iObjectType);

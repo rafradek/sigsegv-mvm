@@ -41,6 +41,15 @@ void SpawnEntity(CBaseEntity *entity) {
 	//lifetime.SetValue(30.0f);
 }
 
+struct BrushEntityBoundingBox 
+{
+	BrushEntityBoundingBox(CBaseEntity *entity, std::string &min, std::string &max) : entity(entity), min(min), max(max) {}
+
+	CBaseEntity *entity;
+	std::string &min;
+	std::string &max;
+};
+
 std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
 
 	Template_Increment +=1;
@@ -94,6 +103,13 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	
 	std::unordered_map<std::string,CBaseEntity*> spawned;
 	std::vector<CBaseEntity*> spawned_list;
+	std::vector<std::pair<CBaseEntity*, string_t>> parent_string_restore;
+
+	HierarchicalSpawn_t *list_spawned = new HierarchicalSpawn_t[this->entities.size()];
+
+	int num_entity = 0;
+
+	std::vector<BrushEntityBoundingBox> brush_entity_bounding_box;
 
 	for (auto it = this->entities.begin(); it != this->entities.end(); ++it){
 		std::multimap<std::string,std::string> &keys = *it;
@@ -142,6 +158,10 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 
 				if (keys.find("parentname") == keys.end()){
 					entity->SetParent(parent_helper, -1);
+					
+					// Set string to NULL to prevent SpawnHierarchicalList from messing up parenting with the spawntemplate parent
+					parent_string_restore.push_back({entity, entity->m_iParent});
+					entity->m_iParent = NULL_STRING;
 				}
 			}
 			else
@@ -149,37 +169,52 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 				entity->Teleport(&translated,&rotated,&vec3_origin);
 			}
 
-			if (keys.find("parentname") != keys.end()) {
+			/*if (keys.find("parentname") != keys.end()) {
 				std::string parstr = keys.find("parentname")->second;
 				CBaseEntity *parentlocal = spawned[parstr];
 				if (parentlocal != nullptr) {
 					entity->SetParent(parentlocal, -1);
 				}
-			}
+			}*/
 			
-			SpawnEntity(entity);
+			list_spawned[num_entity].m_hEntity = entity;
+			list_spawned[num_entity].m_nDepth = 0;
+			list_spawned[num_entity].m_pDeferredParentAttachment = NULL;
+			list_spawned[num_entity].m_pDeferredParent = NULL;
 
 			templ_inst->entities.push_back(entity);
 			g_pointTemplateChild.insert(entity);
 			
 			//To make brush entities working
 			if (keys.find("mins") != keys.end() && keys.find("maxs") != keys.end()){
-
-				entity->SetModel(TEMPLATE_BRUSH_MODEL);
-				entity->KeyValue("Solid", "3");
-				entity->KeyValue("mins", keys.find("mins")->second.c_str());
-				entity->KeyValue("maxs", keys.find("maxs")->second.c_str());
-				entity->AddEffects(32); //DONT RENDER
-
+				brush_entity_bounding_box.push_back({entity, keys.find("mins")->second, keys.find("maxs")->second});
 			}
+			num_entity++;
 		}
 		
 	}
 	
-	for (auto it = spawned_list.begin(); it != spawned_list.end(); it++) {
-		CBaseEntity *entity = *it;
-		entity->Activate();
+	SpawnHierarchicalList(num_entity, list_spawned, true);
+
+	for (auto &box : brush_entity_bounding_box) {
+		box.entity->SetModel(TEMPLATE_BRUSH_MODEL);
+		box.entity->KeyValue("Solid", "2");
+		box.entity->KeyValue("mins", box.min.c_str());
+		box.entity->KeyValue("maxs", box.max.c_str());
+		box.entity->AddEffects(32); //DONT RENDER
+		box.entity->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
 	}
+
+	// Restore parenting string
+	for (auto &pair : parent_string_restore) {
+		pair.first->m_iParent = pair.second;
+	}
+
+	/*for (auto it = spawned_list.begin(); it != spawned_list.end(); it++) {
+		CBaseEntity *entity = *it;
+		SpawnEntity(entity);
+		entity->Activate();
+	}*/
 
 	if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
 		variant_t variant;
@@ -192,6 +227,9 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
 		servertools->RemoveEntity(spawn_trigger);
 	}
+
+	delete[] list_spawned;
+
 	return templ_inst;
 }
 
@@ -514,6 +552,7 @@ void Update_Point_Templates()
 }
 
 StaticFuncThunk<void> ft_PrecachePointTemplates("PrecachePointTemplates");
+StaticFuncThunk<void, int, HierarchicalSpawn_t *, bool> ft_SpawnHierarchicalList("SpawnHierarchicalList");
 MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   CEventQueue::ft_AddEvent("CEventQueue::AddEvent");
 StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
 

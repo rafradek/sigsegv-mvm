@@ -1173,19 +1173,22 @@ namespace Mod::Util::Client_Cmds
 			}
 		}
 	}
+	std::map<std::string, int> modelmap;
+	std::map<std::string, int> modelmapmedal;
+	std::vector<CBasePlayer *> modelplayertargets;
 
 	void CC_GiveEveryItem(CTFPlayer *player, const CCommand& args)
 	{
-		std::vector<CBasePlayer *> vec;
-		GetSMTargets(player, args[1], vec);
-		if (vec.empty()) {
+		GetSMTargets(player, args[1], modelplayertargets);
+		if (modelplayertargets.empty()) {
 			ClientMsg(player, "[sig_giveeveryitem] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 		int items = 0;
-		std::map<std::string, int> modelmap;
-		std::map<std::string, int> modelmapmedal;
 		
+		modelmap.clear();
+		modelmapmedal.clear();
+
 		for (int i = 0; i < 60000; i++) {
 			auto item_def = GetItemSchema()->GetItemDefinition(i);
 			if (item_def != nullptr && strncmp(item_def->GetItemClass(), "tf_wearable", sizeof("tf_wearable")) == 0) {
@@ -1213,20 +1216,6 @@ namespace Mod::Util::Client_Cmds
 
 		ClientMsg(player, "items: %d\n", modelmap.size());
 		ClientMsg(player, "items medals: %d\n", modelmapmedal.size());
-		for (CBasePlayer *target : vec) {
-			for (auto &pair : modelmap) {
-				if (engine->GetEntityCount() > 1920)
-					break;
-
-				CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(pair.second, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-				if (wearable != nullptr) {
-					
-					wearable->m_bValidatedAttachedEntity = true;
-					wearable->GiveTo(target);
-					target->EquipWearable(wearable);
-				}
-			}
-		}
 	}
 	
 	void CC_DumpInventory(CTFPlayer *player, const CCommand& args)
@@ -1367,7 +1356,7 @@ namespace Mod::Util::Client_Cmds
 		return result;
 	}
 	
-	class CMod : public IMod
+	class CMod : public IMod, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:Client_Cmds")
@@ -1375,6 +1364,35 @@ namespace Mod::Util::Client_Cmds
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+		}
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+		virtual void FrameUpdatePostEntityThink() override
+		{
+			if (!modelplayertargets.empty()) {
+				for (CBasePlayer *target : modelplayertargets) {
+					int amount = 0;
+					for (auto it = modelmap.begin(); it != modelmap.end();) {
+						if (engine->GetEntityCount() > 1920) {
+							modelmap.clear();
+							break;
+						}
+
+						CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(it->second, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+						if (wearable != nullptr) {
+							
+							wearable->m_bValidatedAttachedEntity = true;
+							wearable->GiveTo(target);
+							target->EquipWearable(wearable);
+						}
+						it = modelmap.erase(it);
+						amount++;
+						if (amount >= 100) {
+							break;
+						}
+					}
+				}
+			}
 		}
 	};
 	CMod s_Mod;

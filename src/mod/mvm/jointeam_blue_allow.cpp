@@ -930,8 +930,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			
 			/* enable upgrading in blue spawn zones via "upgrade" client command */
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,                "CTFPlayer::ClientCommand");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged,             "CTFPlayer::OnNavAreaChanged");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ClientCommandKeyValues,    "CTFGameRules::ClientCommandKeyValues");
+		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged,             "CTFPlayer::OnNavAreaChanged");
+		//	MOD_ADD_DETOUR_MEMBER(CTFGameRules_ClientCommandKeyValues,    "CTFGameRules::ClientCommandKeyValues");
 			
 			/* allow flag pickup and capture depending on convar values */
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsAllowedToPickUpFlag, "CTFPlayer::IsAllowedToPickUpFlag");

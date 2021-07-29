@@ -50,7 +50,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		the_spawner   = spawner;
 		the_bot_scale = (spawner->IsMiniBoss(-1) ? tf_mvm_miniboss_scale.GetFloat() : 1.0f);
 		if (spawner->m_flScale != -1.0f) the_bot_scale = spawner->m_flScale;
-		
+	
 		SCOPED_INCREMENT_IF(rc_CTFBotSpawner_Spawn, the_bot_scale != 1.0f && cvar_botspawnfix.GetBool());
 		
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
@@ -191,6 +191,8 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
 		if (rc_IsSpaceToSpawnHere > 0 && the_pos != nullptr) {
+			CTraceFilterIgnorePlayers filter(nullptr, COLLISION_GROUP_NONE);
+			pTraceFilter = &filter;
 			if (rc_CTFBotSpawner_Spawn > 0 && the_spawner != nullptr) {
 				Vector vecMins = (VEC_HULL_MIN * the_bot_scale) + Vector(-5.0f, -5.0f, 0.0f);
 				Vector vecMaxs = (VEC_HULL_MAX * the_bot_scale) + Vector( 5.0f,  5.0f, 5.0f);
@@ -311,7 +313,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		}
 
 		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
-		
+
 		if (isbotmvm)
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 	}

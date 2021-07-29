@@ -151,6 +151,8 @@ namespace Mod::MvM::Extended_Upgrades
 
     std::map<CHandle<CTFPlayer>, IBaseMenu *> select_type_menus;
 
+    std::set<CHandle<CTFPlayer>> in_upgrade_zone;
+
     int extended_upgrades_start_index = -1;
 
     bool BuyUpgrade(UpgradeInfo *upgrade,/* CEconEntity *item*/ int slot, CTFPlayer *player, bool free, bool downgrade);
@@ -769,7 +771,7 @@ namespace Mod::MvM::Extended_Upgrades
 
     void StartMenuForPlayer(CTFPlayer *player) {
         if (select_type_menus.find(player) != select_type_menus.end()) return;
-
+        
         SelectUpgradeWeaponHandler *handler = new SelectUpgradeWeaponHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
         
@@ -896,8 +898,29 @@ namespace Mod::MvM::Extended_Upgrades
 		{
 			if (!TFGameRules()->IsMannVsMachineMode()) return;
 
+            
+            for (auto it = in_upgrade_zone.begin(); it != in_upgrade_zone.end();) {
+                if ((*it).Get() == nullptr || !(*it).Get()->m_Shared->m_bInUpgradeZone) {
+                    if ((*it).Get() != nullptr) {
+                        
+                        auto kv = new KeyValues("MvM_UpgradesDone");
+                        serverGameClients->ClientCommandKeyValues((*it).Get()->GetNetworkable()->GetEdict(), kv);
+                    }
+                    it = in_upgrade_zone.erase(it);
+                }
+                else {
+                    it++;
+                }
+            }
+
             ForEachTFPlayer([&](CTFPlayer *player){
                 if (player->IsBot()) return;
+
+                if (player->m_Shared->m_bInUpgradeZone && !upgrades.empty() && in_upgrade_zone.count(player) == 0) {
+                    in_upgrade_zone.insert(player);
+                    auto kv = new KeyValues("MvM_UpgradesBegin");
+                    serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+                }
 
                 if (player->m_Shared->m_bInUpgradeZone && !upgrades.empty() && select_type_menus.find(player) == select_type_menus.end()) {
                     bool found = false;

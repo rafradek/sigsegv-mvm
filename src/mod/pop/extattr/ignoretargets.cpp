@@ -20,6 +20,12 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 			else if (attrs[CTFBot::ExtendedAttr::IGNORE_PLAYERS] && ent->IsPlayer()) {
 				return true;
 			}
+			else if (attrs[CTFBot::ExtendedAttr::IGNORE_REAL_PLAYERS] && ent->IsPlayer() && ent->MyNextBotPointer() == nullptr) {
+				return true;
+			}
+			else if (attrs[CTFBot::ExtendedAttr::IGNORE_BOTS] && ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
+				return true;
+			}
 			else if (attrs[CTFBot::ExtendedAttr::IGNORE_NPC] && !ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
 				return true;
 			}

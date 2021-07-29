@@ -3,6 +3,8 @@
 #include "stub/populators.h"
 #include "stub/gamerules.h"
 #include "util/scope.h"
+#include "util/iterate.h"
+#include "util/admin.h"
 
 
 namespace Mod::MvM::Robot_Limit
@@ -129,7 +131,12 @@ namespace Mod::MvM::Robot_Limit
 			CheckForMaxInvadersAndKickExtras(*mvm_bots);
 			
 			/* ensure that the original code won't do its own bots-over-quota logic */
-			mvm_bots->RemoveAll();
+			int num_bots = mvm_bots->Count();
+			
+			/* bot spawner has a hardcoded 22 bots check */
+			if (num_bots >= GetMvMInvaderLimit()) {
+				mvm_bots->SetCountNonDestructively(22);
+			}
 		}
 		DevMsg("Collect MVM resulted in %d bots\n", mvm_bots->Count());
 		return mvm_bots->Count();
@@ -156,9 +163,23 @@ namespace Mod::MvM::Robot_Limit
 			Warning("%d bots were already allocated some how before CPopulationManager::AllocateBots was called\n", num_bots);
 		}
 		
+		
 		CheckForMaxInvadersAndKickExtras(mvm_bots);
 		
 		while (num_bots < GetMvMInvaderLimit()) {
+			// Kick spectator players if the player limit is exceeded, sorry
+			if (sv->GetNumClients() >= sv->GetMaxClients()) {
+				bool kicked = false;
+				ForEachTFPlayer([&](CTFPlayer *player) {
+					if (player->GetTeamNumber() < 2 && !player->IsFakeClient() && !player->IsHLTV() && !PlayerIsSMAdmin(player)) {
+						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
+						engine->ServerExecute();
+						return false;
+					}
+					return true;
+				});
+			}
+
 			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
 			if (bot != nullptr) {
 				bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);

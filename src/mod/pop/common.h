@@ -8,6 +8,36 @@
 #include "re/path.h"
 
 
+	
+static int GetSlotFromString(const char *string) {
+    int slot = -1;
+    if (V_stricmp(string, "Primary") == 0)
+        slot = 0;
+    else if (V_stricmp(string, "Secondary") == 0)
+        slot = 1;
+    else if (V_stricmp(string, "Melee") == 0)
+        slot = 2;
+    else if (V_stricmp(string, "Utility") == 0)
+        slot = 3;
+    else if (V_stricmp(string, "Building") == 0)
+        slot = 4;
+    else if (V_stricmp(string, "PDA") == 0)
+        slot = 5;
+    else if (V_stricmp(string, "PDA2") == 0)
+        slot = 6;
+    else if (V_stricmp(string, "Head") == 0)
+        slot = 7;
+    else if (V_stricmp(string, "Misc") == 0)
+        slot = 8;
+    else if (V_stricmp(string, "Action") == 0)
+        slot = 9;
+    else if (V_stricmp(string, "Misc2") == 0)
+        slot = 10;
+    else
+        slot = strtol(string, nullptr, 10);
+    return slot;
+}
+
 static int SPELL_TYPE_COUNT=12;
 static int SPELL_TYPE_COUNT_ALL=15;
 static const char *SPELL_TYPE[] = {
@@ -288,6 +318,34 @@ private:
     int m_iDefIndex;
 };
 
+class ItemListEntry_ItemSlot : public ItemListEntry
+{
+public:
+    ItemListEntry_ItemSlot(const char *slot) : m_iSlot(GetSlotFromString(slot)) {}
+    
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
+    {
+        if (item_view == nullptr) return false;
+        return (this->m_iSlot == item_view->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED));
+    }
+    
+    virtual const char *GetInfo() const override
+    {
+        static char buf[64];
+        if (m_iSlot >= 0) {
+            snprintf(buf, sizeof(buf), "Weapon in slot: %s", g_szLoadoutStrings[m_iSlot]);
+        }
+        else {
+            return "Null";
+        }
+        
+        return buf;
+    }
+    
+private:
+    int m_iSlot;
+};
+
 struct ItemAttributes
 {
     std::unique_ptr<ItemListEntry> entry;
@@ -381,6 +439,10 @@ static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &att
             hasname = true;
             DevMsg("ItemAttrib: Add DefIndex entry: %d\n", subkey->GetInt());
             item_attributes.entry = std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt());
+        } else if (FStrEq(subkey->GetName(), "ItemSlot")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add ItemSlot entry: %s\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_ItemSlot>(subkey->GetString());
         } else {
             CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
             

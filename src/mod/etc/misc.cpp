@@ -3,6 +3,7 @@
 #include "stub/projectiles.h"
 #include "stub/objects.h"
 #include "stub/entities.h"
+#include "stub/nextbot_cc.h"
 #include "stub/gamerules.h"
 #include "stub/nav.h"
 #include "util/backtrace.h"
@@ -153,6 +154,47 @@ namespace Mod::Etc::Misc
 
 	}
 
+	DETOUR_DECL_MEMBER(int, CHeadlessHatman_OnTakeDamage_Alive, const CTakeDamageInfo& info)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		float healthPercentage = (float)npc->GetHealth() / (float)npc->GetMaxHealth();
+
+		if (g_pMonsterResource.GetRef() != nullptr)
+		{
+			if (healthPercentage <= 0.0f)
+			{
+				g_pMonsterResource->m_iBossHealthPercentageByte = 0;
+			}
+			else
+			{
+				g_pMonsterResource->m_iBossHealthPercentageByte = (int) (healthPercentage * 255.0f);
+			}
+		}
+		return DETOUR_MEMBER_CALL(CHeadlessHatman_OnTakeDamage_Alive)(info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CHeadlessHatman_Spawn)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		
+		DevMsg(" Has ref %d\n", g_pMonsterResource.GetRef()); 
+		if (g_pMonsterResource.GetRef() != nullptr)
+		{
+			g_pMonsterResource->m_iBossHealthPercentageByte = 255;
+		}
+		DETOUR_MEMBER_CALL(CHeadlessHatman_Spawn)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CHeadlessHatman_D2)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		if (g_pMonsterResource.GetRef() != nullptr)
+		{
+			g_pMonsterResource->m_iBossHealthPercentageByte = 0;
+		}
+		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -175,6 +217,11 @@ namespace Mod::Etc::Misc
 
 			// Drop flag to last bot nav area
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
+
+			// Allow HHH to have a healthbar
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_OnTakeDamage_Alive, "CHeadlessHatman::OnTakeDamage_Alive");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_Spawn,           "CHeadlessHatman::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
 		}
 	};
 	CMod s_Mod;

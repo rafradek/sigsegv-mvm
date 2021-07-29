@@ -4589,6 +4589,110 @@
 					type "sym"
 					sym  "_ZN12CTFGameRules19BetweenRounds_ThinkEv"
 				}
+				"CSchemaAttributeType_Default::ConvertStringToEconAttributeValue"
+				{
+					type "sym"
+					sym  "_ZNK28CSchemaAttributeType_Default34BConvertStringToEconAttributeValueEPK28CEconItemAttributeDefinitionPKcP22attribute_data_union_tb"
+				}
+				"CHeadlessHatman::OnTakeDamage_Alive"
+				{
+					type "sym"
+					sym  "_ZN15CHeadlessHatman18OnTakeDamage_AliveERK15CTakeDamageInfo"
+				}
+				"CHeadlessHatman::Spawn"
+				{
+					type "sym"
+					sym  "_ZN15CHeadlessHatman5SpawnEv"
+				}
+				"CHeadlessHatman [D2]"
+				{
+					type "sym"
+					sym  "_ZN15CHeadlessHatmanD2Ev"
+				}
+				"SpawnHierarchicalList"
+				{
+					type "sym"
+					sym  "_Z21SpawnHierarchicalListiP19HierarchicalSpawn_tb"
+				}
+				"CBaseEntity::VPhysicsInitStatic"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity18VPhysicsInitStaticEv"
+				}
+				"NextBotCombatCharacter [D0]"
+				{
+					type "sym"
+					sym  "_ZN22NextBotCombatCharacterD0Ev"
+				}
+				"NextBotCombatCharacter [D2]"
+				{
+					type "sym"
+					sym  "_ZN22NextBotCombatCharacterD2Ev"
+				}
+				"CCollisionProperty::SetSolidFlags"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty13SetSolidFlagsEi"
+				}
+				"CTFPointWeaponMimic::Spawn"
+				{
+					type "sym"
+					sym  "_ZN19CTFPointWeaponMimic5SpawnEv"
+				}
+				"CGlobalEntityList::FindEntityByName"
+				{
+					type "sym"
+					sym  "_ZN17CGlobalEntityList16FindEntityByNameEP11CBaseEntityPKcS1_S1_S1_P17IEntityFindFilter"
+				}
+				"CHeadlessHatmanAttack::RecomputeHomePosition"
+				{
+					type "sym"
+					sym  "_ZN21CHeadlessHatmanAttack21RecomputeHomePositionEv"
+				}
+				"TE_TFBlood"
+				{
+					type "sym"
+					sym  "_Z10TE_TFBloodR16IRecipientFilterfRK6VectorS3_i"
+				}
+				
+				"CEngineSoundServer::PrecacheSound"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN18CEngineSoundServer13PrecacheSoundEPKcbb"
+				}
+				"CObjectSentrygun::FirstSpawn"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun10FirstSpawnEv"
+				}
+				"CBaseObject::FinishedBuilding"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject16FinishedBuildingEv"
+				}
+				"CTFMinigun::WindUp"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun6WindUpEv"
+				}
+				"CTFMinigun::WindDown"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun8WindDownEv"
+				}
+				"UTIL_ParticleTracer"
+				{
+					type "sym"
+					sym  "_Z19UTIL_ParticleTracerPKcRK6VectorS3_iib"
+				}
+				
+				"UTIL_ParticleTracer"
+				{
+					type "sym"
+					sym  "_Z19UTIL_ParticleTracerPKcRK6VectorS3_iib"
+				}
+				
 			}
 			"addrs_group"
 			{

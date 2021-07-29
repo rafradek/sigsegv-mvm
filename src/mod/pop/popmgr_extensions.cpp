@@ -19,6 +19,7 @@
 #include "stub/tf_objective_resource.h"
 #include "stub/team.h"
 #include "stub/upgrades.h"
+#include "util/clientmsg.h"
 #include "util/admin.h"
 WARN_IGNORE__REORDER()
 #include <../server/vote_controller.h>
@@ -201,16 +202,19 @@ namespace Mod::Pop::PopMgr_Extensions
 			ResendUpgradeFile(true);
 		});	
 	ConVar cvar_bots_are_humans("sig_mvm_bots_are_humans", "0", FCVAR_NONE,
-		"Bots should use human models",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-		});	
+		"Bots should use human models");	
+
+	ConVar cvar_human_bots_robot_voice("sig_mvm_human_bots_robot_voice", "0", FCVAR_NONE,
+		"Bots should use robot voice if they are humans");	
+
 	ConVar cvar_vanilla_mode("sig_vanilla_mode", "0", FCVAR_NONE,	
-		"Disable most mods",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-		});	
+		"Disable most mods");	
 	
 	ConVar cvar_use_teleport("sig_mvm_bots_use_teleporters", "1", FCVAR_NOTIFY,
 		"Blue humans in MvM: bots use player teleporters");
+
+	ConVar cvar_bots_bleed("sig_mvm_bots_bleed", "0", FCVAR_NOTIFY,
+		"Bots should bleed");
 
 	ConVar cvar_max_red_players("sig_mvm_red_team_max_players", "0", FCVAR_NOTIFY,
 		"Set max red team count",
@@ -577,11 +581,19 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_StealthDamageReduction          ("tf_stealth_damage_reduction"),
 			m_AllowFlagCarrierToFight         ("tf_mvm_bot_allow_flag_carrier_to_fight"),
 			m_HealOnKillOverhealMelee         ("sig_attr_healonkill_overheal_melee"),
-			m_MaxActiveZombie                 ("tf_max_active_zombie")
-			
-			
-			
-			
+			m_MaxActiveZombie                 ("tf_max_active_zombie"),
+			m_HHHAttackRange                  ("tf_halloween_bot_attack_range"),
+			m_HHHChaseRange                   ("tf_halloween_bot_chase_range"),
+			m_HHHChaseDuration                ("tf_halloween_bot_chase_range"),
+			m_HHHQuitRange                    ("tf_halloween_bot_quit_range"),
+			m_HHHTerrifyRange                 ("tf_halloween_bot_terrify_radius"),
+			m_HHHHealthBase                   ("tf_halloween_bot_health_base"),
+			m_HHHHealthPerPlayer              ("tf_halloween_bot_health_per_player"),
+			m_ForceRobotBleed                 ("sig_mvm_bots_bleed"),
+			m_BotHumansHaveRobotVoice         ("sig_mvm_human_bots_robot_voice"),
+			m_BotHumansHaveEyeGlow            ("sig_mvm_human_eye_particle"),
+			m_EyeParticle                     ("sig_mvm_eye_particle")
+
 		{
 			this->Reset();
 		}
@@ -625,6 +637,13 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_flRestartRoundTime = -1.0f;
 			this->m_bNoCountdownSounds = false;
 			this->m_bNoCritNoWin = false;
+			this->m_bZombiesNoWave666 = false;
+			this->m_bFastNPCUpdate = false;
+			this->m_bNoRespawnMidwave = false;
+			this->m_bHHHNoControlPointLogic = false;
+			this->m_bMinibossSentrySingleKill = false;
+			this->m_bExtendedUpgradesOnly = false;
+			this->m_bHHHNonSolidToPlayers = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -682,7 +701,17 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AllowFlagCarrierToFight.Reset();
 			this->m_HealOnKillOverhealMelee.Reset();
 			this->m_MaxActiveZombie.Reset();
-			
+			this->m_HHHChaseDuration.Reset();
+			this->m_HHHChaseRange.Reset();
+			this->m_HHHHealthBase.Reset();
+			this->m_HHHQuitRange.Reset();
+			this->m_HHHAttackRange.Reset();
+			this->m_HHHHealthPerPlayer.Reset();
+			this->m_HHHTerrifyRange.Reset();
+			this->m_ForceRobotBleed.Reset();
+			this->m_BotHumansHaveRobotVoice.Reset();
+			this->m_BotHumansHaveEyeGlow.Reset();
+			this->m_EyeParticle.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -792,6 +821,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		float m_flRestartRoundTime;
 		bool m_bNoCountdownSounds;
 		bool m_bNoCritNoWin;
+		bool m_bZombiesNoWave666;
+		bool m_bFastNPCUpdate;
+		bool m_bNoRespawnMidwave;
+		bool m_bHHHNoControlPointLogic;
+		bool m_bForceRobotBleed;
+		bool m_bMinibossSentrySingleKill;
+		bool m_bExtendedUpgradesOnly;
+		bool m_bHHHNonSolidToPlayers;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -816,7 +853,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<int>  m_SetCreditTeam;
 		CPopOverride_ConVar<bool> m_EnableDominations;
 		CPopOverride_ConVar<int>  m_RobotLimit;
-		CPopOverride_ConVar<bool> m_BotsHumans;
+		CPopOverride_ConVar<int> m_BotsHumans;
 		CPopOverride_ConVar<int> m_ForceHoliday;
 		CPopOverride_ConVar<bool> m_VanillaMode;
 		CPopOverride_ConVar<float> m_BodyPartScaleSpeed;
@@ -850,6 +887,17 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_AllowFlagCarrierToFight;
 		CPopOverride_ConVar<bool> m_HealOnKillOverhealMelee;
 		CPopOverride_ConVar<int> m_MaxActiveZombie;
+		CPopOverride_ConVar<float> m_HHHAttackRange;
+		CPopOverride_ConVar<float> m_HHHChaseRange;
+		CPopOverride_ConVar<float> m_HHHChaseDuration;
+		CPopOverride_ConVar<float> m_HHHQuitRange;
+		CPopOverride_ConVar<float> m_HHHTerrifyRange;
+		CPopOverride_ConVar<int> m_HHHHealthBase;
+		CPopOverride_ConVar<int> m_HHHHealthPerPlayer;
+		CPopOverride_ConVar<bool> m_ForceRobotBleed;
+		CPopOverride_ConVar<bool> m_BotHumansHaveRobotVoice;
+		CPopOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
+		CPopOverride_ConVar<std::string> m_EyeParticle;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -906,6 +954,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unordered_map<CTFPlayer *, std::set<int>> m_SelectedLoadoutItems;
 
 		std::unordered_set<CTFPlayer*> m_PlayerMissionInfoSend;
+
+		std::unordered_set<CTFPlayer*> m_PlayersByWaveStart;
 	};
 	PopState state;
 	
@@ -1012,11 +1062,14 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CTFGameRules::PlayerKilled\n");
 		killed = pVictim;
+		bot_killed_check = state.m_bSendBotsToSpectatorImmediately;
 		SCOPED_INCREMENT(rc_CTFGameRules_PlayerKilled);
 		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
-
-		if(state.m_bSendBotsToSpectatorImmediately && pVictim != nullptr && pVictim->IsBot()) {
-			bot_killed_check = true;
+		if (state.m_bMinibossSentrySingleKill) {
+			auto object = ToBaseObject(info.GetAttacker());
+			if (object != nullptr && TFGameRules()->IsMannVsMachineMode() && pVictim != nullptr && ToTFPlayer(pVictim)->IsMiniBoss()) {
+				object->m_iKills -= 4;
+			}
 		}
 	}
 	
@@ -1154,17 +1207,26 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFGameRules_IsPVEModeControlled)(ent);
 	}
 	
+	THINK_FUNC_DECL(PlayerInspect) 
+	{
+		engine->ClientCommand(this->edict(), "+inspect");
+		engine->ClientCommand(this->edict(), "-inspect");
+	}
+
 	DETOUR_DECL_MEMBER(void, CUpgrades_UpgradeTouch, CBaseEntity *pOther)
 	{
-		if (state.m_bDisableUpgradeStations && TFGameRules()->IsMannVsMachineMode()) {
-			CTFPlayer *player = ToTFPlayer(pOther);
-			if (player != nullptr) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled for this mission!");
-				return;
-			}
+		CTFPlayer *player = ToTFPlayer(pOther);
+		bool was_in_upgrade = player != nullptr && player->m_Shared->m_bInUpgradeZone;
+
+		if (state.m_bDisableUpgradeStations && player != nullptr && TFGameRules()->IsMannVsMachineMode()) {
+			gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled for this mission!");
+			return;
 		}
-		
 		DETOUR_MEMBER_CALL(CUpgrades_UpgradeTouch)(pOther);
+
+		if (!was_in_upgrade && player != nullptr && state.m_bExtendedUpgradesOnly && player->m_Shared->m_bInUpgradeZone && TFGameRules()->IsMannVsMachineMode()) {
+			THINK_FUNC_SET(player, PlayerInspect, gpGlobals->curtime);
+		}
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_BroadcastSound, int iTeam, const char *sound, int iAdditionalSoundFlags)
@@ -1417,6 +1479,59 @@ namespace Mod::Pop::PopMgr_Extensions
 		}*/
 		
 		return result;
+	}
+
+	ConVar cvar_givenameditem_blacklist("sig_mvm_blacklist_givenameditem", "1", FCVAR_NOTIFY,
+		"Use item blacklist in GiveNamedItem for backward compatibility");
+
+	RefCount rc_CTFPlayer_PickupWeaponFromOther;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PickupWeaponFromOther, void *weapon)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_PickupWeaponFromOther);
+		DETOUR_MEMBER_CALL(CTFPlayer_PickupWeaponFromOther)(weapon);
+	}
+
+	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GiveNamedItem, const char *classname, int i1, const CEconItemView *item_view, bool b1)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		
+		/* this only applies to red team, for what essentially amounts to "legacy" reasons */
+		if (cvar_givenameditem_blacklist.GetBool() && TFGameRules()->IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
+			/* only enforce the whitelist/blacklist if they are non-empty */
+			
+			if (!state.m_ItemWhitelist.empty()) {
+				bool found = false;
+				for (const auto& entry : state.m_ItemWhitelist) {
+					if (entry->Matches(classname, item_view)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					DevMsg("[%s] GiveNamedItem(\"%s\"): denied by whitelist\n", player->GetPlayerName(), classname);
+					return nullptr;
+				}
+			}
+			
+			if (!state.m_ItemBlacklist.empty()) {
+				bool found = false;
+				for (const auto& entry : state.m_ItemBlacklist) {
+					if (entry->Matches(classname, item_view)) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					DevMsg("[%s] GiveNamedItem(\"%s\"): denied by blacklist\n", player->GetPlayerName(), classname);
+					return nullptr;
+				}
+			}
+
+			
+		}
+		CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
+
+		return entity;
 	}
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
@@ -1757,14 +1872,24 @@ namespace Mod::Pop::PopMgr_Extensions
 		int classname = player->GetPlayerClass()->GetClassIndex();
 		for(auto it = state.m_PlayerAttributes.begin(); it != state.m_PlayerAttributes.end(); ++it){
 			auto attr = player->GetAttributeList()->GetAttributeByName(it->first.c_str());
-			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float)
-				player->AddCustomAttribute(it->first.c_str(),it->second, 7200.0f);
+			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
+				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
+				if (attr_def != nullptr) {
+					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
+					player->TeamFortress_CalculateMaxSpeed();
+				}
+			}
 		}
 		
 		for(auto it = state.m_PlayerAttributesClass[classname].begin(); it != state.m_PlayerAttributesClass[classname].end(); ++it){
 			auto attr = player->GetAttributeList()->GetAttributeByName(it->first.c_str());
-			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float)
-				player->AddCustomAttribute(it->first.c_str(),it->second, 7200.0f);
+			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
+				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
+				if (attr_def != nullptr) {
+					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
+					player->TeamFortress_CalculateMaxSpeed();
+				}
+			}
 		}
 	}
 
@@ -1843,16 +1968,15 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
 		
+		IClient *pClient = sv->GetClient( ENTINDEX(player)-1 );
+		if (player->GetDeathTime() == 0.0f && !pClient->IsFakeClient() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
+			player->SetDeathTime(gpGlobals->curtime); 
+		}
 		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
 
 		//CTFBot *bot = ToTFBot(player);
 		//if (bot != nullptr)
 		//	spawned_bots_first_tick.push_back(bot);
-		IClient *pClient = sv->GetClient( ENTINDEX(player)-1 );
-
-		
-		CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(player) - 1));
-		DevMsg("Client data %d %d %d %s %d %d %d %d\n",client->m_nClientSlot,client->m_nEntityIndex, client->m_UserID, client->m_Name, client->m_Server, sv, client->m_bIsHLTV, client->m_nCustomFiles[0].crc );
 
 		if (!player->IsBot() && !pClient->IsFakeClient()) {
 		//	spawned_players_first_tick.push_back(player);
@@ -1950,8 +2074,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 	
+	RefCount rc_CTFPlayer_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
+		SCOPED_INCREMENT(rc_CTFPlayer_Event_Killed);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		StopGiantSounds(player);
 		if (state.m_bPlayerRobotUsePlayerAnimation && !player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
@@ -1992,7 +2118,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return sound;
 	}
-	
 	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -2000,13 +2125,14 @@ namespace Mod::Pop::PopMgr_Extensions
 				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
 			return "MVM_";
 		}
-		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) || cvar_bots_are_humans.GetBool()) {
+		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE)) {
 			return "";
 		}
 		//const char *token=DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
 		//DevMsg("CTFPlayer::GetSceneSoundToken %s\n", token);
 		return DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
 	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -3192,6 +3318,113 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
+	DETOUR_DECL_MEMBER(bool, CEngineSoundServer_PrecacheSound,const char *sound, bool flag1, bool flag2)
+	{
+		// Add different volume sounds to precache
+		if (sound && sound[0] == '=') {
+			char *pos;
+			strtol(sound + 1, &pos, 10);
+			sound = pos + 1;
+		}
+		return DETOUR_MEMBER_CALL(CEngineSoundServer_PrecacheSound)(sound, flag1, flag2);
+	}
+
+	int event_popfile = 0;
+	int GetEventPopfile() {
+		return event_popfile;
+	}
+
+	DETOUR_DECL_MEMBER(void, CPopulationManager_UpdateObjectiveResource)
+	{
+		DETOUR_MEMBER_CALL(CPopulationManager_UpdateObjectiveResource)();
+		event_popfile = TFObjectiveResource()->m_nMvMEventPopfileType;
+		if (state.m_bZombiesNoWave666)
+			TFObjectiveResource()->m_nMvMEventPopfileType = 0;
+	}
+
+	DETOUR_DECL_MEMBER(bool, NextBotManager_ShouldUpdate, INextBot *bot)
+	{
+		if (state.m_bFastNPCUpdate) {
+			auto ent = bot->GetEntity();
+			if (ent != nullptr && !ent->IsPlayer()) {
+				return true;
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(NextBotManager_ShouldUpdate)(bot);
+	}
+
+	DETOUR_DECL_MEMBER(void, CPopulationManager_StartCurrentWave)
+	{
+		state.m_PlayersByWaveStart.clear();
+		ForEachTFPlayer([&](CTFPlayer *player) {
+			if (!player->IsBot() && player->IsAlive()) {
+				state.m_PlayersByWaveStart.insert(player);
+			}
+		});
+		DETOUR_MEMBER_CALL(CPopulationManager_StartCurrentWave)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToSpawn)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DevMsg(" Check spawn\n");
+		if (state.m_bNoRespawnMidwave && !player->IsBot() && state.m_PlayersByWaveStart.count(player) == 0 ) {
+			DevMsg("Stop Spawn\n");
+			return false;
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CHeadlessHatmanAttack_RecomputeHomePosition)
+	{
+		if (state.m_bHHHNoControlPointLogic) {
+			return;
+		}
+		DETOUR_MEMBER_CALL(CHeadlessHatmanAttack_RecomputeHomePosition)();
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveCurrency, int amount)
+	{
+		if (rc_CTFPlayer_Event_Killed && state.m_DeathPenalty.Get() != 0 && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveCurrency)(amount);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_EndPurchasableUpgrades)
+	{
+		bool reset = false;
+		if (!state.m_RespecEnabled.Get() && TFObjectiveResource()->m_nMannVsMachineWaveCount == 1 && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
+			reset = true;
+			TFObjectiveResource()->m_nMannVsMachineWaveCount = 2;
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_EndPurchasableUpgrades)();
+		if (reset) {
+			TFObjectiveResource()->m_nMannVsMachineWaveCount = 1;
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
+	{
+		if (state.m_bHHHNonSolidToPlayers) {
+			CBaseEntity *entityme = const_cast< CBaseEntity * >(EntityFromEntityHandle(reinterpret_cast<CTraceFilterSimple*>(this)->GetPassEntity()));
+			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
+
+			if (entityme->MyNextBotPointer() != nullptr && entityhit->IsPlayer()) {
+				if (strcmp(entityme->GetClassname(), "headless_hatman") == 0) {
+					return false;
+				}
+			}
+			else if (entityhit->MyNextBotPointer() != nullptr && entityme->IsPlayer()) {
+				if (strcmp(entityhit->GetClassname(), "headless_hatman") == 0) {
+					return false;
+				}
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
+	}
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -3267,6 +3500,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		} else if (FStrEq(kv->GetName(), "DefIndex")) {
 			DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
 			return std::make_unique<ItemListEntry_DefIndex>(kv->GetInt());
+		} else if (FStrEq(kv->GetName(), "ItemSlot")) {
+			DevMsg("%s: Add ItemSlot entry: %s\n", name, kv->GetString());
+		return std::make_unique<ItemListEntry_ItemSlot>(kv->GetString());
 		} else {
 			DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
 			return std::make_unique<ItemListEntry_Classname>(kv->GetString());
@@ -3304,6 +3540,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(subkey->GetName(), "DefIndex")) {
 				DevMsg("PlayerItemEquipSpawnTemplate: Add DefIndex entry: %d\n", subkey->GetInt());
 				info.weapons.push_back(std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt()));
+			} else if (FStrEq(subkey->GetName(), "ItemSlot")) {
+				DevMsg("PlayerItemEquipSpawnTemplate: Add ItemSlot entry: %s\n", subkey->GetString());
+				info.weapons.push_back(std::make_unique<ItemListEntry_ItemSlot>(subkey->GetString()));
 			}
 		}
 		return info;
@@ -3340,39 +3579,14 @@ namespace Mod::Pop::PopMgr_Extensions
 						name = GetItemName(item_def->m_iItemDefIndex);
 					}
 
+					//if (state.m_CustomWeapons.find(subkey->GetName()) != state.m_CustomWeapons.end())
 					Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(subkey->GetName(), view);
-					if (state.m_CustomWeapons.find(subkey->GetName()) != state.m_CustomWeapons.end())
 					state.m_ItemReplace.push_back({item_def, Parse_ItemListEntry(subkey2,"ItemReplacement"), view, name});
 				}
 			}
 			
 		}
 	}
-	
-	int GetSlotFromString(const char *string) {
-        int slot = -1;
-        if (V_stricmp(string, "Primary") == 0)
-            slot = 0;
-        else if (V_stricmp(string, "Secondary") == 0)
-            slot = 1;
-        else if (V_stricmp(string, "Melee") == 0)
-            slot = 2;
-        else if (V_stricmp(string, "PDA") == 0)
-            slot = 5;
-        else if (V_stricmp(string, "PDA2") == 0)
-            slot = 6;
-        else if (V_stricmp(string, "Head") == 0)
-            slot = 7;
-        else if (V_stricmp(string, "Misc") == 0)
-            slot = 8;
-        else if (V_stricmp(string, "Action") == 0)
-            slot = 9;
-        else if (V_stricmp(string, "Misc2") == 0)
-            slot = 10;
-        else
-            slot = strtol(string, nullptr, 10);
-        return slot;
-    }
 
 	void Parse_ExtraLoadoutItemsClass(KeyValues *subkey2, int classname)
 	{
@@ -3632,6 +3846,25 @@ namespace Mod::Pop::PopMgr_Extensions
 			oldpos = pos+1;
 		}
 	}
+	
+	void GetMinMaxFromSolid(KeyValues *kv, Vector &min, Vector &max)
+	{
+		float x1, x2, x3, y1, y2, y3, z1, z2, z3;
+		FOR_EACH_SUBKEY(kv, side_kv) {
+			
+			if (FStrEq(side_kv->GetName(), "side")) {
+				auto plane = side_kv->GetString("plane");
+				sscanf(plane, "(%f %f %f) (%f %f %f) (%f %f %f)", &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
+				min.x = std::min({x1, x2, x3, min.x});
+				min.y = std::min({y1, y2, y3, min.y});
+				min.z = std::min({z1, z2, z3, min.z});
+				max.x = std::max({x1, x2, x3, max.x});
+				max.y = std::max({y1, y2, y3, max.y});
+				max.z = std::max({z1, z2, z3, max.z});
+			}
+		}
+	}
+	
 	void Parse_PointTemplate(KeyValues *kv)
 	{
 		
@@ -3700,28 +3933,56 @@ namespace Mod::Pop::PopMgr_Extensions
 			else {
 				std::multimap<std::string,std::string> keyvalues;
 
-				keyvalues.insert({"classname", cname});
+				const char *classname = cname;
 
+				bool has_solid = false;
+				Vector solid_min = Vector(FLT_MAX, FLT_MAX, FLT_MAX);
+				Vector solid_max = Vector(FLT_MIN, FLT_MIN, FLT_MIN);
+				Vector origin = vec3_origin;
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					const char *name = subkey2->GetName();
-					if (FStrEq(name,"classname")){
-						keyvalues.erase(name);
+					if (FStrEq(name,"origin")){
+						sscanf(subkey2->GetString(), "%f %f %f", &origin.x, &origin.y, &origin.z);
 					}
-					if (FStrEq(name,"connections")){
+					if (FStrEq(name,"classname")){
+						classname = subkey2->GetString();
+					}
+					else if (subkey2->GetFirstSubKey() != NULL && FStrEq(name,"connections")){
 						FOR_EACH_SUBKEY(subkey2, subkey3) {
 							keyvalues.insert({subkey3->GetName(),subkey3->GetString()});
 						}
+					}
+					else if (subkey2->GetFirstSubKey() != NULL && FStrEq(name,"solid")) {
+						has_solid = true;
+						DevMsg("Has solid\n");
+						GetMinMaxFromSolid(subkey2, solid_min, solid_max);
 					}
 					else if (subkey2->GetFirstSubKey() == NULL)
 						keyvalues.insert({name,subkey2->GetString()});
 				}
 
+				DevMsg("Has solid %d\n", has_solid);
+				if (has_solid) {
+
+					solid_min -= origin;
+					solid_max -= origin;
+					char buf[120];
+					snprintf(buf, 120, "%f %f %f", solid_min.x, solid_min.y, solid_min.z);
+					DevMsg("Min %s\n", buf);
+					keyvalues.insert({"mins", buf});
+
+					snprintf(buf, 120, "%f %f %f", solid_max.x, solid_max.y, solid_max.z);
+					DevMsg("Max %s\n", buf);
+					keyvalues.insert({"maxs", buf});
+
+				}
+				keyvalues.insert({"classname", classname});
+
 				if (keyvalues.find("targetname") != keyvalues.end())
 					entity_names.insert(keyvalues.find("targetname")->second);
 				templ.entities.push_back(keyvalues);
-			
-				
-				DevMsg("add Entity %s to template %s\n", cname, tname.c_str());
+
+				DevMsg("add Entity %s %s to template %s\n", cname, keyvalues.find("classname")->second.c_str(), tname.c_str());
 			}
 		}
 		if (!onspawn.empty()){
@@ -4262,6 +4523,29 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_HealOnKillOverhealMelee.Set(subkey->GetBool());
 				} else if (FStrEq(name, "MaxActiveSkeletons")) {
 					state.m_MaxActiveZombie.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHHealthPerPlayer")) {
+					state.m_HHHHealthPerPlayer.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHHealthBase")) {
+					state.m_HHHHealthBase.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHAttackRange")) {
+					state.m_HHHAttackRange.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHChaseRange")) {
+					state.m_HHHChaseRange.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHTerrifyRange")) {
+					state.m_HHHTerrifyRange.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHQuitRange")) {
+					state.m_HHHQuitRange.Set(subkey->GetInt());
+				} else if (FStrEq(name, "HHHChaseDuration")) {
+					state.m_HHHChaseDuration.Set(subkey->GetFloat());
+				} else if (FStrEq(name, "ForceRobotBleed")) {
+					state.m_ForceRobotBleed.Set(subkey->GetBool());
+				} else if (FStrEq(name, "BotHumansHaveRobotVoice")) {
+					state.m_BotHumansHaveRobotVoice.Set(subkey->GetBool());
+				} else if (FStrEq(name, "BotHumansHaveEyeGlow")) {
+					state.m_BotHumansHaveEyeGlow.Set(subkey->GetBool());
+				} else if (FStrEq(name, "CustomEyeParticle")) {
+					state.m_EyeParticle.Set(subkey->GetString());
+					
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
@@ -4316,6 +4600,10 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_iEscortBotCountOffset = subkey->GetInt();
 				} else if (FStrEq(name, "WaveStartCountdown")) {
 					state.m_flRestartRoundTime = subkey->GetFloat();
+				} else if (FStrEq(name, "ZombiesNoWave666")) {
+					state.m_bZombiesNoWave666 = subkey->GetBool();
+				} else if (FStrEq(name, "FastNPCUpdate")) {
+					state.m_bFastNPCUpdate = subkey->GetBool();
 				} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 				} else if (FStrEq(name, "MaxSpectators")) {
@@ -4387,6 +4675,16 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_bNoCritPumpkin = subkey->GetBool();
 				} else if (FStrEq(name, "NoMissionInfo")) {
 					state.m_bNoMissionInfo = subkey->GetBool();
+				} else if (FStrEq(name, "NoJoinMidwave")) {
+					state.m_bNoRespawnMidwave = subkey->GetBool();
+				} else if (FStrEq(name, "HHHNoControlPointLogic")) {
+					state.m_bHHHNoControlPointLogic = subkey->GetBool();
+				} else if (FStrEq(name, "MinibossSentrySingleKill")) {
+					state.m_bMinibossSentrySingleKill = subkey->GetBool();
+				} else if (FStrEq(name, "ExtendedUpgradesOnly")) {
+					state.m_bExtendedUpgradesOnly = subkey->GetBool();
+				} else if (FStrEq(name, "HHHNonSolidToPlayers")) {
+					state.m_bHHHNonSolidToPlayers = subkey->GetBool();
 				} else if (FStrEq(name, "ItemReplacement")) {
 					Parse_ItemReplacement(subkey);
 				} else if (FStrEq(name, "ExtraLoadoutItems")) {
@@ -4542,6 +4840,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ManageRegularWeapons,                "CTFPlayer::ManageRegularWeapons");
 			MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot,              "CTFItemDefinition::GetLoadoutSlot");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetLoadoutItem,                      "CTFPlayer::GetLoadoutItem");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PickupWeaponFromOther,               "CTFPlayer::PickupWeaponFromOther");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveNamedItem,                       "CTFPlayer::GiveNamedItem");
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_GetMaxReturnTime,                 "CCaptureFlag::GetMaxReturnTime");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
@@ -4609,8 +4909,17 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_BetweenRounds_Think, "CTFGameRules::BetweenRounds_Think");
 
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
+			MOD_ADD_DETOUR_MEMBER(CEngineSoundServer_PrecacheSound, "CEngineSoundServer::PrecacheSound");
 			
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_UpdateObjectiveResource, "CPopulationManager::UpdateObjectiveResource");
 			
+			MOD_ADD_DETOUR_MEMBER(NextBotManager_ShouldUpdate, "NextBotManager::ShouldUpdate");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_StartCurrentWave, "CPopulationManager::StartCurrentWave");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_RecomputeHomePosition, "CHeadlessHatmanAttack::RecomputeHomePosition");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveCurrency, "CTFPlayer::RemoveCurrency");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndPurchasableUpgrades, "CTFPlayer::EndPurchasableUpgrades");
+			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
 
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
@@ -4723,9 +5032,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				ForEachTFPlayer([&](CTFPlayer *player){
 					if (player->IsBot()) return;
 					//if (player->GetTeamNumber() != TF_TEAM_RED) return;
-					if (!player->IsAlive()) return;
+					
 
 					ApplyPlayerAttributes(player);
+					if (!player->IsAlive()) return;
 					int classname = player->GetPlayerClass()->GetClassIndex();
 
 					for(auto cond : state.m_PlayerAddCond){

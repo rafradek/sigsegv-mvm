@@ -88,6 +88,13 @@ void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *m
 static StaticFuncThunk<void, CGameTrace *, int> ft_UTIL_PlayerDecalTrace("UTIL_PlayerDecalTrace");
 void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid) { ft_UTIL_PlayerDecalTrace(tr, playerid); }
 
+static StaticFuncThunk<void, const char *, const Vector &, const Vector &, int, int, bool> ft_UTIL_ParticleTracer("UTIL_ParticleTracer");
+void UTIL_ParticleTracer(const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, 
+	int iEntIndex, int iAttachment, bool bWhiz) 
+{
+	ft_UTIL_ParticleTracer(pszTracerEffectName, vecStart, vecEnd, iEntIndex, iAttachment, bWhiz);
+}
+
 static StaticFuncThunk<void, IRecipientFilter &, float, const Vector *, int, int> ft_TE_PlayerDecal("TE_PlayerDecal");
 void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity) { ft_TE_PlayerDecal(filter, delay, pos, player, entity); }
 

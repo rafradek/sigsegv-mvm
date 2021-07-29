@@ -120,7 +120,7 @@ namespace Mod::Debug::Deflect_Angle
 		}
 #endif
 		
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL()(ray, fMask, pTraceFilter, pTrace);
 		
 		if (rc_CTFWeaponBase_DeflectEntity > 0 && fMask == 0x200400b) {
 			NDebugOverlay::Line(pTrace->startpos, pTrace->endpos, 0x00, 0xff, 0x00, false, 2.0f);

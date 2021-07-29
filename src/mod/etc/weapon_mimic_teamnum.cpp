@@ -2,6 +2,7 @@
 #include "stub/baseentity.h"
 #include "stub/projectiles.h"
 #include "stub/entities.h"
+#include "stub/misc.h"
 #include "util/misc.h"
 
 
@@ -18,6 +19,10 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
         projectile = nullptr;
 		grenade = false;
+		
+		variant_t variant;
+        mimic->ReadKeyField("spawnflags", &variant);
+		int spawnflags = variant.Int();
 		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
 			scorer = mimic->GetOwnerEntity();
 		}
@@ -60,6 +65,11 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		}
 
         if (projectile != nullptr) {
+			// Set models to rockets and arrows
+			//if (mimic->m_pzsModelOverride != NULL_STRING && (spawnflags & 2) && (mimic->m_nWeaponType == 0 || mimic->m_nWeaponType == 2)) {
+			//	projectile->SetModel(mimic->m_pzsModelOverride);
+			//}
+
             if (mimic->GetTeamNumber() != 0) {
 				CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(projectile);
                 projectile->SetTeamNumber(mimic->GetTeamNumber());
@@ -69,11 +79,21 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			if (grenade) {
 				projectile->SetOwnerEntity(scorer);
 			}
-			string_t str = mimic->m_pzsFireParticles;
-			if (FStrEq(STRING(str), "Callback")) {
+			// Fire callback
+			if (spawnflags & 1) {
 				variant_t variant;
             	variant.SetString(NULL_STRING);
                 mimic->m_OnUser4->FireOutput(variant, projectile, mimic);
+			}
+			
+			// Play sound, Particles
+			if (spawnflags & 2) {
+				string_t particle = mimic->m_pzsFireParticles;
+				string_t sound = mimic->m_pzsFireSound;
+				if (sound != NULL_STRING)
+					mimic->EmitSound(STRING(sound));
+				if (particle != NULL_STRING)
+					DispatchParticleEffect(STRING(particle), PATTACH_ABSORIGIN_FOLLOW, mimic, INVALID_PARTICLE_ATTACHMENT, false);
 			}
         }
 		scorer = nullptr;
@@ -141,6 +161,29 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         DETOUR_MEMBER_CALL(CTFPointWeaponMimic_dtor2)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Spawn)
+	{
+        DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Spawn)();
+		auto mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		
+		variant_t variant;
+        mimic->ReadKeyField("spawnflags", &variant);
+		int spawnflags = variant.Int();
+		string_t sound = mimic->m_pzsFireSound;
+		string_t particle = mimic->m_pzsFireParticles;
+		if (spawnflags & 2) {
+			if (sound != NULL_STRING) {
+				if (!enginesound->PrecacheSound(STRING(sound), true))
+					CBaseEntity::PrecacheScriptSound(STRING(sound));
+			}
+
+			if (particle != NULL_STRING)
+				PrecacheParticleSystem(STRING(particle));
+		}
+		if ((spawnflags & 2) || mimic->m_nWeaponType == 4) {
+			mimic->AddEFlags(EFL_FORCE_CHECK_TRANSMIT);
+		}
+	}
 
     class CMod : public IMod
 	{
@@ -154,6 +197,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_CreateNoSpawn,  "CBaseEntity::CreateNoSpawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_dtor0,  "CTFPointWeaponMimic::~CTFPointWeaponMimic [D0]");
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_dtor2,  "CTFPointWeaponMimic::~CTFPointWeaponMimic [D2]");
+			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Spawn,  "CTFPointWeaponMimic::Spawn");
 		}
 	};
 	CMod s_Mod;

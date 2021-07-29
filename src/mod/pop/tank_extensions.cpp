@@ -83,6 +83,7 @@ namespace Mod::Pop::Tank_Extensions
 		bool is_crit           	=  false;
 		bool disable_models     =   false;
 		bool disable_tracks     =   false;
+		bool disable_bomb       =   false;
 		bool immobile           =   false;
 		bool replace_model_col  =   false;
 		int team_num            = -1;
@@ -331,6 +332,9 @@ namespace Mod::Pop::Tank_Extensions
 			} else if (FStrEq(name, "DisableTracks")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].disable_tracks = subkey->GetBool();
+			} else if (FStrEq(name, "DisableBomb")) {
+			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
+				spawners[spawner].disable_bomb = subkey->GetBool();
 			} else if (FStrEq(name, "Immobile")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].immobile = subkey->GetBool();
@@ -535,12 +539,13 @@ namespace Mod::Pop::Tank_Extensions
 						}
 
 						
-						if (data.disable_models || data.disable_tracks) {
+						if (data.disable_models || data.disable_tracks || data.disable_bomb) {
 							for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
 								if (!child->ClassMatches("prop_dynamic")) continue;
-								DevMsg("model name %s\n", modelinfo->GetModelName(modelinfo->GetModel(child->GetModelIndex())));
-								if (data.disable_models || FStrEq(modelinfo->GetModelName(modelinfo->GetModel(child->GetModelIndex())), "models/bots/boss_bot/tank_track_L.mdl") || 
-									FStrEq(modelinfo->GetModelName(modelinfo->GetModel(child->GetModelIndex())), "models/bots/boss_bot/tank_track_R.mdl"))
+								const char * model = STRING(child->GetModelName());
+								DevMsg("model name %s\n", model);
+								if (data.disable_models || (data.disable_tracks && (FStrEq(model, "models/bots/boss_bot/tank_track_L.mdl") || 
+									FStrEq(model, "models/bots/boss_bot/tank_track_R.mdl"))) || (data.disable_bomb && FStrEq(model, "models/bots/boss_bot/bomb_mechanism.mdl")))
 								child->AddEffects(32);
 							}
 						}
@@ -619,7 +624,8 @@ namespace Mod::Pop::Tank_Extensions
 			tank->m_hCurrentNode  = nullptr;
 		}
 		
-		if (node != nullptr && tank->m_hCurrentNode == nullptr && data != nullptr && data->attachements.size() != 0) {
+		int spawnflags = tank->m_spawnflags;
+		if (node != nullptr && tank->m_hCurrentNode == nullptr && ((data != nullptr && data->attachements.size() != 0) || (spawnflags & 1))) {
 			variant_t variant;
 			variant.SetString(NULL_STRING);
 			tank->AcceptInput("FireUser4",tank,tank,variant,-1);

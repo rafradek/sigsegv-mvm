@@ -128,10 +128,11 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	int disallow_movetype_tick = 0;
 	DETOUR_DECL_MEMBER(void, CBaseProjectile_SetLauncher, CBaseEntity *launcher)
 	{
+		auto proj = reinterpret_cast<CBaseProjectile *>(this);
+		CBaseEntity *original = proj->GetOriginalLauncher();
 		DETOUR_MEMBER_CALL(CBaseProjectile_SetLauncher)(launcher);
 		
-		if (launcher != nullptr) {
-			auto proj = reinterpret_cast<CBaseProjectile *>(this);
+		if (launcher != nullptr && original == nullptr) {
 			auto weapon = static_cast<CTFWeaponBaseGun *>(launcher->MyCombatWeaponPointer());
 			if (weapon != nullptr && weapon->GetOwnerEntity() != nullptr && weapon->GetOwnerEntity()->IsPlayer()) {
 

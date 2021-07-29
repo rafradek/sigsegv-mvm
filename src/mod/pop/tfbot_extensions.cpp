@@ -1503,7 +1503,7 @@ namespace Mod::Pop::TFBot_Extensions
 					i += 3;
 				}
 				else if (strcmp(command[i], "-posent") == 0) {
-					CBaseEntity *target = servertools->FindEntityByName(nullptr, command[i+1]);
+					CBaseEntity *target = servertools->FindEntityByName(nullptr, command[i+1], actor);
 					if (target == nullptr && FStrEq(command[i+1],"RandomEnemy")) {
 						if (random_enemy == nullptr)
 							random_enemy = actor->SelectRandomReachableEnemy();
@@ -1514,7 +1514,7 @@ namespace Mod::Pop::TFBot_Extensions
 					i++;
 				}
 				else if (strcmp(command[i], "-lookposent") == 0) {
-					CBaseEntity *target = servertools->FindEntityByName(nullptr, command[i+1]);
+					CBaseEntity *target = servertools->FindEntityByName(nullptr, command[i+1], actor);
 					if (target == nullptr && FStrEq(command[i+1],"RandomEnemy")) {
 						if (random_enemy == nullptr)
 							random_enemy = actor->SelectRandomReachableEnemy();

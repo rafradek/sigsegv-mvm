@@ -114,7 +114,7 @@ namespace Mod::MvM::Gib_Improvements
 			}
 			
 			/* commons: never gib if they lack a decent number of gibs */
-			if (!ClassHasDecentGibs(bot)) {
+			if (*(bot->GetPlayerClass()->GetCustomModel()) != 0 && !ClassHasDecentGibs(bot)) {
 				return false;
 			}
 		}
@@ -122,7 +122,9 @@ namespace Mod::MvM::Gib_Improvements
 		/* can't use the vfunc thunk for this call because we specifically
 		 * want to call the implementation in CTFPlayer */
 		static auto p_CTFPlayer_ShouldGib = MakePtrToMemberFunc<CTFPlayer, bool, const CTakeDamageInfo&>(AddrManager::GetAddr("CTFPlayer::ShouldGib"));
-		return (bot->*p_CTFPlayer_ShouldGib)(info);
+		auto ret = (bot->*p_CTFPlayer_ShouldGib)(info);
+		DevMsg("bot info %d %d\n", ret, info.GetDamageType());
+		return ret;
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGib, const CTakeDamageInfo& info)
@@ -155,6 +157,7 @@ namespace Mod::MvM::Gib_Improvements
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
+		DevMsg("Create ragdoll %d\n", bShouldGib);
 		CTFBot *bot;
 		if (TFGameRules()->IsMannVsMachineMode() && (bot = ToTFBot(player)) != nullptr) {
 			if (bot->IsMiniBoss() || bot->GetModelScale() > 1.0f) {

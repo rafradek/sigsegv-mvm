@@ -254,6 +254,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					m_fLifetime = Max(0.0f, subkey->GetFloat());
 				} else if (FStrEq(name, "Speed")) {
 					m_fSpeed = Max(0.0f, subkey->GetFloat());
+				} else if (FStrEq(name, "DamageMultiplier")) {
+					m_fDmgMult = subkey->GetFloat();
 				} else if (FStrEq(name, "Origin")) {
 					m_bSetOrigin = true;
 					sscanf(subkey->GetString(),"%f %f %f", &m_Origin.x, &m_Origin.y, &m_Origin.z);
@@ -339,6 +341,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 		float m_fLifetime = FLT_MAX;
 		float m_fSpeed = FLT_MAX;
+		float m_fDmgMult = 1.0f;
 
 	private:
 		bool m_bIsMiniBoss = true;
@@ -723,6 +726,72 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return DETOUR_MEMBER_CALL(CZombie_OnTakeDamage_Alive)(info);
 	}
 
+	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, const CTakeDamageInfo& info)
+	{
+		auto ent = reinterpret_cast<CBaseEntity *>(this);
+		if (info.GetAttacker() != nullptr && !info.GetAttacker()->IsPlayer() && info.GetAttacker()->MyNextBotPointer() != nullptr) {
+			auto data = GetBossInfo(info.GetAttacker());
+			if (data != nullptr) {
+				const_cast<CTakeDamageInfo&>(info).SetDamage(info.GetDamage() * data->m_fDmgMult);
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+	}
+
+	void DeleteBoss(CBaseEntity *boss, CHalloweenBossSpawner *spawner)
+	{
+		if (spawner == nullptr && boss != nullptr) {
+			spawner = GetBossInfo(boss);
+		}
+
+		if (spawner == nullptr)
+			return;
+
+		auto populator = spawner->m_Populator;
+		if (populator != nullptr) {
+			int currency = populator->GetCurrencyAmountPerDeath();
+
+			if (currency > 0) {
+				if (!spawner->m_bSpawnCurrencyPack || boss == nullptr) {
+					TFGameRules()->DistributeCurrencyAmount(currency, nullptr, true, true, false);
+				}
+				else {
+					QAngle angRand = vec3_angle;
+					angRand.y = RandomFloat( -180.0f, 180.0f );
+					CCurrencyPackCustom *pCurrencyPack = static_cast<CCurrencyPackCustom *>(CBaseEntity::CreateNoSpawn("item_currencypack_custom", boss->GetAbsOrigin(), angRand, nullptr));
+
+					if (pCurrencyPack)
+					{
+						pCurrencyPack->SetAmount( currency );
+						Vector vecImpulse = RandomVector( -1,1 );
+						vecImpulse.z = 1;
+						VectorNormalize( vecImpulse );
+						Vector vecVelocity = vecImpulse * 250.0;
+
+						DispatchSpawn( pCurrencyPack );
+						pCurrencyPack->DropSingleInstance( vecVelocity, nullptr, 0, 0 );
+					}
+				}
+			}
+		}
+		if (spawner->m_strClassIcon != NULL_STRING ) {
+			CTFObjectiveResource *res = TFObjectiveResource();
+			res->DecrementMannVsMachineWaveClassCount(spawner->m_strClassIcon, 1 | 8);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
+	{
+		for (auto it = boss_spawners.begin(); it != boss_spawners.end();) {
+			auto spawner = it->second;
+			auto inst = it->first;
+			DeleteBoss(inst, spawner);
+			it = boss_spawners.erase(it);
+		}
+		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+	}
+	
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -747,6 +816,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(NextBotGroundLocomotion_GetMaxDeceleration,      "NextBotGroundLocomotion::GetMaxDeceleration");
 			
 			MOD_ADD_DETOUR_MEMBER(CZombie_OnTakeDamage_Alive,      "CZombie::OnTakeDamage_Alive");
+
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage");
+
+			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
 		}
@@ -845,38 +918,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				auto spawner = it->second;
 				auto inst = it->first;
 				if (inst == nullptr || !inst->IsAlive()) {
-					auto populator = spawner->m_Populator;
-					if (populator != nullptr) {
-						int currency = populator->GetCurrencyAmountPerDeath();
-
-						if (currency > 0) {
-							if (!spawner->m_bSpawnCurrencyPack) {
-								TFGameRules()->DistributeCurrencyAmount(currency, nullptr, true, true, false);
-							}
-							else if (inst != nullptr) {
-								QAngle angRand = vec3_angle;
-								angRand.y = RandomFloat( -180.0f, 180.0f );
-								CCurrencyPackCustom *pCurrencyPack = static_cast<CCurrencyPackCustom *>(CBaseEntity::CreateNoSpawn("item_currencypack_custom", inst->GetAbsOrigin(), angRand, nullptr));
-
-								if (pCurrencyPack)
-								{
-									pCurrencyPack->SetAmount( currency );
-									Vector vecImpulse = RandomVector( -1,1 );
-									vecImpulse.z = 1;
-									VectorNormalize( vecImpulse );
-									Vector vecVelocity = vecImpulse * 250.0;
-
-									DispatchSpawn( pCurrencyPack );
-									pCurrencyPack->DropSingleInstance( vecVelocity, nullptr, 0, 0 );
-								}
-							}
-						}
-					}
-					if (spawner->m_strClassIcon != NULL_STRING ) {
-						CTFObjectiveResource *res = TFObjectiveResource();
-						res->DecrementMannVsMachineWaveClassCount(spawner->m_strClassIcon, 1 | 8);
-					}
-
+					DeleteBoss(inst, spawner);
 					it = boss_spawners.erase(it);
 					continue;
 				}

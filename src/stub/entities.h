@@ -425,6 +425,8 @@ public:
 	DECL_DATAMAP (float, m_flSpeedMax);
 	DECL_DATAMAP (float, m_flSplashRadius);
 	DECL_DATAMAP (string_t, m_pzsFireParticles);
+	DECL_DATAMAP (string_t, m_pzsFireSound);
+	DECL_DATAMAP (string_t, m_pzsModelOverride);
 	
 	DECL_DATAMAP (int, m_nWeaponType);
 	
@@ -448,7 +450,7 @@ public:
 	DECL_SENDPROP(int, m_iBossState);
 };
 
-extern GlobalThunk<CHandle<CMonsterResource>> g_pMonsterResource;
+extern GlobalThunk<CMonsterResource *> g_pMonsterResource;
 
 // 20151007a
 

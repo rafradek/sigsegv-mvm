@@ -95,6 +95,7 @@ class CBasePlayer : public CBaseCombatCharacter
 {
 public:
 	float GetDeathTime() const              { return this->m_flDeathTime; }
+	void SetDeathTime(float time)           {        this->m_flDeathTime = time; }
 	int GetObserverMode() const             { return this->m_iObserverMode; }
 	const char *GetPlayerName()             { return this->m_szNetname; }
 	float MaxSpeed() const                  { return this->m_flMaxspeed; }

@@ -31,6 +31,12 @@
 					sym  "_ZN14NextBotManager6UpdateEv"
 				}
 				
+				"NextBotManager::ShouldUpdate"
+				{
+					type "sym"
+					sym  "_ZN14NextBotManager12ShouldUpdateEP8INextBot"
+				}
+				
 			}
 		}
 	}

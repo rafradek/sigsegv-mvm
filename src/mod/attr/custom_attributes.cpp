@@ -45,6 +45,14 @@ namespace Mod::Attr::Custom_Attributes
 		return value;
 	}
 
+	inline void PrecacheSound(const char *name) {
+		if (precached.count(name) == 0) {
+			if (!enginesound->PrecacheSound(name, true))
+				CBaseEntity::PrecacheScriptSound(name);
+			precached.insert(name);
+		}
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
 	{
 		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CanAirDash)();
@@ -666,7 +674,9 @@ namespace Mod::Attr::Custom_Attributes
 		if (launcher != nullptr) {
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
 			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
+			
 			if (sound != nullptr) {
+				PrecacheSound(sound);
 				proj->EmitSound(sound);
 			}
 		}
@@ -683,6 +693,7 @@ namespace Mod::Attr::Custom_Attributes
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
 			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
 			if (sound != nullptr) {
+				PrecacheSound(sound);
 				proj->EmitSound(sound);
 			}
 		}
@@ -719,11 +730,8 @@ namespace Mod::Attr::Custom_Attributes
 
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
-				if (precached.find(modelname) == precached.end()) {
-					if (!enginesound->PrecacheSound(modelname, true))
-						CBaseEntity::PrecacheScriptSound(modelname);
-					precached.insert(modelname);
-				}
+				
+				PrecacheSound(modelname);
 				weapon_sound_override_owner = ToTFPlayer(weapon->GetOwner());
 				weapon_sound_override = modelname;
 
@@ -775,6 +783,7 @@ namespace Mod::Attr::Custom_Attributes
 				
 				const char *sound = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom impact sound");
 				if (sound != nullptr) {
+					PrecacheSound(sound);
 					CRecipientFilter filter;
 					filter.AddRecipientsByPAS(ptr->endpos);
 					EmitSound_t params;
@@ -1040,6 +1049,23 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CanHeadshot)();
 	}
 
+	DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, const CTakeDamageInfo& info)
+	{
+		if (info.GetWeapon() != nullptr) {
+			auto character = reinterpret_cast<CBaseCombatCharacter *>(this);
+			if (character->MyNextBotPointer() != nullptr && !character->IsPlayer()) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_npc);
+				if (dmg_mult != 1.0f) {
+					CTakeDamageInfo newinfo = info;
+					newinfo.SetDamage(newinfo.GetDamage() * dmg_mult);
+					return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(newinfo);
+				}
+			}
+		}
+		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+	}
+
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
 		if (info.GetWeapon() != nullptr) {
@@ -1072,10 +1098,6 @@ namespace Mod::Attr::Custom_Attributes
 				dmg *= dmg_mult;
 			}
 			else if (pVictim->MyNextBotPointer() != nullptr && !pVictim->IsPlayer()) {
-				float dmg_mult = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_npc);
-				dmg *= dmg_mult;
-
 				if (pVictim->ClassMatches("tank_boss")) {
 					float dmg_mult = 1.0f;
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_tanks);
@@ -1518,6 +1540,20 @@ namespace Mod::Attr::Custom_Attributes
 		return damage;
 	}
 
+	DETOUR_DECL_MEMBER(bool, CSchemaAttributeType_Default_ConvertStringToEconAttributeValue , const CEconItemAttributeDefinition *pAttrDef, const char *pszValue, attribute_data_union_t *out_pValue, bool floatforce)
+	{
+		if (pszValue[0] == 'i' || pszValue[0] == 'I') {
+			out_pValue->m_UInt = (uint32)V_atoui64(pszValue + 1);
+			return true;
+		}
+		else if (pszValue[0] == 'x' || pszValue[0] == 'X') {
+			out_pValue->m_UInt = (uint32)strtoll(pszValue + 1, nullptr, 16);
+			return true;
+		}
+
+		return DETOUR_MEMBER_CALL(CSchemaAttributeType_Default_ConvertStringToEconAttributeValue)(pAttrDef, pszValue, out_pValue, floatforce);
+	}
+
 	DETOUR_DECL_MEMBER(bool, static_attrib_t_BInitFromKV_SingleLine, const char *context, KeyValues *attribute, CUtlVector<CUtlString> *errors, bool b)
 	{
 		if (V_strnicmp(attribute->GetName(), "SET BONUS: ", strlen("SET BONUS: ")) == 0) {
@@ -1608,10 +1644,44 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_DeflectEntity, CBaseEntity *pTarget, CTFPlayer *pOwner, Vector &vecForward, Vector &vecCenter, Vector &vecSize)
 	{
+		int team = pTarget->GetTeamNumber();
+		CBaseEntity *projOwner = pTarget->GetOwnerEntity();
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_DeflectEntity)(pTarget, pOwner, vecForward, vecCenter, vecSize);
 		if (result) {
+			int deflectKeepTeam = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER ( reinterpret_cast<CTFWeaponBase *>(this), deflectKeepTeam, reflect_keep_team );
+			if (deflectKeepTeam != 0) {
+				pTarget->SetTeamNumber(team);
+				pTarget->SetOwnerEntity(projOwner);
+			}
+
+			int reflectMagnet = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), reflectMagnet, reflect_magnet);
+			if (reflectMagnet != 0) {
+				IPhysicsObject *physics = pTarget->VPhysicsGetObject();
+
+				if (physics != nullptr) {
+					AngularImpulse ang_imp;
+					Vector vel;
+					physics->GetVelocity(&vel, &ang_imp);
+					float len = vel.Length();
+					vel = pOwner->WorldSpaceCenter() - pTarget->GetAbsOrigin();
+					vel.NormalizeInPlace();
+					vel *= len;
+					physics->SetVelocity(&vel, &ang_imp);
+				}
+				else {
+					Vector vel = pTarget->GetAbsVelocity();
+					float len = vel.Length();
+					vel = pOwner->WorldSpaceCenter() - pTarget->GetAbsOrigin();
+					vel.NormalizeInPlace();
+					vel *= len;
+					pTarget->SetAbsVelocity(vel);
+				}
+			}
+
 			float deflectStrength = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( reinterpret_cast<CTFPlayer *>(this), deflectStrength, mult_reflect_velocity );
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), deflectStrength, mult_reflect_velocity);
 			if (deflectStrength != 1.0f) {
 				IPhysicsObject *physics = pTarget->VPhysicsGetObject();
 
@@ -1827,6 +1897,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (ent != nullptr && weapon != nullptr) {
 			const char *str = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom hit sound");
 			if (str != nullptr) {
+				PrecacheSound(str);
 				ent->EmitSound(str);
 			}
 			
@@ -2136,6 +2207,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			const char *sound = GetStringAttribute(econ_entity->GetItem()->GetAttributeList(), "custom impact sound");
 			if (sound != nullptr) {
+				PrecacheSound(sound);
 				text2 = sound;
 			}
 		}
@@ -2459,6 +2531,49 @@ namespace Mod::Attr::Custom_Attributes
 
 		return DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn)(player);
 	}
+
+	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
+	{
+		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
+		for (size_t i = 0; i < stick_info.size(); ) {
+			auto &entry = stick_info[i];
+			if (entry.sticked == player && entry.sticky != nullptr) {
+				stick_info.erase(stick_info.begin() + i);
+				auto phys = entry.sticky->VPhysicsGetObject();
+				if (phys != nullptr) {
+					phys->EnableMotion(true);
+				}
+				continue;
+			}
+			i++;
+		}
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFMinigun_WindDown)
+	{
+		auto minigun = reinterpret_cast<CTFMinigun *>(this);
+		if (minigun->GetItem() != nullptr) {
+			const char *str = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom wind down sound");
+			if (str != nullptr) {
+				PrecacheSound(str);
+				minigun->EmitSound(str);
+			}
+		}
+        DETOUR_MEMBER_CALL(CTFMinigun_WindDown)();
+    }
+	
+	DETOUR_DECL_MEMBER(void, CTFMinigun_WindUp)
+	{
+		auto minigun = reinterpret_cast<CTFMinigun *>(this);
+		if (minigun->GetItem() != nullptr) {
+			const char *str = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom wind up sound");
+			if (str != nullptr) {
+				PrecacheSound(str);
+				minigun->EmitSound(str);
+			}
+		}
+        DETOUR_MEMBER_CALL(CTFMinigun_WindUp)();
+    }
 
 	std::vector<std::string> attribute_info_strings[33];
 	float attribute_info_display_time[33];
@@ -2801,6 +2916,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_CanHeadshot, "CTFProjectile_EnergyBall::CanHeadshot");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_CanHeadshot, "CTFProjectile_EnergyRing::CanHeadshot");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CanHeadshot, "CTFProjectile_Arrow::CanHeadshot");
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_OnTakeDamage, "CBaseCombatCharacter::OnTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_VPhysicsCollision, "CTFGrenadePipebombProjectile::VPhysicsCollision");
@@ -2862,6 +2978,10 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_StickybombTouch ,"CTFGrenadePipebombProjectile::StickybombTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropCurrencyPack ,"CTFPlayer::DropCurrencyPack");
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn ,"CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned ,"CTFGameRules::OnPlayerSpawned");
+			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindDown ,"CTFMinigun::WindDown");
+			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindUp ,"CTFMinigun::WindUp");
+			
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");
@@ -2876,11 +2996,15 @@ namespace Mod::Attr::Custom_Attributes
 		//	Allow explosive headshots on anything
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
 
+		//	Allow parsing attributes stored as integer
+			MOD_ADD_DETOUR_MEMBER(CSchemaAttributeType_Default_ConvertStringToEconAttributeValue, "CSchemaAttributeType_Default::ConvertStringToEconAttributeValue");
+
 		//	Allow set bonus attributes on items, with the help of custom attributes
 			MOD_ADD_DETOUR_MEMBER(static_attrib_t_BInitFromKV_SingleLine, "static_attrib_t::BInitFromKV_SingleLine");
 			
 		//	Fix build small sentries attribute reaplly max health on redeploy bug
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_MakeScaledBuilding, "CObjectSentrygun::MakeScaledBuilding");
+			
 			
 		}
 

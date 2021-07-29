@@ -4,6 +4,7 @@
 
 
 IMPL_DATAMAP(string_t,               CBaseEntity, m_target);
+IMPL_DATAMAP(string_t,               CBaseEntity, m_iParent);
 IMPL_DATAMAP(int,                    CBaseEntity, m_debugOverlays);
 IMPL_DATAMAP(CServerNetworkProperty, CBaseEntity, m_Network);
 IMPL_DATAMAP(string_t,               CBaseEntity, m_iClassname);
@@ -74,6 +75,7 @@ MemberFuncThunk<      CBaseEntity *, int                                        
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_SetEffects                 ("CBaseEntity::SetEffects");
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_AddEffects                 ("CBaseEntity::AddEffects");
 MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *                        > CBaseEntity::ft_ReadKeyField               ("CBaseEntity::ReadKeyField");
+MemberFuncThunk<      CBaseEntity *, IPhysicsObject *                                       > CBaseEntity::ft_VPhysicsInitStatic         ("CBaseEntity::VPhysicsInitStatic");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");
@@ -129,6 +131,7 @@ StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHA
 
 MemberFuncThunk<CCollisionProperty *, void, SurroundingBoundsType_t, const Vector *, const Vector *> ft_SetSurroundingBoundsType("CCollisionProperty::SetSurroundingBoundsType");
 MemberFuncThunk<CCollisionProperty *, void> ft_MarkPartitionHandleDirty("CCollisionProperty::MarkPartitionHandleDirty");
+MemberFuncThunk<CCollisionProperty *, void, int> ft_SetSolidFlags("CCollisionProperty::SetSolidFlags");
 
 void CCollisionProperty::SetSurroundingBoundsType(SurroundingBoundsType_t type, const Vector *pMins, const Vector *pMaxs) {
 	ft_SetSurroundingBoundsType(this, type, pMins, pMaxs);
@@ -136,6 +139,10 @@ void CCollisionProperty::SetSurroundingBoundsType(SurroundingBoundsType_t type, 
 
 void CCollisionProperty::MarkPartitionHandleDirty() {
 	ft_MarkPartitionHandleDirty(this);
+}
+
+void CCollisionProperty::SetSolidFlags(int flags) {
+	ft_SetSolidFlags(this, flags);
 }
 
 // bool CBaseEntity::IsPlayer() const

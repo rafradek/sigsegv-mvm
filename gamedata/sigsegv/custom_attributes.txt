@@ -1816,4 +1816,56 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    //Projectile gravity native
+    "4496"
+    {
+        "name"	"stomp player damage"
+        "attribute_class"	"stomp_player_damage"
+        "description_string"	"Deals %d damage to touched enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Projectile gravity native
+    "4497"
+    {
+        "name"	"reflect keep team"
+        "attribute_class"	"reflect_keep_team"
+        "description_string"	"Reflected projectiles keep their original team"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4498"
+    {
+        "name"	"custom wind up sound"
+        "attribute_class"	"custom_wind_up_sound"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4499"
+    {
+        "name"	"custom wind down sound"
+        "attribute_class"	"custom_wind_down_sound"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Projectile gravity native
+    "4500"
+    {
+        "name"	"reflect magnet"
+        "attribute_class"	"reflect_magnet"
+        "description_string"	"Reflects projectiles towards pyro"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

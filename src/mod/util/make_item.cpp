@@ -176,23 +176,7 @@ namespace Mod::Util::Make_Item
 			ClientMsg(player, "[sig_makeitem_add_attr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", name);
 			return;
 		}
-		if (value[0] == 'i' && value[1] == '&') {
-			
-			attribute_data_union_t value_attr;
-			value_attr.m_UInt = strtoul(value + 2, nullptr, 10);
-			//value_attr.m_Float = strtof(value + 2, nullptr);
-			
-			//CEconItemAttribute *attribute = CEconItemAttribute::Create(attr_def->GetIndex());
-			//*attribute->GetValuePtr() = value_attr;
-
-			//item_view->GetAttributeList().AddAttribute(attribute);
-			item_view->GetAttributeList().SetRuntimeAttributeValue(attr_def, value_attr.m_Float);
-			ClientMsg(player, "[sig_makeitem_add_attr] Integer parsing value %u %.17e %.17e\n", value_attr.m_UInt, value_attr.m_Float, item_view->GetAttributeList().GetAttributeByID(attr_def->GetIndex())->GetValuePtr()->m_Float );
-
-		}
-		else {
-			item_view->GetAttributeList().AddStringAttribute(attr_def, value);
-		}
+		item_view->GetAttributeList().AddStringAttribute(attr_def, value);
 
 		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), value);
 	}

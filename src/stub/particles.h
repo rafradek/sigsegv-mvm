@@ -87,5 +87,12 @@ inline void TE_DispatchEffect( IRecipientFilter &filter, float delay, const Vect
 	ft_TE_DispatchEffect(filter, delay, pos, pName, data);
 }
 
+static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int> ft_TE_TFBlood("TE_TFBlood");
+inline void TE_TFBlood( IRecipientFilter &filter, float delay, const Vector &pos, const Vector &normal, int entindex)
+{
+	ft_TE_TFBlood(filter, delay, pos, normal, entindex);
+}
+
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);
+void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecOrigin, bool hasOrigin, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);
 #endif

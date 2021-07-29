@@ -95,12 +95,14 @@ public:
 	const QAngle& GetAbsAngles() const;
 	const Vector& GetAbsVelocity() const;
 	bool IsEFlagSet(int nEFlagMask) const;
+	void AddEFlags(int nEFlagMask);
 	const matrix3x4_t& EntityToWorldTransform() const;
 	bool NameMatches(const char *pszNameOrWildcard);
 	void SetModel(const char *szModelName);
 	bool ClassMatches(const char *pszClassOrWildcard);
 	void RemoveEffects(int nEffects);
 	void ClearEffects();
+	bool HasSpawnFlags(int flags) const;
 	
 	/* getter/setter */
 	IServerNetworkable *GetNetworkable() const    { return &this->m_Network; }
@@ -177,6 +179,7 @@ public:
 	void SetEffects(int nEffects)                                                                                           {        ft_SetEffects                    (this, nEffects); }
 	void AddEffects(int nEffects)                                                                                           {        ft_AddEffects                    (this, nEffects); }
 	bool ReadKeyField(const char *name, variant_t *var)                                                                     { return ft_ReadKeyField                  (this, name, var); }
+	IPhysicsObject *VPhysicsInitStatic()                                                                                    { return ft_VPhysicsInitStatic            (this); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -241,6 +244,7 @@ public:
 	void NetworkStateChanged(void *pVar);
 	
 	DECL_DATAMAP(string_t, m_target);
+	DECL_DATAMAP(string_t, m_iParent);
 	DECL_DATAMAP(int,      m_debugOverlays);
 	
 	/* TODO: make me private again! */
@@ -317,6 +321,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_SetEffects;
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_AddEffects;
 	static MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *>                         ft_ReadKeyField;
+	static MemberFuncThunk<      CBaseEntity *, IPhysicsObject *>                                        ft_VPhysicsInitStatic;
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;
@@ -357,6 +362,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, const char*>                                   vt_KeyValue;
 	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                                    vt_GetKeyValue;
 	static MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &>                                  vt_FireBullets;
+	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_CreateNoSpawn;
@@ -450,6 +456,19 @@ inline const Vector& CBaseEntity::GetAbsVelocity() const
 inline bool CBaseEntity::IsEFlagSet(int nEFlagMask) const
 {
 	return (this->m_iEFlags & nEFlagMask) != 0;
+}
+
+inline void CBaseEntity::AddEFlags(int nEFlagMask)
+{
+	this->m_iEFlags |= nEFlagMask;
+	if (this->m_iEFlags & ( EFL_FORCE_CHECK_TRANSMIT | EFL_IN_SKYBOX )) {
+		this->DispatchUpdateTransmitState();
+	}
+}
+
+inline bool CBaseEntity::HasSpawnFlags( int nFlags ) const
+{ 
+	return (this->m_spawnflags & nFlags) != 0; 
 }
 
 inline const matrix3x4_t& CBaseEntity::EntityToWorldTransform() const

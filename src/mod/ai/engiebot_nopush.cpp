@@ -9,21 +9,21 @@ namespace Mod::AI::EngieBot_NoPush
 	RefCount rc_TeleSpawn_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMvMEngineerTeleportSpawn_Update, CTFBot *actor, float dt)
 	{
-		SCOPED_INCREMENT_IF(rc_TeleSpawn_Update, actor->GetTeamNumber() == TF_TEAM_BLUE);
+		SCOPED_INCREMENT(rc_TeleSpawn_Update);
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerTeleportSpawn_Update)(actor, dt);
 	}
 	
 	RefCount rc_BuildSentry_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>,CTFBotMvMEngineerBuildSentryGun_Update, CTFBot *actor, float dt)
 	{
-		SCOPED_INCREMENT_IF(rc_BuildSentry_Update, actor->GetTeamNumber() == TF_TEAM_BLUE);
+		SCOPED_INCREMENT(rc_BuildSentry_Update);
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildSentryGun_Update)(actor, dt);
 	}
 	
 	RefCount rc_BuildTele_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMvMEngineerBuildTeleportExit_Update, CTFBot *actor, float dt)
 	{
-		SCOPED_INCREMENT_IF(rc_BuildTele_Update, actor->GetTeamNumber() == TF_TEAM_BLUE);
+		SCOPED_INCREMENT(rc_BuildTele_Update);
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_Update)(actor, dt);
 	}
 

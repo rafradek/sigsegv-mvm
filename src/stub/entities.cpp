@@ -231,6 +231,8 @@ IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flDamage);
 IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flSpeedMax);
 IMPL_DATAMAP (float, CTFPointWeaponMimic, m_flSplashRadius);
 IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsFireParticles);
+IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsFireSound);
+IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsModelOverride);
 IMPL_DATAMAP (int, CTFPointWeaponMimic, m_nWeaponType);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits, 0x04);
 
@@ -242,4 +244,4 @@ IMPL_SENDPROP(int,      CMonsterResource, m_iBossHealthPercentageByte, CMonsterR
 IMPL_SENDPROP(int,      CMonsterResource, m_iBossStunPercentageByte, CMonsterResource);
 IMPL_SENDPROP(int,      CMonsterResource, m_iBossState, CMonsterResource);
 
-GlobalThunk<CHandle<CMonsterResource>> g_pMonsterResource("g_pMonsterResource");
+GlobalThunk<CMonsterResource *> g_pMonsterResource("g_pMonsterResource");
