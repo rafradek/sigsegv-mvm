@@ -3425,6 +3425,25 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
 	}
 
+	RefCount rc_CHeadlessHatmanAttack_AttackTarget;
+	CBaseEntity *hatman_target = nullptr;
+	DETOUR_DECL_MEMBER(void, CHeadlessHatmanAttack_AttackTarget, CBaseEntity *hatman, CBaseEntity *target, float range)
+	{
+		SCOPED_INCREMENT(rc_CHeadlessHatmanAttack_AttackTarget);
+		hatman_target = target;
+		DETOUR_MEMBER_CALL(CHeadlessHatmanAttack_AttackTarget)( hatman, target, range);
+	}
+
+	DETOUR_DECL_STATIC(void, CalculateMeleeDamageForce, CTakeDamageInfo *info, Vector &vecMeleeDir, const Vector &vecForceOrigin, float flScale )
+	{
+		if (rc_CHeadlessHatmanAttack_AttackTarget) {
+			vecMeleeDir.z = 0;
+			hatman_target->SetAbsVelocity(hatman_target->GetAbsVelocity() + Vector(0,0,460));
+		}
+		/*DevMsg("MeleeDaamgeForce %f %d\n", vecMeleeDir.z, rc_CHeadlessHatmanAttack_AttackTarget);*/
+		DETOUR_STATIC_CALL(CalculateMeleeDamageForce)(info, vecMeleeDir, vecForceOrigin, flScale);
+	}
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -4921,6 +4940,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndPurchasableUpgrades, "CTFPlayer::EndPurchasableUpgrades");
 			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
 
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_AttackTarget, "CHeadlessHatmanAttack::AttackTarget");
+			MOD_ADD_DETOUR_STATIC(CalculateMeleeDamageForce, "CalculateMeleeDamageForce");
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");

@@ -4692,7 +4692,16 @@
 					type "sym"
 					sym  "_Z19UTIL_ParticleTracerPKcRK6VectorS3_iib"
 				}
-				
+				"CalculateMeleeDamageForce"
+				{
+					type "sym"
+					sym  "_Z25CalculateMeleeDamageForceP15CTakeDamageInfoRK6VectorS3_f"
+				}
+				"CHeadlessHatmanAttack::AttackTarget"
+				{
+					type "sym"
+					sym  "_ZN21CHeadlessHatmanAttack12AttackTargetEP15CHeadlessHatmanP20CBaseCombatCharacterf"
+				}
 			}
 			"addrs_group"
 			{

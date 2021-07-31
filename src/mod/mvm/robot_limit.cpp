@@ -134,7 +134,7 @@ namespace Mod::MvM::Robot_Limit
 			int num_bots = mvm_bots->Count();
 			
 			/* bot spawner has a hardcoded 22 bots check */
-			if (num_bots >= GetMvMInvaderLimit()) {
+			if (num_bots >= 22 || num_bots >= GetMvMInvaderLimit()) {
 				mvm_bots->SetCountNonDestructively(22);
 			}
 		}
