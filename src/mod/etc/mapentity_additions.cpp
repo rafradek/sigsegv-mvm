@@ -445,6 +445,13 @@ namespace Mod::Etc::Mapentity_Additions
                     player->Weapon_Switch(player->Weapon_GetSlot(atoi(Value.String())));
                     return true;
                 }
+                else if (stricmp(szInputName, "$WeaponStripSlot") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    auto weapon = player->Weapon_GetSlot(atoi(Value.String()));
+                    if (weapon != nullptr)
+                        weapon->Remove();
+                    return true;
+                }
             }
 
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {

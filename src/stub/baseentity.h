@@ -252,6 +252,7 @@ public:
 	DECL_DATAMAP (int,    m_nNextThinkTick);
 	DECL_SENDPROP(char,   m_lifeState);
 	DECL_SENDPROP(int[4], m_nModelIndexOverrides);
+	DECL_SENDPROP(bool,   m_iTextureFrameIndex);
 	DECL_DATAMAP(float,      m_flLocalTime);
 	DECL_DATAMAP(float,      m_flAnimTime);
 	DECL_DATAMAP(float,      m_flSimulationTime);

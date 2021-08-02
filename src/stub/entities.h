@@ -39,10 +39,12 @@ public:
 class CTFDroppedWeapon : public CBaseAnimating {
 public:
 	static CTFDroppedWeapon *Create(CTFPlayer *pLastOwner, const Vector &vecOrigin, const QAngle &vecAngles, const char *pszModelName, const CEconItemView *pItem) { return ft_Create(pLastOwner, vecOrigin, vecAngles, pszModelName, pItem); }
-	
+	void InitDroppedWeapon(CTFPlayer *pPlayer, CTFWeaponBase *pWeapon,  bool bSwap, bool bIsSuicide)  { return ft_InitDroppedWeapon(this, pPlayer, pWeapon, bSwap, bIsSuicide); }
+
 	DECL_SENDPROP(CEconItemView, m_Item);
 private:
 	static StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &, const char *, const CEconItemView *> ft_Create;
+	static MemberFuncThunk<CTFDroppedWeapon *, void, CTFPlayer *, CTFWeaponBase *, bool, bool> ft_InitDroppedWeapon;
 };
 
 

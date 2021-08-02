@@ -2575,6 +2575,105 @@ namespace Mod::Attr::Custom_Attributes
         DETOUR_MEMBER_CALL(CTFMinigun_WindUp)();
     }
 
+	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, CTFPlayer *pOwner, const Vector& vecOrigin, const QAngle& vecAngles, const char *pszModelName, const CEconItemView *pItemView)
+	{
+		if (pItemView != nullptr) {
+			CAttributeList &list = pItemView->GetAttributeList();
+			auto model = GetStringAttribute(list, "custom item model");
+			if (model != nullptr) {
+				pszModelName = model;
+			}
+		}
+		return DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
+	}
+	
+	RefCount rc_CTFPlayer_Regenerate;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Regenerate, bool ammo)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_Regenerate);
+		DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemsMatch, void *pData, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity)
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pData, pCurWeaponItem, pNewWeaponItem, pWpnEntity);
+		
+		if (!ret && rc_CTFPlayer_Regenerate) {
+			int stay = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpnEntity, stay, stay_after_regenerate);
+			if (stay != 0) {
+				return true;
+			} 
+		}
+		return ret;
+	}
+
+	THINK_FUNC_DECL(MinigunClearSounds)
+	{
+		auto minigun = reinterpret_cast<CTFMinigun *>(this);
+		minigun->StopSound(minigun->GetShootSound(WPN_DOUBLE));
+		minigun->StopSound(minigun->GetShootSound(BURST));
+		minigun->StopSound(minigun->GetShootSound(SPECIAL3));
+		
+	}
+
+	THINK_FUNC_DECL(FlameThrowerClearSounds)
+	{
+		auto flamethrower = reinterpret_cast<CTFFlameThrower *>(this);
+		flamethrower->StopSound(flamethrower->GetShootSound(SINGLE));
+		flamethrower->StopSound(flamethrower->GetShootSound(BURST));
+		flamethrower->StopSound(flamethrower->GetShootSound(SPECIAL1));
+		
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFMinigun_SetWeaponState, CTFMinigun::MinigunState_t state)
+	{
+		auto minigun = reinterpret_cast<CTFMinigun *>(this);
+		if (state != minigun->m_iWeaponState) {
+			auto soundfiring = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom weapon fire sound");
+			auto soundspinning = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom minigun spin sound");
+
+			if (soundfiring != nullptr) {
+				if (state == CTFMinigun::AC_STATE_FIRING) {
+					minigun->EmitSound(soundfiring);
+					THINK_FUNC_SET(minigun, MinigunClearSounds, gpGlobals->curtime);
+				}
+				else {
+					minigun->StopSound(soundfiring);
+				}
+			}
+			if (soundspinning != nullptr) {
+				if (state == CTFMinigun::AC_STATE_SPINNING) {
+					minigun->EmitSound(soundspinning);
+					THINK_FUNC_SET(minigun, MinigunClearSounds, gpGlobals->curtime);
+				}
+				else {
+					minigun->StopSound(soundspinning);
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFMinigun_SetWeaponState)(state);
+	}
+	
+	DETOUR_DECL_MEMBER(__gcc_regcall void, CTFFlameThrower_SetWeaponState, int state)
+	{
+		auto flamethrower = reinterpret_cast<CTFFlameThrower *>(this);
+		if (state != flamethrower->m_iWeaponState) {
+			auto soundfiring = GetStringAttribute(flamethrower->GetItem()->GetAttributeList(), "custom weapon fire sound");
+
+			if (soundfiring != nullptr) {
+				if ((state == 1 || state == 2) && flamethrower->m_iWeaponState != 1 && flamethrower->m_iWeaponState != 2) {
+					flamethrower->EmitSound(soundfiring);
+				}
+				else if (state != 1 && state != 2) {
+					flamethrower->StopSound(soundfiring);
+				}
+				THINK_FUNC_SET(flamethrower, FlameThrowerClearSounds, gpGlobals->curtime);
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFFlameThrower_SetWeaponState)(state);
+	}
+	
 	std::vector<std::string> attribute_info_strings[33];
 	float attribute_info_display_time[33];
 
@@ -2981,6 +3080,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned ,"CTFGameRules::OnPlayerSpawned");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindDown ,"CTFMinigun::WindDown");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindUp ,"CTFMinigun::WindUp");
+			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate ,"CTFPlayer::Regenerate");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemsMatch ,"CTFPlayer::ItemsMatch");
+			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SetWeaponState ,"CTFMinigun::SetWeaponState");
+			MOD_ADD_DETOUR_MEMBER(CTFFlameThrower_SetWeaponState ,"CTFFlameThrower::SetWeaponState");
 			
 			
 			//Inspect custom attributes
@@ -3099,10 +3203,18 @@ namespace Mod::Attr::Custom_Attributes
 					model_entries.erase(model_entries.begin() + i);
 					continue;
 				}
-
+				
 				if (!entry.weapon->m_bBeingRepurposedForTaunt)
 					entry.weapon->m_bBeingRepurposedForTaunt = true;
 
+				if (entry.wearable_vm == nullptr || entry.wearable == nullptr) {
+					if (entry.wearable != nullptr)
+						entry.wearable->Remove();
+					if (entry.wearable_vm != nullptr)
+						entry.wearable_vm->Remove();
+
+					CreateWeaponWearables(entry);
+				}
 				if (entry.weapon->IsEffectActive(EF_NODRAW)) {
 					/*if (entry.wearable != nullptr)
 						entry.wearable->Remove();

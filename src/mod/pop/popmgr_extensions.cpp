@@ -592,7 +592,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_ForceRobotBleed                 ("sig_mvm_bots_bleed"),
 			m_BotHumansHaveRobotVoice         ("sig_mvm_human_bots_robot_voice"),
 			m_BotHumansHaveEyeGlow            ("sig_mvm_human_eye_particle"),
-			m_EyeParticle                     ("sig_mvm_eye_particle")
+			m_EyeParticle                     ("sig_mvm_eye_particle"),
+			m_BotEscortCount                  ("tf_bot_flag_escort_max_count")
 
 		{
 			this->Reset();
@@ -712,6 +713,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BotHumansHaveRobotVoice.Reset();
 			this->m_BotHumansHaveEyeGlow.Reset();
 			this->m_EyeParticle.Reset();
+			this->m_BotEscortCount.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -898,6 +900,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_BotHumansHaveRobotVoice;
 		CPopOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
 		CPopOverride_ConVar<std::string> m_EyeParticle;
+		CPopOverride_ConVar<int> m_BotEscortCount;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1356,9 +1359,11 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
 	{
 		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
+		
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
 		if (rc_CTFPlayer_ManageRegularWeapons && is_item_replacement == item_def && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
 			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		
 		return slot;
 	}
 
@@ -3589,6 +3594,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					CEconItemView *view = CEconItemView::Create();
 					view->Init(item_def->m_iItemDefIndex);
+					view->m_iItemID = RandomInt(INT_MIN, INT_MAX);
 					
 					std::string name;
 					if (state.m_CustomWeapons.find(subkey->GetString()) != state.m_CustomWeapons.end()) {
@@ -3613,6 +3619,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (item_def != nullptr) {
 			CEconItemView *view = CEconItemView::Create();
 			view->Init(item_def->m_iItemDefIndex);
+			view->m_iItemID = RandomInt(INT_MIN, INT_MAX);
 			std::string name;
 			if (state.m_CustomWeapons.find(subkey2->GetString()) != state.m_CustomWeapons.end()) {
 				name = subkey2->GetString();
@@ -4564,7 +4571,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_BotHumansHaveEyeGlow.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomEyeParticle")) {
 					state.m_EyeParticle.Set(subkey->GetString());
-					
+				} else if (FStrEq(name, "FlagEscortCountOffset")) {
+					state.m_BotEscortCount.Set(subkey->GetInt() + 4);
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
@@ -4615,8 +4623,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_iPlayerMiniBossMinRespawnTime = subkey->GetInt();
 				} else if (FStrEq(name, "PlayerRobotsUsePlayerAnimation")) {
 					state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
-				} else if (FStrEq(name, "FlagEscortCountOffset")) {
-					state.m_iEscortBotCountOffset = subkey->GetInt();
+				//} else if (FStrEq(name, "FlagEscortCountOffset")) {
+				//	state.m_iEscortBotCountOffset = subkey->GetInt();
 				} else if (FStrEq(name, "WaveStartCountdown")) {
 					state.m_flRestartRoundTime = subkey->GetFloat();
 				} else if (FStrEq(name, "ZombiesNoWave666")) {
@@ -4911,7 +4919,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerClassShared_SetCustomModel,        "CTFPlayerClassShared::SetCustomModel");
-			MOD_ADD_DETOUR_STATIC(GetBotEscortCount,        "GetBotEscortCount");
+			//MOD_ADD_DETOUR_STATIC(GetBotEscortCount,        "GetBotEscortCount");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn,          "CTFPlayer::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_RollNewSpell,              "CTFSpellBook::RollNewSpell");

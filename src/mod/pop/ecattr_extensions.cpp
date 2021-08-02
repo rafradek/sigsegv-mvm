@@ -1032,6 +1032,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		auto player = reinterpret_cast<CTFBot *>(this);
 		auto data = GetDataForBot(player);
         
+		if (data == nullptr) return;
+
         StopParticleEffects(player);
 
 		Vector vColor;
@@ -1062,6 +1064,30 @@ namespace Mod::Pop::ECAttr_Extensions
             eye2 = "eyeglow_R";
 
         DispatchParticleEffect(particle, PATTACH_POINT_FOLLOW, player, eye2, vec3_origin, true, vColorL, vColorL, true, false, &cp, &filter);
+	}
+
+	THINK_FUNC_DECL(SetBodygroup)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		auto data = GetDataForBot(bot);
+
+		if (data == nullptr) return;
+
+		for (const auto& pair : data->bodygroup) {
+			const char *name = pair.first.c_str();
+			int value = pair.second;
+
+			int group = bot->FindBodygroupByName(name);
+			if (group != -1) {
+				bot->SetBodygroup(group, value);
+			}
+			DevMsg("Group %s %d %d\n", name, value, group);
+			int count = bot->GetNumBodyGroups();
+			for (int i = 0; i < count; i++) {
+				name = bot->GetBodygroupName(i);
+				DevMsg("Group sp %s %d\n", name, bot->GetBodygroupCount(i));
+			}
+		}
 	}
 
 	void ApplyCurrentEventChangeAttributes(CTFBot *bot)
@@ -1229,20 +1255,8 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 			}
 
-			for (const auto& pair : data->bodygroup) {
-				const char *name = pair.first.c_str();
-				int value = pair.second;
-
-				int group = bot->FindBodygroupByName(name);
-				if (group != -1) {
-					bot->SetBodygroup(group, value);
-				}
-				int count = bot->GetNumBodyGroups();
-				for (int i = 0; i < count; i++) {
-					name = bot->GetBodygroupName(i);
-					DevMsg("Group sp %s %d\n", name, bot->GetBodygroupCount(i));
-				}
-				DevMsg("Group %s %d %d\n", name, value, group);
+			if (!data->bodygroup.empty()) {
+				THINK_FUNC_SET(bot, SetBodygroup, gpGlobals->curtime + 0.1f);
 			}
 
 			if (data->custom_eye_particle != "" || data->eye_particle_color) {

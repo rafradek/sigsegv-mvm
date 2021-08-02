@@ -4686,12 +4686,6 @@
 					type "sym"
 					sym  "_Z19UTIL_ParticleTracerPKcRK6VectorS3_iib"
 				}
-				
-				"UTIL_ParticleTracer"
-				{
-					type "sym"
-					sym  "_Z19UTIL_ParticleTracerPKcRK6VectorS3_iib"
-				}
 				"CalculateMeleeDamageForce"
 				{
 					type "sym"
@@ -4701,6 +4695,31 @@
 				{
 					type "sym"
 					sym  "_ZN21CHeadlessHatmanAttack12AttackTargetEP15CHeadlessHatmanP20CBaseCombatCharacterf"
+				}
+				"CTFDroppedWeapon::InitDroppedWeapon"
+				{
+					type "sym"
+					sym  "_ZN16CTFDroppedWeapon17InitDroppedWeaponEP9CTFPlayerP13CTFWeaponBasebb"
+				}
+				"CTFMinigun::ItemPostFrame"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun13ItemPostFrameEv"
+				}
+				"CTFMinigun::SetWeaponState"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun14SetWeaponStateE14MinigunState_t"
+				}
+				"CTFFlameThrower::SetWeaponState"
+				{
+					type "sym regex"
+					sym  "_ZN15CTFFlameThrower14SetWeaponStateEi\\.part\\..*"
+				}
+				"CBaseCombatWeapon::GetShootSound"
+				{
+					type "sym"
+					sym  "_ZNK17CBaseCombatWeapon13GetShootSoundEi"
 				}
 			}
 			"addrs_group"

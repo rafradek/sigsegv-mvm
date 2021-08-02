@@ -5,6 +5,25 @@
 #include "stub/tfplayer.h"
 #include "stub/entities.h"
 
+typedef enum {
+	EMPTY,
+	SINGLE,
+	SINGLE_NPC,
+	WPN_DOUBLE,
+	DOUBLE_NPC,
+	BURST,
+	RELOAD,
+	RELOAD_NPC,
+	MELEE_MISS,
+	MELEE_HIT,
+	MELEE_HIT_WORLD,
+	SPECIAL1,
+	SPECIAL2,
+	SPECIAL3,
+	TAUNT,
+	DEPLOY,
+} WeaponSound_t;
+
 class CBaseCombatWeapon : public CEconEntity
 {
 public:
@@ -23,7 +42,8 @@ public:
 	void PrimaryAttack()                                   {        vt_PrimaryAttack (this); }
 	void SecondaryAttack()                                 {        vt_SecondaryAttack (this); }
 	//void CanPerformPrimaryAttack()                                   {        vt_CanPerformPrimaryAttack (this); }
-	void CanPerformSecondaryAttack()                                 {        vt_CanPerformSecondaryAttack (this); }
+	void CanPerformSecondaryAttack()                       {        vt_CanPerformSecondaryAttack (this); }
+	char const *GetShootSound(int type)                    { return vt_GetShootSound (this, type); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -54,6 +74,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_SecondaryAttack;
 	//static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformPrimaryAttack;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformSecondaryAttack;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            vt_GetShootSound;
 };
 
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter
@@ -273,6 +294,7 @@ public:
 	Vector GetFlameOriginPos()  { return ft_GetMuzzlePosHelper(this, false); }
 	float GetDeflectionRadius()  { return ft_GetDeflectionRadius(this); }
 	
+	DECL_SENDPROP(int, m_iWeaponState);
 private:
 	static MemberFuncThunk<CTFFlameThrower *, Vector, bool> ft_GetMuzzlePosHelper;
 	static MemberFuncThunk<CTFFlameThrower *, float> ft_GetDeflectionRadius;

@@ -89,6 +89,8 @@ IMPL_DATAMAP(bool,                 CEnvEntityMaker,   m_bPostSpawnUseAngles);
 
 StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &, const char *, const CEconItemView *> CTFDroppedWeapon::ft_Create("CTFDroppedWeapon::Create");
 
+MemberFuncThunk<CTFDroppedWeapon *, void, CTFPlayer *, CTFWeaponBase *, bool, bool> CTFDroppedWeapon::ft_InitDroppedWeapon("CTFDroppedWeapon::InitDroppedWeapon");
+
 IMPL_SENDPROP(CEconItemView, CTFDroppedWeapon, m_Item,   CTFDroppedWeapon);
 
 MemberFuncThunk<CPathTrack *, CPathTrack *> CPathTrack::ft_GetNext("CPathTrack::GetNext");

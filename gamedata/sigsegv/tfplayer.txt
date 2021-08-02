@@ -864,6 +864,16 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer24BeginPurchasableUpgradesEv"
 				}
+				"CTFPlayer::Regenerate"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer10RegenerateEb"
+				}
+				"CTFPlayer::ItemsMatch"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

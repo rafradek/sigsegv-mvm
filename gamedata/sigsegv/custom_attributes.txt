@@ -1868,4 +1868,24 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    //Projectile gravity native
+    "4501"
+    {
+        "name"	"stay after regenerate"
+        "attribute_class"	"stay_after_regenerate"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4502"
+    {
+        "name"	"custom minigun spin sound"
+        "attribute_class"	"custom_minigun_spin_sound"
+		"attribute_type"	"string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

@@ -1694,13 +1694,14 @@ namespace Mod::Pop::TFBot_Extensions
 		if (result != nullptr) {
 			CAttributeList &list = result->m_Item->GetAttributeList();
 			auto cannot_upgrade_def = GetItemSchema()->GetAttributeDefinitionByName("cannot be upgraded");
-			if (cannot_upgrade_def != nullptr) {
+			if (cannot_upgrade_def != nullptr && list.GetAttributeByName("cannot be upgraded") == nullptr) {
 				list.SetRuntimeAttributeValue(cannot_upgrade_def, 1.0f);
 			}
 			if (dropped_weapon_def != nullptr) {
 				list.SetRuntimeAttributeValue(dropped_weapon_def, 1.0f);
 			}
 		}
+
 		TFGameRules()->Set_m_bPlayingMannVsMachine(is_mvm_mode);
 		
 		return result;
