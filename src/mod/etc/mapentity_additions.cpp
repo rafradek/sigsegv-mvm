@@ -452,6 +452,20 @@ namespace Mod::Etc::Mapentity_Additions
                         weapon->Remove();
                     return true;
                 }
+                else if (stricmp(szInputName, "$GiveItem") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    auto item_def = GetItemSchema()->GetItemDefinitionByName(Value.String());
+                    if (item_def != nullptr) {
+                        const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
+                        CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+                        DispatchSpawn(entity);
+
+                        if (entity != nullptr) {
+                            GiveItemToPlayer(player, entity, false, true, Value.String());
+                        }
+                    }
+                    return true;
+                }
             }
 
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
