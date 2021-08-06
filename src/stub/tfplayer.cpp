@@ -157,6 +157,7 @@ IMPL_SENDPROP(bool,        CTFPlayerShared, m_bInUpgradeZone,          CTFPlayer
 IMPL_SENDPROP(float,       CTFPlayerShared, m_flStealthNoAttackExpire, CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nPlayerState,            CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iAirDash,                CTFPlayer);
+IMPL_SENDPROP(int,         CTFPlayerShared, m_iDesiredPlayerClass,     CTFPlayer);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 

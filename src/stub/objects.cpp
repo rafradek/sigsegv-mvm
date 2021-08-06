@@ -61,7 +61,7 @@ IMPL_SENDPROP(bool,               CBaseObject, m_bBuilding, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bDisabled, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarried, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarryDeploy, CBaseObject);
-IMPL_SENDPROP(int,                CBaseObject, m_iKills, CBaseObject);
+IMPL_SENDPROP(int,                CBaseObject, m_iKills, CObjectSentrygun);
 
 IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSentrygun_FireRocket());
 

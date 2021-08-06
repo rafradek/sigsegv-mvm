@@ -304,6 +304,7 @@ public:
 	DECL_SENDPROP(bool,        m_bInUpgradeZone);
 	DECL_SENDPROP(float,       m_flStealthNoAttackExpire);
 	DECL_SENDPROP(int,         m_iAirDash);
+	DECL_SENDPROP(int,         m_iDesiredPlayerClass);
 	DECL_EXTRACT (CUtlVector<condition_source_t>, m_ConditionData);
 	
 private:

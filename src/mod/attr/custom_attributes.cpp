@@ -758,6 +758,17 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CTFPlayer_FireBullet);
 		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
 	}
+	
+	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_StrikeTarget, mstudiobbox_t *bbox, CBaseEntity *ent)
+	{
+		int can_headshot = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFProjectile_Arrow *>(this)->GetOriginalLauncher(), can_headshot, cannot_be_headshot);
+		if (can_headshot != 0 && bbox->group == HITGROUP_HEAD) {
+			bbox->group = HITGROUP_CHEST;
+		}
+		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_StrikeTarget)(bbox, ent);
+	}
+
 	RefCount rc_CBaseEntity_DispatchTraceAttack;
 	DETOUR_DECL_MEMBER(void, CBaseEntity_DispatchTraceAttack, const CTakeDamageInfo& info, const Vector& vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 	{
@@ -1716,6 +1727,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
 	}
 
+	std::unordered_map<CTFPlayer *, std::unordered_map<CBaseEntity *, float>> player_touch_times;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Touch, CBaseEntity *toucher)
 	{
 		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
@@ -1724,26 +1736,43 @@ namespace Mod::Attr::Custom_Attributes
 			float stomp = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stomp, stomp_building_damage );
 			if (stomp != 0.0f) {
-				CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
-				toucher->TakeDamage(info);
+				
+				float stompTime = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stompTime, stomp_player_time);
+
+				if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
+					float stomp = 0.0f;
+					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
+					toucher->TakeDamage(info);
+					if (stompTime != 0.0f)
+						player_touch_times[player][toucher] = gpGlobals->curtime;
+				}
 			}
 		}
 		else if (toucher->IsPlayer()) {
-			float stomp = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stomp, stomp_player_damage );
-			if (stomp != 0.0f) {
-				CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
-				toucher->TakeDamage(info);
-			}
+			
+			float stompTime = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stompTime, stomp_player_time);
 
-			float knockback = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, knockback, stomp_player_force );
-			if (knockback != 0.0f) {
-				Vector vec = toucher->GetAbsOrigin() - player->GetAbsOrigin();
-				vec.NormalizeInPlace();
-				vec.z = 1.0f;
-				vec *= knockback;
-				ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec);
+			if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
+				float stomp = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stomp, stomp_player_damage );
+				if (stomp != 0.0f) {
+					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
+					toucher->TakeDamage(info);
+				}
+
+				float knockback = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, knockback, stomp_player_force );
+				if (knockback != 0.0f) {
+					Vector vec = toucher->GetAbsOrigin() - player->GetAbsOrigin();
+					vec.NormalizeInPlace();
+					vec.z = 1.0f;
+					vec *= knockback;
+					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec);
+				}
+				if (stompTime != 0.0f)
+					player_touch_times[player][toucher] = gpGlobals->curtime;
 			}
 		}
 	}
@@ -2575,6 +2604,25 @@ namespace Mod::Attr::Custom_Attributes
         DETOUR_MEMBER_CALL(CTFMinigun_WindUp)();
     }
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DropAmmoPack, const CTakeDamageInfo& info, bool b1, bool b2)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		for(int i = 0; i < player->WeaponCount(); i++ ) {
+			CBaseCombatWeapon *weapon = player->GetWeapon(i);
+			if (weapon == nullptr || weapon == player->GetActiveTFWeapon() || weapon->GetItem() == nullptr) continue;
+
+			int droppedWeapon = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, droppedWeapon, is_dropped_weapon);
+			
+			if (droppedWeapon != 0) {
+				auto dropped = CTFDroppedWeapon::Create(player, player->EyePosition(), vec3_angle, weapon->GetWorldModel(), weapon->GetItem());
+				if (dropped != nullptr)
+					dropped->InitDroppedWeapon(player, static_cast<CTFWeaponBase *>(weapon), info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == player->GetTeamNumber(), false);
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_DropAmmoPack)(info, b1, b2);
+	}
+
 	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, CTFPlayer *pOwner, const Vector& vecOrigin, const QAngle& vecAngles, const char *pszModelName, const CEconItemView *pItemView)
 	{
 		if (pItemView != nullptr) {
@@ -3080,11 +3128,14 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned ,"CTFGameRules::OnPlayerSpawned");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindDown ,"CTFMinigun::WindDown");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_WindUp ,"CTFMinigun::WindUp");
+			
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropAmmoPack, "CTFPlayer::DropAmmoPack");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate ,"CTFPlayer::Regenerate");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemsMatch ,"CTFPlayer::ItemsMatch");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SetWeaponState ,"CTFMinigun::SetWeaponState");
 			MOD_ADD_DETOUR_MEMBER(CTFFlameThrower_SetWeaponState ,"CTFFlameThrower::SetWeaponState");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget ,"CTFProjectile_Arrow::StrikeTarget");
 			
 			
 			//Inspect custom attributes
@@ -3135,6 +3186,7 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			precached.clear();
 			entity_penetration_counter.clear();
+			player_touch_times.clear();
 		}
 
 		virtual void LevelInitPreEntity() override
@@ -3155,6 +3207,7 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			precached.clear();
 			entity_penetration_counter.clear();
+			player_touch_times.clear();
 		}
 
 		virtual void OnEnable() override

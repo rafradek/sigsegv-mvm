@@ -169,10 +169,20 @@ namespace Mod::MvM::Extended_Upgrades
         void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
             const char *info = menu->GetItemInfo(item, nullptr);
             int slotid = -1;
-            if (FStrEq(info, "player"))
+            if (info == nullptr)
+                return;
+                
+            if (FStrEq(info, "player")) {
                 slotid = -1;
-            else
+            }
+            else if (FStrEq(info, "refund")) {
+                auto kv = new KeyValues("MVM_Respec");
+                serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+                return;
+            }
+            else {
                 slotid = strtol(info, nullptr, 10);
+            }
             StartUpgradeListForPlayer(player, slotid, 0);
         }
 
@@ -792,9 +802,16 @@ namespace Mod::MvM::Extended_Upgrades
             CEconEntity *item = GetEconEntityAtLoadoutSlot(player, (int)slot);
             if (item != nullptr) {
                 ItemDrawInfo info2(g_Itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str(), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
-                menu->AppendItem(CFmtStr("%d", (int)slot), info2);
+                
+                static char buf[4];
+                snprintf(buf, sizeof(buf), "%d", (int)slot);
+                menu->AppendItem(buf, info2);
             }
         }
+
+        ConVarRef tf_mvm_respec_enabled("tf_mvm_respec_enabled");
+        ItemDrawInfo info2("Refund Upgrades", tf_mvm_respec_enabled.GetBool() ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+        menu->AppendItem("refund", info2);
 
         select_type_menus[player] = menu;
 

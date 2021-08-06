@@ -75,7 +75,7 @@ namespace Mod::Pop::Wave_Extensions
 		std::vector<PointTemplateInfo>   templ;
 		std::vector<std::shared_ptr<PointTemplateInstance>>   templ_inst;
 		std::vector<ETFCond>  addconds;
-		std::vector<ETFCond>  addconds_class[10] = {};
+		std::vector<ETFCond>  addconds_class[11] = {};
 		std::vector<ItemAttributes> item_attributes;
 		ForceItems force_items;
 		
@@ -84,7 +84,7 @@ namespace Mod::Pop::Wave_Extensions
 		bool finishing_wave_causes_wave_loss = false;
 		bool finishing_wave_and_player_wipe_causes_wave_loss = false;
 		bool defined_class_attributes = false;
-		std::map<std::string,float> player_attributes_class[10] = {};
+		std::map<std::string,float> player_attributes_class[11] = {};
 		std::map<std::string,float> player_attributes;
 		float sound_time_end = 0.f;
 		IntervalTimer t_wavestart;
@@ -391,7 +391,7 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -421,7 +421,7 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;

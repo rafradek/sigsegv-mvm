@@ -63,8 +63,8 @@ extern std::map<int, std::string> g_Attribnames;
 
 struct ForceItems
 {
-	std::vector<std::pair<std::string, CEconItemDefinition *>> items[11] = {};
-	std::vector<std::pair<std::string, CEconItemDefinition *>> items_no_remove[11] = {};
+	std::vector<std::pair<std::string, CEconItemDefinition *>> items[12] = {};
+	std::vector<std::pair<std::string, CEconItemDefinition *>> items_no_remove[12] = {};
     bool parsed = false;
 };
 
@@ -382,8 +382,8 @@ static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mar
     ApplyForceItemsClass(force_items.items_no_remove[0], player, true, false, mark);
     ApplyForceItemsClass(force_items.items[player_class], player, false, false, mark);
     ApplyForceItemsClass(force_items.items_no_remove[player_class], player, true, false, mark);
-    ApplyForceItemsClass(force_items.items[10], player, false, true, mark);
-    ApplyForceItemsClass(force_items.items_no_remove[10], player, true, true, mark);
+    ApplyForceItemsClass(force_items.items[11], player, false, true, mark);
+    ApplyForceItemsClass(force_items.items_no_remove[11], player, true, true, mark);
 }
 
 static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremove)
@@ -401,8 +401,8 @@ static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremov
         }
     }
     FOR_EACH_SUBKEY(kv, subkey) {
-        int classname = 10;
-        for(int i=1; i < 10; i++){
+        int classname = 11;
+        for(int i=1; i < 11; i++){
             if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
                 classname=i;
                 break;

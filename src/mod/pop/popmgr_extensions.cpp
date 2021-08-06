@@ -929,12 +929,12 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		std::unordered_set<CTFPlayer*> m_PlayerUpgradeSend;
 
-		int m_DisallowedClasses[10];
+		int m_DisallowedClasses[11];
 
 		std::map<std::string,float> m_PlayerAttributes;
-		std::map<std::string,float> m_PlayerAttributesClass[10] = {};
+		std::map<std::string,float> m_PlayerAttributesClass[11] = {};
 		std::vector<ETFCond> m_PlayerAddCond;
-		std::vector<ETFCond> m_PlayerAddCondClass[10] = {};
+		std::vector<ETFCond> m_PlayerAddCondClass[11] = {};
 		ForceItems m_ForceItems;
 
 
@@ -943,8 +943,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
 		std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_ItemEquipTemplates;
 
-		std::unordered_set<std::string> m_MissingRobotBones[10];
-		string_t m_CachedRobotModelIndex[20];
+		std::unordered_set<std::string> m_MissingRobotBones[11];
+		string_t m_CachedRobotModelIndex[22];
 
 		std::vector<std::pair<int, int>> m_SpellBookNormalRoll;
 		std::vector<std::pair<int, int>> m_SpellBookRareRoll;
@@ -1070,6 +1070,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
 		if (state.m_bMinibossSentrySingleKill) {
 			auto object = ToBaseObject(info.GetAttacker());
+			if (object == nullptr)
+				object = ToBaseObject(info.GetInflictor());
+
 			if (object != nullptr && TFGameRules()->IsMannVsMachineMode() && pVictim != nullptr && ToTFPlayer(pVictim)->IsMiniBoss()) {
 				object->m_iKills -= 4;
 			}
@@ -1173,7 +1176,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		
-		if (state.m_bSniperAllowHeadshots && (rc_CTFSniperRifle_CanFireCriticalShot > 0 || rc_CTFRevolver_CanFireCriticalShot > 0) && TFGameRules()->IsMannVsMachineMode()) {
+		if (state.m_bSniperAllowHeadshots && ( bIsHeadshot ) && TFGameRules()->IsMannVsMachineMode()) {
 			CTFPlayer *owner = weapon->GetTFPlayerOwner();
 			if (owner != nullptr && owner->GetTeamNumber() == TF_TEAM_BLUE) {
 				return true;
@@ -1794,7 +1797,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			bool insetup = TFGameRules()->InSetup();
 			TFGameRules()->SetInSetup(true);
 			if (state.m_bSingleClassAllowed != -1) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",classname,"class is allowed in this mission"));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",g_aRawPlayerClassNames[state.m_bSingleClassAllowed],"class is allowed in this mission"));
 
 				player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 
@@ -1858,6 +1861,14 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 			}
 		}
+
+		/*if (!player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED && !player->m_Shared->m_bInUpgradeZone && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
+			if (FStrEq(pClassName, "random") || FStrEq(pClassName, "civilian")) {
+				player->m_Shared->m_iDesiredPlayerClass = 10;
+				player->ForceRespawn();
+				return;
+			}
+		}*/
 
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
@@ -3636,7 +3647,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -3659,7 +3670,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int amount_classes_blacklisted = 0;
 		int class_not_blacklisted = 0;
 		FOR_EACH_SUBKEY(kv, subkey) {
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					if (state.m_DisallowedClasses[i] != 0 && subkey->GetInt() == 0) {
 						amount_classes_blacklisted+=1;
@@ -3675,7 +3686,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 
 		if (amount_classes_blacklisted == 8) {
-			state.m_bSingleClassAllowed = class_not_blacklisted;
+			for(int i=1; i < 10; i++){
+				if (state.m_DisallowedClasses[i] != 0) {	
+					state.m_bSingleClassAllowed = class_not_blacklisted;
+				}
+			}
 		}
 		//for(int i=1; i < 10; i++){
 		//	DevMsg("%d ",state.m_DisallowedClasses[i]);
@@ -4062,7 +4077,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -4092,7 +4107,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < 11; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -4312,7 +4327,7 @@ namespace Mod::Pop::PopMgr_Extensions
 						
 						// Restore changes made by player animations on robot models
 						auto find = state.m_Player_anim_cosmetics.find(player);
-						if (find != state.m_Player_anim_cosmetics.end()) {
+						if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
 							find->second->Remove();
 							servertools->SetKeyValue(player, "rendermode", "0");
 							player->SetRenderColorA(255);
