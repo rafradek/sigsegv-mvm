@@ -171,6 +171,11 @@ namespace Mod::Etc::Mapentity_Additions
                         g_pMonsterResource->m_iBossState = val;
                     return true;
                 }
+                else if (stricmp(szInputName, "$AddCurrencyGlobal") == 0) {
+                    int val = atoi(Value.String());
+                    TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
+                    return true;
+                }
             }
             else if (ent->GetClassname() == player_classname) {
                 if (stricmp(szInputName, "$AllowClassAnimations") == 0) {

@@ -419,7 +419,6 @@ static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremov
     
     DevMsg("Parsed attributes\n");
 }
-
 static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &attibs)
 {
     ItemAttributes item_attributes;// = state.m_ItemAttributes.emplace_back();
@@ -427,7 +426,9 @@ static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &att
 
     FOR_EACH_SUBKEY(kv, subkey) {
         //std::unique_ptr<ItemListEntry> key=std::make_unique<ItemListEntry_Classname>("");
-        if (FStrEq(subkey->GetName(), "Classname")) {
+        if (strnicmp(subkey->GetName(), "ItemEntry", strlen("Entry")) == 0) {
+            Parse_ItemAttributes(subkey, attibs);
+        } else if (FStrEq(subkey->GetName(), "Classname")) {
             DevMsg("ItemAttrib: Add Classname entry: \"%s\"\n", subkey->GetString());
             hasname = true;
             item_attributes.entry = std::make_unique<ItemListEntry_Classname>(subkey->GetString());
