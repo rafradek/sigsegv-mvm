@@ -466,6 +466,70 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                     return true;
                 }
+                else if (stricmp(szInputName, "$SetCurrency") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    player->RemoveCurrency(player->GetCurrency() - atoi(Value.String()));
+                }
+                else if (stricmp(szInputName, "$AddCurrency") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    player->RemoveCurrency(atoi(Value.String()) * -1);
+                }
+                else if (stricmp(szInputName, "$RemoveCurrency") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    player->RemoveCurrency(atoi(Value.String()));
+                }
+                else if (strnicmp(szInputName, "$CurrencyOutput", 15) == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    int cost = atoi(szInputName + 15);
+                    if(player->GetCurrency() >= cost){
+                        char param_tokenized[2048] = "";
+                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                        if(strcmp(param_tokenized, "") != 0){
+                            char *target = strtok(param_tokenized,",");
+                            char *action = NULL;
+                            char *value = NULL;
+                            if(target != NULL)
+                                action = strtok(NULL,",");
+                            if(action != NULL)
+                                value = strtok(NULL,"");
+                            if(value != NULL){
+                                CEventQueue &que = g_EventQueue;
+                                variant_t actualvalue;
+                                string_t stringvalue = AllocPooledString(value);
+                                actualvalue.SetString(stringvalue);
+                                que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
+                            }
+                        }
+                        player->RemoveCurrency(cost);
+                    }
+                    return true;
+                }
+                else if (strnicmp(szInputName, "$CurrencyInvertOutput", 21) == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    int cost = atoi(szInputName + 21);
+                    if(player->GetCurrency() < cost){
+                        char param_tokenized[2048] = "";
+                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                        if(strcmp(param_tokenized, "") != 0){
+                            char *target = strtok(param_tokenized,",");
+                            char *action = NULL;
+                            char *value = NULL;
+                            if(target != NULL)
+                                action = strtok(NULL,",");
+                            if(action != NULL)
+                                value = strtok(NULL,"");
+                            if(value != NULL){
+                                CEventQueue &que = g_EventQueue;
+                                variant_t actualvalue;
+                                string_t stringvalue = AllocPooledString(value);
+                                actualvalue.SetString(stringvalue);
+                                que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
+                            }
+                        }
+                        //player->RemoveCurrency(cost);
+                    }
+                    return true;
+                }
             }
 
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
