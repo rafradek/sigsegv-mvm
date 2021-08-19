@@ -257,11 +257,13 @@ public:
 	DECL_DATAMAP(float,      m_flAnimTime);
 	DECL_DATAMAP(float,      m_flSimulationTime);
 	DECL_DATAMAP(float,      m_flVPhysicsUpdateLocalTime);
-	DECL_DATAMAP(bool,       m_spawnflags);
+	DECL_DATAMAP(int,       m_spawnflags);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser1);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser2);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser3);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser4);
+	DECL_DATAMAP(char,       m_takedamage);
+	
 	
 	
 	

@@ -247,3 +247,10 @@ IMPL_SENDPROP(int,      CMonsterResource, m_iBossStunPercentageByte, CMonsterRes
 IMPL_SENDPROP(int,      CMonsterResource, m_iBossState, CMonsterResource);
 
 GlobalThunk<CMonsterResource *> g_pMonsterResource("g_pMonsterResource");
+
+
+IMPL_DATAMAP (CHandle<CBaseEntity>, CTriggerCamera, m_hPlayer);
+IMPL_DATAMAP (CHandle<CBaseEntity>, CTriggerCamera, m_hTarget);
+
+MemberFuncThunk<CTriggerCamera *, void> CTriggerCamera::ft_Enable("CTriggerCamera::Enable");
+MemberFuncThunk<CTriggerCamera *, void> CTriggerCamera::ft_Disable("CTriggerCamera::Disable");

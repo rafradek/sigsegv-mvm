@@ -8,6 +8,7 @@
 #include "stub/strings.h"
 #include "stub/objects.h"
 #include "util/scope.h"
+#include "util/iterate.h"
 #include "util/misc.h"
 
 
@@ -65,6 +66,9 @@ namespace Mod::Etc::Mapentity_Additions
     const char *logic_case_classname;
     const char *tf_gamerules_classname;
     const char *player_classname;
+    const char *point_viewcontrol_classname;
+
+    bool allow_create_dropped_weapon = false;
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
     {
         CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
@@ -189,6 +193,9 @@ namespace Mod::Etc::Mapentity_Additions
                     CTFPlayer *player = ToTFPlayer(ent);
                     
                     if (player != nullptr) {
+                        // Disable setup to allow class changing during waves in mvm
+                        bool setup = TFGameRules()->InSetup();
+                        TFGameRules()->SetInSetup(false);
 
                         int index = strtol(Value.String(), nullptr, 10);
                         if (index > 0 && index < 10) {
@@ -197,6 +204,8 @@ namespace Mod::Etc::Mapentity_Additions
                         else {
                             player->HandleCommand_JoinClass(Value.String());
                         }
+                        
+                        TFGameRules()->SetInSetup(setup);
                     }
                     return true;
                 }
@@ -204,6 +213,10 @@ namespace Mod::Etc::Mapentity_Additions
                     CTFPlayer *player = ToTFPlayer(ent);
                     
                     if (player != nullptr) {
+                        // Disable setup to allow class changing during waves in mvm
+                        bool setup = TFGameRules()->InSetup();
+                        TFGameRules()->SetInSetup(false);
+
                         Vector pos = player->GetAbsOrigin();
                         QAngle ang = player->GetAbsAngles();
                         Vector vel = player->GetAbsVelocity();
@@ -217,6 +230,8 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                         player->ForceRespawn();
                         player->Teleport(&pos, &ang, &vel);
+                        
+                        TFGameRules()->SetInSetup(setup);
                     }
                     return true;
                 }
@@ -452,7 +467,11 @@ namespace Mod::Etc::Mapentity_Additions
                 }
                 else if (stricmp(szInputName, "$WeaponStripSlot") == 0) {
                     CTFPlayer *player = ToTFPlayer(ent);
-                    auto weapon = player->Weapon_GetSlot(atoi(Value.String()));
+                    int slot = atoi(Value.String());
+                    CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
+                    if (slot != -1) {
+                        weapon = player->Weapon_GetSlot(slot);
+                    }
                     if (weapon != nullptr)
                         weapon->Remove();
                     return true;
@@ -470,6 +489,25 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                     }
                     return true;
+                }
+                else if (stricmp(szInputName, "$DropItem") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    int slot = atoi(Value.String());
+                    CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
+                    if (slot != -1) {
+                        weapon = player->Weapon_GetSlot(slot);
+                    }
+
+                    if (weapon != nullptr) {
+                        CEconItemView *item_view = weapon->GetItem();
+
+                        allow_create_dropped_weapon = true;
+                        auto dropped = CTFDroppedWeapon::Create(player, player->EyePosition(), vec3_angle, weapon->GetWorldModel(), item_view);
+                        if (dropped != nullptr)
+                            dropped->InitDroppedWeapon(player, static_cast<CTFWeaponBase *>(weapon), false, false);
+
+                        allow_create_dropped_weapon = false;
+                    }
                 }
                 else if (stricmp(szInputName, "$SetCurrency") == 0) {
                     CTFPlayer *player = ToTFPlayer(ent);
@@ -536,7 +574,32 @@ namespace Mod::Etc::Mapentity_Additions
                     return true;
                 }
             }
-
+            else if (ent->GetClassname() == point_viewcontrol_classname) {
+                if (stricmp(szInputName, "$EnableAll") == 0) {
+                    ForEachTFPlayer([&](CTFPlayer *player) {
+                        if (player->IsBot())
+                            return;
+                        else {
+                            static_cast<CTriggerCamera *>(ent)->m_hPlayer = player;
+                            static_cast<CTriggerCamera *>(ent)->Enable();
+                        }
+                    });
+                }
+                else if (stricmp(szInputName, "$DisableAll") == 0) {
+                    ForEachTFPlayer([&](CTFPlayer *player) {
+                        if (player->IsBot())
+                            return;
+                        else {
+                            static_cast<CTriggerCamera *>(ent)->m_hPlayer = player;
+                            static_cast<CTriggerCamera *>(ent)->Disable();
+                            player->m_takedamage = player->IsObserver() ? 0 : 2;
+                        }
+                    });
+                }
+                else if (stricmp(szInputName, "$SetTarget") == 0) {
+                    static_cast<CTriggerCamera *>(ent)->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                }
+            }
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
                 ent->m_OnUser1->FireOutput(Value, ent, ent);
                 return true;
@@ -823,22 +886,18 @@ namespace Mod::Etc::Mapentity_Additions
 		//return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
 	}
 
-    int getspawnflags(CBaseEntity *ent) 
-    {
-        return ent->m_spawnflags;
-    }
     DETOUR_DECL_MEMBER(void, CTFMedigunShield_RemoveShield)
 	{
         CTFMedigunShield *shield = reinterpret_cast<CTFMedigunShield *>(this);
         int spawnflags = shield->m_spawnflags;
         //DevMsg("ShieldRemove %d f\n", spawnflags);
         
-        if (spawnflags == 3) {
+        if (spawnflags & 2) {
             DevMsg("Spawnflags is 3\n");
             shield->SetModel("models/props_mvm/mvm_player_shield2.mdl");
         }
 
-        if (spawnflags == 0) {
+        if (!(spawnflags & 1)) {
             //DevMsg("Spawnflags is 0\n");
         }
         else{
@@ -901,6 +960,37 @@ namespace Mod::Etc::Mapentity_Additions
 		}
 	}
 
+    DETOUR_DECL_MEMBER(void, CBasePlayer_CommitSuicide, bool explode , bool force)
+	{
+        auto player = reinterpret_cast<CBasePlayer *>(this);
+        // No commit suicide if the camera is active
+        CBaseEntity *view = player->m_hViewEntity;
+        if (rtti_cast<CTriggerCamera *>(view) != nullptr) {
+            return;
+        }
+        DETOUR_MEMBER_CALL(CBasePlayer_CommitSuicide)(explode, force);
+	}
+
+	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner, const char *pszModelName, const CEconItemView *pItemView)
+	{
+		// this is really ugly... we temporarily override m_bPlayingMannVsMachine
+		// because the alternative would be to make a patch
+		
+		bool is_mvm_mode = TFGameRules()->IsMannVsMachineMode();
+
+		if (allow_create_dropped_weapon) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		}
+		
+		auto result = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
+		
+		if (allow_create_dropped_weapon) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(is_mvm_mode);
+		}
+		
+		return result;
+	}
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -915,6 +1005,9 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByClassname, "CGlobalEntityList::FindEntityByClassname");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGHEST);
             MOD_ADD_DETOUR_MEMBER(CBaseObject_InitializeMapPlacedObject, "CBaseObject::InitializeMapPlacedObject");
+            MOD_ADD_DETOUR_MEMBER(CBasePlayer_CommitSuicide, "CBasePlayer::CommitSuicide");
+			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+            
     
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
@@ -927,6 +1020,7 @@ namespace Mod::Etc::Mapentity_Additions
             logic_case_classname = STRING(AllocPooledString("logic_case"));
             tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
+            point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
 			return true;
 		}
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -936,6 +1030,7 @@ namespace Mod::Etc::Mapentity_Additions
             logic_case_classname = STRING(AllocPooledString("logic_case"));
             tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
+            point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
         }
 	};
 	CMod s_Mod;

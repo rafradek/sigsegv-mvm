@@ -454,6 +454,19 @@ public:
 
 extern GlobalThunk<CMonsterResource *> g_pMonsterResource;
 
+class CTriggerCamera : public CBaseEntity
+{
+public:
+	void Enable() { ft_Enable(this); }
+	void Disable() { ft_Disable(this); }
+
+	DECL_DATAMAP (CHandle<CBaseEntity>, m_hPlayer);
+	DECL_DATAMAP (CHandle<CBaseEntity>, m_hTarget);
+private:
+	static MemberFuncThunk<CTriggerCamera *, void> ft_Enable;
+	static MemberFuncThunk<CTriggerCamera *, void> ft_Disable;
+};
+
 // 20151007a
 
 // CTFPlayer::Event_Killed

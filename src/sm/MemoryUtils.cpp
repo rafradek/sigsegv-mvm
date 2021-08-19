@@ -424,13 +424,13 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	typedef Elf32_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS32;
 	const uint16_t ELF_MACHINE = EM_386;
-	Msg("32 bit\n");
+	DevMsg("32 bit\n");
 #else
 	typedef Elf64_Ehdr ElfHeader;
 	typedef Elf64_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS64;
 	const uint16_t ELF_MACHINE = EM_X86_64;
-	Msg("64 bit\n");
+	DevMsg("64 bit\n");
 #endif
 
 	Dl_info info;

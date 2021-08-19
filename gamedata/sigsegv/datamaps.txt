@@ -38,6 +38,7 @@
 				"CLogicCase"           "_ZN10CLogicCase9m_DataMapE"
 				"CGameUI"              "_ZN7CGameUI9m_DataMapE"
 				"CBaseFilter"          "_ZN11CBaseFilter9m_DataMapE"
+				"CTriggerCamera"       "_ZN14CTriggerCamera9m_DataMapE"
 			}
 		}
 	}

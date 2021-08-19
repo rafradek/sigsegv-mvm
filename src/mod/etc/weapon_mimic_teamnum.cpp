@@ -21,8 +21,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		grenade = false;
 		
 		variant_t variant;
-        mimic->ReadKeyField("spawnflags", &variant);
-		int spawnflags = variant.Int();
+		int spawnflags = mimic->m_spawnflags;
 		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
 			scorer = mimic->GetOwnerEntity();
 		}
@@ -166,9 +165,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Spawn)();
 		auto mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
 		
-		variant_t variant;
-        mimic->ReadKeyField("spawnflags", &variant);
-		int spawnflags = variant.Int();
+		int spawnflags = mimic->m_spawnflags;
 		string_t sound = mimic->m_pzsFireSound;
 		string_t particle = mimic->m_pzsFireParticles;
 		if (spawnflags & 2) {

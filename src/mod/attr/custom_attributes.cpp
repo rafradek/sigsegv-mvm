@@ -1064,7 +1064,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (info.GetWeapon() != nullptr) {
 			auto character = reinterpret_cast<CBaseCombatCharacter *>(this);
-			if (character->MyNextBotPointer() != nullptr && !character->IsPlayer()) {
+			if (character->MyNextBotPointer() != nullptr && !character->IsPlayer() && !character->ClassMatches("tank_boss")) {
 				float dmg_mult = 1.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_npc);
 				if (dmg_mult != 1.0f) {
@@ -2722,6 +2722,9 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFFlameThrower_SetWeaponState)(state);
 	}
 	
+	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
+		"Enable displaying custom attributes on the right side of the screen");	
+
 	std::vector<std::string> attribute_info_strings[33];
 	float attribute_info_display_time[33];
 
@@ -2849,6 +2852,9 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot)
 	{
+		if (!cvar_display_attrs.GetBool())
+			return;
+			
 		bool display_stock = player != target;
 
 		CTFWeaponBase *weapon = target->GetActiveTFWeapon();

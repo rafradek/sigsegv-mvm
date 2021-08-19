@@ -101,6 +101,7 @@ const LibInfo& LibMgr::GetInfo(Library lib)
 
 void LibMgr::FindInfo(Library lib)
 {
+	ConVarRef developer("developer");
 	DynLibInfo dlinfo;
 	memset(&dlinfo, 0x00, sizeof(dlinfo));
 	assert(g_MemUtils.GetLibraryInfo(GetPtr(lib), dlinfo));
@@ -114,13 +115,15 @@ void LibMgr::FindInfo(Library lib)
 		
 		auto it = segnames_plat.find(name);
 		if (it != segnames_plat.end()) {
-			ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "Library %s: segment '%s' found: %s\n",
-				Lib_ToString(lib), name, Seg_ToString((*it).second));
+			if (developer.GetBool())
+				ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "Library %s: segment '%s' found: %s\n",
+					Lib_ToString(lib), name, Seg_ToString((*it).second));
 			auto result = lib_info.m_SegmentsByType.insert(std::make_pair((*it).second, seg_info));
 			assert(result.second);
 		} else {
-			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Library %s: segment '%s' not found!\n",
-				Lib_ToString(lib), name);
+			if (developer.GetBool())
+				ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Library %s: segment '%s' not found!\n",
+					Lib_ToString(lib), name);
 		}
 		
 		auto result = lib_info.m_SegmentsByName.insert(std::make_pair(name, seg_info));

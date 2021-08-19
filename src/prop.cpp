@@ -5,7 +5,7 @@
 #include "util/demangle.h"
 
 
-void CC_ListProps(const CCommand& cmd)
+void ListProps(bool fail_only)
 {
 	size_t len_obj = 0;
 //	size_t len_mem = 0;
@@ -41,13 +41,17 @@ void CC_ListProps(const CCommand& cmd)
 			
 			switch (prop->GetState()) {
 			case IProp::State::INITIAL:
-				Msg("%-8s  %7s  %-*s  %s\n", kind, "INIT", len_obj, n_obj, n_mem);
+			{	
+				if (!fail_only)
+					Msg("%-8s  %7s  %-*s  %s\n", kind, "INIT", len_obj, n_obj, n_mem);
 				break;
+			}
 			case IProp::State::OK:
 			{
 				int off = -1;
 				prop->GetOffset(off);
-				Msg("%-8s  +0x%04x  %-*s  %s\n", kind, off, len_obj, n_obj, n_mem);
+				if (!fail_only)
+					Msg("%-8s  +0x%04x  %-*s  %s\n", kind, off, len_obj, n_obj, n_mem);
 				break;
 			}
 			case IProp::State::FAIL:
@@ -57,6 +61,12 @@ void CC_ListProps(const CCommand& cmd)
 		}
 	}
 }
+
+void CC_ListProps(const CCommand& cmd)
+{
+	ListProps(false);
+}
+
 static ConCommand ccmd_list_props("sig_list_props", &CC_ListProps,
 	"List props and show their status", FCVAR_NONE);
 
@@ -70,8 +80,7 @@ namespace Prop
 			prop->Preload();
 		}
 		
-		CCommand dummy;
-		CC_ListProps(dummy);
+		ListProps(true);
 	}
 	
 	

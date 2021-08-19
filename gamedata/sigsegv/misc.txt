@@ -4721,6 +4721,16 @@
 					type "sym"
 					sym  "_ZNK17CBaseCombatWeapon13GetShootSoundEi"
 				}
+				"CTriggerCamera::Enable"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerCamera6EnableEv"
+				}
+				"CTriggerCamera::Disable"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerCamera7DisableEv"
+				}
 			}
 			"addrs_group"
 			{

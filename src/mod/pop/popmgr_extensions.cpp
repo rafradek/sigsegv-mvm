@@ -593,7 +593,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BotHumansHaveRobotVoice         ("sig_mvm_human_bots_robot_voice"),
 			m_BotHumansHaveEyeGlow            ("sig_mvm_human_eye_particle"),
 			m_EyeParticle                     ("sig_mvm_eye_particle"),
-			m_BotEscortCount                  ("tf_bot_flag_escort_max_count")
+			m_BotEscortCount                  ("tf_bot_flag_escort_max_count"),
+			m_CustomAttrDisplay               ("sig_attr_display")
 
 		{
 			this->Reset();
@@ -714,6 +715,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BotHumansHaveEyeGlow.Reset();
 			this->m_EyeParticle.Reset();
 			this->m_BotEscortCount.Reset();
+			this->m_CustomAttrDisplay.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -901,6 +903,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
 		CPopOverride_ConVar<std::string> m_EyeParticle;
 		CPopOverride_ConVar<int> m_BotEscortCount;
+		CPopOverride_ConVar<bool> m_CustomAttrDisplay;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1352,6 +1355,7 @@ namespace Mod::Pop::PopMgr_Extensions
 //	}
 	RefCount rc_CTFPlayer_ManageRegularWeapons;
 	CEconItemDefinition *is_item_replacement = nullptr;
+	CEconItemView *item_view_replacement = nullptr;
 	DETOUR_DECL_MEMBER(void , CTFPlayer_ManageRegularWeapons, void *data)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_ManageRegularWeapons);
@@ -1377,8 +1381,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		auto result = DETOUR_MEMBER_CALL(CTFPlayer_GetLoadoutItem)(pclass, slot, b1);
 
-		/* this only applies to red team, for what essentially amounts to "legacy" reasons */
-		if (result != nullptr && result->GetItemDefinition() != nullptr && TFGameRules()->IsMannVsMachineMode() && !player->IsBot()/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
+		if (result != nullptr && result->GetItemDefinition() != nullptr && TFGameRules()->IsMannVsMachineMode() && !player->IsBot()) {
 			
 			auto find_loadout = state.m_SelectedLoadoutItems.find(player);
 			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
@@ -1386,11 +1389,32 @@ namespace Mod::Pop::PopMgr_Extensions
 					auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
 					if (extraitem.item != nullptr && (extraitem.class_index == pclass || extraitem.class_index == 0) && extraitem.loadout_slot == slot) {
 						is_item_replacement = extraitem.item->GetItemDefinition();
+						item_view_replacement = extraitem.item;
 						return extraitem.item;
 					}
 				}
 			}
 			
+			if (!state.m_ItemReplace.empty()) {
+				const char *classname = TranslateWeaponEntForClass_improved(result->GetItemDefinition()->GetKeyValues()->GetString("item_class"), pclass);
+				bool found = false;
+				CEconItemDefinition *item_def = nullptr;
+				CEconItemView *view = nullptr;
+				for (const auto& entry : state.m_ItemReplace) {
+					if (entry.entry->Matches(classname, result)) {
+						found = true;
+						item_def = entry.item_def;
+						view = entry.item;
+						break;
+					}
+				}
+				if (found) {
+					is_item_replacement = item_def;
+					item_view_replacement = view;
+					return view;
+				}
+			}
+
 			/* only enforce the whitelist/blacklist if they are non-empty */
 
 			if (!state.m_ItemWhitelist.empty()) {
@@ -1448,25 +1472,6 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 			}
-
-			if (!state.m_ItemReplace.empty()) {
-				const char *classname = TranslateWeaponEntForClass_improved(result->GetItemDefinition()->GetKeyValues()->GetString("item_class"), pclass);
-				bool found = false;
-				CEconItemDefinition *item_def = nullptr;
-				CEconItemView *view = nullptr;
-				for (const auto& entry : state.m_ItemReplace) {
-					if (entry.entry->Matches(classname, result)) {
-						found = true;
-						item_def = entry.item_def;
-						view = entry.item;
-						break;
-					}
-				}
-				if (found) {
-					is_item_replacement = item_def;
-					return view;
-				}
-			}
 			
 		}
 
@@ -1503,8 +1508,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		/* this only applies to red team, for what essentially amounts to "legacy" reasons */
-		if (cvar_givenameditem_blacklist.GetBool() && TFGameRules()->IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther/*&& player->GetTeamNumber() == TF_TEAM_RED*/) {
+		if (cvar_givenameditem_blacklist.GetBool() && TFGameRules()->IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther && item_view_replacement != item_view) {
 			/* only enforce the whitelist/blacklist if they are non-empty */
 			
 			if (!state.m_ItemWhitelist.empty()) {
@@ -1711,7 +1715,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			DevMsg("Spawning template placeholder\n");
 			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
 			for (auto entity : inst->entities) {
-				if ( entity->GetMoveType() == MOVETYPE_NONE )
+				if (entity == nullptr)
+					continue;
+
+				if (entity->GetMoveType() == MOVETYPE_NONE)
 					continue;
 
 				// Calculate a velocity for this entity
@@ -4159,12 +4166,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		DevMsg("Parsed addcond\n");
 	}
-					
+
 	void Parse_CustomWeapon(KeyValues *kv)
 	{
 		CustomWeapon weapon;
+		weapon.name = kv->GetName();
 		FOR_EACH_SUBKEY(kv, subkey) {
-			if (FStrEq(subkey->GetName(), "Name")) {
+			if (subkey->GetFirstSubKey() != nullptr) {
+				Parse_CustomWeapon(subkey);
+			}
+			else if (FStrEq(subkey->GetName(), "Name")) {
 				weapon.name = subkey->GetString();
 			}
 			else if (FStrEq(subkey->GetName(), "OriginalItemName")){
@@ -4500,7 +4511,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				} else if (FStrEq(name, "FixSetCustomModelInput")) {
 					state.m_bFixSetCustomModelInput = subkey->GetBool();
 				} else if (FStrEq(name, "BotsAreHumans")) {
-					state.m_BotsHumans.Set(subkey->GetBool());
+					state.m_BotsHumans.Set(subkey->GetInt());
 				} else if (FStrEq(name, "SetCreditTeam")) {
 					state.m_SetCreditTeam.Set(subkey->GetInt());
 				} else if (FStrEq(name, "EnableDominations")) {
@@ -4588,6 +4599,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_EyeParticle.Set(subkey->GetString());
 				} else if (FStrEq(name, "FlagEscortCountOffset")) {
 					state.m_BotEscortCount.Set(subkey->GetInt() + 4);
+			//	} else if (FStrEq(name, "NoNewInspection")) {
+			//		state.m_CustomAttrDisplay.Set(!subkey->GetBool());
 				} else if (FStrEq(name, "ForceHoliday")) {
 					DevMsg("Forcing holiday\n");
 					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");

@@ -25,11 +25,12 @@ IMPL_DATAMAP(float,                  CBaseEntity, m_flLocalTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flAnimTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flSimulationTime);
 IMPL_DATAMAP(float,                  CBaseEntity, m_flVPhysicsUpdateLocalTime);
-IMPL_DATAMAP(bool,                   CBaseEntity, m_spawnflags);
+IMPL_DATAMAP(int,                    CBaseEntity, m_spawnflags);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser1);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser2);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser3);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
+IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
 
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);

@@ -141,6 +141,7 @@ public:
 	DECL_SENDPROP(CPlayerLocalData, m_Local);
 	DECL_SENDPROP(int, m_nTickBase);
 	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
+	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

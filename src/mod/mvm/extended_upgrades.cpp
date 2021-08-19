@@ -207,6 +207,10 @@ namespace Mod::MvM::Extended_Upgrades
 
         void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
             const char *info = menu->GetItemInfo(item, nullptr);
+            
+            if (info == nullptr)
+                return;
+                
             int upgrade_id = strtol(info, nullptr, 10);
             if (upgrade_id < 1000)
                 BuyUpgrade(upgrades[upgrade_id], this->slot, this->player, false, false);
@@ -741,7 +745,10 @@ namespace Mod::MvM::Extended_Upgrades
 
                 ItemDrawInfo info1(text, 
                     cur_step >= max_step || player->GetCurrency() < upgrade->cost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
-                menu->AppendItem(CFmtStr("%d", (int)i), info1);
+
+                static char buf[4];
+                snprintf(buf, sizeof(buf), "%d", (int)i);
+                menu->AppendItem(buf, info1);
 
                 if (!upgrade->description.empty()) {
                     ItemDrawInfo infodesc(CFmtStr("^ %s", upgrade->description.c_str()), ITEMDRAW_DISABLED);
@@ -757,7 +764,10 @@ namespace Mod::MvM::Extended_Upgrades
                 snprintf(text, 128, "%s: %s (%d/%d) $%d", upgrade->name.c_str(), disabled_reason, cur_step, max_step, upgrade->cost);
 
                 ItemDrawInfo info1(text, ITEMDRAW_DISABLED);
-                menu->AppendItem(CFmtStr("%d", (int)i), info1);
+                
+                static char buf[4];
+                snprintf(buf, sizeof(buf), "%d", (int)i);
+                menu->AppendItem(buf, info1);
 
                 if (!upgrade->description.empty()) {
                     ItemDrawInfo infodesc(CFmtStr("^ %s", upgrade->description.c_str()), ITEMDRAW_DISABLED);
@@ -955,8 +965,11 @@ namespace Mod::MvM::Extended_Upgrades
                         bool found_now = WeaponHasValidUpgrades(item, player);
                         found_any |= found_now;
                         if (found_now && item == player->GetActiveWeapon()) {
-                            found = true;
-                            StartUpgradeListForPlayer(player, (int)slot, 0);
+                            
+                            if (!WeaponHasValidUpgrades(nullptr, player)) {
+                                found = true;
+                                StartUpgradeListForPlayer(player, (int)slot, 0);
+                            }
                             break;
                         }
                     }
