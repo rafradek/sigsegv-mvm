@@ -230,6 +230,11 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks)
             continue;
         }
         CTFBot *bot = pending_task.bot;
+
+        if (pending_task.health_below != 0 && bot->GetHealth() >= pending_task.health_below) {
+            pending_task.when = gpGlobals->curtime + pending_task.delay;
+        }
+
         if (gpGlobals->curtime >= pending_task.when && (pending_task.health_below == 0 || bot->GetHealth() <= pending_task.health_below)) {
             const CKnownEntity *threat;
             if ((pending_task.health_above > 0 && bot->GetHealth() <= pending_task.health_above) || (
@@ -749,6 +754,7 @@ void ApplyPendingTask(CTFBot *bot, std::vector<PeriodicTaskImpl> &periodic_tasks
         PeriodicTask ptask;
         ptask.bot=bot;
         ptask.type = task_spawner.type;
+        ptask.delay = task_spawner.when;
         ptask.when = task_spawner.when + gpGlobals->curtime;
         ptask.repeats = task_spawner.repeats;
         ptask.cooldown = task_spawner.cooldown;
@@ -1063,6 +1069,34 @@ const char *GetItemName(int item_defid) {
             return item_def->GetName();
         }
         return nullptr;
+    }
+}
+
+void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark)
+{
+    for (auto &pair : items) {
+        if (pair.entry != nullptr) {
+            bool found = false;
+            ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                if (entity->GetItem() != nullptr && pair.entry->Matches(entity->GetItem()->GetItemDefinition()->GetItemClass(), entity->GetItem())) {
+                    found = true;
+                    return false;
+                }
+            });
+            if (!found)
+                return;
+        }
+        const char *classname = TranslateWeaponEntForClass_improved(pair.definition->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
+        CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(pair.definition->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+        if (entity != nullptr) {
+            if (mark) {
+                entity->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("is force item"), 1.0f);
+            }
+            if (!GiveItemToPlayer(player, entity, no_remove, respect_class, pair.name.c_str()))
+            {
+                entity->Remove();
+            }
+        }
     }
 }
 

@@ -740,11 +740,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			for (int i=0; i < 10; i++)
 				this->m_PlayerAddCondClass[i].clear();
 
-			for (int i=0; i < 11; i++)
-			{
-				this->m_ForceItems.items[i].clear();
-				this->m_ForceItems.items_no_remove[i].clear();
-			}
+			this->m_ForceItems.Clear();
 		//	this->m_DisallowedItems.clear();
 			
 			this->m_FlagResetTimes.clear();
@@ -1507,7 +1503,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GiveNamedItem, const char *classname, int i1, const CEconItemView *item_view, bool b1)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		
 		if (cvar_givenameditem_blacklist.GetBool() && TFGameRules()->IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther && item_view_replacement != item_view) {
 			/* only enforce the whitelist/blacklist if they are non-empty */
 			
@@ -1883,10 +1878,72 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (rc_CTFPlayer_HandleCommand_JoinClass < 10 && player->GetTeamNumber() >= TF_TEAM_RED)
 			CheckPlayerClassLimit(player);
 	}
-	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	
+	void ApplyOrClearRobotModel(CTFPlayer *player)
+	{
+		if (!state.m_bRedPlayersRobots && !state.m_bBluPlayersRobots)
+			return;
+
+		// Restore changes made by player animations on robot models
+		auto find = state.m_Player_anim_cosmetics.find(player);
+		if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
+			find->second->Remove();
+			servertools->SetKeyValue(player, "rendermode", "0");
+			player->SetRenderColorA(255);
+			state.m_Player_anim_cosmetics.erase(find);
+		}
+
+		if ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
+				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE)) {
+
+			int model_class=player->GetPlayerClass()->GetClassIndex();
+			const char *model = player->IsMiniBoss() ? g_szBotBossModels[model_class] : g_szBotModels[model_class];
+			
+			if (state.m_bPlayerRobotUsePlayerAnimation) {
+				
+				auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+
+				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+				//DevMsg("Use human anims %d\n", wearable != nullptr);
+				if (wearable != nullptr) {
+					wearable->Spawn();
+					wearable->m_bValidatedAttachedEntity = true;
+					wearable->GiveTo(player);
+					servertools->SetKeyValue(player, "rendermode", "1");
+					player->SetRenderColorA(0);
+					int model_index = CBaseEntity::PrecacheModel(model);
+					wearable->SetModelIndex(model_index);
+					for (int j = 0; j < MAX_VISION_MODES; ++j) {
+						wearable->SetModelIndexOverride(j, model_index);
+					}
+					state.m_Player_anim_cosmetics[player] = wearable;
+					player->GetPlayerClass()->SetCustomModel("", true);
+				}
+			}
+			else {
+				player->GetPlayerClass()->SetCustomModel(model, true);
+			}
+			player->UpdateModel();
+		}
+		else {
+			player->GetPlayerClass()->SetCustomModel("", true);
+			player->UpdateModel();
+		}
+		
+	}
+
+	DETOUR_DECL_MEMBER(void, CBasePlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DETOUR_MEMBER_CALL(CBasePlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		if (!player->IsBot()) {
+			ApplyOrClearRobotModel(player);
+		}
+	}
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	{
 		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->GetTeamNumber() >= TF_TEAM_RED)
 			CheckPlayerClassLimit(player);
 	}
@@ -2057,46 +2114,11 @@ namespace Mod::Pop::PopMgr_Extensions
 				THINK_FUNC_SET(player, DelayMissionInfoSend, gpGlobals->curtime + 1.0f);
 				
 			}
-			
-		}
 
-		if (!player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
-				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
-
-			int model_class=player->GetPlayerClass()->GetClassIndex();
-			const char *model = player->IsMiniBoss() ? g_szBotBossModels[model_class] : g_szBotModels[model_class];
-			
-			if (state.m_bPlayerRobotUsePlayerAnimation) {
-				
-				auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
-
-				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-				//DevMsg("Use human anims %d\n", wearable != nullptr);
-				if (wearable != nullptr) {
-					wearable->Spawn();
-					wearable->m_bValidatedAttachedEntity = true;
-					wearable->GiveTo(player);
-					servertools->SetKeyValue(player, "rendermode", "1");
-					player->SetRenderColorA(0);
-					int model_index = CBaseEntity::PrecacheModel(model);
-					wearable->SetModelIndex(model_index);
-					for (int j = 0; j < MAX_VISION_MODES; ++j) {
-						wearable->SetModelIndexOverride(j, model_index);
-					}
-					state.m_Player_anim_cosmetics[player] = wearable;
-					player->GetPlayerClass()->SetCustomModel("", true);
-				}
-			}
-			else {
-				player->GetPlayerClass()->SetCustomModel(model, true);
-			}
-			player->UpdateModel();
-			player->SetBloodColor(DONT_BLEED);
-
-			
+			ApplyOrClearRobotModel(player);
 		}
 	}
-	
+
 	RefCount rc_CTFPlayer_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
@@ -3167,7 +3189,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				for (int i = 0; i < vec.size(); i++) {
 					auto &item = vec[i];
 					char buf[256];
-					snprintf(buf, sizeof(buf), "%s", item.first.c_str());
+					snprintf(buf, sizeof(buf), "%s", item.name.c_str());
 					ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
 					menu->AppendItem("", info1);
 				}
@@ -3530,25 +3552,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		return info;
-	}
-	std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name) 
-	{
-		if (FStrEq(kv->GetName(), "Classname")) {
-			DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
-			return std::make_unique<ItemListEntry_Classname>(kv->GetString());
-		} else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName") || FStrEq(kv->GetName(), "Item")) {
-			DevMsg("%s: Add Name entry: \"%s\"\n", name, kv->GetString());
-			return std::make_unique<ItemListEntry_Name>(kv->GetString());
-		} else if (FStrEq(kv->GetName(), "DefIndex")) {
-			DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
-			return std::make_unique<ItemListEntry_DefIndex>(kv->GetInt());
-		} else if (FStrEq(kv->GetName(), "ItemSlot")) {
-			DevMsg("%s: Add ItemSlot entry: %s\n", name, kv->GetString());
-		return std::make_unique<ItemListEntry_ItemSlot>(kv->GetString());
-		} else {
-			DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
-			return std::make_unique<ItemListEntry_Classname>(kv->GetString());
-		}
 	}
 
 	bool Parse_ItemListEntry(KeyValues *kv, std::vector<std::unique_ptr<ItemListEntry>> &list, const char *name) 
@@ -4332,23 +4335,36 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CPopulationManager::Parse\n");
 		ForEachTFPlayer([&](CTFPlayer *player){
-					if (!player->IsAlive()) return;
-					
-					if (state.m_bRedPlayersRobots || state.m_bBluPlayersRobots){
-						
-						// Restore changes made by player animations on robot models
-						auto find = state.m_Player_anim_cosmetics.find(player);
-						if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
-							find->second->Remove();
-							servertools->SetKeyValue(player, "rendermode", "0");
-							player->SetRenderColorA(255);
-							state.m_Player_anim_cosmetics.erase(find);
-						}
-
-						player->GetPlayerClass()->SetCustomModel("", true);
-						player->UpdateModel();
+			if (!player->IsAlive()) return;
+			
+			if (!state.m_ItemAttributes.empty()) {
+				for (int i =0 ; i < player->WeaponCount(); i++) {
+					if (player->GetWeapon(i) != nullptr) {
+						player->GetWeapon(i)->Remove();
 					}
-				});
+				}
+				for (int i =0 ; i < player->GetNumWearables(); i++) {
+					if (player->GetWearable(i) != nullptr) {
+						player->GetWearable(i)->Remove();
+					}
+				}
+			}
+
+			if (state.m_bRedPlayersRobots || state.m_bBluPlayersRobots){
+				
+				// Restore changes made by player animations on robot models
+				auto find = state.m_Player_anim_cosmetics.find(player);
+				if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
+					find->second->Remove();
+					servertools->SetKeyValue(player, "rendermode", "0");
+					player->SetRenderColorA(255);
+					state.m_Player_anim_cosmetics.erase(find);
+				}
+
+				player->GetPlayerClass()->SetCustomModel("", true);
+				player->UpdateModel();
+			}
+		});
 				
 		SetVisibleMaxPlayers();
 
@@ -4913,6 +4929,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			
 			//MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent,           "CTFGameRules::FireGameEvent");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ChangeTeam,               "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ChangeTeam,                 "CTFPlayer::ChangeTeam");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CalcIsAttackCritical,   "CTFWeaponBase::CalcIsAttackCritical");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades,   "CUpgrades::GrantOrRemoveAllUpgrades");

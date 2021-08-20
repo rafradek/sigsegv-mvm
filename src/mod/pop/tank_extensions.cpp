@@ -88,7 +88,8 @@ namespace Mod::Pop::Tank_Extensions
 		bool replace_model_col  =   false;
 		int team_num            = -1;
 		float offsetz           =   0.0f;
-		bool rotate_pitch        =  true;
+		bool rotate_pitch       =  true;
+		bool crit_immune        = false;
 
 		std::string sound_ping =   "";
 		std::string sound_deploy =   "";
@@ -373,29 +374,19 @@ namespace Mod::Pop::Tank_Extensions
 				if (!enginesound->PrecacheSound(subkey->GetString(), true))
 					CBaseEntity::PrecacheScriptSound(subkey->GetString());
 			} else if (FStrEq(name, "SpawnTemplate")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].attachements.push_back(Parse_SpawnTemplate(subkey));
-				//Parse_PointTemplate(spawner, subkey);
 			} else if (FStrEq(name, "DestroyTemplate")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].attachements_destroy.push_back(Parse_SpawnTemplate(subkey));
-				//Parse_PointTemplate(spawner, subkey);
 			} else if (FStrEq(name, "TeamNum")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].team_num = subkey->GetInt();
-				//Parse_PointTemplate(spawner, subkey);
 			} else if (FStrEq(name, "OffsetZ")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].offsetz = subkey->GetFloat();
-				//Parse_PointTemplate(spawner, subkey);
 			} else if (FStrEq(name, "ReplaceModelCollisions")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].replace_model_col = subkey->GetBool();
-				//Parse_PointTemplate(spawner, subkey);
 			} else if (FStrEq(name, "RotatePitch")) {
-			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].rotate_pitch = subkey->GetBool();
-				//Parse_PointTemplate(spawner, subkey);
+			} else if (FStrEq(name, "CritImmune")) {
+				spawners[spawner].crit_immune = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -1006,6 +997,36 @@ namespace Mod::Pop::Tank_Extensions
 		entityOnFireCollide = nullptr;
 	}
 
+	RefCount rc_CTFBaseBoss_OnTakeDamage;
+	DETOUR_DECL_MEMBER(int, CTFBaseBoss_OnTakeDamage, CTakeDamageInfo &info)
+	{
+		SCOPED_INCREMENT(rc_CTFBaseBoss_OnTakeDamage);
+		return DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
+	}
+
+	class CTakeDamageInfoTF2 : public CTakeDamageInfo
+	{
+	public:
+		int m_eCritType;
+	};
+
+	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
+	{
+		int result = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+		if (rc_CTFBaseBoss_OnTakeDamage) {
+			auto tank = reinterpret_cast<CTFTankBoss *>(pVictim);
+			SpawnerData *data = FindSpawnerDataForTank(tank);
+			if (data != nullptr && data->crit_immune) {
+				DevMsg("TANK DATA: %f %f\n", info.GetDamage(), info.GetDamageBonus());
+				info.SetDamage(info.GetDamage() - info.GetDamageBonus());
+				info.SetDamageType(info.GetDamageType() & ~(DMG_CRITICAL));
+				reinterpret_cast<CTakeDamageInfoTF2 *>(&info)->m_eCritType = 0;
+
+			}
+		}
+		return result;
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1042,6 +1063,8 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFTankDestruction_Spawn,      "CTFTankDestruction::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_Explode, "CTFTankBoss::Explode");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_UpdateOnRemove, "CTFTankBoss::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_OnTakeDamage, "CTFBaseBoss::OnTakeDamage");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
 
 			// Tank flame damage fix
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");

@@ -991,6 +991,18 @@ namespace Mod::Etc::Mapentity_Additions
 		return result;
 	}
 
+    DETOUR_DECL_MEMBER(void, CBaseEntity_UpdateOnRemove)
+	{
+		auto entity = reinterpret_cast<CBaseEntity *>(this);
+
+        auto name = STRING(entity->GetEntityName());
+		if (name[0] == '!' && name[1] == '$') {
+            variant_t variant;
+            entity->m_OnUser4->FireOutput(variant, entity, entity);
+        }
+		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
+	}
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1007,6 +1019,7 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBaseObject_InitializeMapPlacedObject, "CBaseObject::InitializeMapPlacedObject");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_CommitSuicide, "CBasePlayer::CommitSuicide");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
             
     
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

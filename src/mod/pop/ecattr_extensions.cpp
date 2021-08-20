@@ -165,6 +165,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		bool has_override_step_sound;
 		std::string override_step_sound;
 
+		std::vector<std::string> strip_item;
+
 		CRC32_t spray_file;
 	};
 
@@ -862,6 +864,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.has_override_step_sound = true;
 			if (!enginesound->PrecacheSound(kv->GetString(), true))
 				CBaseEntity::PrecacheScriptSound(kv->GetString());
+		} else if (FStrEq(name, "StripItem")) {
+			data.strip_item.push_back(kv->GetString());
 		} else {
 			found = false;
 		}
@@ -1263,11 +1267,37 @@ namespace Mod::Pop::ECAttr_Extensions
 				THINK_FUNC_SET(bot, EyeParticle, gpGlobals->curtime + 0.1f);
 			}
 
+			//Replenish clip, if clip bonus is being applied
+			for (int i = 0; i < bot->WeaponCount(); ++i) {
+				CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+				if (weapon == nullptr) continue;
+				
+				int fire_when_full = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_when_full, auto_fires_full_clip);
+
+				if (fire_when_full == 0)
+					weapon->m_iClip1 = weapon->GetMaxClip1();
+			}
+
 			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(bot) - 1));
 			client->m_nCustomFiles[0].crc = data->spray_file;
+
+			if (!data->strip_item.empty()) {
+				for (std::string &itemname : data->strip_item) {
+					ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity){
+						if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemname.c_str())) {
+							if (entity->MyCombatWeaponPointer() != nullptr) {
+								bot->Weapon_Detach(entity->MyCombatWeaponPointer());
+							}
+							entity->Remove();
+						}
+					});
+				}
+				bot->EquipBestWeaponForThreat(nullptr);
+			}
 		}
 	}
-
+	
 	RefCount rc_CTFBotSpawner_Spawn;
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{

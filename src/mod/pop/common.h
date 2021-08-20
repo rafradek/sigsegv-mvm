@@ -61,11 +61,30 @@ static const char *SPELL_TYPE[] = {
 extern std::map<int, std::string> g_Itemnames;
 extern std::map<int, std::string> g_Attribnames;
 
+class ItemListEntry;
+
+struct ForceItem
+{
+    std::string name;
+    CEconItemDefinition *definition;
+    std::shared_ptr<ItemListEntry> entry;
+};
+
 struct ForceItems
 {
-	std::vector<std::pair<std::string, CEconItemDefinition *>> items[12] = {};
-	std::vector<std::pair<std::string, CEconItemDefinition *>> items_no_remove[12] = {};
+	std::vector<ForceItem> items[12] = {};
+	std::vector<ForceItem> items_no_remove[12] = {};
     bool parsed = false;
+
+    void Clear() {
+        
+        for (int i=0; i < 12; i++)
+        {
+            items[i].clear();
+            items_no_remove[i].clear();
+        }
+        parsed = false;
+    }
 };
 
 struct AddCond
@@ -129,6 +148,7 @@ struct PeriodicTask
 {
     CHandle<CTFBot> bot;
     PeriodicTaskType type;
+    float delay = 10;
     float when = 10;
     float cooldown = 10;
     int repeats = 0;
@@ -355,24 +375,7 @@ struct ItemAttributes
 void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds);
 void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks);
 
-static void ApplyForceItemsClass(std::vector<std::pair<std::string, CEconItemDefinition *>> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark)
-{
-    for (auto &pair : items) {
-        const char *classname = TranslateWeaponEntForClass_improved(pair.second->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
-        CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(pair.second->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
-        if (entity != nullptr) {
-            
-            if (mark) {
-                entity->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("is force item"), 1.0f);
-            }
-            if (!GiveItemToPlayer(player, entity, no_remove, respect_class, pair.first.c_str()))
-            {
-                entity->Remove();
-            }
-
-        }
-    }
-}
+void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark);
 
 static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mark)
 {
@@ -384,6 +387,26 @@ static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mar
     ApplyForceItemsClass(force_items.items_no_remove[player_class], player, true, false, mark);
     ApplyForceItemsClass(force_items.items[11], player, false, true, mark);
     ApplyForceItemsClass(force_items.items_no_remove[11], player, true, true, mark);
+}
+
+static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name) 
+{
+    if (FStrEq(kv->GetName(), "Classname")) {
+        DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
+        return std::make_unique<ItemListEntry_Classname>(kv->GetString());
+    } else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName") || FStrEq(kv->GetName(), "Item")) {
+        DevMsg("%s: Add Name entry: \"%s\"\n", name, kv->GetString());
+        return std::make_unique<ItemListEntry_Name>(kv->GetString());
+    } else if (FStrEq(kv->GetName(), "DefIndex")) {
+        DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
+        return std::make_unique<ItemListEntry_DefIndex>(kv->GetInt());
+    } else if (FStrEq(kv->GetName(), "ItemSlot")) {
+        DevMsg("%s: Add ItemSlot entry: %s\n", name, kv->GetString());
+    return std::make_unique<ItemListEntry_ItemSlot>(kv->GetString());
+    } else {
+        DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
+        return std::make_unique<ItemListEntry_Classname>(kv->GetString());
+    }
 }
 
 static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremove)
@@ -409,16 +432,27 @@ static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremov
             }
         }
         FOR_EACH_SUBKEY(subkey, subkey2) {
-            CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetString());
-            if (item_def != nullptr) {
-                auto &items = noremove ? force_items.items_no_remove : force_items.items;
-                items[classname].push_back({subkey2->GetString(), item_def});
+            
+            if (subkey2->GetFirstSubKey() != nullptr) {
+                CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetName());
+                if (item_def != nullptr) {
+                    auto &items = noremove ? force_items.items_no_remove : force_items.items;
+                    items[classname].push_back({subkey2->GetString(), item_def, Parse_ItemListEntry(subkey2->GetFirstSubKey(), "ForceItem")});
+                }
+            }
+            else {
+                CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetString());
+                if (item_def != nullptr) {
+                    auto &items = noremove ? force_items.items_no_remove : force_items.items;
+                    items[classname].push_back({subkey2->GetString(), item_def, nullptr});
+                }
             }
         }
     }
     
     DevMsg("Parsed attributes\n");
 }
+
 static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &attibs)
 {
     ItemAttributes item_attributes;// = state.m_ItemAttributes.emplace_back();

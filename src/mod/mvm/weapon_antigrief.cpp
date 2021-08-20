@@ -77,15 +77,28 @@ namespace Mod::MvM::Weapon_AntiGrief
 	}
 	
 	RefCount rc_StunOnHit;
+	CTFWeaponBase *weapon = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
 		SCOPED_INCREMENT(rc_StunOnHit);
+		weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
 	}
 	static inline bool ShouldBlock_ScorchShot()  { return (cvar_scorchshot .GetBool() && rc_ScorchShot  > 0); }
 	static inline bool ShouldBlock_LooseCannon() { return (cvar_loosecannon.GetBool() && rc_LooseCannon > 0); }
 	static inline bool ShouldBlock_ShortStop()   { return (cvar_shortstop.GetBool()   && rc_ShortStop > 0); }
-	static inline bool ShouldBlock_StunOnHit()   { return (cvar_stunonhit.GetBool()   && rc_StunOnHit > 0); }
+	static inline bool ShouldBlock_StunOnHit()   
+	{ 
+		if (cvar_stunonhit.GetBool() && rc_StunOnHit > 0 && weapon != nullptr) {
+			float stundmg = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stundmg, stun_on_damage);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stundmg, aoe_blast_on_damage);
+			if (stundmg != 0.0f) {
+				return true;
+			}
+		}
+		return false;
+	}
 	static inline bool ShouldBlock_Moonshot(int flags) { return ((flags & 9) == 9 && cvar_moonshot.GetBool()); }
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
