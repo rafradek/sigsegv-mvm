@@ -336,6 +336,8 @@ const char *WeaponIdToAlias(int weapon_id);
 float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon);
 
 inline CEconEntity *GetEconEntityAtLoadoutSlot(CTFPlayer *player, int slot) {
+	if (slot < 0)
+		return nullptr;
 	CEconEntity *item = player->Weapon_GetSlot(slot); 
 	if (item == nullptr)
 		return player->GetEquippedWearableForLoadoutSlot(slot);

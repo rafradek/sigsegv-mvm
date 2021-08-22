@@ -746,6 +746,7 @@ namespace Mod::MvM::Extended_Upgrades
                 ItemDrawInfo info1(text, 
                     cur_step >= max_step || player->GetCurrency() < upgrade->cost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
+
                 static char buf[4];
                 snprintf(buf, sizeof(buf), "%d", (int)i);
                 menu->AppendItem(buf, info1);
