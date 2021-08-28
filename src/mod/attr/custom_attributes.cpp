@@ -2116,13 +2116,13 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto arrow = reinterpret_cast<CBaseProjectile *>(this);
 
-		int health_pre = pOther->GetHealth();
-		DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
-		
 		if (pOther == nullptr) {
 			DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
 			return;
 		}
+
+		int health_pre = pOther->GetHealth();
+		DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);	
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
 			int &counter = entity_penetration_counter[arrow];
@@ -2721,7 +2721,46 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		DETOUR_MEMBER_CALL(CTFFlameThrower_SetWeaponState)(state);
 	}
+
 	
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_FadeOut, int time)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_FadeOut)(time);
+		float remove = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), remove, arrow_hit_kill_time);
+		if (remove != 0) {
+			arrow->SetNextThink(gpGlobals->curtime + remove, "ARROW_REMOVE_THINK");
+		}
+
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_CheckSkyboxImpact, CBaseEntity *pOther)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		float bounce_speed = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
+		if (bounce_speed != 0) {
+			trace_t tr;
+			Vector velDir = arrow->GetAbsVelocity();
+			VectorNormalize(velDir);
+			Vector vecSpot = arrow->GetAbsOrigin() - velDir * 32;
+			UTIL_TraceLine(vecSpot, vecSpot + velDir * 64, MASK_SOLID, arrow, COLLISION_GROUP_DEBRIS, &tr);
+
+			if (tr.DidHit()) {
+				Vector pre_vel = arrow->GetAbsVelocity();
+				Vector &normal = tr.plane.normal;
+				Vector mirror_vel = (pre_vel - 2 * (pre_vel.Dot(normal)) * normal) * bounce_speed;
+				arrow->SetAbsVelocity(mirror_vel);
+				QAngle angles;
+				VectorAngles(mirror_vel, angles);
+				arrow->SetAbsAngles(angles);
+				return;
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CheckSkyboxImpact)(pOther);
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -3142,7 +3181,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SetWeaponState ,"CTFMinigun::SetWeaponState");
 			MOD_ADD_DETOUR_MEMBER(CTFFlameThrower_SetWeaponState ,"CTFFlameThrower::SetWeaponState");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget ,"CTFProjectile_Arrow::StrikeTarget");
-			
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_FadeOut, "CTFProjectile_Arrow::FadeOut");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CheckSkyboxImpact, "CTFProjectile_Arrow::CheckSkyboxImpact");
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");
@@ -3165,8 +3205,6 @@ namespace Mod::Attr::Custom_Attributes
 			
 		//	Fix build small sentries attribute reaplly max health on redeploy bug
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_MakeScaledBuilding, "CObjectSentrygun::MakeScaledBuilding");
-			
-			
 		}
 
 		void LoadAttributes()

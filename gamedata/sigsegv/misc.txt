@@ -4731,6 +4731,16 @@
 					type "sym"
 					sym  "_ZN14CTriggerCamera7DisableEv"
 				}
+				"CTFProjectile_Arrow::FadeOut"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow7FadeOutEi"
+				}
+				"CTFProjectile_Arrow::CheckSkyboxImpact"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow17CheckSkyboxImpactEP11CBaseEntity"
+				}
 			}
 			"addrs_group"
 			{

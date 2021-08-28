@@ -142,6 +142,7 @@ MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_PauseSpawning ("CPopulationManager::PauseSpawning");
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_UnpauseSpawning("CPopulationManager::UnpauseSpawning");
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_AllocateBots   ("CPopulationManager::AllocateBots");
+MemberFuncThunk<CPopulationManager *, bool>              CPopulationManager::ft_IsInEndlessWaves("CPopulationManager::IsInEndlessWaves");
 MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");

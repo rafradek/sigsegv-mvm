@@ -1872,6 +1872,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}*/
 
+		
+		if (g_pPopulationManager != nullptr && !player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE && !g_pPopulationManager->IsInEndlessWaves() && (player->m_Shared->m_bInUpgradeZone || TFGameRules()->State_Get() == GR_STATE_RND_RUNNING)) {
+            gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CHAT , "#TF_MVM_NoClassChangeAfterSetup");
+			return;
+		}
+
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
 		// Avoid infinite loop

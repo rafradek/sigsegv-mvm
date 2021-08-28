@@ -1898,4 +1898,15 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    //Projectile gravity native
+    "4504"
+    {
+        "name"	"arrow hit kill time"
+        "attribute_class"	"arrow_hit_kill_time"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    
 }

@@ -18,6 +18,7 @@ public:
 	void PauseSpawning()               {        ft_PauseSpawning (this); }
 	void UnpauseSpawning()             {        ft_UnpauseSpawning (this); }
 	void AllocateBots()	               {        ft_AllocateBots (this); }
+	bool IsInEndlessWaves()	           { return ft_IsInEndlessWaves (this); }
 	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots) { return ft_CollectMvMBots(mvm_bots); }
 	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
 	
@@ -33,6 +34,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, void>              ft_PauseSpawning;
 	static MemberFuncThunk<CPopulationManager *, void>              ft_UnpauseSpawning;
 	static MemberFuncThunk<CPopulationManager *, void>              ft_AllocateBots;
+	static MemberFuncThunk<CPopulationManager *, bool>              ft_IsInEndlessWaves;
 	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;

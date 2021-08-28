@@ -4,7 +4,7 @@
 #include "util/iterate.h"
 
 
-CON_COMMAND_F(find_ent_ex, "Find and list all entities with classnames or targetnames that match the specified wildcard string.\nFormat: find_ent_ex <wildcard>", FCVAR_CHEAT)
+CON_COMMAND_F(find_ent_ex, "Find and list all entities with classnames or targetnames that match the specified wildcard string.\nFormat: find_ent_ex <wildcard>", FCVAR_NONE)
 {
 	if (args.ArgC() < 2) {
 		Msg("Format: find_ent_ex <wildcard>\n");

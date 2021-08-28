@@ -163,6 +163,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		bool m_bSpawnCurrencyPack = false;
 		std::string m_sSpawnCurrencyPack = "";
 		std::vector<std::pair<std::shared_ptr<PointTemplateInstance>, Vector>> m_Instances;
+
 	private:
 		bool m_bIsMiniBoss = false;
 		bool m_bIsCrit = false;
@@ -266,6 +267,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					m_fStickToGround = subkey->GetFloat();
 				} else if (FStrEq(name, "SpawnAtEntity")) {
 					m_SpawnAtEntity = subkey->GetString();
+				} else if (FStrEq(name, "FastUpdate")) {
+					m_bFastUpdate = subkey->GetBool();
 				}
 			}
 			return true;
@@ -342,6 +345,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		float m_fLifetime = FLT_MAX;
 		float m_fSpeed = FLT_MAX;
 		float m_fDmgMult = 1.0f;
+		bool m_bFastUpdate = false;
 
 	private:
 		bool m_bIsMiniBoss = true;
@@ -791,6 +795,38 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 	}
+
+	struct NextBotData
+    {
+        int vtable;
+        INextBotComponent *m_ComponentList;              // +0x04
+        PathFollower *m_CurrentPath;                     // +0x08
+        int m_iManagerIndex;                             // +0x0c
+        bool m_bScheduledForNextTick;                    // +0x10
+        int m_iLastUpdateTick;                           // +0x14
+    };
+
+	/*DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMainAction_Update, CTFBot *actor, float dt)
+	{	
+		auto data = GetDataForBot(actor);
+		if (data != nullptr && data->fast_update) {
+			reinterpret_cast<NextBotData *>(actor->MyNextBotPointer())->m_bScheduledForNextTick = true;
+		}
+		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+	}*/
+
+	/*DETOUR_DECL_MEMBER(bool, NextBotManager_ShouldUpdate, INextBot *bot)
+	{
+		auto ent = bot->GetEntity();
+		if (ent != nullptr && !ent->IsPlayer()) {
+			auto data = GetBossInfo(ent);
+			if (data != nullptr && data->m_bFastUpdate) {
+				return true;
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(NextBotManager_ShouldUpdate)(bot);
+	}*/
 	
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -822,6 +858,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
+
+			
 		}
 		
 		virtual void OnUnload() override
@@ -922,7 +960,12 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					it = boss_spawners.erase(it);
 					continue;
 				}
+
 				it++;
+
+				if (spawner != nullptr && spawner->m_bFastUpdate && inst->MyNextBotPointer() != nullptr) {
+					reinterpret_cast<NextBotData *>(inst->MyNextBotPointer())->m_bScheduledForNextTick = true;
+				}
 			}
 		}
 	};
