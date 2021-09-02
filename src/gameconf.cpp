@@ -36,6 +36,7 @@ static const char *const configs[] = {
 	"sigsegv/debugoverlay",
 	"sigsegv/client",
 	"sigsegv/convars",
+	"sigsegv/fugue",
 	nullptr,
 };
 

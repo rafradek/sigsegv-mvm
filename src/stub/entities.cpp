@@ -104,6 +104,12 @@ IMPL_DATAMAP(IPhysicsConstraint *, CItem, m_pConstraint);
 
 
 IMPL_SENDPROP(int,                CTFPowerupBottle, m_usNumCharges, CTFPowerupBottle);
+IMPL_SENDPROP(int,				  CTFPowerupBottle, m_bActive, CTFPowerupBottle);
+
+MemberFuncThunk<CTFPowerupBottle*, bool> CTFPowerupBottle::ft_AllowedToUse("CTFPowerupBottle::AllowedToUse");
+MemberFuncThunk<CTFPowerupBottle*, uint8> CTFPowerupBottle::ft_GetNumCharges("CTFPowerupBottle::GetNumCharges");
+MemberFuncThunk<CTFPowerupBottle*, void, uint8> CTFPowerupBottle::ft_SetNumCharges("CTFPowerupBottle::SetNumCharges");
+
 
 IMPL_DATAMAP(bool,     CTFPowerup, m_bDisabled);
 IMPL_DATAMAP(bool,     CTFPowerup, m_bAutoMaterialize);

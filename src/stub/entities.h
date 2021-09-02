@@ -148,6 +148,15 @@ class CTFPowerupBottle      : public CTFWearable {
 	
 public:
 	DECL_SENDPROP(int, m_usNumCharges);
+	DECL_SENDPROP(bool, m_bActive);
+	bool AllowedToUse(){ return ft_AllowedToUse(this); }
+	uint8 GetNumCharges(){ return ft_GetNumCharges(this); }
+	void SetNumCharges(uint8 charges){ ft_SetNumCharges(this, charges); }
+private:
+	static MemberFuncThunk<CTFPowerupBottle*, bool> ft_AllowedToUse;
+	static MemberFuncThunk<CTFPowerupBottle*, uint8> ft_GetNumCharges;
+	static MemberFuncThunk<CTFPowerupBottle*, void, uint8> ft_SetNumCharges;
+	
 };
 
 

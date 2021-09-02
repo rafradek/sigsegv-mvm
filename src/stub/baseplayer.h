@@ -28,7 +28,7 @@ public:
 	void SetBloodColor(int nBloodColor)                                         {        ft_SetBloodColor     (this, nBloodColor); }
 	bool Weapon_Detach(CBaseCombatWeapon *pWeapon)                              { return ft_Weapon_Detach     (this, pWeapon); }
 	bool SwitchToNextBestWeapon(CBaseCombatWeapon *weapon)                      { return ft_SwitchToNextBestWeapon(this, weapon); }
-	
+	void SetAmmoCount(int count, int ammoIndex)                                 {        ft_SetAmmoCount      (this, count, ammoIndex); }
 	
 	CBaseCombatWeapon *Weapon_GetSlot(int slot) const                      { return vt_Weapon_GetSlot     (this, slot); }
 	bool Weapon_CanSwitchTo(CBaseCombatWeapon *pWeapon)                    { return vt_Weapon_CanSwitchTo (this, pWeapon); }
@@ -52,6 +52,7 @@ private:
 	static MemberFuncThunk<CBaseCombatCharacter *, void, int>                                          ft_SetBloodColor;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_Weapon_Detach;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_SwitchToNextBestWeapon;
+    static MemberFuncThunk<CBaseCombatCharacter *, void, int, int>                                     ft_SetAmmoCount;
 	
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       vt_Weapon_GetSlot;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      vt_Weapon_CanSwitchTo;

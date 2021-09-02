@@ -542,6 +542,26 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
+	{
+		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
+		int bunnyhop = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, bunnyhop, can_bhop);
+		if(!bunnyhop){
+			CTFWeaponBase* weapon = player->GetActiveTFWeapon();
+			if(weapon){
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, bunnyhop, can_bhop);
+			}
+		}
+		if(bunnyhop && player->IsAlive() && (cmd->buttons & 2) /*&& (player->GetFlags() & 1) */ && (player->GetGroundEntity() == nullptr)){
+			// Vector velocity = player->GetAbsVelocity();
+			// velocity.z = 267.0;
+			// player->SetAbsVelocity(velocity);
+			cmd->buttons &= ~2;
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+	}
+
 	struct CustomModelEntry
 	{
 		CHandle<CTFWeaponBase> weapon;
@@ -1594,15 +1614,26 @@ namespace Mod::Attr::Custom_Attributes
 			bool entityme_player = entityme->IsPlayer();
 			bool entityhit_player = entityhit->IsPlayer();
 
-			if (!entityme_player || (!entityhit_player && !entityhit->IsBaseObject()))
+			int not_solid = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( entityme, not_solid, not_solid_to_players);
+
+			if (!entityme_player || ((not_solid != 2) && !entityhit_player && !entityhit->IsBaseObject()))
 				return true;
+
+			if ((not_solid == 2) && (
+				!strcmp(entityhit->GetClassname(), "obj_sentrygun") ||
+				!strcmp(entityhit->GetClassname(), "obj_dispenser") ||
+				!strcmp(entityhit->GetClassname(), "obj_teleporter")
+			)){
+				return true;		
+			}
 
 			bool me_collide = true;
 			bool hit_collide = true;
 
 			auto entry = should_hit_entity_cache.find(entityme);
 			if (entry == should_hit_entity_cache.end()) {
-				int not_solid = 0;
+				not_solid = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER( entityme, not_solid, not_solid_to_players);
 				me_collide = not_solid == 0;
 				should_hit_entity_cache[entityme] = me_collide;
@@ -1617,7 +1648,7 @@ namespace Mod::Attr::Custom_Attributes
 			if (entityhit_player) {
 				auto entry = should_hit_entity_cache.find(entityhit);
 				if (entry == should_hit_entity_cache.end()) {
-					int not_solid = 0;
+					not_solid = 0;
 					CALL_ATTRIB_HOOK_INT_ON_OTHER( entityhit, not_solid, not_solid_to_players);
 					hit_collide = not_solid == 0;
 					should_hit_entity_cache[entityhit] = hit_collide;
@@ -3052,11 +3083,62 @@ namespace Mod::Attr::Custom_Attributes
 		OnAttributesChange(mgr);
 	}*/
 
+	THINK_FUNC_DECL(AfterUsedCanteen)
+	{
+		reinterpret_cast<CTFPowerupBottle*>(this)->m_bActive = false;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPowerupBottle_Use)
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFPowerupBottle_Use)();
+		DevMsg("do");
+		if(!ret){
+			CTFPowerupBottle* canteen = reinterpret_cast<CTFPowerupBottle*>(this);
+			int cond = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(canteen, cond, custom_canteen_cond);
+			DevMsg("cond: %d", cond);
+			if((cond != 0) && !canteen->m_bActive && (canteen->GetNumCharges() > 0) && canteen->AllowedToUse()){	
+				// can't be bothered setting up refunds
+				float duration = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(canteen, duration, powerup_duration);
+				DevMsg("duration: %f", duration);
+				CTFPlayer* player = ToTFPlayer(canteen->GetOwnerEntity());
+				int extra = 0;
+				if(!player){
+					DevMsg("non null player");
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(player, extra, canteen_specialist);
+					// or stranges
+					player->m_Shared->AddCond((ETFCond)cond, duration + extra, player);
+					CWeaponMedigun* medigun = NULL;
+					CTFPlayer* target = NULL;
+					if(player->IsPlayerClass(TF_CLASS_MEDIC)){
+						medigun = dynamic_cast<CWeaponMedigun*>(player->GetActiveWeapon());
+						if(medigun){
+							target = ToTFPlayer( medigun->GetHealTarget() );
+							if (target){
+								target->m_Shared->AddCond((ETFCond)cond, duration + extra, player);
+							}
+						}
+					}
+
+				}
+				canteen->SetNumCharges(canteen->GetNumCharges() - 1);
+				canteen->m_bActive = true;
+				THINK_FUNC_SET(canteen, AfterUsedCanteen, gpGlobals->curtime + duration + extra);
+				DevMsg("done");
+				ret = true;	
+			}
+		}
+		return ret;
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Attr:Custom_Attributes")
 		{
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");
+			MOD_ADD_DETOUR_MEMBER(CTFPowerupBottle_Use, "CTFPowerupBottle::Use");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanAirDash, "CTFPlayer::CanAirDash");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_AllowedToHealTarget, "CWeaponMedigun::AllowedToHealTarget");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_HealTargetThink, "CWeaponMedigun::HealTargetThink");
