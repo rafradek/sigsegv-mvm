@@ -648,8 +648,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bExtendedUpgradesNoUndo = false;
 			this->m_bHHHNonSolidToPlayers = false;
 			this->m_iBunnyHop = 0;
-			this->m_iAccelerate = 10;
-			this->m_iAirAccelerate = 10;
+			this->m_iAccelerate = -1;
+			this->m_iAirAccelerate = -1;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -968,7 +968,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unordered_set<CTFPlayer*> m_PlayersByWaveStart;
 	};
 	PopState state;
-
+	
 	bool ExtendedUpgradesNoUndo(){ // this is very maintainable yes
 		return Mod::Pop::PopMgr_Extensions::state.m_bExtendedUpgradesNoUndo;
 	}
@@ -3501,7 +3501,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		} else {
 			DETOUR_MEMBER_CALL(CGameMovement_AirAccelerate)(direction, speed, accel);
 		}
-	}	
+	}
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{

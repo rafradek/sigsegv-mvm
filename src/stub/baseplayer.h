@@ -52,7 +52,7 @@ private:
 	static MemberFuncThunk<CBaseCombatCharacter *, void, int>                                          ft_SetBloodColor;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_Weapon_Detach;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_SwitchToNextBestWeapon;
-    static MemberFuncThunk<CBaseCombatCharacter *, void, int, int>                                     ft_SetAmmoCount;
+	static MemberFuncThunk<CBaseCombatCharacter *, void, int, int>                                     ft_SetAmmoCount;
 	
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       vt_Weapon_GetSlot;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      vt_Weapon_CanSwitchTo;
