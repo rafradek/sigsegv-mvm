@@ -74,6 +74,7 @@ CopyFiles('gamedata/sigsegv', 'addons/sourcemod/gamedata/sigsegv',
     'tfbot_locomotion.txt',
     'tfbot_vision.txt',
     'tfbot_behavior.txt',
+    'fugue.txt',
   ]
 )
 

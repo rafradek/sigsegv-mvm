@@ -48,6 +48,7 @@ MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatCharacter *, CBaseComba
 MemberFuncThunk<CBaseCombatCharacter *, void, int>                                                                CBaseCombatCharacter::ft_SetBloodColor     ("CBaseCombatCharacter::SetBloodColor");
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_Weapon_Detach     ("CBaseCombatCharacter::Weapon_Detach");
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_SwitchToNextBestWeapon     ("CBaseCombatCharacter::SwitchToNextBestWeapon");
+MemberFuncThunk<CBaseCombatCharacter *, void, int, int>															  CBaseCombatCharacter::ft_SetAmmoCount      ("CBaseCombatCharacter::SetAmmoCount");
 
 MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       CBaseCombatCharacter::vt_Weapon_GetSlot     (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_GetSlot");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      CBaseCombatCharacter::vt_Weapon_CanSwitchTo (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_CanSwitchTo");

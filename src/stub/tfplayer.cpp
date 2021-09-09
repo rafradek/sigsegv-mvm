@@ -233,6 +233,8 @@ MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_CheckInstantLoadoutRespawn  ("CTFPlayer::CheckInstantLoadoutRespawn");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ForceRegenerateAndRespawn   ("CTFPlayer::ForceRegenerateAndRespawn");
 MemberFuncThunk<      CTFPlayer *, void, Vector &                  > CTFPlayer::ft_ApplyGenericPushbackImpulse ("CTFPlayer::ApplyGenericPushbackImpulse");
+MemberFuncThunk<const CTFPlayer *, bool							   > CTFPlayer::ft_CanAirDash 				   ("CTFPlayer::CanAirDash");
+MemberFuncThunk<	  CTFPlayer *, void, bool					   > CTFPlayer::ft_Regenerate				   ("CTFPlayer::Regenerate");
 
 
 MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");

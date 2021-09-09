@@ -1909,4 +1909,25 @@
         "effect_type"	"positive"
     }
     
+    // this doesn't work :rage:
+    "4505"
+    {
+        "name"  "custom canteen cond"
+        "attribute_class"   "custom_canteen_cond"
+        //"attribute_type"    "string"
+        "description_string"    ""
+        "description_format"    "value_is_additive"
+        "hidden"    "1"
+        "effect_type"   "positive"
+        "stored_as_integer" "1"
+    }
+    "4506"
+    {
+        "name" "can bhop"
+        "attribute_class" "can_bhop"
+        "description_string" "Can bunnyhop"
+        "description_format" "value_is_addtive"
+        "hidden" "1"
+        "effect_type" "positive"
+    }
 }
