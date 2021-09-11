@@ -10,13 +10,7 @@
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/misc.h"
-<<<<<<< HEAD
 #include <boost/algorithm/string.hpp>
-=======
-#include <regex>
-#include <string_view>
-
->>>>>>> 7de667872d0f3b5a1da4ec7a517e3e5623546c81
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -381,38 +375,11 @@ namespace Mod::Etc::Mapentity_Additions
                     return true;
                 }
                 else if (stricmp(szInputName, "$DisplayTextCenter") == 0) {
-                    using namespace std::string_literals;
-                    std::string text{Value.String()};
-                    text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
-                    text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
-                    text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
-                            (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
-                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CENTER, text.c_str());
+                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CENTER, Value.String());
                     return true;
                 }
                 else if (stricmp(szInputName, "$DisplayTextChat") == 0) {
-                    using namespace std::string_literals;
-                    std::string text{"\x01"s + Value.String() + "\x01"s};
-                    text = std::regex_replace(text, std::regex{"\\{reset\\}", std::regex_constants::icase}, "\x01");
-                    text = std::regex_replace(text, std::regex{"\\{blue\\}", std::regex_constants::icase}, "\x07" "99ccff");
-                    text = std::regex_replace(text, std::regex{"\\{red\\}", std::regex_constants::icase}, "\x07" "ff3f3f");
-                    text = std::regex_replace(text, std::regex{"\\{green\\}", std::regex_constants::icase}, "\x07" "99ff99");
-                    text = std::regex_replace(text, std::regex{"\\{darkgreen\\}", std::regex_constants::icase}, "\x07" "40ff40");
-                    text = std::regex_replace(text, std::regex{"\\{yellow\\}", std::regex_constants::icase}, "\x07" "ffb200");
-                    text = std::regex_replace(text, std::regex{"\\{grey\\}", std::regex_constants::icase}, "\x07" "cccccc");
-                    text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
-                    text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
-                    text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
-                            (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
-                    auto pos{text.find("{")};
-                    while(pos != std::string::npos){
-                        if(text.substr(pos).length() > 7){
-                            text[pos] = '\x07';
-                            text.erase(pos+7, 1);
-                            pos = text.find("{");
-                        } else break; 
-                    }
-                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CHAT , text.c_str());
+                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CHAT , Value.String());
                     return true;
                 }
                 else if (stricmp(szInputName, "$Suicide") == 0) {
@@ -743,18 +710,6 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                         //player->RemoveCurrency(cost);
                     }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RefillAmmo") == 0) {
-                    CTFPlayer* player = ToTFPlayer(ent);
-                    for(int i = 0; i < 7; ++i){
-                        player->SetAmmoCount(player->GetMaxAmmo(i), i);
-                    }
-                    return true;
-                }
-                else if(stricmp(szInputName, "$Regenerate") == 0){
-                    CTFPlayer* player = ToTFPlayer(ent);
-                    player->Regenerate(true);
                     return true;
                 }
             }

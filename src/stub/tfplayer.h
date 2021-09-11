@@ -395,6 +395,8 @@ public:
 	void ForceRegenerateAndRespawn()                               { ft_ForceRegenerateAndRespawn  (this); }
 	
 	void ApplyGenericPushbackImpulse(Vector &vec)                  { ft_ApplyGenericPushbackImpulse (this, vec); }
+	bool CanAirDash() const				    					   { return ft_CanAirDash (this); }
+	void Regenerate(bool refillHealthAndAmmo = true)			   { ft_Regenerate(this, refillHealthAndAmmo); }
 	
 	
 	CEconEntity *GetEconEntityByName(const char *name);
@@ -456,6 +458,8 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_CheckInstantLoadoutRespawn;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ForceRegenerateAndRespawn;
 	static MemberFuncThunk<      CTFPlayer *, void, Vector &                  > ft_ApplyGenericPushbackImpulse;
+	static MemberFuncThunk<const CTFPlayer *, bool							  > ft_CanAirDash;
+	static MemberFuncThunk<		 CTFPlayer *, void, bool					  > ft_Regenerate;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 };

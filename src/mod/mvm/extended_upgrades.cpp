@@ -3,6 +3,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/econ.h"
 #include "stub/gamerules.h"
+#include "stub/misc.h"
 #include "util/iterate.h"
 #include "util/misc.h"
 #include "mod/pop/common.h"
@@ -10,6 +11,10 @@
 #include "stub/entities.h"
 #include "stub/strings.h"
 #include "stub/tf_objective_resource.h"
+
+namespace Mod::Pop::PopMgr_Extensions {
+    bool ExtendedUpgradesNoUndo();
+}
 
 namespace Mod::MvM::Extended_Upgrades
 {
@@ -128,6 +133,9 @@ namespace Mod::MvM::Extended_Upgrades
         int allow_wave_max = 9999;
         std::string required_weapons_string = "";
         bool show_requirements = true;
+        //std::string on_upgrade_output = "";
+        std::map<std::string, float> on_upgrade_outputs = {};
+        bool force_enable = false;
     };
 
     std::vector<UpgradeInfo *> upgrades; 
@@ -214,7 +222,7 @@ namespace Mod::MvM::Extended_Upgrades
             int upgrade_id = strtol(info, nullptr, 10);
             if (upgrade_id < 1000)
                 BuyUpgrade(upgrades[upgrade_id], this->slot, this->player, false, false);
-            else if (upgrade_id == 1000) {
+            else if ((upgrade_id == 1000) && (!Mod::Pop::PopMgr_Extensions::ExtendedUpgradesNoUndo())) {
                 DevMsg("Undoing %d %d\n", extended_upgrades_start_index, CMannVsMachineUpgradeManager::Upgrades().Count());
                 for (int i = extended_upgrades_start_index; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
                     int cur_step;
@@ -287,6 +295,12 @@ namespace Mod::MvM::Extended_Upgrades
     void Parse_SecondaryAttributes(KeyValues *kv, std::map<std::string, float> &secondary_attributes) {
         FOR_EACH_SUBKEY(kv, subkey) {
             secondary_attributes[subkey->GetName()] = subkey->GetFloat();
+        }
+    }
+
+    void Parse_OnUpgradeOutputs(KeyValues* kv, std::map<std::string, float>& outputs){
+        FOR_EACH_SUBKEY(kv, subkey) {
+            outputs[subkey->GetName()] = subkey->GetFloat();
         }
     }
 
@@ -423,6 +437,13 @@ namespace Mod::MvM::Extended_Upgrades
                             break;
                         }
                     }
+                }
+                else if (FStrEq(subkey2->GetName(), "OnUpgrade")) {
+                    //upgradeinfo->on_upgrade_output = subkey2->GetString();
+                    Parse_OnUpgradeOutputs(subkey2, upgradeinfo->on_upgrade_outputs);
+                }
+                else if (FStrEq(subkey2->GetName(), "ForceEnable")) {
+                    upgradeinfo->force_enable = true;
                 }
             }
 
@@ -704,6 +725,27 @@ namespace Mod::MvM::Extended_Upgrades
                 g_hUpgradeEntity->PlayerPurchasingUpgrade(player, override_slot, attr, downgrade, true, false);
             }
             from_buy_upgrade_free = false;
+            //if(upgrade->on_upgrade_output != ""){
+            for(const auto& [output, delay] : upgrade->on_upgrade_outputs){
+                char param_tokenized[2048] = "";
+                V_strncpy(param_tokenized, output.c_str(), sizeof(param_tokenized));
+                if(strcmp(param_tokenized, "") != 0){
+                    char *target = strtok(param_tokenized,",");
+                    char *action = NULL;
+                    char *value = NULL;
+                    if(target != NULL)
+                        action = strtok(NULL,",");
+                    if(action != NULL)
+                        value = strtok(NULL,"");
+                    if(value != NULL){
+                        CEventQueue &que = g_EventQueue;
+                        variant_t actualvalue;
+                        string_t stringvalue = AllocPooledString(value);
+                        actualvalue.SetString(stringvalue);
+                        que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, delay, player, player, -1);
+                    }
+                }
+            }
         }
             //if (!free)
             //    player->RemoveCurrency(cost);
@@ -735,6 +777,7 @@ namespace Mod::MvM::Extended_Upgrades
             auto upgrade = upgrades[i];
             char disabled_reason[255] = "";
             bool enabled = IsValidUpgradeForWeapon(upgrade, item, player, disabled_reason, sizeof(disabled_reason));
+            if (upgrade->force_enable) enabled = true;
             if (enabled) {
                 int cur_step;
                 bool over_cap;
@@ -781,9 +824,10 @@ namespace Mod::MvM::Extended_Upgrades
             }
         }
 
-        ItemDrawInfo info1("Undo upgrades");
-        menu->AppendItem("1000", info1);
-
+        if(!Mod::Pop::PopMgr_Extensions::ExtendedUpgradesNoUndo()){
+            ItemDrawInfo info1("Undo upgrades");
+            menu->AppendItem("1000", info1);
+        }
         /*if (upgrades.size() == 1) {
             ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info1);

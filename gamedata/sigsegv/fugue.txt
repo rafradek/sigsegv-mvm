@@ -1,0 +1,56 @@
+"Games" {
+	"#default" {
+		"#supported" {
+			engine "tf2"
+		}
+		
+		"sigsegv" {
+			"addrs" {
+                "CTFPlayer::PlayerRunCommand" {
+                    type "sym"
+                    sym "_ZN9CTFPlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
+                }
+                "CTFPlayer::Regenerate" {
+                    type "sym"
+                    sym "_ZN9CTFPlayer10RegenerateEb"
+                }
+                "CTFGameMovement::PreventBunnyJumping" {
+                    type "sym"
+                    sym "_ZN15CTFGameMovement19PreventBunnyJumpingEv"
+                }
+                "CGameMovement::Accelerate" {
+                    type "sym"
+                    sym "_ZN13CGameMovement10AccelerateER6Vectorff"
+                }
+                "CGameMovement::AirAccelerate" {
+                    type "sym"
+                    sym "_ZN13CGameMovement13AirAccelerateER6Vectorff"
+                }
+                "CBaseCombatCharacter::SetAmmoCount" {
+                    type "sym"
+                    sym "_ZN20CBaseCombatCharacter12SetAmmoCountEii"
+                }
+                "CTFPowerupBottle::Use" {
+                    type "sym"
+                    sym "_ZN16CTFPowerupBottle3UseEv"
+                }
+                "CTFPowerupBottle::AllowedToUse" {
+                    type "sym"
+                    sym "_ZN16CTFPowerupBottle12AllowedToUseEv"
+                }
+                "CTFPowerupBottle::GetNumCharges" {
+                    type "sym"
+                    sym "_ZNK16CTFPowerupBottle13GetNumChargesEv"
+                }
+                "CTFPowerupBottle::SetNumCharges" {
+                    type "sym"
+                    sym "_ZN16CTFPowerupBottle13SetNumChargesEh"
+                }
+                "CTFGameRules::CanUpgradeWithAttrib" {
+                    type "sym"
+                    sym "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades"
+                }
+            }
+        }
+    }
+}
