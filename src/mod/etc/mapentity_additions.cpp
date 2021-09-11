@@ -10,13 +10,10 @@
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/misc.h"
-<<<<<<< HEAD
 #include <boost/algorithm/string.hpp>
-=======
 #include <regex>
 #include <string_view>
 
->>>>>>> 7de667872d0f3b5a1da4ec7a517e3e5623546c81
 
 namespace Mod::Etc::Mapentity_Additions
 {
