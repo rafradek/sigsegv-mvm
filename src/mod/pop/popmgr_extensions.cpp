@@ -1700,83 +1700,6 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	}
 
-	CBaseEntity *templateTargetEntity = nullptr;
-	bool SpawnOurTemplate(CEnvEntityMaker* maker, Vector vector, QAngle angles)
-	{
-		std::string src = STRING((string_t)maker->m_iszTemplate);
-		DevMsg("Spawning template %s\n", src.c_str());
-		PointTemplate *tmpl = FindPointTemplate(src);
-		if (tmpl != nullptr) {
-			DevMsg("Spawning template placeholder\n");
-			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
-			for (auto entity : inst->entities) {
-				if (entity == nullptr)
-					continue;
-
-				if (entity->GetMoveType() == MOVETYPE_NONE)
-					continue;
-
-				// Calculate a velocity for this entity
-				Vector vForward,vRight,vUp;
-				QAngle angSpawnDir( maker->m_angPostSpawnDirection );
-				if ( maker->m_bPostSpawnUseAngles )
-				{
-					if ( entity->GetMoveParent()  )
-					{
-						angSpawnDir += entity->GetMoveParent()->GetAbsAngles();
-					}
-					else
-					{
-						angSpawnDir += entity->GetAbsAngles();
-					}
-				}
-				AngleVectors( angSpawnDir, &vForward, &vRight, &vUp );
-				Vector vecShootDir = vForward;
-				vecShootDir += vRight * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
-				vecShootDir += vForward * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
-				vecShootDir += vUp * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
-				VectorNormalize( vecShootDir );
-				vecShootDir *= maker->m_flPostSpawnSpeed;
-
-				// Apply it to the entity
-				IPhysicsObject *pPhysicsObject = entity->VPhysicsGetObject();
-				if ( pPhysicsObject )
-				{
-					pPhysicsObject->AddVelocity(&vecShootDir, NULL);
-				}
-				else
-				{
-					entity->SetAbsVelocity( vecShootDir );
-				}
-			}
-			
-			return true;
-		}
-		else
-			return false;
-	}
-	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_InputForceSpawn, inputdata_t &inputdata)
-	{
-		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
-		if (!SpawnOurTemplate(me,me->GetAbsOrigin(),me->GetAbsAngles())){
-			DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawn)(inputdata);
-		}
-	}
-	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_InputForceSpawnAtEntityOrigin, inputdata_t &inputdata)
-	{
-		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
-		templateTargetEntity = servertools->FindEntityByName( NULL, STRING(inputdata.value.StringID()), me, inputdata.pActivator, inputdata.pCaller );
-		DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawnAtEntityOrigin)(inputdata);
-		templateTargetEntity = nullptr;
-	}
-	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_SpawnEntity, Vector vector, QAngle angles)
-	{
-		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
-		if (!SpawnOurTemplate(me,vector,angles)){
-			DETOUR_MEMBER_CALL(CEnvEntityMaker_SpawnEntity)(vector,angles);
-		}
-	}
-
 	bool CheckPlayerClassLimit(CTFPlayer *player, int plclass, bool do_switch)
 	{
 		const char* classname = g_aRawPlayerClassNames[plclass];
@@ -3693,9 +3616,6 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 					state.m_DisallowedClasses[i]=subkey->GetInt();
 					
-					if (state.m_DisallowedClasses[i] != 0) {
-						class_not_blacklisted = i;
-					}
 					break;
 				}
 			}
@@ -3704,7 +3624,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (amount_classes_blacklisted == 8) {
 			for(int i=1; i < 10; i++){
 				if (state.m_DisallowedClasses[i] != 0) {	
-					state.m_bSingleClassAllowed = class_not_blacklisted;
+					state.m_bSingleClassAllowed = i;
 				}
 			}
 		}
@@ -4921,9 +4841,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveNamedItem,                       "CTFPlayer::GiveNamedItem");
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_GetMaxReturnTime,                 "CCaptureFlag::GetMaxReturnTime");
-			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
-			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawn,               "CEnvEntityMaker::InputForceSpawn");
-			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawnAtEntityOrigin, "CEnvEntityMaker::InputForceSpawnAtEntityOrigin");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleCommand_JoinClass,             "CTFPlayer::HandleCommand_JoinClass");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned,                  "CTFGameRules::OnPlayerSpawned");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,                        "CTFPlayer::Event_Killed");

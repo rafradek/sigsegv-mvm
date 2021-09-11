@@ -184,6 +184,11 @@ public:
         this->m_hTarget = target;
     }
 
+    CBaseEntity *GetTargetPosEntity()
+    {
+        return this->m_hTarget;
+    }
+
     void SetTargetAimPos(Vector &target_aim)
     {
         this->m_TargetAimPos = target_aim;
@@ -192,6 +197,11 @@ public:
     void SetTargetAimPosEntity(CBaseEntity *target)
     {
         this->m_hTargetAim = target;
+    }
+
+    CBaseEntity * GetTargetAimPosEntity()
+    {
+        return this->m_hTargetAim;
     }
 
     void SetDuration(float duration)

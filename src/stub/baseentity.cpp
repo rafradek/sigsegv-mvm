@@ -120,6 +120,7 @@ MemberVFuncThunk<      CBaseEntity *, bool, const char *, char *, int           
 MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &                                 > CBaseEntity::vt_FireBullets                   (TypeName<CBaseEntity>(), "CBaseEntity::FireBullets");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
+MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");
 
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_Create             ("CBaseEntity::Create");
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_CreateNoSpawn      ("CBaseEntity::CreateNoSpawn");

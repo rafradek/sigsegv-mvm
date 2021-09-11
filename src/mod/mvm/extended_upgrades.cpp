@@ -746,7 +746,11 @@ namespace Mod::MvM::Extended_Upgrades
                 ItemDrawInfo info1(text, 
                     cur_step >= max_step || player->GetCurrency() < upgrade->cost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 
-
+                // Ensure that upgrade and its description will land on the same page
+                if (!upgrade->description.empty() && menu->GetItemCount() % 7 == 6) {
+                    menu->AppendItem("", ItemDrawInfo("", ITEMDRAW_DISABLED));
+                }
+                
                 static char buf[4];
                 snprintf(buf, sizeof(buf), "%d", (int)i);
                 menu->AppendItem(buf, info1);

@@ -269,6 +269,49 @@ class CLogicalEntity : public CServerOnlyEntity {};
 class CLogicCase : public CLogicalEntity
 {
 public:
+
+	void FireCase(int useCase, CBaseEntity *activator) {
+		CBaseEntityOutput *output = nullptr;
+		switch (useCase) {
+			case 1: output = &m_OnCase01; break;
+			case 2: output = &m_OnCase02; break;
+			case 3: output = &m_OnCase03; break;
+			case 4: output = &m_OnCase04; break;
+			case 5: output = &m_OnCase05; break;
+			case 6: output = &m_OnCase06; break;
+			case 7: output = &m_OnCase07; break;
+			case 8: output = &m_OnCase08; break;
+			case 9: output = &m_OnCase09; break;
+			case 10: output = &m_OnCase10; break;
+			case 11: output = &m_OnCase11; break;
+			case 12: output = &m_OnCase12; break;
+			case 13: output = &m_OnCase13; break;
+			case 14: output = &m_OnCase14; break;
+			case 15: output = &m_OnCase15; break;
+			case 16: output = &m_OnCase16; break;
+		}
+		if (output != nullptr) {
+       		variant_t variant1;
+			output->FireOutput(variant1, activator, this);
+		}
+	}
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase01);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase02);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase03);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase04);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase05);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase06);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase07);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase08);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase09);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase10);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase11);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase12);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase13);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase14);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase15);
+	DECL_DATAMAP(CBaseEntityOutput, m_OnCase16);
+
 	DECL_DATAMAP(CBaseEntityOutput, m_OnDefault);
 
 };

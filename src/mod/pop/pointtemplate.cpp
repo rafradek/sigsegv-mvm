@@ -618,6 +618,84 @@ namespace Mod::Pop::PointTemplate
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
 	}
 
+	CBaseEntity *templateTargetEntity = nullptr;
+	bool SpawnOurTemplate(CEnvEntityMaker* maker, Vector vector, QAngle angles)
+	{
+		std::string src = STRING((string_t)maker->m_iszTemplate);
+		DevMsg("Spawning template %s\n", src.c_str());
+		auto tmpl = FindPointTemplate(src);
+		if (tmpl != nullptr) {
+			DevMsg("Spawning template placeholder\n");
+			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
+			for (auto entity : inst->entities) {
+				if (entity == nullptr)
+					continue;
+
+				if (entity->GetMoveType() == MOVETYPE_NONE)
+					continue;
+
+				// Calculate a velocity for this entity
+				Vector vForward,vRight,vUp;
+				QAngle angSpawnDir( maker->m_angPostSpawnDirection );
+				if ( maker->m_bPostSpawnUseAngles )
+				{
+					if ( entity->GetMoveParent()  )
+					{
+						angSpawnDir += entity->GetMoveParent()->GetAbsAngles();
+					}
+					else
+					{
+						angSpawnDir += entity->GetAbsAngles();
+					}
+				}
+				AngleVectors( angSpawnDir, &vForward, &vRight, &vUp );
+				Vector vecShootDir = vForward;
+				vecShootDir += vRight * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
+				vecShootDir += vForward * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
+				vecShootDir += vUp * RandomFloat(-1, 1) * maker->m_flPostSpawnDirectionVariance;
+				VectorNormalize( vecShootDir );
+				vecShootDir *= maker->m_flPostSpawnSpeed;
+
+				// Apply it to the entity
+				IPhysicsObject *pPhysicsObject = entity->VPhysicsGetObject();
+				if ( pPhysicsObject )
+				{
+					pPhysicsObject->AddVelocity(&vecShootDir, NULL);
+				}
+				else
+				{
+					entity->SetAbsVelocity( vecShootDir );
+				}
+			}
+			
+			return true;
+		}
+		else
+			return false;
+	}
+	
+	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_InputForceSpawn, inputdata_t &inputdata)
+	{
+		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
+		if (!SpawnOurTemplate(me,me->GetAbsOrigin(),me->GetAbsAngles())){
+			DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawn)(inputdata);
+		}
+	}
+	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_InputForceSpawnAtEntityOrigin, inputdata_t &inputdata)
+	{
+		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
+		templateTargetEntity = servertools->FindEntityByName( NULL, STRING(inputdata.value.StringID()), me, inputdata.pActivator, inputdata.pCaller );
+		DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawnAtEntityOrigin)(inputdata);
+		templateTargetEntity = nullptr;
+	}
+	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_SpawnEntity, Vector vector, QAngle angles)
+	{
+		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
+		if (!SpawnOurTemplate(me,vector,angles)){
+			DETOUR_MEMBER_CALL(CEnvEntityMaker_SpawnEntity)(vector,angles);
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -625,6 +703,9 @@ namespace Mod::Pop::PointTemplate
 		{
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_Spawn, "CUpgrades::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
+			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawn,               "CEnvEntityMaker::InputForceSpawn");
+			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawnAtEntityOrigin, "CEnvEntityMaker::InputForceSpawnAtEntityOrigin");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

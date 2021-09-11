@@ -10,7 +10,7 @@
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/misc.h"
-
+#include <boost/algorithm/string.hpp>
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -29,6 +29,69 @@ namespace Mod::Etc::Mapentity_Additions
         "Summon Monoculus",
         "Summon Skeletons"
     };
+
+    class CaseMenuHandler : public IMenuHandler
+    {
+    public:
+
+        CaseMenuHandler(CTFPlayer * pPlayer, CLogicCase *pProvider) : IMenuHandler() {
+            this->player = pPlayer;
+            this->provider = pProvider;
+        }
+
+        void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+
+            if (provider == nullptr)
+                return;
+                
+            const char *info = menu->GetItemInfo(item, nullptr);
+
+            provider->FireCase(item + 1, player);
+        }
+
+        virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
+		{
+            if (provider == nullptr)
+                return;
+
+            variant_t variant;
+            provider->m_OnDefault->FireOutput(variant, player, provider);
+		}
+
+        void OnMenuDestroy(IBaseMenu *menu) {
+            DevMsg("Menu destroy\n");
+            delete this;
+        }
+
+        CHandle<CTFPlayer> player;
+        CHandle<CLogicCase> provider;
+    };
+    
+    std::unordered_map<CBaseEntity *, std::unordered_map<std::string, CBaseEntityOutput>> custom_output;
+
+    void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
+        std::string namestr = name;
+        boost::algorithm::to_lower(namestr);
+       // DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
+        custom_output[entity][namestr].ParseEventAction(value);
+    }
+
+    // Alert! Custom outputs must be defined in lowercase
+    void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant) {
+        if (custom_output.empty())
+            return;
+
+        //DevMsg("Fire custom output %d %s %d\n", entity, name, custom_output.size());
+        auto find = custom_output.find(entity);
+        if (find != custom_output.end()) {
+           // DevMsg("Found entity\n");
+            auto findevent = find->second.find(name);
+            if (findevent != find->second.end()) {
+               // DevMsg("Found output\n");
+                findevent->second.FireOutput(variant, activator, caller);
+            }
+        }
+    }
 
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
     {
@@ -148,6 +211,58 @@ namespace Mod::Etc::Mapentity_Additions
                         logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
                     }
                     return true;
+                }
+                else if (FStrEq(szInputName, "$DisplayMenu")) {
+                    auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr && target->IsPlayer()) {
+                        CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
+                        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+
+                        int i;
+                        for (i = 1; i < 16; i++) {
+                            variant_t variant1;
+                            ent->ReadKeyField(CFmtStr("Case%02d", i), &variant1);
+                            const char *name = variant1.String();
+                            if (strlen(name) != 0) {
+                                bool enabled = name[0] != '!';
+                                ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                                menu->AppendItem("it", info1);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+                        if (i < 11) {
+                            menu->SetPagination(MENU_NO_PAGINATION);
+                        }
+
+                        variant_t variant;
+                        ent->ReadKeyField("Case16", &variant);
+                        
+                        char param_tokenized[256];
+                        V_strncpy(param_tokenized, variant.String(), sizeof(param_tokenized));
+                        
+                        char *name = strtok(param_tokenized,"|");
+                        char *timeout = strtok(NULL,"|");
+
+                        menu->SetDefaultTitle(name);
+
+                        char *flag;
+                        while ((flag = strtok(NULL,"|")) != nullptr) {
+                            if (FStrEq(flag, "Cancel")) {
+                                menu->SetMenuOptionFlags(menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXIT);
+                            }
+                        }
+
+                        menu->Display(ENTINDEX(target), timeout == nullptr ? 0 : atoi(timeout));
+                    }
+                    return true;
+                }
+                else if (FStrEq(szInputName, "$HideMenu")) {
+                    auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr && target->IsPlayer()) {
+                        menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(target), false);
+                    }
                 }
             }
             else if (ent->GetClassname() == tf_gamerules_classname) {
@@ -1024,7 +1139,31 @@ namespace Mod::Etc::Mapentity_Additions
             variant_t variant;
             entity->m_OnUser4->FireOutput(variant, entity, entity);
         }
+        
+        if (!custom_output.empty()) {
+            variant_t variant;
+            FireCustomOutput(entity, "$onkilled", entity, entity, variant);
+            custom_output.erase(entity);
+        }
+        
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
+	}
+
+    CBaseEntity *parse_ent = nullptr;
+    DETOUR_DECL_STATIC(bool, ParseKeyvalue, void *pObject, typedescription_t *pFields, int iNumFields, const char *szKeyName, const char *szValue)
+	{
+		bool result = DETOUR_STATIC_CALL(ParseKeyvalue)(pObject, pFields, iNumFields, szKeyName, szValue);
+        if (!result && szKeyName[0] == '$') {
+            ParseCustomOutput(parse_ent, szKeyName, szValue);
+            result = true;
+        }
+        return result;
+	}
+
+    DETOUR_DECL_MEMBER(bool, CBaseEntity_KeyValue, const char *szKeyName, const char *szValue)
+	{
+        parse_ent = reinterpret_cast<CBaseEntity *>(this);
+        return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
 
     class CMod : public IMod, IModCallbackListener
@@ -1044,6 +1183,8 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_CommitSuicide, "CBasePlayer::CommitSuicide");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
+            MOD_ADD_DETOUR_STATIC(ParseKeyvalue, "ParseKeyvalue");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_KeyValue, "CBaseEntity::KeyValue");
             
     
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

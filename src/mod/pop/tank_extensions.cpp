@@ -10,6 +10,10 @@
 #include "stub/tf_objective_resource.h"
 #include "stub/particles.h"
 
+namespace Mod::Etc::Mapentity_Additions
+{
+	void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
+}
 
 class NextBotGroundLocomotion : public ILocomotion
 {
@@ -90,6 +94,7 @@ namespace Mod::Pop::Tank_Extensions
 		float offsetz           =   0.0f;
 		bool rotate_pitch       =  true;
 		bool crit_immune        = false;
+		bool trigger_destroy_fix = false;
 
 		std::string sound_ping =   "";
 		std::string sound_deploy =   "";
@@ -387,6 +392,8 @@ namespace Mod::Pop::Tank_Extensions
 				spawners[spawner].rotate_pitch = subkey->GetBool();
 			} else if (FStrEq(name, "CritImmune")) {
 				spawners[spawner].crit_immune = subkey->GetBool();
+			} else if (FStrEq(name, "TriggerDestroyBuildingFix")) {
+				spawners[spawner].trigger_destroy_fix = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -620,6 +627,7 @@ namespace Mod::Pop::Tank_Extensions
 			variant_t variant;
 			variant.SetString(NULL_STRING);
 			tank->AcceptInput("FireUser4",tank,tank,variant,-1);
+			Mod::Etc::Mapentity_Additions::FireCustomOutput(tank, "$onstartdeploy", tank, tank, variant);
 		}
 
 		node = tank->m_hCurrentNode;
@@ -1027,6 +1035,16 @@ namespace Mod::Pop::Tank_Extensions
 		return result;
 	}
 
+	// Fix buildings being destroyed by trigger entities parented to the tank
+	DETOUR_DECL_MEMBER(void, CTFBaseBoss_Touch, CBaseEntity *toucher)
+	{
+		SpawnerData *data = FindSpawnerDataForTank(reinterpret_cast<CTFTankBoss *>(this));
+		if (data != nullptr && data->trigger_destroy_fix) {
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFBaseBoss_Touch)(toucher);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1065,10 +1083,14 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_UpdateOnRemove, "CTFTankBoss::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_OnTakeDamage, "CTFBaseBoss::OnTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
+			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_Touch, "CBaseEntity::Touch");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_Touch, "CTFBaseBoss::Touch");
+
 
 			// Tank flame damage fix
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_OnCollide,        "CTFFlameManager::OnCollide");
+			
 		}
 		
 		virtual void OnUnload() override

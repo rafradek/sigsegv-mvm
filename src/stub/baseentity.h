@@ -65,10 +65,16 @@ class INextBot;
 class CBaseEntityOutput
 {
 public:
+
 	void FireOutput( variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay = 0 ) { ft_FireOutput(this, Value, pActivator, pCaller, fDelay); }
+	void ParseEventAction( const char *EventData ) { ft_ParseEventAction(this, EventData); }
 
 private:
 	static MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireOutput;
+	static MemberFuncThunk<CBaseEntityOutput *, void, const char *> ft_ParseEventAction;
+	
+	variant_t m_Value;
+	void *m_ActionList;
 };
 
 class CServerNetworkProperty : public IServerNetworkable

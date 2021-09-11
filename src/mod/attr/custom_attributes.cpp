@@ -415,6 +415,11 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
 		killer_weapon = nullptr;
 
+		ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+			if (entity->GetItem() != nullptr && entity->GetItem()->GetAttributeList().GetAttributeByName("attachment name") != nullptr) {
+				entity->RemoveEffects(EF_NODRAW);
+			}
+		});
 		is_ice = false;
 	}
 
@@ -1221,11 +1226,21 @@ namespace Mod::Attr::Custom_Attributes
 
 	void OnWeaponUpdate(CTFWeaponBase *weapon) {
 		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
-		if (owner != nullptr) {
+		if (owner != nullptr && (gpGlobals->tickcount % 6) == 3) {
 			int alwaysCrit = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon,alwaysCrit,always_crit);
 			if (alwaysCrit) {
 				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.25f, nullptr);
+			}
+			int addcond = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, addcond, add_cond_when_active);
+			if (addcond != 0) {
+				for (int i = 0; i < 4; i++) {
+					int addcond_single = (addcond >> (i * 8)) & 255;
+					if (addcond_single != 0) {
+						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.25f, owner);
+					}
+				}
 			}
 		}
 	}
@@ -1483,11 +1498,11 @@ namespace Mod::Attr::Custom_Attributes
 
 		grenade_proj = nullptr;
 	}
-	
+
 	DETOUR_DECL_MEMBER(void, CTFGrenadePipebombProjectile_PipebombTouch, CBaseEntity *ent)
 	{
 		auto proj = reinterpret_cast<CTFGrenadePipebombProjectile *>(this);
-		
+
 		bounce_damage_bonus = 0.0f;
 		if (proj->m_bTouched) {
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetOriginalLauncher(), bounce_damage_bonus, grenade_bounce_damage);
@@ -2020,6 +2035,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return result;
 	}
+	
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_ArrowTouch, CBaseEntity *pOther)
 	{
@@ -2503,7 +2519,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFGrenadePipebombProjectile_StickybombTouch, CBaseEntity *other)
 	{
 		auto proj = reinterpret_cast<CTFGrenadePipebombProjectile *>(this);
-		
+
 		if (!proj->m_bTouched && other->MyCombatCharacterPointer() != nullptr && other->GetTeamNumber() != proj->GetTeamNumber()) {
 			int stick = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(proj->GetOriginalLauncher(), stick, stickbomb_stick_to_enemies);
@@ -2759,6 +2775,55 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CheckSkyboxImpact)(pOther);
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFPlayerShared_CalculateObjectCost, CTFPlayer *builder, int object)
+	{
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+
+		int result = DETOUR_MEMBER_CALL(CTFPlayerShared_CalculateObjectCost)(builder, object);
+
+		if (object == OBJ_SENTRYGUN) {
+			float sentry_cost = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, sentry_cost, mod_sentry_cost);
+			result *= sentry_cost;
+			if (sentry_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, CFmtStr("You need %d metal to build a sentry gun", result));
+			}
+		}
+		else if (object == OBJ_DISPENSER) {
+			float dispenser_cost = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, dispenser_cost, mod_dispenser_cost);
+			result *= dispenser_cost;
+			if (dispenser_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, CFmtStr("You need %d metal to build a dispenser", result));
+			}
+		}
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(ETFDmgCustom, CTFWeaponBase_GetPenetrateType)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_GetPenetrateType)();
+
+		if (result == TF_DMG_CUSTOM_NONE) {
+			int penetrate = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), penetrate, penetrate_teammates);
+			if (penetrate != 0)
+				return TF_DMG_CUSTOM_PENETRATE_MY_TEAM;
+		}
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(float, CBaseProjectile_GetCollideWithTeammatesDelay)
+	{
+		int penetrate = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CBaseProjectile *>(this)->GetOriginalLauncher(), penetrate, penetrate_teammates);
+		if (penetrate) {
+			return 9999.0f;
+		}
+
+		return DETOUR_MEMBER_CALL(CBaseProjectile_GetCollideWithTeammatesDelay)();
 	}
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
@@ -3183,6 +3248,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget ,"CTFProjectile_Arrow::StrikeTarget");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_FadeOut, "CTFProjectile_Arrow::FadeOut");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CheckSkyboxImpact, "CTFProjectile_Arrow::CheckSkyboxImpact");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_CalculateObjectCost, "CTFPlayerShared::CalculateObjectCost");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetPenetrateType, "CTFWeaponBase::GetPenetrateType");
+			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_GetCollideWithTeammatesDelay, "CBaseProjectile::GetCollideWithTeammatesDelay");
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");
