@@ -1888,7 +1888,6 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
-    //Projectile gravity native
     "4503"
     {
         "name"	"stomp player time"
@@ -1898,7 +1897,6 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
-    //Projectile gravity native
     "4504"
     {
         "name"	"arrow hit kill time"
@@ -1908,26 +1906,44 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
-    
-    // this doesn't work :rage:
     "4505"
     {
-        "name"  "custom canteen cond"
-        "attribute_class"   "custom_canteen_cond"
-        //"attribute_type"    "string"
-        "description_string"    ""
-        "description_format"    "value_is_additive"
-        "hidden"    "1"
-        "effect_type"   "positive"
-        "stored_as_integer" "1"
+        "name"	"mod dispenser cost"
+        "attribute_class"	"mod_dispenser_cost"
+        "description_string"	"(+-)%p% dispenser cost"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
     }
     "4506"
     {
-        "name" "can bhop"
-        "attribute_class" "can_bhop"
-        "description_string" "Can bunnyhop"
-        "description_format" "value_is_addtive"
-        "hidden" "1"
-        "effect_type" "positive"
+        "name"	"mod sentry cost"
+        "attribute_class"	"mod_sentry_cost"
+        "description_string"	"(+-)%p% sentry cost"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Addcond on equip
+    "4507"
+    {
+        "name"	"add cond when active"
+        "attribute_class"	"add_cond_when_active"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"1"
+    }
+    //Penetrate teammates
+    "4508"
+    {
+        "name"	"penetrate teammates"
+        "attribute_class"	"penetrate_teammates"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"1"
     }
 }

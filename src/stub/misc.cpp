@@ -98,6 +98,15 @@ void UTIL_ParticleTracer(const char *pszTracerEffectName, const Vector &vecStart
 static StaticFuncThunk<void, IRecipientFilter &, float, const Vector *, int, int> ft_TE_PlayerDecal("TE_PlayerDecal");
 void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity) { ft_TE_PlayerDecal(filter, delay, pos, player, entity); }
 
+static MemberFuncThunk<variant_t*, void, fieldtype_t, void *> ft_VariantSet("variant_t::Set");
+void variant_t::Set(fieldtype_t type, void *data) { ft_VariantSet(this, type, data); }
+
+static MemberFuncThunk<variant_t*, void, void *> ft_VariantSetOther("variant_t::SetOther");
+void variant_t::SetOther(void *data) { ft_VariantSetOther(this, data); }
+
+static MemberFuncThunk<variant_t*, bool, fieldtype_t> ft_VariantConvert("variant_t::Convert");
+bool variant_t::Convert(fieldtype_t type) { return ft_VariantConvert(this, type); }
+
 GlobalThunk<CEventQueue> g_EventQueue("g_EventQueue");
 
 void PrintToChatAll(const char *str)

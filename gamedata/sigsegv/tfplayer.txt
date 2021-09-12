@@ -614,6 +614,11 @@
 					sym  "_ZN15CTFPlayerShared16OnRemoveTauntingEv"
 				}
 				
+				"CTFPlayerShared::CalculateObjectCost"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared19CalculateObjectCostEP9CTFPlayeri"
+				}
 				"CTFPlayerMove::StartCommand"
 				{
 					type "sym"
@@ -873,6 +878,11 @@
 				{
 					type "sym"
 					sym  "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase"
+				}
+				"CBasePlayer::ShowViewPortPanel"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
 				}
 				
 			//	"GetTFConditionName"

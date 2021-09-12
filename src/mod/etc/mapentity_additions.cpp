@@ -18,6 +18,7 @@
 namespace Mod::Etc::Mapentity_Additions
 {
 
+    void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
     static const char *SPELL_TYPE[] = {
         "Fireball",
         "Ball O' Bats",
@@ -50,6 +51,8 @@ namespace Mod::Etc::Mapentity_Additions
             const char *info = menu->GetItemInfo(item, nullptr);
 
             provider->FireCase(item + 1, player);
+            variant_t variant;
+            FireCustomOutput(provider, "$onselect", player, provider, variant);
         }
 
         virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
@@ -59,6 +62,11 @@ namespace Mod::Etc::Mapentity_Additions
 
             variant_t variant;
             provider->m_OnDefault->FireOutput(variant, player, provider);
+		}
+
+        virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+            menu->Destroy(false);
 		}
 
         void OnMenuDestroy(IBaseMenu *menu) {
@@ -71,6 +79,7 @@ namespace Mod::Etc::Mapentity_Additions
     };
     
     std::unordered_map<CBaseEntity *, std::unordered_map<std::string, CBaseEntityOutput>> custom_output;
+    std::unordered_map<CBaseEntity *, std::unordered_map<std::string, string_t>> custom_variables;
 
     void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
         std::string namestr = name;
@@ -121,6 +130,62 @@ namespace Mod::Etc::Mapentity_Additions
         variant1.SetString(AllocPooledString(fmtstr.c_str()));
         entity->m_OnDefault->FireOutput(variant1, activator, entity);
         DevMsg("output: %s\n", fmtstr.c_str());
+    }
+
+    enum GetInputType {
+        VARIABLE,
+        KEYVALUE,
+        DATAMAP,
+    };
+
+    void FireGetInput(CBaseEntity *entity, GetInputType type, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t &value) {
+        char param_tokenized[256] = "";
+        V_strncpy(param_tokenized, value.String(), sizeof(param_tokenized));
+        char *targetstr = strtok(param_tokenized,"|");
+        char *action = strtok(NULL,"|");
+        char *defvalue = strtok(NULL,"|");
+        
+        variant_t variable;
+
+        if (targetstr != nullptr && action != nullptr && defvalue != nullptr) {
+            bool found = false;
+
+            if (type == VARIABLE) {
+                auto find = custom_variables.find(entity);
+                if (find != custom_variables.end()) {
+                    auto find_var = find->second.find(name);
+                    if (find_var != find->second.end()) {
+                        variable.SetString(find_var->second);
+                        found = true;
+                    }
+                }
+            }
+            else if (type == KEYVALUE) {
+                found = entity->ReadKeyField(name, &variable);
+            }
+            else if (type == DATAMAP) {
+                for (datamap_t *dmap = entity->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap) {
+                    // search through all the readable fields in the data description, looking for a match
+                    for (int i = 0; i < dmap->dataNumFields; i++) {
+                        if (strcmp(dmap->dataDesc[i].fieldName, name) == 0) {
+                            variable.Set( dmap->dataDesc[i].fieldType, ((char*)entity) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ] );
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                variable.SetString(AllocPooledString(defvalue));
+            }
+
+            for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, entity, activator, caller)) != nullptr ;) {
+                target->AcceptInput(action, activator, entity, variable, 0);
+            }
+        }
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_InputIgnitePlayer, inputdata_t &inputdata)
@@ -216,48 +281,50 @@ namespace Mod::Etc::Mapentity_Additions
                     return true;
                 }
                 else if (FStrEq(szInputName, "$DisplayMenu")) {
-                    auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr && target->IsPlayer()) {
-                        CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
-                        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+                    
+                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                        if (target != nullptr && target->IsPlayer() && !ToTFPlayer(target)->IsBot()) {
+                            CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
+                            IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
 
-                        int i;
-                        for (i = 1; i < 16; i++) {
-                            variant_t variant1;
-                            ent->ReadKeyField(CFmtStr("Case%02d", i), &variant1);
-                            const char *name = variant1.String();
-                            if (strlen(name) != 0) {
-                                bool enabled = name[0] != '!';
-                                ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
-                                menu->AppendItem("it", info1);
+                            int i;
+                            for (i = 1; i < 16; i++) {
+                                variant_t variant1;
+                                ent->ReadKeyField(CFmtStr("Case%02d", i), &variant1);
+                                const char *name = variant1.String();
+                                if (strlen(name) != 0) {
+                                    bool enabled = name[0] != '!';
+                                    ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                                    menu->AppendItem("it", info1);
+                                }
+                                else {
+                                    break;
+                                }
                             }
-                            else {
-                                break;
+                            if (i < 11) {
+                                menu->SetPagination(MENU_NO_PAGINATION);
                             }
-                        }
-                        if (i < 11) {
-                            menu->SetPagination(MENU_NO_PAGINATION);
-                        }
 
-                        variant_t variant;
-                        ent->ReadKeyField("Case16", &variant);
-                        
-                        char param_tokenized[256];
-                        V_strncpy(param_tokenized, variant.String(), sizeof(param_tokenized));
-                        
-                        char *name = strtok(param_tokenized,"|");
-                        char *timeout = strtok(NULL,"|");
+                            variant_t variant;
+                            ent->ReadKeyField("Case16", &variant);
+                            
+                            char param_tokenized[256];
+                            V_strncpy(param_tokenized, variant.String(), sizeof(param_tokenized));
+                            
+                            char *name = strtok(param_tokenized,"|");
+                            char *timeout = strtok(NULL,"|");
 
-                        menu->SetDefaultTitle(name);
+                            menu->SetDefaultTitle(name);
 
-                        char *flag;
-                        while ((flag = strtok(NULL,"|")) != nullptr) {
-                            if (FStrEq(flag, "Cancel")) {
-                                menu->SetMenuOptionFlags(menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXIT);
+                            char *flag;
+                            while ((flag = strtok(NULL,"|")) != nullptr) {
+                                if (FStrEq(flag, "Cancel")) {
+                                    menu->SetMenuOptionFlags(menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXIT);
+                                }
                             }
-                        }
 
-                        menu->Display(ENTINDEX(target), timeout == nullptr ? 0 : atoi(timeout));
+                            menu->Display(ENTINDEX(target), timeout == nullptr ? 0 : atoi(timeout));
+                        }
                     }
                     return true;
                 }
@@ -797,6 +864,22 @@ namespace Mod::Etc::Mapentity_Additions
                 ent->m_OnUser4->FireOutput(Value, ent, ent);
                 return true;
             }
+            else if (stricmp(szInputName, "$FireUser5") == 0) {
+                FireCustomOutput(ent, "$onuser5", pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "$FireUser6") == 0) {
+                FireCustomOutput(ent, "$onuser6", pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "$FireUser7") == 0) {
+                FireCustomOutput(ent, "$onuser7", pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "$FireUser8") == 0) {
+                FireCustomOutput(ent, "$onuser8", pActivator, ent, Value);
+                return true;
+            }
             else if (stricmp(szInputName, "$TakeDamage") == 0) {
                 int damage = strtol(Value.String(), nullptr, 10);
                 CBaseEntity *attacker = ent;
@@ -923,7 +1006,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$TestEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseFilter *>(ent);
                     if (filter != nullptr && filter->PassesFilter(pCaller, target)) {
                         filter->m_OnPass->FireOutput(Value, pActivator, target);
@@ -932,7 +1015,7 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$StartTouchEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseTrigger *>(ent);
                     if (filter != nullptr) {
                         filter->StartTouch(target);
@@ -941,13 +1024,41 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$EndTouchEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     auto filter = rtti_cast<CBaseTrigger *>(ent);
                     if (filter != nullptr) {
                         filter->EndTouch(target);
                     }
                 }
                 return true;
+            }
+            else if (strnicmp(szInputName, "$SetVar$", strlen("$SetVar$")) == 0) {
+                custom_variables[ent][szInputName + strlen("$SetVar$")] = AllocPooledString(Value.String());
+            }
+            else if (strnicmp(szInputName, "$GetVar$", strlen("$GetVar$")) == 0) {
+                FireGetInput(ent, VARIABLE, szInputName + strlen("$GetVar$"), pActivator, pCaller, Value);
+            }
+            else if (strnicmp(szInputName, "$SetKey$", strlen("$SetKey$")) == 0) {
+                ent->KeyValue(szInputName + strlen("$SetKey$"), Value.String());
+            }
+            else if (strnicmp(szInputName, "$GetKey$", strlen("$GetKey$")) == 0) {
+                FireGetInput(ent, KEYVALUE, szInputName + strlen("$GetKey$"), pActivator, pCaller, Value);
+            }
+            else if (strnicmp(szInputName, "$SetData$", strlen("$SetData$")) == 0) {
+                for (datamap_t *dmap = ent->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap) {
+                    // search through all the readable fields in the data description, looking for a match
+                    for (int i = 0; i < dmap->dataNumFields; i++) {
+                        if (strcmp(dmap->dataDesc[i].fieldName, szInputName + strlen("$SetData$")) == 0) {
+                            Value.Convert(dmap->dataDesc[i].fieldType);
+                            Value.SetOther(((char*)ent) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]);
+                            break;
+                        }
+                    }
+                }
+                ent->KeyValue(szInputName + strlen("$SetData$"), Value.String());
+            }
+            else if (strnicmp(szInputName, "$GetData$", strlen("$GetData$")) == 0) {
+                FireGetInput(ent, DATAMAP, szInputName + strlen("$GetData$"), pActivator, pCaller, Value);
             }
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
@@ -1186,6 +1297,10 @@ namespace Mod::Etc::Mapentity_Additions
             variant_t variant;
             FireCustomOutput(entity, "$onkilled", entity, entity, variant);
             custom_output.erase(entity);
+        }
+
+        if (!custom_variables.empty()) {
+            custom_variables.erase(entity);
         }
         
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();

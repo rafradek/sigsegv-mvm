@@ -4741,6 +4741,52 @@
 					type "sym"
 					sym  "_ZN19CTFProjectile_Arrow17CheckSkyboxImpactEP11CBaseEntity"
 				}
+				"CTFBaseBoss::Touch"
+				{
+					type "sym"
+					sym  "_ZN11CTFBaseBoss5TouchEP11CBaseEntity"
+				}
+				"ParseKeyvalue"
+				{
+					type "sym"
+					sym  "_Z13ParseKeyvaluePvP17typedescription_tiPKcS3_"
+				}
+				"CBaseEntityOutput::ParseEventAction"
+				{
+					type "sym"
+					sym  "_ZN17CBaseEntityOutput16ParseEventActionEPKc"
+				}
+				"CTFWeaponBase::GetPenetrateType"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase16GetPenetrateTypeEv"
+				}
+				"CTFBaseRocket::RocketTouch"
+				{
+					type "sym"
+					sym  "_ZN13CTFBaseRocket11RocketTouchEP11CBaseEntity"
+				}
+				"CBaseProjectile::GetCollideWithTeammatesDelay"
+				{
+					type "sym"
+					sym  "_ZNK15CBaseProjectile28GetCollideWithTeammatesDelayEv"
+				}
+				"variant_t::Set"
+				{
+					type "sym"
+					sym  "_ZN9variant_t3SetE11_fieldtypesPv"
+				}
+				"variant_t::SetOther"
+				{
+					type "sym"
+					sym  "_ZN9variant_t8SetOtherEPv"
+				}
+				"variant_t::Convert"
+				{
+					type "sym"
+					sym  "_ZN9variant_t7ConvertE11_fieldtypes"
+				}
+				
 			}
 			"addrs_group"
 			{

@@ -594,7 +594,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BotHumansHaveEyeGlow            ("sig_mvm_human_eye_particle"),
 			m_EyeParticle                     ("sig_mvm_eye_particle"),
 			m_BotEscortCount                  ("tf_bot_flag_escort_max_count"),
-			m_CustomAttrDisplay               ("sig_attr_display")
+			m_CustomAttrDisplay               ("sig_attr_display"),
+			m_AirAccelerate                   ("sv_airaccelerate"),
+			m_Accelerate                      ("sv_accelerate")
 
 		{
 			this->Reset();
@@ -648,8 +650,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bExtendedUpgradesNoUndo = false;
 			this->m_bHHHNonSolidToPlayers = false;
 			this->m_iBunnyHop = 0;
-			this->m_iAccelerate = -1;
-			this->m_iAirAccelerate = -1;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -720,6 +720,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_EyeParticle.Reset();
 			this->m_BotEscortCount.Reset();
 			this->m_CustomAttrDisplay.Reset();
+			this->m_Accelerate.Reset();
+			this->m_AirAccelerate.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -835,8 +837,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bExtendedUpgradesNoUndo;
 		bool m_bHHHNonSolidToPlayers;
 		int m_iBunnyHop;
-		int m_iAccelerate;
-		int m_iAirAccelerate;
 
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -908,6 +908,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<std::string> m_EyeParticle;
 		CPopOverride_ConVar<int> m_BotEscortCount;
 		CPopOverride_ConVar<bool> m_CustomAttrDisplay;
+		CPopOverride_ConVar<float> m_Accelerate;
+		CPopOverride_ConVar<float> m_AirAccelerate;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -2575,6 +2577,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
         }
 
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+			menu->Destroy();
+		}
+
         virtual void OnMenuDestroy(IBaseMenu *menu) {
             delete this;
         }
@@ -2600,6 +2607,7 @@ namespace Mod::Pop::PopMgr_Extensions
             if (reason == MenuEnd_ExitBack || reason == MenuEnd_Exit) {
                 GoBack();
             }
+			menu->Destroy();
 		}
 
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -2755,6 +2763,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			DisplayExtraLoadoutItems(player);
         }
 
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+			menu->Destroy();
+		}
+		
         virtual void OnMenuDestroy(IBaseMenu *menu) {
             delete this;
         }
@@ -3408,24 +3421,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CGameMovement_Accelerate, Vector& direction, float speed, float accel)
-	{
-		if(state.m_iAccelerate != -1){
-			DETOUR_MEMBER_CALL(CGameMovement_Accelerate)(direction, speed, state.m_iAccelerate);
-		} else {
-			DETOUR_MEMBER_CALL(CGameMovement_Accelerate)(direction, speed, accel);
-		}
-	}
-
-	DETOUR_DECL_MEMBER(void, CGameMovement_AirAccelerate, Vector& direction, float speed, float accel)
-	{
-		if(state.m_iAirAccelerate != -1){
-			DETOUR_MEMBER_CALL(CGameMovement_AirAccelerate)(direction, speed, state.m_iAirAccelerate);
-		} else {
-			DETOUR_MEMBER_CALL(CGameMovement_AirAccelerate)(direction, speed, accel);
-		}
-	}
-
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
 		if (state.m_bHHHNonSolidToPlayers) {
@@ -3463,6 +3458,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		/*DevMsg("MeleeDaamgeForce %f %d\n", vecMeleeDir.z, rc_CHeadlessHatmanAttack_AttackTarget);*/
 		DETOUR_STATIC_CALL(CalculateMeleeDamageForce)(info, vecMeleeDir, vecForceOrigin, flScale);
+	}
+
+	DETOUR_DECL_MEMBER(void, CBasePlayer_ShowViewPortPanel, const char *name, bool show, KeyValues *kv)
+	{
+		if (TFGameRules()->IsMannVsMachineMode() && state.m_bSingleClassAllowed != -1 && (strcmp(name, "class_red") == 0 || strcmp(name, "class_blue") == 0 )) {
+			CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+			player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
+			return;
+		}
+		DETOUR_MEMBER_CALL(CBasePlayer_ShowViewPortPanel)( name, show, kv);
 	}
 
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
@@ -4738,9 +4743,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				} else if (FStrEq(name, "BunnyHop")) {
 					state.m_iBunnyHop = subkey->GetInt();
 				} else if (FStrEq(name, "Accelerate")) {
-					state.m_iAccelerate = subkey->GetInt();
+					state.m_Accelerate.Set(subkey->GetFloat());
 				} else if (FStrEq(name, "AirAccelerate")) {
-					state.m_iAirAccelerate = subkey->GetInt();
+					state.m_AirAccelerate.Set(subkey->GetFloat());
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -4811,9 +4816,17 @@ namespace Mod::Pop::PopMgr_Extensions
 		});
 		if (spectators > resetTo) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() < 2 && spectators > resetTo && !player->IsFakeClient() && !player->IsHLTV() && !PlayerIsSMAdmin(player)) {
-					engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
-					spectators -= 1;
+				if (player->GetTeamNumber() < TF_TEAM_RED && spectators > resetTo && !player->IsFakeClient() && !player->IsHLTV()) {
+					player->HandleCommand_JoinTeam("red");
+
+					if (player->GetTeamNumber() >= TF_TEAM_RED) {
+						spectators -= 1;
+					}
+					else if (!PlayerIsSMAdmin(player)){
+						// Kick if cannot switch to red team
+						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
+						spectators -= 1;
+					}
 				}
 			});
 		}
@@ -4875,8 +4888,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
-			MOD_ADD_DETOUR_MEMBER(CGameMovement_Accelerate, 					 "CGameMovement::Accelerate");
-			MOD_ADD_DETOUR_MEMBER(CGameMovement_AirAccelerate, 					 "CGameMovement::AirAccelerate");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup");
@@ -4901,6 +4912,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_GetMaxReturnTime,                 "CCaptureFlag::GetMaxReturnTime");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleCommand_JoinClass,             "CTFPlayer::HandleCommand_JoinClass");
+			
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_OnPlayerSpawned,                  "CTFGameRules::OnPlayerSpawned");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,                        "CTFPlayer::Event_Killed");
 			
@@ -4977,6 +4989,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_AttackTarget, "CHeadlessHatmanAttack::AttackTarget");
 			MOD_ADD_DETOUR_STATIC(CalculateMeleeDamageForce, "CalculateMeleeDamageForce");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ShowViewPortPanel, "CBasePlayer::ShowViewPortPanel");
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
