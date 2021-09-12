@@ -2579,7 +2579,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-			menu->Destroy();
+			menu->Destroy(false);
 		}
 
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -2607,7 +2607,7 @@ namespace Mod::Pop::PopMgr_Extensions
             if (reason == MenuEnd_ExitBack || reason == MenuEnd_Exit) {
                 GoBack();
             }
-			menu->Destroy();
+			menu->Destroy(false);
 		}
 
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -2765,7 +2765,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-			menu->Destroy();
+			menu->Destroy(false);
 		}
 		
         virtual void OnMenuDestroy(IBaseMenu *menu) {

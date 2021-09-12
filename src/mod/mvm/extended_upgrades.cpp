@@ -134,7 +134,7 @@ namespace Mod::MvM::Extended_Upgrades
         std::string required_weapons_string = "";
         bool show_requirements = true;
         //std::string on_upgrade_output = "";
-        std::map<std::string, float> on_upgrade_outputs = {};
+        std::vector<std::string> on_upgrade_outputs = {};
         bool force_enable = false;
     };
 
@@ -298,9 +298,9 @@ namespace Mod::MvM::Extended_Upgrades
         }
     }
 
-    void Parse_OnUpgradeOutputs(KeyValues* kv, std::map<std::string, float>& outputs){
+    void Parse_OnUpgradeOutputs(KeyValues* kv, std::vector<std::string>& outputs){
         FOR_EACH_SUBKEY(kv, subkey) {
-            outputs[subkey->GetName()] = subkey->GetFloat();
+            outputs.push_back(subkey->GetString());
         }
     }
 
@@ -726,23 +726,28 @@ namespace Mod::MvM::Extended_Upgrades
             }
             from_buy_upgrade_free = false;
             //if(upgrade->on_upgrade_output != ""){
-            for(const auto& [output, delay] : upgrade->on_upgrade_outputs){
+            for(const auto &output : upgrade->on_upgrade_outputs){
                 char param_tokenized[2048] = "";
                 V_strncpy(param_tokenized, output.c_str(), sizeof(param_tokenized));
                 if(strcmp(param_tokenized, "") != 0){
                     char *target = strtok(param_tokenized,",");
                     char *action = NULL;
                     char *value = NULL;
+                    char *delay = NULL;
                     if(target != NULL)
                         action = strtok(NULL,",");
                     if(action != NULL)
-                        value = strtok(NULL,"");
-                    if(value != NULL){
+                        value = strtok(NULL,",");
+                    if(action != NULL)
+                        delay = strtok(NULL,",");
+
+                    
+                    if(delay != NULL){
                         CEventQueue &que = g_EventQueue;
                         variant_t actualvalue;
                         string_t stringvalue = AllocPooledString(value);
                         actualvalue.SetString(stringvalue);
-                        que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, delay, player, player, -1);
+                        que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, strtof(delay, nullptr), player, player, -1);
                     }
                 }
             }
