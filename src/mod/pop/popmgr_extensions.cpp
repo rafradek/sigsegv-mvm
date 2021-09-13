@@ -837,7 +837,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bExtendedUpgradesNoUndo;
 		bool m_bHHHNonSolidToPlayers;
 		int m_iBunnyHop;
-
+		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
 		CPopOverride_ConVar<bool>        m_GrapplingHook;

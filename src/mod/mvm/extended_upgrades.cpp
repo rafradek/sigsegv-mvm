@@ -738,7 +738,7 @@ namespace Mod::MvM::Extended_Upgrades
                         action = strtok(NULL,",");
                     if(action != NULL)
                         value = strtok(NULL,",");
-                    if(action != NULL)
+                    if(value != NULL)
                         delay = strtok(NULL,",");
 
                     

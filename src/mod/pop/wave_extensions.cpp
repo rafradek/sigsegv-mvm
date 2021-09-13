@@ -6,6 +6,7 @@
 #include "stub/nextbot_cc_behavior.h"
 #include "stub/objects.h"
 #include "stub/gamerules.h"
+#include "stub/tf_objective_resource.h"
 #include "stub/tfplayer.h"
 #include "stub/team.h"
 #include "util/scope.h"
@@ -86,11 +87,15 @@ namespace Mod::Pop::Wave_Extensions
 		bool defined_class_attributes = false;
 		std::map<std::string,float> player_attributes_class[11] = {};
 		std::map<std::string,float> player_attributes;
+		int custom_wave_number = INT_MIN;
+		int custom_max_wave_number = INT_MIN;
+
 		float sound_time_end = 0.f;
 		IntervalTimer t_wavestart;
 		IntervalTimer t_waveinit;
 
 		CBaseEntity *explanation_text;
+
 	};
 	
 	
@@ -503,6 +508,10 @@ namespace Mod::Pop::Wave_Extensions
 				waves[wave].finishing_wave_causes_wave_loss = subkey->GetBool();
 			} else if (FStrEq(name, "FinishingWaveAndPlayerWipeCausesWaveLoss")) {
 				waves[wave].finishing_wave_and_player_wipe_causes_wave_loss = subkey->GetBool();
+			} else if (FStrEq(name, "CustomWaveNumber")) {
+				waves[wave].custom_wave_number = subkey->GetInt();
+			} else if (FStrEq(name, "CustomMaxWaveNumber")) {
+				waves[wave].custom_max_wave_number = subkey->GetInt();
 			} else if (FStrEq(name, "SpawnTemplate")) {
 				PointTemplateInfo info =Parse_SpawnTemplate(subkey);
 				if (info.templ != nullptr)
@@ -1261,6 +1270,30 @@ namespace Mod::Pop::Wave_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
 	}
 
+	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		int wave_number = INT_MIN;
+		int max_wave_number = INT_MIN;
+		WaveData *data = GetCurrentWaveData();
+		if (data != nullptr && TFObjectiveResource() != nullptr) {
+			if (data->custom_wave_number != INT_MIN) {
+				wave_number = TFObjectiveResource()->m_nMannVsMachineWaveCount;
+				TFObjectiveResource()->m_nMannVsMachineWaveCount = data->custom_wave_number;
+			}
+			if (data->custom_max_wave_number != INT_MIN) {
+				max_wave_number = TFObjectiveResource()->m_nMannVsMachineMaxWaveCount;
+				TFObjectiveResource()->m_nMannVsMachineMaxWaveCount = data->custom_max_wave_number;
+			}
+		}
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		if (wave_number != INT_MIN) {
+			TFObjectiveResource()->m_nMannVsMachineWaveCount = wave_number;
+		}
+		if (max_wave_number != INT_MIN) {
+			TFObjectiveResource()->m_nMannVsMachineMaxWaveCount = max_wave_number;
+		}
+	}
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -1313,6 +1346,9 @@ namespace Mod::Pop::Wave_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades,   "CUpgrades::GrantOrRemoveAllUpgrades");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ReapplyItemUpgrades,                 "CTFPlayer::ReapplyItemUpgrades");
+
+			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
+			
 			
 		}
 		
