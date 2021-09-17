@@ -26,7 +26,7 @@ autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 l
 ```
 git submodule init
 git submodule update
-cd lib/udis86
+cd libs/udis86
 ./autogen.sh
 ./configure
 make
