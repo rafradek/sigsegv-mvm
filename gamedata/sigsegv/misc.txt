@@ -4786,7 +4786,22 @@
 					type "sym"
 					sym  "_ZN9variant_t7ConvertE11_fieldtypes"
 				}
-				
+				"CBaseEntity::GetTouchTrace"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity13GetTouchTraceEv"
+				}
+				"CreateSpellSpawnZombie"
+				{
+					type "sym"
+					sym  "_Z22CreateSpellSpawnZombieP20CBaseCombatCharacterRK6Vectori"
+				}
+				"ENTINDEX"
+				{
+					type "sym"
+					sym  "_Z8ENTINDEXP11CBaseEntity"
+				}
+				 
 			}
 			"addrs_group"
 			{

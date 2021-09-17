@@ -236,7 +236,7 @@ public:
 	static void EmitSound(IRecipientFilter& filter, int iEntIndex, const char *soundname, HSOUNDSCRIPTHANDLE& handle, const Vector *pOrigin = nullptr, float soundtime = 0.0f, float *duration = nullptr) {        ft_EmitSound_static2  (filter, iEntIndex, soundname, handle, pOrigin, soundtime, duration); }
 	static void EmitSound(IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params)                                                                                                             {        ft_EmitSound_static3  (filter, iEntIndex, params); }
 	static void EmitSound(IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params, HSOUNDSCRIPTHANDLE& handle)                                                                                 {        ft_EmitSound_static4  (filter, iEntIndex, params, handle); }
-	
+	static trace_t &GetTouchTrace()                                                                                                                                                                       { return ft_GetTouchTrace(); }
 	/* hack */
 	bool IsCombatCharacter() { return (this->MyCombatCharacterPointer() != nullptr); }
 	// bool IsPlayer() const;
@@ -382,6 +382,7 @@ private:
 	static StaticFuncThunk<void, IRecipientFilter&, int, const char *, HSOUNDSCRIPTHANDLE&, const Vector *, float, float *> ft_EmitSound_static2;
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                ft_EmitSound_static3;
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           ft_EmitSound_static4;
+	static StaticFuncThunk<trace_t&>                                                                                        ft_GetTouchTrace;
 };
 
 
@@ -406,6 +407,12 @@ inline int ENTINDEX(const CBaseEntity *pEnt)
 	}
 	
 	return pEnt->entindex();
+}
+
+extern StaticFuncThunk<int, CBaseEntity *> ft_ENTINDEX;
+inline int ENTINDEX_NATIVE(CBaseEntity *entity)
+{
+	return ft_ENTINDEX(entity);
 }
 
 inline edict_t *INDEXENT(int iEdictNum)

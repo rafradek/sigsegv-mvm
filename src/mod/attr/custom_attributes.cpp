@@ -36,7 +36,21 @@ namespace Mod::Attr::Custom_Attributes
 
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
 
-	const char *GetStringAttribute(CAttributeList &attrlist, const char *name) {
+#define GET_STRING_ATTRIBUTE(attrlist, name, varname) \
+	static auto *def_##varname = GetItemSchema()->GetAttributeDefinitionByName(name); \
+	const char * varname = GetStringAttribute(attrlist, def_##varname);
+
+	
+	const char *GetStringAttribute(CAttributeList &attrlist, CEconItemAttributeDefinition *def) {
+		auto attr = attrlist.GetAttributeByID(def->GetIndex());
+		const char *value = nullptr;
+		if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+			CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+		}
+		return value;
+	}
+
+	const char *GetStringAttribute(CAttributeList &attrlist, const char* name) {
 		auto attr = attrlist.GetAttributeByName(name);
 		const char *value = nullptr;
 		if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
@@ -244,8 +258,7 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseAnimating *proj = nullptr;
 		for (int i = 0; i < attr_projectile_count; i++) {
 
-
-			const char *projectilename = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "override projectile type extra");
+			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "override projectile type extra", projectilename);
 
 			fire_projectile_multi = i != 0;
 
@@ -267,8 +280,7 @@ namespace Mod::Attr::Custom_Attributes
 					THINK_FUNC_SET(proj, ProjectileLifetime, gpGlobals->curtime + attr_lifetime);
 					//proj->ThinkSet(&ProjectileLifetime::Update, gpGlobals->curtime + attr_lifetime, "ProjLifetime");
 				}
-
-				const char *particlename = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "projectile trail particle");
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "projectile trail particle", particlename);
 				if (particlename != nullptr) {
 
 					force_send_client = true;
@@ -416,8 +428,9 @@ namespace Mod::Attr::Custom_Attributes
 		killer_weapon = nullptr;
 
 		ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-			if (entity->GetItem() != nullptr && entity->GetItem()->GetAttributeList().GetAttributeByName("attachment name") != nullptr) {
-				entity->RemoveEffects(EF_NODRAW);
+			static auto *attachment_name_def = GetItemSchema()->GetAttributeDefinitionByName("attachment name");
+			if (entity->GetItem() != nullptr && entity->GetItem()->GetAttributeList().GetAttributeByID(attachment_name_def != nullptr ? attachment_name_def->GetIndex() : -1) != nullptr) {
+				entity->AddEffects(EF_NODRAW);
 			}
 		});
 		is_ice = false;
@@ -438,7 +451,7 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 		}
 
-		const char *particlename = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "explosion particle");
+		GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "explosion particle", particlename);
 		if (particlename != nullptr) {
 			if (precached.find(particlename) == precached.end()) {
 				PrecacheParticleSystem(particlename);
@@ -584,7 +597,8 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CEconEntity_UpdateModelToClass)();
 		auto entity = reinterpret_cast<CEconEntity *>(this);
 		CAttributeList &attrlist = entity->GetItem()->GetAttributeList();
-		const char *modelname = GetStringAttribute(attrlist, "custom item model");
+
+		GET_STRING_ATTRIBUTE(attrlist, "custom item model", modelname);
 		
 		auto owner = ToTFPlayer(entity->GetOwnerEntity());
 
@@ -623,7 +637,7 @@ namespace Mod::Attr::Custom_Attributes
 			entity->SetRenderColorA(0);
 		}
 
-		const char *attachmentname = GetStringAttribute(attrlist, "attachment name");
+		GET_STRING_ATTRIBUTE(attrlist, "attachment name", attachmentname);
 
 		if (owner != nullptr && attachmentname != nullptr) {
 			int attachment = owner->LookupAttachment(attachmentname);
@@ -638,8 +652,8 @@ namespace Mod::Attr::Custom_Attributes
 			float scale = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( entity, scale, attachment_scale);
 			
-			const char *offsetstr = GetStringAttribute(attrlist, "attachment offset");
-			const char *anglesstr = GetStringAttribute(attrlist, "attachment angles");
+			GET_STRING_ATTRIBUTE(attrlist, "attachment offset", offsetstr);
+			GET_STRING_ATTRIBUTE(attrlist, "attachment angles", anglesstr);
 
 			if (offsetstr != nullptr)
 				sscanf(offsetstr, "%f %f %f", &pos.x, &pos.y, &pos.z);
@@ -655,14 +669,28 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	// Convert float attribute value to uint, so that warpaints display properly when given to bots 
+	THINK_FUNC_DECL(WarpaintAttributeCorrection)
+	{
+		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+		if (weapon->GetItem() != nullptr) {
+			auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByName("paintkit_proto_def_index");
+			if (attr != nullptr) {
+				attr->GetValuePtr()->m_UInt = attr->GetValuePtr()->m_Float;
+			}
+		}
+	}
+
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
-		const char *attachmentname = GetStringAttribute(ent->GetItem()->GetAttributeList(), "attachment name");
+		
+		GET_STRING_ATTRIBUTE(ent->GetItem()->GetAttributeList(), "attachment name", attachmentname);
 		if (attachmentname != nullptr) {
 			ent->SetEffects(ent->GetEffects() & ~(EF_BONEMERGE));
 		}
+		THINK_FUNC_SET(ent, WarpaintAttributeCorrection, gpGlobals->curtime);
 	}
 	
 	float bounce_damage_bonus = 0.0f;
@@ -678,7 +706,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
 		if (launcher != nullptr) {
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
-			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
+			GET_STRING_ATTRIBUTE(launcher->GetItem()->GetAttributeList(), "custom impact sound", sound);
 			
 			if (sound != nullptr) {
 				PrecacheSound(sound);
@@ -696,7 +724,9 @@ namespace Mod::Attr::Custom_Attributes
 		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
 		if (launcher != nullptr) {
 			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
-			const char *sound = GetStringAttribute(launcher->GetItem()->GetAttributeList(), "custom impact sound");
+			
+			GET_STRING_ATTRIBUTE(launcher->GetItem()->GetAttributeList(), "custom impact sound", sound);
+			
 			if (sound != nullptr) {
 				PrecacheSound(sound);
 				proj->EmitSound(sound);
@@ -726,13 +756,15 @@ namespace Mod::Attr::Custom_Attributes
 		if ((index == 1 || index == 5 || index == 6)) {
 			auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
-			const char *attr_name = nullptr;
+			CEconItemAttributeDefinition *attr_name = nullptr;
 
+			static auto *custom_weapon_fire_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon fire sound");
+			static auto *custom_weapon_reload_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon reload sound");
 			switch (index) {
-				case 1: case 5: attr_name = "custom weapon fire sound"; break;
-				case 6: attr_name = "custom weapon reload sound"; break;
+				case 1: case 5: attr_name = custom_weapon_fire_sound; break;
+				case 6: attr_name = custom_weapon_reload_sound; break;
 			}
-
+			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
 				
@@ -796,8 +828,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_CTFPlayer_FireBullet > 0 && ptr != nullptr && rc_CTFGameRules_RadiusDamage == 0 && (ptr->surface.flags & SURF_SKY) == 0) {
 			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
 			if (weapon != nullptr) {
-				
-				const char *sound = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom impact sound");
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "custom impact sound", sound);
 				if (sound != nullptr) {
 					PrecacheSound(sound);
 					CRecipientFilter filter;
@@ -1084,9 +1115,24 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
+		
+		//Allow cart to do more damage based on attributes
+
+		if (info.GetAttacker() != nullptr && info.GetAttacker()->IsPlayer() && info.GetDamageCustom() == TF_DMG_CUSTOM_KART)
+		{
+			float dmg = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetAttacker(), dmg, mult_dmg );
+			if (pVictim->IsPlayer())
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetAttacker(), dmg, mult_dmg_vs_players );
+
+			info.SetDamage(info.GetDamage() * dmg);
+		}
+
 		if (info.GetWeapon() != nullptr) {
 			float dmg = info.GetDamage();
 			
+			CFastTimer timer;
+			timer.Start();
 			float iDmgCurrentHealth = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
 			if (iDmgCurrentHealth != 0.0f)
@@ -1136,6 +1182,9 @@ namespace Mod::Attr::Custom_Attributes
 				dmg *= dmg_mult;
 			}
 			info.SetDamage(dmg);
+			timer.End();
+
+			PrintToChatAll(CFmtStr("Time to execute %.9f\n", timer.GetDuration().GetSeconds()));
 		}
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
@@ -1734,7 +1783,8 @@ namespace Mod::Attr::Custom_Attributes
 		if (info.GetWeapon() != nullptr && info.GetAttacker() != nullptr && info.GetAttacker()->IsPlayer()) {
 			CBaseCombatWeapon *weapon = info.GetWeapon()->MyCombatWeaponPointer();
 			if (weapon != nullptr && weapon->GetItem() != nullptr) {
-				const char *str = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom kill icon");
+				
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "custom kill icon", str);
 				if (str != nullptr)
 					return str;
 			}
@@ -1767,6 +1817,7 @@ namespace Mod::Attr::Custom_Attributes
 		else if (toucher->IsPlayer()) {
 			
 			float stompTime = 0.0f;
+			
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stompTime, stomp_player_time);
 
 			if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
@@ -1939,7 +1990,7 @@ namespace Mod::Attr::Custom_Attributes
 		
 		auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
 		if (ent != nullptr && weapon != nullptr) {
-			const char *str = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "custom hit sound");
+			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "custom hit sound", str);
 			if (str != nullptr) {
 				PrecacheSound(str);
 				ent->EmitSound(str);
@@ -1947,6 +1998,12 @@ namespace Mod::Attr::Custom_Attributes
 			
 			CTFPlayer *victim = ToTFPlayer(ent);
 			if (victim != nullptr && victim != player) {
+				float burn_duration = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, burn_duration, set_dmgtype_ignite);
+				if (burn_duration != 0.0f) {
+					victim->m_Shared->Burn(player, nullptr, burn_duration);
+				}
+
 				int removecond_attr = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, removecond_attr, remove_cond_on_hit);
 				if (removecond_attr != 0) {
@@ -2160,6 +2217,12 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+
+		if (pProvider != player && (nCond == TF_COND_URINE || nCond == TF_COND_MAD_MILK || nCond == TF_COND_MARKEDFORDEATH || nCond == TF_COND_MARKEDFORDEATH_SILENT)) {
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flDuration, mult_debuff_duration);
+		}
+
 		if (rc_CTFPlayerShared_AddCond)
         {
 			if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
@@ -2246,11 +2309,12 @@ namespace Mod::Attr::Custom_Attributes
 			aoe_in_sphere_hit_count = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(econ_entity, aoe_in_sphere_max_hit_count, max_aoe_targets);
 
-			const char *particlename = GetStringAttribute(econ_entity->GetItem()->GetAttributeList(), "explosion particle");
+			GET_STRING_ATTRIBUTE(econ_entity->GetItem()->GetAttributeList(), "explosion particle", particlename);
 			if (particlename != nullptr) {
 				pszImpactEffect = particlename;
 			}
-			const char *sound = GetStringAttribute(econ_entity->GetItem()->GetAttributeList(), "custom impact sound");
+			
+			GET_STRING_ATTRIBUTE(econ_entity->GetItem()->GetAttributeList(), "custom impact sound", sound);
 			if (sound != nullptr) {
 				PrecacheSound(sound);
 				text2 = sound;
@@ -2430,8 +2494,9 @@ namespace Mod::Attr::Custom_Attributes
 		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
 			CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
-			const char *input = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "fire input on hit");
-			const char *filter = GetStringAttribute(weapon->GetItem()->GetAttributeList(), "fire input on hit name restrict");
+
+			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit", input);
+			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit name restrict", filter);
 			
 			if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
 				char input_tokenized[256];
@@ -2598,7 +2663,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto minigun = reinterpret_cast<CTFMinigun *>(this);
 		if (minigun->GetItem() != nullptr) {
-			const char *str = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom wind down sound");
+			GET_STRING_ATTRIBUTE(minigun->GetItem()->GetAttributeList(), "custom wind down sound", str);
 			if (str != nullptr) {
 				PrecacheSound(str);
 				minigun->EmitSound(str);
@@ -2611,7 +2676,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto minigun = reinterpret_cast<CTFMinigun *>(this);
 		if (minigun->GetItem() != nullptr) {
-			const char *str = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom wind up sound");
+			GET_STRING_ATTRIBUTE(minigun->GetItem()->GetAttributeList(), "custom wind up sound", str);
 			if (str != nullptr) {
 				PrecacheSound(str);
 				minigun->EmitSound(str);
@@ -2643,7 +2708,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (pItemView != nullptr) {
 			CAttributeList &list = pItemView->GetAttributeList();
-			auto model = GetStringAttribute(list, "custom item model");
+			GET_STRING_ATTRIBUTE(list, "custom item model", model);
 			if (model != nullptr) {
 				pszModelName = model;
 			}
@@ -2694,8 +2759,8 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto minigun = reinterpret_cast<CTFMinigun *>(this);
 		if (state != minigun->m_iWeaponState) {
-			auto soundfiring = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom weapon fire sound");
-			auto soundspinning = GetStringAttribute(minigun->GetItem()->GetAttributeList(), "custom minigun spin sound");
+			GET_STRING_ATTRIBUTE(minigun->GetItem()->GetAttributeList(), "custom weapon fire sound", soundfiring);
+			GET_STRING_ATTRIBUTE(minigun->GetItem()->GetAttributeList(), "custom minigun spin sound", soundspinning);
 
 			if (soundfiring != nullptr) {
 				if (state == CTFMinigun::AC_STATE_FIRING) {
@@ -2723,7 +2788,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto flamethrower = reinterpret_cast<CTFFlameThrower *>(this);
 		if (state != flamethrower->m_iWeaponState) {
-			auto soundfiring = GetStringAttribute(flamethrower->GetItem()->GetAttributeList(), "custom weapon fire sound");
+			GET_STRING_ATTRIBUTE(flamethrower->GetItem()->GetAttributeList(), "custom weapon fire sound", soundfiring);
 
 			if (soundfiring != nullptr) {
 				if ((state == 1 || state == 2) && flamethrower->m_iWeaponState != 1 && flamethrower->m_iWeaponState != 2) {
@@ -2757,11 +2822,11 @@ namespace Mod::Attr::Custom_Attributes
 		float bounce_speed = 0;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
 		if (bounce_speed != 0) {
-			trace_t tr;
-			Vector velDir = arrow->GetAbsVelocity();
-			VectorNormalize(velDir);
-			Vector vecSpot = arrow->GetAbsOrigin() - velDir * 32;
-			UTIL_TraceLine(vecSpot, vecSpot + velDir * 64, MASK_SOLID, arrow, COLLISION_GROUP_DEBRIS, &tr);
+			trace_t &tr = CBaseEntity::GetTouchTrace();
+			//Vector velDir = arrow->GetAbsVelocity();
+			//VectorNormalize(velDir);
+			//Vector vecSpot = arrow->GetAbsOrigin() - velDir * 32;
+			//UTIL_TraceLine(vecSpot, vecSpot + velDir * 64, MASK_SOLID, arrow, COLLISION_GROUP_DEBRIS, &tr);
 
 			if (tr.DidHit()) {
 				Vector pre_vel = arrow->GetAbsVelocity();

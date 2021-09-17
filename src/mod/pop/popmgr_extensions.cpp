@@ -19,6 +19,7 @@
 #include "stub/tf_objective_resource.h"
 #include "stub/team.h"
 #include "stub/upgrades.h"
+#include "stub/nextbot_cc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
 WARN_IGNORE__REORDER()
@@ -650,6 +651,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bExtendedUpgradesNoUndo = false;
 			this->m_bHHHNonSolidToPlayers = false;
 			this->m_iBunnyHop = 0;
+			this->m_bNoSkeletonSplit = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -837,6 +839,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bExtendedUpgradesNoUndo;
 		bool m_bHHHNonSolidToPlayers;
 		int m_iBunnyHop;
+		bool m_bNoSkeletonSplit;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1990,9 +1993,10 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
-		
 		IClient *pClient = sv->GetClient( ENTINDEX(player)-1 );
-		if (player->GetDeathTime() == 0.0f && !pClient->IsFakeClient() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
+		if (player->GetDeathTime() == 0.0f 
+			&& !pClient->IsFakeClient() 
+			&& TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
 			player->SetDeathTime(gpGlobals->curtime); 
 		}
 		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
@@ -2280,9 +2284,22 @@ namespace Mod::Pop::PopMgr_Extensions
 				ShootTemplateData &temp_data = *it;
 				if (temp_data.weapon_classname != "" && !FStrEq(weapon->GetClassname(), temp_data.weapon_classname.c_str()))
 					continue;
-					
-				if (temp_data.weapon != "" && !FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str()))
-					continue;
+
+				if (temp_data.weapon != "") {
+					bool name_correct = FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str());
+
+					if (!name_correct) {
+						static auto custom_weapon_def = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+						auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(custom_weapon_def != nullptr ? custom_weapon_def->GetIndex() : -1);
+						const char *value = nullptr;
+						if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+							CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+						}
+						if (value == nullptr || strcmp(value, temp_data.weapon.c_str()) != 0) {
+							continue;
+						}
+					}
+				}
 
 				if (temp_data.parent_to_projectile) {
 					CBaseAnimating *proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
@@ -2535,6 +2552,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayForcedItemsClassInfo(CTFPlayer *player);
 	void DisplayForcedItemsInfo(CTFPlayer *player, int id);
 
+	void DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index);
 	void DisplayExtraLoadoutItems(CTFPlayer *player);
 
 	class SelectMainMissionInfoHandler : public IMenuHandler
@@ -2723,6 +2741,33 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
     };
 
+	class SelectExtraLoadoutItemsClassHandler : public IMenuHandler
+    {
+    public:
+        SelectExtraLoadoutItemsClassHandler(CTFPlayer *pPlayer) : IMenuHandler() {
+			this->player = pPlayer;
+		}
+
+		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+			if (player == nullptr)
+				return;
+
+			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
+			DisplayExtraLoadoutItemsClass(player, id);
+        }
+
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+			menu->Destroy(false);
+		}
+		
+        virtual void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+
+		CHandle<CTFPlayer> player;
+    };
+
 	class SelectExtraLoadoutItemsHandler : public IMenuHandler
     {
     public:
@@ -2760,7 +2805,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->ForceRegenerateAndRespawn();
 			}
 			
-			DisplayExtraLoadoutItems(player);
+			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
         }
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
@@ -3210,16 +3255,60 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	void DisplayExtraLoadoutItems(CTFPlayer *player)
 	{
+		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Extra loadout items");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		bool has_class[10] = {0};
+
+		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+			
+			if (item.class_index == 0) {
+				for (int j = 0; j < 10; j++) {
+					has_class[j] = true;
+				}
+			}
+			else {
+				has_class[item.class_index] = true;
+			}
+		}
+		for (int i = 1; i < 10; i++) {
+			if (has_class[i]) {
+				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				std::string num = std::to_string(i);
+				menu->AppendItem(num.c_str(), info1);
+			}
+		}
+
+		if (menu->GetItemCount() == 1) {
+            ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info1);
+        }
+		else if (menu->GetItemCount() == 0) {
+            ItemDrawInfo info1("No extra loadout items available", ITEMDRAW_DISABLED);
+            menu->AppendItem(" ", info1);
+            ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
+            menu->AppendItem(" ", info2);
+		}
+
+        menu->Display(ENTINDEX(player), 10);
+
+	}
+
+	void DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index)
+	{
 		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
         
-        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[player->GetPlayerClass()->GetClassIndex()]));
+        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[class_index]));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 
-			int class_index = player->GetPlayerClass()->GetClassIndex();
 			if (class_index == item.class_index || item.class_index == 0) {
 
 				bool selected = state.m_SelectedLoadoutItems[player].count(i);
@@ -3236,10 +3325,9 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info1);
         }
 		else if (menu->GetItemCount() == 0) {
-            ItemDrawInfo info1(CFmtStr("No extra loadout items available for %s", g_aPlayerClassNames_NonLocalized[player->GetPlayerClass()->GetClassIndex()]), ITEMDRAW_DISABLED);
-            menu->AppendItem(" ", info1);
-            ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
-            menu->AppendItem(" ", info2);
+            menu->Destroy();
+			DisplayExtraLoadoutItems(player);
+			return;
 		}
 		
         menu->Display(ENTINDEX(player), 10);
@@ -3254,7 +3342,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return true;
 			}
 			else if (strcmp(args[0], "sig_missionitems") == 0) {
-				DisplayExtraLoadoutItems(player);
+				DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
 				return true;
 			}
 		}
@@ -3278,7 +3366,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return nullptr;
 			}
 			if (strncmp(p, "!missionitems",len) == 0 || strncmp(p, "/missionitems",len) == 0) {
-				DisplayExtraLoadoutItems(ToTFPlayer(entity));
+				DisplayExtraLoadoutItemsClass(ToTFPlayer(entity), ToTFPlayer(entity)->GetPlayerClass()->GetClassIndex());
 				return nullptr;
 			}
 		}
@@ -3375,7 +3463,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
 	}
 
-	DETOUR_DECL_MEMBER(bool, CHeadlessHatmanAttack_RecomputeHomePosition)
+	DETOUR_DECL_MEMBER(void, CHeadlessHatmanAttack_RecomputeHomePosition)
 	{
 		if (state.m_bHHHNoControlPointLogic) {
 			return;
@@ -3470,6 +3558,21 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CBasePlayer_ShowViewPortPanel)( name, show, kv);
 	}
 
+	RefCount rc_CZombieBehavior_OnKilled;
+	DETOUR_DECL_MEMBER(EventDesiredResult< CZombie >, CZombieBehavior_OnKilled, CZombie *zombie, const CTakeDamageInfo &info)
+	{
+		SCOPED_INCREMENT_IF(rc_CZombieBehavior_OnKilled, TFGameRules()->IsMannVsMachineMode() && state.m_bNoSkeletonSplit)
+		return DETOUR_MEMBER_CALL(CZombieBehavior_OnKilled)( zombie, info);
+	}
+
+	DETOUR_DECL_STATIC(CBaseEntity*, CreateSpellSpawnZombie, CBaseCombatCharacter *pCaster, const Vector& vSpawnPosition, int nSkeletonType)
+	{
+		if (rc_CZombieBehavior_OnKilled) {
+			return nullptr;
+		}
+		return DETOUR_STATIC_CALL(CreateSpellSpawnZombie)(pCaster, vSpawnPosition, nSkeletonType);
+	}
+	
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -3571,7 +3674,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				info.weapons.push_back(std::make_unique<ItemListEntry_ItemSlot>(subkey->GetString()));
 			}
 		}
-		return info;
+		return;
 	}
 
 	void Parse_ItemWhitelist(KeyValues *kv)
@@ -4173,6 +4276,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		if (!weapon.name.empty() && weapon.originalId != nullptr) {
+			weapon.attributes[GetItemSchema()->GetAttributeDefinitionByName("custom weapon name")] = weapon.name;
 			state.m_CustomWeapons[weapon.name] = weapon;
 		}
 	}
@@ -4746,6 +4850,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_Accelerate.Set(subkey->GetFloat());
 				} else if (FStrEq(name, "AirAccelerate")) {
 					state.m_AirAccelerate.Set(subkey->GetFloat());
+				} else if (FStrEq(name, "NoSkeletonSplit")) {
+					state.m_bNoSkeletonSplit = subkey->GetBool();
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -4990,6 +5096,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_AttackTarget, "CHeadlessHatmanAttack::AttackTarget");
 			MOD_ADD_DETOUR_STATIC(CalculateMeleeDamageForce, "CalculateMeleeDamageForce");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ShowViewPortPanel, "CBasePlayer::ShowViewPortPanel");
+
+			MOD_ADD_DETOUR_MEMBER(CZombieBehavior_OnKilled, "CZombieBehavior::OnKilled");
+			MOD_ADD_DETOUR_STATIC(CreateSpellSpawnZombie, "CreateSpellSpawnZombie");
+
+			
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");

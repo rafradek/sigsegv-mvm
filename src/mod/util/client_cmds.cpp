@@ -859,6 +859,7 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
+				poolstr = AllocPooledString_StaticConstantStringPointer("mult_dmg");
 				mgr->ApplyAttributeFloatWrapperFunc(1.0f, player, poolstr );
 			}
 			timer.End();
@@ -886,7 +887,10 @@ namespace Mod::Util::Client_Cmds
 			
 			displaystr += CFmtStr("attr multi time: %.9f", timer.GetDuration().GetSeconds());
 
-			auto weapon = player->GetActiveTFWeapon();
+			auto weapon = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_PRIMARY);
+			auto weapon2 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_SECONDARY);
+			auto weapon3 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_MELEE);
+			auto weapon4 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_ACTION);
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
 				float attr = 1.0f;
@@ -898,14 +902,35 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
+				int attr = 1;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attr, mult_dmg);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("wep int single time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
 				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", weapon, nullptr, true);
-				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_sniper_charge_per_sec", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_sniper_charge_per_sec", weapon2, nullptr, true);
 				CAttributeManager::ft_AttribHookValue_int(0, "set_turn_to_ice", weapon, nullptr, true);
-				CAttributeManager::ft_AttribHookValue_int(0, "use_large_smoke_explosion", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "use_large_smoke_explosion", weapon2, nullptr, true);
 			}
 			timer.End();
 			
 			displaystr += CFmtStr("wep multi time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", weapon, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_sniper_charge_per_sec", weapon2, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "set_turn_to_ice", weapon3, nullptr, true);
+				CAttributeManager::ft_AttribHookValue_int(0, "use_large_smoke_explosion", weapon4, nullptr, true);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("wep multi 4 time: %.9f", timer.GetDuration().GetSeconds());
+
 			playertrg = nullptr;
 		}
 		else if (strcmp(args[2], "isfakeclient") == 0) {

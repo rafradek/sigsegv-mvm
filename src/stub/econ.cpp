@@ -358,3 +358,19 @@ void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, 
 	this->AddAttribute(attr);
 	CEconItemAttribute::Destroy(attr);
 }
+float _CallAttribHookRef_Optimize(float value, string_t pszClass, const CBaseEntity *pEntity)
+{ 
+	if (pEntity != nullptr) {
+		CAttributeManager *mgr = nullptr;
+		if (pEntity->IsPlayer()) {
+			mgr = reinterpret_cast<const CTFPlayer *>(pEntity)->GetAttributeManager();
+		}
+		else if (pEntity->IsBaseCombatWeapon() || pEntity->IsWearable()) {
+			mgr = reinterpret_cast<const CEconEntity *>(pEntity)->GetAttributeManager();
+		}
+		if (mgr != nullptr) {
+			return mgr->ApplyAttributeFloatWrapperFunc(value, pEntity, pszClass);
+		}
+	}
+	return value;
+}

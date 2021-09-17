@@ -302,7 +302,17 @@ public:
     virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
     {
         if (item_view == nullptr) return false;
-        return FStrEq(this->m_strName.c_str(), item_view->GetStaticData()->GetName(""));
+
+        if (FStrEq(this->m_strName.c_str(), item_view->GetStaticData()->GetName(""))) return true; 
+
+        static auto custom_weapon_def = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+		auto attr = item_view->GetAttributeList().GetAttributeByID(custom_weapon_def != nullptr ? custom_weapon_def->GetIndex() : -1);
+        const char *value = nullptr;
+        if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+            CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+        }
+
+        return value != nullptr && strcmp(value, this->m_strName.c_str()) == 0;
     }
 
     virtual const char *GetInfo() const override

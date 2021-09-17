@@ -131,10 +131,13 @@ StaticFuncThunk<void, IRecipientFilter&, int, const char *, const Vector *, floa
 StaticFuncThunk<void, IRecipientFilter&, int, const char *, HSOUNDSCRIPTHANDLE&, const Vector *, float, float *> CBaseEntity::ft_EmitSound_static2  ("CBaseEntity::EmitSound [static: normal + handle]");
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                CBaseEntity::ft_EmitSound_static3  ("CBaseEntity::EmitSound [static: emitsound]");
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           CBaseEntity::ft_EmitSound_static4  ("CBaseEntity::EmitSound [static: emitsound + handle]");
+StaticFuncThunk<trace_t&>                                                                                        CBaseEntity::ft_GetTouchTrace      ("CBaseEntity::GetTouchTrace");
 
 MemberFuncThunk<CCollisionProperty *, void, SurroundingBoundsType_t, const Vector *, const Vector *> ft_SetSurroundingBoundsType("CCollisionProperty::SetSurroundingBoundsType");
 MemberFuncThunk<CCollisionProperty *, void> ft_MarkPartitionHandleDirty("CCollisionProperty::MarkPartitionHandleDirty");
 MemberFuncThunk<CCollisionProperty *, void, int> ft_SetSolidFlags("CCollisionProperty::SetSolidFlags");
+
+StaticFuncThunk<int, CBaseEntity *> ft_ENTINDEX("ENTINDEX");
 
 void CCollisionProperty::SetSurroundingBoundsType(SurroundingBoundsType_t type, const Vector *pMins, const Vector *pMaxs) {
 	ft_SetSurroundingBoundsType(this, type, pMins, pMaxs);
