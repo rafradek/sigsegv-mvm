@@ -372,13 +372,13 @@ WARN_RESTORE()
 #include <npcevent.h>
 #include <dt_send.h>
 #include <bitbuf.h>
-#include <eiface.h>
+#include "sdk2013/eiface.h"
 #include <ispatialpartition.h>
 #include <random.h>
 #include <ai_activity.h>
 #include <igameevents.h>
 #include <inetmessage.h>
-#include <inetchannel.h>
+#include "sdk2013/inetchannel.h"
 #include <irecipientfilter.h>
 //#include <usermessages.h>
 #include <cdll_int.h>
@@ -432,7 +432,7 @@ WARN_RESTORE()
 #include <model_types.h>
 #include <idedicatedexports.h>
 #include <icommandline.h>
-#include <iserver.h>
+#include "sdk2013/iserver.h"
 #include <iclient.h>
 #include <datacache/imdlcache.h>
 WARN_IGNORE__SIGN_COMPARE()
