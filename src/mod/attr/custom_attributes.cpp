@@ -1130,9 +1130,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (info.GetWeapon() != nullptr) {
 			float dmg = info.GetDamage();
-			
-			CFastTimer timer;
-			timer.Start();
+
 			float iDmgCurrentHealth = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
 			if (iDmgCurrentHealth != 0.0f)
@@ -1182,9 +1180,6 @@ namespace Mod::Attr::Custom_Attributes
 				dmg *= dmg_mult;
 			}
 			info.SetDamage(dmg);
-			timer.End();
-
-			PrintToChatAll(CFmtStr("Time to execute %.9f\n", timer.GetDuration().GetSeconds()));
 		}
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
