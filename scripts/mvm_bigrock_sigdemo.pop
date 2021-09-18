@@ -1,0 +1,2734 @@
+#base robot_giant.pop
+#base robot_standard.pop
+
+WaveSchedule
+{
+	//If you want to lookup custom item/character attributes, scroll to the bottom of the file
+	StartingCurrency	1200
+	RespawnWaveTime 		1
+	FixedRespawnWaveTime 1
+	RespawnWaveTimeBlue 5 [$SIGSEGV]
+	FixedRespawnWaveTimeBlue 1 [$SIGSEGV]
+	CanBotsAttackWhileInSpawnRoom no
+
+	BotsDropSpells 1 [$SIGSEGV] //If set, bots will drop spells
+	GiantsDropRareSpells 1 [$SIGSEGV] //If set, giants will drop rare spells rather than common
+	SpellDropRateCommon 0.5 [$SIGSEGV] //Drop chance for common spell books, from 0 to 1
+	SpellDropRateGiant 0.5 [$SIGSEGV] //Drop chance for rare spell books, from 0 to 1
+	SpellDropForBotsInTeam Blue [$SIGSEGV] // When set, drop spells only if bots are from Red/Blue team
+	NoReanimators 1 [$SIGSEGV] //Disable reanimators
+	NoMvMDeathTune 1 [$SIGSEGV] //Disable distinctive sound played when a player is killed
+	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
+	//DisableUpgradeStations 1 [$SIGSEGV] //Disable upgrade station
+	RemoveGrapplingHooks 1 [$SIGSEGV] //Grappling hooks are destroyed after specified amount of seconds
+	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb. Half broken
+	//MedievalMode 1 [$SIGSEGV] //Players can only use melee weapons. Bots are not weapon restricted
+	GrapplingHook 1 [$SIGSEGV] //Enables grappling hook for a mission
+	RespecEnabled 0 [$SIGSEGV] //Set to 0 to disable refunds
+	RespecLimit 1 [$SIGSEGV] //How many times the player can use refunds
+	BonusRatioHalf 0.75 [$SIGSEGV] //The ratio of collected cash required to be awarded 50 bonus credits. (default: 0.95)
+	BonusRatioFull 0.8 [$SIGSEGV] //The ratio of collected cash required to be awarded 100 bonus credits. (default: 1)
+	FixedBuybacks 1 [$SIGSEGV] //If set, the player can only use a number of free buybacks, as specified in BuybacksPerWave
+	BuybacksPerWave 6 [$SIGSEGV] //How many buybacks can a player use, when FixedBuybacks is set to 1 (default: 0)
+	DeathPenalty 100 [$SIGSEGV] //Player will lose this many credits after dying
+	SentryBusterFriendlyFire 0 [$SIGSEGV] //If set to 0, buster will not damage robots (default: 1)
+	BotPushaway 0 [$SIGSEGV] //Should bots push each other away (default: 1)
+	CustomUpgradesFile "mvm_upgrades_sigsegv_extra_v19.txt" [$SIGSEGV] //Custom upgrades file. File must be named mvm_upgrades_x.txt, then send to the server
+	PrecacheModel "models/props_soho/bookstand002.mdl" [$SIGSEGV] //Precaches model. This might be required in some circumstances, such as "custom projectile model" attribute, or prop with custom model
+	PrecacheSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV]
+	PrecacheSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //If your mission contains custom sounds that are used by pointtemplate entities or sound overrides, you must include those sounds with precachesound
+	PrecacheScriptSound "Weapon_RPG.Single" [$SIGSEGV] //Sound script version of precache sound
+	DisableSound "Weapon_Shotgun.Single" [$SIGSEGV] //Disable sound. Note that client side sounds (which include player's own weapon) cannot be disabled. Must use sound script unless there is only a raw version of the sound
+	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
+	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
+	PrecacheParticle "AntlionGib" [$SIGSEGV]
+	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 4) (default: 22)
+	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations
+	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
+	BluHumanFlagCapture 1 [$SIGSEGV] //Can blu humans capture the flag
+	BluHumanFlagPickup 1 [$SIGSEGV] //Can blu humans pickup flags
+	BluHumanInfiniteAmmo 0 [$SIGSEGV] //Enable infinite ammo for blu humans (default: 1)
+	BluHumanInfiniteCloak 1 [$SIGSEGV] //Enable infinite cloak for blu humans (default: 1)
+	AllowJoinTeamBlueMax 4 [$SIGSEGV] //How many players can join the blue team
+	AllowJoinTeamBlue 1 [$SIGSEGV] //If it is possible to join team blue
+	HumansMustJoinTeam blue [$SIGSEGV] //Set to blue to force players join the blu team
+	BluPlayersAreRobots 1 [$SIGSEGV] //If set, blu players use robot models
+	RedPlayersAreRobots 1 [$SIGSEGV] //If set, red players use robot models
+	PlayerRobotsUsePlayerAnimation 1 [$SIGSEGV] //Use player animations instead of robot ones
+	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player
+	BotsAreHumans 1 [$SIGSEGV] //Bots use human models by default. If set to 1, bots can't be sapped, if set to 2, they can
+	ForceHoliday 2 [$SIGSEGV] //Enforces Halloween mode, but does not enable wave 666 and zombie bots
+	BodyPartScaleSpeed 2 [$SIGSEGV] //How fast do "head scale" "torso scale" "hand scale" attributes scale the bot body parts (default: 1)
+	SandmanStun 0 [$SIGSEGV] //Should the sandman ball stun players. 1 reverts the pre Jungle Inferno stun (default: 1)
+	SendBotsToSpectatorImmediately 1 [$SIGSEGV] //Should the bots be transferred to spectator team immediately after dying. Use this if your mission consists of lots of easy to kill enemies (default: 0)
+	MedigunShieldDamage 1 [$SIGSEGV] //If set to 1, bot medigun shields will damage players. Use "dmg penalty vs players" attribute to control damage dealt (default: 0)
+	StandableHeads 1 [$SIGSEGV] //If set, robots will not push the players of their heads (default: 0)
+	NoRomevisionCosmetics 1 [$SIGSEGV] //If set, robots will not wear romevision cosmetics unless forced to (default: 0)
+	BotsRandomCrit 1 [$SIGSEGV] //If set, robots will be able to deal random critical damage. Use "crit mod disabled" weapon attribute to control crit chance (default: 0)
+	AimTrackingIntervalMultiplier 3 [$SIGSEGV] // Scale of robot aim tracking interval (default: 1)
+	SniperAllowHeadshots 1 [$SIGSEGV] // If set, bot snipers can headshot (and amby spy) (default: 0)
+	ImprovedAirblast 1 [$SIGSEGV] // If set, bot pyros can deflect arrows grenades and stickybombs (default: 0)
+	NoSapUnownedBuildings 1 [$SIGSEGV] // If set, spies will not target unowned buildings (default: 0)
+	NoHolidayPickups 1 [$SIGSEGV] // If set, pickups will remain with default models (default: 0)
+	MaxSpectators 0 [$SIGSEGV] // Set max spectator count (default: infinite)
+	MaxRedPlayers 6 [$SIGSEGV] // Override max red player count (default: 6)
+	DisplayRobotDeathNotice 1 [$SIGSEGV] // If set, regular robot death is mentioned in the kill feed (default: 0)
+	FlagCarrierMovementPenalty 0.4 [$SIGSEGV] // Overrides flag carrier movement penalty (default: 0.5)
+	TextPrintTime 7 [$SIGSEGV] // How fast a line from the wave description is displayed in the middle of the screen. Use 0 to disable (default: 4)
+	BotTeleportUberDuration 2 [$SIGSEGV] // How long should uber last for robots exiting engineer bot teleporter (default: 5)
+	BluHumanTeleportOnSpawn 1 [$SIGSEGV] // Should players get teleported to engineer bot teleport on spawn (default: 0)
+	BluHumanBotTeleporter 1 [$SIGSEGV] // Should player teleporters teleport players and bots on spawn (default: 0)
+	BotsUsePlayerTeleporters 0 [$SIGSEGV] // Should bots use player teleporter entrances (default: 1)
+	MaxSpeedLimit 521 [$SIGSEGV] // Max speed limit override. Values above 520 enchance giant scout movement. Values above 521 disable jumping on stuck (default: 520)
+	MaxEntitySpeed 10000 [$SIGSEGV] // Max entity speed limit override (default: 3500)
+	ConchHealthOnHit 0.77 [$SIGSEGV] // Health on hit percentage for conch (default: 0.35)
+	MarkedForDeathLifetime 1 [$SIGSEGV] // Marked for death duration (default: 15)
+	VacNumCharges 16 [$SIGSEGV] // Number of charges for Vaccinator (default: 4)
+	DoubleDonkWindow 99 [$SIGSEGV] // Max time for double donk to register (default: 0.5)
+	ConchSpeedBoost 10 [$SIGSEGV] // Speed boost provided by the Conch, limited to 40% total speed increase (default: 105)
+	StealthDamageReduction 0.1 [$SIGSEGV] // Damage reduction provided by invis watch (default: 0.8)
+	FlagEscortCountOffset 5 [$SIGSEGV] // Allow for this many additional flag escorts (default: 0)
+	AllowFlagCarrierToFight 1 [$SIGSEGV] // Allow bomb carrier to fight (default: 1)
+	NoThrillerTaunt 1 [$SIGSEGV] // No thriller taunt in halloween (default: 0)
+	NoCritPumpkin 1 [$SIGSEGV] // No crit pumpkin on player death drop in halloween (default: 0)
+	HealOnKillOverhealMelee 1 [$SIGSEGV] // Heal on kill with melee weapons overheal (default: 1)
+	NoMissionInfo 0 [$SIGSEGV] // Disable !missioninfo command (default: 0)
+	MaxActiveSkeletons 999 [$SIGSEGV] // Max active skeletons at once (default: 30)
+	WaveStartCountdown 9 [$SIGSEGV] // Wave start countdown duration once all players are ready. Values below 10 disable announcer, values below 9 disable starting music (default: 10)
+	ZombiesNoWave666 1 [$SIGSEGV] // If set to 1, the game will not display wave 666 when EventPopFile is set (default: 0)
+	FastNPCUpdate 1 [$SIGSEGV] // If set to 1, NPCs such as halloween bosses will update every tick (default: 0)
+	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
+	ForceRobotBleed 1 [$SIGSEGV] // If set to 1, robots bleed (default: 0)
+	MinibossSentrySingleKill 1 [$SIGSEGV] // If set to 1, minibosses count as single kill for the sentry (default: 0)
+	BotHumansHaveRobotVoice 1 [$SIGSEGV] // If set to 1, bots with human models have robot voice (default: 0)
+	BotHumansHaveEyeGlow 1 [$SIGSEGV] // If set to 1, bots with human models have eye glow (default: 0)
+	// CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
+	ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
+	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
+	Accelerate 100 [$SIGSEGV] // Acceleration rate (default: 10)
+	AirAccelerate 100 [$SIGSEGV] // Air Acceleration (turning) rate (default: 10)
+	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
+
+	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
+	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
+	HHHHealthBase 3000 [$SIGSEGV] // (default: 3000)
+	HHHAttackRange 200 [$SIGSEGV] // (default: 200)
+	HHHChaseRange 1500 [$SIGSEGV] // (default: 1500)
+	HHHTerrifyRange 500 [$SIGSEGV] // (default: 500)
+	HHHQuitRange 2000 [$SIGSEGV] // (default: 2000)
+	HHHChaseDuration 30 [$SIGSEGV] // (default: 30)
+	HHHNonSolidToPlayers 1 [$SIGSEGV] // (default: 0)
+
+	DisallowUpgrade	"fire rate bonus" [$SIGSEGV] // Disallow upgrade. You can use the position on the upgrade list instead, starting from 1
+
+	SpellBookNormalRoll [$SIGSEGV] // Override spell roll. The value specifies how many spell charges to give. You can duplicate spells to increase their roll chance
+	{
+		"Healing Aura" 3
+		"Fireball" 3
+		"Ball O' Bats" 2
+		"Healing Aura" 3
+		"Pumpkin MIRV" 1 
+		"Superjump" 4
+		"Invisibility" 2
+		"Teleport" 4
+		"Tesla Bolt" 3
+		"Minify" 1
+		"Meteor Shower" 5
+		"Summon Monoculus" 1
+		"Summon Skeletons" 4
+		"Meteor Shower" 5
+	}
+
+	SpellBookRareRoll [$SIGSEGV] // Override spell roll. The value specifies how many spell charges to give. You can duplicate spells to increase their roll chance
+	{
+		"Fireball" 99
+		"Ball O' Bats" 7
+		"Ball O' Bats" 2
+		"Meteor Shower" 5
+	}
+
+	OverrideSounds [$SIGSEGV] //Replace sounds. Only server side sounds can be overridden. Must use sound script unless there is only a raw version of the sound.
+	{
+		"Announcer.MVM_Get_To_Upgrade" "GoldPipe_MissionIntro.mp3"
+		"Weapon_RPG.Single" "GoldPipe_MissionIntro.mp3"
+	}
+	//ItemWhitelist //Only allows to use specified weapons below
+	//{
+	//	Classname "tf_weapon_sniperrifle"
+	//	Name "TF_WEAPON_MINIGUN"
+	//	DefIndex 8 //Bonesaw
+	//}
+	ItemBlacklist [$SIGSEGV] //Disallows using specified weapons below
+	{
+		Classname "tf_weapon_sniperrifle"
+		Name "TF_WEAPON_MINIGUN"
+		Name "The Force-a-Nature"
+		DefIndex 8 //Bonesaw
+		// ItemSlot "secondary" // Items in secondary slot
+	}
+	
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		ItemName "TF_WEAPON_ROCKETLAUNCHER"
+		"reload time decreased" 0.25
+	}
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		"fire rate bonus" 1.8
+	}
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		Classname "tf_weapon_grenadelauncher" // you can specify classname instead of itemname  
+		"attach particle effect" 13 //burning flames
+		"fire rate bonus" 0.5
+	}
+	ClassLimit [$SIGSEGV] //Limits the number of specified classes
+	{
+		Heavyweapons 0
+		Medic 0
+		Sniper 0
+	}
+	FlagResetTime [$SIGSEGV] //Overrides default bomb reset time
+	{
+		Name "intel" //Name of flag entity on the map
+		ResetTime 90
+	}
+
+	ExtraSpawnPoint [$SIGSEGV]  //Adds spawn points on specified location
+    {
+        Name "spawnalt"
+		// StartDisabled 1 // If the spawn point starts disabled (Default: 0)
+        TeamNum 3 // 2 - Red team 3 - Robots. If you are adding spawn for reprogrammed robots, use team 3
+        X	"323"                     
+        Y	"-2505"                  
+        Z	"628"        
+    }
+
+	ExtraTankPath [$SIGSEGV] //Adds tank path to follow
+	{
+		Name "tankpath1" //name of the starting path node prefix. First tank node name would be name_1
+		Node "-1000 -400 700" // note XYZ coordinates. First node is the starting point
+		Node "-1000 400 700"
+	}
+	
+	PlayerAttributes [$SIGSEGV] //Player attributes appied for the whole mission
+	{
+		"move speed bonus" 2
+		//"is miniboss" 1
+		Soldier //Attributes limited to soldier only
+		{
+			"fire rate bonus" 2
+		}
+		"max health additive bonus" 1000
+	}
+
+	PlayerMiniBossMinRespawnTime 30 [$SIGSEGV] //Minimal respawn time for miniboss players in seconds
+	PlayerAddCond [$SIGSEGV] //Player conditions applied for the whole mission
+	{
+		//Index 57 //Ubercharge
+		
+	}
+	
+	// Enables extended upgrades displayed on the left of upgrade gui as SourceMod menu. This allows for more than 8 upgrades per weapon, with custom weapon rules
+	ExtendedUpgrades [$SIGSEGV]
+	{
+		upgrade
+		{
+			Name "+25 max health" // Name of the upgrade displayed on the menu
+			Attribute "max health additive bonus" // The attribute name
+			Cap 200 // Maximum amount of the attribute
+			Increment 25 // Attribute increment value per level
+			Cost 200 // Cost of the upgrade per level
+			PlayerUpgrade 1 // Is the upgrade a player upgrade
+			AllowPlayerClass Scout // Allow only specied classes if set 
+			AllowPlayerClass Heavyweapons
+			AllowPlayerClass Demoman
+		}
+		upgrade
+		{
+			Name "-25% damage penalty"
+			Attribute "damage penalty"
+			Cap 0.5
+			Increment -0.25
+			Cost 200
+			Description "Damage penalty" // Additional description line
+			AllowedWeapons // Restricts upgrade to specified weapons
+			{
+				DealsDamage 1 // All weapons dealing damage
+				Classname tf_weapon_medigun // Classname of the weapon
+				ItemName "The Wrangler"
+				Slot "Melee" // Weapon slot, allowed values: Primary, Secondary, Melee, PDA, Action
+			}
+			DisallowedWeapons // Disallow those weapons
+			{
+				ItemName "The Short Circuit"
+			}
+			AllowedMinWave 3 //The wave at which the upgrade is enabled
+			
+			SecondaryAttributes //Secondary attributes applied when upgrade is applied, for each upgrade level
+			{
+				"fire rate bonus" -0.1
+			}
+
+			OnUpgrade // On upgrade output. Format: target,action,parameter,delay
+			{
+				Output "!activator,sethealth,0,0"
+			}
+		}
+		bisonfield
+		{
+			Name "Disintegration field"
+			Attribute "projectile acceleration"
+			Cap -1500
+			Increment -1500
+			Cost 250
+			Description "Shoots a special projectile that deals damage over time"
+			AllowedWeapons //Restricts upgrade to specified weapons
+			{
+				ItemName "The Righteous Bison"
+			}
+			
+			SecondaryAttributes //Secondary attributes applied when upgrade is applied, for each upgrade level
+			{
+				"fire rate penalty" 3.3
+				"dmg penalty vs players" 1
+				"projectile speed decreased" -0.3
+				"custom projectile size" 30
+			}
+		}
+		damagemastery
+		{
+			Name "Damage mastery"
+			Attribute "damage bonus hidden"
+			Cap 2
+			Increment 1
+			Cost 400
+			Description "Doubles damage, halves fire rate"
+			DisallowedUpgrade
+			{
+				Upgrade fireratemastery // Name of the upgrade, as specified in the outer block
+				Level 1 // Minimum level after which the upgrade becomes disabled (Default: 1)
+			} 
+
+			AllowedWeapons //Restricts upgrade to specified weapons
+			{
+				DealsDamage 1
+			}
+			
+			SecondaryAttributes //Secondary attributes applied when upgrade is applied, for each upgrade level
+			{
+				"fire rate penalty" 1
+				"reload time increased" 1
+			}
+		}
+		fireratemastery
+		{
+			Name "Fire rate mastery"
+			Attribute "fire rate bonus HIDDEN"
+			Cap 0.5
+			Increment -0.5
+			Cost 400
+			Description "Doubles fire rate, halves damage"
+			DisallowedUpgrade
+			{
+				Upgrade damagemastery
+				Level 1
+			} 
+			AllowedWeapons //Restricts upgrade to specified weapons
+			{
+				DealsDamage 1
+			}
+			
+			SecondaryAttributes //Secondary attributes applied when upgrade is applied, for each upgrade level
+			{
+				"reload time decreased" -0.5
+				"damage bonus hidden" -0.5
+			}
+		}
+	}
+	
+	CustomWeapon [$SIGSEGV] //Allows you to use an alias for items with custom attributes
+	{
+		"My Custom Item" // The name you would use in Item key in TFBot
+		{
+			OriginalItemName "The Iron Bomber" // The item used as a base
+			"fire rate bonus" 0.1 // Attributes
+			"damage bonus" 4
+			"custom item model" "models/workshop/weapons/c_models/c_blackbox/c_blackbox_xmas.mdl"
+			"custom weapon fire sound" "Weapon_Soda_Popper.Single"
+		}
+
+		"Rayslick" // The name you would use in Item key in TFBot
+		{
+			OriginalItemName "The Conscientious Objector" // The item used as a base
+			"custom texture lo" "4.96704961615804963e-32n"
+			"custom texture hi" "8.23836940293570411e-31n"
+		}
+	}
+	
+	ForceItem "The Breakneck Baggies" [$SIGSEGV] // Force an item to all applicable classes
+	ForceItem "Particulate Protector" [$SIGSEGV] // Force an item to all applicable classes
+	ForceItem [$SIGSEGV] // Force items to classes even if the item is not intended for the class
+	{
+		All
+		{
+			Item "Rayslick"
+
+			// Advanced syntax, give grappling hook if the player has darwin's danger shield
+			"TF_WEAPON_GRAPPLINGHOOK"
+			{
+				Name "Darwin's Danger Shield"
+			}
+		}
+		Scout
+		{
+			Item "Mad Milk"
+		}
+	}
+	
+	ForceItemNoRemove "The Chargin' Targe" [$SIGSEGV] // Force an item to all applicable classes, but does not remove old items in the slot.
+
+	ItemReplacement [$SIGSEGV] // Replace Items
+	{
+		"My Custom Item"  // The replacement target item
+		{
+			Name "The Loch-n-Load" // The item that will be replaced
+			// Classname "tf_weapon_flaregun_revenge"
+			// DefIndex 740
+		}
+		"tw_heavybot_armor"
+        {
+            ClassName     "tf_weapon_laser_pointer"
+        }
+	}
+
+	ExtraLoadoutItems [$SIGSEGV] // Extra loadout items available after typing !missionitems in chat
+	{
+		Soldier // Player Class
+		{
+			Primary "My Custom Item" // Item slot and name, custom weapon names are available 
+			// Available slots:
+			// Primary
+			// Secondary
+			// Melee
+			// PDA (construction kit, disguise kit)
+			// PDA2 (destruction kit, watch)
+			// Head
+			// Misc
+			// Action (canteen)
+			// Misc2
+		}
+		Head "The Cat's Pajamas" // All class item
+	}
+
+	//PointTemplate is a named set of entities, that can be spawned at any selected moment in the mission.
+	//
+	//It is possible to spawn template entities during these events:
+	//Once on mission start
+	//On wave start
+	//On bot spawn
+	//On tank spawn
+	//env_entity_maker's forcespawn input (after setting template name)
+	//
+	//Keys use the internal names, visible when turning smartedit off in Hammer
+	//
+	//By default, when template is spawned with a bot/tank, the entities will be parented to the spawned bot/tank. To avoid this, add "parentname" "" as keyvalue
+	//Template entities are automatically destroyed when the spawner entity was killed, or the wave has ended
+	//Brush entites can be spawned, if keyvalues "mins" "x y z" "maxs" "x y z" are set
+	//
+	//You can use !parent as targetname, to target the spawner entity (this will apply unique suffix to the parent name)
+	//Tank dimensions: X (front) : 117; Y (left) : 80; Z (top) : 180
+	//
+	//Its also possible to copy the entity keyvalues from Hammer vmf file
+	//Alert, the used models / sounds in entities will not be downloaded unless PrecacheSound / PrecacheModel is included in waveschelude
+	PointTemplates  [$SIGSEGV] 
+	{
+		Blockade //Template name
+		{
+			NoFixup 1 //Normally, each spawned template entity has added an unique suffix to it. Use NoFixup 1 to prevent such changes, which allows the entity to be used in outputs outside of template without wildcard character added to it
+			prop_dynamic //Entity classname
+			{
+				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue
+				"solid" "6" //Physics collision model (0- No collision, 1 - BSP, 2 - Bounding box, 3 - Oriented bounding box, 6 - VPhysics)=
+			}
+			
+		}
+		Special //Template name
+		{
+			KeepAlive 1
+			NoFixup 1 //Normally, each spawned template entity has added an unique suffix to it. Use NoFixup to prevent such changes, which allows the entity to be used in outputs outside of template without wildcard character added to it
+			prop_dynamic //Entity classname
+			{
+				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue
+				"offset" "0 0 0"
+				"solid" "6" //Physics collision model (0- No collision, 1 - BSP, 2 - Bounding box, 3 - Oriented bounding box, 6 - VPhysics)=
+			}
+			OnParentKilledOutput //kill players after the carrier was dead
+			{
+				Target "player"
+				Action "setforcedtauntcam"
+				Delay 0.00
+				Param 1
+			}
+		}
+		KillOnKill
+		{
+			OnParentKilledOutput //kill players after the carrier was dead
+			{
+				Target "player"
+				Action "setforcedtauntcam"
+				Delay 0.00
+				Param 1
+			}
+		}
+		Sentry
+		{
+			KeepAlive 1 //Dont remove entities after their spawner had been killed
+			OnSpawnOutput //Parent entity is the !activator. Set builder to parent entity
+			{
+				Target "sentry" //targetname of an entity added below
+				Action "setbuilder"
+				Delay 0.00
+			}
+			OnParentKilledOutput //kill players after the carrier was dead
+			{
+				Target "player"
+				Action "sethealth"
+				Delay 0.00
+				Param 1
+			}
+			prop_dynamic //Entity classname
+			{
+				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue
+				"solid" "0" //Physics collision model (0- No collision, 1 - BSP, 2 - Bounding box, 3 - Oriented bounding box, 6 - VPhysics)=
+			}
+			obj_sentrygun
+			{
+				"targetname" "sentry" //Entity name. Required if the entity is going to be referenced somewhere
+				"origin" "0 0 0"
+				"teamnum" "3" // 2 - Red team, 3 - Blu team
+				"SolidToPlayer" "0"
+			}
+		}
+		SentryStack
+		{
+			obj_sentrygun
+			{
+				"targetname" "sentry1" //Entity name. Required if the entity is going to be referenced somewhere
+				"origin" "0 0 0"
+				"teamnum" "2" // 2 - Red team, 3 - Blu team
+			}
+			obj_sentrygun
+			{
+				"targetname" "sentry2" //Entity name. Required if the entity is going to be referenced somewhere
+				"origin" "0 0 100"
+				"teamnum" "2" // 2 - Red team, 3 - Blu team
+			}
+			obj_sentrygun
+			{
+				"targetname" "sentry3" //Entity name. Required if the entity is going to be referenced somewhere
+				"origin" "0 0 200"
+				"teamnum" "2" // 2 - Red team, 3 - Blu team
+			}
+			RemoveIfKilled "sentry3" // Remove all entities in template if the specified entity is killed
+		}
+		SentryGunShoot
+		{
+			obj_sentrygun
+			{
+				"SolidToPlayers" "0"
+				"origin" "0 0 0"
+				"teamnum" "3" // 2 - Red team, 3 - Blu team
+			}
+		}
+		Dispenser
+		{
+			OnSpawnOutput //set builder to parent entity
+			{
+				Target "dispenser"
+				Action "setbuilder"
+				Delay 0.00
+			}
+			obj_dispenser
+			{
+				"targetname" "dispenser"
+				"origin" "0 0 0"
+				"teamnum" "3"
+				"SolidToPlayer" "0"
+			}
+		}
+		WeaponMimic
+		{
+			OnSpawnOutput
+			{
+				Target "shoot"
+				Action "$setowner"
+				Param "!activator"
+				Delay 0.01
+			}
+			OnSpawnOutput
+			{
+				Target "shoot"
+				Action "FireUser1"
+				Delay 0.01
+			}
+			tf_point_weapon_mimic
+			{
+				"targetname" "shoot"
+				"origin" "100 0 0"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "1"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "2"
+				"OnUser1" "!self,FireOnce,,0,-1"
+				"OnUser1" "!self,FireUser1,,1,-1"
+			}
+		}
+		WeaponMimicRocket
+		{
+			OnSpawnOutput
+			{
+				Target "shoot"
+				Action "$setowner"
+				Param "!activator"
+				Delay 0.01
+			}
+			OnSpawnOutput
+			{
+				Target "shoot"
+				Action "FireUser1"
+				Delay 0.01
+			}
+			tf_point_weapon_mimic
+			{
+				"targetname" "shoot"
+				"origin" "100 0 0"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "2"
+				"OnUser1" "!self,FireOnce,,0,-1"
+				"OnUser1" "!self,FireUser1,,1,-1"
+			}
+		}
+		Teleporter
+		{
+			OnSpawnOutput //make teleporter non solid, otherwise the bots might get stuck on it
+			{
+				Target "tp"
+				Action "addoutput"
+				Param "solid 0"
+				Delay 5
+			}
+			OnSpawnOutput //set builder to parent entity
+			{
+				Target "tp"
+				Action "setbuilder"
+				Delay 0.00
+			}
+			
+			obj_teleporter 
+			{
+				//"model" "models/buildables/teleporter_light.mdl"
+				"targetname" "tp"
+				"origin" "0 0 0"
+				"teamnum" "3"
+				//"skin" "1"
+				//"health" "220"
+				"TeleportWhere" "spawnbot"
+				"solid" "0"
+				"SolidToPlayer" "0"
+				//"DefaultAnim" "running"
+			}
+		}
+		SentryTank
+		{
+			OnSpawnOutput //make teleporter non solid, otherwise the bots might get stuck on it
+			{
+				Target "tp"
+				Action "addoutput"
+				Param "solid 0"
+				Delay 5
+			}
+			obj_sentrygun
+			{
+				"targetname" "l"
+				"origin" "100 70 80"
+				"SolidToPlayer" "0"
+				"teamnum" "2"
+			}
+			obj_sentrygun
+			{
+				"targetname" "l"
+				"origin" "-110 70 60"
+				"SolidToPlayer" "0"
+				"teamnum" "2"
+			}
+			obj_sentrygun
+			{
+				"targetname" "l"
+				"origin" "100 -70 80"
+				"SolidToPlayer" "0"
+				"teamnum" "2"
+			}
+			obj_sentrygun
+			{
+				"targetname" "l"
+				"origin" "-110 -70 60"
+				"SolidToPlayer" "0"
+				"teamnum" "2"
+			}
+			trigger_multiple
+			{
+				"targetname" "ffff"
+				"mins" "-200 -100 0" //Trigger bounds, relative to origin
+				"maxs" "200 100 230"
+				"spawnflags" "1" //Target players. setting this to 64 will target most entities
+				"onstarttouch" "!activator,BleedPlayer,5,0,0" //When a player touches the trigger (tank), make him bleed
+			}
+			trigger_ignite //ignites the player inside the trigger
+			{
+				"targetname" "ffff"
+				"mins" "-200 -100 0" //Trigger bounds, relative to origin
+				"maxs" "200 100 230"
+				"spawnflags" "1"
+				"burn_duration" "5"
+				"damage_percent_per_second" "10"
+			}
+		}
+		RandomColors //Template name
+		{
+			logic_case //Entity classname
+			{
+				"targetname" "random_color_case"
+				"oncase01" "!activator,Color,255 0 0,0,-1"
+				"oncase02" "!activator,Color,0 255 0,0,-1"
+				"oncase03" "!activator,Color,0 0 255,0,-1"
+				"oncase04" "!activator,Color,0 255 255,0,-1"
+				"oncase05" "!activator,Color,255 0 255,0,-1"
+				"oncase06" "!activator,Color,255 255 0,0,-1"
+			}
+		}
+		Jarate
+		{
+			KeepAlive 1
+			tf_projectile_jar
+			{
+				"origin" "0 0 0"
+				"teamnum" "3" // 2 - Red team, 3 - Blu team
+			}
+		}
+	}
+	
+	SpawnTemplate [$SIGSEGV] //Spawn template once the mission loads
+	{
+		Name "Blockade"
+		Origin "1050 4410 472" //Position where to spawn the template
+		Angles "0 85 0" //Rotation
+	}
+
+	SpawnTemplate "RandomColors" [$SIGSEGV] 
+
+
+	PlayerSpawnTemplate [$SIGSEGV] //Spawn custom player template
+	{
+		Name "WeaponMimicRocket" // Name of the template
+		//Class Soldier // Limit template to this player class only
+		Origin "0 0 50" //Position where to spawn the template
+		// Bone "bip_spine_2" //Player bone where the template would be positioned
+	}
+
+	PlayerSpawnOnceTemplate [$SIGSEGV] //Spawn custom player template, but only once, don't remove after player death
+	{
+		Name "WeaponMimicRocket" // Name of the template
+		Origin "0 0 100" //Position where to spawn the template
+		// Bone "bip_spine_2" //Player bone where the template would be positioned
+	}
+
+	PlayerItemEquipSpawnTemplate [$SIGSEGV] //Spawn custom player template, If a weapon is equipped
+	{
+		Name "WeaponMimic" // Name of the template
+		ItemName "The Black Box" // The item that must be equipped
+		Origin "0 0 50" //Position where to spawn the template
+		// Bone "bip_spine_2" //Player bone where the template would be positioned
+	}
+	PlayerShootTemplate [$SIGSEGV]  //Shoot defined point template. Template is spawned at player position in looking direction, forward velocity being applied to spawned entities
+	{
+		Name Jarate //Name of the template
+		Speed 1000 //Velocity of the spawned objects (Default: 1000)
+		Offset "0 0 0" //Offset from the player shooting position (Default: 0 0 0)
+		Angles "0 0 0" //Shooting angle offset (Default: 0 0 0)
+		OverrideShoot 1 //Stop default projectile from being spawned (Default: 0)
+		Spread 0.1 //Spread of the fired template entities. 0 - No spread, 0.1 - Beggar like spread, 1 - Very inaccurate (Default: 0)
+		// AttachToProjectile 1 //If set, the template is spawned as a child of the projectile being fired. Incompatible with overrideshoot
+		ItemName "The Soda Popper" //Can be specified to limit to a specific weapon
+		// Classname "TF_WEAPON_MINIGUN" //Alternativiely use a weapon classname
+	}
+
+	Templates
+	{
+		ScoutTemplate1
+		{
+			Class Engineer
+			Action FetchFlag
+			ExtAttr AlwaysFireWeaponAlt [$SIGSEGV] //Always use secondary fire
+			Taunt [$SIGSEGV]  //Taunt periodically
+			{
+				Delay 10 //Time before the first taunt starts (Default: 10)
+				Cooldown 1 //Time between each taunt (Default: 10)
+				Repeats 1 //How many times the bot should taunt in total (Default: 0 - Infinite)
+				Duration 5 //Duration of a looping taunt (Default: 0.1)
+				// Name "Taunt: Kazotsky Kick" //If set, uses this item taunt instead of default
+				IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+				IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+				//IfHealthAbove 100 //When set, the task activates only when the bot health is above specified value
+			}
+			VoiceCommand [$SIGSEGV]  //Periodacally uses voice commands
+			{
+				Delay 8 //Time before the first voice command starts (Default: 10)
+				Cooldown 5 //Time between each voice command (Default: 10)
+				Repeats 55 //How many times should bot use the voice command in total (Default: 0 - Infinite)
+				//IfSeeTarget 0 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+				//IfHealthBelow 0 //When set, the task activates only when the bot health is below specified value
+				//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				Type "Medic" // Type of voice command, Possible values:
+					//Medic
+					//Help
+					//Go
+					//Move up
+					//Left
+					//Right
+					//Yes
+					//No
+					//Activate Charge
+					//Charge Ready
+					//Incoming
+					//Spy
+					//Thanks
+					//Jeers
+					//Battle cry
+					//Cheers
+					//Sentry here
+					//Dispenser here
+					//Teleporter here
+					//Good job
+					//Sentry ahead
+					//Positive
+					//Negative
+					//Nice shot
+			}
+			ChangeAttributes [$SIGSEGV]  //Periodically changes bot attributes, defined in EventChangeAttributes
+			{
+				Delay 10 //Time before the first bot attribute change (Default: 10)
+				Cooldown 10 //Time between each bot attribute change (Default: 10)
+				Repeats 1 //How many times should bot change attributes in total (Default: 0 - Infinite)
+				IfSeeTarget 0 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+				IfHealthBelow 800 //When set, the task activates only when the bot health is below specified value
+				Name "Attr1" // Name of the bot attributes listed in EventChangeAttributes
+			}
+			ChangeAttributes [$SIGSEGV]  
+			{
+				Delay 6
+				Cooldown 10
+				Repeats 1
+				IfHealthBelow 900 //When set, the task activates only when the bot health is below specified value
+				Name "Attr2"
+			}
+			NoBombUpgrades 1 [$SIGSEGV] //If set, the bomb carrier will not upgrade over time
+			PainSound "=70|GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Override pain sound. The value after = is sound level in DB, applicable for all custom mission sounds
+			DeathSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Override death sound.
+			Health 1000
+		}
+		ScoutTemplate2
+		{
+			
+			Skill Hard
+			CharacterAttributes
+			{
+				"fire rate bonus" 0.25
+				"move speed bonus" 2
+				"SET BONUS: Special dsp" 134
+				"hand scale" 0
+			}
+			//WeaponRestrictions PDAOnly
+			Item "MvM GateBot Light Engineer"
+			Attributes AlwaysFireWeapon
+			WeaponRestrictions PDAOnly [$SIGSEGV] //Added PDAOnly (forces )and BuildingOnly
+			ClientCommand [$SIGSEGV] // Executes client commands
+			{
+				Name "build 0" // Name of the client command, notable examples:
+					// "build 0/1/2/3" - Build dispenser / teleporter entrance / sentry / teleporter exit
+					// "destroy 0/1/2/3" - Destroy dispenser / teleporter entrance / sentry / teleporter exit
+				Delay 1 //Time before the first execution of the task (Default: 10)
+				Cooldown 5 //Time between each execution of the task (Default: 10)
+				Repeats 12 //How many times should the task be executed in total (Default: 0 - Infinite)
+				IfSeeTarget 0 //When set to 1, this task activates only when the bot can see the target player (Default: 0 - Always activate)
+				//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+			}
+			// You now can place attributes outside of EventChangeAttributes and they will apply to every EventChangeAttributes inside. You can also use EventChangeAttributes outside of template
+			EventChangeAttributes [$SIGSEGV] //Most TFBot custom attributes can apply here, with exception of:
+				// ForceRomeVision, SuppressTimedFetchFlag, SpawnTemplate, DropWeapon
+			{
+				Attr1
+				{
+					ItemAttributes               // turn off light hat
+					{
+						ItemName "MvM GateBot Light Engineer"
+						"item style override" 0
+						"torso scale" 10
+					}
+				}
+				Attr2
+				{
+					ItemAttributes               // turn off light hat
+					{
+						ItemName "MvM GateBot Light Engineer"
+						"item style override" 1
+					}
+					CharacterAttributes
+					{
+						"move speed bonus" 0.5
+						"head scale" 0.5
+					}
+					ExtAttr TargetStickies [$SIGSEGV] //The bot will target stickies. 
+					
+				}
+			}
+			Skin 4 [$SIGSEGV] // Force the bot to use specified model skin
+		}
+		TankTemplate
+		{
+			ClassIcon special_blimp [$SIGSEGV] //Use custom icon for a tank
+		}
+	}
+
+	Mission // sentry buster
+	{
+        Objective DestroySentries
+
+		InitialCooldown 20
+		Where spawnbot
+		BeginAtWave 1
+		RunForThisManyWaves 9
+
+		CooldownTime 40            
+        
+        SuppressSentryBusterModel 1 [$SIGSEGV] // Disable sentry buster model
+
+        TFBot
+        {
+            Template T_TFBot_SentryBuster
+
+        }
+    }
+	Mission
+	{
+		Objective Engineer  
+
+		InitialCooldown 1
+		Where spawnbot
+		BeginAtWave 1
+		RunForThisManyWaves 8
+		CooldownTime 2
+		DesiredCount 3
+
+		TFBot
+		{
+			Template T_TFBot_Engineer_Sentry_Teleporter
+			Item "The Wrangler"
+			HomingRockets [$SIGSEGV]
+			{
+				IgnoreDisguisedSpies 1
+					IgnoreStealthedSpies 1
+					RocketSpeed 0.25 // Multiplier of rocket speed. 1 for default speed
+					TurnPower 90 //How fast should the rocket rotate to face the target=
+					MaxAimError 360 //Max angle between rocket and the target
+			}
+			ExtAttr BuildDispenserAsTeleporter [$SIGSEGV] //Builds dispenser instead of teleporter
+			CharacterAttributes
+			{
+				"engy dispenser radius increased" 40
+			}
+		}
+	}	
+
+	Mission
+	{
+		Objective Engineer  
+
+		InitialCooldown 2
+		Where spawnbot
+		BeginAtWave 1
+		RunForThisManyWaves 8
+		CooldownTime 2
+		DesiredCount 3
+
+		TFBot
+		{
+			Template T_TFBot_Engineer_Sentry_Teleporter
+			ExtAttr BuildDispenserAsSentryGun [$SIGSEGV] //Builds dispenser instead of sentry gun
+			CharacterAttributes
+			{
+				"engy dispenser radius increased" 40
+			}
+		}
+	}	
+
+	SpawnTemplate [$SIGSEGV] //Spawn template once the mission loads
+	{
+		Name "Blockade"
+		Origin "1050 4410 472" //Position where to spawn the template
+		Angles "0 85 0" //Rotation
+	}
+	SpawnTemplate [$SIGSEGV] //spawn template once mission starts
+		{
+			Name "Sentry"
+			Origin "0 -1000 500"
+		}
+	Wave
+	{
+		CustomWaveNumber 419 [$SIGSEGV] // Display custom wave number. 511 is max value
+		CustomMaxWaveNumber 0 [$SIGSEGV] // Display custom max wave number. 0 hides the max wave number
+
+		Explanation [$SIGSEGV]  //Dispayed once the wave is initialized
+		{
+			Line "{blue}Sentry tanks will spawn this wave"
+			Line "{red}Red sentries will help you win this wave!"
+		}
+
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaitWhenDone 65
+		Checkpoint Yes
+		
+		PlayerAttributes [$SIGSEGV] //Add attributes to players when the wave is active
+		{
+			"increased jump height" 0.5
+		}
+		ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+		{
+			ItemName "The Scottish Resistance"
+			"reload time decreased" 0.25
+		}
+		PlayerAddCond [$SIGSEGV] //Add condition to players when wave starts
+		{
+			Index 56
+		}
+		SpawnTemplate [$SIGSEGV] //spawn template once mission starts
+		{
+			Name "Sentry"
+			Origin "0 -800 500"
+		}
+		SpawnTemplate [$SIGSEGV] 
+		{
+			Name "Teleporter"
+			Origin "0 -900 400"
+			Delay 5 //Delay before spawning after the wave has started
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 2
+			MaxActive 2
+			SpawnCount 2
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+		
+			Squad
+			{
+				NoWaitForFormation 1 [$SIGSEGV] // Prevents squad leader from waiting for squad members
+				NoFormation 1 [$SIGSEGV] // Diasables formation. Squad members behave like regular bots
+
+				TFBot
+				{
+					Template ScoutTemplate1 // If you want to add multiple templates in a single TFBot, use AddTemplate
+					AddTemplate ScoutTemplate2 [$SIGSEGV] // If you want to add multiple templates in a single TFBot, use AddTemplate
+				}
+
+				TFBot
+				{
+					Class Demoman
+					Item "TF_WEAPON_SPELLBOOK"
+					WeaponResist [$SIGSEGV] //Multiplies damage received from weapons listed below
+					{
+						"TF_WEAPON_KNIFE" 0.1
+						"TF_WEAPON_MINIGUN" 10
+					}
+					Spell [$SIGSEGV] //Gives specified spell to bots.
+					{
+						Delay 1 //Time before the first spell charges are given (Default: 10)
+						Cooldown 5 //Time between each spell changes (Default: 10)
+						Repeats 12 //How many times should spell charges be given in total (Default: 0 - Infinite)
+						IfSeeTarget 0 //When set to 1, this task activates only when the bot can see the target player (Default: 0 - Always activate)
+						Charges 1 //How many spell charges to give every time the spell is given (Default: 1)
+						Limit 1 //How many spell charges the bot can store (Default: Same as charges given)
+						//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+						//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+						Type "All" //Spell name. Possible values:
+							//"Fireball"
+							//"Ball O' Bats"
+							//"Healing Aura"
+							//"Pumpkin MIRV"
+							//"Superjump"
+							//"Invisibility"
+							//"Teleport",
+							//"Tesla Bolt"
+							//"Minify"
+							//"Summon Monoculus"
+							//"Meteor Shower"
+							//"Summon Skeletons"
+							//"Common"
+							//"Rare"
+							//"All"
+					}
+					UseBusterModel 1 [$SIGSEGV] //Use buster model
+				}
+			}
+		}
+
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 14
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+		
+            TFBot
+            {
+				Class Engineer
+				Action FetchFlag [$SIGSEGV] //Overrides default bot AI. Possible values:
+					//Default - Default action
+					//FetchFlag - Uses generic bomb fetching AI, default action for most bots except Spy, Medic, Engineer or Mission bots
+					//EscortFlag - As above, but ignores bot escort limit
+					//PushToCapturePoint - Pushes to capture point (or hatch in MvM). Similar to BehaviorModfiers Push and its aliases.
+					//Mobber - Chases down random player targets
+					//Spy - Uses spy AI, teleports behind players, but does not use disguises or cloak.
+					//Sniper - Uses mission sniper AI
+					//SuicideBomber - Uses sentry buster AI, but targets players instead. Might crash servers
+					//Idle - Sit in spawn and wait
+				Item "The Short Circuit"
+				ExtAttr AlwaysFireWeaponAlt [$SIGSEGV] 
+				WeaponRestrictions SecondaryOnly
+				CustomWeaponModel [$SIGSEGV] //Sets custom weapon model
+				{
+					Slot 1 //Valid loadout positions:
+						//0 - LOADOUT_POSITION_PRIMARY
+						//1 - LOADOUT_POSITION_SECONDARY
+						//2 - LOADOUT_POSITION_MELEE
+						//3 - LOADOUT_POSITION_UTILITY
+						//4 - LOADOUT_POSITION_BUILDING
+						//5 - LOADOUT_POSITION_PDA
+						//6 - LOADOUT_POSITION_PDA2
+					Model "models/weapons/w_models/w_minigun.mdl"
+				}
+				UseHumanModel 1 [$SIGSEGV] //Use human model. If set to 1, the bot can't be sapped, if set to 2, it can
+				UseMeleeThreatPrioritization 1 [$SIGSEGV] //Prefer players close to the bot
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 21
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+		
+            TFBot
+            {
+				Class Pyro
+				Attributes TeleportToHint //Any bot can use teleporttohint
+				SpawnTemplate "KillOnKill" [$SIGSEGV] 
+				NoCrouchButtonRelease 1 [$SIGSEGV] // Do not automatically release crouch button when the bot is on the ground
+				FireWeapon [$SIGSEGV]  //Periodically fires weapon
+                {
+                    Delay 1 //Time before the first fire input starts (Default: 10)
+                    Cooldown 3 //Time between each fire input (Default: 10)
+                    Repeats 0 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+					IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+                    Duration 0.5 //How long should the button be pressed (Default: 0.1)
+					Type "Secondary" // Type of fire input, Possible values:
+						//Primary
+						//Secondary
+						//Special - MOUSE3
+						//Reload
+						//Jump
+						//Crouch - requires NoCrouchButtonRelease 1 in TFBot
+						//Action
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+
+				UseCustomModel "models/bots/merasmus/merasmus.mdl" [$SIGSEGV] //Use custom model
+				UseHumanAnimations 1 [$SIGSEGV] // Use normal class animations instead of a bot / custom model ones
+
+				RingOfFire 15 [$SIGSEGV] //Enable Ring of Fire from Huo Long Heater. Value is damage done by the ring
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where "spawnalt"  //Spawns at custom location
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 14
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+			Support 1
+			
+            TFBot
+            {
+				Class Soldier
+				SuppressTimedFetchFlag 1 [$SIGSEGV] //Don't fetch flag automatically when the flag is in reset state
+				Item "The Gunboats"
+				ItemColor [$SIGSEGV] //Set item color
+				{
+					ItemName "TF_WEAPON_ROCKETLAUNCHER"
+					Red 255
+					Green 0
+					Blue 0
+				}
+				ItemColor [$SIGSEGV] //Set item color
+				{
+					ItemName "The Gunboats"
+					Red 255
+					Green 0
+					Blue 0
+				}
+				HomingRockets [$SIGSEGV] 
+				{
+					IgnoreDisguisedSpies 1 // Default: 1
+					IgnoreStealthedSpies 1 // Default: 1
+					RocketSpeed 0.01 // Multiplier of rocket speed. (Default: 1)
+					TurnPower 30 //How fast should the rocket rotate to face the target (Default: 10)
+					MaxAimError 50 //Max angle between rocket and the target (Default: 105)
+					AimTime 1 //How long should the rocket be aiming (Default: 9999)
+					Acceleration 1000 //Acceleration in hu (Default: 0)
+					AccelerationTime 0.1 //How long should the rocket accelerate (Default: 9999)
+					AccelerationStartTime 1 //Time before rockets start accelerating (Default: 0)
+					Gravity 355 // Gravity of the rocket (Default: 0)
+					FollowCrosshair 1 // Follow crosshair instead of enemies (Default: 0)
+				}
+				AddCond [$SIGSEGV] //Adds conditions to bots
+				{
+					Name "TF_COND_REPROGRAMMED" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
+					//Index 43 //Condition index can be used instead
+					Delay 3 // Delay before the condition activates (Default: 0)
+					Duration 99 // Duration of the condition effect (Default: 0 - infinite duration)
+					IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+				DamageAppliesCond [$SIGSEGV] //Adds conditions to players on hit
+				{
+					Name "TF_COND_URINE" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
+					//Index 43 //Condition index can be used instead
+					Duration 3 // Duration of the condition effect (Default: 0 - infinite duration)
+					IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+				RocketCustomModel "models/props_halloween/eyeball_projectile.mdl" [$SIGSEGV] //Use custom model for the rocket
+				RocketCustomParticle "flare_glow"
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 8
+			MaxActive 8
+			SpawnCount 1
+			WaitBeforeStarting 35
+			WaitBetweenSpawns 1
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Spy
+				//Action SuicideBomber [$SIGSEGV]  
+				AlwaysGlow 1 [$SIGSEGV] //If set, the bot is always highlighted
+				//NoGlow 1 [$SIGSEGV] //If set, the bot is never highlighted
+				StripItemSlot 1 [$SIGSEGV] //If set, weapon in specified slot is stripped
+				StripItem "Zombie Spy" [$SIGSEGV] // Remove item by name. This can be used to remove cosmetics including zombie cosmetics
+				//Valid loadout positions:
+						//0 - LOADOUT_POSITION_PRIMARY
+						//1 - LOADOUT_POSITION_SECONDARY
+						//2 - LOADOUT_POSITION_MELEE
+						//3 - LOADOUT_POSITION_UTILITY
+						//4 - LOADOUT_POSITION_BUILDING
+						//5 - LOADOUT_POSITION_PDA
+						//6 - LOADOUT_POSITION_PDA2
+				FireInput [$SIGSEGV] 
+				{
+					Target "random_color_case*" //Entity name to use
+					Action "PickRandom" //Input to fire
+					Param "" //Parameter to use
+					Delay 0 //Delay before firing the input
+					Cooldown 1 //Cooldown between firing the input
+					Repeats 0 //How many times should the input be fired
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+			}
+		}
+    }
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaitWhenDone 65
+		Checkpoint Yes
+		RedTeamWipeCausesWaveLoss 1 [$SIGSEGV] //If red team is wiped, it loses
+		BlueTeamWipeCausesWaveLoss 1 [$SIGSEGV] //If blue human team is wiped, it loses
+		FinishingWaveCausesWaveLoss 1 [$SIGSEGV] //If non support wavespawns are finished, wave is lost
+		//FinishingWaveAndPlayerWipeCausesWaveLoss 1 [$SIGSEGV] //If non support wavespawns are finished, and all players are dead, wave is lost
+		Explanation [$SIGSEGV]  //Dispayed once the wave is initialized
+		{
+			Line "{blue}Sentry tanks will spawn this wave"
+			Line "{red}Red sentries will help you win this wave!"
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 2
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+
+            FirstSpawnOutput                                                                                                                                                            
+			{
+				 Target boss_spawn_relay                                            
+				 Action Trigger                         
+			}
+
+			Tank
+			{
+				Health 20000
+				Speed 75
+				Name "tankboss"
+				//StartingPathTrackNode "tankpath1_1"
+				StartingPathTrackNode "boss_path_a1"
+
+				OnKilledOutput                                  
+				{
+					Target boss_dead_relay
+					Action Trigger                         
+				}
+				
+				OnBombDroppedOutput                             
+				{
+					Target boss_deploy_relay 
+					Action Trigger                         
+				}
+
+				SpawnTemplate "SentryTank" [$SIGSEGV] //Spawn custom tank template
+				Template "TankTemplate" [$SIGSEGV] //Use tank template
+				DisableSmokestack 1 [$SIGSEGV] //Disable smoke particles
+				Scale 0.75 [$SIGSEGV] //Scale the tank
+				// ForceRomeVision 1 [$SIGSEGV] //Force romevision
+				MaxTurnRate 9999999 [$SIGSEGV] //How fast the tank turns. Faster turns allows for higher speed tanks. Default: 25
+				// ClassIcon special_blimp [$SIGSEGV] //Use custom icon for a tank
+				IsMiniBoss 0 [$SIGSEGV] //Set to 0 to disable red iconicon outline
+				// DisableChildModels 1 [$SIGSEGV] //If set to 1, bomb and treads models will be disabled
+				// DisableTracks 1 [$SIGSEGV] //If set to 1, treads models will be disabled
+				// DisableBomb 1 [$SIGSEGV] //If set to 1, bomb model will be disabled
+				IsCrit 1 [$SIGSEGV] //Set to 1 to enable crit  treads and the bomb will remain invisible
+				Model [$SIGSEGV] //Set custom model on tank. Will spit harmless errors on client console if the model does not have enough sequences
+				{
+					Default "models/bots/boss_bot/boss_tankred.mdl"
+					Damage1 "models/bots/boss_bot/boss_tankred_damage1.mdl"
+					Damage2 "models/bots/boss_bot/boss_tankred_damage2.mdl"
+					Damage3 "models/bots/boss_bot/boss_tankred_damage3.mdl"
+					Destruction "models/bots/boss_bot/boss_tankred_part1_destruction.mdl"
+					LeftTrack "models/bots/boss_bot/tankred_track_l.mdl"
+					RightTrack "models/bots/boss_bot/tankred_track_r.mdl"
+					Bomb "models/bots/boss_bot/bombblue_mechanism.mdl"
+				}
+
+				// Model "models/bots/boss_bot/boss_tankred.mdl" [$SIGSEGV] Alternate definition that also automatically set damage, track and destruction models if uploaded
+
+				// Immobile 1 [$SIGSEGV] //If enabled, the tank will not move at all (unless parented). Might be useful when used with other forms of locomotion
+				Gravity 0 [$SIGSEGV] //Tanks gravity. Default: 1000
+				PingSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //Tank ping sound override
+				StartSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Tank spawn sound
+				DeploySound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Tank deploy sound
+				EngineLoopSound "Weapon_Minigun.Fire" [$SIGSEGV] //Tank engine sound override, will only loop if the sound was made to be looping.
+				// DestroyTemplate "Blockade" [$SIGSEGV] //Override default tank destroy animation with template
+				TeamNum 2 [$SIGSEGV] //Override tank team (Default: 3)
+				OffsetZ 174 [$SIGSEGV] // Tank distance off the ground (Default: 0) 
+					// 150 - Max melee range without jumping
+					// 174 - max sword range without jumping
+					// 190 - max melee range with jumping
+					// 270 - max melee range with upgraded jumping
+				RotatePitch 0 [$SIGSEGV] // If tank should change its pitch rotation (Default: 1) 
+				// ReplaceModelCollisions 1 [$SIGSEGV] // If set, the tank will use collisons from the custom model. Tank model must contain all sequences or else it will not deploy the bomb (Default: 0)
+				CritImmune 1 [$SIGSEGV] // If set, the tank is immune to crits (Default: 0)
+				TriggerDestroyBuildingFix 1 [$SIGSEGV] // Fixes trigger entities destroying buildings on touch if parented to the tank (Default: 0)
+			}
+        }
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Soldier
+				
+				Item "The Flare Gun"
+				BodyPartScaleSpeed 0.1 [$SIGSEGV] //Multiplier of body part scale speed
+				ItemAttributes
+				{
+					ItemName "The Flare Gun"
+					"head scale" 0.01
+					"custom projectile model" "models/props_soho/bookstand002.mdl" //Precached before with PrecacheModel tag 
+					"set damagetype ignite" 1
+				}
+
+				ExtAttr IgnoreBuildings [$SIGSEGV] // Ignore buildings
+				ExtAttr IgnorePlayers [$SIGSEGV] // Ignore players
+				ExtAttr IgnoreBots [$SIGSEGV] // Ignore bots
+				ExtAttr IgnoreRealPlayers [$SIGSEGV] // Ignore non bot players
+				ExtAttr IgnoreNPC [$SIGSEGV] // Ignore NPC such as tanks skeletons halloween bosses
+
+				Message //Displays message in the chat
+				{
+					Name "{red} Hello!" //Message in the chat displayed
+					Delay 1 //Time before the message is first displayed (Default: 10)
+					Cooldown 3 //Time between each message (Default: 10)
+					Repeats 0 //How many times should bot display the message (Default: 0 - Infinite)
+					IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+				}
+				
+				SpawnTemplate [$SIGSEGV] //Spawn custom player template
+				{
+					Name "Sentry"
+					Bone "bip_head" //bone name where the template should be attached to
+					//Some bone names are listed here:
+					//bip_head
+					//bip_spine_2 - used by flag
+					//bip_hand_L
+					//bip_hand_R
+					//weapoon_bone_R
+					//weapoon_bone_L
+					//bip_foot_L
+					//bip_foot_R
+				}
+				NoPushaway 1 [$SIGSEGV] //Dont push other close bots away
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 7
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Soldier
+				SpawnTemplate [$SIGSEGV] //Spawn custom player template
+				{
+					Name "Teleporter"
+					Bone "bip_spine_2"
+				}
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 12
+			WaitBetweenSpawns 1
+			TotalCurrency 200		
+		
+			StartWaveMessage "Wave start" [$SIGSEGV] //Chat message when wavespawn stops waiting for other wavespawns
+			StartWaveMessage "Wave start line 2" [$SIGSEGV] //Chat message when wavespawn stops waiting for other wavespawns
+			FirstSpawnMessage "First spawn" [$SIGSEGV] //Chat message when a bot is spawned for the first time
+			LastSpawnMessage "Last spawn" [$SIGSEGV] //Chat message when a bot is spawned for the last time
+			DoneMessage "Done" [$SIGSEGV] //Chat message when the wavespawn is finished
+			
+            TFBot
+            {
+				Class Scout
+				Item "The Sandman"
+				WeaponRestrictions MeleeOnly
+				Skill Expert
+				
+				ItemAttributes
+				{
+					ItemName "The Sandman"
+					"mod bat launches balls" 2 //Overrides the global sandman stun toggle, the ball will stun players regardless
+				}
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 22
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Medic
+				WeaponRestrictions SecondaryOnly
+				Attributes ProjectileShield
+				Attributes SpawnWithFullCharge
+				Item "The Quick-Fix"
+				FireWeapon [$SIGSEGV]  //Periodically fires weapon
+                {
+                    Delay 1 //Time before the first fire input starts (Default: 10)
+                    Cooldown 3 //Time between each fire input (Default: 10)
+                    Repeats 0 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+                    Duration 0.6 //How long should the button be pressed (Default: 0.1)
+					Type "Special" 
+				}
+
+				ItemAttributes
+				{
+					ItemName "The Quick-Fix"
+					"bot medic uber deploy delay duration" 999999
+					"generate rage on heal" 2
+					"heal rate bonus" 2
+					"dmg penalty vs players" 0
+				}
+			}
+		}
+		SentryGun [$SIGSEGV] //Spawn sentry gun
+		{
+			TeamNum 2 //Red sentry
+			Delay 2 //Delay before spawning, after starting the wave
+			Level 1 //Sentrygun level
+			//IsMini 1 //Is minisentry
+			BodyGroup 1 //Bodygroup 1 - enable mini sentry cone light
+			Skin 2 //skin 2, 3 - minisentry skin
+			Health 934
+			Position
+			{
+				X 118 
+				Y -2006 
+				Z 516
+				Pitch 9
+				Yaw 4
+				Roll 100
+			}
+		}
+		HalloweenBoss [$SIGSEGV] //Spawn halloween boss
+		{
+			BossType HHH //HHH / MONOCULUS / Merasmus
+			TeamNum 5 //Team to use (5 - boss team) Only monoculus can use teamnum 2 / 3
+			Delay 12 //Delay before spawning
+			Position
+			{
+				X -1000
+				Y 4000 
+				Z 516
+			}
+			Lifetime 5.4 // Boss lifetime for Monoculus and Merasmus in seconds (Default: 0)
+		}
+		SoundLoop [$SIGSEGV] //Played in a loop during wave. The sound must have looping enabled, like the minigun fire, or it will only play once. 
+		//Alternatively you can put multiple sound files and their length in seconds and they will be randomly selected
+		{
+			//SoundFile "Weapon_Minigun.Fire"
+		}
+
+	}
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaitWhenDone 65
+		Checkpoint Yes
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200
+			TFBot
+			{	
+				Class Scout
+				Attributes SuppressFire
+				ForceRomeVision 1 [$SIGSEGV] // Enforces romevion cosmetics
+				Item "War Head"
+				ItemModel [$SIGSEGV] // Replaces item model
+				{
+					ItemName "War Head"
+					Model "models/player/items/all_class/pet_balloonicorn.mdl"
+				}
+				
+				Item "Noise Maker - TF Birthday"
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 5
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+			
+            TFBot
+            {
+				Class Soldier
+				Skill Expert
+				RocketJump 1 //Enables rocket jumping. Type RocketJump 2 to only rocket jump when the clip is full
+				//ExtAttr SuppressCanteenUse [$SIGSEGV] //If set, the bot will not automatically activate canteens when looking at the enemy
+				Item "Battery Canteens"
+				UseBestWeapon 1 [$SIGSEGV] 
+				ForceRomeVision 1 [$SIGSEGV] 
+				ItemAttributes
+				{
+					ItemName "Battery Canteens"
+					"ubercharge" 1
+					"powerup charges" 3
+				}
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 10
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+			
+            TFBot
+            {
+				Name "Engineer Bot"
+				Class Engineer
+				Health 4500
+				Skill Expert
+				WeaponRestrictions SecondaryOnly
+				Attributes MiniBoss
+				Item "The Short Circuit"
+				Action FetchFlag [$SIGSEGV] 
+				FireWeapon [$SIGSEGV]  //Periodically fires weapon
+                {
+                    Delay 0 //Time before the first fire input starts (Default: 10)
+                    Cooldown 8 //Time between each fire input (Default: 10)
+                    Repeats 0 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+					IfSeeTarget 0 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+                    Duration 2 //How long should the button be pressed (Default: 0.1)
+					Type "Secondary" // Type of fire input, Possible values:
+						
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+
+				ItemAttributes
+				{
+					ItemName "The Short Circuit"
+					"fire rate bonus" 0.1
+				}
+				CharacterAttributes
+				{
+					"airblast vulnerability multiplier" 0.6
+					"damage force reduction" 0.6
+					"move speed bonus" 0.5
+				}
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 15
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Heavyweapons
+				WeaponRestrictions MeleeOnly
+				Item "Gold Frying Pan"
+				ItemAttributes
+				{
+					ItemName "Gold Frying Pan"
+					"is australium item" 0
+					"item style override" 3
+					
+				}
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 20
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Name "Giant Armored Medic"
+				Class Medic
+				Health 4500
+				Skill Expert
+				ClassIcon medic_armored_giant
+				WeaponRestrictions SecondaryOnly
+				Attributes MiniBoss
+				Attributes ProjectileShield
+				Attributes SpawnWithFullCharge
+				Item "The Quick-Fix"
+				Item "Das Naggenvatcher"
+				FireWeapon [$SIGSEGV]  //Periodically fires weapon
+                {
+                    Delay 1 //Time before the first fire input starts (Default: 10)
+                    Cooldown 3 //Time between each fire input (Default: 10)
+                    Repeats 0 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+					//IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+                    Duration 0.5 //How long should the button be pressed (Default: 0.1)
+					Type "Special" // Type of fire input, Possible values:
+						
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+
+				WeaponSwitch [$SIGSEGV]  //Periodically switches weapon
+                {
+                    Delay 1 //Time before the first weapon switch starts (Default: 10)
+                    Cooldown 3 //Time between each weapon switch (Default: 10)
+                    Repeats 0 //How many times should bot switch weapons in total (Default: 0 - Infinite)
+					//IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+					Type "Primary" // Weapon slot, possible values:
+						//Primary
+						//Secondary
+						//Melee
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+				ItemAttributes
+				{
+					ItemName "The Quick-Fix"
+					"bot medic uber deploy delay duration" 999999
+					"generate rage on heal" 2
+					"heal rate bonus" 2
+					"dmg penalty vs players" 0
+				}
+				CharacterAttributes
+				{
+					"airblast vulnerability multiplier" 0.6
+					"damage force reduction" 0.6
+					"move speed bonus" 0.5
+				}
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01b"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 25
+			WaitBetweenSpawns 25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Medic
+				Item "The Flare Gun"
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 30
+			WaitBetweenSpawns 30
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Heavyweapons
+				Item "Tomislav"
+				
+				ShootTemplate [$SIGSEGV]  //Shoot defined point template. Template is spawned at bot position in looking direction, forward velocity being applied to spawned entities
+				{
+					Name Jarate //Name of the template
+					Speed 1000 //Velocity of the spawned objects (Default: 1000)
+					Offset "0 0 0" //Offset from the bot shooting position (Default: 0 0 0)
+					Angles "0 0 0" //Shooting angle offset (Default: 0 0 0)
+					OverrideShoot 1 //Stop default projectile from being spawned (Default: 0)
+					Spread 0.1 //Spread of the fired template entities. 0 - No spread, 0.1 - Beggar like spread, 1 - Very inaccurate (Default: 0)
+					//AttachToProjectile 1 //If set, the template is spawned as a child of the projectile being fired. Incompatible with overrideshoot
+					ItemName "Tomislav" //Can be specified to limit to a specific weapon
+				}
+
+				ItemAttributes
+				{
+					ItemName "Tomislav"
+					"set_item_texture_wear" 0.2
+					"paintkit_proto_def_index" 122
+				}
+			}
+		}
+		SoundLoop [$SIGSEGV] //Played in a loop during wave. The sound must have looping enabled, like the minigun fire, or it will only play once. 
+		//Alternatively you can put multiple sound files and their length in seconds and they will be randomly selected
+		{
+			"ui/gamestartup1.mp3" 75
+			"ui/gamestartup2.mp3" 250
+			"ui/gamestartup3.mp3" 40
+			"ui/gamestartup4.mp3" 140
+			"ui/gamestartup5.mp3" 90
+		}
+	}
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+			Support 1
+			
+            TFBot
+            {
+				Class Heavyweapons
+				Attributes HoldFireUntilFullReload
+				WeaponRestrictions SecondaryOnly
+				
+				AddCond [$SIGSEGV] //Adds conditions to bots
+				{
+					Name "TF_COND_REPROGRAMMED" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
+				}
+			}
+		}	
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 5
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Skin 3 [$SIGSEGV] // Force the bot to use specified model skin
+				Class Soldier
+				Item "The Righteous Bison"
+				Attributes HoldFireUntilFullReload
+				WeaponRestrictions SecondaryOnly
+			}
+		}	
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 10
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Soldier
+				Item "The Short Circuit"
+				WeaponRestrictions SecondaryOnly
+				ExtAttr AlwaysFireWeaponAlt [$SIGSEGV]
+				
+				InterruptAction [$SIGSEGV] // Stop current bot ai and force the bot to move to a location
+				{
+					Target "330.196350 4876.522949 320.031250" // Move target location
+					// Target "targetent" // Entity / bot / class name as an alternative. Also: RandomEnemy, ClosestPlayer
+					AimTarget "329.606170 4959.968750 388.896514" // Where the bot should look at
+					// AimTarget "targetent" // Entity / bot / class name as an alternative. Also: RandomEnemy, ClosestPlayer
+					// KillAimTarget 1 // Attack aim target (Default: 0)
+					
+					Delay 1 // Time before the first task starts (Default: 10)
+                    Repeats 1 // How many times should bot do the task in total (Default: 0 - Infinite)
+                    Cooldown 3 //Time between each task (Default: 10)
+					Duration 10 // How long should the ai be interrupted
+
+					WaitUntilDone 1 // If set, duration timer only starts when the bot moves to the target location or the aim target is killed (Default: 0)
+					OnDoneChangeAttributes "Action2" // When the task is done, switch to this EventChangeAttributes
+				}
+				
+				SprayFile "materials/hud/leaderboard_class_dispenser.vtf"  [$SIGSEGV] // Spray file used for the spray attribute
+				Spray [$SIGSEGV] 
+				{
+					Delay 12 //Time before the first task starts (Default: 10)
+                    Repeats 10 //How many times should bot do the task in total (Default: 0 - Infinite)
+                    Cooldown 10 //Time between each task (Default: 10)
+				}
+
+				EventChangeAttributes
+				{
+					Action2
+					{
+						InterruptAction [$SIGSEGV] 
+						{
+							Delay 1 //Time before the first fire input starts (Default: 10)
+							Repeats 1 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+							Target "4.813873 -1628.718506 451.714722"
+						}
+					}
+				}
+			}
+		}
+		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 15
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200		
+		
+			
+            TFBot
+            {
+				Class Soldier
+				WeaponRestrictions SecondaryOnly
+				AimTrackingInterval 0 [$SIGSEGV] //Override aim tracking time. 0.05 - expert 1.0 - easy
+				FastUpdate 1 [$SIGSEGV] //If set, the bot ai updates every tick
+				DropWeapon 1 [$SIGSEGV] //If set, bot will drop a weapon on death. The weapon cannot be upgraded
+				ItemAttributes
+				{
+					ItemName "TF_WEAPON_SHOTGUN_SOLDIER"
+					"custom weapon fire sound" "weapons/rocket_directhit_shoot_crit.wav"
+					"is invisible" 1
+				}
+			//FireSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //Custom fire sound.
+			}
+		}
+		WaveSpawn
+		{
+			
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 20
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			TFBot
+			{
+				Class Demoman
+				Skill Expert
+				Health 5000
+				WeaponRestrictions SecondaryOnly
+				Item "My Custom Item"  //Custom weapon name as defined in popfile
+				AimAt Feet [$SIGSEGV] //Aim at this part of the body. Disables leading unless specified below. Possible values:
+					//Default
+					//Head
+					//Body
+					//Feet
+				AimOffset "0 0 10" [$SIGSEGV] //Aim this much higher than normally (default: 0 0 0)
+				AimLeadProjectileSpeed 1 [$SIGSEGV] //If set, the bot will lead their shots depending on player movement. Setting to 1 will determine projectile speed. Stacks with rocket and arrow leading unless overriden with AimAt
+				AddCond [$SIGSEGV] //Adds conditions to bots
+				{
+					Name "TF_COND_REPROGRAMMED_NEUTRAL" // New condition, makes bots join spectator team as alive players. Many ai tasks will be broken
+				}
+			}
+		}
+		WaveSpawn
+		{
+			
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			TFBot
+			{
+				Class Soldier
+				Skill Expert
+				Health 5000
+				Attributes HoldFireUntilFullReload
+				Attributes MiniBoss
+				ExtAttr JumpStomp [$SIGSEGV] //Try to jump over and stomp obstracles
+				ItemAttributes
+				{
+					ItemName "TF_WEAPON_ROCKETLAUNCHER"
+					"clip size bonus" 3
+					"fire rate bonus" 0.2
+					"reload time decreased" 0.25
+				}
+				CharacterAttributes
+				{
+					"move speed bonus" 0.3
+				}
+				HomingRockets [$SIGSEGV]
+				{
+					IgnoreDisguisedSpies 1
+					IgnoreStealthedSpies 1
+					RocketSpeed 0.3 // Multiplier of rocket speed. 1 for default speed
+					TurnPower 90 //How fast should the rocket rotate to face the target=
+					MaxAimError 360 //Max angle between rocket and the target
+				}
+				ShootTemplate [$SIGSEGV]
+				{
+					Name "SentryGunShoot"
+					AttachToProjectile 1
+				}
+			}
+		}
+	}
+	
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 10
+			MaxActive 10
+			SpawnCount 10
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			Support 1
+			PointTemplate [$SIGSEGV] // PointTemplate spawner. Counts as alive until all entites in the template are removed
+			{
+				SpawnAtEntity Where // Entity to spawn the template at, "Where" spawns at the bot spawn as indicated by where. If omitted, spawns at world origin
+				IsCrit 1 // Shows icon as critical (Default: 0)
+				IsMiniBoss 1 // Shows icon as mini boss (Default: 0)
+				ClassIcon Soldier // ClassIcon to use
+				Name "SentryStack" // Template name to use
+				Origin "0 1 0" // Position where to spawn the template. If SpawnAtEntity is specified, relative to entity
+				Angles "0 85 0" // Rotation of the template
+				SpawnCurrencyPack "sentry3" // Entity which will drop money. If not specified, currency is distributed automatically when the template is removed
+				SpreadRadius "60 60 0" // Randomly spreads entities in x y z coordinates
+				StickToGround 6000 // Stick spawned template to ground, as long as its up to x units above the ground
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			TFBot
+			{
+				Class Soldier
+			}
+		}
+		
+	}
+
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 10
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			Support 1
+			HalloweenBoss [$SIGSEGV] // HalloweenBoss spawner. Spawns a boss
+			{
+				IsCrit 1 // Shows icon as critical (Default: 0)
+				IsMiniBoss 1 // Shows icon as mini boss (Default: 1)
+				ClassIcon Soldier // ClassIcon to use
+				FastUpdate 1 // Should do updates every tick (Default: 0)
+				BossType Monoculus // Boss type: MONOCULUS, Merasmus, HHH, SkeletonSmall, SkeletonNormal, SkeletonKing. Skeletons default limit is 30 active at once unless modified by MaxActiveSkeletons
+				SpawnCurrencyPack 1 // If set, the boss will drop money on death. Otherwise its distributed automatically (Default: 1)
+				TeamNum 5 // Team number for Monoculus (2 - red, 3 - blu, 5 - neutral) (Default: 5)
+				Health 11111 // Boss health, 0 means default health (Default: 0)
+				Lifetime 55 // Boss lifetime for Monoculus, Merasmus and skeletons in seconds (Default: infinite)
+				Speed 0 // Overrides boss move speed
+				// Origin "0 100 0" // If set, spawns boss at the specified position rather than at where location
+				SpreadRadius "200 200 0" // Randomly spreads halloween boss in x y z coordinates
+				StickToGround 6000 // Stick spawned boss to ground, as long as its up to x units above the ground
+				DamageMultiplier 10 // Damage multiplier
+				// SpawnAtEntity "entity" // If set, spawns boss at the entity location instead of where location
+				SpawnTemplate "WeaponMimic" // Spawn PointTemplate at entity
+			}
+		}
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			TFBot
+			{
+				Class Soldier
+				Attributes MiniBoss
+				NoIdleSound 1 [$SIGSEGV] // Stop giant idle sound
+				SpellDropRateCommon 0.4 [$SIGSEGV] // Common spellbook drop rate, overrides global settings
+				SpellDropRateRare 0.1 [$SIGSEGV] // Rare spellbook drop rate, overrides global settings
+				NoCrouchButtonRelease 1 [$SIGSEGV] // Do not automatically release crouch button when the bot is on the ground
+				FireWeapon [$SIGSEGV]  //Periodically fires weapon
+                {
+                    Delay 1 //Time before the first fire input starts (Default: 10)
+                    Cooldown 6 //Time between each fire input (Default: 10)
+                    Repeats 0 //How many times should bot use the fire input in total (Default: 0 - Infinite)
+                    Duration 2 //How long should the button be pressed (Default: 0.1)
+					Type "Crouch" // Type of fire input - requires NoCrouchButtonRelease 1 in TFBot
+				}
+				AdditionalStepSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] // Additional custom step sound. Does not remove the original step sound
+				CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
+				CustomEyeGlowColor "255 255 255" [$SIGSEGV] // Custom eye glow color
+			}
+		}
+		
+	}
+	
+}
+
+// CUSTOM ATTRIBUTES
+
+// if set to 1, the user cannot deploy parachutes
+// "parachute disabled" 1
+
+// Secondary attack: crossbow fires milk bolt. Regenerates every x seconds
+// "fires milk bolt" 1
+
+// The bot with the attribute distributes its currency on death, like with sniper kills
+// "force distribute currency on death" 1
+
+// Melee weapon attacks all enemies in range
+// "melee cleave attack" 1
+
+// Special mode for revolver: each hit reduces damage, up to x times. Likely does not work 
+// "extra damage on hit penalty" 1
+
+// "extra damage on hit" 1
+
+// Grants the players speed buff for 4 seconds after leaving teleporter
+// "mod teleporter speed boost" 1
+
+// Turns the victim ragdoll to ice
+// "set turn to ice" 1
+
+// Can player breathe underwater
+// "can breathe under water" 1
+
+// If set to 1 player cannon swim
+// "cannot swim" 1
+
+// If set to 1 player can swim at full class speed
+// "swimming mastery" 1
+
+// If set to 1 player move his teleporter with double tapped movement keys. Does not work
+// "ability doubletap teleport" 1
+
+// A worse version of damage piercing since it only ignores battalion backup 35% reduction. Does not work?
+// "mod ignore resists absorbs" 1
+
+// Players with this attribute are granted more points for kills but lose points after death
+// "scoreboard minigame" 1
+
+// Is the player immune to wet statuses like jarate or mad milk
+// "wet immunity" 1
+
+// Huntsman: reduces shoot time 40%/70%, same functionality as faster reload rate but limited to 2 points
+// Sniper rifle: reduces zoom time 40%/70% (like reload rate does). increases charge rate 50%/200%, but actually 100% due to the cap
+// "ability master sniper" 2
+
+// Last revolver shot in the clip is critical
+// "last shot crits" 1
+
+// Keep disguise after attacking. Revolver only
+// "keep disguise on attack" 1
+
+// On hit ally: heal your teammate for x health, draining your own health
+// "add give health to teammate on hit" 75
+
+// Can switch to other weapons while spinning minigun
+//"mod minigun can holster while spinning" 1
+
+// Probably does nothing, otherwise it adds time required for the sapper to activate
+// "sapper deploy time" 1
+
+// On kill: gives x% fire rate bonus, stacks up to 3 times. Killing different class clears the combo
+// "kill combo fire rate boost" 0.1
+
+// Healh and ammo dispenser rate
+// "mult dispenser rate" 2
+
+// Sentry max ammo multiplier
+// "mvm sentry ammo" 2
+
+// Sentry is 20% smaller. 33% less health, 25% less metal required to upgrade
+// "build small sentries" 1
+
+// Teleporter recharge duration multiplier
+// "mult teleporter recharge rate" 1
+
+// As spy, disguise as dispenser when crouching
+// "disguise as dispenser on crouch" 1
+
+// On hit, as a medic, with "ubercharge ammo" syringegun: transfer x% of the used uber to the enemy medic
+// "ubercharge transfer" 34
+
+// Uses ubercharge as ammo. 100 for full uber use. Syringegun (not crossbow) only
+// "ubercharge ammo" 10
+
+// On death: x% chance of being immediately revived at spawn with 1 health
+// "teleport instead of die" 0.5
+
+// Flare and rocket homing seek power in degrees per second
+// "mod projectile heat seek power" 360
+
+// Rocket max error in aim in degrees
+// "mod projectile heat aim error" 90
+
+// Damage vs same class multipler
+// "mult dmg vs same class" 2
+
+// On take damage: x% chance of gaining invicibility for 3 seconds
+// "uber on damage taken" 1
+
+// Damage taken from melee multipier
+// "mult dmgtaken from melee" 0.3
+
+// Player is crit boosted when below x% health.
+// "mult crit when health is below percent" 0.5
+
+// Penetrated players receive only x% damage. Bullets only. Can be damage bonus despite the name
+// "penetration damage penalty" 0.5
+
+// Player is pushed x units and speed boosted when firing flamethrower. Limited by ground move speed
+// "firing forward pull" 1000
+
+// x% soldier buff range bonus
+// "mod soldier buff range" 1.7
+
+// Deploy speed bonus when rocket jumping
+// "mult rocketjump deploy time" 0.4
+
+// Fire rate multiplier when not rocket jumping
+// "mul nonrocketjump attackrate" 0.5
+
+// On hit: refire time * (x/60) % chance for aoe heal for 1s (24 hp healed total). use 60 for 100% chance on 1s refire time weapon, 600 for 0.1s
+// "aoe heal chance" 80
+
+// On hit: refire time * (x/60) % chance for crit boost for 3s.  use 60 for 100% chance on 1s refire time weapon, 600 for 0.1s
+// "crits on damage" 80
+
+// On hit: refire time * (x/60) % chance for stun for 3s. use 60 for 100% chance on 1s refire time weapon, 600 for 0.1s
+// "stun on damage" 80
+
+// On hit: refire time * (x/60) % chance for 100 hu blast that stuns players for 2 seconds and applies bleed. use 60 for 100% chance on 1s refire time weapon, 600 for 0.1s
+// "aoe blast on damage" 80
+
+// Grants up to x% damage bonus based on current health. Only for melee weapons
+// "mult dmg with reduced health" 2
+
+// Multiplier of how fast can pyro use primary fire again after airblasting
+// "mult airblast primary refire time" 4
+
+// Spin up time for flamethrowers in seconds
+// "mod flamethrower spinup time" 2.4
+
+// Player pushback cone scale. Might not work after JI
+// "mult airblast cone scale" 1.8
+
+// Combination of flamethrower flags, used to limit airblast functionality. You have to add those numbers to enable specific functions (by default all are enabled):
+// 1 - If airblast should push players
+// 2 - If airblast can put out afterburn
+// 4 - If airblast can reflect projectiles
+// 8 - If airblast can stun players
+// 16 - If airblast disrupts player aim
+// "airblast functionality flags" 9
+
+// airblast pushes players towards the pyro. Does not work?
+// "reverse airblast" 1
+
+// airblast pushes the pyro himself rather than others
+// "airblast dashes" 1
+
+// Sniper rifle charge rate when looking at the enemy. Still subject to the 200% charge rate limit
+// "mult sniper charge per sec with enemy under crosshair" 2
+
+// Beeps when the sniper is looking at the enemy while charging, if set to 1
+// "sniper beep with enemy under crosshair" 1
+
+// On building hit: Disable for x seconds
+// "disable buildings on hit" 4
+
+// Regenerates caber on use
+// "regenerate stickbomb" 1
+
+// Melee smack time multiplier (0.2s default)
+// "mult smack time" 4
+
+// If set to 1, enables healing buildings as medic. increases building healing rate by 10% for each point
+// "medic machinery beam" 1
+
+// Shoots additional 2 arrows per level
+// "arrow mastery" 1
+
+// Custom item model name
+// "custom item model"
+
+// Custom weapon fire sound. Does not work for the weapon owner
+// "custom weapon fire sound"
+
+// Bullets explode in x radius on hit (147 is rocket launcher radius)
+// "explosive bullets" 100
+
+// Projectile model scale multipier
+// "mult projectile scale" 2
+
+// Fire multiple projectiles at once
+// "mult projectile count" 4
+
+// Projectile trail particle name
+// "projectile trail particle"
+
+// Explosion particle name
+// "explosion particle"
+
+// Restores sydney sleeper explosion on headshot
+// "radius sleeper" 1
+
+// Bot with this attribute cannot be affected by the sapper
+// "cannot be sapped" 1
+
+// Item tint color
+// "item color rgb" 223424
+
+// Is item invisible
+// "is invisible" 1
+
+// Cannot taunt
+// "cannot taunt" 1
+
+// Rocket acceleration in hu/s^2
+// "projectile acceleration" 500
+
+// The player is miniboss
+// "is miniboss" 1
+
+// Player model scale
+// "model scale" 1
+
+// Player upgrade possibility
+// "cannot upgrade" 1
+
+// Minimal respawn time in seconds
+// "min respawn time" 4
+
+// Weapon always crits
+// "always crit" 1
+
+// Sentry rocket fire rate
+// "mult firerocket rate" 1
+
+// Building max level limit
+// "building max level" 1
+
+// Allows for faster sentry fire rate, up to 66 shots per second
+// "sentry rapid fire" 1
+
+// Dealing damage with weapon does not increase crit rate
+// "dont count damage towards crit rate" 1
+
+// Set damage rampup to 20%
+// "reduced damage rampup" 1
+
+// Set damage rampup to 50%
+// "no reduced damage rampup" 1
+
+// Force damage rampup and falloff
+// "force damage falloff" 1
+
+// No damage rampup and falloff
+// "no damage falloff" 1
+
+// Weapon can headshot. Hitscan only
+// "can headshot" 1
+
+// Building tint color
+// "building color rgb" 23424
+
+// Building scale. Values above 1.17 make it difficult for players to build on uneven ground
+// "building scale" 1.54
+
+// Stun slow multiplier. 0 to be fully stun slow immune
+// "mult stun resistance" 0
+
+// Allow to deal friendly fire damage
+// "allow friendly fire" 1
+
+// Receive friendly fire from teammates
+// "receive friendly fire" 1
+
+// Weapon Cannot headshot
+// "cannot headshot" 1
+
+// Crit damage multiplier
+// "mult crit dmg" 1.54
+
+// Cannot be headshot. Hitscan only
+// "cannot be headshot" 1
+
+// Use this model attachment instead of bonemerging. If the name is empty, it will follow player origin instead.
+// Common attachments for robot models: head, eye_1, flag. Some bot models also have eye_2, partyhat. Demo & soldier additionally contain foot_L and foot_R
+// Common attachments for player models: head, eyes, flag, partyhat, bread_face, bread_head, effect_hand_L, effect_hand_R, bread_hand_r, bread_hand_l, bread_butt, bread_heel_l, foot_L, foot_R
+// "attachment name" "head"
+
+// Item offset from the attachment origin
+// "attachment offset" "4 2 44"
+
+// Rotation for attached items
+// "attachment angles" "25 25 0"
+
+// Model scale for attached items
+// "attachment scale" 1.5
+
+// For how long should the projectile home in 
+// "mod projectile heat aim time" 1.75
+
+// Projectile gravity in hu/s^2
+// "projectile gravity" 600
+
+// For how long should the projectile accelerate
+// "projectile acceleration time" 2.55
+
+// Grenades explode on impact
+// "grenade explode on impact" 1
+
+// Projectile lifetime in seconds
+// "projectile lifetime" 52
+
+// The player is not solid to other players
+// "not solid to players" 1
+
+// If set, the player takes this amount of damage per second, ignores uber, does not apply damage force
+// "is suicide counter" 1
+
+// Always allow the player to taunt, even midair
+// "always allow taunt" 1
+
+// Reflected projectile speed multiplier
+// "mult reflect velocity" 1
+
+// Use custom kill icon. Icons are defined in scripts/mod_textures.txt in tf_misc_dir.vpk
+// "custom kill icon" "armageddon"
+
+// Homing projectiles follow crosshair
+// "mod projectile heat follow crosshair" 1
+
+// Weapon cannot be upgraded
+// "cannot be upgraded" 1
+ 
+// Projectile cannot be deflected
+// "projectile no deflect" 1
+
+// Time before projectile starts accelerating
+// "projectile acceleration start time" 1
+
+// Player gravity multiplier when ballon head condition (TF_COND_BALLOON_HEAD). 0 is for regular gravity
+// "player gravity ballon head" 12
+
+// Damage multiplier vs giants
+// "mult dmg vs giants" 2.5
+
+// Damage multiplier vs tanks
+// "mult dmg vs tanks" 2.5
+
+// Damage multiplier vs npc excluding tanks and player bots
+// "mult dmg vs npc" 2.5
+
+// Custom sound played when a player victim is hit with the weapon
+// "custom hit sound" "fdfdf"
+
+// Custom sound played when a rocket / projectile / bullet hits something
+// "custom impact sound" "fdfdf"
+
+// Custom weapon reload sound
+// "custom weapon reload sound" "fdfdf"
+
+// No explosion particles and sounds
+// "no explosion particles" 1
+
+// Special version of override projectile type that adds more projectile types:
+// "mechanicalarmorb" - Short circuit orb
+// "override projectile type extra" "mechanicalarmorb"
+
+// Deal additional damage based on fraction of target current health
+// "dmg current health" 0.34
+
+// Deal additional damage based on fraction of target max health
+// "dmg max health" 0.34
+
+// Deal additional damage based on fraction of target missing health
+// "dmg missing health" 0.34
+
+// Player cannot be teleported
+// "cannot be teleported" 1
+
+// Medigun range multiplier
+// "mult medigun range" 1.5
+
+// Penetration limit for projectiles
+// "projectile penetration limit" 3
+
+// Max targets affected by explosives and flamethrowers
+// "max aoe targets" 4
+
+// Add condtion to the target on hit. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
+// "add cond on hit" 56
+
+// Add condtion on hit duration
+// "add cond on hit duration" 4
+
+// Remove condition from target on hit. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
+// "remove cond on hit" 57
+
+// Add damage type to the attack
+// "add damage type" 1
+
+// Remove damage type from the attack
+// "remove damage type" 1
+
+// Sets a special damage type to a range from 1-3
+// "special damage type" 1
+
+// Damage taken multiplier from weapons with special damage type 1
+// "dmg taken mult from special damage type 1" 4
+
+// Damage taken multiplier from weapons with special damage type 2
+// "dmg taken mult from special damage type 2" 4
+
+// Damage taken multiplier from weapons with special damage type 3
+// "dmg taken mult from special damage type 3" 4
+
+// Effect duration multiplier on drinks, jars
+// "mult effect duration" 3
+
+// Effect condtion override on drinks, jars, ubers and many other effects
+// "effect cond override" 24
+
+// Add condition to self on hit target. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
+// "self add cond on hit" 54
+
+// Add condition to self on hit target duration
+// "self add cond on hit duration" 3
+
+// Add condition on kill. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
+// "add cond on kill" 57
+
+// Add condition on kill duration.
+// "add cond on kill duration" 10
+
+// Item description
+// "special item description" "item description"
+
+// Flag carrier move speed multipier
+// "mult flag carrier move speed" 0.66
+
+// On kill healing can overheal
+// "overheal from heal on kill" 1
+
+// Fire input on hit targets. The player is the activator. The format is <target>^<input>^<param>. If omitted, default param is damage received. !projectile is the projectile entity
+// "fire input on hit" "!self^SetHealth^0"
+
+// Restrict input on hit to specified targetname or classname. Wildcards are allowed
+// "fire input on hit name restrict" "player"
+
+// Grenades and arrows bounce off walls, retaining x% of speed after each bounce
+// "grenade bounce speed" 0.8
+
+// Grenades explode on direct hits even if the grenade already touched a wall, dealing x% additional damage
+// "grenade bounce damage" 0.3
+
+// Gravity for arrows and flares. 0 is default gravity. For grenades and stickybombs, any value will disable gravity
+// "projectile gravity native" 0.4
+
+// No drag for grenades and stickybombs
+// "grenade no drag" 1
+
+// Stickybombs stick to enemies
+// "stickybomb stick to enemies" 1
+
+// Stickybombs do not stick to ground
+// "stickybomb no stick" 1
+
+// Bots killed by the weapon drop red money
+// "collect currency on kill" 1
+
+// Force applied to enemy players when touching them. 260 is the minimum amount to knock players up  
+// "stomp player force" 270
+
+// Damage applied to enemies when touching them
+// "stomp player damage" 100
+
+// Projectiles reflected by this weapon keep their original team
+// "reflect keep team" 1
+
+// Custom minigun wind up sound. Does not override default sound
+// "custom wind up sound" "sound.wave"
+
+// Custom minigun wind down sound. Does not override default sound
+// "custom wind down sound" "sound.wave"
+
+// If set to 1, reflected projectiles aim towards the pyro
+// "reflect magnet" 1
+
+// Stay after hitting resupply cabinet or upgrading, if the weapon in the inventory in the slot is different
+// "stay after regenerate" 1
+
+// Custom minigun spin sound. The sound will not loop unless its made to loop
+// "custom minigun spin sound" "sound.wav"
+
+// Time between stomp damage and push
+// "stomp player time" 0.1
+
+// If set to any value other than 0, sets custom arrow kill time after hitting something
+// "arrow hit kill time" 0.3
+
+// Custom projectile hitbox size
+// "custom projectile size" 30
+
+// Sentry cost multiplier
+// "mod sentry cost" 1.25
+
+// Dispenser cost multiplier
+// "mod dispenser cost" 1.25
+
+// Bullets and projectiles penetrate teammates
+// "penetrate teammates" 1
+
+// Add condition when weapon is active. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
+// "add cond when active" 11

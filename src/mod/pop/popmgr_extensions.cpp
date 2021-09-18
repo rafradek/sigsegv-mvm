@@ -4934,7 +4934,7 @@ namespace Mod::Pop::PopMgr_Extensions
 						spectators -= 1;
 					}
 					else {
-						PrintToChat(player, "This mission has a reduced spectator count. If you weren't an admin, you would have been kicked\n");
+						PrintToChat("This mission has a reduced spectator count. If you weren't an admin, you would have been kicked\n", player);
 					}
 				}
 			});

@@ -15,7 +15,8 @@ folder_list = [
 #  'addons/sourcemod/configs',
   'custom/sigsegv/resource',
   'custom/sigsegv/scripts',
-  'cfg'
+  'cfg',
+  'custom/sigsegv/scripts/population'
 ]
 
 # Create the distribution folder hierarchy.
@@ -100,6 +101,8 @@ CopyFiles('scripts', 'custom/sigsegv/scripts',
 )
 
 builder.AddCopy('cfg/sigsegv_convars.cfg', folder_map['cfg'])
+builder.AddCopy('sigsegv.autoload', folder_map['addons/sourcemod/extensions'])
+builder.AddCopy('scripts/mvm_bigrock_sigdemo.pop', folder_map['custom/sigsegv/scripts/population'])
 
 # Copy binaries.
 for cxx_task in Extension.extensions:
