@@ -4933,6 +4933,9 @@ namespace Mod::Pop::PopMgr_Extensions
 						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
 						spectators -= 1;
 					}
+					else {
+						PrintToChat(player, "This mission has a reduced spectator count. If you weren't an admin, you would have been kicked\n");
+					}
 				}
 			});
 		}
@@ -5233,12 +5236,29 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (state.m_iTotalSpectators >= 0) {
 				int spectators = 0;
 				ForEachTFPlayer([&](CTFPlayer *player){
+					
 					if(!player->IsFakeClient() && !player->IsHLTV()) {
 						if (!(player->GetTeamNumber() == TF_TEAM_BLUE || player->GetTeamNumber() == TF_TEAM_RED))
 							spectators++;
 					}
 				});
 				state.m_AllowSpectators.Set(spectators < state.m_iTotalSpectators);
+				if (spectators > state.m_iTotalSpectators) {
+					ForEachTFPlayer([&](CTFPlayer *player) {
+						if (player->GetTeamNumber() < TF_TEAM_RED && spectators > state.m_iTotalSpectators && !player->IsFakeClient() && !player->IsHLTV()) {
+							player->HandleCommand_JoinTeam("red");
+
+							if (player->GetTeamNumber() >= TF_TEAM_RED) {
+								spectators -= 1;
+							}
+							else if (!PlayerIsSMAdmin(player)){
+								// Kick if cannot switch to red team
+								engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
+								spectators -= 1;
+							}
+						}
+					});
+				}
 				//ConVarRef allowspectators("mp_allowspectators");
 				//allowspectators.SetValue(spectators >= state.m_iTotalSpectators ? "0" : "1");
 			}
