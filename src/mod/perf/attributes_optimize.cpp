@@ -189,10 +189,17 @@ namespace Mod::Perf::Attributes_Optimize
             }
             //lastattribcalls = attrib.call_ctr;
         }
-        if (entity_cache->mgr == nullptr)
+        CAttributeManager *mgr = nullptr;
+        if (ent->IsPlayer()) {
+            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
+        }
+        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
+            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
+        }
+        if (mgr == nullptr)
             return value;
             
-        float result = entity_cache->mgr->ApplyAttributeFloat(value, ent, AllocPooledString_StaticConstantStringPointer(attr));
+        float result = mgr->ApplyAttributeFloat(value, ent, AllocPooledString_StaticConstantStringPointer(attr));
 
         if (index_insert == -1)
             index_insert = attribs.AddToTail();
