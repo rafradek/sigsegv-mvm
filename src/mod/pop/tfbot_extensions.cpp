@@ -1321,6 +1321,7 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
 	}
 	
+	ConVar sig_no_bot_partner_taunt("sig_no_bot_partner_taunt", "1", FCVAR_NONE, "Disable bots answering to partner taunts");
 	DETOUR_DECL_MEMBER(CTFPlayer *, CTFPlayer_FindPartnerTauntInitiator)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -1328,6 +1329,10 @@ namespace Mod::Pop::TFBot_Extensions
 			player->SetTeamNumber(TEAM_SPECTATOR);
 		}
 		rc_CTFBotMainAction_Update = false;
+
+		if (sig_no_bot_partner_taunt.GetBool() && player->IsBot())
+			return nullptr;
+
 		return DETOUR_MEMBER_CALL(CTFPlayer_FindPartnerTauntInitiator)();
 	}
 

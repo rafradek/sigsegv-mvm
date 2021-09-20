@@ -18,6 +18,19 @@ class IHasAttributes {
 
 };
 
+namespace Mod::Attr::Custom_Attributes
+{
+	float GetFastAttributeFloat(CBaseEntity *entity, float value, int name);
+	
+	enum FastAttributeClassItem
+	{
+		ALWAYS_CRIT,
+		ADD_COND_ON_ACTIVE,
+		MAX_AOE_TARGETS,
+		ATTRIB_COUNT_ITEM,
+	};
+}
+
 namespace Mod::Util::Client_Cmds
 {
 	// TODO: another version that allows setting a different player's scale...?
@@ -930,6 +943,25 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			
 			displaystr += CFmtStr("wep multi 4 time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("\nfast wep single time: %.9f", timer.GetDuration().GetSeconds());
+
+			timer.Start(); 
+			for(int i = 0; i < times; i++) {
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon2, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon3, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon4, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr(" fast wep multi time: %.9f", timer.GetDuration().GetSeconds());
 
 			playertrg = nullptr;
 		}

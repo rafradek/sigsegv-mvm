@@ -32,9 +32,97 @@ class CDmgAccumulator;
 
 namespace Mod::Attr::Custom_Attributes
 {
+
 	std::set<std::string> precached;
 
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
+
+	enum FastAttributeClassPlayer
+	{
+		STOMP_BUILDING_DAMAGE,
+		STOMP_PLAYER_TIME,
+		STOMP_PLAYER_DAMAGE,
+		STOMP_PLAYER_FORCE,
+		NOT_SOLID_TO_PLAYERS,
+		MULT_MAX_OVERHEAL_SELF,
+		MIN_RESPAWN_TIME,
+		ATTRIB_COUNT_PLAYER,
+	};
+	enum FastAttributeClassItem
+	{
+		ALWAYS_CRIT,
+		ADD_COND_ON_ACTIVE,
+		MAX_AOE_TARGETS,
+		ATTRIB_COUNT_ITEM,
+	};
+	const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
+		"stomp_building_damage", 
+		"stomp_player_time", 
+		"stomp_player_damage", 
+		"stomp_player_force", 
+		"not_solid_to_players",
+		"mult_max_ovelheal_self",
+		"min_respawn_time"
+	};
+
+	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
+		"always_crit",
+		"add_cond_on_active",
+		"max_aoe_targets"
+	};
+
+	float *fast_attribute_cache[2048];
+
+	// Fast Attribute Cache, for every tick attribute querying. The value parameter must be a static value, unlike the CALL_ATTRIB_HOOK_ calls;
+
+	CBaseEntity *last_fast_attrib_entity = nullptr;
+	float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
+		static float* last_attrib_cache = nullptr;
+
+		if (entity == nullptr)
+			return value;
+
+		float *attrib_cache = nullptr;
+		if (last_fast_attrib_entity == entity) {
+            attrib_cache = last_attrib_cache;
+        }
+		else {
+			attrib_cache = fast_attribute_cache[ENTINDEX_NATIVE(entity)];
+			if (attrib_cache == nullptr) {
+				attrib_cache = new float[entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM]{FLT_MIN};
+				fast_attribute_cache[ENTINDEX_NATIVE(entity)] = attrib_cache;
+			}
+			last_fast_attrib_entity = entity;
+			last_attrib_cache = attrib_cache;
+		}
+
+		if (attrib_cache == nullptr)
+			return value;
+
+		float result = attrib_cache[name];
+
+		if (result != FLT_MIN) {
+			return result;
+		}
+
+		CAttributeManager *mgr = nullptr;
+		if (entity->IsPlayer()) {
+            mgr = reinterpret_cast<CTFPlayer *>(entity)->GetAttributeManager();
+        }
+        else if (entity->IsBaseCombatWeapon() || entity->IsWearable()) {
+            mgr = reinterpret_cast<CEconEntity *>(entity)->GetAttributeManager();
+        }
+        if (mgr == nullptr)
+            return value;
+
+		result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
+		attrib_cache[name] = result;
+		return result;
+	}
+
+	int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
+		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
+	}
 
 #define GET_STRING_ATTRIBUTE(attrlist, name, varname) \
 	static auto *def_##varname = GetItemSchema()->GetAttributeDefinitionByName(name); \
@@ -510,10 +598,9 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		hit_entities_explosive = 0;
-		hit_entities_explosive_max = 0;
 		CBaseEntity *weapon = info.m_DmgInfo->GetWeapon();
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, hit_entities_explosive_max, max_aoe_targets);
+		hit_entities_explosive = 0;
+		hit_entities_explosive_max = GetFastAttributeInt(weapon, 0, MAX_AOE_TARGETS);
 
 		DETOUR_MEMBER_CALL(CTFGameRules_RadiusDamage)(info);
 	}
@@ -1271,15 +1358,15 @@ namespace Mod::Attr::Custom_Attributes
 	void OnWeaponUpdate(CTFWeaponBase *weapon) {
 		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
 		if (owner != nullptr && (gpGlobals->tickcount % 6) == 3) {
-			int alwaysCrit = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon,alwaysCrit,always_crit);
+			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
+
 			if (alwaysCrit) {
 				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.25f, nullptr);
 			}
-			int addcond = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, addcond, add_cond_when_active);
+			
+			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
 			if (addcond != 0) {
-				for (int i = 0; i < 4; i++) {
+				for (int i = 0; i < 3; i++) {
 					int addcond_single = (addcond >> (i * 8)) & 255;
 					if (addcond_single != 0) {
 						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.25f, owner);
@@ -1632,17 +1719,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		return DETOUR_MEMBER_CALL(static_attrib_t_BInitFromKV_SingleLine)(context, attribute, errors, b);
 	}
-	
-	int should_hit_entity_cache_tick = 0;
-	std::unordered_map<CBaseEntity *, bool> should_hit_entity_cache;
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
 		CTraceFilterSimple *filter = reinterpret_cast<CTraceFilterSimple*>(this);
-		if ( gpGlobals->tickcount - should_hit_entity_cache_tick > 7 || gpGlobals->tickcount < should_hit_entity_cache_tick ) {
-			should_hit_entity_cache_tick = gpGlobals->tickcount;
-			should_hit_entity_cache.clear();
-		}
 
 		bool result = DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
 		
@@ -1659,31 +1739,15 @@ namespace Mod::Attr::Custom_Attributes
 			bool me_collide = true;
 			bool hit_collide = true;
 
-			auto entry = should_hit_entity_cache.find(entityme);
-			if (entry == should_hit_entity_cache.end()) {
-				int not_solid = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER( entityme, not_solid, not_solid_to_players);
-				me_collide = not_solid == 0;
-				should_hit_entity_cache[entityme] = me_collide;
-			}
-			else{
-				me_collide = entry->second;
-			}
+			int not_solid = GetFastAttributeInt(entityme, 0, NOT_SOLID_TO_PLAYERS);
+			me_collide = not_solid == 0;
 
 			if (!me_collide)
 				return false;
 
 			if (entityhit_player) {
-				auto entry = should_hit_entity_cache.find(entityhit);
-				if (entry == should_hit_entity_cache.end()) {
-					int not_solid = 0;
-					CALL_ATTRIB_HOOK_INT_ON_OTHER( entityhit, not_solid, not_solid_to_players);
-					hit_collide = not_solid == 0;
-					should_hit_entity_cache[entityhit] = hit_collide;
-				}
-				else{
-					hit_collide = entry->second;
-				}
+				int not_solid = GetFastAttributeInt(entityhit, 0, NOT_SOLID_TO_PLAYERS);
+				hit_collide = not_solid == 0;
 			}
 
 			return hit_collide;
@@ -1793,12 +1857,10 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (toucher->IsBaseObject()) {
-			float stomp = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stomp, stomp_building_damage );
+			float stomp = GetFastAttributeFloat(player, 0.0f, STOMP_BUILDING_DAMAGE);
 			if (stomp != 0.0f) {
 				
-				float stompTime = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stompTime, stomp_player_time);
+				float stompTime = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_TIME);
 
 				if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
 					float stomp = 0.0f;
@@ -1811,20 +1873,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		else if (toucher->IsPlayer()) {
 			
-			float stompTime = 0.0f;
-			
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stompTime, stomp_player_time);
+			float stompTime = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_TIME);
 
 			if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
-				float stomp = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, stomp, stomp_player_damage );
+				float stomp = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_DAMAGE);
 				if (stomp != 0.0f) {
 					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 					toucher->TakeDamage(info);
 				}
 
-				float knockback = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( player, knockback, stomp_player_force );
+				float knockback = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_FORCE);
 				if (knockback != 0.0f) {
 					Vector vec = toucher->GetAbsOrigin() - player->GetAbsOrigin();
 					vec.NormalizeInPlace();
@@ -2137,8 +2195,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		bool ret = DETOUR_MEMBER_CALL(CTFFlameManager_BCanBurnEntityThisFrame)(entity);
 		if (ret) {
-			int iMaxAoe = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(flamemgr->GetOwnerEntity(), iMaxAoe, max_aoe_targets);
+			int iMaxAoe = GetFastAttributeInt(flamemgr->GetOwnerEntity(), 0, MAX_AOE_TARGETS);
 			if (iMaxAoe != 0) {
 				int &counter = entity_penetration_counter[flamemgr];
 				int min_delay;
@@ -2300,9 +2357,8 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseCombatWeapon *econ_entity = ToBaseCombatWeapon(pOriginalWeapon);
 		if (econ_entity != nullptr) {
 
-			aoe_in_sphere_max_hit_count = 0;
+			aoe_in_sphere_max_hit_count = GetFastAttributeInt(econ_entity, 0, MAX_AOE_TARGETS);
 			aoe_in_sphere_hit_count = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(econ_entity, aoe_in_sphere_max_hit_count, max_aoe_targets);
 
 			GET_STRING_ATTRIBUTE(econ_entity->GetItem()->GetAttributeList(), "explosion particle", particlename);
 			if (particlename != nullptr) {
@@ -2464,9 +2520,8 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(void, CTFSniperRifle_ExplosiveHeadShot, CTFPlayer *player1, CTFPlayer *player2)
 	{
-		aoe_in_sphere_max_hit_count = 0;
+		aoe_in_sphere_max_hit_count = GetFastAttributeInt(reinterpret_cast<CBaseEntity *>(this), 0, MAX_AOE_TARGETS);
 		aoe_in_sphere_hit_count = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CBaseEntity *>(this), aoe_in_sphere_max_hit_count, max_aoe_targets);
 		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
 		aoe_in_sphere_max_hit_count = 0;
 	}
@@ -2532,7 +2587,7 @@ namespace Mod::Attr::Custom_Attributes
 		static ConVarRef tf_max_health_boost("tf_max_health_boost");
 		float old_value = tf_max_health_boost.GetFloat();
 		float value = old_value;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter(), value, mult_max_ovelheal_self);
+		value *= GetFastAttributeFloat(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter(), 1.0f, MULT_MAX_OVERHEAL_SELF);
 		
 		auto ret = DETOUR_MEMBER_CALL(CTFPlayerShared_GetMaxBuffedHealth)(flag1, flag2);
 
@@ -2626,10 +2681,8 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(float, CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn, CBasePlayer *player)
 	{
-		
-		float respawntime = 0.0f;
-		
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, respawntime, min_respawn_time);
+		float respawntime = GetFastAttributeFloat(player, 0.0f, MIN_RESPAWN_TIME);
+
 		if (!player->IsBot() && respawntime != 0.0f) {
 			return player->GetDeathTime() + respawntime;
 		}
@@ -3133,12 +3186,45 @@ namespace Mod::Attr::Custom_Attributes
 
 	}
 
+    void RemoveAttributeManager(CBaseEntity *entity) {
+        
+        int index = ENTINDEX_NATIVE(entity);
+        if (entity == last_fast_attrib_entity) {
+            last_fast_attrib_entity = nullptr;
+        }
+        delete fast_attribute_cache[index];
+        fast_attribute_cache[index] = nullptr;
+    }
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
 		int id = ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1;
 		attribute_info_strings[id].clear();
 		attribute_info_display_time[id] = 0.0f;
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
+        RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
+    }
+
+	DETOUR_DECL_MEMBER(void, CAttributeManager_ClearCache)
+	{
+        DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
+        auto mgr = reinterpret_cast<CAttributeManager *>(this);
+
+        if (mgr->m_hOuter != nullptr) {
+            auto cache = fast_attribute_cache[ENTINDEX_NATIVE(mgr->m_hOuter)];
+            if (cache != nullptr) {
+				int count = mgr->m_hOuter->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+				for(int i = 0; i < count; i++) {
+					cache[i] = FLT_MIN;
+				}
+            }
+        }
+	}
+
+    DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
+	{
+        DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
+        RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
 
 	/*void OnAttributesChange(CAttributeManager *mgr)
@@ -3333,6 +3419,10 @@ namespace Mod::Attr::Custom_Attributes
 			
 		//	Fix build small sentries attribute reaplly max health on redeploy bug
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_MakeScaledBuilding, "CObjectSentrygun::MakeScaledBuilding");
+
+		//  Fast attribute cache
+			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove", LOWEST);
 		}
 
 		void LoadAttributes()
@@ -3417,6 +3507,7 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				});
 			}
+			
 			for (size_t i = 0; i < model_entries.size(); ) {
 				auto &entry = model_entries[i];
 				if (entry.weapon == nullptr || entry.weapon->IsMarkedForDeletion()) {
@@ -3482,6 +3573,22 @@ namespace Mod::Attr::Custom_Attributes
 				entry.sticky->SetAbsOrigin(entry.sticked->GetAbsOrigin() + entry.offset);
 				i++;
 			}
+			// The function does not make use of this pointer, so its safe to convert to CAttributeManager
+			static int last_cache_version = 0;
+            int cache_version = reinterpret_cast<CAttributeManager *>(this)->GetGlobalCacheVersion();
+
+            if(last_cache_version != cache_version) {
+                for (int i = 0; i < 2048; i++) {
+					auto cache = fast_attribute_cache[i];
+					if (cache != nullptr) {
+						int count = i <= gpGlobals->maxClients ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+						for(int i = 0; i < count; i++) {
+							cache[i] = FLT_MIN;
+						}
+					}
+                }
+                last_cache_version = cache_version;
+            }
 		}
 	};
 	CMod s_Mod;

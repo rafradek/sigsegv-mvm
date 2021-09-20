@@ -270,38 +270,26 @@ namespace Mod::Perf::Attributes_Optimize
         }
 	}
 
-    void RemoveAttributeManager(CAttributeManager *mgr) {
-
+    void RemoveAttributeManager(CBaseEntity *entity) {
+        
+        int index = ENTINDEX_NATIVE(entity);
+        if (entity == last_entity) {
+            last_entity = nullptr;
+        }
+        delete attrib_manager_cache_sp[index];
+        attrib_manager_cache_sp[index] = nullptr;
     }
 
     DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
 	{
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
-
-        if (reinterpret_cast<CBaseEntity *>(this) == last_entity) {
-            last_entity = nullptr;
-        }
-        if (reinterpret_cast<CBaseEntity *>(this) == last_entity_2) {
-            last_entity_2 = nullptr;
-        }
-        delete attrib_manager_cache_sp[ENTINDEX(reinterpret_cast<CBaseEntity *>(this))];
-        attrib_manager_cache_sp[ENTINDEX(reinterpret_cast<CBaseEntity *>(this))] = nullptr;
-        RemoveAttributeManager(reinterpret_cast<CEconEntity *>(this)->GetAttributeManager());
+        RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
-        
-        if (reinterpret_cast<CBaseEntity *>(this) == last_entity) {
-            last_entity = nullptr;
-        }
-        if (reinterpret_cast<CBaseEntity *>(this) == last_entity_2) {
-            last_entity_2 = nullptr;
-        }
-        delete attrib_manager_cache_sp[ENTINDEX(reinterpret_cast<CBaseEntity *>(this))];
-        attrib_manager_cache_sp[ENTINDEX(reinterpret_cast<CBaseEntity *>(this))] = nullptr;
-        RemoveAttributeManager(reinterpret_cast<CTFPlayer *>(this)->GetAttributeManager());
+        RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
     
 
@@ -311,8 +299,8 @@ namespace Mod::Perf::Attributes_Optimize
 		CMod() : IMod("Perf:Attributes_Optimize")
 		{
 			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache");
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove", LOWEST);
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_UpdateOnRemove,                "CTFPlayer::UpdateOnRemove", LOWEST);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove", LOWEST);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_UpdateOnRemove,       "CTFPlayer::UpdateOnRemove", LOWEST);
 			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_int,   "CAttributeManager::AttribHookValue<int>");
 			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_float, "CAttributeManager::AttribHookValue<float>");
 		}
