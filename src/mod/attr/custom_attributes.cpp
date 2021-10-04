@@ -14,6 +14,7 @@
 #include "stub/upgrades.h"
 #include "mod/pop/common.h"
 #include "util/iterate.h"
+#include <gamemovement.h>
 
 struct CTFRadiusDamageInfo
 {
@@ -46,6 +47,9 @@ namespace Mod::Attr::Custom_Attributes
 		NOT_SOLID_TO_PLAYERS,
 		MULT_MAX_OVERHEAL_SELF,
 		MIN_RESPAWN_TIME,
+		MULT_STEP_HEIGHT,
+		IGNORE_PLAYER_CLIP,
+		ALLOW_BUNNY_HOP,
 		ATTRIB_COUNT_PLAYER,
 	};
 	enum FastAttributeClassItem
@@ -62,12 +66,15 @@ namespace Mod::Attr::Custom_Attributes
 		"stomp_player_force", 
 		"not_solid_to_players",
 		"mult_max_ovelheal_self",
-		"min_respawn_time"
+		"min_respawn_time",
+		"mult_step_height",
+		"ignore_player_clip",
+		"allow_bunny_hop"
 	};
 
 	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
 		"always_crit",
-		"add_cond_on_active",
+		"add_cond_when_active",
 		"max_aoe_targets"
 	};
 
@@ -2939,6 +2946,44 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CBaseProjectile_GetCollideWithTeammatesDelay)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
+	{
+		if (gpGlobals->tickcount % 8 == 6) {
+			auto player = reinterpret_cast<CTFPlayer *>(this);
+			static ConVarRef stepsize("sv_stepsize");
+			player->m_Local->m_flStepSize = GetFastAttributeFloat(player, stepsize.GetFloat(), MULT_STEP_HEIGHT);
+		}
+
+		DETOUR_MEMBER_CALL(CTFPlayer_TFPlayerThink)();
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFGameMovement_PlayerSolidMask, bool brushonly)
+	{
+		CBasePlayer *player = reinterpret_cast<CGameMovement *>(this)->player;
+		if (GetFastAttributeInt(player, 0, IGNORE_PLAYER_CLIP) != 0)
+			return brushonly ? MASK_SOLID_BRUSHONLY : MASK_SOLID;
+
+		return DETOUR_MEMBER_CALL(CTFGameMovement_PlayerSolidMask)(brushonly);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
+	{
+		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
+		if( (cmd->buttons & 2) && (player->GetGroundEntity() == nullptr) && player->IsAlive() 
+				/*&& (player->GetFlags() & 1) */ && GetFastAttributeInt(player, 0, ALLOW_BUNNY_HOP) == 1
+				 ){
+			cmd->buttons &= ~2;
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFGameMovement_PreventBunnyJumping)
+	{
+		if(GetFastAttributeInt(reinterpret_cast<CGameMovement *>(this)->player, 0, ALLOW_BUNNY_HOP) == 0){
+			DETOUR_MEMBER_CALL(CTFGameMovement_PreventBunnyJumping)();
+		}
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -3397,6 +3442,10 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_CalculateObjectCost, "CTFPlayerShared::CalculateObjectCost");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetPenetrateType, "CTFWeaponBase::GetPenetrateType");
 			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_GetCollideWithTeammatesDelay, "CBaseProjectile::GetCollideWithTeammatesDelay");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TFPlayerThink,           "CTFPlayer::TFPlayerThink");
+			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PlayerSolidMask, "CTFGameMovement::PlayerSolidMask");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
+			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");

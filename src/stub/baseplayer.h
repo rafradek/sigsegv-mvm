@@ -73,6 +73,7 @@ public:
 	DECL_SENDPROP(bool,  m_bDucking);
 	DECL_SENDPROP(bool,  m_bInDuckJump);
 	DECL_SENDPROP(float, m_flDucktime);
+	DECL_SENDPROP_RW(float, m_flStepSize);
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	
@@ -139,7 +140,7 @@ public:
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	
 	
-	DECL_SENDPROP(CPlayerLocalData, m_Local);
+	DECL_SENDPROP_RW(CPlayerLocalData, m_Local);
 	DECL_SENDPROP(int, m_nTickBase);
 	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);

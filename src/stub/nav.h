@@ -252,6 +252,7 @@ public:
 	CNavArea *GetNearestNavArea(const Vector& pos, bool anyZ = false, float maxDist = 10000.0f, bool checkLOS = false, bool checkGround = true, int team = TEAM_ANY) const { return ft_GetNearestNavArea_vec                   (this, pos, anyZ, maxDist, checkLOS, checkGround, team); }
 	CNavArea *GetNearestNavArea(CBaseEntity *pEntity, int nFlags = GETNAVAREA_CHECK_GROUND, float maxDist = 10000.0f) const                                                { return ft_GetNearestNavArea_ent                   (this, pEntity, nFlags, maxDist); }
 	bool GetGroundHeight(const Vector& pos, float *height, Vector *normal = nullptr) const                                                                                 { return ft_GetGroundHeight                         (this, pos, height, normal); }
+	int Load()                                                                                                                                                             { return ft_Load                                    (this); }
 #if TOOLCHAIN_FIXES
 	void CollectAreasOverlappingExtent(const Extent& extent, CUtlVector<CTFNavArea *> *outVector)                                                                          {        ft_CollectAreasOverlappingExtent_CTFNavArea(this, extent, outVector); }
 #endif
@@ -263,6 +264,7 @@ private:
 	static MemberFuncThunk<const CNavMesh *, CNavArea *, CBaseEntity *, int, float>                   ft_GetNearestNavArea_ent;
 	static MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>                  ft_GetGroundHeight;
 	static MemberFuncThunk<      CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>         ft_CollectAreasOverlappingExtent_CTFNavArea;
+	static MemberFuncThunk<      CNavMesh *, int>                                                     ft_Load;
 };
 
 class CTFNavMesh : public CNavMesh

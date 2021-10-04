@@ -694,40 +694,44 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	
 	DETOUR_DECL_MEMBER(int, CZombie_OnTakeDamage_Alive, const CTakeDamageInfo& info)
 	{
+		
+		int dmg = DETOUR_MEMBER_CALL(CZombie_OnTakeDamage_Alive)(info);
 		auto zombie = reinterpret_cast<CZombie *>(this);
-		IGameEvent *event = gameeventmanager->CreateEvent("npc_hurt");
-		if ( event )
-		{
-
-			event->SetInt("entindex", ENTINDEX(zombie));
-			event->SetInt("health", Max(0, zombie->GetHealth()));
-			event->SetInt("damageamount", info.GetDamage());
-			event->SetBool("crit", (info.GetDamageType() & DMG_CRITICAL) ? true : false);
-
-			CTFPlayer *attackerPlayer = ToTFPlayer(info.GetAttacker());
-			if (attackerPlayer)
+		if (dmg > 0) {
+			IGameEvent *event = gameeventmanager->CreateEvent("npc_hurt");
+			if ( event )
 			{
-				event->SetInt("attacker_player", attackerPlayer->GetUserID());
 
-				if ( attackerPlayer->GetActiveTFWeapon() )
+				event->SetInt("entindex", ENTINDEX(zombie));
+				event->SetInt("health", Max(0, zombie->GetHealth()));
+				event->SetInt("damageamount", dmg);
+				event->SetBool("crit", (info.GetDamageType() & DMG_CRITICAL) ? true : false);
+
+				CTFPlayer *attackerPlayer = ToTFPlayer(info.GetAttacker());
+				if (attackerPlayer)
 				{
-					event->SetInt("weaponid", attackerPlayer->GetActiveTFWeapon()->GetWeaponID());
+					event->SetInt("attacker_player", attackerPlayer->GetUserID());
+
+					if ( attackerPlayer->GetActiveTFWeapon() )
+					{
+						event->SetInt("weaponid", attackerPlayer->GetActiveTFWeapon()->GetWeaponID());
+					}
+					else
+					{
+						event->SetInt("weaponid", 0);
+					}
 				}
 				else
 				{
+					// hurt by world
+					event->SetInt("attacker_player", 0);
 					event->SetInt("weaponid", 0);
 				}
-			}
-			else
-			{
-				// hurt by world
-				event->SetInt("attacker_player", 0);
-				event->SetInt("weaponid", 0);
-			}
 
-			gameeventmanager->FireEvent(event);
+				gameeventmanager->FireEvent(event);
+			}
 		}
-		return DETOUR_MEMBER_CALL(CZombie_OnTakeDamage_Alive)(info);
+		return dmg;
 	}
 
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, const CTakeDamageInfo& info)

@@ -652,6 +652,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bHHHNonSolidToPlayers = false;
 			this->m_iBunnyHop = 0;
 			this->m_bNoSkeletonSplit = false;
+			this->m_fStuckTimeMult = 1.0f;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -790,6 +791,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			Clear_Point_Templates();
 
+			this->m_CustomNavFile = "";
+
 		}
 		
 		bool  m_bGiantsDropRareSpells;
@@ -840,6 +843,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bHHHNonSolidToPlayers;
 		int m_iBunnyHop;
 		bool m_bNoSkeletonSplit;
+		float m_fStuckTimeMult;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -971,6 +975,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unordered_set<CTFPlayer*> m_PlayerMissionInfoSend;
 
 		std::unordered_set<CTFPlayer*> m_PlayersByWaveStart;
+
+		std::string m_CustomNavFile;
 	};
 	PopState state;
 	
@@ -3572,7 +3578,22 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return DETOUR_STATIC_CALL(CreateSpellSpawnZombie)(pCaster, vSpawnPosition, nSkeletonType);
 	}
-	
+
+	RefCount rc_ILocomotion_StuckMonitor;
+	DETOUR_DECL_MEMBER(void, ILocomotion_StuckMonitor)
+	{
+		SCOPED_INCREMENT(rc_ILocomotion_StuckMonitor);
+		DETOUR_MEMBER_CALL(ILocomotion_StuckMonitor)();
+	}
+	DETOUR_DECL_MEMBER(float, PlayerLocomotion_GetDesiredSpeed)
+	{
+		float ret = DETOUR_MEMBER_CALL(PlayerLocomotion_GetDesiredSpeed)();
+		if (rc_ILocomotion_StuckMonitor) {
+			ret *= state.m_fStuckTimeMult;
+		}
+		return ret;
+	}
+
 	class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
 	{
 	public:
@@ -4457,6 +4478,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			ResetMaxTotalPlayers(10);
 		}
 
+		// Reset nav mesh
+		if (state.m_CustomNavFile != "") {
+			TheNavMesh->Load();
+		}
+
 		state.Reset();
 		
 	//	Redirects parsing errors to the client
@@ -4757,6 +4783,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_bZombiesNoWave666 = subkey->GetBool();
 				} else if (FStrEq(name, "FastNPCUpdate")) {
 					state.m_bFastNPCUpdate = subkey->GetBool();
+				} else if (FStrEq(name, "StuckTimeMultiplier")) {
+					state.m_fStuckTimeMult = subkey->GetFloat();
 				} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 				} else if (FStrEq(name, "MaxSpectators")) {
@@ -4852,6 +4880,14 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_AirAccelerate.Set(subkey->GetFloat());
 				} else if (FStrEq(name, "NoSkeletonSplit")) {
 					state.m_bNoSkeletonSplit = subkey->GetBool();
+				} else if (FStrEq(name, "CustomNavFile")) {
+					Msg("%s\n ", STRING(gpGlobals->mapname));
+					state.m_CustomNavFile = subkey->GetString();
+					string_t oldMapName = gpGlobals->mapname;
+					gpGlobals->mapname = AllocPooledString(subkey->GetString());
+					TheNavMesh->Load();
+					gpGlobals->mapname = oldMapName;
+
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -5103,6 +5139,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CZombieBehavior_OnKilled, "CZombieBehavior::OnKilled");
 			MOD_ADD_DETOUR_STATIC(CreateSpellSpawnZombie, "CreateSpellSpawnZombie");
 
+			MOD_ADD_DETOUR_MEMBER(ILocomotion_StuckMonitor, "ILocomotion::StuckMonitor");
+			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_GetDesiredSpeed, "PlayerLocomotion::GetDesiredSpeed");
+			
 			
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");

@@ -13,7 +13,7 @@
 #include <boost/algorithm/string.hpp>
 #include <regex>
 #include <string_view>
-
+#include "stub/sendprop.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -78,14 +78,93 @@ namespace Mod::Etc::Mapentity_Additions
         CHandle<CLogicCase> provider;
     };
     
+    struct SendPropCacheEntry {
+        ServerClass *serverClass;
+        std::string name;
+        int offset;
+        SendProp *prop;
+    };
+
+    struct DatamapCacheEntry {
+        datamap_t *datamap;
+        std::string name;
+        int offset;
+        fieldtype_t fieldType;
+        int size;
+    };
+
     std::unordered_map<CBaseEntity *, std::unordered_map<std::string, CBaseEntityOutput>> custom_output;
     std::unordered_map<CBaseEntity *, std::unordered_map<std::string, string_t>> custom_variables;
+
+    std::vector<SendPropCacheEntry> send_prop_cache;
+    std::vector<DatamapCacheEntry> datamap_cache;
+
+    bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop)
+    {
+        for (int i = 0; i < s_table->GetNumProps(); ++i) {
+            SendProp *s_prop = s_table->GetProp(i);
+            
+            if (s_prop->GetName() != nullptr && strcmp(s_prop->GetName(), name) == 0) {
+                off += s_prop->GetOffset();
+                prop = s_prop;
+                return true;
+            }
+            
+            if (s_prop->GetDataTable() != nullptr) {
+                off += s_prop->GetOffset();
+                if (FindSendProp(off, s_prop->GetDataTable(), name, prop)) {
+                    return true;
+                }
+                off -= s_prop->GetOffset();
+            }
+        }
+        
+        return false;
+    }
+
+    SendPropCacheEntry &GetSendPropOffset(ServerClass *serverClass, const char *name) {
+        
+        for (auto &entry : send_prop_cache) {
+            if (entry.serverClass == serverClass && entry.name == name) {
+                return entry;
+            }
+        }
+
+        SendProp *prop = nullptr;
+        int offset = 0;
+        FindSendProp(offset,serverClass->m_pTable, name, prop);
+
+        send_prop_cache.push_back({serverClass, name, offset, prop});
+        return send_prop_cache.back();
+    }
+
+    DatamapCacheEntry &GetDataMapOffset(datamap_t *datamap, const char *name) {
+        
+        for (auto &entry : datamap_cache) {
+            if (entry.datamap == datamap && entry.name == name) {
+                return entry;
+            }
+        }
+        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
+            // search through all the readable fields in the data description, looking for a match
+            for (int i = 0; i < dmap->dataNumFields; i++) {
+                if (strcmp(dmap->dataDesc[i].fieldName, name) == 0) {
+                    datamap_cache.push_back({datamap, name, dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ], dmap->dataDesc[i].fieldType, dmap->dataDesc[i].fieldSize});
+                    return datamap_cache.back();
+                }
+            }
+        }
+
+        datamap_cache.push_back({datamap, name, 0, FIELD_VOID, 0});
+        return datamap_cache.back();
+    }
 
     void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
         std::string namestr = name;
         boost::algorithm::to_lower(namestr);
        // DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
         custom_output[entity][namestr].ParseEventAction(value);
+        custom_variables[entity][namestr] = AllocPooledString(value);
     }
 
     // Alert! Custom outputs must be defined in lowercase
@@ -136,6 +215,7 @@ namespace Mod::Etc::Mapentity_Additions
         VARIABLE,
         KEYVALUE,
         DATAMAP,
+        SENDPROP
     };
 
     void FireGetInput(CBaseEntity *entity, GetInputType type, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t &value) {
@@ -164,18 +244,39 @@ namespace Mod::Etc::Mapentity_Additions
                 found = entity->ReadKeyField(name, &variable);
             }
             else if (type == DATAMAP) {
-                for (datamap_t *dmap = entity->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap) {
-                    // search through all the readable fields in the data description, looking for a match
-                    for (int i = 0; i < dmap->dataNumFields; i++) {
-                        if (strcmp(dmap->dataDesc[i].fieldName, name) == 0) {
-                            variable.Set( dmap->dataDesc[i].fieldType, ((char*)entity) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ] );
-                            found = true;
-                            break;
+                auto &entry = GetDataMapOffset(entity->GetDataDescMap(), name);
+                if (entry.offset > 0) {
+                    if (entry.fieldType == FIELD_CHARACTER) {
+                        variable.SetString(AllocPooledString(((char*)entity) + entry.offset));
+                    }
+                    else {
+                        variable.Set(entry.fieldType, ((char*)entity) + entry.offset);
+                    }
+                    found = true;
+                }
+            }
+            else if (type == SENDPROP) {
+                auto &entry = GetSendPropOffset(entity->GetServerClass(), name);
+
+                if (entry.offset > 0) {
+                    int offset = entry.offset;
+                    auto propType = entry.prop->GetType();
+                    if (propType == DPT_Int) {
+                        variable.SetInt(*(int*)(((char*)entity) + offset));
+                        if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
+                            variable.Set(FIELD_EHANDLE, (CHandle<CBaseEntity>*)(((char*)entity) + offset));
                         }
                     }
-                    if (found) {
-                        break;
+                    else if (propType == DPT_Float) {
+                        variable.SetFloat(*(float*)(((char*)entity) + offset));
                     }
+                    else if (propType == DPT_String) {
+                        variable.SetString(*(string_t*)(((char*)entity) + offset));
+                    }
+                    else if (propType == DPT_Vector) {
+                        variable.SetVector3D(*(Vector*)(((char*)entity) + offset));
+                    }
+                    found = true;
                 }
             }
             if (!found) {
@@ -1034,31 +1135,75 @@ namespace Mod::Etc::Mapentity_Additions
             }
             else if (strnicmp(szInputName, "$SetVar$", strlen("$SetVar$")) == 0) {
                 custom_variables[ent][szInputName + strlen("$SetVar$")] = AllocPooledString(Value.String());
+                return true;
             }
             else if (strnicmp(szInputName, "$GetVar$", strlen("$GetVar$")) == 0) {
                 FireGetInput(ent, VARIABLE, szInputName + strlen("$GetVar$"), pActivator, pCaller, Value);
+                return true;
             }
             else if (strnicmp(szInputName, "$SetKey$", strlen("$SetKey$")) == 0) {
                 ent->KeyValue(szInputName + strlen("$SetKey$"), Value.String());
+                return true;
             }
             else if (strnicmp(szInputName, "$GetKey$", strlen("$GetKey$")) == 0) {
                 FireGetInput(ent, KEYVALUE, szInputName + strlen("$GetKey$"), pActivator, pCaller, Value);
+                return true;
             }
             else if (strnicmp(szInputName, "$SetData$", strlen("$SetData$")) == 0) {
-                for (datamap_t *dmap = ent->GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap) {
-                    // search through all the readable fields in the data description, looking for a match
-                    for (int i = 0; i < dmap->dataNumFields; i++) {
-                        if (strcmp(dmap->dataDesc[i].fieldName, szInputName + strlen("$SetData$")) == 0) {
-                            Value.Convert(dmap->dataDesc[i].fieldType);
-                            Value.SetOther(((char*)ent) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]);
-                            break;
-                        }
+                const char *name = szInputName + strlen("$SetData$");
+                auto &entry = GetDataMapOffset(ent->GetDataDescMap(), name);
+
+                if (entry.offset > 0) {
+                    if (entry.fieldType == FIELD_CHARACTER) {
+                        V_strncpy(((char*)ent) + entry.offset, Value.String(), entry.size);
+                    }
+                    else {
+                        Value.Convert(entry.fieldType);
+                        Value.SetOther(((char*)ent) + entry.offset);
                     }
                 }
-                ent->KeyValue(szInputName + strlen("$SetData$"), Value.String());
+                return true;
             }
             else if (strnicmp(szInputName, "$GetData$", strlen("$GetData$")) == 0) {
                 FireGetInput(ent, DATAMAP, szInputName + strlen("$GetData$"), pActivator, pCaller, Value);
+                return true;
+            }
+            else if (strnicmp(szInputName, "$SetProp$", strlen("$SetProp$")) == 0) {
+                const char *name = szInputName + strlen("$SetProp$");
+
+                auto &entry = GetSendPropOffset(ent->GetServerClass(), name);
+
+                if (entry.offset > 0) {
+
+                    int offset = entry.offset;
+                    auto propType = entry.prop->GetType();
+                    if (propType == DPT_Int) {
+                        *(int*)(((char*)ent) + offset) = atoi(Value.String());
+                        if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
+                            *(CHandle<CBaseEntity>*)(((char*)ent) + offset) = servertools->FindEntityByName(nullptr, Value.String());
+                        }
+                    }
+                    else if (propType == DPT_Float) {
+                        *(float*)(((char*)ent) + offset) = strtof(Value.String(), nullptr);
+                    }
+                    else if (propType == DPT_String) {
+                        *(string_t*)(((char*)ent) + offset) = AllocPooledString(Value.String());
+                    }
+                    else if (propType == DPT_Vector) {
+                        Vector tmpVec = vec3_origin;
+                        if (sscanf(Value.String(), "[%f %f %f]", &tmpVec[0], &tmpVec[1], &tmpVec[2]) == 0)
+                        {
+                            sscanf(Value.String(), "%f %f %f", &tmpVec[0], &tmpVec[1], &tmpVec[2]);
+                        }
+                        *(Vector*)(((char*)ent) + offset) = tmpVec;
+                    }
+                }
+
+                return true;
+            }
+            else if (strnicmp(szInputName, "$GetProp$", strlen("$GetProp$")) == 0) {
+                FireGetInput(ent, SENDPROP, szInputName + strlen("$GetProp$"), pActivator, pCaller, Value);
+                return true;
             }
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
@@ -1323,6 +1468,13 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
 
+    DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesFilterImpl, CBaseEntity *pCaller, CBaseEntity *pEntity)
+	{
+        parse_ent = reinterpret_cast<CBaseEntity *>(this);
+        return DETOUR_MEMBER_CALL(CBaseFilter_PassesFilterImpl)(pCaller, pEntity);
+	}
+
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1366,6 +1518,9 @@ namespace Mod::Etc::Mapentity_Additions
             tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
             point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
+
+            send_prop_cache.clear();
+            datamap_cache.clear();
         }
 	};
 	CMod s_Mod;
