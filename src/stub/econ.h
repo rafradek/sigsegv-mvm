@@ -295,6 +295,9 @@ template<> inline bool FindAttribute<float, CTFItemDefinition>(const CTFItemDefi
 class CEconItemView // DT_ScriptCreatedItem
 {
 public:
+	void NetworkStateChanged()           {}
+	void NetworkStateChanged(void *pVar) {}
+	
 	static CEconItemView *Create()
 	{
 		/* using an arbitrary buffer size that's basically guaranteed to always
@@ -327,6 +330,7 @@ public:
 	DECL_DATAMAP(CAttributeList, m_AttributeList);
 	DECL_DATAMAP(CAttributeList, m_NetworkedDynamicAttributesForDemos);
 	DECL_DATAMAP(bool,           m_bOnlyIterateItemViewAttributes);
+	DECL_SENDPROP(uint32,        m_iAccountID);
 	
 	int GetItemDefIndex() const { return vt_GetItemDefIndex(this); }
 	
@@ -532,6 +536,8 @@ public:
 
 	CEconItemView *GetItemByPosition(int position, int *index) { return ft_GetItemByPosition(this, position, index); }
 	
+	int vtable;
+	CSteamID m_OwnerId;
 private:
 	static MemberVFuncThunk<      CPlayerInventory *, void, bool> vt_DumpInventoryToConsole;
 	static MemberVFuncThunk<const CPlayerInventory *, int>        vt_GetMaxItemCount;

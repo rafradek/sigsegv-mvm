@@ -56,6 +56,7 @@ public:
 	DECL_SENDPROP(int,   m_iClip2);
 	DECL_SENDPROP(int,   m_iViewModelIndex);
 	DECL_SENDPROP(int,   m_iWorldModelIndex);
+	DECL_DATAMAP(bool,   m_bReloadsSingly);
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatCharacter>, m_hOwner);

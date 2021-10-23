@@ -61,6 +61,7 @@ enum DebugOverlayBits_t : uint32_t
 class CBaseCombatCharacter;
 class CBaseCombatWeapon;
 class INextBot;
+class ExtraEntityData;
 
 class CBaseEntityOutput
 {
@@ -80,6 +81,7 @@ private:
 class CServerNetworkProperty : public IServerNetworkable
 {
 public:
+	int vtable;
 	void MarkPVSInformationDirty()
 	{
 		if (this->GetEdict() != nullptr) {
@@ -87,6 +89,14 @@ public:
 		}
 	}
 	
+	int entindex()
+	{
+		return m_pPev != nullptr ? m_pPev->m_EdictIndex : 0;
+	}
+
+	CBaseEntity *m_pOuter;
+	// CBaseTransmitProxy *m_pTransmitProxy;
+	edict_t	*m_pPev;
 	// ...
 };
 
@@ -161,6 +171,7 @@ public:
 	void SetLocalAngularVelocity( QAngle &ang)    { this->m_vecAngVelocity = ang; }
 	int GetEffects() const                        { return this->m_fEffects; }
 	bool IsEffectActive(int nEffects) const       { return ((this->m_fEffects & nEffects) != 0); }
+	ExtraEntityData *GetExtraEntityData()         { return this->m_extraEntityData; }
 	/* thunk */
 	void Remove()                                                                                                           {        ft_Remove                        (this); }
 	void CalcAbsolutePosition()                                                                                             {        ft_CalcAbsolutePosition          (this); }
@@ -270,8 +281,7 @@ public:
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser3);
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser4);
 	DECL_DATAMAP(char,       m_takedamage);
-	
-	
+	DECL_RELATIVE(ExtraEntityData *, m_extraEntityData);
 	
 	
 private:
@@ -444,7 +454,7 @@ inline CBaseEntity *UTIL_EntityByIndex(int entityIndex)
 
 inline int CBaseEntity::entindex() const
 {
-	return ENTINDEX(this->GetNetworkable()->GetEdict());
+	return this->NetworkProp()->entindex();
 }
 
 inline const Vector& CBaseEntity::GetAbsOrigin() const

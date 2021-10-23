@@ -390,6 +390,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor0\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
 		
+		if (wavespawn->extra != nullptr) {
+			delete wavespawn->extra;
+		}
+
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor0)();
 	}
 	
@@ -399,7 +403,11 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
-		
+
+		if (wavespawn->extra != nullptr) {
+			delete wavespawn->extra;
+		}
+
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor2)();
 	}
 
@@ -410,19 +418,25 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 	}
 
-	/*DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update, InternalStateType state)
+	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
-		if (state == WAIT_FOR_ALL_DEAD) {
-			DisplayMessages(wavespawns[wavespawn].last_spawn_message);
-		else if (state == DONE)
-			DisplayMessages(wavespawns[wavespawn].done_message);
-		
-	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
-		wavespawns.erase(wavespawn);
-		
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor2)();
-	}*/
+		if (wavespawn->extra != nullptr) {
+			auto extra = wavespawn->extra;
+			for (int i = 0; i < extra->m_waitForAllSpawnedList.Count(); i++) {
+				if (extra->m_waitForAllSpawnedList[i]->m_state <= SPAWNING) {
+					return;
+				}
+			}
+			for (int i = 0; i < extra->m_waitForAllDeadList.Count(); i++) {
+				if (extra->m_waitForAllDeadList[i]->m_state != DONE) {
+					return;
+				}
+			}
+		}
+
+		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+	}
 
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_SetState, InternalStateType state)
 	{
@@ -482,6 +496,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		wavespawn->extra = new CWaveSpawnExtra();
 		
 		// make a temporary copy of the KV subtree for this populator
 		// the reason for this: `kv_orig` *might* be a ptr to a shared template KV subtree
@@ -528,6 +543,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 		// delete the temporary copy of the KV subtree
 		kv->deleteThis();
+
+
 		
 		return result;
 	}
@@ -862,6 +879,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
+			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
 
 			
 		}

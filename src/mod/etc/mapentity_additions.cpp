@@ -6,6 +6,7 @@
 #include "stub/tf_shareddefs.h"
 #include "stub/misc.h"
 #include "stub/strings.h"
+#include "stub/server.h"
 #include "stub/objects.h"
 #include "util/scope.h"
 #include "util/iterate.h"
@@ -52,7 +53,7 @@ namespace Mod::Etc::Mapentity_Additions
 
             provider->FireCase(item + 1, player);
             variant_t variant;
-            FireCustomOutput(provider, "$onselect", player, provider, variant);
+            FireCustomOutput(provider, "onselect", player, provider, variant);
         }
 
         virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
@@ -162,7 +163,7 @@ namespace Mod::Etc::Mapentity_Additions
     void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
         std::string namestr = name;
         boost::algorithm::to_lower(namestr);
-       // DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
+    //  DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
         custom_output[entity][namestr].ParseEventAction(value);
         custom_variables[entity][namestr] = AllocPooledString(value);
     }
@@ -186,9 +187,7 @@ namespace Mod::Etc::Mapentity_Additions
 
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
     {
-        variant_t variant;
-        entity->ReadKeyField("Case16", &variant);
-        std::string fmtstr = variant.String();
+        std::string fmtstr = STRING(entity->m_nCase[15]);
         unsigned int pos = 0;
         unsigned int index = 1;
         while ((pos = fmtstr.find('%', pos)) != std::string::npos ) {
@@ -198,17 +197,16 @@ namespace Mod::Etc::Mapentity_Additions
             }
             else
             {
-                entity->ReadKeyField(CFmtStr("Case%02d", index), &variant);
-                fmtstr.replace(pos, 1, variant.String());
+                string_t str = entity->m_nCase[index - 1];
+                fmtstr.replace(pos, 1, STRING(str));
                 index++;
-                pos += strlen(variant.String());
+                pos += strlen(STRING(str));
             }
         }
 
         variant_t variant1;
         variant1.SetString(AllocPooledString(fmtstr.c_str()));
         entity->m_OnDefault->FireOutput(variant1, activator, entity);
-        DevMsg("output: %s\n", fmtstr.c_str());
     }
 
     enum GetInputType {
@@ -217,6 +215,61 @@ namespace Mod::Etc::Mapentity_Additions
         DATAMAP,
         SENDPROP
     };
+
+    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable) {
+        bool found = false;
+
+        if (type == VARIABLE) {
+            auto find = custom_variables.find(entity);
+            if (find != custom_variables.end()) {
+                auto find_var = find->second.find(name);
+                if (find_var != find->second.end()) {
+                    variable.SetString(find_var->second);
+                    found = true;
+                }
+            }
+        }
+        else if (type == KEYVALUE) {
+            found = entity->ReadKeyField(name, &variable);
+        }
+        else if (type == DATAMAP) {
+            auto &entry = GetDataMapOffset(entity->GetDataDescMap(), name);
+            if (entry.offset > 0) {
+                if (entry.fieldType == FIELD_CHARACTER) {
+                    variable.SetString(AllocPooledString(((char*)entity) + entry.offset));
+                }
+                else {
+                    variable.Set(entry.fieldType, ((char*)entity) + entry.offset);
+                }
+                found = true;
+            }
+        }
+        else if (type == SENDPROP) {
+            auto &entry = GetSendPropOffset(entity->GetServerClass(), name);
+
+            if (entry.offset > 0) {
+                int offset = entry.offset;
+                auto propType = entry.prop->GetType();
+                if (propType == DPT_Int) {
+                    variable.SetInt(*(int*)(((char*)entity) + offset));
+                    if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
+                        variable.Set(FIELD_EHANDLE, (CHandle<CBaseEntity>*)(((char*)entity) + offset));
+                    }
+                }
+                else if (propType == DPT_Float) {
+                    variable.SetFloat(*(float*)(((char*)entity) + offset));
+                }
+                else if (propType == DPT_String) {
+                    variable.SetString(*(string_t*)(((char*)entity) + offset));
+                }
+                else if (propType == DPT_Vector) {
+                    variable.SetVector3D(*(Vector*)(((char*)entity) + offset));
+                }
+                found = true;
+            }
+        }
+        return found;
+    }
 
     void FireGetInput(CBaseEntity *entity, GetInputType type, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t &value) {
         char param_tokenized[256] = "";
@@ -227,64 +280,18 @@ namespace Mod::Etc::Mapentity_Additions
         
         variant_t variable;
 
-        if (targetstr != nullptr && action != nullptr && defvalue != nullptr) {
-            bool found = false;
+        if (targetstr != nullptr && action != nullptr) {
 
-            if (type == VARIABLE) {
-                auto find = custom_variables.find(entity);
-                if (find != custom_variables.end()) {
-                    auto find_var = find->second.find(name);
-                    if (find_var != find->second.end()) {
-                        variable.SetString(find_var->second);
-                        found = true;
-                    }
-                }
-            }
-            else if (type == KEYVALUE) {
-                found = entity->ReadKeyField(name, &variable);
-            }
-            else if (type == DATAMAP) {
-                auto &entry = GetDataMapOffset(entity->GetDataDescMap(), name);
-                if (entry.offset > 0) {
-                    if (entry.fieldType == FIELD_CHARACTER) {
-                        variable.SetString(AllocPooledString(((char*)entity) + entry.offset));
-                    }
-                    else {
-                        variable.Set(entry.fieldType, ((char*)entity) + entry.offset);
-                    }
-                    found = true;
-                }
-            }
-            else if (type == SENDPROP) {
-                auto &entry = GetSendPropOffset(entity->GetServerClass(), name);
+            bool found = GetEntityVariable(entity, type, name, variable);
 
-                if (entry.offset > 0) {
-                    int offset = entry.offset;
-                    auto propType = entry.prop->GetType();
-                    if (propType == DPT_Int) {
-                        variable.SetInt(*(int*)(((char*)entity) + offset));
-                        if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
-                            variable.Set(FIELD_EHANDLE, (CHandle<CBaseEntity>*)(((char*)entity) + offset));
-                        }
-                    }
-                    else if (propType == DPT_Float) {
-                        variable.SetFloat(*(float*)(((char*)entity) + offset));
-                    }
-                    else if (propType == DPT_String) {
-                        variable.SetString(*(string_t*)(((char*)entity) + offset));
-                    }
-                    else if (propType == DPT_Vector) {
-                        variable.SetVector3D(*(Vector*)(((char*)entity) + offset));
-                    }
-                    found = true;
-                }
-            }
-            if (!found) {
+            if (!found && defvalue != nullptr) {
                 variable.SetString(AllocPooledString(defvalue));
             }
 
-            for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, entity, activator, caller)) != nullptr ;) {
-                target->AcceptInput(action, activator, entity, variable, 0);
+            if (found || defvalue != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, entity, activator, caller)) != nullptr ;) {
+                    target->AcceptInput(action, activator, entity, variable, 0);
+                }
             }
         }
     }
@@ -310,8 +317,7 @@ namespace Mod::Etc::Mapentity_Additions
                 if (strnicmp(szInputName, "$FormatInput", strlen("$FormatInput")) == 0) {
                     int num = strtol(szInputName + strlen("$FormatInput"), nullptr, 10);
                     if (num > 0 && num < 16) {
-
-                        ent->KeyValue(CFmtStr("Case%02d", num), Value.String());
+                        logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
                         FireFormatInput(logic_case, pActivator, pCaller);
                         
                         return true;
@@ -320,17 +326,17 @@ namespace Mod::Etc::Mapentity_Additions
                 else if (strnicmp(szInputName, "$FormatInputNoFire", strlen("$FormatInputNoFire")) == 0) {
                     int num = strtol(szInputName + strlen("$FormatInputNoFire"), nullptr, 10);
                     if (num > 0 && num < 16) {
-                        ent->KeyValue(CFmtStr("Case%02d", num), Value.String());
+                        logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
                         return true;
                     }
                 }
                 else if (FStrEq(szInputName, "$FormatString")) {
-                    ent->KeyValue("Case16", Value.String());
+                    logic_case->m_nCase[15] = AllocPooledString(Value.String());
                     FireFormatInput(logic_case, pActivator, pCaller);
                     return true;
                 }
                 else if (FStrEq(szInputName, "$FormatStringNoFire")) {
-                    ent->KeyValue("Case16", Value.String());
+                    logic_case->m_nCase[15] = AllocPooledString(Value.String());
                     return true;
                 }
                 else if (FStrEq(szInputName, "$Format")) {
@@ -390,9 +396,8 @@ namespace Mod::Etc::Mapentity_Additions
 
                             int i;
                             for (i = 1; i < 16; i++) {
-                                variant_t variant1;
-                                ent->ReadKeyField(CFmtStr("Case%02d", i), &variant1);
-                                const char *name = variant1.String();
+                                string_t str = logic_case->m_nCase[i - 1];
+                                const char *name = STRING(str);
                                 if (strlen(name) != 0) {
                                     bool enabled = name[0] != '!';
                                     ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
@@ -433,6 +438,33 @@ namespace Mod::Etc::Mapentity_Additions
                     auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
                     if (target != nullptr && target->IsPlayer()) {
                         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(target), false);
+                    }
+                }
+                else if (FStrEq(szInputName, "$BitTest")) {
+                    int val = atoi(Value.String());
+                    for (int i = 1; i <= 16; i++) {
+                        string_t str = logic_case->m_nCase[i - 1];
+
+                        if (val & atoi(STRING(str))) {
+                            logic_case->FireCase(i, pActivator);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                else if (FStrEq(szInputName, "$BitTestAll")) {
+                    int val = atoi(Value.String());
+                    for (int i = 1; i <= 16; i++) {
+                       string_t str = logic_case->m_nCase[i - 1];
+
+                        int test = atoi(STRING(str));
+                        if ((val & test) == test) {
+                            logic_case->FireCase(i, pActivator);
+                        }
+                        else {
+                            break;
+                        }
                     }
                 }
             }
@@ -481,7 +513,7 @@ namespace Mod::Etc::Mapentity_Additions
                     if (player != nullptr) {
                         // Disable setup to allow class changing during waves in mvm
                         bool setup = TFGameRules()->InSetup();
-                        TFGameRules()->SetInSetup(false);
+                        TFGameRules()->SetInSetup(true);
 
                         int index = strtol(Value.String(), nullptr, 10);
                         if (index > 0 && index < 10) {
@@ -501,23 +533,26 @@ namespace Mod::Etc::Mapentity_Additions
                     if (player != nullptr) {
                         // Disable setup to allow class changing during waves in mvm
                         bool setup = TFGameRules()->InSetup();
-                        TFGameRules()->SetInSetup(false);
+                        TFGameRules()->SetInSetup(true);
 
                         Vector pos = player->GetAbsOrigin();
                         QAngle ang = player->GetAbsAngles();
                         Vector vel = player->GetAbsVelocity();
 
                         int index = strtol(Value.String(), nullptr, 10);
+                        int oldState = player->m_Shared->GetState();
+                        player->m_Shared->SetState(TF_STATE_DYING);
                         if (index > 0 && index < 10) {
                             player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
                         }
                         else {
                             player->HandleCommand_JoinClass(Value.String());
                         }
+                        player->m_Shared->SetState(oldState);
+                        TFGameRules()->SetInSetup(setup);
                         player->ForceRespawn();
                         player->Teleport(&pos, &ang, &vel);
                         
-                        TFGameRules()->SetInSetup(setup);
                     }
                     return true;
                 }
@@ -658,7 +693,7 @@ namespace Mod::Etc::Mapentity_Additions
                     float duration = -1.0f;
                     sscanf(Value.String(), "%d %f", &index, &duration);
                     if (player != nullptr) {
-                        player->m_Shared->AddCond(index, duration);
+                        player->m_Shared->AddCond((ETFCond)index, duration);
                     }
                     return true;
                 }
@@ -666,7 +701,7 @@ namespace Mod::Etc::Mapentity_Additions
                     CTFPlayer *player = ToTFPlayer(ent);
                     int index = strtol(Value.String(), nullptr, 10);
                     if (player != nullptr) {
-                        player->m_Shared->RemoveCond(index);
+                        player->m_Shared->RemoveCond((ETFCond)index);
                     }
                     return true;
                 }
@@ -924,13 +959,16 @@ namespace Mod::Etc::Mapentity_Additions
                 }
             }
             else if (ent->GetClassname() == point_viewcontrol_classname) {
+                auto camera = static_cast<CTriggerCamera *>(ent);
                 if (stricmp(szInputName, "$EnableAll") == 0) {
                     ForEachTFPlayer([&](CTFPlayer *player) {
                         if (player->IsBot())
                             return;
                         else {
-                            static_cast<CTriggerCamera *>(ent)->m_hPlayer = player;
-                            static_cast<CTriggerCamera *>(ent)->Enable();
+
+                            camera->m_hPlayer = player;
+                            camera->Enable();
+                            camera->m_spawnflags |= 512;
                         }
                     });
                 }
@@ -939,14 +977,15 @@ namespace Mod::Etc::Mapentity_Additions
                         if (player->IsBot())
                             return;
                         else {
-                            static_cast<CTriggerCamera *>(ent)->m_hPlayer = player;
-                            static_cast<CTriggerCamera *>(ent)->Disable();
+                            camera->m_hPlayer = player;
+                            camera->Disable();
                             player->m_takedamage = player->IsObserver() ? 0 : 2;
+                            camera->m_spawnflags &= ~(512);
                         }
                     });
                 }
                 else if (stricmp(szInputName, "$SetTarget") == 0) {
-                    static_cast<CTriggerCamera *>(ent)->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                    camera->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
                 }
             }
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
@@ -966,19 +1005,19 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser5") == 0) {
-                FireCustomOutput(ent, "$onuser5", pActivator, ent, Value);
+                FireCustomOutput(ent, "onuser5", pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser6") == 0) {
-                FireCustomOutput(ent, "$onuser6", pActivator, ent, Value);
+                FireCustomOutput(ent, "onuser6", pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser7") == 0) {
-                FireCustomOutput(ent, "$onuser7", pActivator, ent, Value);
+                FireCustomOutput(ent, "onuser7", pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser8") == 0) {
-                FireCustomOutput(ent, "$onuser8", pActivator, ent, Value);
+                FireCustomOutput(ent, "onuser8", pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$TakeDamage") == 0) {
@@ -1051,7 +1090,7 @@ namespace Mod::Etc::Mapentity_Additions
                 int val2=MOVECOLLIDE_DEFAULT;
 
                 sscanf(Value.String(), "%d,%d", &val1, &val2);
-                ent->SetMoveType(val1, val2);
+                ent->SetMoveType((MoveType_t)val1, (MoveCollide_t)val2);
                 return true;
             }
             else if (stricmp(szInputName, "$PlaySound") == 0) {
@@ -1205,6 +1244,21 @@ namespace Mod::Etc::Mapentity_Additions
                 FireGetInput(ent, SENDPROP, szInputName + strlen("$GetProp$"), pActivator, pCaller, Value);
                 return true;
             }
+            else if (stricmp(szInputName, "$GetEntIndex") == 0) {
+                char param_tokenized[256] = "";
+                V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                char *targetstr = strtok(param_tokenized,"|");
+                char *action = strtok(NULL,"|");
+                
+                variant_t variable;
+                variable.SetInt(ent->entindex());
+                if (targetstr != nullptr && action != nullptr) {
+                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                        target->AcceptInput(action, pActivator, ent, variable, 0);
+                    }
+                }
+                return true;
+            }
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
     }
@@ -1283,6 +1337,22 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                     }
                 }
+                // Find entity with filter
+                else if (szName[1] == 'f') {
+                    bool skipped = false;
+                    const char *filtername = realname;
+                    CBaseFilter *filter = rtti_cast<CBaseFilter *>(servertools->FindEntityByName(nullptr, filtername));
+                    realname = strchr(filtername, '@');
+                    if (realname != nullptr && filter != nullptr) {
+                        realname += 1;
+                        while (true) {
+                            pStartEntity = functor(pStartEntity, realname);
+                            if (pStartEntity == nullptr) return nullptr;
+
+                            if (filter->PassesFilter(pStartEntity, pStartEntity)) return pStartEntity;
+                        }
+                    }
+                }
             }
             else if (szName[1] == 'b' && szName[2] == 'b') {
                 Vector min;
@@ -1294,7 +1364,7 @@ namespace Mod::Etc::Mapentity_Additions
                         realname += 1;
                         while (true) {
                             pStartEntity = functor(pStartEntity, realname); 
-                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox(min, max)) {
+                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox((const Vector)min, (const Vector)max)) {
                                 continue;
                             }
                             else {
@@ -1375,7 +1445,25 @@ namespace Mod::Etc::Mapentity_Additions
                 info.SetInflictor(owner);
             }
         }
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        bool alive = entity->IsAlive();
+		auto damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+        if (damage != 0) {
+            variant_t variant;
+            variant.SetInt(damage);
+            FireCustomOutput(entity, "ondamagereceived", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+        }
+        else {
+            variant_t variant;
+            variant.SetInt(damage);
+            FireCustomOutput(entity, "ondamageblocked", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+        }
+        if (alive && !entity->IsAlive()) {
+            variant_t variant;
+            variant.SetInt(damage);
+            FireCustomOutput(entity, "ondeath", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+        }
+        return damage;
 	}
 
     DETOUR_DECL_MEMBER(void, CBaseObject_InitializeMapPlacedObject)
@@ -1440,7 +1528,8 @@ namespace Mod::Etc::Mapentity_Additions
         
         if (!custom_output.empty()) {
             variant_t variant;
-            FireCustomOutput(entity, "$onkilled", entity, entity, variant);
+            variant.SetInt(entity->entindex());
+            FireCustomOutput(entity, "onkilled", entity, entity, variant);
             custom_output.erase(entity);
         }
 
@@ -1456,7 +1545,7 @@ namespace Mod::Etc::Mapentity_Additions
 	{
 		bool result = DETOUR_STATIC_CALL(ParseKeyvalue)(pObject, pFields, iNumFields, szKeyName, szValue);
         if (!result && szKeyName[0] == '$') {
-            ParseCustomOutput(parse_ent, szKeyName, szValue);
+            ParseCustomOutput(parse_ent, szKeyName + 1, szValue);
             result = true;
         }
         return result;
@@ -1468,12 +1557,135 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
 
+    const char *filter_keyvalue_class;
+    const char *filter_variable_class;
+    const char *filter_datamap_class;
+    const char *filter_sendprop_class;
+    const char *filter_proximity_class;
+    const char *filter_bbox_class;
+    const char *empty;
+    const char *less;
+    const char *equal;
+    const char *greater;
+    const char *less_or_equal;
+    const char *greater_or_equal;
+
     DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesFilterImpl, CBaseEntity *pCaller, CBaseEntity *pEntity)
 	{
-        parse_ent = reinterpret_cast<CBaseEntity *>(this);
+        auto filter = reinterpret_cast<CBaseEntity *>(this);
+        const char *classname = filter->GetClassname();
+        if (classname[0] == '$') {
+            if (classname == filter_variable_class || classname == filter_datamap_class || classname == filter_sendprop_class || classname == filter_keyvalue_class) {
+                GetInputType type = KEYVALUE;
+
+                if (classname == filter_variable_class) {
+                    type = VARIABLE;
+                } else if (classname == filter_datamap_class) {
+                    type = DATAMAP;
+                } else if (classname == filter_sendprop_class) {
+                    type = SENDPROP;
+                }
+
+                auto &vars = custom_variables[filter];
+                const char *name = STRING(vars["name"]);
+                const char *valuecmp = STRING(vars["value"]);
+                const char *compare = STRING(vars["compare"]);
+
+                variant_t variable; 
+                bool found = GetEntityVariable(pEntity, type, name, variable);
+
+                if (found) {
+                    if (compare == nullptr || compare == empty) {
+                        const char *valuestring = variable.String();
+                        return valuestring == valuecmp || strcmp(valuestring, valuecmp) == 0;
+                    } 
+                    else {
+                        variable.Convert(FIELD_FLOAT);
+                        float value = variable.Float();
+                        float valuecmpconv = strtof(valuecmp, nullptr);
+                        if (compare == equal) {
+                            return value == valuecmpconv;
+                        }
+                        else if (compare == less) {
+                            return value < valuecmpconv;
+                        }
+                        else if (compare == greater) {
+                            return value > valuecmpconv;
+                        }
+                        else if (compare == less_or_equal) {
+                            return value <= valuecmpconv;
+                        }
+                        else if (compare == greater_or_equal) {
+                            return value >= valuecmpconv;
+                        }
+                    }
+                }
+                return false;
+            }
+            else if(classname == filter_proximity_class) {
+                auto &vars = custom_variables[filter];
+                const char *target = STRING(vars["target"]);
+                float range = strtof(STRING(vars["range"]), nullptr);
+                range *= range;
+                Vector center;
+                if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
+                    CBaseEntity *ent = servertools->FindEntityByName(nullptr, target);
+                    if (ent == nullptr) return false;
+
+                    center = ent->GetAbsOrigin();
+                }
+
+                return center.DistToSqr(pEntity->GetAbsOrigin()) <= range;
+            }
+            else if(classname == filter_bbox_class) {
+                auto &vars = custom_variables[filter];
+                const char *target = STRING(vars["target"]);
+                float range = strtof(STRING(vars["range"]), nullptr);
+
+                Vector min;
+                Vector max;
+                sscanf(STRING(vars["min"]), "%f %f %f", &min.x, &min.y, &min.z);
+                sscanf(STRING(vars["max"]), "%f %f %f", &max.x, &max.y, &max.z);
+
+                range *= range;
+                Vector center;
+                if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
+                    CBaseEntity *ent = servertools->FindEntityByName(nullptr, target);
+                    if (ent == nullptr) return false;
+
+                    center = ent->GetAbsOrigin();
+                }
+
+                return pEntity->GetAbsOrigin().WithinAABox(min + center, max + center);
+            }
+        }
         return DETOUR_MEMBER_CALL(CBaseFilter_PassesFilterImpl)(pCaller, pEntity);
 	}
 
+    void OnCameraRemoved(CTriggerCamera *camera)
+    {
+        if (camera->m_spawnflags & 512) {
+            ForEachTFPlayer([&](CTFPlayer *player) {
+                if (player->IsBot())
+                    return;
+                else {
+                    camera->m_hPlayer = player;
+                    camera->Disable();
+                    player->m_takedamage = player->IsObserver() ? 0 : 2;
+                }
+            });
+        }
+    }
+
+    DETOUR_DECL_MEMBER(void, CTriggerCamera_D0)
+	{
+        OnCameraRemoved(reinterpret_cast<CTriggerCamera *>(this));
+    }
+
+    DETOUR_DECL_MEMBER(void, CTriggerCamera_D2)
+	{
+        OnCameraRemoved(reinterpret_cast<CTriggerCamera *>(this));
+    }
 
     class CMod : public IMod, IModCallbackListener
 	{
@@ -1494,6 +1706,11 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
             MOD_ADD_DETOUR_STATIC(ParseKeyvalue, "ParseKeyvalue");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_KeyValue, "CBaseEntity::KeyValue");
+            MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesFilterImpl, "CBaseFilter::PassesFilterImpl");
+
+            // Fix camera despawn bug
+            MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D0, "~CTriggerCamera [D0]");
+            MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D2, "~CTriggerCamera [D2]");
             
     
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
@@ -1501,23 +1718,46 @@ namespace Mod::Etc::Mapentity_Additions
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");
 		}
 
-        virtual bool OnLoad() override
-		{
-            ActivateLoadedInput();
+        virtual void LoadStrings()
+        {
             logic_case_classname = STRING(AllocPooledString("logic_case"));
             tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
             player_classname = STRING(AllocPooledString("player"));
             point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
+            filter_keyvalue_class = STRING(AllocPooledString("$filter_keyvalue"));
+            filter_variable_class = STRING(AllocPooledString("$filter_variable"));
+            filter_datamap_class = STRING(AllocPooledString("$filter_datamap"));
+            filter_sendprop_class = STRING(AllocPooledString("$filter_sendprop"));
+            filter_proximity_class = STRING(AllocPooledString("$filter_proximity"));
+            filter_bbox_class = STRING(AllocPooledString("$filter_bbox"));
+            empty = STRING(AllocPooledString(""));
+            less = STRING(AllocPooledString("less than"));
+            equal = STRING(AllocPooledString("equal"));
+            greater = STRING(AllocPooledString("greater than"));
+            less_or_equal = STRING(AllocPooledString("less than or equal"));
+            greater_or_equal = STRING(AllocPooledString("greater than or equal"));
+        }
+
+        virtual bool OnLoad() override
+		{
+            LoadStrings();
+            ActivateLoadedInput();
+            if (servertools->GetEntityFactoryDictionary()->FindFactory("$filter_keyvalue") == nullptr) {
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_keyvalue");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_variable");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_datamap");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_sendprop");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_proximity");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_bbox");
+            }
+
 			return true;
 		}
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
         virtual void LevelInitPreEntity() override
         {
-            logic_case_classname = STRING(AllocPooledString("logic_case"));
-            tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
-            player_classname = STRING(AllocPooledString("player"));
-            point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
+            LoadStrings();
 
             send_prop_cache.clear();
             datamap_cache.clear();

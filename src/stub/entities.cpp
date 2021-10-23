@@ -201,6 +201,10 @@ const size_t CLogicCase::_adj_m_OnCase15 = offsetof(CLogicCase, m_OnCase15);
 CProp_DataMap CLogicCase::s_prop_m_OnCase15("CLogicCase", "m_OnCase[14]");
 const size_t CLogicCase::_adj_m_OnCase16 = offsetof(CLogicCase, m_OnCase16);
 CProp_DataMap CLogicCase::s_prop_m_OnCase16("CLogicCase", "m_OnCase[15]");
+
+
+const size_t CLogicCase::_adj_m_nCase = offsetof(CLogicCase, m_nCase);
+CProp_DataMap CLogicCase::s_prop_m_nCase("CLogicCase", "m_nCase[0]");
 	
 IMPL_DATAMAP(CBaseEntityOutput, CLogicCase, m_OnDefault);
 

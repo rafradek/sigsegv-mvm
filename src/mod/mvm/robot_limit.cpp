@@ -276,7 +276,10 @@ namespace Mod::MvM::Robot_Limit
 	{
 		if (populator_parse != nullptr) {
 			// Unused variable, now used to tell if the wavespawn contains a tfbot spawner
-			populator_parse->m_nClassCounts = 1;
+			if (populator_parse->extra == nullptr) {
+				populator_parse->extra = new CWaveSpawnExtra();
+			}
+			populator_parse->extra->m_bHasTFBotSpawner = true;
 		}
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
 	}
@@ -288,7 +291,7 @@ namespace Mod::MvM::Robot_Limit
 		int old_slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
 		int &slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
 		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING) {
-			if (wavespawn->m_nClassCounts == 1) {
+			if (wavespawn->extra != nullptr && wavespawn->extra->m_bHasTFBotSpawner) {
 				// Override hardcoded 22 blue bot limit
 				slots = old_slots - (GetMvMInvaderLimit() - 22);
 			}

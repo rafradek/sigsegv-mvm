@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/tfplayer.h"
+#include "stub/tfweaponbase.h"
 #include "stub/entities.h"
 #include "util/scope.h"
 #include "stub/upgrades.h"
@@ -16,6 +17,30 @@ namespace Mod::MvM::Upgrade_Disallow
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
+		if (!b3) {
+			auto upgrade = reinterpret_cast<CUpgrades *>(this);
+			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
+				auto entity = GetEconEntityAtLoadoutSlot(player, itemslot);
+				if (entity != nullptr && entity->GetItem() != nullptr) {
+					auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(upgrade->GetUpgradeAttributeName(upgradeslot));
+					if (attr_def != nullptr) {
+						auto attr = entity->GetItem()->GetAttributeList().GetAttributeByID(attr_def->GetIndex());
+						if (attr != nullptr) {
+							float increment = CMannVsMachineUpgradeManager::Upgrades()[upgradeslot].m_flIncrement;
+							const char *desc = attr_def->GetDescriptionFormat();
+							float defValue = FStrEq(desc, "value_is_percentage") || FStrEq(desc, "value_is_inverted_percentage") ? 1.0f : 0.0f;
+							if (attr->GetValuePtr()->m_Float > defValue && increment < 0) {
+								return;
+							}
+							if (attr->GetValuePtr()->m_Float < defValue && increment > 0) {
+								return;
+							}
+						}
+					}
+				}
+				
+			}
+		}
 		if (!sell && !b3) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
 			

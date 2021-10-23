@@ -151,6 +151,7 @@ sourceFiles += [
   'src/mod/etc/crayairblast_convar_nocheat.cpp',
   'src/mod/etc/debug_mission_change_crash.cpp',
   'src/mod/etc/deflect_rocket_spew.cpp',
+  'src/mod/etc/extraentitydata.cpp',
   'src/mod/etc/heat_seeking_rockets.cpp',
   'src/mod/etc/hltv_client_interact.cpp',
   'src/mod/etc/holiday_items_allow.cpp',

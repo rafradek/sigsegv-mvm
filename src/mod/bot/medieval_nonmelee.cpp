@@ -52,7 +52,7 @@ namespace Mod::Bot::Medieval_NonMelee
 		}
 	};
 	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemIsAllowed, CEconItemView *item_view)
+	DETOUR_DECL_MEMBER(void, CTFBot_OnEventChangeAttributes, void *ecattr)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		bool medieval = TFGameRules()->IsInMedievalMode();
@@ -61,13 +61,11 @@ namespace Mod::Bot::Medieval_NonMelee
 			TFGameRules()->Set_m_bPlayingMedieval(false);
 		}
 
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemIsAllowed)(item_view);
+		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
 		
 		if (TFGameRules()->IsMannVsMachineMode() && player->IsBot()) {
 			TFGameRules()->Set_m_bPlayingMedieval(medieval);
 		}
-
-		return ret;
 	}
 
 	class CMod : public IMod
@@ -76,7 +74,7 @@ namespace Mod::Bot::Medieval_NonMelee
 		CMod() : IMod("Bot:Medieval_NonMelee")
 		{
 			this->AddPatch(new CPatch_CTFBot_EquipRequiredWeapon());
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,                       "CTFPlayer::ItemIsAllowed");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_OnEventChangeAttributes,                       "CTFBot::OnEventChangeAttributes");
 		}
 	};
 	CMod s_Mod;

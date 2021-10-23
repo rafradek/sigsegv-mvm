@@ -188,7 +188,7 @@ namespace Mod::Etc::Misc
 	DETOUR_DECL_MEMBER(void, CHeadlessHatman_D2)
 	{
 		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
-		if (g_pMonsterResource.GetRef() != nullptr)
+		if (g_pMonsterResource.GetRef() != nullptr && g_pMonsterResource)
 		{
 			g_pMonsterResource->m_iBossHealthPercentageByte = 0;
 		}

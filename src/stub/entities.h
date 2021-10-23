@@ -312,6 +312,8 @@ public:
 	DECL_DATAMAP(CBaseEntityOutput, m_OnCase15);
 	DECL_DATAMAP(CBaseEntityOutput, m_OnCase16);
 
+	DECL_DATAMAP(string_t[16], m_nCase);
+
 	DECL_DATAMAP(CBaseEntityOutput, m_OnDefault);
 
 };

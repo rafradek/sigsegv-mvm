@@ -94,7 +94,7 @@ namespace Mod::Perf::Attributes_Optimize
             entity_cache = last_manager;
         }
         else {
-            entity_cache = attrib_manager_cache_sp[ENTINDEX_NATIVE(ent)];
+            entity_cache = attrib_manager_cache_sp[ENTINDEX(ent)];
             if (entity_cache == nullptr) {
                 CAttributeManager *mgr = nullptr;
 
@@ -115,7 +115,7 @@ namespace Mod::Perf::Attributes_Optimize
 
                 //attrib_manager_cache.push_back(entity_cache);
                 //attrib_manager_mgr_cache[entity_cache->mgr] = entity_cache;
-                attrib_manager_cache_sp[ENTINDEX_NATIVE(ent)] = entity_cache;
+                attrib_manager_cache_sp[ENTINDEX(ent)] = entity_cache;
 
                 //DevMsg("Count %d %d\n",attrib_manager_cache.size(), entity_cache->mgr);
             }
@@ -272,7 +272,7 @@ namespace Mod::Perf::Attributes_Optimize
 
     void RemoveAttributeManager(CBaseEntity *entity) {
         
-        int index = ENTINDEX_NATIVE(entity);
+        int index = ENTINDEX(entity);
         if (entity == last_entity) {
             last_entity = nullptr;
         }

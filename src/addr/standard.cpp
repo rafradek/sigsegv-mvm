@@ -18,11 +18,14 @@ bool IAddr_Sym::FindAddrLinux(uintptr_t& addr) const
 
 bool CAddr_Sym_Regex::FindAddrLinux(uintptr_t& addr) const
 {
+	static ConVarRef developer("developer");
 	float t1 = Plat_FloatTime();
 	auto results = LibMgr::FindSymRegex(this->GetLibrary(), this->GetSymbol());
 	float t2 = Plat_FloatTime();
-	ConColorMsg(Color(0xff, 0x00, 0xff, 0xff), "Regex lookup for \"%s\" \"%s\": %.3f ms\n",
-		this->GetName(), this->GetSymbol(), (t2 - t1) * 1000.0f);
+	if (developer.GetBool()) {
+		ConColorMsg(Color(0xff, 0x00, 0xff, 0xff), "Regex lookup for \"%s\" \"%s\": %.3f ms\n",
+			this->GetName(), this->GetSymbol(), (t2 - t1) * 1000.0f);
+	}
 	
 	bool success      = std::get<0>(results);
 	std::string& name = std::get<1>(results);

@@ -722,4 +722,5 @@ namespace Mod::Pop::PointTemplate
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
+
 }

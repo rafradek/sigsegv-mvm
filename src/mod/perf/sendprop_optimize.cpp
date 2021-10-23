@@ -11,6 +11,119 @@
 
 int global_frame_list_counter = 0;
 bool is_client_hltv = false;
+
+
+class CachedChangeFrameList : public IChangeFrameList
+{
+public:
+
+    CachedChangeFrameList()
+	{
+
+	}
+
+	void	Init( int nProperties, int iCurTick )
+	{
+		m_ChangeTicks.SetSize( nProperties );
+		for ( int i=0; i < nProperties; i++ )
+			m_ChangeTicks[i] = iCurTick;
+        
+	}
+
+
+public:
+
+	virtual void	Release()
+	{
+        m_CopyCounter--;
+        if (m_CopyCounter < 0) {
+            delete this;
+        }
+	}
+
+	virtual IChangeFrameList* Copy()
+	{
+        m_CopyCounter++;
+        return this;
+	}
+
+	virtual int		GetNumProps()
+	{
+		return m_ChangeTicks.Count();
+	}
+
+	virtual void	SetChangeTick( const int *pPropIndices, int nPropIndices, const int iTick )
+	{
+        bool same = m_LastChangeTicks.size() == nPropIndices;
+        m_LastChangeTicks.resize(nPropIndices);
+		for ( int i=0; i < nPropIndices; i++ )
+		{
+            
+            int prop = pPropIndices[i];
+			m_ChangeTicks[ prop ] = iTick;
+            
+            same = same && m_LastChangeTicks[i] == prop;
+            m_LastChangeTicks[i] = prop;
+
+		}
+
+        if (!same) {
+            m_LastSameTickNum = iTick;
+        }
+        m_LastChangeTickNum = iTick;
+        if (m_LastChangeTicks.capacity() > m_LastChangeTicks.size() * 8)
+            m_LastChangeTicks.shrink_to_fit();
+	}
+
+	virtual int		GetPropsChangedAfterTick( int iTick, int *iOutProps, int nMaxOutProps )
+	{
+        int nOutProps = 0;
+        if (iTick + 1 >= m_LastSameTickNum) {
+            if (iTick >= m_LastChangeTickNum) {
+                return 0;
+            }
+
+            nOutProps = m_LastChangeTicks.size();
+
+            for ( int i=0; i < nOutProps; i++ )
+            {
+                iOutProps[i] = m_LastChangeTicks[i];
+            }
+
+            return nOutProps;
+        }
+        else {
+            int c = m_ChangeTicks.Count();
+
+            for ( int i=0; i < c; i++ )
+            {
+                if ( m_ChangeTicks[i] > iTick )
+                {
+                    iOutProps[nOutProps] = i;
+                    ++nOutProps;
+                }
+            }
+            return nOutProps;
+        }
+	}
+
+// IChangeFrameList implementation.
+protected:
+
+	virtual			~CachedChangeFrameList()
+	{
+	}
+
+private:
+	// Change frames for each property.
+	CUtlVector<int>		m_ChangeTicks;
+
+    int m_LastChangeTickNum = 0;
+    int m_LastSameTickNum = 0;
+    int m_CopyCounter = 0;
+	std::vector<int> m_LastChangeTicks;
+};
+
 namespace Mod::Perf::SendProp_Optimize
 {
     

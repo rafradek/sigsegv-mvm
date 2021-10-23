@@ -31,6 +31,7 @@ IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser2);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser3);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
 IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
+IMPL_RELATIVE(ExtraEntityData *,      CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
 
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);

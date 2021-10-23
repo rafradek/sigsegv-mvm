@@ -605,7 +605,7 @@ namespace Mod::Util::Client_Cmds
 			return;
 		}
 		ForEachTFPlayer([&](CTFPlayer *playerl){
-			playerl->DoAnimationEvent( 17 /*PLAYERANIMEVENT_SPAWN*/, 0 );
+			playerl->DoAnimationEvent( (PlayerAnimEvent_t) 17 /*PLAYERANIMEVENT_SPAWN*/, 0 );
 			
 		});
 		
@@ -740,6 +740,10 @@ namespace Mod::Util::Client_Cmds
 		//engine->ServerExecute();
 	}
 
+	bool rtti_cast_sp(CBaseEntity *player) {
+		return rtti_cast<CTFPlayer *>(player) != nullptr;
+	}
+
 	CTFPlayer *playertrg = nullptr;
 	std::string displaystr = "";
 	void CC_Benchmark(CTFPlayer *player, const CCommand& args)
@@ -768,7 +772,7 @@ namespace Mod::Util::Client_Cmds
 				target = servertools->FindEntityByClassname(nullptr, "tf_gamerules");
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				check = (rtti_cast<const CBasePlayer *>(target) != nullptr);
+				check = rtti_cast_sp(target);
 			}
 			timer.End();
 			
@@ -1026,7 +1030,10 @@ namespace Mod::Util::Client_Cmds
 			auto rtti_tf_player   = RTTI::GetRTTI<CTFPlayer>();
 			auto rtti_base_object = RTTI::GetRTTI<CBaseObject>();
 			auto rtti_has_attributes = RTTI::GetRTTI<IHasAttributes>();
+			auto vtable_tf_player = RTTI::GetVTable<CTFPlayer>();
 
+			DevMsg("rtti tf player %d %d, dereferenced player %d, dereferenced player -4 %d, dereferenced player +4 %d\n", vtable_tf_player, rtti_tf_player, *(int *)player, *((int *)player-1),*((int *)player+1));
+			DevMsg("dereferenced player vtable %d, dereferenced player vtable -4 %d, dereferenced player vtable +4 %d\n", **((int**)player), (int) *(*((rtti_t***)player)-1),*(*((int**)player)+1));
 			
 			timer.Start();
 			for(int i = 0; i < times; i++) {
@@ -1109,6 +1116,32 @@ namespace Mod::Util::Client_Cmds
 			//}
 
 
+		}
+		else if (strcmp(args[2], "prop") == 0) {
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				int skin = player->m_nBotSkill;
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("prop get: %.9f", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "entindex") == 0) {
+			timer.Start();
+			int entindex = 0;
+			for(int i = 0; i < times; i++) {
+				entindex = ENTINDEX_NATIVE(player);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("entindex: %.9f", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				entindex = ENTINDEX(player);
+			}
+			timer.End();
+			
+			displaystr += CFmtStr("entindex %d native: %.9f", entindex, timer.GetDuration().GetSeconds());
 		}
 		ClientMsg(player, "%s", displaystr.c_str());
 	}

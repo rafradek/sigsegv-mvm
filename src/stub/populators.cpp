@@ -146,6 +146,7 @@ MemberFuncThunk<CPopulationManager *, bool>              CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
+StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefaultPopulationFileShortNames("CPopulationManager::FindDefaultPopulationFileShortNames");
 
 IMPL_EXTRACT(CPopulationManager::SteamIDMap, CPopulationManager, m_RespecPoints,   new CExtract_CPopulationManager_m_RespecPoints());
 IMPL_EXTRACT(bool,                           CPopulationManager, m_bAllocatedBots, new CExtract_CPopulationManager_m_bAllocatedBots());

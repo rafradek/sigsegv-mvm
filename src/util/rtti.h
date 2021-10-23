@@ -85,10 +85,6 @@ inline TO rtti_cast(const FROM ptr)
 	static bool initialized = false;
 	static const rtti_t *rtti_from;
 	static const rtti_t *rtti_to;
-#if defined __GNUC__
-	static bool upcast_success = false;
-	static uintptr_t upcast_offset;
-#endif
 
 	if (!initialized) {
 		initialized = true;	
@@ -97,23 +93,23 @@ inline TO rtti_cast(const FROM ptr)
 		
 		assert(rtti_from != nullptr);
 		assert(rtti_to   != nullptr);
-	
-#if defined __GNUC__
-	/* GCC's __dynamic_cast is grumpy and won't do up-casts at runtime, so we
-	 * have to manually take care of up-casting ourselves */
-	 	
-		void *upcast_ptr = (void *)ptr;
-		upcast_success = static_cast<const std::type_info *>(rtti_from)->__do_upcast(rtti_to, &upcast_ptr);
-		upcast_offset = (uintptr_t)upcast_ptr - (uintptr_t)ptr;
-#endif
 	}
 
 #if defined __GNUC__
 	void *result = (void *)ptr;
-	if (!upcast_success)
+	static std::vector<std::pair<void *, uintptr_t>> dynamic_cast_cache;
+	void *vtable = *((void**)result);
+
+	int c = dynamic_cast_cache.size();
+	for (int i = 0; i < c; i++) {
+		auto &pair = dynamic_cast_cache[i];
+		if (pair.first == vtable) {
+			return pair.second != INT_MAX ? reinterpret_cast<TO>((uintptr_t)result + (uintptr_t)pair.second) : nullptr;
+		}
+	}
+	if (!static_cast<const std::type_info *>(rtti_from)->__do_upcast(rtti_to, &result))
 		result = abi::__dynamic_cast(result, rtti_from, rtti_to, -1);
-	else
-		result = (void *) ((uintptr_t)result + upcast_offset);
+	dynamic_cast_cache.push_back({vtable, result != nullptr ? (uintptr_t)result - (uintptr_t)ptr : INT_MAX});
 
 #elif defined _MSC_VER
 	/* MSVC's __RTDynamicCast will happily do runtime up-casts and down-casts */

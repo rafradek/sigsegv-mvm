@@ -23,8 +23,8 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	
 	void SetCustomProjectileModel(CTFWeaponBaseGun *weapon, CBaseAnimating *proj){
 		CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
-		static auto attr_def = GetItemSchema()->GetAttributeDefinitionByName("custom projectile model");
-		auto attr = attrlist.GetAttributeByID(attr_def->GetIndex());
+		static int attr_def = GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->GetIndex();
+		auto attr = attrlist.GetAttributeByID(attr_def);
 		if (attr != nullptr) {
 			const char *modelname = nullptr;
 			//GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->ConvertValueToString(*(attr->GetValuePtr()),modelname,255);

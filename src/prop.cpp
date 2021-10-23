@@ -3,7 +3,11 @@
 #include "stub/baseentity.h"
 #include "util/misc.h"
 #include "util/demangle.h"
+#include "factory.h"
 
+bool IsClient() {
+	return ClientFactory() != nullptr;
+}
 
 void ListProps(bool fail_only)
 {
@@ -55,7 +59,8 @@ void ListProps(bool fail_only)
 				break;
 			}
 			case IProp::State::FAIL:
-				Msg("%-8s  %7s  %-*s  %s\n", kind, "FAIL", len_obj, n_obj, n_mem);
+				//if (strncmp(n_obj, "C_", 2) != 0 || IsClient())
+					Msg("%-8s  %7s  %-*s  %s\n", kind, "FAIL", len_obj, n_obj, n_mem);
 				break;
 			}
 		}

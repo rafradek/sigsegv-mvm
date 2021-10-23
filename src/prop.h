@@ -60,6 +60,7 @@ public:
 	
 	int GetOffsetAssert();
 	bool GetOffset(int& off);
+	int GetOffsetDirect();
 	
 	State GetState() const { return this->m_State; }
 	
@@ -97,6 +98,11 @@ inline bool IProp::GetOffset(int& off)
 	} else {
 		return false;
 	}
+}
+
+inline int IProp::GetOffsetDirect()
+{
+	return this->m_Offset;
 }
 
 inline void IProp::DoCalcOffset()
@@ -383,13 +389,12 @@ protected:
 	Ptr_t   GetPtr  () const { return reinterpret_cast<Ptr_t  >(this->GetInstanceVarAddr()); }
 	
 private:
-	uintptr_t GetInstanceBaseAddr() const { return (reinterpret_cast<uintptr_t>(this) - *ADJUST); }
-	uintptr_t GetInstanceVarAddr() const  { return (this->GetInstanceBaseAddr() + this->GetCachedVarOffset()); }
+	inline uintptr_t GetInstanceBaseAddr() const { return (reinterpret_cast<uintptr_t>(this) - *ADJUST); }
+	inline uintptr_t GetInstanceVarAddr() const  { return (this->GetInstanceBaseAddr() + PROP->GetOffsetDirect()); }
 	
 	inline ptrdiff_t GetCachedVarOffset() const
 	{
-		static ptrdiff_t s_CachedVarOff = PROP->GetOffsetAssert();
-		return s_CachedVarOff;
+		return PROP->GetOffsetDirect();
 	}
 };
 

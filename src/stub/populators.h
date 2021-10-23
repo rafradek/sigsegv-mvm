@@ -21,6 +21,7 @@ public:
 	bool IsInEndlessWaves()	           { return ft_IsInEndlessWaves (this); }
 	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots) { return ft_CollectMvMBots(mvm_bots); }
 	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
+	static void FindDefaultPopulationFileShortNames(CUtlVector<CUtlString> &vec) { return ft_FindDefaultPopulationFileShortNames(vec); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -38,6 +39,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
+	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;
 };
 extern GlobalThunk<CPopulationManager *> g_pPopulationManager;
 
@@ -67,6 +69,8 @@ class CSpawnLocation
 	bool m_bClosestPointOnNav;
 };
 
+class CWaveSpawnExtra;
+
 class CWaveSpawnPopulator       : public IPopulator 
 {
 public:
@@ -74,7 +78,7 @@ public:
 	CSpawnLocation m_where;
 	int m_totalCount;
 	int m_remainingCount;
-	int m_nClassCounts;
+	CWaveSpawnExtra *extra;  // int m_nClassCounts;
 	int m_maxActive;						
 	int m_spawnCount;						
 	float m_waitBeforeStarting;
@@ -123,6 +127,14 @@ public:
 private:
 	static MemberFuncThunk<CWaveSpawnPopulator *, int> ft_GetCurrencyAmountPerDeath;
 
+};
+
+class CWaveSpawnExtra
+{
+public:
+	bool m_bHasTFBotSpawner;
+	CUtlVector<CWaveSpawnPopulator *> m_waitForAllDeadList;
+	CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
 };
 
 class CWave : public IPopulator

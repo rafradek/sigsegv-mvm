@@ -3,6 +3,7 @@
 #include "stub/tfplayer.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
+#include "stub/extraentitydata.h"
 #include "stub/tfweaponbase.h"
 
 
@@ -105,24 +106,6 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 		*pNewPosition += (*pNewVelocity * gpGlobals->frametime);
 	}
 #endif
-	
-	struct HomingRockets
-	{
-		bool enable                 = false;
-		bool ignore_disguised_spies = true;
-		bool ignore_stealthed_spies = true;
-		bool follow_crosshair       = false;
-		float speed                 = 1.0f;
-		float turn_power            = 0.0f;
-		float min_dot_product       = -0.25f;
-		float aim_time              = 9999.0f;
-		float acceleration          = 0.0f;
-		float acceleration_time     = 9999.0f;
-		float acceleration_start    = 0.0f;
-		float gravity               = 0.0f;
-	};
-	
-	std::map<CHandle<CBaseEntity>, HomingRockets> player_homing_cache;
 
 	CBaseEntity *disallow_movetype = nullptr;
 	int disallow_movetype_tick = 0;
@@ -136,7 +119,8 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 			auto weapon = static_cast<CTFWeaponBaseGun *>(launcher->MyCombatWeaponPointer());
 			if (weapon != nullptr && weapon->GetOwnerEntity() != nullptr && weapon->GetOwnerEntity()->IsPlayer()) {
 
-				HomingRockets homing;
+				HomingRockets &homing = *(GetExtraProjectileData(proj)->homing = new HomingRockets());
+
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.turn_power, mod_projectile_heat_seek_power);
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.acceleration, projectile_acceleration);
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, homing.gravity, projectile_gravity);
@@ -180,8 +164,6 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				}
 				else
 					homing.enable = false;
-
-				player_homing_cache[proj] = homing;
 			}
 		}
 		
@@ -238,12 +220,11 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 			return false;
 		}
 
-		auto homing_entry = player_homing_cache.find(proj);
-		if (homing_entry == player_homing_cache.end()) {
+		auto extra = GetExtraProjectileData(proj, false);
+		if (extra == nullptr || extra->homing == nullptr)
 			return false;
-		}
 
-		HomingRockets &homing = homing_entry->second;
+		HomingRockets &homing = *extra->homing;
 
 		if (!homing.enable) {
 			return false;
@@ -361,7 +342,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 		}
 	}
 	
-	class CMod : public IMod , public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
+	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Etc:Heat_Seeking_Rockets")
@@ -370,22 +351,6 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_SetLauncher,      "CBaseProjectile::SetLauncher");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_PerformCustomPhysics, "CBaseEntity::PerformCustomPhysics");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_PerformCustomPhysics, "CTFProjectile_Flare::PerformCustomPhysics");
-		}
-		
-		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
-		
-		virtual void FrameUpdatePostEntityThink() override
-		{
-			static long frame = 0;
-			if (++frame % 145 != 0) return;
-
-			//Clear out removed weapons
-			for(auto it = player_homing_cache.begin(); it != player_homing_cache.end(); ) {
-				if (it->first == nullptr)
-					it = player_homing_cache.erase(it);
-				else
-					it++;
-			}
 		}
 	};
 	CMod s_Mod;

@@ -305,8 +305,14 @@ public:
 
         if (FStrEq(this->m_strName.c_str(), item_view->GetStaticData()->GetName(""))) return true; 
 
-        static auto custom_weapon_def = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
-		auto attr = item_view->GetAttributeList().GetAttributeByID(custom_weapon_def != nullptr ? custom_weapon_def->GetIndex() : -1);
+        static int custom_weapon_def = -1;
+        if (custom_weapon_def == -1) {
+            auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+            if (attr != nullptr)
+                custom_weapon_def = attr->GetIndex();
+        }
+            
+		auto attr = item_view->GetAttributeList().GetAttributeByID(custom_weapon_def);
         const char *value = nullptr;
         if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
             CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);

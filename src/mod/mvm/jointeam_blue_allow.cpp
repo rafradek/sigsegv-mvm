@@ -1034,7 +1034,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					// Add self blast penalty for flag bearing players
 					if (!player->IsMiniBoss() && player->GetActiveTFWeapon() != nullptr) {
 						static ConVarRef intel_speed("tf_mvm_bot_flag_carrier_movement_penalty");
-						static CEconItemAttributeDefinition *attr_def = nullptr;
+						CEconItemAttributeDefinition *attr_def = nullptr;
 						if (attr_def == nullptr)
 							attr_def = GetItemSchema()->GetAttributeDefinitionByName("self dmg push force decreased");
 						

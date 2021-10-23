@@ -1677,6 +1677,22 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFBot_StartIdleSound)();
 	}
 
+
+	RefCount rc_CTFPlayer_Regenerate;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Regenerate, bool ammo)
+	{
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_Regenerate,reinterpret_cast<CTFPlayer *>(this)->IsBot());
+		DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_GiveDefaultItems)
+	{
+		if (rc_CTFPlayer_Regenerate)
+			return;
+
+		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+	}
+
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
@@ -1850,6 +1866,12 @@ namespace Mod::Pop::TFBot_Extensions
 			//MOD_ADD_DETOUR_MEMBER(ISpatialPartition_EnumerateElementsInSphere, "ISpatialPartition::EnumerateElementsInSphere");
 
 			MOD_ADD_DETOUR_MEMBER(CTFBot_StartIdleSound,        "CTFBot::StartIdleSound");
+
+			// Prevent resupply from giving default items to robots
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate,        "CTFPlayer::Regenerate");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveDefaultItems,  "CTFPlayer::GiveDefaultItems");
+
+
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

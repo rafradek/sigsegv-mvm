@@ -14,6 +14,9 @@
 
 namespace Mod::Pop::PopMgr_Extensions {
     bool ExtendedUpgradesNoUndo();
+    IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index);
+	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player);
+    bool HasExtraLoadoutItems(int class_index);
 }
 
 namespace Mod::MvM::Extended_Upgrades
@@ -186,6 +189,10 @@ namespace Mod::MvM::Extended_Upgrades
             else if (FStrEq(info, "refund")) {
                 auto kv = new KeyValues("MVM_Respec");
                 serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+                return;
+            }
+            else if (FStrEq(info, "extra")) {
+                Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
                 return;
             }
             else {
@@ -877,6 +884,12 @@ namespace Mod::MvM::Extended_Upgrades
         ItemDrawInfo info2("Refund Upgrades", tf_mvm_respec_enabled.GetBool() ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
         menu->AppendItem("refund", info2);
 
+        if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex())) {
+            
+            ItemDrawInfo info3("Extra loadout items", ITEMDRAW_DEFAULT);
+            menu->AppendItem("extra", info3);
+        }
+
         select_type_menus[player] = menu;
 
         menu->Display(ENTINDEX(player), 0);
@@ -1003,9 +1016,12 @@ namespace Mod::MvM::Extended_Upgrades
                     serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
                 }
 
-                if (player->m_Shared->m_bInUpgradeZone && !upgrades.empty() && select_type_menus.find(player) == select_type_menus.end()) {
+                int class_index = player->GetPlayerClass()->GetClassIndex();
+                if (player->m_Shared->m_bInUpgradeZone && (!upgrades.empty() || Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index)) && select_type_menus.find(player) == select_type_menus.end()) {
                     bool found = false;
                     bool found_any = false;
+                    bool has_extra = Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index);
+
                     for (loadout_positions_t slot : {
                         LOADOUT_POSITION_PRIMARY,
                         LOADOUT_POSITION_SECONDARY,
@@ -1020,7 +1036,7 @@ namespace Mod::MvM::Extended_Upgrades
                         found_any |= found_now;
                         if (found_now && item == player->GetActiveWeapon()) {
                             
-                            if (!WeaponHasValidUpgrades(nullptr, player)) {
+                            if (!WeaponHasValidUpgrades(nullptr, player) && !has_extra) {
                                 found = true;
                                 StartUpgradeListForPlayer(player, (int)slot, 0);
                             }
@@ -1029,9 +1045,13 @@ namespace Mod::MvM::Extended_Upgrades
                     }
 
                     if (!found) {
-                        if (!found_any) {
+                        if (!found_any && !has_extra) {
                             if (WeaponHasValidUpgrades(nullptr, player))
                                 StartUpgradeListForPlayer(player, -1, 0);
+                        }
+                        else if (!found_any && has_extra && !WeaponHasValidUpgrades(nullptr, player)) {
+                            StartMenuForPlayer(player);
+                            Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, class_index);
                         }
                         else {
                             StartMenuForPlayer(player);

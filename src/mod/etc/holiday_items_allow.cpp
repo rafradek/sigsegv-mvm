@@ -14,6 +14,17 @@ namespace Mod::Etc::Holiday_Items_Allow
 		return DETOUR_MEMBER_CALL(CTFPlayer_ItemIsAllowed)(item_view);
 	}
 
+	DETOUR_DECL_MEMBER(bool, CEconItemDefinition_BInitFromKV, KeyValues *kv, CUtlVector<CUtlString> *errors)
+	{
+		auto holiday = kv->FindKey("holiday_restriction");
+		if (holiday != nullptr && !FStrEq(kv->GetString("equip_region"), "zombie_body")) {
+			
+			kv->RemoveSubKey(holiday);
+			holiday->deleteThis();
+		}
+		return DETOUR_MEMBER_CALL(CEconItemDefinition_BInitFromKV)(kv, errors);
+	}
+
 	DETOUR_DECL_STATIC(int, UTIL_GetHolidayForString, const char *str)
 	{
 		return rc_CTFPlayer_ItemIsAllowed ? DETOUR_STATIC_CALL(UTIL_GetHolidayForString)(str) : kHoliday_None;
@@ -24,8 +35,8 @@ namespace Mod::Etc::Holiday_Items_Allow
 	public:
 		CMod() : IMod("Etc:Holiday_Items_Allow")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemIsAllowed,  "CTFPlayer::ItemIsAllowed");
-			MOD_ADD_DETOUR_STATIC(UTIL_GetHolidayForString, "UTIL_GetHolidayForString");
+			MOD_ADD_DETOUR_MEMBER(CEconItemDefinition_BInitFromKV,  "CEconItemDefinition::BInitFromKV");
+			//MOD_ADD_DETOUR_STATIC(UTIL_GetHolidayForString, "UTIL_GetHolidayForString");
 		}
 	};
 	CMod s_Mod;

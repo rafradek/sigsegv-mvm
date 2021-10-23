@@ -85,7 +85,7 @@ namespace Mod::Attr::Custom_Attributes
 	CBaseEntity *last_fast_attrib_entity = nullptr;
 	float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
 		static float* last_attrib_cache = nullptr;
-
+		
 		if (entity == nullptr)
 			return value;
 
@@ -94,10 +94,16 @@ namespace Mod::Attr::Custom_Attributes
             attrib_cache = last_attrib_cache;
         }
 		else {
-			attrib_cache = fast_attribute_cache[ENTINDEX_NATIVE(entity)];
+			attrib_cache = fast_attribute_cache[ENTINDEX(entity)];
 			if (attrib_cache == nullptr) {
-				attrib_cache = new float[entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM]{FLT_MIN};
-				fast_attribute_cache[ENTINDEX_NATIVE(entity)] = attrib_cache;
+				int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+				attrib_cache = new float[count];
+				
+				for(int i = 0; i < count; i++) {
+					attrib_cache[i] = FLT_MIN;
+				}
+
+				fast_attribute_cache[ENTINDEX(entity)] = attrib_cache;
 			}
 			last_fast_attrib_entity = entity;
 			last_attrib_cache = attrib_cache;
@@ -107,7 +113,7 @@ namespace Mod::Attr::Custom_Attributes
 			return value;
 
 		float result = attrib_cache[name];
-
+			
 		if (result != FLT_MIN) {
 			return result;
 		}
@@ -131,13 +137,30 @@ namespace Mod::Attr::Custom_Attributes
 		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
 	}
 
+	const char *string_attributes_names[] = {
+		"override projectile type extra", 
+		"projectile trail particle", 
+		"explosion particle", 
+		"custom item model", 
+		"attachment name",
+		"attachment offset",
+		"attachment angles",
+		"custom impact sound",
+		"custom kill icon",
+		"custom hit sound",
+		"fire input on hit",
+		"fire input on hit name restrict",
+		"fire input on kill"
+
+	};
+
 #define GET_STRING_ATTRIBUTE(attrlist, name, varname) \
-	static auto *def_##varname = GetItemSchema()->GetAttributeDefinitionByName(name); \
-	const char * varname = GetStringAttribute(attrlist, def_##varname);
+	static int inddef_##varname = GetItemSchema()->GetAttributeDefinitionByName(name)->GetIndex(); \
+	const char * varname = GetStringAttribute(attrlist, inddef_##varname);
 
 	
-	const char *GetStringAttribute(CAttributeList &attrlist, CEconItemAttributeDefinition *def) {
-		auto attr = attrlist.GetAttributeByID(def->GetIndex());
+	const char *GetStringAttribute(CAttributeList &attrlist, int index) {
+		auto attr = attrlist.GetAttributeByID(index);
 		const char *value = nullptr;
 		if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
 			CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
@@ -343,19 +366,35 @@ namespace Mod::Attr::Custom_Attributes
 		this->Remove();
 	};
 
-	bool fire_projectile_multi = false;
+	bool fire_projectile_multi = true;
+	int old_clip = 0;
 
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
+
 		int attr_projectile_count = 1;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attr_projectile_count, mult_projectile_count);
+
+		int attr_fire_all_at_once = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attr_fire_all_at_once, fire_full_clip_at_once);
+
+		int num_shots = attr_projectile_count;
+		if (attr_fire_all_at_once != 0) {
+			attr_projectile_count *= weapon->m_iClip1;
+		}
+
 		CBaseAnimating *proj = nullptr;
+		//int seed = CBaseEntity::GetPredictionRandomSeed() & 255;
 		for (int i = 0; i < attr_projectile_count; i++) {
 
 			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "override projectile type extra", projectilename);
 
-			fire_projectile_multi = i != 0;
+			fire_projectile_multi = (i % num_shots) == 0;
+
+			//if (i != 0) {
+			//	RandomSeed(gpGlobals->tickcount + i);
+			//}
 
 			if (projectilename != nullptr) {
 				proj = SpawnCustomProjectile(projectilename, weapon, player);
@@ -365,7 +404,7 @@ namespace Mod::Attr::Custom_Attributes
 				proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
 			}
 			
-			fire_projectile_multi = false;
+			fire_projectile_multi = true;
 
 			if (proj != nullptr) {
 				float attr_lifetime = 0.0f;
@@ -424,20 +463,20 @@ namespace Mod::Attr::Custom_Attributes
 			if (weapon->GetWeaponID() != TF_WEAPON_MINIGUN)
 				AttackEnemyProjectiles(player, reinterpret_cast<CTFWeaponBase*>(this), shoot_projectiles);
 		}
-		
+		old_clip = 0;
 		projectile_arrow = proj;
 		return proj;
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
 	{
-		if (!fire_projectile_multi)
+		if (fire_projectile_multi)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
-		if (!fire_projectile_multi)
+		if (fire_projectile_multi)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
 	}
 	
@@ -523,8 +562,8 @@ namespace Mod::Attr::Custom_Attributes
 		killer_weapon = nullptr;
 
 		ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-			static auto *attachment_name_def = GetItemSchema()->GetAttributeDefinitionByName("attachment name");
-			if (entity->GetItem() != nullptr && entity->GetItem()->GetAttributeList().GetAttributeByID(attachment_name_def != nullptr ? attachment_name_def->GetIndex() : -1) != nullptr) {
+			static int attachment_name_def = GetItemSchema()->GetAttributeDefinitionByName("attachment name")->GetIndex();
+			if (entity->GetItem() != nullptr && entity->GetItem()->GetAttributeList().GetAttributeByID(attachment_name_def) != nullptr) {
 				entity->AddEffects(EF_NODRAW);
 			}
 		});
@@ -850,10 +889,10 @@ namespace Mod::Attr::Custom_Attributes
 		if ((index == 1 || index == 5 || index == 6)) {
 			auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
-			CEconItemAttributeDefinition *attr_name = nullptr;
+			int attr_name = -1;
 
-			static auto *custom_weapon_fire_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon fire sound");
-			static auto *custom_weapon_reload_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon reload sound");
+			static int custom_weapon_fire_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon fire sound")->GetIndex();
+			static int custom_weapon_reload_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon reload sound")->GetIndex();
 			switch (index) {
 				case 1: case 5: attr_name = custom_weapon_fire_sound; break;
 				case 6: attr_name = custom_weapon_reload_sound; break;
@@ -1222,8 +1261,39 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetDamage(info.GetDamage() * dmg);
 		}
 
-		if (info.GetWeapon() != nullptr) {
+		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
 			float dmg = info.GetDamage();
+
+
+			// Allow mult_dmg_bonus_while_half_dead mult_dmg_penalty_while_half_alive mult_dmg_with_reduced_health
+			// to work on non melee weapons
+			//
+			if (info.GetAttacker() != nullptr && !info.GetWeapon()->MyCombatWeaponPointer()->IsMeleeWeapon()) {
+				float maxHealth = info.GetAttacker()->GetMaxHealth();
+				float health = info.GetAttacker()->GetHealth();
+				float halfHealth = maxHealth * 0.5f;
+				float dmgmult = 1.0f;
+				if ( health < halfHealth )
+				{
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), dmgmult, mult_dmg_bonus_while_half_dead );
+				}
+				else
+				{
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), dmgmult, mult_dmg_penalty_while_half_alive );
+				}
+
+				// Some weapons change damage based on player's health
+				float flReducedHealthBonus = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), flReducedHealthBonus, mult_dmg_with_reduced_health );
+				if ( flReducedHealthBonus != 1.0f )
+				{
+					float flHealthFraction = clamp( health / maxHealth, 0.0f, 1.0f );
+					flReducedHealthBonus = Lerp( flHealthFraction, flReducedHealthBonus, 1.0f );
+
+					dmgmult *= flReducedHealthBonus;
+				}
+				dmg *= dmgmult;
+			}
 
 			float iDmgCurrentHealth = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
@@ -1905,9 +1975,9 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot = -2);
 
-	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool refund)
 	{
-		if (!b3) {
+		if (!refund) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
 			
 			if (itemslot >= 0 && upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
@@ -1926,10 +1996,24 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, refund);
 		
-		if (!b3) {
+		if (!refund) {
 			InspectAttributes(player, player , true, itemslot);
+		}
+
+		// Delete old dropped weapons if a player refunded an upgrade
+		if (sell && !refund) {
+			if (itemslot >= 0) {
+				CEconEntity *entity = GetEconEntityAtLoadoutSlot(player, itemslot);
+				if (entity != nullptr) {
+					ForEachEntityByRTTI<CTFDroppedWeapon>([&](CTFDroppedWeapon *weapon) {
+						if (weapon->m_Item->m_iItemID == entity->GetItem()->m_iItemID) {
+							weapon->Remove();
+						}
+					});
+				}
+			}
 		}
 	}
 	
@@ -2545,43 +2629,80 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
 
+		CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+		bool was_alive = entity->IsAlive();
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
 		//Fire input on hit
 		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
-			CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
-
-			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit", input);
-			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit name restrict", filter);
-			
-			if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
-				char input_tokenized[256];
-				V_strncpy(input_tokenized, input, sizeof(input_tokenized));
+			{
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit", input);
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit name restrict", filter);
 				
-				char *target = strtok(input_tokenized,"^");
-				char *input = strtok(NULL,"^");
-				char *param = strtok(NULL,"^");
-				
-				if (target != nullptr && input != nullptr) {
-					variant_t variant1;
-					if (param != nullptr) {
-						string_t m_iParameter = AllocPooledString(param);
-						variant1.SetString(m_iParameter);
-					}
-					else {
-                        variant1.SetInt(damage);
-					}
+				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
+					char input_tokenized[256];
+					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
 					
-					if (FStrEq(target, "!self")) {
-						entity->AcceptInput(input,info.GetAttacker(),info.GetAttacker(),variant1,-1);
+					char *target = strtok(input_tokenized,"^");
+					char *input = strtok(NULL,"^");
+					char *param = strtok(NULL,"^");
+					
+					if (target != nullptr && input != nullptr) {
+						variant_t variant1;
+						if (param != nullptr) {
+							string_t m_iParameter = AllocPooledString(param);
+							variant1.SetString(m_iParameter);
+						}
+						else {
+							variant1.SetInt(damage);
+						}
+						
+						if (FStrEq(target, "!self")) {
+							entity->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
+						}
+						else if (FStrEq(target, "!projectile") && info.GetInflictor() != nullptr) {
+							info.GetInflictor()->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
+						}
+						else {
+							CEventQueue &que = g_EventQueue;
+							que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,0,info.GetAttacker(), entity,-1);
+						}
 					}
-					else if (FStrEq(target, "!projectile") && info.GetInflictor() != nullptr) {
-						info.GetInflictor()->AcceptInput(input,info.GetAttacker(),info.GetAttacker(),variant1,-1);
-					}
-					else {
-						CEventQueue &que = g_EventQueue;
-						que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,0,info.GetAttacker(),info.GetAttacker(),-1);
+				}
+			}
+
+			if (was_alive && !entity->IsAlive()) {
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on kill", input);
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on kill name restrict", filter);
+				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
+					char input_tokenized[256];
+					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
+					
+					char *target = strtok(input_tokenized,"^");
+					char *input = strtok(NULL,"^");
+					char *param = strtok(NULL,"^");
+					
+					if (target != nullptr && input != nullptr) {
+						variant_t variant1;
+						if (param != nullptr) {
+							string_t m_iParameter = AllocPooledString(param);
+							variant1.SetString(m_iParameter);
+						}
+						else {
+							variant1.SetInt(damage);
+						}
+						
+						if (FStrEq(target, "!self")) {
+							entity->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
+						}
+						else if (FStrEq(target, "!projectile") && info.GetInflictor() != nullptr) {
+							info.GetInflictor()->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
+						}
+						else {
+							CEventQueue &que = g_EventQueue;
+							que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,0,info.GetAttacker(), entity,-1);
+						}
 					}
 				}
 			}
@@ -2984,6 +3105,18 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Reload)
+	{
+		int iWeaponMod = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), iWeaponMod, reload_full_clip_at_once );
+		if (iWeaponMod == 1)
+		{
+			reinterpret_cast<CTFWeaponBase *>(this)->m_bReloadsSingly = false;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -3101,7 +3234,7 @@ namespace Mod::Attr::Custom_Attributes
 				added_item_name = true;
 			}
 
-			if (attribute_info_vec.back().size() + format_str.size() + 1 > 253 /*220*/) {
+			if (attribute_info_vec.back().size() + format_str.size() + 1 > 252 /*220*/) {
 				++indexstr;
 				attribute_info_vec.push_back("");
 			}
@@ -3233,7 +3366,7 @@ namespace Mod::Attr::Custom_Attributes
 
     void RemoveAttributeManager(CBaseEntity *entity) {
         
-        int index = ENTINDEX_NATIVE(entity);
+        int index = ENTINDEX(entity);
         if (entity == last_fast_attrib_entity) {
             last_fast_attrib_entity = nullptr;
         }
@@ -3244,6 +3377,10 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
 		int id = ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1;
+
+		if (id < 0)
+			return;
+
 		attribute_info_strings[id].clear();
 		attribute_info_display_time[id] = 0.0f;
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
@@ -3256,7 +3393,7 @@ namespace Mod::Attr::Custom_Attributes
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
         if (mgr->m_hOuter != nullptr) {
-            auto cache = fast_attribute_cache[ENTINDEX_NATIVE(mgr->m_hOuter)];
+            auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
             if (cache != nullptr) {
 				int count = mgr->m_hOuter->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
 				for(int i = 0; i < count; i++) {
@@ -3325,6 +3462,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateRagdollEntity, "CTFPlayer::CreateRagdollEntity [args]");
 			MOD_ADD_DETOUR_MEMBER(CTFStickBomb_Smack, "CTFStickBomb::Smack");
+			
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_RadiusDamage, "CTFGameRules::RadiusDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_CheckJumpButton, "CTFGameMovement::CheckJumpButton");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_ProcessMovement, "CTFGameMovement::ProcessMovement");
@@ -3340,6 +3478,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFShotgunBuildingRescue_GetProjectileSpeed,    "CTFShotgunBuildingRescue::GetProjectileSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Explode,    "CTFWeaponBaseGrenadeProj::Explode");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Explode,    "CTFBaseRocket::Explode");
+
 			MOD_ADD_DETOUR_MEMBER(CRecipientFilter_IgnorePredictionCull,    "CRecipientFilter::IgnorePredictionCull");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetDamageType,    "CTFWeaponBase::GetDamageType");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_CanHolster,    "CTFMinigun::CanHolster");
@@ -3446,6 +3585,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PlayerSolidMask, "CTFGameMovement::PlayerSolidMask");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Reload,			 "CTFWeaponBase::Reload");
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");
@@ -3648,4 +3788,5 @@ namespace Mod::Attr::Custom_Attributes
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
+
 }
