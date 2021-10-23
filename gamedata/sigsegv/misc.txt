@@ -4801,7 +4801,87 @@
 					type "sym"
 					sym  "_Z8ENTINDEXP11CBaseEntity"
 				}
-				 
+				"CTraceFilterSimple::CTraceFilterSimple"
+				{
+					type "sym"
+					sym  "_ZN18CTraceFilterSimpleC2EPK13IHandleEntityiPFbPS0_iE"
+				}
+				"CTFGameMovement::PlayerSolidMask"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement15PlayerSolidMaskEb"
+				}
+				"CBaseEntity::GetServerClass"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14GetServerClassEv"
+				}
+				"CBaseFilter::PassesFilterImpl"
+				{
+					type "sym"
+					sym  "_ZN11CBaseFilter16PassesFilterImplEP11CBaseEntityS1_"
+				}
+				"CTFWeaponBase::Reload"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase6ReloadEv"
+				}
+				"CTFWeaponBase::Reload"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase6ReloadEv"
+				}
+				"CMannVsMachineChangeChallengeIssue::ExecuteCommand"
+				{
+					type "sym"
+					sym  "_ZN34CMannVsMachineChangeChallengeIssue14ExecuteCommandEv"
+				}
+				"CTFGameRules::LoadMapCycleFile"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules16LoadMapCycleFileEv"
+				}
+				"~CTriggerCamera [D0]"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerCameraD0Ev"
+				}
+				"~CTriggerCamera [D2]"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerCameraD2Ev"
+				}
+				
+				"CBaseEntity::CBaseEntity"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntityC2Eb"
+				}
+				"~CBaseEntity [D2]"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntityD2Ev"
+				}
+				"IDroppedWeaponAutoList::m_IDroppedWeaponAutoListAutoList"
+				{
+					type "sym"
+					sym  "_ZN22IDroppedWeaponAutoList32m_IDroppedWeaponAutoListAutoListE"
+				}
+				"CTFPlayerInventory::GetItemInLoadout"
+				{
+					type "sym"
+					sym  "_ZN18CTFPlayerInventory16GetItemInLoadoutEii"
+				}
+				"UTIL_PlayerBySteamID"
+				{
+					type "sym"
+					sym  "_Z20UTIL_PlayerBySteamIDRK8CSteamID"
+				}
+				"CPopulationManager::IsValidPopfile"
+				{
+					type "sym"
+					sym  "_ZN18CPopulationManager14IsValidPopfileEPKc"
+				}                              
 			}
 			"addrs_group"
 			{

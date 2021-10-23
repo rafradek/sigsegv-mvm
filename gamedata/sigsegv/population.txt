@@ -28,6 +28,7 @@
 				"CPopulationManager::CollectMvMBots"                              "_ZN18CPopulationManager14CollectMvMBotsEP10CUtlVectorIP9CTFPlayer10CUtlMemoryIS2_iEE"
 				"CPopulationManager::CycleMission"                                "_ZN18CPopulationManager12CycleMissionEv"
 				"CPopulationManager::FindCheckpointSnapshot [CTFPlayer *]"        "_ZNK18CPopulationManager22FindCheckpointSnapshotEP9CTFPlayer"
+				"CPopulationManager::FindDefaultPopulationFileShortNames"         "_ZN18CPopulationManager35FindDefaultPopulationFileShortNamesER10CUtlVectorI10CUtlString10CUtlMemoryIS1_iEE"
 				"CPopulationManager::FindOrAddPlayerUpgradeHistory [CTFPlayer *]" "_ZN18CPopulationManager29FindOrAddPlayerUpgradeHistoryEP9CTFPlayer"
 				"CPopulationManager::GetCurrentWave"                              "_ZN18CPopulationManager14GetCurrentWaveEv"
 				"CPopulationManager::GetNumRespecsAvailableForPlayer"             "_ZN18CPopulationManager31GetNumRespecsAvailableForPlayerEP9CTFPlayer"

@@ -45,6 +45,11 @@
 					type "sym"
 					sym  "_ZNK8CNavMesh15GetGroundHeightERK6VectorPfPS0_"
 				}
+				"CNavMesh::Load"
+				{
+					type "sym"
+					sym  "_ZN8CNavMesh4LoadEv"
+				}
 				
 				"CTFNavMesh::CollectBuiltObjects"
 				{
@@ -128,6 +133,7 @@
 					type "sym"
 					sym  "_ZN30ISearchSurroundingAreasFunctor20IterateAdjacentAreasEP8CNavAreaS1_f"
 				}
+				
 			}
 		}
 	}

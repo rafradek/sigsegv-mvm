@@ -95,6 +95,16 @@
 					type "sym"
 					sym  "_ZNK23NextBotGroundLocomotion18GetMaxDecelerationEv"
 				}
+				"ILocomotion::StuckMonitor"
+				{
+					type "sym"
+					sym  "_ZN11ILocomotion12StuckMonitorEv"
+				}
+				"PlayerLocomotion::GetDesiredSpeed"
+				{
+					type "sym"
+					sym  "_ZNK16PlayerLocomotion15GetDesiredSpeedEv"
+				}
 				
 			}
 		}

@@ -1977,4 +1977,80 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4512"
+    {
+        "name"	"add cond when active"
+        "attribute_class"	"add_cond_when_active"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4513"
+    {
+        "name"	"mult step height"
+        "attribute_class"	"mult_step_height"
+        "description_string"	"(+-)%p% step height"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4514"
+    {
+        "name"	"ignore player clip"
+        "attribute_class"	"ignore_player_clip"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4515"
+    {
+        "name"	"allow bunny hop"
+        "attribute_class"	"allow_bunny_hop"
+        "description_string"	"Can bunny hop"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4516"
+    {
+        "name"	"fire input on kill"
+        "attribute_class"	"fire_input_on_kill"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4517"
+    {
+        "name"	"fire input on kill name restrict"
+        "attribute_class"	"fire_input_on_kill_name_restrict"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4518"
+    {
+        "name"	"fire full clip at once"
+        "attribute_class"	"fire_full_clip_at_once"
+        "description_string"	"Fires full clip at once"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4519"
+    {
+        "name"	"reload full clip at once"
+        "attribute_class"	"reload_full_clip_at_once"
+        "description_string"	"Reloads full clip at once"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }
