@@ -15,15 +15,38 @@ dpkg --add-architecture i386
 apt update
 ```
 
-2. Follow this guide, stop after finishing Downloading Source and Dependencies section. When cloning SourceMod, use 1.10-dev branch `git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.10-dev` . In checkout-deps.sh, you can remove mysql and sdks that are not tf2 and sdk2013 to save space : https://wiki.alliedmods.net/Building_SourceMod
-
-3. Install packages:
+2. Install packages:
 ```
-autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32stdc++-7-dev lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib python2 python-is-python2
+autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32stdc++-7-dev lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
 ```
 
-4. Init submodules:
+3. Clone Sourcemod, Metamod, SDK repositories, and AMBuild
 ```
+cd ..
+mkdir -p alliedmodders
+cd alliedmodders
+git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.10-dev
+git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
+git clone hl2sdk-proxy-repo hl2sdk-sdk2013 -b sdk2013
+git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
+git clone https://github.com/alliedmodders/ambuild
+```
+
+4. Install AMBuild. Also add ~/.local/bin to PATH variable (Not needed if ambuild is installed as root)
+```
+pip install ./ambuild
+echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+5. Install packages:
+```
+python2 python-is-python2
+```
+
+6. Init submodules:
+```
+cd ../sigsegv-mvm
 git submodule init
 git submodule update
 cd libs/udis86
@@ -33,16 +56,16 @@ make
 cd ../..
 ```
 
-5. Install packages:
+7. Install packages:
 ```
 python-is-python3
 ```
 
-6. Update autoconfig.sh with correct hl2sdk, metamod, sourcemod paths
+8. Update autoconfig.sh with correct hl2sdk, metamod, sourcemod paths
 
-7. Run autoconfig.sh
+9. Run autoconfig.sh
 
-8. Build
+10. Build
 
 Release:
 ```
