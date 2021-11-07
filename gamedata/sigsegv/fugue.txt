@@ -50,6 +50,10 @@
                     type "sym"
                     sym "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades"
                 }
+                "CTFWeaponBaseGun::GetWeaponSpread" {
+                    type "sym"
+                    sym "_ZN16CTFWeaponBaseGun15GetWeaponSpreadEv"
+                }
             }
         }
     }
