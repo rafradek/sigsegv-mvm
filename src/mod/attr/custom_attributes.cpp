@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/baseentity.h"
 #include "stub/econ.h"
+#include "stub/extraentitydata.h"
 #include "stub/tfplayer.h"
 #include "stub/projectiles.h"
 #include "stub/tfweaponbase.h"
@@ -80,44 +81,25 @@ namespace Mod::Attr::Custom_Attributes
 
 	float *fast_attribute_cache[2048];
 
-	// Fast Attribute Cache, for every tick attribute querying. The value parameter must be a static value, unlike the CALL_ATTRIB_HOOK_ calls;
 
 	CBaseEntity *last_fast_attrib_entity = nullptr;
-	float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
-		static float* last_attrib_cache = nullptr;
+	float *CreateNewAttributeCache(CBaseEntity *entity) {
+
+		if (rtti_cast<IHasAttributes *>(entity) == nullptr) return nullptr;
 		
-		if (entity == nullptr)
-			return value;
-
-		float *attrib_cache = nullptr;
-		if (last_fast_attrib_entity == entity) {
-            attrib_cache = last_attrib_cache;
-        }
-		else {
-			attrib_cache = fast_attribute_cache[ENTINDEX(entity)];
-			if (attrib_cache == nullptr) {
-				int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
-				attrib_cache = new float[count];
-				
-				for(int i = 0; i < count; i++) {
-					attrib_cache[i] = FLT_MIN;
-				}
-
-				fast_attribute_cache[ENTINDEX(entity)] = attrib_cache;
-			}
-			last_fast_attrib_entity = entity;
-			last_attrib_cache = attrib_cache;
+		int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+		float *attrib_cache = new float[count];
+		
+		for(int i = 0; i < count; i++) {
+			attrib_cache[i] = FLT_MIN;
 		}
 
-		if (attrib_cache == nullptr)
-			return value;
+		//GetExtraEntityDataWithAttributes(entity)->fast_attribute_cache = attrib_cache;
+		fast_attribute_cache[ENTINDEX(entity)] = attrib_cache;
+		return attrib_cache;
+	}
 
-		float result = attrib_cache[name];
-			
-		if (result != FLT_MIN) {
-			return result;
-		}
-
+	float SetAttributeCacheEntry(CBaseEntity *entity, float value, int name, float *attrib_cache) {
 		CAttributeManager *mgr = nullptr;
 		if (entity->IsPlayer()) {
             mgr = reinterpret_cast<CTFPlayer *>(entity)->GetAttributeManager();
@@ -128,12 +110,33 @@ namespace Mod::Attr::Custom_Attributes
         if (mgr == nullptr)
             return value;
 
-		result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
+		float result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
 		attrib_cache[name] = result;
 		return result;
 	}
 
-	int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
+	// Fast Attribute Cache, for every tick attribute querying. The value parameter must be a static value, unlike the CALL_ATTRIB_HOOK_ calls;
+	inline float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
+		
+		if (entity == nullptr)
+			return value;
+
+		//auto data = static_cast<ExtraEntityDataWithAttributes *>(entity->GetExtraEntityData());
+		float *attrib_cache = fast_attribute_cache[ENTINDEX(entity)];
+		if (attrib_cache == nullptr && (attrib_cache = CreateNewAttributeCache(entity)) == nullptr) {
+			return value;
+		}
+		
+		float result = attrib_cache[name];
+			
+		if (result != FLT_MIN) {
+			return result;
+		}
+
+		return SetAttributeCacheEntry(entity, value, name, attrib_cache);
+	}
+
+	inline int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
 		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
 	}
 
@@ -225,7 +228,8 @@ namespace Mod::Attr::Custom_Attributes
 		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() ) {
 			int can_heal = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( medigun, can_heal, medic_machinery_beam );
-			healobject->SetHealth( healobject->GetHealth() + ( (medigun->GetHealRate() / 10.f) * can_heal ) );
+			auto object = ToBaseObject(healobject);
+			object->SetHealth( object->GetHealth() + ( (medigun->GetHealRate() / 10.f) * can_heal ) );
 			
 		}
 	}
@@ -451,6 +455,11 @@ namespace Mod::Attr::Custom_Attributes
 					if (drag != 0) {
 						physics->EnableDrag(false);
 					}
+				}
+
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "projectile sound", soundname);
+				if (soundname != nullptr) {
+					proj->EmitSound(soundname);
 				}
 			}
 		}
@@ -1434,11 +1443,11 @@ namespace Mod::Attr::Custom_Attributes
 
 	void OnWeaponUpdate(CTFWeaponBase *weapon) {
 		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
-		if (owner != nullptr && (gpGlobals->tickcount % 6) == 3) {
+		if (owner != nullptr && (gpGlobals->tickcount % 5) == 3) {
 			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
 
 			if (alwaysCrit) {
-				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.25f, nullptr);
+				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.5f, nullptr);
 			}
 			
 			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
@@ -1446,7 +1455,7 @@ namespace Mod::Attr::Custom_Attributes
 				for (int i = 0; i < 3; i++) {
 					int addcond_single = (addcond >> (i * 8)) & 255;
 					if (addcond_single != 0) {
-						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.25f, owner);
+						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.5f, owner);
 					}
 				}
 			}
@@ -1965,7 +1974,7 @@ namespace Mod::Attr::Custom_Attributes
 					vec.NormalizeInPlace();
 					vec.z = 1.0f;
 					vec *= knockback;
-					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec);
+					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec, player);
 				}
 				if (stompTime != 0.0f)
 					player_touch_times[player][toucher] = gpGlobals->curtime;
@@ -3117,6 +3126,34 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_Holster)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+
+		// Remove add cond on active effects
+		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
+		if (owner != nullptr) {
+			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
+
+			if (alwaysCrit && owner->m_Shared->GetConditionDuration(TF_COND_CRITBOOSTED_CARD_EFFECT) < 0.5f) {
+				owner->m_Shared->RemoveCond(TF_COND_CRITBOOSTED_CARD_EFFECT);
+			}
+			
+			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
+			if (addcond != 0) {
+				for (int i = 0; i < 3; i++) {
+					int addcond_single = (addcond >> (i * 8)) & 255;
+					if (addcond_single != 0) {
+						if (alwaysCrit && owner->m_Shared->GetConditionDuration((ETFCond)addcond_single) < 0.5f) {
+							owner->m_Shared->RemoveCond((ETFCond)addcond_single);
+						}
+					}
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -3173,14 +3210,14 @@ namespace Mod::Attr::Custom_Attributes
 		DisplayAttributeString(reinterpret_cast<CTFPlayer *>(this), 6);
 	}
 
-	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, int item_def, bool display_stock)
+	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, CEconItemView *item_def, bool display_stock)
 	{
 		bool added_item_name = false;
 		int slot = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
-		if (display_stock && (item_def == -1 || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
+		if (display_stock && (item_def == nullptr || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
-			if (item_def != -1)
-				attribute_info_vec.back() += CFmtStr("\n%s:\n\n", GetItemName(item_def));
+			if (item_def != nullptr)
+				attribute_info_vec.back() += CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def));
 			else
 				attribute_info_vec.back() += "\nCharacter Attributes:\n\n";
 		}
@@ -3226,8 +3263,8 @@ namespace Mod::Attr::Custom_Attributes
 			} 
 
 			if (!added_item_name) {
-				if (item_def != -1)
-					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemName(item_def)));
+				if (item_def != nullptr)
+					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def)));
 				else
 					format_str.insert(0, "\nCharacter Attributes:\n\n");
 
@@ -3283,21 +3320,21 @@ namespace Mod::Attr::Custom_Attributes
 		int indexstr = 0;
 
 		if (slot == -1) {
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
 			
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock);
 		}
 		else {
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock);
 
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
 			if (entity->GetItem() != nullptr && entity->GetItem() != view) {
-				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem()->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock);
 			}
 		});
 		
@@ -3393,7 +3430,7 @@ namespace Mod::Attr::Custom_Attributes
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
         if (mgr->m_hOuter != nullptr) {
-            auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
+			auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
             if (cache != nullptr) {
 				int count = mgr->m_hOuter->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
 				for(int i = 0; i < count; i++) {
@@ -3586,6 +3623,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Reload,			 "CTFWeaponBase::Reload");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster,			 "CTFWeaponBase::Holster");
+			
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");

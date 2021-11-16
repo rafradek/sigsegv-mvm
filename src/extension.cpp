@@ -7,6 +7,7 @@
 #include "addr/prescan.h"
 #include "gameconf.h"
 #include "prop.h"
+#include "util/pooled_string.h"
 #include "util/rtti.h"
 //#include "disasm/disasm.h"
 #include "factory.h"
@@ -275,6 +276,7 @@ bool CExtSigsegv::RegisterConCommandBase(ConCommandBase *pCommand)
 
 void CExtSigsegv::LevelInitPreEntity()
 {
+	DevMsg("extsig\n");
 	this->LoadSoundOverrides();
 }
 

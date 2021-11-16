@@ -14,7 +14,7 @@ public:
 	virtual ~AutoList()
 	{
 		if (s_List != nullptr) {
-			s_List->remove(static_cast<T *>(this));
+			s_List->erase(std::find(s_List->begin(), s_List->end(), static_cast<T *>(this)));
 			if (s_List->empty()) {
 				delete s_List;
 				s_List = nullptr;
@@ -22,7 +22,7 @@ public:
 		}
 	}
 	
-	static const std::list<T *>& List()
+	static const std::vector<T *>& List()
 	{
 		AllocList();
 		return *s_List;
@@ -32,11 +32,11 @@ private:
 	static void AllocList()
 	{
 		if (s_List == nullptr) {
-			s_List = new std::list<T *>();
+			s_List = new std::vector<T *>();
 		}
 	}
 	
-	static inline std::list<T *> *s_List = nullptr;
+	static inline std::vector<T *> *s_List = nullptr;
 };
 
 

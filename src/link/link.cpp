@@ -8,6 +8,8 @@
 
 namespace Link
 {
+	bool link_finished = false;
+
 	bool InitAll()
 	{
 		DevMsg("Link::InitAll BEGIN\n");
@@ -22,8 +24,9 @@ namespace Link
 #endif
 			}
 		}
-		
+		link_finished = true;
 		DevMsg("Link::InitAll OK\n");
 		return true;
 	}
+
 }

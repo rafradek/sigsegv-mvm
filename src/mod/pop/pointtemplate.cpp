@@ -198,11 +198,17 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 
 	for (auto &box : brush_entity_bounding_box) {
 		box.entity->SetModel(TEMPLATE_BRUSH_MODEL);
-		box.entity->KeyValue("Solid", "2");
-		box.entity->KeyValue("mins", box.min.c_str());
-		box.entity->KeyValue("maxs", box.max.c_str());
+		box.entity->SetSolid(SOLID_BBOX);
+		Vector min, max;
+		UTIL_StringToVector(min.Base(), box.min.c_str());
+		UTIL_StringToVector(max.Base(), box.max.c_str());
+		//sscanf(box.min.c_str(), "%f %f %f", &min.x, &min.y, &min.z);
+		//sscanf(box.max.c_str(), "%f %f %f", &max.x, &max.y, &max.z);
+		box.entity->CollisionProp()->SetCollisionBounds(min, max);
 		box.entity->AddEffects(32); //DONT RENDER
-		box.entity->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
+		if (box.entity->GetMoveParent() != nullptr) {
+			box.entity->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
+		}
 	}
 
 	// Restore parenting string
@@ -695,6 +701,15 @@ namespace Mod::Pop::PointTemplate
 			DETOUR_MEMBER_CALL(CEnvEntityMaker_SpawnEntity)(vector,angles);
 		}
 	}
+	
+	DETOUR_DECL_MEMBER(void, CBaseEntity_SetParent, CBaseEntity *pParentEntity, int iAttachment)
+	{
+		auto me = reinterpret_cast<CBaseEntity *>(this);
+		DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(pParentEntity,iAttachment);
+		if (me->GetSolid() == SOLID_BBOX && me->GetBaseAnimating() == nullptr && strcmp(STRING(me->GetModelName()), TEMPLATE_BRUSH_MODEL) == 0) {
+			me->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
+		}
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -706,6 +721,9 @@ namespace Mod::Pop::PointTemplate
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawn,               "CEnvEntityMaker::InputForceSpawn");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawnAtEntityOrigin, "CEnvEntityMaker::InputForceSpawnAtEntityOrigin");
+
+			// Set FSOLID_ROOT_PARENT_ALIGNED to parented brush entities spawned by point templates
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

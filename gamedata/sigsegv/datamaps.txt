@@ -40,6 +40,10 @@
 				"CBaseFilter"          "_ZN11CBaseFilter9m_DataMapE"
 				"CTriggerCamera"       "_ZN14CTriggerCamera9m_DataMapE"
 				"CBaseCombatWeapon"    "_ZN17CBaseCombatWeapon9m_DataMapE"
+				"CFuncRotating"        "_ZN13CFuncRotating9m_DataMapE"
+				"CPropVehicle"         "_ZN12CPropVehicle9m_DataMapE"
+				"CPropVehicleDriveable" "_ZN21CPropVehicleDriveable9m_DataMapE"
+				"CBaseAnimating"       "_ZN14CBaseAnimating9m_DataMapE"
 			}
 		}
 	}

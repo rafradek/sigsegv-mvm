@@ -144,6 +144,8 @@ public:
 	DECL_SENDPROP(int, m_nTickBase);
 	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
+	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
+	
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

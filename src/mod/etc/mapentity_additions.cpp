@@ -8,13 +8,21 @@
 #include "stub/strings.h"
 #include "stub/server.h"
 #include "stub/objects.h"
+#include "stub/extraentitydata.h"
+#include "util/pooled_string.h"
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/misc.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
 #include <regex>
 #include <string_view>
 #include "stub/sendprop.h"
+
+namespace Mod::Pop::PopMgr_Extensions
+{
+	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
+}
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -100,6 +108,23 @@ namespace Mod::Etc::Mapentity_Additions
     std::vector<SendPropCacheEntry> send_prop_cache;
     std::vector<DatamapCacheEntry> datamap_cache;
 
+    PooledString trigger_detector_class("$trigger_detector");
+    void AddModuleByName(CBaseEntity *entity, const char *name);
+
+    void SetCustomVariable(CBaseEntity *entity, const char *key, const char *value)
+    {
+        entity->SetCustomVariable(key, value);
+        
+        if (FStrEq(key, "modules")) {
+            std::string str(value);
+            boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
+
+            for (auto &token : tokens) {
+                AddModuleByName(entity,token.c_str());
+            }
+        }
+    }
+
     bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop)
     {
         for (int i = 0; i < s_table->GetNumProps(); ++i) {
@@ -165,7 +190,7 @@ namespace Mod::Etc::Mapentity_Additions
         boost::algorithm::to_lower(namestr);
     //  DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
         custom_output[entity][namestr].ParseEventAction(value);
-        custom_variables[entity][namestr] = AllocPooledString(value);
+        SetCustomVariable(entity, namestr.c_str(), value);
     }
 
     // Alert! Custom outputs must be defined in lowercase
@@ -220,13 +245,10 @@ namespace Mod::Etc::Mapentity_Additions
         bool found = false;
 
         if (type == VARIABLE) {
-            auto find = custom_variables.find(entity);
-            if (find != custom_variables.end()) {
-                auto find_var = find->second.find(name);
-                if (find_var != find->second.end()) {
-                    variable.SetString(find_var->second);
-                    found = true;
-                }
+            const char *var = entity->GetCustomVariableByText(name);
+            if (var != nullptr) {
+                variable.SetString(MAKE_STRING(var));
+                found = true;
             }
         }
         else if (type == KEYVALUE) {
@@ -302,10 +324,293 @@ namespace Mod::Etc::Mapentity_Additions
         reinterpret_cast<CTFPlayer *>(this)->m_Shared->Burn(activator, nullptr, 10.0f);
     }
 
-    const char *logic_case_classname;
-    const char *tf_gamerules_classname;
-    const char *player_classname;
-    const char *point_viewcontrol_classname;
+    THINK_FUNC_DECL(RotatingFollowEntity)
+    {
+        auto rotating = reinterpret_cast<CFuncRotating *>(this);
+        auto data = GetExtraFuncRotatingData(rotating);
+        if (data->m_hRotateTarget == nullptr)
+            return;
+
+        auto lookat = rotating->GetCustomVariable<"lookat">();
+        Vector targetVec;
+        if (FStrEq(lookat, PStr<"origin">())) {
+            targetVec = data->m_hRotateTarget->GetAbsOrigin();
+        } 
+        else if (FStrEq(lookat, PStr<"center">())) {
+            Vector offset = data->m_hRotateTarget->WorldSpaceCenter() - data->m_hRotateTarget->GetLocalOrigin();
+
+            data->m_hRotateTarget->EntityToWorldSpace(offset, &targetVec);
+        } 
+        else {
+            targetVec = data->m_hRotateTarget->EyePosition();
+        }
+
+        targetVec -= rotating->GetAbsOrigin();
+        targetVec += data->m_hRotateTarget->GetAbsVelocity() * gpGlobals->frametime;
+        float projectileSpeed = rotating->GetCustomVariableFloat<"projectilespeed">();
+        if (projectileSpeed != 0) {
+            targetVec += (targetVec.Length() / projectileSpeed) * data->m_hRotateTarget->GetAbsVelocity();
+        }
+
+        QAngle angToTarget;
+	    VectorAngles(targetVec, angToTarget);
+
+        float aimOffset = rotating->GetCustomVariableFloat<"aimoffset">();
+        if (aimOffset != 0) {
+            angToTarget.x -= Vector(targetVec.x, targetVec.y, 0.0f).Length() * aimOffset;
+        }
+
+        float angleDiff;
+        float angle = 0;
+        QAngle moveAngle = rotating->m_vecMoveAng;
+        QAngle angles = rotating->GetAbsAngles();
+
+        float limit = rotating->GetCustomVariableFloat<"limit">();
+        if (limit != 0.0f) {
+            angToTarget.x = clamp(AngleNormalize(angToTarget.x), -limit, limit);
+            angToTarget.y = clamp(AngleNormalize(angToTarget.y), -limit, limit);
+        }
+        if (moveAngle == QAngle(1,0,0)) {
+            angleDiff = AngleDiff(angles.x, angToTarget.x);
+            angle = rotating->GetLocalAngles().x;
+        }
+        else {
+            angleDiff = AngleDiff(angles.y, angToTarget.y);
+            angle = rotating->GetLocalAngles().y;
+        }
+
+        float speed = rotating->m_flMaxSpeed;
+        if (abs(angleDiff) < rotating->m_flMaxSpeed/66) {
+            speed = 0;
+            if (moveAngle == QAngle(1,0,0)) {
+                rotating->SetAbsAngles(QAngle(angToTarget.x, angles.y, angles.z));
+            }
+            else {
+                rotating->SetAbsAngles(QAngle(angles.x, angToTarget.y, angles.z));
+            }
+        }
+
+        if (angleDiff > 0) {
+            speed *= -1.0f;
+        }
+
+        if (speed != rotating->m_flTargetSpeed) {
+            rotating->m_bReversed = angleDiff > 0;
+            rotating->SetTargetSpeed(abs(speed));
+        }
+        
+        rotating->SetNextThink(gpGlobals->curtime + 0.01f, "RotatingFollowEntity");
+    }
+
+    class RotatorModule : public EntityModule
+    {
+    public:
+        CHandle<CBaseEntity> m_hRotateTarget;
+    };
+
+    THINK_FUNC_DECL(RotatorModuleTick)
+    {
+        auto data = this->GetEntityModule<RotatorModule>("rotator");
+        if (data == nullptr || data->m_hRotateTarget == nullptr)
+            return;
+
+        auto lookat = this->GetCustomVariable<"lookat">();
+        Vector targetVec;
+        if (FStrEq(lookat, PStr<"origin">())) {
+            targetVec = data->m_hRotateTarget->GetAbsOrigin();
+        } 
+        else if (FStrEq(lookat, PStr<"center">())) {
+            Vector offset = data->m_hRotateTarget->WorldSpaceCenter() - data->m_hRotateTarget->GetLocalOrigin();
+
+            data->m_hRotateTarget->EntityToWorldSpace(offset, &targetVec);
+        } 
+        else {
+            targetVec = data->m_hRotateTarget->EyePosition();
+        }
+
+        targetVec -= this->GetAbsOrigin();
+        targetVec += data->m_hRotateTarget->GetAbsVelocity() * gpGlobals->frametime;
+        float projectileSpeed = this->GetCustomVariableFloat<"projectilespeed">();
+        if (projectileSpeed != 0) {
+            targetVec += (targetVec.Length() / projectileSpeed) * data->m_hRotateTarget->GetAbsVelocity();
+        }
+
+        QAngle angToTarget;
+	    VectorAngles(targetVec, angToTarget);
+
+        float aimOffset = this->GetCustomVariableFloat<"aimoffset">();
+        if (aimOffset != 0) {
+            angToTarget.x -= Vector(targetVec.x, targetVec.y, 0.0f).Length() * aimOffset;
+        }
+
+        QAngle angles = this->GetAbsAngles();
+
+        bool velocitymode = this->GetCustomVariableFloat<"velocitymode">();
+        float speedx = this->GetCustomVariableFloat<"rotationspeedx">();
+        float speedy = this->GetCustomVariableFloat<"rotationspeedy">();
+        if (!velocitymode) {
+            speedx *= gpGlobals->frametime;
+            speedy *= gpGlobals->frametime;
+        }
+        angToTarget.x = ApproachAngle(angToTarget.x, angles.x, speedx);
+        angToTarget.y = ApproachAngle(angToTarget.y, angles.y, speedy);
+
+        float limitx = this->GetCustomVariableFloat<"rotationlimitx">();
+        if (limitx != 0.0f) {
+            angToTarget.x = clamp(AngleNormalize(angToTarget.x), -limitx, limitx);
+        }
+        
+        float limity = this->GetCustomVariableFloat<"rotationlimity">();
+        if (limity != 0.0f) {
+            angToTarget.y = clamp(AngleNormalize(angToTarget.y), -limity, limity);
+        }
+
+        if (!velocitymode) {
+            this->SetAbsAngles(QAngle(angToTarget.x, angToTarget.y, angles.z));
+        }
+        else {
+            angToTarget = QAngle(angToTarget.x - angles.x, angToTarget.y - angles.y, 0.0f);
+            this->SetLocalAngularVelocity(angToTarget);
+        }
+        
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "RotatorModuleTick");
+    }
+
+    class ForwardVelocityModule : public EntityModule
+    {
+    public:
+        ForwardVelocityModule(CBaseEntity *entity);
+    };
+
+    THINK_FUNC_DECL(ForwardVelocityTick)
+    {
+        if (this->GetEntityModule<ForwardVelocityModule>("forwardvelocity") == nullptr)
+            return;
+            
+        Vector fwd;
+        AngleVectors(this->GetAbsAngles(), &fwd);
+        
+        fwd *= this->GetCustomVariableFloat<"forwardspeed">();
+
+        if (this->GetCustomVariableFloat<"directmode">() != 0) {
+            this->SetAbsOrigin(this->GetAbsOrigin() + fwd * gpGlobals->frametime);
+        }
+        else {
+            IPhysicsObject *pPhysicsObject = this->VPhysicsGetObject();
+            if (pPhysicsObject) {
+                pPhysicsObject->SetVelocity(&fwd, nullptr);
+            }
+            else {
+                this->SetAbsVelocity(fwd);
+            }
+        }
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "ForwardVelocityTick");
+    }
+
+    ForwardVelocityModule::ForwardVelocityModule(CBaseEntity *entity)
+    {
+        if (entity->GetNextThink("ForwardVelocityTick") < gpGlobals->curtime) {
+            THINK_FUNC_SET(entity, ForwardVelocityTick, gpGlobals->curtime + 0.01);
+        }
+    }
+
+    class DroppedWeaponModule : public EntityModule
+    {
+    public:
+        DroppedWeaponModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+        CHandle<CBaseEntity> m_hWeaponSpawner;
+        int ammo = -1;
+        int clip = -1;
+        float energy = FLT_MIN;
+        float charge = FLT_MIN;
+    };
+
+    class FakeParentModule : public EntityModule
+    {
+    public:
+        FakeParentModule(CBaseEntity *entity) : EntityModule(entity) {}
+        CHandle<CBaseEntity> m_hParent;
+        bool m_bParentSet = false;
+    };
+
+    THINK_FUNC_DECL(FakeParentModuleTick)
+    {
+        auto data = this->GetEntityModule<FakeParentModule>("fakeparent");
+        if (data == nullptr || data->m_hParent == nullptr) return;
+
+        if (data->m_hParent == nullptr && data->m_bParentSet) {
+            variant_t variant;
+            FireCustomOutput(this,"onfakeparentkilled", this, this, variant);
+            data->m_bParentSet = false;
+        }
+
+        if (data->m_hParent == nullptr) return;
+
+        Vector pos;
+        QAngle ang;
+        CBaseEntity *parent =data->m_hParent;
+
+        auto bone = this->GetCustomVariable<"bone">();
+        auto attachment = this->GetCustomVariable<"attachment">();
+        auto offsetpar = this->GetCustomVariable<"fakeparentoffset">();
+        auto offsetanglepar = this->GetCustomVariable<"fakeparentrotation">();
+        bool posonly = this->GetCustomVariableFloat<"positiononly">();
+        bool rotationonly = this->GetCustomVariableFloat<"rotationonly">();
+        Vector offset(0,0,0);
+        QAngle offsetangle(0,0,0);
+        matrix3x4_t transform;
+        if (offsetpar != nullptr) {
+            UTIL_StringToVector(offset.Base(), offsetpar);
+        }
+        if (offsetanglepar != nullptr) {
+            UTIL_StringToVector(offsetangle.Base(), offsetanglepar);
+        }
+
+        if (bone != nullptr) {
+            CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
+            anim->GetBoneTransform(anim->LookupBone(bone), transform);
+        }
+        else if (attachment != nullptr){
+            CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
+            anim->GetAttachment(anim->LookupAttachment(attachment), transform);
+        }
+        else{
+            transform = parent->EntityToWorldTransform();
+        }
+
+        if (!rotationonly) {
+            VectorTransform(offset, transform, pos);
+            this->SetAbsOrigin(pos);
+        }
+
+        if (!posonly) {
+            MatrixAngles(transform, ang);
+            ang += offsetangle;
+            this->SetAbsAngles(ang);
+        }
+
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "FakeParentModuleTick");
+    }
+
+    void AddModuleByName(CBaseEntity *entity, const char *name)
+    {
+        if (FStrEq(name, "rotator")) {
+            entity->AddEntityModule("rotator", new RotatorModule());
+        }
+        else if (FStrEq(name, "forwardvelocity")) {
+            entity->AddEntityModule("forwardvelocity", new ForwardVelocityModule(entity));
+        }
+        else if (FStrEq(name, "fakeparent")) {
+            entity->AddEntityModule("fakeparent", new FakeParentModule(entity));
+        }
+    }
+
+    PooledString logic_case_classname("logic_case");
+    PooledString tf_gamerules_classname("tf_gamerules");
+    PooledString player_classname("player");
+    PooledString point_viewcontrol_classname("point_viewcontrol");
+    PooledString weapon_spawner_classname("$weapon_spawner");
 
     bool allow_create_dropped_weapon = false;
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
@@ -850,16 +1155,7 @@ namespace Mod::Etc::Mapentity_Additions
                 }
                 else if (stricmp(szInputName, "$GiveItem") == 0) {
                     CTFPlayer *player = ToTFPlayer(ent);
-                    auto item_def = GetItemSchema()->GetItemDefinitionByName(Value.String());
-                    if (item_def != nullptr) {
-                        const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
-                        CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
-                        DispatchSpawn(entity);
-
-                        if (entity != nullptr) {
-                            GiveItemToPlayer(player, entity, false, true, Value.String());
-                        }
-                    }
+                    GiveItemByName(player, Value.String());
                     return true;
                 }
                 else if (stricmp(szInputName, "$DropItem") == 0) {
@@ -957,6 +1253,12 @@ namespace Mod::Etc::Mapentity_Additions
                     player->Regenerate(true);
                     return true;
                 }
+                else if(stricmp(szInputName, "$BotCommand") == 0){
+                    CTFBot* bot = ToTFBot(ent);
+                    if (bot != nullptr)
+                        bot->MyNextBotPointer()->OnCommandString(Value.String());
+                    return true;
+                }
             }
             else if (ent->GetClassname() == point_viewcontrol_classname) {
                 auto camera = static_cast<CTriggerCamera *>(ent);
@@ -971,6 +1273,7 @@ namespace Mod::Etc::Mapentity_Additions
                             camera->m_spawnflags |= 512;
                         }
                     });
+                    return true;
                 }
                 else if (stricmp(szInputName, "$DisableAll") == 0) {
                     ForEachTFPlayer([&](CTFPlayer *player) {
@@ -983,9 +1286,75 @@ namespace Mod::Etc::Mapentity_Additions
                             camera->m_spawnflags &= ~(512);
                         }
                     });
+                    return true;
                 }
                 else if (stricmp(szInputName, "$SetTarget") == 0) {
                     camera->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                    return true;
+                }
+            }
+            else if (ent->GetClassname() == trigger_detector_class) {
+                if (stricmp(szInputName, "$targettest") == 0) {
+                    auto data = GetExtraTriggerDetectorData(ent);
+                    if (data->m_hLastTarget != nullptr) {
+                        FireCustomOutput(ent, "targettestpass", data->m_hLastTarget, ent, Value);
+                    }
+                    else {
+                        FireCustomOutput(ent, "targettestfail", nullptr, ent, Value);
+                    }
+                    return true;
+                }
+            }
+            else if (ent->GetClassname() == weapon_spawner_classname) {
+                if (stricmp(szInputName, "$DropWeapon") == 0) {
+                    
+                    auto data = GetExtraData<ExtraEntityDataWeaponSpawner>(ent);
+                    auto name = ent->GetCustomVariable<"item">();
+                    auto item_def = GetItemSchema()->GetItemDefinitionByName(name);
+
+                    if (item_def != nullptr) {
+                        auto item = CEconItemView::Create();
+                        item->Init(item_def->m_iItemDefIndex, item_def->m_iItemQuality, 9999, 0);
+                        item->m_iItemID = (RandomInt(INT_MIN, INT_MAX) << 16) + ENTINDEX(ent);
+                        Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(name, item);
+                        auto &vars = GetCustomVariables(ent);
+                        for (auto &var : vars) {
+                            auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(STRING(var.key));
+                            if (attr_def != nullptr) {
+                                item->GetAttributeList().AddStringAttribute(attr_def, STRING(var.value));
+                            }
+                        }
+                        auto weapon = CTFDroppedWeapon::Create(nullptr, ent->EyePosition(), vec3_angle, item->GetPlayerDisplayModel(1, 2), item);
+                        if (weapon != nullptr) {
+                            if (weapon->VPhysicsGetObject() != nullptr) {
+                                weapon->VPhysicsGetObject()->SetMass(25.0f);
+
+                                if (ent->GetCustomVariableFloat<"nomotion">() != 0) {
+                                    weapon->VPhysicsGetObject()->EnableMotion(false);
+                                }
+                            }
+                            auto weapondata = weapon->GetOrCreateEntityModule<DroppedWeaponModule>("droppedweapon");
+                            weapondata->m_hWeaponSpawner = ent;
+                            weapondata->ammo = ent->GetCustomVariableFloat<"ammo">(-1);
+                            weapondata->clip = ent->GetCustomVariableFloat<"clip">(-1);
+                            weapondata->energy = ent->GetCustomVariableFloat<"energy">(FLT_MIN);
+                            weapondata->charge = ent->GetCustomVariableFloat<"charge">(FLT_MAX);
+
+                            data->m_SpawnedWeapons.push_back(weapon);
+                        }
+                        CEconItemView::Destroy(item);
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$RemoveDroppedWeapons") == 0) {
+                    auto data = GetExtraWeaponSpawnerData(ent);
+                    for (auto weapon : data->m_SpawnedWeapons) {
+                        if (weapon != nullptr) {
+                            weapon->Remove();
+                        }
+                    }
+                    data->m_SpawnedWeapons.clear();
+                    return true;
                 }
             }
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
@@ -1026,6 +1395,12 @@ namespace Mod::Etc::Mapentity_Additions
                 
                 CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
                 ent->TakeDamage(info);
+                return true;
+            }
+            else if (stricmp(szInputName, "$AddHealth") == 0) {
+                int damage = strtol(Value.String(), nullptr, 10);
+                CBaseEntity *attacker = ent;
+                ent->TakeHealth(damage, DMG_GENERIC);
                 return true;
             }
             else if (stricmp(szInputName, "$TakeDamageFromActivator") == 0) {
@@ -1155,25 +1530,111 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$StartTouchEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                    auto filter = rtti_cast<CBaseTrigger *>(ent);
-                    if (filter != nullptr) {
+                auto filter = rtti_cast<CBaseTrigger *>(ent);
+                if (filter != nullptr) {
+                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                         filter->StartTouch(target);
                     }
                 }
                 return true;
             }
             else if (stricmp(szInputName, "$EndTouchEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                    auto filter = rtti_cast<CBaseTrigger *>(ent);
-                    if (filter != nullptr) {
+                auto filter = rtti_cast<CBaseTrigger *>(ent);
+                if (filter != nullptr) {
+                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                         filter->EndTouch(target);
                     }
                 }
                 return true;
             }
+            else if (stricmp(szInputName, "$RotateTowards") == 0) {
+                auto rotating = rtti_cast<CFuncRotating *>(ent);
+                if (rotating != nullptr) {
+                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr) {
+                        auto data = GetExtraFuncRotatingData(rotating);
+                        data->m_hRotateTarget = target;
+
+                        if (rotating->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
+                            THINK_FUNC_SET(rotating, RotatingFollowEntity, gpGlobals->curtime + 0.1);
+                        }
+                    }
+                }
+                auto data = ent->GetEntityModule<RotatorModule>("rotator");
+                if (data != nullptr) {
+                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr) {
+                        data->m_hRotateTarget = target;
+
+                        if (ent->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
+                            THINK_FUNC_SET(ent, RotatorModuleTick, gpGlobals->curtime + 0.1);
+                        }
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$StopRotateTowards") == 0) {
+                auto data = ent->GetEntityModule<RotatorModule>("rotator");
+                if (data != nullptr) {
+                    data->m_hRotateTarget = nullptr;
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetForwardVelocity") == 0) {
+                Vector fwd;
+                AngleVectors(ent->GetAbsAngles(), &fwd);
+                fwd *= strtof(Value.String(), nullptr);
+
+                IPhysicsObject *pPhysicsObject = ent->VPhysicsGetObject();
+                if (pPhysicsObject) {
+                    pPhysicsObject->SetVelocity(&fwd, nullptr);
+                }
+                else {
+                    ent->SetAbsVelocity(fwd);
+                }
+                
+                return true;
+            }
+            else if (stricmp(szInputName, "$FaceEntity") == 0) {
+                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
+                    
+                    QAngle angToTarget;
+                    VectorAngles(delta, angToTarget);
+                    ent->SetAbsAngles(angToTarget);
+                }
+                
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetFakeParent") == 0) {
+                auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
+                if (data != nullptr) {
+                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr) {
+                        data->m_hParent = target;
+                        data->m_bParentSet = true;
+                        if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
+                            THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
+                        }
+                    }
+                }
+                
+                return true;
+            }
+            else if (stricmp(szInputName, "$ClearFakeParent") == 0) {
+                auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
+                if (data != nullptr) {
+                    data->m_hParent = nullptr;
+                    data->m_bParentSet = false;
+                }
+                
+                return true;
+            }
             else if (strnicmp(szInputName, "$SetVar$", strlen("$SetVar$")) == 0) {
-                custom_variables[ent][szInputName + strlen("$SetVar$")] = AllocPooledString(Value.String());
+                std::string valuestr = Value.String();
+                boost::algorithm::to_lower(valuestr);
+                SetCustomVariable(ent, szInputName + strlen("$SetVar$"), valuestr.c_str());
                 return true;
             }
             else if (strnicmp(szInputName, "$GetVar$", strlen("$GetVar$")) == 0) {
@@ -1258,6 +1719,12 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                 }
                 return true;
+            }
+            else if (stricmp(szInputName, "$AddModule") == 0) {
+                AddModuleByName(ent, Value.String());
+            }
+            else if (stricmp(szInputName, "$RemoveModule") == 0) {
+                ent->RemoveEntityModule(Value.String());
             }
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
@@ -1435,8 +1902,10 @@ namespace Mod::Etc::Mapentity_Additions
 		return DETOUR_MEMBER_CALL(CTriggerHurt_HurtEntity)(other, damage);
 	}
     
+    RefCount rc_CBaseEntity_TakeDamage;
     DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
+        SCOPED_INCREMENT(rc_CBaseEntity_TakeDamage);
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
         if (rc_CTriggerHurt_HurtEntity) {
             auto owner = info.GetAttacker()->GetOwnerEntity();
@@ -1557,18 +2026,21 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
 
-    const char *filter_keyvalue_class;
-    const char *filter_variable_class;
-    const char *filter_datamap_class;
-    const char *filter_sendprop_class;
-    const char *filter_proximity_class;
-    const char *filter_bbox_class;
-    const char *empty;
-    const char *less;
-    const char *equal;
-    const char *greater;
-    const char *less_or_equal;
-    const char *greater_or_equal;
+    PooledString filter_keyvalue_class("$filter_keyvalue");
+    PooledString filter_variable_class("$filter_variable");
+    PooledString filter_datamap_class("$filter_datamap");
+    PooledString filter_sendprop_class("$filter_sendprop");
+    PooledString filter_proximity_class("$filter_proximity");
+    PooledString filter_bbox_class("$filter_bbox");
+    PooledString filter_itemname_class("$filter_itemname");
+    PooledString filter_specialdamagetype_class("$filter_specialdamagetype");
+    
+    PooledString empty("");
+    PooledString less("less than");
+    PooledString equal("equal");
+    PooledString greater("greater than");
+    PooledString less_or_equal("less than or equal");
+    PooledString greater_or_equal("greater than or equal");
 
     DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesFilterImpl, CBaseEntity *pCaller, CBaseEntity *pEntity)
 	{
@@ -1586,10 +2058,9 @@ namespace Mod::Etc::Mapentity_Additions
                     type = SENDPROP;
                 }
 
-                auto &vars = custom_variables[filter];
-                const char *name = STRING(vars["name"]);
-                const char *valuecmp = STRING(vars["value"]);
-                const char *compare = STRING(vars["compare"]);
+                const char *name = filter->GetCustomVariable<"name">();
+                const char *valuecmp = filter->GetCustomVariable<"value">();
+                const char *compare = filter->GetCustomVariable<"compare">();
 
                 variant_t variable; 
                 bool found = GetEntityVariable(pEntity, type, name, variable);
@@ -1623,9 +2094,8 @@ namespace Mod::Etc::Mapentity_Additions
                 return false;
             }
             else if(classname == filter_proximity_class) {
-                auto &vars = custom_variables[filter];
-                const char *target = STRING(vars["target"]);
-                float range = strtof(STRING(vars["range"]), nullptr);
+                const char *target = filter->GetCustomVariable<"target">();
+                float range = filter->GetCustomVariableFloat<"range">();
                 range *= range;
                 Vector center;
                 if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
@@ -1638,14 +2108,13 @@ namespace Mod::Etc::Mapentity_Additions
                 return center.DistToSqr(pEntity->GetAbsOrigin()) <= range;
             }
             else if(classname == filter_bbox_class) {
-                auto &vars = custom_variables[filter];
-                const char *target = STRING(vars["target"]);
-                float range = strtof(STRING(vars["range"]), nullptr);
+                const char *target = filter->GetCustomVariable<"target">();
+                float range = filter->GetCustomVariableFloat<"range">();
 
                 Vector min;
                 Vector max;
-                sscanf(STRING(vars["min"]), "%f %f %f", &min.x, &min.y, &min.z);
-                sscanf(STRING(vars["max"]), "%f %f %f", &max.x, &max.y, &max.z);
+                sscanf(filter->GetCustomVariable<"min">(), "%f %f %f", &min.x, &min.y, &min.z);
+                sscanf(filter->GetCustomVariable<"max">(), "%f %f %f", &max.x, &max.y, &max.z);
 
                 range *= range;
                 Vector center;
@@ -1687,6 +2156,214 @@ namespace Mod::Etc::Mapentity_Additions
         OnCameraRemoved(reinterpret_cast<CTriggerCamera *>(this));
     }
 
+    DETOUR_DECL_MEMBER(void, CFuncRotating_InputStop, inputdata_t *inputdata)
+	{
+        auto data = GetExtraFuncRotatingData(reinterpret_cast<CFuncRotating *>(this), false);
+        if (data != nullptr) {
+            data->m_hRotateTarget = nullptr;
+        }
+        DETOUR_MEMBER_CALL(CFuncRotating_InputStop)(inputdata);
+    }
+
+    THINK_FUNC_DECL(DetectorTick)
+    {
+        auto data = GetExtraTriggerDetectorData(this);
+        auto trigger = reinterpret_cast<CBaseTrigger *>(this);
+        // The target was killed
+        if (data->m_bHasTarget && data->m_hLastTarget == nullptr) {
+            variant_t variant;
+            FireCustomOutput(this, "onlosttargetall", nullptr, this, variant);
+        }
+
+        // Find nearest target entity
+        bool los = trigger->GetCustomVariableFloat<"checklineofsight">() != 0;
+
+        float minDistance = trigger->GetCustomVariableFloat<"radius">(65000);
+        minDistance *= minDistance;
+
+        float fov = FastCos(DEG2RAD(Clamp(trigger->GetCustomVariableFloat<"fov">(180.0f), 0.0f, 180.0f)));
+
+        CBaseEntity *nearestEntity = nullptr;
+        touchlink_t *root = reinterpret_cast<touchlink_t *>(this->GetDataObject(1));
+        if (root) {
+            touchlink_t *link = root->nextLink;
+
+            // Keep target mode, aim at entity until its dead
+            if (data->m_hLastTarget != nullptr && trigger->GetCustomVariableFloat<"keeptarget">() != 0) {
+                bool inTouch = false;
+                while (link != root) {
+                    if (link->entityTouched == data->m_hLastTarget) {
+                        inTouch = true;
+                        break;
+                    }
+                    link = link->nextLink;
+                }
+                
+                if (inTouch) {
+                    Vector delta = data->m_hLastTarget->EyePosition() - this->GetAbsOrigin();
+                    Vector fwd;
+                    AngleVectors(this->GetAbsAngles(), &fwd);
+                    float distance = delta.LengthSqr();
+                    if (distance < minDistance && DotProduct(delta.Normalized(), fwd.Normalized()) > fov) {
+                        bool inSight = true;
+                        if (los) {
+                            trace_t tr;
+                            UTIL_TraceLine(data->m_hLastTarget->EyePosition(), this->GetAbsOrigin(), MASK_SOLID_BRUSHONLY, data->m_hLastTarget, COLLISION_GROUP_NONE, &tr);
+                            inSight = !tr.DidHit() || tr.m_pEnt == this;
+                        }
+						
+						if (inSight) {
+                            nearestEntity = data->m_hLastTarget;
+                        }
+                    }
+                    
+                }
+            }
+
+            // Pick closest target
+            if (nearestEntity == nullptr) {
+                link = root->nextLink;
+                while (link != root) {
+                    CBaseEntity *entity = link->entityTouched;
+
+                    if ((entity != nullptr) && trigger->PassesTriggerFilters(entity)) {
+                        Vector delta = entity->EyePosition() - this->GetAbsOrigin();
+                        Vector fwd;
+                        AngleVectors(this->GetAbsAngles(), &fwd);
+                        float distance = delta.LengthSqr();
+                        if (distance < minDistance && DotProduct(delta.Normalized(), fwd.Normalized()) > fov) {
+                            bool inSight = true;
+                            if (los) {
+                                trace_t tr;
+                                UTIL_TraceLine(entity->EyePosition(), this->GetAbsOrigin(), MASK_SOLID_BRUSHONLY, entity, COLLISION_GROUP_NONE, &tr);
+                                inSight = !tr.DidHit() || tr.m_pEnt == this;
+                            }
+                            
+                            if (inSight) {
+                                minDistance = distance;
+                                nearestEntity = entity;
+                            }
+                        }
+                    }
+
+                    link = link->nextLink;
+                }
+            }
+        }
+
+        if (nearestEntity != data->m_hLastTarget) {
+            variant_t variant;
+            if (nearestEntity != nullptr) {
+                if (data->m_hLastTarget != nullptr) {
+                    FireCustomOutput(this, "onlosttarget", data->m_hLastTarget, this, variant);
+                }
+                FireCustomOutput(this, "onnewtarget", nearestEntity, this, variant);
+            }
+            else {
+                FireCustomOutput(this, "onlosttargetall", data->m_hLastTarget, this, variant);
+            }
+        }
+
+        data->m_hLastTarget = nearestEntity;
+        data->m_bHasTarget = nearestEntity != nullptr;
+
+        this->SetNextThink(gpGlobals->curtime, "DetectorTick");
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseTrigger_Activate)
+	{
+        auto trigger = reinterpret_cast<CBaseEntity *>(this);
+        if (trigger->GetClassname() == trigger_detector_class) {
+            auto data = GetExtraTriggerDetectorData(trigger);
+            auto &vars = custom_variables[trigger];
+            data->m_hXRotateEntity = servertools->FindEntityGeneric(nullptr, STRING(vars["xrotateentity"]), trigger);
+            data->m_hYRotateEntity = servertools->FindEntityGeneric(nullptr, STRING(vars["yrotateentity"]), trigger);
+            THINK_FUNC_SET(trigger, DetectorTick, gpGlobals->curtime);
+        }
+        DETOUR_MEMBER_CALL(CBaseTrigger_Activate)();
+    }
+
+    THINK_FUNC_DECL(WeaponSpawnerTick)
+    {
+        auto data = GetExtraData<ExtraEntityDataWeaponSpawner>(this);
+        auto &vars = custom_variables[this];
+        
+        this->SetNextThink(gpGlobals->curtime + 0.1f, "WeaponSpawnerTick");
+    }
+
+    DETOUR_DECL_MEMBER(void, CPointTeleport_Activate)
+	{
+        auto spawner = reinterpret_cast<CBaseEntity *>(this);
+        if (spawner->GetClassname() == weapon_spawner_classname) {
+            THINK_FUNC_SET(spawner, WeaponSpawnerTick, gpGlobals->curtime + 0.1f);
+        }
+        DETOUR_MEMBER_CALL(CPointTeleport_Activate)();
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFDroppedWeapon_InitPickedUpWeapon, CTFPlayer *player, CTFWeaponBase *weapon)
+	{
+        auto drop = reinterpret_cast<CTFDroppedWeapon *>(this);
+        auto data = drop->GetEntityModule<DroppedWeaponModule>("droppedweapon");
+        if (data != nullptr) {
+            auto spawner = data->m_hWeaponSpawner;
+            if (spawner != nullptr) {
+                variant_t variant;
+                FireCustomOutput(spawner, "onpickup", player, spawner, variant);
+            }
+            if (data->ammo != -1) {
+                player->SetAmmoCount(data->ammo, weapon->GetPrimaryAmmoType());
+            }
+            if (data->clip != -1) {
+                weapon->m_iClip1 = data->clip;
+            }
+            CWeaponMedigun *medigun = rtti_cast<CWeaponMedigun*>(weapon);
+            if (medigun != nullptr && data->charge != FLT_MIN) {
+                medigun->SetCharge(data->charge);
+            }
+            if (data->energy != FLT_MIN) {
+                weapon->m_flEnergy = data->energy;
+            }
+        }
+        else {
+            DETOUR_MEMBER_CALL(CTFDroppedWeapon_InitPickedUpWeapon)(player, weapon);
+        }
+		
+	}
+
+    DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesDamageFilter, CTakeDamageInfo &info)
+	{
+        auto ret = DETOUR_MEMBER_CALL(CBaseFilter_PassesDamageFilter)(info);
+        auto filter = reinterpret_cast<CBaseEntity *>(this);
+
+        float multiplier = filter->GetCustomVariableFloat<"multiplier">();
+        if (multiplier != 0.0f) {
+            if (ret && rc_CBaseEntity_TakeDamage == 1) {
+                info.SetDamage(info.GetDamage() * multiplier);
+            }
+                    
+            return true;
+        }
+        
+        return ret;
+    }
+
+    DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesDamageFilterImpl, CTakeDamageInfo &info)
+	{
+        auto filter = reinterpret_cast<CBaseFilter *>(this);
+        const char *classname = filter->GetClassname();
+        if (classname[0] == '$') {
+            if (classname == filter_itemname_class && info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
+                return FStrEq(filter->GetCustomVariable<"item">(), info.GetWeapon()->MyCombatWeaponPointer()->GetItem()->GetItemDefinition()->GetName());
+            }
+            if (classname == filter_specialdamagetype_class && info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
+				float iDmgType = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgType, special_damage_type);
+                return iDmgType == filter->GetCustomVariableFloat<"type">();
+            }
+        }
+        return DETOUR_MEMBER_CALL(CBaseFilter_PassesDamageFilterImpl)(info);
+    }
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1707,6 +2384,13 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_STATIC(ParseKeyvalue, "ParseKeyvalue");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_KeyValue, "CBaseEntity::KeyValue");
             MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesFilterImpl, "CBaseFilter::PassesFilterImpl");
+            MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesDamageFilter, "CBaseFilter::PassesDamageFilter");
+            MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesDamageFilterImpl, "CBaseFilter::PassesDamageFilterImpl");
+            MOD_ADD_DETOUR_MEMBER(CFuncRotating_InputStop, "CFuncRotating::InputStop");
+            MOD_ADD_DETOUR_MEMBER(CBaseTrigger_Activate, "CBaseTrigger::Activate");
+            MOD_ADD_DETOUR_MEMBER(CPointTeleport_Activate, "CPointTeleport::Activate");
+            MOD_ADD_DETOUR_MEMBER(CTFDroppedWeapon_InitPickedUpWeapon, "CTFDroppedWeapon::InitPickedUpWeapon");
+            
 
             // Fix camera despawn bug
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D0, "~CTriggerCamera [D0]");
@@ -1718,29 +2402,8 @@ namespace Mod::Etc::Mapentity_Additions
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");
 		}
 
-        virtual void LoadStrings()
-        {
-            logic_case_classname = STRING(AllocPooledString("logic_case"));
-            tf_gamerules_classname = STRING(AllocPooledString("tf_gamerules"));
-            player_classname = STRING(AllocPooledString("player"));
-            point_viewcontrol_classname = STRING(AllocPooledString("point_viewcontrol"));
-            filter_keyvalue_class = STRING(AllocPooledString("$filter_keyvalue"));
-            filter_variable_class = STRING(AllocPooledString("$filter_variable"));
-            filter_datamap_class = STRING(AllocPooledString("$filter_datamap"));
-            filter_sendprop_class = STRING(AllocPooledString("$filter_sendprop"));
-            filter_proximity_class = STRING(AllocPooledString("$filter_proximity"));
-            filter_bbox_class = STRING(AllocPooledString("$filter_bbox"));
-            empty = STRING(AllocPooledString(""));
-            less = STRING(AllocPooledString("less than"));
-            equal = STRING(AllocPooledString("equal"));
-            greater = STRING(AllocPooledString("greater than"));
-            less_or_equal = STRING(AllocPooledString("less than or equal"));
-            greater_or_equal = STRING(AllocPooledString("greater than or equal"));
-        }
-
         virtual bool OnLoad() override
 		{
-            LoadStrings();
             ActivateLoadedInput();
             if (servertools->GetEntityFactoryDictionary()->FindFactory("$filter_keyvalue") == nullptr) {
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_keyvalue");
@@ -1749,6 +2412,10 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_sendprop");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_proximity");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_bbox");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_itemname");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_specialdamagetype");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("trigger_multiple"), "$trigger_detector");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$weapon_spawner");
             }
 
 			return true;
@@ -1757,8 +2424,6 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual void LevelInitPreEntity() override
         {
-            LoadStrings();
-
             send_prop_cache.clear();
             datamap_cache.clear();
         }

@@ -92,6 +92,8 @@ StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &,
 MemberFuncThunk<CTFDroppedWeapon *, void, CTFPlayer *, CTFWeaponBase *, bool, bool> CTFDroppedWeapon::ft_InitDroppedWeapon("CTFDroppedWeapon::InitDroppedWeapon");
 
 IMPL_SENDPROP(CEconItemView, CTFDroppedWeapon, m_Item,   CTFDroppedWeapon);
+IMPL_SENDPROP(float, CTFDroppedWeapon, m_flChargeLevel, CTFDroppedWeapon);
+IMPL_RELATIVE(int, CTFDroppedWeapon, m_nAmmo, m_flChargeLevel, 0x0c);
 
 MemberFuncThunk<CPathTrack *, CPathTrack *> CPathTrack::ft_GetNext("CPathTrack::GetNext");
 
@@ -155,6 +157,7 @@ IMPL_DATAMAP(bool, CBaseTrigger, m_bDisabled);
 
 MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_StartTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::StartTouch");
 MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_EndTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::EndTouch");
+MemberVFuncThunk<CBaseTrigger *, bool, CBaseEntity *> CBaseTrigger::vt_PassesTriggerFilters(TypeName<CBaseTrigger>(),"CBaseTrigger::PassesTriggerFilters");
 
 
 MemberFuncThunk<const CUpgrades *, const char *, int> CUpgrades::ft_GetUpgradeAttributeName("CUpgrades::GetUpgradeAttributeName");
@@ -291,3 +294,20 @@ IMPL_DATAMAP (CHandle<CBaseEntity>, CTriggerCamera, m_hTarget);
 
 MemberFuncThunk<CTriggerCamera *, void> CTriggerCamera::ft_Enable("CTriggerCamera::Enable");
 MemberFuncThunk<CTriggerCamera *, void> CTriggerCamera::ft_Disable("CTriggerCamera::Disable");
+
+IMPL_DATAMAP (bool, CFuncRotating, m_bReversed);
+IMPL_DATAMAP (float, CFuncRotating, m_flMaxSpeed);
+IMPL_DATAMAP (bool, CFuncRotating, m_bStopAtStartPos);
+IMPL_DATAMAP (QAngle, CFuncRotating, m_vecMoveAng);
+IMPL_DATAMAP (float, CFuncRotating, m_flTargetSpeed);
+
+MemberFuncThunk<CFuncRotating *, void, float> CFuncRotating::ft_SetTargetSpeed("CFuncRotating::SetTargetSpeed");
+
+IMPL_DATAMAP (unsigned int, CPropVehicle, m_nVehicleType);
+IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bEnterAnimOn);
+IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bExitAnimOn);
+IMPL_DATAMAP (bool, CPropVehicleDriveable, m_flMinimumSpeedToEnterExit);
+IMPL_DATAMAP (CBaseServerVehicle *, CPropVehicleDriveable, m_pServerVehicle);
+
+MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_HandleEntryExitFinish(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandleEntryExitFinish");
+MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");

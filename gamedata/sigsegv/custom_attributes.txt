@@ -2053,4 +2053,14 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4520"
+    {
+        "name"	"projectile sound"
+        "attribute_class"	"projectile_sound"
+		"attribute_type"	"string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

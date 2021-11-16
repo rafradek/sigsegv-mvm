@@ -2,18 +2,82 @@
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
 #include "stub/projectiles.h"
+#include "util/pooled_string.h"
+
+
+class EntityModule
+{
+public:
+    EntityModule() {}
+    EntityModule(CBaseEntity *entity) {}
+};
+
+struct CustomVariable
+{
+    string_t key;
+    string_t value;
+    float value_float;
+};
 
 class ExtraEntityData
 {
 public:
     ExtraEntityData(CBaseEntity *entity) {}
+
+    ~ExtraEntityData() {
+        for (auto module : modules) {
+            delete module.second;
+        }
+    }
+
+    void AddModule(const char *name, EntityModule *module) {
+        for (auto it = modules.begin(); it != modules.end(); it++) {
+            if (it->first == name) {
+                delete it->second;
+                modules.erase(it);
+                break;
+            }
+        }
+        modules.push_back({name, module});
+    }
+
+    EntityModule *GetModule(const char *name) {
+        for (auto &module : modules) {
+            if (module.first == name) {
+                return module.second;
+            }
+        }
+        return nullptr;
+    }
+
+    void RemoveModule(const char *name) {
+        for (auto it = modules.begin(); it != modules.end(); it++) {
+            if (it->first == name) {
+                delete it->second;
+                modules.erase(it);
+                break;
+            }
+        }
+    }
+
+    std::vector<CustomVariable> &GetCustomVariables() {
+        return custom_variables;
+    }
+
+private:
+    std::vector<std::pair<const char *, EntityModule *>> modules;
+    std::vector<CustomVariable> custom_variables;
 };
 
 class ExtraEntityDataWithAttributes : public ExtraEntityData
 {
 public:
     ExtraEntityDataWithAttributes(CBaseEntity *entity) : ExtraEntityData(entity) {}
-//    float *fast_attribute_cache;
+    // float *fast_attribute_cache;
+
+    // ~ExtraEntityDataWithAttributes() {
+    //     delete[] fast_attribute_cache;
+    // }
 };
 
 class ExtraEntityDataEconEntity : public ExtraEntityDataWithAttributes
@@ -42,8 +106,11 @@ public:
     //float[FastAttributes::ATTRIB_COUNT_ITEM] fast_attrib_cache_data;
 };
 
-struct HomingRockets
+class HomingRockets : public EntityModule
 {
+public:
+    HomingRockets() {}
+    HomingRockets(CBaseEntity *entity) {}
     bool enable                 = false;
     bool ignore_disguised_spies = true;
     bool ignore_stealthed_spies = true;
@@ -90,6 +157,35 @@ public:
     ExtraEntityDataBot(CBaseEntity *entity) : ExtraEntityDataPlayer(entity) {}
 };
 
+class ExtraEntityDataFuncRotating : public ExtraEntityData
+{
+public:
+    ExtraEntityDataFuncRotating(CBaseEntity *entity) : ExtraEntityData(entity) {}
+    
+    CHandle<CBaseEntity> m_hRotateTarget;
+};
+
+class ExtraEntityDataTriggerDetector : public ExtraEntityData
+{
+public:
+    ExtraEntityDataTriggerDetector(CBaseEntity *entity) : ExtraEntityData(entity) {}
+    
+    CHandle<CBaseEntity> m_hLastTarget;
+    CHandle<CBaseEntity> m_hYRotateEntity;
+    CHandle<CBaseEntity> m_hXRotateEntity;
+    bool m_bHasTarget;
+};
+
+class ExtraEntityDataWeaponSpawner : public ExtraEntityData
+{
+public:
+    ExtraEntityDataWeaponSpawner(CBaseEntity *entity) : ExtraEntityData(entity) {}
+    
+    std::vector<CHandle<CBaseEntity>> m_SpawnedWeapons;
+};
+
+/////////////
+
 inline ExtraEntityDataWithAttributes *GetExtraEntityDataWithAttributes(CBaseEntity *entity, bool create = true) {
     ExtraEntityData *data = entity->m_extraEntityData;
     if (create && entity->m_extraEntityData == nullptr) {
@@ -98,6 +194,9 @@ inline ExtraEntityDataWithAttributes *GetExtraEntityDataWithAttributes(CBaseEnti
         }
         else if (entity->IsBaseCombatWeapon()) {
             data = entity->m_extraEntityData = new ExtraEntityDataCombatWeapon(entity);
+        }
+        else if (entity->IsWearable()) {
+            data = entity->m_extraEntityData = new ExtraEntityDataWithAttributes(entity);
         }
     }
     return static_cast<ExtraEntityDataWithAttributes *>(data);
@@ -135,48 +234,184 @@ inline ExtraEntityDataProjectile *GetExtraProjectileData(CBaseProjectile *entity
     return static_cast<ExtraEntityDataProjectile *>(data);
 }
 
+inline ExtraEntityDataFuncRotating *GetExtraFuncRotatingData(CFuncRotating *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = new ExtraEntityDataFuncRotating(entity);
+    }
+    return static_cast<ExtraEntityDataFuncRotating *>(data);
+}
+
+inline ExtraEntityDataTriggerDetector *GetExtraTriggerDetectorData(CBaseEntity *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = new ExtraEntityDataTriggerDetector(entity);
+    }
+    return static_cast<ExtraEntityDataTriggerDetector *>(data);
+}
+
+inline ExtraEntityDataWeaponSpawner *GetExtraWeaponSpawnerData(CBaseEntity *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = new ExtraEntityDataWeaponSpawner(entity);
+    }
+    return static_cast<ExtraEntityDataWeaponSpawner *>(data);
+}
+
+
+template< typename DataClass, typename EntityClass>
+inline DataClass *GetExtraData(EntityClass *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = new DataClass(entity);
+    }
+    return static_cast<DataClass *>(data);
+}
+
+template<typename DataClass>
+inline DataClass *GetExtraData(CBaseEntity *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = new DataClass(entity);
+    }
+    return static_cast<DataClass *>(data);
+}
+
+inline ExtraEntityData *CreateExtraData(CBaseEntity *entity) {
+    static PooledString weapon_spawner("$weapon_spawner");
+    ExtraEntityData *data = GetExtraEntityDataWithAttributes(entity, true);
+    if (data != nullptr) {
+        return data;
+    }
+
+    auto projectile = rtti_cast<CBaseProjectile *>(entity);
+    if (projectile != nullptr) {
+        return entity->m_extraEntityData = new ExtraEntityDataProjectile(projectile);
+    }
+
+    auto rotating = rtti_cast<CFuncRotating *>(entity);
+    if (rotating != nullptr) {
+        return entity->m_extraEntityData = new ExtraEntityDataFuncRotating(rotating);
+    }
+
+    auto trigger = rtti_cast<CBaseTrigger *>(entity);
+    if (trigger != nullptr) {
+        return entity->m_extraEntityData = new ExtraEntityDataTriggerDetector(trigger);
+    }
+
+    if (entity->GetClassname() == weapon_spawner) {
+        return entity->m_extraEntityData = new ExtraEntityDataWeaponSpawner(trigger);
+    }
+
+    return entity->m_extraEntityData = new ExtraEntityData(entity);
+}
+
+inline ExtraEntityData *GetExtraData(CBaseEntity *entity, bool create = true) {
+    if (!create || entity->m_extraEntityData != nullptr) {
+        return entity->m_extraEntityData;
+    }
+
+    return CreateExtraData(entity);
+}
+
 ////////
 
-
-namespace FastAttributes
+template<class ModuleType>
+inline ModuleType *CBaseEntity::GetEntityModule(const char* name)
 {
-	enum FastAttributeClassPlayer
-	{
-		STOMP_BUILDING_DAMAGE,
-		STOMP_PLAYER_TIME,
-		STOMP_PLAYER_DAMAGE,
-		STOMP_PLAYER_FORCE,
-		NOT_SOLID_TO_PLAYERS,
-		MULT_MAX_OVERHEAL_SELF,
-		MIN_RESPAWN_TIME,
-		MULT_STEP_HEIGHT,
-		IGNORE_PLAYER_CLIP,
-		ALLOW_BUNNY_HOP,
-		ATTRIB_COUNT_PLAYER,
-	};
-	enum FastAttributeClassItem
-	{
-		ALWAYS_CRIT,
-		ADD_COND_ON_ACTIVE,
-		MAX_AOE_TARGETS,
-		ATTRIB_COUNT_ITEM,
-	};
-	static const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
-		"stomp_building_damage", 
-		"stomp_player_time", 
-		"stomp_player_damage", 
-		"stomp_player_force", 
-		"not_solid_to_players",
-		"mult_max_ovelheal_self",
-		"min_respawn_time",
-		"mult_step_height",
-		"ignore_player_clip",
-		"allow_bunny_hop"
-	};
+    auto data = this->GetExtraEntityData();
+    return data != nullptr ? static_cast<ModuleType *>(data->GetModule(name)) : nullptr;
+}
 
-	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
-		"always_crit",
-		"add_cond_when_active",
-		"max_aoe_targets"
-	};
+template<class ModuleType>
+inline ModuleType *CBaseEntity::GetOrCreateEntityModule(const char* name)
+{
+    auto data = GetExtraData(this);
+    auto module = data->GetModule(name);
+    if (module == nullptr) {
+        module = new ModuleType(this);
+        data->AddModule(name, module);
+    }
+    return static_cast<ModuleType *>(module);
+}
+
+inline void CBaseEntity::AddEntityModule(const char* name, EntityModule *module)
+{
+    GetExtraData(this)->AddModule(name, module);
+}
+
+inline void CBaseEntity::RemoveEntityModule(const char* name)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        data->RemoveModule(name);
+    }
+}
+
+inline std::vector<CustomVariable> &GetCustomVariables(CBaseEntity *entity)
+{
+    return GetExtraData(entity)->GetCustomVariables();
+}
+
+template<FixedString lit>
+inline const char *CBaseEntity::GetCustomVariable(const char *defValue = nullptr)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                return STRING(var.value);
+            }
+        }
+    }
+    return defValue;
+}
+
+template<FixedString lit>
+inline float CBaseEntity::GetCustomVariableFloat(float defValue = 0.0f)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                return var.value_float;
+            }
+        }
+    }
+    return defValue;
+}
+
+inline const char *CBaseEntity::GetCustomVariableByText(const char *key, const char *defValue = nullptr)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (STRING(var.key) == key || stricmp(STRING(var.key), key) == 0) {
+                return STRING(var.value);
+            }
+        }
+    }
+    return defValue;
+}
+
+inline void CBaseEntity::SetCustomVariable(const char *key, const char *value)
+{
+    auto &list = GetExtraData(this)->GetCustomVariables();
+    bool found = false;
+    for (auto &var : list) {
+        if (STRING(var.key) == key || stricmp(key, STRING(var.key)) == 0) {
+            var.value = AllocPooledString(value);
+            var.value_float = strtof(value, nullptr);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        list.push_back({AllocPooledString(key), AllocPooledString(value), strtof(value, nullptr)});
+    }
 }

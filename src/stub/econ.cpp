@@ -182,6 +182,7 @@ MemberFuncThunk<      CEconItemView *, void>                              CEconI
 MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> CEconItemView::ft_Init         ("CEconItemView::Init");
 MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               CEconItemView::ft_GetStaticData("CEconItemView::GetStaticData");
 MemberFuncThunk<const CEconItemView *, CEconItem *>                       CEconItemView::ft_GetSOCData   ("CEconItemView::GetSOCData");
+MemberFuncThunk<const CEconItemView *, const char *, int, int>            CEconItemView::ft_GetPlayerDisplayModel("CEconItemView::GetPlayerDisplayModel");
 
 MemberVFuncThunk<const CEconItemView *, int> CEconItemView::vt_GetItemDefIndex(TypeName<CEconItemView>(), "CEconItemView::GetItemDefIndex");
 
@@ -243,8 +244,6 @@ MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle con
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_GenerateItemFromScriptData("CItemGeneration::GenerateItemFromScriptData");
 
 static StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput("CopyStringAttributeValueToCharPointerOutput");
-void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr) { ft_CopyStringAttributeValueToCharPointerOutput(attr_str, p_cstr); }
-
 
 GlobalThunk<const char *[NUM_VISUALS_BLOCKS]> g_TeamVisualSections("g_TeamVisualSections");
 

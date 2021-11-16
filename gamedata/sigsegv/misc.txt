@@ -4880,8 +4880,141 @@
 				"CPopulationManager::IsValidPopfile"
 				{
 					type "sym"
-					sym  "_ZN18CPopulationManager14IsValidPopfileEPKc"
-				}                              
+					sym  "_ZN18CPopulationManager14IsValidPopfileE10CUtlString"
+				} 
+				"CCollisionProperty::SetCollisionBounds"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty18SetCollisionBoundsERK6VectorS2_"
+				}  
+				"CBaseEntity::GetBaseAnimating"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity16GetBaseAnimatingEv"
+				} 
+				"UTIL_StringToVector"
+				{
+					type "sym"
+					sym  "_Z19UTIL_StringToVectorPfPKc"
+				}
+				"CCollisionProperty::SetSolid"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty8SetSolidE11SolidType_t"
+				}
+				"CFuncRotating::InputStartForward"
+				{
+					type "sym"
+					sym  "_ZN13CFuncRotating17InputStartForwardER11inputdata_t"
+				}
+				"CFuncRotating::InputStartBackward"
+				{
+					type "sym"
+					sym  "_ZN13CFuncRotating18InputStartBackwardER11inputdata_t"
+				}
+				"CFuncRotating::InputStop"
+				{
+					type "sym"
+					sym  "_ZN13CFuncRotating9InputStopER11inputdata_t"
+				}
+				"CFuncRotating::SetTargetSpeed"
+				{
+					type "sym"
+					sym  "_ZN13CFuncRotating14SetTargetSpeedEf"
+				}
+				"CBaseTrigger::Activate"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger8ActivateEv"
+				}
+				"CBaseEntity::GetDataObject"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity13GetDataObjectEi"
+				}
+				"CPointTeleport::Activate"
+				{
+					type "sym"
+					sym  "_ZN14CPointTeleport8ActivateEv"
+				}
+				"CGameStringPool::LevelShutdownPostEntity"
+				{
+					type "sym"
+					sym  "_ZN15CGameStringPool23LevelShutdownPostEntityEv"
+				}
+				"CEconItemView::GetPlayerDisplayModel"
+				{
+					type "sym"
+					sym  "_ZNK13CEconItemView21GetPlayerDisplayModelEii"
+				}
+				"CTFDroppedWeapon::InitPickedUpWeapon"
+				{
+					type "sym"
+					sym  "_ZN16CTFDroppedWeapon18InitPickedUpWeaponEP9CTFPlayerP13CTFWeaponBase"
+				}
+				"CBaseCombatWeapon::GetPrimaryAmmoType"
+				{
+					type "sym"
+					sym  "_ZNK17CBaseCombatWeapon18GetPrimaryAmmoTypeEv"
+				}
+				"CBaseAnimating::GetAttachment"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating13GetAttachmentEiR6VectorR6QAngle"
+				}
+				"CBaseAnimating::GetAttachment"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating13GetAttachmentEiR6VectorR6QAngle"
+				}
+				"CBaseAnimating::GetAttachmentBone"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating17GetAttachmentBoneEi"
+				}
+				
+				"CBaseAnimating::GetAttachment [matrix]"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating13GetAttachmentEiR11matrix3x4_t"
+				}
+				"CBaseFilter::PassesDamageFilter"
+				{
+					type "sym"
+					sym  "_ZN11CBaseFilter18PassesDamageFilterERK15CTakeDamageInfo"
+				}
+				"CBaseFilter::PassesDamageFilterImpl"
+				{
+					type "sym"
+					sym  "_ZN11CBaseFilter22PassesDamageFilterImplERK15CTakeDamageInfo"
+				}
+				"CBaseAnimating::StudioFrameAdvance"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating18StudioFrameAdvanceEv"
+				}
+				"CBaseServerVehicle::HandleEntryExitFinish"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle21HandleEntryExitFinishEbb"
+				}
+				"CPlayerMove::SetupMove"
+				{
+					type "sym"
+					sym  "_ZN11CPlayerMove9SetupMoveEP11CBasePlayerP8CUserCmdP11IMoveHelperP9CMoveData"
+				}
+				
+				"CBaseServerVehicle::SetupMove"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle9SetupMoveEP11CBasePlayerP8CUserCmdP11IMoveHelperP9CMoveData"
+				}
+				"CBaseEntity::TakeHealth"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity10TakeHealthEfi"
+				}
+				
 			}
 			"addrs_group"
 			{

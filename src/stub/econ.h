@@ -321,6 +321,7 @@ public:
 	CTFItemDefinition *GetItemDefinition() const                                                      { return ft_GetStaticData(this); }
 	CEconItem *GetSOCData() const                                                      				  { return ft_GetSOCData(this); }
 	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
+	const char *GetPlayerDisplayModel(int classindex, int team) const                                      { return ft_GetPlayerDisplayModel(this, classindex, team); }
 
 	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
@@ -341,7 +342,8 @@ private:
 	static MemberFuncThunk<      CEconItemView *, void>                              ft_ctor;
 	static MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> ft_Init;
 	static MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               ft_GetStaticData;
-	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;;
+	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;
+	static MemberFuncThunk<const CEconItemView *, const char *, int, int>            ft_GetPlayerDisplayModel;
 
 	static inline MemberFuncThunk<const CEconItemView *, void, IEconItemAttributeIterator *>         ft_IterateAttributes     { "CEconItemView::IterateAttributes"      };
 	
@@ -494,8 +496,15 @@ private:
 
 CItemGeneration *ItemGeneration();
 
+extern StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput;
 
-void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr);
+inline void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr) { ft_CopyStringAttributeValueToCharPointerOutput(attr_str, p_cstr); }
+inline const char *GetStringAttributeValue(const CAttribute_String *attr_str) 
+{ 
+	const char *p_cstr;
+	ft_CopyStringAttributeValueToCharPointerOutput(attr_str, &p_cstr);
+	return  p_cstr;
+}
 
 
 extern GlobalThunk<const char *[NUM_VISUALS_BLOCKS]> g_TeamVisualSections;

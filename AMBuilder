@@ -67,6 +67,7 @@ sourceFiles += [
   'src/util/firehose_base.cpp',
   'src/util/firehose_recv.cpp',
   'src/util/firehose_send.cpp',
+  'src/util/pooled_string.cpp',
   'src/util/misc.cpp',
   'src/util/rtti.cpp',
   'src/util/socket_old.cpp',

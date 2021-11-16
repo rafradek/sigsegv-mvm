@@ -22,7 +22,7 @@
 				"CTFPlayer::ApplyGenericPushbackImpulse"
 				{
 					type "sym"
-					sym  "_ZN9CTFPlayer27ApplyGenericPushbackImpulseERK6Vector"
+					sym  "_ZN9CTFPlayer27ApplyGenericPushbackImpulseERK6VectorPS_"
 				}
 				"CTFPlayer::ApplyPushFromDamage"
 				{

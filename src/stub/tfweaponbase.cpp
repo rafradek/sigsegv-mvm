@@ -65,6 +65,7 @@ MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseC
 //MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformPrimaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformPrimaryAttack");
 MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformSecondaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformSecondaryAttack");
 MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            CBaseCombatWeapon::vt_GetShootSound(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetShootSound");
+MemberVFuncThunk<      CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetPrimaryAmmoType(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetPrimaryAmmoType");
 
 
 IMPL_SENDPROP(float,                CTFWeaponBase, m_flLastFireTime,          CTFWeaponBase);

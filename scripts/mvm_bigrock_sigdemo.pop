@@ -103,11 +103,14 @@ WaveSchedule
 	BotHumansHaveRobotVoice 1 [$SIGSEGV] // If set to 1, bots with human models have robot voice (default: 0)
 	BotHumansHaveEyeGlow 1 [$SIGSEGV] // If set to 1, bots with human models have eye glow (default: 0)
 	// CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
-	ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
+	// ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
 	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
 	Accelerate 100 [$SIGSEGV] // Acceleration rate (default: 10)
 	AirAccelerate 100 [$SIGSEGV] // Air Acceleration (turning) rate (default: 10)
 	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
+	StuckTimeMultiplier 1 [$SIGSEGV] // Multiplier of how fast the bot detects stuck. 3 means bot detect stuck 3 times faster than normal (staying for 4s in 100hu area) (default: 1)
+	NoCreditsVelocity 1 [$SIGSEGV] // If set credits spawn with no velocity (default: 0)
+	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -407,6 +410,7 @@ WaveSchedule
 		Soldier // Player Class
 		{
 			Primary "My Custom Item" // Item slot and name, custom weapon names are available 
+			Secondary "The Reserve Shooter"
 			// Available slots:
 			// Primary
 			// Secondary
@@ -418,6 +422,7 @@ WaveSchedule
 			// Action (canteen)
 			// Misc2
 		}
+		
 		Head "The Cat's Pajamas" // All class item
 	}
 
@@ -1942,7 +1947,7 @@ WaveSchedule
 					// AimTarget "targetent" // Entity / bot / class name as an alternative. Also: RandomEnemy, ClosestPlayer
 					// KillAimTarget 1 // Attack aim target (Default: 0)
 					
-					Delay 1 // Time before the first task starts (Default: 10)
+					Delay 1 // Time before the first task starts. Must be above 0, or it will not execute (Default: 10)
                     Repeats 1 // How many times should bot do the task in total (Default: 0 - Infinite)
                     Cooldown 3 //Time between each task (Default: 10)
 					Duration 10 // How long should the ai be interrupted
@@ -2732,3 +2737,33 @@ WaveSchedule
 
 // Add condition when weapon is active. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
 // "add cond when active" 11
+
+// Step height multiplier (x * 18hu)
+// "mult step height" 10
+
+// Ignore player clip brushes
+// "ignore player clip" 1
+
+// Allow bunny hopping. 1 - auto bhop. 2 - manual bhop
+// "allow bunny hop" 1
+
+// Fire input on killed targets. The player is the activator. The format is <target>^<input>^<param>. If omitted, default param is damage received. !projectile is the projectile entity
+// "fire input on kill" "!self^SetHealth^0"
+
+// Restrict input on killed to specified targetname. Wildcards are allowed
+// "fire input on kill name restrict" "player"
+
+// Fire entire clip at once
+// "fire full clip at once" 1
+
+// Reload full clip at once
+// "reload full clip at once" 1
+
+// Adds a condition when the weapon is active
+// "add cond when active" 56
+
+// Milk, mark, jarate received duration multiplier
+// "mult debuff duration" 2
+
+// Damage dealt to enemy buildings on touch
+// "stomp building damage" 125

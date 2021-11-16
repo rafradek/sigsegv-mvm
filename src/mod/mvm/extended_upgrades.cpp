@@ -267,22 +267,21 @@ namespace Mod::MvM::Extended_Upgrades
         int slot;
     };
 
-    const char* GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value) {
+    void GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value, std::string &string) {
         if (FStrEq(attr->GetDescriptionFormat(), "value_is_percentage")) {
-            return CFmtStr("%+2f%% %s", value, attr->GetName());
+            string = CFmtStr("%+2f%% %s", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_inverted_percentage")) {
             value *= -1.0f;
-            return CFmtStr("%+2f%% %s", value, attr->GetName());
+            string = CFmtStr("%+2f%% %s", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive")) {
-            return CFmtStr("%2f%% %s", value, attr->GetName());
+            string = CFmtStr("%2f%% %s", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive_percentage")) {
             value *= 100.0f;
-            return CFmtStr("%2f%% %s", value, attr->GetName());
+            string = CFmtStr("%2f%% %s", value, attr->GetName());
         }
-        return "";
     }
 
     void Parse_RequiredUpgrades(KeyValues *kv, std::map<std::string, int> &required_upgrades) {
@@ -326,6 +325,10 @@ namespace Mod::MvM::Extended_Upgrades
         else
             slot = strtol(string, nullptr, 10);
         return slot;
+    }
+    
+    int GetExtendedUpgradesStartIndex() {
+        return extended_upgrades_start_index;
     }
 
     bool Parse_Criteria(KeyValues *kv, std::vector<std::unique_ptr<UpgradeCriteria>> &criteria) {
@@ -463,7 +466,7 @@ namespace Mod::MvM::Extended_Upgrades
 
 
                 if (upgradeinfo->name == "")
-                    upgradeinfo->name = GetIncrementStringForAttribute(upgradeinfo->attributeDefinition, upgradeinfo->increment); //upgradeinfo->attributeDefinition->GetKVString("description_string", );
+                    GetIncrementStringForAttribute(upgradeinfo->attributeDefinition, upgradeinfo->increment, upgradeinfo->name); //upgradeinfo->attributeDefinition->GetKVString("description_string", );
             }
 		}
         RemoveUpgradesFromGameList();
@@ -628,7 +631,7 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     bool WeaponHasValidUpgrades(CEconEntity *item, CTFPlayer *player) {
-        for (int i = 0; i < upgrades.size(); i++) {
+        for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
             char reason[1] = "";
             if (IsValidUpgradeForWeapon(upgrade, item, player, reason, sizeof(reason)) || (strlen(reason) > 0 && upgrade->show_requirements)) {
@@ -770,7 +773,7 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     void StartUpgradeListForPlayer(CTFPlayer *player, int slot, int displayitem) {
-        DevMsg("Start upgrade list %d\n", slot);
+        //DevMsg("Start upgrade list %d\n", slot);
         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
         SelectUpgradeListHandler *handler = new SelectUpgradeListHandler(player, slot);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
@@ -785,7 +788,7 @@ namespace Mod::MvM::Extended_Upgrades
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 
-        for (int i = 0; i < upgrades.size(); i++) {
+        for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
             char disabled_reason[255] = "";
             bool enabled = IsValidUpgradeForWeapon(upgrade, item, player, disabled_reason, sizeof(disabled_reason));
@@ -963,7 +966,7 @@ namespace Mod::MvM::Extended_Upgrades
     DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CBaseEntity &entity)
 	{
         SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
-		DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+		return DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
 	}
 
     DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)

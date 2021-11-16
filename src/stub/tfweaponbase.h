@@ -44,6 +44,7 @@ public:
 	//void CanPerformPrimaryAttack()                                   {        vt_CanPerformPrimaryAttack (this); }
 	void CanPerformSecondaryAttack()                       {        vt_CanPerformSecondaryAttack (this); }
 	char const *GetShootSound(int type)                    { return vt_GetShootSound (this, type); }
+	int GetPrimaryAmmoType()                               { return vt_GetPrimaryAmmoType (this); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -76,6 +77,8 @@ private:
 	//static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformPrimaryAttack;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformSecondaryAttack;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            vt_GetShootSound;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, int>                          vt_GetPrimaryAmmoType;
+	
 };
 
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter

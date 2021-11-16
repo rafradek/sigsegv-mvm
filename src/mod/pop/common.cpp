@@ -1058,6 +1058,44 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
     return true;
 }
 
+const char *GetItemName(const CEconItemView *view) {
+    static int custom_weapon_def = -1;
+    if (custom_weapon_def == -1) {
+        auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+        if (attr != nullptr)
+            custom_weapon_def = attr->GetIndex();
+    }
+        
+    auto attr = view->GetAttributeList().GetAttributeByID(custom_weapon_def);
+    const char *value = nullptr;
+    if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+        CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+    }
+    else {
+        value = view->GetStaticData()->GetName("");
+    }
+    return value;
+}
+
+const char *GetItemNameForDisplay(const CEconItemView *view) {
+    static int custom_weapon_def = -1;
+    if (custom_weapon_def == -1) {
+        auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+        if (attr != nullptr)
+            custom_weapon_def = attr->GetIndex();
+    }
+        
+    auto attr = view->GetAttributeList().GetAttributeByID(custom_weapon_def);
+    const char *value = nullptr;
+    if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+        CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+    }
+    else {
+        value = GetItemName(view->GetItemDefIndex());
+    }
+    return value;
+}
+
 const char *GetItemName(int item_defid) {
     auto find = g_Itemnames.find(item_defid);
     if (find != g_Itemnames.end()) {
@@ -1082,6 +1120,7 @@ void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool
                     found = true;
                     return false;
                 }
+                return true;
             });
             if (!found)
                 return;

@@ -9,6 +9,8 @@ IMPL_SENDPROP(float, CBaseAnimating, m_flModelScale, CBaseAnimating);
 IMPL_SENDPROP(float, CBaseAnimating, m_flCycle,      CBaseAnimating);
 IMPL_SENDPROP(int,   CBaseAnimating, m_nHitboxSet,   CBaseAnimating);
 
+IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceFinished);
+
 MemberFuncThunk<CBaseAnimating *, void, float, float>              CBaseAnimating::ft_SetModelScale       ("CBaseAnimating::SetModelScale");
 MemberFuncThunk<CBaseAnimating *, void, float, bool>               CBaseAnimating::ft_DrawServerHitboxes  ("CBaseAnimating::DrawServerHitboxes");
 MemberFuncThunk<CBaseAnimating *, void, int, int>                  CBaseAnimating::ft_SetBodygroup        ("CBaseAnimating::SetBodygroup");
@@ -29,7 +31,11 @@ MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupAttachment    ("CBaseAnimating::LookupAttachment");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupSequence      ("CBaseAnimating::LookupSequence");
 MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimating::ft_GetBonePosition     ("CBaseAnimating::GetBonePosition");
+MemberFuncThunk<CBaseAnimating *, bool, int, Vector&, QAngle&>     CBaseAnimating::ft_GetAttachment       ("CBaseAnimating::GetAttachment");
+MemberFuncThunk<CBaseAnimating *, bool, int, matrix3x4_t&>         CBaseAnimating::ft_GetAttachment2      ("CBaseAnimating::GetAttachment [matrix]");
+MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimating::ft_GetAttachmentBone   ("CBaseAnimating::GetAttachmentBone");
 
+MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_StudioFrameAdvance(TypeName<CBaseAnimating>(), "CBaseAnimating::StudioFrameAdvance");
 MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_RefreshCollisionBounds(TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");
 
 IMPL_SENDPROP(bool, CEconEntity, m_bValidatedAttachedEntity, CEconEntity);

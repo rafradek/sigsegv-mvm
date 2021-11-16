@@ -75,6 +75,7 @@ IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
 IMPL_DATAMAP(unsigned int, CBasePlayer, m_afPhysicsFlags);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
+IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 
 IMPL_SENDPROP(float,                              CBasePlayer, m_flDeathTime,   CBasePlayer);

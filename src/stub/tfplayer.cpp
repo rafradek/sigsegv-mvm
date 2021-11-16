@@ -232,7 +232,7 @@ MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::ft_RemoveCurrency              ("CTFPlayer::RemoveCurrency");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_CheckInstantLoadoutRespawn  ("CTFPlayer::CheckInstantLoadoutRespawn");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ForceRegenerateAndRespawn   ("CTFPlayer::ForceRegenerateAndRespawn");
-MemberFuncThunk<      CTFPlayer *, void, Vector &                  > CTFPlayer::ft_ApplyGenericPushbackImpulse ("CTFPlayer::ApplyGenericPushbackImpulse");
+MemberFuncThunk<      CTFPlayer *, void, Vector &, CTFPlayer *     > CTFPlayer::ft_ApplyGenericPushbackImpulse ("CTFPlayer::ApplyGenericPushbackImpulse");
 MemberFuncThunk<const CTFPlayer *, bool							   > CTFPlayer::ft_CanAirDash 				   ("CTFPlayer::CanAirDash");
 MemberFuncThunk<	  CTFPlayer *, void, bool					   > CTFPlayer::ft_Regenerate				   ("CTFPlayer::Regenerate");
 
@@ -367,6 +367,23 @@ namespace Mod::Pop::PopMgr_Extensions
 	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
 }
 
+CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove, bool force_give)
+{
+	auto item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
+	if (item_def != nullptr) {
+		const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
+		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+		DispatchSpawn(entity);
+
+		if (entity != nullptr && !GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
+			entity->Remove();
+			entity = nullptr;
+		}
+		return entity;
+	}
+	return nullptr;
+}
+
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name)
 {
 	if (entity == nullptr)
@@ -381,7 +398,6 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 		slot = view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 	}
 
-    DevMsg("Give item %s %d\n", item_name, no_remove);
 	if (!no_remove) {
 		
 

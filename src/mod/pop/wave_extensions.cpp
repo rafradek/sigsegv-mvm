@@ -781,18 +781,39 @@ namespace Mod::Pop::Wave_Extensions
 			}
 		}
 	}
+
+	THINK_FUNC_DECL(DelayExplaination)
+	{
+		ShowWaveExplanation(false, reinterpret_cast<CTFPlayer *>(this));
+	}
+
+	THINK_FUNC_DECL(DelayExplainationAll)
+	{
+		ShowWaveExplanation(false);
+	}
+
+	THINK_FUNC_DECL(DelayExplainationAllSuccess)
+	{
+		ShowWaveExplanation(true);
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		bool show_wave_expl = !player->IsBot() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED;
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 		if (show_wave_expl && TFGameRules()->IsMannVsMachineMode())
-			ShowWaveExplanation(false, player);
+			THINK_FUNC_SET(player, DelayExplaination, gpGlobals->curtime + 2.0f);
 	}
 
 	void OnWaveBegin(bool success) {
-
-		ShowWaveExplanation(success);
+		
+		if (success) {
+			THINK_FUNC_SET(g_pPopulationManager, DelayExplainationAllSuccess, gpGlobals->curtime + 2.0f);
+		}
+		else {
+			THINK_FUNC_SET(g_pPopulationManager, DelayExplainationAll, gpGlobals->curtime + 2.0f);
+		}
 
 		auto data = GetCurrentWaveData();
 		if (data != nullptr && !data->t_waveinit.HasStarted()) {
