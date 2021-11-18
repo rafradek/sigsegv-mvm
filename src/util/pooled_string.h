@@ -27,9 +27,9 @@ private:
 };
 
 template<FixedString lit>
-inline PooledString PStr()
+inline const char *PStr()
 {
     static PooledString pooled(lit);
-    return pooled;
+    return pooled.Get();
 }
 #endif

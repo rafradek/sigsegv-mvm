@@ -76,6 +76,7 @@ public:
 	DECL_SENDPROP_RW(float, m_flStepSize);
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
+	DECL_SENDPROP(bool,  m_bDrawViewmodel);
 	
 	inline void NetworkStateChanged()           { }
 	inline void NetworkStateChanged(void *pVar) { }
@@ -138,6 +139,8 @@ public:
 	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
 	void ChangeTeam(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {        vt_ChangeTeam_bool3    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
+	CBaseEntity *FindUseEntity()                                         { return vt_FindUseEntity      (this); }
+	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
 	
 	
 	DECL_SENDPROP_RW(CPlayerLocalData, m_Local);
@@ -182,6 +185,8 @@ private:
 	static MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> vt_ChangeTeam_bool3;
 	static MemberVFuncThunk<      CBasePlayer *, void, CBaseCombatWeapon *>   vt_Weapon_Equip;
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_EquipWearable;
+	static MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               vt_FindUseEntity;
+	static MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> vt_LeaveVehicle;
 };
 
 class CBaseMultiplayerPlayer : public CBasePlayer

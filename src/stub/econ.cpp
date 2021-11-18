@@ -243,7 +243,7 @@ MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector c
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle const&, int, int, char const*> CItemGeneration::ft_SpawnItem_defid("CItemGeneration::SpawnItem [defIndex]");
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_GenerateItemFromScriptData("CItemGeneration::GenerateItemFromScriptData");
 
-static StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput("CopyStringAttributeValueToCharPointerOutput");
+StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput("CopyStringAttributeValueToCharPointerOutput");
 
 GlobalThunk<const char *[NUM_VISUALS_BLOCKS]> g_TeamVisualSections("g_TeamVisualSections");
 

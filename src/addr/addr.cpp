@@ -38,7 +38,7 @@ void AddrManager::Load()
 		if (s_Addrs.find(name) == s_Addrs.end()) {
 			s_Addrs[name] = addr;
 		} else {
-			DevMsg("AddrManager::Load: duplicate addr for \"%s\"\n", addr->GetName());
+			Msg("AddrManager::Load: duplicate addr for \"%s\"\n", addr->GetName());
 		}
 	}
 	
@@ -88,7 +88,13 @@ void *AddrManager::GetAddr(const char *name)
 	assert(state != IAddr::State::LOADING);
 	
 	if (state == IAddr::State::FAIL) {
-		DevMsg("AddrManager::GetAddr FAIL: cannot resolve addr for name \"%s\"\n", name);
+		if (LibMgr::HaveLib(addr->GetLibrary()) && !strstr(name,"[client]")) {
+			Msg("AddrManager::GetAddr FAIL: cannot resolve addr for name \"%s\"\n", name);
+		}
+		else {
+			DevMsg("AddrManager::GetAddr FAIL: cannot resolve addr for name \"%s\"\n", name);
+		}
+
 		return nullptr;
 	}
 	

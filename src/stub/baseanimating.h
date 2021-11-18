@@ -30,7 +30,7 @@ public:
 	int GetNumBones()                                                      { return ft_GetNumBones         (this); }
 	void ResetSequenceInfo()                                               {        ft_ResetSequenceInfo   (this); }
 	void ResetSequence(int nSequence)                                      {        ft_ResetSequence       (this, nSequence); }
-	CStudioHdr *GetModelPtr()                                              { return ft_GetModelPtr         (this); }
+	CStudioHdr *GetModelPtr()                                              { return nullptr; }
 	int LookupPoseParameter(CStudioHdr *pStudioHdr, const char *szName)    { return ft_LookupPoseParameter (this, pStudioHdr, szName); }
 	float GetPoseParameter(int iParameter)                                 { return ft_GetPoseParameter_int(this, iParameter); }
 	float GetPoseParameter(const char *szName)                             { return ft_GetPoseParameter_str(this, szName); }
@@ -68,7 +68,7 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, int>                             ft_GetNumBones;
 	static MemberFuncThunk<CBaseAnimating *, void>                            ft_ResetSequenceInfo;
 	static MemberFuncThunk<CBaseAnimating *, void, int>                       ft_ResetSequence;
-	static MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    ft_GetModelPtr;
+//	static MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    ft_GetModelPtr;
 	static MemberFuncThunk<CBaseAnimating *, int, CStudioHdr *, const char *> ft_LookupPoseParameter;
 	static MemberFuncThunk<CBaseAnimating *, float, int>                      ft_GetPoseParameter_int;
 	static MemberFuncThunk<CBaseAnimating *, float, const char *>             ft_GetPoseParameter_str;

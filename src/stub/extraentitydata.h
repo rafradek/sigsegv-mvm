@@ -354,7 +354,7 @@ inline std::vector<CustomVariable> &GetCustomVariables(CBaseEntity *entity)
 }
 
 template<FixedString lit>
-inline const char *CBaseEntity::GetCustomVariable(const char *defValue = nullptr)
+inline const char *CBaseEntity::GetCustomVariable(const char *defValue)
 {
     static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
@@ -370,7 +370,7 @@ inline const char *CBaseEntity::GetCustomVariable(const char *defValue = nullptr
 }
 
 template<FixedString lit>
-inline float CBaseEntity::GetCustomVariableFloat(float defValue = 0.0f)
+inline float CBaseEntity::GetCustomVariableFloat(float defValue)
 {
     static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
@@ -385,7 +385,7 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue = 0.0f)
     return defValue;
 }
 
-inline const char *CBaseEntity::GetCustomVariableByText(const char *key, const char *defValue = nullptr)
+inline const char *CBaseEntity::GetCustomVariableByText(const char *key, const char *defValue)
 {
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {

@@ -1402,43 +1402,54 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
-	THINK_FUNC_DECL(CarThink) {
-		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
-		int sequence = vehicle->m_nSequence;
-		bool sequenceFinished = vehicle->m_bSequenceFinished;
-		bool enterAnimOn = vehicle->m_bEnterAnimOn;
-		bool exitAnimOn = vehicle->m_bExitAnimOn;
-
-		vehicle->StudioFrameAdvance();
-
-		if ((sequence == 0 || sequenceFinished) && (enterAnimOn || exitAnimOn)) {
-			if (enterAnimOn)
-			{
-				variant_t variant;
-				vehicle->AcceptInput("TurnOn", vehicle, vehicle, variant, -1);
-			}
-			
-			CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
-			serverVehicle->HandleEntryExitFinish(exitAnimOn, true);
-		}
-		vehicle->SetNextThink(gpGlobals->curtime+0.01, "CarThink");
-	}
-
 	void CC_Vehicle(CTFPlayer *player, const CCommand& args)
 	{
+		const char *type = "car";
+		const char *model = "models/buggy.mdl";
+		const char *script = "scripts/vehicles/jeep_test.txt";
+		if (args.ArgC() >= 2) {
+			type = args[1];
+		}
+		
 		CPropVehicleDriveable *vehicle = reinterpret_cast<CPropVehicle *>(CreateEntityByName("prop_vehicle_driveable"));
 		if (vehicle != nullptr) {
 			DevMsg("Vehicle spawned\n");
 			vehicle->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,100,0));
-			vehicle->KeyValue("model", "models/buggy.mdl");
-			vehicle->KeyValue("vehiclescript", "scripts/vehicles/jeep_test.txt");
 			vehicle->KeyValue("actionScale", "1");
 			vehicle->KeyValue("spawnflags", "1");
-			vehicle->m_nVehicleType = 1;
+			if (FStrEq(type, "car")) {
+				vehicle->m_nVehicleType = 1;
+				script = "scripts/vehicles/jeep_test.txt";
+				model = "models/buggy.mdl";
+			}
+			else if (FStrEq(type, "car_raycast")) {
+				vehicle->m_nVehicleType = 2;
+				script = "scripts/vehicles/jeep_test.txt";
+				model = "models/buggy.mdl";
+			}
+			else if (FStrEq(type, "jetski")) {
+				vehicle->m_nVehicleType = 4;
+				script = "scripts/vehicles/jetski.txt";
+				model = "models/airboat.mdl";
+			}
+			else if (FStrEq(type, "airboat")) {
+				vehicle->m_nVehicleType = 8;
+				script = "scripts/vehicles/airboat.txt";
+				model = "models/airboat.mdl";
+			}
+
+			if (args.ArgC() >= 3) {
+				model = args[2];
+			}
+			if (args.ArgC() >= 4) {
+				script = args[3];
+			}
+
+			vehicle->KeyValue("model", model);
+			vehicle->KeyValue("vehiclescript", script);
 			vehicle->Spawn();
 			vehicle->Activate();
 			vehicle->m_flMinimumSpeedToEnterExit = 100;
-			THINK_FUNC_SET(vehicle, CarThink, gpGlobals->curtime + 0.01);
 		}
 	}
 	
@@ -1472,7 +1483,7 @@ namespace Mod::Util::Client_Cmds
 	};
 
 	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+	 DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player != nullptr) {
@@ -1512,19 +1523,6 @@ namespace Mod::Util::Client_Cmds
 		
 		return result;
 	}
-	
-	DETOUR_DECL_MEMBER(void, CPlayerMove_SetupMove, CBasePlayer *player, CUserCmd *ucmd, void *pHelper, void *move)
-	{
-		if (player->m_hVehicle != nullptr) {
-			CBaseEntity *entVehicle = player->m_hVehicle;
-			auto vehicle = rtti_cast<CPropVehicleDriveable *>(entVehicle);
-			if (vehicle != nullptr) {
-				CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
-				serverVehicle->SetupMove(player, ucmd, pHelper, move);
-			}
-		}
-		DETOUR_MEMBER_CALL(CPlayerMove_SetupMove)(player, ucmd, pHelper, move);
-	}
 
 	class CMod : public IMod, IFrameUpdatePostEntityThinkListener
 	{
@@ -1534,7 +1532,6 @@ namespace Mod::Util::Client_Cmds
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
-			//MOD_ADD_DETOUR_MEMBER(CPlayerMove_SetupMove, "CPlayerMove::SetupMove");
 			
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

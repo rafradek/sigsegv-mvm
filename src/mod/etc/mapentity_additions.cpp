@@ -414,7 +414,7 @@ namespace Mod::Etc::Mapentity_Additions
         if (data == nullptr || data->m_hRotateTarget == nullptr)
             return;
 
-        auto lookat = this->GetCustomVariable<"lookat">();
+        auto lookat = this->GetCustomVariable<"lookat">("eyes");
         Vector targetVec;
         if (FStrEq(lookat, PStr<"origin">())) {
             targetVec = data->m_hRotateTarget->GetAbsOrigin();
@@ -1567,6 +1567,7 @@ namespace Mod::Etc::Mapentity_Additions
                         data->m_hRotateTarget = target;
 
                         if (ent->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
+                            Msg("install rotator\n");
                             THINK_FUNC_SET(ent, RotatorModuleTick, gpGlobals->curtime + 0.1);
                         }
                     }
@@ -1916,15 +1917,16 @@ namespace Mod::Etc::Mapentity_Additions
         }
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         bool alive = entity->IsAlive();
+        int health_pre = entity->GetHealth();
 		auto damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
-        if (damage != 0) {
+        if (damage != 0 && health_pre - entity->GetHealth() != 0) {
             variant_t variant;
-            variant.SetInt(damage);
+            variant.SetInt(health_pre - entity->GetHealth());
             FireCustomOutput(entity, "ondamagereceived", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
         else {
             variant_t variant;
-            variant.SetInt(damage);
+            variant.SetInt(info.GetDamage());
             FireCustomOutput(entity, "ondamageblocked", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
         if (alive && !entity->IsAlive()) {
@@ -1934,6 +1936,13 @@ namespace Mod::Etc::Mapentity_Additions
         }
         return damage;
 	}
+
+    DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, CTakeDamageInfo &info)
+	{
+
+        info.SetDamage(-100);
+        return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+    }
 
     DETOUR_DECL_MEMBER(void, CBaseObject_InitializeMapPlacedObject)
 	{
@@ -2329,7 +2338,26 @@ namespace Mod::Etc::Mapentity_Additions
         }
 		
 	}
-
+    
+    CBaseEntity *filter_entity = nullptr;
+    float filter_total_multiplier = 1.0f;
+    DETOUR_DECL_MEMBER(bool, CBaseEntity_PassesDamageFilter, CTakeDamageInfo &info)
+	{
+        filter_entity = reinterpret_cast<CBaseEntity *>(this);
+        filter_total_multiplier = 1.0f;
+        auto ret = DETOUR_MEMBER_CALL(CBaseFilter_PassesDamageFilter)(info);
+        if (filter_total_multiplier != 1.0f) {
+            if (filter_total_multiplier > 0)
+                info.SetDamage(info.GetDamage() * filter_total_multiplier);
+            else {
+                filter_entity->TakeHealth(info.GetDamage() * -filter_total_multiplier, DMG_GENERIC);
+                info.SetDamage(0);
+            }
+        }
+        filter_entity = nullptr;
+        return ret;
+    }
+    
     DETOUR_DECL_MEMBER(bool, CBaseFilter_PassesDamageFilter, CTakeDamageInfo &info)
 	{
         auto ret = DETOUR_MEMBER_CALL(CBaseFilter_PassesDamageFilter)(info);
@@ -2338,9 +2366,8 @@ namespace Mod::Etc::Mapentity_Additions
         float multiplier = filter->GetCustomVariableFloat<"multiplier">();
         if (multiplier != 0.0f) {
             if (ret && rc_CBaseEntity_TakeDamage == 1) {
-                info.SetDamage(info.GetDamage() * multiplier);
+                filter_total_multiplier *= multiplier;
             }
-                    
             return true;
         }
         
@@ -2390,6 +2417,7 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBaseTrigger_Activate, "CBaseTrigger::Activate");
             MOD_ADD_DETOUR_MEMBER(CPointTeleport_Activate, "CPointTeleport::Activate");
             MOD_ADD_DETOUR_MEMBER(CTFDroppedWeapon_InitPickedUpWeapon, "CTFDroppedWeapon::InitPickedUpWeapon");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_PassesDamageFilter, "CBaseEntity::PassesDamageFilter");
             
 
             // Fix camera despawn bug

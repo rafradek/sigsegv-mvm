@@ -61,6 +61,7 @@ sourceFiles += [
   'src/mem/hook.cpp',
   'src/mem/patch.cpp',
   'src/mem/scan.cpp',
+  'src/mem/virtual_hook.cpp',
   
   'src/util/admin.cpp',
   'src/util/backtrace.cpp',
@@ -174,6 +175,7 @@ sourceFiles += [
   'src/mod/etc/server_allow_wait_command.cpp',
   'src/mod/etc/suppress_nb_event_messages.cpp',
   'src/mod/etc/target_changegravity_improved.cpp',
+  'src/mod/etc/vehicle_fix.cpp',
   'src/mod/etc/weapon_mimic_teamnum.cpp',
   'src/mod/etc/trigger_filter_fix.cpp',
   
@@ -287,7 +289,7 @@ sourceFiles += [
   'src/mod/util/overlay_recv.cpp',
   'src/mod/util/overlay_send.cpp',
   'src/mod/util/override_vertex_limit.cpp',
-  'src/mod/util/screenshot_png.cpp',
+# 'src/mod/util/screenshot_png.cpp',
   'src/mod/util/search_paths.cpp',
   'src/mod/util/serialize_spew.cpp',
   'src/mod/util/vprof_recv.cpp',

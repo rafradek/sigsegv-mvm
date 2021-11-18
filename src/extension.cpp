@@ -5,6 +5,7 @@
 #include "mod.h"
 #include "addr/addr.h"
 #include "addr/prescan.h"
+#include "stub/tfplayer.h"
 #include "gameconf.h"
 #include "prop.h"
 #include "util/pooled_string.h"
@@ -138,6 +139,8 @@ void CExtSigsegv::SDK_OnUnload()
 	g_GCHook.UnloadAll();
 	
 	ColorSpew::Disable();
+
+	UnloadAllCustomThinkFunc();
 }
 
 void CExtSigsegv::SDK_OnAllLoaded()

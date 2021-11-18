@@ -1,5 +1,6 @@
 #include "stub/baseentity.h"
 #include "stub/baseplayer.h"
+//#include "util/iterate.h"
 #include "stub/objects.h"
 
 
@@ -260,4 +261,15 @@ const char *variant_t::ToString( void ) const
 	}
 
 	return("No conversion to string");
+}
+
+void UnloadAllCustomThinkFunc()
+{
+	for (CBaseEntity *ent = servertools->FirstEntity(); ent != nullptr; ent = servertools->NextEntity(ent)) {
+		for (auto &think : CustomThinkFunc::List()) {
+			if (ent->GetNextThink(think->m_sName) != -1) {
+				ent->SetNextThink(-1, think->m_sName);
+			}
+		}
+	}
 }

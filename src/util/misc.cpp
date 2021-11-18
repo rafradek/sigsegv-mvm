@@ -49,3 +49,17 @@ void HexDumpToSpewFunc(void (*func)(const char *, ...), const void *ptr, size_t 
 {
 	HexDump_Internal([=](const char *line){ (*func)("%s", line); }, ptr, len, absolute);
 }
+
+void SendConVarValue(int playernum, const char *convar, const char *value)
+{
+	char data[256];
+	bf_write buffer(data, sizeof(data));
+	buffer.WriteUBitLong(5, 6);
+	buffer.WriteByte(1);
+	buffer.WriteString(convar);
+	buffer.WriteString(value);
+	INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(playernum));
+	if (netchan != nullptr) {
+		netchan->SendData(buffer);
+	}
+}

@@ -734,11 +734,6 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9AddObjectEP11CBaseObject"
 				}
-				"CTFPlayer::StartBuildingObjectOfType"
-				{
-					type "sym"
-					sym  "_ZN9CTFPlayer25StartBuildingObjectOfTypeEii"
-				}
 				"CTFPlayer::Touch"
 				{
 					type "sym"

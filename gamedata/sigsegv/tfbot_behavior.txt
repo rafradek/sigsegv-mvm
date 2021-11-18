@@ -461,11 +461,6 @@
 					type "sym"
 					sym  "_ZN17CTFBotDeliverFlag5OnEndEP6CTFBotP6ActionIS0_E"
 				}
-				"CTFBotTacticalMonitor::OnCommandString"
-				{
-					type "sym"
-					sym  "_ZN21CTFBotTacticalMonitor15OnCommandStringEP6CTFBotPKc"
-				}
 			}
 		}
 	}

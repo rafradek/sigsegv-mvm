@@ -536,10 +536,14 @@ class CBaseServerVehicle
 public:
 	void HandleEntryExitFinish(bool bExitAnimOn, bool bResetAnim) { return vt_HandleEntryExitFinish(this, bExitAnimOn, bResetAnim); }
 	void SetupMove(CBasePlayer *player, CUserCmd *ucmd, void *pHelper, void *move) { return vt_SetupMove(this, player, ucmd, pHelper, move); }
+	bool HandlePassengerExit(CBaseCombatCharacter *pPassenger)  { return vt_HandlePassengerExit(this, pPassenger); }
+	void HandlePassengerEntry(CBaseCombatCharacter *pPassenger, bool allowAnyPosition)  { vt_HandlePassengerEntry(this, pPassenger, allowAnyPosition); }
 
 private:
 	static MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> vt_HandleEntryExitFinish;
 	static MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> vt_SetupMove;
+	static MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> vt_HandlePassengerExit;
+	static MemberVFuncThunk<CBaseServerVehicle *, void, CBaseCombatCharacter *, bool> vt_HandlePassengerEntry;
 };
 
 class CPropVehicle : public CBaseAnimating
@@ -555,7 +559,9 @@ public:
 	DECL_DATAMAP (bool, m_bExitAnimOn);
 	DECL_DATAMAP (float, m_flMinimumSpeedToEnterExit);
 	DECL_DATAMAP (CBaseServerVehicle *, m_pServerVehicle);
-	
+	DECL_DATAMAP (CHandle<CBasePlayer>, m_hPlayer);
+	DECL_DATAMAP (float, m_nSpeed);
+	DECL_DATAMAP (float, m_bLocked);
 
 	
 };

@@ -133,9 +133,9 @@ namespace Mod::Demo::StringTable_Limit
 	public:
 		CMod() : IMod("Demo:StringTable_Limit")
 		{
-			MOD_ADD_DETOUR_MEMBER(CDemoPlayer_ReadPacket,                 "CDemoPlayer::ReadPacket");
-			MOD_ADD_DETOUR_MEMBER(CHLTVServer_ReadCompeleteDemoFile,      "CHLTVServer::ReadCompeleteDemoFile");
-			MOD_ADD_DETOUR_MEMBER(CDemoRecorder_RecordStringTables,       "CDemoRecorder::RecordStringTables");
+		//	MOD_ADD_DETOUR_MEMBER(CDemoPlayer_ReadPacket,                 "CDemoPlayer::ReadPacket");
+		//	MOD_ADD_DETOUR_MEMBER(CHLTVServer_ReadCompeleteDemoFile,      "CHLTVServer::ReadCompeleteDemoFile");
+		//	MOD_ADD_DETOUR_MEMBER(CDemoRecorder_RecordStringTables,       "CDemoRecorder::RecordStringTables");
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_RecordStringTables,   "CHLTVDemoRecorder::RecordStringTables");
 			MOD_ADD_DETOUR_MEMBER(CReplayDemoRecorder_RecordStringTables, "CReplayDemoRecorder::RecordStringTables");
 			

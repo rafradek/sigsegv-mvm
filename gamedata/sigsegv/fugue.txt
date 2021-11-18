@@ -10,10 +10,6 @@
                     type "sym"
                     sym "_ZN9CTFPlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
                 }
-                "CTFPlayer::Regenerate" {
-                    type "sym"
-                    sym "_ZN9CTFPlayer10RegenerateEb"
-                }
                 "CTFGameMovement::PreventBunnyJumping" {
                     type "sym"
                     sym "_ZN15CTFGameMovement19PreventBunnyJumpingEv"
@@ -45,10 +41,6 @@
                 "CTFPowerupBottle::SetNumCharges" {
                     type "sym"
                     sym "_ZN16CTFPowerupBottle13SetNumChargesEh"
-                }
-                "CTFGameRules::CanUpgradeWithAttrib" {
-                    type "sym"
-                    sym "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades"
                 }
             }
         }

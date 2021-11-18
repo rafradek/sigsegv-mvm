@@ -269,5 +269,5 @@ template<> inline std::string ConVar_GetValue<std::string>(const ConVarRef& cvar
 template<typename T> void ConVar_SetValue(ConVarRef& cvar, const T& val) { cvar.SetValue(val); }
 template<> inline void ConVar_SetValue(ConVarRef& cvar, const std::string& val) { cvar.SetValue(val.c_str()); }
 
-
+void SendConVarValue(int playernum, const char *convar, const char *value);
 #endif

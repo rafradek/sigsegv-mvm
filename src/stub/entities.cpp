@@ -308,6 +308,11 @@ IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bEnterAnimOn);
 IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bExitAnimOn);
 IMPL_DATAMAP (bool, CPropVehicleDriveable, m_flMinimumSpeedToEnterExit);
 IMPL_DATAMAP (CBaseServerVehicle *, CPropVehicleDriveable, m_pServerVehicle);
+IMPL_DATAMAP (CHandle<CBasePlayer>, CPropVehicleDriveable, m_hPlayer);
+IMPL_DATAMAP (float, CPropVehicleDriveable, m_nSpeed);
+IMPL_DATAMAP (float, CPropVehicleDriveable, m_bLocked);
 
 MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_HandleEntryExitFinish(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandleEntryExitFinish");
 MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");
+MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> CBaseServerVehicle::vt_HandlePassengerExit(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerExit");
+MemberVFuncThunk<CBaseServerVehicle *, void, CBaseCombatCharacter *, bool> CBaseServerVehicle::vt_HandlePassengerEntry(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerEntry");

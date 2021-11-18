@@ -577,6 +577,15 @@ inline void CBaseEntity::ClearEffects()
 	this->DispatchUpdateTransmitState();
 }
 
+class CustomThinkFunc : public AutoList<CustomThinkFunc>
+{
+public:
+	CustomThinkFunc(void *func, const char *name) : m_pFunc(func), m_sName(name) {};
+	void *m_pFunc;
+	const char *m_sName;
+};
+
+void UnloadAllCustomThinkFunc();
 
 /* like those stupid SetThink and SetContextThink macros, but way better! */
 #define THINK_FUNC_DECL(name) \
@@ -585,7 +594,8 @@ inline void CBaseEntity::ClearEffects()
 	public: \
 		void Update(); \
 	}; \
-	void ThinkFunc_##name::Update()
+	CustomThinkFunc customthinkfunc_##name(GetAddrOfMemberFunc(&ThinkFunc_##name::Update), #name);\
+	void ThinkFunc_##name::Update()\
 
 #define THINK_FUNC_SET(ent, name, time) ent->ThinkSet(&ThinkFunc_##name::Update, time, #name)
 

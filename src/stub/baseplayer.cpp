@@ -69,6 +69,7 @@ MemberVFuncThunk<      CBaseCombatCharacter *, int>                            C
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngle, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
+IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
@@ -105,8 +106,10 @@ MemberVFuncThunk<      CBasePlayer *, Vector>                      CBasePlayer::
 MemberVFuncThunk<      CBasePlayer *, float>                       CBasePlayer::vt_GetPlayerMaxSpeed   (TypeName<CBasePlayer>(), "CBasePlayer::GetPlayerMaxSpeed");
 MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       CBasePlayer::vt_RemoveWearable      (TypeName<CBasePlayer>(), "CBasePlayer::RemoveWearable");
 MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> CBasePlayer::vt_ChangeTeam_bool3    (TypeName<CBasePlayer>(), "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
-MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          CBasePlayer::vt_Weapon_Equip (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
-MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              CBasePlayer::vt_EquipWearable (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
+MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>         CBasePlayer::vt_Weapon_Equip        (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
+MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>             CBasePlayer::vt_EquipWearable       (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
+MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               CBasePlayer::vt_FindUseEntity       (TypeName<CBasePlayer>(),"CBasePlayer::FindUseEntity");
+MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> CBasePlayer::vt_LeaveVehicle(TypeName<CBasePlayer>(),"CBasePlayer::LeaveVehicle");
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");

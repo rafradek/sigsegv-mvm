@@ -10,7 +10,7 @@ CL2Cache::CL2Cache()  { assert(false); }
 CL2Cache::~CL2Cache() { assert(false); }
 
 
-static StaticFuncThunk<CRConClient&> ft_RCONClient("RCONClient");
+static StaticFuncThunk<CRConClient&> ft_RCONClient("[client] RCONClient");
 CRConClient& RCONClient() { return ft_RCONClient(); }
 
 

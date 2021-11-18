@@ -4,6 +4,7 @@
 
 #include "mem/patch.h"
 #include "mem/detour.h"
+#include "mem/virtual_hook.h"
 
 
 class IToggleable
@@ -103,8 +104,37 @@ private:
 	std::map<const char *, IDetour *> m_Detours;
 };
 
+class IHasVirtualHooks
+{
+public:
+	virtual ~IHasVirtualHooks() {}
+	
+	virtual const char *GetName() const = 0;
+	
+	bool LoadVirtualHooks();
+	void UnloadVirtualHooks();
+	
+	void AddVirtualHook(CVirtualHook *detour);
+	
+	bool ToggleAllVirtualHooks(bool enable);
+	bool EnableAllVirtualHooks()  { return this->ToggleAllVirtualHooks(true); }
+	bool DisableAllVirtualHooks() { return this->ToggleAllVirtualHooks(false); }
+	
+	size_t GetNumVirtualHooks() const                 { return this->m_Hooks.size(); }
+	std::map<const char *, CVirtualHook *>& VirtualHooks() { return this->m_Hooks; }
+	
+protected:
+	IHasVirtualHooks() {}
+	
+	virtual bool CanAddVirtualHooks() const = 0;
+	virtual bool CanToggleVirtualHooks() const = 0;
+	
+private:
+	std::map<const char *, CVirtualHook *> m_Hooks;
+};
 
-class IMod : public AutoList<IMod>, public IToggleable, public IHasPatches, public IHasDetours
+
+class IMod : public AutoList<IMod>, public IToggleable, public IHasPatches, public IHasDetours, public IHasVirtualHooks
 {
 public:
 	virtual ~IMod() {}
@@ -137,6 +167,9 @@ private:
 	
 	virtual bool CanAddDetours() const override    { return !this->m_bLoaded; }
 	virtual bool CanToggleDetours() const override { return !this->m_bFailed; }
+	
+	virtual bool CanAddVirtualHooks() const override    { return !this->m_bLoaded; }
+	virtual bool CanToggleVirtualHooks() const override { return !this->m_bFailed; }
 	
 	const char *m_pszName;
 	
@@ -225,6 +258,8 @@ protected:
 	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour)))
 #define MOD_ADD_DETOUR_STATIC_PRIORITY(detour, addr, priority) \
 	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour), IDetour::priority))
+#define MOD_ADD_VHOOK(detour, class_name, func_name) \
+	this->AddVirtualHook(new CVirtualHook(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
 
 
 #endif

@@ -22,7 +22,7 @@ MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimating::ft_GetNumBones         ("CBaseAnimating::GetNumBones");
 MemberFuncThunk<CBaseAnimating *, void>                            CBaseAnimating::ft_ResetSequenceInfo   ("CBaseAnimating::ResetSequenceInfo");
 MemberFuncThunk<CBaseAnimating *, void, int>                       CBaseAnimating::ft_ResetSequence       ("CBaseAnimating::ResetSequence");
-MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    CBaseAnimating::ft_GetModelPtr         ("CBaseAnimating::GetModelPtr");
+//MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    CBaseAnimating::ft_GetModelPtr         ("CBaseAnimating::GetModelPtr");
 MemberFuncThunk<CBaseAnimating *, int, CStudioHdr *, const char *> CBaseAnimating::ft_LookupPoseParameter ("CBaseAnimating::LookupPoseParameter");
 MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_GetPoseParameter_int("CBaseAnimating::GetPoseParameter [int]");
 MemberFuncThunk<CBaseAnimating *, float, const char *>             CBaseAnimating::ft_GetPoseParameter_str("CBaseAnimating::GetPoseParameter [str]");
@@ -45,7 +45,6 @@ MemberFuncThunk<CEconEntity *, void> CEconEntity::ft_DebugDescribe("CEconEntity:
 MemberVFuncThunk<CEconEntity *, CAttributeContainer *> CEconEntity::vt_GetAttributeContainer(TypeName<CEconEntity>(), "CEconEntity::GetAttributeContainer");
 MemberVFuncThunk<CEconEntity *, CAttributeManager *>   CEconEntity::vt_GetAttributeManager  (TypeName<CEconEntity>(), "CEconEntity::GetAttributeManager");
 MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   CEconEntity::vt_GiveTo               (TypeName<CEconEntity>(), "CEconEntity::GiveTo");
-
 
 CEconItemView *CEconEntity::GetItem()
 {
