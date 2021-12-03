@@ -58,6 +58,8 @@ public:
 	DECL_SENDPROP(int,   m_iViewModelIndex);
 	DECL_SENDPROP(int,   m_iWorldModelIndex);
 	DECL_DATAMAP(bool,   m_bReloadsSingly);
+	DECL_DATAMAP(bool,   m_bInReload);
+	
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatCharacter>, m_hOwner);
@@ -340,13 +342,7 @@ const char *WeaponIdToAlias(int weapon_id);
 float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon);
 
 inline CEconEntity *GetEconEntityAtLoadoutSlot(CTFPlayer *player, int slot) {
-	if (slot < 0)
-		return nullptr;
-	CEconEntity *item = player->Weapon_GetSlot(slot); 
-	if (item == nullptr)
-		return player->GetEquippedWearableForLoadoutSlot(slot);
-	else
-		return item;
+	return rtti_cast<CEconEntity *>(player->GetEntityForLoadoutSlot(slot));
 }
 
 const char *TranslateWeaponEntForClass_improved(const char *name, int classnum);

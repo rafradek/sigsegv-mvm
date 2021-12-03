@@ -31,7 +31,7 @@ namespace Mod::Bot::Kart_Locomotion
 	/* don't do dodge strafing */
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_Dodge, CTFBot *actor)
 	{
-		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING)) {
+		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING) || actor->m_hVehicle != nullptr) {
 			return;
 		}
 		
@@ -41,7 +41,7 @@ namespace Mod::Bot::Kart_Locomotion
 	/* don't strafe and jump around when stuck */
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMainAction_OnStuck, CTFBot *actor)
 	{
-		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING)) {
+		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING) || actor->m_hVehicle != nullptr) {
 			return EventDesiredResult<CTFBot>::Continue();
 		}
 		
@@ -82,6 +82,50 @@ namespace Mod::Bot::Kart_Locomotion
 			}/* else if (fwd < -0.50f) {
 				bot->PressBackwardButton();
 			}*/
+			
+			const float cos_3deg = std::cos(DEG2RAD(3.0f));
+			
+			if (fwd > 0.0f && fwd < cos_3deg) {
+				if (side > 0.0f) {
+					bot->PressRightButton();
+				} else {
+					bot->PressLeftButton();
+				}
+			} else if (fwd > -cos_3deg) {
+				if (side > 0.0f) {
+					bot->PressLeftButton();
+				} else {
+					bot->PressRightButton();
+				}
+			}
+
+		}
+
+		if (bot != nullptr && bot->m_hVehicle != nullptr ) {
+
+			bot->ReleaseForwardButton();
+			bot->ReleaseBackwardButton();
+			bot->ReleaseLeftButton();
+			bot->ReleaseRightButton();
+			
+			Vector dir = (dst - bot->GetAbsOrigin());
+			dir.z = 0.0f;
+			dir.NormalizeInPlace();
+			
+			Vector eye; bot->EyeVectors(&eye);
+			eye.z = 0.0f;
+			eye.NormalizeInPlace();
+			
+			Vector eye_90 = Vector(eye.y, -eye.x, 0.0f);
+			
+			float fwd  = dir.Dot(eye);
+			float side = dir.Dot(eye_90);
+			
+			if (fwd > 0.0f) {
+				bot->PressForwardButton();
+			} else {// if (fwd < -0.50f) {
+				bot->PressBackwardButton();
+			}
 			
 			const float cos_3deg = std::cos(DEG2RAD(3.0f));
 			

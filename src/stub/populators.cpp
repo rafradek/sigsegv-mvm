@@ -144,6 +144,7 @@ MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_AllocateBots   ("CPopulationManager::AllocateBots");
 MemberFuncThunk<CPopulationManager *, bool>              CPopulationManager::ft_IsInEndlessWaves("CPopulationManager::IsInEndlessWaves");
 MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
+MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>              CPopulationManager::ft_GetPlayerUpgradeHistory ("CPopulationManager::GetPlayerUpgradeHistory");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
 StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefaultPopulationFileShortNames("CPopulationManager::FindDefaultPopulationFileShortNames");

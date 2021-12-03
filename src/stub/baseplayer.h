@@ -77,6 +77,7 @@ public:
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
+	DECL_SENDPROP(int,   m_iHideHUD);
 	
 	inline void NetworkStateChanged()           { }
 	inline void NetworkStateChanged(void *pVar) { }
@@ -119,6 +120,7 @@ public:
 	
 	void EyeVectors(Vector *pForward, Vector *pRight = nullptr, Vector *pUp = nullptr) { return ft_EyeVectors    (this, pForward, pRight, pUp); }
 	bool GetSteamID(CSteamID *pID)                                                     { return ft_GetSteamID    (this, pID); }
+	CSteamID GetSteamID()                                                              { CSteamID id; this->GetSteamID(&id); return id; }
 	void SetPlayerName(const char *name)                                               {        ft_SetPlayerName (this, name); }
 	CBaseViewModel *GetViewModel(int viewmodelindex = 0, bool bObserverOK = true)      { return ft_GetViewModel  (this, viewmodelindex, bObserverOK); }
 	void DisableButtons(int nButtons)                                                  {        ft_DisableButtons(this, nButtons); }

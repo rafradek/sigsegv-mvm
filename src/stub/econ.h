@@ -195,8 +195,12 @@ public:
 	void RemoveAttributeByIndex(int index)                             {        ft_RemoveAttributeByIndex(this, index); }
 	void DestroyAllAttributes()                                        {        ft_DestroyAllAttributes  (this); }
 	void SetRuntimeAttributeValue(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeValue  (this, pAttrDef, value); }
+	void NotifyManagerOfAttributeValueChanges()                        {        ft_NotifyManagerOfAttributeValueChanges  (this); }
+
 	CUtlVector<CEconItemAttribute>& Attributes() { return this->m_Attributes; }
 	void AddStringAttribute(CEconItemAttributeDefinition *pAttrDef, std::string value);
+	void SetRuntimeAttributeValueByDefID(int def_idx, float value);
+	void RemoveAttributeByDefID(int def_idx);
 	
 private:
 	int vtable;
@@ -211,6 +215,7 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void, int>                                  ft_RemoveAttributeByIndex{ "CAttributeList::RemoveAttributeByIndex" };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_DestroyAllAttributes  { "CAttributeList::DestroyAllAttributes"   };
 	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeValue  { "CAttributeList::SetRuntimeAttributeValue"   };
+	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_NotifyManagerOfAttributeValueChanges  { "CAttributeList::NotifyManagerOfAttributeValueChanges"   };
 
 };
 static_assert(sizeof(CAttributeList) == 0x1c);
@@ -410,11 +415,16 @@ public:
 		if (ptr == nullptr) return;
 		::operator delete(reinterpret_cast<void *>(ptr));
 	}
+	CEconItemAttribute() {}
+
+	CEconItemAttribute( const attrib_definition_index_t iAttributeIndex, float flValue ) : m_iAttributeDefinitionIndex(iAttributeIndex) {m_iRawValue32.m_Float = flValue;}
 	
 	attribute_data_union_t *GetValuePtr() { return &this->m_iRawValue32; }
 	
 	CEconItemAttributeDefinition *GetStaticData() const { return ft_GetStaticData(this); }
-	
+
+	int GetAttributeDefinitionIndex() const { return m_iAttributeDefinitionIndex; }
+	friend class CAttributeList;
 private:
 	static MemberFuncThunk<      CEconItemAttribute *, void>                           ft_ctor;
 	static MemberFuncThunk<const CEconItemAttribute *, CEconItemAttributeDefinition *> ft_GetStaticData;

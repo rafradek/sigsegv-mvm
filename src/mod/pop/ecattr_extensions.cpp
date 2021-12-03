@@ -12,6 +12,7 @@
 #include "util/clientmsg.h"
 #include "mod/pop/pointtemplate.h"
 #include "mod/pop/common.h"
+#include "mod/pop/popmgr_extensions.h"
 
 
 // update data with every call to:
@@ -30,13 +31,6 @@
 
 #define PLAYER_ANIM_WEARABLE_ITEM_ID 12138
 
-namespace Mod::Pop::PopMgr_Extensions
-{
-	CTFItemDefinition *GetCustomWeaponItemDef(std::string name);
-	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
-	const char *GetCustomWeaponNameOverride(const char *name);
-	int GetEventPopfile();
-}
 
 class PlayerBody : public IBody {
 	public:
@@ -1614,7 +1608,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			return data->head_rotate_speed;
 		}
 
-		if (data != nullptr && data->tracking_interval >= 0.f && data->tracking_interval < 0.5f)
+		if (data != nullptr && data->tracking_interval >= 0.f && data->tracking_interval < 0.05f)
 			return 10000.0f;
 		else
 			return DETOUR_MEMBER_CALL(PlayerBody_GetMaxHeadAngularVelocity)();

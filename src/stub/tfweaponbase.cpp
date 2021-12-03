@@ -49,6 +49,8 @@ IMPL_SENDPROP(CHandle<CBaseCombatCharacter>, CBaseCombatWeapon, m_hOwner,       
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iViewModelIndex,       CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iWorldModelIndex,      CBaseCombatWeapon);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bReloadsSingly);
+IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
+
 
 MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWeapon("CBaseCombatWeapon::IsMeleeWeapon");
 

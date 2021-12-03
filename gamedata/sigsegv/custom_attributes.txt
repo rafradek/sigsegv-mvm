@@ -2063,4 +2063,76 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4521"
+    {
+        "name"	"burst fire count"
+        "attribute_class"	"burst_fire_count"
+        "description_string"	"Fires %d rounds in burst"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4522"
+    {
+        "name"	"burst fire rate mult"
+        "attribute_class"	"burst_fire_rate_mult"
+        "description_string"	"(+-)%p% fire rate in burst"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4523"
+    {
+        "name"	"continous accuracy mult"
+        "attribute_class"	"continous_accuracy_mult"
+        "description_string"	"(+-)%p% accurate over time"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4524"
+    {
+        "name"	"continous accuracy time"
+        "attribute_class"	"continous_accuracy_time"
+        "description_string"	"Up to (+-)%p% accurate over time"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4525"
+    {
+        "name"	"continous accuracy time recovery"
+        "attribute_class"	"continous_accuracy_time_recovery"
+        "description_string"	"Up to (+-)%p% accurate over time"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4526"
+    {
+        "name"	"duck accuracy mult"
+        "attribute_class"	"duck_accuracy_mult"
+        "description_string"	"(+-)%p% accurate when crouching"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4527"
+    {
+        "name"	"move accuracy mult"
+        "attribute_class"	"move_accuracy_mult"
+        "description_string"	"(+-)%p% accurate when moving"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4528"
+    {
+        "name"	"force fire full clip"
+        "attribute_class"	"force_fire_full_clip"
+        "description_string"	"Fires full clip automatically"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

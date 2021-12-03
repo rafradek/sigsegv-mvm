@@ -92,6 +92,9 @@
 				"g_pMonsterResource" "g_pMonsterResource"
 				
 				"CBaseEntity::m_nPredictionRandomSeed" "_ZN11CBaseEntity23m_nPredictionRandomSeedE"
+				"g_RecipientFilterPredictionSystem" "_ZL33g_RecipientFilterPredictionSystem"
+				
+				"g_pPlayerResource" "g_pPlayerResource"
 				
 			}
 			

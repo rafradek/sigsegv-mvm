@@ -538,18 +538,26 @@ public:
 	void SetupMove(CBasePlayer *player, CUserCmd *ucmd, void *pHelper, void *move) { return vt_SetupMove(this, player, ucmd, pHelper, move); }
 	bool HandlePassengerExit(CBaseCombatCharacter *pPassenger)  { return vt_HandlePassengerExit(this, pPassenger); }
 	void HandlePassengerEntry(CBaseCombatCharacter *pPassenger, bool allowAnyPosition)  { vt_HandlePassengerEntry(this, pPassenger, allowAnyPosition); }
+	CBaseEntity *GetDriver()  { return vt_GetDriver(this); }
+	CBaseEntity *GetVehicleEnt()  { return vt_GetVehicleEnt(this); }
 
 private:
 	static MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> vt_HandleEntryExitFinish;
 	static MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> vt_SetupMove;
 	static MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> vt_HandlePassengerExit;
 	static MemberVFuncThunk<CBaseServerVehicle *, void, CBaseCombatCharacter *, bool> vt_HandlePassengerEntry;
+	static MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> vt_GetDriver;
+	static MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> vt_GetVehicleEnt;
 };
 
 class CPropVehicle : public CBaseAnimating
 {
 public:
 	DECL_DATAMAP (unsigned int, m_nVehicleType);
+	DECL_DATAMAP (string_t, m_vehicleScript);
+	DECL_DATAMAP (CHandle<CBasePlayer>, m_hPhysicsAttacker);
+	DECL_DATAMAP (float, m_flLastPhysicsInfluenceTime);
+	
 };
 
 class CPropVehicleDriveable : public CPropVehicle

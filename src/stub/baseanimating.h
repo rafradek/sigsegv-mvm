@@ -119,4 +119,16 @@ inline void UTIL_SetSize( CBaseEntity * entity, const Vector * min, const Vector
 	ft_UTIL_SetSize(entity, min, max);
 }
 
+extern StaticFuncThunk<float, CBaseFlex *, const char *, EHANDLE *, float, bool, void *, bool, IRecipientFilter *> ft_InstancedScriptedScene;
+inline float InstancedScriptedScene(CBaseFlex *pActor, const char *pszScene,  EHANDLE *phSceneEnt = NULL, float flPostDelay = 0.0f, bool bIsBackground = false, void *response = NULL, bool bMultiplayer = false, IRecipientFilter *filter = NULL)
+{
+	return ft_InstancedScriptedScene(pActor, pszScene, phSceneEnt, flPostDelay, bIsBackground, response, bMultiplayer, filter);
+}
+
+extern StaticFuncThunk<void, CBaseFlex *, EHANDLE> ft_StopScriptedScene;
+inline void StopScriptedScene(CBaseFlex *pActor, EHANDLE hSceneEnt)
+{
+	ft_StopScriptedScene(pActor, hSceneEnt);
+}
+
 #endif

@@ -575,11 +575,16 @@ namespace Mod::Util::Client_Cmds
 	
 	void CC_Animation(CTFPlayer *player, const CCommand& args)
 	{
-		if (args.ArgC() != 3) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
-				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
-			return;
+		if (args.ArgC() == 3) {
+
+			int type = atoi(args[2]);
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				playerl->DoAnimationEvent( (PlayerAnimEvent_t) type /*17 PLAYERANIMEVENT_SPAWN*/, playerl->LookupSequence(args[1]) );
+				
+			});
 		}
+		
+		if (args.ArgC() == 2) {
 			//int sequence = playerl->LookupSequence(args[1]);
 			
 			//int arg1;
@@ -590,7 +595,10 @@ namespace Mod::Util::Client_Cmds
 			//playerl->ResetSequence(sequence);
 			//playerl->GetPlayerClass() // //playerl->PlaySpecificSequence(args[1]);
 			//TE_PlayerAnimEvent( playerl, 21 /*PLAYERANIMEVENT_SPAWN*/, sequence );
-			player->PlaySpecificSequence(args[1]);
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+			playerl->PlaySpecificSequence(args[1]);
+			});
+		}
 		
 	}
 
@@ -601,8 +609,10 @@ namespace Mod::Util::Client_Cmds
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
+		int seq = atoi(args[1]);
+		int type = atoi(args[2]);
 		ForEachTFPlayer([&](CTFPlayer *playerl){
-			playerl->DoAnimationEvent( (PlayerAnimEvent_t) 17 /*PLAYERANIMEVENT_SPAWN*/, 0 );
+			playerl->DoAnimationEvent( (PlayerAnimEvent_t) type /*17 PLAYERANIMEVENT_SPAWN*/, seq );
 			
 		});
 		
@@ -1453,7 +1463,17 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 	
-	
+	void CC_PlayScene(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() == 2) {
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				InstancedScriptedScene(playerl, args[1], nullptr, 0, false, nullptr, true, nullptr );
+				//playerl->PlayScene(args[1]);
+			});
+		}
+		
+	}
+
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
 	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
@@ -1480,6 +1500,7 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_listitemattr",     CC_DumpItems        },
 		{ "sig_sprays",           CC_Sprays           },
 		{ "sig_vehicle",          CC_Vehicle          },
+		{ "sig_playscene",        CC_PlayScene        },
 	};
 
 	

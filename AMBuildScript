@@ -164,6 +164,7 @@ class ExtensionConfig(object):
     cxx.defines += ['HAVE_STRING_H']
     cxx.defines += ['GNUC']
     cxx.defines += ['PLATFORM_X86']
+    cxx.defines += ['FMT_HEADER_ONLY']
     
     ############################################################################
     # C & C++ COMPILER #########################################################

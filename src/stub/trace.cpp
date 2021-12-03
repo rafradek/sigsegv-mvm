@@ -192,3 +192,17 @@ bool CTraceFilterSimple::ShouldHitEntity( IHandleEntity *pHandleEntity, int cont
 
 	return true;
 }
+
+CTraceFilterSkipTwoEntities::CTraceFilterSkipTwoEntities( const IHandleEntity *passentity, const IHandleEntity *passentity2, int collisionGroup ) :
+	CTraceFilterSimple( passentity, collisionGroup ), m_pPassEnt2(passentity2)
+{
+}
+
+bool CTraceFilterSkipTwoEntities::ShouldHitEntity( IHandleEntity *pHandleEntity, int contentsMask )
+{
+	Assert( pHandleEntity );
+	if ( !PassServerEntityFilter( pHandleEntity, m_pPassEnt2 ) )
+		return false;
+
+	return CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask );
+}

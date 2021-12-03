@@ -10,7 +10,7 @@ class CVirtualHook
 {
 public:
 	/* by addr name */
-	CVirtualHook(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : m_pszVTableName(class_name), m_pszFuncName(func_name), m_pCallback(callback), m_pInner(inner_ptr) {};
+	CVirtualHook(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : m_pszVTableName(class_name), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_pInner(inner_ptr) {};
 	
 	virtual bool DoLoad();
 	virtual void DoUnload();
@@ -18,7 +18,7 @@ public:
 	virtual void DoEnable();
 	virtual void DoDisable();
     
-    virtual const char *GetName() { return m_pszFuncName; };
+    virtual const char *GetName() { return m_szName.c_str(); };
 
     bool IsLoaded() const { return this->m_bLoaded; }
 	bool IsActive() const { return this->m_bEnabled; }
@@ -28,6 +28,7 @@ public:
 private:
 	const char *m_pszVTableName;
 	const char *m_pszFuncName;
+	std::string m_szName;
 	
     bool m_bEnabled = false;
     bool m_bLoaded = false;

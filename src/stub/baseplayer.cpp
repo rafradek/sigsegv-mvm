@@ -61,15 +61,16 @@ MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   C
 MemberVFuncThunk<      CBaseCombatCharacter *, int>                            CBaseCombatCharacter::vt_GetBossType        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetBossType");
 
 
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucked,        CBasePlayer);
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucking,       CBasePlayer);
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
-//IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucked,        CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucking,       CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
+IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
 //IMPL_SENDPROP(float, CPlayerLocalData, m_flDuckJumpTime, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngle, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
 IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
+IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);

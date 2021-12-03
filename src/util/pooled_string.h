@@ -32,4 +32,11 @@ inline const char *PStr()
     static PooledString pooled(lit);
     return pooled.Get();
 }
+
+inline const char *operator"" _PStr(const char *str)
+{
+    static PooledString pooled(str);
+    return pooled.Get();
+}
+
 #endif

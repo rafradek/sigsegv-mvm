@@ -351,26 +351,66 @@ void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, 
 		value = attribute_string_values[value_str];
 	}
 
-	this->RemoveAttribute(attr_def);
-
-	CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
-	*attr->GetValuePtr() = value;
-	this->AddAttribute(attr);
-	CEconItemAttribute::Destroy(attr);
+	//this->RemoveAttribute(attr_def);
+	this->SetRuntimeAttributeValue(attr_def, value.m_Float);
+	//CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
+	//*attr->GetValuePtr() = value;
+	//this->AddAttribute(attr);
+	//CEconItemAttribute::Destroy(attr);
 }
 float _CallAttribHookRef_Optimize(float value, string_t pszClass, const CBaseEntity *pEntity)
 { 
 	if (pEntity != nullptr) {
+		CBaseEntity *entity_cast = const_cast<CBaseEntity *>(pEntity);
 		CAttributeManager *mgr = nullptr;
 		if (pEntity->IsPlayer()) {
-			mgr = reinterpret_cast<const CTFPlayer *>(pEntity)->GetAttributeManager();
+			mgr = reinterpret_cast<CTFPlayer *>(entity_cast)->GetAttributeManager();
 		}
 		else if (pEntity->IsBaseCombatWeapon() || pEntity->IsWearable()) {
-			mgr = reinterpret_cast<const CEconEntity *>(pEntity)->GetAttributeManager();
+			mgr = reinterpret_cast<CEconEntity *>(entity_cast)->GetAttributeManager();
 		}
 		if (mgr != nullptr) {
-			return mgr->ApplyAttributeFloatWrapperFunc(value, pEntity, pszClass);
+			return mgr->ApplyAttributeFloatWrapperFunc(value, entity_cast, pszClass);
 		}
 	}
 	return value;
+}
+
+void CAttributeList::SetRuntimeAttributeValueByDefID(int def_idx, float value)
+{
+	this->SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinition(def_idx), value);
+	/*const int iAttributes = this->Attributes().Count();
+	for ( int i = 0; i < iAttributes; i++ )
+	{
+		CEconItemAttribute &pAttribute = this->Attributes()[i];
+
+		if ( pAttribute.m_iAttributeDefinitionIndex == def_idx)
+		{
+			if (pAttribute.m_iRawValue32.m_Float != value) {
+				pAttribute.m_iRawValue32.m_Float = value;
+				this->NotifyManagerOfAttributeValueChanges();
+			}
+			return;
+		}
+	}
+	CEconItemAttribute attribute(def_idx, value);
+
+	this->Attributes().AddToTail( attribute );
+	this->NotifyManagerOfAttributeValueChanges();*/
+}
+
+void CAttributeList::RemoveAttributeByDefID(int def_idx)
+{
+	this->RemoveAttribute(GetItemSchema()->GetAttributeDefinition(def_idx));
+	/*const int iAttributes = this->Attributes().Count();
+	for ( int i = 0; i < iAttributes; i++ )
+	{
+		CEconItemAttribute &pAttribute = this->Attributes()[i];
+
+		if ( pAttribute.m_iAttributeDefinitionIndex == def_idx )
+		{
+			this->RemoveAttributeByIndex(i);
+			return;
+		}
+	}*/
 }

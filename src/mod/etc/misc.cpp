@@ -195,6 +195,14 @@ namespace Mod::Etc::Misc
 		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
 	}
 
+	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
+	{
+		if (strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
+			name = "hightower_explosion";
+		}
+		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -222,6 +230,9 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_OnTakeDamage_Alive, "CHeadlessHatman::OnTakeDamage_Alive");
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_Spawn,           "CHeadlessHatman::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
+			
+			// Replace buster smoke with something else
+			//MOD_ADD_DETOUR_STATIC(DispatchParticleEffect, "DispatchParticleEffect [overload 3]");
 		}
 	};
 	CMod s_Mod;

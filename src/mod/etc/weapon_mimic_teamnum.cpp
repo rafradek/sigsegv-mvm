@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/baseentity.h"
+#include "stub/extraentitydata.h"
 #include "stub/projectiles.h"
 #include "stub/entities.h"
 #include "stub/misc.h"
@@ -13,10 +14,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	CBaseEntity *scorer = nullptr;
 	bool grenade = false;
 	bool do_crits = false;
+	CBaseEntity *mimicFire = nullptr;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
 		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		mimicFire = mimic;
         projectile = nullptr;
 		grenade = false;
 		
@@ -52,6 +55,21 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			info.m_iAmmoType = 1;//m_iAmmoType;
 			info.m_flDamage = mimic->m_flDamage;
 			info.m_flDamageForceScale = mimic->m_flSplashRadius;
+
+			// Prevent the mimic from shooting the root parent
+			if (mimic->GetCustomVariableFloat<"preventshootparent">(1.0f)) {
+				CBaseEntity *rootEntity = mimic;
+				while (rootEntity) {
+					CBaseEntity *parent = rootEntity->GetMoveParent();
+					if (parent == nullptr) {
+						break;
+					}
+					else {
+						rootEntity = parent;
+					}
+				}
+				info.m_pAdditionalIgnoreEnt = rootEntity;
+			}
 
 			do_crits = mimic->m_bCrits;
 			mimic->FireBullets(info);
@@ -96,6 +114,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			}
         }
 		scorer = nullptr;
+		mimicFire = nullptr;
 	}
 
 
@@ -103,6 +122,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	{
 		if (do_crits) {
 			dmgInfo->SetDamageType(dmgInfo->GetDamageType() | DMG_CRITICAL);
+		}
+		if (mimicFire != nullptr) {
+			int dmgtype = atoi(mimicFire->GetCustomVariable<"dmgtype">("-1"));
+			if (dmgtype != -1) {
+				dmgInfo->SetDamageType(dmgtype);
+			}
 		}
         DETOUR_MEMBER_CALL(CBaseEntity_ModifyFireBulletsDamage)(dmgInfo);
 	}
@@ -182,6 +207,32 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		}
 	}
 
+	DETOUR_DECL_MEMBER(const char *, CTFGameRules_GetKillingWeaponName, const CTakeDamageInfo &info, CTFPlayer *pVictim, int *iWeaponID)
+	{
+		if (mimicFire != nullptr) {
+			auto killIcon = mimicFire->GetCustomVariable<"killicon">();
+			if (killIcon != nullptr) {
+				return killIcon;
+			}
+		}
+		if (info.GetInflictor() != nullptr) {
+			auto killIcon = info.GetInflictor()->GetCustomVariable<"killicon">();
+			if (killIcon != nullptr) {
+				return killIcon;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFBaseProjectile_GetDamageType)
+	{
+		int dmgtype = atoi(reinterpret_cast<CTFBaseProjectile *>(this)->GetCustomVariable<"dmgtype">("-1"));
+		if (dmgtype != -1) {
+			return dmgtype;
+		}
+		return DETOUR_MEMBER_CALL(CTFBaseProjectile_GetDamageType)();
+	}
+	
     class CMod : public IMod
 	{
 	public:
@@ -195,6 +246,8 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_dtor0,  "CTFPointWeaponMimic::~CTFPointWeaponMimic [D0]");
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_dtor2,  "CTFPointWeaponMimic::~CTFPointWeaponMimic [D2]");
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Spawn,  "CTFPointWeaponMimic::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetKillingWeaponName,  "CTFGameRules::GetKillingWeaponName");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseProjectile_GetDamageType,  "CTFBaseProjectile::GetDamageType");
 		}
 	};
 	CMod s_Mod;

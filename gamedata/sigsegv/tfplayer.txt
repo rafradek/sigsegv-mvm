@@ -879,6 +879,11 @@
 					type "sym"
 					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
 				}
+				"CTFPlayer::PlayScene"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer9PlaySceneEPKcfP11AI_ResponseP16IRecipientFilter"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

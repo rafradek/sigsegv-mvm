@@ -18,11 +18,7 @@
 #include <regex>
 #include <string_view>
 #include "stub/sendprop.h"
-
-namespace Mod::Pop::PopMgr_Extensions
-{
-	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
-}
+#include "mod/pop/popmgr_extensions.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -209,6 +205,13 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }
     }
+    
+    void ClearCustomOutputs(CBaseEntity *entity) {
+        if (custom_output.empty())
+            return;
+        
+        custom_output.erase(entity);
+    }
 
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
     {
@@ -337,9 +340,7 @@ namespace Mod::Etc::Mapentity_Additions
             targetVec = data->m_hRotateTarget->GetAbsOrigin();
         } 
         else if (FStrEq(lookat, PStr<"center">())) {
-            Vector offset = data->m_hRotateTarget->WorldSpaceCenter() - data->m_hRotateTarget->GetLocalOrigin();
-
-            data->m_hRotateTarget->EntityToWorldSpace(offset, &targetVec);
+            targetVec = data->m_hRotateTarget->WorldSpaceCenter();
         } 
         else {
             targetVec = data->m_hRotateTarget->EyePosition();
@@ -416,20 +417,32 @@ namespace Mod::Etc::Mapentity_Additions
 
         auto lookat = this->GetCustomVariable<"lookat">("eyes");
         Vector targetVec;
+        auto aimEntity = data->m_hRotateTarget;
         if (FStrEq(lookat, PStr<"origin">())) {
             targetVec = data->m_hRotateTarget->GetAbsOrigin();
         } 
         else if (FStrEq(lookat, PStr<"center">())) {
-            Vector offset = data->m_hRotateTarget->WorldSpaceCenter() - data->m_hRotateTarget->GetLocalOrigin();
+            targetVec = data->m_hRotateTarget->WorldSpaceCenter();
+        } 
+        else if (FStrEq(lookat, PStr<"aim">())) {
+            Vector fwd;
+            Vector dest;
+            AngleVectors(data->m_hRotateTarget->EyeAngles(), &fwd);
+            VectorMA(data->m_hRotateTarget->EyePosition(), 8192.0f, fwd, dest);
+            trace_t tr;
+            UTIL_TraceLine(data->m_hRotateTarget->EyePosition(), dest, MASK_SHOT, data->m_hRotateTarget, COLLISION_GROUP_NONE, &tr);
 
-            data->m_hRotateTarget->EntityToWorldSpace(offset, &targetVec);
+            targetVec = tr.endpos;
+            aimEntity = tr.m_pEnt;
         } 
         else {
             targetVec = data->m_hRotateTarget->EyePosition();
         }
 
         targetVec -= this->GetAbsOrigin();
-        targetVec += data->m_hRotateTarget->GetAbsVelocity() * gpGlobals->frametime;
+        if (aimEntity != nullptr) {
+            targetVec += aimEntity->GetAbsVelocity() * gpGlobals->frametime;
+        }
         float projectileSpeed = this->GetCustomVariableFloat<"projectilespeed">();
         if (projectileSpeed != 0) {
             targetVec += (targetVec.Length() / projectileSpeed) * data->m_hRotateTarget->GetAbsVelocity();
@@ -593,6 +606,37 @@ namespace Mod::Etc::Mapentity_Additions
         this->SetNextThink(gpGlobals->curtime + 0.01f, "FakeParentModuleTick");
     }
 
+    class AimFollowModule : public EntityModule
+    {
+    public:
+        AimFollowModule(CBaseEntity *entity) : EntityModule(entity) {}
+        CHandle<CBaseEntity> m_hParent;
+    };
+
+    THINK_FUNC_DECL(AimFollowModuleTick)
+    {
+        auto data = this->GetEntityModule<AimFollowModule>("aimfollow");
+        if (data == nullptr || data->m_hParent == nullptr) return;
+
+        
+        Vector fwd;
+        Vector dest;
+        AngleVectors(data->m_hParent->EyeAngles(), &fwd);
+        VectorMA(data->m_hParent->EyePosition(), 8192.0f, fwd, dest);
+        trace_t tr;
+        CTraceFilterSkipTwoEntities filter(data->m_hParent, this, COLLISION_GROUP_NONE);
+        UTIL_TraceLine(data->m_hParent->EyePosition(), dest, MASK_SHOT, &filter, &tr);
+
+        Vector targetVec = tr.endpos;
+        
+        this->SetAbsOrigin(targetVec);
+        bool rotationfollow = this->GetCustomVariableFloat<"rotationfollow">();
+        if (rotationfollow) {
+            this->SetAbsAngles(data->m_hParent->EyeAngles());
+        }
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "AimFollowModuleTick");
+    }
+
     void AddModuleByName(CBaseEntity *entity, const char *name)
     {
         if (FStrEq(name, "rotator")) {
@@ -603,6 +647,9 @@ namespace Mod::Etc::Mapentity_Additions
         }
         else if (FStrEq(name, "fakeparent")) {
             entity->AddEntityModule("fakeparent", new FakeParentModule(entity));
+        }
+        else if (FStrEq(name, "aimfollow")) {
+            entity->AddEntityModule("aimfollow", new AimFollowModule(entity));
         }
     }
 
@@ -1259,6 +1306,12 @@ namespace Mod::Etc::Mapentity_Additions
                         bot->MyNextBotPointer()->OnCommandString(Value.String());
                     return true;
                 }
+                else if(stricmp(szInputName, "$ResetInventory") == 0){
+                    CTFPlayer* player = ToTFPlayer(ent);
+                    
+                    player->GiveDefaultItemsNoAmmo();
+
+                }
             }
             else if (ent->GetClassname() == point_viewcontrol_classname) {
                 auto camera = static_cast<CTriggerCamera *>(ent);
@@ -1355,6 +1408,30 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                     data->m_SpawnedWeapons.clear();
                     return true;
+                }
+            }
+            else if (ent->GetClassname() == PStr<"prop_vehicle_driveable">()) {
+                if (stricmp(szInputName, "$EnterVehicle") == 0) {
+                    auto target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                    auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
+                    if (ToTFPlayer(target) != nullptr && vehicle != nullptr) {
+                        
+                        Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
+                        
+                        QAngle angToTarget;
+                        VectorAngles(delta, angToTarget);
+                        ToTFPlayer(target)->SnapEyeAngles(angToTarget);
+                        
+                        CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
+                        serverVehicle->HandlePassengerEntry(ToTFPlayer(target), true);
+                    }
+                }
+                if (stricmp(szInputName, "$ExitVehicle") == 0) {
+                    auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
+                    if (vehicle != nullptr && vehicle->m_hPlayer != nullptr) {
+                        CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
+                        serverVehicle->HandlePassengerExit(vehicle->m_hPlayer);
+                    }
                 }
             }
             if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
@@ -1604,6 +1681,9 @@ namespace Mod::Etc::Mapentity_Additions
                     QAngle angToTarget;
                     VectorAngles(delta, angToTarget);
                     ent->SetAbsAngles(angToTarget);
+                    if (ToTFPlayer(ent) != nullptr) {
+                        ToTFPlayer(ent)->SnapEyeAngles(angToTarget);
+                    }
                 }
                 
                 return true;
@@ -1617,6 +1697,20 @@ namespace Mod::Etc::Mapentity_Additions
                         data->m_bParentSet = true;
                         if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
                             THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
+                        }
+                    }
+                }
+                
+                return true;
+            }
+            else if (stricmp(szInputName, "$SetAimFollow") == 0) {
+                auto data = ent->GetEntityModule<AimFollowModule>("aimfollow");
+                if (data != nullptr) {
+                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                    if (target != nullptr) {
+                        data->m_hParent = target;
+                        if (ent->GetNextThink("AimFollowModuleTick") < gpGlobals->curtime) {
+                            THINK_FUNC_SET(ent, AimFollowModuleTick, gpGlobals->curtime + 0.01);
                         }
                     }
                 }
@@ -2118,14 +2212,12 @@ namespace Mod::Etc::Mapentity_Additions
             }
             else if(classname == filter_bbox_class) {
                 const char *target = filter->GetCustomVariable<"target">();
-                float range = filter->GetCustomVariableFloat<"range">();
 
                 Vector min;
                 Vector max;
                 sscanf(filter->GetCustomVariable<"min">(), "%f %f %f", &min.x, &min.y, &min.z);
                 sscanf(filter->GetCustomVariable<"max">(), "%f %f %f", &max.x, &max.y, &max.z);
 
-                range *= range;
                 Vector center;
                 if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
                     CBaseEntity *ent = servertools->FindEntityByName(nullptr, target);

@@ -1929,7 +1929,7 @@
 				"CTeamplayRoundBasedRules::BroadcastSound"
 				{
 					type "sym"
-					sym  "_ZN24CTeamplayRoundBasedRules14BroadcastSoundEiPKci"
+					sym  "_ZN24CTeamplayRoundBasedRules14BroadcastSoundEiPKciP11CBasePlayer"
 				}
 				
 				"tf_mvm_popfile"
@@ -4987,6 +4987,121 @@
 				{
 					type "sym"
 					sym  "_ZN21CPropVehicleDriveable5SpawnEv"
+				}
+				"CBaseServerVehicle::IsPassengerVisible"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle18IsPassengerVisibleEi"
+				}
+				"CBaseServerVehicle::GetDriver"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle9GetDriverEv"
+				}
+				"CBaseServerVehicle::IsPassengerUsingStandardWeapons"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle31IsPassengerUsingStandardWeaponsEi"
+				}
+				"CBaseServerVehicle::GetVehicleEnt"
+				{
+					type "sym"
+					sym  "_ZN18CBaseServerVehicle13GetVehicleEntEv"
+				}
+				"CTFBaseProjectile::PhysicsSolidMaskForEntity"
+				{
+					type "sym"
+					sym  "_ZNK17CTFBaseProjectile25PhysicsSolidMaskForEntityEv"
+				}
+				"CTFProjectile_Arrow::Spawn"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow5SpawnEv"
+				}
+				"CBasePlayer::EyeAngles"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer9EyeAnglesEv"
+				}
+				"CTFWeaponBaseGun::PrimaryAttack"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun13PrimaryAttackEv"
+				}
+				"CTFBaseProjectile::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZN17CTFBaseProjectile13GetDamageTypeEv"
+				}
+				"GetPlayerClassData"
+				{
+					type "sym"
+					sym  "_Z18GetPlayerClassDataj"
+				}
+				"CPropVehicleDriveable::TraceAttack"
+				{
+					type "sym"
+					sym  "_ZN21CPropVehicleDriveable11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+				}
+				"CPropVehicleDriveable::DriveVehicle"
+				{
+					type "sym"
+					sym  "_ZN21CPropVehicleDriveable12DriveVehicleEfP8CUserCmdii"
+				}
+				"CPropVehicleDriveable::PassengerShouldReceiveDamage"
+				{
+					type "sym"
+					sym  "_ZN21CPropVehicleDriveable28PassengerShouldReceiveDamageER15CTakeDamageInfo"
+				}
+				"CalculatePhysicsImpactDamage"
+				{
+					type "sym"
+					sym  "_Z28CalculatePhysicsImpactDamageiP21gamevcollisionevent_tRK19impactdamagetable_tfbRib"
+				}
+				"CBaseEntityOutput::DeleteAllElements"
+				{
+					type "sym"
+					sym  "_ZN17CBaseEntityOutput17DeleteAllElementsEv"
+				}
+				"InstancedScriptedScene"
+				{
+					type "sym"
+					sym  "_Z22InstancedScriptedSceneP9CBaseFlexPKcP7CHandleI11CBaseEntityEfbP11AI_ResponsebP16IRecipientFilter"
+				}
+				"StopScriptedScene"
+				{
+					type "sym"
+					sym  "_Z17StopScriptedSceneP9CBaseFlex7CHandleI11CBaseEntityE"
+				}
+				"CBaseCombatCharacter::CalculatePhysicsStressDamage"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter28CalculatePhysicsStressDamageEP23vphysics_objectstress_tP14IPhysicsObject"
+				}
+				"CTFBaseProjectile::Spawn"
+				{
+					type "sym"
+					sym  "_ZN17CTFBaseProjectile5SpawnEv"
+				}
+				"CPhysicsHook::FindOrAddVehicleScript"
+				{
+					type "sym"
+					sym  "_ZN12CPhysicsHook22FindOrAddVehicleScriptEPKcP15vehicleparams_tP15vehiclesounds_t"
+				}
+				"CBaseProjectile::~CBaseProjectile [D2]"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectileD2Ev"
+				}
+				"CAttributeList::NotifyManagerOfAttributeValueChanges"
+				{
+					type "sym"
+					sym  "_ZN14CAttributeList36NotifyManagerOfAttributeValueChangesEv"
+				}
+				"CTFWeaponBase::GetSpreadAngles"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase15GetSpreadAnglesEv"
 				}
 			}
 			"addrs_group"

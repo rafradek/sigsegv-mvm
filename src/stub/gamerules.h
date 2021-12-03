@@ -139,7 +139,7 @@ public:
 	bool InSetup()                     { NULL_RET(false        ); return this->m_bInSetup; }
 	void SetInSetup(bool setup)        { NULL_RET( );             m_bInSetup = setup; }
 	
-	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
+	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0, CBasePlayer *player = nullptr) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags, player); }
 	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
 	void State_Transition(gamerules_roundstate_t newState)                           { NULL_RET(    );        ft_State_Transition            (this, newState); }
 	void SetForceMapReset(bool reset)                                                { NULL_RET(    );        ft_SetForceMapReset            (this, reset); }
@@ -155,7 +155,7 @@ private:
 	DECL_SENDPROP_RW(bool[33],            m_bTeamReady);
 	DECL_SENDPROP(bool,                   m_bInSetup);
 	
-	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
+	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> ft_BroadcastSound;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         ft_GetMinTimeWhenPlayerMaySpawn;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> ft_State_Transition;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   ft_SetForceMapReset;

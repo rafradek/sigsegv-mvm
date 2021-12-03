@@ -304,6 +304,10 @@ IMPL_DATAMAP (float, CFuncRotating, m_flTargetSpeed);
 MemberFuncThunk<CFuncRotating *, void, float> CFuncRotating::ft_SetTargetSpeed("CFuncRotating::SetTargetSpeed");
 
 IMPL_DATAMAP (unsigned int, CPropVehicle, m_nVehicleType);
+IMPL_DATAMAP (string_t, CPropVehicle, m_vehicleScript);
+IMPL_DATAMAP (CHandle<CBasePlayer>, CPropVehicle, m_hPhysicsAttacker);
+IMPL_DATAMAP (float, CPropVehicle, m_flLastPhysicsInfluenceTime);
+
 IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bEnterAnimOn);
 IMPL_DATAMAP (bool, CPropVehicleDriveable, m_bExitAnimOn);
 IMPL_DATAMAP (bool, CPropVehicleDriveable, m_flMinimumSpeedToEnterExit);
@@ -316,3 +320,5 @@ MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_
 MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");
 MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> CBaseServerVehicle::vt_HandlePassengerExit(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerExit");
 MemberVFuncThunk<CBaseServerVehicle *, void, CBaseCombatCharacter *, bool> CBaseServerVehicle::vt_HandlePassengerEntry(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerEntry");
+MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> CBaseServerVehicle::vt_GetDriver(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::GetDriver");
+MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> CBaseServerVehicle::vt_GetVehicleEnt(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::GetVehicleEnt");

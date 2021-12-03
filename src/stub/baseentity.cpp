@@ -128,6 +128,7 @@ MemberVFuncThunk<      CBaseEntity *, int, float, int                           
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");
+MemberFuncThunk<CBaseEntityOutput *, void                                                > CBaseEntityOutput::ft_DeleteAllElements("CBaseEntityOutput::DeleteAllElements");
 
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_Create             ("CBaseEntity::Create");
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_CreateNoSpawn      ("CBaseEntity::CreateNoSpawn");

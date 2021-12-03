@@ -44,6 +44,7 @@
 				"CPopulationManager::ResetRespecPoints"                           "_ZN18CPopulationManager17ResetRespecPointsEv"
 				"CPopulationManager::RestoreCheckpoint"                           "_ZN18CPopulationManager17RestoreCheckpointEv"
 				"CPopulationManager::RestorePlayerCurrency"                       "_ZN18CPopulationManager21RestorePlayerCurrencyEv"
+				"CPopulationManager::SetCheckpoint"                               "_ZN18CPopulationManager13SetCheckpointEi"
 				"CPopulationManager::SetNumRespecsForPlayer"                      "_ZN18CPopulationManager22SetNumRespecsForPlayerEP9CTFPlayeri"
 				"CPopulationManager::Spawn"                                       "_ZN18CPopulationManager5SpawnEv"
 				"CPopulationManager::Update"                                      "_ZN18CPopulationManager6UpdateEv"
