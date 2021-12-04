@@ -61,20 +61,23 @@ MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   C
 MemberVFuncThunk<      CBaseCombatCharacter *, int>                            CBaseCombatCharacter::vt_GetBossType        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetBossType");
 
 
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucked,        CBasePlayer);
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucking,       CBasePlayer);
-//IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
-//IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucked,        CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucking,       CBasePlayer);
+IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
+IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
 //IMPL_SENDPROP(float, CPlayerLocalData, m_flDuckJumpTime, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngle, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
+IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
+IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
 IMPL_DATAMAP(unsigned int, CBasePlayer, m_afPhysicsFlags);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
+IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 
 IMPL_SENDPROP(float,                              CBasePlayer, m_flDeathTime,   CBasePlayer);
@@ -104,8 +107,10 @@ MemberVFuncThunk<      CBasePlayer *, Vector>                      CBasePlayer::
 MemberVFuncThunk<      CBasePlayer *, float>                       CBasePlayer::vt_GetPlayerMaxSpeed   (TypeName<CBasePlayer>(), "CBasePlayer::GetPlayerMaxSpeed");
 MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       CBasePlayer::vt_RemoveWearable      (TypeName<CBasePlayer>(), "CBasePlayer::RemoveWearable");
 MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> CBasePlayer::vt_ChangeTeam_bool3    (TypeName<CBasePlayer>(), "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
-MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>          CBasePlayer::vt_Weapon_Equip (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
-MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>              CBasePlayer::vt_EquipWearable (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
+MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>         CBasePlayer::vt_Weapon_Equip        (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
+MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>             CBasePlayer::vt_EquipWearable       (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
+MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               CBasePlayer::vt_FindUseEntity       (TypeName<CBasePlayer>(),"CBasePlayer::FindUseEntity");
+MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> CBasePlayer::vt_LeaveVehicle(TypeName<CBasePlayer>(),"CBasePlayer::LeaveVehicle");
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");

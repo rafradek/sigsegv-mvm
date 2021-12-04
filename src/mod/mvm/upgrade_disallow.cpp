@@ -5,6 +5,7 @@
 #include "util/scope.h"
 #include "stub/upgrades.h"
 #include "stub/gamerules.h"
+#include "mod/mvm/extended_upgrades.h"
 
 namespace Mod::MvM::Upgrade_Disallow
 {
@@ -19,7 +20,8 @@ namespace Mod::MvM::Upgrade_Disallow
 	{
 		if (!b3) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
-			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
+			int extended_upgrades_start_index = Mod::MvM::Extended_Upgrades::GetExtendedUpgradesStartIndex();
+			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count() && (extended_upgrades_start_index == -1 || upgradeslot < extended_upgrades_start_index)) {
 				auto entity = GetEconEntityAtLoadoutSlot(player, itemslot);
 				if (entity != nullptr && entity->GetItem() != nullptr) {
 					auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(upgrade->GetUpgradeAttributeName(upgradeslot));

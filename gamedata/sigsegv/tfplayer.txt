@@ -22,7 +22,7 @@
 				"CTFPlayer::ApplyGenericPushbackImpulse"
 				{
 					type "sym"
-					sym  "_ZN9CTFPlayer27ApplyGenericPushbackImpulseERK6Vector"
+					sym  "_ZN9CTFPlayer27ApplyGenericPushbackImpulseERK6VectorPS_"
 				}
 				"CTFPlayer::ApplyPushFromDamage"
 				{
@@ -734,11 +734,6 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9AddObjectEP11CBaseObject"
 				}
-				"CTFPlayer::StartBuildingObjectOfType"
-				{
-					type "sym"
-					sym  "_ZN9CTFPlayer25StartBuildingObjectOfTypeEii"
-				}
 				"CTFPlayer::Touch"
 				{
 					type "sym"
@@ -883,6 +878,11 @@
 				{
 					type "sym"
 					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
+				}
+				"CTFPlayer::PlayScene"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer9PlaySceneEPKcfP11AI_ResponseP16IRecipientFilter"
 				}
 				
 			//	"GetTFConditionName"

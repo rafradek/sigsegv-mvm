@@ -164,6 +164,7 @@ class ExtensionConfig(object):
     cxx.defines += ['HAVE_STRING_H']
     cxx.defines += ['GNUC']
     cxx.defines += ['PLATFORM_X86']
+    cxx.defines += ['FMT_HEADER_ONLY']
     
     ############################################################################
     # C & C++ COMPILER #########################################################
@@ -201,7 +202,7 @@ class ExtensionConfig(object):
     ############################################################################
     # C++ COMPILER #############################################################
     ############################################################################
-    cxx.cxxflags += ['-std=c++17']
+    cxx.cxxflags += ['-std=c++2a']
 #   cxx.cxxflags += ['-fno-exceptions']
     cxx.cxxflags += ['-fexceptions'] # !!!
 #   cxx.cxxflags += ['-fno-threadsafe-statics']
@@ -261,10 +262,10 @@ class ExtensionConfig(object):
     # OPTIMIZE #################################################################
     ############################################################################
     if builder.options.opt == '1':
-      cxx.cflags    += ['-O3']
+      cxx.cflags    += ['-O2']
       cxx.cflags    += ['-fno-builtin']
       
-      cxx.linkflags += ['-Wl,-O3']
+      cxx.linkflags += ['-Wl,-O2']
       cxx.linkflags += ['-Wl,--gc-sections']
     else:
       if have_gcc or cxx.version >= 'clang-4.0':

@@ -143,6 +143,64 @@ bool IHasDetours::ToggleAllDetours(bool enable)
 }
 
 
+bool IHasVirtualHooks::LoadVirtualHooks()
+{
+	bool ok = true;
+	
+	for (auto& pair : this->m_Hooks) {
+		const char *name = pair.first;
+		CVirtualHook *detour  = pair.second;
+		if (detour->DoLoad()) {
+//			DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" OK\n", this->GetName(), name);
+		} else {
+			DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" FAIL\n", this->GetName(), name);
+			ok = false;
+		}
+	}
+	
+	return ok;
+}
+
+void IHasVirtualHooks::UnloadVirtualHooks()
+{
+	for (auto& pair : this->m_Hooks) {
+		CVirtualHook *detour = pair.second;
+		detour->DoUnload();
+		
+		delete detour;
+	}
+	
+	this->m_Hooks.clear();
+}
+
+
+void IHasVirtualHooks::AddVirtualHook(CVirtualHook *detour)
+{
+	const char *name = detour->GetName();
+	
+//	DevMsg("IHasDetours::AddDetour: \"%s\" \"%s\"\n", this->GetName(), name);
+	
+	assert(this->CanAddVirtualHooks());
+	assert(this->m_Hooks.find(name) == this->m_Hooks.end());
+	
+	this->m_Hooks[name] = detour;
+}
+
+bool IHasVirtualHooks::ToggleAllVirtualHooks(bool enable)
+{
+	if (!this->CanToggleVirtualHooks()) return false;
+	
+//	DevMsg("IHasDetours::ToggleAllDetours: \"%s\" %s\n", this->GetName(),
+//		(enable ? "ON" : "OFF"));
+	
+	for (auto& pair : this->m_Hooks) {
+		CVirtualHook *detour = pair.second;
+		detour->Toggle(enable);
+	}
+	
+	return true;
+}
+
 void IMod::InvokeLoad()
 {
 	DevMsg("IMod::InvokeLoad: \"%s\"\n", this->GetName());
@@ -151,8 +209,9 @@ void IMod::InvokeLoad()
 	
 	bool ok_patch  = this->LoadPatches();
 	bool ok_detour = this->LoadDetours();
+	bool ok_hooks = this->LoadVirtualHooks();
 	
-	if (!ok_patch || !ok_detour) {
+	if (!ok_patch || !ok_detour || !ok_hooks) {
 		this->m_bFailed = true;
 		return;
 	}
@@ -175,6 +234,7 @@ void IMod::InvokeUnload()
 	
 	this->UnloadDetours();
 	this->UnloadPatches();
+	this->UnloadVirtualHooks();
 }
 
 
@@ -196,6 +256,7 @@ void IMod::Toggle(bool enable)
 	/* actually toggle enable/detour all of the mod's patches and detours */
 	this->ToggleAllPatches(enable);
 	this->ToggleAllDetours(enable);
+	this->ToggleAllVirtualHooks(enable);
 }
 
 

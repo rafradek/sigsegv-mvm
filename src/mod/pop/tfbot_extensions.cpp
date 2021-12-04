@@ -16,19 +16,13 @@
 #include "stub/usermessages_sv.h"
 #include "stub/trace.h"
 #include "util/clientmsg.h"
+#include "mod/pop/popmgr_extensions.h"
 #include <ctime>
 
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
 
 bool TeleportNearVictim(CTFBot *spy, CTFPlayer *victim, int dist) {return ft_TeleportNearVictim(spy,victim,dist);};
-
-namespace Mod::Pop::PopMgr_Extensions
-{
-	CTFItemDefinition *GetCustomWeaponItemDef(std::string name);
-	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
-	const char *GetCustomWeaponNameOverride(const char *name);
-}
 
 namespace Mod::Pop::TFBot_Extensions
 {

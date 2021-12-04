@@ -49,6 +49,8 @@ IMPL_SENDPROP(CHandle<CBaseCombatCharacter>, CBaseCombatWeapon, m_hOwner,       
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iViewModelIndex,       CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iWorldModelIndex,      CBaseCombatWeapon);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bReloadsSingly);
+IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
+
 
 MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWeapon("CBaseCombatWeapon::IsMeleeWeapon");
 
@@ -65,6 +67,7 @@ MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseC
 //MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformPrimaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformPrimaryAttack");
 MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         CBaseCombatWeapon::vt_CanPerformSecondaryAttack (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CanPerformSecondaryAttack");
 MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            CBaseCombatWeapon::vt_GetShootSound(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetShootSound");
+MemberVFuncThunk<      CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetPrimaryAmmoType(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetPrimaryAmmoType");
 
 
 IMPL_SENDPROP(float,                CTFWeaponBase, m_flLastFireTime,          CTFWeaponBase);

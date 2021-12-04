@@ -10,7 +10,7 @@ CL2Cache::CL2Cache()  { assert(false); }
 CL2Cache::~CL2Cache() { assert(false); }
 
 
-static StaticFuncThunk<CRConClient&> ft_RCONClient("RCONClient");
+static StaticFuncThunk<CRConClient&> ft_RCONClient("[client] RCONClient");
 CRConClient& RCONClient() { return ft_RCONClient(); }
 
 
@@ -106,6 +106,9 @@ void variant_t::SetOther(void *data) { ft_VariantSetOther(this, data); }
 
 static MemberFuncThunk<variant_t*, bool, fieldtype_t> ft_VariantConvert("variant_t::Convert");
 bool variant_t::Convert(fieldtype_t type) { return ft_VariantConvert(this, type); }
+
+static StaticFuncThunk<void, float *, const char *> ft_UTIL_StringToVector("UTIL_StringToVector");
+void UTIL_StringToVector(float *base, const char *string) {ft_UTIL_StringToVector(base, string); }
 
 GlobalThunk<CEventQueue> g_EventQueue("g_EventQueue");
 

@@ -23,6 +23,14 @@ struct inputdata_t
 	int nOutputID;
 };
 
+struct touchlink_t
+{
+	EHANDLE				entityTouched;
+	int					touchStamp;
+	touchlink_t			*nextLink;
+	touchlink_t			*prevLink;
+	int					flags;
+};
 
 enum DebugOverlayBits_t : uint32_t
 {
@@ -62,6 +70,8 @@ class CBaseCombatCharacter;
 class CBaseCombatWeapon;
 class INextBot;
 class ExtraEntityData;
+class EntityModule;
+class IHasAttributes;
 
 class CBaseEntityOutput
 {
@@ -69,10 +79,12 @@ public:
 
 	void FireOutput( variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay = 0 ) { ft_FireOutput(this, Value, pActivator, pCaller, fDelay); }
 	void ParseEventAction( const char *EventData ) { ft_ParseEventAction(this, EventData); }
+	void DeleteAllElements() { ft_DeleteAllElements(this); }
 
 private:
 	static MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireOutput;
 	static MemberFuncThunk<CBaseEntityOutput *, void, const char *> ft_ParseEventAction;
+	static MemberFuncThunk<CBaseEntityOutput *, void> ft_DeleteAllElements;
 	
 	variant_t m_Value;
 	void *m_ActionList;
@@ -119,7 +131,23 @@ public:
 	void RemoveEffects(int nEffects);
 	void ClearEffects();
 	bool HasSpawnFlags(int flags) const;
-	
+	void WorldToEntitySpace(const Vector &in, Vector *pOut) const;     
+	void EntityToWorldSpace(const Vector &in, Vector *pOut) const;    
+
+	template<class ModuleType>
+	ModuleType *GetEntityModule(const char* name);
+	template<class ModuleType>
+	ModuleType *GetOrCreateEntityModule(const char* name);
+	void AddEntityModule(const char* name, EntityModule *module);  
+	void RemoveEntityModule(const char* name);       
+
+	template<FixedString lit>
+	const char *GetCustomVariable(const char *defValue = nullptr);
+	template<FixedString lit>
+	float GetCustomVariableFloat(float defValue = 0.0f);
+	const char *GetCustomVariableByText(const char *key, const char *defValue = nullptr);
+	void SetCustomVariable(const char *key, const char *value);
+
 	/* getter/setter */
 	IServerNetworkable *GetNetworkable() const    { return &this->m_Network; }
 	CServerNetworkProperty *NetworkProp() const   { return &this->m_Network; }
@@ -140,7 +168,7 @@ public:
 	int GetCollisionGroup() const                 { return this->m_CollisionGroup; }
 	void SetCollisionGroup(int group)             { this->m_CollisionGroup = group; }
 	SolidType_t GetSolid() const                  { return this->CollisionProp()->GetSolid(); }
-	//void SetSolid(SolidType_t solid)              { return this->CollisionProp()->SetSolid(solid); }
+	void SetSolid(SolidType_t solid)              { return this->CollisionProp()->SetSolid(solid); }
 	model_t *GetModel() const                     { return const_cast<model_t *>(modelinfo->GetModel(this->GetModelIndex())); }
 	bool IsTransparent() const                    { return (this->m_nRenderMode != kRenderNormal); }
 	int GetRenderMode() const                     { return this->m_nRenderMode; }
@@ -197,6 +225,7 @@ public:
 	void AddEffects(int nEffects)                                                                                           {        ft_AddEffects                    (this, nEffects); }
 	bool ReadKeyField(const char *name, variant_t *var)                                                                     { return ft_ReadKeyField                  (this, name, var); }
 	IPhysicsObject *VPhysicsInitStatic()                                                                                    { return ft_VPhysicsInitStatic            (this); }
+	void *GetDataObject(int type)                                                                                           { return ft_GetDataObject                 (this, type); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -237,7 +266,9 @@ public:
 	bool GetKeyValue(const char *key, char *value, int maxlen)                                                              { return vt_GetKeyValue                   (this, key, value, maxlen); }
 	void FireBullets(const FireBulletsInfo_t &info)                                                                         {        vt_FireBullets                   (this, info); }
 	ServerClass *GetServerClass()                                                                                           { return vt_GetServerClass                (this); }
-	
+	CBaseAnimating *GetBaseAnimating()                                                                                      { return vt_GetBaseAnimating              (this); }
+	int TakeHealth(float health, int damageType)                                                                            { return vt_TakeHealth                    (this, health, damageType); }
+
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
 	static CBaseEntity *CreateNoSpawn(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                { return ft_CreateNoSpawn      (szName, vecOrigin, vecAngles, pOwner); }
@@ -282,6 +313,7 @@ public:
 	DECL_DATAMAP(CBaseEntityOutput,      m_OnUser4);
 	DECL_DATAMAP(char,       m_takedamage);
 	DECL_RELATIVE(ExtraEntityData *, m_extraEntityData);
+	DECL_RELATIVE(IHasAttributes *, m_pAttributes);
 	
 	
 private:
@@ -342,6 +374,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, void, int>                                               ft_AddEffects;
 	static MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *>                         ft_ReadKeyField;
 	static MemberFuncThunk<      CBaseEntity *, IPhysicsObject *>                                        ft_VPhysicsInitStatic;
+	static MemberFuncThunk<      CBaseEntity *, void *,int>                                              ft_GetDataObject;
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;
@@ -383,6 +416,8 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, bool, const char*, char*, int>                                    vt_GetKeyValue;
 	static MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &>                                  vt_FireBullets;
 	static MemberVFuncThunk<      CBaseEntity *, ServerClass *>                                                    vt_GetServerClass;
+	static MemberVFuncThunk<      CBaseEntity *, CBaseAnimating *>                                                 vt_GetBaseAnimating;
+	static MemberVFuncThunk<      CBaseEntity *, int, float, int>                                                  vt_TakeHealth;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
@@ -544,6 +579,15 @@ inline void CBaseEntity::ClearEffects()
 	this->DispatchUpdateTransmitState();
 }
 
+class CustomThinkFunc : public AutoList<CustomThinkFunc>
+{
+public:
+	CustomThinkFunc(void *func, const char *name) : m_pFunc(func), m_sName(name) {};
+	void *m_pFunc;
+	const char *m_sName;
+};
+
+void UnloadAllCustomThinkFunc();
 
 /* like those stupid SetThink and SetContextThink macros, but way better! */
 #define THINK_FUNC_DECL(name) \
@@ -552,7 +596,8 @@ inline void CBaseEntity::ClearEffects()
 	public: \
 		void Update(); \
 	}; \
-	void ThinkFunc_##name::Update()
+	CustomThinkFunc customthinkfunc_##name(GetAddrOfMemberFunc(&ThinkFunc_##name::Update), #name);\
+	void ThinkFunc_##name::Update()\
 
 #define THINK_FUNC_SET(ent, name, time) ent->ThinkSet(&ThinkFunc_##name::Update, time, #name)
 
@@ -572,6 +617,29 @@ inline void CBaseEntity::NetworkStateChanged(void *pVar)
 	gamehelpers->SetEdictStateChanged(this->GetNetworkable()->GetEdict(), ((uintptr_t)pVar - (uintptr_t)this));
 }
 
+inline void CBaseEntity::EntityToWorldSpace(const Vector &in, Vector *pOut) const
+{
+	if (GetAbsAngles() == vec3_angle)
+	{
+		VectorAdd(in, GetAbsOrigin(), *pOut);
+	}
+	else
+	{
+		VectorTransform(in, EntityToWorldTransform(), *pOut);
+	}
+}
+
+inline void CBaseEntity::WorldToEntitySpace(const Vector &in, Vector *pOut) const
+{
+	if (GetAbsAngles() == vec3_angle)
+	{
+		VectorSubtract(in, GetAbsOrigin(), *pOut);
+	}
+	else
+	{
+		VectorITransform(in, EntityToWorldTransform(), *pOut);
+	}
+}
 
 inline CBaseEntity *CreateEntityByName(const char *szClassname)
 {

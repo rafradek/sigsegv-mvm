@@ -76,6 +76,8 @@ public:
 	DECL_SENDPROP_RW(float, m_flStepSize);
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
+	DECL_SENDPROP(bool,  m_bDrawViewmodel);
+	DECL_SENDPROP(int,   m_iHideHUD);
 	
 	inline void NetworkStateChanged()           { }
 	inline void NetworkStateChanged(void *pVar) { }
@@ -118,6 +120,7 @@ public:
 	
 	void EyeVectors(Vector *pForward, Vector *pRight = nullptr, Vector *pUp = nullptr) { return ft_EyeVectors    (this, pForward, pRight, pUp); }
 	bool GetSteamID(CSteamID *pID)                                                     { return ft_GetSteamID    (this, pID); }
+	CSteamID GetSteamID()                                                              { CSteamID id; this->GetSteamID(&id); return id; }
 	void SetPlayerName(const char *name)                                               {        ft_SetPlayerName (this, name); }
 	CBaseViewModel *GetViewModel(int viewmodelindex = 0, bool bObserverOK = true)      { return ft_GetViewModel  (this, viewmodelindex, bObserverOK); }
 	void DisableButtons(int nButtons)                                                  {        ft_DisableButtons(this, nButtons); }
@@ -138,12 +141,16 @@ public:
 	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
 	void ChangeTeam(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {        vt_ChangeTeam_bool3    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
+	CBaseEntity *FindUseEntity()                                         { return vt_FindUseEntity      (this); }
+	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
 	
 	
 	DECL_SENDPROP_RW(CPlayerLocalData, m_Local);
 	DECL_SENDPROP(int, m_nTickBase);
 	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
+	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
+	
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }
@@ -180,6 +187,8 @@ private:
 	static MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> vt_ChangeTeam_bool3;
 	static MemberVFuncThunk<      CBasePlayer *, void, CBaseCombatWeapon *>   vt_Weapon_Equip;
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_EquipWearable;
+	static MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               vt_FindUseEntity;
+	static MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> vt_LeaveVehicle;
 };
 
 class CBaseMultiplayerPlayer : public CBasePlayer

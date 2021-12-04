@@ -1,5 +1,6 @@
 #include "stub/baseentity.h"
 #include "stub/baseplayer.h"
+//#include "util/iterate.h"
 #include "stub/objects.h"
 
 
@@ -31,7 +32,8 @@ IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser2);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser3);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
 IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
-IMPL_RELATIVE(ExtraEntityData *,      CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
+IMPL_RELATIVE(ExtraEntityData *,     CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
+IMPL_RELATIVE(IHasAttributes *,      CBaseEntity, m_pAttributes, m_iMaxHealth, -0x0c);
 
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);
@@ -79,6 +81,7 @@ MemberFuncThunk<      CBaseEntity *, void, int                                  
 MemberFuncThunk<      CBaseEntity *, void, int                                              > CBaseEntity::ft_AddEffects                 ("CBaseEntity::AddEffects");
 MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *                        > CBaseEntity::ft_ReadKeyField               ("CBaseEntity::ReadKeyField");
 MemberFuncThunk<      CBaseEntity *, IPhysicsObject *                                       > CBaseEntity::ft_VPhysicsInitStatic         ("CBaseEntity::VPhysicsInitStatic");
+MemberFuncThunk<      CBaseEntity *, void *,int                                             > CBaseEntity::ft_GetDataObject              ("CBaseEntity::GetDataObject");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");
@@ -120,9 +123,12 @@ MemberVFuncThunk<      CBaseEntity *, bool, const char *, const char *          
 MemberVFuncThunk<      CBaseEntity *, bool, const char *, char *, int                                 > CBaseEntity::vt_GetKeyValue                   (TypeName<CBaseEntity>(), "CBaseEntity::GetKeyValue");
 MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &                                 > CBaseEntity::vt_FireBullets                   (TypeName<CBaseEntity>(), "CBaseEntity::FireBullets");
 MemberVFuncThunk<      CBaseEntity *, ServerClass *                                                   > CBaseEntity::vt_GetServerClass                (TypeName<CBaseEntity>(), "CBaseEntity::GetServerClass");
+MemberVFuncThunk<      CBaseEntity *, CBaseAnimating *                                                > CBaseEntity::vt_GetBaseAnimating              (TypeName<CBaseEntity>(), "CBaseEntity::GetBaseAnimating");
+MemberVFuncThunk<      CBaseEntity *, int, float, int                                                 > CBaseEntity::vt_TakeHealth                    (TypeName<CBaseEntity>(), "CBaseEntity::TakeHealth");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");
+MemberFuncThunk<CBaseEntityOutput *, void                                                > CBaseEntityOutput::ft_DeleteAllElements("CBaseEntityOutput::DeleteAllElements");
 
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_Create             ("CBaseEntity::Create");
 StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        CBaseEntity::ft_CreateNoSpawn      ("CBaseEntity::CreateNoSpawn");
@@ -138,6 +144,8 @@ StaticFuncThunk<trace_t&>                                                       
 MemberFuncThunk<CCollisionProperty *, void, SurroundingBoundsType_t, const Vector *, const Vector *> ft_SetSurroundingBoundsType("CCollisionProperty::SetSurroundingBoundsType");
 MemberFuncThunk<CCollisionProperty *, void> ft_MarkPartitionHandleDirty("CCollisionProperty::MarkPartitionHandleDirty");
 MemberFuncThunk<CCollisionProperty *, void, int> ft_SetSolidFlags("CCollisionProperty::SetSolidFlags");
+MemberFuncThunk<CCollisionProperty *, void, const Vector &, const Vector &> ft_SetCollisionBounds("CCollisionProperty::SetCollisionBounds");
+MemberFuncThunk<CCollisionProperty *, void, SolidType_t> ft_SetSolid("CCollisionProperty::SetSolid");
 
 StaticFuncThunk<int, CBaseEntity *> ft_ENTINDEX("ENTINDEX");
 
@@ -151,6 +159,14 @@ void CCollisionProperty::MarkPartitionHandleDirty() {
 
 void CCollisionProperty::SetSolidFlags(int flags) {
 	ft_SetSolidFlags(this, flags);
+}
+
+void CCollisionProperty::SetCollisionBounds(const Vector &min, const Vector &max) {
+	ft_SetCollisionBounds(this, min, max);
+}
+
+void CCollisionProperty::SetSolid(SolidType_t solid) {
+	ft_SetSolid(this, solid);
 }
 
 // bool CBaseEntity::IsPlayer() const
@@ -246,4 +262,15 @@ const char *variant_t::ToString( void ) const
 	}
 
 	return("No conversion to string");
+}
+
+void UnloadAllCustomThinkFunc()
+{
+	for (CBaseEntity *ent = servertools->FirstEntity(); ent != nullptr; ent = servertools->NextEntity(ent)) {
+		for (auto &think : CustomThinkFunc::List()) {
+			if (ent->GetNextThink(think->m_sName) != -1) {
+				ent->SetNextThink(-1, think->m_sName);
+			}
+		}
+	}
 }

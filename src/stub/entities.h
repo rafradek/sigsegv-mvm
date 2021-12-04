@@ -42,6 +42,8 @@ public:
 	void InitDroppedWeapon(CTFPlayer *pPlayer, CTFWeaponBase *pWeapon,  bool bSwap, bool bIsSuicide)  { return ft_InitDroppedWeapon(this, pPlayer, pWeapon, bSwap, bIsSuicide); }
 
 	DECL_SENDPROP(CEconItemView, m_Item);
+	DECL_SENDPROP(float, m_flChargeLevel);
+	DECL_RELATIVE(int, m_nAmmo);
 private:
 	static StaticFuncThunk<CTFDroppedWeapon *, CTFPlayer *, const Vector &, const QAngle &, const char *, const CEconItemView *> ft_Create;
 	static MemberFuncThunk<CTFDroppedWeapon *, void, CTFPlayer *, CTFWeaponBase *, bool, bool> ft_InitDroppedWeapon;
@@ -222,12 +224,14 @@ class CBaseTrigger : public CBaseToggle
 public:
 	void StartTouch(CBaseEntity *entity) { return vt_StartTouch(this, entity); }
 	void EndTouch(CBaseEntity *entity) { return vt_EndTouch(this, entity); }
-	
+	bool PassesTriggerFilters(CBaseEntity *entity) { return vt_PassesTriggerFilters(this, entity); }
+
 	DECL_DATAMAP(bool, m_bDisabled);
 
 private:
 	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_StartTouch;
 	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_EndTouch;
+	static MemberVFuncThunk<CBaseTrigger *, bool, CBaseEntity *> vt_PassesTriggerFilters;
 };
 
 class CUpgrades : public CBaseTrigger
@@ -512,6 +516,63 @@ private:
 	static MemberFuncThunk<CTriggerCamera *, void> ft_Disable;
 };
 
+class CFuncRotating : public CBaseEntity
+{
+public:
+	void SetTargetSpeed(float speed) { ft_SetTargetSpeed(this, speed); }
+
+	DECL_DATAMAP (bool, m_bReversed);
+	DECL_DATAMAP (float, m_flMaxSpeed);
+	DECL_DATAMAP (bool, m_bStopAtStartPos);
+	DECL_DATAMAP (QAngle, m_vecMoveAng);
+	DECL_DATAMAP (float, m_flTargetSpeed);
+
+private:
+	static MemberFuncThunk<CFuncRotating *, void, float> ft_SetTargetSpeed;
+};
+
+class CBaseServerVehicle
+{
+public:
+	void HandleEntryExitFinish(bool bExitAnimOn, bool bResetAnim) { return vt_HandleEntryExitFinish(this, bExitAnimOn, bResetAnim); }
+	void SetupMove(CBasePlayer *player, CUserCmd *ucmd, void *pHelper, void *move) { return vt_SetupMove(this, player, ucmd, pHelper, move); }
+	bool HandlePassengerExit(CBaseCombatCharacter *pPassenger)  { return vt_HandlePassengerExit(this, pPassenger); }
+	void HandlePassengerEntry(CBaseCombatCharacter *pPassenger, bool allowAnyPosition)  { vt_HandlePassengerEntry(this, pPassenger, allowAnyPosition); }
+	CBaseEntity *GetDriver()  { return vt_GetDriver(this); }
+	CBaseEntity *GetVehicleEnt()  { return vt_GetVehicleEnt(this); }
+
+private:
+	static MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> vt_HandleEntryExitFinish;
+	static MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> vt_SetupMove;
+	static MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> vt_HandlePassengerExit;
+	static MemberVFuncThunk<CBaseServerVehicle *, void, CBaseCombatCharacter *, bool> vt_HandlePassengerEntry;
+	static MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> vt_GetDriver;
+	static MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> vt_GetVehicleEnt;
+};
+
+class CPropVehicle : public CBaseAnimating
+{
+public:
+	DECL_DATAMAP (unsigned int, m_nVehicleType);
+	DECL_DATAMAP (string_t, m_vehicleScript);
+	DECL_DATAMAP (CHandle<CBasePlayer>, m_hPhysicsAttacker);
+	DECL_DATAMAP (float, m_flLastPhysicsInfluenceTime);
+	
+};
+
+class CPropVehicleDriveable : public CPropVehicle
+{
+public:
+	DECL_DATAMAP (bool, m_bEnterAnimOn);
+	DECL_DATAMAP (bool, m_bExitAnimOn);
+	DECL_DATAMAP (float, m_flMinimumSpeedToEnterExit);
+	DECL_DATAMAP (CBaseServerVehicle *, m_pServerVehicle);
+	DECL_DATAMAP (CHandle<CBasePlayer>, m_hPlayer);
+	DECL_DATAMAP (float, m_nSpeed);
+	DECL_DATAMAP (float, m_bLocked);
+
+	
+};
 // 20151007a
 
 // CTFPlayer::Event_Killed

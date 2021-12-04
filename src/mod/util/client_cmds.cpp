@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/econ.h"
+#include "stub/extraentitydata.h"
 #include "stub/projectiles.h"
 #include "stub/tfplayer.h"
 #include "stub/tfbot.h"
@@ -13,10 +14,6 @@
 #include "util/clientmsg.h"
 #include "util/misc.h"
 #include "util/iterate.h"
-
-class IHasAttributes {
-
-};
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -578,11 +575,16 @@ namespace Mod::Util::Client_Cmds
 	
 	void CC_Animation(CTFPlayer *player, const CCommand& args)
 	{
-		if (args.ArgC() != 3) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
-				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
-			return;
+		if (args.ArgC() == 3) {
+
+			int type = atoi(args[2]);
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				playerl->DoAnimationEvent( (PlayerAnimEvent_t) type /*17 PLAYERANIMEVENT_SPAWN*/, playerl->LookupSequence(args[1]) );
+				
+			});
 		}
+		
+		if (args.ArgC() == 2) {
 			//int sequence = playerl->LookupSequence(args[1]);
 			
 			//int arg1;
@@ -593,7 +595,10 @@ namespace Mod::Util::Client_Cmds
 			//playerl->ResetSequence(sequence);
 			//playerl->GetPlayerClass() // //playerl->PlaySpecificSequence(args[1]);
 			//TE_PlayerAnimEvent( playerl, 21 /*PLAYERANIMEVENT_SPAWN*/, sequence );
-			player->PlaySpecificSequence(args[1]);
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+			playerl->PlaySpecificSequence(args[1]);
+			});
+		}
 		
 	}
 
@@ -604,8 +609,10 @@ namespace Mod::Util::Client_Cmds
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
+		int seq = atoi(args[1]);
+		int type = atoi(args[2]);
 		ForEachTFPlayer([&](CTFPlayer *playerl){
-			playerl->DoAnimationEvent( (PlayerAnimEvent_t) 17 /*PLAYERANIMEVENT_SPAWN*/, 0 );
+			playerl->DoAnimationEvent( (PlayerAnimEvent_t) type /*17 PLAYERANIMEVENT_SPAWN*/, seq );
 			
 		});
 		
@@ -744,8 +751,13 @@ namespace Mod::Util::Client_Cmds
 		return rtti_cast<CTFPlayer *>(player) != nullptr;
 	}
 
+	void get_extra_data(CBaseEntity *entity) {
+		entity->GetEntityModule<HomingRockets>("homing")->speed=4;
+	}
 	CTFPlayer *playertrg = nullptr;
 	std::string displaystr = "";
+
+	PooledString pstr("pooled");
 	void CC_Benchmark(CTFPlayer *player, const CCommand& args)
 	{
 		
@@ -770,14 +782,16 @@ namespace Mod::Util::Client_Cmds
 			CBaseEntity *target = player;
 			if (args.ArgC() == 4)
 				target = servertools->FindEntityByClassname(nullptr, "tf_gamerules");
+			rtti_cast<CTFPlayer *>(target);
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				check = rtti_cast_sp(target);
+				check = rtti_cast<CTFPlayer *>(target);
 			}
 			timer.End();
 			
 			displaystr += CFmtStr("rtti cast time: %.9f", timer.GetDuration().GetSeconds());
-		
+
+			target->IsPlayer();
 			timer.Start();
 			for(int i = 0; i < times; i++) {
 				check = target->IsPlayer();
@@ -856,6 +870,10 @@ namespace Mod::Util::Client_Cmds
 				else if (bot3 == nullptr)
 					bot3 = ToTFBot(UTIL_PlayerByIndex(i));
 			}
+			auto weapon = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_PRIMARY);
+			auto weapon2 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_SECONDARY);
+			auto weapon3 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_MELEE);
+			auto weapon4 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_ACTION);
 			CAttributeManager *mgr = player->GetAttributeManager();
 
 			timer.Start(); 
@@ -904,10 +922,6 @@ namespace Mod::Util::Client_Cmds
 			
 			displaystr += CFmtStr("attr multi time: %.9f", timer.GetDuration().GetSeconds());
 
-			auto weapon = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_PRIMARY);
-			auto weapon2 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_SECONDARY);
-			auto weapon3 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_MELEE);
-			auto weapon4 = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_ACTION);
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
 				float attr = 1.0f;
@@ -948,9 +962,9 @@ namespace Mod::Util::Client_Cmds
 			
 			displaystr += CFmtStr("wep multi 4 time: %.9f", timer.GetDuration().GetSeconds());
 
-			timer.Start(); 
+			/*timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 0.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
 			}
 			timer.End();
 			
@@ -958,14 +972,14 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
-				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon2, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
-				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon3, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
-				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon4, 1.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon, 0.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon2, 0.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon3, 0.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
+				Mod::Attr::Custom_Attributes::GetFastAttributeFloat(weapon4, 0.0f, Mod::Attr::Custom_Attributes::ADD_COND_ON_ACTIVE);
 			}
 			timer.End();
 			
-			displaystr += CFmtStr(" fast wep multi time: %.9f", timer.GetDuration().GetSeconds());
+			displaystr += CFmtStr(" fast wep multi time: %.9f", timer.GetDuration().GetSeconds());*/
 
 			playertrg = nullptr;
 		}
@@ -1142,6 +1156,26 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			
 			displaystr += CFmtStr("entindex %d native: %.9f", entindex, timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "extradata") == 0) {
+			CBaseEntity *gamerules = servertools->FindEntityByClassname(nullptr, "tf_gamerules");
+
+			GetExtraProjectileData(reinterpret_cast<CBaseProjectile *>(gamerules))->homing = new HomingRockets();
+			gamerules->GetOrCreateEntityModule<HomingRockets>("homing");
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				GetExtraProjectileData(reinterpret_cast<CBaseProjectile *>(gamerules))->homing->speed=4;
+			}
+			timer.End();
+			displaystr += CFmtStr("extra data time: %.9f", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				gamerules->GetEntityModule<HomingRockets>("homing")->speed=4;
+			}
+			timer.End();
+			displaystr += CFmtStr("entity module time: %.9f", timer.GetDuration().GetSeconds());
+			
+
 		}
 		ClientMsg(player, "%s", displaystr.c_str());
 	}
@@ -1378,6 +1412,68 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
+	void CC_Vehicle(CTFPlayer *player, const CCommand& args)
+	{
+		const char *type = "car";
+		const char *model = "models/buggy.mdl";
+		const char *script = "scripts/vehicles/jeep_test.txt";
+		if (args.ArgC() >= 2) {
+			type = args[1];
+		}
+		
+		CPropVehicleDriveable *vehicle = reinterpret_cast<CPropVehicle *>(CreateEntityByName("prop_vehicle_driveable"));
+		if (vehicle != nullptr) {
+			DevMsg("Vehicle spawned\n");
+			vehicle->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,100,0));
+			vehicle->KeyValue("actionScale", "1");
+			vehicle->KeyValue("spawnflags", "1");
+			if (FStrEq(type, "car")) {
+				vehicle->m_nVehicleType = 1;
+				script = "scripts/vehicles/jeep_test.txt";
+				model = "models/buggy.mdl";
+			}
+			else if (FStrEq(type, "car_raycast")) {
+				vehicle->m_nVehicleType = 2;
+				script = "scripts/vehicles/jeep_test.txt";
+				model = "models/buggy.mdl";
+			}
+			else if (FStrEq(type, "jetski")) {
+				vehicle->m_nVehicleType = 4;
+				script = "scripts/vehicles/jetski.txt";
+				model = "models/airboat.mdl";
+			}
+			else if (FStrEq(type, "airboat")) {
+				vehicle->m_nVehicleType = 8;
+				script = "scripts/vehicles/airboat.txt";
+				model = "models/airboat.mdl";
+			}
+
+			if (args.ArgC() >= 3) {
+				model = args[2];
+			}
+			if (args.ArgC() >= 4) {
+				script = args[3];
+			}
+
+			vehicle->KeyValue("model", model);
+			vehicle->KeyValue("vehiclescript", script);
+			vehicle->Spawn();
+			vehicle->Activate();
+			vehicle->m_flMinimumSpeedToEnterExit = 100;
+		}
+	}
+	
+	void CC_PlayScene(CTFPlayer *player, const CCommand& args)
+	{
+		if (args.ArgC() == 2) {
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				InstancedScriptedScene(playerl, args[1], nullptr, 0, false, nullptr, true, nullptr );
+				//playerl->PlayScene(args[1]);
+			});
+		}
+		
+	}
+
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
 	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
@@ -1403,9 +1499,12 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_getmissingbones",  CC_GetMissingBones  },
 		{ "sig_listitemattr",     CC_DumpItems        },
 		{ "sig_sprays",           CC_Sprays           },
+		{ "sig_vehicle",          CC_Vehicle          },
+		{ "sig_playscene",        CC_PlayScene        },
 	};
 
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+	
+	 DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player != nullptr) {
@@ -1445,7 +1544,7 @@ namespace Mod::Util::Client_Cmds
 		
 		return result;
 	}
-	
+
 	class CMod : public IMod, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1454,6 +1553,7 @@ namespace Mod::Util::Client_Cmds
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+			
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 

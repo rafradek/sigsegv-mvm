@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/baseentity.h"
 #include "stub/econ.h"
+#include "stub/extraentitydata.h"
 #include "stub/tfplayer.h"
 #include "stub/projectiles.h"
 #include "stub/tfweaponbase.h"
@@ -31,12 +32,24 @@ struct CTFRadiusDamageInfo
 
 class CDmgAccumulator;
 
+class IPredictionSystem
+{
+public:
+	void *vtable;
+	IPredictionSystem	*m_pNextSystem;
+	int				m_bSuppressEvent;
+	CBaseEntity			*m_pSuppressHost;
+
+	int					m_nStatusPushed;
+};
+
 namespace Mod::Attr::Custom_Attributes
 {
 
 	std::set<std::string> precached;
 
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
+	GlobalThunk<IPredictionSystem> g_RecipientFilterPredictionSystem("g_RecipientFilterPredictionSystem");
 
 	enum FastAttributeClassPlayer
 	{
@@ -57,6 +70,11 @@ namespace Mod::Attr::Custom_Attributes
 		ALWAYS_CRIT,
 		ADD_COND_ON_ACTIVE,
 		MAX_AOE_TARGETS,
+		DUCK_ACCURACY_MULT,
+		CONTINOUS_ACCURACY_MULT,
+		CONTINOUS_ACCURACY_TIME,
+		CONTINOUS_ACCURACY_TIME_RECOVERY,
+		MOVE_ACCURACY_MULT,
 		ATTRIB_COUNT_ITEM,
 	};
 	const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
@@ -75,49 +93,35 @@ namespace Mod::Attr::Custom_Attributes
 	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
 		"always_crit",
 		"add_cond_when_active",
-		"max_aoe_targets"
+		"max_aoe_targets",
+		"duck_accuracy_mult",
+		"continous_accuracy_mult",
+		"continous_accuracy_time",
+		"continous_accuracy_time_recovery",
+		"move_accuracy_mult"
 	};
 
 	float *fast_attribute_cache[2048];
 
-	// Fast Attribute Cache, for every tick attribute querying. The value parameter must be a static value, unlike the CALL_ATTRIB_HOOK_ calls;
 
 	CBaseEntity *last_fast_attrib_entity = nullptr;
-	float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
-		static float* last_attrib_cache = nullptr;
+	float *CreateNewAttributeCache(CBaseEntity *entity) {
+
+		if (rtti_cast<IHasAttributes *>(entity) == nullptr) return nullptr;
 		
-		if (entity == nullptr)
-			return value;
-
-		float *attrib_cache = nullptr;
-		if (last_fast_attrib_entity == entity) {
-            attrib_cache = last_attrib_cache;
-        }
-		else {
-			attrib_cache = fast_attribute_cache[ENTINDEX(entity)];
-			if (attrib_cache == nullptr) {
-				int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
-				attrib_cache = new float[count];
-				
-				for(int i = 0; i < count; i++) {
-					attrib_cache[i] = FLT_MIN;
-				}
-
-				fast_attribute_cache[ENTINDEX(entity)] = attrib_cache;
-			}
-			last_fast_attrib_entity = entity;
-			last_attrib_cache = attrib_cache;
+		int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+		float *attrib_cache = new float[count];
+		
+		for(int i = 0; i < count; i++) {
+			attrib_cache[i] = FLT_MIN;
 		}
 
-		if (attrib_cache == nullptr)
-			return value;
+		//GetExtraEntityDataWithAttributes(entity)->fast_attribute_cache = attrib_cache;
+		fast_attribute_cache[ENTINDEX(entity)] = attrib_cache;
+		return attrib_cache;
+	}
 
-		float result = attrib_cache[name];
-			
-		if (result != FLT_MIN) {
-			return result;
-		}
-
+	float SetAttributeCacheEntry(CBaseEntity *entity, float value, int name, float *attrib_cache) {
 		CAttributeManager *mgr = nullptr;
 		if (entity->IsPlayer()) {
             mgr = reinterpret_cast<CTFPlayer *>(entity)->GetAttributeManager();
@@ -128,12 +132,33 @@ namespace Mod::Attr::Custom_Attributes
         if (mgr == nullptr)
             return value;
 
-		result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
+		float result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
 		attrib_cache[name] = result;
 		return result;
 	}
 
-	int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
+	// Fast Attribute Cache, for every tick attribute querying. The value parameter must be a static value, unlike the CALL_ATTRIB_HOOK_ calls;
+	inline float GetFastAttributeFloat(CBaseEntity *entity, float value, int name) {
+		
+		if (entity == nullptr)
+			return value;
+
+		//auto data = static_cast<ExtraEntityDataWithAttributes *>(entity->GetExtraEntityData());
+		float *attrib_cache = fast_attribute_cache[ENTINDEX(entity)];
+		if (attrib_cache == nullptr && (attrib_cache = CreateNewAttributeCache(entity)) == nullptr) {
+			return value;
+		}
+		
+		float result = attrib_cache[name];
+			
+		if (result != FLT_MIN) {
+			return result;
+		}
+
+		return SetAttributeCacheEntry(entity, value, name, attrib_cache);
+	}
+
+	inline int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
 		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
 	}
 
@@ -225,7 +250,8 @@ namespace Mod::Attr::Custom_Attributes
 		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() ) {
 			int can_heal = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( medigun, can_heal, medic_machinery_beam );
-			healobject->SetHealth( healobject->GetHealth() + ( (medigun->GetHealRate() / 10.f) * can_heal ) );
+			auto object = ToBaseObject(healobject);
+			object->SetHealth( object->GetHealth() + ( (medigun->GetHealRate() / 10.f) * can_heal ) );
 			
 		}
 	}
@@ -451,6 +477,11 @@ namespace Mod::Attr::Custom_Attributes
 					if (drag != 0) {
 						physics->EnableDrag(false);
 					}
+				}
+
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "projectile sound", soundname);
+				if (soundname != nullptr) {
+					proj->EmitSound(soundname);
 				}
 			}
 		}
@@ -1432,13 +1463,31 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CUpgrades_UpgradeTouch)(pOther);
 	}
 
+	class WeaponModule : public EntityModule
+    {
+    public:
+	WeaponModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+	float crouchAccuracy = 1.0f;
+	bool crouchAccuracyApplied = false;
+	bool lastMoveAccuracyApplied = 1.0f;
+	float consecutiveShotsScore = 0.0f;
+	float lastConsecutiveShotsApplied = 1.0f;
+	float totalAccuracyApplied = 1.0f;
+
+	float lastShotTime = 0.0f;
+	int burstShotNumber = 0;
+	float lastAttackCooldown = 0.0f;
+	float attackTimeSave = 0.0f;
+    };
+
 	void OnWeaponUpdate(CTFWeaponBase *weapon) {
 		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
-		if (owner != nullptr && (gpGlobals->tickcount % 6) == 3) {
+		if (owner != nullptr && (gpGlobals->tickcount % 5) == 3) {
 			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
 
 			if (alwaysCrit) {
-				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.25f, nullptr);
+				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.5f, nullptr);
 			}
 			
 			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
@@ -1446,9 +1495,53 @@ namespace Mod::Attr::Custom_Attributes
 				for (int i = 0; i < 3; i++) {
 					int addcond_single = (addcond >> (i * 8)) & 255;
 					if (addcond_single != 0) {
-						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.25f, owner);
+						owner->m_Shared->AddCond((ETFCond)addcond_single, 0.5f, owner);
 					}
 				}
+			}
+			float crouch_accuracy = GetFastAttributeFloat(weapon, 1.0f, DUCK_ACCURACY_MULT);
+			float consecutive_accuracy = GetFastAttributeFloat(weapon, 1.0f, CONTINOUS_ACCURACY_MULT);
+			float move_accuracy = GetFastAttributeFloat(weapon, 1.0f, MOVE_ACCURACY_MULT);
+
+			if (crouch_accuracy != 1.0f || consecutive_accuracy != 1.0f) {
+				auto mod = weapon->GetOrCreateEntityModule<WeaponModule>("weapon");
+				static int accuracy_penalty_id = GetItemSchema()->GetAttributeDefinitionByName("spread penalty")->GetIndex();
+				float applyAccuracy = 1.0f;
+				bool doApplyAccuracy = false;
+				//auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(accuracy_penalty_id);
+
+				if (crouch_accuracy != 1.0f) {
+					mod->crouchAccuracyApplied = owner->m_Local->m_bDucked;
+					if (mod->crouchAccuracyApplied) {
+						applyAccuracy *= crouch_accuracy;
+					}
+				}
+
+				if (consecutive_accuracy != 1.0f) {
+					float consecutive_accuracy_time = GetFastAttributeFloat(weapon, 0.0f, CONTINOUS_ACCURACY_TIME);
+					float consecutiveAccuracyApply = RemapValClamped(mod->consecutiveShotsScore, 0.0f, consecutive_accuracy_time, 1.0f, consecutive_accuracy);
+					applyAccuracy *= consecutiveAccuracyApply;
+					if (weapon->m_flNextPrimaryAttack <= gpGlobals->curtime || weapon->m_bInReload) {
+						mod->consecutiveShotsScore = Clamp(mod->consecutiveShotsScore - gpGlobals->frametime * 5 * 5, 0.0f, consecutive_accuracy_time);
+					}
+					mod->lastConsecutiveShotsApplied = consecutiveAccuracyApply;
+				}
+
+				if (move_accuracy != 1.0f) {
+					float consecutiveAccuracyApply = RemapValClamped(owner->GetAbsVelocity().Length(), 0.0f, owner->TeamFortress_CalculateMaxSpeed() * 0.5f, 1.0f, move_accuracy);
+					applyAccuracy *= consecutiveAccuracyApply;
+					mod->lastMoveAccuracyApplied = consecutiveAccuracyApply;
+				}
+				doApplyAccuracy = mod->totalAccuracyApplied != applyAccuracy;
+				if (doApplyAccuracy) {
+					if (applyAccuracy == 1.0f) {
+						weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(accuracy_penalty_id);
+					}
+					else {
+						weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(accuracy_penalty_id, applyAccuracy);
+					}
+				}
+				mod->totalAccuracyApplied = applyAccuracy;
 			}
 		}
 	}
@@ -1965,7 +2058,7 @@ namespace Mod::Attr::Custom_Attributes
 					vec.NormalizeInPlace();
 					vec.z = 1.0f;
 					vec *= knockback;
-					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec);
+					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec, player);
 				}
 				if (stompTime != 0.0f)
 					player_touch_times[player][toucher] = gpGlobals->curtime;
@@ -3117,6 +3210,213 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_Holster)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+
+		// Remove add cond on active effects
+		CTFPlayer *owner = ToTFPlayer(weapon->GetOwnerEntity());
+		if (owner != nullptr) {
+			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
+
+			if (alwaysCrit && owner->m_Shared->GetConditionDuration(TF_COND_CRITBOOSTED_CARD_EFFECT) < 0.5f) {
+				owner->m_Shared->RemoveCond(TF_COND_CRITBOOSTED_CARD_EFFECT);
+			}
+			
+			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
+			if (addcond != 0) {
+				for (int i = 0; i < 3; i++) {
+					int addcond_single = (addcond >> (i * 8)) & 255;
+					if (addcond_single != 0) {
+						if (alwaysCrit && owner->m_Shared->GetConditionDuration((ETFCond)addcond_single) < 0.5f) {
+							owner->m_Shared->RemoveCond((ETFCond)addcond_single);
+						}
+					}
+				}
+			}
+		}
+		weapon->GetOrCreateEntityModule<WeaponModule>("weapon")->consecutiveShotsScore = 0.0f;
+		DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseProjectile_D2)
+	{
+		auto projectile = reinterpret_cast<CBaseProjectile *>(this);
+		auto weapon = ToBaseCombatWeapon(projectile->GetOriginalLauncher());
+		if (weapon != nullptr) {
+			GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "projectile sound", sound);
+			if (sound != nullptr) {
+				projectile->StopSound(sound);
+			}
+		}
+        DETOUR_MEMBER_CALL(CBaseProjectile_D2)();
+    }
+
+	std::map<CHandle<CTFWeaponBaseGun>, float> applyGunDelay;
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_PrimaryAttack)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
+		auto mod = weapon->GetOrCreateEntityModule<WeaponModule>("weapon");
+
+		auto oldHost = g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost;
+		// Burst mode 
+
+		//if (mod->lastAttackCooldown != 0.0f && gpGlobals->curtime < mod->lastShotTime + mod->lastAttackCooldown + gpGlobals->frametime) {
+		//	g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
+		//}
+
+		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_PrimaryAttack)();
+		if (weapon->m_flNextPrimaryAttack > gpGlobals->curtime) {
+			float attackTime = weapon->m_flNextPrimaryAttack - gpGlobals->curtime;
+			mod->consecutiveShotsScore += (weapon->m_flNextPrimaryAttack - gpGlobals->curtime);
+			
+			static int auto_fires_full_clip_id = GetItemSchema()->GetAttributeDefinitionByName("auto fires full clip")->GetIndex();
+			int burst_num = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, burst_num, burst_fire_count);
+			if (burst_num != 0) {
+				bool enforced = burst_num < 0;
+				int burst_num_real = abs(burst_num) - 1;
+				mod->lastAttackCooldown = attackTime;
+				if (gpGlobals->curtime > mod->lastShotTime + attackTime + gpGlobals->frametime ) {
+					mod->burstShotNumber = 0;
+				}
+				mod->lastShotTime = gpGlobals->curtime;
+
+				if (mod->burstShotNumber < burst_num_real) {
+					if (enforced && mod->burstShotNumber == 0) {
+						weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(auto_fires_full_clip_id, 1.0f);
+					}
+					float ping = 0;
+					auto netinfo = engine->GetPlayerNetInfo(ENTINDEX(weapon->GetTFPlayerOwner()));
+					if (netinfo != nullptr) {
+						ping = netinfo->GetLatency(FLOW_OUTGOING) - 0.03f;
+					}
+					int shotsinping = ping / attackTime;
+					if (mod->burstShotNumber >= burst_num_real - shotsinping) {
+						applyGunDelay[weapon] = gpGlobals->curtime + attackTime;
+					} 
+					mod->burstShotNumber += 1;
+				}
+				else {
+					mod->burstShotNumber = 0;
+					float burst_fire_rate = 1.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, burst_fire_rate, burst_fire_rate_mult);
+					weapon->m_flNextPrimaryAttack = gpGlobals->curtime + attackTime * burst_fire_rate;
+					if (enforced) {
+						weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(auto_fires_full_clip_id);
+					}
+				}
+				if (enforced && weapon->m_iClip1 == 0) {
+					weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(auto_fires_full_clip_id);
+				}
+			}
+			
+			int fire_full_clip = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_full_clip, force_fire_full_clip);
+			if (fire_full_clip != 0) {
+				if (weapon->m_iClip1 != 0) {
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(auto_fires_full_clip_id, 1.0f);
+				}
+				else {
+					weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(auto_fires_full_clip_id);
+				}
+			}
+		}
+		g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldHost;
+
+	}
+
+	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		if (!applyGunDelay.empty()) {
+			for (auto it = applyGunDelay.begin(); it != applyGunDelay.end();) {
+				if (it->first == nullptr || it->second < gpGlobals->curtime) {
+					it = applyGunDelay.erase(it);
+					continue;
+				}
+				it->first->GetOrCreateEntityModule<WeaponModule>("weapon")->attackTimeSave = it->first->m_flNextPrimaryAttack;
+				it->first->m_flNextPrimaryAttack = gpGlobals->curtime + 1.0f;
+				it++;
+			}
+		}
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		if (!applyGunDelay.empty()) {
+			for (auto it = applyGunDelay.begin(); it != applyGunDelay.end(); it++) {
+				it->first->m_flNextPrimaryAttack = it->first->GetOrCreateEntityModule<WeaponModule>("weapon")->attackTimeSave;
+			}
+		} 
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
+		for (int i = 0; i < MAX_WEAPONS; i++) {
+			auto weapon = player->GetWeapon(i);
+			if (weapon != nullptr) {
+				int fire_full_clip = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_full_clip, force_fire_full_clip);
+				int burst_num = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, burst_num, burst_fire_count);
+				int auto_full_clip = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, auto_full_clip, auto_fires_full_clip);
+				if ((burst_num < 0 || fire_full_clip != 0) && auto_full_clip != 0) {
+					static int auto_fires_full_clip_id = GetItemSchema()->GetAttributeDefinitionByName("auto fires full clip")->GetIndex();
+					weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(auto_fires_full_clip_id);
+				}
+			}
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+	}
+
+	DETOUR_DECL_MEMBER(QAngle, CTFWeaponBase_GetSpreadAngles)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_GetSpreadAngles)();
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		auto eye = weapon->GetTFPlayerOwner()->EyeAngles();
+		if (eye != ret) {
+			auto diff = ret - eye;
+			auto mod = weapon->GetEntityModule<WeaponModule>("weapon");
+			if (mod != nullptr && mod->totalAccuracyApplied != 1.0f) {
+				diff *= mod->totalAccuracyApplied;
+			}
+			ret = eye + diff;
+		}
+		return ret;
+	}
+
+	inline int IsCustomAttribute(CEconItemAttribute &attr) {
+		return (attr.GetAttributeDefinitionIndex() > 4200 && attr.GetAttributeDefinitionIndex() < 5000);
+	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
+	{	
+		auto list = reinterpret_cast<CAttributeList *>(this);
+		auto &attrs = list->Attributes();
+		int countpre = attrs.Count();
+		DETOUR_MEMBER_CALL(CAttributeList_SetRuntimeAttributeValue)(pAttrDef, flValue);
+		// Move around attributes so that the custom attributes appear at the end of the list
+		if (pAttrDef != nullptr && countpre != attrs.Count() && attrs.Count() > 20 && (pAttrDef->GetIndex() < 4200 || pAttrDef->GetIndex() > 5000)) {
+			int count = attrs.Count();
+			int i = 1;
+			while (i < count) {
+				auto x = attrs[i];
+				int cmp = IsCustomAttribute(x);
+				int j = i - 1;
+				while (j >= 0 && IsCustomAttribute(attrs[j]) > cmp) {
+						attrs[j+1] = attrs[j];
+					j = j - 1;
+				}
+				attrs[j+1] = x;
+				i = i + 1;
+			}
+			/*std::sort(attrs.begin(), attrs.end(), [](auto a, auto b) {
+				return IsCustomAttribute(a) - IsCustomAttribute(b);
+			}); */
+			list->NotifyManagerOfAttributeValueChanges();
+		}
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -3173,14 +3473,14 @@ namespace Mod::Attr::Custom_Attributes
 		DisplayAttributeString(reinterpret_cast<CTFPlayer *>(this), 6);
 	}
 
-	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, int item_def, bool display_stock)
+	void DisplayAttributes(int &indexstr, std::vector<std::string> &attribute_info_vec, CUtlVector<CEconItemAttribute> &attrs, CTFPlayer *player, CEconItemView *item_def, bool display_stock)
 	{
 		bool added_item_name = false;
 		int slot = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
-		if (display_stock && (item_def == -1 || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
+		if (display_stock && (item_def == nullptr || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
-			if (item_def != -1)
-				attribute_info_vec.back() += CFmtStr("\n%s:\n\n", GetItemName(item_def));
+			if (item_def != nullptr)
+				attribute_info_vec.back() += CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def));
 			else
 				attribute_info_vec.back() += "\nCharacter Attributes:\n\n";
 		}
@@ -3226,8 +3526,8 @@ namespace Mod::Attr::Custom_Attributes
 			} 
 
 			if (!added_item_name) {
-				if (item_def != -1)
-					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemName(item_def)));
+				if (item_def != nullptr)
+					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def)));
 				else
 					format_str.insert(0, "\nCharacter Attributes:\n\n");
 
@@ -3283,21 +3583,21 @@ namespace Mod::Attr::Custom_Attributes
 		int indexstr = 0;
 
 		if (slot == -1) {
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
 			
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock);
 		}
 		else {
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock);
 
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, -1, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
 			if (entity->GetItem() != nullptr && entity->GetItem() != view) {
-				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem()->m_iItemDefinitionIndex, display_stock);
+				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock);
 			}
 		});
 		
@@ -3393,7 +3693,7 @@ namespace Mod::Attr::Custom_Attributes
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
         if (mgr->m_hOuter != nullptr) {
-            auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
+			auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
             if (cache != nullptr) {
 				int count = mgr->m_hOuter->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
 				for(int i = 0; i < count; i++) {
@@ -3637,6 +3937,14 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Reload,			 "CTFWeaponBase::Reload");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster,			 "CTFWeaponBase::Holster");
+			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_D2, "CBaseProjectile::~CBaseProjectile [D2]");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_PrimaryAttack, "CTFWeaponBaseGun::PrimaryAttack");
+			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetSpreadAngles, "CTFWeaponBase::GetSpreadAngles");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_SetRuntimeAttributeValue, "CAttributeList::SetRuntimeAttributeValue");
+			
 			
 			//Inspect custom attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InspectButtonPressed ,"CTFPlayer::InspectButtonPressed");

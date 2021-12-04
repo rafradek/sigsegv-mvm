@@ -195,8 +195,12 @@ public:
 	void RemoveAttributeByIndex(int index)                             {        ft_RemoveAttributeByIndex(this, index); }
 	void DestroyAllAttributes()                                        {        ft_DestroyAllAttributes  (this); }
 	void SetRuntimeAttributeValue(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeValue  (this, pAttrDef, value); }
+	void NotifyManagerOfAttributeValueChanges()                        {        ft_NotifyManagerOfAttributeValueChanges  (this); }
+
 	CUtlVector<CEconItemAttribute>& Attributes() { return this->m_Attributes; }
 	void AddStringAttribute(CEconItemAttributeDefinition *pAttrDef, std::string value);
+	void SetRuntimeAttributeValueByDefID(int def_idx, float value);
+	void RemoveAttributeByDefID(int def_idx);
 	
 private:
 	int vtable;
@@ -211,6 +215,7 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void, int>                                  ft_RemoveAttributeByIndex{ "CAttributeList::RemoveAttributeByIndex" };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_DestroyAllAttributes  { "CAttributeList::DestroyAllAttributes"   };
 	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeValue  { "CAttributeList::SetRuntimeAttributeValue"   };
+	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_NotifyManagerOfAttributeValueChanges  { "CAttributeList::NotifyManagerOfAttributeValueChanges"   };
 
 };
 static_assert(sizeof(CAttributeList) == 0x1c);
@@ -321,6 +326,7 @@ public:
 	CTFItemDefinition *GetItemDefinition() const                                                      { return ft_GetStaticData(this); }
 	CEconItem *GetSOCData() const                                                      				  { return ft_GetSOCData(this); }
 	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
+	const char *GetPlayerDisplayModel(int classindex, int team) const                                      { return ft_GetPlayerDisplayModel(this, classindex, team); }
 
 	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
@@ -341,7 +347,8 @@ private:
 	static MemberFuncThunk<      CEconItemView *, void>                              ft_ctor;
 	static MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> ft_Init;
 	static MemberFuncThunk<const CEconItemView *, CTFItemDefinition *>               ft_GetStaticData;
-	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;;
+	static MemberFuncThunk<const CEconItemView *, CEconItem *>                       ft_GetSOCData;
+	static MemberFuncThunk<const CEconItemView *, const char *, int, int>            ft_GetPlayerDisplayModel;
 
 	static inline MemberFuncThunk<const CEconItemView *, void, IEconItemAttributeIterator *>         ft_IterateAttributes     { "CEconItemView::IterateAttributes"      };
 	
@@ -408,11 +415,16 @@ public:
 		if (ptr == nullptr) return;
 		::operator delete(reinterpret_cast<void *>(ptr));
 	}
+	CEconItemAttribute() {}
+
+	CEconItemAttribute( const attrib_definition_index_t iAttributeIndex, float flValue ) : m_iAttributeDefinitionIndex(iAttributeIndex) {m_iRawValue32.m_Float = flValue;}
 	
 	attribute_data_union_t *GetValuePtr() { return &this->m_iRawValue32; }
 	
 	CEconItemAttributeDefinition *GetStaticData() const { return ft_GetStaticData(this); }
-	
+
+	int GetAttributeDefinitionIndex() const { return m_iAttributeDefinitionIndex; }
+	friend class CAttributeList;
 private:
 	static MemberFuncThunk<      CEconItemAttribute *, void>                           ft_ctor;
 	static MemberFuncThunk<const CEconItemAttribute *, CEconItemAttributeDefinition *> ft_GetStaticData;
@@ -494,8 +506,15 @@ private:
 
 CItemGeneration *ItemGeneration();
 
+extern StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput;
 
-void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr);
+inline void CopyStringAttributeValueToCharPointerOutput(const CAttribute_String *attr_str, const char **p_cstr) { ft_CopyStringAttributeValueToCharPointerOutput(attr_str, p_cstr); }
+inline const char *GetStringAttributeValue(const CAttribute_String *attr_str) 
+{ 
+	const char *p_cstr;
+	ft_CopyStringAttributeValueToCharPointerOutput(attr_str, &p_cstr);
+	return  p_cstr;
+}
 
 
 extern GlobalThunk<const char *[NUM_VISUALS_BLOCKS]> g_TeamVisualSections;

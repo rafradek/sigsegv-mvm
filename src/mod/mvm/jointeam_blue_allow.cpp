@@ -2,23 +2,18 @@
 #include "stub/gamerules.h"
 #include "stub/tfbot.h"
 #include "stub/objects.h"
+#include "stub/tf_player_resource.h"
 #include "stub/tf_shareddefs.h"
 #include "stub/misc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
 #include "util/iterate.h"
 #include "stub/populators.h"
+#include "mod/pop/popmgr_extensions.h"
 
 // TODO: move to common.h
 #include <igamemovement.h>
 #include <in_buttons.h>
-
-
-/* HACK */
-namespace Mod::Pop::PopMgr_Extensions
-{
-	bool PopFileIsOverridingJoinTeamBlueConVarOn();
-}
 
 
 namespace Mod::MvM::JoinTeam_Blue_Allow
@@ -851,48 +846,65 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		return ret;
 	}
 
+	void TeleportAfterSpawn(CTFPlayer *player)
+	{
+		float distanceToBomb = std::numeric_limits<float>::max();
+		CObjectTeleporter *teleOut = nullptr;
+		CCaptureZone *zone = nullptr;
+
+		for (auto elem : ICaptureZoneAutoList::AutoList()) {
+			zone = rtti_scast<CCaptureZone *>(elem);
+			if (zone != nullptr)
+				break;
+		}
+		if (zone == nullptr)
+			return;
+			
+		CTFPlayer *playerbot = ToTFBot(player);
+		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+			auto tele = rtti_cast<CObjectTeleporter *>(IBaseObjectAutoList::AutoList()[i]);
+			if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && !tele->m_bBuilding && !tele->m_bDisabled && !tele->m_bCarried) {
+				if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetOwnerEntity()) == nullptr) || 
+						(playerbot == nullptr && (tele->GetOwnerEntity() == nullptr || ToTFBot(tele->GetOwnerEntity()) != nullptr))) ) {
+					float dist = tele->WorldSpaceCenter().DistToSqr(zone->WorldSpaceCenter());
+					if ( dist < distanceToBomb) {
+						teleOut = tele;
+						distanceToBomb = dist;
+					}
+				}
+			}
+		}
+		if (teleOut != nullptr) {
+			auto vec = teleOut->WorldSpaceCenter();
+			vec.z += teleOut->CollisionProp()->OBBMaxs().z;
+			bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
+			if (!is_space_to_spawn)
+				vec.z += 50.0f;
+			if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
+				player->Teleport(&(vec),&(teleOut->GetAbsAngles()),&(player->GetAbsVelocity()));
+				player->EmitSound("MVM.Robot_Teleporter_Deliver");
+			}
+		}
+	}
+	
+	THINK_FUNC_DECL(TeleportAfterSpawnThink)
+	{
+		TeleportAfterSpawn(reinterpret_cast<CTFPlayer *>(this));
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
 		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
 		bool bluhuman = IsMvMBlueHuman(player);
 		CTFPlayer *playerbot = ToTFBot(player);
 		if ((bluhuman && cvar_teleport.GetBool()) || cvar_teleport_player.GetBool()) {
-			float distanceToBomb = std::numeric_limits<float>::max();
-			CObjectTeleporter *teleOut = nullptr;
-			CCaptureZone *zone = nullptr;
 
-			for (auto elem : ICaptureZoneAutoList::AutoList()) {
-				zone = rtti_scast<CCaptureZone *>(elem);
-				if (zone != nullptr)
-					break;
+			if (player->IsBot()) {
+				// Bots need a delay in telein in case they have reprogrammed mode on, to prevent teleports from teleporting opposite team bots
+				THINK_FUNC_SET(player, TeleportAfterSpawnThink, gpGlobals->curtime + 1.0f);
 			}
-			if (zone == nullptr)
-				return;
-
-			for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
-				auto tele = rtti_cast<CObjectTeleporter *>(IBaseObjectAutoList::AutoList()[i]);
-				if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && !tele->m_bBuilding && !tele->m_bDisabled && !tele->m_bCarried) {
-					if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetOwnerEntity()) == nullptr) || 
-							(playerbot == nullptr && (tele->GetOwnerEntity() == nullptr || ToTFBot(tele->GetOwnerEntity()) != nullptr))) ) {
-						float dist = tele->WorldSpaceCenter().DistToSqr(zone->WorldSpaceCenter());
-						if ( dist < distanceToBomb) {
-							teleOut = tele;
-							distanceToBomb = dist;
-						}
-					}
-				}
-			}
-
-			if (teleOut != nullptr) {
-				auto vec = teleOut->WorldSpaceCenter();
-				vec.z += teleOut->CollisionProp()->OBBMaxs().z;
-				bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
-				if (!is_space_to_spawn)
-					vec.z += 50.0f;
-				if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
-					player->Teleport(&(vec),&(teleOut->GetAbsAngles()),&(player->GetAbsVelocity()));
-					player->EmitSound("MVM.Robot_Teleporter_Deliver");
-				}
+			else {
+				TeleportAfterSpawn(player);
 			}
 		}
 	}
@@ -911,7 +923,23 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 	}
 
-	
+	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		static float angpre[34];
+		
+		ForEachTFPlayer([](CTFPlayer *player) {
+			if (IsMvMBlueHuman(player)) {
+				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
+			}
+		}); 
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		ForEachTFPlayer([](CTFPlayer *player) {
+			if (IsMvMBlueHuman(player)) {
+				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_BLUE, ENTINDEX(player));
+			}
+		}); 
+	}
+
 	// TODO: on mod disable, force blue humans back onto red team
 	// - use IsMvMBlueHuman
 	// - beware of the call order between IMod::OnDisable and when the patches/detours are actually disabled...
@@ -993,6 +1021,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 			// Player minigiant stomp logic
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch,                  "CTFPlayer::Touch");
+			
+			// Allow blue players to appear on the scoreboard
+			// MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
 			
 		}
 		

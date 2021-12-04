@@ -381,8 +381,12 @@ protected:
 	/* reference getters */
 	RefRO_t GetRO() const { return *this->GetPtrRO(); }
 	RefRW_t GetRW() const { return *this->GetPtrRW(); }
+
+// This is public because sometimes the conversion operator does not do their job correctly
+public:
 	Ref_t   Get  () const { return *this->GetPtr  (); }
-	
+
+protected:
 	/* pointer getters */
 	PtrRO_t GetPtrRO() const { return reinterpret_cast<PtrRO_t>(this->GetInstanceVarAddr()); }
 	PtrRW_t GetPtrRW() const { return reinterpret_cast<PtrRW_t>(this->GetInstanceVarAddr()); }

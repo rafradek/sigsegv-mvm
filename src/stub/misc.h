@@ -89,6 +89,8 @@ void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *m
 
 void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid);
 
+void UTIL_StringToVector(float *base, const char* string);
+
 void UTIL_ParticleTracer(const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, 
 				 int iEntIndex, int iAttachment, bool bWhiz);
 

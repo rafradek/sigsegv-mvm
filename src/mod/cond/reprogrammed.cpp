@@ -2,6 +2,7 @@
 #include "stub/tfbot.h"
 #include "stub/team.h"
 #include "stub/objects.h"
+#include "stub/tf_player_resource.h"
 #include "stub/tf_shareddefs.h"
 #include "stub/gamerules.h"
 #include "stub/tfbot_behavior.h"
@@ -861,6 +862,23 @@ namespace Mod::Cond::Reprogrammed
 		}
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
 	}
+	
+	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		static float angpre[34];
+		
+		ForEachTFBot([](CTFBot *player) {
+			if (player->GetTeamNumber() == TF_TEAM_RED) {
+				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_BLUE, ENTINDEX(player));
+			}
+		}); 
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		ForEachTFBot([](CTFBot *player) {
+			if (player->GetTeamNumber() == TF_TEAM_RED) {
+				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
+			}
+		}); 
+	}
 
 #if 0
 	DETOUR_DECL_MEMBER(const char *, CTFWeaponBase_GetShootSound, int iIndex)
@@ -945,6 +963,9 @@ namespace Mod::Cond::Reprogrammed
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent, "CTFGameRules::FireGameEvent");
 			MOD_ADD_DETOUR_STATIC(CollectPlayers_CTFPlayer,   "CollectPlayers<CTFPlayer>");
 			MOD_ADD_DETOUR_MEMBER(CWave_ActiveWaveUpdate,   "CWave::ActiveWaveUpdate");
+
+			// Hide red bots from the scoreboard
+			// MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
 			
 		//	/* fix: make giant weapon sounds apply to miniboss players on any team */
 		//	this->AddPatch(new CPatch_CTFWeaponBase_GetShootSound());

@@ -2055,38 +2055,84 @@
     }
     "4520"
     {
-        "name"	"spread recovery time"
-        "attribute_class"	"spread_recovery_time"
-        "description_string"	"After this amount of time (in seconds) after firing a (hitscan) shot, the weapon becomes 100% accurate"
+        "name"	"projectile sound"
+        "attribute_class"	"projectile_sound"
+		"attribute_type"	"string"
+        "description_string"	"%d"
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
     }
     "4521"
     {
-        "name"	"add spread while moving"
-        "attribute_class"	"add_spread_moving"
-        "description_string"	"Added spread while moving"
+        "name"	"burst fire count"
+        "attribute_class"	"burst_fire_count"
+        "description_string"	"Fires %d rounds in burst"
         "description_format"	"value_is_additive"
-        "hidden"	"1"
-        "effect_type"	"negative"
+        "hidden"	"0"
+        "effect_type"	"positive"
     }
     "4522"
     {
-        "name"	"mult spread while moving"
-        "attribute_class"	"mult_spread_moving"
-        "description_string"	"(+-)%p% spread while moving"
+        "name"	"burst fire rate mult"
+        "attribute_class"	"burst_fire_rate_mult"
+        "description_string"	"(+-)%p% fire rate in burst"
         "description_format"	"value_is_percentage"
-        "hidden"	"0"
-        "effect_type"	"negative"
+        "hidden"	"1"
+        "effect_type"	"positive"
     }
     "4523"
     {
-        "name"	"spread while moving min velocity"
-        "attribute_class"	"min_velocity_spread_moving"
-        "description_string"	"When the player is moving faster than this (HU/s), apply moving spread penalties"
+        "name"	"continous accuracy mult"
+        "attribute_class"	"continous_accuracy_mult"
+        "description_string"	"(+-)%p% accurate over time"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4524"
+    {
+        "name"	"continous accuracy time"
+        "attribute_class"	"continous_accuracy_time"
+        "description_string"	"Up to (+-)%p% accurate over time"
         "description_format"	"value_is_additive"
         "hidden"	"1"
-        "effect_type"	"negative"
+        "effect_type"	"positive"
+    }
+    "4525"
+    {
+        "name"	"continous accuracy time recovery"
+        "attribute_class"	"continous_accuracy_time_recovery"
+        "description_string"	"Up to (+-)%p% accurate over time"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4526"
+    {
+        "name"	"duck accuracy mult"
+        "attribute_class"	"duck_accuracy_mult"
+        "description_string"	"(+-)%p% accurate when crouching"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4527"
+    {
+        "name"	"move accuracy mult"
+        "attribute_class"	"move_accuracy_mult"
+        "description_string"	"(+-)%p% accurate when moving"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4528"
+    {
+        "name"	"force fire full clip"
+        "attribute_class"	"force_fire_full_clip"
+        "description_string"	"Fires full clip automatically"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
     }
 }

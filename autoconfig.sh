@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONFIGURE=$(realpath configure.py)
-PATHS="--hl2sdk-root=/mnt/user/dev/alliedmodders --mms-path=/mnt/user/dev/alliedmodders/mmsource-1.10 --sm-path=/mnt/user/dev/alliedmodders/sourcemod"
+PATHS="--hl2sdk-root=/home/rafradek/dev/alliedmodders --mms-path=/home/rafradek/dev/alliedmodders/mmsource-1.10 --sm-path=/home/rafradek/dev/alliedmodders/sourcemod"
 
 mkdir -p build
 cd build

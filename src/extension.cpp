@@ -5,8 +5,10 @@
 #include "mod.h"
 #include "addr/addr.h"
 #include "addr/prescan.h"
+#include "stub/tfplayer.h"
 #include "gameconf.h"
 #include "prop.h"
+#include "util/pooled_string.h"
 #include "util/rtti.h"
 //#include "disasm/disasm.h"
 #include "factory.h"
@@ -137,6 +139,8 @@ void CExtSigsegv::SDK_OnUnload()
 	g_GCHook.UnloadAll();
 	
 	ColorSpew::Disable();
+
+	UnloadAllCustomThinkFunc();
 }
 
 void CExtSigsegv::SDK_OnAllLoaded()
@@ -275,6 +279,7 @@ bool CExtSigsegv::RegisterConCommandBase(ConCommandBase *pCommand)
 
 void CExtSigsegv::LevelInitPreEntity()
 {
+	DevMsg("extsig\n");
 	this->LoadSoundOverrides();
 }
 

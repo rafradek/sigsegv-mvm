@@ -11,6 +11,7 @@ class CTFWeaponBase;
 class CTFPlayer;
 class CTFItem;
 class CTFWearable;
+class TFPlayerClassData_t;
 enum ETFFlagType : int32_t;
 
 enum PlayerAnimEvent_t : int32_t
@@ -329,7 +330,7 @@ private:
 	static MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > ft_Burn;
 };
 
-class CTFPlayer : public CBaseMultiplayerPlayer
+class CTFPlayer : public CBaseMultiplayerPlayer, public IHasAttributes
 {
 public:
 	CTFPlayerClass *GetPlayerClass()             { return &m_PlayerClass; }
@@ -394,9 +395,14 @@ public:
 	void CheckInstantLoadoutRespawn()                              { ft_CheckInstantLoadoutRespawn  (this); }
 	void ForceRegenerateAndRespawn()                               { ft_ForceRegenerateAndRespawn  (this); }
 	
-	void ApplyGenericPushbackImpulse(Vector &vec)                  { ft_ApplyGenericPushbackImpulse (this, vec); }
-	bool CanAirDash() const				    					   { return ft_CanAirDash (this); }
-	void Regenerate(bool refillHealthAndAmmo = true)			   { ft_Regenerate(this, refillHealthAndAmmo); }
+	void ApplyGenericPushbackImpulse(Vector &vec, CTFPlayer *inflictor) { ft_ApplyGenericPushbackImpulse (this, vec, inflictor); }
+	bool CanAirDash() const				    					        { return ft_CanAirDash (this); }
+	void Regenerate(bool refillHealthAndAmmo = true)			        { ft_Regenerate(this, refillHealthAndAmmo); }
+	void ManageRegularWeapons(TFPlayerClassData_t *data)		        { ft_ManageRegularWeapons(this, data); }
+	void ManageBuilderWeapons(TFPlayerClassData_t *data)		        { ft_ManageBuilderWeapons(this, data); }
+	void GiveDefaultItems()		                                        { ft_GiveDefaultItems(this); }
+	void GiveDefaultItemsNoAmmo();
+	float PlayScene(const char *pszScene, float flDelay = 0.0f, void *response = nullptr, IRecipientFilter *filter = nullptr)		        { return ft_PlayScene(this, pszScene, flDelay, response, filter); }
 	
 	
 	CEconEntity *GetEconEntityByName(const char *name);
@@ -411,6 +417,7 @@ public:
 	DECL_SENDPROP   (bool,       m_bAllowMoveDuringTaunt);
 	DECL_SENDPROP   (float,      m_flCurrentTauntMoveSpeed);
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
+	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	
 private:
 	DECL_SENDPROP_RW(CTFPlayerClass,   m_PlayerClass);
@@ -457,9 +464,13 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void, int                       > ft_RemoveCurrency;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_CheckInstantLoadoutRespawn;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_ForceRegenerateAndRespawn;
-	static MemberFuncThunk<      CTFPlayer *, void, Vector &                  > ft_ApplyGenericPushbackImpulse;
+	static MemberFuncThunk<      CTFPlayer *, void, Vector &, CTFPlayer *     > ft_ApplyGenericPushbackImpulse;
 	static MemberFuncThunk<const CTFPlayer *, bool							  > ft_CanAirDash;
 	static MemberFuncThunk<		 CTFPlayer *, void, bool					  > ft_Regenerate;
+	static MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	  > ft_ManageRegularWeapons;
+	static MemberFuncThunk<		 CTFPlayer *, void, TFPlayerClassData_t *	  > ft_ManageBuilderWeapons;
+	static MemberFuncThunk<		 CTFPlayer *, void                      	  > ft_GiveDefaultItems;
+	static MemberFuncThunk<		 CTFPlayer *, float, const char *, float, void *, IRecipientFilter *	  > ft_PlayScene;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 };
@@ -527,7 +538,11 @@ template<> inline int CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *> *playerV
 extern StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent;
 inline void TE_PlayerAnimEvent(CBasePlayer *player, int anim, int data) { ft_TE_PlayerAnimEvent(player, anim, data); }
 
+CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove = false, bool force_give = true);
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name);
+
+extern StaticFuncThunk<TFPlayerClassData_t *, uint> ft_GetPlayerClassData;
+inline TFPlayerClassData_t *GetPlayerClassData(uint index) { return ft_GetPlayerClassData(index); }
 
 
 #endif

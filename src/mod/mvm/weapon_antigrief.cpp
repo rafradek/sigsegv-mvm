@@ -101,7 +101,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	}
 	static inline bool ShouldBlock_Moonshot(int flags) { return ((flags & 9) == 9 && cvar_moonshot.GetBool()); }
 	
-	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse, CTFPlayer * inflictor)
 	{
 		if (ShouldBlock_ScorchShot() && TFGameRules()->IsMannVsMachineMode())
 			return;
@@ -114,7 +114,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse);
+		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
 	}
 	
 	bool HasStunAttribute(CTFPlayer *attacker)

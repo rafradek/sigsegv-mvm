@@ -98,11 +98,11 @@ namespace Mod::Visualize::Airblast_Vectors
 	}
 	
 	
-	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse, CTFPlayer * inflictor)
 	{
 		DevMsg("ApplyGenericPushbackImpulse: %6.1f [ %+7.1f %+7.1f %+7.1f ]\n",
 			impulse.Length(), impulse.x, impulse.y, impulse.z);
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse);
+		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
 	}
 	
 	

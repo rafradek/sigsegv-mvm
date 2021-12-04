@@ -410,7 +410,9 @@ private:
 
 namespace Link
 {
+	extern bool link_finished;
 	bool InitAll();
+	inline bool LinkFinished() { return link_finished; };
 }
 
 

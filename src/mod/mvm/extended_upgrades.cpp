@@ -7,17 +7,14 @@
 #include "util/iterate.h"
 #include "util/misc.h"
 #include "mod/pop/common.h"
+#include "mod/pop/popmgr_extensions.h"
 #include "stub/upgrades.h"
 #include "stub/entities.h"
 #include "stub/strings.h"
 #include "stub/tf_objective_resource.h"
-
-namespace Mod::Pop::PopMgr_Extensions {
-    bool ExtendedUpgradesNoUndo();
-    IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index);
-	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player);
-    bool HasExtraLoadoutItems(int class_index);
-}
+#include <fmt/core.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
 
 namespace Mod::MvM::Extended_Upgrades
 {
@@ -56,7 +53,7 @@ namespace Mod::MvM::Extended_Upgrades
         UpgradeCriteriaName(std::string name) : m_name(name) {}
         
         virtual bool Matches(CEconEntity *ent, CEconItemView *item, CTFPlayer *owner) override {
-            return FStrEq(m_name.c_str(), item->GetItemDefinition()->GetName());
+            return FStrEq(m_name.c_str(), GetItemName(item));
         }
 
         virtual void ParseKey(KeyValues *kv) override {
@@ -138,27 +135,18 @@ namespace Mod::MvM::Extended_Upgrades
         bool show_requirements = true;
         //std::string on_upgrade_output = "";
         std::vector<std::string> on_upgrade_outputs = {};
+        std::vector<std::string> on_apply_outputs = {};
+        std::vector<std::string> on_downgrade_outputs = {};
+        std::vector<std::string> on_restore_outputs = {};
         bool force_enable = false;
+        int tier = 0;
+        int uigroup = 0;
     };
 
     std::vector<UpgradeInfo *> upgrades; 
     std::map<std::string, UpgradeInfo *> upgrades_ref;
-
-    struct UpgradeHistory {
-        UpgradeInfo *upgrade;
-        int player_class;
-        int item_def_index;
-        int cost;
-    };
-
-    struct PlayerUpgradeHistory {
-        std::vector<UpgradeHistory> upgrades;
-        int currency_spent;
-        CSteamID steam_id;
-    };
-
-    std::vector<PlayerUpgradeHistory> upgrade_history;
-    std::vector<PlayerUpgradeHistory> upgrade_snapshot;
+    std::vector<int> max_tier_upgrades;
+    std::vector<int> min_tier_upgrades;
 
     std::map<CHandle<CTFPlayer>, IBaseMenu *> select_type_menus;
 
@@ -167,6 +155,29 @@ namespace Mod::MvM::Extended_Upgrades
     int extended_upgrades_start_index = -1;
 
     bool BuyUpgrade(UpgradeInfo *upgrade,/* CEconEntity *item*/ int slot, CTFPlayer *player, bool free, bool downgrade);
+    void FireOutputs(std::vector<std::string> &outputs, variant_t &defaultValue, CBaseEntity *activator, CBaseEntity *caller)
+    {
+        for(const auto &output : outputs){
+            
+            boost::tokenizer<boost::char_separator<char>> tokens(output, boost::char_separator<char>(","));
+            auto tokens_it = tokens.begin();
+            std::string target = tokens_it != tokens.end() ? *tokens_it++ : "";
+            std::string action = tokens_it != tokens.end() ? *tokens_it++ : "";
+            std::string value = tokens_it != tokens.end() ? *tokens_it++ : "";
+            std::string delay = tokens_it != tokens.end() ? *tokens_it++ : "";
+                
+            if(target != "" && action != "") {
+                // Use provided default parameter
+                variant_t actualvalue = defaultValue;
+                if (value != "") {
+                    string_t stringvalue = AllocPooledString(value.c_str());
+                    actualvalue.SetString(stringvalue);
+                }
+                CEventQueue &que = g_EventQueue;
+                que.AddEvent(STRING(AllocPooledString(target.c_str())), STRING(AllocPooledString(action.c_str())), actualvalue, strtof(delay.c_str(), nullptr), activator, caller, -1);
+            }
+        }
+    }
 
     class SelectUpgradeWeaponHandler : public IMenuHandler
     {
@@ -267,22 +278,21 @@ namespace Mod::MvM::Extended_Upgrades
         int slot;
     };
 
-    const char* GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value) {
+    void GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value, std::string &string) {
         if (FStrEq(attr->GetDescriptionFormat(), "value_is_percentage")) {
-            return CFmtStr("%+2f%% %s", value, attr->GetName());
+            string = fmt::format("{+2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_inverted_percentage")) {
             value *= -1.0f;
-            return CFmtStr("%+2f%% %s", value, attr->GetName());
+            string = fmt::format("{+2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive")) {
-            return CFmtStr("%2f%% %s", value, attr->GetName());
+            string = fmt::format("{2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive_percentage")) {
             value *= 100.0f;
-            return CFmtStr("%2f%% %s", value, attr->GetName());
+            string = fmt::format("{2f}% {}", value, attr->GetName());
         }
-        return "";
     }
 
     void Parse_RequiredUpgrades(KeyValues *kv, std::map<std::string, int> &required_upgrades) {
@@ -327,6 +337,10 @@ namespace Mod::MvM::Extended_Upgrades
             slot = strtol(string, nullptr, 10);
         return slot;
     }
+    
+    int GetExtendedUpgradesStartIndex() {
+        return extended_upgrades_start_index;
+    }
 
     bool Parse_Criteria(KeyValues *kv, std::vector<std::unique_ptr<UpgradeCriteria>> &criteria) {
         FOR_EACH_SUBKEY(kv, subkey) {
@@ -363,7 +377,7 @@ namespace Mod::MvM::Extended_Upgrades
             upgrade_game.m_flCap = upgrade->cap;
             upgrade_game.m_flIncrement = upgrade->increment;
             upgrade_game.m_nCost = upgrade->cost;
-            upgrade_game.m_iUIGroup = upgrade->playerUpgrade ? 1 : 0;
+            upgrade_game.m_iUIGroup = upgrade->playerUpgrade ? 1 : upgrade->uigroup;
             upgrade_game.m_iQuality = 9500;
             upgrade_game.m_iTier = 0;
 
@@ -376,7 +390,7 @@ namespace Mod::MvM::Extended_Upgrades
                 upgrade_game_child.m_flCap = entry.second > 0 ? 1.0f + entry.second * 64 : entry.second * 64;
                 upgrade_game_child.m_flIncrement = entry.second;
                 upgrade_game_child.m_nCost = 0;
-                upgrade_game_child.m_iUIGroup = upgrade->playerUpgrade ? 1 : 0;
+                upgrade_game_child.m_iUIGroup = upgrade->playerUpgrade ? 1 : upgrade->uigroup;
                 upgrade_game_child.m_iQuality = 9500;
                 upgrade_game_child.m_iTier = 0;
             }
@@ -385,6 +399,29 @@ namespace Mod::MvM::Extended_Upgrades
 
     void Parse_ExtendedUpgrades(KeyValues *kv) {
         FOR_EACH_SUBKEY(kv, subkey) {
+            if (FStrEq(subkey->GetName(), "MaxUpgradesTier")) {
+                FOR_EACH_SUBKEY(subkey, subkey2) {
+                    int tier = atoi(subkey2->GetName());
+                    int max = subkey2->GetInt();
+                    if ((size_t) tier > max_tier_upgrades.size()) {
+                        max_tier_upgrades.resize(tier, 1);
+                    }
+                    max_tier_upgrades[tier - 1] = max;
+                }
+                continue;
+            }
+            else if (FStrEq(subkey->GetName(), "MinUpgradesTier")) {
+                FOR_EACH_SUBKEY(subkey, subkey2) {
+                    int tier = atoi(subkey2->GetName());
+                    int max = subkey2->GetInt();
+                    if ((size_t) tier > min_tier_upgrades.size()) {
+                        min_tier_upgrades.resize(tier, 1);
+                    }
+                    min_tier_upgrades[tier - 1] = max;
+                }
+                continue;
+            }
+
             auto upgradeinfo = new UpgradeInfo(); // upgrades.emplace(upgrades.end());
             upgradeinfo->ref_name = subkey->GetName();
             
@@ -446,12 +483,27 @@ namespace Mod::MvM::Extended_Upgrades
                     }
                 }
                 else if (FStrEq(subkey2->GetName(), "OnUpgrade")) {
-                    //upgradeinfo->on_upgrade_output = subkey2->GetString();
                     Parse_OnUpgradeOutputs(subkey2, upgradeinfo->on_upgrade_outputs);
+                }
+                else if (FStrEq(subkey2->GetName(), "OnApply")) {
+                    Parse_OnUpgradeOutputs(subkey2, upgradeinfo->on_apply_outputs);
+                }
+                else if (FStrEq(subkey2->GetName(), "OnDowngrade")) {
+                    Parse_OnUpgradeOutputs(subkey2, upgradeinfo->on_downgrade_outputs);
+                }
+                else if (FStrEq(subkey2->GetName(), "OnRestore")) {
+                    Parse_OnUpgradeOutputs(subkey2, upgradeinfo->on_restore_outputs);
                 }
                 else if (FStrEq(subkey2->GetName(), "ForceEnable")) {
                     upgradeinfo->force_enable = true;
                 }
+                else if (FStrEq(subkey2->GetName(), "Tier")) {
+                    upgradeinfo->tier = subkey2->GetInt();
+                }
+                else if (FStrEq(subkey2->GetName(), "UIGroup")) {
+                    upgradeinfo->uigroup = subkey2->GetInt();
+                }
+                
             }
 
             if (upgradeinfo->attributeDefinition == nullptr) {
@@ -463,7 +515,7 @@ namespace Mod::MvM::Extended_Upgrades
 
 
                 if (upgradeinfo->name == "")
-                    upgradeinfo->name = GetIncrementStringForAttribute(upgradeinfo->attributeDefinition, upgradeinfo->increment); //upgradeinfo->attributeDefinition->GetKVString("description_string", );
+                    GetIncrementStringForAttribute(upgradeinfo->attributeDefinition, upgradeinfo->increment, upgradeinfo->name); //upgradeinfo->attributeDefinition->GetKVString("description_string", );
             }
 		}
         RemoveUpgradesFromGameList();
@@ -472,6 +524,8 @@ namespace Mod::MvM::Extended_Upgrades
     
 
     void ClearUpgrades() {
+        max_tier_upgrades.clear();
+        min_tier_upgrades.clear();
         std::vector<CHandle<CTFPlayer>> vecmenus;
         for (auto pair : select_type_menus) {
             vecmenus.push_back(pair.first);
@@ -493,13 +547,11 @@ namespace Mod::MvM::Extended_Upgrades
         upgrades.clear();
         upgrades_ref.clear();
 
-        upgrade_history.clear();
-        upgrade_snapshot.clear();
         RemoveUpgradesFromGameList();
         DevMsg("Total updates count: %d %d\n", CMannVsMachineUpgradeManager::Upgrades().Count(), extended_upgrades_start_index);
     }
 
-    bool IsValidUpgradeForWeapon(UpgradeInfo *upgrade, CEconEntity *item, CTFPlayer *player, char *reason, int reasonlen) {
+    bool IsValidUpgradeForWeapon(UpgradeInfo *upgrade, CEconEntity *item, CTFPlayer *player, std::string &reason) {
         if (upgrade->hidden)
             return false;
 
@@ -542,11 +594,11 @@ namespace Mod::MvM::Extended_Upgrades
         }
 
         if (wave < upgrade->allow_wave_min) {
-            snprintf(reason, reasonlen, "Available from wave %d", upgrade->allow_wave_min);
+            reason = fmt::format("Available from wave {}", upgrade->allow_wave_min);
             return false;
         }
         else if (wave > upgrade->allow_wave_max) {
-            snprintf(reason, reasonlen, "Available up to wave %d", upgrade->allow_wave_max);
+            reason = fmt::format("Available up to wave {}", upgrade->allow_wave_max);
             return false;
         }
 
@@ -557,7 +609,7 @@ namespace Mod::MvM::Extended_Upgrades
                 bool over_cap;
                 int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), child->mvm_upgrade_index, cur_step, over_cap);
                 if (cur_step < entry.second) {
-                    snprintf(reason, reasonlen, "Requires %s upgraded to level %d", child->name.c_str(), entry.second);
+                    reason = fmt::format("Requires {} upgraded to level {}", child->name, entry.second);
                     return false;
                 }
             }
@@ -572,7 +624,7 @@ namespace Mod::MvM::Extended_Upgrades
                 int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), child->mvm_upgrade_index, cur_step, over_cap);
                 DevMsg("%d %d\n", cur_step, entry.second);
                 if (cur_step >= entry.second) {
-                    snprintf(reason, reasonlen, "Incompatible with %s upgrade", child->name.c_str());
+                    reason = fmt::format("Incompatible with {} upgrade", child->name);
                     return false;
                 }
             }
@@ -590,7 +642,7 @@ namespace Mod::MvM::Extended_Upgrades
                         found = true;
                     }
                     else {
-                        snprintf(reason, reasonlen, "Requires %s upgraded to level %d", child->name.c_str(), entry.second);
+                        reason = fmt::format("Requires {} upgraded to level {}", child->name, entry.second);
                     }
                 }
             }
@@ -619,7 +671,37 @@ namespace Mod::MvM::Extended_Upgrades
                         break;
             }
             if (!found) {
-                V_strncpy(reason, upgrade->required_weapons_string.c_str(), reasonlen);
+                reason = upgrade->required_weapons_string;
+                return false;
+            }
+        }
+
+        if (upgrade->tier > 0) {
+            int numTierUpgrades = 0;
+            int numPrevTierUpgrades = 0;
+            for (auto &upgrade2 : upgrades) {
+                if (upgrade2 != nullptr && upgrade->playerUpgrade == upgrade2->playerUpgrade) {
+                    int cur_step;
+                    bool over_cap;
+                    int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), upgrade2->mvm_upgrade_index, cur_step, over_cap);
+                    if (cur_step > 0) {
+                        if (upgrade->tier == upgrade2->tier) {
+                            numTierUpgrades+=cur_step;
+                        }
+                        else if (upgrade->tier == upgrade2->tier + 1) {
+                            numPrevTierUpgrades+=cur_step;
+                        }
+                    }
+                }
+            }
+            int maxUpgradesForThisTier = (max_tier_upgrades.size() > upgrade->tier - 1 ? max_tier_upgrades[upgrade->tier - 1] : 1);
+            int minUpgradesForPrevTier = (upgrade->tier > 1 && min_tier_upgrades.size() > upgrade->tier - 2 ? min_tier_upgrades[upgrade->tier - 2] : 1);
+            if (numTierUpgrades >= maxUpgradesForThisTier) {
+                reason = fmt::format("Tier {} is closed", upgrade->tier);
+                return false;
+            }
+            if (upgrade->tier > 1 && numPrevTierUpgrades < minUpgradesForPrevTier) {
+                reason = fmt::format("Buy {} more upgrades on tier {} to unlock this tier", minUpgradesForPrevTier - numPrevTierUpgrades, upgrade->tier - 1);
                 return false;
             }
         }
@@ -628,68 +710,15 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     bool WeaponHasValidUpgrades(CEconEntity *item, CTFPlayer *player) {
-        for (int i = 0; i < upgrades.size(); i++) {
+        for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
-            char reason[1] = "";
-            if (IsValidUpgradeForWeapon(upgrade, item, player, reason, sizeof(reason)) || (strlen(reason) > 0 && upgrade->show_requirements)) {
+            std::string reason = "";
+            if (IsValidUpgradeForWeapon(upgrade, item, player, reason) || (reason != "" && upgrade->show_requirements)) {
                 return true;
             }
         }
         return false;
     }
-
-    /*bool CanBuyUpgrade(UpgradeInfo *upgrade, CEconEntity *item, CTFPlayer *player) {
-        if (!IsValidUpgradeForWeapon(upgrade, item, player))
-            return false;
-        
-        return true;
-    }*/
-
-    /*std::vector<UpgradeHistory> *GetUpgradeHistory(CTFPlayer *player) {
-        CSteamID steam_id;
-        if (!player->GetSteamID(&steam_id)) 
-            return nullptr;
-
-        for (auto &history : upgrade_history) {
-            if (history.steam_id == steam_id) {
-                return &history.upgrades;
-            }
-        }
-        
-        auto history = upgrade_history.emplace(upgrade_history.end());
-        history->steam_id = steam_id;
-        history->currency_spent = 0;
-        return &history->upgrades;
-    }*/
-
-    /*void RememberUpgrade(UpgradeInfo *upgrade, CEconItemView *item, CTFPlayer *player, int cost, bool downgrade) {
-        std::vector<UpgradeHistory> *player_history_upgrades = GetUpgradeHistory(player);
-        if (player_history_upgrades != nullptr) {
-
-            int item_def_index = -1;
-            if (item != nullptr)
-                item_def_index = item->GetItemDefIndex();
-
-            if (!downgrade) {
-                UpgradeHistory history;
-                history.upgrade = upgrade;
-                history.cost = cost;
-                history.player_class = player->GetPlayerClass()->GetClassIndex();
-                history.item_def_index = item_def_index;
-                player_history_upgrades->push_back(history);
-            }
-            else
-            {
-                for (int i = 0; i < player_history_upgrades->size(); i++) {
-                    UpgradeHistory history = *(player_history_upgrades)[i];
-                    if (history.upgrade == upgrade && history.item_def_index == item_def_index && history.cost == -cost) {
-                        player_history_upgrades->erase(player_history_upgrades->begin()+i);
-                        break;
-                    }
-                }
-            }
-        }
-    }*/
 
     bool from_buy_upgrade_free = false;
     bool upgrade_success = false;
@@ -732,32 +761,16 @@ namespace Mod::MvM::Extended_Upgrades
                 g_hUpgradeEntity->PlayerPurchasingUpgrade(player, override_slot, attr, downgrade, true, false);
             }
             from_buy_upgrade_free = false;
-            //if(upgrade->on_upgrade_output != ""){
-            for(const auto &output : upgrade->on_upgrade_outputs){
-                char param_tokenized[2048] = "";
-                V_strncpy(param_tokenized, output.c_str(), sizeof(param_tokenized));
-                if(strcmp(param_tokenized, "") != 0){
-                    char *target = strtok(param_tokenized,",");
-                    char *action = NULL;
-                    char *value = NULL;
-                    char *delay = NULL;
-                    if(target != NULL)
-                        action = strtok(NULL,",");
-                    if(action != NULL)
-                        value = strtok(NULL,",");
-                    if(value != NULL)
-                        delay = strtok(NULL,",");
+            
+            int cur_step;
+            bool over_cap;
+            int max_step = GetUpgradeStepData(player, slot, upgrade->mvm_upgrade_index, cur_step, over_cap);
 
-                    
-                    if(delay != NULL){
-                        CEventQueue &que = g_EventQueue;
-                        variant_t actualvalue;
-                        string_t stringvalue = AllocPooledString(value);
-                        actualvalue.SetString(stringvalue);
-                        que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, strtof(delay, nullptr), player, player, -1);
-                    }
-                }
-            }
+            variant_t variant;
+            variant.SetInt(cur_step);
+            
+            auto itemInSlot = GetEconEntityAtLoadoutSlot(player, slot);
+            FireOutputs(upgrade->on_upgrade_outputs, variant, player,  itemInSlot == nullptr ? (CBaseEntity *)player : (CBaseEntity *)itemInSlot);
         }
             //if (!free)
             //    player->RemoveCurrency(cost);
@@ -770,7 +783,7 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     void StartUpgradeListForPlayer(CTFPlayer *player, int slot, int displayitem) {
-        DevMsg("Start upgrade list %d\n", slot);
+        //DevMsg("Start upgrade list %d\n", slot);
         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
         SelectUpgradeListHandler *handler = new SelectUpgradeListHandler(player, slot);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
@@ -781,22 +794,29 @@ namespace Mod::MvM::Extended_Upgrades
         if (slot == -1)
             menu->SetDefaultTitle("Player Upgrades");
         else {
-            menu->SetDefaultTitle(CFmtStr("Upgrades for %s", g_Itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str()));
+            menu->SetDefaultTitle(CFmtStr("Upgrades for %s", GetItemNameForDisplay(item->GetItem())));
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 
-        for (int i = 0; i < upgrades.size(); i++) {
+        for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
-            char disabled_reason[255] = "";
-            bool enabled = IsValidUpgradeForWeapon(upgrade, item, player, disabled_reason, sizeof(disabled_reason));
+            std::string disabled_reason;
+            bool enabled = IsValidUpgradeForWeapon(upgrade, item, player, disabled_reason);
             if (upgrade->force_enable) enabled = true;
+            
+            int cur_step;
+            bool over_cap;
+            int max_step = GetUpgradeStepData(player, slot, upgrade->mvm_upgrade_index, cur_step, over_cap);
+
             if (enabled) {
-                int cur_step;
-                bool over_cap;
-                int max_step = GetUpgradeStepData(player, slot, upgrade->mvm_upgrade_index, cur_step, over_cap);
 
                 char text[128];
-                snprintf(text, 128, "%s (%d/%d) $%d", upgrade->name.c_str(), cur_step, max_step, upgrade->cost);
+                if (upgrade->increment != 0 && max_step < 100000 ) {
+                    snprintf(text, 128, "%s (%d/%d) $%d", upgrade->name.c_str(), cur_step, max_step, upgrade->cost);
+                }
+                else { // If increment == 0 or max steps less than 100000, pretend unlimited upgrades
+                    snprintf(text, 128, "%s $%d", upgrade->name.c_str(), upgrade->cost);
+                }
 
                 ItemDrawInfo info1(text, 
                     cur_step >= max_step || player->GetCurrency() < upgrade->cost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
@@ -815,13 +835,15 @@ namespace Mod::MvM::Extended_Upgrades
                     menu->AppendItem("9999", infodesc);
                 }
             }
-            else if (upgrade->show_requirements && strlen(disabled_reason) > 0) {
-                int cur_step;
-                bool over_cap;
-                int max_step = GetUpgradeStepData(player, slot, upgrade->mvm_upgrade_index, cur_step, over_cap);
+            else if (upgrade->show_requirements && disabled_reason != "") {
 
                 char text[128];
-                snprintf(text, 128, "%s: %s (%d/%d) $%d", upgrade->name.c_str(), disabled_reason, cur_step, max_step, upgrade->cost);
+                if (upgrade->increment != 0 && max_step < 100000) {
+                    snprintf(text, 128, "%s: %s (%d/%d) $%d", upgrade->name.c_str(), disabled_reason.c_str(), cur_step, max_step, upgrade->cost);
+                }
+                else { // If increment == 0 or max steps less than 100000, pretend unlimited upgrades
+                    snprintf(text, 128, "%s: %s $%d", upgrade->name.c_str(), disabled_reason.c_str(), upgrade->cost);
+                }
 
                 ItemDrawInfo info1(text, ITEMDRAW_DISABLED);
                 
@@ -846,7 +868,6 @@ namespace Mod::MvM::Extended_Upgrades
         }*/
 
         select_type_menus[player] = menu;
-        DevMsg("Displaying %d\n", slot);
         menu->DisplayAtItem(ENTINDEX(player), 0, displayitem);
     }
 
@@ -872,7 +893,7 @@ namespace Mod::MvM::Extended_Upgrades
 		}) {
             CEconEntity *item = GetEconEntityAtLoadoutSlot(player, (int)slot);
             if (item != nullptr) {
-                ItemDrawInfo info2(g_Itemnames[item->GetItem()->m_iItemDefinitionIndex].c_str(), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                ItemDrawInfo info2(GetItemNameForDisplay(item->GetItem()), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
                 
                 static char buf[4];
                 snprintf(buf, sizeof(buf), "%d", (int)slot);
@@ -946,6 +967,24 @@ namespace Mod::MvM::Extended_Upgrades
         attrib_definition_index_t result = DETOUR_MEMBER_CALL(CUpgrades_ApplyUpgradeToItem)(player, item, upgrade, cost, downgrade, fresh);
         upgrade_success = result != INVALID_ATTRIB_DEF_INDEX;
 
+        if (upgrade_success && extended_upgrades_start_index != -1 && upgrade >= extended_upgrades_start_index && upgrade < extended_upgrades_start_index + upgrades.size()) {
+            int slot = item == nullptr ? -1 : item->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+            auto upgradeInfo = upgrades[upgrade - extended_upgrades_start_index];
+            int cur_step;
+            bool over_cap;
+            int max_step = GetUpgradeStepData(player, slot, upgrade, cur_step, over_cap);
+
+            variant_t variant;
+            variant.SetInt(cur_step);
+            
+            auto item_entity = GetEconEntityAtLoadoutSlot(player, slot);
+            if (!downgrade) {
+                FireOutputs(upgradeInfo->on_apply_outputs, variant, player, item_entity == nullptr ? (CBaseEntity *) player : item_entity);
+            }
+            else {
+                FireOutputs(upgradeInfo->on_downgrade_outputs, variant, player, item_entity == nullptr ? (CBaseEntity *) player : item_entity);
+            }
+        }
         return result;
     }
 
@@ -963,13 +1002,33 @@ namespace Mod::MvM::Extended_Upgrades
     DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CBaseEntity &entity)
 	{
         SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
-		DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+		return DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
 	}
 
     DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
         SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+	}
+
+	DETOUR_DECL_MEMBER(void, CPopulationManager_RestoreCheckpoint)
+	{
+		DETOUR_MEMBER_CALL(CPopulationManager_RestoreCheckpoint)();
+
+		ForEachTFPlayer([](CTFPlayer *player) {
+            
+            for (auto upgrade : upgrades) {
+                int cur_step;
+                bool over_cap;
+                for (int slot = -1 ; slot <= LOADOUT_POSITION_ACTION; slot++) {
+                    int max_step = GetUpgradeStepData(player, slot, upgrade->mvm_upgrade_index, cur_step, over_cap);
+                    variant_t variant;
+                    variant.SetInt(cur_step);
+                    auto item = GetEconEntityAtLoadoutSlot(player, (int)slot);
+                    FireOutputs(upgrade->on_restore_outputs, variant, player, item == nullptr ? (CBaseEntity *)player : item);
+                }
+            }
+		});
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
@@ -984,6 +1043,7 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
             MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -1071,6 +1131,14 @@ namespace Mod::MvM::Extended_Upgrades
             LoadItemNames();
         }
 
+        virtual void OnDisable() override
+        {
+            ForEachTFPlayer([&](CTFPlayer *player){
+                if (!player->IsBot())
+                    menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
+            });
+        }
+        
         virtual void LevelInitPreEntity() override
 		{
             

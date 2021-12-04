@@ -7,7 +7,10 @@
 
 
 class CWave;
+class CUpgradeInfo
+{
 
+};
 
 class CPopulationManager : public CPointEntity
 {
@@ -22,6 +25,7 @@ public:
 	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots) { return ft_CollectMvMBots(mvm_bots); }
 	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
 	static void FindDefaultPopulationFileShortNames(CUtlVector<CUtlString> &vec) { return ft_FindDefaultPopulationFileShortNames(vec); }
+	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player) { return ft_GetPlayerUpgradeHistory(this, player); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -37,6 +41,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, void>              ft_AllocateBots;
 	static MemberFuncThunk<CPopulationManager *, bool>              ft_IsInEndlessWaves;
 	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
+	static MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>             ft_GetPlayerUpgradeHistory;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;

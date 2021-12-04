@@ -103,11 +103,17 @@ WaveSchedule
 	BotHumansHaveRobotVoice 1 [$SIGSEGV] // If set to 1, bots with human models have robot voice (default: 0)
 	BotHumansHaveEyeGlow 1 [$SIGSEGV] // If set to 1, bots with human models have eye glow (default: 0)
 	// CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
-	ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
+	// ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
 	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
 	Accelerate 100 [$SIGSEGV] // Acceleration rate (default: 10)
 	AirAccelerate 100 [$SIGSEGV] // Air Acceleration (turning) rate (default: 10)
 	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
+	StuckTimeMultiplier 1 [$SIGSEGV] // Multiplier of how fast the bot detects stuck. 3 means bot detect stuck 3 times faster than normal (staying for 4s in 100hu area) (default: 1)
+	NoCreditsVelocity 1 [$SIGSEGV] // If set credits spawn with no velocity (default: 0)
+	RestoreNegativeDamageHealing 1 [$SIGSEGV] // Allow negative damage to overheal (default: 0)
+	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
+	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
+	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -232,6 +238,16 @@ WaveSchedule
 	// Enables extended upgrades displayed on the left of upgrade gui as SourceMod menu. This allows for more than 8 upgrades per weapon, with custom weapon rules
 	ExtendedUpgrades [$SIGSEGV]
 	{
+		MaxUpgradesTier // For tiered upgrades: Specify how many upgrades can be bought per tier. (1 by default)
+		{
+			1 2 // Max 2 upgrades on tier 1
+			2 1 // Max 1 upgrade on tier 2
+		}
+		MinUpgradesTier // For tiered upgrades: Specify how many upgrades have to be bought to unlock next tier. (1 by default)
+		{
+			1 2 // Min 2 upgrades on tier 1 to unlock tier 2
+			2 1 // Min 1 upgrade on tier 2 to unlock tier 3
+		}
 		upgrade
 		{
 			Name "+25 max health" // Name of the upgrade displayed on the menu
@@ -243,6 +259,15 @@ WaveSchedule
 			AllowPlayerClass Scout // Allow only specied classes if set 
 			AllowPlayerClass Heavyweapons
 			AllowPlayerClass Demoman
+			// RequiredWeapons // The player must have these items equipped for the upgrade to work
+			//{
+			//	ItemName "The Wrangler"
+			//}
+			// RequiredWeaponsString "You need wrangler equipped" // The requirement text displayed if the player does not have the required items equipped
+			
+			// ForceUpgradeSlot 1 // When upgraded, upgrade weapon on this slot instead of the selected weapon. Use -1 to upgrade the player instead
+			// UIGroup 2 // UIGroup 2 - Canteens
+			// Tier 1 // Marks the upgrade as tieried. Tiered upgrades on the same level share special exclusivity rules, and one can only be bought if an upgrade of previous tier is bought beforehand
 		}
 		upgrade
 		{
@@ -270,9 +295,24 @@ WaveSchedule
 				"fire rate bonus" -0.1
 			}
 
-			OnUpgrade // On upgrade output. Format: target,action,parameter,delay
+			OnUpgrade // On upgrade output. Format: target,action,parameter,delay. If parameter is empty, the upgrade level is passed instead as parameter
 			{
-				Output "!activator,sethealth,0,0"
+				Output "!activator,$displaytextchat,onupgrade,0"
+			}
+			OnApply // Output fired when the upgrade is being applied (the upgrade being bought, the player changing classes or weapons). Format: target,action,parameter,delay
+			// If parameter is empty, the upgrade level is passed instead as parameter
+			{
+				Output "!activator,$displaytextchat,onapply,0"
+			}
+			OnDowngrade // Output fired when the upgrade is being downgraded (undo upgrades or refund button). Format: target,action,parameter,delay. 
+			//If parameter is empty, the upgrade level is passed instead as parameter
+			{
+				Output "!activator,$displaytextchat,ondowngrade,0"
+			}
+			OnRestore // Output fired when the upgrade is being restored after a failed wave. Format: target,action,parameter,delay. 
+			//If parameter is empty, the upgrade level is passed instead as parameter, it can be 0 if no upgrades are restored
+			{
+				Output "!activator,$displaytextchat,onrestore,0"
 			}
 		}
 		bisonfield
@@ -287,7 +327,21 @@ WaveSchedule
 			{
 				ItemName "The Righteous Bison"
 			}
-			
+			// RequiredUpgrade
+			// {
+			// 	Upgrade "damagemastery" // Name of the upgrade, as specified in the outer block
+			// 	Level 1 // Minimum level after which the upgrade becomes enabled (Default: 1)
+			// }
+			// RequiredUpgradeOr // Like RequiredUpgrade, but only one of them has to be upgraded
+			// {
+			// 	Upgrade "damagemastery"
+			// 	Level 1
+			// }
+			// RequiredUpgradeOr
+			// {
+			// 	Upgrade "fireratemastery"
+			// 	Level 1
+			// }
 			SecondaryAttributes //Secondary attributes applied when upgrade is applied, for each upgrade level
 			{
 				"fire rate penalty" 3.3
@@ -404,9 +458,18 @@ WaveSchedule
 
 	ExtraLoadoutItems [$SIGSEGV] // Extra loadout items available after typing !missionitems in chat
 	{
+		AllowEquipOutsideSpawn 1 // Allow equipping items outside spawn
 		Soldier // Player Class
 		{
-			Primary "My Custom Item" // Item slot and name, custom weapon names are available 
+			Secondary "The Reserve Shooter" // Item slot and name
+			Primary // Extended syntax, Item slot to use
+			{
+				Item  "My Custom Item" // Item name, custom weapon names are available 
+				Cost 100 // The cost of the weapon (default: 0)
+				AllowedMinWave 1 //The wave at which the weapon is enabled (default: 1)
+				AllowedMaxWave 55 //The max wave at which the weapon is enabled (default: infinite)
+				AllowRefund 1 //Allow refunding of the weapon (default: 1)
+			}
 			// Available slots:
 			// Primary
 			// Secondary
@@ -418,6 +481,7 @@ WaveSchedule
 			// Action (canteen)
 			// Misc2
 		}
+		
 		Head "The Cat's Pajamas" // All class item
 	}
 
@@ -1942,7 +2006,7 @@ WaveSchedule
 					// AimTarget "targetent" // Entity / bot / class name as an alternative. Also: RandomEnemy, ClosestPlayer
 					// KillAimTarget 1 // Attack aim target (Default: 0)
 					
-					Delay 1 // Time before the first task starts (Default: 10)
+					Delay 1 // Time before the first task starts. Must be above 0, or it will not execute (Default: 10)
                     Repeats 1 // How many times should bot do the task in total (Default: 0 - Infinite)
                     Cooldown 3 //Time between each task (Default: 10)
 					Duration 10 // How long should the ai be interrupted
@@ -2732,3 +2796,57 @@ WaveSchedule
 
 // Add condition when weapon is active. To provide a second condition, multiply it by 256. To provide a third condition, multiply it by 65536
 // "add cond when active" 11
+
+// Step height multiplier (x * 18hu)
+// "mult step height" 10
+
+// Ignore player clip brushes
+// "ignore player clip" 1
+
+// Allow bunny hopping. 1 - auto bhop. 2 - manual bhop
+// "allow bunny hop" 1
+
+// Fire input on killed targets. The player is the activator. The format is <target>^<input>^<param>. If omitted, default param is damage received. !projectile is the projectile entity
+// "fire input on kill" "!self^SetHealth^0"
+
+// Restrict input on killed to specified targetname. Wildcards are allowed
+// "fire input on kill name restrict" "player"
+
+// Fire entire clip at once
+// "fire full clip at once" 1
+
+// Reload full clip at once
+// "reload full clip at once" 1
+
+// Adds a condition when the weapon is active
+// "add cond when active" 56
+
+// Milk, mark, jarate received duration multiplier
+// "mult debuff duration" 2
+
+// Damage dealt to enemy buildings on touch
+// "stomp building damage" 125
+
+// Sound played when the projectile is fired
+// "projectile sound" "sound.wav"
+
+// Fire this many rounds in a burst. If negative, forces to fire this many rounds even if attack button is not pressed
+// "burst fire count" 3
+
+// Fire rate multiplier between bursts
+// "burst fire rate mult" 2
+
+// Accuracy multiplier, continous attacking increases/decreases accuracy up to specified value over the duration of "continous accuracy time" attribute. Overwrites "spread penalty" attribute
+// "continous accuracy mult" 3
+
+// How long in seconds should the weapon be fired continously to reach full "continous accuracy mult" value
+// "continous accuracy time" 1
+
+// Accuracy multiplier when ducking. Overwrites "spread penalty" attribute
+// "duck accuracy mult" 0.5
+
+// Accuracy multiplier when moving. Overwrites "spread penalty" attribute
+// "move accuracy mult" 2
+
+// Automatically fire full clip
+// "force fire full clip" 1

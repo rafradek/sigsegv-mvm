@@ -2,6 +2,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/entities.h"
 #include "stub/strings.h"
+#include "mod/pop/popmgr_extensions.h"
 #include "util/misc.h"
 #include "mem/extract.h"
 #include "util/iterate.h"
@@ -196,6 +197,10 @@ IMPL_SENDPROP(float,                CTFPlayer, m_flCurrentTauntMoveSpeed,CTFPlay
 IMPL_SENDPROP(short,                CTFPlayer, m_iTauntItemDefIndex  ,   CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
+void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
+const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
+CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", NetworkStateChanged_CTFPlayer_m_angEyeAngles);
+
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
 MemberFuncThunk<      CTFPlayer *, void, int, int                  > CTFPlayer::ft_StartBuildingObjectOfType        ("CTFPlayer::StartBuildingObjectOfType");
@@ -232,9 +237,14 @@ MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void, int                       > CTFPlayer::ft_RemoveCurrency              ("CTFPlayer::RemoveCurrency");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_CheckInstantLoadoutRespawn  ("CTFPlayer::CheckInstantLoadoutRespawn");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ForceRegenerateAndRespawn   ("CTFPlayer::ForceRegenerateAndRespawn");
-MemberFuncThunk<      CTFPlayer *, void, Vector &                  > CTFPlayer::ft_ApplyGenericPushbackImpulse ("CTFPlayer::ApplyGenericPushbackImpulse");
+MemberFuncThunk<      CTFPlayer *, void, Vector &, CTFPlayer *     > CTFPlayer::ft_ApplyGenericPushbackImpulse ("CTFPlayer::ApplyGenericPushbackImpulse");
 MemberFuncThunk<const CTFPlayer *, bool							   > CTFPlayer::ft_CanAirDash 				   ("CTFPlayer::CanAirDash");
 MemberFuncThunk<	  CTFPlayer *, void, bool					   > CTFPlayer::ft_Regenerate				   ("CTFPlayer::Regenerate");
+MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	   > CTFPlayer::ft_ManageRegularWeapons        ("CTFPlayer::ManageRegularWeapons");
+MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	   > CTFPlayer::ft_ManageBuilderWeapons        ("CTFPlayer::ManageBuilderWeapons");
+MemberFuncThunk<	  CTFPlayer *, void                      	   > CTFPlayer::ft_GiveDefaultItems            ("CTFPlayer::GiveDefaultItems");
+
+MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
 
 
 MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");
@@ -330,6 +340,7 @@ ETFCond GetTFConditionFromName(const char *name)
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *, int, bool, bool> ft_CollectPlayers_CTFPlayer("CollectPlayers<CTFPlayer>");
 StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent("TE_PlayerAnimEvent");
+StaticFuncThunk<TFPlayerClassData_t *, uint> ft_GetPlayerClassData("GetPlayerClassData");
 
 CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *player, int slot, CEconEntity **ent)
 { 
@@ -362,9 +373,21 @@ CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *pla
 	return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); 
 }
 
-namespace Mod::Pop::PopMgr_Extensions
+CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove, bool force_give)
 {
-	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);
+	auto item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
+	if (item_def != nullptr) {
+		const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
+		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+		DispatchSpawn(entity);
+
+		if (entity != nullptr && !GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
+			entity->Remove();
+			entity = nullptr;
+		}
+		return entity;
+	}
+	return nullptr;
 }
 
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name)
@@ -381,7 +404,6 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 		slot = view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 	}
 
-    DevMsg("Give item %s %d\n", item_name, no_remove);
 	if (!no_remove) {
 		
 
@@ -475,4 +497,24 @@ CEconEntity *CTFPlayer::GetEconEntityById(int id)
 	});
 
 	return value;
+}
+
+void CTFPlayer::GiveDefaultItemsNoAmmo()
+{
+	float ammoFraction[TF_AMMO_COUNT];
+
+	for ( int iAmmo = 0; iAmmo < TF_AMMO_COUNT; ++iAmmo )
+	{
+		if (GetMaxAmmo(iAmmo) != 0) {
+			ammoFraction[iAmmo] = ((float) GetAmmoCount(iAmmo) / (float) GetMaxAmmo(iAmmo));
+		}
+	}
+	CTFPlayer::GiveDefaultItems();
+
+	for ( int iAmmo = 0; iAmmo < TF_AMMO_COUNT; ++iAmmo )
+	{
+		if (GetMaxAmmo(iAmmo) != 0) {
+			SetAmmoCount( ammoFraction[iAmmo] * GetMaxAmmo(iAmmo), iAmmo );
+		}
+	}
 }

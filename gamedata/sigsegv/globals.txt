@@ -92,6 +92,9 @@
 				"g_pMonsterResource" "g_pMonsterResource"
 				
 				"CBaseEntity::m_nPredictionRandomSeed" "_ZN11CBaseEntity23m_nPredictionRandomSeedE"
+				"g_RecipientFilterPredictionSystem" "_ZL33g_RecipientFilterPredictionSystem"
+				
+				"g_pPlayerResource" "g_pPlayerResource"
 				
 			}
 			
@@ -104,7 +107,7 @@
 				}
 				"g_PropTypeFns" "g_PropTypeFns"
 				
-				"g_MapListMgr" "g_MapListMgr"
+				"g_MapListMgr" "_ZL12g_MapListMgr"
 				"g_FrameSnapshotManager" "_ZL22g_FrameSnapshotManager"
 				"g_SharedEdictChangeInfo" "g_SharedEdictChangeInfo"
 				"hltv" "hltv"

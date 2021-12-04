@@ -12,10 +12,10 @@ namespace Mod::Debug::NoKnockback
 	ConVar cvar_airblast("sig_debug_noknockback_airblast", "0", FCVAR_NOTIFY,
 		"Debug: also disable ApplyGenericPushbackImpulse");
 	
-	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse, CTFPlayer * inflictor)
 	{
 		if (!cvar_airblast.GetBool()) {
-			DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse);
+			DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
 		}
 	}
 	

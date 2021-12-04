@@ -731,7 +731,7 @@ public:
 		this->SetLibrary(Library::ENGINE);
 	}
 	
-	virtual const char *GetName() const override   { return "RCONClient"; }
+	virtual const char *GetName() const override   { return "[client] RCONClient"; }
 	virtual const char *GetSymbol() const override { return "_Z10RCONClientv"; }
 	
 	virtual bool FindAddrWin(uintptr_t& addr) const override

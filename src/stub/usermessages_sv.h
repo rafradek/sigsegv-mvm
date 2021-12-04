@@ -33,6 +33,8 @@ public:
 		this->m_bInitMessage = false;
 		this->m_Recipients.clear();
 	}
+
+	void CopyFrom   (const IRecipientFilter &filter);
 	
 	void MakeReliable()    { this->m_bReliable    = true; }
 	void MakeInitMessage() { this->m_bInitMessage = true; }
@@ -60,6 +62,17 @@ private:
 	bool m_bInitMessage;
 	std::vector<int> m_Recipients;
 };
+
+inline void CRecipientFilter::CopyFrom(const IRecipientFilter &filter)
+{
+	int count = filter.GetRecipientCount();
+	for (int i = 0; i < count; i++) {
+		int id = filter.GetRecipientIndex(i);
+		if (std::find(this->m_Recipients.begin(), this->m_Recipients.end(), id) != this->m_Recipients.end()) continue;
+
+		this->m_Recipients.push_back(id);
+	}
+}
 
 inline void CRecipientFilter::AddRecipient(const CBasePlayer *player)
 {

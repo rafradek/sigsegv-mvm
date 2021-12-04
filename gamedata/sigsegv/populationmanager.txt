@@ -31,6 +31,7 @@
 				"CPopulationManager::FindOrAddPlayerUpgradeHistory [CTFPlayer *]" "_ZN18CPopulationManager29FindOrAddPlayerUpgradeHistoryEP9CTFPlayer"
 				"CPopulationManager::GetCurrentWave"                              "_ZN18CPopulationManager14GetCurrentWaveEv"
 				"CPopulationManager::GetNumRespecsAvailableForPlayer"             "_ZN18CPopulationManager31GetNumRespecsAvailableForPlayerEP9CTFPlayer"
+				"CPopulationManager::GetPlayerUpgradeHistory"                     "_ZN18CPopulationManager23GetPlayerUpgradeHistoryEP9CTFPlayer"
 				"CPopulationManager::Initialize"                                  "_ZN18CPopulationManager10InitializeEv"
 				"CPopulationManager::JumpToWave"                                  "_ZN18CPopulationManager10JumpToWaveEjf"
 				"CPopulationManager::LoadMvMMission"                              "_ZN18CPopulationManager14LoadMvMMissionEP9KeyValues"
@@ -44,12 +45,13 @@
 				"CPopulationManager::RestoreCheckpoint"                           "_ZN18CPopulationManager17RestoreCheckpointEv"
 				"CPopulationManager::RestorePlayerCurrency"                       "_ZN18CPopulationManager21RestorePlayerCurrencyEv"
 				"CPopulationManager::SetNumRespecsForPlayer"                      "_ZN18CPopulationManager22SetNumRespecsForPlayerEP9CTFPlayeri"
+				"CPopulationManager::SetCheckpoint"                               "_ZN18CPopulationManager13SetCheckpointEi"
 				"CPopulationManager::Spawn"                                       "_ZN18CPopulationManager5SpawnEv"
 				"CPopulationManager::Update"                                      "_ZN18CPopulationManager6UpdateEv"
 				"CPopulationManager::UpdateObjectiveResource"                     "_ZN18CPopulationManager23UpdateObjectiveResourceEv"
 				"CPopulationManager::WaveEnd"                                     "_ZN18CPopulationManager7WaveEndEb"
 				"CPopulationManager::IsValidPopfile"                              "_ZN18CPopulationManager14IsValidPopfileEPKc"
-				
+
 				"CMissionPopulator::~CMissionPopulator [D0]"      "_ZN17CMissionPopulatorD0Ev"
 				"CMissionPopulator::~CMissionPopulator [D2]"      "_ZN17CMissionPopulatorD2Ev"
 				"CMissionPopulator::Parse"                        "_ZN17CMissionPopulator5ParseEP9KeyValues"
