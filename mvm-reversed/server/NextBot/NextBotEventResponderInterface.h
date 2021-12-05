@@ -58,7 +58,7 @@ public:
 	virtual void OnModelChanged();
 	virtual void OnPickUp(CBaseEntity *ent, CBaseCombatCharacter *who);
 	virtual void OnDrop(CBaseEntity *ent);
-	virtual void OnActorEmoted(CBaseCombatCharacter *who, int concept);
+	virtual void OnActorEmoted(CBaseCombatCharacter *who, int emote_concept);
 	
 	virtual void OnCommandAttack(CBaseEntity *ent);
 	virtual void OnCommandApproach(const Vector& v1, float f1);

@@ -84,9 +84,9 @@ namespace Mod::AI::RocketJump
 			return EventDesiredResult<CTFBot>::Continue();
 		}
 		
-		virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int concept) override
+		virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int emote_concept) override
 		{
-			DevMsg("[%8.3f] %s(#%d): OnActorEmoted(#%d, %d)\n", gpGlobals->curtime, this->GetName(), ENTINDEX(actor), ENTINDEX(who), concept);
+			DevMsg("[%8.3f] %s(#%d): OnActorEmoted(#%d, %d)\n", gpGlobals->curtime, this->GetName(), ENTINDEX(actor), ENTINDEX(who), emote_concept);
 			return EventDesiredResult<CTFBot>::Continue();
 		}
 	};
@@ -100,7 +100,7 @@ namespace Mod::AI::RocketJump
 		
 		virtual ActionResult<CTFBot> Update(CTFBot *actor, float dt) override;
 		
-		virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int concept) override;
+		virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int emote_concept) override;
 		virtual EventDesiredResult<CTFBot> OnCommandString(CTFBot *actor, const char *cmd) override;
 		
 	private:
@@ -134,10 +134,10 @@ namespace Mod::AI::RocketJump
 		return ActionResult<CTFBot>::Continue();
 	}
 	
-	inline EventDesiredResult<CTFBot> CTFBotRocketJump_Wait::OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int concept)
+	inline EventDesiredResult<CTFBot> CTFBotRocketJump_Wait::OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int emote_concept)
 	{
 		CTFPlayer *player = ToTFPlayer(who);
-		if (player != nullptr && !player->IsBot() && concept == MP_CONCEPT_PLAYER_GO) {
+		if (player != nullptr && !player->IsBot() && emote_concept == MP_CONCEPT_PLAYER_GO) {
 			if (!this->m_ctRespond.HasStarted()) {
 				this->m_ctRespond.Start(0.6f);
 			}

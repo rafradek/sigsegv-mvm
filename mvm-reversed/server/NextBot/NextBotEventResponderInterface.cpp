@@ -200,10 +200,10 @@ void INextBotEventResponder::OnDrop(CBaseEntity *ent)
 	}
 }
 
-void INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter *who, int concept)
+void INextBotEventResponder::OnActorEmoted(CBaseCombatCharacter *who, int emote_concept)
 {
 	FOR_EACH_RESPONDER {
-		responder->OnActorEmoted(who, concept);
+		responder->OnActorEmoted(who, emote_concept);
 	}
 }
 

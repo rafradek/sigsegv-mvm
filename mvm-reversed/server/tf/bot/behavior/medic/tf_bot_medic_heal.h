@@ -21,7 +21,7 @@ public:
 	virtual EventDesiredResult<CTFBot> OnMoveToSuccess(CTFBot *actor, const Path *path) override;
 	virtual EventDesiredResult<CTFBot> OnMoveToFailure(CTFBot *actor, const Path *path, MoveToFailureType fail) override;
 	virtual EventDesiredResult<CTFBot> OnStuck(CTFBot *actor) override;
-	virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int concept) override;
+	virtual EventDesiredResult<CTFBot> OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int emote_concept) override;
 	
 	virtual QueryResponse ShouldHurry(const INextBot *nextbot) const override;
 	virtual QueryResponse ShouldRetreat(const INextBot *nextbot) const override;

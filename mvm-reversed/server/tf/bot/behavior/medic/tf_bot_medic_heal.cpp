@@ -268,7 +268,7 @@ EventDesiredResult<CTFBot> CTFBotMedicHeal::OnStuck(CTFBot *actor)
 	return EventDesiredResult<CTFBot>::Continue();
 }
 
-EventDesiredResult<CTFBot> CTFBotMedicHeal::OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int concept)
+EventDesiredResult<CTFBot> CTFBotMedicHeal::OnActorEmoted(CTFBot *actor, CBaseCombatCharacter *who, int emote_concept)
 {
 	if (!who->IsPlayer()) {
 		return EventDesiredResult<CTBot>::Continue();
@@ -279,8 +279,8 @@ EventDesiredResult<CTFBot> CTFBotMedicHeal::OnActorEmoted(CTFBot *actor, CBaseCo
 		return EventDesiredResult<CTBot>::Continue();
 	}
 	
-	if (concept == MP_CONCEPT_PLAYER_GO ||
-		concept == MP_CONCEPT_PLAYER_ACTIVATECHARGE) {
+	if (emote_concept == MP_CONCEPT_PLAYER_GO ||
+		emote_concept == MP_CONCEPT_PLAYER_ACTIVATECHARGE) {
 		CTFPlayer *patient = this->m_hPatient();
 		if (patient != nullptr && player != nullptr &&
 			ENTINDEX(player) == ENTINDEX(patient)) {
