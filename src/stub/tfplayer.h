@@ -389,7 +389,7 @@ public:
 	CAttributeManager *GetAttributeManager()						{ return ft_GetAttributeManager  (this); }
 	CBaseEntity *GiveNamedItem(const char *pszName, int iSubType, CEconItemView *pItem, bool bDontTranslateForClass) { return vt_GiveNamedItem(this, pszName, iSubType, pItem, bDontTranslateForClass); }
 
-	void Taunt(taunts_t taunt, int concept)                                       { ft_Taunt                   (this, taunt, concept); }
+	void Taunt(taunts_t taunt, int taunt_concept)                                 { ft_Taunt                   (this, taunt, taunt_concept); }
 	void PlayTauntSceneFromItem(CEconItemView *view)                              { ft_PlayTauntSceneFromItem  (this, view); }
 
 	void CheckInstantLoadoutRespawn()                              { ft_CheckInstantLoadoutRespawn  (this); }
