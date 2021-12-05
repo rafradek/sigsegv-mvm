@@ -3745,62 +3745,11 @@ namespace Mod::Attr::Custom_Attributes
 		OnAttributesChange(mgr);
 	}*/
 
-	// DETOUR_DECL_STATIC(void, FX_FireBullets, CTFWeaponBase* weapon, int player_index, const Vector& origin, const QAngle& angles,
-	// 				 int weapon_id, int mode, int seed, float spread, float damage, bool crit){
-	// 	float recovery_time{-1.0};
-	// 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, recovery_time, spread_recovery_time);
-	// 	if((recovery_time > 0.0) && ((gpGlobals->curtime - weapon->m_flLastFireTime) > recovery_time)){
-	// 		spread = 0.0;
-	// 	}
-
-	// 	CTFPlayer* player {ToTFPlayer(UTIL_PlayerByIndex(player_index))};
-	// 	float add_spread_moving{0.0};
-	// 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, add_spread_moving, spread_moving);
-	// 	float mult_spread_moving{1.0};
-	// 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_spread_moving, mult_spread_moving);
-	// 	float min_velocity_spread_moving{-1.0};
-	// 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, min_velocity_spread_moving, min_velocity_spread_moving);
-
-	// 	if((min_velocity_spread_moving > 0.0) && (player->GetAbsVelocity().Length() > min_velocity_spread_moving)){
-	// 		spread += add_spread_moving;
-	// 		spread *= mult_spread_moving;
-	// 	}
-
-	// 	DETOUR_STATIC_CALL(FX_FireBullets)(weapon, player, origin, angles, weapon_id, mode, seed, spread, damage, crit);
-	// }
-
-	DETOUR_DECL_MEMBER(float, CTFWeaponBaseGun_GetWeaponSpread){
-		float spread = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_GetWeaponSpread)();
-		CTFWeaponBaseGun* weapon{reinterpret_cast<CTFWeaponBaseGun*>(this)};
-
-		float recovery_time{-1.0};
-
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, recovery_time, spread_recovery_time);
-		if((recovery_time > 0.0) && ((gpGlobals->curtime - weapon->m_flLastFireTime) > recovery_time)){
-			spread = 0.0;
-		}
-		CTFPlayer* player{weapon->GetTFPlayerOwner()};
-		float add_spread_moving{0.0};
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, add_spread_moving, add_spread_moving);
-		float mult_spread_moving{1.0};
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_spread_moving, mult_spread_moving);
-		float min_velocity_spread_moving{-1.0};
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, min_velocity_spread_moving, min_velocity_spread_moving);
-
-		if((min_velocity_spread_moving > 0.0) && (player->GetAbsVelocity().Length() > min_velocity_spread_moving)){
-			spread += add_spread_moving;
-			spread *= mult_spread_moving;
-		}
-		return spread;
-	}
-
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Attr:Custom_Attributes")
 		{
-			// MOD_ADD_DETOUR_STATIC(FX_FireBullets, "FX_FireBullets");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_GetWeaponSpread, "CTFWeaponBaseGun::GetWeaponSpread");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanAirDash, "CTFPlayer::CanAirDash");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_AllowedToHealTarget, "CWeaponMedigun::AllowedToHealTarget");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_HealTargetThink, "CWeaponMedigun::HealTargetThink");
