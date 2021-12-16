@@ -278,7 +278,7 @@ public:
 	virtual void OnModelChanged() override final;
 	virtual void OnPickUp(CBaseEntity *ent, CBaseCombatCharacter *who) override final;
 	virtual void OnDrop(CBaseEntity *ent) override final;
-	virtual void OnActorEmoted(CBaseCombatCharacter *who, int concept) override final;
+	virtual void OnActorEmoted(CBaseCombatCharacter *who, int emote_concept) override final;
 	
 	virtual void OnCommandAttack(CBaseEntity *ent) override final;
 	virtual void OnCommandApproach(const Vector& v1, float f1) override final;

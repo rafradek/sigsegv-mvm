@@ -291,18 +291,18 @@ namespace Mod::MvM::Extended_Upgrades
 
     void GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value, std::string &string) {
         if (FStrEq(attr->GetDescriptionFormat(), "value_is_percentage")) {
-            string = fmt::format("{+2f}% {}", value, attr->GetName());
+            string = fmt::format("{:+.2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_inverted_percentage")) {
             value *= -1.0f;
-            string = fmt::format("{+2f}% {}", value, attr->GetName());
+            string = fmt::format("{:+.2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive")) {
-            string = fmt::format("{2f}% {}", value, attr->GetName());
+            string = fmt::format("{:.2f}% {}", value, attr->GetName());
         }
         else if (FStrEq(attr->GetDescriptionFormat(), "value_is_additive_percentage")) {
             value *= 100.0f;
-            string = fmt::format("{2f}% {}", value, attr->GetName());
+            string = fmt::format("{:.2f}% {}", value, attr->GetName());
         }
     }
 
