@@ -5103,6 +5103,11 @@
 					type "sym"
 					sym  "_ZN13CTFWeaponBase15GetSpreadAnglesEv"
 				}
+				"CAttributeList::SetRuntimeAttributeRefundableCurrency"
+				{
+					type "sym"
+					sym  "_ZN14CAttributeList37SetRuntimeAttributeRefundableCurrencyEPK28CEconItemAttributeDefinitioni"
+				}
 			}
 			"addrs_group"
 			{

@@ -2135,4 +2135,13 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4529"
+    {
+        "name"	"is extra loadout item"
+        "attribute_class"	"is_extra_loadout_item"
+        "description_string"	"Fires full clip automatically"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }
