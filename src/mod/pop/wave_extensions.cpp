@@ -831,7 +831,7 @@ namespace Mod::Pop::Wave_Extensions
 					ApplyItemAttributes(item_view, player, data->item_attributes);
 				});
 				
-				ApplyForceItems(data->force_items, player, true);
+				ApplyForceItems(data->force_items, player, true, false);
 			});
 		}
 
@@ -1364,7 +1364,7 @@ namespace Mod::Pop::Wave_Extensions
 			if (sent && player != nullptr) {
 				auto data = GetCurrentWaveData();
 				if (data != nullptr && !player->IsBot())
-					ApplyForceItems(data->force_items, player, false);
+					ApplyForceItems(data->force_items, player, false, false);
 			}
 		}
 	};

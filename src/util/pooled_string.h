@@ -33,7 +33,7 @@ inline const char *PStr()
     return pooled.Get();
 }
 
-inline const char *operator"" _PStr(const char *str)
+inline const char *operator ""_PStr(const char *str, size_t size)
 {
     static PooledString pooled(str);
     return pooled.Get();

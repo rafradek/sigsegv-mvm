@@ -3,6 +3,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/projectiles.h"
 #include "util/pooled_string.h"
+#include <boost/algorithm/string.hpp>
 
 
 class EntityModule
@@ -17,6 +18,12 @@ struct CustomVariable
     string_t key;
     string_t value;
     float value_float;
+};
+
+struct CustomOutput
+{
+    string_t key;
+    CBaseEntityOutput output;
 };
 
 class ExtraEntityData
@@ -64,9 +71,14 @@ public:
         return custom_variables;
     }
 
+    std::vector<CustomOutput> &GetCustomOutputs() {
+        return custom_outputs;
+    }
+
 private:
     std::vector<std::pair<const char *, EntityModule *>> modules;
     std::vector<CustomVariable> custom_variables;
+    std::vector<CustomOutput> custom_outputs;
 };
 
 class ExtraEntityDataWithAttributes : public ExtraEntityData
@@ -413,5 +425,70 @@ inline void CBaseEntity::SetCustomVariable(const char *key, const char *value)
     }
     if (!found) {
         list.push_back({AllocPooledString(key), AllocPooledString(value), strtof(value, nullptr)});
+    }
+}
+
+inline void CBaseEntity::AddCustomOutput(const char *key, const char *value)
+{
+    std::string namestr = key;
+    boost::algorithm::to_lower(namestr);
+
+    auto &list = GetExtraData(this)->GetCustomOutputs();
+    
+    bool found = false;
+    for (auto &var : list) {
+        if (STRING(var.key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(var.key)) == 0) {
+            var.output.ParseEventAction(value);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        list.emplace_back();
+        list.back().key = AllocPooledString(namestr.c_str());
+        list.back().output.ParseEventAction(value);
+    }
+}
+
+template<FixedString lit>
+inline void CBaseEntity::FireCustomOutput(CBaseEntity *activator, CBaseEntity *caller, variant_t variant)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomOutputs();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                var.output.FireOutput(variant, activator, caller);
+                return;
+            }
+        }
+    }
+}
+
+inline void CBaseEntity::RemoveCustomOutput(const char *key)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        std::string namestr = key;
+        boost::algorithm::to_lower(namestr);
+
+        auto &list = data->GetCustomOutputs();
+        
+        bool found = false;
+        for (auto it = list.begin(); it != list.end(); it++) {
+            if (STRING(it->key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(it->key)) == 0) {
+                list.erase(it);
+                return;
+            }
+        }
+    }
+}
+
+inline void CBaseEntity::RemoveAllCustomOutputs()
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        data->GetCustomOutputs().clear();
     }
 }

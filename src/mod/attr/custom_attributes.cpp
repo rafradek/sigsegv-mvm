@@ -2996,6 +2996,9 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pData, pCurWeaponItem, pNewWeaponItem, pWpnEntity);
 		
+		if (pCurWeaponItem != nullptr && pNewWeaponItem != nullptr) {
+			DevMsg("%lld %lld %d %s %s\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem));
+		}
 		if (!ret && rc_CTFPlayer_Regenerate) {
 			int stay = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpnEntity, stay, stay_after_regenerate);

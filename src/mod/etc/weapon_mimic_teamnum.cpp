@@ -97,11 +97,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				projectile->SetOwnerEntity(scorer);
 			}
 			// Fire callback
+			variant_t variant;
+			variant.SetString(NULL_STRING);
 			if (spawnflags & 1) {
-				variant_t variant;
-            	variant.SetString(NULL_STRING);
                 mimic->m_OnUser4->FireOutput(variant, projectile, mimic);
 			}
+			mimic->FireCustomOutput<"onfire">(projectile, mimic, variant);
 			
 			// Play sound, Particles
 			if (spawnflags & 2) {

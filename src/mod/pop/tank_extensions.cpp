@@ -3,17 +3,13 @@
 #include "stub/entities.h"
 #include "stub/populators.h"
 #include "stub/strings.h"
+#include "stub/extraentitydata.h"
 #include "stub/misc.h"
 #include "stub/nextbot_cc.h"
 #include "util/scope.h"
 #include "mod/pop/pointtemplate.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/particles.h"
-
-namespace Mod::Etc::Mapentity_Additions
-{
-	void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
-}
 
 class NextBotGroundLocomotion : public ILocomotion
 {
@@ -623,11 +619,13 @@ namespace Mod::Pop::Tank_Extensions
 		}
 		
 		int spawnflags = tank->m_spawnflags;
-		if (node != nullptr && tank->m_hCurrentNode == nullptr && ((data != nullptr && data->attachements.size() != 0) || (spawnflags & 1))) {
+		if (node != nullptr && tank->m_hCurrentNode == nullptr) {
 			variant_t variant;
 			variant.SetString(NULL_STRING);
-			tank->AcceptInput("FireUser4",tank,tank,variant,-1);
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(tank, "$onstartdeploy", tank, tank, variant);
+			if (((data != nullptr && data->attachements.size() != 0) || (spawnflags & 1))) {
+				tank->AcceptInput("FireUser4",tank,tank,variant,-1);
+			}
+			tank->FireCustomOutput<"onstartdeploy">(tank, tank, variant);
 		}
 
 		node = tank->m_hCurrentNode;

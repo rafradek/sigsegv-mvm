@@ -390,16 +390,19 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks);
 
 void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark);
 
-static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mark)
+static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mark, bool remove_items_only = false)
 {
     DevMsg("Apply item\n");
     int player_class = player->GetPlayerClass()->GetClassIndex();
     ApplyForceItemsClass(force_items.items[0], player, false, false, mark);
-    ApplyForceItemsClass(force_items.items_no_remove[0], player, true, false, mark);
     ApplyForceItemsClass(force_items.items[player_class], player, false, false, mark);
-    ApplyForceItemsClass(force_items.items_no_remove[player_class], player, true, false, mark);
     ApplyForceItemsClass(force_items.items[11], player, false, true, mark);
-    ApplyForceItemsClass(force_items.items_no_remove[11], player, true, true, mark);
+
+    if (remove_items_only) {
+        ApplyForceItemsClass(force_items.items_no_remove[0], player, true, false, mark);
+        ApplyForceItemsClass(force_items.items_no_remove[player_class], player, true, false, mark);
+        ApplyForceItemsClass(force_items.items_no_remove[11], player, true, true, mark);
+    }
 }
 
 static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name) 

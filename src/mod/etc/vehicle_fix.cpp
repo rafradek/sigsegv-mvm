@@ -31,12 +31,6 @@ class CTEPlayerAnimEvent {};
 
 GlobalThunk<IPredictionSystem> g_RecipientFilterPredictionSystem("g_RecipientFilterPredictionSystem");
 
-
-namespace Mod::Etc::Mapentity_Additions
-{
-    void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
-}
-
 namespace Mod::Util::Vehicle_Fix
 {	
 
@@ -381,34 +375,34 @@ namespace Mod::Util::Vehicle_Fix
 		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
 		variant_t variant;
 		if (iButtonsReleased & IN_ATTACK) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedattack", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedattack">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsReleased & IN_ATTACK2) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedattack2", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedattack2">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsReleased & IN_FORWARD) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedforward", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedforward">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsDown & IN_FORWARD) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "pressedforward", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"pressedforward">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsReleased & IN_BACK) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedback", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedback">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsDown & IN_BACK) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "pressedback", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"pressedback">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsReleased & IN_MOVELEFT) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedmoveleft", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedmoveleft">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsDown & IN_MOVELEFT) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "pressedmoveleft", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"pressedmoveleft">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsReleased & IN_MOVERIGHT) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "unpressedmoveright", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"unpressedmoveright">(vehicle->m_hPlayer, vehicle, variant);
 		}
 		if (iButtonsDown & IN_MOVERIGHT) {
-			Mod::Etc::Mapentity_Additions::FireCustomOutput(vehicle, "pressedmoveright", vehicle->m_hPlayer, vehicle, variant);
+			vehicle->FireCustomOutput<"pressedmoveright">(vehicle->m_hPlayer, vehicle, variant);
 		}
 	}
 

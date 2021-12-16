@@ -686,20 +686,7 @@ namespace Mod::Util::Client_Cmds
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
-		auto item_def = GetItemSchema()->GetItemDefinitionByName(args[1]);
-		if (item_def != nullptr) {
-			const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
-			
-			CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
-			ClientMsg(player, "item %d", entity);
-			DispatchSpawn(entity);
-
-
-			if (entity != nullptr) {
-				
-				GiveItemToPlayer(player, entity, false, true, args[1]);
-			}
-		}
+		GiveItemByName(player, args[1], false, true);
 		//engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
 		//engine->ServerExecute();
 	}

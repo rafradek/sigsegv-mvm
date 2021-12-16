@@ -181,6 +181,7 @@ struct attr_type_t
 };
 static_assert(sizeof(attr_type_t) == 0x8);
 
+bool LoadAttributeDataUnionFromString(CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, std::string &value_str);
 
 class CEconItemAttribute;
 
@@ -195,6 +196,7 @@ public:
 	void RemoveAttributeByIndex(int index)                             {        ft_RemoveAttributeByIndex(this, index); }
 	void DestroyAllAttributes()                                        {        ft_DestroyAllAttributes  (this); }
 	void SetRuntimeAttributeValue(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeValue  (this, pAttrDef, value); }
+	void SetRuntimeAttributeRefundableCurrency(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeRefundableCurrency  (this, pAttrDef, value); }
 	void NotifyManagerOfAttributeValueChanges()                        {        ft_NotifyManagerOfAttributeValueChanges  (this); }
 
 	CUtlVector<CEconItemAttribute>& Attributes() { return this->m_Attributes; }
@@ -215,6 +217,7 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void, int>                                  ft_RemoveAttributeByIndex{ "CAttributeList::RemoveAttributeByIndex" };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_DestroyAllAttributes  { "CAttributeList::DestroyAllAttributes"   };
 	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeValue  { "CAttributeList::SetRuntimeAttributeValue"   };
+	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeRefundableCurrency  { "CAttributeList::SetRuntimeAttributeRefundableCurrency"   };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_NotifyManagerOfAttributeValueChanges  { "CAttributeList::NotifyManagerOfAttributeValueChanges"   };
 
 };

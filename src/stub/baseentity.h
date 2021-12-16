@@ -148,6 +148,13 @@ public:
 	const char *GetCustomVariableByText(const char *key, const char *defValue = nullptr);
 	void SetCustomVariable(const char *key, const char *value);
 
+    // Alert! Custom outputs must be defined in lowercase
+	template<FixedString lit>
+	void FireCustomOutput(CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
+	void AddCustomOutput(const char *key, const char *value);
+	void RemoveCustomOutput(const char *key);
+	void RemoveAllCustomOutputs();
+
 	/* getter/setter */
 	IServerNetworkable *GetNetworkable() const    { return &this->m_Network; }
 	CServerNetworkProperty *NetworkProp() const   { return &this->m_Network; }

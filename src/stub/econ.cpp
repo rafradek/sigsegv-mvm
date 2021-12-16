@@ -328,12 +328,10 @@ CInventoryManager *InventoryManager() { return ft_InventoryManager(); }
 static StaticFuncThunk<CTFInventoryManager *> ft_TFInventoryManager("TFInventoryManager");
 CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
 
-void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, std::string value_str)
+bool LoadAttributeDataUnionFromString(CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, std::string &value_str)
 {
 	//Pool of previously added string values
 	static std::map<std::string, attribute_data_union_t> attribute_string_values;
-
-	attribute_data_union_t value;
 
 	auto entry = attribute_string_values.find(value_str);
 
@@ -343,16 +341,23 @@ void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, 
 		attr_def->GetType()->InitializeNewEconAttributeValue(&value);
 		if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str.c_str(), &value, true)) {
 			attr_def->GetType()->UnloadEconAttributeValue(&value);
-			return;
+			return false;
 		}
 		attribute_string_values[value_str] = value;
 	}
 	else {
 		value = attribute_string_values[value_str];
 	}
+	return true;
+}
 
+void CAttributeList::AddStringAttribute(CEconItemAttributeDefinition *attr_def, std::string value_str)
+{
 	//this->RemoveAttribute(attr_def);
-	this->SetRuntimeAttributeValue(attr_def, value.m_Float);
+	attribute_data_union_t value;
+	if (LoadAttributeDataUnionFromString(attr_def, value, value_str)) {
+		this->SetRuntimeAttributeValue(attr_def, value.m_Float);
+	}
 	//CEconItemAttribute *attr = CEconItemAttribute::Create(attr_def->GetIndex());
 	//*attr->GetValuePtr() = value;
 	//this->AddAttribute(attr);

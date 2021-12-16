@@ -1125,15 +1125,11 @@ void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool
             if (!found)
                 return;
         }
-        const char *classname = TranslateWeaponEntForClass_improved(pair.definition->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
-        CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(pair.definition->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+        CEconEntity *entity = GiveItemByName(player, pair.name.c_str(), no_remove, respect_class);
+        
         if (entity != nullptr) {
             if (mark) {
                 entity->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("is force item"), 1.0f);
-            }
-            if (!GiveItemToPlayer(player, entity, no_remove, respect_class, pair.name.c_str()))
-            {
-                entity->Remove();
             }
         }
     }

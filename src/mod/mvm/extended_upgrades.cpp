@@ -18,7 +18,7 @@
 
 namespace Mod::MvM::Extended_Upgrades
 {
-
+    int GetLoadoutSlotForItem(CTFItemDefinition *item, int class_index);
     void StartMenuForPlayer(CTFPlayer *player);
     void StartUpgradeListForPlayer(CTFPlayer *player, int slot, int displayitem = 0);
     void StopMenuForPlayer(CTFPlayer *player);
@@ -96,7 +96,7 @@ namespace Mod::MvM::Extended_Upgrades
         
         virtual bool Matches(CEconEntity *ent, CEconItemView *item, CTFPlayer *owner) override {
 
-            return item->GetItemDefinition()->GetLoadoutSlot(owner->GetPlayerClass()->GetClassIndex()) == this->slot;
+            return GetLoadoutSlotForItem(item->GetItemDefinition(), owner->GetPlayerClass()->GetClassIndex()) == this->slot;
         }
 
         virtual void ParseKey(KeyValues *kv) override {
@@ -155,6 +155,16 @@ namespace Mod::MvM::Extended_Upgrades
     int extended_upgrades_start_index = -1;
 
     bool BuyUpgrade(UpgradeInfo *upgrade,/* CEconEntity *item*/ int slot, CTFPlayer *player, bool free, bool downgrade);
+    
+    int GetLoadoutSlotForItem(CTFItemDefinition *item, int class_index) 
+    {
+        int slot = item->GetLoadoutSlot(class_index);
+        if (slot == -1 && class_index != TF_CLASS_UNDEFINED && item->m_iItemDefIndex != 0) {
+            slot = item->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+        }
+        return slot;
+    }
+
     void FireOutputs(std::vector<std::string> &outputs, variant_t &defaultValue, CBaseEntity *activator, CBaseEntity *caller)
     {
         for(const auto &output : outputs){
@@ -243,10 +253,11 @@ namespace Mod::MvM::Extended_Upgrades
             else if ((upgrade_id == 1000) && (!Mod::Pop::PopMgr_Extensions::ExtendedUpgradesNoUndo())) {
                 DevMsg("Undoing %d %d\n", extended_upgrades_start_index, CMannVsMachineUpgradeManager::Upgrades().Count());
                 for (int i = extended_upgrades_start_index; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
+                    CMannVsMachineUpgrades &upgr = CMannVsMachineUpgradeManager::Upgrades()[i];
                     int cur_step;
                     bool over_cap;
                     int max_step = GetUpgradeStepData(this->player, this->slot, i, cur_step, over_cap);
-                   // DevMsg("Undoing upgrade %d %d\n", cur_step, max_step);
+                    DevMsg("Undoing upgrade %d cap %f increment %f steps %d %d\n", i, upgr.m_flCap,  upgr.m_flIncrement, cur_step, max_step);
                     for (int j = 0; j < cur_step; j++) {
                         DevMsg("Undoing upgrade %d %d\n", j, cur_step);
                         from_buy_upgrade = true;
@@ -311,7 +322,12 @@ namespace Mod::MvM::Extended_Upgrades
 
     void Parse_SecondaryAttributes(KeyValues *kv, std::map<std::string, float> &secondary_attributes) {
         FOR_EACH_SUBKEY(kv, subkey) {
-            secondary_attributes[subkey->GetName()] = subkey->GetFloat();
+            attribute_data_union_t value;
+            auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
+            std::string value_str = subkey->GetString();
+            if (attr_def != nullptr && LoadAttributeDataUnionFromString(attr_def, value, value_str)) {
+                secondary_attributes[subkey->GetName()] = value.m_Float;
+            }
         }
     }
 
@@ -387,7 +403,14 @@ namespace Mod::MvM::Extended_Upgrades
                 upgrade->secondary_attributes_index.push_back(upgrade_index);
                 strcpy(upgrade_game_child.m_szAttribute, entry.first.c_str());
 
-                upgrade_game_child.m_flCap = entry.second > 0 ? 1.0f + entry.second * 64 : entry.second * 64;
+                // String attributes always have cap set the same as increment
+                if (GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str())->IsType<CSchemaAttributeType_String>()) {
+                    upgrade_game_child.m_flCap = entry.second;
+                }
+                else {
+                    upgrade_game_child.m_flCap = entry.second > 0 ? 1.0f + entry.second * 64 : entry.second * 64;
+                }
+
                 upgrade_game_child.m_flIncrement = entry.second;
                 upgrade_game_child.m_nCost = 0;
                 upgrade_game_child.m_iUIGroup = upgrade->playerUpgrade ? 1 : upgrade->uigroup;
@@ -607,7 +630,7 @@ namespace Mod::MvM::Extended_Upgrades
             if (child != nullptr) {
                 int cur_step;
                 bool over_cap;
-                int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), child->mvm_upgrade_index, cur_step, over_cap);
+                int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), child->mvm_upgrade_index, cur_step, over_cap);
                 if (cur_step < entry.second) {
                     reason = fmt::format("Requires {} upgraded to level {}", child->name, entry.second);
                     return false;
@@ -621,7 +644,7 @@ namespace Mod::MvM::Extended_Upgrades
             if (child != nullptr) {
                 int cur_step;
                 bool over_cap;
-                int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), child->mvm_upgrade_index, cur_step, over_cap);
+                int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), child->mvm_upgrade_index, cur_step, over_cap);
                 DevMsg("%d %d\n", cur_step, entry.second);
                 if (cur_step >= entry.second) {
                     reason = fmt::format("Incompatible with {} upgrade", child->name);
@@ -637,7 +660,7 @@ namespace Mod::MvM::Extended_Upgrades
                 if (child != nullptr) {
                     int cur_step;
                     bool over_cap;
-                    int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), child->mvm_upgrade_index, cur_step, over_cap);
+                    int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), child->mvm_upgrade_index, cur_step, over_cap);
                     if (cur_step >= entry.second) {
                         found = true;
                     }
@@ -683,7 +706,7 @@ namespace Mod::MvM::Extended_Upgrades
                 if (upgrade2 != nullptr && upgrade->playerUpgrade == upgrade2->playerUpgrade) {
                     int cur_step;
                     bool over_cap;
-                    int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : item->GetItem()->GetItemDefinition()->GetLoadoutSlot(player_class), upgrade2->mvm_upgrade_index, cur_step, over_cap);
+                    int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), upgrade2->mvm_upgrade_index, cur_step, over_cap);
                     if (cur_step > 0) {
                         if (upgrade->tier == upgrade2->tier) {
                             numTierUpgrades+=cur_step;
@@ -758,6 +781,7 @@ namespace Mod::MvM::Extended_Upgrades
                 }
             }
             for (int attr : upgrade->secondary_attributes_index) {
+                DevMsg("Buy Secondary upgrade %d\n", attr);
                 g_hUpgradeEntity->PlayerPurchasingUpgrade(player, override_slot, attr, downgrade, true, false);
             }
             from_buy_upgrade_free = false;
@@ -783,13 +807,16 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     void StartUpgradeListForPlayer(CTFPlayer *player, int slot, int displayitem) {
-        //DevMsg("Start upgrade list %d\n", slot);
         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
-        SelectUpgradeListHandler *handler = new SelectUpgradeListHandler(player, slot);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
         
         CEconEntity *item = GetEconEntityAtLoadoutSlot(player, slot);
+        
+        DevMsg("Start upgrade list %d %d\n", slot, item != nullptr);
+
         if (slot != -1 && item == nullptr) return;
+
+        SelectUpgradeListHandler *handler = new SelectUpgradeListHandler(player, slot);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
 
         if (slot == -1)
             menu->SetDefaultTitle("Player Upgrades");
@@ -901,7 +928,7 @@ namespace Mod::MvM::Extended_Upgrades
             }
         }
 
-        ConVarRef tf_mvm_respec_enabled("tf_mvm_respec_enabled");
+        static ConVarRef tf_mvm_respec_enabled("tf_mvm_respec_enabled");
         ItemDrawInfo info2("Refund Upgrades", tf_mvm_respec_enabled.GetBool() ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
         menu->AppendItem("refund", info2);
 
@@ -946,10 +973,12 @@ namespace Mod::MvM::Extended_Upgrades
         AddUpgradesToGameList();
     }
 
+    bool player_is_downgrading = false;
     DETOUR_DECL_MEMBER(bool, CTFGameRules_CanUpgradeWithAttrib, CTFPlayer *player, int slot, int defindex, CMannVsMachineUpgrades *upgrade)
 	{
-        if (upgrade != nullptr && upgrade->m_iQuality == 9500)
-            return from_buy_upgrade;
+        if (upgrade != nullptr && upgrade->m_iQuality == 9500) {
+            return player_is_downgrading || from_buy_upgrade;
+        }
 
         return DETOUR_MEMBER_CALL(CTFGameRules_CanUpgradeWithAttrib)(player, slot, defindex, upgrade);
     }
@@ -967,12 +996,15 @@ namespace Mod::MvM::Extended_Upgrades
         attrib_definition_index_t result = DETOUR_MEMBER_CALL(CUpgrades_ApplyUpgradeToItem)(player, item, upgrade, cost, downgrade, fresh);
         upgrade_success = result != INVALID_ATTRIB_DEF_INDEX;
 
-        if (upgrade_success && extended_upgrades_start_index != -1 && upgrade >= extended_upgrades_start_index && upgrade < extended_upgrades_start_index + upgrades.size()) {
-            int slot = item == nullptr ? -1 : item->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+        DevMsg("ApplyUpgradeToItem %d %d %d %d\n", upgrade_success, upgrade, cost, downgrade);
+        if (upgrade_success && extended_upgrades_start_index != -1 && upgrade >= extended_upgrades_start_index && upgrade < extended_upgrades_start_index + (int)upgrades.size()) {
+            int slot = item == nullptr ? -1 : GetLoadoutSlotForItem(item->GetItemDefinition(), player->GetPlayerClass()->GetClassIndex());
             auto upgradeInfo = upgrades[upgrade - extended_upgrades_start_index];
             int cur_step;
             bool over_cap;
             int max_step = GetUpgradeStepData(player, slot, upgrade, cur_step, over_cap);
+            
+            DevMsg("^ %d/%d %e %e\n", cur_step, max_step, CMannVsMachineUpgradeManager::Upgrades()[upgrade].m_flCap, CMannVsMachineUpgradeManager::Upgrades()[upgrade].m_flIncrement);
 
             variant_t variant;
             variant.SetInt(cur_step);
@@ -994,20 +1026,16 @@ namespace Mod::MvM::Extended_Upgrades
 	{
 		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
-		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && rc_CUpgrades_PlayerPurchasingUpgrade && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
+		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
 			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 		return slot;
-	}
-
-    DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CBaseEntity &entity)
-	{
-        SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
-		return DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
 	}
 
     DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
         SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
+        player_is_downgrading = sell;
+        DevMsg("PlayerPurchasing %d %d %d %d\n", itemslot, upgradeslot, sell, free);
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
 	}
 
@@ -1031,6 +1059,69 @@ namespace Mod::MvM::Extended_Upgrades
 		});
 	}
 
+    DETOUR_DECL_STATIC(int, GetUpgradeStepData, CTFPlayer *player, int slot, int upgrade, int& cur_step, bool& over_cap)
+	{
+        if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
+            auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
+            auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
+            DevMsg("IsString(%d)\n", attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
+            if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
+                CAttributeList *attribList = nullptr;
+                if (slot == -1) {
+                    attribList = player->GetAttributeList();
+                }
+                else {
+                    auto item = GetEconEntityAtLoadoutSlot(player, (int)slot);
+                    if (item != nullptr) {
+                        attribList = &item->GetItem()->GetAttributeList();
+                    }
+                }
+                if (attribList != nullptr) {
+                    auto attr = attribList->GetAttributeByID(attribDef->GetIndex());
+                    
+                    over_cap = false;
+                    cur_step = attr != nullptr ? 1 : 0;
+                    return 1;
+                }
+            }
+        }
+		auto result = DETOUR_STATIC_CALL(GetUpgradeStepData)(player, slot, upgrade, cur_step, over_cap);
+		return result;
+	}
+
+    #warning __gcc_regcall detours considered harmful!
+	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, attrib_definition_index_t, ApplyUpgrade_Default, const CMannVsMachineUpgrades& upgrade, CTFPlayer *pTFPlayer, CEconItemView *pEconItemView, int nCost, bool bDowngrade)
+	{
+        auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade.m_szAttribute);
+        if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
+            CAttributeList *attribList = nullptr;
+            if (upgrade.m_iUIGroup == 1) {
+                attribList = pTFPlayer->GetAttributeList();
+            }
+            else if (pEconItemView != nullptr) {
+                attribList = &pEconItemView->GetAttributeList();
+            }
+            if (attribList == nullptr) return;
+
+            if (bDowngrade) {
+                if (attribList->GetAttributeByID(attribDef->GetIndex()) != nullptr) {
+                    attribList->RemoveAttribute(attribDef);
+                    return attribDef->GetIndex();
+                }
+                else {
+                    return INVALID_ATTRIB_DEF_INDEX;
+                }
+            }
+            else {
+                attribList->SetRuntimeAttributeValue(attribDef, upgrade.m_flIncrement);
+	            attribList->SetRuntimeAttributeRefundableCurrency(attribDef, nCost);
+                return attribDef->GetIndex();
+            }
+            return INVALID_ATTRIB_DEF_INDEX;
+        }
+        return DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
+    }
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1041,9 +1132,13 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetCostForUpgrade, "CTFGameRules::GetCostForUpgrade");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
-            MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
+            //MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
+
+            // Properly track string attribute upgrades
+            MOD_ADD_DETOUR_STATIC(GetUpgradeStepData, "GetUpgradeStepData");
+            MOD_ADD_DETOUR_STATIC(ApplyUpgrade_Default, "ApplyUpgrade_Default");
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

@@ -232,7 +232,7 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
 			
 			// Replace buster smoke with something else
-			//MOD_ADD_DETOUR_STATIC(DispatchParticleEffect, "DispatchParticleEffect [overload 3]");
+			MOD_ADD_DETOUR_STATIC(DispatchParticleEffect, "DispatchParticleEffect [overload 3]");
 		}
 	};
 	CMod s_Mod;

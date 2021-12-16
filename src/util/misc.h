@@ -149,6 +149,18 @@ inline bool FStrEq(const char *sz1, const char *sz2)
 	return (sz1 == sz2 || V_stricmp(sz1, sz2) == 0);
 }
 
+inline bool StringEndsWith(const char *string, const char *suffix, bool case_sensitive = true)
+{
+	int lengthString = strlen(string);
+	int lengthSuffix = strlen(suffix);
+	const char *start = string + (lengthString - lengthSuffix);
+	return lengthString >= lengthSuffix && (case_sensitive ? strcmp(start, suffix) : stricmp(start, suffix)) == 0;
+}
+
+inline bool StringStartsWith(const char *string, const char *prefix, bool case_sensitive = true)
+{
+	return (case_sensitive ? strncmp(string, prefix, strlen(prefix)) : strnicmp(string, prefix, strlen(prefix))) == 0;
+}
 
 /* return an iterator to a random element in an STL container
  * based on: http://stackoverflow.com/a/16421677 */
@@ -226,11 +238,15 @@ struct VStricmpLess
 };
 
 
-inline bool StringToIntStrict(const char *str, int& out, int base = 0)
+inline bool StringToIntStrict(const char *str, int& out, int base = 0, const char **next = nullptr)
 {
 	char *str_end = nullptr;
 	long num = strtol(str, &str_end, base);
 	
+	if (next != nullptr) {
+		*next = str_end;
+	}
+
 	if (str_end != str) {
 		out = (int)num;
 		return true;
@@ -239,10 +255,14 @@ inline bool StringToIntStrict(const char *str, int& out, int base = 0)
 	}
 }
 
-inline bool StringToFloatStrict(const char *str, float& out)
+inline bool StringToFloatStrict(const char *str, float& out, const char **next = nullptr)
 {
 	char *str_end = nullptr;
 	float num = strtof(str, &str_end);
+	
+	if (next != nullptr) {
+		*next = str_end;
+	}
 	
 	if (str_end != str) {
 		out = num;

@@ -346,7 +346,7 @@ CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *pla
 { 
 	//also search invalid class weapons
 	
-	int classindex = player->GetPlayerClass()->GetClassIndex();
+	/*int classindex = player->GetPlayerClass()->GetClassIndex();
 	for(int i = 0; i < MAX_WEAPONS; i++) {
 		CEconEntity *weapon = player->GetWeapon(i);
 		if (weapon == nullptr)
@@ -369,7 +369,7 @@ CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *pla
 			}
 			return view;
 		}
-	}
+	}*/
 	return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); 
 }
 
@@ -381,9 +381,12 @@ CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_re
 		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
 		DispatchSpawn(entity);
 
-		if (entity != nullptr && !GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
-			entity->Remove();
-			entity = nullptr;
+		if (entity != nullptr) {
+			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, entity->GetItem());
+			if (!GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
+				entity->Remove();
+				entity = nullptr;
+			}
 		}
 		return entity;
 	}
@@ -429,6 +432,15 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 			(void)CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(player, slot, &old_econ_entity);
 			
 			if (old_econ_entity != nullptr) {
+				// Prevent replacing extra loadout item
+				int extraLoadoutItem = 0;
+				int forced = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_forced_item);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(old_econ_entity, extraLoadoutItem, is_extra_loadout_item);
+				if (extraLoadoutItem != 0 && forced == 0) {
+					return false;
+				}
+
 				if (old_econ_entity->IsBaseCombatWeapon()) {
 					auto old_weapon = ToBaseCombatWeapon(old_econ_entity);
 					
@@ -459,7 +471,6 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 			weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
 		}
 	}
-	Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, entity->GetItem());
 	
 	entity->GiveTo(player);
 	return true;

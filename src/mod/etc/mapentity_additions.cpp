@@ -23,7 +23,6 @@
 namespace Mod::Etc::Mapentity_Additions
 {
 
-    void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant);
     static const char *SPELL_TYPE[] = {
         "Fireball",
         "Ball O' Bats",
@@ -57,7 +56,7 @@ namespace Mod::Etc::Mapentity_Additions
 
             provider->FireCase(item + 1, player);
             variant_t variant;
-            FireCustomOutput(provider, "onselect", player, provider, variant);
+            provider->FireCustomOutput<"onselect">(player, provider, variant);
         }
 
         virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
@@ -87,6 +86,7 @@ namespace Mod::Etc::Mapentity_Additions
         ServerClass *serverClass;
         std::string name;
         int offset;
+        bool isVecAxis;
         SendProp *prop;
     };
 
@@ -97,9 +97,6 @@ namespace Mod::Etc::Mapentity_Additions
         fieldtype_t fieldType;
         int size;
     };
-
-    std::unordered_map<CBaseEntity *, std::unordered_map<std::string, CBaseEntityOutput>> custom_output;
-    std::unordered_map<CBaseEntity *, std::unordered_map<std::string, string_t>> custom_variables;
 
     std::vector<SendPropCacheEntry> send_prop_cache;
     std::vector<DatamapCacheEntry> datamap_cache;
@@ -121,26 +118,58 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
-    bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop)
+    bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, int index = -1)
     {
         for (int i = 0; i < s_table->GetNumProps(); ++i) {
             SendProp *s_prop = s_table->GetProp(i);
             
             if (s_prop->GetName() != nullptr && strcmp(s_prop->GetName(), name) == 0) {
                 off += s_prop->GetOffset();
+                if (index >= 0) {
+                    if (s_prop->GetDataTable() != nullptr && index < s_table->GetNumProps()) {
+                        prop = s_prop->GetDataTable()->GetProp(index);
+                        off += prop->GetOffset();
+                        return true;
+                    }
+                    if (s_prop->IsInsideArray()) {
+                        auto prop_array = s_prop->GetDataTable()->GetProp(i + 1);
+                        if (prop_array != nullptr && prop_array->GetType() == DPT_Array && index < prop_array->GetNumElements()) {
+                            off += prop_array->GetElementStride();
+                        }
+                    }
+                }
                 prop = s_prop;
                 return true;
             }
             
             if (s_prop->GetDataTable() != nullptr) {
                 off += s_prop->GetOffset();
-                if (FindSendProp(off, s_prop->GetDataTable(), name, prop)) {
+                if (FindSendProp(off, s_prop->GetDataTable(), name, prop, index)) {
                     return true;
                 }
                 off -= s_prop->GetOffset();
             }
         }
         
+        return false;
+    }
+
+    bool ReadArrayIndexFromString(std::string &name, int &arrayPos, int &offset, bool &isVecAxis)
+    {
+        size_t arrayStr = name.find('$');
+        const char *vecChar = nullptr;
+        if (arrayStr != std::string::npos) {
+            StringToIntStrict(name.c_str() + arrayStr + 1, arrayPos, 0, &vecChar);
+            name.resize(arrayStr);
+            if (vecChar != nullptr) {
+                switch (*vecChar) {
+                    case 'x': case 'X': isVecAxis = true; break;
+                    case 'y': case 'Y': isVecAxis = true; offset += 4; break;
+                    case 'z': case 'Z': isVecAxis = true; offset += 8; break;
+                }
+            }
+            return true;
+        }
         return false;
     }
 
@@ -152,11 +181,16 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }
 
-        SendProp *prop = nullptr;
+        std::string nameNoArray = name;
+        int arrayPos = -1;
         int offset = 0;
-        FindSendProp(offset,serverClass->m_pTable, name, prop);
+        bool isVecAxis = false;
+        ReadArrayIndexFromString(nameNoArray, arrayPos, offset, isVecAxis);
 
-        send_prop_cache.push_back({serverClass, name, offset, prop});
+        SendProp *prop = nullptr;
+        FindSendProp(offset,serverClass->m_pTable, nameNoArray.c_str(), prop, arrayPos);
+        
+        send_prop_cache.push_back({serverClass, name, offset, isVecAxis, prop});
         return send_prop_cache.back();
     }
 
@@ -167,11 +201,23 @@ namespace Mod::Etc::Mapentity_Additions
                 return entry;
             }
         }
+
+        std::string nameNoArray = name;
+        int arrayPos = 0;
+        int extraOffset = 0;
+        bool isVecAxis = false;
+        ReadArrayIndexFromString(nameNoArray, arrayPos, extraOffset, isVecAxis);
+
         for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
             // search through all the readable fields in the data description, looking for a match
             for (int i = 0; i < dmap->dataNumFields; i++) {
-                if (strcmp(dmap->dataDesc[i].fieldName, name) == 0) {
-                    datamap_cache.push_back({datamap, name, dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ], dmap->dataDesc[i].fieldType, dmap->dataDesc[i].fieldSize});
+                if (dmap->dataDesc[i].fieldName != nullptr && strcmp(dmap->dataDesc[i].fieldName, nameNoArray.c_str()) == 0) {
+                    fieldtype_t fieldType = isVecAxis ? FIELD_FLOAT : dmap->dataDesc[i].fieldType;
+                    int offset = dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ] + extraOffset;
+                    
+                    offset += clamp(arrayPos, 0, (int)dmap->dataDesc[i].fieldSize) * (dmap->dataDesc[i].fieldSizeInBytes / dmap->dataDesc[i].fieldSize);
+
+                    datamap_cache.push_back({datamap, name, offset, fieldType, dmap->dataDesc[i].fieldSize});
                     return datamap_cache.back();
                 }
             }
@@ -185,32 +231,8 @@ namespace Mod::Etc::Mapentity_Additions
         std::string namestr = name;
         boost::algorithm::to_lower(namestr);
     //  DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
-        custom_output[entity][namestr].ParseEventAction(value);
+        entity->AddCustomOutput(namestr.c_str(), value);
         SetCustomVariable(entity, namestr.c_str(), value);
-    }
-
-    // Alert! Custom outputs must be defined in lowercase
-    void FireCustomOutput(CBaseEntity *entity, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t variant) {
-        if (custom_output.empty())
-            return;
-
-        //DevMsg("Fire custom output %d %s %d\n", entity, name, custom_output.size());
-        auto find = custom_output.find(entity);
-        if (find != custom_output.end()) {
-           // DevMsg("Found entity\n");
-            auto findevent = find->second.find(name);
-            if (findevent != find->second.end()) {
-               // DevMsg("Found output\n");
-                findevent->second.FireOutput(variant, activator, caller);
-            }
-        }
-    }
-    
-    void ClearCustomOutputs(CBaseEntity *entity) {
-        if (custom_output.empty())
-            return;
-        
-        custom_output.erase(entity);
     }
 
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
@@ -281,7 +303,7 @@ namespace Mod::Etc::Mapentity_Additions
                         variable.Set(FIELD_EHANDLE, (CHandle<CBaseEntity>*)(((char*)entity) + offset));
                     }
                 }
-                else if (propType == DPT_Float) {
+                else if (propType == DPT_Float || entry.isVecAxis) {
                     variable.SetFloat(*(float*)(((char*)entity) + offset));
                 }
                 else if (propType == DPT_String) {
@@ -554,7 +576,7 @@ namespace Mod::Etc::Mapentity_Additions
 
         if (data->m_hParent == nullptr && data->m_bParentSet) {
             variant_t variant;
-            FireCustomOutput(this,"onfakeparentkilled", this, this, variant);
+            this->FireCustomOutput<"onfakeparentkilled">(this, this, variant);
             data->m_bParentSet = false;
         }
 
@@ -1077,6 +1099,100 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                     return true;
                 }
+                else if (stricmp(szInputName, "$GetPlayerAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    if (player != nullptr) {
+                        char param_tokenized[256] = "";
+                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                        char *attrName = strtok(param_tokenized,"|");
+                        char *targetstr = strtok(NULL,"|");
+                        char *action = strtok(NULL,"|");
+                        char *defvalue = strtok(NULL,"|");
+                        CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
+                        variant_t variable;
+                        bool found = false;
+                        if (attr != nullptr) {
+                            char buf[256];
+                            attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
+                            variable.SetString(AllocPooledString(buf));
+                            found = true;
+                        }
+                        else {
+                            variable.SetString(AllocPooledString(defvalue));
+                        }
+
+                        if (targetstr != nullptr && action != nullptr) {
+                            if (found || defvalue != nullptr) {
+                                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                                    target->AcceptInput(action, pActivator, ent, variable, 0);
+                                }
+                            }
+                        }
+                    }
+                    return true;
+                }
+                else if (stricmp(szInputName, "$GetItemAttribute") == 0) {
+                    CTFPlayer *player = ToTFPlayer(ent);
+                    if (player != nullptr) {
+                        char param_tokenized[256] = "";
+                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                        char *itemSlot = strtok(param_tokenized,"|");
+                        char *attrName = strtok(NULL,"|");
+                        char *targetstr = strtok(NULL,"|");
+                        char *action = strtok(NULL,"|");
+                        char *defvalue = strtok(NULL,"|");
+
+                        bool found = false;
+
+                        variant_t variable;
+                        if (itemSlot != nullptr) {
+                            int slot = 0;
+                            CEconEntity *item = nullptr;
+                            if (StringToIntStrict(itemSlot, slot)) {
+                                if (slot != -1) {
+                                    item = GetEconEntityAtLoadoutSlot(player, slot);
+                                }
+                                else {
+                                    item = player->GetActiveTFWeapon();
+                                }
+                            }
+                            else {
+                                ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                                    if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemSlot)) {
+                                        item = entity;
+                                    }
+                                });
+                            }
+                            
+                            if (item != nullptr) {
+                                CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
+                                if (attr != nullptr) {
+                                    char buf[256];
+                                    attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
+                                    variable.SetString(AllocPooledString(buf));
+                                    found = true;
+                                }
+                            }
+                        }
+
+                        if (!found) {
+                            variable.SetString(AllocPooledString(defvalue));
+                        }
+
+                        if (targetstr != nullptr && action != nullptr) {
+                            if (found || defvalue != nullptr) {
+                                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                                    target->AcceptInput(action, pActivator, ent, variable, 0);
+                                }
+                            }
+                        }
+                    }
+                    return true;
+                }
+                else if (strnicmp(szInputName, "$GetKey$", strlen("$GetKey$")) == 0) {
+                    FireGetInput(ent, KEYVALUE, szInputName + strlen("$GetKey$"), pActivator, pCaller, Value);
+                    return true;
+                }
                 else if (stricmp(szInputName, "$AddItemAttribute") == 0) {
                     CTFPlayer *player = ToTFPlayer(ent);
                     char param_tokenized[256];
@@ -1090,7 +1206,7 @@ namespace Mod::Etc::Mapentity_Additions
                         CEconEntity *item = nullptr;
                         if (slot != nullptr) {
                             ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
+                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), slot)) {
                                     item = entity;
                                 }
                             });
@@ -1312,6 +1428,7 @@ namespace Mod::Etc::Mapentity_Additions
                     player->GiveDefaultItemsNoAmmo();
 
                 }
+                
             }
             else if (ent->GetClassname() == point_viewcontrol_classname) {
                 auto camera = static_cast<CTriggerCamera *>(ent);
@@ -1350,10 +1467,10 @@ namespace Mod::Etc::Mapentity_Additions
                 if (stricmp(szInputName, "$targettest") == 0) {
                     auto data = GetExtraTriggerDetectorData(ent);
                     if (data->m_hLastTarget != nullptr) {
-                        FireCustomOutput(ent, "targettestpass", data->m_hLastTarget, ent, Value);
+                        ent->FireCustomOutput<"targettestpass">(data->m_hLastTarget, ent, Value);
                     }
                     else {
-                        FireCustomOutput(ent, "targettestfail", nullptr, ent, Value);
+                        ent->FireCustomOutput<"targettestfail">(nullptr, ent, Value);
                     }
                     return true;
                 }
@@ -1451,19 +1568,19 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser5") == 0) {
-                FireCustomOutput(ent, "onuser5", pActivator, ent, Value);
+                ent->FireCustomOutput<"onuser5">(pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser6") == 0) {
-                FireCustomOutput(ent, "onuser6", pActivator, ent, Value);
+                ent->FireCustomOutput<"onuser6">(pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser7") == 0) {
-                FireCustomOutput(ent, "onuser7", pActivator, ent, Value);
+                ent->FireCustomOutput<"onuser7">(pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$FireUser8") == 0) {
-                FireCustomOutput(ent, "onuser8", pActivator, ent, Value);
+                ent->FireCustomOutput<"onuser8">(pActivator, ent, Value);
                 return true;
             }
             else if (stricmp(szInputName, "$TakeDamage") == 0) {
@@ -1778,7 +1895,7 @@ namespace Mod::Etc::Mapentity_Additions
                             *(CHandle<CBaseEntity>*)(((char*)ent) + offset) = servertools->FindEntityByName(nullptr, Value.String());
                         }
                     }
-                    else if (propType == DPT_Float) {
+                    else if (propType == DPT_Float || entry.isVecAxis) {
                         *(float*)(((char*)ent) + offset) = strtof(Value.String(), nullptr);
                     }
                     else if (propType == DPT_String) {
@@ -1817,10 +1934,28 @@ namespace Mod::Etc::Mapentity_Additions
             }
             else if (stricmp(szInputName, "$AddModule") == 0) {
                 AddModuleByName(ent, Value.String());
+                return true;
             }
             else if (stricmp(szInputName, "$RemoveModule") == 0) {
                 ent->RemoveEntityModule(Value.String());
+                return true;
             }
+            else if (stricmp(szInputName, "$RemoveOutput") == 0) {
+                const char *name = Value.String();
+                auto datamap = ent->GetDataDescMap();
+                for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
+                    // search through all the readable fields in the data description, looking for a match
+                    for (int i = 0; i < dmap->dataNumFields; i++) {
+                        if ((dmap->dataDesc[i].flags & FTYPEDESC_OUTPUT) && stricmp(dmap->dataDesc[i].externalName, name) == 0) {
+                            ((CBaseEntityOutput*)(((char*)ent) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]))->DeleteAllElements();
+                            return true;
+                        }
+                    }
+                }
+                ent->RemoveCustomOutput(name);
+                return true;
+            }
+            
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
     }
@@ -2016,17 +2151,17 @@ namespace Mod::Etc::Mapentity_Additions
         if (damage != 0 && health_pre - entity->GetHealth() != 0) {
             variant_t variant;
             variant.SetInt(health_pre - entity->GetHealth());
-            FireCustomOutput(entity, "ondamagereceived", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+            entity->FireCustomOutput<"ondamagereceived">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
         else {
             variant_t variant;
             variant.SetInt(info.GetDamage());
-            FireCustomOutput(entity, "ondamageblocked", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+            entity->FireCustomOutput<"ondamageblocked">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
         if (alive && !entity->IsAlive()) {
             variant_t variant;
             variant.SetInt(damage);
-            FireCustomOutput(entity, "ondeath", info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
+            entity->FireCustomOutput<"ondeath">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
         return damage;
 	}
@@ -2098,17 +2233,10 @@ namespace Mod::Etc::Mapentity_Additions
             entity->m_OnUser4->FireOutput(variant, entity, entity);
         }
         
-        if (!custom_output.empty()) {
-            variant_t variant;
-            variant.SetInt(entity->entindex());
-            FireCustomOutput(entity, "onkilled", entity, entity, variant);
-            custom_output.erase(entity);
-        }
+        variant_t variant;
+        variant.SetInt(entity->entindex());
+        entity->FireCustomOutput<"onkilled">(entity, entity, variant);
 
-        if (!custom_variables.empty()) {
-            custom_variables.erase(entity);
-        }
-        
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
 	}
 
@@ -2273,7 +2401,7 @@ namespace Mod::Etc::Mapentity_Additions
         // The target was killed
         if (data->m_bHasTarget && data->m_hLastTarget == nullptr) {
             variant_t variant;
-            FireCustomOutput(this, "onlosttargetall", nullptr, this, variant);
+            this->FireCustomOutput<"onlosttargetall">(nullptr, this, variant);
         }
 
         // Find nearest target entity
@@ -2356,12 +2484,12 @@ namespace Mod::Etc::Mapentity_Additions
             variant_t variant;
             if (nearestEntity != nullptr) {
                 if (data->m_hLastTarget != nullptr) {
-                    FireCustomOutput(this, "onlosttarget", data->m_hLastTarget, this, variant);
+                    this->FireCustomOutput<"onlosttarget">(data->m_hLastTarget, this, variant);
                 }
-                FireCustomOutput(this, "onnewtarget", nearestEntity, this, variant);
+                this->FireCustomOutput<"onnewtarget">(nearestEntity, this, variant);
             }
             else {
-                FireCustomOutput(this, "onlosttargetall", data->m_hLastTarget, this, variant);
+               this->FireCustomOutput<"onlosttargetall">(data->m_hLastTarget, this, variant);
             }
         }
 
@@ -2376,9 +2504,6 @@ namespace Mod::Etc::Mapentity_Additions
         auto trigger = reinterpret_cast<CBaseEntity *>(this);
         if (trigger->GetClassname() == trigger_detector_class) {
             auto data = GetExtraTriggerDetectorData(trigger);
-            auto &vars = custom_variables[trigger];
-            data->m_hXRotateEntity = servertools->FindEntityGeneric(nullptr, STRING(vars["xrotateentity"]), trigger);
-            data->m_hYRotateEntity = servertools->FindEntityGeneric(nullptr, STRING(vars["yrotateentity"]), trigger);
             THINK_FUNC_SET(trigger, DetectorTick, gpGlobals->curtime);
         }
         DETOUR_MEMBER_CALL(CBaseTrigger_Activate)();
@@ -2387,7 +2512,6 @@ namespace Mod::Etc::Mapentity_Additions
     THINK_FUNC_DECL(WeaponSpawnerTick)
     {
         auto data = GetExtraData<ExtraEntityDataWeaponSpawner>(this);
-        auto &vars = custom_variables[this];
         
         this->SetNextThink(gpGlobals->curtime + 0.1f, "WeaponSpawnerTick");
     }
@@ -2409,7 +2533,7 @@ namespace Mod::Etc::Mapentity_Additions
             auto spawner = data->m_hWeaponSpawner;
             if (spawner != nullptr) {
                 variant_t variant;
-                FireCustomOutput(spawner, "onpickup", player, spawner, variant);
+                spawner->FireCustomOutput<"onpickup">(player, spawner, variant);
             }
             if (data->ammo != -1) {
                 player->SetAmmoCount(data->ammo, weapon->GetPrimaryAmmoType());

@@ -45,11 +45,6 @@ namespace Mod::Pop::Wave_Extensions
 	std::vector<std::string> *GetWaveExplanation(int wave);
 }
 
-namespace Mod::Etc::Mapentity_Additions
-{
-	void ClearCustomOutputs(CBaseEntity *entity);
-}
-
 namespace Mod::Pop::PopMgr_Extensions
 {
 	
@@ -950,7 +945,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<PointTemplateInfo>				m_SpawnTemplates;
 		std::vector<PlayerPointTemplateInfo>        m_PlayerSpawnTemplates;
 		std::vector<PointTemplateInfo>              m_PlayerSpawnOnceTemplates;
-		std::unordered_set<CTFPlayer*>              m_PlayerSpawnOnceTemplatesAppliedTo;
+		std::set<CHandle<CTFPlayer>>                m_PlayerSpawnOnceTemplatesAppliedTo;
 		std::vector<ShootTemplateData>              m_ShootTemplates;
 		std::vector<WeaponPointTemplateInfo>        m_WeaponSpawnTemplates;
 
@@ -1400,6 +1395,21 @@ namespace Mod::Pop::PopMgr_Extensions
 //		SCOPED_INCREMENT(rc_CTFPlayer_GiveDefaultItems);
 //		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 //	}
+
+	RefCount rc_GetEntityForLoadoutSlot;
+	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot)
+	{
+		SCOPED_INCREMENT(rc_GetEntityForLoadoutSlot);
+		return DETOUR_MEMBER_CALL(GetEntityForLoadoutSlot)(slot);
+	}
+
+	RefCount rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot;
+    DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CBaseEntity &entity)
+	{
+        SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
+        return DETOUR_MEMBER_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+	}
+
 	RefCount rc_CTFPlayer_GiveDefaultItems;
 	std::unordered_set<CEconItemDefinition *> is_item_replacement;
 	CEconItemView *item_view_replacement = nullptr;
@@ -1415,7 +1425,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
 		
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
-		if (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def) && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
+		if ((rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
 			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 		
 		return slot;
@@ -1436,6 +1446,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					if (itemnum < state.m_ExtraLoadoutItems.size()) {
 						auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
 						if (extraitem.item != nullptr && (extraitem.class_index == pclass || extraitem.class_index == 0) && extraitem.loadout_slot == slot) {
+							DevMsg("GiveItem %d %s\n", slot, GetItemNameForDisplay(extraitem.item));
 							if (rc_CTFPlayer_GiveDefaultItems)
 								is_item_replacement.insert(extraitem.item->GetItemDefinition());
 							item_view_replacement = extraitem.item;
@@ -1470,6 +1481,10 @@ namespace Mod::Pop::PopMgr_Extensions
 					item_view_replacement = view;
 					return view;
 				}
+			}
+
+			if (state.m_ForceItems.parsed) {
+				
 			}
 
 			/* only enforce the whitelist/blacklist if they are non-empty */
@@ -3952,7 +3967,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 			if (sent && player != nullptr) {
 				if (!player->IsBot())
-					ApplyForceItems(state.m_ForceItems, player, false);
+					ApplyForceItems(state.m_ForceItems, player, false, false);
 			}
 		}
 	};
@@ -4062,7 +4077,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					CEconItemView *view = CEconItemView::Create();
 					view->Init(item_def->m_iItemDefIndex);
-					view->m_iItemID = RandomInt(INT_MIN, INT_MAX);
+					view->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey;
 					
 					std::string name;
 					if (state.m_CustomWeapons.find(subkey->GetString()) != state.m_CustomWeapons.end()) {
@@ -4087,7 +4102,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		item.class_index = classname;
 		item.loadout_slot = GetSlotFromString(subkey2->GetName());
 		const char *item_name = nullptr;
-		if (subkey2->GetString() == nullptr) {
+		if (subkey2->GetFirstSubKey() == nullptr) {
 			item_name = subkey2->GetString();
 		}
 		else {
@@ -4114,7 +4129,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (item_def != nullptr) {
 			item.item = CEconItemView::Create();
 			item.item->Init(item_def->m_iItemDefIndex);
-			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX);
+			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey2;
 			std::string name;
 			if (state.m_CustomWeapons.find(item_name) != state.m_CustomWeapons.end()) {
 				name = item_name;
@@ -4123,6 +4138,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				name = GetItemName(item_def->m_iItemDefIndex);
 			}
 			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, item.item);
+			static int isExtraLoadoutItemId = GetItemSchema()->GetAttributeDefinitionByName("is extra loadout item")->GetIndex();
+			item.item->GetAttributeList().SetRuntimeAttributeValueByDefID(isExtraLoadoutItemId, 1.0f);
 			item.name = name;
 			state.m_ExtraLoadoutItems.push_back(item);
 		}
@@ -4821,10 +4838,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			player->m_OnUser2->DeleteAllElements();
 			player->m_OnUser3->DeleteAllElements();
 			player->m_OnUser4->DeleteAllElements();
+			player->SetName(NULL_STRING);
 			delete player->GetExtraEntityData();
 
 			player->m_extraEntityData = nullptr;
-			Mod::Etc::Mapentity_Additions::ClearCustomOutputs(player);
 		});
 		state.m_SelectedLoadoutItems.clear();
 		state.m_BoughtLoadoutItems.clear();
@@ -5308,14 +5325,15 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_UpgradeStationRegenCreators.Set(!subkey->GetBool());
 					state.m_UpgradeStationRegen.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomNavFile")) {
-					Msg("%s\n ", STRING(gpGlobals->mapname));
-					state.m_CustomNavFile = subkey->GetString();
+					char strippedFile[128];
+					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
+					state.m_CustomNavFile = strippedFile;
 					string_t oldMapName = gpGlobals->mapname;
 					
-					if (!filesystem->FileExists(CFmtStr("maps/%s.nav", subkey->GetString()))) {
-						Msg("The custom nav file %s might not exist\n", subkey->GetString());
+					if (!filesystem->FileExists(CFmtStr("maps/%s.nav", strippedFile))) {
+						Msg("The custom nav file %s might not exist\n", strippedFile);
 					}
-					gpGlobals->mapname = AllocPooledString(subkey->GetString());
+					gpGlobals->mapname = AllocPooledString(strippedFile);
 					TheNavMesh->Load();
 					gpGlobals->mapname = oldMapName;
 
@@ -5579,7 +5597,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetCheckpoint, "CPopulationManager::SetCheckpoint");
-
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, "CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");
 			
 			// Remove banned missions from the list
 			MOD_ADD_DETOUR_STATIC(CPopulationManager_FindDefaultPopulationFileShortNames, "CPopulationManager::FindDefaultPopulationFileShortNames");
