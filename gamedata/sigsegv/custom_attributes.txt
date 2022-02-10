@@ -635,8 +635,8 @@
     "4383"
     {
         "name"	"disable buildings on hit"
-        "attribute_class"	"On Hit Building: disable building for %d seconds"
-        "description_string"	"melee cleave attack"
+        "attribute_class"   "disable_buildings_on_hit"
+        "description_string"	"On Hit Building: disable building for %d seconds"
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
@@ -2142,6 +2142,117 @@
         "description_string"	"Fires full clip automatically"
         "description_format"	"value_is_additive"
         "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4530"
+    {
+        "name"	"special item description 2"
+        "attribute_class"	"special_item_description_2"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4531"
+    {
+        "name"	"special item description 3"
+        "attribute_class"	"special_item_description_3"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4532"
+    {
+        "name"	"special item description 4"
+        "attribute_class"	"special_item_description_4"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4533"
+    {
+        "name"	"allowed build types"
+        "attribute_class"	"allowed_build_types"
+        "description_string"	"Allowed build types"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4534"
+    {
+        "name"	"max bullet range"
+        "attribute_class"	"max_bullet_range"
+        "description_string"	"%d range"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4535"
+    {
+        "name"	"effect add attributes"
+        "attribute_class"	"effect_add_attributes"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4536"
+    {
+        "name"	"medigun passive attributes"
+        "attribute_class"	"medigun_passive_attributes"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    //Item description
+    "4537"
+    {
+        "name"	"medigun passive attributes owner"
+        "attribute_class"	"medigun_passive_attributes_owner"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4538"
+    {
+        "name"	"bullet spread additive"
+        "attribute_class"	"mult_spread_scale"
+        "description_string"	"%d range"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4539"
+    {
+        "name"	"mod projectile heat no predict target speed"
+        "attribute_class"	"mod_projectile_heat_no_predict_target_speed"
+        "description_string"	"%d range"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4540"
+    {
+        "name"	"mult dmg vs airborne"
+        "attribute_class"	"mult_dmg_vs_airborne"
+        "description_string"	"(+-)%p% damage vs players launched by explosions"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
         "effect_type"	"positive"
     }
 }

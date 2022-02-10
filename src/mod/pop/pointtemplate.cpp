@@ -4,6 +4,7 @@
 #include "stub/tfplayer.h"
 #include "mod/pop/pointtemplate.h"
 #include "util/misc.h"
+#include "util/iterate.h"
 #include "util/backtrace.h"
 #include "stub/misc.h"
 #include "stub/tfweaponbase.h"
@@ -559,7 +560,6 @@ void Update_Point_Templates()
 
 StaticFuncThunk<void> ft_PrecachePointTemplates("PrecachePointTemplates");
 StaticFuncThunk<void, int, HierarchicalSpawn_t *, bool> ft_SpawnHierarchicalList("SpawnHierarchicalList");
-MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   CEventQueue::ft_AddEvent("CEventQueue::AddEvent");
 StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
 
 StaticFuncThunk<void, IRecipientFilter&,
@@ -585,6 +585,34 @@ namespace Mod::Pop::PointTemplate
 			g_hUpgradeEntity.GetRef() = prev;
 		}
 	}
+
+	void OnDestroyUpgrades(CUpgrades *upgrades)
+	{
+		CUpgrades *prev = g_hUpgradeEntity.GetRef();
+		// Choose a different upgrade station
+		if (prev == upgrades ) {
+			ForEachEntityByRTTI<CUpgrades>([&](CUpgrades *upgrades2) {
+				if (upgrades2 != upgrades && !upgrades2->IsMarkedForDeletion()) {
+					g_hUpgradeEntity.GetRef() = upgrades2;
+				}
+			});
+		}
+	}
+	/* */
+	DETOUR_DECL_MEMBER(void, CUpgrades_D2)
+	{
+		OnDestroyUpgrades(reinterpret_cast<CUpgrades *>(this));
+
+		DETOUR_MEMBER_CALL(CUpgrades_D2)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CUpgrades_D0)
+	{
+		OnDestroyUpgrades(reinterpret_cast<CUpgrades *>(this));
+
+		DETOUR_MEMBER_CALL(CUpgrades_D0)();
+	}
+	
 	
 	/* Pointtemplate keep child entities after parent removal*/
 	DETOUR_DECL_MEMBER(void, CBaseEntity_UpdateOnRemove)
@@ -717,6 +745,9 @@ namespace Mod::Pop::PointTemplate
 		CMod() : IMod("Pop:PointTemplates")
 		{
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_Spawn, "CUpgrades::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_D0, "CUpgrades::~CUpgrades [D0]");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_D2, "CUpgrades::~CUpgrades [D2]");
+			
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_SpawnEntity,                   "CEnvEntityMaker::SpawnEntity");
 			MOD_ADD_DETOUR_MEMBER(CEnvEntityMaker_InputForceSpawn,               "CEnvEntityMaker::InputForceSpawn");

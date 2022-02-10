@@ -7,9 +7,11 @@
 namespace Mod::AI::EngieBot_NoPush
 {
 	RefCount rc_TeleSpawn_Update;
+	CTFBot *pusher_engineer;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMvMEngineerTeleportSpawn_Update, CTFBot *actor, float dt)
 	{
 		SCOPED_INCREMENT(rc_TeleSpawn_Update);
+		pusher_engineer = actor;
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerTeleportSpawn_Update)(actor, dt);
 	}
 	
@@ -17,6 +19,7 @@ namespace Mod::AI::EngieBot_NoPush
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>,CTFBotMvMEngineerBuildSentryGun_Update, CTFBot *actor, float dt)
 	{
 		SCOPED_INCREMENT(rc_BuildSentry_Update);
+		pusher_engineer = actor;
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildSentryGun_Update)(actor, dt);
 	}
 	
@@ -24,6 +27,7 @@ namespace Mod::AI::EngieBot_NoPush
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMvMEngineerBuildTeleportExit_Update, CTFBot *actor, float dt)
 	{
 		SCOPED_INCREMENT(rc_BuildTele_Update);
+		pusher_engineer = actor;
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_Update)(actor, dt);
 	}
 
@@ -33,7 +37,7 @@ namespace Mod::AI::EngieBot_NoPush
 	/* would prefer to detour CTFGameRules::PushAllPlayersAway, but it's hard to reliably locate on Windows */
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
 	{
-		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() == 0.0f) {
+		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) &&cvar_reducerange.GetFloat() == 0.0f) {
 			return;
 		}
 		
@@ -43,6 +47,9 @@ namespace Mod::AI::EngieBot_NoPush
 	DETOUR_DECL_MEMBER(void, CTFGameRules_PushAllPlayersAway, const Vector& vFromThisPoint, float flRange, float flForce, int nTeam, CUtlVector< CTFPlayer* > *pPushedPlayers)
 	{
 		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() > 0.0f) {
+			if (pusher_engineer->GetTeamNumber() == TF_TEAM_RED)
+				nTeam = TF_TEAM_BLUE;
+				
 			flRange = cvar_reducerange.GetFloat();
 			
 		}

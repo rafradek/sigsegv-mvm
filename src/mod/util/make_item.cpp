@@ -268,20 +268,7 @@ namespace Mod::Util::Make_Item
 			auto econ_ent = rtti_cast<CEconEntity *>(ent);
 			if (econ_ent != nullptr) {
 				/* make the model visible for other players */
-				econ_ent->m_bValidatedAttachedEntity = true;
-				
-				/* make any extra wearable models visible for other players */
-				auto weapon = rtti_cast<CTFWeaponBase *>(econ_ent);
-				if (weapon != nullptr) {
-					if (weapon->m_hExtraWearable != nullptr) {
-						Msg("Validating extra wearable #%d on weapon #%d \"%s\"\n", ENTINDEX(weapon->m_hExtraWearable), ENTINDEX(weapon), weapon->GetClassname());
-						weapon->m_hExtraWearable->m_bValidatedAttachedEntity = true;
-					}
-					if (weapon->m_hExtraWearableViewModel != nullptr) {
-						Msg("Validating extra wearable VM #%d on weapon #%d \"%s\"\n", ENTINDEX(weapon->m_hExtraWearableViewModel), ENTINDEX(weapon), weapon->GetClassname());
-						weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
-					}
-				}
+				econ_ent->Validate();
 				econ_ent->GiveTo(recipient);
 			} else {
 				ClientMsg(player, "[%s] Failure: GiveNamedItem returned a non-CEconEntity!\n", cmd_name);

@@ -95,7 +95,7 @@
 				"g_RecipientFilterPredictionSystem" "_ZL33g_RecipientFilterPredictionSystem"
 				
 				"g_pPlayerResource" "g_pPlayerResource"
-				
+				"g_EntityListPool" "g_EntityListPool"
 			}
 			
 			"addrs_group"

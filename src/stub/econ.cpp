@@ -148,6 +148,7 @@ MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString>
 
 MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeFloatWrapper("CAttributeManager::ApplyAttributeFloatWrapper");
 MemberFuncThunk<const CAttributeManager *, int> CAttributeManager::ft_GetGlobalCacheVersion("CAttributeManager::GetGlobalCacheVersion");
+MemberFuncThunk<CAttributeManager *, void>  CAttributeManager::ft_ClearCache("CAttributeManager::ClearCache [clone]");
 
 MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloatWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloatWrapper");
 MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloat(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloat");
@@ -156,6 +157,10 @@ StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEnt
 StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool> CAttributeManager::ft_AttribHookValue_float("CAttributeManager::AttribHookValue<float>");
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CAttributeManager, m_hOuter, CEconEntity);
+IMPL_SENDPROP(int, CAttributeManager, m_iReapplyProvisionParity, CEconEntity);
+IMPL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Receivers, m_iReapplyProvisionParity, -sizeof(CUtlVector<CHandle<CBaseEntity>>));
+IMPL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Providers, m_iReapplyProvisionParity, -sizeof(CUtlVector<CHandle<CBaseEntity>>) * 2);
+IMPL_RELATIVE(CUtlVector<cached_attribute_t>, CAttributeManager, m_CachedResults, m_hOuter, +16);
 
 IMPL_EXTRACT(const char *[NUM_SHOOT_SOUND_TYPES], perteamvisuals_t, m_Sounds, new CExtract_perteamvisuals_t_m_Sounds());
 

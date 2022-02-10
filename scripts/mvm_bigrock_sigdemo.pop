@@ -21,7 +21,7 @@ WaveSchedule
 	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
 	//DisableUpgradeStations 1 [$SIGSEGV] //Disable upgrade station
 	RemoveGrapplingHooks 1 [$SIGSEGV] //Grappling hooks are destroyed after specified amount of seconds
-	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb. Half broken
+	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb
 	//MedievalMode 1 [$SIGSEGV] //Players can only use melee weapons. Bots are not weapon restricted
 	GrapplingHook 1 [$SIGSEGV] //Enables grappling hook for a mission
 	RespecEnabled 0 [$SIGSEGV] //Set to 0 to disable refunds
@@ -114,6 +114,8 @@ WaveSchedule
 	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
 	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
 	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
+	ScriptSoundOverrides "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] // Load a file that adds or overrides existing soundscripts. Overrides persist until next map load
+	
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -158,6 +160,12 @@ WaveSchedule
 		"Announcer.MVM_Get_To_Upgrade" "GoldPipe_MissionIntro.mp3"
 		"Weapon_RPG.Single" "GoldPipe_MissionIntro.mp3"
 	}
+
+	OverrideParticles [$SIGSEGV] //Replace particles. Only server side particles can be overridden
+	{
+		"fluidSmokeExpl_ring_mvm" "hightower_explosion"
+	}
+
 	//ItemWhitelist //Only allows to use specified weapons below
 	//{
 	//	Classname "tf_weapon_sniperrifle"
@@ -173,6 +181,12 @@ WaveSchedule
 		// ItemSlot "secondary" // Items in secondary slot
 	}
 	
+	HandModelOverride [$SIGSEGV] // Overwrite first person arms models
+	{
+		Spy "models/weapons/c_models/c_sniper_arms.mdl"
+		Sniper "models/weapons/c_models/c_medic_arms.mdl"
+	}
+
 	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
 	{
 		ItemName "TF_WEAPON_ROCKETLAUNCHER"
@@ -832,6 +846,19 @@ WaveSchedule
 		ItemName "The Soda Popper" //Can be specified to limit to a specific weapon
 		// Classname "TF_WEAPON_MINIGUN" //Alternativiely use a weapon classname
 	}
+	BuildingSpawnTemplate [$SIGSEGV]
+	{
+		Name Blockade // Name of the template
+
+		ItemName "TF_WEAPON_WRENCH" // If set, name of the weapon that the player needs to have in the inventory to build a building with this template.
+		BuildingType "Sentry" // Which building should have the template attached to. Possible values:
+			// Sentry
+			// Dispenser
+			// Teleporter Entry
+			// Teleporter Exit
+			// Sapper
+		AllowBots 0 // Allow bots to spawn the template when building (Default: 0)
+	}
 
 	Templates
 	{
@@ -1460,6 +1487,7 @@ WaveSchedule
 				// ReplaceModelCollisions 1 [$SIGSEGV] // If set, the tank will use collisons from the custom model. Tank model must contain all sequences or else it will not deploy the bomb (Default: 0)
 				CritImmune 1 [$SIGSEGV] // If set, the tank is immune to crits (Default: 0)
 				TriggerDestroyBuildingFix 1 [$SIGSEGV] // Fixes trigger entities destroying buildings on touch if parented to the tank (Default: 0)
+				NoCrushDamage 1 [$SIGSEGV] // Tanks cannot crush players (Default: 0)
 			}
         }
 		WaveSpawn

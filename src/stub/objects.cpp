@@ -59,6 +59,7 @@ IMPL_SENDPROP(bool,               CBaseObject, m_bMiniBuilding,       CBaseObjec
 IMPL_SENDPROP(bool,               CBaseObject, m_bDisposableBuilding, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bBuilding, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bDisabled, CBaseObject);
+IMPL_SENDPROP(bool,               CBaseObject, m_bPlacing, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarried, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarryDeploy, CBaseObject);
 IMPL_SENDPROP(int,                CBaseObject, m_iKills, CObjectSentrygun);

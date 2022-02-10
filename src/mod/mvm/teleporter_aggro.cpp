@@ -20,10 +20,8 @@ namespace Mod::Pop::Teleporter_Aggro
 		auto vision = reinterpret_cast<IVision *>(this);
 		CBaseEntity *ent_bot = vision->GetBot()->GetEntity();
 		bool allow = false;
-		if (ent_bot->GetTeamNumber() == TF_TEAM_BLUE) {
-			CTFBot *bot = ToTFBot(ent_bot);
-			allow = bot != nullptr && rtti_cast<CTFWeaponBaseMelee *>(bot->GetActiveWeapon()) == nullptr;
-		}
+		CTFBot *bot = ToTFBot(ent_bot);
+		allow = bot != nullptr && rtti_cast<CTFWeaponBaseMelee *>(bot->GetActiveWeapon()) == nullptr;
 
 		if (allow)
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);

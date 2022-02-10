@@ -461,6 +461,17 @@
 					type "sym"
 					sym  "_ZN17CTFBotDeliverFlag5OnEndEP6CTFBotP6ActionIS0_E"
 				}
+				"CTFBotSpyInfiltrate::Update"
+				{
+					type "sym"
+					sym  "_ZN19CTFBotSpyInfiltrate6UpdateEP6CTFBotf"
+				}
+				"CTFBotMedicHeal::IsVisibleToEnemy"
+				{
+					type "sym"
+					sym  "_ZNK15CTFBotMedicHeal16IsVisibleToEnemyEP6CTFBotRK6Vector"
+				}
+				
 			}
 		}
 	}

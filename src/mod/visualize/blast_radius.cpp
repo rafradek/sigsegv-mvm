@@ -18,17 +18,7 @@
 // jarate/milk
 
 
-struct CTFRadiusDamageInfo
-{
-	CTakeDamageInfo *m_DmgInfo;   // +0x00
-	Vector m_vecOrigin;           // +0x04: blast origin
-	float m_flRadius;             // +0x10: blast radius
-	CBaseEntity *m_pEntityIgnore; // +0x14
-	float m_unknown_18;           // +0x18, default 0.0f, ?
-	float m_unknown_1c;           // +0x1c, default 1.0f, scales damage force or something
-	int m_unknown_20;             // +0x20, default 0, ?
-	float m_flFalloff;            // +0x24: how much the damage is decreased by at the edge of the blast
-};
+
 
 
 namespace Mod::Visualize::Blast_Radius

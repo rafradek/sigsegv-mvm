@@ -28,6 +28,8 @@ public:
 	void FinishedBuilding()                   {        vt_FinishedBuilding             (this); }
 	int GetMiniBuildingStartingHealth()       { return vt_GetMiniBuildingStartingHealth(this); }
 	int GetMaxHealthForCurrentLevel()         { return vt_GetMaxHealthForCurrentLevel  (this); }
+
+	bool IsFunctional()                    { return !m_bBuilding && !m_bDisabled && !m_bPlacing && !m_bCarried; }
 	
 	DECL_DATAMAP(int, m_nDefaultUpgradeLevel);
 	
@@ -36,6 +38,7 @@ public:
 	DECL_SENDPROP(bool,               m_bDisposableBuilding);
 	DECL_SENDPROP(bool,               m_bBuilding);
 	DECL_SENDPROP(bool,               m_bDisabled);
+	DECL_SENDPROP(bool,               m_bPlacing);
 	DECL_SENDPROP(bool,               m_bCarried);
 	DECL_SENDPROP(bool,               m_bCarryDeploy);
 	DECL_SENDPROP(int,                m_iKills);

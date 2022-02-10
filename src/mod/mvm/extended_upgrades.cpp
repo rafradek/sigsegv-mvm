@@ -63,6 +63,44 @@ namespace Mod::MvM::Extended_Upgrades
 
     private:
         std::string m_name;
+        std::string m_strLogName;
+    };
+
+    class UpgradeCriteriaSimilar : public UpgradeCriteria
+    {
+    public:
+        UpgradeCriteriaSimilar(const char *name) : m_strName(name)
+        {
+            auto itemDef = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(name));
+            if (itemDef != nullptr && Mod::Pop::PopMgr_Extensions::GetCustomWeaponItemDef(name) == nullptr) {
+                m_strLogName = itemDef->GetKeyValues()->GetString("item_logname");
+                m_strBaseName = itemDef->GetKeyValues()->GetString("base_item_name");
+                m_bCanCompareByLogName = !m_strLogName.empty() || !m_strBaseName.empty();
+                m_strBaseClassMelee = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED) == LOADOUT_POSITION_MELEE && FStrEq(itemDef->GetKeyValues()->GetString("item_quality"), "normal") ? itemDef->GetItemClass() : "";
+            }
+        }
+
+        virtual bool Matches(CEconEntity *ent, CEconItemView *item_view, CTFPlayer *owner) override
+        {
+            if (item_view == nullptr) return false;
+
+            bool is_custom = false;
+            const char *name =  GetItemName(item_view, is_custom);
+            if (FStrEq(this->m_strName.c_str(),name)) return true;
+
+            return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, ent->GetClassname());
+        }
+
+        virtual void ParseKey(KeyValues *kv) override {
+        }
+        
+    private:
+
+        std::string m_strName;
+        bool m_bCanCompareByLogName;
+        std::string m_strLogName;
+        std::string m_strBaseName;
+        std::string m_strBaseClassMelee;
     };
 
     class UpgradeCriteriaHasDamage : public UpgradeCriteria {
@@ -79,6 +117,8 @@ namespace Mod::MvM::Extended_Upgrades
 							weaponid == TF_WEAPON_BUFF_ITEM ||
 							weaponid == TF_WEAPON_BUILDER ||
 							weaponid == TF_WEAPON_PDA_ENGINEER_BUILD ||
+							weaponid == TF_WEAPON_PDA_ENGINEER_DESTROY ||
+							weaponid == TF_WEAPON_PDA_SPY ||
 							weaponid == TF_WEAPON_INVIS ||
 							weaponid == TF_WEAPON_SPELLBOOK);
             }
@@ -364,6 +404,8 @@ namespace Mod::MvM::Extended_Upgrades
                 criteria.push_back(std::make_unique<UpgradeCriteriaClassname>(subkey->GetString()));
             else if (FStrEq(subkey->GetName(), "ItemName"))
                 criteria.push_back(std::make_unique<UpgradeCriteriaName>(subkey->GetString()));
+            else if (FStrEq(subkey->GetName(), "SimilarToItem"))
+                criteria.push_back(std::make_unique<UpgradeCriteriaSimilar>(subkey->GetString()));
             else if (FStrEq(subkey->GetName(), "DealsDamage"))
                 criteria.push_back(std::make_unique<UpgradeCriteriaHasDamage>());
             else if (FStrEq(subkey->GetName(), "Slot")) {
@@ -686,7 +728,9 @@ namespace Mod::MvM::Extended_Upgrades
                     LOADOUT_POSITION_ACTION,
                 }) {
                     CEconEntity *item_require = GetEconEntityAtLoadoutSlot(player, (int)slot);
-                    found = criteria->Matches(item_require, item->GetItem(), player);
+                    if (item_require != nullptr) {
+                        found = criteria->Matches(item_require, item->GetItem(), player);
+                    }
                     if (found)
                         break;
                 }
@@ -717,8 +761,8 @@ namespace Mod::MvM::Extended_Upgrades
                     }
                 }
             }
-            int maxUpgradesForThisTier = (max_tier_upgrades.size() > upgrade->tier - 1 ? max_tier_upgrades[upgrade->tier - 1] : 1);
-            int minUpgradesForPrevTier = (upgrade->tier > 1 && min_tier_upgrades.size() > upgrade->tier - 2 ? min_tier_upgrades[upgrade->tier - 2] : 1);
+            int maxUpgradesForThisTier = ((int) max_tier_upgrades.size() > upgrade->tier - 1 ? max_tier_upgrades[upgrade->tier - 1] : 1);
+            int minUpgradesForPrevTier = (upgrade->tier > 1 && (int) min_tier_upgrades.size() > upgrade->tier - 2 ? min_tier_upgrades[upgrade->tier - 2] : 1);
             if (numTierUpgrades >= maxUpgradesForThisTier) {
                 reason = fmt::format("Tier {} is closed", upgrade->tier);
                 return false;
@@ -898,6 +942,26 @@ namespace Mod::MvM::Extended_Upgrades
         menu->DisplayAtItem(ENTINDEX(player), 0, displayitem);
     }
 
+    // Some items should not be displayed on the upgrade list if there are no upgrades assigned to them
+    bool DisplayItemByDefault(CEconEntity *item) {
+        auto weapon = rtti_cast<CTFWeaponBase *>(item);
+        if (weapon != nullptr) {
+            int itemID = weapon->GetWeaponID();
+            if (itemID == TF_WEAPON_INVIS)
+                return false;
+            if (itemID == TF_WEAPON_PDA_ENGINEER_DESTROY)
+                return false;
+            if (itemID == TF_WEAPON_PDA_SPY)
+                return false;
+            // Hide engineer builder item
+            if (itemID == TF_WEAPON_BUILDER) {
+                auto kv = weapon->GetItem()->GetStaticData()->GetKeyValues()->FindKey("used_by_classes");
+                return kv != nullptr && kv->FindKey("spy") != nullptr;
+            }
+        }
+        return true;
+    }
+
     void StartMenuForPlayer(CTFPlayer *player) {
         if (select_type_menus.find(player) != select_type_menus.end()) return;
         
@@ -916,11 +980,16 @@ namespace Mod::MvM::Extended_Upgrades
 			LOADOUT_POSITION_MELEE,
 			LOADOUT_POSITION_BUILDING,
 			LOADOUT_POSITION_PDA,
+			LOADOUT_POSITION_PDA2,
 			LOADOUT_POSITION_ACTION,
 		}) {
             CEconEntity *item = GetEconEntityAtLoadoutSlot(player, (int)slot);
             if (item != nullptr) {
-                ItemDrawInfo info2(GetItemNameForDisplay(item->GetItem()), WeaponHasValidUpgrades(item, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                bool hasValidUpgrades = WeaponHasValidUpgrades(item, player);
+                if (!hasValidUpgrades && !DisplayItemByDefault(item))
+                    continue;
+
+                ItemDrawInfo info2(GetItemNameForDisplay(item->GetItem()), hasValidUpgrades ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
                 
                 static char buf[4];
                 snprintf(buf, sizeof(buf), "%d", (int)slot);
@@ -1064,7 +1133,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
             auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
             auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
-            DevMsg("IsString(%d)\n", attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
+            //DevMsg("IsString(%d)\n", attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
             if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
                 CAttributeList *attribList = nullptr;
                 if (slot == -1) {
@@ -1101,12 +1170,12 @@ namespace Mod::MvM::Extended_Upgrades
             else if (pEconItemView != nullptr) {
                 attribList = &pEconItemView->GetAttributeList();
             }
-            if (attribList == nullptr) return;
+            if (attribList == nullptr) return INVALID_ATTRIB_DEF_INDEX;
 
             if (bDowngrade) {
                 if (attribList->GetAttributeByID(attribDef->GetIndex()) != nullptr) {
                     attribList->RemoveAttribute(attribDef);
-                    return attribDef->GetIndex();
+                    return (attrib_definition_index_t) attribDef->GetIndex();
                 }
                 else {
                     return INVALID_ATTRIB_DEF_INDEX;
@@ -1115,7 +1184,7 @@ namespace Mod::MvM::Extended_Upgrades
             else {
                 attribList->SetRuntimeAttributeValue(attribDef, upgrade.m_flIncrement);
 	            attribList->SetRuntimeAttributeRefundableCurrency(attribDef, nCost);
-                return attribDef->GetIndex();
+                return (attrib_definition_index_t) attribDef->GetIndex();
             }
             return INVALID_ATTRIB_DEF_INDEX;
         }
@@ -1172,7 +1241,7 @@ namespace Mod::MvM::Extended_Upgrades
                 }
 
                 int class_index = player->GetPlayerClass()->GetClassIndex();
-                if (player->m_Shared->m_bInUpgradeZone && (!upgrades.empty() || Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index)) && select_type_menus.find(player) == select_type_menus.end()) {
+                if (player->m_Shared->m_bInUpgradeZone && g_hUpgradeEntity.GetRef() != nullptr && (!upgrades.empty() || Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index)) && select_type_menus.find(player) == select_type_menus.end()) {
                     bool found = false;
                     bool found_any = false;
                     bool has_extra = Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index);

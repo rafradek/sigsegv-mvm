@@ -317,17 +317,11 @@ public:
 	
 	template<typename A> inline void SetIndex(const A val, int index)
 	{ 
-		auto val_cast = static_cast<const typename std::remove_extent<T>::type>(val);
 		if constexpr (NET) {
-			if (memcmp((this->GetPtrRO()+index), &val, sizeof(typename std::remove_extent<T>::type)) != 0) {
+			if (memcmp((this->GetPtrRO()+index), &val, sizeof(A)) != 0)
 				PROP->StateChanged(reinterpret_cast<void *>(this->GetInstanceBaseAddr()), this->GetPtrRW()+index);
-				(this->GetRW()[index] = val);
-			} else {
-				this->GetRO();
-			}
-		} else {
-			(this->GetRW()[index] = val);
 		}
+		this->GetRW()[index] = val;
 	}
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<( RW2 && std::is_array_v<T2>),       T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }
 //	template<typename T2 = T, bool RW2 = (!NET || RW)> typename std::enable_if_t<(!RW2 && std::is_array_v<T2>), const T&/* remove extent */> operator[](/* TODO */) const/*?*/ { /* TODO */ }

@@ -207,10 +207,14 @@ namespace Mod::Cond::Reprogrammed
 		perteamvisuals_t *visuals_boss = item_def->m_Visuals[idx_visuals_mvm_boss];
 		if (visuals_boss == nullptr) return false;
 		
+		// Hack: attack projectiles attribute requires matching team number to work properly
+		int attackProjectiles = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attackProjectiles, attack_projectiles);
+		if (attackProjectiles != 0) return false;
+
 		for (int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i) {
 			if (visuals_boss->m_Sounds[i] != nullptr) return true;
 		}
-		
 		/* NO: "visuals_mvm_boss" block lacks any "sound_*" entries */
 		return false;
 	}
@@ -236,7 +240,7 @@ namespace Mod::Cond::Reprogrammed
 			if (pre_team == TF_TEAM_RED || pre_team == TF_TEAM_BLUE) {
 				/* don't change the team of weapons that have special giant-specific sounds, because the client only
 				 * uses those sound overrides if the weapon is on TF_TEAM_BLUE, and there's no other easy workaround */
-				if (pre_team == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode() && !WeaponHasMiniBossSounds(weapon)) {
+				if (pre_team == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode() && (!player->IsMiniBoss() || !WeaponHasMiniBossSounds(weapon))) {
 				//	ConColorMsg(Color(0xff, 0x00, 0xff, 0xff),
 				//		"- weapon with itemdefidx %4d: no miniboss sounds\n", [](CBaseCombatWeapon *weapon){
 				//		CEconItemView *item_view = weapon->GetItem();
@@ -355,6 +359,15 @@ namespace Mod::Cond::Reprogrammed
 	}
 
 	std::vector<CHandle<CTFPlayer>> bots_killed;
+	THINK_FUNC_DECL(SetPlayerResourceTeamRed)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
+		if (gpGlobals->curtime - player->GetDeathTime() < 0.5f) {
+			player->SetNextThink(gpGlobals->curtime + 0.01f, "SetPlayerResourceTeamRed");
+		}
+	}
+ 
 	void OnRemoveReprogrammed(CTFPlayer *player)
 	{
 		DevMsg("OnRemoveReprogrammed(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
@@ -365,7 +378,11 @@ namespace Mod::Cond::Reprogrammed
 			if (player->m_lifeState == LIFE_DYING) {
 				if (player->GetTeamNumber() == TF_TEAM_RED)
 					player->ForceChangeTeam(TF_TEAM_BLUE, false);
-				//bots_killed.push_back(player);
+					
+				// Fix death notice appearing as opposing team
+				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
+				//THINK_FUNC_SET(player, SetPlayerResourceTeamRed, gpGlobals->curtime);
+				bots_killed.push_back(player);
 			}
 			else {
 				if (player->GetTeamNumber() == TF_TEAM_RED) {
@@ -880,6 +897,35 @@ namespace Mod::Cond::Reprogrammed
 		}); 
 	}
 
+	RefCount rc_CTFBot_Event_Killed;
+	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
+	{
+		static ConVarRef cvar_player_team("sig_mvm_jointeam_blue_allow_force"); 
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		SCOPED_INCREMENT_IF(rc_CTFBot_Event_Killed, cvar_player_team.GetBool() || bot->GetTeamNumber() == TF_TEAM_RED);
+		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
+	}
+
+	DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		if (rc_CTFBot_Event_Killed && strcmp(event->GetName(), "mvm_mission_update") == 0) {
+			mgr->FreeEvent(event);
+			return false;
+		}
+		
+		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBotMedicHeal_IsVisibleToEnemy, CTFBot *me, const Vector &where)
+	{
+		if (TFGameRules()->IsMannVsMachineMode() && me->GetTeamNumber() == TF_TEAM_RED) {
+			return false;
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFBotMedicHeal_IsVisibleToEnemy)(me, where);
+	}
+
 #if 0
 	DETOUR_DECL_MEMBER(const char *, CTFWeaponBase_GetShootSound, int iIndex)
 	{
@@ -898,7 +944,7 @@ namespace Mod::Cond::Reprogrammed
 		return result;
 	}
 #endif
-	
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -952,6 +998,13 @@ namespace Mod::Cond::Reprogrammed
 			// Fix spectator bots collision
 			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
 
+			// Prevent spy killing announcement if the spy is on the same team as players
+			MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "CTFBot::Event_Killed");
+			MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
+
+			// Stop retreat to cover AI of red bot medics
+			MOD_ADD_DETOUR_MEMBER(CTFBotMedicHeal_IsVisibleToEnemy, "CTFBotMedicHeal::IsVisibleToEnemy");
+
 			/* fix: make mission populators aware of red-team mission bots */
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMission());
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMissionDestroySentries());
@@ -963,6 +1016,7 @@ namespace Mod::Cond::Reprogrammed
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent, "CTFGameRules::FireGameEvent");
 			MOD_ADD_DETOUR_STATIC(CollectPlayers_CTFPlayer,   "CollectPlayers<CTFPlayer>");
 			MOD_ADD_DETOUR_MEMBER(CWave_ActiveWaveUpdate,   "CWave::ActiveWaveUpdate");
+
 
 			// Hide red bots from the scoreboard
 			// MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
@@ -986,14 +1040,12 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		virtual void FrameUpdatePostEntityThink() override
 		{
-
+			if (PlayerResource() == nullptr) return;
+			
 			for (int i = 0; i < bots_killed.size(); i++) {
 				CTFPlayer *bot = bots_killed[i];
-				if (bot != nullptr) {
-					if (gpGlobals->curtime - bot->GetDeathTime() > 0.1f) {
-						engine->ServerCommand(CFmtStr("kickid %d\n", bot->GetUserID()));
-						DevMsg("Kicking %d\n", bot->GetUserID());
-					}
+				if (bot != nullptr && gpGlobals->curtime - bot->GetDeathTime() < 0.5f) {
+					PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(bot));
 				}
 				else {
 					bots_killed.erase(bots_killed.begin()+i);

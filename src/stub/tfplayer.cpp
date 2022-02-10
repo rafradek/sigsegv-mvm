@@ -159,6 +159,7 @@ IMPL_SENDPROP(float,       CTFPlayerShared, m_flStealthNoAttackExpire, CTFPlayer
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nPlayerState,            CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iAirDash,                CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iDesiredPlayerClass,     CTFPlayer);
+IMPL_SENDPROP(bool,        CTFPlayerShared, m_bHasPasstimeBall,        CTFPlayer);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 
@@ -208,6 +209,7 @@ MemberFuncThunk<const CTFPlayer *, bool, ETFFlagType *, int        > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, int, int                        > CTFPlayer::ft_GetAutoTeam                      ("CTFPlayer::GetAutoTeam");
 MemberFuncThunk<      CTFPlayer *, float, CTFWeaponBase **         > CTFPlayer::ft_MedicGetChargeLevel              ("CTFPlayer::MedicGetChargeLevel");
 MemberFuncThunk<      CTFPlayer *, float, bool                     > CTFPlayer::ft_TeamFortress_CalculateMaxSpeed   ("CTFPlayer::TeamFortress_CalculateMaxSpeed");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_TeamFortress_SetSpeed            ("CTFPlayer::TeamFortress_SetSpeed");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_UpdateModel                      ("CTFPlayer::UpdateModel");
 MemberFuncThunk<const CTFPlayer *, CTFWeaponBase *, int            > CTFPlayer::ft_Weapon_OwnsThisID                ("CTFPlayer::Weapon_OwnsThisID");
 MemberFuncThunk<      CTFPlayer *, CTFWeaponBase *, int            > CTFPlayer::ft_Weapon_GetWeaponByType           ("CTFPlayer::Weapon_GetWeaponByType");
@@ -243,12 +245,16 @@ MemberFuncThunk<	  CTFPlayer *, void, bool					   > CTFPlayer::ft_Regenerate				
 MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	   > CTFPlayer::ft_ManageRegularWeapons        ("CTFPlayer::ManageRegularWeapons");
 MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	   > CTFPlayer::ft_ManageBuilderWeapons        ("CTFPlayer::ManageBuilderWeapons");
 MemberFuncThunk<	  CTFPlayer *, void                      	   > CTFPlayer::ft_GiveDefaultItems            ("CTFPlayer::GiveDefaultItems");
+MemberFuncThunk<	  CTFPlayer *, bool                      	   > CTFPlayer::ft_TryToPickupBuilding         ("CTFPlayer::TryToPickupBuilding");
+MemberFuncThunk<	  CTFPlayer *, void, int, int                  > CTFPlayer::ft_DetonateObjectOfType        ("CTFPlayer::DetonateObjectOfType");
+MemberFuncThunk<	  CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> CTFPlayer::ft_GetPassiveWeapons          ("CTFPlayer::GetPassiveWeapons");
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
 
 
 MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> CTFPlayer::vt_GiveNamedItem("CTFPlayer::GiveNamedItem");
 
+StaticFuncThunk<void> CTFPlayer::ft_PrecacheMVM("CTFPlayer::PrecacheMvM");
 
 StaticFuncThunk<CEconItemView *, CTFPlayer *, int, CEconEntity **> CTFPlayerSharedUtils::ft_GetEconItemViewByLoadoutSlot("CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");
 
@@ -460,17 +466,7 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 		}
 	}
 	/* make the model visible for other players */
-	entity->m_bValidatedAttachedEntity = true;
-	/* make any extra wearable models visible for other players */
-	auto weapon = rtti_cast<CTFWeaponBase *>(entity);
-	if (weapon != nullptr) {
-		if (weapon->m_hExtraWearable != nullptr) {
-			weapon->m_hExtraWearable->m_bValidatedAttachedEntity = true;
-		}
-		if (weapon->m_hExtraWearableViewModel != nullptr) {
-			weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
-		}
-	}
+	entity->Validate();
 	
 	entity->GiveTo(player);
 	return true;

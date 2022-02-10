@@ -22,15 +22,17 @@ public:
 	float ApplyAttributeFloatWrapper(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return vt_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	float ApplyAttributeFloat( float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = NULL ) { return vt_ApplyAttributeFloat(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	int GetGlobalCacheVersion( ) const                                  { return ft_GetGlobalCacheVersion(this);}
+	void ClearCache() { ft_ClearCache(this);}
 
 	float ApplyAttributeFloatWrapperFunc(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return ft_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	
 	template<typename T>
 	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool b1 = true);
-	
+
 	//The function is virtual originally, but since there are no derivates it should be safe to make it a regular function link, for speed
 	static MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeFloatWrapper;
 	static MemberFuncThunk<const CAttributeManager *, int> ft_GetGlobalCacheVersion;
+	static MemberFuncThunk<CAttributeManager *, void> ft_ClearCache;
 	
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloatWrapper;
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloat;
@@ -38,7 +40,18 @@ public:
 	static StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool>     ft_AttribHookValue_int;
 	static StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool> ft_AttribHookValue_float;
 
+	struct cached_attribute_t
+	{
+		string_t attrib;
+		float in;
+		float out;
+	};
+
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOuter);
+	DECL_SENDPROP(int, m_iReapplyProvisionParity);
+	DECL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, m_Receivers);
+	DECL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, m_Providers);
+	DECL_RELATIVE(CUtlVector<cached_attribute_t>, m_CachedResults);
 };
 
 template<> inline int CAttributeManager::AttribHookValue<int>(int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
@@ -418,22 +431,29 @@ public:
 		if (ptr == nullptr) return;
 		::operator delete(reinterpret_cast<void *>(ptr));
 	}
-	CEconItemAttribute() {}
+	CEconItemAttribute() 
+	{
+		m_iAttributeDefinitionIndex = INVALID_ATTRIB_DEF_INDEX;
+		m_iRawValue32.m_Float = 0.0f;
+		m_nRefundableCurrency = 0;
+	}
 
 	CEconItemAttribute( const attrib_definition_index_t iAttributeIndex, float flValue ) : m_iAttributeDefinitionIndex(iAttributeIndex) {m_iRawValue32.m_Float = flValue;}
 	
 	attribute_data_union_t *GetValuePtr() { return &this->m_iRawValue32; }
+	attribute_data_union_t GetValue() { return this->m_iRawValue32; }
 	
 	CEconItemAttributeDefinition *GetStaticData() const { return ft_GetStaticData(this); }
 
-	int GetAttributeDefinitionIndex() const { return m_iAttributeDefinitionIndex; }
+	attrib_definition_index_t GetAttributeDefinitionIndex() const { return m_iAttributeDefinitionIndex; }
+
 	friend class CAttributeList;
 private:
 	static MemberFuncThunk<      CEconItemAttribute *, void>                           ft_ctor;
 	static MemberFuncThunk<const CEconItemAttribute *, CEconItemAttributeDefinition *> ft_GetStaticData;
 	
 	uint32_t __pad00;
-	short m_iAttributeDefinitionIndex;
+	attrib_definition_index_t m_iAttributeDefinitionIndex;
 	attribute_data_union_t m_iRawValue32;
 	int m_nRefundableCurrency;
 };

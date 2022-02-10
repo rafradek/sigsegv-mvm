@@ -191,7 +191,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
 		if (rc_IsSpaceToSpawnHere > 0 && the_pos != nullptr) {
-			CTraceFilterIgnorePlayers filter(nullptr, COLLISION_GROUP_NONE);
+			CTraceFilterIgnorePlayers filter(nullptr, COLLISION_GROUP_PLAYER_MOVEMENT);
 			pTraceFilter = &filter;
 			if (rc_CTFBotSpawner_Spawn > 0 && the_spawner != nullptr) {
 				Vector vecMins = (VEC_HULL_MIN * the_bot_scale) + Vector(-5.0f, -5.0f, 0.0f);

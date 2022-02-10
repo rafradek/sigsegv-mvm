@@ -188,6 +188,7 @@ sourceFiles += [
   'src/mod/mvm/drop_weapons.cpp',
   'src/mod/mvm/explosive_headshot_on_everything.cpp',
   'src/mod/mvm/friendlyfire.cpp',
+  'src/mod/mvm/gamemode_converter.cpp',
   'src/mod/mvm/gib_improvements.cpp',
   'src/mod/mvm/go_back_in_time.cpp',
   'src/mod/mvm/human_death_yells.cpp',
@@ -212,6 +213,7 @@ sourceFiles += [
   'src/mod/mvm/refund_usermsg_overflow_fix.cpp',
   
   'src/mod/perf/attributes_optimize.cpp',
+  'src/mod/perf/input_optimize.cpp',
   'src/mod/perf/hltv_optimize.cpp',
   'src/mod/perf/flame_breakable_collision.cpp',
   'src/mod/perf/medigun_shield_damage_events.cpp',

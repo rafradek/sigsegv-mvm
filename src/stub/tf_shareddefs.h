@@ -262,6 +262,7 @@ enum : int32_t
 	OBJ_TELEPORTER        = 1,
 	OBJ_SENTRYGUN         = 2,
 	OBJ_ATTACHMENT_SAPPER = 3,
+	OBJ_LAST              = 4
 };
 
 /* from SourceMod; can't seem to find these elsewhere */

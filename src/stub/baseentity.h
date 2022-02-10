@@ -73,6 +73,21 @@ class ExtraEntityData;
 class EntityModule;
 class IHasAttributes;
 
+class CEventAction
+{
+public:
+
+	string_t m_iTarget; // name of the entity(s) to cause the action in
+	string_t m_iTargetInput; // the name of the action to fire
+	string_t m_iParameter; // parameter to send, 0 if none
+	float m_flDelay; // the number of seconds to wait before firing the action
+	int m_nTimesToFire; // The number of times to fire this event, or EVENT_FIRE_ALWAYS.
+
+	int m_iIDStamp;	// unique identifier stamp
+
+	CEventAction *m_pNext;
+};
+
 class CBaseEntityOutput
 {
 public:
@@ -81,13 +96,14 @@ public:
 	void ParseEventAction( const char *EventData ) { ft_ParseEventAction(this, EventData); }
 	void DeleteAllElements() { ft_DeleteAllElements(this); }
 
+	variant_t m_Value;
+	CEventAction *m_ActionList;
+
 private:
 	static MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireOutput;
 	static MemberFuncThunk<CBaseEntityOutput *, void, const char *> ft_ParseEventAction;
 	static MemberFuncThunk<CBaseEntityOutput *, void> ft_DeleteAllElements;
 	
-	variant_t m_Value;
-	void *m_ActionList;
 };
 
 class CServerNetworkProperty : public IServerNetworkable
@@ -145,6 +161,10 @@ public:
 	const char *GetCustomVariable(const char *defValue = nullptr);
 	template<FixedString lit>
 	float GetCustomVariableFloat(float defValue = 0.0f);
+	template<FixedString lit>
+	Vector GetCustomVariableVector(const Vector &defValue = vec3_origin);
+	template<FixedString lit>
+	QAngle GetCustomVariableAngle(const QAngle &defValue = vec3_angle);
 	const char *GetCustomVariableByText(const char *key, const char *defValue = nullptr);
 	void SetCustomVariable(const char *key, const char *value);
 
@@ -321,6 +341,7 @@ public:
 	DECL_DATAMAP(char,       m_takedamage);
 	DECL_RELATIVE(ExtraEntityData *, m_extraEntityData);
 	DECL_RELATIVE(IHasAttributes *, m_pAttributes);
+	DECL_DATAMAP(unsigned char, m_nWaterLevel);
 	
 	
 private:

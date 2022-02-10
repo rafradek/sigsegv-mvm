@@ -2,6 +2,7 @@
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "util/iterate.h"
+#include "mod/pop/popmgr_extensions.h"
 
 std::map<int, std::string> g_Itemnames;
 std::map<int, std::string> g_Attribnames;
@@ -9,6 +10,26 @@ std::map<int, std::string> g_Attribnames;
 namespace Mod::Pop::Wave_Extensions
 {
 	void ParseColorsAndPrint(const char *line, float gameTextDelay, int &linenum, CTFPlayer* player = nullptr);
+}
+
+ItemListEntry_Similar::ItemListEntry_Similar(const char *name) : m_strName(name)
+{
+    auto itemDef = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(name));
+    if (itemDef != nullptr && Mod::Pop::PopMgr_Extensions::GetCustomWeaponItemDef(name) == nullptr) {
+        m_strLogName = itemDef->GetKeyValues()->GetString("item_logname");
+        m_strBaseName = itemDef->GetKeyValues()->GetString("base_item_name");
+        m_bCanCompareByLogName = !m_strLogName.empty() || !m_strBaseName.empty();
+        m_strBaseClassMelee = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED) == LOADOUT_POSITION_MELEE && FStrEq(itemDef->GetKeyValues()->GetString("item_quality"), "normal") ? itemDef->GetItemClass() : "";
+    }
+}
+
+bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, const std::string &base_name, const std::string &log_name, const std::string &base_melee_class, const char *classname)
+{
+    return (compare_by_log_name 
+        && FStrEq(base_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"))
+        && ((!base_name.empty() && !item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/) 
+        || FStrEq(log_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("item_logname"))))
+        || base_melee_class == classname && FStrEq(item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"), "Frying Pan");
 }
 
 ActionResult<CTFBot> CTFBotMoveTo::OnStart(CTFBot *actor, Action<CTFBot> *action)
@@ -1057,8 +1078,12 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
 
     return true;
 }
-
 const char *GetItemName(const CEconItemView *view) {
+    bool val;
+    return GetItemName(view, val);
+}
+
+const char *GetItemName(const CEconItemView *view, bool &is_custom) {
     static int custom_weapon_def = -1;
     if (custom_weapon_def == -1) {
         auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
@@ -1070,9 +1095,11 @@ const char *GetItemName(const CEconItemView *view) {
     const char *value = nullptr;
     if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
         CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+        is_custom = true;
     }
     else {
         value = view->GetStaticData()->GetName("");
+        is_custom = false;
     }
     return value;
 }
@@ -1089,6 +1116,12 @@ const char *GetItemNameForDisplay(const CEconItemView *view) {
     const char *value = nullptr;
     if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
         CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+    }
+    // Also check custom item name from name tag
+    else if((attr = view->GetAttributeList().GetAttributeByID(500 /*custom name attr*/)) != nullptr) {
+        CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+        std::string buf = "''"s + value + "''"s; 
+        return STRING(AllocPooledString(buf.c_str()));
     }
     else {
         value = GetItemName(view->GetItemDefIndex());

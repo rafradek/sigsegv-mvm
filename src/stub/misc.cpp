@@ -112,6 +112,9 @@ void UTIL_StringToVector(float *base, const char *string) {ft_UTIL_StringToVecto
 
 GlobalThunk<CEventQueue> g_EventQueue("g_EventQueue");
 
+MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   CEventQueue::ft_AddEvent("CEventQueue::AddEvent");
+MemberFuncThunk< CEventQueue*, void, CBaseEntity *>   CEventQueue::ft_CancelEvents("CEventQueue::CancelEvents");
+
 void PrintToChatAll(const char *str)
 {
 	int msg_type = usermessages->LookupUserMessage("SayText2");

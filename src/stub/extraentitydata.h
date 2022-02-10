@@ -13,11 +13,24 @@ public:
     EntityModule(CBaseEntity *entity) {}
 };
 
-struct CustomVariable
+class CustomVariable
 {
+public:
+    CustomVariable(const char *key, const char *value)
+    {
+        this->key = AllocPooledString(key);
+        this->value = AllocPooledString(value);
+        UTIL_StringToVectorAlt(this->value_vector, value);
+    }
     string_t key;
     string_t value;
-    float value_float;
+
+    union{
+        float value_float;
+        Vector value_vector;
+        QAngle value_angle;
+    };
+    
 };
 
 struct CustomOutput
@@ -127,6 +140,7 @@ public:
     bool ignore_disguised_spies = true;
     bool ignore_stealthed_spies = true;
     bool follow_crosshair       = false;
+    bool predict_target_speed   = true;
     float speed                 = 1.0f;
     float turn_power            = 0.0f;
     float min_dot_product       = -0.25f;
@@ -397,6 +411,39 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue)
     return defValue;
 }
 
+template<FixedString lit>
+inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                return var.value_vector;
+            }
+        }
+    }
+    return defValue;
+}
+
+template<FixedString lit>
+inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                return var.value_angle;
+            }
+        }
+    }
+    return defValue;
+}
+
+
 inline const char *CBaseEntity::GetCustomVariableByText(const char *key, const char *defValue)
 {
     auto data = this->GetExtraEntityData();
@@ -418,13 +465,13 @@ inline void CBaseEntity::SetCustomVariable(const char *key, const char *value)
     for (auto &var : list) {
         if (STRING(var.key) == key || stricmp(key, STRING(var.key)) == 0) {
             var.value = AllocPooledString(value);
-            var.value_float = strtof(value, nullptr);
+            UTIL_StringToVectorAlt(var.value_vector, value);
             found = true;
             break;
         }
     }
     if (!found) {
-        list.push_back({AllocPooledString(key), AllocPooledString(value), strtof(value, nullptr)});
+        list.emplace_back(key, value);
     }
 }
 

@@ -884,6 +884,61 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9PlaySceneEPKcfP11AI_ResponseP16IRecipientFilter"
 				}
+				"CTFPlayer::TryToPickupBuilding"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer19TryToPickupBuildingEv"
+				}
+				"CTFPlayerShared::UpdateChargeMeter"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared17UpdateChargeMeterEv"
+				}
+				"CTFPlayer::EndClassSpecialSkill"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20EndClassSpecialSkillEv"
+				}
+				"CTFPlayer::GetMaxHealthForBuffing"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer22GetMaxHealthForBuffingEv"
+				}
+				"CTFPlayer::DetonateObjectOfType"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20DetonateObjectOfTypeEiib"
+				}
+				"CTFPlayerClassShared::CanBuildObject"
+				{
+					type "sym"
+					sym  "_ZN20CTFPlayerClassShared14CanBuildObjectEi"
+				}
+				"CTFPlayer::RemoveAllOwnedEntitiesFromWorld"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer31RemoveAllOwnedEntitiesFromWorldEb"
+				}
+				"CTFPlayerClassShared::GetHandModelName"
+				{
+					type "sym"
+					sym  "_ZNK20CTFPlayerClassShared16GetHandModelNameEi"
+				}
+				"CTFPlayer::GetPassiveWeapons"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer17GetPassiveWeaponsER10CUtlVectorIP13CTFWeaponBase10CUtlMemoryIS2_iEE"
+				}
+				"CTFPlayer::TeamFortress_SetSpeed"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer21TeamFortress_SetSpeedEv"
+				}
+				"CTFPlayer::PrecacheMvM"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer11PrecacheMvMEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

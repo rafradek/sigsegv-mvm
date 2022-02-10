@@ -15,6 +15,7 @@
 #include <igamemovement.h>
 #include <in_buttons.h>
 
+class CLaserDot {};
 
 namespace Mod::MvM::JoinTeam_Blue_Allow
 {
@@ -377,10 +378,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	static int CollectPlayers_EnemyTeam(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
 	{
 		extern ConVar cvar_force;
-		if (cvar_force.GetBool()) 
-			return CollectPlayers(playerVector, TF_TEAM_RED,  isAlive, shouldAppend);
-		else
-			return CollectPlayers(playerVector, TF_TEAM_BLUE, isAlive, true);
+		ClientMsgAll("see enemy team %d\n", cvar_force.GetBool());
+		return CollectPlayers(playerVector, cvar_force.GetBool() ? TF_TEAM_RED : TF_TEAM_BLUE,  isAlive, shouldAppend);
 	}
 
 	static int CollectPlayers_RedAndBlue(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
@@ -479,28 +478,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 		
 		return DETOUR_STATIC_CALL(CTFReviveMarker_Create)(player);
-	}
-	
-	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		
-		if (FStrEq(args[0], "upgrade")) {
-			if (IsMvMBlueHuman(player) && IsInBlueSpawnRoom(player)) {
-				int cannotUpgrade = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
-				if (cannotUpgrade) {
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
-				}
-				else
-					player->m_Shared->m_bInUpgradeZone = true;
-			}
-			
-			return true;
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_OnNavAreaChanged, CNavArea *enteredArea, CNavArea *leftArea)
@@ -748,11 +725,11 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		bool result = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		ConVarRef sig_mvm_teleporter_aggro("sig_mvm_teleporter_aggro");
 		if (!result) {
 			auto vision = reinterpret_cast<IVision *>(this);
-			CBaseEntity *ent_bot = vision->GetBot()->GetEntity();
-			if (ent_bot->GetTeamNumber() == TF_TEAM_RED) {
-				CTFBot *bot = ToTFBot(ent_bot);
+			CTFBot *bot = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
+			if (bot->GetTeamNumber() == TF_TEAM_RED && (!sig_mvm_teleporter_aggro.GetBool() || rtti_cast<CTFWeaponBaseMelee *>(bot->GetActiveWeapon()) != nullptr)) {
 				if (bot != nullptr && (bot->GetActiveWeapon()) != nullptr && ent->IsBaseObject()) {
 					CBaseObject *obj = ToBaseObject(ent);
 					if (obj != nullptr && obj->GetType() == OBJ_TELEPORTER) {
@@ -863,7 +840,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		CTFPlayer *playerbot = ToTFBot(player);
 		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
 			auto tele = rtti_cast<CObjectTeleporter *>(IBaseObjectAutoList::AutoList()[i]);
-			if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && !tele->m_bBuilding && !tele->m_bDisabled && !tele->m_bCarried) {
+			if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && tele->IsFunctional()) {
 				if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetOwnerEntity()) == nullptr) || 
 						(playerbot == nullptr && (tele->GetOwnerEntity() == nullptr || ToTFBot(tele->GetOwnerEntity()) != nullptr))) ) {
 					float dist = tele->WorldSpaceCenter().DistToSqr(zone->WorldSpaceCenter());
@@ -939,11 +916,271 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			}
 		}); 
 	}
-
-	// TODO: on mod disable, force blue humans back onto red team
-	// - use IsMvMBlueHuman
-	// - beware of the call order between IMod::OnDisable and when the patches/detours are actually disabled...
 	
+	CBaseEntity *laser_dot = nullptr;
+	DETOUR_DECL_MEMBER(void, CTFSniperRifle_CreateSniperDot)
+	{
+		if (IsMvMBlueHuman(reinterpret_cast<CTFSniperRifle *>(this)->GetTFPlayerOwner())) {
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFSniperRifle_CreateSniperDot)();
+	}
+	
+	DETOUR_DECL_STATIC(CBaseEntity *, CSniperDot_Create, Vector &origin, CBaseEntity *owner, bool visibleDot)
+	{
+		return laser_dot = DETOUR_STATIC_CALL(CSniperDot_Create)(origin, owner, visibleDot);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllOwnedEntitiesFromWorld, bool explode)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		bool blueHuman = IsMvMBlueHuman(player);
+		if (blueHuman) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+		if (blueHuman) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+		}
+	}
+	
+	struct ScoreStats
+	{
+		int m_iPrevDamage;
+		int m_iPrevDamageAssist;
+		int m_iPrevDamageBoss;
+		int m_iPrevHealing;
+		int m_iPrevHealingAssist;
+		int m_iPrevDamageBlocked;
+		int m_iPrevCurrencyCollected;
+		int m_iPrevBonusPoints;
+
+		void Reset()
+		{
+			m_iPrevDamage = 0;
+			m_iPrevDamageAssist = 0;
+			m_iPrevDamageBoss = 0;
+			m_iPrevHealing = 0;
+			m_iPrevHealingAssist = 0;
+			m_iPrevDamageBlocked = 0;
+			m_iPrevCurrencyCollected = 0;
+			m_iPrevBonusPoints = 0;
+		}
+	};
+	ScoreStats score_stats[34];
+
+	void DisplayScoreboard(CTFPlayer *playerShow);
+
+	THINK_FUNC_DECL(DisplayScoreboardDelay)
+	{
+		DisplayScoreboard(nullptr);
+	}
+
+	DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (event != nullptr && strcmp(event->GetName(), "player_death") == 0 && (event->GetInt( "death_flags" ) & 0x0200 /*TF_DEATH_MINIBOSS*/) == 0) {
+			auto player = UTIL_PlayerByUserId(event->GetInt("userid"));
+			if (IsMvMBlueHuman(ToTFPlayer(player)))
+				event->SetInt("death_flags", (event->GetInt( "death_flags" ) | 0x0200));
+		}
+
+		if (event != nullptr && strcmp(event->GetName(), "mvm_reset_stats") == 0) {
+			for (auto &stats : score_stats) {
+				stats.Reset();
+			}
+		}
+
+		if (event != nullptr && strcmp(event->GetName(), "player_connect_client") == 0) {
+			int index = event->GetInt("index") + 1;
+			score_stats[index].Reset();
+		}
+
+		if (event != nullptr && strcmp(event->GetName(), "mvm_wave_complete") == 0) {
+			CTFPlayerResource *tfres = TFPlayerResource();
+			if (tfres != nullptr) {
+				for (uint index = 0; index < ARRAYSIZE(score_stats); index++) {
+					score_stats[index].m_iPrevDamage += tfres->m_iDamage[index];
+					score_stats[index].m_iPrevDamageAssist += tfres->m_iDamageAssist[index];
+					score_stats[index].m_iPrevDamageBoss += tfres->m_iDamageBoss[index];
+					score_stats[index].m_iPrevDamageBlocked += tfres->m_iDamageBlocked[index];
+					score_stats[index].m_iPrevHealing += tfres->m_iHealing[index];
+					score_stats[index].m_iPrevHealingAssist += tfres->m_iHealingAssist[index];
+					score_stats[index].m_iPrevCurrencyCollected += tfres->m_iCurrencyCollected[index];
+					score_stats[index].m_iPrevBonusPoints += tfres->m_iBonusPoints[index];
+				}
+				PrintToChatAll("To see the scoreboard again, type !scoreboard\n");
+				THINK_FUNC_SET(tfres, DisplayScoreboardDelay, gpGlobals->curtime + 1.1f);
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+	}
+
+	RefCount rc_CTFBot_Event_Killed;
+	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
+		
+		extern ConVar cvar_force;
+		if (cvar_force.GetBool() && bot->GetTeamNumber() == TF_TEAM_RED) {
+			bool foundMoreSpies = false;
+			ForEachTFBot([&](CTFBot *bot2) {
+				if (bot2->GetTeamNumber() == TF_TEAM_RED && bot2->IsAlive() && bot2->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY) {
+					foundMoreSpies = true;
+					return false;
+				}
+				return true;
+			});
+			if (!foundMoreSpies) {
+				IGameEvent *event = gameeventmanager->CreateEvent("mvm_mission_update");
+				if ( event )
+				{
+					event->SetInt("class", TF_CLASS_SPY);
+					event->SetInt("count", 0);
+					gameeventmanager->FireEvent(event);
+				}
+			}
+		}
+	}
+
+	class ScoreboardHandler : public IMenuHandler
+    {
+    public:
+        ScoreboardHandler() : IMenuHandler() {
+		}
+
+		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
+        }
+
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+		}
+		
+        virtual void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+    };
+	
+	void DisplayScoreboard(CTFPlayer *playerShow)
+	{
+		ScoreboardHandler *handler = new ScoreboardHandler();
+		static IBaseMenu *menu = nullptr;
+		if (menu != nullptr) {
+			menu->Destroy();
+		}
+        menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        
+        menu->SetDefaultTitle("Name                        |Score|Damage|Tank|Healing|Support|Cash");
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+
+		ForEachTFPlayer([&](CTFPlayer *player) {
+			if (player->IsBot() || player->GetTeamNumber() != TF_TEAM_BLUE) return;
+			int index = ENTINDEX(player);
+			char buf[256];
+			CTFPlayerResource *tfres = TFPlayerResource();
+			int support = tfres->m_iDamageAssist[index] + score_stats[index].m_iPrevDamageAssist + tfres->m_iHealingAssist[index] + score_stats[index].m_iPrevHealingAssist + tfres->m_iDamageBlocked[index] + score_stats[index].m_iPrevDamageBlocked + ((tfres->m_iBonusPoints[index] + score_stats[index].m_iPrevBonusPoints) * 25);
+
+			snprintf(buf, sizeof(buf), "%24.24s|%6d|%6d|%6d|%6d|%6d|%4d", player->GetPlayerName(), tfres->m_iTotalScore[index], tfres->m_iDamage[index] + score_stats[index].m_iPrevDamage, tfres->m_iDamageBoss[index] + score_stats[index].m_iPrevDamageBoss, tfres->m_iHealing[index] + score_stats[index].m_iPrevHealing, support, tfres->m_iCurrencyCollected[index] + score_stats[index].m_iPrevCurrencyCollected);
+			ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
+			menu->AppendItem("", info1);
+		});
+		
+		if (playerShow != nullptr) {
+        	menu->Display(ENTINDEX(playerShow), 60);
+		}
+		else {
+			ForEachTFPlayer([&](CTFPlayer *player) {
+				if (player->IsBot()) return;
+        		menu->Display(ENTINDEX(player), 60);
+			});
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player != nullptr) {
+			if (FStrEq(args[0], "sig_scoreboard")) {
+				DisplayScoreboard(player);
+				return true;
+			}
+			/*else if (FStrEq(args[0], "upgrade")) {
+				if (IsMvMBlueHuman(player) && IsInBlueSpawnRoom(player)) {
+					int cannotUpgrade = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
+					if (cannotUpgrade) {
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
+					}
+					else
+						player->m_Shared->m_bInUpgradeZone = true;
+				}
+				
+				return true;
+			}*/
+		}
+		
+		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
+	}
+	
+	DETOUR_DECL_STATIC(void, Host_Say, edict_t *edict, const CCommand& args, bool team )
+	{
+		CBaseEntity *entity = GetContainingEntity(edict);
+		if (edict != nullptr) {
+			const char *p = args.ArgS();
+			int len = strlen(p);
+			if (*p == '"')
+			{
+				p++;
+				len -=2;
+			}
+			if (strncmp(p, "!scoreboard",len) == 0 || strncmp(p, "/scoreboard",len) == 0) {
+				DisplayScoreboard(ToTFPlayer(entity));
+				return;
+			}
+		}
+		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CVoteController_IsValidVoter, CBasePlayer *player)
+	{
+		bool blueHuman = IsMvMBlueHuman(ToTFPlayer(player));
+		if (blueHuman) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		}
+		
+		bool ret = DETOUR_MEMBER_CALL(CVoteController_IsValidVoter)(player);
+
+		if (blueHuman) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CMissionPopulator_UpdateMissionDestroySentries, CBasePlayer *player)
+	{
+		std::vector<CBaseObject *> sentriesToRestoreTeam;
+
+		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+			auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
+			if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_BLUE && IsMvMBlueHuman(obj->GetBuilder())) {
+				sentriesToRestoreTeam.push_back(obj);
+				obj->SetTeamNumber(TF_TEAM_RED);
+			}
+			if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_RED && obj->GetBuilder() != nullptr && obj->GetBuilder()->IsBot()) {
+				sentriesToRestoreTeam.push_back(obj);
+				obj->SetTeamNumber(TF_TEAM_BLUE);
+			}
+		}
+		auto ret = DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)(player);
+
+		for (auto obj : sentriesToRestoreTeam) {
+			obj->SetTeamNumber(obj->GetTeamNumber() == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
+		}
+		return ret;
+	}
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -994,6 +1231,29 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			// Red sapped robots can be backstabbed from any range
 			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
 
+			// Stop blue team sniper dot
+			// MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_CreateSniperDot, "CTFSniperRifle::CreateSniperDot");
+			//MOD_ADD_DETOUR_STATIC(CSniperDot_Create, "CSniperDot::Create");
+
+			// Forcibly remove blue human buildings when changing classes
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllOwnedEntitiesFromWorld, "CTFPlayer::RemoveAllOwnedEntitiesFromWorld");
+
+			// Display blue player death notice
+			MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
+
+			// Show red team spy death message
+			//MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "IGameEventManager2::FireEvent");
+
+			// Display blue player scoreboard
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
+			MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
+
+			// Make voting work properly for blue players
+			MOD_ADD_DETOUR_MEMBER(CVoteController_IsValidVoter, "CVoteController::IsValidVoter");
+
+			// Allow sentry busters to hunt blue sentries
+			MOD_ADD_DETOUR_MEMBER(CMissionPopulator_UpdateMissionDestroySentries, "CMissionPopulator::UpdateMissionDestroySentries");
+
 			/* fix hardcoded teamnum check when clearing MvM checkpoints */
 			this->AddPatch(new CPatch_CollectPlayers_Caller2<0x0000, 0x0100, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue>("CPopulationManager::ClearCheckpoint"));
 			
@@ -1007,11 +1267,12 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0000, 0x0400, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue_NotBot>("CWave::WaveCompleteUpdate"));
 
 			// Show only spy bots on the enemy team
-			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0500, 0x0930, TF_TEAM_BLUE, true, false, CollectPlayers_EnemyTeam>("CTFBot::Event_Killed"));
+			// this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0500, 0x0930, TF_TEAM_BLUE, true, false, CollectPlayers_RedAndBlue>("CTFBot::Event_Killed"));
 			
 			/* fix hardcoded teamnum checks in the radius spy scan ability */
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_RadiusSpyScan, "CTFPlayerShared::RadiusSpyScan");
 			this->AddPatch(new CPatch_CollectPlayers_Caller1<0x0000, 0x0100, TF_TEAM_BLUE, true, false, CollectPlayers_RadiusSpyScan>("CTFPlayerShared::RadiusSpyScan"));
+			
 			this->AddPatch(new CPatch_RadiusSpyScan());
 			
 			/* this is purely for debugging the blue-robots-spawning-between-waves situation */

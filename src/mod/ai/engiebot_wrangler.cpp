@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "re/nextbot.h"
 #include "re/path.h"
+#include "stub/gamerules.h"
 #include "stub/objects.h"
 #include "stub/tfbot.h"
 
@@ -125,7 +126,7 @@ namespace Mod::AI::EngieBot_Wrangler
 		{
 			if (!actor->IsPlayerClass(TF_CLASS_ENGINEER))                     return false;
 			if (actor->Weapon_OwnsThisID(TF_WEAPON_LASER_POINTER) == nullptr) return false;
-			if (actor->GetObjectOfType(OBJ_SENTRYGUN, 0) == nullptr || actor->GetObjectOfType(OBJ_SENTRYGUN, 0)->m_bBuilding || actor->GetObjectOfType(OBJ_SENTRYGUN, 0)->m_bDisabled)          return false;
+			if (actor->GetObjectOfType(OBJ_SENTRYGUN, 0) == nullptr || !actor->GetObjectOfType(OBJ_SENTRYGUN, 0)->IsFunctional())          return false;
 			
 			return true;
 		}
@@ -165,13 +166,21 @@ namespace Mod::AI::EngieBot_Wrangler
 	// - hopefully we can call StopParticleEffects on the laser dot entity itself and not the player entity!
 	
 	
+	CBaseEntity *laser_dot = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFLaserPointer_CreateLaserDot)
 	{
-		auto weapon = reinterpret_cast<CBaseEntity *>(this);
-
-		if (weapon->GetTeamNumber() != TF_TEAM_BLUE)
-			DETOUR_MEMBER_CALL(CTFLaserPointer_CreateLaserDot)();
+		laser_dot = nullptr;
+		DETOUR_MEMBER_CALL(CTFLaserPointer_CreateLaserDot)();
+		if (laser_dot != nullptr && laser_dot->GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode()) {
+			laser_dot->SetTeamNumber(TF_TEAM_RED);
+		}
 	}
+	
+	DETOUR_DECL_STATIC(CBaseEntity *, CLaserDot_Create, Vector &origin, CBaseEntity *owner, bool visibleDot)
+	{
+		return laser_dot = DETOUR_STATIC_CALL(CLaserDot_Create)(origin, owner, visibleDot);
+	}
+
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, Action_CTFBot_OnCommandString, CTFBot *actor, const char *cmd)
 	{
 		if (V_stricmp(cmd, "wrangle") == 0) {
@@ -204,7 +213,10 @@ namespace Mod::AI::EngieBot_Wrangler
 		{
 			MOD_ADD_DETOUR_MEMBER(Action_CTFBot_OnCommandString, "Action<CTFBot>::OnCommandString");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_Update, "CTFBotMvMEngineerIdle::Update");
-			//MOD_ADD_DETOUR_MEMBER(CTFLaserPointer_CreateLaserDot, "CTFLaserPointer::CreateLaserDot");
+
+			// Stop blue team wrangler dot
+			MOD_ADD_DETOUR_MEMBER(CTFLaserPointer_CreateLaserDot, "CTFLaserPointer::CreateLaserDot");
+			MOD_ADD_DETOUR_STATIC(CLaserDot_Create, "CLaserDot::Create");
 		}
 	};
 	CMod s_Mod;

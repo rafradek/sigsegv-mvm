@@ -12,6 +12,7 @@ public:
 	DECL_SENDPROP_RW(int[34],          m_iTeam);
 	DECL_SENDPROP_RW(int[34],          m_bValid);
 	
+	
 private:
 	
 };
@@ -19,6 +20,17 @@ private:
 class CTFPlayerResource : public CPlayerResource
 {
 public:
+
+	DECL_SENDPROP_RW(int[34],          m_iDamage);
+	DECL_SENDPROP_RW(int[34],          m_iTotalScore);
+	DECL_SENDPROP_RW(int[34],          m_iDamageBoss);
+	DECL_SENDPROP_RW(int[34],          m_iHealing);
+	DECL_SENDPROP_RW(int[34],          m_iCurrencyCollected);
+	DECL_SENDPROP_RW(int[34],          m_iDamageAssist);
+	DECL_SENDPROP_RW(int[34],          m_iHealingAssist);
+	DECL_SENDPROP_RW(int[34],          m_iBonusPoints);
+	DECL_SENDPROP_RW(int[34],          m_iDamageBlocked);
+	
 
 private:
 

@@ -5108,6 +5108,229 @@
 					type "sym"
 					sym  "_ZN14CAttributeList37SetRuntimeAttributeRefundableCurrencyEPK28CEconItemAttributeDefinitioni"
 				}
+				"CEventQueue::CancelEvents"
+				{
+					type "sym"
+					sym  "_ZN11CEventQueue12CancelEventsEP11CBaseEntity"
+				}
+				"CBaseEntityOutput::FireOutput"
+				{
+					type "sym"
+					sym  "_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				}
+				"V_snprintf"
+				{
+					type "sym"
+					sym  "_Z10V_snprintfPciPKcz"
+				}
+				"CEventQueue::ServiceEvents"
+				{
+					type "sym"
+					sym  "_ZN11CEventQueue13ServiceEventsEv"
+				}
+				"CTFSword::GetSwordSpeedMod"
+				{
+					type "sym"
+					sym  "_ZN8CTFSword16GetSwordSpeedModEv"
+				}
+				"CTFSword::GetSwordHealthMod"
+				{
+					type "sym"
+					sym  "_ZN8CTFSword17GetSwordHealthModEv"
+				}
+				"CTFWearableDemoShield::DoSpecialAction"
+				{
+					type "sym"
+					sym  "_ZN21CTFWearableDemoShield15DoSpecialActionEP9CTFPlayer"
+				}
+				"CTFMinigun::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun15SecondaryAttackEv"
+				}
+				"CTFFists::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN8CTFFists15SecondaryAttackEv"
+				}
+				"CTFFists::Punch"
+				{
+					type "sym"
+					sym  "_ZN8CTFFists5PunchEv"
+				}
+				"CTFWearableDemoShield::EndSpecialAction"
+				{
+					type "sym"
+					sym  "_ZN21CTFWearableDemoShield16EndSpecialActionEP9CTFPlayer"
+				}
+				"ClassCanBuild"
+				{
+					type "sym"
+					sym  "_Z13ClassCanBuildii"
+				}
+				"CTFWeaponBuilder::GetViewModel"
+				{
+					type "sym"
+					sym  "_ZNK16CTFWeaponBuilder12GetViewModelEi"
+				}
+				"CTFWeaponBuilder::SetSubType"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBuilder10SetSubTypeEi"
+				}
+				"CTFWeaponBase::Equip"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase5EquipEP20CBaseCombatCharacter"
+				}
+				"CTFWeaponBuilder::CanDeploy"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBuilder9CanDeployEv"
+				}
+				"CBaseCombatWeapon::SetSubType"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon10SetSubTypeEi"
+				}
+				"CTFWeaponBase::UpdateHands"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase11UpdateHandsEv"
+				}
+				"CBaseEntity::ShouldTransmit"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14ShouldTransmitEPK18CCheckTransmitInfo"
+				}
+				"CLaserDot::Create"
+				{
+					type "sym"
+					sym  "_ZN9CLaserDot6CreateERK6VectorP11CBaseEntityb"
+				}
+				"CSniperDot::Create"
+				{
+					type "sym"
+					sym  "_ZN10CSniperDot6CreateERK6VectorP11CBaseEntityb"
+				}
+				"CBaseCombatWeapon::SetViewModel"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon12SetViewModelEv"
+				}
+				"findFileInDirCaseInsensitive"
+				{
+					type "sym"
+					lib "dedicated"
+					sym  "_Z28findFileInDirCaseInsensitivePKcPcj"
+				}
+				"CBaseCombatCharacter::ClearLastKnownArea"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter18ClearLastKnownAreaEv"
+				}
+				"CBaseCombatCharacter::ClearLastKnownArea"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter18ClearLastKnownAreaEv"
+				}
+				"CWeaponMedigun::RemoveHealingTarget"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun19RemoveHealingTargetEb"
+				}
+				"CWeaponMedigun::StartHealingTarget"
+				{
+					type "sym"
+					sym  "_ZN14CWeaponMedigun18StartHealingTargetEP11CBaseEntity"
+				}
+				"CTFWeaponBase::Energy_GetMaxEnergy"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase19Energy_GetMaxEnergyEv"
+				}
+				"CTFWeaponBase::Energy_Recharge"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase15Energy_RechargeEv"
+				}
+				"CTFWeaponBase::IsEnergyWeapon"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase14IsEnergyWeaponEv"
+				}
+				"CTFWeaponBase::Energy_GetShotCost"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase18Energy_GetShotCostEv"
+				}
+				"CVoteController::IsValidVoter"
+				{
+					type "sym"
+					sym  "_ZN15CVoteController12IsValidVoterEP11CBasePlayer"
+				}
+				"CUpgrades::~CUpgrades [D2]"
+				{
+					type "sym"
+					sym  "_ZN9CUpgradesD2Ev"
+				}
+				"CUpgrades::~CUpgrades [D0]"
+				{
+					type "sym"
+					sym  "_ZN9CUpgradesD0Ev"
+				}
+				"CTFBaseBoss::ResolvePlayerCollision"
+				{
+					type "sym"
+					sym  "_ZN11CTFBaseBoss22ResolvePlayerCollisionEP9CTFPlayer"
+				}
+				"GetParticleSystemNameFromIndex"
+				{
+					type "sym"
+					sym  "_Z30GetParticleSystemNameFromIndexi"
+				}
+				"CEventQueue::AddEvent [CBaseEntity]"
+				{
+					type "sym"
+					sym  "_ZN11CEventQueue8AddEventEP11CBaseEntityPKc9variant_tfS1_S1_i"
+				}
+				"CUpgrades::EndTouch"
+				{
+					type "sym"
+					sym  "_ZN9CUpgrades8EndTouchEP11CBaseEntity"
+				}
+				"CM_EntityString"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z15CM_EntityStringv"
+				}
+				"CServerGameDLL::LevelInit"
+				{
+					type "sym"
+					sym  "_ZN14CServerGameDLL9LevelInitEPKcS1_S1_S1_bb"
+				}
+				"CBaseCombatWeapon::ItemPostFrame"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon13ItemPostFrameEv"
+				}
+				"CBasePlayer::ItemPostFrame"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer13ItemPostFrameEv"
+				}
+				"CTFWeaponBaseGun::ZoomIn"
+				{
+					type "sym"
+					sym  "_ZN16CTFWeaponBaseGun6ZoomInEv"
+				}
+				"CSpawnLocation::FindSpawnLocation"
+				{
+					type "sym"
+					sym  "_ZN14CSpawnLocation17FindSpawnLocationER6Vector"
+				}
+				
 			}
 			"addrs_group"
 			{

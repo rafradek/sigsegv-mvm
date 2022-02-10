@@ -1,5 +1,6 @@
 #include "stub/baseanimating.h"
 #include "stub/econ.h"
+#include "stub/tfweaponbase.h"
 
 
 IMPL_SENDPROP(int,   CBaseAnimating, m_nSkin,        CBaseAnimating);
@@ -52,6 +53,21 @@ CEconItemView *CEconEntity::GetItem()
 	assert(attr_container != nullptr);
 	
 	return attr_container->GetItem();
+}
+
+void CEconEntity::Validate()
+{
+	this->m_bValidatedAttachedEntity = true;
+	// make any extra wearable models visible for other players
+	auto weapon = rtti_cast<CTFWeaponBase *>(this);
+	if (weapon != nullptr) {
+		if (weapon->m_hExtraWearable != nullptr) {
+			weapon->m_hExtraWearable->m_bValidatedAttachedEntity = true;
+		}
+		if (weapon->m_hExtraWearableViewModel != nullptr) {
+			weapon->m_hExtraWearableViewModel->m_bValidatedAttachedEntity = true;
+		}
+	}
 }
 
 StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize("UTIL_SetSize");

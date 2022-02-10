@@ -132,7 +132,11 @@ MemberVFuncThunk<const IHasGenericMeter *, float> IHasGenericMeter::vt_GetCharge
 MemberVFuncThunk<CEconWearable *, void, CBaseEntity *> CEconWearable::vt_RemoveFrom(TypeName<CEconWearable>(), "CEconWearable::RemoveFrom");
 MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> CEconWearable::vt_UnEquip   (TypeName<CEconWearable>(), "CEconWearable::UnEquip");
 
-IMPL_SENDPROP(CHandle<CBaseEntity *>, CTFWearable, m_hWeaponAssociatedWith, CTFWearable);
+IMPL_SENDPROP(CHandle<CBaseEntity>, CTFWearable, m_hWeaponAssociatedWith, CTFWearable);
+IMPL_SENDPROP(bool, CTFWearable, m_bDisguiseWearable, CTFWearable);
+
+MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_DoSpecialAction ( "CTFWearableDemoShield::DoSpecialAction");
+MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_EndSpecialAction( "CTFWearableDemoShield::EndSpecialAction");
 
 IMPL_SENDPROP(bool, CTFBotHintEngineerNest, m_bHasActiveTeleporter, CTFBotHintEngineerNest);
 

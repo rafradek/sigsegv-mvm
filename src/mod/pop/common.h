@@ -8,6 +8,32 @@
 #include "re/path.h"
 
 
+static const char *loadoutStrings[] = 
+{
+    // Weapons & Equipment
+    "Primary",		// LOADOUT_POSITION_PRIMARY = 0,
+    "Secondary",	// LOADOUT_POSITION_SECONDARY,
+    "Melee",		// LOADOUT_POSITION_MELEE,
+    "Utility",		// LOADOUT_POSITION_UTILITY,
+    "Building",		// LOADOUT_POSITION_BUILDING,
+    "PDA",			// LOADOUT_POSITION_PDA,
+    "PDA 2",			// LOADOUT_POSITION_PDA2,
+
+    // Wearables
+    "Head",			// LOADOUT_POSITION_HEAD,
+    "Misc",			// LOADOUT_POSITION_MISC,
+    "Action",		// LOADOUT_POSITION_ACTION,
+    "Misc 2",   	// LOADOUT_POSITION_MISC2
+
+    "taunt",		// LOADOUT_POSITION_TAUNT
+    "",				// LOADOUT_POSITION_TAUNT2
+    "",				// LOADOUT_POSITION_TAUNT3
+    "",				// LOADOUT_POSITION_TAUNT4
+    "",				// LOADOUT_POSITION_TAUNT5
+    "",				// LOADOUT_POSITION_TAUNT6
+    "",				// LOADOUT_POSITION_TAUNT7
+    "",				// LOADOUT_POSITION_TAUNT8
+};
 	
 static int GetSlotFromString(const char *string) {
     int slot = -1;
@@ -250,6 +276,7 @@ private:
 };
 
 const char *GetItemName(const CEconItemView *view);
+const char *GetItemName(const CEconItemView *view, bool &is_custom);
 const char *GetItemName(int item_defid);
 const char *GetItemNameForDisplay(const CEconItemView *view);
 
@@ -271,7 +298,13 @@ public:
     
     virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
     {
+
         if (classname == nullptr) return false;
+        
+        bool isCustom = false;
+        GetItemName(item_view, isCustom);
+        if (isCustom) return false;
+
         if (wildcard)
             return strnicmp(classname, m_strClassname.c_str(), m_strClassname.size() - 1) == 0;
         else
@@ -294,6 +327,52 @@ public:
 private:
     bool wildcard;
     std::string m_strClassname;
+};
+
+// Item is similar, if:
+// Name matches
+// The item is not custom, and:
+// base_item_name matches
+// base_item_name is not empty or item_logname matches
+// Or if the the item_view is an all class melee weapon and is compared to a base class melee weapon
+bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, const std::string &base_name, const std::string &log_name, const std::string &base_melee_class, const char *classname);
+
+class ItemListEntry_Similar : public ItemListEntry
+{
+public:
+    ItemListEntry_Similar(const char *name);
+    virtual bool Matches(const char *classname, const CEconItemView *item_view) const override
+    {
+        if (item_view == nullptr) return false;
+
+        bool is_custom = false;
+        const char *name =  GetItemName(item_view, is_custom);
+
+        if (FStrEq(this->m_strName.c_str(),name)) return true;
+
+        return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, classname);
+    }
+
+    virtual const char *GetInfo() const override
+    {
+        auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strName.c_str());
+        
+        if (item_def != nullptr) {
+            auto find = g_Itemnames.find(item_def->m_iItemDefIndex);
+            if (find != g_Itemnames.end()) {
+                return find->second.c_str();
+            }
+        }
+        return m_strName.c_str();
+    }
+    
+private:
+
+    std::string m_strName;
+    bool m_bCanCompareByLogName;
+    std::string m_strLogName;
+    std::string m_strBaseName;
+    std::string m_strBaseClassMelee;
 };
 
 class ItemListEntry_Name : public ItemListEntry
@@ -405,7 +484,7 @@ static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mar
     }
 }
 
-static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name) 
+static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const char *name, bool parse_default = true) 
 {
     if (FStrEq(kv->GetName(), "Classname")) {
         DevMsg("%s: Add Classname entry: \"%s\"\n", name, kv->GetString());
@@ -413,6 +492,9 @@ static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const c
     } else if (FStrEq(kv->GetName(), "Name") || FStrEq(kv->GetName(), "ItemName") || FStrEq(kv->GetName(), "Item")) {
         DevMsg("%s: Add Name entry: \"%s\"\n", name, kv->GetString());
         return std::make_unique<ItemListEntry_Name>(kv->GetString());
+    } else if (FStrEq(kv->GetName(), "SimilarToItem")) {
+        DevMsg("%s: Add SimilarTo entry: \"%s\"\n", name, kv->GetString());
+        return std::make_unique<ItemListEntry_Similar>(kv->GetString());
     } else if (FStrEq(kv->GetName(), "DefIndex")) {
         DevMsg("%s: Add DefIndex entry: %d\n", name, kv->GetInt());
         return std::make_unique<ItemListEntry_DefIndex>(kv->GetInt());
@@ -421,7 +503,7 @@ static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(KeyValues *kv, const c
     return std::make_unique<ItemListEntry_ItemSlot>(kv->GetString());
     } else {
         DevMsg("%s: Found DEPRECATED entry with key \"%s\"; treating as Classname entry: \"%s\"\n", name, kv->GetName(), kv->GetString());
-        return std::make_unique<ItemListEntry_Classname>(kv->GetString());
+        return parse_default ? std::make_unique<ItemListEntry_Classname>(kv->GetString()) : std::unique_ptr<ItemListEntry>(nullptr);
     }
 }
 
@@ -486,6 +568,10 @@ static void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &att
             hasname = true;
             DevMsg("ItemAttrib: Add Name entry: \"%s\"\n", subkey->GetString());
             item_attributes.entry = std::make_unique<ItemListEntry_Name>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "SimilarToItem")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add SimilarTo entry: \"%s\"\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_Similar>(subkey->GetString());
         } else if (FStrEq(subkey->GetName(), "DefIndex")) {
             hasname = true;
             DevMsg("ItemAttrib: Add DefIndex entry: %d\n", subkey->GetInt());

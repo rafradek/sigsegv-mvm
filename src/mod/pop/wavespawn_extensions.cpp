@@ -441,6 +441,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_SetState, InternalStateType state)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		if (state == wavespawn->m_state)
+			return;
+			
 		wavespawns[wavespawn].state = state;
 		switch (state) {
 			case PRE_SPAWN_DELAY:
@@ -496,6 +499,11 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+
+		// Change default total currency from -1 to 0;
+		if (wavespawn->m_totalCurrency == -1)
+			wavespawn->m_totalCurrency = 0;
+
 		wavespawn->extra = new CWaveSpawnExtra();
 		
 		// make a temporary copy of the KV subtree for this populator

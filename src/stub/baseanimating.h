@@ -105,6 +105,8 @@ public:
 	
 	DECL_SENDPROP_RW(bool, m_bValidatedAttachedEntity);
 	
+	// make the model visible for other players
+	void Validate();
 private:
 	static MemberFuncThunk<CEconEntity *, void> ft_DebugDescribe;
 	

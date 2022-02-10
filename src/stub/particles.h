@@ -75,6 +75,12 @@ inline int GetParticleSystemIndex( const char * name)
 	return ft_GetParticleSystemIndex(name);
 }
 
+static StaticFuncThunk<const char *, int> ft_GetParticleSystemNameFromIndex("GetParticleSystemNameFromIndex");
+inline const char * GetParticleSystemNameFromIndex(int index)
+{
+	return ft_GetParticleSystemNameFromIndex(index);
+}
+
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");
 inline void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID = -1, int nSound = 11 /*SPECIAL1*/, int iCustomParticle = INVALID_STRING_INDEX )
 {

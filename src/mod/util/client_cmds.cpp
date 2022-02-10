@@ -1460,6 +1460,14 @@ namespace Mod::Util::Client_Cmds
 		}
 		
 	}
+	
+	void CC_ClientCvar(CTFPlayer *player, const CCommand& args)
+	{
+		ClientMsg(player, "Command %d\n", args.ArgC());
+		if (args.ArgC() == 2) {
+			ClientMsg(player, "%s\n", engine->GetClientConVarValue(ENTINDEX(player), args[1]));
+		}
+	}
 
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
@@ -1488,6 +1496,7 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_sprays",           CC_Sprays           },
 		{ "sig_vehicle",          CC_Vehicle          },
 		{ "sig_playscene",        CC_PlayScene        },
+		{ "sig_getclientcvar",    CC_ClientCvar       },
 	};
 
 	
@@ -1564,7 +1573,7 @@ namespace Mod::Util::Client_Cmds
 						}
 						it = modelmap.erase(it);
 						amount++;
-						if (amount >= 100) {
+						if (amount >= 10) {
 							break;
 						}
 					}

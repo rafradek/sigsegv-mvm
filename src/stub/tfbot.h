@@ -370,6 +370,8 @@ public:
 #endif
 	DECL_EXTRACT(AttributeType,       m_nBotAttrs);
 	DECL_RELATIVE(WeaponRestriction, m_iWeaponRestrictionFlags);
+	DECL_RELATIVE(CHandle<CBaseEntity>, m_enemySentry);
+	
 	/*uint8_t of[0x3D0];// +0x2830
 	float m_flScale; // +0x2bf4
 	uint8_t of[0x3D0];// +0x2830

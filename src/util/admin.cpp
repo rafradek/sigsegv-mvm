@@ -1,5 +1,7 @@
 #include "util/admin.h"
 #include "stub/baseplayer.h"
+#include "util/iterate.h"
+#include "util/iterate.h"
 
 
 static IGamePlayer *GetSMPlayer(CBasePlayer *player)
@@ -102,4 +104,18 @@ bool PlayerHasSMAdminFlags_Any(CBasePlayer *player, FlagBits flag_mask)
 	if ((flags & ADMFLAG_ROOT) != 0) return true;
 	
 	return ((flags & flag_mask) != 0);
+}
+
+template<typename... ARGS>
+void SendConsoleMessageToAdmins(const char *fmt, ARGS&&... args)
+{
+	CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
+	for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+		CBasePlayer *player = UTIL_PlayerByIndex(i);
+		if (player == nullptr)       continue;
+		if (player->IsFakeClient())  continue;
+		if (PlayerIsSMAdmin(player)) continue;
+		
+		engine->ClientPrintf(player->edict(), str);
+	}
 }

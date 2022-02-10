@@ -91,6 +91,7 @@ namespace Mod::Pop::Tank_Extensions
 		bool rotate_pitch       =  true;
 		bool crit_immune        = false;
 		bool trigger_destroy_fix = false;
+		bool no_crush_damage    = false;
 
 		std::string sound_ping =   "";
 		std::string sound_deploy =   "";
@@ -109,7 +110,7 @@ namespace Mod::Pop::Tank_Extensions
 	};
 	
 	
-	std::map<CTankSpawner *, SpawnerData> spawners;
+	std::unordered_map<CTankSpawner *, SpawnerData> spawners;
 	
 	
 	SpawnerData *FindSpawnerDataForTank(const CTFTankBoss *tank)
@@ -390,6 +391,8 @@ namespace Mod::Pop::Tank_Extensions
 				spawners[spawner].crit_immune = subkey->GetBool();
 			} else if (FStrEq(name, "TriggerDestroyBuildingFix")) {
 				spawners[spawner].trigger_destroy_fix = subkey->GetBool();
+			} else if (FStrEq(name, "NoCrushDamage")) {
+				spawners[spawner].no_crush_damage = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -1043,6 +1046,24 @@ namespace Mod::Pop::Tank_Extensions
 		DETOUR_MEMBER_CALL(CTFBaseBoss_Touch)(toucher);
 	}
 
+	RefCount rc_CTFBaseBoss_ResolvePlayerCollision;
+	DETOUR_DECL_MEMBER(void, CTFBaseBoss_ResolvePlayerCollision, CTFPlayer *toucher)
+	{
+		SpawnerData *data = FindSpawnerDataForTank(reinterpret_cast<CTFBaseBoss *>(this));
+		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_ResolvePlayerCollision, data != nullptr && data->no_crush_damage);
+		DETOUR_MEMBER_CALL(CTFBaseBoss_ResolvePlayerCollision)(toucher);
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (rc_CTFBaseBoss_ResolvePlayerCollision || (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr&& thinking_tank_data->no_crush_damage) ) {
+			Msg("Tank Crush Damage Resolved\n");
+			return 0;
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1083,6 +1104,8 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
 			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_Touch, "CBaseEntity::Touch");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_Touch, "CTFBaseBoss::Touch");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_ResolvePlayerCollision, "CTFBaseBoss::ResolvePlayerCollision");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage,        "CTFPlayer::OnTakeDamage");
 
 
 			// Tank flame damage fix

@@ -345,6 +345,7 @@ namespace Mod::Util::Vehicle_Fix
 	
 	DETOUR_DECL_MEMBER(void, CPropVehicleDriveable_TraceAttack, const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, void *pAccumulator)
 	{
+		DevMsg("Has trace attack\n");
 		CTakeDamageInfo info2 = info;
 		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
 		float strength = vehicle->GetCustomVariableFloat<"meleeforce">(1.0f);
@@ -500,7 +501,7 @@ namespace Mod::Util::Vehicle_Fix
 
 	VHOOK_DECL(bool, CPropVehicleDriveable_IsCombatItem)
 	{
-		return reinterpret_cast<CPropVehicleDriveable *>(this)->GetTeamNumber() != 0;
+		return reinterpret_cast<CPropVehicleDriveable *>(this)->GetTeamNumber() != 0 && reinterpret_cast<CPropVehicleDriveable *>(this)->m_hPlayer != nullptr;
 	}
 
     class CMod : public IMod, public IModCallbackListener

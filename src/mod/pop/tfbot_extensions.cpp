@@ -1687,6 +1687,29 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 	}
 
+	DETOUR_DECL_MEMBER(int, CSpawnLocation_FindSpawnLocation, Vector& vSpawnPosition)
+	{
+		auto location = reinterpret_cast<CSpawnLocation *>(this);
+		FOR_EACH_VEC(location->m_teamSpawnVector, i) {
+			if (location->m_teamSpawnVector[i] == nullptr) {
+				location->m_teamSpawnVector.Remove(i);
+				i--;
+			}
+		}
+
+		return DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CBaseCombatCharacter_Weapon_Detach, CBaseCombatWeapon *weapon)
+	{
+		if (weapon == nullptr)
+			return false;
+
+		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
+	}
+
+	
+
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
@@ -1864,6 +1887,12 @@ namespace Mod::Pop::TFBot_Extensions
 			// Prevent resupply from giving default items to robots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate,        "CTFPlayer::Regenerate");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveDefaultItems,  "CTFPlayer::GiveDefaultItems");
+
+			// Fix crash if spawn location is being removed during the round
+			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_FindSpawnLocation,  "CSpawnLocation::FindSpawnLocation");
+
+			// Fix crash if trying to remove null weapon (happens when CTFBot::AddItem tries to remove cosmetics in weapon slot)
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach,  "CBaseCombatCharacter::Weapon_Detach");
 
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");

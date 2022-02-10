@@ -59,6 +59,7 @@ MemberVFuncThunk<      CBaseCombatCharacter *, int, int, int, bool>            C
 MemberVFuncThunk<const CBaseCombatCharacter *, int, int>                       CBaseCombatCharacter::vt_GetAmmoCount       (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetAmmoCount");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   CBaseCombatCharacter::vt_ShouldGib          (TypeName<CTFPlayer>(),            "CTFPlayer::ShouldGib");
 MemberVFuncThunk<      CBaseCombatCharacter *, int>                            CBaseCombatCharacter::vt_GetBossType        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetBossType");
+MemberVFuncThunk<      CBaseCombatCharacter *, void>                           CBaseCombatCharacter::vt_ClearLastKnownArea (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::ClearLastKnownArea");
 
 
 IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucked,        CBasePlayer);
@@ -78,6 +79,8 @@ IMPL_DATAMAP(unsigned int, CBasePlayer, m_afPhysicsFlags);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
+IMPL_DATAMAP(int,          CBasePlayer, m_nButtons);
+
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 
 IMPL_SENDPROP(float,                              CBasePlayer, m_flDeathTime,   CBasePlayer);

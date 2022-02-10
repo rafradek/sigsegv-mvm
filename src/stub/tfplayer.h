@@ -254,6 +254,7 @@ public:
 	bool IsClass(int iClass) const { return (this->m_iClass == iClass); }
 	
 	int GetClassIndex() const { return this->m_iClass; }
+	void SetClassIndex(int iClass) { this->m_iClass = iClass; }
 	void SetCustomModel(const char *pszModelPath, bool bUseClassAnimations = true) { ft_SetCustomModel(this, pszModelPath, bUseClassAnimations); }
 	// TODO: accessor for m_iszClassIcon
 	// TODO: accessor for m_iszCustomModel
@@ -294,7 +295,7 @@ public:
 	bool IsLoserStateStunned() const                                                    { return ft_IsLoserStateStunned       (this); }
 	void SetDefaultItemChargeMeters()                                                   {        ft_SetDefaultItemChargeMeters(this); }
 	void SetItemChargeMeter(loadout_positions_t slot, float value)                      {        ft_SetItemChargeMeter        (this, slot, value); }
-	void Burn(CTFPlayer *igniter, CTFWeaponBase *weapon, float duration = 10.0f)                      {        ft_Burn        (this, igniter, weapon, duration); }
+	void Burn(CTFPlayer *igniter, CTFWeaponBase *weapon, float duration = 10.0f)        {        ft_Burn        (this, igniter, weapon, duration); }
 	DECL_SENDPROP(float,       m_flCloakMeter);
 	DECL_SENDPROP(float,       m_flEnergyDrinkMeter);
 	DECL_SENDPROP(float,       m_flHypeMeter);
@@ -306,6 +307,7 @@ public:
 	DECL_SENDPROP(float,       m_flStealthNoAttackExpire);
 	DECL_SENDPROP(int,         m_iAirDash);
 	DECL_SENDPROP(int,         m_iDesiredPlayerClass);
+	DECL_SENDPROP(bool,        m_bHasPasstimeBall);
 	DECL_EXTRACT (CUtlVector<condition_source_t>, m_ConditionData);
 	
 private:
@@ -358,6 +360,7 @@ public:
 	int GetAutoTeam(int team)                                    { return ft_GetAutoTeam                      (this, team); }
 	float MedicGetChargeLevel(CTFWeaponBase **medigun = nullptr) { return ft_MedicGetChargeLevel              (this, medigun); }
 	float TeamFortress_CalculateMaxSpeed(bool b1 = false)        { return ft_TeamFortress_CalculateMaxSpeed   (this, b1); }
+	void TeamFortress_SetSpeed()                                 {        ft_TeamFortress_SetSpeed            (this); }
 	void UpdateModel()                                           {        ft_UpdateModel                      (this); }
 	CTFWeaponBase *Weapon_OwnsThisID(int id) const               { return ft_Weapon_OwnsThisID                (this, id); }
 	CTFWeaponBase *Weapon_GetWeaponByType(int type)              { return ft_Weapon_GetWeaponByType           (this, type); }
@@ -403,7 +406,12 @@ public:
 	void GiveDefaultItems()		                                        { ft_GiveDefaultItems(this); }
 	void GiveDefaultItemsNoAmmo();
 	float PlayScene(const char *pszScene, float flDelay = 0.0f, void *response = nullptr, IRecipientFilter *filter = nullptr)		        { return ft_PlayScene(this, pszScene, flDelay, response, filter); }
+	void GetPassiveWeapons(CUtlVector<CTFWeaponBase *> &weapons)		            { ft_GetPassiveWeapons(this, weapons); }
 	
+	bool TryToPickupBuilding()   { return ft_TryToPickupBuilding(this); }
+	void DetonateObjectOfType(int building, int mode) { ft_DetonateObjectOfType(this, building, mode); }
+	
+	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
@@ -419,6 +427,7 @@ public:
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	
+	static void PrecacheMvM() { ft_PrecacheMVM(); }
 private:
 	DECL_SENDPROP_RW(CTFPlayerClass,   m_PlayerClass);
 	DECL_SENDPROP   (CHandle<CTFItem>, m_hItem);
@@ -435,6 +444,7 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, int, int                        > ft_GetAutoTeam;
 	static MemberFuncThunk<      CTFPlayer *, float, CTFWeaponBase **         > ft_MedicGetChargeLevel;
 	static MemberFuncThunk<      CTFPlayer *, float, bool                     > ft_TeamFortress_CalculateMaxSpeed;
+	static MemberFuncThunk<      CTFPlayer *, void                            > ft_TeamFortress_SetSpeed;
 	static MemberFuncThunk<      CTFPlayer *, void                            > ft_UpdateModel;
 	static MemberFuncThunk<const CTFPlayer *, CTFWeaponBase *, int            > ft_Weapon_OwnsThisID;
 	static MemberFuncThunk<      CTFPlayer *, CTFWeaponBase *, int            > ft_Weapon_GetWeaponByType;
@@ -471,8 +481,13 @@ private:
 	static MemberFuncThunk<		 CTFPlayer *, void, TFPlayerClassData_t *	  > ft_ManageBuilderWeapons;
 	static MemberFuncThunk<		 CTFPlayer *, void                      	  > ft_GiveDefaultItems;
 	static MemberFuncThunk<		 CTFPlayer *, float, const char *, float, void *, IRecipientFilter *	  > ft_PlayScene;
+	static MemberFuncThunk<		 CTFPlayer *, bool                      	  > ft_TryToPickupBuilding;
+	static MemberFuncThunk<		 CTFPlayer *, void, int, int                  > ft_DetonateObjectOfType;
+	static MemberFuncThunk<		 CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> ft_GetPassiveWeapons;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
+
+	static StaticFuncThunk<void> ft_PrecacheMVM;
 };
 
 class CTFPlayerSharedUtils

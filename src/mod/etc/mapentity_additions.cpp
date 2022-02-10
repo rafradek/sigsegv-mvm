@@ -100,6 +100,7 @@ namespace Mod::Etc::Mapentity_Additions
 
     std::vector<SendPropCacheEntry> send_prop_cache;
     std::vector<DatamapCacheEntry> datamap_cache;
+    std::vector<std::pair<string_t, CHandle<CBaseEntity>>> entity_listeners;
 
     PooledString trigger_detector_class("$trigger_detector");
     void AddModuleByName(CBaseEntity *entity, const char *name);
@@ -114,6 +115,19 @@ namespace Mod::Etc::Mapentity_Additions
 
             for (auto &token : tokens) {
                 AddModuleByName(entity,token.c_str());
+            }
+        }
+        if (entity->GetClassname() == PStr<"$entity_spawn_detector">() && FStrEq(key, "name")) {
+            bool found = false;
+            for (auto &pair : entity_listeners) {
+                if (pair.second == entity) {
+                    pair.first = AllocPooledString(value);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                entity_listeners.push_back({AllocPooledString(value), entity});
             }
         }
     }
@@ -569,6 +583,16 @@ namespace Mod::Etc::Mapentity_Additions
         bool m_bParentSet = false;
     };
 
+    class MathVectorModule : public EntityModule
+    {
+    public:
+        MathVectorModule(CBaseEntity *entity) : EntityModule(entity) {}
+        union {
+            Vector value;
+            QAngle valueAng;
+        };
+    };
+
     THINK_FUNC_DECL(FakeParentModuleTick)
     {
         auto data = this->GetEntityModule<FakeParentModule>("fakeparent");
@@ -588,19 +612,11 @@ namespace Mod::Etc::Mapentity_Additions
 
         auto bone = this->GetCustomVariable<"bone">();
         auto attachment = this->GetCustomVariable<"attachment">();
-        auto offsetpar = this->GetCustomVariable<"fakeparentoffset">();
-        auto offsetanglepar = this->GetCustomVariable<"fakeparentrotation">();
         bool posonly = this->GetCustomVariableFloat<"positiononly">();
         bool rotationonly = this->GetCustomVariableFloat<"rotationonly">();
-        Vector offset(0,0,0);
-        QAngle offsetangle(0,0,0);
+        Vector offset = this->GetCustomVariableVector<"fakeparentoffset">();
+        QAngle offsetangle = this->GetCustomVariableAngle<"fakeparentrotation">();
         matrix3x4_t transform;
-        if (offsetpar != nullptr) {
-            UTIL_StringToVector(offset.Base(), offsetpar);
-        }
-        if (offsetanglepar != nullptr) {
-            UTIL_StringToVector(offsetangle.Base(), offsetanglepar);
-        }
 
         if (bone != nullptr) {
             CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
@@ -682,1281 +698,1475 @@ namespace Mod::Etc::Mapentity_Additions
     PooledString weapon_spawner_classname("$weapon_spawner");
 
     bool allow_create_dropped_weapon = false;
-	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
+    bool HandleCustomInput(CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
     {
-        CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
-        if (szInputName[0] == '$') {
-            if (ent->GetClassname() == logic_case_classname) {
-                CLogicCase *logic_case = static_cast<CLogicCase *>(ent);
-                if (strnicmp(szInputName, "$FormatInput", strlen("$FormatInput")) == 0) {
-                    int num = strtol(szInputName + strlen("$FormatInput"), nullptr, 10);
-                    if (num > 0 && num < 16) {
-                        logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
-                        FireFormatInput(logic_case, pActivator, pCaller);
-                        
-                        return true;
-                    }
-                }
-                else if (strnicmp(szInputName, "$FormatInputNoFire", strlen("$FormatInputNoFire")) == 0) {
-                    int num = strtol(szInputName + strlen("$FormatInputNoFire"), nullptr, 10);
-                    if (num > 0 && num < 16) {
-                        logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
-                        return true;
-                    }
-                }
-                else if (FStrEq(szInputName, "$FormatString")) {
-                    logic_case->m_nCase[15] = AllocPooledString(Value.String());
+        if (ent->GetClassname() == logic_case_classname) {
+            CLogicCase *logic_case = static_cast<CLogicCase *>(ent);
+            if (strnicmp(szInputName, "FormatInput", strlen("$FormatInput")) == 0) {
+                int num = strtol(szInputName + strlen("$FormatInput"), nullptr, 10);
+                if (num > 0 && num < 16) {
+                    logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
                     FireFormatInput(logic_case, pActivator, pCaller);
+                    
                     return true;
                 }
-                else if (FStrEq(szInputName, "$FormatStringNoFire")) {
-                    logic_case->m_nCase[15] = AllocPooledString(Value.String());
+            }
+            else if (strnicmp(szInputName, "FormatInputNoFire", strlen("FormatInputNoFire")) == 0) {
+                int num = strtol(szInputName + strlen("FormatInputNoFire"), nullptr, 10);
+                if (num > 0 && num < 16) {
+                    logic_case->m_nCase[num - 1] = AllocPooledString(Value.String());
                     return true;
                 }
-                else if (FStrEq(szInputName, "$Format")) {
-                    FireFormatInput(logic_case, pActivator, pCaller);
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$TestSigsegv")) {
-                    ent->m_OnUser1->FireOutput(Value, pActivator, pCaller);
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$ToInt")) {
-                    variant_t convert;
-                    convert.SetInt(strtol(Value.String(), nullptr, 10));
-                    logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$ToFloat")) {
-                    variant_t convert;
-                    convert.SetFloat(strtof(Value.String(), nullptr));
-                    logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$CallerToActivator")) {
-                    logic_case->m_OnDefault->FireOutput(Value, pCaller, ent);
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$GetKeyValueFromActivator")) {
+            }
+            else if (FStrEq(szInputName, "FormatString")) {
+                logic_case->m_nCase[15] = AllocPooledString(Value.String());
+                FireFormatInput(logic_case, pActivator, pCaller);
+                return true;
+            }
+            else if (FStrEq(szInputName, "FormatStringNoFire")) {
+                logic_case->m_nCase[15] = AllocPooledString(Value.String());
+                return true;
+            }
+            else if (FStrEq(szInputName, "Format")) {
+                FireFormatInput(logic_case, pActivator, pCaller);
+                return true;
+            }
+            else if (FStrEq(szInputName, "TestSigsegv")) {
+                ent->m_OnUser1->FireOutput(Value, pActivator, pCaller);
+                return true;
+            }
+            else if (FStrEq(szInputName, "ToInt")) {
+                variant_t convert;
+                convert.SetInt(strtol(Value.String(), nullptr, 10));
+                logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
+                return true;
+            }
+            else if (FStrEq(szInputName, "ToFloat")) {
+                variant_t convert;
+                convert.SetFloat(strtof(Value.String(), nullptr));
+                logic_case->m_OnDefault->FireOutput(convert, pActivator, ent);
+                return true;
+            }
+            else if (FStrEq(szInputName, "CallerToActivator")) {
+                logic_case->m_OnDefault->FireOutput(Value, pCaller, ent);
+                return true;
+            }
+            else if (FStrEq(szInputName, "GetKeyValueFromActivator")) {
+                variant_t variant;
+                pActivator->ReadKeyField(Value.String(), &variant);
+                logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
+                return true;
+            }
+            else if (FStrEq(szInputName, "GetConVar")) {
+                ConVarRef cvref(Value.String());
+                if (cvref.IsValid() && cvref.IsFlagSet(FCVAR_REPLICATED) && !cvref.IsFlagSet(FCVAR_PROTECTED)) {
                     variant_t variant;
-                    pActivator->ReadKeyField(Value.String(), &variant);
+                    variant.SetFloat(cvref.GetFloat());
                     logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
-                    return true;
                 }
-                else if (FStrEq(szInputName, "$GetConVar")) {
-                    ConVarRef cvref(Value.String());
-                    if (cvref.IsValid() && cvref.IsFlagSet(FCVAR_REPLICATED) && !cvref.IsFlagSet(FCVAR_PROTECTED)) {
-                        variant_t variant;
-                        variant.SetFloat(cvref.GetFloat());
-                        logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
-                    }
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$GetConVarString")) {
-                    ConVarRef cvref(Value.String());
-                    if (cvref.IsValid() && cvref.IsFlagSet(FCVAR_REPLICATED) && !cvref.IsFlagSet(FCVAR_PROTECTED)) {
-                        variant_t variant;
-                        variant.SetString(AllocPooledString(cvref.GetString()));
-                        logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
-                    }
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$DisplayMenu")) {
-                    
-                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                        if (target != nullptr && target->IsPlayer() && !ToTFPlayer(target)->IsBot()) {
-                            CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
-                            IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
-
-                            int i;
-                            for (i = 1; i < 16; i++) {
-                                string_t str = logic_case->m_nCase[i - 1];
-                                const char *name = STRING(str);
-                                if (strlen(name) != 0) {
-                                    bool enabled = name[0] != '!';
-                                    ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
-                                    menu->AppendItem("it", info1);
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-                            if (i < 11) {
-                                menu->SetPagination(MENU_NO_PAGINATION);
-                            }
-
-                            variant_t variant;
-                            ent->ReadKeyField("Case16", &variant);
-                            
-                            char param_tokenized[256];
-                            V_strncpy(param_tokenized, variant.String(), sizeof(param_tokenized));
-                            
-                            char *name = strtok(param_tokenized,"|");
-                            char *timeout = strtok(NULL,"|");
-
-                            menu->SetDefaultTitle(name);
-
-                            char *flag;
-                            while ((flag = strtok(NULL,"|")) != nullptr) {
-                                if (FStrEq(flag, "Cancel")) {
-                                    menu->SetMenuOptionFlags(menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXIT);
-                                }
-                            }
-
-                            menu->Display(ENTINDEX(target), timeout == nullptr ? 0 : atoi(timeout));
-                        }
-                    }
-                    return true;
-                }
-                else if (FStrEq(szInputName, "$HideMenu")) {
-                    auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr && target->IsPlayer()) {
-                        menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(target), false);
-                    }
-                }
-                else if (FStrEq(szInputName, "$BitTest")) {
-                    int val = atoi(Value.String());
-                    for (int i = 1; i <= 16; i++) {
-                        string_t str = logic_case->m_nCase[i - 1];
-
-                        if (val & atoi(STRING(str))) {
-                            logic_case->FireCase(i, pActivator);
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                }
-                else if (FStrEq(szInputName, "$BitTestAll")) {
-                    int val = atoi(Value.String());
-                    for (int i = 1; i <= 16; i++) {
-                       string_t str = logic_case->m_nCase[i - 1];
-
-                        int test = atoi(STRING(str));
-                        if ((val & test) == test) {
-                            logic_case->FireCase(i, pActivator);
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                }
+                return true;
             }
-            else if (ent->GetClassname() == tf_gamerules_classname) {
-                if (stricmp(szInputName, "$StopVO") == 0) {
-                    TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, Value.String(), SND_STOP);
-                    return true;
+            else if (FStrEq(szInputName, "GetConVarString")) {
+                ConVarRef cvref(Value.String());
+                if (cvref.IsValid() && cvref.IsFlagSet(FCVAR_REPLICATED) && !cvref.IsFlagSet(FCVAR_PROTECTED)) {
+                    variant_t variant;
+                    variant.SetString(AllocPooledString(cvref.GetString()));
+                    logic_case->m_OnDefault->FireOutput(variant, pActivator, ent);
                 }
-                else if (stricmp(szInputName, "$StopVORed") == 0) {
-                    TFGameRules()->BroadcastSound(TF_TEAM_RED, Value.String(), SND_STOP);
-                    return true;
-                }
-                else if (stricmp(szInputName, "$StopVOBlue") == 0) {
-                    TFGameRules()->BroadcastSound(TF_TEAM_BLUE, Value.String(), SND_STOP);
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SetBossHealthPercentage") == 0) {
-                    float val = atof(Value.String());
-                    if (g_pMonsterResource.GetRef() != nullptr)
-                        g_pMonsterResource->m_iBossHealthPercentageByte = (int) (val * 255.0f);
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SetBossState") == 0) {
-                    int val = atoi(Value.String());
-                    if (g_pMonsterResource.GetRef() != nullptr)
-                        g_pMonsterResource->m_iBossState = val;
-                    return true;
-                }
-                else if (stricmp(szInputName, "$AddCurrencyGlobal") == 0) {
-                    int val = atoi(Value.String());
-                    TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
-                    return true;
-                }
+                return true;
             }
-            else if (ent->GetClassname() == player_classname) {
-                if (stricmp(szInputName, "$AllowClassAnimations") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        player->GetPlayerClass()->m_bUseClassAnimations = Value.Bool();
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SwitchClass") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    
-                    if (player != nullptr) {
-                        // Disable setup to allow class changing during waves in mvm
-                        bool setup = TFGameRules()->InSetup();
-                        TFGameRules()->SetInSetup(true);
+            else if (FStrEq(szInputName, "DisplayMenu")) {
+                
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                    if (target != nullptr && target->IsPlayer() && !ToTFPlayer(target)->IsBot()) {
+                        CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
+                        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
 
-                        int index = strtol(Value.String(), nullptr, 10);
-                        if (index > 0 && index < 10) {
-                            player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
-                        }
-                        else {
-                            player->HandleCommand_JoinClass(Value.String());
-                        }
-                        
-                        TFGameRules()->SetInSetup(setup);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SwitchClassInPlace") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    
-                    if (player != nullptr) {
-                        // Disable setup to allow class changing during waves in mvm
-                        bool setup = TFGameRules()->InSetup();
-                        TFGameRules()->SetInSetup(true);
-
-                        Vector pos = player->GetAbsOrigin();
-                        QAngle ang = player->GetAbsAngles();
-                        Vector vel = player->GetAbsVelocity();
-
-                        int index = strtol(Value.String(), nullptr, 10);
-                        int oldState = player->m_Shared->GetState();
-                        player->m_Shared->SetState(TF_STATE_DYING);
-                        if (index > 0 && index < 10) {
-                            player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
-                        }
-                        else {
-                            player->HandleCommand_JoinClass(Value.String());
-                        }
-                        player->m_Shared->SetState(oldState);
-                        TFGameRules()->SetInSetup(setup);
-                        player->ForceRespawn();
-                        player->Teleport(&pos, &ang, &vel);
-                        
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$ForceRespawn") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
-                            player->ForceRespawn();
-                        }
-                        else {
-                            player->m_bAllowInstantSpawn = true;
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$ForceRespawnDead") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr && !player->IsAlive()) {
-                        if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
-                            player->ForceRespawn();
-                        }
-                        else {
-                            player->m_bAllowInstantSpawn = true;
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$DisplayTextCenter") == 0) {
-                    using namespace std::string_literals;
-                    std::string text{Value.String()};
-                    text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
-                    text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
-                    text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
-                            (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
-                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CENTER, text.c_str());
-                    return true;
-                }
-                else if (stricmp(szInputName, "$DisplayTextChat") == 0) {
-                    using namespace std::string_literals;
-                    std::string text{"\x01"s + Value.String() + "\x01"s};
-                    text = std::regex_replace(text, std::regex{"\\{reset\\}", std::regex_constants::icase}, "\x01");
-                    text = std::regex_replace(text, std::regex{"\\{blue\\}", std::regex_constants::icase}, "\x07" "99ccff");
-                    text = std::regex_replace(text, std::regex{"\\{red\\}", std::regex_constants::icase}, "\x07" "ff3f3f");
-                    text = std::regex_replace(text, std::regex{"\\{green\\}", std::regex_constants::icase}, "\x07" "99ff99");
-                    text = std::regex_replace(text, std::regex{"\\{darkgreen\\}", std::regex_constants::icase}, "\x07" "40ff40");
-                    text = std::regex_replace(text, std::regex{"\\{yellow\\}", std::regex_constants::icase}, "\x07" "ffb200");
-                    text = std::regex_replace(text, std::regex{"\\{grey\\}", std::regex_constants::icase}, "\x07" "cccccc");
-                    text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
-                    text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
-                    text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
-                            (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
-                    auto pos{text.find("{")};
-                    while(pos != std::string::npos){
-                        if(text.substr(pos).length() > 7){
-                            text[pos] = '\x07';
-                            text.erase(pos+7, 1);
-                            pos = text.find("{");
-                        } else break; 
-                    }
-                    gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CHAT , text.c_str());
-                    return true;
-                }
-                else if (stricmp(szInputName, "$Suicide") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        player->CommitSuicide(false, true);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$ChangeAttributes") == 0) {
-                    CTFBot *bot = ToTFBot(ent);
-                    if (bot != nullptr) {
-                        auto *attrib = bot->GetEventChangeAttributes(Value.String());
-                        if (attrib != nullptr){
-                            bot->OnEventChangeAttributes(attrib);
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RollCommonSpell") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
-                    
-                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
-
-                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
-                    spellbook->RollNewSpell(0);
-
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SetSpell") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
-                    
-                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
-                    
-                    const char *str = Value.String();
-                    int index = strtol(str, nullptr, 10);
-                    for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
-                        if (FStrEq(str, SPELL_TYPE[i])) {
-                            index = i;
-                        }
-                    }
-
-                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
-                    spellbook->m_iSelectedSpellIndex = index;
-                    spellbook->m_iSpellCharges = 1;
-
-                    return true;
-                }
-                else if (stricmp(szInputName, "$AddSpell") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    
-                    CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
-                    
-                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
-                    
-                    const char *str = Value.String();
-                    int index = strtol(str, nullptr, 10);
-                    for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
-                        if (FStrEq(str, SPELL_TYPE[i])) {
-                            index = i;
-                        }
-                    }
-
-                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
-                    if (spellbook->m_iSelectedSpellIndex != index) {
-                        spellbook->m_iSpellCharges = 0;
-                    }
-                    spellbook->m_iSelectedSpellIndex = index;
-                    spellbook->m_iSpellCharges += 1;
-
-                    return true;
-                }
-                else if (stricmp(szInputName, "$AddCond") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int index = 0;
-                    float duration = -1.0f;
-                    sscanf(Value.String(), "%d %f", &index, &duration);
-                    if (player != nullptr) {
-                        player->m_Shared->AddCond((ETFCond)index, duration);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RemoveCond") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int index = strtol(Value.String(), nullptr, 10);
-                    if (player != nullptr) {
-                        player->m_Shared->RemoveCond((ETFCond)index);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$AddPlayerAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    char param_tokenized[256];
-                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                    
-                    char *attr = strtok(param_tokenized,"|");
-                    char *value = strtok(NULL,"|");
-
-                    if (player != nullptr) {
-                        player->AddCustomAttribute(attr, atof(value), -1.0f);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RemovePlayerAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        player->RemoveCustomAttribute(Value.String());
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$GetPlayerAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        char param_tokenized[256] = "";
-                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                        char *attrName = strtok(param_tokenized,"|");
-                        char *targetstr = strtok(NULL,"|");
-                        char *action = strtok(NULL,"|");
-                        char *defvalue = strtok(NULL,"|");
-                        CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
-                        variant_t variable;
-                        bool found = false;
-                        if (attr != nullptr) {
-                            char buf[256];
-                            attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
-                            variable.SetString(AllocPooledString(buf));
-                            found = true;
-                        }
-                        else {
-                            variable.SetString(AllocPooledString(defvalue));
-                        }
-
-                        if (targetstr != nullptr && action != nullptr) {
-                            if (found || defvalue != nullptr) {
-                                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
-                                    target->AcceptInput(action, pActivator, ent, variable, 0);
-                                }
-                            }
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$GetItemAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    if (player != nullptr) {
-                        char param_tokenized[256] = "";
-                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                        char *itemSlot = strtok(param_tokenized,"|");
-                        char *attrName = strtok(NULL,"|");
-                        char *targetstr = strtok(NULL,"|");
-                        char *action = strtok(NULL,"|");
-                        char *defvalue = strtok(NULL,"|");
-
-                        bool found = false;
-
-                        variant_t variable;
-                        if (itemSlot != nullptr) {
-                            int slot = 0;
-                            CEconEntity *item = nullptr;
-                            if (StringToIntStrict(itemSlot, slot)) {
-                                if (slot != -1) {
-                                    item = GetEconEntityAtLoadoutSlot(player, slot);
-                                }
-                                else {
-                                    item = player->GetActiveTFWeapon();
-                                }
+                        int i;
+                        for (i = 1; i < 16; i++) {
+                            string_t str = logic_case->m_nCase[i - 1];
+                            const char *name = STRING(str);
+                            if (strlen(name) != 0) {
+                                bool enabled = name[0] != '!';
+                                ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                                menu->AppendItem("it", info1);
                             }
                             else {
-                                ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                                    if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemSlot)) {
-                                        item = entity;
-                                    }
-                                });
-                            }
-                            
-                            if (item != nullptr) {
-                                CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
-                                if (attr != nullptr) {
-                                    char buf[256];
-                                    attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
-                                    variable.SetString(AllocPooledString(buf));
-                                    found = true;
-                                }
+                                break;
                             }
                         }
-
-                        if (!found) {
-                            variable.SetString(AllocPooledString(defvalue));
+                        if (i < 11) {
+                            menu->SetPagination(MENU_NO_PAGINATION);
                         }
 
-                        if (targetstr != nullptr && action != nullptr) {
-                            if (found || defvalue != nullptr) {
-                                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
-                                    target->AcceptInput(action, pActivator, ent, variable, 0);
-                                }
+                        variant_t variant;
+                        ent->ReadKeyField("Case16", &variant);
+                        
+                        char param_tokenized[256];
+                        V_strncpy(param_tokenized, variant.String(), sizeof(param_tokenized));
+                        
+                        char *name = strtok(param_tokenized,"|");
+                        char *timeout = strtok(NULL,"|");
+
+                        menu->SetDefaultTitle(name);
+
+                        char *flag;
+                        while ((flag = strtok(NULL,"|")) != nullptr) {
+                            if (FStrEq(flag, "Cancel")) {
+                                menu->SetMenuOptionFlags(menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXIT);
                             }
                         }
-                    }
-                    return true;
-                }
-                else if (strnicmp(szInputName, "$GetKey$", strlen("$GetKey$")) == 0) {
-                    FireGetInput(ent, KEYVALUE, szInputName + strlen("$GetKey$"), pActivator, pCaller, Value);
-                    return true;
-                }
-                else if (stricmp(szInputName, "$AddItemAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    char param_tokenized[256];
-                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                    
-                    char *attr = strtok(param_tokenized,"|");
-                    char *value = strtok(NULL,"|");
-                    char *slot = strtok(NULL,"|");
 
-                    if (player != nullptr) {
-                        CEconEntity *item = nullptr;
-                        if (slot != nullptr) {
-                            ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), slot)) {
-                                    item = entity;
-                                }
-                            });
-                            if (item == nullptr)
-                                item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
-                        }
-                        else {
-                            item = player->GetActiveTFWeapon();
-                        }
-                        if (item != nullptr) {
-                            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
-                            if (attr_def == nullptr) {
-                                int idx = -1;
-                                if (StringToIntStrict(attr, idx)) {
-                                    attr_def = GetItemSchema()->GetAttributeDefinition(idx);
-                                }
-                            }
-				            item->GetItem()->GetAttributeList().AddStringAttribute(attr_def, value);
-
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RemoveItemAttribute") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    char param_tokenized[256];
-                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                    
-                    char *attr = strtok(param_tokenized,"|");
-                    char *slot = strtok(NULL,"|");
-
-                    if (player != nullptr) {
-                        CEconEntity *item = nullptr;
-                        if (slot != nullptr) {
-                            ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
-                                    item = entity;
-                                }
-                            });
-                            if (item == nullptr)
-                                item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
-                        }
-                        else {
-                            item = player->GetActiveTFWeapon();
-                        }
-                        if (item != nullptr) {
-                            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
-                            if (attr_def == nullptr) {
-                                int idx = -1;
-                                if (StringToIntStrict(attr, idx)) {
-                                    attr_def = GetItemSchema()->GetAttributeDefinition(idx);
-                                }
-                            }
-				            item->GetItem()->GetAttributeList().RemoveAttribute(attr_def);
-
-                        }
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$PlaySoundToSelf") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    CRecipientFilter filter;
-		            filter.AddRecipient(player);
-                    
-                    if (!enginesound->PrecacheSound(Value.String(), true))
-						CBaseEntity::PrecacheScriptSound(Value.String());
-
-                    EmitSound_t params;
-                    params.m_pSoundName = Value.String();
-                    params.m_flSoundTime = 0.0f;
-                    params.m_pflSoundDuration = nullptr;
-                    params.m_bWarnOnDirectWaveReference = true;
-                    CBaseEntity::EmitSound(filter, ENTINDEX(player), params);
-                    return true;
-                }
-                else if (stricmp(szInputName, "$IgnitePlayerDuration") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    CTFPlayer *activator = pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : player;
-                    player->m_Shared->Burn(activator, nullptr, atof(Value.String()));
-                    return true;
-                }
-                else if (stricmp(szInputName, "$WeaponSwitchSlot") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    player->Weapon_Switch(player->Weapon_GetSlot(atoi(Value.String())));
-                    return true;
-                }
-                else if (stricmp(szInputName, "$WeaponStripSlot") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int slot = atoi(Value.String());
-                    CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
-                    if (slot != -1) {
-                        weapon = player->Weapon_GetSlot(slot);
-                    }
-                    if (weapon != nullptr)
-                        weapon->Remove();
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RemoveItem") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-						if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
-							if (entity->MyCombatWeaponPointer() != nullptr) {
-								player->Weapon_Detach(entity->MyCombatWeaponPointer());
-							}
-							entity->Remove();
-						}
-					});
-                    return true;
-                }
-                else if (stricmp(szInputName, "$GiveItem") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    GiveItemByName(player, Value.String());
-                    return true;
-                }
-                else if (stricmp(szInputName, "$DropItem") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int slot = atoi(Value.String());
-                    CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
-                    if (slot != -1) {
-                        weapon = player->Weapon_GetSlot(slot);
-                    }
-
-                    if (weapon != nullptr) {
-                        CEconItemView *item_view = weapon->GetItem();
-
-                        allow_create_dropped_weapon = true;
-                        auto dropped = CTFDroppedWeapon::Create(player, player->EyePosition(), vec3_angle, weapon->GetWorldModel(), item_view);
-                        if (dropped != nullptr)
-                            dropped->InitDroppedWeapon(player, static_cast<CTFWeaponBase *>(weapon), false, false);
-
-                        allow_create_dropped_weapon = false;
+                        menu->Display(ENTINDEX(target), timeout == nullptr ? 0 : atoi(timeout));
                     }
                 }
-                else if (stricmp(szInputName, "$SetCurrency") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    player->RemoveCurrency(player->GetCurrency() - atoi(Value.String()));
-                }
-                else if (stricmp(szInputName, "$AddCurrency") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    player->RemoveCurrency(atoi(Value.String()) * -1);
-                }
-                else if (stricmp(szInputName, "$RemoveCurrency") == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    player->RemoveCurrency(atoi(Value.String()));
-                }
-                else if (strnicmp(szInputName, "$CurrencyOutput", 15) == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int cost = atoi(szInputName + 15);
-                    if(player->GetCurrency() >= cost){
-                        char param_tokenized[2048] = "";
-                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                        if(strcmp(param_tokenized, "") != 0){
-                            char *target = strtok(param_tokenized,",");
-                            char *action = NULL;
-                            char *value = NULL;
-                            if(target != NULL)
-                                action = strtok(NULL,",");
-                            if(action != NULL)
-                                value = strtok(NULL,"");
-                            if(value != NULL){
-                                CEventQueue &que = g_EventQueue;
-                                variant_t actualvalue;
-                                string_t stringvalue = AllocPooledString(value);
-                                actualvalue.SetString(stringvalue);
-                                que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
-                            }
-                        }
-                        player->RemoveCurrency(cost);
-                    }
-                    return true;
-                }
-                else if (strnicmp(szInputName, "$CurrencyInvertOutput", 21) == 0) {
-                    CTFPlayer *player = ToTFPlayer(ent);
-                    int cost = atoi(szInputName + 21);
-                    if(player->GetCurrency() < cost){
-                        char param_tokenized[2048] = "";
-                        V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                        if(strcmp(param_tokenized, "") != 0){
-                            char *target = strtok(param_tokenized,",");
-                            char *action = NULL;
-                            char *value = NULL;
-                            if(target != NULL)
-                                action = strtok(NULL,",");
-                            if(action != NULL)
-                                value = strtok(NULL,"");
-                            if(value != NULL){
-                                CEventQueue &que = g_EventQueue;
-                                variant_t actualvalue;
-                                string_t stringvalue = AllocPooledString(value);
-                                actualvalue.SetString(stringvalue);
-                                que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
-                            }
-                        }
-                        //player->RemoveCurrency(cost);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RefillAmmo") == 0) {
-                    CTFPlayer* player = ToTFPlayer(ent);
-                    for(int i = 0; i < 7; ++i){
-                        player->SetAmmoCount(player->GetMaxAmmo(i), i);
-                    }
-                    return true;
-                }
-                else if(stricmp(szInputName, "$Regenerate") == 0){
-                    CTFPlayer* player = ToTFPlayer(ent);
-                    player->Regenerate(true);
-                    return true;
-                }
-                else if(stricmp(szInputName, "$BotCommand") == 0){
-                    CTFBot* bot = ToTFBot(ent);
-                    if (bot != nullptr)
-                        bot->MyNextBotPointer()->OnCommandString(Value.String());
-                    return true;
-                }
-                else if(stricmp(szInputName, "$ResetInventory") == 0){
-                    CTFPlayer* player = ToTFPlayer(ent);
-                    
-                    player->GiveDefaultItemsNoAmmo();
-
-                }
-                
+                return true;
             }
-            else if (ent->GetClassname() == point_viewcontrol_classname) {
-                auto camera = static_cast<CTriggerCamera *>(ent);
-                if (stricmp(szInputName, "$EnableAll") == 0) {
-                    ForEachTFPlayer([&](CTFPlayer *player) {
-                        if (player->IsBot())
-                            return;
-                        else {
-
-                            camera->m_hPlayer = player;
-                            camera->Enable();
-                            camera->m_spawnflags |= 512;
-                        }
-                    });
-                    return true;
-                }
-                else if (stricmp(szInputName, "$DisableAll") == 0) {
-                    ForEachTFPlayer([&](CTFPlayer *player) {
-                        if (player->IsBot())
-                            return;
-                        else {
-                            camera->m_hPlayer = player;
-                            camera->Disable();
-                            player->m_takedamage = player->IsObserver() ? 0 : 2;
-                            camera->m_spawnflags &= ~(512);
-                        }
-                    });
-                    return true;
-                }
-                else if (stricmp(szInputName, "$SetTarget") == 0) {
-                    camera->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                    return true;
+            else if (FStrEq(szInputName, "HideMenu")) {
+                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr && target->IsPlayer()) {
+                    menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(target), false);
                 }
             }
-            else if (ent->GetClassname() == trigger_detector_class) {
-                if (stricmp(szInputName, "$targettest") == 0) {
-                    auto data = GetExtraTriggerDetectorData(ent);
-                    if (data->m_hLastTarget != nullptr) {
-                        ent->FireCustomOutput<"targettestpass">(data->m_hLastTarget, ent, Value);
+            else if (FStrEq(szInputName, "BitTest")) {
+                Value.Convert(FIELD_INTEGER);
+                int val = Value.Int();
+                for (int i = 1; i <= 16; i++) {
+                    string_t str = logic_case->m_nCase[i - 1];
+
+                    if (val & atoi(STRING(str))) {
+                        logic_case->FireCase(i, pActivator);
                     }
                     else {
-                        ent->FireCustomOutput<"targettestfail">(nullptr, ent, Value);
+                        break;
                     }
-                    return true;
                 }
             }
-            else if (ent->GetClassname() == weapon_spawner_classname) {
-                if (stricmp(szInputName, "$DropWeapon") == 0) {
+            else if (FStrEq(szInputName, "BitTestAll")) {
+                Value.Convert(FIELD_INTEGER);
+                int val = Value.Int();
+                for (int i = 1; i <= 16; i++) {
+                    string_t str = logic_case->m_nCase[i - 1];
+
+                    int test = atoi(STRING(str));
+                    if ((val & test) == test) {
+                        logic_case->FireCase(i, pActivator);
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        else if (ent->GetClassname() == tf_gamerules_classname) {
+            if (stricmp(szInputName, "StopVO") == 0) {
+                TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, Value.String(), SND_STOP);
+                return true;
+            }
+            else if (stricmp(szInputName, "StopVORed") == 0) {
+                TFGameRules()->BroadcastSound(TF_TEAM_RED, Value.String(), SND_STOP);
+                return true;
+            }
+            else if (stricmp(szInputName, "StopVOBlue") == 0) {
+                TFGameRules()->BroadcastSound(TF_TEAM_BLUE, Value.String(), SND_STOP);
+                return true;
+            }
+            else if (stricmp(szInputName, "SetBossHealthPercentage") == 0) {
+                Value.Convert(FIELD_FLOAT);
+                float val = Value.Float();
+                if (g_pMonsterResource.GetRef() != nullptr)
+                    g_pMonsterResource->m_iBossHealthPercentageByte = (int) (val * 255.0f);
+                return true;
+            }
+            else if (stricmp(szInputName, "SetBossState") == 0) {
+                Value.Convert(FIELD_INTEGER);
+                int val = Value.Int();
+                if (g_pMonsterResource.GetRef() != nullptr)
+                    g_pMonsterResource->m_iBossState = val;
+                return true;
+            }
+            else if (stricmp(szInputName, "AddCurrencyGlobal") == 0) {
+                Value.Convert(FIELD_INTEGER);
+                int val = atoi(Value.Int());
+                TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
+                return true;
+            }
+        }
+        else if (ent->GetClassname() == player_classname) {
+            if (stricmp(szInputName, "AllowClassAnimations") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    player->GetPlayerClass()->m_bUseClassAnimations = Value.Bool();
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "SwitchClass") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                
+                if (player != nullptr) {
+                    // Disable setup to allow class changing during waves in mvm
+                    bool setup = TFGameRules()->InSetup();
+                    TFGameRules()->SetInSetup(true);
+
+                    int index = strtol(Value.String(), nullptr, 10);
+                    if (index > 0 && index < 10) {
+                        player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
+                    }
+                    else {
+                        player->HandleCommand_JoinClass(Value.String());
+                    }
                     
-                    auto data = GetExtraData<ExtraEntityDataWeaponSpawner>(ent);
-                    auto name = ent->GetCustomVariable<"item">();
-                    auto item_def = GetItemSchema()->GetItemDefinitionByName(name);
+                    TFGameRules()->SetInSetup(setup);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "SwitchClassInPlace") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                
+                if (player != nullptr) {
+                    // Disable setup to allow class changing during waves in mvm
+                    bool setup = TFGameRules()->InSetup();
+                    TFGameRules()->SetInSetup(true);
 
-                    if (item_def != nullptr) {
-                        auto item = CEconItemView::Create();
-                        item->Init(item_def->m_iItemDefIndex, item_def->m_iItemQuality, 9999, 0);
-                        item->m_iItemID = (RandomInt(INT_MIN, INT_MAX) << 16) + ENTINDEX(ent);
-                        Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(name, item);
-                        auto &vars = GetCustomVariables(ent);
-                        for (auto &var : vars) {
-                            auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(STRING(var.key));
-                            if (attr_def != nullptr) {
-                                item->GetAttributeList().AddStringAttribute(attr_def, STRING(var.value));
+                    Vector pos = player->GetAbsOrigin();
+                    QAngle ang = player->GetAbsAngles();
+                    Vector vel = player->GetAbsVelocity();
+
+                    int index = strtol(Value.String(), nullptr, 10);
+                    int oldState = player->m_Shared->GetState();
+                    player->m_Shared->SetState(TF_STATE_DYING);
+                    if (index > 0 && index < 10) {
+                        player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
+                    }
+                    else {
+                        player->HandleCommand_JoinClass(Value.String());
+                    }
+                    player->m_Shared->SetState(oldState);
+                    TFGameRules()->SetInSetup(setup);
+                    player->ForceRespawn();
+                    player->Teleport(&pos, &ang, &vel);
+                    
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "ForceRespawn") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
+                        player->ForceRespawn();
+                    }
+                    else {
+                        player->m_bAllowInstantSpawn = true;
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "ForceRespawnDead") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr && !player->IsAlive()) {
+                    if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
+                        player->ForceRespawn();
+                    }
+                    else {
+                        player->m_bAllowInstantSpawn = true;
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "DisplayTextCenter") == 0) {
+                using namespace std::string_literals;
+                std::string text{Value.String()};
+                text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
+                text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
+                text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
+                        (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
+                gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CENTER, text.c_str());
+                return true;
+            }
+            else if (stricmp(szInputName, "DisplayTextChat") == 0) {
+                using namespace std::string_literals;
+                std::string text{"\x01"s + Value.String() + "\x01"s};
+                text = std::regex_replace(text, std::regex{"\\{reset\\}", std::regex_constants::icase}, "\x01");
+                text = std::regex_replace(text, std::regex{"\\{blue\\}", std::regex_constants::icase}, "\x07" "99ccff");
+                text = std::regex_replace(text, std::regex{"\\{red\\}", std::regex_constants::icase}, "\x07" "ff3f3f");
+                text = std::regex_replace(text, std::regex{"\\{green\\}", std::regex_constants::icase}, "\x07" "99ff99");
+                text = std::regex_replace(text, std::regex{"\\{darkgreen\\}", std::regex_constants::icase}, "\x07" "40ff40");
+                text = std::regex_replace(text, std::regex{"\\{yellow\\}", std::regex_constants::icase}, "\x07" "ffb200");
+                text = std::regex_replace(text, std::regex{"\\{grey\\}", std::regex_constants::icase}, "\x07" "cccccc");
+                text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
+                text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
+                text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
+                        (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
+                auto pos{text.find("{")};
+                while(pos != std::string::npos){
+                    if(text.substr(pos).length() > 7){
+                        text[pos] = '\x07';
+                        text.erase(pos+7, 1);
+                        pos = text.find("{");
+                    } else break; 
+                }
+                gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CHAT , text.c_str());
+                return true;
+            }
+            else if (stricmp(szInputName, "Suicide") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    player->CommitSuicide(false, true);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "ChangeAttributes") == 0) {
+                CTFBot *bot = ToTFBot(ent);
+                if (bot != nullptr) {
+                    auto *attrib = bot->GetEventChangeAttributes(Value.String());
+                    if (attrib != nullptr){
+                        bot->OnEventChangeAttributes(attrib);
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RollCommonSpell") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                
+                if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+
+                CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                spellbook->RollNewSpell(0);
+
+                return true;
+            }
+            else if (stricmp(szInputName, "SetSpell") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                
+                if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+                
+                const char *str = Value.String();
+                int index = strtol(str, nullptr, 10);
+                for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                    if (FStrEq(str, SPELL_TYPE[i])) {
+                        index = i;
+                    }
+                }
+
+                CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                spellbook->m_iSelectedSpellIndex = index;
+                spellbook->m_iSpellCharges = 1;
+
+                return true;
+            }
+            else if (stricmp(szInputName, "AddSpell") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                
+                CBaseEntity *weapon = player->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION);
+                
+                if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return true;
+                
+                const char *str = Value.String();
+                int index = strtol(str, nullptr, 10);
+                for (int i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                    if (FStrEq(str, SPELL_TYPE[i])) {
+                        index = i;
+                    }
+                }
+
+                CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+                if (spellbook->m_iSelectedSpellIndex != index) {
+                    spellbook->m_iSpellCharges = 0;
+                }
+                spellbook->m_iSelectedSpellIndex = index;
+                spellbook->m_iSpellCharges += 1;
+
+                return true;
+            }
+            else if (stricmp(szInputName, "AddCond") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                int index = 0;
+                float duration = -1.0f;
+                sscanf(Value.String(), "%d %f", &index, &duration);
+                if (player != nullptr) {
+                    player->m_Shared->AddCond((ETFCond)index, duration);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RemoveCond") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                int index = strtol(Value.String(), nullptr, 10);
+                if (player != nullptr) {
+                    player->m_Shared->RemoveCond((ETFCond)index);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "AddPlayerAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                char param_tokenized[256];
+                V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                
+                char *attr = strtok(param_tokenized,"|");
+                char *value = strtok(NULL,"|");
+
+                if (player != nullptr) {
+                    player->AddCustomAttribute(attr, atof(value), -1.0f);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RemovePlayerAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    player->RemoveCustomAttribute(Value.String());
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "GetPlayerAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    char param_tokenized[256] = "";
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    char *attrName = strtok(param_tokenized,"|");
+                    char *targetstr = strtok(NULL,"|");
+                    char *action = strtok(NULL,"|");
+                    char *defvalue = strtok(NULL,"|");
+                    CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
+                    variant_t variable;
+                    bool found = false;
+                    if (attr != nullptr) {
+                        char buf[256];
+                        attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
+                        variable.SetString(AllocPooledString(buf));
+                        found = true;
+                    }
+                    else {
+                        variable.SetString(AllocPooledString(defvalue));
+                    }
+
+                    if (targetstr != nullptr && action != nullptr) {
+                        if (found || defvalue != nullptr) {
+                            for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                                target->AcceptInput(action, pActivator, ent, variable, 0);
                             }
                         }
-                        auto weapon = CTFDroppedWeapon::Create(nullptr, ent->EyePosition(), vec3_angle, item->GetPlayerDisplayModel(1, 2), item);
-                        if (weapon != nullptr) {
-                            if (weapon->VPhysicsGetObject() != nullptr) {
-                                weapon->VPhysicsGetObject()->SetMass(25.0f);
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "GetItemAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                if (player != nullptr) {
+                    char param_tokenized[256] = "";
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    char *itemSlot = strtok(param_tokenized,"|");
+                    char *attrName = strtok(NULL,"|");
+                    char *targetstr = strtok(NULL,"|");
+                    char *action = strtok(NULL,"|");
+                    char *defvalue = strtok(NULL,"|");
 
-                                if (ent->GetCustomVariableFloat<"nomotion">() != 0) {
-                                    weapon->VPhysicsGetObject()->EnableMotion(false);
+                    bool found = false;
+
+                    variant_t variable;
+                    if (itemSlot != nullptr) {
+                        int slot = 0;
+                        CEconEntity *item = nullptr;
+                        if (StringToIntStrict(itemSlot, slot)) {
+                            if (slot != -1) {
+                                item = GetEconEntityAtLoadoutSlot(player, slot);
+                            }
+                            else {
+                                item = player->GetActiveTFWeapon();
+                            }
+                        }
+                        else {
+                            ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemSlot)) {
+                                    item = entity;
                                 }
+                            });
+                        }
+                        
+                        if (item != nullptr) {
+                            CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
+                            if (attr != nullptr) {
+                                char buf[256];
+                                attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
+                                variable.SetString(AllocPooledString(buf));
+                                found = true;
                             }
-                            auto weapondata = weapon->GetOrCreateEntityModule<DroppedWeaponModule>("droppedweapon");
-                            weapondata->m_hWeaponSpawner = ent;
-                            weapondata->ammo = ent->GetCustomVariableFloat<"ammo">(-1);
-                            weapondata->clip = ent->GetCustomVariableFloat<"clip">(-1);
-                            weapondata->energy = ent->GetCustomVariableFloat<"energy">(FLT_MIN);
-                            weapondata->charge = ent->GetCustomVariableFloat<"charge">(FLT_MAX);
-
-                            data->m_SpawnedWeapons.push_back(weapon);
-                        }
-                        CEconItemView::Destroy(item);
-                    }
-                    return true;
-                }
-                else if (stricmp(szInputName, "$RemoveDroppedWeapons") == 0) {
-                    auto data = GetExtraWeaponSpawnerData(ent);
-                    for (auto weapon : data->m_SpawnedWeapons) {
-                        if (weapon != nullptr) {
-                            weapon->Remove();
                         }
                     }
-                    data->m_SpawnedWeapons.clear();
-                    return true;
-                }
-            }
-            else if (ent->GetClassname() == PStr<"prop_vehicle_driveable">()) {
-                if (stricmp(szInputName, "$EnterVehicle") == 0) {
-                    auto target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                    auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
-                    if (ToTFPlayer(target) != nullptr && vehicle != nullptr) {
-                        
-                        Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
-                        
-                        QAngle angToTarget;
-                        VectorAngles(delta, angToTarget);
-                        ToTFPlayer(target)->SnapEyeAngles(angToTarget);
-                        
-                        CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
-                        serverVehicle->HandlePassengerEntry(ToTFPlayer(target), true);
-                    }
-                }
-                if (stricmp(szInputName, "$ExitVehicle") == 0) {
-                    auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
-                    if (vehicle != nullptr && vehicle->m_hPlayer != nullptr) {
-                        CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
-                        serverVehicle->HandlePassengerExit(vehicle->m_hPlayer);
-                    }
-                }
-            }
-            if (stricmp(szInputName, "$FireUserAsActivator1") == 0) {
-                ent->m_OnUser1->FireOutput(Value, ent, ent);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUserAsActivator2") == 0) {
-                ent->m_OnUser2->FireOutput(Value, ent, ent);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUserAsActivator3") == 0) {
-                ent->m_OnUser3->FireOutput(Value, ent, ent);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUserAsActivator4") == 0) {
-                ent->m_OnUser4->FireOutput(Value, ent, ent);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUser5") == 0) {
-                ent->FireCustomOutput<"onuser5">(pActivator, ent, Value);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUser6") == 0) {
-                ent->FireCustomOutput<"onuser6">(pActivator, ent, Value);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUser7") == 0) {
-                ent->FireCustomOutput<"onuser7">(pActivator, ent, Value);
-                return true;
-            }
-            else if (stricmp(szInputName, "$FireUser8") == 0) {
-                ent->FireCustomOutput<"onuser8">(pActivator, ent, Value);
-                return true;
-            }
-            else if (stricmp(szInputName, "$TakeDamage") == 0) {
-                int damage = strtol(Value.String(), nullptr, 10);
-                CBaseEntity *attacker = ent;
-                
-                CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
-                ent->TakeDamage(info);
-                return true;
-            }
-            else if (stricmp(szInputName, "$AddHealth") == 0) {
-                int damage = strtol(Value.String(), nullptr, 10);
-                CBaseEntity *attacker = ent;
-                ent->TakeHealth(damage, DMG_GENERIC);
-                return true;
-            }
-            else if (stricmp(szInputName, "$TakeDamageFromActivator") == 0) {
-                int damage = strtol(Value.String(), nullptr, 10);
-                CBaseEntity *attacker = pActivator;
-                
-                CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
-                ent->TakeDamage(info);
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetModelOverride") == 0) {
-                int replace_model = CBaseEntity::PrecacheModel(Value.String());
-                if (replace_model != -1) {
-                    for (int i = 0; i < MAX_VISION_MODES; ++i) {
-                        ent->SetModelIndexOverride(i, replace_model);
-                    }
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetModel") == 0) {
-                CBaseEntity::PrecacheModel(Value.String());
-                ent->SetModel(Value.String());
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetModelSpecial") == 0) {
-                int replace_model = CBaseEntity::PrecacheModel(Value.String());
-                if (replace_model != -1) {
-                    ent->SetModelIndex(replace_model);
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetOwner") == 0) {
-                auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                if (owner != nullptr) {
-                    ent->SetOwnerEntity(owner);
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$GetKeyValue") == 0) {
-                variant_t variant;
-                ent->ReadKeyField(Value.String(), &variant);
-                ent->m_OnUser1->FireOutput(variant, pActivator, ent);
-                return true;
-            }
-            else if (stricmp(szInputName, "$InheritOwner") == 0) {
-                auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                if (owner != nullptr) {
-                    ent->SetOwnerEntity(owner->GetOwnerEntity());
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$InheritParent") == 0) {
-                auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                if (owner != nullptr) {
-                    ent->SetParent(owner->GetMoveParent(), -1);
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$MoveType") == 0) {
-                variant_t variant;
-                int val1=0;
-                int val2=MOVECOLLIDE_DEFAULT;
 
-                sscanf(Value.String(), "%d,%d", &val1, &val2);
-                ent->SetMoveType((MoveType_t)val1, (MoveCollide_t)val2);
+                    if (!found) {
+                        variable.SetString(AllocPooledString(defvalue));
+                    }
+
+                    if (targetstr != nullptr && action != nullptr) {
+                        if (found || defvalue != nullptr) {
+                            for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                                target->AcceptInput(action, pActivator, ent, variable, 0);
+                            }
+                        }
+                    }
+                }
                 return true;
             }
-            else if (stricmp(szInputName, "$PlaySound") == 0) {
+            else if (strnicmp(szInputName, "GetKey$", strlen("GetKey$")) == 0) {
+                FireGetInput(ent, KEYVALUE, szInputName + strlen("GetKey$"), pActivator, pCaller, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "AddItemAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                char param_tokenized[256];
+                V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                
+                char *attr = strtok(param_tokenized,"|");
+                char *value = strtok(NULL,"|");
+                char *slot = strtok(NULL,"|");
+
+                if (player != nullptr) {
+                    CEconEntity *item = nullptr;
+                    if (slot != nullptr) {
+                        ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                            if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), slot)) {
+                                item = entity;
+                            }
+                        });
+                        if (item == nullptr)
+                            item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
+                    }
+                    else {
+                        item = player->GetActiveTFWeapon();
+                    }
+                    if (item != nullptr) {
+                        CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
+                        if (attr_def == nullptr) {
+                            int idx = -1;
+                            if (StringToIntStrict(attr, idx)) {
+                                attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+                            }
+                        }
+                        item->GetItem()->GetAttributeList().AddStringAttribute(attr_def, value);
+
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RemoveItemAttribute") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                char param_tokenized[256];
+                V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                
+                char *attr = strtok(param_tokenized,"|");
+                char *slot = strtok(NULL,"|");
+
+                if (player != nullptr) {
+                    CEconEntity *item = nullptr;
+                    if (slot != nullptr) {
+                        ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                            if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
+                                item = entity;
+                            }
+                        });
+                        if (item == nullptr)
+                            item = GetEconEntityAtLoadoutSlot(player, atoi(slot));
+                    }
+                    else {
+                        item = player->GetActiveTFWeapon();
+                    }
+                    if (item != nullptr) {
+                        CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(attr);
+                        if (attr_def == nullptr) {
+                            int idx = -1;
+                            if (StringToIntStrict(attr, idx)) {
+                                attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+                            }
+                        }
+                        item->GetItem()->GetAttributeList().RemoveAttribute(attr_def);
+
+                    }
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "PlaySoundToSelf") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                CRecipientFilter filter;
+                filter.AddRecipient(player);
                 
                 if (!enginesound->PrecacheSound(Value.String(), true))
                     CBaseEntity::PrecacheScriptSound(Value.String());
 
-                ent->EmitSound(Value.String());
+                EmitSound_t params;
+                params.m_pSoundName = Value.String();
+                params.m_flSoundTime = 0.0f;
+                params.m_pflSoundDuration = nullptr;
+                params.m_bWarnOnDirectWaveReference = true;
+                CBaseEntity::EmitSound(filter, ENTINDEX(player), params);
                 return true;
             }
-            else if (stricmp(szInputName, "$StopSound") == 0) {
-                ent->StopSound(Value.String());
+            else if (stricmp(szInputName, "IgnitePlayerDuration") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                Value.Convert(FIELD_FLOAT);
+                CTFPlayer *activator = pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : player;
+                player->m_Shared->Burn(activator, nullptr, Value.Float());
                 return true;
             }
-            else if (stricmp(szInputName, "$SetLocalOrigin") == 0) {
-                Vector vec;
-                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                ent->SetLocalOrigin(vec);
+            else if (stricmp(szInputName, "WeaponSwitchSlot") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                Value.Convert(FIELD_INTEGER);
+                player->Weapon_Switch(player->Weapon_GetSlot(Value.Int()));
                 return true;
             }
-            else if (stricmp(szInputName, "$SetLocalAngles") == 0) {
-                QAngle vec;
-                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                ent->SetLocalAngles(vec);
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetLocalVelocity") == 0) {
-                Vector vec;
-                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                ent->SetLocalVelocity(vec);
-                return true;
-            }
-            else if (stricmp(szInputName, "$TeleportToEntity") == 0) {
-                auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
-                if (target != nullptr) {
-                    Vector targetpos = target->GetAbsOrigin();
-                    ent->Teleport(&targetpos, nullptr, nullptr);
+            else if (stricmp(szInputName, "WeaponStripSlot") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                Value.Convert(FIELD_INTEGER);
+                int slot = Value.Int();
+                CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
+                if (slot != -1) {
+                    weapon = player->Weapon_GetSlot(slot);
                 }
+                if (weapon != nullptr)
+                    weapon->Remove();
                 return true;
             }
-            else if (stricmp(szInputName, "$MoveRelative") == 0) {
-                Vector vec;
-                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                vec = vec + ent->GetLocalOrigin();
-                ent->SetLocalOrigin(vec);
-                return true;
-            }
-            else if (stricmp(szInputName, "$RotateRelative") == 0) {
-                QAngle vec;
-                sscanf(Value.String(), "%f %f %f", &vec.x, &vec.y, &vec.z);
-                vec = vec + ent->GetLocalAngles();
-                ent->SetLocalAngles(vec);
-                return true;
-            }
-            else if (stricmp(szInputName, "$TestEntity") == 0) {
-                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                    auto filter = rtti_cast<CBaseFilter *>(ent);
-                    if (filter != nullptr && filter->PassesFilter(pCaller, target)) {
-                        filter->m_OnPass->FireOutput(Value, pActivator, target);
+            else if (stricmp(szInputName, "RemoveItem") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+                    if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
+                        if (entity->MyCombatWeaponPointer() != nullptr) {
+                            player->Weapon_Detach(entity->MyCombatWeaponPointer());
+                        }
+                        entity->Remove();
                     }
-                }
+                });
                 return true;
             }
-            else if (stricmp(szInputName, "$StartTouchEntity") == 0) {
-                auto filter = rtti_cast<CBaseTrigger *>(ent);
-                if (filter != nullptr) {
-                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                        filter->StartTouch(target);
-                    }
-                }
+            else if (stricmp(szInputName, "GiveItem") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                GiveItemByName(player, Value.String());
                 return true;
             }
-            else if (stricmp(szInputName, "$EndTouchEntity") == 0) {
-                auto filter = rtti_cast<CBaseTrigger *>(ent);
-                if (filter != nullptr) {
-                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
-                        filter->EndTouch(target);
-                    }
+            else if (stricmp(szInputName, "DropItem") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                Value.Convert(FIELD_INTEGER);
+                int slot = Value.Int();
+                CBaseCombatWeapon *weapon = player->GetActiveTFWeapon();
+                if (slot != -1) {
+                    weapon = player->Weapon_GetSlot(slot);
                 }
-                return true;
-            }
-            else if (stricmp(szInputName, "$RotateTowards") == 0) {
-                auto rotating = rtti_cast<CFuncRotating *>(ent);
-                if (rotating != nullptr) {
-                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr) {
-                        auto data = GetExtraFuncRotatingData(rotating);
-                        data->m_hRotateTarget = target;
 
-                        if (rotating->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
-                            THINK_FUNC_SET(rotating, RotatingFollowEntity, gpGlobals->curtime + 0.1);
+                if (weapon != nullptr) {
+                    CEconItemView *item_view = weapon->GetItem();
+
+                    allow_create_dropped_weapon = true;
+                    auto dropped = CTFDroppedWeapon::Create(player, player->EyePosition(), vec3_angle, weapon->GetWorldModel(), item_view);
+                    if (dropped != nullptr)
+                        dropped->InitDroppedWeapon(player, static_cast<CTFWeaponBase *>(weapon), false, false);
+
+                    allow_create_dropped_weapon = false;
+                }
+            }
+            else if (stricmp(szInputName, "SetCurrency") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                player->RemoveCurrency(player->GetCurrency() - atoi(Value.String()));
+            }
+            else if (stricmp(szInputName, "AddCurrency") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                player->RemoveCurrency(atoi(Value.String()) * -1);
+            }
+            else if (stricmp(szInputName, "RemoveCurrency") == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                player->RemoveCurrency(atoi(Value.String()));
+            }
+            else if (strnicmp(szInputName, "CurrencyOutput", 15) == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                int cost = atoi(szInputName + 15);
+                if(player->GetCurrency() >= cost){
+                    char param_tokenized[2048] = "";
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    if(strcmp(param_tokenized, "") != 0){
+                        char *target = strtok(param_tokenized,",");
+                        char *action = NULL;
+                        char *value = NULL;
+                        if(target != NULL)
+                            action = strtok(NULL,",");
+                        if(action != NULL)
+                            value = strtok(NULL,"");
+                        if(value != NULL){
+                            CEventQueue &que = g_EventQueue;
+                            variant_t actualvalue;
+                            string_t stringvalue = AllocPooledString(value);
+                            actualvalue.SetString(stringvalue);
+                            que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
                         }
                     }
+                    player->RemoveCurrency(cost);
                 }
-                auto data = ent->GetEntityModule<RotatorModule>("rotator");
-                if (data != nullptr) {
-                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr) {
-                        data->m_hRotateTarget = target;
-
-                        if (ent->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
-                            Msg("install rotator\n");
-                            THINK_FUNC_SET(ent, RotatorModuleTick, gpGlobals->curtime + 0.1);
+                return true;
+            }
+            else if (strnicmp(szInputName, "CurrencyInvertOutput", 21) == 0) {
+                CTFPlayer *player = ToTFPlayer(ent);
+                int cost = atoi(szInputName + 21);
+                if(player->GetCurrency() < cost){
+                    char param_tokenized[2048] = "";
+                    V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    if(strcmp(param_tokenized, "") != 0){
+                        char *target = strtok(param_tokenized,",");
+                        char *action = NULL;
+                        char *value = NULL;
+                        if(target != NULL)
+                            action = strtok(NULL,",");
+                        if(action != NULL)
+                            value = strtok(NULL,"");
+                        if(value != NULL){
+                            CEventQueue &que = g_EventQueue;
+                            variant_t actualvalue;
+                            string_t stringvalue = AllocPooledString(value);
+                            actualvalue.SetString(stringvalue);
+                            que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, 0.0, player, player, -1);
                         }
                     }
+                    //player->RemoveCurrency(cost);
                 }
                 return true;
             }
-            else if (stricmp(szInputName, "$StopRotateTowards") == 0) {
-                auto data = ent->GetEntityModule<RotatorModule>("rotator");
-                if (data != nullptr) {
-                    data->m_hRotateTarget = nullptr;
+            else if (stricmp(szInputName, "RefillAmmo") == 0) {
+                CTFPlayer* player = ToTFPlayer(ent);
+                for(int i = 0; i < 7; ++i){
+                    player->SetAmmoCount(player->GetMaxAmmo(i), i);
                 }
                 return true;
             }
-            else if (stricmp(szInputName, "$SetForwardVelocity") == 0) {
-                Vector fwd;
-                AngleVectors(ent->GetAbsAngles(), &fwd);
-                fwd *= strtof(Value.String(), nullptr);
-
-                IPhysicsObject *pPhysicsObject = ent->VPhysicsGetObject();
-                if (pPhysicsObject) {
-                    pPhysicsObject->SetVelocity(&fwd, nullptr);
-                }
-                else {
-                    ent->SetAbsVelocity(fwd);
-                }
+            else if(stricmp(szInputName, "Regenerate") == 0){
+                CTFPlayer* player = ToTFPlayer(ent);
+                player->Regenerate(true);
+                return true;
+            }
+            else if(stricmp(szInputName, "BotCommand") == 0){
+                CTFBot* bot = ToTFBot(ent);
+                if (bot != nullptr)
+                    bot->MyNextBotPointer()->OnCommandString(Value.String());
+                return true;
+            }
+            else if(stricmp(szInputName, "ResetInventory") == 0){
+                CTFPlayer* player = ToTFPlayer(ent);
                 
-                return true;
-            }
-            else if (stricmp(szInputName, "$FaceEntity") == 0) {
-                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                if (target != nullptr) {
-                    Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
-                    
-                    QAngle angToTarget;
-                    VectorAngles(delta, angToTarget);
-                    ent->SetAbsAngles(angToTarget);
-                    if (ToTFPlayer(ent) != nullptr) {
-                        ToTFPlayer(ent)->SnapEyeAngles(angToTarget);
-                    }
-                }
-                
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetFakeParent") == 0) {
-                auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
-                if (data != nullptr) {
-                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr) {
-                        data->m_hParent = target;
-                        data->m_bParentSet = true;
-                        if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
-                            THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
-                        }
-                    }
-                }
-                
-                return true;
-            }
-            else if (stricmp(szInputName, "$SetAimFollow") == 0) {
-                auto data = ent->GetEntityModule<AimFollowModule>("aimfollow");
-                if (data != nullptr) {
-                    CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
-                    if (target != nullptr) {
-                        data->m_hParent = target;
-                        if (ent->GetNextThink("AimFollowModuleTick") < gpGlobals->curtime) {
-                            THINK_FUNC_SET(ent, AimFollowModuleTick, gpGlobals->curtime + 0.01);
-                        }
-                    }
-                }
-                
-                return true;
-            }
-            else if (stricmp(szInputName, "$ClearFakeParent") == 0) {
-                auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
-                if (data != nullptr) {
-                    data->m_hParent = nullptr;
-                    data->m_bParentSet = false;
-                }
-                
-                return true;
-            }
-            else if (strnicmp(szInputName, "$SetVar$", strlen("$SetVar$")) == 0) {
-                std::string valuestr = Value.String();
-                boost::algorithm::to_lower(valuestr);
-                SetCustomVariable(ent, szInputName + strlen("$SetVar$"), valuestr.c_str());
-                return true;
-            }
-            else if (strnicmp(szInputName, "$GetVar$", strlen("$GetVar$")) == 0) {
-                FireGetInput(ent, VARIABLE, szInputName + strlen("$GetVar$"), pActivator, pCaller, Value);
-                return true;
-            }
-            else if (strnicmp(szInputName, "$SetKey$", strlen("$SetKey$")) == 0) {
-                ent->KeyValue(szInputName + strlen("$SetKey$"), Value.String());
-                return true;
-            }
-            else if (strnicmp(szInputName, "$GetKey$", strlen("$GetKey$")) == 0) {
-                FireGetInput(ent, KEYVALUE, szInputName + strlen("$GetKey$"), pActivator, pCaller, Value);
-                return true;
-            }
-            else if (strnicmp(szInputName, "$SetData$", strlen("$SetData$")) == 0) {
-                const char *name = szInputName + strlen("$SetData$");
-                auto &entry = GetDataMapOffset(ent->GetDataDescMap(), name);
+                player->GiveDefaultItemsNoAmmo();
 
-                if (entry.offset > 0) {
-                    if (entry.fieldType == FIELD_CHARACTER) {
-                        V_strncpy(((char*)ent) + entry.offset, Value.String(), entry.size);
-                    }
-                    else {
-                        Value.Convert(entry.fieldType);
-                        Value.SetOther(((char*)ent) + entry.offset);
-                    }
-                }
-                return true;
             }
-            else if (strnicmp(szInputName, "$GetData$", strlen("$GetData$")) == 0) {
-                FireGetInput(ent, DATAMAP, szInputName + strlen("$GetData$"), pActivator, pCaller, Value);
-                return true;
-            }
-            else if (strnicmp(szInputName, "$SetProp$", strlen("$SetProp$")) == 0) {
-                const char *name = szInputName + strlen("$SetProp$");
+            else if(stricmp(szInputName, "PlaySequence") == 0){
+                CTFPlayer* player = ToTFPlayer(ent);
+                player->PlaySpecificSequence(Value.String());
 
-                auto &entry = GetSendPropOffset(ent->GetServerClass(), name);
-
-                if (entry.offset > 0) {
-
-                    int offset = entry.offset;
-                    auto propType = entry.prop->GetType();
-                    if (propType == DPT_Int) {
-                        *(int*)(((char*)ent) + offset) = atoi(Value.String());
-                        if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
-                            *(CHandle<CBaseEntity>*)(((char*)ent) + offset) = servertools->FindEntityByName(nullptr, Value.String());
-                        }
-                    }
-                    else if (propType == DPT_Float || entry.isVecAxis) {
-                        *(float*)(((char*)ent) + offset) = strtof(Value.String(), nullptr);
-                    }
-                    else if (propType == DPT_String) {
-                        *(string_t*)(((char*)ent) + offset) = AllocPooledString(Value.String());
-                    }
-                    else if (propType == DPT_Vector) {
-                        Vector tmpVec = vec3_origin;
-                        if (sscanf(Value.String(), "[%f %f %f]", &tmpVec[0], &tmpVec[1], &tmpVec[2]) == 0)
-                        {
-                            sscanf(Value.String(), "%f %f %f", &tmpVec[0], &tmpVec[1], &tmpVec[2]);
-                        }
-                        *(Vector*)(((char*)ent) + offset) = tmpVec;
-                    }
-                }
-
-                return true;
-            }
-            else if (strnicmp(szInputName, "$GetProp$", strlen("$GetProp$")) == 0) {
-                FireGetInput(ent, SENDPROP, szInputName + strlen("$GetProp$"), pActivator, pCaller, Value);
-                return true;
-            }
-            else if (stricmp(szInputName, "$GetEntIndex") == 0) {
-                char param_tokenized[256] = "";
-                V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
-                char *targetstr = strtok(param_tokenized,"|");
-                char *action = strtok(NULL,"|");
-                
-                variant_t variable;
-                variable.SetInt(ent->entindex());
-                if (targetstr != nullptr && action != nullptr) {
-                    for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
-                        target->AcceptInput(action, pActivator, ent, variable, 0);
-                    }
-                }
-                return true;
-            }
-            else if (stricmp(szInputName, "$AddModule") == 0) {
-                AddModuleByName(ent, Value.String());
-                return true;
-            }
-            else if (stricmp(szInputName, "$RemoveModule") == 0) {
-                ent->RemoveEntityModule(Value.String());
-                return true;
-            }
-            else if (stricmp(szInputName, "$RemoveOutput") == 0) {
-                const char *name = Value.String();
-                auto datamap = ent->GetDataDescMap();
-                for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
-                    // search through all the readable fields in the data description, looking for a match
-                    for (int i = 0; i < dmap->dataNumFields; i++) {
-                        if ((dmap->dataDesc[i].flags & FTYPEDESC_OUTPUT) && stricmp(dmap->dataDesc[i].externalName, name) == 0) {
-                            ((CBaseEntityOutput*)(((char*)ent) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]))->DeleteAllElements();
-                            return true;
-                        }
-                    }
-                }
-                ent->RemoveCustomOutput(name);
                 return true;
             }
             
         }
+        else if (ent->GetClassname() == point_viewcontrol_classname) {
+            auto camera = static_cast<CTriggerCamera *>(ent);
+            if (stricmp(szInputName, "EnableAll") == 0) {
+                ForEachTFPlayer([&](CTFPlayer *player) {
+                    if (player->IsBot())
+                        return;
+                    else {
+
+                        camera->m_hPlayer = player;
+                        camera->Enable();
+                        camera->m_spawnflags |= 512;
+                    }
+                });
+                return true;
+            }
+            else if (stricmp(szInputName, "DisableAll") == 0) {
+                ForEachTFPlayer([&](CTFPlayer *player) {
+                    if (player->IsBot())
+                        return;
+                    else {
+                        camera->m_hPlayer = player;
+                        camera->Disable();
+                        player->m_takedamage = player->IsObserver() ? 0 : 2;
+                        camera->m_spawnflags &= ~(512);
+                    }
+                });
+                return true;
+            }
+            else if (stricmp(szInputName, "SetTarget") == 0) {
+                camera->m_hTarget = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+                return true;
+            }
+        }
+        else if (ent->GetClassname() == trigger_detector_class) {
+            if (stricmp(szInputName, "targettest") == 0) {
+                auto data = GetExtraTriggerDetectorData(ent);
+                if (data->m_hLastTarget != nullptr) {
+                    ent->FireCustomOutput<"targettestpass">(data->m_hLastTarget, ent, Value);
+                }
+                else {
+                    ent->FireCustomOutput<"targettestfail">(nullptr, ent, Value);
+                }
+                return true;
+            }
+        }
+        else if (ent->GetClassname() == weapon_spawner_classname) {
+            if (stricmp(szInputName, "DropWeapon") == 0) {
+                
+                auto data = GetExtraData<ExtraEntityDataWeaponSpawner>(ent);
+                auto name = ent->GetCustomVariable<"item">();
+                auto item_def = GetItemSchema()->GetItemDefinitionByName(name);
+
+                if (item_def != nullptr) {
+                    auto item = CEconItemView::Create();
+                    item->Init(item_def->m_iItemDefIndex, item_def->m_iItemQuality, 9999, 0);
+                    item->m_iItemID = (RandomInt(INT_MIN, INT_MAX) << 16) + ENTINDEX(ent);
+                    Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(name, item);
+                    auto &vars = GetCustomVariables(ent);
+                    for (auto &var : vars) {
+                        auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(STRING(var.key));
+                        if (attr_def != nullptr) {
+                            item->GetAttributeList().AddStringAttribute(attr_def, STRING(var.value));
+                        }
+                    }
+                    auto weapon = CTFDroppedWeapon::Create(nullptr, ent->EyePosition(), vec3_angle, item->GetPlayerDisplayModel(1, 2), item);
+                    if (weapon != nullptr) {
+                        if (weapon->VPhysicsGetObject() != nullptr) {
+                            weapon->VPhysicsGetObject()->SetMass(25.0f);
+
+                            if (ent->GetCustomVariableFloat<"nomotion">() != 0) {
+                                weapon->VPhysicsGetObject()->EnableMotion(false);
+                            }
+                        }
+                        auto weapondata = weapon->GetOrCreateEntityModule<DroppedWeaponModule>("droppedweapon");
+                        weapondata->m_hWeaponSpawner = ent;
+                        weapondata->ammo = ent->GetCustomVariableFloat<"ammo">(-1);
+                        weapondata->clip = ent->GetCustomVariableFloat<"clip">(-1);
+                        weapondata->energy = ent->GetCustomVariableFloat<"energy">(FLT_MIN);
+                        weapondata->charge = ent->GetCustomVariableFloat<"charge">(FLT_MAX);
+
+                        data->m_SpawnedWeapons.push_back(weapon);
+                    }
+                    CEconItemView::Destroy(item);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RemoveDroppedWeapons") == 0) {
+                auto data = GetExtraWeaponSpawnerData(ent);
+                for (auto weapon : data->m_SpawnedWeapons) {
+                    if (weapon != nullptr) {
+                        weapon->Remove();
+                    }
+                }
+                data->m_SpawnedWeapons.clear();
+                return true;
+            }
+        }
+        else if (ent->GetClassname() == PStr<"prop_vehicle_driveable">()) {
+            if (stricmp(szInputName, "EnterVehicle") == 0) {
+                auto target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
+                if (ToTFPlayer(target) != nullptr && vehicle != nullptr) {
+                    
+                    Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
+                    
+                    QAngle angToTarget;
+                    VectorAngles(delta, angToTarget);
+                    ToTFPlayer(target)->SnapEyeAngles(angToTarget);
+                    
+                    CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
+                    serverVehicle->HandlePassengerEntry(ToTFPlayer(target), true);
+                }
+            }
+            if (stricmp(szInputName, "ExitVehicle") == 0) {
+                auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
+                if (vehicle != nullptr && vehicle->m_hPlayer != nullptr) {
+                    CBaseServerVehicle *serverVehicle = vehicle->m_pServerVehicle;
+                    serverVehicle->HandlePassengerExit(vehicle->m_hPlayer);
+                }
+            }
+        }
+        else if (ent->GetClassname() == PStr<"$math_vector">()) {
+            auto mathVector = ent->GetOrCreateEntityModule<MathVectorModule>("math_vector");
+            auto vecValue = ent->GetCustomVariableVector<"value">();
+            if (stricmp(szInputName, "Set") == 0) {
+                ent->SetCustomVariable("value", Value.String());
+                return true;
+            }
+            else if (stricmp(szInputName, "Add") == 0) {
+                Value.Convert(FIELD_VECTOR);
+                Vector vec;
+                Value.Vector3D(vec);
+                vec += vecValue;
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "AddScalar") == 0) {
+                Value.Convert(FIELD_FLOAT);
+                Vector vec = vecValue + Vector(Value.Float(), Value.Float(), Value.Float());
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "Subtract") == 0) {
+                Value.Convert(FIELD_VECTOR);
+                Vector vec;
+                Value.Vector3D(vec);
+                vec -= vecValue;
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "SubtractScalar") == 0) {
+                Value.Convert(FIELD_FLOAT);
+                Vector vec = vecValue - Vector(Value.Float(), Value.Float(), Value.Float());
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "Multiply") == 0) {
+                Value.Convert(FIELD_VECTOR);
+                Vector vec;
+                Value.Vector3D(vec);
+                vec *= vecValue;
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "MultiplyScalar") == 0) {
+                Value.Convert(FIELD_FLOAT);
+                Vector vec = vecValue * Value.Float();
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "Divide") == 0) {
+                Value.Convert(FIELD_VECTOR);
+                Vector vec;
+                Value.Vector3D(vec);
+                vec /= vecValue;
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "DivideScalar") == 0) {
+                Value.Convert(FIELD_FLOAT);
+                Vector vec = vecValue / Value.Float();
+                Value.SetVector3D(vec);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "DotProduct") == 0) {
+                if (Value.Convert(FIELD_VECTOR)) {
+                    Vector vec;
+                    Value.Vector3D(vec);
+                    Value.SetFloat(DotProduct(vec, vecValue));
+                    ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "CrossProduct") == 0) {
+                if (Value.Convert(FIELD_VECTOR)) {
+                    Vector vec;
+                    Value.Vector3D(vec);
+                    Vector out;
+                    CrossProduct(vec, vecValue, out);
+                    Value.SetVector3D(out);
+                    ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "Distance") == 0) {
+                if (Value.Convert(FIELD_VECTOR)) {
+                    Vector vec;
+                    Value.Vector3D(vec);
+                    Value.SetFloat(vec.DistTo(vecValue));
+                    ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "DistanceToEntity") == 0) {
+                auto target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    Value.SetFloat(vecValue.DistTo(target->GetAbsOrigin()));
+                    ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                }
+                return true;
+            }
+            else if (stricmp(szInputName, "RotateVector") == 0) {
+                Value.Convert(FIELD_VECTOR);
+                QAngle ang;
+                Value.Vector3D(*reinterpret_cast<Vector *>(&ang));
+                Vector out;
+                VectorRotate(vecValue, ang, out);
+                Value.SetVector3D(out);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "Length") == 0) {
+                Value.SetFloat(vecValue.Length());
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "ToAngles") == 0) {
+                QAngle out;
+                VectorAngles(vecValue, out);
+                Value.SetVector3D(*reinterpret_cast<Vector *>(&out));
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "Normalize") == 0) {
+                Vector out = vecValue.Normalized();
+                Value.SetVector3D(out);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "ToForwardVector") == 0) {
+                Vector out;
+                AngleVectors(*reinterpret_cast<QAngle *>(&vecValue), &out);
+                Value.SetVector3D(out);
+                ent->FireCustomOutput<"outvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "GetX") == 0) {
+                Value.SetFloat(vecValue.x);
+                ent->FireCustomOutput<"getvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "GetY") == 0) {
+                Value.SetFloat(vecValue.y);
+                ent->FireCustomOutput<"getvalue">(pActivator, ent, Value);
+                return true;
+            }
+            else if (stricmp(szInputName, "GetZ") == 0) {
+                Value.SetFloat(vecValue.z);
+                ent->FireCustomOutput<"getvalue">(pActivator, ent, Value);
+                return true;
+            }
+        }
+        if (stricmp(szInputName, "FireUserAsActivator1") == 0) {
+            ent->m_OnUser1->FireOutput(Value, ent, ent);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUserAsActivator2") == 0) {
+            ent->m_OnUser2->FireOutput(Value, ent, ent);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUserAsActivator3") == 0) {
+            ent->m_OnUser3->FireOutput(Value, ent, ent);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUserAsActivator4") == 0) {
+            ent->m_OnUser4->FireOutput(Value, ent, ent);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUser5") == 0) {
+            ent->FireCustomOutput<"onuser5">(pActivator, ent, Value);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUser6") == 0) {
+            ent->FireCustomOutput<"onuser6">(pActivator, ent, Value);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUser7") == 0) {
+            ent->FireCustomOutput<"onuser7">(pActivator, ent, Value);
+            return true;
+        }
+        else if (stricmp(szInputName, "FireUser8") == 0) {
+            ent->FireCustomOutput<"onuser8">(pActivator, ent, Value);
+            return true;
+        }
+        else if (stricmp(szInputName, "TakeDamage") == 0) {
+            Value.Convert(FIELD_INTEGER);
+            int damage = Value.Int();
+            CBaseEntity *attacker = ent;
+            
+            CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
+            ent->TakeDamage(info);
+            return true;
+        }
+        else if (stricmp(szInputName, "AddHealth") == 0) {
+            Value.Convert(FIELD_INTEGER);
+            CBaseEntity *attacker = ent;
+            ent->TakeHealth(Value.Int(), DMG_GENERIC);
+            return true;
+        }
+        else if (stricmp(szInputName, "TakeDamageFromActivator") == 0) {
+            Value.Convert(FIELD_INTEGER);
+            int damage = Value.Int();
+            CBaseEntity *attacker = pActivator;
+            
+            CTakeDamageInfo info(attacker, attacker, nullptr, vec3_origin, ent->GetAbsOrigin(), damage, DMG_PREVENT_PHYSICS_FORCE, 0 );
+            ent->TakeDamage(info);
+            return true;
+        }
+        else if (stricmp(szInputName, "SetModelOverride") == 0) {
+            int replace_model = CBaseEntity::PrecacheModel(Value.String());
+            if (replace_model != -1) {
+                for (int i = 0; i < MAX_VISION_MODES; ++i) {
+                    ent->SetModelIndexOverride(i, replace_model);
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "SetModel") == 0) {
+            CBaseEntity::PrecacheModel(Value.String());
+            ent->SetModel(Value.String());
+            return true;
+        }
+        else if (stricmp(szInputName, "SetModelSpecial") == 0) {
+            int replace_model = CBaseEntity::PrecacheModel(Value.String());
+            if (replace_model != -1) {
+                ent->SetModelIndex(replace_model);
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "SetOwner") == 0) {
+            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            if (owner != nullptr) {
+                ent->SetOwnerEntity(owner);
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "GetKeyValue") == 0) {
+            variant_t variant;
+            ent->ReadKeyField(Value.String(), &variant);
+            ent->m_OnUser1->FireOutput(variant, pActivator, ent);
+            return true;
+        }
+        else if (stricmp(szInputName, "InheritOwner") == 0) {
+            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            if (owner != nullptr) {
+                ent->SetOwnerEntity(owner->GetOwnerEntity());
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "InheritParent") == 0) {
+            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            if (owner != nullptr) {
+                ent->SetParent(owner->GetMoveParent(), -1);
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "MoveType") == 0) {
+            variant_t variant;
+            int val1=0;
+            int val2=MOVECOLLIDE_DEFAULT;
+
+            sscanf(Value.String(), "%d,%d", &val1, &val2);
+            ent->SetMoveType((MoveType_t)val1, (MoveCollide_t)val2);
+            return true;
+        }
+        else if (stricmp(szInputName, "PlaySound") == 0) {
+            
+            if (!enginesound->PrecacheSound(Value.String(), true))
+                CBaseEntity::PrecacheScriptSound(Value.String());
+
+            ent->EmitSound(Value.String());
+            return true;
+        }
+        else if (stricmp(szInputName, "StopSound") == 0) {
+            ent->StopSound(Value.String());
+            return true;
+        }
+        else if (stricmp(szInputName, "SetLocalOrigin") == 0) {
+            Value.Convert(FIELD_VECTOR);
+            Vector vec;
+            Value.Vector3D(vec);
+            ent->SetLocalOrigin(vec);
+            return true;
+        }
+        else if (stricmp(szInputName, "SetLocalAngles") == 0) {
+            Value.Convert(FIELD_VECTOR);
+            QAngle vec;
+            Value.Vector3D(*reinterpret_cast<Vector *>(&vec));
+            ent->SetLocalAngles(vec);
+            return true;
+        }
+        else if (stricmp(szInputName, "SetLocalVelocity") == 0) {
+            Value.Convert(FIELD_VECTOR);
+            Vector vec;
+            Value.Vector3D(vec);
+            ent->SetLocalVelocity(vec);
+            return true;
+        }
+        else if (stricmp(szInputName, "TeleportToEntity") == 0) {
+            auto target = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            if (target != nullptr) {
+                Vector targetpos = target->GetAbsOrigin();
+                ent->Teleport(&targetpos, nullptr, nullptr);
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "MoveRelative") == 0) {
+            Value.Convert(FIELD_VECTOR);
+            Vector vec;
+            Value.Vector3D(vec);
+            vec = vec + ent->GetLocalOrigin();
+            ent->SetLocalOrigin(vec);
+            return true;
+        }
+        else if (stricmp(szInputName, "RotateRelative") == 0) {
+            Value.Convert(FIELD_VECTOR);
+            QAngle vec;
+            Value.Vector3D(*reinterpret_cast<Vector *>(&vec));
+            vec = vec + ent->GetLocalAngles();
+            ent->SetLocalAngles(vec);
+            return true;
+        }
+        else if (stricmp(szInputName, "TestEntity") == 0) {
+            for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                auto filter = rtti_cast<CBaseFilter *>(ent);
+                if (filter != nullptr && filter->PassesFilter(pCaller, target)) {
+                    filter->m_OnPass->FireOutput(Value, pActivator, target);
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "StartTouchEntity") == 0) {
+            auto filter = rtti_cast<CBaseTrigger *>(ent);
+            if (filter != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                    filter->StartTouch(target);
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "EndTouchEntity") == 0) {
+            auto filter = rtti_cast<CBaseTrigger *>(ent);
+            if (filter != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                    filter->EndTouch(target);
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "RotateTowards") == 0) {
+            auto rotating = rtti_cast<CFuncRotating *>(ent);
+            if (rotating != nullptr) {
+                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    auto data = GetExtraFuncRotatingData(rotating);
+                    data->m_hRotateTarget = target;
+
+                    if (rotating->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
+                        THINK_FUNC_SET(rotating, RotatingFollowEntity, gpGlobals->curtime + 0.1);
+                    }
+                }
+            }
+            auto data = ent->GetEntityModule<RotatorModule>("rotator");
+            if (data != nullptr) {
+                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    data->m_hRotateTarget = target;
+
+                    if (ent->GetNextThink("RotatingFollowEntity") < gpGlobals->curtime) {
+                        Msg("install rotator\n");
+                        THINK_FUNC_SET(ent, RotatorModuleTick, gpGlobals->curtime + 0.1);
+                    }
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "StopRotateTowards") == 0) {
+            auto data = ent->GetEntityModule<RotatorModule>("rotator");
+            if (data != nullptr) {
+                data->m_hRotateTarget = nullptr;
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "SetForwardVelocity") == 0) {
+            Vector fwd;
+            AngleVectors(ent->GetAbsAngles(), &fwd);
+            fwd *= strtof(Value.String(), nullptr);
+
+            IPhysicsObject *pPhysicsObject = ent->VPhysicsGetObject();
+            if (pPhysicsObject) {
+                pPhysicsObject->SetVelocity(&fwd, nullptr);
+            }
+            else {
+                ent->SetAbsVelocity(fwd);
+            }
+            
+            return true;
+        }
+        else if (stricmp(szInputName, "FaceEntity") == 0) {
+            CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+            if (target != nullptr) {
+                Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
+                
+                QAngle angToTarget;
+                VectorAngles(delta, angToTarget);
+                ent->SetAbsAngles(angToTarget);
+                if (ToTFPlayer(ent) != nullptr) {
+                    ToTFPlayer(ent)->SnapEyeAngles(angToTarget);
+                }
+            }
+            
+            return true;
+        }
+        else if (stricmp(szInputName, "SetFakeParent") == 0) {
+            auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
+            if (data != nullptr) {
+                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    data->m_hParent = target;
+                    data->m_bParentSet = true;
+                    if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
+                        THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
+                    }
+                }
+            }
+            
+            return true;
+        }
+        else if (stricmp(szInputName, "SetAimFollow") == 0) {
+            auto data = ent->GetEntityModule<AimFollowModule>("aimfollow");
+            if (data != nullptr) {
+                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                if (target != nullptr) {
+                    data->m_hParent = target;
+                    if (ent->GetNextThink("AimFollowModuleTick") < gpGlobals->curtime) {
+                        THINK_FUNC_SET(ent, AimFollowModuleTick, gpGlobals->curtime + 0.01);
+                    }
+                }
+            }
+            
+            return true;
+        }
+        else if (stricmp(szInputName, "ClearFakeParent") == 0) {
+            auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
+            if (data != nullptr) {
+                data->m_hParent = nullptr;
+                data->m_bParentSet = false;
+            }
+            
+            return true;
+        }
+        else if (strnicmp(szInputName, "SetVar$", strlen("SetVar$")) == 0) {
+            std::string valuestr = Value.String();
+            boost::algorithm::to_lower(valuestr);
+            SetCustomVariable(ent, szInputName + strlen("SetVar$"), valuestr.c_str());
+            return true;
+        }
+        else if (strnicmp(szInputName, "GetVar$", strlen("GetVar$")) == 0) {
+            FireGetInput(ent, VARIABLE, szInputName + strlen("GetVar$"), pActivator, pCaller, Value);
+            return true;
+        }
+        else if (strnicmp(szInputName, "SetKey$", strlen("SetKey$")) == 0) {
+            ent->KeyValue(szInputName + strlen("SetKey$"), Value.String());
+            return true;
+        }
+        else if (strnicmp(szInputName, "GetKey$", strlen("GetKey$")) == 0) {
+            FireGetInput(ent, KEYVALUE, szInputName + strlen("GetKey$"), pActivator, pCaller, Value);
+            return true;
+        }
+        else if (strnicmp(szInputName, "SetData$", strlen("SetData$")) == 0) {
+            const char *name = szInputName + strlen("SetData$");
+            auto &entry = GetDataMapOffset(ent->GetDataDescMap(), name);
+
+            if (entry.offset > 0) {
+                if (entry.fieldType == FIELD_CHARACTER) {
+                    V_strncpy(((char*)ent) + entry.offset, Value.String(), entry.size);
+                }
+                else {
+                    Value.Convert(entry.fieldType);
+                    Value.SetOther(((char*)ent) + entry.offset);
+                }
+            }
+            return true;
+        }
+        else if (strnicmp(szInputName, "GetData$", strlen("GetData$")) == 0) {
+            FireGetInput(ent, DATAMAP, szInputName + strlen("GetData$"), pActivator, pCaller, Value);
+            return true;
+        }
+        else if (strnicmp(szInputName, "SetProp$", strlen("SetProp$")) == 0) {
+            const char *name = szInputName + strlen("SetProp$");
+
+            auto &entry = GetSendPropOffset(ent->GetServerClass(), name);
+
+            if (entry.offset > 0) {
+
+                int offset = entry.offset;
+                auto propType = entry.prop->GetType();
+                if (propType == DPT_Int) {
+                    if (entry.prop->m_nBits == 21 && strncmp(name, "m_h", 3)) {
+                        *(CHandle<CBaseEntity>*)(((char*)ent) + offset) = servertools->FindEntityByName(nullptr, Value.String());
+                    }
+                    else {
+                        Value.Convert(FIELD_INTEGER);
+                        *(int*)(((char*)ent) + offset) = Value.Int();
+                    }
+                }
+                else if (propType == DPT_Float || entry.isVecAxis) {
+                    Value.Convert(FIELD_FLOAT);
+                    *(float*)(((char*)ent) + offset) = Value.Float();
+                }
+                else if (propType == DPT_String) {
+                    *(string_t*)(((char*)ent) + offset) = AllocPooledString(Value.String());
+                }
+                else if (propType == DPT_Vector) {
+                    Value.Convert(FIELD_VECTOR);
+                    Vector tmpVec;
+                    Value.Vector3D(tmpVec);
+                    *(Vector*)(((char*)ent) + offset) = tmpVec;
+                }
+                ent->NetworkStateChanged();
+            }
+
+            return true;
+        }
+        else if (strnicmp(szInputName, "GetProp$", strlen("GetProp$")) == 0) {
+            FireGetInput(ent, SENDPROP, szInputName + strlen("GetProp$"), pActivator, pCaller, Value);
+            return true;
+        }
+        else if (stricmp(szInputName, "GetEntIndex") == 0) {
+            char param_tokenized[256] = "";
+            V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+            char *targetstr = strtok(param_tokenized,"|");
+            char *action = strtok(NULL,"|");
+            
+            variant_t variable;
+            variable.SetInt(ent->entindex());
+            if (targetstr != nullptr && action != nullptr) {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, targetstr, ent, pActivator, pCaller)) != nullptr ;) {
+                    target->AcceptInput(action, pActivator, ent, variable, 0);
+                }
+            }
+            return true;
+        }
+        else if (stricmp(szInputName, "AddModule") == 0) {
+            AddModuleByName(ent, Value.String());
+            return true;
+        }
+        else if (stricmp(szInputName, "RemoveModule") == 0) {
+            ent->RemoveEntityModule(Value.String());
+            return true;
+        }
+        else if (stricmp(szInputName, "RemoveOutput") == 0) {
+            const char *name = Value.String();
+            auto datamap = ent->GetDataDescMap();
+            for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
+                // search through all the readable fields in the data description, looking for a match
+                for (int i = 0; i < dmap->dataNumFields; i++) {
+                    if ((dmap->dataDesc[i].flags & FTYPEDESC_OUTPUT) && stricmp(dmap->dataDesc[i].externalName, name) == 0) {
+                        ((CBaseEntityOutput*)(((char*)ent) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]))->DeleteAllElements();
+                        return true;
+                    }
+                }
+            }
+            ent->RemoveCustomOutput(name);
+            return true;
+        }
+        else if (stricmp(szInputName, "CancelPending") == 0) {
+            g_EventQueue.GetRef().CancelEvents(ent);
+            return true;
+        }
+        return false;
+    }
+
+	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
+    {
+        CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
+        if (szInputName[0] == '$' && HandleCustomInput(ent, szInputName + 1, pActivator, pCaller, Value, outputID)) {
+            return true;
+        }
+
         return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
     }
 
@@ -2037,16 +2247,58 @@ namespace Mod::Etc::Mapentity_Additions
                 // Find entity with filter
                 else if (szName[1] == 'f') {
                     bool skipped = false;
-                    const char *filtername = realname;
-                    CBaseFilter *filter = rtti_cast<CBaseFilter *>(servertools->FindEntityByName(nullptr, filtername));
-                    realname = strchr(filtername, '@');
-                    if (realname != nullptr && filter != nullptr) {
-                        realname += 1;
-                        while (true) {
-                            pStartEntity = functor(pStartEntity, realname);
-                            if (pStartEntity == nullptr) return nullptr;
+                    
+                    std::string filtername = realname;
+                    int atSplit = filtername.find('@');
+                    if (atSplit != std::string::npos) {
+                        realname += atSplit + 1;
+                        filtername.resize(atSplit);
 
-                            if (filter->PassesFilter(pStartEntity, pStartEntity)) return pStartEntity;
+                        CBaseFilter *filter = rtti_cast<CBaseFilter *>(servertools->FindEntityByName(nullptr, realname));
+                        if (filter != nullptr) {
+                            while (true) {
+                                pStartEntity = functor(pStartEntity, realname);
+                                if (pStartEntity == nullptr) return nullptr;
+
+                                if (filter->PassesFilter(pStartEntity, pStartEntity)) return pStartEntity;
+                            }
+                        }
+                    }
+                }
+                // Find entity from entity variable
+                else if (szName[1] == 'e') {
+                    bool skipped = false;
+                    
+                    std::string varname = realname;
+
+                    int atSplit = varname.find('@');
+                    if (atSplit != std::string::npos) {
+                        realname += atSplit + 1;
+                        varname.resize(atSplit);
+                        
+                        static CBaseEntity *last_entity = nullptr;
+                        if (pStartEntity == nullptr)
+                            last_entity = nullptr;
+
+                        while (true) {
+                            last_entity = functor(last_entity, realname); 
+                            nextentity = last_entity;
+                            if (nextentity != nullptr) {
+                                variant_t variant;
+                                variant_t variant2;
+                                
+                                if ((GetEntityVariable(nextentity, DATAMAP, varname.c_str(), variant) && variant.Entity() != nullptr) || 
+                                    (GetEntityVariable(nextentity, SENDPROP, varname.c_str(), variant) && variant.Entity() != nullptr)) {
+                                        
+                                    return variant.Entity();
+                                }
+                                else {
+                                    continue;
+                                }
+                            }
+                            else {
+                                return nullptr;
+                            }
                         }
                     }
                 }
@@ -2061,7 +2313,7 @@ namespace Mod::Etc::Mapentity_Additions
                         realname += 1;
                         while (true) {
                             pStartEntity = functor(pStartEntity, realname); 
-                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox((const Vector)min, (const Vector)max)) {
+                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox(min, max)) {
                                 continue;
                             }
                             else {
@@ -2078,16 +2330,18 @@ namespace Mod::Etc::Mapentity_Additions
 
     DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName)
 	{
-        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(entity, realname);});
+        if (szName == nullptr || szName[0] != '@') return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
+        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByClassname(entity, realname);});
 
-		//return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
+		//return 
     }
 
     DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByName, CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pSearchingEntity, CBaseEntity *pActivator, CBaseEntity *pCaller, IEntityFindFilter *pFilter)
 	{
-        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
+        if (szName == nullptr || szName[0] != '@') return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
+        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
         
-		//return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
+		//return ;
 	}
 
     DETOUR_DECL_MEMBER(void, CTFMedigunShield_RemoveShield)
@@ -2329,7 +2583,7 @@ namespace Mod::Etc::Mapentity_Additions
                 float range = filter->GetCustomVariableFloat<"range">();
                 range *= range;
                 Vector center;
-                if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
+                if (!UTIL_StringToVectorAlt(center, target)) {
                     CBaseEntity *ent = servertools->FindEntityByName(nullptr, target);
                     if (ent == nullptr) return false;
 
@@ -2341,13 +2595,11 @@ namespace Mod::Etc::Mapentity_Additions
             else if(classname == filter_bbox_class) {
                 const char *target = filter->GetCustomVariable<"target">();
 
-                Vector min;
-                Vector max;
-                sscanf(filter->GetCustomVariable<"min">(), "%f %f %f", &min.x, &min.y, &min.z);
-                sscanf(filter->GetCustomVariable<"max">(), "%f %f %f", &max.x, &max.y, &max.z);
+                Vector min = filter->GetCustomVariableVector<"min">();
+                Vector max = filter->GetCustomVariableVector<"max">();
 
                 Vector center;
-                if (sscanf(target, "%f %f %f", &center.x, &center.y, &center.z) != 3) {
+                if (!UTIL_StringToVectorAlt(center, target)) {
                     CBaseEntity *ent = servertools->FindEntityByName(nullptr, target);
                     if (ent == nullptr) return false;
 
@@ -2607,6 +2859,59 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CBaseFilter_PassesDamageFilterImpl)(info);
     }
 
+    DETOUR_DECL_MEMBER(void, CEventQueue_AddEvent_CBaseEntity, CBaseEntity *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID)
+	{
+        if (fireDelay == -1.0f) {
+            if (target != nullptr) {
+                target->AcceptInput(targetInput, pActivator, pCaller, Value, outputID);
+            }
+            return;
+        }
+        DETOUR_MEMBER_CALL(CEventQueue_AddEvent_CBaseEntity)(target, targetInput, Value, fireDelay, pActivator, pCaller, outputID);
+    }
+
+
+    DETOUR_DECL_MEMBER(void, CEventQueue_AddEvent, const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID)
+	{
+        if (fireDelay == -1.0f) {
+            bool found = false;
+            for (CBaseEntity *targetEnt = nullptr; (targetEnt = servertools->FindEntityByName(targetEnt, target, pCaller, pActivator, pCaller)) != nullptr ;) {
+                found = true;
+                targetEnt->AcceptInput(targetInput, pActivator, pCaller, Value, outputID);
+            }
+            if (!found) {
+                for (CBaseEntity *targetEnt = nullptr; (targetEnt = servertools->FindEntityByClassname(targetEnt, target)) != nullptr ;) {
+                    targetEnt->AcceptInput(targetInput, pActivator, pCaller, Value, outputID);
+                }
+            }
+            return;
+        }
+        DETOUR_MEMBER_CALL(CEventQueue_AddEvent)(target, targetInput, Value, fireDelay, pActivator, pCaller, outputID);
+    }
+
+	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
+	{
+		auto ret = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+        if (ret != nullptr && !entity_listeners.empty()) {
+            auto classNameOur = MAKE_STRING(ret->GetClassname());
+            for (auto it = entity_listeners.begin(); it != entity_listeners.end();) {
+                auto &pair = *it;
+                if (pair.first == classNameOur)
+                {
+                    if (pair.second == nullptr) {
+                        it = entity_listeners.erase(it);
+                        continue;
+                    }
+                    variant_t variant;
+                    pair.second->FireCustomOutput<"onentityspawned">(ret, pair.second, variant);
+                }
+                it++;
+            }
+        }
+        
+        return ret;
+	}
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -2634,6 +2939,10 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CPointTeleport_Activate, "CPointTeleport::Activate");
             MOD_ADD_DETOUR_MEMBER(CTFDroppedWeapon_InitPickedUpWeapon, "CTFDroppedWeapon::InitPickedUpWeapon");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_PassesDamageFilter, "CBaseEntity::PassesDamageFilter");
+
+            // Execute -1 delay events immediately
+            MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
+            MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent, "CEventQueue::AddEvent");
             
 
             // Fix camera despawn bug
@@ -2660,6 +2969,8 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_specialdamagetype");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("trigger_multiple"), "$trigger_detector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$weapon_spawner");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$math_vector");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$entity_spawn_detector");
             }
 
 			return true;
@@ -2670,6 +2981,7 @@ namespace Mod::Etc::Mapentity_Additions
         {
             send_prop_cache.clear();
             datamap_cache.clear();
+            entity_listeners.clear();
         }
 	};
 	CMod s_Mod;

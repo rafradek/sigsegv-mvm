@@ -155,6 +155,11 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, follow_crosshair, mod_projectile_heat_follow_crosshair);
 					if (follow_crosshair != 0)
 						homing.follow_crosshair = true;
+
+					int no_predict_target_speed = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, follow_crosshair, mod_projectile_heat_no_predict_target_speed);
+					if (follow_crosshair != 0)
+						homing.predict_target_speed = false;
 					
 					homing.speed = CalculateProjectileSpeed(weapon);
 
@@ -298,7 +303,8 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				if (target_player != nullptr) {
 					target_vec = target_player->WorldSpaceCenter();
 					float target_distance = proj->WorldSpaceCenter().DistTo(target_player->WorldSpaceCenter());
-					target_vec += target_player->GetAbsVelocity() * target_distance / speed_calculated;
+					if (homing.predict_target_speed)
+						target_vec += target_player->GetAbsVelocity() * target_distance / speed_calculated;
 				}
 			}
 			

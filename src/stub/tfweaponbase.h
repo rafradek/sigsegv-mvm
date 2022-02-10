@@ -45,6 +45,7 @@ public:
 	void CanPerformSecondaryAttack()                       {        vt_CanPerformSecondaryAttack (this); }
 	char const *GetShootSound(int type)                    { return vt_GetShootSound (this, type); }
 	int GetPrimaryAmmoType()                               { return vt_GetPrimaryAmmoType (this); }
+	void SetSubType(int type)                              {        vt_SetSubType (this, type); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -56,7 +57,9 @@ public:
 	DECL_SENDPROP(int,   m_iClip1);
 	DECL_SENDPROP(int,   m_iClip2);
 	DECL_SENDPROP(int,   m_iViewModelIndex);
+	DECL_SENDPROP(int,   m_nViewModelIndex);
 	DECL_SENDPROP(int,   m_iWorldModelIndex);
+	DECL_SENDPROP(bool,  m_bFlipViewModel);
 	DECL_DATAMAP(bool,   m_bReloadsSingly);
 	DECL_DATAMAP(bool,   m_bInReload);
 	
@@ -80,6 +83,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_CanPerformSecondaryAttack;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            vt_GetShootSound;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, int>                          vt_GetPrimaryAmmoType;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    vt_SetSubType;
 	
 };
 
@@ -89,11 +93,14 @@ public:
 	CTFPlayer *GetTFPlayerOwner() const { return ft_GetTFPlayerOwner(this); }
 	
 	bool IsSilentKiller() { return ft_IsSilentKiller(this); }
+	float Energy_GetMaxEnergy() { return ft_Energy_GetMaxEnergy(this); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
 	void GetProjectileFireSetup(CTFPlayer *player, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammaates, float flEndDist) {        vt_GetProjectileFireSetup (this, player, vecOffset, vecSrc, angForward, bHitTeammaates, flEndDist); }
 	bool ShouldRemoveInvisibilityOnPrimaryAttack() const { return vt_ShouldRemoveInvisibilityOnPrimaryAttack(this); }
+	bool IsEnergyWeapon() const { return vt_IsEnergyWeapon(this); }
+	float Energy_GetShotCost() const { return vt_Energy_GetShotCost(this); }
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
@@ -107,11 +114,14 @@ public:
 private:
 	static MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> ft_GetTFPlayerOwner;
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_IsSilentKiller;
+	static MemberFuncThunk<CTFWeaponBase *, float> ft_Energy_GetMaxEnergy;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;
 	static MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *, bool , float >   vt_GetProjectileFireSetup;
 	static MemberVFuncThunk<const CTFWeaponBase *, bool> vt_ShouldRemoveInvisibilityOnPrimaryAttack;
+	static MemberVFuncThunk<const CTFWeaponBase *, bool> vt_IsEnergyWeapon;
+	static MemberVFuncThunk<const CTFWeaponBase *, float> vt_Energy_GetShotCost;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {
@@ -276,6 +286,19 @@ private:
 
 class CTFBuffItem : public CTFWeaponBaseMelee {};
 
+class CTFDecapitationMeleeWeaponBase : public CTFWeaponBaseMelee {};
+
+class CTFSword : public CTFDecapitationMeleeWeaponBase
+{
+public:
+	float GetSwordSpeedMod() { return ft_GetSwordSpeedMod(this); }
+	int GetSwordHealthMod() { return ft_GetSwordHealthMod(this); }
+	
+private:
+	static MemberFuncThunk<CTFSword *, float> ft_GetSwordSpeedMod;
+	static MemberFuncThunk<CTFSword *, int> ft_GetSwordHealthMod;
+};
+
 class CTFLunchBox : public CTFWeaponBase {};
 class CTFLunchBox_Drink : public CTFLunchBox {};
 
@@ -306,7 +329,12 @@ private:
 	static MemberFuncThunk<CTFFlameThrower *, float> ft_GetDeflectionRadius;
 };
 
-class CTFWeaponBuilder : public CTFWeaponBase {};
+class CTFWeaponBuilder : public CTFWeaponBase {
+public:
+	DECL_SENDPROP(int, m_iObjectType);
+	DECL_SENDPROP(int, m_iObjectMode);
+	DECL_SENDPROP_RW(bool[4], m_aBuildableObjectTypes);
+};
 class CTFWeaponSapper : public CTFWeaponBuilder {};
 
 class CTFWeaponInvis : public CTFWeaponBase {};

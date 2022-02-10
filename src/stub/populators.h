@@ -66,6 +66,7 @@ class CPeriodicSpawnPopulator   : public IPopulator {};
 
 class CSpawnLocation
 {
+public:
 	int m_relative;
 	CUtlVector< CHandle< CTFTeamSpawn > > m_teamSpawnVector;
 
@@ -142,6 +143,13 @@ public:
 	CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
 };
 
+struct WaveClassCount_t
+{
+	int nClassCount;
+	string_t iszClassIconName;
+	unsigned int iFlags;
+};
+
 class CWave : public IPopulator
 {
 public:
@@ -153,6 +161,37 @@ public:
 	//CUtlVector<CWaveSpawnPopulator *> GetWaveSpawns()	            { return reinterpret_cast<T>((uintptr_t)this + 0x18 - 0x0c); }
 	
 	CUtlVector<CWaveSpawnPopulator *> m_WaveSpawns;
+	bool m_isStarted;
+	bool m_bFiredInitWaveOutput;
+	int m_iEnemyCount;
+	int m_nTanksSpawned;
+	int m_nSentryBustersSpawned;
+	int m_nNumEngineersTeleportSpawned;
+
+	int m_nNumSentryBustersKilled;
+
+	CUtlVector< WaveClassCount_t > m_nWaveClassCounts;
+	int	m_totalCurrency;
+
+	void *m_startOutput;
+	void *m_doneOutput;
+	void *m_initOutput;
+
+	CFmtStr m_description;
+	CFmtStr m_soundName;
+	
+	float m_waitWhenDone;
+	CountdownTimer m_doneTimer;	
+
+	bool m_bCheckBonusCreditsMin;
+	bool m_bCheckBonusCreditsMax;
+	float m_flBonusCreditsTime;
+
+	bool m_bPlayedUpgradeAlert;
+	CountdownTimer m_GetUpgradesAlertTimer;
+
+	bool m_isEveryContainedWaveSpawnDone;
+	float m_flStartTime;
 	
 private:
 	static MemberFuncThunk<CWave *, void, string_t, int, unsigned int> ft_AddClassType;

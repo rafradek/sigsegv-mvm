@@ -928,7 +928,8 @@ namespace Mod::Pop::Wave_Extensions
 		
 		if (info.use_hint) {
 			for (const auto& hint : info.hints) {
-				info.sentry = SpawnSentryGun(hint->GetAbsOrigin(), hint->GetAbsAngles(), info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
+				if (hint != nullptr)
+					info.sentry = SpawnSentryGun(hint->GetAbsOrigin(), hint->GetAbsAngles(), info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
 			}
 		} else {
 			info.sentry = SpawnSentryGun(info.origin, info.angles, info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
@@ -1074,12 +1075,12 @@ namespace Mod::Pop::Wave_Extensions
 				if (!player->IsAlive()) return;
 				for(auto it = data.player_attributes.begin(); it != data.player_attributes.end(); ++it){
 					
-					player->AddCustomAttribute(it->first.c_str(),it->second, 1.0f);
+					player->AddCustomAttribute(it->first.c_str(),it->second, -1.0f);
 				}
 				int classname = player->GetPlayerClass()->GetClassIndex();
 
 				for(auto it = data.player_attributes_class[classname].begin(); it != data.player_attributes_class[classname].end(); ++it){
-						player->AddCustomAttribute(it->first.c_str(),it->second, 7200.0f);
+						player->AddCustomAttribute(it->first.c_str(),it->second, -1.0f);
 					}
 				for(auto cond : data.addconds){
 					if (!player->m_Shared->InCond(cond)){

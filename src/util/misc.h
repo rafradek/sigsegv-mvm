@@ -162,6 +162,69 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 	return (case_sensitive ? strncmp(string, prefix, strlen(prefix)) : strnicmp(string, prefix, strlen(prefix))) == 0;
 }
 
+#define TIME_SCOPE2(name) \
+	class CTimeScopeMsg_##name \
+	{ \
+	public: \
+		CTimeScopeMsg_##name() { m_Timer.Start(); } \
+		~CTimeScopeMsg_##name() \
+		{ \
+			m_Timer.End(); \
+			Msg( #name "time: %.9fs\n", m_Timer.GetDuration().GetSeconds() ); \
+		} \
+	private:	\
+		CFastTimer	m_Timer; \
+	} name##_TSM;
+
+
+#define TIME_SCOPE_DEV(name) \
+	class CTimeScopeMsg_##name \
+	{ \
+	public: \
+		CTimeScopeMsg_##name() { m_Timer.Start(); } \
+		~CTimeScopeMsg_##name() \
+		{ \
+			m_Timer.End(); \
+			DevMsg( #name "time: %.9fs\n", m_Timer.GetDuration().GetSeconds() ); \
+		} \
+	private:	\
+		CFastTimer	m_Timer; \
+	} name##_TSM;
+
+class MultiScopeTimer
+{
+public:
+	MultiScopeTimer(const char *name)
+	{
+		m_Timers.emplace_back();
+		m_TimerNames.push_back(name);
+		m_Timers[0].Start();
+	}
+
+	void StartNextTimer(const char *name)
+	{
+		m_Timers.emplace_back();
+		m_TimerNames.push_back(name);
+		m_Timers[m_CurrentTimer].End();
+		m_Timers[++m_CurrentTimer].Start();
+	}
+
+	~MultiScopeTimer()
+	{
+		m_Timers[m_CurrentTimer].End();
+		Msg("Timer");
+		for (size_t i = 0; i < m_Timers.size(); i++) {
+			Msg(", %s took %.9f s", m_TimerNames[i], m_Timers[i].GetDuration().GetSeconds());
+		}
+		Msg("\n");
+	}
+
+private:
+	std::vector<CFastTimer> m_Timers;
+	std::vector<const char*> m_TimerNames;
+	int m_CurrentTimer = 0;
+};
+
 /* return an iterator to a random element in an STL container
  * based on: http://stackoverflow.com/a/16421677 */
 template<typename Iterator>

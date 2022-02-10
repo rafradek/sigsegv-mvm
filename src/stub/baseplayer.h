@@ -39,7 +39,7 @@ public:
 	int GetAmmoCount(int iAmmoIndex) const                                 { return vt_GetAmmoCount       (this, iAmmoIndex); }
 	bool ShouldGib(const CTakeDamageInfo& info)                            { return vt_ShouldGib          (this, info); }
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
-
+	void ClearLastKnownArea()                                              {        vt_ClearLastKnownArea (this); }
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>,              m_hActiveWeapon);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], m_hMyWeapons);
@@ -63,6 +63,7 @@ private:
 	static MemberVFuncThunk<const CBaseCombatCharacter *, int, int>                       vt_GetAmmoCount;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   vt_ShouldGib;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int>                            vt_GetBossType;
+	static MemberVFuncThunk<      CBaseCombatCharacter *, void>                           vt_ClearLastKnownArea;
 };
 
 
@@ -150,6 +151,7 @@ public:
 	DECL_DATAMAP (bool,      m_bAllowInstantSpawn);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
+	DECL_DATAMAP(int,          m_nButtons);
 	
 	
 private:
