@@ -2882,3 +2882,40 @@ WaveSchedule
 
 // Automatically fire full clip
 // "force fire full clip" 1
+
+// Second line of an item description
+// "special item description 2" "desc"
+
+// Third line of an item description
+// "special item description 3" "desc"
+
+// Fourth line of an item description
+// "special item description 4" "desc"
+
+// Change allowed build types, add values to allow multiple objects
+// 1 - dispenser
+// 2 - teleporter
+// 4 - sentry gun
+// 8 - sapper
+// "allowed build types" 4
+
+// Change bullet range in hu
+// "max bullet range" 10
+
+// Make addcond effects to also apply those attributes to the affected player
+// "effect add attributes" "move speed bonus|2|fire rate bonus|0.1"
+
+// Attributes added passively to the patient
+// "medigun passive attributes" "move speed bonus|2|fire rate bonus|0.1"
+
+// Attributes added passively to the healing medic
+// "medigun passive attributes owner" "move speed bonus|2|fire rate bonus|0.1"
+
+// Disables movement prediction for homing projectiles. Might be useful for very slow projectiles
+// "mod projectile heat no predict target speed" 1
+
+// Damage multiplier vs airborne players
+// "mult dmg vs airborne" 3
+
+// Medigun revive speed multiplier
+// "revive rate" 10
