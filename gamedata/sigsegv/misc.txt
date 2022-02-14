@@ -5330,6 +5330,23 @@
 					type "sym"
 					sym  "_ZN14CSpawnLocation17FindSpawnLocationER6Vector"
 				}
+				"CSoundEmitterSystemBase::AddSoundsFromFile"
+				{
+					type "sym"
+					lib "soundemittersystem"
+					sym  "_ZN23CSoundEmitterSystemBase17AddSoundsFromFileEPKcbbb"
+				}
+				"CSoundEmitterSystemBase::InitSoundInternalParameters"
+				{
+					type "sym"
+					lib "soundemittersystem"
+					sym  "_ZN23CSoundEmitterSystemBase27InitSoundInternalParametersEPKcP9KeyValuesR24CSoundParametersInternal"
+				}
+				"CTFProjectile_EnergyBall::Explode"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyBall7ExplodeEP10CGameTraceP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

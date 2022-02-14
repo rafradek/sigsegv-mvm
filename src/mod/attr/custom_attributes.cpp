@@ -65,6 +65,7 @@ namespace Mod::Attr::Custom_Attributes
 		CONTINOUS_ACCURACY_TIME,
 		CONTINOUS_ACCURACY_TIME_RECOVERY,
 		MOVE_ACCURACY_MULT,
+		ALT_FIRE_DISABLED,
 		ATTRIB_COUNT_ITEM,
 	};
 	const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
@@ -88,7 +89,8 @@ namespace Mod::Attr::Custom_Attributes
 		"continous_accuracy_mult",
 		"continous_accuracy_time",
 		"continous_accuracy_time_recovery",
-		"move_accuracy_mult"
+		"move_accuracy_mult",
+		"unimplemented_altfire_disabled"
 	};
 
 	float *fast_attribute_cache[2048];
@@ -152,23 +154,6 @@ namespace Mod::Attr::Custom_Attributes
 		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
 	}
 
-	const char *string_attributes_names[] = {
-		"override projectile type extra", 
-		"projectile trail particle", 
-		"explosion particle", 
-		"custom item model", 
-		"attachment name",
-		"attachment offset",
-		"attachment angles",
-		"custom impact sound",
-		"custom kill icon",
-		"custom hit sound",
-		"fire input on hit",
-		"fire input on hit name restrict",
-		"fire input on kill"
-
-	};
-
 #define GET_STRING_ATTRIBUTE(attrlist, name, varname) \
 	static int inddef_##varname = GetItemSchema()->GetAttributeDefinitionByName(name)->GetIndex(); \
 	const char * varname = GetStringAttribute(attrlist, inddef_##varname);
@@ -193,7 +178,7 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 	inline void PrecacheSound(const char *name) {
-		if (precached.count(name) == 0) {
+		if (name != nullptr && name[0] != '\0' && precached.count(name) == 0) {
 			if (!enginesound->PrecacheSound(name, true))
 				CBaseEntity::PrecacheScriptSound(name);
 			precached.insert(name);
@@ -382,6 +367,10 @@ namespace Mod::Attr::Custom_Attributes
 		this->Remove();
 	};
 
+	THINK_FUNC_DECL(ProjectileSoundDelay) {
+		this->Remove();
+	};
+
 	bool fire_projectile_multi = true;
 	int old_clip = 0;
 
@@ -471,6 +460,7 @@ namespace Mod::Attr::Custom_Attributes
 
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "projectile sound", soundname);
 				if (soundname != nullptr) {
+					PrecacheSound(soundname);
 					proj->EmitSound(soundname);
 				}
 			}
@@ -856,6 +846,21 @@ namespace Mod::Attr::Custom_Attributes
 	}
 	
 	float bounce_damage_bonus = 0.0f;
+
+	void ExplosionCustomSet(CBaseProjectile *proj)
+	{
+		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
+		if (launcher != nullptr) {
+			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
+			GET_STRING_ATTRIBUTE(launcher->GetItem()->GetAttributeList(), "custom impact sound", sound);
+			
+			if (sound != nullptr) {
+				PrecacheSound(sound);
+				proj->EmitSound(sound);
+			}
+		}
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
 	{
 		particle_to_use = 0;
@@ -865,16 +870,7 @@ namespace Mod::Attr::Custom_Attributes
 			proj->SetDamage(proj->GetDamage() * (1 + bounce_damage_bonus));
 		}
 
-		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
-		if (launcher != nullptr) {
-			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
-			GET_STRING_ATTRIBUTE(launcher->GetItem()->GetAttributeList(), "custom impact sound", sound);
-			
-			if (sound != nullptr) {
-				PrecacheSound(sound);
-				proj->EmitSound(sound);
-			}
-		}
+		ExplosionCustomSet(proj);
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
 		particle_to_use = 0;
 	}
@@ -883,20 +879,17 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		particle_to_use = 0;
 		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
-		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
-		if (launcher != nullptr) {
-			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
-			
-			GET_STRING_ATTRIBUTE(launcher->GetItem()->GetAttributeList(), "custom impact sound", sound);
-			
-			if (sound != nullptr) {
-				PrecacheSound(sound);
-				proj->EmitSound(sound);
-			}
-		}
+		ExplosionCustomSet(proj);
 		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
 
 		particle_to_use = 0;
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyBall_Explode, trace_t *pTrace, CBaseEntity *pOther)
+	{
+		auto proj = reinterpret_cast<CTFProjectile_EnergyBall *>(this);
+		ExplosionCustomSet(proj);
+		DETOUR_MEMBER_CALL(CTFProjectile_EnergyBall_Explode)(pTrace, pOther);
 	}
 
 	DETOUR_DECL_STATIC(void, TE_TFExplosion, IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID, int nSound, int iCustomParticle)
@@ -1309,6 +1302,18 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetAttacker(), dmg, mult_dmg );
 			if (pVictim->IsPlayer())
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetAttacker(), dmg, mult_dmg_vs_players );
+
+			info.SetDamage(info.GetDamage() * dmg);
+		}
+
+		//Allow mantreads to do more damage based on attributes
+
+		if (info.GetAttacker() != nullptr && info.GetAttacker()->IsPlayer() && info.GetDamageCustom() == TF_DMG_CUSTOM_BOOTS_STOMP && info.GetWeapon() != nullptr && info.GetWeapon()->IsWearable())
+		{
+			float dmg = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetWeapon(), dmg, mult_dmg );
+			if (pVictim->IsPlayer())
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetWeapon(), dmg, mult_dmg_vs_players );
 
 			info.SetDamage(info.GetDamage() * dmg);
 		}
@@ -3649,9 +3654,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto weapon = player->GetActiveTFWeapon();
 		bool pressedM2 = false;
 		if (weapon != nullptr) {
-			int disableAltFire = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, disableAltFire, unimplemented_altfire_disabled);
-			if (disableAltFire == 1) {
+			if (GetFastAttributeInt(weapon, 0, ALT_FIRE_DISABLED) != 0) {
 				weapon->m_flNextSecondaryAttack = gpGlobals->curtime + 1.0f;
 				if (player->m_nButtons & IN_ATTACK2) {
 					player->m_nButtons &= ~IN_ATTACK2;
@@ -3665,6 +3668,17 @@ namespace Mod::Attr::Custom_Attributes
 		if (pressedM2) {
 			player->m_nButtons |= IN_ATTACK2;
 		}
+	}
+
+	DETOUR_DECL_MEMBER(float, CWeaponMedigun_GetHealRate)
+	{
+		auto weapon = reinterpret_cast<CWeaponMedigun *>(this);
+
+		auto healRate = DETOUR_MEMBER_CALL(CWeaponMedigun_GetHealRate)();
+		if (rtti_cast<CTFReviveMarker *>(weapon->GetHealTarget()) != nullptr) {
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, healRate, revive_rate);
+		}
+		return healRate;
 	}
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
@@ -4162,7 +4176,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_StartHealingTarget, "CWeaponMedigun::StartHealingTarget");
 			MOD_ADD_DETOUR_STATIC(FX_FireBullets, "FX_FireBullets");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Energy_Recharge, "CTFWeaponBase::Energy_Recharge");
-		
+            MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_GetHealRate, "CWeaponMedigun::GetHealRate");
+            MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_Explode, "CTFProjectile_EnergyBall::Explode");
+
 		//  Implement disable alt fire
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_ItemPostFrame, "CBasePlayer::ItemPostFrame");
 			

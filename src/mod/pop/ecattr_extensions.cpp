@@ -1618,8 +1618,8 @@ namespace Mod::Pop::ECAttr_Extensions
 	{
 		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
 		auto data = GetDataForBot(actor);
-		if (data != nullptr && data->rocket_jump_type > 0) {
-			auto weapon = actor->GetActiveTFWeapon();
+		auto weapon = actor->GetActiveTFWeapon();
+		if (data != nullptr && data->rocket_jump_type > 0 && !weapon->IsMeleeWeapon()) {
 			const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
 			if (weapon != nullptr && (data->rocket_jump_type == 1 || weapon->m_iClip1 >= weapon->GetMaxClip1()) && threat != nullptr && threat->GetEntity() != nullptr && actor->IsLineOfFireClear( threat->GetEntity()->EyePosition() )/*&& ShouldRocketJump(actor, weapon, data, true)*//*weapon != nullptr*/) {
 				

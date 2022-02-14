@@ -206,11 +206,6 @@ namespace Mod::Cond::Reprogrammed
 		/* NO: item definition has no "visuals_mvm_boss" block */
 		perteamvisuals_t *visuals_boss = item_def->m_Visuals[idx_visuals_mvm_boss];
 		if (visuals_boss == nullptr) return false;
-		
-		// Hack: attack projectiles attribute requires matching team number to work properly
-		int attackProjectiles = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attackProjectiles, attack_projectiles);
-		if (attackProjectiles != 0) return false;
 
 		for (int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i) {
 			if (visuals_boss->m_Sounds[i] != nullptr) return true;
@@ -879,23 +874,6 @@ namespace Mod::Cond::Reprogrammed
 		}
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
 	}
-	
-	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
-	{
-		static float angpre[34];
-		
-		ForEachTFBot([](CTFBot *player) {
-			if (player->GetTeamNumber() == TF_TEAM_RED) {
-				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_BLUE, ENTINDEX(player));
-			}
-		}); 
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
-		ForEachTFBot([](CTFBot *player) {
-			if (player->GetTeamNumber() == TF_TEAM_RED) {
-				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
-			}
-		}); 
-	}
 
 	RefCount rc_CTFBot_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
@@ -944,6 +922,24 @@ namespace Mod::Cond::Reprogrammed
 		return result;
 	}
 #endif
+
+	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		std::vector<CBaseEntity *> weaponsTeamSwitched;
+		ForEachTFPlayer([&](CTFPlayer *player) {
+			if (player->IsMiniBoss() && player->GetTeamNumber() == TF_TEAM_RED) {
+				auto weapon = player->GetActiveTFWeapon();
+				if (weapon != nullptr && WeaponHasMiniBossSounds(weapon)) {
+					weapon->SetTeamNumber(TF_TEAM_BLUE);
+					weaponsTeamSwitched.push_back(weapon);
+				}
+			}
+		}); 
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		for (auto weapon : weaponsTeamSwitched) {
+			weapon->SetTeamNumber(TF_TEAM_RED);
+		}
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1018,8 +1014,8 @@ namespace Mod::Cond::Reprogrammed
 			MOD_ADD_DETOUR_MEMBER(CWave_ActiveWaveUpdate,   "CWave::ActiveWaveUpdate");
 
 
-			// Hide red bots from the scoreboard
-			// MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
+			// Fix reprogrammed weapons not making giant sounds
+			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
 			
 		//	/* fix: make giant weapon sounds apply to miniboss players on any team */
 		//	this->AddPatch(new CPatch_CTFWeaponBase_GetShootSound());

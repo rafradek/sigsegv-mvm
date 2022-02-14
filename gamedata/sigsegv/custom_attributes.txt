@@ -2255,4 +2255,13 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4541"
+    {
+        "name"	"revive rate"
+        "attribute_class"	"revive_rate"
+        "description_string"	"(+-)%p% revive rate"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

@@ -122,6 +122,7 @@ IMPL_DATAMAP(int, CSpellPickup, m_nTier);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFReviveMarker, m_hOwner,   CTFReviveMarker);
 IMPL_SENDPROP(short,                CTFReviveMarker, m_nRevives, CTFReviveMarker);
 
+StaticFuncThunk<CTFReviveMarker *, CTFPlayer *> CTFReviveMarker::ft_Create ("CTFReviveMarker::Create");
 
 MemberVFuncThunk<const IHasGenericMeter *, bool>  IHasGenericMeter::vt_ShouldUpdateMeter    (TypeName<IHasGenericMeter>(), "IHasGenericMeter::ShouldUpdateMeter");
 MemberVFuncThunk<const IHasGenericMeter *, float> IHasGenericMeter::vt_GetMeterMultiplier   (TypeName<IHasGenericMeter>(), "IHasGenericMeter::GetMeterMultiplier");

@@ -203,6 +203,9 @@ namespace Mod::Etc::Mapentity_Additions
 
         SendProp *prop = nullptr;
         FindSendProp(offset,serverClass->m_pTable, nameNoArray.c_str(), prop, arrayPos);
+        if (prop == nullptr) {
+            offset = 0;
+        }
         
         send_prop_cache.push_back({serverClass, name, offset, isVecAxis, prop});
         return send_prop_cache.back();

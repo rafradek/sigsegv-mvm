@@ -303,4 +303,9 @@ namespace RTTI
 		
 		return (*it).second;
 	}
+
+	const std::unordered_map<std::string, const rtti_t *> &GetAllRTTI()
+	{
+		return s_RTTI;
+	}
 }

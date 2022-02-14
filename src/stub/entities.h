@@ -97,6 +97,10 @@ public:
 	// 49b?
 	// 49c float 0.0f
 	// 4a0 byte, probably: have we landed on the ground
+	static CTFReviveMarker *Create(CTFPlayer *player) { return ft_Create(player); }
+
+private:
+	static StaticFuncThunk<CTFReviveMarker *, CTFPlayer *> ft_Create;
 };
 
 

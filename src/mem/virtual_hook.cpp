@@ -36,6 +36,7 @@ bool CVirtualHook::DoLoad()
         return false;
     }
     this->m_bLoaded = true;
+    this->m_pVTable = pVT;
     return true;
 }
 
@@ -47,7 +48,7 @@ void CVirtualHook::DoUnload()
 void CVirtualHook::DoEnable()
 {
     if (!this->m_bEnabled && this->m_bLoaded) {
-        CVirtualHookFunc::Find(this->m_pFuncPtr).AddVirtualHook(this);
+        CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).AddVirtualHook(this);
         this->m_bEnabled = true;
     }
 }
@@ -55,14 +56,52 @@ void CVirtualHook::DoEnable()
 void CVirtualHook::DoDisable()
 {
     if (this->m_bEnabled) {
-        CVirtualHookFunc::Find(this->m_pFuncPtr).RemoveVirtualHook(this);
+        CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).RemoveVirtualHook(this);
         this->m_bEnabled = false;
     }
 }
 
-CVirtualHookFunc& CVirtualHookFunc::Find(void **func_ptr)
+// bool CVirtualHookInherit::DoLoad()
+// {
+//     if (this->m_bLoaded) return true;
+    
+//     const void **pVT  = nullptr;
+// 	const void *pFunc = nullptr;
+
+//     pVT = RTTI::GetVTable(this->m_pszVTableName);
+//     if (pVT == nullptr) {
+//         DevMsg("CVirtualHook::FAIL \"%s\": can't find vtable\n", this->m_pszFuncName);
+//         return false;
+//     }
+    
+//     pFunc = AddrManager::GetAddr(this->m_pszFuncName);
+//     if (pFunc == nullptr) {
+//         DevMsg("CVirtualHook::FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
+//         return false;
+//     }
+    
+//     bool found = false;
+//     for (int i = 0; i < 0x1000; ++i) {
+//         if (pVT[i] == pFunc) {
+//             this->m_pFuncPtr = const_cast<void **>(pVT + i);
+//             found = true;
+//             break;
+//         }
+//     }
+    
+//     if (!found) {
+//         DevMsg("CVirtualHook::FAIL \"%s\": can't find func ptr in vtable\n", this->m_pszFuncName);
+//         return false;
+//     }
+
+//     for 
+//     this->m_bLoaded = true;
+//     return true;
+// }
+
+CVirtualHookFunc& CVirtualHookFunc::Find(void **func_ptr, void *vtable)
 {
-    return s_FuncMap.emplace(func_ptr, func_ptr).first->second;
+    return s_FuncMap.try_emplace(func_ptr, func_ptr, vtable).first->second;
 }
 
 CVirtualHookFunc::~CVirtualHookFunc()
@@ -109,13 +148,13 @@ void CVirtualHookFunc::DoHook()
     CVirtualHook *last  = this->m_Hooks.back();
     this->m_pFuncInner = *this->m_pFuncPtr;
 
-    *last->m_pInner = this->m_pFuncInner;
+    last->SetInner(this->m_pFuncInner, this->m_pVTable);
     
     for (int i = this->m_Hooks.size() - 2; i >= 0; --i) {
         CVirtualHook *d1 = this->m_Hooks[i];
         CVirtualHook *d2 = this->m_Hooks[i + 1];
         
-        *d1->m_pInner = d2->m_pCallback;
+        d1->SetInner(d2->m_pCallback, this->m_pVTable);
     }
     MemProtModifier_RX_RWX(this->m_pFuncPtr, sizeof(void **));
     *this->m_pFuncPtr = first->m_pCallback;

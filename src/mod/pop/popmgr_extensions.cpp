@@ -613,7 +613,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_Accelerate                      ("sv_accelerate"),
 			m_TurboPhysics                    ("sv_turbophysics"),
 			m_UpgradeStationRegenCreators     ("sig_mvm_upgradestation_creators"),
-			m_UpgradeStationRegen             ("sig_mvm_upgradestation_regen_improved")
+			m_UpgradeStationRegen             ("sig_mvm_upgradestation_regen_improved"),
+			m_AllowBluePlayerReanimators      ("sig_mvm_jointeam_blue_allow_revive")
 			
 		{
 			this->Reset();
@@ -747,6 +748,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_TurboPhysics.Reset();
 			this->m_UpgradeStationRegenCreators.Reset();
 			this->m_UpgradeStationRegen.Reset();
+			this->m_AllowBluePlayerReanimators.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -952,6 +954,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_TurboPhysics;
 		CPopOverride_ConVar<bool> m_UpgradeStationRegenCreators;
 		CPopOverride_ConVar<bool> m_UpgradeStationRegen;
+		CPopOverride_ConVar<bool> m_AllowBluePlayerReanimators;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -2046,7 +2049,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
 				if (attr_def != nullptr) {
 					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
-					player->TeamFortress_CalculateMaxSpeed();
+					player->TeamFortress_SetSpeed();
 				}
 			}
 		}
@@ -2057,7 +2060,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
 				if (attr_def != nullptr) {
 					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
-					player->TeamFortress_CalculateMaxSpeed();
+					player->TeamFortress_SetSpeed();
 				}
 			}
 		}
@@ -5146,14 +5149,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			ResetMaxTotalPlayers(10);
 		}
 
-		// Reset nav mesh
-		if (state.m_CustomNavFile != "") {
-			ForEachEntityByRTTI<CBaseCombatCharacter>([&](CBaseCombatCharacter *character) {
-				character->ClearLastKnownArea();
-			});
-			TheNavMesh->Load();
-		}
-
+		std::string prevNavFile = state.m_CustomNavFile;
 		state.Reset();
 		
 	//	Redirects parsing errors to the client
@@ -5165,6 +5161,28 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+
+		// Reset nav mesh
+		if (state.m_CustomNavFile != prevNavFile) {
+			
+			string_t oldMapName = gpGlobals->mapname;
+			if (!state.m_CustomNavFile.empty()) {
+
+				if (!filesystem->FileExists(CFmtStr("maps/%s.nav", state.m_CustomNavFile.c_str()))) {
+					Warning("The custom nav file %s might not exist\n", state.m_CustomNavFile.c_str());
+				}
+			}
+
+			ForEachEntityByRTTI<CBaseCombatCharacter>([&](CBaseCombatCharacter *character) {
+				character->ClearLastKnownArea();
+			});
+
+			if (!state.m_CustomNavFile.empty()) {
+				gpGlobals->mapname = AllocPooledString(state.m_CustomNavFile.c_str());
+			}
+			TheNavMesh->Load();
+			gpGlobals->mapname = oldMapName;
+		}
 
 		if (cvar_parse_errors.GetBool())
 			SpewOutputFunc(LocalSpewOutputFunc);
@@ -5572,32 +5590,28 @@ namespace Mod::Pop::PopMgr_Extensions
 				} else if (FStrEq(name, "UpgradeStationKeepWeapons")) {
 					state.m_UpgradeStationRegenCreators.Set(!subkey->GetBool());
 					state.m_UpgradeStationRegen.Set(subkey->GetBool());
+				} else if (FStrEq(name, "AllowBluPlayerReanimators")) {
+					state.m_AllowBluePlayerReanimators.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomNavFile")) {
 					char strippedFile[128];
 					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
 					state.m_CustomNavFile = strippedFile;
-					string_t oldMapName = gpGlobals->mapname;
-					
-					if (!filesystem->FileExists(CFmtStr("maps/%s.nav", strippedFile))) {
-						Warning("The custom nav file %s might not exist\n", strippedFile);
-					}
-					
-					ForEachEntityByRTTI<CBaseCombatCharacter>([&](CBaseCombatCharacter *character) {
-						character->ClearLastKnownArea();
-					});
-
-					gpGlobals->mapname = AllocPooledString(strippedFile);
-					TheNavMesh->Load();
-					gpGlobals->mapname = oldMapName;
-
 				// } else if (FStrEq(name, "SprayDecal")) {
 				// 	Parse_SprayDecal(subkey);
 				
-				} else if (FStrEq(name, "ScriptSoundOverrides")) {
+				} else if (FStrEq(name, "ScriptSoundOverrides") || FStrEq(name, "CustomScriptSoundFile")) {
 					if (!filesystem->FileExists(subkey->GetString())) {
 						Warning("The custom sound script file %s might not exist\n", subkey->GetString());
 					}
 					soundemitterbase->AddSoundOverrides(subkey->GetString(), true);
+					KeyValues *kvsnd = new KeyValues( "" );
+					
+					if (kvsnd->LoadFromFile(filesystem, subkey->GetString())) {
+						for (KeyValues *pKeys = kvsnd; pKeys != nullptr; pKeys = pKeys->GetNextKey()) {
+							CBaseEntity::PrecacheScriptSound(pKeys->GetName());
+						}
+					}
+					kvsnd->deleteThis();
 				} else if (FStrEq(name, "OverrideParticles")) {
 					FOR_EACH_SUBKEY(subkey, subkey2) {
 						state.m_ParticleOverride[subkey2->GetName()] = subkey2->GetString();

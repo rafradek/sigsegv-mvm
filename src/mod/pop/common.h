@@ -301,9 +301,11 @@ public:
 
         if (classname == nullptr) return false;
         
-        bool isCustom = false;
-        GetItemName(item_view, isCustom);
-        if (isCustom) return false;
+        if (item_view != nullptr) {
+            bool isCustom = false;
+            GetItemName(item_view, isCustom);
+            if (isCustom) return false;
+        }
 
         if (wildcard)
             return strnicmp(classname, m_strClassname.c_str(), m_strClassname.size() - 1) == 0;

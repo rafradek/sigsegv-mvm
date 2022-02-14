@@ -470,10 +470,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		return iResult;
 	}
 	
-	
+	ConVar cvar_allow_reanimators("sig_mvm_jointeam_blue_allow_revive", "0", FCVAR_NOTIFY, "Allow reanimators for the blue players");
 	DETOUR_DECL_STATIC(CTFReviveMarker *, CTFReviveMarker_Create, CTFPlayer *player)
 	{
-		if (IsMvMBlueHuman(player)) {
+		if (!cvar_allow_reanimators.GetBool() && IsMvMBlueHuman(player)) {
 			return nullptr;
 		}
 		
@@ -841,8 +841,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
 			auto tele = rtti_cast<CObjectTeleporter *>(IBaseObjectAutoList::AutoList()[i]);
 			if (tele != nullptr && tele->GetTeamNumber() == player->GetTeamNumber() && tele->IsFunctional()) {
-				if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetOwnerEntity()) == nullptr) || 
-						(playerbot == nullptr && (tele->GetOwnerEntity() == nullptr || ToTFBot(tele->GetOwnerEntity()) != nullptr))) ) {
+				if (((cvar_teleport_player.GetBool() && ToTFBot(tele->GetBuilder()) == nullptr) || 
+						(playerbot == nullptr && (tele->GetBuilder() == nullptr || ToTFBot(tele->GetBuilder()) != nullptr))) ) {
 					float dist = tele->WorldSpaceCenter().DistToSqr(zone->WorldSpaceCenter());
 					if ( dist < distanceToBomb) {
 						teleOut = tele;

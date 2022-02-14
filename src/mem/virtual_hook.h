@@ -20,6 +20,8 @@ public:
     
     virtual const char *GetName() { return m_szName.c_str(); };
 
+	virtual void SetInner(void *inner, void *vtable) { *m_pInner = inner; }
+
     bool IsLoaded() const { return this->m_bLoaded; }
 	bool IsActive() const { return this->m_bEnabled; }
 	
@@ -37,16 +39,39 @@ private:
 
 	void *m_pCallback;
 	void **m_pInner;
+
+	void *m_pVTable;
     friend class CVirtualHookFunc;
 };
+
+// typedef VTableToInnerPtr = std::vector<std::pair<void *, void *>;
+
+// class CVirtualHookInherit : public CVirtualHook
+// {
+// public:
+// 	/* by addr name */
+// 	CVirtualHookInherit(const char *class_name, const char *func_name, void *callback, VTableToInnerPtr &vtable_to_inner_ptr) : m_pszVTableName(class_name), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_VTableToInnerPtr(vtable_to_inner_ptr) {};
+	
+// 	virtual bool DoLoad() override;
+// 	virtual void DoUnload() override;
+	
+// 	virtual void DoEnable() override;
+// 	virtual void DoDisable() override;
+
+// 	virtual void SetInner(void **inner, void *vtable) override;
+	
+// private:
+// 	VTableToInnerPtr &m_VTableToInnerPtr;
+//     friend class CVirtualHookFunc;
+// };
 
 class CVirtualHookFunc
 {
 public:
-	CVirtualHookFunc(void **func_ptr) : m_pFuncPtr(func_ptr) {};
+	CVirtualHookFunc(void **func_ptr, void *vtable) : m_pFuncPtr(func_ptr), m_pVTable(vtable) {};
 	~CVirtualHookFunc();
 	
-	static CVirtualHookFunc& Find(void **func_ptr);
+	static CVirtualHookFunc& Find(void **func_ptr, void *vtable);
 	
 	static void CleanUp();
 	
@@ -58,6 +83,7 @@ public:
 private:
     void **m_pFuncPtr;
     void *m_pFuncInner;
+	void *m_pVTable;
 
     bool m_bHooked = false;
 

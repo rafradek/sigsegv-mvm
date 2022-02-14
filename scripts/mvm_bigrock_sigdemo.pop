@@ -114,8 +114,12 @@ WaveSchedule
 	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
 	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
 	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
-	ScriptSoundOverrides "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] // Load a file that adds or overrides existing soundscripts. Overrides persist until next map load
-	
+
+	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
+	// Overrides persist until next map load, use OverrideSounds instead
+	// If you made any changes to the file, you need to reload the map for it to take effect
+	CustomScriptSoundFile "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] 
+	AllowBluPlayerReanimators 1 [$SIGSEGV] // Allow reanimators for BLU players (default: 0)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)

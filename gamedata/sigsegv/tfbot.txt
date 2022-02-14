@@ -390,7 +390,11 @@
 					type "sym"
 					sym  "_ZN6CTFBot10LeaveSquadEv"
 				}
-				
+				"CTFBot::HasTag"
+				{
+					type "sym"
+					sym  "_ZN6CTFBot6HasTagEPKc"
+				}
 			}
 		}
 	}
