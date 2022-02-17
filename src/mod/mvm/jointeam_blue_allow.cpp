@@ -587,7 +587,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 //		}
 //	}
 	
-	
 	RefCount rc_CTFGameRules_FireGameEvent__teamplay_round_start;
 	DETOUR_DECL_MEMBER(void, CTFGameRules_FireGameEvent, IGameEvent *event)
 	{
@@ -754,18 +753,36 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			player->SetTeamNumber(TF_TEAM_BLUE);
 	}
 
+	int sentryAmmoCurrent;
+	int sentryRocketAmmoCurrent;
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SentryThink)
 	{
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
+		
+		int maxAmmo = obj->m_iMaxAmmoShells;
+		int maxAmmoRockets = obj->m_iMaxAmmoRockets;
+		sentryAmmoCurrent = obj->m_iAmmoShells;
+		sentryRocketAmmoCurrent = obj->m_iAmmoRockets;
 		bool stopammo = TFGameRules()->IsMannVsMachineMode() && !cvar_infinite_ammo.GetBool() && IsMvMBlueHuman(owner);
-		if (stopammo)
-			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 
 		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
 
-		if (stopammo)
-			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
+		if (stopammo) {
+			obj->m_iMaxAmmoShells = maxAmmo;
+			obj->m_iMaxAmmoRockets = maxAmmoRockets;
+			obj->m_iAmmoShells = sentryAmmoCurrent;
+			obj->m_iAmmoRockets = sentryRocketAmmoCurrent;
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Attack)
+	{
+		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
+
+		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
+		sentryAmmoCurrent = obj->m_iAmmoShells;
+		sentryRocketAmmoCurrent = obj->m_iAmmoRockets;
 	}
 
 	DETOUR_DECL_MEMBER(bool, CBaseObject_ShouldQuickBuild)
@@ -971,11 +988,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 	void DisplayScoreboard(CTFPlayer *playerShow);
 
-	THINK_FUNC_DECL(DisplayScoreboardDelay)
-	{
-		DisplayScoreboard(nullptr);
-	}
-
 	DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
 	{
 		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
@@ -1010,8 +1022,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					score_stats[index].m_iPrevCurrencyCollected += tfres->m_iCurrencyCollected[index];
 					score_stats[index].m_iPrevBonusPoints += tfres->m_iBonusPoints[index];
 				}
-				PrintToChatAll("To see the scoreboard again, type !scoreboard\n");
-				THINK_FUNC_SET(tfres, DisplayScoreboardDelay, gpGlobals->curtime + 1.1f);
 			}
 		}
 		
@@ -1051,18 +1061,12 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
     public:
         ScoreboardHandler() : IMenuHandler() {
 		}
-
-		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
-        }
-
-		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
-		{
-		}
 		
         virtual void OnMenuDestroy(IBaseMenu *menu) {
             delete this;
         }
     };
+	ScoreboardHandler scoreboard_handler_def;
 	
 	void DisplayScoreboard(CTFPlayer *playerShow)
 	{
@@ -1074,7 +1078,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
         menu = menus->GetDefaultStyle()->CreateMenu(handler);
         
         menu->SetDefaultTitle("Name                        |Score|Damage|Tank|Healing|Support|Cash");
-        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
+        menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT | MENUFLAG_NO_SOUND);
 
 		ForEachTFPlayer([&](CTFPlayer *player) {
 			if (player->IsBot() || player->GetTeamNumber() != TF_TEAM_BLUE) return;
@@ -1084,7 +1088,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			int support = tfres->m_iDamageAssist[index] + score_stats[index].m_iPrevDamageAssist + tfres->m_iHealingAssist[index] + score_stats[index].m_iPrevHealingAssist + tfres->m_iDamageBlocked[index] + score_stats[index].m_iPrevDamageBlocked + ((tfres->m_iBonusPoints[index] + score_stats[index].m_iPrevBonusPoints) * 25);
 
 			snprintf(buf, sizeof(buf), "%24.24s|%6d|%6d|%6d|%6d|%6d|%4d", player->GetPlayerName(), tfres->m_iTotalScore[index], tfres->m_iDamage[index] + score_stats[index].m_iPrevDamage, tfres->m_iDamageBoss[index] + score_stats[index].m_iPrevDamageBoss, tfres->m_iHealing[index] + score_stats[index].m_iPrevHealing, support, tfres->m_iCurrencyCollected[index] + score_stats[index].m_iPrevCurrencyCollected);
-			ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
+			ItemDrawInfo info1(buf, ITEMDRAW_DEFAULT);
 			menu->AppendItem("", info1);
 		});
 		
@@ -1097,51 +1101,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
         		menu->Display(ENTINDEX(player), 60);
 			});
 		}
-	}
-
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-			if (FStrEq(args[0], "sig_scoreboard")) {
-				DisplayScoreboard(player);
-				return true;
-			}
-			/*else if (FStrEq(args[0], "upgrade")) {
-				if (IsMvMBlueHuman(player) && IsInBlueSpawnRoom(player)) {
-					int cannotUpgrade = 0;
-					CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
-					if (cannotUpgrade) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
-					}
-					else
-						player->m_Shared->m_bInUpgradeZone = true;
-				}
-				
-				return true;
-			}*/
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
-	
-	DETOUR_DECL_STATIC(void, Host_Say, edict_t *edict, const CCommand& args, bool team )
-	{
-		CBaseEntity *entity = GetContainingEntity(edict);
-		if (edict != nullptr) {
-			const char *p = args.ArgS();
-			int len = strlen(p);
-			if (*p == '"')
-			{
-				p++;
-				len -=2;
-			}
-			if (strncmp(p, "!scoreboard",len) == 0 || strncmp(p, "/scoreboard",len) == 0) {
-				DisplayScoreboard(ToTFPlayer(entity));
-				return;
-			}
-		}
-		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CVoteController_IsValidVoter, CBasePlayer *player)
@@ -1218,6 +1177,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			// Disable infinite ammo for players unless toggled
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAmmo, "CTFPlayer::RemoveAmmo");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SentryThink,                  "CObjectSentrygun::SentryThink");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Attack,                  "CObjectSentrygun::Attack");
 
 			// Stop blue player teleporters from spinning when disabled
 			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_DeterminePlaybackRate, "CObjectTeleporter::DeterminePlaybackRate");
@@ -1243,10 +1203,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 			// Show red team spy death message
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "IGameEventManager2::FireEvent");
-
-			// Display blue player scoreboard
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
-			MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
 
 			// Make voting work properly for blue players
 			MOD_ADD_DETOUR_MEMBER(CVoteController_IsValidVoter, "CVoteController::IsValidVoter");
@@ -1303,11 +1259,32 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			static bool prevPressedScore[34];
 			if (TFGameRules()->IsMannVsMachineMode()) {
 				ForEachTFPlayer([](CTFPlayer *player){
 					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;
 					if (player->IsBot())                         return;
 					
+					int plIndex = ENTINDEX(player);
+					if(player->m_nButtons & IN_SCORE && !prevPressedScore[plIndex]) {
+						IBaseMenu *menu = nullptr;
+						menus->GetDefaultStyle()->GetClientMenu(plIndex, (void **)&menu);
+						if (menu != nullptr && menu->GetDefaultTitle() != nullptr && strcmp(menu->GetDefaultTitle(), "Name                        |Score|Damage|Tank|Healing|Support|Cash") == 0) {
+							auto panel = menus->GetDefaultStyle()->CreatePanel();
+							ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
+							panel->DrawItem(info1);
+							ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
+							panel->DrawItem(info2);
+							panel->SetSelectableKeys(255);
+							panel->SendDisplay(plIndex, &scoreboard_handler_def, 1);
+						}
+						else {
+							DisplayScoreboard(player);
+						}
+						
+					}
+					prevPressedScore[plIndex] = (player->m_nButtons & IN_SCORE) == IN_SCORE;
+
 					if (gpGlobals->tickcount % 3 == 1 && cvar_spawn_protection.GetBool() ) {
 						if (PointInRespawnRoom(player, player->WorldSpaceCenter(), true)) {
 							player->m_Shared->AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED, 0.500f);

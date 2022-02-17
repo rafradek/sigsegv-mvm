@@ -239,7 +239,6 @@ THINK_FUNC_DECL(StopTaunt) {
 }
 
 
-std::unordered_map<std::string, CEconItemView *> taunt_item_view;
 
 void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks)
 {
@@ -267,24 +266,12 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks)
                 continue;
             }
             if (pending_task.type==TASK_TAUNT) {
-                if (!pending_task.attrib_name.empty()) {
-
-                    CEconItemView *view = taunt_item_view[pending_task.attrib_name];
-                    
-                    if (view == nullptr) {
-                        auto item_def = GetItemSchema()->GetItemDefinitionByName(pending_task.attrib_name.c_str());
-                        if (item_def != nullptr) {
-                            view = CEconItemView::Create();
-                            view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
-                            taunt_item_view[pending_task.attrib_name] = view;
-                        }
-                    }
-
-                    if (view != nullptr) {
-                        bot->PlayTauntSceneFromItem(view);
-                        THINK_FUNC_SET(bot, StopTaunt, gpGlobals->curtime + pending_task.duration);
-                    }
-                    
+                if (pending_task.spell_type != 0) {
+                    CEconItemView *view = CEconItemView::Create();
+                    view->Init(pending_task.spell_type, 6, 9999, 0);
+                    bot->PlayTauntSceneFromItem(view);
+                    CEconItemView::Destroy(view);
+                    THINK_FUNC_SET(bot, StopTaunt, gpGlobals->curtime + pending_task.duration);
                 }
                 else {
                     
@@ -674,9 +661,6 @@ bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues
                     }	
                 }
             }
-            else if (type == TASK_TAUNT) {
-                task.spell_type = subkey->GetInt();
-            }
             else if (type == TASK_WEAPON_SWITCH) {
                 
                 const char *typen = subkey->GetString();
@@ -718,6 +702,11 @@ bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues
             task.if_target=subkey->GetBool();
         }
         else if (FStrEq(name, "Name") || FStrEq(name, "Target")) {
+            if (type == TASK_TAUNT) {
+                auto item_def = GetItemSchema()->GetItemDefinitionByName(subkey->GetString());
+                if (item_def != nullptr)
+                    task.spell_type = item_def->m_iItemDefIndex;
+            }
             task.attrib_name=subkey->GetString();
         }
         else if (FStrEq(name, "Action") || FStrEq(name, "AimTarget") || FStrEq(name, "TargetAngles")) {

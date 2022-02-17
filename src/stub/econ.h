@@ -216,6 +216,7 @@ public:
 	void AddStringAttribute(CEconItemAttributeDefinition *pAttrDef, std::string value);
 	void SetRuntimeAttributeValueByDefID(int def_idx, float value);
 	void RemoveAttributeByDefID(int def_idx);
+	CAttributeManager *GetManager() { return this->m_pManager; }
 	
 private:
 	int vtable;
@@ -433,12 +434,15 @@ public:
 	}
 	CEconItemAttribute() 
 	{
-		m_iAttributeDefinitionIndex = INVALID_ATTRIB_DEF_INDEX;
-		m_iRawValue32.m_Float = 0.0f;
-		m_nRefundableCurrency = 0;
+		ft_ctor(this);
 	}
 
-	CEconItemAttribute( const attrib_definition_index_t iAttributeIndex, float flValue ) : m_iAttributeDefinitionIndex(iAttributeIndex) {m_iRawValue32.m_Float = flValue;}
+	CEconItemAttribute( const attrib_definition_index_t iAttributeIndex, float flValue ) 
+	{
+		ft_ctor(this); 
+		m_iAttributeDefinitionIndex = iAttributeIndex; 
+		m_iRawValue32.m_Float = flValue;
+	}
 	
 	attribute_data_union_t *GetValuePtr() { return &this->m_iRawValue32; }
 	attribute_data_union_t GetValue() { return this->m_iRawValue32; }

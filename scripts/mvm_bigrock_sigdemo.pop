@@ -120,6 +120,7 @@ WaveSchedule
 	// If you made any changes to the file, you need to reload the map for it to take effect
 	CustomScriptSoundFile "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] 
 	AllowBluPlayerReanimators 1 [$SIGSEGV] // Allow reanimators for BLU players (default: 0)
+	RemoveBluVelocityLimit 1 [$SIGSEGV] // Remove 1000 hu velocity limit for BLU team (default: 0)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)

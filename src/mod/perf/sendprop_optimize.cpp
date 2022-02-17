@@ -336,28 +336,6 @@ namespace Mod::Perf::SendProp_Optimize
                     bf_write prop_writer("packed data writer", packedData, sizeof(packedData));
                     bf_read prop_reader("packed data reader", packedData, sizeof(packedData));
                     IChangeFrameList *pChangeFrame = NULL;
-                    // Set local player table recipient to the current player. Guess that if a single player is set as recipient then its a local only table
-                    /*int recipient_count = pRecipients->Count();
-                    for (int i = 0; i < recipient_count; i++) {
-                        auto &recipient = (*pRecipients)[i];
-                        uint64_t bits = recipient.m_Bits.GetDWord(0) | ((uint64_t)recipient.m_Bits.GetDWord(1) << 32);
-                        
-                        // local player only
-                        if (bits && !(bits & (bits-1))) {
-                            bits = 1LL << (objectID - 1);
-                            recipient.m_Bits.SetDWord(0, bits & 0xFFFFFFFF);
-                            recipient.m_Bits.SetDWord(1, bits >> 32);
-                        }
-                        else {
-                            bits = (~recipient.m_Bits.GetDWord(0)) | ((uint64_t)(~recipient.m_Bits.GetDWord(1)) << 32);
-                            // Other players only
-                            if (bits && !(bits & (bits-1))) {
-                                bits = 1LL << (objectID - 1);
-                                recipient.m_Bits.SetDWord(0, ~(bits & 0xFFFFFFFF));
-                                recipient.m_Bits.SetDWord(1, ~(bits >> 32));
-                            }
-                        }
-                    }*/
 
                     // Insertion sort on prop indexes 
                     int i = 1;
@@ -714,10 +692,10 @@ namespace Mod::Perf::SendProp_Optimize
                     //}
 
                     offset_data[iToProp] = write_offset;
-
+                    
                     toBitsReader.SkipPropData(pProp);
                     lastbit = toBits.GetNumBitsRead();
-                    lastprop = iToProp;
+                    lastprop = iToProp; 
                 }
                 firsttime = false;
             }
@@ -783,6 +761,12 @@ namespace Mod::Perf::SendProp_Optimize
             
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_CreateViewModel, int index)
+    {
+        DETOUR_MEMBER_CALL(CTFPlayer_CreateViewModel)(index);
+        force_player_update[ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1] = true;
+    }
 
     IChangeInfoAccessor *world_accessor = nullptr;
     CEdictChangeInfo *world_change_info = nullptr;
@@ -882,6 +866,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,   "CAttributeManager::ClearCache [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateViewModel, "CTFPlayer::CreateViewModel");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
             MOD_ADD_DETOUR_STATIC(PackEntities_Normal,   "PackEntities_Normal");
             MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,   "SendTable_WritePropList");

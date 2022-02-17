@@ -1169,37 +1169,44 @@ namespace Mod::Util::Client_Cmds
 
 	void CC_Taunt(CTFPlayer *player, const CCommand& args)
 	{
-		if (args.ArgC() < 2) {
+		if (args.ArgC() < 3) {
 			ClientMsg(player, "[sig_taunt] Usage: any of the following:\n"
-				"  sig_taunt <tauntname>    | start taunt of name\n");
+				"  sig_taunt <target> <tauntname> [attribute] [value] ...   | start taunt of name\n");
 			return;
 		}
 
-		static std::unordered_map<std::string, CEconItemView *> taunt_item_view;
+		auto item_def = GetItemSchema()->GetItemDefinitionByName(args[2]);
+		if (item_def == nullptr) {
+			ClientMsg(player, "[sig_taunt] Error: no matching item \"%s\".\n", args[2]);
+			return;
+		}
 
-		CEconItemView *view = taunt_item_view[args[2]];
-						
-		if (view == nullptr) {
-			auto item_def = GetItemSchema()->GetItemDefinitionByName(args[2]);
-			if (item_def != nullptr) {
-				view = CEconItemView::Create();
-				view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
-				taunt_item_view[args[2]] = view;
+		CEconItemView *view = CEconItemView::Create();
+		view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+		for (int i = 3; i < args.ArgC() - 1; i+=2) {
+			CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(args[i]);
+			if (attr_def == nullptr) {
+				int idx = -1;
+				if (StringToIntStrict(args[i], idx)) {
+					attr_def = GetItemSchema()->GetAttributeDefinition(idx);
+				}
+			}
+
+			if (attr_def != nullptr) {
+				view->GetAttributeList().AddStringAttribute(attr_def, args[i + 1]);
 			}
 		}
 
-		if (view != nullptr) {
-			
-			std::vector<CBasePlayer *> vec;
-			GetSMTargets(player, args[1], vec);
-			if (vec.empty()) {
-				ClientMsg(player, "[sig_taunt] Error: no matching target found for \"%s\".\n", args[1]);
-				return;
-			}
-			for (CBasePlayer *target : vec) {
-				ToTFPlayer(target)->PlayTauntSceneFromItem(view);
-			}
+		std::vector<CBasePlayer *> vec;
+		GetSMTargets(player, args[1], vec);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_taunt] Error: no matching target found for \"%s\".\n", args[1]);
+			return;
 		}
+		for (CBasePlayer *target : vec) {
+			ToTFPlayer(target)->PlayTauntSceneFromItem(view);
+		}
+		CEconItemView::Destroy(view);
 	}
 	
 	void CC_AddAttr(CTFPlayer *player, const CCommand& args)

@@ -614,7 +614,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_TurboPhysics                    ("sv_turbophysics"),
 			m_UpgradeStationRegenCreators     ("sig_mvm_upgradestation_creators"),
 			m_UpgradeStationRegen             ("sig_mvm_upgradestation_regen_improved"),
-			m_AllowBluePlayerReanimators      ("sig_mvm_jointeam_blue_allow_revive")
+			m_AllowBluePlayerReanimators      ("sig_mvm_jointeam_blue_allow_revive"),
+			m_BluVelocityRemoveLimit          ("sig_mvm_blu_velocity_limit_remove")
 			
 		{
 			this->Reset();
@@ -749,6 +750,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_UpgradeStationRegenCreators.Reset();
 			this->m_UpgradeStationRegen.Reset();
 			this->m_AllowBluePlayerReanimators.Reset();
+			this->m_BluVelocityRemoveLimit.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -955,6 +957,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_UpgradeStationRegenCreators;
 		CPopOverride_ConVar<bool> m_UpgradeStationRegen;
 		CPopOverride_ConVar<bool> m_AllowBluePlayerReanimators;
+		CPopOverride_ConVar<bool> m_BluVelocityRemoveLimit;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -5198,7 +5201,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			//Msg("SpawnTemplateLate %s\n", it->template_name.c_str());
 		}
 		state.m_SpawnTemplates.clear();
-		
+
+		TogglePatches();
 //		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
 	}
@@ -5592,6 +5596,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_UpgradeStationRegen.Set(subkey->GetBool());
 				} else if (FStrEq(name, "AllowBluPlayerReanimators")) {
 					state.m_AllowBluePlayerReanimators.Set(subkey->GetBool());
+				} else if (FStrEq(name, "RemoveBluVelocityLimit")) {
+					state.m_BluVelocityRemoveLimit.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomNavFile")) {
 					char strippedFile[128];
 					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));

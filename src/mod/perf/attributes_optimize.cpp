@@ -19,7 +19,7 @@ namespace Mod::Perf::Attributes_Optimize
         //float in_alt;
         float out;
         //float out_alt;
-        unsigned int call_ctr = 0;
+        //unsigned int call_ctr = 0;
     };
 
     struct EntityAttribCache
@@ -60,6 +60,66 @@ namespace Mod::Perf::Attributes_Optimize
     int callscopy = 0;
     int callshookfloat = 0;
     int callshookint = 0;
+
+    EntityAttribCache* CreateNewCacheEntry(CBaseEntity *ent)
+    {
+        CAttributeManager *mgr = nullptr;
+
+        if (ent->IsPlayer()) {
+            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
+        }
+        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
+            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
+        }
+        
+        if (mgr == nullptr) {
+            //timer.End();
+            return nullptr;
+        }
+
+        EntityAttribCache *entity_cache = new EntityAttribCache();
+        entity_cache->mgr = mgr;
+
+        //attrib_manager_cache.push_back(entity_cache);
+        //attrib_manager_mgr_cache[entity_cache->mgr] = entity_cache;
+        return attrib_manager_cache_sp[ENTINDEX(ent)] = entity_cache;
+    }
+
+    float CalculateAttribValue(CBaseEntity *ent, float value, const char *attr, int index_insert, EntityAttribCache* entity_cache)
+    {
+        CAttributeManager *mgr = nullptr;
+        if (ent->IsPlayer()) {
+            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
+        }
+        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
+            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
+        }
+        if (mgr == nullptr)
+            return value;
+            
+        float result = mgr->ApplyAttributeFloat(value, ent, AllocPooledString_StaticConstantStringPointer(attr));
+
+        auto &attribs = entity_cache->attribs;
+
+        if (index_insert == -1)
+            index_insert = attribs.AddToTail();
+
+        entity_cache->count = attribs.Count();
+        //else {
+        //    attribs[index_insert].in_alt = attribs[index_insert].in;
+        //    attribs[index_insert].out_alt = attribs[index_insert].out;
+        //}
+        attribs[index_insert].in = value;
+        attribs[index_insert].out = result;
+        attribs[index_insert].name = attr;
+
+        entity_cache->last_name = attr;
+        entity_cache->last_in = value;
+        entity_cache->last_out = result;
+       //timerattr.End();
+        return result;
+    }
+
     float GetAttribValue(float value, const char *attr, CBaseEntity *ent, bool isint) {
         
         if (!Enabled()) {
@@ -96,29 +156,13 @@ namespace Mod::Perf::Attributes_Optimize
         else {
             entity_cache = attrib_manager_cache_sp[ENTINDEX(ent)];
             if (entity_cache == nullptr) {
-                CAttributeManager *mgr = nullptr;
-
-                if (ent->IsPlayer()) {
-                    mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
-                }
-                else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
-                    mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
-                }
-                
-                if (mgr == nullptr) {
-                    //timer.End();
+                entity_cache = CreateNewCacheEntry(ent);
+                if (entity_cache == nullptr) {
                     return value;
                 }
-
-                entity_cache = new EntityAttribCache();
-                entity_cache->mgr = mgr;
-
-                //attrib_manager_cache.push_back(entity_cache);
-                //attrib_manager_mgr_cache[entity_cache->mgr] = entity_cache;
-                attrib_manager_cache_sp[ENTINDEX(ent)] = entity_cache;
-
                 //DevMsg("Count %d %d\n",attrib_manager_cache.size(), entity_cache->mgr);
             }
+            
             //last_entity_2 = last_entity;
             //last_manager_2 = last_manager;
             last_entity = ent;
@@ -189,35 +233,7 @@ namespace Mod::Perf::Attributes_Optimize
             }
             //lastattribcalls = attrib.call_ctr;
         }
-        CAttributeManager *mgr = nullptr;
-        if (ent->IsPlayer()) {
-            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
-        }
-        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
-            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
-        }
-        if (mgr == nullptr)
-            return value;
-            
-        float result = mgr->ApplyAttributeFloat(value, ent, AllocPooledString_StaticConstantStringPointer(attr));
-
-        if (index_insert == -1)
-            index_insert = attribs.AddToTail();
-
-        entity_cache->count = attribs.Count();
-        //else {
-        //    attribs[index_insert].in_alt = attribs[index_insert].in;
-        //    attribs[index_insert].out_alt = attribs[index_insert].out;
-        //}
-        attribs[index_insert].in = value;
-        attribs[index_insert].out = result;
-        attribs[index_insert].name = attr;
-
-        entity_cache->last_name = attr;
-        entity_cache->last_in = value;
-        entity_cache->last_out = result;
-       //timerattr.End();
-        return result;
+        return CalculateAttribValue(ent, value, attr, index_insert, entity_cache);
     }
 
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)

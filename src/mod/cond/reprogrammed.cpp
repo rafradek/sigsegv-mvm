@@ -235,7 +235,7 @@ namespace Mod::Cond::Reprogrammed
 			if (pre_team == TF_TEAM_RED || pre_team == TF_TEAM_BLUE) {
 				/* don't change the team of weapons that have special giant-specific sounds, because the client only
 				 * uses those sound overrides if the weapon is on TF_TEAM_BLUE, and there's no other easy workaround */
-				if (pre_team == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode() && (!player->IsMiniBoss() || !WeaponHasMiniBossSounds(weapon))) {
+				if (pre_team == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode()) {
 				//	ConColorMsg(Color(0xff, 0x00, 0xff, 0xff),
 				//		"- weapon with itemdefidx %4d: no miniboss sounds\n", [](CBaseCombatWeapon *weapon){
 				//		CEconItemView *item_view = weapon->GetItem();
@@ -925,19 +925,19 @@ namespace Mod::Cond::Reprogrammed
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
 	{
-		std::vector<CBaseEntity *> weaponsTeamSwitched;
+		std::vector<std::pair<CBaseEntity *, int>> weaponsTeamSwitched;
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->IsMiniBoss() && player->GetTeamNumber() == TF_TEAM_RED) {
+			if (player->IsMiniBoss() && player->GetTeamNumber() != TF_TEAM_BLUE) {
 				auto weapon = player->GetActiveTFWeapon();
 				if (weapon != nullptr && WeaponHasMiniBossSounds(weapon)) {
+					weaponsTeamSwitched.push_back({weapon, weapon->GetTeamNumber()});
 					weapon->SetTeamNumber(TF_TEAM_BLUE);
-					weaponsTeamSwitched.push_back(weapon);
 				}
 			}
 		}); 
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
-		for (auto weapon : weaponsTeamSwitched) {
-			weapon->SetTeamNumber(TF_TEAM_RED);
+		for (auto &weapon : weaponsTeamSwitched) {
+			weapon.first->SetTeamNumber(weapon.second);
 		}
 	}
 
@@ -1038,7 +1038,7 @@ namespace Mod::Cond::Reprogrammed
 		{
 			if (PlayerResource() == nullptr) return;
 			
-			for (int i = 0; i < bots_killed.size(); i++) {
+			for (size_t i = 0; i < bots_killed.size(); i++) {
 				CTFPlayer *bot = bots_killed[i];
 				if (bot != nullptr && gpGlobals->curtime - bot->GetDeathTime() < 0.5f) {
 					PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(bot));

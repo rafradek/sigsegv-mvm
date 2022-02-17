@@ -5347,6 +5347,16 @@
 					type "sym"
 					sym  "_ZN24CTFProjectile_EnergyBall7ExplodeEP10CGameTraceP11CBaseEntity"
 				}
+				"CBaseEntity::GetTeamNumber"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity13GetTeamNumberEv"
+				}
+				"CObjectSentrygun::Attack"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun6AttackEv"
+				}
 				
 			}
 			"addrs_group"

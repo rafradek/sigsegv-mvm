@@ -185,6 +185,8 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value);
+
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
 	{
 		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CanAirDash)();
@@ -2499,16 +2501,19 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
 	RefCount rc_CTFPlayerShared_RemoveCond;
 	CBaseEntity *addcond_provider = nullptr;
 	CBaseEntity *addcond_provider_item = nullptr;
+	RefCount rc_CTFPlayerShared_PulseRageBuff;
 
 	int aoe_in_sphere_max_hit_count = 0;
 	int aoe_in_sphere_hit_count = 0;
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondIn);
 		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 
 		if (pProvider != player && (nCond == TF_COND_URINE || nCond == TF_COND_MAD_MILK || nCond == TF_COND_MARKEDFORDEATH || nCond == TF_COND_MARKEDFORDEATH_SILENT)) {
@@ -2521,16 +2526,19 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 
+			// If one condition was added due to another condition, ignore it
+			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(addcond_provider, flDuration, mult_effect_duration);
 			int iCondOverride = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
 
-			DevMsg("add cond pre %d\n", iCondOverride);
+			//DevMsg("add cond pre %d\n", iCondOverride);
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
 				for (int i = 0; i < 4; i++) {
 					int addcond = (iCondOverride >> (i * 8)) & 255;
-					DevMsg("add cond post %d\n", addcond);
+					//DevMsg("add cond post %d\n", addcond);
 					if (addcond != 0) {
 						nCond = (ETFCond) addcond;
 						DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
@@ -2540,13 +2548,13 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			auto weapon = ToBaseCombatWeapon(addcond_provider_item);
-			Msg(CFmtStr("provider item, %d\n", weapon));
+			//Msg(CFmtStr("provider item, %d %d %d\n", weapon, nCond, rc_CTFPlayerShared_AddCond));
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "effect add attributes", attribs);
 				
 				if (attribs != nullptr) {
 					std::string str(attribs);
-					Msg(CFmtStr("attribs, %s\n", attribs));
+					//Msg(CFmtStr("attribs, %s\n", attribs));
 					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
 
 					auto it = tokens.begin();
@@ -2555,7 +2563,7 @@ namespace Mod::Attr::Custom_Attributes
 						if (++it == tokens.end())
 							break;
 						auto &value = *it;
-						Msg(CFmtStr("provide, %s %f %f\n", attribute.c_str(), strtof(value.c_str(),nullptr), flDuration));
+						//Msg(CFmtStr("provide, %s %f %f\n", attribute.c_str(), strtof(value.c_str(),nullptr), flDuration));
 						player->AddCustomAttribute(attribute.c_str(), strtof(value.c_str(),nullptr), flDuration);
 						it++;
 					}
@@ -3505,12 +3513,41 @@ namespace Mod::Attr::Custom_Attributes
 		return (attr.GetAttributeDefinitionIndex() > 4200 && attr.GetAttributeDefinitionIndex() < 5000);
 	}
 
+	bool attribute_manager_no_clear_cache;
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
 	{	
 		auto list = reinterpret_cast<CAttributeList *>(this);
 		auto &attrs = list->Attributes();
 		int countpre = attrs.Count();
-		DETOUR_MEMBER_CALL(CAttributeList_SetRuntimeAttributeValue)(pAttrDef, flValue);
+
+		attribute_data_union_t oldValue;
+		oldValue.m_Float = FLT_MIN;
+
+		bool found = false;
+		for (int i = 0; i < countpre; i++) {
+			CEconItemAttribute &pAttribute = attrs[i];
+
+			if (pAttribute.GetAttributeDefinitionIndex() == pAttrDef->GetIndex())
+			{
+				// Found existing attribute -- change value.
+				oldValue = pAttribute.GetValue();
+				found = true;
+				if (memcmp(&pAttribute.GetValue().m_Float, &flValue, sizeof(float)) != 0) {
+					pAttribute.GetValuePtr()->m_Float = flValue;
+					list->NotifyManagerOfAttributeValueChanges();
+				}
+			}
+		}
+
+		// Couldn't find an existing attribute for this definition -- make a new one.
+		if (!found) {
+			CEconItemAttribute attribute(pAttrDef->GetIndex(), flValue);
+
+			attrs.AddToTail(attribute);
+			list->NotifyManagerOfAttributeValueChanges();
+		}
+
+		// DETOUR_MEMBER_CALL(CAttributeList_SetRuntimeAttributeValue)(pAttrDef, flValue);
 		// Move around attributes so that the custom attributes appear at the end of the list
 		if (pAttrDef != nullptr && countpre != attrs.Count() && attrs.Count() > 20 && (pAttrDef->GetIndex() < 4200 || pAttrDef->GetIndex() > 5000)) {
 			int count = attrs.Count();
@@ -3531,7 +3568,100 @@ namespace Mod::Attr::Custom_Attributes
 			}); */
 			list->NotifyManagerOfAttributeValueChanges();
 		}
+		
+		if (oldValue.m_Float != flValue) {
+			attribute_data_union_t newValue;
+			newValue.m_Float = flValue;
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+		}
 	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_RemoveAttribute, const CEconItemAttributeDefinition *pAttrDef)
+	{
+		auto list = reinterpret_cast<CAttributeList *>(this);
+		
+		attribute_data_union_t oldValue;
+		oldValue.m_Float = FLT_MIN;
+		auto attr = list->GetAttributeByID(pAttrDef->GetIndex());
+		if (attr != nullptr) {
+			oldValue = attr->GetValue();
+		}
+
+		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttribute)(pAttrDef);
+
+		if (oldValue.m_Float != FLT_MIN) {
+			attribute_data_union_t newValue;
+			newValue.m_Float = FLT_MIN;
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_RemoveAttributeByIndex, int index)
+	{
+		auto list = reinterpret_cast<CAttributeList *>(this);
+		auto &attrs = list->Attributes();
+		CEconItemAttributeDefinition *pAttrDef = nullptr;
+		attribute_data_union_t oldValue;
+		oldValue.m_Float = FLT_MIN;
+		
+		if (index >= 0 && index < attrs.Count()) {
+			oldValue = attrs[index].GetValue();
+			pAttrDef = attrs[index].GetStaticData();
+		}
+
+		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttributeByIndex)(index);
+
+		if (pAttrDef != nullptr) {
+			attribute_data_union_t newValue;
+			newValue.m_Float = FLT_MIN;
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_AddAttribute, CEconItemAttribute *attr)
+	{
+		auto list = reinterpret_cast<CAttributeList *>(this);
+
+		attribute_data_union_t oldValue;
+		oldValue.m_Float = FLT_MIN;
+		auto attrOld = list->GetAttributeByID(attr->GetAttributeDefinitionIndex());
+		if (attrOld != nullptr) {
+			oldValue = attr->GetValue();
+		}
+
+		DETOUR_MEMBER_CALL(CAttributeList_AddAttribute)(attr);
+
+		if (oldValue.m_UInt != attr->GetValue().m_UInt) {
+			OnAttributeChanged(list, attr->GetStaticData(), oldValue, attr->GetValue());
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_DestroyAllAttributes)
+	{
+		auto list = reinterpret_cast<CAttributeList *>(this);
+
+		auto &attrs = list->Attributes();
+		if (attrs.Count()) {
+			for (int i = attrs.Count() - 1; i >= 0; i--) {
+				auto &attr = attrs[i];
+				CEconItemAttributeDefinition *pAttrDef = attr.GetStaticData();
+				attribute_data_union_t oldValue = attr.GetValue();
+				attrs.Remove(i);
+
+				attribute_data_union_t newValue;
+				newValue.m_Float = FLT_MIN;
+				OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+			}
+			list->NotifyManagerOfAttributeValueChanges();
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CAttributeList_NotifyManagerOfAttributeValueChanges)
+	{
+		auto list = reinterpret_cast<CAttributeList *>(this);
+		DETOUR_MEMBER_CALL(CAttributeList_NotifyManagerOfAttributeValueChanges)();
+	}
+	
 
 	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage)
 	{
@@ -3955,6 +4085,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CAttributeManager_ClearCache)
 	{
         DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
+
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
         if (mgr->m_hOuter != nullptr) {
@@ -4016,10 +4147,105 @@ namespace Mod::Attr::Custom_Attributes
 				auto econ = reinterpret_cast<CEconEntity *>(rec[i].Get());
 				econ->GetAttributeContainer()->ClearCache();
 			}*/
+			
 			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
 				entity->GetAttributeContainer()->ClearCache();
 			});
 
+		}
+	}
+
+	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			auto player = ToTFPlayer(manager->m_hOuter);
+			if (player == nullptr && manager->m_hOuter != nullptr) {
+				player = ToTFPlayer(manager->m_hOuter->GetOwnerEntity());
+			}
+			return player;
+		}
+		return nullptr;
+	}
+
+	using AttributeCallback = void (*)(CAttributeList *, const CEconItemAttributeDefinition *, attribute_data_union_t, attribute_data_union_t);
+	std::vector<std::pair<unsigned short, AttributeCallback>> attribute_callbacks;
+	
+	void RegisterCallback(const char *attribute_class, AttributeCallback callback)
+	{
+		for (int i = 0; i < 30000; i++) {
+			auto attr = GetItemSchema()->GetAttributeDefinition(i);
+			if (attr != nullptr && strcmp(attr->GetAttributeClass(""), attribute_class) == 0) {
+				attribute_callbacks.push_back({i, callback});
+			}
+		}
+	}
+
+	unsigned short move_speed_attributes[] = {107, 442, 489, 378, 788, 792, 851, 1002, 75, 54};
+	unsigned short max_health_attributes[] = {125, 140, 26, 517};
+
+	void ClearAttributeManagerCachedAttribute(const char *class_name, CAttributeManager *manager)
+	{
+		auto &cached = manager->m_CachedResults.Get();
+		for(int i = cached.Count() - 1; i >= 0; i--) {
+			if (strcmp(STRING(cached[i].attrib), class_name) == 0) {
+				cached.Remove(i);
+			}
+		}
+	}
+
+	void ClearAttributeManagerCachedAttributeRecurse(const char *class_name, CAttributeManager *manager)
+	{
+		ClearAttributeManagerCachedAttribute(class_name, manager);
+		auto player = ToTFPlayer(manager->m_hOuter);
+		if (player != nullptr) {
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+				ClearAttributeManagerCachedAttribute(class_name, entity->GetAttributeContainer());
+			});
+		}
+		else if (manager->m_hOuter != nullptr) {
+			auto player = ToTFPlayer(manager->m_hOuter->GetOwnerEntity());
+			ClearAttributeManagerCachedAttribute(class_name, player->GetAttributeManager());
+		}
+	}
+
+	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		if (pAttrDef == nullptr) return;
+		
+		// auto manager = list->GetManager();
+		// if (manager != nullptr) {
+		// 	auto className = pAttrDef->GetAttributeClass();
+		// 	ClearAttributeManagerCachedAttributeRecurse(class_name, manager);
+		// }
+
+		int index = pAttrDef->GetIndex();
+
+		for (auto &pair : attribute_callbacks) {
+			if (pair.first == index) {
+				(*pair.second)(list, pAttrDef, old_value, new_value);
+			}
+		}
+	}
+
+	void OnMoveSpeedChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			player->TeamFortress_SetSpeed();
+		}
+	}
+
+	void OnMaxHealthChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			float change = old_value.m_Float == FLT_MIN ? new_value.m_Float : (new_value.m_Float == FLT_MIN ? -old_value.m_Float : new_value.m_Float - old_value.m_Float);
+			float maxHealth = player->GetMaxHealth();
+			float preMaxHealth = maxHealth - change;
+			float overheal = MAX(0, player->GetHealth() - preMaxHealth);
+			float preHealthRatio = MIN(1, player->GetHealth() / preMaxHealth);
+			player->SetHealth(maxHealth * preHealthRatio + overheal);
 		}
 	}
 
@@ -4171,7 +4397,13 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetSpreadAngles, "CTFWeaponBase::GetSpreadAngles");
+
 			MOD_ADD_DETOUR_MEMBER(CAttributeList_SetRuntimeAttributeValue, "CAttributeList::SetRuntimeAttributeValue");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_RemoveAttribute, "CAttributeList::RemoveAttribute");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_RemoveAttributeByIndex, "CAttributeList::RemoveAttributeByIndex");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_AddAttribute, "CAttributeList::AddAttribute");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_DestroyAllAttributes, "CAttributeList::DestroyAllAttributes");
+
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_RemoveHealingTarget, "CWeaponMedigun::RemoveHealingTarget");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_StartHealingTarget, "CWeaponMedigun::StartHealingTarget");
 			MOD_ADD_DETOUR_STATIC(FX_FireBullets, "FX_FireBullets");
@@ -4222,6 +4454,17 @@ namespace Mod::Attr::Custom_Attributes
 				DevMsg("Loaded attrs\n");
 				CUtlVector<CUtlString> err;
 				GetItemSchema()->BInitAttributes(kv, &err);
+			}
+			static bool attributeCallbackInstalled = false;
+			if (!attributeCallbackInstalled) {
+				attributeCallbackInstalled = true;
+				RegisterCallback("mult_player_movespeed", OnMoveSpeedChange);
+				RegisterCallback("mult_player_aiming_movespeed", OnMoveSpeedChange);
+				RegisterCallback("major_mult_player_movespeed", OnMoveSpeedChange);
+				RegisterCallback("mult_player_movespeed_shieldrequired", OnMoveSpeedChange);
+				RegisterCallback("mult_player_movespeed_active", OnMoveSpeedChange);
+				RegisterCallback("add_maxhealth", OnMaxHealthChange);
+				RegisterCallback("add_maxhealth_nonbuffed", OnMaxHealthChange);
 			}
 		}
 

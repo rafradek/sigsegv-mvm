@@ -939,6 +939,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer11PrecacheMvMEv"
 				}
+				"CTFPlayer::PostThink"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer9PostThinkEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{
