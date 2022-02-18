@@ -671,7 +671,7 @@ namespace Mod::Perf::SendProp_Optimize
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
                 int propcount = pTable->m_pPrecalc->m_Props.Count();
                 unsigned short *offset_data = player_prop_write_offset[objectID - 1].data();
-
+                
                 // Required for later writeproplist
                 offset_data[pTable->m_pPrecalc->m_Props.Count()] = pPrevFrame->GetNumBits() + 7;
 
@@ -692,7 +692,7 @@ namespace Mod::Perf::SendProp_Optimize
                     //}
 
                     offset_data[iToProp] = write_offset;
-                    
+
                     toBitsReader.SkipPropData(pProp);
                     lastbit = toBits.GetNumBitsRead();
                     lastprop = iToProp; 
@@ -761,12 +761,6 @@ namespace Mod::Perf::SendProp_Optimize
             
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
-
-    DETOUR_DECL_MEMBER(void, CTFPlayer_CreateViewModel, int index)
-    {
-        DETOUR_MEMBER_CALL(CTFPlayer_CreateViewModel)(index);
-        force_player_update[ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1] = true;
-    }
 
     IChangeInfoAccessor *world_accessor = nullptr;
     CEdictChangeInfo *world_change_info = nullptr;
@@ -866,7 +860,6 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,   "CAttributeManager::ClearCache [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateViewModel, "CTFPlayer::CreateViewModel");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
             MOD_ADD_DETOUR_STATIC(PackEntities_Normal,   "PackEntities_Normal");
             MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,   "SendTable_WritePropList");
@@ -971,15 +964,17 @@ namespace Mod::Perf::SendProp_Optimize
                     
                     int elementCount = 1;
                     int elementStride = 0;
-                    
+                    int propIdToUse = iToProp;
                     if ( pProp->GetType() == DPT_Array )
                     {
                         offset = pProp->GetArrayProp()->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
                         elementCount = pProp->m_nElements;
                         elementStride = pProp->m_ElementStride;
+                        pProp = pProp->GetArrayProp();
+                        propIdToUse -= iToProp - 1;
                     }
 
-                    player_prop_offsets[iToProp] = offset;
+                    player_prop_offsets[propIdToUse] = offset;
 
 
                     //if (pProp->GetType() == DPT_Vector || pProp->GetType() == DPT_Vector )
@@ -990,13 +985,13 @@ namespace Mod::Perf::SendProp_Optimize
                         int offset_off = offset;
                         for ( int j = 0; j < elementCount; j++ )
                         {
-                            AddOffsetToList(offset_off, iToProp);
+                            AddOffsetToList(offset_off, propIdToUse);
                             if (pProp->GetType() == DPT_Vector) {
-                                AddOffsetToList(offset_off + 4, iToProp);
-                                AddOffsetToList(offset_off + 8, iToProp);
+                                AddOffsetToList(offset_off + 4, propIdToUse);
+                                AddOffsetToList(offset_off + 8, propIdToUse);
                             }
                             else if (pProp->GetType() == DPT_VectorXY) {
-                                AddOffsetToList(offset_off + 4, iToProp);
+                                AddOffsetToList(offset_off + 4, propIdToUse);
                             }
                             offset_off += elementStride;
                         }

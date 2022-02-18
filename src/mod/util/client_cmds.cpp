@@ -1164,6 +1164,33 @@ namespace Mod::Util::Client_Cmds
 			
 
 		}
+		else if (strcmp(args[2], "findentity") == 0) {
+			
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+			for (CBaseEntity *targetEnt = nullptr; (targetEnt = servertools->FindEntityByName(targetEnt, "somename", player, player, player)) != nullptr ;) {
+                
+            }
+			}
+			timer.End();
+			displaystr += CFmtStr("find entity by name time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+			for (CBaseEntity *targetEnt = nullptr; (targetEnt = servertools->FindEntityByClassname(targetEnt, "player")) != nullptr ;) {
+                
+            }
+			}
+			timer.End();
+			displaystr += CFmtStr("find entity by classname time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+			for (CBaseEntity *targetEnt = nullptr; (targetEnt = servertools->FindEntityGeneric(targetEnt, "logic_relay")) != nullptr ;) {
+                
+            }
+			}
+			timer.End();
+			displaystr += CFmtStr("find entity generic time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
 		ClientMsg(player, "%s", displaystr.c_str());
 	}
 

@@ -1675,6 +1675,14 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
 		
+		// Reapply attributes to custom weapons, as if they come with attributes used by upgrades, those attributes will be removed
+		ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+			bool isCustom = false;
+			auto name = GetItemName(entity->GetItem(), isCustom);
+			if (isCustom) {
+				AddCustomWeaponAttributes(name, entity->GetItem());
+			}
+		});
 
 		if (remove && !state.m_ItemAttributes.empty()) {
 			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
