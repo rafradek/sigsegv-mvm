@@ -183,9 +183,17 @@ MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, floa
 
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime,    CTFPlayer);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_iSpawnCounter,          CTFPlayer);
 IMPL_RELATIVE(CTFPlayerAnimState *, CTFPlayer, m_PlayerAnimState,        m_hItem, -0x18); // 20170116a
 //IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
 IMPL_RELATIVE(bool,                 CTFPlayer, m_bFeigningDeath,         m_bArenaSpectator, -0x14);
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntAttackTime, m_iSpawnCounter, -32);
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntInhaleTime, m_iSpawnCounter, -28);
+IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntAttack, m_iSpawnCounter, -24);
+IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntAttackCount, m_iSpawnCounter, -20);
+IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntRPSResult, m_iSpawnCounter, -16);
+IMPL_RELATIVE(int,                  CTFPlayer, m_iPreTauntWeaponSlot, m_iSpawnCounter, -12);
+IMPL_RELATIVE(int,                  CTFPlayer, m_iPreTauntFOV, m_iSpawnCounter, -8);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bArenaSpectator,        CTFPlayer);
 IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,            CTFPlayer);
 IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,                  CTFPlayer);

@@ -418,8 +418,16 @@ public:
 
 	DECL_SENDPROP_RW(CTFPlayerShared,      m_Shared);
 	DECL_SENDPROP   (float,                m_flMvMLastDamageTime);
+    DECL_SENDPROP   (bool,                 m_iSpawnCounter);
 	DECL_RELATIVE   (CTFPlayerAnimState *, m_PlayerAnimState);
 	DECL_RELATIVE   (bool,                 m_bFeigningDeath);
+    DECL_RELATIVE   (float,      m_flTauntAttackTime);
+    DECL_RELATIVE   (float,      m_flTauntInhaleTime);
+    DECL_RELATIVE   (int,        m_iTauntAttack);
+    DECL_RELATIVE   (int,        m_iTauntAttackCount);
+    DECL_RELATIVE   (int,        m_iTauntRPSResult);
+    DECL_RELATIVE   (int,        m_iPreTauntWeaponSlot);
+    DECL_RELATIVE   (int,        m_iPreTauntFOV);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hGrapplingHookTarget);
 	DECL_SENDPROP   (int,        m_nBotSkill);
 	DECL_SENDPROP   (bool,       m_bAllowMoveDuringTaunt);
