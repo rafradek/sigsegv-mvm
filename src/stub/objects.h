@@ -95,9 +95,9 @@ public:
 	void SentryThink()         { ft_SentryThink  (this); }
 	DECL_EXTRACT(float, m_flNextRocketFire);
 	DECL_SENDPROP(int, m_iAmmoShells);
-	DECL_SENDPROP(int, m_iMaxAmmoShells);
+	DECL_RELATIVE(int, m_iMaxAmmoShells);
 	DECL_SENDPROP(int, m_iAmmoRockets);
-	DECL_SENDPROP(int, m_iMaxAmmoRockets);
+	DECL_RELATIVE(int, m_iMaxAmmoRockets);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
 	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;

@@ -88,6 +88,13 @@ public:
 	CEventAction *m_pNext;
 };
 
+abstract_class IEntityFindFilter
+{
+public:
+	virtual bool ShouldFindEntity( CBaseEntity *pEntity ) = 0;
+	virtual CBaseEntity *GetFilterResult( void ) = 0;
+};
+
 class CBaseEntityOutput
 {
 public:
@@ -128,6 +135,31 @@ public:
 	// ...
 };
 
+/*class CEntInfo
+{
+public:
+	IHandleEntity	*m_pEntity;
+	int				m_SerialNumber;
+	CEntInfo		*m_pPrev;
+	CEntInfo		*m_pNext;
+
+	void			ClearLinks();
+};*/
+
+class CEntInfoList
+{
+public:
+	CEntInfo		*m_pHead;
+	CEntInfo		*m_pTail;
+};
+
+/*class CBaseEntityList
+{
+public:
+	void *vtable;
+	CEntInfo m_EntPtrArray[NUM_ENT_ENTRIES];
+	CEntInfoList	m_activeList;
+};*/
 
 class CBaseEntity : public IServerEntity
 {
@@ -178,7 +210,9 @@ public:
 	/* getter/setter */
 	IServerNetworkable *GetNetworkable() const    { return &this->m_Network; }
 	CServerNetworkProperty *NetworkProp() const   { return &this->m_Network; }
-	inline const char *GetClassname() const              { return STRING((string_t)this->m_iClassname); }
+	inline const char *GetClassname() const       { return STRING((string_t)this->m_iClassname); }
+	inline string_t GetClassnameString() const   { return this->m_iClassname; }
+	void SetClassname(string_t classname)         { this->m_iClassname = classname; }
 	string_t GetEntityName() const                { return this->m_iName; }
 	void SetName(string_t newName)                { this->m_iName = newName; }
 	ICollideable *GetCollideable() const          { return &this->m_Collision; }

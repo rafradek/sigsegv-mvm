@@ -2264,4 +2264,22 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4542"
+    {
+        "name"	"taunt attack after end"
+        "attribute_class"	"taunt_attack_after_end"
+        "description_string"	"Taunt attack may happen even after the taunt ended"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4543"
+    {
+        "name"	"taunt attack time mult"
+        "attribute_class"	"taunt_attack_time_mult"
+        "description_string"	"(+-)%p% taunt attack time"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

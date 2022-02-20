@@ -27,9 +27,9 @@ bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, c
 {
     return (compare_by_log_name 
         && FStrEq(base_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"))
-        && ((!base_name.empty() && !item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/) 
+        && ((!base_name.empty() && item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/) 
         || FStrEq(log_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("item_logname"))))
-        || base_melee_class == classname && FStrEq(item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"), "Frying Pan");
+        || (base_melee_class == classname && FStrEq(item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"), "Frying Pan"));
 }
 
 ActionResult<CTFBot> CTFBotMoveTo::OnStart(CTFBot *actor, Action<CTFBot> *action)

@@ -335,6 +335,82 @@ inline bool StringToFloatStrict(const char *str, float& out, const char **next =
 	}
 }
 
+inline bool IsStrLower(const char *pch)
+{
+	const char *pCurrent = pch;
+	while ( *pCurrent != '\0' )
+	{
+		if ( *pCurrent >= 'A' && *pCurrent <= 'Z' )
+			return false;
+
+		pCurrent++;
+	}
+
+	return true;
+}
+
+inline void StrLowerCopy(const char *in, char *out)
+{
+	char c;
+	while(true) {
+		c = *(in++);
+		if (c >= 'A' && c <= 'Z') {
+			*out = c + 32; 
+		}
+		else {
+			*out = c;
+		}
+		out++;
+
+		if (c == '\0') break;
+	}
+}
+
+inline void StrLowerCopy(const char *in, char *out, size_t len)
+{
+	char c;
+	size_t i = 0;
+	while(i < len) {
+		c = *(in++);
+		if (c >= 'A' && c <= 'Z') {
+			*out = c + 32; 
+		}
+		else {
+			*out = c;
+		}
+		out++;
+
+		if (c == '\0') break;
+		i++;
+	}
+}
+
+inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
+{
+	if ( nameToMatch == NULL_STRING )
+		return (!pszQuery || *pszQuery == 0 || *pszQuery == '*');
+
+	const char *pszNameToMatch = STRING(nameToMatch);
+
+	while ( *pszNameToMatch && *pszQuery )
+	{
+		unsigned char cName = *pszNameToMatch;
+		unsigned char cQuery = *pszQuery;
+		// simple ascii case conversion
+		if (cName != cQuery) break;
+		++pszNameToMatch;
+		++pszQuery;
+	}
+
+	if ( *pszQuery == 0 && *pszNameToMatch == 0 )
+		return true;
+
+	// @TODO (toml 03-18-03): Perhaps support real wildcards. Right now, only thing supported is trailing *
+	if ( *pszQuery == '*' )
+		return true;
+
+	return false;
+}
 
 template<int SIZE_BUF = FMTSTR_STD_LEN, typename... ARGS>
 std::string CFmtStdStr(ARGS&&... args)

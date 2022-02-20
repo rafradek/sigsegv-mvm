@@ -26,6 +26,11 @@
 namespace Mod::Etc::Mapentity_Additions
 {
 
+#if defined(__GNUC__) && (__GNUC__ >= 11)
+#define GCC11 
+#endif
+
+#ifdef GCC11
     namespace {
         // just dump these here-
 
@@ -109,7 +114,7 @@ namespace Mod::Etc::Mapentity_Additions
             }
         };
     }
-
+#endif
     static const char *SPELL_TYPE[] = {
         "Fireball",
         "Ball O' Bats",
@@ -1547,6 +1552,7 @@ namespace Mod::Etc::Mapentity_Additions
 
                 return true;
             }
+#ifdef GCC11
             else if(stricmp(szInputName, "TauntFromItem") == 0){
                 CTFPlayer* player{ToTFPlayer(ent)};
                 auto view{CEconItemView::Create()};
@@ -1627,6 +1633,7 @@ namespace Mod::Etc::Mapentity_Additions
                 }
             }
             
+#endif
         }
         else if (ent->GetClassname() == point_viewcontrol_classname) {
             auto camera = static_cast<CTriggerCamera *>(ent);
@@ -2497,20 +2504,140 @@ namespace Mod::Etc::Mapentity_Additions
         return functor(pStartEntity, szName);
     }
 
+    string_t last_find_entity_name_str = NULL_STRING;
+    const char *last_find_entity_name = nullptr;
+    bool last_find_entity_wildcard = false;
+    ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_NONE, "Converts all entity names to lowercase for faster lookup", 
+        [](IConVar *pConVar, const char *pOldValue, float flOldValue){
+            // Immediately convert every name and classname to lowercase
+            if (static_cast<ConVar *>(pConVar)->GetBool()) {
+                ForEachEntity([](CBaseEntity *entity){
+                    if (entity->GetEntityName() != NULL_STRING) {
+                        char *lowercase = stackalloc(strlen(STRING(entity->GetEntityName())) + 1);
+                        StrLowerCopy(STRING(entity->GetEntityName()), lowercase);
+                        entity->SetName(AllocPooledString(lowercase));
+                    }
+                    if (entity->GetClassnameString() != NULL_STRING) {
+                        char *lowercase = stackalloc(strlen(STRING(entity->GetClassnameString())) + 1);
+                        StrLowerCopy(STRING(entity->GetClassnameString()), lowercase);
+                        entity->SetClassname(AllocPooledString(lowercase));
+                    }
+                });
+            }
+		});
+
     DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName)
 	{
-        if (szName == nullptr || szName[0] != '@') return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
-        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByClassname(entity, realname);});
+        if (szName == nullptr || szName[0] == '\0') return nullptr;
 
-		//return 
+        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByClassname(entity, realname);});
+
+        if (!cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
+
+		auto entList = reinterpret_cast<CBaseEntityList *>(this);
+
+        string_t lowercaseStr;
+        if (szName == last_find_entity_name) {
+            lowercaseStr = last_find_entity_name_str;
+        }
+        else {
+            int length = strlen(szName);
+            last_find_entity_name = szName;
+            last_find_entity_wildcard = szName[length - 1] == '*';
+            char *lowercase = stackalloc(length + 1);
+            StrLowerCopy(szName, lowercase);
+            last_find_entity_name_str = lowercaseStr = AllocPooledString(lowercase);
+        }
+        
+        const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
+
+        if (!last_find_entity_wildcard) {
+            for ( ;pInfo; pInfo = pInfo->m_pNext ) {
+                CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
+                if (!ent) {
+                    DevWarning( "NULL entity in global entity list!\n" );
+                    continue;
+                }
+
+                if (ent->GetClassnameString() == lowercaseStr) {
+                    return ent;
+                }
+            }
+        }
+        else {
+            for ( ;pInfo; pInfo = pInfo->m_pNext ) {
+                CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
+                if (!ent) {
+                    DevWarning( "NULL entity in global entity list!\n" );
+                    continue;
+                }
+
+                if (NamesMatchCaseSensitve(STRING(lowercaseStr), ent->GetClassnameString())) {
+                    return ent;
+                }
+            }
+        }
+		return nullptr;
     }
 
     DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByName, CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pSearchingEntity, CBaseEntity *pActivator, CBaseEntity *pCaller, IEntityFindFilter *pFilter)
 	{
-        if (szName == nullptr || szName[0] != '@') return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
-        return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
+        if (szName == nullptr || szName[0] == '\0') return nullptr;
+
+        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
+
+        if (szName[0] == '!' || !cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
         
-		//return ;
+        auto entList = reinterpret_cast<CBaseEntityList *>(this);
+
+        string_t lowercaseStr;
+        if (szName == last_find_entity_name) {
+            lowercaseStr = last_find_entity_name_str;
+        }
+        else {
+            int length = strlen(szName);
+            last_find_entity_name = szName;
+            last_find_entity_wildcard = szName[length - 1] == '*';
+            char *lowercase = stackalloc(length + 1);
+            StrLowerCopy(szName, lowercase);
+            last_find_entity_name_str = lowercaseStr = AllocPooledString(lowercase);
+        }
+        
+        const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
+
+        if (!last_find_entity_wildcard) {
+            for ( ;pInfo; pInfo = pInfo->m_pNext ) {
+                CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
+                if (!ent) {
+                    DevWarning( "NULL entity in global entity list!\n" );
+                    continue;
+                }
+
+                if (ent->GetEntityName() == lowercaseStr)
+                {
+                    if (pFilter && !pFilter->ShouldFindEntity(ent)) continue;
+
+                    return ent;
+                }
+            }
+        }
+        else {
+            for ( ;pInfo; pInfo = pInfo->m_pNext ) {
+                CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
+                if (!ent) {
+                    DevWarning( "NULL entity in global entity list!\n" );
+                    continue;
+                }
+                
+                if (NamesMatchCaseSensitve(STRING(lowercaseStr), ent->GetEntityName()))
+                {
+                    if (pFilter && !pFilter->ShouldFindEntity(ent)) continue;
+
+                    return ent;
+                }
+            }
+        }
+		return nullptr;
 	}
 
     DETOUR_DECL_MEMBER(void, CTFMedigunShield_RemoveShield)
@@ -2677,8 +2804,32 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(bool, CBaseEntity_KeyValue, const char *szKeyName, const char *szValue)
 	{
         parse_ent = reinterpret_cast<CBaseEntity *>(this);
+        if (cvar_fast_lookup.GetBool()) {
+            if (FStrEq(szKeyName, "targetname")) {
+                char *lowercase = stackalloc(strlen(szValue) + 1);
+                StrLowerCopy(szValue, lowercase);
+                parse_ent->SetName(AllocPooledString(lowercase));
+                return true;
+            }
+            else if (FStrEq(szKeyName, "classname")) {
+                char *lowercase = stackalloc(strlen(szValue) + 1);
+                StrLowerCopy(szValue, lowercase);
+                parse_ent->SetClassname(AllocPooledString(lowercase));
+                return true;
+            }
+        }
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_PostConstructor, const char *classname)
+	{
+        if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
+            char *lowercase = stackalloc(strlen(classname) + 1);
+            StrLowerCopy(classname, lowercase, 255);
+            parse_ent->SetClassname(AllocPooledString(lowercase));
+        }
+        return DETOUR_MEMBER_CALL(CBaseEntity_PostConstructor)(classname);
+    }
 
     PooledString filter_keyvalue_class("$filter_keyvalue");
     PooledString filter_variable_class("$filter_variable");

@@ -121,6 +121,7 @@ WaveSchedule
 	CustomScriptSoundFile "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] 
 	AllowBluPlayerReanimators 1 [$SIGSEGV] // Allow reanimators for BLU players (default: 0)
 	RemoveBluVelocityLimit 1 [$SIGSEGV] // Remove 1000 hu velocity limit for BLU team (default: 0)
+	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -1331,7 +1332,7 @@ WaveSchedule
 					Name "TF_COND_REPROGRAMMED" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
 					//Index 43 //Condition index can be used instead
 					Delay 3 // Delay before the condition activates (Default: 0)
-					Duration 99 // Duration of the condition effect (Default: 0 - infinite duration)
+					Duration 99 // Duration of the condition effect (Default: -1 - infinite duration)
 					IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
 				}
@@ -1339,7 +1340,7 @@ WaveSchedule
 				{
 					Name "TF_COND_URINE" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
 					//Index 43 //Condition index can be used instead
-					Duration 3 // Duration of the condition effect (Default: 0 - infinite duration)
+					Duration 3 // Duration of the condition effect (Default: -1 - infinite duration)
 					IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
 				}
@@ -1483,7 +1484,7 @@ WaveSchedule
 				EngineLoopSound "Weapon_Minigun.Fire" [$SIGSEGV] //Tank engine sound override, will only loop if the sound was made to be looping.
 				// DestroyTemplate "Blockade" [$SIGSEGV] //Override default tank destroy animation with template
 				TeamNum 2 [$SIGSEGV] //Override tank team (Default: 3)
-				OffsetZ 174 [$SIGSEGV] // Tank distance off the ground (Default: 0) 
+				OffsetZ 0 [$SIGSEGV] // Tank distance off the ground (Default: 0) 
 					// 150 - Max melee range without jumping
 					// 174 - max sword range without jumping
 					// 190 - max melee range with jumping

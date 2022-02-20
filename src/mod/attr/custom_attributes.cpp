@@ -915,8 +915,8 @@ namespace Mod::Attr::Custom_Attributes
 
 			int weaponid = weapon->GetWeaponID();
 			// Allow SPECIAL1 sound for Cow Mangler and SPECIAL3 sound for short circuit
-			if (index == 11 && weaponid != TF_WEAPON_PARTICLE_CANNON) return;
-			if (index == 13 && weaponid != TF_WEAPON_MECHANICAL_ARM) return;
+			if (index == 11 && weaponid != TF_WEAPON_PARTICLE_CANNON) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			if (index == 13 && weaponid != TF_WEAPON_MECHANICAL_ARM) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
 
 			int attr_name = -1;
 
@@ -2631,9 +2631,48 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DoTauntAttack)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
-		addcond_provider = reinterpret_cast<CTFPlayer *>(this);
-		addcond_provider_item = GetEconEntityAtLoadoutSlot(reinterpret_cast<CTFPlayer *>(this), LOADOUT_POSITION_SECONDARY);
+		
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		addcond_provider = player;
+		addcond_provider_item = GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_SECONDARY);
+		
+		int attackWhenInterrupted = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player->GetActiveTFWeapon(), attackWhenInterrupted, taunt_attack_after_end);
+		bool removeTauntAfter = false;
+		if (attackWhenInterrupted != 0) {
+			removeTauntAfter = (player->m_Shared->m_nPlayerCond & TF_COND_TAUNTING) == 0;
+			player->m_Shared->m_nPlayerCond |= 1 << TF_COND_TAUNTING;
+		}
+
 		DETOUR_MEMBER_CALL(CTFPlayer_DoTauntAttack)();
+
+		if (removeTauntAfter) {
+			player->m_Shared->m_nPlayerCond &= ~(1 << TF_COND_TAUNTING);
+		}
+
+		if (player->m_flTauntAttackTime > gpGlobals->curtime) {
+			float attackDelayMult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player->GetActiveTFWeapon(), attackDelayMult, taunt_attack_time_mult);
+			if (attackDelayMult != 1.0f) {
+				float attackDelay = player->m_flTauntAttackTime - gpGlobals->curtime;
+				attackDelay *= attackDelayMult;
+				player->m_flTauntAttackTime = gpGlobals->curtime + attackDelay;
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ClearTauntAttack)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		int attackWhenInterrupted = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player->GetActiveTFWeapon(), attackWhenInterrupted, taunt_attack_after_end);
+		if (attackWhenInterrupted != 0) {
+			return;
+		}
+
+		DETOUR_MEMBER_CALL(CTFPlayer_ClearTauntAttack)();
 	}
 
 	#define WEAPON_USE_DETOUR \
@@ -3811,6 +3850,23 @@ namespace Mod::Attr::Custom_Attributes
 		return healRate;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Taunt, taunts_t index, int concept)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, concept);
+
+		if (player->m_flTauntAttackTime > gpGlobals->curtime) {
+			float attackDelayMult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, attackDelayMult, taunt_attack_time_mult);
+			if (attackDelayMult != 1.0f) {
+				float attackDelay = player->m_flTauntAttackTime - gpGlobals->curtime;
+				attackDelay *= attackDelayMult;
+				player->m_flTauntAttackTime = gpGlobals->curtime + attackDelay;
+			}
+		}
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -4410,6 +4466,9 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Energy_Recharge, "CTFWeaponBase::Energy_Recharge");
             MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_GetHealRate, "CWeaponMedigun::GetHealRate");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_Explode, "CTFProjectile_EnergyBall::Explode");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClearTauntAttack, "CTFPlayer::ClearTauntAttack");
+			
 
 		//  Implement disable alt fire
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_ItemPostFrame, "CBasePlayer::ItemPostFrame");

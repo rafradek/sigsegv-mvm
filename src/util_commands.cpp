@@ -16,7 +16,7 @@ CON_COMMAND_F(find_ent_ex, "Find and list all entities with classnames or target
 	
 	size_t nMaxClass  = 0;
 	size_t nMaxTarget = 0;
-	std::map<int, CBaseEntity *> matches;
+	std::multimap<int, CBaseEntity *> matches;
 	
 	size_t nTotalEntities = 0;
 	

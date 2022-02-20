@@ -135,6 +135,7 @@ using CExtract_CTFPlayerShared_m_ConditionData = IExtractStub;
 
 #endif
 
+IMPL_SENDPROP(int, CTFConditionList, _condition_bits, CTFPlayer);
 
 MemberFuncThunk<CMultiplayerAnimState *, void> CMultiplayerAnimState::ft_OnNewModel("CMultiplayerAnimState::OnNewModel");
 
@@ -160,6 +161,8 @@ IMPL_SENDPROP(int,         CTFPlayerShared, m_nPlayerState,            CTFPlayer
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iAirDash,                CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iDesiredPlayerClass,     CTFPlayer);
 IMPL_SENDPROP(bool,        CTFPlayerShared, m_bHasPasstimeBall,        CTFPlayer);
+IMPL_SENDPROP(uint,        CTFPlayerShared, m_nPlayerCond,             CTFPlayer);
+IMPL_SENDPROP(CTFConditionList,     CTFPlayerShared, m_ConditionList,  CTFPlayer);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 

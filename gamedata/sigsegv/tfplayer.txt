@@ -944,7 +944,16 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9PostThinkEv"
 				}
-				
+				"CTFPlayer::CreateViewModel"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer15CreateViewModelEi"
+				}
+				"CTFPlayer::ClearTauntAttack"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16ClearTauntAttackEv"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

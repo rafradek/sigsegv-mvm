@@ -223,6 +223,14 @@ enum ETFCond : int32_t
 	TF_COND_COUNT,
 };
 
+class CTFConditionList 
+{
+public:
+	void NetworkStateChanged() {};
+	void NetworkStateChanged(void *pVar) {};
+	DECL_SENDPROP(uint,                 _condition_bits);
+};
+
 struct condition_source_t
 {
 	int datatable;
@@ -309,6 +317,8 @@ public:
 	DECL_SENDPROP(int,         m_iDesiredPlayerClass);
 	DECL_SENDPROP(bool,        m_bHasPasstimeBall);
 	DECL_EXTRACT (CUtlVector<condition_source_t>, m_ConditionData);
+	DECL_SENDPROP_RW(CTFConditionList,     m_ConditionList);
+	DECL_SENDPROP(uint,        m_nPlayerCond);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
