@@ -616,7 +616,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_UpgradeStationRegen             ("sig_mvm_upgradestation_regen_improved"),
 			m_AllowBluePlayerReanimators      ("sig_mvm_jointeam_blue_allow_revive"),
 			m_BluVelocityRemoveLimit          ("sig_mvm_blu_velocity_limit_remove"),
-			m_FastEntityNameLookup            ("sig_etc_fast_entity_name_lookup")
+			m_FastEntityNameLookup            ("sig_etc_fast_entity_name_lookup"),
+			m_AllowMultipleSappers            ("sig_mvm_sapper_allow_multiple_active")
+			
 		{
 			this->Reset();
 		}
@@ -752,6 +754,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AllowBluePlayerReanimators.Reset();
 			this->m_BluVelocityRemoveLimit.Reset();
 			this->m_FastEntityNameLookup.Reset();
+			this->m_AllowMultipleSappers.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -960,6 +963,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_AllowBluePlayerReanimators;
 		CPopOverride_ConVar<bool> m_BluVelocityRemoveLimit;
 		CPopOverride_ConVar<bool> m_FastEntityNameLookup;
+		CPopOverride_ConVar<bool> m_AllowMultipleSappers;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1658,21 +1662,19 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		// Delete refundable custom weapons from player inventory
 		if (remove && !state.m_BoughtLoadoutItems.empty()) {
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				auto playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
-				auto playerItemsSelected = state.m_SelectedLoadoutItems[player];
-				for (auto it = playerItems.begin(); it != playerItems.end();) {
-					int id = *it;
-					if (state.m_ExtraLoadoutItems[id].allow_refund) {
-						player->RemoveCurrency(-state.m_ExtraLoadoutItems[id].cost);
-						it = playerItems.erase(it);
-						playerItemsSelected.erase(id);
-					}
-					else {
-						it++;
-					}
+			auto playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
+			auto playerItemsSelected = state.m_SelectedLoadoutItems[player];
+			for (auto it = playerItems.begin(); it != playerItems.end();) {
+				int id = *it;
+				if (state.m_ExtraLoadoutItems[id].allow_refund) {
+					player->RemoveCurrency(-state.m_ExtraLoadoutItems[id].cost);
+					it = playerItems.erase(it);
+					playerItemsSelected.erase(id);
 				}
-			});
+				else {
+					it++;
+				}
+			}
 		}
 
 		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
@@ -5610,6 +5612,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_BluVelocityRemoveLimit.Set(subkey->GetBool());
 				} else if (FStrEq(name, "FastEntityNameLookup")) {
 					state.m_FastEntityNameLookup.Set(subkey->GetBool());
+				} else if (FStrEq(name, "AllowMultipleSappers")) {
+					state.m_AllowMultipleSappers.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomNavFile")) {
 					char strippedFile[128];
 					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));

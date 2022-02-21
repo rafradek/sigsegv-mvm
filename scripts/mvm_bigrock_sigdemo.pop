@@ -122,6 +122,7 @@ WaveSchedule
 	AllowBluPlayerReanimators 1 [$SIGSEGV] // Allow reanimators for BLU players (default: 0)
 	RemoveBluVelocityLimit 1 [$SIGSEGV] // Remove 1000 hu velocity limit for BLU team (default: 0)
 	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
+	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)

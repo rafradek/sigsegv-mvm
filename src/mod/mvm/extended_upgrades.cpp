@@ -1128,6 +1128,13 @@ namespace Mod::MvM::Extended_Upgrades
 		});
 	}
 
+    RefCount rc_CUpgrades_GrantOrRemoveAllUpgrades;
+    DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
+	{
+        SCOPED_INCREMENT_IF(rc_CUpgrades_GrantOrRemoveAllUpgrades, remove);
+        DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
+    }
+
     DETOUR_DECL_STATIC(int, GetUpgradeStepData, CTFPlayer *player, int slot, int upgrade, int& cur_step, bool& over_cap)
 	{
         if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
@@ -1155,6 +1162,10 @@ namespace Mod::MvM::Extended_Upgrades
             }
         }
 		auto result = DETOUR_STATIC_CALL(GetUpgradeStepData)(player, slot, upgrade, cur_step, over_cap);
+        // To reduce refund execution time, only count steps that are bought for the item
+        if (rc_CUpgrades_GrantOrRemoveAllUpgrades && result > cur_step) {
+            return cur_step;
+        }
 		return result;
 	}
 
@@ -1204,6 +1215,8 @@ namespace Mod::MvM::Extended_Upgrades
             //MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
+            MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades, "CUpgrades::GrantOrRemoveAllUpgrades");
+            
 
             // Properly track string attribute upgrades
             MOD_ADD_DETOUR_STATIC(GetUpgradeStepData, "GetUpgradeStepData");

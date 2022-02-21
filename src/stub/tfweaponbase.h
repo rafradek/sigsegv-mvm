@@ -370,6 +370,7 @@ const char *WeaponIdToAlias(int weapon_id);
 float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon);
 
 inline CEconEntity *GetEconEntityAtLoadoutSlot(CTFPlayer *player, int slot) {
+	if (slot < 0) return nullptr;
 	CEconEntity *entity = nullptr;
 	CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(player, slot, &entity);
 	return entity;
