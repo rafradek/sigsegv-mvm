@@ -1541,7 +1541,7 @@ namespace Mod::Attr::Custom_Attributes
 			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
 
 			if (alwaysCrit) {
-				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_CARD_EFFECT, 0.5f, nullptr);
+				owner->m_Shared->AddCond(TF_COND_CRITBOOSTED_USER_BUFF, 0.5f, nullptr);
 			}
 			
 			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);
@@ -3382,8 +3382,8 @@ namespace Mod::Attr::Custom_Attributes
 		if (owner != nullptr) {
 			int alwaysCrit = GetFastAttributeInt(weapon, 0, ALWAYS_CRIT);
 
-			if (alwaysCrit && owner->m_Shared->GetConditionDuration(TF_COND_CRITBOOSTED_CARD_EFFECT) < 0.5f) {
-				owner->m_Shared->RemoveCond(TF_COND_CRITBOOSTED_CARD_EFFECT);
+			if (alwaysCrit && owner->m_Shared->GetConditionDuration(TF_COND_CRITBOOSTED_USER_BUFF) < 0.5f) {
+				owner->m_Shared->RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
 			}
 			
 			int addcond = GetFastAttributeInt(weapon, 0, ADD_COND_ON_ACTIVE);

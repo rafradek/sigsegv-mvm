@@ -876,6 +876,11 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				vec.z += 50.0f;
 			if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
 				player->Teleport(&(vec),&(teleOut->GetAbsAngles()),&(player->GetAbsVelocity()));
+				static ConVarRef uberDuration("tf_mvm_engineer_teleporter_uber_duration");
+				if (uberDuration.GetFloat() != 5.0f) {
+					player->m_Shared->AddCond(TF_COND_INVULNERABLE, uberDuration.GetFloat());
+					player->m_Shared->AddCond(TF_COND_INVULNERABLE_WEARINGOFF, uberDuration.GetFloat());
+				}
 				player->EmitSound("MVM.Robot_Teleporter_Deliver");
 			}
 		}
@@ -1128,10 +1133,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				sentriesToRestoreTeam.push_back(obj);
 				obj->SetTeamNumber(TF_TEAM_RED);
 			}
-			if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_RED && obj->GetBuilder() != nullptr && obj->GetBuilder()->IsBot()) {
+			/*if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_RED && obj->GetBuilder() != nullptr && obj->GetBuilder()->IsBot()) {
 				sentriesToRestoreTeam.push_back(obj);
 				obj->SetTeamNumber(TF_TEAM_BLUE);
-			}
+			}*/
 		}
 		auto ret = DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)(player);
 

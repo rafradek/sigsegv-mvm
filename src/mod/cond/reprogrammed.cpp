@@ -904,24 +904,21 @@ namespace Mod::Cond::Reprogrammed
 		return DETOUR_MEMBER_CALL(CTFBotMedicHeal_IsVisibleToEnemy)(me, where);
 	}
 
-#if 0
 	DETOUR_DECL_MEMBER(const char *, CTFWeaponBase_GetShootSound, int iIndex)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_GetShootSound)(iIndex);
-		
-		DevMsg("CTFWeaponBase::GetShootSound(#%d, classname \"%s\", teamnum %d, index %d): \"%s\"\n",
-			ENTINDEX(weapon), weapon->GetClassname(), weapon->GetTeamNumber(), iIndex, result);
-		
-		if (strcmp(weapon->GetClassname(), "tf_weapon_minigun") == 0 ||
-			strcmp(weapon->GetClassname(), "tf_weapon_rocketlauncher") == 0) {
-			BACKTRACE();
+		auto player = weapon->GetTFPlayerOwner();
+
+		int oldWeaponTeam = weapon->GetTeamNumber();
+		if (player != nullptr && player->IsMiniBoss() && player->GetTeamNumber() != TF_TEAM_BLUE && WeaponHasMiniBossSounds(weapon)) {
+			weapon->SetTeamNumber(TF_TEAM_BLUE);
 		}
-		
+
+		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_GetShootSound)(iIndex);
+
+		weapon->SetTeamNumber(oldWeaponTeam);
 		return result;
 	}
-#endif
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
 	{
@@ -939,6 +936,28 @@ namespace Mod::Cond::Reprogrammed
 		for (auto &weapon : weaponsTeamSwitched) {
 			weapon.first->SetTeamNumber(weapon.second);
 		}
+	}
+
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMissionSuicideBomber_Update, CTFBot *actor, float dt)
+	{
+		auto me = reinterpret_cast<CTFBotMissionSuicideBomber *>(this);
+		//DevMsg("Bomberupdate %d %d\n", me->m_hTarget != nullptr, me->m_hTarget != nullptr && me->m_hTarget->IsAlive() && !me->m_hTarget->IsBaseObject());
+		if (me->m_hTarget != nullptr && me->m_hTarget->IsAlive() && me->m_hTarget->GetTeamNumber() != actor->GetTeamNumber() && me->m_hTarget->IsBaseObject()) {
+			for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+				auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
+				if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() != actor->GetTeamNumber() && !obj->m_bPlacing) {
+					me->m_hTarget = obj;
+					me->m_vecTargetPos = obj->GetAbsOrigin();
+					me->m_vecDetonatePos = obj->GetAbsOrigin();
+					break;
+				}
+			}
+		}
+		//DevMsg("\n[Update]\n");
+		//DevMsg("reached goal %d,detonating %d,failures %d, %d %f %f\n",me->m_bDetReachedGoal, me->m_bDetonating ,me->m_nConsecutivePathFailures,ENTINDEX(me->m_hTarget), me->m_vecDetonatePos.x, me->m_vecTargetPos.x);
+		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Update)(actor, dt);
+		
+		return result;
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
@@ -1016,6 +1035,10 @@ namespace Mod::Cond::Reprogrammed
 
 			// Fix reprogrammed weapons not making giant sounds
 			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetShootSound, "CTFWeaponBase::GetShootSound");
+
+			// Change sentry buster target if the sentry gun is on the same team
+			MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");
 			
 		//	/* fix: make giant weapon sounds apply to miniboss players on any team */
 		//	this->AddPatch(new CPatch_CTFWeaponBase_GetShootSound());

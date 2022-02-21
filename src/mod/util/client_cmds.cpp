@@ -1229,6 +1229,7 @@ namespace Mod::Util::Client_Cmds
 
 			if (attr_def != nullptr) {
 				view->GetAttributeList().AddStringAttribute(attr_def, args[i + 1]);
+				ClientMsg(player, "[sig_taunt] Added attribute \"%s\" = \"%s\". \n", attr_def->GetName(), args[i + 1]);
 			}
 		}
 

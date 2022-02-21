@@ -1078,6 +1078,10 @@ namespace Mod::Perf::SendProp_Optimize
 		{
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             sv_parallel_packentities.SetValue(true);
+            ConVarRef sv_maxreplay("sv_maxreplay");
+            if (sv_maxreplay.GetFloat() == 0.0f) {
+                sv_maxreplay.SetValue(0.05f);
+            }
         }
 
 		virtual void LevelInitPostEntity() override
@@ -1088,6 +1092,10 @@ namespace Mod::Perf::SendProp_Optimize
             
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             sv_parallel_packentities.SetValue(true);
+            ConVarRef sv_maxreplay("sv_maxreplay");
+            if (sv_maxreplay.GetFloat() == 0.0f) {
+                sv_maxreplay.SetValue(0.05f);
+            }
 		}
 
 	};
