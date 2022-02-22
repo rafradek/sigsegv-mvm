@@ -22,99 +22,11 @@
 #include <charconv>
 #include "stub/sendprop.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "util/vi.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
 
-#if defined(__GNUC__) && (__GNUC__ >= 11)
-#define GCC11 
-#endif
-
-#ifdef GCC11
-    namespace {
-        // just dump these here-
-
-        // return iterator instead of position
-        [[nodiscard]]
-        constexpr auto find_str_in_str(
-                const std::string_view str,
-                const std::string_view delim)
-        {
-            auto ans{str.find(delim)};
-            if(ans == std::string_view::npos)
-                return str.end();
-            return str.begin() + ans;
-        }
-        
-        constexpr void for_each_split_str(
-                std::string_view str,
-                const std::string_view delim,
-                const std::invocable<std::string_view> auto& func)
-        {
-            if(delim == ""){
-                func(std::string_view{str.begin(), str.end()});
-                return;
-            }
-            auto i{str.begin()};
-            auto j{find_str_in_str(str, delim)};
-            while(j != str.end()){
-                func(std::string_view{i, j});
-                i = j + delim.size();
-                str = {i, str.end()};
-                j = {find_str_in_str(str, delim)};
-            }
-            func(std::string_view{i, str.end()});
-        }
-        
-        [[nodiscard]]
-        auto split_str(
-                const std::string_view str,
-                const std::string_view delim)
-        {
-            std::vector<std::string_view> v;
-            for_each_split_str(str, delim, [&v](auto s){
-                v.push_back(s);
-            });
-            return v;
-        }
-        constexpr auto to_int{
-            [](std::string_view str) -> std::optional<int> {
-                int result;
-                [[maybe_unused]]
-                auto [p, ec] {std::from_chars(str.data(),
-                                              str.data() + str.size(),
-                                              result)};
-                if(ec != std::errc{})
-                    return {};
-                return result;
-            }
-        };
-        constexpr auto to_float{
-            [](std::string_view str) -> std::optional<float> {
-                float result;
-                [[maybe_unused]]
-                auto [p, ec] {std::from_chars(str.data(),
-                                              str.data() + str.size(),
-                                              result)};
-                if(ec != std::errc{})
-                    return {};
-                return result;
-            }
-        };
-        constexpr auto to_double{
-            [](std::string_view str) -> std::optional<double> {
-                double result;
-                [[maybe_unused]]
-                auto [p, ec] {std::from_chars(str.data(),
-                                              str.data() + str.size(),
-                                              result)};
-                if(ec != std::errc{})
-                    return {};
-                return result;
-            }
-        };
-    }
-#endif
     static const char *SPELL_TYPE[] = {
         "Fireball",
         "Ball O' Bats",
@@ -1557,8 +1469,8 @@ namespace Mod::Etc::Mapentity_Additions
                 CTFPlayer* player{ToTFPlayer(ent)};
                 auto view{CEconItemView::Create()};
                 const std::string_view input{Value.String()};
-                auto index{to_int(Value.String())};
-                const auto v{split_str(input, "|")};
+                auto index{vi::from_str<int>(Value.String())};
+                const auto v{vi::split_str(input, "|")};
                 const auto do_taunt{[&view, &player](int index) -> void {
                     view->Init(index);
                     player->PlayTauntSceneFromItem(view);
@@ -1568,13 +1480,13 @@ namespace Mod::Etc::Mapentity_Additions
                     do_taunt(*index);
                 } else {
                     if(v.size() > 1){
-                        index = {to_int(v[0])};
+                        index = {vi::from_str<int>(v[0])};
                         const auto value{v[1]};
                         if(index && (value.length() > 0)){
                             std::string_view no_op{value};
                             no_op.remove_prefix(1);
-                            const auto remove_op{to_float(no_op)};
-                            auto original{to_float(value)};
+                            const auto remove_op{vi::from_str<float>(no_op)};
+                            auto original{vi::from_str<float>(value)};
                             
                             const std::unordered_map<char,
                                         std::function<void()>> ops{
@@ -1620,13 +1532,13 @@ namespace Mod::Etc::Mapentity_Additions
             else if(stricmp(szInputName, "TauntIndexConcept") == 0){
                 CTFPlayer* player{ToTFPlayer(ent)};
                 const std::string_view input{Value.String()};
-                auto v{split_str(input, "|")};
+                auto v{vi::split_str(input, "|")};
                 if(v.size() > 1){
                     auto index{
-                        to_int(v[0])
+                        vi::from_str<int>(v[0])
                     };
                     auto taunt_concept{
-                        to_int(v[1])
+                        vi::from_str<int>(v[1])
                     };
                     if(index && taunt_concept) 
                         player->Taunt(*index, *taunt_concept);
