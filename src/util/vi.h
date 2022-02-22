@@ -7,11 +7,14 @@
 
 #include <vector>
 #include <charconv>
-#include <concepts>
 #include <string_view>
 #include <cstddef>
 #include <system_error>
 #include <optional>
+
+#ifndef OLD_GCC
+#include <concepts>
+#endif
 
 namespace vi {
 
