@@ -29,7 +29,9 @@ constexpr auto find_str_in_str(
 
 #ifdef OLD_GCC
 template<typename T>
-constexpr std::string_view make_sv_it(T begin, T end){
+constexpr std::string_view make_sv_it(T begin, T end, std::string_view str){
+    if(begin == end)
+        return std::string_view{str.data(), 0};
     return std::string_view{&*begin, std::size_t(std::distance(begin, end))};
 }
 #endif
@@ -49,7 +51,7 @@ constexpr void for_each_split_str(
 {
     if(delim == ""){
 #ifdef OLD_GCC
-        func(make_sv_it(str.begin(), str.end()));
+        func(make_sv_it(str.begin(), str.end(), str));
 #else
         func(std::string_view{str.begin(), str.end()});
 #endif
@@ -59,20 +61,20 @@ constexpr void for_each_split_str(
     auto j{find_str_in_str(str, delim)};
     while(j != str.end()){
 #ifdef OLD_GCC
-        func(make_sv_it(i, j));
+        func(make_sv_it(i, j, str));
 #else
         func(std::string_view{i, j});
 #endif
         i = j + delim.size();
 #ifdef OLD_GCC
-        str = {make_sv_it(i, str.end())};
+        str = {make_sv_it(i, str.end(), str)};
 #else
         str = {i, str.end()};
 #endif
         j = {find_str_in_str(str, delim)};
     }
 #ifdef OLD_GCC
-    func(make_sv_it(i, str.end()));
+    func(make_sv_it(i, str.end(), str));
 #else
     func(std::string_view{i, str.end()});
 #endif
