@@ -3850,11 +3850,11 @@ namespace Mod::Attr::Custom_Attributes
 		return healRate;
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayer_Taunt, taunts_t index, int concept)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Taunt, taunts_t index, int taunt_concept)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, concept);
+		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
 
 		if (player->m_flTauntAttackTime > gpGlobals->curtime) {
 			float attackDelayMult = 1.0f;

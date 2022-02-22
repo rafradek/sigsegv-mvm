@@ -11,6 +11,10 @@ public:
 	
 	void Enable()  { this->DoEnable();  this->m_bEnabled = true;  }
 	void Disable() { this->DoDisable(); this->m_bEnabled = false; }
+    bool Toggle() {
+        this->m_bEnabled ? this->Disable() : this->Enable();
+        return this->m_bEnabled;
+    }
 	
 protected:
 	IOverride() = default;
@@ -28,13 +32,13 @@ class IConVarOverride : public IOverride
 protected:
 	IConVarOverride(const char *name) : m_pszConVarName(name),    m_pIConVar(nullptr) {}
 	IConVarOverride(IConVar *p_icvar) : m_pszConVarName(nullptr), m_pIConVar(p_icvar) {}
-	
+public:	
 	bool IsValid() const
 	{
 		this->InitOnDemand();
 		return (this->m_pConVarRef != nullptr && this->m_pConVarRef->IsValid());
 	}
-	
+protected:	
 	ConVarRef& CVRef()
 	{
 		this->InitOnDemand();
@@ -56,8 +60,9 @@ private:
 			}
 		}
 	}
-	
+public:
 	const char *const m_pszConVarName;
+private:
 	IConVar *const m_pIConVar;
 	
 	mutable std::unique_ptr<ConVarRef> m_pConVarRef;

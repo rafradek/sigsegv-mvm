@@ -14,6 +14,7 @@
 #include "util/clientmsg.h"
 #include "util/misc.h"
 #include "util/iterate.h"
+#include "util/override.h"
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -1527,6 +1528,67 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
+    namespace {
+        // idk how to specify the keyequal argument with unordered_set so
+        std::set<
+            CConVarOverride_Flags,
+            decltype([](const CConVarOverride_Flags& l, 
+                        const CConVarOverride_Flags& r){
+                return (std::strcmp(
+                            l.m_pszConVarName,
+                            r.m_pszConVarName)
+                       ) < 0;
+            })> cvar_overrides{};
+        // make this std::set too for prettiness
+        std::set<std::string> cvar_strs{};
+    }
+
+    void CC_CvarNoCheat(CTFPlayer* player, const CCommand& args)
+    {
+        const auto usage{[&player]{
+            ClientMsg(player, 
+                    "[sig_nocheat] Removes/toggles cheat flag on a cvar\n"
+                    "[sig_nocheat] Usage: sig_nocheat <cvar> [cvars...]\n");
+        }};
+        if(args.ArgC() < 2){ usage(); return; }
+        for(int i{1}; i < args.ArgC(); ++i){
+            std::string cvar_str{args[i]};
+            CConVarOverride_Flags cvar{cvar_str.c_str(), FCVAR_NONE, FCVAR_CHEAT};
+            if(!cvar.IsValid()){
+                ClientMsg(player,
+                        "[sig_nocheat] Unknown cvar %s\n", args[i]);
+                continue;
+            }
+            [[maybe_unused]] cvar_strs.insert(std::move(cvar_str));
+            [[maybe_unused]]
+            auto[it, inserted]{cvar_overrides.insert(std::move(cvar))};
+            const bool removed{it->Toggle()};
+            if(removed) 
+                ClientMsg(player, "[sig_nocheat] Toggled %s (on)\n", args[i]);
+            else
+                ClientMsg(player, "[sig_nocheat] Toggled %s (off)\n", args[i]);
+        }
+    }
+
+    void CC_CvarNoCheatList(CTFPlayer* player, const CCommand& args)
+    {
+        auto enabled_count{std::count_if(
+            cvar_overrides.begin(),
+            cvar_overrides.end(),
+            [](const auto& c){
+                return c.IsEnabled();
+            })
+        };
+        ClientMsg(player, "[sig_nocheat_list] Overridden cvars: %d (%d on)\n",
+                cvar_overrides.size(), enabled_count);
+        for(const auto& c : cvar_overrides){
+            ClientMsg(player, "%s (%s)\n", c.m_pszConVarName, 
+                    c.IsEnabled() ? "on" : "off");
+        }
+    }
+
+
+
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
 	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
@@ -1556,6 +1618,8 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_playscene",        CC_PlayScene        },
 		{ "sig_getclientcvar",    CC_ClientCvar       },
 		{ "sig_dropmarker",       CC_DropMarker       },
+        { "sig_nocheat",          CC_CvarNoCheat      },
+        { "sig_nocheat_list",     CC_CvarNoCheatList  },
 	};
 
 	
