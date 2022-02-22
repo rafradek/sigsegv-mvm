@@ -30,8 +30,9 @@ constexpr auto find_str_in_str(
 #ifdef OLD_GCC
 template<typename T>
 constexpr std::string_view make_sv_it(T begin, T end, std::string_view str){
+    // i think i need this
     if(begin == end)
-        return std::string_view{str.data(), 0};
+        return std::string_view{str.data() + str.size(), 0};
     return std::string_view{&*begin, std::size_t(std::distance(begin, end))};
 }
 #endif
