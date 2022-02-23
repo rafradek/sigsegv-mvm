@@ -1932,7 +1932,7 @@ namespace Mod::Pop::TFBot_Extensions
 		{
 			
 			UpdateDelayedAddConds(delayed_addconds);
-			UpdatePeriodicTasks(pending_periodic_tasks);
+			UpdatePeriodicTasks(pending_periodic_tasks, false);
 			if (paused_wave_time != -1 && g_pPopulationManager != nullptr && (gpGlobals->tickcount - paused_wave_time > 5 || gpGlobals->tickcount < paused_wave_time)) {
 				paused_wave_time = -1;
 				g_pPopulationManager->UnpauseSpawning();

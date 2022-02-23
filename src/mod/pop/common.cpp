@@ -240,7 +240,7 @@ THINK_FUNC_DECL(StopTaunt) {
 
 
 
-void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks)
+void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool insideECAttr)
 {
     for (auto it = pending_periodic_tasks.begin(); it != pending_periodic_tasks.end(); ) {
         auto& pending_task = *it;
@@ -391,6 +391,10 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks)
                 if (attrib != nullptr){
                     DevMsg("Attribute exists %s\n", pending_task.attrib_name.c_str());
                     bot->OnEventChangeAttributes(attrib);
+                    if (!bot->IsAlive() || insideECAttr) {
+                        it = pending_periodic_tasks.begin();
+                        continue;
+                    }
                 }
                 DevMsg("Attribute changed %s\n", pending_task.attrib_name.c_str());
             }

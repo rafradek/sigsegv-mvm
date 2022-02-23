@@ -2,6 +2,7 @@
 
 #include "stub/gamerules.h"
 #include "util/iterate.h"
+#include "util/expression_eval.h"
 
 
 CON_COMMAND_F(find_ent_ex, "Find and list all entities with classnames or targetnames that match the specified wildcard string.\nFormat: find_ent_ex <wildcard>", FCVAR_NONE)
@@ -64,4 +65,13 @@ CON_COMMAND_F(sig_setcustomupgradesfile, "Equivalent to firing the SetCustomUpgr
 	}
 	
 	TFGameRules()->SetCustomUpgradesFile(args[1]);
+}
+
+
+CON_COMMAND_F(sig_expression_test, "Test of expressions", FCVAR_NONE)
+{
+	variant_t value;
+	Evaluation expr(value);
+	expr.Evaluate(args[1]);
+	Msg("Value: %s\n ", value.String());
 }

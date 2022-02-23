@@ -1557,9 +1557,10 @@ namespace Mod::Attr::Custom_Attributes
 			float consecutive_accuracy = GetFastAttributeFloat(weapon, 1.0f, CONTINOUS_ACCURACY_MULT);
 			float move_accuracy = GetFastAttributeFloat(weapon, 1.0f, MOVE_ACCURACY_MULT);
 
-			if (crouch_accuracy != 1.0f || consecutive_accuracy != 1.0f) {
+			if (crouch_accuracy != 1.0f || consecutive_accuracy != 1.0f || move_accuracy != 1.0f) {
 				auto mod = weapon->GetOrCreateEntityModule<WeaponModule>("weapon");
 				static int accuracy_penalty_id = GetItemSchema()->GetAttributeDefinitionByName("spread penalty")->GetIndex();
+				static int spread_angle_mult_id = GetItemSchema()->GetAttributeDefinitionByName("projectile spread angle mult")->GetIndex();
 				float applyAccuracy = 1.0f;
 				bool doApplyAccuracy = false;
 				//auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(accuracy_penalty_id);
@@ -1590,9 +1591,11 @@ namespace Mod::Attr::Custom_Attributes
 				if (doApplyAccuracy) {
 					if (applyAccuracy == 1.0f) {
 						weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(accuracy_penalty_id);
+						weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(spread_angle_mult_id);
 					}
 					else {
 						weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(accuracy_penalty_id, applyAccuracy);
+						weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(spread_angle_mult_id, applyAccuracy);
 					}
 				}
 				mod->totalAccuracyApplied = applyAccuracy;

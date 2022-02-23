@@ -2464,7 +2464,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		virtual void FrameUpdatePostEntityThink() override
 		{
 			UpdateDelayedAddConds(delayed_addconds);
-			UpdatePeriodicTasks(pending_periodic_tasks);
+			UpdatePeriodicTasks(pending_periodic_tasks, true);
 			UpdateRingOfFire();
 			UpdateAlwaysGlow();
 		}

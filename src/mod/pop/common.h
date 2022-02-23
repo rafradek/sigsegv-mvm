@@ -467,7 +467,7 @@ struct ItemAttributes
 };
 
 void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds);
-void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks);
+void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool insideECAttr = false);
 
 void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark);
 

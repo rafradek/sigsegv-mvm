@@ -281,6 +281,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     enum GetInputType {
+        ANY,
         VARIABLE,
         KEYVALUE,
         DATAMAP,
@@ -290,7 +291,13 @@ namespace Mod::Etc::Mapentity_Additions
     bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable) {
         bool found = false;
 
-        if (type == VARIABLE) {
+        if (type == ANY) {
+            found = GetEntityVariable(entity, VARIABLE, name, variable) ||
+                    GetEntityVariable(entity, SENDPROP, name, variable) ||
+                    GetEntityVariable(entity, DATAMAP, name, variable) ||
+                    GetEntityVariable(entity, KEYVALUE, name, variable);
+        }
+        else if (type == VARIABLE) {
             const char *var = entity->GetCustomVariableByText(name);
             if (var != nullptr) {
                 variable.SetString(MAKE_STRING(var));

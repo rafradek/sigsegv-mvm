@@ -65,6 +65,7 @@ sourceFiles += [
   
   'src/util/admin.cpp',
   'src/util/backtrace.cpp',
+  'src/util/expression_eval.cpp',
   'src/util/firehose_base.cpp',
   'src/util/firehose_recv.cpp',
   'src/util/firehose_send.cpp',
