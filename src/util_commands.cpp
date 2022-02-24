@@ -66,12 +66,3 @@ CON_COMMAND_F(sig_setcustomupgradesfile, "Equivalent to firing the SetCustomUpgr
 	
 	TFGameRules()->SetCustomUpgradesFile(args[1]);
 }
-
-
-CON_COMMAND_F(sig_expression_test, "Test of expressions", FCVAR_NONE)
-{
-	variant_t value;
-	Evaluation expr(value);
-	expr.Evaluate(args[1]);
-	Msg("Value: %s\n ", value.String());
-}

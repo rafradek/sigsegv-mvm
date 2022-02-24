@@ -34,6 +34,9 @@ private:
 
     inline void ParseOp(Op op);
 
+    inline void PushStack();
+    inline void PopStack();
+
     void ParseToken(char *token, variant_t &value);
 
     void DoOp();
@@ -46,8 +49,8 @@ private:
     Op m_LastOp = INVALID;
     char m_strToken[256];
     char *m_pCurrentChar = m_strToken;
-    std::vector<Op> m_OpStack;
-    std::vector<variant_t> m_ResultStack;
+    std::deque<Op> m_OpStack;
+    std::deque<variant_t> m_ResultStack;
     variant_t m_curValue;
     variant_t &result;
 };
