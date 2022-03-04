@@ -1123,29 +1123,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		return ret;
 	}
 
-	DETOUR_DECL_MEMBER(bool, CMissionPopulator_UpdateMissionDestroySentries, CBasePlayer *player)
-	{
-		std::vector<CBaseObject *> sentriesToRestoreTeam;
-
-		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
-			auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
-			if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_BLUE && IsMvMBlueHuman(obj->GetBuilder())) {
-				sentriesToRestoreTeam.push_back(obj);
-				obj->SetTeamNumber(TF_TEAM_RED);
-			}
-			/*if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_RED && obj->GetBuilder() != nullptr && obj->GetBuilder()->IsBot()) {
-				sentriesToRestoreTeam.push_back(obj);
-				obj->SetTeamNumber(TF_TEAM_BLUE);
-			}*/
-		}
-		auto ret = DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)(player);
-
-		for (auto obj : sentriesToRestoreTeam) {
-			obj->SetTeamNumber(obj->GetTeamNumber() == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
-		}
-		return ret;
-	}
-	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1211,9 +1188,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 			// Make voting work properly for blue players
 			MOD_ADD_DETOUR_MEMBER(CVoteController_IsValidVoter, "CVoteController::IsValidVoter");
-
-			// Allow sentry busters to hunt blue sentries
-			MOD_ADD_DETOUR_MEMBER(CMissionPopulator_UpdateMissionDestroySentries, "CMissionPopulator::UpdateMissionDestroySentries");
 
 			/* fix hardcoded teamnum check when clearing MvM checkpoints */
 			this->AddPatch(new CPatch_CollectPlayers_Caller2<0x0000, 0x0100, TF_TEAM_RED, false, false, CollectPlayers_RedAndBlue>("CPopulationManager::ClearCheckpoint"));

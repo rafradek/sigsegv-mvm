@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "mod/pop/kv_conditional.h"
 #include "stub/populators.h"
+#include "stub/objects.h"
 #include "util/scope.h"
 
 
@@ -9,6 +10,7 @@ namespace Mod::Pop::Mission_Extensions
 	struct MissionData
 	{
 		bool suppress_sentrybuster_model = false;
+		bool target_blu_sentries = false;
 	};
 	
 	
@@ -50,6 +52,9 @@ namespace Mod::Pop::Mission_Extensions
 			if (FStrEq(name, "SuppressSentryBusterModel")) {
 			//	DevMsg("Got \"SuppressSentryBusterModel\" = %d\n", subkey->GetBool());
 				missions[mission].suppress_sentrybuster_model = subkey->GetBool();
+			} else if (FStrEq(name, "TargetBluSentries")) {
+			//	DevMsg("Got \"SuppressSentryBusterModel\" = %d\n", subkey->GetBool());
+				missions[mission].target_blu_sentries = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -78,12 +83,32 @@ namespace Mod::Pop::Mission_Extensions
 	{
 		auto mission = reinterpret_cast<CMissionPopulator *>(this);
 		
-	//	DevMsg("CMissionPopulator::UpdateMissionDestroySentries %08x\n", (uintptr_t)this);
-		
+		std::vector<CBaseObject *> sentriesToRestoreTeam;
+		auto it = missions.find(current_mission);
+		if (it != missions.end()) {
+			MissionData& data = (*it).second;
+			if (data.target_blu_sentries) {
+				for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+					auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
+					if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->GetTeamNumber() == TF_TEAM_BLUE) {
+						sentriesToRestoreTeam.push_back(obj);
+						obj->SetTeamNumber(TF_TEAM_RED);
+					}
+				}
+			}
+		}
+
 		SCOPED_INCREMENT(rc_CMissionPopulator_UpdateMissionDestroySentries);
 		current_mission = mission;
+
+		auto ret = DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)();
+
+		for (auto obj : sentriesToRestoreTeam) {
+			obj->SetTeamNumber(obj->GetTeamNumber() == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
+		}
+		return ret;
 		
-		return DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)();
+	//	DevMsg("CMissionPopulator::UpdateMissionDestroySentries %08x\n", (uintptr_t)this);
 	}
 	
 	
@@ -103,7 +128,7 @@ namespace Mod::Pop::Mission_Extensions
 		
 		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
 	}
-	
+
 	
 	class CMod : public IMod, public IModCallbackListener
 	{

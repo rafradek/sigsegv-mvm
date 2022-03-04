@@ -15,6 +15,7 @@
 #include "util/misc.h"
 #include "util/iterate.h"
 #include "util/override.h"
+#include "util/expression_eval.h"
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -1587,7 +1588,33 @@ namespace Mod::Util::Client_Cmds
         }
     }
 
+    void CC_Expression(CTFPlayer* player, const CCommand& args)
+    {
+		if (args.ArgC() < 2) {
+			ClientMsg(player, "[sig_expresion] Usage: sig_expression <expression>\n");
+			return;
+		}
+		variant_t value;
+		variant_t value2;
+		Evaluation expr(value);
+		expr.Evaluate(args[1], player, player, player, value2);
+    }
 
+	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
+    {
+		for (auto &func : Evaluation::GetFunctionList()) {
+			ClientMsg(player, "%s(", func.name);
+			bool first = true;
+			for (auto &param : func.paramNames) {
+				if (!first) {
+					ClientMsg(player, ";");
+				}
+				first = false;
+				ClientMsg(player, " %s", param);
+			}
+			ClientMsg(player, " )\n");
+		}
+	}
 
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Make_Item)
@@ -1620,6 +1647,9 @@ namespace Mod::Util::Client_Cmds
 		{ "sig_dropmarker",       CC_DropMarker       },
         { "sig_nocheat",          CC_CvarNoCheat      },
         { "sig_nocheat_list",     CC_CvarNoCheatList  },
+        { "sig_expression",           CC_Expression     },
+        { "sig_expression_functions", CC_Expression_Func},
+		
 	};
 
 	

@@ -18,10 +18,12 @@ std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> g_enti
 
 void FixupKeyvalue(std::string &val,int id, const char *parentname) {
 	int amperpos = 0;
-	while((amperpos = val.find('&',amperpos)) != -1){
+	while((amperpos = val.find('\1',amperpos)) != -1){
+		val[amperpos] = '&';
 		amperpos+=1;
+		
 		val.insert(amperpos,std::to_string(id));
-		DevMsg("amp %d\n",amperpos);
+		DevMsg("amp %d %s\n",amperpos, val.c_str());
 	}
 		
 	int parpos = 0;

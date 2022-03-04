@@ -5357,6 +5357,16 @@
 					type "sym"
 					sym  "_ZN16CObjectSentrygun6AttackEv"
 				}
+				"CTFWeaponBase::ApplyFireDelay"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase14ApplyFireDelayEf"
+				}
+				"CEventAction::CEventAction [C2]"
+				{
+					type "sym"
+					sym  "_ZN12CEventActionC2EPKc"
+				}
 				
 			}
 			"addrs_group"

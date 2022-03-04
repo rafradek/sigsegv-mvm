@@ -91,28 +91,6 @@ void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid);
 
 void UTIL_StringToVector(float *base, const char* string);
 
-inline bool UTIL_StringToVectorAlt(Vector &base, const char* string)
-{
-	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
-	if (scannum == 0)
-	{
-		// Try sucking out 3 floats with no []s
-		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
-	}
-	return scannum == 3;
-}
-
-inline bool UTIL_StringToAnglesAlt(QAngle &base, const char* string)
-{
-	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
-	if (scannum == 0)
-	{
-		// Try sucking out 3 floats with no []s
-		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
-	}
-	return scannum == 3;
-}
-
 void UTIL_ParticleTracer(const char *pszTracerEffectName, const Vector &vecStart, const Vector &vecEnd, 
 				 int iEntIndex, int iAttachment, bool bWhiz);
 

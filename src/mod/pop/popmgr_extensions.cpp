@@ -2648,12 +2648,16 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
-		if (ToTFBot(owner) == nullptr) {
-			for (auto &info : state.m_WeaponSpawnTemplates) {
-				for (auto &entry : info.weapons) {
-					if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
-						state.m_ItemEquipTemplates[ent] = info.info.SpawnTemplate(owner);
-						break;
+		if (!state.m_WeaponSpawnTemplates.empty()) {
+			if (ToTFBot(owner) == nullptr) {
+				if (state.m_ItemEquipTemplates.find(ent) == state.m_ItemEquipTemplates.end()) {
+					for (auto &info : state.m_WeaponSpawnTemplates) {
+						for (auto &entry : info.weapons) {
+							if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
+								state.m_ItemEquipTemplates[ent] = info.info.SpawnTemplate(owner);
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -2689,16 +2693,20 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 			}
-			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
-				for (auto &info : state.m_WeaponSpawnTemplates) {
-					for (auto &entry : info.weapons) {
-						if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
-							state.m_ItemEquipTemplates[entity] = info.info.SpawnTemplate(player);
-							break;
+			if (!state.m_WeaponSpawnTemplates.empty()) {
+				ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+					if (!entity->IsMarkedForDeletion() && state.m_ItemEquipTemplates.find(entity) == state.m_ItemEquipTemplates.end()) {
+						for (auto &info : state.m_WeaponSpawnTemplates) {
+							for (auto &entry : info.weapons) {
+								if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
+									state.m_ItemEquipTemplates[entity] = info.info.SpawnTemplate(player);
+									break;
+								}
+							}
 						}
 					}
-				}
-			});
+				});
+			}
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
 	}
@@ -2710,6 +2718,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto find = state.m_ItemEquipTemplates.find(entity);
 		if (find != state.m_ItemEquipTemplates.end()) {
 			find->second->OnKilledParent(false);
+			state.m_ItemEquipTemplates.erase(find);
 		}
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
     }
@@ -4611,33 +4620,20 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 
 	void InsertFixupPattern(std::string &str, std::set<std::string> &entity_names) {
-		int oldpos = 0;
-		while(oldpos < str.size()){
-			int commapos = str.find(',',oldpos);
-			int spacepos = str.find(' ',oldpos);
-			int colonpos = str.find(':',oldpos);
-			int breakpos = str.find('|',oldpos);
-			int atpos = str.find('@',oldpos);
-			int pos;
-			if (atpos != -1 && (spacepos == -1 || atpos < spacepos) && (commapos == -1 || atpos < commapos) && (colonpos == -1 || atpos < colonpos) && (breakpos == -1 || atpos < breakpos))
-				pos = breakpos;
-			else if (breakpos != -1 && (spacepos == -1 || breakpos < spacepos) && (commapos == -1 || breakpos < commapos) && (colonpos == -1 || breakpos < colonpos))
-				pos = breakpos;
-			else if (colonpos != -1 && (spacepos == -1 || colonpos < spacepos) && (commapos == -1 || colonpos < commapos))
-				pos = colonpos;
-			else if (commapos != -1 && (spacepos == -1 || commapos < spacepos))
-				pos = commapos;
-			else
-				pos = spacepos;
-			if (pos == -1)
-				pos = str.size();
-			std::string strsub = str.substr(oldpos,pos-oldpos);
-			if (entity_names.find(strsub) != entity_names.end()){
-				str.insert(pos,"&");
-				//templ.fixup_names.insert(str);
+		int pos = 0;
+		size_t start = 0;
+		while(pos <= str.size()){
+			char c = pos < str.size() ? str[pos] : '\0';
+			if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '*' || c == '$' || c == '_')) {
+				std::string strsub = str.substr(start, pos-start);
+				if (entity_names.find(strsub) != entity_names.end()){
+					str.insert(pos,"\1");
+					DevMsg("pos %d %d %s", start, pos, strsub.c_str());
+					//templ.fixup_names.insert(str);
+				}
+				start = pos+1;
 			}
-			DevMsg("pos %d %d %s", oldpos, pos, strsub.c_str());
-			oldpos = pos+1;
+			pos++;
 		}
 	}
 	

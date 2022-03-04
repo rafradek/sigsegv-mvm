@@ -16,21 +16,13 @@ public:
 class CustomVariable
 {
 public:
-    CustomVariable(const char *key, const char *value)
+    CustomVariable(const char *key, variant_t &value)
     {
         this->key = AllocPooledString(key);
-        this->value = AllocPooledString(value);
-        UTIL_StringToVectorAlt(this->value_vector, value);
+        this->value = value;
     }
     string_t key;
-    string_t value;
-
-    union{
-        float value_float;
-        Vector value_vector;
-        QAngle value_angle;
-    };
-    
+    variant_t value;
 };
 
 struct CustomOutput
@@ -388,7 +380,7 @@ inline const char *CBaseEntity::GetCustomVariable(const char *defValue)
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (var.key == pooled) {
-                return STRING(var.value);
+                return var.value.String();
             }
         }
     }
@@ -404,7 +396,7 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue)
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (var.key == pooled) {
-                return var.value_float;
+                return var.value.Float();
             }
         }
     }
@@ -420,7 +412,9 @@ inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (var.key == pooled) {
-                return var.value_vector;
+                Vector vec;
+                var.value.Vector3D(vec);
+                return vec;
             }
         }
     }
@@ -436,7 +430,11 @@ inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (var.key == pooled) {
-                return var.value_angle;
+                QAngle ang;
+
+                var.value.Vector3D(*((Vector *)ang.Base()));
+                
+                return ang;
             }
         }
     }
@@ -444,28 +442,28 @@ inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
 }
 
 
-inline const char *CBaseEntity::GetCustomVariableByText(const char *key, const char *defValue)
+inline bool CBaseEntity::GetCustomVariableByText(const char *key, variant_t &value)
 {
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (STRING(var.key) == key || stricmp(STRING(var.key), key) == 0) {
-                return STRING(var.value);
+                value = var.value;
+                return true;
             }
         }
     }
-    return defValue;
+    return false;
 }
 
-inline void CBaseEntity::SetCustomVariable(const char *key, const char *value)
+inline void CBaseEntity::SetCustomVariable(const char *key, variant_t &value)
 {
     auto &list = GetExtraData(this)->GetCustomVariables();
     bool found = false;
     for (auto &var : list) {
         if (STRING(var.key) == key || stricmp(key, STRING(var.key)) == 0) {
-            var.value = AllocPooledString(value);
-            UTIL_StringToVectorAlt(var.value_vector, value);
+            var.value = value;
             found = true;
             break;
         }

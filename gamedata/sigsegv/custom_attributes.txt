@@ -2282,4 +2282,32 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4544"
+    {
+        "name"	"projectile spread angle mult"
+        "attribute_class"	"projectile_spread_angle"
+        "description_string"	"(+-)%p% projectile spread angle"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4545"
+    {
+        "name"	"damage returns as health"
+        "attribute_class"	"damage_returns_as_health"
+        "description_string"	"(+-)%p% damage dealt is returned as health"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4546"
+    {
+        "name"	"no resupply"
+        "attribute_class"	"no_resupply"
+        "description_string"	"Cannot resupply"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    
 }

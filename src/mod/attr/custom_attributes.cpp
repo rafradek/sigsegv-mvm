@@ -101,7 +101,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (rtti_cast<IHasAttributes *>(entity) == nullptr) return nullptr;
 		
-		int count = entity->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+		int count = entity->IsPlayer() ? (int)ATTRIB_COUNT_PLAYER : (int)ATTRIB_COUNT_ITEM;
 		float *attrib_cache = new float[count];
 		
 		for(int i = 0; i < count; i++) {
@@ -715,6 +715,29 @@ namespace Mod::Attr::Custom_Attributes
 	};
 	std::vector<CustomModelEntry> model_entries;
 
+	CustomModelEntry *FindCustomModelEntry(CTFWeaponBase *entity) {
+		for (auto &entry : model_entries) {
+			if (entry.weapon == entity) {
+				return &entry;
+			} 
+		}
+		return nullptr;
+	}
+
+	CBaseAnimating *FindVisibleEntity(CTFPlayer *owner, CEconEntity *econEntity)
+	{
+		if (model_entries.empty()) return econEntity;
+
+		auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(econEntity));
+		if (weapon != nullptr) {
+			auto entry = FindCustomModelEntry(weapon);
+			if (entry != nullptr && entry->wearable != nullptr) {
+				return entry->wearable;
+			}
+		}
+		return econEntity;
+	}
+	
 	void ApplyAttachmentAttributesToEntity(CTFPlayer *owner, CBaseAnimating *entity, CEconEntity *econEntity)
 	{
 		int color = 0;
@@ -792,21 +815,24 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateModelToClass)
-	{
-		DETOUR_MEMBER_CALL(CEconEntity_UpdateModelToClass)();
-		auto entity = reinterpret_cast<CEconEntity *>(this);
-		CAttributeList &attrlist = entity->GetItem()->GetAttributeList();
+	void UpdateCustomModel(CTFPlayer *owner, CEconEntity *entity, CAttributeList &attrlist) {
+		
 
 		GET_STRING_ATTRIBUTE(attrlist, "custom item model", modelname);
-		
-		auto owner = ToTFPlayer(entity->GetOwnerEntity());
-
 		if (modelname != nullptr) {
 
 			int model_index = CBaseEntity::PrecacheModel(modelname);
 			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
 			if (weapon != nullptr && owner != nullptr && !owner->IsFakeClient()) {
+				auto entry = FindCustomModelEntry(weapon);
+				if (entry != nullptr && entry->wearable != nullptr && entry->wearable->GetModelIndex() != model_index) {
+					entry->wearable->Remove();
+					entry->wearable = nullptr;
+				}
+				if (entry != nullptr && entry->wearable_vm != nullptr && entry->wearable_vm->GetModelIndex() != model_index) {
+					entry->wearable_vm->Remove();
+					entry->wearable_vm = nullptr;
+				}
 				entity->SetRenderMode(kRenderTransAlpha);
 				entity->SetRenderColorA(0);
 				weapon->m_bBeingRepurposedForTaunt = true;
@@ -819,7 +845,27 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+		else if (modelname == nullptr) {
+			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
+			if (weapon != nullptr ) {
+				auto entry = FindCustomModelEntry(weapon);
+				if (entry != nullptr) {
+					weapon->SetRenderMode(kRenderNormal);
+					entity->SetRenderColorA(255);
+					entry->weapon = nullptr;
+				}
+			}
+		}
+	}
 
+	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateModelToClass)
+	{
+		DETOUR_MEMBER_CALL(CEconEntity_UpdateModelToClass)();
+		auto entity = reinterpret_cast<CEconEntity *>(this);
+		
+		auto owner = ToTFPlayer(entity->GetOwnerEntity());
+		CAttributeList &attrlist = entity->GetItem()->GetAttributeList();
+		UpdateCustomModel(owner, entity, attrlist);
 		ApplyAttachmentAttributesToEntity(owner, entity, entity);
 	}
 
@@ -2301,6 +2347,18 @@ namespace Mod::Attr::Custom_Attributes
 					victim->m_Shared->Burn(player, nullptr, burn_duration);
 				}
 
+				float damageReturnsAsHealth = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, damageReturnsAsHealth, damage_returns_as_health);
+				if (damageReturnsAsHealth != 0.0f) {
+					float health = damageReturnsAsHealth * info.GetDamage();
+					if (health >= 0) {
+						player->TakeHealth(health, DMG_GENERIC);
+					} 
+					else {
+						player->TakeDamage(CTakeDamageInfo(player, player, weapon, vec3_origin, vec3_origin, (health * -1), DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
+					}
+				}
+
 				int removecond_attr = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, removecond_attr, remove_cond_on_hit);
 				if (removecond_attr != 0) {
@@ -2597,13 +2655,13 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			auto weapon = ToBaseCombatWeapon(addcond_provider_item);
-			Msg(CFmtStr("remove cond item, %d\n", weapon));
+			Msg("remove cond item, %d\n", weapon);
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "effect add attributes", attribs);
 				
 				if (attribs != nullptr) {
 					std::string str(attribs);
-					Msg(CFmtStr("attribs, %s\n", attribs));
+					Msg("attribs, %s\n", attribs);
 					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
 
 					auto it = tokens.begin();
@@ -2612,7 +2670,7 @@ namespace Mod::Attr::Custom_Attributes
 						if (++it == tokens.end())
 							break;
 						auto &value = *it;
-						Msg(CFmtStr("provide, %s %f\n", attribute.c_str()));
+						Msg("provide, %s %f\n", attribute.c_str());
 						player->RemoveCustomAttribute(attribute.c_str());
 						it++;
 					}
@@ -2625,7 +2683,8 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_PulseRageBuff, int rage)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
-		CTFPlayer *player = addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();;
+		addcond_provider = player;
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(player, rage == 5 ? LOADOUT_POSITION_PRIMARY : LOADOUT_POSITION_SECONDARY);
 
 		DETOUR_MEMBER_CALL(CTFPlayerShared_PulseRageBuff)(rage);
@@ -2823,6 +2882,26 @@ namespace Mod::Attr::Custom_Attributes
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 		int overheal_allow = 0;
 		if (info.GetWeapon() != nullptr) {
+			// Allow Restore health on kill for wearables
+			if (info.GetWeapon()->IsWearable()) {
+				int iRestoreHealthToPercentageOnKill = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iRestoreHealthToPercentageOnKill, restore_health_on_kill );
+
+				if ( iRestoreHealthToPercentageOnKill > 0 )
+				{
+					// This attribute should ignore runes
+					int iRestoreMax = player->GetMaxHealth();
+					// We add one here to deal with a bizarre problem that comes up leaving you one health short sometimes
+					// due to bizarre floating point rounding or something equally silly.
+					int iTargetHealth = ( int )( ( ( float )iRestoreHealthToPercentageOnKill / 100.0f ) * ( float )iRestoreMax ) + 1;
+
+					int iBaseMaxHealth =  player->GetMaxHealth() * 1.5,
+						iNewHealth = Min(  player->GetHealth() + iTargetHealth, iBaseMaxHealth ),
+						iDeltaHealth = Max(iNewHealth -  player->GetHealth(), 0);
+
+					 player->TakeHealth( iDeltaHealth, DMG_IGNORE_MAXHEALTH );
+				}
+			}
 			int addcond_attr = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), addcond_attr, add_cond_on_kill);
 			if (addcond_attr != 0) {
@@ -3150,7 +3229,13 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Regenerate, bool ammo)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_Regenerate);
-		DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		
+		int noRegenerate = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, noRegenerate, no_resupply);
+		if (!noRegenerate) {
+			DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+		}
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemsMatch, void *pData, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity)
@@ -3574,7 +3659,7 @@ namespace Mod::Attr::Custom_Attributes
 				// Found existing attribute -- change value.
 				oldValue = pAttribute.GetValue();
 				found = true;
-				if (memcmp(&pAttribute.GetValue().m_Float, &flValue, sizeof(float)) != 0) {
+				if (memcmp(&oldValue.m_Float, &flValue, sizeof(float)) != 0) {
 					pAttribute.GetValuePtr()->m_Float = flValue;
 					list->NotifyManagerOfAttributeValueChanges();
 				}
@@ -3583,9 +3668,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		// Couldn't find an existing attribute for this definition -- make a new one.
 		if (!found) {
-			CEconItemAttribute attribute(pAttrDef->GetIndex(), flValue);
-
-			attrs.AddToTail(attribute);
+			auto attribute = CEconItemAttribute::Create(pAttrDef->GetIndex());
+			attribute->GetValuePtr()->m_Float = flValue;
+			attrs.AddToTail(*attribute);
+			CEconItemAttribute::Destroy(attribute);
 			list->NotifyManagerOfAttributeValueChanges();
 		}
 
@@ -3870,6 +3956,24 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(float, CTFWeaponBase_ApplyFireDelay, float delay)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+
+		delay = DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyFireDelay)(delay);
+
+		if (weapon->IsMeleeWeapon()) {
+			float flReducedHealthBonus = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, flReducedHealthBonus, mult_postfiredelay_with_reduced_health );
+			if ( flReducedHealthBonus != 1.0f )
+			{
+				flReducedHealthBonus = RemapValClamped( weapon->GetTFPlayerOwner()->GetHealth() / weapon->GetTFPlayerOwner()->GetMaxHealth(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f );
+				delay *= flReducedHealthBonus;
+			}
+		}
+		return delay;
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -4150,7 +4254,7 @@ namespace Mod::Attr::Custom_Attributes
         if (mgr->m_hOuter != nullptr) {
 			auto cache = fast_attribute_cache[ENTINDEX(mgr->m_hOuter)];
             if (cache != nullptr) {
-				int count = mgr->m_hOuter->IsPlayer() ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+				int count = mgr->m_hOuter->IsPlayer() ? (int)ATTRIB_COUNT_PLAYER : (int)ATTRIB_COUNT_ITEM;
 				for(int i = 0; i < count; i++) {
 					cache[i] = FLT_MIN;
 				}
@@ -4305,6 +4409,32 @@ namespace Mod::Attr::Custom_Attributes
 			float overheal = MAX(0, player->GetHealth() - preMaxHealth);
 			float preHealthRatio = MIN(1, player->GetHealth() / preMaxHealth);
 			player->SetHealth(maxHealth * preHealthRatio + overheal);
+		}
+	}
+
+	void OnItemColorChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			auto player = GetPlayerOwnerOfAttributeList(list);
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CEconEntity *>(ent);
+			if (econentity != nullptr) {
+				ApplyAttachmentAttributesToEntity(player, FindVisibleEntity(player, econentity), econentity);
+			}
+		}
+	}
+
+	void OnCustomModelChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			auto player = GetPlayerOwnerOfAttributeList(list);
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CEconEntity *>(ent);
+			if (econentity != nullptr) {
+				UpdateCustomModel(player, econentity, *list);
+			}
 		}
 	}
 
@@ -4471,7 +4601,9 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_Explode, "CTFProjectile_EnergyBall::Explode");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClearTauntAttack, "CTFPlayer::ClearTauntAttack");
-			
+
+		//  Allow fire rate bonus with reduced health on melee weapons
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyFireDelay, "CTFWeaponBase::ApplyFireDelay");
 
 		//  Implement disable alt fire
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_ItemPostFrame, "CBasePlayer::ItemPostFrame");
@@ -4527,6 +4659,13 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("mult_player_movespeed_active", OnMoveSpeedChange);
 				RegisterCallback("add_maxhealth", OnMaxHealthChange);
 				RegisterCallback("add_maxhealth_nonbuffed", OnMaxHealthChange);
+				RegisterCallback("item_color_rgb", OnItemColorChange);
+				RegisterCallback("is_invisible", OnItemColorChange);
+				RegisterCallback("attachment_name", OnItemColorChange);
+				RegisterCallback("attachment_scale", OnItemColorChange);
+				RegisterCallback("attachment_offset", OnItemColorChange);
+				RegisterCallback("attachment_angles", OnItemColorChange);
+				RegisterCallback("custom_item_model", OnCustomModelChange);
 			}
 		}
 
@@ -4674,7 +4813,7 @@ namespace Mod::Attr::Custom_Attributes
                 for (int i = 0; i < 2048; i++) {
 					auto cache = fast_attribute_cache[i];
 					if (cache != nullptr) {
-						int count = i <= gpGlobals->maxClients ? ATTRIB_COUNT_PLAYER : ATTRIB_COUNT_ITEM;
+						int count = i <= gpGlobals->maxClients ? (int)ATTRIB_COUNT_PLAYER : (int)ATTRIB_COUNT_ITEM;
 						for(int i = 0; i < count; i++) {
 							cache[i] = FLT_MIN;
 						}

@@ -64,9 +64,20 @@ namespace Mod::Util::Download_Manager
 	extern ConVar cvar_mission_owner;
 
 	void CreateNotifyDirectory();
+	void ResetVoteMapList();
 
-	ConVar cvar_resource_file("sig_util_download_manager_resource_file", "tf_mvm_missioncycle.res", FCVAR_NONE, "Download Manager: Mission cycle file to write to");
-	ConVar cvar_mapcycle_file("sig_util_download_manager_maplist_file", "cfg/mapcycle.txt", FCVAR_NONE, "Download Manager: Map cycle file to write to");
+	bool server_activated = false;
+	ConVar cvar_resource_file("sig_util_download_manager_resource_file", "tf_mvm_missioncycle.res", FCVAR_NONE, "Download Manager: Mission cycle file to write to",
+		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
+			if (server_activated)
+				ResetVoteMapList();
+		});
+
+	ConVar cvar_mapcycle_file("sig_util_download_manager_maplist_file", "cfg/mapcycle.txt", FCVAR_NONE, "Download Manager: Map cycle file to write to",
+		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
+			if (server_activated)
+				ResetVoteMapList();
+		});
 
 	ConVar cvar_download_refresh("sig_util_download_manager_download_refresh", "1", FCVAR_NOTIFY,
 		"Download Manager: Set if the downloads should be refreshed periodically", 
@@ -76,7 +87,11 @@ namespace Mod::Util::Download_Manager
 		});
 
 	ConVar cvar_mappath("sig_util_download_manager_map_path", "", FCVAR_NOTIFY,
-		"Download Manager: if specified, only include maps in the directory to the vote menu");
+		"Download Manager: if specified, only include maps in the directory to the vote menu",
+		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
+			if (server_activated)
+				ResetVoteMapList();
+		});
 
 	std::unordered_set<std::string> banned_maps;
 	ConVar cvar_banned_maps("sig_util_download_manager_banned_maps", "", FCVAR_NOTIFY,
@@ -89,6 +104,8 @@ namespace Mod::Util::Download_Manager
             for (auto &token : tokens) {
                 banned_maps.insert(token);
             }
+			if (server_activated)
+				ResetVoteMapList();
 		});
 
 	const char *game_path;
@@ -565,7 +582,7 @@ namespace Mod::Util::Download_Manager
 	void AddMapToVoteList(const char *mapName, KeyValues *kv, int &files, std::string &maplistStr)
 	{
 		std::string mapNameStr(mapName, strlen(mapName) - 4);
-		if (banned_maps.count(mapName)) return;
+		if (banned_maps.count(mapNameStr)) return;
 
 		files++;
 
@@ -826,7 +843,6 @@ namespace Mod::Util::Download_Manager
 		kv->deleteThis();
 	}
 	
-	bool server_activated = false;
 	DETOUR_DECL_MEMBER(void, CServerGameDLL_ServerActivate, edict_t *pEdictList, int edictList, int clientMax)
 	{
 		DETOUR_MEMBER_CALL(CServerGameDLL_ServerActivate)(pEdictList, edictList, clientMax);

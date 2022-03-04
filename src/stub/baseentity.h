@@ -197,8 +197,8 @@ public:
 	Vector GetCustomVariableVector(const Vector &defValue = vec3_origin);
 	template<FixedString lit>
 	QAngle GetCustomVariableAngle(const QAngle &defValue = vec3_angle);
-	const char *GetCustomVariableByText(const char *key, const char *defValue = nullptr);
-	void SetCustomVariable(const char *key, const char *value);
+	bool GetCustomVariableByText(const char *key, variant_t &value);
+	void SetCustomVariable(const char *key, variant_t &value);
 
     // Alert! Custom outputs must be defined in lowercase
 	template<FixedString lit>
@@ -671,12 +671,15 @@ BASEPTR CBaseEntity::ThinkSet(DERIVEDPTR func, float flNextThinkTime, const char
 
 inline void CBaseEntity::NetworkStateChanged()
 {
-	gamehelpers->SetEdictStateChanged(this->GetNetworkable()->GetEdict(), 0);
+	if (this->GetNetworkable()->GetEdict() == nullptr) return;
+	this->GetNetworkable()->GetEdict()->m_fStateFlags |= FL_EDICT_CHANGED;
 }
 
 inline void CBaseEntity::NetworkStateChanged(void *pVar)
 {
-	gamehelpers->SetEdictStateChanged(this->GetNetworkable()->GetEdict(), ((uintptr_t)pVar - (uintptr_t)this));
+	if (this->GetNetworkable()->GetEdict() == nullptr) return;
+	this->GetNetworkable()->GetEdict()->m_fStateFlags |= FL_EDICT_CHANGED;
+	//gamehelpers->SetEdictStateChanged(this->GetNetworkable()->GetEdict(), ((uintptr_t)pVar - (uintptr_t)this));
 }
 
 inline void CBaseEntity::EntityToWorldSpace(const Vector &in, Vector *pOut) const

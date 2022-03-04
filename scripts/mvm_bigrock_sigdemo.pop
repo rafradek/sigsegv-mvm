@@ -646,20 +646,20 @@ WaveSchedule
 		{
 			OnSpawnOutput
 			{
-				Target "shoot"
+				Target "shootm"
 				Action "$setowner"
 				Param "!activator"
 				Delay 0.01
 			}
 			OnSpawnOutput
 			{
-				Target "shoot"
+				Target "shootm"
 				Action "FireUser1"
 				Delay 0.01
 			}
 			tf_point_weapon_mimic
 			{
-				"targetname" "shoot"
+				"targetname" "shootm"
 				"origin" "100 0 0"
 				"speedmin" "1000"
 				"speedmax" "1000"
@@ -1016,6 +1016,7 @@ WaveSchedule
 		CooldownTime 40            
         
         SuppressSentryBusterModel 1 [$SIGSEGV] // Disable sentry buster model
+		TargetBluSentries 1 [$SIGSEGV] // Target blu sentries instead of red ones. This is for reprogrammed busters
 
         TFBot
         {
@@ -2449,7 +2450,7 @@ WaveSchedule
 // On hit: refire time * (x/60) % chance for 100 hu blast that stuns players for 2 seconds and applies bleed. use 60 for 100% chance on 1s refire time weapon, 600 for 0.1s
 // "aoe blast on damage" 80
 
-// Grants up to x% damage bonus based on current health. Only for melee weapons
+// Grants up to x% damage bonus based on current health.
 // "mult dmg with reduced health" 2
 
 // Multiplier of how fast can pyro use primary fire again after airblasting
@@ -2922,3 +2923,15 @@ WaveSchedule
 
 // Medigun revive speed multiplier
 // "revive rate" 10
+
+// Taunt attack happens even after taunt ends or is interrupted
+// "taunt attack after end" 1
+
+// Taunt attack time multiplier
+// "taunt attack time mult" 2
+
+// Returns fraction of damage dealt as health
+// "damage returns as health" 0.5
+
+// Cannot resupply from cabinets 
+// "no resupply" 1

@@ -1058,7 +1058,6 @@ namespace Mod::Pop::Tank_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (rc_CTFBaseBoss_ResolvePlayerCollision || (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr&& thinking_tank_data->no_crush_damage) ) {
-			Msg("Tank Crush Damage Resolved\n");
 			return 0;
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);

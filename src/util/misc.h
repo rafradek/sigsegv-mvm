@@ -300,7 +300,6 @@ struct VStricmpLess
 	}
 };
 
-
 inline bool StringToIntStrict(const char *str, int& out, int base = 0, const char **next = nullptr)
 {
 	char *str_end = nullptr;
@@ -318,6 +317,12 @@ inline bool StringToIntStrict(const char *str, int& out, int base = 0, const cha
 	}
 }
 
+inline bool StringToIntStrictAndSpend(const char *str, int& out, int base = 0)
+{
+	const char *end;
+	return StringToIntStrict(str, out, base, &end) && (end == nullptr || *end == '\0'); 
+}
+
 inline bool StringToFloatStrict(const char *str, float& out, const char **next = nullptr)
 {
 	char *str_end = nullptr;
@@ -333,6 +338,12 @@ inline bool StringToFloatStrict(const char *str, float& out, const char **next =
 	} else {
 		return false;
 	}
+}
+
+inline bool StringToFloatStrictAndSpend(const char *str, float& out)
+{
+	const char *end;
+	return StringToFloatStrict(str, out, &end) && (end == nullptr || *end == '\0'); 
 }
 
 inline bool IsStrLower(const char *pch)
@@ -412,12 +423,162 @@ inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
 	return false;
 }
 
+inline bool UTIL_StringToVectorAlt(Vector &base, const char* string)
+{
+	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
+	if (scannum == 0)
+	{
+		// Try sucking out 3 floats with no []s
+		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
+	}
+	return scannum == 3;
+}
+
+inline bool UTIL_StringToAnglesAlt(QAngle &base, const char* string)
+{
+	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
+	if (scannum == 0)
+	{
+		// Try sucking out 3 floats with no []s
+		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
+	}
+	return scannum == 3;
+}
+
+inline bool ParseNumberOrVectorFromString(const char *str, variant_t &value)
+{
+    float val;
+    int valint;
+    Vector vec;
+    if (UTIL_StringToVectorAlt(vec, str)) {
+        //Msg("Parse vector\n");
+        value.SetVector3D(vec);
+        return true;
+    }
+    // Parse as int
+    else if (StringToIntStrictAndSpend(str, valint)) {
+       // Msg("Parse float\n");
+        value.SetInt(valint);
+        return true;
+    }
+    // Parse as float
+    else if (StringToFloatStrict(str, val)) {
+       // Msg("Parse float\n");
+        value.SetFloat(val);
+        return true;
+    }
+    return false;
+}
+
+inline const char *FindCaseInsensitive(const char *string, const char* needle)
+{
+	const char *result = nullptr;
+	const char *needleadv = needle;
+	char c;
+	while((c = (*string++)) != '\0') {
+		if ((c & ~(32)) == (*needleadv & ~(32))) {
+			if (result == nullptr) {
+				result = string - 1;
+			}
+			needleadv++;
+			if (*needleadv == '\0') {
+				return result;
+			}
+		}
+		else {
+			result = nullptr;
+			needleadv = needle;
+		}
+	}
+	return nullptr;
+}
+
+inline const char *FindCaseSensitive(const char *string, const char* needle)
+{
+	const char *result = nullptr;
+	const char *needleadv = needle;
+	char c;
+	while((c = (*string++)) != '\0') {
+		if (c == *needleadv) {
+			if (result == nullptr) {
+				result = string - 1;
+			}
+			needleadv++;
+			if (*needleadv == '\0') {
+				return result;
+			}
+		}
+		else {
+			result = nullptr;
+			needleadv = needle;
+		}
+	}
+	return nullptr;
+}
+
+inline const char *FindCaseSensitiveReverse(const char *string, const char* needle)
+{
+	size_t sizeh = strlen(string) - 1;
+	size_t sizen = strlen(needle);
+	const char *result = nullptr;
+	const char *needleadv = needle + sizeh;
+	string += sizeh;
+	char c;
+	const char *end = string + sizeh;
+	while(end != string) {
+		end--;
+		c = *end;
+		if (c == *needleadv) {
+			if (result == nullptr) {
+				result = end;
+			}
+			needleadv--;
+			if (*needleadv == '\0') {
+				return result;
+			}
+		}
+		else {
+			result = nullptr;
+			needleadv = needle + sizeh;
+		}
+	}
+	return nullptr;
+}
+
+inline const char *FindCaseInsensitiveReverse(const char *string, const char* needle)
+{
+	size_t sizeh = strlen(string) - 1;
+	size_t sizen = strlen(needle);
+	const char *result = nullptr;
+	const char *needleadv = needle + sizeh;
+	string += sizeh;
+	char c;
+	const char *end = string + sizeh;
+	while(end != string) {
+		end--;
+		c = *end;
+		if ((c & ~(32)) == ((*needleadv) & ~(32))) {
+			if (result == nullptr) {
+				result = end;
+			}
+			needleadv--;
+			if (*needleadv == '\0') {
+				return result;
+			}
+		}
+		else {
+			result = nullptr;
+			needleadv = needle + sizeh;
+		}
+	}
+	return nullptr;
+}
+
 template<int SIZE_BUF = FMTSTR_STD_LEN, typename... ARGS>
 std::string CFmtStdStr(ARGS&&... args)
 {
 	return CFmtStrN<SIZE_BUF>(std::forward<ARGS>(args)...).Get();
 }
-
 
 template<typename T> T ConVar_GetValue(const ConVarRef& cvar);
 template<> inline bool        ConVar_GetValue<bool>       (const ConVarRef& cvar) { return cvar.GetBool();   }
