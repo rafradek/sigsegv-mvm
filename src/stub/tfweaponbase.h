@@ -94,6 +94,7 @@ public:
 	
 	bool IsSilentKiller() { return ft_IsSilentKiller(this); }
 	float Energy_GetMaxEnergy() { return ft_Energy_GetMaxEnergy(this); }
+	void CalcIsAttackCritical() { ft_CalcIsAttackCritical(this); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
@@ -101,6 +102,7 @@ public:
 	bool ShouldRemoveInvisibilityOnPrimaryAttack() const { return vt_ShouldRemoveInvisibilityOnPrimaryAttack(this); }
 	bool IsEnergyWeapon() const { return vt_IsEnergyWeapon(this); }
 	float Energy_GetShotCost() const { return vt_Energy_GetShotCost(this); }
+	void Misfire()               { vt_Misfire(this); }
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
@@ -115,6 +117,7 @@ private:
 	static MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> ft_GetTFPlayerOwner;
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_IsSilentKiller;
 	static MemberFuncThunk<CTFWeaponBase *, float> ft_Energy_GetMaxEnergy;
+	static MemberFuncThunk<CTFWeaponBase *, void> ft_CalcIsAttackCritical;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;
@@ -122,6 +125,7 @@ private:
 	static MemberVFuncThunk<const CTFWeaponBase *, bool> vt_ShouldRemoveInvisibilityOnPrimaryAttack;
 	static MemberVFuncThunk<const CTFWeaponBase *, bool> vt_IsEnergyWeapon;
 	static MemberVFuncThunk<const CTFWeaponBase *, float> vt_Energy_GetShotCost;
+	static MemberVFuncThunk<CTFWeaponBase *, void> vt_Misfire;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {
@@ -135,6 +139,7 @@ public:
 	void RemoveProjectileAmmo(CTFPlayer *pPlayer) {        vt_RemoveProjectileAmmo(this, pPlayer); }
 	void DoFireEffects()                          {        vt_DoFireEffects       (this); }
 	bool ShouldPlayFireAnim()                     { return vt_ShouldPlayFireAnim  (this); }
+	CBaseEntity *FireProjectile(CTFPlayer *pPlayer) { return vt_FireProjectile  (this, pPlayer); }
 private:
 	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileGravity;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileSpeed;
@@ -146,6 +151,7 @@ private:
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> vt_RemoveProjectileAmmo;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void>              vt_DoFireEffects;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, bool>              vt_ShouldPlayFireAnim;
+	static MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> vt_FireProjectile;
 };
 
 class CTFPipebombLauncher : public CTFWeaponBaseGun {};

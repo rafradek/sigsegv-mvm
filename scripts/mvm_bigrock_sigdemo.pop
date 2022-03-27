@@ -110,9 +110,12 @@ WaveSchedule
 	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
 	StuckTimeMultiplier 1 [$SIGSEGV] // Multiplier of how fast the bot detects stuck. 3 means bot detect stuck 3 times faster than normal (staying for 4s in 100hu area) (default: 1)
 	NoCreditsVelocity 1 [$SIGSEGV] // If set credits spawn with no velocity (default: 0)
-	RestoreNegativeDamageHealing 1 [$SIGSEGV] // Allow negative damage to overheal (default: 0)
+	RestoreNegativeDamageHealing 1 [$SIGSEGV] // Allow negative damage to heal (default: 1)
+	RestoreNegativeDamageOverheal 1 [$SIGSEGV] // Allow negative damage to overheal (default: 1)
 	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
 	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
+	EngineerPushRange 40 [$SIGSEGV] // Any value other than 0 changes Engineer bot push range when building (defualt: 0)
+	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (defualt: 0)
 	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
 
 	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
@@ -184,6 +187,7 @@ WaveSchedule
 		Classname "tf_weapon_sniperrifle"
 		Name "TF_WEAPON_MINIGUN"
 		Name "The Force-a-Nature"
+		// SimilarToItem "TF_WEAPON_FISTS" // Matches the item and all functionally identical items
 		DefIndex 8 //Bonesaw
 		// ItemSlot "secondary" // Items in secondary slot
 	}
@@ -201,6 +205,7 @@ WaveSchedule
 	}
 	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
 	{
+		SimilarToItem "TF_WEAPON_CLUB"
 		"fire rate bonus" 1.8
 	}
 	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
@@ -1223,6 +1228,7 @@ WaveSchedule
 					//Sniper - Uses mission sniper AI
 					//SuicideBomber - Uses sentry buster AI, but targets players instead. Might crash servers
 					//Idle - Sit in spawn and wait
+					//Passive - Sit at spawn position, until an active threat is in vision
 				Item "The Short Circuit"
 				ExtAttr AlwaysFireWeaponAlt [$SIGSEGV] 
 				WeaponRestrictions SecondaryOnly
@@ -2935,3 +2941,9 @@ WaveSchedule
 
 // Cannot resupply from cabinets 
 // "no resupply" 1
+
+// No view flinch from taking damage
+// "no damage view flinch" 1
+
+// Damage dealt to teammates multiplier. Requires Allow friendly fire
+// "mult dmg friendly fire" 0.4

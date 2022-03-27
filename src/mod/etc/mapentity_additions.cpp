@@ -136,11 +136,10 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
-    void SetCustomVariable(CBaseEntity *entity, const char *key, const char *value)
+    void SetCustomVariable(CBaseEntity *entity, const char *key, variant_t &value)
     {
-        variant_t variant;
-        if (!ParseNumberOrVectorFromString(value, variant)) {
-            variant.SetString(AllocPooledString(value));
+        if (value.FieldType() == FIELD_STRING) {
+            ParseNumberOrVectorFromString(value.String(), value);
         }
         
         std::string nameNoArray = key;
@@ -148,35 +147,13 @@ namespace Mod::Etc::Mapentity_Additions
         ReadVectorIndexFromString(nameNoArray, vecOffset);
         if (vecOffset != -1) {
             Vector vec;
-            entity->GetCustomVariableByText(nameNoArray.c_str(), variant);
-            variant.Vector3D(vec);
-            vec[vecOffset] = strtof(value, nullptr);
-            variant.SetVector3D(vec);
+            entity->GetCustomVariableByText(nameNoArray.c_str(), value);
+            value.Vector3D(vec);
+            vec[vecOffset] = value.Float();
+            value.SetVector3D(vec);
         }
 
-        entity->SetCustomVariable(nameNoArray.c_str(), variant);
-
-        if (FStrEq(key, "modules")) {
-            std::string str(value);
-            boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
-
-            for (auto &token : tokens) {
-                AddModuleByName(entity,token.c_str());
-            }
-        }
-        if (entity->GetClassname() == PStr<"$entity_spawn_detector">() && FStrEq(key, "name")) {
-            bool found = false;
-            for (auto &pair : entity_listeners) {
-                if (pair.second == entity) {
-                    pair.first = AllocPooledString(value);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                entity_listeners.push_back({AllocPooledString(value), entity});
-            }
-        }
+        entity->SetCustomVariable(nameNoArray.c_str(), value);
     }
 
     bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, int index = -1)
@@ -299,7 +276,31 @@ namespace Mod::Etc::Mapentity_Additions
         boost::algorithm::to_lower(namestr);
     //  DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
         entity->AddCustomOutput(namestr.c_str(), value);
-        SetCustomVariable(entity, namestr.c_str(), value);
+        variant_t variant;
+        variant.SetString(AllocPooledString(value));
+        SetCustomVariable(entity, namestr.c_str(), variant);
+
+        if (FStrEq(name, "modules")) {
+            std::string str(value);
+            boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
+
+            for (auto &token : tokens) {
+                AddModuleByName(entity,token.c_str());
+            }
+        }
+        if (entity->GetClassname() == PStr<"$entity_spawn_detector">() && FStrEq(name, "name")) {
+            bool found = false;
+            for (auto &pair : entity_listeners) {
+                if (pair.second == entity) {
+                    pair.first = AllocPooledString(value);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                entity_listeners.push_back({AllocPooledString(value), entity});
+            }
+        }
     }
 
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
@@ -334,6 +335,99 @@ namespace Mod::Etc::Mapentity_Additions
         SENDPROP
     };
 
+    CStandardSendProxies* sendproxies = nullptr;
+    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable) {
+        bool found = false;
+
+        if (type == ANY) {
+            found = SetEntityVariable(entity, DATAMAP, name, variable) ||
+                    SetEntityVariable(entity, SENDPROP, name, variable) ||
+                    SetEntityVariable(entity, KEYVALUE, name, variable) ||
+                    SetEntityVariable(entity, VARIABLE, name, variable);
+        }
+        else if (type == VARIABLE) {
+            SetCustomVariable(entity, name, variable);
+            found = true;
+        }
+        else if (type == KEYVALUE) {
+            std::string nameNoArray = name;
+            int vecOffset;
+            ReadVectorIndexFromString(nameNoArray, vecOffset);
+            if (vecOffset != -1) {
+                Vector vec;
+                variant_t variant;
+                entity->ReadKeyField(nameNoArray.c_str(), &variant);
+                variable.Vector3D(vec);
+                variable.Convert(FIELD_FLOAT);
+                vec[vecOffset] = variable.Float();
+                variable.SetVector3D(vec);
+            }
+            else {
+                entity->KeyValue(nameNoArray.c_str(), variable.String());
+            }
+            found = false;
+        }
+        else if (type == DATAMAP) {
+            auto &entry = GetDataMapOffset(entity->GetDataDescMap(), name);
+
+            if (entry.offset > 0) {
+                if (entry.fieldType == FIELD_CHARACTER && entry.size > 1) {
+                    V_strncpy(((char*)entity) + entry.offset, variable.String(), entry.size);
+                }
+                else {
+                    variable.Convert(entry.fieldType);
+                    variable.SetOther(((char*)entity) + entry.offset);
+                }
+                found = true;
+            }
+        }
+        else if (type == SENDPROP) {
+            auto &entry = GetSendPropOffset(entity->GetServerClass(), name);
+
+            if (entry.offset > 0) {
+
+                int offset = entry.offset;
+                auto propType = entry.prop->GetType();
+                if (propType == DPT_Int) {
+                    
+                    if (entry.prop->m_nBits == 21 && (entry.prop->GetFlags() & SPROP_UNSIGNED)) {
+                        variable.Convert(FIELD_EHANDLE);
+                        *(CHandle<CBaseEntity>*)(((char*)entity) + offset) = variable.Entity();
+                    }
+                    else {
+                        variable.Convert(FIELD_INTEGER);
+                        auto proxyfn = entry.prop->GetProxyFn();
+                        if (proxyfn == sendproxies->m_Int8ToInt32 || proxyfn == sendproxies->m_UInt8ToInt32) {
+                            *(char*)(((char*)entity) + offset) = variable.Int();
+                        }
+                        else if (proxyfn == sendproxies->m_Int16ToInt32 || proxyfn == sendproxies->m_UInt16ToInt32) {
+                            *(short*)(((short*)entity) + offset) = variable.Int();
+                        }
+                        else {
+                            *(int*)(((char*)entity) + offset) = variable.Int();
+                        }
+                    }
+                }
+                else if (propType == DPT_Float || entry.isVecAxis) {
+                    variable.Convert(FIELD_FLOAT);
+                    *(float*)(((char*)entity) + offset) = variable.Float();
+                }
+                else if (propType == DPT_String) {
+                    *(string_t*)(((char*)entity) + offset) = AllocPooledString(variable.String());
+                }
+                else if (propType == DPT_Vector) {
+                    variable.Convert(FIELD_VECTOR);
+                    Vector tmpVec;
+                    variable.Vector3D(tmpVec);
+                    *(Vector*)(((char*)entity) + offset) = tmpVec;
+                }
+                entity->NetworkStateChanged();
+                found = true;
+            }
+        }
+        return found;
+    }
+
     bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable) {
         bool found = false;
 
@@ -353,6 +447,9 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }
         else if (type == KEYVALUE) {
+            if (name[0] == '$') {
+                return GetEntityVariable(entity, VARIABLE, name + 1, variable);
+            }
             std::string nameNoArray = name;
             int vecOffset;
             ReadVectorIndexFromString(nameNoArray, vecOffset);
@@ -362,12 +459,22 @@ namespace Mod::Etc::Mapentity_Additions
         else if (type == DATAMAP) {
             auto &entry = GetDataMapOffset(entity->GetDataDescMap(), name);
             if (entry.offset > 0) {
-                if (entry.fieldType == FIELD_CHARACTER) {
+                if (entry.fieldType == FIELD_CHARACTER && entry.size > 1) {
                     variable.SetString(AllocPooledString(((char*)entity) + entry.offset));
                 }
                 else {
                     variable.Set(entry.fieldType, ((char*)entity) + entry.offset);
                 }
+                if (entry.fieldType == FIELD_POSITION_VECTOR) {
+                    variable.Convert(FIELD_VECTOR);
+                }
+                else if (entry.fieldType == FIELD_CLASSPTR) {
+                    variable.Convert(FIELD_EHANDLE);
+                }
+                else if ((entry.fieldType == FIELD_CHARACTER && entry.size == 1) || (entry.fieldType == FIELD_SHORT)) {
+                    variable.Convert(FIELD_INTEGER);
+                }
+                
                 found = true;
             }
         }
@@ -378,9 +485,20 @@ namespace Mod::Etc::Mapentity_Additions
                 int offset = entry.offset;
                 auto propType = entry.prop->GetType();
                 if (propType == DPT_Int) {
-                    variable.SetInt(*(int*)(((char*)entity) + offset));
                     if (entry.prop->m_nBits == 21 && (entry.prop->GetFlags() & SPROP_UNSIGNED)) {
                         variable.Set(FIELD_EHANDLE, (CHandle<CBaseEntity>*)(((char*)entity) + offset));
+                    }
+                    else {
+                        auto proxyfn = entry.prop->GetProxyFn();
+                        if (proxyfn == sendproxies->m_Int8ToInt32 || proxyfn == sendproxies->m_UInt8ToInt32) {
+                            variable.SetInt(*(char*)(((char*)entity) + offset));
+                        }
+                        else if (proxyfn == sendproxies->m_Int16ToInt32 || proxyfn == sendproxies->m_UInt16ToInt32) {
+                            variable.SetInt(*(short*)(((char*)entity) + offset));
+                        }
+                        else {
+                            variable.SetInt(*(int*)(((char*)entity) + offset));
+                        }
                     }
                 }
                 else if (propType == DPT_Float || entry.isVecAxis) {
@@ -971,8 +1089,8 @@ namespace Mod::Etc::Mapentity_Additions
                 
                 if (player != nullptr) {
                     // Disable setup to allow class changing during waves in mvm
-                    bool setup = TFGameRules()->InSetup();
-                    TFGameRules()->SetInSetup(true);
+                    static ConVarRef endless("tf_mvm_endless_force_on");
+                    endless.SetValue(true);
 
                     int index = strtol(Value.String(), nullptr, 10);
                     if (index > 0 && index < 10) {
@@ -981,8 +1099,7 @@ namespace Mod::Etc::Mapentity_Additions
                     else {
                         player->HandleCommand_JoinClass(Value.String());
                     }
-                    
-                    TFGameRules()->SetInSetup(setup);
+                    endless.SetValue(false);
                 }
                 return true;
             }
@@ -991,8 +1108,8 @@ namespace Mod::Etc::Mapentity_Additions
                 
                 if (player != nullptr) {
                     // Disable setup to allow class changing during waves in mvm
-                    bool setup = TFGameRules()->InSetup();
-                    TFGameRules()->SetInSetup(true);
+                    static ConVarRef endless("tf_mvm_endless_force_on");
+                    endless.SetValue(true);
 
                     Vector pos = player->GetAbsOrigin();
                     QAngle ang = player->GetAbsAngles();
@@ -1008,7 +1125,7 @@ namespace Mod::Etc::Mapentity_Additions
                         player->HandleCommand_JoinClass(Value.String());
                     }
                     player->m_Shared->SetState(oldState);
-                    TFGameRules()->SetInSetup(setup);
+                    endless.SetValue(false);
                     player->ForceRespawn();
                     player->Teleport(&pos, &ang, &vel);
                     
@@ -2187,9 +2304,7 @@ namespace Mod::Etc::Mapentity_Additions
             return true;
         }
         else if (strnicmp(szInputName, "SetVar$", strlen("SetVar$")) == 0) {
-            std::string valuestr = Value.String();
-            boost::algorithm::to_lower(valuestr);
-            SetCustomVariable(ent, szInputName + strlen("SetVar$"), valuestr.c_str());
+            SetEntityVariable(ent, VARIABLE, szInputName + strlen("SetVar$"), Value);
             return true;
         }
         else if (strnicmp(szInputName, "GetVar$", strlen("GetVar$")) == 0) {
@@ -2197,19 +2312,7 @@ namespace Mod::Etc::Mapentity_Additions
             return true;
         }
         else if (strnicmp(szInputName, "SetKey$", strlen("SetKey$")) == 0) {
-            std::string nameNoArray = szInputName + strlen("SetKey$");
-            int vecOffset;
-            ReadVectorIndexFromString(nameNoArray, vecOffset);
-            if (vecOffset != -1) {
-                Vector vec;
-                variant_t variant;
-                ent->ReadKeyField(nameNoArray.c_str(), &variant);
-                variant.Vector3D(vec);
-                Value.Convert(FIELD_FLOAT);
-                vec[vecOffset] = Value.Float();
-                Value.SetVector3D(vec);
-            }
-            ent->KeyValue(nameNoArray.c_str(), Value.String());
+            SetEntityVariable(ent, KEYVALUE, szInputName + strlen("SetKey$"), Value);
             return true;
         }
         else if (strnicmp(szInputName, "GetKey$", strlen("GetKey$")) == 0) {
@@ -2217,18 +2320,7 @@ namespace Mod::Etc::Mapentity_Additions
             return true;
         }
         else if (strnicmp(szInputName, "SetData$", strlen("SetData$")) == 0) {
-            const char *name = szInputName + strlen("SetData$");
-            auto &entry = GetDataMapOffset(ent->GetDataDescMap(), name);
-
-            if (entry.offset > 0) {
-                if (entry.fieldType == FIELD_CHARACTER) {
-                    V_strncpy(((char*)ent) + entry.offset, Value.String(), entry.size);
-                }
-                else {
-                    Value.Convert(entry.fieldType);
-                    Value.SetOther(((char*)ent) + entry.offset);
-                }
-            }
+            SetEntityVariable(ent, DATAMAP, szInputName + strlen("SetData$"), Value);
             return true;
         }
         else if (strnicmp(szInputName, "GetData$", strlen("GetData$")) == 0) {
@@ -2236,39 +2328,7 @@ namespace Mod::Etc::Mapentity_Additions
             return true;
         }
         else if (strnicmp(szInputName, "SetProp$", strlen("SetProp$")) == 0) {
-            const char *name = szInputName + strlen("SetProp$");
-
-            auto &entry = GetSendPropOffset(ent->GetServerClass(), name);
-
-            if (entry.offset > 0) {
-
-                int offset = entry.offset;
-                auto propType = entry.prop->GetType();
-                if (propType == DPT_Int) {
-                    if (entry.prop->m_nBits == 21 && (entry.prop->GetFlags() & SPROP_UNSIGNED)) {
-                        *(CHandle<CBaseEntity>*)(((char*)ent) + offset) = servertools->FindEntityByName(nullptr, Value.String());
-                    }
-                    else {
-                        Value.Convert(FIELD_INTEGER);
-                        *(int*)(((char*)ent) + offset) = Value.Int();
-                    }
-                }
-                else if (propType == DPT_Float || entry.isVecAxis) {
-                    Value.Convert(FIELD_FLOAT);
-                    *(float*)(((char*)ent) + offset) = Value.Float();
-                }
-                else if (propType == DPT_String) {
-                    *(string_t*)(((char*)ent) + offset) = AllocPooledString(Value.String());
-                }
-                else if (propType == DPT_Vector) {
-                    Value.Convert(FIELD_VECTOR);
-                    Vector tmpVec;
-                    Value.Vector3D(tmpVec);
-                    *(Vector*)(((char*)ent) + offset) = tmpVec;
-                }
-                ent->NetworkStateChanged();
-            }
-
+            SetEntityVariable(ent, SENDPROP, szInputName + strlen("SetProp$"), Value);
             return true;
         }
         else if (strnicmp(szInputName, "GetProp$", strlen("GetProp$")) == 0) {
@@ -2310,7 +2370,7 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                 }
             }
-            ent->RemoveCustomOutput(name);
+            ent->RemoveCustomOutput(name+1);
             return true;
         }
         else if (stricmp(szInputName, "CancelPending") == 0) {
@@ -3331,7 +3391,8 @@ namespace Mod::Etc::Mapentity_Additions
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
         virtual void LevelInitPreEntity() override
-        {
+        { 
+            sendproxies = gamedll->GetStandardSendProxies();
             send_prop_cache.clear();
             datamap_cache.clear();
             entity_listeners.clear();

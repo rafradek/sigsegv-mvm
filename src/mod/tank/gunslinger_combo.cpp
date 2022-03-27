@@ -9,22 +9,22 @@ namespace Mod::Tank::Gunslinger_Combo
 	
 
 
-	RefCount rc_CTFRobotArm_Smack;
+	bool rc_CTFRobotArm_Smack = false;
 	DETOUR_DECL_MEMBER(void, CTFRobotArm_Smack)
 	{
-		SCOPED_INCREMENT(rc_CTFRobotArm_Smack);
+		rc_CTFRobotArm_Smack = true;
 		DETOUR_MEMBER_CALL(CTFRobotArm_Smack)();
+		rc_CTFRobotArm_Smack = false;
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBaseMelee_DoSwingTrace, trace_t &trace)
 	{
 		bool result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTrace)(trace);
 		if (rc_CTFRobotArm_Smack && result && trace.m_pEnt != nullptr && ENTINDEX(trace.m_pEnt) != 0 && reinterpret_cast<CBaseEntity *>(trace.m_pEnt)->ClassMatches("tank_boss")) {
-			--rc_CTFRobotArm_Smack;
+			rc_CTFRobotArm_Smack = false;
 			CBaseEntity *owner = reinterpret_cast<CTFWeaponBaseMelee *>(this)->GetOwnerEntity();
 
 			ForEachPlayer([&](CBasePlayer *player){
-				DevMsg("has\n");
 				if (player->GetTeamNumber() != owner->GetTeamNumber()) {
 					trace.m_pEnt = player;
 					return false;

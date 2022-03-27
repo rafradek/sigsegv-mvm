@@ -76,6 +76,7 @@ namespace Mod::MvM::Extended_Upgrades
                 m_strLogName = itemDef->GetKeyValues()->GetString("item_logname");
                 m_strBaseName = itemDef->GetKeyValues()->GetString("base_item_name");
                 m_bCanCompareByLogName = !m_strLogName.empty() || !m_strBaseName.empty();
+                m_iBaseDefIndex = itemDef->m_iItemDefIndex;
                 m_strBaseClassMelee = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED) == LOADOUT_POSITION_MELEE && FStrEq(itemDef->GetKeyValues()->GetString("item_quality"), "normal") ? itemDef->GetItemClass() : "";
             }
         }
@@ -88,7 +89,7 @@ namespace Mod::MvM::Extended_Upgrades
             const char *name =  GetItemName(item_view, is_custom);
             if (FStrEq(this->m_strName.c_str(),name)) return true;
 
-            return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, ent->GetClassname());
+            return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, ent->GetClassname(), m_iBaseDefIndex);
         }
 
         virtual void ParseKey(KeyValues *kv) override {
@@ -101,6 +102,7 @@ namespace Mod::MvM::Extended_Upgrades
         std::string m_strLogName;
         std::string m_strBaseName;
         std::string m_strBaseClassMelee;
+        int m_iBaseDefIndex;
     };
 
     class UpgradeCriteriaHasDamage : public UpgradeCriteria {

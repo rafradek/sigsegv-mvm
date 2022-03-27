@@ -84,7 +84,7 @@ namespace Mod::Pop::Mission_Extensions
 		auto mission = reinterpret_cast<CMissionPopulator *>(this);
 		
 		std::vector<CBaseObject *> sentriesToRestoreTeam;
-		auto it = missions.find(current_mission);
+		auto it = missions.find(mission);
 		if (it != missions.end()) {
 			MissionData& data = (*it).second;
 			if (data.target_blu_sentries) {

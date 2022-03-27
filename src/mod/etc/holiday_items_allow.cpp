@@ -10,7 +10,7 @@ namespace Mod::Etc::Holiday_Items_Allow
 	RefCount rc_CTFPlayer_ItemIsAllowed;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemIsAllowed, CEconItemView *item_view)
 	{
-		SCOPED_INCREMENT_IF(rc_CTFPlayer_ItemIsAllowed, item_view != nullptr && item_view->GetStaticData() != nullptr && FStrEq(item_view->GetStaticData()->GetKeyValues()->GetString("equip_region"), "zombie_body"));
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ItemIsAllowed, item_view != nullptr && item_view->GetStaticData() != nullptr && item_view->GetStaticData()->GetKeyValues() != nullptr && FStrEq(item_view->GetStaticData()->GetKeyValues()->GetString("equip_region"), "zombie_body"));
 		return DETOUR_MEMBER_CALL(CTFPlayer_ItemIsAllowed)(item_view);
 	}
 

@@ -1603,16 +1603,27 @@ namespace Mod::Util::Client_Cmds
 	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
     {
 		for (auto &func : Evaluation::GetFunctionList()) {
-			ClientMsg(player, "%s(", func.name);
+			std::string str;
+			str+=func.name;
+			str+='(';
 			bool first = true;
 			for (auto &param : func.paramNames) {
 				if (!first) {
-					ClientMsg(player, ";");
+					str+=',';
 				}
 				first = false;
-				ClientMsg(player, " %s", param);
+				str+=' ';
+				str+=param;
 			}
-			ClientMsg(player, " )\n");
+			for (auto &param : func.paramNamesOptional) {
+				if (!first) {
+					str+=',';
+				}
+				first = false;
+				str+=' ';
+				str+=param;
+			}
+			ClientMsg(player, "%s )\n", str.c_str());
 		}
 	}
 

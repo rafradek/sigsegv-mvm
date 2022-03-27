@@ -300,6 +300,149 @@ struct VStricmpLess
 	}
 };
 
+static const char * ParseToInt(const char *str, int &value) 
+{
+    value=0;
+	const char *startPos = str;
+    char c = *str;
+    bool neg = false;
+	bool hasNum = false;
+	// Skip whitespace
+	while (c == ' ' || (c >= '\t' && c <= '\r')) {
+		c = *(++str);
+	}
+	// negative / positive
+    if (c == '-') {
+        str++;
+        neg = true;
+    }
+    else if (c == '+') {
+        str++;
+    }
+	// parse digits
+    while (true) {
+        if (c >= '0' && c <= '9') {
+            value = value * 10 + c - '0';
+			hasNum = true;
+		}
+        else {
+            break;
+		}
+		c = *(++str);
+    }
+    if (neg) {
+        value *= -1;
+    }
+	if (!hasNum) {
+		return startPos;
+	}
+    return str;
+}
+
+static int ParseToInt(const char *str)
+{
+	int value = 0;
+	ParseToInt(str, value);
+	return value;
+}
+
+static const char * ParseToFloat(const char *str, float &value) 
+{
+    value=0.0f;
+	const char *startPos = str;
+    char c = *str;
+    bool neg = false;
+	bool hasNum = false;
+    bool parseDecimal = false;
+	bool parseExponential = false;
+    float mult = 1.0f;
+
+	// Skip whitespace
+	while (c == ' ' || (c >= '\t' && c <= '\r')) {
+		c = *(++str);
+	}
+	// negative / positive
+    if (c == '-') {
+        str++;
+        neg = true;
+    }
+    else if (c == '+') {
+        str++;
+    }
+	// Parse digits
+    while (true) {
+        if (c >= '0' && c <= '9') {
+			hasNum = true;
+            if (parseDecimal) {
+                mult *= 0.1f;
+                value = value + (float)(c - '0') * mult;
+            }
+            else {
+                value = value * 10.0f + (float)( c - '0');
+            }
+        }
+        else if (c == '.') {
+            parseDecimal = true;
+		}
+        else if (hasNum && c == 'e') {
+			// Exponential mode
+            parseExponential = true;
+			c = *(++str);
+			break;
+		}
+        else {
+            break;
+		}
+		c = *(++str);
+    }
+    if (neg) {
+        value *= -1.0f;
+    }
+	// Parse exponential
+	if (parseExponential) {
+		int valExp = 0;
+		neg = false;
+		if (*str == '-') {
+			str++;
+			neg = true;
+		}
+		else if (*str == '+') {
+			str++;
+		}
+    	while (true) {
+        	if (c >= '0' && c <= '9') {
+				valExp = valExp * 10 + ( c - '0');
+			}
+			else {
+				break;
+			}
+			c = *(++str);
+		}
+		if (!neg) {
+			for (int i = 0; i < valExp; i++) {
+				value *= 10.0f;
+			}
+		}
+		else {
+			for (int i = 0; i < valExp; i++) {
+				value *= 0.1f;
+			}
+		}
+	}
+	if (!hasNum) {
+		return startPos;
+	}
+    return str;
+}
+
+static float ParseToFloat(const char *str)
+{
+	float value = 0;
+	ParseToFloat(str, value);
+	return value;
+}
+
+
 inline bool StringToIntStrict(const char *str, int& out, int base = 0, const char **next = nullptr)
 {
 	char *str_end = nullptr;
@@ -425,24 +568,38 @@ inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
 
 inline bool UTIL_StringToVectorAlt(Vector &base, const char* string)
 {
-	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
-	if (scannum == 0)
-	{
-		// Try sucking out 3 floats with no []s
-		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
+	if (string[0] == '[') {
+		string++;
 	}
-	return scannum == 3;
+	for (int i = 0; i < 3; i++) {
+		const char *next = ParseToFloat(string, base[i]);
+		if (next == string) {
+			for (i++; i < 3; i++) {
+				base[i] = 0.0f;
+			}
+			return false;
+		}
+		string = next;
+	}
+	return true;
 }
 
 inline bool UTIL_StringToAnglesAlt(QAngle &base, const char* string)
 {
-	int scannum = sscanf(string, "[%f %f %f]", &base[0], &base[1], &base[2]);
-	if (scannum == 0)
-	{
-		// Try sucking out 3 floats with no []s
-		scannum = sscanf(string, "%f %f %f", &base[0], &base[1], &base[2]);
+	if (string[0] == '[') {
+		string++;
 	}
-	return scannum == 3;
+	for (int i = 0; i < 3; i++) {
+		const char *next = ParseToFloat(string, base[i]);
+		if (next == string) {
+			for (i++; i < 3; i++) {
+				base[i] = 0.0f;
+			}
+			return false;
+		}
+		string = next;
+	}
+	return true;
 }
 
 inline bool ParseNumberOrVectorFromString(const char *str, variant_t &value)
@@ -456,13 +613,13 @@ inline bool ParseNumberOrVectorFromString(const char *str, variant_t &value)
         return true;
     }
     // Parse as int
-    else if (StringToIntStrictAndSpend(str, valint)) {
+    else if (*ParseToInt(str, valint) == '\0') {
        // Msg("Parse float\n");
         value.SetInt(valint);
         return true;
     }
     // Parse as float
-    else if (StringToFloatStrict(str, val)) {
+    else if (ParseToFloat(str, val) != str) {
        // Msg("Parse float\n");
         value.SetFloat(val);
         return true;

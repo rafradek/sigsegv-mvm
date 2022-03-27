@@ -116,30 +116,25 @@ namespace Mod::MvM::Weapon_AntiGrief
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
 	}
-	
-	bool HasStunAttribute(CTFPlayer *attacker)
+
+	RefCount rc_StunBall;
+	DETOUR_DECL_MEMBER(void, CTFStunBall_ApplyBallImpactEffectOnVictim, CBaseEntity *other)
 	{
-		CTFWeaponBase *weapon = attacker->GetActiveTFWeapon();
-		if (weapon != nullptr) {
-			CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
-			auto attr = attrlist.GetAttributeByName("mod bat launches balls");
-			if (attr != nullptr) {
-				float value = attr->GetValuePtr()->m_Float;
-				return value >= 1.f;
-			}
-		}
-		return false;
+		auto ball = reinterpret_cast<CBaseProjectile *>(this);
+		int stun = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(ball->GetOriginalLauncher(), stun, set_weapon_mode);
+		auto player = ToTFPlayer(other);
+		SCOPED_INCREMENT_IF(rc_StunBall, (cvar_stunball.GetBool() || stun > 1) && player != nullptr && !(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())));
+		
+		DETOUR_MEMBER_CALL(CTFStunBall_ApplyBallImpactEffectOnVictim)(other);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
 	{
 		DevMsg("Stun ball %f %f %d\n",duration, slowdown, flags);
 	
-		if (flags == 257 && slowdown == 0.5f && duration != 5.0f && (cvar_stunball.GetBool() || HasStunAttribute(attacker))) {
-			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
-			auto player = shared->GetOuter();
-			if (!(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())))
-				flags = TF_STUNFLAGS_SMALLBONK;
+		if (rc_StunBall) {
+			flags = TF_STUNFLAGS_SMALLBONK;
 		}
 		if (ShouldBlock_ScorchShot() || ShouldBlock_LooseCannon() || ShouldBlock_StunOnHit() || ShouldBlock_Moonshot(flags)) {
 			auto shared = reinterpret_cast<CTFPlayerShared *>(this);
@@ -169,6 +164,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyGenericPushbackImpulse,       "CTFPlayer::ApplyGenericPushbackImpulse");
+			MOD_ADD_DETOUR_MEMBER(CTFStunBall_ApplyBallImpactEffectOnVictim,   "CTFStunBall::ApplyBallImpactEffectOnVictim");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer,                  "CTFPlayerShared::StunPlayer");
 		}
 	};

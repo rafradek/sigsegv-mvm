@@ -83,6 +83,7 @@ IMPL_SENDPROP(bool                , CTFWeaponBase, m_bBeingRepurposedForTaunt,CT
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
 MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");
 MemberFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::ft_Energy_GetMaxEnergy("CTFWeaponBase::Energy_GetMaxEnergy");
+MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_CalcIsAttackCritical("CTFWeaponBase::CalcIsAttackCritical");
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");
@@ -90,6 +91,7 @@ MemberVFuncThunk<CTFWeaponBase *, void, CTFPlayer *, Vector , Vector *, QAngle *
 MemberVFuncThunk<const CTFWeaponBase *, bool> CTFWeaponBase::vt_ShouldRemoveInvisibilityOnPrimaryAttack(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack");
 MemberVFuncThunk<const CTFWeaponBase *, bool> CTFWeaponBase::vt_IsEnergyWeapon(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::IsEnergyWeapon");
 MemberVFuncThunk<const CTFWeaponBase *, float> CTFWeaponBase::vt_Energy_GetShotCost(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::Energy_GetShotCost");
+MemberVFuncThunk<CTFWeaponBase *, void>  CTFWeaponBase::vt_Misfire(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::Misfire");
 
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileGravity(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileGravity") ;
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileSpeed(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileSpeed") ;
@@ -101,6 +103,7 @@ MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::ft_Upda
 MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::vt_RemoveProjectileAmmo(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::RemoveProjectileAmmo");
 MemberVFuncThunk<CTFWeaponBaseGun *, void>              CTFWeaponBaseGun::vt_DoFireEffects       (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::DoFireEffects");
 MemberVFuncThunk<CTFWeaponBaseGun *, bool>              CTFWeaponBaseGun::vt_ShouldPlayFireAnim  (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ShouldPlayFireAnim");
+MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> CTFWeaponBaseGun::vt_FireProjectile(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::FireProjectile");
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");

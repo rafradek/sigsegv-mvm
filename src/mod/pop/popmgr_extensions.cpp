@@ -2,6 +2,7 @@
 #include "stub/entities.h"
 #include "stub/extraentitydata.h"
 #include "stub/projectiles.h"
+#include "stub/player_util.h"
 #include "stub/tfbot.h"
 #include "stub/gamerules.h"
 #include "stub/populators.h"
@@ -617,7 +618,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AllowBluePlayerReanimators      ("sig_mvm_jointeam_blue_allow_revive"),
 			m_BluVelocityRemoveLimit          ("sig_mvm_blu_velocity_limit_remove"),
 			m_FastEntityNameLookup            ("sig_etc_fast_entity_name_lookup"),
-			m_AllowMultipleSappers            ("sig_mvm_sapper_allow_multiple_active")
+			m_AllowMultipleSappers            ("sig_mvm_sapper_allow_multiple_active"),
+			m_EngineerPushRange               ("sig_ai_engiebot_pushrange"),
+			m_FixHuntsmanDamageBonus          ("sig_etc_huntsman_damage_fix")
 			
 		{
 			this->Reset();
@@ -674,7 +677,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bNoSkeletonSplit = false;
 			this->m_fStuckTimeMult = 1.0f;
 			this->m_bNoCreditsVelocity = false;
-			this->m_bRestoreNegativeDamageHealing = false;
+			this->m_bRestoreNegativeDamageHealing = true;
+			this->m_bRestoreNegativeDamageOverheal = true;
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
 			
 			this->m_MedievalMode            .Reset();
@@ -755,7 +759,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BluVelocityRemoveLimit.Reset();
 			this->m_FastEntityNameLookup.Reset();
 			this->m_AllowMultipleSappers.Reset();
-			
+			this->m_EngineerPushRange.Reset();
+			this->m_FixHuntsmanDamageBonus.Reset();
+
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
 			
@@ -883,6 +889,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		float m_fStuckTimeMult;
 		bool m_bNoCreditsVelocity;
 		bool m_bRestoreNegativeDamageHealing;
+		bool m_bRestoreNegativeDamageOverheal;
 		bool m_bExtraLoadoutItemsAllowEquipOutsideSpawn;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
@@ -964,6 +971,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_BluVelocityRemoveLimit;
 		CPopOverride_ConVar<bool> m_FastEntityNameLookup;
 		CPopOverride_ConVar<bool> m_AllowMultipleSappers;
+		CPopOverride_ConVar<float> m_EngineerPushRange;
+		CPopOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1898,8 +1907,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (state.m_DisallowedClasses[plclass] <= taken_slots[plclass]){
 			
-			bool insetup = TFGameRules()->InSetup();
-			TFGameRules()->SetInSetup(true);
+			
+			static ConVarRef endless("tf_mvm_endless_force_on");
+			endless.SetValue(true);
 			if (state.m_bSingleClassAllowed != -1) {
 				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",g_aRawPlayerClassNames[state.m_bSingleClassAllowed],"class is allowed in this mission"));
 
@@ -1936,7 +1946,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 				engine->MessageEnd();
 			}
-			TFGameRules()->SetInSetup(insetup);
+			endless.SetValue(false);
 			return true;
 		}
 		return false;
@@ -2695,7 +2705,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			if (!state.m_WeaponSpawnTemplates.empty()) {
 				ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
-					if (!entity->IsMarkedForDeletion() && state.m_ItemEquipTemplates.find(entity) == state.m_ItemEquipTemplates.end()) {
+					if (!entity->IsMarkedForDeletion()) {
 						for (auto &info : state.m_WeaponSpawnTemplates) {
 							for (auto &entry : info.weapons) {
 								if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
@@ -4067,7 +4077,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		float damage = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageAliveModifyRules)(info, entity, extra);
 		if (damage < 0.0f && entity->IsPlayer() && state.m_bRestoreNegativeDamageHealing) {
-			entity->TakeHealth(-damage, DMG_IGNORE_MAXHEALTH);
+			HealPlayer(ToTFPlayer(entity), ToTFPlayer(info.GetAttacker()), rtti_cast<CEconEntity *>(info.GetWeapon()), -damage, true, state.m_bRestoreNegativeDamageOverheal ? DMG_IGNORE_MAXHEALTH : DMG_GENERIC);
 		}
 		return damage;
 	}
@@ -5597,6 +5607,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_bNoSkeletonSplit = subkey->GetBool();
 				} else if (FStrEq(name, "RestoreNegativeDamageHealing")) {
 					state.m_bRestoreNegativeDamageHealing = subkey->GetBool();
+				} else if (FStrEq(name, "RestoreNegativeDamageOverheal")) {
+					state.m_bRestoreNegativeDamageOverheal = subkey->GetBool();
 				} else if (FStrEq(name, "TurboPhysics")) {
 					state.m_TurboPhysics.Set(subkey->GetBool());
 				} else if (FStrEq(name, "UpgradeStationKeepWeapons")) {
@@ -5610,6 +5622,10 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_FastEntityNameLookup.Set(subkey->GetBool());
 				} else if (FStrEq(name, "AllowMultipleSappers")) {
 					state.m_AllowMultipleSappers.Set(subkey->GetBool());
+				} else if (FStrEq(name, "EngineerPushRange")) {
+					state.m_EngineerPushRange.Set(subkey->GetFloat());
+				} else if (FStrEq(name, "FixHuntsmanDamageBonus")) {
+					state.m_FixHuntsmanDamageBonus.Set(subkey->GetBool());
 				} else if (FStrEq(name, "CustomNavFile")) {
 					char strippedFile[128];
 					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
@@ -5890,7 +5906,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_GetDesiredSpeed, "PlayerLocomotion::GetDesiredSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropCurrencyPack, "CTFPlayer::DropCurrencyPack");
 			MOD_ADD_DETOUR_MEMBER(CTFPowerup_DropSingleInstance, "CTFPowerup::DropSingleInstance");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageAliveModifyRules, "CTFGameRules::ApplyOnDamageAliveModifyRules");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_ApplyOnDamageAliveModifyRules, "CTFGameRules::ApplyOnDamageAliveModifyRules", LOW);
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetCheckpoint, "CPopulationManager::SetCheckpoint");

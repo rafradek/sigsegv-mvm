@@ -15,6 +15,7 @@
 #include "stub/nextbot_cc.cpp"
 #include "stub/objects.cpp"
 #include "stub/particles.cpp"
+#include "stub/player_util.cpp"
 #include "stub/populators.cpp"
 #include "stub/projectiles.cpp"
 #include "stub/sendprop.cpp"

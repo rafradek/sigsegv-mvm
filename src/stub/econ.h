@@ -122,7 +122,9 @@ struct static_attrib_t
 static_assert(sizeof(static_attrib_t) == 0x8);
 
 typedef unsigned short attrib_definition_index_t;
+typedef unsigned short	item_definition_index_t;
 const attrib_definition_index_t INVALID_ATTRIB_DEF_INDEX = ((attrib_definition_index_t)-1);
+const item_definition_index_t INVALID_ITEM_DEF_INDEX = ((item_definition_index_t)-1);
 
 struct attribute_t
 {

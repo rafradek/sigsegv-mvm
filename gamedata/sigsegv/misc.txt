@@ -5367,6 +5367,31 @@
 					type "sym"
 					sym  "_ZN12CEventActionC2EPKc"
 				}
+				"CTFWeaponBase::Misfire"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase7MisfireEv"
+				}
+				"CBaseEntity::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity13GetDamageTypeEv"
+				}
+				"CTFWeaponBase::CheckReloadMisfire"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
+				}
+				"CTFWeaponBase::CheckReloadMisfire"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
+				}
+				"CTFStunBall::ApplyBallImpactEffectOnVictim"
+				{
+					type "sym"
+					sym  "_ZN11CTFStunBall29ApplyBallImpactEffectOnVictimEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

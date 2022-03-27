@@ -99,6 +99,41 @@ inline void TE_TFBlood( IRecipientFilter &filter, float delay, const Vector &pos
 	ft_TE_TFBlood(filter, delay, pos, normal, entindex);
 }
 
+static StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
+inline void TE_TFParticleEffect(IRecipientFilter& recipement, float value, char const* name, Vector vector, QAngle angles, CBaseEntity* entity = nullptr, ParticleAttachment_t attach = ParticleAttachment_t())
+{
+	ft_TE_TFParticleEffect(recipement,value,name,vector,angles,entity,attach);
+}
+
+
+static StaticFuncThunk<void, IRecipientFilter&,
+	float,
+	const char *,
+	Vector,
+	QAngle,
+	te_tf_particle_effects_colors_t *,
+	te_tf_particle_effects_control_point_t *,
+	CBaseEntity *,
+	ParticleAttachment_t,
+	Vector> ft_TE_TFParticleEffectComplex("TE_TFParticleEffectComplex");
+
+inline void TE_TFParticleEffectComplex
+(
+	IRecipientFilter &filter,
+	float flDelay,
+	const char *pszParticleName,
+	Vector vecOrigin,
+	QAngle vecAngles,
+	te_tf_particle_effects_colors_t *pOptionalColors /*= NULL*/,
+	te_tf_particle_effects_control_point_t *pOptionalControlPoint1 /*= NULL*/,
+	CBaseEntity *pEntity /*= NULL*/,
+	ParticleAttachment_t eAttachType /*= PATTACH_CUSTOMORIGIN*/,
+	Vector vecStart /* = vec3_origin */
+)
+{
+	ft_TE_TFParticleEffectComplex(filter,flDelay,pszParticleName,vecOrigin,vecAngles,pOptionalColors,pOptionalControlPoint1, pEntity, eAttachType, vecStart);
+}
+
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecOrigin, bool hasOrigin, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);
 #endif

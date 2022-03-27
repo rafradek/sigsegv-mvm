@@ -1,7 +1,9 @@
 #include "mod.h"
 #include "stub/tfplayer.h"
+#include "stub/particles.h"
 #include "stub/populators.h"
 #include "stub/projectiles.h"
+#include "stub/objects.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/strings.h"
@@ -80,28 +82,47 @@ namespace Mod::Pop::TFBot_Extensions
 				
 				if (this->m_hTarget == nullptr) {
 					CBaseEntity *target_ent = nullptr;
-					do {
-						target_ent = servertools->FindEntityByClassname(target_ent, "tank_boss");
+					auto attrs = actor->ExtAttr();
+					if (!attrs[CTFBot::ExtendedAttr::IGNORE_NPC]) {
+						do {
+							target_ent = servertools->FindEntityByClassname(target_ent, "tank_boss");
 
-						if (target_ent != nullptr && target_ent->GetTeamNumber() != actor->GetTeamNumber()) {
-							this->m_hTarget = target_ent->MyCombatCharacterPointer();
-							break;
-						}
+							if (target_ent != nullptr && target_ent->GetTeamNumber() != actor->GetTeamNumber()) {
+								this->m_hTarget = target_ent->MyCombatCharacterPointer();
+								break;
+							}
 
-					} while (target_ent != nullptr);
-					
-					target_ent = nullptr;
-					do {
-						target_ent = servertools->FindEntityByClassname(target_ent, "headless_hatman");
+						} while (target_ent != nullptr);
+						
+						target_ent = nullptr;
+						do {
+							target_ent = servertools->FindEntityByClassname(target_ent, "headless_hatman");
 
-						if (target_ent != nullptr && target_ent->GetTeamNumber() != actor->GetTeamNumber()) {
-							this->m_hTarget = target_ent->MyCombatCharacterPointer();
-							break;
-						}
+							if (target_ent != nullptr && target_ent->GetTeamNumber() != actor->GetTeamNumber()) {
+								this->m_hTarget = target_ent->MyCombatCharacterPointer();
+								break;
+							}
 
-					} while (target_ent != nullptr);
+						} while (target_ent != nullptr);
+					}
 				}
 				
+				if (this->m_hTarget == nullptr) {
+					CBaseEntity *target_ent = nullptr;
+					auto attrs = actor->ExtAttr();
+					std::vector<CBaseObject *> objs;
+					if (!attrs[CTFBot::ExtendedAttr::IGNORE_BUILDINGS]) {
+						for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+							auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
+							if (obj != nullptr && obj->GetType() == OBJ_SENTRYGUN && obj->IsTargetable() && obj->GetTeamNumber() != actor->GetTeamNumber()) {
+								objs.push_back(obj);
+							}
+						}
+					}
+					if (!objs.empty()) {
+						this->m_hTarget = objs[RandomInt(0, objs.size()-1)];
+					}
+				}
 				if (this->m_hTarget == nullptr) {
 					return ActionResult<CTFBot>::Continue();
 				}
@@ -116,6 +137,77 @@ namespace Mod::Pop::TFBot_Extensions
 				
 				CTFBotPathCost cost_func(actor, DEFAULT_ROUTE);
 				this->m_PathFollower.Compute(nextbot, this->m_hTarget, cost_func, 0.0f, true);
+			}
+			
+			this->m_PathFollower.Update(nextbot);
+			
+			return ActionResult<CTFBot>::Continue();
+		}
+		
+	private:
+		CTFBotAttack *m_Attack = nullptr;
+		
+		CHandle<CBaseCombatCharacter> m_hTarget;
+		
+		PathFollower m_PathFollower;
+		CountdownTimer m_ctRecomputePath;
+	};
+
+	class CTFBotPassive : public IHotplugAction<CTFBot>
+	{
+	public:
+		CTFBotPassive()
+		{
+			this->m_Attack = CTFBotAttack::New();
+		}
+		virtual ~CTFBotPassive()
+		{
+			if (this->m_Attack != nullptr) {
+				delete this->m_Attack;
+			}
+			DevMsg("Remove mobber\n");
+		}
+		
+		virtual void OnEnd(CTFBot *actor, Action<CTFBot> *action) override
+		{
+			DevMsg("On end mobber\n");
+		}
+
+		virtual const char *GetName() const override { return "Passive"; }
+		
+		virtual ActionResult<CTFBot> OnStart(CTFBot *actor, Action<CTFBot> *action) override
+		{
+			this->m_PathFollower.SetMinLookAheadDistance(actor->GetDesiredPathLookAheadRange());
+			
+			this->m_hTarget = nullptr;
+			
+			return this->m_Attack->OnStart(actor, action);
+		}
+		
+		virtual ActionResult<CTFBot> Update(CTFBot *actor, float dt) override
+		{
+			actor->GetVisionInterface()->Update();
+			const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
+			if (threat != nullptr) {
+				actor->EquipBestWeaponForThreat(threat);
+			}
+			
+			ActionResult<CTFBot> result = this->m_Attack->Update(actor, dt);
+			if (result.transition != ActionTransition::DONE) {
+				return ActionResult<CTFBot>::Continue();
+			}
+			
+			if (threat == nullptr || threat->IsObsolete() || threat->GetEntity()->MyCombatCharacterPointer() == nullptr) {
+				return ActionResult<CTFBot>::Continue();
+			}
+			
+			auto nextbot = actor->MyNextBotPointer();
+			
+			if (this->m_ctRecomputePath.IsElapsed()) {
+				this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
+				
+				CTFBotPathCost cost_func(actor, DEFAULT_ROUTE);
+				this->m_PathFollower.Compute(nextbot, threat->GetEntity()->MyCombatCharacterPointer(), cost_func, 0.0f, true);
 			}
 			
 			this->m_PathFollower.Update(nextbot);
@@ -148,6 +240,7 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		// custom
 		ACTION_Mobber,
+		ACTION_Passive,
 	};
 
 	struct SpawnerData
@@ -410,6 +503,8 @@ namespace Mod::Pop::TFBot_Extensions
 			spawners[spawner].action = ACTION_EscortFlag;
 		} else if (FStrEq(value, "Idle")) {
 			spawners[spawner].action = ACTION_Idle;
+		} else if (FStrEq(value, "Passive")) {
+			spawners[spawner].action = ACTION_Passive;
 		} else {
 			Warning("Unknown value \'%s\' for TFBot Action.\n", value);
 		}
@@ -543,7 +638,7 @@ namespace Mod::Pop::TFBot_Extensions
 		/* post-processing: modify all of the spawner's EventChangeAttributes_t structs as necessary */
 		auto l_postproc_ecattr = [](CTFBotSpawner *spawner, CTFBot::EventChangeAttributes_t& ecattr){
 			/* Action Mobber: add implicit Attributes IgnoreFlag */
-			if (spawners[spawner].action == ACTION_Mobber) {
+			if (spawners[spawner].action == ACTION_Mobber || spawners[spawner].action == ACTION_Passive) {
 				/* operator|= on enums: >:[ */
 				ecattr.m_nBotAttrs = static_cast<CTFBot::AttributeType>(ecattr.m_nBotAttrs | CTFBot::ATTR_IGNORE_FLAG);
 			}
@@ -852,6 +947,10 @@ namespace Mod::Pop::TFBot_Extensions
 			case ACTION_Mobber:
 				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Mobber\n", ENTINDEX(actor), actor->GetPlayerName());
 				return new CTFBotMobber();
+
+			case ACTION_Passive:
+				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to Passive\n", ENTINDEX(actor), actor->GetPlayerName());
+				return new CTFBotPassive();
 
 			case ACTION_BotSpyInfiltrate:
 				DevMsg("CTFBotSpawner: setting initial action of bot #%d \"%s\" to SpyInfiltrate\n", ENTINDEX(actor), actor->GetPlayerName());

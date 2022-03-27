@@ -104,8 +104,114 @@ void variant_t::Set(fieldtype_t type, void *data) { ft_VariantSet(this, type, da
 static MemberFuncThunk<variant_t*, void, void *> ft_VariantSetOther("variant_t::SetOther");
 void variant_t::SetOther(void *data) { ft_VariantSetOther(this, data); }
 
+void variant_t::SetEntity( CBaseEntity *val ) 
+{ 
+	eVal = val;
+	fieldType = FIELD_EHANDLE; 
+}
+
 static MemberFuncThunk<variant_t*, bool, fieldtype_t> ft_VariantConvert("variant_t::Convert");
-bool variant_t::Convert(fieldtype_t type) { return ft_VariantConvert(this, type); }
+bool variant_t::Convert(fieldtype_t newType) {
+	if (newType == this->fieldType) {
+		return true;
+	}
+	if (newType == FIELD_VOID) {
+		this->fieldType = FIELD_VOID;
+		return true;
+	}
+
+	switch (fieldType) {
+		case FIELD_INTEGER: case FIELD_CHARACTER: case FIELD_SHORT: {
+			switch ( newType ) {
+				case FIELD_FLOAT: SetFloat( (float) iVal ); return true;
+				case FIELD_CHARACTER: case FIELD_SHORT: case FIELD_INTEGER: fieldType = newType; return true;
+				case FIELD_BOOLEAN: SetBool( iVal != 0 ); return true;
+			}
+			break;
+		}
+
+		case FIELD_FLOAT: {
+			switch ( newType ) {
+				case FIELD_INTEGER: SetInt( (int) flVal ); return true;
+				case FIELD_CHARACTER: SetInt( (int) flVal); fieldType = FIELD_CHARACTER; return true;
+				case FIELD_SHORT: SetInt( (int) flVal); fieldType = FIELD_SHORT; return true;
+				case FIELD_BOOLEAN: SetBool( flVal != 0 ); return true;
+			}
+			break;
+		}
+
+		case FIELD_VECTOR: case FIELD_POSITION_VECTOR: {
+			switch ( newType ) {
+				case FIELD_POSITION_VECTOR: case FIELD_VECTOR: fieldType = newType; return true;
+			}
+			break;
+		}
+
+		//
+		// Everyone must convert from FIELD_STRING if possible, since
+		// parameter overrides are always passed as strings.
+		//
+		case FIELD_STRING: {
+			switch ( newType ) {
+				case FIELD_INTEGER: SetInt(iszVal != NULL_STRING ? ParseToInt(STRING(iszVal)) : 0); return true;
+				case FIELD_FLOAT: SetFloat(iszVal != NULL_STRING ? ParseToFloat(STRING(iszVal)) : 0); return true;
+				case FIELD_BOOLEAN: SetBool(iszVal != NULL_STRING && ParseToInt(STRING(iszVal)) != 0); return true;
+				case FIELD_CHARACTER: SetInt(iszVal != NULL_STRING ? ParseToInt(STRING(iszVal)) : 0); return true;
+				case FIELD_POSITION_VECTOR: case FIELD_VECTOR: {
+					Vector tmpVec = vec3_origin;
+					if (iszVal != NULL_STRING) {
+						UTIL_StringToVectorAlt(tmpVec, STRING(iszVal));
+					}
+					SetVector3D(tmpVec);
+					fieldType = newType;
+					return true;
+				}
+
+				case FIELD_COLOR32: {
+					int nRed = 0;
+					int nGreen = 0;
+					int nBlue = 0;
+					int nAlpha = 255;
+
+					sscanf(STRING(iszVal), "%d %d %d %d", &nRed, &nGreen, &nBlue, &nAlpha);
+					SetColor32( nRed, nGreen, nBlue, nAlpha );
+					return true;
+				}
+
+				case FIELD_EHANDLE: case FIELD_CLASSPTR: {
+					// convert the string to an entity by locating it by classname
+					CBaseEntity *ent = nullptr;
+					if ( iszVal != NULL_STRING ) {
+						// FIXME: do we need to pass an activator in here?
+						ent = servertools->FindEntityByName(nullptr, STRING(iszVal));
+					}
+					SetEntity(ent);
+					fieldType = newType;
+					return true;
+				}
+			}
+		
+			break;
+		}
+
+		case FIELD_EHANDLE: case FIELD_CLASSPTR: {
+			switch ( newType ) {
+				case FIELD_CLASSPTR: case FIELD_EHANDLE: fieldType = newType; return true;
+
+				case FIELD_STRING: {
+					// take the entities targetname as the string
+					string_t iszStr = NULL_STRING;
+					if ( eVal != nullptr ) {
+						SetString( eVal->GetEntityName() );
+					}
+					return true;
+				}
+			}
+			break;
+		}
+	}
+	return false;
+}
 
 static StaticFuncThunk<void, float *, const char *> ft_UTIL_StringToVector("UTIL_StringToVector");
 void UTIL_StringToVector(float *base, const char *string) {ft_UTIL_StringToVector(base, string); }

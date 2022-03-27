@@ -126,6 +126,7 @@ MemberVFuncThunk<      CBaseEntity *, void, const FireBulletsInfo_t &           
 MemberVFuncThunk<      CBaseEntity *, ServerClass *                                                   > CBaseEntity::vt_GetServerClass                (TypeName<CBaseEntity>(), "CBaseEntity::GetServerClass");
 MemberVFuncThunk<      CBaseEntity *, CBaseAnimating *                                                > CBaseEntity::vt_GetBaseAnimating              (TypeName<CBaseEntity>(), "CBaseEntity::GetBaseAnimating");
 MemberVFuncThunk<      CBaseEntity *, int, float, int                                                 > CBaseEntity::vt_TakeHealth                    (TypeName<CBaseEntity>(), "CBaseEntity::TakeHealth");
+MemberVFuncThunk<      CBaseEntity *, int                                                             > CBaseEntity::vt_GetDamageType                 (TypeName<CBaseEntity>(), "CBaseEntity::GetDamageType");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");

@@ -45,7 +45,9 @@ class CTFBaseRocket  : public CBaseProjectile
 {
 public:
 	CBaseEntity *GetLauncher() const { return this->m_hLauncher; }
-	
+
+	void Explode( trace_t *pTrace, CBaseEntity *pOther ) { vt_Explode(this, pTrace, pOther); }
+
 	CBasePlayer *GetOwnerPlayer() const { return ft_GetOwnerPlayer(this); }
 	
 	DECL_SENDPROP(Vector, m_vInitialVelocity);
@@ -54,6 +56,8 @@ public:
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
 	
+	static MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> vt_Explode;
+
 	static MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> ft_GetOwnerPlayer;
 };
 
@@ -110,7 +114,8 @@ public:
 	int GetWeaponID() const { return vt_GetWeaponID(this); }
 
 	void SetDetonateTimerLength(float time) const { ft_SetDetonateTimerLength(this, time); }
-	
+	void Explode(trace_t *pTrace, int bitsDamageType)  { ft_Explode(this, pTrace, bitsDamageType); }
+
 	DECL_SENDPROP(int,    m_iDeflected);
 	DECL_SENDPROP(bool,   m_bCritical);
 	DECL_SENDPROP(Vector, m_vInitialVelocity);
@@ -119,6 +124,7 @@ private:
 	static MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> vt_GetWeaponID;
 
 	static MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> ft_SetDetonateTimerLength;
+	static MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, trace_t *, int> ft_Explode;
 };
 
 class CTFGrenadePipebombProjectile : public CTFWeaponBaseGrenadeProj

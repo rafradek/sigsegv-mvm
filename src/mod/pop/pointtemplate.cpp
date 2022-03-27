@@ -19,7 +19,7 @@ std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> g_enti
 void FixupKeyvalue(std::string &val,int id, const char *parentname) {
 	int amperpos = 0;
 	while((amperpos = val.find('\1',amperpos)) != -1){
-		val[amperpos] = '&';
+		val[amperpos] = '\1';
 		amperpos+=1;
 		
 		val.insert(amperpos,std::to_string(id));
@@ -562,18 +562,6 @@ void Update_Point_Templates()
 
 StaticFuncThunk<void> ft_PrecachePointTemplates("PrecachePointTemplates");
 StaticFuncThunk<void, int, HierarchicalSpawn_t *, bool> ft_SpawnHierarchicalList("SpawnHierarchicalList");
-StaticFuncThunk<void, IRecipientFilter&, float, char const*, Vector, QAngle, CBaseEntity*, ParticleAttachment_t> ft_TE_TFParticleEffect("TE_TFParticleEffect");
-
-StaticFuncThunk<void, IRecipientFilter&,
-	float,
-	const char *,
-	Vector,
-	QAngle,
-	te_tf_particle_effects_colors_t *,
-	te_tf_particle_effects_control_point_t *,
-	CBaseEntity *,
-	ParticleAttachment_t,
-	Vector> ft_TE_TFParticleEffectComplex("TE_TFParticleEffectComplex");
 
 namespace Mod::Pop::PointTemplate
 {

@@ -1038,7 +1038,7 @@ namespace Mod::Cond::Reprogrammed
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetShootSound, "CTFWeaponBase::GetShootSound");
 
 			// Change sentry buster target if the sentry gun is on the same team
-			MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");
+			// MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");
 			
 		//	/* fix: make giant weapon sounds apply to miniboss players on any team */
 		//	this->AddPatch(new CPatch_CTFWeaponBase_GetShootSound());

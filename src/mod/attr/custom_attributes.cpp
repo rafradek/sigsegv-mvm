@@ -4,6 +4,7 @@
 #include "stub/extraentitydata.h"
 #include "stub/tfplayer.h"
 #include "stub/projectiles.h"
+#include "stub/player_util.h"
 #include "stub/tfweaponbase.h"
 #include "stub/objects.h"
 #include "stub/entities.h"
@@ -53,6 +54,9 @@ namespace Mod::Attr::Custom_Attributes
 		MULT_STEP_HEIGHT,
 		IGNORE_PLAYER_CLIP,
 		ALLOW_BUNNY_HOP,
+		ALLOW_FRIENDLY_FIRE,
+
+		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
 	};
 	enum FastAttributeClassItem
@@ -66,6 +70,8 @@ namespace Mod::Attr::Custom_Attributes
 		CONTINOUS_ACCURACY_TIME_RECOVERY,
 		MOVE_ACCURACY_MULT,
 		ALT_FIRE_DISABLED,
+		
+		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
 	};
 	const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
@@ -78,7 +84,8 @@ namespace Mod::Attr::Custom_Attributes
 		"min_respawn_time",
 		"mult_step_height",
 		"ignore_player_clip",
-		"allow_bunny_hop"
+		"allow_bunny_hop",
+		"allow_friendly_fire"
 	};
 
 	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
@@ -1369,7 +1376,6 @@ namespace Mod::Attr::Custom_Attributes
 		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
 			float dmg = info.GetDamage();
 
-
 			// Allow mult_dmg_bonus_while_half_dead mult_dmg_penalty_while_half_alive mult_dmg_with_reduced_health
 			// to work on non melee weapons
 			//
@@ -1462,6 +1468,25 @@ namespace Mod::Attr::Custom_Attributes
 			float dmg = info.GetDamage();
 			info.SetDamageBonus(dmg * crit - (dmg - info.GetDamageBonus()));
 			info.SetDamage(dmg * crit);
+		}
+
+		// Fix razorback infinite healing exploit
+		if (info.GetDamageCustom() == TF_DMG_CUSTOM_BACKSTAB && info.GetDamage() == 0.0f && info.GetDamageBonus() != 0.0f) {
+			info.SetDamageBonus(0.0f);
+		}
+
+		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
+			float dmg = info.GetDamage();
+
+			if (info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == pVictim->GetTeamNumber()) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_friendly_fire);
+				dmg *= dmg_mult;
+				if (dmg < 0.0f) {
+					HealPlayer(ToTFPlayer(pVictim), ToTFPlayer(info.GetAttacker()), rtti_cast<CEconEntity *>(info.GetWeapon()), -dmg, true, DMG_GENERIC);
+					return 0;
+				}
+			}
 		}
 		return ret;
 	}
@@ -1788,8 +1813,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_FPlayerCanTakeDamage, CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo& info)
 	{
 		if (pPlayer != nullptr && pAttacker != nullptr && pPlayer->GetTeamNumber() == pAttacker->GetTeamNumber()) {
-			int friendly = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttacker, friendly, allow_friendly_fire);
+			int friendly = GetFastAttributeInt(pAttacker, 0, ALLOW_FRIENDLY_FIRE);
 			if (friendly != 0)
 				return true;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, friendly, receive_friendly_fire);
@@ -1799,33 +1823,16 @@ namespace Mod::Attr::Custom_Attributes
 		
 		return DETOUR_MEMBER_CALL(CTFGameRules_FPlayerCanTakeDamage)(pPlayer, pAttacker, info);
 	}
-	
-	int friendy_fire_cache_tick = 0;
-	std::unordered_map<CTFPlayer *, bool> friendy_fire_cache;
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_WantsLagCompensationOnEntity, const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		
-		if ( gpGlobals->tickcount - friendy_fire_cache_tick > 7 || gpGlobals->tickcount < friendy_fire_cache_tick ) {
-			friendy_fire_cache_tick = gpGlobals->tickcount;
-			friendy_fire_cache.clear();
-		}
 		auto result = DETOUR_MEMBER_CALL(CTFPlayer_WantsLagCompensationOnEntity)(pPlayer, pCmd, pEntityTransmitBits);
 		
 		if (!result && player->GetTeamNumber() == pPlayer->GetTeamNumber()) {
-			auto entry = friendy_fire_cache.find(player);
-
-			if (entry == friendy_fire_cache.end()) {
-				int friendly = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER( player, friendly, allow_friendly_fire);
-				result = friendly != 0;
-				friendy_fire_cache[player] = result;
-			}
-			else{
-				result = entry->second;
-			}
+			int friendly = GetFastAttributeInt(player, 0, ALLOW_FRIENDLY_FIRE);
+			result = friendly != 0;
 		}
 		return result;
 	}
@@ -1948,9 +1955,13 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	CTFPlayer *player_taking_damage = nullptr;
+
 	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
 	{
+		player_taking_damage = reinterpret_cast<CTFPlayer *>(this);
 		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		player_taking_damage = nullptr;
 
 		//Non sniper rifle explosive headshot
 		auto weapon = info.GetWeapon();
@@ -2140,7 +2151,7 @@ namespace Mod::Attr::Custom_Attributes
 
 				if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
 					float stomp = 0.0f;
-					CTakeDamageInfo info(player, player, nullptr, vec3_origin, vec3_origin, stomp, DMG_BLAST);
+					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 					toucher->TakeDamage(info);
 					if (stompTime != 0.0f)
 						player_touch_times[player][toucher] = gpGlobals->curtime;
@@ -2154,7 +2165,7 @@ namespace Mod::Attr::Custom_Attributes
 			if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
 				float stomp = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_DAMAGE);
 				if (stomp != 0.0f) {
-					CTakeDamageInfo info(player, player, nullptr, vec3_origin, vec3_origin, stomp, DMG_BLAST);
+					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 					toucher->TakeDamage(info);
 				}
 
@@ -3406,6 +3417,11 @@ namespace Mod::Attr::Custom_Attributes
 			return 9999.0f;
 		}
 
+		int friendlyfire = GetFastAttributeInt(reinterpret_cast<CBaseProjectile *>(this)->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE);
+		if (friendlyfire) {
+			return 0.0f;
+		}
+
 		return DETOUR_MEMBER_CALL(CBaseProjectile_GetCollideWithTeammatesDelay)();
 	}
 
@@ -3974,6 +3990,82 @@ namespace Mod::Attr::Custom_Attributes
 		return delay;
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ApplyPunchImpulseX, float amount)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		int noDamageFlinch = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, noDamageFlinch, no_damage_view_flinch);
+
+		if (noDamageFlinch != 0) {
+			return false;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFPlayer_ApplyPunchImpulseX)(amount);
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_ForceRespawn)
+	{
+		if (player_taking_damage != nullptr && player_taking_damage == reinterpret_cast<CTFPlayer *>(this)) {
+			
+			int teleport = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player_taking_damage, teleport, teleport_instead_of_die);
+			if (teleport != 0) {
+				PrecacheSound("Halloween.Merasmus_TP_In");
+				player_taking_damage->EmitSound("Halloween.Merasmus_TP_In");
+				Vector tele_pos = player_taking_damage->GetAbsOrigin();
+				CPVSFilter filter(tele_pos);
+				bf_write *msg = engine->UserMessageBegin(&filter, usermessages->LookupUserMessage("PlayerTeleportHomeEffect"));
+				msg->WriteByte(ENTINDEX(player_taking_damage));
+				engine->MessageEnd();
+				
+				TE_TFParticleEffect(filter, 0.0f, "teleported_blue", tele_pos, vec3_angle);
+				TE_TFParticleEffect(filter, 0.0f, "player_sparkles_blue", tele_pos, vec3_angle);
+			}
+		}
+        return DETOUR_MEMBER_CALL(CTFPlayer_ForceRespawn)();
+    }
+
+	void Misfire(CTFWeaponBaseGun *weapon)
+	{
+		weapon->CalcIsAttackCritical();
+		//DETOUR_MEMBER_CALL(CTFWeaponBase_Misfire)();
+
+		CTFPlayer *player = weapon->GetTFPlayerOwner();
+		if (!player) return;
+
+		CBaseEntity *entity = weapon->FireProjectile(player);
+		CTFBaseRocket *rocket = rtti_cast<CTFBaseRocket *>(entity);
+		CTFWeaponBaseGrenadeProj *grenade = rtti_cast<CTFWeaponBaseGrenadeProj *>(entity);
+		if (rocket != nullptr) {
+			trace_t tr;
+			UTIL_TraceLine(rocket->GetAbsOrigin(), player->EyePosition(), MASK_SOLID, rocket, COLLISION_GROUP_NONE, &tr);
+			rocket->Explode(&tr, player);
+		}
+		if (grenade != nullptr) {
+			trace_t tr;
+			UTIL_TraceLine(grenade->GetAbsOrigin(), player->EyePosition(), MASK_SOLID, grenade, COLLISION_GROUP_NONE, &tr);
+			grenade->Explode(&tr, grenade->GetDamageType());
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CheckReloadMisfire)
+	{
+		bool result = DETOUR_MEMBER_CALL(CTFWeaponBase_CheckReloadMisfire)();
+
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		int canOverload = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, canOverload, can_overload);
+
+		if (canOverload != 0 && weapon->m_iClip1 >= weapon->GetMaxClip1()) {
+			auto weapongun = rtti_cast<CTFWeaponBaseGun *>(weapon);
+			if (weapongun == nullptr) return result;
+			Misfire(weapongun);
+			return true;
+		}
+		return result;
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -4300,10 +4392,10 @@ namespace Mod::Attr::Custom_Attributes
 	*/
 	DETOUR_DECL_MEMBER(void, CAttributeContainerPlayer_OnAttributeValuesChanged)
 	{
-        DETOUR_MEMBER_CALL(CAttributeContainerPlayer_OnAttributeValuesChanged)();
-        auto mgr = reinterpret_cast<CAttributeManager *>(this);
+		auto mgr = reinterpret_cast<CAttributeManager *>(this);
 		auto player = ToTFPlayer(mgr->m_hOuter);
 		if (player != nullptr) {
+			DETOUR_MEMBER_CALL(CAttributeContainerPlayer_OnAttributeValuesChanged)();
 			/*auto &rec = mgr->m_Providers.Get();
 			FOR_EACH_VEC(rec, i) {
 				//Msg("Receiver %s\n", ent->GetClassname());
@@ -4601,12 +4693,18 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_Explode, "CTFProjectile_EnergyBall::Explode");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClearTauntAttack, "CTFPlayer::ClearTauntAttack");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyPunchImpulseX, "CTFPlayer::ApplyPunchImpulseX");			
 
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForceRespawn, "CTFPlayer::ForceRespawn");	
+			
 		//  Allow fire rate bonus with reduced health on melee weapons
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyFireDelay, "CTFWeaponBase::ApplyFireDelay");
 
 		//  Implement disable alt fire
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_ItemPostFrame, "CBasePlayer::ItemPostFrame");
+
+		//  Implement can overload for non rocket launchers
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CheckReloadMisfire, "CTFWeaponBase::CheckReloadMisfire");
 			
 
 		//	Remove knife armor penetration limit

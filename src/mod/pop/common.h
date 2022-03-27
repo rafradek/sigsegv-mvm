@@ -337,7 +337,7 @@ private:
 // base_item_name matches
 // base_item_name is not empty or item_logname matches
 // Or if the the item_view is an all class melee weapon and is compared to a base class melee weapon
-bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, const std::string &base_name, const std::string &log_name, const std::string &base_melee_class, const char *classname);
+bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, const std::string &base_name, const std::string &log_name, const std::string &base_melee_class, const char *classname, int base_defindex);
 
 class ItemListEntry_Similar : public ItemListEntry
 {
@@ -352,7 +352,7 @@ public:
 
         if (FStrEq(this->m_strName.c_str(),name)) return true;
 
-        return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, classname);
+        return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, classname, m_iBaseDefIndex);
     }
 
     virtual const char *GetInfo() const override
@@ -375,6 +375,7 @@ private:
     std::string m_strLogName;
     std::string m_strBaseName;
     std::string m_strBaseClassMelee;
+    int m_iBaseDefIndex;
 };
 
 class ItemListEntry_Name : public ItemListEntry

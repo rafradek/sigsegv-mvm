@@ -8,7 +8,7 @@
 void FunctionTest(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (param_count < 3) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     if (params[0].FieldType() != FIELD_INTEGER) {
@@ -26,7 +26,7 @@ void FunctionTestExists(const char *function, Evaluation::Params &params, int pa
 void FunctionLength(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     Vector vec;
@@ -36,11 +36,11 @@ void FunctionLength(const char *function, Evaluation::Params &params, int param_
 void FunctionDistance(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     if (params[1].FieldType() != FIELD_VECTOR && !params[1].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     Vector vec1;
@@ -97,11 +97,11 @@ void FunctionMax(const char *function, Evaluation::Params &params, int param_cou
 void FunctionDot(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     if (params[1].FieldType() != FIELD_VECTOR && !params[1].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     Vector vec1;
@@ -114,11 +114,11 @@ void FunctionDot(const char *function, Evaluation::Params &params, int param_cou
 void FunctionCross(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     if (params[1].FieldType() != FIELD_VECTOR && !params[1].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     Vector vec1;
@@ -133,11 +133,11 @@ void FunctionCross(const char *function, Evaluation::Params &params, int param_c
 void FunctionRotate(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     if (params[1].FieldType() != FIELD_VECTOR && !params[1].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -153,7 +153,7 @@ void FunctionRotate(const char *function, Evaluation::Params &params, int param_
 void FunctionToAngles(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -167,7 +167,7 @@ void FunctionToAngles(const char *function, Evaluation::Params &params, int para
 void FunctionNormalize(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -179,7 +179,7 @@ void FunctionNormalize(const char *function, Evaluation::Params &params, int par
 void FunctionToForwardVector(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_VECTOR && !params[0].Convert(FIELD_VECTOR)) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -194,7 +194,7 @@ void FunctionClamp(const char *function, Evaluation::Params &params, int param_c
 {
     for (int i = 0; i < 3; i++) {
         if (params[i].FieldType() != FIELD_FLOAT && !params[i].Convert(FIELD_FLOAT)) {
-            result.Convert(FIELD_VOID);
+            result = variant_t();
             return;
         }
     }
@@ -205,7 +205,7 @@ void FunctionRemap(const char *function, Evaluation::Params &params, int param_c
 {
     for (int i = 0; i < 5; i++) {
         if (params[i].FieldType() != FIELD_FLOAT && !params[i].Convert(FIELD_FLOAT)) {
-            result.Convert(FIELD_VOID);
+            result = variant_t();
             return;
         }
     }
@@ -216,7 +216,7 @@ void FunctionRemapClamp(const char *function, Evaluation::Params &params, int pa
 {
     for (int i = 0; i < 5; i++) {
         if (params[i].FieldType() != FIELD_FLOAT && !params[i].Convert(FIELD_FLOAT)) {
-            result.Convert(FIELD_VOID);
+            result = variant_t();
             return;
         }
     }
@@ -261,7 +261,8 @@ void FunctionToVector(const char *function, Evaluation::Params &params, int para
         result = params[0];
         return;
     }
-    if (param_count < 3); result.Convert(FIELD_VOID); return;
+    
+    if (param_count < 3) { result = variant_t(); return; }
     params[0].Convert(FIELD_FLOAT);
     params[1].Convert(FIELD_FLOAT);
     params[2].Convert(FIELD_FLOAT);
@@ -393,7 +394,7 @@ void FunctionSin(const char *function, Evaluation::Params &params, int param_cou
     if (params[0].FieldType() != FIELD_FLOAT)
         params[0].Convert(FIELD_FLOAT);
 
-    result.SetFloat(sin(params[0].Float()));
+    result.SetFloat(sin(DEG2RAD(params[0].Float())));
 }
 
 void FunctionCos(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -401,7 +402,7 @@ void FunctionCos(const char *function, Evaluation::Params &params, int param_cou
     if (params[0].FieldType() != FIELD_FLOAT)
         params[0].Convert(FIELD_FLOAT);
 
-    result.SetFloat(cos(params[0].Float()));
+    result.SetFloat(cos(DEG2RAD(params[0].Float())));
 }
 
 void FunctionTan(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -409,7 +410,7 @@ void FunctionTan(const char *function, Evaluation::Params &params, int param_cou
     if (params[0].FieldType() != FIELD_FLOAT)
         params[0].Convert(FIELD_FLOAT);
 
-    result.SetFloat(tan(params[0].Float()));
+    result.SetFloat(tan(DEG2RAD(params[0].Float())));
 }
 
 void FunctionAtan(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -417,7 +418,7 @@ void FunctionAtan(const char *function, Evaluation::Params &params, int param_co
     if (params[0].FieldType() != FIELD_FLOAT)
         params[0].Convert(FIELD_FLOAT);
 
-    result.SetFloat(atan(params[0].Float()));
+    result.SetFloat(RAD2DEG(atan(params[0].Float())));
 }
 
 void FunctionAbs(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -444,7 +445,7 @@ void FunctionAtan2(const char *function, Evaluation::Params &params, int param_c
     if (params[1].FieldType() != FIELD_FLOAT)
         params[1].Convert(FIELD_FLOAT);
 
-    result.SetFloat(atan2(params[0].Float(), params[1].Float()));
+    result.SetFloat(RAD2DEG(atan2(params[0].Float(), params[1].Float())));
 }
 
 void FunctionGetPlayer(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -480,7 +481,7 @@ void FunctionGetPlayerItemAtSlot(const char *function, Evaluation::Params &param
 
     CTFPlayer *player = ToTFPlayer(params[0].Entity());
     if (player == nullptr) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -495,7 +496,7 @@ void FunctionGetItemAttribute(const char *function, Evaluation::Params &params, 
 
     CBaseEntity *entity = params[0].Entity();
     if (entity == nullptr) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     
@@ -510,7 +511,7 @@ void FunctionGetItemAttribute(const char *function, Evaluation::Params &params, 
         }
     }
     if (list == nullptr) {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
     CEconItemAttribute * attr = list->GetAttributeByName(params[1].String());
@@ -527,7 +528,7 @@ void FunctionGetItemAttribute(const char *function, Evaluation::Params &params, 
         }
     }
     else {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
         return;
     }
 }
@@ -561,7 +562,7 @@ void FunctionCharAt(const char *function, Evaluation::Params &params, int param_
         result.SetString(AllocPooledString(buf));
     }
     else {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
     }
 }
 
@@ -578,7 +579,7 @@ void FunctionSubstring(const char *function, Evaluation::Params &params, int par
         result.SetString(AllocPooledString(buf));
     }
     else {
-        result.Convert(FIELD_VOID);
+        result = variant_t();
     }
 }
 
@@ -654,9 +655,9 @@ public:
         Evaluation::AddFunction("randomint", FunctionRandomInt, {"minimum value", "maximum value"});
         Evaluation::AddFunction("randomfloat", FunctionRandomFloat, {"minimum value", "maximum value"});
         Evaluation::AddFunction("case", FunctionCase, {"test value", "default", "case1"}, {"[case2]..."});
-        Evaluation::AddFunction("sin", FunctionSin, {"angle in radians"});
-        Evaluation::AddFunction("cos", FunctionCos, {"angle in radians"});
-        Evaluation::AddFunction("tan", FunctionTan, {"angle in radians"});
+        Evaluation::AddFunction("sin", FunctionSin, {"angle in degrees"});
+        Evaluation::AddFunction("cos", FunctionCos, {"angle in degrees"});
+        Evaluation::AddFunction("tan", FunctionTan, {"angle in degrees"});
         Evaluation::AddFunction("atan", FunctionAtan, {"value"});
         Evaluation::AddFunction("atan2", FunctionAtan2, {"x", "y"});
         Evaluation::AddFunction("abs", FunctionAbs, {"value"});

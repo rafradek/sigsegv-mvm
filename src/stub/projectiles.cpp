@@ -65,6 +65,8 @@ IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRo
 IMPL_SENDPROP(int,                  CTFBaseRocket, m_iDeflected,       CTFBaseRocket);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFBaseRocket, m_hLauncher,        CTFBaseRocket);
 
+MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> CTFBaseRocket::vt_Explode(TypeName<CTFBaseRocket>(), "CTFBaseRocket::Explode");
+
 MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwnerPlayer("CTFBaseRocket::GetOwnerPlayer");
 
 MemberFuncThunk<CTFProjectile_EnergyRing *, float> CTFProjectile_EnergyRing::ft_GetInitialVelocity("CTFProjectile_EnergyRing::GetInitialVelocity");
@@ -87,7 +89,7 @@ IMPL_SENDPROP(Vector, CTFWeaponBaseGrenadeProj, m_vInitialVelocity, CTFWeaponBas
 MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> CTFWeaponBaseGrenadeProj::vt_GetWeaponID(TypeName<CTFWeaponBaseGrenadeProj>(), "CTFWeaponBaseGrenadeProj::GetWeaponID");
 
 MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> CTFWeaponBaseGrenadeProj::ft_SetDetonateTimerLength("CTFWeaponBaseGrenadeProj::SetDetonateTimerLength");
-
+MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, trace_t *, int> CTFWeaponBaseGrenadeProj::ft_Explode("CTFWeaponBaseGrenadeProj::Explode");
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrenadePipebombProjectile, m_hLauncher, CTFGrenadePipebombProjectile);
 IMPL_SENDPROP(bool, CTFGrenadePipebombProjectile, m_bTouched, CTFGrenadePipebombProjectile);

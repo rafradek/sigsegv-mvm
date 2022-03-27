@@ -2309,5 +2309,22 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
-    
+    "4547"
+    {
+        "name"	"no damage view flinch"
+        "attribute_class"	"no_damage_view_flinch"
+        "description_string"	"No view flinch when taking damage"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4548"
+    {
+        "name"	"mult dmg friendly fire"
+        "attribute_class"	"mult_dmg_friendly_fire"
+        "description_string"	"Allies receive (+-)%p% damage"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

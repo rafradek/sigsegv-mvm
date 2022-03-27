@@ -954,6 +954,12 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer16ClearTauntAttackEv"
 				}
+				"CTFPlayer::ApplyPunchImpulseX"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer18ApplyPunchImpulseXEf"
+				}
+				
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

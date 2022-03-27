@@ -30,6 +30,7 @@ public:
 	int GetMaxHealthForCurrentLevel()         { return vt_GetMaxHealthForCurrentLevel  (this); }
 
 	bool IsFunctional()                    { return !m_bBuilding && !m_bDisabled && !m_bPlacing && !m_bCarried; }
+	bool IsTargetable()                    { return !m_bPlacing && !m_bCarried; }
 	
 	DECL_DATAMAP(int, m_nDefaultUpgradeLevel);
 	
