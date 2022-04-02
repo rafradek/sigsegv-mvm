@@ -139,5 +139,79 @@ std::optional<T> from_str(std::string_view str){
     return result;
 }
 
+struct unexpected_type { // because posix reserves _t suffix for some reason
+    explicit constexpr unexpected_type(int) {}
+};
+
+inline constexpr unexpected_type unexpected{0};
+
+#ifndef OLD_GCC
+template<typename T, typename U>
+concept expected_value_or_type = 
+    std::copy_constructible<T> &&
+    std::move_constructible<T> &&
+    std::convertible_to<T&&, U>;
+
+template<typename T>
+concept valid_optional = requires (T x) {
+    std::optional{x};
+};
+
+template<valid_optional T, std::default_initializable E>
+#else
+template<typename T, typename E>
+#endif
+class expected {
+    
+    std::optional<T> opt{};
+    E err{};
+
+    public:
+
+    constexpr expected() = default;
+    template<typename U = T>
+    constexpr expected(U&& arg) : opt{arg} {}
+    constexpr expected([[maybe_unused]] unexpected_type t) : opt{} {}
+    constexpr expected([[maybe_unused]] unexpected_type t, E e) : opt{}, err{e} {}
+    template<typename U = T>
+    constexpr expected(const std::optional<U>& other) : opt{other} {}
+    template<typename U = T>
+    constexpr expected(std::optional<U>&& other) noexcept : opt{other} {}
+
+    constexpr explicit operator bool() const noexcept { return opt.has_value(); }
+    constexpr bool has_value() const noexcept { return opt.has_value(); }
+
+    constexpr operator std::optional<T>() const noexcept { return opt; }
+
+    constexpr const T* operator->() const noexcept { return opt; }
+    constexpr T* operator->() noexcept { return &*opt; }
+
+    constexpr const T& operator*() const& noexcept { return *opt; }
+    constexpr T& operator*() & noexcept { return *opt; }
+    
+    constexpr const T&& operator*() const&& noexcept { return *opt; }
+    constexpr T&& operator*() && noexcept { return *opt; }
+
+    constexpr const T& value() const& { return opt.value(); }
+    constexpr T& value() & { return opt.value(); }
+
+    constexpr const T&& value() const&& { return opt.value(); }
+    constexpr T&& value() && { return opt.value(); }
+
+    #ifndef OLD_GCC
+    constexpr T value_or(expected_value_or_type<T> auto&& default_value) const& { return opt.value_or(default_value); }
+    constexpr T value_or(expected_value_or_type<T> auto&& default_value) && { return opt.value_or(default_value); }
+    #else
+    template<typename U>
+    constexpr T value_or(U&& default_value) const& { return opt.value_or(default_value); }
+    template<typename U>
+    constexpr T value_or(U&& default_value) && { return opt.value_or(default_value); }
+    #endif
+
+    constexpr const E& error() const& { return err; }
+    constexpr E& error() & { return err; }
+
+};
+
 }
 #endif // VI_H 

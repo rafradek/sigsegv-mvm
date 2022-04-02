@@ -1540,8 +1540,7 @@ namespace Mod::Util::Client_Cmds
                             r.m_pszConVarName)
                        ) < 0;
             })> cvar_overrides{};
-        // make this std::set too for prettiness
-        std::set<std::string> cvar_strs{};
+        std::vector<std::unique_ptr<char[]>> cvar_strs{};
     }
 
     void CC_CvarNoCheat(CTFPlayer* player, const CCommand& args)
@@ -1553,21 +1552,22 @@ namespace Mod::Util::Client_Cmds
         }};
         if(args.ArgC() < 2){ usage(); return; }
         for(int i{1}; i < args.ArgC(); ++i){
-            std::string cvar_str{args[i]};
-            CConVarOverride_Flags cvar{cvar_str.c_str(), FCVAR_NONE, FCVAR_CHEAT};
+            auto cvar_str{std::make_unique<char[]>(std::strlen(args[i]) + 1)};
+            std::strcpy(cvar_str.get(), args[i]);
+            CConVarOverride_Flags cvar{cvar_str.get(), FCVAR_NONE, FCVAR_CHEAT};
             if(!cvar.IsValid()){
                 ClientMsg(player,
                         "[sig_nocheat] Unknown cvar %s\n", args[i]);
                 continue;
             }
-            [[maybe_unused]] cvar_strs.insert(std::move(cvar_str));
-            [[maybe_unused]]
             auto[it, inserted]{cvar_overrides.insert(std::move(cvar))};
             const bool removed{it->Toggle()};
             if(removed) 
                 ClientMsg(player, "[sig_nocheat] Toggled %s (on)\n", args[i]);
             else
                 ClientMsg(player, "[sig_nocheat] Toggled %s (off)\n", args[i]);
+            if(inserted)
+                cvar_strs.push_back(std::move(cvar_str));
         }
     }
 

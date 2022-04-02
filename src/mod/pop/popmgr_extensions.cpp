@@ -48,6 +48,17 @@ namespace Mod::Pop::Wave_Extensions
 
 namespace Mod::Pop::PopMgr_Extensions
 {
+    bool IsMannVsMachineMode();
+}
+
+namespace Mod {
+    bool IsMannVsMachineMode(){
+        return Mod::Pop::PopMgr_Extensions::IsMannVsMachineMode();
+    }
+}
+
+namespace Mod::Pop::PopMgr_Extensions
+{
 	int iGetTeamAssignmentOverride = 6;
 	#if defined _LINUX
 
@@ -226,6 +237,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			else
 				ResetMaxRedTeamPlayers(6);
 		});	
+
+    ConVar cvar_modded_pvp{"sig_modded_pvp", "0", FCVAR_NOTIFY,
+        "Allow more mods to work in non-MvM gamemodes"};
+
+    bool IsMannVsMachineMode(){
+        return cvar_modded_pvp.GetBool() 
+            ? true 
+            : TFGameRules()->IsMannVsMachineMode();
+    }
 		
 	std::string last_custom_upgrades = "";
 	bool received_message_tick = false;
@@ -1160,7 +1180,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (object == nullptr)
 				object = ToBaseObject(info.GetInflictor());
 
-			if (object != nullptr && TFGameRules()->IsMannVsMachineMode() && pVictim != nullptr && ToTFPlayer(pVictim)->IsMiniBoss()) {
+			if (object != nullptr && IsMannVsMachineMode() && pVictim != nullptr && ToTFPlayer(pVictim)->IsMiniBoss()) {
 				object->m_iKills -= 4;
 			}
 		}
@@ -1170,7 +1190,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CTFGameRules::ShouldDropSpellPickup\n");
 		
-		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
+		if (IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
 			CTFBot *bot = ToTFBot(killed);
 			if (bot == nullptr) return false;
 			if (!state.m_SpellsEnabled.Get()) return false;
@@ -1195,7 +1215,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CTFGameRules::DropSpellPickup\n");
 		
-		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
+		if (IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
 			CTFBot *bot = ToTFBot(killed);
 			if (bot != nullptr) {
 	//			DevMsg("  is a bot\n");
@@ -1213,7 +1233,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CTFGameRules::IsUsingSpells\n");
 		
-		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
+		if (IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
 	//		DevMsg("  returning true\n");
 			return true;
 		}
@@ -1234,7 +1254,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto rifle = reinterpret_cast<CTFSniperRifle *>(this);
 		
-		if (state.m_bSniperHideLasers && TFGameRules()->IsMannVsMachineMode()) {
+		if (state.m_bSniperHideLasers && IsMannVsMachineMode()) {
 			CTFPlayer *owner = rifle->GetTFPlayerOwner();
 			if (owner != nullptr && owner->GetTeamNumber() == TF_TEAM_BLUE) {
 				return;
@@ -1263,7 +1283,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		
-		if (state.m_bSniperAllowHeadshots && ( bIsHeadshot ) && TFGameRules()->IsMannVsMachineMode()) {
+		if (state.m_bSniperAllowHeadshots && ( bIsHeadshot ) && IsMannVsMachineMode()) {
 			CTFPlayer *owner = weapon->GetTFPlayerOwner();
 			if (owner != nullptr && owner->GetTeamNumber() == TF_TEAM_BLUE) {
 				return true;
@@ -1289,11 +1309,11 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_IsPVEModeControlled, CBaseEntity *ent)
 	{
-		if ( rc_CTFProjectile_Arrow_StrikeTarget && state.m_bSniperAllowHeadshots && TFGameRules()->IsMannVsMachineMode()) {
+		if ( rc_CTFProjectile_Arrow_StrikeTarget && state.m_bSniperAllowHeadshots && IsMannVsMachineMode()) {
 			return false;
 		}
 		
-		if ( rc_CTFWeaponBase_CalcIsAttackCritical && state.m_bBotRandomCrits && TFGameRules()->IsMannVsMachineMode()) {
+		if ( rc_CTFWeaponBase_CalcIsAttackCritical && state.m_bBotRandomCrits && IsMannVsMachineMode()) {
 			return false;
 		}
 
@@ -1311,20 +1331,20 @@ namespace Mod::Pop::PopMgr_Extensions
 		CTFPlayer *player = ToTFPlayer(pOther);
 		bool was_in_upgrade = player != nullptr && player->m_Shared->m_bInUpgradeZone;
 
-		if (state.m_bDisableUpgradeStations && player != nullptr && TFGameRules()->IsMannVsMachineMode()) {
+		if (state.m_bDisableUpgradeStations && player != nullptr && IsMannVsMachineMode()) {
 			gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled for this mission!");
 			return;
 		}
 		DETOUR_MEMBER_CALL(CUpgrades_UpgradeTouch)(pOther);
 
-		if (!was_in_upgrade && player != nullptr && state.m_bExtendedUpgradesOnly && player->m_Shared->m_bInUpgradeZone && TFGameRules()->IsMannVsMachineMode()) {
+		if (!was_in_upgrade && player != nullptr && state.m_bExtendedUpgradesOnly && player->m_Shared->m_bInUpgradeZone && IsMannVsMachineMode()) {
 			THINK_FUNC_SET(player, PlayerInspect, gpGlobals->curtime);
 		}
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_BroadcastSound, int iTeam, const char *sound, int iAdditionalSoundFlags)
 	{
-		if (TFGameRules()->IsMannVsMachineMode()) {
+		if (IsMannVsMachineMode()) {
 		//	DevMsg("CTeamplayRoundBasedRules::BroadcastSound(%d, \"%s\", 0x%08x)\n", iTeam, sound, iAdditionalSoundFlags);
 			
 			if (sound != nullptr && state.m_DisableSounds.count(std::string(sound)) != 0) {
@@ -1354,7 +1374,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound, IRecipientFilter& filter, int iEntIndex, EmitSound_t& params)
 	{
 		static bool callfrom = false;
-		if (!callfrom && TFGameRules()->IsMannVsMachineMode()) {
+		if (!callfrom && IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
 			if (iEntIndex > 0 && iEntIndex < 34 && strncmp(sound,"mvm/player/footsteps/robostep",26) == 0){
 				filter = CReliableBroadcastRecipientFilter();
@@ -1404,7 +1424,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	
 	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound_static_emitsound_handle, IRecipientFilter& filter, int iEntIndex, EmitSound_t& params, HSOUNDSCRIPTHANDLE& handle)
 	{
-		if (TFGameRules()->IsMannVsMachineMode()) {
+		if (IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
 			
 			//DevMsg("CBaseEntity::EmitSound(#%d, \"%s\", 0x%04x)\n", iEntIndex, sound, (uint16_t)handle);
@@ -1480,7 +1500,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
 
-		if (result != nullptr && result->GetItemDefinition() != nullptr && TFGameRules()->IsMannVsMachineMode() && player != nullptr) {
+		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
 			
 			auto find_loadout = state.m_SelectedLoadoutItems.find(player);
 			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
@@ -1621,7 +1641,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GiveNamedItem, const char *classname, int i1, const CEconItemView *item_view, bool b1)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (cvar_givenameditem_blacklist.GetBool() && TFGameRules()->IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther && item_view_replacement != item_view) {
+		if (cvar_givenameditem_blacklist.GetBool() && IsMannVsMachineMode() && !player->IsBot() && !rc_CTFPlayer_PickupWeaponFromOther && item_view_replacement != item_view) {
 			/* only enforce the whitelist/blacklist if they are non-empty */
 			
 			if (!state.m_ItemWhitelist.empty()) {
@@ -1721,7 +1741,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (TFGameRules()->IsMannVsMachineMode() && !player->IsBot() /*player->GetTeamNumber() == TF_TEAM_RED*/) {
+		if (IsMannVsMachineMode() && !player->IsBot() /*player->GetTeamNumber() == TF_TEAM_RED*/) {
 			if (!state.m_ItemAttributes.empty()) {
 				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
 			}
@@ -1734,7 +1754,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		if (TFGameRules()->IsMannVsMachineMode() && item_view != nullptr) {
+		if (IsMannVsMachineMode() && item_view != nullptr) {
 			int item_defidx = item_view->GetItemDefIndex();
 			
 			if (state.m_DisallowedItems.count(item_defidx) != 0) {
@@ -1751,7 +1771,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto flag = reinterpret_cast<CCaptureFlag *>(this);
 		
-		if (TFGameRules()->IsMannVsMachineMode()) {
+		if (IsMannVsMachineMode()) {
 			auto it = state.m_FlagResetTimes.find(STRING(flag->GetEntityName()));
 			if (it != state.m_FlagResetTimes.end()) {
 				return (*it).second;
@@ -1802,9 +1822,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			gamerules_roundstate_t oldState = TFGameRules()->State_Get();
 			
 		//	ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[State] MvM:%d Reverse:%d oldState:%d newState:%d\n",
-		//		TFGameRules()->IsMannVsMachineMode(), state.m_bReverseWinConditions, oldState, newState);
+		//		IsMannVsMachineMode(), state.m_bReverseWinConditions, oldState, newState);
 			
-			if (TFGameRules()->IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && g_pPopulationManager != nullptr && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
+			if (IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && g_pPopulationManager != nullptr && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
 				
 				int wave_pre = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 				//int GetTotalCurrency() return {}
@@ -2400,7 +2420,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFGCServerSystem_PreClientUpdate)
 	{
 		DETOUR_MEMBER_CALL(CTFGCServerSystem_PreClientUpdate)();
-		if (TFGameRules()->IsMannVsMachineMode() && cvar_max_red_players.GetInt() > 0) {
+		if (IsMannVsMachineMode() && cvar_max_red_players.GetInt() > 0) {
 			static ConVarRef visible_max_players("sv_visiblemaxplayers");
 			int maxplayers = visible_max_players.GetInt() + cvar_max_red_players.GetInt() - 6;
 			if (state.m_iTotalMaxPlayers > 0 && maxplayers > state.m_iTotalMaxPlayers)
@@ -2520,7 +2540,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
-		if (TFGameRules()->IsMannVsMachineMode() && !player->IsFakeClient()) {
+		if (IsMannVsMachineMode() && !player->IsFakeClient()) {
 			bool stopproj = false;
 			auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
 			for(auto it = state.m_ShootTemplates.begin(); it != state.m_ShootTemplates.end(); it++) {
@@ -3804,13 +3824,13 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ModifyOrAppendCriteria, void *criteria)
 	{
-		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, TFGameRules()->IsMannVsMachineMode() && state.m_bNoThrillerTaunt);
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, IsMannVsMachineMode() && state.m_bNoThrillerTaunt);
 		DETOUR_MEMBER_CALL(CTFPlayer_ModifyOrAppendCriteria)(criteria);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFAmmoPack_InitAmmoPack, CTFPlayer * player, CTFWeaponBase *weapon, int i1, bool b1, bool b2, float f1)
 	{
-		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, TFGameRules()->IsMannVsMachineMode() && state.m_bNoCritPumpkin);
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ModifyOrAppendCriteria, IsMannVsMachineMode() && state.m_bNoCritPumpkin);
 		DETOUR_MEMBER_CALL(CTFAmmoPack_InitAmmoPack)(player, weapon, i1, b1, b2, f1);
 	}
 
@@ -3977,7 +3997,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(void, CBasePlayer_ShowViewPortPanel, const char *name, bool show, KeyValues *kv)
 	{
-		if (TFGameRules()->IsMannVsMachineMode() && state.m_bSingleClassAllowed != -1 && (strcmp(name, "class_red") == 0 || strcmp(name, "class_blue") == 0 )) {
+		if (IsMannVsMachineMode() && state.m_bSingleClassAllowed != -1 && (strcmp(name, "class_red") == 0 || strcmp(name, "class_blue") == 0 )) {
 			CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 			player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 			return;
@@ -3988,7 +4008,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	RefCount rc_CZombieBehavior_OnKilled;
 	DETOUR_DECL_MEMBER(EventDesiredResult< CZombie >, CZombieBehavior_OnKilled, CZombie *zombie, const CTakeDamageInfo &info)
 	{
-		SCOPED_INCREMENT_IF(rc_CZombieBehavior_OnKilled, TFGameRules()->IsMannVsMachineMode() && state.m_bNoSkeletonSplit)
+		SCOPED_INCREMENT_IF(rc_CZombieBehavior_OnKilled, IsMannVsMachineMode() && state.m_bNoSkeletonSplit)
 		return DETOUR_MEMBER_CALL(CZombieBehavior_OnKilled)( zombie, info);
 	}
 
@@ -4224,7 +4244,7 @@ namespace Mod::Pop::PopMgr_Extensions
 //	{
 //		auto player = reinterpret_cast<CTFPlayer *>(this);
 //		
-//		if (rc_CTFGameRules_FireGameEvent_teamplay_round_start > 0 && TFGameRules()->IsMannVsMachineMode() && state.m_bReverseWinConditions && iTeamNum == TEAM_SPECTATOR) {
+//		if (rc_CTFGameRules_FireGameEvent_teamplay_round_start > 0 && IsMannVsMachineMode() && state.m_bReverseWinConditions && iTeamNum == TEAM_SPECTATOR) {
 //			ConColorMsg(Color(0x00, 0xff, 0xff, 0xff), "BLOCKING ChangeTeam(TEAM_SPECTATOR) for player #%d \"%s\" on team %d\n",
 //				ENTINDEX(player), player->GetPlayerName(), player->GetTeamNumber());
 //			return;
@@ -5232,6 +5252,446 @@ namespace Mod::Pop::PopMgr_Extensions
 		return true;
 		//return DETOUR_MEMBER_CALL(CPopulationManager_IsValidPopfile)(name);
 	}
+    
+    void Parse_Popfile(KeyValues* kv, IBaseFileSystem* filesystem)
+    {
+    
+		std::vector<KeyValues *> del_kv;
+		
+		// Parse PointTemplates first
+		FOR_EACH_SUBKEY(kv, subkey) {
+			const char *name = subkey->GetName();
+			
+			if (FStrEq(name, "PointTemplates")) {
+				Parse_PointTemplates(subkey);
+				del_kv.push_back(subkey);
+			}
+		}
+		
+		FOR_EACH_SUBKEY(kv, subkey) {
+			const char *name = subkey->GetName();
+			
+			bool del = true;
+			if (FStrEq(name, "BotsDropSpells")) {
+				state.m_SpellsEnabled.Set(subkey->GetBool());
+			} else if (FStrEq(name, "GiantsDropRareSpells")) {
+				state.m_bGiantsDropRareSpells = subkey->GetBool();
+			} else if (FStrEq(name, "SpellDropRateCommon")) {
+				state.m_flSpellDropRateCommon = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
+			} else if (FStrEq(name, "SpellDropRateGiant")) {
+				state.m_flSpellDropRateGiant = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
+			} else if (FStrEq(name, "SpellDropForBotsInTeam")) {
+				if (FStrEq(subkey->GetString(), "Red")) {
+					state.m_iSpellDropForTeam = 2;
+				}
+				else if (FStrEq(subkey->GetString(), "Blue")) {
+					state.m_iSpellDropForTeam = 3;
+				}
+				else {
+					state.m_iSpellDropForTeam = atoi(subkey->GetString());
+				}
+			} else if (FStrEq(name, "NoReanimators")) {
+				state.m_bNoReanimators = subkey->GetBool();
+			} else if (FStrEq(name, "NoMvMDeathTune")) {
+				state.m_bNoMvMDeathTune = subkey->GetBool();
+			} else if (FStrEq(name, "SniperHideLasers")) {
+				state.m_bSniperHideLasers = subkey->GetBool();
+			} else if (FStrEq(name, "SniperAllowHeadshots")) {
+				state.m_bSniperAllowHeadshots = subkey->GetBool();
+			} else if (FStrEq(name, "DisableUpgradeStations")) {
+				state.m_bDisableUpgradeStations = subkey->GetBool();
+			} else if (FStrEq(name, "RemoveGrapplingHooks")) {
+				state.m_flRemoveGrapplingHooks = subkey->GetFloat();
+			} else if (FStrEq(name, "ReverseWinConditions")) {
+				state.m_bReverseWinConditions = subkey->GetBool();
+			} else if (FStrEq(name, "MedievalMode")) {
+				state.m_MedievalMode.Set(subkey->GetBool());
+			} else if (FStrEq(name, "GrapplingHook")) {
+				state.m_GrapplingHook.Set(subkey->GetBool());
+			} else if (FStrEq(name, "RespecEnabled")) {
+				state.m_RespecEnabled.Set(subkey->GetBool());
+			} else if (FStrEq(name, "RespecLimit")) {
+				state.m_RespecLimit.Set(subkey->GetInt());
+			} else if (FStrEq(name, "BonusRatioHalf")) {
+				state.m_BonusRatioHalf.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "BonusRatioFull")) {
+				state.m_BonusRatioFull.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "FixedBuybacks")) {
+				state.m_FixedBuybacks.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BuybacksPerWave")) {
+				state.m_BuybacksPerWave.Set(subkey->GetInt());
+			} else if (FStrEq(name, "DeathPenalty")) {
+				state.m_DeathPenalty.Set(subkey->GetInt());
+			} else if (FStrEq(name, "SentryBusterFriendlyFire")) {
+				state.m_SentryBusterFriendlyFire.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BotPushaway")) {
+				state.m_BotPushaway.Set(subkey->GetBool());
+			} else if (FStrEq(name, "HumansMustJoinTeam")) {
+				
+				if (FStrEq(subkey->GetString(),"blue")){
+					state.m_HumansMustJoinTeam.Set(true);
+					if (!state.m_AllowJoinTeamBlueMax.IsOverridden() )
+						state.m_AllowJoinTeamBlueMax.Set(6);
+					if (!state.m_SetCreditTeam.IsOverridden() )
+						state.m_SetCreditTeam.Set(3);
+					SetVisibleMaxPlayers();
+					ForEachTFPlayer([&](CTFPlayer *player){
+						if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
+							player->ForceChangeTeam(TF_TEAM_BLUE, true);
+						}
+					});
+				}
+				else
+					state.m_HumansMustJoinTeam.Set(false);
+			} else if (FStrEq(name, "AllowJoinTeamBlue")) {
+				state.m_AllowJoinTeamBlue.Set(subkey->GetBool());
+				SetVisibleMaxPlayers();
+			} else if (FStrEq(name, "AllowJoinTeamBlueMax")) {
+				state.m_AllowJoinTeamBlueMax.Set(subkey->GetInt());
+				SetVisibleMaxPlayers();
+			} else if (FStrEq(name, "BluHumanFlagPickup")) {
+				state.m_BluHumanFlagPickup.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanFlagCapture")) {
+				state.m_BluHumanFlagCapture.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanInfiniteAmmo")) {
+				state.m_BluHumanInfiniteAmmo.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanInfiniteCloak")) {
+				state.m_BluHumanInfiniteCloak.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluPlayersAreRobots")) {
+				state.m_bBluPlayersRobots = subkey->GetBool();
+			} else if (FStrEq(name, "RedPlayersAreRobots")) {
+				state.m_bRedPlayersRobots = subkey->GetBool();
+			} else if (FStrEq(name, "FixSetCustomModelInput")) {
+				state.m_bFixSetCustomModelInput = subkey->GetBool();
+			} else if (FStrEq(name, "BotsAreHumans")) {
+				state.m_BotsHumans.Set(subkey->GetInt());
+			} else if (FStrEq(name, "SetCreditTeam")) {
+				state.m_SetCreditTeam.Set(subkey->GetInt());
+			} else if (FStrEq(name, "EnableDominations")) {
+				state.m_EnableDominations.Set(subkey->GetBool());
+			} else if (FStrEq(name, "VanillaMode")) {
+				state.m_VanillaMode.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BodyPartScaleSpeed")) {
+				state.m_BodyPartScaleSpeed.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "SandmanStun")) {
+				state.m_SandmanStuns.Set(subkey->GetBool());
+			} else if (FStrEq(name, "MedigunShieldDamage")) {
+				state.m_MedigunShieldDamage.Set(subkey->GetBool());
+			} else if (FStrEq(name, "StandableHeads")) {
+				state.m_StandableHeads.Set(subkey->GetBool());
+			} else if (FStrEq(name, "NoRomevisionCosmetics")) {
+				state.m_NoRomevisionCosmetics.Set(subkey->GetBool());
+			} else if (FStrEq(name, "CreditsBetterRadiusCollection")) {
+				state.m_CreditsBetterRadiusCollection.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AimTrackingIntervalMultiplier")) {
+				state.m_AimTrackingIntervalMultiplier.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "ImprovedAirblast")) {
+				state.m_ImprovedAirblast.Set(subkey->GetBool());
+			} else if (FStrEq(name, "FlagCarrierMovementPenalty")) {
+				state.m_FlagCarrierMovementPenalty.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "TextPrintTime")) {
+				state.m_TextPrintSpeed.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "BotTeleportUberDuration")) {
+				state.m_TeleporterUberDuration.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "BluHumanTeleportOnSpawn")) {
+				state.m_BluHumanTeleport.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanBotTeleporter")) {
+				state.m_BluHumanTeleportPlayer.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BotsUsePlayerTeleporters")) {
+				state.m_BotsUsePlayerTeleporters.Set(subkey->GetBool());
+			} else if (FStrEq(name, "MaxEntitySpeed")) {
+				state.m_MaxVelocity.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "MaxSpeedLimit")) {
+				state.m_MaxSpeedEnable.Set(subkey->GetFloat() != 520.0f);
+				state.m_MaxSpeedLimit.Set(subkey->GetFloat());
+				state.m_BotRunFast.Set(subkey->GetFloat() > 520.0f);
+				state.m_BotRunFastUpdate.Set(subkey->GetFloat() > 520.0f);
+				state.m_BotRunFastJump.Set(subkey->GetFloat() > 521.0f);
+				if (subkey->GetFloat() > 3500.0f)
+					state.m_MaxVelocity.Set(subkey->GetFloat());
+
+			} else if (FStrEq(name, "ConchHealthOnHit")) {
+				state.m_ConchHealthOnHitRegen.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "MarkedForDeathLifetime")) {
+				state.m_MarkOnDeathLifetime.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "VacNumCharges")) {
+				state.m_VacNumCharges.Set(subkey->GetInt());
+			} else if (FStrEq(name, "DoubleDonkWindow")) {
+				state.m_DoubleDonkWindow.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "ConchSpeedBoost")) {
+				state.m_ConchSpeedBoost.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "StealthDamageReduction")) {
+				state.m_StealthDamageReduction.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "AllowFlagCarrierToFight")) {
+				state.m_AllowFlagCarrierToFight.Set(subkey->GetBool());
+			} else if (FStrEq(name, "HealOnKillOverhealMelee")) {
+				state.m_HealOnKillOverhealMelee.Set(subkey->GetBool());
+			} else if (FStrEq(name, "MaxActiveSkeletons")) {
+				state.m_MaxActiveZombie.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHHealthPerPlayer")) {
+				state.m_HHHHealthPerPlayer.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHHealthBase")) {
+				state.m_HHHHealthBase.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHAttackRange")) {
+				state.m_HHHAttackRange.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHChaseRange")) {
+				state.m_HHHChaseRange.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHTerrifyRange")) {
+				state.m_HHHTerrifyRange.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHQuitRange")) {
+				state.m_HHHQuitRange.Set(subkey->GetInt());
+			} else if (FStrEq(name, "HHHChaseDuration")) {
+				state.m_HHHChaseDuration.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "ForceRobotBleed")) {
+				state.m_ForceRobotBleed.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BotHumansHaveRobotVoice")) {
+				state.m_BotHumansHaveRobotVoice.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BotHumansHaveEyeGlow")) {
+				state.m_BotHumansHaveEyeGlow.Set(subkey->GetBool());
+			} else if (FStrEq(name, "CustomEyeParticle")) {
+				state.m_EyeParticle.Set(subkey->GetString());
+			} else if (FStrEq(name, "FlagEscortCountOffset")) {
+				state.m_BotEscortCount.Set(subkey->GetInt() + 4);
+		//	} else if (FStrEq(name, "NoNewInspection")) {
+		//		state.m_CustomAttrDisplay.Set(!subkey->GetBool());
+			} else if (FStrEq(name, "ForceHoliday")) {
+				DevMsg("Forcing holiday\n");
+				CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
+				ent->KeyValue("holiday_type", "2");
+				DispatchSpawn(ent);
+				ent->Activate();
+				state.m_ForceHoliday.Set(FStrEq(subkey->GetString(),"Halloween") ? 2 : subkey->GetInt());
+			} else if (FStrEq(name, "RobotLimit")) {
+				state.m_RobotLimit.Set(subkey->GetInt());
+			} else if (FStrEq(name, "CustomUpgradesFile")) {
+				//static const std::string prefix("download/scripts/items/");
+				state.m_CustomUpgradesFile.Set(subkey->GetString());
+			} else if (FStrEq(name, "DisableSound")) {
+				state.m_DisableSounds.emplace(subkey->GetString());
+			} else if (FStrEq(name, "SendBotsToSpectatorImmediately")) {
+				state.m_bSendBotsToSpectatorImmediately = subkey->GetBool();
+			} else if (FStrEq(name, "BotsRandomCrit")) {
+				state.m_bBotRandomCrits = subkey->GetBool();
+			} else if (FStrEq(name, "NoHolidayPickups")) {
+				state.m_bNoHolidayHealthPack = subkey->GetBool();
+				if (state.m_bNoHolidayHealthPack) {
+					ForEachEntityByRTTI<CTFPowerup>([&](CTFPowerup *powerup){
+						powerup->SetModelIndexOverride( VISION_MODE_PYRO, 0 );
+						powerup->SetModelIndexOverride( VISION_MODE_HALLOWEEN, 0 );
+					});
+				}
+			} else if (FStrEq(name, "NoSapUnownedBuildings")) {
+				state.m_bSpyNoSapUnownedBuildings = subkey->GetBool();
+			} else if (FStrEq(name, "RespawnWaveTimeBlue")) {
+				state.m_flRespawnWaveTimeBlue = subkey->GetFloat();
+			} else if (FStrEq(name, "FixedRespawnWaveTimeBlue")) {
+				state.m_bFixedRespawnWaveTimeBlue = subkey->GetBool();
+			} else if (FStrEq(name, "DisplayRobotDeathNotice")) {
+				state.m_bDisplayRobotDeathNotice = subkey->GetBool();
+			} else if (FStrEq(name, "PlayerMiniboss")) {
+				state.m_bPlayerMinigiant = subkey->GetBool();
+			} else if (FStrEq(name, "PlayerScale")) {
+				state.m_fPlayerScale = subkey->GetFloat();
+			} else if (FStrEq(name, "DisplayRobotDeathNotice")) {
+				state.m_bDisplayRobotDeathNotice = subkey->GetBool();
+			} else if (FStrEq(name, "Ribit")) {
+				state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
+			} else if (FStrEq(name, "MaxRedPlayers")) {
+				state.m_RedTeamMaxPlayers.Set(subkey->GetInt());
+				//if (state.m_iRedTeamMaxPlayers > 0)
+				//	ResetMaxRedTeamPlayers(state.m_iRedTeamMaxPlayers);
+			} else if (FStrEq(name, "PlayerMiniBossMinRespawnTime")) {
+				state.m_iPlayerMiniBossMinRespawnTime = subkey->GetInt();
+			} else if (FStrEq(name, "PlayerRobotsUsePlayerAnimation")) {
+				state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
+			//} else if (FStrEq(name, "FlagEscortCountOffset")) {
+			//	state.m_iEscortBotCountOffset = subkey->GetInt();
+			} else if (FStrEq(name, "WaveStartCountdown")) {
+				state.m_flRestartRoundTime = subkey->GetFloat();
+			} else if (FStrEq(name, "ZombiesNoWave666")) {
+				state.m_bZombiesNoWave666 = subkey->GetBool();
+			} else if (FStrEq(name, "FastNPCUpdate")) {
+				state.m_bFastNPCUpdate = subkey->GetBool();
+			} else if (FStrEq(name, "StuckTimeMultiplier")) {
+				state.m_fStuckTimeMult = subkey->GetFloat();
+			} else if (FStrEq(name, "NoCreditsVelocity")) {
+				state.m_bNoCreditsVelocity = subkey->GetBool();
+			} else if (FStrEq(name, "MaxTotalPlayers")) {
+
+			} else if (FStrEq(name, "MaxSpectators")) {
+				SetMaxSpectators(subkey->GetInt());
+			} else if (FStrEq(name, "ItemWhitelist")) {
+				Parse_ItemWhitelist(subkey);
+			} else if (FStrEq(name, "ItemBlacklist")) {
+				Parse_ItemBlacklist(subkey);
+			} else if (FStrEq(name, "ItemAttributes")) {
+				Parse_ItemAttributes(subkey, state.m_ItemAttributes);
+			} else if (FStrEq(name, "ClassLimit")) {
+				Parse_ClassBlacklist(subkey);
+		//	} else if (FStrEq(name, "DisallowedItems")) {
+		//		Parse_DisallowedItems(subkey);
+			} else if (FStrEq(name, "FlagResetTime")) {
+				Parse_FlagResetTime(subkey);
+			} else if (FStrEq(name, "ExtraSpawnPoint")) {
+				Parse_ExtraSpawnPoint(subkey);
+			} else if (FStrEq(name, "ExtraTankPath")) {
+				Parse_ExtraTankPath(subkey);
+			} else if (FStrEq(name, "PlayerAttributes")) {
+				Parse_PlayerAttributes(subkey);
+			} else if (FStrEq(name, "PlayerAddCond")) {
+				Parse_PlayerAddCond(subkey);
+			} else if (FStrEq(name, "OverrideSounds")) {
+				Parse_OverrideSounds(subkey);
+			} else if (FStrEq(name, "ForceItem")) {
+				Parse_ForceItem(subkey, state.m_ForceItems, false);
+			} else if (FStrEq(name, "ForceItemNoRemove")) {
+				Parse_ForceItem(subkey, state.m_ForceItems, true);
+			} else if (FStrEq(name, "HandModelOverride")) {
+				Parse_HandModelOverride(subkey);
+			} else if (FStrEq(name, "ExtendedUpgrades")) {
+				Mod::MvM::Extended_Upgrades::Parse_ExtendedUpgrades(subkey);
+			} else if (FStrEq(name, "SpawnTemplate")) {
+				auto templ_info = Parse_SpawnTemplate(subkey);
+				if (templ_info.templ == nullptr)
+				{
+					state.m_SpawnTemplates.push_back(templ_info);
+				}
+				else {
+				//	Msg("SpawnTemplate %s\n", templ_info.template_name.c_str());
+					templ_info.SpawnTemplate(nullptr);
+				}
+			} else if (FStrEq(name, "PlayerSpawnTemplate")) {
+				PlayerPointTemplateInfo info = Parse_PlayerSpawnTemplate(subkey);
+				state.m_PlayerSpawnTemplates.push_back(info);
+			} else if (FStrEq(name, "PlayerItemEquipSpawnTemplate")) {
+				state.m_WeaponSpawnTemplates.emplace_back();
+				WeaponPointTemplateInfo &info = state.m_WeaponSpawnTemplates.back();//
+				Parse_PlayerItemEquipSpawnTemplate(info, subkey);
+			} else if (FStrEq(name, "PlayerSpawnOnceTemplate")) {
+				PointTemplateInfo info = Parse_SpawnTemplate(subkey);
+				info.ignore_parent_alive_state = true;
+				state.m_PlayerSpawnOnceTemplates.push_back(info);
+			} else if (FStrEq(name, "PlayerShootTemplate")) {
+				ShootTemplateData data;
+				if (Parse_ShootTemplate(data, subkey))
+					state.m_ShootTemplates.push_back(data);
+			} else if (FStrEq(name, "CustomWeapon")) {
+				Parse_CustomWeapon(subkey);
+			} else if (FStrEq(name, "SpellBookNormalRoll")) {
+				Parse_SpellBookRoll(subkey, state.m_SpellBookNormalRoll);
+			} else if (FStrEq(name, "SpellBookRareRoll")) {
+				Parse_SpellBookRoll(subkey, state.m_SpellBookRareRoll);
+			} else if (FStrEq(name, "DisallowUpgrade")) {
+				state.m_DisallowedUpgrades.push_back(subkey->GetString());
+			} else if (FStrEq(name, "Description")) {
+				state.m_Description.push_back(subkey->GetString());
+			} else if (FStrEq(name, "NoThrillerTaunt")) {
+				state.m_bNoThrillerTaunt = subkey->GetBool();
+			} else if (FStrEq(name, "NoCritPumpkin")) {
+				state.m_bNoCritPumpkin = subkey->GetBool();
+			} else if (FStrEq(name, "NoMissionInfo")) {
+				state.m_bNoMissionInfo = subkey->GetBool();
+			} else if (FStrEq(name, "NoJoinMidwave")) {
+				state.m_bNoRespawnMidwave = subkey->GetBool();
+			} else if (FStrEq(name, "HHHNoControlPointLogic")) {
+				state.m_bHHHNoControlPointLogic = subkey->GetBool();
+			} else if (FStrEq(name, "MinibossSentrySingleKill")) {
+				state.m_bMinibossSentrySingleKill = subkey->GetBool();
+			} else if (FStrEq(name, "ExtendedUpgradesOnly")) {
+				state.m_bExtendedUpgradesOnly = subkey->GetBool();
+			} else if (FStrEq(name, "ExtendedUpgradesNoUndo")) {
+				state.m_bExtendedUpgradesNoUndo = subkey->GetBool();
+			} else if (FStrEq(name, "HHHNonSolidToPlayers")) {
+				state.m_bHHHNonSolidToPlayers = subkey->GetBool();
+			} else if (FStrEq(name, "ItemReplacement")) {
+				Parse_ItemReplacement(subkey);
+			} else if (FStrEq(name, "ExtraLoadoutItems")) {
+				Parse_ExtraLoadoutItems(subkey);
+			} else if (FStrEq(name, "BunnyHop")) {
+				state.m_iBunnyHop = subkey->GetInt();
+			} else if (FStrEq(name, "Accelerate")) {
+				state.m_Accelerate.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "AirAccelerate")) {
+				state.m_AirAccelerate.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "NoSkeletonSplit")) {
+				state.m_bNoSkeletonSplit = subkey->GetBool();
+			} else if (FStrEq(name, "RestoreNegativeDamageHealing")) {
+				state.m_bRestoreNegativeDamageHealing = subkey->GetBool();
+			} else if (FStrEq(name, "RestoreNegativeDamageOverheal")) {
+				state.m_bRestoreNegativeDamageOverheal = subkey->GetBool();
+			} else if (FStrEq(name, "TurboPhysics")) {
+				state.m_TurboPhysics.Set(subkey->GetBool());
+			} else if (FStrEq(name, "UpgradeStationKeepWeapons")) {
+				state.m_UpgradeStationRegenCreators.Set(!subkey->GetBool());
+				state.m_UpgradeStationRegen.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowBluPlayerReanimators")) {
+				state.m_AllowBluePlayerReanimators.Set(subkey->GetBool());
+			} else if (FStrEq(name, "RemoveBluVelocityLimit")) {
+				state.m_BluVelocityRemoveLimit.Set(subkey->GetBool());
+			} else if (FStrEq(name, "FastEntityNameLookup")) {
+				state.m_FastEntityNameLookup.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowMultipleSappers")) {
+				state.m_AllowMultipleSappers.Set(subkey->GetBool());
+			} else if (FStrEq(name, "EngineerPushRange")) {
+				state.m_EngineerPushRange.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "FixHuntsmanDamageBonus")) {
+				state.m_FixHuntsmanDamageBonus.Set(subkey->GetBool());
+			} else if (FStrEq(name, "CustomNavFile")) {
+				char strippedFile[128];
+				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
+				state.m_CustomNavFile = strippedFile;
+			// } else if (FStrEq(name, "SprayDecal")) {
+			// 	Parse_SprayDecal(subkey);
+			
+			} else if (FStrEq(name, "ScriptSoundOverrides") || FStrEq(name, "CustomScriptSoundFile")) {
+				if (!filesystem->FileExists(subkey->GetString())) {
+					Warning("The custom sound script file %s might not exist\n", subkey->GetString());
+				}
+				soundemitterbase->AddSoundOverrides(subkey->GetString(), true);
+				KeyValues *kvsnd = new KeyValues( "" );
+				
+				if (kvsnd->LoadFromFile(filesystem, subkey->GetString())) {
+					for (KeyValues *pKeys = kvsnd; pKeys != nullptr; pKeys = pKeys->GetNextKey()) {
+						CBaseEntity::PrecacheScriptSound(pKeys->GetName());
+					}
+				}
+				kvsnd->deleteThis();
+			} else if (FStrEq(name, "OverrideParticles")) {
+				FOR_EACH_SUBKEY(subkey, subkey2) {
+					state.m_ParticleOverride[subkey2->GetName()] = subkey2->GetString();
+				}
+			} else if (FStrEq(name, "BuildingSpawnTemplate")) {
+				Parse_PlayerBuildingSpawnTemplate(subkey);
+			} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
+			} else if (FStrEq(name, "PrecacheSound"))        { enginesound->PrecacheSound       (subkey->GetString(), false);
+			} else if (FStrEq(name, "PrecacheModel"))        { engine     ->PrecacheModel       (subkey->GetString(), false);
+			} else if (FStrEq(name, "PrecacheSentenceFile")) { engine     ->PrecacheSentenceFile(subkey->GetString(), false);
+			} else if (FStrEq(name, "PrecacheDecal"))        { engine     ->PrecacheDecal       (subkey->GetString(), false);
+			} else if (FStrEq(name, "PrecacheGeneric"))      { engine     ->PrecacheGeneric     (subkey->GetString(), false);
+			} else if (FStrEq(name, "PrecacheParticle"))     { PrecacheParticleSystem( subkey->GetString() );
+			} else if (FStrEq(name, "PreloadSound"))         { enginesound->PrecacheSound       (subkey->GetString(), true);
+			} else if (FStrEq(name, "PreloadModel"))         { engine     ->PrecacheModel       (subkey->GetString(), true);
+			} else if (FStrEq(name, "PreloadSentenceFile"))  { engine     ->PrecacheSentenceFile(subkey->GetString(), true);
+			} else if (FStrEq(name, "PreloadDecal"))         { engine     ->PrecacheDecal       (subkey->GetString(), true);
+			} else if (FStrEq(name, "PreloadGeneric"))       { engine     ->PrecacheGeneric     (subkey->GetString(), true);
+			} else {
+				del = false;
+			}
+			
+			if (del) {
+			//	DevMsg("Key \"%s\": processed, will delete\n", name);
+				del_kv.push_back(subkey);
+			} else {
+			//	DevMsg("Key \"%s\": passthru\n", name);
+			}
+		}
+		
+		for (auto subkey : del_kv) {
+		//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
+			kv->RemoveSubKey(subkey);
+			subkey->deleteThis();
+		}
+    }
 
 	RefCount rc_KeyValues_LoadFromFile;
 	DETOUR_DECL_MEMBER(bool, KeyValues_LoadFromFile, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID, bool refreshCache)
@@ -5245,442 +5705,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		if (result && rc_CPopulationManager_Parse > 0 && rc_KeyValues_LoadFromFile == 0 && rc_CPopulationManager_IsValidPopfile == 0) {
 			auto kv = reinterpret_cast<KeyValues *>(this);
-			
-			std::vector<KeyValues *> del_kv;
-			
-			// Parse PointTemplates first
-			FOR_EACH_SUBKEY(kv, subkey) {
-				const char *name = subkey->GetName();
-				
-				if (FStrEq(name, "PointTemplates")) {
-					Parse_PointTemplates(subkey);
-					del_kv.push_back(subkey);
-				}
-			}
-			
-			FOR_EACH_SUBKEY(kv, subkey) {
-				const char *name = subkey->GetName();
-				
-				bool del = true;
-				if (FStrEq(name, "BotsDropSpells")) {
-					state.m_SpellsEnabled.Set(subkey->GetBool());
-				} else if (FStrEq(name, "GiantsDropRareSpells")) {
-					state.m_bGiantsDropRareSpells = subkey->GetBool();
-				} else if (FStrEq(name, "SpellDropRateCommon")) {
-					state.m_flSpellDropRateCommon = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
-				} else if (FStrEq(name, "SpellDropRateGiant")) {
-					state.m_flSpellDropRateGiant = Clamp(subkey->GetFloat(), 0.0f, 1.0f);
-				} else if (FStrEq(name, "SpellDropForBotsInTeam")) {
-					if (FStrEq(subkey->GetString(), "Red")) {
-						state.m_iSpellDropForTeam = 2;
-					}
-					else if (FStrEq(subkey->GetString(), "Blue")) {
-						state.m_iSpellDropForTeam = 3;
-					}
-					else {
-						state.m_iSpellDropForTeam = atoi(subkey->GetString());
-					}
-				} else if (FStrEq(name, "NoReanimators")) {
-					state.m_bNoReanimators = subkey->GetBool();
-				} else if (FStrEq(name, "NoMvMDeathTune")) {
-					state.m_bNoMvMDeathTune = subkey->GetBool();
-				} else if (FStrEq(name, "SniperHideLasers")) {
-					state.m_bSniperHideLasers = subkey->GetBool();
-				} else if (FStrEq(name, "SniperAllowHeadshots")) {
-					state.m_bSniperAllowHeadshots = subkey->GetBool();
-				} else if (FStrEq(name, "DisableUpgradeStations")) {
-					state.m_bDisableUpgradeStations = subkey->GetBool();
-				} else if (FStrEq(name, "RemoveGrapplingHooks")) {
-					state.m_flRemoveGrapplingHooks = subkey->GetFloat();
-				} else if (FStrEq(name, "ReverseWinConditions")) {
-					state.m_bReverseWinConditions = subkey->GetBool();
-				} else if (FStrEq(name, "MedievalMode")) {
-					state.m_MedievalMode.Set(subkey->GetBool());
-				} else if (FStrEq(name, "GrapplingHook")) {
-					state.m_GrapplingHook.Set(subkey->GetBool());
-				} else if (FStrEq(name, "RespecEnabled")) {
-					state.m_RespecEnabled.Set(subkey->GetBool());
-				} else if (FStrEq(name, "RespecLimit")) {
-					state.m_RespecLimit.Set(subkey->GetInt());
-				} else if (FStrEq(name, "BonusRatioHalf")) {
-					state.m_BonusRatioHalf.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "BonusRatioFull")) {
-					state.m_BonusRatioFull.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "FixedBuybacks")) {
-					state.m_FixedBuybacks.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BuybacksPerWave")) {
-					state.m_BuybacksPerWave.Set(subkey->GetInt());
-				} else if (FStrEq(name, "DeathPenalty")) {
-					state.m_DeathPenalty.Set(subkey->GetInt());
-				} else if (FStrEq(name, "SentryBusterFriendlyFire")) {
-					state.m_SentryBusterFriendlyFire.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BotPushaway")) {
-					state.m_BotPushaway.Set(subkey->GetBool());
-				} else if (FStrEq(name, "HumansMustJoinTeam")) {
-					
-					if (FStrEq(subkey->GetString(),"blue")){
-						state.m_HumansMustJoinTeam.Set(true);
-						if (!state.m_AllowJoinTeamBlueMax.IsOverridden() )
-							state.m_AllowJoinTeamBlueMax.Set(6);
-						if (!state.m_SetCreditTeam.IsOverridden() )
-							state.m_SetCreditTeam.Set(3);
-						SetVisibleMaxPlayers();
-						ForEachTFPlayer([&](CTFPlayer *player){
-							if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
-								player->ForceChangeTeam(TF_TEAM_BLUE, true);
-							}
-						});
-					}
-					else
-						state.m_HumansMustJoinTeam.Set(false);
-				} else if (FStrEq(name, "AllowJoinTeamBlue")) {
-					state.m_AllowJoinTeamBlue.Set(subkey->GetBool());
-					SetVisibleMaxPlayers();
-				} else if (FStrEq(name, "AllowJoinTeamBlueMax")) {
-					state.m_AllowJoinTeamBlueMax.Set(subkey->GetInt());
-					SetVisibleMaxPlayers();
-				} else if (FStrEq(name, "BluHumanFlagPickup")) {
-					state.m_BluHumanFlagPickup.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BluHumanFlagCapture")) {
-					state.m_BluHumanFlagCapture.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BluHumanInfiniteAmmo")) {
-					state.m_BluHumanInfiniteAmmo.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BluHumanInfiniteCloak")) {
-					state.m_BluHumanInfiniteCloak.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BluPlayersAreRobots")) {
-					state.m_bBluPlayersRobots = subkey->GetBool();
-				} else if (FStrEq(name, "RedPlayersAreRobots")) {
-					state.m_bRedPlayersRobots = subkey->GetBool();
-				} else if (FStrEq(name, "FixSetCustomModelInput")) {
-					state.m_bFixSetCustomModelInput = subkey->GetBool();
-				} else if (FStrEq(name, "BotsAreHumans")) {
-					state.m_BotsHumans.Set(subkey->GetInt());
-				} else if (FStrEq(name, "SetCreditTeam")) {
-					state.m_SetCreditTeam.Set(subkey->GetInt());
-				} else if (FStrEq(name, "EnableDominations")) {
-					state.m_EnableDominations.Set(subkey->GetBool());
-				} else if (FStrEq(name, "VanillaMode")) {
-					state.m_VanillaMode.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BodyPartScaleSpeed")) {
-					state.m_BodyPartScaleSpeed.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "SandmanStun")) {
-					state.m_SandmanStuns.Set(subkey->GetBool());
-				} else if (FStrEq(name, "MedigunShieldDamage")) {
-					state.m_MedigunShieldDamage.Set(subkey->GetBool());
-				} else if (FStrEq(name, "StandableHeads")) {
-					state.m_StandableHeads.Set(subkey->GetBool());
-				} else if (FStrEq(name, "NoRomevisionCosmetics")) {
-					state.m_NoRomevisionCosmetics.Set(subkey->GetBool());
-				} else if (FStrEq(name, "CreditsBetterRadiusCollection")) {
-					state.m_CreditsBetterRadiusCollection.Set(subkey->GetBool());
-				} else if (FStrEq(name, "AimTrackingIntervalMultiplier")) {
-					state.m_AimTrackingIntervalMultiplier.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "ImprovedAirblast")) {
-					state.m_ImprovedAirblast.Set(subkey->GetBool());
-				} else if (FStrEq(name, "FlagCarrierMovementPenalty")) {
-					state.m_FlagCarrierMovementPenalty.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "TextPrintTime")) {
-					state.m_TextPrintSpeed.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "BotTeleportUberDuration")) {
-					state.m_TeleporterUberDuration.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "BluHumanTeleportOnSpawn")) {
-					state.m_BluHumanTeleport.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BluHumanBotTeleporter")) {
-					state.m_BluHumanTeleportPlayer.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BotsUsePlayerTeleporters")) {
-					state.m_BotsUsePlayerTeleporters.Set(subkey->GetBool());
-				} else if (FStrEq(name, "MaxEntitySpeed")) {
-					state.m_MaxVelocity.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "MaxSpeedLimit")) {
-					state.m_MaxSpeedEnable.Set(subkey->GetFloat() != 520.0f);
-					state.m_MaxSpeedLimit.Set(subkey->GetFloat());
-					state.m_BotRunFast.Set(subkey->GetFloat() > 520.0f);
-					state.m_BotRunFastUpdate.Set(subkey->GetFloat() > 520.0f);
-					state.m_BotRunFastJump.Set(subkey->GetFloat() > 521.0f);
-					if (subkey->GetFloat() > 3500.0f)
-						state.m_MaxVelocity.Set(subkey->GetFloat());
-
-				} else if (FStrEq(name, "ConchHealthOnHit")) {
-					state.m_ConchHealthOnHitRegen.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "MarkedForDeathLifetime")) {
-					state.m_MarkOnDeathLifetime.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "VacNumCharges")) {
-					state.m_VacNumCharges.Set(subkey->GetInt());
-				} else if (FStrEq(name, "DoubleDonkWindow")) {
-					state.m_DoubleDonkWindow.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "ConchSpeedBoost")) {
-					state.m_ConchSpeedBoost.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "StealthDamageReduction")) {
-					state.m_StealthDamageReduction.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "AllowFlagCarrierToFight")) {
-					state.m_AllowFlagCarrierToFight.Set(subkey->GetBool());
-				} else if (FStrEq(name, "HealOnKillOverhealMelee")) {
-					state.m_HealOnKillOverhealMelee.Set(subkey->GetBool());
-				} else if (FStrEq(name, "MaxActiveSkeletons")) {
-					state.m_MaxActiveZombie.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHHealthPerPlayer")) {
-					state.m_HHHHealthPerPlayer.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHHealthBase")) {
-					state.m_HHHHealthBase.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHAttackRange")) {
-					state.m_HHHAttackRange.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHChaseRange")) {
-					state.m_HHHChaseRange.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHTerrifyRange")) {
-					state.m_HHHTerrifyRange.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHQuitRange")) {
-					state.m_HHHQuitRange.Set(subkey->GetInt());
-				} else if (FStrEq(name, "HHHChaseDuration")) {
-					state.m_HHHChaseDuration.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "ForceRobotBleed")) {
-					state.m_ForceRobotBleed.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BotHumansHaveRobotVoice")) {
-					state.m_BotHumansHaveRobotVoice.Set(subkey->GetBool());
-				} else if (FStrEq(name, "BotHumansHaveEyeGlow")) {
-					state.m_BotHumansHaveEyeGlow.Set(subkey->GetBool());
-				} else if (FStrEq(name, "CustomEyeParticle")) {
-					state.m_EyeParticle.Set(subkey->GetString());
-				} else if (FStrEq(name, "FlagEscortCountOffset")) {
-					state.m_BotEscortCount.Set(subkey->GetInt() + 4);
-			//	} else if (FStrEq(name, "NoNewInspection")) {
-			//		state.m_CustomAttrDisplay.Set(!subkey->GetBool());
-				} else if (FStrEq(name, "ForceHoliday")) {
-					DevMsg("Forcing holiday\n");
-					CBaseEntity *ent = CreateEntityByName("tf_logic_holiday");
-					ent->KeyValue("holiday_type", "2");
-					DispatchSpawn(ent);
-					ent->Activate();
-					state.m_ForceHoliday.Set(FStrEq(subkey->GetString(),"Halloween") ? 2 : subkey->GetInt());
-				} else if (FStrEq(name, "RobotLimit")) {
-					state.m_RobotLimit.Set(subkey->GetInt());
-				} else if (FStrEq(name, "CustomUpgradesFile")) {
-					//static const std::string prefix("download/scripts/items/");
-					state.m_CustomUpgradesFile.Set(subkey->GetString());
-				} else if (FStrEq(name, "DisableSound")) {
-					state.m_DisableSounds.emplace(subkey->GetString());
-				} else if (FStrEq(name, "SendBotsToSpectatorImmediately")) {
-					state.m_bSendBotsToSpectatorImmediately = subkey->GetBool();
-				} else if (FStrEq(name, "BotsRandomCrit")) {
-					state.m_bBotRandomCrits = subkey->GetBool();
-				} else if (FStrEq(name, "NoHolidayPickups")) {
-					state.m_bNoHolidayHealthPack = subkey->GetBool();
-					if (state.m_bNoHolidayHealthPack) {
-						ForEachEntityByRTTI<CTFPowerup>([&](CTFPowerup *powerup){
-							powerup->SetModelIndexOverride( VISION_MODE_PYRO, 0 );
-							powerup->SetModelIndexOverride( VISION_MODE_HALLOWEEN, 0 );
-						});
-					}
-				} else if (FStrEq(name, "NoSapUnownedBuildings")) {
-					state.m_bSpyNoSapUnownedBuildings = subkey->GetBool();
-				} else if (FStrEq(name, "RespawnWaveTimeBlue")) {
-					state.m_flRespawnWaveTimeBlue = subkey->GetFloat();
-				} else if (FStrEq(name, "FixedRespawnWaveTimeBlue")) {
-					state.m_bFixedRespawnWaveTimeBlue = subkey->GetBool();
-				} else if (FStrEq(name, "DisplayRobotDeathNotice")) {
-					state.m_bDisplayRobotDeathNotice = subkey->GetBool();
-				} else if (FStrEq(name, "PlayerMiniboss")) {
-					state.m_bPlayerMinigiant = subkey->GetBool();
-				} else if (FStrEq(name, "PlayerScale")) {
-					state.m_fPlayerScale = subkey->GetFloat();
-				} else if (FStrEq(name, "DisplayRobotDeathNotice")) {
-					state.m_bDisplayRobotDeathNotice = subkey->GetBool();
-				} else if (FStrEq(name, "Ribit")) {
-					state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
-				} else if (FStrEq(name, "MaxRedPlayers")) {
-					state.m_RedTeamMaxPlayers.Set(subkey->GetInt());
-					//if (state.m_iRedTeamMaxPlayers > 0)
-					//	ResetMaxRedTeamPlayers(state.m_iRedTeamMaxPlayers);
-				} else if (FStrEq(name, "PlayerMiniBossMinRespawnTime")) {
-					state.m_iPlayerMiniBossMinRespawnTime = subkey->GetInt();
-				} else if (FStrEq(name, "PlayerRobotsUsePlayerAnimation")) {
-					state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
-				//} else if (FStrEq(name, "FlagEscortCountOffset")) {
-				//	state.m_iEscortBotCountOffset = subkey->GetInt();
-				} else if (FStrEq(name, "WaveStartCountdown")) {
-					state.m_flRestartRoundTime = subkey->GetFloat();
-				} else if (FStrEq(name, "ZombiesNoWave666")) {
-					state.m_bZombiesNoWave666 = subkey->GetBool();
-				} else if (FStrEq(name, "FastNPCUpdate")) {
-					state.m_bFastNPCUpdate = subkey->GetBool();
-				} else if (FStrEq(name, "StuckTimeMultiplier")) {
-					state.m_fStuckTimeMult = subkey->GetFloat();
-				} else if (FStrEq(name, "NoCreditsVelocity")) {
-					state.m_bNoCreditsVelocity = subkey->GetBool();
-				} else if (FStrEq(name, "MaxTotalPlayers")) {
-
-				} else if (FStrEq(name, "MaxSpectators")) {
-					SetMaxSpectators(subkey->GetInt());
-				} else if (FStrEq(name, "ItemWhitelist")) {
-					Parse_ItemWhitelist(subkey);
-				} else if (FStrEq(name, "ItemBlacklist")) {
-					Parse_ItemBlacklist(subkey);
-				} else if (FStrEq(name, "ItemAttributes")) {
-					Parse_ItemAttributes(subkey, state.m_ItemAttributes);
-				} else if (FStrEq(name, "ClassLimit")) {
-					Parse_ClassBlacklist(subkey);
-			//	} else if (FStrEq(name, "DisallowedItems")) {
-			//		Parse_DisallowedItems(subkey);
-				} else if (FStrEq(name, "FlagResetTime")) {
-					Parse_FlagResetTime(subkey);
-				} else if (FStrEq(name, "ExtraSpawnPoint")) {
-					Parse_ExtraSpawnPoint(subkey);
-				} else if (FStrEq(name, "ExtraTankPath")) {
-					Parse_ExtraTankPath(subkey);
-				} else if (FStrEq(name, "PlayerAttributes")) {
-					Parse_PlayerAttributes(subkey);
-				} else if (FStrEq(name, "PlayerAddCond")) {
-					Parse_PlayerAddCond(subkey);
-				} else if (FStrEq(name, "OverrideSounds")) {
-					Parse_OverrideSounds(subkey);
-				} else if (FStrEq(name, "ForceItem")) {
-					Parse_ForceItem(subkey, state.m_ForceItems, false);
-				} else if (FStrEq(name, "ForceItemNoRemove")) {
-					Parse_ForceItem(subkey, state.m_ForceItems, true);
-				} else if (FStrEq(name, "HandModelOverride")) {
-					Parse_HandModelOverride(subkey);
-				} else if (FStrEq(name, "ExtendedUpgrades")) {
-					Mod::MvM::Extended_Upgrades::Parse_ExtendedUpgrades(subkey);
-				} else if (FStrEq(name, "SpawnTemplate")) {
-					auto templ_info = Parse_SpawnTemplate(subkey);
-					if (templ_info.templ == nullptr)
-					{
-						state.m_SpawnTemplates.push_back(templ_info);
-					}
-					else {
-					//	Msg("SpawnTemplate %s\n", templ_info.template_name.c_str());
-						templ_info.SpawnTemplate(nullptr);
-					}
-				} else if (FStrEq(name, "PlayerSpawnTemplate")) {
-					PlayerPointTemplateInfo info = Parse_PlayerSpawnTemplate(subkey);
-					state.m_PlayerSpawnTemplates.push_back(info);
-				} else if (FStrEq(name, "PlayerItemEquipSpawnTemplate")) {
-					state.m_WeaponSpawnTemplates.emplace_back();
-					WeaponPointTemplateInfo &info = state.m_WeaponSpawnTemplates.back();//
-					Parse_PlayerItemEquipSpawnTemplate(info, subkey);
-				} else if (FStrEq(name, "PlayerSpawnOnceTemplate")) {
-					PointTemplateInfo info = Parse_SpawnTemplate(subkey);
-					info.ignore_parent_alive_state = true;
-					state.m_PlayerSpawnOnceTemplates.push_back(info);
-				} else if (FStrEq(name, "PlayerShootTemplate")) {
-					ShootTemplateData data;
-					if (Parse_ShootTemplate(data, subkey))
-						state.m_ShootTemplates.push_back(data);
-				} else if (FStrEq(name, "CustomWeapon")) {
-					Parse_CustomWeapon(subkey);
-				} else if (FStrEq(name, "SpellBookNormalRoll")) {
-					Parse_SpellBookRoll(subkey, state.m_SpellBookNormalRoll);
-				} else if (FStrEq(name, "SpellBookRareRoll")) {
-					Parse_SpellBookRoll(subkey, state.m_SpellBookRareRoll);
-				} else if (FStrEq(name, "DisallowUpgrade")) {
-					state.m_DisallowedUpgrades.push_back(subkey->GetString());
-				} else if (FStrEq(name, "Description")) {
-					state.m_Description.push_back(subkey->GetString());
-				} else if (FStrEq(name, "NoThrillerTaunt")) {
-					state.m_bNoThrillerTaunt = subkey->GetBool();
-				} else if (FStrEq(name, "NoCritPumpkin")) {
-					state.m_bNoCritPumpkin = subkey->GetBool();
-				} else if (FStrEq(name, "NoMissionInfo")) {
-					state.m_bNoMissionInfo = subkey->GetBool();
-				} else if (FStrEq(name, "NoJoinMidwave")) {
-					state.m_bNoRespawnMidwave = subkey->GetBool();
-				} else if (FStrEq(name, "HHHNoControlPointLogic")) {
-					state.m_bHHHNoControlPointLogic = subkey->GetBool();
-				} else if (FStrEq(name, "MinibossSentrySingleKill")) {
-					state.m_bMinibossSentrySingleKill = subkey->GetBool();
-				} else if (FStrEq(name, "ExtendedUpgradesOnly")) {
-					state.m_bExtendedUpgradesOnly = subkey->GetBool();
-				} else if (FStrEq(name, "ExtendedUpgradesNoUndo")) {
-					state.m_bExtendedUpgradesNoUndo = subkey->GetBool();
-				} else if (FStrEq(name, "HHHNonSolidToPlayers")) {
-					state.m_bHHHNonSolidToPlayers = subkey->GetBool();
-				} else if (FStrEq(name, "ItemReplacement")) {
-					Parse_ItemReplacement(subkey);
-				} else if (FStrEq(name, "ExtraLoadoutItems")) {
-					Parse_ExtraLoadoutItems(subkey);
-				} else if (FStrEq(name, "BunnyHop")) {
-					state.m_iBunnyHop = subkey->GetInt();
-				} else if (FStrEq(name, "Accelerate")) {
-					state.m_Accelerate.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "AirAccelerate")) {
-					state.m_AirAccelerate.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "NoSkeletonSplit")) {
-					state.m_bNoSkeletonSplit = subkey->GetBool();
-				} else if (FStrEq(name, "RestoreNegativeDamageHealing")) {
-					state.m_bRestoreNegativeDamageHealing = subkey->GetBool();
-				} else if (FStrEq(name, "RestoreNegativeDamageOverheal")) {
-					state.m_bRestoreNegativeDamageOverheal = subkey->GetBool();
-				} else if (FStrEq(name, "TurboPhysics")) {
-					state.m_TurboPhysics.Set(subkey->GetBool());
-				} else if (FStrEq(name, "UpgradeStationKeepWeapons")) {
-					state.m_UpgradeStationRegenCreators.Set(!subkey->GetBool());
-					state.m_UpgradeStationRegen.Set(subkey->GetBool());
-				} else if (FStrEq(name, "AllowBluPlayerReanimators")) {
-					state.m_AllowBluePlayerReanimators.Set(subkey->GetBool());
-				} else if (FStrEq(name, "RemoveBluVelocityLimit")) {
-					state.m_BluVelocityRemoveLimit.Set(subkey->GetBool());
-				} else if (FStrEq(name, "FastEntityNameLookup")) {
-					state.m_FastEntityNameLookup.Set(subkey->GetBool());
-				} else if (FStrEq(name, "AllowMultipleSappers")) {
-					state.m_AllowMultipleSappers.Set(subkey->GetBool());
-				} else if (FStrEq(name, "EngineerPushRange")) {
-					state.m_EngineerPushRange.Set(subkey->GetFloat());
-				} else if (FStrEq(name, "FixHuntsmanDamageBonus")) {
-					state.m_FixHuntsmanDamageBonus.Set(subkey->GetBool());
-				} else if (FStrEq(name, "CustomNavFile")) {
-					char strippedFile[128];
-					V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
-					state.m_CustomNavFile = strippedFile;
-				// } else if (FStrEq(name, "SprayDecal")) {
-				// 	Parse_SprayDecal(subkey);
-				
-				} else if (FStrEq(name, "ScriptSoundOverrides") || FStrEq(name, "CustomScriptSoundFile")) {
-					if (!filesystem->FileExists(subkey->GetString())) {
-						Warning("The custom sound script file %s might not exist\n", subkey->GetString());
-					}
-					soundemitterbase->AddSoundOverrides(subkey->GetString(), true);
-					KeyValues *kvsnd = new KeyValues( "" );
-					
-					if (kvsnd->LoadFromFile(filesystem, subkey->GetString())) {
-						for (KeyValues *pKeys = kvsnd; pKeys != nullptr; pKeys = pKeys->GetNextKey()) {
-							CBaseEntity::PrecacheScriptSound(pKeys->GetName());
-						}
-					}
-					kvsnd->deleteThis();
-				} else if (FStrEq(name, "OverrideParticles")) {
-					FOR_EACH_SUBKEY(subkey, subkey2) {
-						state.m_ParticleOverride[subkey2->GetName()] = subkey2->GetString();
-					}
-				} else if (FStrEq(name, "BuildingSpawnTemplate")) {
-					Parse_PlayerBuildingSpawnTemplate(subkey);
-				} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
-				} else if (FStrEq(name, "PrecacheSound"))        { enginesound->PrecacheSound       (subkey->GetString(), false);
-				} else if (FStrEq(name, "PrecacheModel"))        { engine     ->PrecacheModel       (subkey->GetString(), false);
-				} else if (FStrEq(name, "PrecacheSentenceFile")) { engine     ->PrecacheSentenceFile(subkey->GetString(), false);
-				} else if (FStrEq(name, "PrecacheDecal"))        { engine     ->PrecacheDecal       (subkey->GetString(), false);
-				} else if (FStrEq(name, "PrecacheGeneric"))      { engine     ->PrecacheGeneric     (subkey->GetString(), false);
-				} else if (FStrEq(name, "PrecacheParticle"))     { PrecacheParticleSystem( subkey->GetString() );
-				} else if (FStrEq(name, "PreloadSound"))         { enginesound->PrecacheSound       (subkey->GetString(), true);
-				} else if (FStrEq(name, "PreloadModel"))         { engine     ->PrecacheModel       (subkey->GetString(), true);
-				} else if (FStrEq(name, "PreloadSentenceFile"))  { engine     ->PrecacheSentenceFile(subkey->GetString(), true);
-				} else if (FStrEq(name, "PreloadDecal"))         { engine     ->PrecacheDecal       (subkey->GetString(), true);
-				} else if (FStrEq(name, "PreloadGeneric"))       { engine     ->PrecacheGeneric     (subkey->GetString(), true);
-				} else {
-					del = false;
-				}
-				
-				if (del) {
-				//	DevMsg("Key \"%s\": processed, will delete\n", name);
-					del_kv.push_back(subkey);
-				} else {
-				//	DevMsg("Key \"%s\": passthru\n", name);
-				}
-			}
-			
-			for (auto subkey : del_kv) {
-			//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
-				kv->RemoveSubKey(subkey);
-				subkey->deleteThis();
-			}
+            Parse_Popfile(kv, filesystem);
 		}
 		
 		return result;
@@ -6031,7 +6056,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{
-			if (!TFGameRules()->IsMannVsMachineMode()) return;
+			if (!IsMannVsMachineMode()) return;
 			
 			if (state.m_flRemoveGrapplingHooks >= 0.0f) {
 				ForEachEntityByClassnameRTTI<CTFProjectile_GrapplingHook>("tf_projectile_grapplinghook", [](CTFProjectile_GrapplingHook *proj){
@@ -6146,6 +6171,34 @@ namespace Mod::Pop::PopMgr_Extensions
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
+
+    ConVar cvar_custom_popfile{"sig_custom_popfile", "", FCVAR_NONE,
+        "Force load specified popfile on map start in PvP "
+        "(use tf_mvm_popfile instead for MvM)",
+        [](IConVar* cvar, const char* old_value, auto){
+            if(TFGameRules()->IsMannVsMachineMode())
+                return;
+            const char* value_c_str{cvar_custom_popfile.GetString()};
+            std::string_view value{value_c_str};
+            if(value == ""){
+                state.Reset();
+                ConVarRef restart_cvar{"mp_restartgame_immediate"};
+                restart_cvar.SetValue(1);
+                return;
+            }
+            if(!filesystem->FileExists(value_c_str)){
+                Warning("Cannot load popfile: file \"%s\" does not exist\n",
+                        value_c_str);
+                return;
+            }
+            state.Reset();
+            KeyValues* kv{new KeyValues{""}};
+            if(kv->LoadFromFile(filesystem, value_c_str))
+                Parse_Popfile(kv, filesystem);
+            ConVarRef restart_cvar{"mp_restartgame_immediate"};
+            restart_cvar.SetValue(1);
+            kv->deleteThis();
+        }};
 	
 	
 	class CKVCond_PopMgr : public IKVCond
