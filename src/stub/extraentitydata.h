@@ -441,6 +441,24 @@ inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
     return defValue;
 }
 
+template<FixedString lit>
+inline bool CBaseEntity::GetCustomVariableVariant(variant_t &value)
+{
+    static PooledString pooled(lit);
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        for (auto &var : attrs) {
+            if (var.key == pooled) {
+                value = var.value;
+                
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 
 inline bool CBaseEntity::GetCustomVariableByText(const char *key, variant_t &value)
 {

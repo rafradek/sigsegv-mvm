@@ -298,6 +298,11 @@ CON_COMMAND(sig_build, "")
 	Msg("%s %s\n", GetBuildDate(), GetBuildTime());
 }
 
+CON_COMMAND(sig_cpu_usage, "")
+{
+	Msg("%f\n", GetCPUUsage());
+}
+
 CON_COMMAND(sig_memory_stats, "")
 {
     char buffer[1024] = "";

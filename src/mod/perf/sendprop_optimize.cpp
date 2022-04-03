@@ -1077,11 +1077,14 @@ namespace Mod::Perf::SendProp_Optimize
         virtual void OnEnable() override
 		{
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
+            ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
+            sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
                 sv_maxreplay.SetValue(0.05f);
             }
+            
         }
 
 		virtual void LevelInitPostEntity() override
@@ -1091,7 +1094,9 @@ namespace Mod::Perf::SendProp_Optimize
             world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
             
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
+            ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
+            sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
                 sv_maxreplay.SetValue(0.05f);

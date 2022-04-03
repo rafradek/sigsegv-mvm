@@ -197,6 +197,8 @@ public:
 	Vector GetCustomVariableVector(const Vector &defValue = vec3_origin);
 	template<FixedString lit>
 	QAngle GetCustomVariableAngle(const QAngle &defValue = vec3_angle);
+	template<FixedString lit>
+	bool GetCustomVariableVariant(variant_t &value);
 	bool GetCustomVariableByText(const char *key, variant_t &value);
 	void SetCustomVariable(const char *key, variant_t &value);
 

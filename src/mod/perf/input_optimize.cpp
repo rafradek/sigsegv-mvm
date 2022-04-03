@@ -217,6 +217,7 @@ namespace Mod::Perf::Input_Optimize
                     message_listeners.erase(player);
                     message_listeners_empty = message_listeners.empty();
                 }
+                return true;
             }
 		}
 		

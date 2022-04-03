@@ -119,6 +119,9 @@ bool variant_t::Convert(fieldtype_t newType) {
 		this->fieldType = FIELD_VOID;
 		return true;
 	}
+	else if (newType == FIELD_INPUT) {
+		return true;
+	}
 
 	switch (fieldType) {
 		case FIELD_INTEGER: case FIELD_CHARACTER: case FIELD_SHORT: {

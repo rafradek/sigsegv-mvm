@@ -812,13 +812,13 @@ void Evaluation::DoOp()
     }
     else if (op == EQUAL) {
         if (left.FieldType() == FIELD_INTEGER) {
-            result.SetInt(left.Float() == right.Float());
+            result.SetInt(left.Int() == right.Int());
         }
         else if (left.FieldType() == FIELD_FLOAT) {
             result.SetInt(left.Float() == right.Float());
         }
         else if (left.FieldType() == FIELD_STRING) {
-            result.SetInt(strcmp(left.String(), right.String()) == 0);
+            result.SetInt(left.String() == right.String());
         }
         else if (left.FieldType() == FIELD_VECTOR) {
             result.SetInt(vec1 == vec2);
@@ -835,7 +835,7 @@ void Evaluation::DoOp()
             result.SetInt(left.Float() != right.Float());
         }
         else if (left.FieldType() == FIELD_STRING) {
-            result.SetInt(strcmp(left.String(), right.String()) != 0);
+            result.SetInt(left.String() != right.String());
         }
         else if (left.FieldType() == FIELD_VECTOR) {
             result.SetInt(vec1 != vec2);

@@ -1807,6 +1807,14 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
 	}
 
+	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent, IGameEvent* event)
+	{
+		if (rc_CTFBotSpawner_Spawn) {
+			return;
+		}
+
+		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
+	}
 	
 
 //#ifdef ENABLE_BROKEN_STUFF
@@ -1993,6 +2001,8 @@ namespace Mod::Pop::TFBot_Extensions
 			// Fix crash if trying to remove null weapon (happens when CTFBot::AddItem tries to remove cosmetics in weapon slot)
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach,  "CBaseCombatCharacter::Weapon_Detach");
 
+			// Fix crash related to bot change teams?
+			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent,  "CQuestItemTracker::FireGameEvent");
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");

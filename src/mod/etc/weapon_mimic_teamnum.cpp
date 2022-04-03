@@ -227,7 +227,10 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 
 	DETOUR_DECL_MEMBER(int, CTFBaseProjectile_GetDamageType)
 	{
-		int dmgtype = atoi(reinterpret_cast<CTFBaseProjectile *>(this)->GetCustomVariable<"dmgtype">("-1"));
+		variant_t variant;
+		variant.SetInt(-1);
+		reinterpret_cast<CTFBaseProjectile *>(this)->GetCustomVariableVariant<"dmgtype">(variant);
+		int dmgtype = variant.Int();
 		if (dmgtype != -1) {
 			return dmgtype;
 		}

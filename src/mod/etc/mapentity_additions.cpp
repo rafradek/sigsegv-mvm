@@ -2917,35 +2917,61 @@ namespace Mod::Etc::Mapentity_Additions
                 }
 
                 const char *name = filter->GetCustomVariable<"name">();
-                const char *valuecmp = filter->GetCustomVariable<"value">();
+                variant_t valuecmp;
+                filter->GetCustomVariableVariant<"value">(valuecmp);
                 const char *compare = filter->GetCustomVariable<"compare">();
 
                 variant_t variable; 
                 bool found = GetEntityVariable(pEntity, type, name, variable);
 
                 if (found) {
-                    if (compare == nullptr || compare == empty) {
-                        const char *valuestring = variable.String();
-                        return valuestring == valuecmp || strcmp(valuestring, valuecmp) == 0;
-                    } 
-                    else {
+                    if (valuecmp.FieldType() == FIELD_STRING) {
+                        ParseNumberOrVectorFromString(valuecmp.String(), valuecmp);
+                    }
+                    if (variable.FieldType() == FIELD_STRING) {
+                        ParseNumberOrVectorFromString(variable.String(), variable);
+                    }
+                    if (valuecmp.FieldType() == FIELD_INTEGER && variable.FieldType() == FIELD_FLOAT) {
+                        valuecmp.Convert(FIELD_FLOAT);
+                    }
+                    else if (valuecmp.FieldType() == FIELD_FLOAT && variable.FieldType() == FIELD_INTEGER) {
                         variable.Convert(FIELD_FLOAT);
-                        float value = variable.Float();
-                        float valuecmpconv = strtof(valuecmp, nullptr);
-                        if (compare == equal) {
-                            return value == valuecmpconv;
+                    }
+                    
+                    
+                    if (compare == nullptr || compare == empty || compare == equal) {
+                        if (valuecmp.FieldType() == FIELD_INTEGER) {
+                            return valuecmp.Int() == variable.Int();
                         }
-                        else if (compare == less) {
-                            return value < valuecmpconv;
+                        else if (valuecmp.FieldType() == FIELD_FLOAT) {
+                            return valuecmp.Float() == variable.Float();
                         }
-                        else if (compare == greater) {
-                            return value > valuecmpconv;
+                        else if (valuecmp.FieldType() == FIELD_STRING) {
+                            return valuecmp.String() == variable.String();
+                        }
+                        else if (valuecmp.FieldType() == FIELD_VECTOR) {
+                            Vector vec1;
+                            Vector vec2;
+                            valuecmp.Vector3D(vec1);
+                            variable.Vector3D(vec2);
+                            return vec1 == vec2;
+                        }
+                        else if (valuecmp.FieldType() == FIELD_EHANDLE) {
+                            return valuecmp.Entity() == variable.Entity();
+                        }
+                    }
+                    else {
+                        if (compare == less) {
+                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() < variable.Float() : valuecmp.Int() < variable.Int();
                         }
                         else if (compare == less_or_equal) {
-                            return value <= valuecmpconv;
+                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() <= variable.Float() : valuecmp.Int() <= variable.Int();
+                        }
+                        else if (compare == greater) {
+                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() > variable.Float() : valuecmp.Int() > variable.Int();
                         }
                         else if (compare == greater_or_equal) {
-                            return value >= valuecmpconv;
+                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() >= variable.Float() : valuecmp.Int() >= variable.Int();
                         }
                     }
                 }
