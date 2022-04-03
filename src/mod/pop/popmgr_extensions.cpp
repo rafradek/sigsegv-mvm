@@ -700,6 +700,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bRestoreNegativeDamageHealing = true;
 			this->m_bRestoreNegativeDamageOverheal = true;
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
+            this->m_bNoWranglerShield = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -911,6 +912,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bRestoreNegativeDamageHealing;
 		bool m_bRestoreNegativeDamageOverheal;
 		bool m_bExtraLoadoutItemsAllowEquipOutsideSpawn;
+        bool m_bNoWranglerShield;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1063,7 +1065,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		std::vector<BuildingPointTemplateInfo> m_BuildingPointTemplates;
 	};
-	PopState state;
+	PopState state{};
 	
 	bool ExtendedUpgradesNoUndo(){ // this is very maintainable yes
 		return Mod::Pop::PopMgr_Extensions::state.m_bExtendedUpgradesNoUndo;
@@ -2813,6 +2815,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
 	}
+
+    DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FindTarget)
+    {
+        bool ret{DETOUR_MEMBER_CALL(CObjectSentrygun_FindTarget)()};
+        if(state.m_bNoWranglerShield){
+            CObjectSentrygun* sentry{reinterpret_cast<CObjectSentrygun*>(this)};
+            sentry->m_nShieldLevel = 0;
+        }
+        return ret;
+    }
 
 	void DisplayMainMissionInfo(CTFPlayer *player);
 	void DisplayWhitelistInfo(CTFPlayer *player);
@@ -5607,6 +5619,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				Parse_ItemReplacement(subkey);
 			} else if (FStrEq(name, "ExtraLoadoutItems")) {
 				Parse_ExtraLoadoutItems(subkey);
+            } else if (FStrEq(name, "NoWranglerShield")) {
+                state.m_bNoWranglerShield = subkey->GetBool();
 			} else if (FStrEq(name, "BunnyHop")) {
 				state.m_iBunnyHop = subkey->GetInt();
 			} else if (FStrEq(name, "Accelerate")) {
@@ -5949,6 +5963,7 @@ namespace Mod::Pop::PopMgr_Extensions
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_6, "DispatchParticleEffect [overload 6]");
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_7, "DispatchParticleEffect [overload 7]");
             MOD_ADD_DETOUR_MEMBER(CBaseObject_StartBuilding, "CBaseObject::StartBuilding");
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
 			
 			
 			// Remove banned missions from the list
@@ -6182,6 +6197,9 @@ namespace Mod::Pop::PopMgr_Extensions
             std::string_view value{value_c_str};
             if(value == ""){
                 state.Reset();
+                ForEachTFPlayer([](CTFPlayer* player){
+                    player->GetAttributeList()->DestroyAllAttributes();        
+                });
                 ConVarRef restart_cvar{"mp_restartgame_immediate"};
                 restart_cvar.SetValue(1);
                 return;
@@ -6192,6 +6210,23 @@ namespace Mod::Pop::PopMgr_Extensions
                 return;
             }
             state.Reset();
+            ForEachTFPlayer([](CTFPlayer* player){
+                if(player == nullptr) return;
+                if(player->GetAttributeList() != nullptr)
+                    player->GetAttributeList()->DestroyAllAttributes();        
+	            for(int i{0}; i < player->GetNumWearables(); ++i){
+		            CEconWearable* wearable = player->GetWearable(i);
+		            if((wearable != nullptr)
+                        && (wearable->GetItem() != nullptr)
+                    ) wearable->GetItem()->GetAttributeList().DestroyAllAttributes();
+	            }
+	            for(int i{0}; i < player->WeaponCount(); ++i){
+		            CBaseCombatWeapon* weapon = player->GetWeapon(i);
+		            if((weapon != nullptr)
+                        && (weapon->GetItem() != nullptr)
+                    ) weapon->GetItem()->GetAttributeList().DestroyAllAttributes();
+	            }
+            });
             KeyValues* kv{new KeyValues{""}};
             if(kv->LoadFromFile(filesystem, value_c_str))
                 Parse_Popfile(kv, filesystem);

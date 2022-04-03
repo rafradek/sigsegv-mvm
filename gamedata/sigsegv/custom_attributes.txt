@@ -2327,4 +2327,13 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4549"
+    {
+        "name"  "disable wrangler shield"
+        "attribute_class"   "disable_wrangler_shield"
+        "description_string"    "Disables wrangler shield"
+        "description_format"    "value_is_additive"
+        "hidden"    "1"
+        "effect_type"   "positive"
+    }
 }

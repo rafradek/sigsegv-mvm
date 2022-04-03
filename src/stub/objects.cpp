@@ -68,6 +68,7 @@ IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoShells,     CObjectSentrygun);
 IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoShells,  m_iAmmoShells, 4);
 IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoRockets,    CObjectSentrygun);
 IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoRockets, m_iAmmoRockets, 4);
+IMPL_RELATIVE(unsigned int, CObjectSentrygun, m_nShieldLevel, m_iAmmoRockets, 44);
 IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSentrygun_FireRocket());
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");

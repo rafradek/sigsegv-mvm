@@ -4066,6 +4066,28 @@ namespace Mod::Attr::Custom_Attributes
 		return result;
 	}
 
+    DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FindTarget)
+    {
+        bool ret{DETOUR_MEMBER_CALL(CObjectSentrygun_FindTarget)()};
+        auto sentry{reinterpret_cast<CObjectSentrygun*>(this)};
+        CTFPlayer* builder{sentry->GetBuilder()};
+        if(builder){
+            int value{-1};
+            CALL_ATTRIB_HOOK_INT_ON_OTHER(builder, value, disable_wrangler_shield);
+            if(value > 0){
+                sentry->m_nShieldLevel = 0;
+                return ret;
+            }
+            CTFWeaponBase* weapon{builder->GetActiveTFWeapon()};
+            if(weapon){
+                CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, value, disable_wrangler_shield);
+                if(value > 0)
+                    sentry->m_nShieldLevel = 0;
+            }
+        }
+        return ret;
+    }
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -4705,6 +4727,8 @@ namespace Mod::Attr::Custom_Attributes
 
 		//  Implement can overload for non rocket launchers
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CheckReloadMisfire, "CTFWeaponBase::CheckReloadMisfire");
+        //  Implement disable wrangler shield attribute
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
 			
 
 		//	Remove knife armor penetration limit

@@ -99,6 +99,7 @@ public:
 	DECL_RELATIVE(int, m_iMaxAmmoShells);
 	DECL_SENDPROP(int, m_iAmmoRockets);
 	DECL_RELATIVE(int, m_iMaxAmmoRockets);
+    DECL_RELATIVE(unsigned int, m_nShieldLevel);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
 	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;
