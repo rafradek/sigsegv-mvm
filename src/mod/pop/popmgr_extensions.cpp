@@ -57,6 +57,11 @@ namespace Mod {
     }
 }
 
+namespace Mod::Etc::Mapentity_Additions
+{
+    void ClearFakeProp();
+}
+
 namespace Mod::Pop::PopMgr_Extensions
 {
 	int iGetTeamAssignmentOverride = 6;
@@ -5145,6 +5150,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		state.m_SelectedLoadoutItems.clear();
 		state.m_BoughtLoadoutItems.clear();
 		state.m_BoughtLoadoutItemsCheckpoint.clear();
+		Mod::Etc::Mapentity_Additions::ClearFakeProp();
 		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
 	}
 

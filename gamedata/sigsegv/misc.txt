@@ -5382,15 +5382,15 @@
 					type "sym"
 					sym  "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
 				}
-				"CTFWeaponBase::CheckReloadMisfire"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
-				}
 				"CTFStunBall::ApplyBallImpactEffectOnVictim"
 				{
 					type "sym"
 					sym  "_ZN11CTFStunBall29ApplyBallImpactEffectOnVictimEP11CBaseEntity"
+				}
+				"CQuestItemTracker::FireGameEvent"
+				{
+					type "sym"
+					sym  "_ZN17CQuestItemTracker13FireGameEventEP10IGameEvent"
 				}
 				
 			}

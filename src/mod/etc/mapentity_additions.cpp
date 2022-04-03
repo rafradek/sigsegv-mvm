@@ -859,6 +859,16 @@ namespace Mod::Etc::Mapentity_Additions
         this->SetNextThink(gpGlobals->curtime + 0.01f, "AimFollowModuleTick");
     }
 
+    class FakePropModule : public EntityModule, public AutoList<FakePropModule>
+    {
+    public:
+        FakePropModule() {}
+        FakePropModule(CBaseEntity *entity) : entity(entity) {}
+        
+        CBaseEntity *entity = nullptr;
+        std::unordered_map<std::string, std::pair<variant_t, variant_t>> props;
+    };
+
     void AddModuleByName(CBaseEntity *entity, const char *name)
     {
         if (FStrEq(name, "rotator")) {
@@ -2335,6 +2345,16 @@ namespace Mod::Etc::Mapentity_Additions
             FireGetInput(ent, SENDPROP, szInputName + strlen("GetProp$"), pActivator, pCaller, Value);
             return true;
         }
+        else if (strnicmp(szInputName, "SetClientProp$", strlen("SetClientProp$")) == 0) {
+            auto mod = ent->GetOrCreateEntityModule<FakePropModule>("fakeprop");
+            mod->props[szInputName + strlen("SetClientProp$")] = {Value, Value};
+            return true;
+        }
+        else if (strnicmp(szInputName, "ResetClientProp$", strlen("ResetClientProp$")) == 0) {
+            auto mod = ent->GetOrCreateEntityModule<FakePropModule>("fakeprop");
+            mod->props.erase(szInputName + strlen("ResetClientProp$"));
+            return true;
+        }
         else if (stricmp(szInputName, "GetEntIndex") == 0) {
             char param_tokenized[256] = "";
             V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
@@ -3349,6 +3369,29 @@ namespace Mod::Etc::Mapentity_Additions
         DETOUR_MEMBER_CALL(CEventAction_CEventAction)(name);
     }
 
+    DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
+	{
+		for (auto &module : FakePropModule::List()) {
+            for (auto &entry : module->props) {
+                GetEntityVariable(module->entity, SENDPROP, entry.first.c_str(), entry.second.second);
+                SetEntityVariable(module->entity, SENDPROP, entry.first.c_str(), entry.second.first);
+            }
+        }
+		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+        for (auto &module : FakePropModule::List()) {
+            for (auto &entry : module->props) {
+                SetEntityVariable(module->entity, SENDPROP, entry.first.c_str(), entry.second.second);
+            }
+        }
+	}
+
+    void ClearFakeProp()
+    {
+        for (size_t i = FakePropModule::List().size() - 1; i >= 0; i--) {
+            FakePropModule::List()[i]->entity->RemoveEntityModule("fakeprop");
+        }
+    }
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -3376,6 +3419,7 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CPointTeleport_Activate, "CPointTeleport::Activate");
             MOD_ADD_DETOUR_MEMBER(CTFDroppedWeapon_InitPickedUpWeapon, "CTFDroppedWeapon::InitPickedUpWeapon");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_PassesDamageFilter, "CBaseEntity::PassesDamageFilter");
+            MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
 
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
@@ -3388,7 +3432,7 @@ namespace Mod::Etc::Mapentity_Additions
             
             MOD_ADD_DETOUR_MEMBER(CEventAction_CEventAction, "CEventAction::CEventAction [C2]");
     
-    
+
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");
