@@ -3387,8 +3387,8 @@ namespace Mod::Etc::Mapentity_Additions
 
     void ClearFakeProp()
     {
-        for (size_t i = FakePropModule::List().size() - 1; i >= 0; i--) {
-            FakePropModule::List()[i]->entity->RemoveEntityModule("fakeprop");
+        while (!FakePropModule::List().empty() ) {
+            FakePropModule::List().back()->entity->RemoveEntityModule("fakeprop");
         }
     }
 
