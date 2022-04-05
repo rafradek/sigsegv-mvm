@@ -126,6 +126,7 @@ WaveSchedule
 	RemoveBluVelocityLimit 1 [$SIGSEGV] // Remove 1000 hu velocity limit for BLU team (default: 0)
 	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
 	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
+	DefaultMiniBossScale 1.6 [$SIGSEGV] // Default Giant Bot scale (default: 1.75) 
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -2947,3 +2948,12 @@ WaveSchedule
 
 // Damage dealt to teammates multiplier. Requires Allow friendly fire
 // "mult dmg friendly fire" 0.4
+
+// Disable wrangler shield
+// "disable wrangler shield" 1
+
+// Allow infinite parachute redeploying
+// "parachute redeploy" 1
+
+// Ducking speed multiplier. 3 is for normal speed. Cannot be faster than walking speed
+// "mult duck speed" 3
