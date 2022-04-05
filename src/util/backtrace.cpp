@@ -124,6 +124,16 @@ void print_backtrace()
 	}
 }
 
+void sig_handler(int signo)
+{
+	print_backtrace();
+}
+
+CON_COMMAND(sig_crash_handler, "")
+{
+	signal(SIGSEGV, sig_handler);
+}
+
 #endif
 
 extern "C"

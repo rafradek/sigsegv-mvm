@@ -5392,6 +5392,32 @@
 					type "sym"
 					sym  "_ZN17CQuestItemTracker13FireGameEventEP10IGameEvent"
 				}
+				"CBaseServer::GetCPUUsage"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseServer11GetCPUUsageEv"
+				}
+				"CGlobalEntityList::NumberOfEntities"
+				{
+					type "sym"
+					sym  "_ZN17CGlobalEntityList16NumberOfEntitiesEv"
+				}
+				"CTFGameMovement::ToggleParachute"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement15ToggleParachuteEv"
+				}
+				"CTFGameMovement::HandleDuckingSpeedCrop"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement22HandleDuckingSpeedCropEv"
+				}
+				"CTFProjectile_EnergyRing::ShouldPenetrate"
+				{
+					type "sym"
+					sym  "_ZNK24CTFProjectile_EnergyRing15ShouldPenetrateEv"
+				}
 				
 			}
 			"addrs_group"

@@ -7,7 +7,12 @@
 
 
 // TODO
-class CGlobalEntityList : public CBaseEntityList {};
+class CGlobalEntityList : public CBaseEntityList {
+public:
+	int m_iHighestEnt;
+	int m_iNumEnts;
+	int m_iNumEdicts;
+};
 
 
 using BASEPTR       = void (CBaseEntity::*)();

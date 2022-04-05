@@ -2327,4 +2327,31 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4549"
+    {
+        "name"	"disable wrangler shield"
+        "attribute_class"	"disable_wrangler_shield"
+        "description_string"	"No wrangler shield"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4550"
+    {
+        "name"	"parachute redeploy"
+        "attribute_class"	"parachute_redeploy"
+        "description_string"	"Parachute redeploying is allowed"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4551"
+    {
+        "name"	"mult duck speed"
+        "attribute_class"	"mult_duck_speed"
+        "description_string"	"(+-)%p% move speed while crouching"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

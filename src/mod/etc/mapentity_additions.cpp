@@ -2,7 +2,9 @@
 #include "stub/baseentity.h"
 #include "stub/entities.h"
 #include "stub/gamerules.h"
+#include "stub/populators.h"
 #include "stub/tfbot.h"
+#include "stub/nextbot_cc.h"
 #include "stub/tf_shareddefs.h"
 #include "stub/misc.h"
 #include "stub/strings.h"
@@ -1201,6 +1203,16 @@ namespace Mod::Etc::Mapentity_Additions
                 gamehelpers->TextMsg(ENTINDEX(ent), TEXTMSG_DEST_CHAT , text.c_str());
                 return true;
             }
+            else if (stricmp(szInputName, "DisplayTextHint") == 0) {
+                using namespace std::string_literals;
+                std::string text{Value.String()};
+                text = std::regex_replace(text, std::regex{"\\{newline\\}", std::regex_constants::icase}, "\n");
+                text = std::regex_replace(text, std::regex{"\\{player\\}", std::regex_constants::icase}, ToTFPlayer(ent)->GetPlayerName());
+                text = std::regex_replace(text, std::regex{"\\{activator\\}", std::regex_constants::icase}, 
+                        (pActivator != nullptr && pActivator->IsPlayer() ? ToTFPlayer(pActivator) : ToTFPlayer(ent))->GetPlayerName());
+                gamehelpers->HintTextMsg(ENTINDEX(ent), text.c_str());
+                return true;
+            }
             else if (stricmp(szInputName, "Suicide") == 0) {
                 CTFPlayer *player = ToTFPlayer(ent);
                 if (player != nullptr) {
@@ -1299,7 +1311,7 @@ namespace Mod::Etc::Mapentity_Additions
                 char *attr = strtok(param_tokenized,"|");
                 char *value = strtok(NULL,"|");
 
-                if (player != nullptr) {
+                if (player != nullptr && value != nullptr) {
                     player->AddCustomAttribute(attr, atof(value), -1.0f);
                 }
                 return true;
@@ -1414,7 +1426,7 @@ namespace Mod::Etc::Mapentity_Additions
                 char *value = strtok(NULL,"|");
                 char *slot = strtok(NULL,"|");
 
-                if (player != nullptr) {
+                if (player != nullptr && value != nullptr) {
                     CEconEntity *item = nullptr;
                     if (slot != nullptr) {
                         ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
@@ -2894,6 +2906,24 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
 
+    DETOUR_DECL_MEMBER(bool, CTankSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	{
+		auto spawner = reinterpret_cast<CTankSpawner *>(this);
+		
+		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
+		
+        if (cvar_fast_lookup.GetBool() && result && ents != nullptr && !ents->IsEmpty()) {
+
+            auto tank = rtti_cast<CTFTankBoss *>(ents->Tail().Get());
+            if (tank != nullptr) {
+                char *lowercase = stackalloc(strlen(STRING(tank->GetEntityName())) + 1);
+                StrLowerCopy(STRING(tank->GetEntityName()), lowercase);
+                tank->SetName(AllocPooledString(lowercase));
+            }
+        }
+        return result;
+    }
+    
     DETOUR_DECL_MEMBER(void, CBaseEntity_PostConstructor, const char *classname)
 	{
         if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
@@ -3420,6 +3450,8 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTFDroppedWeapon_InitPickedUpWeapon, "CTFDroppedWeapon::InitPickedUpWeapon");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_PassesDamageFilter, "CBaseEntity::PassesDamageFilter");
             MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
+            MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
+            
 
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");

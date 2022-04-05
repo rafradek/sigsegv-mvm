@@ -455,7 +455,7 @@ void FunctionGetPlayer(const char *function, Evaluation::Params &params, int par
 
 
     CHandle<CBaseEntity> entity = UTIL_PlayerByIndex(params[0].Int());
-    result.Set(FIELD_EHANDLE, entity);
+    result.Set(FIELD_EHANDLE, &entity);
 }
 
 void FunctionGetEntityIndex(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
@@ -484,9 +484,8 @@ void FunctionGetPlayerItemAtSlot(const char *function, Evaluation::Params &param
         result = variant_t();
         return;
     }
-    
     CHandle<CBaseEntity> entity = GetEconEntityAtLoadoutSlot(player, params[1].Int());
-    result.Set(FIELD_EHANDLE, entity);
+    result.Set(FIELD_EHANDLE, &entity);
 }
 
 void FunctionGetItemAttribute(const char *function, Evaluation::Params &params, int param_count, variant_t& result)

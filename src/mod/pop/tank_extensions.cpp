@@ -494,7 +494,7 @@ namespace Mod::Pop::Tank_Extensions
 	CTankSpawner *current_spawner = nullptr;
 
 	
-	DETOUR_DECL_MEMBER(int, CTankSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	DETOUR_DECL_MEMBER(bool, CTankSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
 		
@@ -506,83 +506,79 @@ namespace Mod::Pop::Tank_Extensions
 		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
 		
 
-		if (ents != nullptr) {
+		if (result && ents != nullptr && !ents->IsEmpty()) {
 			auto it = spawners.find(spawner);
 			if (it != spawners.end()) {
 				SpawnerData& data = (*it).second;
-				
-				FOR_EACH_VEC((*ents), i) {
-					CBaseEntity *ent = (*ents)[i];
+				auto tank = rtti_cast<CTFTankBoss *>(ents->Tail().Get());
 					
-					auto tank = rtti_cast<CTFTankBoss *>(ent);
-					if (tank != nullptr) {
-						data.tanks.push_back(tank);
+				if (tank != nullptr) {
+					data.tanks.push_back(tank);
+					
+					if (data.team_num != -1) {
+						tank->SetTeamNumber(data.team_num);
+						tank->AddGlowEffect();
+					}
+
+					if (data.scale != 1.00f) {
+						/* need to call this BEFORE changing the scale; otherwise,
+							* the collision bounding box will be very screwed up */
+						tank->UpdateCollisionBounds();
 						
-						if (data.team_num != -1) {
-							tank->SetTeamNumber(data.team_num);
-							tank->AddGlowEffect();
-						}
+						tank->SetModelScale(data.scale);
+					}
+					static ConVarRef sig_no_romevision_cosmetics("sig_no_romevision_cosmetics");
+					if (data.force_romevision || sig_no_romevision_cosmetics.GetBool()) {
+						ForceRomeVisionModels(tank, data.force_romevision);
+					}
 
-						if (data.scale != 1.00f) {
-							/* need to call this BEFORE changing the scale; otherwise,
-							 * the collision bounding box will be very screwed up */
-							tank->UpdateCollisionBounds();
-							
-							tank->SetModelScale(data.scale);
-						}
-						static ConVarRef sig_no_romevision_cosmetics("sig_no_romevision_cosmetics");
-						if (data.force_romevision || sig_no_romevision_cosmetics.GetBool()) {
-							ForceRomeVisionModels(tank, data.force_romevision);
-						}
-
-						
-						if (data.disable_models || data.disable_tracks || data.disable_bomb) {
-							for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
-								if (!child->ClassMatches("prop_dynamic")) continue;
-								const char * model = STRING(child->GetModelName());
-								DevMsg("model name %s\n", model);
-								if (data.disable_models || (data.disable_tracks && (FStrEq(model, "models/bots/boss_bot/tank_track_L.mdl") || 
-									FStrEq(model, "models/bots/boss_bot/tank_track_R.mdl"))) || (data.disable_bomb && FStrEq(model, "models/bots/boss_bot/bomb_mechanism.mdl")))
-								child->AddEffects(32);
-							}
-						}
-
-						if (!data.custom_model.empty()) {
-							if (data.replace_model_col)
-								tank->SetModel(modelinfo->GetModelName(modelinfo->GetModel(data.custom_model[0])));
-
-							tank->SetModelIndexOverride(VISION_MODE_NONE, data.custom_model[0]);
-							tank->SetModelIndexOverride(VISION_MODE_ROME, data.custom_model[0]);
-						}
-						
-						if (data.offsetz != 0.0f)
-						{
-							Vector offset = tank->GetAbsOrigin() + Vector(0, 0, data.offsetz);
-							tank->SetAbsOrigin(offset);
-						}
+					
+					if (data.disable_models || data.disable_tracks || data.disable_bomb) {
 						for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
 							if (!child->ClassMatches("prop_dynamic")) continue;
-							
-							int replace_model = -1;
-							if (data.bomb_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/bomb_mechanism.mdl"))
-								replace_model = data.bomb_model;
-							else if (data.left_tracks_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/tank_track_L.mdl"))
-								replace_model = data.left_tracks_model;
-							else if (data.right_tracks_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/tank_track_R.mdl"))
-								replace_model = data.right_tracks_model;
-
-							DevMsg("Replace child model %s %d\n",  STRING(child->GetModelName()), replace_model );
-							if (replace_model != -1) {
-								child->SetModelIndex(replace_model);
-								child->SetModelIndexOverride(VISION_MODE_NONE, replace_model);
-								child->SetModelIndexOverride(VISION_MODE_ROME, replace_model);
-							}
-							
+							const char * model = STRING(child->GetModelName());
+							DevMsg("model name %s\n", model);
+							if (data.disable_models || (data.disable_tracks && (FStrEq(model, "models/bots/boss_bot/tank_track_L.mdl") || 
+								FStrEq(model, "models/bots/boss_bot/tank_track_R.mdl"))) || (data.disable_bomb && FStrEq(model, "models/bots/boss_bot/bomb_mechanism.mdl")))
+							child->AddEffects(32);
 						}
+					}
 
-						for (auto it1 = data.attachements.begin(); it1 != data.attachements.end(); ++it1) {
-							it1->SpawnTemplate(tank);
+					if (!data.custom_model.empty()) {
+						if (data.replace_model_col)
+							tank->SetModel(modelinfo->GetModelName(modelinfo->GetModel(data.custom_model[0])));
+
+						tank->SetModelIndexOverride(VISION_MODE_NONE, data.custom_model[0]);
+						tank->SetModelIndexOverride(VISION_MODE_ROME, data.custom_model[0]);
+					}
+					
+					if (data.offsetz != 0.0f)
+					{
+						Vector offset = tank->GetAbsOrigin() + Vector(0, 0, data.offsetz);
+						tank->SetAbsOrigin(offset);
+					}
+					for (CBaseEntity *child = tank->FirstMoveChild(); child != nullptr; child = child->NextMovePeer()) {
+						if (!child->ClassMatches("prop_dynamic")) continue;
+						
+						int replace_model = -1;
+						if (data.bomb_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/bomb_mechanism.mdl"))
+							replace_model = data.bomb_model;
+						else if (data.left_tracks_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/tank_track_L.mdl"))
+							replace_model = data.left_tracks_model;
+						else if (data.right_tracks_model != -1 && FStrEq(STRING(child->GetModelName()), "models/bots/boss_bot/tank_track_R.mdl"))
+							replace_model = data.right_tracks_model;
+
+						DevMsg("Replace child model %s %d\n",  STRING(child->GetModelName()), replace_model );
+						if (replace_model != -1) {
+							child->SetModelIndex(replace_model);
+							child->SetModelIndexOverride(VISION_MODE_NONE, replace_model);
+							child->SetModelIndexOverride(VISION_MODE_ROME, replace_model);
 						}
+						
+					}
+
+					for (auto it1 = data.attachements.begin(); it1 != data.attachements.end(); ++it1) {
+						it1->SpawnTemplate(tank);
 					}
 				}
 			}

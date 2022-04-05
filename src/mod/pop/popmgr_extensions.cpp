@@ -645,7 +645,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_FastEntityNameLookup            ("sig_etc_fast_entity_name_lookup"),
 			m_AllowMultipleSappers            ("sig_mvm_sapper_allow_multiple_active"),
 			m_EngineerPushRange               ("sig_ai_engiebot_pushrange"),
-			m_FixHuntsmanDamageBonus          ("sig_etc_huntsman_damage_fix")
+			m_FixHuntsmanDamageBonus          ("sig_etc_huntsman_damage_fix"),
+			m_DefaultBossScale                ("tf_mvm_miniboss_scale")
 			
 		{
 			this->Reset();
@@ -787,6 +788,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AllowMultipleSappers.Reset();
 			this->m_EngineerPushRange.Reset();
 			this->m_FixHuntsmanDamageBonus.Reset();
+			this->m_DefaultBossScale.Reset();
 
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1000,6 +1002,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_AllowMultipleSappers;
 		CPopOverride_ConVar<float> m_EngineerPushRange;
 		CPopOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
+		CPopOverride_ConVar<bool> m_DefaultBossScale;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1465,6 +1468,60 @@ namespace Mod::Pop::PopMgr_Extensions
 //		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 //	}
 
+
+	void ApplyOrClearRobotModel(CTFPlayer *player)
+	{
+		if (!state.m_bRedPlayersRobots && !state.m_bBluPlayersRobots)
+			return;
+
+		// Restore changes made by player animations on robot models
+		auto find = state.m_Player_anim_cosmetics.find(player);
+		if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
+			find->second->Remove();
+			servertools->SetKeyValue(player, "rendermode", "0");
+			player->SetRenderColorA(255);
+			state.m_Player_anim_cosmetics.erase(find);
+		}
+
+		if ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
+				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE)) {
+
+			int model_class=player->GetPlayerClass()->GetClassIndex();
+			const char *model = player->IsMiniBoss() ? g_szBotBossModels[model_class] : g_szBotModels[model_class];
+			
+			if (state.m_bPlayerRobotUsePlayerAnimation) {
+				
+				auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+
+				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+				//DevMsg("Use human anims %d\n", wearable != nullptr);
+				if (wearable != nullptr) {
+					wearable->Spawn();
+					wearable->m_bValidatedAttachedEntity = true;
+					wearable->GiveTo(player);
+					servertools->SetKeyValue(player, "rendermode", "1");
+					player->SetRenderColorA(0);
+					int model_index = CBaseEntity::PrecacheModel(model);
+					wearable->SetModelIndex(model_index);
+					for (int j = 0; j < MAX_VISION_MODES; ++j) {
+						wearable->SetModelIndexOverride(j, model_index);
+					}
+					state.m_Player_anim_cosmetics[player] = wearable;
+					player->GetPlayerClass()->SetCustomModel("", true);
+				}
+			}
+			else {
+				player->GetPlayerClass()->SetCustomModel(model, true);
+			}
+			player->UpdateModel();
+		}
+		else {
+			player->GetPlayerClass()->SetCustomModel("", true);
+			player->UpdateModel();
+		}
+		
+	}
+	
 	RefCount rc_GetEntityForLoadoutSlot;
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot)
 	{
@@ -1486,6 +1543,10 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_GiveDefaultItems);
 		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!player->IsBot()) {
+			ApplyOrClearRobotModel(player);
+		}
 		is_item_replacement.clear();
 	}
 
@@ -2012,9 +2073,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		}*/
 
 		
-		if (g_pPopulationManager != nullptr && !player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE && !g_pPopulationManager->IsInEndlessWaves() && (player->m_Shared->m_bInUpgradeZone || TFGameRules()->State_Get() == GR_STATE_RND_RUNNING)) {
-            gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CHAT , "#TF_MVM_NoClassChangeAfterSetup");
-			return;
+		if (g_pPopulationManager != nullptr && !player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) {
+			if (player->m_nCanPurchaseUpgradesCount > 0) {
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER , "#TF_MVM_NoClassUpgradeUI");
+				return;
+			}
+			if (!TFGameRules()->InSetup() && !g_pPopulationManager->IsInEndlessWaves()) {
+            	gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CHAT , "#TF_MVM_NoClassChangeAfterSetup");
+				return;
+			}
 		}
 
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
@@ -2022,59 +2089,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		// Avoid infinite loop
 		if (rc_CTFPlayer_HandleCommand_JoinClass < 10 && player->GetTeamNumber() >= TF_TEAM_RED)
 			CheckPlayerClassLimit(player);
-	}
-	
-	void ApplyOrClearRobotModel(CTFPlayer *player)
-	{
-		if (!state.m_bRedPlayersRobots && !state.m_bBluPlayersRobots)
-			return;
-
-		// Restore changes made by player animations on robot models
-		auto find = state.m_Player_anim_cosmetics.find(player);
-		if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
-			find->second->Remove();
-			servertools->SetKeyValue(player, "rendermode", "0");
-			player->SetRenderColorA(255);
-			state.m_Player_anim_cosmetics.erase(find);
-		}
-
-		if ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
-				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE)) {
-
-			int model_class=player->GetPlayerClass()->GetClassIndex();
-			const char *model = player->IsMiniBoss() ? g_szBotBossModels[model_class] : g_szBotModels[model_class];
-			
-			if (state.m_bPlayerRobotUsePlayerAnimation) {
-				
-				auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
-
-				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-				//DevMsg("Use human anims %d\n", wearable != nullptr);
-				if (wearable != nullptr) {
-					wearable->Spawn();
-					wearable->m_bValidatedAttachedEntity = true;
-					wearable->GiveTo(player);
-					servertools->SetKeyValue(player, "rendermode", "1");
-					player->SetRenderColorA(0);
-					int model_index = CBaseEntity::PrecacheModel(model);
-					wearable->SetModelIndex(model_index);
-					for (int j = 0; j < MAX_VISION_MODES; ++j) {
-						wearable->SetModelIndexOverride(j, model_index);
-					}
-					state.m_Player_anim_cosmetics[player] = wearable;
-					player->GetPlayerClass()->SetCustomModel("", true);
-				}
-			}
-			else {
-				player->GetPlayerClass()->SetCustomModel(model, true);
-			}
-			player->UpdateModel();
-		}
-		else {
-			player->GetPlayerClass()->SetCustomModel("", true);
-			player->UpdateModel();
-		}
-		
 	}
 
 	DETOUR_DECL_MEMBER(void, CBasePlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
@@ -4076,14 +4090,12 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_STATIC(void, tf_mvm_popfile, const CCommand& args)
 	{
-		if (vote_tf_mvm_popfile_time + 10 > gpGlobals->curtime && vote_tf_mvm_popfile_time <= gpGlobals->curtime && args.ArgC() > 1) {
 
-			if (filesystem->FileExists("banned_missions.txt", "GAME")) {
-				CUtlVector<CUtlString> vec;
-				CPopulationManager::FindDefaultPopulationFileShortNames(vec);
-				if (vec.Find(args[1]) == -1) {
-					return;
-				}
+		if (vote_tf_mvm_popfile_time + 10 > gpGlobals->curtime && vote_tf_mvm_popfile_time <= gpGlobals->curtime && args.ArgC() > 1) {
+			CUtlVector<CUtlString> vec;
+			CPopulationManager::FindDefaultPopulationFileShortNames(vec);
+			if (vec.Find(args[1]) == -1 && !(FStrEq(args[1], STRING(gpGlobals->mapname)) && vec.Find("normal") != -1)) {
+				return;
 			}
 		}
 		DETOUR_STATIC_CALL(tf_mvm_popfile)(args);
@@ -5271,9 +5283,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		//return DETOUR_MEMBER_CALL(CPopulationManager_IsValidPopfile)(name);
 	}
     
+	RefCount rc_Parse_Popfile;
     void Parse_Popfile(KeyValues* kv, IBaseFileSystem* filesystem)
     {
-    
+		SCOPED_INCREMENT(rc_Parse_Popfile);
 		std::vector<KeyValues *> del_kv;
 		
 		// Parse PointTemplates first
@@ -5656,6 +5669,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_EngineerPushRange.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "FixHuntsmanDamageBonus")) {
 				state.m_FixHuntsmanDamageBonus.Set(subkey->GetBool());
+			} else if (FStrEq(name, "DefaultMiniBossScale")) {
+				state.m_DefaultBossScale.Set(subkey->GetFloat());
+				
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
@@ -5723,8 +5739,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto result = DETOUR_MEMBER_CALL(KeyValues_LoadFromFile)(filesystem, resourceName, pathID, refreshCache);
 		--rc_KeyValues_LoadFromFile;
 		
-		if (result && rc_CPopulationManager_Parse > 0 && rc_KeyValues_LoadFromFile == 0 && rc_CPopulationManager_IsValidPopfile == 0) {
+		if (result && rc_CPopulationManager_Parse > 0 && rc_KeyValues_LoadFromFile == 0 && rc_CPopulationManager_IsValidPopfile == 0 && rc_Parse_Popfile == 0) {
 			auto kv = reinterpret_cast<KeyValues *>(this);
+
             Parse_Popfile(kv, filesystem);
 		}
 		

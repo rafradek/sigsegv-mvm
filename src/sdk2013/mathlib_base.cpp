@@ -52,13 +52,11 @@ void Sys_Error (char *error, ...);
 //-----------------------------------------------------------------------------
 float _sqrtf(float _X)
 {
-	Assert( s_bMathlibInitialized );
 	return sqrtf(_X); 
 }
 
 float _rsqrtf(float x)
 {
-	Assert( s_bMathlibInitialized );
 
 	return 1.f / _sqrtf( x );
 }
@@ -68,7 +66,7 @@ float FASTCALL _VectorNormalize (Vector& vec)
 #ifdef _VPROF_MATHLIB
 	VPROF_BUDGET( "_VectorNormalize", "Mathlib" );
 #endif
-	Assert( s_bMathlibInitialized );
+	//Assert( s_bMathlibInitialized );
 	float radius = sqrtf(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
 
 	// FLT_EPSILON is added to the radius to eliminate the possibility of divide by zero.
@@ -126,7 +124,6 @@ void InitSinCosTable()
 
 qboolean VectorsEqual( const float *v1, const float *v2 )
 {
-	Assert( s_bMathlibInitialized );
 	return ( ( v1[0] == v2[0] ) &&
 		     ( v1[1] == v2[1] ) &&
 			 ( v1[2] == v2[2] ) );
@@ -210,7 +207,6 @@ void MatrixAngles( const matrix3x4_t& matrix, float *angles )
 #ifdef _VPROF_MATHLIB
 	VPROF_BUDGET( "MatrixAngles", "Mathlib" );
 #endif
-	Assert( s_bMathlibInitialized );
 	float forward[3];
 	float left[3];
 	float up[3];
@@ -258,7 +254,6 @@ void MatrixAngles( const matrix3x4_t& matrix, float *angles )
 // transform in1 by the matrix in2
 void VectorTransform (const float *in1, const matrix3x4_t& in2, float *out)
 {
-	Assert( s_bMathlibInitialized );
 	Assert( in1 != out );
 	out[0] = DotProduct(in1, in2[0]) + in2[0][3];
 	out[1] = DotProduct(in1, in2[1]) + in2[1][3];
@@ -269,7 +264,6 @@ void VectorTransform (const float *in1, const matrix3x4_t& in2, float *out)
 // assuming the matrix is orthonormal, transform in1 by the transpose (also the inverse in this case) of in2.
 void VectorITransform (const float *in1, const matrix3x4_t& in2, float *out)
 {
-	Assert( s_bMathlibInitialized );
 	float in1t[3];
 
 	in1t[0] = in1[0] - in2[0][3];
@@ -285,7 +279,6 @@ void VectorITransform (const float *in1, const matrix3x4_t& in2, float *out)
 // assume in2 is a rotation and rotate the input vector
 void VectorRotate( const float *in1, const matrix3x4_t& in2, float *out )
 {
-	Assert( s_bMathlibInitialized );
 	Assert( in1 != out );
 	out[0] = DotProduct( in1, in2[0] );
 	out[1] = DotProduct( in1, in2[1] );
@@ -312,7 +305,6 @@ void VectorRotate( const Vector &in1, const Quaternion &in2, Vector &out )
 // rotate by the inverse of the matrix
 void VectorIRotate( const float *in1, const matrix3x4_t& in2, float *out )
 {
-	Assert( s_bMathlibInitialized );
 	Assert( in1 != out );
 	out[0] = in1[0]*in2[0][0] + in1[1]*in2[1][0] + in1[2]*in2[2][0];
 	out[1] = in1[0]*in2[0][1] + in1[1]*in2[1][1] + in1[2]*in2[2][1];
@@ -356,7 +348,6 @@ void MatrixInitialize( matrix3x4_t &mat, const Vector &vecOrigin, const Vector &
 
 void MatrixCopy( const matrix3x4_t& in, matrix3x4_t& out )
 {
-	Assert( s_bMathlibInitialized );
 	memcpy( out.Base(), in.Base(), sizeof( float ) * 3 * 4 );
 }
 
@@ -379,7 +370,6 @@ bool MatricesAreEqual( const matrix3x4_t &src1, const matrix3x4_t &src2, float f
 // NOTE: This is just the transpose not a general inverse
 void MatrixInvert( const matrix3x4_t& in, matrix3x4_t& out )
 {
-	Assert( s_bMathlibInitialized );
 	if ( &in == &out )
 	{
 		V_swap(out[0][1],out[1][0]);
@@ -457,7 +447,6 @@ void MatrixScaleByZero ( matrix3x4_t &out )
 
 int VectorCompare (const float *v1, const float *v2)
 {
-	Assert( s_bMathlibInitialized );
 	int		i;
 	
 	for (i=0 ; i<3 ; i++)
@@ -469,7 +458,6 @@ int VectorCompare (const float *v1, const float *v2)
 
 void CrossProduct (const float* v1, const float* v2, float* cross)
 {
-	Assert( s_bMathlibInitialized );
 	Assert( v1 != cross );
 	Assert( v2 != cross );
 	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
@@ -497,7 +485,6 @@ void MatrixVectors( const matrix3x4_t &matrix, Vector* pForward, Vector *pRight,
 
 void VectorVectors( const Vector &forward, Vector &right, Vector &up )
 {
-	Assert( s_bMathlibInitialized );
 	Vector tmp;
 
 	if (forward[0] == 0 && forward[1] == 0)
@@ -522,7 +509,6 @@ void VectorVectors( const Vector &forward, Vector &right, Vector &up )
 
 void VectorMatrix( const Vector &forward, matrix3x4_t& matrix)
 {
-	Assert( s_bMathlibInitialized );
 	Vector right, up;
 	VectorVectors(forward, right, up);
 
@@ -534,7 +520,6 @@ void VectorMatrix( const Vector &forward, matrix3x4_t& matrix)
 
 void VectorAngles( const float *forward, float *angles )
 {
-	Assert( s_bMathlibInitialized );
 	float	tmp, yaw, pitch;
 	
 	if (forward[1] == 0 && forward[0] == 0)
@@ -900,7 +885,6 @@ int __cdecl BoxOnPlaneSide (const float *emins, const float *emaxs, const cplane
 
 void AngleVectors (const QAngle &angles, Vector *forward)
 {
-	Assert( s_bMathlibInitialized );
 	Assert( forward );
 	
 	float	sp, sy, cp, cy;
@@ -918,7 +902,6 @@ void AngleVectors (const QAngle &angles, Vector *forward)
 //-----------------------------------------------------------------------------
 void AngleVectors( const QAngle &angles, Vector *forward, Vector *right, Vector *up )
 {
-	Assert( s_bMathlibInitialized );
 	
 	float sr, sp, sy, cr, cp, cy;
 
@@ -964,7 +947,6 @@ void AngleVectors( const QAngle &angles, Vector *forward, Vector *right, Vector 
 
 void AngleVectorsTranspose (const QAngle &angles, Vector *forward, Vector *right, Vector *up)
 {
-	Assert( s_bMathlibInitialized );
 	float sr, sp, sy, cr, cp, cy;
 	
 	SinCos( DEG2RAD( angles[YAW] ), &sy, &cy );
@@ -999,7 +981,6 @@ void AngleVectorsTranspose (const QAngle &angles, Vector *forward, Vector *right
 
 void VectorAngles( const Vector& forward, QAngle &angles )
 {
-	Assert( s_bMathlibInitialized );
 	float	tmp, yaw, pitch;
 	
 	if (forward[1] == 0 && forward[0] == 0)
@@ -1033,7 +1014,6 @@ void VectorAngles( const Vector& forward, QAngle &angles )
 
 void VectorAngles( const Vector &forward, const Vector &pseudoup, QAngle &angles )
 {
-	Assert( s_bMathlibInitialized );
 
 	Vector left;
 

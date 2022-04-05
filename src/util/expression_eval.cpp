@@ -790,6 +790,9 @@ void Evaluation::DoOp()
             result.SetFloat(left.Float() / right.Float());
         }
         else if (left.FieldType() == FIELD_INTEGER) {
+            if (right.Int() == 0) {
+                result.SetFloat(NAN);
+            }
             result.SetInt(left.Int() / right.Int());
         }
     }

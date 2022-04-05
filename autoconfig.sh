@@ -5,7 +5,7 @@ PATHS="--hl2sdk-root=/home/rafradek/dev/alliedmodders --mms-path=/home/rafradek/
 
 mkdir -p build
 cd build
- 	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-debug --exclude-mods-debug --enable-optimize --exclude-mods-visualize
+ 	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-debug --exclude-mods-debug --enable-optimize --exclude-mods-visualize --exclude-vgui
 cd ..
 
 mkdir -p build/release

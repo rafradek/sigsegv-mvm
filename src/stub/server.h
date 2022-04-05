@@ -7,10 +7,14 @@
 class CBaseServer : public IServer
 {
 public:
-    IClient *CreateFakeClient(const char *name)                      { return ft_CreateFakeClient(this, name); }
+    IClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
+	
+	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
     
 private:
     static MemberFuncThunk<CBaseServer *, IClient *, const char *>              ft_CreateFakeClient;
+	
+	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
 };
 
 class CHLTVServer : public IGameEventListener2, public CBaseServer

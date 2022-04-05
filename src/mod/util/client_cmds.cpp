@@ -16,6 +16,8 @@
 #include "util/iterate.h"
 #include "util/override.h"
 #include "util/expression_eval.h"
+#include <sys/resource.h>
+#include <fmt/core.h>
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -1602,8 +1604,8 @@ namespace Mod::Util::Client_Cmds
 
 	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
     {
+		std::string str;
 		for (auto &func : Evaluation::GetFunctionList()) {
-			std::string str;
 			str+=func.name;
 			str+='(';
 			bool first = true;
@@ -1623,7 +1625,27 @@ namespace Mod::Util::Client_Cmds
 				str+=' ';
 				str+=param;
 			}
-			ClientMsg(player, "%s )\n", str.c_str());
+			str+=" )\n";
+		}
+		ClientMsg(player, "%s", str.c_str());
+	}
+
+	int cpu_show_player[34] {};
+	float cpu_usage = 0;
+	void CC_Cpu_Usage(CTFPlayer* player, const CCommand& args)
+    {
+		if (args.ArgC() < 2) {
+			ClientMsg(player, "[sig_expresion] Usage: sig_cpu_usage [never|default|always]\n");
+			return;
+		}
+		if (FStrEq(args[1], "never")) {
+			cpu_show_player[ENTINDEX(player)] = 2;
+		}
+		else if (FStrEq(args[1], "default")) {
+			cpu_show_player[ENTINDEX(player)] = 0;
+		}
+		else if (FStrEq(args[1], "always")) {
+			cpu_show_player[ENTINDEX(player)] = 1;
 		}
 	}
 
@@ -1660,6 +1682,7 @@ namespace Mod::Util::Client_Cmds
         { "sig_nocheat_list",     CC_CvarNoCheatList  },
         { "sig_expression",           CC_Expression     },
         { "sig_expression_functions", CC_Expression_Func},
+        { "sig_cpu_usage",        CC_Cpu_Usage        },
 		
 	};
 
@@ -1719,6 +1742,62 @@ namespace Mod::Util::Client_Cmds
 
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			static int lastCheck = 0;
+			static struct rusage s_lastUsage;
+			struct rusage currentUsage;
+			if (gpGlobals->curtime < lastCheck || (int)gpGlobals->curtime > lastCheck) {
+				lastCheck = gpGlobals->curtime;
+				
+				if ( getrusage( RUSAGE_SELF, &currentUsage ) == 0 )
+				{
+					double flTimeDiff = (currentUsage.ru_utime.tv_sec + (currentUsage.ru_utime.tv_usec / 1000000.0)) - (s_lastUsage.ru_utime.tv_sec + (s_lastUsage.ru_utime.tv_usec / 1000000.0)) + 
+						(currentUsage.ru_stime.tv_sec + (currentUsage.ru_stime.tv_usec / 1000000.0)) - (s_lastUsage.ru_stime.tv_sec + (s_lastUsage.ru_stime.tv_usec / 1000000.0));
+					cpu_usage = flTimeDiff;
+
+					s_lastUsage = currentUsage;
+
+					extern ConVar cvar_cpushowlevel;
+					bool highCpu = cvar_cpushowlevel.GetInt() < (int) (cpu_usage * 100);
+					bool highEdict = gEntList->m_iNumEdicts > 1500;
+					bool highEnt = (gEntList->m_iNumEnts - gEntList->m_iNumEdicts) > 1500;
+
+					hudtextparms_t textparam;
+					textparam.channel = 5;
+					textparam.x = 1.0f;
+					textparam.y = 0.0f;
+					textparam.effect = 0;
+					textparam.r1 = 255;
+					textparam.r2 = 255;
+					textparam.b1 = highCpu ? 160 : 255;
+					textparam.b2 = highCpu ? 160 : 255;
+					textparam.g1 = highCpu ? 160 : 255;
+					textparam.g2 = highCpu ? 160 : 255;
+					textparam.a1 = 0;
+					textparam.a2 = 0; 
+					textparam.fadeinTime = 0.f;
+					textparam.fadeoutTime = 0.f;
+					textparam.holdTime = 1.1f;
+					textparam.fxTime = 1.0f;
+					
+					ForEachTFPlayer([&](CTFPlayer *player) {
+						if (!player->IsBot() && cpu_show_player[ENTINDEX(player)] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[ENTINDEX(player)] == 1)) {
+							std::string str;
+							if (highCpu || cpu_show_player[ENTINDEX(player)] == 1) {
+								str += fmt::format("CPU Usage {}%\n", (int)(cpu_usage * 100));
+							}
+							if (highEdict || cpu_show_player[ENTINDEX(player)] == 1) {
+								str += fmt::format("Entities: {}/2048\n", gEntList->m_iNumEdicts);
+							}
+							if (highEnt || cpu_show_player[ENTINDEX(player)] == 1) {
+								str += fmt::format("Logic Entities: {}/2048\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
+							}
+							UTIL_HudMessage(player, textparam, str.c_str());
+						}
+					});
+					
+				}
+			}
+
 			if (!modelplayertargets.empty()) {
 				for (CBasePlayer *target : modelplayertargets) {
 					int amount = 0;
@@ -1743,6 +1822,8 @@ namespace Mod::Util::Client_Cmds
 					}
 				}
 			}
+
+
 		}
 	};
 	CMod s_Mod;
@@ -1759,4 +1840,8 @@ namespace Mod::Util::Client_Cmds
 	/* default: admin-only mode ENABLED */
 	ConVar cvar_adminonly("sig_util_client_cmds_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Utility: restrict this mod's functionality to SM admins only");
+		
+	/* default: admin-only mode ENABLED */
+	ConVar cvar_cpushowlevel("sig_util_client_cmds_show_cpu_min_level", "99", /*FCVAR_NOTIFY*/FCVAR_NONE,
+		"Minimum cpu usage percentage to start displaying to admins by default");
 }

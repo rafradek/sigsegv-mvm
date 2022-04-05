@@ -444,6 +444,8 @@ public:
 	DECL_SENDPROP   (float,      m_flCurrentTauntMoveSpeed);
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
+	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
+	DECL_RELATIVE   (int,       m_nCanPurchaseUpgradesCount);
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
 private:

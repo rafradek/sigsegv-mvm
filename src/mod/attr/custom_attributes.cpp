@@ -17,6 +17,7 @@
 #include "mod/pop/common.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "util/iterate.h"
+#include "util/clientmsg.h"
 #include <gamemovement.h>
 #include <boost/tokenizer.hpp>
 
@@ -55,6 +56,7 @@ namespace Mod::Attr::Custom_Attributes
 		IGNORE_PLAYER_CLIP,
 		ALLOW_BUNNY_HOP,
 		ALLOW_FRIENDLY_FIRE,
+		MULT_DUCK_SPEED,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -85,7 +87,8 @@ namespace Mod::Attr::Custom_Attributes
 		"mult_step_height",
 		"ignore_player_clip",
 		"allow_bunny_hop",
-		"allow_friendly_fire"
+		"allow_friendly_fire",
+		"mult_duck_speed"
 	};
 
 	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
@@ -2550,6 +2553,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	bool bison_projectile_touch = false;
 	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyRing_ProjectileTouch, CBaseEntity *pOther)
 	{
 		auto arrow = reinterpret_cast<CBaseProjectile *>(this);
@@ -2560,7 +2564,9 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		int health_pre = pOther->GetHealth();
+		bison_projectile_touch = pOther->GetTeamNumber() == arrow->GetTeamNumber() && gpGlobals->tickcount % 2 == 0;
 		DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);	
+		bison_projectile_touch = false;
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
 			int &counter = entity_penetration_counter[arrow];
@@ -2573,6 +2579,15 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFProjectile_EnergyRing_ShouldPenetrate)
+	{
+		if (bison_projectile_touch) {
+			bison_projectile_touch = false;
+			return false;
+		}
+		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
+	}
+	
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
 	RefCount rc_CTFPlayerShared_RemoveCond;
@@ -3659,6 +3674,8 @@ namespace Mod::Attr::Custom_Attributes
 	bool attribute_manager_no_clear_cache;
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
 	{	
+		if (pAttrDef == nullptr) return;
+
 		auto list = reinterpret_cast<CAttributeList *>(this);
 		auto &attrs = list->Attributes();
 		int countpre = attrs.Count();
@@ -4086,6 +4103,40 @@ namespace Mod::Attr::Custom_Attributes
             }
         }
         return ret;
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFGameMovement_ToggleParachute)
+    {
+		CTFPlayer *player = ToTFPlayer(reinterpret_cast<CGameMovement *>(this)->player);
+		//if ((player->GetFlags() & FL_ONGROUND) || (reinterpret_cast<CGameMovement *>(this)->GetMoveData()->m_nOldButtons & IN_JUMP)) return;
+		//ClientMsg(player, "redepl\n");
+        DETOUR_MEMBER_CALL(CTFGameMovement_ToggleParachute)();
+		if (player->m_Shared->InCond(TF_COND_PARACHUTE_DEPLOYED)) {
+			int parachuteRedeploy = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, parachuteRedeploy, parachute_redeploy);
+			if (parachuteRedeploy != 0) {
+				player->m_Shared->RemoveCond(TF_COND_PARACHUTE_DEPLOYED);
+			}
+		}
+    }
+	
+	DETOUR_DECL_MEMBER(void, CTFGameMovement_HandleDuckingSpeedCrop)
+    {
+		auto movement = reinterpret_cast<CGameMovement *>(this);
+		CTFPlayer *player = ToTFPlayer(movement->player);
+
+		float preSpeedFw = movement->GetMoveData()->m_flForwardMove;
+		float preSpeedSide = movement->GetMoveData()->m_flSideMove;
+		float preSpeedUp = movement->GetMoveData()->m_flUpMove;
+		
+		
+        DETOUR_MEMBER_CALL(CTFGameMovement_HandleDuckingSpeedCrop)();
+		if (preSpeedFw != movement->GetMoveData()->m_flForwardMove || preSpeedSide != movement->GetMoveData()->m_flSideMove || preSpeedUp != movement->GetMoveData()->m_flUpMove) {
+			float mult = GetFastAttributeFloat(player, 1, MULT_DUCK_SPEED);
+			movement->GetMoveData()->m_flForwardMove *= mult;
+			movement->GetMoveData()->m_flSideMove *= mult;
+			movement->GetMoveData()->m_flUpMove *= mult;
+		}
     }
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
@@ -4552,6 +4603,34 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnMiniBossChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			player->SetMiniBoss(new_value.m_Float != FLT_MIN && new_value.m_Float != 0.0f);
+
+			float playerScale = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, playerScale, model_scale);
+			if (playerScale == 1.0f) {
+				if (new_value.m_Float != 0.0f && new_value.m_Float != FLT_MIN) {
+					static ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
+					player->SetModelScale(miniboss_scale.GetFloat());
+				}
+				else {
+					player->SetModelScale(1.0f);
+				}
+			}
+		}
+	}
+
+	void OnScaleChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			player->SetModelScale(new_value.m_Float == FLT_MIN ? 1.0f : new_value.m_Float);
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -4644,6 +4723,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_BCanBurnEntityThisFrame,        "CTFFlameManager::BCanBurnEntityThisFrame");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_ProjectileTouch, "CTFProjectile_EnergyRing::ProjectileTouch");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_ShouldPenetrate, "CTFProjectile_EnergyRing::ShouldPenetrate");
+			
 
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_RemoveCond, "CTFPlayerShared::RemoveCond", HIGHEST);
@@ -4719,6 +4800,10 @@ namespace Mod::Attr::Custom_Attributes
 
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForceRespawn, "CTFPlayer::ForceRespawn");	
 			
+            MOD_ADD_DETOUR_MEMBER(CTFGameMovement_ToggleParachute, "CTFGameMovement::ToggleParachute");	
+            MOD_ADD_DETOUR_MEMBER(CTFGameMovement_HandleDuckingSpeedCrop, "CTFGameMovement::HandleDuckingSpeedCrop");	
+			
+			
 		//  Allow fire rate bonus with reduced health on melee weapons
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyFireDelay, "CTFWeaponBase::ApplyFireDelay");
 
@@ -4788,6 +4873,8 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("attachment_offset", OnItemColorChange);
 				RegisterCallback("attachment_angles", OnItemColorChange);
 				RegisterCallback("custom_item_model", OnCustomModelChange);
+				RegisterCallback("is_miniboss", OnMiniBossChange);
+				RegisterCallback("model_scale", OnScaleChange);
 			}
 		}
 
