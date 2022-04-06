@@ -1369,7 +1369,7 @@ namespace Mod::Etc::Mapentity_Additions
                     bool found = false;
 
                     variant_t variable;
-                    if (itemSlot != nullptr) {
+                    if (itemSlot != nullptr && attrName != nullptr) {
                         int slot = 0;
                         CEconEntity *item = nullptr;
                         if (StringToIntStrict(itemSlot, slot)) {
@@ -1389,7 +1389,7 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                         
                         if (item != nullptr) {
-                            CEconItemAttribute * attr = player->GetAttributeList()->GetAttributeByName(attrName);
+                            CEconItemAttribute * attr = item->GetItem()->GetAttributeList().GetAttributeByName(attrName);
                             if (attr != nullptr) {
                                 char buf[256];
                                 attr->GetStaticData()->ConvertValueToString(*attr->GetValuePtr(), buf, sizeof(buf));
@@ -2514,12 +2514,12 @@ namespace Mod::Etc::Mapentity_Additions
                         realname += atSplit + 1;
                         filtername.resize(atSplit);
 
-                        CBaseFilter *filter = rtti_cast<CBaseFilter *>(servertools->FindEntityByName(nullptr, realname));
+                        CBaseFilter *filter = rtti_cast<CBaseFilter *>(servertools->FindEntityByName(nullptr, filtername.c_str()));
                         if (filter != nullptr) {
                             while (true) {
                                 pStartEntity = functor(pStartEntity, realname);
                                 if (pStartEntity == nullptr) return nullptr;
-
+                                Msg("Passes filter %d\n", filter->PassesFilter(pStartEntity, pStartEntity));
                                 if (filter->PassesFilter(pStartEntity, pStartEntity)) return pStartEntity;
                             }
                         }
@@ -2586,7 +2586,7 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }
 
-        return functor(pStartEntity, szName);
+        return functor(pStartEntity, szName+1);
     }
 
     string_t last_find_entity_name_str = NULL_STRING;

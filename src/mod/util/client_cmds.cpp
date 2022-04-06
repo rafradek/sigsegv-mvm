@@ -1600,6 +1600,7 @@ namespace Mod::Util::Client_Cmds
 		variant_t value2;
 		Evaluation expr(value);
 		expr.Evaluate(args[1], player, player, player, value2);
+		ClientMsg(player, "Result: %s\n", value.String());
     }
 
 	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
