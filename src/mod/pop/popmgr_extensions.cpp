@@ -646,7 +646,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AllowMultipleSappers            ("sig_mvm_sapper_allow_multiple_active"),
 			m_EngineerPushRange               ("sig_ai_engiebot_pushrange"),
 			m_FixHuntsmanDamageBonus          ("sig_etc_huntsman_damage_fix"),
-			m_DefaultBossScale                ("tf_mvm_miniboss_scale")
+			m_DefaultBossScale                ("tf_mvm_miniboss_scale"),
+			m_FastWholeMapTriggers            ("sig_pop_pointtemplate_fast_whole_map_trigger"),
+			m_BluHumanSpawnNoShoot            ("sig_mvm_bluhuman_spawn_noshoot"),
+			m_BluHumanSpawnProtection         ("sig_mvm_bluhuman_spawn_protection")
 			
 		{
 			this->Reset();
@@ -789,6 +792,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_EngineerPushRange.Reset();
 			this->m_FixHuntsmanDamageBonus.Reset();
 			this->m_DefaultBossScale.Reset();
+			this->m_FastWholeMapTriggers.Reset();
+			this->m_BluHumanSpawnNoShoot.Reset();
+			this->m_BluHumanSpawnProtection.Reset();
 
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1003,6 +1009,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_EngineerPushRange;
 		CPopOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
 		CPopOverride_ConVar<bool> m_DefaultBossScale;
+		CPopOverride_ConVar<bool> m_FastWholeMapTriggers;
+		CPopOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
+		CPopOverride_ConVar<bool> m_BluHumanSpawnProtection;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -5671,7 +5680,12 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_FixHuntsmanDamageBonus.Set(subkey->GetBool());
 			} else if (FStrEq(name, "DefaultMiniBossScale")) {
 				state.m_DefaultBossScale.Set(subkey->GetFloat());
-				
+			} else if (FStrEq(name, "FastWholeMapTriggers")) {
+				state.m_FastWholeMapTriggers.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanSpawnNoShoot")) {
+				state.m_BluHumanSpawnNoShoot.Set(subkey->GetBool());
+			} else if (FStrEq(name, "BluHumanSpawnProtection")) {
+				state.m_BluHumanSpawnProtection.Set(subkey->GetBool());
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));

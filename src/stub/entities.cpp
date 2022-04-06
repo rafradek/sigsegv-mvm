@@ -160,8 +160,6 @@ GlobalThunk<CUtlVector<ICaptureFlagAutoList *>> ICaptureFlagAutoList::m_ICapture
 
 IMPL_DATAMAP(bool, CBaseTrigger, m_bDisabled);
 
-MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_StartTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::StartTouch");
-MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> CBaseTrigger::vt_EndTouch(TypeName<CBaseTrigger>(),"CBaseTrigger::EndTouch");
 MemberVFuncThunk<CBaseTrigger *, bool, CBaseEntity *> CBaseTrigger::vt_PassesTriggerFilters(TypeName<CBaseTrigger>(),"CBaseTrigger::PassesTriggerFilters");
 
 

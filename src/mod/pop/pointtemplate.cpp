@@ -2,6 +2,7 @@
 #include "stub/entities.h"
 #include "stub/gamerules.h"
 #include "stub/tfplayer.h"
+#include "stub/extraentitydata.h"
 #include "mod/pop/pointtemplate.h"
 #include "util/misc.h"
 #include "util/iterate.h"
@@ -13,6 +14,18 @@ int Template_Increment;
 
 #define TEMPLATE_BRUSH_MODEL "models/weapons/w_models/w_rocket.mdl"
 
+ConVar fast_whole_map_trigger("sig_pop_pointtemplate_fast_whole_map_trigger", "1", FCVAR_NOTIFY,
+		"Mod: Make whole map triggers faster");
+
+class WholeMapTriggerModule : public EntityModule, public AutoList<WholeMapTriggerModule>
+{
+public:
+	WholeMapTriggerModule() {}
+	WholeMapTriggerModule(CBaseEntity *entity) : entity(entity) {}
+	
+	CBaseEntity *entity = nullptr;
+	std::unordered_map<std::string, std::pair<variant_t, variant_t>> props;
+};
 
 std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> g_entityToTemplate;
 
@@ -44,6 +57,7 @@ void SpawnEntity(CBaseEntity *entity) {
 	//lifetime.SetValue(30.0f);
 }
 
+
 struct BrushEntityBoundingBox 
 {
 	BrushEntityBoundingBox(CBaseEntity *entity, std::string &min, std::string &max) : entity(entity), min(min), max(max) {}
@@ -52,6 +66,12 @@ struct BrushEntityBoundingBox
 	std::string &min;
 	std::string &max;
 };
+
+	
+bool TriggerCollideable(CBaseEntity *entity)
+{
+	return entity->GetSolid() != SOLID_NONE && !entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && !entity->CollisionProp()->IsSolidFlagSet(FSOLID_NOT_SOLID);
+}
 
 std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
 
@@ -207,6 +227,17 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		UTIL_StringToVector(max.Base(), box.max.c_str());
 		//sscanf(box.min.c_str(), "%f %f %f", &min.x, &min.y, &min.z);
 		//sscanf(box.max.c_str(), "%f %f %f", &max.x, &max.y, &max.z);
+		if (fast_whole_map_trigger.GetBool() && min.DistTo(max) > 10000 && box.entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+			min = vec3_origin;
+			max = vec3_origin;
+			box.entity->SetAbsOrigin(Vector(-30000,-30000,-30000));
+			box.entity->GetOrCreateEntityModule<WholeMapTriggerModule>("wholemaptrigger");
+			ForEachEntity([&](CBaseEntity *entity) {
+				if (TriggerCollideable(entity)) {
+					box.entity->StartTouch(entity);
+				}
+			});
+		}
 		box.entity->CollisionProp()->SetCollisionBounds(min, max);
 		box.entity->AddEffects(32); //DONT RENDER
 		if (box.entity->GetMoveParent() != nullptr) {
@@ -602,7 +633,7 @@ namespace Mod::Pop::PointTemplate
 
 		DETOUR_MEMBER_CALL(CUpgrades_D0)();
 	}
-	
+
 	
 	/* Pointtemplate keep child entities after parent removal*/
 	DETOUR_DECL_MEMBER(void, CBaseEntity_UpdateOnRemove)
@@ -637,6 +668,14 @@ namespace Mod::Pop::PointTemplate
 						entityinst->Remove();
 				}
 				g_entityToTemplate.erase(it);
+			}
+		}
+
+		if (!WholeMapTriggerModule::List().empty() && TriggerCollideable(entity)) {
+			for (auto mod : WholeMapTriggerModule::List()) {
+				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+					mod->entity->EndTouch(entity);
+				}
 			}
 		}
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
@@ -729,6 +768,82 @@ namespace Mod::Pop::PointTemplate
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolid, SolidType_t solid)
+	{
+		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
+		if (me == nullptr || WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolid)(solid); return; }
+
+		auto solidpre = TriggerCollideable(me);
+		DETOUR_MEMBER_CALL(CCollisionProperty_SetSolid)(solid);
+		auto solidnow = TriggerCollideable(me);
+		if (!solidpre && solidnow) {
+			for (auto mod : WholeMapTriggerModule::List()) {
+				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+				//mod->entity->GetDamageType();
+					mod->entity->StartTouch(me);
+				}
+			}
+		}
+		else if (solidpre && !solidnow) {
+			for (auto mod : WholeMapTriggerModule::List()) {
+				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+					mod->entity->EndTouch(me);
+				}
+			}
+		}
+	}
+
+	RefCount rc_CCollisionProperty_SetSolidFlags;
+	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolidFlags, int flags)
+	{
+		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
+		if (me == nullptr || WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
+
+		SCOPED_INCREMENT(rc_CCollisionProperty_SetSolidFlags);
+		auto solidpre = TriggerCollideable(me);
+		auto triggerpre = me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER);
+		DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags);
+		//Msg("entity %s %d %d %d\n", me->GetClassname(), me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER), me->CollisionProp()->IsSolidFlagSet(FSOLID_NOT_SOLID), TriggerCollideable(me));
+		auto solidnow = TriggerCollideable(me);
+		if (!solidpre && solidnow) {
+			int restore = -1; 
+			if (me->IsPlayer() && !me->IsAlive()) {
+				restore = me->m_lifeState;
+				me->m_lifeState = LIFE_ALIVE;
+			}
+			for (auto mod : WholeMapTriggerModule::List()) {
+				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+					mod->entity->StartTouch(me);
+				}
+			}
+			if (restore != -1) {
+				me->m_lifeState = restore;
+			}
+		}
+		else if (solidpre && !solidnow) {
+			for (auto mod : WholeMapTriggerModule::List()) {
+				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+					mod->entity->EndTouch(me);
+				}
+			}
+		}
+
+		if (triggerpre && !me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger") != nullptr) {
+			ForEachEntity([&](CBaseEntity *entity) {
+				if (TriggerCollideable(entity)) {
+					me->EndTouch(entity);
+				}
+			});
+		}
+		else if (!triggerpre && me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger") != nullptr) {
+			ForEachEntity([&](CBaseEntity *entity) {
+				if (TriggerCollideable(entity)) {
+					me->StartTouch(entity);
+				}
+			});
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -745,6 +860,10 @@ namespace Mod::Pop::PointTemplate
 
 			// Set FSOLID_ROOT_PARENT_ALIGNED to parented brush entities spawned by point templates
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
+
+			// Optimize whole map triggers, auto touch logic
+			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolid, "CCollisionProperty::SetSolid");
+			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolidFlags, "CCollisionProperty::SetSolidFlags");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -752,6 +871,15 @@ namespace Mod::Pop::PointTemplate
 		virtual void FrameUpdatePostEntityThink() override
 		{
 			Update_Point_Templates();
+			if (fast_whole_map_trigger.GetBool() && !WholeMapTriggerModule::List().empty()) {
+				ForEachEntity([&](CBaseEntity *entity){
+					if (TriggerCollideable(entity)) {
+						for (auto mod : WholeMapTriggerModule::List()) {
+							mod->entity->Touch(entity);
+						}
+					}
+				});
+			}
 		}
 	};
 	CMod s_Mod;

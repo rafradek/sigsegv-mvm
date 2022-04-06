@@ -11,6 +11,8 @@ class EntityModule
 public:
     EntityModule() {}
     EntityModule(CBaseEntity *entity) {}
+
+    virtual ~EntityModule() {}
 };
 
 class CustomVariable

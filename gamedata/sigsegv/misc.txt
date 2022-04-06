@@ -5418,6 +5418,16 @@
 					type "sym"
 					sym  "_ZNK24CTFProjectile_EnergyRing15ShouldPenetrateEv"
 				}
+				"CBaseEntity::StartTouch"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity10StartTouchEPS_"
+				}
+				"CBaseEntity::EndTouch"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity8EndTouchEPS_"
+				}
 				
 			}
 			"addrs_group"

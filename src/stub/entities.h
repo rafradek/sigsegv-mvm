@@ -235,15 +235,11 @@ class CBaseToggle : public CBaseEntity {};
 class CBaseTrigger : public CBaseToggle
 {
 public:
-	void StartTouch(CBaseEntity *entity) { return vt_StartTouch(this, entity); }
-	void EndTouch(CBaseEntity *entity) { return vt_EndTouch(this, entity); }
 	bool PassesTriggerFilters(CBaseEntity *entity) { return vt_PassesTriggerFilters(this, entity); }
 
 	DECL_DATAMAP(bool, m_bDisabled);
 
 private:
-	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_StartTouch;
-	static MemberVFuncThunk<CBaseTrigger *, void, CBaseEntity *> vt_EndTouch;
 	static MemberVFuncThunk<CBaseTrigger *, bool, CBaseEntity *> vt_PassesTriggerFilters;
 };
 

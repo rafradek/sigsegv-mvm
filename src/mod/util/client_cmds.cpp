@@ -1769,10 +1769,10 @@ namespace Mod::Util::Client_Cmds
 					textparam.effect = 0;
 					textparam.r1 = 255;
 					textparam.r2 = 255;
-					textparam.b1 = highCpu ? 160 : 255;
-					textparam.b2 = highCpu ? 160 : 255;
-					textparam.g1 = highCpu ? 160 : 255;
-					textparam.g2 = highCpu ? 160 : 255;
+					textparam.b1 = highCpu ? 255 : 255;
+					textparam.b2 = highCpu ? 255 : 255;
+					textparam.g1 = highCpu ? 255 : 255;
+					textparam.g2 = highCpu ? 255 : 255;
 					textparam.a1 = 0;
 					textparam.a2 = 0; 
 					textparam.fadeinTime = 0.f;
@@ -1787,7 +1787,7 @@ namespace Mod::Util::Client_Cmds
 								str += fmt::format("CPU Usage {}%\n", (int)(cpu_usage * 100));
 							}
 							if (highEdict || cpu_show_player[ENTINDEX(player)] == 1) {
-								str += fmt::format("Entities: {}/2048\n", gEntList->m_iNumEdicts);
+								str += fmt::format("Networked Entities: {}/2048\n", gEntList->m_iNumEdicts);
 							}
 							if (highEnt || cpu_show_player[ENTINDEX(player)] == 1) {
 								str += fmt::format("Logic Entities: {}/2048\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);

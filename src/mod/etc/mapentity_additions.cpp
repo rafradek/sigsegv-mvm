@@ -3079,11 +3079,13 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(void, CTriggerCamera_D0)
 	{
         OnCameraRemoved(reinterpret_cast<CTriggerCamera *>(this));
+        DETOUR_MEMBER_CALL(CTriggerCamera_D0)();
     }
 
     DETOUR_DECL_MEMBER(void, CTriggerCamera_D2)
 	{
         OnCameraRemoved(reinterpret_cast<CTriggerCamera *>(this));
+        DETOUR_MEMBER_CALL(CTriggerCamera_D2)();
     }
 
     DETOUR_DECL_MEMBER(void, CFuncRotating_InputStop, inputdata_t *inputdata)

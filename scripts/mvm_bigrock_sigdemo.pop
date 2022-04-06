@@ -115,7 +115,7 @@ WaveSchedule
 	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
 	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
 	EngineerPushRange 40 [$SIGSEGV] // Any value other than 0 changes Engineer bot push range when building (defualt: 0)
-	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (defualt: 0)
+	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
 	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
 
 	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
@@ -127,6 +127,9 @@ WaveSchedule
 	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
 	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
 	DefaultMiniBossScale 1.6 [$SIGSEGV] // Default Giant Bot scale (default: 1.75) 
+	FastWholeMapTriggers 1 [$SIGSEGV] // Optimize big triggers (larger than 5000 units in all directions) spawned by point templates, by automatically assuming all entities hit the trigger. Might cause issues, but in that case you should use an alternative method anyway (default: 1)
+	BluHumanSpawnNoShoot 1 [$SIGSEGV] // BLU players cannot shoot while in spawn (default: 1)
+	BluHumanSpawnProtection 1 [$SIGSEGV] // BLU players are invincible in spawn (default: 1)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -2955,5 +2958,5 @@ WaveSchedule
 // Allow infinite parachute redeploying
 // "parachute redeploy" 1
 
-// Ducking speed multiplier. 3 is for normal speed. Cannot be faster than walking speed
+// Ducking speed multiplier. 3 is for walking speed. Cannot be faster than walking speed
 // "mult duck speed" 3

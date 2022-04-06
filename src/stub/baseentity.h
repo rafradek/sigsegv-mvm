@@ -337,6 +337,8 @@ public:
 	CBaseAnimating *GetBaseAnimating()                                                                                      { return vt_GetBaseAnimating              (this); }
 	int TakeHealth(float health, int damageType)                                                                            { return vt_TakeHealth                    (this, health, damageType); }
 	int GetDamageType()                                                                                                     { return vt_GetDamageType                 (this); }
+	void StartTouch(CBaseEntity *entity)                                                                                    { return vt_StartTouch                    (this, entity); }
+	void EndTouch(CBaseEntity *entity)                                                                                      { return vt_EndTouch                      (this, entity); }
 
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
@@ -489,6 +491,8 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, CBaseAnimating *>                                                 vt_GetBaseAnimating;
 	static MemberVFuncThunk<      CBaseEntity *, int, float, int>                                                  vt_TakeHealth;
 	static MemberVFuncThunk<      CBaseEntity *, int >                                                             vt_GetDamageType;
+	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_StartTouch;
+	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_EndTouch;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;

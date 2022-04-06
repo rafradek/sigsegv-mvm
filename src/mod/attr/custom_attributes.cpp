@@ -3739,10 +3739,13 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CAttributeList_RemoveAttribute, const CEconItemAttributeDefinition *pAttrDef)
 	{
+		if (pAttrDef == nullptr) return;
+		
 		auto list = reinterpret_cast<CAttributeList *>(this);
 		
 		attribute_data_union_t oldValue;
 		oldValue.m_Float = FLT_MIN;
+
 		auto attr = list->GetAttributeByID(pAttrDef->GetIndex());
 		if (attr != nullptr) {
 			oldValue = attr->GetValue();

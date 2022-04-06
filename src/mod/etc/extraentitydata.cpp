@@ -17,11 +17,12 @@ namespace Mod::Etc::ExtraEntityData
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_D2)
 	{
-        DETOUR_MEMBER_CALL(CBaseEntity_D2)();
+        
         auto entity = reinterpret_cast<CBaseEntity *>(this);
         if (entity->m_extraEntityData != nullptr) {
             delete entity->m_extraEntityData;
         }
+        DETOUR_MEMBER_CALL(CBaseEntity_D2)();
     }
 
     class CMod : public IMod
