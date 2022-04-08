@@ -1766,6 +1766,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
 	{
 
+
 		// Delete refundable custom weapons from player inventory
 		if (remove && !state.m_BoughtLoadoutItems.empty()) {
 			auto playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
@@ -1802,6 +1803,17 @@ namespace Mod::Pop::PopMgr_Extensions
 				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
 			});
 		}
+
+		int oldwave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
+		TFObjectiveResource()->m_nMannVsMachineWaveCount = 2;
+		auto kv = new KeyValues("MvM_UpgradesBegin");
+		serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+		kv->deleteThis();
+		kv = new KeyValues("MvM_UpgradesDone");
+		serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+		kv->deleteThis();
+		TFObjectiveResource()->m_nMannVsMachineWaveCount = oldwave;
+		
 		if (remove) {
 			CSteamID steamid;
 			player->GetSteamID(&steamid);

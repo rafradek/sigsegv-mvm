@@ -730,8 +730,8 @@ namespace Mod::MvM::Extended_Upgrades
                     LOADOUT_POSITION_ACTION,
                 }) {
                     CEconEntity *item_require = GetEconEntityAtLoadoutSlot(player, (int)slot);
-                    if (item_require != nullptr) {
-                        found = criteria->Matches(item_require, item->GetItem(), player);
+                    if (item_require != nullptr && item_require->GetItem() != nullptr) {
+                        found = criteria->Matches(item_require, item_require->GetItem(), player);
                     }
                     if (found)
                         break;
@@ -1134,6 +1134,36 @@ namespace Mod::MvM::Extended_Upgrades
     DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
 	{
         SCOPED_INCREMENT_IF(rc_CUpgrades_GrantOrRemoveAllUpgrades, remove);
+        bool respec = remove && refund;
+        if (respec) {
+            for (int upgrade = 0; upgrade < CMannVsMachineUpgradeManager::Upgrades().Count(); upgrade++) {
+                auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
+                auto &upgradeInfoCutom = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
+                auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
+                if (attribDef != nullptr) {
+                    loadout_positions_t nLastLoadoutPos = LOADOUT_POSITION_MISC2;
+                    for (int iItemSlot = LOADOUT_POSITION_PRIMARY; iItemSlot < nLastLoadoutPos; iItemSlot++) {
+                        if (iItemSlot == LOADOUT_POSITION_ACTION) continue;
+
+                        auto item = GetEconEntityAtLoadoutSlot(player, iItemSlot);
+                        if (item != nullptr && item->GetItem() != nullptr) {
+                            if (upgrade >= extended_upgrades_start_index && extended_upgrades_start_index != -1 && upgrade < extended_upgrades_start_index + (int)upgrades.size()) {
+                                bool overCap = false;
+                                int currentUpgrade = 0;
+                                GetUpgradeStepData(player, iItemSlot, upgrade, currentUpgrade, overCap);
+                                auto upgradeInfoExtra = upgrades[upgrade - extended_upgrades_start_index];
+                                for (int j = currentUpgrade-1; j >= 0; j--) {
+                                    variant_t variant;
+                                    variant.SetInt(j);
+                                    FireOutputs(upgradeInfoExtra->on_downgrade_outputs, variant, player, item);
+                                }
+                            }
+                            item->GetItem()->GetAttributeList().RemoveAttribute(attribDef);
+                        }
+                    }
+                }
+            }
+        }
         DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
     }
 
@@ -1217,6 +1247,8 @@ namespace Mod::MvM::Extended_Upgrades
             //MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
+
+            // Fix message overload when refunding
             MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades, "CUpgrades::GrantOrRemoveAllUpgrades");
             
 
@@ -1238,6 +1270,7 @@ namespace Mod::MvM::Extended_Upgrades
                         
                         auto kv = new KeyValues("MvM_UpgradesDone");
                         serverGameClients->ClientCommandKeyValues((*it).Get()->GetNetworkable()->GetEdict(), kv);
+		                kv->deleteThis();
                     }
                     it = in_upgrade_zone.erase(it);
                 }
@@ -1253,6 +1286,7 @@ namespace Mod::MvM::Extended_Upgrades
                     in_upgrade_zone.insert(player);
                     auto kv = new KeyValues("MvM_UpgradesBegin");
                     serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+		            kv->deleteThis();
                 }
 
                 int class_index = player->GetPlayerClass()->GetClassIndex();

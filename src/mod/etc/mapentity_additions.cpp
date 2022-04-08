@@ -11,6 +11,7 @@
 #include "stub/server.h"
 #include "stub/objects.h"
 #include "stub/extraentitydata.h"
+#include "mod/pop/common.h"
 #include "util/pooled_string.h"
 #include "util/scope.h"
 #include "util/iterate.h"
@@ -1382,7 +1383,7 @@ namespace Mod::Etc::Mapentity_Additions
                         }
                         else {
                             ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                                if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemSlot)) {
+                                if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), itemSlot)) {
                                     item = entity;
                                 }
                             });
@@ -1430,7 +1431,7 @@ namespace Mod::Etc::Mapentity_Additions
                     CEconEntity *item = nullptr;
                     if (slot != nullptr) {
                         ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                            if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), slot)) {
+                            if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), slot)) {
                                 item = entity;
                             }
                         });
@@ -1466,7 +1467,7 @@ namespace Mod::Etc::Mapentity_Additions
                     CEconEntity *item = nullptr;
                     if (slot != nullptr) {
                         ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                            if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
+                            if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), Value.String())) {
                                 item = entity;
                             }
                         });
@@ -1534,7 +1535,7 @@ namespace Mod::Etc::Mapentity_Additions
             else if (stricmp(szInputName, "RemoveItem") == 0) {
                 CTFPlayer *player = ToTFPlayer(ent);
                 ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
-                    if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), Value.String())) {
+                    if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), Value.String())) {
                         if (entity->MyCombatWeaponPointer() != nullptr) {
                             player->Weapon_Detach(entity->MyCombatWeaponPointer());
                         }
@@ -3012,16 +3013,16 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                     else {
                         if (compare == less) {
-                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() < variable.Float() : valuecmp.Int() < variable.Int();
+                            return valuecmp.FieldType() == FIELD_FLOAT ? variable.Float() < valuecmp.Float() : variable.Int() < valuecmp.Int();
                         }
                         else if (compare == less_or_equal) {
-                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() <= variable.Float() : valuecmp.Int() <= variable.Int();
+                            return valuecmp.FieldType() == FIELD_FLOAT ? variable.Float() <= valuecmp.Float() : variable.Int() <= valuecmp.Int();
                         }
                         else if (compare == greater) {
-                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() > variable.Float() : valuecmp.Int() > variable.Int();
+                            return valuecmp.FieldType() == FIELD_FLOAT ? variable.Float() > valuecmp.Float() : variable.Int() > valuecmp.Int();
                         }
                         else if (compare == greater_or_equal) {
-                            return valuecmp.FieldType() == FIELD_FLOAT ? valuecmp.Float() >= variable.Float() : valuecmp.Int() >= variable.Int();
+                            return valuecmp.FieldType() == FIELD_FLOAT ? variable.Float() >= valuecmp.Float() : variable.Int() >= valuecmp.Int();
                         }
                     }
                 }

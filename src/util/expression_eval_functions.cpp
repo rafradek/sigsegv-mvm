@@ -1,6 +1,8 @@
 #include "stub/misc.h"
 #include "stub/econ.h"
 #include "stub/tfweaponbase.h"
+#include "mod/pop/common.h"
+#include "util/iterate.h"
 #include "util/expression_eval.h"
 #include "util/pooled_string.h"
 #include "util/misc.h"
@@ -488,6 +490,25 @@ void FunctionGetPlayerItemAtSlot(const char *function, Evaluation::Params &param
     result.Set(FIELD_EHANDLE, &entity);
 }
 
+void FunctionGetPlayerItemByName(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
+{   
+    if (params[0].FieldType() != FIELD_EHANDLE)
+        params[0].Convert(FIELD_EHANDLE);
+
+    CTFPlayer *player = ToTFPlayer(params[0].Entity());
+    if (player == nullptr) {
+        result = variant_t();
+        return;
+    }
+    CHandle<CBaseEntity> entityh;
+    ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+        if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), params[1].String())) {
+            entityh = entity;
+        }
+    });
+    result.Set(FIELD_EHANDLE, &entityh);
+}
+
 void FunctionGetItemAttribute(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {   
     if (params[0].FieldType() != FIELD_EHANDLE)
@@ -663,6 +684,7 @@ public:
         Evaluation::AddFunction("playeratindex", FunctionGetPlayer, {"index"});
         Evaluation::AddFunction("entityindex", FunctionGetEntityIndex, {"entity"});
         Evaluation::AddFunction("playeritematslot", FunctionGetPlayerItemAtSlot, {"entity", "slot"});
+        Evaluation::AddFunction("playeritembyname", FunctionGetPlayerItemByName, {"entity", "item name"});
         Evaluation::AddFunction("attribute", FunctionGetItemAttribute, {"player or item", "attribute name"});
         Evaluation::AddFunction("type", FunctionGetType, {"value"});
         Evaluation::AddFunction("charat", FunctionCharAt, {"string", "pos"});

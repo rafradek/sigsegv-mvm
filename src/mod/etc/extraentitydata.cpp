@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "stub/extraentitydata.h"
+#include "util/iterate.h"
 
 namespace Mod::Etc::ExtraEntityData
 {
@@ -33,6 +34,16 @@ namespace Mod::Etc::ExtraEntityData
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_CBaseEntity, "CBaseEntity::CBaseEntity");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2, "~CBaseEntity [D2]");
         }
+        
+		virtual void OnUnload() override
+		{
+			ForEachEntity([](CBaseEntity *entity) {
+                if (entity->m_extraEntityData != nullptr) {
+                    delete entity->m_extraEntityData;
+                    entity->m_extraEntityData = nullptr;
+                }
+            });
+		}
         
         virtual bool EnableByDefault() override { return true; }
     };
