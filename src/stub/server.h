@@ -3,41 +3,7 @@
 
 
 #include "link/link.h"
-
-class CBaseServer : public IServer
-{
-public:
-    IClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
-	
-	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
-    
-private:
-    static MemberFuncThunk<CBaseServer *, IClient *, const char *>              ft_CreateFakeClient;
-	
-	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
-};
-
-class CHLTVServer : public IGameEventListener2, public CBaseServer
-{
-public:
-    void StartMaster(IClient *client)      {        ft_StartMaster(this, client); }
-    int CountClientFrames()                { return ft_CountClientFrames(this); }
-    void RemoveOldestFrame()               {        ft_RemoveOldestFrame(this); }
-    
-private:
-    static MemberFuncThunk<CHLTVServer *, void, IClient *>   ft_StartMaster;
-    static MemberFuncThunk<CHLTVServer *, int>               ft_CountClientFrames;
-    static MemberFuncThunk<CHLTVServer *, void>              ft_RemoveOldestFrame;
-};
-
-class CGameClient 
-{
-public:
-    bool ShouldSendMessages()                      { return ft_ShouldSendMessages(this); }
-    
-private:
-    static MemberFuncThunk<CGameClient *, bool>              ft_ShouldSendMessages;
-};
+#include "stub/sendprop.h"
 
 typedef struct CustomFile_s
 {
@@ -76,6 +42,60 @@ public:
 
 	// a client can have couple of cutomized files distributed to all other players
 	CustomFile_t	m_nCustomFiles[MAX_CUSTOM_FILES];
+	int				m_nFilesDownloaded;	// counter of how many files we downloaded from this client
+
+	INetChannel		*m_NetChannel;		// The client's net connection.
+	int				m_nSignonState;		// connection state
+	int				m_nDeltaTick;		// -1 = no compression.  This is where the server is creating the
+										// compressed info from.
+	int				m_nStringTableAckTick; // Highest tick acked for string tables (usually m_nDeltaTick, except when it's -1)
+	int				m_nSignonTick;		// tick the client got his signon data
+	void * m_pLastSnapshot;	// last send snapshot
+	int pad;
+
+	CFrameSnapshot	*m_pBaseline;			// current entity baselines as a snapshot
+	int				m_nBaselineUpdateTick;	// last tick we send client a update baseline signal or -1
+	CBitVec<MAX_EDICTS>	m_BaselinesSent;	// baselines sent with last update
+	int				m_nBaselineUsed;		// 0/1 toggling flag, singaling client what baseline to use
+
+	int				m_nForceWaitForTick;
+	
+	bool			m_bFakePlayer;
+};
+
+class CBaseServer : public IServer
+{
+public:
+    CBaseClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
+	
+	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
+    
+private:
+    static MemberFuncThunk<CBaseServer *, CBaseClient *, const char *>              ft_CreateFakeClient;
+	
+	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
+};
+
+class CHLTVServer : public IGameEventListener2, public CBaseServer
+{
+public:
+    void StartMaster(CBaseClient *client)  {        ft_StartMaster(this, client); }
+    int CountClientFrames()                { return ft_CountClientFrames(this); }
+    void RemoveOldestFrame()               {        ft_RemoveOldestFrame(this); }
+    
+private:
+    static MemberFuncThunk<CHLTVServer *, void, CBaseClient *> ft_StartMaster;
+    static MemberFuncThunk<CHLTVServer *, int>                 ft_CountClientFrames;
+    static MemberFuncThunk<CHLTVServer *, void>                ft_RemoveOldestFrame;
+};
+
+class CGameClient 
+{
+public:
+    bool ShouldSendMessages()                      { return ft_ShouldSendMessages(this); }
+    
+private:
+    static MemberFuncThunk<CGameClient *, bool>              ft_ShouldSendMessages;
 };
 
 class CHLTVClient : public CBaseClient {

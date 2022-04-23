@@ -1587,14 +1587,15 @@ namespace Mod::Etc::Mapentity_Additions
                 if(player->GetCurrency() >= cost){
                     char param_tokenized[2048] = "";
                     V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+                    const char *separator = strchr(param_tokenized, ',') != nullptr ? "," : "|";
                     if(strcmp(param_tokenized, "") != 0){
-                        char *target = strtok(param_tokenized,",");
+                        char *target = strtok(param_tokenized,separator);
                         char *action = NULL;
                         char *value = NULL;
                         if(target != NULL)
-                            action = strtok(NULL,",");
+                            action = strtok(NULL,separator);
                         if(action != NULL)
-                            value = strtok(NULL,"");
+                            value = strtok(NULL,separator);
                         if(value != NULL){
                             CEventQueue &que = g_EventQueue;
                             variant_t actualvalue;
@@ -1612,15 +1613,16 @@ namespace Mod::Etc::Mapentity_Additions
                 int cost = atoi(szInputName + 21);
                 if(player->GetCurrency() < cost){
                     char param_tokenized[2048] = "";
+                    const char *separator = strchr(param_tokenized, ',') != nullptr ? "," : "|";
                     V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
                     if(strcmp(param_tokenized, "") != 0){
-                        char *target = strtok(param_tokenized,",");
+                        char *target = strtok(param_tokenized,separator);
                         char *action = NULL;
                         char *value = NULL;
                         if(target != NULL)
-                            action = strtok(NULL,",");
+                            action = strtok(NULL,separator);
                         if(action != NULL)
-                            value = strtok(NULL,"");
+                            value = strtok(NULL,separator);
                         if(value != NULL){
                             CEventQueue &que = g_EventQueue;
                             variant_t actualvalue;
@@ -1661,6 +1663,18 @@ namespace Mod::Etc::Mapentity_Additions
                 CTFPlayer* player = ToTFPlayer(ent);
                 player->PlaySpecificSequence(Value.String());
 
+                return true;
+            }
+            else if(stricmp(szInputName, "AwardExtraItem") == 0){
+                CTFPlayer* player = ToTFPlayer(ent);
+                std::string str = Value.String();
+                Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str);
+                return true;
+            }
+            else if(stricmp(szInputName, "StripExtraItem") == 0){
+                CTFPlayer* player = ToTFPlayer(ent);
+                std::string str = Value.String();
+                Mod::Pop::PopMgr_Extensions::StripExtraItem(player, str);
                 return true;
             }
 #ifdef GCC11
@@ -2669,6 +2683,8 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByName, CBaseEntity *pStartEntity, const char *szName, CBaseEntity *pSearchingEntity, CBaseEntity *pActivator, CBaseEntity *pCaller, IEntityFindFilter *pFilter)
 	{
         if (szName == nullptr || szName[0] == '\0') return nullptr;
+
+        if (szName[0] == '@' && szName[1] == 'h' && szName[2] == '@') { return CHandle<CBaseEntity>::FromIndex(atoi(szName+3)); }
 
         if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
 

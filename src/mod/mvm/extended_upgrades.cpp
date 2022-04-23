@@ -440,9 +440,10 @@ namespace Mod::MvM::Extended_Upgrades
             upgrade_game.m_iUIGroup = upgrade->playerUpgrade ? 1 : upgrade->uigroup;
             upgrade_game.m_iQuality = 9500;
             upgrade_game.m_iTier = 0;
-
+        }
+        for (auto upgrade : upgrades) {
             for(auto entry : upgrade->secondary_attributes) {
-                upgrade_index = CMannVsMachineUpgradeManager::Upgrades().AddToTail();
+                int upgrade_index = CMannVsMachineUpgradeManager::Upgrades().AddToTail();
                 CMannVsMachineUpgrades &upgrade_game_child = CMannVsMachineUpgradeManager::Upgrades()[upgrade_index];
                 upgrade->secondary_attributes_index.push_back(upgrade_index);
                 strcpy(upgrade_game_child.m_szAttribute, entry.first.c_str());
@@ -1138,27 +1139,34 @@ namespace Mod::MvM::Extended_Upgrades
         if (respec) {
             for (int upgrade = 0; upgrade < CMannVsMachineUpgradeManager::Upgrades().Count(); upgrade++) {
                 auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
-                auto &upgradeInfoCutom = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
                 auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
                 if (attribDef != nullptr) {
                     loadout_positions_t nLastLoadoutPos = LOADOUT_POSITION_MISC2;
-                    for (int iItemSlot = LOADOUT_POSITION_PRIMARY; iItemSlot < nLastLoadoutPos; iItemSlot++) {
+                    for (int iItemSlot = -1; iItemSlot < nLastLoadoutPos; iItemSlot++) {
                         if (iItemSlot == LOADOUT_POSITION_ACTION) continue;
 
                         auto item = GetEconEntityAtLoadoutSlot(player, iItemSlot);
-                        if (item != nullptr && item->GetItem() != nullptr) {
+                        if ((iItemSlot == -1 && upgradeInfo.m_iUIGroup == 1) || (item != nullptr && item->GetItem() != nullptr && upgradeInfo.m_iUIGroup != 1)) {
+                            int currentUpgrade = 0;
                             if (upgrade >= extended_upgrades_start_index && extended_upgrades_start_index != -1 && upgrade < extended_upgrades_start_index + (int)upgrades.size()) {
                                 bool overCap = false;
-                                int currentUpgrade = 0;
                                 GetUpgradeStepData(player, iItemSlot, upgrade, currentUpgrade, overCap);
+                            }
+
+                            if (currentUpgrade > 0) {
                                 auto upgradeInfoExtra = upgrades[upgrade - extended_upgrades_start_index];
-                                for (int j = currentUpgrade-1; j >= 0; j--) {
-                                    variant_t variant;
-                                    variant.SetInt(j);
-                                    FireOutputs(upgradeInfoExtra->on_downgrade_outputs, variant, player, item);
+                                if (upgradeInfoExtra->on_downgrade_outputs.size() > 0) {
+                                    for (int j = currentUpgrade-1; j >= 0; j--) {
+                                        variant_t variant;
+                                        variant.SetInt(j);
+                                        FireOutputs(upgradeInfoExtra->on_downgrade_outputs, variant, player, iItemSlot == -1 ? (CBaseEntity *)player : item);
+                                    }
                                 }
                             }
-                            item->GetItem()->GetAttributeList().RemoveAttribute(attribDef);
+
+                            if (iItemSlot != -1) {
+                                item->GetItem()->GetAttributeList().RemoveAttribute(attribDef);
+                            }
                         }
                     }
                 }

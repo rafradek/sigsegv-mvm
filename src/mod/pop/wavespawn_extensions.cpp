@@ -418,6 +418,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 	}
 
+	bool allWaiting = true;
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
@@ -434,6 +435,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				}
 			}
 		}
+		if (wavespawn->m_state != DONE)
+			allWaiting = false;
 
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
 	}
@@ -560,6 +563,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(void, CWave_ActiveWaveUpdate)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
+		allWaiting = true;
 		DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
 		if (wave->IsDoneWithNonSupportWaves()) {
 			for(auto spawner : template_spawners) {
@@ -591,6 +595,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					}
 				}
 			}
+		}
+		if (allWaiting) {
+			wave->m_isEveryContainedWaveSpawnDone = true;
 		}
 	}
 

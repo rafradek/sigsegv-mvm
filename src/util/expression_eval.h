@@ -8,12 +8,11 @@ class Evaluation
 public:
     using Params = std::deque<variant_t>;
     using ExpressionFunction = void (*)(const char *, Params &, int, variant_t&);
-    Evaluation(variant_t &result) : m_Result(result) {};
-
+    
     void Evaluate(const char *expression, CBaseEntity *self, CBaseEntity *activator, CBaseEntity *caller, variant_t &param);
 
-    static std::vector<const char *> args_optional_empty;
-    static void AddFunction(std::string name, ExpressionFunction function, std::vector<std::string> args, std::vector<const char *> args_optional = args_optional_empty);
+    static std::vector<std::string> args_optional_empty;
+    static void AddFunction(std::string name, ExpressionFunction function, std::vector<std::string> args, std::string explanation, std::vector<std::string> args_optional = args_optional_empty);
 
     class EvaluationFuncDef
     {
@@ -22,10 +21,34 @@ public:
         ExpressionFunction function;
         const char *expr = nullptr;
         size_t paramCount = 0;
+        std::string explanation;
         std::vector<std::string> paramNames;
-        std::vector<const char *> paramNamesOptional;
+        std::vector<std::string> paramNamesOptional;
     };
+
+    class ScriptGlobals
+    {
+    public:
+        std::deque<std::pair<std::string, variant_t>> m_Variables;
+        std::deque<std::string> m_FunctionExpressions;
+        std::vector<EvaluationFuncDef> m_Functions;
+
+        void ClearGlobalState()
+        {
+            m_Variables.clear();
+            m_FunctionExpressions.clear();
+            m_Functions.clear();
+        }
+    };
+
+    static ScriptGlobals s_scriptGlobals;
+
+    Evaluation(variant_t &result) : m_Result(result) {};
+
     static const std::vector<Evaluation::EvaluationFuncDef> &GetFunctionList();
+    static void GetFunctionInfoStrings(std::vector<std::string> &vec);
+    static void GetVariableStrings(std::vector<std::string> &vec);
+
 private:
     enum Op
     {
@@ -60,11 +83,19 @@ private:
         IF_AFTER_FALSE,
         ELSE_TRUE,
         ELSE_FALSE,
+        WHILE_BEGIN,
+        WHILE_CONDITION,
+        WHILE_EXEC,
+        DO,
+        FOR_BEGIN,
+        FOR_CONDITION,
+        FOR_INCREMENT,
+        FOR_EXEC,
         RETURN
     };
     struct EvaluationFunc
     {
-        EvaluationFuncDef *func;
+        const EvaluationFuncDef *func;
         Params params;
     };
     struct EvaluationStack
@@ -73,10 +104,12 @@ private:
         variant_t result;
         EvaluationFunc *func = nullptr;
         const char *returnPos = nullptr;
-        std::deque<std::string> *varNames = nullptr;
         DeclareMode declMode = NORMAL;
+        std::deque<std::string> *varNames = nullptr;
+        std::deque<std::pair<std::string, variant_t>> *variables = nullptr;
         bool popStackOnEnd = false;
         bool isFunction = false;
+        bool exportMode = false;
     };
 
     inline void ParseChar(char c);
@@ -107,7 +140,7 @@ private:
     bool FindVariable(std::string &name, variant_t &value);
     bool SetVariable(std::string &name, variant_t &value);
 
-    EvaluationFuncDef *FindFunction(std::string &name);
+    const EvaluationFuncDef *FindFunction(std::string &name);
     void ExecuteFunction(EvaluationFunc *func);
 
     void ParseToken();
@@ -139,9 +172,9 @@ private:
     const char *m_pExpression = nullptr;
     EvaluationFuncDef m_DefFunc;
     variant_t m_param;
-    std::deque<std::pair<std::string, variant_t>> m_Variables;
-    std::deque<EvaluationFuncDef> m_Functions;
+    std::vector<EvaluationFuncDef> m_Functions;
     
+    const char *m_pLoopGoBackPosition = nullptr;
 };
 
 #endif

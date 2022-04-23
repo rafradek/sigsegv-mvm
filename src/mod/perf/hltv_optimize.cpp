@@ -60,10 +60,10 @@ namespace Mod::Perf::HLTV_Optimize
             hltvclient->Disconnect("");
         }
 
-        if (hasplayer && hltvclient == nullptr) {
+        if (hasplayer && hltvclient == nullptr && sv->IsActive()) {
             DevMsg("spawning sourcetv\n");
             static ConVarRef tv_name("tv_name");
-            IClient *client = reinterpret_cast<CBaseServer *>(sv)->CreateFakeClient(tv_name.GetString());
+            CBaseClient *client = reinterpret_cast<CBaseServer *>(sv)->CreateFakeClient(tv_name.GetString());
             if (client != nullptr) {
                 DevMsg("spawning sourcetv client %d\n", client->GetPlayerSlot());
                 reinterpret_cast<CHLTVServer *>(this)->StartMaster(client);
@@ -179,7 +179,61 @@ namespace Mod::Perf::HLTV_Optimize
 		DETOUR_MEMBER_CALL(CBasePlayer_PhysicsSimulate)();
 	}
 
+    ConVar sig_perf_hltv_use_special_slot("sig_perf_hltv_use_special_slot", "1", FCVAR_NOTIFY,
+		"Use special slot 34 for hltv. Requires map restart to function");
+    
+    RefCount rc_CBaseServer_CreateFakeClient;
+    DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_CreateFakeClient, const char *name)
+	{
+        static ConVarRef tv_name("tv_name");
+        SCOPED_INCREMENT_IF(rc_CBaseServer_CreateFakeClient, sig_perf_hltv_use_special_slot.GetBool() && tv_name.GetString() == name);
+		return DETOUR_MEMBER_CALL(CBaseServer_CreateFakeClient)(name);
+	}
+    
+    DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
+	{
+        if (rc_CBaseServer_CreateFakeClient) {
+            std::vector<CBaseClient *> clientList;
 
+            auto server = reinterpret_cast<CBaseServer *>(this);
+            for (int i = 0; i < server->GetClientCount(); i++) {
+                CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
+                if (!client->IsConnected() && !client->IsFakeClient()) {
+                    clientList.push_back(client);
+                    client->m_bFakePlayer = true;
+                }
+            }
+
+            CBaseClient *lastClient = nullptr;
+            while (server->GetClientCount() != server->GetMaxClients()) {
+                lastClient = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+                if (lastClient != nullptr) {
+                    clientList.push_back(lastClient);
+                    lastClient->m_bFakePlayer = true;
+                }
+            }
+            
+            for (CBaseClient *client : clientList) {
+                client->m_bFakePlayer = false;
+            }
+
+            return lastClient;
+        }
+            
+		return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+
+	}
+
+    StaticFuncThunk<void, int> ft_SetupMaxPlayers("SetupMaxPlayers");
+
+	DETOUR_DECL_MEMBER(void, CServerGameClients_GetPlayerLimits, int &minplayers, int &maxplayers, int &defaultplayers)
+	{
+		DETOUR_MEMBER_CALL(CServerGameClients_GetPlayerLimits)(minplayers,maxplayers,defaultplayers);
+        if (sig_perf_hltv_use_special_slot.GetBool())
+		    maxplayers = 34;
+	}
+
+    
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -198,6 +252,11 @@ namespace Mod::Perf::HLTV_Optimize
             
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
+
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_CreateFakeClient,              "CBaseServer::CreateFakeClient");
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,              "CBaseServer::GetFreeClient");
+			MOD_ADD_DETOUR_MEMBER(CServerGameClients_GetPlayerLimits, "CServerGameClients::GetPlayerLimits");
+            
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
@@ -205,9 +264,34 @@ namespace Mod::Perf::HLTV_Optimize
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
+        virtual void OnEnablePost() override
+		{
+            
+        }
+
         virtual void LevelInitPreEntity() override
 		{
             last_restore_tick = -1;
+        }
+
+        virtual void LevelShutdownPostEntity() override
+		{
+
+            if (sig_perf_hltv_use_special_slot.GetBool() && (gpGlobals->maxClients == 32 || gpGlobals->maxClients == 33)) {
+                // Kick old HLTV client
+                int clientCount = sv->GetClientCount();
+                for ( int i=0 ; i < clientCount ; i++ )
+                {
+                    IClient *pClient = sv->GetClient( i );
+
+                    if (pClient->IsConnected() && pClient->IsHLTV() && i <= 33)
+                    {
+                        pClient->Disconnect("");
+                        break;
+                    }
+                }
+                ft_SetupMaxPlayers(34);
+            }
         }
 	};
 	CMod s_Mod;

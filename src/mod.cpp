@@ -251,12 +251,17 @@ void IMod::Toggle(bool enable)
 	}
 	
 	/* call OnEnable/OnDisable, set enabled state, etc */
+	bool preEnabled = this->IsEnabled();
 	IToggleable::Toggle(enable);
 	
 	/* actually toggle enable/detour all of the mod's patches and detours */
 	this->ToggleAllPatches(enable);
 	this->ToggleAllDetours(enable);
 	this->ToggleAllVirtualHooks(enable);
+	
+	if (!preEnabled && enable) {
+		this->OnEnablePost();
+	} 
 }
 
 

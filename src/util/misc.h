@@ -313,11 +313,11 @@ static const char * ParseToInt(const char *str, int &value)
 	}
 	// negative / positive
     if (c == '-') {
-        str++;
+        c = *(++str);
         neg = true;
     }
     else if (c == '+') {
-        str++;
+        c = *(++str);
     }
 	// parse digits
     while (true) {
@@ -363,11 +363,11 @@ static const char * ParseToFloat(const char *str, float &value)
 	}
 	// negative / positive
     if (c == '-') {
-        str++;
+        c = *(++str);
         neg = true;
     }
     else if (c == '+') {
-        str++;
+        c = *(++str);
     }
 	// Parse digits
     while (true) {

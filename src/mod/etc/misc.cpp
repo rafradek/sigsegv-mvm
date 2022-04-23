@@ -462,6 +462,13 @@ namespace Mod::Etc::Misc
 		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
 	}
 
+	DETOUR_DECL_MEMBER(void, CFuncIllusionary_Spawn)
+	{
+		auto entity = reinterpret_cast<CBaseEntity *>(this);
+		CBaseEntity::PrecacheModel(STRING(entity->GetModelName()));
+		DETOUR_MEMBER_CALL(CFuncIllusionary_Spawn)();
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -512,6 +519,8 @@ namespace Mod::Etc::Misc
 			MOD_ADD_VHOOK(CTFWeaponSapper_Equip, TypeName<CTFWeaponSapper>(), "CTFWeaponBase::Equip");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 
+			// Fix cfuncillusionary crash
+			MOD_ADD_DETOUR_MEMBER(CFuncIllusionary_Spawn, "CFuncIllusionary::Spawn");
 		}
 	};
 	CMod s_Mod;

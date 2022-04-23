@@ -227,7 +227,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		UTIL_StringToVector(max.Base(), box.max.c_str());
 		//sscanf(box.min.c_str(), "%f %f %f", &min.x, &min.y, &min.z);
 		//sscanf(box.max.c_str(), "%f %f %f", &max.x, &max.y, &max.z);
-		if (fast_whole_map_trigger.GetBool() && min.DistTo(max) > 10000 && box.entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+		if (fast_whole_map_trigger.GetBool() && ((max.z - min.z) * (max.y - min.y) * (max.x - min.x)) > 4500.0f * 4500.0f * 4500.0f  && box.entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
 			min = vec3_origin;
 			max = vec3_origin;
 			box.entity->SetAbsOrigin(Vector(-30000,-30000,-30000));

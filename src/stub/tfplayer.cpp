@@ -260,7 +260,8 @@ MemberFuncThunk<      CTFPlayer *, void, TFPlayerClassData_t *	   > CTFPlayer::f
 MemberFuncThunk<	  CTFPlayer *, void                      	   > CTFPlayer::ft_GiveDefaultItems            ("CTFPlayer::GiveDefaultItems");
 MemberFuncThunk<	  CTFPlayer *, bool                      	   > CTFPlayer::ft_TryToPickupBuilding         ("CTFPlayer::TryToPickupBuilding");
 MemberFuncThunk<	  CTFPlayer *, void, int, int                  > CTFPlayer::ft_DetonateObjectOfType        ("CTFPlayer::DetonateObjectOfType");
-MemberFuncThunk<	  CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> CTFPlayer::ft_GetPassiveWeapons          ("CTFPlayer::GetPassiveWeapons");
+MemberFuncThunk<	  CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> CTFPlayer::ft_GetPassiveWeapons        ("CTFPlayer::GetPassiveWeapons");
+MemberFuncThunk<	  CTFPlayer *, bool                            > CTFPlayer::ft_IsReadyToPlay               ("CTFPlayer::IsReadyToPlay");
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
 

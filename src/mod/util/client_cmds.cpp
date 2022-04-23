@@ -1605,30 +1605,32 @@ namespace Mod::Util::Client_Cmds
 
 	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
     {
-		std::string str;
-		for (auto &func : Evaluation::GetFunctionList()) {
-			str+=func.name;
-			str+='(';
-			bool first = true;
-			for (auto &param : func.paramNames) {
-				if (!first) {
-					str+=',';
-				}
-				first = false;
-				str+=' ';
-				str+=param;
+		std::vector<std::string> functions;
+		std::string buf;
+		Evaluation::GetFunctionInfoStrings(functions);
+		for (auto &function : functions) {
+			if (buf.size() + function.size() > 1000) {
+				ClientMsg(player, "%s", buf);
+				buf.clear();
 			}
-			for (auto &param : func.paramNamesOptional) {
-				if (!first) {
-					str+=',';
-				}
-				first = false;
-				str+=' ';
-				str+=param;
-			}
-			str+=" )\n";
+			buf += function;
 		}
-		ClientMsg(player, "%s", str.c_str());
+		ClientMsg(player, "%s", buf);
+	}
+
+	void CC_Expression_Vars(CTFPlayer* player, const CCommand& args)
+    {
+		std::vector<std::string> vars;
+		std::string buf;
+		Evaluation::GetVariableStrings(vars);
+		for (auto &var : vars) {
+			if (buf.size() + var.size() > 1000) {
+				ClientMsg(player, "%s", buf);
+				buf.clear();
+			}
+			buf += var;
+		}
+		ClientMsg(player, "%s", buf);
 	}
 
 	int cpu_show_player[34] {};
@@ -1683,6 +1685,7 @@ namespace Mod::Util::Client_Cmds
         { "sig_nocheat_list",     CC_CvarNoCheatList  },
         { "sig_expression",           CC_Expression     },
         { "sig_expression_functions", CC_Expression_Func},
+        { "sig_expression_vars",      CC_Expression_Vars},
         { "sig_cpu_usage",        CC_Cpu_Usage        },
 		
 	};

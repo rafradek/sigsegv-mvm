@@ -11,5 +11,8 @@ namespace Mod::Pop::PopMgr_Extensions {
 	const char *GetCustomWeaponNameOverride(const char *name);
 	int GetEventPopfile();
 	bool PopFileIsOverridingJoinTeamBlueConVarOn();
+	void AwardExtraItem(CTFPlayer *player, std::string &name);
+	void StripExtraItem(CTFPlayer *player, std::string &name);
+	void ApplyOrClearRobotModel(CTFPlayer *player);
 }
 #endif

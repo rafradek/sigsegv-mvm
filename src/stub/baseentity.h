@@ -294,6 +294,7 @@ public:
 	bool ReadKeyField(const char *name, variant_t *var)                                                                     { return ft_ReadKeyField                  (this, name, var); }
 	IPhysicsObject *VPhysicsInitStatic()                                                                                    { return ft_VPhysicsInitStatic            (this); }
 	void *GetDataObject(int type)                                                                                           { return ft_GetDataObject                 (this, type); }
+	int SetTransmitState(int state)                                                                                         { return ft_SetTransmitState              (this, state); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -447,6 +448,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *>                         ft_ReadKeyField;
 	static MemberFuncThunk<      CBaseEntity *, IPhysicsObject *>                                        ft_VPhysicsInitStatic;
 	static MemberFuncThunk<      CBaseEntity *, void *,int>                                              ft_GetDataObject;
+	static MemberFuncThunk<      CBaseEntity *, int, int>                                                ft_SetTransmitState;
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;

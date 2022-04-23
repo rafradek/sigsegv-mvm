@@ -435,11 +435,16 @@ namespace Mod::Attr::Custom_Attributes
 				if (particlename != nullptr) {
 
 					force_send_client = true;
+					CRecipientFilter filter;
+					filter.AddAllPlayers();
+					Vector color0 = weapon->GetParticleColor(1);
+					Vector color1 = weapon->GetParticleColor(2);
 					if (*particlename == '~') {
 						StopParticleEffects(proj);
-						DispatchParticleEffect(particlename + 1, PATTACH_ABSORIGIN_FOLLOW, proj, INVALID_PARTICLE_ATTACHMENT, false);
+						//DispatchParticleEffect(particlename + 1, PATTACH_ABSORIGIN_FOLLOW, proj, INVALID_PARTICLE_ATTACHMENT, false);
+						DispatchParticleEffect(particlename + 1, PATTACH_ABSORIGIN_FOLLOW, proj, nullptr, vec3_origin, false, color0, color1, true, false, nullptr, &filter);
 					} else {
-						DispatchParticleEffect(particlename, PATTACH_ABSORIGIN_FOLLOW, proj, INVALID_PARTICLE_ATTACHMENT, false);
+						DispatchParticleEffect(particlename, PATTACH_ABSORIGIN_FOLLOW, proj, nullptr, vec3_origin, false, color0, color1, true, false, nullptr, &filter);
 					}
 					force_send_client = false;
 				}
@@ -844,6 +849,7 @@ namespace Mod::Attr::Custom_Attributes
 					entry->wearable_vm = nullptr;
 				}
 				entity->SetRenderMode(kRenderTransAlpha);
+				entity->AddEffects(EF_NOSHADOW);
 				entity->SetRenderColorA(0);
 				weapon->m_bBeingRepurposedForTaunt = true;
 				model_entries.push_back({weapon, nullptr, nullptr, model_index});
@@ -2138,7 +2144,14 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
 	}
 
-	std::unordered_map<CTFPlayer *, std::unordered_map<CBaseEntity *, float>> player_touch_times;
+	class PlayerTouchModule : public EntityModule
+	{
+	public:
+		PlayerTouchModule(CBaseEntity *entity) {}
+
+		std::unordered_map<CBaseEntity *, float> touchTimes;
+	};
+
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Touch, CBaseEntity *toucher)
 	{
 		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
@@ -2152,20 +2165,19 @@ namespace Mod::Attr::Custom_Attributes
 				
 				float stompTime = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_TIME);
 
-				if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
+				if (stompTime == 0.0f || (gpGlobals->curtime - player->GetOrCreateEntityModule<PlayerTouchModule>("playertouch")->touchTimes[toucher]) > stompTime) {
 					float stomp = 0.0f;
 					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 					toucher->TakeDamage(info);
 					if (stompTime != 0.0f)
-						player_touch_times[player][toucher] = gpGlobals->curtime;
+						player->GetOrCreateEntityModule<PlayerTouchModule>("playertouch")->touchTimes[toucher] = gpGlobals->curtime;
 				}
 			}
 		}
 		else if (toucher->IsPlayer()) {
 			
 			float stompTime = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_TIME);
-
-			if (stompTime == 0.0f || (gpGlobals->curtime - player_touch_times[player][toucher]) > stompTime) {
+			if (stompTime == 0.0f || (gpGlobals->curtime - player->GetOrCreateEntityModule<PlayerTouchModule>("playertouch")->touchTimes[toucher]) > stompTime) {
 				float stomp = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_DAMAGE);
 				if (stomp != 0.0f) {
 					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
@@ -2181,7 +2193,7 @@ namespace Mod::Attr::Custom_Attributes
 					ToTFPlayer(toucher)->ApplyGenericPushbackImpulse(vec, player);
 				}
 				if (stompTime != 0.0f)
-					player_touch_times[player][toucher] = gpGlobals->curtime;
+					player->GetOrCreateEntityModule<PlayerTouchModule>("playertouch")->touchTimes[toucher] = gpGlobals->curtime;
 			}
 		}
 	}
@@ -2503,7 +2515,13 @@ namespace Mod::Attr::Custom_Attributes
 		return result;
 	}
 	
-	std::map<CHandle<CBaseEntity>, int> entity_penetration_counter;
+	class PenetrationNumberModule : public EntityModule
+	{
+	public:
+		PenetrationNumberModule(CBaseEntity *entity) {}
+
+		int penetrationCount = 0;
+	};
 	
 	DETOUR_DECL_MEMBER(bool, CTFFlameManager_BCanBurnEntityThisFrame, CBaseEntity* entity)
 	{
@@ -2513,7 +2531,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (ret) {
 			int iMaxAoe = GetFastAttributeInt(flamemgr->GetOwnerEntity(), 0, MAX_AOE_TARGETS);
 			if (iMaxAoe != 0) {
-				int &counter = entity_penetration_counter[flamemgr];
+				int &counter = flamemgr->GetOrCreateEntityModule<PenetrationNumberModule>("penetrationnumber")->penetrationCount; 
 				int min_delay;
 				switch(iMaxAoe) {
 					case 1: min_delay = 5; break;
@@ -2543,7 +2561,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
-			int &counter = entity_penetration_counter[arrow];
+			int &counter = arrow->GetOrCreateEntityModule<PenetrationNumberModule>("penetrationnumber")->penetrationCount;
 			counter += 1;
 			int iPenetrateLimit = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), iPenetrateLimit, projectile_penetration_limit);
@@ -2569,7 +2587,7 @@ namespace Mod::Attr::Custom_Attributes
 		bison_projectile_touch = false;
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
-			int &counter = entity_penetration_counter[arrow];
+			int &counter = arrow->GetOrCreateEntityModule<PenetrationNumberModule>("penetrationnumber")->penetrationCount;
 			counter += 1;
 			int iPenetrateLimit = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), iPenetrateLimit, projectile_penetration_limit);
@@ -3632,6 +3650,13 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
 	{
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
+		
+		// // Reapply attributes from items that stay after respawn
+		// std::unordered_set<CEconEntity *> preSpawnItems;
+		// ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
+		// 	preSpawnItems.insert(entity);
+		// });
+
 		for (int i = 0; i < MAX_WEAPONS; i++) {
 			auto weapon = player->GetWeapon(i);
 			if (weapon != nullptr) {
@@ -3649,6 +3674,12 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+		
+		// for(auto entity : preSpawnItems) {
+		// 	if (!entity->IsMarkedForDeletion()) {
+				
+		// 	}
+		// }
 	}
 
 	DETOUR_DECL_MEMBER(QAngle, CTFWeaponBase_GetSpreadAngles)
@@ -4141,6 +4172,130 @@ namespace Mod::Attr::Custom_Attributes
 			movement->GetMoveData()->m_flUpMove *= mult;
 		}
     }
+	
+	
+	DETOUR_DECL_MEMBER(void, CAttributeManager_ProvideTo, CBaseEntity *entity)
+    {
+        DETOUR_MEMBER_CALL(CAttributeManager_ProvideTo)(entity);
+		auto manager = reinterpret_cast<CAttributeManager *>(this);
+		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
+		if (item != nullptr) {
+			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
+			
+			attribute_data_union_t oldValue;
+			oldValue.m_Float = FLT_MIN;
+
+			FOR_EACH_VEC(attrs, i) {
+				auto &attr = attrs[i];
+				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), oldValue, attr.GetValue());
+			}
+		}
+    }
+	
+	DETOUR_DECL_MEMBER(void, CAttributeManager_StopProvidingTo, CBaseEntity *entity)
+    {
+        DETOUR_MEMBER_CALL(CAttributeManager_StopProvidingTo)(entity);
+		auto manager = reinterpret_cast<CAttributeManager *>(this);
+		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
+		if (item != nullptr) {
+			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
+			
+			attribute_data_union_t newValue;
+			newValue.m_Float = FLT_MIN;
+
+			FOR_EACH_VEC(attrs, i) {
+				auto &attr = attrs[i];
+				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), attr.GetValue(), newValue);
+			}
+		}
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleAnimEvent, animevent_t *pEvent)
+    {
+		DETOUR_MEMBER_CALL(CTFPlayer_HandleAnimEvent)(pEvent);
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if ((pEvent->event == AE_WPN_HIDE || pEvent->event == AE_WPN_UNHIDE) && player->GetActiveTFWeapon() != nullptr) {
+			GET_STRING_ATTRIBUTE(player->GetActiveTFWeapon()->GetItem()->GetAttributeList(), "custom item model", model);
+			if (model != nullptr) {
+				if (pEvent->event == AE_WPN_HIDE) {
+					player->GetActiveTFWeapon()->AddEffects(EF_NODRAW);
+				}
+				else if (pEvent->event == AE_WPN_UNHIDE) {
+					player->GetActiveTFWeapon()->RemoveEffects(EF_NODRAW);
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(Vector, CTFWeaponBase_GetParticleColor, int color)
+    {
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		int particleColor = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, particleColor, particle_color_rgb);
+		if (particleColor != 0) {
+			Color clr = Color( ((particleColor & 0xFF0000) >> 16), ((particleColor & 0xFF00) >> 8), (particleColor & 0xFF) );
+
+			float fColorMod = 1.f;
+			if ( color == 2 )
+			{
+				fColorMod = 0.5f;
+			}
+
+			Vector vResult;
+			vResult.x = clamp( fColorMod * clr.r() * (1.f/255), 0.f, 1.0f );
+			vResult.y = clamp( fColorMod * clr.g() * (1.f/255), 0.f, 1.0f );
+			vResult.z = clamp( fColorMod * clr.b() * (1.f/255), 0.f, 1.0f );
+			return vResult;
+		}
+		float particleRainbow = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, particleRainbow, particle_color_rainbow);
+		if (particleRainbow != 0) {
+
+			Vector vResult;
+			HSVtoRGB(Vector((int)(gpGlobals->curtime * particleRainbow) % 360, 1 , 1), vResult);
+
+			return vResult;
+		}
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_GetParticleColor)(color);
+	}
+
+	DETOUR_DECL_STATIC(CTFProjectile_EnergyRing *, CTFProjectile_EnergyRing_Create, CTFWeaponBaseGun *pLauncher, const Vector &vecOrigin, const QAngle& vecAngles, float fSpeed, float fGravity, 
+			CBaseEntity *pOwner, CBaseEntity *pScorer, Vector vColor1, Vector vColor2, bool bCritical)
+    {
+		auto ring = DETOUR_STATIC_CALL(CTFProjectile_EnergyRing_Create)(pLauncher, vecOrigin, vecAngles, fSpeed, fGravity, pOwner, pScorer, vColor1, vColor2, bCritical);
+		if (ring != nullptr && pLauncher != nullptr) {
+			int particleColor = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(pLauncher, particleColor, particle_color_rgb);
+			float particleRainbow = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pLauncher, particleRainbow, particle_color_rainbow);
+			if (particleColor != 0 || particleRainbow != 0) {
+				const char *particle;
+				int penetrate = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(pLauncher, penetrate, energy_weapon_penetration);
+				if (penetrate && bCritical) {
+					particle = "drg_bison_projectile_crit";
+				}
+				else if (penetrate && !bCritical) {
+					particle = "drg_bison_projectile";
+				}
+				else if (!penetrate && bCritical) {
+					particle = "drg_pomson_projectile_crit";
+				}
+				else {
+					particle = "drg_pomson_projectile";
+				}
+
+				force_send_client = true;
+				CRecipientFilter filter;
+				filter.AddAllPlayers();
+				Vector color0 = pLauncher->GetParticleColor(1);
+				Vector color1 = pLauncher->GetParticleColor(2);
+				DispatchParticleEffect(particle, PATTACH_ABSORIGIN_FOLLOW, ring, nullptr, vec3_origin, false, color0, color1, true, true, nullptr, &filter);
+				force_send_client = false;
+			}
+		}
+		return ring;
+	}
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
@@ -4623,6 +4778,7 @@ namespace Mod::Attr::Custom_Attributes
 					player->SetModelScale(1.0f);
 				}
 			}
+			Mod::Pop::PopMgr_Extensions::ApplyOrClearRobotModel(player);
 		}
 	}
 
@@ -4805,6 +4961,11 @@ namespace Mod::Attr::Custom_Attributes
 			
             MOD_ADD_DETOUR_MEMBER(CTFGameMovement_ToggleParachute, "CTFGameMovement::ToggleParachute");	
             MOD_ADD_DETOUR_MEMBER(CTFGameMovement_HandleDuckingSpeedCrop, "CTFGameMovement::HandleDuckingSpeedCrop");	
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_HandleAnimEvent, "CTFPlayer::HandleAnimEvent");
+            MOD_ADD_DETOUR_MEMBER(CAttributeManager_ProvideTo, "CAttributeManager::ProvideTo");
+            MOD_ADD_DETOUR_MEMBER(CAttributeManager_StopProvidingTo, "CAttributeManager::StopProvidingTo");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetParticleColor, "CTFWeaponBase::GetParticleColor");
+            MOD_ADD_DETOUR_STATIC(CTFProjectile_EnergyRing_Create, "CTFProjectile_EnergyRing::Create");
 			
 			
 		//  Allow fire rate bonus with reduced health on melee weapons
@@ -4891,14 +5052,11 @@ namespace Mod::Attr::Custom_Attributes
 		virtual void LevelInitPostEntity() override
 		{
 			precached.clear();
-			entity_penetration_counter.clear();
-			player_touch_times.clear();
 		}
 
 		virtual void LevelInitPreEntity() override
 		{
 			precached.clear();
-			entity_penetration_counter.clear();
 			LoadAttributes();
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return true; }
@@ -4906,14 +5064,11 @@ namespace Mod::Attr::Custom_Attributes
 		virtual void OnUnload() override
 		{
 			precached.clear();
-			entity_penetration_counter.clear();
 		}
 		
 		virtual void OnDisable() override
 		{
 			precached.clear();
-			entity_penetration_counter.clear();
-			player_touch_times.clear();
 		}
 
 		virtual void OnEnable() override
@@ -4924,14 +5079,6 @@ namespace Mod::Attr::Custom_Attributes
 		virtual void FrameUpdatePostEntityThink() override
 		{
 			if (gpGlobals->tickcount % 16 == 0) { 
-				for (auto it = entity_penetration_counter.begin(); it != entity_penetration_counter.end(); ) {
-					if (it->first == nullptr || it->first->IsMarkedForDeletion()) {
-						it = entity_penetration_counter.erase(it);
-					}
-					else {
-						it++;
-					}
-				}
 				ForEachTFPlayer([&](CTFPlayer *player){
 					static bool in_upgrade_zone[33];
 
@@ -4954,7 +5101,7 @@ namespace Mod::Attr::Custom_Attributes
 
 			for (size_t i = 0; i < model_entries.size(); ) {
 				auto &entry = model_entries[i];
-				if (entry.weapon == nullptr || entry.weapon->IsMarkedForDeletion()) {
+				if (entry.weapon == nullptr || entry.weapon->IsMarkedForDeletion() || entry.weapon->GetOwnerEntity() == nullptr) {
 					if (entry.wearable != nullptr)
 						entry.wearable->Remove();
 					if (entry.wearable_vm != nullptr)

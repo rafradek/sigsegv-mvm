@@ -3,7 +3,6 @@
 
 
 #include "stub/baseanimating.h"
-#include "stub/server.h"
 
 class CNavArea;
 class CBaseCombatWeapon;
@@ -269,20 +268,6 @@ inline CBasePlayer *UTIL_PlayerByUserId(int userID)
 template<typename T>
 int CollectPlayers(CUtlVector<T *> *playerVector, int team = TEAM_ANY, bool isAlive = false, bool shouldAppend = false);
 
-inline CBasePlayer *UTIL_PlayerBySteamID(const CSteamID &steamid) {
-	if (steamid.ConvertToUint64() == 0LL)
-		return nullptr;
-
-	int clients = sv->GetClientCount();
-	for (int i = 0; i < clients; i++) {
-		auto client = sv->GetClient(i);
-		if (client != nullptr) {
-			if (static_cast<CBaseClient *>(client)->m_SteamID == steamid) {
-				return UTIL_PlayerByIndex(i+1);
-			}
-		}
-	}
-	return nullptr;
-}
+CBasePlayer *UTIL_PlayerBySteamID(const CSteamID &steamid);
 
 #endif

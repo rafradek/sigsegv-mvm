@@ -83,6 +83,7 @@ MemberFuncThunk<      CBaseEntity *, void, int                                  
 MemberFuncThunk<      CBaseEntity *, bool, const char *, variant_t *                        > CBaseEntity::ft_ReadKeyField               ("CBaseEntity::ReadKeyField");
 MemberFuncThunk<      CBaseEntity *, IPhysicsObject *                                       > CBaseEntity::ft_VPhysicsInitStatic         ("CBaseEntity::VPhysicsInitStatic");
 MemberFuncThunk<      CBaseEntity *, void *,int                                             > CBaseEntity::ft_GetDataObject              ("CBaseEntity::GetDataObject");
+MemberFuncThunk<      CBaseEntity *, int, int                                               > CBaseEntity::ft_SetTransmitState           ("CBaseEntity::SetTransmitState");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");
@@ -259,7 +260,8 @@ const char *variant_t::ToString( void ) const
 
 	case FIELD_EHANDLE:
 		{
-			const char *pszName = (Entity()) ? STRING(Entity()->GetEntityName()) : "<<null entity>>";
+			auto entity = Entity();
+			const char *pszName = entity ? (entity->GetEntityName() != NULL_STRING && *STRING(entity->GetEntityName()) != '\0' ? STRING(entity->GetEntityName()) : CFmtStr("@h@%d(%s)", entity->GetRefEHandle().ToInt(), entity->GetClassname()).Get( )) : "<<null entity>>";
 			Q_strncpy( szBuf, pszName, 512 );
 			return (szBuf);
 		}

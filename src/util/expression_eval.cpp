@@ -19,7 +19,9 @@ namespace Mod::Etc::Mapentity_Additions
 
 std::vector<Evaluation::EvaluationFuncDef> expression_functions;
 
-std::vector<const char *> Evaluation::args_optional_empty;
+std::vector<std::string> Evaluation::args_optional_empty;
+
+Evaluation::ScriptGlobals Evaluation::s_scriptGlobals;
 
 bool ParseNumberOrVectorFromStringStrict(const char *str, variant_t &value, bool asfloat)
 {
@@ -48,7 +50,7 @@ bool ParseNumberOrVectorFromStringStrict(const char *str, variant_t &value, bool
     return false;
 }
 
-void Evaluation::AddFunction(std::string name, ExpressionFunction function, std::vector<std::string> args, std::vector<const char *> args_optional)
+void Evaluation::AddFunction(std::string name, ExpressionFunction function, std::vector<std::string> args, std::string explanation, std::vector<std::string> args_optional)
 {
     Evaluation::EvaluationFuncDef func;
     func.name = name;
@@ -56,6 +58,7 @@ void Evaluation::AddFunction(std::string name, ExpressionFunction function, std:
     func.paramCount = args.size();
     func.paramNames = args;
     func.paramNamesOptional = args_optional;
+    func.explanation = explanation;
     expression_functions.push_back(func);
 }
 
@@ -180,6 +183,7 @@ void Evaluation::Evaluate(const char *expression, CBaseEntity *self, CBaseEntity
                     }
                 }
             }
+            Msg("%c", c);
             switch (c) {
                 case ' ': case '\t': case '\n': case '\r': ParseWhitespace(); break;
                 case '+': ParseOp(ADD); break;
@@ -204,7 +208,16 @@ void Evaluation::Evaluate(const char *expression, CBaseEntity *self, CBaseEntity
         }
     }
     ParseOp(INVALID);
+    Msg("Left size %d\n", m_Stack.size());
     m_Result = m_CurStack.result;
+    if (m_CurStack.varNames != nullptr) {
+        delete m_CurStack.varNames;
+        m_CurStack.varNames = nullptr;
+    }
+    if (m_CurStack.variables != nullptr) {
+        delete m_CurStack.variables;
+        m_CurStack.variables = nullptr;
+    }
 }
 
 void Evaluation::ParseParenthesisLeft()
@@ -212,12 +225,15 @@ void Evaluation::ParseParenthesisLeft()
     if (!m_strToken.empty()) {
         ParseToken();
     }
-    if (!m_bParseFunction) {
-        PushStack();
-    }
-    else {
+    if (m_bParseFunction) {
         m_bParseFunctionParam = true;
+        return;
     }
+
+    if (m_CurStack.declMode == WHILE_BEGIN) {
+        m_pLoopGoBackPosition = m_pExpression;
+    }
+    PushStack();
 }
 
 void Evaluation::ParseParam()
@@ -237,18 +253,15 @@ void Evaluation::ParseParam()
     PushStack();
 }
 
-Evaluation::EvaluationFuncDef *Evaluation::FindFunction(std::string &name)
+const Evaluation::EvaluationFuncDef *Evaluation::FindFunction(std::string &name)
 {
-        for (auto &pair : expression_functions) {
-            if (pair.name == name) {
-                return &pair;
+    for (auto funcList : {&expression_functions, &m_Functions, &s_scriptGlobals.m_Functions}) {
+        for (auto &func : *funcList) {
+            if (func.name == name) {
+                return &func;
             }
         }
-        for (auto &pair : m_Functions) {
-            if(pair.name == name) {
-                return &pair;
-            }
-        }
+    }
     //ClientMsgAll("Script Error: Function %s not found\n", func->func);
     return nullptr;
 }
@@ -257,7 +270,7 @@ void Evaluation::ExecuteFunction(EvaluationFunc *func)
 {
     auto def = func->func;
     if (def->paramCount > func->params.size()) {
-        ClientMsgAll("Script Error: Function %s called with %d parameters, need %d:", def->name, func->params.size(), def->paramCount);
+        ClientMsgAll("Script Error: Function %s called with %d parameters, need %d:", def->name.c_str(), func->params.size(), def->paramCount);
         for (size_t i = 0; i < def->paramCount; i++) {
             ClientMsgAll(", %s", def->paramNames[i]);
         }
@@ -270,16 +283,18 @@ void Evaluation::ExecuteFunction(EvaluationFunc *func)
     else {
         PushStack();
         m_CurStack.returnPos = m_pExpression;
+        m_CurStack.isFunction = true;
         m_pExpression = def->expr;
+        m_CurStack.variables = new std::deque<std::pair<std::string, variant_t>>();
         for (size_t i = 0; i < def->paramCount; i++) {
-            m_Variables.push_back({def->paramNames[i], func->params[i]});
+            m_CurStack.variables->push_back({def->paramNames[i], func->params[i]});
         }
     }
 }
 
-bool Evaluation::FindVariable(std::string &name, variant_t &value)
+inline bool FindInVariableList(std::string &name, variant_t &value, std::deque<std::pair<std::string, variant_t>> &vars)
 {
-    for (auto &pair : m_Variables) {
+    for (auto &pair : vars) {
         if (pair.first == name) {
             value = pair.second;
             return true;
@@ -288,15 +303,59 @@ bool Evaluation::FindVariable(std::string &name, variant_t &value)
     return false;
 }
 
-bool Evaluation::SetVariable(std::string &name, variant_t &value)
+bool Evaluation::FindVariable(std::string &name, variant_t &value)
 {
-    for (auto &pair : m_Variables) {
+    // Find in top of the stack
+    if (m_CurStack.variables != nullptr && FindInVariableList(name, value, *m_CurStack.variables)) return true;
+
+    // Find in the rest of the stack
+    for(auto it = m_Stack.rbegin(); it != m_Stack.rend(); it++) {
+        if ((*it).variables != nullptr && FindInVariableList(name, value, *(*it).variables)) return true;
+    }
+
+    // Find in global variables
+    if (FindInVariableList(name, value, s_scriptGlobals.m_Variables)) return true;
+    return false;
+}
+
+inline bool SetInVariableList(std::string &name, variant_t &value, std::deque<std::pair<std::string, variant_t>> &vars, bool create)
+{
+    for (auto &pair : vars) {
         if (pair.first == name) {
             pair.second = value;
             return true;
         }
     }
-    m_Variables.push_back({name, value});
+    if (create) {
+        vars.push_back({name, value});
+    }
+    return false;
+}
+
+bool Evaluation::SetVariable(std::string &name, variant_t &value)
+{
+    // Find or create global variable if public token is set
+    if (m_CurStack.exportMode) {
+        m_CurStack.exportMode = false;
+        return SetInVariableList(name, value, s_scriptGlobals.m_Variables, true);
+    }
+
+    // Search top of the stack first
+    if (m_CurStack.variables != nullptr && SetInVariableList(name, value, *m_CurStack.variables, false)) return true;
+    
+    // Search rest of the stack
+    for(auto it = m_Stack.rbegin(); it != m_Stack.rend(); it++) {
+        if ((*it).variables != nullptr && SetInVariableList(name, value, *(*it).variables, false)) return true;
+    }
+
+    // Search global variables
+    if (SetInVariableList(name, value, s_scriptGlobals.m_Variables, false)) return true;
+
+    // No varible found, create it then
+    if (m_CurStack.variables == nullptr) {
+        m_CurStack.variables = new std::deque<std::pair<std::string, variant_t>>();
+    }
+    m_CurStack.variables->push_back({name, value});
     return false;
 }
 
@@ -318,6 +377,7 @@ void Evaluation::ParseParenthesisRight()
         delete m_CurStack.func;
         m_CurStack.func = nullptr;
     }
+    Msg( "mode %d\n",m_CurStack.declMode );
     if (m_CurStack.declMode == IF) {
         if (m_curValue.Int()) {
             m_CurStack.declMode = IF_AFTER_TRUE;
@@ -328,6 +388,21 @@ void Evaluation::ParseParenthesisRight()
             m_CurStack.declMode = IF_AFTER_FALSE;
             SkipNextCodeBlock();
         }
+    }
+    else if (m_CurStack.declMode == WHILE_BEGIN) {
+        Msg( "while\n");
+        if (m_curValue.Int()) {
+            m_CurStack.declMode = WHILE_EXEC;
+            PushStack();
+            m_CurStack.popStackOnEnd = true;
+            m_CurStack.returnPos = m_pLoopGoBackPosition;
+            Msg( "return pos %s\n", m_CurStack.returnPos);
+        }
+        else {
+            SkipNextCodeBlock();
+            m_CurStack.declMode = NORMAL;
+        }
+        m_pLoopGoBackPosition = nullptr;
     }
     m_bParseToken = false;
 }
@@ -341,10 +416,20 @@ void Evaluation::ParseBraceLeft()
         m_CurStack.declMode = NORMAL;
     }
     if (m_bParseFunction) {
-        m_DefFunc.expr = m_pExpression;
-        m_Functions.push_back(m_DefFunc);
+        if (m_CurStack.exportMode) {
+            const char *start = m_pExpression;
+            SkipChars('{', '}');
+            m_DefFunc.expr = s_scriptGlobals.m_FunctionExpressions.emplace_back(start, (size_t)(m_pExpression - start)).c_str();
+            
+            m_CurStack.exportMode = false;
+            s_scriptGlobals.m_Functions.push_back(m_DefFunc);
+        }
+        else {
+            m_DefFunc.expr = m_pExpression;
+            m_Functions.push_back(m_DefFunc);
+            SkipChars('{', '}');
+        }
         m_DefFunc = EvaluationFuncDef();
-        SkipChars('{', '}');
         m_bParseFunction = false;
         m_bParseFunctionParam = false;
         //Msg("Parse end fuction %s\n", m_pExpression);
@@ -460,6 +545,9 @@ void Evaluation::PopStack()
     if (m_CurStack.varNames != nullptr) {
         delete m_CurStack.varNames;
     }
+    if (m_CurStack.variables != nullptr) {
+        delete m_CurStack.variables;
+    }
     m_curValue = m_CurStack.result;
     m_CurStack = m_Stack.back();
     m_Stack.pop_back();
@@ -523,6 +611,9 @@ void Evaluation::ParseToken()
         m_bWasString = false;
     }
     // Reserved tokens
+    else if (m_strToken == "public"sv) {
+        m_CurStack.exportMode = true;
+    }
     else if (m_strToken == "function"sv) {
         m_bParseFunction = true;
     }
@@ -543,8 +634,14 @@ void Evaluation::ParseToken()
             m_CurStack.popStackOnEnd = true;
         }
     }
+    else if (m_strToken == "while"sv) {
+        m_CurStack.declMode = WHILE_BEGIN;
+    }
     else if (m_strToken == "return"sv) {
         m_CurStack.declMode = RETURN;
+    }
+    else if (m_strToken == "do"sv) {
+        m_CurStack.declMode = DO;
     }
     else if (ParseNumberOrVectorFromStringStrict(m_strToken.c_str(), m_curValue, asfloat)) {
 
@@ -593,7 +690,7 @@ void Evaluation::ParseToken()
         if (!m_bDeclaringVariable) {
             if (m_CurStack.op != ACCESS) {
                 if (!FindVariable(m_strToken, m_curValue)) {
-                    auto function = FindFunction(m_strToken);
+                    auto *function = FindFunction(m_strToken);
                     if (function != nullptr) {
                         m_CurStack.func = new EvaluationFunc {function};
                     }
@@ -921,12 +1018,14 @@ void Evaluation::ParseOp(Op op)
                 PopStack();
             }
             m_bReturning = true;
+            // Return outside of function, stop script execution
             if (m_Stack.size() == 0) {
                 while(*m_pExpression != '\0') {
                     m_pExpression++;
                 }
                 m_CurStack.result = retValue;
             }
+            // Return inside function, go back to function caller
             else {
                 if (m_CurStack.returnPos != nullptr) {
                     m_pExpression = m_CurStack.returnPos;
@@ -936,9 +1035,57 @@ void Evaluation::ParseOp(Op op)
             }
         }
         if (m_CurStack.popStackOnEnd) {
+            if (m_CurStack.returnPos != nullptr) {
+                m_pExpression = m_CurStack.returnPos;
+            }
             PopStack();
             ParseOp(INVALID);
+            
+            if (m_CurStack.declMode == WHILE_EXEC) {
+                Msg("ToExec %d %s\n", m_CurStack.declMode, m_pExpression);
+                m_CurStack.declMode = WHILE_BEGIN;
+                PushStack();
+                m_pLoopGoBackPosition = m_pExpression;
+            }
         }
+        Msg("Pop %d\n", m_CurStack.declMode);
+    }
+}
+
+void Evaluation::GetFunctionInfoStrings(std::vector<std::string> &vec)
+{
+    for (auto funcList : {&expression_functions, &s_scriptGlobals.m_Functions}) {
+        for (auto &func : *funcList) {
+            std::string &bufCmd = vec.emplace_back();
+            bufCmd += func.name;
+            bufCmd += '(';
+            bool first = true;
+            for (auto &paramList : {func.paramNames, func.paramNamesOptional}) {
+                for (auto &param : paramList) {
+                    if (!first) {
+                        bufCmd += ',';
+                    }
+                    first = false;
+                    bufCmd += ' ';
+                    bufCmd += param;
+                }
+            }
+            bufCmd += " )\n";
+            bufCmd += func.expr != nullptr ? func.expr : func.explanation;
+            bufCmd += '\n';
+            bufCmd += '\n';
+        }
+    }
+}
+
+void Evaluation::GetVariableStrings(std::vector<std::string> &vec)
+{
+    for (auto &var : s_scriptGlobals.m_Variables) {
+        std::string &bufCmd = vec.emplace_back();
+        bufCmd += var.first;
+        bufCmd += " = ";
+        bufCmd += var.second.String();
+        bufCmd += '\n';
     }
 }
 
@@ -956,16 +1103,24 @@ CON_COMMAND_F(sig_expression_test, "Test of expressions", FCVAR_NONE)
 
 CON_COMMAND_F(sig_expression_functions, "List of expression functions", FCVAR_NONE)
 {
-	for (auto &func : expression_functions) {
-        Msg("%s(", func.name.c_str());
-        bool first = true;
-	    for (auto &param : func.paramNames) {
-            if (!first) {
-                Msg(",");
-            }
-            first = false;
-            Msg(" %s", param.c_str());
-        }
-        Msg(" )\n");
+    std::vector<std::string> functions;
+    std::string buf;
+    Evaluation::GetFunctionInfoStrings(functions);
+    for (auto &function : functions) {
+        buf += function;
     }
+    
+    puts(buf.c_str());
+}
+
+CON_COMMAND_F(sig_expression_vars, "List of expression variables", FCVAR_NONE)
+{
+    std::vector<std::string> vars;
+    std::string buf;
+    Evaluation::GetVariableStrings(vars);
+    for (auto &var : vars) {
+        buf += var;
+    }
+    
+    puts(buf.c_str());
 }

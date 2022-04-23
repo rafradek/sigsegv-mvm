@@ -551,6 +551,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int cost = 0;
 		int min_wave = 0;
 		int max_wave = 9999;
+		bool hidden = false;
 		bool allow_refund = false;
 	};
 
@@ -1813,7 +1814,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
 		kv->deleteThis();
 		TFObjectiveResource()->m_nMannVsMachineWaveCount = oldwave;
-		
+
 		if (remove) {
 			CSteamID steamid;
 			player->GetSteamID(&steamid);
@@ -2099,7 +2100,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER , "#TF_MVM_NoClassUpgradeUI");
 				return;
 			}
-			if (!TFGameRules()->InSetup() && !g_pPopulationManager->IsInEndlessWaves()) {
+			if (player->IsReadyToPlay() && !TFGameRules()->InSetup() && !g_pPopulationManager->IsInEndlessWaves()) {
             	gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CHAT , "#TF_MVM_NoClassChangeAfterSetup");
 				return;
 			}
@@ -2714,6 +2715,52 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		PrintToChatAll("Set Visible\n");
 		//this->SetEffects(this->GetEffects() & ~(EF_NODRAW));
+	}
+	
+	THINK_FUNC_DECL(EquipDelaySetVisible2)
+	{
+		this->SetEffects(this->GetEffects() | EF_NODRAW);
+		this->NetworkProp()->MarkPVSInformationDirty();
+		this->DispatchUpdateTransmitState();
+		//this->SetEffects(this->GetEffects() & ~(EF_NODRAW));
+	}
+	
+	THINK_FUNC_DECL(EquipDelaySetVisible3)
+	{
+		this->SetEffects(this->GetEffects() & ~(EF_NODRAW));
+		this->NetworkProp()->MarkPVSInformationDirty();
+		this->DispatchUpdateTransmitState();
+		//this->SetEffects(this->GetEffects() & ~(EF_NODRAW));
+	}
+
+	DETOUR_DECL_MEMBER(int, CBaseCombatWeapon_UpdateTransmitState)
+	{
+		auto wep = reinterpret_cast<CBaseCombatWeapon *>(this);
+		auto owner = ToTFPlayer(wep->GetOwnerEntity());
+		if (owner != nullptr && owner->GetActiveWeapon() != wep) {
+			return wep->SetTransmitState(FL_EDICT_DONTSEND);
+		}
+		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_UpdateTransmitState)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		if (ret) {
+			wep->m_iState = WEAPON_IS_ACTIVE;
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *pSwitchingTo)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(pSwitchingTo);
+		if (ret) {
+			wep->m_iState = WEAPON_IS_CARRIED_BY_PLAYER;
+		}
+		return ret;
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
@@ -3752,6 +3799,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			if ((class_index == item.class_index || item.class_index == 0) && wave >= item.min_wave && wave <= item.max_wave) {
 
 				bool selected = state.m_SelectedLoadoutItems[player].count(i);
+
+				if (item.hidden && !state.m_BoughtLoadoutItems[player->GetSteamID()].count(i)) {
+					continue;
+				}
 				
 				// Display item cost if not free
 				char cost[32] = "";
@@ -4276,6 +4327,44 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
+	void AwardExtraItem(CTFPlayer *player, std::string &name) {
+		
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+			if (item.name == name) {
+				CSteamID steamid;
+				player->GetSteamID(&steamid);
+				state.m_BoughtLoadoutItems[steamid].insert(i);
+
+				auto &set = state.m_SelectedLoadoutItems[player];
+				for (auto it = set.begin(); it != set.end(); ) {
+					auto &item_compare = state.m_ExtraLoadoutItems[*it];
+					if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
+						it = set.erase(it);
+					}
+					else {
+						it++;
+					}
+				}
+				set.insert(i);
+				return;
+			}
+		}
+	}
+
+	void StripExtraItem(CTFPlayer *player, std::string &name) {
+		
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			if (state.m_ExtraLoadoutItems[i].name == name) {
+				CSteamID steamid;
+				player->GetSteamID(&steamid);
+				state.m_BoughtLoadoutItems[steamid].erase(i);
+
+				state.m_SelectedLoadoutItems[player].erase(i);
+				return;
+			}
+		}
+	}
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
 	// {
 	// 	DevMsg("MessageWriteString %s\n",name);
@@ -4455,6 +4544,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 				else if (FStrEq(name, "AllowRefund")) {
 					item.allow_refund = subkey3->GetBool();
+				}
+				else if (FStrEq(name, "Hidden")) {
+					item.hidden = subkey3->GetBool();
 				}
 			}
 		}
@@ -6013,6 +6105,11 @@ namespace Mod::Pop::PopMgr_Extensions
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_7, "DispatchParticleEffect [overload 7]");
             MOD_ADD_DETOUR_MEMBER(CBaseObject_StartBuilding, "CBaseObject::StartBuilding");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
+            //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_UpdateTransmitState, "CBaseCombatWeapon::UpdateTransmitState");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
+			
+			
 			
 			
 			// Remove banned missions from the list
@@ -6070,6 +6167,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void LevelInitPostEntity() override
 		{
+
 			// Precache bones that are not available on robot models
 			for (int i = 1; i < 10; i++) {
 				state.m_CachedRobotModelIndex[i] = AllocPooledString(g_szBotModels[i]);
@@ -6120,6 +6218,22 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			if (gpGlobals->tickcount % 66 == 24) {
+				ForEachTFPlayer([](CTFPlayer *player){
+					if (!player->IsAlive()) return;
+
+					for (int i =0; i < MAX_WEAPONS; i++) {
+						CBaseCombatWeapon *cbcw = player->Weapon_GetSlot(i);
+						if (cbcw == nullptr || cbcw == player->GetActiveWeapon()) continue;
+						if (cbcw->GetEffects() & 512) {
+							cbcw->RemoveEffects(512);
+						}
+						else {
+							cbcw->AddEffects(512);
+						}
+					}
+				});
+			}
 			if (!IsMannVsMachineMode()) return;
 			
 			if (state.m_flRemoveGrapplingHooks >= 0.0f) {

@@ -149,6 +149,7 @@ protected:
 	
 	virtual void OnEnable() override  {}
 	virtual void OnDisable() override {}
+	virtual void OnEnablePost() {};
 	
 	// for e.g. dynamically adding patches/detours: ctor is too early, but OnLoad is too late
 	virtual void PreLoad() {}

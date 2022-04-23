@@ -141,9 +141,9 @@ namespace Mod::Perf::SendProp_Optimize
     std::vector<PropIndexData> prop_offset_sendtable;
 
     // key: prop index value: write bit index
-    std::vector<unsigned short> player_prop_write_offset[33];
+    std::vector<unsigned short> player_prop_write_offset[34];
 
-    std::vector<int> player_prop_value_old[33];
+    std::vector<int> player_prop_value_old[34];
 
     unsigned short *player_prop_offsets;
 
@@ -154,10 +154,10 @@ namespace Mod::Perf::SendProp_Optimize
 
     CSendNode **player_send_nodes;
 
-    bool force_player_update[33];
+    bool force_player_update[34];
 
     // This is used to check if a player had a forced full update
-    bool player_not_force_updated[33];
+    bool player_not_force_updated[34];
 
     bool firsttime = true;
     bool lastFullEncode = false;
@@ -187,7 +187,7 @@ namespace Mod::Perf::SendProp_Optimize
 	const int objectID)
 	{
         if (rc_SendTable_WriteAllDeltaProps) {
-            if (objectID > 0 && objectID < 34) {
+            if (objectID > 0 && objectID < 35) {
                 bf_read toBits( "SendTable_CalcDelta/toBits", pToState, BitByte(nToBits), nToBits );
                 CDeltaBitsReader toBitsReader( &toBits );
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
@@ -230,6 +230,9 @@ namespace Mod::Perf::SendProp_Optimize
     StaticFuncThunk<void, int , edict_t *, void *, CFrameSnapshot *> ft_SV_PackEntity("SV_PackEntity");
     StaticFuncThunk<IChangeFrameList*, int, int> ft_AllocChangeFrameList("AllocChangeFrameList");
     StaticFuncThunk<void, PackWork_t &> ft_PackWork_t_Process("PackWork_t::Process");
+    StaticFuncThunk<bool, const SendTable *, const void *, bf_write *, int, CUtlMemory<CSendProxyRecipients> *, bool> ft_SendTable_Encode("SendTable_Encode");
+    StaticFuncThunk<void, ServerClass *, int, const void *, int> ft_SV_EnsureInstanceBaseline("SV_EnsureInstanceBaseline");
+    
 
     static inline void SV_PackEntity( 
         int edictIdx, 
@@ -249,6 +252,16 @@ namespace Mod::Perf::SendProp_Optimize
     static inline IChangeFrameList* AllocChangeFrameList(int props, int tick)
     {
         return ft_AllocChangeFrameList(props, tick);
+    }
+
+    static inline bool SendTable_Encode(const SendTable *table, const void *entity, bf_write *buf, int edictnum, CUtlMemory<CSendProxyRecipients> *recip, bool zeromem)
+    {
+        return ft_SendTable_Encode(table, entity, buf, edictnum, recip, zeromem);
+    }
+
+    static inline void SV_EnsureInstanceBaseline(ServerClass *serverClass, int edictnum, const void *data, int size)
+    {
+        return ft_SV_EnsureInstanceBaseline(serverClass, edictnum, data, size);
     }
 
     int count_tick;
@@ -847,6 +860,43 @@ namespace Mod::Perf::SendProp_Optimize
         return pVarData;
     }
 
+    DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
+	{
+		auto ret = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+        if (ret != nullptr) {
+            edict_t *edict = ret->edict();
+            auto serverClass = ret->GetServerClass();
+            if (edict != nullptr && serverClass != nullptr && serverClass->m_InstanceBaselineIndex == INVALID_STRING_INDEX) {
+                SendTable *pSendTable = serverClass->m_pTable;
+
+                //
+                // create entity baseline
+                //
+                
+                ALIGN4 char packedData[MAX_PACKEDENTITY_DATA] ALIGN4_POST;
+                bf_write writeBuf( "SV_CreateBaseline->writeBuf", packedData, sizeof( packedData ) );
+
+
+                // create basline from zero values
+                if ( !SendTable_Encode(
+                    pSendTable, 
+                    ret, 
+                    &writeBuf, 
+                    ENTINDEX(ret),
+                    NULL,
+                    false
+                    ) )
+                {
+                    Error("SV_CreateBaseline: SendTable_Encode returned false (ent %d).\n", ENTINDEX(ret));
+                }
+
+                // copy baseline into baseline stringtable
+                SV_EnsureInstanceBaseline( serverClass, ENTINDEX(ret), packedData, writeBuf.GetNumBytesWritten() );
+            }
+        }
+        
+        return ret;
+	}
 
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -869,6 +919,7 @@ namespace Mod::Perf::SendProp_Optimize
 		    MOD_ADD_DETOUR_STATIC(SendTable_CullPropsFromProxies, "SendTable_CullPropsFromProxies");
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendPredictableId, "SendProxy_SendPredictableId");
 		    MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
+			MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
 			//MOD_ADD_DETOUR_STATIC(SendTable_WriteAllDeltaProps, "SendTable_WriteAllDeltaProps");
             
 		}
@@ -1079,7 +1130,7 @@ namespace Mod::Perf::SendProp_Optimize
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
-            sv_instancebaselines.SetValue(false);
+            //sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
                 sv_maxreplay.SetValue(0.05f);
@@ -1096,7 +1147,7 @@ namespace Mod::Perf::SendProp_Optimize
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
-            sv_instancebaselines.SetValue(false);
+            //sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
                 sv_maxreplay.SetValue(0.05f);

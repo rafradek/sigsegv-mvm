@@ -1,6 +1,7 @@
 #include "stub/baseplayer.h"
 #include "mem/extract.h"
 #include "stub/tfplayer.h"
+#include "stub/server.h"
 
 
 #if defined _LINUX
@@ -117,3 +118,20 @@ MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> CBase
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");
+
+CBasePlayer *UTIL_PlayerBySteamID(const CSteamID &steamid)
+{
+	if (steamid.ConvertToUint64() == 0LL)
+		return nullptr;
+
+	int clients = sv->GetClientCount();
+	for (int i = 0; i < clients; i++) {
+		auto client = sv->GetClient(i);
+		if (client != nullptr) {
+			if (static_cast<CBaseClient *>(client)->m_SteamID == steamid) {
+				return UTIL_PlayerByIndex(i+1);
+			}
+		}
+	}
+	return nullptr;
+}

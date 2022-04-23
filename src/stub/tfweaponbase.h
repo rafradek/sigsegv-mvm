@@ -103,6 +103,7 @@ public:
 	bool IsEnergyWeapon() const { return vt_IsEnergyWeapon(this); }
 	float Energy_GetShotCost() const { return vt_Energy_GetShotCost(this); }
 	void Misfire()               { vt_Misfire(this); }
+	Vector GetParticleColor(int color) { return vt_GetParticleColor(this, color); }
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
@@ -126,6 +127,7 @@ private:
 	static MemberVFuncThunk<const CTFWeaponBase *, bool> vt_IsEnergyWeapon;
 	static MemberVFuncThunk<const CTFWeaponBase *, float> vt_Energy_GetShotCost;
 	static MemberVFuncThunk<CTFWeaponBase *, void> vt_Misfire;
+	static MemberVFuncThunk<CTFWeaponBase *, Vector, int> vt_GetParticleColor;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {

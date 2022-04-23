@@ -1,3 +1,6 @@
+#ifndef _INCLUDE_SIGSEGV_STUB_SENDPROP_H_
+#define _INCLUDE_SIGSEGV_STUB_SENDPROP_H_
+
 #include "sdk2013/mempool.h"
 
 #define PROP_INDEX_VECTOR_ELEM_MARKER 0x8000
@@ -837,3 +840,5 @@ private:
 
 	CFrameSnapshot		*m_pSnapshot;
 };
+
+#endif

@@ -345,6 +345,14 @@ void FunctionFloor(const char *function, Evaluation::Params &params, int param_c
     result.SetInt((int)floor(params[0].Float()));
 }
 
+void FunctionRound(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
+{
+    if (params[0].FieldType() != FIELD_FLOAT)
+        params[0].Convert(FIELD_FLOAT);
+
+    result.SetInt((int)round(params[0].Float()));
+}
+
 void FunctionCeil(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     if (params[0].FieldType() != FIELD_FLOAT)
@@ -589,13 +597,24 @@ void FunctionCharAt(const char *function, Evaluation::Params &params, int param_
 void FunctionSubstring(const char *function, Evaluation::Params &params, int param_count, variant_t& result)
 {
     params[1].Convert(FIELD_INTEGER);
-    params[2].Convert(FIELD_INTEGER);
+    int length = -1;
+    if (param_count > 2) {
+        params[2].Convert(FIELD_INTEGER);
+        length = params[2].Int();
+    }
     const char *str = params[0].String();
     int len = strlen(str);
-    if (params[2].Int() >= 0 && params[1].Int() >= 0 && params[1].Int() + params[2].Int() <= len) {
-        char *buf = alloca(params[2].Int() + 1);
-        strncpy(buf, str + params[1].Int(), params[2].Int());
-        buf[params[2].Int()] = '\0';
+    if (params[1].Int() >= 0 && params[1].Int() + length <= len) {
+        char *buf;
+        if (length >= 0) {
+            buf = alloca(params[2].Int() + 1);
+            strncpy(buf, str + params[1].Int(), params[2].Int());
+            buf[length] = '\0';
+        }
+        else {
+            buf = alloca(len + 1 - params[1].Int());
+            strcpy(buf, str + params[1].Int());
+        }
         result.SetString(AllocPooledString(buf));
     }
     else {
@@ -641,58 +660,59 @@ class ExpressionFunctionInit
 public:
     ExpressionFunctionInit() 
     {
-        Evaluation::AddFunction("test", FunctionTest, {"test expression", "if true", "if false"});
-        Evaluation::AddFunction("?", FunctionTest, {"test expression", "if true", "if false"});
-        Evaluation::AddFunction("exists", FunctionTestExists, {"value"});
-        Evaluation::AddFunction("min", FunctionMin, {"value 1", "value 2"});
-        Evaluation::AddFunction("max", FunctionMax, {"value 1", "value 2"});
-        Evaluation::AddFunction("length", FunctionLength, {"vector"});
-        Evaluation::AddFunction("distance", FunctionDistance, {"vector 1", "vector 2"});
-        Evaluation::AddFunction("dotproduct", FunctionDot, {"vector 1", "vector 2"});
-        Evaluation::AddFunction("crossproduct", FunctionCross, {"vector 1", "vector 2"});
-        Evaluation::AddFunction("rotate", FunctionRotate, {"input vector", "rotation angles"});
-        Evaluation::AddFunction("normalize", FunctionNormalize, {"vector"});
-        Evaluation::AddFunction("toangles", FunctionToAngles, {"vector"});
-        Evaluation::AddFunction("toforwardvector", FunctionToForwardVector, {"vector"});
-        Evaluation::AddFunction("clamp", FunctionClamp, {"input value", "minimum value", "maximum value"});
-        Evaluation::AddFunction("remap", FunctionRemap, {"input value", "from min", "from max", "to min", "to max"});
-        Evaluation::AddFunction("remapclamped", FunctionRemapClamp, {"input value", "from min", "from max", "to min", "to max"});
-        Evaluation::AddFunction("int", FunctionToInt, {"value"});
-        Evaluation::AddFunction("float", FunctionToFloat, {"value"});
-        Evaluation::AddFunction("string", FunctionToString, {"value"});
-        Evaluation::AddFunction("stringpad", FunctionToStringPadding, {"value", "min digits", "num digits after decimal point"});
-        Evaluation::AddFunction("vector", FunctionToVector, {"string or X coordinate"}, {"[Y coordinate]', '[Z coordinate]"});
-        Evaluation::AddFunction("x", FunctionGetX, {"vector"});
-        Evaluation::AddFunction("y", FunctionGetY, {"vector"});
-        Evaluation::AddFunction("z", FunctionGetZ, {"vector"});
-        Evaluation::AddFunction("not", FunctionNegate, {"value"});
-        Evaluation::AddFunction("!", FunctionNegate, {"value"});
-        Evaluation::AddFunction("~", FunctionReverse, {"value"});
-        Evaluation::AddFunction("sqrt", FunctionSquareRoot, {"value"});
-        Evaluation::AddFunction("pow", FunctionPower, {"base", "exponent"});
-        Evaluation::AddFunction("floor", FunctionFloor, {"value"});
-        Evaluation::AddFunction("ceil", FunctionCeil, {"value"});
-        Evaluation::AddFunction("randomint", FunctionRandomInt, {"minimum value", "maximum value"});
-        Evaluation::AddFunction("randomfloat", FunctionRandomFloat, {"minimum value", "maximum value"});
-        Evaluation::AddFunction("case", FunctionCase, {"test value", "default", "case1"}, {"[case2]..."});
-        Evaluation::AddFunction("sin", FunctionSin, {"angle in degrees"});
-        Evaluation::AddFunction("cos", FunctionCos, {"angle in degrees"});
-        Evaluation::AddFunction("tan", FunctionTan, {"angle in degrees"});
-        Evaluation::AddFunction("atan", FunctionAtan, {"value"});
-        Evaluation::AddFunction("atan2", FunctionAtan2, {"x", "y"});
-        Evaluation::AddFunction("abs", FunctionAbs, {"value"});
-        Evaluation::AddFunction("playeratindex", FunctionGetPlayer, {"index"});
-        Evaluation::AddFunction("entityindex", FunctionGetEntityIndex, {"entity"});
-        Evaluation::AddFunction("playeritematslot", FunctionGetPlayerItemAtSlot, {"entity", "slot"});
-        Evaluation::AddFunction("playeritembyname", FunctionGetPlayerItemByName, {"entity", "item name"});
-        Evaluation::AddFunction("attribute", FunctionGetItemAttribute, {"player or item", "attribute name"});
-        Evaluation::AddFunction("type", FunctionGetType, {"value"});
-        Evaluation::AddFunction("charat", FunctionCharAt, {"string", "pos"});
-        Evaluation::AddFunction("substr", FunctionSubstring, {"string", "pos", "length"});
-        Evaluation::AddFunction("substring", FunctionSubstring, {"string", "pos", "length"});
-        Evaluation::AddFunction("startswith", FunctionStartsWith, {"string", "prefix"});
-        Evaluation::AddFunction("endswith", FunctionEndsWith, {"string", "suffix"});
-        Evaluation::AddFunction("find", FunctionFind, {"haystack", "needle"}, {"case sensitive = true"});
+        Evaluation::AddFunction("test", FunctionTest, {"test expression", "if true", "if false"}, "If an expression in the first parameter is true, returns the second parameter, otherwise returns third parameter");
+        Evaluation::AddFunction("?", FunctionTest, {"test expression", "if true", "if false"}, "If an expression in first parameter is true, returns the second parameter, otherwise returns third parameter");
+        Evaluation::AddFunction("exists", FunctionTestExists, {"value"}, "Returns true if the variable or entity exists");
+        Evaluation::AddFunction("min", FunctionMin, {"value 1", "value 2"}, "Returns smaller value of two parameters");
+        Evaluation::AddFunction("max", FunctionMax, {"value 1", "value 2"}, "Returns bigger value of two parameters");
+        Evaluation::AddFunction("length", FunctionLength, {"vector"}, "Returns length of vector, or distance from 0 0 0 point");
+        Evaluation::AddFunction("distance", FunctionDistance, {"vector 1", "vector 2"}, "Returns distance between two vectors");
+        Evaluation::AddFunction("dotproduct", FunctionDot, {"vector 1", "vector 2"}, "Returns dot product of two vectors");
+        Evaluation::AddFunction("crossproduct", FunctionCross, {"vector 1", "vector 2"}, "Returns cross product of two vectors");
+        Evaluation::AddFunction("rotate", FunctionRotate, {"input vector", "rotation angles"}, "Returns rotated input vector by rotation angles");
+        Evaluation::AddFunction("normalize", FunctionNormalize, {"vector"}, "Returns normalized vector (vector in the same direction but with length 1)");
+        Evaluation::AddFunction("toangles", FunctionToAngles, {"vector"}, "Returns angles of a vector");
+        Evaluation::AddFunction("toforwardvector", FunctionToForwardVector, {"angles"}, "Returns forward vector from specified angles");
+        Evaluation::AddFunction("clamp", FunctionClamp, {"input value", "minimum value", "maximum value"}, "Returns input value, limited to value between minimum and maximum");
+        Evaluation::AddFunction("remap", FunctionRemap, {"input value", "from min", "from max", "to min", "to max"}, "Returns remapped value, so that input value set to from min becomes to min and set to from max becomes to max");
+        Evaluation::AddFunction("remapclamped", FunctionRemapClamp, {"input value", "from min", "from max", "to min", "to max"}, "Returns remapped value, so that input value set to from min becomes to min and set to from max becomes to max, and limits the returned value between to min and to max values");
+        Evaluation::AddFunction("int", FunctionToInt, {"value"}, "Returns converted value to integer");
+        Evaluation::AddFunction("float", FunctionToFloat, {"value"}, "Returns converted value to real number");
+        Evaluation::AddFunction("string", FunctionToString, {"value"}, "Returns converted value to string");
+        Evaluation::AddFunction("stringpad", FunctionToStringPadding, {"value", "min digits", "num digits after decimal point"}, "Returns converted number to string, with specified amount of digits printed before and after decimal point");
+        Evaluation::AddFunction("vector", FunctionToVector, {"string or X coordinate"}, "Returns converted string or 3 number arguments to vector", {"[Y coordinate]', '[Z coordinate]"});
+        Evaluation::AddFunction("x", FunctionGetX, {"vector"}, "Returns X coordinate of a vector");
+        Evaluation::AddFunction("y", FunctionGetY, {"vector"}, "Returns Y coordinate of a vector");
+        Evaluation::AddFunction("z", FunctionGetZ, {"vector"}, "Returns Z coordinate of a vector");
+        Evaluation::AddFunction("not", FunctionNegate, {"value"}, "Returns negated value");
+        Evaluation::AddFunction("!", FunctionNegate, {"value"}, "Returns negated value");
+        Evaluation::AddFunction("~", FunctionReverse, {"value"}, "Returns reversed bits of integer value");
+        Evaluation::AddFunction("sqrt", FunctionSquareRoot, {"value"}, "Returns square root of a number");
+        Evaluation::AddFunction("pow", FunctionPower, {"base", "exponent"}, "Returns base number raised to power of exponent");
+        Evaluation::AddFunction("floor", FunctionFloor, {"value"}, "Returns the number rounded down");
+        Evaluation::AddFunction("round", FunctionRound, {"value"}, "Returns the rounded number");
+        Evaluation::AddFunction("ceil", FunctionCeil, {"value"}, "Returns the number rounded up");
+        Evaluation::AddFunction("randomint", FunctionRandomInt, {"minimum value", "maximum value"}, "Returns random integer between minimum and maximum value");
+        Evaluation::AddFunction("randomfloat", FunctionRandomFloat, {"minimum value", "maximum value"}, "Returns random real number between minimum and maximum value");
+        Evaluation::AddFunction("case", FunctionCase, {"test value", "default", "case1"}, "Returns caseN argument where N is test value, if caseN argument does not exist returns default value instead", {"[case2]..."});
+        Evaluation::AddFunction("sin", FunctionSin, {"angle in degrees"}, "Returns sin of an angle");
+        Evaluation::AddFunction("cos", FunctionCos, {"angle in degrees"}, "Returns cos of an angle");
+        Evaluation::AddFunction("tan", FunctionTan, {"angle in degrees"}, "Returns tan of an angle");
+        Evaluation::AddFunction("atan", FunctionAtan, {"value"}, "Returns atan of a value");
+        Evaluation::AddFunction("atan2", FunctionAtan2, {"x", "y"}, "Returns atan2 of x and y values");
+        Evaluation::AddFunction("abs", FunctionAbs, {"value"}, "Returns absolute number");
+        Evaluation::AddFunction("playeratindex", FunctionGetPlayer, {"index"}, "Returns player by slot index");
+        Evaluation::AddFunction("entityindex", FunctionGetEntityIndex, {"entity"}, "Returns entity index");
+        Evaluation::AddFunction("playeritematslot", FunctionGetPlayerItemAtSlot, {"entity", "slot"}, "Returns player equipped item by slot");
+        Evaluation::AddFunction("playeritembyname", FunctionGetPlayerItemByName, {"entity", "item name"}, "Returns player equipped item by item name");
+        Evaluation::AddFunction("attribute", FunctionGetItemAttribute, {"player or item", "attribute name"}, "Returns player or item entity attribute value");
+        Evaluation::AddFunction("type", FunctionGetType, {"value"}, "Returns type of a value");
+        Evaluation::AddFunction("charat", FunctionCharAt, {"string", "pos"}, "Returns string character at pos position");
+        Evaluation::AddFunction("substr", FunctionSubstring, {"string", "pos"}, "Returns a part of a string starting at pos position, limited to length if specified", {"[length]"});
+        Evaluation::AddFunction("substring", FunctionSubstring, {"string", "pos"}, "Returns a part of a string starting at pos position, limited to length if specified", {"[length]"});
+        Evaluation::AddFunction("startswith", FunctionStartsWith, {"string", "prefix"}, "Returns true if string starts with prefix");
+        Evaluation::AddFunction("endswith", FunctionEndsWith, {"string", "suffix"}, "Returns true if string ends with suffix");
+        Evaluation::AddFunction("find", FunctionFind, {"haystack", "needle"}, "Returns true if string contains specified text, case sensitive by default", {"[case sensitive = true]"});
         //Evaluation::AddFunction("replace", FunctionReplace, 3, "haystack", "needle", "replace");
     };
 };

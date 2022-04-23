@@ -418,8 +418,10 @@ public:
 	float PlayScene(const char *pszScene, float flDelay = 0.0f, void *response = nullptr, IRecipientFilter *filter = nullptr)		        { return ft_PlayScene(this, pszScene, flDelay, response, filter); }
 	void GetPassiveWeapons(CUtlVector<CTFWeaponBase *> &weapons)		            { ft_GetPassiveWeapons(this, weapons); }
 	
-	bool TryToPickupBuilding()   { return ft_TryToPickupBuilding(this); }
-	void DetonateObjectOfType(int building, int mode) { ft_DetonateObjectOfType(this, building, mode); }
+	bool TryToPickupBuilding()                         { return ft_TryToPickupBuilding(this); }
+	void DetonateObjectOfType(int building, int mode)  { ft_DetonateObjectOfType(this, building, mode); }
+
+	bool IsReadyToPlay()                               { return ft_IsReadyToPlay(this); }
 	
 	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
@@ -504,6 +506,7 @@ private:
 	static MemberFuncThunk<		 CTFPlayer *, bool                      	  > ft_TryToPickupBuilding;
 	static MemberFuncThunk<		 CTFPlayer *, void, int, int                  > ft_DetonateObjectOfType;
 	static MemberFuncThunk<		 CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> ft_GetPassiveWeapons;
+	static MemberFuncThunk<		 CTFPlayer *, bool                            > ft_IsReadyToPlay;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 

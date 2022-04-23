@@ -92,6 +92,7 @@ MemberVFuncThunk<const CTFWeaponBase *, bool> CTFWeaponBase::vt_ShouldRemoveInvi
 MemberVFuncThunk<const CTFWeaponBase *, bool> CTFWeaponBase::vt_IsEnergyWeapon(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::IsEnergyWeapon");
 MemberVFuncThunk<const CTFWeaponBase *, float> CTFWeaponBase::vt_Energy_GetShotCost(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::Energy_GetShotCost");
 MemberVFuncThunk<CTFWeaponBase *, void>  CTFWeaponBase::vt_Misfire(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::Misfire");
+MemberVFuncThunk<CTFWeaponBase *, Vector, int> CTFWeaponBase::vt_GetParticleColor(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetParticleColor");
 
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileGravity(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileGravity") ;
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileSpeed(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileSpeed") ;
