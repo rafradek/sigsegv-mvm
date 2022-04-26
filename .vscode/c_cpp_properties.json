@@ -1,0 +1,61 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/sdk",
+                "${workspaceFolder}/libs/udis86",
+                "${workspaceFolder}/libs/lz4/lib",
+                "${workspaceFolder}/libs/lodepng",
+                "${workspaceFolder}/libs/capstone/include",
+                "${workspaceFolder}/libs/ann/include",
+                "${workspaceFolder}/libs/fmt/include",
+                "${workspaceFolder}/../alliedmodders/sourcemod/public",
+                "${workspaceFolder}/../alliedmodders/sourcemod/public/extensions",
+                "${workspaceFolder}/../alliedmodders/sourcemod/sourcepawn/include",
+                "${workspaceFolder}/../alliedmodders/sourcemod/public/amtl/amtl",
+                "${workspaceFolder}/../alliedmodders/sourcemod/public/amtl",
+                "${workspaceFolder}/../alliedmodders/mmsource-1.10/core",
+                "${workspaceFolder}/../alliedmodders/mmsource-1.10/core/sourcehook",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/tier0",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/tier1",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/game/server",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/toolframework",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/engine",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/mathlib",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/public/vstdlib",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/game/shared",
+                "${workspaceFolder}/../alliedmodders/hl2sdk-sdk2013/common"
+            ],
+            "defines": [
+                "HAVE_STDINT_H",
+                "HAVE_STRING_H",
+                "GNUC",
+                "PLATFORM_X86",
+                "FMT_HEADER_ONLY",
+                "LINUX",
+                "POSIX",
+                "SE_TF2=11",
+                "SOURCE_ENGINE=11",
+                "COMPILER_GCC",
+                "NO_HOOK_MALLOC",
+                "NO_MALLOC_OVERRIDE",
+                "T_HEADER_ONLY",
+                "_LINUX"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-gcc-x86",
+            "compilerArgs": [
+                "-m32"
+            ],
+            "forcedInclude": [
+                "${workspaceFolder}/src/common.h"
+            ]
+        }
+    ],
+    "version": 4
+}
