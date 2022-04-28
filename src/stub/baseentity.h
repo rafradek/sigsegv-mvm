@@ -134,6 +134,10 @@ public:
 		return m_pPev != nullptr ? m_pPev->m_EdictIndex : 0;
 	}
 
+	inline edict_t *GetProp() {
+		return m_pPev;
+	}
+
 	CBaseEntity *m_pOuter;
 	// CBaseTransmitProxy *m_pTransmitProxy;
 	edict_t	*m_pPev;
@@ -686,14 +690,14 @@ BASEPTR CBaseEntity::ThinkSet(DERIVEDPTR func, float flNextThinkTime, const char
 
 inline void CBaseEntity::NetworkStateChanged()
 {
-	if (this->GetNetworkable()->GetEdict() == nullptr) return;
-	this->GetNetworkable()->GetEdict()->m_fStateFlags |= FL_EDICT_CHANGED;
+	if (this->edict() == nullptr) return;
+	this->edict()->m_fStateFlags |= FL_EDICT_CHANGED;
 }
 
 inline void CBaseEntity::NetworkStateChanged(void *pVar)
 {
-	if (this->GetNetworkable()->GetEdict() == nullptr) return;
-	this->GetNetworkable()->GetEdict()->m_fStateFlags |= FL_EDICT_CHANGED;
+	if (this->edict() == nullptr) return;
+	this->edict()->m_fStateFlags |= FL_EDICT_CHANGED;
 	//gamehelpers->SetEdictStateChanged(this->GetNetworkable()->GetEdict(), ((uintptr_t)pVar - (uintptr_t)this));
 }
 

@@ -724,7 +724,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		bool result = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
-		ConVarRef sig_mvm_teleporter_aggro("sig_mvm_teleporter_aggro");
+		static ConVarRef sig_mvm_teleporter_aggro("sig_mvm_teleporter_aggro");
 		if (!result) {
 			auto vision = reinterpret_cast<IVision *>(this);
 			CTFBot *bot = static_cast<CTFBot *>(vision->GetBot()->GetEntity());

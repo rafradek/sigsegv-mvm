@@ -1,3 +1,6 @@
+#ifndef _INCLUDE_SIGSEGV_STUB_EXTRAENTITYDATA_H_
+#define _INCLUDE_SIGSEGV_STUB_EXTRAENTITYDATA_H_
+
 #include "stub/baseentity.h"
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
@@ -557,3 +560,4 @@ inline void CBaseEntity::RemoveAllCustomOutputs()
         data->GetCustomOutputs().clear();
     }
 }
+#endif

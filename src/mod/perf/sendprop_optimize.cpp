@@ -141,9 +141,9 @@ namespace Mod::Perf::SendProp_Optimize
     std::vector<PropIndexData> prop_offset_sendtable;
 
     // key: prop index value: write bit index
-    std::vector<unsigned short> player_prop_write_offset[34];
+    std::vector<unsigned short> player_prop_write_offset[39];
 
-    std::vector<int> player_prop_value_old[34];
+    std::vector<int> player_prop_value_old[39];
 
     unsigned short *player_prop_offsets;
 
@@ -154,10 +154,11 @@ namespace Mod::Perf::SendProp_Optimize
 
     CSendNode **player_send_nodes;
 
-    bool force_player_update[34];
+    // This can be set to force a full update
+    bool force_player_update[39];
 
     // This is used to check if a player had a forced full update
-    bool player_not_force_updated[34];
+    bool player_not_force_updated[39];
 
     bool firsttime = true;
     bool lastFullEncode = false;
@@ -187,7 +188,7 @@ namespace Mod::Perf::SendProp_Optimize
 	const int objectID)
 	{
         if (rc_SendTable_WriteAllDeltaProps) {
-            if (objectID > 0 && objectID < 35) {
+            if (objectID > 0 && objectID <= gpGlobals->maxClients) {
                 bf_read toBits( "SendTable_CalcDelta/toBits", pToState, BitByte(nToBits), nToBits );
                 CDeltaBitsReader toBitsReader( &toBits );
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
@@ -214,7 +215,7 @@ namespace Mod::Perf::SendProp_Optimize
                         }
                     }
                         
-                    SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
+                    const SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
 
                     lastprop = iToProp;
                     lastoffset = write_offset;
@@ -381,7 +382,7 @@ namespace Mod::Perf::SendProp_Optimize
                         prop_writer.SeekToBit(bit_offset);
                         prop_reader.Seek(bit_offset);
                         DVariant var;
-                        SendProp *pProp = pPrecalc->m_Props[propOffsets[i]];
+                        const SendProp *pProp = pPrecalc->m_Props[propOffsets[i]];
 
                         //DevMsg("max write offset %d %s %d\n", propOffsets[i], pProp->GetName(), bit_offset);
 
@@ -414,7 +415,7 @@ namespace Mod::Perf::SendProp_Optimize
 
                         //sizetestbuf_write.SeekToBit(0);
                         encode_fun[pProp->m_Type].Encode( 
-                            pStructBaseOffset, 
+                            (const unsigned char *) pStructBaseOffset, 
                             &var, 
                             pProp, 
                             &prop_writer, 
@@ -692,7 +693,7 @@ namespace Mod::Perf::SendProp_Optimize
                 int lastprop = 0;
                 for ( ; iToProp < MAX_DATATABLE_PROPS; iToProp = toBitsReader.ReadNextPropIndex())
                 { 
-                    SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
+                    const SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
                     /*if (iToProp != lastprop + 1) {
                         for (int i = lastprop + 1; i < iToProp; i++) {
                             offset_data[i] = 65535;
@@ -738,7 +739,7 @@ namespace Mod::Perf::SendProp_Optimize
 
     ConVar cvar_crash("sig_crash", "0", FCVAR_NONE);
 
-    DETOUR_DECL_MEMBER(__gcc_regcall void, CAttributeManager_ClearCache)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
         static int called_by_weapon = 0;
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
@@ -798,7 +799,7 @@ namespace Mod::Perf::SendProp_Optimize
                 if (ent->GetFlags() & FL_FAKECLIENT && ((i + gpGlobals->tickcount) % 2) != 0) {
                     CBaseEntity *weapon = ent->GetActiveWeapon();
                     if (weapon != nullptr) {
-                        weapon->GetNetworkable()->GetEdict()->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
+                        weapon->edict()->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
                     }
                 }
             }
@@ -846,7 +847,7 @@ namespace Mod::Perf::SendProp_Optimize
         auto result = DETOUR_STATIC_CALL(SendProxy_SendPredictableId)( pProp, pStruct, pVarData, pRecipients, objectID);
         if (result == nullptr && objectID <= gpGlobals->maxClients && objectID != 0 ) {
             pRecipients->ClearAllRecipients();
-            return pVarData;
+            return (void *) pVarData;
         }
         return nullptr;
     }
@@ -857,7 +858,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (result == nullptr) {
             pRecipients->ClearAllRecipients();
         }
-        return pVarData;
+        return (void *) pVarData;
     }
 
     DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
@@ -997,7 +998,7 @@ namespace Mod::Perf::SendProp_Optimize
 
             for (int iToProp = 0; iToProp < playerSendTable->m_pPrecalc->m_Props.Count(); iToProp++)
             { 
-                SendProp *pProp = playerSendTable->m_pPrecalc->m_Props[iToProp];
+                const SendProp *pProp = playerSendTable->m_pPrecalc->m_Props[iToProp];
 
                 pmStack.SeekToProp( iToProp );
 

@@ -6,6 +6,10 @@
 #include "util/iterate.h"
 #include "util/admin.h"
 
+namespace Mod::Pop::WaveSpawn_Extensions
+{
+	bool IsEnabled();
+}
 
 namespace Mod::MvM::Robot_Limit
 {
@@ -274,11 +278,8 @@ namespace Mod::MvM::Robot_Limit
 
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Parse, KeyValues *kv_orig)
 	{
-		if (populator_parse != nullptr) {
+		if (populator_parse != nullptr && Mod::Pop::WaveSpawn_Extensions::IsEnabled()) {
 			// Unused variable, now used to tell if the wavespawn contains a tfbot spawner
-			if (populator_parse->extra == nullptr) {
-				populator_parse->extra = new CWaveSpawnExtra();
-			}
 			populator_parse->extra->m_bHasTFBotSpawner = true;
 		}
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
@@ -291,7 +292,7 @@ namespace Mod::MvM::Robot_Limit
 		int old_slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
 		int &slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
 		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING) {
-			if (wavespawn->extra != nullptr && wavespawn->extra->m_bHasTFBotSpawner) {
+			if (!Mod::Pop::WaveSpawn_Extensions::IsEnabled() || wavespawn->extra->m_bHasTFBotSpawner) {
 				// Override hardcoded 22 blue bot limit
 				slots = old_slots - (GetMvMInvaderLimit() - 22);
 			}

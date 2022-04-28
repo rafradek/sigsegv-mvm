@@ -1533,7 +1533,7 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER(__gcc_regcall void, Action_CTFBot_InvokeOnEnd, CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *nextaction)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, Action_CTFBot_InvokeOnEnd, CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *nextaction)
 	{
 		auto action = reinterpret_cast<Action<CTFBot> *>(this);
 		//DevMsg("Message1\n");

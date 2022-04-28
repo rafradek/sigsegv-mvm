@@ -1808,10 +1808,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		int oldwave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 		TFObjectiveResource()->m_nMannVsMachineWaveCount = 2;
 		auto kv = new KeyValues("MvM_UpgradesBegin");
-		serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+		serverGameClients->ClientCommandKeyValues(player->edict(), kv);
 		kv->deleteThis();
 		kv = new KeyValues("MvM_UpgradesDone");
-		serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+		serverGameClients->ClientCommandKeyValues(player->edict(), kv);
 		kv->deleteThis();
 		TFObjectiveResource()->m_nMannVsMachineWaveCount = oldwave;
 
@@ -2743,25 +2743,25 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_UpdateTransmitState)();
 	}
 
-	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
-	{
-		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
-		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
-		if (ret) {
-			wep->m_iState = WEAPON_IS_ACTIVE;
-		}
-		return ret;
-	}
+	// DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
+	// {
+	// 	auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+	// 	auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+	// 	if (ret) {
+	// 		wep->m_iState = WEAPON_IS_ACTIVE;
+	// 	}
+	// 	return ret;
+	// }
 
-	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *pSwitchingTo)
-	{
-		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
-		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(pSwitchingTo);
-		if (ret) {
-			wep->m_iState = WEAPON_IS_CARRIED_BY_PLAYER;
-		}
-		return ret;
-	}
+	// DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *pSwitchingTo)
+	// {
+	// 	auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+	// 	auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(pSwitchingTo);
+	// 	if (ret) {
+	// 		wep->m_iState = WEAPON_IS_CARRIED_BY_PLAYER;
+	// 	}
+	// 	return ret;
+	// }
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
@@ -6106,8 +6106,8 @@ namespace Mod::Pop::PopMgr_Extensions
             MOD_ADD_DETOUR_MEMBER(CBaseObject_StartBuilding, "CBaseObject::StartBuilding");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_UpdateTransmitState, "CBaseCombatWeapon::UpdateTransmitState");
-            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
-            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
+            //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
+            //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
 			
 			
 			

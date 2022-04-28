@@ -7,6 +7,7 @@
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
 #include "stub/econ.h"
+#include "stub/extraentitydata.h"
 #include "util/misc.h"
 #include "re/nextbot.h"
 #include "util/rtti.h"
@@ -279,8 +280,6 @@ public:
 	
 #ifdef ADD_EXTATTR
 
-	
-
 	class ExtendedAttr
 	{
 	public:
@@ -298,6 +297,7 @@ public:
 			IGNORE_NPC = 8,
 			IGNORE_REAL_PLAYERS = 9,
 			IGNORE_BOTS = 10,
+			NO_SPAWN_PROTECTION_FIX = 11,
 		};
 
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;
@@ -317,6 +317,14 @@ public:
 		uint32_t m_nBits = 0;
 	};
 	SIZE_CHECK(ExtendedAttr, 0x4);
+
+	class ExtendedAttrModule : public EntityModule
+	{
+	public:
+		ExtendedAttrModule() {};
+		ExtendedAttrModule(CBaseEntity *entity) {};
+		ExtendedAttr attrs;
+	};
 #endif
 	
 	bool HasAttribute(AttributeType attr) const { return ((this->m_nBotAttrs & attr) != 0); }
@@ -357,8 +365,7 @@ public:
 	/* custom: extended attributes */
 	ExtendedAttr& ExtAttr()
 	{
-		CHandle<CTFBot> h_this = this;
-		return s_ExtAttrs[h_this];
+		return this->GetOrCreateEntityModule<ExtendedAttrModule>("BotExtAttr")->attrs;
 	}
 	static void ClearExtAttr() {
 		s_ExtAttrs.clear();

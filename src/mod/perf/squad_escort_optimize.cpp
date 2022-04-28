@@ -128,6 +128,13 @@ namespace Mod::Perf::Squad_Escort_Optimize
         DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_dtor2)();
     }
 
+    DETOUR_DECL_MEMBER(ConVar *, CCvar_FindVar, const char *name)
+	{
+        Msg("CVar %s\n", name);
+        return DETOUR_MEMBER_CALL(CCvar_FindVar)(name);
+    }
+
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -137,6 +144,10 @@ namespace Mod::Perf::Squad_Escort_Optimize
 			MOD_ADD_DETOUR_MEMBER(CTFBotEscortSquadLeader_dtor0,               "CTFBotEscortSquadLeader::~CTFBotEscortSquadLeader [D0]");
 			MOD_ADD_DETOUR_MEMBER(CTFBotEscortSquadLeader_dtor2,               "CTFBotEscortSquadLeader::~CTFBotEscortSquadLeader [D2]");
         
+		}
+		virtual void PreLoad() override
+		{
+            //this->AddDetour(new CDetour("CCvar::FindVar", (void *)(LibMgr::GetInfo(Library::VSTDLIB).BaseAddr() + 0x0010470), GET_MEMBER_CALLBACK(CCvar_FindVar), GET_MEMBER_INNERPTR(CCvar_FindVar)));
 		}
     
 		virtual void OnUnload() override

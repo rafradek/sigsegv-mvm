@@ -418,6 +418,52 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 	}
 
+	void SetWaveSpawnWait(CWave *wave, bool createData)
+	{
+		int waveSpawnCount = wave->m_WaveSpawns.Count();
+		for (int i = 0; i < waveSpawnCount; i++) {
+			auto wavespawn = wave->m_WaveSpawns[i];
+
+			if (wavespawn == nullptr) continue;
+
+			if (createData) {
+				wavespawn->extra = new CWaveSpawnExtra();
+			}
+
+			if (!wavespawn->m_waitForAllSpawned.IsEmpty()) {
+				char *name = wavespawn->m_waitForAllSpawned.GetForModify();
+				for (int j = 0; j < waveSpawnCount; j++) {
+					auto wavespawnwait = wave->m_WaveSpawns[j];
+					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
+						wavespawn->extra->m_waitForAllSpawnedList.AddToHead(wavespawnwait);
+					}
+				}
+				wavespawn->m_waitForAllSpawned = "";
+			}
+
+			if (!wavespawn->m_waitForAllDead.IsEmpty()) {
+				char *name = wavespawn->m_waitForAllDead.GetForModify();
+				for (int j = 0; j < waveSpawnCount; j++) {
+					auto wavespawnwait = wave->m_WaveSpawns[j];
+					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
+						wavespawn->extra->m_waitForAllDeadList.AddToHead(wavespawnwait);
+					}
+				}
+				wavespawn->m_waitForAllDead = "";
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
+	{
+		auto wave = reinterpret_cast<CWave *>(this);
+		
+		auto ret = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+
+		SetWaveSpawnWait(wave, false);
+		return ret;
+	}
+
 	bool allWaiting = true;
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
@@ -895,7 +941,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
-
+			MOD_ADD_DETOUR_MEMBER(CWave_Parse, "CWave::Parse");
 			
 		}
 		
@@ -904,8 +950,27 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			wavespawns.clear();
 		}
 		
+		virtual void OnEnable() override
+		{
+			auto wave = g_pPopulationManager != nullptr ? g_pPopulationManager->GetCurrentWave() : nullptr;
+			if (wave != nullptr) {
+				SetWaveSpawnWait(wave, true);
+			}
+			wavespawns.clear();
+		}
+		
 		virtual void OnDisable() override
 		{
+			auto wave = g_pPopulationManager != nullptr ? g_pPopulationManager->GetCurrentWave() : nullptr;
+			if (wave != nullptr) {
+				int waveSpawnCount = wave->m_WaveSpawns.Count();
+				for (int i = 0; i < waveSpawnCount; i++) {
+					auto wavespawn = wave->m_WaveSpawns[i];
+
+					if (wavespawn == nullptr) continue;
+					delete wavespawn->extra;
+				}
+			}
 			wavespawns.clear();
 		}
 		
@@ -1008,13 +1073,16 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	};
 	CMod s_Mod;
 	
-	
+
 	ConVar cvar_enable("sig_pop_wavespawn_extensions", "0", FCVAR_NOTIFY,
 		"Mod: enable extended KV in CWaveSpawnPopulator::Parse",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 	
+	bool IsEnabled() {
+		return cvar_enable.GetBool();
+	}
 	
 	class CKVCond_WaveSpawn : public IKVCond
 	{

@@ -93,6 +93,7 @@ class CGameClient
 {
 public:
     bool ShouldSendMessages()                      { return ft_ShouldSendMessages(this); }
+	//bool SpawnServer(const char *szMapName, const char *szMapFile, const char *startspot)  { return ft_SpawnServer(this, szMapName, szMapFile, startspot); }
     
 private:
     static MemberFuncThunk<CGameClient *, bool>              ft_ShouldSendMessages;

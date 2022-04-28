@@ -84,8 +84,8 @@ namespace Prop
 		for (auto prop : AutoList<IProp>::List()) {
 			prop->Preload();
 		}
-		
-		ListProps(true);
+		ConVarRef developer("developer");
+		ListProps(!developer.GetBool());
 	}
 	
 	

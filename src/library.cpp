@@ -17,6 +17,7 @@ static std::map<Library, const char *> libnames{
 	{ Library::DATACACHE,          "datacache"          },
 	{ Library::VGUI,               "vgui"               },
 	{ Library::VPHYSICS,           "vphysics"           },
+	{ Library::VSTDLIB,            "vstdlib"            },
 };
 
 static std::map<Segment, const char *> segnames{

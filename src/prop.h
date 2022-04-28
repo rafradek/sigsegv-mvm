@@ -388,7 +388,7 @@ protected:
 	
 private:
 	inline uintptr_t GetInstanceBaseAddr() const { return (reinterpret_cast<uintptr_t>(this) - *ADJUST); }
-	inline uintptr_t GetInstanceVarAddr() const  { return (this->GetInstanceBaseAddr() + PROP->GetOffsetDirect()); }
+	inline uintptr_t GetInstanceVarAddr() const  { return ( this->GetInstanceBaseAddr() + PROP->GetOffsetDirect()); }
 	
 	inline ptrdiff_t GetCachedVarOffset() const
 	{

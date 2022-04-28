@@ -258,6 +258,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	LibMgr::SetPtr(Library::DATACACHE,          DataCacheFactory());
 	LibMgr::SetPtr(Library::VGUI,               VGUIFactory());
 	LibMgr::SetPtr(Library::VPHYSICS,           VPhysicsFactory());
+	LibMgr::SetPtr(Library::VSTDLIB,            icvar);
 	
 	return true;
 }

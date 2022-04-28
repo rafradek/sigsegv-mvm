@@ -6,6 +6,7 @@
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
+#include "stub/team.h"
 #include "stub/tfweaponbase.h"
 
 namespace Mod::Perf::HLTV_Optimize
@@ -179,20 +180,33 @@ namespace Mod::Perf::HLTV_Optimize
 		DETOUR_MEMBER_CALL(CBasePlayer_PhysicsSimulate)();
 	}
 
-    ConVar sig_perf_hltv_use_special_slot("sig_perf_hltv_use_special_slot", "1", FCVAR_NOTIFY,
+    ConVar sig_perf_hltv_use_special_slot("sig_perf_hltv_use_special_slot", "34", FCVAR_NOTIFY,
+		"Use special slot 34 for hltv. Requires map restart to function");
+
+    ConVar sig_perf_hltv_allow_bots_extra_slot("sig_perf_hltv_allow_bots_extra_slot", "0", FCVAR_NOTIFY,
 		"Use special slot 34 for hltv. Requires map restart to function");
     
+    RefCount rc_CBaseServer_CreateFakeClient_HLTV;
     RefCount rc_CBaseServer_CreateFakeClient;
+
+    inline bool ExtraSlotsEnabled()
+    {
+        return sig_perf_hltv_use_special_slot.GetInt() > 33;
+    }
+
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_CreateFakeClient, const char *name)
 	{
         static ConVarRef tv_name("tv_name");
-        SCOPED_INCREMENT_IF(rc_CBaseServer_CreateFakeClient, sig_perf_hltv_use_special_slot.GetBool() && tv_name.GetString() == name);
+        SCOPED_INCREMENT(rc_CBaseServer_CreateFakeClient);
+        SCOPED_INCREMENT_IF(rc_CBaseServer_CreateFakeClient_HLTV, tv_name.GetString() == name);
 		return DETOUR_MEMBER_CALL(CBaseServer_CreateFakeClient)(name);
 	}
     
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
-        if (rc_CBaseServer_CreateFakeClient) {
+        if (!ExtraSlotsEnabled()) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+
+        if (rc_CBaseServer_CreateFakeClient_HLTV) {
             std::vector<CBaseClient *> clientList;
 
             auto server = reinterpret_cast<CBaseServer *>(this);
@@ -219,20 +233,106 @@ namespace Mod::Perf::HLTV_Optimize
 
             return lastClient;
         }
-            
-		return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
-
+		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if ( !(sig_perf_hltv_allow_bots_extra_slot.GetBool() && rc_CBaseServer_CreateFakeClient) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
+            return nullptr;
+        }
+        if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1) {
+            return nullptr;
+        }
+        return client;
 	}
 
     StaticFuncThunk<void, int> ft_SetupMaxPlayers("SetupMaxPlayers");
+    //StaticFuncThunk<bool, bool, const char *, const char *> ft_Host_Changelevel("Host_Changelevel");
+    //MemberFuncThunk<CBaseServer *, bool, const char *, const char *, const char *>              ft_SpawnServer("CGameServer::SpawnServer");
 
 	DETOUR_DECL_MEMBER(void, CServerGameClients_GetPlayerLimits, int &minplayers, int &maxplayers, int &defaultplayers)
 	{
 		DETOUR_MEMBER_CALL(CServerGameClients_GetPlayerLimits)(minplayers,maxplayers,defaultplayers);
-        if (sig_perf_hltv_use_special_slot.GetBool())
-		    maxplayers = 34;
+        if (ExtraSlotsEnabled())
+		    maxplayers = sig_perf_hltv_use_special_slot.GetInt();
 	}
 
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FrameUpdatePostEntityThink)
+	{
+        int preMaxPlayers = gpGlobals->maxClients;
+
+        if (preMaxPlayers > 33) {
+            gpGlobals->maxClients = 33;
+        }
+		DETOUR_MEMBER_CALL(CLagCompensationManager_FrameUpdatePostEntityThink)();
+        gpGlobals->maxClients = preMaxPlayers;
+	}
+	
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
+	{
+		int preMaxPlayers = gpGlobals->maxClients;
+
+        if (preMaxPlayers > 33) {
+            gpGlobals->maxClients = 33;
+        }
+		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+        gpGlobals->maxClients = preMaxPlayers;
+	}
+	
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
+	{
+		int preMaxPlayers = gpGlobals->maxClients;
+
+        if (preMaxPlayers > 33) {
+            gpGlobals->maxClients = 33;
+        }
+		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
+        gpGlobals->maxClients = preMaxPlayers;
+	}
+
+    int playerListOffset = 0;
+	DETOUR_DECL_STATIC(void, SendProxy_PlayerList, const void *pProp, const void *pStruct, const void *pData, void *pOut, int iElement, int objectID)
+	{
+        if (!ExtraSlotsEnabled()) return DETOUR_STATIC_CALL(SendProxy_PlayerList)(pProp, pStruct, pData, pOut, iElement, objectID);
+        if (iElement == 0) {
+            playerListOffset = 0;
+        }
+        auto team = (CTeam *)(pData);
+        int numplayers = team->GetNumPlayers();
+        while (iElement + playerListOffset < numplayers - 1 && ENTINDEX(team->GetPlayer(iElement + playerListOffset)) > 33) {
+            playerListOffset += 1;
+        }
+        return DETOUR_STATIC_CALL(SendProxy_PlayerList)(pProp, pStruct, pData, pOut, iElement + playerListOffset, objectID);
+    }
+    DETOUR_DECL_STATIC(int, SendProxyArrayLength_PlayerArray, const void *pStruct, int objectID)
+	{
+		int count = DETOUR_STATIC_CALL(SendProxyArrayLength_PlayerArray)(pStruct, objectID);
+        if (ExtraSlotsEnabled()) {
+            auto team = (CTeam *)(pStruct);
+
+            for (int i = 0; i < count; i++) {
+                if (ENTINDEX(team->GetPlayer(i)) > 33) {
+                    count--;
+                }
+            }
+        }
+        return count;
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFTeam_AddPlayer, CBasePlayer *player)
+	{
+        DETOUR_MEMBER_CALL(CTFTeam_AddPlayer)(player);
+        auto team = reinterpret_cast<CTFTeam *>(this);
+        if (ENTINDEX(player) > 33 && team->m_hLeader == player) {
+            team->m_hLeader = nullptr;
+        }
+    }
+
+	DETOUR_DECL_MEMBER(void, CTeam_RemovePlayer, CBasePlayer *player)
+	{
+        auto team = reinterpret_cast<CTFTeam *>(this);
+        if (team->m_hLeader == player) {
+            team->m_hLeader = nullptr;
+        }
+        DETOUR_MEMBER_CALL(CTFTeam_RemovePlayer)(player);
+    }
     
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -256,6 +356,13 @@ namespace Mod::Perf::HLTV_Optimize
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_CreateFakeClient,              "CBaseServer::CreateFakeClient");
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,              "CBaseServer::GetFreeClient");
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_GetPlayerLimits, "CServerGameClients::GetPlayerLimits");
+			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FrameUpdatePostEntityThink, "CLagCompensationManager::FrameUpdatePostEntityThink");
+            MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation,  "CLagCompensationManager::StartLagCompensation");
+			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FinishLagCompensation, "CLagCompensationManager::FinishLagCompensation");
+			//MOD_ADD_DETOUR_STATIC(SendProxy_PlayerList,    "SendProxy_PlayerList");
+			//MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
+			//MOD_ADD_DETOUR_MEMBER(CTFTeam_AddPlayer, "CTFTeam::AddPlayer");
+			MOD_ADD_DETOUR_MEMBER(CTeam_RemovePlayer, "CTeam::RemovePlayer");
             
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
@@ -266,18 +373,21 @@ namespace Mod::Perf::HLTV_Optimize
 
         virtual void OnEnablePost() override
 		{
-            
+
         }
 
         virtual void LevelInitPreEntity() override
 		{
+            if (sig_perf_hltv_use_special_slot.GetInt() > 33 && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_perf_hltv_use_special_slot.GetInt())) {
+                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+            }
             last_restore_tick = -1;
         }
 
         virtual void LevelShutdownPostEntity() override
 		{
 
-            if (sig_perf_hltv_use_special_slot.GetBool() && (gpGlobals->maxClients == 32 || gpGlobals->maxClients == 33)) {
+            if (sig_perf_hltv_use_special_slot.GetInt() > 33 && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_perf_hltv_use_special_slot.GetInt())) {
                 // Kick old HLTV client
                 int clientCount = sv->GetClientCount();
                 for ( int i=0 ; i < clientCount ; i++ )
@@ -290,7 +400,7 @@ namespace Mod::Perf::HLTV_Optimize
                         break;
                     }
                 }
-                ft_SetupMaxPlayers(34);
+                ft_SetupMaxPlayers(sig_perf_hltv_use_special_slot.GetInt());
             }
         }
 	};

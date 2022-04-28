@@ -13,6 +13,8 @@ MemberFuncThunk<      CTeam *, void, CBasePlayer *> CTeam::ft_RemovePlayer ("CTe
 MemberFuncThunk<CTFTeam *, int, int>           CTFTeam::ft_GetNumObjects("CTFTeam::GetNumObjects");
 MemberFuncThunk<CTFTeam *, CBaseObject *, int> CTFTeam::ft_GetObject    ("CTFTeam::GetObject");
 
+IMPL_SENDPROP(CHandle<CBasePlayer>, CTFTeam, m_hLeader, CTFTeam);
+
 
 MemberFuncThunk<CTFTeamManager *, bool, int>      CTFTeamManager::ft_IsValidTeam("CTFTeamManager::IsValidTeam");
 MemberFuncThunk<CTFTeamManager *, CTFTeam *, int> CTFTeamManager::ft_GetTeam    ("CTFTeamManager::GetTeam");

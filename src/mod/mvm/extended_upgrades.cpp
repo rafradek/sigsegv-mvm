@@ -251,7 +251,7 @@ namespace Mod::MvM::Extended_Upgrades
             }
             else if (FStrEq(info, "refund")) {
                 auto kv = new KeyValues("MVM_Respec");
-                serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+                serverGameClients->ClientCommandKeyValues(player->edict(), kv);
                 return;
             }
             else if (FStrEq(info, "extra")) {
@@ -1277,7 +1277,7 @@ namespace Mod::MvM::Extended_Upgrades
                     if ((*it).Get() != nullptr) {
                         
                         auto kv = new KeyValues("MvM_UpgradesDone");
-                        serverGameClients->ClientCommandKeyValues((*it).Get()->GetNetworkable()->GetEdict(), kv);
+                        serverGameClients->ClientCommandKeyValues((*it).Get()->edict(), kv);
 		                kv->deleteThis();
                     }
                     it = in_upgrade_zone.erase(it);
@@ -1293,7 +1293,7 @@ namespace Mod::MvM::Extended_Upgrades
                 if (player->m_Shared->m_bInUpgradeZone && !upgrades.empty() && in_upgrade_zone.count(player) == 0) {
                     in_upgrade_zone.insert(player);
                     auto kv = new KeyValues("MvM_UpgradesBegin");
-                    serverGameClients->ClientCommandKeyValues(player->GetNetworkable()->GetEdict(), kv);
+                    serverGameClients->ClientCommandKeyValues(player->edict(), kv);
 		            kv->deleteThis();
                 }
 

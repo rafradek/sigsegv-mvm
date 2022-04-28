@@ -2154,8 +2154,10 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Touch, CBaseEntity *toucher)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (toucher == nullptr || player == nullptr) return;
+
+		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
 
 		if (toucher->GetTeamNumber() == player->GetTeamNumber()) return;
 
@@ -3346,7 +3348,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFMinigun_SetWeaponState)(state);
 	}
 	
-	DETOUR_DECL_MEMBER(__gcc_regcall void, CTFFlameThrower_SetWeaponState, int state)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFFlameThrower_SetWeaponState, int state)
 	{
 		auto flamethrower = reinterpret_cast<CTFFlameThrower *>(this);
 		if (state != flamethrower->m_iWeaponState) {
@@ -4559,7 +4561,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		int id = ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1;
 
-		if (id < 0)
+		if (id < 0 || id > 32)
 			return;
 
 		attribute_info_strings[id].clear();
@@ -4725,13 +4727,13 @@ namespace Mod::Attr::Custom_Attributes
 	void OnMaxHealthChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
-		if (player != nullptr) {
+		if (player != nullptr && player->GetHealth() > 0) {
 			float change = old_value.m_Float == FLT_MIN ? new_value.m_Float : (new_value.m_Float == FLT_MIN ? -old_value.m_Float : new_value.m_Float - old_value.m_Float);
 			float maxHealth = player->GetMaxHealth();
 			float preMaxHealth = maxHealth - change;
 			float overheal = MAX(0, player->GetHealth() - preMaxHealth);
 			float preHealthRatio = MIN(1, player->GetHealth() / preMaxHealth);
-			player->SetHealth(maxHealth * preHealthRatio + overheal);
+			player->SetHealth(MAX(1,round(maxHealth * preHealthRatio + overheal)));
 		}
 	}
 

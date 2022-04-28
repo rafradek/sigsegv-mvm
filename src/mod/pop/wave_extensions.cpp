@@ -16,6 +16,11 @@
 #include "mod/pop/pointtemplate.h"
 #include "mod/pop/common.h"
 
+namespace Mod::MvM::Wavespawn_Extensions
+{
+	bool IsEnabled();
+}
+
 namespace Mod::Pop::Wave_Extensions
 {
 	struct SentryGunInfo
@@ -537,37 +542,7 @@ namespace Mod::Pop::Wave_Extensions
 		}
 		
 		auto ret = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
-
-		int waveSpawnCount = wave->m_WaveSpawns.Count();
-		for (int i = 0; i < waveSpawnCount; i++) {
-			auto wavespawn = wave->m_WaveSpawns[i];
-
-			if (wavespawn == nullptr) continue;
-
-			wavespawn->extra = new CWaveSpawnExtra();
-
-			if (!wavespawn->m_waitForAllSpawned.IsEmpty()) {
-				char *name = wavespawn->m_waitForAllSpawned.GetForModify();
-				for (int j = 0; j < waveSpawnCount; j++) {
-					auto wavespawnwait = wave->m_WaveSpawns[j];
-					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
-						wavespawn->extra->m_waitForAllSpawnedList.AddToHead(wavespawnwait);
-					}
-				}
-				wavespawn->m_waitForAllSpawned = "";
-			}
-
-			if (!wavespawn->m_waitForAllDead.IsEmpty()) {
-				char *name = wavespawn->m_waitForAllDead.GetForModify();
-				for (int j = 0; j < waveSpawnCount; j++) {
-					auto wavespawnwait = wave->m_WaveSpawns[j];
-					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
-						wavespawn->extra->m_waitForAllDeadList.AddToHead(wavespawnwait);
-					}
-				}
-				wavespawn->m_waitForAllDead = "";
-			}
-		}
+		
 		return ret;
 	}
 	

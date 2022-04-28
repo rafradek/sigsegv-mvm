@@ -310,6 +310,18 @@ private:
 	ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
 	ret Detour_##name::callback(__VA_ARGS__)
 
+
+#define DETOUR_DECL_MEMBER_CALL_CONVENTION(cc ,ret, name, ...) \
+	class Detour_##name \
+	{ \
+	public: \
+		cc ret callback(__VA_ARGS__); \
+		cc static ret (Detour_##name::* Actual)(__VA_ARGS__); \
+	}; \
+	static CDetour *detour_##name = nullptr; \
+	cc ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	cc ret Detour_##name::callback(__VA_ARGS__)
+
 #define GET_MEMBER_CALLBACK(name) GetAddrOfMemberFunc(&Detour_##name::callback)
 #define GET_MEMBER_INNERPTR(name) reinterpret_cast<void **>(&Detour_##name::Actual)
 

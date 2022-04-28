@@ -17,7 +17,11 @@ namespace Mod::Robot::Spawn_Protection_Fix
 		if (rc_CTFBotMainAction_Update > 0 &&
 			(nCond == TF_COND_INVULNERABLE || nCond == TF_COND_INVULNERABLE_WEARINGOFF) &&
 			flDuration == 0.5f && pProvider == nullptr) {
-			return;
+			
+			auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+			if (FindCaseInsensitive(player->GetPlayerName(), "overclock") == nullptr && !ToTFBot(player)->ExtAttr()[CTFBot::ExtendedAttr::NO_SPAWN_PROTECTION_FIX]) {
+				return;
+			}
 		}
 		
 	//	#warning REMOVE THIS DEBUG MESSAGE!

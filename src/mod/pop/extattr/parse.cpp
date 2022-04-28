@@ -46,6 +46,9 @@ namespace Mod::Pop::ExtAttr::Parse
 			} else if (V_stricmp(val, "IgnoreRealPlayers") == 0) {
 				DevMsg("  found: ExtAttr IgnoreRealPlayers\n");
 				ext->TurnOn(CTFBot::ExtendedAttr::IGNORE_REAL_PLAYERS);
+			} else if (V_stricmp(val, "DisableSpawnProtectionFix") == 0) {
+				DevMsg("  found: ExtAttr DisableSpawnProtectionFix\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::NO_SPAWN_PROTECTION_FIX);
 			} else {
 				Warning("TFBotSpawner: Invalid extended attribute '%s'\n", val);
 			}

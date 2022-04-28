@@ -45,7 +45,8 @@ class CTFTeam : public CTeam
 public:
 	int GetNumObjects(int iObjectType = -1) { return ft_GetNumObjects(this, iObjectType); }
 	CBaseObject *GetObject(int num)         { return ft_GetObject    (this, num); }
-	
+
+	DECL_SENDPROP(CHandle<CBasePlayer>, m_hLeader);
 private:
 	static MemberFuncThunk<CTFTeam *, int, int>           ft_GetNumObjects;
 	static MemberFuncThunk<CTFTeam *, CBaseObject *, int> ft_GetObject;
