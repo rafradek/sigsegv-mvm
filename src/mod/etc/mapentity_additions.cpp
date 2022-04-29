@@ -173,9 +173,9 @@ namespace Mod::Etc::Mapentity_Additions
                         return true;
                     }
                     if (s_prop->IsInsideArray()) {
-                        auto prop_array = s_prop->GetDataTable()->GetProp(i + 1);
+                        auto prop_array = s_table->GetProp(i + 1);
                         if (prop_array != nullptr && prop_array->GetType() == DPT_Array && index < prop_array->GetNumElements()) {
-                            off += prop_array->GetElementStride();
+                            off += prop_array->GetElementStride() * index;
                         }
                     }
                 }

@@ -24,6 +24,9 @@ public:
 	void AddPlayerNonVirtual(CBasePlayer *player)    { ft_AddPlayer                 (this, player); }
 	void RemovePlayerNonVirtual(CBasePlayer *player) { ft_RemovePlayer              (this, player); }
 	
+	DECL_SENDPROP(char[32], m_szTeamname);
+	DECL_RELATIVE(CUtlVector<CBasePlayer *>, m_aPlayers);
+
 private:
 	static MemberVFuncThunk<const CTeam *, int>                vt_GetTeamNumber;
 	static MemberVFuncThunk<      CTeam *, const char *>       vt_GetName;

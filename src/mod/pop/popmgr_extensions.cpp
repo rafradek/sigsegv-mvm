@@ -650,7 +650,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_DefaultBossScale                ("tf_mvm_miniboss_scale"),
 			m_FastWholeMapTriggers            ("sig_pop_pointtemplate_fast_whole_map_trigger"),
 			m_BluHumanSpawnNoShoot            ("sig_mvm_bluhuman_spawn_noshoot"),
-			m_BluHumanSpawnProtection         ("sig_mvm_bluhuman_spawn_protection")
+			m_BluHumanSpawnProtection         ("sig_mvm_bluhuman_spawn_protection"),
+			m_TvEnable                        ("tv_enable"),
+			m_AllowBotsExtraSlots             ("sig_perf_hltv_allow_bots_extra_slot")
 			
 		{
 			this->Reset();
@@ -796,6 +798,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_FastWholeMapTriggers.Reset();
 			this->m_BluHumanSpawnNoShoot.Reset();
 			this->m_BluHumanSpawnProtection.Reset();
+			this->m_TvEnable.Reset();
+			this->m_AllowBotsExtraSlots.Reset();
 
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1013,6 +1017,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_FastWholeMapTriggers;
 		CPopOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
 		CPopOverride_ConVar<bool> m_BluHumanSpawnProtection;
+		CPopOverride_ConVar<bool> m_TvEnable;
+		CPopOverride_ConVar<bool> m_AllowBotsExtraSlots;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -5790,6 +5796,21 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_BluHumanSpawnNoShoot.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BluHumanSpawnProtection")) {
 				state.m_BluHumanSpawnProtection.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowBotExtraSlots")) {
+				state.m_AllowBotsExtraSlots.Set(subkey->GetBool());
+				if (subkey->GetBool()) {
+					state.m_TvEnable.Set(false);
+					// Kick HLTV client
+					int clientCount = sv->GetClientCount();
+					for ( int i=0 ; i < clientCount ; i++ ) {
+						IClient *pClient = sv->GetClient( i );
+
+						if (pClient->IsConnected() && pClient->IsHLTV()) {
+							pClient->Disconnect("");
+							break;
+						}
+					}
+				}
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));

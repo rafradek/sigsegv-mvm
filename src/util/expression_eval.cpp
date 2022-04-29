@@ -183,7 +183,7 @@ void Evaluation::Evaluate(const char *expression, CBaseEntity *self, CBaseEntity
                     }
                 }
             }
-            Msg("%c", c);
+            //Msg("%c", c);
             switch (c) {
                 case ' ': case '\t': case '\n': case '\r': ParseWhitespace(); break;
                 case '+': ParseOp(ADD); break;
@@ -208,7 +208,7 @@ void Evaluation::Evaluate(const char *expression, CBaseEntity *self, CBaseEntity
         }
     }
     ParseOp(INVALID);
-    Msg("Left size %d\n", m_Stack.size());
+    //Msg("Left size %d\n", m_Stack.size());
     m_Result = m_CurStack.result;
     if (m_CurStack.varNames != nullptr) {
         delete m_CurStack.varNames;
@@ -377,7 +377,7 @@ void Evaluation::ParseParenthesisRight()
         delete m_CurStack.func;
         m_CurStack.func = nullptr;
     }
-    Msg( "mode %d\n",m_CurStack.declMode );
+    //Msg( "mode %d\n",m_CurStack.declMode );
     if (m_CurStack.declMode == IF) {
         if (m_curValue.Int()) {
             m_CurStack.declMode = IF_AFTER_TRUE;
@@ -390,13 +390,13 @@ void Evaluation::ParseParenthesisRight()
         }
     }
     else if (m_CurStack.declMode == WHILE_BEGIN) {
-        Msg( "while\n");
+        //Msg( "while\n");
         if (m_curValue.Int()) {
             m_CurStack.declMode = WHILE_EXEC;
             PushStack();
             m_CurStack.popStackOnEnd = true;
             m_CurStack.returnPos = m_pLoopGoBackPosition;
-            Msg( "return pos %s\n", m_CurStack.returnPos);
+            //Msg( "return pos %s\n", m_CurStack.returnPos);
         }
         else {
             SkipNextCodeBlock();
@@ -1042,13 +1042,13 @@ void Evaluation::ParseOp(Op op)
             ParseOp(INVALID);
             
             if (m_CurStack.declMode == WHILE_EXEC) {
-                Msg("ToExec %d %s\n", m_CurStack.declMode, m_pExpression);
+                //Msg("ToExec %d %s\n", m_CurStack.declMode, m_pExpression);
                 m_CurStack.declMode = WHILE_BEGIN;
                 PushStack();
                 m_pLoopGoBackPosition = m_pExpression;
             }
         }
-        Msg("Pop %d\n", m_CurStack.declMode);
+        //Msg("Pop %d\n", m_CurStack.declMode);
     }
 }
 

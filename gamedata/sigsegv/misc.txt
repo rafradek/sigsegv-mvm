@@ -5428,7 +5428,124 @@
 					type "sym"
 					sym  "_ZN11CBaseEntity8EndTouchEPS_"
 				}
-				
+				"CAttributeManager::ProvideTo"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager9ProvideToEP11CBaseEntity"
+				}
+				"CAttributeManager::StopProvidingTo"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager15StopProvidingToEP11CBaseEntity"
+				}
+				"CTFWeaponBase::GetParticleColor"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase16GetParticleColorEi"
+				}
+				"CTFProjectile_EnergyRing::Create"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyRing6CreateEP16CTFWeaponBaseGunRK6VectorRK6QAngleffP11CBaseEntityS9_S2_S2_b"
+				}
+				"CBaseEntity::SetTransmitState"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity16SetTransmitStateEi"
+				}
+				"CBaseCombatWeapon::UpdateTransmitState"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon19UpdateTransmitStateEv"
+				}
+				"CServerGameClients::GetPlayerLimits"
+				{
+					type "sym"
+					sym  "_ZNK18CServerGameClients15GetPlayerLimitsERiS0_S0_"
+				}
+				"CBaseServer::GetFreeClient"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseServer13GetFreeClientER8netadr_s"
+				}
+				"CBaseServer::CreateNewClient"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseServer15CreateNewClientEi"
+				}
+				"SV_ActivateServer"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z17SV_ActivateServerv"
+				}
+				"CFuncIllusionary::Spawn"
+				{
+					type "sym"
+					sym  "_ZN16CFuncIllusionary5SpawnEv"
+				}
+				"SetupMaxPlayers"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z15SetupMaxPlayersi"
+				}
+				"Host_Changelevel"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z16Host_ChangelevelbPKcS0_"
+				}
+				"CGameServer::SpawnServer"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CGameServer11SpawnServerEPKcS1_S1_"
+				}
+				"Host_NewGame"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z12Host_NewGamePcbbPKcS1_b"
+				}
+				"CLagCompensationManager::FrameUpdatePostEntityThink"
+				{
+					type "sym"
+					sym  "_ZN23CLagCompensationManager26FrameUpdatePostEntityThinkEv"
+				}
+				"SendProxy_PlayerList"
+				{
+					type "sym"
+					sym  "_Z20SendProxy_PlayerListPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxyArrayLength_PlayerArray"
+				{
+					type "sym"
+					sym  "_Z32SendProxyArrayLength_PlayerArrayPKvi"
+				}
+				"CTFTeam::AddPlayer"
+				{
+					type "sym"
+					sym  "_ZN7CTFTeam9AddPlayerEP11CBasePlayer"
+				}
+				"CTFTeam::RemovePlayer"
+				{
+					type "sym"
+					sym  "_ZN7CTFTeam12RemovePlayerEP11CBasePlayer"
+				}
+				"CTeam::RemovePlayer"
+				{
+					type "sym"
+					sym  "_ZN5CTeam12RemovePlayerEP11CBasePlayer"
+				}
+				"CCvar::FindVar"
+				{
+					type "sym"
+					lib "vstdlib"
+					sym  "_ZNK5CCvar7FindVarEPKc"
+				}
 			}
 			"addrs_group"
 			{

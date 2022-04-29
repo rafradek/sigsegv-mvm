@@ -1784,7 +1784,7 @@ namespace Mod::Util::Client_Cmds
 					textparam.fxTime = 1.0f;
 					
 					ForEachTFPlayer([&](CTFPlayer *player) {
-						if (!player->IsBot() && cpu_show_player[ENTINDEX(player)] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[ENTINDEX(player)] == 1)) {
+						if (!player->IsBot() && ENTINDEX(player) < ARRAYSIZE(cpu_show_player) && cpu_show_player[ENTINDEX(player)] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[ENTINDEX(player)] == 1)) {
 							std::string str;
 							if (highCpu || cpu_show_player[ENTINDEX(player)] == 1) {
 								str += fmt::format("CPU Usage {}%\n", (int)(cpu_usage * 100));

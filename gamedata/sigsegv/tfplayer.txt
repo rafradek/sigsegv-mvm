@@ -959,6 +959,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer18ApplyPunchImpulseXEf"
 				}
+				"CTFPlayer::HandleAnimEvent"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer15HandleAnimEventEP11animevent_t"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

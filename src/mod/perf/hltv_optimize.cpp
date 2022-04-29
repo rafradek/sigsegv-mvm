@@ -8,6 +8,7 @@
 #include "stub/server.h"
 #include "stub/team.h"
 #include "stub/tfweaponbase.h"
+#include <gamemovement.h>
 
 namespace Mod::Perf::HLTV_Optimize
 {
@@ -206,32 +207,55 @@ namespace Mod::Perf::HLTV_Optimize
 	{
         if (!ExtraSlotsEnabled()) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
-        if (rc_CBaseServer_CreateFakeClient_HLTV) {
+        if (rc_CBaseServer_CreateFakeClient) {
             std::vector<CBaseClient *> clientList;
-
             auto server = reinterpret_cast<CBaseServer *>(this);
-            for (int i = 0; i < server->GetClientCount(); i++) {
-                CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
-                if (!client->IsConnected() && !client->IsFakeClient()) {
-                    clientList.push_back(client);
-                    client->m_bFakePlayer = true;
-                }
-            }
 
-            CBaseClient *lastClient = nullptr;
-            while (server->GetClientCount() != server->GetMaxClients()) {
-                lastClient = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
-                if (lastClient != nullptr) {
-                    clientList.push_back(lastClient);
-                    lastClient->m_bFakePlayer = true;
+            // Make sure all slots are taken
+            if (server->GetClientCount() != server->GetMaxClients()) {
+                // Set clients as fake so they are considered taken
+                for (int i = 0; i < server->GetClientCount(); i++) {
+                    CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
+                    if (!client->IsConnected() && !client->IsFakeClient()) {
+                        clientList.push_back(client);
+                        client->m_bFakePlayer = true;
+                    }
+                }
+
+                // Create clients to fill all slots
+                while (server->GetClientCount() != server->GetMaxClients()) {
+                    CBaseClient *lastClient = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+                    if (lastClient != nullptr) {
+                        clientList.push_back(lastClient);
+                        lastClient->m_bFakePlayer = true;
+                    }
+                }
+                for (auto client : clientList) {
+                    client->m_bFakePlayer = false;
                 }
             }
             
-            for (CBaseClient *client : clientList) {
-                client->m_bFakePlayer = false;
+            int desiredSlot = server->GetMaxClients() - 1;
+            if (!rc_CBaseServer_CreateFakeClient_HLTV) {
+                if (!sig_perf_hltv_allow_bots_extra_slot.GetBool()) {
+                    desiredSlot = 32;
+                }
+                else {
+			        static ConVarRef visible_max_players("sv_visiblemaxplayers");
+			        static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
+			        static ConVarRef tv_enable("tv_enable");
+                    desiredSlot = MIN(MAX(32,visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1), server->GetMaxClients() - (tv_enable.GetBool() ? 2 : 1));
+                }
+            }
+            
+            for (int i = desiredSlot; i >= 0; i--) {
+                CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
+                if (!client->IsConnected() && !client->IsFakeClient()) {
+                    return client;
+                }
             }
 
-            return lastClient;
+            return nullptr;
         }
 		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
         if ( !(sig_perf_hltv_allow_bots_extra_slot.GetBool() && rc_CBaseServer_CreateFakeClient) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
@@ -299,29 +323,45 @@ namespace Mod::Perf::HLTV_Optimize
         while (iElement + playerListOffset < numplayers - 1 && ENTINDEX(team->GetPlayer(iElement + playerListOffset)) > 33) {
             playerListOffset += 1;
         }
+        Msg("Element %d offset %d\n", iElement, playerListOffset);
         return DETOUR_STATIC_CALL(SendProxy_PlayerList)(pProp, pStruct, pData, pOut, iElement + playerListOffset, objectID);
     }
     DETOUR_DECL_STATIC(int, SendProxyArrayLength_PlayerArray, const void *pStruct, int objectID)
 	{
 		int count = DETOUR_STATIC_CALL(SendProxyArrayLength_PlayerArray)(pStruct, objectID);
+        int countpre = count;
         if (ExtraSlotsEnabled()) {
             auto team = (CTeam *)(pStruct);
 
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < countpre; i++) {
                 if (ENTINDEX(team->GetPlayer(i)) > 33) {
                     count--;
                 }
             }
         }
+        Msg("Count %d Pre %d\n", count, countpre);
         return count;
     }
 
-	DETOUR_DECL_MEMBER(void, CTFTeam_AddPlayer, CBasePlayer *player)
+	DETOUR_DECL_MEMBER(void, CTeam_AddPlayer, CBasePlayer *player)
 	{
-        DETOUR_MEMBER_CALL(CTFTeam_AddPlayer)(player);
         auto team = reinterpret_cast<CTFTeam *>(this);
-        if (ENTINDEX(player) > 33 && team->m_hLeader == player) {
-            team->m_hLeader = nullptr;
+        if (ENTINDEX(player) < 34) {
+            int insertindex = team->m_aPlayers->Count();
+            while (insertindex > 0 && ENTINDEX(team->m_aPlayers[insertindex - 1]) > 33) {
+                insertindex--;
+            }
+            team->m_aPlayers->InsertBefore(insertindex, player);
+            team->NetworkStateChanged();
+            return;
+        }
+        DETOUR_MEMBER_CALL(CTeam_AddPlayer)(player);
+
+        // team->m_aPlayers->Sort([](CBasePlayer * const *l, CBasePlayer * const *r){
+        //     return ENTINDEX(*l) - ENTINDEX(*r);
+        // });
+        for (auto player : team->m_aPlayers) {
+            Msg("team post %d\n", ENTINDEX(player));
         }
     }
 
@@ -333,7 +373,110 @@ namespace Mod::Perf::HLTV_Optimize
         }
         DETOUR_MEMBER_CALL(CTFTeam_RemovePlayer)(player);
     }
+
+	DETOUR_DECL_MEMBER(int, CGameMovement_GetPointContentsCached, const Vector &point, int slot)
+	{
+        auto movement = reinterpret_cast<CGameMovement *>(this);
+        if (movement->player != nullptr && ENTINDEX(movement->player) > 33) {
+            return enginetrace->GetPointContents(point);
+        }
+        return DETOUR_MEMBER_CALL(CGameMovement_GetPointContentsCached)(point, slot);
+    }
+
+	DETOUR_DECL_MEMBER(int, CGameMovement_CheckStuck)
+	{
+        auto movement = reinterpret_cast<CGameMovement *>(this);
+
+        int oldIndex = -1;
+        if (movement->player != nullptr && ENTINDEX(movement->player) > 33) {
+            oldIndex = ENTINDEX(movement->player);
+            movement->player->edict()->m_EdictIndex = 0;
+        }
+        auto ret = DETOUR_MEMBER_CALL(CGameMovement_CheckStuck)();
+        if (oldIndex != -1) {
+            movement->player->edict()->m_EdictIndex = oldIndex;
+        }
+        return ret;
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFGameStats_ResetPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetPlayerStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_ResetKillHistory, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetKillHistory)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_IncrementStat, CTFPlayer* player, int statType, int value) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_IncrementStat)(player, statType, value);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_SendStatsToPlayer, CTFPlayer* player, bool isAlive) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_SendStatsToPlayer)(player, isAlive);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_AccumulateAndResetPerLifeStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_AccumulateAndResetPerLifeStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerConnected, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerConnected)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerDisconnectedTF, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerDisconnectedTF)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerLeachedHealth, CTFPlayer* player, bool dispenser, float amount) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerLeachedHealth)(player, dispenser, amount);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_TrackKillStats, CTFPlayer* attacker, CTFPlayer* victim) { if (ENTINDEX(attacker) > 33 || ENTINDEX(victim) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_TrackKillStats)(attacker, victim);}
+    DETOUR_DECL_MEMBER(void *, CTFGameStats_FindPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return nullptr; return DETOUR_MEMBER_CALL(CTFGameStats_FindPlayerStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerEarnedKillStreak, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerEarnedKillStreak)(player);}
+
+    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominated, int index) { if (index > 33) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominated)(index);}
+    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominatingMe, int index) { if (index > 33) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominatingMe)(index);}
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominated, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominated)(player, dominated);}
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominatingMe, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominatingMe)(player, dominated);}
+
+    /*DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (event != nullptr && sig_perf_hltv_allow_bots_extra_slot.GetBool() && strcmp(event->GetName(), "player_death") == 0) {
+            auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
+            auto attacker = UTIL_PlayerByUserId(event->GetInt("attacker"));
+            auto assister = UTIL_PlayerByUserId(event->GetInt("assister"));
+            auto player33 = UTIL_PlayerByIndex(33);
+            if (player33 != nullptr) {
+                if (ENTINDEX(victim) > 33) {
+                    event->SetInt("userid", player33->GetUserID());
+                }
+            }
+        }
+    }*/
+	DETOUR_DECL_MEMBER(void, CTFGameRules_GetTaggedConVarList, KeyValues *kv)
+	{
+        DETOUR_MEMBER_CALL(CTFGameRules_GetTaggedConVarList)(kv);
+        FOR_EACH_SUBKEY(kv, subkey) {
+            //Msg("CVAR %s TAG %s \n", subkey->GetString("convar"), subkey->GetString("tag"));
+            if (FStrEq(subkey->GetString("convar"), "tf_pve_mode")) {
+                kv->RemoveSubKey(subkey);
+                subkey->deleteThis();
+                break;
+            }
+        }
+    }
+
+    CON_COMMAND(sig_get_commands, "")
+    {
+        const ConCommandBase *cmd = icvar->GetCommands();
+        for ( ; cmd; cmd = cmd->GetNext() )
+        {
+            Msg("%s\n", cmd->GetName());
+        }
+    }
+
+	DETOUR_DECL_MEMBER(void, CBaseServer_RecalculateTags)
+	{
+        static ConCommandBase *bot_moveto = icvar->FindCommandBase("bot_moveto");
+        static ConCommandBase *tf_stats_nogameplaycheck = icvar->FindCommandBase("tf_stats_nogameplaycheck");
+
+        if (UTIL_PlayerByIndex(40) != nullptr) {
+            Msg("Post %d\n", bot_moveto->GetNext());
+            Msg("Post2 %d\n", tf_stats_nogameplaycheck->GetNext());
+            const ConCommandBase *cmd = icvar->GetCommands();
+            for ( ; cmd; cmd = cmd->GetNext() )
+            {
+                //Msg("%s\n", cmd->GetName());
+            }
+            return;
+        }
+        else {
+            Msg("Pre %d\n", bot_moveto->GetNext());
+            Msg("Pre2 %d\n", tf_stats_nogameplaycheck->GetNext());
+        }
+        DETOUR_MEMBER_CALL(CBaseServer_RecalculateTags)();
+    }
     
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -360,9 +503,31 @@ namespace Mod::Perf::HLTV_Optimize
             MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation,  "CLagCompensationManager::StartLagCompensation");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FinishLagCompensation, "CLagCompensationManager::FinishLagCompensation");
 			//MOD_ADD_DETOUR_STATIC(SendProxy_PlayerList,    "SendProxy_PlayerList");
-			//MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
-			//MOD_ADD_DETOUR_MEMBER(CTFTeam_AddPlayer, "CTFTeam::AddPlayer");
-			MOD_ADD_DETOUR_MEMBER(CTeam_RemovePlayer, "CTeam::RemovePlayer");
+		    MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
+			MOD_ADD_DETOUR_MEMBER(CTeam_AddPlayer, "CTeam::AddPlayer");
+			//MOD_ADD_DETOUR_MEMBER(CTeam_RemovePlayer, "CTeam::RemovePlayer");
+			MOD_ADD_DETOUR_MEMBER(CGameMovement_GetPointContentsCached, "CGameMovement::GetPointContentsCached");
+			//MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetTaggedConVarList, "CTFGameRules::GetTaggedConVarList");
+			//MOD_ADD_DETOUR_MEMBER(CBaseServer_RecalculateTags, "CBaseServer::RecalculateTags");
+
+            
+			MOD_ADD_DETOUR_MEMBER(CTFGameStats_ResetPlayerStats, "CTFGameStats::ResetPlayerStats");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_ResetKillHistory, "CTFGameStats::ResetKillHistory");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_IncrementStat, "CTFGameStats::IncrementStat");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_SendStatsToPlayer, "CTFGameStats::SendStatsToPlayer");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_AccumulateAndResetPerLifeStats, "CTFGameStats::AccumulateAndResetPerLifeStats");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_Event_PlayerConnected, "CTFGameStats::Event_PlayerConnected");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_Event_PlayerDisconnectedTF, "CTFGameStats::Event_PlayerDisconnectedTF");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_Event_PlayerLeachedHealth, "CTFGameStats::Event_PlayerLeachedHealth");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_TrackKillStats, "CTFGameStats::TrackKillStats");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_FindPlayerStats, "CTFGameStats::FindPlayerStats");
+            MOD_ADD_DETOUR_MEMBER(CTFGameStats_Event_PlayerEarnedKillStreak, "CTFGameStats::Event_PlayerEarnedKillStreak");
+
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_IsPlayerDominated, "CTFPlayerShared::IsPlayerDominated");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_IsPlayerDominatingMe, "CTFPlayerShared::IsPlayerDominatingMe");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetPlayerDominated, "CTFPlayerShared::SetPlayerDominated");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetPlayerDominatingMe, "CTFPlayerShared::SetPlayerDominatingMe");
+            
             
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");

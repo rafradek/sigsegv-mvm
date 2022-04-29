@@ -458,7 +458,7 @@ namespace Mod::Util::Vehicle_Fix
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
 	{
-		static float angpre[34];
+		static float angpre[129];
 		ForEachTFPlayer([](CTFPlayer *player) {
 			if (player->m_hVehicle != nullptr && player->m_hVehicle->GetCustomVariableFloat<"playermodellookforward">(1.0f)) {
 				QAngle ang = player->m_angEyeAngles;

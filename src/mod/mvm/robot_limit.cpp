@@ -47,7 +47,19 @@ namespace Mod::MvM::Robot_Limit
 			int need_to_kick = (mvm_bots.Count() - GetMvMInvaderLimit());
 			DevMsg("Need to kick %d bots\n", need_to_kick);
 			
-			/* pass 1: nominate bots on TEAM_SPECTATOR to be kicked */
+			/* pass 1: nominate bots with slot > 33 to be kicked*/
+			for (auto bot : mvm_bots) {
+				if (need_to_kick <= 0) break;
+
+				static ConVarRef visible_max_players("sv_visiblemaxplayers");
+
+				if (ENTINDEX(bot) > 33 && ENTINDEX(bot) > GetMvMInvaderLimit() + visible_max_players.GetInt()) {
+					bots_to_kick.AddToTail(bot);
+					--need_to_kick;
+				}
+			}
+
+			/* pass 2: nominate bots on TEAM_SPECTATOR to be kicked */
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
@@ -57,7 +69,7 @@ namespace Mod::MvM::Robot_Limit
 				}
 			}
 			
-			/* pass 2: nominate bots on TF_TEAM_RED to be kicked */
+			/* pass 3: nominate bots on TF_TEAM_RED to be kicked */
 			if (cvar_fix_red.GetBool()) {
 				for (auto bot : mvm_bots) {
 					if (need_to_kick <= 0) break;
@@ -68,7 +80,7 @@ namespace Mod::MvM::Robot_Limit
 					}
 				}
 			}
-			/* pass 3: nominate dead bots to be kicked */
+			/* pass 4: nominate dead bots to be kicked */
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
@@ -77,7 +89,7 @@ namespace Mod::MvM::Robot_Limit
 					--need_to_kick;
 				}
 			}
-			/* pass 4: nominate bots on TF_TEAM_BLUE to be kicked */
+			/* pass 5: nominate bots on TF_TEAM_BLUE to be kicked */
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				

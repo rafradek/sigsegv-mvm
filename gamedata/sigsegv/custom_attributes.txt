@@ -2354,4 +2354,22 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4552"
+    {
+        "name"	"particle color rgb"
+        "attribute_class"	"particle_color_rgb"
+        "description_string"	"(+-)%p% move speed while crouching"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4553"
+    {
+        "name"	"particle color rainbow"
+        "attribute_class"	"particle_color_rainbow"
+        "description_string"	"(+-)%p% move speed while crouching"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

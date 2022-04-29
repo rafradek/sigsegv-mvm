@@ -4302,8 +4302,8 @@ namespace Mod::Attr::Custom_Attributes
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
-	std::vector<std::string> attribute_info_strings[33];
-	float attribute_info_display_time[33];
+	std::vector<std::string> attribute_info_strings[34];
+	float attribute_info_display_time[34];
 
 	void DisplayAttributeString(CTFPlayer *player, int num)
 	{
@@ -4429,7 +4429,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot)
 	{
-		if (!cvar_display_attrs.GetBool())
+		if (!cvar_display_attrs.GetBool() || ENTINDEX(target) >= ARRAYSIZE(attribute_info_strings))
 			return;
 			
 		bool display_stock = player != target;
@@ -5082,11 +5082,12 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			if (gpGlobals->tickcount % 16 == 0) { 
 				ForEachTFPlayer([&](CTFPlayer *player){
-					static bool in_upgrade_zone[33];
-
-					if (player->IsBot()) return;
+					static bool in_upgrade_zone[34];
 
 					int index = ENTINDEX(player) - 1;
+
+					if (player->IsBot() || index > 33) return;
+
 					if (player->m_Shared->m_bInUpgradeZone) {
 						in_upgrade_zone[index] = true;
 						if (attribute_info_strings[index].empty()) {

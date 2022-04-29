@@ -9,6 +9,8 @@ MemberVFuncThunk<      CTeam *, CBasePlayer *, int> CTeam::vt_GetPlayer    (Type
 MemberFuncThunk<      CTeam *, void, CBasePlayer *> CTeam::ft_AddPlayer    ("CTeam::AddPlayer");
 MemberFuncThunk<      CTeam *, void, CBasePlayer *> CTeam::ft_RemovePlayer ("CTeam::RemovePlayer");
 
+IMPL_SENDPROP(char[32], CTeam, m_szTeamname, CTeam);
+IMPL_RELATIVE(CUtlVector<CBasePlayer *>, CTeam, m_aPlayers, m_szTeamname, -sizeof(CUtlVector<CBasePlayer *>));
 
 MemberFuncThunk<CTFTeam *, int, int>           CTFTeam::ft_GetNumObjects("CTFTeam::GetNumObjects");
 MemberFuncThunk<CTFTeam *, CBaseObject *, int> CTFTeam::ft_GetObject    ("CTFTeam::GetObject");

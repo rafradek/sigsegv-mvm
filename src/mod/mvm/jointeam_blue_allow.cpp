@@ -1011,7 +1011,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 		if (event != nullptr && strcmp(event->GetName(), "player_connect_client") == 0) {
 			int index = event->GetInt("index") + 1;
-			score_stats[index].Reset();
+			if (index < ARRAYSIZE(score_stats))
+				score_stats[index].Reset();
 		}
 
 		if (event != nullptr && strcmp(event->GetName(), "mvm_wave_complete") == 0) {
@@ -1243,8 +1244,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				ForEachTFPlayer([](CTFPlayer *player){
 					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;
 					if (player->IsBot())                         return;
-					
 					int plIndex = ENTINDEX(player);
+					if (plIndex >= ARRAYSIZE(prevPressedScore)) return;
+					
 					if(player->m_nButtons & IN_SCORE && !prevPressedScore[plIndex]) {
 						IBaseMenu *menu = nullptr;
 						menus->GetDefaultStyle()->GetClientMenu(plIndex, (void **)&menu);
