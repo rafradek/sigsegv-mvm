@@ -11,6 +11,7 @@ class CPlayerResource : public CBaseEntity
 public:
 	DECL_SENDPROP_RW(int[34],          m_iTeam);
 	DECL_SENDPROP_RW(int[34],          m_bValid);
+	DECL_SENDPROP_RW(uint32[34],          m_iAccountID);
 	
 	
 private:

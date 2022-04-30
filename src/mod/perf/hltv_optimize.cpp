@@ -2,12 +2,14 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "util/iterate.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/team.h"
 #include "stub/tfweaponbase.h"
+#include "stub/tf_player_resource.h"
 #include <gamemovement.h>
 
 namespace Mod::Perf::HLTV_Optimize
@@ -198,14 +200,45 @@ namespace Mod::Perf::HLTV_Optimize
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_CreateFakeClient, const char *name)
 	{
         static ConVarRef tv_name("tv_name");
+        static int counter = 0;
         SCOPED_INCREMENT(rc_CBaseServer_CreateFakeClient);
         SCOPED_INCREMENT_IF(rc_CBaseServer_CreateFakeClient_HLTV, tv_name.GetString() == name);
+        if (tv_name.GetString() != name) {
+            name = STRING(AllocPooledString(CFmtStr("TFBot %d", ++counter)));
+        }
+
+        //ForEachEntity([](CBaseEntity *ent){
+         //   Msg("Entity %d %s\n", ent->entindex(), ent->GetClassname());
+		//	});
 		return DETOUR_MEMBER_CALL(CBaseServer_CreateFakeClient)(name);
 	}
-    
+
+    DETOUR_DECL_MEMBER(void, CServerGameClients_ClientActive, edict_t *pEdict, bool bLoadGame)
+	{
+        
+        Msg("EntityEnd %d\n", pEdict);
+        if (pEdict != nullptr) {
+            Msg("EntityEnd2 %d\n", pEdict->m_EdictIndex);
+        }
+        DETOUR_MEMBER_CALL(CServerGameClients_ClientActive)(pEdict, bLoadGame);
+        Msg("EntityAfter\n");
+        
+    }
+
+    DETOUR_DECL_STATIC(void, ClientActive, edict_t *pEdict, bool bLoadGame)
+	{
+        Msg("ClientActivePre\n");
+        DETOUR_STATIC_CALL(ClientActive)(pEdict, bLoadGame);
+        ForEachEntity([](CBaseEntity *ent){
+            Msg("EntityPost %d %s\n", ent->entindex(), ent->GetClassname());
+            ent->PostClientActive();
+			});
+        Msg("ClientActivePost\n");
+    }
+
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
-        if (!ExtraSlotsEnabled()) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if (!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
         if (rc_CBaseServer_CreateFakeClient) {
             std::vector<CBaseClient *> clientList;
@@ -235,7 +268,7 @@ namespace Mod::Perf::HLTV_Optimize
                 }
             }
             
-            int desiredSlot = server->GetMaxClients() - 1;
+            int desiredSlot = 33;
             if (!rc_CBaseServer_CreateFakeClient_HLTV) {
                 if (!sig_perf_hltv_allow_bots_extra_slot.GetBool()) {
                     desiredSlot = 32;
@@ -244,13 +277,16 @@ namespace Mod::Perf::HLTV_Optimize
 			        static ConVarRef visible_max_players("sv_visiblemaxplayers");
 			        static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
 			        static ConVarRef tv_enable("tv_enable");
-                    desiredSlot = MIN(MAX(32,visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1), server->GetMaxClients() - (tv_enable.GetBool() ? 2 : 1));
+                    desiredSlot = MIN(MAX(32,visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1), server->GetMaxClients() - 1);
                 }
             }
             
             for (int i = desiredSlot; i >= 0; i--) {
                 CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
-                if (!client->IsConnected() && !client->IsFakeClient()) {
+                static ConVarRef tv_enable("tv_enable");
+                if (!client->IsConnected() 
+                && !client->IsFakeClient() 
+                && !(i == 33 && !rc_CBaseServer_CreateFakeClient_HLTV && tv_enable.GetBool())) {
                     return client;
                 }
             }
@@ -416,6 +452,50 @@ namespace Mod::Perf::HLTV_Optimize
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominated, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominated)(player, dominated);}
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominatingMe, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominatingMe)(player, dominated);}
 
+    DETOUR_DECL_MEMBER(void, CTFPlayerResource_UpdateConnectedPlayer, int index, CTFPlayer *player)
+	{
+        //Msg("Update connected player %d %d\n", index, ENTINDEX(player));
+        int teampre = player->GetTeamNumber();
+        player->SetTeamNumber(TEAM_SPECTATOR);
+        DETOUR_MEMBER_CALL(CTFPlayerResource_UpdateConnectedPlayer)(index, player);
+        player->SetTeamNumber(teampre);
+        if (index > 0 && index < 34)
+            TFPlayerResource()->m_iTeam.SetIndex(teampre, index);
+    }
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerResource_UpdateDisconnectedPlayer, int index)
+	{
+        //Msg("Update disconnected player %d\n", index);
+
+        TFPlayerResource()->m_iAccountID.SetIndex(0, index);
+        DETOUR_MEMBER_CALL(CTFPlayerResource_UpdateDisconnectedPlayer)(index);
+    }
+    
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerResource_SetPlayerClassWhenKilled, int iIndex, int iClass )
+	{
+        if (iIndex > 33) {
+            return;
+        } 
+        DETOUR_MEMBER_CALL(CTFPlayerResource_SetPlayerClassWhenKilled)(iIndex, iClass);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBasePlayer_UpdatePlayerSound)
+	{
+        auto player = reinterpret_cast<CBasePlayer *>(this);
+        if (player->entindex() > 96) return;
+        DETOUR_MEMBER_CALL(CBasePlayer_UpdatePlayerSound)();
+    }
+
+    DETOUR_DECL_MEMBER(void, CSoundEnt_Initialize)
+	{
+        int oldMaxClients = gpGlobals->maxClients;
+        if (gpGlobals->maxClients > 96) {
+            gpGlobals->maxClients = 96;
+        }
+        DETOUR_MEMBER_CALL(CSoundEnt_Initialize)();
+        gpGlobals->maxClients = oldMaxClients;
+    }
     /*DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
 	{
 		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
@@ -527,6 +607,13 @@ namespace Mod::Perf::HLTV_Optimize
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_IsPlayerDominatingMe, "CTFPlayerShared::IsPlayerDominatingMe");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetPlayerDominated, "CTFPlayerShared::SetPlayerDominated");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetPlayerDominatingMe, "CTFPlayerShared::SetPlayerDominatingMe");
+            //MOD_ADD_DETOUR_MEMBER(CTFPlayerResource_UpdateConnectedPlayer, "CTFPlayerResource::UpdateConnectedPlayer");
+            //MOD_ADD_DETOUR_MEMBER(CTFPlayerResource_UpdateDisconnectedPlayer, "CTFPlayerResource::UpdateDisconnectedPlayer");
+            //MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientActive, "CServerGameClients::ClientActive");
+            //MOD_ADD_DETOUR_STATIC(ClientActive, "ClientActive");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerResource_SetPlayerClassWhenKilled, "CTFPlayerResource::SetPlayerClassWhenKilled");
+            MOD_ADD_DETOUR_MEMBER(CBasePlayer_UpdatePlayerSound, "CBasePlayer::UpdatePlayerSound");
+            MOD_ADD_DETOUR_MEMBER(CSoundEnt_Initialize, "CSoundEnt::Initialize");
             
             
             

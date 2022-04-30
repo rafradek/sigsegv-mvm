@@ -2,6 +2,7 @@
 
 IMPL_SENDPROP(int[34],          CPlayerResource, m_iTeam, CPlayerResource);
 IMPL_SENDPROP(int[34],          CPlayerResource, m_bValid, CPlayerResource);
+IMPL_SENDPROP(uint32[34],          CPlayerResource, m_iAccountID, CPlayerResource);
 
 IMPL_SENDPROP(int[34],          CTFPlayerResource,          m_iDamage, CTFPlayerResource);
 IMPL_SENDPROP(int[34],          CTFPlayerResource,          m_iTotalScore, CTFPlayerResource);

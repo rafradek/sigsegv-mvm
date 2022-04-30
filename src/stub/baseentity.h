@@ -344,6 +344,7 @@ public:
 	int GetDamageType()                                                                                                     { return vt_GetDamageType                 (this); }
 	void StartTouch(CBaseEntity *entity)                                                                                    { return vt_StartTouch                    (this, entity); }
 	void EndTouch(CBaseEntity *entity)                                                                                      { return vt_EndTouch                      (this, entity); }
+	void PostClientActive()                                                                                                 { return vt_PostClientActive              (this); }
 
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
@@ -499,6 +500,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, int >                                                             vt_GetDamageType;
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_StartTouch;
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_EndTouch;
+	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_PostClientActive;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;

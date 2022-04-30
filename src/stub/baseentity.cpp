@@ -130,6 +130,7 @@ MemberVFuncThunk<      CBaseEntity *, int, float, int                           
 MemberVFuncThunk<      CBaseEntity *, int                                                             > CBaseEntity::vt_GetDamageType                 (TypeName<CBaseEntity>(), "CBaseEntity::GetDamageType");
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                                             > CBaseEntity::vt_StartTouch                    (TypeName<CBaseEntity>(), "CBaseEntity::StartTouch");
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                                             > CBaseEntity::vt_EndTouch                      (TypeName<CBaseEntity>(), "CBaseEntity::EndTouch");
+MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_PostClientActive              (TypeName<CBaseEntity>(), "CBaseEntity::PostClientActive");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");
