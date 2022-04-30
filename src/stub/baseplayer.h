@@ -143,6 +143,7 @@ public:
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	CBaseEntity *FindUseEntity()                                         { return vt_FindUseEntity      (this); }
 	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
+	void CreateViewModel(int index)                                      { return vt_CreateViewModel(this, index); }
 	
 	
 	DECL_SENDPROP_RW(CPlayerLocalData, m_Local);
@@ -190,6 +191,7 @@ private:
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_EquipWearable;
 	static MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               vt_FindUseEntity;
 	static MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> vt_LeaveVehicle;
+	static MemberVFuncThunk<      CBasePlayer *, void, int>                   vt_CreateViewModel;
 };
 
 class CBaseMultiplayerPlayer : public CBasePlayer

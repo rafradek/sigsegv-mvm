@@ -964,7 +964,26 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer15HandleAnimEventEP11animevent_t"
 				}
-				
+				"CTFPlayerShared::IsPlayerDominated"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared17IsPlayerDominatedEi"
+				}
+				"CTFPlayerShared::IsPlayerDominatingMe"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared20IsPlayerDominatingMeEi"
+				}
+				"CTFPlayerShared::SetPlayerDominated"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared18SetPlayerDominatedEP9CTFPlayerb"
+				}
+				"CTFPlayerShared::SetPlayerDominatingMe"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared21SetPlayerDominatingMeEP9CTFPlayerb"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

@@ -115,6 +115,7 @@ MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>         CBasePlayer::
 MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>             CBasePlayer::vt_EquipWearable       (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
 MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               CBasePlayer::vt_FindUseEntity       (TypeName<CBasePlayer>(),"CBasePlayer::FindUseEntity");
 MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> CBasePlayer::vt_LeaveVehicle(TypeName<CBasePlayer>(),"CBasePlayer::LeaveVehicle");
+MemberVFuncThunk<      CBasePlayer *, void, int>                   CBasePlayer::vt_CreateViewModel     (TypeName<CTFPlayer>(),  "CTFPlayer::CreateViewmodel");
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");

@@ -5546,6 +5546,128 @@
 					lib "vstdlib"
 					sym  "_ZNK5CCvar7FindVarEPKc"
 				}
+				"CGameMovement::GetPointContentsCached"
+				{
+					type "sym"
+					sym  "_ZN13CGameMovement22GetPointContentsCachedERK6Vectori"
+				}
+				"CTFGameRules::GetTaggedConVarList"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules19GetTaggedConVarListEP9KeyValues"
+				}
+				"CBaseServer::RecalculateTags"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseServer15RecalculateTagsEv"
+				}
+				"CGameMovement::CheckStuck"
+				{
+					type "sym"
+					sym  "_ZN13CGameMovement10CheckStuckEv"
+				}
+				"CTFGameStats::ResetPlayerStats"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats16ResetPlayerStatsEP9CTFPlayer"
+				}
+				"CTFGameStats::ResetKillHistory"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats16ResetKillHistoryEP9CTFPlayer"
+				}
+				"CTFGameStats::IncrementStat"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats13IncrementStatEP9CTFPlayer12TFStatType_ti"
+				}
+				"CTFGameStats::SendStatsToPlayer"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats17SendStatsToPlayerEP9CTFPlayerb"
+				}
+				"CTFGameStats::AccumulateAndResetPerLifeStats"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats30AccumulateAndResetPerLifeStatsEP9CTFPlayer"
+				}
+				"CTFGameStats::Event_PlayerConnected"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats21Event_PlayerConnectedEP11CBasePlayer"
+				}
+				"CTFGameStats::Event_PlayerDisconnectedTF"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats26Event_PlayerDisconnectedTFEP9CTFPlayer"
+				}
+				"CTFGameStats::Event_PlayerLeachedHealth"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats25Event_PlayerLeachedHealthEP9CTFPlayerbf"
+				}
+				"CTFGameStats::TrackKillStats"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats14TrackKillStatsEP11CBasePlayerS1_"
+				}
+				"CTFGameStats::FindPlayerStats"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats15FindPlayerStatsEP11CBasePlayer"
+				}
+				"CTFGameStats::Event_PlayerEarnedKillStreak"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats28Event_PlayerEarnedKillStreakEP9CTFPlayer"
+				}
+				"CTFPlayerResource::UpdateConnectedPlayer"
+				{
+					type "sym"
+					sym  "_ZN17CTFPlayerResource21UpdateConnectedPlayerEiP11CBasePlayer"
+				}
+				"CTFPlayerResource::UpdateDisconnectedPlayer"
+				{
+					type "sym"
+					sym  "_ZN17CTFPlayerResource24UpdateDisconnectedPlayerEi"
+				}
+				"CServerGameClients::ClientActive"
+				{
+					type "sym"
+					sym  "_ZN18CServerGameClients12ClientActiveEP7edict_tb"
+				}
+				"CBaseEntity::PostClientActive"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity16PostClientActiveEv"
+				}
+				"ClientActive"
+				{
+					type "sym"
+					sym  "_Z12ClientActiveP7edict_tb"
+				}
+				"CTFPlayerResource::SetPlayerClassWhenKilled"
+				{
+					type "sym"
+					sym  "_ZN17CTFPlayerResource24SetPlayerClassWhenKilledEii"
+				}
+				"CBasePlayer::UpdatePlayerSound"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer17UpdatePlayerSoundEv"
+				}
+				"CSoundEnt::Initialize"
+				{
+					type "sym"
+					sym  "_ZN9CSoundEnt10InitializeEv"
+				}
+				"CVoiceGameMgr::ClientConnected"
+				{
+					type "sym"
+					sym  "_ZN13CVoiceGameMgr15ClientConnectedEP7edict_t"
+				}
+				
 			}
 			"addrs_group"
 			{

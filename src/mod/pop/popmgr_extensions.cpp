@@ -652,7 +652,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BluHumanSpawnNoShoot            ("sig_mvm_bluhuman_spawn_noshoot"),
 			m_BluHumanSpawnProtection         ("sig_mvm_bluhuman_spawn_protection"),
 			m_TvEnable                        ("tv_enable"),
-			m_AllowBotsExtraSlots             ("sig_perf_hltv_allow_bots_extra_slot")
+			m_AllowBotsExtraSlots             ("sig_perf_hltv_allow_bots_extra_slot"),
+			m_AutoWeaponStrip                 ("sig_auto_weapon_strip")
 			
 		{
 			this->Reset();
@@ -713,6 +714,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bRestoreNegativeDamageOverheal = true;
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
             this->m_bNoWranglerShield = false;
+            this->m_bRemoveOffhandViewmodel = true;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -800,6 +802,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BluHumanSpawnProtection.Reset();
 			this->m_TvEnable.Reset();
 			this->m_AllowBotsExtraSlots.Reset();
+			this->m_AutoWeaponStrip.Reset();
 
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -931,6 +934,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bRestoreNegativeDamageOverheal;
 		bool m_bExtraLoadoutItemsAllowEquipOutsideSpawn;
         bool m_bNoWranglerShield;
+		bool m_bRemoveOffhandViewmodel;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1019,6 +1023,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_BluHumanSpawnProtection;
 		CPopOverride_ConVar<bool> m_TvEnable;
 		CPopOverride_ConVar<bool> m_AllowBotsExtraSlots;
+		CPopOverride_ConVar<bool> m_AutoWeaponStrip;
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -2787,6 +2792,12 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
+		// Restore unused offhand viewmodel for other classes than spy
+
+		auto playerOwner = ToTFPlayer(owner);
+		if (state.m_bRemoveOffhandViewmodel && playerOwner != nullptr && playerOwner->GetViewModel(1) == nullptr && ent->m_nViewModelIndex == 1) {
+			playerOwner->CreateViewModel(1);
+		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerClassShared_SetCustomModel, const char *s1, bool b1)
@@ -2833,7 +2844,13 @@ namespace Mod::Pop::PopMgr_Extensions
 				});
 			}
 		}
+		
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+
+		// Remove unused offhand viewmodel for other classes than spy
+		if (state.m_bRemoveOffhandViewmodel && !player->IsPlayerClass(TF_CLASS_SPY) && player->GetViewModel(1) != nullptr) {
+			player->GetViewModel(1)->Remove();
+		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
@@ -5666,6 +5683,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_fStuckTimeMult = subkey->GetFloat();
 			} else if (FStrEq(name, "NoCreditsVelocity")) {
 				state.m_bNoCreditsVelocity = subkey->GetBool();
+			} else if (FStrEq(name, "RemoveUnusedOffhandViewmodel")) {
+				state.m_bRemoveOffhandViewmodel = subkey->GetBool();
 			} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 			} else if (FStrEq(name, "MaxSpectators")) {
@@ -5796,6 +5815,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_BluHumanSpawnNoShoot.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BluHumanSpawnProtection")) {
 				state.m_BluHumanSpawnProtection.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AutoWeaponStrip")) {
+				state.m_AutoWeaponStrip.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowBotExtraSlots")) {
 				state.m_AllowBotsExtraSlots.Set(subkey->GetBool());
 				if (subkey->GetBool()) {

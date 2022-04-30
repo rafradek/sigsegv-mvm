@@ -527,7 +527,7 @@ inline CBaseEntity *GetContainingEntity(edict_t *pent)
 
 inline int ENTINDEX(const edict_t *pEdict)
 {
-	return gamehelpers->IndexOfEdict(const_cast<edict_t *>(pEdict));
+	return pEdict != nullptr ? pEdict->m_EdictIndex : 0;
 }
 
 inline int ENTINDEX(const CBaseEntity *pEnt)

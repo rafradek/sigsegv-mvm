@@ -393,6 +393,8 @@ namespace Mod::Pop::ECAttr_Extensions
 
 	ConVar cvar_no_romevision("sig_no_romevision_cosmetics", "0", FCVAR_NONE,
 		"Disable romevision cosmetics");
+	ConVar cvar_auto_strip("sig_auto_weapon_strip", "0", FCVAR_NONE,
+		"Automatically strip unused weapons");
 	ConVar cvar_creators_custom_item("sig_creators_custom_item", "0", FCVAR_NONE,
 		"Enable fallback to creators custom item");
 
@@ -1325,6 +1327,44 @@ namespace Mod::Pop::ECAttr_Extensions
 		// Load ctfbot's ecattr data
 		auto data = &extdata[ecattr];
 		ecattr_map[bot] = data;
+
+		// Auto strip weapons that are not believed to be used (stock items without attributes on non primary slots)
+		if (ecattr != nullptr && cvar_auto_strip.GetBool() && bot->GetPlayerClass()->GetClassIndex() != TF_CLASS_SPY && !data->use_best_weapon) {
+			int usingSlot = 0;
+			if (bot->Weapon_GetWeaponByType(TF_WEAPON_MEDIGUN)) {
+				usingSlot = 1;
+			}
+			if (bot->GetPlayerClass()->GetClassIndex() == TF_CLASS_ENGINEER) {
+				usingSlot = 2;
+			}
+			if (ecattr->m_nWeaponRestrict == 1) {
+				usingSlot = 2;
+			}
+			else if (ecattr->m_nWeaponRestrict == 2) {
+				usingSlot = 0;
+			}
+			else if (ecattr->m_nWeaponRestrict == 4) {
+				usingSlot = 1;
+			}
+			for (int i = 0; i < 3; i++) {
+				if (i != usingSlot && !(i == 2 && ecattr->m_nWeaponRestrict == 0 && bot->GetMission() == CTFBot::MISSION_SNIPER) /* Sniper AI may use melee weapon */) {
+					CBaseCombatWeapon *item = bot->Weapon_GetSlot(i);
+					if (item != nullptr && item->GetItem() != nullptr && item->GetItem()->m_iEntityQuality == 0) {
+						bool remove = true;
+						for (auto &attr : ecattr->m_ItemAttrs) {
+							if (FStrEq(attr.m_strItemName.Get(), item->GetItem()->GetItemDefinition()->GetName())) {
+								remove = false;
+								break;
+							} 
+						}
+						if (remove) {
+							bot->Weapon_Detach(item);
+							item->Remove();
+						}
+					}
+				}
+			}
+		}
 
 		for (int slot : data->strip_item_slot) {
 			CBaseEntity *item;

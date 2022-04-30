@@ -396,9 +396,9 @@ namespace Mod::Perf::HLTV_Optimize
         // team->m_aPlayers->Sort([](CBasePlayer * const *l, CBasePlayer * const *r){
         //     return ENTINDEX(*l) - ENTINDEX(*r);
         // });
-        for (auto player : team->m_aPlayers) {
-            Msg("team post %d\n", ENTINDEX(player));
-        }
+        //for (auto player : team->m_aPlayers) {
+        //    Msg("team post %d\n", ENTINDEX(player));
+        //}
     }
 
 	DETOUR_DECL_MEMBER(void, CTeam_RemovePlayer, CBasePlayer *player)
@@ -495,6 +495,12 @@ namespace Mod::Perf::HLTV_Optimize
         }
         DETOUR_MEMBER_CALL(CSoundEnt_Initialize)();
         gpGlobals->maxClients = oldMaxClients;
+    }
+
+    DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
+	{
+        if (ENTINDEX(edict) > 33) return;
+        DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
     }
     /*DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
 	{
@@ -614,6 +620,7 @@ namespace Mod::Perf::HLTV_Optimize
             MOD_ADD_DETOUR_MEMBER(CTFPlayerResource_SetPlayerClassWhenKilled, "CTFPlayerResource::SetPlayerClassWhenKilled");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_UpdatePlayerSound, "CBasePlayer::UpdatePlayerSound");
             MOD_ADD_DETOUR_MEMBER(CSoundEnt_Initialize, "CSoundEnt::Initialize");
+            MOD_ADD_DETOUR_MEMBER(CVoiceGameMgr_ClientConnected, "CVoiceGameMgr::ClientConnected");
             
             
             

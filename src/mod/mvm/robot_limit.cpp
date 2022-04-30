@@ -19,15 +19,23 @@ namespace Mod::MvM::Robot_Limit
 	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
 		"Mod: fix problems with enforcement of the MvM robot limit when bots are on red team");
 
+	THINK_FUNC_DECL(UpdateRobotCounts)
+	{
+		CUtlVector<CTFPlayer *> mvm_bots;
+		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
+		CheckForMaxInvadersAndKickExtras(mvm_bots);
+		DevMsg("Changed\n");
+	}
+
 	ConVar cvar_override("sig_mvm_robot_limit_override", "22", FCVAR_NOTIFY,
 		"Mod: override the max number of MvM robots that are allowed to be spawned at once (normally 22)",
 		true, 0, false, 0,
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			/* ensure that slots are cleared up when this convar is decreased */
-			CUtlVector<CTFPlayer *> mvm_bots;
-			CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
-			CheckForMaxInvadersAndKickExtras(mvm_bots);
-			DevMsg("Changed\n");
+			if (g_pPopulationManager != nullptr) {
+				THINK_FUNC_SET(g_pPopulationManager, UpdateRobotCounts, gpGlobals->curtime + 0.01);
+			}
+			
 		});
 	
 	

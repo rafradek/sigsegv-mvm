@@ -365,8 +365,8 @@ class ExtensionConfig(object):
       '-ldl',
     ]
     if 'gcc' in cxx.version.vendor_name:
-    #  cxx.linkflags += ['-static-libgcc', '-static-libstdc++']
-      cxx.linkflags += ['-static-libgcc']
+       cxx.linkflags += ['-static-libgcc', '-static-libstdc++']
+    #  cxx.linkflags += ['-static-libgcc']
     elif 'clang' in cxx.version.vendor_name:
       cxx.linkflags += ['-lgcc_eh']
 
