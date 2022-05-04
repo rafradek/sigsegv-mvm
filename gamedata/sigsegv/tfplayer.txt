@@ -984,6 +984,12 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared21SetPlayerDominatingMeEP9CTFPlayerb"
 				}
+				"CTFPlayer::UpdateExpression"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16UpdateExpressionEv"
+				}
+				
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

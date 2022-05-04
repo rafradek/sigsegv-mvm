@@ -2,6 +2,7 @@
 #include "stub/tfbot.h"
 #include "stub/populators.h"
 #include "stub/gamerules.h"
+#include "mod/pop/popmgr_extensions.h"
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/admin.h"
@@ -19,12 +20,24 @@ namespace Mod::MvM::Robot_Limit
 	ConVar cvar_fix_red("sig_mvm_robot_limit_fix_red", "0", FCVAR_NOTIFY,
 		"Mod: fix problems with enforcement of the MvM robot limit when bots are on red team");
 
+	bool allocate_round_start = false;
+	bool hibernated = false;
+	
+	THINK_FUNC_DECL(SpawnBots)
+	{
+		allocate_round_start = true;
+		if (!hibernated)
+			reinterpret_cast<CPopulationManager *>(this)->AllocateBots();
+		allocate_round_start = false;
+	}
+
 	THINK_FUNC_DECL(UpdateRobotCounts)
 	{
 		CUtlVector<CTFPlayer *> mvm_bots;
 		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
 		CheckForMaxInvadersAndKickExtras(mvm_bots);
 		DevMsg("Changed\n");
+		THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
 	}
 
 	ConVar cvar_override("sig_mvm_robot_limit_override", "22", FCVAR_NOTIFY,
@@ -48,6 +61,33 @@ namespace Mod::MvM::Robot_Limit
 	// - add a third pass to the collect-bots-to-kick logic for bots on TF_TEAM_RED
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots)
 	{
+		// When extra bot slots are enabled, always kick bots in slots considered reserved for players
+		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
+		static ConVarRef visible_max_players("sv_visiblemaxplayers");
+		static ConVarRef tv_enable("tv_enable");
+		int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
+		if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
+			int playerReservedSlots = specs + visible_max_players.GetInt();
+			
+			for (int i = 0; i < mvm_bots.Count(); i++) {
+				if (ENTINDEX(mvm_bots[i]) <= playerReservedSlots) {
+					engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
+					mvm_bots.Remove(i);
+					i--;
+				}
+			}
+		}
+
+		// Kick bots over the slot 33
+
+		for (int i = 0; i < mvm_bots.Count(); i++) {
+			if (ENTINDEX(mvm_bots[i]) > 33 && ENTINDEX(mvm_bots[i]) > GetMvMInvaderLimit() + visible_max_players.GetInt() + specs + (tv_enable.GetBool() ? 1 : 0)) {
+				engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
+				mvm_bots.Remove(i);
+				i--;
+			}
+		}
+
 		if (mvm_bots.Count() < GetMvMInvaderLimit()) return;
 		
 		if (mvm_bots.Count() > GetMvMInvaderLimit()) {
@@ -55,18 +95,6 @@ namespace Mod::MvM::Robot_Limit
 			int need_to_kick = (mvm_bots.Count() - GetMvMInvaderLimit());
 			DevMsg("Need to kick %d bots\n", need_to_kick);
 			
-			/* pass 1: nominate bots with slot > 33 to be kicked*/
-			for (auto bot : mvm_bots) {
-				if (need_to_kick <= 0) break;
-
-				static ConVarRef visible_max_players("sv_visiblemaxplayers");
-
-				if (ENTINDEX(bot) > 33 && ENTINDEX(bot) > GetMvMInvaderLimit() + visible_max_players.GetInt()) {
-					bots_to_kick.AddToTail(bot);
-					--need_to_kick;
-				}
-			}
-
 			/* pass 2: nominate bots on TEAM_SPECTATOR to be kicked */
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
@@ -168,8 +196,6 @@ namespace Mod::MvM::Robot_Limit
 	
 	// rewrite this function entirely, with some changes:
 	// - use the overridden max bot count, rather than a hardcoded 22
-	bool allocate_round_start = false;
-	bool hibernated = false;
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_AllocateBots)
 	{
@@ -216,14 +242,6 @@ namespace Mod::MvM::Robot_Limit
 	}
 	//Restore the original max bot counts
 	RefCount rc_JumpToWave;
-
-	THINK_FUNC_DECL(SpawnBots)
-	{
-		allocate_round_start = true;
-		if (!hibernated)
-			reinterpret_cast<CPopulationManager *>(this)->AllocateBots();
-		allocate_round_start = false;
-	}
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
 	{

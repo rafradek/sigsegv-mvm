@@ -16,6 +16,7 @@
 #include "util/iterate.h"
 #include "util/override.h"
 #include "util/expression_eval.h"
+#include "mod/pop/popmgr_extensions.h"
 #include <sys/resource.h>
 #include <fmt/core.h>
 
@@ -1222,6 +1223,7 @@ namespace Mod::Util::Client_Cmds
 
 		CEconItemView *view = CEconItemView::Create();
 		view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+		Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(args[2], view);
 		for (int i = 3; i < args.ArgC() - 1; i+=2) {
 			CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(args[i]);
 			if (attr_def == nullptr) {
@@ -1762,7 +1764,7 @@ namespace Mod::Util::Client_Cmds
 
 					extern ConVar cvar_cpushowlevel;
 					bool highCpu = cvar_cpushowlevel.GetInt() < (int) (cpu_usage * 100);
-					bool highEdict = gEntList->m_iNumEdicts > 1500;
+					bool highEdict = engine->GetEntityCount() /* gEntList->m_iNumEdicts*/ > 1900;
 					bool highEnt = (gEntList->m_iNumEnts - gEntList->m_iNumEdicts) > 1500;
 
 					hudtextparms_t textparam;
@@ -1790,7 +1792,7 @@ namespace Mod::Util::Client_Cmds
 								str += fmt::format("CPU Usage {}%\n", (int)(cpu_usage * 100));
 							}
 							if (highEdict || cpu_show_player[ENTINDEX(player)] == 1) {
-								str += fmt::format("Networked Entities: {}/2048\n", gEntList->m_iNumEdicts);
+								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
 							}
 							if (highEnt || cpu_show_player[ENTINDEX(player)] == 1) {
 								str += fmt::format("Logic Entities: {}/2048\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);

@@ -14,5 +14,6 @@ namespace Mod::Pop::PopMgr_Extensions {
 	void AwardExtraItem(CTFPlayer *player, std::string &name);
 	void StripExtraItem(CTFPlayer *player, std::string &name);
 	void ApplyOrClearRobotModel(CTFPlayer *player);
+	int GetMaxSpectators();
 }
 #endif

@@ -272,6 +272,7 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool
                 if (pending_task.spell_type != 0) {
                     CEconItemView *view = CEconItemView::Create();
                     view->Init(pending_task.spell_type, 6, 9999, 0);
+                    Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(pending_task.attrib_name, view);
                     bot->PlayTauntSceneFromItem(view);
                     CEconItemView::Destroy(view);
                     THINK_FUNC_SET(bot, StopTaunt, gpGlobals->curtime + pending_task.duration);

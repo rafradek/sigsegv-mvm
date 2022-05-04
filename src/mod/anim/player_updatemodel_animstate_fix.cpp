@@ -14,7 +14,7 @@ namespace Mod::Anim::Player_UpdateModel_AnimState_Fix
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_UpdateModel)();
+		DETOUR_MEMBER_CALL(Model)();
 		
 		DevMsg("[Player #%d \"%s\"] In CTFPlayer::UpdateModel, calling m_PlayerAnimState->OnNewModel()\n", ENTINDEX(player), player->GetPlayerName());
 		

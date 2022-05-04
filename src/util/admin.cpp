@@ -106,16 +106,19 @@ bool PlayerHasSMAdminFlags_Any(CBasePlayer *player, FlagBits flag_mask)
 	return ((flags & flag_mask) != 0);
 }
 
-template<typename... ARGS>
-void SendConsoleMessageToAdmins(const char *fmt, ARGS&&... args)
+void SendConsoleMessageToAdmins(const char *fmt, ...)
 {
-	CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
+	va_list arglist;
+	va_start(arglist, fmt);
+	char buf[1024];
+	vsnprintf(buf, sizeof(buf), fmt, arglist);
+	va_end(arglist);
+	
 	for (int i = 1; i <= gpGlobals->maxClients; ++i) {
 		CBasePlayer *player = UTIL_PlayerByIndex(i);
 		if (player == nullptr)       continue;
 		if (player->IsFakeClient())  continue;
-		if (PlayerIsSMAdmin(player)) continue;
-		
-		engine->ClientPrintf(player->edict(), str);
+		if (!PlayerIsSMAdmin(player)) continue;
+		engine->ClientPrintf(player->edict(), buf);
 	}
 }

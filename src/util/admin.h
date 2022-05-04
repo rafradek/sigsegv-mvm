@@ -22,7 +22,6 @@ bool PlayerHasSMAdminFlag(CBasePlayer *player, AdminFlag flag);
 bool PlayerHasSMAdminFlags_All(CBasePlayer *player, FlagBits flag_mask);
 bool PlayerHasSMAdminFlags_Any(CBasePlayer *player, FlagBits flag_mask);
 
-template<typename... ARGS>
-void SendConsoleMessageToAdmins(const char *fmt, ARGS&&... args);
+void SendConsoleMessageToAdmins(const char *fmt, ...);
 
 #endif

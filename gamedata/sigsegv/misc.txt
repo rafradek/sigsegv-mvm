@@ -5535,11 +5535,6 @@
 					type "sym"
 					sym  "_ZN7CTFTeam12RemovePlayerEP11CBasePlayer"
 				}
-				"CTeam::RemovePlayer"
-				{
-					type "sym"
-					sym  "_ZN5CTeam12RemovePlayerEP11CBasePlayer"
-				}
 				"CCvar::FindVar"
 				{
 					type "sym"
@@ -5666,6 +5661,109 @@
 				{
 					type "sym"
 					sym  "_ZN13CVoiceGameMgr15ClientConnectedEP7edict_t"
+				}
+				"CTFTeam::SetTeamLeader"
+				{
+					type "sym"
+					sym  "_ZN7CTFTeam13SetTeamLeaderEP11CBasePlayer"
+				}
+				"CHLTVDirector::BuildActivePlayerList"
+				{
+					type "sym"
+					sym  "_ZN13CHLTVDirector21BuildActivePlayerListEv"
+				}
+				"CTFGameRules::PlayerReadyStatus_UpdatePlayerState"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb"
+				}
+				"CTFGCServerSystem::ClientDisconnected"
+				{
+					type "sym"
+					sym  "_ZN17CTFGCServerSystem18ClientDisconnectedE8CSteamID"
+				}
+				"ConVar::GetName"
+				{
+					type "sym"
+					sym  "_ZNK6ConVar7GetNameEv"
+				}
+				"CVoiceGameMgrHelper::CanPlayerHearPlayer"
+				{
+					type "sym"
+					sym  "_ZN19CVoiceGameMgrHelper19CanPlayerHearPlayerEP11CBasePlayerS1_Rb"
+				}
+				"CVoiceGameMgrHelper::ClientCommand"
+				{
+					type "sym"
+					sym  "_ZN13CVoiceGameMgr13ClientCommandEP11CBasePlayerRK8CCommand"
+				}
+				"CTeamplayRoundBasedRules::State_Enter_PREROUND"
+				{
+					type "sym"
+					sym  "_ZN24CTeamplayRoundBasedRules20State_Enter_PREROUNDEv"
+				}
+				"CBaseClient::FireGameEvent"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseClient13FireGameEventEP10IGameEvent"
+				}
+				"ConCommandBase::GetName"
+				{
+					type "sym"
+					sym  "_ZNK14ConCommandBase7GetNameEv"
+				}
+				"CTFGameRules::PowerupModeKillCountCompare"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules27PowerupModeKillCountCompareEv"
+				}
+				"CTFGameRules::PowerupModeInitKillCountTimer"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules29PowerupModeInitKillCountTimerEv"
+				}
+				"CTFGameMovement::CheckWater"
+				{
+					type "sym"
+					sym  "_ZN15CTFGameMovement10CheckWaterEv"
+				}
+				"Physics_SimulateEntity"
+				{
+					type "sym"
+					sym  "_Z22Physics_SimulateEntityP11CBaseEntity"
+				}
+				"CBaseCombatWeapon::SetViewModelIndex"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon17SetViewModelIndexEi"
+				}
+				"SV_BroadcastVoiceData"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z21SV_BroadcastVoiceDataP7IClientiPcx"
+				}
+				"CSteam3Server::SendUpdatedServerDetails"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN13CSteam3Server24SendUpdatedServerDetailsEv"
+				}
+				"CVoiceGameMgr::UpdateMasks"
+				{
+					type "sym"
+					sym  "_ZN13CVoiceGameMgr11UpdateMasksEv"
+				}
+				"CTFGameRules::CalcDominationAndRevenge"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules24CalcDominationAndRevengeEP9CTFPlayerP11CBaseEntityS1_bPi"
+				}
+				"CTFBot::GetNextSpawnClassname"
+				{
+					type "sym"
+					sym  "_ZNK6CTFBot21GetNextSpawnClassnameEv"
 				}
 				
 			}

@@ -158,11 +158,11 @@ public:
 	
 	float GetNextRespawnWave(int iTeam, CBasePlayer *pPlayer) { NULL_RET(0.0f); return vt_GetNextRespawnWave(this, iTeam, pPlayer); }
 	
+	DECL_SENDPROP(bool[33],               m_bPlayerReady);
 private:
 
 	DECL_SENDPROP(gamerules_roundstate_t, m_iRoundState);
 	DECL_SENDPROP(int,                    m_iWinningTeam);
-	DECL_SENDPROP(bool[33],               m_bPlayerReady);
 	DECL_SENDPROP_RW(bool[33],            m_bTeamReady);
 	DECL_SENDPROP(bool,                   m_bInSetup);
 	
@@ -200,6 +200,7 @@ public:
 	void Set_m_bPlayingMannVsMachine(bool val) { NULL_RET(); this->m_bPlayingMannVsMachine = val; }
 	void SetRestartRoundTime(float time)       { NULL_RET(); this->m_flRestartRoundTime    = time; }
 	
+	DECL_SENDPROP(int[34],         m_ePlayerWantsRematch);
 private:
 	DECL_SENDPROP(bool,           m_bPlayingMedieval);
 	DECL_SENDPROP(bool,           m_bPlayingMannVsMachine);

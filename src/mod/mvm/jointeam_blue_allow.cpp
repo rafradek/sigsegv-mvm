@@ -443,7 +443,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		extern ConVar cvar_force;
 		//DevMsg("Get team assignment %d %d %d\n", iWantedTeam, cvar_force.GetBool());
 
-		if (TFGameRules()->IsMannVsMachineMode() && !pPlayer->IsFakeClient() && !pPlayer->IsBot() 
+		if (TFGameRules()->IsMannVsMachineMode() && !pPlayer->IsFakeClient() && !pPlayer->IsBot() && !pPlayer->IsHLTV()
 			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
 			// NOTE: if the pop file had custom param 'AllowJoinTeamBlue 1', then disregard admin-only restrictions
 			extern ConVar cvar_adminonly;

@@ -96,6 +96,10 @@
 				
 				"g_pPlayerResource" "g_pPlayerResource"
 				"g_EntityListPool" "g_EntityListPool"
+				"g_DeleteList" "_ZL12g_DeleteList"
+				"g_bDisableEhandleAccess" "g_bDisableEhandleAccess"
+				"s_RemoveImmediateSemaphore" "_ZL26s_RemoveImmediateSemaphore"
+				
 			}
 			
 			"addrs_group"
@@ -110,6 +114,7 @@
 				"g_MapListMgr" "_ZL12g_MapListMgr"
 				"g_FrameSnapshotManager" "_ZL22g_FrameSnapshotManager"
 				"g_SharedEdictChangeInfo" "g_SharedEdictChangeInfo"
+				"g_FreeEdicts" "_ZL12g_FreeEdicts"
 				"hltv" "hltv"
 			}
 		}

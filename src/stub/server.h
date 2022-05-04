@@ -69,11 +69,17 @@ public:
     CBaseClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
 	
 	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
-    
+    int &GetMaxClientsRef() {return *(int *)((uintptr_t)(this) + 0x14C);}
 private:
     static MemberFuncThunk<CBaseServer *, CBaseClient *, const char *>              ft_CreateFakeClient;
 	
 	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
+};
+
+class CGameServer : public CBaseServer
+{
+public:
+	int GetNumEdicts() {return *(int *)((uintptr_t)(this) + 0x1E4);}
 };
 
 class CHLTVServer : public IGameEventListener2, public CBaseServer

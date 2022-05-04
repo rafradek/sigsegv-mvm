@@ -652,8 +652,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BluHumanSpawnNoShoot            ("sig_mvm_bluhuman_spawn_noshoot"),
 			m_BluHumanSpawnProtection         ("sig_mvm_bluhuman_spawn_protection"),
 			m_TvEnable                        ("tv_enable"),
-			m_AllowBotsExtraSlots             ("sig_perf_hltv_allow_bots_extra_slot"),
-			m_AutoWeaponStrip                 ("sig_auto_weapon_strip")
+			m_AllowBotsExtraSlots             ("sig_etc_extra_player_slots_allow_bots"),
+			m_AutoWeaponStrip                 ("sig_auto_weapon_strip"),
+			m_RemoveOffhandViewmodel          ("sig_etc_entity_limit_manager_viewmodel"),
+			m_RemoveBotExpressions            ("sig_etc_entity_limit_manager_remove_expressions")
 			
 		{
 			this->Reset();
@@ -714,7 +716,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bRestoreNegativeDamageOverheal = true;
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
             this->m_bNoWranglerShield = false;
-            this->m_bRemoveOffhandViewmodel = true;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -803,7 +804,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_TvEnable.Reset();
 			this->m_AllowBotsExtraSlots.Reset();
 			this->m_AutoWeaponStrip.Reset();
-
+			this->m_RemoveOffhandViewmodel.Reset();
+			this->m_RemoveBotExpressions.Reset();
+			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
 			
@@ -1024,6 +1027,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_TvEnable;
 		CPopOverride_ConVar<bool> m_AllowBotsExtraSlots;
 		CPopOverride_ConVar<bool> m_AutoWeaponStrip;
+		CPopOverride_ConVar<bool> m_RemoveOffhandViewmodel;
+		CPopOverride_ConVar<bool> m_RemoveBotExpressions;
+		
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -2792,12 +2798,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
-		// Restore unused offhand viewmodel for other classes than spy
-
-		auto playerOwner = ToTFPlayer(owner);
-		if (state.m_bRemoveOffhandViewmodel && playerOwner != nullptr && playerOwner->GetViewModel(1) == nullptr && ent->m_nViewModelIndex == 1) {
-			playerOwner->CreateViewModel(1);
-		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerClassShared_SetCustomModel, const char *s1, bool b1)
@@ -2847,10 +2847,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
 
-		// Remove unused offhand viewmodel for other classes than spy
-		if (state.m_bRemoveOffhandViewmodel && !player->IsPlayerClass(TF_CLASS_SPY) && player->GetViewModel(1) != nullptr) {
-			player->GetViewModel(1)->Remove();
-		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
@@ -5683,8 +5679,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_fStuckTimeMult = subkey->GetFloat();
 			} else if (FStrEq(name, "NoCreditsVelocity")) {
 				state.m_bNoCreditsVelocity = subkey->GetBool();
-			} else if (FStrEq(name, "RemoveUnusedOffhandViewmodel")) {
-				state.m_bRemoveOffhandViewmodel = subkey->GetBool();
 			} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 			} else if (FStrEq(name, "MaxSpectators")) {
@@ -5819,19 +5813,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_AutoWeaponStrip.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowBotExtraSlots")) {
 				state.m_AllowBotsExtraSlots.Set(subkey->GetBool());
-				if (subkey->GetBool()) {
-					state.m_TvEnable.Set(false);
-					// Kick HLTV client
-					int clientCount = sv->GetClientCount();
-					for ( int i=0 ; i < clientCount ; i++ ) {
-						IClient *pClient = sv->GetClient( i );
-
-						if (pClient->IsConnected() && pClient->IsHLTV()) {
-							pClient->Disconnect("");
-							break;
-						}
-					}
-				}
+			} else if (FStrEq(name, "RemoveUnusedOffhandViewmodel")) {
+				state.m_RemoveOffhandViewmodel.Set(subkey->GetBool());
+			} else if (FStrEq(name, "RemoveBotExpressions")) {
+				state.m_RemoveBotExpressions.Set(subkey->GetBool());
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
@@ -5960,6 +5945,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			});
 		}
 		state.m_iTotalSpectators = resetTo;
+	}
+	int GetMaxSpectators()
+	{
+		return state.m_iTotalSpectators;
 	}
 	void ResetMaxTotalPlayers(int resetTo) {
 		

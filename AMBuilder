@@ -180,6 +180,8 @@ sourceFiles += [
   'src/mod/etc/vehicle_fix.cpp',
   'src/mod/etc/weapon_mimic_teamnum.cpp',
   'src/mod/etc/trigger_filter_fix.cpp',
+  'src/mod/etc/extra_player_slots.cpp',
+  'src/mod/etc/entity_limit_manager.cpp',
   
   'src/mod/mvm/blu_velocity_limit_remove.cpp',
   'src/mod/mvm/changebotattributes_crash_fix.cpp',
