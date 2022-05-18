@@ -2980,7 +2980,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 					
 					if (foundMatch) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission", entry.max != 0 ? "more ": "", upgradename));
 						return;
 					}
 				}

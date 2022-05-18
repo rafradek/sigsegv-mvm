@@ -11,6 +11,7 @@ WaveSchedule
 	// Example lua script. This script is parsed once when the game switches to this mission, or map reset vote is called (But not when the wave switches)
 	// scripts/globals.lua is always parsed before other scripts
 	// You can also look at scripts/natives.lua for available API functions
+	// The mod uses lua version 5.4 . Lua Programming guide: https://www.lua.org/pil/1.html . Quick Reference available at https://www.lua.org/manual/5.4/ 
 	LuaScript "
 		-- Called every time wave is reset to starting point (When losing, or winning too when the reverse winning mode is active)
 		function OnWaveReset(wave)
