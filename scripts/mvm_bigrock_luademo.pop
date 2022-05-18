@@ -6,38 +6,47 @@ WaveSchedule
 
 	StartingCurrency		1500
 	RespawnWaveTime 		2
-	CanBotsAttackWhileInSpawnRoom no
+	CanBotsAttackWhileInSpawnRoom not
 
+	// Example lua script. This script is parsed once when the game switches to this mission, or map reset vote is called (But not when the wave switches)
 	LuaScript "
+		-- Called every time wave is reset to starting point (When losing, or winning too when the reverse winning mode is active)
 		function OnWaveReset(wave)
 			print('wave reset', wave)
 		end
 
+		-- Called when the between waves stage begins
 		function OnWaveInit(wave)
 			print('wave init', wave)
 		end
 
+		-- Called after wave success
 		function OnWaveSuccess(wave)
 			print('wave success', wave)
 		end
 
+		-- Called after wave fail, after reset
 		function OnWaveFail(wave)
 			print('wave fail', wave)
 		end
 
+		-- Called when wave starts
+		function OnWaveStart(wave)
+			print('wave start', wave)
+		end
+
+		-- Called when the wave spawns a bot, after the bot is initialized with key values
 		function OnWaveSpawnBot(bot, wave, tags)
 			print('wave spawn bot' .. tostring(bot:IsValid()) .. wave .. #tags)
 			PrintTable(tags)
 		end
 
+		-- Called when the wave spawns a tank, after the tank is initialized with key values
 		function OnWaveSpawnTank(tank, wave)
 			print('wave spawn tank', tank, wave)
 		end
 
-		function OnWaveStart(wave)
-			print('wave start', wave)
-		end
-
+		-- Called when a player or bot joins the game. Also called once for every player that joined before the mission began
 		function OnPlayerConnected(player)
 			print('player join', tostring(player))
 			player:AddCallback(ON_REMOVE, function(ent) print('Player remove '..tostring(ent)) end)
@@ -47,7 +56,7 @@ WaveSchedule
 				ent.m_iRevengeCrits = 5 
 				ent.m_iAmmo[1] = 4 --Do note that arrays in Lua are indexed starting from 1
 			end)
-			
+
 			player:AddCallback(ON_ACTIVATE, function(ent) print('Player activate '..tostring(ent)) end)
 			player:AddCallback(ON_DAMAGE_RECEIVED_PRE, function(ent, damage) print('Player damaged pre '..tostring(ent)); PrintTable(damage); damage.Damage=0; return true; end)
 			player:AddCallback(ON_DAMAGE_RECEIVED_POST, function(ent, damage) print('Player damaged post '..tostring(ent)); PrintTable(damage) end)
@@ -63,19 +72,26 @@ WaveSchedule
 			end)
 		end
 
+		-- Called when a player or bot leaves the game
 		function OnPlayerDisconnected(player)
 			print('player disconnect', player)
 		end
 
+		-- Called on every game tick (every 0.015 ms)
 		function OnGameTick()
 			print('time '..CurTime())
 		end
 
+		-- Adds entity creation callbacks
 		ents.AddCreateCallback('obj_sentry*', function(ent) print('CREATED2: '..tostring(ent)) end);
 		ents.AddCreateCallback('player', function(ent) print('CREATED: '..tostring(ent)) end);
+
+		-- Adds a timer that fires every 0.5 seconds
 		timer.Create(0.5, function() ents.FindByName('intel').a = {4,3} end, 0)
 
 	" [$SIGSEGV]
+
+	LuaScriptFile "script/somefile.lua" //Example name for lua script file
 
 	WaveStartCountdown 1 [$SIGSEGV]
 	//WAVE 1 //Currency 1300 ///////////////////////////////////////////////////////////////////////////////////////////////////////
