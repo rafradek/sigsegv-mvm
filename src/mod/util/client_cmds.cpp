@@ -1693,7 +1693,7 @@ namespace Mod::Util::Client_Cmds
 	};
 
 	
-	 DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player != nullptr) {

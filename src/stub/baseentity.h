@@ -209,7 +209,7 @@ public:
 	template<FixedString lit>
 	bool GetCustomVariableVariant(variant_t &value);
 	bool GetCustomVariableByText(const char *key, variant_t &value);
-	void SetCustomVariable(const char *key, variant_t &value);
+	bool SetCustomVariable(const char *key, variant_t &value, bool create = true, bool find = true);
 
     // Alert! Custom outputs must be defined in lowercase
 	template<FixedString lit>
@@ -299,6 +299,7 @@ public:
 	IPhysicsObject *VPhysicsInitStatic()                                                                                    { return ft_VPhysicsInitStatic            (this); }
 	void *GetDataObject(int type)                                                                                           { return ft_GetDataObject                 (this, type); }
 	int SetTransmitState(int state)                                                                                         { return ft_SetTransmitState              (this, state); }
+	void FireNamedOutput(const char *pszOutput, variant_t variant, CBaseEntity *pActivator, CBaseEntity *pCaller, float flDelay) { return ft_FireNamedOutput          (this, pszOutput, variant, pActivator, pCaller, flDelay); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -345,7 +346,7 @@ public:
 	void StartTouch(CBaseEntity *entity)                                                                                    { return vt_StartTouch                    (this, entity); }
 	void EndTouch(CBaseEntity *entity)                                                                                      { return vt_EndTouch                      (this, entity); }
 	void PostClientActive()                                                                                                 { return vt_PostClientActive              (this); }
-
+	
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
 	static CBaseEntity *CreateNoSpawn(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                { return ft_CreateNoSpawn      (szName, vecOrigin, vecAngles, pOwner); }
@@ -454,6 +455,8 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, IPhysicsObject *>                                        ft_VPhysicsInitStatic;
 	static MemberFuncThunk<      CBaseEntity *, void *,int>                                              ft_GetDataObject;
 	static MemberFuncThunk<      CBaseEntity *, int, int>                                                ft_SetTransmitState;
+	static MemberFuncThunk<      CBaseEntity *, void, const char *, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireNamedOutput;
+	
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;

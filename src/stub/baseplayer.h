@@ -152,6 +152,7 @@ public:
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
 	DECL_DATAMAP(int,          m_nButtons);
+	DECL_SENDPROP(CHandle<CBaseEntity>, m_hObserverTarget);
 	
 	
 private:

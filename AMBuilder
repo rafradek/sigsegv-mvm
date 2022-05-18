@@ -70,6 +70,7 @@ sourceFiles += [
   'src/util/firehose_base.cpp',
   'src/util/firehose_recv.cpp',
   'src/util/firehose_send.cpp',
+  'src/util/lua.cpp',
   'src/util/pooled_string.cpp',
   'src/util/misc.cpp',
   'src/util/rtti.cpp',
@@ -165,6 +166,7 @@ sourceFiles += [
   'src/mod/etc/limp_projectiles.cpp',
   'src/mod/etc/loose_cannon_damage_fix.cpp',
   'src/mod/etc/mapentity_additions.cpp',
+  'src/mod/etc/mapentity_inputs.cpp',
   'src/mod/etc/medicgun_beam_machinery.cpp',
   'src/mod/etc/melee_ignore_teammates.cpp',
   'src/mod/etc/misc.cpp',
@@ -474,6 +476,7 @@ binary.compiler.linkflags += [
   '-liberty',
 #  os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'libcapstone.a'),
   os.path.join(builder.currentSourcePath, 'libs', 'ann', 'lib', 'libANN.a'),
+  os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src', 'liblua.a'),
 ]
 
 if builder.options.debug == '1':
@@ -490,6 +493,7 @@ binary.compiler.includes += [
   os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'include'),
   os.path.join(builder.currentSourcePath, 'libs', 'ann', 'include'),
   os.path.join(builder.currentSourcePath, 'libs', 'fmt', 'include'),
+  os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src'),
 ]
 
 # add libstrcompat dependency (for Linux only)

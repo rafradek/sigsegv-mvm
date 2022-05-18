@@ -12,6 +12,11 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	bool IsEnabled();
 }
 
+namespace Mod::Etc::Extra_Player_Slots
+{
+	void SetForceCreateAtSlot(int slot);
+}
+
 namespace Mod::MvM::Robot_Limit
 {
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots);
@@ -51,9 +56,59 @@ namespace Mod::MvM::Robot_Limit
 			
 		});
 	
-	
-	
+	bool has_extra_bot_mission = false;
+
+	void ScanMissionsForExtraBots() 
+	{
+		has_extra_bot_mission = false;
+		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
+		if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
+			has_extra_bot_mission = true;
+			return;
+		}
+
+		FileFindHandle_t missionHandle;
+		const char *map = STRING(gpGlobals->mapname);
+		char poppathfind[256];
+		snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
+		for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
+						missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
+			
+			char poppath[256];
+			snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
+			KeyValues *kv = new KeyValues("kv");
+			kv->UsesConditionals(false);
+			if (kv->LoadFromFile(filesystem, poppath)) {
+				FOR_EACH_SUBKEY(kv, subkey) {
+
+					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+						has_extra_bot_mission = true;
+						//Msg("Found extra bot mission\n");
+						break;
+					}
+				}
+				kv->deleteThis();
+				if (has_extra_bot_mission) break;
+			}
+		}
+		filesystem->FindClose(missionHandle);
+	}
+
 	int GetMvMInvaderLimit() { return cvar_override.GetInt(); }
+
+	// Clients may crash when a bot at extra slot joined after they spawned, so all the extra slots get occupied at once as soon as a player joins. 
+	// Those extra slots must stay unused to respect the max robot limit
+	int GetMaxAllowedSlot()
+	{
+		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
+		if (!sig_etc_extra_player_slots_allow_bots.GetBool()) return 33;
+		
+		static ConVarRef tv_enable("tv_enable");
+		static ConVarRef visible_max_players("sv_visiblemaxplayers");
+		int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
+
+		return GetMvMInvaderLimit() + visible_max_players.GetInt() + specs + (tv_enable.GetBool() ? 1 : 0);
+	}
 	
 	
 	// reimplement the MvM bots-over-quota logic, with some changes:
@@ -80,13 +135,13 @@ namespace Mod::MvM::Robot_Limit
 
 		// Kick bots over the slot 33
 
-		for (int i = 0; i < mvm_bots.Count(); i++) {
+		/*for (int i = 0; i < mvm_bots.Count(); i++) {
 			if (ENTINDEX(mvm_bots[i]) > 33 && ENTINDEX(mvm_bots[i]) > GetMvMInvaderLimit() + visible_max_players.GetInt() + specs + (tv_enable.GetBool() ? 1 : 0)) {
 				engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
 				mvm_bots.Remove(i);
 				i--;
 			}
-		}
+		}*/
 
 		if (mvm_bots.Count() < GetMvMInvaderLimit()) return;
 		
@@ -99,7 +154,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (bot->GetTeamNumber() == TEAM_SPECTATOR) {
+				if (bot->GetTeamNumber() == TEAM_SPECTATOR && ENTINDEX(bot) <= 33) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -110,7 +165,7 @@ namespace Mod::MvM::Robot_Limit
 				for (auto bot : mvm_bots) {
 					if (need_to_kick <= 0) break;
 					
-					if (bot->GetTeamNumber() == TF_TEAM_RED) {
+					if (bot->GetTeamNumber() == TF_TEAM_RED && ENTINDEX(bot) <= 33) {
 						bots_to_kick.AddToTail(bot);
 						--need_to_kick;
 					}
@@ -120,7 +175,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (!bot->IsAlive()) {
+				if (!bot->IsAlive() && ENTINDEX(bot) <= 33) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -129,7 +184,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (bot->GetTeamNumber() == TF_TEAM_BLUE) {
+				if (bot->GetTeamNumber() == TF_TEAM_BLUE && ENTINDEX(bot) <= 33) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -152,13 +207,14 @@ namespace Mod::MvM::Robot_Limit
 	int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots, bool collect_red) {
 		mvm_bots->RemoveAll();
 		int count_red = 0;
-		for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+		int maxAllowedSlot = GetMaxAllowedSlot();
+		for (int i = 1; i <= maxAllowedSlot; ++i) {
 			CTFBot *bot = ToTFBot(UTIL_PlayerByIndex(i));
 			if (bot == nullptr)      continue;
 			if (ENTINDEX(bot) == 0)  continue;
 			if (!bot->IsBot())       continue;
 			if (!bot->IsConnected()) continue;
-			
+
 			if (bot->GetTeamNumber() == TF_TEAM_RED) {
 				if (collect_red && bot->m_Shared->InCond(TF_COND_REPROGRAMMED)) {
 					count_red += 1;
@@ -236,6 +292,20 @@ namespace Mod::MvM::Robot_Limit
 			}
 			
 			++num_bots;
+		}
+
+		// To prevent client crashes when 33+ slots are used, create all bots at extra slots at once. They will still be ignored if robot limit is not high enough
+		if (has_extra_bot_mission) {
+			for (int i = 33; i < gpGlobals->maxClients; i++) {
+				if (UTIL_PlayerByIndex(i + 1) == nullptr) {
+					Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(i);
+					CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
+					Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(-1);
+					if (bot != nullptr) {
+						bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
+					}
+				}
+			}
 		}
 		
 		popmgr->m_bAllocatedBots = true;
@@ -343,7 +413,7 @@ namespace Mod::MvM::Robot_Limit
 		slots = old_slots;
 	}
 
-	class CMod : public IMod
+	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
 		CMod() : IMod("MvM:Robot_Limit")
@@ -364,6 +434,14 @@ namespace Mod::MvM::Robot_Limit
 
 			MOD_ADD_DETOUR_MEMBER(CGameServer_SetHibernating, "CGameServer::SetHibernating");
 		}
+
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+		virtual void LevelInitPreEntity() override
+		{
+			ScanMissionsForExtraBots();
+		}
+		
 	};
 	CMod s_Mod;
 	

@@ -393,24 +393,30 @@ CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *pla
 	return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); 
 }
 
-CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove, bool force_give)
+CEconEntity *CreateItemByName(CTFPlayer *player, const char *item_name)
 {
 	auto item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
 	if (item_def != nullptr) {
 		const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
 		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
-		DispatchSpawn(entity);
 
 		if (entity != nullptr) {
 			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, entity->GetItem());
-			if (!GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
-				entity->Remove();
-				entity = nullptr;
-			}
+			DispatchSpawn(entity);
 		}
 		return entity;
 	}
 	return nullptr;
+}
+
+CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove, bool force_give)
+{
+	auto entity = CreateItemByName(player, item_name);
+	if (entity != nullptr && !GiveItemToPlayer(player, entity, no_remove, force_give, item_name)) {
+		entity->Remove();
+		entity = nullptr;
+	}
+	return entity;
 }
 
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name)

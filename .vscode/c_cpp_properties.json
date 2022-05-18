@@ -11,6 +11,7 @@
                 "${workspaceFolder}/libs/capstone/include",
                 "${workspaceFolder}/libs/ann/include",
                 "${workspaceFolder}/libs/fmt/include",
+                "${workspaceFolder}/libs/lua/src",
                 "${workspaceFolder}/../alliedmodders/sourcemod/public",
                 "${workspaceFolder}/../alliedmodders/sourcemod/public/extensions",
                 "${workspaceFolder}/../alliedmodders/sourcemod/sourcepawn/include",

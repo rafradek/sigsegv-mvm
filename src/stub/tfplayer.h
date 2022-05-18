@@ -576,6 +576,7 @@ template<> inline int CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *> *playerV
 extern StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent;
 inline void TE_PlayerAnimEvent(CBasePlayer *player, int anim, int data) { ft_TE_PlayerAnimEvent(player, anim, data); }
 
+CEconEntity *CreateItemByName(CTFPlayer *player, const char *item_name);
 CEconEntity *GiveItemByName(CTFPlayer *player, const char *item_name, bool no_remove = false, bool force_give = true);
 bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bool force_give, const char *item_name);
 

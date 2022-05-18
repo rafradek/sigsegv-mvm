@@ -25,6 +25,9 @@ namespace Mod::Etc::Extra_Player_Slots
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
 		"Fixes voice chat indicator showing with more than 64 slots, but also disables all of voice chat");
+
+    ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "0", FCVAR_NOTIFY,
+		"Does not display death cam when killed by players in extra slots");
     
     RefCount rc_CBaseServer_CreateFakeClient_HLTV;
     RefCount rc_CBaseServer_CreateFakeClient;
@@ -55,11 +58,16 @@ namespace Mod::Etc::Extra_Player_Slots
         return 32;
     }
 
+    int force_create_at_slot = -1;
+    void SetForceCreateAtSlot(int slot) {
+        force_create_at_slot = slot;
+    }
+
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
-        if (!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if ((!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
-        if (rc_CBaseServer_CreateFakeClient) {
+        if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
             std::vector<CBaseClient *> clientList;
             auto server = reinterpret_cast<CBaseServer *>(this);
@@ -88,6 +96,12 @@ namespace Mod::Etc::Extra_Player_Slots
                 }
             }
             
+            if (force_create_at_slot != -1) {
+                CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(force_create_at_slot));
+                force_create_at_slot = -1;
+                return !client->IsConnected() && !client->IsFakeClient() ? client : nullptr;
+            }
+
             int desiredSlot = GetHLTVSlot();
             if (!rc_CBaseServer_CreateFakeClient_HLTV) {
                 if (!sig_etc_extra_player_slots_allow_bots.GetBool()) {
@@ -105,7 +119,7 @@ namespace Mod::Etc::Extra_Player_Slots
                     }
                 }
             }
-            
+
             for (int i = desiredSlot; i >= 0; i--) {
                 CBaseClient *client = static_cast<CBaseClient *>(server->GetClient(i));
                 if (!client->IsConnected() 
@@ -526,11 +540,50 @@ namespace Mod::Etc::Extra_Player_Slots
     {
         float time;
         IGameEvent *event;
+        bool send = false;
+        int fakePlayersIndex[3] {-1,-1,-1};
+        std::string fakePlayersOldNames[3];
+        int fakePlayersTeams[3] {-1, -1, -1};
     };
     std::deque<KillEvent> kill_events;
     int player33_fake_team_num=-1;
     float player33_fake_kill_time=FLT_MIN;
     
+    CBasePlayer *FindFreeFakePlayer(std::vector<CBasePlayer *> &checkVec) 
+    {
+        for (int i = 33; i >= 1; i--) {
+            bool found = false;
+
+            auto playeri = UTIL_PlayerByIndex(i);
+            if (playeri == nullptr) continue;
+
+            if (!playeri->IsHLTV() && !playeri->IsBot()) continue;
+
+            for (auto &event : kill_events) {
+                for (auto index : event.fakePlayersIndex) {
+                    if (index == i) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+            if (found) continue;
+
+            for (auto player : checkVec) {
+                if (ENTINDEX(player) == i) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) continue;
+
+            return playeri;
+        }
+
+        return UTIL_PlayerByIndex(33);
+    }
+
     MemberFuncThunk<CBaseClient *, void, IGameEvent *>  ft_CBaseClient_FireGameEvent("CBaseClient::FireGameEvent");
 
     bool sending_delayed_event = false;
@@ -549,19 +602,26 @@ namespace Mod::Etc::Extra_Player_Slots
             auto assister = UTIL_PlayerByUserId(event->GetInt("assister"));
             auto player33 = UTIL_PlayerByIndex(33);
             if (ENTINDEX(victim) > 33 || ENTINDEX(attacker) > 33 || ENTINDEX(assister) > 33) {
-                CBasePlayer *copyNameFromPlayer = nullptr;
+                std::vector<CBasePlayer *> participants;
+                std::vector<CBasePlayer *> fakePlayers;
                 duplicate = gameeventmanager->DuplicateEvent(event);
                 if (ENTINDEX(victim) > 33) {
-                    duplicate->SetInt("userid", player33->GetUserID());
-                    copyNameFromPlayer = victim;
+                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
+                    duplicate->SetInt("userid", fakePlayer->GetUserID());
+                    fakePlayers.push_back(fakePlayer);
+                    participants.push_back(victim);
                 }
                 if (ENTINDEX(attacker) > 33) {
-                    duplicate->SetInt("attacker", player33->GetUserID());
-                    copyNameFromPlayer = attacker;
+                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
+                    duplicate->SetInt("attacker", fakePlayer->GetUserID());
+                    fakePlayers.push_back(fakePlayer);
+                    participants.push_back(attacker);
                 }
                 if (ENTINDEX(assister) > 33) {
-                    duplicate->SetInt("assister", player33->GetUserID());
-                    copyNameFromPlayer = assister;
+                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
+                    duplicate->SetInt("assister", fakePlayer->GetUserID());
+                    fakePlayers.push_back(fakePlayer);
+                    participants.push_back(assister);
                 }
                 //auto fakePlayer = nullptr;
                 /*for (int i = 33; i >= 1; i--) {
@@ -571,12 +631,17 @@ namespace Mod::Etc::Extra_Player_Slots
                     }
                 }*/
                 //gameeventmanager->SerializeEvent(duplicate);
-                player33->SetPlayerName(copyNameFromPlayer->GetPlayerName());
-                engine->SetFakeClientConVarValue(player33->edict(), "name", copyNameFromPlayer->GetPlayerName());
                 kill_events.push_back({gpGlobals->curtime, duplicate});
+                for (size_t i = 0; i < participants.size(); i++) {
+                    kill_events.back().fakePlayersOldNames[i] = fakePlayers[i]->GetPlayerName();
+                    kill_events.back().fakePlayersIndex[i] = ENTINDEX(fakePlayers[i]);
+                    kill_events.back().fakePlayersTeams[i] = participants[i]->GetTeamNumber();
+                    fakePlayers[i]->SetPlayerName(participants[i]->GetPlayerName());
+                    engine->SetFakeClientConVarValue(fakePlayers[i]->edict(), "name", participants[i]->GetPlayerName());
+                    TFPlayerResource()->m_iTeam.SetIndex(participants[i]->GetTeamNumber(), fakePlayers[i]->entindex());
+                }
                 player33_fake_kill_time = gpGlobals->curtime;
-                player33_fake_team_num = copyNameFromPlayer->GetTeamNumber();
-                TFPlayerResource()->m_iTeam.SetIndex(copyNameFromPlayer->GetTeamNumber(), 33);
+                //player33_fake_team_num = copyNameFromPlayer->GetTeamNumber();
                 return;
                 //event = duplicate;
             }
@@ -593,7 +658,8 @@ namespace Mod::Etc::Extra_Player_Slots
             for (auto it = kill_events.begin(); it != kill_events.end();){
                 auto &killEvent = (*it);
                 
-                if (killEvent.time + 0.11f < gpGlobals->curtime) {
+                if (killEvent.time + 0.2f < gpGlobals->curtime && !killEvent.send) {
+                    killEvent.send = true;
                     sending_delayed_event = true;
                     for (int i = 0; i < sv->GetMaxClients(); i++) {
                         auto client = static_cast<CBaseClient *>(sv->GetClient(i));
@@ -604,6 +670,26 @@ namespace Mod::Etc::Extra_Player_Slots
                     sending_delayed_event = false;
 
                     gameeventmanager->FreeEvent(killEvent.event);
+                }
+
+                for (int i = 0; i < 3; i++) {
+                    if (killEvent.fakePlayersIndex[i] != -1) {
+                        TFPlayerResource()->m_iTeam.SetIndex(killEvent.fakePlayersTeams[i], killEvent.fakePlayersIndex[i]);
+                    }
+                }
+
+                if (killEvent.time + 0.35f < gpGlobals->curtime) {
+                    
+                    for (int i = 0; i < 3; i++) {
+                        if (killEvent.fakePlayersIndex[i] != -1 && killEvent.fakePlayersIndex[i] != 33) {
+                            
+                            auto player = UTIL_PlayerByIndex(killEvent.fakePlayersIndex[i]);
+                            if (player != nullptr)
+                                player->SetPlayerName(killEvent.fakePlayersOldNames[i].c_str());
+                            engine->SetFakeClientConVarValue(INDEXENT(killEvent.fakePlayersIndex[i]), "name", killEvent.fakePlayersOldNames[i].c_str());
+                        }
+                    }
+
                     it = kill_events.erase(it);
                 }
                 else {
@@ -611,15 +697,14 @@ namespace Mod::Etc::Extra_Player_Slots
                 }
             }
         }
-        if (player33_fake_kill_time + 2 > gpGlobals->curtime) {
-            realTeam = TFPlayerResource()->m_iTeam[33];
-            TFPlayerResource()->m_iTeam.SetIndex(player33_fake_team_num, 33);
-        }
+        //if (player33_fake_kill_time + 2 > gpGlobals->curtime) {
+        //    realTeam = TFPlayerResource()->m_iTeam[33];
+        //}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
-        if (realTeam != -1) {
-
-            TFPlayerResource()->m_iTeam.SetIndex(realTeam, 33);
-        }
+        //if (realTeam != -1) {
+//
+        //    TFPlayerResource()->m_iTeam.SetIndex(realTeam, 33);
+        //}
 	}
 
     DETOUR_DECL_MEMBER(void, CSteam3Server_SendUpdatedServerDetails)
@@ -644,15 +729,9 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(void, CTFGameRules_CalcDominationAndRevenge, CTFPlayer *pAttacker, CBaseEntity *pWeapon, CTFPlayer *pVictim, bool bIsAssist, int *piDeathFlags)
 	{
-        //int &players = static_cast<CBaseServer *>(sv)->GetMaxClientsRef();
-        //int oldPlayers = players;
-        //if (players > 33) {
-        //    players = 33;
-        //}
         if (ENTINDEX(pAttacker) > 33 || ENTINDEX(pVictim) > 33) return;
 
         DETOUR_MEMBER_CALL(CTFGameRules_CalcDominationAndRevenge)(pAttacker, pWeapon, pVictim, bIsAssist, piDeathFlags);
-        //players = oldPlayers;
     }
 
 
@@ -665,6 +744,15 @@ namespace Mod::Etc::Extra_Player_Slots
             return g_aRawPlayerClassNames[(ENTINDEX(bot)/2 % 9) + 1];
         }
 		return DETOUR_MEMBER_CALL(CTFBot_GetNextSpawnClassname)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+        if (sig_etc_extra_player_slots_no_death_cam.GetBool() && ToTFPlayer(player->m_hObserverTarget) != nullptr && ENTINDEX(player->m_hObserverTarget) > 33) {
+            player->m_hObserverTarget = nullptr;
+        }
 	}
     
 	class CMod : public IMod, public IModCallbackListener
@@ -730,6 +818,7 @@ namespace Mod::Etc::Extra_Player_Slots
             
             MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetNextSpawnClassname, "CTFBot::GetNextSpawnClassname");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
             
             
             

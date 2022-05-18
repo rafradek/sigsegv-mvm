@@ -731,6 +731,60 @@ inline const char *FindCaseInsensitiveReverse(const char *string, const char* ne
 	return nullptr;
 }
 
+template<class Container, class UnaryPredicate>
+inline bool RemoveFirstElement(Container &container, UnaryPredicate p)
+{
+	for (auto it = container.begin(); it != container.end(); it++) {
+		if (p(*it)) {
+			container.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
+
+template<class Container, class UnaryPredicate>
+inline void RemoveIf(Container &container, UnaryPredicate p)
+{
+	for (auto it = container.begin(); it != container.end();) {
+		if (p(*it)) {
+			it = container.erase(it);
+		}
+		else {
+			it++;
+		}
+	}
+}
+
+enum IterateAction
+{
+	IT_CONTINUE,
+	IT_BREAK,
+	IT_REMOVE,
+	IT_REMOVE_BREAK,
+};
+
+template<class Container, class Func>
+inline void Iterate(Container &container, Func f)
+{
+	for (auto it = container.begin(); it != container.end();) {
+		IterateAction action = f(*it);
+		if (action == IT_CONTINUE) {
+			it++;
+		}
+		else if (action == IT_REMOVE) {
+			it = container.erase(it);
+		}
+		else if (action == IT_REMOVE_BREAK) {
+			container.erase(it);
+			return;
+		}
+		else {
+			return;
+		}
+	}
+}
+
 template<int SIZE_BUF = FMTSTR_STD_LEN, typename... ARGS>
 std::string CFmtStdStr(ARGS&&... args)
 {

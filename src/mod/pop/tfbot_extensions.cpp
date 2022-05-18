@@ -19,6 +19,7 @@
 #include "stub/trace.h"
 #include "util/clientmsg.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "stub/team.h"
 #include <ctime>
 
 
@@ -267,6 +268,8 @@ namespace Mod::Pop::TFBot_Extensions
 		bool no_formation = false;
 
 		bool no_idle_sound = false;
+
+		bool prefer_extra_slots = false;
 	};
 
 	std::unordered_map<CTFBotSpawner *, SpawnerData> spawners;
@@ -608,6 +611,8 @@ namespace Mod::Pop::TFBot_Extensions
 				spawners[spawner].neutral = subkey->GetBool();
 			} else if (FStrEq(name, "NoIdleSound")) {
 				spawners[spawner].no_idle_sound = subkey->GetBool();
+			} else if (FStrEq(name, "PreferExtraSlots")) {
+				spawners[spawner].prefer_extra_slots = subkey->GetBool();
 //#ifdef ENABLE_BROKEN_STUFF
 			} else if (FStrEq(name, "DropWeapon")) {
 				spawners[spawner].drop_weapon = subkey->GetBool();
@@ -736,7 +741,7 @@ namespace Mod::Pop::TFBot_Extensions
 	}
 
 	// clock_t start_time_spawn;
-	void OnBotSpawn(CTFBotSpawner *spawner, CUtlVector<CHandle<CBaseEntity>> *ents) {
+	void OnBotSpawn(CTFBotSpawner *spawner, CUtlVector<CHandle<CBaseEntity>> *ents, SpawnerData &data) {
 		
 		
 		// clock_t endn = clock() ;
@@ -754,146 +759,154 @@ namespace Mod::Pop::TFBot_Extensions
 	//	}
 		
 		if (ents != nullptr && !ents->IsEmpty()) {
-			auto it = spawners.find(spawner);
-			if (it != spawners.end()) {
-				SpawnerData& data = (*it).second;
-				CTFBot *bot_leader = ToTFBot(ents->Head());
-				CTFBot *bot = ToTFBot(ents->Tail());
-				if (bot != nullptr) {
-					spawner_of_bot[bot] = spawner;
-					bots_data[bot] = &data;
-					
-				//	DevMsg("CTFBotSpawner %08x: found %u AddCond's\n", (uintptr_t)spawner, data.addconds.size());
-					ApplyAddCond(bot, data.addconds, delayed_addconds);
-					ApplyPendingTask(bot, data.periodic_tasks, pending_periodic_tasks);
+			CTFBot *bot_leader = ToTFBot(ents->Head());
+			CTFBot *bot = ToTFBot(ents->Tail());
+			if (bot != nullptr) {
+				spawner_of_bot[bot] = spawner;
+				bots_data[bot] = &data;
+				
+			//	DevMsg("CTFBotSpawner %08x: found %u AddCond's\n", (uintptr_t)spawner, data.addconds.size());
+				ApplyAddCond(bot, data.addconds, delayed_addconds);
+				ApplyPendingTask(bot, data.periodic_tasks, pending_periodic_tasks);
 
-					for (auto templ : data.templ) {
-						templ.SpawnTemplate(bot);
-						//if (Point_Templates().find(templ) != Point_Templates().end())
-						//	Point_Templates()[templ].SpawnTemplate(bot);
-					}
+				for (auto templ : data.templ) {
+					templ.SpawnTemplate(bot);
+					//if (Point_Templates().find(templ) != Point_Templates().end())
+					//	Point_Templates()[templ].SpawnTemplate(bot);
+				}
 
-					if (data.force_romevision_cosmetics) {
-						for (int i = 0; i < 2; i++) {
-							//CEconItemView *item_view= CEconItemView::Create();
-							//item_view->Init(152, 6, 9999, 0);
+				if (data.force_romevision_cosmetics) {
+					for (int i = 0; i < 2; i++) {
+						//CEconItemView *item_view= CEconItemView::Create();
+						//item_view->Init(152, 6, 9999, 0);
+						
+						CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(152, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+						if (wearable) {
 							
-							CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(152, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-							if (wearable) {
-								
-								wearable->m_bValidatedAttachedEntity = true;
-								wearable->GiveTo(bot);
-								DevMsg("Created wearable %d\n",bot->GetPlayerClass()->GetClassIndex()*2 + i);
-								bot->EquipWearable(wearable);
-								const char *path = ROMEVISON_MODELS[bot->GetPlayerClass()->GetClassIndex()*2 + i];
-								int model_index = CBaseEntity::PrecacheModel(path);
-								wearable->SetModelIndex(model_index);
-								for (int j = 0; j < MAX_VISION_MODES; ++j) {
-									wearable->SetModelIndexOverride(j, model_index);
-								}
+							wearable->m_bValidatedAttachedEntity = true;
+							wearable->GiveTo(bot);
+							DevMsg("Created wearable %d\n",bot->GetPlayerClass()->GetClassIndex()*2 + i);
+							bot->EquipWearable(wearable);
+							const char *path = ROMEVISON_MODELS[bot->GetPlayerClass()->GetClassIndex()*2 + i];
+							int model_index = CBaseEntity::PrecacheModel(path);
+							wearable->SetModelIndex(model_index);
+							for (int j = 0; j < MAX_VISION_MODES; ++j) {
+								wearable->SetModelIndexOverride(j, model_index);
 							}
 						}
 					}
+				}
 
-					//Replenish clip, if clip bonus is being applied
-					for (int i = 0; i < bot->WeaponCount(); ++i) {
-						CBaseCombatWeapon *weapon = bot->GetWeapon(i);
-						if (weapon == nullptr) continue;
-						
-						int fire_when_full = 0;
-						CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_when_full, auto_fires_full_clip);
-
-						if (fire_when_full == 0)
-							weapon->m_iClip1 = weapon->GetMaxClip1();
-					}
+				//Replenish clip, if clip bonus is being applied
+				for (int i = 0; i < bot->WeaponCount(); ++i) {
+					CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+					if (weapon == nullptr) continue;
 					
-					DevMsg("Dests %d\n",Teleport_Destination().size());
-					if (!(bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT) && !Teleport_Destination().empty()) {
-						bool done = false;
-						CBaseEntity *destination = nullptr;
+					int fire_when_full = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_when_full, auto_fires_full_clip);
 
-						if (Teleport_Destination().find("small") != Teleport_Destination().end() && !bot_leader->IsMiniBoss()) {
-							destination = Teleport_Destination().find("small")->second;
-						}
-						else if (Teleport_Destination().find("giants") != Teleport_Destination().end() && bot_leader->IsMiniBoss()) {
-							destination = Teleport_Destination().find("giants")->second;
-						}
-						else if (Teleport_Destination().find("all") != Teleport_Destination().end()) {
-							destination = Teleport_Destination().find("all")->second;
-						}
-						else {
-							ForEachEntityByClassname("info_player_teamspawn", [&](CBaseEntity *ent){
-								if (done)
-									return;
+					if (fire_when_full == 0)
+						weapon->m_iClip1 = weapon->GetMaxClip1();
+				}
+				
+				DevMsg("Dests %d\n",Teleport_Destination().size());
+				if (!(bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT) && !Teleport_Destination().empty()) {
+					bool done = false;
+					CBaseEntity *destination = nullptr;
 
-								auto vec = ent->WorldSpaceCenter();
-								
-								auto area = TheNavMesh->GetNearestNavArea(vec);
+					if (Teleport_Destination().find("small") != Teleport_Destination().end() && !bot_leader->IsMiniBoss()) {
+						destination = Teleport_Destination().find("small")->second;
+					}
+					else if (Teleport_Destination().find("giants") != Teleport_Destination().end() && bot_leader->IsMiniBoss()) {
+						destination = Teleport_Destination().find("giants")->second;
+					}
+					else if (Teleport_Destination().find("all") != Teleport_Destination().end()) {
+						destination = Teleport_Destination().find("all")->second;
+					}
+					else {
+						ForEachEntityByClassname("info_player_teamspawn", [&](CBaseEntity *ent){
+							if (done)
+								return;
 
-								if (area != nullptr) {
-									vec = area->GetCenter();
-								}
+							auto vec = ent->WorldSpaceCenter();
+							
+							auto area = TheNavMesh->GetNearestNavArea(vec);
 
-								float dist = vec.DistToSqr(bot->GetAbsOrigin());
-								DevMsg("Dist %f %s\n",dist, ent->GetEntityName());
-								if (dist < 1000) {
-									auto dest = Teleport_Destination().find(STRING(ent->GetEntityName()));
-									if(dest != Teleport_Destination().end() && dest->second != nullptr){
-										destination = dest->second;
-										done = true;
-									}
-								}
-							});
-						}
-						if (destination != nullptr)
-						{
-							auto vec = destination->WorldSpaceCenter();
-							vec.z += destination->CollisionProp()->OBBMaxs().z;
-							bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
-							if (!is_space_to_spawn)
-								vec.z += 50.0f;
-							if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
-								bot->Teleport(&(vec),&(destination->GetAbsAngles()),&(bot->GetAbsVelocity()));
-								bot->EmitSound("MVM.Robot_Teleporter_Deliver");
-								bot->m_Shared->AddCond(TF_COND_INVULNERABLE_CARD_EFFECT,1.5f);
+							if (area != nullptr) {
+								vec = area->GetCenter();
 							}
-						}
-						
-					}
 
-					if (bot->GetPlayerClass()->GetClassIndex() != TF_CLASS_ENGINEER && (bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT))
-						TeleportToHint(bot, data.action != ACTION_Default);
-
-					if (data.action == ACTION_BotSpyInfiltrate) {
-						SpyInitAction(bot);
-					}
-					
-					//DevMsg("Client get pre %s\n", bot->GetPlayerName());
-					//DevMsg("Client setting user info changed\n");
-
-					//reinterpret_cast<CBaseServer *>(sv)->UserInfoChanged(client->GetPlayerSlot());
-					//DevMsg("Client success\n");
-					
-					//player_info_t *pi = (player_info_t*) sv->GetUserInfoTable()->GetStringUserData( ENTINDEX(bot), NULL );
-					//spawned_bots_first_tick.push_back(bot);
-
-					if (data.neutral) {
-						bot->SetTeamNumber(TEAM_SPECTATOR);
-
-						ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity) {
-							entity->ChangeTeam(TEAM_SPECTATOR);
+							float dist = vec.DistToSqr(bot->GetAbsOrigin());
+							DevMsg("Dist %f %s\n",dist, ent->GetEntityName());
+							if (dist < 1000) {
+								auto dest = Teleport_Destination().find(STRING(ent->GetEntityName()));
+								if(dest != Teleport_Destination().end() && dest->second != nullptr){
+									destination = dest->second;
+									done = true;
+								}
+							}
 						});
 					}
-
-					/*for (int i = 0; i < bot->WeaponCount(); i++) {
-						CBaseCombatWeapon *weapon = bot->GetWeapon(i);
-						if (weapon != nullptr) {
-							bot->Weapon_Switch(weapon);
-
-							//DevMsg("Is active %d %d %d\n", weapon == player->GetActiveWeapon(), weapon->GetEffects(), weapon->GetRenderMode());
+					if (destination != nullptr)
+					{
+						auto vec = destination->WorldSpaceCenter();
+						vec.z += destination->CollisionProp()->OBBMaxs().z;
+						bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
+						if (!is_space_to_spawn)
+							vec.z += 50.0f;
+						if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
+							bot->Teleport(&(vec),&(destination->GetAbsAngles()),&(bot->GetAbsVelocity()));
+							bot->EmitSound("MVM.Robot_Teleporter_Deliver");
+							bot->m_Shared->AddCond(TF_COND_INVULNERABLE_CARD_EFFECT,1.5f);
 						}
-					}*/
+					}
+					
 				}
+
+				if (bot->GetPlayerClass()->GetClassIndex() != TF_CLASS_ENGINEER && (bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT))
+					TeleportToHint(bot, data.action != ACTION_Default);
+
+				if (data.action == ACTION_BotSpyInfiltrate) {
+					SpyInitAction(bot);
+				}
+				
+				//DevMsg("Client get pre %s\n", bot->GetPlayerName());
+				//DevMsg("Client setting user info changed\n");
+
+				//reinterpret_cast<CBaseServer *>(sv)->UserInfoChanged(client->GetPlayerSlot());
+				//DevMsg("Client success\n");
+				
+				//player_info_t *pi = (player_info_t*) sv->GetUserInfoTable()->GetStringUserData( ENTINDEX(bot), NULL );
+				//spawned_bots_first_tick.push_back(bot);
+
+				if (data.neutral) {
+					bot->SetTeamNumber(TEAM_SPECTATOR);
+
+					ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity) {
+						entity->ChangeTeam(TEAM_SPECTATOR);
+					});
+				}
+				
+				if (data.prefer_extra_slots) {
+					// Swap the team vector contents back
+					auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+					auto &vec = team->m_aPlayers.Get();
+					int count = vec.Count();
+					for (int i = 0; i < count/2; i++) {
+						auto swap = vec[count - 1 - i];
+						vec[count - 1 - i] = vec[i];
+						vec[i] = swap;
+					}
+				}
+
+				/*for (int i = 0; i < bot->WeaponCount(); i++) {
+					CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+					if (weapon != nullptr) {
+						bot->Weapon_Switch(weapon);
+
+						//DevMsg("Is active %d %d %d\n", weapon == player->GetActiveWeapon(), weapon->GetEffects(), weapon->GetRenderMode());
+					}
+				}*/
 			}
 		}
 		
@@ -907,9 +920,25 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		auto spawner = reinterpret_cast<CTFBotSpawner *>(this);
 		current_spawner = spawner;
+
+		auto it = spawners.find(spawner);
+		if (it != spawners.end()) {
+			SpawnerData &data = (*it).second;
+			if (data.prefer_extra_slots) {
+				// Swap the team vector contents to use extra slots instead of normal
+				auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+				auto &vec = team->m_aPlayers.Get();
+				int count = vec.Count();
+				for (int i = 0; i < count/2; i++) {
+					auto swap = vec[count - 1 - i];
+					vec[count - 1 - i] = vec[i];
+					vec[i] = swap;
+				}
+			}
+		}
 		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
-		if (result) {
-			OnBotSpawn(spawner,ents);
+		if (result && it != spawners.end()) {
+			OnBotSpawn(spawner,ents, (*it).second);
 		}
 		return result;
 	}
@@ -1807,11 +1836,17 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
 	}
 
+	RefCount rc_CBasePlayer_ChangeTeam;
+	DETOUR_DECL_MEMBER(void, CBasePlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DETOUR_MEMBER_CALL(CBasePlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		SCOPED_INCREMENT_IF(rc_CBasePlayer_ChangeTeam, player->IsFakeClient() || player->IsHLTV());
+	}
+
 	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent, IGameEvent* event)
 	{
-		if (rc_CTFBotSpawner_Spawn) {
-			return;
-		}
+		if (rc_CBasePlayer_ChangeTeam) return;
 
 		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
 	}
@@ -2002,6 +2037,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach,  "CBaseCombatCharacter::Weapon_Detach");
 
 			// Fix crash related to bot change teams?
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ChangeTeam,               "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent,  "CQuestItemTracker::FireGameEvent");
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");

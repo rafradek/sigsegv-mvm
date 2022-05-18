@@ -142,7 +142,7 @@ union MemberPtrUnion
 
 
 template<class C, typename RET, typename... PARAMS>
-MemberPtrType<C, RET, PARAMS...> MakePtrToMemberFunc(const void *ptr)
+inline MemberPtrType<C, RET, PARAMS...> MakePtrToMemberFunc(const void *ptr)
 {
 	MemberPtrUnion<C, RET, PARAMS...> u;
 	
@@ -152,34 +152,34 @@ MemberPtrType<C, RET, PARAMS...> MakePtrToMemberFunc(const void *ptr)
 	return u.fptr;
 }
 template<class C, typename RET, typename... PARAMS>
-MemberPtrTypeConst<C, RET, PARAMS...> MakePtrToConstMemberFunc(const void *ptr)
+inline MemberPtrTypeConst<C, RET, PARAMS...> MakePtrToConstMemberFunc(const void *ptr)
 {
 	return reinterpret_cast<MemberPtrTypeConst<C, RET, PARAMS...>>(MakePtrToMemberFunc<C, RET, PARAMS...>(ptr));
 }
 
 
 template<class C, typename RET, typename... PARAMS>
-void *GetAddrOfMemberFunc(MemberPtrType<C, RET, PARAMS...> ptr)
+inline void *GetAddrOfMemberFunc(MemberPtrType<C, RET, PARAMS...> ptr)
 {
 	MemberPtrUnion<C, RET, PARAMS...> u;
 	
 	u.fptr = ptr;
 	
-	assert((uintptr_t)u.guts.ptr % 2 == 0);
+//	assert((uintptr_t)u.guts.ptr % 2 == 0);
 	return (void *)u.guts.ptr;
 }
 template<class C, typename RET, typename... PARAMS>
-void *GetAddrOfMemberFunc(MemberPtrTypeConst<C, RET, PARAMS...> ptr)
+inline void *GetAddrOfMemberFunc(MemberPtrTypeConst<C, RET, PARAMS...> ptr)
 {
 	return GetAddrOfMemberFunc(reinterpret_cast<MemberPtrType<C, RET, PARAMS...>>(ptr));
 }
 template<class C, typename RET, typename... PARAMS>
-void *GetAddrOfMemberFunc(MemberPtrTypeVa<C, RET, PARAMS...> ptr)
+inline void *GetAddrOfMemberFunc(MemberPtrTypeVa<C, RET, PARAMS...> ptr)
 {
 	return GetAddrOfMemberFunc(reinterpret_cast<MemberPtrType<C, RET, PARAMS...>>(ptr));
 }
 template<class C, typename RET, typename... PARAMS>
-void *GetAddrOfMemberFunc(MemberPtrTypeVaConst<C, RET, PARAMS...> ptr)
+inline void *GetAddrOfMemberFunc(MemberPtrTypeVaConst<C, RET, PARAMS...> ptr)
 {
 	return GetAddrOfMemberFunc(reinterpret_cast<MemberPtrType<C, RET, PARAMS...>>(ptr));
 }

@@ -122,3 +122,21 @@ void SendConsoleMessageToAdmins(const char *fmt, ...)
 		engine->ClientPrintf(player->edict(), buf);
 	}
 }
+
+void SendWarningConsoleMessageToAdmins(const char *fmt, ...)
+{
+	va_list arglist;
+	va_start(arglist, fmt);
+	char buf[1024];
+	vsnprintf(buf, sizeof(buf), fmt, arglist);
+	va_end(arglist);
+	Warning("%s", buf);
+	
+	for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+		CBasePlayer *player = UTIL_PlayerByIndex(i);
+		if (player == nullptr)       continue;
+		if (player->IsFakeClient())  continue;
+		if (!PlayerIsSMAdmin(player)) continue;
+		engine->ClientPrintf(player->edict(), buf);
+	}
+}

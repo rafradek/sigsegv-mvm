@@ -90,6 +90,7 @@ IMPL_SENDPROP(CPlayerLocalData,                   CBasePlayer, m_Local,         
 IMPL_SENDPROP(int,                                CBasePlayer, m_nTickBase,     CBasePlayer);
 IMPL_SENDPROP(float,                              CBasePlayer, m_flMaxspeed,    CBasePlayer);
 IMPL_SENDPROP(CUtlVector<CHandle<CEconWearable>>, CBasePlayer, m_hMyWearables,  CBasePlayer);
+IMPL_SENDPROP(CHandle<CBaseEntity>,               CBasePlayer, m_hObserverTarget, CBasePlayer);
 
 MemberFuncThunk<CBasePlayer *, void, Vector *, Vector *, Vector *> CBasePlayer::ft_EyeVectors    ("CBasePlayer::EyeVectors");
 MemberFuncThunk<CBasePlayer *, bool, CSteamID *>                   CBasePlayer::ft_GetSteamID    ("CBasePlayer::GetSteamID");

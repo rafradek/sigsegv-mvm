@@ -21,3 +21,5 @@ MSVC/Report*.csv
 
 *.sublime-project
 *.sublime-workspace
+
+libs/lua/

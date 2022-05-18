@@ -480,20 +480,24 @@ inline bool CBaseEntity::GetCustomVariableByText(const char *key, variant_t &val
     return false;
 }
 
-inline void CBaseEntity::SetCustomVariable(const char *key, variant_t &value)
+inline bool CBaseEntity::SetCustomVariable(const char *key, variant_t &value, bool create, bool find)
 {
     auto &list = GetExtraData(this)->GetCustomVariables();
     bool found = false;
-    for (auto &var : list) {
-        if (STRING(var.key) == key || stricmp(key, STRING(var.key)) == 0) {
-            var.value = value;
-            found = true;
-            break;
+    if (find) {
+        for (auto &var : list) {
+            if (STRING(var.key) == key || stricmp(key, STRING(var.key)) == 0) {
+                var.value = value;
+                found = true;
+                return true;
+            }
         }
     }
-    if (!found) {
+    if (!found && create) {
         list.emplace_back(key, value);
+        return true;
     }
+    return false;
 }
 
 inline void CBaseEntity::AddCustomOutput(const char *key, const char *value)

@@ -161,6 +161,9 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		std::vector<std::string> strip_item;
 
+		float desired_attack_range = -1;
+		float move_behind_enemy = 0;
+
 		CRC32_t spray_file;
 	};
 
@@ -862,6 +865,10 @@ namespace Mod::Pop::ECAttr_Extensions
 				CBaseEntity::PrecacheScriptSound(kv->GetString());
 		} else if (FStrEq(name, "StripItem")) {
 			data.strip_item.push_back(kv->GetString());
+		} else if (FStrEq(name, "DesiredAttackRange")) {
+			data.desired_attack_range = kv->GetFloat();
+		} else if (FStrEq(name, "MoveBehindEnemy")) {
+			data.move_behind_enemy = kv->GetFloat();
 		} else {
 			found = false;
 		}
@@ -2407,6 +2414,87 @@ namespace Mod::Pop::ECAttr_Extensions
 		DETOUR_STATIC_CALL(TE_TFParticleEffect)(recipement, value, name, vector, angles, entity, attach);
 	}
 
+	DETOUR_DECL_MEMBER(float, CTFBot_GetDesiredAttackRange)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto *data = GetDataForBot(bot);
+			if (data != nullptr && data->desired_attack_range != -1) {
+				return data->desired_attack_range;
+			}
+		}
+
+		auto result = DETOUR_MEMBER_CALL(CTFBot_GetDesiredAttackRange)();
+
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotAttack_Update, CTFBot *me, float interval)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFBotAttack_Update)(me, interval);
+
+		if (!TFGameRules()->IsMannVsMachineMode()) return result;
+		auto *data = GetDataForBot(me);
+
+		if (data == nullptr) return result;
+		
+		float circleStrafeRange = data->move_behind_enemy;
+		if (circleStrafeRange < 1) return result;
+		if (circleStrafeRange == 1) {
+			circleStrafeRange = 250;
+		}
+
+		const CKnownEntity *threat = me->GetVisionInterface()->GetPrimaryKnownThreat(false);
+
+
+		if (threat == nullptr || threat->IsObsolete()) return result;
+
+		auto playerThreat = ToTFPlayer(threat->GetEntity());
+
+		if (playerThreat != nullptr && threat->IsVisibleInFOVNow())
+		{
+			Vector toPlayerThreat = playerThreat->GetAbsOrigin() - me->GetAbsOrigin();
+			
+			float threatRange = toPlayerThreat.NormalizeInPlace();
+			
+			Vector playerThreatForward;
+			playerThreat->EyeVectors( &playerThreatForward );
+
+			bool isBehindVictim = DotProduct( playerThreatForward, toPlayerThreat ) > 0.7071f;
+			if ( threatRange < circleStrafeRange )
+			{
+				// we're close - aim our stab attack
+				me->GetBodyInterface()->AimHeadTowards( playerThreat, IBody::LookAtPriorityType::CRITICAL, 0.1f, NULL, "Aiming my stab!" );
+
+				if ( !isBehindVictim )
+				{
+					// circle around our victim to get behind them
+					Vector myForward;
+					me->EyeVectors( &myForward );
+
+					Vector cross;
+					CrossProduct( playerThreatForward, myForward, cross );
+
+					if ( cross.z < 0.0f )
+					{
+						me->PressRightButton();
+					}
+					else
+					{
+						me->PressLeftButton();
+					}
+
+					// don't continue to close in if we're already very close so we don't bump them and give ourselves away
+					// if ( threatRange < 100.0f )
+					// {
+					// 	isMovingTowardVictim = false;
+					// }
+				}
+			}
+		}
+		return result;
+	}
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2475,6 +2563,9 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_STATIC(DispatchParticleEffect, "DispatchParticleEffect [overload 3]");
 			MOD_ADD_DETOUR_STATIC(TE_TFParticleEffect, "TE_TFParticleEffect");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
+			
+			MOD_ADD_DETOUR_MEMBER(CTFBot_GetDesiredAttackRange, "CTFBot::GetDesiredAttackRange");
+			MOD_ADD_DETOUR_MEMBER(CTFBotAttack_Update, "CTFBotAttack::Update");
 		}
 
 		virtual bool OnLoad() override

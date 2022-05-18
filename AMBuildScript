@@ -165,6 +165,7 @@ class ExtensionConfig(object):
     cxx.defines += ['GNUC']
     cxx.defines += ['PLATFORM_X86']
     cxx.defines += ['FMT_HEADER_ONLY']
+    cxx.defines += ['LUAJIT_ENABLE_LUA52COMPAT']
     
     ############################################################################
     # C & C++ COMPILER #########################################################

@@ -100,6 +100,14 @@ CopyFiles('scripts', 'custom/sigsegv/scripts',
   ]
 )
 
+# Lua Script files
+CopyFiles('src/lua', 'custom/sigsegv/scripts',
+  [
+    'globals.lua',
+    'natives.lua'
+  ]
+)
+
 builder.AddCopy('cfg/sigsegv_convars.cfg', folder_map['cfg'])
 builder.AddCopy('sigsegv.autoload', folder_map['addons/sourcemod/extensions'])
 builder.AddCopy('scripts/mvm_bigrock_sigdemo.pop', folder_map['custom/sigsegv/scripts/population'])

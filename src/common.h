@@ -355,7 +355,8 @@ WARN_RESTORE()
 #include <ehandle.h>
 #include <datamap.h>
 #include <predictioncopy.h>
-#include <takedamageinfo.h>
+#include "sdk2013/takedamageinfo.h"
+//#include <takedamageinfo.h>
 #include <iserverentity.h>
 WARN_IGNORE__ADDRESS()
 WARN_IGNORE__NONNULL_COMPARE()

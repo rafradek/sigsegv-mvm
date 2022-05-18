@@ -582,6 +582,18 @@ public:
 
 	
 };
+
+class CMathCounter : public CLogicalEntity
+{
+
+};
+
+extern GlobalThunk<CBaseEntity *> g_WorldEntity;
+
+inline CBaseEntity* GetWorldEntity() {
+	return g_WorldEntity;
+}
+
 // 20151007a
 
 // CTFPlayer::Event_Killed

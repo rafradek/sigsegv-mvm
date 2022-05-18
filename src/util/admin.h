@@ -23,5 +23,6 @@ bool PlayerHasSMAdminFlags_All(CBasePlayer *player, FlagBits flag_mask);
 bool PlayerHasSMAdminFlags_Any(CBasePlayer *player, FlagBits flag_mask);
 
 void SendConsoleMessageToAdmins(const char *fmt, ...);
+void SendWarningConsoleMessageToAdmins(const char *fmt, ...);
 
 #endif

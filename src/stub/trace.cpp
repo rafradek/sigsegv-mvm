@@ -1,5 +1,6 @@
 #include "stub/trace.h"
 #include "stub/gamerules.h"
+#include "stub/entities.h"
 
 
 CFlaggedEntitiesEnum::CFlaggedEntitiesEnum( CBaseEntity **pList, int listMax, int flagMask )
@@ -205,4 +206,14 @@ bool CTraceFilterSkipTwoEntities::ShouldHitEntity( IHandleEntity *pHandleEntity,
 		return false;
 
 	return CTraceFilterSimple::ShouldHitEntity( pHandleEntity, contentsMask );
+}
+
+bool CGameTrace::DidHitWorld() const
+{
+	return m_pEnt == GetWorldEntity();
+}
+
+bool CGameTrace::DidHitNonWorldEntity() const
+{
+	return m_pEnt != NULL && !DidHitWorld();
 }

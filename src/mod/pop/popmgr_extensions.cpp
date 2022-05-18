@@ -24,6 +24,8 @@
 #include "stub/nextbot_cc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
+#include "mod/etc/mapentity_additions.h"
+
 WARN_IGNORE__REORDER()
 #include <../server/vote_controller.h>
 WARN_RESTORE()
@@ -655,7 +657,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AllowBotsExtraSlots             ("sig_etc_extra_player_slots_allow_bots"),
 			m_AutoWeaponStrip                 ("sig_auto_weapon_strip"),
 			m_RemoveOffhandViewmodel          ("sig_etc_entity_limit_manager_viewmodel"),
-			m_RemoveBotExpressions            ("sig_etc_entity_limit_manager_remove_expressions")
+			m_RemoveBotExpressions            ("sig_etc_entity_limit_manager_remove_expressions"),
+			m_ExtraBotSlotsNoDeathcam         ("sig_etc_extra_player_slots_no_death_cam")
 			
 		{
 			this->Reset();
@@ -806,6 +809,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AutoWeaponStrip.Reset();
 			this->m_RemoveOffhandViewmodel.Reset();
 			this->m_RemoveBotExpressions.Reset();
+			this->m_ExtraBotSlotsNoDeathcam.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -881,6 +885,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			this->m_ParticleOverride.clear();
 			this->m_BuildingPointTemplates.clear();
+			this->m_Scripts.clear();
+			this->m_ScriptFiles.clear();
 		}
 		
 		bool  m_bGiantsDropRareSpells;
@@ -1029,6 +1035,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_AutoWeaponStrip;
 		CPopOverride_ConVar<bool> m_RemoveOffhandViewmodel;
 		CPopOverride_ConVar<bool> m_RemoveBotExpressions;
+		CPopOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
 		
 		
 		
@@ -1099,6 +1106,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unordered_map<std::string, std::string> m_ParticleOverride;
 
 		std::vector<BuildingPointTemplateInfo> m_BuildingPointTemplates;
+
+		std::vector<std::string> m_Scripts;
+		std::vector<std::string> m_ScriptFiles;
+		CHandle<CBaseEntity> m_ScriptManager;
 	};
 	PopState state{};
 	
@@ -2006,12 +2017,26 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
 	{
 		DevMsg("Wave end team win %d\n", TFGameRules()->GetWinningTeam());
+		bool origSuccess = success;
 		if (state.m_bReverseWinConditions && last_game_was_win) {
 			DevMsg("State_Enter %d\n", rc_CTeamplayRoundBasedRules_State_Enter);
-			DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(true);
-			
-			return;
+			success = true;
 		}
+
+		if (state.m_ScriptManager != nullptr) {
+			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+
+			if (scriptManager->CheckGlobal("OnWaveInit")) {
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
+				scriptManager->Call(1, 0);
+			}
+
+			if (scriptManager->CheckGlobal(success ? "OnWaveSuccess" : "OnWaveFail")) {
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
+				scriptManager->Call(1, 0);
+			}
+		}
+
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 	}
 
@@ -4018,7 +4043,16 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_PlayersByWaveStart.insert(player);
 			}
 		});
+
 		DETOUR_MEMBER_CALL(CPopulationManager_StartCurrentWave)();
+
+		if (state.m_ScriptManager != nullptr) {
+			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+			if (scriptManager->CheckGlobal("OnWaveStart")) {
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+				scriptManager->Call(1, 0);
+			}
+		}
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToSpawn)
@@ -4384,6 +4418,48 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		if (result && ents != nullptr && state.m_ScriptManager != nullptr) {
+			auto player = ToTFBot(ents->Tail());
+			if (player != nullptr) {
+				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+				if (scriptManager->CheckGlobal("OnWaveSpawnBot")) {
+					Util::Lua::LEntityAlloc(scriptManager->GetState(), player);
+					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+					lua_newtable(scriptManager->GetState());
+					int idx = 1;
+					for (auto &tag : player->m_Tags) {
+						lua_pushstring(scriptManager->GetState(), tag.Get());
+						lua_rawseti(scriptManager->GetState(), -2, idx);
+						idx++;
+					}
+					scriptManager->Call(3, 0);
+				}
+			}
+		}
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTankSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
+		if (result && ents != nullptr && state.m_ScriptManager != nullptr) {
+			auto entity = ents->Tail();
+			if (entity != nullptr) {
+				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+				if (scriptManager->CheckGlobal("OnWaveSpawnTank")) {
+					Util::Lua::LEntityAlloc(scriptManager->GetState(), entity);
+					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+					scriptManager->Call(2, 0);
+				}
+			}
+		}
+		return result;
+	}
+
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
 	// {
 	// 	DevMsg("MessageWriteString %s\n",name);
@@ -5295,6 +5371,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		state.m_BoughtLoadoutItems.clear();
 		state.m_BoughtLoadoutItemsCheckpoint.clear();
 		Mod::Etc::Mapentity_Additions::ClearFakeProp();
+
+		if (state.m_ScriptManager != nullptr) {
+			state.m_ScriptManager->Remove();
+		}
 		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
 	}
 
@@ -5402,6 +5482,26 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		state.m_SpawnTemplates.clear();
 
+		if (state.m_ScriptManager == nullptr && (!state.m_Scripts.empty() || !state.m_ScriptFiles.empty())) {
+			state.m_ScriptManager = CreateEntityByName("$script_manager");
+			DispatchSpawn(state.m_ScriptManager);
+			state.m_ScriptManager->SetName(AllocPooledString("popscript"));
+			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+			for (auto &script : state.m_ScriptFiles) {
+            	scriptManager->DoFile(script.c_str(), true);
+			}
+			for (auto &script : state.m_Scripts) {
+            	scriptManager->DoString(script.c_str(), true);
+			}
+			state.m_ScriptManager->Activate();
+		}
+		if (state.m_ScriptManager != nullptr) {
+			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+			if (scriptManager->CheckGlobal("OnWaveReset")) {
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+				scriptManager->Call(1, 0);
+			}
+		}
 		TogglePatches();
 //		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
@@ -5817,6 +5917,12 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_RemoveOffhandViewmodel.Set(subkey->GetBool());
 			} else if (FStrEq(name, "RemoveBotExpressions")) {
 				state.m_RemoveBotExpressions.Set(subkey->GetBool());
+			} else if (FStrEq(name, "ExtraBotSlotsNoDeathcam")) {
+				state.m_ExtraBotSlotsNoDeathcam.Set(subkey->GetBool());
+			} else if (FStrEq(name, "LuaScript")) {
+				state.m_Scripts.push_back(subkey->GetString());
+			} else if (FStrEq(name, "LuaScriptFile")) {
+				state.m_ScriptFiles.push_back(subkey->GetString());
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
@@ -6139,6 +6245,8 @@ namespace Mod::Pop::PopMgr_Extensions
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_UpdateTransmitState, "CBaseCombatWeapon::UpdateTransmitState");
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
+			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
 			
 			
 			

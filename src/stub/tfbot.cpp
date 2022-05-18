@@ -74,11 +74,16 @@ struct CExtract_CTFBot_m_nMission : public IExtract<CTFBot::MissionType *>
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFBot_m_Tags[] = {
-	0x55,                               // +0000  push ebp
+	/*0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
 	0x53,                               // +0003  push ebx
 	0x8b, 0x5d, 0x08,                   // +0004  mov ebx,[ebp+this]
-	0x8b, 0x83, 0xd8, 0x2b, 0x00, 0x00, // +0007  mov eax,[ebx+0xVVVVVVVV]
+	0x8b, 0x83, 0xd8, 0x2b, 0x00, 0x00, // +0007  mov eax,[ebx+0xVVVVVVVV] */
+	0x55,
+	0x89, 0xE5, 
+	0x8B, 0x45, 0x08,
+	0xC7, 0x80, 0x90, 0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+
 };
 
 struct CExtract_CTFBot_m_Tags : public IExtract<CUtlVector<CFmtStr> *>
@@ -91,7 +96,7 @@ struct CExtract_CTFBot_m_Tags : public IExtract<CUtlVector<CFmtStr> *>
 	{
 		buf.CopyFrom(s_Buf_CTFBot_m_Tags);
 		
-		mask.SetRange(0x07 + 2, 4, 0x00);
+		mask.SetRange(0x06 + 2, 4, 0x00);
 		
 		return true;
 	}
@@ -99,7 +104,7 @@ struct CExtract_CTFBot_m_Tags : public IExtract<CUtlVector<CFmtStr> *>
 	virtual const char *GetFuncName() const override   { return "CTFBot::ClearTags"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
-	virtual uint32_t GetExtractOffset() const override { return 0x0007 + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x0006 + 2; }
 	
 	virtual T AdjustValue(T val) const { return reinterpret_cast<T>((uintptr_t)val - 0xc); }
 };
@@ -197,9 +202,9 @@ MemberFuncThunk<CTFBot::SuspectedSpyInfo_t *, bool> CTFBot::SuspectedSpyInfo_t::
 
 IMPL_EXTRACT(CTFBot::MissionType,   CTFBot, m_nMission,  new CExtract_CTFBot_m_nMission());
 #if !defined _WINDOWS
-#if TOOLCHAIN_FIXES
+//#if TOOLCHAIN_FIXES
 IMPL_EXTRACT(CUtlVector<CFmtStr>,   CTFBot, m_Tags,      new CExtract_CTFBot_m_Tags());
-#endif
+//#endif
 IMPL_EXTRACT(CTFBot::AttributeType, CTFBot, m_nBotAttrs, new CExtract_CTFBot_m_nBotAttrs());
 IMPL_RELATIVE(CTFBot::WeaponRestriction, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, -0x04);
 IMPL_RELATIVE(CHandle<CBaseEntity>, CTFBot, m_enemySentry,    m_nBotAttrs, 0x20);

@@ -230,7 +230,7 @@ namespace Mod::Perf::Input_Optimize
 		CMod() : IMod("Perf::Input_Optimize")
 		{
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput", LOWEST);
-            MOD_ADD_DETOUR_MEMBER(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput");
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
             //MOD_ADD_DETOUR_MEMBER(CEventQueue_ServiceEvents, "CEventQueue::ServiceEvents");
             

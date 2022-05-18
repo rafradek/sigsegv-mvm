@@ -42,6 +42,10 @@ CTakeDamageInfo::CTakeDamageInfo(CBaseEntity *pInflictor, CBaseEntity *pAttacker
 	ft_CTakeDamageInfo_ctor5(this, pInflictor, pAttacker, pWeapon, damageForce, damagePosition, flDamage, bitsDamageType, iKillType, reportedPosition);
 }
 
+CTakeDamageInfo::CTakeDamageInfo()
+{
+	ft_CTakeDamageInfo_ctor5(this, nullptr, nullptr, nullptr, vec3_origin, vec3_origin, 0, 0, 0, nullptr);
+}
 
 static MemberFuncThunk<CTraceFilterSimple *, void, const IHandleEntity *, int, ShouldHitFunc_t> ft_CTraceFilterSimple_ctor("CTraceFilterSimple::CTraceFilterSimple [C1]");
 CTraceFilterSimple::CTraceFilterSimple(const IHandleEntity *passedict, int collisionGroup, ShouldHitFunc_t pExtraShouldHitFunc)
@@ -99,10 +103,23 @@ static StaticFuncThunk<void, IRecipientFilter &, float, const Vector *, int, int
 void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, int player, int entity) { ft_TE_PlayerDecal(filter, delay, pos, player, entity); }
 
 static MemberFuncThunk<variant_t*, void, fieldtype_t, void *> ft_VariantSet("variant_t::Set");
-void variant_t::Set(fieldtype_t type, void *data) { ft_VariantSet(this, type, data); }
+void variant_t::Set(fieldtype_t type, void *data) { 
+	if (type == FIELD_CUSTOM) {
+		iVal = *(int *)data;
+		fieldType = FIELD_CUSTOM;
+		return;
+	}
+	ft_VariantSet(this, type, data); }
 
 static MemberFuncThunk<variant_t*, void, void *> ft_VariantSetOther("variant_t::SetOther");
-void variant_t::SetOther(void *data) { ft_VariantSetOther(this, data); }
+void variant_t::SetOther(void *data) { 
+	
+	if (this->fieldType == FIELD_CUSTOM) {
+		*((int *)data) = iVal;
+		return;
+	}
+
+	ft_VariantSetOther(this, data); }
 
 void variant_t::SetEntity( CBaseEntity *val ) 
 { 
@@ -129,6 +146,16 @@ bool variant_t::Convert(fieldtype_t newType) {
 				case FIELD_FLOAT: SetFloat( (float) iVal ); return true;
 				case FIELD_CHARACTER: case FIELD_SHORT: case FIELD_INTEGER: fieldType = newType; return true;
 				case FIELD_BOOLEAN: SetBool( iVal != 0 ); return true;
+				case FIELD_EHANDLE: case FIELD_CLASSPTR: {
+					
+					CBaseEntity *ent = nullptr;
+					if ( iszVal != NULL_STRING ) {
+						ent = CHandle<CBaseEntity>::FromIndex(iVal);
+					}
+					SetEntity(ent);
+					fieldType = newType;
+					return true;
+				}
 			}
 			break;
 		}
@@ -182,10 +209,8 @@ bool variant_t::Convert(fieldtype_t newType) {
 				}
 
 				case FIELD_EHANDLE: case FIELD_CLASSPTR: {
-					// convert the string to an entity by locating it by classname
 					CBaseEntity *ent = nullptr;
 					if ( iszVal != NULL_STRING ) {
-						// FIXME: do we need to pass an activator in here?
 						ent = servertools->FindEntityByName(nullptr, STRING(iszVal));
 					}
 					SetEntity(ent);
@@ -206,6 +231,14 @@ bool variant_t::Convert(fieldtype_t newType) {
 					string_t iszStr = NULL_STRING;
 					if ( eVal != nullptr ) {
 						SetString( eVal->GetEntityName() );
+					}
+					return true;
+				}
+
+				case FIELD_INTEGER: {
+					// take the entities targetname as the string
+					if ( eVal != nullptr ) {
+						SetInt( eVal.ToInt() );
 					}
 					return true;
 				}
