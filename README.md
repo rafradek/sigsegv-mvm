@@ -56,16 +56,28 @@ make
 cd ../..
 ```
 
-7. Install packages:
+7. Install lua:
+```
+cd libs
+wget https://www.lua.org/ftp/lua-5.4.4.tar.gz
+tar -xf lua-*.tar.gz
+rm lua-*.tar.gz
+mv lua-* lua
+cd lua
+make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+cd ../..
+```
+
+8. Install packages:
 ```
 python-is-python3
 ```
 
-8. Update autoconfig.sh with correct hl2sdk, metamod, sourcemod paths
+9. Update autoconfig.sh with correct hl2sdk, metamod, sourcemod paths
 
-9. Run autoconfig.sh
+10. Run autoconfig.sh
 
-10. Build
+11. Build
 
 Release:
 ```
