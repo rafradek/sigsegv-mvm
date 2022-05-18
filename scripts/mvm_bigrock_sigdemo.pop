@@ -42,7 +42,9 @@ WaveSchedule
 	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
 	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
 	PrecacheParticle "AntlionGib" [$SIGSEGV]
-	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 4) (default: 22)
+	// AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 57 bots instead of 26. Experimental. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Map reload recommended after change (default: 0)
+	// ExtraBotSlotsNoDeathcam 0 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 0)
+	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). 26 is maximum value to keep 6 players active (default: 22)
 	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations
 	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
 	BluHumanFlagCapture 1 [$SIGSEGV] //Can blu humans capture the flag
@@ -130,6 +132,8 @@ WaveSchedule
 	FastWholeMapTriggers 1 [$SIGSEGV] // Optimize big triggers (larger than 5000 units in all directions) spawned by point templates, by automatically assuming all entities hit the trigger. Might cause issues, but in that case you should use an alternative method anyway (default: 1)
 	BluHumanSpawnNoShoot 1 [$SIGSEGV] // BLU players cannot shoot while in spawn (default: 1)
 	BluHumanSpawnProtection 1 [$SIGSEGV] // BLU players are invincible in spawn (default: 1)
+	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
+	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -1234,6 +1238,8 @@ WaveSchedule
 					//Idle - Sit in spawn and wait
 					//Passive - Sit at spawn position, until an active threat is in vision
 				Item "The Short Circuit"
+				DesiredAttackRange 100 [$SIGSEGV] // How close to the target the bot should want to move when trying to attack. For melee weapons, default is 100. For other weapons except sniper rifles - 500
+				MoveBehindEnemy 1 [$SIGSEGV] // Should the bot try to get behind the target, similar to how the Spy bot behaves. Instead of 1 you can also specify custom distance at which the bot will start strafing around the target (default: 0) 
 				ExtAttr AlwaysFireWeaponAlt [$SIGSEGV] 
 				WeaponRestrictions SecondaryOnly
 				CustomWeaponModel [$SIGSEGV] //Sets custom weapon model
@@ -1761,6 +1767,13 @@ WaveSchedule
 					"ubercharge" 1
 					"powerup charges" 3
 				}
+				Sequence [$SIGSEGV]  // Display a sequence animation with a name. Not every animation is supported
+				{
+					Name "Run_MELEE" // Name of the sequence
+					Delay 6 // Delay before playing animation
+					Repeats 1 // How often repeat the animation
+					IfHealthBelow 17000 // Health below which activate animation
+				}
 			}
 		}
 		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
@@ -2161,6 +2174,7 @@ WaveSchedule
 				Attributes HoldFireUntilFullReload
 				Attributes MiniBoss
 				ExtAttr JumpStomp [$SIGSEGV] //Try to jump over and stomp obstracles
+				//ExtAttr DisableSpawnProtectionFix [$SIGSEGV] // Disable a fix where if a medic activates ubercharge inside spawn, the medic will not be invulnerable exiting spawn
 				ItemAttributes
 				{
 					ItemName "TF_WEAPON_ROCKETLAUNCHER"

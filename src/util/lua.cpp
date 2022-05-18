@@ -2395,7 +2395,6 @@ namespace Util::Lua
         timer.Start();
         SwitchState();
         {
-            TIME_SCOPE2(lol);
             int err = luaL_loadstring(l, str);
             if (err) {
                 const char *errbuf = lua_tostring(l, -1);
@@ -2438,7 +2437,6 @@ namespace Util::Lua
         bool bRetOK = (((IFileSystem *)filesystem)->ReadEx(buffer, bufSize, fileSize, f) != 0);
         
         if (bRetOK) {
-            TIME_SCOPE2(lol);
             int err = luaL_loadbuffer(l, buffer, bufSize, path);
             if (err) {
                 const char *errbuf = lua_tostring(l, -1);
@@ -2481,7 +2479,6 @@ namespace Util::Lua
         
         SwitchState();
         {
-            TIME_SCOPE2(lol);
             lua_getglobal(l, str);
             int err = lua_pcall(l, numargs, 0, 0);
             if (err) {
@@ -2500,7 +2497,7 @@ namespace Util::Lua
 
     int LuaState::Call(int numargs, int numret) {
         VPROF_BUDGET("LuaState::Call", "Lua");
-        TIME_SCOPE2(call);
+        //TIME_SCOPE2(call);
         CFastTimer timer;
         timer.Start();
         SwitchState();

@@ -99,7 +99,7 @@
 				"g_DeleteList" "_ZL12g_DeleteList"
 				"g_bDisableEhandleAccess" "g_bDisableEhandleAccess"
 				"s_RemoveImmediateSemaphore" "_ZL26s_RemoveImmediateSemaphore"
-				
+				"g_WorldEntity" "_ZL13g_WorldEntity"
 			}
 			
 			"addrs_group"

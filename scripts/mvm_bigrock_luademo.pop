@@ -1,0 +1,234 @@
+#base robot_giant.pop
+#base robot_standard.pop
+
+WaveSchedule
+{
+
+	StartingCurrency		1500
+	RespawnWaveTime 		2
+	CanBotsAttackWhileInSpawnRoom no
+
+	LuaScript "
+		function OnWaveReset(wave)
+			print('wave reset', wave)
+		end
+
+		function OnWaveInit(wave)
+			print('wave init', wave)
+		end
+
+		function OnWaveSuccess(wave)
+			print('wave success', wave)
+		end
+
+		function OnWaveFail(wave)
+			print('wave fail', wave)
+		end
+
+		function OnWaveSpawnBot(bot, wave, tags)
+			print('wave spawn bot' .. tostring(bot:IsValid()) .. wave .. #tags)
+			PrintTable(tags)
+		end
+
+		function OnWaveSpawnTank(tank, wave)
+			print('wave spawn tank', tank, wave)
+		end
+
+		function OnWaveStart(wave)
+			print('wave start', wave)
+		end
+
+		function OnPlayerConnected(player)
+			print('player join', tostring(player))
+			player:AddCallback(ON_REMOVE, function(ent) print('Player remove '..tostring(ent)) end)
+
+			player:AddCallback(ON_SPAWN, function(ent) 
+				print('Player spawn '..tostring(ent))
+				ent.m_iRevengeCrits = 5 
+				ent.m_iAmmo[1] = 4 --Do note that arrays in Lua are indexed starting from 1
+			end)
+			
+			player:AddCallback(ON_ACTIVATE, function(ent) print('Player activate '..tostring(ent)) end)
+			player:AddCallback(ON_DAMAGE_RECEIVED_PRE, function(ent, damage) print('Player damaged pre '..tostring(ent)); PrintTable(damage); damage.Damage=0; return true; end)
+			player:AddCallback(ON_DAMAGE_RECEIVED_POST, function(ent, damage) print('Player damaged post '..tostring(ent)); PrintTable(damage) end)
+			player:AddCallback(ON_INPUT, function(ent, name, activator, caller, value) 
+				print('Player input '..tostring(ent)..' '..name..' '..tostring(activator)..' '..tostring(caller)..' '..tostring(value))
+			end)
+			player:AddCallback(ON_OUTPUT, function(ent, name, activator, value) print('Player output '..tostring(ent)..' '..name..' '..tostring(activator)..' '..tostring(value));  end)
+			player:AddCallback(ON_KEY_PRESSED, function(ent, key) print('Player key press '..tostring(ent)..' '..key) 
+			end)
+			player:AddCallback(ON_KEY_RELEASED, function(ent, key) print('Player key release '..tostring(ent)..' '..key);
+			end)
+			player:AddCallback(ON_DEATH, function(ent, damage) print('Player death '..tostring(ent));
+			end)
+		end
+
+		function OnPlayerDisconnected(player)
+			print('player disconnect', player)
+		end
+
+		function OnGameTick()
+			print('time '..CurTime())
+		end
+
+		ents.AddCreateCallback('obj_sentry*', function(ent) print('CREATED2: '..tostring(ent)) end);
+		ents.AddCreateCallback('player', function(ent) print('CREATED: '..tostring(ent)) end);
+		timer.Create(0.5, function() ents.FindByName('intel').a = {4,3} end, 0)
+
+	" [$SIGSEGV]
+
+	WaveStartCountdown 1 [$SIGSEGV]
+	//WAVE 1 //Currency 1300 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+	Wave
+	{
+		StartWaveOutput
+			{
+				Target wave_start_relay
+				Action Trigger
+			}
+		DoneOutput					
+			{
+				Target wave_finished_relay
+				Action trigger
+			}
+		WaitWhenDone 65
+		Checkpoint Yes
+		
+		// Spy mission - 4 active	
+		// Sniper mission - 2 active	
+
+		WaveSpawn //WAVE 01a: 36 total, 18 active, Scout (bonk) + crit soldier 
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 36
+			MaxActive 18
+			SpawnCount 6
+			WaitBeforeStarting 4
+			WaitBetweenSpawns 5
+			TotalCurrency 300		
+		
+			Squad
+			{
+				TFBot
+				{
+					Class Scout
+					Skill Easy
+				}
+				TFBot
+				{
+					Class Scout
+					Skill Easy
+				}
+				TFBot
+				{
+					Template T_TFBot_Scout_Bonk
+				}
+				TFBot
+				{
+					
+				Tag lol
+					Template T_TFBot_Scout_Bonk
+				}
+				TFBot
+				{
+					
+				Tag lol
+					Template T_TFBot_Scout_Bonk
+				}
+				TFBot
+				{
+					
+				Tag lol
+					Class Soldier
+					Skill Expert
+					Attributes AlwaysCrit
+					ItemAttributes 
+					{
+						ItemName "TF_WEAPON_ROCKETLAUNCHER"
+						"faster reload rate" -0.8
+						"fire rate bonus" 0.6	
+					}
+				}
+			}
+		}
+		WaveSpawn //WAVE 01b: [GIANT] 4 total, 3 active, Soldier (rapid fire)
+		{
+			Name "wave01b"
+			Where spawnbot
+			TotalCount 4
+			MaxActive 4
+			SpawnCount 1
+			WaitBeforeStarting 45
+			WaitBetweenSpawns 60
+			TotalCurrency 300		
+		
+			TFBot
+			{
+				Template T_TFBot_Giant_Soldier_Spammer
+				Tag lol
+			}
+		}
+		WaveSpawn //WAVE 01c: 40 total, 20 active, Heavy (crit) + uber medic + 3 Pyros (WAITFORALLDEAD "WAVE01A")
+		{
+			Name "wave01c"
+			Where spawnbot
+			TotalCount 40
+			MaxActive 20
+			SpawnCount 5
+			WaitForAllDead "wave01a"
+			WaitBeforeStarting 30
+			WaitBetweenSpawns 15
+			TotalCurrency 350		
+		
+			Squad
+			{
+				TFBot
+				{
+					Class Heavyweapons
+					Skill Easy
+					Attributes AlwaysCrit
+				}
+				TFBot
+				{
+					Template T_TFBot_Medic_QuickUber
+				}
+				TFBot
+				{
+					Class Pyro
+					Skill Easy
+				}
+				TFBot
+				{
+					Class Pyro
+					Skill Easy
+				}
+				TFBot
+				{
+					Class Pyro
+					Skill Easy
+				}
+			}
+		}
+		WaveSpawn //WAVE 01d: 40 total, 22 active, Scout (crit bats) (WAITTFORALLSPAWNED "WAVE01C")
+		{
+			Name "wave01d"
+			Where spawnbot
+			TotalCount 40
+			MaxActive 22
+			SpawnCount 8
+			WaitForAllSpawned "wave01c"
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0
+			TotalCurrency 350		
+		
+			TFBot
+			{
+				Class Scout
+				Skill Easy
+				WeaponRestrictions MeleeOnly
+				Attributes AlwaysCrit
+			}
+		}
+	}
+}

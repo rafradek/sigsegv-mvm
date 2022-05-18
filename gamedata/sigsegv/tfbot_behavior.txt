@@ -471,6 +471,11 @@
 					type "sym"
 					sym  "_ZNK15CTFBotMedicHeal16IsVisibleToEnemyEP6CTFBotRK6Vector"
 				}
+				"CTFBotAttack::Update"
+				{
+					type "sym"
+					sym  "_ZN12CTFBotAttack6UpdateEP6CTFBotf"
+				}
 				
 			}
 		}

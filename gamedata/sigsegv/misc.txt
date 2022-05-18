@@ -5765,6 +5765,52 @@
 					type "sym"
 					sym  "_ZNK6CTFBot21GetNextSpawnClassnameEv"
 				}
+				"CTFGameRules::RoundCleanupShouldIgnore"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules24RoundCleanupShouldIgnoreEP11CBaseEntity"
+				}
+				"CTFGameRules::ShouldCreateEntity"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules18ShouldCreateEntityEPKc"
+				}
+				"CServerGameClients::ClientPutInServer"
+				{
+					type "sym"
+					sym  "_ZN18CServerGameClients17ClientPutInServerEP7edict_tPKc"
+				}
+				"DispatchSpawn"
+				{
+					type "sym"
+					sym  "_Z13DispatchSpawnP11CBaseEntity"
+				}
+				"SendProxy_StringT_To_String"
+				{
+					type "sym"
+					sym  "_Z27SendProxy_StringT_To_StringPK8SendPropPKvS3_P8DVariantii"
+				}
+				"CBasePlayer::PlayerRunCommand"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
+				}
+				"CBaseEntity::FireNamedOutput"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity15FireNamedOutputEPKc9variant_tPS_S3_f"
+				}
+				"CBaseEntity::Event_Killed"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity12Event_KilledERK15CTakeDamageInfo"
+				}
+				"CBaseCombatCharacter::Event_Killed"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter12Event_KilledERK15CTakeDamageInfo"
+				}
+				
 				
 			}
 			"addrs_group"
