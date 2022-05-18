@@ -2437,7 +2437,7 @@ namespace Util::Lua
         bool bRetOK = (((IFileSystem *)filesystem)->ReadEx(buffer, bufSize, fileSize, f) != 0);
         
         if (bRetOK) {
-            int err = luaL_loadbuffer(l, buffer, bufSize, path);
+            int err = luaL_loadbuffer(l, buffer, fileSize, path);
             if (err) {
                 const char *errbuf = lua_tostring(l, -1);
                 SendWarningConsoleMessageToAdmins("%s\n", errbuf);

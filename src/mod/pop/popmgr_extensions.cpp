@@ -566,6 +566,13 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unique_ptr<ItemListEntry> entry;
 	};
 
+	struct DisallowUpgradeEntry
+	{
+		std::string name;
+		int max = 0;
+		std::vector<std::unique_ptr<ItemListEntry>> entries;
+	};
+
 	struct PopState
 	{
 		PopState() :
@@ -860,6 +867,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SpellBookNextRollTier.clear();
 
 			this->m_DisallowedUpgrades.clear();
+			this->m_DisallowedUpgradesExtra.clear();
 
 			for (auto &replace : this->m_ItemReplace) {
 				CEconItemView::Destroy(replace.item);
@@ -1087,6 +1095,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::unordered_map<CBaseEntity *, int> m_SpellBookNextRollTier;
 
 		std::vector<std::string> m_DisallowedUpgrades;
+		std::vector<DisallowUpgradeEntry> m_DisallowedUpgradesExtra;
 		std::vector<ItemReplace> m_ItemReplace;
 		std::vector<std::string> m_Description;
 		std::vector<ExtraLoadoutItem> m_ExtraLoadoutItems;
@@ -2942,6 +2951,39 @@ namespace Mod::Pop::PopMgr_Extensions
 						return;
 					}
 				}
+				for (auto &entry : state.m_DisallowedUpgradesExtra)
+				{
+					// Check name
+					bool nameMatch = strtol(entry.name.c_str(), nullptr, 0) == upgradeslot + 1 || FStrEq(upgradename, entry.name.c_str());
+					if (!nameMatch) continue;
+						
+					// Check upgrade level
+                    int cur_step;
+                    bool over_cap;
+                    int max_step = GetUpgradeStepData(player, itemslot, upgradeslot, cur_step, over_cap);
+
+					if (cur_step <= entry.max) continue;
+
+					// Check item match
+					auto item = GetEconEntityAtLoadoutSlot(player, itemslot);
+					bool foundMatch = true;
+					if (!entry.entries.empty()) {
+						foundMatch = false;
+						if (item != nullptr && item->GetItem() != nullptr) {
+							for(auto &entry : entry.entries) {
+								if (entry->Matches(item->GetClassname(), item->GetItem())) {
+									foundMatch = true;
+									break;
+								}
+							}
+						}
+					}
+					
+					if (foundMatch) {
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+						return;
+					}
+				}
 			}
 		}
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
@@ -4229,10 +4271,15 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DropCurrencyPack, int pack, int amount, bool forcedistribute, CTFPlayer *moneymaker )
 	{
 		int creditTeam = state.m_SetCreditTeam.Get();
+		if (creditTeam == 0) {
+			creditTeam = TF_TEAM_RED;
+		}
+
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
-		if (moneymaker != nullptr && moneymaker != nullptr && moneymaker->IsBot() && ((creditTeam == 0 && moneymaker->GetTeamNumber() == TF_TEAM_BLUE) || (creditTeam != 0 && moneymaker->GetTeamNumber() != creditTeam))) {
-			forcedistribute = false;
-			moneymaker = nullptr;
+		if (moneymaker != nullptr && TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() > 0 && moneymaker->IsBot() && (creditTeam != 0 && moneymaker->GetTeamNumber() != creditTeam)) {
+			// forcedistribute = false;
+			// The moneymaker must be on the team that collects credits. If not, just find a random player on credit team
+			moneymaker = TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
 		}
 
 		DETOUR_MEMBER_CALL(CTFPlayer_DropCurrencyPack)(pack, amount, forcedistribute, moneymaker);
@@ -4492,6 +4539,28 @@ namespace Mod::Pop::PopMgr_Extensions
 //	{
 //		DETOUR_MEMBER_CALL(CPopulationManager_PostInitialize)();
 //	}
+	
+	void Parse_DisallowedUpgrade(KeyValues *kv) {
+		if (kv->GetFirstSubKey() == nullptr) {
+			state.m_DisallowedUpgrades.push_back(kv->GetString());
+		}
+		else {
+			DisallowUpgradeEntry &entry = state.m_DisallowedUpgradesExtra.emplace_back();
+			FOR_EACH_SUBKEY(kv, subkey) {
+				if (FStrEq(subkey->GetName(), "Upgrade")) {
+					entry.name = subkey->GetString();
+				}
+				else if (FStrEq(subkey->GetName(), "MaxLevel")) {
+					entry.max = subkey->GetInt();
+				}
+				else {
+					auto itemEntry = Parse_ItemListEntry(subkey,"DisallowedUpgrade", false);
+					if (itemEntry != nullptr)
+						entry.entries.push_back(std::move(itemEntry));
+				}
+			}
+		}
+	}
 	
 	PlayerPointTemplateInfo Parse_PlayerSpawnTemplate(KeyValues *kv) {
 		PlayerPointTemplateInfo info;
@@ -5845,7 +5914,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "SpellBookRareRoll")) {
 				Parse_SpellBookRoll(subkey, state.m_SpellBookRareRoll);
 			} else if (FStrEq(name, "DisallowUpgrade")) {
-				state.m_DisallowedUpgrades.push_back(subkey->GetString());
+				Parse_DisallowedUpgrade(subkey);
 			} else if (FStrEq(name, "Description")) {
 				state.m_Description.push_back(subkey->GetString());
 			} else if (FStrEq(name, "NoThrillerTaunt")) {
