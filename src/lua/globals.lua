@@ -658,16 +658,16 @@ LOADOUT_POSITION_TAUNT8 = 18
 ----------------
 -- Entity callbacks
 ----------------
-ON_REMOVE = 0
-ON_SPAWN = 1
-ON_ACTIVATE = 2
-ON_DAMAGE_RECEIVED_PRE = 3
-ON_DAMAGE_RECEIVED_POST = 4
-ON_INPUT = 5
-ON_OUTPUT = 6
-ON_KEY_PRESSED = 7
-ON_KEY_RELEASED = 8
-ON_DEATH = 9
+ON_REMOVE = 0               -- Callback function parameters: entity
+ON_SPAWN = 1                -- Callback function parameters: entity
+ON_ACTIVATE = 2             -- Callback function parameters: entity
+ON_DAMAGE_RECEIVED_PRE = 3  -- Callback function parameters: entity, damageinfo. Return true to apply changes made in damageinfo table 
+ON_DAMAGE_RECEIVED_POST = 4 -- Callback function parameters: entity, damageinfo
+ON_INPUT = 5                -- Callback function parameters: entity, inputName, value, activator, caller. Return true to stop entity from processing the input
+ON_OUTPUT = 6               -- Callback function parameters: entity, outputName, value, activator. Return true to stop entity from processing the output
+ON_KEY_PRESSED = 7          -- Callback function parameters: entity, key
+ON_KEY_RELEASED = 8         -- Callback function parameters: entity, key
+ON_DEATH = 9                -- Callback function parameters: entity
 
 function table.ForEach(tab, funcname)
 
