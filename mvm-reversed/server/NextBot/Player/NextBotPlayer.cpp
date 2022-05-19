@@ -519,3 +519,4 @@ template<class T> T *NextBotCreatePlayerBot(const char *name, bool fakeclient)
 	
 	return bot;
 }
+
