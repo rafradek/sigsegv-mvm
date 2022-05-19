@@ -344,7 +344,7 @@ function timer.Simple(delay, func) end
 
 --Creates a timer that calls the function after delay, with repeat count, and paramater
 ---@param delay number Delay in seconds before firing the function
----@param func function Function to call. If param is set, calls the function with a sigle provided value
+---@param func function Function to call. If param is set, calls the function with a sigle provided value. Return false to stop the repeaiting timer
 ---@param repeats? number = 1. Number of timer repeats. 0 = Infinite
 ---@param param? any Parameter to pass to the function
 ---@return number id #id that can be used to stop the timer with `timer.Stop`

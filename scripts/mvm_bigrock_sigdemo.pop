@@ -150,6 +150,7 @@ WaveSchedule
 	{
 		Upgrade	"damage bonus" // Upgrade name
 		MaxLevel 2 // Maximum allowed level
+		CheckAllSlots 1 // Disallow if the player has the matching items equipped
 		ItemName "TF_WEAPON_ROCKETLAUNCHER" // Apply upgrade restrictions only to those items if specified
 		ClassName "tf_weapon_smg"
 	}

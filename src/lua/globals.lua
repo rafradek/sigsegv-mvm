@@ -668,6 +668,9 @@ ON_OUTPUT = 6               -- Callback function parameters: entity, outputName,
 ON_KEY_PRESSED = 7          -- Callback function parameters: entity, key
 ON_KEY_RELEASED = 8         -- Callback function parameters: entity, key
 ON_DEATH = 9                -- Callback function parameters: entity
+ON_EQUIP_ITEM = 10          -- Callback function parameters: entity, weapon. Return false to prevent equipping the weapon
+ON_DEPLOY_WEAPON = 11       -- Callback function parameters: entity, oldWeapon, newWeapon. Return false to stop deploy
+ON_PROVIDE_ITEMS = 12       -- Callback function parameters: entity
 
 function table.ForEach(tab, funcname)
 
@@ -712,8 +715,31 @@ function table.GetKeys(tab)
 	return keys
 end
 
-function PrintTable(t, indent, done)
+--Prints an array of strings, should be used as a function inside timer.Create
+function PrintDelay(t)
+    --Initialize print index
+    t.printIndex = t.printIndex or 1;
+
+    for i= 0, 5 do
+        print(t[t.printIndex])
+        t.printIndex = t.printIndex + 1;
+        if t.printIndex > #t then
+            return false
+        end
+    end
+end
+
+--Prints table to console. The optional paramaters should be ignored
+---@param t table The table to print
+---@param indent? number
+---@param done? table
+---@param output? table
+function PrintTable(t, indent, done, output)
     done = done or {}
+    if output == nil then
+        output = output or {}
+        timer.Create(0, PrintDelay, 0, output);
+    end
     indent = indent or 0
     local keys = table.GetKeys(t)
     local keysize = 0;
@@ -736,11 +762,11 @@ function PrintTable(t, indent, done)
 
         if  (type(value) == "table" and not done[value] ) then
             done[value] = true
-            print(line..key..":")
-            PrintTable(value, indent + 1, done)
+            table.insert(output, line..key..":");
+            PrintTable(value, indent + 1, done, output)
             done[value] = nil
         else
-            print(line..key..string.rep(" ", keysize - #tostring(key) + 1).."=\t"..tostring(value))
+            table.insert(output, line..key..string.rep(" ", keysize - #tostring(key) + 1).."=\t"..tostring(value))
         end
     end
 end

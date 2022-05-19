@@ -726,6 +726,9 @@ namespace Util::Lua
         ON_KEY_PRESSED,
         ON_KEY_RELEASED,
         ON_DEATH,
+        ON_EQUIP_ITEM,
+        ON_DEPLOY_WEAPON,
+        ON_PROVIDE_ITEMS,
         CALLBACK_TYPE_COUNT
     };
 
@@ -2933,6 +2936,83 @@ namespace Util::Lua
 
 	}
     
+    bool CheckDeploy(CallbackType type, CBaseEntity *player, CBaseEntity *entity)
+    {
+        auto mod = player->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod != nullptr) {
+            bool give = true;
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                LEntityAlloc(state->GetState(),entity);
+            };
+            std::function<void(LuaState *)> funcReturn = [&](LuaState *state){
+                give = lua_isnil(state->GetState(), -1) || lua_toboolean(state->GetState(), -1);
+            };
+            mod->FireCallback(type, &func, 1, &funcReturn, 1);
+            return give;
+        }
+        return true;
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
+	{
+		auto entity = reinterpret_cast<CBaseCombatWeapon *>(this);
+        if (!CheckDeploy(ON_EQUIP_ITEM, owner, entity)) return;
+        
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *owner)
+	{
+		auto entity = reinterpret_cast<CTFWearable *>(this);
+        if (!CheckDeploy(ON_EQUIP_ITEM, owner, entity)) return;
+        
+		DETOUR_MEMBER_CALL(CTFWearable_Equip)(owner);
+	}
+
+    DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *newWeapon)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+
+        auto mod = wep->GetOwnerEntity()->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod != nullptr) {
+            bool give = true;
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                LEntityAlloc(state->GetState(),wep);
+                LEntityAlloc(state->GetState(),newWeapon);
+            };
+            std::function<void(LuaState *)> funcReturn = [&](LuaState *state){
+                give = lua_isnil(state->GetState(), -1) || lua_toboolean(state->GetState(), -1);
+            };
+            mod->FireCallback(ON_DEPLOY_WEAPON, &func, 2, &funcReturn, 1);
+            if (!give) return false;
+        }
+		
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(newWeapon);
+	}
+
+    class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
+	{
+	public:
+
+		CTFPlayer *player = nullptr;
+		virtual void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+		{
+			if (pFilter->GetRecipientCount() > 0) {
+				int id = pFilter->GetRecipientIndex(0);
+				player = ToTFPlayer(UTIL_PlayerByIndex(id));
+			}
+		}
+		virtual void OnPostUserMessage(int msg_id, bool sent)
+		{
+			if (sent && player != nullptr) {
+                auto mod = player->GetEntityModule<LuaEntityModule>("luaentity");
+                if (mod != nullptr) {
+                    mod->FireCallback(ON_PROVIDE_ITEMS);
+                }
+			}
+		}
+	};
+
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2951,6 +3031,9 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_Event_Killed, "CBaseEntity::Event_Killed");
             MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Event_Killed, "CBaseCombatCharacter::Event_Killed");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
+            MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
+            MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
             
         }
 		
@@ -2966,7 +3049,14 @@ namespace Util::Lua
         virtual void OnEnable() override
 		{
             sendproxies = gamedll->GetStandardSendProxies();
+            
+			usermsgs->HookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
         }
+
+		virtual void OnDisable() override
+		{
+			usermsgs->UnhookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
+		}
 
         virtual void LevelInitPreEntity() override
         { 
@@ -3008,6 +3098,8 @@ namespace Util::Lua
                 }
             }
 		}
+        
+		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
 	CMod s_Mod;
 }

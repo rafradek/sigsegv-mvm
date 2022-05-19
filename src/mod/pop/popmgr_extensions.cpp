@@ -571,6 +571,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::string name;
 		int max = 0;
 		std::vector<std::unique_ptr<ItemListEntry>> entries;
+		bool checkAllSlots = false;
 	};
 
 	struct PopState
@@ -1807,8 +1808,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		// Delete refundable custom weapons from player inventory
 		if (remove && !state.m_BoughtLoadoutItems.empty()) {
-			auto playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
-			auto playerItemsSelected = state.m_SelectedLoadoutItems[player];
+			auto &playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
+			auto &playerItemsSelected = state.m_SelectedLoadoutItems[player];
 			for (auto it = playerItems.begin(); it != playerItems.end();) {
 				int id = *it;
 				if (state.m_ExtraLoadoutItems[id].allow_refund) {
@@ -2016,6 +2017,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		
+		if (rc_CTFGameRules_ctor <= 0 && newState == GR_STATE_BETWEEN_RNDS) {
+			if (state.m_ScriptManager != nullptr) {
+				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+				if (scriptManager != nullptr && scriptManager->CheckGlobal("OnWaveInit")) {
+					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+					scriptManager->Call(1, 0);
+				}
+			}
+		}
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
 
 		if (startBonusTimer) {
@@ -2034,11 +2044,6 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (state.m_ScriptManager != nullptr) {
 			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-
-			if (scriptManager->CheckGlobal("OnWaveInit")) {
-				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
-				scriptManager->Call(1, 0);
-			}
 
 			if (scriptManager->CheckGlobal(success ? "OnWaveSuccess" : "OnWaveFail")) {
 				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
@@ -2962,25 +2967,44 @@ namespace Mod::Pop::PopMgr_Extensions
                     bool over_cap;
                     int max_step = GetUpgradeStepData(player, itemslot, upgradeslot, cur_step, over_cap);
 
-					if (cur_step <= entry.max) continue;
+					if (cur_step < entry.max) continue;
 
 					// Check item match
-					auto item = GetEconEntityAtLoadoutSlot(player, itemslot);
 					bool foundMatch = true;
+					CEconItemView *incompatibleItem = nullptr;
 					if (!entry.entries.empty()) {
 						foundMatch = false;
-						if (item != nullptr && item->GetItem() != nullptr) {
-							for(auto &entry : entry.entries) {
-								if (entry->Matches(item->GetClassname(), item->GetItem())) {
-									foundMatch = true;
-									break;
+						if (entry.checkAllSlots) {
+							ForEachTFPlayerEconEntity(player, [&](CEconEntity *item){
+								if (item != nullptr && item->GetItem() != nullptr) {
+									for(auto &entry : entry.entries) {
+										if (entry->Matches(item->GetClassname(), item->GetItem())) {
+											foundMatch = true;
+											incompatibleItem = item->GetItem();
+											return false;
+										}
+									}
+								}
+								return true;
+							});
+							
+						}
+						else {
+							auto item = GetEconEntityAtLoadoutSlot(player, itemslot);
+							if (item != nullptr && item->GetItem() != nullptr) {
+								for(auto &entry : entry.entries) {
+									if (entry->Matches(item->GetClassname(), item->GetItem())) {
+										foundMatch = true;
+										break;
+									}
 								}
 							}
 						}
 					}
 					
 					if (foundMatch) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission", entry.max != 0 ? "more ": "", upgradename));
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission\n%s%s", entry.max != 0 ? "more ": "", upgradename, 
+						incompatibleItem != nullptr ? GetItemNameForDisplay(incompatibleItem) : "", incompatibleItem != nullptr ? " blocks this upgrade" : ""));
 						return;
 					}
 				}
@@ -4552,6 +4576,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 				else if (FStrEq(subkey->GetName(), "MaxLevel")) {
 					entry.max = subkey->GetInt();
+				}
+				else if (FStrEq(subkey->GetName(), "CheckAllSlots")) {
+					entry.checkAllSlots = subkey->GetInt();
 				}
 				else {
 					auto itemEntry = Parse_ItemListEntry(subkey,"DisallowedUpgrade", false);
