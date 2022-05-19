@@ -146,6 +146,13 @@ WaveSchedule
 	HHHNonSolidToPlayers 1 [$SIGSEGV] // (default: 0)
 
 	DisallowUpgrade	"fire rate bonus" [$SIGSEGV] // Disallow upgrade. You can use the position on the upgrade list instead, starting from 1
+	DisallowUpgrade	[$SIGSEGV] //Advanced syntax
+	{
+		Upgrade	"damage bonus" // Upgrade name
+		MaxLevel 2 // Maximum allowed level
+		ItemName "TF_WEAPON_ROCKETLAUNCHER" // Apply upgrade restrictions only to those items if specified
+		ClassName "tf_weapon_smg"
+	}
 
 	SpellBookNormalRoll [$SIGSEGV] // Override spell roll. The value specifies how many spell charges to give. You can duplicate spells to increase their roll chance
 	{
@@ -2974,3 +2981,9 @@ WaveSchedule
 
 // Ducking speed multiplier. 3 is for walking speed. Cannot be faster than walking speed
 // "mult duck speed" 3
+
+// RGB color for projectile particles that support it (bison)
+// "particle color rgb" 765776
+
+// Cycles colors for the projectile particle. Higher values cycle faster
+// "particle color rainbow" 100
