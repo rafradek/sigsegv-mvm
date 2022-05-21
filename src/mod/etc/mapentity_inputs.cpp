@@ -375,6 +375,14 @@ namespace Mod::Etc::Mapentity_Additions
 
     }
 
+    inline CBaseEntity *FindTargetFromVariant(variant_t &Value, CBaseEntity *ent, CBaseEntity *pActivator, CBaseEntity *pCaller)
+    {
+        if (Value.FieldType() == FIELD_EHANDLE || Value.FieldType() == FIELD_CLASSPTR) {
+            return Value.Entity().Get();
+        }
+        return servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+    }
+
     void ScriptModule::TimerAdded() {
         THINK_FUNC_SET(owner, ScriptModuleTick, gpGlobals->curtime);
     }
@@ -736,11 +744,13 @@ namespace Mod::Etc::Mapentity_Additions
             
             if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return;
             
-            const char *str = Value.String();
-            int index = strtol(str, nullptr, 10);
-            for (size_t i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
-                if (FStrEq(str, SPELL_TYPE[i])) {
-                    index = i;
+            int index = Value.Int();
+            if (Value.FieldType() == FIELD_STRING) {
+                const char *str = Value.String();
+                for (size_t i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                    if (FStrEq(str, SPELL_TYPE[i])) {
+                        index = i;
+                    }
                 }
             }
 
@@ -755,11 +765,13 @@ namespace Mod::Etc::Mapentity_Additions
             
             if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) return;
             
-            const char *str = Value.String();
-            int index = strtol(str, nullptr, 10);
-            for (size_t i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
-                if (FStrEq(str, SPELL_TYPE[i])) {
-                    index = i;
+            int index = Value.Int();
+            if (Value.FieldType() == FIELD_STRING) {
+                const char *str = Value.String();
+                for (size_t i = 0; i < ARRAYSIZE(SPELL_TYPE); i++) {
+                    if (FStrEq(str, SPELL_TYPE[i])) {
+                        index = i;
+                    }
                 }
             }
 
@@ -1317,7 +1329,7 @@ namespace Mod::Etc::Mapentity_Additions
     });
     ClassnameFilter prop_vehicle_driveable_filter("prop_vehicle_driveable", {
         {"EnterVehicle"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            auto target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+            auto target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             auto vehicle = rtti_cast<CPropVehicleDriveable *>(ent);
             if (ToTFPlayer(target) != nullptr && vehicle != nullptr) {
                 
@@ -1602,7 +1614,7 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }},
         {"SetOwner"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            auto owner = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             if (owner != nullptr) {
                 ent->SetOwnerEntity(owner);
             }
@@ -1613,13 +1625,13 @@ namespace Mod::Etc::Mapentity_Additions
             ent->m_OnUser1->FireOutput(variant, pActivator, ent);
         }},
         {"InheritOwner"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            auto owner = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             if (owner != nullptr) {
                 ent->SetOwnerEntity(owner->GetOwnerEntity());
             }
         }},
         {"InheritParent"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            auto owner = servertools->FindEntityByName(nullptr, Value.String(), ent, pActivator, pCaller);
+            auto owner = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             if (owner != nullptr) {
                 ent->SetParent(owner->GetMoveParent(), -1);
             }
@@ -1708,7 +1720,7 @@ namespace Mod::Etc::Mapentity_Additions
         {"RotateTowards"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto rotating = rtti_cast<CFuncRotating *>(ent);
             if (rotating != nullptr) {
-                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
                 if (target != nullptr) {
                     auto data = GetExtraFuncRotatingData(rotating);
                     data->m_hRotateTarget = target;
@@ -1720,7 +1732,7 @@ namespace Mod::Etc::Mapentity_Additions
             }
             auto data = ent->GetEntityModule<RotatorModule>("rotator");
             if (data != nullptr) {
-                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
                 if (target != nullptr) {
                     data->m_hRotateTarget = target;
 
@@ -1751,7 +1763,7 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }},
         {"FaceEntity"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+            CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             if (target != nullptr) {
                 Vector delta = target->GetAbsOrigin() - ent->GetAbsOrigin();
                 
@@ -1766,7 +1778,7 @@ namespace Mod::Etc::Mapentity_Additions
         {"SetFakeParent"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
             if (data != nullptr) {
-                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
                 if (target != nullptr) {
                     data->m_hParent = target;
                     data->m_bParentSet = true;
@@ -1780,7 +1792,7 @@ namespace Mod::Etc::Mapentity_Additions
             
             auto data = ent->GetEntityModule<AimFollowModule>("aimfollow");
             if (data != nullptr) {
-                CBaseEntity *target = servertools->FindEntityGeneric(nullptr, Value.String(), ent, pActivator, pCaller);
+                CBaseEntity *target =  FindTargetFromVariant(Value, ent, pActivator, pCaller);
                 if (target != nullptr) {
                     data->m_hParent = target;
                     if (ent->GetNextThink("AimFollowModuleTick") < gpGlobals->curtime) {
@@ -1866,13 +1878,11 @@ namespace Mod::Etc::Mapentity_Additions
             g_EventQueue.GetRef().CancelEvents(ent);
         }},
         {"SetCollisionFilter"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            Msg("Input\n");
             if (Value.FieldType() == FIELD_EHANDLE ) {
                 ent->SetCustomVariable("colfilter", Value);
             }
             else {
                 variant_t variant;
-                Msg("Set collision filter %d\n", servertools->FindEntityByName(nullptr, Value.String()));
                 variant.SetEntity(servertools->FindEntityByName(nullptr, Value.String()));
                 ent->SetCustomVariable("colfilter", variant);
             }

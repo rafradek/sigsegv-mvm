@@ -73,6 +73,10 @@ WaveSchedule
 			end)
 			player:AddCallback(ON_DEATH, function(ent, damage) print('Player death '..tostring(ent));
 			end)
+			player:AddCallback(ON_TOUCH, function(ent, other, pos, normal) print('Player touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
+			player:AddCallback(ON_START_TOUCH, function(ent, other, pos, normal) print('Player start touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
+			player:AddCallback(ON_END_TOUCH, function(ent, other, pos, normal) print('Player end touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
+			player:AddCallback(ON_SHOULD_COLLIDE, function(ent, other) print('Player collide '..tostring(ent)..' '..tostring(other)) end)
 		end
 
 		-- Called when a player or bot leaves the game

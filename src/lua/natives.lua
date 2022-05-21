@@ -2,7 +2,7 @@
 ---@field x number
 ---@field y number
 ---@field z number
-local vector = {}
+local CVector = {}
 
 -- Creates a vector with set x, y, z coordinates
 ---@param x number
@@ -12,48 +12,48 @@ local vector = {}
 function Vector(x, y, z) end
 
 ---@return Vector
-function vector:Normalize() end
+function CVector:Normalize() end
 
 ---@return number
-function vector:Length() end
-
----@param other Vector
----@return number
-function vector:Distance(other) end
+function CVector:Length() end
 
 ---@param other Vector
 ---@return number
-function vector:Dot(other) end
+function CVector:Distance(other) end
+
+---@param other Vector
+---@return number
+function CVector:Dot(other) end
 
 ---@param other Vector
 ---@return Vector
-function vector:Cross(other) end
+function CVector:Cross(other) end
 
 ---@param angle Vector
 ---@return Vector
-function vector:Rotate(angle) end
+function CVector:Rotate(angle) end
 
 ---@return Vector
-function vector:ToAngles() end
+function CVector:ToAngles() end
 
 ---@return Vector
-function vector:GetForward() end
+function CVector:GetForward() end
 
 ---@return Vector, Vector, Vector
-function vector:GetAngleVectors() end
+function CVector:GetAngleVectors() end
 
 ---@param vector Vector
 ---@return nil
-function vector:Copy(vector) end
+function CVector:Copy(vector) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return nil
-function vector:CopyUnpacked(x, y, z) end
+function CVector:CopyUnpacked(x, y, z) end
 
 ---@class Entity
-local entity = {}
+local CEntity = {}
 
 --Creates an entity with specified classname
 --Alternatively, if classname is a number, returns an entity with handle/network index if it exists
@@ -70,76 +70,79 @@ function Entity(classname, spawn, activate) end
 function IsValid(value) end
 
 ---@return boolean
-function entity:IsValid() end
+function CEntity:IsValid() end
 
 ---@return number handleId
-function entity:GetHandleIndex() end
+function CEntity:GetHandleIndex() end
 
 ---@return number networkId
-function entity:GetNetworkIndex() end
+function CEntity:GetNetworkIndex() end
 
 ---@return nil
-function entity:Spawn() end
+function CEntity:Spawn() end
 
 ---@return nil
-function entity:Activate() end
+function CEntity:Activate() end
 
 ---@return nil
-function entity:Remove() end
+function CEntity:Remove() end
 
 -- Returns targetname of the entity
 ---@return string
-function entity:GetName() end
+function CEntity:GetName() end
 
 -- Set targetname of the entity
 ---@param name string
 ---@return nil
-function entity:SetName(name) end
+function CEntity:SetName(name) end
 
 ---@return string
-function entity:GetPlayerName() end
+function CEntity:GetPlayerName() end
 
 ---@return boolean
-function entity:IsAlive() end
+function CEntity:IsAlive() end
 
 ---@return boolean # `true` if the entity is a player (real or bot)
-function entity:IsPlayer() end
+function CEntity:IsPlayer() end
 
 ---@return boolean # `true` if the entity has AI but is not a player bot. Engineer buildings are not NPC
-function entity:IsNPC() end
+function CEntity:IsNPC() end
 
 ---@return boolean # `true` if the entity is a player bot, `false` otherwise. Returns `false` if entity is SourceTV bot
-function entity:IsBot() end
+function CEntity:IsBot() end
 
 ---@return boolean # `true` if the entity is a real player, and not a bot, `false` otherwise
-function entity:IsRealPlayer() end
+function CEntity:IsRealPlayer() end
 
 ---@return boolean
-function entity:IsWeapon() end
+function CEntity:IsWeapon() end
 
 ---@return boolean # `true` if the entity is an Engineer building or sapper, `false` otherwise
-function entity:IsObject() end
+function CEntity:IsObject() end
 
 ---@return boolean # `true` if the entity is an NPC, player or a building, `false` otherwise
-function entity:IsCombatCharacter() end
+function CEntity:IsCombatCharacter() end
 
 ---@return boolean # `true` if the entity is a player cosmetic item, `false` otherwise
-function entity:IsWearable() end
+function CEntity:IsWearable() end
+
+---@return boolean # `true` if the entity is the world entity, `false` otherwise
+function CEntity:IsWorld() end
 
 ---@return string
-function entity:GetClassname() end
+function CEntity:GetClassname() end
 
 --Adds callback function for a specific action, check ON_* globals for more info
 ---@param type number Action to use, check ON_* globals
 ---@param func function Callback function. Function parameters depend on the callback type
 ---@return number id Can be used to remove a callback with `RemoveCallback` function
-function entity:AddCallback(type, func) end
+function CEntity:AddCallback(type, func) end
 
 --Removes callback added with `AddCallback` function
 ---@param type number Action to use, check ON_* globals
 ---@param id number Callback id
 ---@return nil
-function entity:RemoveCallback(type, id) end
+function CEntity:RemoveCallback(type, id) end
 
 --Fires an entity input
 ---@param name string Name of the input
@@ -147,67 +150,73 @@ function entity:RemoveCallback(type, id) end
 ---@param activator? Entity The activator entity
 ---@param caller? Entity The caller entity
 ---@return boolean `true` if the input exists and was called successfully, `false` otherwise
-function entity:AcceptInput(name, value, activator, caller) end
+function CEntity:AcceptInput(name, value, activator, caller) end
 
 --Returns player item in a slot number
 ---@param slot number Slot number, check LOADOUT_POSITION_* globals
 ---@return Entity 
 ---@return nil #No item found in the specified slot
-function entity:GetPlayerItemBySlot(slot) end
+function CEntity:GetPlayerItemBySlot(slot) end
 
 --Returns player item by name
 ---@param name string Item definition name
 ---@return Entity
 ---@return nil #No item found with the specified name
-function entity:GetPlayerItemByName(name) end
+function CEntity:GetPlayerItemByName(name) end
 
 --Returns item or player attribute value
 ---@param name string Attribute definition name
 ---@return string|number|nil value Value of the attribute
-function entity:GetAttributeValue(name) end
+function CEntity:GetAttributeValue(name) end
 
 --Sets item or player attribute value. Value of nil removes the attribute
 ---@param name string Attribute definition name
 ---@param value string|number|nil Attribute value
 ---@return nil
-function entity:SetAttributeValue(name, value) end
+function CEntity:SetAttributeValue(name, value) end
 
 --Returns a table of all properties (datamap, sendprop, custom) as keys and their values.
 --The table is read only, changes must be written to the entity variable itself
 ---@return table
-function entity:DumpProperties() end
+function CEntity:DumpProperties() end
 
 --Returns a table containing all inputs of the entity.
 --The inputs can be called directly as functions. Example: `ent:FireUser1(value,activator,caller)`
 ---@return table
-function entity:DumpInputs() end
+function CEntity:DumpInputs() end
 
 --Deal damage to the entity
 ---@param damageInfo TakeDamageInfo See DefaultTakeDamageInfo
 ---@return number damageDealt Damage dealt to the entity
-function entity:TakeDamage(damageInfo) end
+function CEntity:TakeDamage(damageInfo) end
+
+--Add health to the entity
+---@param amount number
+---@param overheal? boolean
+---@return number damageDealt Damage dealt to the entity
+function CEntity:AddHealth(amount, overheal) end
 
 --Add condition to player. Check TF_COND_* globals for the list of conditions
 ---@param condition number
 ---@param duration? number #Optional duration in seconds
 ---@param provider? Entity #Optional player that caused the condition
 ---@return nil
-function entity:AddCond(condition, duration, provider) end
+function CEntity:AddCond(condition, duration, provider) end
 
 --Remove condition from player. Check TF_COND_* globals for the list of conditions
 ---@param condition number
 ---@return nil
-function entity:RemoveCond(condition) end
+function CEntity:RemoveCond(condition) end
 
 --Check if player has the condition applied. Check TF_COND_* globals for the list of conditions
 ---@param condition number
 ---@return boolean
-function entity:InCond(condition) end
+function CEntity:InCond(condition) end
 
 --Get player that provided the condition. Check TF_COND_* globals for the list of conditions
 ---@param condition number
 ---@return boolean
-function entity:GetConditionProvider(condition) end
+function CEntity:GetConditionProvider(condition) end
 
 --Stun a player, slowing him down and/or making him unable to attack. Check TF_STUNFLAG_* globals
 ---@param duration number How long should the stun last in seconds
@@ -215,28 +224,28 @@ function entity:GetConditionProvider(condition) end
 ---@param flags number Stun flags to set
 ---@param stunner? Entity Optional player that caused the stun
 ---@return boolean
-function entity:StunPlayer(duration, amount, flags, stunner) end
+function CEntity:StunPlayer(duration, amount, flags, stunner) end
 
 ---@return Vector
-function entity:GetAbsOrigin() end
+function CEntity:GetAbsOrigin() end
 
 ---@param vec Vector
 ---@return nil
-function entity:SetAbsOrigin(vec) end
+function CEntity:SetAbsOrigin(vec) end
 
 ---@return Vector
-function entity:GetAbsAngles() end
+function CEntity:GetAbsAngles() end
 
 ---@param angles Vector
 ---@return nil
-function entity:SetAbsAngles(angles) end
+function CEntity:SetAbsAngles(angles) end
 
 --Teleports entity to a location, optionally also sets angles and velocity
 ---@param pos Vector|nil
 ---@param angles? Vector|nil
 ---@param velocity? Vector|nil
 ---@return nil
-function entity:Teleport(pos, angles, velocity) end
+function CEntity:Teleport(pos, angles, velocity) end
 
 --Creates an item. The item will be given to the player
 ---@param name string
@@ -244,7 +253,7 @@ function entity:Teleport(pos, angles, velocity) end
 ---@param noRemove? boolean = false. Do not remove previous item in the slot.
 ---@param forceGive? boolean = true. Forcibly give an item even if the player class does not match.
 ---@return Entity|nil item The created item or nil on failure
-function entity:GiveItem(name, attrs, noRemove, forceGive) end
+function CEntity:GiveItem(name, attrs, noRemove, forceGive) end
 
 --Fire entity output by name
 ---@param name string
@@ -252,60 +261,140 @@ function entity:GiveItem(name, attrs, noRemove, forceGive) end
 ---@param activator? Entity
 ---@param delay? number
 ---@return nil
-function entity:FireOutput(name, value, activator, delay) end
+function CEntity:FireOutput(name, value, activator, delay) end
 
 --Set fake send prop value. This value is only seen by clients, not the server
 ---@param name string
 ---@param value any
 ---@return nil
-function entity:SetFakeSendProp(name, value) end
+function CEntity:SetFakeSendProp(name, value) end
 
 --Reset fake send prop value. This value is only seen by clients, not the server
 ---@param name string
 ---@return nil
-function entity:ResetFakeSendProp(name) end
+function CEntity:ResetFakeSendProp(name) end
 
 --Get fake send prop value. This value is only seen by clients, not the server
 ---@param name string
 ---@return any
-function entity:GetFakeSendProp(name) end
+function CEntity:GetFakeSendProp(name) end
 
 --Add effects to an entity. Check EF_* globals
 ---@param effect number
 ---@return nil
-function entity:AddEffects(effect) end
+function CEntity:AddEffects(effect) end
 
 --Remove effects from an entity. Check EF_* globals
 ---@param effect number
 ---@return nil
-function entity:RemoveEffects(effect) end
+function CEntity:RemoveEffects(effect) end
 
 --Returns if effect is active. Check EF_* globals
 ---@param effect number
 ---@return boolean
-function entity:IsEffectActive(effect) end
+function CEntity:IsEffectActive(effect) end
 
 --Prints message to player.
 ---@param printTarget number See PRINT_TARGET_* globals
 ---@vararg any
 ---@return nil
-function entity:PrintTo(printTarget, ...) end
+function CEntity:PrintTo(printTarget, ...) end
 
 --Prints message to player
 ---@param params ShowHUDTextParams Table containing params. See DefaultHudTextParams global
 ---@vararg any
 ---@return nil
-function entity:ShowHudText(params, ...) end
+function CEntity:ShowHudText(params, ...) end
 
 --Displays menu to player
 ---@param menu Menu See DefaultMenu globals
 ---@return nil
-function entity:DisplayMenu(menu) end
+function CEntity:DisplayMenu(menu) end
 
 --Hide current menu from the player
 ---@return nil
-function entity:HideMenu() end
+function CEntity:HideMenu() end
 
+----------------
+-- Entity inputs
+----------------
+
+function CEntity:FireUser1(_,activator, caller) end
+function CEntity:FireUser2(_,activator, caller) end
+function CEntity:FireUser3(_,activator, caller) end
+function CEntity:FireUser4(_,activator, caller) end
+
+function CEntity:FireUser5(value, activator, caller) end
+function CEntity:FireUser6(value, activator, caller) end
+function CEntity:FireUser7(value, activator, caller) end
+function CEntity:FireUser8(value, activator, caller) end
+
+function CEntity:FireUserAsActivator1(value, _, caller) end
+function CEntity:FireUserAsActivator2(value, _, caller) end
+function CEntity:FireUserAsActivator3(value, _, caller) end
+function CEntity:FireUserAsActivator4(value, _, caller) end
+
+function CEntity:SetModelOverride(value) end
+function CEntity:SetModel(value) end
+function CEntity:SetModelSpecial(value) end
+
+function CEntity:MoveType(value) end
+function CEntity:PlaySound(value) end
+function CEntity:StopSound(value) end
+
+function CEntity:SetLocalOrigin(value) end
+function CEntity:SetLocalAngles(value) end
+function CEntity:SetLocalVelocity(value) end
+function CEntity:SetForwardVelocity(value) end
+
+function CEntity:AddOutput(value) end
+function CEntity:RemoveOutput(value) end
+function CEntity:CancelPending() end
+
+function CEntity:SetCollisionFilter(value) end
+function CEntity:ClearFakeParent() end
+function CEntity:SetFakeParent(entity) end
+function CEntity:SetAimFollow(entity) end
+function CEntity:FaceEntity(entity) end
+function CEntity:RotateTowards(entity) end
+
+function CEntity:AddModule(name) end
+function CEntity:RemoveModule(name) end
+
+-------------
+-- Player inputs
+-------------
+
+function CEntity:SwitchClass(name) end
+function CEntity:SwitchClassInPlace(name) end
+function CEntity:ForceRespawn() end
+function CEntity:ForceRespawnDead() end
+function CEntity:Suicide() end
+function CEntity:ChangeAttributes(name) end
+function CEntity:RollCommonSpell() end
+function CEntity:RollRareSpell() end
+function CEntity:SetSpell(nameOrIndex) end
+function CEntity:AddSpell(nameOrIndex) end
+function CEntity:PlaySoundToSelf(name) end
+function CEntity:IgnitePlayerDuration(duration, igniter) end
+function CEntity:WeaponSwitchSlot(slot) end
+function CEntity:WeaponStripSlot(slot) end
+function CEntity:RemoveItem(name) end
+---@param slot? number Optional slot number
+function CEntity:DropItem(slot) end
+function CEntity:SetCurrency(currency) end
+function CEntity:AddCurrency(currency) end
+function CEntity:RemoveCurrency(currency) end
+function CEntity:RefillAmmo() end
+function CEntity:Regenerate() end
+function CEntity:BotCommand() end
+function CEntity:ResetInventory() end
+function CEntity:PlaySequence(name) end
+function CEntity:AwardExtraItem(name) end
+function CEntity:BleedDuration(duration) end
+-- For player only
+function CEntity:SetCustomModel(name) end
+function CEntity:SetHUDVisibility(visible) end
 
 ents = {}
 

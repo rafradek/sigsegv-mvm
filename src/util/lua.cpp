@@ -713,6 +713,13 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntityIsWorld(lua_State *l)
+    {
+        auto entity = LEntityGetOptional(l, 1);
+        lua_pushboolean(l, entity == GetWorldEntity());
+        return 1;
+    }
+
     int LEntityGetClassname(lua_State *l)
     {
         auto *handle = LEntityGetCheck(l, 1);
@@ -1575,6 +1582,16 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntityTakeHealth(lua_State *l)
+    {
+        CTakeDamageInfo info;
+        auto entity = LEntityGetNonNull(l, 1);
+        float amount = luaL_checknumber(l, 2);
+        bool overheal = lua_toboolean(l, 3);
+        entity->TakeHealth(amount, overheal ? DMG_IGNORE_MAXHEALTH : DMG_GENERIC);
+        return 1;
+    }
+
     int LEntityAddCond(lua_State *l)
     {
         auto player = LPlayerGetNonNull(l, 1);
@@ -1959,6 +1976,7 @@ namespace Util::Lua
     {
         auto player = LPlayerGetNonNull(l, 1);
         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player), false);
+        return 0;
     }
 
     int LFindEntityByName(lua_State *l)
@@ -2406,11 +2424,13 @@ namespace Util::Lua
         {"IsWeapon", LEntityIsWeapon},
         {"IsCombatCharacter", LEntityIsCombatCharacter},
         {"IsWearable", LEntityIsWearable},
+        {"IsWorld", LEntityIsWorld},
         {"AddCallback", LEntityAddCallback},
         {"RemoveCallback", LEntityRemoveCallback},
         {"DumpProperties", LEntityDumpProperties},
         {"DumpInputs", LEntityDumpInputs},
         {"TakeDamage", LEntityTakeDamage},
+        {"AddHealth", LEntityTakeHealth},
         {"AddCond", LEntityAddCond},
         {"RemoveCond", LEntityRemoveCond},
         {"InCond", LEntityInCond},

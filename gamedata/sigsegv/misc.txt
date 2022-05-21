@@ -5810,7 +5810,31 @@
 					type "sym"
 					sym  "_ZN20CBaseCombatCharacter12Event_KilledERK15CTakeDamageInfo"
 				}
-				
+				"CTraceFilterEntity::ShouldHitEntity"
+				{
+					type "sym"
+					sym  "_ZN18CTraceFilterEntity15ShouldHitEntityEP13IHandleEntityi"
+				}
+				"CBaseTrigger::StartTouch"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity"
+				}
+				"CBaseTrigger::EndTouch"
+				{
+					type "sym"
+					sym  "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity"
+				}
+				"CCollisionEvent::ShouldCollide"
+				{
+					type "sym"
+					sym  "_ZN15CCollisionEvent13ShouldCollideEP14IPhysicsObjectS1_PvS2_"
+				}
+				"CBasePlayer::Touch"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer5TouchEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"
