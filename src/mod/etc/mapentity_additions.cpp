@@ -28,6 +28,7 @@
 #include "util/vi.h"
 #include "util/expression_eval.h"
 #include "mod/etc/mapentity_additions.h"
+#include "stub/trace.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -1633,7 +1634,57 @@ namespace Mod::Etc::Mapentity_Additions
         
         return VHOOK_CALL(CMathCounter_Activate)();
     }
-    
+
+    bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
+        variant_t val;
+        if (entity1->GetCustomVariableVariant<"colfilter">(val)) {
+            auto filterEnt = static_cast<CBaseFilter *>(val.Entity().Get());
+            if (filterEnt != nullptr) {
+                result = filterEnt->PassesFilter(entity1, entity2);
+                return true;
+            }
+        }
+        else if (entity2->GetCustomVariableVariant<"colfilter">(val)) {
+            auto filterEnt = static_cast<CBaseFilter *>(val.Entity().Get());
+            if (filterEnt != nullptr) {
+                result = filterEnt->PassesFilter(entity2, entity1);
+                return true;
+            }
+        }
+        return false;
+    }
+    DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
+	{
+        auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
+        {
+            if (ret) {
+                auto entity1 = (CBaseEntity*) ent1;
+                auto entity2 = (CBaseEntity*) ent2;
+                
+                bool result;
+                if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
+                {
+                    return result;
+                }
+            }
+        }
+        return ret;
+    }
+
+    DETOUR_DECL_MEMBER(int, CCollisionEvent_ShouldCollide, IPhysicsObject *pObj0, IPhysicsObject *pObj1, void *pGameData0, void *pGameData1)
+	{
+        {
+            CBaseEntity *entity1 = static_cast<CBaseEntity *>(pGameData0);
+            CBaseEntity *entity2 = static_cast<CBaseEntity *>(pGameData1);
+
+            bool result;
+            if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
+            {
+                return result;
+            }
+        }
+        return DETOUR_MEMBER_CALL(CCollisionEvent_ShouldCollide)(pObj0, pObj1, pGameData0, pGameData1);
+    }
 
     void ClearFakeProp()
     {
@@ -1674,7 +1725,8 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_RoundCleanupShouldIgnore, "CTFGameRules::RoundCleanupShouldIgnore");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldCreateEntity, "CTFGameRules::ShouldCreateEntity");
 			MOD_ADD_VHOOK(CMathCounter_Activate, TypeName<CMathCounter>(), "CBaseEntity::Activate");
-            
+            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
+            MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
 
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");

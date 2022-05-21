@@ -368,6 +368,9 @@ WARN_RESTORE()
 #include <ivdebugoverlay.h>
 #include "sdk2013/debugoverlay_shared.h"
 #include <util_shared.h>
+#undef EntityFromEntityHandle
+#include "sdk2013/ientityhandle.h"
+#define EntityFromEntityHandle MyEntityFromEntityHandle
 #include <ai_activity.h>
 #include <usercmd.h>
 #include <npcevent.h>

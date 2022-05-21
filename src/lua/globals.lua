@@ -665,12 +665,195 @@ ON_DAMAGE_RECEIVED_PRE = 3  -- Callback function parameters: entity, damageinfo.
 ON_DAMAGE_RECEIVED_POST = 4 -- Callback function parameters: entity, damageinfo
 ON_INPUT = 5                -- Callback function parameters: entity, inputName, value, activator, caller. Return true to stop entity from processing the input
 ON_OUTPUT = 6               -- Callback function parameters: entity, outputName, value, activator. Return true to stop entity from processing the output
-ON_KEY_PRESSED = 7          -- Callback function parameters: entity, key
-ON_KEY_RELEASED = 8         -- Callback function parameters: entity, key
+ON_KEY_PRESSED = 7          -- Look at IN_* globals for more info. Callback function parameters: entity, key
+ON_KEY_RELEASED = 8         -- Look at IN_* globals for more info. Callback function parameters: entity, key
 ON_DEATH = 9                -- Callback function parameters: entity
 ON_EQUIP_ITEM = 10          -- Callback function parameters: entity, weapon. Return false to prevent equipping the weapon
 ON_DEPLOY_WEAPON = 11       -- Callback function parameters: entity, oldWeapon, newWeapon. Return false to stop deploy
-ON_PROVIDE_ITEMS = 12       -- Callback function parameters: entity
+ON_PROVIDE_ITEMS = 12       -- Called when loadout items are provided to the player. Callback function parameters: entity
+ON_TOUCH = 13               -- Called every tick the entity is touched. Callback function parameters: entity, other, hitPos, hitNormal
+ON_START_TOUCH = 14         -- Callback function parameters: entity, other, hitPos, hitNormal
+ON_END_TOUCH = 15           -- Callback function parameters: entity, other, hitPos, hitNormal
+ON_SHOULD_COLLIDE = 16      -- Callback function parameters: entity, other. Return false to disable collision, true to enable
+
+----------------
+-- Print targets
+----------------
+PRINT_TARGET_CONSOLE = 0
+PRINT_TARGET_CHAT = 1
+PRINT_TARGET_CENTER = 2
+PRINT_TARGET_HINT = 3 -- Message on the bottom part of the screen, plays a cue sound
+PRINT_TARGET_RIGHT = 4 -- Message on the right part of the screen
+
+----------------
+-- Menu flags
+----------------
+MENUFLAG_BUTTON_EXIT	    = (1<<0) -- Menu has an "exit" button
+MENUFLAG_BUTTON_EXITBACK	= (1<<1) -- Menu has an "exit back" button
+MENUFLAG_NO_SOUND           = (1<<2) -- Menu will not have any select sounds
+
+----------------
+-- Table structures
+----------------
+
+---@class ShowHUDTextParams
+---@field channel number = 4
+---@field x number = -1. X coordinate from 0 to 1. -1 for center positon. Text is wrapped so it does not overflow the screen
+---@field y number = -1. Y coordinate from 0 to 1. -1 for center positonText is wrapped so it does not overflow the screen
+---@field effect number = 0. 0,1 - fade in/fade out text. 2 - typeout text
+---@field r1 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field r2 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field g1 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field g2 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field b1 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field b2 number = 255. 0 - 255 range. The text is rendered additively, black text will not display
+---@field a1 number = 0. 0 - 255 range. 0 - fully visible, 255 - invisible
+---@field a2 number = 0. 0 - 255 range. 0 - fully visible, 255 - invisible
+---@field fadeinTime number = 0. Time to fade in text
+---@field fadeoutTime number = 0. Time to fade out text
+---@field holdTime number = 9999. Time the text is fully displayed
+---@field fxTime number = 0. Time to type a single letter with typeout effect
+DefaultHudTextParams = {
+    channel = 4, --Channel number 0 - 5, -- Channel 0 is used to display wave explanation, -- Channel 1 is used to display cash in reverse mvm,
+    x = -1, -- X coordinate from 0 to 1, -- -1 for center positon, -- Text is wrapped so it does not overflow the screen
+    y = -1, -- Y coordinate from 0 to 1, -- -1 for center positonText is wrapped so it does not overflow the screen
+    effect = 0, -- 0,1 - fade in/fade out text, -- 2 - typeout text
+    r1 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    r2 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    g1 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    g2 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    b1 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    b2 = 255, -- 0 - 255 range, -- The text is rendered additively, black text will not display
+    a1 = 0, -- 0 - 255 range, -- 0 - fully visible, 255 - invisible
+    a2 = 0, -- 0 - 255 range, -- 0 - fully visible, 255 - invisible
+    fadeinTime = 0, -- Time to fade in text
+    fadeoutTime = 0, -- Time to fade out text
+    holdTime = 9999, -- Time the text is fully displayed
+    fxTime = 0, -- Time to type a single letter with typeout effect
+}
+
+---@class TraceInfo
+---@field start Vector|Entity
+---@field endpos Vector|nil
+---@field distance number
+---@field angles Vector
+---@field mask number
+---@field collisiongroup number
+---@field mins Vector
+---@field maxs Vector
+---@field filter function|table|Entity
+DefaultTraceInfo = {
+    start = Vector(0,0,0), -- Start position vector. Can also be set to entity, in this case the trace will start from entity eyes position
+    endpos = nil, -- End position vector. If nil, the trace will be fired in `angles` direction with `distance` length
+    distance = 8192, -- Used if endpos is nil
+    angles = Vector(0,0,0), -- Used if endpos is nil
+    mask = MASK_SOLID, -- Solid type mask, see MASK_* globals
+    collisiongroup = COLLISION_GROUP_NONE, -- Pretend the trace to be fired by an entity belonging to this group. See COLLISION_GROUP_* globals
+    mins = Vector(0,0,0), -- Extends the size of the trace in negative direction
+    maxs = Vector(0,0,0), -- Extends the size of the trace in positive direction
+    filter = nil -- Entity to ignore. Can be a single entity, table of entities, or a function with a single entity parameter
+}
+
+---@class TraceResultInfo
+---@field Entity Entity|nil
+---@field Fraction number
+---@field FractionLeftSolid number
+---@field Hit boolean
+---@field HitBox number
+---@field HitGroup number
+---@field HitNoDraw boolean
+---@field HitNonWorld boolean
+---@field HitNormal Vector
+---@field HitPos Vector
+---@field HitSky boolean
+---@field HitTexture string
+---@field HitWorld boolean
+---@field Normal Vector
+---@field StartPos Vector
+---@field StartSolid boolean
+---@field SurfaceFlags number
+---@field DispFlags number
+---@field Contents number
+---@field SurfaceProps number
+---@field PhysicsBone number
+DefaultTraceResultInfo = {
+    Entity = nil, -- The hit entity
+    Fraction = 1, -- Distance to the target divided by trace length. 1 if did not hit anything
+    FractionLeftSolid = 0,
+    Hit = false, -- `true` if trace hit anything
+    HitBox = 0, -- Hitbox of the target
+    HitGroup = HITGROUP_GENERIC, -- Hit group of the target, see HITGROUP_* globals
+    HitNoDraw = false, -- `true` if nodraw brush was hit
+    HitNonWorld = false, -- `true` if the target was not a static brush or prop
+    HitNormal = Vector(0,0,0), -- Normal of the surface being hit
+    HitPos = Vector(0,0,0), -- Position where the trace hit
+    HitSky = false, -- `true` if skybox was hit
+    HitTexture = "**empty**", -- Material of the hit brush. **displacement** is returned for displacements and **studio** for props
+    HitWorld = false, -- `true` if the target was the world
+    Normal = Vector(0,0,0), -- Normalized direction of the trace
+    StartPos = Vector(0,0,0), -- Starting point of the trace
+    StartSolid = false, -- `true` if the trace started inside solid
+    SurfaceFlags = 0, -- See SURF_* globals
+    DispFlags = 0, -- See DISPSURF_* globals
+    Contents = 0 -- See CONTENTS_* globals
+}
+
+---@class TakeDamageInfo
+---@field Attacker Entity|nil
+---@field Inflictor Entity|nil
+---@field Weapon Entity|nil
+---@field Damage number
+---@field DamageType number
+---@field DamageCustom number
+---@field CritType number
+DefaultTakeDamageInfo = {
+    Attacker = nil, -- Attacker
+    Inflictor = nil, -- Direct cause of damage, usually a projectile
+    Weapon = nil,
+    Damage = 0,
+    DamageType = DMG_GENERIC, -- Damage type, see DMG_* globals. Can be combined with | operator
+    DamageCustom = TF_DMG_CUSTOM_NONE -- Custom damage type, see TF_DMG_* globals
+}
+
+-- A single menu entry
+---@class MenuEntry
+---@field text string
+---@field value string
+---@field disabled boolean
+DefaultMenuEntry = {
+    text = "", -- Text for display
+    value = "", -- Internal value used in onSelect function
+    disabled = false -- This entry cannot be selected
+}
+
+-- To add a new entry, add a number indexed key, with either string or MenuEntry table as a value
+-- Example:
+-- ```
+-- {
+--     1 = "simple",
+--     2 = {text = "complex", value = "internal", disabled = true}
+--     timeout = 0, -- How long to display the menu, or 0 for no timeout
+--     title = "Menu",
+--     itemsPerPage = nil,
+--     flags = MENUFLAG_BUTTON_EXIT,
+--     onSelect = function (player, index, value) end , -- Function called on select with parameters: player, index, value
+--     onCancel = function (player, reason) end, -- Function called on cancel with parameters: player, reason
+-- }
+-- ```
+---@class Menu
+---@field timeout number
+---@field title string
+---@field itemsPerPage number|nil
+---@field flags number
+---@field onSelect function
+DefaultMenu = {
+    timeout = 0, -- How long to display the menu, or 0 for no timeout
+    title = "Menu",
+    itemsPerPage = nil, -- How many items per page, nil for default (7). Can be set up to 10 for single page menu
+    flags = MENUFLAG_BUTTON_EXIT,
+    onSelect = nil, -- Function called on select with parameters: player, selectedIndex, value
+    onCancel = nil, -- Function called on cancel with parameters: player, reason
+}
 
 function table.ForEach(tab, funcname)
 

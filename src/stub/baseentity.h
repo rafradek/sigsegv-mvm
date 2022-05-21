@@ -272,6 +272,8 @@ public:
 	int GetEffects() const                        { return this->m_fEffects; }
 	bool IsEffectActive(int nEffects) const       { return ((this->m_fEffects & nEffects) != 0); }
 	ExtraEntityData *GetExtraEntityData()         { return this->m_extraEntityData; }
+	const CBaseHandle &GetRefEHandle()            { return this->m_RefEHandle; }
+
 	/* thunk */
 	void Remove()                                                                                                           {        ft_Remove                        (this); }
 	void CalcAbsolutePosition()                                                                                             {        ft_CalcAbsolutePosition          (this); }
@@ -425,6 +427,7 @@ private:
 	DECL_SENDPROP   (Vector,               m_vecVelocity);
 	DECL_SENDPROP   (Vector,               m_vecOrigin);
 	DECL_SENDPROP   (QAngle,               m_angRotation);
+	DECL_RELATIVE   (CBaseHandle,          m_RefEHandle);
 	DECL_SENDPROP_RW(int,                  m_fEffects);
 	
 	static MemberFuncThunk<      CBaseEntity *, void>                                                    ft_Remove;

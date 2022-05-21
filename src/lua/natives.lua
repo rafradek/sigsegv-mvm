@@ -64,6 +64,11 @@ local entity = {}
 ---@return Entity
 function Entity(classname, spawn, activate) end
 
+--Checks if the passed value is not nil and a valid Entity
+---@param value any
+---@return boolean
+function IsValid(value) end
+
 ---@return boolean
 function entity:IsValid() end
 
@@ -177,17 +182,8 @@ function entity:DumpProperties() end
 ---@return table
 function entity:DumpInputs() end
 
----@class TakeDamageInfo
----@field Attacker Entity|nil
----@field Inflictor Entity|nil
----@field Weapon Entity|nil
----@field Damage number
----@field DamageType number
----@field DamageCustom number
----@field CritType number
-
 --Deal damage to the entity
----@param damageInfo TakeDamageInfo
+---@param damageInfo TakeDamageInfo See DefaultTakeDamageInfo
 ---@return number damageDealt Damage dealt to the entity
 function entity:TakeDamage(damageInfo) end
 
@@ -289,6 +285,28 @@ function entity:RemoveEffects(effect) end
 ---@return boolean
 function entity:IsEffectActive(effect) end
 
+--Prints message to player.
+---@param printTarget number See PRINT_TARGET_* globals
+---@vararg any
+---@return nil
+function entity:PrintTo(printTarget, ...) end
+
+--Prints message to player
+---@param params ShowHUDTextParams Table containing params. See DefaultHudTextParams global
+---@vararg any
+---@return nil
+function entity:ShowHudText(params, ...) end
+
+--Displays menu to player
+---@param menu Menu See DefaultMenu globals
+---@return nil
+function entity:DisplayMenu(menu) end
+
+--Hide current menu from the player
+---@return nil
+function entity:HideMenu() end
+
+
 ents = {}
 
 --Finds first matching entity by targetname. Trailing wildcards and @ selectors apply
@@ -301,7 +319,7 @@ function ents.FindByName(name, prev) end
 ---@param classname string
 ---@param prev ?Entity #Find next matching entity after this entity
 ---@return Entity|nil #Entity if found, nil otherwise
-function ents.FindByClassname(classname, prev) end
+function ents.FindByClass(classname, prev) end
 
 --Finds all matching entities by name. Trailing wildcards and @ selectors apply
 ---@param name string
@@ -311,7 +329,7 @@ function ents.FindAllByName(name) end
 --Finds all matching entities by classname. Trailing wildcards and @ selectors apply
 ---@param classname string
 ---@return table entities All entities that matched the criteria
-function ents.FindAllByClassname(classname) end
+function ents.FindAllByClass(classname) end
 
 --Finds all entities in a box
 ---@param mins Vector Starting box coordinates
@@ -327,12 +345,31 @@ function ents.FindAllInSphere(center, radius) end
 
 --Returns first entity
 ---@return Entity first First entity in the list
-function ents.FirstEntity() end
+function ents.GetFirstEntity() end
 
 --Returns next entity after previous entity
 ---@param prev Entity The previous entity
 ---@return Entity first The next entity in the list
-function ents.NextEntity(prev) end
+function ents.GetNextEntity(prev) end
+
+--Returns a table containing all entities
+---@return table entities all entities
+function ents.GetAll() end
+
+--Returns a table containing all players
+---@return table players all players
+function ents.GetAllPlayers() end
+
+--Adds an entity creation callback
+---@param classname string Entity classname to which the callback will listen to. Supports trailing wildcards
+---@param callback function Callback function, called with two parameters: entity, classname
+---@return number id id of the callback for removal with `ents.RemoveCreateCallback(id)` 
+function ents.AddCreateCallback(classname, callback) end
+
+--Removes an entity creation callback
+---@param id number Callback id
+---@return nil
+function ents.RemoveCreateCallback(id) end
 
 timer = {}
 
@@ -355,45 +392,12 @@ function timer.Create(delay, func, repeats, param) end
 ---@return nil
 function timer.Stop(id) end
 
+
 util = {}
 
----@class TraceInfo
----@field start Vector|Entity
----@field endpos Entity
----@field distance number
----@field angles Vector
----@field mask number
----@field collisiongroup number
----@field mins Vector
----@field maxs Vector
----@field filter function|table|Entity
-
----@class TraceResultInfo
----@field Entity Entity
----@field Fraction number
----@field FractionLeftSolid number
----@field Hit boolean
----@field HitBox number
----@field HitGroup number
----@field HitNoDraw boolean
----@field HitNonWorld boolean
----@field HitNormal Vector
----@field HitPos Vector
----@field HitSky boolean
----@field HitTexture string
----@field HitWorld boolean
----@field Normal Vector
----@field StartPos Vector
----@field StartSolid boolean
----@field SurfaceFlags number
----@field DispFlags number
----@field Contents number
----@field SurfaceProps number
----@field PhysicsBone number
-
 --Fires a trace
----@param trace TraceInfo trace table to use 
----@return TraceResultInfo #trace result table
+---@param trace TraceInfo trace table to use. See DefaultTraceInfo
+---@return TraceResultInfo #trace result table. See DefaultTraceResultInfo
 function util.Trace(trace) end
 
 --Prints message to player's console
@@ -429,8 +433,3 @@ function TickCount() end
 --Returns current map name
 ---@return string
 function GetMapName() end
-
---Checks if the passed value is not nil and a valid Entity
----@param value any
----@return boolean
-function IsValid(value) end

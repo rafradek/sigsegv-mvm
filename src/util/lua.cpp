@@ -12,6 +12,8 @@
 #include "mod/etc/mapentity_additions.h"
 #include "mod.h"
 
+class CStaticProp {};
+
 namespace Util::Lua
 {
     LuaState *cur_state = nullptr;
@@ -55,11 +57,10 @@ namespace Util::Lua
       printf("\n");  /* end the listing */
     }
 
-    int LPrint(lua_State *l)
+    void ConstructPrint(lua_State *l, int index, std::string &str)
     {
         int args = lua_gettop(l);
-        std::string str = "";
-        for (int i = 1; i <= args; i++) {
+        for (int i = index; i <= args; i++) {
             const char *msg = nullptr;
             auto type = lua_type(l, i);
             if (type == LUA_TSTRING || type == LUA_TNUMBER) {
@@ -75,6 +76,12 @@ namespace Util::Lua
             str += msg != nullptr ? msg : "";
             str += '\t';
         }
+    }
+
+    int LPrint(lua_State *l)
+    {
+        std::string str = "";
+        ConstructPrint(l, 1, str);
         SendConsoleMessageToAdmins("%s\n", str.c_str());
         Msg("%s\n", str.c_str());
         return 0;
@@ -729,6 +736,10 @@ namespace Util::Lua
         ON_EQUIP_ITEM,
         ON_DEPLOY_WEAPON,
         ON_PROVIDE_ITEMS,
+        ON_TOUCH,
+        ON_START_TOUCH,
+        ON_END_TOUCH,
+        ON_SHOULD_COLLIDE,
         CALLBACK_TYPE_COUNT
     };
 
@@ -824,6 +835,7 @@ namespace Util::Lua
         // }
         
         void FireCallback(CallbackType type, std::function<void(LuaState *)> *extrafunc = nullptr, int extraargs = 0, std::function<void(LuaState *)> *extraretfunc = nullptr, int ret = 0) {
+            if (callbacks[type].empty()) return;
             for (auto &pair : callbacks[type]) {
                 auto l = pair.state->GetState();
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
@@ -1751,6 +1763,204 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntityPrintHud(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        luaL_checktype(l, 2, LUA_TTABLE);
+        std::string str;
+        ConstructPrint(l, 3, str);
+
+        hudtextparms_t textparam;
+        lua_getfield(l, 2, "channel"); textparam.channel = luaL_optinteger(l, -1, 4) % 6; lua_pop(l,1);
+        lua_getfield(l, 2, "x"); textparam.x = luaL_optnumber(l, -1, -1); lua_pop(l,1);
+        lua_getfield(l, 2, "y"); textparam.y = luaL_optnumber(l, -1, -1); lua_pop(l,1);
+        lua_getfield(l, 2, "effect"); textparam.effect = luaL_optinteger(l, -1, 0); lua_pop(l,1);
+        lua_getfield(l, 2, "r1"); textparam.r1 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "r2"); textparam.r2 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "g1"); textparam.g1 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "g2"); textparam.g2 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "b1"); textparam.b1 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "b2"); textparam.b2 = luaL_optinteger(l, -1, 255); lua_pop(l,1);
+        lua_getfield(l, 2, "a1"); textparam.a1 = luaL_optinteger(l, -1, 0); lua_pop(l,1);
+        lua_getfield(l, 2, "a2"); textparam.a2 = luaL_optinteger(l, -1, 0); lua_pop(l,1);
+        lua_getfield(l, 2, "fadeinTime"); textparam.fadeinTime = luaL_optnumber(l, -1, 0); lua_pop(l,1);
+        lua_getfield(l, 2, "fadeoutTime"); textparam.fadeoutTime = luaL_optnumber(l, -1, 0); lua_pop(l,1);
+        lua_getfield(l, 2, "holdTime"); textparam.holdTime = luaL_optnumber(l, -1, 9999); lua_pop(l,1);
+        lua_getfield(l, 2, "fxTime"); textparam.fxTime = luaL_optnumber(l, -1, 0); lua_pop(l,1);
+        UTIL_HudMessage(player, textparam, str.c_str());
+        
+        return 0;
+    }
+
+    enum PrintTarget
+    {
+        PRINT_TARGET_CONSOLE,
+        PRINT_TARGET_CHAT,
+        PRINT_TARGET_CENTER,
+        PRINT_TARGET_HINT,
+        PRINT_TARGET_RIGHT,
+        PRINT_TARGET_COUNT
+    };
+
+    int LEntityPrintTo(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        PrintTarget target = (PrintTarget) luaL_checknumber(l, 2);
+        luaL_argcheck(l, target >= PRINT_TARGET_CONSOLE && target < PRINT_TARGET_COUNT, 3, "Print target out of bounds");
+        std::string str;
+        ConstructPrint(l, 3, str);
+        switch (target) {
+            case PRINT_TARGET_CONSOLE: ClientMsg(player,"%s\n", str.c_str()); return 0;
+            case PRINT_TARGET_CHAT: PrintToChat(str.c_str(), player); return 0;
+            case PRINT_TARGET_CENTER: gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, str.c_str()); return 0;
+            case PRINT_TARGET_HINT: gamehelpers->HintTextMsg(ENTINDEX(player), str.c_str());
+            case PRINT_TARGET_RIGHT: {
+                CRecipientFilter filter;
+                filter.AddRecipient(player);
+                bf_write *msg = engine->UserMessageBegin(&filter, usermessages->LookupUserMessage("KeyHintText"));
+                msg->WriteByte(1);
+                msg->WriteString(str.c_str());
+                engine->MessageEnd();
+                return 0;
+            }
+        }
+        
+        return 0;
+    }
+
+    
+    class LuaMenuHandler : public IMenuHandler, public AutoList<LuaMenuHandler>
+    {
+    public:
+
+        LuaMenuHandler(CBasePlayer *player, LuaState *state) : IMenuHandler(), player(player), state(state) 
+        {
+            tableRef = luaL_ref(state->GetState(), LUA_REGISTRYINDEX);
+        }
+        virtual ~LuaMenuHandler()
+        {
+            luaL_unref(state->GetState(), LUA_REGISTRYINDEX, tableRef);
+        }
+
+        void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
+        {
+            if (invalid) return;
+
+            const char *info = menu->GetItemInfo(item, nullptr);
+
+            lua_rawgeti(state->GetState(), LUA_REGISTRYINDEX, tableRef);
+            if (lua_getfield(state->GetState(), -1, "onSelect") != LUA_TNIL) {
+                LEntityAlloc(state->GetState(), player.Get());
+                lua_pushinteger(state->GetState(), item + 1);
+                lua_pushstring(state->GetState(), info);
+                state->Call(3, 0);
+            }
+            else {
+                lua_pop(state->GetState(), 1);
+            }
+            lua_pop(state->GetState(), 1);
+        }
+
+        virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
+		{
+            if (invalid) return;
+
+            lua_rawgeti(state->GetState(), LUA_REGISTRYINDEX, tableRef);
+            if (lua_getfield(state->GetState(), -1, "onCancel") != LUA_TNIL) {
+                LEntityAlloc(state->GetState(), player.Get());
+                lua_pushinteger(state->GetState(), reason);
+                state->Call(2, 0);
+            }
+            else {
+                lua_pop(state->GetState(), 1);
+            }
+            lua_pop(state->GetState(), 1);
+		}
+
+        virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+            menu->Destroy(false);
+		}
+
+        void OnMenuDestroy(IBaseMenu *menu) {
+            delete this;
+        }
+
+        CHandle<CBasePlayer> player;
+        LuaState *state;
+        int tableRef;
+        bool invalid = false;
+    };
+
+    int LEntityDisplayMenu(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        if (player->IsFakeClient() || player->IsHLTV()) return 0;
+
+        luaL_checktype(l, 2, LUA_TTABLE);
+        lua_pushvalue(l, 2);
+        LuaMenuHandler *handler = new LuaMenuHandler(player, cur_state);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+
+        int len = lua_rawlen(l, 2);
+        for (int i = 1; i <= len; i++) {
+            lua_rawgeti(l, 2, i);
+            // Advanced table entry
+            if (lua_type(l, -1) == LUA_TTABLE) {
+                lua_getfield(l, -1, "text");
+                const char *name = luaL_optstring(l, -1, "");
+                lua_pop(l, 1);
+
+                lua_getfield(l, -1, "value");
+                const char *value = luaL_optstring(l, -1, "");
+                lua_pop(l, 1);
+
+                lua_getfield(l, -1, "disabled");
+                bool disabled = lua_toboolean(l, -1);
+                lua_pop(l, 1);
+
+                if (name != nullptr) {
+                    ItemDrawInfo info1(name, disabled ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+                    menu->AppendItem(value, info1);
+                }
+
+                lua_pop(l, 1);
+            }
+            // Simple string entry
+            else {
+                const char *name = lua_tostring(l, -1);
+                if (name != nullptr) {
+                    bool enabled = name[0] != '!';
+                    ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+                    menu->AppendItem(name, info1);
+                }
+                lua_pop(l, 1);
+            }
+        }
+        lua_getfield(l, 2, "timeout");
+        int timeout = luaL_optnumber(l, -1, 0);
+
+        lua_getfield(l, 2, "title");
+        menu->SetDefaultTitle(luaL_optstring(l, -1, "Menu"));
+
+        lua_getfield(l, 2, "itemsPerPage");
+        if (!lua_isnil(l, -1)) {
+            menu->SetPagination(lua_tointeger(l, -1));
+        }
+
+        lua_getfield(l, 2, "flags");
+        menu->SetMenuOptionFlags(luaL_optinteger(l, -1, MENUFLAG_BUTTON_EXIT));
+
+        menu->Display(ENTINDEX(player), timeout);
+        return 0;
+    }
+
+    int LEntityHideMenu(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player), false);
+    }
+
     int LFindEntityByName(lua_State *l)
     {
         const char *name = luaL_checkstring(l, 1);
@@ -1805,6 +2015,19 @@ namespace Util::Lua
                 idx++;
             }
         }
+        return 1;
+    }
+
+    int LFindAllPlayers(lua_State *l)
+    {
+        lua_newtable(l);
+        int idx = 1;
+        ForEachTFPlayer([&](CTFPlayer *player) {
+            LEntityAlloc(l, player);
+            lua_rawseti(l, -2, idx);
+            idx++;
+        });
+
         return 1;
     }
 
@@ -2061,68 +2284,34 @@ namespace Util::Lua
 
     int LUtilPrintToConsoleAll(lua_State *l)
     {
-        int args = lua_gettop(l);
         std::string str;
-        for (int i = 1; i <= args; i++) {
-            const char *msg = lua_tostring(l, i);
-            if (msg != nullptr) {
-                str += msg;
-                str += '\t';
-            }
-        }
+        ConstructPrint(l, 1, str);
         ClientMsgAll("%s\n", str.c_str());
         return 0;
     }
 
     int LUtilPrintToConsole(lua_State *l)
     {
-        auto player = ToTFPlayer(LEntityGetCheck(l, 1)->Get());
-        if (player != nullptr) {
-            luaL_error(l, "Entity is not a valid player");
-        }
-        int args = lua_gettop(l);
+        auto player = LPlayerGetNonNull(l, 1);
         std::string str;
-        for (int i = 2; i <= args; i++) {
-            const char *msg = lua_tostring(l, i);
-            if (msg != nullptr) {
-                str += msg;
-                str += '\t';
-            }
-        }
+        ConstructPrint(l, 2, str);
         ClientMsg(player,"%s\n", str.c_str());
         return 0;
     }
 
     int LUtilPrintToChatAll(lua_State *l)
     {
-        int args = lua_gettop(l);
         std::string str;
-        for (int i = 1; i <= args; i++) {
-            const char *msg = lua_tostring(l, i);
-            if (msg != nullptr) {
-                str += msg;
-                str += '\t';
-            }
-        }
+        ConstructPrint(l, 1, str);
         PrintToChatAll(str.c_str());
         return 0;
     }
 
     int LUtilPrintToChat(lua_State *l)
     {
-        auto player = ToTFPlayer(LEntityGetCheck(l, 1)->Get());
-        if (player != nullptr) {
-            luaL_error(l, "Entity is not a valid player");
-        }
-        int args = lua_gettop(l);
+        auto player = LPlayerGetNonNull(l, 1);
         std::string str;
-        for (int i = 1; i <= args; i++) {
-            const char *msg = lua_tostring(l, i);
-            if (msg != nullptr) {
-                str += msg;
-                str += '\t';
-            }
-        }
+        ConstructPrint(l, 2, str);
         PrintToChat(str.c_str(), player);
         return 0;
     }
@@ -2182,6 +2371,7 @@ namespace Util::Lua
         {"FindInBox", LFindAllEntityInBox},
         {"FindInSphere", LFindAllEntityInSphere},
         {"GetAll", LFindAllEntity},
+        {"GetAllPlayers", LFindAllPlayers},
         {"Create", LEntityNew},
         {"GetFirstEntity", LEntityFirst},
         {"GetNextEntity", LEntityNext},
@@ -2239,6 +2429,10 @@ namespace Util::Lua
         {"AddEffects", LEntityAddEffects},
         {"RemoveEffects", LEntityRemoveEffects},
         {"IsEffectActive", LEntityIsEffectActive},
+        {"ShowHudText", LEntityPrintHud},
+        {"Print", LEntityPrintTo},
+        {"DisplayMenu", LEntityDisplayMenu},
+        {"HideMenu", LEntityHideMenu},
         {"__eq", LEntityEquals},
         {"__tostring", LEntityToString},
         {"__index", LEntityGetProp},
@@ -2377,6 +2571,10 @@ namespace Util::Lua
     }
 
     LuaState::~LuaState() {
+        for (auto menu : LuaMenuHandler::List()) {
+            menu->invalid = true;
+        }
+
         for (auto entity : callbackEntities) {
             auto luaModule = entity->GetEntityModule<LuaEntityModule>("luaentity");
             if (luaModule != nullptr) {
@@ -2973,7 +3171,7 @@ namespace Util::Lua
 	{
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
 
-        auto mod = wep->GetOwnerEntity()->GetEntityModule<LuaEntityModule>("luaentity");
+        auto mod = wep->GetOwnerEntity() != nullptr ? wep->GetOwnerEntity()->GetEntityModule<LuaEntityModule>("luaentity") : nullptr;
         if (mod != nullptr) {
             bool give = true;
             std::function<void(LuaState *)> func = [&](LuaState *state){
@@ -3013,6 +3211,144 @@ namespace Util::Lua
 		}
 	};
 
+    bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
+        auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod1 != nullptr && !mod1->callbacks[ON_SHOULD_COLLIDE].empty()) {
+            for (auto &pair : mod1->callbacks[ON_SHOULD_COLLIDE]) {
+                auto l = pair.state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+                LEntityAlloc(l, entity1);
+                LEntityAlloc(l, entity2);
+                pair.state->Call(2, 1);
+                if (lua_type(l, -1) == LUA_TBOOLEAN) {
+                    result = lua_toboolean(l, -1);
+                    lua_settop(l, 0);
+                    return true;
+                }
+                lua_settop(l, 0);
+            }
+        }
+        auto mod2 = entity2->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod2 != nullptr && !mod2->callbacks[ON_SHOULD_COLLIDE].empty()) {
+            for (auto &pair : mod2->callbacks[ON_SHOULD_COLLIDE]) {
+                auto l = pair.state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+                LEntityAlloc(l, entity2);
+                LEntityAlloc(l, entity1);
+                pair.state->Call(2, 1);
+                if (lua_type(l, -1) == LUA_TBOOLEAN) {
+                    result = lua_toboolean(l, -1);
+                    lua_settop(l, 0);
+                    return true;
+                }
+                lua_settop(l, 0);
+            }
+        }
+        return false;
+    }
+    enum
+    {
+        // This bit will be set in GetRefEHandle for all static props
+        STATICPROP_EHANDLE_MASK = 0x40000000
+    };
+    DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
+	{
+        auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
+        {
+            if (ret) {
+                auto entity1 = (CBaseEntity*) ent1;
+                auto entity2 = (CBaseEntity*) ent2;
+                
+                bool result;
+                if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
+                {
+                    return result;
+                }
+            }
+        }
+        return ret;
+    }
+
+    DETOUR_DECL_MEMBER(int, CCollisionEvent_ShouldCollide, IPhysicsObject *pObj0, IPhysicsObject *pObj1, void *pGameData0, void *pGameData1)
+	{
+        {
+            CBaseEntity *entity1 = static_cast<CBaseEntity *>(pGameData0);
+            CBaseEntity *entity2 = static_cast<CBaseEntity *>(pGameData1);
+
+            bool result;
+            if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
+            {
+                return result;
+            }
+        }
+        return DETOUR_MEMBER_CALL(CCollisionEvent_ShouldCollide)(pObj0, pObj1, pGameData0, pGameData1);
+    }
+
+    bool DoTouchCallback(CallbackType type, CBaseEntity *entity, CBaseEntity *other)
+    {
+        auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod != nullptr) {
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                LEntityAlloc(state->GetState(), other);
+                trace_t &tr = CBaseEntity::GetTouchTrace();
+                auto pos = LVectorAlloc(state->GetState());
+                *pos = tr.endpos;
+                auto normal = LVectorAlloc(state->GetState());
+                *normal = tr.plane.normal;
+            };
+            mod->FireCallback(type, &func, 3);
+        }
+        return true;
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_StartTouch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_START_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBaseEntity_StartTouch)(other);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_EndTouch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_END_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBaseEntity_EndTouch)(other);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseTrigger_StartTouch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_START_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBaseTrigger_StartTouch)(other);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseTrigger_EndTouch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_END_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBaseTrigger_EndTouch)(other);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_Touch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBasePlayer_Touch, CBaseEntity *other)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (!DoTouchCallback(ON_TOUCH, entity, other)) return; 
+        
+        return DETOUR_MEMBER_CALL(CBasePlayer_Touch)(other);
+    }
+
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -3034,6 +3370,15 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
+            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
+            MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_StartTouch, "CBaseEntity::StartTouch");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_EndTouch, "CBaseEntity::EndTouch");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_Touch, "CBaseEntity::Touch");
+            MOD_ADD_DETOUR_MEMBER(CBaseTrigger_StartTouch, "CBaseTrigger::StartTouch");
+            MOD_ADD_DETOUR_MEMBER(CBaseTrigger_EndTouch, "CBaseTrigger::EndTouch");
+            MOD_ADD_DETOUR_MEMBER(CBasePlayer_Touch, "CBasePlayer::Touch");
+
             
         }
 		

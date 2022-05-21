@@ -54,6 +54,7 @@ IMPL_SENDPROP(color32,              CBaseEntity, m_clrRender,            CBaseEn
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecVelocity,          CBaseGrenade);
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecOrigin,            CBaseEntity);
 IMPL_SENDPROP(QAngle,               CBaseEntity, m_angRotation,          CBaseEntity);
+IMPL_RELATIVE(CBaseHandle,          CBaseEntity, m_RefEHandle, m_angRotation, sizeof(QAngle));
 IMPL_SENDPROP(int,                  CBaseEntity, m_fEffects,             CBaseEntity);
 
 MemberFuncThunk<      CBaseEntity *, void                                                   > CBaseEntity::ft_Remove                     ("CBaseEntity::Remove");

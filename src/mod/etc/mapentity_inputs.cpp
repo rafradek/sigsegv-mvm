@@ -1864,6 +1864,18 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"CancelPending"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             g_EventQueue.GetRef().CancelEvents(ent);
+        }},
+        {"SetCollisionFilter"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Msg("Input\n");
+            if (Value.FieldType() == FIELD_EHANDLE ) {
+                ent->SetCustomVariable("colfilter", Value);
+            }
+            else {
+                variant_t variant;
+                Msg("Set collision filter %d\n", servertools->FindEntityByName(nullptr, Value.String()));
+                variant.SetEntity(servertools->FindEntityByName(nullptr, Value.String()));
+                ent->SetCustomVariable("colfilter", variant);
+            }
         }}
     });
 }

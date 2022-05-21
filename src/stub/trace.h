@@ -41,7 +41,11 @@ int UTIL_EntitiesAlongRay( CBaseEntity **pList, int listMax, const Ray_t &ray, i
 void UTIL_TraceModel( const Vector &vecStart, const Vector &vecEnd, const Vector &hullMin, 
 					  const Vector &hullMax, CBaseEntity *pentModel, int collisionGroup, trace_t *ptr );
 
-bool PassServerEntityFilter( const IHandleEntity *pTouch, const IHandleEntity *pPass );
+extern StaticFuncThunk<bool, const IHandleEntity *, const IHandleEntity *> ft_PassServerEntityFilter;
+inline bool PassServerEntityFilter( const IHandleEntity *pTouch, const IHandleEntity *pPass ) 
+{
+	return ft_PassServerEntityFilter(pTouch, pPass);
+}
 
 bool StandardFilterRules( IHandleEntity *pHandleEntity, int fContentsMask );
 
@@ -106,6 +110,14 @@ private:
 	bool m_bNoChain;
 };
 
+
+class CTraceFilterEntity : public CTraceFilterSimple
+{
+public:
+	CBaseEntity *m_pRootParent;
+	CBaseEntity *m_pEntity;
+	bool		m_checkHash;
+};
 /*void TryUnstuck(CBaseEntity *player) {
 	const Vector& vOrigin = player->GetAbsOrigin();
 	const QAngle& qAngle = player->GetAbsAngles();

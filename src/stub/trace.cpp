@@ -83,36 +83,7 @@ void UTIL_TraceModel( const Vector &vecStart, const Vector &vecEnd, const Vector
 }
 
 
-//-----------------------------------------------------------------------------
-//
-// Shared client/server trace filter code
-//
-//-----------------------------------------------------------------------------
-bool PassServerEntityFilter( const IHandleEntity *pTouch, const IHandleEntity *pPass ) 
-{
-	if ( !pPass )
-		return true;
-
-	if ( pTouch == pPass )
-		return false;
-
-	const CBaseEntity *pEntTouch = EntityFromEntityHandle( pTouch );
-	const CBaseEntity *pEntPass = EntityFromEntityHandle( pPass );
-	if ( !pEntTouch || !pEntPass )
-		return true;
-
-	// don't clip against own missiles
-	if ( pEntTouch->GetOwnerEntity() == pEntPass )
-		return false;
-	
-	// don't clip against owner
-	if ( pEntPass->GetOwnerEntity() == pEntTouch )
-		return false;	
-
-
-	return true;
-}
-
+StaticFuncThunk<bool, const IHandleEntity *, const IHandleEntity *> ft_PassServerEntityFilter("PassServerEntityFilter");
 
 //-----------------------------------------------------------------------------
 // A standard filter to be applied to just about everything.
