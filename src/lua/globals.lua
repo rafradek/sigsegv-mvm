@@ -693,6 +693,13 @@ MENUFLAG_BUTTON_EXITBACK	= (1<<1) -- Menu has an "exit back" button
 MENUFLAG_NO_SOUND           = (1<<2) -- Menu will not have any select sounds
 
 ----------------
+-- Event callback actions
+----------------
+ACTION_CONTINUE	            = 0 -- Continue event as usual with no changes
+ACTION_STOP                 = 1 -- Stop event from being performed
+ACTION_MODIFY               = 2 -- Continue event with modified values
+
+----------------
 -- Table structures
 ----------------
 

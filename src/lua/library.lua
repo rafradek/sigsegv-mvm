@@ -315,6 +315,15 @@ function CEntity:DisplayMenu(menu) end
 ---@return nil
 function CEntity:HideMenu() end
 
+--Snap player view to specified angle
+---@param angle Vector angle to snap to
+---@return nil
+function CEntity:SnapEyeAngles(angle) end
+
+--Get player user id
+---@return number userid User id of of the player 
+function CEntity:GetUserId() end
+
 ----------------
 -- Entity inputs
 ----------------
@@ -460,6 +469,11 @@ function ents.AddCreateCallback(classname, callback) end
 ---@return nil
 function ents.RemoveCreateCallback(id) end
 
+--Finds a player with given userid, or nil if not found
+---@param userid number
+---@return Entity player Player with given user id, or nil if not found
+function ents.GetPlayerByUserId(userid) end
+
 timer = {}
 
 --Creates a simple timer that calls the function after delay
@@ -511,6 +525,14 @@ function util.PrintToChat(player, ...) end
 ---@return nil
 function util.PrintToChatAll(...) end
 
+--Displays a particle effect
+---@param name string Name of the particle
+---@param position Vector|nil Position of the particle
+---@param angle Vector|nil Angle of the particle
+---@param entity Entity|nil Entity to attach to
+---@return nil
+function util.ParticleEffect(name, position, angle, entity) end
+
 --Returns time in seconds since map load
 ---@return number
 function CurTime() end
@@ -522,3 +544,14 @@ function TickCount() end
 --Returns current map name
 ---@return string
 function GetMapName() end
+
+--Adds game event callback. See https://wiki.alliedmods.net/Team_Fortress_2_Events
+---@param name string Name of the event
+---@param callback function Callback function with parameters: eventTable (contains event key values). Return ACTION_MODIFY to send event with modified values, ACTION_STOP to stop the event
+---@return number id id for later removal with `RemoveEventCallback(id)` function
+function AddEventCallback(name, callback) end
+
+--Removes game event callback
+---@param id number id of the event callback
+---@return nil
+function RemoveEventCallback(id) end

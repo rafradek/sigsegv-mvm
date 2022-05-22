@@ -1780,6 +1780,16 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntitySnapEyeAngles(lua_State *l)
+    {
+        auto entity = LPlayerGetNonNull(l, 1);
+        auto vec = LAngleGetCheck(l, 2);
+        entity->SnapEyeAngles(*vec);
+        
+        return 0;
+    }
+
+    
     int LEntityPrintHud(lua_State *l)
     {
         auto player = LPlayerGetNonNull(l, 1);
@@ -1979,6 +1989,13 @@ namespace Util::Lua
         return 0;
     }
 
+    int LEntityGetUserId(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        lua_pushinteger(l, player->GetUserID());
+        return 1;
+    }
+
     int LFindEntityByName(lua_State *l)
     {
         const char *name = luaL_checkstring(l, 1);
@@ -2103,6 +2120,12 @@ namespace Util::Lua
     int LEntityNext(lua_State *l)
     {
         LEntityAlloc(l, servertools->NextEntity(LEntityGetCheck(l,1)->Get()));
+        return 1;
+    }
+
+    int LPlayerByUserID(lua_State *l)
+    {
+        LEntityAlloc(l, UTIL_PlayerByUserId(luaL_checkinteger(l, 1)));
         return 1;
     }
 
@@ -2334,6 +2357,16 @@ namespace Util::Lua
         return 0;
     }
 
+    int LUtilParticleEffect(lua_State *l)
+    {
+        auto name = luaL_checkstring(l, 1);
+        auto pos = LVectorGetNoCheck(l, 2);
+        auto ang = LAngleGetNoCheck(l, 3);
+        auto ent = LEntityGetOptional(l, 4);
+        DispatchParticleEffect(name, pos != nullptr ? *pos : vec3_origin, ang != nullptr ? *ang : vec3_angle, ent);
+        return 0;
+    }
+
     int LCurTime(lua_State *l)
     {
         lua_pushnumber(l, gpGlobals->curtime);
@@ -2350,6 +2383,41 @@ namespace Util::Lua
     {
         lua_pushstring(l, STRING(gpGlobals->mapname));
         return 1;
+    }
+
+    struct EventCallback
+    {   
+        LuaState *state;
+        std::string name;
+        int func;
+    };
+    std::vector<EventCallback> event_callbacks;
+
+    int LAddEventCallback(lua_State *l)
+    {
+        const char *name = luaL_checkstring(l, 1);
+        luaL_argcheck(l, strlen(name) > 0, 1, "event name empty");
+        luaL_checktype(l,2, LUA_TFUNCTION);
+        lua_pushvalue(l,2);
+        int func = luaL_ref(l, LUA_REGISTRYINDEX);
+        
+        event_callbacks.push_back({cur_state, name, func});
+        lua_pushinteger(l, func);
+        return 1;
+    }
+
+    int LRemoveEventCallback(lua_State *l)
+    {
+        int func = luaL_checkinteger(l, 1);
+        RemoveIf(event_callbacks, [&](auto &callback){ 
+            if (callback.state == cur_state && callback.func == func) {
+                luaL_unref(l, LUA_REGISTRYINDEX, func);
+                return true ;
+            }
+            return false ;
+        });
+
+        return 0;
     }
 
     static const struct luaL_Reg vectorlib_f [] = {
@@ -2395,6 +2463,7 @@ namespace Util::Lua
         {"GetNextEntity", LEntityNext},
         {"AddCreateCallback", LEntityAddCreateCallback},
         {"RemoveCreateCallback", LEntityRemoveCreateCallback},
+        {"GetPlayerByUserId", LPlayerByUserID},
         {nullptr, nullptr},
     };
 
@@ -2453,6 +2522,8 @@ namespace Util::Lua
         {"Print", LEntityPrintTo},
         {"DisplayMenu", LEntityDisplayMenu},
         {"HideMenu", LEntityHideMenu},
+        {"SnapEyeAngles", LEntitySnapEyeAngles},
+        {"GetUserId", LEntityGetUserId},
         {"__eq", LEntityEquals},
         {"__tostring", LEntityToString},
         {"__index", LEntityGetProp},
@@ -2476,6 +2547,7 @@ namespace Util::Lua
         {"PrintToConsole", LUtilPrintToConsole},
         {"PrintToChatAll", LUtilPrintToChatAll},
         {"PrintToChat", LUtilPrintToChat},
+        {"ParticleEffect", LUtilParticleEffect},
         {nullptr, nullptr},
     };
 
@@ -2566,6 +2638,8 @@ namespace Util::Lua
         lua_register(l, "GetMapName", LGetMapName);
         lua_register(l, "TickCount", LTickCount);
         lua_register(l, "IsValid", LIsValid);
+        lua_register(l, "AddEventCallback", LAddEventCallback);
+        lua_register(l, "RemoveEventCallback", LRemoveEventCallback);
         
 
         luaL_newlib(l, entitylib_f);
@@ -2604,6 +2678,10 @@ namespace Util::Lua
         RemoveIf(entity_create_callbacks, [&](auto &callback){
             return callback.state == this;
         });
+        RemoveIf(event_callbacks, [&](auto &callback){
+            return callback.state == this;
+        });
+        
         lua_close(l);
     }
 
@@ -3368,6 +3446,78 @@ namespace Util::Lua
         
         return DETOUR_MEMBER_CALL(CBasePlayer_Touch)(other);
     }
+    class CGameEvent : public IGameEvent
+    {
+    public:
+        CGameEvent( void *descriptor );
+        virtual ~CGameEvent();
+
+        const char *GetName() const;
+        bool  IsEmpty(const char *keyName = NULL);
+        bool  IsLocal() const;
+        bool  IsReliable() const;
+
+        bool  GetBool( const char *keyName = NULL, bool defaultValue = false );
+        int   GetInt( const char *keyName = NULL, int defaultValue = 0 );
+        float GetFloat( const char *keyName = NULL, float defaultValue = 0.0f );
+        const char *GetString( const char *keyName = NULL, const char *defaultValue = "" );
+
+        void SetBool( const char *keyName, bool value );
+        void SetInt( const char *keyName, int value );
+        void SetFloat( const char *keyName, float value );
+        void SetString( const char *keyName, const char *value );
+        
+        void	*m_pDescriptor;
+        KeyValues				*m_pDataKeys;
+    };
+
+    enum CallbackAction
+    {
+        ACTION_CONTINUE,
+        ACTION_STOP,
+        ACTION_MODIFY
+    };
+
+    DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (event != nullptr && !event_callbacks.empty()) {
+            auto cevent = reinterpret_cast<CGameEvent *>(event);
+
+            for (auto &callback : event_callbacks) {
+                if (callback.name == event->GetName()) {
+                    auto l = callback.state->GetState();
+                    lua_newtable(l);
+                    lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
+                    lua_pushvalue(l,-2);
+                    FOR_EACH_SUBKEY(cevent->m_pDataKeys, subkey) {
+                        lua_pushstring(l, subkey->GetString());
+                        lua_setfield(l, -2, subkey->GetName());
+                    }
+                    callback.state->Call(1,1);
+                    int result = luaL_optinteger(l, -1, ACTION_CONTINUE);
+                    if (result == ACTION_MODIFY) {
+                        lua_pop(l,1);
+                        lua_pushnil(l);
+                        while (lua_next(l, -2)) {
+                            lua_pushvalue(l, -2);
+                            event->SetString(lua_tostring(l, -1), lua_tostring(l, -2));
+                            lua_pop(l, 2);
+                        }
+                    }
+                    if (result == ACTION_STOP) {
+                        lua_pop(l,1);
+			            mgr->FreeEvent(event);
+                        return false;
+                    }
+                    lua_pop(l,1);
+                }
+            }
+        } 
+		
+		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+	}
 
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -3398,6 +3548,7 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CBaseTrigger_StartTouch, "CBaseTrigger::StartTouch");
             MOD_ADD_DETOUR_MEMBER(CBaseTrigger_EndTouch, "CBaseTrigger::EndTouch");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_Touch, "CBasePlayer::Touch");
+            MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
 
             
         }
