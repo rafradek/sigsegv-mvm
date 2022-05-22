@@ -401,6 +401,7 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue)
         auto &attrs = data->GetCustomVariables();
         for (auto &var : attrs) {
             if (var.key == pooled) {
+                if (var.value.FieldType() != FIELD_FLOAT) var.value.Convert(FIELD_FLOAT);
                 return var.value.Float();
             }
         }
@@ -418,6 +419,7 @@ inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
         for (auto &var : attrs) {
             if (var.key == pooled) {
                 Vector vec;
+                if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
                 var.value.Vector3D(vec);
                 return vec;
             }
@@ -437,6 +439,7 @@ inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
             if (var.key == pooled) {
                 QAngle ang;
 
+                if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
                 var.value.Vector3D(*((Vector *)ang.Base()));
                 
                 return ang;

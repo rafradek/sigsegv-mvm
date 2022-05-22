@@ -23,3 +23,4 @@ MSVC/Report*.csv
 *.sublime-workspace
 
 libs/lua/
+sigsegv-mvm.kdev4

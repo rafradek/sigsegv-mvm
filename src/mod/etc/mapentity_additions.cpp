@@ -48,22 +48,6 @@ namespace Mod::Etc::Mapentity_Additions
         "Summon Skeletons"
     };
 
-    struct SendPropCacheEntry {
-        ServerClass *serverClass;
-        std::string name;
-        int offset;
-        bool isVecAxis;
-        SendProp *prop;
-    };
-
-    struct DatamapCacheEntry {
-        datamap_t *datamap;
-        std::string name;
-        int offset;
-        fieldtype_t fieldType;
-        int size;
-    };
-
     std::vector<ServerClass *> send_prop_cache_classes;
     std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> send_prop_cache;
 
@@ -243,6 +227,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, std::string &name) {
+        TIME_SCOPE2(Sendproptime);
         size_t classIndex = 0;
         for (; classIndex < send_prop_cache_classes.size(); classIndex++) {
             if (send_prop_cache_classes[classIndex] == serverClass) {
@@ -1778,7 +1763,9 @@ namespace Mod::Etc::Mapentity_Additions
         { 
             sendproxies = gamedll->GetStandardSendProxies();
             send_prop_cache.clear();
+            send_prop_cache_classes.clear();
             datamap_cache.clear();
+            datamap_cache_classes.clear();
             entity_listeners.clear();
         }
 	};

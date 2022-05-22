@@ -104,7 +104,7 @@ CopyFiles('scripts', 'custom/sigsegv/scripts',
 CopyFiles('src/lua', 'custom/sigsegv/scripts',
   [
     'globals.lua',
-    'natives.lua'
+    'library.lua'
   ]
 )
 

@@ -65,12 +65,12 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
-        if ((!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        auto server = reinterpret_cast<CBaseServer *>(this);
+        if (server == hltv || (!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
         if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
             std::vector<CBaseClient *> clientList;
-            auto server = reinterpret_cast<CBaseServer *>(this);
 
             // Make sure all slots are taken
             if (server->GetClientCount() != server->GetMaxClients()) {
