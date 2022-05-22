@@ -5790,6 +5790,12 @@
 					type "sym"
 					sym  "_Z27SendProxy_StringT_To_StringPK8SendPropPKvS3_P8DVariantii"
 				}
+				"SendProxy_StringToString"
+				{
+					type "sym"
+					sym  "_Z24SendProxy_StringToStringPK8SendPropPKvS3_P8DVariantii"
+				}
+				
 				"CBasePlayer::PlayerRunCommand"
 				{
 					type "sym"
