@@ -370,6 +370,24 @@ function CEntity:RotateTowards(entity) end
 function CEntity:AddModule(name) end
 function CEntity:RemoveModule(name) end
 
+--Hides entity to the provided player
+---@param player Entity
+---@return nil
+function CEntity:HideTo(player) end
+
+--Shows entity to the provided player, if it was previously hidden
+---@param player Entity
+---@return nil
+function CEntity:ShowTo(player) end
+
+--Hides entity to all players by default
+---@return nil
+function CEntity:HideToAll() end
+
+--Shows entity to all players, if it was previously hidden
+---@return nil
+function CEntity:ShowToAll() end
+
 -------------
 -- Player inputs
 -------------

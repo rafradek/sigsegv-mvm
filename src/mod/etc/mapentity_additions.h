@@ -110,6 +110,15 @@ namespace Mod::Etc::Mapentity_Additions
         bool popInit = false;
     };
 
+    class VisibilityModule : public EntityModule
+    {
+    public:
+        VisibilityModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+        bool defaultHide = false;
+        std::vector<edict_t *> hideTo;
+    };
+
 
     using CustomInputFunction = void (*)(CBaseEntity *, const char *, CBaseEntity *, CBaseEntity *, variant_t &);
     CustomInputFunction *GetCustomInput(CBaseEntity *ent, const char *szInputName);

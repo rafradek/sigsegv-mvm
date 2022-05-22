@@ -1886,6 +1886,70 @@ namespace Mod::Etc::Mapentity_Additions
                 variant.SetEntity(servertools->FindEntityByName(nullptr, Value.String()));
                 ent->SetCustomVariable("colfilter", variant);
             }
+        }},
+        {"HideTo"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
+            if (Value.FieldType() == FIELD_EHANDLE) {
+                auto target = ToTFPlayer(Value.Entity().Get());
+                if (target == nullptr || target->IsFakeClient() || target->IsHLTV()) return;
+
+                auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), target->edict());
+                if (!mod->defaultHide && entry == mod->hideTo.end())
+                    mod->hideTo.push_back(target->edict());
+                else if (mod->defaultHide && entry != mod->hideTo.end())
+                    mod->hideTo.erase(entry);
+            }
+            else {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                    CTFPlayer *player = ToTFPlayer(target);
+                    if (player == nullptr || player->IsFakeClient() || player->IsHLTV()) continue;
+
+                    auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), player->edict());
+                    if (!mod->defaultHide && entry == mod->hideTo.end())
+                        mod->hideTo.push_back(player->edict());
+                    else if (mod->defaultHide && entry != mod->hideTo.end())
+                        mod->hideTo.erase(entry);
+                }
+            }
+            ent->DispatchUpdateTransmitState();
+        }},
+        {"ShowTo"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
+            if (Value.FieldType() == FIELD_EHANDLE) {
+                auto target = ToTFPlayer(Value.Entity().Get());
+                if (target == nullptr || target->IsFakeClient() || target->IsHLTV()) return;
+
+                auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), target->edict());
+                if (mod->defaultHide && entry == mod->hideTo.end())
+                    mod->hideTo.push_back(target->edict());
+                else if (!mod->defaultHide && entry != mod->hideTo.end())
+                    mod->hideTo.erase(entry);
+            }
+            else {
+                for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
+                    CTFPlayer *player = ToTFPlayer(target);
+                    if (player == nullptr || player->IsFakeClient() || player->IsHLTV()) continue;
+
+                    auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), player->edict());
+                    if (mod->defaultHide && entry == mod->hideTo.end())
+                        mod->hideTo.push_back(player->edict());
+                    else if (!mod->defaultHide && entry != mod->hideTo.end())
+                        mod->hideTo.erase(entry);
+                }
+            }
+            ent->DispatchUpdateTransmitState();
+        }},
+        {"HideToAll"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
+            mod->defaultHide = true;
+            mod->hideTo.clear();
+            ent->DispatchUpdateTransmitState();
+        }},
+        {"ShowToAll"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
+            mod->defaultHide = false;
+            mod->hideTo.clear();
+            ent->DispatchUpdateTransmitState();
         }}
     });
 }

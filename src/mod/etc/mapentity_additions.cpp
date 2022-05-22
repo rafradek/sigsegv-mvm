@@ -168,7 +168,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
 
-    void *stringTSendProxy = nullptr;
+    void *stringSendProxy = nullptr;
     CStandardSendProxies* sendproxies = nullptr;
     void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset) {
         if (prop == nullptr) return;
@@ -214,7 +214,7 @@ namespace Mod::Etc::Mapentity_Additions
         }
         else if (propType == DPT_String) {
             auto proxyfn = prop->GetProxyFn();
-            if (proxyfn == stringTSendProxy) {
+            if (proxyfn != stringSendProxy) {
                 entry.fieldType = FIELD_STRING;
             }
             else {
@@ -1671,6 +1671,53 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CCollisionEvent_ShouldCollide)(pObj0, pObj1, pGameData0, pGameData1);
     }
 
+    DETOUR_DECL_MEMBER(int, CBaseEntity_DispatchUpdateTransmitState)
+	{
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        auto mod = entity->GetEntityModule<VisibilityModule>("visibility");
+        if (mod != nullptr) {
+            if (mod->hideTo.empty()) {
+                if (mod->defaultHide) {
+                    entity->SetTransmitState(FL_EDICT_DONTSEND);
+                    return FL_EDICT_DONTSEND;
+                }
+            }
+            else {
+                entity->SetTransmitState(FL_EDICT_FULLCHECK);
+                return FL_EDICT_FULLCHECK;
+            }
+        }
+        return DETOUR_MEMBER_CALL(CBaseEntity_DispatchUpdateTransmitState)();
+    }
+
+    bool ModVisibilityUpdate(CBaseEntity *entity, const CCheckTransmitInfo *info)
+    {
+        auto mod = entity->GetEntityModule<VisibilityModule>("visibility");
+        if (mod != nullptr) {
+            bool hide = mod->defaultHide;
+            for (auto player : mod->hideTo) {
+                if (player == info->m_pClientEnt) {
+                    hide = !hide;
+                    break;
+                }
+            }
+            if (hide) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    DETOUR_DECL_MEMBER(int, CBaseEntity_ShouldTransmit, const CCheckTransmitInfo *info)
+	{
+        {
+            auto entity = reinterpret_cast<CBaseEntity *>(this);
+            if (entity->GetExtraEntityData() != nullptr && ModVisibilityUpdate(entity, info))
+                return FL_EDICT_DONTSEND;
+        }
+        return DETOUR_MEMBER_CALL(CBaseEntity_ShouldTransmit)(info);
+    }
+
     void ClearFakeProp()
     {
         while (!FakePropModule::List().empty() ) {
@@ -1712,6 +1759,8 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_VHOOK(CMathCounter_Activate, TypeName<CMathCounter>(), "CBaseEntity::Activate");
             MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
             MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_ShouldTransmit, "CBaseEntity::ShouldTransmit");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState, "CBaseEntity::DispatchUpdateTransmitState");
 
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
@@ -1732,7 +1781,7 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual bool OnLoad() override
 		{
-            stringTSendProxy = AddrManager::GetAddr("SendProxy_StringT_To_String");
+            stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
             ActivateLoadedInput();
             if (servertools->GetEntityFactoryDictionary()->FindFactory("$filter_keyvalue") == nullptr) {
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_keyvalue");

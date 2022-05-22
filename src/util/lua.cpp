@@ -1111,7 +1111,7 @@ namespace Util::Lua
         }
     }
 
-    void *stringTSendProxy = nullptr;
+    void *stringSendProxy = nullptr;
     CStandardSendProxies* sendproxies = nullptr;
     int LEntityDumpProperties(lua_State *l)
     {
@@ -2238,6 +2238,9 @@ namespace Util::Lua
             auto anglesptr = LAngleGetNoCheck(l, -1);
             if (anglesptr != nullptr) {
                 angles = *anglesptr;
+            }
+            else if (startptrentity != nullptr) {
+                angles = startptrentity->EyeAngles();
             }
             Vector fwd;
             AngleVectors(angles, &fwd);
@@ -3555,7 +3558,7 @@ namespace Util::Lua
 		
         virtual void PreLoad() override
         {
-            stringTSendProxy = AddrManager::GetAddr("SendProxy_StringT_To_String");
+            stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
         }
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
