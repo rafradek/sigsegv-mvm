@@ -973,8 +973,10 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
             float float_value = value.m_Float;
 
             if (attr_def->IsType<CSchemaAttributeType_String>()) {
-                const char *pstr;
-                CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+                const char *pstr = "";
+                if (value.m_String != nullptr) {
+                    CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+                }
                 V_strncpy(val_buf, pstr, sizeof(val_buf));
             }
             else {
@@ -1030,8 +1032,10 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
 
 
             if (attr_def->IsType<CSchemaAttributeType_String>()) {
-                const char *pstr;
-                CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+                const char *pstr = "";
+                if (value.m_String != nullptr) {
+                    CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+                }
                 V_strncpy(val_buf, pstr, sizeof(val_buf));
             }
             else {

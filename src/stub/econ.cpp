@@ -210,6 +210,10 @@ void CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& 
 		snprintf(buf, buf_len, "%f", value.m_Float);
 	}
 	else if (this->IsType<CSchemaAttributeType_String>()) {
+		if (value.m_String == nullptr) {
+			*buf = '\0'; 
+			return;
+		}
 		const char *pstr;
 		CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
 		V_strncpy(buf, pstr, buf_len);
