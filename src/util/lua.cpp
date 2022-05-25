@@ -1539,6 +1539,15 @@ namespace Util::Lua
         lua_setfield(l, -2, "DamageCustom");
         lua_pushinteger(l, info.GetCritType());
         lua_setfield(l, -2, "CritType");
+        auto vec1 = LVectorAlloc(l);
+        *vec1 = info.GetDamagePosition();
+        lua_setfield(l, -2, "DamagePosition");
+        vec1 = LVectorAlloc(l);
+        *vec1 = info.GetDamageForce();
+        lua_setfield(l, -2, "DamageForce");
+        vec1 = LVectorAlloc(l);
+        *vec1 = info.GetReportedPosition();
+        lua_setfield(l, -2, "ReportedPosition");
     };
 
     void TableToDamageInfo(lua_State *l, int idx, CTakeDamageInfo &info) {
@@ -1569,6 +1578,24 @@ namespace Util::Lua
 
         lua_getfield(l, -1, "CritType");
         info.SetCritType((CTakeDamageInfo::ECritType)lua_tointeger(l, -1));
+        lua_pop(l, 1);
+
+        lua_getfield(l, -1, "DamagePosition");
+        auto vec = LVectorGetNoCheck(l, -1);
+        if (vec != nullptr) 
+            info.SetDamagePosition(*vec);
+        lua_pop(l, 1);
+
+        lua_getfield(l, -1, "DamageForce");
+        vec = LVectorGetNoCheck(l, -1);
+        if (vec != nullptr) 
+            info.SetDamageForce(*vec);
+        lua_pop(l, 1);
+
+        lua_getfield(l, -1, "ReportedPosition");
+        vec = LVectorGetNoCheck(l, -1);
+        if (vec != nullptr) 
+            info.SetReportedPosition(*vec);
         lua_pop(l, 1);
     };
 

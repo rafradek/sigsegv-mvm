@@ -813,13 +813,19 @@ DefaultTraceResultInfo = {
 ---@field DamageType number
 ---@field DamageCustom number
 ---@field CritType number
+---@field DamagePosition Vector
+---@field DamageForce Vector
+---@field ReportedPosition Vector
 DefaultTakeDamageInfo = {
     Attacker = nil, -- Attacker
     Inflictor = nil, -- Direct cause of damage, usually a projectile
     Weapon = nil,
     Damage = 0,
     DamageType = DMG_GENERIC, -- Damage type, see DMG_* globals. Can be combined with | operator
-    DamageCustom = TF_DMG_CUSTOM_NONE -- Custom damage type, see TF_DMG_* globals
+    DamageCustom = TF_DMG_CUSTOM_NONE, -- Custom damage type, see TF_DMG_* globals
+    DamagePosition = Vector(0,0,0), -- Where the target was hit at
+    DamageForce = Vector(0,0,0), -- Knockback force of the attack
+    ReportedPosition = Vector(0,0,0) -- Where the attacker attacked from
 }
 
 -- A single menu entry
