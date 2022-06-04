@@ -10,6 +10,8 @@
 #include "util/iterate.h"
 #include "stub/populators.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "stub/sendprop.h"
+#include "stub/server.h"
 
 // TODO: move to common.h
 #include <igamemovement.h>
@@ -921,22 +923,143 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			}
 		}
 	}
+	GlobalThunk<SendTable> DT_TFPlayerResource_g_SendTable("DT_TFPlayerResource::g_SendTable");
+	GlobalThunk<SendTable> DT_PlayerResource_g_SendTable("DT_PlayerResource::g_SendTable");
+	bool someone_pressed_score = false;
+	bool prev_someone_pressed_score = false;
+	unsigned int team_num_prop_index = 0;
+	int client_num = 0;
+
+	void WriteOverridePlayerTeam(const SendTable *pTable,
+	const void *pState,
+	const int nBits,
+	bf_write *pOut,
+	const int objectID,
+	int *pCheckProps,
+	int nCheckProps)
+	{
+		
+		CSendTablePrecalc *pPrecalc = pTable->m_pPrecalc;
+		CDeltaBitsWriter deltaBitsWriter( pOut );
+
+		bf_read inputBuffer( "SendTable_WritePropList->inputBuffer", pState, BitByte( nBits ), nBits );
+		CDeltaBitsReader inputBitsReader( &inputBuffer );
+		// Ok, they want to specify a small list of properties to check.
+		unsigned int iToProp = inputBitsReader.ReadNextPropIndex();
+		int i = 0;
+		while ( i < nCheckProps )
+		{
+			// Seek the 'to' state to the current property we want to check.
+			while ( iToProp < (unsigned int) pCheckProps[i] )
+			{
+				inputBitsReader.SkipPropData( pPrecalc->m_Props[iToProp] );
+				iToProp = inputBitsReader.ReadNextPropIndex();
+			}
+
+			if ( iToProp >= MAX_DATATABLE_PROPS )
+			{
+				break;
+			}
+			
+			if ( iToProp == (unsigned int) pCheckProps[i] )
+			{
+				const SendProp *pProp = pPrecalc->m_Props[iToProp];
+
+				deltaBitsWriter.WritePropIndex( iToProp );
+				
+				if (iToProp >= team_num_prop_index && iToProp < team_num_prop_index + 34) {
+					auto player = ToTFPlayer(UTIL_PlayerByIndex(iToProp - team_num_prop_index));
+					int nValue = 0;
+					if (player != nullptr) {
+						
+						nValue = player->GetTeamNumber();
+						if (UTIL_PlayerByIndex(client_num) != nullptr && (UTIL_PlayerByIndex(client_num)->m_nButtons & IN_SCORE)) {
+							if (player->IsBot() && player->GetTeamNumber() == TF_TEAM_RED) {
+								nValue = TF_TEAM_BLUE;
+							}
+							else if (!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) {
+								nValue = TF_TEAM_RED;
+							}
+						}
+					}
+					pOut->WriteUBitLong( nValue, 4, false );
+					inputBitsReader.SkipPropData( pProp );
+				}
+				else {
+					inputBitsReader.CopyPropData( deltaBitsWriter.GetBitBuf(), pProp ); 
+				}
+
+				// Seek to the next prop.
+				iToProp = inputBitsReader.ReadNextPropIndex();
+			}
+
+			++i;
+		}
+
+		inputBitsReader.ForceFinished(); // avoid a benign assert
+	}
+	
+	DETOUR_DECL_STATIC(void, SendTable_WritePropList,
+	const SendTable *pTable,
+	const void *pState,
+	const int nBits,
+	bf_write *pOut,
+	const int objectID,
+	int *pCheckProps,
+	int nCheckProps
+	)
+    {
+        if (someone_pressed_score && pTable == &DT_TFPlayerResource_g_SendTable.GetRef()) {
+            WriteOverridePlayerTeam(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+			return;
+        }
+		DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+    }
+	
+	DETOUR_DECL_MEMBER(void, CBaseServer_WriteDeltaEntities, CBaseClient *client, CClientFrame *to, CClientFrame *from, bf_write &pBuf )
+    {
+		client_num = client->m_nEntityIndex;
+		
+		/*if (someone_pressed_score) {
+			CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
+			PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket(TFPlayerResource()->entindex(), TFPlayerResource()->edict()->m_NetworkSerialNumber);
+			if (pPrevFrame->m_pChangeFrameList != nullptr && pPrevFrame->m_nSnapshotCreationTick + 3 < gpGlobals->tickcount) {
+				int prop[] = {team_num_prop_index};
+				pPrevFrame->m_pChangeFrameList->SetChangeTick(prop, 1, to->GetSnapshot()->m_nTickCount);
+			}
+
+		}*/
+
+        DETOUR_MEMBER_CALL(CBaseServer_WriteDeltaEntities)(client, to, from, pBuf);
+    }
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
 	{
-		static float angpre[34];
-		
-		ForEachTFPlayer([](CTFPlayer *player) {
-			if (IsMvMBlueHuman(player)) {
-				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_RED, ENTINDEX(player));
+		prev_someone_pressed_score = someone_pressed_score;
+		someone_pressed_score = false;
+
+		ForEachTFPlayer([&](CTFPlayer *player) {
+			if ((player->m_nButtons & IN_SCORE)) {
+				someone_pressed_score = true;
+				return false;
 			}
-		}); 
+			return true;
+		});
+		int prevTeamNum[34];
+		if (someone_pressed_score || prev_someone_pressed_score) {
+			for (int i = 0; i < 34; i++) {
+				prevTeamNum[i] = PlayerResource()->m_iTeam[i];
+				if (prevTeamNum[i] > TEAM_SPECTATOR) {
+					PlayerResource()->m_iTeam.SetIndex(gpGlobals->tickcount % 2, i);
+				}
+			}
+		}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
-		ForEachTFPlayer([](CTFPlayer *player) {
-			if (IsMvMBlueHuman(player)) {
-				PlayerResource()->m_iTeam.SetIndex(TF_TEAM_BLUE, ENTINDEX(player));
+		if (someone_pressed_score || prev_someone_pressed_score) {
+			for (int i = 0; i < 34; i++) {
+				PlayerResource()->m_iTeam.SetIndex(prevTeamNum[i], i);
 			}
-		}); 
+		}
 	}
 	
 	CBaseEntity *laser_dot = nullptr;
@@ -1011,7 +1134,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 		if (event != nullptr && strcmp(event->GetName(), "player_connect_client") == 0) {
 			int index = event->GetInt("index") + 1;
-			if (index < ARRAYSIZE(score_stats))
+			if (index < (int)ARRAYSIZE(score_stats))
 				score_stats[index].Reset();
 		}
 
@@ -1029,6 +1152,13 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					score_stats[index].m_iPrevBonusPoints += tfres->m_iBonusPoints[index];
 				}
 			}
+		}
+
+		// Switch team victory panels so it no longer shows you lost a wave after capturing it
+		extern ConVar cvar_force;
+		if (event != nullptr && cvar_force.GetBool() && strcmp(event->GetName(), "pve_win_panel") == 0) {
+			int teamnum = event->GetInt("winning_team");
+			event->SetInt("winning_team", teamnum == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
 		}
 		
 		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
@@ -1123,6 +1253,27 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 		return ret;
 	}
+
+	DETOUR_DECL_MEMBER(int, CBaseEntity_DispatchUpdateTransmitState)
+	{
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        if (someone_pressed_score && entity->GetClassname() == PStr<"tf_player_manager">()) {
+			return FL_EDICT_FULLCHECK;
+        }
+        return DETOUR_MEMBER_CALL(CBaseEntity_DispatchUpdateTransmitState)();
+    }
+	
+    DETOUR_DECL_MEMBER(int, CBaseEntity_ShouldTransmit, const CCheckTransmitInfo *info)
+	{
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        if (someone_pressed_score && entity->GetClassname() == PStr<"tf_player_manager">()) {
+			auto player = ToTFPlayer(GetContainingEntity(info->m_pClientEnt));
+			if (player != nullptr) {
+				return (player->m_nButtons & IN_SCORE) ? FL_EDICT_ALWAYS : FL_EDICT_DONTSEND;
+			}
+        }
+        return DETOUR_MEMBER_CALL(CBaseEntity_ShouldTransmit)(info);
+    }
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1220,10 +1371,37 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch,                  "CTFPlayer::Touch");
 			
 			// Allow blue players to appear on the scoreboard
-			// MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
+			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
+			MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,                  "SendTable_WritePropList");
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_WriteDeltaEntities, "CBaseServer::WriteDeltaEntities");
+			
+			
+			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState,     "CBaseEntity::DispatchUpdateTransmitState");
+			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_ShouldTransmit,                  "CBaseEntity::ShouldTransmit");
 			
 		}
-		
+		virtual bool OnLoad() override
+		{
+			auto precalc = DT_TFPlayerResource_g_SendTable.GetRef().m_pPrecalc;
+			auto &table = DT_PlayerResource_g_SendTable.GetRef();
+			SendProp *teamNumProp = nullptr;
+			for (int i = 0; i < table.GetNumProps(); i++) {
+				if (strcmp(table.GetProp(i)->GetName(), "m_iTeam") == 0) {
+					teamNumProp = table.GetProp(i)->GetDataTable()->GetProp(0);
+					break;
+				}
+			}
+			if (teamNumProp != nullptr) {
+				for (int i = 0; i < precalc->m_Props.Count(); i++) {
+					if (precalc->m_Props[i] == teamNumProp) {
+						team_num_prop_index = i;
+						break;
+					}
+				}
+			}
+			return true;
+		}
+
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void OnDisable() override
@@ -1245,25 +1423,25 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;
 					if (player->IsBot())                         return;
 					int plIndex = ENTINDEX(player);
-					if (plIndex >= ARRAYSIZE(prevPressedScore)) return;
+					if (plIndex >= (int)ARRAYSIZE(prevPressedScore)) return;
 					
-					if(player->m_nButtons & IN_SCORE && !prevPressedScore[plIndex]) {
-						IBaseMenu *menu = nullptr;
-						menus->GetDefaultStyle()->GetClientMenu(plIndex, (void **)&menu);
-						if (menu != nullptr && menu->GetDefaultTitle() != nullptr && strcmp(menu->GetDefaultTitle(), "Name                        |Score|Damage|Tank|Healing|Support|Cash") == 0) {
-							auto panel = menus->GetDefaultStyle()->CreatePanel();
-							ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
-							panel->DrawItem(info1);
-							ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
-							panel->DrawItem(info2);
-							panel->SetSelectableKeys(255);
-							panel->SendDisplay(plIndex, &scoreboard_handler_def, 1);
-						}
-						else {
-							DisplayScoreboard(player);
-						}
+					// if(player->m_nButtons & IN_SCORE && !prevPressedScore[plIndex]) {
+					// 	IBaseMenu *menu = nullptr;
+					// 	menus->GetDefaultStyle()->GetClientMenu(plIndex, (void **)&menu);
+					// 	if (menu != nullptr && menu->GetDefaultTitle() != nullptr && strcmp(menu->GetDefaultTitle(), "Name                        |Score|Damage|Tank|Healing|Support|Cash") == 0) {
+					// 		auto panel = menus->GetDefaultStyle()->CreatePanel();
+					// 		ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
+					// 		panel->DrawItem(info1);
+					// 		ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
+					// 		panel->DrawItem(info2);
+					// 		panel->SetSelectableKeys(255);
+					// 		panel->SendDisplay(plIndex, &scoreboard_handler_def, 1);
+					// 	}
+					// 	else {
+					// 		DisplayScoreboard(player);
+					// 	}
 						
-					}
+					// }
 					prevPressedScore[plIndex] = (player->m_nButtons & IN_SCORE) == IN_SCORE;
 
 					if (gpGlobals->tickcount % 3 == 1 && cvar_spawn_protection.GetBool() ) {
@@ -1312,7 +1490,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 						}
 					}
 
-					if (gpGlobals->tickcount % 5 == 0) {
+					if (gpGlobals->tickcount % 5 == 0 && !(player->m_nButtons & IN_SCORE)) {
 						hudtextparms_t textparam;
 						textparam.channel = 1;
 						textparam.x = 0.042f;

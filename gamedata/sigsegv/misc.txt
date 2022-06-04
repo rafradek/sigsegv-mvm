@@ -5841,6 +5841,33 @@
 					type "sym"
 					sym  "_ZN11CBasePlayer5TouchEP11CBaseEntity"
 				}
+				"CTFTankBossBody::GetSolidMask"
+				{
+					type "sym"
+					sym  "_ZNK15CTFTankBossBody12GetSolidMaskEv"
+				}
+				"CNetChan::SendDatagram"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN8CNetChan12SendDatagramEP8bf_write"
+				}
+				"SendTable_WritePropList"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_Z23SendTable_WritePropListPK9SendTablePKviP8bf_writeiPKii"
+				}
+				"CTFGameRules::SendWinPanelInfo"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules16SendWinPanelInfoEb"
+				}
+				"CTFGameRules::BroadcastSound"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules14BroadcastSoundEiPKciP11CBasePlayer"
+				}
 				
 			}
 			"addrs_group"

@@ -328,6 +328,7 @@ namespace Mod::Etc::Mapentity_Additions
         if (!rotationonly) {
             VectorTransform(offset, transform, pos);
             this->SetAbsOrigin(pos);
+            this->SetAbsVelocity(vec3_origin);
         }
 
         if (!posonly) {
@@ -388,7 +389,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     void FireGetInput(CBaseEntity *entity, GetInputType type, const char *name, CBaseEntity *activator, CBaseEntity *caller, variant_t &value) {
-        char param_tokenized[256] = "";
+        char param_tokenized[512] = "";
         V_strncpy(param_tokenized, value.String(), sizeof(param_tokenized));
         char *targetstr = strtok(param_tokenized,"|");
         char *action = strtok(NULL,"|");
@@ -819,7 +820,7 @@ namespace Mod::Etc::Mapentity_Additions
         {"GetPlayerAttribute"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             CTFPlayer *player = ToTFPlayer(ent);
             if (player != nullptr) {
-                char param_tokenized[256] = "";
+                char param_tokenized[512] = "";
                 V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
                 char *attrName = strtok(param_tokenized,"|");
                 char *targetstr = strtok(NULL,"|");
@@ -850,7 +851,7 @@ namespace Mod::Etc::Mapentity_Additions
         {"GetItemAttribute"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             CTFPlayer *player = ToTFPlayer(ent);
                 if (player != nullptr) {
-                    char param_tokenized[256] = "";
+                    char param_tokenized[512] = "";
                     V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
                     char *itemSlot = strtok(param_tokenized,"|");
                     char *attrName = strtok(NULL,"|");
@@ -1841,7 +1842,7 @@ namespace Mod::Etc::Mapentity_Additions
             mod->props.erase(szInputName + strlen("ResetClientProp$"));
         }},
         {"GetEntIndex"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            char param_tokenized[256] = "";
+            char param_tokenized[512] = "";
             V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
             char *targetstr = strtok(param_tokenized,"|");
             char *action = strtok(NULL,"|");

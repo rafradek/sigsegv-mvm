@@ -1399,23 +1399,33 @@ namespace Mod::Pop::PopMgr_Extensions
 			THINK_FUNC_SET(player, PlayerInspect, gpGlobals->curtime);
 		}
 	}
-	
-	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_BroadcastSound, int iTeam, const char *sound, int iAdditionalSoundFlags)
+	const char *BroadcastSound(const char *sound)
 	{
 		if (IsMannVsMachineMode()) {
 		//	DevMsg("CTeamplayRoundBasedRules::BroadcastSound(%d, \"%s\", 0x%08x)\n", iTeam, sound, iAdditionalSoundFlags);
 			
 			if (sound != nullptr && state.m_DisableSounds.count(std::string(sound)) != 0) {
 				DevMsg("Blocked sound \"%s\" via CTeamplayRoundBasedRules::BroadcastSound\n", sound);
-				return;
+				return nullptr;
 			}
 			else if (sound != nullptr && state.m_OverrideSounds.count(std::string(sound)) != 0) {
-				
-				DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_BroadcastSound)(iTeam, state.m_OverrideSounds[sound].c_str(), iAdditionalSoundFlags);
 				DevMsg("Blocked sound \"%s\" via CBaseEntity::EmitSound\n", sound);
-				return;
+				return state.m_OverrideSounds[sound].c_str();
 			}
 		}
+		return sound;
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFGameRules_BroadcastSound, int iTeam, const char *sound, int iAdditionalSoundFlags)
+	{
+		sound = BroadcastSound(sound);
+		
+		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_BroadcastSound)(iTeam, sound, iAdditionalSoundFlags);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_BroadcastSound, int iTeam, const char *sound, int iAdditionalSoundFlags)
+	{
+		sound = BroadcastSound(sound);
 		
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_BroadcastSound)(iTeam, sound, iAdditionalSoundFlags);
 	}
@@ -6220,6 +6230,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget,              "CTFProjectile_Arrow::StrikeTarget");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_IsPVEModeControlled,              "CTFGameRules::IsPVEModeControlled");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_UpgradeTouch,                        "CUpgrades::UpgradeTouch");
+			
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_BroadcastSound,                   "CTFGameRules::BroadcastSound");
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_BroadcastSound,       "CTeamplayRoundBasedRules::BroadcastSound");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_EmitSound_static_emitsound,        "CBaseEntity::EmitSound [static: emitsound]");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_EmitSound_static_emitsound_handle, "CBaseEntity::EmitSound [static: emitsound + handle]");

@@ -3020,7 +3020,7 @@ namespace Mod::Attr::Custom_Attributes
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit name restrict", filter);
 				
 				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
-					char input_tokenized[256];
+					char input_tokenized[512];
 					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
 					
 					char *target = strtok(input_tokenized,"^");

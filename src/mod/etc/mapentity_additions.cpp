@@ -227,7 +227,6 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, std::string &name) {
-        TIME_SCOPE2(Sendproptime);
         size_t classIndex = 0;
         for (; classIndex < send_prop_cache_classes.size(); classIndex++) {
             if (send_prop_cache_classes[classIndex] == serverClass) {

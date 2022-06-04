@@ -100,6 +100,9 @@
 				"g_bDisableEhandleAccess" "g_bDisableEhandleAccess"
 				"s_RemoveImmediateSemaphore" "_ZL26s_RemoveImmediateSemaphore"
 				"g_WorldEntity" "_ZL13g_WorldEntity"
+				"DT_TFPlayerResource::g_SendTable" "_ZN19DT_TFPlayerResource11g_SendTableE"
+				"DT_PlayerResource::g_SendTable" "_ZN17DT_PlayerResource11g_SendTableE"
+				
 			}
 			
 			"addrs_group"

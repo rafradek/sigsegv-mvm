@@ -801,4 +801,46 @@ template<typename T> void ConVar_SetValue(ConVarRef& cvar, const T& val) { cvar.
 template<> inline void ConVar_SetValue(ConVarRef& cvar, const std::string& val) { cvar.SetValue(val.c_str()); }
 
 void SendConVarValue(int playernum, const char *convar, const char *value);
+
+static const char *nexttoken(char *token, size_t nMaxTokenLen, const char *str, char sep)
+{
+	if (nMaxTokenLen < 1)
+	{
+		Assert(nMaxTokenLen > 0);
+		return NULL;
+	}
+
+	if ((str == NULL) || (*str == '\0'))
+	{
+		*token = '\0';
+		return(NULL);
+	}
+
+	char *pTokenLast = token + nMaxTokenLen - 1;
+
+	//
+	// Copy everything up to the first separator into the return buffer.
+	// Do not include separators in the return buffer.
+	//
+	while ((*str != sep) && (*str != '\0') && (token < pTokenLast))
+	{
+		*token++ = *str++;
+	}
+	*token = '\0';
+
+	//
+	// Advance the pointer unless we hit the end of the input string.
+	//
+	if (*str == '\0')
+	{
+		return(str);
+	}
+
+	return(++str);
+}
+
+template <size_t maxLenInChars> inline const char *nexttoken( OUT_Z_ARRAY char (&pToken)[maxLenInChars], const char *str, char sep)
+{
+	return nexttoken( pToken, maxLenInChars, str, sep );
+}
 #endif

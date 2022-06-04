@@ -1,4 +1,13 @@
 ----------------
+-- Teams
+----------------
+TEAM_UNASSIGNED = 0
+TEAM_SPECTATOR = 1
+TEAM_RED = 2
+TEAM_BLUE = 3
+TEAM_HALLOWEEN = 5
+
+----------------
 -- Collision groups
 ----------------
 COLLISION_GROUP_NONE = 0

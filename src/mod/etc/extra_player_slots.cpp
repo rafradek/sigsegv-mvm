@@ -607,21 +607,27 @@ namespace Mod::Etc::Extra_Player_Slots
                 duplicate = gameeventmanager->DuplicateEvent(event);
                 if (ENTINDEX(victim) > 33) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    duplicate->SetInt("userid", fakePlayer->GetUserID());
-                    fakePlayers.push_back(fakePlayer);
-                    participants.push_back(victim);
+                    if (fakePlayer != nullptr) {
+                        duplicate->SetInt("userid", fakePlayer->GetUserID());
+                        fakePlayers.push_back(fakePlayer);
+                        participants.push_back(victim);
+                    }
                 }
                 if (ENTINDEX(attacker) > 33) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    duplicate->SetInt("attacker", fakePlayer->GetUserID());
-                    fakePlayers.push_back(fakePlayer);
-                    participants.push_back(attacker);
+                    if (fakePlayer != nullptr) {
+                        duplicate->SetInt("attacker", fakePlayer->GetUserID());
+                        fakePlayers.push_back(fakePlayer);
+                        participants.push_back(attacker);
+                    }
                 }
                 if (ENTINDEX(assister) > 33) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    duplicate->SetInt("assister", fakePlayer->GetUserID());
-                    fakePlayers.push_back(fakePlayer);
-                    participants.push_back(assister);
+                    if (fakePlayer != nullptr) {
+                        duplicate->SetInt("assister", fakePlayer->GetUserID());
+                        fakePlayers.push_back(fakePlayer);
+                        participants.push_back(assister);
+                    }
                 }
                 //auto fakePlayer = nullptr;
                 /*for (int i = 33; i >= 1; i--) {

@@ -92,6 +92,7 @@ namespace Mod::Pop::Tank_Extensions
 		bool crit_immune        = false;
 		bool trigger_destroy_fix = false;
 		bool no_crush_damage    = false;
+		bool solid_to_brushes   = false;
 
 		std::string sound_ping =   "";
 		std::string sound_deploy =   "";
@@ -393,6 +394,8 @@ namespace Mod::Pop::Tank_Extensions
 				spawners[spawner].trigger_destroy_fix = subkey->GetBool();
 			} else if (FStrEq(name, "NoCrushDamage")) {
 				spawners[spawner].no_crush_damage = subkey->GetBool();
+			} else if (FStrEq(name, "SolidToBrushes")) {
+				spawners[spawner].solid_to_brushes = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -1045,7 +1048,7 @@ namespace Mod::Pop::Tank_Extensions
 	RefCount rc_CTFBaseBoss_ResolvePlayerCollision;
 	DETOUR_DECL_MEMBER(void, CTFBaseBoss_ResolvePlayerCollision, CTFPlayer *toucher)
 	{
-		SpawnerData *data = FindSpawnerDataForTank(reinterpret_cast<CTFBaseBoss *>(this));
+		SpawnerData *data = FindSpawnerDataForBoss(reinterpret_cast<CTFBaseBoss *>(this));
 		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_ResolvePlayerCollision, data != nullptr && data->no_crush_damage);
 		DETOUR_MEMBER_CALL(CTFBaseBoss_ResolvePlayerCollision)(toucher);
 	}
@@ -1057,6 +1060,15 @@ namespace Mod::Pop::Tank_Extensions
 			return 0;
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+	}
+
+	DETOUR_DECL_MEMBER(uint, CTFTankBossBody_GetSolidMask)
+	{
+		auto data = FindSpawnerDataForTank((CTFTankBoss *) reinterpret_cast<IBody *>(this)->GetBot()->GetEntity());
+		if (data != nullptr && data->solid_to_brushes) {
+			return CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_MOVEABLE;
+		}
+		return DETOUR_MEMBER_CALL(CTFTankBossBody_GetSolidMask)();
 	}
 
 	class CMod : public IMod, public IModCallbackListener
@@ -1101,7 +1113,8 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_Touch, "CTFBaseBoss::Touch");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_ResolvePlayerCollision, "CTFBaseBoss::ResolvePlayerCollision");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage,        "CTFPlayer::OnTakeDamage");
-
+			MOD_ADD_DETOUR_MEMBER(CTFTankBossBody_GetSolidMask,        "CTFTankBossBody::GetSolidMask");
+			
 
 			// Tank flame damage fix
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");

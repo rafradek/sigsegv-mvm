@@ -71,5 +71,6 @@
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [
         "lowercase-global"
-    ]
+    ],
+    "terminal.integrated.copyOnSelection": false
 }

@@ -15,6 +15,7 @@
 #include <fmt/core.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
+#include "tier1/strtools.h"
 
 namespace Mod::MvM::Extended_Upgrades
 {
@@ -211,22 +212,27 @@ namespace Mod::MvM::Extended_Upgrades
     {
         for(const auto &output : outputs){
             
-            boost::tokenizer<boost::char_separator<char>> tokens(output, boost::char_separator<char>(","));
-            auto tokens_it = tokens.begin();
-            std::string target = tokens_it != tokens.end() ? *tokens_it++ : "";
-            std::string action = tokens_it != tokens.end() ? *tokens_it++ : "";
-            std::string value = tokens_it != tokens.end() ? *tokens_it++ : "";
-            std::string delay = tokens_it != tokens.end() ? *tokens_it++ : "";
-                
-            if(target != "" && action != "") {
+			char target[256];
+            char action[256];
+            char value[256];
+            char delay[256];
+            
+			const char *psz = nexttoken(target, output.c_str(), ',');
+            psz = nexttoken(action, psz, ',');
+            psz = nexttoken(value, psz, ',');
+            psz = nexttoken(delay, psz, ',');
+
+            if(target[0] != '\0' && action[0] != '\0') {
                 // Use provided default parameter
                 variant_t actualvalue = defaultValue;
-                if (value != "") {
-                    string_t stringvalue = AllocPooledString(value.c_str());
+                if (value[0] != '\0') {
+                    string_t stringvalue = AllocPooledString(value);
                     actualvalue.SetString(stringvalue);
                 }
+                
+                Msg("eh %d %d\n", defaultValue.Int(), actualvalue.Int());
                 CEventQueue &que = g_EventQueue;
-                que.AddEvent(STRING(AllocPooledString(target.c_str())), STRING(AllocPooledString(action.c_str())), actualvalue, strtof(delay.c_str(), nullptr), activator, caller, -1);
+                que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, delay[0] != '\0' ? strtof(delay, nullptr) : 0, activator, caller, -1);
             }
         }
     }
@@ -389,7 +395,7 @@ namespace Mod::MvM::Extended_Upgrades
             slot = 2;
         else if (V_stricmp(string, "PDA") == 0)
             slot = 5;
-        else if (V_stricmp(string, "Canteen") == 0)
+        else if (V_stricmp(string, "Canteen") == 0 || V_stricmp(string, "Action") == 0)
             slot = 9;
         else
             slot = strtol(string, nullptr, 10);
@@ -1175,12 +1181,24 @@ namespace Mod::MvM::Extended_Upgrades
         DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
     }
 
+    RefCount rc_GetUpgradeStepData;
+    DETOUR_DECL_STATIC(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CEconEntity **entity)
+	{
+        auto result = DETOUR_STATIC_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+        if (rc_GetUpgradeStepData && entity != nullptr && rtti_cast<CTFPowerupBottle *>(*entity) != nullptr) {
+            *entity = nullptr;
+        }
+        return result;
+    }
+    
     DETOUR_DECL_STATIC(int, GetUpgradeStepData, CTFPlayer *player, int slot, int upgrade, int& cur_step, bool& over_cap)
 	{
+        SCOPED_INCREMENT_IF(rc_GetUpgradeStepData, extended_upgrades_start_index != -1 && upgrade >= extended_upgrades_start_index);
         if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
             auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
             auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
             //DevMsg("IsString(%d)\n", attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
+
             if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
                 CAttributeList *attribList = nullptr;
                 if (slot == -1) {
@@ -1263,6 +1281,10 @@ namespace Mod::MvM::Extended_Upgrades
             // Properly track string attribute upgrades
             MOD_ADD_DETOUR_STATIC(GetUpgradeStepData, "GetUpgradeStepData");
             MOD_ADD_DETOUR_STATIC(ApplyUpgrade_Default, "ApplyUpgrade_Default");
+
+            // Remove hardcoded bottle upgrade steps
+            //MOD_ADD_DETOUR_STATIC(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, "CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");
+            
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -1311,9 +1333,9 @@ namespace Mod::MvM::Extended_Upgrades
                         LOADOUT_POSITION_PDA,
                         LOADOUT_POSITION_ACTION,
                     }) {
-                        CBaseCombatWeapon *item = player->Weapon_GetSlot((int)slot);
+                        auto *item = GetEconEntityAtLoadoutSlot(player, (int)slot);
 
-                        bool found_now = WeaponHasValidUpgrades(item, player);
+                        bool found_now = item != nullptr && WeaponHasValidUpgrades(item, player);
                         found_any |= found_now;
                         if (found_now && item == player->GetActiveWeapon()) {
                             

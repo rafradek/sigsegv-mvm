@@ -3579,7 +3579,6 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CBaseTrigger_EndTouch, "CBaseTrigger::EndTouch");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_Touch, "CBasePlayer::Touch");
             MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
-
             
         }
 		
