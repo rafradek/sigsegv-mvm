@@ -666,7 +666,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AutoWeaponStrip                 ("sig_auto_weapon_strip"),
 			m_RemoveOffhandViewmodel          ("sig_etc_entity_limit_manager_viewmodel"),
 			m_RemoveBotExpressions            ("sig_etc_entity_limit_manager_remove_expressions"),
-			m_ExtraBotSlotsNoDeathcam         ("sig_etc_extra_player_slots_no_death_cam")
+			m_ExtraBotSlotsNoDeathcam         ("sig_etc_extra_player_slots_no_death_cam"),
+			m_NoRobotFootsteps                ("sig_mvm_jointeam_blue_no_footsteps")
 			
 		{
 			this->Reset();
@@ -818,6 +819,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_RemoveOffhandViewmodel.Reset();
 			this->m_RemoveBotExpressions.Reset();
 			this->m_ExtraBotSlotsNoDeathcam.Reset();
+			this->m_NoRobotFootsteps.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1045,6 +1047,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_RemoveOffhandViewmodel;
 		CPopOverride_ConVar<bool> m_RemoveBotExpressions;
 		CPopOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
+		CPopOverride_ConVar<bool> m_NoRobotFootsteps;
 		
 		
 		
@@ -1479,7 +1482,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				es.m_nPitch = params.m_nPitch;
 				ModifyEmitSound(es);
 				//CBaseEntity::EmitSound(filter,iEntIndex,es);
-				
+			
 				DETOUR_STATIC_CALL(CBaseEntity_EmitSound_static_emitsound)(filter, iEntIndex, es);
 				DevMsg("Blocked sound \"%s\" via CBaseEntity::EmitSound\n", sound);
 				return;
@@ -6025,6 +6028,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_RemoveBotExpressions.Set(subkey->GetBool());
 			} else if (FStrEq(name, "ExtraBotSlotsNoDeathcam")) {
 				state.m_ExtraBotSlotsNoDeathcam.Set(subkey->GetBool());
+			} else if (FStrEq(name, "NoBluHumanFootsteps")) {
+				state.m_NoRobotFootsteps.Set(subkey->GetBool());
 			} else if (FStrEq(name, "LuaScript")) {
 				state.m_Scripts.push_back(subkey->GetString());
 			} else if (FStrEq(name, "LuaScriptFile")) {

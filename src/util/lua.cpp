@@ -2752,6 +2752,12 @@ namespace Util::Lua
 
         FileHandle_t f = filesystem->Open(path, "rb", "GAME");
         if (f == nullptr) {
+            f = filesystem->Open(CFmtStr("scripts/%s",path), "rb", "GAME");
+        }
+        if (f == nullptr) {
+            f = filesystem->Open(CFmtStr("scripts/population/%s",path), "rb", "GAME");
+        }
+        if (f == nullptr) {
             SendWarningConsoleMessageToAdmins("Cannot find lua script file %s\n", path);
             return;
         }

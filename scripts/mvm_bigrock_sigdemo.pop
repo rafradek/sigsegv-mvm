@@ -134,6 +134,7 @@ WaveSchedule
 	BluHumanSpawnProtection 1 [$SIGSEGV] // BLU players are invincible in spawn (default: 1)
 	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
 	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
+	NoBluHumanFootsteps 1 [$SIGSEGV] // Disables robot footsteps for BLU humans (default: 0)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -1413,6 +1414,27 @@ WaveSchedule
 					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
 				}
+				AddAttribute [$SIGSEGV] 
+				{
+					Item "TF_WEAPON_KNIFE" // Item name to which add the attribute, or Player for player attribute, or Active for active weapon
+					Name "damage bonus" // Attribute name
+					Value 2 // Attribute value
+					Delay 0 //Delay before adding the attribute
+					Cooldown 1 //Cooldown between adding attributes
+					Repeats 0 //How many times should the attribute be added (Matters only if it was previously removed)
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
+				RemoveAttribute [$SIGSEGV] 
+				{
+					Item "TF_WEAPON_KNIFE" // Item name from which remove the attribute, or Player for player attribute, or Active for active weapon
+					Name "damage bonus" // Attribute name
+					Delay 4 //Delay before removing the attribute
+					Cooldown 1 //Cooldown between removing attributes
+					Repeats 0 //How many times should the attribute be added (Matters only if it was previously added)
+					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
+					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
+				}
 			}
 		}
     }
@@ -1520,6 +1542,7 @@ WaveSchedule
 				CritImmune 1 [$SIGSEGV] // If set, the tank is immune to crits (Default: 0)
 				TriggerDestroyBuildingFix 1 [$SIGSEGV] // Fixes trigger entities destroying buildings on touch if parented to the tank (Default: 0)
 				NoCrushDamage 1 [$SIGSEGV] // Tanks cannot crush players (Default: 0)
+				SolidToBrushes 1 [$SIGSEGV] // Tanks is solid to brush entities (Default: 0)
 			}
         }
 		WaveSpawn

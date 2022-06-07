@@ -577,8 +577,16 @@ namespace Mod::Pop::TFBot_Extensions
 			KeyValues *templates = g_pPopulationManager->m_pTemplates;
 			if (templates != nullptr) {
 				KeyValues *tmpl = templates->FindKey(addtemplate->GetString());
-				if (tmpl != nullptr)
-					addtemplate->SetNextKey(tmpl->GetFirstSubKey()->MakeCopy(true));
+				if (tmpl != nullptr) {
+					KeyValues *next = addtemplate->GetNextKey();
+					KeyValues *copy = tmpl->GetFirstSubKey()->MakeCopy(true);
+					addtemplate->SetNextKey(copy);
+					KeyValues *copyNext = copy;
+					while (copyNext->GetNextKey() != nullptr) {
+						copyNext = copyNext->GetNextKey();
+					}
+					copyNext->SetNextKey(next);
+				}
 				else {
 					Warning("CTFBotSpawner: Template %s not found\n", addtemplate->GetString());
 				}

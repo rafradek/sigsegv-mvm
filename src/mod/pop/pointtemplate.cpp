@@ -794,6 +794,7 @@ namespace Mod::Pop::PointTemplate
 	}
 
 	RefCount rc_CCollisionProperty_SetSolidFlags;
+	RefCount rc_CTFPlayer_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolidFlags, int flags)
 	{
 		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
@@ -821,9 +822,11 @@ namespace Mod::Pop::PointTemplate
 			}
 		}
 		else if (solidpre && !solidnow) {
-			for (auto mod : WholeMapTriggerModule::List()) {
-				if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
-					mod->entity->EndTouch(me);
+			if (!rc_CTFPlayer_Event_Killed && me->IsPlayer()) {
+				for (auto mod : WholeMapTriggerModule::List()) {
+					if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+						mod->entity->EndTouch(me);
+					}
 				}
 			}
 		}
@@ -841,6 +844,19 @@ namespace Mod::Pop::PointTemplate
 					me->StartTouch(entity);
 				}
 			});
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_Event_Killed);
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		for (auto mod : WholeMapTriggerModule::List()) {
+			if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+				mod->entity->EndTouch(player);
+			}
 		}
 	}
 
@@ -864,6 +880,7 @@ namespace Mod::Pop::PointTemplate
 			// Optimize whole map triggers, auto touch logic
 			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolid, "CCollisionProperty::SetSolid");
 			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolidFlags, "CCollisionProperty::SetSolidFlags");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

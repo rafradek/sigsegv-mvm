@@ -341,6 +341,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 	ConVar cvar_teleport_player("sig_mvm_bluhuman_teleport_player", "0", FCVAR_NOTIFY,
 		"Blue humans in MvM: teleport bots and players to player teleport exit");
+		
+	ConVar cvar_no_footsteps("sig_mvm_jointeam_blue_no_footsteps", "0", FCVAR_NOTIFY,
+		"Blue humans in MvM: No robot footsteps");
 	
 	std::map<CHandle<CTFPlayer>, float> player_deploy_time; 
 	// TODO: probably need to add in a check for TF_COND_REPROGRAMMED here and:
@@ -1054,11 +1057,36 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				}
 			}
 		}
+		bool prevIsGiant[34];
+		if (cvar_no_footsteps.GetBool()) {
+			ForEachTFPlayer([&](CTFPlayer *player) {
+				if (IsMvMBlueHuman(player)) {
+					bool isBoss = player->IsMiniBoss();
+					prevIsGiant[ENTINDEX(player)] = isBoss;
+					player->SetMiniBoss(true);
+					if (!isBoss && player->GetActiveTFWeapon() != nullptr) {
+						player->GetActiveTFWeapon()->SetTeamNumber(TF_TEAM_RED);
+					}
+				}
+			});
+		}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
 		if (someone_pressed_score || prev_someone_pressed_score) {
 			for (int i = 0; i < 34; i++) {
 				PlayerResource()->m_iTeam.SetIndex(prevTeamNum[i], i);
 			}
+		}
+		
+		if (cvar_no_footsteps.GetBool()) {
+			ForEachTFPlayer([&](CTFPlayer *player) {
+				if (IsMvMBlueHuman(player)) {
+					bool isBoss = prevIsGiant[ENTINDEX(player)];
+					player->SetMiniBoss(isBoss);
+					if (!isBoss && player->GetActiveTFWeapon() != nullptr) {
+						player->GetActiveTFWeapon()->SetTeamNumber(TF_TEAM_BLUE);
+					}
+				}
+			});
 		}
 	}
 	
