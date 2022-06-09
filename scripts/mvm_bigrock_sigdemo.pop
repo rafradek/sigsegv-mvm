@@ -1542,7 +1542,8 @@ WaveSchedule
 				CritImmune 1 [$SIGSEGV] // If set, the tank is immune to crits (Default: 0)
 				TriggerDestroyBuildingFix 1 [$SIGSEGV] // Fixes trigger entities destroying buildings on touch if parented to the tank (Default: 0)
 				NoCrushDamage 1 [$SIGSEGV] // Tanks cannot crush players (Default: 0)
-				SolidToBrushes 1 [$SIGSEGV] // Tanks is solid to brush entities (Default: 0)
+				SolidToBrushes 1 [$SIGSEGV] // Tank is solid to brush entities (Default: 0)
+				NoScreenShake 1 [$SIGSEGV] // Disable screen shake (Default: 0)
 			}
         }
 		WaveSpawn

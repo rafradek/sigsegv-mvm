@@ -1205,11 +1205,14 @@ namespace Mod::Attr::Custom_Attributes
 		return speed * DETOUR_MEMBER_CALL(CTFShotgunBuildingRescue_GetProjectileSpeed)();
 	}
 
-	DETOUR_DECL_MEMBER(int, CTFWeaponBase_GetDamageType)
+	int GetDamageType(CTFWeaponBase *weapon, int value)
 	{
-		int value = DETOUR_MEMBER_CALL(CTFWeaponBase_GetDamageType)();
-
-		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		int headshot = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, headshot, can_headshot);
+		if (headshot) {
+			value |= DMG_USE_HITLOCATIONS;
+		}
+		
 		if ((value & DMG_USE_HITLOCATIONS) == 0) {
 			int headshot = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, headshot, can_headshot);
@@ -1274,18 +1277,32 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iRemoveDamageType, remove_damage_type);
 		value &= ~iRemoveDamageType;
 
-		/*if (info.GetWeapon() != nullptr) {
-			auto weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon());
-			if (weapon != nullptr) {
-				int headshot = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, headshot, can_headshot);
-				if (headshot) {
-					CTakeDamageInfo info2 = info;
-					info2.SetDamageType(can_headshot);
-				}
-			}
-		}*/
 		return value;
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFWeaponBase_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFWeaponBase_GetDamageType)());
+	}
+	DETOUR_DECL_MEMBER(int, CTFSniperRifle_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSniperRifle_GetDamageType)());
+	}
+	DETOUR_DECL_MEMBER(int, CTFSniperRifleClassic_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSniperRifleClassic_GetDamageType)());
+	}
+	DETOUR_DECL_MEMBER(int, CTFSMG_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSMG_GetDamageType)());
+	}
+	DETOUR_DECL_MEMBER(int, CTFRevolver_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFRevolver_GetDamageType)());
+	}
+	DETOUR_DECL_MEMBER(int, CTFPistol_ScoutSecondary_GetDamageType)
+	{
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFPistol_ScoutSecondary_GetDamageType)());
 	}
 
 	bool CanHeadshot(CBaseProjectile *projectile) {
@@ -3010,10 +3027,21 @@ namespace Mod::Attr::Custom_Attributes
 
 		CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
 		bool was_alive = entity->IsAlive();
+
+		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
+		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
+			int iAddDamageType = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iAddDamageType, add_damage_type);
+			info.AddDamageType(iAddDamageType);
+
+			int iRemoveDamageType = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iRemoveDamageType, remove_damage_type);
+			info.SetDamageType(info.GetDamageType() & ~(iRemoveDamageType));
+		}
+
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
 		//Fire input on hit
-		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
 			{
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "fire input on hit", input);
@@ -4828,6 +4856,12 @@ namespace Mod::Attr::Custom_Attributes
 
 			MOD_ADD_DETOUR_MEMBER(CRecipientFilter_IgnorePredictionCull,    "CRecipientFilter::IgnorePredictionCull");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetDamageType,    "CTFWeaponBase::GetDamageType");
+			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_GetDamageType,    "CTFSniperRifle::GetDamageType");
+			MOD_ADD_DETOUR_MEMBER(CTFSniperRifleClassic_GetDamageType,    "CTFSniperRifleClassic::GetDamageType");
+			MOD_ADD_DETOUR_MEMBER(CTFRevolver_GetDamageType,    "CTFRevolver::GetDamageType");
+			MOD_ADD_DETOUR_MEMBER(CTFSMG_GetDamageType,    "CTFSMG::GetDamageType");
+			MOD_ADD_DETOUR_MEMBER(CTFPistol_ScoutSecondary_GetDamageType,    "CTFPistol_ScoutSecondary::GetDamageType");
+			
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_CanHolster,    "CTFMinigun::CanHolster");
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects,    "CObjectSapper::ApplyRoboSapperEffects");
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_IsParentValid,    "CObjectSapper::IsParentValid");

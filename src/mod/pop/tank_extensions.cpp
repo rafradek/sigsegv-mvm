@@ -93,6 +93,7 @@ namespace Mod::Pop::Tank_Extensions
 		bool trigger_destroy_fix = false;
 		bool no_crush_damage    = false;
 		bool solid_to_brushes   = false;
+		bool no_screen_shake    = false;
 
 		std::string sound_ping =   "";
 		std::string sound_deploy =   "";
@@ -396,6 +397,8 @@ namespace Mod::Pop::Tank_Extensions
 				spawners[spawner].no_crush_damage = subkey->GetBool();
 			} else if (FStrEq(name, "SolidToBrushes")) {
 				spawners[spawner].solid_to_brushes = subkey->GetBool();
+			} else if (FStrEq(name, "NoScreenShake")) {
+				spawners[spawner].no_screen_shake = subkey->GetBool();
 			} else {
 				del = false;
 			}
@@ -582,6 +585,10 @@ namespace Mod::Pop::Tank_Extensions
 
 					for (auto it1 = data.attachements.begin(); it1 != data.attachements.end(); ++it1) {
 						it1->SpawnTemplate(tank);
+					}
+					
+					if (data.immobile) {
+						tank->SetMoveType(MOVETYPE_NONE, MOVECOLLIDE_DEFAULT);
 					}
 				}
 			}
@@ -1071,6 +1078,15 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_MEMBER_CALL(CTFTankBossBody_GetSolidMask)();
 	}
 
+	DETOUR_DECL_STATIC(void, UTIL_ScreenShake, const Vector &center, float amplitude, float frequency, float duration, float radius, int eCommand, bool bAirShake)
+	{
+		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr && thinking_tank_data->no_screen_shake) {
+			return;
+		}
+		return DETOUR_STATIC_CALL(UTIL_ScreenShake)(center, amplitude, frequency, duration, radius, eCommand, bAirShake);
+	}
+
+	
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1114,6 +1130,7 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBoss_ResolvePlayerCollision, "CTFBaseBoss::ResolvePlayerCollision");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage,        "CTFPlayer::OnTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBossBody_GetSolidMask,        "CTFTankBossBody::GetSolidMask");
+			MOD_ADD_DETOUR_STATIC(UTIL_ScreenShake,        "UTIL_ScreenShake");
 			
 
 			// Tank flame damage fix

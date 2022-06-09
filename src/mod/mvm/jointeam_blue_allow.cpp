@@ -618,7 +618,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		
 		/* instead of restricting the ability to team red, restrict it to human players */
-		if (player->IsBot()) {
+		if (player->IsBot() || !player->IsAlive()) {
 			return;
 		}
 		
@@ -632,7 +632,6 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	{
 		/* sanity checks */
 		assert(rc_CTFPlayerShared_RadiusSpyScan > 0);
-		assert(radius_spy_scan_teamnum == TF_TEAM_RED || radius_spy_scan_teamnum == TF_TEAM_BLUE);
 		
 		/* rather than always affecting blue players, affect players on the opposite team of the player with the ability */
 		return CollectPlayers(playerVector, GetEnemyTeam(radius_spy_scan_teamnum), isAlive, shouldAppend);
@@ -1049,7 +1048,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			return true;
 		});
 		int prevTeamNum[34];
-		if (someone_pressed_score || prev_someone_pressed_score) {
+		if (someone_pressed_score) {
 			for (int i = 0; i < 34; i++) {
 				prevTeamNum[i] = PlayerResource()->m_iTeam[i];
 				if (prevTeamNum[i] > TEAM_SPECTATOR) {
@@ -1071,7 +1070,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			});
 		}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
-		if (someone_pressed_score || prev_someone_pressed_score) {
+		if (someone_pressed_score) {
 			for (int i = 0; i < 34; i++) {
 				PlayerResource()->m_iTeam.SetIndex(prevTeamNum[i], i);
 			}
@@ -1303,6 +1302,35 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
         return DETOUR_MEMBER_CALL(CBaseEntity_ShouldTransmit)(info);
     }
 
+	CBasePlayer *killed = nullptr;
+	bool team_change_back = false;
+	DETOUR_DECL_MEMBER(void, CTFGameRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
+	{
+	//	DevMsg("CTFGameRules::PlayerKilled\n");
+		killed = IsMvMBlueHuman(ToTFPlayer(info.GetAttacker())) && pVictim->GetTeamNumber() == TF_TEAM_RED ? pVictim : nullptr;
+		team_change_back = false;
+		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTeamplayRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
+	{
+		if (killed != nullptr && team_change_back) 
+			killed->SetTeamNumber(TF_TEAM_RED);
+		DETOUR_MEMBER_CALL(CTeamplayRules_PlayerKilled)(pVictim, info);
+		killed = nullptr;
+	}
+	
+    DETOUR_DECL_STATIC(CTFWeaponBase *, GetKilleaterWeaponFromDamageInfo, CTakeDamageInfo &info)
+	{
+		if (killed != nullptr) {
+			killed->SetTeamNumber(TF_TEAM_BLUE);
+			
+			team_change_back = true;
+		}
+
+        return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)(info);
+    }
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1402,6 +1430,11 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
 			MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,                  "SendTable_WritePropList");
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_WriteDeltaEntities, "CBaseServer::WriteDeltaEntities");
+			
+			// Robot part fix?
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled, "CTFGameRules::PlayerKilled");
+			MOD_ADD_DETOUR_MEMBER(CTeamplayRules_PlayerKilled, "CTeamplayRules::PlayerKilled");
+			MOD_ADD_DETOUR_STATIC(GetKilleaterWeaponFromDamageInfo, "GetKilleaterWeaponFromDamageInfo");
 			
 			
 			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState,     "CBaseEntity::DispatchUpdateTransmitState");

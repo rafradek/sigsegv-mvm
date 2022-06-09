@@ -648,11 +648,10 @@ namespace Mod::Pop::PointTemplate
 			
 			do {
 				if (g_pointTemplateChild.find(child) != g_pointTemplateChild.end()) {
-
 					childrenToRemove.push_back(child);
 				}
 			} 
-			while ((child = entity->NextMovePeer()) != nullptr);
+			while ((child = child->NextMovePeer()) != nullptr);
 
 			for (auto childToRemove : childrenToRemove) {
 				childToRemove->SetParent(nullptr, -1);
