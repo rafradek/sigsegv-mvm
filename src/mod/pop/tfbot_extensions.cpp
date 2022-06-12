@@ -1858,7 +1858,12 @@ namespace Mod::Pop::TFBot_Extensions
 
 		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
 	}
-	
+	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent_NonVirtual, IGameEvent* event)
+	{
+		if (rc_CBasePlayer_ChangeTeam) return;
+
+		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent_NonVirtual)(event);
+	}
 
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
@@ -2047,6 +2052,7 @@ namespace Mod::Pop::TFBot_Extensions
 			// Fix crash related to bot change teams?
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ChangeTeam,               "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent,  "CQuestItemTracker::FireGameEvent");
+			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent_NonVirtual,  "CQuestItemTracker::FireGameEvent_NonVirtual");
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");

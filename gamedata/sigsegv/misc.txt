@@ -5868,6 +5868,61 @@
 					type "sym"
 					sym  "_ZN12CTFGameRules14BroadcastSoundEiPKciP11CBasePlayer"
 				}
+				"UTIL_ScreenShake"
+				{
+					type "sym"
+					sym  "_Z16UTIL_ScreenShakeRK6Vectorffff14ShakeCommand_tb"
+				}
+				"CTFSniperRifle::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK14CTFSniperRifle13GetDamageTypeEv"
+				}
+				"CTFSniperRifleClassic::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK21CTFSniperRifleClassic13GetDamageTypeEv"
+				}
+				"CTFSMG::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK6CTFSMG13GetDamageTypeEv"
+				}
+				"CTFRevolver::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK11CTFRevolver13GetDamageTypeEv"
+				}
+				"CTFPistol_ScoutSecondary::GetDamageType"
+				{
+					type "sym"
+					sym  "_ZNK24CTFPistol_ScoutSecondary13GetDamageTypeEv"
+				}
+				"GetKilleaterWeaponFromDamageInfo"
+				{
+					type "sym"
+					sym  "_Z32GetKilleaterWeaponFromDamageInfoPK15CTakeDamageInfo"
+				}
+				"CTeamplayRules::PlayerKilled"
+				{
+					type "sym"
+					sym  "_ZN14CTeamplayRules12PlayerKilledEP11CBasePlayerRK15CTakeDamageInfo"
+				}
+				"CCurrencyPack::DistributedBy"
+				{
+					type "sym"
+					sym  "_ZN13CCurrencyPack13DistributedByEP11CBasePlayer"
+				}
+				"CCurrencyPack::Spawn"
+				{
+					type "sym"
+					sym  "_ZN13CCurrencyPack5SpawnEv"
+				}
+				"CQuestItemTracker::FireGameEvent_NonVirtual"
+				{
+					type "sym"
+					sym  "_ZThn20_N17CQuestItemTracker13FireGameEventEP10IGameEvent"
+				}
 				
 			}
 			"addrs_group"

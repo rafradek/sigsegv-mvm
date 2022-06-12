@@ -23,6 +23,9 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY,
 		"Allow bots to use extra player slots");
 
+    ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
+		"Allow players to use extra player slots");
+
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
 		"Fixes voice chat indicator showing with more than 64 slots, but also disables all of voice chat");
 
@@ -36,6 +39,37 @@ namespace Mod::Etc::Extra_Player_Slots
     {
         return sig_etc_extra_player_slots_count.GetInt() > 33;
     }
+
+    bool MapHasExtraSlots(const char *map) 
+	{
+        if (!ExtraSlotsEnabled()) return false;
+		if (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool()) return true;
+
+		FileFindHandle_t missionHandle;
+		char poppathfind[256];
+		snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
+		for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
+						missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
+			
+			char poppath[256];
+			snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
+			KeyValues *kv = new KeyValues("kv");
+			kv->UsesConditionals(false);
+			if (kv->LoadFromFile(filesystem, poppath)) {
+				FOR_EACH_SUBKEY(kv, subkey) {
+
+					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+						return true;
+						//Msg("Found extra bot mission\n");
+						break;
+					}
+				}
+				kv->deleteThis();
+			}
+		}
+		filesystem->FindClose(missionHandle);
+        return false;
+	}
 
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_CreateFakeClient, const char *name)
 	{
@@ -66,7 +100,7 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
         auto server = reinterpret_cast<CBaseServer *>(this);
-        if (server == hltv || ((!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if (server == hltv || ((!ExtraSlotsEnabled()/* || gpGlobals->maxClients < 34*/) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
         if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
@@ -132,7 +166,7 @@ namespace Mod::Etc::Extra_Player_Slots
             return nullptr;
         }
 		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
-        if ( !(sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
+        if ( !((sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) || (sig_etc_extra_player_slots_allow_players.GetBool() && !rc_CBaseServer_CreateFakeClient)) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
             return nullptr;
         }
         if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1) {
@@ -761,6 +795,13 @@ namespace Mod::Etc::Extra_Player_Slots
         }
 	}
     
+    std::string nextmap;
+    DETOUR_DECL_STATIC(bool, Host_Changelevel, bool fromSave, const char *mapname, const char *start)
+	{
+        nextmap = mapname;
+		return DETOUR_STATIC_CALL(Host_Changelevel)(fromSave, mapname, start);
+    }
+    
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -825,6 +866,7 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetNextSpawnClassname, "CTFBot::GetNextSpawnClassname");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
+            MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
             
             
             
@@ -850,7 +892,7 @@ namespace Mod::Etc::Extra_Player_Slots
             player33_fake_kill_time=FLT_MIN;
             kill_events.clear();
 
-            if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+            if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                 engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
             }
             static bool saved_old_alltalk = false;
@@ -871,22 +913,33 @@ namespace Mod::Etc::Extra_Player_Slots
 
         virtual void LevelShutdownPostEntity() override
 		{
-
-            if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
-                // Kick old HLTV client
-                int clientCount = sv->GetClientCount();
-                for ( int i=0 ; i < clientCount ; i++ )
-                {
-                    IClient *pClient = sv->GetClient( i );
-
-                    if (pClient->IsConnected() && pClient->IsHLTV() && i <= 33)
-                    {
-                        pClient->Disconnect("");
-                        break;
-                    }
-                }
-                ft_SetupMaxPlayers(sig_etc_extra_player_slots_count.GetInt());
+            //Msg("Has %d\n", sig_etc_extra_player_slots_allow_bots.GetBool());
+            bool enable = MapHasExtraSlots(nextmap.c_str());
+            if (!enable && gpGlobals->maxClients >= 33) {
+			    //static ConVarRef tv_enable("tv_enable");
+                //bool tv_enabled = tv_enable.GetBool();
+                //tv_enable.SetValue(false);
+                //ft_SetupMaxPlayers(33);
+                //tv_enable.SetValue(tv_enabled);
             }
+            else {
+                if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+                    // Kick old HLTV client
+                    int clientCount = sv->GetClientCount();
+                    for ( int i=0 ; i < clientCount ; i++ )
+                    {
+                        IClient *pClient = sv->GetClient( i );
+
+                        if (pClient->IsConnected() && pClient->IsHLTV() && i <= 33)
+                        {
+                            pClient->Disconnect("");
+                            break;
+                        }
+                    }
+                    ft_SetupMaxPlayers(sig_etc_extra_player_slots_count.GetInt());
+                }
+            }
+            
         }
 	};
 	CMod s_Mod;

@@ -683,6 +683,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bNoMvMDeathTune         = false;
 			this->m_bSniperHideLasers       = false;
 			this->m_bSniperAllowHeadshots   = false;
+			this->m_bRedSniperNoHeadshots   = false;
 			this->m_bDisableUpgradeStations = false;
 			this->m_bRedPlayersRobots       = false;
 			this->m_bBluPlayersRobots       = false;
@@ -692,6 +693,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bFixSetCustomModelInput = false;
 			this->m_bSendBotsToSpectatorImmediately = false;
 			this->m_bBotRandomCrits = false;
+			this->m_bRedBotNoRandomCrits = false;
 			this->m_bSingleClassAllowed = -1;
 			this->m_bNoHolidayHealthPack = false;
 			this->m_bSpyNoSapUnownedBuildings = false;
@@ -728,6 +730,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bRestoreNegativeDamageOverheal = true;
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
             this->m_bNoWranglerShield = false;
+			this->m_bForceRedMoney = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -955,6 +958,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bExtraLoadoutItemsAllowEquipOutsideSpawn;
         bool m_bNoWranglerShield;
 		bool m_bRemoveOffhandViewmodel;
+		bool m_bRedBotNoRandomCrits;
+		bool m_bRedSniperNoHeadshots;
+		bool m_bForceRedMoney;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1339,17 +1345,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFRevolver_CanFireCriticalShot)(bIsHeadshot, ent1);
 	}
 	
-
+	RefCount rc_CTFWeaponBase_CanFireCriticalShot;
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CanFireCriticalShot, bool bIsHeadshot, CBaseEntity *ent1)
 	{
-		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		
-		if (state.m_bSniperAllowHeadshots && ( bIsHeadshot ) && IsMannVsMachineMode()) {
-			CTFPlayer *owner = weapon->GetTFPlayerOwner();
-			if (owner != nullptr && owner->GetTeamNumber() == TF_TEAM_BLUE) {
-				return true;
-			}
-		}
+		SCOPED_INCREMENT_IF(rc_CTFWeaponBase_CanFireCriticalShot, bIsHeadshot);
 		
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_CanFireCriticalShot)(bIsHeadshot, ent1);
 	}
@@ -1370,10 +1369,18 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_IsPVEModeControlled, CBaseEntity *ent)
 	{
-		if ( rc_CTFProjectile_Arrow_StrikeTarget && state.m_bSniperAllowHeadshots && IsMannVsMachineMode()) {
+		if ((rc_CTFProjectile_Arrow_StrikeTarget || rc_CTFWeaponBase_CanFireCriticalShot) && state.m_bRedSniperNoHeadshots && IsMannVsMachineMode()) {
+			auto player = ToTFPlayer(ent);
+			if (player != nullptr && player->IsBot() && player->GetTeamNumber() == TF_TEAM_RED) return true;
+		}
+		if ((rc_CTFProjectile_Arrow_StrikeTarget || rc_CTFWeaponBase_CanFireCriticalShot) && state.m_bSniperAllowHeadshots && IsMannVsMachineMode()) {
 			return false;
 		}
 		
+		if (rc_CTFWeaponBase_CalcIsAttackCritical && state.m_bRedBotNoRandomCrits && IsMannVsMachineMode()) {
+			auto player = ToTFPlayer(ent);
+			if (player != nullptr && player->IsBot() && player->GetTeamNumber() == TF_TEAM_RED) return true;
+		}
 		if ( rc_CTFWeaponBase_CalcIsAttackCritical && state.m_bBotRandomCrits && IsMannVsMachineMode()) {
 			return false;
 		}
@@ -2423,6 +2430,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	
 	RefCount rc_CTFPlayer_Event_Killed;
+	CTFPlayer *player_killer = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_Event_Killed);
@@ -2440,8 +2448,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
-
+		player_killer = ToTFPlayer(info.GetAttacker());
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		player_killer = nullptr;
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_InputSetCustomModel, inputdata_t data)
@@ -4312,7 +4321,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			creditTeam = TF_TEAM_RED;
 		}
 
-		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);		
 		if (moneymaker != nullptr && TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() > 0 && moneymaker->IsBot() && (creditTeam != 0 && moneymaker->GetTeamNumber() != creditTeam)) {
 			// forcedistribute = false;
 			// The moneymaker must be on the team that collects credits. If not, just find a random player on credit team
@@ -4329,6 +4338,26 @@ namespace Mod::Pop::PopMgr_Extensions
 			velocity.Init();
 		}
 		DETOUR_MEMBER_CALL(CTFPowerup_DropSingleInstance)(velocity, owner, flThrowerTouchDelay, flResetTime);
+	}
+
+	DETOUR_DECL_MEMBER(void, CCurrencyPack_Spawn)
+	{
+		auto currency = reinterpret_cast<CCurrencyPack *>(this);
+		if (state.m_bForceRedMoney && !currency->IsDistributed()) {
+			auto maker = player_killer;
+			
+			int creditTeam = state.m_SetCreditTeam.Get();
+			if (creditTeam == 0) {
+				creditTeam = TF_TEAM_RED;
+			}
+
+			if (TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() > 0 && (maker == nullptr || (maker->IsBot() && (maker != 0 && maker->GetTeamNumber() != creditTeam)))) {
+				maker = TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
+			}
+			
+			currency->DistributedBy(player_killer);
+		}
+		DETOUR_MEMBER_CALL(CCurrencyPack_Spawn)();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFGameRules_ApplyOnDamageAliveModifyRules, CTakeDamageInfo &info, CBaseEntity *entity, void *extra)
@@ -5670,6 +5699,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bSniperHideLasers = subkey->GetBool();
 			} else if (FStrEq(name, "SniperAllowHeadshots")) {
 				state.m_bSniperAllowHeadshots = subkey->GetBool();
+			} else if (FStrEq(name, "NoRedSniperBotHeadshots")) {
+				state.m_bRedSniperNoHeadshots = subkey->GetBool();
 			} else if (FStrEq(name, "DisableUpgradeStations")) {
 				state.m_bDisableUpgradeStations = subkey->GetBool();
 			} else if (FStrEq(name, "RemoveGrapplingHooks")) {
@@ -5844,6 +5875,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bSendBotsToSpectatorImmediately = subkey->GetBool();
 			} else if (FStrEq(name, "BotsRandomCrit")) {
 				state.m_bBotRandomCrits = subkey->GetBool();
+			} else if (FStrEq(name, "NoRedBotsRandomCrit")) {
+				state.m_bRedBotNoRandomCrits = subkey->GetBool();
 			} else if (FStrEq(name, "NoHolidayPickups")) {
 				state.m_bNoHolidayHealthPack = subkey->GetBool();
 				if (state.m_bNoHolidayHealthPack) {
@@ -6034,6 +6067,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_Scripts.push_back(subkey->GetString());
 			} else if (FStrEq(name, "LuaScriptFile")) {
 				state.m_ScriptFiles.push_back(subkey->GetString());
+			} else if (FStrEq(name, "ForceRedMoney")) {
+				state.m_bForceRedMoney = subkey->GetBool();
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));
@@ -6360,6 +6395,7 @@ namespace Mod::Pop::PopMgr_Extensions
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CCurrencyPack_Spawn, "CCurrencyPack::Spawn");
 			
 			
 			

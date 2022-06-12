@@ -371,6 +371,7 @@ public:
 	void SetAmount(int amount)    { this->m_nAmount = amount; }
 	
 	bool AffectedByRadiusCollection() const { return vt_AffectedByRadiusCollection(this); }
+	void DistributedBy(CTFPlayer *player) { ft_DistributedBy(this, player); }
 	
 private:
 	DECL_RELATIVE   (bool, m_bTouched);
@@ -379,6 +380,9 @@ private:
 	DECL_EXTRACT    (int,  m_nAmount);
 	
 	static MemberVFuncThunk<const CCurrencyPack *, bool> vt_AffectedByRadiusCollection;
+
+	static MemberFuncThunk<CCurrencyPack *, void, CTFPlayer *> ft_DistributedBy;
+	
 };
 
 class CCurrencyPackCustom : public CCurrencyPack

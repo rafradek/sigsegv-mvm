@@ -135,6 +135,7 @@ WaveSchedule
 	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
 	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
 	NoBluHumanFootsteps 1 [$SIGSEGV] // Disables robot footsteps for BLU humans (default: 0)
+	ForceRedMoney 1 [$SIGSEGV] // Force drop red money (default: 0)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)

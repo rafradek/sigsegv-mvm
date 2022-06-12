@@ -234,6 +234,8 @@ IMPL_EXTRACT   (int,  CCurrencyPack, m_nAmount, new CExtract_CCurrencyPack_m_nAm
 
 MemberVFuncThunk<const CCurrencyPack *, bool> CCurrencyPack::vt_AffectedByRadiusCollection(TypeName<CCurrencyPack>(), "CCurrencyPack::AffectedByRadiusCollection");
 
+MemberFuncThunk<CCurrencyPack *, void, CTFPlayer *> CCurrencyPack::ft_DistributedBy("CCurrencyPack::DistributedBy");
+
 
 GlobalThunk<CUtlVector<ICurrencyPackAutoList *>> ICurrencyPackAutoList::m_ICurrencyPackAutoListAutoList("ICurrencyPackAutoList::m_ICurrencyPackAutoListAutoList");
 
