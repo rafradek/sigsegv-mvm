@@ -1331,6 +1331,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
         return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)(info);
     }
 
+	DETOUR_DECL_MEMBER(void, CMultiplayRules_HaveAllPlayersSpeakConceptIfAllowed, int iConcept, int iTeam /* = TEAM_UNASSIGNED */, const char *modifiers)
+	{
+		if (iConcept == TF_TEAM_RED) {
+			iTeam = TF_TEAM_BLUE;
+		}
+		DETOUR_MEMBER_CALL(CMultiplayRules_HaveAllPlayersSpeakConceptIfAllowed)(iConcept, iTeam, modifiers);
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1435,7 +1443,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled, "CTFGameRules::PlayerKilled");
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRules_PlayerKilled, "CTeamplayRules::PlayerKilled");
 			MOD_ADD_DETOUR_STATIC(GetKilleaterWeaponFromDamageInfo, "GetKilleaterWeaponFromDamageInfo");
-			
+
+			//MOD_ADD_DETOUR_MEMBER(CMultiplayRules_HaveAllPlayersSpeakConceptIfAllowed, "CMultiplayRules::HaveAllPlayersSpeakConceptIfAllowed");
 			
 			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState,     "CBaseEntity::DispatchUpdateTransmitState");
 			//MOD_ADD_DETOUR_MEMBER(CBaseEntity_ShouldTransmit,                  "CBaseEntity::ShouldTransmit");

@@ -298,7 +298,7 @@ function CEntity:IsEffectActive(effect) end
 ---@param printTarget number See PRINT_TARGET_* globals
 ---@vararg any
 ---@return nil
-function CEntity:PrintTo(printTarget, ...) end
+function CEntity:Print(printTarget, ...) end
 
 --Prints message to player
 ---@param params ShowHUDTextParams Table containing params. See DefaultHudTextParams global

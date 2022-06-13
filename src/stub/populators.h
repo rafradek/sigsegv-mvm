@@ -77,6 +77,13 @@ public:
 
 class CWaveSpawnExtra;
 
+enum SpawnLocationResult
+{
+	SPAWN_LOCATION_NOT_FOUND = 0,
+	SPAWN_LOCATION_NAV,
+	SPAWN_LOCATION_TELEPORTER
+};
+
 class CWaveSpawnPopulator       : public IPopulator 
 {
 public:
@@ -127,6 +134,10 @@ public:
 		DONE
 	};
 	InternalStateType m_state;
+	
+	bool m_bRandomSpawn;
+	SpawnLocationResult m_spawnLocationResult;
+	Vector m_vSpawnPosition;
 	
 	int GetCurrencyAmountPerDeath()                                       { return ft_GetCurrencyAmountPerDeath(this); }
 

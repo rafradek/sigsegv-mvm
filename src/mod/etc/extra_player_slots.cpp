@@ -100,7 +100,7 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
         auto server = reinterpret_cast<CBaseServer *>(this);
-        if (server == hltv || ((!ExtraSlotsEnabled()/* || gpGlobals->maxClients < 34*/) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if (server == hltv || ((!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
         if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
@@ -166,11 +166,13 @@ namespace Mod::Etc::Extra_Player_Slots
             return nullptr;
         }
 		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
-        if ( !((sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) || (sig_etc_extra_player_slots_allow_players.GetBool() && !rc_CBaseServer_CreateFakeClient)) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
-            return nullptr;
-        }
-        if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1) {
-            return nullptr;
+        if (client != nullptr) {
+            if ( !((sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) || (sig_etc_extra_player_slots_allow_players.GetBool() && !rc_CBaseServer_CreateFakeClient)) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
+                return nullptr;
+            }
+            if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1) {
+                return nullptr;
+            }
         }
         return client;
 	}
