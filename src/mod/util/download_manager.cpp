@@ -202,7 +202,7 @@ namespace Mod::Util::Download_Manager
 			kv = new KeyValues("file");
 			kv->UsesConditionals(false);
 			kv->LoadFromBuffer(resourceName, buffer, filesystem);
-			delete buffer;
+			delete[] buffer;
 		}
 		
 		return kv;
@@ -1075,6 +1075,30 @@ namespace Mod::Util::Download_Manager
 			Msg("Missing file: %s\n", value.second.c_str());
 		}
 	}
+
+	CON_COMMAND_F(sig_util_download_manager_missing_files_all, "Utility: list missing files", FCVAR_NOTIFY)
+	{
+		FileFindHandle_t mapHandle;
+		std::string maplistStr;
+		int files = 0;
+		std::unordered_set<std::string> missing_files_all;
+		for (const char *mapName = filesystem->FindFirstEx("maps/mvm_*.bsp", "GAME", &mapHandle);
+							mapName != nullptr; mapName = filesystem->FindNext(mapHandle)) {
+			string_t pre = gpGlobals->mapname;
+			std::string mapNameNoExt(mapName, strlen(mapName) - 4);
+			gpGlobals->mapname = AllocPooledString(mapNameNoExt.c_str());
+			GenerateDownloadables();
+			for (auto &value : missing_files) {
+				missing_files_all.insert(value.second);
+			}
+		}
+		
+		
+		for (auto &value : missing_files_all) {
+			Msg("Missing file: %s\n", value.c_str());
+		}
+	}
+			
 	
 	// is FCVAR_NOTIFY even a valid thing for commands...?
 	CON_COMMAND_F(sig_util_download_manager_reload, "Utility: reload the configuration file", FCVAR_NOTIFY)
