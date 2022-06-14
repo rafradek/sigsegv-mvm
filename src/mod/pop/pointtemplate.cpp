@@ -135,7 +135,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	std::vector<BrushEntityBoundingBox> brush_entity_bounding_box;
 
 	for (auto it = this->entities.begin(); it != this->entities.end(); ++it){
-		std::multimap<std::string,std::string> &keys = *it;
+		auto &keys = *it;
 		CBaseEntity *entity = CreateEntityByName(keys.find("classname")->second.c_str());
 		if (entity != nullptr) {
 			spawned_list.push_back(entity);

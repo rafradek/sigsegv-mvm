@@ -108,13 +108,13 @@ namespace Mod::MvM::Extended_Upgrades
 
     class UpgradeCriteriaHasDamage : public UpgradeCriteria {
     public:
-        UpgradeCriteriaHasDamage() {}
+        UpgradeCriteriaHasDamage(bool check) : m_bCheckDealsDamage(check) {}
         
         virtual bool Matches(CEconEntity *ent, CEconItemView *item, CTFPlayer *owner) override {
             auto weapon = rtti_cast<CTFWeaponBase *>(ent);
             if (weapon != nullptr) {
                 int weaponid = weapon->GetWeaponID();
-                return !(weaponid == TF_WEAPON_NONE || 
+                bool dealsDamage = !(weaponid == TF_WEAPON_NONE || 
 							weaponid == TF_WEAPON_LASER_POINTER || 
 							weaponid == TF_WEAPON_MEDIGUN || 
 							weaponid == TF_WEAPON_BUFF_ITEM ||
@@ -124,6 +124,7 @@ namespace Mod::MvM::Extended_Upgrades
 							weaponid == TF_WEAPON_PDA_SPY ||
 							weaponid == TF_WEAPON_INVIS ||
 							weaponid == TF_WEAPON_SPELLBOOK);
+                return m_bCheckDealsDamage == dealsDamage;
             }
             return false;
         }
@@ -131,6 +132,7 @@ namespace Mod::MvM::Extended_Upgrades
         virtual void ParseKey(KeyValues *kv) override {
 
         }
+        bool m_bCheckDealsDamage = true;
     };
 
     class UpgradeCriteriaWeaponSlot : public UpgradeCriteria {
@@ -230,7 +232,6 @@ namespace Mod::MvM::Extended_Upgrades
                     actualvalue.SetString(stringvalue);
                 }
                 
-                Msg("eh %d %d\n", defaultValue.Int(), actualvalue.Int());
                 CEventQueue &que = g_EventQueue;
                 que.AddEvent(STRING(AllocPooledString(target)), STRING(AllocPooledString(action)), actualvalue, delay[0] != '\0' ? strtof(delay, nullptr) : 0, activator, caller, -1);
             }
@@ -305,9 +306,12 @@ namespace Mod::MvM::Extended_Upgrades
                     int cur_step;
                     bool over_cap;
                     int max_step = GetUpgradeStepData(this->player, this->slot, i, cur_step, over_cap);
+                    if (upgr.m_flCap == upgr.m_flIncrement && cur_step > 0) 
+                        cur_step = 1;
+
                     DevMsg("Undoing upgrade %d cap %f increment %f steps %d %d\n", i, upgr.m_flCap,  upgr.m_flIncrement, cur_step, max_step);
                     for (int j = 0; j < cur_step; j++) {
-                        DevMsg("Undoing upgrade %d %d\n", j, cur_step);
+                        DevMsg("Undoing upgrade %d %d %d %s %f %f\n", j, max_step, cur_step, upgr.m_szAttribute, upgr.m_flCap,  upgr.m_flIncrement);
                         from_buy_upgrade = true;
                         g_hUpgradeEntity->PlayerPurchasingUpgrade(this->player, this->slot, i, true, false, false);
                         from_buy_upgrade = false;
@@ -415,7 +419,7 @@ namespace Mod::MvM::Extended_Upgrades
             else if (FStrEq(subkey->GetName(), "SimilarToItem"))
                 criteria.push_back(std::make_unique<UpgradeCriteriaSimilar>(subkey->GetString()));
             else if (FStrEq(subkey->GetName(), "DealsDamage"))
-                criteria.push_back(std::make_unique<UpgradeCriteriaHasDamage>());
+                criteria.push_back(std::make_unique<UpgradeCriteriaHasDamage>(subkey->GetBool()));
             else if (FStrEq(subkey->GetName(), "Slot")) {
                 criteria.push_back(std::make_unique<UpgradeCriteriaWeaponSlot>(GetSlotFromString(subkey->GetString())));
             }
@@ -448,18 +452,30 @@ namespace Mod::MvM::Extended_Upgrades
             upgrade_game.m_iTier = 0;
         }
         for (auto upgrade : upgrades) {
+            auto mainAttrDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade->attribute_name.c_str());
+            int steps = 1;
+            if (mainAttrDef != nullptr && !mainAttrDef->IsType<CSchemaAttributeType_String>()) {
+                const char *type = mainAttrDef->GetDescriptionFormat();
+                float value = FStrEq(type, "value_is_percentage") || FStrEq(type, "value_is_inverted_percentage") ? 1 : 0;
+                steps = (upgrade->cap - value) / upgrade->increment;
+            }
             for(auto entry : upgrade->secondary_attributes) {
                 int upgrade_index = CMannVsMachineUpgradeManager::Upgrades().AddToTail();
                 CMannVsMachineUpgrades &upgrade_game_child = CMannVsMachineUpgradeManager::Upgrades()[upgrade_index];
                 upgrade->secondary_attributes_index.push_back(upgrade_index);
                 strcpy(upgrade_game_child.m_szAttribute, entry.first.c_str());
 
+                auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str());
+
+                const char *type = attrDef->GetDescriptionFormat();
+                float defValue = 0;
                 // String attributes always have cap set the same as increment
-                if (GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str())->IsType<CSchemaAttributeType_String>()) {
+                if (attrDef->IsType<CSchemaAttributeType_String>()) {
                     upgrade_game_child.m_flCap = entry.second;
                 }
                 else {
-                    upgrade_game_child.m_flCap = entry.second > 0 ? 1.0f + entry.second * 64 : entry.second * 64;
+                    defValue = FStrEq(type, "value_is_percentage") || FStrEq(type, "value_is_inverted_percentage") ? 1 : 0;
+                    upgrade_game_child.m_flCap = defValue + entry.second * steps;
                 }
 
                 upgrade_game_child.m_flIncrement = entry.second;
@@ -1197,7 +1213,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
             auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
             auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
-            //DevMsg("IsString(%d)\n", attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
+            DevMsg("IsString %s (%d)\n",upgradeInfo.m_szAttribute, attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
 
             if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
                 CAttributeList *attribList = nullptr;

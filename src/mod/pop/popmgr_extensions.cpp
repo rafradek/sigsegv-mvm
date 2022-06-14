@@ -5072,8 +5072,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		PointTemplate &templ = Point_Templates().emplace(tname,PointTemplate()).first->second;
 		templ.name = tname;
 		bool hasParentSpecialName = false;
-		std::multimap<std::string,std::string> onspawn;
-		std::multimap<std::string,std::string> onkilled;
+		EntityKeys onspawn;
+		EntityKeys onkilled;
 		FOR_EACH_SUBKEY(kv, subkey) {
 
 			const char *cname = subkey->GetName();
@@ -5125,7 +5125,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				templ.remove_if_killed = subkey->GetString();
 			}
 			else {
-				std::multimap<std::string,std::string> keyvalues;
+				EntityKeys keyvalues;
 
 				const char *classname = cname;
 

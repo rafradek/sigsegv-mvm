@@ -26,12 +26,21 @@ struct InputInfoTemplate
 	float delay;
 };
 
+struct CaseInsensitiveLess
+{
+    bool operator()(const std::string lhs, const std::string rhs) const
+    {
+        return stricmp(lhs.c_str(), rhs.c_str()) < 0;
+    }
+};
+
+typedef std::multimap<std::string,std::string, CaseInsensitiveLess> EntityKeys;
 class PointTemplate
 {
 public:
 	std::string name;
 	int id = 0;
-	std::vector<std::multimap<std::string,std::string>> entities;
+	std::vector<EntityKeys> entities;
 	std::set<std::string> fixup_names;
 	bool has_parent_name = false;
 	bool keep_alive = false;
