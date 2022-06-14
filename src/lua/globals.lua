@@ -8,6 +8,21 @@ TEAM_BLUE = 3
 TEAM_HALLOWEEN = 5
 
 ----------------
+-- Classes (m_iClass player field)
+----------------
+TF_CLASS_UNDEFINED = 0
+TF_CLASS_SCOUT = 1
+TF_CLASS_SNIPER = 2
+TF_CLASS_SOLDIER = 3
+TF_CLASS_DEMOMAN = 4
+TF_CLASS_MEDIC = 5
+TF_CLASS_HEAVYWEAPONS = 6
+TF_CLASS_PYRO = 7
+TF_CLASS_SPY = 8
+TF_CLASS_ENGINEER = 9
+TF_CLASS_CIVILIAN = 10
+
+----------------
 -- Collision groups
 ----------------
 COLLISION_GROUP_NONE = 0
