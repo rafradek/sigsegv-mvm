@@ -46,12 +46,13 @@ namespace Mod::AI::EngieBot_NoPush
 	
 	DETOUR_DECL_MEMBER(void, CTFGameRules_PushAllPlayersAway, const Vector& vFromThisPoint, float flRange, float flForce, int nTeam, CUtlVector< CTFPlayer* > *pPushedPlayers)
 	{
-		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() > 0.0f) {
+		if (rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) {
 			if (pusher_engineer->GetTeamNumber() == TF_TEAM_RED)
 				nTeam = TF_TEAM_BLUE;
-				
+		}
+		if ((rc_TeleSpawn_Update > 0 || rc_BuildSentry_Update > 0 || rc_BuildTele_Update > 0) && cvar_reducerange.GetFloat() > 0.0f) {
 			flRange = cvar_reducerange.GetFloat();
-			
+
 		}
 		
 		DETOUR_MEMBER_CALL(CTFGameRules_PushAllPlayersAway)(vFromThisPoint, flRange, flForce, nTeam, pPushedPlayers);

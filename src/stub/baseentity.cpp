@@ -35,6 +35,7 @@ IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
 IMPL_RELATIVE(ExtraEntityData *,     CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
 IMPL_RELATIVE(IHasAttributes *,      CBaseEntity, m_pAttributes, m_iMaxHealth, -0x0c);
 IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
+IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
 
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);

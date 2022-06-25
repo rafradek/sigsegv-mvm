@@ -395,6 +395,7 @@ public:
 	DECL_RELATIVE(ExtraEntityData *, m_extraEntityData);
 	DECL_RELATIVE(IHasAttributes *, m_pAttributes);
 	DECL_DATAMAP(unsigned char, m_nWaterLevel);
+	DECL_SENDPROP(unsigned char, m_nRenderFX);
 	
 	
 private:

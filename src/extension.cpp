@@ -110,6 +110,7 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	ConVar_Restore::Load();
 	ConVar_Restore::OnExtLoad();
 
+	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("Sigsegv"), this);
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
 //	}
@@ -292,6 +293,10 @@ void CExtSigsegv::LoadSoundOverrides()
 	}
 }
 
+IdentityToken_t *CExtSigsegv::GetIdentity() const
+{
+	return identity;
+}
 
 //ConVar cvar_build("sig_build", __DATE__ " " __TIME__, FCVAR_NONE);
 CON_COMMAND(sig_build, "")

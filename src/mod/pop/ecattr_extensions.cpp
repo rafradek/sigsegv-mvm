@@ -1434,7 +1434,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	const char *item_name;
 	CTFBot *bot_additem;
 	int bot_classnum = TF_CLASS_UNDEFINED;
-	DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang)
+	DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang, const char *name)
 	{
 		if (rc_CTFBot_AddItem > 0) {
 
@@ -1489,13 +1489,13 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 
 				else
-					ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang);
+					ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
 			}
 			
 
 			return ret;
 		}
-		return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang);
+		return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBot_EquipRequiredWeapon)

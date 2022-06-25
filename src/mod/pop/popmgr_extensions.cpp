@@ -447,9 +447,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		~ExtraTankPath()
 		{
+			//Msg("Delete extra tank path %s and its %d\n", this->m_strName.c_str(),  this->m_PathNodes.size());
 			for (CPathTrack *node : this->m_PathNodes) {
 				if (node != nullptr) {
-					node->Remove();
+					//node->Remove();
 				}
 			}
 		}
@@ -1546,8 +1547,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto find = state.m_Player_anim_cosmetics.find(player);
 		if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
 			find->second->Remove();
-			servertools->SetKeyValue(player, "rendermode", "0");
-			player->SetRenderColorA(255);
+			player->m_nRenderFX = 0;
+			//servertools->SetKeyValue(player, "rendermode", "0");
+			//player->SetRenderColorA(255);
 			state.m_Player_anim_cosmetics.erase(find);
 		}
 
@@ -1567,8 +1569,9 @@ namespace Mod::Pop::PopMgr_Extensions
 					wearable->Spawn();
 					wearable->m_bValidatedAttachedEntity = true;
 					wearable->GiveTo(player);
-					servertools->SetKeyValue(player, "rendermode", "1");
-					player->SetRenderColorA(0);
+					player->m_nRenderFX = 6;
+					//servertools->SetKeyValue(player, "rendermode", "10");
+					//player->SetRenderColorA(0);
 					int model_index = CBaseEntity::PrecacheModel(model);
 					wearable->SetModelIndex(model_index);
 					for (int j = 0; j < MAX_VISION_MODES; ++j) {
@@ -2000,32 +2003,34 @@ namespace Mod::Pop::PopMgr_Extensions
 				TFObjectiveResource()->m_nMvMWorldMoney = 0;
 				TFGameRules()->DistributeCurrencyAmount( packsCurrency, NULL, true, false, false );
 
-				// Distribute cash from unspawned packs
-				int unallocatedCurrency = 0;
-				FOR_EACH_VEC(wave->m_WaveSpawns, i) {
-					CWaveSpawnPopulator *wavespawn = wave->m_WaveSpawns[i];
-					if (wavespawn->m_unallocatedCurrency != -1) {
-						unallocatedCurrency += wavespawn->m_unallocatedCurrency;
+				if (wave != nullptr) {
+					// Distribute cash from unspawned packs
+					int unallocatedCurrency = 0;
+					FOR_EACH_VEC(wave->m_WaveSpawns, i) {
+						CWaveSpawnPopulator *wavespawn = wave->m_WaveSpawns[i];
+						if (wavespawn->m_unallocatedCurrency != -1) {
+							unallocatedCurrency += wavespawn->m_unallocatedCurrency;
+						}
 					}
+					TFGameRules()->DistributeCurrencyAmount( unallocatedCurrency, NULL, true, true, false );
+					
+					/* call this twice to ensure all wavespawns get to state DONE */
+					ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::ForceFinish\n");
+					wave->ForceFinish();
+					ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "MID  CWave::ForceFinish\n");
+					wave->ForceFinish();
+					ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::ForceFinish\n");
+					
+					// is this necessary or not? unsure...
+					// TODO: if enabled, need to block CTFPlayer::CommitSuicide call from ActiveWaveUpdate
+				//	ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::ActiveWaveUpdate\n");
+				//	wave->ActiveWaveUpdate();
+				//	ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::ActiveWaveUpdate\n");
+					
+					ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::WaveCompleteUpdate\n");
+					wave->WaveCompleteUpdate();
+					ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::WaveCompleteUpdate\n");
 				}
-				TFGameRules()->DistributeCurrencyAmount( unallocatedCurrency, NULL, true, true, false );
-				
-				/* call this twice to ensure all wavespawns get to state DONE */
-				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::ForceFinish\n");
-				wave->ForceFinish();
-				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "MID  CWave::ForceFinish\n");
-				wave->ForceFinish();
-				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::ForceFinish\n");
-				
-				// is this necessary or not? unsure...
-				// TODO: if enabled, need to block CTFPlayer::CommitSuicide call from ActiveWaveUpdate
-			//	ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::ActiveWaveUpdate\n");
-			//	wave->ActiveWaveUpdate();
-			//	ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::ActiveWaveUpdate\n");
-				
-				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "PRE  CWave::WaveCompleteUpdate\n");
-				wave->WaveCompleteUpdate();
-				ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "POST CWave::WaveCompleteUpdate\n");
 				startBonusTimer = true;
 				last_game_was_win = true;
 				if ( wave_pre == TFObjectiveResource()->m_nMannVsMachineMaxWaveCount) {
@@ -2037,7 +2042,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		
-		if (rc_CTFGameRules_ctor <= 0 && newState == GR_STATE_BETWEEN_RNDS) {
+		if (rc_CTFGameRules_ctor <= 0 && newState == GR_STATE_BETWEEN_RNDS && IsMannVsMachineMode()) {
+			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get());
 			if (state.m_ScriptManager != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
 				if (scriptManager != nullptr && scriptManager->CheckGlobal("OnWaveInit")) {
@@ -3106,7 +3112,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-			menu->Destroy(false);
+			//menu->Destroy(false);
+			HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -3134,7 +3142,9 @@ namespace Mod::Pop::PopMgr_Extensions
             if (reason == MenuEnd_ExitBack || reason == MenuEnd_Exit) {
                 GoBack();
             }
-			menu->Destroy(false);
+			//menu->Destroy(false);
+			HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -3267,7 +3277,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-			menu->Destroy(false);
+			//menu->Destroy(false);
+			HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 		
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -3283,7 +3295,6 @@ namespace Mod::Pop::PopMgr_Extensions
 
         SelectExtraLoadoutItemsHandler(CTFPlayer * pPlayer) : IMenuHandler() {
             this->player = pPlayer;
-            
         }
 
         virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
@@ -3329,7 +3340,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-			menu->Destroy(false);
+			//menu->Destroy(false);
+			HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 		
         virtual void OnMenuDestroy(IBaseMenu *menu) {
@@ -3432,7 +3445,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayMainMissionInfo(CTFPlayer *player)
 	{
 		SelectMainMissionInfoHandler *handler = new SelectMainMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		DevMsg("Mission Menu\n");
         menu->SetDefaultTitle("Mission info menu");
@@ -3532,7 +3545,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayWhitelistInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Whitelisted Items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3549,7 +3562,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayBlacklistInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Blacklisted Items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3566,7 +3579,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayItemReplaceInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Item Replacement");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3585,7 +3598,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayDescriptionInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Description");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3621,7 +3634,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayDisallowedUpgradesInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Disallowed Upgrades");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3646,7 +3659,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayItemAttributeInfo(CTFPlayer *player)
 	{
 		SelectItemAttributeHandler *handler = new SelectItemAttributeHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Item Attributes");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3666,7 +3679,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayItemAttributeListInfo(CTFPlayer *player, int id)
 	{
 		SelectItemAttributeListHandler *handler = new SelectItemAttributeListHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle(CFmtStr("%s Attributes", state.m_ItemAttributes[id].entry->GetInfo()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3694,7 +3707,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayPlayerAttributeInfo(CTFPlayer *player)
 	{
 		SelectPlayerAttributeHandler *handler = new SelectPlayerAttributeHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Player Attributes");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3719,7 +3732,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayPlayerAttributeListInfo(CTFPlayer *player, int id)
 	{
 		SelectPlayerAttributeListHandler *handler = new SelectPlayerAttributeListHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		if (id == 0) {
 			menu->SetDefaultTitle("All Class Attributes");
@@ -3753,7 +3766,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayForcedItemsClassInfo(CTFPlayer *player)
 	{
 		SelectForcedItemsClassInfoHandler *handler = new SelectForcedItemsClassInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Forced items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3787,7 +3800,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayForcedItemsInfo(CTFPlayer *player, int id)
 	{
 		SelectForcedItemsInfoHandler *handler = new SelectForcedItemsInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle(CFmtStr("Forced items (%s)", g_aPlayerClassNames_NonLocalized[id]));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3810,7 +3823,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayExtraLoadoutItemsClassInfo(CTFPlayer *player)
 	{
 		SelectExtraLoadoutItemsClassInfoHandler *handler = new SelectExtraLoadoutItemsClassInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Extra loadout items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3843,7 +3856,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayExtraLoadoutItemsInfo(CTFPlayer *player, int id)
 	{
 		SelectExtraLoadoutItemsInfoHandler *handler = new SelectExtraLoadoutItemsInfoHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[id]));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3874,7 +3887,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player)
 	{
 		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Extra loadout items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3919,7 +3932,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index)
 	{
 		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[class_index]));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
@@ -3966,7 +3979,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	IBaseMenu *DisplayExtraLoadoutItemsBuy(CTFPlayer *player, int itemId)
 	{
 		SelectExtraLoadoutItemsBuyHandler *handler = new SelectExtraLoadoutItemsBuyHandler(player, itemId);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		auto &item = state.m_ExtraLoadoutItems[itemId];
 
@@ -4135,6 +4148,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CPopulationManager_StartCurrentWave)();
 
 		if (state.m_ScriptManager != nullptr) {
+			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d started\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get());
 			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
 			if (scriptManager->CheckGlobal("OnWaveStart")) {
 				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
@@ -4571,6 +4585,17 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		return result;
+	}
+
+	DETOUR_DECL_MEMBER(void, CDynamicProp_Spawn)
+	{
+		DETOUR_MEMBER_CALL(CDynamicProp_Spawn)();
+		if (state.m_NoRomevisionCosmetics.GetValue()) {
+			auto entity = reinterpret_cast<CBaseEntity *>(this);
+			if (FStrEq(STRING(entity->GetModelName()), "models/bots/boss_bot/carrier_parts.mdl")) {
+				entity->SetModelIndexOverride(VISION_MODE_ROME, entity->GetModelIndex());
+			}
+		}
 	}
 
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
@@ -5018,8 +5043,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		
-		// Is it actually OK that we're spawning this stuff during parsing...?
-		path.SpawnNodes();
 		
 		DevMsg("Parse_ExtraTankPath: name \"%s\", %zu nodes\n", name, points.size());
 	}
@@ -5618,7 +5641,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			it->SpawnTemplate(nullptr);
 			//Msg("SpawnTemplateLate %s\n", it->template_name.c_str());
 		}
+
 		state.m_SpawnTemplates.clear();
+
+		for (auto &path : state.m_ExtraTankPaths) {
+			path.SpawnNodes();
+		}
 
 		if (state.m_ScriptManager == nullptr && (!state.m_Scripts.empty() || !state.m_ScriptFiles.empty())) {
 			state.m_ScriptManager = CreateEntityByName("$script_manager");
@@ -6396,6 +6424,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CCurrencyPack_Spawn, "CCurrencyPack::Spawn");
+
+			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
 			
 			
 			

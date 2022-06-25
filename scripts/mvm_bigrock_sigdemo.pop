@@ -66,7 +66,7 @@ WaveSchedule
 	MedigunShieldDamage 1 [$SIGSEGV] //If set to 1, bot medigun shields will damage players. Use "dmg penalty vs players" attribute to control damage dealt (default: 0)
 	StandableHeads 1 [$SIGSEGV] //If set, robots will not push the players of their heads (default: 0)
 	NoRomevisionCosmetics 1 [$SIGSEGV] //If set, robots will not wear romevision cosmetics unless forced to (default: 0)
-	BotsRandomCrit 1 [$SIGSEGV] //If set, robots will be able to deal random critical damage. Use "crit mod disabled" weapon attribute to control crit chance (default: 0)
+	BotsRandomCrit 1 [$SIGSEGV] //If set, blue robots and players will be able to deal random critical damage. Use "crit mod disabled" weapon attribute to control crit chance (default: 0)
 	AimTrackingIntervalMultiplier 3 [$SIGSEGV] // Scale of robot aim tracking interval (default: 1)
 	SniperAllowHeadshots 1 [$SIGSEGV] // If set, bot snipers can headshot (and amby spy) (default: 0)
 	ImprovedAirblast 1 [$SIGSEGV] // If set, bot pyros can deflect arrows grenades and stickybombs (default: 0)
@@ -135,6 +135,8 @@ WaveSchedule
 	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
 	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
 	NoBluHumanFootsteps 1 [$SIGSEGV] // Disables robot footsteps for BLU humans (default: 0)
+	NoRedBotsRandomCrit 1 [$SIGSEGV] //If set, red robots will not be able to deal random critical damage. (default: 0)
+	NoRedSniperBotHeadshots 1 [$SIGSEGV] // If set, red bot snipers cannot headshot (and amby spy) (default: 0)
 	ForceRedMoney 1 [$SIGSEGV] // Force drop red money (default: 0)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)

@@ -193,7 +193,7 @@ namespace Mod::MvM::Extended_Upgrades
     std::vector<int> max_tier_upgrades;
     std::vector<int> min_tier_upgrades;
 
-    std::map<CHandle<CTFPlayer>, IBaseMenu *> select_type_menus;
+    //std::map<CHandle<CTFPlayer>, IBaseMenu *> select_type_menus;
 
     std::set<CHandle<CTFPlayer>> in_upgrade_zone;
 
@@ -271,9 +271,13 @@ namespace Mod::MvM::Extended_Upgrades
             StartUpgradeListForPlayer(player, slotid, 0);
         }
 
+        virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
+		{
+            HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+            handlesys->FreeHandle(menu->GetHandle(), &sec);
+        }
+        
         void OnMenuDestroy(IBaseMenu *menu) {
-            if (select_type_menus[player] == menu)
-                select_type_menus.erase(player);
             delete this;
         }
 
@@ -324,22 +328,34 @@ namespace Mod::MvM::Extended_Upgrades
         
         virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
+            HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+            handlesys->FreeHandle(menu->GetHandle(), &sec);
             if (reason == MenuEnd_ExitBack) {
-                if (select_type_menus[player] == menu)
-                    select_type_menus.erase(player);
                 StartMenuForPlayer(player);
             }
 		}
 
         void OnMenuDestroy(IBaseMenu *menu) {
-            if (select_type_menus[player] == menu)
-                select_type_menus.erase(player);
             delete this;
         }
 
         CHandle<CTFPlayer> player;
         int slot;
     };
+
+    bool CurrentMenuIsUpgrade(CTFPlayer *player)
+    {
+        void *menu = nullptr;
+        if (menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu) == MenuSource_BaseMenu && menu != nullptr) {
+            auto title = ((IBaseMenu *)menu)->GetDefaultTitle();
+            return title != nullptr && (FStrEq(title, "Player Upgrades") || FStrEq(title, "Extended Upgrades Menu") || StringStartsWith(title, "Upgrades for"));
+            /*auto handler = ((IBaseMenu *)menu)->GetHandler();
+            if (handler != nullptr && (dynamic_cast<SelectUpgradeWeaponHandler *>(handler) != nullptr || dynamic_cast<SelectUpgradeListHandler *>(handler) != nullptr)) {
+                return true;
+            }*/
+        }
+        return false;
+    }
 
     void GetIncrementStringForAttribute(CEconItemAttributeDefinition *attr, float value, std::string &string) {
         if (FStrEq(attr->GetDescriptionFormat(), "value_is_percentage")) {
@@ -455,7 +471,7 @@ namespace Mod::MvM::Extended_Upgrades
             auto mainAttrDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade->attribute_name.c_str());
             int steps = 1;
             if (mainAttrDef != nullptr && !mainAttrDef->IsType<CSchemaAttributeType_String>()) {
-                const char *type = mainAttrDef->GetDescriptionFormat();
+                const char *type = mainAttrDef->GetDescriptionFormat("");
                 float value = FStrEq(type, "value_is_percentage") || FStrEq(type, "value_is_inverted_percentage") ? 1 : 0;
                 steps = (upgrade->cap - value) / upgrade->increment;
             }
@@ -467,7 +483,7 @@ namespace Mod::MvM::Extended_Upgrades
 
                 auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str());
 
-                const char *type = attrDef->GetDescriptionFormat();
+                const char *type = attrDef->GetDescriptionFormat("");
                 float defValue = 0;
                 // String attributes always have cap set the same as increment
                 if (attrDef->IsType<CSchemaAttributeType_String>()) {
@@ -617,19 +633,26 @@ namespace Mod::MvM::Extended_Upgrades
         max_tier_upgrades.clear();
         min_tier_upgrades.clear();
         std::vector<CHandle<CTFPlayer>> vecmenus;
-        for (auto pair : select_type_menus) {
-            vecmenus.push_back(pair.first);
-        }
+        ForEachTFPlayer([](CTFPlayer *player){
+            if (player->IsBot()) return;
 
-        for (auto player : vecmenus) {
-            IBaseMenu *menu = select_type_menus[player];
-            if (player != nullptr)
+            if (CurrentMenuIsUpgrade(player)) {
                 menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
+            }
+        });
+        // for (auto pair : select_type_menus) {
+        //     vecmenus.push_back(pair.first);
+        // }
+
+        // for (auto player : vecmenus) {
+        //     IBaseMenu *menu = select_type_menus[player];
+        //     if (player != nullptr)
+        //         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
                 
-            menus->CancelMenu(menu);
-            menu->Destroy();
-        }
-        select_type_menus.clear();
+        //     menus->CancelMenu(menu);
+        //     //menu->Destroy();
+        // }
+        //select_type_menus.clear();
 
         for (auto upgrade : upgrades) {
             delete upgrade;
@@ -885,7 +908,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (slot != -1 && item == nullptr) return;
 
         SelectUpgradeListHandler *handler = new SelectUpgradeListHandler(player, slot);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
 
         if (slot == -1)
             menu->SetDefaultTitle("Player Upgrades");
@@ -963,7 +986,7 @@ namespace Mod::MvM::Extended_Upgrades
             menu->AppendItem(" ", info1);
         }*/
 
-        select_type_menus[player] = menu;
+        //select_type_menus[player] = menu;
         menu->DisplayAtItem(ENTINDEX(player), 0, displayitem);
     }
 
@@ -988,10 +1011,11 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     void StartMenuForPlayer(CTFPlayer *player) {
-        if (select_type_menus.find(player) != select_type_menus.end()) return;
+        if (menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), nullptr) == MenuSource_BaseMenu) return;
+        //if (select_type_menus.find(player) != select_type_menus.end()) return;
         
         SelectUpgradeWeaponHandler *handler = new SelectUpgradeWeaponHandler(player);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Extended Upgrades Menu");
         menu->SetMenuOptionFlags(0);
@@ -1032,27 +1056,50 @@ namespace Mod::MvM::Extended_Upgrades
             menu->AppendItem("extra", info3);
         }
 
-        select_type_menus[player] = menu;
+        //select_type_menus[player] = menu;
 
         menu->Display(ENTINDEX(player), 0);
     }
 
+    class EmptyHandler : public IMenuHandler
+    {
+    public:
+        EmptyHandler() : IMenuHandler() {
+		}
+    };
+	EmptyHandler empty_handler_def;
+    
     void StopMenuForPlayer(CTFPlayer *player) {
-        if (select_type_menus.find(player) == select_type_menus.end()) return;
-        DevMsg("Stopped menu\n");
-        IBaseMenu *menu = select_type_menus[player];
+        //if (select_type_menus.find(player) == select_type_menus.end()) return;
+        //DevMsg("Stopped menu\n");
+        void *menu = nullptr;
+        menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu);
+        //select_type_menus[player];
+        
+        //    Msg("Menu CancelClient %d\n", menu);
         menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
-        menus->CancelMenu(menu);
-        menu->Destroy();
+        //menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu);
+        //    Msg("Menu Cancel %d\n", menu);
+        //if (menu != nullptr)
+        //    menus->CancelMenu((IBaseMenu *)menu);
+        //menu->Destroy();
 
-        menu = menus->GetDefaultStyle()->CreateMenu(new SelectUpgradeWeaponHandler(player));
-        menu->SetDefaultTitle(" ");
-        menu->SetMenuOptionFlags(0);
-        ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
-        menu->AppendItem(" ", info1);
-        ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
-        menu->AppendItem(" ", info2);
-        menu->Display(ENTINDEX(player), 1);
+        auto panel = menus->GetDefaultStyle()->CreatePanel();
+        ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
+        panel->DrawItem(info1);
+        ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
+        panel->DrawItem(info2);
+        panel->SetSelectableKeys(255);
+        panel->SendDisplay(ENTINDEX(player), &empty_handler_def, 1);
+
+        // menu = menus->GetDefaultStyle()->CreateMenu(new SelectUpgradeWeaponHandler(player), g_Ext.GetIdentity());
+        // menu->SetDefaultTitle(" ");
+        // menu->SetMenuOptionFlags(0);
+        // ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
+        // menu->AppendItem(" ", info1);
+        // ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
+        // menu->AppendItem(" ", info2);
+        // menu->Display(ENTINDEX(player), 1);
     }
 
     DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
@@ -1336,7 +1383,8 @@ namespace Mod::MvM::Extended_Upgrades
                 }
 
                 int class_index = player->GetPlayerClass()->GetClassIndex();
-                if (player->m_Shared->m_bInUpgradeZone && g_hUpgradeEntity.GetRef() != nullptr && (!upgrades.empty() || Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index)) && select_type_menus.find(player) == select_type_menus.end()) {
+               
+                if (player->m_Shared->m_bInUpgradeZone && menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), nullptr) != MenuSource_BaseMenu && g_hUpgradeEntity.GetRef() != nullptr && (!upgrades.empty() || Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index))) {
                     bool found = false;
                     bool found_any = false;
                     bool has_extra = Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(class_index);
@@ -1377,7 +1425,7 @@ namespace Mod::MvM::Extended_Upgrades
                         }
                     }
                 }
-                else if (!player->m_Shared->m_bInUpgradeZone && select_type_menus.find(player) != select_type_menus.end()) {
+                else if (!player->m_Shared->m_bInUpgradeZone && CurrentMenuIsUpgrade(player)) {
                     StopMenuForPlayer(player);
                 }
             });

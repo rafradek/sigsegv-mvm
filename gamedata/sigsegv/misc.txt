@@ -5923,6 +5923,22 @@
 					type "sym"
 					sym  "_ZThn20_N17CQuestItemTracker13FireGameEventEP10IGameEvent"
 				}
+				"CMultiplayRules::HaveAllPlayersSpeakConceptIfAllowed"
+				{
+					type "sym"
+					sym  "_ZN15CMultiplayRules35HaveAllPlayersSpeakConceptIfAllowedEiiPKc"
+				}
+				"CDynamicProp::Spawn"
+				{
+					type "sym"
+					sym  "_ZN12CDynamicProp5SpawnEv"
+				}
+				"CBaseServer::GetClassBaseline"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN11CBaseServer16GetClassBaselineEP11ServerClassPPKvPi"
+				}
 				
 			}
 			"addrs_group"

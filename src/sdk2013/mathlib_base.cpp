@@ -3079,7 +3079,7 @@ void CalcSqrDistAndClosestPointOnAABB( const Vector &mins, const Vector &maxs, c
 
 float CalcClosestPointToLineT( const Vector &P, const Vector &vLineA, const Vector &vLineB, Vector &vDir )
 {
-	Assert( s_bMathlibInitialized );
+	//Assert( s_bMathlibInitialized );
 	VectorSubtract( vLineB, vLineA, vDir );
 
 	// D dot [P - (A + D*t)] = 0
@@ -3136,7 +3136,7 @@ void CalcClosestPointOnLineSegment( const Vector &P, const Vector &vLineA, const
 
 float CalcDistanceToLineSegment( const Vector &P, const Vector &vLineA, const Vector &vLineB, float *outT )
 {
-	Assert( s_bMathlibInitialized );
+	//Assert( s_bMathlibInitialized );
 	Vector vClosest;
 	CalcClosestPointOnLineSegment( P, vLineA, vLineB, vClosest, outT );
 	return P.DistTo( vClosest );
@@ -3144,7 +3144,7 @@ float CalcDistanceToLineSegment( const Vector &P, const Vector &vLineA, const Ve
 
 float CalcDistanceSqrToLineSegment( const Vector &P, const Vector &vLineA, const Vector &vLineB, float *outT )
 {
-	Assert( s_bMathlibInitialized );
+	//Assert( s_bMathlibInitialized );
 	Vector vClosest;
 	CalcClosestPointOnLineSegment( P, vLineA, vLineB, vClosest, outT );
 	return P.DistToSqr(vClosest);

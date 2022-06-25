@@ -1238,7 +1238,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		if (menu != nullptr) {
 			menu->Destroy();
 		}
-        menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Name                        |Score|Damage|Tank|Healing|Support|Cash");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT | MENUFLAG_NO_SOUND);

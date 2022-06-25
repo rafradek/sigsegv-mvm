@@ -188,10 +188,11 @@ class ExtensionConfig(object):
 #   cxx.cflags += ['-Winvalid-pch']
     cxx.cflags += ['-Wno-unknown-pragmas']
     cxx.cflags += ['-pthread']
-    cxx.cflags += ['-gsplit-dwarf']
+#   cxx.cflags += ['-gsplit-dwarf']
 #   cxx.cflags += ['-feliminate-dwarf2-dups']
-    cxx.cflags += ['-gz']
+#   cxx.cflags += ['-gz']
 #   cxx.cflags += ['-arch i386']
+    cxx.cflags += ['-g1']
     if use_gold:
       cxx.cflags += ['-fpic']
     

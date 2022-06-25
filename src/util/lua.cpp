@@ -1933,7 +1933,9 @@ namespace Util::Lua
 
         virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-            menu->Destroy(false);
+            //menu->Destroy(false);
+            HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 
         void OnMenuDestroy(IBaseMenu *menu) {
@@ -1954,7 +1956,7 @@ namespace Util::Lua
         luaL_checktype(l, 2, LUA_TTABLE);
         lua_pushvalue(l, 2);
         LuaMenuHandler *handler = new LuaMenuHandler(player, cur_state);
-        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+        IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
 
         int len = lua_rawlen(l, 2);
         for (int i = 1; i <= len; i++) {

@@ -22,13 +22,16 @@ public:
 #endif
 	
 	virtual bool RegisterConCommandBase(ConCommandBase *pCommand) override;
-	
+	IdentityToken_t *GetIdentity() const;
+
 private:
 	// CBaseGameSystemPerFrame
 	virtual const char *Name() override { return "CExtSigsegv"; }
 	virtual void LevelInitPreEntity() override;
 	
 	void LoadSoundOverrides();
+
+	IdentityToken_t *identity;
 };
 extern CExtSigsegv g_Ext;
 

@@ -8,6 +8,7 @@
 #include "stub/tfweaponbase.h"
 #include <forward_list>
 #include "stub/sendprop.h"
+#include "util/iterate.h"
 
 int global_frame_list_counter = 0;
 bool is_client_hltv = false;
@@ -898,6 +899,56 @@ namespace Mod::Perf::SendProp_Optimize
         
         return ret;
 	}
+    bool GenerateBaseline(ServerClass *pClass, void const **pData, int *pDatalen)
+    {
+        static ConVarRef sv_instancebaselines("sv_instancebaselines");
+        if (sv_instancebaselines.GetBool()) {
+            // Try to find an entity and generate baseline now
+
+            CBaseEntity *ourEnt = nullptr;
+            ForEachEntity([&](CBaseEntity *ent){
+                if (ent->GetServerClass() == pClass) {
+                    ourEnt = ent;
+                    return false;
+                }
+                return true;
+            });
+            if (ourEnt != nullptr) {
+                ALIGN4 char packedData[MAX_PACKEDENTITY_DATA] ALIGN4_POST;
+                bf_write writeBuf( "SV_CreateBaseline->writeBuf", packedData, sizeof( packedData ) );
+                // create basline from zero values
+                SendTable *pSendTable = pClass->m_pTable;
+                if ( !SendTable_Encode(
+                    pSendTable, 
+                    ourEnt, 
+                    &writeBuf, 
+                    ENTINDEX(ourEnt),
+                    NULL,
+                    false
+                    ) )
+                {
+                    Error("SV_CreateBaseline: SendTable_Encode returned false (ent %d).\n", ENTINDEX(ourEnt));
+                }
+                // copy baseline into baseline stringtable
+                SV_EnsureInstanceBaseline( pClass, ENTINDEX(ourEnt), packedData, writeBuf.GetNumBytesWritten() );
+            }
+            else {
+                static char dummy[1] = {0};
+                *pData = dummy;
+                *pDatalen = 1;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    DETOUR_DECL_MEMBER(bool, CBaseServer_GetClassBaseline, ServerClass *pClass, void const **pData, int *pDatalen)
+	{
+        if (pClass->m_InstanceBaselineIndex == INVALID_STRING_INDEX && GenerateBaseline(pClass, pData, pDatalen)) {
+            return true;
+        }
+        return DETOUR_MEMBER_CALL(CBaseServer_GetClassBaseline)(pClass, pData, pDatalen);
+    }
 
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -921,6 +972,8 @@ namespace Mod::Perf::SendProp_Optimize
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendPredictableId, "SendProxy_SendPredictableId");
 		    MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
 			MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetClassBaseline,   "CBaseServer::GetClassBaseline");
+            
 			//MOD_ADD_DETOUR_STATIC(SendTable_WriteAllDeltaProps, "SendTable_WriteAllDeltaProps");
             
 		}

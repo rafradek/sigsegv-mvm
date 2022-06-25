@@ -216,7 +216,7 @@ namespace Mod::MvM::Robot_Limit
 			if (!bot->IsConnected()) continue;
 
 			if (bot->GetTeamNumber() == TF_TEAM_RED) {
-				if (collect_red && bot->m_Shared->InCond(TF_COND_REPROGRAMMED)) {
+				if (collect_red /*&& bot->m_Shared->InCond(TF_COND_REPROGRAMMED)*/) {
 					count_red += 1;
 				} else {
 					/* exclude */
@@ -350,7 +350,7 @@ namespace Mod::MvM::Robot_Limit
 		auto result = DETOUR_MEMBER_CALL(CTFBotDead_Update)(bot,interval);
 		if (result.transition == ActionTransition::DONE) {
 			CUtlVector<CTFPlayer *> mvm_bots;
-			CollectMvMBots(&mvm_bots, true);
+			CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
 			if (mvm_bots.Count() > GetMvMInvaderLimit()) {
 				engine->ServerCommand(CFmtStr("kickid %d\n", bot->GetUserID()));
 			}

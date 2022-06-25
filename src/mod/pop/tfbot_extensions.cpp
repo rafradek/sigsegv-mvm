@@ -1849,20 +1849,31 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DETOUR_MEMBER_CALL(CBasePlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
-		SCOPED_INCREMENT_IF(rc_CBasePlayer_ChangeTeam, player->IsFakeClient() || player->IsHLTV());
+		SCOPED_INCREMENT(rc_CBasePlayer_ChangeTeam);
 	}
 
 	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent, IGameEvent* event)
 	{
-		if (rc_CBasePlayer_ChangeTeam) return;
+		return;
+		// Msg("FireGameEvent\n");
+		// if (rc_CBasePlayer_ChangeTeam) return;
 
-		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
+		// DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
 	}
 	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent_NonVirtual, IGameEvent* event)
 	{
-		if (rc_CBasePlayer_ChangeTeam) return;
+		return;
+		//Msg("FireGameEvent\n");
+		// if (rc_CBasePlayer_ChangeTeam) return;
 
-		DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent_NonVirtual)(event);
+		// DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent_NonVirtual)(event);
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CBasePlayer_GetSteamID, CSteamID *pID)
+	{
+		if (this == nullptr) return false;
+		
+		return DETOUR_MEMBER_CALL(CBasePlayer_GetSteamID)(pID);
 	}
 
 //#ifdef ENABLE_BROKEN_STUFF
@@ -2053,6 +2064,8 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_ChangeTeam,               "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent,  "CQuestItemTracker::FireGameEvent");
 			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent_NonVirtual,  "CQuestItemTracker::FireGameEvent_NonVirtual");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_GetSteamID,  "CBasePlayer::GetSteamID");
+
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");

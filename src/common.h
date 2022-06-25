@@ -509,7 +509,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H
 
 /* this extension */
 #include <smsdk_ext.h>
-
+#include <extension.h>
 
 /* dammit Valve, why do you have to do stupid shit like redefining offsetof?
  * maybe you live in a world where it's impossible to overload operator&, but

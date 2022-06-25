@@ -125,7 +125,7 @@
 				"CItemGeneration::GenerateRandomItem"
 				{
 					type "sym"
-					sym  "_ZN15CItemGeneration18GenerateRandomItemEP22CItemSelectionCriteriaRK6VectorRK6QAngle"
+					sym  "_ZN15CItemGeneration18GenerateRandomItemEP22CItemSelectionCriteriaRK6VectorRK6QAnglePKc"
 				}
 				"CItemGeneration::GenerateItemFromScriptData"
 				{

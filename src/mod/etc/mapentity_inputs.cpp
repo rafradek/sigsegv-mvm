@@ -64,11 +64,11 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
-            menu->Destroy(false);
+            HandleSecurity sec(g_Ext.GetIdentity(), g_Ext.GetIdentity());
+			handlesys->FreeHandle(menu->GetHandle(), &sec);
 		}
 
         void OnMenuDestroy(IBaseMenu *menu) {
-            DevMsg("Menu destroy\n");
             delete this;
         }
 
@@ -490,7 +490,7 @@ namespace Mod::Etc::Mapentity_Additions
             for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                 if (target != nullptr && target->IsPlayer() && !ToTFPlayer(target)->IsBot()) {
                     CaseMenuHandler *handler = new CaseMenuHandler(ToTFPlayer(target), logic_case);
-                    IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler);
+                    IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
 
                     int i;
                     for (i = 1; i < 16; i++) {
