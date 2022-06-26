@@ -5939,7 +5939,18 @@
 					lib "engine"
 					sym  "_ZN11CBaseServer16GetClassBaselineEP11ServerClassPPKvPi"
 				}
-				
+				"CNetworkStringTableContainer::DirectUpdate"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN28CNetworkStringTableContainer12DirectUpdateEi"
+				}
+				"CNetworkStringTable::UpdateMirrorTable"
+				{
+					type "sym"
+					lib "engine"
+					sym  "_ZN19CNetworkStringTable17UpdateMirrorTableEi"
+				}
 			}
 			"addrs_group"
 			{

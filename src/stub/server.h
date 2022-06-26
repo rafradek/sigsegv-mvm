@@ -116,6 +116,8 @@ public:
 	virtual void	Dump( void );
 	virtual void	Lock( bool bLock );
 
+	void UpdateMirrorTable (int tick) { ft_UpdateMirrorTable(this, tick); }
+
 	TABLEID					m_id;
 	char					*m_pszTableName;
 	// Must be a power of 2, so encoding can determine # of bits to use based on log2
@@ -133,6 +135,9 @@ public:
 	pfnStringChanged		m_changeFunc;
 	void					*m_pObject;
 	CNetworkStringTable		*m_pMirrorTable;
+
+private:
+	static MemberFuncThunk<CNetworkStringTable *, void, int>              ft_UpdateMirrorTable;
 };
 
 abstract_class IEntityFactory

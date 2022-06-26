@@ -862,6 +862,17 @@ namespace Mod::Perf::SendProp_Optimize
         return (void *) pVarData;
     }
 
+    static MemberFuncThunk<INetworkStringTableContainer *, void, int> ft_DirectUpdate("CNetworkStringTableContainer::DirectUpdate");
+
+    class CNetworkStringTableContainer : public INetworkStringTableContainer
+    {
+    public:
+        void DirectUpdate(int tickAck) { ft_DirectUpdate(this, tickAck); }
+    
+    private:
+        
+    };
+
     DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
 	{
 		auto ret = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
@@ -894,12 +905,18 @@ namespace Mod::Perf::SendProp_Optimize
 
                 // copy baseline into baseline stringtable
                 SV_EnsureInstanceBaseline( serverClass, ENTINDEX(ret), packedData, writeBuf.GetNumBytesWritten() );
+                char idString[32];
+			    Q_snprintf( idString, sizeof( idString ), "%d", serverClass->m_ClassID );
+                ((CNetworkStringTable *)networkstringtable->FindTable("instancebaseline"))->UpdateMirrorTable(0);
+                //static_cast<CNetworkStringTableContainer *>(networkstringtable)->DirectUpdate(GetMaxAckTickCount);
             }
         }
         
         return ret;
 	}
-    bool GenerateBaseline(ServerClass *pClass, void const **pData, int *pDatalen)
+    
+
+    /*bool GenerateBaseline(ServerClass *pClass, void const **pData, int *pDatalen)
     {
         static ConVarRef sv_instancebaselines("sv_instancebaselines");
         if (sv_instancebaselines.GetBool()) {
@@ -948,7 +965,7 @@ namespace Mod::Perf::SendProp_Optimize
             return true;
         }
         return DETOUR_MEMBER_CALL(CBaseServer_GetClassBaseline)(pClass, pData, pDatalen);
-    }
+    }*/
 
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -972,7 +989,7 @@ namespace Mod::Perf::SendProp_Optimize
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendPredictableId, "SendProxy_SendPredictableId");
 		    MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
 			MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
-			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetClassBaseline,   "CBaseServer::GetClassBaseline");
+			//MOD_ADD_DETOUR_MEMBER(CBaseServer_GetClassBaseline,   "CBaseServer::GetClassBaseline");
             
 			//MOD_ADD_DETOUR_STATIC(SendTable_WriteAllDeltaProps, "SendTable_WriteAllDeltaProps");
             
