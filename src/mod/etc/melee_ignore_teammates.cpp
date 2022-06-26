@@ -2,6 +2,7 @@
 #include "stub/tfweaponbase.h"
 #include "util/scope.h"
 #include "util/iterate.h"
+#include "stub/gamerules.h"
 
 
 namespace Mod::Etc::Melee_Ignore_Teammates
@@ -41,7 +42,18 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			});
 		}
 
-		if (!cleave_attack && team != TF_TEAM_BLUE) {
+		bool revertMannVsMachine = false;
+		if (team == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode()) {
+			int whip = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, whip, speed_buff_ally);
+			int friendly = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, friendly, allow_friendly_fire);
+			if (whip > 0 || friendly != 0) {
+				TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+				revertMannVsMachine = true;
+			}
+		}
+		if (!cleave_attack/* && team != TF_TEAM_BLUE*/) {
 			attacker = weapon->GetTFPlayerOwner();
 			//is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
 			SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_DoSwingTraceInternal);
@@ -68,6 +80,9 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			for (auto ent : altered_flags) {
 				ent->m_fFlags &= ~FL_OBJECT;
 			}
+		}
+		if (revertMannVsMachine) {
+			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
 		}
 		//weapon->GetOwner()->SetTeamNumber(team);
 
