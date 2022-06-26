@@ -4168,18 +4168,19 @@ namespace Mod::Attr::Custom_Attributes
         auto sentry{reinterpret_cast<CObjectSentrygun*>(this)};
         CTFPlayer* builder{sentry->GetBuilder()};
         if(builder){
-            int value{-1};
+            int value = 0;
             CALL_ATTRIB_HOOK_INT_ON_OTHER(builder, value, disable_wrangler_shield);
             if(value > 0){
                 sentry->m_nShieldLevel = 0;
                 return ret;
             }
-            CTFWeaponBase* weapon{builder->GetActiveTFWeapon()};
-            if(weapon){
-                CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, value, disable_wrangler_shield);
-                if(value > 0)
-                    sentry->m_nShieldLevel = 0;
-            }
+            // CTFWeaponBase* weapon{builder->GetActiveTFWeapon()};
+            // if(weapon){
+			// 	int value = 0;
+            //     CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, value, disable_wrangler_shield);
+            //     if(value > 0)
+            //         sentry->m_nShieldLevel = 0;
+            // }
         }
         return ret;
     }
