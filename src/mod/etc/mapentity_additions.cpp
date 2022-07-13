@@ -1724,6 +1724,18 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
+    StaticFuncThunk<void, const CCommand&> tf_mvm_popfile("tf_mvm_popfile");
+    THINK_FUNC_DECL(SetForcedMission)
+    {
+        if (change_level_info.set && g_pPopulationManager.GetRef() != nullptr) {
+            const char * commandn[] = {"tf_mvm_popfile", change_level_info.mission.c_str()};
+            CCommand command = CCommand(2, commandn);
+
+            tf_mvm_popfile(command);
+            change_level_info.set = false;
+        }
+    }
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1815,6 +1827,13 @@ namespace Mod::Etc::Mapentity_Additions
             datamap_cache.clear();
             datamap_cache_classes.clear();
             entity_listeners.clear();
+        }
+
+        virtual void LevelInitPostEntity() override
+        { 
+            if (change_level_info.set && g_pPopulationManager.GetRef() != nullptr) {
+                THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, 1.0f);
+            }
         }
 	};
 	CMod s_Mod;

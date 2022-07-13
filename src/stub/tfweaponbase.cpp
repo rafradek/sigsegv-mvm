@@ -84,6 +84,7 @@ MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeap
 MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");
 MemberFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::ft_Energy_GetMaxEnergy("CTFWeaponBase::Energy_GetMaxEnergy");
 MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_CalcIsAttackCritical("CTFWeaponBase::CalcIsAttackCritical");
+MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> CTFWeaponBase::ft_GetTFWeaponData("CTFWeaponBase::GetTFWpnData");
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");

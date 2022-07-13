@@ -74,5 +74,6 @@
     "Lua.diagnostics.disable": [
         "lowercase-global"
     ],
-    "terminal.integrated.copyOnSelection": false
+    "terminal.integrated.copyOnSelection": false,
+    "cmake.configureOnOpen": false
 }

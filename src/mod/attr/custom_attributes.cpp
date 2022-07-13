@@ -359,6 +359,44 @@ namespace Mod::Attr::Custom_Attributes
 				DispatchSpawn(projectile);
 			}
 		}
+		else if (strcmp(name, "stunball") == 0) {
+
+			auto projectile = CTFStunBall::Create(vecSrc, player->EyeAngles(), player);
+			if (projectile != nullptr) {
+				
+				float mult_speed = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
+
+				Vector eye_angles_fwd;
+				AngleVectors(angForward, &eye_angles_fwd);
+				static ConVarRef tf_scout_stunball_base_speed("tf_scout_stunball_base_speed");
+				Vector velocity = mult_speed * tf_scout_stunball_base_speed.GetFloat() * eye_angles_fwd;
+				
+				projectile->InitGrenade(velocity, AngularImpulse( 0, RandomFloat( 0, 100 ), 0 ), player, weapon->GetTFWpnData());
+				projectile->SetLauncher(weapon);
+				projectile->SetOwnerEntity(player);
+				projectile->m_nSkin = player->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0;
+			}
+		}
+		else if (strcmp(name, "ornament") == 0) {
+
+			auto projectile = CTFBall_Ornament::Create(vecSrc, player->EyeAngles(), player);
+			if (projectile != nullptr) {
+
+				float mult_speed = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
+
+				Vector eye_angles_fwd;
+				AngleVectors(angForward, &eye_angles_fwd);
+				static ConVarRef tf_scout_stunball_base_speed("tf_scout_stunball_base_speed");
+				Vector velocity = mult_speed * tf_scout_stunball_base_speed.GetFloat() * eye_angles_fwd;
+				
+				projectile->InitGrenade(velocity, AngularImpulse( 0, RandomFloat( 0, 100 ), 0 ), player, weapon->GetTFWpnData());
+				projectile->SetLauncher(weapon);
+				projectile->SetOwnerEntity(player);
+				projectile->m_nSkin = player->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0;
+			}
+		}
 		
 		if (weapon->ShouldPlayFireAnim()) {
 			player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
@@ -4343,6 +4381,21 @@ namespace Mod::Attr::Custom_Attributes
 		return ring;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFBat_Wood_SecondaryAttack)
+    {
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		bool good = weapon->m_flNextPrimaryAttack <= gpGlobals->curtime;
+		Msg("Time Attack pre %f\n", weapon->GetNextThink("LAUNCH_BALL_THINK"));
+		DETOUR_MEMBER_CALL(CTFBat_Wood_SecondaryAttack)();
+		Msg("Time Attack post %f\n", weapon->GetNextThink("LAUNCH_BALL_THINK"));
+		if (good && weapon->m_flNextPrimaryAttack > gpGlobals->curtime) {
+			float fireRateMult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, fireRateMult, mult_postfiredelay);
+			weapon->m_flNextPrimaryAttack = (weapon->m_flNextPrimaryAttack - gpGlobals->curtime) * fireRateMult + (gpGlobals->curtime);
+			weapon->SetNextThink(-1, "LAUNCH_BALL_THINK");
+			weapon->SetNextThink(gpGlobals->curtime + 0.01, "LAUNCH_BALL_THINK");
+		}
+	}
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -5019,6 +5072,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetParticleColor, "CTFWeaponBase::GetParticleColor");
             MOD_ADD_DETOUR_STATIC(CTFProjectile_EnergyRing_Create, "CTFProjectile_EnergyRing::Create");
 			
+		//  Allow fire rate bonus on ball secondary attack
+            MOD_ADD_DETOUR_MEMBER(CTFBat_Wood_SecondaryAttack, "CTFBat_Wood::SecondaryAttack");
 			
 		//  Allow fire rate bonus with reduced health on melee weapons
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyFireDelay, "CTFWeaponBase::ApplyFireDelay");

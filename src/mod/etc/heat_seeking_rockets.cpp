@@ -127,6 +127,9 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				if (homing.turn_power != 0.0f || homing.acceleration != 0.0f || homing.gravity != 0.0f) {
 
 					proj->SetMoveType(MOVETYPE_CUSTOM, proj->GetMoveCollide());
+					if (proj->VPhysicsGetObject() != nullptr) {
+						proj->VPhysicsDestroyObject();
+					}
 					disallow_movetype = proj;
 					disallow_movetype_tick = gpGlobals->tickcount;
 

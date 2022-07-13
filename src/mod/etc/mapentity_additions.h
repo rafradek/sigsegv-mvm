@@ -161,7 +161,15 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual bool Test(CBaseEntity *ent) {return rtti_cast<T>(ent);}
     };
-    
+
+    struct ChangeLevelInfo
+    {
+        bool set = false;
+        std::string mission;
+
+    };
+    static ChangeLevelInfo change_level_info;
+
     void AddModuleByName(CBaseEntity *entity, const char *name);
 }
 

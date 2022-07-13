@@ -595,6 +595,18 @@ namespace Mod::Etc::Mapentity_Additions
             Value.Convert(FIELD_INTEGER);
             int val = Value.Int();
             TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
+        }},
+        {"ChangeLevel"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            CTFPlayer *player = ToTFPlayer(ent);
+            char param_tokenized[256];
+            V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
+            
+            char *map = strtok(param_tokenized,"|");
+            char *mission = strtok(NULL,"|");
+            change_level_info.set = true;
+            change_level_info.mission = mission;
+            engine->ChangeLevel(map, nullptr);
+            //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
         }}
     });
     ClassnameFilter player_filter("player", {

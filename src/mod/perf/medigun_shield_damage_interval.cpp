@@ -165,7 +165,7 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 				//	}
 				//}
 			//}
-			return !ent->IsCombatItem();
+			return ent->IsCombatItem();
 			
 		}
 		

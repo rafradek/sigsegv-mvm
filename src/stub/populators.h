@@ -26,6 +26,7 @@ public:
 	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
 	static void FindDefaultPopulationFileShortNames(CUtlVector<CUtlString> &vec) { return ft_FindDefaultPopulationFileShortNames(vec); }
 	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player) { return ft_GetPlayerUpgradeHistory(this, player); }
+	void SetPopulationFilename(const char *name) { ft_SetPopulationFilename(this, name); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -42,6 +43,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, bool>              ft_IsInEndlessWaves;
 	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
 	static MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>             ft_GetPlayerUpgradeHistory;
+	static MemberFuncThunk<CPopulationManager *, void, const char*> ft_SetPopulationFilename;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;

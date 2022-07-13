@@ -927,6 +927,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	}
 	GlobalThunk<SendTable> DT_TFPlayerResource_g_SendTable("DT_TFPlayerResource::g_SendTable");
 	GlobalThunk<SendTable> DT_PlayerResource_g_SendTable("DT_PlayerResource::g_SendTable");
+	bool someone_spec = false;
 	bool someone_pressed_score = false;
 	bool prev_someone_pressed_score = false;
 	unsigned int team_num_prop_index = 0;
@@ -975,7 +976,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 					if (player != nullptr) {
 						
 						nValue = player->GetTeamNumber();
-						if (UTIL_PlayerByIndex(client_num) != nullptr && (UTIL_PlayerByIndex(client_num)->m_nButtons & IN_SCORE)) {
+						auto clientPlayer = UTIL_PlayerByIndex(client_num);
+						if (clientPlayer != nullptr && ((clientPlayer->m_nButtons & IN_SCORE) || (clientPlayer->GetTeamNumber() == TEAM_SPECTATOR && !clientPlayer->IsHLTV()))) {
 							if (player->IsBot() && player->GetTeamNumber() == TF_TEAM_RED) {
 								nValue = TF_TEAM_BLUE;
 							}
@@ -1011,7 +1013,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	int nCheckProps
 	)
     {
-        if (someone_pressed_score && pTable == &DT_TFPlayerResource_g_SendTable.GetRef()) {
+        if ((someone_pressed_score || someone_spec) && pTable == &DT_TFPlayerResource_g_SendTable.GetRef()) {
             WriteOverridePlayerTeam(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
 			return;
         }
@@ -1039,16 +1041,18 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	{
 		prev_someone_pressed_score = someone_pressed_score;
 		someone_pressed_score = false;
+		someone_spec = false;
 
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if ((player->m_nButtons & IN_SCORE)) {
-				someone_pressed_score = true;
-				return false;
+			if (!someone_spec && !player->IsFakeClient() && !player->IsHLTV() && player->GetTeamNumber() == TEAM_SPECTATOR) {
+				someone_spec = true;
 			}
-			return true;
+			if (!someone_pressed_score && (player->m_nButtons & IN_SCORE)) {
+				someone_pressed_score = true;
+			}
 		});
 		int prevTeamNum[34];
-		if (someone_pressed_score) {
+		if (someone_pressed_score || someone_spec) {
 			for (int i = 0; i < 34; i++) {
 				prevTeamNum[i] = PlayerResource()->m_iTeam[i];
 				if (prevTeamNum[i] > TEAM_SPECTATOR) {

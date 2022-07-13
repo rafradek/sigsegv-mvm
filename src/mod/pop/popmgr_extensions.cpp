@@ -1579,6 +1579,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 					state.m_Player_anim_cosmetics[player] = wearable;
 					player->GetPlayerClass()->SetCustomModel("", true);
+					wearable->SetEffects(129);
 				}
 			}
 			else {

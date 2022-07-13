@@ -24,6 +24,8 @@ typedef enum {
 	DEPLOY,
 } WeaponSound_t;
 
+class CTFWeaponInfo {};
+
 class CBaseCombatWeapon : public CEconEntity
 {
 public:
@@ -95,6 +97,7 @@ public:
 	bool IsSilentKiller() { return ft_IsSilentKiller(this); }
 	float Energy_GetMaxEnergy() { return ft_Energy_GetMaxEnergy(this); }
 	void CalcIsAttackCritical() { ft_CalcIsAttackCritical(this); }
+	CTFWeaponInfo const& GetTFWpnData() const { return ft_GetTFWeaponData(this); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
@@ -119,6 +122,7 @@ private:
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_IsSilentKiller;
 	static MemberFuncThunk<CTFWeaponBase *, float> ft_Energy_GetMaxEnergy;
 	static MemberFuncThunk<CTFWeaponBase *, void> ft_CalcIsAttackCritical;
+	static MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> ft_GetTFWeaponData;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;

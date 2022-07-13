@@ -108,6 +108,8 @@ private:
 class CTFProjectile_HealingBolt : public CTFProjectile_Arrow {};
 class CTFProjectile_GrapplingHook : public CTFProjectile_Arrow {};
 
+class CTFWeaponInfo;
+
 class CTFWeaponBaseGrenadeProj : public CBaseGrenade
 {
 public:
@@ -115,6 +117,8 @@ public:
 
 	void SetDetonateTimerLength(float time) const { ft_SetDetonateTimerLength(this, time); }
 	void Explode(trace_t *pTrace, int bitsDamageType)  { ft_Explode(this, pTrace, bitsDamageType); }
+	void InitGrenade(const Vector &velocity, const Vector &impulse, CBaseCombatCharacter *owner, const CTFWeaponInfo &info)  { ft_InitGrenade(this, velocity, impulse, owner, info); }
+	
 
 	DECL_SENDPROP(int,    m_iDeflected);
 	DECL_SENDPROP(bool,   m_bCritical);
@@ -125,6 +129,7 @@ private:
 
 	static MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> ft_SetDetonateTimerLength;
 	static MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, trace_t *, int> ft_Explode;
+	static MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, const Vector &, const Vector &, CBaseCombatCharacter *, const CTFWeaponInfo &> ft_InitGrenade;
 };
 
 class CTFGrenadePipebombProjectile : public CTFWeaponBaseGrenadeProj
@@ -150,8 +155,20 @@ class CTFProjectile_ThrowableBreadMonster : public CTFProjectile_Throwable {};
 class CTFProjectile_ThrowableBrick : public CTFProjectile_Throwable {};
 class CTFProjectile_ThrowableRepel : public CTFProjectile_Throwable {};
 
-class CTFStunBall : public CTFGrenadePipebombProjectile {};
-class CTFBall_Ornament : public CTFStunBall {};
+class CTFStunBall : public CTFGrenadePipebombProjectile 
+{
+public:
+	static CTFStunBall *Create(const Vector &vecOrigin, const QAngle &vecAngles,  CBaseEntity *pOwner) {return ft_Create(vecOrigin, vecAngles, pOwner); }
+private:
+	static StaticFuncThunk<CTFStunBall *,const Vector &, const QAngle &, CBaseEntity *> ft_Create;
+};
+class CTFBall_Ornament : public CTFStunBall
+{
+public:
+	static CTFBall_Ornament *Create(const Vector &vecOrigin, const QAngle &vecAngles,  CBaseEntity *pOwner) {return ft_Create(vecOrigin, vecAngles, pOwner); }
+private:
+	static StaticFuncThunk<CTFBall_Ornament *,const Vector &, const QAngle &, CBaseEntity *> ft_Create;
+};
 
 class CTFProjectile_SpellFireball : public CTFProjectile_Rocket {};
 class CTFProjectile_SpellBats : public CTFProjectile_Jar {};
