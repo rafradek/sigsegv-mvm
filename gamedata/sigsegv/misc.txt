@@ -5951,6 +5951,37 @@
 					lib "engine"
 					sym  "_ZN19CNetworkStringTable17UpdateMirrorTableEi"
 				}
+				"CTFBat_Wood::SecondaryAttack"
+				{
+					type "sym"
+					sym  "_ZN11CTFBat_Wood15SecondaryAttackEv"
+				}
+				"CTFStunBall::Create"
+				{
+					type "sym"
+					sym  "_ZN11CTFStunBall6CreateERK6VectorRK6QAngleP11CBaseEntity"
+				}
+				"CTFBall_Ornament::Create"
+				{
+					type "sym"
+					sym  "_ZN16CTFBall_Ornament6CreateERK6VectorRK6QAngleP11CBaseEntity"
+				}
+				"CTFWeaponBaseGrenadeProj::InitGrenade"
+				{
+					type "sym"
+					sym  "_ZN24CTFWeaponBaseGrenadeProj11InitGrenadeERK6VectorS2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFWeaponBase::GetTFWpnData"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase12GetTFWpnDataEv"
+				}
+				"CBaseEntity::VPhysicsDestroyObject"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity21VPhysicsDestroyObjectEv"
+				}
+				
 			}
 			"addrs_group"
 			{
