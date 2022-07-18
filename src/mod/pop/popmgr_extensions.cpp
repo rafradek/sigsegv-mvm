@@ -4397,7 +4397,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			playerItems = playerItemsCheckpoint;
 			
 			for (auto it = playerItemsSelected.begin(); it != playerItemsSelected.end(); ) {
-				if (*it > state.m_ExtraLoadoutItems.size() && state.m_ExtraLoadoutItems[*it].cost != 0 && !playerItems.count(*it)) {
+				if (*it >= state.m_ExtraLoadoutItems.size() || (state.m_ExtraLoadoutItems[*it].cost != 0 && !playerItems.count(*it))) {
 					it = playerItemsSelected.erase(it);
 				}
 				else {

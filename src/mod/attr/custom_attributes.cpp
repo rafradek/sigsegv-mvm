@@ -4171,7 +4171,7 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseEntity *entity = weapon->FireProjectile(player);
 		CTFBaseRocket *rocket = rtti_cast<CTFBaseRocket *>(entity);
 		CTFWeaponBaseGrenadeProj *grenade = rtti_cast<CTFWeaponBaseGrenadeProj *>(entity);
-		if (rocket != nullptr) {
+		if (rocket != nullptr && rtti_cast<CTFProjectile_Arrow *>(entity) == nullptr) {
 			trace_t tr;
 			UTIL_TraceLine(rocket->GetAbsOrigin(), player->EyePosition(), MASK_SOLID, rocket, COLLISION_GROUP_NONE, &tr);
 			rocket->Explode(&tr, player);
@@ -4179,7 +4179,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (grenade != nullptr) {
 			trace_t tr;
 			UTIL_TraceLine(grenade->GetAbsOrigin(), player->EyePosition(), MASK_SOLID, grenade, COLLISION_GROUP_NONE, &tr);
-			grenade->Explode(&tr, grenade->GetDamageType());
+			grenade->Explode(&tr, weapon->GetDamageType());
 		}
 	}
 
