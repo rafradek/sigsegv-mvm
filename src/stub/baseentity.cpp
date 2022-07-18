@@ -3,6 +3,7 @@
 //#include "util/iterate.h"
 #include "stub/objects.h"
 
+MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> CServerNetworkProperty::ft_AttachEdict("CServerNetworkProperty::AttachEdict");
 
 IMPL_DATAMAP(string_t,               CBaseEntity, m_target);
 IMPL_DATAMAP(string_t,               CBaseEntity, m_iParent);
@@ -36,6 +37,7 @@ IMPL_RELATIVE(ExtraEntityData *,     CBaseEntity, m_extraEntityData, m_debugOver
 IMPL_RELATIVE(IHasAttributes *,      CBaseEntity, m_pAttributes, m_iMaxHealth, -0x0c);
 IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
+IMPL_SENDPROP(unsigned char,          CBaseEntity, m_iParentAttachment,  CBaseEntity);
 
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);
@@ -150,6 +152,8 @@ StaticFuncThunk<void, IRecipientFilter&, int, const char *, HSOUNDSCRIPTHANDLE&,
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                CBaseEntity::ft_EmitSound_static3  ("CBaseEntity::EmitSound [static: emitsound]");
 StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           CBaseEntity::ft_EmitSound_static4  ("CBaseEntity::EmitSound [static: emitsound + handle]");
 StaticFuncThunk<trace_t&>                                                                                        CBaseEntity::ft_GetTouchTrace      ("CBaseEntity::GetTouchTrace");
+StaticFuncThunk<void, CBaseEntity *, CBaseEntity *>                                                              CBaseEntity::ft_TransformStepData_ParentToParent("CBaseEntity::TransformStepData_ParentToParent");
+StaticFuncThunk<void, CBaseEntity *>                                                                             CBaseEntity::ft_TransformStepData_WorldToParent("CBaseEntity::TransformStepData_WorldToParent");
 
 MemberFuncThunk<CCollisionProperty *, void, SurroundingBoundsType_t, const Vector *, const Vector *> ft_SetSurroundingBoundsType("CCollisionProperty::SetSurroundingBoundsType");
 MemberFuncThunk<CCollisionProperty *, void> ft_MarkPartitionHandleDirty("CCollisionProperty::MarkPartitionHandleDirty");

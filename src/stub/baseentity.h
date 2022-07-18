@@ -134,6 +134,7 @@ public:
 		return m_pPev != nullptr ? m_pPev->m_EdictIndex : 0;
 	}
 
+	void AttachEdict(edict_t *required) { ft_AttachEdict(this, required); }
 	inline edict_t *GetProp() {
 		return m_pPev;
 	}
@@ -142,6 +143,8 @@ public:
 	// CBaseTransmitProxy *m_pTransmitProxy;
 	edict_t	*m_pPev;
 	// ...
+private:
+	static MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> ft_AttachEdict;
 };
 
 /*class CEntInfo
@@ -251,6 +254,9 @@ public:
 	CBaseEntity *GetMoveParent()                  { return this->m_hMoveParent; }
 	CBaseEntity *FirstMoveChild()                 { return this->m_hMoveChild; }
 	CBaseEntity *NextMovePeer()                   { return this->m_hMovePeer; }
+	void SetMoveParent(CBaseEntity *entity)       { this->m_hMoveParent = entity; }
+	void SetFirstMoveChild(CBaseEntity *entity)   { this->m_hMoveChild = entity; }
+	void SetNextMovePeer(CBaseEntity *entity)     { this->m_hMovePeer = entity; }
 	const color32 GetRenderColor() const          { return this->m_clrRender; }
 	void SetRenderColorR(byte r)                  { this->m_clrRender->r = r; }
 	void SetRenderColorG(byte g)                  { this->m_clrRender->g = g; }
@@ -361,6 +367,8 @@ public:
 	static void EmitSound(IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params)                                                                                                             {        ft_EmitSound_static3  (filter, iEntIndex, params); }
 	static void EmitSound(IRecipientFilter& filter, int iEntIndex, const EmitSound_t& params, HSOUNDSCRIPTHANDLE& handle)                                                                                 {        ft_EmitSound_static4  (filter, iEntIndex, params, handle); }
 	static trace_t &GetTouchTrace()                                                                                                                                                                       { return ft_GetTouchTrace(); }
+	static void TransformStepData_ParentToParent(CBaseEntity *pOldParent, CBaseEntity *pNewParent)                                                                                                        {        ft_TransformStepData_ParentToParent(pOldParent, pNewParent); }
+	static void TransformStepData_WorldToParent(CBaseEntity *parent)                                                                                                                                      {        ft_TransformStepData_WorldToParent(parent); }
 	/* hack */
 	bool IsCombatCharacter() { return (this->MyCombatCharacterPointer() != nullptr); }
 	// bool IsPlayer() const;
@@ -397,6 +405,7 @@ public:
 	DECL_RELATIVE(IHasAttributes *, m_pAttributes);
 	DECL_DATAMAP(unsigned char, m_nWaterLevel);
 	DECL_SENDPROP(unsigned char, m_nRenderFX);
+	DECL_SENDPROP(unsigned char, m_iParentAttachment);
 	
 	
 private:
@@ -522,6 +531,8 @@ private:
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&>                                                ft_EmitSound_static3;
 	static StaticFuncThunk<void, IRecipientFilter&, int, const EmitSound_t&, HSOUNDSCRIPTHANDLE&>                           ft_EmitSound_static4;
 	static StaticFuncThunk<trace_t&>                                                                                        ft_GetTouchTrace;
+	static StaticFuncThunk<void, CBaseEntity *, CBaseEntity *>                                                              ft_TransformStepData_ParentToParent;
+	static StaticFuncThunk<void, CBaseEntity *>                                                                             ft_TransformStepData_WorldToParent;
 };
 
 

@@ -1,5 +1,6 @@
 #include "util/misc.h"
-
+#include "stub/baseentity.h"
+#include "stub/baseanimating.h"
 
 template<typename LINE_FUNC>
 static void HexDump_Internal(LINE_FUNC&& line_func, const void *ptr, size_t len, bool absolute)
@@ -63,3 +64,42 @@ void SendConVarValue(int playernum, const char *convar, const char *value)
 		netchan->SendData(buffer);
 	}
 }
+
+void EntityMatrix::InitFromEntity( CBaseEntity *pEntity, int iAttachment=0 )
+{
+		
+	if ( !pEntity )
+	{
+		Identity();
+		return;
+	}
+
+	// Get an attachment's matrix?
+	if ( iAttachment != 0 )
+	{
+		CBaseAnimating *pAnimating = pEntity->GetBaseAnimating();
+		if ( pAnimating && pAnimating->GetModelPtr() )
+		{
+			Vector vOrigin;
+			QAngle vAngles;
+			if ( pAnimating->GetAttachment( iAttachment, vOrigin, vAngles ) )
+			{
+				((VMatrix *)this)->SetupMatrixOrgAngles( vOrigin, vAngles );
+				return;
+			}
+		}
+	}
+
+	((VMatrix *)this)->SetupMatrixOrgAngles( pEntity->GetAbsOrigin(), pEntity->GetAbsAngles() );
+}
+
+void EntityMatrix::InitFromEntityLocal( CBaseEntity *entity )
+{
+	if ( !entity || !entity->edict() )
+	{
+		Identity();
+		return;
+	}
+	((VMatrix *)this)->SetupMatrixOrgAngles( entity->GetLocalOrigin(), entity->GetLocalAngles() );
+}
+

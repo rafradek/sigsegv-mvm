@@ -5981,6 +5981,21 @@
 					type "sym"
 					sym  "_ZN11CBaseEntity21VPhysicsDestroyObjectEv"
 				}
+				"CServerNetworkProperty::AttachEdict"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty11AttachEdictEP7edict_t"
+				}
+				"CBaseEntity::TransformStepData_WorldToParent"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity31TransformStepData_WorldToParentEPS_"
+				}
+				"CBaseEntity::TransformStepData_ParentToParent"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity32TransformStepData_ParentToParentEPS_S0_"
+				}
 				
 			}
 			"addrs_group"

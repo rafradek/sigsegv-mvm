@@ -843,4 +843,31 @@ template <size_t maxLenInChars> inline const char *nexttoken( OUT_Z_ARRAY char (
 {
 	return nexttoken( pToken, maxLenInChars, str, sep );
 }
+
+class EntityMatrix : public VMatrix
+{
+public:
+	void InitFromEntity( CBaseEntity *pEntity, int iAttachment=0 );
+	void InitFromEntityLocal( CBaseEntity *entity );
+
+	inline Vector LocalToWorld( const Vector &vVec ) const
+	{
+		return VMul4x3( vVec );
+	}
+
+	inline Vector WorldToLocal( const Vector &vVec ) const
+	{
+		return VMul4x3Transpose( vVec );
+	}
+
+	inline Vector LocalToWorldRotation( const Vector &vVec ) const
+	{
+		return VMul3x3( vVec );
+	}
+
+	inline Vector WorldToLocalRotation( const Vector &vVec ) const
+	{
+		return VMul3x3Transpose( vVec );
+	}
+};
 #endif
