@@ -42,8 +42,8 @@ WaveSchedule
 	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
 	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
 	PrecacheParticle "AntlionGib" [$SIGSEGV]
-	// AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 57 bots instead of 26. Experimental. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Map reload recommended after change (default: 0)
-	// ExtraBotSlotsNoDeathcam 0 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 0)
+	AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 57 bots instead of 26. Experimental. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Map reload recommended after change (default: 0)
+	ExtraBotSlotsNoDeathcam 0 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 0)
 	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). 26 is maximum value to keep 6 players active (default: 22)
 	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations
 	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
@@ -72,7 +72,7 @@ WaveSchedule
 	ImprovedAirblast 1 [$SIGSEGV] // If set, bot pyros can deflect arrows grenades and stickybombs (default: 0)
 	NoSapUnownedBuildings 1 [$SIGSEGV] // If set, spies will not target unowned buildings (default: 0)
 	NoHolidayPickups 1 [$SIGSEGV] // If set, pickups will remain with default models (default: 0)
-	MaxSpectators 0 [$SIGSEGV] // Set max spectator count (default: infinite)
+	MaxSpectators 5 [$SIGSEGV] // Set max spectator count (default: infinite)
 	MaxRedPlayers 6 [$SIGSEGV] // Override max red player count (default: 6)
 	DisplayRobotDeathNotice 1 [$SIGSEGV] // If set, regular robot death is mentioned in the kill feed (default: 0)
 	FlagCarrierMovementPenalty 0.4 [$SIGSEGV] // Overrides flag carrier movement penalty (default: 0.5)
@@ -138,6 +138,9 @@ WaveSchedule
 	NoRedBotsRandomCrit 1 [$SIGSEGV] //If set, red robots will not be able to deal random critical damage. (default: 0)
 	NoRedSniperBotHeadshots 1 [$SIGSEGV] // If set, red bot snipers cannot headshot (and amby spy) (default: 0)
 	ForceRedMoney 1 [$SIGSEGV] // Force drop red money (default: 0)
+	SentryHintBombForwardRange 0 [$SIGSEGV] // How far in front of the bomb the engineer can teleport in (default: 0)
+	SentryHintBombBackwardRange 3000 [$SIGSEGV] // How far behind the bomb the engineer can teleport in (default: 3000)
+	SentryHintMinDistanceFromBomb 1300 [$SIGSEGV] // How far the engineer spot must be behind the bomb (default: 1300)
 
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
@@ -514,7 +517,7 @@ WaveSchedule
 				Cost 100 // The cost of the weapon (default: 0)
 				AllowedMinWave 1 //The wave at which the weapon is enabled (default: 1)
 				AllowedMaxWave 55 //The max wave at which the weapon is enabled (default: infinite)
-				AllowRefund 1 //Allow refunding of the weapon (default: 1)
+				AllowRefund 0 //Allow refunding of the weapon (default: 1)
 			}
 			// Available slots:
 			// Primary

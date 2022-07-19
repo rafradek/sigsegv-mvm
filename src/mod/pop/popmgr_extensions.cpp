@@ -668,7 +668,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_RemoveOffhandViewmodel          ("sig_etc_entity_limit_manager_viewmodel"),
 			m_RemoveBotExpressions            ("sig_etc_entity_limit_manager_remove_expressions"),
 			m_ExtraBotSlotsNoDeathcam         ("sig_etc_extra_player_slots_no_death_cam"),
-			m_NoRobotFootsteps                ("sig_mvm_jointeam_blue_no_footsteps")
+			m_NoRobotFootsteps                ("sig_mvm_jointeam_blue_no_footsteps"),
+			m_SentryHintBombForwardRange      ("tf_bot_engineer_mvm_sentry_hint_bomb_forward_range"),
+			m_SentryHintBombBackwardRange     ("tf_bot_engineer_mvm_sentry_hint_bomb_backward_range"),
+			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb")
 			
 		{
 			this->Reset();
@@ -824,6 +827,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_RemoveBotExpressions.Reset();
 			this->m_ExtraBotSlotsNoDeathcam.Reset();
 			this->m_NoRobotFootsteps.Reset();
+			this->m_SentryHintBombForwardRange.Reset();
+			this->m_SentryHintBombBackwardRange.Reset();
+			this->m_SentryHintMinDistanceFromBomb.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1055,6 +1061,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_RemoveBotExpressions;
 		CPopOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
 		CPopOverride_ConVar<bool> m_NoRobotFootsteps;
+		CPopOverride_ConVar<float> m_SentryHintBombForwardRange;
+		CPopOverride_ConVar<float> m_SentryHintBombBackwardRange;
+		CPopOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
 		
 		
 		
@@ -6092,6 +6101,13 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_ExtraBotSlotsNoDeathcam.Set(subkey->GetBool());
 			} else if (FStrEq(name, "NoBluHumanFootsteps")) {
 				state.m_NoRobotFootsteps.Set(subkey->GetBool());
+			} else if (FStrEq(name, "SentryHintBombForwardRange")) {
+				state.m_SentryHintBombForwardRange.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "SentryHintBombBackwardRange")) {
+				state.m_SentryHintBombBackwardRange.Set(subkey->GetFloat());
+			} else if (FStrEq(name, "SentryHintMinDistanceFromBomb")) {
+				state.m_SentryHintMinDistanceFromBomb.Set(subkey->GetFloat());
+				
 			} else if (FStrEq(name, "LuaScript")) {
 				state.m_Scripts.push_back(subkey->GetString());
 			} else if (FStrEq(name, "LuaScriptFile")) {
