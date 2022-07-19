@@ -5996,6 +5996,11 @@
 					type "sym"
 					sym  "_ZN11CBaseEntity32TransformStepData_ParentToParentEPS_S0_"
 				}
+				"CObjectSentrygun::ValidTargetPlayer"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun17ValidTargetPlayerEP9CTFPlayerRK6VectorS4_"
+				}
 				
 			}
 			"addrs_group"

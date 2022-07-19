@@ -21,6 +21,8 @@
 #include "mod/pop/popmgr_extensions.h"
 #include "stub/team.h"
 #include <ctime>
+#include <boost/algorithm/string.hpp>
+#include <boost/tokenizer.hpp>
 
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
@@ -1490,12 +1492,14 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_STATIC_CALL(GetBotEscortCount)(team);
 	}
 
+	bool is_this_map_ignoring_cannot_pickup = false;
+
 	RefCount rc_CTFBotFetchFlag_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotFetchFlag_Update, CTFBot *actor, float dt)
 	{
 		int cannotPickupInteligence = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(actor, cannotPickupInteligence, cannot_pick_up_intelligence);
-		SCOPED_INCREMENT_IF(rc_CTFBotFetchFlag_Update, cannotPickupInteligence > 0);
+		SCOPED_INCREMENT_IF(rc_CTFBotFetchFlag_Update, cannotPickupInteligence > 0 && !is_this_map_ignoring_cannot_pickup);
 		return DETOUR_MEMBER_CALL(CTFBotFetchFlag_Update)(actor, dt);
 	}
 
@@ -2092,6 +2096,24 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		virtual void LevelInitPreEntity() override
 		{
+			// Some maps, such as mvm_berserker, rely on vanilla cannot pick up intelligence behavior, which to not respect their attribute when the bomb first spawn in
+			const char *str = engine->GetMapEntitiesString();
+			const char *find = FindCaseSensitive(str, "cannot pick up intelligence");
+			if (find != nullptr) {
+				Msg("Found cannot pick up intelligence\n");
+			}
+			is_this_map_ignoring_cannot_pickup = find != nullptr;
+			// std::string str(cvar_cannot_pickup_flag_ignore_maps.GetString());
+            // boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>(","));
+
+			// const char *map = STRING(gpGlobals->mapname);
+			// is_this_map_ignoring_cannot_pickup = false;
+            // for (auto &token : tokens) {
+            //     if (StringStartsWith(map, token.c_str())) {
+			// 		is_this_map_ignoring_cannot_pickup = true;
+			// 		break;
+			// 	}
+            // }
 			ClearAllData();
 		}
 		

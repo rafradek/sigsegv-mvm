@@ -2372,4 +2372,14 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4554"
+    {
+        "name"	"ignored by enemy sentries"
+        "attribute_class"	"ignored_by_enemy_sentries"
+        "description_string"	"Ignored by enemy senties"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    
 }

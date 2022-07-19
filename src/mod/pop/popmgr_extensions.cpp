@@ -1454,7 +1454,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		if (params.m_pSoundName && params.m_pSoundName[0] == '=') {
 			char *pos;
-			params.m_SoundLevel = (int) strtol(params.m_pSoundName + 1, &pos, 10);
+			params.m_SoundLevel = (soundlevel_t) strtol(params.m_pSoundName + 1, &pos, 10);
 			params.m_pSoundName = pos + 1;
 		}
 	}
@@ -1604,10 +1604,10 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 	
 	RefCount rc_GetEntityForLoadoutSlot;
-	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot)
+	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot, bool flag)
 	{
 		SCOPED_INCREMENT(rc_GetEntityForLoadoutSlot);
-		return DETOUR_MEMBER_CALL(GetEntityForLoadoutSlot)(slot);
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetEntityForLoadoutSlot)(slot, flag);
 	}
 
 	RefCount rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot;
@@ -1645,7 +1645,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerInventory_GetItemInLoadout, int pclass, int slot)
 	{
 		auto inventory = reinterpret_cast<CTFPlayerInventory *>(this);
-		CTFPlayer *player = UTIL_PlayerBySteamID(inventory->m_OwnerId);
+		CTFPlayer *player = (CTFPlayer *) UTIL_PlayerBySteamID(inventory->m_OwnerId);
 
 		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
 
@@ -2751,7 +2751,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	}*/
 
 
-	bool IsInvalidWearableForModel(CTFPlayer *player, CTFWearable *wearable) 
+	bool IsInvalidWearableForModel(CTFPlayer *player, CEconWearable *wearable) 
 	{
 		auto item_view = wearable->GetItem();
 		if (item_view != nullptr && item_view->GetItemDefinition() != nullptr) {
@@ -4349,7 +4349,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (moneymaker != nullptr && TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() > 0 && moneymaker->IsBot() && (creditTeam != 0 && moneymaker->GetTeamNumber() != creditTeam)) {
 			// forcedistribute = false;
 			// The moneymaker must be on the team that collects credits. If not, just find a random player on credit team
-			moneymaker = TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
+			moneymaker = (CTFPlayer *) TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
 		}
 
 		DETOUR_MEMBER_CALL(CTFPlayer_DropCurrencyPack)(pack, amount, forcedistribute, moneymaker);
@@ -4376,7 +4376,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			if (TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() > 0 && (maker == nullptr || (maker->IsBot() && (maker != 0 && maker->GetTeamNumber() != creditTeam)))) {
-				maker = TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
+				maker = (CTFPlayer *) TFTeamMgr()->GetTeam(creditTeam)->GetPlayer(RandomInt(0, TFTeamMgr()->GetTeam(creditTeam)->GetNumPlayers() - 1));
 			}
 			
 			currency->DistributedBy(player_killer);

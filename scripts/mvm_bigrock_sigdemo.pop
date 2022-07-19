@@ -3018,3 +3018,6 @@ WaveSchedule
 
 // Cycles colors for the projectile particle. Higher values cycle faster
 // "particle color rainbow" 100
+
+// If enemy sentries should ignore this player
+// "ignored by enemy sentries" 1
