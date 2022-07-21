@@ -178,7 +178,7 @@ function CEntity:GetAttributeValue(name) end
 function CEntity:SetAttributeValue(name, value) end
 
 --Returns a table of all properties (datamap, sendprop, custom) as keys and their values.
---The table is read only, changes must be written to the entity variable itself
+--The table is read only, changes must be written to the entity itself, like entity.m_iTeamNum = 3
 ---@return table
 function CEntity:DumpProperties() end
 

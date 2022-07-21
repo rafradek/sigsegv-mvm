@@ -747,9 +747,10 @@ namespace Mod::Etc::Mapentity_Additions
         return functor(pStartEntity, szName+1);
     }
 
-    string_t last_find_entity_name_str = NULL_STRING;
-    const char *last_find_entity_name = nullptr;
-    bool last_find_entity_wildcard = false;
+    std::string last_entity_name;
+    bool last_entity_name_wildcard = false;
+    string_t last_entity_lowercase = NULL_STRING;
+
     ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_NONE, "Converts all entity names to lowercase for faster lookup", 
         [](IConVar *pConVar, const char *pOldValue, float flOldValue){
             // Immediately convert every name and classname to lowercase
@@ -780,21 +781,21 @@ namespace Mod::Etc::Mapentity_Additions
 		auto entList = reinterpret_cast<CBaseEntityList *>(this);
 
         string_t lowercaseStr;
-        if (szName == last_find_entity_name) {
-            lowercaseStr = last_find_entity_name_str;
+        if (last_entity_name == szName) {
+            lowercaseStr = last_entity_lowercase;
         }
         else {
+            last_entity_name = szName;
             int length = strlen(szName);
-            last_find_entity_name = szName;
-            last_find_entity_wildcard = szName[length - 1] == '*';
-            char *lowercase = stackalloc(length + 1);
+            last_entity_name_wildcard = szName[length - 1] == '*';
+            char *lowercase = (char *)stackalloc(length + 1);
             StrLowerCopy(szName, lowercase);
-            last_find_entity_name_str = lowercaseStr = AllocPooledString(lowercase);
+            last_entity_lowercase = lowercaseStr = AllocPooledString(lowercase);
         }
         
         const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
 
-        if (!last_find_entity_wildcard) {
+        if (!last_entity_name_wildcard) {
             for ( ;pInfo; pInfo = pInfo->m_pNext ) {
                 CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
                 if (!ent) {
@@ -836,21 +837,21 @@ namespace Mod::Etc::Mapentity_Additions
         auto entList = reinterpret_cast<CBaseEntityList *>(this);
 
         string_t lowercaseStr;
-        if (szName == last_find_entity_name) {
-            lowercaseStr = last_find_entity_name_str;
+        if (last_entity_name == szName) {
+            lowercaseStr = last_entity_lowercase;
         }
         else {
+            last_entity_name = szName;
             int length = strlen(szName);
-            last_find_entity_name = szName;
-            last_find_entity_wildcard = szName[length - 1] == '*';
-            char *lowercase = stackalloc(length + 1);
+            last_entity_name_wildcard = szName[length - 1] == '*';
+            char *lowercase = (char *)stackalloc(length + 1);
             StrLowerCopy(szName, lowercase);
-            last_find_entity_name_str = lowercaseStr = AllocPooledString(lowercase);
+            last_entity_lowercase = lowercaseStr = AllocPooledString(lowercase);
         }
         
         const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
 
-        if (!last_find_entity_wildcard) {
+        if (!last_entity_name_wildcard) {
             for ( ;pInfo; pInfo = pInfo->m_pNext ) {
                 CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
                 if (!ent) {

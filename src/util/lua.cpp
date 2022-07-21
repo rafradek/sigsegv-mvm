@@ -930,10 +930,10 @@ namespace Util::Lua
             double number = lua_tonumber(l, index);
             int inumber = (int) number;
             if (number == inumber) {
-                variant.SetInt(lua_tointeger(l, index));
+                variant.SetInt(inumber);
             }
             else {
-                variant.SetFloat(lua_tointeger(l, index));
+                variant.SetFloat(number);
             }
         }
         else if (type != LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA) {
@@ -1321,7 +1321,7 @@ namespace Util::Lua
                 }
             }
         }
-        auto func = Mod::Etc::Mapentity_Additions::GetCustomInput(entity, name.c_str());
+        auto func = Mod::Etc::Mapentity_Additions::GetCustomInput(entity, name[0] == '$' ? name.c_str() + 1 : name.c_str());
         if (func != nullptr) {
             names.push_back(name);
             pair.second.push_back({nullptr, func});

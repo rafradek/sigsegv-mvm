@@ -1013,9 +1013,12 @@ namespace Mod::Pop::Tank_Extensions
 	}
 
 	RefCount rc_CTFBaseBoss_OnTakeDamage;
+	RefCount rc_CTFBaseBoss_OnTakeDamage_SameTeam;
 	DETOUR_DECL_MEMBER(int, CTFBaseBoss_OnTakeDamage, CTakeDamageInfo &info)
 	{
+		auto tank = reinterpret_cast<CTFBaseBoss *>(this);
 		SCOPED_INCREMENT(rc_CTFBaseBoss_OnTakeDamage);
+		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_OnTakeDamage_SameTeam, info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() != tank->GetTeamNumber());
 		return DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
 	}
 
@@ -1032,7 +1035,6 @@ namespace Mod::Pop::Tank_Extensions
 			auto tank = reinterpret_cast<CTFTankBoss *>(pVictim);
 			SpawnerData *data = FindSpawnerDataForTank(tank);
 			if (data != nullptr && data->crit_immune) {
-				DevMsg("TANK DATA: %f %f\n", info.GetDamage(), info.GetDamageBonus());
 				info.SetDamage(info.GetDamage() - info.GetDamageBonus());
 				info.SetDamageType(info.GetDamageType() & ~(DMG_CRITICAL));
 				reinterpret_cast<CTakeDamageInfoTF2 *>(&info)->m_eCritType = 0;
@@ -1086,7 +1088,12 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_STATIC_CALL(UTIL_ScreenShake)(center, amplitude, frequency, duration, radius, eCommand, bAirShake);
 	}
 
-	
+	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
+	{
+		if (rc_CTFBaseBoss_OnTakeDamage_SameTeam) return;
+		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1131,7 +1138,9 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage,        "CTFPlayer::OnTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFTankBossBody_GetSolidMask,        "CTFTankBossBody::GetSolidMask");
 			MOD_ADD_DETOUR_STATIC(UTIL_ScreenShake,        "UTIL_ScreenShake");
-			
+
+			// No rage gain for same team tanks
+			MOD_ADD_DETOUR_STATIC(HandleRageGain,        "HandleRageGain");
 
 			// Tank flame damage fix
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");
