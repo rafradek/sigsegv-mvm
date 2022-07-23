@@ -32,6 +32,7 @@ public:
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
 	DECL_EXTRACT(bool,       m_bAllocatedBots);
 	DECL_EXTRACT(KeyValues *,m_pTemplates);
+	DECL_RELATIVE(int,       m_nStartingCurrency);
 	
 private:
 	static MemberFuncThunk<CPopulationManager *, bool, KeyValues *> ft_LoadMvMMission;

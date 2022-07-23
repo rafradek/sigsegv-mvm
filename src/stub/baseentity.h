@@ -251,9 +251,9 @@ public:
 	MoveType_t GetMoveType() const                { return (MoveType_t)(unsigned char)this->m_MoveType; }
 	MoveCollide_t GetMoveCollide() const          { return (MoveCollide_t)(unsigned char)this->m_MoveCollide; }
 	void SetMoveCollide(MoveCollide_t val)        { this->m_MoveCollide = val; }
-	CBaseEntity *GetMoveParent()                  { return this->m_hMoveParent; }
-	CBaseEntity *FirstMoveChild()                 { return this->m_hMoveChild; }
-	CBaseEntity *NextMovePeer()                   { return this->m_hMovePeer; }
+	CBaseEntity *GetMoveParent() const            { return this->m_hMoveParent; }
+	CBaseEntity *FirstMoveChild() const           { return this->m_hMoveChild; }
+	CBaseEntity *NextMovePeer() const             { return this->m_hMovePeer; }
 	void SetMoveParent(CBaseEntity *entity)       { this->m_hMoveParent = entity; }
 	void SetFirstMoveChild(CBaseEntity *entity)   { this->m_hMoveChild = entity; }
 	void SetNextMovePeer(CBaseEntity *entity)     { this->m_hMovePeer = entity; }

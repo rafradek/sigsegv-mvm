@@ -153,6 +153,7 @@ StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefau
 IMPL_EXTRACT(CPopulationManager::SteamIDMap, CPopulationManager, m_RespecPoints,   new CExtract_CPopulationManager_m_RespecPoints());
 IMPL_EXTRACT(bool,                           CPopulationManager, m_bAllocatedBots, new CExtract_CPopulationManager_m_bAllocatedBots());
 IMPL_EXTRACT(KeyValues *,                    CPopulationManager, m_pTemplates,     new CExtract_CPopulationManager_m_pTemplates());
+IMPL_RELATIVE(int,                           CPopulationManager, m_nStartingCurrency, m_pTemplates, +12);
 
 
 GlobalThunk<CPopulationManager *> g_pPopulationManager("g_pPopulationManager");

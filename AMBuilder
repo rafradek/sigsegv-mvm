@@ -218,6 +218,7 @@ sourceFiles += [
   'src/mod/mvm/extended_upgrades.cpp',
   'src/mod/mvm/teleporter_aggro.cpp',
   'src/mod/mvm/refund_usermsg_overflow_fix.cpp',
+  'src/mod/mvm/robot_multiplier.cpp',
   
   'src/mod/perf/attributes_optimize.cpp',
   'src/mod/perf/input_optimize.cpp',

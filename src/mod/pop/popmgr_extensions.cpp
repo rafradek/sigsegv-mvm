@@ -248,6 +248,9 @@ namespace Mod::Pop::PopMgr_Extensions
     ConVar cvar_modded_pvp{"sig_modded_pvp", "0", FCVAR_NOTIFY,
         "Allow more mods to work in non-MvM gamemodes"};
 
+	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY,
+		"Bots should be send to spectator immediately after dying");
+
     bool IsMannVsMachineMode(){
         return cvar_modded_pvp.GetBool() 
             ? true 
@@ -671,7 +674,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_NoRobotFootsteps                ("sig_mvm_jointeam_blue_no_footsteps"),
 			m_SentryHintBombForwardRange      ("tf_bot_engineer_mvm_sentry_hint_bomb_forward_range"),
 			m_SentryHintBombBackwardRange     ("tf_bot_engineer_mvm_sentry_hint_bomb_backward_range"),
-			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb")
+			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb"),
+			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately")
 			
 		{
 			this->Reset();
@@ -695,7 +699,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bReverseWinConditions   = false;
 			this->m_bDeclaredClassAttrib    = false;
 			this->m_bFixSetCustomModelInput = false;
-			this->m_bSendBotsToSpectatorImmediately = false;
 			this->m_bBotRandomCrits = false;
 			this->m_bRedBotNoRandomCrits = false;
 			this->m_bSingleClassAllowed = -1;
@@ -830,6 +833,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SentryHintBombForwardRange.Reset();
 			this->m_SentryHintBombBackwardRange.Reset();
 			this->m_SentryHintMinDistanceFromBomb.Reset();
+			this->m_SendBotsToSpectatorImmediately.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -925,7 +929,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool  m_bReverseWinConditions;
 		bool m_bDeclaredClassAttrib;
 		bool m_bFixSetCustomModelInput;
-		bool m_bSendBotsToSpectatorImmediately;
 		bool m_bBotRandomCrits;
 		int m_bSingleClassAllowed;
 		bool m_bNoHolidayHealthPack;
@@ -1064,6 +1067,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_SentryHintBombForwardRange;
 		CPopOverride_ConVar<float> m_SentryHintBombBackwardRange;
 		CPopOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
+		CPopOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
 		
 		
 		
@@ -1249,7 +1253,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	//	DevMsg("CTFGameRules::PlayerKilled\n");
 		killed = pVictim;
-		bot_killed_check = state.m_bSendBotsToSpectatorImmediately;
+		bot_killed_check = cvar_send_bots_to_spectator_immediately.GetBool();
 		SCOPED_INCREMENT(rc_CTFGameRules_PlayerKilled);
 		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
 		if (state.m_bMinibossSentrySingleKill) {
@@ -5910,7 +5914,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "DisableSound")) {
 				state.m_DisableSounds.emplace(subkey->GetString());
 			} else if (FStrEq(name, "SendBotsToSpectatorImmediately")) {
-				state.m_bSendBotsToSpectatorImmediately = subkey->GetBool();
+				state.m_SendBotsToSpectatorImmediately.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BotsRandomCrit")) {
 				state.m_bBotRandomCrits = subkey->GetBool();
 			} else if (FStrEq(name, "NoRedBotsRandomCrit")) {
