@@ -1018,7 +1018,7 @@ namespace Mod::Pop::Tank_Extensions
 	{
 		auto tank = reinterpret_cast<CTFBaseBoss *>(this);
 		SCOPED_INCREMENT(rc_CTFBaseBoss_OnTakeDamage);
-		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_OnTakeDamage_SameTeam, info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() != tank->GetTeamNumber());
+		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_OnTakeDamage_SameTeam, info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == tank->GetTeamNumber());
 		return DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
 	}
 

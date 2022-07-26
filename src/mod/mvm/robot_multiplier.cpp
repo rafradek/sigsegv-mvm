@@ -20,11 +20,11 @@ namespace Mod::MvM::Robot_Multiplier
 
 		// Not a tank
 		if (rtti_cast<CTankSpawner *>(wavespawn->m_Spawner) == nullptr) {
-			float spawnMult = MIN(robotMax.GetInt()/22, cvar_enable.GetInt());
+			float spawnMult = MIN(robotMax.GetFloat()/22, cvar_enable.GetInt());
 			float timeMult = spawnMult / cvar_enable.GetInt();
 			wavespawn->m_spawnCount = MIN(robotMax.GetInt(),ceil(wavespawn->m_spawnCount * spawnMult));
 			if (timeMult < 1) {
-				wavespawn->m_waitBetweenSpawns *= timeMult;
+				wavespawn->m_waitBetweenSpawns *= 0.25;
 			}
 			wavespawn->m_maxActive = MIN(robotMax.GetInt(),ceil(wavespawn->m_maxActive * spawnMult));
 		}

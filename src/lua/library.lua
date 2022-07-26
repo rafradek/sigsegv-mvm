@@ -78,7 +78,7 @@ function CEntity:IsValid() end
 function CEntity:GetHandleIndex() end
 
 ---@return number networkId
-function CEntity:GetNetworkIndex() end
+function CEntity:GetNetIndex() end
 
 ---@return nil
 function CEntity:Spawn() end

@@ -6502,6 +6502,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
+
 		}
 
 		virtual void LevelInitPostEntity() override
@@ -6544,6 +6545,10 @@ namespace Mod::Pop::PopMgr_Extensions
 						bones.erase(bone->pszName());
 				}
 			}
+			if (strlen(cvar_custom_upgrades_file.GetString()) > 0) {
+				ResendUpgradeFile(true);
+			}
+			SetVisibleMaxPlayers();
 		}
 
 		virtual void LevelShutdownPostEntity() override

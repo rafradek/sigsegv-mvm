@@ -17,14 +17,26 @@
 
 namespace Mod::Etc::Extra_Player_Slots
 {
+    inline bool ExtraSlotsEnabled();
+    
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
 		"Extra player slot count. Requires map restart to function");
 
     ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY,
-		"Allow bots to use extra player slots");
+		"Allow bots to use extra player slots",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			if (sig_etc_extra_player_slots_allow_bots.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
+                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+            }
+		});
 
     ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
-		"Allow players to use extra player slots");
+		"Allow players to use extra player slots",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			if (sig_etc_extra_player_slots_allow_players.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
+                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+            }
+		});
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
 		"Fixes voice chat indicator showing with more than 64 slots, but also disables all of voice chat");
