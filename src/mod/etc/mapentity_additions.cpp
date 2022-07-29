@@ -1737,49 +1737,6 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
-    DETOUR_DECL_MEMBER(void, CBaseEntity_SetParent, CBaseEntity *pParentEntity, int iAttachment)
-	{
-		auto me = reinterpret_cast<CBaseEntity *>(this);
-		DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(pParentEntity,iAttachment);
-        if (me->edict() == nullptr && rtti_cast<CLogicalEntity *>(me) == nullptr) {
-            bool wasNotParented = me->GetMoveParent() == nullptr;
-            CBaseEntity *oldParent = me->GetMoveParent();
-            EHANDLE hParent;
-            hParent.Set(pParentEntity);
-            if (pParentEntity != nullptr) {
-                CBaseEntity *lastChild = pParentEntity->FirstMoveChild();
-                while (lastChild != nullptr && lastChild->NextMovePeer() != nullptr) {
-                    lastChild = lastChild->NextMovePeer();
-                }
-                if (lastChild != nullptr) {
-                    lastChild->SetNextMovePeer(me);
-                }
-                else {
-                    pParentEntity->SetFirstMoveChild(me);
-                }
-            }
-            
-            me->SetMoveParent(pParentEntity);
-            me->m_iParentAttachment = iAttachment;
-            
-            EntityMatrix matrix, childMatrix;
-            matrix.InitFromEntity( const_cast<CBaseEntity *>(pParentEntity), iAttachment ); // parent->world
-            childMatrix.InitFromEntityLocal( me ); // child->world
-            Vector localOrigin = matrix.WorldToLocal( me->GetLocalOrigin() );
-            
-            // I have the axes of local space in world space. (childMatrix)
-            // I want to compute those world space axes in the parent's local space
-            // and set that transform (as angles) on the child's object so the net
-            // result is that the child is now in parent space, but still oriented the same way
-            VMatrix tmp = matrix.Transpose(); // world->parent
-            tmp.MatrixMul( childMatrix, matrix ); // child->parent
-            QAngle angles;
-            MatrixToAngles( matrix, angles );
-            me->SetLocalAngles(angles);
-            me->SetLocalOrigin(localOrigin);
-        }
-	}
-
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1827,9 +1784,6 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D2, "~CTriggerCamera [D2]");
             
             MOD_ADD_DETOUR_MEMBER(CEventAction_CEventAction, "CEventAction::CEventAction [C2]");
-
-            // Fix recent regression introduced in TF2 update
-            MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
