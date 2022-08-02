@@ -120,7 +120,7 @@ StaticFuncThunk<CTFStunBall *,const Vector &, const QAngle &, CBaseEntity *> CTF
 StaticFuncThunk<CTFBall_Ornament *,const Vector &, const QAngle &, CBaseEntity *> CTFBall_Ornament::ft_Create("CTFBall_Ornament::Create");
 StaticFuncThunk<CTFProjectile_Jar *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_Jar::ft_Create("CTFProjectile_Jar::Create");
 StaticFuncThunk<CTFProjectile_JarMilk *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_JarMilk::ft_Create("CTFProjectile_JarMilk::Create");
-StaticFuncThunk<CTFProjectile_Cleaver *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &, int> CTFProjectile_Cleaver::ft_Create("CTFProjectile_JarCleaver::Create");
+StaticFuncThunk<CTFProjectile_Cleaver *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &, int> CTFProjectile_Cleaver::ft_Create("CTFProjectile_Cleaver::Create");
 StaticFuncThunk<CTFProjectile_JarGas *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_JarGas::ft_Create("CTFProjectile_JarGas::Create");
 
 

@@ -382,7 +382,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	
 	DETOUR_DECL_STATIC(CTFWeaponBase *, GetKilleaterWeaponFromDamageInfo, CTakeDamageInfo &info)
 	{
-		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer()->GetOwner() == nullptr) return nullptr;
+		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr && info.GetWeapon()->MyCombatWeaponPointer()->GetOwner() == nullptr) return nullptr;
 		return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)( info);
 	}
 	

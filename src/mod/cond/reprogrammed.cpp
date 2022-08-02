@@ -738,8 +738,11 @@ namespace Mod::Cond::Reprogrammed
 		DETOUR_MEMBER_CALL(CTFGameRules_FireGameEvent)(event);
 	}
 	
+	RefCount rc_CBaseObject_FindSnapToBuildPos;
+	RefCount rc_CBaseObject_FindSnapToBuildPos_spec;
 	DETOUR_DECL_STATIC(int, CollectPlayers_CTFPlayer, CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
 	{
+		static bool reentrancy = false;
 		if (rc_CTFGameRules_FireGameEvent__teamplay_round_start > 0 && (team == TF_TEAM_BLUE && !isAlive && !shouldAppend)) {
 			CUtlVector<CTFPlayer *> tempVector;
 			CollectPlayers(&tempVector, TEAM_ANY);
@@ -757,6 +760,19 @@ namespace Mod::Cond::Reprogrammed
 			}
 
 			return playerVector->Count();
+		}
+		
+		if (rc_CBaseObject_FindSnapToBuildPos && !reentrancy) {
+			reentrancy = true;
+			if (rc_CBaseObject_FindSnapToBuildPos_spec) {
+				CollectPlayers(playerVector, team == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED, isAlive, shouldAppend);
+				shouldAppend = true;
+			}
+			else {
+				CollectPlayers(playerVector, TEAM_SPECTATOR, isAlive, shouldAppend);
+				shouldAppend = true;
+			}
+			reentrancy = false;
 		}
 		
 		if (team == TEAM_SPECTATOR && isAlive) {
@@ -960,6 +976,22 @@ namespace Mod::Cond::Reprogrammed
 		return result;
 	}
 
+	DETOUR_DECL_MEMBER(bool, CBaseObject_FindSnapToBuildPos, CBaseObject *pObjectOverride)
+	{
+		auto me = reinterpret_cast<CBaseObject *>(this);
+		SCOPED_INCREMENT(rc_CBaseObject_FindSnapToBuildPos);
+		SCOPED_INCREMENT_IF(rc_CBaseObject_FindSnapToBuildPos_spec, me->GetBuilder() != nullptr && me->GetBuilder()->GetTeamNumber() == TEAM_SPECTATOR);
+		return DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+	}
+	DETOUR_DECL_MEMBER(CTFTeam *, CTFPlayer_GetOpposingTFTeam)
+	{
+		auto me = reinterpret_cast<CTFPlayer *>(this);
+		if (me->GetTeamNumber() == TEAM_SPECTATOR && me->IsAlive()) {
+			return TFTeamMgr()->GetTeam(RandomInt(TF_TEAM_RED, TF_TEAM_BLUE));
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetOpposingTFTeam)();
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1036,6 +1068,11 @@ namespace Mod::Cond::Reprogrammed
 			// Fix reprogrammed weapons not making giant sounds
 			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetShootSound, "CTFWeaponBase::GetShootSound");
+
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindSnapToBuildPos, "CBaseObject::FindSnapToBuildPos");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOpposingTFTeam, "CTFPlayer::GetOpposingTFTeam");
+
+			
 
 			// Change sentry buster target if the sentry gun is on the same team
 			// MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");
