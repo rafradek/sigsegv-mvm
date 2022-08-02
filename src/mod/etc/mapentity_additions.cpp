@@ -828,7 +828,7 @@ namespace Mod::Etc::Mapentity_Additions
 	{
         if (szName == nullptr || szName[0] == '\0') return nullptr;
 
-        if (szName[0] == '@' && szName[1] == 'h' && szName[2] == '@') { return CHandle<CBaseEntity>::FromIndex(atoi(szName+3)); }
+        if (szName[0] == '@' && szName[1] == 'h' && szName[2] == '@') {  return pStartEntity == nullptr ? CHandle<CBaseEntity>::FromIndex(atoi(szName+3)) : nullptr; }
 
         if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
 

@@ -9,6 +9,7 @@
 #include "util/backtrace.h"
 #include "stub/misc.h"
 #include "stub/tfweaponbase.h"
+#include <fmt/core.h>
 int Template_Increment;
 
 
@@ -88,7 +89,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	templ_inst->has_parent = parent != nullptr;
 	templ_inst->ignore_parent_alive_state = ignore_parent_alive_state;
 
-	const char *parentname;
+	std::string parentname;
 	CBaseEntity* parent_helper = parent;
 
 	if (parent != nullptr){
@@ -111,7 +112,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			templ_inst->parent_helper = parent_helper;
 		}
 
-		parentname = CFmtStr("@h@%d", parent->GetRefEHandle().ToInt());
+		parentname = fmt::format("@h@{}", parent->GetRefEHandle().ToInt());
 		g_pointTemplateParent.insert(parent);
 	}
 	else
@@ -143,7 +144,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 				}
 
 				if (!this->no_fixup)
-					FixupKeyvalue(val,Template_Increment,parentname);
+					FixupKeyvalue(val,Template_Increment,parentname.c_str());
 
 				servertools->SetKeyValue(entity, it1->first.c_str(), val.c_str());
 			}
