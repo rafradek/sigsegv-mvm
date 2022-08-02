@@ -888,7 +888,7 @@ void Evaluation::DoOp()
         }
         else if (left.FieldType() == FIELD_INTEGER) {
             if (right.Int() == 0) {
-                result.SetFloat(FLOAT32_NAN);
+                result.SetFloat(std::numeric_limits<float>::infinity());
             }
             else {
                 result.SetInt(left.Int() / right.Int());
