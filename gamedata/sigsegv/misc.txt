@@ -6121,6 +6121,11 @@
 					type "sym"
 					sym  "_ZN20CTFProjectile_Rocket9SetScorerEP11CBaseEntity"
 				}
+				"CBaseObject::FindSnapToBuildPos"
+				{
+					type "sym"
+					sym  "_ZN11CBaseObject18FindSnapToBuildPosEPS_"
+				}
 				
 			}
 			"addrs_group"

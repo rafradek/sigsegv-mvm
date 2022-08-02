@@ -994,8 +994,11 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared23ConditionGameRulesThinkEv"
 				}
-				
-				
+				"CTFPlayer::GetOpposingTFTeam"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer17GetOpposingTFTeamEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{
