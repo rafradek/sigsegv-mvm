@@ -536,10 +536,15 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(bool, CVoiceGameMgrHelper_CanPlayerHearPlayer, CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity)
 	{
-        if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool() 
-            && (ENTINDEX(pTalker) > 64 || talk_time[ENTINDEX(pTalker) - 1] + 1.0f < gpGlobals->curtime)) {
-            //Msg("talker %d %d\n", ENTINDEX(pTalker) , (ENTINDEX(pTalker) > 64 || talk_time[ENTINDEX(pTalker) - 1] + 1.0f > gpGlobals->curtime));
-                return false;}
+        
+        if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
+            if (ENTINDEX(pTalker) > 64)
+                return false;
+            
+            if ((gpGlobals->maxClients > 127 || ENTINDEX(pTalker) % 64 < gpGlobals->maxClients % 64) && talk_time[ENTINDEX(pTalker) - 1] + 1.0f < gpGlobals->curtime)
+                return false;
+            
+        }
 
         return DETOUR_MEMBER_CALL(CVoiceGameMgrHelper_CanPlayerHearPlayer)(pListener, pTalker, bProximity);
     }

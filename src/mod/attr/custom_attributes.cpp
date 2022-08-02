@@ -18,6 +18,7 @@
 #include "mod/pop/popmgr_extensions.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
+#include "mem/protect.h"
 #include <gamemovement.h>
 #include <boost/tokenizer.hpp>
 
@@ -4406,6 +4407,42 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CObjectSentrygun_ValidTargetPlayer)(pPlayer, vecStart, vecEnd);
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
+	{
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		float remainingFlameTime = shared->m_flFlameRemoveTime;
+		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
+		ClientMsg(shared->GetOuter(), "A %f\n", shared->m_flFlameRemoveTime.Get());
+		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
+			float mult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_wpn_burntime);
+			ClientMsg(shared->GetOuter(), "B %f\n", mult);
+			if (mult > 1.0f) {
+				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
+				ClientMsg(shared->GetOuter(), "C %f\n", ((1.0f - 1.0f/mult) * 0.5f));
+			}
+		}
+	}
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ConditionGameRulesThink)
+	{
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		float nextFlameTime = shared->m_flFlameBurnTime;
+		DETOUR_MEMBER_CALL(CTFPlayerShared_ConditionGameRulesThink)();
+		if (nextFlameTime != shared->m_flFlameBurnTime && shared->m_hBurnWeapon != nullptr) {
+			float mult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_wpn_burntime);
+			ClientMsg(shared->GetOuter(), "E %f\n", mult);
+			if (mult > 1.0f) {
+				ClientMsg(shared->GetOuter(), "F %f\n",  ((1.0f - 1.0f/mult) * 0.5f));
+				shared->m_flFlameRemoveTime += ((1.0f - 1.0f/mult) * 0.5f);
+				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
+			}
+		}
+		float mult = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->GetOuter(), mult, mult_wpn_burntime);
+	}
+
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -5082,7 +5119,10 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetParticleColor, "CTFWeaponBase::GetParticleColor");
             MOD_ADD_DETOUR_STATIC(CTFProjectile_EnergyRing_Create, "CTFProjectile_EnergyRing::Create");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_ValidTargetPlayer, "CObjectSentrygun::ValidTargetPlayer");
-			
+
+			// Fix burn time mult not working by making fire deal damage faster
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Burn, "CTFPlayerShared::Burn");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink");
 			
 		//  Allow fire rate bonus on ball secondary attack
             MOD_ADD_DETOUR_MEMBER(CTFBat_Wood_SecondaryAttack, "CTFBat_Wood::SecondaryAttack");
@@ -5163,6 +5203,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		virtual bool OnLoad() override
 		{
+			MemProtModifier_RX_RWX((uint8_t *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744), 4);
+			Msg("Value is %f\n", *(float *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744));
+			*(float *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744) = 40.0;
+
 			if (GetItemSchema() != nullptr)
 				LoadAttributes();
 			return true;

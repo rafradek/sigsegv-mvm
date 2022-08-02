@@ -163,6 +163,10 @@ IMPL_SENDPROP(int,         CTFPlayerShared, m_iDesiredPlayerClass,     CTFPlayer
 IMPL_SENDPROP(bool,        CTFPlayerShared, m_bHasPasstimeBall,        CTFPlayer);
 IMPL_SENDPROP(uint,        CTFPlayerShared, m_nPlayerCond,             CTFPlayer);
 IMPL_SENDPROP(CTFConditionList,     CTFPlayerShared, m_ConditionList,  CTFPlayer);
+IMPL_SENDPROP(bool,        CTFPlayerShared, m_bLastDisguisedAsOwnTeam, CTFPlayer);
+IMPL_RELATIVE(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hBurnWeapon, m_bLastDisguisedAsOwnTeam, +10);
+IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameBurnTime, m_bLastDisguisedAsOwnTeam, +14);
+IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameRemoveTime, m_bLastDisguisedAsOwnTeam, +18);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 

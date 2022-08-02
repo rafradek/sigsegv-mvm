@@ -1737,6 +1737,131 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
+    RefCount rc_ServerOnly;
+    ConVar cvar_path_track_is_server_entity("sig_etc_path_track_is_server_entity", "1", FCVAR_NOTIFY,
+		"Mod: make path_track a server entity, which saves edicts");
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CPathTrack_Create, const char *classname)
+	{
+        SCOPED_INCREMENT_IF(rc_ServerOnly, cvar_path_track_is_server_entity.GetBool());
+        return DETOUR_MEMBER_CALL(CEntityFactory_CPathTrack_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHintSentrygun_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHintSentrygun_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHintTeleporterExit_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHintTeleporterExit_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHint_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHint_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavAvoid_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavAvoid_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavPrefer_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavPrefer_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavPrerequisite_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavPrerequisite_Create)(classname);
+    }
+
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CEnvEntityMaker_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CEnvEntityMaker_Create)(classname);
+    }
+
+    THINK_FUNC_DECL(PlaceholderThink)
+    {
+        variant_t val;
+        this->GetCustomVariableVariant<"placeholderorig">(val);
+        auto entity = val.Entity().Get();
+        this->GetCustomVariableVariant<"placeholdermove">(val);
+        auto move = val.Entity().Get();
+        auto animating = entity != nullptr ? entity->GetBaseAnimating() : nullptr;
+        this->GetCustomVariableVariant<"placeholderlight">(val);
+        bool light = val.Bool();
+
+        if (move == nullptr || entity == nullptr || ((light && (animating == nullptr || animating->m_hLightingOrigin != this)) || (!light && entity->GetMoveParent() != this ))) {
+            this->Remove();
+            return;
+        }
+        this->SetAbsOrigin(move->GetAbsOrigin());
+        this->SetAbsAngles(move->GetAbsAngles());
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "PlaceholderThink");
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_SetParent, CBaseEntity *parent, int iAttachment)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (parent != nullptr && entity->edict() != nullptr && parent->edict() == nullptr && rtti_cast<CLogicalEntity *>(parent) == nullptr) {
+            auto placeholder = CreateEntityByName("point_teleport");
+            variant_t val;
+            val.SetEntity(entity);
+            placeholder->SetCustomVariable("placeholderorig", val);
+            val.SetEntity(parent);
+            placeholder->SetCustomVariable("placeholdermove", val);
+            val.SetBool(true);
+            placeholder->SetCustomVariable("placeholderparent", val);
+            THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
+            placeholder->SetAbsOrigin(parent->GetAbsOrigin());
+            placeholder->SetAbsAngles(parent->GetAbsAngles());
+            parent = placeholder;
+        }
+        DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(parent, iAttachment);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseAnimating_SetLightingOrigin, CBaseEntity *entity)
+	{
+        CBaseAnimating *animating = reinterpret_cast<CBaseAnimating *>(this);
+        if (entity != nullptr && entity->edict() == nullptr) {
+            auto placeholder = CreateEntityByName("point_teleport");
+            variant_t val;
+            val.SetEntity(animating);
+            placeholder->SetCustomVariable("placeholderorig", val);
+            val.SetEntity(entity);
+            placeholder->SetCustomVariable("placeholdermove", val);
+            val.SetBool(true);
+            placeholder->SetCustomVariable("placeholderlight", val);
+            THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
+            entity = placeholder;
+        }
+        DETOUR_MEMBER_CALL(CBaseAnimating_SetLightingOrigin)(entity);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_CBaseEntity, bool serverOnly)
+	{
+        DETOUR_MEMBER_CALL(CBaseEntity_CBaseEntity)(rc_ServerOnly || serverOnly);
+        if (rc_ServerOnly) {
+            auto entity = reinterpret_cast<CBaseEntity *>(this);
+            entity->AddEFlags(65536); //EFL_FORCE_ALLOW_MOVEPARENT
+        }
+        /*auto entity = reinterpret_cast<CBaseEntity *>(this);
+        if (entity->IsPlayer()) {
+            entity->m_extraEntityData = new ExtraEntityDataPlayer(entity);
+        }
+        else if (entity->IsBaseCombatWeapon()) {
+            entity->m_extraEntityData = new ExtraEntityDataCombatWeapon(entity);
+        }*/
+    }
+
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -1784,6 +1909,19 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D2, "~CTriggerCamera [D2]");
             
             MOD_ADD_DETOUR_MEMBER(CEventAction_CEventAction, "CEventAction::CEventAction [C2]");
+
+            // Make some entities server only
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_CBaseEntity, "CBaseEntity::CBaseEntity");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPathTrack_Create, "CEntityFactory<CPathTrack>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHint_Create, "CEntityFactory<CTFBotHint>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHintSentrygun_Create, "CEntityFactory<CTFBotHintSentrygun>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHintTeleporterExit_Create,  "CEntityFactory<CTFBotHintTeleporterExit>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavAvoid_Create,  "CEntityFactory<CFuncNavAvoid>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrefer_Create,  "CEntityFactory<CFuncNavPrefer>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrerequisite_Create,  "CEntityFactory<CFuncNavPrerequisite>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvEntityMaker_Create,  "CEntityFactory<CEnvEntityMaker>::Create");
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

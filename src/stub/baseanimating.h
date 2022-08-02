@@ -51,6 +51,7 @@ public:
 	DECL_SENDPROP   (int,   m_nBody);
 	DECL_SENDPROP   (int,   m_nSequence);
 	DECL_DATAMAP   (bool,   m_bSequenceFinished);
+	DECL_SENDPROP  (CHandle<CBaseEntity>, m_hLightingOrigin);
 	
 private:
 	DECL_SENDPROP   (float, m_flModelScale);

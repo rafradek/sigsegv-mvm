@@ -88,11 +88,6 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	templ_inst->has_parent = parent != nullptr;
 	templ_inst->ignore_parent_alive_state = ignore_parent_alive_state;
 
-	if (this->has_parent_name && parent != nullptr){
-		const char *str = STRING(parent->GetEntityName());
-		if (strchr(str,'&') == NULL)
-			parent->KeyValue("targetname", CFmtStr("%s&%d",str, Template_Increment));
-	}
 	const char *parentname;
 	CBaseEntity* parent_helper = parent;
 
@@ -116,7 +111,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			templ_inst->parent_helper = parent_helper;
 		}
 
-		parentname = STRING(parent->GetEntityName());
+		parentname = CFmtStr("@h@%d", parent->GetRefEHandle().ToInt());
 		g_pointTemplateParent.insert(parent);
 	}
 	else
@@ -462,16 +457,6 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 					ent->SetParent(nullptr, -1);
 				}
 			}
-		}
-	}
-
-	if (this->templ->has_parent_name && this->parent != nullptr && this->parent->IsPlayer()){
-		std::string str = STRING(this->parent->GetEntityName());
-		
-		int pos = str.find('&');
-		if (pos != -1) {
-			str.resize(pos);
-			parent->KeyValue("targetname", str.c_str());
 		}
 	}
 

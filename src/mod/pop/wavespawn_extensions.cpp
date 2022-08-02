@@ -6,6 +6,8 @@
 #include "stub/tf_objective_resource.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
+#include "util/iterate.h"
+#include "util/clientmsg.h"
 
 namespace Mod::Pop::Wave_Extensions
 {

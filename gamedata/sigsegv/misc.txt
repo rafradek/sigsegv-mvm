@@ -6001,6 +6001,51 @@
 					type "sym"
 					sym  "_ZN16CObjectSentrygun17ValidTargetPlayerEP9CTFPlayerRK6VectorS4_"
 				}
+				"CEntityFactory<CTFBotHint>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI10CTFBotHintE6CreateEPKc"
+				}
+				"CEntityFactory<CTFBotHintSentrygun>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI19CTFBotHintSentrygunE6CreateEPKc"
+				}
+				"CEntityFactory<CTFBotHintTeleporterExit>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI24CTFBotHintTeleporterExitE6CreateEPKc"
+				}
+				"CEntityFactory<CPathTrack>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI10CPathTrackE6CreateEPKc"
+				}
+				"CEntityFactory<CFuncNavAvoid>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI13CFuncNavAvoidE6CreateEPKc"
+				}
+				"CEntityFactory<CFuncNavPrefer>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI14CFuncNavPreferE6CreateEPKc"
+				}
+				"CEntityFactory<CFuncNavPrerequisite>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI20CFuncNavPrerequisiteE6CreateEPKc"
+				}
+				"CBaseAnimating::SetLightingOrigin"
+				{
+					type "sym"
+					sym  "_ZN14CBaseAnimating17SetLightingOriginEP11CBaseEntity"
+				}
+				"CEntityFactory<CEnvEntityMaker>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI15CEnvEntityMakerE6CreateEPKc"
+				}
 				
 			}
 			"addrs_group"

@@ -888,9 +888,11 @@ void Evaluation::DoOp()
         }
         else if (left.FieldType() == FIELD_INTEGER) {
             if (right.Int() == 0) {
-                result.SetFloat(NAN);
+                result.SetFloat(FLOAT32_NAN);
             }
-            result.SetInt(left.Int() / right.Int());
+            else {
+                result.SetInt(left.Int() / right.Int());
+            }
         }
     }
     else if (op == REMAINDER) {

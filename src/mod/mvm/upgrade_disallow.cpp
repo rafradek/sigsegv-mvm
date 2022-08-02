@@ -15,6 +15,8 @@ namespace Mod::MvM::Upgrade_Disallow
 		"Should medigun shield be enabled");
 	ConVar cvar_upgrade_over_cap("sig_mvm_upgrade_over_cap_exploit_fix", "0", FCVAR_NOTIFY,
 		"Fix for upgrade over cap exploit");
+	ConVar cvar_burn_time("sig_mvm_upgrade_allow_burn_time", "1", FCVAR_NOTIFY,
+		"Should burn time be enabled");
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
@@ -58,7 +60,7 @@ namespace Mod::MvM::Upgrade_Disallow
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "Projectile shield is not allowed on this server");
 					return;
 				}
-				else if (strcmp(upgradename,"weapon burn time increased") == 0){
+				else if (!cvar_burn_time.GetBool() && strcmp(upgradename,"weapon burn time increased") == 0){
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "Burn time bonus upgrade is broken. Buy another upgrade");
 					return;
 				}

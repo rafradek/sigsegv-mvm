@@ -297,6 +297,10 @@ namespace Mod::Etc::Mapentity_Additions
             variant_t variant;
             this->FireCustomOutput<"onfakeparentkilled">(this, this, variant);
             data->m_bParentSet = false;
+            if (data->m_bDeleteWithParent) {
+                this->Remove();
+                return;
+            }
         }
 
         if (data->m_hParent == nullptr) return;

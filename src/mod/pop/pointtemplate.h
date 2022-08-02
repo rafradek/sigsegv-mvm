@@ -42,7 +42,6 @@ public:
 	int id = 0;
 	std::vector<EntityKeys> entities;
 	std::set<std::string> fixup_names;
-	bool has_parent_name = false;
 	bool keep_alive = false;
 	bool has_on_kill_parent_trigger = false;
 	bool has_on_kill_trigger = false;

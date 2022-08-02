@@ -989,6 +989,12 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer16UpdateExpressionEv"
 				}
+				"CTFPlayerShared::ConditionGameRulesThink"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared23ConditionGameRulesThinkEv"
+				}
+				
 				
 			//	"GetTFConditionName"
 			//	{

@@ -59,6 +59,7 @@ namespace Mod::Etc::Mapentity_Additions
         FakeParentModule(CBaseEntity *entity) : EntityModule(entity) {}
         CHandle<CBaseEntity> m_hParent;
         bool m_bParentSet = false;
+        bool m_bDeleteWithParent = false;
     };
 
     class MathVectorModule : public EntityModule

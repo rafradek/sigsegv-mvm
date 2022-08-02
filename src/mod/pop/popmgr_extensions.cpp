@@ -675,7 +675,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SentryHintBombForwardRange      ("tf_bot_engineer_mvm_sentry_hint_bomb_forward_range"),
 			m_SentryHintBombBackwardRange     ("tf_bot_engineer_mvm_sentry_hint_bomb_backward_range"),
 			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb"),
-			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately")
+			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately"),
+			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity")
 			
 		{
 			this->Reset();
@@ -834,6 +835,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SentryHintBombBackwardRange.Reset();
 			this->m_SentryHintMinDistanceFromBomb.Reset();
 			this->m_SendBotsToSpectatorImmediately.Reset();
+			this->m_PathTrackIsServerEntity.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1068,6 +1070,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_SentryHintBombBackwardRange;
 		CPopOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
 		CPopOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
+		CPopOverride_ConVar<bool> m_PathTrackIsServerEntity;
 		
 		
 		
@@ -5108,7 +5111,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::set<std::string> entity_names;
 		PointTemplate &templ = Point_Templates().emplace(tname,PointTemplate()).first->second;
 		templ.name = tname;
-		bool hasParentSpecialName = false;
 		EntityKeys onspawn;
 		EntityKeys onkilled;
 		FOR_EACH_SUBKEY(kv, subkey) {
@@ -5233,17 +5235,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			for (auto it = templ.entities.begin(); it != templ.entities.end(); ++it){
 				for (auto it2 = it->begin(); it2 != it->end(); ++it2){
 					std::string str=it2->second;
-					
-					if (!hasParentSpecialName && str.find("!parent") != -1)
-						hasParentSpecialName = true;
 						
 					InsertFixupPattern(str, entity_names);
 					it2->second = str;
 				}
 			}
 		}
-
-		templ.has_parent_name = hasParentSpecialName;
 		
 
 		CBaseEntity *maker = CreateEntityByName("env_entity_maker");
@@ -6111,7 +6108,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_SentryHintBombBackwardRange.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "SentryHintMinDistanceFromBomb")) {
 				state.m_SentryHintMinDistanceFromBomb.Set(subkey->GetFloat());
-				
+			} else if (FStrEq(name, "PathTrackIsServerEntity")) {
+				state.m_PathTrackIsServerEntity.Set(subkey->GetBool());
 			} else if (FStrEq(name, "LuaScript")) {
 				state.m_Scripts.push_back(subkey->GetString());
 			} else if (FStrEq(name, "LuaScriptFile")) {
