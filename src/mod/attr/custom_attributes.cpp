@@ -1419,7 +1419,6 @@ namespace Mod::Attr::Custom_Attributes
 		if (shooter != nullptr) {
 			int headshot = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(shooter, headshot, can_headshot);
-			DevMsg("can headshot %d",headshot);
 			return headshot != 0;
 		}
 		return false;
@@ -4455,9 +4454,7 @@ namespace Mod::Attr::Custom_Attributes
     {
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		bool good = weapon->m_flNextPrimaryAttack <= gpGlobals->curtime;
-		Msg("Time Attack pre %f\n", weapon->GetNextThink("LAUNCH_BALL_THINK"));
 		DETOUR_MEMBER_CALL(CTFBat_Wood_SecondaryAttack)();
-		Msg("Time Attack post %f\n", weapon->GetNextThink("LAUNCH_BALL_THINK"));
 		if (good && weapon->m_flNextPrimaryAttack > gpGlobals->curtime) {
 			float fireRateMult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, fireRateMult, mult_postfiredelay);
@@ -4481,14 +4478,11 @@ namespace Mod::Attr::Custom_Attributes
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		float remainingFlameTime = shared->m_flFlameRemoveTime;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
-		ClientMsg(shared->GetOuter(), "A %f\n", shared->m_flFlameRemoveTime.Get());
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_wpn_burntime);
-			ClientMsg(shared->GetOuter(), "B %f\n", mult);
 			if (mult > 1.0f) {
 				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
-				ClientMsg(shared->GetOuter(), "C %f\n", ((1.0f - 1.0f/mult) * 0.5f));
 			}
 		}
 	}
@@ -4500,9 +4494,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (nextFlameTime != shared->m_flFlameBurnTime && shared->m_hBurnWeapon != nullptr) {
 			float mult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_wpn_burntime);
-			ClientMsg(shared->GetOuter(), "E %f\n", mult);
 			if (mult > 1.0f) {
-				ClientMsg(shared->GetOuter(), "F %f\n",  ((1.0f - 1.0f/mult) * 0.5f));
 				shared->m_flFlameRemoveTime += ((1.0f - 1.0f/mult) * 0.5f);
 				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
 			}
