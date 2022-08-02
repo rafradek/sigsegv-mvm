@@ -65,7 +65,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		}
 		
 		const char *weaponName = mimic->GetCustomVariable<"weaponname">();
-		Msg("weap %d %d\n", weaponName != nullptr, ToTFPlayer(mimic->GetOwnerEntity()) != nullptr);
 		if (weaponName != nullptr) {
 			bool tempPlayer = false;
 			auto player = ToTFPlayer(mimic->GetOwnerEntity());
@@ -73,7 +72,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			if (player == nullptr) {
 				tempPlayer = true;
 				
-				Msg("settemp %d\n", tempPlayer);
 				CTFPlayer *anyTeamPlayer = nullptr;
 				ForEachTFPlayer([&](CTFPlayer *playerl){
 					if (playerl->GetTeamNumber() == mimicTeam) {
@@ -123,23 +121,22 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 						weapon->SetOwner(player);
 					}
 					projectile = weapon->FireProjectile(player);
-					Msg("temp %d\n", tempPlayer);
 					if (tempPlayer) {
 						weapon->SetOwnerEntity(nullptr);
 						weapon->SetOwner(nullptr);
 						if (projectile != nullptr) {
 							projectile->SetOwnerEntity(mimic);
 							projectile->SetTeamNumber(mimicTeam);
-							if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr) {
+							if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
 								rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(mimic);
-							}
-							if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr) {
+							else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
 								rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(mimic);
-							}
-							Msg("Proj info %d %d %d\n", projectile->GetOwnerEntity(), weapon->GetOwner(), weapon->GetOwnerEntity());
-							if (rtti_cast<IScorer *>(projectile) != nullptr) {
-								Msg("AAA %d\n", rtti_cast<IScorer *>(projectile)->GetScorer());
-							}
+							else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
+								rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(mimic);
+							else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
+								rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(mimic);
+							else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
+								rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(mimic);
 						}
 					}
 				}

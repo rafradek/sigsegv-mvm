@@ -71,14 +71,24 @@ MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> CTFBaseRocket:
 
 MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwnerPlayer("CTFBaseRocket::GetOwnerPlayer");
 
+MemberFuncThunk<CTFProjectile_EnergyBall *, void, CBaseEntity *> CTFProjectile_EnergyBall::ft_SetScorer("CTFProjectile_EnergyBall::SetScorer");
+
+
+MemberFuncThunk<CTFProjectile_Flare *, void, CBaseEntity *> CTFProjectile_Flare::ft_SetScorer("CTFProjectile_Flare::SetScorer");
+
+
 MemberFuncThunk<CTFProjectile_EnergyRing *, float> CTFProjectile_EnergyRing::ft_GetInitialVelocity("CTFProjectile_EnergyRing::GetInitialVelocity");
 
-IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
 MemberFuncThunk<CTFProjectile_Rocket *, void, CBaseEntity *> CTFProjectile_Rocket::ft_SetScorer("CTFProjectile_Rocket::SetScorer");
+
+IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
+
 
 IMPL_EXTRACT(float, CTFProjectile_Arrow, m_flTimeInit, new CExtract_CTFProjectile_Arrow_ArrowTouch());
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bCritical, CTFProjectile_Arrow);
 IMPL_RELATIVE(CUtlVector<int>, CTFProjectile_Arrow, m_HitEntities, m_flTimeInit, -sizeof(CUtlVector<int>));
+
+MemberFuncThunk<CTFProjectile_Arrow *, void, CBaseEntity *> CTFProjectile_Arrow::ft_SetScorer("CTFProjectile_Arrow::SetScorer");
 
 //MemberFuncThunk<const CTFProjectile_Arrow *, bool> CTFProjectile_Arrow::ft_CanPenetrate("CTFBaseRocket::GetOwnerPlayer");
 //MemberFuncThunk<CTFProjectile_Arrow *, void, bool> CTFProjectile_Arrow::ft_SetPenetrate("CTFBaseRocket::GetOwnerPlayer");
