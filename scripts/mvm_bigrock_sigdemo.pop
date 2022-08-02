@@ -549,7 +549,7 @@ WaveSchedule
 	//Template entities are automatically destroyed when the spawner entity was killed, or the wave has ended
 	//Brush entites can be spawned, if keyvalues "mins" "x y z" "maxs" "x y z" are set
 	//
-	//You can use !parent as targetname, to target the spawner entity (this will apply unique suffix to the parent name)
+	//You can use !parent as targetname, to target the spawner entity
 	//Tank dimensions: X (front) : 117; Y (left) : 80; Z (top) : 180
 	//
 	//Its also possible to copy the entity keyvalues from Hammer vmf file
@@ -2746,6 +2746,15 @@ WaveSchedule
 
 // Special version of override projectile type that adds more projectile types:
 // "mechanicalarmorb" - Short circuit orb
+// "stunball" - Sandman ball
+// "ornament" - Wrap assassin ball
+// "jarate"
+// "madmilk"
+// "cleaver"
+// "gas"
+// "brick"
+// "repel"
+// "breadmonster"
 // "override projectile type extra" "mechanicalarmorb"
 
 // Deal additional damage based on fraction of target current health

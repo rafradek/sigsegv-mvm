@@ -923,7 +923,7 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"AddItemAttribute"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer *player = ToTFPlayer(ent);
-                char param_tokenized[256];
+                char param_tokenized[512];
                 V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
                 
                 char *attr = strtok(param_tokenized,"|");

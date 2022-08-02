@@ -6046,6 +6046,81 @@
 					type "sym"
 					sym  "_ZN14CEntityFactoryI15CEnvEntityMakerE6CreateEPKc"
 				}
+				"CTFProjectile_Jar::Create"
+				{
+					type "sym"
+					sym  "_ZN17CTFProjectile_Jar6CreateERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFProjectile_JarMilk::Create"
+				{
+					type "sym"
+					sym  "_ZN21CTFProjectile_JarMilk6CreateERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFProjectile_Cleaver::Create"
+				{
+					type "sym"
+					sym  "_ZN21CTFProjectile_Cleaver6CreateERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfoi"
+				}
+				"CTFGrenadePipebombProjectile::SetPipebombMode"
+				{
+					type "sym"
+					sym  "_ZN28CTFGrenadePipebombProjectile15SetPipebombModeEi"
+				}
+				"CTFProjectile_Throwable::GetVelocityVector"
+				{
+					type "sym"
+					sym  "_ZN23CTFProjectile_Throwable17GetVelocityVectorERK6VectorS2_S2_f"
+				}
+				"CTFProjectile_Throwable::GetAngularImpulse"
+				{
+					type "sym"
+					sym  "_ZN23CTFProjectile_Throwable17GetAngularImpulseEv"
+				}
+				"CTFProjectile_JarGas::Create"
+				{
+					type "sym"
+					sym  "_ZN20CTFProjectile_JarGas6CreateERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
+				}
+				"CTFJar::TossJarThink"
+				{
+					type "sym"
+					sym  "_ZN6CTFJar12TossJarThinkEv"
+				}
+				"CBaseCombatWeapon::SetOwner"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon8SetOwnerEP20CBaseCombatCharacter"
+				}
+				"GetKilleaterWeaponFromDamageInfo::CTakeDamageInfo"
+				{
+					type "sym"
+					sym  "_Z32GetKilleaterWeaponFromDamageInfoPK15CTakeDamageInfo"
+				}
+				"CTFBaseProjectile::SetScorer"
+				{
+					type "sym"
+					sym  "_ZN17CTFBaseProjectile9SetScorerEP11CBaseEntity"
+				}
+				"CTFProjectile_Arrow::SetScorer"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow9SetScorerEP11CBaseEntity"
+				}
+				"CTFProjectile_EnergyBall::SetScorer"
+				{
+					type "sym"
+					sym  "_ZN24CTFProjectile_EnergyBall9SetScorerEP11CBaseEntity"
+				}
+				"CTFProjectile_Flare::SetScorer"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Flare9SetScorerEP11CBaseEntity"
+				}
+				"CTFProjectile_Rocket::SetScorer"
+				{
+					type "sym"
+					sym  "_ZN20CTFProjectile_Rocket9SetScorerEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

@@ -637,6 +637,13 @@ namespace Mod::Etc::Extra_Player_Slots
         return UTIL_PlayerByIndex(33);
     }
 
+    bool stopMoreEvents = false;
+    DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+        stopMoreEvents = false;
+        return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+    }
+
     MemberFuncThunk<CBaseClient *, void, IGameEvent *>  ft_CBaseClient_FireGameEvent("CBaseClient::FireGameEvent");
 
     bool sending_delayed_event = false;
@@ -650,6 +657,9 @@ namespace Mod::Etc::Extra_Player_Slots
         }
         if ( eventName != nullptr && (strcmp(eventName, "player_death") == 0 || strcmp(eventName, "object_destroyed") == 0
               || StringStartsWith(eventName, "fish_notice"))) {
+            if (stopMoreEvents) {
+                return;
+            }
             auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
             auto attacker = UTIL_PlayerByUserId(event->GetInt("attacker"));
             auto assister = UTIL_PlayerByUserId(event->GetInt("assister"));
@@ -657,6 +667,7 @@ namespace Mod::Etc::Extra_Player_Slots
             if (ENTINDEX(victim) > 33 || ENTINDEX(attacker) > 33 || ENTINDEX(assister) > 33) {
                 std::vector<CBasePlayer *> participants;
                 std::vector<CBasePlayer *> fakePlayers;
+                stopMoreEvents = true;
                 duplicate = gameeventmanager->DuplicateEvent(event);
                 if (ENTINDEX(victim) > 33) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
@@ -876,7 +887,8 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_State_Enter_PREROUND, "CTeamplayRoundBasedRules::State_Enter_PREROUND");
             //MOD_ADD_DETOUR_MEMBER(CTFGameRules_PowerupModeKillCountCompare, "CTFGameRules::PowerupModeKillCountCompare");
             //MOD_ADD_DETOUR_MEMBER(CTFGameRules_PowerupModeInitKillCountTimer, "CTFGameRules::PowerupModeInitKillCountTimer");
-            
+
+            MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
             MOD_ADD_DETOUR_MEMBER(CBaseClient_FireGameEvent, "CBaseClient::FireGameEvent");
             MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckStuck, "CGameMovement::CheckStuck");
             MOD_ADD_DETOUR_MEMBER(CSteam3Server_SendUpdatedServerDetails, "CSteam3Server::SendUpdatedServerDetails");

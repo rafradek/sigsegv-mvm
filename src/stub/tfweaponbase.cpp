@@ -55,6 +55,7 @@ IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
 
 
 MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWeapon("CBaseCombatWeapon::IsMeleeWeapon");
+MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> CBaseCombatWeapon::ft_SetOwner("CBaseCombatWeapon::SetOwner");
 
 MemberVFuncThunk<const CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetMaxClip1  (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetMaxClip1");
 MemberVFuncThunk<const CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetMaxClip2  (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetMaxClip2");
@@ -79,6 +80,8 @@ IMPL_SENDPROP(float,                CTFWeaponBase, m_flEnergy,                CT
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearable,          CTFWeaponBase);
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearableViewModel, CTFWeaponBase);
 IMPL_SENDPROP(bool                , CTFWeaponBase, m_bBeingRepurposedForTaunt,CTFWeaponBase);
+IMPL_SENDPROP(float               , CTFWeaponBase, m_flReloadPriorNextFire,   CTFWeaponBase);
+IMPL_RELATIVE(bool                , CTFWeaponBase, m_bCurrentAttackIsCrit, m_flReloadPriorNextFire, +10);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
 MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");

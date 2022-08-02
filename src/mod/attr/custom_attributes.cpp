@@ -324,7 +324,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	CBaseAnimating *SpawnCustomProjectile(const char *name, CTFWeaponBaseGun *weapon, CTFPlayer *player)
+	CBaseAnimating *SpawnCustomProjectile(const char *name, CTFWeaponBaseGun *weapon, CTFPlayer *player, bool doEffect)
 	{
 		CBaseAnimating *retval = nullptr;
 		
@@ -337,15 +337,14 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		weapon->GetProjectileFireSetup( player, vecOffset, &vecSrc, &angForward, false ,2000);
 
+		float mult_speed = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
 		if (strcmp(name, "mechanicalarmorb") == 0) {
 
 			auto projectile = rtti_cast<CTFProjectile_MechanicalArmOrb *>(CBaseEntity::CreateNoSpawn("tf_projectile_mechanicalarmorb", vecSrc, player->EyeAngles(), player));
 			if (projectile != nullptr) {
 				projectile->SetOwnerEntity(player);
 				projectile->SetLauncher   (weapon);
-				
-				float mult_speed = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
 
 				Vector eye_angles_fwd;
 				AngleVectors(angForward, &eye_angles_fwd);
@@ -364,9 +363,6 @@ namespace Mod::Attr::Custom_Attributes
 
 			auto projectile = CTFStunBall::Create(vecSrc, player->EyeAngles(), player);
 			if (projectile != nullptr) {
-				
-				float mult_speed = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
 
 				Vector eye_angles_fwd;
 				AngleVectors(angForward, &eye_angles_fwd);
@@ -377,6 +373,9 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->SetLauncher(weapon);
 				projectile->SetOwnerEntity(player);
 				projectile->m_nSkin = player->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0;
+				if (weapon->m_bCurrentAttackIsCrit) {
+					projectile->m_bCritical = true;
+				}
 			}
 		}
 		else if (strcmp(name, "ornament") == 0) {
@@ -384,9 +383,6 @@ namespace Mod::Attr::Custom_Attributes
 			auto projectile = CTFBall_Ornament::Create(vecSrc, player->EyeAngles(), player);
 			if (projectile != nullptr) {
 
-				float mult_speed = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult_speed, mult_projectile_speed);
-
 				Vector eye_angles_fwd;
 				AngleVectors(angForward, &eye_angles_fwd);
 				static ConVarRef tf_scout_stunball_base_speed("tf_scout_stunball_base_speed");
@@ -396,20 +392,82 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->SetLauncher(weapon);
 				projectile->SetOwnerEntity(player);
 				projectile->m_nSkin = player->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0;
+				if (weapon->m_bCurrentAttackIsCrit) {
+					projectile->m_bCritical = true;
+				}
 			}
 		}
-		
-		if (weapon->ShouldPlayFireAnim()) {
-			player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
+		else if (strcmp(name, "jarate") == 0 || strcmp(name, "madmilk") == 0 || strcmp(name, "cleaver") == 0 || strcmp(name, "gas") == 0) {
+			Vector eye_angles_fwd, eye_angles_up, eye_angles_right;
+			AngleVectors(angForward, &eye_angles_fwd, &eye_angles_right, &eye_angles_up);
+
+			float speed = strcmp(name, "cleaver") == 0 ? 7000 : 1000;
+			AngularImpulse angImp = strcmp(name, "cleaver") == 0 ? AngularImpulse( 0, 500, 0 ) : AngularImpulse( 300, 0, 0 );
+
+			Vector fwd( ( eye_angles_fwd * speed * mult_speed ) + ( eye_angles_up * 200.0f ) + ( RandomFloat( -10.0f, 10.0f ) * eye_angles_right ) +		
+			( RandomFloat( -10.0f, 10.0f ) * eye_angles_up ) );
+
+			CTFProjectile_Jar *projectile = nullptr;
+			if (strcmp(name, "jarate") == 0) {
+				projectile = CTFProjectile_Jar::Create(vecSrc, player->EyeAngles(), fwd, angImp, player, weapon->GetTFWpnData());
+			}
+			else if (strcmp(name, "madmilk") == 0) {
+				projectile = CTFProjectile_JarMilk::Create(vecSrc, player->EyeAngles(), fwd, angImp, player, weapon->GetTFWpnData());
+			}
+			else if (strcmp(name, "cleaver") == 0) {
+				projectile = CTFProjectile_Cleaver::Create(vecSrc, player->EyeAngles(), fwd, angImp, player, weapon->GetTFWpnData(), weapon->m_nSkin);
+			}
+			else if (strcmp(name, "gas") == 0) {
+				projectile = CTFProjectile_JarGas::Create(vecSrc, player->EyeAngles(), fwd, angImp, player, weapon->GetTFWpnData());
+			}
+			if (projectile != nullptr) {
+				projectile->SetLauncher(weapon);
+				projectile->m_bCritical = weapon->m_bCurrentAttackIsCrit;
+			}
 		}
+		else if (strcmp(name, "brick") == 0 || strcmp(name, "repel") == 0 || strcmp(name, "breadmonster") == 0 || strcmp(name, "throwable") == 0) {
+			const char *classname;
+			if (strcmp(name, "brick") == 0) 
+				classname = "tf_projectile_throwable_brick";
+			else if (strcmp(name, "repel") == 0) {
+				CBaseEntity::PrecacheModel("models/weapons/c_models/c_balloon_default.mdl");
+				classname = "tf_projectile_throwable_repel";
+			}
+			else if (strcmp(name, "breadmonster") == 0) 
+				classname = "tf_projectile_throwable_breadmonster";
+			else if (strcmp(name, "throwable") == 0) 
+				classname = "tf_projectile_throwable";
+			CTFProjectile_Throwable *projectile = rtti_cast<CTFProjectile_Throwable *>(CBaseEntity::CreateNoSpawn(classname, vecSrc, player->EyeAngles(), player));
+			if (projectile != nullptr) {
+				projectile->SetPipebombMode();
+				projectile->SetLauncher(weapon);
+				projectile->m_bCritical = weapon->m_bCurrentAttackIsCrit;
+				
+				DispatchSpawn(projectile);
+
+				
+				Vector eye_angles_fwd, eye_angles_up, eye_angles_right;
+				AngleVectors(angForward, &eye_angles_fwd, &eye_angles_right, &eye_angles_up);
+				Vector vecVelocity = projectile->GetVelocityVector( eye_angles_fwd, eye_angles_right, eye_angles_up, 0 );
+				vecVelocity *= mult_speed;
+				AngularImpulse angVelocity = projectile->GetAngularImpulse();
+
+				projectile->InitGrenade(vecVelocity, angVelocity, player, weapon->GetTFWpnData());
+			}
+		}
+		if (doEffect) {
+			if (weapon->ShouldPlayFireAnim()) {
+				player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
+			}
 		
-		weapon->RemoveProjectileAmmo(player);
-		weapon->m_flLastFireTime = gpGlobals->curtime;
-		weapon->DoFireEffects();
-		weapon->UpdatePunchAngles(player);
+			weapon->RemoveProjectileAmmo(player);
+			weapon->m_flLastFireTime = gpGlobals->curtime;
+			weapon->DoFireEffects();
+			weapon->UpdatePunchAngles(player);
 		
-		if (player->m_Shared->IsStealthed() && weapon->ShouldRemoveInvisibilityOnPrimaryAttack()) {
-			player->RemoveInvisibility();
+			if (player->m_Shared->IsStealthed() && weapon->ShouldRemoveInvisibilityOnPrimaryAttack()) {
+				player->RemoveInvisibility();
+			}
 		}
 		return retval;
 	}	
@@ -424,6 +482,17 @@ namespace Mod::Attr::Custom_Attributes
 
 	bool fire_projectile_multi = true;
 	int old_clip = 0;
+
+	DETOUR_DECL_MEMBER(void, CTFJar_TossJarThink)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
+		GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "override projectile type extra", projectilename);
+		if (projectilename != nullptr) {
+			SpawnCustomProjectile(projectilename, weapon, weapon->GetTFPlayerOwner(), false);
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFJar_TossJarThink)();
+	}
 
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
@@ -453,7 +522,7 @@ namespace Mod::Attr::Custom_Attributes
 			//}
 
 			if (projectilename != nullptr) {
-				proj = SpawnCustomProjectile(projectilename, weapon, player);
+				proj = SpawnCustomProjectile(projectilename, weapon, player, true);
 				
 			}
 			else {
@@ -5119,6 +5188,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetParticleColor, "CTFWeaponBase::GetParticleColor");
             MOD_ADD_DETOUR_STATIC(CTFProjectile_EnergyRing_Create, "CTFProjectile_EnergyRing::Create");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_ValidTargetPlayer, "CObjectSentrygun::ValidTargetPlayer");
+            MOD_ADD_DETOUR_MEMBER(CTFJar_TossJarThink, "CTFJar::TossJarThink");
+			
 
 			// Fix burn time mult not working by making fire deal damage faster
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Burn, "CTFPlayerShared::Burn");

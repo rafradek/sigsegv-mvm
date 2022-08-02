@@ -61,6 +61,8 @@ MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> CBaseProjectile::vt_SetL
 MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::SetDamage");
 MemberVFuncThunk<CTFBaseProjectile *, float> CTFBaseProjectile::vt_GetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::GetDamage");
 
+MemberFuncThunk<CTFBaseProjectile *, void, CBaseEntity *> CTFBaseProjectile::ft_SetScorer("CTFBaseProjectile::SetScorer");
+
 IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRocket);
 IMPL_SENDPROP(int,                  CTFBaseRocket, m_iDeflected,       CTFBaseRocket);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFBaseRocket, m_hLauncher,        CTFBaseRocket);
@@ -72,6 +74,7 @@ MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwner
 MemberFuncThunk<CTFProjectile_EnergyRing *, float> CTFProjectile_EnergyRing::ft_GetInitialVelocity("CTFProjectile_EnergyRing::GetInitialVelocity");
 
 IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
+MemberFuncThunk<CTFProjectile_Rocket *, void, CBaseEntity *> CTFProjectile_Rocket::ft_SetScorer("CTFProjectile_Rocket::SetScorer");
 
 IMPL_EXTRACT(float, CTFProjectile_Arrow, m_flTimeInit, new CExtract_CTFProjectile_Arrow_ArrowTouch());
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bCritical, CTFProjectile_Arrow);
@@ -93,12 +96,22 @@ MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> CTFWeaponBaseGrenadeProj
 MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> CTFWeaponBaseGrenadeProj::ft_SetDetonateTimerLength("CTFWeaponBaseGrenadeProj::SetDetonateTimerLength");
 MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, trace_t *, int> CTFWeaponBaseGrenadeProj::ft_Explode("CTFWeaponBaseGrenadeProj::Explode");
 
+
+MemberVFuncThunk<CTFGrenadePipebombProjectile *, void, int> CTFGrenadePipebombProjectile::vt_SetPipebombMode(TypeName<CTFGrenadePipebombProjectile>(), "CTFGrenadePipebombProjectile::SetPipebombMode");
+
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrenadePipebombProjectile, m_hLauncher, CTFGrenadePipebombProjectile);
 IMPL_SENDPROP(bool, CTFGrenadePipebombProjectile, m_bTouched, CTFGrenadePipebombProjectile);
 IMPL_SENDPROP(int, CTFGrenadePipebombProjectile, m_iType, CTFGrenadePipebombProjectile);
 
+MemberVFuncThunk<CTFProjectile_Throwable *, Vector, const Vector &, const Vector &, const Vector &, float> CTFProjectile_Throwable::vt_GetVelocityVector(TypeName<CTFProjectile_Throwable>(), "CTFProjectile_Throwable::GetVelocityVector");
+MemberVFuncThunk<CTFProjectile_Throwable *, const AngularImpulse> CTFProjectile_Throwable::vt_GetAngularImpulse(TypeName<CTFProjectile_Throwable>(), "CTFProjectile_Throwable::GetAngularImpulse");
+
 StaticFuncThunk<CTFStunBall *,const Vector &, const QAngle &, CBaseEntity *> CTFStunBall::ft_Create("CTFStunBall::Create");
 StaticFuncThunk<CTFBall_Ornament *,const Vector &, const QAngle &, CBaseEntity *> CTFBall_Ornament::ft_Create("CTFBall_Ornament::Create");
+StaticFuncThunk<CTFProjectile_Jar *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_Jar::ft_Create("CTFProjectile_Jar::Create");
+StaticFuncThunk<CTFProjectile_JarMilk *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_JarMilk::ft_Create("CTFProjectile_JarMilk::Create");
+StaticFuncThunk<CTFProjectile_Cleaver *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &, int> CTFProjectile_Cleaver::ft_Create("CTFProjectile_JarCleaver::Create");
+StaticFuncThunk<CTFProjectile_JarGas *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFProjectile_JarGas::ft_Create("CTFProjectile_JarGas::Create");
 
 
 GlobalThunk<CUtlVector<IBaseProjectileAutoList *>> IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList("IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList");

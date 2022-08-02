@@ -36,9 +36,13 @@ class CTFBaseProjectile : public CBaseProjectile {
 public:
 	void SetDamage(float damage) { vt_SetDamage(this, damage); }
 	float GetDamage() { return vt_GetDamage(this); }
+
+	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
 private:
 	static MemberVFuncThunk<CTFBaseProjectile *, void, float> vt_SetDamage;
 	static MemberVFuncThunk<CTFBaseProjectile *, float> vt_GetDamage;
+	
+	static MemberFuncThunk<CTFBaseProjectile *, void, CBaseEntity *> ft_SetScorer;
 };
 
 class CTFBaseRocket  : public CBaseProjectile
@@ -79,13 +83,28 @@ class CTFProjectile_Rocket : public CTFBaseRocket
 public:
 	bool IsCritical() const          { return this->m_bCritical; }
 	void SetCritical(bool bCritical) { this->m_bCritical = bCritical; }
+
+	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
 	
 private:
 	DECL_SENDPROP(bool, m_bCritical);
+
+	static MemberFuncThunk<CTFProjectile_Rocket *, void, CBaseEntity *> ft_SetScorer;
 };
 class CTFProjectile_SentryRocket : public CTFProjectile_Rocket {};
-class CTFProjectile_Flare : public CTFBaseRocket {};
-class CTFProjectile_EnergyBall : public CTFBaseRocket {};
+class CTFProjectile_Flare : public CTFBaseRocket {
+public:
+	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
+private:
+	static MemberFuncThunk<CTFProjectile_Flare *, void, CBaseEntity *> ft_SetScorer;
+};
+class CTFProjectile_EnergyBall : public CTFBaseRocket 
+{
+public:
+	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
+private:
+	static MemberFuncThunk<CTFProjectile_EnergyBall *, void, CBaseEntity *> ft_SetScorer;
+};
 
 class CTFProjectile_Arrow : public CTFBaseRocket
 {
@@ -98,9 +117,13 @@ public:
 	DECL_SENDPROP(bool, m_bCritical);
 	DECL_RELATIVE(CUtlVector<int>, m_HitEntities);
 
+	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
+
 	static CTFProjectile_Arrow *Create(const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer) {return ft_Create(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);}
 private:
 	static StaticFuncThunk<CTFProjectile_Arrow *,const Vector &, const QAngle &, const float, const float, int, CBaseEntity *, CBaseEntity *> ft_Create;
+
+	static MemberFuncThunk<CTFProjectile_Arrow *, void, CBaseEntity *> ft_SetScorer;
 	//static MemberFuncThunk<const CTFProjectile_Arrow *, bool> ft_CanPenetrate;
 	//static MemberFuncThunk<CTFProjectile_Arrow *, void, bool> ft_SetPenetrate;
 };
@@ -137,20 +160,67 @@ class CTFGrenadePipebombProjectile : public CTFWeaponBaseGrenadeProj
 public:
 	CBaseEntity *GetLauncher() const { return this->m_hLauncher; }
 
+	void SetPipebombMode(int mode = 0) { return vt_SetPipebombMode(this, mode); }
+
 	DECL_SENDPROP(bool, m_bTouched);
 	DECL_SENDPROP(int, m_iType);
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
+	
+	static MemberVFuncThunk<CTFGrenadePipebombProjectile *, void, int> vt_SetPipebombMode;
 };
 class CTFProjectile_MechanicalArmOrb : public CTFProjectile_Rocket {};
 class CTFWeaponBaseMerasmusGrenade : public CTFWeaponBaseGrenadeProj {};
 
-class CTFProjectile_Jar : public CTFGrenadePipebombProjectile {};
-class CTFProjectile_JarMilk : public CTFProjectile_Jar {};
-class CTFProjectile_Cleaver : public CTFProjectile_Jar {};
+class CTFProjectile_Jar : public CTFGrenadePipebombProjectile 
+{
+public:
+	static CTFProjectile_Jar *Create(const Vector &position, const QAngle &angles, 
+												const Vector &velocity, const AngularImpulse &angVelocity, 
+												CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo) {return ft_Create(position, angles, velocity, angVelocity, pOwner, weaponInfo);}
+private:
+	static StaticFuncThunk<CTFProjectile_Jar *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> ft_Create;
+};
+class CTFProjectile_JarMilk : public CTFProjectile_Jar 
+{
+public:
+	static CTFProjectile_JarMilk *Create(const Vector &position, const QAngle &angles, 
+												const Vector &velocity, const AngularImpulse &angVelocity, 
+												CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo) {return ft_Create(position, angles, velocity, angVelocity, pOwner, weaponInfo);}
+private:
+	static StaticFuncThunk<CTFProjectile_JarMilk *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> ft_Create;
+};
+class CTFProjectile_Cleaver : public CTFProjectile_Jar 
+{
+public:
+	static CTFProjectile_Cleaver *Create(const Vector &position, const QAngle &angles, 
+												const Vector &velocity, const AngularImpulse &angVelocity, 
+												CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo, int skin) {return ft_Create(position, angles, velocity, angVelocity, pOwner, weaponInfo, skin);}
+private:
+	static StaticFuncThunk<CTFProjectile_Cleaver *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &, int> ft_Create;
+};
+class CTFProjectile_JarGas : public CTFProjectile_Jar 
+{
+public:
+	static CTFProjectile_JarGas *Create(const Vector &position, const QAngle &angles, 
+												const Vector &velocity, const AngularImpulse &angVelocity, 
+												CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo) {return ft_Create(position, angles, velocity, angVelocity, pOwner, weaponInfo);}
+private:
+	static StaticFuncThunk<CTFProjectile_JarGas *,const Vector &, const QAngle &, const Vector &, const AngularImpulse &, CBaseCombatCharacter *, const CTFWeaponInfo &> ft_Create;
+};
 
-class CTFProjectile_Throwable : public CTFProjectile_Jar {};
+class CTFProjectile_Throwable : public CTFProjectile_Jar 
+{
+public:
+	Vector GetVelocityVector(const Vector &vecForward, const Vector &vecRight, const Vector &vecUp, float flCharge) { return vt_GetVelocityVector(this, vecForward, vecRight, vecUp, flCharge); }
+	const AngularImpulse GetAngularImpulse() { return vt_GetAngularImpulse(this); }
+	
+
+private:
+	static MemberVFuncThunk<CTFProjectile_Throwable *, Vector, const Vector &, const Vector &, const Vector &, float> vt_GetVelocityVector;
+	static MemberVFuncThunk<CTFProjectile_Throwable *, const AngularImpulse> vt_GetAngularImpulse;
+};
 class CTFProjectile_ThrowableBreadMonster : public CTFProjectile_Throwable {};
 class CTFProjectile_ThrowableBrick : public CTFProjectile_Throwable {};
 class CTFProjectile_ThrowableRepel : public CTFProjectile_Throwable {};

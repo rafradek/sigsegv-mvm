@@ -32,6 +32,7 @@ public:
 	CBaseCombatCharacter *GetOwner() const { return this->m_hOwner; }
 	
 	bool IsMeleeWeapon() const { return ft_IsMeleeWeapon(this); }
+	void SetOwner(CBaseCombatCharacter *owner) { return ft_SetOwner(this, owner); }
 	
 	int GetMaxClip1() const                                { return vt_GetMaxClip1  (this); }
 	int GetMaxClip2() const                                { return vt_GetMaxClip2  (this); }
@@ -70,6 +71,7 @@ private:
 	DECL_SENDPROP(CHandle<CBaseCombatCharacter>, m_hOwner);
 	
 	static MemberFuncThunk<const CBaseCombatWeapon *, bool> ft_IsMeleeWeapon;
+	static MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> ft_SetOwner;
 	
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip1;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip2;
@@ -114,6 +116,8 @@ public:
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearable);
 	DECL_SENDPROP(CHandle<CTFWearable>, m_hExtraWearableViewModel);
 	DECL_SENDPROP(bool, m_bBeingRepurposedForTaunt);
+	DECL_SENDPROP(float, m_flReloadPriorNextFire);
+	DECL_RELATIVE(bool,  m_bCurrentAttackIsCrit);
 	
 
 	

@@ -193,7 +193,7 @@ namespace Mod::Util::Make_Item
 		AddAttr(player, args[1], args[2]);
 	}
 
-	void Give_Common(CTFPlayer *player, CTFPlayer *recipient, const char *cmd_name, const CSteamID *steamid, bool no_remove)
+	void Give_Common(CTFPlayer *player, CTFPlayer *recipient, const char *cmd_name, const CSteamID *steamid, bool no_remove, const char* custom_class)
 	{
 		// possible ways to use this command:
 		// - 0 args: give to me
@@ -310,12 +310,12 @@ namespace Mod::Util::Make_Item
 	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool no_remove)
 	{
 		if (args.ArgC() == 1)
-			Give_Common(player, player, cmd_name, steamid, no_remove);
+			Give_Common(player, player, cmd_name, steamid, no_remove, nullptr);
 		else if (args.ArgC() == 2) {
 			std::vector<CBasePlayer *> vec;
 			GetSMTargets(player, args[1], vec);
 			for(CBasePlayer *target : vec) {
-				Give_Common(player, ToTFPlayer(target), cmd_name, steamid, no_remove);
+				Give_Common(player, ToTFPlayer(target), cmd_name, steamid, no_remove, nullptr);
 			}
 		}
 		state.erase(*steamid);
@@ -356,7 +356,7 @@ namespace Mod::Util::Make_Item
 		CC_Give_Common(player, args, "sig_makeitem_give_noremove", steamid, true);
 	}
 
-	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool noremove)
+	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool noremove, const char *custom_class)
 	{
 		state.erase(*steamid);
 
@@ -386,7 +386,7 @@ namespace Mod::Util::Make_Item
 		}
 		
 		for(CBasePlayer *target : vec) {
-			Give_Common(player, ToTFPlayer(target), "sig_makeitem", steamid, noremove);
+			Give_Common(player, ToTFPlayer(target), "sig_makeitem", steamid, noremove, custom_class);
 		}
 		state.erase(*steamid);
 	}
@@ -395,14 +395,21 @@ namespace Mod::Util::Make_Item
 	{
 		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
 		if (steamid == nullptr) return;
-		Give_OneLine(player, args, "sig_makeitem", steamid, false);
+		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);
 	}
 	
 	void CC_Give_OneLine_NoRemove(CTFPlayer *player, const CCommand& args)
 	{
 		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine_NoRemove", player);
 		if (steamid == nullptr) return;
-		Give_OneLine(player, args, "sig_makeitem_noremove", steamid, true);
+		Give_OneLine(player, args, "sig_makeitem_noremove", steamid, true, nullptr);
+	}
+
+	void CC_Give_Custom_Class(CTFPlayer *player, const CCommand& args)
+	{
+		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
+		if (steamid == nullptr) return;
+		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);
 	}
 	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
 	// (also make this change in Util:Client_Cmds)
