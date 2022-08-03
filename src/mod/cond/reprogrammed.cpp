@@ -775,7 +775,7 @@ namespace Mod::Cond::Reprogrammed
 			reentrancy = false;
 		}
 		
-		if (team == TEAM_SPECTATOR && isAlive) {
+		if (team == TEAM_SPECTATOR && isAlive && !reentrancy) {
 			team = RandomInt(TEAM_SPECTATOR, TF_TEAM_BLUE);
 		}
 		return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);

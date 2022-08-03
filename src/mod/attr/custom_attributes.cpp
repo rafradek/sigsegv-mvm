@@ -324,6 +324,12 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFProjectile_ThrowableRepel_SetCustomPipebombModel)
+	{
+		auto me = reinterpret_cast<CTFProjectile_ThrowableRepel *>(this);
+		me->SetModel("models/weapons/w_models/w_baseball.mdl");
+	}
+	
 	CBaseAnimating *SpawnCustomProjectile(const char *name, CTFWeaponBaseGun *weapon, CTFPlayer *player, bool doEffect)
 	{
 		CBaseAnimating *retval = nullptr;
@@ -520,6 +526,10 @@ namespace Mod::Attr::Custom_Attributes
 			//if (i != 0) {
 			//	RandomSeed(gpGlobals->tickcount + i);
 			//}
+
+			if (rtti_cast<CTFJar *>(weapon) != nullptr) {
+				weapon->StartEffectBarRegen();
+			}
 
 			if (projectilename != nullptr) {
 				proj = SpawnCustomProjectile(projectilename, weapon, player, true);
@@ -4476,6 +4486,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		Msg("Igniter: %d Weapon: %d %s Duration: %f\n", igniter, weapon, weapon != nullptr ? weapon->GetClassname() : "", duration);
 		float remainingFlameTime = shared->m_flFlameRemoveTime;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
@@ -5181,6 +5192,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_STATIC(CTFProjectile_EnergyRing_Create, "CTFProjectile_EnergyRing::Create");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_ValidTargetPlayer, "CObjectSentrygun::ValidTargetPlayer");
             MOD_ADD_DETOUR_MEMBER(CTFJar_TossJarThink, "CTFJar::TossJarThink");
+            MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableRepel_SetCustomPipebombModel, "CTFProjectile_ThrowableRepel::SetCustomPipebombModel");
 			
 
 			// Fix burn time mult not working by making fire deal damage faster

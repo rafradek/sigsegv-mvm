@@ -47,6 +47,17 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 					}
 				}
 			}
+        }},
+		{"RemoveWeaponAttribute"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto *mimic = static_cast<CTFPointWeaponMimic *>(ent);
+			auto mod = mimic->GetOrCreateEntityModule<MimicModule>("weaponmimic");
+			CEconItemAttributeDefinition *def = GetItemSchema()->GetAttributeDefinitionByName(szInputName);
+			mod->attribs.erase(szInputName);
+			if (def != nullptr) {
+				if (mod->weapon != nullptr && mod->weapon->GetItem() != nullptr) {
+					mod->weapon->GetItem()->GetAttributeList().RemoveAttribute(def);
+				}
+			}
         }}
 	});
 

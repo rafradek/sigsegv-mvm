@@ -6126,6 +6126,16 @@
 					type "sym"
 					sym  "_ZN11CBaseObject18FindSnapToBuildPosEPS_"
 				}
+				"CTFWeaponBase::StartEffectBarRegen"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase19StartEffectBarRegenEv"
+				}
+				"CTFProjectile_ThrowableRepel::SetCustomPipebombModel"
+				{
+					type "sym"
+					sym  "_ZN28CTFProjectile_ThrowableRepel22SetCustomPipebombModelEv"
+				}
 				
 			}
 			"addrs_group"

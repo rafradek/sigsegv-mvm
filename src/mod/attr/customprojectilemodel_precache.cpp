@@ -21,7 +21,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 		}
 	}
 	
-	void SetCustomProjectileModel(CTFWeaponBaseGun *weapon, CBaseAnimating *proj){
+	void SetCustomProjectileModel(CBaseCombatWeapon *weapon, CBaseAnimating *proj){
 		CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
 		static int attr_def = GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->GetIndex();
 		auto attr = attrlist.GetAttributeByID(attr_def);
@@ -79,6 +79,16 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 		return proj;
 	}
 
+	DETOUR_DECL_MEMBER(void, CBaseProjectile_SetLauncher, CBaseEntity *launcher)
+	{
+		auto proj = reinterpret_cast<CBaseProjectile *>(this);
+		CBaseEntity *original = proj->GetOriginalLauncher();
+		DETOUR_MEMBER_CALL(CBaseProjectile_SetLauncher)(launcher);
+		if (original == nullptr && launcher != nullptr && launcher->MyCombatWeaponPointer() != nullptr) {
+			SetCustomProjectileModel(launcher->MyCombatWeaponPointer(),proj);
+		}
+	}
+	
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
@@ -101,7 +111,9 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 			MOD_ADD_DETOUR_MEMBER(CTFJarGas_CreateJarProjectile,     "CTFJarGas::CreateJarProjectile");
 			MOD_ADD_DETOUR_MEMBER(CTFCleaver_CreateJarProjectile,     "CTFCleaver::CreateJarProjectile");
 			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireNail,     "CTFWeaponBaseGun::FireNail");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile,     "CTFWeaponBaseGun::FireProjectile");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFWeaponBaseGun_FireProjectile,     "CTFWeaponBaseGun::FireProjectile", LOWEST);
+			MOD_ADD_DETOUR_MEMBER(CBaseProjectile_SetLauncher,     "CBaseProjectile::SetLauncher");
+			
 		}
 
 		/*virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

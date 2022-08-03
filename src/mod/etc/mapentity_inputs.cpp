@@ -1636,6 +1636,9 @@ namespace Mod::Etc::Mapentity_Additions
                 ent->SetOwnerEntity(owner);
             }
         }},
+        {"ClearOwner"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            ent->SetOwnerEntity(nullptr);
+        }},
         {"GetKeyValue"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             variant_t variant;
             ent->ReadKeyField(Value.String(), &variant);
