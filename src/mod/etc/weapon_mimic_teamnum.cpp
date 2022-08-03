@@ -61,6 +61,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         }}
 	});
 
+	bool shooting_weapon = false;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
@@ -113,6 +114,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 								mod->weapon->GetItem()->GetAttributeList().AddStringAttribute(def, value);
 							}
 						}
+						weapon->SetAbsOrigin(mimic->GetAbsOrigin());
+						weapon->SetAbsAngles(mimic->GetAbsAngles());
+						weapon->SetMoveParent(mimic);
+						variant_t var;
+						var.SetEntity(mimic);
+						weapon->SetCustomVariable("mimicent", var);
 					}
 					else if (item != nullptr) {
 						item->Remove();
@@ -131,13 +138,22 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 						weapon->SetOwnerEntity(player);
 						weapon->SetOwner(player);
 					}
+					shooting_weapon = true;
+					auto oldActive = player->GetActiveWeapon();
+					player->SetActiveWeapon(weapon);
 					projectile = weapon->FireProjectile(player);
+					player->SetActiveWeapon(oldActive);
+					shooting_weapon = false;
+
 					if (tempPlayer) {
 						weapon->SetOwnerEntity(nullptr);
 						weapon->SetOwner(nullptr);
 						if (projectile != nullptr) {
 							projectile->SetOwnerEntity(mimic);
 							projectile->SetTeamNumber(mimicTeam);
+							if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
+								rtti_cast<CBaseGrenade *>(projectile)->SetThrower(mimic);
+							}
 							if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
 								rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(mimic);
 							else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
@@ -213,6 +229,18 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			//if (mimic->m_pzsModelOverride != NULL_STRING && (spawnflags & 2) && (mimic->m_nWeaponType == 0 || mimic->m_nWeaponType == 2)) {
 			//	projectile->SetModel(mimic->m_pzsModelOverride);
 			//}
+
+			variant_t var;
+			var.SetEntity(mimic);
+			projectile->SetCustomVariable("mimicent", var);
+
+			var = variant_t();
+			mimic->GetCustomVariableVariant<"killicon">(var);
+			projectile->SetCustomVariable("killicon", var);
+
+			var = variant_t();
+			mimic->GetCustomVariableVariant<"dmgtype">(var);
+			projectile->SetCustomVariable("dmgtype", var);
 
             if (mimic->GetTeamNumber() != 0) {
 				CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(projectile);
@@ -357,9 +385,9 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			if (particle != NULL_STRING)
 				PrecacheParticleSystem(STRING(particle));
 		}
-		if ((spawnflags & 2) || mimic->m_nWeaponType == 4) {
+		//if ((spawnflags & 2) || mimic->m_nWeaponType == 4) {
 			mimic->AddEFlags(EFL_FORCE_CHECK_TRANSMIT);
-		}
+		//}
 	}
 
 	DETOUR_DECL_MEMBER(const char *, CTFGameRules_GetKillingWeaponName, const CTakeDamageInfo &info, CTFPlayer *pVictim, int *iWeaponID)
@@ -396,7 +424,44 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr && info.GetWeapon()->MyCombatWeaponPointer()->GetOwner() == nullptr) return nullptr;
 		return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)( info);
 	}
+
+	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent_Batched, void *pEconInterface, class CTFPlayer *pOwner, class CTFPlayer *pVictim, int eEventType, int nIncrementValue)
+	{
+		if (pOwner == nullptr) return;
+		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent_Batched)(pEconInterface, pOwner, pVictim, eEventType, nIncrementValue);
+	}
 	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		CBaseEntity *observer = player->m_hObserverTarget;
+		if (info.GetInflictor() != nullptr) {
+			if (rtti_cast<CTFPointWeaponMimic *>(info.GetInflictor()) != nullptr) {
+				player->m_hObserverTarget = info.GetInflictor();
+			}
+			else {
+				variant_t var;
+				info.GetInflictor()->GetCustomVariableVariant<"mimicent">(var);
+				if (var.Entity() != nullptr) {
+					player->m_hObserverTarget = var.Entity();
+				}
+			}
+		}
+		if (mimicFire != nullptr) {
+			player->m_hObserverTarget = mimicFire;
+		}
+	}
+
+	class CDmgAccumulator;
+	DETOUR_DECL_MEMBER(void, CBaseEntity_DispatchTraceAttack, CTakeDamageInfo& info, const Vector& vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
+	{
+		if (shooting_weapon) {
+			info.SetAttacker(mimicFire);
+		}
+		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -416,6 +481,10 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_UpdatePunchAngles,  "CTFWeaponBaseGun::UpdatePunchAngles");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
 			MOD_ADD_DETOUR_STATIC(GetKilleaterWeaponFromDamageInfo,  "GetKilleaterWeaponFromDamageInfo");
+			MOD_ADD_DETOUR_STATIC(EconItemInterface_OnOwnerKillEaterEvent_Batched,  "EconItemInterface_OnOwnerKillEaterEvent_Batched");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,  "CTFPlayer::Event_Killed");
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
+			
 			
 		}
 	};

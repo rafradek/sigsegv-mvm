@@ -15,6 +15,7 @@ public:
 	enum FieldOfViewCheckType { USE_FOV, DISREGARD_FOV };
 	
 	CBaseCombatWeapon *GetActiveWeapon() const { return this->m_hActiveWeapon; }
+	void SetActiveWeapon(CBaseCombatWeapon * weapon) { this->m_hActiveWeapon = weapon; }
 	int WeaponCount() const                    { return MAX_WEAPONS; }
 	CBaseCombatWeapon *GetWeapon(int i) const  { return this->m_hMyWeapons[i]; }
 	static_assert(MAX_WEAPONS == 48);

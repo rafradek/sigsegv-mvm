@@ -25,7 +25,14 @@ private:
 	static MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> vt_SetLauncher;
 };
 
-class CBaseGrenade : public CBaseProjectile {};
+class CBaseGrenade : public CBaseProjectile 
+{
+public:
+	void SetThrower(CBaseEntity *entity) { ft_SetThrower(this, entity); }
+
+private:
+	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;
+};
 
 class CThrownGrenade : public CBaseGrenade {};
 class CBaseGrenadeConcussion : public CBaseGrenade {};

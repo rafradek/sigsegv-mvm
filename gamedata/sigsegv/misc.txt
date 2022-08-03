@@ -6136,6 +6136,16 @@
 					type "sym"
 					sym  "_ZN28CTFProjectile_ThrowableRepel22SetCustomPipebombModelEv"
 				}
+				"CBaseGrenade::SetThrower"
+				{
+					type "sym"
+					sym  "_ZN12CBaseGrenade10SetThrowerEP20CBaseCombatCharacter"
+				}
+				"EconItemInterface_OnOwnerKillEaterEvent_Batched"
+				{
+					type "sym"
+					sym  "_Z47EconItemInterface_OnOwnerKillEaterEvent_BatchedP18IEconItemInterfaceP9CTFPlayerS2_18kill_eater_event_ti"
+				}
 				
 			}
 			"addrs_group"
