@@ -111,7 +111,6 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 
 PointTemplate *FindPointTemplate(std::string &str);
 std::unordered_map<std::string, PointTemplate> &Point_Templates();
-std::unordered_multimap<std::string, CHandle<CBaseEntity>> &Teleport_Destination();
 extern std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
 extern std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
 extern std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;

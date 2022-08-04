@@ -246,6 +246,14 @@ namespace Mod::Pop::TFBot_Extensions
 		ACTION_Passive,
 	};
 
+    class TeleporterModule : public EntityModule
+    {
+    public:
+        TeleporterModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+        std::unordered_set<std::string> teleportWhere;
+    };
+
 	struct SpawnerData
 	{
 		std::vector<AddCond> addconds;
@@ -552,6 +560,35 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	}
 	
+
+	GlobalThunk<CHandle<CBaseEntity>> s_lastTeleporter("s_lastTeleporter");
+	bool FindTeleporter(const char *name, Vector &vSpawnPosition, bool tryAll)
+	{
+		std::vector<CBaseEntity *> objectsToUse;
+		for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
+			CBaseObject *obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
+			if (obj->GetType() != OBJ_TELEPORTER) continue;
+			if (!obj->IsFunctional()) continue;
+
+			auto mod = obj->GetEntityModule<TeleporterModule>("teleportwhere");
+			if (mod != nullptr) {
+				
+				if (mod->teleportWhere.contains(name) || (tryAll && mod->teleportWhere.contains("all"))) {
+					objectsToUse.push_back(obj);
+				}
+			}
+		}
+
+		if (!objectsToUse.empty()) {
+			auto destination = objectsToUse[RandomInt(0, objectsToUse.size() - 1)];
+			vSpawnPosition = destination->WorldSpaceCenter();
+			vSpawnPosition.z += destination->CollisionProp()->OBBMaxs().z;
+			s_lastTeleporter.GetRef() = destination;
+			return true;
+		}
+		return false;
+	}
+
 	CTFBotSpawner *current_spawner = nullptr;
 	KeyValues *current_spawner_kv = nullptr;
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Parse, KeyValues *kv_orig)
@@ -750,6 +787,7 @@ namespace Mod::Pop::TFBot_Extensions
 		DevMsg("Pos post tp %d %f\n", success, actor->GetAbsOrigin().x);
 	}
 
+	StaticFuncThunk<void *, CTFBot *> ft_OnBotTeleported("OnBotTeleported");
 	// clock_t start_time_spawn;
 	void OnBotSpawn(CTFBotSpawner *spawner, CUtlVector<CHandle<CBaseEntity>> *ents, SpawnerData &data) {
 		
@@ -819,55 +857,17 @@ namespace Mod::Pop::TFBot_Extensions
 						weapon->m_iClip1 = weapon->GetMaxClip1();
 				}
 				
-				DevMsg("Dests %d\n",Teleport_Destination().size());
-				if (!(bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT) && !Teleport_Destination().empty()) {
+				if (!(bot->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT)) {
 					bool done = false;
 					CBaseEntity *destination = nullptr;
-
-					if (Teleport_Destination().find("small") != Teleport_Destination().end() && !bot_leader->IsMiniBoss()) {
-						destination = Teleport_Destination().find("small")->second;
-					}
-					else if (Teleport_Destination().find("giants") != Teleport_Destination().end() && bot_leader->IsMiniBoss()) {
-						destination = Teleport_Destination().find("giants")->second;
-					}
-					else if (Teleport_Destination().find("all") != Teleport_Destination().end()) {
-						destination = Teleport_Destination().find("all")->second;
-					}
-					else {
-						ForEachEntityByClassname("info_player_teamspawn", [&](CBaseEntity *ent){
-							if (done)
-								return;
-
-							auto vec = ent->WorldSpaceCenter();
-							
-							auto area = TheNavMesh->GetNearestNavArea(vec);
-
-							if (area != nullptr) {
-								vec = area->GetCenter();
-							}
-
-							float dist = vec.DistToSqr(bot->GetAbsOrigin());
-							DevMsg("Dist %f %s\n",dist, ent->GetEntityName());
-							if (dist < 1000) {
-								auto dest = Teleport_Destination().find(STRING(ent->GetEntityName()));
-								if(dest != Teleport_Destination().end() && dest->second != nullptr){
-									destination = dest->second;
-									done = true;
-								}
-							}
-						});
-					}
-					if (destination != nullptr)
-					{
-						auto vec = destination->WorldSpaceCenter();
-						vec.z += destination->CollisionProp()->OBBMaxs().z;
-						bool is_space_to_spawn = IsSpaceToSpawnHere(vec);
+					Vector spawnPosition;
+					if ((!bot_leader->IsMiniBoss() && FindTeleporter("small", spawnPosition, false)) || (bot_leader->IsMiniBoss() && FindTeleporter("giants", spawnPosition, false)) ) {
+						bool is_space_to_spawn = IsSpaceToSpawnHere(spawnPosition);
 						if (!is_space_to_spawn)
-							vec.z += 50.0f;
-						if (is_space_to_spawn || IsSpaceToSpawnHere(vec)){
-							bot->Teleport(&(vec),&(destination->GetAbsAngles()),&(bot->GetAbsVelocity()));
-							bot->EmitSound("MVM.Robot_Teleporter_Deliver");
-							bot->m_Shared->AddCond(TF_COND_INVULNERABLE_CARD_EFFECT,1.5f);
+							spawnPosition.z += 50.0f;
+						if (is_space_to_spawn || IsSpaceToSpawnHere(spawnPosition)){
+							bot->Teleport(&(spawnPosition),&vec3_angle,&(bot->GetAbsVelocity()));
+							ft_OnBotTeleported(bot);
 						}
 					}
 					
@@ -923,6 +923,13 @@ namespace Mod::Pop::TFBot_Extensions
 		//clock_t end = clock() ;
 		//timespent = ((end-endn) / (float)CLOCKS_PER_SEC);
 		//DevMsg("detour spawning took %f %d\n",timespent, spawned_bots_first_tick.capacity());
+	}
+
+	DETOUR_DECL_STATIC(int, DoTeleporterOverride, CBaseEntity *spawnEnt, Vector& vSpawnPosition, bool bClosestPointOnNav)
+	{
+		if (FindTeleporter(STRING(spawnEnt->GetEntityName()), vSpawnPosition, true)) return SPAWN_LOCATION_TELEPORTER;
+		
+		return DETOUR_STATIC_CALL(DoTeleporterOverride)(spawnEnt, vSpawnPosition, bClosestPointOnNav);
 	}
 
 	RefCount rc_CTFBotSpawner_Spawn;
@@ -1955,6 +1962,17 @@ namespace Mod::Pop::TFBot_Extensions
 
 //#endif
 	
+
+    VHOOK_DECL(bool, CObjectTeleporter_KeyValue, const char *szKeyName, const char *szValue)
+	{
+        if (FStrEq(szKeyName, "TeleportWhere") || FStrEq(szKeyName, "$TeleportWhere")) {
+			auto me = reinterpret_cast<CObjectTeleporter *>(this);
+			auto mod = me->GetOrCreateEntityModule<TeleporterModule>("teleportwhere");
+			mod->teleportWhere.insert(szValue);
+		}
+        return VHOOK_CALL(CObjectTeleporter_KeyValue)(szKeyName, szValue);
+    }
+	
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2070,6 +2088,10 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CQuestItemTracker_FireGameEvent_NonVirtual,  "CQuestItemTracker::FireGameEvent_NonVirtual");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_GetSteamID,  "CBasePlayer::GetSteamID");
 
+
+			// Custom TeleportWhere teleports 
+			MOD_ADD_DETOUR_STATIC(DoTeleporterOverride, "DoTeleporterOverride");
+			MOD_ADD_VHOOK(CObjectTeleporter_KeyValue, TypeName<CObjectTeleporter>(), "CBaseEntity::KeyValue");
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");

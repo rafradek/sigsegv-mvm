@@ -137,11 +137,6 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			spawned_list.push_back(entity);
 			for (auto it1 = keys.begin(); it1 != keys.end(); ++it1){
 				std::string val = it1->second;
-				
-				if (it1->first == "TeleportWhere"){
-					Teleport_Destination().insert({val,entity});
-					continue;
-				}
 
 				if (!this->no_fixup)
 					FixupKeyvalue(val,Template_Increment,parentname.c_str());
@@ -477,12 +472,6 @@ std::unordered_map<std::string, PointTemplate> &Point_Templates()
 	return templ;
 }
 
-std::unordered_multimap<std::string, CHandle<CBaseEntity>> &Teleport_Destination()
-{
-	static std::unordered_multimap<std::string, CHandle<CBaseEntity>> tp;
-	return tp;
-}
-
 std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
 std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
 std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
@@ -499,12 +488,6 @@ void Clear_Point_Templates()
 
 void Update_Point_Templates()
 {
-	for(auto it = Teleport_Destination().begin(); it != Teleport_Destination().end();it++){
-		if (it->second == nullptr) {
-			Teleport_Destination().erase(it);
-			break;
-		}
-	}
 	for(auto it = g_templateInstances.begin(); it != g_templateInstances.end(); it++){
 		auto inst = *(it);
 		if (!inst->mark_delete) {

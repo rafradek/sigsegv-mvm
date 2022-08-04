@@ -61,7 +61,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         }}
 	});
 
-	bool shooting_weapon = false;
+	CTFWeaponBase *shooting_weapon = nullptr;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
@@ -114,9 +114,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 								mod->weapon->GetItem()->GetAttributeList().AddStringAttribute(def, value);
 							}
 						}
-						weapon->SetAbsOrigin(mimic->GetAbsOrigin());
-						weapon->SetAbsAngles(mimic->GetAbsAngles());
-						weapon->SetMoveParent(mimic);
 						variant_t var;
 						var.SetEntity(mimic);
 						weapon->SetCustomVariable("mimicent", var);
@@ -138,12 +135,19 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 						weapon->SetOwnerEntity(player);
 						weapon->SetOwner(player);
 					}
-					shooting_weapon = true;
+					
+					weapon->SetAbsOrigin(mimic->GetAbsOrigin());
+					weapon->SetAbsAngles(mimic->GetAbsAngles());
+
+					shooting_weapon = weapon;
 					auto oldActive = player->GetActiveWeapon();
 					player->SetActiveWeapon(weapon);
+					int oldTeam = player->GetTeamNumber();
+					player->SetTeamNumber(mimic->GetTeamNumber());
 					projectile = weapon->FireProjectile(player);
+					player->SetTeamNumber(oldTeam);
 					player->SetActiveWeapon(oldActive);
-					shooting_weapon = false;
+					shooting_weapon = nullptr;
 
 					if (tempPlayer) {
 						weapon->SetOwnerEntity(nullptr);
@@ -234,13 +238,13 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			var.SetEntity(mimic);
 			projectile->SetCustomVariable("mimicent", var);
 
-			var = variant_t();
-			mimic->GetCustomVariableVariant<"killicon">(var);
-			projectile->SetCustomVariable("killicon", var);
+			if (mimic->GetCustomVariableVariant<"killicon">(var)) {
+				projectile->SetCustomVariable("killicon", var);
+			}
 
-			var = variant_t();
-			mimic->GetCustomVariableVariant<"dmgtype">(var);
-			projectile->SetCustomVariable("dmgtype", var);
+			if (mimic->GetCustomVariableVariant<"dmgtype">(var)) {
+				projectile->SetCustomVariable("dmgtype", var);
+			}
 
             if (mimic->GetTeamNumber() != 0) {
 				CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(projectile);
@@ -302,7 +306,11 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			dmgInfo->SetDamageType(dmgInfo->GetDamageType() | DMG_CRITICAL);
 		}
 		if (mimicFire != nullptr) {
-			int dmgtype = atoi(mimicFire->GetCustomVariable<"dmgtype">("-1"));
+			variant_t variant;
+			variant.SetInt(-1);
+			mimicFire->GetCustomVariableVariant<"dmgtype">(variant);
+			variant.Convert(FIELD_INTEGER);
+			int dmgtype = variant.Int();
 			if (dmgtype != -1) {
 				dmgInfo->SetDamageType(dmgtype);
 			}
@@ -392,19 +400,24 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 
 	DETOUR_DECL_MEMBER(const char *, CTFGameRules_GetKillingWeaponName, const CTakeDamageInfo &info, CTFPlayer *pVictim, int *iWeaponID)
 	{
+		
 		if (mimicFire != nullptr) {
 			auto killIcon = mimicFire->GetCustomVariable<"killicon">();
 			if (killIcon != nullptr) {
+				Msg("Killicon1 %s\n", killIcon);
 				return killIcon;
 			}
 		}
 		if (info.GetInflictor() != nullptr) {
 			auto killIcon = info.GetInflictor()->GetCustomVariable<"killicon">();
 			if (killIcon != nullptr) {
+				Msg("Killicon2 %s\n", killIcon);
 				return killIcon;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+		auto result = DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+		Msg("Killicon %s\n", result);
+		return result;
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFBaseProjectile_GetDamageType)
@@ -412,6 +425,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		variant_t variant;
 		variant.SetInt(-1);
 		reinterpret_cast<CTFBaseProjectile *>(this)->GetCustomVariableVariant<"dmgtype">(variant);
+		variant.Convert(FIELD_INTEGER);
 		int dmgtype = variant.Int();
 		if (dmgtype != -1) {
 			return dmgtype;
@@ -430,6 +444,14 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (pOwner == nullptr) return;
 		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent_Batched)(pEconInterface, pOwner, pVictim, eEventType, nIncrementValue);
 	}
+
+	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent, void *pEconEntity, CTFPlayer *pOwner, CTFPlayer *pVictim, int eEventType, int nIncrementValue)
+	{
+		if (pOwner == nullptr) return;
+		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent)(pEconEntity, pOwner, pVictim, eEventType, nIncrementValue);
+	}
+
+	
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
@@ -456,10 +478,25 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	class CDmgAccumulator;
 	DETOUR_DECL_MEMBER(void, CBaseEntity_DispatchTraceAttack, CTakeDamageInfo& info, const Vector& vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 	{
-		if (shooting_weapon) {
+		if (shooting_weapon != nullptr && ToTFPlayer(mimicFire->GetOwnerEntity()) == nullptr) {
 			info.SetAttacker(mimicFire);
+			info.SetInflictor(shooting_weapon);
 		}
 		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
+	{
+		if (shooting_weapon != nullptr && mimicFire != nullptr) {
+			auto me = reinterpret_cast<CBaseCombatWeapon *>(this);
+			auto oldOwner = me->GetOwner();
+			me->SetOwner(nullptr);
+			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			me->SetOwner(oldOwner);
+		}
+		else {
+			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+		}
 	}
 
     class CMod : public IMod
@@ -482,8 +519,11 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
 			MOD_ADD_DETOUR_STATIC(GetKilleaterWeaponFromDamageInfo,  "GetKilleaterWeaponFromDamageInfo");
 			MOD_ADD_DETOUR_STATIC(EconItemInterface_OnOwnerKillEaterEvent_Batched,  "EconItemInterface_OnOwnerKillEaterEvent_Batched");
+			MOD_ADD_DETOUR_STATIC(EconItemInterface_OnOwnerKillEaterEvent,  "EconItemInterface_OnOwnerKillEaterEvent");
+			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,  "CTFPlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound");
 			
 			
 		}

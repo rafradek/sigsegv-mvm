@@ -6146,6 +6146,16 @@
 					type "sym"
 					sym  "_Z47EconItemInterface_OnOwnerKillEaterEvent_BatchedP18IEconItemInterfaceP9CTFPlayerS2_18kill_eater_event_ti"
 				}
+				"OnBotTeleported"
+				{
+					type "sym"
+					sym  "_Z15OnBotTeleportedP6CTFBot"
+				}
+				"EconItemInterface_OnOwnerKillEaterEvent"
+				{
+					type "sym"
+					sym  "_Z39EconItemInterface_OnOwnerKillEaterEventP18IEconItemInterfaceP9CTFPlayerS2_18kill_eater_event_ti"
+				}
 				
 			}
 			"addrs_group"

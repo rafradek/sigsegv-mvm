@@ -51,7 +51,8 @@ namespace Mod::Credits::Better_Radius_Collection
 			if ( pack->GetAbsOrigin().DistToSqr(player_pos) > radius_sqr) continue;
 			if (!pack->AffectedByRadiusCollection())                      continue;
 			if (!player->FVisible(pack, MASK_OPAQUE))                     continue;
-			
+			float time = gpGlobals->curtime - (float)(pack->m_flAnimTime);
+			if (time < 0.1f) continue;
 	//		DevMsg("[%8.3f] %4d: 0x%08x, idx %4d: touching!\n", gpGlobals->curtime, i, (uintptr_t)pack, ENTINDEX(pack));
 			pack->Touch(player);
 			
