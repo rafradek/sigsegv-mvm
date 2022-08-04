@@ -3030,3 +3030,6 @@ WaveSchedule
 
 // If enemy sentries should ignore this player
 // "ignored by enemy sentries" 1
+
+// Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging
+// "melee airblast" 2
