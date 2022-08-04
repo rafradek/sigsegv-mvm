@@ -670,6 +670,17 @@ namespace Mod::Attr::Custom_Attributes
 		weapon->m_flSmackTime = time + (smacktime - time) * attr_smacktime;
 		if (!player->IsBot() && weapon->m_flSmackTime > weapon->m_flNextPrimaryAttack)
 			weapon->m_flSmackTime = weapon->m_flNextPrimaryAttack - 0.02;
+		
+		int airblast = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( weapon, airblast, melee_airblast);
+		if (airblast > 0) {
+			weapon->DeflectProjectiles();
+			if (airblast > 1) {
+				variant_t var;
+				var.SetFloat(gpGlobals->curtime);
+				weapon->SetCustomVariable("swingtime", var);
+			}
+		}
 	}
 
 	DETOUR_DECL_MEMBER(int, CBaseObject_OnTakeDamage, CTakeDamageInfo &info)
@@ -1515,8 +1526,26 @@ namespace Mod::Attr::Custom_Attributes
 
 			info.SetDamage(info.GetDamage() * dmg);
 		}
-
+		
+		if ((info.GetDamageType() & (DMG_BLAST | DMG_BULLET | DMG_BUCKSHOT)) && ToTFPlayer(pVictim) != nullptr) {
+			auto melee = rtti_cast<CTFWeaponBaseMelee *>(ToTFPlayer(pVictim)->GetActiveTFWeapon());
+			if (melee != nullptr) {
+				float swingTime = melee->GetCustomVariableFloat<"swingtime">();
+				if (swingTime + 1.0f > gpGlobals->curtime) {
+					Vector fwd;
+					AngleVectors(pVictim->EyeAngles(), &fwd);
+					float dot = info.GetDamageForce().Dot(fwd);
+					return 0;
+					//ClientMsg(ToTFPlayer(pVictim), "dot %f\n", dot);
+					//if (dot < 0) {
+					//	return 0;
+					//}
+				}
+			}
+		}
+		
 		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
+			
 			float dmg = info.GetDamage();
 
 			// Allow mult_dmg_bonus_while_half_dead mult_dmg_penalty_while_half_alive mult_dmg_with_reduced_health

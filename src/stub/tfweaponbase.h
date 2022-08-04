@@ -101,6 +101,7 @@ public:
 	void CalcIsAttackCritical() { ft_CalcIsAttackCritical(this); }
 	CTFWeaponInfo const& GetTFWpnData() const { return ft_GetTFWeaponData(this); }
 	void StartEffectBarRegen()   { ft_StartEffectBarRegen(this); }
+	bool DeflectProjectiles()    { return ft_DeflectProjectiles(this); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
@@ -129,6 +130,7 @@ private:
 	static MemberFuncThunk<CTFWeaponBase *, void> ft_CalcIsAttackCritical;
 	static MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> ft_GetTFWeaponData;
 	static MemberFuncThunk<CTFWeaponBase *, void> ft_StartEffectBarRegen;
+	static MemberFuncThunk<CTFWeaponBase *, bool> ft_DeflectProjectiles;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;

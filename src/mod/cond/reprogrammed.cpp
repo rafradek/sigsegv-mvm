@@ -992,6 +992,21 @@ namespace Mod::Cond::Reprogrammed
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetOpposingTFTeam)();
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
+
+		if ( !ret && TFGameRules() && TFGameRules()->IsMannVsMachineMode() && target->GetTeamNumber() == TEAM_SPECTATOR )
+		{
+			if ( target->m_Shared->InCond( TF_COND_MVM_BOT_STUN_RADIOWAVE ) )
+				return true;
+
+			if ( target->m_Shared->InCond( TF_COND_SAPPED ) && !target->IsMiniBoss() )
+				return true;
+		}
+		return ret;
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1071,6 +1086,10 @@ namespace Mod::Cond::Reprogrammed
 
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindSnapToBuildPos, "CBaseObject::FindSnapToBuildPos");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOpposingTFTeam, "CTFPlayer::GetOpposingTFTeam");
+
+			// Allow spectator team bots to be backstabbed at any angle when sapped
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
+			
 
 			
 

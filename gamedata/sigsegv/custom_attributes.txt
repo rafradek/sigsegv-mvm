@@ -2378,7 +2378,16 @@
         "attribute_class"	"ignored_by_enemy_sentries"
         "description_string"	"Ignored by enemy senties"
         "description_format"	"value_is_additive"
-        "hidden"	"1"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4555"
+    {
+        "name"	"melee airblast"
+        "attribute_class"	"melee_airblast"
+        "description_string"	"Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
         "effect_type"	"positive"
     }
     
