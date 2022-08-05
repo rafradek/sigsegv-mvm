@@ -1531,7 +1531,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto melee = rtti_cast<CTFWeaponBaseMelee *>(ToTFPlayer(pVictim)->GetActiveTFWeapon());
 			if (melee != nullptr) {
 				float swingTime = melee->GetCustomVariableFloat<"swingtime">();
-				if (swingTime + 1.0f > gpGlobals->curtime) {
+				if (swingTime + 0.5f > gpGlobals->curtime) {
 					Vector fwd;
 					AngleVectors(pVictim->EyeAngles(), &fwd);
 					float dot = info.GetDamageForce().Dot(fwd);
