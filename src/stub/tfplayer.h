@@ -320,6 +320,7 @@ public:
 	DECL_SENDPROP_RW(CTFConditionList,     m_ConditionList);
 	DECL_SENDPROP(uint,        m_nPlayerCond);
 	DECL_SENDPROP(bool,        m_bLastDisguisedAsOwnTeam);
+	DECL_SENDPROP(int,         m_nDisguiseTeam);
 	DECL_RELATIVE(CHandle<CTFWeaponBase>, m_hBurnWeapon);
 	DECL_RELATIVE(float,       m_flFlameBurnTime);
 	DECL_RELATIVE(float,       m_flFlameRemoveTime);

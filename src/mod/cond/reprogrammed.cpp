@@ -711,6 +711,18 @@ namespace Mod::Cond::Reprogrammed
 	{
 		if (onKill && TFGameRules()->IsMannVsMachineMode() && team == TF_TEAM_BLUE && reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetTeamNumber() == TF_TEAM_BLUE)
 			team = TF_TEAM_RED;
+
+		if (team == TEAM_SPECTATOR && reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetTeamNumber() == TEAM_SPECTATOR ) {
+			auto bot = ToTFBot(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter());
+			if (bot != nullptr) {
+				auto threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
+				ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
+				team = sig_mvm_jointeam_blue_allow_force.GetBool() ? TF_TEAM_BLUE : TF_TEAM_RED;
+				if (threat != nullptr && threat->GetEntity() != nullptr) {
+					team = threat->GetEntity()->GetTeamNumber();
+				}
+			}
+		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Disguise)(team, iclass, victim, onKill);
 	}
 
@@ -1007,6 +1019,25 @@ namespace Mod::Cond::Reprogrammed
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
+	{
+		auto player = ToTFPlayer(ent);
+		int restoreTeam = -1;
+		if (player != nullptr) {
+			CTFBot *me = reinterpret_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
+			if (me->GetTeamNumber() == TEAM_SPECTATOR && player->m_Shared->InCond( TF_COND_DISGUISED ) && player->m_Shared->GetDisguiseTeam() != player->GetTeamNumber()) {
+				restoreTeam = player->m_Shared->m_nDisguiseTeam;
+				player->m_Shared->m_nDisguiseTeam = me->GetTeamNumber();
+			}
+		}
+		bool ret = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		if (restoreTeam != -1) {
+			player->m_Shared->m_nDisguiseTeam = restoreTeam;
+		}
+
+		return ret;
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1090,7 +1121,8 @@ namespace Mod::Cond::Reprogrammed
 			// Allow spectator team bots to be backstabbed at any angle when sapped
 			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
 			
-
+			// Fix spectator team bots ignoring disguise
+			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
 			
 
 			// Change sentry buster target if the sentry gun is on the same team
