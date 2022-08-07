@@ -3032,7 +3032,25 @@ WaveSchedule
 // "ignored by enemy sentries" 1
 
 // Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging
-// "melee airblast" 2
+// "melee airblast" 1
 
 // Automatically reloads the weapon while not active. Since the reload speed is tied to animations this will make weapons reload faster than usual
 // "passive reload" 1
+
+// Knockback, stun and damage nearby enemies when landing. The value specifies the minimum fall velocity before applying knockback
+// "kb fall min velocity" 300
+
+// The radius of the fall knockback. 230 by default
+// "kb fall radius" 230
+
+// Small robot stun time of the fall knockback. 5 by default
+// "kb fall stun time" 5
+
+// Fall knockback force. 300 by default
+// "kb fall force" 300
+
+// Fall knockback damage. 50 by default
+// "kb fall damage" 50
+
+// Melee attacks grant protection from attacks for specified amount of time
+// "melee grants protection" 0.6

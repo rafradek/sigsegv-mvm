@@ -2385,7 +2385,7 @@
     {
         "name"	"melee airblast"
         "attribute_class"	"melee_airblast"
-        "description_string"	"Attack reflects projectiles. Second level also grants you protection from attacks for a brief period while swinging"
+        "description_string"	"Attack reflects projectiles"
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
@@ -2442,6 +2442,15 @@
         "description_string"	"On fall, all enemies nearby are knocked back"
         "description_format"	"value_is_additive"
         "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4562"
+    {
+        "name"	"melee grants protection"
+        "attribute_class"	"melee_grants_protection"
+        "description_string"	"Attacking with this weapon gives you resistance to incoming damage for a brief period of time"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
         "effect_type"	"positive"
     }
     

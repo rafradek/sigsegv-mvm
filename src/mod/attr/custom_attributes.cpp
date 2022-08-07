@@ -677,11 +677,13 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( weapon, airblast, melee_airblast);
 		if (airblast > 0) {
 			weapon->DeflectProjectiles();
-			if (airblast > 1) {
-				variant_t var;
-				var.SetFloat(gpGlobals->curtime);
-				weapon->SetCustomVariable("swingtime", var);
-			}
+		}
+		float protection = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, protection, melee_grants_protection);
+		if (protection > 0) {
+			variant_t var;
+			var.SetFloat(gpGlobals->curtime + protection);
+			weapon->SetCustomVariable("swingtime", var);
 		}
 	}
 
@@ -1533,7 +1535,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto melee = rtti_cast<CTFWeaponBaseMelee *>(ToTFPlayer(pVictim)->GetActiveTFWeapon());
 			if (melee != nullptr) {
 				float swingTime = melee->GetCustomVariableFloat<"swingtime">();
-				if (swingTime + 0.6f > gpGlobals->curtime) {
+				if (swingTime > gpGlobals->curtime) {
 					Vector fwd;
 					AngleVectors(pVictim->EyeAngles(), &fwd);
 					float dot = info.GetDamageForce().Dot(fwd);
