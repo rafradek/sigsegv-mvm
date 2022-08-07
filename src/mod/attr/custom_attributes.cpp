@@ -73,6 +73,7 @@ namespace Mod::Attr::Custom_Attributes
 		CONTINOUS_ACCURACY_TIME_RECOVERY,
 		MOVE_ACCURACY_MULT,
 		ALT_FIRE_DISABLED,
+		PASSIVE_RELOAD,
 		
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -101,7 +102,8 @@ namespace Mod::Attr::Custom_Attributes
 		"continous_accuracy_time",
 		"continous_accuracy_time_recovery",
 		"move_accuracy_mult",
-		"unimplemented_altfire_disabled"
+		"unimplemented_altfire_disabled",
+		"passive_reload"
 	};
 
 	float *fast_attribute_cache[2048];
@@ -3056,46 +3058,46 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayerShared_SetRevengeCrits)(crits);
 	}
 	
-	DETOUR_DECL_MEMBER(void, CTFFlareGun_Revenge_Holster, CBaseCombatWeapon *weapon)
+	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Holster)(weapon);
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFShotgun_Revenge_Holster, CBaseCombatWeapon *weapon)
+	DETOUR_DECL_MEMBER(bool, CTFShotgun_Revenge_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Holster)(weapon);
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFRevolver_Holster, CBaseCombatWeapon *weapon)
+	DETOUR_DECL_MEMBER(bool, CTFRevolver_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFRevolver_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(CTFRevolver_Holster)(weapon);
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFFlareGun_Revenge_Deploy)
+	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Deploy)();
+		return DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Deploy)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFShotgun_Revenge_Deploy)
+	DETOUR_DECL_MEMBER(bool, CTFShotgun_Revenge_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Deploy)();
+		return DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Deploy)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFRevolver_Deploy)
+	DETOUR_DECL_MEMBER(bool, CTFRevolver_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFRevolver_Deploy)();
+		return DETOUR_MEMBER_CALL(CTFRevolver_Deploy)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFChargedSMG_SecondaryAttack)
+	DETOUR_DECL_MEMBER(bool, CTFChargedSMG_SecondaryAttack)
 	{
 		WEAPON_USE_DETOUR
-		DETOUR_MEMBER_CALL(CTFChargedSMG_SecondaryAttack)();
+		return DETOUR_MEMBER_CALL(CTFChargedSMG_SecondaryAttack)();
 	}
 
 
@@ -3701,7 +3703,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFWeaponBase_Holster)
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
@@ -3727,9 +3729,23 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		weapon->GetOrCreateEntityModule<WeaponModule>("weapon")->consecutiveShotsScore = 0.0f;
-		DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+		if (GetFastAttributeInt(weapon, 0, PASSIVE_RELOAD) != 0) {
+			weapon->m_bInReload = true;
+		}
+		return result;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemHolsterFrame)
+	{
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemHolsterFrame)();
+		
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		if (weapon->GetMaxClip1() != -1 && GetFastAttributeInt(weapon, 0, PASSIVE_RELOAD) != 0) {
+			weapon->CheckReload();
+		}
+	}
+	
 	DETOUR_DECL_MEMBER(void, CBaseProjectile_D2)
 	{
 		auto projectile = reinterpret_cast<CBaseProjectile *>(this);
@@ -5222,6 +5238,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_ValidTargetPlayer, "CObjectSentrygun::ValidTargetPlayer");
             MOD_ADD_DETOUR_MEMBER(CTFJar_TossJarThink, "CTFJar::TossJarThink");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableRepel_SetCustomPipebombModel, "CTFProjectile_ThrowableRepel::SetCustomPipebombModel");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemHolsterFrame, "CTFWeaponBase::ItemHolsterFrame");
 			
 
 			// Fix burn time mult not working by making fire deal damage faster

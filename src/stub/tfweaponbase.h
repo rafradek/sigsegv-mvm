@@ -49,6 +49,7 @@ public:
 	char const *GetShootSound(int type)                    { return vt_GetShootSound (this, type); }
 	int GetPrimaryAmmoType()                               { return vt_GetPrimaryAmmoType (this); }
 	void SetSubType(int type)                              {        vt_SetSubType (this, type); }
+	void CheckReload()                                     {        vt_CheckReload (this); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -88,6 +89,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            vt_GetShootSound;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, int>                          vt_GetPrimaryAmmoType;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    vt_SetSubType;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_CheckReload;
 	
 };
 

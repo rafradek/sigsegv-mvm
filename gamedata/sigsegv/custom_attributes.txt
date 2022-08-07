@@ -2390,5 +2390,14 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4556"
+    {
+        "name"	"passive reload"
+        "attribute_class"	"passive_reload"
+        "description_string"	"Weapon is automatically reloaded when not active"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
     
 }
