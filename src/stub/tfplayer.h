@@ -428,6 +428,8 @@ public:
 
 	bool IsReadyToPlay()                               { return ft_IsReadyToPlay(this); }
 	
+	void ApplyAbsVelocityImpulse(const Vector &impulse) {        ft_ApplyAbsVelocityImpulse       (this, impulse); }
+	
 	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
 	CEconEntity *GetEconEntityByName(const char *name);
@@ -512,6 +514,7 @@ private:
 	static MemberFuncThunk<		 CTFPlayer *, void, int, int                  > ft_DetonateObjectOfType;
 	static MemberFuncThunk<		 CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> ft_GetPassiveWeapons;
 	static MemberFuncThunk<		 CTFPlayer *, bool                            > ft_IsReadyToPlay;
+	static MemberFuncThunk<      CTFPlayer *, void, const Vector &            > ft_ApplyAbsVelocityImpulse;
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 

@@ -308,6 +308,7 @@ public:
 	void *GetDataObject(int type)                                                                                           { return ft_GetDataObject                 (this, type); }
 	int SetTransmitState(int state)                                                                                         { return ft_SetTransmitState              (this, state); }
 	void FireNamedOutput(const char *pszOutput, variant_t variant, CBaseEntity *pActivator, CBaseEntity *pCaller, float flDelay) { return ft_FireNamedOutput          (this, pszOutput, variant, pActivator, pCaller, flDelay); }
+	void ApplyAbsVelocityImpulse(const Vector &impulse)                                                                     {        ft_ApplyAbsVelocityImpulse       (this, impulse); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -472,6 +473,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, void *,int>                                              ft_GetDataObject;
 	static MemberFuncThunk<      CBaseEntity *, int, int>                                                ft_SetTransmitState;
 	static MemberFuncThunk<      CBaseEntity *, void, const char *, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireNamedOutput;
+	static MemberFuncThunk<      CBaseEntity *, void, const Vector &>                                    ft_ApplyAbsVelocityImpulse;
 	
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;

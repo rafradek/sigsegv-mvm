@@ -267,6 +267,7 @@ MemberFuncThunk<	  CTFPlayer *, bool                      	   > CTFPlayer::ft_Tr
 MemberFuncThunk<	  CTFPlayer *, void, int, int                  > CTFPlayer::ft_DetonateObjectOfType        ("CTFPlayer::DetonateObjectOfType");
 MemberFuncThunk<	  CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> CTFPlayer::ft_GetPassiveWeapons        ("CTFPlayer::GetPassiveWeapons");
 MemberFuncThunk<	  CTFPlayer *, bool                            > CTFPlayer::ft_IsReadyToPlay               ("CTFPlayer::IsReadyToPlay");
+MemberFuncThunk<      CTFPlayer *, void, const Vector &            > CTFPlayer::ft_ApplyAbsVelocityImpulse     ("CTFPlayer::ApplyAbsVelocityImpulse");
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
 

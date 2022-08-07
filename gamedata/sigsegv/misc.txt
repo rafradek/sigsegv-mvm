@@ -6166,6 +6166,21 @@
 					type "sym"
 					sym  "_ZN17CBaseCombatWeapon11CheckReloadEv"
 				}
+				"CTFGameRules::FlPlayerFallDamage"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules18FlPlayerFallDamageEP11CBasePlayer"
+				}
+				"CBaseEntity::ApplyAbsVelocityImpulse"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity23ApplyAbsVelocityImpulseERK6Vector"
+				}
+				"CGameMovement::CheckFalling"
+				{
+					type "sym"
+					sym  "_ZN13CGameMovement12CheckFallingEv"
+				}
 				
 			}
 			"addrs_group"

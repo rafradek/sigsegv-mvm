@@ -2385,7 +2385,7 @@
     {
         "name"	"melee airblast"
         "attribute_class"	"melee_airblast"
-        "description_string"	"Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging"
+        "description_string"	"Attack reflects projectiles. Second level also grants you protection from attacks for a brief period while swinging"
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
@@ -2397,6 +2397,51 @@
         "description_string"	"Weapon is automatically reloaded when not active"
         "description_format"	"value_is_additive"
         "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4557"
+    {
+        "name"	"kb fall min velocity"
+        "attribute_class"	"kb_fall_min_velocity"
+        "description_string"	"On fall, all enemies nearby are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4558"
+    {
+        "name"	"kb fall radius"
+        "attribute_class"	"kb_fall_radius"
+        "description_string"	"On fall, all enemies nearby are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4559"
+    {
+        "name"	"kb fall stun time"
+        "attribute_class"	"kb_fall_stun_time"
+        "description_string"	"On fall, all enemies nearby are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4560"
+    {
+        "name"	"kb fall force"
+        "attribute_class"	"kb_fall_force"
+        "description_string"	"On fall, all enemies nearby are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4561"
+    {
+        "name"	"kb fall damage"
+        "attribute_class"	"kb_fall_damage"
+        "description_string"	"On fall, all enemies nearby are knocked back"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
         "effect_type"	"positive"
     }
     

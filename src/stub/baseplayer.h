@@ -79,6 +79,7 @@ public:
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
 	DECL_SENDPROP(int,   m_iHideHUD);
+	DECL_SENDPROP(int,   m_flFallVelocity);
 	
 	inline void NetworkStateChanged()           { }
 	inline void NetworkStateChanged(void *pVar) { }

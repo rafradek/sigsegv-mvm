@@ -89,6 +89,7 @@ MemberFuncThunk<      CBaseEntity *, IPhysicsObject *                           
 MemberFuncThunk<      CBaseEntity *, void *,int                                             > CBaseEntity::ft_GetDataObject              ("CBaseEntity::GetDataObject");
 MemberFuncThunk<      CBaseEntity *, int, int                                               > CBaseEntity::ft_SetTransmitState           ("CBaseEntity::SetTransmitState");
 MemberFuncThunk<      CBaseEntity *, void, const char *, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntity::ft_FireNamedOutput ("CBaseEntity::FireNamedOutput");
+MemberFuncThunk<      CBaseEntity *, void, const Vector &                                   > CBaseEntity::ft_ApplyAbsVelocityImpulse    ("CBaseEntity::ApplyAbsVelocityImpulse");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");

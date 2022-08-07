@@ -1529,11 +1529,11 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetDamage(info.GetDamage() * dmg);
 		}
 		
-		if ((info.GetDamageType() & (DMG_BLAST | DMG_BULLET | DMG_BUCKSHOT)) && ToTFPlayer(pVictim) != nullptr) {
+		if ((info.GetDamageType() & (DMG_BLAST | DMG_BULLET | DMG_BUCKSHOT | DMG_MELEE)) && ToTFPlayer(pVictim) != nullptr) {
 			auto melee = rtti_cast<CTFWeaponBaseMelee *>(ToTFPlayer(pVictim)->GetActiveTFWeapon());
 			if (melee != nullptr) {
 				float swingTime = melee->GetCustomVariableFloat<"swingtime">();
-				if (swingTime + 0.5f > gpGlobals->curtime) {
+				if (swingTime + 0.6f > gpGlobals->curtime) {
 					Vector fwd;
 					AngleVectors(pVictim->EyeAngles(), &fwd);
 					float dot = info.GetDamageForce().Dot(fwd);
@@ -4559,6 +4559,65 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->GetOuter(), mult, mult_wpn_burntime);
 	}
 
+	DETOUR_DECL_MEMBER(void, CGameMovement_CheckFalling)
+	{
+		auto me = reinterpret_cast<CGameMovement *>(this);
+		auto player = reinterpret_cast<CTFPlayer *>(me->player);
+		float fall = player->m_Local->m_flFallVelocity;
+		if (player->GetGroundEntity() != nullptr && player->IsAlive() && fall > 0) {
+			float fallMinVel = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, fallMinVel, kb_fall_min_velocity);
+			float kbRadius = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, kbRadius, kb_fall_radius);
+			float kbStunTime = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, kbStunTime, kb_fall_stun_time);
+			float kbStrength = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, kbStrength, kb_fall_force);
+			float kbDamage = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, kbDamage, kb_fall_damage);
+			if (fallMinVel != 0 && fall > fallMinVel) {
+				if (kbRadius == 0) {
+					kbRadius = 230;
+				}
+				if (kbStunTime == 0) {
+					kbStunTime = 5;
+				}
+				if (kbStrength == 0) {
+					kbStrength = 300;
+				}
+				if (kbDamage == 0) {
+					kbDamage = 50;
+				}
+				Vector point = player->GetAbsOrigin();
+				ForEachTFPlayer([&](CTFPlayer *playerl){
+					if (playerl->IsAlive() && playerl->GetTeamNumber() == player->GetTeamNumber()) return;
+
+					Vector toPlayer = playerl->EyePosition() - point;
+
+					if ( toPlayer.LengthSqr() < kbRadius * kbRadius )
+					{
+						// send the player flying
+						// make sure we push players up and away
+						toPlayer.z = 0.0f;
+						toPlayer.NormalizeInPlace();
+						toPlayer.z = 1.0f;
+
+						Vector vPush = kbStrength * toPlayer;
+
+						playerl->ApplyAbsVelocityImpulse( vPush );
+						playerl->TakeDamage(CTakeDamageInfo(player, player, nullptr, vec3_origin, player->GetAbsOrigin(), kbDamage, DMG_FALL, TF_DMG_CUSTOM_BOOTS_STOMP));
+						if (!playerl->IsMiniBoss()) {
+							playerl->m_Shared->StunPlayer(kbStunTime, 0.85, 2, player);
+						}
+					}
+				});
+			}
+		}
+		DETOUR_MEMBER_CALL(CGameMovement_CheckFalling)();
+	}
+
+	
+
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
@@ -5239,6 +5298,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFJar_TossJarThink, "CTFJar::TossJarThink");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableRepel_SetCustomPipebombModel, "CTFProjectile_ThrowableRepel::SetCustomPipebombModel");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemHolsterFrame, "CTFWeaponBase::ItemHolsterFrame");
+            MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckFalling, "CGameMovement::CheckFalling");
 			
 
 			// Fix burn time mult not working by making fire deal damage faster
