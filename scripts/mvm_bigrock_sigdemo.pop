@@ -3033,3 +3033,6 @@ WaveSchedule
 
 // Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging
 // "melee airblast" 2
+
+// Automatically reloads the weapon while not active. Since the reload speed is tied to animations this will make weapons reload faster than usual
+// "passive reload" 1
