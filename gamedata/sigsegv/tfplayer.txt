@@ -1009,6 +1009,16 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared16UpdateCloakMeterEv"
 				}
+				"CTFPlayer::SetOffHandWeapon"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16SetOffHandWeaponEP13CTFWeaponBase"
+				}
+				"CTFPlayer::HolsterOffHandWeapon"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer20HolsterOffHandWeaponEv"
+				}
 				
 				
 			//	"GetTFConditionName"

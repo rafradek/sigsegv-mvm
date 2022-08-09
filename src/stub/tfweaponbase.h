@@ -368,11 +368,21 @@ class CBaseViewModel : public CBaseAnimating
 {
 public:
 	CBaseCombatWeapon *GetWeapon() const { return this->m_hWeapon; }
+
+	void SetControlPanelsActive(bool enable) { ft_SetControlPanelsActive(this, enable); }
+	void SpawnControlPanels()                { ft_SpawnControlPanels(this); }
+
+	void SetWeaponModel(const char *model, CBaseCombatWeapon *weapon) { return vt_SetWeaponModel(this, model, weapon); }
 	
 private:
 	DECL_SENDPROP(int,                        m_nViewModelIndex);
 	DECL_SENDPROP(CHandle<CBaseEntity>,       m_hOwner);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>, m_hWeapon);
+
+	static MemberFuncThunk<CBaseViewModel *, void, bool> ft_SetControlPanelsActive;
+	static MemberFuncThunk<CBaseViewModel *, void> ft_SpawnControlPanels;
+
+	static MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> vt_SetWeaponModel;
 };
 
 class CTFViewModel : public CBaseViewModel {};

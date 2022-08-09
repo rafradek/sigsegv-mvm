@@ -176,6 +176,12 @@ IMPL_SENDPROP(CHandle<CBaseEntity>,       CBaseViewModel, m_hOwner,          CBa
 IMPL_SENDPROP(CHandle<CBaseCombatWeapon>, CBaseViewModel, m_hWeapon,         CBaseViewModel);
 
 
+MemberFuncThunk<CBaseViewModel *, void, bool> CBaseViewModel::ft_SetControlPanelsActive("CBaseViewModel::SetControlPanelsActive");
+MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_SpawnControlPanels("CBaseViewModel::SpawnControlPanels");
+
+MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> CBaseViewModel::vt_SetWeaponModel(TypeName<CBaseViewModel>(), "CBaseViewModel::SetWeaponModel");
+
+
 static StaticFuncThunk<bool, int> ft_WeaponID_IsSniperRifle("WeaponID_IsSniperRifle");
 bool WeaponID_IsSniperRifle(int id) { return ft_WeaponID_IsSniperRifle(id); }
 

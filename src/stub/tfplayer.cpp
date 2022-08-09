@@ -168,6 +168,8 @@ IMPL_SENDPROP(int,         CTFPlayerShared, m_nDisguiseTeam,           CTFPlayer
 IMPL_RELATIVE(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hBurnWeapon, m_bLastDisguisedAsOwnTeam, +10);
 IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameBurnTime, m_bLastDisguisedAsOwnTeam, +14);
 IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameRemoveTime, m_bLastDisguisedAsOwnTeam, +18);
+IMPL_SENDPROP(float,       CTFPlayerShared, m_flInvisChangeCompleteTime,CTFPlayer);
+IMPL_RELATIVE(bool,       CTFPlayerShared, m_bMotionCloak, m_flInvisChangeCompleteTime, +16);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 
@@ -216,6 +218,7 @@ IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlay
 IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlayer);
 IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
+IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hOffHandWeapon,   CTFPlayer);
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
 CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", NetworkStateChanged_CTFPlayer_m_angEyeAngles);
@@ -268,6 +271,9 @@ MemberFuncThunk<	  CTFPlayer *, void, int, int                  > CTFPlayer::ft_
 MemberFuncThunk<	  CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> CTFPlayer::ft_GetPassiveWeapons        ("CTFPlayer::GetPassiveWeapons");
 MemberFuncThunk<	  CTFPlayer *, bool                            > CTFPlayer::ft_IsReadyToPlay               ("CTFPlayer::IsReadyToPlay");
 MemberFuncThunk<      CTFPlayer *, void, const Vector &            > CTFPlayer::ft_ApplyAbsVelocityImpulse     ("CTFPlayer::ApplyAbsVelocityImpulse");
+MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > CTFPlayer::ft_SetOffHandWeapon            ("CTFPlayer::SetOffHandWeapon");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_HolsterOffHandWeapon        ("CTFPlayer::HolsterOffHandWeapon");
+
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
 

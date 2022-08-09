@@ -963,6 +963,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	DETOUR_DECL_MEMBER(const char *, CTFWeaponInvis_GetViewModel, int index)
+	{
+		auto me = reinterpret_cast<CTFWeaponInvis *>(this);
+		GET_STRING_ATTRIBUTE(me->GetItem()->GetAttributeList(), "custom item model", modelname);
+		if (modelname != nullptr) {
+			return modelname;
+		}
+		return DETOUR_MEMBER_CALL(CTFWeaponInvis_GetViewModel)(index);
+	}
+
 	void UpdateCustomModel(CTFPlayer *owner, CEconEntity *entity, CAttributeList &attrlist) {
 		
 
@@ -971,7 +981,14 @@ namespace Mod::Attr::Custom_Attributes
 
 			int model_index = CBaseEntity::PrecacheModel(modelname);
 			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
-			if (weapon != nullptr && owner != nullptr && !owner->IsFakeClient()) {
+			if (owner != nullptr && rtti_cast<CTFWeaponInvis *>(weapon) != nullptr && owner->GetViewModel(weapon->m_nViewModelIndex) != nullptr) {
+				//owner->GetViewModel(weapon->m_nViewModelIndex)->SetWeaponModel(modelname, weapon);
+				// owner->GetViewModel(weapon->m_nViewModelIndex)->SetModel(modelname);
+				// owner->GetViewModel(weapon->m_nViewModelIndex)->SpawnControlPanels();
+				// owner->GetViewModel(weapon->m_nViewModelIndex)->SetControlPanelsActive(true);
+
+			}
+			else if (weapon != nullptr && owner != nullptr && !owner->IsFakeClient()) {
 				auto entry = FindCustomModelEntry(weapon);
 				if (entry != nullptr && entry->wearable != nullptr && entry->wearable->GetModelIndex() != model_index) {
 					entry->wearable->Remove();
@@ -2792,6 +2809,7 @@ namespace Mod::Attr::Custom_Attributes
 	
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
+	RefCount rc_CTFPlayerShared_AddCondWatch;
 	RefCount rc_CTFPlayerShared_RemoveCond;
 	RefCount rc_CTFPlayerShared_InCond;
 	CBaseEntity *addcond_provider = nullptr;
@@ -2813,6 +2831,8 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (rc_CTFPlayerShared_AddCond)
         {
+			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+
 			if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
 				return;
 			}
@@ -2868,6 +2888,8 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (rc_CTFPlayerShared_RemoveCond)
         {
+			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 			int iCondOverride = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
@@ -2913,6 +2935,8 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CTFPlayerShared_InCond, ETFCond nCond)
 	{
 		if (rc_CTFPlayerShared_InCond) {
+			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
+
 			int iCondOverride = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
 
@@ -2935,9 +2959,27 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
+		
 		auto wep = reinterpret_cast<CTFWeaponInvis *>(this);
 		addcond_provider = wep->GetTFPlayerOwner();
 		addcond_provider_item = wep;
+		
+		int iCondOverride = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(wep->GetTFPlayerOwner(), iCondOverride, effect_cond_override);
+
+		if (iCondOverride != 0) {
+			if (!wep->GetTFPlayerOwner()->m_Shared->InCond(TF_COND_STEALTHED)) {
+
+				int mode = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(wep, mode, set_weapon_mode);
+				if (mode != 1)
+					wep->GetTFPlayerOwner()->SetOffHandWeapon(wep);
+
+				wep->GetTFPlayerOwner()->m_Shared->m_bMotionCloak = mode == 2;
+			}
+		}
+		
 		return DETOUR_MEMBER_CALL(CTFWeaponInvis_ActivateInvisibilityWatch)();
 	}
 
@@ -2945,9 +2987,15 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		addcond_provider = me->GetOuter();
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
+		int iCondOverride = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+		if (iCondOverride) {
+			me->GetOuter()->HolsterOffHandWeapon();
+		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_FadeInvis)(mult);
 	}
 
@@ -2955,14 +3003,31 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		if (me->GetOuter()->IsPlayerClass(TF_CLASS_SPY)) {
 			addcond_provider = me->GetOuter();
 			addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
+			if (me->m_bMotionCloak && me->m_flCloakMeter <= 0 && addcond_provider_item != nullptr) {
+				
+				int iCondOverride = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+				if (iCondOverride != 0)
+					me->m_bMotionCloak = false;
+			} 
 		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateCloakMeter)();
 	}
-
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_SpyDeadRingerDeath, const CTakeDamageInfo& info)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		auto me = reinterpret_cast<CTFPlayer *>(this);
+		addcond_provider = me;
+		addcond_provider_item = GetEconEntityAtLoadoutSlot(me, LOADOUT_POSITION_PDA2);
+		DETOUR_MEMBER_CALL(CTFPlayer_SpyDeadRingerDeath)(info);
+	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_PulseRageBuff, int rage)
 	{
@@ -5361,6 +5426,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_FadeInvis, "CTFPlayerShared::FadeInvis");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateCloakMeter, "CTFPlayerShared::UpdateCloakMeter");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
 			
 			
 

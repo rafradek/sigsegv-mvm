@@ -6186,6 +6186,27 @@
 					type "sym"
 					sym  "_ZN14CTFWeaponInvis25ActivateInvisibilityWatchEv"
 				}
+				"CBaseViewModel::SetWeaponModel"
+				{
+					type "sym"
+					sym  "_ZN14CBaseViewModel14SetWeaponModelEPKcP17CBaseCombatWeapon"
+				}
+				"CBaseViewModel::SpawnControlPanels"
+				{
+					type "sym"
+					sym  "_ZN14CBaseViewModel18SpawnControlPanelsEv"
+				}
+				"CBaseViewModel::SetControlPanelsActive"
+				{
+					type "sym"
+					sym  "_ZN14CBaseViewModel22SetControlPanelsActiveEb"
+				}
+				"CTFWeaponInvis::GetViewModel"
+				{
+					type "sym"
+					sym  "_ZNK14CTFWeaponInvis12GetViewModelEi"
+				}
+				
 			}
 			"addrs_group"
 			{

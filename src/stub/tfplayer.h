@@ -324,6 +324,8 @@ public:
 	DECL_RELATIVE(CHandle<CTFWeaponBase>, m_hBurnWeapon);
 	DECL_RELATIVE(float,       m_flFlameBurnTime);
 	DECL_RELATIVE(float,       m_flFlameRemoveTime);
+	DECL_SENDPROP(float,       m_flInvisChangeCompleteTime);
+	DECL_RELATIVE(bool,       m_bMotionCloak);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
@@ -422,6 +424,8 @@ public:
 	void GiveDefaultItemsNoAmmo();
 	float PlayScene(const char *pszScene, float flDelay = 0.0f, void *response = nullptr, IRecipientFilter *filter = nullptr)		        { return ft_PlayScene(this, pszScene, flDelay, response, filter); }
 	void GetPassiveWeapons(CUtlVector<CTFWeaponBase *> &weapons)		            { ft_GetPassiveWeapons(this, weapons); }
+	void SetOffHandWeapon(CTFWeaponBase *weapon)                                     {        ft_SetOffHandWeapon       (this, weapon); }
+	void HolsterOffHandWeapon()                                                      {        ft_HolsterOffHandWeapon   (this); }
 	
 	bool TryToPickupBuilding()                         { return ft_TryToPickupBuilding(this); }
 	void DetonateObjectOfType(int building, int mode)  { ft_DetonateObjectOfType(this, building, mode); }
@@ -455,6 +459,8 @@ public:
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
 	DECL_RELATIVE   (int,       m_nCanPurchaseUpgradesCount);
+	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hOffHandWeapon);
+	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
 private:
@@ -515,6 +521,9 @@ private:
 	static MemberFuncThunk<		 CTFPlayer *, void, CUtlVector<CTFWeaponBase *> &> ft_GetPassiveWeapons;
 	static MemberFuncThunk<		 CTFPlayer *, bool                            > ft_IsReadyToPlay;
 	static MemberFuncThunk<      CTFPlayer *, void, const Vector &            > ft_ApplyAbsVelocityImpulse;
+	static MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > ft_SetOffHandWeapon;
+    static MemberFuncThunk<      CTFPlayer *, void                            > ft_HolsterOffHandWeapon;
+	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;
 
