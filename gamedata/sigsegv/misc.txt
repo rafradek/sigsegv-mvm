@@ -6181,7 +6181,11 @@
 					type "sym"
 					sym  "_ZN13CGameMovement12CheckFallingEv"
 				}
-				
+				"CTFWeaponInvis::ActivateInvisibilityWatch"
+				{
+					type "sym"
+					sym  "_ZN14CTFWeaponInvis25ActivateInvisibilityWatchEv"
+				}
 			}
 			"addrs_group"
 			{

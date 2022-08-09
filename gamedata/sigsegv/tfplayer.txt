@@ -999,6 +999,17 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer17GetOpposingTFTeamEv"
 				}
+				"CTFPlayerShared::FadeInvis"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared9FadeInvisEf"
+				}
+				"CTFPlayerShared::UpdateCloakMeter"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared16UpdateCloakMeterEv"
+				}
+				
 				
 			//	"GetTFConditionName"
 			//	{

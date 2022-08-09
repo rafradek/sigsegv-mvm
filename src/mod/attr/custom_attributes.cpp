@@ -2793,12 +2793,14 @@ namespace Mod::Attr::Custom_Attributes
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
 	RefCount rc_CTFPlayerShared_RemoveCond;
+	RefCount rc_CTFPlayerShared_InCond;
 	CBaseEntity *addcond_provider = nullptr;
 	CBaseEntity *addcond_provider_item = nullptr;
 	RefCount rc_CTFPlayerShared_PulseRageBuff;
 
 	int aoe_in_sphere_max_hit_count = 0;
 	int aoe_in_sphere_hit_count = 0;
+
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
@@ -2908,6 +2910,60 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFPlayerShared_InCond, ETFCond nCond)
+	{
+		if (rc_CTFPlayerShared_InCond) {
+			int iCondOverride = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+
+			// Allow up to 4 addconds with bit shifting
+			if (iCondOverride != 0) {
+				for (int i = 0; i < 4; i++) {
+					int addcond = (iCondOverride >> (i * 8)) & 255;
+					if (addcond != 0) {
+						nCond = (ETFCond) addcond;
+						if (DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond)) return true;
+					}
+				}
+				return false;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFWeaponInvis_ActivateInvisibilityWatch)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		auto wep = reinterpret_cast<CTFWeaponInvis *>(this);
+		addcond_provider = wep->GetTFPlayerOwner();
+		addcond_provider_item = wep;
+		return DETOUR_MEMBER_CALL(CTFWeaponInvis_ActivateInvisibilityWatch)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_FadeInvis, float mult)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		auto me = reinterpret_cast<CTFPlayerShared *>(this);
+		addcond_provider = me->GetOuter();
+		addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
+		DETOUR_MEMBER_CALL(CTFPlayerShared_FadeInvis)(mult);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateCloakMeter)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
+		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
+		auto me = reinterpret_cast<CTFPlayerShared *>(this);
+		if (me->GetOuter()->IsPlayerClass(TF_CLASS_SPY)) {
+			addcond_provider = me->GetOuter();
+			addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateCloakMeter)();
+	}
+
+	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_PulseRageBuff, int rage)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
@@ -4592,7 +4648,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				Vector point = player->GetAbsOrigin();
 				ForEachTFPlayer([&](CTFPlayer *playerl){
-					if (playerl->IsAlive() && playerl->GetTeamNumber() == player->GetTeamNumber()) return;
+					if (!playerl->IsAlive() || playerl->GetTeamNumber() == player->GetTeamNumber()) return;
 
 					Vector toPlayer = playerl->EyePosition() - point;
 
@@ -5301,6 +5357,11 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableRepel_SetCustomPipebombModel, "CTFProjectile_ThrowableRepel::SetCustomPipebombModel");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemHolsterFrame, "CTFWeaponBase::ItemHolsterFrame");
             MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckFalling, "CGameMovement::CheckFalling");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_ActivateInvisibilityWatch, "CTFWeaponInvis::ActivateInvisibilityWatch");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_FadeInvis, "CTFPlayerShared::FadeInvis");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateCloakMeter, "CTFPlayerShared::UpdateCloakMeter");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
+			
 			
 
 			// Fix burn time mult not working by making fire deal damage faster

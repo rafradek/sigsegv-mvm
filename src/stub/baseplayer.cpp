@@ -73,7 +73,7 @@ IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
 IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
 IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
-IMPL_SENDPROP(int, CPlayerLocalData,   m_flFallVelocity, CBasePlayer);
+IMPL_SENDPROP(float, CPlayerLocalData,   m_flFallVelocity, CBasePlayer);
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
