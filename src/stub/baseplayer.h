@@ -3,6 +3,7 @@
 
 
 #include "stub/baseanimating.h"
+#include "PlayerState.h"
 
 class CNavArea;
 class CBaseCombatWeapon;
@@ -112,8 +113,8 @@ public:
 	/* easy-but-slow calls via IPlayerInfo */
 	const char *GetNetworkIDString() const { return this->GetPlayerInfo()->GetNetworkIDString(); }
 	bool IsConnected() const               { return this->GetPlayerInfo()->IsConnected(); }
-	bool IsHLTV() const                    { return this->GetPlayerInfo()->IsHLTV(); }
-	bool IsReplay() const                  { return this->GetPlayerInfo()->IsReplay(); }
+	bool IsHLTV() const                    { return this->pl->hltv; }
+	bool IsReplay() const                  { return this->pl->replay; }
 	bool IsDead() const                    { return this->GetPlayerInfo()->IsDead(); }
 	bool IsObserver() const                { return this->GetPlayerInfo()->IsObserver(); }
 	const Vector GetPlayerMins() const     { return this->GetPlayerInfo()->GetPlayerMins(); }
@@ -155,6 +156,7 @@ public:
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
 	DECL_DATAMAP(int,          m_nButtons);
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hObserverTarget);
+	DECL_SENDPROP_RW(CPlayerState, pl);
 	
 	
 private:

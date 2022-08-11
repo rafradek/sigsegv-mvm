@@ -1796,15 +1796,13 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }},
         {"SetFakeParent"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
-            if (data != nullptr) {
-                CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
-                if (target != nullptr) {
-                    data->m_hParent = target;
-                    data->m_bParentSet = true;
-                    if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
-                        THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
-                    }
+            auto data = ent->GetOrCreateEntityModule<FakeParentModule>("fakeparent");
+            CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
+            if (target != nullptr) {
+                data->m_hParent = target;
+                data->m_bParentSet = true;
+                if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
+                    THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
                 }
             }
         }},

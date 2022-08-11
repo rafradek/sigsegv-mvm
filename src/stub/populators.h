@@ -7,10 +7,7 @@
 
 
 class CWave;
-class CUpgradeInfo
-{
-
-};
+class CUpgradeInfo;
 
 class CPopulationManager : public CPointEntity
 {

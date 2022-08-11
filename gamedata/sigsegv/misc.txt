@@ -6206,6 +6206,11 @@
 					type "sym"
 					sym  "_ZNK14CTFWeaponInvis12GetViewModelEi"
 				}
+				"CTFGameRules::CanPlayerUseRespec"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules18CanPlayerUseRespecEP9CTFPlayer"
+				}
 				
 			}
 			"addrs_group"

@@ -1392,7 +1392,7 @@ namespace Util::Lua
             return 1;
         }
         auto *entry = &Mod::Etc::Mapentity_Additions::GetDataMapOffset(entity->GetDataDescMap(), varNameStr);
-        if (entry == nullptr && entry->offset <= 0) {
+        if (entry == nullptr || entry->offset <= 0) {
             entry = &Mod::Etc::Mapentity_Additions::GetSendPropOffset(entity->GetServerClass(), varNameStr);
         }
         if (entry != nullptr && entry->offset > 0) {
@@ -1713,7 +1713,7 @@ namespace Util::Lua
         auto entity = CreateItemByName(player, name);
         auto noRemove = lua_toboolean(l, 4);
         auto forceGive = lua_gettop(l) < 5 || lua_toboolean(l, 5);
-        if (entity != nullptr && lua_gettop(l) > 2) {
+        if (entity != nullptr && lua_gettop(l) > 2 && lua_type(l, 3) == LUA_TTABLE) {
             auto view = entity->GetItem();
             lua_pushnil(l);
             while (lua_next(l, 3) != 0) {

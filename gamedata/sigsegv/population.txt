@@ -32,6 +32,7 @@
 				"CPopulationManager::FindOrAddPlayerUpgradeHistory [CTFPlayer *]" "_ZN18CPopulationManager29FindOrAddPlayerUpgradeHistoryEP9CTFPlayer"
 				"CPopulationManager::GetCurrentWave"                              "_ZN18CPopulationManager14GetCurrentWaveEv"
 				"CPopulationManager::GetNumRespecsAvailableForPlayer"             "_ZN18CPopulationManager31GetNumRespecsAvailableForPlayerEP9CTFPlayer"
+				"CPopulationManager::GetPlayerUpgradeHistory"                     "_ZN18CPopulationManager23GetPlayerUpgradeHistoryEP9CTFPlayer"
 				"CPopulationManager::Initialize"                                  "_ZN18CPopulationManager10InitializeEv"
 				"CPopulationManager::JumpToWave"                                  "_ZN18CPopulationManager10JumpToWaveEjf"
 				"CPopulationManager::LoadMvMMission"                              "_ZN18CPopulationManager14LoadMvMMissionEP9KeyValues"

@@ -382,8 +382,6 @@ public:
 	void NetworkStateChanged();
 	void NetworkStateChanged(void *pVar);
 	
-	Vector RealWorldSpaceCenter() const;
-	
 	DECL_DATAMAP(string_t, m_target);
 	DECL_DATAMAP(string_t, m_iParent);
 	DECL_DATAMAP(int,      m_debugOverlays);
@@ -591,16 +589,6 @@ inline CBaseEntity *UTIL_EntityByIndex(int entityIndex)
 	}
 	
 	return entity;
-}
-
-inline Vector CBaseEntity::RealWorldSpaceCenter() const
-{
-	auto parent = this->GetMoveParent();
-	if (parent == nullptr) return this->WorldSpaceCenter();
-
-	Vector vec;
-	VectorTransform(this->WorldSpaceCenter(), parent->EntityToWorldTransform(), vec);
-	return vec;
 }
 
 inline int CBaseEntity::entindex() const

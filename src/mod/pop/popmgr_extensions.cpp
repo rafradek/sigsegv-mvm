@@ -1405,12 +1405,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFGameRules_IsPVEModeControlled)(ent);
 	}
 	
-	THINK_FUNC_DECL(PlayerInspect) 
-	{
-		engine->ClientCommand(this->edict(), "+inspect");
-		engine->ClientCommand(this->edict(), "-inspect");
-	}
-
 	DETOUR_DECL_MEMBER(void, CUpgrades_UpgradeTouch, CBaseEntity *pOther)
 	{
 		CTFPlayer *player = ToTFPlayer(pOther);
@@ -1421,10 +1415,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			return;
 		}
 		DETOUR_MEMBER_CALL(CUpgrades_UpgradeTouch)(pOther);
-
-		if (!was_in_upgrade && player != nullptr && state.m_bExtendedUpgradesOnly && player->m_Shared->m_bInUpgradeZone && IsMannVsMachineMode()) {
-			THINK_FUNC_SET(player, PlayerInspect, gpGlobals->curtime);
-		}
 	}
 	const char *BroadcastSound(const char *sound)
 	{
@@ -2060,7 +2050,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		
 		if (rc_CTFGameRules_ctor <= 0 && newState == GR_STATE_BETWEEN_RNDS && IsMannVsMachineMode()) {
-			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get());
+			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized of mission %s\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get(), STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()));
 			if (state.m_ScriptManager != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
 				if (scriptManager != nullptr && scriptManager->CheckGlobal("OnWaveInit")) {
@@ -2341,6 +2331,12 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (!player->IsBot() && !pClient->IsFakeClient()) {
 		//	spawned_players_first_tick.push_back(player);
+			if (state.m_bExtendedUpgradesOnly) {
+				auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+				variant_t value;
+				value.SetBool(false);
+        		mod->props["m_bInUpgradeZone"] = {value, value};
+			}
 			ApplyPlayerAttributes(player);
 			player->SetHealth(player->GetMaxHealth());
 

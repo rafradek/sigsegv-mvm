@@ -12,6 +12,7 @@
 #include "stub/entities.h"
 #include "stub/strings.h"
 #include "stub/tf_objective_resource.h"
+#include "stub/populators.h"
 #include <fmt/core.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
@@ -257,8 +258,46 @@ namespace Mod::MvM::Extended_Upgrades
                 slotid = -1;
             }
             else if (FStrEq(info, "refund")) {
-                auto kv = new KeyValues("MVM_Respec");
-                serverGameClients->ClientCommandKeyValues(player->edict(), kv);
+
+                if (!TFGameRules()->CanPlayerUseRespec(this->player)) {
+                    auto &vec = player->m_RefundableUpgrades.Get();
+                    auto history = g_pPopulationManager->GetPlayerUpgradeHistory(this->player);
+                    for (int i = vec.Count() - 1; i >= 0 ; i--) {
+                        bool apply = false;
+                        CEconItemView *itemA = nullptr;
+                        if (vec[i].m_iPlayerClass == this->player->GetPlayerClass()->GetClassIndex()) {
+                            if (vec[i].m_itemDefIndex != INVALID_ITEM_DEF_INDEX) {
+                                for (int slot = 0; slot <= LOADOUT_POSITION_ACTION; slot++) {
+                                    auto item = GetEconEntityAtLoadoutSlot(player, slot);
+                                    if (item != nullptr && item->GetItem() != nullptr && vec[i].m_itemDefIndex == item->GetItem()->GetItemDefIndex()) {
+                                        itemA = item->GetItem();
+                                        apply = true;
+                                    }
+                                }
+                            }
+                            else {
+                                apply = true;
+                            }
+                        }
+                        if (apply) {
+                            g_hUpgradeEntity->ApplyUpgradeToItem(player, itemA, vec[i].m_upgrade, vec[i].m_nCost, true);
+                        }
+                        this->player->RemoveCurrency(-vec[i].m_nCost);
+                        if (history != nullptr) {
+                            for (int j = history->Count() - 1; j >= 0; j-- ) {
+                                auto &entryHistory = (*history)[j];
+                                if (entryHistory.m_iPlayerClass == vec[i].m_iPlayerClass && entryHistory.m_itemDefIndex == vec[i].m_itemDefIndex && entryHistory.m_nCost == vec[i].m_nCost && entryHistory.m_upgrade == vec[i].m_upgrade) {
+                                history->Remove(j);
+                                }
+                            }
+                        }
+                    }
+                    vec.RemoveAll();
+                }
+                else {
+                    auto kv = new KeyValues("MVM_Respec");
+                    serverGameClients->ClientCommandKeyValues(player->edict(), kv);
+                }
                 return;
             }
             else if (FStrEq(info, "extra")) {

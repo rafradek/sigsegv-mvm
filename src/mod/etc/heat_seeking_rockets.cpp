@@ -5,6 +5,7 @@
 #include "util/clientmsg.h"
 #include "stub/extraentitydata.h"
 #include "stub/tfweaponbase.h"
+#include "stub/trace.h"
 
 
 namespace Mod::Etc::Heat_Seeking_Rockets
@@ -254,8 +255,9 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 					Vector forward;
 					AngleVectors(owner->EyeAngles(), &forward);
 
+					CTraceFilterIgnoreFriendlyCombatItems filter(owner, COLLISION_GROUP_NONE, false);
 					trace_t result;
-					UTIL_TraceLine(owner->EyePosition(), owner->EyePosition() + 4000.0f * forward, MASK_SHOT, owner, COLLISION_GROUP_NONE, &result);
+					UTIL_TraceLine(owner->EyePosition(), owner->EyePosition() + 4000.0f * forward, MASK_SHOT, &filter, &result);
 
 					target_vec = result.endpos;
 				}

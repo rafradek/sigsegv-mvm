@@ -249,12 +249,14 @@ public:
 	const char *GetUpgradeAttributeName(int index) const { return ft_GetUpgradeAttributeName(this, index); }
 	void GrantOrRemoveAllUpgrades(CTFPlayer *player, bool remove = false, bool refund = true) const { ft_GrantOrRemoveAllUpgrades(this, player, remove, refund); };
 	void PlayerPurchasingUpgrade(CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool refund) { ft_PlayerPurchasingUpgrade(this, player, itemslot, upgradeslot, sell, free, refund); };
-
+	attrib_definition_index_t ApplyUpgradeToItem(CTFPlayer *pTFPlayer, CEconItemView *pView, int iUpgrade, int nCost, bool bDowngrade = false, bool bIsFresh = false) { return ft_ApplyUpgradeToItem(this, pTFPlayer, pView, iUpgrade, nCost, bDowngrade, bIsFresh); };
+	
 	
 private:
 	static MemberFuncThunk<const CUpgrades *, const char *, int> ft_GetUpgradeAttributeName;
 	static MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > ft_GrantOrRemoveAllUpgrades;
 	static MemberFuncThunk<CUpgrades *, void, CTFPlayer *, int , int, bool, bool, bool > ft_PlayerPurchasingUpgrade;
+	static MemberFuncThunk<CUpgrades *, attrib_definition_index_t,  CTFPlayer*, CEconItemView *, int, int, bool, bool > ft_ApplyUpgradeToItem;
 };
 extern GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity;
 

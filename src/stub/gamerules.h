@@ -193,6 +193,7 @@ public:
 	void RadiusDamage(CTFRadiusDamageInfo& radiusdamage)                                                         { NULL_RET(     );        ft_RadiusDamage                       (this, radiusdamage); }
 	bool IsPVEModeControlled(CBaseEntity *entity)                                                                { NULL_RET(false); return ft_IsPVEModeControlled                (this, entity); }
 	void DropSpellPickup(const Vector &pos, int tier)                                                            { NULL_RET(     );        ft_DropSpellPickup                    (this, pos, tier); }
+	bool CanPlayerUseRespec(CTFPlayer *player)                                                                   { NULL_RET(false); return ft_CanPlayerUseRespec                 (this, player); }
 
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
@@ -218,6 +219,7 @@ private:
 	static MemberFuncThunk<CTFGameRules *, void, CTFRadiusDamageInfo&>                                       ft_RadiusDamage;
 	static MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                                              ft_IsPVEModeControlled;
 	static MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                                        ft_DropSpellPickup;
+	static MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                ft_CanPlayerUseRespec;
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };

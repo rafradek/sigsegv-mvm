@@ -166,6 +166,7 @@ MemberVFuncThunk<CBaseTrigger *, bool, CBaseEntity *> CBaseTrigger::vt_PassesTri
 MemberFuncThunk<const CUpgrades *, const char *, int> CUpgrades::ft_GetUpgradeAttributeName("CUpgrades::GetUpgradeAttributeName");
 MemberFuncThunk<const CUpgrades *, void, CTFPlayer *, bool , bool > CUpgrades::ft_GrantOrRemoveAllUpgrades("CUpgrades::GrantOrRemoveAllUpgrades");
 MemberFuncThunk<CUpgrades *, void, CTFPlayer *, int , int, bool, bool, bool > CUpgrades::ft_PlayerPurchasingUpgrade("CUpgrades::PlayerPurchasingUpgrade");
+MemberFuncThunk<CUpgrades *, attrib_definition_index_t,  CTFPlayer*, CEconItemView *, int, int, bool, bool > CUpgrades::ft_ApplyUpgradeToItem("CUpgrades::ApplyUpgradeToItem");
 
 GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity("g_hUpgradeEntity");
 

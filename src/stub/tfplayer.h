@@ -250,6 +250,14 @@ private:
 };
 class CTFPlayerAnimState : public CMultiplayerAnimState {};
 
+class CUpgradeInfo
+{
+public:
+	int m_iPlayerClass;
+	item_definition_index_t m_itemDefIndex;
+	int m_upgrade;
+	int m_nCost;
+};
 
 class CTFPlayerClassShared
 {
@@ -458,8 +466,9 @@ public:
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
-	DECL_RELATIVE   (int,       m_nCanPurchaseUpgradesCount);
+	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hOffHandWeapon);
+	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
