@@ -2453,5 +2453,22 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
-    
+    "4563"
+    {
+        "name"	"arrow snap to next target radius"
+        "attribute_class"	"arrow_snap_to_next_target_radius"
+        "description_string"	"Projectiles snap to the next nearest target after being hit"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4564"
+    {
+        "name"	"arrow snap to next target angle"
+        "attribute_class"	"arrow_snap_to_next_target_angle"
+        "description_string"	"Projectiles snap to the next nearest target after being hit"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

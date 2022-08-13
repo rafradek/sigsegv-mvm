@@ -6107,7 +6107,19 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "PathTrackIsServerEntity")) {
 				state.m_PathTrackIsServerEntity.Set(subkey->GetBool());
 			} else if (FStrEq(name, "LuaScript")) {
-				state.m_Scripts.push_back(subkey->GetString());
+				if (subkey->GetFirstSubKey() == nullptr) {
+					state.m_Scripts.push_back(subkey->GetString());
+				}
+				else {
+					FOR_EACH_SUBKEY(subkey, subkey2) {
+						if (FStrEq(subkey2->GetName(), "File")) {
+							state.m_ScriptFiles.push_back(subkey2->GetString());
+						}
+						else {
+							state.m_Scripts.push_back(subkey2->GetString());
+						}
+					}
+				}
 			} else if (FStrEq(name, "LuaScriptFile")) {
 				state.m_ScriptFiles.push_back(subkey->GetString());
 			} else if (FStrEq(name, "ForceRedMoney")) {

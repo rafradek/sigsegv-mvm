@@ -13,7 +13,9 @@ WaveSchedule
 	// You can also look at scripts/library.lua for available API functions
 	// The mod uses lua version 5.4 . Lua Programming guide: https://www.lua.org/pil/1.html . Quick Reference available at https://www.lua.org/manual/5.4/ 
 	// A single LuaScript block can contain up to 2047 characters, otherwise the scripts must be split into separate blocks
-	LuaScript "
+	LuaScript 
+	{
+		Script "
 		-- Called every time wave is reset to starting point (When losing, or winning too when the reverse winning mode is active). Also called after mission is loaded
 		function OnWaveReset(wave)
 			print('wave reset', wave)
@@ -49,9 +51,9 @@ WaveSchedule
 		function OnWaveSpawnTank(tank, wave)
 			print('wave spawn tank', tank, wave)
 		end
-	" [$SIGSEGV]
+		"
 
-	LuaScript "
+		Script "
 		-- Called when a player or bot joins the game. Also called once for every player that joined before the mission began
 		function OnPlayerConnected(player)
 			print('player join', tostring(player))
@@ -101,9 +103,9 @@ WaveSchedule
 		-- Adds a timer that fires every 0.5 seconds
 		timer.Create(0.5, function() ents.FindByName('intel').a = {4,3} end, 0)
 
-	" [$SIGSEGV]
-
-	LuaScriptFile "script/somefile.lua" //Example name for lua script file
+		"
+		File "script/somefile.lua" //Example name for lua script file
+	} [$SIGSEGV]
 
 	WaveStartCountdown 1 [$SIGSEGV]
 	//WAVE 1 //Currency 1300 ///////////////////////////////////////////////////////////////////////////////////////////////////////

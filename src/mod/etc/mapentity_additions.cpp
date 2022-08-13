@@ -993,7 +993,7 @@ namespace Mod::Etc::Mapentity_Additions
         auto player = reinterpret_cast<CBasePlayer *>(this);
         // No commit suicide if the camera is active
         CBaseEntity *view = player->m_hViewEntity;
-        if (rtti_cast<CTriggerCamera *>(view) != nullptr) {
+        if (rtti_cast<CTriggerCamera *>(view) != nullptr && view->GetCustomVariableFloat<"allowdamage">() == 0) {
             return;
         }
         DETOUR_MEMBER_CALL(CBasePlayer_CommitSuicide)(explode, force);
@@ -1234,6 +1234,45 @@ namespace Mod::Etc::Mapentity_Additions
                     player->m_takedamage = player->IsObserver() ? 0 : 2;
                 }
             });
+        }
+    }
+    
+    DETOUR_DECL_MEMBER(void, CTriggerCamera_Enable)
+	{
+        auto camera = reinterpret_cast<CTriggerCamera *>(this);
+        int oldTakeDamage = camera->m_hPlayer->m_takedamage;
+        DETOUR_MEMBER_CALL(CTriggerCamera_Enable)();
+        auto player = ToTFPlayer(camera->m_hPlayer);
+        if (player != nullptr && !player->IsAlive() && player->m_hViewEntity == camera) {
+            camera->m_spawnflags |= 8192;
+        }
+        if (player != nullptr && camera->GetCustomVariableFloat<"allowdamage">() != 0) {
+            player->m_takedamage = oldTakeDamage;
+        }
+    }
+
+    DETOUR_DECL_MEMBER(void, CTriggerCamera_Disable)
+	{
+        auto camera = reinterpret_cast<CTriggerCamera *>(this);
+        int oldTakeDamage = camera->m_hPlayer->m_takedamage;
+        auto player = ToTFPlayer(camera->m_hPlayer);
+        DETOUR_MEMBER_CALL(CTriggerCamera_Disable)();
+        if (player != nullptr) {
+            if (!player->IsAlive() && player->m_hViewEntity == camera) {
+                player->m_hViewEntity = nullptr;
+                engine->SetView(player->edict(), player->edict());
+                if (player->GetActiveWeapon() != nullptr) {
+                    player->GetActiveWeapon()->RemoveEffects(EF_NODRAW);
+                }
+            }
+            if (camera->GetCustomVariableFloat<"allowdamage">() == 0) {
+                if (((camera->m_spawnflags & 8192) && player->IsAlive()) || (!(camera->m_spawnflags & 8192) && !player->IsAlive())) {
+                    player->m_takedamage = player->IsObserver() ? 0 : 2;
+                }
+            }
+            else {
+                player->m_takedamage = oldTakeDamage;
+            }
         }
     }
 
@@ -1905,8 +1944,11 @@ namespace Mod::Etc::Mapentity_Additions
             
 
             // Fix camera despawn bug
+            MOD_ADD_DETOUR_MEMBER(CTriggerCamera_Enable, "CTriggerCamera::Enable");
+            MOD_ADD_DETOUR_MEMBER(CTriggerCamera_Disable, "CTriggerCamera::Disable");
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D0, "~CTriggerCamera [D0]");
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_D2, "~CTriggerCamera [D2]");
+            
             
             MOD_ADD_DETOUR_MEMBER(CEventAction_CEventAction, "CEventAction::CEventAction [C2]");
 

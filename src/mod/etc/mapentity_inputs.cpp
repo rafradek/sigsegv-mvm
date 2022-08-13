@@ -1266,15 +1266,14 @@ namespace Mod::Etc::Mapentity_Additions
         {"DisableAll"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto camera = static_cast<CTriggerCamera *>(ent);
             ForEachTFPlayer([&](CTFPlayer *player) {
-                    if (player->IsBot())
-                        return;
-                    else {
-                        camera->m_hPlayer = player;
-                        camera->Disable();
-                        player->m_takedamage = player->IsObserver() ? 0 : 2;
-                        camera->m_spawnflags &= ~(512);
-                    }
-                });
+                if (player->IsBot())
+                    return;
+                else {
+                    camera->m_hPlayer = player;
+                    camera->Disable();
+                    camera->m_spawnflags &= ~(512);
+                }
+            });
         }},
         {"SetTarget"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto camera = static_cast<CTriggerCamera *>(ent);

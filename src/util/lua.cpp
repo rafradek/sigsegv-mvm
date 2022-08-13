@@ -1262,7 +1262,7 @@ namespace Util::Lua
         luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
 
         variant_t variant;
-        Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index, -1);
+        Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
         LFromVariant(l, variant);
         return 1;
     }
@@ -1396,7 +1396,7 @@ namespace Util::Lua
             entry = &Mod::Etc::Mapentity_Additions::GetSendPropOffset(entity->GetServerClass(), varNameStr);
         }
         if (entry != nullptr && entry->offset > 0) {
-            if (entry->arraySize > 1) {
+            if (entry->arraySize > 1 && entry->fieldType != FIELD_CHARACTER) {
                 LPropAlloc(l, entity, *entry);
             }
             else{

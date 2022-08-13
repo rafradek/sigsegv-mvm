@@ -2695,6 +2695,56 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CTFProjectile_Arrow_ArrowTouch);
 		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_ArrowTouch)(pOther);
 
+		if (pOther->IsAlive() && pOther->GetTeamNumber() != arrow->GetTeamNumber() && pOther->MyCombatCharacterPointer() != nullptr) {
+			float snapRadius = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), snapRadius, arrow_snap_to_next_target_radius);
+			if (snapRadius > 0) {
+				const int maxCollectedEntities = 128;
+				CBaseEntity	*pObjects[ maxCollectedEntities ];
+				
+				CFlaggedEntitiesEnum iter = CFlaggedEntitiesEnum(pObjects, maxCollectedEntities, FL_CLIENT | FL_FAKECLIENT | FL_NPC );
+
+				partition->EnumerateElementsInSphere(PARTITION_ENGINE_NON_STATIC_EDICTS, arrow->GetAbsOrigin(), snapRadius, false, &iter);
+				int count = iter.GetCount();
+
+				CBaseEntity *bestTarget = nullptr;
+				float bestTargetDist = FLT_MAX;
+				Vector pos = arrow->GetAbsOrigin();
+				Vector forward;
+				AngleVectors(arrow->GetAbsAngles(), &forward);
+				for ( int i = 0; i < count; i++ )
+				{
+					CBaseEntity *pObject = pObjects[i];
+					if (bestTarget != nullptr && bestTarget->IsPlayer() && !pObject->IsPlayer()) continue;
+					if (pObject == pOther) continue;
+					if (!pObject->IsAlive()) continue;
+					if (pObject->GetTeamNumber() == arrow->GetTeamNumber()) continue;
+					if (pObject->MyCombatCharacterPointer() == nullptr) continue;
+					if (arrow->m_HitEntities->Find(pObject->entindex()) != -1) continue;
+
+					auto dist = pObject->WorldSpaceCenter().DistToSqr(pos);
+					if (dist < bestTargetDist) {
+						
+						CTraceFilterIgnoreFriendlyCombatItems filter(arrow, COLLISION_GROUP_NONE, false);
+						trace_t result;
+						UTIL_TraceLine(pos, pos + sqrt(dist) * forward, MASK_SHOT, &filter, &result);
+						if (!result.DidHit() || result.m_pEnt == pObject) {
+							bestTargetDist = dist;
+							bestTarget = pObject;
+						}
+					}
+				}
+				if (bestTarget != nullptr) {
+					float velocity = arrow->GetAbsVelocity().Length();
+					forward = (bestTarget->WorldSpaceCenter() - pos).Normalized() * velocity;
+					QAngle angles;
+					VectorAngles(forward, angles);
+					arrow->SetAbsVelocity(forward);
+					arrow->SetAbsAngles(angles);
+				}
+			}
+		}
+
 		int iPenetrateLimit = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), iPenetrateLimit, projectile_penetration_limit);
 		if (iPenetrateLimit != 0 && arrow->m_HitEntities->Count() >= iPenetrateLimit + 1) {
@@ -5235,6 +5285,18 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnReloadFullClipAtOnceChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CTFWeaponBase *>(ent);
+			if (econentity != nullptr) {
+				econentity->m_bReloadsSingly = new_value.m_Float == 0.0 || new_value.m_Float == FLT_MIN;
+			}
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -5509,15 +5571,12 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("custom_item_model", OnCustomModelChange);
 				RegisterCallback("is_miniboss", OnMiniBossChange);
 				RegisterCallback("model_scale", OnScaleChange);
+				RegisterCallback("reload_full_clip_at_once", OnReloadFullClipAtOnceChange);
 			}
 		}
 
 		virtual bool OnLoad() override
 		{
-			MemProtModifier_RX_RWX((uint8_t *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744), 4);
-			Msg("Value is %f\n", *(float *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744));
-			*(float *)(LibMgr::GetInfo(Library::SERVER).BaseAddr() + 0x119C744) = 40.0;
-
 			if (GetItemSchema() != nullptr)
 				LoadAttributes();
 			return true;

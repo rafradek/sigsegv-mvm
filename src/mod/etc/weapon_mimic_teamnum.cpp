@@ -125,7 +125,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				// Move the owner player to mimic position
 				Vector oldPos = player->GetAbsOrigin();
 				QAngle oldAng = player->EyeAngles();
-				serverGameClients->GetPlayerState(player->edict())->v_angle = mimic->GetAbsAngles();
+				player->pl->v_angle = mimic->GetAbsAngles();
 				Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
 				player->SetAbsOrigin(mimic->GetAbsOrigin() - eyeOffset);
 				// Fire the weapon
@@ -172,7 +172,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 					}
 				}
 				player->SetAbsOrigin(oldPos);
-				serverGameClients->GetPlayerState(player->edict())->v_angle = oldAng;
+				player->pl->v_angle = oldAng;
 			}
 		}
 		else if (mimic->m_nWeaponType == 4) {
