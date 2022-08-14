@@ -3031,7 +3031,7 @@ WaveSchedule
 // If enemy sentries should ignore this player
 // "ignored by enemy sentries" 1
 
-// Melee reflects projectiles. Second level also grants you protection from bullets and explosives for a brief perion while swinging
+// Melee reflects projectiles
 // "melee airblast" 1
 
 // Automatically reloads the weapon while not active. Since the reload speed is tied to animations this will make weapons reload faster than usual
