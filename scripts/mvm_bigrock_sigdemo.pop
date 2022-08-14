@@ -3054,3 +3054,6 @@ WaveSchedule
 
 // Melee attacks grant protection from attacks for specified amount of time
 // "melee grants protection" 0.6
+
+// Snaps the arrow to the next closest available target within range
+// "arrow snap to next target radius" 1000
