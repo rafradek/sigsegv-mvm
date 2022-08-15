@@ -181,6 +181,7 @@ public:
 	bool IsMannVsMachineMode() const             { NULL_RET(false); return this->m_bPlayingMannVsMachine; }
 	const char *GetCustomUpgradesFile() const    { NULL_RET(""   ); return this->m_pszCustomUpgradesFile; }
 	float GetRestartRoundTime()                  { NULL_RET(    0); return this->m_flRestartRoundTime; }
+	bool IsCompetitive() const                { NULL_RET(false); return this->m_bPlayingMedieval; }
 	void SetCustomUpgradesFile(const char *path);
 	
 	bool CanUpgradeWithAttrib(CTFPlayer *player, int slot, unsigned short attr, CMannVsMachineUpgrades *upgrade) { NULL_RET(false); return ft_CanUpgradeWithAttrib               (this, player, slot, attr, upgrade); }
@@ -194,6 +195,7 @@ public:
 	bool IsPVEModeControlled(CBaseEntity *entity)                                                                { NULL_RET(false); return ft_IsPVEModeControlled                (this, entity); }
 	void DropSpellPickup(const Vector &pos, int tier)                                                            { NULL_RET(     );        ft_DropSpellPickup                    (this, pos, tier); }
 	bool CanPlayerUseRespec(CTFPlayer *player)                                                                   { NULL_RET(false); return ft_CanPlayerUseRespec                 (this, player); }
+	bool IsCompetitiveMode()                                                                                     { NULL_RET(false); return ft_IsCompetitiveMode                  (this); }
 
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
@@ -220,6 +222,7 @@ private:
 	static MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                                              ft_IsPVEModeControlled;
 	static MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                                        ft_DropSpellPickup;
 	static MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                ft_CanPlayerUseRespec;
+	static MemberFuncThunk<CTFGameRules *, bool>                                                             ft_IsCompetitiveMode;
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };

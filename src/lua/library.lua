@@ -223,7 +223,7 @@ function CEntity:GetConditionProvider(condition) end
 --Stun a player, slowing him down and/or making him unable to attack. Check TF_STUNFLAG_* globals
 ---@param duration number How long should the stun last in seconds
 ---@param amount number Movement speed penalty when TF_STUNFLAG_SLOWDOWN flag is set. The number should be between 0 and 1. 0 - 450 speed limit, 1 - no movement
----@param flags number Stun flags to set
+---@param flags number Stun flags to set. Flags can be combined with | operator. Check TF_STUNFLAG_* globals
 ---@param stunner? Entity Optional player that caused the stun
 ---@return boolean
 function CEntity:StunPlayer(duration, amount, flags, stunner) end

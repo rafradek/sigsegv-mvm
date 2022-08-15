@@ -52,6 +52,7 @@ MemberFuncThunk<CTFGameRules *, void, CTFRadiusDamageInfo&>                     
 MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                                              CTFGameRules::ft_IsPVEModeControlled                ("CTFGameRules::IsPVEModeControlled");
 MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                                        CTFGameRules::ft_DropSpellPickup                    ("CTFGameRules::DropSpellPickup");
 MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                CTFGameRules::ft_CanPlayerUseRespec                 ("CTFGameRules::CanPlayerUseRespec");
+MemberFuncThunk<CTFGameRules *, bool>                                                             CTFGameRules::ft_IsCompetitiveMode                  ("CTFGameRules::IsCompetitiveMode");
 
 MemberVFuncThunk<CTFGameRules *, bool> CTFGameRules::vt_FlagsMayBeCapped(TypeName<CTFGameRules>(), "CTFGameRules::FlagsMayBeCapped");
 

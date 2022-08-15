@@ -2857,6 +2857,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
 	}
 	
+	bool addcond_overridden = false;
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
 	RefCount rc_CTFPlayerShared_AddCondWatch;
@@ -2890,6 +2891,7 @@ namespace Mod::Attr::Custom_Attributes
 			// If one condition was added due to another condition, ignore it
 			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 
+			addcond_overridden = false;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(addcond_provider, flDuration, mult_effect_duration);
 			int iCondOverride = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
@@ -2902,7 +2904,9 @@ namespace Mod::Attr::Custom_Attributes
 					//DevMsg("add cond post %d\n", addcond);
 					if (addcond != 0) {
 						nCond = (ETFCond) addcond;
+						addcond_overridden = true;
 						DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+						
 					}
 				}
 				return;
@@ -2943,6 +2947,7 @@ namespace Mod::Attr::Custom_Attributes
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 			int iCondOverride = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+			addcond_overridden = false;
 
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
@@ -2951,6 +2956,7 @@ namespace Mod::Attr::Custom_Attributes
 					if (addcond != 0) {
 						nCond = (ETFCond) addcond;
 						DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+						addcond_overridden = true;
 					}
 				}
 				return;
@@ -3229,6 +3235,18 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		addcond_provider_item = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetActiveWeapon();
 		DETOUR_MEMBER_CALL(CTFPlayerShared_SetRevengeCrits)(crits);
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFWearableDemoShield_DoCharge, CTFPlayer *player)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
+		addcond_provider = player;
+		addcond_provider_item = reinterpret_cast<CTFWearableDemoShield *>(this);
+		addcond_overridden = false;
+		DETOUR_MEMBER_CALL(CTFWearableDemoShield_DoCharge)(player);
+		if (addcond_overridden) {
+			player->m_Shared->m_flChargeMeter = 0;
+		}
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Holster, CBaseCombatWeapon *weapon)
@@ -3554,7 +3572,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		float respawntime = GetFastAttributeFloat(player, 0.0f, MIN_RESPAWN_TIME);
 
-		if (!player->IsBot() && respawntime != 0.0f) {
+		if (respawntime != 0.0f && !(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
 			return player->GetDeathTime() + respawntime;
 		}
 
@@ -5490,6 +5508,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
+            MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
 			
 			
 
