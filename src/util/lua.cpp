@@ -753,7 +753,7 @@ namespace Util::Lua
     class EntityCallback 
     {
     public:
-        EntityCallback(LuaState *state, int func) : state(state), func(func) {};
+        EntityCallback(LuaState *state, int func, int id) : state(state), func(func), id(id) {};
 
         ~EntityCallback() {
             if (state != nullptr) {
@@ -762,6 +762,7 @@ namespace Util::Lua
         };
         LuaState *state;
         int func;
+        int id;
     };
 
     struct EntityTableStorageEntry
@@ -806,12 +807,13 @@ namespace Util::Lua
             //});
         }
 
-        void AddCallback(CallbackType type, LuaState *state, int func) {
+        int AddCallback(CallbackType type, LuaState *state, int func) {
             if (type < 0 && type >= CALLBACK_TYPE_COUNT) return;
 
-            callbacks[type].emplace_back(state, func);
+            callbacks[type].emplace_back(state, func, callbackNextId);
             states.insert(state);
             state->EntityCallbackAdded(owner);
+            return callbackNextId++;
         }
 
         void RemoveCallback(CallbackType type, LuaState *state, int func) {
@@ -868,6 +870,7 @@ namespace Util::Lua
         std::vector<EntityCallback> callbacks[CALLBACK_TYPE_COUNT];
         std::unordered_set<LuaState *> states;
         CBaseEntity *owner;
+        int callbackNextId = 0;
         //std::vector<EntityTableStorageEntry> tableStore;
     };
 
@@ -879,8 +882,8 @@ namespace Util::Lua
         luaL_checktype(l, 3, LUA_TFUNCTION);
         int func = luaL_ref(l, LUA_REGISTRYINDEX);
 
-        entity->GetOrCreateEntityModule<LuaEntityModule>("luaentity")->AddCallback((CallbackType)type, cur_state, func);
-        lua_pushinteger(l, func);
+        int id = entity->GetOrCreateEntityModule<LuaEntityModule>("luaentity")->AddCallback((CallbackType)type, cur_state, func);
+        lua_pushinteger(l, id);
         return 1;
     }
 
