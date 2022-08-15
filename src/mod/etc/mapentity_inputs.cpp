@@ -1328,6 +1328,7 @@ namespace Mod::Etc::Mapentity_Additions
                         weapondata->clip = ent->GetCustomVariableFloat<"clip">(-1);
                         weapondata->energy = ent->GetCustomVariableFloat<"energy">(FLT_MIN);
                         weapondata->charge = ent->GetCustomVariableFloat<"charge">(FLT_MAX);
+                        weapon->SetNextThink(gpGlobals->curtime + ent->GetCustomVariableFloat<"lifetime">(30), "RemoveThink");
 
                         data->m_SpawnedWeapons.push_back(weapon);
                     }
