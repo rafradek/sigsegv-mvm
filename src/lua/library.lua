@@ -141,7 +141,7 @@ function CEntity:GetClassname() end
 function CEntity:AddCallback(type, func) end
 
 --Removes callback added with `AddCallback` function
----@param type number Action to use, check ON_* globals
+---@param type? number Optional action type to use, check ON_* globals. If not specified, it will remove from all callback types that use the same function
 ---@param id number Callback id
 ---@return nil
 function CEntity:RemoveCallback(type, id) end

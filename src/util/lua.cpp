@@ -820,6 +820,14 @@ namespace Util::Lua
             });
         }
 
+        void RemoveCallback(LuaState *state, int func) {
+            for (int type = 0; type < CALLBACK_TYPE_COUNT; type++) {
+                RemoveFirstElement(callbacks[type], [&](auto &pair) {
+                    return pair.state == state && func == pair.func;
+                });
+            }
+        }
+
         // bool RemoveTableStorageEntry(LuaState *state, int value) {
         //     if (tableStore.empty()) return false;
 
@@ -879,13 +887,16 @@ namespace Util::Lua
     int LEntityRemoveCallback(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
-        int type = luaL_checkinteger(l, 2);
-        luaL_argcheck(l, type >= 0 && type < CALLBACK_TYPE_COUNT, 2, "type out of range");
-        int func = luaL_checkinteger(l, 3);
+        int type = lua_gettop(l) > 2 ? luaL_checkinteger(l, 2) : -1;
+        luaL_argcheck(l, type >= -1 && type < CALLBACK_TYPE_COUNT, 2, "type out of range");
+        int func = luaL_checkinteger(l, type != -1 ? 3 : 2);
 
         auto module = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (module != nullptr) {
-            module->RemoveCallback((CallbackType)type, cur_state, func);
+            if (type != -1)
+                module->RemoveCallback((CallbackType)type, cur_state, func);
+            else
+                module->RemoveCallback(cur_state, func);
         }
         return 0;
     }
