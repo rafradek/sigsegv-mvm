@@ -1269,8 +1269,10 @@ namespace Mod::Etc::Mapentity_Additions
                 if (player->IsBot())
                     return;
                 else {
-                    camera->m_hPlayer = player;
-                    camera->Disable();
+                    if (player->m_hViewEntity == camera) {
+                        camera->m_hPlayer = player;
+                        camera->Disable();
+                    }
                     camera->m_spawnflags &= ~(512);
                 }
             });

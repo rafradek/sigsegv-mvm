@@ -1256,9 +1256,10 @@ namespace Mod::Etc::Mapentity_Additions
         auto camera = reinterpret_cast<CTriggerCamera *>(this);
         int oldTakeDamage = camera->m_hPlayer->m_takedamage;
         auto player = ToTFPlayer(camera->m_hPlayer);
+        CBaseEntity *view = player->m_hViewEntity;
         DETOUR_MEMBER_CALL(CTriggerCamera_Disable)();
-        if (player != nullptr) {
-            if (!player->IsAlive() && player->m_hViewEntity == camera) {
+        if (player != nullptr && view == camera) {
+            if (!player->IsAlive()) {
                 player->m_hViewEntity = nullptr;
                 engine->SetView(player->edict(), player->edict());
                 if (player->GetActiveWeapon() != nullptr) {
