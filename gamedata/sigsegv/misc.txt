@@ -345,6 +345,11 @@
 					type "sym"
 					sym  "_ZN9KeyValues12LoadFromFileEP15IBaseFileSystemPKcS3_b"
 				}
+				"KeyValues::MergeBaseKeys"
+				{
+					type "sym"
+					sym  "_ZN9KeyValues13MergeBaseKeysER10CUtlVectorIPS_10CUtlMemoryIS1_iEE"
+				}
 				
 				"CBasePlayer::EyeVectors"
 				{
@@ -6210,6 +6215,16 @@
 				{
 					type "sym"
 					sym  "_ZN12CTFGameRules18CanPlayerUseRespecEP9CTFPlayer"
+				}
+				"CTFWearableDemoShield::DoCharge"
+				{
+					type "sym"
+					sym  "_ZN21CTFWearableDemoShield8DoChargeEP9CTFPlayer"
+				}
+				"CTFGameRules::IsCompetitiveMode"
+				{
+					type "sym"
+					sym  "_ZNK12CTFGameRules17IsCompetitiveModeEv"
 				}
 				
 			}
