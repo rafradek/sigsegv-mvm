@@ -7,23 +7,27 @@ WaveSchedule
 	StartingCurrency	1200
 	RespawnWaveTime 		1
 	FixedRespawnWaveTime 1
-	RespawnWaveTimeBlue 5 [$SIGSEGV]
-	FixedRespawnWaveTimeBlue 1 [$SIGSEGV]
 	CanBotsAttackWhileInSpawnRoom no
 
-	BotsDropSpells 1 [$SIGSEGV] //If set, bots will drop spells
-	GiantsDropRareSpells 1 [$SIGSEGV] //If set, giants will drop rare spells rather than common
-	SpellDropRateCommon 0.5 [$SIGSEGV] //Drop chance for common spell books, from 0 to 1
-	SpellDropRateGiant 0.5 [$SIGSEGV] //Drop chance for rare spell books, from 0 to 1
-	SpellDropForBotsInTeam Blue [$SIGSEGV] // When set, drop spells only if bots are from Red/Blue team
+
+	//////////////////////////
+	// Player options       //
+	//////////////////////////
 	NoReanimators 1 [$SIGSEGV] //Disable reanimators
 	NoMvMDeathTune 1 [$SIGSEGV] //Disable distinctive sound played when a player is killed
-	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
-	//DisableUpgradeStations 1 [$SIGSEGV] //Disable upgrade station
-	RemoveGrapplingHooks 1 [$SIGSEGV] //Grappling hooks are destroyed after specified amount of seconds
-	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb
-	//MedievalMode 1 [$SIGSEGV] //Players can only use melee weapons. Bots are not weapon restricted
+	MaxSpectators 5 [$SIGSEGV] // Set max spectator count (default: infinite)
+	MaxRedPlayers 6 [$SIGSEGV] // Override max red player count (default: 6)
 	GrapplingHook 1 [$SIGSEGV] //Enables grappling hook for a mission
+	//MedievalMode 1 [$SIGSEGV] //Players can only use melee weapons. Bots are not weapon restricted
+	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
+	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
+	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
+
+	
+	//////////////////////////
+	// Credits options      //
+	//////////////////////////
+	//DisableUpgradeStations 1 [$SIGSEGV] //Disable upgrade station
 	RespecEnabled 0 [$SIGSEGV] //Set to 0 to disable refunds
 	RespecLimit 1 [$SIGSEGV] //How many times the player can use refunds
 	BonusRatioHalf 0.75 [$SIGSEGV] //The ratio of collected cash required to be awarded 50 bonus credits. (default: 0.95)
@@ -31,117 +35,102 @@ WaveSchedule
 	FixedBuybacks 1 [$SIGSEGV] //If set, the player can only use a number of free buybacks, as specified in BuybacksPerWave
 	BuybacksPerWave 6 [$SIGSEGV] //How many buybacks can a player use, when FixedBuybacks is set to 1 (default: 0)
 	DeathPenalty 100 [$SIGSEGV] //Player will lose this many credits after dying
+	ForceRedMoney 1 [$SIGSEGV] // Force drop red money (default: 0)
+	NoCreditsVelocity 1 [$SIGSEGV] // If set credits spawn with no velocity (default: 0)
+	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
+	CustomUpgradesFile "mvm_upgrades_sigsegv_extra_v19.txt" [$SIGSEGV] //Custom upgrades file. File must be named mvm_upgrades_x.txt, then send to the server
+	// ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
+
+
+	//////////////////////////
+	// Robot options        //
+	//////////////////////////
+	// Many of those also applies to players on BLU team
+	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
 	SentryBusterFriendlyFire 0 [$SIGSEGV] //If set to 0, buster will not damage robots (default: 1)
 	BotPushaway 0 [$SIGSEGV] //Should bots push each other away (default: 1)
-	CustomUpgradesFile "mvm_upgrades_sigsegv_extra_v19.txt" [$SIGSEGV] //Custom upgrades file. File must be named mvm_upgrades_x.txt, then send to the server
-	PrecacheModel "models/props_soho/bookstand002.mdl" [$SIGSEGV] //Precaches model. This might be required in some circumstances, such as "custom projectile model" attribute, or prop with custom model
-	PrecacheSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV]
-	PrecacheSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //If your mission contains custom sounds that are used by pointtemplate entities or sound overrides, you must include those sounds with precachesound
-	PrecacheScriptSound "Weapon_RPG.Single" [$SIGSEGV] //Sound script version of precache sound
-	DisableSound "Weapon_Shotgun.Single" [$SIGSEGV] //Disable sound. Note that client side sounds (which include player's own weapon) cannot be disabled. Must use sound script unless there is only a raw version of the sound
-	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
-	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
-	PrecacheParticle "AntlionGib" [$SIGSEGV]
 	AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 57 bots instead of 26. Experimental. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Map reload recommended after change (default: 0)
 	ExtraBotSlotsNoDeathcam 0 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 0)
 	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). 26 is maximum value to keep 6 players active (default: 22)
 	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations
-	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
-	BluHumanFlagCapture 1 [$SIGSEGV] //Can blu humans capture the flag
-	BluHumanFlagPickup 1 [$SIGSEGV] //Can blu humans pickup flags
-	BluHumanInfiniteAmmo 0 [$SIGSEGV] //Enable infinite ammo for blu humans (default: 1)
-	BluHumanInfiniteCloak 1 [$SIGSEGV] //Enable infinite cloak for blu humans (default: 1)
-	AllowJoinTeamBlueMax 4 [$SIGSEGV] //How many players can join the blue team
-	AllowJoinTeamBlue 1 [$SIGSEGV] //If it is possible to join team blue
-	HumansMustJoinTeam blue [$SIGSEGV] //Set to blue to force players join the blu team
-	BluPlayersAreRobots 1 [$SIGSEGV] //If set, blu players use robot models
-	RedPlayersAreRobots 1 [$SIGSEGV] //If set, red players use robot models
-	PlayerRobotsUsePlayerAnimation 1 [$SIGSEGV] //Use player animations instead of robot ones
-	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player
-	BotsAreHumans 1 [$SIGSEGV] //Bots use human models by default. If set to 1, bots can't be sapped, if set to 2, they can
-	ForceHoliday 2 [$SIGSEGV] //Enforces Halloween mode, but does not enable wave 666 and zombie bots
-	BodyPartScaleSpeed 2 [$SIGSEGV] //How fast do "head scale" "torso scale" "hand scale" attributes scale the bot body parts (default: 1)
-	SandmanStun 0 [$SIGSEGV] //Should the sandman ball stun players. 1 reverts the pre Jungle Inferno stun (default: 1)
-	SendBotsToSpectatorImmediately 1 [$SIGSEGV] //Should the bots be transferred to spectator team immediately after dying. Use this if your mission consists of lots of easy to kill enemies (default: 0)
 	MedigunShieldDamage 1 [$SIGSEGV] //If set to 1, bot medigun shields will damage players. Use "dmg penalty vs players" attribute to control damage dealt (default: 0)
+	SendBotsToSpectatorImmediately 1 [$SIGSEGV] //Should the bots be transferred to spectator team immediately after dying. Use this if your mission consists of lots of easy to kill enemies (default: 0)
 	StandableHeads 1 [$SIGSEGV] //If set, robots will not push the players of their heads (default: 0)
-	NoRomevisionCosmetics 1 [$SIGSEGV] //If set, robots will not wear romevision cosmetics unless forced to (default: 0)
-	BotsRandomCrit 1 [$SIGSEGV] //If set, blue robots and players will be able to deal random critical damage. Use "crit mod disabled" weapon attribute to control crit chance (default: 0)
-	AimTrackingIntervalMultiplier 3 [$SIGSEGV] // Scale of robot aim tracking interval (default: 1)
+	BotsRandomCrit 1 [$SIGSEGV] //If set, blue robots and players will be able to deal random critical damage. Use "crit mod disabled" weapon attribute to control crit chance (default: 0)	AimTrackingIntervalMultiplier 3 [$SIGSEGV] // Scale of robot aim tracking interval (default: 1)
 	SniperAllowHeadshots 1 [$SIGSEGV] // If set, bot snipers can headshot (and amby spy) (default: 0)
 	ImprovedAirblast 1 [$SIGSEGV] // If set, bot pyros can deflect arrows grenades and stickybombs (default: 0)
 	NoSapUnownedBuildings 1 [$SIGSEGV] // If set, spies will not target unowned buildings (default: 0)
-	NoHolidayPickups 1 [$SIGSEGV] // If set, pickups will remain with default models (default: 0)
-	MaxSpectators 5 [$SIGSEGV] // Set max spectator count (default: infinite)
-	MaxRedPlayers 6 [$SIGSEGV] // Override max red player count (default: 6)
 	DisplayRobotDeathNotice 1 [$SIGSEGV] // If set, regular robot death is mentioned in the kill feed (default: 0)
 	FlagCarrierMovementPenalty 0.4 [$SIGSEGV] // Overrides flag carrier movement penalty (default: 0.5)
-	TextPrintTime 7 [$SIGSEGV] // How fast a line from the wave description is displayed in the middle of the screen. Use 0 to disable (default: 4)
 	BotTeleportUberDuration 2 [$SIGSEGV] // How long should uber last for robots exiting engineer bot teleporter (default: 5)
-	BluHumanTeleportOnSpawn 1 [$SIGSEGV] // Should players get teleported to engineer bot teleport on spawn (default: 0)
-	BluHumanBotTeleporter 1 [$SIGSEGV] // Should player teleporters teleport players and bots on spawn (default: 0)
-	BotsUsePlayerTeleporters 0 [$SIGSEGV] // Should bots use player teleporter entrances (default: 1)
-	MaxSpeedLimit 521 [$SIGSEGV] // Max speed limit override. Values above 520 enchance giant scout movement. Values above 521 disable jumping on stuck (default: 520)
-	MaxEntitySpeed 10000 [$SIGSEGV] // Max entity speed limit override (default: 3500)
+	AllowFlagCarrierToFight 1 [$SIGSEGV] // Allow bomb carrier to fight (default: 1)
+	FlagEscortCountOffset 5 [$SIGSEGV] // Allow for this many additional flag escorts (default: 0)
+	StuckTimeMultiplier 1 [$SIGSEGV] // Multiplier of how fast the bot detects stuck. 3 means bot detect stuck 3 times faster than normal (staying for 4s in 100hu area) (default: 1)
+	EngineerPushRange 40 [$SIGSEGV] // Any value other than 0 changes Engineer bot push range when building (defualt: 0)
+	MinibossSentrySingleKill 1 [$SIGSEGV] // If set to 1, minibosses count as single kill for the sentry (default: 0)
+	NoRedBotsRandomCrit 1 [$SIGSEGV] //If set, red robots will not be able to deal random critical damage. (default: 0)
+	NoRedSniperBotHeadshots 1 [$SIGSEGV] // If set, red bot snipers cannot headshot (and amby spy) (default: 0)
+	SentryHintBombForwardRange 0 [$SIGSEGV] // How far in front of the bomb the engineer can teleport in (default: 0)
+	SentryHintBombBackwardRange 3000 [$SIGSEGV] // How far behind the bomb the engineer can teleport in (default: 3000)
+	SentryHintMinDistanceFromBomb 1300 [$SIGSEGV] // How far the engineer spot must be behind the bomb (default: 1300)
+	DefaultMiniBossScale 1.6 [$SIGSEGV] // Default Giant Bot scale (default: 1.75) 
+	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
+
+
+	//////////////////////////
+	// Weapon Options       //
+	//////////////////////////
+	SandmanStun 0 [$SIGSEGV] //Should the sandman ball stun players. 1 reverts the pre Jungle Inferno stun (default: 1)
 	ConchHealthOnHit 0.77 [$SIGSEGV] // Health on hit percentage for conch (default: 0.35)
 	MarkedForDeathLifetime 1 [$SIGSEGV] // Marked for death duration (default: 15)
 	VacNumCharges 16 [$SIGSEGV] // Number of charges for Vaccinator (default: 4)
 	DoubleDonkWindow 99 [$SIGSEGV] // Max time for double donk to register (default: 0.5)
 	ConchSpeedBoost 10 [$SIGSEGV] // Speed boost provided by the Conch, limited to 40% total speed increase (default: 105)
 	StealthDamageReduction 0.1 [$SIGSEGV] // Damage reduction provided by invis watch (default: 0.8)
-	FlagEscortCountOffset 5 [$SIGSEGV] // Allow for this many additional flag escorts (default: 0)
-	AllowFlagCarrierToFight 1 [$SIGSEGV] // Allow bomb carrier to fight (default: 1)
-	NoThrillerTaunt 1 [$SIGSEGV] // No thriller taunt in halloween (default: 0)
-	NoCritPumpkin 1 [$SIGSEGV] // No crit pumpkin on player death drop in halloween (default: 0)
 	HealOnKillOverhealMelee 1 [$SIGSEGV] // Heal on kill with melee weapons overheal (default: 1)
-	NoMissionInfo 0 [$SIGSEGV] // Disable !missioninfo command (default: 0)
-	MaxActiveSkeletons 999 [$SIGSEGV] // Max active skeletons at once (default: 30)
-	WaveStartCountdown 9 [$SIGSEGV] // Wave start countdown duration once all players are ready. Values below 10 disable announcer, values below 9 disable starting music (default: 10)
-	ZombiesNoWave666 1 [$SIGSEGV] // If set to 1, the game will not display wave 666 when EventPopFile is set (default: 0)
-	FastNPCUpdate 1 [$SIGSEGV] // If set to 1, NPCs such as halloween bosses will update every tick (default: 0)
-	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
-	ForceRobotBleed 1 [$SIGSEGV] // If set to 1, robots bleed (default: 0)
-	MinibossSentrySingleKill 1 [$SIGSEGV] // If set to 1, minibosses count as single kill for the sentry (default: 0)
-	BotHumansHaveRobotVoice 1 [$SIGSEGV] // If set to 1, bots with human models have robot voice (default: 0)
-	BotHumansHaveEyeGlow 1 [$SIGSEGV] // If set to 1, bots with human models have eye glow (default: 0)
-	// CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
-	// ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
-	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
-	Accelerate 100 [$SIGSEGV] // Acceleration rate (default: 10)
-	AirAccelerate 100 [$SIGSEGV] // Air Acceleration (turning) rate (default: 10)
-	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
-	StuckTimeMultiplier 1 [$SIGSEGV] // Multiplier of how fast the bot detects stuck. 3 means bot detect stuck 3 times faster than normal (staying for 4s in 100hu area) (default: 1)
-	NoCreditsVelocity 1 [$SIGSEGV] // If set credits spawn with no velocity (default: 0)
-	RestoreNegativeDamageHealing 1 [$SIGSEGV] // Allow negative damage to heal (default: 1)
-	RestoreNegativeDamageOverheal 1 [$SIGSEGV] // Allow negative damage to overheal (default: 1)
-	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
-	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
-	EngineerPushRange 40 [$SIGSEGV] // Any value other than 0 changes Engineer bot push range when building (defualt: 0)
-	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
-	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
 
-	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
-	// Overrides persist until next map load, use OverrideSounds instead
-	// If you made any changes to the file, you need to reload the map for it to take effect
-	CustomScriptSoundFile "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] 
+
+	//////////////////////////
+	// BLU Players Options //
+	//////////////////////////
+	// BLU players also are affected by BLU robot options 
+	AllowJoinTeamBlue 1 [$SIGSEGV] //If it is possible to join team blue
+	AllowJoinTeamBlueMax 4 [$SIGSEGV] //How many players can join the blue team
+	HumansMustJoinTeam blue [$SIGSEGV] //Set to blue to force players join the blu team
+	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb
+	RespawnWaveTimeBlue 5 [$SIGSEGV]
+	FixedRespawnWaveTimeBlue 1 [$SIGSEGV]
+	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
+	BluHumanFlagCapture 1 [$SIGSEGV] //Can blu humans capture the flag
+	BluHumanFlagPickup 1 [$SIGSEGV] //Can blu humans pickup flags
+	BluHumanInfiniteAmmo 0 [$SIGSEGV] //Enable infinite ammo for blu humans (default: 1)
+	BluHumanInfiniteCloak 1 [$SIGSEGV] //Enable infinite cloak for blu humans (default: 1)
+	BluHumanTeleportOnSpawn 1 [$SIGSEGV] // Should players get teleported to engineer bot teleport on spawn (default: 0)
+	BluHumanBotTeleporter 1 [$SIGSEGV] // Should player teleporters teleport players and bots on spawn (default: 0)
 	AllowBluPlayerReanimators 1 [$SIGSEGV] // Allow reanimators for BLU players (default: 0)
 	RemoveBluVelocityLimit 1 [$SIGSEGV] // Remove 1000 hu velocity limit for BLU team (default: 0)
-	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
-	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
-	DefaultMiniBossScale 1.6 [$SIGSEGV] // Default Giant Bot scale (default: 1.75) 
-	FastWholeMapTriggers 1 [$SIGSEGV] // Optimize big triggers (larger than 5000 units in all directions) spawned by point templates, by automatically assuming all entities hit the trigger. Might cause issues, but in that case you should use an alternative method anyway (default: 1)
 	BluHumanSpawnNoShoot 1 [$SIGSEGV] // BLU players cannot shoot while in spawn (default: 1)
 	BluHumanSpawnProtection 1 [$SIGSEGV] // BLU players are invincible in spawn (default: 1)
-	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
-	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
 	NoBluHumanFootsteps 1 [$SIGSEGV] // Disables robot footsteps for BLU humans (default: 0)
-	NoRedBotsRandomCrit 1 [$SIGSEGV] //If set, red robots will not be able to deal random critical damage. (default: 0)
-	NoRedSniperBotHeadshots 1 [$SIGSEGV] // If set, red bot snipers cannot headshot (and amby spy) (default: 0)
-	ForceRedMoney 1 [$SIGSEGV] // Force drop red money (default: 0)
-	SentryHintBombForwardRange 0 [$SIGSEGV] // How far in front of the bomb the engineer can teleport in (default: 0)
-	SentryHintBombBackwardRange 3000 [$SIGSEGV] // How far behind the bomb the engineer can teleport in (default: 3000)
-	SentryHintMinDistanceFromBomb 1300 [$SIGSEGV] // How far the engineer spot must be behind the bomb (default: 1300)
+	BotsUsePlayerTeleporters 0 [$SIGSEGV] // Should bots use player teleporter entrances (default: 1)
 
+
+	//////////////////////////
+	// Halloween options    //
+	//////////////////////////
+	ForceHoliday 2 [$SIGSEGV] //Enforces Halloween mode, but does not enable wave 666 and zombie bots
+	BotsDropSpells 1 [$SIGSEGV] //If set, bots will drop spells
+	GiantsDropRareSpells 1 [$SIGSEGV] //If set, giants will drop rare spells rather than common
+	SpellDropRateCommon 0.5 [$SIGSEGV] //Drop chance for common spell books, from 0 to 1
+	SpellDropRateGiant 0.5 [$SIGSEGV] //Drop chance for rare spell books, from 0 to 1
+	SpellDropForBotsInTeam Blue [$SIGSEGV] // When set, drop spells only if bots are from Red/Blue team
+	NoThrillerTaunt 1 [$SIGSEGV] // No thriller taunt in halloween (default: 0)
+	NoCritPumpkin 1 [$SIGSEGV] // No crit pumpkin on player death drop in halloween (default: 0)
+	NoSkeletonSplit 1 [$SIGSEGV] // Do not split medium skeletons after death (default: 0)
+	MaxActiveSkeletons 999 [$SIGSEGV] // Max active skeletons at once (default: 30)
+	FastNPCUpdate 1 [$SIGSEGV] // If set to 1, NPCs such as halloween bosses will update every tick (default: 0)
+	ZombiesNoWave666 1 [$SIGSEGV] // If set to 1, the game will not display wave 666 when EventPopFile is set (default: 0)
+	NoHolidayPickups 1 [$SIGSEGV] // If set, pickups will remain with default models (default: 0)
 	HHHNoControlPointLogic 1 [$SIGSEGV] // Disable HHH going to the contested point (default: 0)
 	HHHHealthPerPlayer 200 [$SIGSEGV] // (default: 200)
 	HHHHealthBase 3000 [$SIGSEGV] // (default: 3000)
@@ -152,16 +141,276 @@ WaveSchedule
 	HHHChaseDuration 30 [$SIGSEGV] // (default: 30)
 	HHHNonSolidToPlayers 1 [$SIGSEGV] // (default: 0)
 
-	DisallowUpgrade	"fire rate bonus" [$SIGSEGV] // Disallow upgrade. You can use the position on the upgrade list instead, starting from 1
-	DisallowUpgrade	[$SIGSEGV] //Advanced syntax
+
+	//////////////////////////
+	// Visual Options       //
+	//////////////////////////
+	BluPlayersAreRobots 1 [$SIGSEGV] //If set, blu players use robot models
+	RedPlayersAreRobots 1 [$SIGSEGV] //If set, red players use robot models
+	BotsAreHumans 1 [$SIGSEGV] //Bots use human models by default. If set to 1, bots can't be sapped, if set to 2, they can
+	PlayerRobotsUsePlayerAnimation 1 [$SIGSEGV] //Use player animations instead of robot ones
+	ForceRobotBleed 1 [$SIGSEGV] // If set to 1, robots bleed (default: 0)
+	BotHumansHaveRobotVoice 1 [$SIGSEGV] // If set to 1, bots with human models have robot voice (default: 0)
+	BotHumansHaveEyeGlow 1 [$SIGSEGV] // If set to 1, bots with human models have eye glow (default: 0)
+	BodyPartScaleSpeed 2 [$SIGSEGV] //How fast do "head scale" "torso scale" "hand scale" attributes scale the bot body parts (default: 1)
+	NoRomevisionCosmetics 1 [$SIGSEGV] //If set, robots will not wear romevision cosmetics unless forced to (default: 0)
+	// CustomEyeParticle "eye_powerup_green_lvl_4" [$SIGSEGV] // Custom eye glow particle (default: "")
+
+
+	//////////////////////////
+	// Misc Options         //
+	//////////////////////////
+	RemoveGrapplingHooks 1 [$SIGSEGV] //Grappling hooks are destroyed after specified amount of seconds
+	RestoreNegativeDamageHealing 1 [$SIGSEGV] // Allow negative damage to heal (default: 1)
+	RestoreNegativeDamageOverheal 1 [$SIGSEGV] // Allow negative damage to overheal (default: 1)
+	Accelerate 100 [$SIGSEGV] // Acceleration rate (default: 10)
+	AirAccelerate 100 [$SIGSEGV] // Air Acceleration (turning) rate (default: 10)
+	TurboPhysics 0 [$SIGSEGV] // Turn off to allow players interacting with physics objects like vehicles (default: 1)
+	MaxEntitySpeed 10000 [$SIGSEGV] // Max entity speed limit override (default: 3500)
+	MaxSpeedLimit 521 [$SIGSEGV] // Max speed limit override. Values above 520 enchance giant scout movement. Values above 521 disable jumping on stuck (default: 520)
+	TextPrintTime 7 [$SIGSEGV] // How fast a line from the wave description is displayed in the middle of the screen. Use 0 to disable (default: 4)
+	NoMissionInfo 0 [$SIGSEGV] // Disable !missioninfo command (default: 0)
+	WaveStartCountdown 9 [$SIGSEGV] // Wave start countdown duration once all players are ready. Values below 10 disable announcer, values below 9 disable starting music (default: 10)
+
+
+	//////////////////////////
+	// Fixes                //
+	//////////////////////////
+	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player
+	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
+
+
+	//////////////////////////
+	// Optimizations        //
+	//////////////////////////
+	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
+	FastWholeMapTriggers 1 [$SIGSEGV] // Optimize big triggers (larger than 5000 units in all directions) spawned by point templates, by automatically assuming all entities hit the trigger. Might cause issues, but in that case you should use an alternative method anyway (default: 1)
+	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
+	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
+
+
+	//////////////////////////
+	// Load resources       //
+	//////////////////////////
+	PrecacheModel "models/props_soho/bookstand002.mdl" [$SIGSEGV] //Precaches model. This might be required in some circumstances, such as "custom projectile model" attribute, or prop with custom model
+	PrecacheSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV]
+	PrecacheSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //If your mission contains custom sounds that are used by pointtemplate entities or sound overrides, you must include those sounds with precachesound
+	PrecacheScriptSound "Weapon_RPG.Single" [$SIGSEGV] //Sound script version of precache sound
+	PrecacheDecal "decals/tscorch" [$SIGSEGV] // Precache decal file. Not sure if there is a use for this
+	PrecacheGeneric "materials/sprites/fire_res.vmt" [$SIGSEGV] // Precache generic file. Use this if you want the file to be downloaded on clients
+	PrecacheParticle "AntlionGib" [$SIGSEGV]
+	PrecacheSentenceFile "scripts/somethingsentencefile.txt" [$SIGSEGV] // Sentences file, used by HL2 but not by TF2
+
+
+	DisableSound "Weapon_Shotgun.Single" [$SIGSEGV] //Disable sound. Note that client side sounds (which include player's own weapon) cannot be disabled. Must use sound script unless there is only a raw version of the sound
+	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
+	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
+
+	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
+	// Overrides persist until next map load, use OverrideSounds instead
+	// If you made any changes to the file, you need to reload the map for it to take effect
+	CustomScriptSoundFile "scripts/sigsegv_sound_overrides.txt" [$SIGSEGV] 
+
+	///////////////////////
+	// Multiline options //
+	///////////////////////
+	
+	//////////////
+	// Sounds   //
+	//////////////
+
+	OverrideSounds [$SIGSEGV] //Replace sounds. Only server side sounds can be overridden. Must use sound script unless there is only a raw version of the sound.
 	{
-		Upgrade	"damage bonus" // Upgrade name
-		MaxLevel 2 // Maximum allowed level
-		CheckAllSlots 1 // Disallow if the player has the matching items equipped
-		ItemName "TF_WEAPON_ROCKETLAUNCHER" // Apply upgrade restrictions only to those items if specified
-		ClassName "tf_weapon_smg"
+		"Announcer.MVM_Get_To_Upgrade" "GoldPipe_MissionIntro.mp3"
+		"Weapon_RPG.Single" "GoldPipe_MissionIntro.mp3"
 	}
 
+
+	//////////////
+	// Items    //
+	//////////////
+
+	//ItemWhitelist //Only allows to use specified weapons below
+	//{
+	//	Classname "tf_weapon_sniperrifle"
+	//	Name "TF_WEAPON_MINIGUN"
+	//	DefIndex 8 //Bonesaw
+	//}
+	ItemBlacklist [$SIGSEGV] //Disallows using specified weapons below
+	{
+		Classname "tf_weapon_sniperrifle"
+		Name "TF_WEAPON_MINIGUN"
+		Name "The Force-a-Nature"
+		// SimilarToItem "TF_WEAPON_FISTS" // Matches the item and all functionally identical items
+		DefIndex 8 //Bonesaw
+		// ItemSlot "secondary" // Items in secondary slot
+	}
+
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		ItemName "TF_WEAPON_ROCKETLAUNCHER"
+		"reload time decreased" 0.25
+	}
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		SimilarToItem "TF_WEAPON_CLUB"
+		"fire rate bonus" 1.8
+	}
+	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
+	{
+		Classname "tf_weapon_grenadelauncher" // you can specify classname instead of itemname  
+		"attach particle effect" 13 //burning flames
+		"fire rate bonus" 0.5
+	}
+	
+	CustomWeapon [$SIGSEGV] //Allows you to use an alias for items with custom attributes
+	{
+		"My Custom Item" // The name you would use in Item key in TFBot
+		{
+			OriginalItemName "The Iron Bomber" // The item used as a base
+			"fire rate bonus" 0.1 // Attributes
+			"damage bonus" 4
+			"custom item model" "models/workshop/weapons/c_models/c_blackbox/c_blackbox_xmas.mdl"
+			"custom weapon fire sound" "Weapon_Soda_Popper.Single"
+		}
+
+		"Rayslick" // The name you would use in Item key in TFBot
+		{
+			OriginalItemName "The Conscientious Objector" // The item used as a base
+			"custom texture lo" "4.96704961615804963e-32n"
+			"custom texture hi" "8.23836940293570411e-31n"
+		}
+	}
+	
+	ForceItem "The Breakneck Baggies" [$SIGSEGV] // Force an item to all applicable classes
+	ForceItem "Particulate Protector" [$SIGSEGV] // Force an item to all applicable classes
+	ForceItem [$SIGSEGV] // Force items to classes even if the item is not intended for the class
+	{
+		All
+		{
+			Item "Rayslick"
+
+			// Advanced syntax, give grappling hook if the player has darwin's danger shield
+			"TF_WEAPON_GRAPPLINGHOOK"
+			{
+				Name "Darwin's Danger Shield"
+			}
+		}
+		Scout
+		{
+			Item "Mad Milk"
+		}
+	}
+	
+	ForceItemNoRemove "The Chargin' Targe" [$SIGSEGV] // Force an item to all applicable classes, but does not remove old items in the slot.
+
+	ItemReplacement [$SIGSEGV] // Replace Items
+	{
+		"My Custom Item"  // The replacement target item
+		{
+			Name "The Loch-n-Load" // The item that will be replaced
+			// Classname "tf_weapon_flaregun_revenge"
+			// DefIndex 740
+		}
+		"tw_heavybot_armor"
+        {
+            ClassName     "tf_weapon_laser_pointer"
+        }
+	}
+
+	ExtraLoadoutItems [$SIGSEGV] // Extra loadout items available after typing !missionitems in chat
+	{
+		AllowEquipOutsideSpawn 1 // Allow equipping items outside spawn
+		Soldier // Player Class
+		{
+			Secondary "The Reserve Shooter" // Item slot and name
+			Primary // Extended syntax, Item slot to use
+			{
+				Item  "My Custom Item" // Item name, custom weapon names are available 
+				Cost 100 // The cost of the weapon (default: 0)
+				AllowedMinWave 1 //The wave at which the weapon is enabled (default: 1)
+				AllowedMaxWave 55 //The max wave at which the weapon is enabled (default: infinite)
+				AllowRefund 0 //Allow refunding of the weapon (default: 1)
+			}
+			// Available slots:
+			// Primary
+			// Secondary
+			// Melee
+			// PDA (construction kit, disguise kit)
+			// PDA2 (destruction kit, watch)
+			// Head
+			// Misc
+			// Action (canteen)
+			// Misc2
+		}
+		
+		Head "The Cat's Pajamas" // All class item
+	}
+
+	//////////////
+	// Player   //
+	//////////////
+
+	ClassLimit [$SIGSEGV] //Limits the number of specified classes
+	{
+		Heavyweapons 0
+		Medic 0
+		Sniper 0
+	}
+	HandModelOverride [$SIGSEGV] // Overwrite first person arms models
+	{
+		Spy "models/weapons/c_models/c_sniper_arms.mdl"
+		Sniper "models/weapons/c_models/c_medic_arms.mdl"
+	}
+	
+	PlayerAttributes [$SIGSEGV] //Player attributes appied for the whole mission
+	{
+		"move speed bonus" 2
+		//"is miniboss" 1
+		Soldier //Attributes limited to soldier only
+		{
+			"fire rate bonus" 2
+		}
+		"max health additive bonus" 1000
+	}
+
+	PlayerAddCond [$SIGSEGV] //Player conditions applied for the whole mission
+	{
+		//Index 57 //Ubercharge
+		
+	}
+
+
+	//////////////
+	// Spawning //
+	//////////////
+	FlagResetTime [$SIGSEGV] //Overrides default bomb reset time
+	{
+		Name "intel" //Name of flag entity on the map
+		ResetTime 90
+	}
+
+	ExtraSpawnPoint [$SIGSEGV]  //Adds spawn points on specified location
+    {
+        Name "spawnalt"
+		// StartDisabled 1 // If the spawn point starts disabled (Default: 0)
+        TeamNum 3 // 2 - Red team 3 - Robots. If you are adding spawn for reprogrammed robots, use team 3
+        X	"323"                     
+        Y	"-2505"                  
+        Z	"628"        
+    }
+
+	ExtraTankPath [$SIGSEGV] //Adds tank path to follow
+	{
+		Name "tankpath1" //name of the starting path node prefix. First tank node name would be name_1
+		Node "-1000 -400 700" // note XYZ coordinates. First node is the starting point
+		Node "-1000 400 700"
+	}
+
+
+	//////////////
+	// Misc     //
+	//////////////
 	SpellBookNormalRoll [$SIGSEGV] // Override spell roll. The value specifies how many spell charges to give. You can duplicate spells to increase their roll chance
 	{
 		"Healing Aura" 3
@@ -188,100 +437,24 @@ WaveSchedule
 		"Meteor Shower" 5
 	}
 
-	OverrideSounds [$SIGSEGV] //Replace sounds. Only server side sounds can be overridden. Must use sound script unless there is only a raw version of the sound.
-	{
-		"Announcer.MVM_Get_To_Upgrade" "GoldPipe_MissionIntro.mp3"
-		"Weapon_RPG.Single" "GoldPipe_MissionIntro.mp3"
-	}
-
 	OverrideParticles [$SIGSEGV] //Replace particles. Only server side particles can be overridden
 	{
 		"fluidSmokeExpl_ring_mvm" "hightower_explosion"
 	}
 
-	//ItemWhitelist //Only allows to use specified weapons below
-	//{
-	//	Classname "tf_weapon_sniperrifle"
-	//	Name "TF_WEAPON_MINIGUN"
-	//	DefIndex 8 //Bonesaw
-	//}
-	ItemBlacklist [$SIGSEGV] //Disallows using specified weapons below
-	{
-		Classname "tf_weapon_sniperrifle"
-		Name "TF_WEAPON_MINIGUN"
-		Name "The Force-a-Nature"
-		// SimilarToItem "TF_WEAPON_FISTS" // Matches the item and all functionally identical items
-		DefIndex 8 //Bonesaw
-		// ItemSlot "secondary" // Items in secondary slot
-	}
-	
-	HandModelOverride [$SIGSEGV] // Overwrite first person arms models
-	{
-		Spy "models/weapons/c_models/c_sniper_arms.mdl"
-		Sniper "models/weapons/c_models/c_medic_arms.mdl"
-	}
 
-	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
-	{
-		ItemName "TF_WEAPON_ROCKETLAUNCHER"
-		"reload time decreased" 0.25
-	}
-	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
-	{
-		SimilarToItem "TF_WEAPON_CLUB"
-		"fire rate bonus" 1.8
-	}
-	ItemAttributes [$SIGSEGV] //Adds attributes to specified item given to players
-	{
-		Classname "tf_weapon_grenadelauncher" // you can specify classname instead of itemname  
-		"attach particle effect" 13 //burning flames
-		"fire rate bonus" 0.5
-	}
-	ClassLimit [$SIGSEGV] //Limits the number of specified classes
-	{
-		Heavyweapons 0
-		Medic 0
-		Sniper 0
-	}
-	FlagResetTime [$SIGSEGV] //Overrides default bomb reset time
-	{
-		Name "intel" //Name of flag entity on the map
-		ResetTime 90
-	}
+	//////////////
+	// Upgrades //
+	//////////////
 
-	ExtraSpawnPoint [$SIGSEGV]  //Adds spawn points on specified location
-    {
-        Name "spawnalt"
-		// StartDisabled 1 // If the spawn point starts disabled (Default: 0)
-        TeamNum 3 // 2 - Red team 3 - Robots. If you are adding spawn for reprogrammed robots, use team 3
-        X	"323"                     
-        Y	"-2505"                  
-        Z	"628"        
-    }
-
-	ExtraTankPath [$SIGSEGV] //Adds tank path to follow
+	DisallowUpgrade	"fire rate bonus" [$SIGSEGV] // Disallow upgrade. You can use the position on the upgrade list instead, starting from 1
+	DisallowUpgrade	[$SIGSEGV] //Advanced syntax
 	{
-		Name "tankpath1" //name of the starting path node prefix. First tank node name would be name_1
-		Node "-1000 -400 700" // note XYZ coordinates. First node is the starting point
-		Node "-1000 400 700"
-	}
-	
-	PlayerAttributes [$SIGSEGV] //Player attributes appied for the whole mission
-	{
-		"move speed bonus" 2
-		//"is miniboss" 1
-		Soldier //Attributes limited to soldier only
-		{
-			"fire rate bonus" 2
-		}
-		"max health additive bonus" 1000
-	}
-
-	PlayerMiniBossMinRespawnTime 30 [$SIGSEGV] //Minimal respawn time for miniboss players in seconds
-	PlayerAddCond [$SIGSEGV] //Player conditions applied for the whole mission
-	{
-		//Index 57 //Ubercharge
-		
+		Upgrade	"damage bonus" // Upgrade name
+		MaxLevel 2 // Maximum allowed level
+		CheckAllSlots 1 // Disallow if the player has the matching items equipped
+		ItemName "TF_WEAPON_ROCKETLAUNCHER" // Apply upgrade restrictions only to those items if specified
+		ClassName "tf_weapon_smg"
 	}
 	
 	// Enables extended upgrades displayed on the left of upgrade gui as SourceMod menu. This allows for more than 8 upgrades per weapon, with custom weapon rules
@@ -449,90 +622,10 @@ WaveSchedule
 			}
 		}
 	}
-	
-	CustomWeapon [$SIGSEGV] //Allows you to use an alias for items with custom attributes
-	{
-		"My Custom Item" // The name you would use in Item key in TFBot
-		{
-			OriginalItemName "The Iron Bomber" // The item used as a base
-			"fire rate bonus" 0.1 // Attributes
-			"damage bonus" 4
-			"custom item model" "models/workshop/weapons/c_models/c_blackbox/c_blackbox_xmas.mdl"
-			"custom weapon fire sound" "Weapon_Soda_Popper.Single"
-		}
 
-		"Rayslick" // The name you would use in Item key in TFBot
-		{
-			OriginalItemName "The Conscientious Objector" // The item used as a base
-			"custom texture lo" "4.96704961615804963e-32n"
-			"custom texture hi" "8.23836940293570411e-31n"
-		}
-	}
-	
-	ForceItem "The Breakneck Baggies" [$SIGSEGV] // Force an item to all applicable classes
-	ForceItem "Particulate Protector" [$SIGSEGV] // Force an item to all applicable classes
-	ForceItem [$SIGSEGV] // Force items to classes even if the item is not intended for the class
-	{
-		All
-		{
-			Item "Rayslick"
-
-			// Advanced syntax, give grappling hook if the player has darwin's danger shield
-			"TF_WEAPON_GRAPPLINGHOOK"
-			{
-				Name "Darwin's Danger Shield"
-			}
-		}
-		Scout
-		{
-			Item "Mad Milk"
-		}
-	}
-	
-	ForceItemNoRemove "The Chargin' Targe" [$SIGSEGV] // Force an item to all applicable classes, but does not remove old items in the slot.
-
-	ItemReplacement [$SIGSEGV] // Replace Items
-	{
-		"My Custom Item"  // The replacement target item
-		{
-			Name "The Loch-n-Load" // The item that will be replaced
-			// Classname "tf_weapon_flaregun_revenge"
-			// DefIndex 740
-		}
-		"tw_heavybot_armor"
-        {
-            ClassName     "tf_weapon_laser_pointer"
-        }
-	}
-
-	ExtraLoadoutItems [$SIGSEGV] // Extra loadout items available after typing !missionitems in chat
-	{
-		AllowEquipOutsideSpawn 1 // Allow equipping items outside spawn
-		Soldier // Player Class
-		{
-			Secondary "The Reserve Shooter" // Item slot and name
-			Primary // Extended syntax, Item slot to use
-			{
-				Item  "My Custom Item" // Item name, custom weapon names are available 
-				Cost 100 // The cost of the weapon (default: 0)
-				AllowedMinWave 1 //The wave at which the weapon is enabled (default: 1)
-				AllowedMaxWave 55 //The max wave at which the weapon is enabled (default: infinite)
-				AllowRefund 0 //Allow refunding of the weapon (default: 1)
-			}
-			// Available slots:
-			// Primary
-			// Secondary
-			// Melee
-			// PDA (construction kit, disguise kit)
-			// PDA2 (destruction kit, watch)
-			// Head
-			// Misc
-			// Action (canteen)
-			// Misc2
-		}
-		
-		Head "The Cat's Pajamas" // All class item
-	}
+	/////////////////////
+	// Point Templates //
+	/////////////////////
 
 	//PointTemplate is a named set of entities, that can be spawned at any selected moment in the mission.
 	//
@@ -846,6 +939,17 @@ WaveSchedule
 
 	SpawnTemplate "RandomColors" [$SIGSEGV] 
 
+	SpawnTemplate [$SIGSEGV] //Spawn template once the mission loads
+	{
+		Name "Blockade"
+		Origin "1050 4410 472" //Position where to spawn the template
+		Angles "0 85 0" //Rotation
+	}
+	SpawnTemplate [$SIGSEGV] //Spawn template once the mission loads. BLU buildings get destroyed on wave init though
+	{
+		Name "Sentry"
+		Origin "0 -1000 500"
+	}
 
 	PlayerSpawnTemplate [$SIGSEGV] //Spawn custom player template
 	{
@@ -1104,18 +1208,6 @@ WaveSchedule
 			}
 		}
 	}	
-
-	SpawnTemplate [$SIGSEGV] //Spawn template once the mission loads
-	{
-		Name "Blockade"
-		Origin "1050 4410 472" //Position where to spawn the template
-		Angles "0 85 0" //Rotation
-	}
-	SpawnTemplate [$SIGSEGV] //spawn template once mission starts
-		{
-			Name "Sentry"
-			Origin "0 -1000 500"
-		}
 	Wave
 	{
 		CustomWaveNumber 419 [$SIGSEGV] // Display custom wave number. 511 is max value
@@ -1153,12 +1245,12 @@ WaveSchedule
 		{
 			Index 56
 		}
-		SpawnTemplate [$SIGSEGV] //spawn template once mission starts
+		SpawnTemplate [$SIGSEGV] //Spawn template once the wave starts
 		{
 			Name "Sentry"
 			Origin "0 -800 500"
 		}
-		SpawnTemplate [$SIGSEGV] 
+		SpawnTemplate [$SIGSEGV] //Spawn template once the wave starts
 		{
 			Name "Teleporter"
 			Origin "0 -900 400"
