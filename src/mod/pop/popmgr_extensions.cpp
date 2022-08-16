@@ -5546,6 +5546,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
 	}
 
+	bool reading_popfile = false;
 	RefCount rc_CPopulationManager_Parse;
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
@@ -5611,7 +5612,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
+		reading_popfile = true;
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		reading_popfile = false;
 
 		// Reset nav mesh
 		if (state.m_CustomNavFile != prevNavFile) {
@@ -5678,6 +5681,46 @@ namespace Mod::Pop::PopMgr_Extensions
 		TogglePatches();
 //		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
+	}
+
+	const char *include_instead_of_merging_key_names[] = {
+		"ItemAttributes",
+		"ForceItem",
+		"ForceItemNoRemove",
+		"FlagResetTime",
+		"ExtraSpawnPoint",
+		"ExtraTankPath",
+		"DisallowUpgrades",
+		"SpawnTemplate",
+		"PlayerSpawnTemplate",
+		"PlayerSpawnOnceTemplate",
+		"PlayerItemEquipSpawnTemplate",
+		"PlayerShootTemplate",
+		"BuildingSpawnTemplate"
+	};
+	DETOUR_DECL_MEMBER(void, KeyValues_MergeBaseKeys, CUtlVector<KeyValues *> &keys)
+	{
+		if (reading_popfile) {
+			auto kv = reinterpret_cast<KeyValues *>(this);
+			for (int i = 0; i < keys.Count(); i++) {
+				std::vector<KeyValues *> del_kv;
+				FOR_EACH_SUBKEY(keys[i], subkey) {
+					auto name = subkey->GetName();
+					for (int j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
+						if (FStrEq(name, include_instead_of_merging_key_names[j])) {
+							kv->AddSubKey(subkey->MakeCopy());
+							del_kv.push_back(subkey);
+						}
+					}
+				}
+				for (auto subkey : del_kv) {
+				//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
+					keys[i]->RemoveSubKey(subkey);
+					subkey->deleteThis();
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(KeyValues_MergeBaseKeys)(keys);
 	}
 
 	RefCount rc_CPopulationManager_IsValidPopfile;
@@ -6432,6 +6475,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetCheckpoint, "CPopulationManager::SetCheckpoint");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, "CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");
+            MOD_ADD_DETOUR_MEMBER(KeyValues_MergeBaseKeys, "KeyValues::MergeBaseKeys");
+			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_SetViewModel, "CBaseCombatWeapon::SetViewModel");
@@ -6741,8 +6786,10 @@ namespace Mod::Pop::PopMgr_Extensions
 	            }
             });
             KeyValues* kv{new KeyValues{""}};
+			reading_popfile = true;
             if(kv->LoadFromFile(filesystem, value_c_str))
                 Parse_Popfile(kv, filesystem);
+			reading_popfile = false;
             ConVarRef restart_cvar{"mp_restartgame_immediate"};
             restart_cvar.SetValue(1);
             kv->deleteThis();

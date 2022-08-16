@@ -635,6 +635,7 @@ WaveSchedule
 	//On bot spawn
 	//On tank spawn
 	//env_entity_maker's forcespawn input (after setting template name)
+	//And more
 	//
 	//Keys use the internal names, visible when turning smartedit off in Hammer
 	//

@@ -2045,8 +2045,12 @@ namespace Mod::Attr::Custom_Attributes
 		return result;
 	}
 
+	RefCount rc_stop_stun;
+	bool addcond_overridden = false;
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
 	{
+		if (rc_stop_stun) return;
+
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		
 		auto player = shared->GetOuter();
@@ -2857,7 +2861,6 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
 	}
 	
-	bool addcond_overridden = false;
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
 	RefCount rc_CTFPlayerShared_AddCondWatch;
@@ -2892,9 +2895,9 @@ namespace Mod::Attr::Custom_Attributes
 			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 
 			addcond_overridden = false;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(addcond_provider, flDuration, mult_effect_duration);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(addcond_provider_item, flDuration, mult_effect_duration);
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
 
 			//DevMsg("add cond pre %d\n", iCondOverride);
 			// Allow up to 4 addconds with bit shifting
@@ -2946,7 +2949,7 @@ namespace Mod::Attr::Custom_Attributes
 
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
 			addcond_overridden = false;
 
 			// Allow up to 4 addconds with bit shifting
@@ -2995,7 +2998,7 @@ namespace Mod::Attr::Custom_Attributes
 			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
 
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
 
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
@@ -3248,6 +3251,18 @@ namespace Mod::Attr::Custom_Attributes
 		if (addcond_overridden) {
 			player->m_Shared->m_flChargeMeter = 0;
 		}
+	}
+	
+	DETOUR_DECL_MEMBER(void, CObjectSapper_ApplyRoboSapperEffects_Last, CTFPlayer *target, float duration) {
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
+		auto sapper = reinterpret_cast<CObjectSapper *>(this);
+		addcond_provider = sapper->GetBuilder();
+		addcond_provider_item = GetEconEntityAtLoadoutSlot(sapper->GetBuilder(), LOADOUT_POSITION_BUILDING);
+		int iCondOverride = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+		
+		SCOPED_INCREMENT_IF(rc_stop_stun, iCondOverride != 0);
+		DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects_Last)(target, duration);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Holster, CBaseCombatWeapon *weapon)
@@ -5510,7 +5525,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
-			
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);
 			
 
 			// Fix burn time mult not working by making fire deal damage faster
