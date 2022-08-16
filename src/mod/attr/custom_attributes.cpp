@@ -2894,10 +2894,11 @@ namespace Mod::Attr::Custom_Attributes
 			// If one condition was added due to another condition, ignore it
 			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 
+			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			addcond_overridden = false;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(addcond_provider_item, flDuration, mult_effect_duration);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(attribProvider, flDuration, mult_effect_duration);
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(attribProvider, iCondOverride, effect_cond_override);
 
 			//DevMsg("add cond pre %d\n", iCondOverride);
 			// Allow up to 4 addconds with bit shifting
@@ -2947,9 +2948,10 @@ namespace Mod::Attr::Custom_Attributes
         {
 			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 
+			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(attribProvider, iCondOverride, effect_cond_override);
 			addcond_overridden = false;
 
 			// Allow up to 4 addconds with bit shifting
@@ -2997,8 +2999,9 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_CTFPlayerShared_InCond) {
 			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
 
+			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			int iCondOverride = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(attribProvider, iCondOverride, effect_cond_override);
 
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
@@ -3026,7 +3029,7 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider_item = wep;
 		
 		int iCondOverride = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(wep->GetTFPlayerOwner(), iCondOverride, effect_cond_override);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(wep, iCondOverride, effect_cond_override);
 
 		if (iCondOverride != 0) {
 			if (!wep->GetTFPlayerOwner()->m_Shared->InCond(TF_COND_STEALTHED)) {
