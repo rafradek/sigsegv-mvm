@@ -1272,10 +1272,10 @@ namespace Mod::Util::Client_Cmds
 		}
 
 		for (CBasePlayer *target : vec) {
-			CAttributeList *list;
+			CAttributeList *list = nullptr;
 			if (slot != -1) {
 				CEconEntity *item = GetEconEntityAtLoadoutSlot(ToTFPlayer(target), slot);
-				if (item != nullptr) {
+				if (item != nullptr && item->GetItem() != nullptr) {
 					list = &item->GetItem()->GetAttributeList();
 				}
 			}

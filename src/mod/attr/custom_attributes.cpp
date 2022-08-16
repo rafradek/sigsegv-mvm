@@ -2909,10 +2909,9 @@ namespace Mod::Attr::Custom_Attributes
 						
 					}
 				}
-				return;
 			}
 
-			auto weapon = ToBaseCombatWeapon(addcond_provider_item);
+			auto weapon = rtti_cast<CEconEntity *>(addcond_provider_item);
 			//Msg(CFmtStr("provider item, %d %d %d\n", weapon, nCond, rc_CTFPlayerShared_AddCond));
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "effect add attributes", attribs);
@@ -2934,6 +2933,7 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 			}
+			if (iCondOverride != 0) return;
         }
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
@@ -2962,7 +2962,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 
-			auto weapon = ToBaseCombatWeapon(addcond_provider_item);
+			auto *weapon = rtti_cast<CEconEntity *>(addcond_provider_item);
 			Msg("remove cond item, %d\n", weapon);
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "effect add attributes", attribs);
@@ -2984,6 +2984,7 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 			}
+			if (iCondOverride != 0) return;
         }
 		DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 	}
