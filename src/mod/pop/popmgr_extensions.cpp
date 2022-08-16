@@ -5696,19 +5696,29 @@ namespace Mod::Pop::PopMgr_Extensions
 		"PlayerSpawnOnceTemplate",
 		"PlayerItemEquipSpawnTemplate",
 		"PlayerShootTemplate",
-		"BuildingSpawnTemplate"
+		"BuildingSpawnTemplate",
+		"LuaScript"
 	};
 	DETOUR_DECL_MEMBER(void, KeyValues_MergeBaseKeys, CUtlVector<KeyValues *> &keys)
 	{
 		if (reading_popfile) {
 			auto kv = reinterpret_cast<KeyValues *>(this);
+			KeyValues *appendKvFirst = nullptr;
+			KeyValues *appendKvLast = nullptr;
 			for (int i = 0; i < keys.Count(); i++) {
 				std::vector<KeyValues *> del_kv;
 				FOR_EACH_SUBKEY(keys[i], subkey) {
 					auto name = subkey->GetName();
 					for (int j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
 						if (FStrEq(name, include_instead_of_merging_key_names[j])) {
-							kv->AddSubKey(subkey->MakeCopy());
+							auto kvCopy = subkey->MakeCopy();
+							if (appendKvFirst == nullptr) {
+								appendKvFirst = kvCopy;
+							}
+							if (appendKvLast != nullptr) {
+								appendKvLast->SetNextKey(kvCopy);
+							}
+							appendKvLast = kvCopy;
 							del_kv.push_back(subkey);
 						}
 					}
@@ -5717,6 +5727,15 @@ namespace Mod::Pop::PopMgr_Extensions
 				//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
 					keys[i]->RemoveSubKey(subkey);
 					subkey->deleteThis();
+				}
+			}
+			if (appendKvFirst != nullptr) {
+				if (kv->GetFirstSubKey() != nullptr) {
+					appendKvLast->SetNextKey(kv->GetFirstSubKey()->GetNextKey());
+					kv->GetFirstSubKey()->SetNextKey(appendKvFirst);
+				}
+				else {
+					kv->AddSubKey(appendKvFirst);
 				}
 			}
 		}
