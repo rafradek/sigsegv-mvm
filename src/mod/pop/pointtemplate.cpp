@@ -761,12 +761,48 @@ namespace Mod::Pop::PointTemplate
 		}
 	}
 
+	ConVar cvar_whole_map_trigger_all("sig_pop_pointtemplate_fast_whole_map_trigger_all", "0", FCVAR_NONE, "Mod: Optimize whole map triggers, the triggers must have higher volume than a cube with specified size");
+	void CheckSetWholeMapTrigger(CBaseEntity *me)
+	{
+		WholeMapTriggerModule *mod;
+		float minRadius = cvar_whole_map_trigger_all.GetFloat();
+		if (minRadius > 0 && me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && (mod = me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger")) != nullptr) {
+			if (me->GetModel() != nullptr) {
+				Vector min;
+				Vector max;
+				modelinfo->GetModelBounds(me->GetModel(), min, max);
+				float volume = ((max.z - min.z) * (max.y - min.y) * (max.x - min.x));
+				if (volume > minRadius * minRadius * minRadius) {
+					me->SetModel(TEMPLATE_BRUSH_MODEL);
+					me->SetSolid(SOLID_BBOX);
+					me->SetAbsOrigin(Vector(-30000,-30000,-30000));
+					me->CollisionProp()->SetCollisionBounds(vec3_origin, vec3_origin);
+					mod = me->GetOrCreateEntityModule<WholeMapTriggerModule>("wholemaptrigger");
+					ForEachEntity([&](CBaseEntity *entity) {
+						if (TriggerCollideable(entity)) {
+							me->StartTouch(entity);
+						}
+					});
+				}
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseEntity_SetModel, const char *model)
+	{
+		DETOUR_MEMBER_CALL(CBaseEntity_SetModel)(model);
+		CheckSetWholeMapTrigger(reinterpret_cast<CBaseEntity *>(this));
+	}
+
+
 	RefCount rc_CCollisionProperty_SetSolidFlags;
 	RefCount rc_CTFPlayer_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolidFlags, int flags)
 	{
 		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
-		if (me == nullptr || WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
+		if (me == nullptr) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
+		
+		if (!cvar_whole_map_trigger_all.GetBool() && WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
 
 		SCOPED_INCREMENT(rc_CCollisionProperty_SetSolidFlags);
 		auto solidpre = TriggerCollideable(me);
@@ -799,19 +835,28 @@ namespace Mod::Pop::PointTemplate
 			}
 		}
 
-		if (triggerpre && !me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger") != nullptr) {
-			ForEachEntity([&](CBaseEntity *entity) {
-				if (TriggerCollideable(entity)) {
-					me->EndTouch(entity);
-				}
-			});
+		if (triggerpre && !me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+			auto mod = me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger");
+			if (mod != nullptr) {
+				ForEachEntity([&](CBaseEntity *entity) {
+					if (TriggerCollideable(entity)) {
+						me->EndTouch(entity);
+					}
+				});
+			}
 		}
-		else if (!triggerpre && me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger") != nullptr) {
-			ForEachEntity([&](CBaseEntity *entity) {
-				if (TriggerCollideable(entity)) {
-					me->StartTouch(entity);
-				}
-			});
+		else if (!triggerpre && me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
+			auto mod = me->GetEntityModule<WholeMapTriggerModule>("wholemaptrigger");
+			if (mod != nullptr) {
+				ForEachEntity([&](CBaseEntity *entity) {
+					if (TriggerCollideable(entity)) {
+						me->StartTouch(entity);
+					}
+				});
+			}
+			else {
+				CheckSetWholeMapTrigger(me);
+			}
 		}
 	}
 
@@ -846,6 +891,7 @@ namespace Mod::Pop::PointTemplate
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
 
 			// Optimize whole map triggers, auto touch logic
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetModel, "CBaseEntity::SetModel");
 			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolid, "CCollisionProperty::SetSolid");
 			MOD_ADD_DETOUR_MEMBER(CCollisionProperty_SetSolidFlags, "CCollisionProperty::SetSolidFlags");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");

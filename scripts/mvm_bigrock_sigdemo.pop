@@ -185,6 +185,7 @@ WaveSchedule
 	//////////////////////////
 	FastEntityNameLookup 1 [$SIGSEGV] // Decreases entity lookup time 2-4 times. Set to 0 if you are reading m_iName or m_iClassname from datamaps directly and expecting uppercase letters (with $getdata or $setdata input for example) (default: 1)
 	FastWholeMapTriggers 1 [$SIGSEGV] // Optimize big triggers (larger than 5000 units in all directions) spawned by point templates, by automatically assuming all entities hit the trigger. Might cause issues, but in that case you should use an alternative method anyway (default: 1)
+	// FastWholeMapBuildInTriggersMinRadius 4500 [$SIGSEGV] // Same as FastWholeMapTriggers, except it applies to all triggers including map made. The trigger volume must be larger than a cube with specified size to be considered "whole map" trigger. It might improve performance of some map gimmics but usually does barely anyting (default: 0) 
 	AutoWeaponStrip 1 [$SIGSEGV] // Automatically strip stock weapons without attributes in slots that are not used (default: 0)
 	RemoveUnusedOffhandViewmodel 1 [$SIGSEGV] // Remove unused offhand viewmodel on other class than Spy (default: 1)
 

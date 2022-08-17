@@ -676,7 +676,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SentryHintBombBackwardRange     ("tf_bot_engineer_mvm_sentry_hint_bomb_backward_range"),
 			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb"),
 			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately"),
-			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity")
+			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity"),
+			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all")
 			
 		{
 			this->Reset();
@@ -836,6 +837,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SentryHintMinDistanceFromBomb.Reset();
 			this->m_SendBotsToSpectatorImmediately.Reset();
 			this->m_PathTrackIsServerEntity.Reset();
+			this->m_FastWholeMapTriggersAll.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -1071,7 +1073,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
 		CPopOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
 		CPopOverride_ConVar<bool> m_PathTrackIsServerEntity;
-		
+		CPopOverride_ConVar<float> m_FastWholeMapTriggersAll;		
 		
 		
 		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -6144,6 +6146,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_DefaultBossScale.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "FastWholeMapTriggers")) {
 				state.m_FastWholeMapTriggers.Set(subkey->GetBool());
+			} else if (FStrEq(name, "FastWholeMapBuildInTriggersMinRadius")) {
+				state.m_FastWholeMapTriggersAll.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "BluHumanSpawnNoShoot")) {
 				state.m_BluHumanSpawnNoShoot.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BluHumanSpawnProtection")) {
