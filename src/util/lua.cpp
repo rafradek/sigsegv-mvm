@@ -808,7 +808,7 @@ namespace Util::Lua
         }
 
         int AddCallback(CallbackType type, LuaState *state, int func) {
-            if (type < 0 && type >= CALLBACK_TYPE_COUNT) return;
+            if (type < 0 && type >= CALLBACK_TYPE_COUNT) return -1;
 
             callbacks[type].emplace_back(state, func, callbackNextId);
             states.insert(state);
@@ -816,16 +816,16 @@ namespace Util::Lua
             return callbackNextId++;
         }
 
-        void RemoveCallback(CallbackType type, LuaState *state, int func) {
+        void RemoveCallback(CallbackType type, LuaState *state, int id) {
             RemoveFirstElement(callbacks[type], [&](auto &pair) {
-                return pair.state == state && func == pair.func;
+                return pair.state == state && id == pair.id;
             });
         }
 
-        void RemoveCallback(LuaState *state, int func) {
+        void RemoveCallback(LuaState *state, int id) {
             for (int type = 0; type < CALLBACK_TYPE_COUNT; type++) {
                 RemoveFirstElement(callbacks[type], [&](auto &pair) {
-                    return pair.state == state && func == pair.func;
+                    return pair.state == state && id == pair.id;
                 });
             }
         }
@@ -892,14 +892,14 @@ namespace Util::Lua
         auto entity = LEntityGetNonNull(l, 1);
         int type = lua_gettop(l) > 2 ? luaL_checkinteger(l, 2) : -1;
         luaL_argcheck(l, type >= -1 && type < CALLBACK_TYPE_COUNT, 2, "type out of range");
-        int func = luaL_checkinteger(l, type != -1 ? 3 : 2);
+        int id = luaL_checkinteger(l, type != -1 ? 3 : 2);
 
         auto module = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (module != nullptr) {
             if (type != -1)
-                module->RemoveCallback((CallbackType)type, cur_state, func);
+                module->RemoveCallback((CallbackType)type, cur_state, id);
             else
-                module->RemoveCallback(cur_state, func);
+                module->RemoveCallback(cur_state, id);
         }
         return 0;
     }
