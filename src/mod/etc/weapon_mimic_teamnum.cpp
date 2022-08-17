@@ -404,19 +404,19 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (mimicFire != nullptr) {
 			auto killIcon = mimicFire->GetCustomVariable<"killicon">();
 			if (killIcon != nullptr) {
-				Msg("Killicon1 %s\n", killIcon);
+				//Msg("Killicon1 %s\n", killIcon);
 				return killIcon;
 			}
 		}
 		if (info.GetInflictor() != nullptr) {
 			auto killIcon = info.GetInflictor()->GetCustomVariable<"killicon">();
 			if (killIcon != nullptr) {
-				Msg("Killicon2 %s\n", killIcon);
+				//Msg("Killicon2 %s\n", killIcon);
 				return killIcon;
 			}
 		}
 		auto result = DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
-		Msg("Killicon %s\n", result);
+		//Msg("Killicon %s\n", result);
 		return result;
 	}
 
