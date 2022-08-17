@@ -453,13 +453,13 @@ function ents.FindAllByClass(classname) end
 ---@param mins Vector Starting box coordinates
 ---@param maxs Vector Ending box coordinates
 ---@return table entities All entities that matched the criteria
-function ents.FindAllInBox(mins, maxs) end
+function ents.FindInBox(mins, maxs) end
 
 --Finds all entities in a sphere
 ---@param center Vector Sphere center coordinates
 ---@param radius number Sphere radius
 ---@return table entities All entities that matched the criteria
-function ents.FindAllInSphere(center, radius) end
+function ents.FindInSphere(center, radius) end
 
 --Returns first entity
 ---@return Entity first First entity in the list
