@@ -2,6 +2,7 @@
 #include "stub/entities.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
+#include "mod/attr/custom_attributes.h"
 
 
 namespace Mod::Credits::Better_Radius_Collection
@@ -35,8 +36,10 @@ namespace Mod::Credits::Better_Radius_Collection
 		
 		/* only run every 3rd tick */
 		if (gpGlobals->tickcount % 3 != 0) return;
-		
-		float radius_sqr = Square(player->IsPlayerClass(TF_CLASS_SCOUT) ? 288.0f : 72.0f);
+
+		float radius = player->IsPlayerClass(TF_CLASS_SCOUT) ? 288.0f : 72.0f;
+		radius = Mod::Attr::Custom_Attributes::GetFastAttributeFloatExternal(player, radius, Mod::Attr::Custom_Attributes::MULT_CREDIT_COLLECT_RANGE);
+		float radius_sqr = Square(radius);
 		Vector player_pos = player->GetAbsOrigin();
 		
 	//	if (!ICurrencyPackAutoList::AutoList().IsEmpty()) {

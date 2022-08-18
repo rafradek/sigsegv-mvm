@@ -2471,4 +2471,22 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4565"
+    {
+        "name"	"mult credit collect range"
+        "attribute_class"	"mult_credit_collect_range"
+        "description_string"	"(+-)%p% credit collection range"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4566"
+    {
+        "name"	"health from credits"
+        "attribute_class"	"health_from_credits"
+        "description_string"	"(+-)%d health gained from credits"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

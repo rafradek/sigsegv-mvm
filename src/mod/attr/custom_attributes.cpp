@@ -21,6 +21,7 @@
 #include "mem/protect.h"
 #include <gamemovement.h>
 #include <boost/tokenizer.hpp>
+#include "mod/attr/custom_attributes.h"
 
 
 class CDmgAccumulator;
@@ -44,70 +45,7 @@ namespace Mod::Attr::Custom_Attributes
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
 	GlobalThunk<IPredictionSystem> g_RecipientFilterPredictionSystem("g_RecipientFilterPredictionSystem");
 
-	enum FastAttributeClassPlayer
-	{
-		STOMP_BUILDING_DAMAGE,
-		STOMP_PLAYER_TIME,
-		STOMP_PLAYER_DAMAGE,
-		STOMP_PLAYER_FORCE,
-		NOT_SOLID_TO_PLAYERS,
-		MULT_MAX_OVERHEAL_SELF,
-		MIN_RESPAWN_TIME,
-		MULT_STEP_HEIGHT,
-		IGNORE_PLAYER_CLIP,
-		ALLOW_BUNNY_HOP,
-		ALLOW_FRIENDLY_FIRE,
-		MULT_DUCK_SPEED,
-
-		// Add new entries above this line
-		ATTRIB_COUNT_PLAYER,
-	};
-	enum FastAttributeClassItem
-	{
-		ALWAYS_CRIT,
-		ADD_COND_ON_ACTIVE,
-		MAX_AOE_TARGETS,
-		DUCK_ACCURACY_MULT,
-		CONTINOUS_ACCURACY_MULT,
-		CONTINOUS_ACCURACY_TIME,
-		CONTINOUS_ACCURACY_TIME_RECOVERY,
-		MOVE_ACCURACY_MULT,
-		ALT_FIRE_DISABLED,
-		PASSIVE_RELOAD,
-		
-		// Add new entries above this line
-		ATTRIB_COUNT_ITEM,
-	};
-	const char *fast_attribute_classes_player[ATTRIB_COUNT_PLAYER] = {
-		"stomp_building_damage", 
-		"stomp_player_time", 
-		"stomp_player_damage", 
-		"stomp_player_force", 
-		"not_solid_to_players",
-		"mult_max_ovelheal_self",
-		"min_respawn_time",
-		"mult_step_height",
-		"ignore_player_clip",
-		"allow_bunny_hop",
-		"allow_friendly_fire",
-		"mult_duck_speed"
-	};
-
-	const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
-		"always_crit",
-		"add_cond_when_active",
-		"max_aoe_targets",
-		"duck_accuracy_mult",
-		"continous_accuracy_mult",
-		"continous_accuracy_time",
-		"continous_accuracy_time_recovery",
-		"move_accuracy_mult",
-		"unimplemented_altfire_disabled",
-		"passive_reload"
-	};
-
 	float *fast_attribute_cache[2048];
-
 
 	CBaseEntity *last_fast_attrib_entity = nullptr;
 	float *CreateNewAttributeCache(CBaseEntity *entity) {
@@ -166,6 +104,16 @@ namespace Mod::Attr::Custom_Attributes
 	inline int GetFastAttributeInt(CBaseEntity *entity, int value, int name) {
 		return RoundFloatToInt(GetFastAttributeFloat(entity, value, name));
 	}
+
+	extern ConVar cvar_enable;
+	float GetFastAttributeFloatExternal(CBaseEntity *entity, float value, int name) {
+		return cvar_enable.GetBool() ? GetFastAttributeFloat(entity, value, name) : value;
+	}
+
+	float GetFastAttributeIntExternal(CBaseEntity *entity, float value, int name) {
+		return cvar_enable.GetBool() ? GetFastAttributeInt(entity, value, name) : value;
+	}
+
 
 #define GET_STRING_ATTRIBUTE(attrlist, name, varname) \
 	static int inddef_##varname = GetItemSchema()->GetAttributeDefinitionByName(name)->GetIndex(); \
@@ -2968,13 +2916,13 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			auto *weapon = rtti_cast<CEconEntity *>(addcond_provider_item);
-			Msg("remove cond item, %d\n", weapon);
+			//Msg("remove cond item, %d\n", weapon);
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "effect add attributes", attribs);
 				
 				if (attribs != nullptr) {
 					std::string str(attribs);
-					Msg("attribs, %s\n", attribs);
+					//Msg("attribs, %s\n", attribs);
 					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
 
 					auto it = tokens.begin();
@@ -2983,7 +2931,7 @@ namespace Mod::Attr::Custom_Attributes
 						if (++it == tokens.end())
 							break;
 						auto &value = *it;
-						Msg("provide, %s %f\n", attribute.c_str());
+						//Msg("provide, %s %f\n", attribute.c_str());
 						player->RemoveCustomAttribute(attribute.c_str());
 						it++;
 					}
@@ -4826,7 +4774,33 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CGameMovement_CheckFalling)();
 	}
 
-	
+	DETOUR_DECL_MEMBER(bool, CCurrencyPack_MyTouch, CBasePlayer *player)
+	{
+		int nCurHealth = player->GetHealth();
+		int nMaxHealth = player->GetMaxHealth();
+		bool ret = DETOUR_MEMBER_CALL(CCurrencyPack_MyTouch)(player);
+		if (ret) {
+			float health = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, health, health_from_credits);
+			if (health != 0) {
+				float nHealth = nCurHealth < nMaxHealth ? health : health * 0.5f;
+
+				int nHealthCap = nMaxHealth * 4;
+				if ( nCurHealth > nHealthCap )
+				{
+					nHealth = RemapValClamped( nCurHealth, nHealthCap, (nHealthCap * 1.5f), health * 0.4f, health * 0.1f );
+				}
+
+				if (nHealth > 0) {
+					player->TakeHealth( nHealth, DMG_IGNORE_MAXHEALTH );
+				}
+				else {
+					player->TakeDamage(CTakeDamageInfo(player, player, nullptr, vec3_origin, vec3_origin, (nHealth * -1), DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
+				}
+			}
+		}
+		return ret;
+	}
 
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
@@ -5529,6 +5503,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);
+            MOD_ADD_DETOUR_MEMBER(CCurrencyPack_MyTouch, "CCurrencyPack::MyTouch");
 			
 
 			// Fix burn time mult not working by making fire deal damage faster
