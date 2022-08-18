@@ -3151,3 +3151,9 @@ WaveSchedule
 
 // Snaps the arrow to the next closest available target within range
 // "arrow snap to next target radius" 1000
+
+// Credit collection radius multiplier, scouts have 4x bigger collection radiues
+// "mult credit collect range" 2
+
+// Additional health gained from credits
+// "health from credits" 50
