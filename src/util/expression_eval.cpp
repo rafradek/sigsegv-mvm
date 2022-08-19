@@ -2,20 +2,9 @@
 #include "util/expression_eval.h"
 #include "util/misc.h"
 #include "util/clientmsg.h"
-
-namespace Mod::Etc::Mapentity_Additions
-{
-    enum GetInputType {
-        ANY,
-        VARIABLE,
-        KEYVALUE,
-        DATAMAP,
-        SENDPROP
-    };
-
-    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable);
-    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable);
-}
+#include "stub/baseentity.h"
+#include "stub/extraentitydata.h"
+#include "mod/etc/mapentity_additions.h"
 
 std::vector<Evaluation::EvaluationFuncDef> expression_functions;
 

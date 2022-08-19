@@ -4802,6 +4802,11 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(void, CVEngineServer_PlaybackTempEntity, IRecipientFilter& filter, float delay, const void *pSender, const SendTable *pST, int classID)
+	{
+		DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter, delay, pSender, pST, classID);
+		Msg("TempEnt %s \n", pST->GetName());
+	}
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
@@ -5504,6 +5509,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CCurrencyPack_MyTouch, "CCurrencyPack::MyTouch");
+            //MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");
 			
 
 			// Fix burn time mult not working by making fire deal damage faster

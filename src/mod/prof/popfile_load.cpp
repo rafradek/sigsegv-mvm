@@ -1,11 +1,8 @@
 #include "mod.h"
 #include "stub/baseentity.h"
+#include "stub/entities.h"
 #include "util/scope.h"
 #include "util/stringpool.h"
-
-
-class CBaseParticleEntity : public CBaseEntity {};
-class CSmokeStack : public CBaseParticleEntity {};
 
 class CEntityMapData;
 

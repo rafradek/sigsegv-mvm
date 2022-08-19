@@ -52,7 +52,10 @@ function CVector:Copy(vector) end
 ---@return nil
 function CVector:CopyUnpacked(x, y, z) end
 
---It is possible to access entity properties and custom variables like a typical field, like entity.m_iTeamNum or entity.m_iAmmo[1] (Arrays start from 1 instead of 0)
+--Game entity class.
+--It is possible to access entity netprops, datamap and custom variables like a typical field, like entity.m_iTeamNum or entity.m_iAmmo[1] (Arrays start from 1 instead of 0)
+--List of netprops https://raw.githubusercontent.com/powerlord/tf2-data/master/netprops.txt
+--List of datamap props https://raw.githubusercontent.com/powerlord/tf2-data/master/datamaps.txt
 --Is is also possible to call entity inputs like a typical function, like entity.FireUser1()
 ---@class Entity
 local CEntity = {}

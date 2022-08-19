@@ -68,7 +68,20 @@
         "mutex": "cpp",
         "thread": "cpp",
         "compare": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "cassert": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "ciso646": "cpp",
+        "climits": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "cstdbool": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [

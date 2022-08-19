@@ -653,7 +653,7 @@ WaveSchedule
 	{
 		Blockade //Template name
 		{
-			NoFixup 1 //Normally, each spawned template entity has added an unique suffix to it. Use NoFixup 1 to prevent such changes, which allows the entity to be used in outputs outside of template without wildcard character added to it
+			NoFixup 1 //If the entity targetname is used somewhere else in the template, any additional spawn of a template will have an unique suffix added to the entity name. Use NoFixup to prevent such changes
 			prop_dynamic //Entity classname
 			{
 				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue
@@ -664,7 +664,7 @@ WaveSchedule
 		Special //Template name
 		{
 			KeepAlive 1
-			NoFixup 1 //Normally, each spawned template entity has added an unique suffix to it. Use NoFixup to prevent such changes, which allows the entity to be used in outputs outside of template without wildcard character added to it
+			NoFixup 1 //If the entity targetname is used somewhere else in the template, any additional spawn of a template will have an unique suffix added to the entity name. Use NoFixup to prevent such changes
 			prop_dynamic //Entity classname
 			{
 				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue

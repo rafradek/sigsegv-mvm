@@ -2904,7 +2904,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
 
 		if (ToTFBot(player) == nullptr) {
-			if ( g_pointTemplateParent.find(player) != g_pointTemplateParent.end()) {
+			if (player->GetEntityModule<EntityModule>("parenttemplatemodule") != nullptr) {
 				for (auto templ : g_templateInstances) {
 					if (templ->parent == player && !templ->ignore_parent_alive_state) {
 						templ->OnKilledParent(false);
@@ -5062,22 +5062,44 @@ namespace Mod::Pop::PopMgr_Extensions
 		DevMsg("Parse_ExtraTankPath: name \"%s\", %zu nodes\n", name, points.size());
 	}
 
-	void InsertFixupPattern(std::string &str, std::set<std::string> &entity_names) {
+	void FindUsedEntityNames(std::string &str, std::set<std::string> &entity_names, std::set<std::string> &entity_names_used) {
 		int pos = 0;
 		size_t start = 0;
+
+		while(pos <= str.size()){
+			char c = pos < str.size() ? str[pos] : '\0';
+			if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '*' || c == '$' || c == '_')) {
+				std::string strsub = str.substr(start, pos-start);
+				if (entity_names.contains(strsub)){
+					entity_names_used.insert(strsub);
+				}
+				start = pos+1;
+			}
+			pos++;
+		}
+	}
+
+	bool InsertFixupPattern(std::string &str, std::set<std::string> &entity_names) {
+		bool changed = false;
+		int pos = 0;
+		size_t start = 0;
+
 		while(pos <= str.size()){
 			char c = pos < str.size() ? str[pos] : '\0';
 			if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '*' || c == '$' || c == '_')) {
 				std::string strsub = str.substr(start, pos-start);
 				if (entity_names.find(strsub) != entity_names.end()){
+					str.insert(start,"\1");
+					pos+=1;
 					str.insert(pos,"\1");
-					DevMsg("pos %d %d %s", start, pos, strsub.c_str());
+					changed = true;
 					//templ.fixup_names.insert(str);
 				}
 				start = pos+1;
 			}
 			pos++;
 		}
+		return changed;
 	}
 	
 	void GetMinMaxFromSolid(KeyValues *kv, Vector &min, Vector &max)
@@ -5107,10 +5129,9 @@ namespace Mod::Pop::PopMgr_Extensions
     	[](unsigned char c){ return std::tolower(c); });
 
 		std::set<std::string> entity_names;
+		std::set<std::string> entity_names_used;
 		PointTemplate &templ = Point_Templates().emplace(tname,PointTemplate()).first->second;
 		templ.name = tname;
-		EntityKeys onspawn;
-		EntityKeys onkilled;
 		FOR_EACH_SUBKEY(kv, subkey) {
 
 			const char *cname = subkey->GetName();
@@ -5136,18 +5157,15 @@ namespace Mod::Pop::PopMgr_Extensions
 						param = subkey2->GetString();
 					}
 				}
-				
-				std::string trig = CFmtStr("%s,%s,%s,%f,1",target.c_str(),action.c_str(),param.c_str(),delay).Get();
-				
-				if (FStrEq(cname, "OnSpawnOutput"))
-					onspawn.insert({"ontrigger",trig});
+
+				if (FStrEq(cname, "OnSpawnOutput")) {
+					templ.on_spawn_triggers.push_back({target, action, param, delay});
+				}
 				else if (FStrEq(cname, "OnParentKilledOutput")) {
-					templ.has_on_kill_parent_trigger = true;
-					templ.on_parent_kill_triggers.push_back(trig);
+					templ.on_parent_kill_triggers.push_back({target, action, param, delay});
 				}
 				else if (FStrEq(cname, "OnAllKilledOutput")) {
-					templ.has_on_kill_trigger = true;
-					templ.on_kill_triggers.push_back(trig);
+					templ.on_kill_triggers.push_back({target, action, param, delay});
 				}
 				
 				//DevMsg("Added onspawn %s %s \n", input->target.c_str(), input->input.c_str());
@@ -5216,25 +5234,41 @@ namespace Mod::Pop::PopMgr_Extensions
 				DevMsg("add Entity %s %s to template %s\n", cname, keyvalues.find("classname")->second.c_str(), tname.c_str());
 			}
 		}
-		
-		if (!onspawn.empty()){
-			onspawn.insert({"classname", "logic_relay"});
-			onspawn.insert({"targetname", "trigger_spawn_relay_inter"});
-			onspawn.insert({"spawnflags", "2"});
-			templ.entities.push_back(onspawn);
-			//entity_names.insert(onspawn.find("targetname")->second);
-		}
+
 		if (!templ.no_fixup) {
-			for (auto it = templ.on_parent_kill_triggers.begin(); it != templ.on_parent_kill_triggers.end(); ++it){
-				InsertFixupPattern(*it, entity_names);
+			for (auto &in : templ.on_spawn_triggers) {
+				FindUsedEntityNames(in.target, entity_names, entity_names_used);
+				FindUsedEntityNames(in.param, entity_names, entity_names_used);
 			}
-			InsertFixupPattern(templ.remove_if_killed, entity_names);
+			for (auto &in : templ.on_parent_kill_triggers) {
+				FindUsedEntityNames(in.target, entity_names, entity_names_used);
+				FindUsedEntityNames(in.param, entity_names, entity_names_used);
+			}
+			FindUsedEntityNames(templ.remove_if_killed, entity_names, entity_names_used);
+			
+			for (auto it = templ.entities.begin(); it != templ.entities.end(); ++it){
+				for (auto it2 = it->begin(); it2 != it->end(); ++it2){
+					if (!FStrEq(it2->first.c_str(), "targetname")) {
+						FindUsedEntityNames(it2->second, entity_names, entity_names_used);
+					}
+				}
+			}
+
+			for (auto &in : templ.on_spawn_triggers) {
+				InsertFixupPattern(in.target, entity_names_used);
+				InsertFixupPattern(in.param, entity_names_used);
+			}
+			for (auto &in : templ.on_parent_kill_triggers) {
+				InsertFixupPattern(in.target, entity_names_used);
+				InsertFixupPattern(in.param, entity_names_used);
+			}
+			InsertFixupPattern(templ.remove_if_killed, entity_names_used);
 			
 			for (auto it = templ.entities.begin(); it != templ.entities.end(); ++it){
 				for (auto it2 = it->begin(); it2 != it->end(); ++it2){
 					std::string str=it2->second;
 						
-					InsertFixupPattern(str, entity_names);
+					InsertFixupPattern(str, entity_names_used);
 					it2->second = str;
 				}
 			}

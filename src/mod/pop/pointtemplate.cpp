@@ -18,6 +18,25 @@ int Template_Increment;
 ConVar fast_whole_map_trigger("sig_pop_pointtemplate_fast_whole_map_trigger", "1", FCVAR_NOTIFY,
 		"Mod: Make whole map triggers faster");
 
+class TemplateParentModule : public EntityModule
+{
+public:
+	TemplateParentModule() {}
+	TemplateParentModule(CBaseEntity *entity) {}
+};
+
+class TemplateEntityModule : public EntityModule
+{
+public:
+	TemplateEntityModule() {}
+	TemplateEntityModule(CBaseEntity *entity) : entity(entity) {}
+	
+	CBaseEntity *entity = nullptr;
+	bool deleteAllOnRemove = false;
+
+	std::shared_ptr<PointTemplateInstance> inst;
+};
+
 class WholeMapTriggerModule : public EntityModule, public AutoList<WholeMapTriggerModule>
 {
 public:
@@ -28,16 +47,31 @@ public:
 	std::unordered_map<std::string, std::pair<variant_t, variant_t>> props;
 };
 
-std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> g_entityToTemplate;
+void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst);
 
-void FixupKeyvalue(std::string &val,int id, const char *parentname) {
+void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<EHANDLE> &matching) {
 	int amperpos = 0;
 	while((amperpos = val.find('\1',amperpos)) != -1){
-		val[amperpos] = '\1';
-		amperpos+=1;
-		
-		val.insert(amperpos,std::to_string(id));
-		DevMsg("amp %d %s\n",amperpos, val.c_str());
+		int endNamePos = val.find('\1',amperpos+1);
+		if (endNamePos != -1) {
+			Msg("amp pre %d %s\n",amperpos, val.c_str());
+			std::string entName = val.substr(amperpos+1, endNamePos - amperpos - 1);
+
+			// Find if there is already an entity with that name, if yes, fix up the name, otherwise delete the fixup marker 
+			auto sameName = servertools->FindEntityByName(nullptr, entName.c_str());
+			if (sameName != nullptr && std::find(matching.begin(), matching.end(), sameName) == matching.end()) {
+				val[endNamePos] = '\1';
+				val.insert(endNamePos+1,std::to_string(id));
+			}
+			else {
+				val.erase(endNamePos, 1);
+			}
+			val.erase(amperpos, 1);
+			Msg("amp %d %s\n",amperpos, val.c_str());
+		}
+		else {
+			amperpos++;
+		}
 	}
 		
 	int parpos = 0;
@@ -113,7 +147,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		}
 
 		parentname = fmt::format("@h@{}", parent->GetRefEHandle().ToInt());
-		g_pointTemplateParent.insert(parent);
+		parent->AddEntityModule("parenttemplatemodule", new TemplateParentModule());
 	}
 	else
 	{
@@ -135,11 +169,14 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		CBaseEntity *entity = CreateEntityByName(keys.find("classname")->second.c_str());
 		if (entity != nullptr) {
 			spawned_list.push_back(entity);
+			templ_inst->entities.push_back(entity);
+			auto mod = entity->GetOrCreateEntityModule<TemplateEntityModule>("templatemodule");
+			mod->inst = templ_inst;
 			for (auto it1 = keys.begin(); it1 != keys.end(); ++it1){
 				std::string val = it1->second;
 
 				if (!this->no_fixup)
-					FixupKeyvalue(val,Template_Increment,parentname.c_str());
+					FixupKeyvalue(val,Template_Increment,parentname.c_str(), templ_inst->entities);
 
 				servertools->SetKeyValue(entity, it1->first.c_str(), val.c_str());
 			}
@@ -147,7 +184,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			auto itname = keys.find("targetname");
 			if (itname != keys.end()){
 				if (this->remove_if_killed != "" && itname->second == this->remove_if_killed) {
-					g_entityToTemplate[entity] = templ_inst;
+					mod->deleteAllOnRemove = true;
 				}
 				spawned[itname->second]=entity;
 			}
@@ -195,9 +232,6 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			list_spawned[num_entity].m_nDepth = 0;
 			list_spawned[num_entity].m_pDeferredParentAttachment = NULL;
 			list_spawned[num_entity].m_pDeferredParent = NULL;
-
-			templ_inst->entities.push_back(entity);
-			g_pointTemplateChild.insert(entity);
 			
 			//To make brush entities working
 			if (keys.find("mins") != keys.end() && keys.find("maxs") != keys.end()){
@@ -247,17 +281,20 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		entity->Activate();
 	}*/
 
-	if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
-		variant_t variant;
-		variant.SetString(NULL_STRING);
-		CBaseEntity *spawn_trigger = spawned.find("trigger_spawn_relay_inter")->second;
-		
-		if (parent != nullptr)
-			spawn_trigger->AcceptInput("Trigger",parent,parent,variant,-1);
-		else
-			spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
-		servertools->RemoveEntity(spawn_trigger);
+	if (!this->on_spawn_triggers.empty()) {
+		TriggerList(parent != nullptr ? parent : UTIL_EntityByIndex(0), this->on_spawn_triggers, templ_inst.get());
 	}
+	// if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
+	// 	variant_t variant;
+	// 	variant.SetString(NULL_STRING);
+	// 	CBaseEntity *spawn_trigger = spawned.find("trigger_spawn_relay_inter")->second;
+		
+	// 	if (parent != nullptr)
+	// 		spawn_trigger->AcceptInput("Trigger",parent,parent,variant,-1);
+	// 	else
+	// 		spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
+	// 	servertools->RemoveEntity(spawn_trigger);
+	// }
 
 	delete[] list_spawned;
 
@@ -404,13 +441,28 @@ PointTemplate *FindPointTemplate(std::string &str) {
 	return nullptr;
 }
 
-void TriggerList(CBaseEntity *activator, std::vector<std::string> &triggers, PointTemplateInstance *inst)
+void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst)
 {
-	CBaseEntity *trigger = CreateEntityByName("logic_relay");
-	variant_t variant1;
-	variant1.SetString(NULL_STRING);
 
-	for(auto it = triggers.begin(); it != triggers.end(); it++){
+	//CBaseEntity *trigger = CreateEntityByName("logic_relay");
+	//variant_t variant1;
+	for (auto &inputinfo : triggers) {
+		std::string target = inputinfo.target;
+		std::string param = inputinfo.param;
+		if (!inst->templ->no_fixup) {
+			FixupKeyvalue(target,inst->id,"", inst->entities);
+			FixupKeyvalue(param,inst->id,"", inst->entities);
+		}
+		variant_t variant;
+		//if (!param.empty()) {
+			variant.SetString(AllocPooledString(param.c_str()));
+		//}
+		//else {
+		//	variant.SetString(NULL_STRING);
+		//}
+		g_EventQueue.GetRef().AddEvent( STRING(AllocPooledString(target.c_str())), STRING(AllocPooledString(inputinfo.input.c_str())), variant, inputinfo.delay, activator, activator, -1);
+	}
+	/*for(auto it = triggers.begin(); it != triggers.end(); it++){
 		std::string val = *(it); 
 		if (!inst->templ->no_fixup)
 			FixupKeyvalue(val,inst->id,"");
@@ -425,7 +477,7 @@ void TriggerList(CBaseEntity *activator, std::vector<std::string> &triggers, Poi
 		trigger->AcceptInput("trigger", activator, activator ,variant1,-1);
 	else
 		trigger->AcceptInput("trigger", UTIL_EntityByIndex(0),UTIL_EntityByIndex(0),variant1,-1);
-	servertools->RemoveEntity(trigger);
+	servertools->RemoveEntity(trigger);*/
 }
 
 void PointTemplateInstance::OnKilledParent(bool cleared) {
@@ -436,8 +488,8 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 		return;
 	}
 
-	if (!cleared && this->templ->has_on_kill_parent_trigger) {
-		TriggerList(this->parent, this->templ->on_parent_kill_triggers, this);
+	if (!cleared && !this->templ->on_parent_kill_triggers.empty()) {
+		TriggerList(this->parent != nullptr && this->parent->IsPlayer() ? this->parent.Get() : UTIL_EntityByIndex(0), this->templ->on_parent_kill_triggers, this);
 	}
 
 	for(auto it = this->entities.begin(); it != this->entities.end(); it++){
@@ -472,8 +524,6 @@ std::unordered_map<std::string, PointTemplate> &Point_Templates()
 	return templ;
 }
 
-std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
-std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
 std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 
 void Clear_Point_Templates()
@@ -506,10 +556,10 @@ void Update_Point_Templates()
 				if (!hasalive)
 				{
 					inst->all_entities_killed = true;
-					TriggerList(inst->parent, inst->templ->on_kill_triggers, inst.get());
+					TriggerList(inst->parent != nullptr && inst->parent->IsPlayer() ? inst->parent.Get() : UTIL_EntityByIndex(0), inst->templ->on_kill_triggers, inst.get());
 				}
 			}
-			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && inst->templ->has_on_kill_parent_trigger)) {
+			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && !inst->templ->on_parent_kill_triggers.empty())) {
 				inst->OnKilledParent(true);
 			}
 		}
@@ -543,20 +593,6 @@ void Update_Point_Templates()
 			//if (it->entities[1] != nullptr)
 			//	DevMsg("childpos %f %d %d\n",it->entities[1]->GetAbsOrigin().x, it->entities[1]->GetMoveParent() != nullptr, it->entities[1]->GetMoveParent() == it->parent_helper);
 		}
-	}
-	for(auto it = g_pointTemplateParent.begin(); it != g_pointTemplateParent.end();){
-		if (*(it) == nullptr) {
-			it = g_pointTemplateParent.erase(it);
-		}
-		else
-			it++;
-	}
-	for(auto it = g_pointTemplateChild.begin(); it != g_pointTemplateChild.end();){
-		if (*(it) == nullptr) {
-			it = g_pointTemplateChild.erase(it);
-		}
-		else
-			it++;
 	}
 }
 
@@ -609,14 +645,14 @@ namespace Mod::Pop::PointTemplate
 	{
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
 
-		if (entity->FirstMoveChild() != nullptr && g_pointTemplateParent.find(entity) != g_pointTemplateParent.end()) {
+		if (entity->FirstMoveChild() != nullptr && entity->GetEntityModule<TemplateParentModule>("parenttemplatemodule") != nullptr) {
 
 			CBaseEntity *child = entity->FirstMoveChild();
 
 			std::vector<CBaseEntity *> childrenToRemove;
 			
 			do {
-				if (g_pointTemplateChild.find(child) != g_pointTemplateChild.end()) {
+				if (child->GetEntityModule<TemplateEntityModule>("templatemodule") != nullptr) {
 					childrenToRemove.push_back(child);
 				}
 			} 
@@ -626,16 +662,15 @@ namespace Mod::Pop::PointTemplate
 				childToRemove->SetParent(nullptr, -1);
 			}
 		}
-		if (!g_entityToTemplate.empty())
+		auto templMod = entity->GetEntityModule<TemplateEntityModule>("templatemodule");
+		
+		if (templMod != nullptr)
 		{
-			auto it = g_entityToTemplate.find(entity);
-			if (it != g_entityToTemplate.end()) {
-				auto inst = it->second;
-				for (auto entityinst : inst->entities) {
+			if (templMod->deleteAllOnRemove) {
+				for (auto entityinst : templMod->inst->entities) {
 					if (entityinst != nullptr && entityinst != entity)
 						entityinst->Remove();
 				}
-				g_entityToTemplate.erase(it);
 			}
 		}
 

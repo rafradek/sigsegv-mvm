@@ -43,13 +43,12 @@ public:
 	std::vector<EntityKeys> entities;
 	std::set<std::string> fixup_names;
 	bool keep_alive = false;
-	bool has_on_kill_parent_trigger = false;
-	bool has_on_kill_trigger = false;
 	bool no_fixup = false;
 	std::string remove_if_killed = "";
 
-	std::vector<std::string> on_parent_kill_triggers = std::vector<std::string>();
-	std::vector<std::string> on_kill_triggers = std::vector<std::string>();
+	std::vector<InputInfoTemplate> on_spawn_triggers = std::vector<InputInfoTemplate>();
+	std::vector<InputInfoTemplate> on_parent_kill_triggers = std::vector<InputInfoTemplate>();
+	std::vector<InputInfoTemplate> on_kill_triggers = std::vector<InputInfoTemplate>();
 
 	std::shared_ptr<PointTemplateInstance> SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr, bool ignore_parent_alive_state = false);
 };
@@ -111,8 +110,6 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 
 PointTemplate *FindPointTemplate(std::string &str);
 std::unordered_map<std::string, PointTemplate> &Point_Templates();
-extern std::set<CHandle<CBaseEntity>> g_pointTemplateParent;
-extern std::set<CHandle<CBaseEntity>> g_pointTemplateChild;
 extern std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 
 void Clear_Point_Templates();
