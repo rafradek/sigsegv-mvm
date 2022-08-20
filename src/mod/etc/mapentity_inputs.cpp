@@ -1157,9 +1157,7 @@ namespace Mod::Etc::Mapentity_Additions
                 std::string str = Value.String();
                 Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str);
         }},
-        
-#ifdef GCC11
-        {"TauntFromItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+        {"TauntFromItem2"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 
                 CTFPlayer* player{ToTFPlayer(ent)};
                 auto view{CEconItemView::Create()};
@@ -1237,11 +1235,45 @@ namespace Mod::Etc::Mapentity_Additions
                         vi::from_str<int>(v[1])
                     };
                     if(index && taunt_concept) 
-                        player->Taunt(*index, *taunt_concept);
+                        player->Taunt((taunts_t)*index, *taunt_concept);
                 }
                 
         }},
-#endif
+        {"TauntFromItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player{ToTFPlayer(ent)};
+                const std::string_view input{Value.String()};
+                const auto v{vi::split_str(input, "|")};
+                
+                if (v.empty()) return;
+
+                std::string itemName = std::string(v[0]);
+		        auto item_def = GetItemSchema()->GetItemDefinitionByName(itemName.c_str());
+
+                if (item_def == nullptr) return;
+
+                CEconItemView *view = CEconItemView::Create();
+                view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+                Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(itemName, view);
+                for (size_t i = 1; i < v.size() - 1; i+=2) {
+                    CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(std::string(v[i]).c_str());
+                    if (attr_def == nullptr) {
+                        auto idx = vi::from_str<int>(v[i]);
+                        if (idx.has_value()) {
+                            attr_def = GetItemSchema()->GetAttributeDefinition(*idx);
+                        }
+                    }
+
+                    if (attr_def != nullptr) {
+                        view->GetAttributeList().AddStringAttribute(attr_def, std::string(v[i+1]).c_str());
+                    }
+                }
+                player->PlayTauntSceneFromItem(view);
+                CEconItemView::Destroy(view);
+        }},
+        {"Taunt"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player{ToTFPlayer(ent)};
+                player->Taunt(TAUNT_BASE_WEAPON, 0);
+        }},
         {"StripExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player = ToTFPlayer(ent);
                 std::string str = Value.String();
