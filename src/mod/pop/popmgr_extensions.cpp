@@ -576,6 +576,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int max = 0;
 		std::vector<std::unique_ptr<ItemListEntry>> entries;
 		bool checkAllSlots = false;
+		std::vector<std::pair<std::string, int>> ifUpgradePresent;
 	};
 
 	struct PopState
@@ -3014,7 +3015,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 					// Check item match
 					bool foundMatch = true;
-					CEconItemView *incompatibleItem = nullptr;
+					std::string incompatibleItem;
 					if (!entry.entries.empty()) {
 						foundMatch = false;
 						if (entry.checkAllSlots) {
@@ -3023,7 +3024,7 @@ namespace Mod::Pop::PopMgr_Extensions
 									for(auto &entry : entry.entries) {
 										if (entry->Matches(item->GetClassname(), item->GetItem())) {
 											foundMatch = true;
-											incompatibleItem = item->GetItem();
+											incompatibleItem = GetItemNameForDisplay(item->GetItem());
 											return false;
 										}
 									}
@@ -3044,10 +3045,31 @@ namespace Mod::Pop::PopMgr_Extensions
 							}
 						}
 					}
+
+					if (foundMatch && !entry.ifUpgradePresent.empty()) {
+						foundMatch = false;
+						for (auto [name, level] : entry.ifUpgradePresent) {
+							for (int i = 0; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
+								const char *upgradename2 = upgrade->GetUpgradeAttributeName(i);
+								if (FStrEq(upgradename2, name.c_str())) {
+									
+									int cur_step;
+									bool over_cap;
+									int max_step = GetUpgradeStepData(player, itemslot, i, cur_step, over_cap);
+
+									if (cur_step >= level) {
+										foundMatch = true;
+										incompatibleItem = name;
+										break;
+									}
+								}
+							}
+						}
+					}
 					
 					if (foundMatch) {
 						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission\n%s%s", entry.max != 0 ? "more ": "", upgradename, 
-						incompatibleItem != nullptr ? GetItemNameForDisplay(incompatibleItem) : "", incompatibleItem != nullptr ? " blocks this upgrade" : ""));
+						incompatibleItem.c_str(), !incompatibleItem.empty() ? " blocks this upgrade" : ""));
 						return;
 					}
 				}
@@ -4662,6 +4684,11 @@ namespace Mod::Pop::PopMgr_Extensions
 				else if (FStrEq(subkey->GetName(), "CheckAllSlots")) {
 					entry.checkAllSlots = subkey->GetInt();
 				}
+				else if (FStrEq(subkey->GetName(), "IfUpgradePresent")) {
+					FOR_EACH_SUBKEY(subkey, subkeyUpgrade) {
+						entry.ifUpgradePresent.push_back({subkeyUpgrade->GetName(), subkeyUpgrade->GetInt()});
+					}
+				}
 				else {
 					auto itemEntry = Parse_ItemListEntry(subkey,"DisallowedUpgrade", false);
 					if (itemEntry != nullptr)
@@ -5726,7 +5753,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		"FlagResetTime",
 		"ExtraSpawnPoint",
 		"ExtraTankPath",
-		"DisallowUpgrades",
+		"DisallowUpgrade",
 		"SpawnTemplate",
 		"PlayerSpawnTemplate",
 		"PlayerSpawnOnceTemplate",

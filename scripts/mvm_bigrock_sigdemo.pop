@@ -457,6 +457,16 @@ WaveSchedule
 		ItemName "TF_WEAPON_ROCKETLAUNCHER" // Apply upgrade restrictions only to those items if specified
 		ClassName "tf_weapon_smg"
 	}
+
+	DisallowUpgrade	[$SIGSEGV] //Advanced syntax
+	{
+		Upgrade	"damage bonus hidden" // Upgrade name. In case of extended upgrades, the name of the attribute
+		MaxLevel 0 // Maximum allowed level
+		IfUpgradePresent // Other upgrades that should not be present
+		{
+			"clip size upgrade atomic" 1 // "clip size upgrade atomic" at level 1 or more blocks this upgrade 
+		}
+	}
 	
 	// Enables extended upgrades displayed on the left of upgrade gui as SourceMod menu. This allows for more than 8 upgrades per weapon, with custom weapon rules
 	ExtendedUpgrades [$SIGSEGV]

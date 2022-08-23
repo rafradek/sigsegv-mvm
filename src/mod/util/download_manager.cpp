@@ -566,6 +566,11 @@ namespace Mod::Util::Download_Manager
 		popfiles_to_forced_update.clear();
 
 		bool saved_lock = engine->LockNetworkStringTables(false);
+
+		static ConVarRef sig_mvm_custom_upgrades_file("sig_mvm_custom_upgrades_file");
+		if (strlen(sig_mvm_custom_upgrades_file.GetString()) > 0) {
+			files_add[sig_mvm_custom_upgrades_file.GetString()] = true;
+		}
 		for (auto &entry : files_add) {
 			if (entry.second) {
 				//Msg("%s\n", entry.first.c_str());
