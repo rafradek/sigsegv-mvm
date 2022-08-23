@@ -54,7 +54,6 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<
 	while((amperpos = val.find('\1',amperpos)) != -1){
 		int endNamePos = val.find('\1',amperpos+1);
 		if (endNamePos != -1) {
-			Msg("amp pre %d %s\n",amperpos, val.c_str());
 			std::string entName = val.substr(amperpos+1, endNamePos - amperpos - 1);
 
 			// Find if there is already an entity with that name, if yes, fix up the name, otherwise delete the fixup marker 
@@ -67,7 +66,6 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<
 				val.erase(endNamePos, 1);
 			}
 			val.erase(amperpos, 1);
-			Msg("amp %d %s\n",amperpos, val.c_str());
 		}
 		else {
 			amperpos++;

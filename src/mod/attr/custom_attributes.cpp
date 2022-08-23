@@ -4689,7 +4689,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
-		Msg("Igniter: %d Weapon: %d %s Duration: %f\n", igniter, weapon, weapon != nullptr ? weapon->GetClassname() : "", duration);
+		//Msg("Igniter: %d Weapon: %d %s Duration: %f\n", igniter, weapon, weapon != nullptr ? weapon->GetClassname() : "", duration);
 		float remainingFlameTime = shared->m_flFlameRemoveTime;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
@@ -4938,7 +4938,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot)
 	{
-		if (!cvar_display_attrs.GetBool() || ENTINDEX(target) >= ARRAYSIZE(attribute_info_strings))
+		if (!cvar_display_attrs.GetBool() || (size_t)ENTINDEX(target) >= ARRAYSIZE(attribute_info_strings))
 			return;
 			
 		bool display_stock = player != target;

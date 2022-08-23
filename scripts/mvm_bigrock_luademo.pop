@@ -67,7 +67,7 @@ WaveSchedule
 
 			player:AddCallback(ON_ACTIVATE, function(ent) print('Player activate '..tostring(ent)) end)
 			player:AddCallback(ON_DAMAGE_RECEIVED_PRE, function(ent, damage) print('Player damaged pre '..tostring(ent)); PrintTable(damage); damage.Damage=0; return true; end)
-			player:AddCallback(ON_DAMAGE_RECEIVED_POST, function(ent, damage) print('Player damaged post '..tostring(ent)); PrintTable(damage) end)
+			player:AddCallback(ON_DAMAGE_RECEIVED_POST, function(ent, damage, previousHealth) print('Player damaged post '..tostring(ent)); PrintTable(damage) end)
 			player:AddCallback(ON_INPUT, function(ent, name, activator, caller, value) 
 				print('Player input '..tostring(ent)..' '..name..' '..tostring(activator)..' '..tostring(caller)..' '..tostring(value))
 			end)

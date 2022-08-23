@@ -763,6 +763,7 @@ namespace Util::Lua
         LuaState *state;
         int func;
         int id;
+        bool deleted = false;
     };
 
     struct EntityTableStorageEntry
@@ -817,16 +818,19 @@ namespace Util::Lua
         }
 
         void RemoveCallback(CallbackType type, LuaState *state, int id) {
-            RemoveFirstElement(callbacks[type], [&](auto &pair) {
-                return pair.state == state && id == pair.id;
-            });
+            for (auto it = callbacks[type].begin(); it != callbacks[type].end(); it++) {
+                auto &pair = *it;
+                if (id == pair.id && pair.state == state) {
+                    pair.deleted = true;
+                    callbacksToDelete.push_back({type, id});
+                    return;
+                }
+            }
         }
 
         void RemoveCallback(LuaState *state, int id) {
             for (int type = 0; type < CALLBACK_TYPE_COUNT; type++) {
-                RemoveFirstElement(callbacks[type], [&](auto &pair) {
-                    return pair.state == state && id == pair.id;
-                });
+                RemoveCallback((CallbackType)type, state, id);
             }
         }
 
@@ -850,15 +854,32 @@ namespace Util::Lua
         //     }
         //     tableStore.push_back({state, value});
         // }
-        
+
+        void CallCallback(LuaState *state, int args, int ret) {
+            inCallback++;
+            state->Call(args, ret);
+            inCallback--;
+            if (inCallback == 0 && !callbacksToDelete.empty()) {
+                for (auto &[type, id] : callbacksToDelete) {
+                    RemoveFirstElement(callbacks[type], [&](EntityCallback &callback){
+                        return callback.id == id;
+                    });
+                }
+            }
+        }
+
         void FireCallback(CallbackType type, std::function<void(LuaState *)> *extrafunc = nullptr, int extraargs = 0, std::function<void(LuaState *)> *extraretfunc = nullptr, int ret = 0) {
             if (callbacks[type].empty()) return;
+            
             for (auto &pair : callbacks[type]) {
+                if (pair.deleted) continue;
+
                 auto l = pair.state->GetState();
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, owner);
                 if (extrafunc != nullptr)
                     (*extrafunc)(pair.state);
+                CallCallback(pair.state, 1 + extraargs, ret);
                 pair.state->Call(1 + extraargs, ret);
                 if (extraretfunc != nullptr)
                     (*extraretfunc)(pair.state);
@@ -867,10 +888,13 @@ namespace Util::Lua
             }
         }
 
-        std::vector<EntityCallback> callbacks[CALLBACK_TYPE_COUNT];
+        std::deque<EntityCallback> callbacks[CALLBACK_TYPE_COUNT];
         std::unordered_set<LuaState *> states;
+        std::vector<std::pair<CallbackType,int>> callbacksToDelete;
         CBaseEntity *owner;
+        int inCallback = 0;
         int callbackNextId = 0;
+        CTakeDamageInfo lastTakeDamage;
         //std::vector<EntityTableStorageEntry> tableStore;
     };
 
@@ -1537,7 +1561,7 @@ namespace Util::Lua
         return 0;
     }
 
-    void DamageInfoToTable(lua_State *l, CTakeDamageInfo &info) {
+    void DamageInfoToTable(lua_State *l, const CTakeDamageInfo &info) {
         lua_newtable(l);
         LEntityAlloc(l, info.GetAttacker());
         lua_setfield(l, -2, "Attacker");
@@ -3026,51 +3050,61 @@ namespace Util::Lua
 
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         
-        bool overriden = false;
+        int health_pre = entity->GetHealth();
         auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         int damage = 0;
 
-        int health_pre = entity->GetHealth();
-        if (mod != nullptr) {
-            CTakeDamageInfo infooverride = info;
+        CTakeDamageInfo infooverride = info;
+        if (mod != nullptr && !mod->callbacks[ON_DAMAGE_RECEIVED_PRE].empty()) {
             for (auto &pair : mod->callbacks[ON_DAMAGE_RECEIVED_PRE]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                pair.state->Call(2, 1);
+                mod->CallCallback(pair.state, 2, 1);
                 if (lua_toboolean(l, -1)) {
-                    overriden = true;
                     TableToDamageInfo(l, -2, infooverride);
                 }
 
                 lua_settop(l, 0);
             }
-            if(overriden) {
-                damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(infooverride);
-            }
+        }
+        if (mod != nullptr && !mod->callbacks[ON_DAMAGE_RECEIVED_POST].empty()) {
+            mod->lastTakeDamage = infooverride;
         }
 
-        if (!overriden) {
-		    damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
-        }
+		damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(infooverride);
 
-        if (mod != nullptr) {
+        if (mod != nullptr&& !mod->callbacks[ON_DAMAGE_RECEIVED_POST].empty()) {
             for (auto &pair : mod->callbacks[ON_DAMAGE_RECEIVED_POST]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity);
-                DamageInfoToTable(l, info);
+                DamageInfoToTable(l, mod->lastTakeDamage);
                 lua_pushnumber(l, health_pre);
-                pair.state->Call(3, 0);
+                mod->CallCallback(pair.state, 3, 0);
 
                 lua_settop(l, 0);
             }
         }
 
         return damage;
+	}
+
+    DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, const CTakeDamageInfo& info)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+		auto ret = DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+
+        auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod != nullptr) {
+            mod->lastTakeDamage = info;
+        }
+        return ret;
 	}
 
     DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
@@ -3219,13 +3253,14 @@ namespace Util::Lua
         if (mod != nullptr) {
             CTakeDamageInfo infooverride = info;
             for (auto &pair : mod->callbacks[ON_DEATH]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                pair.state->Call(2, 1);
+                mod->CallCallback(pair.state, 2, 1);
                 if (lua_toboolean(l, -1)) {
                     overriden = true;
                     TableToDamageInfo(l, -2, infooverride);
@@ -3251,13 +3286,14 @@ namespace Util::Lua
         if (mod != nullptr) {
             CTakeDamageInfo infooverride = info;
             for (auto &pair : mod->callbacks[ON_DEATH]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                pair.state->Call(2, 1);
+                mod->CallCallback(pair.state, 2, 1);
                 if (lua_toboolean(l, -1)) {
                     overriden = true;
                     TableToDamageInfo(l, -2, infooverride);
@@ -3365,11 +3401,12 @@ namespace Util::Lua
         auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod1 != nullptr && !mod1->callbacks[ON_SHOULD_COLLIDE].empty()) {
             for (auto &pair : mod1->callbacks[ON_SHOULD_COLLIDE]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity1);
                 LEntityAlloc(l, entity2);
-                pair.state->Call(2, 1);
+                mod1->CallCallback(pair.state, 2, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);
@@ -3381,11 +3418,12 @@ namespace Util::Lua
         auto mod2 = entity2->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod2 != nullptr && !mod2->callbacks[ON_SHOULD_COLLIDE].empty()) {
             for (auto &pair : mod2->callbacks[ON_SHOULD_COLLIDE]) {
+                if (pair.deleted) continue;
                 auto l = pair.state->GetState();
                 lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
                 LEntityAlloc(l, entity2);
                 LEntityAlloc(l, entity1);
-                pair.state->Call(2, 1);
+                mod2->CallCallback(pair.state, 2, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);
@@ -3579,6 +3617,7 @@ namespace Util::Lua
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput", HIGH);
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput", HIGH);
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGH);
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseCombatCharacter_OnTakeDamage, "CBaseCombatCharacter::OnTakeDamage", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_Activate, "CBaseEntity::Activate");
             MOD_ADD_DETOUR_STATIC(DispatchSpawn, "DispatchSpawn");
             MOD_ADD_DETOUR_STATIC(CreateEntityByName, "CreateEntityByName");
