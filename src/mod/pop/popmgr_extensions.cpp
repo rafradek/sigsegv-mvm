@@ -594,7 +594,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SentryBusterFriendlyFire("tf_bot_suicide_bomb_friendly_fire"),
 			m_BotPushaway             ("tf_avoidteammates_pushaway"),
 			m_HumansMustJoinTeam      ("sig_mvm_jointeam_blue_allow_force"),
-			m_ForceHoliday            ("tf_forced_holiday"),
 			m_AllowJoinTeamBlue       ("sig_mvm_jointeam_blue_allow"),
 			m_AllowJoinTeamBlueMax    ("sig_mvm_jointeam_blue_allow_max"),
 			m_BluHumanFlagPickup      ("sig_mvm_bluhuman_flag_pickup"),
@@ -604,13 +603,13 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SetCreditTeam           ("sig_mvm_set_credit_team"),
 			m_EnableDominations       ("sig_mvm_dominations"),
 			m_RobotLimit              ("sig_mvm_robot_limit_override"),
-			m_CustomUpgradesFile      ("sig_mvm_custom_upgrades_file"),
 			m_BotsHumans              ("sig_mvm_bots_are_humans"),
+			m_ForceHoliday            ("tf_forced_holiday"),
 			m_VanillaMode             ("sig_vanilla_mode"),
 			m_BodyPartScaleSpeed      ("sig_mvm_body_scale_speed"),
 			m_SandmanStuns      	  ("sig_mvm_stunball_stun"),
-			m_StandableHeads      	  ("sig_robot_standable_heads"),
 			m_MedigunShieldDamage     ("sig_mvm_medigunshield_damage"),
+			m_StandableHeads      	  ("sig_robot_standable_heads"),
 			m_NoRomevisionCosmetics   ("sig_no_romevision_cosmetics"),
 			m_CreditsBetterRadiusCollection   ("sig_credits_better_radius_collection"),
 			m_AimTrackingIntervalMultiplier   ("sig_head_tracking_interval_multiplier"),
@@ -625,10 +624,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_RedTeamMaxPlayers               ("sig_mvm_red_team_max_players"),
 			m_MaxSpeedEnable                  ("sig_etc_override_speed_limit"),
 			m_MaxSpeedLimit                   ("sig_etc_override_speed_limit_value"),
+			m_MaxVelocity                     ("sv_maxvelocity"),
 			m_BotRunFast                      ("sig_bot_runfast"),
 			m_BotRunFastJump                  ("sig_bot_runfast_allowjump"),
 			m_BotRunFastUpdate                ("sig_bot_runfast_fast_update"),
-			m_MaxVelocity                     ("sv_maxvelocity"),
 			m_ConchHealthOnHitRegen           ("tf_dev_health_on_damage_recover_percentage"),
 			m_MarkOnDeathLifetime             ("tf_dev_marked_for_death_lifetime"),
 			m_VacNumCharges                   ("weapon_medigun_resist_num_chunks"),
@@ -651,8 +650,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_EyeParticle                     ("sig_mvm_eye_particle"),
 			m_BotEscortCount                  ("tf_bot_flag_escort_max_count"),
 			m_CustomAttrDisplay               ("sig_attr_display"),
-			m_AirAccelerate                   ("sv_airaccelerate"),
 			m_Accelerate                      ("sv_accelerate"),
+			m_AirAccelerate                   ("sv_airaccelerate"),
 			m_TurboPhysics                    ("sv_turbophysics"),
 			m_UpgradeStationRegenCreators     ("sig_mvm_upgradestation_creators"),
 			m_UpgradeStationRegen             ("sig_mvm_upgradestation_regen_improved"),
@@ -678,7 +677,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SentryHintMinDistanceFromBomb   ("tf_bot_engineer_mvm_hint_min_distance_from_bomb"),
 			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately"),
 			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity"),
-			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all")
+			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all"),
+
+			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
 			
 		{
 			this->Reset();
@@ -1654,7 +1655,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto find_loadout = state.m_SelectedLoadoutItems.find(player);
 			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
 				for(int itemnum : find_loadout->second) {
-					if (itemnum < state.m_ExtraLoadoutItems.size()) {
+					if (itemnum < (int) state.m_ExtraLoadoutItems.size()) {
 						auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
 						if (extraitem.item != nullptr && (extraitem.class_index == pclass || extraitem.class_index == 0) && extraitem.loadout_slot == slot) {
 							DevMsg("GiveItem %d %s\n", slot, GetItemNameForDisplay(extraitem.item));
@@ -1987,7 +1988,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			if (IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && g_pPopulationManager != nullptr && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
 				
-				int wave_pre = TFObjectiveResource()->m_nMannVsMachineWaveCount;
+				unsigned int wave_pre = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 				//int GetTotalCurrency() return {}
 				
 				rc_CTeamplayRoundBasedRules_State_Enter = true;
@@ -2137,16 +2138,18 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 
 				int msg_type = usermessages->LookupUserMessage("VGUIMenu");
-				if (msg_type == -1) return;
+				if (msg_type != -1) {
 				
-				bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
-				if (msg == nullptr) return;
-				
-				msg->WriteString("class_red");
-				msg->WriteByte(0x01);
-				msg->WriteByte(0x00);
+					bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
 
-				engine->MessageEnd();
+					if (msg != nullptr) {
+						msg->WriteString("class_red");
+						msg->WriteByte(0x01);
+						msg->WriteByte(0x00);
+
+						engine->MessageEnd();
+					}
+				}
 			}
 			endless.SetValue(false);
 			return true;
@@ -2651,7 +2654,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			int spectators = 0;
 			int assigned = 0;
 			ForEachTFPlayer([&](CTFPlayer *player){
-				if(!player->IsFakeClient() && !player->IsHLTV()) {
+				if(player->IsRealPlayer()) {
 					if (player->GetTeamNumber() == TF_TEAM_BLUE || player->GetTeamNumber() == TF_TEAM_RED)
 						assigned++;
 					else
@@ -3103,9 +3106,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisplayForcedItemsClassInfo(CTFPlayer *player);
 	void DisplayForcedItemsInfo(CTFPlayer *player, int id);
 
-	IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index);
-	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player);
-	IBaseMenu *DisplayExtraLoadoutItemsBuy(CTFPlayer *player, int itemId);
+	IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index, bool autoHide);
+	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player, bool autoHide);
+	IBaseMenu *DisplayExtraLoadoutItemsBuy(CTFPlayer *player, int itemId, bool autoHide);
 
 	class SelectMainMissionInfoHandler : public IMenuHandler
     {
@@ -3297,10 +3300,17 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
     };
 
-	class SelectExtraLoadoutItemsClassHandler : public IMenuHandler
+	class ExtraLoadoutItemsHander : public IMenuHandler
+	{
+	public:
+		ExtraLoadoutItemsHander(bool autoHide) : IMenuHandler(), autoHide(autoHide) {}
+		bool autoHide = false;
+	};
+
+	class SelectExtraLoadoutItemsClassHandler : public ExtraLoadoutItemsHander
     {
     public:
-        SelectExtraLoadoutItemsClassHandler(CTFPlayer *pPlayer) : IMenuHandler() {
+        SelectExtraLoadoutItemsClassHandler(CTFPlayer *pPlayer, bool autoHide) : ExtraLoadoutItemsHander(autoHide) {
 			this->player = pPlayer;
 		}
 
@@ -3309,7 +3319,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 
 			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
-			DisplayExtraLoadoutItemsClass(player, id);
+			DisplayExtraLoadoutItemsClass(player, id, autoHide);
         }
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
@@ -3326,11 +3336,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		CHandle<CTFPlayer> player;
     };
 
-	class SelectExtraLoadoutItemsHandler : public IMenuHandler
+	class SelectExtraLoadoutItemsHandler : public ExtraLoadoutItemsHander
     {
     public:
 
-        SelectExtraLoadoutItemsHandler(CTFPlayer * pPlayer) : IMenuHandler() {
+        SelectExtraLoadoutItemsHandler(CTFPlayer * pPlayer, bool autoHide) : ExtraLoadoutItemsHander(autoHide) {
             this->player = pPlayer;
         }
 
@@ -3346,7 +3356,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				auto &item = state.m_ExtraLoadoutItems[id];
 
 				if (item.cost > 0) {
-					DisplayExtraLoadoutItemsBuy(player, id);
+					DisplayExtraLoadoutItemsBuy(player, id, autoHide);
 					return;
 				}
 
@@ -3372,7 +3382,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 			
-			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), autoHide);
         }
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
@@ -3389,11 +3399,11 @@ namespace Mod::Pop::PopMgr_Extensions
         CHandle<CTFPlayer> player;
     };
 
-	class SelectExtraLoadoutItemsBuyHandler : public IMenuHandler
+	class SelectExtraLoadoutItemsBuyHandler : public ExtraLoadoutItemsHander
     {
     public:
 
-        SelectExtraLoadoutItemsBuyHandler(CTFPlayer * pPlayer, int itemId) : IMenuHandler() {
+        SelectExtraLoadoutItemsBuyHandler(CTFPlayer * pPlayer, int itemId, bool autoHide) : ExtraLoadoutItemsHander(autoHide) {
             this->player = pPlayer;
             this->itemId = itemId;
         }
@@ -3461,13 +3471,13 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			}
 			
-			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), autoHide);
         }
 
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
 			if (reason == MenuEnd_ExitBack || reason == MenuEnd_Exit) {
-			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), autoHide);
 			}
 		}
 		
@@ -3721,7 +3731,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetDefaultTitle(CFmtStr("%s Attributes", state.m_ItemAttributes[id].entry->GetInfo()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
-		if (id < state.m_ItemAttributes.size()) {
+		if (id < (int)state.m_ItemAttributes.size()) {
 			auto &attribs = state.m_ItemAttributes[id].attributes;
 			for (auto &entry : attribs) {
 				attribute_data_union_t value;
@@ -3844,7 +3854,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
 			for (auto &vec : {items_class[id], items_class[0], items_class[10]}) {
-				for (int i = 0; i < vec.size(); i++) {
+				for (size_t i = 0; i < vec.size(); i++) {
 					auto &item = vec[i];
 					char buf[256];
 					snprintf(buf, sizeof(buf), "%s", item.name.c_str());
@@ -3867,7 +3877,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		bool has_class[10] = {0};
 
-		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 			
 			if (item.class_index == 0) {
@@ -3898,7 +3908,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[id]));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
-		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 
 			if (id == item.class_index || item.class_index == 0) {
@@ -3911,9 +3921,45 @@ namespace Mod::Pop::PopMgr_Extensions
 		
         menu->Display(ENTINDEX(player), 10);
 	}
+	
+	class EmptyHandler : public IMenuHandler
+	{
+	public:
+		EmptyHandler() : IMenuHandler() {
+		}
+	};
+	EmptyHandler empty_handler_def;
+
+	THINK_FUNC_DECL(PlayerExtraLoadoutMenuThink)
+	{
+		bool nextThink = false;
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		void *menu = nullptr;
+		if (menus->GetDefaultStyle()->GetClientMenu(player->entindex(), &menu) == MenuSource_BaseMenu && menu != nullptr) {
+			auto handler = dynamic_cast<ExtraLoadoutItemsHander *>(((IBaseMenu *)menu)->GetHandler());
+			if (handler != nullptr && handler->autoHide) {
+				nextThink = true;
+				if (!player->m_Shared->m_bInUpgradeZone && !PointInRespawnRoom(player, player->GetAbsOrigin(), false)) {
+					menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
+					auto panel = menus->GetDefaultStyle()->CreatePanel();
+					ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
+					panel->DrawItem(info1);
+					ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
+					panel->DrawItem(info2);
+					panel->SetSelectableKeys(255);
+					panel->SendDisplay(ENTINDEX(player), &empty_handler_def, 1);
+					return;
+				}
+			}
+		}
+		
+		if (nextThink) {
+			this->SetNextThink(gpGlobals->curtime + 0.05f, "PlayerExtraLoadoutMenuThink");
+		}
+	}
 
 	bool HasExtraLoadoutItems(int class_index) {
-		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			if (state.m_ExtraLoadoutItems[i].class_index == class_index || state.m_ExtraLoadoutItems[i].class_index == 0) {
 				return true;
 			}
@@ -3921,9 +3967,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		return false;
 	}
 
-	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player)
+	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player, bool autoHide)
 	{
-		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player);
+		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle("Extra loadout items");
@@ -3931,7 +3977,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		bool has_class[10] = {0};
 
-		for (int i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 			
 			if (item.class_index == 0) {
@@ -3962,13 +4008,16 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info2);
 		}
 
+		if (autoHide)
+			THINK_FUNC_SET(player, PlayerExtraLoadoutMenuThink, gpGlobals->curtime+0.05f);
+
         menu->Display(ENTINDEX(player), 10);
 		return menu;
 	}
 
-	IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index)
+	IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index, bool autoHide)
 	{
-		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player);
+		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
         menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[class_index]));
@@ -3999,6 +4048,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				menu->AppendItem(num.c_str(), info1);
 			}
 		}
+
 		if (menu->GetItemCount() == 1) {
             ItemDrawInfo info1(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info1);
@@ -4006,16 +4056,19 @@ namespace Mod::Pop::PopMgr_Extensions
 		else if (menu->GetItemCount() == 0) {
             menu->Destroy();
 			
-			return DisplayExtraLoadoutItems(player);
+			return DisplayExtraLoadoutItems(player, autoHide);
 		}
+		
+		if (autoHide)
+			THINK_FUNC_SET(player, PlayerExtraLoadoutMenuThink, gpGlobals->curtime+0.05f);
 		
         menu->Display(ENTINDEX(player), 10);
 		return menu;
 	}
 
-	IBaseMenu *DisplayExtraLoadoutItemsBuy(CTFPlayer *player, int itemId)
+	IBaseMenu *DisplayExtraLoadoutItemsBuy(CTFPlayer *player, int itemId, bool autoHide)
 	{
-		SelectExtraLoadoutItemsBuyHandler *handler = new SelectExtraLoadoutItemsBuyHandler(player, itemId);
+		SelectExtraLoadoutItemsBuyHandler *handler = new SelectExtraLoadoutItemsBuyHandler(player, itemId, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		auto &item = state.m_ExtraLoadoutItems[itemId];
@@ -4074,7 +4127,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return true;
 			}
 			else if (strcmp(args[0], "sig_missionitems") == 0) {
-				DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+				DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), false);
 				return true;
 			}
 		}
@@ -4098,7 +4151,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 			}
 			if (strncmp(p, "!missionitems",len) == 0 || strncmp(p, "/missionitems",len) == 0) {
-				DisplayExtraLoadoutItemsClass(ToTFPlayer(entity), ToTFPlayer(entity)->GetPlayerClass()->GetClassIndex());
+				DisplayExtraLoadoutItemsClass(ToTFPlayer(entity), ToTFPlayer(entity)->GetPlayerClass()->GetClassIndex(), false);
 				return;
 			}
 		}
@@ -4224,7 +4277,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_EndPurchasableUpgrades)
 	{
 		bool reset = false;
-		if (!state.m_RespecEnabled.Get() && TFObjectiveResource()->m_nMannVsMachineWaveCount == 1 && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
+		if (!state.m_RespecEnabled.Get() && TFObjectiveResource()->m_nMannVsMachineWaveCount == 1u && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING) {
 			reset = true;
 			TFObjectiveResource()->m_nMannVsMachineWaveCount = 2;
 		}
@@ -4433,7 +4486,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			playerItems = playerItemsCheckpoint;
 			
 			for (auto it = playerItemsSelected.begin(); it != playerItemsSelected.end(); ) {
-				if (*it >= state.m_ExtraLoadoutItems.size() || (state.m_ExtraLoadoutItems[*it].cost != 0 && !playerItems.count(*it))) {
+				if (*it >= (int)state.m_ExtraLoadoutItems.size() || (state.m_ExtraLoadoutItems[*it].cost != 0 && !playerItems.count(*it))) {
 					it = playerItemsSelected.erase(it);
 				}
 				else {
@@ -5090,7 +5143,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 
 	void FindUsedEntityNames(std::string &str, std::set<std::string> &entity_names, std::set<std::string> &entity_names_used) {
-		int pos = 0;
+		size_t pos = 0;
 		size_t start = 0;
 
 		while(pos <= str.size()){
@@ -5108,7 +5161,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	bool InsertFixupPattern(std::string &str, std::set<std::string> &entity_names) {
 		bool changed = false;
-		int pos = 0;
+		size_t pos = 0;
 		size_t start = 0;
 
 		while(pos <= str.size()){
@@ -5772,7 +5825,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				std::vector<KeyValues *> del_kv;
 				FOR_EACH_SUBKEY(keys[i], subkey) {
 					auto name = subkey->GetName();
-					for (int j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
+					for (size_t j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
 						if (FStrEq(name, include_instead_of_merging_key_names[j])) {
 							auto kvCopy = subkey->MakeCopy();
 							if (appendKvFirst == nullptr) {
@@ -6331,12 +6384,12 @@ namespace Mod::Pop::PopMgr_Extensions
 	void ResetMaxRedTeamPlayers(int resetTo) {
 		int redplayers = 0;
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->GetTeamNumber() == TF_TEAM_RED && !player->IsFakeClient() && !player->IsHLTV())
+			if (player->GetTeamNumber() == TF_TEAM_RED && player->IsRealPlayer())
 				redplayers += 1;
 		});
 		if (redplayers > resetTo) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() == TF_TEAM_RED && redplayers > resetTo && !player->IsFakeClient() && !player->IsHLTV() && !player->IsFakeClient() && !PlayerIsSMAdmin(player)) {
+				if (player->GetTeamNumber() == TF_TEAM_RED && redplayers > resetTo && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
 					player->ForceChangeTeam(TEAM_SPECTATOR, false);
 					redplayers -= 1;
 				}
@@ -6356,12 +6409,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		int spectators = 0;
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->GetTeamNumber() < 2 && !player->IsFakeClient() && !player->IsHLTV())
+			if (player->GetTeamNumber() < 2 && player->IsRealPlayer())
 				spectators += 1;
 		});
 		if (spectators > resetTo) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() < TF_TEAM_RED && spectators > resetTo && !player->IsFakeClient() && !player->IsHLTV()) {
+				if (player->GetTeamNumber() < TF_TEAM_RED && spectators > resetTo && player->IsRealPlayer()) {
 					player->HandleCommand_JoinTeam("red");
 
 					if (player->GetTeamNumber() >= TF_TEAM_RED) {
@@ -6388,18 +6441,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		int totalplayers = 0;
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (!player->IsFakeClient() && !player->IsHLTV())
+			if (player->IsRealPlayer())
 				totalplayers += 1;
 		});
 		if (totalplayers > resetTo) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() < 2 && totalplayers > resetTo && !player->IsFakeClient() && !player->IsHLTV() && !PlayerIsSMAdmin(player)) {
+				if (player->GetTeamNumber() < 2 && totalplayers > resetTo && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
 					engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
 					totalplayers -= 1;
 				}
 			});
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() >= 2 && totalplayers > state.m_iTotalMaxPlayers && !player->IsFakeClient() && !player->IsHLTV() && !PlayerIsSMAdmin(player)) {
+				if (player->GetTeamNumber() >= 2 && totalplayers > state.m_iTotalMaxPlayers && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
 					engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
 					totalplayers -= 1;
 				}
@@ -6750,7 +6803,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				int spectators = 0;
 				ForEachTFPlayer([&](CTFPlayer *player){
 					
-					if(!player->IsFakeClient() && !player->IsHLTV()) {
+					if(player->IsRealPlayer()) {
 						if (!(player->GetTeamNumber() == TF_TEAM_BLUE || player->GetTeamNumber() == TF_TEAM_RED))
 							spectators++;
 					}
@@ -6758,7 +6811,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_AllowSpectators.Set(spectators < state.m_iTotalSpectators);
 				if (spectators > state.m_iTotalSpectators) {
 					ForEachTFPlayer([&](CTFPlayer *player) {
-						if (player->GetTeamNumber() < TF_TEAM_RED && spectators > state.m_iTotalSpectators && !player->IsFakeClient() && !player->IsHLTV()) {
+						if (player->GetTeamNumber() < TF_TEAM_RED && spectators > state.m_iTotalSpectators && player->IsRealPlayer()) {
 							player->HandleCommand_JoinTeam("red");
 
 							if (player->GetTeamNumber() >= TF_TEAM_RED) {

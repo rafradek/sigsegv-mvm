@@ -120,6 +120,7 @@ MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetCurrentCharge(  
 
 
 IMPL_SENDPROP(CTFMinigun::MinigunState_t, CTFMinigun, m_iWeaponState, CTFMinigun);
+IMPL_SENDPROP(bool, CTFMinigun, m_bCritShot, CTFMinigun);
 
 MemberFuncThunk<CTFSniperRifle *, void, CTFPlayer *, CTFPlayer *> CTFSniperRifle::ft_ExplosiveHeadShot            ("CTFSniperRifle::ExplosiveHeadShot");
 MemberFuncThunk<CTFSniperRifle *, void, float &>                  CTFSniperRifle::ft_ApplyChargeSpeedModifications("CTFSniperRifle::ApplyChargeSpeedModifications");

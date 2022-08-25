@@ -277,7 +277,7 @@ namespace Mod::MvM::Robot_Limit
 			if (sv->GetNumClients() >= sv->GetMaxClients()) {
 				bool kicked = false;
 				ForEachTFPlayer([&](CTFPlayer *player) {
-					if (player->GetTeamNumber() < 2 && !player->IsFakeClient() && !player->IsHLTV() && !PlayerIsSMAdmin(player)) {
+					if (player->GetTeamNumber() < 2 && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
 						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
 						engine->ServerExecute();
 						return false;

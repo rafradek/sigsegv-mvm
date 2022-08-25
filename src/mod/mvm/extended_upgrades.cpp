@@ -301,7 +301,7 @@ namespace Mod::MvM::Extended_Upgrades
                 return;
             }
             else if (FStrEq(info, "extra")) {
-                Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+                Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), true);
                 return;
             }
             else {
@@ -1457,7 +1457,7 @@ namespace Mod::MvM::Extended_Upgrades
                         }
                         else if (!found_any && has_extra && !WeaponHasValidUpgrades(nullptr, player)) {
                             StartMenuForPlayer(player);
-                            Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, class_index);
+                            Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, class_index, true);
                         }
                         else {
                             StartMenuForPlayer(player);

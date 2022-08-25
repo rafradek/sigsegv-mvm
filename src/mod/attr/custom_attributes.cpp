@@ -1065,6 +1065,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		DETOUR_STATIC_CALL(TE_TFExplosion)(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
 	}
+	RefCount rc_CTFPlayer_TraceAttack;
 
 	const char *weapon_sound_override = nullptr;
 	CBasePlayer *weapon_sound_override_owner = nullptr;
@@ -1089,7 +1090,7 @@ namespace Mod::Attr::Custom_Attributes
 			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
-				
+				if (rc_CTFPlayer_TraceAttack && index == 5) return;
 				PrecacheSound(modelname);
 				weapon_sound_override_owner = ToTFPlayer(weapon->GetOwner());
 				weapon_sound_override = modelname;
@@ -1097,6 +1098,9 @@ namespace Mod::Attr::Custom_Attributes
 				weapon->GetOwner()->EmitSound(modelname, soundtime);
 				return;
 			}
+		}
+		if (rc_CTFPlayer_TraceAttack && index == 5 && rtti_cast<CTFMinigun *>(reinterpret_cast<CTFWeaponBase *>(this)) != nullptr) {
+			return;
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
 		weapon_sound_override = nullptr;
@@ -1708,7 +1712,7 @@ namespace Mod::Attr::Custom_Attributes
 				if (cannotUpgrade) {
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
                     if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex()) && menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), nullptr) != MenuSource_BaseMenu) {
-                        Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex());
+                        Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), true);
 					}
 					return;
 				}
@@ -4808,6 +4812,12 @@ namespace Mod::Attr::Custom_Attributes
 		Msg("TempEnt %s \n", pST->GetName());
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_TraceAttack, const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, void *pAccumulator)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_TraceAttack);
+		DETOUR_MEMBER_CALL(CTFPlayer_TraceAttack)(info, vecDir, ptr, pAccumulator);
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -5509,6 +5519,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CCurrencyPack_MyTouch, "CCurrencyPack::MyTouch");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_TraceAttack, "CTFPlayer::TraceAttack");
+			
             //MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");
 			
 

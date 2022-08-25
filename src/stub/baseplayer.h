@@ -148,6 +148,8 @@ public:
 	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
 	void CreateViewModel(int index)                                      { return vt_CreateViewModel(this, index); }
 	
+	bool IsRealPlayer() const { return !IsFakeClient() && !IsHLTV() && !IsReplay(); }
+	
 	
 	DECL_SENDPROP_RW(CPlayerLocalData, m_Local);
 	DECL_SENDPROP(int, m_nTickBase);

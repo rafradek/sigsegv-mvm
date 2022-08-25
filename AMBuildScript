@@ -264,12 +264,12 @@ class ExtensionConfig(object):
     # OPTIMIZE #################################################################
     ############################################################################
     if builder.options.opt == '1':
-      cxx.cflags    += ['-O3']
-      cxx.cflags    += ['-flto=auto']
+      cxx.cflags    += ['-O2']
+    #  cxx.cflags    += ['-flto=auto']
       cxx.cflags    += ['-fno-builtin']
       
-      cxx.linkflags += ['-Wl,-O3']
-      cxx.linkflags += ['-Wl,-flto=auto']
+      cxx.linkflags += ['-Wl,-O2']
+    #  cxx.linkflags += ['-Wl,-flto=auto']
       cxx.linkflags += ['-Wl,--gc-sections']
     else:
       if have_gcc or cxx.version >= 'clang-4.0':

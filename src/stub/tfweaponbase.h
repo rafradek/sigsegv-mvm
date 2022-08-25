@@ -220,6 +220,7 @@ public:
 	};
 	
 	DECL_SENDPROP(MinigunState_t, m_iWeaponState);
+	DECL_SENDPROP(bool, m_bCritShot);
 };
 
 class CTFSniperRifle : public CTFWeaponBaseGun

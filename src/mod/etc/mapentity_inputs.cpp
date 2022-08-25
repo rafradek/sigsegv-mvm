@@ -1943,7 +1943,7 @@ namespace Mod::Etc::Mapentity_Additions
             auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
             if (Value.FieldType() == FIELD_EHANDLE) {
                 auto target = ToTFPlayer(Value.Entity().Get());
-                if (target == nullptr || target->IsFakeClient() || target->IsHLTV()) return;
+                if (target == nullptr || !target->IsRealPlayer()) return;
 
                 auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), target->edict());
                 if (!mod->defaultHide && entry == mod->hideTo.end())
@@ -1954,7 +1954,7 @@ namespace Mod::Etc::Mapentity_Additions
             else {
                 for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     CTFPlayer *player = ToTFPlayer(target);
-                    if (player == nullptr || player->IsFakeClient() || player->IsHLTV()) continue;
+                    if (player == nullptr || !player->IsRealPlayer()) continue;
 
                     auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), player->edict());
                     if (!mod->defaultHide && entry == mod->hideTo.end())
@@ -1969,7 +1969,7 @@ namespace Mod::Etc::Mapentity_Additions
             auto mod = ent->GetOrCreateEntityModule<VisibilityModule>("visibility");
             if (Value.FieldType() == FIELD_EHANDLE) {
                 auto target = ToTFPlayer(Value.Entity().Get());
-                if (target == nullptr || target->IsFakeClient() || target->IsHLTV()) return;
+                if (target == nullptr || !target->IsRealPlayer()) return;
 
                 auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), target->edict());
                 if (mod->defaultHide && entry == mod->hideTo.end())
@@ -1980,7 +1980,7 @@ namespace Mod::Etc::Mapentity_Additions
             else {
                 for (CBaseEntity *target = nullptr; (target = servertools->FindEntityGeneric(target, Value.String(), ent, pActivator, pCaller)) != nullptr ;) {
                     CTFPlayer *player = ToTFPlayer(target);
-                    if (player == nullptr || player->IsFakeClient() || player->IsHLTV()) continue;
+                    if (player == nullptr || !player->IsRealPlayer()) continue;
 
                     auto entry = std::find(mod->hideTo.begin(), mod->hideTo.end(), player->edict());
                     if (mod->defaultHide && entry == mod->hideTo.end())

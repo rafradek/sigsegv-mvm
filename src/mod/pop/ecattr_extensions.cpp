@@ -2321,10 +2321,10 @@ namespace Mod::Pop::ECAttr_Extensions
 				float rate_common = rate_rare + data->spell_drop_rate_common;
 				
 				if (rnd < rate_rare) {
-					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 0);
+					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 1);
 				}
 				else if (rnd < rate_common) {
-					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 1);
+					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 0);
 				}
 			}
 			if (data != nullptr && data->custom_eye_particle != "") {

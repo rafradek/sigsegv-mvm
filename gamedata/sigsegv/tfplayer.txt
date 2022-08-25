@@ -1019,6 +1019,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer20HolsterOffHandWeaponEv"
 				}
+				"CTFPlayer::TraceAttack"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+				}
 				
 				
 			//	"GetTFConditionName"

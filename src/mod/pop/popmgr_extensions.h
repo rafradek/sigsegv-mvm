@@ -3,8 +3,8 @@
 
 namespace Mod::Pop::PopMgr_Extensions {
     bool ExtendedUpgradesNoUndo();
-    IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index);
-    IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player);
+    IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index, bool autoHide);
+    IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player, bool autoHide);
     bool HasExtraLoadoutItems(int class_index);
     CTFItemDefinition *GetCustomWeaponItemDef(std::string name);
 	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view);

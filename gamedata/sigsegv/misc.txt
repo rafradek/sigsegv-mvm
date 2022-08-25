@@ -6226,6 +6226,17 @@
 					type "sym"
 					sym  "_ZNK12CTFGameRules17IsCompetitiveModeEv"
 				}
+				"CVEngineServer::PlaybackTempEntity"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CVEngineServer18PlaybackTempEntityER16IRecipientFilterfPKvPK9SendTablei"
+				}
+				"CTFMinigun::SharedAttack"
+				{
+					type "sym"
+					sym  "_ZN10CTFMinigun12SharedAttackEv"
+				}
 				
 			}
 			"addrs_group"

@@ -681,7 +681,7 @@ namespace Util::Lua
     int LEntityIsRealPlayer(lua_State *l)
     {
         auto entity = ToTFPlayer(LEntityGetOptional(l, 1));
-        lua_pushboolean(l, entity != nullptr && !entity->IsFakeClient() && !entity->IsHLTV());
+        lua_pushboolean(l, entity != nullptr && entity->IsRealPlayer());
         return 1;
     }
 
@@ -880,7 +880,6 @@ namespace Util::Lua
                 if (extrafunc != nullptr)
                     (*extrafunc)(pair.state);
                 CallCallback(pair.state, 1 + extraargs, ret);
-                pair.state->Call(1 + extraargs, ret);
                 if (extraretfunc != nullptr)
                     (*extraretfunc)(pair.state);
 
@@ -1989,7 +1988,7 @@ namespace Util::Lua
     int LEntityDisplayMenu(lua_State *l)
     {
         auto player = LPlayerGetNonNull(l, 1);
-        if (player->IsFakeClient() || player->IsHLTV()) return 0;
+        if (!player->IsRealPlayer()) return 0;
 
         luaL_checktype(l, 2, LUA_TTABLE);
         lua_pushvalue(l, 2);

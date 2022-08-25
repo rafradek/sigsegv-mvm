@@ -448,7 +448,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		extern ConVar cvar_force;
 		//DevMsg("Get team assignment %d %d %d\n", iWantedTeam, cvar_force.GetBool());
 
-		if (TFGameRules()->IsMannVsMachineMode() && !pPlayer->IsFakeClient() && !pPlayer->IsBot() && !pPlayer->IsHLTV()
+		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
 			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
 			// NOTE: if the pop file had custom param 'AllowJoinTeamBlue 1', then disregard admin-only restrictions
 			extern ConVar cvar_adminonly;
@@ -1044,7 +1044,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		someone_spec = false;
 
 		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (!someone_spec && !player->IsFakeClient() && !player->IsHLTV() && player->GetTeamNumber() == TEAM_SPECTATOR) {
+			if (!someone_spec && player->IsRealPlayer() && player->GetTeamNumber() == TEAM_SPECTATOR) {
 				someone_spec = true;
 			}
 			if (!someone_pressed_score && (player->m_nButtons & IN_SCORE)) {
