@@ -2453,6 +2453,7 @@ WaveSchedule
 			WaitBeforeStarting 0
 			WaitBetweenSpawns 0.25
 			TotalCurrency 200	
+			HideIcon 1 [$SIGSEGV] // Hides icons from the wave bar. Should use a ClassIcon different from visible ones 
 			TFBot
 			{
 				Class Soldier

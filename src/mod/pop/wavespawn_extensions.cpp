@@ -379,6 +379,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		std::vector<std::string> first_spawn_message;
 		std::vector<std::string> last_spawn_message;
 		std::vector<std::string> done_message;
+		bool hidden = false;
 		InternalStateType state;
 	};
 	
@@ -456,12 +457,14 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 	}
 
+	CWave *wave_parsing = nullptr;
 	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
 	{
-		auto wave = reinterpret_cast<CWave *>(this);
+		auto wave = wave_parsing = reinterpret_cast<CWave *>(this);
 		
 		auto ret = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
-
+		wave_parsing = nullptr;
+		
 		SetWaveSpawnWait(wave, false);
 		return ret;
 	}
@@ -547,9 +550,11 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return result;
 	}
 
+	bool last_wavespawn_hidden = false;
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		last_wavespawn_hidden = false;
 
 		// Change default total currency from -1 to 0;
 		if (wavespawn->m_totalCurrency == -1)
@@ -568,6 +573,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	//	DevMsg("CWaveSpawnPopulator::Parse\n");
 		
 		std::vector<KeyValues *> del_kv;
+		bool hidden = false;
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
 			
@@ -580,10 +586,17 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				wavespawns[wavespawn].last_spawn_message.push_back(subkey->GetString());
 			else if ( FStrEq(name, "DoneMessage"))
 				wavespawns[wavespawn].done_message.push_back(subkey->GetString());
+			else if ( FStrEq(name, "HideIcon")) {
+				wavespawns[wavespawn].hidden = subkey->GetBool();
+				hidden = true;
+			}
 			else {
 				del = false;
 			}
 			
+			if (FStrEq(name, "TotalCount")) {
+
+			}
 			if (del) {
 			//	DevMsg("Key \"%s\": processed, will delete\n", name);
 				del_kv.push_back(subkey);
@@ -603,9 +616,20 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		// delete the temporary copy of the KV subtree
 		kv->deleteThis();
 
-
+		if (result && hidden) {
+			last_wavespawn_hidden = true;
+		}
+		if (result && hidden && !wavespawn->m_bSupportWave && wave_parsing != nullptr) {
+			wave_parsing->m_iEnemyCount -= wavespawn->m_totalCount;
+		}
 		
 		return result;
+	}
+
+	DETOUR_DECL_MEMBER(void, CWave_AddClassType, string_t icon, int count, unsigned int flags)
+	{
+		if (last_wavespawn_hidden && wave_parsing != nullptr) return;
+		DETOUR_MEMBER_CALL(CWave_AddClassType)(icon, count, flags);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CWave_ActiveWaveUpdate)
@@ -944,6 +968,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
 			MOD_ADD_DETOUR_MEMBER(CWave_Parse, "CWave::Parse");
+			MOD_ADD_DETOUR_MEMBER(CWave_AddClassType, "CWave::AddClassType");
 			
 		}
 		
