@@ -1523,6 +1523,12 @@ namespace Mod::Pop::ECAttr_Extensions
 		name = Mod::Pop::PopMgr_Extensions::GetCustomWeaponNameOverride(name);
 		return DETOUR_MEMBER_CALL(CEconItemSchema_GetItemDefinitionByName)(name);
 	}
+
+	DETOUR_DECL_MEMBER(CEconItemDefinition *, CEconItemSchema_GetItemDefinitionByName2, const char *name)
+	{
+		name = Mod::Pop::PopMgr_Extensions::GetCustomWeaponNameOverride(name);
+		return DETOUR_MEMBER_CALL(CEconItemSchema_GetItemDefinitionByName)(name);
+	}
 	// DETOUR_DECL_MEMBER(void *, CSchemaFieldHandle_CEconItemDefinition, const char* name) {
 	// 	DevMsg("CShemaItemDefHandle 1 %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
 	// 	return DETOUR_MEMBER_CALL(CSchemaFieldHandle_CEconItemDefinition)(name);
@@ -2521,6 +2527,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			MOD_ADD_DETOUR_STATIC(ParseDynamicAttributes,         "ParseDynamicAttributes");
 			MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetItemDefinitionByName,        "CEconItemSchema::GetItemDefinitionByName");
+			MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetItemDefinitionByName2,        "CEconItemSchema::GetItemDefinitionByName2");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_EquipRequiredWeapon,        "CTFBot::EquipRequiredWeapon");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_FireWeaponAtEnemy, "CTFBotMainAction::FireWeaponAtEnemy");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectTargetPoint, "CTFBotMainAction::SelectTargetPoint");

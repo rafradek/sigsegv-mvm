@@ -1219,10 +1219,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	
 	const char *GetCustomWeaponNameOverride(const char *name)
 	{
-		if (name == nullptr)
-		{
-			DevMsg("null name\n");
-		}
 		if (!state.m_CustomWeapons.empty() && name != nullptr) {
 			std::string namestr = name;
 			auto entry = state.m_CustomWeapons.find(namestr);

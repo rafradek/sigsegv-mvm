@@ -23,6 +23,7 @@ namespace Util::Lua
         int m_iRepeats;
         int m_iRefFunc;
         int m_iRefParam;
+        bool m_bDestroyed = false;
     };
 
     class LuaState : public AutoList<LuaState>
@@ -63,6 +64,7 @@ namespace Util::Lua
 
         void Activate();
     private:
+        void DestroyTimer(std::deque<LuaTimer>::iterator it);
         lua_State *l;
 
         int m_iVectorMeta = LUA_NOREF;
@@ -71,8 +73,9 @@ namespace Util::Lua
         const void *m_pEntityMeta = nullptr;
         int m_iEntityTableStorage = LUA_NOREF;
         int m_iPropMeta = LUA_NOREF;
+        bool m_bTimerLoop = false;
 
-        std::vector<LuaTimer> timers;
+        std::deque<LuaTimer> timers;
         int m_iNextTimerID = 0;
         std::unordered_set<CBaseEntity *> callbackEntities;
     };

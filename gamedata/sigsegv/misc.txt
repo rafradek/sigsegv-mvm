@@ -815,7 +815,11 @@
 					type "sym"
 					sym  "_ZNK15CEconItemSchema23GetItemDefinitionByNameEPKc"
 				}
-				
+				"CEconItemSchema::GetItemDefinitionByName2"
+				{
+					type "sym"
+					sym  "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc"
+				}
 				"CEconItemSchema::GetAttributeDefinition"
 				{
 					type "sym"

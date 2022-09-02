@@ -2635,7 +2635,6 @@ namespace Util::Lua
 
     LuaState::LuaState() 
     {
-        
         l = luaL_newstate();
         luaL_openlibs(l);
 
@@ -2901,6 +2900,7 @@ namespace Util::Lua
         VPROF_BUDGET("LuaState::UpdateTimers", "Lua");
         SwitchState();
 
+        this->m_bTimerLoop = true;
         for (auto it = timers.begin(); it != timers.end();) {
             auto &timer = *it;
             
@@ -2935,6 +2935,20 @@ namespace Util::Lua
             }
             it++;
         }
+        this->m_bTimerLoop = false;
+        for (auto it = timers.begin(); it != timers.end();) {
+            if (it->m_bDestroyed) {
+                it->Destroy(l);
+                it = timers.erase(it);
+                if (timers.empty())
+                    AllTimersRemoved();
+            }
+            else {
+                it++;
+            }
+        }
+
+
     }
 
     int LuaState::AddTimer(float delay, int repeats, int reffunc, int refparam) {
@@ -2945,14 +2959,23 @@ namespace Util::Lua
         return m_iNextTimerID;
     }
 
+    void LuaState::DestroyTimer(std::deque<LuaTimer>::iterator it)
+    {
+        it->Destroy(l);
+        timers.erase(it);
+        
+        if (timers.empty())
+            AllTimersRemoved();
+    }
+
     bool LuaState::StopTimer(int id) {
         for (auto it = timers.begin(); it != timers.end(); it++) {
             if (it->m_iID == id) {
-                it->Destroy(l);
-                timers.erase(it);
-                
-                if (timers.empty())
-                    AllTimersRemoved();
+                it->m_bDestroyed = true;
+
+                if (!this->m_bTimerLoop) {
+                    this->DestroyTimer(it);
+                }
 
                 return true;
             }
