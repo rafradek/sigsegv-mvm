@@ -285,6 +285,7 @@ IMPL_DATAMAP (int, CTFPointWeaponMimic, m_nWeaponType);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits, 0x04);
 
 MemberFuncThunk<const CTFPointWeaponMimic *, QAngle> CTFPointWeaponMimic::ft_GetFiringAngles("CTFPointWeaponMimic::GetFiringAngles");
+MemberFuncThunk<CTFPointWeaponMimic *, void> CTFPointWeaponMimic::ft_Fire("CTFPointWeaponMimic::Fire");
 
 IMPL_DATAMAP (CHandle<CBasePlayer>, CGameUI, m_player);
 

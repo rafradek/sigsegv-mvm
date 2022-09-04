@@ -29,7 +29,30 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		std::unordered_map<std::string, std::string> attribs;
 	};
 
+	THINK_FUNC_DECL(MimicFire)
+	{
+		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		int times = mimic->GetCustomVariableFloat<"shootmultcount">();
+		for (int i = 0; i < times; i++) {
+			mimic->Fire();
+		}
+		this->SetNextThink(gpGlobals->curtime + mimic->GetCustomVariableFloat<"firetime">(), "MimicFire");
+	}
+
 	Mod::Etc::Mapentity_Additions::ClassnameFilter mimic_filter("tf_point_weapon_mimic", {
+		{"StartFiring"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            auto *mimic = static_cast<CTFPointWeaponMimic *>(ent);
+			variant_t times;
+			times.SetInt(Max(1, Value.Int()));
+			mimic->SetCustomVariable("shootmultcount", times);
+			for (int i = 0; i < times.Int(); i++) {
+				mimic->Fire();
+			}
+			THINK_FUNC_SET(mimic, MimicFire, gpGlobals->curtime + mimic->GetCustomVariableFloat<"firetime">());
+        }},
+		{"StopFiring"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            ent->SetNextThink(-1, "MimicFire");
+        }},
         {"AddWeaponAttribute"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto *mimic = static_cast<CTFPointWeaponMimic *>(ent);
 			char param_tokenized[512];
@@ -144,6 +167,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 					player->SetActiveWeapon(weapon);
 					int oldTeam = player->GetTeamNumber();
 					player->SetTeamNumber(mimic->GetTeamNumber());
+					weapon->m_bCurrentAttackIsCrit = mimic->m_bCrits;
 					projectile = weapon->FireProjectile(player);
 					player->SetTeamNumber(oldTeam);
 					player->SetActiveWeapon(oldActive);

@@ -117,6 +117,7 @@ public:
 	virtual void	Lock( bool bLock );
 
 	void UpdateMirrorTable (int tick) { ft_UpdateMirrorTable(this, tick); }
+	void DeleteAllStrings ()          { ft_DeleteAllStrings(this); }
 
 	TABLEID					m_id;
 	char					*m_pszTableName;
@@ -138,6 +139,7 @@ public:
 
 private:
 	static MemberFuncThunk<CNetworkStringTable *, void, int>              ft_UpdateMirrorTable;
+	static MemberFuncThunk<CNetworkStringTable *, void>                   ft_DeleteAllStrings;
 };
 
 abstract_class IEntityFactory

@@ -173,6 +173,7 @@ sourceFiles += [
   'src/mod/etc/mm_spoof.cpp',
   'src/mod/etc/nav_updateblocked.cpp',
   'src/mod/etc/override_move_speed.cpp',
+  'src/mod/etc/particle_stringtable_fix.cpp',
   'src/mod/etc/player_bullet_boundingbox_fix.cpp',
   'src/mod/etc/ratelimit_exclude.cpp',
   'src/mod/etc/release_source_mutex.cpp',

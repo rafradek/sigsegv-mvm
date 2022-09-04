@@ -1024,6 +1024,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
 				}
+				"CTFPlayerShared::IsCritBoosted"
+				{
+					type "sym"
+					sym  "_ZNK15CTFPlayerShared13IsCritBoostedEv"
+				}
 				
 				
 			//	"GetTFConditionName"

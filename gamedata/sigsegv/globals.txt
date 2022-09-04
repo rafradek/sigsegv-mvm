@@ -103,6 +103,7 @@
 				"DT_TFPlayerResource::g_SendTable" "_ZN19DT_TFPlayerResource11g_SendTableE"
 				"DT_PlayerResource::g_SendTable" "_ZN17DT_PlayerResource11g_SendTableE"
 				"s_lastTeleporter" "_ZL16s_lastTeleporter"
+				"g_pParticleSystemMgr" "_ZL19s_ParticleSystemMgr"
 				
 			}
 			

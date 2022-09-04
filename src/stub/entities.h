@@ -484,6 +484,7 @@ class CTFPointWeaponMimic : public CPointEntity
 public:
 
 	QAngle GetFiringAngles() const { return ft_GetFiringAngles(this); }
+	void   Fire()                  {        ft_Fire(this); }
 
 	DECL_DATAMAP (bool, m_bCrits);
 	DECL_DATAMAP (float, m_flSpreadAngle);
@@ -500,6 +501,7 @@ public:
 
 private:
 	static MemberFuncThunk<const CTFPointWeaponMimic *, QAngle> ft_GetFiringAngles;
+	static MemberFuncThunk<CTFPointWeaponMimic *, void> ft_Fire;
 };
 
 class CGameUI : public CBaseEntity

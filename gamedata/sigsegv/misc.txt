@@ -6241,6 +6241,54 @@
 					type "sym"
 					sym  "_ZN10CTFMinigun12SharedAttackEv"
 				}
+				"CNetworkStringTableContainer::CreateStringTable"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN28CNetworkStringTableContainer17CreateStringTableEPKciii"
+				}
+				"CNetworkStringTable::DeleteAllStrings"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN19CNetworkStringTable16DeleteAllStringsEv"
+				}
+				"CNetworkStringTable::AddString"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN19CNetworkStringTable9AddStringEbPKciPKv"
+				}
+				"CParticleSystemMgr::UncacheAllParticleSystems"
+				{
+					type "sym"
+					sym  "_ZN18CParticleSystemMgr25UncacheAllParticleSystemsEv"
+				}
+				"ParseParticleEffects"
+				{
+					type "sym"
+					sym  "_Z20ParseParticleEffectsbb"
+				}
+				"CParticleSystemMgr::GetParticleSystemCount"
+				{
+					type "sym"
+					sym  "_ZN18CParticleSystemMgr22GetParticleSystemCountEv"
+				}
+				"CParticleSystemMgr::CParticleSystemMgr"
+				{
+					type "sym"
+					sym  "_ZN18CParticleSystemMgrC2Ev"
+				}
+				"CParticleSystemMgr::~CParticleSystemMgr"
+				{
+					type "sym"
+					sym  "_ZN18CParticleSystemMgrD2Ev"
+				}
+				"CParticleSystemMgr::Init"
+				{
+					type "sym"
+					sym  "_ZN18CParticleSystemMgr4InitEP20IParticleSystemQuery"
+				}
 				
 			}
 			"addrs_group"

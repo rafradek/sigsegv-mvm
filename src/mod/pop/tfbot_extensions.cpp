@@ -861,7 +861,7 @@ namespace Mod::Pop::TFBot_Extensions
 					bool done = false;
 					CBaseEntity *destination = nullptr;
 					Vector spawnPosition;
-					if ((!bot_leader->IsMiniBoss() && FindTeleporter("small", spawnPosition, false)) || (bot_leader->IsMiniBoss() && FindTeleporter("giants", spawnPosition, false)) ) {
+					if ((!(bot_leader != nullptr && bot_leader->IsMiniBoss()) && FindTeleporter("small", spawnPosition, false)) || ((bot_leader != nullptr && bot_leader->IsMiniBoss()) && FindTeleporter("giants", spawnPosition, false)) ) {
 						bool is_space_to_spawn = IsSpaceToSpawnHere(spawnPosition);
 						if (!is_space_to_spawn)
 							spawnPosition.z += 50.0f;
