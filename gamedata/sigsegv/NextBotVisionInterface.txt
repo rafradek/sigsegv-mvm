@@ -53,6 +53,11 @@
 					type "sym"
 					sym  "_ZNK7IVision11IsAbleToSeeEP11CBaseEntityNS_20FieldOfViewCheckTypeEP6Vector"
 				}
+				"IVision::IsLineOfSightClearToEntity"
+				{
+					type "sym"
+					sym  "_ZNK7IVision26IsLineOfSightClearToEntityEPK11CBaseEntityP6Vector"
+				}
 			}
 		}
 	}

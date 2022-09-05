@@ -1887,6 +1887,63 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CBasePlayer_GetSteamID)(pID);
 	}
 
+	RefCount rc_IVision_IsAbleToSee;
+	CBaseEntity *vision_subject = nullptr;
+	DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *subject, int checkFOV, Vector *visibleSpot)
+	{
+		// {
+		// 	TIME_SCOPE2(visible);
+		// 	if (subject != nullptr && subject->MyCombatCharacterPointer() != nullptr && subject->MyCombatCharacterPointer()->GetLastKnownArea() != nullptr) {
+		// 		subject->MyCombatCharacterPointer()->GetLastKnownArea()->Contains(subject->GetAbsOrigin());
+		// 	}
+		// }
+		SCOPED_INCREMENT(rc_IVision_IsAbleToSee);
+		vision_subject = subject;
+		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
+		vision_subject = nullptr;
+
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClearToEntity, CBaseEntity *subject, Vector *visibleSpot)
+	{
+		CFastTimer timer;
+		timer.Start();
+		bool ret = DETOUR_MEMBER_CALL(IVision_IsLineOfSightClearToEntity)(subject, visibleSpot);
+		timer.End();
+		if (rc_IVision_IsAbleToSee) {
+			Msg("LineOfSight %.9f %d\n", timer.GetDuration().GetSeconds(), gpGlobals->tickcount);
+		}
+
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CNavArea_IsPotentiallyVisible, CNavArea *area)
+	{
+		
+		// CFastTimer timer;
+		// timer.Start();
+		if (rc_IVision_IsAbleToSee && vision_subject != nullptr && vision_subject->IsPlayer() && ToTFPlayer(vision_subject)->IsRealPlayer()) {
+			return true;
+		}
+		bool ret = DETOUR_MEMBER_CALL(CNavArea_IsPotentiallyVisible)(area);
+		if (!ret && rc_IVision_IsAbleToSee && vision_subject != nullptr) {
+			auto subjectCombat = vision_subject->MyCombatCharacterPointer();
+			if (subjectCombat != nullptr) {
+				auto area = subjectCombat->GetLastKnownArea();
+				if (area != nullptr) {
+					auto &vec = vision_subject->GetAbsOrigin();
+					bool contains = area->IsOverlapping(vec,4.0f);
+					float z = area->GetZ(vec.x, vec.y);
+					if (!contains && z - vec.z > 20) {
+						return true;
+					}
+				}
+			}
+		}
+		return ret;
+	}
+
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldDropAmmoPack)
@@ -2092,6 +2149,12 @@ namespace Mod::Pop::TFBot_Extensions
 			// Custom TeleportWhere teleports 
 			MOD_ADD_DETOUR_STATIC(DoTeleporterOverride, "DoTeleporterOverride");
 			MOD_ADD_VHOOK(CObjectTeleporter_KeyValue, TypeName<CObjectTeleporter>(), "CBaseEntity::KeyValue");
+
+			// Fix god spots
+			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee2");
+			//MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
+			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
+			
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");

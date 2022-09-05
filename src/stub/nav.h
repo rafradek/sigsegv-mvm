@@ -206,7 +206,8 @@ public:
 	float ComputeAdjacentConnectionHeightChange(const CNavArea *destinationArea) const              { return ft_ComputeAdjacentConnectionHeightChange(this, destinationArea); }
 	float GetZ(float x, float y) const                                                              { return ft_GetZ                                 (this, x, y); }
 	void DrawFilled(int r, int g, int b, int a, float deltaT, bool noDepthTest, float margin) const {        vt_DrawFilled                           (this, r, g, b, a, deltaT, noDepthTest, margin); }
-	
+	bool Contains(const Vector &vec) const                                                          { return ft_Contains                             (this, vec); }
+	bool IsOverlapping(const Vector &vec, float tolerance) const                                    { return ft_IsOverlapping                        (this, vec, tolerance); }
 	
 	DECL_EXTRACT(CUtlVector<CHandle<CFuncNavCost>>, m_funcNavCostVector);
 	
@@ -222,6 +223,8 @@ private:
 	static MemberFuncThunk <const CNavArea *, float, const CNavArea *>                      ft_ComputeAdjacentConnectionHeightChange;
 	static MemberFuncThunk <const CNavArea *, float, float, float>                          ft_GetZ;
 	static MemberVFuncThunk<const CNavArea *, void, int, int, int, int, float, bool, float> vt_DrawFilled;
+	static MemberFuncThunk <const CNavArea *, bool, const Vector &>                         ft_Contains;
+	static MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                  ft_IsOverlapping;
 };
 
 class CTFNavArea : public CNavArea

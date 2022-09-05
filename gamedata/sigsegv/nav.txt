@@ -92,7 +92,21 @@
 					type "sym"
 					sym  "_ZNK8CNavArea4GetZEff"
 				}
-				
+				"CNavArea::IsPotentiallyVisible"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea20IsPotentiallyVisibleEPKS_"
+				}
+				"CNavArea::Contains"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea8ContainsERK6Vector"
+				}
+				"CNavArea::IsOverlapping"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea13IsOverlappingERK6Vectorf"
+				}
 				"CTFNavArea::IsBlocked"
 				{
 					type   "func knownvtidx"

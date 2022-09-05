@@ -308,6 +308,8 @@ MemberFuncThunk <const CNavArea *, void, const Vector *, Vector *>              
 MemberFuncThunk <const CNavArea *, float, const CNavArea *>                      CNavArea::ft_ComputeAdjacentConnectionHeightChange("CNavArea::ComputeAdjacentConnectionHeightChange");
 MemberFuncThunk <const CNavArea *, float, float, float>                          CNavArea::ft_GetZ                                 ("CNavArea::GetZ [float float]");
 MemberVFuncThunk<const CNavArea *, void, int, int, int, int, float, bool, float> CNavArea::vt_DrawFilled                           (TypeName<CNavArea>(), "CNavArea::DrawFilled");
+MemberFuncThunk <const CNavArea *, bool, const Vector &>                         CNavArea::ft_Contains                             ("CNavArea::Contains");
+MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                  CNavArea::ft_IsOverlapping                        ("CNavArea::IsOverlapping");
 
 
 IMPL_EXTRACT(TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());

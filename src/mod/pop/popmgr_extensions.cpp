@@ -742,6 +742,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bExtraLoadoutItemsAllowEquipOutsideSpawn = false;
             this->m_bNoWranglerShield = false;
 			this->m_bForceRedMoney = false;
+			this->m_bSpellbookRateSet = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -977,6 +978,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bRedBotNoRandomCrits;
 		bool m_bRedSniperNoHeadshots;
 		bool m_bForceRedMoney;
+		bool m_bSpellbookRateSet;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -5883,6 +5885,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			bool del = true;
 			if (FStrEq(name, "BotsDropSpells")) {
+				state.m_SpellsEnabled.Set(subkey->GetBool());
+			} else if (FStrEq(name, "SpellsEnabled")) {
 				state.m_SpellsEnabled.Set(subkey->GetBool());
 			} else if (FStrEq(name, "GiantsDropRareSpells")) {
 				state.m_bGiantsDropRareSpells = subkey->GetBool();

@@ -1240,9 +1240,9 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(void, CTriggerCamera_Enable)
 	{
         auto camera = reinterpret_cast<CTriggerCamera *>(this);
-        int oldTakeDamage = camera->m_hPlayer->m_takedamage;
-        DETOUR_MEMBER_CALL(CTriggerCamera_Enable)();
         auto player = ToTFPlayer(camera->m_hPlayer);
+        int oldTakeDamage = player != nullptr ? player->m_takedamage : 0;
+        DETOUR_MEMBER_CALL(CTriggerCamera_Enable)();
         if (player != nullptr && !player->IsAlive() && player->m_hViewEntity == camera) {
             camera->m_spawnflags |= 8192;
         }

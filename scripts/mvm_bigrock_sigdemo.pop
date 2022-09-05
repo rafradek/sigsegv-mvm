@@ -119,7 +119,8 @@ WaveSchedule
 	// Halloween options    //
 	//////////////////////////
 	ForceHoliday 2 [$SIGSEGV] //Enforces Halloween mode, but does not enable wave 666 and zombie bots
-	BotsDropSpells 1 [$SIGSEGV] //If set, bots will drop spells
+	BotsDropSpells 1 [$SIGSEGV] //If set, bots will drop spells and enables spell indicator on hud
+	SpellsEnabled 1 [$SIGSEGV] //If set, bots will drop spells and enables spell indicator on hud
 	GiantsDropRareSpells 1 [$SIGSEGV] //If set, giants will drop rare spells rather than common
 	SpellDropRateCommon 0.5 [$SIGSEGV] //Drop chance for common spell books, from 0 to 1
 	SpellDropRateGiant 0.5 [$SIGSEGV] //Drop chance for rare spell books, from 0 to 1

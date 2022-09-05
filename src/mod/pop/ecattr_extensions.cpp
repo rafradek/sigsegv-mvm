@@ -244,7 +244,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (clear_action != DESTRUCT) {
 			
 			auto data = GetDataForBot(bot);
-			if (data != nullptr && data->use_human_animations) {
+			if (data != nullptr && data->use_human_animations && data->use_human_model == 0) {
 				for(int i = 0; i < bot->GetNumWearables(); i++) {
 					CEconWearable *wearable = bot->GetWearable(i);
 					if (wearable != nullptr && wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
@@ -1176,7 +1176,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				bot->SetBloodColor(BLOOD_COLOR_RED);
 			}
 
-			if (data->use_human_animations) {
+			if (data->use_human_animations && data->use_human_model == 0) {
 				CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
 				DevMsg("Use human anims %d\n", wearable != nullptr);
 				if (wearable != nullptr) {

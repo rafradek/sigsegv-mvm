@@ -6289,7 +6289,6 @@
 					type "sym"
 					sym  "_ZN18CParticleSystemMgr4InitEP20IParticleSystemQuery"
 				}
-				
 			}
 			"addrs_group"
 			{
