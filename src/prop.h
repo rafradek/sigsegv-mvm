@@ -445,6 +445,7 @@ struct CPropAccessor<CHandle<U>, T_ARGS> final : public CPropAccessorHandle<U, T
 #define DECL_SENDPROP_RW(TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, SendProp, true,  true )
 #define DECL_DATAMAP(    TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, DataMap,  false, false)
 #define DECL_EXTRACT(    TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Extract,  false, false)
+#define DECL_EXTRACT_RW( TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Extract,  false, true )
 #define DECL_RELATIVE(   TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Relative, false, false)
 
 

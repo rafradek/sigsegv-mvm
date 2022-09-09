@@ -1029,7 +1029,11 @@
 					type "sym"
 					sym  "_ZNK15CTFPlayerShared13IsCritBoostedEv"
 				}
-				
+				"CTFPlayerShared::CTFPlayerShared"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerSharedC2Ev"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

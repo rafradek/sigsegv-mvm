@@ -364,8 +364,9 @@ ETFCond GetTFConditionFromName(const char *name)
 			return static_cast<ETFCond>(i);
 		}
 	}
-	if (FStrEq("TF_COND_REPROGRAMMED_NEUTRAL", name))
-		return TF_COND_HALLOWEEN_HELL_HEAL;
+	static ConVarRef sig_cond_reprogrammed("sig_cond_reprogrammed");
+	if (sig_cond_reprogrammed.GetBool() && FStrEq("TF_COND_REPROGRAMMED_NEUTRAL", name))
+		return (ETFCond)159;
 	
 	return TF_COND_INVALID;
 }

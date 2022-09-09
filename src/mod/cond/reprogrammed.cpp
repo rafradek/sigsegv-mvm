@@ -507,6 +507,11 @@ namespace Mod::Cond::Reprogrammed
 		return DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
 	}
 
+	inline int GetExtraConditionCount()
+	{
+		return ((GetNumberOfTFConds()+31) / 32) * 32;
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionAdded, ETFCond cond)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
@@ -516,7 +521,7 @@ namespace Mod::Cond::Reprogrammed
 			return;
 		}
 		
-		if (cond == TF_COND_HALLOWEEN_HELL_HEAL && TFGameRules()->IsMannVsMachineMode()) {
+		if (cond == GetExtraConditionCount() - 1) {
 			OnAddReprogrammedNeutral(shared->GetOuter());
 			return;
 		}
@@ -536,7 +541,7 @@ namespace Mod::Cond::Reprogrammed
 			return;
 		}
 
-		if (cond == TF_COND_HALLOWEEN_HELL_HEAL && TFGameRules()->IsMannVsMachineMode()) {
+		if (cond == GetExtraConditionCount() - 1) {
 			OnRemoveReprogrammedNeutral(shared->GetOuter());
 			return;
 		}
@@ -1037,6 +1042,20 @@ namespace Mod::Cond::Reprogrammed
 
 		return ret;
 	}
+    
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_C2)
+	{
+		DETOUR_MEMBER_CALL(CTFPlayerShared_C2)();
+        reinterpret_cast<CTFPlayerShared *>(this)->m_ConditionData->EnsureCount(GetExtraConditionCount());
+	}
+	
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
+	{
+		if (nCond < 0 || nCond >= GetExtraConditionCount()) {
+            return;
+        }
+		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1123,6 +1142,9 @@ namespace Mod::Cond::Reprogrammed
 			
 			// Fix spectator team bots ignoring disguise
 			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
+
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_C2, "CTFPlayerShared::CTFPlayerShared");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
 			
 
 			// Change sentry buster target if the sentry gun is on the same team
@@ -1147,6 +1169,25 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			ForEachTFPlayer([](CTFPlayer *player){
+				auto &shared = player->m_Shared.Get();
+				int maxCond = GetExtraConditionCount();
+				for (int i = GetNumberOfTFConds(); i < maxCond; i++) {
+					if (shared.InCond((ETFCond)i)) {
+						auto &data = shared.m_ConditionData.Get()[i];
+						float duration = data.m_flExpireTime;
+						if (duration != -1) {
+							data.m_flExpireTime -= gpGlobals->frametime;
+
+							if ( data.m_flExpireTime <= 0 )
+							{
+								shared.RemoveCond((ETFCond)i);
+							}
+						}
+					}
+				}
+			});
+
 			if (PlayerResource() == nullptr) return;
 			
 			for (size_t i = 0; i < bots_killed.size(); i++) {

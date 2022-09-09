@@ -42,16 +42,16 @@ extern "C"
 
 
 THUNK_TYPEINFO_BASE(12CKnownEntity);
-//THUNK_VTABLE(12CKnownEntity, 0x80);
+THUNK_VTABLE(12CKnownEntity, 0x80);
 
 THUNK_TYPEINFO_BASE(22INextBotEventResponder);
-//THUNK_VTABLE(22INextBotEventResponder, 0x100);
+THUNK_VTABLE(22INextBotEventResponder, 0x100);
 
 THUNK_TYPEINFO_BASE(16IContextualQuery);
-//THUNK_VTABLE(16IContextualQuery, 0x40);
+THUNK_VTABLE(16IContextualQuery, 0x40);
 
 THUNK_TYPEINFO_SINGLE(8INextBot);
-//THUNK_VTABLE(8INextBot, 0x200);
+THUNK_VTABLE(8INextBot, 0x200);
 
 #elif defined _MSC_VER
 

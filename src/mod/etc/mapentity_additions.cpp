@@ -1254,8 +1254,8 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(void, CTriggerCamera_Disable)
 	{
         auto camera = reinterpret_cast<CTriggerCamera *>(this);
-        int oldTakeDamage = camera->m_hPlayer->m_takedamage;
         auto player = ToTFPlayer(camera->m_hPlayer);
+        int oldTakeDamage = player != nullptr ? camera->m_hPlayer->m_takedamage : 0;
         CBaseEntity *view = player != nullptr ? player->m_hViewEntity.Get() : nullptr;
         DETOUR_MEMBER_CALL(CTriggerCamera_Disable)();
         if (player != nullptr && view == camera) {

@@ -231,9 +231,12 @@ public:
 	DECL_SENDPROP(uint,                 _condition_bits);
 };
 
-struct condition_source_t
+class condition_source_t
 {
-	int datatable;
+public:
+	virtual void NetworkStateChanged() {};
+	virtual void NetworkStateChanged(void *pVar) {};
+
 	int	m_nPreventedDamageFromCondition;
 	float m_flExpireTime;
 	float m_pProvider;
@@ -324,7 +327,7 @@ public:
 	DECL_SENDPROP(int,         m_iAirDash);
 	DECL_SENDPROP(int,         m_iDesiredPlayerClass);
 	DECL_SENDPROP(bool,        m_bHasPasstimeBall);
-	DECL_EXTRACT (CUtlVector<condition_source_t>, m_ConditionData);
+	DECL_EXTRACT_RW (CUtlVector<condition_source_t>, m_ConditionData);
 	DECL_SENDPROP_RW(CTFConditionList,     m_ConditionList);
 	DECL_SENDPROP(uint,        m_nPlayerCond);
 	DECL_SENDPROP(bool,        m_bLastDisguisedAsOwnTeam);
