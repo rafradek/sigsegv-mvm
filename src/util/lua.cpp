@@ -764,6 +764,7 @@ namespace Util::Lua
         int func;
         int id;
         bool deleted = false;
+        int calling = false;
     };
 
     struct EntityTableStorageEntry
@@ -822,7 +823,9 @@ namespace Util::Lua
                 auto &pair = *it;
                 if (id == pair.id && pair.state == state) {
                     pair.deleted = true;
-                    callbacksToDelete.push_back({type, id});
+                    if (pair.calling == 0) {
+                        callbacks[type].erase(it);
+                    }
                     return;
                 }
             }
@@ -855,41 +858,41 @@ namespace Util::Lua
         //     tableStore.push_back({state, value});
         // }
 
-        void CallCallback(LuaState *state, int args, int ret) {
-            inCallback++;
-            state->Call(args, ret);
-            inCallback--;
-            if (inCallback == 0 && !callbacksToDelete.empty()) {
-                for (auto &[type, id] : callbacksToDelete) {
-                    RemoveFirstElement(callbacks[type], [&](EntityCallback &callback){
-                        return callback.id == id;
-                    });
-                }
+        void CallCallback(std::list<EntityCallback> callbackList, std::list<EntityCallback>::iterator &it, int args, int ret) {
+            auto &callback = *it;
+            callback.calling++;
+            callback.state->Call(args, ret);
+            callback.calling--;
+            if (callback.deleted && callback.calling == 0) {
+                it = callbackList.erase(it);
+            } else {
+                it++;
             }
         }
 
         void FireCallback(CallbackType type, std::function<void(LuaState *)> *extrafunc = nullptr, int extraargs = 0, std::function<void(LuaState *)> *extraretfunc = nullptr, int ret = 0) {
-            if (callbacks[type].empty()) return;
+            auto &callbackList = callbacks[type];
+            if (callbackList.empty()) return;
             
-            for (auto &pair : callbacks[type]) {
-                if (pair.deleted) continue;
-
-                auto l = pair.state->GetState();
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto state = callback.state;
+                auto l = state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, owner);
                 if (extrafunc != nullptr)
-                    (*extrafunc)(pair.state);
-                CallCallback(pair.state, 1 + extraargs, ret);
+                    (*extrafunc)(state);
+                CallCallback(callbackList, it, 1 + extraargs, ret);
                 if (extraretfunc != nullptr)
-                    (*extraretfunc)(pair.state);
+                    (*extraretfunc)(state);
 
                 lua_settop(l, 0);
             }
         }
 
-        std::deque<EntityCallback> callbacks[CALLBACK_TYPE_COUNT];
+        std::list<EntityCallback> callbacks[CALLBACK_TYPE_COUNT];
         std::unordered_set<LuaState *> states;
-        std::vector<std::pair<CallbackType,int>> callbacksToDelete;
         CBaseEntity *owner;
         int inCallback = 0;
         int callbackNextId = 0;
@@ -2901,10 +2904,10 @@ namespace Util::Lua
         SwitchState();
 
         this->m_bTimerLoop = true;
-        for (auto it = timers.begin(); it != timers.end();) {
+        for (auto it = timers.begin(); it != timers.end(); it++) {
             auto &timer = *it;
-            
-            if (timer.m_flNextCallTime < gpGlobals->curtime) {
+
+            if (!timer.m_bDestroyed && timer.m_flNextCallTime < gpGlobals->curtime) {
                 lua_rawgeti(l, LUA_REGISTRYINDEX, timer.m_iRefFunc);
                 if (timer.m_iRefParam != 0)
                     lua_rawgeti(l, LUA_REGISTRYINDEX, timer.m_iRefParam);
@@ -2924,24 +2927,20 @@ namespace Util::Lua
                     timer.m_flNextCallTime = gpGlobals->curtime + timer.m_flDelay;
                 }
                 else {
-                    timer.Destroy(l);
-                    it = timers.erase(it);
-                    lua_settop(l,0);
+                    timer.m_bDestroyed = true;
+                    // timer.Destroy(l);
+                    // it = timers.erase(it);
+                    // lua_settop(l,0);
 
-                    if (timers.empty())
-                        AllTimersRemoved();
-                    continue;
+                    // if (timers.empty())
+                    //     AllTimersRemoved();
                 }
             }
-            it++;
         }
         this->m_bTimerLoop = false;
         for (auto it = timers.begin(); it != timers.end();) {
             if (it->m_bDestroyed) {
-                it->Destroy(l);
-                it = timers.erase(it);
-                if (timers.empty())
-                    AllTimersRemoved();
+                it = DestroyTimer(it);
             }
             else {
                 it++;
@@ -2959,13 +2958,13 @@ namespace Util::Lua
         return m_iNextTimerID;
     }
 
-    void LuaState::DestroyTimer(std::deque<LuaTimer>::iterator it)
+    std::list<LuaTimer>::iterator LuaState::DestroyTimer(std::list<LuaTimer>::iterator it)
     {
         it->Destroy(l);
-        timers.erase(it);
-        
         if (timers.empty())
             AllTimersRemoved();
+        return timers.erase(it);
+        
     }
 
     bool LuaState::StopTimer(int id) {
@@ -3078,15 +3077,17 @@ namespace Util::Lua
 
         CTakeDamageInfo infooverride = info;
         if (mod != nullptr && !mod->callbacks[ON_DAMAGE_RECEIVED_PRE].empty()) {
-            for (auto &pair : mod->callbacks[ON_DAMAGE_RECEIVED_PRE]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
+            auto &callbackList = mod->callbacks[ON_DAMAGE_RECEIVED_PRE];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                mod->CallCallback(pair.state, 2, 1);
+                mod->CallCallback(callbackList, it, 2, 1);
                 if (lua_toboolean(l, -1)) {
                     TableToDamageInfo(l, -2, infooverride);
                 }
@@ -3101,14 +3102,16 @@ namespace Util::Lua
 		damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(infooverride);
 
         if (mod != nullptr&& !mod->callbacks[ON_DAMAGE_RECEIVED_POST].empty()) {
-            for (auto &pair : mod->callbacks[ON_DAMAGE_RECEIVED_POST]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+            auto &callbackList = mod->callbacks[ON_DAMAGE_RECEIVED_POST];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity);
                 DamageInfoToTable(l, mod->lastTakeDamage);
                 lua_pushnumber(l, health_pre);
-                mod->CallCallback(pair.state, 3, 0);
+                mod->CallCallback(callbackList, it, 3, 0);
 
                 lua_settop(l, 0);
             }
@@ -3274,15 +3277,17 @@ namespace Util::Lua
 
         if (mod != nullptr) {
             CTakeDamageInfo infooverride = info;
-            for (auto &pair : mod->callbacks[ON_DEATH]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
+            auto &callbackList = mod->callbacks[ON_DEATH];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                mod->CallCallback(pair.state, 2, 1);
+                mod->CallCallback(callbackList, it, 2, 1);
                 if (lua_toboolean(l, -1)) {
                     overriden = true;
                     TableToDamageInfo(l, -2, infooverride);
@@ -3307,15 +3312,17 @@ namespace Util::Lua
 
         if (mod != nullptr) {
             CTakeDamageInfo infooverride = info;
-            for (auto &pair : mod->callbacks[ON_DEATH]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
+            auto &callbackList = mod->callbacks[ON_DEATH];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
                 DamageInfoToTable(l, infooverride);
                 lua_pushvalue(l, -1);
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity);
                 lua_pushvalue(l, -3);
-                mod->CallCallback(pair.state, 2, 1);
+                mod->CallCallback(callbackList, it, 2, 1);
                 if (lua_toboolean(l, -1)) {
                     overriden = true;
                     TableToDamageInfo(l, -2, infooverride);
@@ -3422,13 +3429,15 @@ namespace Util::Lua
     bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
         auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod1 != nullptr && !mod1->callbacks[ON_SHOULD_COLLIDE].empty()) {
-            for (auto &pair : mod1->callbacks[ON_SHOULD_COLLIDE]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+            auto &callbackList = mod1->callbacks[ON_SHOULD_COLLIDE];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity1);
                 LEntityAlloc(l, entity2);
-                mod1->CallCallback(pair.state, 2, 1);
+                mod1->CallCallback(callbackList, it, 2, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);
@@ -3439,13 +3448,15 @@ namespace Util::Lua
         }
         auto mod2 = entity2->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod2 != nullptr && !mod2->callbacks[ON_SHOULD_COLLIDE].empty()) {
-            for (auto &pair : mod2->callbacks[ON_SHOULD_COLLIDE]) {
-                if (pair.deleted) continue;
-                auto l = pair.state->GetState();
-                lua_rawgeti(l, LUA_REGISTRYINDEX, pair.func);
+            auto &callbackList = mod2->callbacks[ON_SHOULD_COLLIDE];
+            for (auto it = callbackList.begin(); it != callbackList.end();) {
+                auto &callback = *it;
+                if (callback.deleted) {it++; continue;}
+                auto l = callback.state->GetState();
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity2);
                 LEntityAlloc(l, entity1);
-                mod2->CallCallback(pair.state, 2, 1);
+                mod2->CallCallback(callbackList, it, 2, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);

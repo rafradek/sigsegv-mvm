@@ -640,7 +640,14 @@ namespace Mod::Pop::TFBot_Extensions
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
 			bool del = true;
-			if (FStrEq(name, "AddCond")) {
+			if (FStrEq(name, "Template")) {
+				if (g_pPopulationManager->m_pTemplates == nullptr) {
+					Warning("No Templates in WaveSchedule. Did you forget to include robot_standard.pop ?\n");
+				}
+				else {
+					del = false;
+				}
+			} else if (FStrEq(name, "AddCond")) {
 				Parse_AddCond(spawners[spawner].addconds, subkey);
 			} else if (Parse_PeriodicTask(spawners[spawner].periodic_tasks, subkey, name)) {
 

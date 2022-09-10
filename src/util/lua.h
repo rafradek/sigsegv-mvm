@@ -64,7 +64,7 @@ namespace Util::Lua
 
         void Activate();
     private:
-        void DestroyTimer(std::deque<LuaTimer>::iterator it);
+        std::list<LuaTimer>::iterator DestroyTimer(std::list<LuaTimer>::iterator it);
         lua_State *l;
 
         int m_iVectorMeta = LUA_NOREF;
@@ -75,7 +75,7 @@ namespace Util::Lua
         int m_iPropMeta = LUA_NOREF;
         bool m_bTimerLoop = false;
 
-        std::deque<LuaTimer> timers;
+        std::list<LuaTimer> timers;
         int m_iNextTimerID = 0;
         std::unordered_set<CBaseEntity *> callbackEntities;
     };
