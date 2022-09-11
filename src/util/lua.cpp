@@ -764,7 +764,7 @@ namespace Util::Lua
         int func;
         int id;
         bool deleted = false;
-        int calling = false;
+        int calling = 0;
     };
 
     struct EntityTableStorageEntry
@@ -858,7 +858,7 @@ namespace Util::Lua
         //     tableStore.push_back({state, value});
         // }
 
-        void CallCallback(std::list<EntityCallback> callbackList, std::list<EntityCallback>::iterator &it, int args, int ret) {
+        void CallCallback(std::list<EntityCallback> &callbackList, std::list<EntityCallback>::iterator &it, int args, int ret) {
             auto &callback = *it;
             callback.calling++;
             callback.state->Call(args, ret);
