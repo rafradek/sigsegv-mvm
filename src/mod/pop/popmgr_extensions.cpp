@@ -2864,11 +2864,12 @@ namespace Mod::Pop::PopMgr_Extensions
 	// 	return ret;
 	// }
 
+	RefCount rc_CTFPlayer_Spawn;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
-		if (!state.m_WeaponSpawnTemplates.empty()) {
+		if (!state.m_WeaponSpawnTemplates.empty() && rc_CTFPlayer_Spawn == 0) {
 			if (ToTFBot(owner) == nullptr) {
 				if (state.m_ItemEquipTemplates.find(ent) == state.m_ItemEquipTemplates.end()) {
 					for (auto &info : state.m_WeaponSpawnTemplates) {
@@ -2913,24 +2914,25 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 			}
-			if (!state.m_WeaponSpawnTemplates.empty()) {
-				ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
-					if (!entity->IsMarkedForDeletion()) {
-						for (auto &info : state.m_WeaponSpawnTemplates) {
-							for (auto &entry : info.weapons) {
-								if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
-									state.m_ItemEquipTemplates[entity] = info.info.SpawnTemplate(player);
-									break;
-								}
+			
+		}
+		
+		SCOPED_INCREMENT(rc_CTFPlayer_Spawn);
+		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+		if (ToTFBot(player) == nullptr && !state.m_WeaponSpawnTemplates.empty()) {
+			ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity) {
+				if (!entity->IsMarkedForDeletion()) {
+					for (auto &info : state.m_WeaponSpawnTemplates) {
+						for (auto &entry : info.weapons) {
+							if (entry->Matches(entity->GetClassname(), entity->GetItem())) {
+								state.m_ItemEquipTemplates[entity] = info.info.SpawnTemplate(player);
+								break;
 							}
 						}
 					}
-				});
-			}
+				}
+			});
 		}
-		
-		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
-
 	}
 
 	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
@@ -4248,9 +4250,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToSpawn)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DevMsg(" Check spawn\n");
-		if (state.m_bNoRespawnMidwave && !player->IsBot() && state.m_PlayersByWaveStart.count(player) == 0 ) {
-			DevMsg("Stop Spawn\n");
+		//DevMsg(" Check spawn\n");
+		if (state.m_bNoRespawnMidwave && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !player->IsBot() && state.m_PlayersByWaveStart.count(player) == 0 ) {
+			//DevMsg("Stop Spawn\n");
 			return false;
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
