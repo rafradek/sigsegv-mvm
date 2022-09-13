@@ -637,5 +637,7 @@ bool LoadUserDataFile(CRC32_t &value, const char *filename);
 void LoadItemNames();
 bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
 
+class ShootTemplateData;
+CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc);
 
 #endif

@@ -3,6 +3,7 @@
 #include "stub/misc.h"
 #include "util/iterate.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "mod/pop/pointtemplate.h"
 
 std::map<int, std::string> g_Itemnames;
 std::map<int, std::string> g_Attribnames;
@@ -1167,6 +1168,53 @@ void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool
             }
         }
     }
+}
+
+CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc)
+{
+    stopproj = false;
+    for(auto it = templates.begin(); it != templates.end(); it++) {
+        ShootTemplateData &temp_data = *it;
+        if (temp_data.weapon_classname != "" && !FStrEq(weapon->GetClassname(), temp_data.weapon_classname.c_str()))
+            continue;
+
+        if (temp_data.weapon != "" && !FStrEq(GetItemName(weapon->GetItem()), temp_data.weapon.c_str()))
+            continue;
+
+            // bool name_correct = FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str());
+
+            // if (!name_correct) {
+            // 	static int custom_weapon_def = -1;
+            // 	if (custom_weapon_def == -1) {
+            // 		auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+            // 		if (attr != nullptr)
+            // 			custom_weapon_def = attr->GetIndex();
+            // 	}
+            // 	auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(custom_weapon_def);
+            // 	const char *value = nullptr;
+            // 	if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+            // 		CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+            // 	}
+            // 	if (value == nullptr || strcmp(value, temp_data.weapon.c_str()) != 0) {
+            // 		continue;
+            // 	}
+            // }
+        //}
+
+        if (temp_data.parent_to_projectile) {
+            CBaseAnimating *proj = origShootFunc();
+            if (proj != nullptr) {
+                Vector vec = temp_data.offset;
+                QAngle ang = temp_data.angles;
+                auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
+            }
+            
+            return proj;
+        }
+        
+        stopproj = temp_data.Shoot(player, weapon) | stopproj;
+    }
+    return nullptr;
 }
 
 void GenerateReferences()

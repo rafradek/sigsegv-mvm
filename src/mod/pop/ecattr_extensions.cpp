@@ -2167,6 +2167,24 @@ namespace Mod::Pop::ECAttr_Extensions
 	//	DevMsg("[%d] PerformCustomPhysics: #%d %s\n", gpGlobals->tickcount, ENTINDEX(ent), ent->GetClassname());
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
+	{
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			auto weapon = reinterpret_cast<CTFWeaponBaseMelee*>(this);
+			auto player = weapon->GetTFPlayerOwner();
+			auto data = GetDataForBot(player);
+			if (data != nullptr) {
+				bool stopproj;
+				bool smacked = false;
+				TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ smacked = true; DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)(); return nullptr; });
+				if (stopproj || smacked) {
+					return;
+				}
+			}
+		}
+ 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+
+	}
 	
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
@@ -2176,23 +2194,9 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (data != nullptr) {
 				bool stopproj = false;
 				auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
-				for(auto it = data->shoot_templ.begin(); it != data->shoot_templ.end(); it++) {
-					ShootTemplateData &temp_data = *it;
-					
-					if (temp_data.weapon != "" && !FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str()))
-						continue;
-
-					if (temp_data.parent_to_projectile) {
-						CBaseAnimating *proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
-						if (proj != nullptr) {
-							Vector vec = temp_data.offset;
-							QAngle ang = temp_data.angles;
-							auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
-						}
-						return proj;
-					}
-					
-					stopproj = temp_data.Shoot(player, weapon) | stopproj;
+				auto proj = TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ return DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player); });
+				if (proj != nullptr) {
+					return proj;
 				}
 				if (stopproj) {
 					if (weapon->ShouldPlayFireAnim()) {
@@ -2573,6 +2577,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBot_GetDesiredAttackRange, "CTFBot::GetDesiredAttackRange");
 			MOD_ADD_DETOUR_MEMBER(CTFBotAttack_Update, "CTFBotAttack::Update");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			
 		}
 
 		virtual bool OnLoad() override

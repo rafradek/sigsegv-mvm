@@ -2682,49 +2682,76 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport)(bot) && cvar_use_teleport.GetBool() && !bot->HasItem();
 	}
 
+	// CBaseAnimating * TemplateShootSpawn(CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc)
+	// {
+	// 	stopproj = false;
+	// 	for(auto it = state.m_ShootTemplates.begin(); it != state.m_ShootTemplates.end(); it++) {
+	// 		ShootTemplateData &temp_data = *it;
+	// 		if (temp_data.weapon_classname != "" && !FStrEq(weapon->GetClassname(), temp_data.weapon_classname.c_str()))
+	// 			continue;
+
+	// 		if (temp_data.weapon != "" && !FStrEq(GetItemName(weapon->GetItem()), temp_data.weapon.c_str()))
+	// 			continue;
+
+	// 			// bool name_correct = FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str());
+
+	// 			// if (!name_correct) {
+	// 			// 	static int custom_weapon_def = -1;
+	// 			// 	if (custom_weapon_def == -1) {
+	// 			// 		auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
+	// 			// 		if (attr != nullptr)
+	// 			// 			custom_weapon_def = attr->GetIndex();
+	// 			// 	}
+	// 			// 	auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(custom_weapon_def);
+	// 			// 	const char *value = nullptr;
+	// 			// 	if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
+	// 			// 		CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
+	// 			// 	}
+	// 			// 	if (value == nullptr || strcmp(value, temp_data.weapon.c_str()) != 0) {
+	// 			// 		continue;
+	// 			// 	}
+	// 			// }
+	// 		//}
+
+	// 		if (temp_data.parent_to_projectile) {
+	// 			CBaseAnimating *proj = origShootFunc();
+	// 			if (proj != nullptr) {
+	// 				Vector vec = temp_data.offset;
+	// 				QAngle ang = temp_data.angles;
+	// 				auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
+	// 			}
+				
+	// 			return proj;
+	// 		}
+			
+	// 		stopproj = temp_data.Shoot(player, weapon) | stopproj;
+	// 	}
+	// 	return nullptr;
+	// }
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseMelee*>(this);
+		auto player = weapon->GetTFPlayerOwner();
+		if (IsMannVsMachineMode() && player != nullptr && !player->IsFakeClient()) {
+			bool stopproj;
+			bool smacked = false;
+			TemplateShootSpawn(state.m_ShootTemplates, player, weapon, stopproj, [&](){ smacked = true; DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)(); return nullptr; });
+			if (stopproj || smacked) {
+				return;
+			}
+		}
+ 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+
+	}
+
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		if (IsMannVsMachineMode() && !player->IsFakeClient()) {
-			bool stopproj = false;
 			auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
-			for(auto it = state.m_ShootTemplates.begin(); it != state.m_ShootTemplates.end(); it++) {
-				ShootTemplateData &temp_data = *it;
-				if (temp_data.weapon_classname != "" && !FStrEq(weapon->GetClassname(), temp_data.weapon_classname.c_str()))
-					continue;
-
-				if (temp_data.weapon != "") {
-					bool name_correct = FStrEq(weapon->GetItem()->GetStaticData()->GetName(), temp_data.weapon.c_str());
-
-					if (!name_correct) {
-						static int custom_weapon_def = -1;
-						if (custom_weapon_def == -1) {
-							auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon name");
-							if (attr != nullptr)
-								custom_weapon_def = attr->GetIndex();
-						}
-						auto attr = weapon->GetItem()->GetAttributeList().GetAttributeByID(custom_weapon_def);
-						const char *value = nullptr;
-						if (attr != nullptr && attr->GetValuePtr()->m_String != nullptr) {
-							CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &value);
-						}
-						if (value == nullptr || strcmp(value, temp_data.weapon.c_str()) != 0) {
-							continue;
-						}
-					}
-				}
-
-				if (temp_data.parent_to_projectile) {
-					CBaseAnimating *proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
-					if (proj != nullptr) {
-						Vector vec = temp_data.offset;
-						QAngle ang = temp_data.angles;
-						auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
-					}
-					
-					return proj;
-				}
-				
-				stopproj = temp_data.Shoot(player, weapon) | stopproj;
+			bool stopproj;
+			auto proj = TemplateShootSpawn(state.m_ShootTemplates, player, weapon, stopproj, [&](){ return DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player); });
+			if (proj != nullptr) {
+				return proj;
 			}
 			if (stopproj) {
 				if (weapon->ShouldPlayFireAnim()) {
@@ -2742,6 +2769,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				return nullptr;
 			}
 		}
+		
 		return DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
 	}
 
@@ -6637,6 +6665,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CCurrencyPack_Spawn, "CCurrencyPack::Spawn");
 
 			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			
 			
 			
