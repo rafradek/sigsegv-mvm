@@ -1071,26 +1071,28 @@ namespace Mod::Attr::Custom_Attributes
 	CBasePlayer *weapon_sound_override_owner = nullptr;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
-		if ((index == 1 || index == 5 || index == 6 || index == 11 || index == 13)) {
+		if ((index == SINGLE || index == BURST || index == MELEE_MISS || index == MELEE_HIT || index == MELEE_HIT_WORLD || index == RELOAD || index == SPECIAL1 || index == SPECIAL3)) {
 			auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
 			int weaponid = weapon->GetWeaponID();
 			// Allow SPECIAL1 sound for Cow Mangler and SPECIAL3 sound for short circuit
-			if (index == 11 && weaponid != TF_WEAPON_PARTICLE_CANNON) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
-			if (index == 13 && weaponid != TF_WEAPON_MECHANICAL_ARM) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			if (index == SPECIAL1 && weaponid != TF_WEAPON_PARTICLE_CANNON) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			if (index == SPECIAL3 && weaponid != TF_WEAPON_MECHANICAL_ARM) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
 
 			int attr_name = -1;
 
 			static int custom_weapon_fire_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon fire sound")->GetIndex();
+			static int custom_weapon_impact_sound = GetItemSchema()->GetAttributeDefinitionByName("custom impact sound")->GetIndex();
 			static int custom_weapon_reload_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon reload sound")->GetIndex();
 			switch (index) {
-				case 1: case 5: case 11: case 13: attr_name = custom_weapon_fire_sound; break;
-				case 6: attr_name = custom_weapon_reload_sound; break;
+				case SINGLE: case BURST: case MELEE_MISS: case SPECIAL1: case SPECIAL3: attr_name = custom_weapon_fire_sound; break;
+				case MELEE_HIT: case MELEE_HIT_WORLD: attr_name = custom_weapon_impact_sound; break;
+				case RELOAD: attr_name = custom_weapon_reload_sound; break;
 			}
 			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
-				if (rc_CTFPlayer_TraceAttack && index == 5) return;
+				if (rc_CTFPlayer_TraceAttack && index == BURST) return;
 				PrecacheSound(modelname);
 				weapon_sound_override_owner = ToTFPlayer(weapon->GetOwner());
 				weapon_sound_override = modelname;
@@ -1099,7 +1101,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		if (rc_CTFPlayer_TraceAttack && index == 5 && rtti_cast<CTFMinigun *>(reinterpret_cast<CTFWeaponBase *>(this)) != nullptr) {
+		if (rc_CTFPlayer_TraceAttack && index == BURST && rtti_cast<CTFMinigun *>(reinterpret_cast<CTFWeaponBase *>(this)) != nullptr) {
 			return;
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
