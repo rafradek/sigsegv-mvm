@@ -169,9 +169,11 @@ IMPL_RELATIVE(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hBurnWeapon, m_bLastDis
 IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameBurnTime, m_bLastDisguisedAsOwnTeam, +14);
 IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameRemoveTime, m_bLastDisguisedAsOwnTeam, +18);
 IMPL_SENDPROP(float,       CTFPlayerShared, m_flInvisChangeCompleteTime,CTFPlayer);
-IMPL_RELATIVE(bool,       CTFPlayerShared, m_bMotionCloak, m_flInvisChangeCompleteTime, +16);
+IMPL_RELATIVE(bool,        CTFPlayerShared, m_bMotionCloak, m_flInvisChangeCompleteTime, +16);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
+IMPL_SENDPROP(int,         CTFPlayerShared, m_iTauntIndex,   CTFPlayer);
+IMPL_RELATIVE(CUtlVector<bleed_struct_t>, CTFPlayerShared, m_BleedInfo, m_iTauntIndex, -sizeof(CUtlVector<bleed_struct_t>));
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");

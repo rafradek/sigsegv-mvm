@@ -596,6 +596,12 @@ class CMathCounter : public CLogicalEntity
 
 };
 
+class CTriggerIgnite : public CBaseTrigger
+{
+public:
+	DECL_DATAMAP (float, m_flBurnDuration);
+};
+
 extern GlobalThunk<CBaseEntity *> g_WorldEntity;
 
 inline CBaseEntity* GetWorldEntity() {

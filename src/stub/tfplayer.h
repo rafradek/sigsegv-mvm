@@ -223,6 +223,16 @@ enum ETFCond : int32_t
 	TF_COND_COUNT,
 };
 
+struct bleed_struct_t
+{
+	CHandle<CTFPlayer>		hBleedingAttacker;
+	CHandle<CTFWeaponBase>  hBleedingWeapon;
+	float					flBleedingTime;
+	float					flBleedingRemoveTime;
+	int						nBleedDmg;
+	bool					bPermanentBleeding;
+};
+
 class CTFConditionList 
 {
 public:
@@ -337,6 +347,8 @@ public:
 	DECL_RELATIVE(float,       m_flFlameRemoveTime);
 	DECL_SENDPROP(float,       m_flInvisChangeCompleteTime);
 	DECL_RELATIVE(bool,       m_bMotionCloak);
+	DECL_SENDPROP(int,        m_iTauntIndex);
+	DECL_RELATIVE(CUtlVector<bleed_struct_t>, m_BleedInfo);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);

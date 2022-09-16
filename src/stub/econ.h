@@ -196,7 +196,7 @@ struct attr_type_t
 };
 static_assert(sizeof(attr_type_t) == 0x8);
 
-bool LoadAttributeDataUnionFromString(CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, std::string &value_str);
+bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str);
 
 class CEconItemAttribute;
 
@@ -387,11 +387,12 @@ public:
 	KeyValues *GetKeyValues() const       { return this->m_pKV; }
 	unsigned short GetIndex() const       { return this->m_iIndex; }
 	ISchemaAttributeType *GetType() const { return this->m_pAttributeType; }
+	bool IsStoredAsInteger () const       { return this->m_bStoredAsInteger; }
 	
 	const char *GetName             (const char *fallback = nullptr) const { return this->GetKVString("name",               fallback); }
 	const char *GetAttributeClass   (const char *fallback = nullptr) const { return this->GetKVString("attribute_class",    fallback); }
 	const char *GetDescriptionFormat(const char *fallback = nullptr) const { return this->GetKVString("description_format", fallback); }
-	bool        IsStoredAsInteger   (bool        fallback = false)   const { return this->GetKVBool  ("stored_as_integer",  fallback); }
+	
 	
 	template<typename T> bool IsType() const { return (dynamic_cast<T *>(this->GetType()) != nullptr); }
 	
@@ -414,6 +415,15 @@ private:
 	KeyValues *m_pKV;                       // +0x00
 	unsigned short m_iIndex;                // +0x04
 	ISchemaAttributeType *m_pAttributeType; // +0x08
+	bool		m_bHidden;
+	bool		m_pad1;
+	bool		m_bStoredAsInteger;
+	bool		m_pad2;
+	int m_pad3;
+	int m_pad4;
+	int m_pad5;
+	int m_pad6;
+	int m_iDescriptionFormat;
 	// ...
 };
 

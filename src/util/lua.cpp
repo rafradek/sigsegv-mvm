@@ -532,6 +532,30 @@ namespace Util::Lua
         return 1;
     }    
 
+    int LEntityNewWithKeys(lua_State *l)
+    {
+        auto entity = CreateEntityByName(luaL_checkstring(l, 1));
+        auto handle = LEntityAlloc(l,entity);
+
+        luaL_checktype(l, 2, LUA_TTABLE);
+
+        lua_pushnil(l);
+        while (lua_next(l, 2) != 0) {
+            if (lua_type(l, -2) == LUA_TSTRING) {
+                entity->KeyValue(lua_tostring(l, -2), lua_tostring(l, -1));
+            }
+            lua_pop(l, 1);
+        }
+
+        if (entity != nullptr && (lua_gettop(l) < 3 || lua_toboolean(l,3)) ) {
+            DispatchSpawn(entity);
+        }
+        if (entity != nullptr && (lua_gettop(l) < 4 || lua_toboolean(l,4)) ) {
+            entity->Activate();
+        }
+        return 1;
+    }    
+
     // Returns entity handle, throws an error if variable is not nil or entity
     inline const EHANDLE *LEntityGetCheck(lua_State *l, int index)
     {
@@ -1307,6 +1331,19 @@ namespace Util::Lua
         return 1;
     }
 
+    int LPropPairs(lua_State *l)
+    {
+        auto prop = (ArrayProp *) lua_touserdata(l, 1);
+        int index = lua_tointeger(l, 2);
+        luaL_argcheck(l, prop != nullptr, 1, "Userdata is null");
+        luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
+
+        variant_t variant;
+        Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
+        LFromVariant(l, variant);
+        return 1;
+    }
+
     int LPropGetN(lua_State *l)
     {
         auto prop = (ArrayProp *) lua_touserdata(l, 1);
@@ -1423,6 +1460,13 @@ namespace Util::Lua
             return 1;
         }
 
+        // Check for sendprop$ prefix in name, if so force reading sendprop instead of datamap
+        bool forceSendprop = false;
+        if (StringStartsWith(varName, "sendprop$")) {
+            forceSendprop = true;
+            varName = varName+9;
+        }
+
         std::string varNameStr(varName);
         
         variant_t variant;
@@ -1431,7 +1475,10 @@ namespace Util::Lua
             LFromVariant(l, variant);
             return 1;
         }
-        auto *entry = &Mod::Etc::Mapentity_Additions::GetDataMapOffset(entity->GetDataDescMap(), varNameStr);
+        Mod::Etc::Mapentity_Additions::PropCacheEntry *entry = nullptr;
+        if (!forceSendprop) {
+            entry = &Mod::Etc::Mapentity_Additions::GetDataMapOffset(entity->GetDataDescMap(), varNameStr);
+        }
         if (entry == nullptr || entry->offset <= 0) {
             entry = &Mod::Etc::Mapentity_Additions::GetSendPropOffset(entity->GetServerClass(), varNameStr);
         }
@@ -1499,7 +1546,14 @@ namespace Util::Lua
             lua_pushnil(l);
             return 1;
         }
-       
+
+        // Check for sendprop$ prefix in name, if so force reading sendprop instead of datamap
+        bool forceSendprop = false;
+        if (StringStartsWith(varName, "sendprop$")) {
+            forceSendprop = true;
+            varName = varName+9;
+        }
+
         std::string varNameStr(varName);
         /*auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr) {
@@ -1514,7 +1568,7 @@ namespace Util::Lua
 
         variant_t variant;
         LToVariant(l, 3, variant);
-        SetEntityVariable(entity, Mod::Etc::Mapentity_Additions::ANY, varNameStr, variant, 0, -1);
+        SetEntityVariable(entity, forceSendprop ? Mod::Etc::Mapentity_Additions::SENDPROP : Mod::Etc::Mapentity_Additions::ANY, varNameStr, variant, 0, -1);
         
         /*if (variant.FieldType() == FIELD_CUSTOM) {
             if (mod == nullptr) {
@@ -2531,6 +2585,7 @@ namespace Util::Lua
         {"GetAll", LFindAllEntity},
         {"GetAllPlayers", LFindAllPlayers},
         {"Create", LEntityNew},
+        {"CreateWithKeys", LEntityNewWithKeys},
         {"GetFirstEntity", LEntityFirst},
         {"GetNextEntity", LEntityNext},
         {"AddCreateCallback", LEntityAddCreateCallback},

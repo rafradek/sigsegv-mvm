@@ -1061,7 +1061,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CPopOverride_ConVar<bool> m_AllowMultipleSappers;
 		CPopOverride_ConVar<float> m_EngineerPushRange;
 		CPopOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
-		CPopOverride_ConVar<bool> m_DefaultBossScale;
+		CPopOverride_ConVar<float> m_DefaultBossScale;
 		CPopOverride_ConVar<bool> m_FastWholeMapTriggers;
 		CPopOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
 		CPopOverride_ConVar<bool> m_BluHumanSpawnProtection;

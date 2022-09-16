@@ -337,7 +337,7 @@ CInventoryManager *InventoryManager() { return ft_InventoryManager(); }
 static StaticFuncThunk<CTFInventoryManager *> ft_TFInventoryManager("TFInventoryManager");
 CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
 
-bool LoadAttributeDataUnionFromString(CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, std::string &value_str)
+bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str)
 {
 	//Pool of previously added string values
 	static std::map<std::string, attribute_data_union_t> attribute_string_values;

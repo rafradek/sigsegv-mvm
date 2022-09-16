@@ -1896,6 +1896,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 	RefCount rc_IVision_IsAbleToSee;
 	CBaseEntity *vision_subject = nullptr;
+	bool vision_entity_melee = false;
 	DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *subject, int checkFOV, Vector *visibleSpot)
 	{
 		// {
@@ -1906,8 +1907,11 @@ namespace Mod::Pop::TFBot_Extensions
 		// }
 		SCOPED_INCREMENT(rc_IVision_IsAbleToSee);
 		vision_subject = subject;
+		auto entity = reinterpret_cast<IVision *>(this)->GetBot()->GetEntity();
+		vision_entity_melee = entity->GetActiveWeapon() != nullptr && entity->GetActiveWeapon()->IsMeleeWeapon();
 		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
 		vision_subject = nullptr;
+		vision_entity_melee = false;
 
 		return ret;
 	}
@@ -1925,31 +1929,56 @@ namespace Mod::Pop::TFBot_Extensions
 		return ret;
 	}
 
+	bool IsOnNav(CBaseEntity *entity, float maxZDistance, float maxXYDistance)
+	{
+		auto subjectCombat = entity->MyCombatCharacterPointer();
+		if (subjectCombat != nullptr) {
+			auto area = subjectCombat->GetLastKnownArea();
+			if (area != nullptr) {
+				
+				auto &vec = entity->GetAbsOrigin();
+				bool contains = area->IsOverlapping(vec,maxXYDistance);
+				float z = area->GetZ(vec.x, vec.y);
+				if (!contains || z - vec.z > maxZDistance) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	DETOUR_DECL_MEMBER(bool, CNavArea_IsPotentiallyVisible, CNavArea *area)
 	{
 		
 		// CFastTimer timer;
 		// timer.Start();
-		if (rc_IVision_IsAbleToSee && vision_subject != nullptr && vision_subject->IsPlayer() && ToTFPlayer(vision_subject)->IsRealPlayer()) {
+		if (rc_IVision_IsAbleToSee && vision_subject != nullptr && !vision_entity_melee && vision_subject->IsPlayer() && ToTFPlayer(vision_subject)->IsRealPlayer()) {
 			return true;
 		}
 		bool ret = DETOUR_MEMBER_CALL(CNavArea_IsPotentiallyVisible)(area);
-		if (!ret && rc_IVision_IsAbleToSee && vision_subject != nullptr) {
-			auto subjectCombat = vision_subject->MyCombatCharacterPointer();
-			if (subjectCombat != nullptr) {
-				auto area = subjectCombat->GetLastKnownArea();
-				if (area != nullptr) {
-					auto &vec = vision_subject->GetAbsOrigin();
-					bool contains = area->IsOverlapping(vec,4.0f);
-					float z = area->GetZ(vec.x, vec.y);
-					if (!contains && z - vec.z > 20) {
-						return true;
-					}
-				}
-			}
+		if (!ret && rc_IVision_IsAbleToSee && !vision_entity_melee && vision_subject != nullptr && !IsOnNav(vision_subject, 20, 4)) {
+			return true;
 		}
 		return ret;
 	}
+
+	// DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotMainAction_SelectCloserThreat, CTFBot *me, const CKnownEntity *threat1, const CKnownEntity *threat2)
+	// {
+	// 	auto closer = DETOUR_MEMBER_CALL(CTFBotMainAction_SelectCloserThreat)(me, threat1, threat2);
+	// 	if (me->GetActiveTFWeapon() != nullptr && me->GetActiveTFWeapon()->IsMeleeWeapon()) {
+	// 		float meleeRange = 48 * me->GetModelScale();
+	// 		float maxZ = me->EyePosition().z - me->GetAbsOrigin().z + meleeRange;
+	// 		float maxXY = meleeRange / 2 + 12;
+	// 		bool threat1OnNav = IsOnNav(threat1->GetEntity(), maxZ, maxXY);
+	// 		bool threat2OnNav = IsOnNav(threat2->GetEntity(), maxZ, maxXY);
+
+
+	// 		if (threat1OnNav && !threat2OnNav) return threat1;
+	// 		if (threat2OnNav && !threat1OnNav) return threat2;
+	// 	}
+	// 	return closer;
+	// }
+
 
 //#ifdef ENABLE_BROKEN_STUFF
 	bool drop_weapon_bot = false;
@@ -2161,6 +2190,8 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee2");
 			//MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
+			//MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectCloserThreat, "CTFBotMainAction::SelectCloserThreat");
+			
 			
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");

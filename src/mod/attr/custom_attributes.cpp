@@ -146,7 +146,14 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value);
+	enum class AttributeChangeType
+	{
+		NONE,
+		ADD,
+		UPDATE,
+		REMOVE
+	};
+	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType);
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
 	{
@@ -196,6 +203,7 @@ namespace Mod::Attr::Custom_Attributes
 
 
 	void CreateExtraArrow(CTFCompoundBow *bow, CTFProjectile_Arrow *main_arrow, const QAngle& angles, float speed) {
+
 		CTFProjectile_Arrow* pExtraArrow = CTFProjectile_Arrow::Create( main_arrow->GetAbsOrigin(), angles, speed, bow->GetProjectileGravity(), bow->GetWeaponProjectileType(), main_arrow->GetOwnerEntity(), main_arrow->GetOwnerEntity() );
 		if ( pExtraArrow != nullptr )
 		{
@@ -584,7 +592,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( bow, attib_arrow_mastery, arrow_mastery );
 
-		if (attib_arrow_mastery != 0 && projectile_arrow != nullptr) {
+		if (attib_arrow_mastery != 0 && projectile_arrow != nullptr && projectile_arrow->GetOwnerEntity() != nullptr) {
 
 			Vector vecMainVelocity = projectile_arrow->GetAbsVelocity();
 			float flMainSpeed = vecMainVelocity.Length();
@@ -2526,11 +2534,6 @@ namespace Mod::Attr::Custom_Attributes
 			
 			CTFPlayer *victim = ToTFPlayer(ent);
 			if (victim != nullptr && victim != player) {
-				float burn_duration = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, burn_duration, set_dmgtype_ignite);
-				if (burn_duration != 0.0f) {
-					victim->m_Shared->Burn(player, nullptr, burn_duration);
-				}
 
 				float damageReturnsAsHealth = 0.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, damageReturnsAsHealth, damage_returns_as_health);
@@ -3345,6 +3348,11 @@ namespace Mod::Attr::Custom_Attributes
 		if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
 			return;
 		}
+		float multDmg = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon != nullptr ? (CBaseEntity*)weapon : attacker, multDmg, mult_bleeding_dmg);
+		if (multDmg != 1.0f) {
+			bleeddmg = gpGlobals->curtime + 0.5f;
+		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_MakeBleed)(attacker, weapon, bleedTime, bleeddmg, perm, val);
 	}
 
@@ -4073,6 +4081,22 @@ namespace Mod::Attr::Custom_Attributes
 		return (attr.GetAttributeDefinitionIndex() > 4200 && attr.GetAttributeDefinitionIndex() < 5000);
 	}
 
+	void DefaultValueForAttribute(attribute_data_union_t &value, const CEconItemAttributeDefinition *attribute)
+	{
+		if (attribute->IsType<CSchemaAttributeType_String>()) {
+			LoadAttributeDataUnionFromString(attribute, value, ""s);
+		}
+		else {
+			const char *desc_format = attribute->GetKeyValues()->GetString("description_format");
+			if (FStrEq(desc_format, "value_is_percentage") || FStrEq(desc_format, "value_is_inverted_percentage")) {
+				value.m_Float = 1.0f;
+			}
+			else {
+				value.m_Float = 0.0f;
+			}
+		}
+	}
+
 	bool attribute_manager_no_clear_cache;
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
 	{	
@@ -4082,8 +4106,8 @@ namespace Mod::Attr::Custom_Attributes
 		auto &attrs = list->Attributes();
 		int countpre = attrs.Count();
 
+		AttributeChangeType changeType = AttributeChangeType::UPDATE;
 		attribute_data_union_t oldValue;
-		oldValue.m_Float = FLT_MIN;
 
 		bool found = false;
 		for (int i = 0; i < countpre; i++) {
@@ -4097,12 +4121,17 @@ namespace Mod::Attr::Custom_Attributes
 				if (memcmp(&oldValue.m_Float, &flValue, sizeof(float)) != 0) {
 					pAttribute.GetValuePtr()->m_Float = flValue;
 					list->NotifyManagerOfAttributeValueChanges();
+					changeType = AttributeChangeType::UPDATE;
+				}
+				else {
+					changeType = AttributeChangeType::NONE;
 				}
 			}
 		}
 
 		// Couldn't find an existing attribute for this definition -- make a new one.
 		if (!found) {
+			changeType = AttributeChangeType::ADD;
 			auto attribute = CEconItemAttribute::Create(pAttrDef->GetIndex());
 			attribute->GetValuePtr()->m_Float = flValue;
 			attrs.AddToTail(*attribute);
@@ -4132,10 +4161,10 @@ namespace Mod::Attr::Custom_Attributes
 			list->NotifyManagerOfAttributeValueChanges();
 		}
 		
-		if (oldValue.m_Float != flValue) {
+		if (changeType != AttributeChangeType::NONE) {
 			attribute_data_union_t newValue;
 			newValue.m_Float = flValue;
-			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue, changeType);
 		}
 	}
 
@@ -4146,19 +4175,19 @@ namespace Mod::Attr::Custom_Attributes
 		auto list = reinterpret_cast<CAttributeList *>(this);
 		
 		attribute_data_union_t oldValue;
-		oldValue.m_Float = FLT_MIN;
+		AttributeChangeType changeType = AttributeChangeType::NONE;
 
 		auto attr = list->GetAttributeByID(pAttrDef->GetIndex());
 		if (attr != nullptr) {
 			oldValue = attr->GetValue();
+			changeType = AttributeChangeType::REMOVE;
 		}
 
 		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttribute)(pAttrDef);
 
-		if (oldValue.m_Float != FLT_MIN) {
+		if (changeType != AttributeChangeType::NONE) {
 			attribute_data_union_t newValue;
-			newValue.m_Float = FLT_MIN;
-			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue, changeType);
 		}
 	}
 
@@ -4168,7 +4197,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto &attrs = list->Attributes();
 		CEconItemAttributeDefinition *pAttrDef = nullptr;
 		attribute_data_union_t oldValue;
-		oldValue.m_Float = FLT_MIN;
+		AttributeChangeType changeType = AttributeChangeType::NONE;
 		
 		if (index >= 0 && index < attrs.Count()) {
 			oldValue = attrs[index].GetValue();
@@ -4178,9 +4207,9 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttributeByIndex)(index);
 
 		if (pAttrDef != nullptr) {
+			changeType = AttributeChangeType::REMOVE;
 			attribute_data_union_t newValue;
-			newValue.m_Float = FLT_MIN;
-			OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+			OnAttributeChanged(list, pAttrDef, oldValue, newValue, changeType);
 		}
 	}
 
@@ -4189,8 +4218,8 @@ namespace Mod::Attr::Custom_Attributes
 		auto list = reinterpret_cast<CAttributeList *>(this);
 
 		attribute_data_union_t oldValue;
-		oldValue.m_Float = FLT_MIN;
 		auto attrOld = list->GetAttributeByID(attr->GetAttributeDefinitionIndex());
+		AttributeChangeType changeType = AttributeChangeType::NONE;
 		if (attrOld != nullptr) {
 			oldValue = attr->GetValue();
 		}
@@ -4198,7 +4227,8 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CAttributeList_AddAttribute)(attr);
 
 		if (oldValue.m_UInt != attr->GetValue().m_UInt) {
-			OnAttributeChanged(list, attr->GetStaticData(), oldValue, attr->GetValue());
+			changeType = AttributeChangeType::ADD;
+			OnAttributeChanged(list, attr->GetStaticData(), oldValue, attr->GetValue(), changeType);
 		}
 	}
 
@@ -4215,8 +4245,7 @@ namespace Mod::Attr::Custom_Attributes
 				attrs.Remove(i);
 
 				attribute_data_union_t newValue;
-				newValue.m_Float = FLT_MIN;
-				OnAttributeChanged(list, pAttrDef, oldValue, newValue);
+				OnAttributeChanged(list, pAttrDef, oldValue, newValue, AttributeChangeType::REMOVE);
 			}
 			list->NotifyManagerOfAttributeValueChanges();
 		}
@@ -4555,11 +4584,10 @@ namespace Mod::Attr::Custom_Attributes
 			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
 			
 			attribute_data_union_t oldValue;
-			oldValue.m_Float = FLT_MIN;
 
 			FOR_EACH_VEC(attrs, i) {
 				auto &attr = attrs[i];
-				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), oldValue, attr.GetValue());
+				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), oldValue, attr.GetValue(), AttributeChangeType::ADD);
 			}
 		}
     }
@@ -4573,11 +4601,10 @@ namespace Mod::Attr::Custom_Attributes
 			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
 			
 			attribute_data_union_t newValue;
-			newValue.m_Float = FLT_MIN;
 
 			FOR_EACH_VEC(attrs, i) {
 				auto &attr = attrs[i];
-				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), attr.GetValue(), newValue);
+				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), attr.GetValue(), newValue, AttributeChangeType::REMOVE);
 			}
 		}
     }
@@ -4711,6 +4738,18 @@ namespace Mod::Attr::Custom_Attributes
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		float nextFlameTime = shared->m_flFlameBurnTime;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_ConditionGameRulesThink)();
+		auto &bleedVec = shared->m_BleedInfo.Get();
+		FOR_EACH_VEC(bleedVec, i) {
+			auto &info = bleedVec[i];
+			if (info.flBleedingTime == gpGlobals->curtime + 0.5f) {
+				
+				float mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.hBleedingWeapon != nullptr ? (CBaseEntity*)info.hBleedingWeapon.Get() : info.hBleedingAttacker.Get(), mult, mult_bleeding_delay);
+				if (mult != 1.0f) {
+					info.flBleedingTime = gpGlobals->curtime + 0.5f * mult;
+				}
+			}
+		}
 		if (nextFlameTime != shared->m_flFlameBurnTime && shared->m_hBurnWeapon != nullptr) {
 			float mult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_wpn_burntime);
@@ -4719,8 +4758,6 @@ namespace Mod::Attr::Custom_Attributes
 				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
 			}
 		}
-		float mult = 1.0f;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->GetOuter(), mult, mult_wpn_burntime);
 	}
 
 	DETOUR_DECL_MEMBER(void, CGameMovement_CheckFalling)
@@ -4818,6 +4855,17 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_TraceAttack);
 		DETOUR_MEMBER_CALL(CTFPlayer_TraceAttack)(info, vecDir, ptr, pAccumulator);
+	}
+
+	DETOUR_DECL_MEMBER(float, CTFWeaponBase_GetAfterburnRateOnHit)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		float burn_duration = 0.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, burn_duration, set_dmgtype_ignite);
+		if (burn_duration != 0.0f) {
+			return 7.5f;
+		}
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_GetAfterburnRateOnHit)();
 	}
 
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
@@ -5177,7 +5225,7 @@ namespace Mod::Attr::Custom_Attributes
 		return nullptr;
 	}
 
-	using AttributeCallback = void (*)(CAttributeList *, const CEconItemAttributeDefinition *, attribute_data_union_t, attribute_data_union_t);
+	using AttributeCallback = void (*)(CAttributeList *, const CEconItemAttributeDefinition *, attribute_data_union_t, attribute_data_union_t, AttributeChangeType);
 	std::vector<std::pair<unsigned short, AttributeCallback>> attribute_callbacks;
 	
 	void RegisterCallback(const char *attribute_class, AttributeCallback callback)
@@ -5189,9 +5237,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 	}
-
-	unsigned short move_speed_attributes[] = {107, 442, 489, 378, 788, 792, 851, 1002, 75, 54};
-	unsigned short max_health_attributes[] = {125, 140, 26, 517};
 
 	void ClearAttributeManagerCachedAttribute(const char *class_name, CAttributeManager *manager)
 	{
@@ -5218,7 +5263,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		if (pAttrDef == nullptr) return;
 		
@@ -5229,15 +5274,20 @@ namespace Mod::Attr::Custom_Attributes
 		// }
 
 		int index = pAttrDef->GetIndex();
+		
+		if (changeType == AttributeChangeType::REMOVE)
+			DefaultValueForAttribute(new_value, pAttrDef);
+		if (changeType == AttributeChangeType::ADD)
+			DefaultValueForAttribute(old_value, pAttrDef);
 
 		for (auto &pair : attribute_callbacks) {
 			if (pair.first == index) {
-				(*pair.second)(list, pAttrDef, old_value, new_value);
+				(*pair.second)(list, pAttrDef, old_value, new_value, changeType);
 			}
 		}
 	}
 
-	void OnMoveSpeedChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnMoveSpeedChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
@@ -5245,11 +5295,11 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnMaxHealthChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnMaxHealthChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr && player->GetHealth() > 0) {
-			float change = old_value.m_Float == FLT_MIN ? new_value.m_Float : (new_value.m_Float == FLT_MIN ? -old_value.m_Float : new_value.m_Float - old_value.m_Float);
+			float change = new_value.m_Float - old_value.m_Float;
 			float maxHealth = player->GetMaxHealth();
 			float preMaxHealth = maxHealth - change;
 			float overheal = MAX(0, player->GetHealth() - preMaxHealth);
@@ -5258,7 +5308,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnItemColorChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnItemColorChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto manager = list->GetManager();
 		if (manager != nullptr) {
@@ -5271,7 +5321,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnCustomModelChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnCustomModelChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto manager = list->GetManager();
 		if (manager != nullptr) {
@@ -5284,16 +5334,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnMiniBossChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnMiniBossChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			player->SetMiniBoss(new_value.m_Float != FLT_MIN && new_value.m_Float != 0.0f);
+			player->SetMiniBoss(new_value.m_Float != 0.0f);
 
 			float playerScale = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, playerScale, model_scale);
 			if (playerScale == 1.0f) {
-				if (new_value.m_Float != 0.0f && new_value.m_Float != FLT_MIN) {
+				if (new_value.m_Float != 0.0f) {
 					static ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
 					player->SetModelScale(miniboss_scale.GetFloat());
 				}
@@ -5305,22 +5355,22 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	void OnScaleChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnScaleChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			player->SetModelScale(new_value.m_Float == FLT_MIN ? 1.0f : new_value.m_Float);
+			player->SetModelScale(new_value.m_Float);
 		}
 	}
 
-	void OnReloadFullClipAtOnceChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void OnReloadFullClipAtOnceChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto manager = list->GetManager();
 		if (manager != nullptr) {
 			CBaseEntity *ent = manager->m_hOuter;
 			auto econentity = rtti_cast<CTFWeaponBase *>(ent);
 			if (econentity != nullptr) {
-				econentity->m_bReloadsSingly = new_value.m_Float == 0.0 || new_value.m_Float == FLT_MIN;
+				econentity->m_bReloadsSingly = new_value.m_Float == 0.0;
 			}
 		}
 	}
@@ -5569,6 +5619,10 @@ namespace Mod::Attr::Custom_Attributes
 			
 		//	Fix build small sentries attribute reaplly max health on redeploy bug
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_MakeScaledBuilding, "CObjectSentrygun::MakeScaledBuilding");
+
+		//	Fix set dmgtype ignite
+			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetInitialAfterburnDuration, "CTFWeaponBase::GetInitialAfterburnDuration");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetAfterburnRateOnHit, "CTFWeaponBase::GetAfterburnRateOnHit");
 
 		//  Fast attribute cache
 			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache");

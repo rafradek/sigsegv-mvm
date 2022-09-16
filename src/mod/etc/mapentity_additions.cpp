@@ -927,13 +927,40 @@ namespace Mod::Etc::Mapentity_Additions
         SCOPED_INCREMENT(rc_CTriggerHurt_HurtEntity);
 		return DETOUR_MEMBER_CALL(CTriggerHurt_HurtEntity)(other, damage);
 	}
+
+    RefCount rc_CTriggerIgnite_BurnEntities;
+    DETOUR_DECL_MEMBER(int, CTriggerIgnite_BurnEntities)
+	{
+        SCOPED_INCREMENT(rc_CTriggerIgnite_BurnEntities);
+		return DETOUR_MEMBER_CALL(CTriggerIgnite_BurnEntities)();
+	}
+
+    CTFPlayer *selfburn_replace = nullptr;
+    DETOUR_DECL_MEMBER(void, CTriggerIgnite_IgniteEntity, CBaseEntity *other)
+	{
+        auto me = reinterpret_cast<CTriggerIgnite *>(this);
+        selfburn_replace = ToTFPlayer(me->GetOwnerEntity());
+		DETOUR_MEMBER_CALL(CTriggerIgnite_IgniteEntity)(other);
+        selfburn_replace = nullptr;
+        if (me->GetOwnerEntity() != nullptr && other->IsPlayer()) {
+        }
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SelfBurn, float duration)
+	{
+        if (selfburn_replace != nullptr) {
+            reinterpret_cast<CTFPlayerShared *>(this)->Burn(selfburn_replace, nullptr, duration);
+            return;
+        }
+        DETOUR_MEMBER_CALL(CTFPlayerShared_SelfBurn)(duration);
+    }
     
     RefCount rc_CBaseEntity_TakeDamage;
     DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
         SCOPED_INCREMENT(rc_CBaseEntity_TakeDamage);
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
-        if (rc_CTriggerHurt_HurtEntity) {
+        if (rc_CTriggerHurt_HurtEntity || rc_CTriggerIgnite_BurnEntities) {
             auto owner = info.GetAttacker()->GetOwnerEntity();
             if (owner != nullptr && owner->IsPlayer()) {
                 info.SetAttacker(owner);
@@ -1912,6 +1939,9 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
 			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity");
+			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_IgniteEntity, "CTriggerIgnite::IgniteEntity");
+			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_BurnEntities, "CTriggerIgnite::BurnEntities");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SelfBurn, "CTFPlayerShared::SelfBurn");
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByName, "CGlobalEntityList::FindEntityByName");
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByClassname, "CGlobalEntityList::FindEntityByClassname");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGHEST);

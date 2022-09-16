@@ -497,6 +497,13 @@ function ents.RemoveCreateCallback(id) end
 ---@return Entity player Player with given user id, or nil if not found
 function ents.GetPlayerByUserId(userid) end
 
+--Creates an entity with specified classname and keyvalues
+---@param classname string
+---@param keyTable table key -> value table. Example: { origin = "0 0 0" }
+---@param spawn? boolean = true. Spawn entity after creation
+---@param activate? boolean = true. Activate entity after creation
+function ents.CreateWithKeys(classname, keyTable, spawn, activate) end
+
 timer = {}
 
 --Creates a simple timer that calls the function after delay

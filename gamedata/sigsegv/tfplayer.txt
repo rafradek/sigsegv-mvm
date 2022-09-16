@@ -1034,6 +1034,11 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerSharedC2Ev"
 				}
+				"CTFPlayerShared::SelfBurn"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared8SelfBurnEf"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

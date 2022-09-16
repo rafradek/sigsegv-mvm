@@ -6289,6 +6289,26 @@
 					type "sym"
 					sym  "_ZN18CParticleSystemMgr4InitEP20IParticleSystemQuery"
 				}
+				"CTFWeaponBase::GetInitialAfterburnDuration"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase27GetInitialAfterburnDurationEv"
+				}
+				"CTFWeaponBase::GetAfterburnRateOnHit"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase21GetAfterburnRateOnHitEv"
+				}
+				"CTriggerIgnite::BurnEntities"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerIgnite12BurnEntitiesEv"
+				}
+				"CTriggerIgnite::IgniteEntity"
+				{
+					type "sym"
+					sym  "_ZN14CTriggerIgnite12IgniteEntityEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

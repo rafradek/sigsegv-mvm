@@ -9,7 +9,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Secondary attack: crossbow fires milk bolt. Regenerates every x seconds as set in attribute
     "4325"
@@ -20,7 +20,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //The bot with the attribute distributes its currency on death, like with sniper kills
     "4326"
@@ -31,7 +31,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //airblast pushes the pyro himself rather than others
     "4327"
@@ -42,7 +42,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Melee weapon attacks all enemies in range
     "4328"
@@ -53,7 +53,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Special mode for revolver: each hit increases damage, up to x times. Likely does not work 
     "4329"
@@ -64,7 +64,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4330"
     {
@@ -74,7 +74,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Grants the players speed buff for 4 seconds after leaving teleporter
     "4331"
@@ -85,7 +85,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Turns the victim ragdoll to ice.
     "4332"
@@ -96,7 +96,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Can player breathe underwater
     "4333"
@@ -107,7 +107,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //If set to 1 player cannon swim
     "4334"
@@ -118,7 +118,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //If set to 1 player can swim faster
     "4335"
@@ -129,7 +129,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //If set to 1 player move his teleporter with double tapped movement keys. Does not work
     "4336"
@@ -140,7 +140,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //A worse version of damage piercing since it only ignores battalion backup 35% reduction. Not working?
     "4337"
@@ -151,7 +151,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Players with this attribute are granted more points for kills but lose points after death
     "4338"
@@ -162,7 +162,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Is the player immune to wet statuses like jarate or mad milk
     "4339"
@@ -173,7 +173,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Huntsman: reduces shoot time 40%/70%, same functionality as faster reload rate but limited to 2 points
     //Sniper rifle: reduces zoom time 40%/70% (like reload rate does). increases charge rate 50%/200%, but actually 100% due to the cap
@@ -185,7 +185,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Last revolver shot in the clip is critical
     "4341"
@@ -196,7 +196,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Keep disguise after attacking. Revolver only
     "4343"
@@ -207,7 +207,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //On hit ally: heal your teammate for x health, draining your own health. Melee only
     "4344"
@@ -218,7 +218,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Combination of flamethrower flags, used to limit airblast functionality. You have to add those numbers to enable specific functions (by default all are enabled):
     //1 - If airblast should push players
@@ -234,7 +234,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //airblast pushes players towards the pyro. Not working?
     "4346"
@@ -245,7 +245,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4347"
     {
@@ -255,7 +255,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Probably does nothing
     "4348"
@@ -266,7 +266,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //On kill: gives x% fire rate bonus, stacks up to 3 times. Killing different class clears the combo
     "4349"
@@ -607,7 +607,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //If set to 1, enables healing buildings as medic. increases building healing rate by 10% for each point
     "4381"
@@ -618,7 +618,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Smack time multiplier (0.2s default)
     "4382"
@@ -695,7 +695,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile model scale multipier.
     "4389"
@@ -717,7 +717,7 @@
         "description_format"	"value_is_percentage"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile trail particle name
     "4392"
@@ -772,7 +772,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //No damage falloff or rampup
     "4397"
@@ -783,7 +783,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Enforce damage falloff and rampup
     "4398"
@@ -794,7 +794,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Set damage rampup to 50%
     "4399"
@@ -805,7 +805,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Set damage rampup to 20%
     "4400"
@@ -816,7 +816,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Don't count damage towards crit rate
     "4401"
@@ -827,7 +827,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Cannot be sapped
     "4402"
@@ -838,7 +838,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Item color rgb
     "4403"
@@ -849,7 +849,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Is invisible
     "4404"
@@ -860,7 +860,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Cannot taunt
     "4405"
@@ -871,7 +871,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile acceleration
     "4406"
@@ -882,7 +882,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Is minigiant
     "4407"
@@ -893,7 +893,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
     }
     //Is minigiant
     "4408"
@@ -914,7 +913,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
     }
     //Minimal respawn timep
     "4410"
@@ -935,7 +933,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
     }
     //Sentry rocket fire rate bonus
     "4412"
@@ -956,7 +953,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
     }
     //rapid fire sentry
     "4414"
@@ -967,7 +963,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
     }
     //Building color rgb
     "4415"
@@ -978,7 +973,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
     }
     //Building scale
     "4416"
@@ -1009,7 +1003,6 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
     }
     //Receive friendly fire
     "4419"
@@ -1020,7 +1013,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"negative"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Cannot headshot
     "4420"
@@ -1031,7 +1024,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Mult crit dmg
     "4421"
@@ -1042,7 +1035,7 @@
         "description_format"	"value_is_percentage"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Can be headshot
     "4422"
@@ -1053,7 +1046,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Parent item to specified attachment
     "4423"
@@ -1141,7 +1134,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Grenade explode on impact
     "4431"
@@ -1201,7 +1194,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4437"
     {
@@ -1211,7 +1204,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4438"
     {
@@ -1239,7 +1232,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4441"
     {
@@ -1249,7 +1242,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     "4442"
     {
@@ -1279,7 +1272,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Is dropped weapon
     "4445"
@@ -1290,7 +1283,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile heat follow crosshair
     "4446"
@@ -1301,7 +1294,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile No deflect
     "4447"
@@ -1312,7 +1305,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile acceleration start time
     "4448"
@@ -1343,7 +1336,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Projectile acceleration start time
     "4451"
@@ -1417,7 +1410,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Override projectile type extra
     "4458"
@@ -1469,7 +1462,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Medigun range multipier
     "4463"
@@ -1490,7 +1483,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Max aoe enemies affected
     "4465"
@@ -1501,7 +1494,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Addcond on hit
     "4466"
@@ -1512,7 +1505,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Addcond on hit duration
     "4467"
@@ -1533,7 +1526,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Weapon damage type
     "4469"
@@ -1544,7 +1537,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Weapon damage type
     "4470"
@@ -1555,7 +1548,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Weapon special type
     "4471"
@@ -1566,7 +1559,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Weapon special type
     "4472"
@@ -1617,7 +1610,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Addcond on hit
     "4477"
@@ -1628,7 +1621,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Addcond on hit duration
     "4478"
@@ -1649,7 +1642,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Addcond on kill duration
     "4480"
@@ -1691,7 +1684,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"0"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Item description
     "4484"
@@ -1933,7 +1926,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Penetrate teammates
     "4508"
@@ -1944,7 +1937,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Penetrate teammates
     "4509"
@@ -1955,7 +1948,7 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
-        "stored_as_integer"	"1"
+        "stored_as_integer"	"0"
     }
     //Penetrate teammates
     "4510"
@@ -2489,4 +2482,23 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4567"
+    {
+        "name"	"mult bleeding delay"
+        "attribute_class"	"mult_bleeding_delay"
+        "description_string"	"(+-)%p% bleeding damage delay"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4568"
+    {
+        "name"	"mult bleeding dmg"
+        "attribute_class"	"mult_bleeding_dmg"
+        "description_string"	"(+-)%p% bleeding damage"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    
 }
