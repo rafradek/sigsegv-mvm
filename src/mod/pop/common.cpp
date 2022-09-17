@@ -112,6 +112,11 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
             change_attributes_delay[actor] = this->m_strOnDoneAttributes;
             THINK_FUNC_SET(actor, ChangeAttributes, gpGlobals->curtime);
         }
+        if (this->m_strName != "") {
+            variant_t variant;
+            variant.SetString(AllocPooledString(this->m_strName.c_str()));
+            actor->FireCustomOutput<"onactiondone">(actor, actor, variant);
+        }
         return ActionResult<CTFBot>::Done( "Successfully moved to area" );
     }
 
@@ -244,293 +249,600 @@ THINK_FUNC_DECL(StopTaunt) {
 
 
 
-void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool insideECAttr)
+class PeriodicTaskTaunt : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Name")) {
+            auto item_def = GetItemSchema()->GetItemDefinitionByName(subkey->GetString());
+            if (item_def != nullptr)
+                this->tauntDef = item_def->m_iItemDefIndex;
+
+            tauntName = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        if (tauntDef != 0) {
+            CEconItemView *view = CEconItemView::Create();
+            view->Init(tauntDef, 6, 9999, 0);
+            Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(tauntName, view);
+            bot->PlayTauntSceneFromItem(view);
+            CEconItemView::Destroy(view);
+            THINK_FUNC_SET(bot, StopTaunt, gpGlobals->curtime + duration);
+        }
+        else {
+            
+            const char * commandn = "taunt";
+            CCommand command = CCommand();
+            command.Tokenize(commandn);
+            bot->ClientCommand(command);
+            //bot->Taunt(TAUNT_BASE_WEAPON, 0);
+        }
+    }
+
+    int tauntDef = 0;
+    std::string tauntName;
+};
+
+class PeriodicTaskGiveSpell : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Type")) {
+            spellType = subkey->GetInt();
+            const char *typen =subkey->GetString();
+            for (int i = 0; i < SPELL_TYPE_COUNT_ALL; i++) {
+                if(FStrEq(typen,SPELL_TYPE[i])){
+                    spellType = i;
+                }	
+            }
+        }
+        else if (FStrEq(subkey->GetName(), "Charges")) {
+            spellCount = subkey->GetInt();
+        }
+        else if (FStrEq(subkey->GetName(), "Limit")) {
+            maxSpells = subkey->GetInt();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        if (maxSpells == 0) {
+            maxSpells = spellCount;
+        }
+        CTFPlayer *ply = bot;
+        for (int i = 0; i < MAX_WEAPONS; ++i) {
+            CBaseCombatWeapon *weapon = ply->GetWeapon(i);
+            if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) continue;
+            
+            CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
+            if (spellType < SPELL_TYPE_COUNT){
+                spellbook->m_iSelectedSpellIndex=spellType;
+            }
+            else{
+                if (spellType == 12) //common spell
+                    spellbook->m_iSelectedSpellIndex=RandomInt(0,6);
+                else if (spellType == 13) //rare spell
+                    spellbook->m_iSelectedSpellIndex=RandomInt(7,11);
+                else if (spellType == 14) //all spells
+                    spellbook->m_iSelectedSpellIndex=RandomInt(0,11);
+            }
+            spellbook->m_iSpellCharges += spellCount;
+            if (spellbook->m_iSpellCharges > maxSpells)
+                spellbook->m_iSpellCharges = maxSpells;
+            
+                
+            DevMsg("Weapon %d %s\n",i , weapon -> GetClassname());
+            break;
+        }
+        DevMsg("Spell task executed %d\n", spellType);
+    }
+    
+    int spellType = 0;
+    int spellCount = 1;
+    int maxSpells = 0;
+};
+
+class PeriodicTaskVoiceCommand : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Type")) {
+            type = subkey->GetInt();
+            const char *typen =subkey->GetString();
+            int resp = GetResponseFor(typen);
+            if (resp >= 0)
+                type = resp;
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        TFGameRules()->VoiceCommand(reinterpret_cast<CBaseMultiplayerPlayer*>(bot), type / 10, type % 10);
+    }
+
+    int type = 0;
+};
+
+class PeriodicTaskFireWeapon : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Type")) {
+            type = subkey->GetInt();
+            const char *typen =subkey->GetString();
+            for (int i = 0; i < INPUT_TYPE_COUNT; i++) {
+                if(FStrEq(typen,INPUT_TYPE[i])){
+                    type = i;
+                }	
+            }
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        switch (type) {
+        case 0:
+            bot->ReleaseFireButton();
+            break;
+        case 1:
+            bot->ReleaseAltFireButton();
+            break;
+        case 2:
+            bot->ReleaseSpecialFireButton();
+            break;
+        case 3:
+            bot->ReleaseReloadButton();
+            break;
+        case 4:
+            bot->ReleaseJumpButton();
+            break;
+        case 5:
+            bot->ReleaseCrouchButton();
+            break;
+        case 6:
+            bot->UseActionSlotItemReleased();
+            break;
+        }
+        if (duration >= 0){
+
+            CTFBot::AttributeType attrs = bot->m_nBotAttrs;
+
+            // Stop SuppressFire bot attribute from preventing to press buttons
+            bot->m_nBotAttrs = CTFBot::ATTR_NONE;
+
+            switch (type) {
+            case 0:
+                bot->PressFireButton(duration);
+                break;
+            case 1:
+                bot->PressAltFireButton(duration);
+                break;
+            case 2:
+                bot->PressSpecialFireButton(duration);
+                break;
+            case 3:
+                bot->PressReloadButton(duration);
+                break;
+            case 4:
+                bot->PressJumpButton(duration);
+                break;
+            case 5:
+                bot->PressCrouchButton(duration);
+                break;
+            }
+
+            bot->m_nBotAttrs = attrs;
+        }
+        if (type == 6) {
+            bot->UseActionSlotItemPressed();
+        }
+    }
+    
+    int type = 0;
+};
+
+class PeriodicTaskChangeAttributes : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Name")) {
+            name = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        const CTFBot::EventChangeAttributes_t *attrib = bot->GetEventChangeAttributes(name.c_str());
+        if (attrib != nullptr){
+            DevMsg("Attribute exists %s\n", name.c_str());
+            bot->OnEventChangeAttributes(attrib);
+        }
+        DevMsg("Attribute changed %s\n", name.c_str());
+    }
+
+    std::string name;
+};
+
+class PeriodicTaskFireInput : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Target") || FStrEq(subkey->GetName(), "Name")) {
+            target = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "Action") || FStrEq(subkey->GetName(), "Input")) {
+            input = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "Param")) {
+            param = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        variant_t variant1;
+        string_t m_iParameter = AllocPooledString(param.c_str());
+            variant1.SetString(m_iParameter);
+        CEventQueue &que = g_EventQueue;
+        que.AddEvent(STRING(AllocPooledString(target.c_str())),STRING(AllocPooledString(input.c_str())),variant1,0,bot,bot,-1);
+        std::string targetname = STRING(bot->GetEntityName());
+        int findamp = targetname.find('&');
+        if (findamp != -1){
+            que.AddEvent(STRING(AllocPooledString((target+targetname.substr(findamp)).c_str())),STRING(AllocPooledString(input.c_str())),variant1,0,bot,bot,-1);
+        }
+    }
+
+    std::string target;
+    std::string input;
+    std::string param;
+};
+
+class PeriodicTaskMessage : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Name")) {
+            message = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        int linenum = 0;
+        Mod::Pop::Wave_Extensions::ParseColorsAndPrint(message.c_str(), 0.1f, linenum, nullptr);
+    }
+
+    std::string message;
+};
+
+class PeriodicTaskWeaponSwitch : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Type")) {
+            const char *typen = subkey->GetString();
+            if (FStrEq(typen, "Primary"))
+                type = CTFBot::WeaponRestriction::PRIMARY_ONLY;
+            else if (FStrEq(typen, "Secondary"))
+                type = CTFBot::WeaponRestriction::SECONDARY_ONLY;
+            else if (FStrEq(typen, "Melee"))
+                type = CTFBot::WeaponRestriction::MELEE_ONLY;
+            else if (FStrEq(typen, "Building"))
+                type = CTFBot::WeaponRestriction::BUILDING_ONLY;
+            else if (FStrEq(typen, "PDA"))
+                type = CTFBot::WeaponRestriction::PDA_ONLY;
+            else
+                type = subkey->GetInt();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        bot->m_iWeaponRestrictionFlags = (CTFBot::WeaponRestriction)type;
+    }
+
+    int type = 0;
+};
+
+CAttributeList *GetAttributeListByItemIndex(CTFPlayer *player, int index)
+{
+    CAttributeList *list = nullptr;
+    if (index == -1) { // Player
+        list = player->GetAttributeList();
+    }
+    if (index == -2) { // Active weapon
+        CTFWeaponBase *entity = player->GetActiveTFWeapon();
+        if (entity != nullptr)
+            list = &entity->GetItem()->GetAttributeList();
+    }
+    else { // Weapon
+        CEconEntity *entity = player->GetEconEntityById(index);
+        if (entity != nullptr)
+            list = &entity->GetItem()->GetAttributeList();
+    }
+    return list;
+}
+
+class PeriodicTaskAddAttribute : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Item")) {
+            itemDefIndex=subkey->GetInt();
+            const char *typen = subkey->GetString();
+            if (FStrEq(typen, "Player")){
+                itemDefIndex = -1;
+            }
+            if (FStrEq(typen, "Active")){
+                itemDefIndex= -2;
+            }
+            else {
+                auto item_def = GetItemSchema()->GetItemDefinitionByName(typen);
+                if (item_def != nullptr)
+                    itemDefIndex = item_def->m_iItemDefIndex;
+            }
+        }
+        else if (FStrEq(subkey->GetName(), "Name")) {
+            attrDef = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetString());
+            if (attrDef == nullptr) {
+                attrDef = GetItemSchema()->GetAttributeDefinition(subkey->GetInt());
+            }
+        }
+        else if (FStrEq(subkey->GetName(), "Value")) {
+            param = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        auto list = GetAttributeListByItemIndex(bot, itemDefIndex);
+
+        if (list != nullptr && attrDef != nullptr) {
+            list->AddStringAttribute(attrDef, param);
+        }
+    }
+
+    int itemDefIndex = 0;
+    CEconItemAttributeDefinition *attrDef = nullptr;
+    std::string param;
+};
+
+class PeriodicTaskRemoveAttribute : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Item")) {
+            itemDefIndex=subkey->GetInt();
+            const char *typen = subkey->GetString();
+            if (FStrEq(typen, "Player")){
+                itemDefIndex = -1;
+            }
+            if (FStrEq(typen, "Active")){
+                itemDefIndex= -2;
+            }
+            else {
+                auto item_def = GetItemSchema()->GetItemDefinitionByName(typen);
+                if (item_def != nullptr)
+                    itemDefIndex = item_def->m_iItemDefIndex;
+            }
+        }
+        else if (FStrEq(subkey->GetName(), "Name")) {
+            attrDef = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetString());
+            if (attrDef == nullptr) {
+                attrDef = GetItemSchema()->GetAttributeDefinition(subkey->GetInt());
+            }
+        }
+    }
+    
+    virtual void Update(CTFBot *bot) override
+    {
+        auto list = GetAttributeListByItemIndex(bot, itemDefIndex);
+
+        if (list != nullptr && attrDef != nullptr) {
+            list->RemoveAttribute(attrDef);
+        }
+    }
+
+    int itemDefIndex = 0;
+    CEconItemAttributeDefinition *attrDef = nullptr;
+};
+
+class PeriodicTaskSequence : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Name")) {
+            sequence = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        bot->PlaySpecificSequence(sequence.c_str());
+    }
+
+    std::string sequence;
+};
+
+class PeriodicTaskClientCommand : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Name")) {
+            command = subkey->GetString();
+        }
+    }
+    
+    virtual void Update(CTFBot *bot) override
+    {
+        const char * commandn = command.c_str();
+        CCommand command;
+        command.Tokenize(commandn);
+        bot->ClientCommand(command);
+    }
+
+    std::string command;
+};
+
+class PeriodicTaskInterruptAction : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Target")) {
+            target = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "AimTarget")) {
+            aimTarget = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "KillAimTarget")) {
+            killAimTarget = subkey->GetBool();
+        }
+        else if (FStrEq(subkey->GetName(), "WaitUntilDone")) {
+            waitUntilDone = subkey->GetFloat();
+        }
+        else if (FStrEq(subkey->GetName(), "OnDoneChangeAttributes")) {
+            onDoneChangeAttributes = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "Name")) {
+            name = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        std::string command = "interrupt_action";
+
+        if (!target.empty()) {
+            float posx, posy, posz;
+
+            if (sscanf(target.c_str(),"%f %f %f", &posx, &posy, &posz) == 3) {
+                command += CFmtStr(" -pos %f %f %f", posx, posy, posz);
+            }
+            else {
+                command += CFmtStr(" -posent %s", target.c_str());
+            }
+        }
+        if (!aimTarget.empty()) {
+            float posx, posy, posz;
+
+            if (sscanf(aimTarget.c_str(),"%f %f %f", &posx, &posy, &posz) == 3) {
+                command += CFmtStr(" -lookpos %f %f %f", posx, posy, posz);
+            }
+            else {
+                command += CFmtStr(" -lookposent %s", aimTarget.c_str());
+            }
+        }
+        
+        if (!onDoneChangeAttributes.empty()) {
+            command += " -ondoneattributes " + onDoneChangeAttributes;
+        }
+        
+        if (!name.empty()) {
+            command += " -name " + name;
+        }
+
+        command += CFmtStr(" -duration %f", duration);
+
+        if (waitUntilDone != 0)
+            command += " -waituntildone";
+
+        if (killAimTarget)
+            command += " -killlook";
+        
+        bot->MyNextBotPointer()->OnCommandString(command.c_str());
+    }
+
+    std::string target;
+    std::string aimTarget;
+    bool killAimTarget;
+    float waitUntilDone;
+    std::string onDoneChangeAttributes;
+    std::string name;
+};
+
+class PeriodicTaskSpray : public PeriodicTask
+{
+    virtual void Parse(KeyValues *subkey) override 
+    {
+        if (FStrEq(subkey->GetName(), "Target")) {
+            target = subkey->GetString();
+        }
+        else if (FStrEq(subkey->GetName(), "TargetAngle")) {
+            targetAngle = subkey->GetString();
+        }
+    }
+
+    virtual void Update(CTFBot *bot) override
+    {
+        Vector forward;
+        trace_t	tr;	
+
+        Vector origin;
+        QAngle angles;
+        if (sscanf(target.c_str(),"%f %f %f", &origin.x, &origin.y, &origin.z) != 3) {
+            origin = bot->WorldSpaceCenter() + Vector (0 , 0 , 32);
+        }
+        if (sscanf(targetAngle.c_str(),"%f %f %f", &angles.x, &angles.y, &angles.z) != 3) {
+            angles = bot->EyeAngles();
+        }
+        bot->EmitSound("SprayCan.Paint");
+        AngleVectors(angles, &forward );
+        UTIL_TraceLine(origin, origin + forward * 1280, 
+            MASK_SOLID_BRUSHONLY, bot, COLLISION_GROUP_NONE, &tr);
+
+        DevMsg("Spraying %f %f %f %f %f %d %d\n", origin.x, angles.x, tr.endpos.x, tr.endpos.y, tr.endpos.z, tr.DidHit(), ENTINDEX(tr.m_pEnt) == 0);
+        CBroadcastRecipientFilter filter;
+
+        //ForEachTFPlayer([&](CTFPlayer *player){
+        //    if (player->GetTeamNumber() == TF_TEAM_RED)
+                TE_PlayerDecal(filter, 0.0f, &tr.endpos, ENTINDEX(bot), ENTINDEX(tr.m_pEnt));
+        //});
+    }
+
+    std::string target;
+    std::string targetAngle;
+};
+
+void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, bool insideECAttr)
 {
     for (auto it = pending_periodic_tasks.begin(); it != pending_periodic_tasks.end(); ) {
-        auto& pending_task = *it;
+        auto& pending_task_impl = *it;
+        auto& pending_task = *pending_task_impl.task;
+        auto pending_task_ptr = pending_task_impl.task.get();
 
-        if (pending_task.bot == nullptr || !pending_task.bot->IsAlive()) {
+        CTFBot *bot = pending_task_impl.bot;
+        if (bot == nullptr || !bot->IsAlive()) {
             it = pending_periodic_tasks.erase(it);
             continue;
         }
-        CTFBot *bot = pending_task.bot;
 
-        if (pending_task.health_below != 0 && bot->GetHealth() >= pending_task.health_below) {
-            pending_task.when = gpGlobals->curtime + pending_task.delay;
+        if (pending_task.health_below != 0 
+            && bot->GetHealth() >= pending_task.health_below) {
+            pending_task_impl.nextTaskTime = gpGlobals->curtime + pending_task.delay;
         }
 
-        if (gpGlobals->curtime >= pending_task.when && (pending_task.health_below == 0 || bot->GetHealth() <= pending_task.health_below)) {
+        if (gpGlobals->curtime >= pending_task_impl.nextTaskTime && (pending_task.health_below == 0 || bot->GetHealth() <= pending_task.health_below)) {
             const CKnownEntity *threat;
             if ((pending_task.health_above > 0 && bot->GetHealth() <= pending_task.health_above) || (
                     pending_task.if_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr ))) {
                 if (pending_task.health_below > 0)
-                    pending_task.when = gpGlobals->curtime;
+                    pending_task_impl.nextTaskTime = gpGlobals->curtime;
 
-                pending_task.when+=pending_task.cooldown;
+                pending_task_impl.nextTaskTime+=pending_task.cooldown;
                 continue;
             }
-            if (pending_task.type==TASK_TAUNT) {
-                if (pending_task.spell_type != 0) {
-                    CEconItemView *view = CEconItemView::Create();
-                    view->Init(pending_task.spell_type, 6, 9999, 0);
-                    Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(pending_task.attrib_name, view);
-                    bot->PlayTauntSceneFromItem(view);
-                    CEconItemView::Destroy(view);
-                    THINK_FUNC_SET(bot, StopTaunt, gpGlobals->curtime + pending_task.duration);
-                }
-                else {
-                    
-                    const char * commandn = "taunt";
-                    CCommand command = CCommand();
-                    command.Tokenize(commandn);
-                    bot->ClientCommand(command);
-                    //bot->Taunt(TAUNT_BASE_WEAPON, 0);
-                }
-            }
-            else if (pending_task.type==TASK_GIVE_SPELL) {
-                CTFPlayer *ply = bot;
-                for (int i = 0; i < MAX_WEAPONS; ++i) {
-                    CBaseCombatWeapon *weapon = ply->GetWeapon(i);
-                    if (weapon == nullptr || !FStrEq(weapon->GetClassname(), "tf_weapon_spellbook")) continue;
-                    
-                    CTFSpellBook *spellbook = rtti_cast<CTFSpellBook *>(weapon);
-                    if (pending_task.spell_type < SPELL_TYPE_COUNT){
-                        spellbook->m_iSelectedSpellIndex=pending_task.spell_type;
-                    }
-                    else{
-                        if (pending_task.spell_type == 12) //common spell
-                            spellbook->m_iSelectedSpellIndex=RandomInt(0,6);
-                        else if (pending_task.spell_type == 13) //rare spell
-                            spellbook->m_iSelectedSpellIndex=RandomInt(7,11);
-                        else if (pending_task.spell_type == 14) //all spells
-                            spellbook->m_iSelectedSpellIndex=RandomInt(0,11);
-                    }
-                    spellbook->m_iSpellCharges+=pending_task.spell_count;
-                    if (spellbook->m_iSpellCharges > pending_task.max_spells)
-                        spellbook->m_iSpellCharges = pending_task.max_spells;
-                    
-                        
-                    DevMsg("Weapon %d %s\n",i , weapon -> GetClassname());
-                    break;
-                }
-                DevMsg("Spell task executed %d\n", pending_task.spell_type);
-            }
-            else if (pending_task.type==TASK_VOICE_COMMAND) {
-                TFGameRules()->VoiceCommand(reinterpret_cast<CBaseMultiplayerPlayer*>(bot), pending_task.spell_type / 10, pending_task.spell_type % 10);
-                //ToTFPlayer(bot)->SpeakConceptIfAllowed(pending_task.spell_type);
-                /*const char * commandn3= "voicemenu 0 0";
-                CCommand command3 = CCommand();
-                command3.Tokenize(commandn3);
-                DevMsg("Command test 1 %d\n", command3.ArgC());
-                for (int i = 0; i < command3.ArgC(); i++){
-                    DevMsg("%d. Argument %s\n",i, command3[i]);
-                }
 
-                DevMsg("\n");
-                ToTFPlayer(bot)->ClientCommand(command);*/
-                DevMsg("Voice command executed %d\n", pending_task.spell_type);
-            }
-            else if (pending_task.type==TASK_FIRE_WEAPON) {
+            size_t sizePre = pending_periodic_tasks.size();
+            size_t posPre = it - pending_periodic_tasks.begin();
+            pending_task.Update(bot);
 
-                switch (pending_task.spell_type) {
-                case 0:
-                    bot->ReleaseFireButton();
-                    break;
-                case 1:
-                    bot->ReleaseAltFireButton();
-                    break;
-                case 2:
-                    bot->ReleaseSpecialFireButton();
-                    break;
-                case 3:
-                    bot->ReleaseReloadButton();
-                    break;
-                case 4:
-                    bot->ReleaseJumpButton();
-                    break;
-                case 5:
-                    bot->ReleaseCrouchButton();
-                    break;
-                case 6:
-                    bot->UseActionSlotItemReleased();
-                    break;
-                }
-                if (pending_task.duration >= 0){
-
-                    CTFBot::AttributeType attrs = bot->m_nBotAttrs;
-
-                    bot->m_nBotAttrs = CTFBot::ATTR_NONE;
-
-                    switch (pending_task.spell_type) {
-                    case 0:
-                        bot->PressFireButton(pending_task.duration);
-                        break;
-                    case 1:
-                        bot->PressAltFireButton(pending_task.duration);
-                        break;
-                    case 2:
-                        bot->PressSpecialFireButton(pending_task.duration);
-                        break;
-                    case 3:
-                        bot->PressReloadButton(pending_task.duration);
-                        break;
-                    case 4:
-                        bot->PressJumpButton(pending_task.duration);
-                        break;
-                    case 5:
-                        bot->PressCrouchButton(pending_task.duration);
-                        break;
-                    }
-
-                    bot->m_nBotAttrs = attrs;
-                }
-                if (pending_task.spell_type == 6) {
-                    bot->UseActionSlotItemPressed();
-                }
-                
-                DevMsg("FIRE_WEAPON_ %d\n", pending_task.spell_type);
-            }
-            else if (pending_task.type==TASK_CHANGE_ATTRIBUTES) {
-                
-                const CTFBot::EventChangeAttributes_t *attrib = bot->GetEventChangeAttributes(pending_task.attrib_name.c_str());
-                if (attrib != nullptr){
-                    DevMsg("Attribute exists %s\n", pending_task.attrib_name.c_str());
-                    bot->OnEventChangeAttributes(attrib);
-                    if (!bot->IsAlive() || insideECAttr) {
-                        it = pending_periodic_tasks.begin();
-                        continue;
-                    }
-                }
-                DevMsg("Attribute changed %s\n", pending_task.attrib_name.c_str());
-            }
-            else if (pending_task.type==TASK_FIRE_INPUT) {
-                variant_t variant1;
-                string_t m_iParameter = AllocPooledString(pending_task.param.c_str());
-                    variant1.SetString(m_iParameter);
-                CEventQueue &que = g_EventQueue;
-                que.AddEvent(STRING(AllocPooledString(pending_task.attrib_name.c_str())),STRING(AllocPooledString(pending_task.input_name.c_str())),variant1,0,bot,bot,-1);
-                std::string targetname = STRING(bot->GetEntityName());
-                int findamp = targetname.find('&');
-                if (findamp != -1){
-                    que.AddEvent(STRING(AllocPooledString((pending_task.attrib_name+targetname.substr(findamp)).c_str())),STRING(AllocPooledString(pending_task.input_name.c_str())),variant1,0,bot,bot,-1);
-                }
-
-                //trigger->AcceptInput("trigger", this->parent, this->parent ,variant1,-1);
-            }
-            else if (pending_task.type == TASK_MESSAGE) {
-                int linenum = 0;
-                Mod::Pop::Wave_Extensions::ParseColorsAndPrint(pending_task.attrib_name.c_str(), 0.1f, linenum, nullptr);
-            }
-            else if (pending_task.type == TASK_WEAPON_SWITCH) {
-                bot->m_iWeaponRestrictionFlags = (CTFBot::WeaponRestriction)pending_task.spell_type;
-            }
-            else if (pending_task.type == TASK_ADD_ATTRIBUTE || pending_task.type == TASK_REMOVE_ATTRIBUTE) {
-                CAttributeList *list = nullptr;
-
-                /*if (pending_task.spell_type == -2) { // TFBot
-                    CTFBot::EventChangeAttributes_t ecattr;
-                    KeyValues *kv = new KeyValues();
-                    kv->SetString(pending_task.attrib_name, pending_task.param);
-                    ParseDynamicAttributes(ecattr, kv);
-                    kv->deleteThis();
-                    if (FStrEq(pending_task.attrib_name, "MaxVisionRange"))
-                }*/
-                if (pending_task.spell_type == -1) { // Player
-                    list = bot->GetAttributeList();
-                }
-                if (pending_task.spell_type == -2) { // Active weapon
-                    CTFWeaponBase *entity = bot->GetActiveTFWeapon();
-                    if (entity != nullptr)
-                        list = &entity->GetItem()->GetAttributeList();
-                }
-                else { // Weapon
-                    CEconEntity *entity = bot->GetEconEntityById(pending_task.spell_type);
-                    if (entity != nullptr)
-                        list = &entity->GetItem()->GetAttributeList();
-                }
-
-                if (list != nullptr) {
-                    auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(pending_task.attrib_name.c_str());
-                    if (attr_def != nullptr) {
-                        if (pending_task.type == TASK_ADD_ATTRIBUTE)
-                            list->AddStringAttribute(attr_def, pending_task.param);
-                        else if (pending_task.type == TASK_REMOVE_ATTRIBUTE)
-                            list->RemoveAttribute(attr_def);
-                    }
-                }
-            }
-            else if (pending_task.type == TASK_SEQUENCE) {
-                bot->PlaySpecificSequence(pending_task.attrib_name.c_str());
-            }
-            else if (pending_task.type == TASK_CLIENT_COMMAND) {
-                const char * commandn = pending_task.attrib_name.c_str();
-                CCommand command;
-                command.Tokenize(commandn);
-                bot->ClientCommand(command);
-            }
-            else if (pending_task.type == TASK_INTERRUPT_ACTION) {
-                std::string command = "interrupt_action";
-
-                if (!pending_task.attrib_name.empty()) {
-                    float posx, posy, posz;
-
-                    if (sscanf(pending_task.attrib_name.c_str(),"%f %f %f", &posx, &posy, &posz) == 3) {
-                        command += CFmtStr(" -pos %f %f %f", posx, posy, posz);
-                    }
-                    else {
-                        command += CFmtStr(" -posent %s", pending_task.attrib_name.c_str());
-                    }
-                }
-                if (!pending_task.input_name.empty()) {
-                    float posx, posy, posz;
-
-                    if (sscanf(pending_task.input_name.c_str(),"%f %f %f", &posx, &posy, &posz) == 3) {
-                        command += CFmtStr(" -lookpos %f %f %f", posx, posy, posz);
-                    }
-                    else {
-                        command += CFmtStr(" -lookposent %s", pending_task.input_name.c_str());
-                    }
-                }
-                
-                if (!pending_task.param.empty()) {
-                    command += " -ondoneattributes " + pending_task.param;
-                }
-
-                command += CFmtStr(" -duration %f", pending_task.duration);
-
-                if (pending_task.spell_count != 0)
-                    command += " -waituntildone";
-
-                if (pending_task.spell_type != 0)
-                    command += " -killlook";
-                
-                bot->MyNextBotPointer()->OnCommandString(command.c_str());
-            }
-            else if (pending_task.type == TASK_SPRAY) {
-                Vector forward;
-                trace_t	tr;	
-
-                Vector origin;
-                QAngle angles;
-                if (sscanf(pending_task.attrib_name.c_str(),"%f %f %f", &origin.x, &origin.y, &origin.z) != 3) {
-                    origin = bot->WorldSpaceCenter() + Vector (0 , 0 , 32);
-                }
-                if (sscanf(pending_task.input_name.c_str(),"%f %f %f", &angles.x, &angles.y, &angles.z) != 3) {
-                    angles = bot->EyeAngles();
-                }
-                bot->EmitSound("SprayCan.Paint");
-                AngleVectors(angles, &forward );
-                UTIL_TraceLine(origin, origin + forward * 1280, 
-                    MASK_SOLID_BRUSHONLY, bot, COLLISION_GROUP_NONE, &tr);
-
-                DevMsg("Spraying %f %f %f %f %f %d %d\n", origin.x, angles.x, tr.endpos.x, tr.endpos.y, tr.endpos.z, tr.DidHit(), ENTINDEX(tr.m_pEnt) == 0);
-                CBroadcastRecipientFilter filter;
-
-                //ForEachTFPlayer([&](CTFPlayer *player){
-                //    if (player->GetTeamNumber() == TF_TEAM_RED)
-                        TE_PlayerDecal(filter, 0.0f, &tr.endpos, ENTINDEX(bot), ENTINDEX(tr.m_pEnt));
-		        //});
-                
+            // Changing attributes might clear the task table
+            if (!bot->IsAlive() || sizePre != pending_periodic_tasks.size() || pending_task_ptr != pending_periodic_tasks[posPre].task.get()) {
+                it = pending_periodic_tasks.begin();
+                continue;
             }
 
             //info.Execute(pending_task.bot);
@@ -540,7 +852,7 @@ void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool
                 continue;
             }
             else{
-                pending_task.when+=pending_task.cooldown;
+                pending_task_impl.nextTaskTime+=pending_task.cooldown;
 
             }
         }
@@ -597,44 +909,43 @@ void Parse_AddCond(std::vector<AddCond> &addconds, KeyValues *kv)
     addconds.push_back(addcond);
 }
 
-bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues *kv, const char *type_name)
+bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tasks, KeyValues *kv, const char *type_name)
 {
-    PeriodicTaskType type;
+    std::shared_ptr<PeriodicTask> taskPtr;
     if (FStrEq(type_name, "Taunt")) {
-        type = TASK_TAUNT;
+        taskPtr = std::make_shared<PeriodicTaskTaunt>();
     } else if (FStrEq(type_name, "Spell")) {
-        type = TASK_GIVE_SPELL;
+        taskPtr = std::make_shared<PeriodicTaskGiveSpell>();
     } else if (FStrEq(type_name, "VoiceCommand")) {
-        type = TASK_VOICE_COMMAND;
+        taskPtr = std::make_shared<PeriodicTaskVoiceCommand>();
     } else if (FStrEq(type_name, "FireWeapon")) {
-        type = TASK_FIRE_WEAPON;
+        taskPtr = std::make_shared<PeriodicTaskFireWeapon>();
     } else if (FStrEq(type_name, "ChangeAttributes")) {
-        type = TASK_CHANGE_ATTRIBUTES;
+        taskPtr = std::make_shared<PeriodicTaskChangeAttributes>();
     } else if (FStrEq(type_name, "FireInput")) {
-        type = TASK_FIRE_INPUT;
+        taskPtr = std::make_shared<PeriodicTaskFireInput>();
     } else if (FStrEq(type_name, "Message")) {
-        type = TASK_MESSAGE;
+        taskPtr = std::make_shared<PeriodicTaskMessage>();
     } else if (FStrEq(type_name, "WeaponSwitch")) {
-        type = TASK_WEAPON_SWITCH;
+        taskPtr = std::make_shared<PeriodicTaskWeaponSwitch>();
     } else if (FStrEq(type_name, "AddAttribute")) {
-        type = TASK_ADD_ATTRIBUTE;
+        taskPtr = std::make_shared<PeriodicTaskAddAttribute>();
     } else if (FStrEq(type_name, "RemoveAttribute")) {
-        type = TASK_REMOVE_ATTRIBUTE;
+        taskPtr = std::make_shared<PeriodicTaskRemoveAttribute>();
     } else if (FStrEq(type_name, "Sequence")) {
-        type = TASK_SEQUENCE;
+        taskPtr = std::make_shared<PeriodicTaskSequence>();
     } else if (FStrEq(type_name, "ClientCommand")) {
-        type = TASK_CLIENT_COMMAND;
+        taskPtr = std::make_shared<PeriodicTaskClientCommand>();
     } else if (FStrEq(type_name, "InterruptAction")) {
-        type = TASK_INTERRUPT_ACTION;
+        taskPtr = std::make_shared<PeriodicTaskInterruptAction>();
     } else if (FStrEq(type_name, "Spray")) {
-        type = TASK_SPRAY;
+        taskPtr = std::make_shared<PeriodicTaskSpray>();
     } else {
         return false;
     }
 
     const char *name;
-    PeriodicTaskImpl task;
-    task.type = type;
+    PeriodicTask &task = *taskPtr;
     FOR_EACH_SUBKEY(kv, subkey) {
         const char *name = subkey->GetName();
         
@@ -645,84 +956,11 @@ bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues
         } else if (FStrEq(name, "Delay")) {
             task.when = subkey->GetFloat();
         }
-        else if (FStrEq(name, "Type")) {
-            task.spell_type=subkey->GetInt();
-
-            if (type == TASK_GIVE_SPELL){
-                const char *typen =subkey->GetString();
-                for (int i = 0; i < SPELL_TYPE_COUNT_ALL; i++) {
-                    if(FStrEq(typen,SPELL_TYPE[i])){
-                        task.spell_type = i;
-                    }	
-                }
-            }
-            else if (type == TASK_VOICE_COMMAND){
-                const char *typen =subkey->GetString();
-                int resp = GetResponseFor(typen);
-                if (resp >= 0)
-                    task.spell_type = resp;
-            }
-            else if (type == TASK_FIRE_WEAPON){
-                const char *typen =subkey->GetString();
-                for (int i = 0; i < INPUT_TYPE_COUNT; i++) {
-                    if(FStrEq(typen,INPUT_TYPE[i])){
-                        task.spell_type = i;
-                    }	
-                }
-            }
-            else if (type == TASK_WEAPON_SWITCH) {
-                
-                const char *typen = subkey->GetString();
-                if (FStrEq(typen, "Primary"))
-                    task.spell_type = 2;
-                else if (FStrEq(typen, "Secondary"))
-                    task.spell_type = 4;
-                else if (FStrEq(typen, "Melee"))
-                    task.spell_type = 1;
-            }
-        }
-        else if (FStrEq(name, "Item")) {
-            task.spell_type=subkey->GetInt();
-            if (type == TASK_ADD_ATTRIBUTE || type == TASK_REMOVE_ATTRIBUTE) {
-                const char *typen = subkey->GetString();
-                if (FStrEq(typen, "Player")){
-                    task.spell_type = -1;
-                }
-                if (FStrEq(typen, "Active")){
-                    task.spell_type = -2;
-                }
-                else {
-                    auto item_def = GetItemSchema()->GetItemDefinitionByName(typen);
-                    if (item_def != nullptr)
-                        task.spell_type = item_def->m_iItemDefIndex;
-                }
-            }
-        }
-        else if (FStrEq(name, "Limit")) {
-            task.max_spells=subkey->GetInt();
-        }
-        else if (FStrEq(name, "Charges")) {
-            task.spell_count=subkey->GetInt();
-        }
         else if (FStrEq(name, "Duration")) {
             task.duration=subkey->GetFloat();
         }
         else if (FStrEq(name, "IfSeeTarget")) {
             task.if_target=subkey->GetBool();
-        }
-        else if (FStrEq(name, "Name") || FStrEq(name, "Target")) {
-            if (type == TASK_TAUNT) {
-                auto item_def = GetItemSchema()->GetItemDefinitionByName(subkey->GetString());
-                if (item_def != nullptr)
-                    task.spell_type = item_def->m_iItemDefIndex;
-            }
-            task.attrib_name=subkey->GetString();
-        }
-        else if (FStrEq(name, "Action") || FStrEq(name, "AimTarget") || FStrEq(name, "TargetAngles")) {
-            task.input_name=subkey->GetString();
-        }
-        else if (FStrEq(name, "Param") || FStrEq(name, "Value") || FStrEq(name, "OnDoneChangeAttributes")) {
-            task.param=subkey->GetString();
         }
         else if (FStrEq(name, "IfHealthBelow")) {
             task.health_below=subkey->GetInt();
@@ -730,21 +968,16 @@ bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues
         else if (FStrEq(name, "IfHealthAbove")) {
             task.health_above=subkey->GetInt();
         }
-        else if (FStrEq(name, "WaitForDone")) {
-            task.spell_count=subkey->GetInt();
-        }
-        else if (FStrEq(name, "KillAimTarget")) {
-            task.spell_type=subkey->GetInt();
+        else {
+            task.Parse(subkey);
         }
         //else if (FStrEq(name, "SpawnTemplate")) {
         //	spawners[spawner].periodic_templ.push_back(Parse_SpawnTemplate(subkey));
         //	task.spell_type = spawners[spawner].periodic_templ.size()-1;
         //}
     }
-    if (task.max_spells == 0)
-        task.max_spells = task.spell_count;
     DevMsg("CTFBotSpawner %08x: add periodic(%f, %f)\n", (uintptr_t)&periodic_tasks, task.cooldown, task.when);
-    periodic_tasks.push_back(task);
+    periodic_tasks.push_back(std::move(taskPtr));
     return true;
 }
 
@@ -767,27 +1000,14 @@ void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<Delay
     }
 }
 
-void ApplyPendingTask(CTFBot *bot, std::vector<PeriodicTaskImpl> &periodic_tasks, std::vector<PeriodicTask> &pending_periodic_tasks)
+void ApplyPendingTask(CTFBot *bot, std::vector<std::shared_ptr<PeriodicTask>> &periodic_tasks, std::vector<PeriodicTaskImpl> &pending_periodic_tasks)
 {
-    for (auto task_spawner : periodic_tasks) {
-        PeriodicTask ptask;
-        ptask.bot=bot;
-        ptask.type = task_spawner.type;
-        ptask.delay = task_spawner.when;
-        ptask.when = task_spawner.when + gpGlobals->curtime;
-        ptask.repeats = task_spawner.repeats;
-        ptask.cooldown = task_spawner.cooldown;
-        ptask.spell_type = task_spawner.spell_type;
-        ptask.spell_count = task_spawner.spell_count;
-        ptask.max_spells = task_spawner.max_spells;
-        ptask.duration = task_spawner.duration;
-        ptask.if_target = task_spawner.if_target;
-        ptask.attrib_name = task_spawner.attrib_name;
-        ptask.health_below = task_spawner.health_below;
-        ptask.health_above = task_spawner.health_above;
-        ptask.input_name = task_spawner.input_name;
-        ptask.param = task_spawner.param;
-        pending_periodic_tasks.push_back(ptask);
+    for (auto &taskParse : periodic_tasks) {
+        PeriodicTaskImpl newTask;
+        newTask.bot = bot;
+        newTask.nextTaskTime = taskParse->when + gpGlobals->curtime;
+        newTask.task = taskParse;
+        pending_periodic_tasks.push_back(std::move(newTask));
     }
 }
 		

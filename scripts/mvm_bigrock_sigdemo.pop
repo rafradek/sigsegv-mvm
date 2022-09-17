@@ -2040,6 +2040,8 @@ WaveSchedule
 						//Primary
 						//Secondary
 						//Melee
+						//PDA
+						//Building
 					//IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 					//IfHealthAbove 0 //When set, the task activates only when the bot health is above specified value
 				}
@@ -2207,6 +2209,7 @@ WaveSchedule
 					AimTarget "329.606170 4959.968750 388.896514" // Where the bot should look at
 					// AimTarget "targetent" // Entity / bot / class name as an alternative. Also: RandomEnemy, ClosestPlayer
 					// KillAimTarget 1 // Attack aim target (Default: 0)
+					Name "a" // Name of the interrupt action. When the task is done, bot's $OnActionDone output is fired with name as parameter
 					
 					Delay 1 // Time before the first task starts. Must be above 0, or it will not execute (Default: 10)
                     Repeats 1 // How many times should bot do the task in total (Default: 0 - Infinite)
@@ -2223,6 +2226,8 @@ WaveSchedule
 					Delay 12 //Time before the first task starts (Default: 10)
                     Repeats 10 //How many times should bot do the task in total (Default: 0 - Infinite)
                     Cooldown 10 //Time between each task (Default: 10)
+					// Target "330.196350 4876.522949 320.031250" // Optional spray location
+					// TargetAngles "90 0 0" // Optional spray rotation
 				}
 
 				EventChangeAttributes

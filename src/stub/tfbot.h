@@ -161,7 +161,7 @@ public:
 		PRIMARY_ONLY	= 0x0002,
 		SECONDARY_ONLY	= 0x0004,
 		PDA_ONLY		= 0x0008,
-		BUILDING_ONLY	= 0x00016,
+		BUILDING_ONLY	= 0x0010,
 	};
 	
 	struct EventChangeAttributes_t

@@ -141,23 +141,23 @@ enum PeriodicTaskType
     TASK_SPRAY
 };
 
-struct PeriodicTaskImpl 
-{
-    float when = 10;
-    float cooldown = 10;
-    int repeats = -1;
-    PeriodicTaskType type;
-    int spell_type = 0;
-    int spell_count = 1;
-    int max_spells = 0;
-    float duration = 0.1f;
-    bool if_target = false;
-    int health_below = 0;
-    int health_above = 0;
-    std::string attrib_name;
-    std::string input_name;
-    std::string param;
-};
+// struct PeriodicTaskImpl 
+// {
+//     float when = 10;
+//     float cooldown = 10;
+//     int repeats = -1;
+//     PeriodicTaskType type;
+//     int spell_type = 0;
+//     int spell_count = 1;
+//     int max_spells = 0;
+//     float duration = 0.1f;
+//     bool if_target = false;
+//     int health_below = 0;
+//     int health_above = 0;
+//     std::string attrib_name;
+//     std::string input_name;
+//     std::string param;
+// };
 
 struct DelayedAddCond
 {
@@ -170,9 +170,9 @@ struct DelayedAddCond
     
 };
 
-struct PeriodicTask
+class PeriodicTask
 {
-    CHandle<CTFBot> bot;
+public:
     PeriodicTaskType type;
     float delay = 10;
     float when = 10;
@@ -180,16 +180,20 @@ struct PeriodicTask
     int repeats = 0;
     float duration = 0.1f;
     bool if_target = false;
-    std::string attrib_name;
-    std::string input_name;
-    std::string param;
-
-    int spell_type=0;
-    int spell_count=1;
-    int max_spells=0;
 
     int health_below = 0;
     int health_above = 0;
+
+    virtual void Parse(KeyValues *kv) = 0;
+    virtual void Update(CTFBot *bot) = 0;
+};
+
+class PeriodicTaskImpl
+{
+public:
+    CHandle<CTFBot> bot;
+    std::shared_ptr<PeriodicTask> task;
+    float nextTaskTime = 0;
 };
 
 class CTFBotMoveTo : public IHotplugAction<CTFBot>
@@ -250,6 +254,11 @@ public:
         this->m_strOnDoneAttributes = on_done_attributes;
     }
 
+    void SetName(const std::string &name)
+    {
+        this->m_strName = name;
+    }
+
     virtual const char *GetName() const override { return "Interrupt Action"; }
 
     virtual ActionResult<CTFBot> OnStart(CTFBot *actor, Action<CTFBot> *action) override;
@@ -257,6 +266,8 @@ public:
     virtual EventDesiredResult<CTFBot> OnCommandString(CTFBot *actor, const char *cmd) override;
 
 private:
+
+    std::string m_strName;
 
     Vector m_TargetPos = vec3_origin;
     Vector m_TargetAimPos = vec3_origin;
@@ -468,7 +479,7 @@ struct ItemAttributes
 };
 
 void UpdateDelayedAddConds(std::vector<DelayedAddCond> &delayed_addconds);
-void UpdatePeriodicTasks(std::vector<PeriodicTask> &pending_periodic_tasks, bool insideECAttr = false);
+void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, bool insideECAttr = false);
 
 void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark);
 
@@ -628,8 +639,8 @@ static void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player, std
 }
 
 void Parse_AddCond(std::vector<AddCond> &addconds, KeyValues *kv);
-bool Parse_PeriodicTask(std::vector<PeriodicTaskImpl> &periodic_tasks, KeyValues *kv, const char *type_name);
-void ApplyPendingTask(CTFBot *bot, std::vector<PeriodicTaskImpl> &periodic_tasks, std::vector<PeriodicTask> &pending_periodic_tasks);
+bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tasks, KeyValues *kv, const char *type_name);
+void ApplyPendingTask(CTFBot *bot, std::vector<std::shared_ptr<PeriodicTask>> &periodic_tasks, std::vector<PeriodicTaskImpl> &pending_periodic_tasks);
 void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<DelayedAddCond> &delayed_addconds);
 
 bool LoadUserDataFile(CRC32_t &value, const char *filename);

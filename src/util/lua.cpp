@@ -1331,17 +1331,34 @@ namespace Util::Lua
         return 1;
     }
 
+    int LPropNext(lua_State *l)
+    {
+        auto prop = (ArrayProp *) lua_touserdata(l, 1);
+        luaL_argcheck(l, prop != nullptr, 1, "Userdata is null");
+        int index = lua_isnoneornil(l, 2) ? 0 : lua_tointeger(l, 2);
+        index++;
+        luaL_argcheck(l, index > 0, 2, "index out of range");
+
+        lua_pushinteger(l, index);
+        if (index > prop->entry.arraySize) {
+            lua_pushnil(l);
+        }
+        else {
+            variant_t variant;
+            Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
+            LFromVariant(l, variant);
+        }
+        return 2;
+    }
+
     int LPropPairs(lua_State *l)
     {
         auto prop = (ArrayProp *) lua_touserdata(l, 1);
-        int index = lua_tointeger(l, 2);
         luaL_argcheck(l, prop != nullptr, 1, "Userdata is null");
-        luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
-
-        variant_t variant;
-        Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
-        LFromVariant(l, variant);
-        return 1;
+        lua_pushcfunction(l, LPropNext);
+        lua_pushvalue(l,1);
+        lua_pushinteger(l,0);
+        return 3;
     }
 
     int LPropGetN(lua_State *l)
@@ -2680,6 +2697,8 @@ namespace Util::Lua
 
     static const struct luaL_Reg proplib_m [] = {
         {"__index", LPropGet},
+        {"__pairs", LPropPairs},
+        {"__ipairs", LPropPairs},
         {"__newindex", LPropSet},
         {"__len", LPropGetN},
         {nullptr, nullptr},
@@ -3092,13 +3111,14 @@ namespace Util::Lua
         }
     }
 
-	DETOUR_DECL_STATIC(void, DispatchSpawn, CBaseEntity *entity)
+	DETOUR_DECL_STATIC(int, DispatchSpawn, CBaseEntity *entity)
 	{
-        DETOUR_STATIC_CALL(DispatchSpawn)(entity);
+        auto result = DETOUR_STATIC_CALL(DispatchSpawn)(entity);
         auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr && !entity->IsPlayer()) {
             mod->FireCallback(ON_SPAWN);
         }
+        return result;
     }
 
 	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)

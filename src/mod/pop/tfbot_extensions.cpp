@@ -254,11 +254,12 @@ namespace Mod::Pop::TFBot_Extensions
         std::unordered_set<std::string> teleportWhere;
     };
 
-	struct SpawnerData
+	class SpawnerData
 	{
+	public:
 		std::vector<AddCond> addconds;
 
-		std::vector<PeriodicTaskImpl> periodic_tasks;
+		std::vector<std::shared_ptr<PeriodicTask>> periodic_tasks;
 		
 		bool force_romevision_cosmetics = false;
 
@@ -291,7 +292,7 @@ namespace Mod::Pop::TFBot_Extensions
 	std::vector<DelayedAddCond> delayed_addconds;
 	//std::vector<CHandle<CTFBot>> spawned_bots_first_tick;
 
-	std::vector<PeriodicTask> pending_periodic_tasks;
+	std::vector<PeriodicTaskImpl> pending_periodic_tasks;
 
 	const char *ROMEVISON_MODELS[] = {
 		"",
@@ -337,7 +338,7 @@ namespace Mod::Pop::TFBot_Extensions
 				++it;
 			}
 		}
-		auto data = spawners[spawner];
+		//auto data = spawners[spawner];
 		spawners.erase(spawner);
 	}
 	
@@ -1675,7 +1676,11 @@ namespace Mod::Pop::TFBot_Extensions
 
 			auto interrupt_action = new CTFBotMoveTo();
 			for (int i = 1; i < command.ArgC(); i++) {
-				if (strcmp(command[i], "-pos") == 0) {
+				if (strcmp(command[i], "-name") == 0) {
+					interrupt_action->SetName(command[i+1]);
+					i++;
+				}
+				else if (strcmp(command[i], "-pos") == 0) {
 					Vector pos;
 					pos.x = strtof(command[i+1], nullptr);
 					pos.y = strtof(command[i+2], nullptr);

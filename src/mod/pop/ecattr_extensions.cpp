@@ -72,8 +72,10 @@ namespace Mod::Pop::ECAttr_Extensions
 		AIM_FEET
 	};
 
-	struct EventChangeAttributesData
+	class EventChangeAttributesData
 	{
+	public:
+
 		std::map<std::string,std::map<std::string, std::string>> custom_attrs;
 		int skin = -1;
 		std::map<std::string, int> bodygroup;
@@ -154,7 +156,7 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		std::vector<AddCond> addconds;
 
-		std::vector<PeriodicTaskImpl> periodic_tasks;
+		std::vector<std::shared_ptr<PeriodicTask>> periodic_tasks;
 
 		bool has_override_step_sound;
 		std::string override_step_sound;
@@ -176,7 +178,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	
 	std::vector<DelayedAddCond> delayed_addconds;
 
-	std::vector<PeriodicTask> pending_periodic_tasks;
+	std::vector<PeriodicTaskImpl> pending_periodic_tasks;
 	
 #if 0
 	/* maps CTFBot instances -> their current ECAttr name */
@@ -468,7 +470,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 		
 		DevMsg("CTFBotSpawner %08x: add ItemColor(\"%s\", %02X%02X%02X)\n", (uintptr_t)&data, item_name, color_r, color_g, color_b);
-		data.item_colors[item_name] = { color_r, color_g, color_b, 0xff };
+		data.item_colors[item_name] = { (uint8_t) color_r, (uint8_t) color_g, (uint8_t) color_b, 0xff };
 	}
 
 	void Parse_ItemModel(EventChangeAttributesData &data, KeyValues *kv)
