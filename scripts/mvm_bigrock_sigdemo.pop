@@ -528,6 +528,10 @@ WaveSchedule
 			{
 				"fire rate bonus" -0.1
 			}
+			ShowRequirements 1 // If the upgrade should be visible in menu when it could not be applied (default: 1)
+			// Hidden 1 // If the upgrade should not be visible in the menu (default: 0)
+			Children bisonfield // Apply specified upgrade when this upgrade is applied 
+			Children damagemastery
 
 			OnUpgrade // On upgrade output. Format: target,action,parameter,delay. If parameter is empty, the upgrade level is passed instead as parameter
 			{
