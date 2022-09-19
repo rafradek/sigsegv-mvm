@@ -3174,3 +3174,9 @@ WaveSchedule
 
 // Additional health gained from credits
 // "health from credits" 50
+
+// Delay between bleeding damage multiplier
+// "mult bleeding delay" 2
+
+// Bleeding damage multiplier
+// "mult bleeding dmg" 2
