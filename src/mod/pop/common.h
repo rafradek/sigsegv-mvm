@@ -175,7 +175,6 @@ class PeriodicTask
 public:
     PeriodicTaskType type;
     float delay = 10;
-    float when = 10;
     float cooldown = 10;
     int repeats = 0;
     float duration = 0.1f;
@@ -194,6 +193,7 @@ public:
     CHandle<CTFBot> bot;
     std::shared_ptr<PeriodicTask> task;
     float nextTaskTime = 0;
+    int repeatsLeft = 0;
 };
 
 class CTFBotMoveTo : public IHotplugAction<CTFBot>

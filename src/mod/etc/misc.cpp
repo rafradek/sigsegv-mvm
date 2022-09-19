@@ -58,7 +58,8 @@ namespace Mod::Etc::Misc
 		if (AllowHit(arrow, pOther))
 			DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
 	}
-	
+
+	RefCount rc_DoNotOverrideSmoke;
 	CBaseEntity *sentry_attacker_rocket = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Explode, trace_t *pTrace, CBaseEntity *pOther)
 	{
@@ -72,6 +73,8 @@ namespace Mod::Etc::Misc
 				sentry_attacker_rocket = owner;
 			}
 		}
+		auto playerOwner = ToTFPlayer(owner);
+		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, playerOwner != nullptr && FindCaseInsensitive(playerOwner->GetPlayerName(), "smoke") != nullptr);
 		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
 		sentry_attacker_rocket = nullptr;
 	}
@@ -209,9 +212,17 @@ namespace Mod::Etc::Misc
 		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
+	{
+		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
+		auto thrower = ToTFPlayer(proj->GetThrower());
+		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, thrower != nullptr && FindCaseInsensitive(thrower->GetPlayerName(), "smoke") != nullptr);
+		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
+	}
+
 	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
 	{
-		if (strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
+		if (!rc_DoNotOverrideSmoke && strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
 			name = "hightower_explosion";
 		}
 		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
@@ -499,6 +510,7 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
 			
 			// Replace buster smoke with something else
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Explode, "CTFWeaponBaseGrenadeProj::Explode");
 			MOD_ADD_DETOUR_STATIC_PRIORITY(DispatchParticleEffect, "DispatchParticleEffect [overload 3]", HIGH);
 
 			// Allow non demos to use shields and benefit from eyelander heads

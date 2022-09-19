@@ -28,9 +28,11 @@ private:
 class CBaseGrenade : public CBaseProjectile 
 {
 public:
+	CBaseEntity *GetThrower() const { return ft_GetThrower(this); }
 	void SetThrower(CBaseEntity *entity) { ft_SetThrower(this, entity); }
 
 private:
+	static MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> ft_GetThrower;
 	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;
 };
 

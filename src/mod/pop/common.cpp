@@ -846,8 +846,8 @@ void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, 
             }
 
             //info.Execute(pending_task.bot);
-            DevMsg("Periodic task executed %f, %f\n", pending_task.when,gpGlobals->curtime);
-            if (--pending_task.repeats == 0) {
+            DevMsg("Periodic task executed %f, %f\n", pending_task.delay,gpGlobals->curtime);
+            if (--pending_task_impl.repeatsLeft == 0) {
                 it =  pending_periodic_tasks.erase(it);
                 continue;
             }
@@ -954,7 +954,7 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
         } else if (FStrEq(name, "Repeats")) {
             task.repeats = subkey->GetInt();
         } else if (FStrEq(name, "Delay")) {
-            task.when = subkey->GetFloat();
+            task.delay = subkey->GetFloat();
         }
         else if (FStrEq(name, "Duration")) {
             task.duration=subkey->GetFloat();
@@ -976,7 +976,7 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
         //	task.spell_type = spawners[spawner].periodic_templ.size()-1;
         //}
     }
-    DevMsg("CTFBotSpawner %08x: add periodic(%f, %f)\n", (uintptr_t)&periodic_tasks, task.cooldown, task.when);
+    DevMsg("CTFBotSpawner %08x: add periodic(%f, %f)\n", (uintptr_t)&periodic_tasks, task.cooldown, task.delay);
     periodic_tasks.push_back(std::move(taskPtr));
     return true;
 }
@@ -1005,8 +1005,9 @@ void ApplyPendingTask(CTFBot *bot, std::vector<std::shared_ptr<PeriodicTask>> &p
     for (auto &taskParse : periodic_tasks) {
         PeriodicTaskImpl newTask;
         newTask.bot = bot;
-        newTask.nextTaskTime = taskParse->when + gpGlobals->curtime;
+        newTask.nextTaskTime = taskParse->delay + gpGlobals->curtime;
         newTask.task = taskParse;
+        newTask.repeatsLeft = taskParse->repeats;
         pending_periodic_tasks.push_back(std::move(newTask));
     }
 }

@@ -5015,7 +5015,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	void Parse_FlagResetTime(KeyValues *kv)
 	{
 		const char *name = nullptr; // required
-		int reset_time;             // required
+		int reset_time = 0;         // required
 		
 		bool got_time = false;
 		
