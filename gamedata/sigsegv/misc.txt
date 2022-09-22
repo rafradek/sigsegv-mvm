@@ -6309,7 +6309,16 @@
 					type "sym"
 					sym  "_ZN14CTriggerIgnite12IgniteEntityEP11CBaseEntity"
 				}
-				
+				"CBaseGrenade::GetThrower"
+				{
+					type "sym"
+					sym  "_ZN12CBaseGrenade10GetThrowerEv"
+				}
+				"CEntityFactory<CGameText>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI9CGameTextE6CreateEPKc"
+				}
 			}
 			"addrs_group"
 			{

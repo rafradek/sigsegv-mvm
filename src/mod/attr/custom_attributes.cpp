@@ -2070,10 +2070,15 @@ namespace Mod::Attr::Custom_Attributes
 
 		float bounce_speed = 0.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(grenade_proj->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
-		if (bounce_speed != 0.0f) {
+		float bounce_speed_xy = 0.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(grenade_proj->GetOriginalLauncher(), bounce_speed_xy, grenade_bounce_speed_xy);
+		if (bounce_speed != 0.0f || bounce_speed_xy != 0.0f) {
 			Vector &pre_vel = pEvent->preVelocity[index];
 			Vector normal;
 			pEvent->pInternalData->GetSurfaceNormal(normal);
+			if (bounce_speed_xy != 0) {
+				normal *= bounce_speed_xy;
+			}
 			Vector mirror_vel = (pre_vel - 2 * (pre_vel.Dot(normal)) * normal) * bounce_speed;
 			AngularImpulse angularVelocity;
 			grenade_proj->VPhysicsGetObject()->GetVelocity( &normal, &angularVelocity );
@@ -3840,6 +3845,9 @@ namespace Mod::Attr::Custom_Attributes
 		unsigned int mask = DETOUR_MEMBER_CALL(CTFGameMovement_PlayerSolidMask)(brushonly);
 		if (GetFastAttributeInt(player, 0, IGNORE_PLAYER_CLIP) != 0)
 			mask &= ~CONTENTS_PLAYERCLIP;
+
+		if (GetFastAttributeInt(player, 0, NOT_SOLID) != 0)
+			mask = 0;
 
 		return mask;
 	}

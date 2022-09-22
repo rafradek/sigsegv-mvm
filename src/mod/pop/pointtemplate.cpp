@@ -78,6 +78,25 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<
 	}
 }
 
+void FixupParameters(std::string &val, const TemplateParams &params) {
+	if (params.empty()) return;
+
+	int parampos = 0;
+	while((parampos = val.find('$',parampos)) != -1){
+		int endNamePos = val.find('$',parampos+1);
+		if (endNamePos != -1) {
+			std::string paramName = val.substr(parampos+1, endNamePos - parampos - 1);
+			auto paramFind = params.find(paramName);
+			if (paramFind != params.end()) {
+				val.replace(parampos, paramName.size()+2, paramFind->second);
+			}
+		}
+		else {
+			break;
+		}
+	}
+}
+
 void SpawnEntity(CBaseEntity *entity) {
 
 	/* Set infinite lifetime for target dummies */
@@ -106,7 +125,7 @@ bool TriggerCollideable(CBaseEntity *entity)
 	return entity->GetSolid() != SOLID_NONE && !entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER) && !entity->CollisionProp()->IsSolidFlagSet(FSOLID_NOT_SOLID);
 }
 
-std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state) {
+std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity *parent, const Vector &translation, const QAngle &rotation, bool autoparent, const char *attachment, bool ignore_parent_alive_state, const TemplateParams &params) {
 
 	Template_Increment +=1;
 	if (Template_Increment > 999999)
@@ -120,6 +139,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	templ_inst->id = Template_Increment;
 	templ_inst->has_parent = parent != nullptr;
 	templ_inst->ignore_parent_alive_state = ignore_parent_alive_state;
+	templ_inst->parameters = params;
 
 	std::string parentname;
 	CBaseEntity* parent_helper = parent;
@@ -175,6 +195,8 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 
 				if (!this->no_fixup)
 					FixupKeyvalue(val,Template_Increment,parentname.c_str(), templ_inst->entities);
+					
+				FixupParameters(val, params);
 
 				servertools->SetKeyValue(entity, it1->first.c_str(), val.c_str());
 			}
@@ -299,12 +321,16 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	return templ_inst;
 }
 
+/// @brief Spawns template specified by the object
+/// @param parent 
+/// @param autoparent 
+/// @return The shared pointer to template instance, returns null pointer if template is invalid
 std::shared_ptr<PointTemplateInstance> PointTemplateInfo::SpawnTemplate(CBaseEntity *parent, bool autoparent){
 	if (templ == nullptr && template_name.size() > 0)
 		templ = FindPointTemplate(template_name);
 	//DevMsg("Is templ null %d\n",templ == nullptr);
 	if (templ != nullptr)
-		return templ->SpawnTemplate(parent,translation,rotation,autoparent,attachment.c_str(), ignore_parent_alive_state);
+		return templ->SpawnTemplate(parent,translation,rotation,autoparent,attachment.c_str(), ignore_parent_alive_state, parameters);
 	else
 		return nullptr;
 }
@@ -323,7 +349,7 @@ bool ShootTemplateData::Shoot(CTFPlayer *player, CTFWeaponBase *weapon) {
 	
 	angForward += this->angles;
 
-	auto inst = this->templ->SpawnTemplate(player, vecSrc, angForward, false, nullptr);
+	auto inst = this->templ->SpawnTemplate(player, vecSrc, angForward, false, nullptr, false, parameters);
 	for (auto entity : inst->entities) {
 		Vector vForward,vRight,vUp;
 		QAngle angSpawnDir( angForward );
@@ -371,6 +397,11 @@ PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv) {
 		}
 		else if (FStrEq(name, "Bone")) {
 			info.attachment = subkey->GetString();
+		}
+		else if (FStrEq(name, "Params")) {
+			FOR_EACH_SUBKEY(subkey, subkey2) {
+				info.parameters[subkey2->GetName()] = subkey2->GetString();
+			}
 		}
 	}
 	if (!hasname && kv->GetString() != nullptr) {
@@ -424,6 +455,11 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv)
 		else if (FStrEq(name, "Classname")) {
 			data.weapon_classname = subkey->GetString();
 		}
+		else if (FStrEq(name, "Params")) {
+			FOR_EACH_SUBKEY(subkey, subkey2) {
+				data.parameters[subkey2->GetName()] = subkey2->GetString();
+			}
+		}
 	}
 	return data.templ != nullptr;
 }
@@ -451,6 +487,8 @@ void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &trigger
 			FixupKeyvalue(target,inst->id,"", inst->entities);
 			FixupKeyvalue(param,inst->id,"", inst->entities);
 		}
+		FixupParameters(target, inst->parameters);
+		FixupParameters(param, inst->parameters);
 		variant_t variant;
 		//if (!param.empty()) {
 			variant.SetString(AllocPooledString(param.c_str()));
@@ -686,10 +724,17 @@ namespace Mod::Pop::PointTemplate
 	bool SpawnOurTemplate(CEnvEntityMaker* maker, Vector vector, QAngle angles)
 	{
 		std::string src = STRING((string_t)maker->m_iszTemplate);
-		DevMsg("Spawning template %s\n", src.c_str());
+		//DevMsg("Spawning template %s\n", src.c_str());
 		auto tmpl = FindPointTemplate(src);
 		if (tmpl != nullptr) {
-			DevMsg("Spawning template placeholder\n");
+			TemplateParams params;
+			if (maker->GetExtraEntityData() != nullptr) {
+				for (auto &variable : maker->GetExtraEntityData()->GetCustomVariables()) {
+					if (StringStartsWith(STRING(variable.key), "Param", false)) {
+						params[STRING(variable.key)] = variable.value.String();
+					}
+				}
+			}
 			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
 			for (auto entity : inst->entities) {
 				if (entity == nullptr)

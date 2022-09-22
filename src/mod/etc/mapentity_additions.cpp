@@ -1855,6 +1855,12 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CEntityFactory_CEnvEntityMaker_Create)(classname);
     }
 
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CGameText_Create, const char *classname)
+	{
+        SCOPED_INCREMENT(rc_ServerOnly);
+        return DETOUR_MEMBER_CALL(CEntityFactory_CGameText_Create)(classname);
+    }
+
     THINK_FUNC_DECL(PlaceholderThink)
     {
         variant_t val;
@@ -1993,6 +1999,7 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrefer_Create,  "CEntityFactory<CFuncNavPrefer>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrerequisite_Create,  "CEntityFactory<CFuncNavPrerequisite>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvEntityMaker_Create,  "CEntityFactory<CEnvEntityMaker>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CGameText_Create,  "CEntityFactory<CGameText>::Create");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
     

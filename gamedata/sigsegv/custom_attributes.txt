@@ -2500,5 +2500,23 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4569"
+    {
+        "name"	"grenade bounce speed xy"
+        "attribute_class"	"grenade_bounce_speed_xy"
+        "description_string"	"(+-)%p% xy bounce speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4570"
+    {
+        "name"	"not solid"
+        "attribute_class"	"not_solid"
+        "description_string"	"Player is not solid"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
     
 }

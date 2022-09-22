@@ -18,6 +18,7 @@ namespace Mod::Attr::Custom_Attributes
 		ALLOW_FRIENDLY_FIRE,
 		MULT_DUCK_SPEED,
 		MULT_CREDIT_COLLECT_RANGE,
+		NOT_SOLID,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -51,7 +52,8 @@ namespace Mod::Attr::Custom_Attributes
 		"allow_bunny_hop",
 		"allow_friendly_fire",
 		"mult_duck_speed",
-		"mult_credit_collect_range"
+		"mult_credit_collect_range",
+		"not_solid"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {

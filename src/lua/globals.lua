@@ -772,7 +772,7 @@ DefaultHudTextParams = {
 ---@field collisiongroup number
 ---@field mins Vector
 ---@field maxs Vector
----@field filter function|table|Entity
+---@field filter function|table|Entity|nil
 DefaultTraceInfo = {
     start = Vector(0,0,0), -- Start position vector. Can also be set to entity, in this case the trace will start from entity eyes position
     endpos = nil, -- End position vector. If nil, the trace will be fired in `angles` direction with `distance` length
@@ -882,7 +882,8 @@ DefaultMenuEntry = {
 ---@field title string
 ---@field itemsPerPage number|nil
 ---@field flags number
----@field onSelect function
+---@field onSelect function|nil
+---@field onCancel function|nil
 DefaultMenu = {
     timeout = 0, -- How long to display the menu, or 0 for no timeout
     title = "Menu",

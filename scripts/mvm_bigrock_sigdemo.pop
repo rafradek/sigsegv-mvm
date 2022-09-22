@@ -98,6 +98,7 @@ WaveSchedule
 	AllowJoinTeamBlueMax 4 [$SIGSEGV] //How many players can join the blue team
 	HumansMustJoinTeam blue [$SIGSEGV] //Set to blue to force players join the blu team
 	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb
+	EnemyTeamForReverse red [$SIGSEGV] //Enemy team for reverse win condition
 	RespawnWaveTimeBlue 5 [$SIGSEGV]
 	FixedRespawnWaveTimeBlue 1 [$SIGSEGV]
 	SetCreditTeam 3 [$SIGSEGV] //Sets which team can pickup money. Set to 3 to allow blu team to collect money instead. Setting this also allows bots to collect money
@@ -673,6 +674,7 @@ WaveSchedule
 			{
 				"model" "models/props_coalmines/wood_fence_short_128.mdl" //keyvalue
 				"solid" "6" //Physics collision model (0- No collision, 1 - BSP, 2 - Bounding box, 3 - Oriented bounding box, 6 - VPhysics)=
+				"solid" "$Solid$" // Use Solid template parameter provided by SpawnTemplate
 			}
 			
 		}
@@ -943,6 +945,7 @@ WaveSchedule
 			{
 				"origin" "0 0 0"
 				"teamnum" "3" // 2 - Red team, 3 - Blu team
+				"teamnum" "$Team$" // Use Team template parameter provided by SpawnTemplate
 			}
 		}
 	}
@@ -952,6 +955,10 @@ WaveSchedule
 		Name "Blockade"
 		Origin "1050 4410 472" //Position where to spawn the template
 		Angles "0 85 0" //Rotation
+		Params // Parameters passed to the template
+		{
+			Solid "6"
+		}
 	}
 
 	SpawnTemplate "RandomColors" [$SIGSEGV] 
@@ -1001,6 +1008,10 @@ WaveSchedule
 		// AttachToProjectile 1 //If set, the template is spawned as a child of the projectile being fired. Incompatible with overrideshoot
 		ItemName "The Soda Popper" //Can be specified to limit to a specific weapon
 		// Classname "TF_WEAPON_MINIGUN" //Alternativiely use a weapon classname
+		Params // Parameters passed to the template
+		{
+			Team "3"
+		}
 	}
 	BuildingSpawnTemplate [$SIGSEGV]
 	{

@@ -743,6 +743,7 @@ namespace Mod::Pop::PopMgr_Extensions
             this->m_bNoWranglerShield = false;
 			this->m_bForceRedMoney = false;
 			this->m_bSpellbookRateSet = false;
+			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -979,6 +980,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bRedSniperNoHeadshots;
 		bool m_bForceRedMoney;
 		bool m_bSpellbookRateSet;
+		int m_iEnemyTeamForReverse;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1984,7 +1986,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[State] MvM:%d Reverse:%d oldState:%d newState:%d\n",
 		//		IsMannVsMachineMode(), state.m_bReverseWinConditions, oldState, newState);
 			
-			if (IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != TF_TEAM_RED && state.m_bReverseWinConditions && g_pPopulationManager != nullptr && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
+			if (IsMannVsMachineMode() && TFGameRules()->GetWinningTeam() != state.m_iEnemyTeamForReverse && state.m_bReverseWinConditions && g_pPopulationManager != nullptr && oldState == GR_STATE_TEAM_WIN && newState == GR_STATE_PREROUND) {
 				
 				unsigned int wave_pre = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 				//int GetTotalCurrency() return {}
@@ -2822,7 +2824,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			for (auto &info : state.m_WeaponSpawnTemplates) {
 				for (auto &entry : info.weapons) {
 					if (entry->Matches(wearable->GetClassname(), wearable->GetItem())) {
-						state.m_ItemEquipTemplates[wearable] = info.info.SpawnTemplate(player);
+						auto inst = info.info.SpawnTemplate(player);
+						if (inst != nullptr)
+							state.m_ItemEquipTemplates[wearable] = info.info.SpawnTemplate(player);
 						break;
 					}
 				}
@@ -2903,7 +2907,9 @@ namespace Mod::Pop::PopMgr_Extensions
 					for (auto &info : state.m_WeaponSpawnTemplates) {
 						for (auto &entry : info.weapons) {
 							if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
-								state.m_ItemEquipTemplates[ent] = info.info.SpawnTemplate(owner);
+								auto inst = info.info.SpawnTemplate(owner);
+								if (inst != nullptr)
+									state.m_ItemEquipTemplates[ent] = inst;
 								break;
 							}
 						}
@@ -6316,6 +6322,13 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_SentryHintMinDistanceFromBomb.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "PathTrackIsServerEntity")) {
 				state.m_PathTrackIsServerEntity.Set(subkey->GetBool());
+			} else if (FStrEq(name, "EnemyTeamForReverse")) {
+				if (FStrEq(subkey->GetString(), "Red")) {
+					state.m_iEnemyTeamForReverse = 2;
+				}
+				else if (FStrEq(subkey->GetString(), "Blu") || FStrEq(subkey->GetString(), "Blue")) {
+					state.m_iEnemyTeamForReverse = 3;
+				}
 			} else if (FStrEq(name, "LuaScript")) {
 				if (subkey->GetFirstSubKey() == nullptr) {
 					state.m_Scripts.push_back(subkey->GetString());
