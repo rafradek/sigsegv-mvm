@@ -42,6 +42,8 @@ namespace Mod::Etc::LaserDot_Fix
 		{
 			MOD_ADD_DETOUR_MEMBER(C_SniperDot_ClientThink, "[client] C_SniperDot::ClientThink");
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

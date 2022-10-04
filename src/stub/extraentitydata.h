@@ -172,6 +172,13 @@ public:
     }
 
     //float[FastAttributes::ATTRIB_COUNT_PLAYER] fast_attrib_cache_data;
+
+    CHandle<CEconEntity> quickItemInLoadoutSlot[LOADOUT_POSITION_COUNT];
+
+    float lastHurtSpeakTime = 0.0f;
+
+    float lastForwardMove = 0.0f;
+    float lastSideMove = 0.0f;
 };
 
 class ExtraEntityDataBot : public ExtraEntityDataPlayer
@@ -379,13 +386,15 @@ inline std::vector<CustomVariable> &GetCustomVariables(CBaseEntity *entity)
 template<FixedString lit>
 inline const char *CBaseEntity::GetCustomVariable(const char *defValue)
 {
-    static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
-        for (auto &var : attrs) {
-            if (var.key == pooled) {
-                return var.value.String();
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    return var.value.String();
+                }
             }
         }
     }
@@ -395,14 +404,16 @@ inline const char *CBaseEntity::GetCustomVariable(const char *defValue)
 template<FixedString lit>
 inline float CBaseEntity::GetCustomVariableFloat(float defValue)
 {
-    static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
-        for (auto &var : attrs) {
-            if (var.key == pooled) {
-                if (var.value.FieldType() != FIELD_FLOAT) var.value.Convert(FIELD_FLOAT);
-                return var.value.Float();
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    if (var.value.FieldType() != FIELD_FLOAT) var.value.Convert(FIELD_FLOAT);
+                    return var.value.Float();
+                }
             }
         }
     }
@@ -412,16 +423,18 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue)
 template<FixedString lit>
 inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
 {
-    static PooledString pooled(lit);
-    auto data = this->GetExtraEntityData();
+   auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
-        for (auto &var : attrs) {
-            if (var.key == pooled) {
-                Vector vec;
-                if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
-                var.value.Vector3D(vec);
-                return vec;
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    Vector vec;
+                    if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
+                    var.value.Vector3D(vec);
+                    return vec;
+                }
             }
         }
     }
@@ -431,18 +444,20 @@ inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
 template<FixedString lit>
 inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
 {
-    static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
-        for (auto &var : attrs) {
-            if (var.key == pooled) {
-                QAngle ang;
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    QAngle ang;
 
-                if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
-                var.value.Vector3D(*((Vector *)ang.Base()));
-                
-                return ang;
+                    if (var.value.FieldType() != FIELD_VECTOR) var.value.Convert(FIELD_VECTOR);
+                    var.value.Vector3D(*((Vector *)ang.Base()));
+                    
+                    return ang;
+                }
             }
         }
     }
@@ -452,15 +467,17 @@ inline QAngle CBaseEntity::GetCustomVariableAngle(const QAngle &defValue)
 template<FixedString lit>
 inline bool CBaseEntity::GetCustomVariableVariant(variant_t &value)
 {
-    static PooledString pooled(lit);
     auto data = this->GetExtraEntityData();
     if (data != nullptr) {
         auto &attrs = data->GetCustomVariables();
-        for (auto &var : attrs) {
-            if (var.key == pooled) {
-                value = var.value;
-                
-                return true;
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    value = var.value;
+                    
+                    return true;
+                }
             }
         }
     }

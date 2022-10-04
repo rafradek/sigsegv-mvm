@@ -414,6 +414,8 @@ namespace Mod::Util::Overlay_Enhancements
 			
 			MOD_ADD_DETOUR_STATIC(CDebugOverlay_DrawOverlay, "[client] CDebugOverlay::DrawOverlay");
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

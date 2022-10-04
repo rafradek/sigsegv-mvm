@@ -172,7 +172,7 @@ bool CExtSigsegv::QueryRunning(char *error, size_t maxlength)
 
 bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
 {
-	DevMsg("CExtSigsegv: compiled @ %s %s\n", GetBuildDate(), GetBuildTime());
+	Msg("CExtSigsegv: compiled @ %s %s\n", GetBuildDate(), GetBuildTime());
 	
 	GET_IFACE_REQUIRED(Engine,     engine,            INTERFACEVERSION_VENGINESERVER);
 	GET_IFACE_REQUIRED(Server,     gamedll,           INTERFACEVERSION_SERVERGAMEDLL);

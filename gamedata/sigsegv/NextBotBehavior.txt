@@ -662,11 +662,11 @@
 					//type "sym"
 					//sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
 				}
-//				"Action<CTFBot>::InvokeOnEnd [clone]"
-//				{
-//					type "sym regex"
-//					sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_\\.part\\..*"
-//				}
+				"Action<CTFBot>::InvokeOnEnd [clone]"
+				{
+					type "sym regex"
+					sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_\\.part\\..*"
+				}
 				"Action<CTFBot>::InvokeOnResume"
 				{
 					type "sym"

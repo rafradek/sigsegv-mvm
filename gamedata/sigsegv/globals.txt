@@ -57,8 +57,6 @@
 				
 				"g_aWeaponNames" "g_aWeaponNames"
 				
-				"g_aConditionNames" "_ZL17g_aConditionNames"
-				
 				"g_szLoadoutStrings"           "g_szLoadoutStrings"
 				"g_szLoadoutStringsForDisplay" "g_szLoadoutStringsForDisplay"
 				
@@ -104,6 +102,8 @@
 				"DT_PlayerResource::g_SendTable" "_ZN17DT_PlayerResource11g_SendTableE"
 				"s_lastTeleporter" "_ZL16s_lastTeleporter"
 				"g_pParticleSystemMgr" "_ZL19s_ParticleSystemMgr"
+				"g_pParticleSystemQuery" "g_pParticleSystemQuery"
+				"g_pszMPConcepts" "g_pszMPConcepts"
 				
 			}
 			
@@ -121,6 +121,10 @@
 				"g_SharedEdictChangeInfo" "g_SharedEdictChangeInfo"
 				"g_FreeEdicts" "_ZL12g_FreeEdicts"
 				"hltv" "hltv"
+				"s_StaticPropMgr" "_ZL15s_StaticPropMgr"
+				"modelloader" "modelloader"
+				"VTable for CStaticProp" "_ZTV11CStaticProp"
+				
 			}
 		}
 	}

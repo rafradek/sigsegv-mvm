@@ -336,6 +336,10 @@ CProp_Extract::~CProp_Extract()
 
 bool CProp_Extract::CalcOffset(int& off) const
 {
+	if (strnicmp(this->m_Extractor->GetFuncName(), "[client]", strlen("[client]")) == 0 && !IsClient()) {
+		off = 0;
+		return true;
+	}
 	if (this->m_Extractor == nullptr) {
 		Warning("CProp_Extract: %s::%s FAIL: no extractor provided (nullptr)\n", this->GetObjectName(), this->GetMemberName());
 		return false;

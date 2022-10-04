@@ -120,7 +120,6 @@ SDKExtension::SDKExtension()
 
 bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late)
 {
-	Msg("Extension load\n");
 	g_pShareSys = sharesys = sys;
 	myself = me;
 

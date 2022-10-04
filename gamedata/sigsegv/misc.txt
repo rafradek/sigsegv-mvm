@@ -1043,7 +1043,7 @@
 					sym  "_ZN20CBaseCombatCharacter18IsGlowEffectActiveEv"
 				}
 				
-				"SendProxy_UInt8toInt32"
+				"SendProxy_UInt8ToInt32"
 				{
 					type "sym"
 					sym  "_Z22SendProxy_UInt8ToInt32PK8SendPropPKvS3_P8DVariantii"
@@ -5122,20 +5122,10 @@
 					type "sym"
 					sym  "_ZN11CEventQueue12CancelEventsEP11CBaseEntity"
 				}
-				"CBaseEntityOutput::FireOutput"
-				{
-					type "sym"
-					sym  "_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				}
 				"V_snprintf"
 				{
 					type "sym"
 					sym  "_Z10V_snprintfPciPKcz"
-				}
-				"CEventQueue::ServiceEvents"
-				{
-					type "sym"
-					sym  "_ZN11CEventQueue13ServiceEventsEv"
 				}
 				"CTFSword::GetSwordSpeedMod"
 				{
@@ -5222,21 +5212,11 @@
 					type "sym"
 					sym  "_ZN10CSniperDot6CreateERK6VectorP11CBaseEntityb"
 				}
-				"CBaseCombatWeapon::SetViewModel"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon12SetViewModelEv"
-				}
 				"findFileInDirCaseInsensitive"
 				{
 					type "sym"
 					lib "dedicated"
 					sym  "_Z28findFileInDirCaseInsensitivePKcPcj"
-				}
-				"CBaseCombatCharacter::ClearLastKnownArea"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter18ClearLastKnownAreaEv"
 				}
 				"CBaseCombatCharacter::ClearLastKnownArea"
 				{
@@ -5681,11 +5661,6 @@
 					type "sym"
 					sym  "_ZN13CHLTVDirector21BuildActivePlayerListEv"
 				}
-				"CTFGameRules::PlayerReadyStatus_UpdatePlayerState"
-				{
-					type "sym"
-					sym  "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb"
-				}
 				"CTFGCServerSystem::ClientDisconnected"
 				{
 					type "sym"
@@ -5737,11 +5712,6 @@
 					type "sym"
 					sym  "_ZN15CTFGameMovement10CheckWaterEv"
 				}
-				"Physics_SimulateEntity"
-				{
-					type "sym"
-					sym  "_Z22Physics_SimulateEntityP11CBaseEntity"
-				}
 				"CBaseCombatWeapon::SetViewModelIndex"
 				{
 					type "sym"
@@ -5763,11 +5733,6 @@
 				{
 					type "sym"
 					sym  "_ZN13CVoiceGameMgr11UpdateMasksEv"
-				}
-				"CTFGameRules::CalcDominationAndRevenge"
-				{
-					type "sym"
-					sym  "_ZN12CTFGameRules24CalcDominationAndRevengeEP9CTFPlayerP11CBaseEntityS1_bPi"
 				}
 				"CTFBot::GetNextSpawnClassname"
 				{
@@ -5830,16 +5795,6 @@
 					type "sym"
 					sym  "_ZN18CTraceFilterEntity15ShouldHitEntityEP13IHandleEntityi"
 				}
-				"CBaseTrigger::StartTouch"
-				{
-					type "sym"
-					sym  "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity"
-				}
-				"CBaseTrigger::EndTouch"
-				{
-					type "sym"
-					sym  "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity"
-				}
 				"CCollisionEvent::ShouldCollide"
 				{
 					type "sym"
@@ -5860,12 +5815,6 @@
 					type "sym"
 					lib "engine"
 					sym  "_ZN8CNetChan12SendDatagramEP8bf_write"
-				}
-				"SendTable_WritePropList"
-				{
-					type "sym"
-					lib "engine"
-					sym  "_Z23SendTable_WritePropListPK9SendTablePKviP8bf_writeiPKii"
 				}
 				"CTFGameRules::SendWinPanelInfo"
 				{
@@ -5953,12 +5902,6 @@
 					type "sym"
 					lib "engine"
 					sym  "_ZN28CNetworkStringTableContainer12DirectUpdateEi"
-				}
-				"CNetworkStringTable::UpdateMirrorTable"
-				{
-					type "sym"
-					lib "engine"
-					sym  "_ZN19CNetworkStringTable17UpdateMirrorTableEi"
 				}
 				"CTFBat_Wood::SecondaryAttack"
 				{
@@ -6319,6 +6262,327 @@
 					type "sym"
 					sym  "_ZN14CEntityFactoryI9CGameTextE6CreateEPKc"
 				}
+				"CBaseEntity::SetLocalOrigin"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14SetLocalOriginERK6Vector"
+				}
+				"CBaseEntity::SetLocalAngles"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14SetLocalAnglesERK6QAngle"
+				}
+				"CBaseEntity::SetLocalVelocity"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity16SetLocalVelocityERK6Vector"
+				}
+				"CEntityFactory<CTrainingAnnotation>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI19CTrainingAnnotationE6CreateEPKc"
+				}
+				"CEntityFactory<CTriggerMultiple>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI16CTriggerMultipleE6CreateEPKc"
+				}
+				"CEntityFactory<CTriggerHurt>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI12CTriggerHurtE6CreateEPKc"
+				}
+				"CEntityFactory<CTFHudNotify>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI12CTFHudNotifyE6CreateEPKc"
+				}
+				"CEntityFactory<CRagdollMagnet>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI14CRagdollMagnetE6CreateEPKc"
+				}
+				"CEntityFactory<CEnvShake>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI9CEnvShakeE6CreateEPKc"
+				}
+				"CEntityFactory<CTeamplayRoundWin>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI17CTeamplayRoundWinE6CreateEPKc"
+				}
+				"CEntityFactory<CEnvViewPunch>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI13CEnvViewPunchE6CreateEPKc"
+				}
+				"CEntityFactory<CTFForceRespawn>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI15CTFForceRespawnE6CreateEPKc"
+				}
+				"CEntityFactory<CPointEntity>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI12CPointEntityE6CreateEPKc"
+				}
+				"CEntityFactory<CPointNavInterface>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI18CPointNavInterfaceE6CreateEPKc"
+				}
+				"CEntityFactory<CPointClientCommand>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI19CPointClientCommandE6CreateEPKc"
+				}
+				"CEntityFactory<CPointServerCommand>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI19CPointServerCommandE6CreateEPKc"
+				}
+				"CEntityFactory<CPointPopulatorInterface>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI24CPointPopulatorInterfaceE6CreateEPKc"
+				}
+				"CEntityFactory<CPointHurt>::Create"
+				{
+					type "sym"
+					sym  "_ZN14CEntityFactoryI10CPointHurtE6CreateEPKc"
+				}
+				"CBaseEntity::GetBaseEntity"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity13GetBaseEntityEv"
+				}
+				"CBaseEntity::GetNetworkable"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14GetNetworkableEv"
+				}
+				"CBaseEntity::GetCollideable"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14GetCollideableEv"
+				}
+				"CBaseEntity::GetRefEHandle"
+				{
+					type "sym"
+					sym  "_ZNK11CBaseEntity13GetRefEHandleEv"
+				}
+				"CServerNetworkProperty::GetEdict"
+				{
+					type "sym"
+					sym  "_ZNK22CServerNetworkProperty8GetEdictEv"
+				}
+				"CServerNetworkProperty::GetEntityHandle"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty15GetEntityHandleEv"
+				}
+				"CServerNetworkProperty::GetServerClass"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty14GetServerClassEv"
+				}
+				"CServerNetworkProperty::GetBaseEntity"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty13GetBaseEntityEv"
+				}
+				"CServerNetworkProperty::GetBaseNetworkable"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty18GetBaseNetworkableEv"
+				}
+				"CServerNetworkProperty::GetClassName"
+				{
+					type "sym"
+					sym  "_ZNK22CServerNetworkProperty12GetClassNameEv"
+				}
+				"CServerNetworkProperty::GetPVSInfo"
+				{
+					type "sym"
+					sym  "_ZN22CServerNetworkProperty10GetPVSInfoEv"
+				}
+				"CServerNetworkProperty::AreaNum"
+				{
+					type "sym"
+					sym  "_ZNK22CServerNetworkProperty7AreaNumEv"
+				}
+				
+				"CCollisionProperty::GetEntityHandle"
+				{
+					type "sym"
+					sym  "_ZN18CCollisionProperty15GetEntityHandleEv"
+				}
+				"CCollisionProperty::GetSolid"
+				{
+					type "sym"
+					sym  "_ZNK18CCollisionProperty8GetSolidEv"
+				}
+				"CCollisionProperty::GetSolidFlags"
+				{
+					type "sym"
+					sym  "_ZNK18CCollisionProperty13GetSolidFlagsEv"
+				}
+				"CTFConditionList::_Add"
+				{
+					type "sym"
+					sym  "_ZN16CTFConditionList4_AddE7ETFCondfP9CTFPlayerP11CBaseEntity"
+				}
+				"CTFConditionList::_Remove"
+				{
+					type "sym"
+					sym  "_ZN16CTFConditionList7_RemoveE7ETFCondb"
+				}
+				"GEconItemSchema"
+				{
+					type "sym"
+					sym  "_Z15GEconItemSchemav"
+				}
+				"CTFWeaponBase::IsPassiveWeapon"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase15IsPassiveWeaponEv"
+				}
+				"GetFileWeaponInfoFromHandle"
+				{
+					type "sym"
+					sym  "_Z27GetFileWeaponInfoFromHandlet"
+				}
+				"CBaseCombatWeapon::GetWpnData"
+				{
+					type "sym"
+					sym  "_ZNK17CBaseCombatWeapon10GetWpnDataEv"
+				}
+				"CTFWeaponBase::AutoFiresFullClip"
+				{
+					type "sym"
+					sym  "_ZNK13CTFWeaponBase17AutoFiresFullClipEv"
+				}
+				"CStaticPropMgr::IsStaticProp"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZNK14CStaticPropMgr12IsStaticPropEP13IHandleEntity"
+				}
+				"INextBot::GetDebugIdentifier"
+				{
+					type "sym"
+					sym  "_ZNK8INextBot18GetDebugIdentifierEv"
+				}
+				"CStaticProp::GetEntityHandle"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CStaticProp15GetEntityHandleEv"
+				}
+				"CStaticProp::GetRefEHandle"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZNK11CStaticProp13GetRefEHandleEv"
+				}
+				"CStaticPropMgr::GetStaticProp"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CStaticPropMgr13GetStaticPropEP13IHandleEntity"
+				}
+				"CStaticProp::Init"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CStaticProp4InitEiR16StaticPropLump_tP7model_t"
+				}
+				"CSpatialPartition::CreateHandle"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN17CSpatialPartition12CreateHandleEP13IHandleEntity"
+				}
+				"CStaticPropMgr::GetStaticPropIndex"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZNK14CStaticPropMgr18GetStaticPropIndexEP13IHandleEntity"
+				}
+				"CStaticPropMgr::LevelShutdown"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CStaticPropMgr13LevelShutdownEv"
+				}
+				"CStaticPropMgr::LevelInit"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CStaticPropMgr9LevelInitEv"
+				}
+				"UTIL_PlayerByIndex"
+				{
+					type "sym"
+					sym  "_Z18UTIL_PlayerByIndexi"
+				}
+				"CModelInfoServer::RegisterDynamicModel"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN16CModelInfoServer20RegisterDynamicModelEPKcb"
+				}
+				"CMDLCache::BeginLock"
+				{
+					lib "datacache"
+					type "sym"
+					sym  "_ZN9CMDLCache9BeginLockEv"
+				}
+				"CMDLCache::EndLock"
+				{
+					lib "datacache"
+					type "sym"
+					sym  "_ZN9CMDLCache7EndLockEv"
+				}
+				"CModelLoader::FlushDynamicModels"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN12CModelLoader18FlushDynamicModelsEv"
+				}
+				"CThreadLocalBase::Get"
+				{
+					lib "tier0"
+					type "sym"
+					sym  "_ZNK16CThreadLocalBase3GetEv"
+				}
+				"CBaseEntity::TraceAttack"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+				}
+				"CTakeDamageInfo::Init"
+				{
+					type "sym"
+					sym  "_ZN15CTakeDamageInfo4InitEP11CBaseEntityS1_S1_RK6VectorS4_S4_fii"
+				}
+				"CBaseMultiplayerPlayer::ShouldRunRateLimitedCommand [str]"
+				{
+					type "sym"
+					sym  "_ZN22CBaseMultiplayerPlayer27ShouldRunRateLimitedCommandEPKc"
+				}
+				"CBaseCombatCharacter::Weapon_Equip"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter12Weapon_EquipEP17CBaseCombatWeapon"
+				}
+				"CTFWeaponBase::SendWeaponAnim"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase14SendWeaponAnimEi"
+				}
+				
 			}
 			"addrs_group"
 			{

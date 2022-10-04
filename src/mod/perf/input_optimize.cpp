@@ -8,6 +8,7 @@
 #include "stub/server.h"
 #include "stub/tfweaponbase.h"
 #include "sdk2013/mempool.h"
+#include "mem/protect.h"
 
 #define EVENT_FIRE_ALWAYS	-1
 

@@ -34,6 +34,7 @@ public:
 	CBaseCombatWeapon *Weapon_GetSlot(int slot) const                      { return vt_Weapon_GetSlot     (this, slot); }
 	bool Weapon_CanSwitchTo(CBaseCombatWeapon *pWeapon)                    { return vt_Weapon_CanSwitchTo (this, pWeapon); }
 	bool Weapon_Switch(CBaseCombatWeapon *pWeapon, int viewmodelindex = 0) { return vt_Weapon_Switch      (this, pWeapon, viewmodelindex); }
+	void Weapon_Equip(CBaseCombatWeapon *pWeapon)                          { vt_Weapon_Equip     	      (this, pWeapon); }
 	CNavArea *GetLastKnownArea() const                                     { return vt_GetLastKnownArea   (this); }
 	void UpdateLastKnownArea()                                             {        vt_UpdateLastKnownArea(this); }
 	int GiveAmmo(int iCount, int iAmmoIndex, bool bSuppressSound = false)  { return vt_GiveAmmo           (this, iCount, iAmmoIndex, bSuppressSound); }
@@ -58,6 +59,7 @@ private:
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       vt_Weapon_GetSlot;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      vt_Weapon_CanSwitchTo;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *, int> vt_Weapon_Switch;
+	static MemberVFuncThunk<      CBaseCombatCharacter *, void, CBaseCombatWeapon *>      vt_Weapon_Equip;
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CNavArea *>                     vt_GetLastKnownArea;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, void>                           vt_UpdateLastKnownArea;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int, int, int, bool>            vt_GiveAmmo;
@@ -131,7 +133,6 @@ public:
 	void ForceButtons(int nButtons)                                                    {        ft_ForceButtons  (this, nButtons); }
 	void UnforceButtons(int nButtons)                                                  {        ft_UnforceButtons(this, nButtons); }
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
-	void Weapon_Equip(CBaseCombatWeapon *pWeapon)                               { vt_Weapon_Equip     	      (this, pWeapon); }
 	void EquipWearable(CEconWearable *wearable)									{ vt_EquipWearable     (this, wearable); }
 	
 	bool IsBot() const                                                   { return vt_IsBot               (this); }
@@ -194,7 +195,6 @@ private:
 	static MemberVFuncThunk<      CBasePlayer *, float>                       vt_GetPlayerMaxSpeed;
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_RemoveWearable;
 	static MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> vt_ChangeTeam_bool3;
-	static MemberVFuncThunk<      CBasePlayer *, void, CBaseCombatWeapon *>   vt_Weapon_Equip;
 	static MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       vt_EquipWearable;
 	static MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               vt_FindUseEntity;
 	static MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> vt_LeaveVehicle;

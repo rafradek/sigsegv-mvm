@@ -7,31 +7,26 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		IVision *vision = reinterpret_cast<IVision *>(this);
-		CTFBot *actor = ToTFBot(vision->GetBot()->GetEntity());
+		CTFBot *actor = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
 		
-		bool ignored = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
-
-		if (!ignored && ent != nullptr && actor != nullptr) {
-			
-			auto attrs = actor->ExtAttr();
-			if (attrs[CTFBot::ExtendedAttr::IGNORE_BUILDINGS] && ent->IsBaseObject()) {
-				return true;
-			}
-			else if (attrs[CTFBot::ExtendedAttr::IGNORE_PLAYERS] && ent->IsPlayer()) {
-				return true;
-			}
-			else if (attrs[CTFBot::ExtendedAttr::IGNORE_REAL_PLAYERS] && ent->IsPlayer() && ent->MyNextBotPointer() == nullptr) {
-				return true;
-			}
-			else if (attrs[CTFBot::ExtendedAttr::IGNORE_BOTS] && ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
-				return true;
-			}
-			else if (attrs[CTFBot::ExtendedAttr::IGNORE_NPC] && !ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
-				return true;
-			}
+		auto attrs = actor->ExtAttr();
+		if (attrs[CTFBot::ExtendedAttr::IGNORE_BUILDINGS] && ent->IsBaseObject()) {
+			return true;
 		}
-		
-		return ignored;
+		else if (attrs[CTFBot::ExtendedAttr::IGNORE_PLAYERS] && ent->IsPlayer()) {
+			return true;
+		}
+		else if (attrs[CTFBot::ExtendedAttr::IGNORE_REAL_PLAYERS] && ent->IsPlayer() && ent->MyNextBotPointer() == nullptr) {
+			return true;
+		}
+		else if (attrs[CTFBot::ExtendedAttr::IGNORE_BOTS] && ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
+			return true;
+		}
+		else if (attrs[CTFBot::ExtendedAttr::IGNORE_NPC] && !ent->IsPlayer() && ent->MyNextBotPointer() != nullptr) {
+			return true;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 	}
 	
 	

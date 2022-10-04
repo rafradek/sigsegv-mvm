@@ -266,7 +266,8 @@ private:
 	static MemberFuncThunk<const CNavMesh *, CNavArea *, const Vector&, bool, float, bool, bool, int> ft_GetNearestNavArea_vec;
 	static MemberFuncThunk<const CNavMesh *, CNavArea *, CBaseEntity *, int, float>                   ft_GetNearestNavArea_ent;
 	static MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>                  ft_GetGroundHeight;
-	static MemberFuncThunk<      CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>         ft_CollectAreasOverlappingExtent_CTFNavArea;
+	// This is inlined in the code
+	// static MemberFuncThunk<      CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>         ft_CollectAreasOverlappingExtent_CTFNavArea;
 	static MemberFuncThunk<      CNavMesh *, int>                                                     ft_Load;
 };
 

@@ -68,7 +68,8 @@ namespace Mod::Pop::ExtAttr::Parse
 			auto bot = reinterpret_cast<CTFBot *>(this);
 			auto ext = reinterpret_cast<CTFBot::ExtendedAttr *>((uintptr_t)ecattr + 0x10);
 			
-			bot->ExtAttr() = *ext;
+			if (ext->IsZero() != bot->ExtAttr().IsZero())
+				bot->ExtAttrForModify() = *ext;
 		}
 		
 		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);

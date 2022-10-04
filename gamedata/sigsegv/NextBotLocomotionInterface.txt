@@ -75,6 +75,11 @@
 					type "sym"
 					sym  "_ZNK25CHeadlessHatmanLocomotion11GetRunSpeedEv"
 				}
+				"CHeadlessHatmanLocomotion::ShouldCollideWith"
+				{
+					type "sym"
+					sym  "_ZNK25CHeadlessHatmanLocomotion17ShouldCollideWithEPK11CBaseEntity"
+				}
 				"CMerasmusLocomotion::GetRunSpeed"
 				{
 					type "sym"

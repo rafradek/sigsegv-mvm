@@ -142,6 +142,8 @@ namespace Mod::Prof::Debug_Overlay
 			this->AddDetour(new CDetour("MultiByteToWideChar", reinterpret_cast<void *>(&MultiByteToWideChar), GET_STATIC_CALLBACK(D_MultiByteToWideChar), GET_STATIC_INNERPTR(D_MultiByteToWideChar)));
 #endif
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

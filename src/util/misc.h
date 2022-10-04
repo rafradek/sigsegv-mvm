@@ -162,6 +162,28 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 	return (case_sensitive ? strncmp(string, prefix, strlen(prefix)) : strnicmp(string, prefix, strlen(prefix))) == 0;
 }
 
+#define AVERAGE_TIME(name) \
+	static int tickLast_##name = 0; \
+	static int counter_##name = 0; \
+    static CCycleCount cycle_##name; \
+	class CTimeScopeMsg_##name \
+	{ \
+	public: \
+		CTimeScopeMsg_##name() { } \
+		~CTimeScopeMsg_##name() \
+		{ \
+			m_Timer.End(); \
+		} \
+	private:	\
+		CTimeAdder m_Timer(&cycle_##name);\
+	} name##_TSM; \
+	counter_##name++;\
+	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
+		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
+		counter_##name = 0;\
+		tickLast_##name = gpGlobals->tickcount;\
+	}\
+
 #define TIME_SCOPE2(name) \
 	class CTimeScopeMsg_##name \
 	{ \

@@ -49,16 +49,22 @@ public:
 
 void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst);
 
-void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<EHANDLE> &matching) {
-	int amperpos = 0;
-	while((amperpos = val.find('\1',amperpos)) != -1){
-		int endNamePos = val.find('\1',amperpos+1);
-		if (endNamePos != -1) {
+void FixupKeyvalue(std::string &val,int id, const char *parentname, FixupNames &matching) {
+	size_t amperpos = 0;
+	while((amperpos = val.find('\1',amperpos)) != std::string::npos){
+		size_t endNamePos = val.find('\1',amperpos+1);
+		if (endNamePos != std::string::npos) {
 			std::string entName = val.substr(amperpos+1, endNamePos - amperpos - 1);
 
 			// Find if there is already an entity with that name, if yes, fix up the name, otherwise delete the fixup marker 
-			auto sameName = servertools->FindEntityByName(nullptr, entName.c_str());
-			if (sameName != nullptr && std::find(matching.begin(), matching.end(), sameName) == matching.end()) {
+			// bool found = false;
+			// for (CBaseEntity* entity = nullptr; (entity = servertools->FindEntityByName(entity, entName.c_str())) != nullptr ; ) {
+			// 	if (std::find(matching.begin(), matching.end(), entity) == matching.end()) {
+			// 		found = true;
+			// 		break;
+			// 	}
+			// }
+			if (matching.contains(entName)) {
 				val[endNamePos] = '\1';
 				val.insert(endNamePos+1,std::to_string(id));
 			}
@@ -72,8 +78,8 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<
 		}
 	}
 		
-	int parpos = 0;
-	while((parpos = val.find("!parent",parpos)) != -1){
+	size_t parpos = 0;
+	while((parpos = val.find("!parent",parpos)) != std::string::npos){
 		val.replace(parpos,7,parentname);
 	}
 }
@@ -81,19 +87,39 @@ void FixupKeyvalue(std::string &val,int id, const char *parentname, std::vector<
 void FixupParameters(std::string &val, const TemplateParams &params) {
 	if (params.empty()) return;
 
-	int parampos = 0;
-	while((parampos = val.find('$',parampos)) != -1){
-		int endNamePos = val.find('$',parampos+1);
-		if (endNamePos != -1) {
-			std::string paramName = val.substr(parampos+1, endNamePos - parampos - 1);
-			auto paramFind = params.find(paramName);
-			if (paramFind != params.end()) {
-				val.replace(parampos, paramName.size()+2, paramFind->second);
+	size_t parampos = 0;
+	while((parampos = val.find('$',parampos)) != std::string::npos){
+		size_t endNamePos = val.find('$',parampos+1);
+		if (endNamePos != std::string::npos) {
+			if (endNamePos - parampos > 1) {
+				std::string paramName = val.substr(parampos+1, endNamePos - parampos - 1);
+				auto paramFind = params.find(paramName);
+				if (paramFind != params.end()) {
+					val.replace(parampos, paramName.size()+2, paramFind->second);
+					endNamePos = parampos + paramFind->second.size();
+				}
 			}
 		}
 		else {
 			break;
 		}
+		parampos = endNamePos;
+	}
+}
+
+void FixupTriggers(const std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst, std::vector<InputInfoTemplate> &triggersFixed, FixupNames &names)
+{
+	for (auto &inputinfo : triggers) {
+		std::string target = inputinfo.target;
+		std::string param = inputinfo.param;
+		if (!inst->templ->no_fixup) {
+			auto parentname = inst->parent != nullptr ? fmt::format("@h@{}", inst->parent->GetRefEHandle().ToInt()) : "";
+			FixupKeyvalue(target,inst->id,parentname.c_str(), names);
+			FixupKeyvalue(param,inst->id,parentname.c_str(), names);
+		}
+		FixupParameters(target, inst->parameters);
+		FixupParameters(param, inst->parameters);
+		triggersFixed.push_back({target, inputinfo.input, param, inputinfo.delay});
 	}
 }
 
@@ -154,7 +180,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		}
 		templ_inst->attachment = bone;
 
- 		if(parent->IsPlayer() && autoparent){
+ 		if(parent->IsPlayer() && autoparent && !this->entities.empty()){
 			parent_helper = CreateEntityByName("point_teleport");
 			parent_helper->SetAbsOrigin(parent->GetAbsOrigin());
 			parent_helper->SetAbsAngles(parent->GetAbsAngles());
@@ -173,7 +199,6 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	}
 	
 	std::unordered_map<std::string,CBaseEntity*> spawned;
-	std::vector<CBaseEntity*> spawned_list;
 	std::vector<std::pair<CBaseEntity*, string_t>> parent_string_restore;
 
 	HierarchicalSpawn_t *list_spawned = new HierarchicalSpawn_t[this->entities.size()];
@@ -186,7 +211,6 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		auto &keys = *it;
 		CBaseEntity *entity = CreateEntityByName(keys.find("classname")->second.c_str());
 		if (entity != nullptr) {
-			spawned_list.push_back(entity);
 			templ_inst->entities.push_back(entity);
 			auto mod = entity->GetOrCreateEntityModule<TemplateEntityModule>("templatemodule");
 			mod->inst = templ_inst;
@@ -194,7 +218,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 				std::string val = it1->second;
 
 				if (!this->no_fixup)
-					FixupKeyvalue(val,Template_Increment,parentname.c_str(), templ_inst->entities);
+					FixupKeyvalue(val,Template_Increment,parentname.c_str(), g_fixupNames);
 					
 				FixupParameters(val, params);
 
@@ -295,26 +319,16 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		pair.first->m_iParent = pair.second;
 	}
 
-	/*for (auto it = spawned_list.begin(); it != spawned_list.end(); it++) {
-		CBaseEntity *entity = *it;
-		SpawnEntity(entity);
-		entity->Activate();
-	}*/
-
-	if (!this->on_spawn_triggers.empty()) {
-		TriggerList(parent != nullptr ? parent : UTIL_EntityByIndex(0), this->on_spawn_triggers, templ_inst.get());
+	FixupTriggers(this->on_spawn_triggers, templ_inst.get(), templ_inst->on_spawn_triggers_fixed, g_fixupNames);
+	FixupTriggers(this->on_parent_kill_triggers, templ_inst.get(), templ_inst->on_parent_kill_triggers_fixed, g_fixupNames);
+	FixupTriggers(this->on_kill_triggers, templ_inst.get(), templ_inst->on_kill_triggers_fixed, g_fixupNames);
+	if (!templ_inst->on_spawn_triggers_fixed.empty()) {
+		TriggerList(parent != nullptr ? parent : UTIL_EntityByIndex(0), templ_inst->on_spawn_triggers_fixed, templ_inst.get());
 	}
-	// if(spawned.find("trigger_spawn_relay_inter") != spawned.end()){
-	// 	variant_t variant;
-	// 	variant.SetString(NULL_STRING);
-	// 	CBaseEntity *spawn_trigger = spawned.find("trigger_spawn_relay_inter")->second;
-		
-	// 	if (parent != nullptr)
-	// 		spawn_trigger->AcceptInput("Trigger",parent,parent,variant,-1);
-	// 	else
-	// 		spawn_trigger->AcceptInput("Trigger",UTIL_EntityByIndex(0), UTIL_EntityByIndex(0),variant,-1);
-	// 	servertools->RemoveEntity(spawn_trigger);
-	// }
+
+	for (auto &str : this->fixup_names) {
+		g_fixupNames.insert(str);
+	}
 
 	delete[] list_spawned;
 
@@ -481,22 +495,14 @@ void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &trigger
 	//CBaseEntity *trigger = CreateEntityByName("logic_relay");
 	//variant_t variant1;
 	for (auto &inputinfo : triggers) {
-		std::string target = inputinfo.target;
-		std::string param = inputinfo.param;
-		if (!inst->templ->no_fixup) {
-			FixupKeyvalue(target,inst->id,"", inst->entities);
-			FixupKeyvalue(param,inst->id,"", inst->entities);
-		}
-		FixupParameters(target, inst->parameters);
-		FixupParameters(param, inst->parameters);
 		variant_t variant;
 		//if (!param.empty()) {
-			variant.SetString(AllocPooledString(param.c_str()));
+			variant.SetString(AllocPooledString(inputinfo.param.c_str()));
 		//}
 		//else {
 		//	variant.SetString(NULL_STRING);
 		//}
-		g_EventQueue.GetRef().AddEvent( STRING(AllocPooledString(target.c_str())), STRING(AllocPooledString(inputinfo.input.c_str())), variant, inputinfo.delay, activator, activator, -1);
+		g_EventQueue.GetRef().AddEvent( STRING(AllocPooledString(inputinfo.target.c_str())), STRING(AllocPooledString(inputinfo.input.c_str())), variant, inputinfo.delay, activator, activator, -1);
 	}
 	/*for(auto it = triggers.begin(); it != triggers.end(); it++){
 		std::string val = *(it); 
@@ -525,7 +531,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 	}
 
 	if (!cleared && !this->templ->on_parent_kill_triggers.empty()) {
-		TriggerList(this->parent != nullptr && this->parent->IsPlayer() ? this->parent.Get() : UTIL_EntityByIndex(0), this->templ->on_parent_kill_triggers, this);
+		TriggerList(this->parent != nullptr && this->parent->IsPlayer() ? this->parent.Get() : UTIL_EntityByIndex(0), this->on_parent_kill_triggers_fixed, this);
 	}
 
 	for(auto it = this->entities.begin(); it != this->entities.end(); it++){
@@ -561,6 +567,7 @@ std::unordered_map<std::string, PointTemplate> &Point_Templates()
 }
 
 std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
+FixupNames g_fixupNames;
 
 void Clear_Point_Templates()
 {
@@ -569,6 +576,7 @@ void Clear_Point_Templates()
 		inst->OnKilledParent(true);
 	}
 	g_templateInstances.clear();
+	g_fixupNames.clear();
 	Point_Templates().clear();
 }
 
@@ -592,12 +600,16 @@ void Update_Point_Templates()
 				if (!hasalive)
 				{
 					inst->all_entities_killed = true;
-					TriggerList(inst->parent != nullptr && inst->parent->IsPlayer() ? inst->parent.Get() : UTIL_EntityByIndex(0), inst->templ->on_kill_triggers, inst.get());
+					TriggerList(inst->parent != nullptr && inst->parent->IsPlayer() ? inst->parent.Get() : UTIL_EntityByIndex(0), inst->on_kill_triggers_fixed, inst.get());
 				}
 			}
-			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && !inst->templ->on_parent_kill_triggers.empty())) {
+			if (inst->all_entities_killed && !((inst->has_parent || inst->is_wave_spawned) && !inst->on_parent_kill_triggers_fixed.empty())) {
 				inst->OnKilledParent(true);
 			}
+		}
+		if (inst->parent_helper != nullptr && (inst->mark_delete || inst->parent_helper->FirstMoveChild() == nullptr)) {
+			inst->parent_helper->Remove();
+			inst->parent_helper = nullptr;
 		}
 		if (inst->mark_delete) {
 			g_templateInstances.erase(it);
@@ -727,15 +739,21 @@ namespace Mod::Pop::PointTemplate
 		//DevMsg("Spawning template %s\n", src.c_str());
 		auto tmpl = FindPointTemplate(src);
 		if (tmpl != nullptr) {
+			
+			bool autoparent = maker->GetCustomVariableFloat<"autoparent">();
+			if (autoparent) {
+				vector = vec3_origin;
+				angles = vec3_angle;
+			}
 			TemplateParams params;
 			if (maker->GetExtraEntityData() != nullptr) {
 				for (auto &variable : maker->GetExtraEntityData()->GetCustomVariables()) {
 					if (StringStartsWith(STRING(variable.key), "Param", false)) {
-						params[STRING(variable.key)] = variable.value.String();
+						params[STRING(variable.key)+5] = variable.value.String();
 					}
 				}
 			}
-			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles,false);
+			auto inst = tmpl->SpawnTemplate(templateTargetEntity,vector,angles, autoparent, nullptr, false, params);
 			for (auto entity : inst->entities) {
 				if (entity == nullptr)
 					continue;

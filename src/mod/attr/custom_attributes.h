@@ -19,6 +19,7 @@ namespace Mod::Attr::Custom_Attributes
 		MULT_DUCK_SPEED,
 		MULT_CREDIT_COLLECT_RANGE,
 		NOT_SOLID,
+		IGNORED_BY_BOTS,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -35,7 +36,10 @@ namespace Mod::Attr::Custom_Attributes
 		MOVE_ACCURACY_MULT,
 		ALT_FIRE_DISABLED,
 		PASSIVE_RELOAD,
-		
+		IS_PASSIVE_WEAPON,
+		MOD_MAX_PRIMARY_CLIP_OVERRIDE,
+		AUTO_FIRES_FULL_CLIP,
+
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
 	};
@@ -53,7 +57,8 @@ namespace Mod::Attr::Custom_Attributes
 		"allow_friendly_fire",
 		"mult_duck_speed",
 		"mult_credit_collect_range",
-		"not_solid"
+		"not_solid",
+		"ignored_by_bots"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
@@ -66,7 +71,10 @@ namespace Mod::Attr::Custom_Attributes
 		"continous_accuracy_time_recovery",
 		"move_accuracy_mult",
 		"unimplemented_altfire_disabled",
-		"passive_reload"
+		"passive_reload",
+		"is_passive_weapon",
+		"mod_max_primary_clip_override",
+		"auto_fires_full_clip"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled

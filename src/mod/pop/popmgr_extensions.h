@@ -15,5 +15,6 @@ namespace Mod::Pop::PopMgr_Extensions {
 	void StripExtraItem(CTFPlayer *player, std::string &name);
 	void ApplyOrClearRobotModel(CTFPlayer *player);
 	int GetMaxSpectators();
+	bool SpyNoSapUnownedBuildings();
 }
 #endif

@@ -4,27 +4,9 @@
 
 #include "stub/tfplayer.h"
 #include "stub/entities.h"
+#include "weapon_parse.h"
 
-typedef enum {
-	EMPTY,
-	SINGLE,
-	SINGLE_NPC,
-	WPN_DOUBLE,
-	DOUBLE_NPC,
-	BURST,
-	RELOAD,
-	RELOAD_NPC,
-	MELEE_MISS,
-	MELEE_HIT,
-	MELEE_HIT_WORLD,
-	SPECIAL1,
-	SPECIAL2,
-	SPECIAL3,
-	TAUNT,
-	DEPLOY,
-} WeaponSound_t;
-
-class CTFWeaponInfo {};
+class CTFWeaponInfo : public FileWeaponInfo_t { };
 
 class CBaseCombatWeapon : public CEconEntity
 {
@@ -33,6 +15,7 @@ public:
 	
 	bool IsMeleeWeapon() const { return ft_IsMeleeWeapon(this); }
 	void SetOwner(CBaseCombatCharacter *owner) { return ft_SetOwner(this, owner); }
+	FileWeaponInfo_t const &GetWpnData() const       { return ft_GetWpnData(this); }
 	
 	int GetMaxClip1() const                                { return vt_GetMaxClip1  (this); }
 	int GetMaxClip2() const                                { return vt_GetMaxClip2  (this); }
@@ -73,6 +56,7 @@ private:
 	
 	static MemberFuncThunk<const CBaseCombatWeapon *, bool> ft_IsMeleeWeapon;
 	static MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> ft_SetOwner;
+	static MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> ft_GetWpnData;
 	
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip1;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip2;

@@ -112,8 +112,8 @@ CTFBotMedicRetreat *CTFBotMedicRetreat::New()
 	return action;
 }
 
-
-static MemberFuncThunk<CTFBotSniperLurk *, void> ft_CTFBotSniperLurk_ctor("CTFBotSniperLurk::CTFBotSniperLurk [C1]");
+// Inlined in the code
+// static MemberFuncThunk<CTFBotSniperLurk *, void> ft_CTFBotSniperLurk_ctor("CTFBotSniperLurk::CTFBotSniperLurk [C1]");
 #if TOOLCHAIN_FIXES
 CTFBotSniperLurk *CTFBotSniperLurk::New()
 {

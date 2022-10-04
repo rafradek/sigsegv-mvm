@@ -36,20 +36,21 @@ struct CaseInsensitiveLess
 
 using EntityKeys = std::multimap<std::string,std::string, CaseInsensitiveLess>;
 using TemplateParams = std::map<std::string,std::string, CaseInsensitiveLess>;
+using FixupNames = std::set<std::string, CaseInsensitiveLess>;
 class PointTemplate
 {
 public:
 	std::string name;
 	int id = 0;
 	std::vector<EntityKeys> entities;
-	std::set<std::string> fixup_names;
+	FixupNames fixup_names;
 	bool keep_alive = false;
 	bool no_fixup = false;
 	std::string remove_if_killed = "";
 
-	std::vector<InputInfoTemplate> on_spawn_triggers = std::vector<InputInfoTemplate>();
-	std::vector<InputInfoTemplate> on_parent_kill_triggers = std::vector<InputInfoTemplate>();
-	std::vector<InputInfoTemplate> on_kill_triggers = std::vector<InputInfoTemplate>();
+	std::vector<InputInfoTemplate> on_spawn_triggers;
+	std::vector<InputInfoTemplate> on_parent_kill_triggers;
+	std::vector<InputInfoTemplate> on_kill_triggers;
 
 	std::shared_ptr<PointTemplateInstance> SpawnTemplate(CBaseEntity *parent, const Vector &translation = vec3_origin, const QAngle &rotation = vec3_angle, bool autoparent = true, const char *attachment=nullptr, bool ignore_parent_alive_state = false, const TemplateParams &params = TemplateParams());
 };
@@ -75,6 +76,9 @@ public:
 	PointTemplateKilledCallback on_kill_callback = nullptr;
 	TemplateParams parameters;
 
+	std::vector<InputInfoTemplate> on_spawn_triggers_fixed;
+	std::vector<InputInfoTemplate> on_parent_kill_triggers_fixed;
+	std::vector<InputInfoTemplate> on_kill_triggers_fixed;
 
 };
 static PointTemplateInstance PointTemplateInstance_Invalid = PointTemplateInstance();
@@ -116,6 +120,7 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 PointTemplate *FindPointTemplate(std::string &str);
 std::unordered_map<std::string, PointTemplate> &Point_Templates();
 extern std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
+extern FixupNames g_fixupNames;
 
 void Clear_Point_Templates();
 void Update_Point_Templates();

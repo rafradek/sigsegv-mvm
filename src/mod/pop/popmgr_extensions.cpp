@@ -1603,7 +1603,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		
 	}
-	
+
+	bool SpyNoSapUnownedBuildings()
+	{
+		return state.m_bSpyNoSapUnownedBuildings;
+	}
+
 	RefCount rc_GetEntityForLoadoutSlot;
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot, bool flag)
 	{
@@ -1632,15 +1637,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		is_item_replacement.clear();
 	}
 
+	int LoadoutSlotReplace(int slot, CTFItemDefinition *item_def, int classIndex) 
+	{
+		if (rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) {
+			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		}
+		return slot;
+	}
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
 	{
-		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
-		
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
-		if ((rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
-			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
-		
-		return slot;
+		auto item_def = reinterpret_cast<CTFItemDefinition *>(this);
+		return slot == -1 && classIndex != TF_CLASS_UNDEFINED && item_def->m_iItemDefIndex != 0 ? LoadoutSlotReplace(slot, item_def, classIndex) : slot;
 	}
 
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerInventory_GetItemInLoadout, int pclass, int slot)
@@ -2335,7 +2343,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//if (bot != nullptr)
 		//	spawned_bots_first_tick.push_back(bot);
 
-		if (!player->IsBot() && !pClient->IsFakeClient()) {
+		if (!player->IsBot() && !pClient->IsFakeClient() && IsMannVsMachineMode()) {
 		//	spawned_players_first_tick.push_back(player);
 			if (state.m_bExtendedUpgradesOnly) {
 				auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
@@ -2346,14 +2354,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			ApplyPlayerAttributes(player);
 			player->SetHealth(player->GetMaxHealth());
 
-			int isMiniboss = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, isMiniboss, is_miniboss);
-			player->SetMiniBoss(isMiniboss);
+			// int isMiniboss = 0;
+			// CALL_ATTRIB_HOOK_INT_ON_OTHER(player, isMiniboss, is_miniboss);
+			// player->SetMiniBoss(isMiniboss);
 
-			float playerScale = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, playerScale, model_scale);
+			// float playerScale = 1.0f;
+			// CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, playerScale, model_scale);
 			
-			StopGiantSounds(player);
+			// StopGiantSounds(player);
 			/*if (isMiniboss) {
 				const char *sound = GetGiantLoopSound(player);
 				if (sound != nullptr){}
@@ -2374,12 +2382,12 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_PlayerSpawnOnceTemplatesAppliedTo.insert(player);
 			}
 
-			if (playerScale != 1.0f)
-				player->SetModelScale(playerScale);
-			else if (player->IsMiniBoss()) {
-				static ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
-				player->SetModelScale(miniboss_scale.GetFloat());
-			}
+			// if (playerScale != 1.0f)
+			// 	player->SetModelScale(playerScale);
+			// else if (player->IsMiniBoss()) {
+			// 	static ConVarRef miniboss_scale("tf_mvm_miniboss_scale");
+			// 	player->SetModelScale(miniboss_scale.GetFloat());
+			// }
 
 			if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED && !state.m_PlayerUpgradeSend.count(player) && 
 					(strcmp(TFGameRules()->GetCustomUpgradesFile(), "") != 0 && strcmp(TFGameRules()->GetCustomUpgradesFile(), "scripts/items/mvm_upgrades.txt") != 0)) {
@@ -2460,7 +2468,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_Event_Killed);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		StopGiantSounds(player);
 		if (state.m_bPlayerRobotUsePlayerAnimation && !player->IsBot() && ((state.m_bRedPlayersRobots && player->GetTeamNumber() == TF_TEAM_RED) || 
 				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
 			
@@ -2591,15 +2598,13 @@ namespace Mod::Pop::PopMgr_Extensions
 	
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
-
-		if (!ret && ent != nullptr && ent->IsBaseObject()) {
-			CTFBot *bot = ToTFBot(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
+		if (ent->IsBaseObject()) {
+			CTFBot *bot = static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
 			if (bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && (ent->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && ToBaseObject(ent)->GetBuilder() == nullptr))) {
 				return true;
 			}
 		}
-		return ret;
+		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 	}
 
 
@@ -4338,24 +4343,12 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
+	DETOUR_DECL_MEMBER(bool, CHeadlessHatmanLocomotion_ShouldCollideWith, CBaseEntity *entity)
 	{
-		if (state.m_bHHHNonSolidToPlayers) {
-			CBaseEntity *entityme = const_cast< CBaseEntity * >(EntityFromEntityHandle(reinterpret_cast<CTraceFilterSimple*>(this)->GetPassEntity()));
-			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
-
-			if (entityme->MyNextBotPointer() != nullptr && entityhit->IsPlayer()) {
-				if (strcmp(entityme->GetClassname(), "headless_hatman") == 0) {
-					return false;
-				}
-			}
-			else if (entityhit->MyNextBotPointer() != nullptr && entityme->IsPlayer()) {
-				if (strcmp(entityhit->GetClassname(), "headless_hatman") == 0) {
-					return false;
-				}
-			}
+		if (state.m_bHHHNonSolidToPlayers && entity->IsPlayer()) {
+			return false;
 		}
-		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
+		return DETOUR_MEMBER_CALL(CHeadlessHatmanLocomotion_ShouldCollideWith)(entity);
 	}
 
 	RefCount rc_CHeadlessHatmanAttack_AttackTarget;
@@ -5176,7 +5169,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DevMsg("Parse_ExtraTankPath: name \"%s\", %zu nodes\n", name, points.size());
 	}
 
-	void FindUsedEntityNames(std::string &str, std::set<std::string> &entity_names, std::set<std::string> &entity_names_used) {
+	void FindUsedEntityNames(std::string &str, FixupNames &entity_names, FixupNames &entity_names_used) {
 		size_t pos = 0;
 		size_t start = 0;
 
@@ -5193,7 +5186,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	bool InsertFixupPattern(std::string &str, std::set<std::string> &entity_names) {
+	bool InsertFixupPattern(std::string &str, FixupNames &entity_names) {
 		bool changed = false;
 		size_t pos = 0;
 		size_t start = 0;
@@ -5242,8 +5235,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::transform(tname.begin(), tname.end(), tname.begin(),
     	[](unsigned char c){ return std::tolower(c); });
 
-		std::set<std::string> entity_names;
-		std::set<std::string> entity_names_used;
+		FixupNames entity_names;
+		FixupNames entity_names_used;
 		PointTemplate &templ = Point_Templates().emplace(tname,PointTemplate()).first->second;
 		templ.name = tname;
 		FOR_EACH_SUBKEY(kv, subkey) {
@@ -5387,6 +5380,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
+		templ.fixup_names = entity_names_used;
 		
 
 		CBaseEntity *maker = CreateEntityByName("env_entity_maker");
@@ -6636,7 +6630,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_RecomputeHomePosition, "CHeadlessHatmanAttack::RecomputeHomePosition");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveCurrency, "CTFPlayer::RemoveCurrency");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndPurchasableUpgrades, "CTFPlayer::EndPurchasableUpgrades");
-			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanLocomotion_ShouldCollideWith, "CHeadlessHatmanLocomotion::ShouldCollideWith");
 
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_AttackTarget, "CHeadlessHatmanAttack::AttackTarget");
 			MOD_ADD_DETOUR_STATIC(CalculateMeleeDamageForce, "CalculateMeleeDamageForce");

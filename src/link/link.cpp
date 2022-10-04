@@ -1,4 +1,5 @@
 #include "link/link.h"
+#include "factory.h"
 
 
 //#if defined _WINDOWS
@@ -12,9 +13,12 @@ namespace Link
 
 	bool InitAll()
 	{
+		vtable_staticprop = RTTI::GetVTable("11CStaticProp");
 		DevMsg("Link::InitAll BEGIN\n");
 		
 		for (auto link : AutoList<ILinkage>::List()) {
+			if (ClientFactory() == nullptr && link->ClientSide()) continue;
+
 			link->InvokeLink();
 			
 			if (!link->IsLinked()) {

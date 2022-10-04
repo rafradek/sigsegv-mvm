@@ -35,6 +35,8 @@ extern GlobalThunk<const char *[4]> s_TankModelRome;
 extern GlobalThunk<char_0x104[10]> g_szRomePromoItems_Hat;
 extern GlobalThunk<char_0x104[10]> g_szRomePromoItems_Misc;
 
+extern GlobalThunk<const char *[]> g_pszMPConcepts_thunk;
+
 inline int GetClassIndexFromString(const char *pClassName)
 {
 	for (int i = 1; i <= 10; ++i) {

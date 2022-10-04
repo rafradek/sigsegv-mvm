@@ -1411,24 +1411,27 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 	}
 
+
 	RefCount rc_CTFBot_AddItem;
-	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	int LoadoutSlotReplace(int slot, CTFItemDefinition *item_def, int classIndex) 
 	{
-		CTFItemDefinition *item_def=reinterpret_cast<CTFItemDefinition *>(this);
-		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
-		if (rc_CTFBot_OnEventChangeAttributes) {
-			const char *name = item_def->GetItemClass();
-			if (rc_CTFBot_AddItem && (FStrEq(name,"tf_weapon_buff_item") || FStrEq(name,"tf_weapon_parachute") || strncmp(name,"tf_wearable", strlen("tf_wearable")) == 0))
-				return slot;
-			
-			if (slot == -1){
-				if(FStrEq(name,"tf_weapon_revolver"))
-					slot = 0;
-				else
-					slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
-			}
+		const char *name = item_def->GetItemClass();
+		if (rc_CTFBot_AddItem && (FStrEq(name,"tf_weapon_buff_item") || FStrEq(name,"tf_weapon_parachute") || strncmp(name,"tf_wearable", strlen("tf_wearable")) == 0))
+			return slot;
+		
+		if (slot == -1){
+			if(FStrEq(name,"tf_weapon_revolver"))
+				slot = 0;
+			else
+				slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 		}
 		return slot;
+	}
+	
+	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	{
+		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		return !rc_CTFBot_OnEventChangeAttributes ? slot : LoadoutSlotReplace(slot, reinterpret_cast<CTFItemDefinition *>(this), classIndex);
 	}
 	
 	bool is_revolver;

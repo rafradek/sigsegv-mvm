@@ -94,8 +94,9 @@ static MemberFuncThunk<const IContextualQuery *, const CKnownEntity *, const INe
 /* Path */
 static MemberFuncThunk<const Path *, bool>                                                                   ft_Path_IsValid                       ("Path::IsValid");
 static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&>                                        ft_Path_ComputePathDetails            ("Path::ComputePathDetails");
-static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&, CTFBotPathCost&, float, bool>          ft_Path_Compute_CTFBotPathCost_goal   ("Path::Compute<CTFBotPathCost> [goal]");
-static MemberFuncThunk<      Path *, bool, INextBot *, CBaseCombatCharacter *, CTFBotPathCost&, float, bool> ft_Path_Compute_CTFBotPathCost_subject("Path::Compute<CTFBotPathCost> [subject]");
+// Inlined in the code
+// static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&, CTFBotPathCost&, float, bool>          ft_Path_Compute_CTFBotPathCost_goal   ("Path::Compute<CTFBotPathCost> [goal]");
+// static MemberFuncThunk<      Path *, bool, INextBot *, CBaseCombatCharacter *, CTFBotPathCost&, float, bool> ft_Path_Compute_CTFBotPathCost_subject("Path::Compute<CTFBotPathCost> [subject]");
 static MemberFuncThunk<      Path *, bool, INextBot *, const Vector&>                                        ft_Path_BuildTrivialPath              ("Path::BuildTrivialPath");
 static MemberFuncThunk<      Path *, void, INextBot *>                                                       ft_Path_Optimize                      ("Path::Optimize");
 static MemberFuncThunk<      Path *, void>                                                                   ft_Path_PostProcess                   ("Path::PostProcess");
@@ -203,7 +204,7 @@ static MemberFuncThunk<      Action<CTFBot> *, EDR,              CTFBot *>      
 static MemberFuncThunk<      Action<CTFBot> *, EDR,              CTFBot *>                                                      ft_Action_OnLose(                             "Action<CTFBot>::OnLose");
 static MemberFuncThunk<const Action<CTFBot> *, bool,             const INextBot *>                                              ft_Action_IsAbleToBlockMovementOf(            "Action<CTFBot>::IsAbleToBlockMovementOf");
 static MemberFuncThunk<      Action<CTFBot> *, Action<CTFBot> *, CTFBot *, Behavior<CTFBot> *, AR>                              ft_Action_ApplyResult(                        "Action<CTFBot>::ApplyResult");
-static MemberFuncThunk<      Action<CTFBot> *, void,             CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnEnd(                        "Action<CTFBot>::InvokeOnEnd");
+static MemberFuncThunk<      Action<CTFBot> *, void,             CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnEnd(                        "Action<CTFBot>::InvokeOnEnd [clone]");
 static MemberFuncThunk<      Action<CTFBot> *, AR,               CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnResume(                     "Action<CTFBot>::InvokeOnResume");
 static MemberFuncThunk<const Action<CTFBot> *, char *,           char[256], const Action<CTFBot> *>                             ft_Action_BuildDecoratedName(                 "Action<CTFBot>::BuildDecoratedName");
 static MemberFuncThunk<const Action<CTFBot> *, char *>                                                                          ft_Action_DebugString(                        "Action<CTFBot>::DebugString");

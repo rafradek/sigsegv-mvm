@@ -142,6 +142,8 @@ public:
 	virtual const char *GetName() const override final { return this->m_pszName; }
 	
 	virtual void Toggle(bool enable) override;
+
+	virtual bool IsClientSide() { return false; }
 	
 protected:
 	IMod(const char *name) :

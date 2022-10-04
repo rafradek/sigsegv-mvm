@@ -2,16 +2,10 @@
 #define _INCLUDE_SIGSEGV_MOD_ETC_MAPENTITY_ADDITIONS_H_
 
 #include "util/lua.h"
+#include "util/prop_helper.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
-    struct PropCacheEntry
-    {
-        int offset = 0;
-        fieldtype_t fieldType = FIELD_VOID;
-        int arraySize = 1;
-        int elementStride = 0;
-    };
 
     enum GetInputType {
         ANY,
@@ -23,15 +17,6 @@ namespace Mod::Etc::Mapentity_Additions
         VARIABLE_NO_CREATE,
         DATAMAP_REFRESH,
     };
-
-    void WriteProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
-    void ReadProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
-
-    void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset);
-    void GetDataMapInfo(typedescription_t &desc, PropCacheEntry &entry);
-
-    PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, std::string &name);
-    PropCacheEntry &GetDataMapOffset(datamap_t *datamap, std::string &name);
 
     bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable);
     bool SetEntityVariable(CBaseEntity *entity, GetInputType type, std::string &name, variant_t &variable, int arrayPos, int vecAxis);
@@ -172,6 +157,7 @@ namespace Mod::Etc::Mapentity_Additions
     static ChangeLevelInfo change_level_info;
 
     void AddModuleByName(CBaseEntity *entity, const char *name);
+    bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, bool &result, variant_t &val);
 }
 
 #endif

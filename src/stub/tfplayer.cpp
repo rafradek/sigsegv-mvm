@@ -220,7 +220,6 @@ IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlay
 IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlayer);
 IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
-IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hOffHandWeapon,   CTFPlayer);
 IMPL_RELATIVE(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_bMatchSafeToLeave, +16);
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);

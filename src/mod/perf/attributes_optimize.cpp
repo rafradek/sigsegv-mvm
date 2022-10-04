@@ -27,7 +27,7 @@ namespace Mod::Perf::Attributes_Optimize
         //CBaseEntity *ent;
         CAttributeManager *mgr;
         CUtlVector<AttribCache> attribs;
-        const char *last_name;
+        const char *last_name = nullptr;
         float last_in;
         float last_out;
         int count = 0;
@@ -120,11 +120,8 @@ namespace Mod::Perf::Attributes_Optimize
         return result;
     }
 
-    float GetAttribValue(float value, const char *attr, CBaseEntity *ent, bool isint) {
+    inline float GetAttribValue(float value, const char *attr, CBaseEntity *ent, bool isint) {
         
-        if (!Enabled()) {
-            return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, nullptr, true);
-        }
         // if (isint) {
         //     callshookint++;
         // }
@@ -234,6 +231,13 @@ namespace Mod::Perf::Attributes_Optimize
             //lastattribcalls = attrib.call_ctr;
         }
         return CalculateAttribValue(ent, value, attr, index_insert, entity_cache);
+    }
+
+    float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint) {
+        if (!Enabled()) {
+            return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, nullptr, true);
+        }
+        return GetAttribValue(value, attr, ent, isint);
     }
 
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)

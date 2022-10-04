@@ -298,6 +298,18 @@ private:
 };
 class CTFPlayerClass : public CTFPlayerClassShared {};
 
+class CondData
+{
+public:
+	CondData(uint *data) : data(data) {};
+	inline bool InCond(int cond) const  { return data[cond / 32] & 1 << (cond % 32); }
+	inline void AddCondBit(int cond)    {        data[cond / 32] = data[cond / 32] | (1 << (cond % 32)); }
+	inline void RemoveCondBit(int cond) {        data[cond / 32] = data[cond / 32] & ~(1 << (cond % 32)); }
+
+private:
+	uint *data;
+};
+
 class CTFPlayerShared
 {
 public:
@@ -308,6 +320,7 @@ public:
 	int GetState() const           { return this->m_nPlayerState; }
 	void SetState(int nState)      { this->m_nPlayerState = nState; }
 	bool InState(int nState) const { return (this->m_nPlayerState == nState); }
+	inline CondData GetCondData()  { return CondData{(uint *)((uintptr_t)this + s_prop_m_nPlayerCond.GetOffsetDirect())}; }
 	
 	void AddCond(ETFCond cond, float duration = -1.0f, CBaseEntity *provider = nullptr) {        ft_AddCond                   (this, cond, duration, provider); }
 	void RemoveCond(ETFCond cond, bool b1 = false)                                      {        ft_RemoveCond                (this, cond, b1); }
@@ -482,7 +495,6 @@ public:
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
 	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
-	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hOffHandWeapon);
 	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);
 	
 	

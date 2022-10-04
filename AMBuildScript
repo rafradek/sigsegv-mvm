@@ -182,7 +182,7 @@ class ExtensionConfig(object):
 #   cxx.cflags += ['-Winvalid-constexpr']
     cxx.cflags += ['-fvisibility=hidden']
     cxx.cflags += ['-fdiagnostics-color=always']
-    cxx.cflags += ['-fno-omit-frame-pointer']
+#   cxx.cflags += ['-fno-omit-frame-pointer']
 #   cxx.cflags += ['-masm=intel']
 #   cxx.cflags += ['-Q']
 #   cxx.cflags += ['-Winvalid-pch']

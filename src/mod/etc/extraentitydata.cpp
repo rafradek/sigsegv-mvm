@@ -22,6 +22,7 @@ namespace Mod::Etc::ExtraEntityData
         auto entity = reinterpret_cast<CBaseEntity *>(this);
         if (entity->m_extraEntityData != nullptr) {
             delete entity->m_extraEntityData;
+            entity->m_extraEntityData = nullptr;
         }
         DETOUR_MEMBER_CALL(CBaseEntity_D2)();
     }

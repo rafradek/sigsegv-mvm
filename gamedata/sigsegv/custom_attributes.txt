@@ -2518,5 +2518,23 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4571"
+    {
+        "name"	"dmg taken from self reduced"
+        "attribute_class"	"mult_dmgtaken_from_self"
+        "description_string"	"(+-)%p% damage taken from self"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4572"
+    {
+        "name"	"ignored by bots"
+        "attribute_class"	"ignored_by_bots"
+        "description_string"	"Ignored by bots"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
     
 }

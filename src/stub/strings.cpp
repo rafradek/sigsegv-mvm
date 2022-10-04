@@ -27,3 +27,5 @@ GlobalThunk<const char *[4]> s_TankModelRome("s_TankModelRome");
 
 GlobalThunk<char_0x104[10]> g_szRomePromoItems_Hat ("g_szRomePromoItems_Hat");
 GlobalThunk<char_0x104[10]> g_szRomePromoItems_Misc("g_szRomePromoItems_Misc");
+
+GlobalThunk<const char *[]> g_pszMPConcepts_thunk("g_pszMPConcepts");

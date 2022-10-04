@@ -54,6 +54,7 @@ MemberFuncThunk<CBaseCombatCharacter *, void, int, int>															  CBaseCom
 MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       CBaseCombatCharacter::vt_Weapon_GetSlot     (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_GetSlot");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      CBaseCombatCharacter::vt_Weapon_CanSwitchTo (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_CanSwitchTo");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *, int> CBaseCombatCharacter::vt_Weapon_Switch      (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_Switch");
+MemberVFuncThunk<      CBaseCombatCharacter *, void, CBaseCombatWeapon *>      CBaseCombatCharacter::vt_Weapon_Equip       (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_Equip");
 MemberVFuncThunk<const CBaseCombatCharacter *, CNavArea *>                     CBaseCombatCharacter::vt_GetLastKnownArea   (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetLastKnownArea");
 MemberVFuncThunk<      CBaseCombatCharacter *, void>                           CBaseCombatCharacter::vt_UpdateLastKnownArea(TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::UpdateLastKnownArea");
 MemberVFuncThunk<      CBaseCombatCharacter *, int, int, int, bool>            CBaseCombatCharacter::vt_GiveAmmo           (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GiveAmmo");
@@ -114,11 +115,10 @@ MemberVFuncThunk<      CBasePlayer *, Vector>                      CBasePlayer::
 MemberVFuncThunk<      CBasePlayer *, float>                       CBasePlayer::vt_GetPlayerMaxSpeed   (TypeName<CBasePlayer>(), "CBasePlayer::GetPlayerMaxSpeed");
 MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       CBasePlayer::vt_RemoveWearable      (TypeName<CBasePlayer>(), "CBasePlayer::RemoveWearable");
 MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> CBasePlayer::vt_ChangeTeam_bool3    (TypeName<CBasePlayer>(), "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
-MemberVFuncThunk<CBasePlayer *, void, CBaseCombatWeapon *>         CBasePlayer::vt_Weapon_Equip        (TypeName<CBasePlayer>(),"CBasePlayer::Weapon_Equip");
 MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>             CBasePlayer::vt_EquipWearable       (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");
 MemberVFuncThunk<      CBasePlayer *, CBaseEntity *>               CBasePlayer::vt_FindUseEntity       (TypeName<CBasePlayer>(),"CBasePlayer::FindUseEntity");
 MemberVFuncThunk<      CBasePlayer *, void, const Vector &,const QAngle &> CBasePlayer::vt_LeaveVehicle(TypeName<CBasePlayer>(),"CBasePlayer::LeaveVehicle");
-MemberVFuncThunk<      CBasePlayer *, void, int>                   CBasePlayer::vt_CreateViewModel     (TypeName<CTFPlayer>(),  "CTFPlayer::CreateViewmodel");
+MemberVFuncThunk<      CBasePlayer *, void, int>                   CBasePlayer::vt_CreateViewModel     (TypeName<CTFPlayer>(),  "CTFPlayer::CreateViewModel");
 
 
 MemberVFuncThunk<CBaseMultiplayerPlayer *, bool, int, const char *, char *, size_t, IRecipientFilter *> CBaseMultiplayerPlayer::vt_SpeakConceptIfAllowed(TypeName<CTFPlayer>(), "CTFPlayer::SpeakConceptIfAllowed");

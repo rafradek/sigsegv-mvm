@@ -256,7 +256,7 @@ namespace Mod::Etc::Misc
 			return result; 
 
 		if (!result && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
-			auto sticky = rtti_cast<CTFPipebombLauncher *>(player->Weapon_OwnsThisID(TF_WEAPON_PIPEBOMBLAUNCHER));
+			auto sticky = rtti_cast<CTFPipebombLauncher *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_SECONDARY));
 			if (sticky != nullptr) {
 				sticky->SecondaryAttack();
 				result = true;
@@ -310,7 +310,7 @@ namespace Mod::Etc::Misc
 		float ret = DETOUR_MEMBER_CALL(CTFPlayer_TeamFortress_CalculateMaxSpeed)(flag);
 		
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
-			auto sword = rtti_cast<CTFSword *>(player->Weapon_OwnsThisID(TF_WEAPON_SWORD));
+			auto sword = rtti_cast<CTFSword *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_MELEE));
 			if (sword != nullptr) {
 				ret *= sword->GetSwordSpeedMod();
 			}
@@ -327,7 +327,7 @@ namespace Mod::Etc::Misc
 		int ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxHealthForBuffing)();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
-			auto sword = rtti_cast<CTFSword *>(player->Weapon_OwnsThisID(TF_WEAPON_SWORD));
+			auto sword = rtti_cast<CTFSword *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_MELEE));
 			if (sword != nullptr) {
 				ret += sword->GetSwordHealthMod();
 			}

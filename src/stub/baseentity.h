@@ -271,9 +271,6 @@ public:
 	const Vector& GetLocalOrigin() const          { return this->m_vecOrigin; }
 	const QAngle& GetLocalAngles() const          { return this->m_angRotation; }
 	const QAngle& GetLocalAngularVelocity() const { return this->m_vecAngVelocity; }
-	void SetLocalVelocity(Vector &vec)            { this->m_vecVelocity = vec; }
-	void SetLocalOrigin(Vector &vec)              { this->m_vecOrigin = vec; }
-	void SetLocalAngles(QAngle &ang)              { this->m_angRotation = ang; }
 	void SetLocalAngularVelocity( QAngle &ang)    { this->m_vecAngVelocity = ang; }
 	int GetEffects() const                        { return this->m_fEffects; }
 	bool IsEffectActive(int nEffects) const       { return ((this->m_fEffects & nEffects) != 0); }
@@ -309,6 +306,9 @@ public:
 	int SetTransmitState(int state)                                                                                         { return ft_SetTransmitState              (this, state); }
 	void FireNamedOutput(const char *pszOutput, variant_t variant, CBaseEntity *pActivator, CBaseEntity *pCaller, float flDelay) { return ft_FireNamedOutput          (this, pszOutput, variant, pActivator, pCaller, flDelay); }
 	void ApplyAbsVelocityImpulse(const Vector &impulse)                                                                     {        ft_ApplyAbsVelocityImpulse       (this, impulse); }
+	void SetLocalVelocity(const Vector &vec)                                                                                {        ft_SetLocalVelocity              (this, vec); }
+	void SetLocalOrigin(const Vector &vec)                                                                                  {        ft_SetLocalOrigin                (this, vec); }
+	void SetLocalAngles(const QAngle &ang)                                                                                  {        ft_SetLocalAngles                (this, ang); }
 	
 	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
@@ -407,11 +407,13 @@ public:
 	DECL_DATAMAP(unsigned char, m_nWaterLevel);
 	DECL_SENDPROP(unsigned char, m_nRenderFX);
 	DECL_SENDPROP(unsigned char, m_iParentAttachment);
+	DECL_RELATIVE(CBaseHandle,          m_RefEHandle);
+	DECL_SENDPROP(int,                  m_iTeamNum);
+	DECL_DATAMAP(string_t,               m_iClassname);
 	
 	
 private:
 	DECL_DATAMAP(CServerNetworkProperty, m_Network);
-	DECL_DATAMAP(string_t,               m_iClassname);
 	DECL_DATAMAP(string_t,               m_iName);
 	DECL_DATAMAP(int,                    m_iEFlags);
 	DECL_DATAMAP(Vector,                 m_vecAbsOrigin);
@@ -426,7 +428,6 @@ private:
 	DECL_DATAMAP(QAngle,                 m_vecAngVelocity);
 	
 	DECL_SENDPROP_RW(CCollisionProperty,   m_Collision);
-	DECL_SENDPROP   (int,                  m_iTeamNum);
 	DECL_SENDPROP   (int,                  m_iMaxHealth);
 	DECL_SENDPROP   (int,                  m_iHealth);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hGroundEntity);
@@ -439,7 +440,6 @@ private:
 	DECL_SENDPROP   (Vector,               m_vecVelocity);
 	DECL_SENDPROP   (Vector,               m_vecOrigin);
 	DECL_SENDPROP   (QAngle,               m_angRotation);
-	DECL_RELATIVE   (CBaseHandle,          m_RefEHandle);
 	DECL_SENDPROP_RW(int,                  m_fEffects);
 	
 	static MemberFuncThunk<      CBaseEntity *, void>                                                    ft_Remove;
@@ -454,7 +454,6 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, void, const char *, HSOUNDSCRIPTHANDLE&, float, float *> ft_EmitSound_member2;
 	static MemberFuncThunk<      CBaseEntity *, void, const char *>                                      ft_StopSound;
 	static MemberFuncThunk<      CBaseEntity *, float, const char *>                                     ft_GetNextThink;
-	static MemberFuncThunk<      CBaseEntity *, void, const Vector&, Vector *>                           ft_EntityToWorldSpace;
 	static MemberFuncThunk<const CBaseEntity *, bool>                                                    ft_IsBSPModel;
 	static MemberFuncThunk<      CBaseEntity *, void, int, const char *, float, int, int, int, int>      ft_EntityText;
 	static MemberFuncThunk<      CBaseEntity *, int, const CTakeDamageInfo&>                             ft_TakeDamage;
@@ -472,6 +471,9 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, int, int>                                                ft_SetTransmitState;
 	static MemberFuncThunk<      CBaseEntity *, void, const char *, variant_t, CBaseEntity *, CBaseEntity *, float> ft_FireNamedOutput;
 	static MemberFuncThunk<      CBaseEntity *, void, const Vector &>                                    ft_ApplyAbsVelocityImpulse;
+	static MemberFuncThunk<      CBaseEntity *, void, const Vector &>                                    ft_SetLocalVelocity;
+	static MemberFuncThunk<      CBaseEntity *, void, const Vector &>                                    ft_SetLocalOrigin;
+	static MemberFuncThunk<      CBaseEntity *, void, const QAngle &>                                    ft_SetLocalAngles;
 	
 	
 	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
@@ -541,7 +543,9 @@ private:
 inline CBaseEntity *GetContainingEntity(edict_t *pent)
 {
 	if (pent != nullptr && pent->GetUnknown() != nullptr) {
-		return pent->GetUnknown()->GetBaseEntity();
+		// return pent->GetUnknown()->GetBaseEntity();
+		// Optimization
+		return (CBaseEntity *)pent->GetUnknown();
 	}
 	
 	return nullptr;

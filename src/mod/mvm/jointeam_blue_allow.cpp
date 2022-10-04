@@ -727,21 +727,18 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
-		bool result = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 		static ConVarRef sig_mvm_teleporter_aggro("sig_mvm_teleporter_aggro");
-		if (!result) {
-			auto vision = reinterpret_cast<IVision *>(this);
-			CTFBot *bot = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
-			if (bot->GetTeamNumber() == TF_TEAM_RED && (!sig_mvm_teleporter_aggro.GetBool() || rtti_cast<CTFWeaponBaseMelee *>(bot->GetActiveWeapon()) != nullptr)) {
-				if (bot != nullptr && (bot->GetActiveWeapon()) != nullptr && ent->IsBaseObject()) {
-					CBaseObject *obj = ToBaseObject(ent);
-					if (obj != nullptr && obj->GetType() == OBJ_TELEPORTER) {
-						return true;
-					}
+		auto vision = reinterpret_cast<IVision *>(this);
+		CTFBot *bot = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
+		if (bot->GetTeamNumber() == TF_TEAM_RED && (!sig_mvm_teleporter_aggro.GetBool() || rtti_cast<CTFWeaponBaseMelee *>(bot->GetActiveWeapon()) != nullptr)) {
+			if (bot != nullptr && (bot->GetActiveWeapon()) != nullptr && ent->IsBaseObject()) {
+				CBaseObject *obj = ToBaseObject(ent);
+				if (obj != nullptr && obj->GetType() == OBJ_TELEPORTER) {
+					return true;
 				}
 			}
 		}
-		return result;
+		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAmmo, int count, const char *name)

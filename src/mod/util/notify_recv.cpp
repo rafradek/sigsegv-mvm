@@ -158,6 +158,8 @@ namespace Mod::Util::Notify_Recv
 			delete recv;
 			recv = nullptr;
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

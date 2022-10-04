@@ -106,6 +106,8 @@ namespace Mod::Prof::Tier2_RenderUtils
 			
 		//	MOD_ADD_DETOUR_STATIC(DrawScreenSpaceRectangle, "[client] DrawScreenSpaceRectangle");
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

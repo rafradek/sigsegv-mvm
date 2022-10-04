@@ -899,11 +899,16 @@ namespace Mod::Cond::Reprogrammed
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
-		CTFPlayer *entityme = ToTFPlayer(const_cast< CBaseEntity * >(EntityFromEntityHandle(reinterpret_cast<CTraceFilterSimple*>(this)->GetPassEntity())));
-		CTFPlayer *entityhit = ToTFPlayer(EntityFromEntityHandle(pServerEntity));
-
-		if (entityme != nullptr && entityhit != nullptr && entityme->GetTeamNumber() == TEAM_SPECTATOR) {
-			return entityme->GetTeamNumber() != entityhit->GetTeamNumber();
+		CTraceFilterSimple *filter = reinterpret_cast<CTraceFilterSimple*>(this);
+		
+        // Always a player so ok to cast directly
+        CBaseEntity *entityme = reinterpret_cast<CBaseEntity *>(const_cast<IHandleEntity *>(filter->GetPassEntity()));
+		
+		if (entityme->GetTeamNumber() == TEAM_SPECTATOR) {
+			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
+			if (entityhit != nullptr) {
+				return entityme->GetTeamNumber() != entityhit->GetTeamNumber() || !entityhit->IsPlayer();
+			}
 		}
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
 	}
@@ -1026,11 +1031,13 @@ namespace Mod::Cond::Reprogrammed
 
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
+		CTFBot *me = reinterpret_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
+		if (me->GetTeamNumber() != TEAM_SPECTATOR) return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		
 		auto player = ToTFPlayer(ent);
 		int restoreTeam = -1;
 		if (player != nullptr) {
-			CTFBot *me = reinterpret_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
-			if (me->GetTeamNumber() == TEAM_SPECTATOR && player->m_Shared->InCond( TF_COND_DISGUISED ) && player->m_Shared->GetDisguiseTeam() != player->GetTeamNumber()) {
+			if (player->m_Shared->InCond( TF_COND_DISGUISED ) && player->m_Shared->GetDisguiseTeam() != player->GetTeamNumber()) {
 				restoreTeam = player->m_Shared->m_nDisguiseTeam;
 				player->m_Shared->m_nDisguiseTeam = me->GetTeamNumber();
 			}
@@ -1172,8 +1179,9 @@ namespace Mod::Cond::Reprogrammed
 			ForEachTFPlayer([](CTFPlayer *player){
 				auto &shared = player->m_Shared.Get();
 				int maxCond = GetExtraConditionCount();
+				auto condData = shared.GetCondData();
 				for (int i = GetNumberOfTFConds(); i < maxCond; i++) {
-					if (shared.InCond((ETFCond)i)) {
+					if (condData.InCond(i)) {
 						auto &data = shared.m_ConditionData.Get()[i];
 						float duration = data.m_flExpireTime;
 						if (duration != -1) {

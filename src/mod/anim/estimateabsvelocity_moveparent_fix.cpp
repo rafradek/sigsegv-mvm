@@ -120,6 +120,8 @@ namespace Mod::Anim::EstimateAbsVelocity_MoveParent_Fix
 		{
 			MOD_ADD_DETOUR_MEMBER(C_BaseEntity_EstimateAbsVelocity, "[client] C_BaseEntity::EstimateAbsVelocity");
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

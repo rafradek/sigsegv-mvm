@@ -17,7 +17,7 @@ static constexpr uint8_t s_Buf_perteamvisuals_t_m_Sounds[] = {
 	0x8b, 0x80, 0x00, 0x00, 0x00, 0x00,       // +0000  mov eax,[eax+m_Visuals]
 	0x85, 0xc0,                               // +0006  test eax,eax
 	0x74, 0x00,                               // +0008  jz +0x??
-	0x83, 0xfb, NUM_SHOOT_SOUND_TYPES,        // +000A  cmp ebx,NUM_SHOOT_SOUND_TYPES
+	0x83, 0xfb, NUM_SHOOT_SOUND_TYPES-1,      // +000A  cmp ebx,NUM_SHOOT_SOUND_TYPES
 	0x77, 0x00,                               // +000D  ja +0x??
 	0x8b, 0x84, 0x98, 0x00, 0x00, 0x00, 0x00, // +000F  mov eax,[eax+ebx*4+m_Sounds]
 };
@@ -324,7 +324,7 @@ loadout_positions_t GetLoadoutPositionByName(const char *name) { return ft_GetLo
 MemberVFuncThunk<      CPlayerInventory *, void, bool> CPlayerInventory::vt_DumpInventoryToConsole(TypeName<CPlayerInventory>(), "CPlayerInventory::DumpInventoryToConsole");
 MemberVFuncThunk<const CPlayerInventory *, int>        CPlayerInventory::vt_GetMaxItemCount       (TypeName<CPlayerInventory>(), "CPlayerInventory::GetMaxItemCount");
 
-MemberFuncThunk< CPlayerInventory *, CEconItemView *, int, int *>         CPlayerInventory::ft_GetItemByPosition("CPlayerInventory::_GetItemByPosition");
+MemberFuncThunk< CPlayerInventory *, CEconItemView *, int, int *>         CPlayerInventory::ft_GetItemByPosition("CPlayerInventory::GetItemByPosition");
 
 
 MemberFuncThunk<CTFInventoryManager *, CTFPlayerInventory *, const CSteamID&> CTFInventoryManager::ft_GetInventoryForPlayer("CTFInventoryManager::GetInventoryForPlayer");

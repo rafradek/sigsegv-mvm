@@ -1039,6 +1039,16 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared8SelfBurnEf"
 				}
+				"CTFPlayerShared::GetCarryingRuneType"
+				{
+					type "sym"
+					sym  "_ZNK15CTFPlayerShared19GetCarryingRuneTypeEv"
+				}
+				"CBasePlayer::IsPlayer"
+				{
+					type "sym"
+					sym  "_ZNK11CBasePlayer8IsPlayerEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

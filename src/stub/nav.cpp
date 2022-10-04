@@ -324,7 +324,8 @@ MemberFuncThunk<const CNavMesh *, CNavArea *, CBaseEntity *, int, float>        
 MemberFuncThunk<const CNavMesh *, CNavArea *, const Vector&, bool, float, bool, bool, int> CNavMesh::ft_GetNearestNavArea_vec                   ("CNavMesh::GetNearestNavArea [vec]");
 MemberFuncThunk<const CNavMesh *, CNavArea *, CBaseEntity *, int, float>                   CNavMesh::ft_GetNearestNavArea_ent                   ("CNavMesh::GetNearestNavArea [ent]");
 MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>                  CNavMesh::ft_GetGroundHeight                         ("CNavMesh::GetGroundHeight");
-MemberFuncThunk<CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>               CNavMesh::ft_CollectAreasOverlappingExtent_CTFNavArea("CNavMesh::CollectAreasOverlappingExtent<CTFNavArea>");
+// This is inlined in the code
+// MemberFuncThunk<CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>               CNavMesh::ft_CollectAreasOverlappingExtent_CTFNavArea("CNavMesh::CollectAreasOverlappingExtent<CTFNavArea>");
 MemberFuncThunk<CNavMesh *, int>                                                           CNavMesh::ft_Load                                    ("CNavMesh::Load");
 
 

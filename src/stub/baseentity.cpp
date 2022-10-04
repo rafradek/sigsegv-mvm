@@ -72,7 +72,6 @@ MemberFuncThunk<      CBaseEntity *, void, const char *, float, float *         
 MemberFuncThunk<      CBaseEntity *, void, const char *, HSOUNDSCRIPTHANDLE&, float, float *> CBaseEntity::ft_EmitSound_member2          ("CBaseEntity::EmitSound [member: normal + handle]");
 MemberFuncThunk<      CBaseEntity *, void, const char *                                     > CBaseEntity::ft_StopSound                  ("CBaseEntity::StopSound");
 MemberFuncThunk<      CBaseEntity *, float, const char *                                    > CBaseEntity::ft_GetNextThink               ("CBaseEntity::GetNextThink");
-MemberFuncThunk<      CBaseEntity *, void, const Vector&, Vector *                          > CBaseEntity::ft_EntityToWorldSpace         ("CBaseEntity::EntityToWorldSpace");
 MemberFuncThunk<const CBaseEntity *, bool                                                   > CBaseEntity::ft_IsBSPModel                 ("CBaseEntity::IsBSPModel");
 MemberFuncThunk<      CBaseEntity *, void, int, const char *, float, int, int, int, int     > CBaseEntity::ft_EntityText                 ("CBaseEntity::EntityText");
 MemberFuncThunk<      CBaseEntity *, int, const CTakeDamageInfo&                            > CBaseEntity::ft_TakeDamage                 ("CBaseEntity::TakeDamage");
@@ -90,6 +89,9 @@ MemberFuncThunk<      CBaseEntity *, void *,int                                 
 MemberFuncThunk<      CBaseEntity *, int, int                                               > CBaseEntity::ft_SetTransmitState           ("CBaseEntity::SetTransmitState");
 MemberFuncThunk<      CBaseEntity *, void, const char *, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntity::ft_FireNamedOutput ("CBaseEntity::FireNamedOutput");
 MemberFuncThunk<      CBaseEntity *, void, const Vector &                                   > CBaseEntity::ft_ApplyAbsVelocityImpulse    ("CBaseEntity::ApplyAbsVelocityImpulse");
+MemberFuncThunk<      CBaseEntity *, void, const Vector &                                   > CBaseEntity::ft_SetLocalVelocity           ("CBaseEntity::SetLocalVelocity");
+MemberFuncThunk<      CBaseEntity *, void, const Vector &                                   > CBaseEntity::ft_SetLocalOrigin             ("CBaseEntity::SetLocalOrigin");
+MemberFuncThunk<      CBaseEntity *, void, const QAngle &                                   > CBaseEntity::ft_SetLocalAngles             ("CBaseEntity::SetLocalAngles");
 
 MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");

@@ -137,6 +137,8 @@ namespace Prof_MvM_Shield_Events
 			// TODO: C_BaseEntity::EmitSound
 			// NOPE, already covered, I *think*
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

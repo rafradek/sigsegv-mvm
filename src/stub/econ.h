@@ -3,13 +3,14 @@
 
 
 #include "stub/tf_shareddefs.h"
+#include "weapon_parse.h"
 
 
 class CEconItem;
 
 namespace Mod::Perf::Attributes_Optimize
 {
-	float GetAttribValue(float value, const char *attr, CBaseEntity *ent, bool isint);
+	float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint);
 }
 
 class CAttributeManager
@@ -59,7 +60,7 @@ template<> inline int CAttributeManager::AttribHookValue<int>(int value, const c
 	if (ent == nullptr)
 		return value;
 
-	return RoundFloatToInt(Mod::Perf::Attributes_Optimize::GetAttribValue(value, attr, const_cast<CBaseEntity *>(ent), true));
+	return RoundFloatToInt(Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), true));
 	//
 }
 template<> inline float CAttributeManager::AttribHookValue<float>(float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
@@ -67,7 +68,7 @@ template<> inline float CAttributeManager::AttribHookValue<float>(float value, c
 	if (ent == nullptr)
 		return value;
 		
-	return Mod::Perf::Attributes_Optimize::GetAttribValue(value, attr, const_cast<CBaseEntity *>(ent), false);
+	return Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), false);
 	//return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, vec, b1); 
 }
 
@@ -247,7 +248,6 @@ static inline StaticFuncThunk<bool, const CAttributeList *, const CEconItemAttri
 template<> inline bool FindAttribute<float, CAttributeList>(const CAttributeList *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
 { return ft_FindAttribute_CAttributeList(attrList, attrDef, out); }
 
-constexpr int NUM_SHOOT_SOUND_TYPES = 15;
 constexpr int NUM_VISUALS_BLOCKS    = 5;
 
 

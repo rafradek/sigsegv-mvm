@@ -316,12 +316,12 @@ bool IDetour_SymNormal::DoLoad()
 	if (this->m_bFuncByName) {
 		this->m_pFunc = reinterpret_cast<uint8_t *>(AddrManager::GetAddr(this->m_strFuncName.c_str()));
 		if (this->m_pFunc == nullptr) {
-			DevMsg("IDetour_SymNormal::DoLoad: \"%s\": addr lookup failed for \"%s\"\n", this->GetName(), this->m_strFuncName.c_str());
+			Warning("IDetour_SymNormal::DoLoad: \"%s\": addr lookup failed for \"%s\"\n", this->GetName(), this->m_strFuncName.c_str());
 			return false;
 		}
 	} else {
 		if (this->m_pFunc == nullptr) {
-			DevMsg("IDetour_SymNormal::DoLoad: \"%s\": func ptr provided is nullptr\n", this->GetName());
+			Warning("IDetour_SymNormal::DoLoad: \"%s\": func ptr provided is nullptr\n", this->GetName());
 			return false;
 		}
 	}
@@ -350,12 +350,12 @@ bool IDetour_SymRegex::DoLoad()
 	TRACE("[this: %08x \"%s\"]", (uintptr_t)this, this->GetName());
 	
 	if (this->m_Library == Library::INVALID) {
-		DevMsg("IDetour_SymRegex::DoLoad: \"%s\": invalid library\n", this->GetName());
+		Warning("IDetour_SymRegex::DoLoad: \"%s\": invalid library\n", this->GetName());
 		return false;
 	}
 	
 	if (!LibMgr::HaveLib(this->m_Library)) {
-		DevMsg("IDetour_SymRegex::DoLoad: \"%s\": library not available: %s\n", this->GetName(), LibMgr::Lib_ToString(this->m_Library));
+		Warning("IDetour_SymRegex::DoLoad: \"%s\": library not available: %s\n", this->GetName(), LibMgr::Lib_ToString(this->m_Library));
 		return false;
 	}
 	
@@ -379,9 +379,9 @@ bool IDetour_SymRegex::DoLoad()
 	});
 	
 	if (syms.size() != 1) {
-		DevMsg("IDetour_SymRegex::DoLoad: \"%s\": symbol lookup failed (%zu matches):\n", this->GetName(), syms.size());
+		Warning("IDetour_SymRegex::DoLoad: \"%s\": symbol lookup failed (%zu matches):\n", this->GetName(), syms.size());
 		for (const auto& sym : syms) {
-			DevMsg("  %s\n", sym.name.c_str());
+			Warning("  %s\n", sym.name.c_str());
 		}
 		return false;
 	}

@@ -254,24 +254,14 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		IVision *vision = reinterpret_cast<IVision *>(this);
-		CTFBot *actor = ToTFBot(vision->GetBot()->GetEntity());
+		CTFBot *actor = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
 		
 	//	DevMsg("CTFBotVision::IsIgnored INextBot %08x CTFBot %08x\n", (uintptr_t)vision->GetBot(), (uintptr_t)actor);
 	//	DevMsg("CTFBotVision::IsIgnored actor %08x ent %08x\n", (uintptr_t)actor, (uintptr_t)ent);
 		
-		if (ent != nullptr && actor != nullptr) {
 	//		DevMsg("CTFBotVision::IsIgnored classname \"%s\" mission %d\n", ent->GetClassname(), actor->GetMission());
-			bool is_sticky = (strcmp(ent->GetClassname(), "tf_projectile_pipe_remote") == 0);
-			
-			if (actor->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
-				/* ignore everything except stickies */
-				return !is_sticky;
-			} else {
-				/* ignore stickies, passthru for all else */
-				if (is_sticky) {
-					return true;
-				}
-			}
+		if (actor->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
+			return !FStrEq(ent->GetClassname(), "tf_projectile_pipe_remote");
 		}
 		
 		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
@@ -287,11 +277,14 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 	DETOUR_DECL_MEMBER(void, CTFBotVision_CollectPotentiallyVisibleEntities, CUtlVector<CBaseEntity *> *ents)
 	{
 		SCOPED_INCREMENT(rc_CTFBotVision_CollectPotentiallyVisibleEntities);
-		DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
+		bool targetsStickies = static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES];
+
+		if (!targetsStickies)
+			DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
 		
 		auto &list = IBaseProjectileAutoList::AutoList();
 		int list_count = list.Count();
-		if (list_count != 0 && static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES]) {
+		if (list_count != 0 && targetsStickies) {
 			for (int i = 0; i < list_count; ++i) {
 				auto proj = rtti_scast<CBaseProjectile *>(list[i]);
 				assert(proj != nullptr);
@@ -315,7 +308,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFBotScenarioMonitor_DesiredScenarioAndClassAction, "CTFBotScenarioMonitor::DesiredScenarioAndClassAction");
 			
-			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored,              "CTFBotVision::IsIgnored");
+			//MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored,              "CTFBotVision::IsIgnored");
 //			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsVisibleEntityNoticed, "CTFBotVision::IsVisibleEntityNoticed");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotVision_CollectPotentiallyVisibleEntities, "CTFBotVision::CollectPotentiallyVisibleEntities");

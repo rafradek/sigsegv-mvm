@@ -94,6 +94,8 @@ namespace Mod::Util::DebugOverlay_Font
 				}
 			}
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

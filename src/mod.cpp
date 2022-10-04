@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "util/misc.h"
+#include "factory.h"
 
 
 bool IHasPatches::LoadPatches()
@@ -11,11 +12,11 @@ bool IHasPatches::LoadPatches()
 			if (patch->Check()) {
 //				DevMsg("IHasPatches::LoadPatches: \"%s\" OK\n", this->GetName());
 			} else {
-				DevMsg("IHasPatches::LoadPatches: \"%s\" FAIL in Check\n", this->GetName());
+				Warning("IHasPatches::LoadPatches: \"%s\" FAIL in Check\n", this->GetName());
 				ok = false;
 			}
 		} else {
-			DevMsg("IHasPatches::LoadPatches: \"%s\" FAIL in Init\n", this->GetName());
+			Warning("IHasPatches::LoadPatches: \"%s\" FAIL in Init\n", this->GetName());
 			ok = false;
 		}
 	}
@@ -76,7 +77,7 @@ bool IHasDetours::LoadDetours()
 			if (detour->Load()) {
 //				DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" OK\n", this->GetName(), name);
 			} else {
-				DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" FAIL\n", this->GetName(), name);
+				Warning("IHasDetours::LoadDetours: \"%s\" \"%s\" FAIL\n", this->GetName(), name);
 				ok = false;
 			}
 		}
@@ -153,7 +154,7 @@ bool IHasVirtualHooks::LoadVirtualHooks()
 		if (detour->DoLoad()) {
 //			DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" OK\n", this->GetName(), name);
 		} else {
-			DevMsg("IHasDetours::LoadDetours: \"%s\" \"%s\" FAIL\n", this->GetName(), name);
+			Warning("IHasVirtualHooks::LoadVirtualHooks: \"%s\" \"%s\" FAIL\n", this->GetName(), name);
 			ok = false;
 		}
 	}
@@ -203,6 +204,8 @@ bool IHasVirtualHooks::ToggleAllVirtualHooks(bool enable)
 
 void IMod::InvokeLoad()
 {
+	if (this->IsClientSide() && ClientFactory() == nullptr) return;
+
 	DevMsg("IMod::InvokeLoad: \"%s\"\n", this->GetName());
 	
 	this->PreLoad();

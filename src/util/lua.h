@@ -10,6 +10,8 @@ extern "C" {
 namespace Util::Lua
 {
 
+    class LuaEntityModule;
+
     class LuaTimer
     {
     public:
@@ -82,5 +84,6 @@ namespace Util::Lua
 
     void LFromVariant(lua_State *l, variant_t &variant);
     const EHANDLE *LEntityAlloc(lua_State *l, CBaseEntity *entity);
+    bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, LuaEntityModule *mod, bool &result);
 }
 #endif

@@ -303,6 +303,7 @@ public:
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;
 		
 		void Zero() { this->m_nBits = 0; }
+		bool IsZero() { return this->m_nBits == 0; }
 		
 		void Set(ExtAttr attr, bool on) { on ? this->TurnOn(attr) : this->TurnOff(attr); }
 		void TurnOn(ExtAttr attr)       { this->m_nBits |=  (1U << (int)attr); }
@@ -363,7 +364,12 @@ public:
 
 #ifdef ADD_EXTATTR
 	/* custom: extended attributes */
-	ExtendedAttr& ExtAttr()
+	ExtendedAttr ExtAttr()
+	{
+		auto mod = this->GetEntityModule<ExtendedAttrModule>("BotExtAttr");
+		return mod != nullptr ? mod->attrs : ExtendedAttr();
+	}
+	ExtendedAttr &ExtAttrForModify()
 	{
 		return this->GetOrCreateEntityModule<ExtendedAttrModule>("BotExtAttr")->attrs;
 	}

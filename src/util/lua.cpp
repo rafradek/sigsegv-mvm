@@ -1185,14 +1185,14 @@ namespace Util::Lua
         
         lua_newtable(l);
         FindSendProp(off, entity->GetServerClass()->m_pTable, [&](SendProp *prop, int offset){
-            Mod::Etc::Mapentity_Additions::PropCacheEntry entry;
-            Mod::Etc::Mapentity_Additions::GetSendPropInfo(prop, entry, offset);
+            PropCacheEntry entry;
+            GetSendPropInfo(prop, entry, offset);
             if (entry.arraySize > 1) {
                 lua_newtable(l);
             }
             for (int i = 0; i < entry.arraySize; i++) {
                 variant_t variant;
-                Mod::Etc::Mapentity_Additions::ReadProp(entity, entry, variant, i, -1);
+                ReadProp(entity, entry, variant, i, -1);
                 //Msg("Sendprop %s = %s %d %d\n", prop->GetName(), variant.String(), entry.offset, entry.arraySize);
 
                 LFromVariant(l, variant);
@@ -1212,14 +1212,14 @@ namespace Util::Lua
             // search through all the readable fields in the data description, looking for a match
             for (int i = 0; i < dmap->dataNumFields; i++) {
                 if (dmap->dataDesc[i].fieldName != nullptr) {
-                    Mod::Etc::Mapentity_Additions::PropCacheEntry entry;
-                    Mod::Etc::Mapentity_Additions::GetDataMapInfo(dmap->dataDesc[i], entry);
+                    PropCacheEntry entry;
+                    GetDataMapInfo(dmap->dataDesc[i], entry);
                     if (entry.arraySize > 1) {
                         lua_newtable(l);
                     }
                     for (int j = 0; j < entry.arraySize; j++) {
                         variant_t variant;
-                        Mod::Etc::Mapentity_Additions::ReadProp(entity, entry, variant, j, -1);
+                        ReadProp(entity, entry, variant, j, -1);
                         //Msg("Datamap %s = %s %d\n", dmap->dataDesc[i].fieldName, variant.String(), entry.offset);
 
                         LFromVariant(l, variant);
@@ -1304,10 +1304,10 @@ namespace Util::Lua
     struct ArrayProp
     {
         CBaseEntity *entity;
-        Mod::Etc::Mapentity_Additions::PropCacheEntry entry;
+        PropCacheEntry entry;
     };
 
-    ArrayProp *LPropAlloc(lua_State *l, CBaseEntity *entity, Mod::Etc::Mapentity_Additions::PropCacheEntry &entry)
+    ArrayProp *LPropAlloc(lua_State *l, CBaseEntity *entity, PropCacheEntry &entry)
     {
         ArrayProp *prop = (ArrayProp *)lua_newuserdata(l, sizeof(ArrayProp));
         prop->entity = entity;
@@ -1326,7 +1326,7 @@ namespace Util::Lua
         luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
 
         variant_t variant;
-        Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
+        ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
         LFromVariant(l, variant);
         return 1;
     }
@@ -1345,7 +1345,7 @@ namespace Util::Lua
         }
         else {
             variant_t variant;
-            Mod::Etc::Mapentity_Additions::ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
+            ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
             LFromVariant(l, variant);
         }
         return 2;
@@ -1379,7 +1379,7 @@ namespace Util::Lua
 
         variant_t variant;
         LToVariant(l, 3, variant);
-        Mod::Etc::Mapentity_Additions::WriteProp(prop->entity, prop->entry, variant, index, -1);
+        WriteProp(prop->entity, prop->entry, variant, index, -1);
         return 0;
     }
 
@@ -1492,19 +1492,19 @@ namespace Util::Lua
             LFromVariant(l, variant);
             return 1;
         }
-        Mod::Etc::Mapentity_Additions::PropCacheEntry *entry = nullptr;
+        PropCacheEntry *entry = nullptr;
         if (!forceSendprop) {
-            entry = &Mod::Etc::Mapentity_Additions::GetDataMapOffset(entity->GetDataDescMap(), varNameStr);
+            entry = &GetDataMapOffset(entity->GetDataDescMap(), varNameStr);
         }
         if (entry == nullptr || entry->offset <= 0) {
-            entry = &Mod::Etc::Mapentity_Additions::GetSendPropOffset(entity->GetServerClass(), varNameStr);
+            entry = &GetSendPropOffset(entity->GetServerClass(), varNameStr);
         }
         if (entry != nullptr && entry->offset > 0) {
             if (entry->arraySize > 1 && entry->fieldType != FIELD_CHARACTER) {
                 LPropAlloc(l, entity, *entry);
             }
             else{
-                Mod::Etc::Mapentity_Additions::ReadProp(entity, *entry, variant, 0, -1);
+                ReadProp(entity, *entry, variant, 0, -1);
                 LFromVariant(l, variant);
             }
             return 1;
@@ -3501,10 +3501,9 @@ namespace Util::Lua
 		}
 	};
 
-    bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
-        auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
-        if (mod1 != nullptr && !mod1->callbacks[ON_SHOULD_COLLIDE].empty()) {
-            auto &callbackList = mod1->callbacks[ON_SHOULD_COLLIDE];
+    bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, LuaEntityModule *mod, bool &result) {
+        if (!mod->callbacks[ON_SHOULD_COLLIDE].empty()) {
+            auto &callbackList = mod->callbacks[ON_SHOULD_COLLIDE];
             for (auto it = callbackList.begin(); it != callbackList.end();) {
                 auto &callback = *it;
                 if (callback.deleted) {it++; continue;}
@@ -3512,7 +3511,7 @@ namespace Util::Lua
                 lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity1);
                 LEntityAlloc(l, entity2);
-                mod1->CallCallback(callbackList, it, 2, 1);
+                mod->CallCallback(callbackList, it, 2, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);
@@ -3521,24 +3520,17 @@ namespace Util::Lua
                 lua_settop(l, 0);
             }
         }
+        
+        return false;
+    }
+    bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
+        auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
+        if (mod1 != nullptr && DoCollideTestInternal(entity1, entity2, mod1, result)) {
+            return true;
+        }
         auto mod2 = entity2->GetEntityModule<LuaEntityModule>("luaentity");
-        if (mod2 != nullptr && !mod2->callbacks[ON_SHOULD_COLLIDE].empty()) {
-            auto &callbackList = mod2->callbacks[ON_SHOULD_COLLIDE];
-            for (auto it = callbackList.begin(); it != callbackList.end();) {
-                auto &callback = *it;
-                if (callback.deleted) {it++; continue;}
-                auto l = callback.state->GetState();
-                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
-                LEntityAlloc(l, entity2);
-                LEntityAlloc(l, entity1);
-                mod2->CallCallback(callbackList, it, 2, 1);
-                if (lua_type(l, -1) == LUA_TBOOLEAN) {
-                    result = lua_toboolean(l, -1);
-                    lua_settop(l, 0);
-                    return true;
-                }
-                lua_settop(l, 0);
-            }
+        if (mod2 != nullptr && DoCollideTestInternal(entity2, entity1, mod2, result)) {
+            return true;
         }
         return false;
     }
@@ -3549,20 +3541,22 @@ namespace Util::Lua
     };
     DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
-        auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
+        auto entity1 = EntityFromEntityHandle(ent1);
+        auto entity2 = EntityFromEntityHandle(ent2);
+        
+        if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr)
         {
-            if (ret) {
-                auto entity1 = (CBaseEntity*) ent1;
-                auto entity2 = (CBaseEntity*) ent2;
-                
-                bool result;
-                if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
-                {
-                    return result;
-                }
+            bool result;
+            auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
+            if (mod1 != nullptr && DoCollideTestInternal(entity1, entity2, mod1, result)) {
+                return result;
+            }
+            auto mod2 = entity2->GetEntityModule<LuaEntityModule>("luaentity");
+            if (mod2 != nullptr && DoCollideTestInternal(entity2, entity1, mod2, result)) {
+                return result;
             }
         }
-        return ret;
+        return DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
     }
 
     DETOUR_DECL_MEMBER(int, CCollisionEvent_ShouldCollide, IPhysicsObject *pObj0, IPhysicsObject *pObj1, void *pGameData0, void *pGameData1)
@@ -3816,4 +3810,10 @@ namespace Util::Lua
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
 	CMod s_Mod;
+    
+	ConVar cvar_enable("sig_util_lua", "1", FCVAR_NOTIFY,
+		"Mod: Lua",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
 }

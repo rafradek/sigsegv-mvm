@@ -750,6 +750,8 @@ namespace Mod::Util::Client_Cmds
 	std::string displaystr = "";
 
 	PooledString pstr("pooled");
+	CThreadLocalInt threadlocal;
+	CThreadRWLock threadlock;
 	void CC_Benchmark(CTFPlayer *player, const CCommand& args)
 	{
 		
@@ -1203,6 +1205,36 @@ namespace Mod::Util::Client_Cmds
 			}
 			timer.End();
 			displaystr += CFmtStr("find entity by name wildcard time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "locks") == 0) {
+			
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				threadlock.LockForWrite();
+				threadlock.UnlockWrite();
+			}
+			timer.End();
+			displaystr += CFmtStr("locks time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "threadlocal") == 0) {
+			
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				int a = threadlocal.Get();
+			}
+			timer.End();
+			displaystr += CFmtStr("threadlocal time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
+		else if (strcmp(args[2], "threadlocalmine") == 0) {
+			static pthread_key_t index;
+			static int done = pthread_key_create( &index, NULL );
+			pthread_setspecific(index, (const void *)8878);
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				int a = (int) pthread_getspecific(index);
+			}
+			timer.End();
+			displaystr += CFmtStr("threadlocalmine time: %.9f\n", timer.GetDuration().GetSeconds());
 		}
 		ClientMsg(player, "%s", displaystr.c_str());
 	}
@@ -1789,7 +1821,7 @@ namespace Mod::Util::Client_Cmds
 						if (!player->IsBot() && ENTINDEX(player) < ARRAYSIZE(cpu_show_player) && cpu_show_player[ENTINDEX(player)] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[ENTINDEX(player)] == 1)) {
 							std::string str;
 							if (highCpu || cpu_show_player[ENTINDEX(player)] == 1) {
-								str += fmt::format("CPU Usage {}%\n", (int)(cpu_usage * 100));
+								str += fmt::format("CPU Usage {:.1f}%\n", (float)(cpu_usage * 100));
 							}
 							if (highEdict || cpu_show_player[ENTINDEX(player)] == 1) {
 								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
@@ -1804,29 +1836,24 @@ namespace Mod::Util::Client_Cmds
 				}
 			}
 
-			if (!modelplayertargets.empty()) {
+			if (!modelplayertargets.empty() && !modelmap.empty()) {
 				for (CBasePlayer *target : modelplayertargets) {
 					int amount = 0;
-					for (auto it = modelmap.begin(); it != modelmap.end();) {
-						if (engine->GetEntityCount() > 1920) {
-							modelmap.clear();
-							break;
-						}
+					if (engine->GetEntityCount() > 1920) {
+						modelmap.clear();
+						break;
+					}
 
-						CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(it->second, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-						if (wearable != nullptr) {
-							
-							wearable->m_bValidatedAttachedEntity = true;
-							wearable->GiveTo(target);
-							target->EquipWearable(wearable);
-						}
-						it = modelmap.erase(it);
-						amount++;
-						if (amount >= 10) {
-							break;
-						}
+					CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(modelmap.begin()->second, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+					if (wearable != nullptr) {
+						
+						wearable->m_bValidatedAttachedEntity = true;
+						wearable->GiveTo(target);
+						target->EquipWearable(wearable);
 					}
 				}
+				if (!modelmap.empty())
+					modelmap.erase(modelmap.begin());
 			}
 
 

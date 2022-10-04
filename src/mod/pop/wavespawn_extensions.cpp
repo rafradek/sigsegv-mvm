@@ -111,6 +111,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					if (entity_target == nullptr) {
 						return false;
 					}
+					spawnpos += entity_target->GetAbsOrigin();
 				}
 			}
 			else {
@@ -364,15 +365,6 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		std::string m_SpawnAtEntity = "";
 	};
 
-	enum InternalStateType
-	{
-		PENDING,
-		PRE_SPAWN_DELAY,
-		SPAWNING,
-		WAIT_FOR_ALL_DEAD,
-		DONE
-	};
-
 	struct WaveSpawnData
 	{
 		std::vector<std::string> start_spawn_message;
@@ -380,7 +372,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		std::vector<std::string> last_spawn_message;
 		std::vector<std::string> done_message;
 		bool hidden = false;
-		InternalStateType state;
+		CWaveSpawnPopulator::InternalStateType state;
 	};
 	
 	std::map<CWaveSpawnPopulator *, WaveSpawnData> wavespawns;
@@ -476,23 +468,23 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (wavespawn->extra != nullptr) {
 			auto extra = wavespawn->extra;
 			for (int i = 0; i < extra->m_waitForAllSpawnedList.Count(); i++) {
-				if (extra->m_waitForAllSpawnedList[i]->m_state <= SPAWNING) {
+				if (extra->m_waitForAllSpawnedList[i]->m_state <= CWaveSpawnPopulator::SPAWNING) {
 					return;
 				}
 			}
 			for (int i = 0; i < extra->m_waitForAllDeadList.Count(); i++) {
-				if (extra->m_waitForAllDeadList[i]->m_state != DONE) {
+				if (extra->m_waitForAllDeadList[i]->m_state != CWaveSpawnPopulator::DONE) {
 					return;
 				}
 			}
 		}
-		if (wavespawn->m_state != DONE)
+		if (wavespawn->m_state != CWaveSpawnPopulator::DONE)
 			allWaiting = false;
 
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_SetState, InternalStateType state)
+	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_SetState, CWaveSpawnPopulator::InternalStateType state)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
 		if (state == wavespawn->m_state)
@@ -500,16 +492,16 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			
 		wavespawns[wavespawn].state = state;
 		switch (state) {
-			case PRE_SPAWN_DELAY:
+			case CWaveSpawnPopulator::PRE_SPAWN_DELAY:
 				DisplayMessages(wavespawns[wavespawn].start_spawn_message);
 				break;
-			case SPAWNING:
+			case CWaveSpawnPopulator::SPAWNING:
 				DisplayMessages(wavespawns[wavespawn].first_spawn_message);
 				break;
-			case WAIT_FOR_ALL_DEAD:
+			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
 				DisplayMessages(wavespawns[wavespawn].last_spawn_message);
 				break;
-			case DONE:
+			case CWaveSpawnPopulator::DONE:
 				DisplayMessages(wavespawns[wavespawn].done_message);
 				break;
 		}

@@ -322,6 +322,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event)
+	{
+		if (rc_CTFPointWeaponMimic_Fire) return;
+
+		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event);
+	}
 	
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_ModifyFireBulletsDamage, CTakeDamageInfo* dmgInfo)
@@ -512,6 +518,9 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
 		if (shooting_weapon != nullptr && mimicFire != nullptr) {
+			if (mimicFire->GetCustomVariableFloat<"weaponnosound">()) {
+				return;
+			}
 			auto me = reinterpret_cast<CBaseCombatWeapon *>(this);
 			auto oldOwner = me->GetOwner();
 			me->SetOwner(nullptr);
@@ -548,7 +557,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,  "CTFPlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound");
-			
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			
 		}
 	};

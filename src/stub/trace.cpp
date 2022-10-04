@@ -26,7 +26,7 @@ bool CFlaggedEntitiesEnum::AddToList( CBaseEntity *pEntity )
 IterationRetval_t CFlaggedEntitiesEnum::EnumElement( IHandleEntity *pHandleEntity )
 {
 //	CBaseEntity *pEntity = gEntList.GetBaseEntity( pHandleEntity->GetRefEHandle() );
-	CBaseEntity *pEntity = static_cast<IServerUnknown *>(pHandleEntity)->GetBaseEntity();
+	CBaseEntity *pEntity = EntityFromEntityHandle(pHandleEntity);
 	if ( pEntity )
 	{
 		if ( m_flagMask && !(pEntity->GetFlags() & m_flagMask) )	// Does it meet the criteria?

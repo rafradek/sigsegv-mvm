@@ -26,6 +26,7 @@ public:
 	}
 	
 	bool IsLinked() const { return this->m_bLinked; }
+	virtual bool ClientSide() { return false; }
 	
 protected:
 	ILinkage() {}
@@ -53,7 +54,7 @@ public:
 		if (this->m_pFuncPtr == nullptr) {
 			this->m_pFuncPtr = (FPtr)AddrManager::GetAddr(this->m_pszFuncName);
 			if (this->m_pFuncPtr == nullptr) {
-				DevMsg("StaticFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
+				Warning("StaticFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
 				return false;
 			}
 		}
@@ -75,6 +76,8 @@ private:
 	const char *m_pszFuncName;
 	
 	FPtr m_pFuncPtr = nullptr;
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
 };
 
 //template<class C, typename RET, typename... PARAMS>
@@ -91,7 +94,7 @@ public:
 		if (this->m_pFuncPtr == nullptr) {
 			this->m_pFuncPtr = AddrManager::GetAddr(this->m_pszFuncName);
 			if (this->m_pFuncPtr == nullptr) {
-				DevMsg("MemberFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
+				Warning("MemberFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
 				return false;
 			}
 		}
@@ -109,6 +112,8 @@ private:
 	const char *m_pszFuncName;
 	
 	const void *m_pFuncPtr = nullptr;
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
 };
 
 template<class C, typename RET, typename... PARAMS>
@@ -153,9 +158,10 @@ public:
 	inline RET operator()(const C *obj, PARAMS... args) const
 	{
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
-		
-		assert(pFunc != nullptr);
-		assert(obj   != nullptr);
+#ifdef DEBUG
+			assert(pFunc != nullptr);
+			assert(obj   != nullptr);
+#endif
 		
 		return (obj->*pFunc)(args...);
 	}
@@ -176,13 +182,13 @@ public:
 		if (this->m_iVTIndex == -1) {
 			pVT = RTTI::GetVTable(this->m_pszVTableName);
 			if (pVT == nullptr) {
-				DevMsg("MemberVFuncThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszFuncName);
+				Warning("MemberVFuncThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszFuncName);
 				return false;
 			}
 			
 			pFunc = AddrManager::GetAddr(this->m_pszFuncName);
 			if (pFunc == nullptr) {
-				DevMsg("MemberVFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
+				Warning("MemberVFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
 				return false;
 			}
 			
@@ -196,7 +202,7 @@ public:
 			}
 			
 			if (!found) {
-				DevMsg("MemberVFuncThunk::Link FAIL \"%s\": can't find func ptr in vtable\n", this->m_pszFuncName);
+				Warning("MemberVFuncThunk::Link FAIL \"%s\": can't find func ptr in vtable\n", this->m_pszFuncName);
 				return false;
 			}
 		}
@@ -215,6 +221,8 @@ private:
 	const char *m_pszFuncName;
 	
 	int m_iVTIndex = -1;
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
 };
 
 template<class C, typename RET, typename... PARAMS>
@@ -242,8 +250,10 @@ public:
 	{
 		int vt_index = this->GetVTableIndex();
 		
+#ifdef DEBUG
 		assert(vt_index != -1);
 		assert(obj != nullptr);
+#endif
 		
 		auto pVT = *reinterpret_cast<void **const *>(obj);
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
@@ -266,8 +276,10 @@ public:
 	{
 		int vt_index = this->GetVTableIndex();
 		
+#ifdef DEBUG
 		assert(vt_index != -1);
 		assert(obj != nullptr);
+#endif
 		
 		auto pVT = *reinterpret_cast<void **const *>(obj);
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
@@ -288,7 +300,7 @@ public:
 		if (this->m_pObjPtr == nullptr) {
 			this->m_pObjPtr = (T *)AddrManager::GetAddr(this->m_pszObjName);
 			if (this->m_pObjPtr == nullptr) {
-				DevMsg("GlobalThunk::Link FAIL \"%s\": can't find global addr\n", this->m_pszObjName);
+				Warning("GlobalThunk::Link FAIL \"%s\": can't find global addr\n", this->m_pszObjName);
 				return false;
 			}
 		}
@@ -297,21 +309,24 @@ public:
 		return true;
 	}
 	
-	operator T&() const
+	inline operator T&() const
 	{
+		
+#ifdef DEBUG
 		assert(this->m_pObjPtr != nullptr);
+#endif
 		return this->GetRef();
 	}
 	
-	T& operator->() const
+	inline T& operator->() const
 	{
 		return this->GetRef();
 	}
 	
-	T& GetRef() const { return *this->m_pObjPtr; }
+	inline T& GetRef() const { return *this->m_pObjPtr; }
 	
 protected:
-	T *GetPtr() const { return this->m_pObjPtr; }
+	inline T *GetPtr() const { return this->m_pObjPtr; }
 	
 private:
 	virtual void ForceAddr(uintptr_t addr) override { this->m_pObjPtr = (T *)addr; }
@@ -319,6 +334,8 @@ private:
 	const char *m_pszObjName;
 	
 	T *m_pObjPtr = nullptr;
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszObjName, "[client]", strlen("[client]")) == 0; }
 };
 
 template<typename T>
@@ -328,7 +345,7 @@ public:
 	GlobalThunkRW(const char *n_obj) :
 		GlobalThunk<T>(n_obj) {}
 	
-	T& operator=(T& that)
+	inline T& operator=(T& that)
 	{
 		*this->GetPtr() = that;
 		return that;
@@ -350,7 +367,7 @@ public:
 			static_assert((SIZE % 4) == 0);
 			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
 			
-			DevMsg("TypeInfoThunk::Link FAIL \"%s\": can't find RTTI\n", this->m_pszName);
+			Warning("TypeInfoThunk::Link FAIL \"%s\": can't find RTTI\n", this->m_pszName);
 			return false;
 		}
 		
@@ -382,7 +399,7 @@ public:
 			static_assert((SIZE % 4) == 0);
 			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
 			
-			DevMsg("VTableThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszName);
+			Warning("VTableThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszName);
 			return false;
 		}
 		

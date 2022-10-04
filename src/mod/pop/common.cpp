@@ -1427,7 +1427,7 @@ CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, C
             if (proj != nullptr) {
                 Vector vec = temp_data.offset;
                 QAngle ang = temp_data.angles;
-                auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr);
+                auto inst = temp_data.templ->SpawnTemplate(proj, vec, ang, true, nullptr, false, temp_data.parameters);
             }
             
             return proj;

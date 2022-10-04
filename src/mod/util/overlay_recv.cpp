@@ -1148,6 +1148,8 @@ namespace Mod::Util::Overlay_Recv
 			usermessages->UnHookMessage("Overlays", &Hook_Overlays);
 #endif
 		}
+
+		virtual bool IsClientSide() override { return true; }
 	};
 	CMod s_Mod;
 	

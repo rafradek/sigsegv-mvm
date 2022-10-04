@@ -48,12 +48,6 @@ namespace Mod::Etc::Mapentity_Additions
         "Summon Skeletons"
     };
 
-    std::vector<ServerClass *> send_prop_cache_classes;
-    std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> send_prop_cache;
-
-    std::vector<datamap_t *> datamap_cache_classes;
-    std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> datamap_cache;
-
     std::vector<std::pair<string_t, CHandle<CBaseEntity>>> entity_listeners;
 
     PooledString trigger_detector_class("$trigger_detector");
@@ -104,48 +98,6 @@ namespace Mod::Etc::Mapentity_Additions
         return ret;
     }
 
-    bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, int index = -1)
-    {
-        for (int i = 0; i < s_table->GetNumProps(); ++i) {
-            SendProp *s_prop = s_table->GetProp(i);
-            
-            if (s_prop->GetName() != nullptr && strcmp(s_prop->GetName(), name) == 0) {
-                off += s_prop->GetOffset();
-                if (index >= 0) {
-                    if (s_prop->GetDataTable() != nullptr && index < s_table->GetNumProps()) {
-                        prop = s_prop->GetDataTable()->GetProp(index);
-                        off += prop->GetOffset();
-                        return true;
-                    }
-                    if (s_prop->IsInsideArray()) {
-                        auto prop_array = s_table->GetProp(i + 1);
-                        if (prop_array != nullptr && prop_array->GetType() == DPT_Array && index < prop_array->GetNumElements()) {
-                            off += prop_array->GetElementStride() * index;
-                        }
-                    }
-                }
-                else {
-                    if (s_prop->IsInsideArray()) {
-                        off -= s_prop->GetOffset();
-                        continue;
-                    }
-                }
-                prop = s_prop;
-                return true;
-            }
-            
-            if (s_prop->GetDataTable() != nullptr) {
-                off += s_prop->GetOffset();
-                if (FindSendProp(off, s_prop->GetDataTable(), name, prop, index)) {
-                    return true;
-                }
-                off -= s_prop->GetOffset();
-            }
-        }
-        
-        return false;
-    }
-
     bool ReadArrayIndexFromString(std::string &name, int &arrayPos, int &vecAxis)
     {
         size_t arrayStr = name.find('$');
@@ -165,196 +117,6 @@ namespace Mod::Etc::Mapentity_Additions
             return true;
         }
         return false;
-    }
-
-
-    void *stringSendProxy = nullptr;
-    CStandardSendProxies* sendproxies = nullptr;
-    void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset) {
-        if (prop == nullptr) return;
-        
-        entry.offset = offset;
-        if (prop->GetType() == DPT_Array) {
-            entry.offset += prop->GetArrayProp()->GetOffset();
-            entry.elementStride = prop->GetElementStride();
-            entry.arraySize = prop->GetNumElements();
-        }
-        else if (prop->GetDataTable() != nullptr) {
-            entry.arraySize = prop->GetDataTable()->GetNumProps();
-            if (entry.arraySize > 1) {
-                entry.elementStride = prop->GetDataTable()->GetProp(1)->GetOffset() - prop->GetDataTable()->GetProp(0)->GetOffset();
-            }
-        }
-
-        if (prop->GetArrayProp() != nullptr) {
-            prop = prop->GetArrayProp();
-        }
-
-        auto propType = prop->GetType();
-        if (propType == DPT_Int) {
-            
-            if (prop->m_nBits == 21 && (prop->GetFlags() & SPROP_UNSIGNED)) {
-                entry.fieldType = FIELD_EHANDLE;
-            }
-            else {
-                auto proxyfn = prop->GetProxyFn();
-                if (proxyfn == sendproxies->m_Int8ToInt32 || proxyfn == sendproxies->m_UInt8ToInt32) {
-                    entry.fieldType = FIELD_CHARACTER;
-                }
-                else if (proxyfn == sendproxies->m_Int16ToInt32 || proxyfn == sendproxies->m_UInt16ToInt32) {
-                    entry.fieldType = FIELD_SHORT;
-                }
-                else {
-                    entry.fieldType = FIELD_INTEGER;
-                }
-            }
-        }
-        else if (propType == DPT_Float) {
-            entry.fieldType = FIELD_FLOAT;
-        }
-        else if (propType == DPT_String) {
-            auto proxyfn = prop->GetProxyFn();
-            if (proxyfn != stringSendProxy) {
-                entry.fieldType = FIELD_STRING;
-            }
-            else {
-                entry.fieldType = FIELD_CHARACTER;
-            }
-        }
-        else if (propType == DPT_Vector || propType == DPT_VectorXY) {
-            entry.fieldType = FIELD_VECTOR;
-        }
-    }
-
-    PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, std::string &name) {
-        size_t classIndex = 0;
-        for (; classIndex < send_prop_cache_classes.size(); classIndex++) {
-            if (send_prop_cache_classes[classIndex] == serverClass) {
-                break;
-            }
-        }
-        if (classIndex >= send_prop_cache_classes.size()) {
-            send_prop_cache_classes.push_back(serverClass);
-            send_prop_cache.emplace_back();
-        }
-        auto &pair = send_prop_cache[classIndex];
-        auto &names = pair.first;
-
-        int nameCount = names.size();
-        for (size_t i = 0; i < nameCount; i++ ) {
-            if (names[i] == name) {
-                return pair.second[i];
-            }
-        }
-
-        int offset = 0;
-        SendProp *prop = nullptr;
-        FindSendProp(offset,serverClass->m_pTable, name.c_str(), prop);
-
-        PropCacheEntry entry;
-        GetSendPropInfo(prop, entry, offset);
-        
-        names.push_back(name);
-        pair.second.push_back(entry);
-        return pair.second.back();
-    }
-
-    void WriteProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
-    {
-        if (entry.offset > 0) {
-            int offset = entry.offset + arrayPos * entry.elementStride;
-            fieldtype_t fieldType = entry.fieldType;
-            if (vecAxis != -1) {
-                fieldType = FIELD_FLOAT;
-                offset += vecAxis * sizeof(float);
-            }
-
-            if (fieldType == FIELD_CHARACTER && entry.arraySize > 1) {
-                V_strncpy(((char*)entity) + offset, variant.String(), entry.arraySize);
-            }
-            else {
-                variant.Convert(fieldType);
-                variant.SetOther(((char*)entity) + offset);
-            }
-        }
-    }
-
-    void ReadProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
-    {
-        if (entry.offset > 0) {
-            int offset = entry.offset + arrayPos * entry.elementStride;
-            fieldtype_t fieldType = entry.fieldType;
-            if (vecAxis != -1) {
-                fieldType = FIELD_FLOAT;
-                offset += vecAxis * sizeof(float);
-            }
-
-            if (fieldType == FIELD_CHARACTER && entry.arraySize > 1) {
-                variant.SetString(AllocPooledString(((char*)entity) + offset));
-            }
-            else {
-                variant.Set(fieldType, ((char*)entity) + offset);
-            }
-            if (fieldType == FIELD_POSITION_VECTOR) {
-                variant.Convert(FIELD_VECTOR);
-            }
-            else if (fieldType == FIELD_CLASSPTR) {
-                variant.Convert(FIELD_EHANDLE);
-            }
-            else if ((fieldType == FIELD_CHARACTER && entry.arraySize == 1) || (fieldType == FIELD_SHORT)) {
-                variant.Convert(FIELD_INTEGER);
-            }
-        }
-    }
-
-    void GetDataMapInfo(typedescription_t &desc, PropCacheEntry &entry) {
-        entry.fieldType = desc.fieldType;
-        entry.offset = desc.fieldOffset[ TD_OFFSET_NORMAL ];
-        
-        entry.arraySize = (int)desc.fieldSize;
-        entry.elementStride = (desc.fieldSizeInBytes / desc.fieldSize);
-    }
-
-    PropCacheEntry &GetDataMapOffset(datamap_t *datamap, std::string &name) {
-        
-        size_t classIndex = 0;
-        for (; classIndex < datamap_cache_classes.size(); classIndex++) {
-            if (datamap_cache_classes[classIndex] == datamap) {
-                break;
-            }
-        }
-        if (classIndex >= datamap_cache_classes.size()) {
-            datamap_cache_classes.push_back(datamap);
-            datamap_cache.emplace_back();
-        }
-        auto &pair = datamap_cache[classIndex];
-        auto &names = pair.first;
-
-        int nameCount = names.size();
-        for (size_t i = 0; i < nameCount; i++ ) {
-            if (names[i] == name) {
-                return pair.second[i];
-            }
-        }
-
-        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
-            // search through all the readable fields in the data description, looking for a match
-            for (int i = 0; i < dmap->dataNumFields; i++) {
-                if (dmap->dataDesc[i].fieldName != nullptr && (strcmp(dmap->dataDesc[i].fieldName, name.c_str()) == 0 || 
-                    ( (dmap->dataDesc[i].flags & (FTYPEDESC_OUTPUT | FTYPEDESC_KEY)) && strcmp(dmap->dataDesc[i].externalName, name.c_str()) == 0))) {
-                    PropCacheEntry entry;
-                    GetDataMapInfo(dmap->dataDesc[i], entry);
-
-                    names.push_back(name);
-                    pair.second.push_back(entry);
-                    return pair.second.back();
-                }
-            }
-        }
-
-        names.push_back(name);
-        pair.second.push_back({0, FIELD_VOID, 1, 0});
-        return pair.second.back();
     }
 
     void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
@@ -667,7 +429,7 @@ namespace Mod::Etc::Mapentity_Additions
                     bool skipped = false;
                     
                     std::string filtername = realname;
-                    int atSplit = filtername.find('@');
+                    size_t atSplit = filtername.find('@');
                     if (atSplit != std::string::npos) {
                         realname += atSplit + 1;
                         filtername.resize(atSplit);
@@ -689,7 +451,7 @@ namespace Mod::Etc::Mapentity_Additions
                     
                     std::string varname = realname;
 
-                    int atSplit = varname.find('@');
+                    size_t atSplit = varname.find('@');
                     if (atSplit != std::string::npos) {
                         realname += atSplit + 1;
                         varname.resize(atSplit);
@@ -1686,6 +1448,14 @@ namespace Mod::Etc::Mapentity_Additions
         
         return VHOOK_CALL(CMathCounter_Activate)();
     }
+    bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, bool &result, variant_t &val) {
+        auto filterEnt = static_cast<CBaseFilter *>(val.Entity().Get());
+        if (filterEnt != nullptr) {
+            result = filterEnt->PassesFilter(entity1, entity2);
+            return true;
+        }
+        return false;
+    }
 
     bool DoCollideTest(CBaseEntity *entity1, CBaseEntity *entity2, bool &result) {
         variant_t val;
@@ -1707,20 +1477,20 @@ namespace Mod::Etc::Mapentity_Additions
     }
     DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
-        auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
-        {
-            if (ret) {
-                auto entity1 = (CBaseEntity*) ent1;
-                auto entity2 = (CBaseEntity*) ent2;
-                
-                bool result;
-                if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
-                {
-                    return result;
-                }
+        auto entity1 = EntityFromEntityHandle(ent1);
+        auto entity2 = EntityFromEntityHandle(ent2);
+        
+        if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr) {
+            bool result;
+            variant_t val;
+            if (entity1->GetCustomVariableVariant<"colfilter">(val) && DoCollideTestInternal(entity1, entity2, result, val)) {
+                return result;
+            }
+            else if (entity2->GetCustomVariableVariant<"colfilter">(val) && DoCollideTestInternal(entity2, entity1, result, val)) {
+                return result;
             }
         }
-        return ret;
+        return DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
     }
 
     DETOUR_DECL_MEMBER(int, CCollisionEvent_ShouldCollide, IPhysicsObject *pObj0, IPhysicsObject *pObj1, void *pGameData0, void *pGameData1)
@@ -1729,10 +1499,15 @@ namespace Mod::Etc::Mapentity_Additions
             CBaseEntity *entity1 = static_cast<CBaseEntity *>(pGameData0);
             CBaseEntity *entity2 = static_cast<CBaseEntity *>(pGameData1);
 
-            bool result;
-            if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr && DoCollideTest(entity1, entity2, result))
-            {
-                return result;
+            if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr) {
+                bool result;
+                variant_t val;
+                if (entity1->GetCustomVariableVariant<"colfilter">(val) && DoCollideTestInternal(entity1, entity2, result, val)) {
+                    return result;
+                }
+                else if (entity2->GetCustomVariableVariant<"colfilter">(val) && DoCollideTestInternal(entity2, entity1, result, val)) {
+                    return result;
+                }
             }
         }
         return DETOUR_MEMBER_CALL(CCollisionEvent_ShouldCollide)(pObj0, pObj1, pGameData0, pGameData1);
@@ -1813,53 +1588,37 @@ namespace Mod::Etc::Mapentity_Additions
         return DETOUR_MEMBER_CALL(CEntityFactory_CPathTrack_Create)(classname);
     }
 
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHintSentrygun_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHintSentrygun_Create)(classname);
-    }
+#define MAKE_ENTITY_SERVERSIDE(name) \
+    DETOUR_DECL_MEMBER(IServerNetworkable *, name, const char *classname) \
+	{\
+        SCOPED_INCREMENT(rc_ServerOnly);\
+        return DETOUR_MEMBER_CALL(name)(classname);\
+    }\
 
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHintTeleporterExit_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHintTeleporterExit_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CTFBotHint_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CTFBotHint_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavAvoid_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavAvoid_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavPrefer_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavPrefer_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CFuncNavPrerequisite_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CFuncNavPrerequisite_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CEnvEntityMaker_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CEnvEntityMaker_Create)(classname);
-    }
-
-    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CGameText_Create, const char *classname)
-	{
-        SCOPED_INCREMENT(rc_ServerOnly);
-        return DETOUR_MEMBER_CALL(CEntityFactory_CGameText_Create)(classname);
-    }
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHintSentrygun_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHintTeleporterExit_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHint_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavAvoid_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavPrefer_Create);
+    // Trigger entities cannot be made serverside
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavPrerequisite_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvEntityMaker_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CGameText_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTrainingAnnotation_Create);
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTriggerMultiple_Create);
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTriggerHurt_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFHudNotify_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CRagdollMagnet_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvShake_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTeamplayRoundWin_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvViewPunch_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFForceRespawn_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointEntity_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointNavInterface_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointClientCommand_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointServerCommand_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointPopulatorInterface_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointHurt_Create);
 
     THINK_FUNC_DECL(PlaceholderThink)
     {
@@ -1997,9 +1756,25 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHintTeleporterExit_Create,  "CEntityFactory<CTFBotHintTeleporterExit>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavAvoid_Create,  "CEntityFactory<CFuncNavAvoid>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrefer_Create,  "CEntityFactory<CFuncNavPrefer>::Create");
-            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrerequisite_Create,  "CEntityFactory<CFuncNavPrerequisite>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrerequisite_Create,  "CEntityFactory<CFuncNavPrerequisite>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvEntityMaker_Create,  "CEntityFactory<CEnvEntityMaker>::Create");
             MOD_ADD_DETOUR_MEMBER(CEntityFactory_CGameText_Create,  "CEntityFactory<CGameText>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTrainingAnnotation_Create,  "CEntityFactory<CTrainingAnnotation>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTriggerMultiple_Create,  "CEntityFactory<CTriggerMultiple>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTriggerHurt_Create,  "CEntityFactory<CTriggerHurt>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFHudNotify_Create,  "CEntityFactory<CTFHudNotify>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CRagdollMagnet_Create,  "CEntityFactory<CRagdollMagnet>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvShake_Create,  "CEntityFactory<CEnvShake>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTeamplayRoundWin_Create,  "CEntityFactory<CTeamplayRoundWin>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvViewPunch_Create,  "CEntityFactory<CEnvViewPunch>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFForceRespawn_Create,  "CEntityFactory<CTFForceRespawn>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointEntity_Create,  "CEntityFactory<CPointEntity>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointNavInterface_Create,  "CEntityFactory<CPointNavInterface>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointClientCommand_Create,  "CEntityFactory<CPointClientCommand>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointServerCommand_Create,  "CEntityFactory<CPointServerCommand>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointPopulatorInterface_Create,  "CEntityFactory<CPointPopulatorInterface>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointHurt_Create,  "CEntityFactory<CPointHurt>::Create");
+            
             MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
     
@@ -2011,7 +1786,6 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual bool OnLoad() override
 		{
-            stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
             ActivateLoadedInput();
             if (servertools->GetEntityFactoryDictionary()->FindFactory("$filter_keyvalue") == nullptr) {
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_keyvalue");
@@ -2035,16 +1809,12 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual void OnEnable() override
 		{
-            sendproxies = gamedll->GetStandardSendProxies();
+
         }
 
         virtual void LevelInitPreEntity() override
         { 
-            sendproxies = gamedll->GetStandardSendProxies();
-            send_prop_cache.clear();
-            send_prop_cache_classes.clear();
-            datamap_cache.clear();
-            datamap_cache_classes.clear();
+            ResetPropDataCache();
             entity_listeners.clear();
         }
 

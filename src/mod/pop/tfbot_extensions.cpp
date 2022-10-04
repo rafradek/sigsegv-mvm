@@ -1094,15 +1094,27 @@ namespace Mod::Pop::TFBot_Extensions
 		 * CTFBotScenarioMonitor::Update (the part of the AI where the timer
 		 * checks and the actual SuspendFor(CTFBotFetchFlag) occur);
 		 * the rest of the AI's calls to GetFlagToFetch will be untouched */
-		if (rc_CTFBotScenarioMonitor_Update > 0) {
-			auto data = GetDataForBot(bot);
-			if (data != nullptr && data->suppress_timed_fetchflag) {
-				return nullptr;
-			}
-		}
 		
 		SCOPED_INCREMENT(rc_CTFBot_GetFlagToFetch);
+		
+		auto data = GetDataForBot(bot);
+		if (data != nullptr && rc_CTFBotScenarioMonitor_Update > 0 && data->suppress_timed_fetchflag) {
+			return nullptr;
+		}
+		/* disable the implicit "Attributes IgnoreFlag" thing given to
+		* engineer bots if they have one of our Action overrides
+		* enabled (the pop author can explicitly give the engie bot
+		* "Attributes IgnoreFlag" if they want, of course)
+		* NOTE: this logic will NOT take effect if the bot also has the
+		* SuppressTimedFetchFlag custom parameter */
+		bool IsEngineer = data != nullptr && data->action != ACTION_Default && bot->IsPlayerClass(TF_CLASS_ENGINEER);
+		if (IsEngineer) {
+			bot->GetPlayerClass()->SetClassIndex(TF_CLASS_SOLDIER);
+		}
 		auto result = DETOUR_MEMBER_CALL(CTFBot_GetFlagToFetch)();
+		if (IsEngineer) {
+			bot->GetPlayerClass()->SetClassIndex(TF_CLASS_ENGINEER);
+		}
 		
 	//	DevMsg("CTFBot::GetFlagToFetch([#%d \"%s\"]) = [#%d \"%s\"]\n",
 	//		ENTINDEX(bot), bot->GetPlayerName(),
@@ -2094,7 +2106,7 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotScenarioMonitor_Update, "CTFBotScenarioMonitor::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagToFetch,        "CTFBot::GetFlagToFetch");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsPlayerClass,      "CTFPlayer::IsPlayerClass");
+			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsPlayerClass,      "CTFPlayer::IsPlayerClass");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagCaptureZone, "CTFBot::GetFlagCaptureZone");
 			

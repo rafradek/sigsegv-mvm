@@ -23,7 +23,7 @@ namespace Mod::Prof::Frame_Prof
             timespent.Init();
             prevTime = gpGlobals->curtime/5;
         }
-		Msg("ones: %d %d %d %d\n", bytesPrev, bytesPrevReliable, bytesPrevVoice, prevOverflow);
+		//Msg("ones: %d %d %d %d\n", bytesPrev, bytesPrevReliable, bytesPrevVoice, prevOverflow);
 		bytesPrevReliable = 0;
 		bytesPrev = 0;
 		bytesPrevVoice = 0;
@@ -45,7 +45,7 @@ namespace Mod::Prof::Frame_Prof
 		CMod() : IMod("Prof:Frame_Prof")
 		{
 			MOD_ADD_DETOUR_STATIC(_Host_RunFrame,               "_Host_RunFrame");
-			MOD_ADD_DETOUR_MEMBER(CNetChan_SendDatagram,               "CNetChan::SendDatagram");
+			//MOD_ADD_DETOUR_MEMBER(CNetChan_SendDatagram,               "CNetChan::SendDatagram");
 		}
 	};
 	CMod s_Mod;
