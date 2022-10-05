@@ -952,8 +952,9 @@ namespace Mod::Etc::Mapentity_Additions
                                 attr_def = GetItemSchema()->GetAttributeDefinition(idx);
                             }
                         }
-                        item->GetItem()->GetAttributeList().AddStringAttribute(attr_def, value);
-
+                        if (attr_def != nullptr) {
+                            item->GetItem()->GetAttributeList().AddStringAttribute(attr_def, value);
+                        }
                     }
                 }
         }},

@@ -233,9 +233,9 @@ namespace Mod::Perf::Attributes_Optimize
         return CalculateAttribValue(ent, value, attr, index_insert, entity_cache);
     }
 
-    float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint) {
-        if (!Enabled()) {
-            return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, nullptr, true);
+    float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint, bool literalString) {
+        if (!Enabled() || !literalString) {
+            return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, nullptr, literalString);
         }
         return GetAttribValue(value, attr, ent, isint);
     }

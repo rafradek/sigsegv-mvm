@@ -63,8 +63,8 @@ local CEntity = {}
 --Creates an entity with specified classname
 --Alternatively, if classname is a number, returns an entity with handle/network index if it exists
 ---@param classname string
----@param spawn? boolean = true. Spawn entity after creation
----@param activate? boolean = true. Activate entity after creation
+---@param spawn? boolean `= true`. Spawn entity after creation
+---@param activate? boolean `= true`. Activate entity after creation
 ---@overload fun(classname: number, spawn: nil, activate: nil)
 ---@return Entity
 function Entity(classname, spawn, activate) end
@@ -131,6 +131,9 @@ function CEntity:IsCombatCharacter() end
 ---@return boolean # `true` if the entity is a player cosmetic item, `false` otherwise
 function CEntity:IsWearable() end
 
+---@return boolean # `true` if the entity is a weapon or cosmetic, `false` otherwise
+function CEntity:IsItem() end
+
 ---@return boolean # `true` if the entity is the world entity, `false` otherwise
 function CEntity:IsWorld() end
 
@@ -169,13 +172,37 @@ function CEntity:GetPlayerItemBySlot(slot) end
 ---@return nil #No item found with the specified name
 function CEntity:GetPlayerItemByName(name) end
 
---Returns item or player attribute value
----@param name string Attribute definition name
+--Returns item or player attribute value. Ignores item definition attributes unless specified
+---@param name string|number Attribute definition name or index
+---@param checkDefinition? boolean `= false`. Enables checking for attributes in the item definition as well
 ---@return string|number|nil value Value of the attribute
-function CEntity:GetAttributeValue(name) end
+function CEntity:GetAttributeValue(name, checkDefinition) end
+
+--Returns item or player attribute value by class (like "mult_dmg"), combines all attributes with matching class, including attributes from the player owner.
+---@param name string Attribute class name
+---@param default number Default value to use. Typically 1 for multiply attributes, 0 for additive attributes
+---@return number value Value of an attribute class, default value if not found
+function CEntity:GetAttributeValueByClass(name, default) end
+
+--Returns all item or player attribute values. Ignores item definition attributes unless specified
+---@param checkDefinition? boolean `= false`. Enables checking for attributes in the item definition as well
+---@return table values Table containing attribute name -> value keys
+function CEntity:GetAllAttributeValues(checkDefinition) end
+
+--Returns item name
+---@return string name Item name in item definition
+function CEntity:GetItemName() end
+
+--Returns item name displayed in game
+---@return string name Item name displayed in game
+function CEntity:GetItemNameForDisplay() end
+
+--Returns a table containing all player items
+---@return table items Table containing all items
+function CEntity:GetAllItems() end
 
 --Sets item or player attribute value. Value of nil removes the attribute
----@param name string Attribute definition name
+---@param name string|number Attribute definition name or index
 ---@param value string|number|nil Attribute value
 ---@return nil
 function CEntity:SetAttributeValue(name, value) end
@@ -562,6 +589,27 @@ function util.PrintToChatAll(...) end
 ---@param entity Entity|nil Entity to attach to
 ---@return nil
 function util.ParticleEffect(name, position, angle, entity) end
+
+--Returns name of item definition with specified id
+---@param id number item definition index
+---@return string|nil name Name of the item with specified id or nil if not found
+function util.GetItemDefinitionNameByIndex(id) end
+
+--Returns id of item definition with specified name
+---@param name number item definition name
+---@return number|nil id Id of the item with specified name or nil if not found
+function util.GetItemDefinitionIndexByName(name) end
+
+--Returns name of attribute definition with specified id
+---@param id number attribute definition index
+---@return string|nil name Name of the attribute with specified id or nil if not found
+function util.GetAttributeDefinitionNameByIndex(id) end
+
+--Returns id of attribute definition with specified name
+---@param name number attribute definition name
+---@return number|nil id Id of the attribute with specified name or nil if not found
+function util.GetAttributeDefinitionIndexByName(name) end
+
 
 --Returns time in seconds since map load
 ---@return number

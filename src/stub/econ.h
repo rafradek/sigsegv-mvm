@@ -10,7 +10,7 @@ class CEconItem;
 
 namespace Mod::Perf::Attributes_Optimize
 {
-	float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint);
+	float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint, bool literalString);
 }
 
 class CAttributeManager
@@ -28,7 +28,7 @@ public:
 	float ApplyAttributeFloatWrapperFunc(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return ft_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	
 	template<typename T>
-	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool b1 = true);
+	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool literalString = true);
 
 	//The function is virtual originally, but since there are no derivates it should be safe to make it a regular function link, for speed
 	static MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeFloatWrapper;
@@ -55,20 +55,20 @@ public:
 	DECL_RELATIVE(CUtlVector<cached_attribute_t>, m_CachedResults);
 };
 
-template<> inline int CAttributeManager::AttribHookValue<int>(int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
+template<> inline int CAttributeManager::AttribHookValue<int>(int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool literalString)
 { 
 	if (ent == nullptr)
 		return value;
 
-	return RoundFloatToInt(Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), true));
+	return RoundFloatToInt(Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), true, literalString));
 	//
 }
-template<> inline float CAttributeManager::AttribHookValue<float>(float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
+template<> inline float CAttributeManager::AttribHookValue<float>(float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool literalString)
 { 
 	if (ent == nullptr)
 		return value;
 		
-	return Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), false);
+	return Mod::Perf::Attributes_Optimize::GetAttribValueOptimizedIfEnabled(value, attr, const_cast<CBaseEntity *>(ent), false, literalString);
 	//return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, vec, b1); 
 }
 
@@ -373,6 +373,8 @@ private:
 	
 	static MemberVFuncThunk<const CEconItemView *, int> vt_GetItemDefIndex;
 };
+
+void ForEachItemAttribute(CEconItemView *item, std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString);
 
 class CEconItem
 {

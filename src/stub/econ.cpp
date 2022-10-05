@@ -340,7 +340,7 @@ CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
 bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str)
 {
 	//Pool of previously added string values
-	static std::map<std::string, attribute_data_union_t> attribute_string_values;
+	static std::unordered_map<std::string, attribute_data_union_t> attribute_string_values;
 
 	auto entry = attribute_string_values.find(value_str);
 
@@ -427,4 +427,39 @@ void CAttributeList::RemoveAttributeByDefID(int def_idx)
 			return;
 		}
 	}*/
+}
+
+class AttributeIteratorWrapper : public IEconItemAttributeIterator
+{
+public:
+	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString) : onNormal(onNormal), onString(onString) {}
+
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
+	{
+		attribute_data_union_t valueu;
+		valueu.m_UInt = value;
+		return onNormal(pAttrDef, valueu);
+	}
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, float                                    value) const { return true; }
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const uint64&                            value) const { return true; }
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String&                 value) const
+	{
+		const char *pstr;
+		CopyStringAttributeValueToCharPointerOutput(&value, &pstr);
+		return onString(pAttrDef, pstr);
+	}
+
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_DynamicRecipeComponent& value) const { return true; }
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_ItemSlotCriteria&       value) const { return true; }
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_WorldItemPlacement&     value) const { return true; }
+
+	std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal;
+	std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString;
+
+};
+
+void ForEachItemAttribute(CEconItemView *item, std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString)
+{
+	AttributeIteratorWrapper it(onNormal, onString);
+	item->IterateAttributes(&it);
 }

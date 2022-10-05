@@ -737,6 +737,13 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntityIsItem(lua_State *l)
+    {
+        auto entity = LEntityGetOptional(l, 1);
+        lua_pushboolean(l, entity != nullptr && (entity->IsBaseCombatWeapon() || entity->IsWearable()));
+        return 1;
+    }
+
     int LEntityIsWorld(lua_State *l)
     {
         auto entity = LEntityGetOptional(l, 1);
@@ -1063,10 +1070,140 @@ namespace Util::Lua
         return 1;
     }
 
-    int LEntityGetItemAttribute(lua_State *l)
+    int LEntityGetAllItemAttributes(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        auto checkAll = lua_toboolean(l, 2);
+
+        if (entity == nullptr) {
+            luaL_error(l, "Entity in not valid");
+            lua_pushnil(l);
+            return 1;
+        }
+        
+        CAttributeList *list = nullptr;
+        if (entity->IsPlayer()) {
+            list = ToTFPlayer(entity)->GetAttributeList();
+        } 
+        else {
+            CEconEntity *econEntity = rtti_cast<CEconEntity *>(entity);
+            if (econEntity != nullptr) {
+                // Check all attributes, including those in item definition and the backpack attributes
+                if (checkAll) {
+                    lua_newtable(l);
+                    ForEachItemAttribute(econEntity->GetItem(), [l](const CEconItemAttributeDefinition *def, auto val){
+                        lua_pushnumber(l, val.m_Float);
+                        lua_setfield(l, -2, def->GetName());
+                        return true; 
+                    }, [l](auto def, auto val){ 
+                        lua_pushstring(l, val);
+                        lua_setfield(l, -2, def->GetName());
+                        return true; 
+                    });
+                    return 1;
+                }
+                list = &econEntity->GetItem()->GetAttributeList();
+            }
+        }
+        if (list == nullptr) {
+            luaL_error(l, "Entity (%s) is not a player or item", entity->GetClassname());
+            lua_pushnil(l);
+            return 1;
+        }
+
+        lua_newtable(l);
+        for (int i = 0; i < list->Attributes().Count(); i++) {
+            CEconItemAttribute &attr = list->Attributes()[i];
+            if (!attr.GetStaticData()->IsType<CSchemaAttributeType_String>()) {
+                lua_pushnumber(l,attr.GetValuePtr()->m_Float);
+            }
+            else {
+                char buf[256];
+                attr.GetStaticData()->ConvertValueToString(*attr.GetValuePtr(), buf, sizeof(buf));
+                lua_pushstring(l,buf);
+            }
+            lua_setfield(l, -2, attr.GetStaticData()->GetName());
+        }
+        return 1;
+    }
+
+    int LEntityGetItemName(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        CEconEntity *econEntity = rtti_cast<CEconEntity *>(entity);
+        if (econEntity == nullptr) {
+            luaL_error(l, "Entity is not an item");
+            lua_pushnil(l);
+            return 1;
+        }
+        auto item = econEntity->GetItem();
+        if (item == nullptr) {
+            lua_pushstring(l, "");
+            return 1;
+        }
+        lua_pushstring(l, GetItemName(item));
+        return 1;
+    }
+
+    int LEntityGetItemNameForDisplay(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        CEconEntity *econEntity = rtti_cast<CEconEntity *>(entity);
+        if (econEntity == nullptr) {
+            luaL_error(l, "Entity is not an item");
+            lua_pushnil(l);
+            return 1;
+        }
+        auto item = econEntity->GetItem();
+        if (item == nullptr) {
+            lua_pushstring(l, "");
+            return 1;
+        }
+        lua_pushstring(l, GetItemNameForDisplay(item));
+        return 1;
+    }
+
+    int LEntityGetAllItems(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        if (!entity->IsPlayer()) {
+            luaL_error(l, "Entity is not a player");
+            lua_pushnil(l);
+            return 1;
+        }
+        CTFPlayer *player = ToTFPlayer(entity);
+        lua_newtable(l);
+        int i = 1;
+        ForEachTFPlayerEconEntity(player, [l, &i](CEconEntity *econEntity){
+            LEntityAlloc(l, econEntity);
+            lua_rawseti(l, -2, i);
+            i++;
+        });
+        return 1;
+    }
+
+    int LEntityGetItemAttributeValueByClass(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
         auto name = luaL_checkstring(l, 2);
+        auto value = luaL_checknumber(l, 3);
+        value = CAttributeManager::AttribHookValue<float>(value, name, entity, nullptr, false);
+        lua_pushnumber(l, value);
+        return 1;
+    }
+
+    int LEntityGetItemAttribute(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        const char *name = nullptr;
+        int id = -1;
+        if (!lua_isnumber(l, 2)) {
+            name = luaL_checkstring(l, 2);
+        }
+        else {
+            id = luaL_checkinteger(l, 2);
+        }
+        auto checkAll = lua_toboolean(l, 3);
 
         if (entity == nullptr) {
             luaL_error(l, "Entity in not valid");
@@ -1081,6 +1218,29 @@ namespace Util::Lua
         else {
             CEconEntity *econEntity = rtti_cast<CEconEntity *>(entity);
             if (econEntity != nullptr) {
+                // Check all attributes, including those in item definition and the backpack attributes
+                if (checkAll) {
+                    bool success = false;
+                    ForEachItemAttribute(econEntity->GetItem(), [l, id, name, &success](const CEconItemAttributeDefinition *def, auto val){
+                        if ((name != nullptr && FStrEq(def->GetName(), name)) || def->GetIndex() == id) {
+                            success = true;
+                            lua_pushnumber(l, val.m_Float);
+                            return false;
+                        }
+                        return true; 
+                    },  [l, id, name, &success](auto def, auto val){ 
+                        if ((name != nullptr && FStrEq(def->GetName(), name)) || def->GetIndex() == id) {
+                            success = true;
+                            lua_pushstring(l, val);
+                            return false;
+                        }
+                        return true; 
+                    });
+                    if (!success) {
+                        lua_pushnil(l);
+                    }
+                    return 1;
+                }
                 list = &econEntity->GetItem()->GetAttributeList();
             }
         }
@@ -1089,7 +1249,13 @@ namespace Util::Lua
             lua_pushnil(l);
             return 1;
         }
-        CEconItemAttribute * attr = list->GetAttributeByName(name);
+        CEconItemAttribute * attr;
+        
+        if (name != nullptr) {
+            attr = list->GetAttributeByName(name);
+        } else {
+            attr = list->GetAttributeByID(id);
+        }
         if (attr != nullptr) {
             if (!attr->GetStaticData()->IsType<CSchemaAttributeType_String>()) {
                 lua_pushnumber(l,attr->GetValuePtr()->m_Float);
@@ -1109,7 +1275,14 @@ namespace Util::Lua
     int LEntitySetItemAttribute(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
-        auto name = luaL_checkstring(l, 2);
+        const char *name = nullptr;
+        int id = -1;
+        if (!lua_isnumber(l, 2)) {
+            name = luaL_checkstring(l, 2);
+        }
+        else {
+            id = luaL_checkinteger(l, 2);
+        }
         auto value = lua_tostring(l, 3);
 
         CAttributeList *list = nullptr;
@@ -1126,7 +1299,14 @@ namespace Util::Lua
             luaL_error(l, "Entity (%s) is not a player or item", entity->GetClassname());
             return 0;
         }
-        auto def = GetItemSchema()->GetAttributeDefinitionByName(name);
+        CEconItemAttributeDefinition *def;
+        
+        if (name != nullptr) {
+            def = GetItemSchema()->GetAttributeDefinitionByName(name);
+        }
+        else {
+            def = GetItemSchema()->GetAttributeDefinition(id);
+        }
         if (def != nullptr) {
             if (value == nullptr) {
                 list->RemoveAttribute(def);
@@ -2510,6 +2690,52 @@ namespace Util::Lua
         return 0;
     }
 
+    int LUtilGetItemDefinitionNameByIndex(lua_State *l)
+    {
+        auto id = luaL_checkinteger(l, 1);
+        auto def = GetItemSchema()->GetItemDefinition(id);
+        if (def != nullptr)
+            lua_pushstring(l, def->GetItemName());
+        else
+            lua_pushnil(l);
+        return 1;
+    }
+
+    int LUtilGetItemDefinitionIndexByName(lua_State *l)
+    {
+        auto name = luaL_checkstring(l, 1);
+        auto def = GetItemSchema()->GetItemDefinitionByName(name);
+        
+        if (def != nullptr)
+            lua_pushinteger(l, def->m_iItemDefIndex);
+        else
+            lua_pushnil(l);
+        return 1;
+    }
+
+    int LUtilGetAttributeDefinitionNameByIndex(lua_State *l)
+    {
+        auto id = luaL_checkinteger(l, 1);
+        auto def = GetItemSchema()->GetAttributeDefinition(id);
+        if (def != nullptr)
+            lua_pushstring(l, def->GetName());
+        else
+            lua_pushnil(l);
+        return 1;
+    }
+
+    int LUtilGetAttributeDefinitionIndexByName(lua_State *l)
+    {
+        auto name = luaL_checkstring(l, 1);
+        auto def = GetItemSchema()->GetAttributeDefinitionByName(name);
+        
+        if (def != nullptr)
+            lua_pushinteger(l, def->GetIndex());
+        else
+            lua_pushnil(l);
+        return 1;
+    }
+
     int LCurTime(lua_State *l)
     {
         lua_pushnumber(l, gpGlobals->curtime);
@@ -2622,6 +2848,11 @@ namespace Util::Lua
         {"GetPlayerItemBySlot", LEntityGetPlayerItemBySlot},
         {"GetPlayerItemByName", LEntityGetPlayerItemByName},
         {"GetAttributeValue", LEntityGetItemAttribute},
+        {"GetAttributeValueByClass", LEntityGetItemAttributeValueByClass},
+        {"GetItemName", LEntityGetItemName},
+        {"GetItemNameForDisplay", LEntityGetItemNameForDisplay},
+        {"GetAllItems", LEntityGetAllItems},
+        {"GetAllAttributeValues", LEntityGetAllItemAttributes},
         {"SetAttributeValue", LEntitySetItemAttribute},
         {"PrintToChat", LUtilPrintToChat},
         {"PrintToConsole", LUtilPrintToConsole},
@@ -2637,6 +2868,7 @@ namespace Util::Lua
         {"IsWeapon", LEntityIsWeapon},
         {"IsCombatCharacter", LEntityIsCombatCharacter},
         {"IsWearable", LEntityIsWearable},
+        {"IsItem", LEntityIsItem},
         {"IsWorld", LEntityIsWorld},
         {"AddCallback", LEntityAddCallback},
         {"RemoveCallback", LEntityRemoveCallback},
@@ -2692,6 +2924,10 @@ namespace Util::Lua
         {"PrintToChatAll", LUtilPrintToChatAll},
         {"PrintToChat", LUtilPrintToChat},
         {"ParticleEffect", LUtilParticleEffect},
+        {"GetItemDefinitionNameByIndex", LUtilGetItemDefinitionNameByIndex},
+        {"GetItemDefinitionIndexByName", LUtilGetItemDefinitionIndexByName},
+        {"GetAttributeDefinitionNameByIndex", LUtilGetAttributeDefinitionNameByIndex},
+        {"GetAttributeDefinitionIndexByName", LUtilGetAttributeDefinitionIndexByName},
         {nullptr, nullptr},
     };
 

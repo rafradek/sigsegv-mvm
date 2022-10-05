@@ -2205,13 +2205,12 @@ namespace Mod::Attr::Custom_Attributes
 
 			int not_solid = GetFastAttributeInt(entityme, 0, NOT_SOLID_TO_PLAYERS);
 			me_collide = not_solid == 0;
-
 			if (!me_collide)
 				return false;
 
 			if (entityhit_player) {
 				int not_solid = GetFastAttributeInt(entityhit, 0, NOT_SOLID_TO_PLAYERS);
-				if (not_solid == 0)
+				if (not_solid != 0)
 					return false;
 			}
 		}
