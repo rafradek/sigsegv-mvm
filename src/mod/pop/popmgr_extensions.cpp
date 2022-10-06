@@ -744,6 +744,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bForceRedMoney = false;
 			this->m_bSpellbookRateSet = false;
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
+			this->m_iRobotLimitSetByMission = 22;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -981,6 +982,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bForceRedMoney;
 		bool m_bSpellbookRateSet;
 		int m_iEnemyTeamForReverse;
+		int m_iRobotLimitSetByMission;
 		
 		CPopOverride_MedievalMode        m_MedievalMode;
 		CPopOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1607,6 +1609,11 @@ namespace Mod::Pop::PopMgr_Extensions
 	bool SpyNoSapUnownedBuildings()
 	{
 		return state.m_bSpyNoSapUnownedBuildings;
+	}
+
+	int GetMaxRobotLimit()
+	{
+		return state.m_iRobotLimitSetByMission;
 	}
 
 	RefCount rc_GetEntityForLoadoutSlot;
@@ -4624,7 +4631,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	void AwardExtraItem(CTFPlayer *player, std::string &name) {
+	void AwardExtraItem(CTFPlayer *player, std::string &name, bool equipNow) {
 		
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
@@ -4644,22 +4651,48 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 				set.insert(i);
+				if (equipNow) {
+					GiveItemByName(player, name.c_str());
+				}
 				return;
 			}
 		}
 	}
 
-	void StripExtraItem(CTFPlayer *player, std::string &name) {
+	void StripExtraItem(CTFPlayer *player, std::string &name, bool removeNow) {
 		
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			if (state.m_ExtraLoadoutItems[i].name == name) {
 				CSteamID steamid;
 				player->GetSteamID(&steamid);
-				state.m_BoughtLoadoutItems[steamid].erase(i);
+				bool remove = false;
+				if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0 && removeNow) 
+					remove = true;
 
-				state.m_SelectedLoadoutItems[player].erase(i);
+				if (state.m_SelectedLoadoutItems[player].erase(i) != 0 && removeNow) 
+					remove = true;
+				
+				if (remove)
+					player->GiveDefaultItemsNoAmmo();
+
 				return;
 			}
+		}
+	}
+
+	void ResetExtraItems(CTFPlayer *player) {
+		bool removedSomething = false;
+		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
+			CSteamID steamid;
+			player->GetSteamID(&steamid);
+			if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0) 
+				removedSomething = true;
+
+			if (state.m_SelectedLoadoutItems[player].erase(i) != 0) 
+				removedSomething = true;
+		}
+		if (removedSomething) {
+			player->GiveDefaultItemsNoAmmo();
 		}
 	}
 
@@ -6096,6 +6129,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_BotHumansHaveEyeGlow.Set(subkey->GetBool());
 			} else if (FStrEq(name, "CustomEyeParticle")) {
 				state.m_EyeParticle.Set(subkey->GetString());
+				PrecacheParticleSystem( subkey->GetString() );
 			} else if (FStrEq(name, "FlagEscortCountOffset")) {
 				state.m_BotEscortCount.Set(subkey->GetInt() + 4);
 		//	} else if (FStrEq(name, "NoNewInspection")) {
@@ -6109,6 +6143,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_ForceHoliday.Set(FStrEq(subkey->GetString(),"Halloween") ? 2 : subkey->GetInt());
 			} else if (FStrEq(name, "RobotLimit")) {
 				state.m_RobotLimit.Set(subkey->GetInt());
+				state.m_iRobotLimitSetByMission = subkey->GetInt();
 			} else if (FStrEq(name, "CustomUpgradesFile")) {
 				//static const std::string prefix("download/scripts/items/");
 				state.m_CustomUpgradesFile.Set(subkey->GetString());

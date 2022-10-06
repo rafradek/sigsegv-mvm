@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/populators.h"
 #include "stub/nextbot_cc.h"
+#include "mod/pop/popmgr_extensions.h"
 #include "util/scope.h"
 
 namespace Mod::MvM::Robot_Multiplier
@@ -12,21 +13,34 @@ namespace Mod::MvM::Robot_Multiplier
 		"Cash multiplier for robot multiplier mode");
 	ConVar sig_mvm_robot_multiplier_currency_start("sig_mvm_robot_multiplier_currency_start", "2", FCVAR_NOTIFY,
 		"Starting cash multiplier for robot multiplier mode");
-	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv)
+
+
+	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		static ConVarRef robotMax("sig_mvm_robot_limit_override");
+		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		auto manager = reinterpret_cast<CPopulationManager *>(this);
+		manager->m_nStartingCurrency = manager->m_nStartingCurrency * (manager->m_nStartingCurrency < 3000 ? sig_mvm_robot_multiplier_currency_start.GetFloat() : sig_mvm_robot_multiplier_currency.GetFloat());
+		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
+		robotMax.SetValue(realMult * Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit());
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv)
+	{
         bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv);
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
 
 		// Not a tank
 		if (rtti_cast<CTankSpawner *>(wavespawn->m_Spawner) == nullptr) {
-			float spawnMult = MIN(robotMax.GetFloat()/22, cvar_enable.GetInt());
+			float spawnMult = realMult;
 			float timeMult = spawnMult / cvar_enable.GetInt();
-			wavespawn->m_spawnCount = MIN(robotMax.GetInt(),ceil(wavespawn->m_spawnCount * spawnMult));
+			wavespawn->m_spawnCount *= wavespawn->m_spawnCount * spawnMult;
 			if (timeMult < 1) {
-				wavespawn->m_waitBetweenSpawns *= 0.25;
+				wavespawn->m_waitBetweenSpawns *= MAX(0.25f, timeMult);
 			}
-			wavespawn->m_maxActive = MIN(robotMax.GetInt(),ceil(wavespawn->m_maxActive * spawnMult));
+			wavespawn->m_maxActive *= wavespawn->m_maxActive * spawnMult;
 		}
 		// Tank
 		else {
@@ -39,7 +53,7 @@ namespace Mod::MvM::Robot_Multiplier
 				wavespawn->m_waitBetweenSpawns /= cvar_enable.GetInt();
 			}
 		}
-		wavespawn->m_totalCount *= cvar_enable.GetInt();
+		wavespawn->m_totalCount *= realMult;
 		
 		wavespawn->m_totalCurrency *= sig_mvm_robot_multiplier_currency.GetFloat();
         return result;
@@ -61,24 +75,17 @@ namespace Mod::MvM::Robot_Multiplier
 		return result;
 	}
 
-	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
-	{
-		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
-		auto manager = reinterpret_cast<CPopulationManager *>(this);
-		manager->m_nStartingCurrency = manager->m_nStartingCurrency * (manager->m_nStartingCurrency < 3000 ? sig_mvm_robot_multiplier_currency_start.GetFloat() : sig_mvm_robot_multiplier_currency.GetFloat());
-		return ret;
-	}
-
 	DETOUR_DECL_MEMBER(bool, CMissionPopulator_Parse, KeyValues *kv)
 	{
 		static ConVarRef robotMax("sig_mvm_robot_limit_override");
 		auto mission = reinterpret_cast<CMissionPopulator *>(this);
+		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
 
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
 			
 			if (FStrEq(name, "DesiredCount")) {
-				subkey->SetInt(nullptr, subkey->GetInt() * ceil(MIN(robotMax.GetInt()/22, cvar_enable.GetInt())) );
+				subkey->SetInt(nullptr, subkey->GetInt() * realMult );
 			}
 		}
 		

@@ -37,7 +37,7 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationM
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
 	virtual uint32_t GetExtractOffset() const override { return 0x000c + 2; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val - 0x4); }
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val); }
 };
 
 

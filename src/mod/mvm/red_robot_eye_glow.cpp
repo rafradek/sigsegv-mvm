@@ -3,6 +3,7 @@
 #include "stub/tfplayer.h"
 #include "stub/usermessages_sv.h"
 #include "stub/particles.h"
+#include "stub/extraentitydata.h"
 #include "util/iterate.h"
 
 namespace Mod::Pop::Red_Robot_Eye_Glow
@@ -73,18 +74,27 @@ namespace Mod::Pop::Red_Robot_Eye_Glow
             eye2 = "eyeglow_R";
 
         DispatchParticleEffect(particle, PATTACH_POINT_FOLLOW, player, eye2, vec3_origin, false, vColorL, vColorL, true, false, &cp, &filter);
+
+        variant_t var;
+        var.SetFloat(1.0f);
+        player->SetCustomVariable("CustomEyeGlow", var);
     }
 
     void DeployModel(CTFPlayer *player, const char *model)
     {
-        if (strncmp(player->GetPlayerClass()->GetCustomModel(),"models/bots/", strlen("models/bots/")) == 0)
+        if (player->GetCustomVariableFloat<"CustomEyeGlow">()) {
             StopParticleEffects(player);
+            variant_t var;
+            var.SetFloat(0.0f);
+            player->SetCustomVariable("CustomEyeGlow", var);
+        }
 
         bool bot = player != nullptr && player->IsBot();
         if (player != nullptr && ((player->GetTeamNumber() != TF_TEAM_BLUE && player->IsAlive() && model != nullptr && strncmp(model,"models/bots/", strlen("models/bots/")) == 0) 
             || (bot && cvar_human_eye_particle.GetBool())
             || (bot && strlen(cvar_eye_particle.GetString()) > 0)
             || (bot && cvar_extended_difficulty_colors.GetBool()))) {
+
             THINK_FUNC_SET(player, EyeParticle, gpGlobals->curtime + 0.05f);
         }
     }
@@ -122,9 +132,13 @@ namespace Mod::Pop::Red_Robot_Eye_Glow
     DETOUR_DECL_MEMBER(void, CTFGameRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
 	{
 		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
-		if (strlen(cvar_eye_particle.GetString()) != 0) {
+
+		if (pVictim->GetCustomVariableFloat<"CustomEyeGlow">()) {
             StopParticleEffects(pVictim);
-		}
+            variant_t var;
+            var.SetFloat(0.0f);
+            pVictim->SetCustomVariable("CustomEyeGlow", var);
+        }
 	}
 
     class CMod : public IMod

@@ -11,10 +11,12 @@ namespace Mod::Pop::PopMgr_Extensions {
 	const char *GetCustomWeaponNameOverride(const char *name);
 	int GetEventPopfile();
 	bool PopFileIsOverridingJoinTeamBlueConVarOn();
-	void AwardExtraItem(CTFPlayer *player, std::string &name);
-	void StripExtraItem(CTFPlayer *player, std::string &name);
+	void AwardExtraItem(CTFPlayer *player, std::string &name, bool equipNow);
+	void StripExtraItem(CTFPlayer *player, std::string &name, bool removeNow);
+	void ResetExtraItems(CTFPlayer *player);
 	void ApplyOrClearRobotModel(CTFPlayer *player);
 	int GetMaxSpectators();
 	bool SpyNoSapUnownedBuildings();
+	int GetMaxRobotLimit();
 }
 #endif

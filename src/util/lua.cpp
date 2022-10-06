@@ -868,6 +868,26 @@ namespace Util::Lua
             }
         }
 
+        void RemoveAllCallbacks(CallbackType type, LuaState *state) {
+            for (auto it = callbacks[type].begin(); it != callbacks[type].end();) {
+                auto &pair = *it;
+                if (pair.state == state) {
+                    pair.deleted = true;
+                    if (pair.calling == 0) {
+                        it = callbacks[type].erase(it);
+                        continue;
+                    }
+                }
+                ++it;
+            }
+        }
+
+        void RemoveAllCallbacks(LuaState *state) {
+            for (int type = 0; type < CALLBACK_TYPE_COUNT; type++) {
+                RemoveAllCallbacks((CallbackType) type, state);
+            }
+        }
+
         // bool RemoveTableStorageEntry(LuaState *state, int value) {
         //     if (tableStore.empty()) return false;
 
@@ -942,6 +962,22 @@ namespace Util::Lua
         int id = entity->GetOrCreateEntityModule<LuaEntityModule>("luaentity")->AddCallback((CallbackType)type, cur_state, func);
         lua_pushinteger(l, id);
         return 1;
+    }
+
+    int LEntityRemoveAllCallbacks(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+        int type = lua_gettop(l) > 2 ? luaL_checkinteger(l, 2) : -1;
+        luaL_argcheck(l, type >= -1 && type < CALLBACK_TYPE_COUNT, 2, "type out of range");
+
+        auto module = entity->GetEntityModule<LuaEntityModule>("luaentity");
+        if (module != nullptr) {
+            if (type != -1)
+                module->RemoveAllCallbacks((CallbackType)type, cur_state);
+            else
+                module->RemoveAllCallbacks(cur_state);
+        }
+        return 0;
     }
 
     int LEntityRemoveCallback(lua_State *l)
@@ -2872,6 +2908,7 @@ namespace Util::Lua
         {"IsWorld", LEntityIsWorld},
         {"AddCallback", LEntityAddCallback},
         {"RemoveCallback", LEntityRemoveCallback},
+        {"RemoveAllCallbacks", LEntityRemoveAllCallbacks},
         {"DumpProperties", LEntityDumpProperties},
         {"DumpInputs", LEntityDumpInputs},
         {"TakeDamage", LEntityTakeDamage},

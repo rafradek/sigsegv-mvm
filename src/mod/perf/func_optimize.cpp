@@ -515,7 +515,7 @@ namespace Mod::Perf::Func_Optimize
     DETOUR_DECL_STATIC(int, CBaseEntity_PrecacheModel, const char *model)
 	{
         int index = modelinfo->GetModelIndex(model);
-        if (index != -1) {
+        if (index != -1 && !IsDynamicModelIndex(index)) {
             return index;
         }
         return DETOUR_STATIC_CALL(CBaseEntity_PrecacheModel)(model);

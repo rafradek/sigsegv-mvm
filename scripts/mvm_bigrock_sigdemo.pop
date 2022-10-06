@@ -334,6 +334,7 @@ WaveSchedule
 				AllowedMinWave 1 //The wave at which the weapon is enabled (default: 1)
 				AllowedMaxWave 55 //The max wave at which the weapon is enabled (default: infinite)
 				AllowRefund 0 //Allow refunding of the weapon (default: 1)
+				// Hidden 1 //If set, this item is only accessible via $AwardExtraItem input (default: 0)
 			}
 			// Available slots:
 			// Primary

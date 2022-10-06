@@ -1156,7 +1156,12 @@ namespace Mod::Etc::Mapentity_Additions
         {"AwardExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player = ToTFPlayer(ent);
                 std::string str = Value.String();
-                Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str);
+                Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str, false);
+        }},
+        {"AwardAndGiveExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player = ToTFPlayer(ent);
+                std::string str = Value.String();
+                Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str, true);
         }},
         {"TauntFromItem2"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 
@@ -1278,7 +1283,11 @@ namespace Mod::Etc::Mapentity_Additions
         {"StripExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player = ToTFPlayer(ent);
                 std::string str = Value.String();
-                Mod::Pop::PopMgr_Extensions::StripExtraItem(player, str);
+                Mod::Pop::PopMgr_Extensions::StripExtraItem(player, str, true);
+        }},
+        {"ResetExtraItems"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player = ToTFPlayer(ent);
+                Mod::Pop::PopMgr_Extensions::ResetExtraItems(player);
         }}
     });
 

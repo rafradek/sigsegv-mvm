@@ -846,6 +846,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.no_crouch_button_release = kv->GetBool();
 		} else if (FStrEq(name, "CustomEyeParticle")) {
 			data.custom_eye_particle = kv->GetString();
+			PrecacheParticleSystem( kv->GetString() );
 		} else if (FStrEq(name, "CustomEyeGlowColor")) {
 			data.eye_particle_color = true;
 			sscanf(kv->GetString(), "%d %d %d", &data.eye_particle_r, &data.eye_particle_g, &data.eye_particle_b);
