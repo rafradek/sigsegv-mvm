@@ -967,7 +967,7 @@ namespace Util::Lua
     int LEntityRemoveAllCallbacks(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
-        int type = lua_gettop(l) > 2 ? luaL_checkinteger(l, 2) : -1;
+        int type = lua_gettop(l) > 1 ? luaL_checkinteger(l, 2) : -1;
         luaL_argcheck(l, type >= -1 && type < CALLBACK_TYPE_COUNT, 2, "type out of range");
 
         auto module = entity->GetEntityModule<LuaEntityModule>("luaentity");

@@ -155,7 +155,7 @@ function CEntity:RemoveCallback(type, id) end
 --Removes all callbacks added with `AddCallback` function
 ---@param type? number Optionally only delete callbacks of specified type, check ON_* globals
 ---@return nil
-function CEntity:RemoveAllCallbacks(type, id) end
+function CEntity:RemoveAllCallbacks(type) end
 
 --Fires an entity input
 ---@param name string Name of the input
