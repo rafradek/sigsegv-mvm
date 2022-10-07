@@ -4753,8 +4753,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			&& iWantedTeam == TF_TEAM_RED) {
 				
 			int totalPlayers = 0;
-			ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [&totalPlayers](CTFPlayer *player){
-				if (player->IsRealPlayer()) {
+			ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [&totalPlayers, pPlayer](CTFPlayer *player){
+				if (player->IsRealPlayer() && pPlayer != player) {
 					totalPlayers += 1;
 				}
 			});
