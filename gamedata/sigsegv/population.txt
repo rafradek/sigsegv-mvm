@@ -57,6 +57,7 @@
 				"CPopulationManager::StartCurrentWave"                            "_ZN18CPopulationManager16StartCurrentWaveEv"
 				"CPopulationManager::IsInEndlessWaves"                            "_ZN18CPopulationManager16IsInEndlessWavesEv"
 				"CPopulationManager::SetPopulationFilename"                       "_ZN18CPopulationManager21SetPopulationFilenameEPKc"
+				"CPopulationManager::GetPlayerCurrencySpent"                      "_ZN18CPopulationManager22GetPlayerCurrencySpentEP9CTFPlayer"
 				
 				
 				"CMissionPopulator::~CMissionPopulator [D0]"      "_ZN17CMissionPopulatorD0Ev"
@@ -120,6 +121,8 @@
 				
 				"ParseDynamicAttributes" "_ZL22ParseDynamicAttributesRN6CTFBot23EventChangeAttributes_tEP9KeyValues"
 				"FireEvent" "_ZL9FireEventP9EventInfoPKc"
+
+				"MannVsMachineStats_GetAcquiredCredits" "_Z37MannVsMachineStats_GetAcquiredCreditsib"
 			}
 		}
 	}

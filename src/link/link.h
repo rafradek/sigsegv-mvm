@@ -64,7 +64,9 @@ public:
 	
 	inline RET operator()(PARAMS... args) const
 	{
-		assert(this->GetFuncPtr() != nullptr);
+#ifdef DEBUG
+		assert(this->GetFuncPtr() != nullptr); 
+#endif
 		return (*this->GetFuncPtr())(args...);
 	}
 	
@@ -137,9 +139,10 @@ public:
 	inline RET operator()(      C *obj, PARAMS... args) const
 	{
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
-		
+#ifdef DEBUG
 		assert(pFunc != nullptr);
 		assert(obj   != nullptr);
+#endif
 		
 		return (obj->*pFunc)(args...);
 	}

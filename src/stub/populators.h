@@ -24,6 +24,7 @@ public:
 	static void FindDefaultPopulationFileShortNames(CUtlVector<CUtlString> &vec) { return ft_FindDefaultPopulationFileShortNames(vec); }
 	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player) { return ft_GetPlayerUpgradeHistory(this, player); }
 	void SetPopulationFilename(const char *name) { ft_SetPopulationFilename(this, name); }
+	int GetPlayerCurrencySpent(CTFPlayer *player) { return ft_GetPlayerCurrencySpent(this, player); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -42,6 +43,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             ft_RemovePlayerAndItemUpgradesFromHistory;
 	static MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>             ft_GetPlayerUpgradeHistory;
 	static MemberFuncThunk<CPopulationManager *, void, const char*> ft_SetPopulationFilename;
+	static MemberFuncThunk<CPopulationManager *, int, CTFPlayer *> ft_GetPlayerCurrencySpent;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;
@@ -310,6 +312,7 @@ struct EventInfo
 
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
 extern StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes;
+extern StaticFuncThunk<int> ft_MannVsMachineStats_GetAcquiredCredits;
 
 
 inline bool IsSpaceToSpawnHere(const Vector& pos)
@@ -320,5 +323,10 @@ inline bool IsSpaceToSpawnHere(const Vector& pos)
 inline bool ParseDynamicAttributes(CTFBot::EventChangeAttributes_t &event, KeyValues *kv)
 {
 	return ft_ParseDynamicAttributes(event, kv);
+}
+
+inline int MannVsMachineStats_GetAcquiredCredits()
+{
+	return ft_MannVsMachineStats_GetAcquiredCredits();
 }
 #endif

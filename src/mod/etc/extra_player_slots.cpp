@@ -392,8 +392,10 @@ namespace Mod::Etc::Extra_Player_Slots
         gpGlobals->maxClients = oldMaxClients;
     }
 
+    int last_player_connect_time = 0;
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
 	{
+        last_player_connect_time = gpGlobals->curtime;
         if (ENTINDEX(edict) > 33) return;
         DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
     }
@@ -536,14 +538,14 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(bool, CVoiceGameMgrHelper_CanPlayerHearPlayer, CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity)
 	{
-        
         if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
+            if (last_player_connect_time + 100 == gpGlobals->tickcount) return true;
+
             if (ENTINDEX(pTalker) > 64)
                 return false;
             
             if ((gpGlobals->maxClients > 127 || ENTINDEX(pTalker) % 64 < gpGlobals->maxClients % 64) && talk_time[ENTINDEX(pTalker) - 1] + 1.0f < gpGlobals->curtime)
-                return false;
-            
+                 return false;
         }
 
         return DETOUR_MEMBER_CALL(CVoiceGameMgrHelper_CanPlayerHearPlayer)(pListener, pTalker, bProximity);

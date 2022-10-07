@@ -143,9 +143,10 @@ MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_UnpauseSpawning("CPopulationManager::UnpauseSpawning");
 MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_AllocateBots   ("CPopulationManager::AllocateBots");
 MemberFuncThunk<CPopulationManager *, bool>              CPopulationManager::ft_IsInEndlessWaves("CPopulationManager::IsInEndlessWaves");
-MemberFuncThunk<CPopulationManager *, void, CTFPlayer *>             CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
+MemberFuncThunk<CPopulationManager *, void, CTFPlayer *> CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
 MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>              CPopulationManager::ft_GetPlayerUpgradeHistory ("CPopulationManager::GetPlayerUpgradeHistory");
 MemberFuncThunk<CPopulationManager *, void, const char*> CPopulationManager::ft_SetPopulationFilename("CPopulationManager::SetPopulationFilename");
+MemberFuncThunk<CPopulationManager *, int, CTFPlayer *>  CPopulationManager::ft_GetPlayerCurrencySpent("CPopulationManager::GetPlayerCurrencySpent");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
 StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefaultPopulationFileShortNames("CPopulationManager::FindDefaultPopulationFileShortNames");
@@ -177,3 +178,4 @@ MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > IPopula
 
 StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere("IsSpaceToSpawnHere");
 StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes("ParseDynamicAttributes");
+StaticFuncThunk<int> ft_MannVsMachineStats_GetAcquiredCredits("MannVsMachineStats_GetAcquiredCredits");

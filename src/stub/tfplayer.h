@@ -397,6 +397,7 @@ public:
 	CTFItem *GetItem() const    { return this->m_hItem; }
 	bool IsMiniBoss() const     { return this->m_bIsMiniBoss; }
 	int GetCurrency() const     { return this->m_nCurrency; }
+	void SetCurrency(int currency) { this->m_nCurrency = currency; }
 	void SetMiniBoss(bool boss) { this->m_bIsMiniBoss = boss; }
 	void SetForcedSkin(int skin){ this->m_bForcedSkin = true; this->m_nForcedSkin = skin; }
 	int GetForcedSkin()         { return this->m_nForcedSkin; }
@@ -602,6 +603,14 @@ inline void CTFPlayerClassShared::NetworkStateChanged(void *pVar) { this->GetOut
 
 inline void CTFPlayerShared::NetworkStateChanged()           { this->GetOuter()->NetworkStateChanged(); }
 inline void CTFPlayerShared::NetworkStateChanged(void *pVar) { this->GetOuter()->NetworkStateChanged(pVar); }
+
+inline CTFPlayer *ToTFPlayer(CBasePlayer *pEntity)
+{
+	// Its not really probable for a player not to be an instance of CTFPlayer
+	return static_cast<CTFPlayer *>(pEntity);
+
+	// return rtti_cast<CTFPlayer *>(pEntity);
+}
 
 
 inline CTFPlayer *ToTFPlayer(CBaseEntity *pEntity)

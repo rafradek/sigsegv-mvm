@@ -8,10 +8,10 @@
 #include "stub/populators.h"
 #include "stub/server.h"
 #include "stub/misc.h"
+#include "stub/team.h"
 #include "util/iterate.h"
 #include "util/scope.h"
 #include "mod/pop/kv_conditional.h"
-#include "stub/team.h"
 #include "mod/pop/pointtemplate.h"
 #include "mod/mvm/extended_upgrades.h"
 #include "mod/pop/common.h"
@@ -19,7 +19,6 @@
 #include "stub/usermessages_sv.h"
 #include "stub/objects.h"
 #include "stub/tf_objective_resource.h"
-#include "stub/team.h"
 #include "stub/upgrades.h"
 #include "stub/nextbot_cc.h"
 #include "util/clientmsg.h"
@@ -4748,6 +4747,45 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
+	DETOUR_DECL_MEMBER(int, CTFGameRules_GetTeamAssignmentOverride, CTFPlayer *pPlayer, int iWantedTeam, bool b1)
+	{
+		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
+			&& iWantedTeam == TF_TEAM_RED) {
+				
+			int totalPlayers = 0;
+			ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [&totalPlayers](CTFPlayer *player){
+				if (player->IsRealPlayer()) {
+					totalPlayers += 1;
+				}
+			});
+
+			if (totalPlayers < iGetTeamAssignmentOverride) {
+				Log( "MVM assigned %s to defending team (%d more slots remaining after us)\n", pPlayer->GetPlayerName(), iGetTeamAssignmentOverride - totalPlayers - 1 );
+				// Set Their Currency
+				int nRoundCurrency = MannVsMachineStats_GetAcquiredCredits();
+				nRoundCurrency += g_pPopulationManager->m_nStartingCurrency;
+
+				// deduct any cash that has already been spent
+				int spentCurrency = g_pPopulationManager->GetPlayerCurrencySpent(pPlayer);
+				pPlayer->SetCurrency(nRoundCurrency - spentCurrency);
+				return TF_TEAM_RED;
+			}
+			else {
+				// no room
+				Log( "MVM assigned %s to spectator, all slots for defending team are in use, or reserved for lobby members\n",
+				     pPlayer->GetPlayerName() );
+				return TEAM_SPECTATOR;
+			}
+			
+		}
+
+		/* it's important to let the call happen, because pPlayer->m_nCurrency
+		 * is set to its proper value in the call (stupid, but whatever) */
+		auto iResult = DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
+		
+		return iResult;
+	}
+
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
 	// {
 	// 	DevMsg("MessageWriteString %s\n",name);
@@ -6708,6 +6746,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride", LOWEST);
 			
 			
 			
@@ -6720,7 +6759,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
 			//MOD_ADD_DETOUR_MEMBER(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
-			//MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride");
 			//MOD_ADD_DETOUR_MEMBER(CMatchInfo_GetNumActiveMatchPlayers, "CMatchInfo::GetNumActiveMatchPlayers");
 			//MOD_ADD_DETOUR_STATIC(CollectPlayers_CTFPlayer,   "CollectPlayers<CTFPlayer>");
 			//MOD_ADD_DETOUR_MEMBER(CTFGCServerSystem_PreClientUpdate,   "CTFGCServerSystem::PreClientUpdate");
