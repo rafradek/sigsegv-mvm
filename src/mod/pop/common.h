@@ -432,7 +432,7 @@ public:
     virtual const char *GetInfo() const override
     {
         static char buf[6];
-        const char *name = GetItemName(m_iDefIndex);
+        const char *name = GetItemNameForDisplay(m_iDefIndex);
         if (name != nullptr) {
             return name;
         }

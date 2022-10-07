@@ -3,6 +3,7 @@
 #include "soundchars.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/populators.h"
+#include "stub/gamerules.h"
 #include "util/misc.h"
 #include "util/clientmsg.h"
 #include "util/iterate.h"
@@ -559,6 +560,10 @@ namespace Mod::Util::Download_Manager
 			}
 			closedir(dir);
 		}
+		
+		if (TFGameRules()->GetCustomUpgradesFile() != nullptr && TFGameRules()->GetCustomUpgradesFile()[0] != '\0')
+			AddFileIfCustom(TFGameRules()->GetCustomUpgradesFile());
+
 		if (missingfilemention && admin != nullptr) {
 			PrintToChat("Some files are missing on the server, check console for details\n", admin);
 			missingfilemention = false;
@@ -567,10 +572,6 @@ namespace Mod::Util::Download_Manager
 
 		bool saved_lock = engine->LockNetworkStringTables(false);
 
-		static ConVarRef sig_mvm_custom_upgrades_file("sig_mvm_custom_upgrades_file");
-		if (strlen(sig_mvm_custom_upgrades_file.GetString()) > 0) {
-			files_add[sig_mvm_custom_upgrades_file.GetString()] = true;
-		}
 		for (auto &entry : files_add) {
 			if (entry.second) {
 				//Msg("%s\n", entry.first.c_str());

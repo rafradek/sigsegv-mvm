@@ -178,4 +178,4 @@ MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > IPopula
 
 StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere("IsSpaceToSpawnHere");
 StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes("ParseDynamicAttributes");
-StaticFuncThunk<int> ft_MannVsMachineStats_GetAcquiredCredits("MannVsMachineStats_GetAcquiredCredits");
+StaticFuncThunk<int, int, bool> ft_MannVsMachineStats_GetAcquiredCredits("MannVsMachineStats_GetAcquiredCredits");

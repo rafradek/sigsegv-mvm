@@ -393,9 +393,11 @@ namespace Mod::Etc::Extra_Player_Slots
     }
 
     int last_player_connect_time = 0;
+    int last_player_connect_time_ack = 0;
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
 	{
-        last_player_connect_time = gpGlobals->curtime;
+        Msg("VoiceMgrConnected\n");
+        last_player_connect_time = gpGlobals->tickcount;
         if (ENTINDEX(edict) > 33) return;
         DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
     }
@@ -539,7 +541,12 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(bool, CVoiceGameMgrHelper_CanPlayerHearPlayer, CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity)
 	{
         if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
-            if (last_player_connect_time + 100 == gpGlobals->tickcount) return true;
+            // This clears out the errorname voice status for the first time player joins the server
+            if (last_player_connect_time > last_player_connect_time_ack) {
+                last_player_connect_time_ack = gpGlobals->tickcount;
+            }
+            if (last_player_connect_time_ack == gpGlobals->tickcount) 
+                return true;
 
             if (ENTINDEX(pTalker) > 64)
                 return false;
@@ -946,6 +953,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
         virtual void LevelShutdownPostEntity() override
 		{
+            last_player_connect_time_ack = 0;
             //Msg("Has %d\n", sig_etc_extra_player_slots_allow_bots.GetBool());
             bool enable = MapHasExtraSlots(nextmap.c_str());
             if (!enable && gpGlobals->maxClients >= 33) {

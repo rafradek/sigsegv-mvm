@@ -312,7 +312,7 @@ struct EventInfo
 
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
 extern StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes;
-extern StaticFuncThunk<int> ft_MannVsMachineStats_GetAcquiredCredits;
+extern StaticFuncThunk<int, int, bool> ft_MannVsMachineStats_GetAcquiredCredits;
 
 
 inline bool IsSpaceToSpawnHere(const Vector& pos)
@@ -325,8 +325,8 @@ inline bool ParseDynamicAttributes(CTFBot::EventChangeAttributes_t &event, KeyVa
 	return ft_ParseDynamicAttributes(event, kv);
 }
 
-inline int MannVsMachineStats_GetAcquiredCredits()
+inline int MannVsMachineStats_GetAcquiredCredits(int wave = -1, bool bonus = true)
 {
-	return ft_MannVsMachineStats_GetAcquiredCredits();
+	return ft_MannVsMachineStats_GetAcquiredCredits(wave, bonus);
 }
 #endif

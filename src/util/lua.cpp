@@ -2881,6 +2881,7 @@ namespace Util::Lua
         {"AcceptInput", LEntityAcceptInput},
         {"GetNetIndex", LEntityGetNetworkIndex},
         {"GetHandleIndex", LEntityGetHandleIndex},
+        {"GetClassname", LEntityGetClassname},
         {"GetPlayerItemBySlot", LEntityGetPlayerItemBySlot},
         {"GetPlayerItemByName", LEntityGetPlayerItemByName},
         {"GetAttributeValue", LEntityGetItemAttribute},

@@ -1619,6 +1619,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		return state.m_iRobotLimitSetByMission;
 	}
 
+	
+	DETOUR_DECL_STATIC(const char *, TranslateWeaponEntForClass, const char *name, int classIndex)
+	{
+		auto result = DETOUR_STATIC_CALL(TranslateWeaponEntForClass)(name, classIndex);
+		if (result != nullptr && result[0] == '\0') {
+			return TranslateWeaponEntForClass_improved(name, classIndex);
+		}
+		return result;
+	}
+
 	RefCount rc_GetEntityForLoadoutSlot;
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot, bool flag)
 	{
@@ -4934,7 +4944,7 @@ namespace Mod::Pop::PopMgr_Extensions
 						name = subkey->GetString();
 					}
 					else {
-						name = GetItemName(item_def->m_iItemDefIndex);
+						name = GetItemNameForDisplay(item_def->m_iItemDefIndex);
 					}
 
 					//if (state.m_CustomWeapons.find(subkey->GetName()) != state.m_CustomWeapons.end())
@@ -6773,6 +6783,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride", LOWEST);
+			MOD_ADD_DETOUR_STATIC(TranslateWeaponEntForClass, "TranslateWeaponEntForClass");
+			
 			
 			
 			
