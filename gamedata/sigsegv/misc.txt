@@ -32,12 +32,12 @@
 					unistr "CreateEntityByName( %s, %d ) - CreateEdict failed."
 				}
 				
-//				"TranslateWeaponEntForClass"
-//				{
-//					type   "func ebpprologue uniref"
-//					sym    "_Z26TranslateWeaponEntForClassPKci"
-//					uniref "pszWpnEntTranslationList"
-//				}
+				"TranslateWeaponEntForClass"
+				{
+					type   "func ebpprologue uniref"
+					sym    "_Z26TranslateWeaponEntForClassPKci"
+					uniref "pszWpnEntTranslationList"
+				}
 				
 				"CBaseEntity::CalcAbsolutePosition"
 				{
