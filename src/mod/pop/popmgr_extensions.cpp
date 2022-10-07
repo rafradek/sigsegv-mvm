@@ -24,6 +24,7 @@
 #include "util/clientmsg.h"
 #include "util/admin.h"
 #include "mod/etc/mapentity_additions.h"
+#include <fmt/core.h>
 
 WARN_IGNORE__REORDER()
 #include <../server/vote_controller.h>
@@ -553,6 +554,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int loadout_slot;
 		CEconItemView *item;
 		std::string name;
+		std::string definitionName;
 		int cost = 0;
 		int min_wave = 0;
 		int max_wave = 9999;
@@ -904,6 +906,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				CEconItemView::Destroy(item.item);
 			}
 			this->m_ExtraLoadoutItems.clear();
+			this->m_ExtraLoadoutItemsNotify = false;
 
 			this->m_PlayerMissionInfoSend.clear();
 			
@@ -1135,6 +1138,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<ItemReplace> m_ItemReplace;
 		std::vector<std::string> m_Description;
 		std::vector<ExtraLoadoutItem> m_ExtraLoadoutItems;
+		bool m_ExtraLoadoutItemsNotify;
 		std::unordered_map<CTFPlayer *, std::set<int>> m_SelectedLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItemsCheckpoint;
@@ -2300,7 +2304,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DevMsg("Pass send\n");
 
-		if (!state.m_ExtraLoadoutItems.empty())
+		if (state.m_ExtraLoadoutItemsNotify)
 			PrintToChat("\x07""7fd4ffThis mission allows you to equip custom items. Type !missionitems in chat to see available items for your class\n",player);
 
 		//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
@@ -4012,6 +4016,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		return false;
 	}
 
+	bool IsExtraItemAvailable(int currentWave, CSteamID steamId, ExtraLoadoutItem &item, int itemId)
+	{
+		return currentWave >= item.min_wave && currentWave <= item.max_wave && !(item.hidden && !state.m_BoughtLoadoutItems[steamId].count(itemId));
+	}
+
 	IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player, bool autoHide)
 	{
 		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player, autoHide);
@@ -4022,9 +4031,16 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		bool has_class[10] = {0};
 
+		bool hasHidden = false;
+		int wave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 			
+			if (!IsExtraItemAvailable(wave, player->GetSteamID(), item, i)) {
+				hasHidden = true;
+				continue;
+			}
+
 			if (item.class_index == 0) {
 				for (int j = 0; j < 10; j++) {
 					has_class[j] = true;
@@ -4047,7 +4063,7 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info1);
         }
 		else if (menu->GetItemCount() == 0) {
-            ItemDrawInfo info1("No extra loadout items available", ITEMDRAW_DISABLED);
+            ItemDrawInfo info1(hasHidden ? "No extra loadout items available (yet)" : "No extra loadout items available", ITEMDRAW_DISABLED);
             menu->AppendItem(" ", info1);
             ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info2);
@@ -4519,7 +4535,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			playerItems = playerItemsCheckpoint;
 			
 			for (auto it = playerItemsSelected.begin(); it != playerItemsSelected.end(); ) {
-				if (*it >= (int)state.m_ExtraLoadoutItems.size() || (state.m_ExtraLoadoutItems[*it].cost != 0 && !playerItems.count(*it))) {
+				if (*it >= (int)state.m_ExtraLoadoutItems.size() || ((state.m_ExtraLoadoutItems[*it].cost != 0 || state.m_ExtraLoadoutItems[*it].hidden) && !playerItems.count(*it))) {
 					it = playerItemsSelected.erase(it);
 				}
 				else {
@@ -4634,7 +4650,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
-			if (item.name == name) {
+			if (item.definitionName == name) {
 				CSteamID steamid;
 				player->GetSteamID(&steamid);
 				state.m_BoughtLoadoutItems[steamid].insert(i);
@@ -4650,10 +4666,9 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 				set.insert(i);
-				if (equipNow) {
+				if (equipNow && (item.class_index == 0 || item.class_index == player->GetPlayerClass()->GetClassIndex())) {
 					GiveItemByName(player, name.c_str());
 				}
-				return;
 			}
 		}
 	}
@@ -4661,20 +4676,19 @@ namespace Mod::Pop::PopMgr_Extensions
 	void StripExtraItem(CTFPlayer *player, std::string &name, bool removeNow) {
 		
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
-			if (state.m_ExtraLoadoutItems[i].name == name) {
+			auto &item = state.m_ExtraLoadoutItems[i];
+			if (item.definitionName == name) {
 				CSteamID steamid;
 				player->GetSteamID(&steamid);
-				bool remove = false;
-				if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0 && removeNow) 
-					remove = true;
+				bool removed = false;
+				if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0) 
+					removed = true;
 
-				if (state.m_SelectedLoadoutItems[player].erase(i) != 0 && removeNow) 
-					remove = true;
+				if (state.m_SelectedLoadoutItems[player].erase(i) != 0) 
+					removed = true;
 				
-				if (remove)
+				if (removeNow && removed && (item.class_index == 0 || item.class_index == player->GetPlayerClass()->GetClassIndex()))
 					player->GiveDefaultItemsNoAmmo();
-
-				return;
 			}
 		}
 	}
@@ -5011,12 +5025,16 @@ namespace Mod::Pop::PopMgr_Extensions
 				name = item_name;
 			}
 			else {
-				name = GetItemName(item_def->m_iItemDefIndex);
+				name = GetItemNameForDisplay(item_def->m_iItemDefIndex);
 			}
 			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, item.item);
 			static int isExtraLoadoutItemId = GetItemSchema()->GetAttributeDefinitionByName("is extra loadout item")->GetIndex();
 			item.item->GetAttributeList().SetRuntimeAttributeValueByDefID(isExtraLoadoutItemId, 1.0f);
 			item.name = name;
+			item.definitionName = item_name;
+			if (!item.hidden) {
+				state.m_ExtraLoadoutItemsNotify = true;
+			}
 			state.m_ExtraLoadoutItems.push_back(item);
 		}
 	}
@@ -5572,6 +5590,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			else if (FStrEq(subkey->GetName(), "OriginalItemName")){
 				weapon.originalId = static_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(subkey->GetString()));
+
+				// Replace stock weapons with upgradeable versions. This is so the game properly replaces stock weapons with requested custom weapons in extra loadout
+				if (weapon.originalId != nullptr && FStrEq(weapon.originalId->GetKeyValues()->GetString("item_quality"), "normal")) {
+					auto upgradeable = static_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(fmt::format("upgradeable {}", subkey->GetString()).c_str()));
+					if (upgradeable != nullptr) {
+						weapon.originalId = upgradeable;
+					}
+				}
 			}
 			else {
 				CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());

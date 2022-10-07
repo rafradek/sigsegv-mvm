@@ -288,7 +288,7 @@ private:
 
 const char *GetItemName(const CEconItemView *view);
 const char *GetItemName(const CEconItemView *view, bool &is_custom);
-const char *GetItemName(int item_defid);
+const char *GetItemNameForDisplay(int item_defid);
 const char *GetItemNameForDisplay(const CEconItemView *view);
 
 class ItemListEntry

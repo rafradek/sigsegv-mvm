@@ -1324,6 +1324,7 @@ const char *GetItemName(const CEconItemView *view, bool &is_custom) {
         value = view->GetStaticData()->GetName("");
         is_custom = false;
     }
+    Msg("ItemName %s\n", value);
     return value;
 }
 
@@ -1347,12 +1348,12 @@ const char *GetItemNameForDisplay(const CEconItemView *view) {
         return STRING(AllocPooledString(buf.c_str()));
     }
     else {
-        value = GetItemName(view->GetItemDefIndex());
+        value = GetItemNameForDisplay(view->GetItemDefIndex());
     }
     return value;
 }
 
-const char *GetItemName(int item_defid) {
+const char *GetItemNameForDisplay(int item_defid) {
     auto find = g_Itemnames.find(item_defid);
     if (find != g_Itemnames.end()) {
         return find->second.c_str();
