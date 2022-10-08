@@ -504,7 +504,7 @@ namespace Mod::Perf::Func_Optimize
     edict_t *world_edict = nullptr;
     DETOUR_DECL_STATIC(CBasePlayer *, UTIL_PlayerByIndex, int slot)
 	{
-        if (slot < 0 || slot >= gpGlobals->maxClients) return nullptr;
+        if (slot <= 0 || slot > gpGlobals->maxClients) return nullptr;
         auto edict = world_edict + slot;
         if (edict == nullptr || edict->IsFree()) return nullptr;
 

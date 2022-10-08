@@ -396,7 +396,6 @@ namespace Mod::Etc::Extra_Player_Slots
     int last_player_connect_time_ack = 0;
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
 	{
-        Msg("VoiceMgrConnected\n");
         last_player_connect_time = gpGlobals->tickcount;
         if (ENTINDEX(edict) > 33) return;
         DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
