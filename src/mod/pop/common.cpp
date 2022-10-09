@@ -1324,7 +1324,6 @@ const char *GetItemName(const CEconItemView *view, bool &is_custom) {
         value = view->GetStaticData()->GetName("");
         is_custom = false;
     }
-    Msg("ItemName %s\n", value);
     return value;
 }
 

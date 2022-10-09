@@ -561,8 +561,9 @@ namespace Mod::Util::Download_Manager
 			closedir(dir);
 		}
 		
-		if (TFGameRules()->GetCustomUpgradesFile() != nullptr && TFGameRules()->GetCustomUpgradesFile()[0] != '\0')
-			AddFileIfCustom(TFGameRules()->GetCustomUpgradesFile());
+		auto upgradeFile = TFGameRules()->GetCustomUpgradesFile();
+		if (upgradeFile != nullptr && upgradeFile[0] != '\0')
+			AddFileIfCustom(StringStartsWith(upgradeFile, "download/") ? upgradeFile + strlen("download/") : upgradeFile);
 
 		if (missingfilemention && admin != nullptr) {
 			PrintToChat("Some files are missing on the server, check console for details\n", admin);
@@ -583,6 +584,39 @@ namespace Mod::Util::Download_Manager
 		Msg("GenerateDownloadables time %.9f\n", timer.GetDuration().GetSeconds());
 		case_sensitive_toggle = false;
 
+	}
+
+	CON_COMMAND_F(sig_util_download_manager_scan_all_missing, "Utility: scan all missing files in all population files", FCVAR_NOTIFY)
+	{
+		char poppath[256];
+		snprintf(poppath, sizeof(poppath), "%s/%s/scripts/population", game_path, cvar_downloadpath.GetString());
+		DIR *dir;
+		dirent *ent;
+		char filepath[512];
+		char respath[512];
+
+		if ((dir = opendir(poppath)) != nullptr) {
+			while ((ent = readdir(dir)) != nullptr) {
+				if (StringStartsWith(ent->d_name, "mvm_") && StringEndsWith(ent->d_name, ".pop")) {
+					snprintf(filepath, sizeof(filepath), "%s/%s", poppath, ent->d_name);
+
+					snprintf(respath, sizeof(respath), "%s%s", "scripts/population/",ent->d_name);
+					KeyValues *kv = new KeyValues("kv");
+					kv->UsesConditionals(false);
+					if (kv->LoadFromFile(filesystem, respath)) {
+						printmissing = false;
+						KeyValueBrowse(kv);
+					}
+					kv->deleteThis();
+					//Msg("FIle: %s time: %.9f\n", respath, timer.GetDuration().GetSeconds());
+				}
+			}
+			closedir(dir);
+		}
+		Msg("Missing files:\n");
+		for (auto &entry : missing_files) {
+			Msg("%s\n", entry.second);
+		}
 	}
 
 	void AddMapToVoteList(const char *mapName, KeyValues *kv, int &files, std::string &maplistStr)

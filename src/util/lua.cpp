@@ -2558,6 +2558,7 @@ namespace Util::Lua
                     lua_pop(l, 1);
                     return hit;
                 }
+                return true;
             }
             return false;
         }

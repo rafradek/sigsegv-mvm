@@ -47,6 +47,14 @@ COLLISION_GROUP_PUSHAWAY = 17	-- Nonsolid on client and server, pushaway in play
 
 COLLISION_GROUP_NPC_ACTOR = 18		-- Used so NPCs in scripts ignore the player.
 COLLISION_GROUP_NPC_SCRIPTED = 19	-- USed for NPCs in scripts that should not collide with each other
+TF_COLLISIONGROUP_GRENADES = 20
+TFCOLLISION_GROUP_OBJECT = 21
+TFCOLLISION_GROUP_OBJECT_SOLIDTOPLAYERMOVEMENT = 22
+TFCOLLISION_GROUP_COMBATOBJECT = 23
+TFCOLLISION_GROUP_ROCKETS = 24		-- Solid to players, but not player movement. ensures touch calls are originating from rocket
+TFCOLLISION_GROUP_RESPAWNROOMS = 25
+TFCOLLISION_GROUP_TANK = 26
+TFCOLLISION_GROUP_ROCKET_BUT_NOT_WITH_OTHER_ROCKETS = 27
 
 ----------------
 -- Hit groups

@@ -243,6 +243,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				ResetMaxRedTeamPlayers(cvar_max_red_players.GetInt());
 			else
 				ResetMaxRedTeamPlayers(6);
+				
+			SetVisibleMaxPlayers();
 		});	
 
     ConVar cvar_modded_pvp{"sig_modded_pvp", "0", FCVAR_NOTIFY,
@@ -3994,7 +3996,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool nextThink = false;
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		void *menu = nullptr;
-		if (menus->GetDefaultStyle()->GetClientMenu(player->entindex(), &menu) == MenuSource_BaseMenu && menu != nullptr) {
+		if (menus->GetDefaultStyle()->GetClientMenu(player->entindex(), &menu) == MenuSource_BaseMenu && menu != nullptr && ((IBaseMenu *)menu)->GetHandler() != nullptr) {
 			auto handler = dynamic_cast<ExtraLoadoutItemsHander *>(((IBaseMenu *)menu)->GetHandler());
 			if (handler != nullptr && handler->autoHide) {
 				nextThink = true;
