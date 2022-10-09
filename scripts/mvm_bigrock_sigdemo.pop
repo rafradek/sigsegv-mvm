@@ -646,6 +646,7 @@ WaveSchedule
 	/////////////////////
 
 	//PointTemplate is a named set of entities, that can be spawned at any selected moment in the mission.
+	//Every template definition will spawn a single env_entity_maker entity with its name
 	//
 	//It is possible to spawn template entities during these events:
 	//Once on mission start
