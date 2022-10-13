@@ -100,6 +100,7 @@ namespace Mod::MvM::Robot_Limit
 	// Those extra slots must stay unused to respect the max robot limit
 	int GetMaxAllowedSlot()
 	{
+		//return gpGlobals->maxClients;
 		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
 		if (!sig_etc_extra_player_slots_allow_bots.GetBool()) return 33;
 		
@@ -135,13 +136,14 @@ namespace Mod::MvM::Robot_Limit
 
 		// Kick bots over the slot 33
 
-		/*for (int i = 0; i < mvm_bots.Count(); i++) {
-			if (ENTINDEX(mvm_bots[i]) > 33 && ENTINDEX(mvm_bots[i]) > GetMvMInvaderLimit() + visible_max_players.GetInt() + specs + (tv_enable.GetBool() ? 1 : 0)) {
+		int maxAllowedSlot = GetMaxAllowedSlot();
+		for (int i = 0; i < mvm_bots.Count(); i++) {
+			if (ENTINDEX(mvm_bots[i]) > 33 && ENTINDEX(mvm_bots[i]) > maxAllowedSlot) {
 				engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
 				mvm_bots.Remove(i);
 				i--;
 			}
-		}*/
+		}
 
 		if (mvm_bots.Count() < GetMvMInvaderLimit()) return;
 		
@@ -154,7 +156,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (bot->GetTeamNumber() == TEAM_SPECTATOR && ENTINDEX(bot) <= 33) {
+				if (bot->GetTeamNumber() == TEAM_SPECTATOR /*&& ENTINDEX(bot) <= 33*/) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -165,7 +167,7 @@ namespace Mod::MvM::Robot_Limit
 				for (auto bot : mvm_bots) {
 					if (need_to_kick <= 0) break;
 					
-					if (bot->GetTeamNumber() == TF_TEAM_RED && ENTINDEX(bot) <= 33) {
+					if (bot->GetTeamNumber() == TF_TEAM_RED /*&& ENTINDEX(bot) <= 33*/) {
 						bots_to_kick.AddToTail(bot);
 						--need_to_kick;
 					}
@@ -175,7 +177,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (!bot->IsAlive() && ENTINDEX(bot) <= 33) {
+				if (!bot->IsAlive() /*&& ENTINDEX(bot) <= 33*/) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -184,7 +186,7 @@ namespace Mod::MvM::Robot_Limit
 			for (auto bot : mvm_bots) {
 				if (need_to_kick <= 0) break;
 				
-				if (bot->GetTeamNumber() == TF_TEAM_BLUE && ENTINDEX(bot) <= 33) {
+				if (bot->GetTeamNumber() == TF_TEAM_BLUE /*&& ENTINDEX(bot) <= 33*/) {
 					bots_to_kick.AddToTail(bot);
 					--need_to_kick;
 				}
@@ -207,8 +209,8 @@ namespace Mod::MvM::Robot_Limit
 	int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots, bool collect_red) {
 		mvm_bots->RemoveAll();
 		int count_red = 0;
-		int maxAllowedSlot = GetMaxAllowedSlot();
-		for (int i = 1; i <= maxAllowedSlot; ++i) {
+		int maxAllowedSlot = gpGlobals->maxClients;//GetMaxAllowedSlot();
+		for (int i = 1; i <= maxAllowedSlot ; i++) {
 			CTFBot *bot = ToTFBot(UTIL_PlayerByIndex(i));
 			if (bot == nullptr)      continue;
 			if (ENTINDEX(bot) == 0)  continue;
@@ -295,18 +297,18 @@ namespace Mod::MvM::Robot_Limit
 		}
 
 		// To prevent client crashes when 33+ slots are used, create all bots at extra slots at once. They will still be ignored if robot limit is not high enough
-		if (has_extra_bot_mission) {
-			for (int i = 33; i < gpGlobals->maxClients; i++) {
-				if (UTIL_PlayerByIndex(i + 1) == nullptr) {
-					Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(i);
-					CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
-					Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(-1);
-					if (bot != nullptr) {
-						bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
-					}
-				}
-			}
-		}
+		// if (has_extra_bot_mission) {
+		// 	for (int i = 33; i < gpGlobals->maxClients; i++) {
+		// 		if (UTIL_PlayerByIndex(i + 1) == nullptr) {
+		// 			Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(i);
+		// 			CTFBot *bot = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
+		// 			Mod::Etc::Extra_Player_Slots::SetForceCreateAtSlot(-1);
+		// 			if (bot != nullptr) {
+		// 				bot->ChangeTeam(TEAM_SPECTATOR, false, true, false);
+		// 			}
+		// 		}
+		// 	}
+		// }
 		
 		popmgr->m_bAllocatedBots = true;
 	}

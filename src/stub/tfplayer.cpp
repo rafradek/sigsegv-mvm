@@ -476,9 +476,10 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 				// Prevent replacing extra loadout item
 				int extraLoadoutItem = 0;
 				int forced = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_forced_item);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_force_item);
+				// 2 - ForceItem from WaveSchedule, cannot replace extra loadout item
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(old_econ_entity, extraLoadoutItem, is_extra_loadout_item);
-				if (extraLoadoutItem != 0 && forced == 0) {
+				if (extraLoadoutItem != 0 && forced == 2) {
 					return false;
 				}
 

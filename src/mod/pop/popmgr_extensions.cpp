@@ -4075,7 +4075,7 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info1);
         }
 		else if (menu->GetItemCount() == 0) {
-            ItemDrawInfo info1(hasHidden ? "No extra loadout items available (yet)" : "No extra loadout items available", ITEMDRAW_DISABLED);
+            ItemDrawInfo info1(hasHidden ? "No extra loadout items currently available" : "No extra loadout items available", ITEMDRAW_DISABLED);
             menu->AppendItem(" ", info1);
             ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info2);

@@ -139,8 +139,9 @@ namespace Mod::Pop::Wave_Extensions
 				}
 				
 				int forced = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_forced_item);
-				if (forced != 0) {
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, forced, is_force_item);
+				// 1 - ForceItem from WaveSchedule
+				if (forced == 1) {
 					respawn = true;
 				}
 			});

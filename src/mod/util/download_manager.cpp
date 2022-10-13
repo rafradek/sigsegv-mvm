@@ -588,34 +588,61 @@ namespace Mod::Util::Download_Manager
 
 	CON_COMMAND_F(sig_util_download_manager_scan_all_missing, "Utility: scan all missing files in all population files", FCVAR_NOTIFY)
 	{
-		char poppath[256];
+		char poppath[512];
 		snprintf(poppath, sizeof(poppath), "%s/%s/scripts/population", game_path, cvar_downloadpath.GetString());
 		DIR *dir;
 		dirent *ent;
 		char filepath[512];
 		char respath[512];
+		char origMapFile[256];
+		snprintf(origMapFile, sizeof(origMapFile), "maps/%s.bsp", STRING(gpGlobals->mapname));
+		filesystem->RemoveSearchPath(origMapFile, "GAME");
 
-		if ((dir = opendir(poppath)) != nullptr) {
-			while ((ent = readdir(dir)) != nullptr) {
-				if (StringStartsWith(ent->d_name, "mvm_") && StringEndsWith(ent->d_name, ".pop")) {
-					snprintf(filepath, sizeof(filepath), "%s/%s", poppath, ent->d_name);
+		FileFindHandle_t mapHandle;
+		// Find maps in all game directories
+		for (const char *mapName = filesystem->FindFirstEx("maps/mvm_*.bsp", "GAME", &mapHandle);
+						mapName != nullptr; mapName = filesystem->FindNext(mapHandle)) {
+			//Remove extension from the map name
+			std::string mapNameNoExt(mapName, strlen(mapName) - 4);
+			char mapFile[256];
+			snprintf(mapFile, sizeof(mapFile), "maps/%s", mapName);
+			bool addedToPath = false;
+			if ((dir = opendir(poppath)) != nullptr) {
+				
+				while ((ent = readdir(dir)) != nullptr) {
+					if (StringStartsWith(ent->d_name, mapNameNoExt.c_str()) && StringEndsWith(ent->d_name, ".pop")) {
+						if (!addedToPath) {
+							filesystem->AddSearchPath(mapFile, "GAME");
+							addedToPath = true;
+						}
+						snprintf(filepath, sizeof(filepath), "%s/%s", poppath, ent->d_name);
 
-					snprintf(respath, sizeof(respath), "%s%s", "scripts/population/",ent->d_name);
-					KeyValues *kv = new KeyValues("kv");
-					kv->UsesConditionals(false);
-					if (kv->LoadFromFile(filesystem, respath)) {
-						printmissing = false;
-						KeyValueBrowse(kv);
+						snprintf(respath, sizeof(respath), "%s%s", "scripts/population/",ent->d_name);
+						KeyValues *kv = new KeyValues("kv");
+						kv->UsesConditionals(false);
+						if (kv->LoadFromFile(filesystem, respath)) {
+							printmissing = false;
+							KeyValueBrowse(kv);
+						}
+						kv->deleteThis();
+						//Msg("FIle: %s time: %.9f\n", respath, timer.GetDuration().GetSeconds());
 					}
-					kv->deleteThis();
-					//Msg("FIle: %s time: %.9f\n", respath, timer.GetDuration().GetSeconds());
 				}
+				closedir(dir);
 			}
-			closedir(dir);
+			if (addedToPath) {
+				filesystem->RemoveSearchPath(mapFile, "GAME");
+			}
+
 		}
+		filesystem->FindClose(mapHandle);
+		filesystem->AddSearchPath(origMapFile, "GAME");
 		Msg("Missing files:\n");
+		int pathfullLength = strlen(game_path) + 1 + strlen(cvar_downloadpath.GetString()) + 1;
 		for (auto &entry : missing_files) {
-			Msg("%s\n", entry.second);
+			if (!entry.second.ends_with(".phy") && entry.second.length() > pathfullLength) {
+				Msg("%s\n", entry.second.c_str() + pathfullLength);
+			}
 		}
 	}
 

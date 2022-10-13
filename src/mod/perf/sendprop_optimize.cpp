@@ -142,9 +142,9 @@ namespace Mod::Perf::SendProp_Optimize
     std::vector<PropIndexData> prop_offset_sendtable;
 
     // key: prop index value: write bit index
-    std::vector<unsigned short> player_prop_write_offset[256];
+    std::vector<unsigned short> player_prop_write_offset[ABSOLUTE_PLAYER_LIMIT];
 
-    std::vector<int> player_prop_value_old[256];
+    std::vector<int> player_prop_value_old[ABSOLUTE_PLAYER_LIMIT];
 
     unsigned short *player_prop_offsets;
 
@@ -156,10 +156,10 @@ namespace Mod::Perf::SendProp_Optimize
     CSendNode **player_send_nodes;
 
     // This can be set to force a full update
-    bool force_player_update[256];
+    bool force_player_update[ABSOLUTE_PLAYER_LIMIT];
 
     // This is used to check if a player had a forced full update
-    bool player_not_force_updated[256];
+    bool player_not_force_updated[ABSOLUTE_PLAYER_LIMIT];
 
     bool firsttime = true;
     bool lastFullEncode = false;

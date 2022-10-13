@@ -97,12 +97,6 @@ CopyFiles('resource', 'custom/sigsegv/resource',
 CopyFiles('scripts', 'custom/sigsegv/scripts',
   [
     'sigsegv_sound_overrides.txt',
-  ]
-)
-
-# Lua Script files
-CopyFiles('src/lua', 'custom/sigsegv/scripts',
-  [
     'globals.lua',
     'library.lua'
   ]

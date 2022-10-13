@@ -14,12 +14,12 @@ int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlay
 {
 	if (pattern == nullptr) return 0;
 
-	cell_t targets[65];
+	cell_t targets[ABSOLUTE_PLAYER_LIMIT];
 	cmd_target_info_t target_info;
 	target_info.admin = ENTINDEX(caller);
 	target_info.pattern = pattern;
 	target_info.targets = targets;
-	target_info.max_targets = 65;
+	target_info.max_targets = gpGlobals->maxClients;
 	target_info.target_name = target_name;
 	target_info.target_name_maxlength = target_name_size;
 	target_info.flags = flags;

@@ -17,6 +17,7 @@
 
 namespace Mod::Etc::Extra_Player_Slots
 {
+    constexpr int DEFAULT_MAX_PLAYERS = 33;
     inline bool ExtraSlotsEnabled();
     
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
@@ -49,7 +50,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
     inline bool ExtraSlotsEnabled()
     {
-        return sig_etc_extra_player_slots_count.GetInt() > 33;
+        return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS;
     }
 
     bool MapHasExtraSlots(const char *map) 
@@ -101,7 +102,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
     inline int GetHLTVSlot()
     {
-        return 32;
+        return DEFAULT_MAX_PLAYERS - 1;
     }
 
     int force_create_at_slot = -1;
@@ -112,7 +113,7 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
         auto server = reinterpret_cast<CBaseServer *>(this);
-        if (server == hltv || ((!ExtraSlotsEnabled() || gpGlobals->maxClients < 34) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if (server == hltv || ((!ExtraSlotsEnabled() || gpGlobals->maxClients < DEFAULT_MAX_PLAYERS + 1) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
         if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
@@ -151,14 +152,14 @@ namespace Mod::Etc::Extra_Player_Slots
             int desiredSlot = GetHLTVSlot();
             if (!rc_CBaseServer_CreateFakeClient_HLTV) {
                 if (!sig_etc_extra_player_slots_allow_bots.GetBool()) {
-                    desiredSlot = 32;
+                    desiredSlot = DEFAULT_MAX_PLAYERS - 1;
                 }
                 else {
                     if (TFGameRules()->IsMannVsMachineMode()) {
                         static ConVarRef visible_max_players("sv_visiblemaxplayers");
                         static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
                         int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
-                        desiredSlot = Clamp(visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1 + specs + (tv_enable.GetBool() ? 1 : 0), 32, server->GetMaxClients() - 1);
+                        desiredSlot = Clamp(visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1 + specs + (tv_enable.GetBool() ? 1 : 0), DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
                     }
                     else {
                         desiredSlot = gpGlobals->maxClients - 1;
@@ -179,7 +180,7 @@ namespace Mod::Etc::Extra_Player_Slots
         }
 		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
         if (client != nullptr) {
-            if ( !((sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) || (sig_etc_extra_player_slots_allow_players.GetBool() && !rc_CBaseServer_CreateFakeClient)) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > 32) {
+            if ( !((sig_etc_extra_player_slots_allow_bots.GetBool() && rc_CBaseServer_CreateFakeClient) || (sig_etc_extra_player_slots_allow_players.GetBool() && !rc_CBaseServer_CreateFakeClient)) && !rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() > DEFAULT_MAX_PLAYERS - 1) {
                 return nullptr;
             }
             if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1) {
@@ -204,8 +205,8 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
         int preMaxPlayers = gpGlobals->maxClients;
 
-        if (preMaxPlayers > 33) {
-            gpGlobals->maxClients = 33;
+        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_FrameUpdatePostEntityThink)();
         gpGlobals->maxClients = preMaxPlayers;
@@ -215,8 +216,8 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
 		int preMaxPlayers = gpGlobals->maxClients;
 
-        if (preMaxPlayers > 33) {
-            gpGlobals->maxClients = 33;
+        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
         gpGlobals->maxClients = preMaxPlayers;
@@ -226,8 +227,8 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
 		int preMaxPlayers = gpGlobals->maxClients;
 
-        if (preMaxPlayers > 33) {
-            gpGlobals->maxClients = 33;
+        if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
         gpGlobals->maxClients = preMaxPlayers;
@@ -242,7 +243,7 @@ namespace Mod::Etc::Extra_Player_Slots
         }
         auto team = (CTeam *)(pData);
         int numplayers = team->GetNumPlayers();
-        while (iElement + playerListOffset < numplayers - 1 && ENTINDEX(team->GetPlayer(iElement + playerListOffset)) > 33) {
+        while (iElement + playerListOffset < numplayers - 1 && ENTINDEX(team->GetPlayer(iElement + playerListOffset)) > DEFAULT_MAX_PLAYERS) {
             playerListOffset += 1;
         }
         //Msg("Element %d offset %d\n", iElement, playerListOffset);
@@ -259,7 +260,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
             for (int i = 0; i < countpre; i++) {
                 //Msg("Player %d\n", team->GetPlayer(i));
-                if (ENTINDEX(team->GetPlayer(i)) > 33) {
+                if (ENTINDEX(team->GetPlayer(i)) > DEFAULT_MAX_PLAYERS) {
                     count--;
                 }
                 //Msg("Player post\n");
@@ -273,9 +274,9 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
         auto team = reinterpret_cast<CTFTeam *>(this);
         //Msg("Add plaayer Team is %d %d\n", team->GetTeamNumber(), player);
-        if (ENTINDEX(player) < 34) {
+        if (ENTINDEX(player) < DEFAULT_MAX_PLAYERS + 1) {
             int insertindex = team->m_aPlayers->Count();
-            while (insertindex > 0 && ENTINDEX(team->m_aPlayers[insertindex - 1]) > 33) {
+            while (insertindex > 0 && ENTINDEX(team->m_aPlayers[insertindex - 1]) > DEFAULT_MAX_PLAYERS) {
                 insertindex--;
             }
             team->m_aPlayers->InsertBefore(insertindex, player);
@@ -294,7 +295,7 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(void, CTFTeam_SetTeamLeader, CBasePlayer *player)
 	{
         auto team = reinterpret_cast<CTFTeam *>(this);
-        //if (ENTINDEX(player) > 33) {
+        //if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) {
         //    team->m_hLeader = nullptr;
         //    return;
         //}
@@ -322,9 +323,9 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
         int oldIndex = -1;
         auto movement = reinterpret_cast<CGameMovement *>(this);
-        if (movement->player != nullptr && ENTINDEX(movement->player) > 33) {
+        if (movement->player != nullptr && ENTINDEX(movement->player) > DEFAULT_MAX_PLAYERS) {
             oldIndex = ENTINDEX(movement->player);
-            movement->player->edict()->m_EdictIndex = 32;
+            movement->player->edict()->m_EdictIndex = DEFAULT_MAX_PLAYERS - 1;
             //return enginetrace->GetPointContents(point);
         }
         auto ret = DETOUR_MEMBER_CALL(CGameMovement_GetPointContentsCached)(point, slot);
@@ -338,7 +339,7 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
         auto movement = reinterpret_cast<CGameMovement *>(this);
         int oldIndex = -1;
-        if (movement->player != nullptr && ENTINDEX(movement->player) > 33) {
+        if (movement->player != nullptr && ENTINDEX(movement->player) > DEFAULT_MAX_PLAYERS) {
             oldIndex = ENTINDEX(movement->player);
             movement->player->edict()->m_EdictIndex = 0;
         }
@@ -349,27 +350,27 @@ namespace Mod::Etc::Extra_Player_Slots
         return ret;
     }
 
-	DETOUR_DECL_MEMBER(void, CTFGameStats_ResetPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetPlayerStats)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_ResetKillHistory, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetKillHistory)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_IncrementStat, CTFPlayer* player, int statType, int value) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_IncrementStat)(player, statType, value);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_SendStatsToPlayer, CTFPlayer* player, bool isAlive) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_SendStatsToPlayer)(player, isAlive);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_AccumulateAndResetPerLifeStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_AccumulateAndResetPerLifeStats)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerConnected, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerConnected)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerDisconnectedTF, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerDisconnectedTF)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerLeachedHealth, CTFPlayer* player, bool dispenser, float amount) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerLeachedHealth)(player, dispenser, amount);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_TrackKillStats, CTFPlayer* attacker, CTFPlayer* victim) { if (ENTINDEX(attacker) > 33 || ENTINDEX(victim) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_TrackKillStats)(attacker, victim);}
-    DETOUR_DECL_MEMBER(void *, CTFGameStats_FindPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > 33) return nullptr; return DETOUR_MEMBER_CALL(CTFGameStats_FindPlayerStats)(player);}
-    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerEarnedKillStreak, CTFPlayer* player) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerEarnedKillStreak)(player);}
+	DETOUR_DECL_MEMBER(void, CTFGameStats_ResetPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetPlayerStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_ResetKillHistory, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_ResetKillHistory)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_IncrementStat, CTFPlayer* player, int statType, int value) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_IncrementStat)(player, statType, value);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_SendStatsToPlayer, CTFPlayer* player, bool isAlive) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_SendStatsToPlayer)(player, isAlive);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_AccumulateAndResetPerLifeStats, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_AccumulateAndResetPerLifeStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerConnected, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerConnected)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerDisconnectedTF, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerDisconnectedTF)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerLeachedHealth, CTFPlayer* player, bool dispenser, float amount) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerLeachedHealth)(player, dispenser, amount);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_TrackKillStats, CTFPlayer* attacker, CTFPlayer* victim) { if (ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(victim) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_TrackKillStats)(attacker, victim);}
+    DETOUR_DECL_MEMBER(void *, CTFGameStats_FindPlayerStats, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return nullptr; return DETOUR_MEMBER_CALL(CTFGameStats_FindPlayerStats)(player);}
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerEarnedKillStreak, CTFPlayer* player) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFGameStats_Event_PlayerEarnedKillStreak)(player);}
 
-    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominated, int index) { if (index > 33) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominated)(index);}
-    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominatingMe, int index) { if (index > 33) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominatingMe)(index);}
-    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominated, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominated)(player, dominated);}
-    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominatingMe, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > 33) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominatingMe)(player, dominated);}
+    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominated, int index) { if (index > DEFAULT_MAX_PLAYERS) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominated)(index);}
+    DETOUR_DECL_MEMBER(bool, CTFPlayerShared_IsPlayerDominatingMe, int index) { if (index > DEFAULT_MAX_PLAYERS) return false; return DETOUR_MEMBER_CALL(CTFPlayerShared_IsPlayerDominatingMe)(index);}
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominated, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominated)(player, dominated);}
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetPlayerDominatingMe, CTFPlayer * player, bool dominated) { if (ENTINDEX(player) > DEFAULT_MAX_PLAYERS) return; DETOUR_MEMBER_CALL(CTFPlayerShared_SetPlayerDominatingMe)(player, dominated);}
     
 
     DETOUR_DECL_MEMBER(void, CTFPlayerResource_SetPlayerClassWhenKilled, int iIndex, int iClass )
 	{
-        if (iIndex > 33) {
+        if (iIndex > DEFAULT_MAX_PLAYERS) {
             return;
         } 
         DETOUR_MEMBER_CALL(CTFPlayerResource_SetPlayerClassWhenKilled)(iIndex, iClass);
@@ -397,15 +398,15 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
 	{
         last_player_connect_time = gpGlobals->tickcount;
-        if (ENTINDEX(edict) > 33) return;
+        if (ENTINDEX(edict) > DEFAULT_MAX_PLAYERS) return;
         DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
     }
 
     DETOUR_DECL_MEMBER(void, CHLTVDirector_BuildActivePlayerList)
 	{
         int oldMaxClients = gpGlobals->maxClients;
-        if (gpGlobals->maxClients > 33) {
-            gpGlobals->maxClients = 33;
+        if (gpGlobals->maxClients > DEFAULT_MAX_PLAYERS) {
+            gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
         DETOUR_MEMBER_CALL(CHLTVDirector_BuildActivePlayerList)();
         gpGlobals->maxClients = oldMaxClients;
@@ -418,7 +419,7 @@ namespace Mod::Etc::Extra_Player_Slots
         char oldReady = ready[player->entindex()];
         Msg("pre ready %d \n", ready[player->entindex()]);
         DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinTeam)(team);
-        if (player->entindex() > 33) {
+        if (player->entindex() > DEFAULT_MAX_PLAYERS) {
             Msg("post ready %d\n", ready[player->entindex()]);
             ready[player->entindex()] = oldReady;
         }
@@ -426,7 +427,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(void, CTFGameRules_PlayerReadyStatus_UpdatePlayerState, CTFPlayer *pTFPlayer, bool bState)
 	{
-        if (ENTINDEX(pTFPlayer) > 33 ) return;
+        if (ENTINDEX(pTFPlayer) > DEFAULT_MAX_PLAYERS ) return;
 
         DETOUR_MEMBER_CALL(CTFGameRules_PlayerReadyStatus_UpdatePlayerState)(pTFPlayer, bState);
     }
@@ -436,7 +437,7 @@ namespace Mod::Etc::Extra_Player_Slots
         int *state = (int *)(TFGameRules()->m_ePlayerWantsRematch.Get());
         int oldstate = -1;
         int index = ENTINDEX(UTIL_PlayerBySteamID(steamid));
-        if (index > 33) {
+        if (index > DEFAULT_MAX_PLAYERS) {
             oldstate = state[index];
         }
         DETOUR_MEMBER_CALL(CTFGCServerSystem_ClientDisconnected)(steamid);
@@ -612,13 +613,13 @@ namespace Mod::Etc::Extra_Player_Slots
     
     CBasePlayer *FindFreeFakePlayer(std::vector<CBasePlayer *> &checkVec) 
     {
-        for (int i = 33; i >= 1; i--) {
+        for (int i = DEFAULT_MAX_PLAYERS; i >= 1; i--) {
             bool found = false;
 
             auto playeri = UTIL_PlayerByIndex(i);
             if (playeri == nullptr) continue;
 
-            if (!playeri->IsHLTV() && !playeri->IsBot()) continue;
+            if (playeri->IsRealPlayer()) continue;
 
             for (auto &event : kill_events) {
                 for (auto index : event.fakePlayersIndex) {
@@ -642,7 +643,7 @@ namespace Mod::Etc::Extra_Player_Slots
             return playeri;
         }
 
-        return UTIL_PlayerByIndex(33);
+        return UTIL_PlayerByIndex(DEFAULT_MAX_PLAYERS);
     }
 
     bool stopMoreEvents = false;
@@ -657,6 +658,11 @@ namespace Mod::Etc::Extra_Player_Slots
     bool sending_delayed_event = false;
     DETOUR_DECL_MEMBER(void, CBaseClient_FireGameEvent, IGameEvent *event)
 	{
+        if (event->GetName() != nullptr && strcmp(event->GetName(), "player_connect_client") == 0) {
+            if (event->GetInt("index") > DEFAULT_MAX_PLAYERS - 1) {
+                return;
+            }
+        }
         // Replace extra slot client id with some other bot with lower id
         IGameEvent *duplicate = nullptr;
         const char *eventName = nullptr;
@@ -671,13 +677,13 @@ namespace Mod::Etc::Extra_Player_Slots
             auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
             auto attacker = UTIL_PlayerByUserId(event->GetInt("attacker"));
             auto assister = UTIL_PlayerByUserId(event->GetInt("assister"));
-            auto player33 = UTIL_PlayerByIndex(33);
-            if (ENTINDEX(victim) > 33 || ENTINDEX(attacker) > 33 || ENTINDEX(assister) > 33) {
+            auto player33 = UTIL_PlayerByIndex(DEFAULT_MAX_PLAYERS);
+            if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS || ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(assister) > DEFAULT_MAX_PLAYERS) {
                 std::vector<CBasePlayer *> participants;
                 std::vector<CBasePlayer *> fakePlayers;
                 stopMoreEvents = true;
                 duplicate = gameeventmanager->DuplicateEvent(event);
-                if (ENTINDEX(victim) > 33) {
+                if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
                     if (fakePlayer != nullptr) {
                         duplicate->SetInt("userid", fakePlayer->GetUserID());
@@ -685,7 +691,7 @@ namespace Mod::Etc::Extra_Player_Slots
                         participants.push_back(victim);
                     }
                 }
-                if (ENTINDEX(attacker) > 33) {
+                if (ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
                     if (fakePlayer != nullptr) {
                         duplicate->SetInt("attacker", fakePlayer->GetUserID());
@@ -693,7 +699,7 @@ namespace Mod::Etc::Extra_Player_Slots
                         participants.push_back(attacker);
                     }
                 }
-                if (ENTINDEX(assister) > 33) {
+                if (ENTINDEX(assister) > DEFAULT_MAX_PLAYERS) {
                     auto fakePlayer = FindFreeFakePlayer(fakePlayers);
                     if (fakePlayer != nullptr) {
                         duplicate->SetInt("assister", fakePlayer->GetUserID());
@@ -702,7 +708,7 @@ namespace Mod::Etc::Extra_Player_Slots
                     }
                 }
                 //auto fakePlayer = nullptr;
-                /*for (int i = 33; i >= 1; i--) {
+                /*for (int i = DEFAULT_MAX_PLAYERS; i >= 1; i--) {
                     auto player = UTIL_PlayerByIndex(i);
                     if (player != nullptr && player->GetTeamNumber() == copyNameFromPlayer->GetTeamNumber() && player->GetName()) {
                         
@@ -759,7 +765,7 @@ namespace Mod::Etc::Extra_Player_Slots
                 if (killEvent.time + 0.35f < gpGlobals->curtime) {
                     
                     for (int i = 0; i < 3; i++) {
-                        if (killEvent.fakePlayersIndex[i] != -1 && killEvent.fakePlayersIndex[i] != 33) {
+                        if (killEvent.fakePlayersIndex[i] != -1 && killEvent.fakePlayersIndex[i] != DEFAULT_MAX_PLAYERS) {
                             
                             auto player = UTIL_PlayerByIndex(killEvent.fakePlayersIndex[i]);
                             if (player != nullptr)
@@ -776,12 +782,12 @@ namespace Mod::Etc::Extra_Player_Slots
             }
         }
         //if (player33_fake_kill_time + 2 > gpGlobals->curtime) {
-        //    realTeam = TFPlayerResource()->m_iTeam[33];
+        //    realTeam = TFPlayerResource()->m_iTeam[DEFAULT_MAX_PLAYERS];
         //}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
         //if (realTeam != -1) {
 //
-        //    TFPlayerResource()->m_iTeam.SetIndex(realTeam, 33);
+        //    TFPlayerResource()->m_iTeam.SetIndex(realTeam, DEFAULT_MAX_PLAYERS);
         //}
 	}
 
@@ -789,14 +795,14 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
         //int &players = static_cast<CBaseServer *>(sv)->GetMaxClientsRef();
         //int oldPlayers = players;
-        //if (players > 33) {
-        //    players = 33;
+        //if (players > DEFAULT_MAX_PLAYERS) {
+        //    players = DEFAULT_MAX_PLAYERS;
         //}
         static ConVarRef sv_visiblemaxplayers("sv_visiblemaxplayers");
         int oldsv_visiblemaxplayers = -1; 
-        if (sv_visiblemaxplayers.GetInt() > 33) {
+        if (sv_visiblemaxplayers.GetInt() > DEFAULT_MAX_PLAYERS) {
             oldsv_visiblemaxplayers = sv_visiblemaxplayers.GetInt();
-            sv_visiblemaxplayers.SetValue(33);
+            sv_visiblemaxplayers.SetValue(DEFAULT_MAX_PLAYERS);
         }
         DETOUR_MEMBER_CALL(CSteam3Server_SendUpdatedServerDetails)();
         if (oldsv_visiblemaxplayers != -1) {
@@ -807,7 +813,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
     DETOUR_DECL_MEMBER(void, CTFGameRules_CalcDominationAndRevenge, CTFPlayer *pAttacker, CBaseEntity *pWeapon, CTFPlayer *pVictim, bool bIsAssist, int *piDeathFlags)
 	{
-        if (ENTINDEX(pAttacker) > 33 || ENTINDEX(pVictim) > 33) return;
+        if (ENTINDEX(pAttacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(pVictim) > DEFAULT_MAX_PLAYERS) return;
 
         DETOUR_MEMBER_CALL(CTFGameRules_CalcDominationAndRevenge)(pAttacker, pWeapon, pVictim, bIsAssist, piDeathFlags);
     }
@@ -828,7 +834,7 @@ namespace Mod::Etc::Extra_Player_Slots
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
-        if (sig_etc_extra_player_slots_no_death_cam.GetBool() && ToTFPlayer(player->m_hObserverTarget) != nullptr && ENTINDEX(player->m_hObserverTarget) > 33) {
+        if (sig_etc_extra_player_slots_no_death_cam.GetBool() && ToTFPlayer(player->m_hObserverTarget) != nullptr && ENTINDEX(player->m_hObserverTarget) > DEFAULT_MAX_PLAYERS) {
             player->m_hObserverTarget = nullptr;
         }
 	}
@@ -931,7 +937,7 @@ namespace Mod::Etc::Extra_Player_Slots
             player33_fake_kill_time=FLT_MIN;
             kill_events.clear();
 
-            if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+            if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                 engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
             }
             static bool saved_old_alltalk = false;
@@ -955,22 +961,22 @@ namespace Mod::Etc::Extra_Player_Slots
             last_player_connect_time_ack = 0;
             //Msg("Has %d\n", sig_etc_extra_player_slots_allow_bots.GetBool());
             bool enable = MapHasExtraSlots(nextmap.c_str());
-            if (!enable && gpGlobals->maxClients >= 33) {
+            if (!enable && gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS) {
 			    //static ConVarRef tv_enable("tv_enable");
                 //bool tv_enabled = tv_enable.GetBool();
                 //tv_enable.SetValue(false);
-                //ft_SetupMaxPlayers(33);
+                //ft_SetupMaxPlayers(DEFAULT_MAX_PLAYERS);
                 //tv_enable.SetValue(tv_enabled);
             }
             else {
-                if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= 32 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+                if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                     // Kick old HLTV client
                     int clientCount = sv->GetClientCount();
                     for ( int i=0 ; i < clientCount ; i++ )
                     {
                         IClient *pClient = sv->GetClient( i );
 
-                        if (pClient->IsConnected() && pClient->IsHLTV() && i <= 33)
+                        if (pClient->IsConnected() && pClient->IsHLTV() && i <= DEFAULT_MAX_PLAYERS)
                         {
                             pClient->Disconnect("");
                             break;

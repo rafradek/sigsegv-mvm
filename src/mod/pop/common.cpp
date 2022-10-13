@@ -1384,9 +1384,9 @@ void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool
         CEconEntity *entity = GiveItemByName(player, pair.name.c_str(), no_remove, respect_class);
         
         if (entity != nullptr) {
-            if (mark) {
-                entity->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("is force item"), 1.0f);
-            }
+            // 1 - ForceItem from Wave, can replace extra loadout item
+            // 2 - ForceItem from WaveSchedule, cannot replace extra loadout item
+            entity->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("is force item"), mark ? 1.0f : 2.0f);
         }
     }
 }
