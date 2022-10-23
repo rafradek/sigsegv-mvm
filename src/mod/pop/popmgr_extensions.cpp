@@ -1929,6 +1929,31 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 	
+	int ReplaceEconItemViewDefId(CEconItemView *pItem)
+	{
+		static int custom_weapon_def = -1;
+		auto origItemDefId = -1;
+		if (custom_weapon_def == -1) {
+			auto attr = GetItemSchema()->GetAttributeDefinitionByName("custom weapon id");
+			if (attr != nullptr)
+				custom_weapon_def = attr->GetIndex();
+		}
+		if (pItem != nullptr) {
+			auto attr = pItem->GetAttributeList().GetAttributeByID(custom_weapon_def);
+			if (attr != nullptr) {
+				origItemDefId = pItem->m_iItemDefinitionIndex;
+				pItem->m_iItemDefinitionIndex = 0xF000 + (int)attr->GetValue().m_Float;
+			}
+		} 
+		return origItemDefId;
+	}
+
+	void RestoreEconItemViewDefId(CEconItemView *pItem, int origItemDefId)
+	{
+		if (origItemDefId != -1 && pItem != nullptr) {
+			pItem->m_iItemDefinitionIndex = origItemDefId;
+		}
+	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
 	{
@@ -1938,7 +1963,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
 			}
 		}
+		int origItemDefId = ReplaceEconItemViewDefId(item_view);
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
+		RestoreEconItemViewDefId(item_view, origItemDefId);
 	}
 
 #if 0
@@ -3366,6 +3393,15 @@ namespace Mod::Pop::PopMgr_Extensions
 	public:
 		ExtraLoadoutItemsHander(bool autoHide) : IMenuHandler(), autoHide(autoHide) {}
 		bool autoHide = false;
+
+		virtual bool OnSetHandlerOption(const char *option, const void *data)
+		{
+			if (FStrEq(option, "SigsegvExtraLoadoutItemsIsAutoHide")) {
+				*(bool *)data = autoHide;
+				return true;
+			}
+			return false;
+		}
 	};
 
 	class SelectExtraLoadoutItemsClassHandler : public ExtraLoadoutItemsHander
@@ -3997,8 +4033,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		void *menu = nullptr;
 		if (menus->GetDefaultStyle()->GetClientMenu(player->entindex(), &menu) == MenuSource_BaseMenu && menu != nullptr && ((IBaseMenu *)menu)->GetHandler() != nullptr) {
-			auto handler = dynamic_cast<ExtraLoadoutItemsHander *>(((IBaseMenu *)menu)->GetHandler());
-			if (handler != nullptr && handler->autoHide) {
+			bool autoHide = false;
+			((IBaseMenu *)menu)->GetHandler()->OnSetHandlerOption("SigsegvExtraLoadoutItemsIsAutoHide", &autoHide);
+			if (autoHide) {
 				nextThink = true;
 				if (!player->m_Shared->m_bInUpgradeZone && !PointInRespawnRoom(player, player->GetAbsOrigin(), false)) {
 					menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
@@ -4812,6 +4849,20 @@ namespace Mod::Pop::PopMgr_Extensions
 		return iResult;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RememberUpgrade, int iPlayerClass, CEconItemView *pItem, int iUpgrade, int nCost, bool bDowngrade )
+	{
+		int origItemDefId = ReplaceEconItemViewDefId(pItem);
+		DETOUR_MEMBER_CALL(CTFPlayer_RememberUpgrade)(iPlayerClass, pItem, iUpgrade, nCost, bDowngrade);
+		RestoreEconItemViewDefId(pItem, origItemDefId);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ForgetFirstUpgradeForItem, CEconItemView *pItem)
+	{
+		int origItemDefId = ReplaceEconItemViewDefId(pItem);
+		DETOUR_MEMBER_CALL(CTFPlayer_RememberUpgrade)(pItem);
+		RestoreEconItemViewDefId(pItem, origItemDefId);
+	}
+
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
 	// {
 	// 	DevMsg("MessageWriteString %s\n",name);
@@ -5623,6 +5674,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		if (!weapon.name.empty() && weapon.originalId != nullptr) {
 			weapon.attributes[GetItemSchema()->GetAttributeDefinitionByName("custom weapon name")] = weapon.name;
+			weapon.attributes[GetItemSchema()->GetAttributeDefinitionByName("custom weapon id")] = std::to_string(state.m_CustomWeapons.size() + 1);
 			state.m_CustomWeapons[weapon.name] = weapon;
 		}
 	}
@@ -6645,7 +6697,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_IsUsingSpells,                    "CTFGameRules::IsUsingSpells");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ReapplyItemUpgrades,                 "CTFPlayer::ReapplyItemUpgrades");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_ReapplyItemUpgrades,        "CTFPlayer::ReapplyItemUpgrades", LOWEST);
 			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create,                        "CTFReviveMarker::Create");
 			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_CreateSniperDot,                "CTFSniperRifle::CreateSniperDot");
 			MOD_ADD_DETOUR_MEMBER(CTFSniperRifle_CanFireCriticalShot,            "CTFSniperRifle::CanFireCriticalShot");
@@ -6786,6 +6838,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride", LOWEST);
 			MOD_ADD_DETOUR_STATIC(TranslateWeaponEntForClass, "TranslateWeaponEntForClass");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RememberUpgrade, "CTFPlayer::RememberUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForgetFirstUpgradeForItem, "CTFPlayer::ForgetFirstUpgradeForItem");
 			
 			
 			

@@ -520,28 +520,6 @@ inline bool CBaseEntity::SetCustomVariable(const char *key, variant_t &value, bo
     return false;
 }
 
-inline void CBaseEntity::AddCustomOutput(const char *key, const char *value)
-{
-    std::string namestr = key;
-    boost::algorithm::to_lower(namestr);
-
-    auto &list = GetExtraData(this)->GetCustomOutputs();
-    
-    bool found = false;
-    for (auto &var : list) {
-        if (STRING(var.key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(var.key)) == 0) {
-            var.output.ParseEventAction(value);
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        list.emplace_back();
-        list.back().key = AllocPooledString(namestr.c_str());
-        list.back().output.ParseEventAction(value);
-    }
-}
-
 template<FixedString lit>
 inline void CBaseEntity::FireCustomOutput(CBaseEntity *activator, CBaseEntity *caller, variant_t variant)
 {
@@ -555,33 +533,6 @@ inline void CBaseEntity::FireCustomOutput(CBaseEntity *activator, CBaseEntity *c
                 return;
             }
         }
-    }
-}
-
-inline void CBaseEntity::RemoveCustomOutput(const char *key)
-{
-    auto data = this->GetExtraEntityData();
-    if (data != nullptr) {
-        std::string namestr = key;
-        boost::algorithm::to_lower(namestr);
-
-        auto &list = data->GetCustomOutputs();
-        
-        bool found = false;
-        for (auto it = list.begin(); it != list.end(); it++) {
-            if (STRING(it->key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(it->key)) == 0) {
-                list.erase(it);
-                return;
-            }
-        }
-    }
-}
-
-inline void CBaseEntity::RemoveAllCustomOutputs()
-{
-    auto data = this->GetExtraEntityData();
-    if (data != nullptr) {
-        data->GetCustomOutputs().clear();
     }
 }
 #endif

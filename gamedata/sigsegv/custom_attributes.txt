@@ -2536,5 +2536,13 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
-    
+    "4573"
+    {
+        "name"	"custom weapon id"
+        "attribute_class"	"custom_weapon_id"
+        "description_string"	"Custom weapon id"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

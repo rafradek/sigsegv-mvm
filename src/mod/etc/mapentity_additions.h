@@ -154,7 +154,7 @@ namespace Mod::Etc::Mapentity_Additions
         std::string mission;
 
     };
-    static ChangeLevelInfo change_level_info;
+    extern ChangeLevelInfo change_level_info;
 
     void AddModuleByName(CBaseEntity *entity, const char *name);
     bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, bool &result, variant_t &val);

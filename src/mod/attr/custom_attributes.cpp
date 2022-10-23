@@ -5116,7 +5116,7 @@ namespace Mod::Attr::Custom_Attributes
 				added_item_name = true;
 			}
 
-			if (attribute_info_vec.back().size() + format_str.size() + 1 > 252 /*220*/) {
+			if (attribute_info_vec.back().size() + format_str.size() + 1 > 251 /*220*/) {
 				++indexstr;
 				attribute_info_vec.push_back("");
 			}

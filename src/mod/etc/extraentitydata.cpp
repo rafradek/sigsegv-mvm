@@ -2,6 +2,56 @@
 #include "stub/extraentitydata.h"
 #include "util/iterate.h"
 
+
+void CBaseEntity::AddCustomOutput(const char *key, const char *value)
+{
+    std::string namestr = key;
+    boost::algorithm::to_lower(namestr);
+
+    auto &list = GetExtraData(this)->GetCustomOutputs();
+    
+    bool found = false;
+    for (auto &var : list) {
+        if (STRING(var.key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(var.key)) == 0) {
+            var.output.ParseEventAction(value);
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        CustomOutput output {AllocPooledString(namestr.c_str())};
+        output.output.ParseEventAction(value);
+        list.push_back(output);
+    }
+}
+
+void CBaseEntity::RemoveCustomOutput(const char *key)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        std::string namestr = key;
+        boost::algorithm::to_lower(namestr);
+
+        auto &list = data->GetCustomOutputs();
+        
+        bool found = false;
+        for (auto it = list.begin(); it != list.end(); it++) {
+            if (STRING(it->key) == namestr.c_str() || stricmp(namestr.c_str(), STRING(it->key)) == 0) {
+                list.erase(it);
+                return;
+            }
+        }
+    }
+}
+
+void CBaseEntity::RemoveAllCustomOutputs()
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        data->GetCustomOutputs().clear();
+    }
+}
+
 namespace Mod::Etc::ExtraEntityData
 {
     DETOUR_DECL_MEMBER(void, CBaseEntity_CBaseEntity, bool flag)

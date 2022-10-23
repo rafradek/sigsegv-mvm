@@ -50,6 +50,8 @@ namespace Mod::Etc::Mapentity_Additions
 
     std::vector<std::pair<string_t, CHandle<CBaseEntity>>> entity_listeners;
 
+    ChangeLevelInfo change_level_info;
+    
     PooledString trigger_detector_class("$trigger_detector");
     void AddModuleByName(CBaseEntity *entity, const char *name);
 
@@ -120,6 +122,8 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     void ParseCustomOutput(CBaseEntity *entity, const char *name, const char *value) {
+        if (entity == nullptr || entity->IsMarkedForDeletion()) return;
+        
         std::string namestr = name;
         boost::algorithm::to_lower(namestr);
     //  DevMsg("Add custom output %d %s %s\n", entity, namestr.c_str(), value);
@@ -825,20 +829,9 @@ namespace Mod::Etc::Mapentity_Additions
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
 	}
 
-    CBaseEntity *parse_ent = nullptr;
-    DETOUR_DECL_STATIC(bool, ParseKeyvalue, void *pObject, typedescription_t *pFields, int iNumFields, const char *szKeyName, const char *szValue)
-	{
-		bool result = DETOUR_STATIC_CALL(ParseKeyvalue)(pObject, pFields, iNumFields, szKeyName, szValue);
-        if (!result && szKeyName[0] == '$') {
-            ParseCustomOutput(parse_ent, szKeyName + 1, szValue);
-            result = true;
-        }
-        return result;
-	}
-
     DETOUR_DECL_MEMBER(bool, CBaseEntity_KeyValue, const char *szKeyName, const char *szValue)
 	{
-        parse_ent = reinterpret_cast<CBaseEntity *>(this);
+        CBaseEntity *parse_ent = reinterpret_cast<CBaseEntity *>(this);
         if (cvar_fast_lookup.GetBool()) {
             if (FStrEq(szKeyName, "targetname")) {
                 char *lowercase = stackalloc(strlen(szValue) + 1);
@@ -852,6 +845,9 @@ namespace Mod::Etc::Mapentity_Additions
                 parse_ent->SetClassname(AllocPooledString(lowercase));
                 return true;
             }
+        }
+        if (szKeyName[0] == '$') {
+            ParseCustomOutput(parse_ent, szKeyName + 1, szValue);
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_KeyValue)(szKeyName, szValue);
 	}
@@ -879,7 +875,7 @@ namespace Mod::Etc::Mapentity_Additions
         if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
             char *lowercase = stackalloc(strlen(classname) + 1);
             StrLowerCopy(classname, lowercase, 255);
-            parse_ent->SetClassname(AllocPooledString(lowercase));
+            reinterpret_cast<CBaseEntity *>(this)->SetClassname(AllocPooledString(lowercase));
         }
         return DETOUR_MEMBER_CALL(CBaseEntity_PostConstructor)(classname);
     }
@@ -1714,7 +1710,6 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_CommitSuicide, "CBasePlayer::CommitSuicide");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_UpdateOnRemove, "CBaseEntity::UpdateOnRemove");
-            MOD_ADD_DETOUR_STATIC(ParseKeyvalue, "ParseKeyvalue");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_KeyValue, "CBaseEntity::KeyValue");
             MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesFilterImpl, "CBaseFilter::PassesFilterImpl");
             MOD_ADD_DETOUR_MEMBER(CBaseFilter_PassesDamageFilter, "CBaseFilter::PassesDamageFilter");
@@ -1820,8 +1815,13 @@ namespace Mod::Etc::Mapentity_Additions
 
         virtual void LevelInitPostEntity() override
         { 
-            if (change_level_info.set && g_pPopulationManager.GetRef() != nullptr) {
-                THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, 1.0f);
+            if (change_level_info.set) {
+                if (g_pPopulationManager.GetRef() != nullptr) {
+                    THINK_FUNC_SET(g_pPopulationManager.GetRef(), SetForcedMission, 1.0f);
+                }
+                else {
+                    change_level_info.set = false;
+                }
             }
         }
 	};

@@ -347,7 +347,7 @@ public:
 	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
 	const char *GetPlayerDisplayModel(int classindex, int team) const                                      { return ft_GetPlayerDisplayModel(this, classindex, team); }
 
-	DECL_DATAMAP(short,          m_iItemDefinitionIndex);
+	DECL_DATAMAP(uint16,         m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
 	DECL_DATAMAP(int,            m_iEntityLevel);
 	DECL_DATAMAP(int64,          m_iItemID);

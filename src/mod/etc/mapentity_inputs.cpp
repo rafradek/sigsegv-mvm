@@ -607,8 +607,8 @@ namespace Mod::Etc::Mapentity_Additions
             
             char *map = strtok(param_tokenized,"|");
             char *mission = strtok(NULL,"|");
-            change_level_info.set = true;
-            change_level_info.mission = mission;
+            change_level_info.set = mission != nullptr;
+            change_level_info.mission = mission != nullptr ? mission : "";
             engine->ChangeLevel(map, nullptr);
             //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
         }}
@@ -1934,7 +1934,9 @@ namespace Mod::Etc::Mapentity_Additions
                     }
                 }
             }
-            ent->RemoveCustomOutput(name+1);
+            if (name[0] == '$') {
+                ent->RemoveCustomOutput(name + 1);
+            }
         }},
         {"CancelPending"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             g_EventQueue.GetRef().CancelEvents(ent);

@@ -173,7 +173,7 @@ IMPL_EXTRACT(unsigned int,                           CEconItemDefinition, m_nEqu
 MemberFuncThunk<const CTFItemDefinition *, int, int> CTFItemDefinition::ft_GetLoadoutSlot("CTFItemDefinition::GetLoadoutSlot");
 
 
-IMPL_DATAMAP(short,          CEconItemView, m_iItemDefinitionIndex);
+IMPL_DATAMAP(uint16,          CEconItemView, m_iItemDefinitionIndex);
 IMPL_DATAMAP(int,            CEconItemView, m_iEntityQuality);
 IMPL_DATAMAP(int,            CEconItemView, m_iEntityLevel);
 IMPL_DATAMAP(int64,          CEconItemView, m_iItemID);
