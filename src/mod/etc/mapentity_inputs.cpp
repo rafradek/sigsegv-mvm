@@ -601,7 +601,6 @@ namespace Mod::Etc::Mapentity_Additions
             TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
         }},
         {"ChangeLevel"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            CTFPlayer *player = ToTFPlayer(ent);
             char param_tokenized[256];
             V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
             
@@ -611,6 +610,9 @@ namespace Mod::Etc::Mapentity_Additions
             change_level_info.mission = mission != nullptr ? mission : "";
             engine->ChangeLevel(map, nullptr);
             //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
+        }},
+        {"ReloadNavAttributes"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            TheNavMesh->RecomputeInternalData();
         }}
     });
     ClassnameFilter player_filter("player", {

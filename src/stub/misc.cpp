@@ -221,7 +221,16 @@ bool variant_t::Convert(fieldtype_t newType) {
 		
 			break;
 		}
-
+		case FIELD_VOID: {
+			switch ( newType ) {
+				case FIELD_CLASSPTR: case FIELD_EHANDLE: {
+					SetEntity(nullptr); 
+					fieldType = newType; 
+					return true;
+				}
+				break;
+			}
+		}
 		case FIELD_EHANDLE: case FIELD_CLASSPTR: {
 			switch ( newType ) {
 				case FIELD_CLASSPTR: case FIELD_EHANDLE: fieldType = newType; return true;

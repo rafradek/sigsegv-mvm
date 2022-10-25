@@ -330,6 +330,7 @@ MemberFuncThunk<CNavMesh *, int>                                                
 
 
 MemberFuncThunk<CTFNavMesh *, void, CUtlVector<CBaseObject *> *, int> CTFNavMesh::ft_CollectBuiltObjects("CTFNavMesh::CollectBuiltObjects");
+MemberFuncThunk<CTFNavMesh *, void>                                   CTFNavMesh::ft_RecomputeInternalData("CTFNavMesh::RecomputeInternalData");
 
 
 GlobalThunk<CTFNavMesh *>             TheNavMesh ("TheNavMesh");

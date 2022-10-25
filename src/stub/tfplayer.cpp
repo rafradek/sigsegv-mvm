@@ -221,6 +221,12 @@ IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlay
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlayer);
 IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
 IMPL_RELATIVE(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_bMatchSafeToLeave, +16);
+IMPL_SENDPROP(float,                CTFPlayer, m_flVehicleReverseTime, CTFPlayer);
+IMPL_RELATIVE(bool,                 CTFPlayer, m_bTauntForceMoveForward, m_flVehicleReverseTime, sizeof(float));
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntForceMoveForwardSpeed, m_flVehicleReverseTime, sizeof(float) * 2);
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntMoveAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 3);
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnSpeed, m_flVehicleReverseTime, sizeof(float) * 4);
+IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 5);
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
 CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", NetworkStateChanged_CTFPlayer_m_angEyeAngles);
@@ -275,6 +281,7 @@ MemberFuncThunk<	  CTFPlayer *, bool                            > CTFPlayer::ft_
 MemberFuncThunk<      CTFPlayer *, void, const Vector &            > CTFPlayer::ft_ApplyAbsVelocityImpulse     ("CTFPlayer::ApplyAbsVelocityImpulse");
 MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > CTFPlayer::ft_SetOffHandWeapon            ("CTFPlayer::SetOffHandWeapon");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_HolsterOffHandWeapon        ("CTFPlayer::HolsterOffHandWeapon");
+MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_CanMoveDuringTaunt          ("CTFPlayer::CanMoveDuringTaunt");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

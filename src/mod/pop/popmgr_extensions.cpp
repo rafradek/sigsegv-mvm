@@ -4404,6 +4404,40 @@ namespace Mod::Pop::PopMgr_Extensions
 				(player->GetGroundEntity() == nullptr) && !player->CanAirDash()){
 			cmd->buttons &= ~2;
 		}
+		// if (player->IsBot() && player->CanMoveDuringTaunt() && player->m_Shared->InCond(TF_COND_TAUNTING)) {
+		// 	QAngle angMoveAngle = cmd->viewangles;
+		// 	float flSign = cmd->sidemove != 0.f ? 1.f : -1.f;
+		// 	float flMaxTurnSpeed = player->m_flTauntTurnSpeed;
+		// 	float flTargetTurnSpeed = player->m_flTauntTurnSpeed;
+		// 	if ( player->m_flTauntTurnAccelerationTime > 0.f )
+		// 	{
+		// 		flTargetTurnSpeed = clamp( flTargetTurnSpeed + flSign * ( gpGlobals->frametime / player->m_flTauntTurnAccelerationTime ) * flMaxTurnSpeed, 0.f, flMaxTurnSpeed );
+		// 	}
+		// 	else
+		// 	{
+		// 		flTargetTurnSpeed = flMaxTurnSpeed;
+		// 	}
+			
+		// 	float flSmoothTurnSpeed = 0.f;
+		// 	if ( flMaxTurnSpeed > 0.f )
+		// 	{
+		// 		flSmoothTurnSpeed = SimpleSpline( flTargetTurnSpeed / flMaxTurnSpeed ) * flMaxTurnSpeed;
+		// 	}
+
+		// 	// only let these button through
+		// 	if ( cmd->sidemove < 0 )
+		// 	{
+		// 		angMoveAngle += QAngle( 0.f, flSmoothTurnSpeed * gpGlobals->frametime, 0.f );
+		// 	}
+		// 	else if( cmd->sidemove > 0 )
+		// 	{
+		// 		angMoveAngle += QAngle( 0.f, -flSmoothTurnSpeed * gpGlobals->frametime, 0.f );
+		// 	}
+		// 	cmd->buttons = cmd->buttons & ( IN_MOVELEFT | IN_MOVERIGHT | IN_FORWARD | IN_BACK );
+		// 	cmd->sidemove = 0.0f;
+
+		// 	VectorCopy( angMoveAngle, cmd->viewangles );
+		// }
 		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
 	}
 

@@ -790,7 +790,7 @@ DefaultTraceInfo = {
     collisiongroup = COLLISION_GROUP_NONE, -- Pretend the trace to be fired by an entity belonging to this group. See COLLISION_GROUP_* globals
     mins = Vector(0,0,0), -- Extends the size of the trace in negative direction
     maxs = Vector(0,0,0), -- Extends the size of the trace in positive direction
-    filter = nil -- Entity to ignore. Can be a single entity, table of entities, or a function with a single entity parameter
+    filter = nil -- Entity to ignore. If nil, filters start entity. Can be a single entity, table of entities, or a function with a single entity parameter that returns true if trace should hit the entity, false otherwise.
 }
 
 ---@class TraceResultInfo
@@ -900,6 +900,53 @@ DefaultMenu = {
     onSelect = nil, -- Function called on select with parameters: player, selectedIndex, value
     onCancel = nil, -- Function called on cancel with parameters: player, reason
 }
+
+-- SpawnTemplate info
+---@class SpawnTemplateInfo
+---@field translation Vector
+---@field rotation Vector
+---@field parent Entity|nil
+---@field autoParent boolean
+---@field attachment string|nil
+---@field ignoreParentAliveState boolean
+---@field params table|nil
+DefaultSpawnTemplateInfo = {
+    translation = Vector(0,0,0), -- Spawn position offset
+    rotation = Vector(0,0,0), -- Spawn rotation angle
+    parent = nil, -- Template parent. If set, template entities are spawned relatively to the parent, and are automatically removed when the parent dies
+    autoParent = true, -- Automatically set parent of template entities without parentname
+    attachment = nil, -- If set, parent template entities to this parent attachment
+    ignoreParentAliveState = false, -- If true, only remove this template when the parent is removed, but not when it is killed
+    params = nil, -- Table with parameters passed to the template. Example { paramname = "value" }
+}
+
+-- Returns an array with merged values from input tables
+---@vararg table 
+---@return table result
+function table.JoinArray(...)
+    local result = {}
+    for i = 1, #arg do
+        local argtable = arg[i]
+        for k, v in pairs(argtable) do
+            table.insert(result, v)
+        end
+    end 
+    return result;
+end
+
+-- Returns a table with merged contents from input tables
+---@vararg table 
+---@return table result
+function table.JoinTable(...)
+    local result = {}
+    for i = 1, #arg do
+        local argtable = arg[i]
+        for k, v in pairs(argtable) do
+            result[k] = v
+        end
+    end 
+    return result;
+end
 
 function table.ForEach(tab, funcname)
 

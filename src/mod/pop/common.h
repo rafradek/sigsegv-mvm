@@ -259,6 +259,11 @@ public:
         this->m_strName = name;
     }
 
+    void SetAlwaysLook(bool always_look)
+    {
+        this->m_bAlwaysLook = always_look;
+    }
+
     virtual const char *GetName() const override { return "Interrupt Action"; }
 
     virtual ActionResult<CTFBot> OnStart(CTFBot *actor, Action<CTFBot> *action) override;
@@ -280,6 +285,7 @@ private:
     bool m_bWaitUntilDone = false;
 
     bool m_bKillLook = false;
+    bool m_bAlwaysLook = false;
     std::string m_strOnDoneAttributes = "";
     PathFollower m_PathFollower;
     CountdownTimer m_ctRecomputePath;

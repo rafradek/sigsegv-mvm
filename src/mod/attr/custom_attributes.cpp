@@ -110,7 +110,7 @@ namespace Mod::Attr::Custom_Attributes
 		return cvar_enable.GetBool() ? GetFastAttributeFloat(entity, value, name) : value;
 	}
 
-	float GetFastAttributeIntExternal(CBaseEntity *entity, float value, int name) {
+	int GetFastAttributeIntExternal(CBaseEntity *entity, int value, int name) {
 		return cvar_enable.GetBool() ? GetFastAttributeInt(entity, value, name) : value;
 	}
 
@@ -778,8 +778,18 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFGameMovement_CheckJumpButton)
 	{
+		bool restoreDucking = false;
+		if (process_movement_player != nullptr) {
+			auto player = ToTFPlayer(process_movement_player);
+			if (!player->IsPlayerClass(TF_CLASS_SCOUT) && player->GetGroundEntity() == nullptr && player->GetFlags() & FL_DUCKING) {
+				player->m_fFlags &= ~(FL_DUCKING);
+				restoreDucking = true;
+			}
+		}
 		bool ret = DETOUR_MEMBER_CALL(CTFGameMovement_CheckJumpButton)();
-
+		if (restoreDucking) {
+			process_movement_player->m_fFlags |= FL_DUCKING;
+		}
 		if (ret && process_movement_player != nullptr) {
 			auto player = ToTFPlayer(process_movement_player);
 			//CAttributeList *attrlist = player->GetAttributeList();

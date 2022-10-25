@@ -3,6 +3,7 @@
 
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
+#include <boost/algorithm/string.hpp>
 
 #include "link/link.h"
 #include "prop.h"
@@ -32,6 +33,26 @@ struct CaseInsensitiveLess
     {
         return stricmp(lhs.c_str(), rhs.c_str()) < 0;
     }
+};
+
+class CaseInsensitveCompare 
+{
+public:
+	bool operator() (const std::string &lhs, const std::string &rhs) const
+	{
+		return stricmp(lhs.c_str(), rhs.c_str()) == 0;
+	}
+};
+
+class CaseInsensitveHash
+{
+public:
+	std::size_t operator() (std::string str) const
+	{
+		boost::algorithm::to_lower(str);
+
+		return std::hash<std::string>{}(str);
+	}
 };
 
 using EntityKeys = std::multimap<std::string,std::string, CaseInsensitiveLess>;
@@ -117,8 +138,14 @@ public:
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
 bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 
-PointTemplate *FindPointTemplate(std::string &str);
-std::unordered_map<std::string, PointTemplate> &Point_Templates();
+PointTemplate *FindPointTemplate(const std::string &str);
+extern std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> g_templates;
+
+inline std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> &Point_Templates()
+{
+	return g_templates;
+}
+
 extern std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 extern FixupNames g_fixupNames;
 

@@ -124,9 +124,9 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
     
     if (look != vec3_origin) {
         
-        bool look_now = !m_bKillLook;
+        bool look_now = !m_bKillLook || m_bAlwaysLook;
         if (m_bKillLook) {
-            look_now = actor->HasAttribute(CTFBot::ATTR_IGNORE_ENEMIES);
+            look_now |= actor->HasAttribute(CTFBot::ATTR_IGNORE_ENEMIES);
             if ((this->m_hTargetAim != nullptr && actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look))) {
                 look_now = true;
                 if (actor->GetBodyInterface()->IsHeadAimingOnTarget()) {
@@ -137,7 +137,7 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
         }
 
         if (look_now) {
-            actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.1f, NULL, "Aiming at target we need to destroy to progress");
+            actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
         }
     }
 
@@ -703,6 +703,9 @@ class PeriodicTaskInterruptAction : public PeriodicTask
         else if (FStrEq(subkey->GetName(), "WaitUntilDone")) {
             waitUntilDone = subkey->GetFloat();
         }
+        else if (FStrEq(subkey->GetName(), "AlwaysLook")) {
+            alwaysLook = subkey->GetBool();
+        }
         else if (FStrEq(subkey->GetName(), "OnDoneChangeAttributes")) {
             onDoneChangeAttributes = subkey->GetString();
         }
@@ -758,6 +761,7 @@ class PeriodicTaskInterruptAction : public PeriodicTask
     std::string target;
     std::string aimTarget;
     bool killAimTarget;
+    bool alwaysLook;
     float waitUntilDone;
     std::string onDoneChangeAttributes;
     std::string name;

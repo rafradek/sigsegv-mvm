@@ -10,6 +10,7 @@
 #include "util/admin.h"
 #include "util/clientmsg.h"
 #include "mod/etc/mapentity_additions.h"
+#include "mod/pop/pointtemplate.h"
 #include "mod.h"
 
 class CStaticProp {};
@@ -592,6 +593,53 @@ namespace Util::Lua
         return player;
     }
 
+    int LEntitySpawnTemplate(lua_State *l)
+    {
+        auto templ = FindPointTemplate(luaL_checkstring(l, 1));
+
+        if (templ != nullptr) {
+            Vector offset(vec3_origin);
+            QAngle angle(vec3_angle);
+            bool autoParent = true;
+            CBaseEntity *parent = nullptr;
+            const char *attachment = nullptr;
+            bool ignoreAliveState = true;
+            TemplateParams params;
+            if (lua_istable(l, 2)) {
+                lua_getfield(l, 2, "translation");
+                auto *offsetPtr = LVectorGetNoCheck(l, -1);
+                if (offsetPtr != nullptr) {
+                    offset = *offsetPtr;
+                }
+                lua_getfield(l, 2, "rotation");
+                auto *anglePtr = LAngleGetNoCheck(l, -1);
+                if (anglePtr != nullptr) {
+                    angle = *anglePtr;
+                }
+                lua_getfield(l, 2, "autoParent");
+                autoParent = !lua_isboolean(l, -1) || lua_toboolean(l, -1);
+                lua_getfield(l, 2, "parent");
+                parent = LEntityGetOptional(l, -1);
+                lua_getfield(l, 2, "attachment");
+                attachment = luaL_optstring(l, -1, nullptr);
+                lua_getfield(l, 2, "ignoreParentAliveState");
+                ignoreAliveState = lua_isboolean(l, -1) && lua_toboolean(l, -1);
+                lua_getfield(l, 2, "params");
+                if (lua_istable(l, -1)) {
+                    lua_pushnil(l);
+                    while (lua_next(l, -1) != 0) {
+                        if (lua_type(l, -2) == LUA_TSTRING) {
+                            params[lua_tostring(l, -2)] = lua_tostring(l, -1);
+                        }
+                        lua_pop(l, 1);
+                    }
+                }
+            }
+            
+            templ->SpawnTemplate(parent, offset, angle, autoParent, attachment, ignoreAliveState, params);
+        }
+        return 1;
+    }    
 
     int LEntityEquals(lua_State *l)
     {
@@ -1018,7 +1066,17 @@ namespace Util::Lua
                 variant.Vector3D(*vec);
                 return;
             }
-            case FIELD_EHANDLE: case FIELD_CLASSPTR: variant.Convert(FIELD_EHANDLE); LEntityAlloc(l, variant.Entity()); return;
+            case FIELD_EHANDLE: case FIELD_CLASSPTR: {
+                variant.Convert(FIELD_EHANDLE);
+                auto entity = variant.Entity();
+                if (entity != nullptr) {
+                    LEntityAlloc(l, variant.Entity());
+                }
+                else {
+                    lua_pushnil(l);
+                }
+                return;
+            }
             default: lua_pushnil(l); return;
         }
         
@@ -1780,7 +1838,7 @@ namespace Util::Lua
             return 1;
         }
 
-        // Check for sendprop$ prefix in name, if so force reading sendprop instead of datamap
+        // Check for sendprop$ prefix in name, if so, force reading sendprop instead of datamap
         bool forceSendprop = false;
         if (StringStartsWith(varName, "sendprop$")) {
             forceSendprop = true;
@@ -2871,6 +2929,7 @@ namespace Util::Lua
         {"AddCreateCallback", LEntityAddCreateCallback},
         {"RemoveCreateCallback", LEntityRemoveCreateCallback},
         {"GetPlayerByUserId", LPlayerByUserID},
+        {"SpawnTemplate", LEntitySpawnTemplate},
         {nullptr, nullptr},
     };
 

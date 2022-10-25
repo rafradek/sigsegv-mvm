@@ -470,6 +470,8 @@ public:
 	bool IsReadyToPlay()                               { return ft_IsReadyToPlay(this); }
 	
 	void ApplyAbsVelocityImpulse(const Vector &impulse) {        ft_ApplyAbsVelocityImpulse       (this, impulse); }
+
+	bool CanMoveDuringTaunt() { return ft_CanMoveDuringTaunt (this); }
 	
 	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
@@ -497,6 +499,12 @@ public:
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
 	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
 	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);
+    DECL_SENDPROP   (float,      m_flVehicleReverseTime);
+    DECL_RELATIVE   (bool,       m_bTauntForceMoveForward);
+    DECL_RELATIVE   (float,      m_flTauntForceMoveForwardSpeed);
+    DECL_RELATIVE   (float,      m_flTauntMoveAccelerationTime);
+    DECL_RELATIVE   (float,      m_flTauntTurnSpeed);
+    DECL_RELATIVE   (float,      m_flTauntTurnAccelerationTime);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
@@ -560,6 +568,8 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void, const Vector &            > ft_ApplyAbsVelocityImpulse;
 	static MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > ft_SetOffHandWeapon;
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_HolsterOffHandWeapon;
+    static MemberFuncThunk<      CTFPlayer *, bool                            > ft_CanMoveDuringTaunt;
+	
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

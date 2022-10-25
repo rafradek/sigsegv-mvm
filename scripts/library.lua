@@ -536,6 +536,11 @@ function ents.GetPlayerByUserId(userid) end
 ---@param activate? boolean = true. Activate entity after creation
 function ents.CreateWithKeys(classname, keyTable, spawn, activate) end
 
+--Spawns a point template from population file
+---@param template string Template name
+---@param templateInfo SpawnTemplateInfo Table containing template spawn paramaters. See DefaultSpawnTemplateInfo global
+function ents.SpawnTemplate(template, templateInfo) end
+
 timer = {}
 
 --Creates a simple timer that calls the function after delay

@@ -1742,6 +1742,9 @@ namespace Mod::Pop::TFBot_Extensions
 				else if (strcmp(command[i], "-killlook") == 0) {
 					interrupt_action->SetKillLook(true);
 				}
+				else if (strcmp(command[i], "-alwayslook") == 0) {
+					interrupt_action->SetAlwaysLook(true);
+				}
 				else if (strcmp(command[i], "-ondoneattributes") == 0) {
 					interrupt_action->SetOnDoneAttributes(command[i+1]);
 					i++;

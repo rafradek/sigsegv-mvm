@@ -2228,6 +2228,7 @@ WaveSchedule
 					// KillAimTarget 1 // Attack aim target (Default: 0)
 					Name "a" // Name of the interrupt action. When the task is done, bot's $OnActionDone output is fired with name as parameter
 					
+					// AlwaysLook 1 // Normally, if KillAimTarget is set, the bot will not look at the target entity if its not in field of view. Set to 1 to always look at target (Default: 0)
 					Delay 1 // Time before the first task starts. Must be above 0, or it will not execute (Default: 10)
                     Repeats 1 // How many times should bot do the task in total (Default: 0 - Infinite)
                     Cooldown 3 //Time between each task (Default: 10)

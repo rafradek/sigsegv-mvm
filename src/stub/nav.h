@@ -275,9 +275,12 @@ class CTFNavMesh : public CNavMesh
 {
 public:
 	void CollectBuiltObjects(CUtlVector<CBaseObject *> *objects, int i1) { ft_CollectBuiltObjects(this, objects, i1); }
+	void RecomputeInternalData()                                         { ft_RecomputeInternalData(this); }
+	
 	
 private:
 	static MemberFuncThunk<CTFNavMesh *, void, CUtlVector<CBaseObject *> *, int> ft_CollectBuiltObjects;
+	static MemberFuncThunk<CTFNavMesh *, void>                                   ft_RecomputeInternalData;
 };
 
 

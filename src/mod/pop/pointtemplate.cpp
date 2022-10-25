@@ -478,13 +478,11 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv)
 	return data.templ != nullptr;
 }
 
-PointTemplate *FindPointTemplate(std::string &str) {
-	std::transform(str.begin(), str.end(), str.begin(),
-    [](unsigned char c){ return std::tolower(c); });
+PointTemplate *FindPointTemplate(const std::string &str) {
 
 	auto it = Point_Templates().find(str);
 	if (it != Point_Templates().end())
-			return &(it->second);
+		return &(it->second);
 
 	return nullptr;
 }
@@ -560,11 +558,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 	this->has_parent = false;
 }
 
-std::unordered_map<std::string, PointTemplate> &Point_Templates()
-{
-	static std::unordered_map<std::string, PointTemplate> templ;
-	return templ;
-}
+std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> g_templates;
 
 std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 FixupNames g_fixupNames;

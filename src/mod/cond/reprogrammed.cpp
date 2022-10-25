@@ -11,6 +11,7 @@
 #include "util/iterate.h"
 #include "stub/projectiles.h"
 #include "stub/populators.h"
+#include "mod/attr/custom_attributes.h"
 
 
 namespace Mod::Cond::Reprogrammed
@@ -757,6 +758,7 @@ namespace Mod::Cond::Reprogrammed
 	
 	RefCount rc_CBaseObject_FindSnapToBuildPos;
 	RefCount rc_CBaseObject_FindSnapToBuildPos_spec;
+	RefCount rc_CollectPlayers_Enemy;
 	DETOUR_DECL_STATIC(int, CollectPlayers_CTFPlayer, CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
 	{
 		static bool reentrancy = false;
@@ -777,6 +779,13 @@ namespace Mod::Cond::Reprogrammed
 			}
 
 			return playerVector->Count();
+		}
+		if (rc_CollectPlayers_Enemy && !reentrancy && team == TEAM_SPECTATOR) {
+			reentrancy = true;
+			CollectPlayers(playerVector, TF_TEAM_RED, isAlive, shouldAppend);
+			shouldAppend = true;
+			team = TF_TEAM_BLUE;
+			reentrancy = false;
 		}
 		
 		if (rc_CBaseObject_FindSnapToBuildPos && !reentrancy) {
@@ -906,8 +915,16 @@ namespace Mod::Cond::Reprogrammed
 		
 		if (entityme->GetTeamNumber() == TEAM_SPECTATOR) {
 			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
-			if (entityhit != nullptr) {
-				return entityme->GetTeamNumber() != entityhit->GetTeamNumber() || !entityhit->IsPlayer();
+			if (entityhit != nullptr && entityhit->IsPlayer() && entityme->GetTeamNumber() == entityhit->GetTeamNumber()) {
+				return false;
+			}
+			if (entityhit != nullptr && entityhit->IsBaseObject()) {
+				if (entityme->GetTeamNumber() != entityhit->GetTeamNumber() && Mod::Attr::Custom_Attributes::GetFastAttributeIntExternal(entityme, 0, Mod::Attr::Custom_Attributes::NOT_SOLID_TO_PLAYERS) == 0) {
+					return true;
+				}
+				else if (entityme->GetTeamNumber() == entityhit->GetTeamNumber() && ToBaseObject(entityhit)->GetBuilder() != entityme && ToBaseObject(entityhit)->GetType() != OBJ_TELEPORTER){
+					return false;
+				}
 			}
 		}
 		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
@@ -1049,7 +1066,28 @@ namespace Mod::Cond::Reprogrammed
 
 		return ret;
 	}
-    
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->IsBot()) {
+			auto teamnum = player->GetTeamNumber();
+			if (teamnum == TF_TEAM_RED || teamnum == TEAM_SPECTATOR) {
+				player->SetTeamNumber(TF_TEAM_BLUE);
+			}
+			DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+			player->SetTeamNumber(teamnum);
+		}
+		else
+			DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPistol_ScoutPrimary_Push)
+	{
+		SCOPED_INCREMENT(rc_CollectPlayers_Enemy);
+		DETOUR_MEMBER_CALL(CTFPistol_ScoutPrimary_Push)();
+	}
+
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_C2)
 	{
 		DETOUR_MEMBER_CALL(CTFPlayerShared_C2)();
@@ -1153,6 +1191,11 @@ namespace Mod::Cond::Reprogrammed
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_C2, "CTFPlayerShared::CTFPlayerShared");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
 			
+			// Fix spectator team bots death sound
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
+
+			// Fix spectator team shortstop push
+            MOD_ADD_DETOUR_MEMBER(CTFPistol_ScoutPrimary_Push, "CTFPistol_ScoutPrimary::Push");
 
 			// Change sentry buster target if the sentry gun is on the same team
 			// MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");
