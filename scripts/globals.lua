@@ -701,12 +701,15 @@ ON_KEY_PRESSED = 7          -- Look at IN_* globals for more info. Callback func
 ON_KEY_RELEASED = 8         -- Look at IN_* globals for more info. Callback function parameters: entity, key
 ON_DEATH = 9                -- Callback function parameters: entity
 ON_EQUIP_ITEM = 10          -- Callback function parameters: entity, weapon. Return false to prevent equipping the weapon
-ON_DEPLOY_WEAPON = 11       -- Callback function parameters: entity, oldWeapon, newWeapon. Return false to stop deploy
+ON_DEPLOY_WEAPON = 11       -- Callback function parameters: entity, weapon. Return false to stop deploying the weapon
 ON_PROVIDE_ITEMS = 12       -- Called when loadout items are provided to the player. Callback function parameters: entity
 ON_TOUCH = 13               -- Called every tick the entity is touched. Callback function parameters: entity, other, hitPos, hitNormal
 ON_START_TOUCH = 14         -- Callback function parameters: entity, other, hitPos, hitNormal
 ON_END_TOUCH = 15           -- Callback function parameters: entity, other, hitPos, hitNormal
 ON_SHOULD_COLLIDE = 16      -- Callback function parameters: entity, other. Return false to disable collision, true to enable
+ON_HOLSTER_WEAPON = 17      -- Callback function parameters: entity, oldWeapon, newWeapon. Return false to stop holstering the weapon
+ON_FIRE_WEAPON_PRE = 18     -- Callback function parameters: entity. Return ACTION_STOP to prevent weapon from firing, ACTION_HANDLED to stop projectile from being fired but still consume ammo
+ON_FIRE_WEAPON_POST = 19    -- Callback function parameters: entity, projectile.
 
 ----------------
 -- Print targets
@@ -730,6 +733,7 @@ MENUFLAG_NO_SOUND           = (1<<2) -- Menu will not have any select sounds
 ACTION_CONTINUE	            = 0 -- Continue event as usual with no changes
 ACTION_STOP                 = 1 -- Stop event from being performed
 ACTION_MODIFY               = 2 -- Continue event with modified values
+ACTION_HANDLED              = 3 -- Stop original event, but pretend it happened
 
 ----------------
 -- Table structures

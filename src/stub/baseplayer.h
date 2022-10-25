@@ -160,7 +160,8 @@ public:
 	DECL_DATAMAP(int,          m_nButtons);
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hObserverTarget);
 	DECL_SENDPROP_RW(CPlayerState, pl);
-	
+	DECL_DATAMAP(float,         m_flStepSoundTime);
+	DECL_RELATIVE(CUserCmd *,   m_pCurrentCommand);
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

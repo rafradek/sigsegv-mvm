@@ -83,6 +83,8 @@ IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
 IMPL_DATAMAP(int,          CBasePlayer, m_nButtons);
+IMPL_DATAMAP(float,        CBasePlayer, m_flStepSoundTime);
+IMPL_RELATIVE(CUserCmd *,  CBasePlayer, m_pCurrentCommand, m_flStepSoundTime, -sizeof(QAngle) - sizeof(int) - sizeof(uintptr_t));
 
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 

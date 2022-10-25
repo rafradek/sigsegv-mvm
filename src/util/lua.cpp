@@ -11,6 +11,7 @@
 #include "util/clientmsg.h"
 #include "mod/etc/mapentity_additions.h"
 #include "mod/pop/pointtemplate.h"
+#include "stub/lagcompensation.h"
 #include "mod.h"
 
 class CStaticProp {};
@@ -826,6 +827,10 @@ namespace Util::Lua
         ON_START_TOUCH,
         ON_END_TOUCH,
         ON_SHOULD_COLLIDE,
+        ON_FIRE_WEAPON_PRE,
+        ON_FIRE_WEAPON_POST,
+        ON_HOLSTER_WEAPON,
+
         CALLBACK_TYPE_COUNT
     };
 
@@ -2831,6 +2836,34 @@ namespace Util::Lua
         return 1;
     }
 
+    int LUtilIsLagCompensationActive(lua_State *l)
+    {
+        lua_pushboolean(l,lagcompensation->IsCurrentlyDoingLagCompensation());
+        return 1;
+    }
+
+    int LUtilStartLagCompensation(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+
+        luaL_argcheck(l, entity != nullptr && entity->IsPlayer(), 1, "Entity is not a player");
+        auto player = ToTFPlayer(entity);
+        if (lagcompensation->IsCurrentlyDoingLagCompensation()) return 0;
+        lagcompensation->StartLagCompensation(player, player->m_pCurrentCommand);
+        return 0;
+    }
+
+    int LUtilFinishLagCompensation(lua_State *l)
+    {
+        auto entity = LEntityGetNonNull(l, 1);
+
+        luaL_argcheck(l, entity != nullptr && entity->IsPlayer(), 1, "Entity is not a player");
+        auto player = ToTFPlayer(entity);
+        if (!lagcompensation->IsCurrentlyDoingLagCompensation()) return 0;
+        lagcompensation->FinishLagCompensation(player);
+        return 0;
+    }
+
     int LCurTime(lua_State *l)
     {
         lua_pushnumber(l, gpGlobals->curtime);
@@ -3026,6 +3059,9 @@ namespace Util::Lua
         {"GetItemDefinitionIndexByName", LUtilGetItemDefinitionIndexByName},
         {"GetAttributeDefinitionNameByIndex", LUtilGetAttributeDefinitionNameByIndex},
         {"GetAttributeDefinitionIndexByName", LUtilGetAttributeDefinitionIndexByName},
+        {"IsLagCompensationActive", LUtilIsLagCompensationActive},
+        {"StartLagCompensation", LUtilStartLagCompensation},
+        {"FinishLagCompensation", LUtilFinishLagCompensation},
         {nullptr, nullptr},
     };
 
@@ -3791,6 +3827,24 @@ namespace Util::Lua
 		DETOUR_MEMBER_CALL(CTFWearable_Equip)(owner);
 	}
 
+    DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		auto mod = wep->GetOwnerEntity() != nullptr ? wep->GetOwnerEntity()->GetEntityModule<LuaEntityModule>("luaentity") : nullptr;
+        if (mod != nullptr) {
+            bool give = true;
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                LEntityAlloc(state->GetState(),wep);
+            };
+            std::function<void(LuaState *)> funcReturn = [&](LuaState *state){
+                give = lua_isnil(state->GetState(), -1) || lua_toboolean(state->GetState(), -1);
+            };
+            mod->FireCallback(ON_DEPLOY_WEAPON, &func, 1, &funcReturn, 1);
+            if (!give) return false;
+        }
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+	}
+
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *newWeapon)
 	{
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
@@ -3805,7 +3859,7 @@ namespace Util::Lua
             std::function<void(LuaState *)> funcReturn = [&](LuaState *state){
                 give = lua_isnil(state->GetState(), -1) || lua_toboolean(state->GetState(), -1);
             };
-            mod->FireCallback(ON_DEPLOY_WEAPON, &func, 2, &funcReturn, 1);
+            mod->FireCallback(ON_HOLSTER_WEAPON, &func, 2, &funcReturn, 1);
             if (!give) return false;
         }
 		
@@ -4001,7 +4055,8 @@ namespace Util::Lua
     {
         ACTION_CONTINUE,
         ACTION_STOP,
-        ACTION_MODIFY
+        ACTION_MODIFY,
+        ACTION_HANDLED
     };
 
     DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
@@ -4045,6 +4100,78 @@ namespace Util::Lua
 		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
 	}
 
+    DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseMelee*>(this);
+		auto mod = weapon->GetEntityModule<LuaEntityModule>("luaentity");
+        int action = ACTION_CONTINUE;
+        if (mod != nullptr) {
+            std::function<void(LuaState *)> retfunc = [&](LuaState *state){
+                action = luaL_optinteger(state->GetState(), -1, ACTION_CONTINUE);
+            };
+            mod->FireCallback(ON_FIRE_WEAPON_PRE, nullptr, 0, &retfunc, 1);
+
+            if (action == ACTION_STOP) return;
+        }
+
+        if (action == ACTION_CONTINUE) {
+            DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+        }
+ 		
+        if (mod != nullptr) {
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                lua_pushnil(state->GetState());
+            };
+            mod->FireCallback(ON_FIRE_WEAPON_POST, &func, 1);
+        }
+	}
+
+	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
+	{
+        auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
+        bool stopproj;
+        auto mod = weapon->GetEntityModule<LuaEntityModule>("luaentity");
+        int action = ACTION_CONTINUE;
+        if (mod != nullptr) {
+            std::function<void(LuaState *)> retfunc = [&](LuaState *state){
+                action = luaL_optinteger(state->GetState(), -1, ACTION_CONTINUE);
+            };
+            mod->FireCallback(ON_FIRE_WEAPON_PRE, nullptr, 0, &retfunc, 1);
+
+            if (action == ACTION_STOP) return nullptr;
+        }
+
+        CBaseAnimating *proj = nullptr;
+        if (action == ACTION_CONTINUE) {
+            proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+        }
+
+        if (action == ACTION_HANDLED) {
+            if (weapon->ShouldPlayFireAnim()) {
+                player->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
+            }
+            
+            weapon->RemoveProjectileAmmo(player);
+            weapon->m_flLastFireTime = gpGlobals->curtime;
+            weapon->DoFireEffects();
+            weapon->UpdatePunchAngles(player);
+            
+            if (player->m_Shared->IsStealthed() && weapon->ShouldRemoveInvisibilityOnPrimaryAttack()) {
+                player->RemoveInvisibility();
+            }
+            return nullptr;
+        }
+
+        if (mod != nullptr) {
+            std::function<void(LuaState *)> func = [&](LuaState *state){
+                LEntityAlloc(state->GetState(), proj);
+            };
+            mod->FireCallback(ON_FIRE_WEAPON_POST, &func, 1);
+        }
+		
+		return proj;
+	}
+
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -4066,6 +4193,7 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
             MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
             MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
             MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
@@ -4076,6 +4204,8 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CBaseTrigger_EndTouch, "CBaseTrigger::EndTouch");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_Touch, "CBasePlayer::Touch");
             MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile, "CTFWeaponBaseGun::FireProjectile");
             
         }
 		

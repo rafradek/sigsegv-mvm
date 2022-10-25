@@ -541,6 +541,7 @@ function ents.CreateWithKeys(classname, keyTable, spawn, activate) end
 ---@param templateInfo SpawnTemplateInfo Table containing template spawn paramaters. See DefaultSpawnTemplateInfo global
 function ents.SpawnTemplate(template, templateInfo) end
 
+
 timer = {}
 
 --Creates a simple timer that calls the function after delay
@@ -619,6 +620,20 @@ function util.GetAttributeDefinitionNameByIndex(id) end
 ---@param name number attribute definition name
 ---@return number|nil id Id of the attribute with specified name or nil if not found
 function util.GetAttributeDefinitionIndexByName(name) end
+
+--Check if lag compensation is active. Lag compensation allows traces fired from player eyes to be more accurate with what the player can see
+---@return boolean
+function util.IsLagCompensationActive() end
+
+--Starts lag compensation. Useful when firing traces from player eyes. Make sure IsLagCompensationActive() returns false before calling this function, and FinishLagCompensation() is called right after firing the trace
+---@param player Entity The player which should have their lag compensated
+---@return nil
+function util.StartLagCompensation(player) end
+
+--Finishes lag compensation. Useful when firing traces from player eyes. Make sure StartLagCompensation() was called before calling this function
+---@param player Entity The player which should have their lag no longer compensated
+---@return nil
+function util.FinishLagCompensation(player) end
 
 
 --Returns time in seconds since map load
