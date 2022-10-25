@@ -3670,6 +3670,7 @@ namespace Util::Lua
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
         int prebuttons = player->m_nButtons;
+		DETOUR_MEMBER_CALL(CBasePlayer_PlayerRunCommand)(cmd, moveHelper);
         if (prebuttons != cmd->buttons) {
             auto mod = player->GetEntityModule<LuaEntityModule>("luaentity");
             if (mod != nullptr) {
@@ -3692,8 +3693,8 @@ namespace Util::Lua
                 }
             }
         }
-		DETOUR_MEMBER_CALL(CBasePlayer_PlayerRunCommand)(cmd, moveHelper);
 	}
+    
 
     bool profile[34] = {};
     DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)

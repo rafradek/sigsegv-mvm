@@ -443,7 +443,6 @@ namespace Mod::Etc::Mapentity_Additions
                             while (true) {
                                 pStartEntity = functor(pStartEntity, realname);
                                 if (pStartEntity == nullptr) return nullptr;
-                                Msg("Passes filter %d\n", filter->PassesFilter(pStartEntity, pStartEntity));
                                 if (filter->PassesFilter(pStartEntity, pStartEntity)) return pStartEntity;
                             }
                         }
