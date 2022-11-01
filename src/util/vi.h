@@ -139,6 +139,14 @@ std::optional<T> from_str(std::string_view str){
     return result;
 }
 
+#ifdef OLD_GCC
+template<>
+[[nodiscard]]
+std::optional<float> from_str<float>(std::string_view str){
+   return std::optional<float>(std::stof(std::string(str)));
+}
+#endif
+
 struct unexpected_type { // because posix reserves _t suffix for some reason
     explicit constexpr unexpected_type(int) {}
 };
