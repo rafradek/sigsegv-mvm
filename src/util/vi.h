@@ -126,7 +126,7 @@ concept from_chars_type =
 template<from_chars_type T>
 #endif
 [[nodiscard]]
-std::optional<T> from_str(std::string_view str){
+inline std::optional<T> from_str(std::string_view str){
     T result;
     [[maybe_unused]]
     auto [p, ec] {std::from_chars(
@@ -142,7 +142,7 @@ std::optional<T> from_str(std::string_view str){
 #ifdef OLD_GCC
 template<>
 [[nodiscard]]
-std::optional<float> from_str<float>(std::string_view str){
+inline std::optional<float> from_str<float>(std::string_view str){
    return std::optional<float>(std::stof(std::string(str)));
 }
 #endif

@@ -882,6 +882,11 @@ namespace Mod::MvM::Extended_Upgrades
             DevMsg("No upgrade entity?\n");
             return false;
         }
+
+        std::string reason;
+        if (!IsValidUpgradeForWeapon(upgrade, slot == -1 ? nullptr : GetEconEntityAtLoadoutSlot(player, slot), player, reason)) {
+            return false;
+        }
         /*int cost = upgrade->cost;
 
         if (downgrade)

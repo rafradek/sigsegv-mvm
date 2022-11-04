@@ -489,7 +489,7 @@ class PeriodicTaskFireInput : public PeriodicTask
         CEventQueue &que = g_EventQueue;
         que.AddEvent(STRING(AllocPooledString(target.c_str())),STRING(AllocPooledString(input.c_str())),variant1,0,bot,bot,-1);
         std::string targetname = STRING(bot->GetEntityName());
-        int findamp = targetname.find('&');
+        int findamp = targetname.find('\1');
         if (findamp != -1){
             que.AddEvent(STRING(AllocPooledString((target+targetname.substr(findamp)).c_str())),STRING(AllocPooledString(input.c_str())),variant1,0,bot,bot,-1);
         }

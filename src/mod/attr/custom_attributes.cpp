@@ -3123,7 +3123,9 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();;
 		addcond_provider = player;
-		addcond_provider_item = GetEconEntityAtLoadoutSlot(player, rage == 5 ? LOADOUT_POSITION_PRIMARY : LOADOUT_POSITION_SECONDARY);
+		int primaryHasRage = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_PRIMARY), primaryHasRage, set_buff_type); 
+		addcond_provider_item = GetEconEntityAtLoadoutSlot(player, primaryHasRage != 0 ? LOADOUT_POSITION_PRIMARY : LOADOUT_POSITION_SECONDARY);
 
 		DETOUR_MEMBER_CALL(CTFPlayerShared_PulseRageBuff)(rage);
 	}
@@ -3234,7 +3236,7 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider = pProvider;
 		addcond_provider_item = pProvider != nullptr ? GetEconEntityAtLoadoutSlot(pProvider, LOADOUT_POSITION_SECONDARY) : nullptr;
 		int iCondOverride = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider, iCondOverride, effect_cond_override);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider, iCondOverride, effect_cond_override);
 		
 		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_AddCond, iCondOverride != 0);
 		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_RemoveCond, iCondOverride != 0);

@@ -857,6 +857,14 @@ namespace Util::Lua
         int value;
     };
 
+    class PlayerUserCmdModule : public EntityModule
+    {
+    public:
+        PlayerUserCmdModule(CBaseEntity *entity) : EntityModule(entity) {};
+    
+        CUserCmd lastPlayerUserCmd;
+    };
+
     class LuaEntityModule : public EntityModule
     {
     public:
@@ -2849,7 +2857,19 @@ namespace Util::Lua
         luaL_argcheck(l, entity != nullptr && entity->IsPlayer(), 1, "Entity is not a player");
         auto player = ToTFPlayer(entity);
         if (lagcompensation->IsCurrentlyDoingLagCompensation()) return 0;
-        lagcompensation->StartLagCompensation(player, player->m_pCurrentCommand);
+        CUserCmd *cmd = player->m_pCurrentCommand;
+        if (cmd == nullptr) {
+            auto mod = player->GetEntityModule<PlayerUserCmdModule>("playerusercmd");
+            if (mod != nullptr) {
+                cmd = &mod->lastPlayerUserCmd;
+            }
+            else {
+                player->AddEntityModule("playerusercmd", new PlayerUserCmdModule(player));
+            }
+        }
+        if (cmd == nullptr) return 0;
+        
+        lagcompensation->StartLagCompensation(player, cmd);
         return 0;
     }
 
@@ -4173,6 +4193,15 @@ namespace Util::Lua
 		return proj;
 	}
 
+    DETOUR_DECL_MEMBER(void, CPlayerMove_StartCommand, CBasePlayer *player, CUserCmd *ucmd)
+	{
+		DETOUR_MEMBER_CALL(CPlayerMove_StartCommand)(player, ucmd);
+        auto mod = player->GetEntityModule<PlayerUserCmdModule>("playerusercmd");
+        if (mod != nullptr) {
+            mod->lastPlayerUserCmd = *ucmd;
+        }
+	}
+
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -4207,7 +4236,7 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile, "CTFWeaponBaseGun::FireProjectile");
-            
+            MOD_ADD_DETOUR_MEMBER(CPlayerMove_StartCommand, "CPlayerMove::StartCommand");
         }
 		
         virtual void PreLoad() override
