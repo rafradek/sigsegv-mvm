@@ -533,12 +533,14 @@ function ents.GetPlayerByUserId(userid) end
 ---@param classname string
 ---@param keyTable table key -> value table. Example: { origin = "0 0 0" }
 ---@param spawn? boolean = true. Spawn entity after creation
----@param activate? boolean = true. Activate entity after creation
+---@param activate? boolean = true. Activate entity after spawn
+---@return Entity entity Entity that was created or `nil` in case of failure
 function ents.CreateWithKeys(classname, keyTable, spawn, activate) end
 
 --Spawns a point template from population file
 ---@param template string Template name
 ---@param templateInfo SpawnTemplateInfo Table containing template spawn paramaters. See DefaultSpawnTemplateInfo global
+---@return table entities Table containing spawned entities. `nil` if template failed to spawn
 function ents.SpawnTemplate(template, templateInfo) end
 
 

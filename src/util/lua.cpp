@@ -637,7 +637,16 @@ namespace Util::Lua
                 }
             }
             
-            templ->SpawnTemplate(parent, offset, angle, autoParent, attachment, ignoreAliveState, params);
+            auto tmpl = templ->SpawnTemplate(parent, offset, angle, autoParent, attachment, ignoreAliveState, params);
+            int i = 1;
+            for (auto ent : tmpl->entities) {
+                lua_newtable(l);
+                LEntityAlloc(l, ent);
+                lua_rawseti(l, -2, i++);
+            }
+        }
+        else {
+            lua_pushnil(l);
         }
         return 1;
     }    
@@ -2552,7 +2561,8 @@ namespace Util::Lua
 
     int LPlayerByUserID(lua_State *l)
     {
-        LEntityAlloc(l, UTIL_PlayerByUserId(luaL_checkinteger(l, 1)));
+        int userid = luaL_checkinteger(l, 1);
+        LEntityAlloc(l, UTIL_PlayerByUserId(userid));
         return 1;
     }
 
@@ -4097,23 +4107,25 @@ namespace Util::Lua
                         lua_pushstring(l, subkey->GetString());
                         lua_setfield(l, -2, subkey->GetName());
                     }
-                    callback.state->Call(1,1);
-                    int result = luaL_optinteger(l, -1, ACTION_CONTINUE);
-                    if (result == ACTION_MODIFY) {
-                        lua_pop(l,1);
-                        lua_pushnil(l);
-                        while (lua_next(l, -2)) {
-                            lua_pushvalue(l, -2);
-                            event->SetString(lua_tostring(l, -1), lua_tostring(l, -2));
-                            lua_pop(l, 2);
+                    int err = callback.state->Call(1, 1);
+                    if (!err) {
+                        int result = luaL_optinteger(l, -1, ACTION_CONTINUE);
+                        if (result == ACTION_MODIFY) {
+                            lua_pop(l, 1);
+                            lua_pushnil(l);
+                            while (lua_next(l, -2)) {
+                                lua_pushvalue(l, -2);
+                                event->SetString(lua_tostring(l, -1), lua_tostring(l, -2));
+                                lua_pop(l, 2);
+                            }
                         }
-                    }
-                    if (result == ACTION_STOP) {
+                        if (result == ACTION_STOP) {
+                            lua_pop(l,1);
+                            mgr->FreeEvent(event);
+                            return false;
+                        }
                         lua_pop(l,1);
-			            mgr->FreeEvent(event);
-                        return false;
                     }
-                    lua_pop(l,1);
                 }
             }
         } 
