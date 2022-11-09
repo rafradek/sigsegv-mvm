@@ -25,6 +25,7 @@ public:
 	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player) { return ft_GetPlayerUpgradeHistory(this, player); }
 	void SetPopulationFilename(const char *name) { ft_SetPopulationFilename(this, name); }
 	int GetPlayerCurrencySpent(CTFPlayer *player) { return ft_GetPlayerCurrencySpent(this, player); }
+	void JumpToWave(int wave, float money = -1.0f)	{        ft_JumpToWave (this, wave, money); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -44,6 +45,7 @@ private:
 	static MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>             ft_GetPlayerUpgradeHistory;
 	static MemberFuncThunk<CPopulationManager *, void, const char*> ft_SetPopulationFilename;
 	static MemberFuncThunk<CPopulationManager *, int, CTFPlayer *> ft_GetPlayerCurrencySpent;
+	static MemberFuncThunk<CPopulationManager *, void, int, float> ft_JumpToWave;
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;

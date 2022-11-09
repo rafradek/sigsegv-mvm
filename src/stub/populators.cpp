@@ -147,6 +147,7 @@ MemberFuncThunk<CPopulationManager *, void, CTFPlayer *> CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>              CPopulationManager::ft_GetPlayerUpgradeHistory ("CPopulationManager::GetPlayerUpgradeHistory");
 MemberFuncThunk<CPopulationManager *, void, const char*> CPopulationManager::ft_SetPopulationFilename("CPopulationManager::SetPopulationFilename");
 MemberFuncThunk<CPopulationManager *, int, CTFPlayer *>  CPopulationManager::ft_GetPlayerCurrencySpent("CPopulationManager::GetPlayerCurrencySpent");
+MemberFuncThunk<CPopulationManager *, void, int, float>  CPopulationManager::ft_JumpToWave("CPopulationManager::JumpToWave");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
 StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefaultPopulationFileShortNames("CPopulationManager::FindDefaultPopulationFileShortNames");

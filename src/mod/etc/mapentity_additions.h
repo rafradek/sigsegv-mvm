@@ -158,6 +158,9 @@ namespace Mod::Etc::Mapentity_Additions
 
     void AddModuleByName(CBaseEntity *entity, const char *name);
     bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, bool &result, variant_t &val);
+
+    extern int waveToJumpNextTick;
+    extern float waveToJumpNextTickMoney;
 }
 
 #endif

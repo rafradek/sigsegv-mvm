@@ -5520,6 +5520,57 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 	}
+	class AmmoFractionModule : public EntityModule
+	{
+	public:
+		AmmoFractionModule(CBaseEntity *entity) {}
+
+		float ammoFraction[TF_AMMO_COUNT] {0.0f};
+	};
+
+	void AdjustAmmo(CTFPlayer *player, int ammoType, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	{
+		auto mod = player->GetOrCreateEntityModule<AmmoFractionModule>("ammofraction");
+		if (mod->ammoFraction[ammoType] != 0 && player->GetAmmoCount(ammoType) * (new_value.m_Float / old_value.m_Float) >= player->GetMaxAmmo(ammoType)) {
+			mod->ammoFraction[ammoType] = 0;
+		}
+		float ammo = (player->GetAmmoCount(ammoType) +  mod->ammoFraction[ammoType]) * (new_value.m_Float / old_value.m_Float);
+		float fraction = ammo - (int) ammo;
+		player->SetAmmoCount(ammo, ammoType);
+		mod->ammoFraction[ammoType] = fraction;
+	}
+
+	void OnPrimaryAmmoChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			AdjustAmmo(player, TF_AMMO_PRIMARY, old_value, new_value);
+		}
+	}
+
+	void OnSecondaryAmmoChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			AdjustAmmo(player, TF_AMMO_SECONDARY, old_value, new_value);
+		}
+	}
+
+	void OnGrenadeAmmoChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			AdjustAmmo(player, TF_AMMO_GRENADES1, old_value, new_value);
+		}
+	}
+
+	void OnMetalChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			AdjustAmmo(player, TF_AMMO_METAL, old_value, new_value);
+		}
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -5814,6 +5865,11 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("is_miniboss", OnMiniBossChange);
 				RegisterCallback("model_scale", OnScaleChange);
 				RegisterCallback("reload_full_clip_at_once", OnReloadFullClipAtOnceChange);
+				RegisterCallback("mult_maxammo_primary", OnPrimaryAmmoChange);
+				RegisterCallback("mult_maxammo_secondary", OnSecondaryAmmoChange);
+				RegisterCallback("mult_maxammo_grenades1", OnGrenadeAmmoChange);
+				RegisterCallback("mult_maxammo_metal", OnMetalChange);
+				
 			}
 		}
 

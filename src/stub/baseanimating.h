@@ -101,6 +101,7 @@ public:
 	CAttributeManager *GetAttributeManager()	 { return vt_GetAttributeManager  (this); }
 	CAttributeContainer *GetAttributeContainer() { return vt_GetAttributeContainer(this); }
 	void GiveTo(CBaseEntity *ent)                {        vt_GiveTo(this, ent); }
+	void ReapplyProvision()                      {        vt_ReapplyProvision(this); }
 	
 	CEconItemView *GetItem();
 	
@@ -114,6 +115,7 @@ private:
 	static MemberVFuncThunk<CEconEntity *, CAttributeContainer *> vt_GetAttributeContainer;
 	static MemberVFuncThunk<CEconEntity *, CAttributeManager *>   vt_GetAttributeManager;
 	static MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   vt_GiveTo;
+	static MemberVFuncThunk<CEconEntity *, void>                  vt_ReapplyProvision;
 };
 
 extern StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize;

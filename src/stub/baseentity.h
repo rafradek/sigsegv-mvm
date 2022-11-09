@@ -212,7 +212,7 @@ public:
 	template<FixedString lit>
 	bool GetCustomVariableVariant(variant_t &value);
 	bool GetCustomVariableByText(const char *key, variant_t &value);
-	bool SetCustomVariable(const char *key, variant_t &value, bool create = true, bool find = true);
+	bool SetCustomVariable(const char *key, const variant_t &value, bool create = true, bool find = true);
 
     // Alert! Custom outputs must be defined in lowercase
 	template<FixedString lit>

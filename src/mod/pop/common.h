@@ -201,7 +201,9 @@ class CTFBotMoveTo : public IHotplugAction<CTFBot>
 public:
     CTFBotMoveTo() {}
     virtual ~CTFBotMoveTo() {
-        
+        if (this->m_pNext != nullptr) {
+            delete this->m_pNext;
+        }
     }
 
     void SetTargetPos(Vector &target_pos)
@@ -290,6 +292,8 @@ private:
     PathFollower m_PathFollower;
     CountdownTimer m_ctRecomputePath;
     CountdownTimer m_ctDoneAction;
+
+    CTFBotMoveTo *m_pNext = nullptr;
 };
 
 const char *GetItemName(const CEconItemView *view);
@@ -657,4 +661,5 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
 class ShootTemplateData;
 CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc);
 
+CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd);
 #endif

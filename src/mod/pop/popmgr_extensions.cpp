@@ -2147,13 +2147,31 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 	}
+	#define CONVAR_SCOPE_VALUE(name, value) \
+	static ConVarRef convarScopedRef_##name(#name); \
+	ConvarScopeValue convarScoped_##name(convarScopedRef_##name, #value);
 
+	class ConvarScopeValue
+	{
+	public:
+		ConvarScopeValue(ConVarRef &ref, std::string valueToSet) : cvar(ref), valueToRestore(ref.GetString()) {
+			cvar.SetValue(valueToSet.c_str());
+		}
+		~ConvarScopeValue() {
+			cvar.SetValue(valueToRestore.c_str());
+		}
+	public:
+		ConVarRef cvar;
+		std::string valueToRestore;
+	};
+	
 	bool CheckPlayerClassLimit(CTFPlayer *player, int plclass, bool do_switch)
 	{
 		const char* classname = g_aRawPlayerClassNames[plclass];
 		if (player->IsBot() || state.m_DisallowedClasses[plclass] == -1)
 			return false;
 
+		Msg("CheckPlayerLimit\n");
 		int taken_slots[10];
 		for (int i=0; i < 10; i++)
 			taken_slots[i] = 0;
@@ -2167,9 +2185,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (state.m_DisallowedClasses[plclass] <= taken_slots[plclass]){
 			
+			CONVAR_SCOPE_VALUE(tf_mvm_endless_force_on, 1);
 			
-			static ConVarRef endless("tf_mvm_endless_force_on");
-			endless.SetValue(true);
 			if (state.m_bSingleClassAllowed != -1) {
 				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",g_aRawPlayerClassNames[state.m_bSingleClassAllowed],"class is allowed in this mission"));
 
@@ -2208,7 +2225,6 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 			}
-			endless.SetValue(false);
 			return true;
 		}
 		return false;
@@ -2257,7 +2273,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 			}
 		}
-
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
 		// Avoid infinite loop
@@ -3444,6 +3459,8 @@ namespace Mod::Pop::PopMgr_Extensions
         virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item) {
 			int id = strtol(menu->GetItemInfo(item, nullptr), nullptr, 10);
 			
+			if (id >= state.m_ExtraLoadoutItems.size()) return;
+
 			auto &set = state.m_SelectedLoadoutItems[player];
 			auto find = set.find(id);
 			if (find != set.end()) {
@@ -3476,6 +3493,15 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 				else if (state.m_bExtraLoadoutItemsAllowEquipOutsideSpawn) {
 					player->GiveDefaultItemsNoAmmo();
+				}
+				if (!TFGameRules()->InSetup()) {
+					auto &item = state.m_ExtraLoadoutItems[id];
+					auto weapon = rtti_cast<CTFWeaponBase *>(player->GetEntityForLoadoutSlot(item.loadout_slot));
+					if (weapon != nullptr) {
+						weapon->m_iClip1 = 0;
+						weapon->m_iClip2 = 0;
+						weapon->m_flEnergy = 0;
+					}
 				}
 			}
 			
@@ -5161,6 +5187,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 	}
+	bool checkClassLimitNextTick = false;
 
 	void Parse_ClassBlacklist(KeyValues *kv)
 	{
@@ -5190,11 +5217,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	DevMsg("%d ",state.m_DisallowedClasses[i]);
 		//}
 		//DevMsg("\n");
-		ForEachTFPlayer([&](CTFPlayer *player){
-			if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
-				CheckPlayerClassLimit(player);
-			}
-		});
+		checkClassLimitNextTick = true;
 	}
 
 	void Parse_FlagResetTime(KeyValues *kv)
@@ -7104,6 +7127,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			received_message_tick = false;
 			for (int i = 0 ; i < 33; i++)
 				received_mission_message_tick[i] = false;
+
+			if (checkClassLimitNextTick) {
+				checkClassLimitNextTick = false;
+				ForEachTFPlayer([&](CTFPlayer *player){
+					if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
+						CheckPlayerClassLimit(player);
+					}
+				});
+			}
 		}
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;

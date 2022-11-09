@@ -1637,121 +1637,15 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_OnEnd)(actor, nextaction);
 	}
 
-	CBaseEntity *SelectTargetByName(CTFBot *actor, const char *name)
-	{
-		CBaseEntity *target = servertools->FindEntityByName(nullptr, name, actor);
-		if (target == nullptr && FStrEq(name,"RandomEnemy")) {
-			target = actor->SelectRandomReachableEnemy();
-		}
-		else if (target == nullptr && FStrEq(name, "ClosestPlayer")) {
-			float closest_dist = FLT_MAX;
-			ForEachTFPlayer([&](CTFPlayer *player){
-				if (player->IsAlive() && !player->IsBot()) {
-					float dist = player->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin());
-					if (dist < closest_dist) {
-						closest_dist = dist;
-						target = player;
-					}
-				}
-			});
-		}
-		else if (target == nullptr) {
-			ForEachTFBot([&](CTFBot *bot) {
-				if (bot->IsAlive() && FStrEq(bot->GetPlayerName(), name)) {
-					target = bot; 
-				}
-			});
-		}
-		if (target == nullptr) {
-			float closest_dist = FLT_MAX;
-			ForEachEntityByClassname(name, [&](CBaseEntity *entity) {
-				float dist = entity->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin());
-				if (dist < closest_dist) {
-					closest_dist = dist;
-					target = entity;
-				}
-			});
-		}
-		return target;
-
-	}
-
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotTacticalMonitor_OnCommandString, CTFBot *actor, const char *cmd)
 	{
 		if (actor->IsAlive() && V_strnicmp(cmd, "interrupt_action", strlen("interrupt_action")) == 0) {
-			CCommand command = CCommand();
-			command.Tokenize(cmd);
 			
 			auto action = reinterpret_cast<Action<CTFBot> *>(this);
 
-			const char *other_target = "";
+			
 
-			auto interrupt_action = new CTFBotMoveTo();
-			for (int i = 1; i < command.ArgC(); i++) {
-				if (strcmp(command[i], "-name") == 0) {
-					interrupt_action->SetName(command[i+1]);
-					i++;
-				}
-				else if (strcmp(command[i], "-pos") == 0) {
-					Vector pos;
-					pos.x = strtof(command[i+1], nullptr);
-					pos.y = strtof(command[i+2], nullptr);
-					pos.z = strtof(command[i+3], nullptr);
-
-					interrupt_action->SetTargetPos(pos);
-					i += 3;
-				}
-				else if (strcmp(command[i], "-lookpos") == 0) {
-					Vector pos;
-					pos.x = strtof(command[i+1], nullptr);
-					pos.y = strtof(command[i+2], nullptr);
-					pos.z = strtof(command[i+3], nullptr);
-
-					interrupt_action->SetTargetAimPos(pos);
-					i += 3;
-				}
-				else if (strcmp(command[i], "-posent") == 0) {
-					if (strcmp(other_target, command[i+1]) == 0) {
-						interrupt_action->SetTargetPosEntity(interrupt_action->GetTargetAimPosEntity());
-					}
-					else {
-						CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
-						other_target = command[i+1];
-						interrupt_action->SetTargetPosEntity(target);
-					}
-					i++;
-				}
-				else if (strcmp(command[i], "-lookposent") == 0) {
-					if (strcmp(other_target, command[i+1]) == 0) {
-						interrupt_action->SetTargetAimPosEntity(interrupt_action->GetTargetPosEntity());
-					}
-					else {
-						CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
-						other_target = command[i+1];
-						interrupt_action->SetTargetAimPosEntity(target);
-					}
-					i++;
-				}
-				else if (strcmp(command[i], "-duration") == 0) {
-					interrupt_action->SetDuration(strtof(command[i+1], nullptr));
-					i++;
-				}
-				else if (strcmp(command[i], "-waituntildone") == 0) {
-					interrupt_action->SetWaitUntilDone(true);
-				}
-				else if (strcmp(command[i], "-killlook") == 0) {
-					interrupt_action->SetKillLook(true);
-				}
-				else if (strcmp(command[i], "-alwayslook") == 0) {
-					interrupt_action->SetAlwaysLook(true);
-				}
-				else if (strcmp(command[i], "-ondoneattributes") == 0) {
-					interrupt_action->SetOnDoneAttributes(command[i+1]);
-					i++;
-				}
-			}	
-
-			return EventDesiredResult<CTFBot>::SuspendFor(interrupt_action, "Executing interrupt task");
+			return EventDesiredResult<CTFBot>::SuspendFor(CreateInterruptAction(actor, cmd), "Executing interrupt task");
 		}
 		
 		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnCommandString)(actor, cmd);

@@ -11,6 +11,7 @@
 #include "stub/server.h"
 #include "stub/objects.h"
 #include "stub/extraentitydata.h"
+#include "stub/tf_objective_resource.h"
 #include "mod/pop/common.h"
 #include "util/pooled_string.h"
 #include "util/scope.h"
@@ -613,6 +614,76 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"ReloadNavAttributes"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             TheNavMesh->RecomputeInternalData();
+        }},
+        {"CollectCash"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            // Distribute cash from packs
+            int packsCurrency = TFObjectiveResource()->m_nMvMWorldMoney;
+            
+            for (int i = 0; i < ICurrencyPackAutoList::AutoList().Count(); ++i) {
+                auto pack = rtti_cast<CCurrencyPack *>(ICurrencyPackAutoList::AutoList()[i]);
+                if (pack == nullptr) continue;
+                pack->SetDistributed(true);
+                pack->Remove();
+            }
+            TFObjectiveResource()->m_nMvMWorldMoney = 0;
+            TFGameRules()->DistributeCurrencyAmount( packsCurrency, NULL, true, false, false );
+        }},
+        {"FinishWave"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager != nullptr) {
+                CWave *wave = g_pPopulationManager->GetCurrentWave();
+                ForEachTFBot([&](CTFBot *bot){
+					if (bot->GetTeamNumber() != TEAM_SPECTATOR) {
+						bot->CommitSuicide();
+						bot->ForceChangeTeam(TEAM_SPECTATOR, true);
+					}
+				});
+                if (wave != nullptr) {
+                    int unallocatedCurrency = 0;
+					FOR_EACH_VEC(wave->m_WaveSpawns, i) {
+						CWaveSpawnPopulator *wavespawn = wave->m_WaveSpawns[i];
+						if (wavespawn->m_unallocatedCurrency != -1) {
+							unallocatedCurrency += wavespawn->m_unallocatedCurrency;
+						}
+					}
+					TFGameRules()->DistributeCurrencyAmount( unallocatedCurrency, NULL, true, true, false );
+
+				    wave->ForceFinish();
+				    wave->ForceFinish();
+				    wave->WaveCompleteUpdate();
+                }
+            }
+        }},
+        {"FinishWaveNoUnspawnedMoney"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager != nullptr) {
+                CWave *wave = g_pPopulationManager->GetCurrentWave();
+                ForEachTFBot([&](CTFBot *bot){
+					if (bot->GetTeamNumber() != TEAM_SPECTATOR) {
+						bot->CommitSuicide();
+						bot->ForceChangeTeam(TEAM_SPECTATOR, true);
+					}
+				});
+                if (wave != nullptr) {
+				    wave->ForceFinish();
+				    wave->ForceFinish();
+				    wave->WaveCompleteUpdate();
+                }
+            }
+        }},
+        {"JumpToWave"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Value.Convert(FIELD_INTEGER);
+            int val = Value.Int();
+            if (g_pPopulationManager != nullptr) {
+                waveToJumpNextTick = val - 1;
+                waveToJumpNextTickMoney = val > 1 ? -1.0f : 1.0f;
+            }
+        }},
+        {"JumpToWaveCalculateMoney"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Value.Convert(FIELD_INTEGER);
+            int val = Value.Int();
+            if (g_pPopulationManager != nullptr) {
+                waveToJumpNextTick = val - 1;
+                waveToJumpNextTickMoney = 1.0f;
+            }
         }}
     });
     ClassnameFilter player_filter("player", {

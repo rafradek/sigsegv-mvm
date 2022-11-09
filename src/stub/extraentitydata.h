@@ -21,7 +21,7 @@ public:
 class CustomVariable
 {
 public:
-    CustomVariable(const char *key, variant_t &value)
+    CustomVariable(const char *key, const variant_t &value)
     {
         this->key = AllocPooledString(key);
         this->value = value;
@@ -500,7 +500,7 @@ inline bool CBaseEntity::GetCustomVariableByText(const char *key, variant_t &val
     return false;
 }
 
-inline bool CBaseEntity::SetCustomVariable(const char *key, variant_t &value, bool create, bool find)
+inline bool CBaseEntity::SetCustomVariable(const char *key, const variant_t &value, bool create, bool find)
 {
     auto &list = GetExtraData(this)->GetCustomVariables();
     bool found = false;

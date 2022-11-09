@@ -2,6 +2,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/entities.h"
 #include "stub/strings.h"
+#include "stub/misc.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "util/misc.h"
 #include "mem/extract.h"
@@ -552,19 +553,41 @@ CEconEntity *CTFPlayer::GetEconEntityById(int id)
 void CTFPlayer::GiveDefaultItemsNoAmmo()
 {
 	float ammoFraction[TF_AMMO_COUNT];
+	auto &providers = this->GetAttributeManager()->m_Providers.Get();
 
+	// // Some weapons have provide on active attribute. Need to forcefully add them to providers for now
+	// std::vector<CEconEntity *> providersAdded;
+	// ForEachTFPlayerEconEntity(this, [&](CEconEntity *ent){
+	// 	if (providers.Find(ent) == providers.InvalidIndex()) {
+	// 		providersAdded.push_back(ent);
+	// 		this->GetAttributeManager()->AddProvider(ent);
+	// 	}
+	// });
 	for ( int iAmmo = 0; iAmmo < TF_AMMO_COUNT; ++iAmmo )
 	{
 		if (GetMaxAmmo(iAmmo) != 0) {
-			ammoFraction[iAmmo] = ((float) GetAmmoCount(iAmmo) / (float) GetMaxAmmo(iAmmo));
+			ammoFraction[iAmmo] = MIN(1,((float) GetAmmoCount(iAmmo) / (float) GetMaxAmmo(iAmmo)));
 		}
 	}
+	// for (auto provider : providersAdded) {
+	// 	this->GetAttributeManager()->RemoveProvider(provider);
+	// }
+	//providersAdded.clear();
 	CTFPlayer::GiveDefaultItems();
 
+	// ForEachTFPlayerEconEntity(this, [&](CEconEntity *ent){
+	// 	if (providers.Find(ent) == providers.InvalidIndex()) {
+	// 		providersAdded.push_back(ent);
+	// 		this->GetAttributeManager()->AddProvider(ent);
+	// 	}
+	// });
 	for ( int iAmmo = 0; iAmmo < TF_AMMO_COUNT; ++iAmmo )
 	{
 		if (GetMaxAmmo(iAmmo) != 0) {
 			SetAmmoCount( ammoFraction[iAmmo] * GetMaxAmmo(iAmmo), iAmmo );
 		}
 	}
+	// for (auto provider : providersAdded) {
+	// 	this->GetAttributeManager()->RemoveProvider(provider);
+	// }
 }

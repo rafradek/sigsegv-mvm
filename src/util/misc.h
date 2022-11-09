@@ -267,6 +267,35 @@ auto select_random(const Container& container)
 	return select_random(begin(container), end(container));
 }
 
+template<class T>
+inline variant_t Variant(T value) {
+	return variant_t();
+}
+
+template<>
+inline variant_t Variant<float>(float value)
+{
+	variant_t var;
+	var.SetFloat(value);
+	return var;
+}
+
+template<>
+inline variant_t Variant<int>(int value)
+{
+	variant_t var;
+	var.SetInt(value);
+	return var;
+}
+
+template<>
+inline variant_t Variant<string_t>(string_t value)
+{
+	variant_t var;
+	var.SetString(value);
+	return var;
+}
+
 
 #if 0
 class CEntitySphereQuery

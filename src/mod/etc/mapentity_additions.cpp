@@ -51,6 +51,8 @@ namespace Mod::Etc::Mapentity_Additions
     std::vector<std::pair<string_t, CHandle<CBaseEntity>>> entity_listeners;
 
     ChangeLevelInfo change_level_info;
+    int waveToJumpNextTick = -1;
+    float waveToJumpNextTickMoney = -1;
     
     PooledString trigger_detector_class("$trigger_detector");
     void AddModuleByName(CBaseEntity *entity, const char *name);
@@ -1689,7 +1691,7 @@ namespace Mod::Etc::Mapentity_Additions
         }*/
     }
 
-    class CMod : public IMod, IModCallbackListener
+    class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Etc:Mapentity_Additions")
@@ -1810,6 +1812,16 @@ namespace Mod::Etc::Mapentity_Additions
         { 
             ResetPropDataCache();
             entity_listeners.clear();
+        }
+
+        virtual void FrameUpdatePostEntityThink() override
+        {
+            if (waveToJumpNextTick != -1) {
+                if (g_pPopulationManager.GetRef() != nullptr) {
+                    g_pPopulationManager->JumpToWave(waveToJumpNextTick, waveToJumpNextTickMoney);
+                }
+                waveToJumpNextTick = -1;
+            }
         }
 
         virtual void LevelInitPostEntity() override

@@ -117,6 +117,11 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
             variant.SetString(AllocPooledString(this->m_strName.c_str()));
             actor->FireCustomOutput<"onactiondone">(actor, actor, variant);
         }
+        if (this->m_pNext != nullptr) {
+            auto nextAction = this->m_pNext;
+            this->m_pNext = nullptr;
+            return ActionResult<CTFBot>::ChangeTo(nextAction, "Switch to next interrupt action in queue");
+        }
         return ActionResult<CTFBot>::Done( "Successfully moved to area" );
     }
 
@@ -149,6 +154,33 @@ EventDesiredResult<CTFBot> CTFBotMoveTo::OnCommandString(CTFBot *actor, const ch
 
     if (V_stricmp(cmd, "stop interrupt action") == 0) {
         return EventDesiredResult<CTFBot>::Done("Stopping interrupt action");
+    }
+    else if (V_strnicmp(cmd, "interrupt_action_queue", strlen("interrupt_action_queue")) == 0) {
+        CTFBotMoveTo *action = this;
+        while(action->m_pNext != nullptr) {
+            action = action->m_pNext;
+        }
+        action->m_pNext = CreateInterruptAction(actor, cmd);
+        return EventDesiredResult<CTFBot>::Sustain("Add to queue");
+    }
+    else if (V_stricmp(cmd, "clear_interrupt_action_queue") == 0) {
+        delete this->m_pNext;
+        return EventDesiredResult<CTFBot>::Sustain("Clear queue");
+    }
+    else if (V_stricmp(cmd, "remove_interrupt_action_queue_name") == 0) {
+        CTFBotMoveTo *action = this;
+        CCommand command = CCommand();
+        command.Tokenize(cmd);
+        while(action->m_pNext != nullptr) {
+            if (FStrEq(action->m_pNext->GetName(), command[1])) {
+                auto actionToDelete = action->m_pNext;
+                action->m_pNext = actionToDelete->m_pNext;
+                delete actionToDelete;
+                break;
+            }
+            action = action->m_pNext;
+        }
+        return EventDesiredResult<CTFBot>::Sustain("Delete from queue");
     }
     
     return EventDesiredResult<CTFBot>::Continue();
@@ -712,11 +744,20 @@ class PeriodicTaskInterruptAction : public PeriodicTask
         else if (FStrEq(subkey->GetName(), "Name")) {
             name = subkey->GetString();
         }
+        else if (FStrEq(subkey->GetName(), "AddToQueue")) {
+            addToQueue = subkey->GetBool();
+        }
+        else if (FStrEq(subkey->GetName(), "StopCurrentInterruptAction")) {
+            stopCurrentInterruptAction = subkey->GetBool();
+        }
     }
 
     virtual void Update(CTFBot *bot) override
     {
-        std::string command = "interrupt_action";
+        if (stopCurrentInterruptAction) {
+            bot->MyNextBotPointer()->OnCommandString("stop interrupt action");
+        }
+        std::string command = addToQueue ? "interrupt_action_queue" : "interrupt_action";
 
         if (!target.empty()) {
             float posx, posy, posz;
@@ -760,11 +801,13 @@ class PeriodicTaskInterruptAction : public PeriodicTask
 
     std::string target;
     std::string aimTarget;
-    bool killAimTarget;
-    bool alwaysLook;
-    float waitUntilDone;
+    bool killAimTarget = false;
+    bool alwaysLook = false;
+    float waitUntilDone = 0.0f;
     std::string onDoneChangeAttributes;
     std::string name;
+    bool addToQueue = false;
+    bool stopCurrentInterruptAction = false;
 };
 
 class PeriodicTaskSpray : public PeriodicTask
@@ -1495,3 +1538,115 @@ void GenerateReferences()
     kvin->deleteThis();
 }
 ConCommand ccmd_generate_references("sig_generate_references", &GenerateReferences, "Generate references for later use");
+
+
+CBaseEntity *SelectTargetByName(CTFBot *actor, const char *name)
+{
+    CBaseEntity *target = servertools->FindEntityByName(nullptr, name, actor);
+    if (target == nullptr && FStrEq(name,"RandomEnemy")) {
+        target = actor->SelectRandomReachableEnemy();
+    }
+    else if (target == nullptr && FStrEq(name, "ClosestPlayer")) {
+        float closest_dist = FLT_MAX;
+        ForEachTFPlayer([&](CTFPlayer *player){
+            if (player->IsAlive() && !player->IsBot()) {
+                float dist = player->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin());
+                if (dist < closest_dist) {
+                    closest_dist = dist;
+                    target = player;
+                }
+            }
+        });
+    }
+    else if (target == nullptr) {
+        ForEachTFBot([&](CTFBot *bot) {
+            if (bot->IsAlive() && FStrEq(bot->GetPlayerName(), name)) {
+                target = bot; 
+            }
+        });
+    }
+    if (target == nullptr) {
+        float closest_dist = FLT_MAX;
+        ForEachEntityByClassname(name, [&](CBaseEntity *entity) {
+            float dist = entity->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin());
+            if (dist < closest_dist) {
+                closest_dist = dist;
+                target = entity;
+            }
+        });
+    }
+    return target;
+
+}
+
+CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd) {
+    CCommand command = CCommand();
+    command.Tokenize(cmd);
+    
+    const char *other_target = "";
+
+    auto interrupt_action = new CTFBotMoveTo();
+    for (int i = 1; i < command.ArgC(); i++) {
+        if (strcmp(command[i], "-name") == 0) {
+            interrupt_action->SetName(command[i+1]);
+            i++;
+        }
+        else if (strcmp(command[i], "-pos") == 0) {
+            Vector pos;
+            pos.x = strtof(command[i+1], nullptr);
+            pos.y = strtof(command[i+2], nullptr);
+            pos.z = strtof(command[i+3], nullptr);
+
+            interrupt_action->SetTargetPos(pos);
+            i += 3;
+        }
+        else if (strcmp(command[i], "-lookpos") == 0) {
+            Vector pos;
+            pos.x = strtof(command[i+1], nullptr);
+            pos.y = strtof(command[i+2], nullptr);
+            pos.z = strtof(command[i+3], nullptr);
+
+            interrupt_action->SetTargetAimPos(pos);
+            i += 3;
+        }
+        else if (strcmp(command[i], "-posent") == 0) {
+            if (strcmp(other_target, command[i+1]) == 0) {
+                interrupt_action->SetTargetPosEntity(interrupt_action->GetTargetAimPosEntity());
+            }
+            else {
+                CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
+                other_target = command[i+1];
+                interrupt_action->SetTargetPosEntity(target);
+            }
+            i++;
+        }
+        else if (strcmp(command[i], "-lookposent") == 0) {
+            if (strcmp(other_target, command[i+1]) == 0) {
+                interrupt_action->SetTargetAimPosEntity(interrupt_action->GetTargetPosEntity());
+            }
+            else {
+                CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
+                other_target = command[i+1];
+                interrupt_action->SetTargetAimPosEntity(target);
+            }
+            i++;
+        }
+        else if (strcmp(command[i], "-duration") == 0) {
+            interrupt_action->SetDuration(strtof(command[i+1], nullptr));
+            i++;
+        }
+        else if (strcmp(command[i], "-waituntildone") == 0) {
+            interrupt_action->SetWaitUntilDone(true);
+        }
+        else if (strcmp(command[i], "-killlook") == 0) {
+            interrupt_action->SetKillLook(true);
+        }
+        else if (strcmp(command[i], "-alwayslook") == 0) {
+            interrupt_action->SetAlwaysLook(true);
+        }
+        else if (strcmp(command[i], "-ondoneattributes") == 0) {
+            interrupt_action->SetOnDoneAttributes(command[i+1]);
+            i++;
+        }
+    }	
+}

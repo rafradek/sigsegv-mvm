@@ -25,15 +25,21 @@ public:
 	int GetGlobalCacheVersion( ) const                                  { return ft_GetGlobalCacheVersion(this);}
 	void ClearCache() { ft_ClearCache(this);}
 
+	void AddProvider(CBaseEntity *provider)    {        ft_AddProvider(this, provider);}
+	void RemoveProvider(CBaseEntity *provider) {        ft_RemoveProvider(this, provider);}
+
 	float ApplyAttributeFloatWrapperFunc(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return ft_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	
 	template<typename T>
 	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool literalString = true);
 
+
 	//The function is virtual originally, but since there are no derivates it should be safe to make it a regular function link, for speed
 	static MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeFloatWrapper;
 	static MemberFuncThunk<const CAttributeManager *, int> ft_GetGlobalCacheVersion;
 	static MemberFuncThunk<CAttributeManager *, void> ft_ClearCache;
+	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_AddProvider;
+	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_RemoveProvider;
 	
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloatWrapper;
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloat;

@@ -47,6 +47,7 @@ MemberFuncThunk<CEconEntity *, void> CEconEntity::ft_DebugDescribe("CEconEntity:
 MemberVFuncThunk<CEconEntity *, CAttributeContainer *> CEconEntity::vt_GetAttributeContainer(TypeName<CEconEntity>(), "CEconEntity::GetAttributeContainer");
 MemberVFuncThunk<CEconEntity *, CAttributeManager *>   CEconEntity::vt_GetAttributeManager  (TypeName<CEconEntity>(), "CEconEntity::GetAttributeManager");
 MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   CEconEntity::vt_GiveTo               (TypeName<CEconEntity>(), "CEconEntity::GiveTo");
+MemberVFuncThunk<CEconEntity *, void>                  CEconEntity::vt_ReapplyProvision     (TypeName<CEconEntity>(), "CEconEntity::ReapplyProvision");
 
 CEconItemView *CEconEntity::GetItem()
 {
