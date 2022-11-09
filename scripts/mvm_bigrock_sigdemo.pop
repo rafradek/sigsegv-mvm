@@ -2237,6 +2237,7 @@ WaveSchedule
 					WaitUntilDone 1 // If set, duration timer only starts when the bot moves to the target location or the aim target is killed (Default: 0)
 					OnDoneChangeAttributes "Action2" // When the task is done, switch to this EventChangeAttributes
 					
+					Distance 50 // How close should bot move to the target (Default: 0)
 					AddToQueue 1 // If there is already another interrupt action active, start this action after previous interrupt action ends (Default: 0)
 					// StopCurrentInterruptAction 1 // If there is already another interrupt action active, completely stop previous action instead of suspending it (Default: 0)
 				}

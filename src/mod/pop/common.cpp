@@ -84,15 +84,20 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
 
     auto nextbot = actor->MyNextBotPointer();
     
-    if (this->m_ctRecomputePath.IsElapsed()) {
-        this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
-        
-        if (pos != vec3_origin) {
-            CTFBotPathCost cost_func(actor, DEFAULT_ROUTE);
-            this->m_PathFollower.Compute(nextbot, pos, cost_func, 0.0f, true);
+    bool inRange = actor->GetAbsOrigin().DistToSqr(pos) < m_fDistanceSq && !(look != vec3_origin && !actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look));
+    if (!inRange) {
+        if (this->m_ctRecomputePath.IsElapsed()) {
+            this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
+            
+            if (pos != vec3_origin) {
+                CTFBotPathCost cost_func(actor, DEFAULT_ROUTE);
+                this->m_PathFollower.Compute(nextbot, pos, cost_func, 0.0f, true);
+            }
         }
     }
-    
+    else {
+        this->m_PathFollower.Invalidate();
+    }
     if (!m_bDone) {
 
         if (!m_bWaitUntilDone) {
@@ -101,7 +106,7 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
         else if (m_bKillLook) {
             m_bDone = this->m_hTargetAim == nullptr || !this->m_hTargetAim->IsAlive();
         }
-        else if (pos == vec3_origin || TheNavMesh->GetNavArea(pos) == actor->GetLastKnownArea()) {
+        else if (pos == vec3_origin || TheNavMesh->GetNavArea(pos) == actor->GetLastKnownArea() || inRange) {
             m_bDone = true;
         }
 
@@ -750,6 +755,9 @@ class PeriodicTaskInterruptAction : public PeriodicTask
         else if (FStrEq(subkey->GetName(), "StopCurrentInterruptAction")) {
             stopCurrentInterruptAction = subkey->GetBool();
         }
+        else if (FStrEq(subkey->GetName(), "Distance")) {
+            distance = subkey->GetFloat();
+        }
     }
 
     virtual void Update(CTFBot *bot) override
@@ -795,6 +803,8 @@ class PeriodicTaskInterruptAction : public PeriodicTask
 
         if (killAimTarget)
             command += " -killlook";
+
+        command += CFmtStr(" -distance %f", distance);
         
         bot->MyNextBotPointer()->OnCommandString(command.c_str());
     }
@@ -808,6 +818,7 @@ class PeriodicTaskInterruptAction : public PeriodicTask
     std::string name;
     bool addToQueue = false;
     bool stopCurrentInterruptAction = false;
+    float distance = 0.0f;
 };
 
 class PeriodicTaskSpray : public PeriodicTask
@@ -1648,5 +1659,10 @@ CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd) {
             interrupt_action->SetOnDoneAttributes(command[i+1]);
             i++;
         }
+        else if (strcmp(command[i], "-distance") == 0) {
+            interrupt_action->SetMaxDistance(strtof(command[i+1], nullptr));
+            i++;
+        }
     }	
+    return interrupt_action;
 }

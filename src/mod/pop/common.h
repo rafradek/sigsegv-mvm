@@ -266,6 +266,11 @@ public:
         this->m_bAlwaysLook = always_look;
     }
 
+    void SetMaxDistance(float distance)
+    {
+        this->m_fDistanceSq = distance * distance;
+    }
+
     virtual const char *GetName() const override { return "Interrupt Action"; }
 
     virtual ActionResult<CTFBot> OnStart(CTFBot *actor, Action<CTFBot> *action) override;
@@ -285,6 +290,7 @@ private:
     float m_fDuration = 0.0f;
     bool m_bDone = false;
     bool m_bWaitUntilDone = false;
+    float m_fDistanceSq = 0.0f;
 
     bool m_bKillLook = false;
     bool m_bAlwaysLook = false;

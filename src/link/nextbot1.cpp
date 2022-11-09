@@ -103,6 +103,7 @@ static MemberFuncThunk<      Path *, void>                                      
 
 /* PathFollower */
 static MemberFuncThunk<PathFollower *, void, INextBot *> ft_PathFollower_Update                 ("PathFollower::Update");
+static MemberFuncThunk<PathFollower *, void>             ft_PathFollower_Invalidate             ("PathFollower::Invalidate");
 static MemberFuncThunk<PathFollower *, void, float>      ft_PathFollower_SetMinLookAheadDistance("PathFollower::SetMinLookAheadDistance");
 
 /* ChasePath */
@@ -307,6 +308,7 @@ void Path::PostProcess()                                                        
 
 /* PathFollower */
 void PathFollower::Update(INextBot *nextbot)           { ft_PathFollower_Update                 (this, nextbot); }
+void PathFollower::Invalidate()                        { ft_PathFollower_Invalidate             (this); }
 void PathFollower::SetMinLookAheadDistance(float dist) { ft_PathFollower_SetMinLookAheadDistance(this, dist); }
 
 /* ChasePath */
