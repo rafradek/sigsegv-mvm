@@ -487,7 +487,10 @@ inline bool StringToIntStrictAndSpend(const char *str, int& out, int base = 0)
 	const char *end;
 	return StringToIntStrict(str, out, base, &end) && (end == nullptr || *end == '\0'); 
 }
-
+/** 
+ * Converts string to float, if it is possible
+ * @return true if conversion to float was possible, false otherwise
+ */
 inline bool StringToFloatStrict(const char *str, float& out, const char **next = nullptr)
 {
 	char *str_end = nullptr;
@@ -505,6 +508,10 @@ inline bool StringToFloatStrict(const char *str, float& out, const char **next =
 	}
 }
 
+/** 
+ * Converts string to float, if it is possible, and there are non number characters left after the parse
+ * @return true if conversion to float was possible and there are no characters left after the number, false otherwise
+ */
 inline bool StringToFloatStrictAndSpend(const char *str, float& out)
 {
 	const char *end;

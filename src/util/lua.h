@@ -75,6 +75,8 @@ namespace Util::Lua
         const void *m_pEntityMeta = nullptr;
         int m_iEntityTableStorage = LUA_NOREF;
         int m_iPropMeta = LUA_NOREF;
+        int m_iEventMeta = LUA_NOREF;
+
         bool m_bTimerLoop = false;
 
         std::list<LuaTimer> timers;

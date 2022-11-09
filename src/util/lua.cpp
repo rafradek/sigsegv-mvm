@@ -29,6 +29,8 @@ namespace Util::Lua
     int prop_meta = LUA_NOREF;
     int entity_table_store = LUA_NOREF;
 
+    int event_meta = LUA_NOREF;
+
     static void stackDump (lua_State *L) {
       int i;
       int top = lua_gettop(L);
@@ -2946,6 +2948,20 @@ namespace Util::Lua
 
         return 0;
     }
+    
+    int LEventGet(lua_State *l)
+    {
+        lua_pushnumber(l, 0);
+        return 1;
+    }
+
+    int LEventGetString(lua_State *l)
+    {
+        lua_getfield(l, 1, luaL_checkstring(l, 2));
+        luaL_optstring(l, -1, "");
+        return 1;
+    }
+
 
     static const struct luaL_Reg vectorlib_f [] = {
         {"__call", LVectorNew},
@@ -3104,6 +3120,12 @@ namespace Util::Lua
         {nullptr, nullptr},
     };
 
+    static const struct luaL_Reg event_m [] = {
+        {"GetString", LEventGetString},
+        {"__index", LEventGet},
+        {nullptr, nullptr},
+    };
+
     THINK_FUNC_DECL(ScriptModuleTick)
     {
         
@@ -3162,6 +3184,10 @@ namespace Util::Lua
         luaL_newmetatable(l, "prop");
         luaL_setfuncs(l, proplib_m, 0);
         m_iPropMeta = prop_meta = luaL_ref(l, LUA_REGISTRYINDEX);
+
+        luaL_newmetatable(l, "event");
+        luaL_setfuncs(l, event_m, 0);
+        m_iEventMeta = event_meta = luaL_ref(l, LUA_REGISTRYINDEX);
         //lua_rawsetp(l, LUA_REGISTRYINDEX, (void*)entity_meta);
 
         //lua_pushstring(l, "__index");
@@ -3320,6 +3346,7 @@ namespace Util::Lua
         entity_meta_ptr = m_pEntityMeta;
         entity_table_store = m_iEntityTableStorage;
         prop_meta = m_iPropMeta;
+        event_meta = m_iEventMeta;
     }
 
     void LuaState::CallGlobal(const char *str, int numargs) {
@@ -4062,21 +4089,6 @@ namespace Util::Lua
     public:
         CGameEvent( void *descriptor );
         virtual ~CGameEvent();
-
-        const char *GetName() const;
-        bool  IsEmpty(const char *keyName = NULL);
-        bool  IsLocal() const;
-        bool  IsReliable() const;
-
-        bool  GetBool( const char *keyName = NULL, bool defaultValue = false );
-        int   GetInt( const char *keyName = NULL, int defaultValue = 0 );
-        float GetFloat( const char *keyName = NULL, float defaultValue = 0.0f );
-        const char *GetString( const char *keyName = NULL, const char *defaultValue = "" );
-
-        void SetBool( const char *keyName, bool value );
-        void SetInt( const char *keyName, int value );
-        void SetFloat( const char *keyName, float value );
-        void SetString( const char *keyName, const char *value );
         
         void	*m_pDescriptor;
         KeyValues				*m_pDataKeys;
@@ -4096,15 +4108,23 @@ namespace Util::Lua
 		
 		if (event != nullptr && !event_callbacks.empty()) {
             auto cevent = reinterpret_cast<CGameEvent *>(event);
-
             for (auto &callback : event_callbacks) {
                 if (callback.name == event->GetName()) {
                     auto l = callback.state->GetState();
                     lua_newtable(l);
+                    lua_rawgeti(l, LUA_REGISTRYINDEX, event_meta);
+                    lua_setmetatable(l, -2);
                     lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                     lua_pushvalue(l,-2);
                     FOR_EACH_SUBKEY(cevent->m_pDataKeys, subkey) {
-                        lua_pushstring(l, subkey->GetString());
+                        float num;
+                        const char *str = subkey->GetString();
+                        if (StringToFloatStrictAndSpend(str, num)) {
+                            lua_pushnumber(l, num);
+                        }
+                        else {
+                            lua_pushstring(l, subkey->GetString());
+                        }
                         lua_setfield(l, -2, subkey->GetName());
                     }
                     int err = callback.state->Call(1, 1);

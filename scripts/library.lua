@@ -652,7 +652,7 @@ function GetMapName() end
 
 --Adds game event callback. See https://wiki.alliedmods.net/Team_Fortress_2_Events
 ---@param name string Name of the event
----@param callback function Callback function with parameters: eventTable (contains event key values). Return ACTION_MODIFY to send event with modified values, ACTION_STOP to stop the event
+---@param callback function Callback function with parameters: eventTable (contains event key values, absent keys return 0). Return ACTION_MODIFY to send event to clients with modified values, ACTION_STOP to stop the event from being send to clients.
 ---@return number id id for later removal with `RemoveEventCallback(id)` function
 function AddEventCallback(name, callback) end
 
