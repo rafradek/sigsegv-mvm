@@ -148,6 +148,8 @@ MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>
 MemberFuncThunk<CPopulationManager *, void, const char*> CPopulationManager::ft_SetPopulationFilename("CPopulationManager::SetPopulationFilename");
 MemberFuncThunk<CPopulationManager *, int, CTFPlayer *>  CPopulationManager::ft_GetPlayerCurrencySpent("CPopulationManager::GetPlayerCurrencySpent");
 MemberFuncThunk<CPopulationManager *, void, int, float>  CPopulationManager::ft_JumpToWave("CPopulationManager::JumpToWave");
+MemberFuncThunk<CPopulationManager *, PlayerUpgradeHistory *, CSteamID> CPopulationManager::ft_FindOrAddPlayerUpgradeHistory("CPopulationManager::FindOrAddPlayerUpgradeHistory");
+MemberFuncThunk<CPopulationManager *, void, int>         CPopulationManager::ft_SetCheckpoint("CPopulationManager::SetCheckpoint");
 
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> CPopulationManager::ft_CollectMvMBots("CPopulationManager::CollectMvMBots");
 StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefaultPopulationFileShortNames("CPopulationManager::FindDefaultPopulationFileShortNames");

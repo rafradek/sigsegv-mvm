@@ -8,6 +8,7 @@
 
 class CWave;
 class CUpgradeInfo;
+class PlayerUpgradeHistory;
 
 class CPopulationManager : public CPointEntity
 {
@@ -19,13 +20,15 @@ public:
 	void UnpauseSpawning()             {        ft_UnpauseSpawning (this); }
 	void AllocateBots()	               {        ft_AllocateBots (this); }
 	bool IsInEndlessWaves()	           { return ft_IsInEndlessWaves (this); }
-	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots) { return ft_CollectMvMBots(mvm_bots); }
-	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer ) { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
+	static int CollectMvMBots(CUtlVector<CTFPlayer *> *mvm_bots)                 { return ft_CollectMvMBots(mvm_bots); }
+	void RemovePlayerAndItemUpgradesFromHistory( CTFPlayer *pPlayer )            { return ft_RemovePlayerAndItemUpgradesFromHistory(this, pPlayer); }
 	static void FindDefaultPopulationFileShortNames(CUtlVector<CUtlString> &vec) { return ft_FindDefaultPopulationFileShortNames(vec); }
-	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player) { return ft_GetPlayerUpgradeHistory(this, player); }
-	void SetPopulationFilename(const char *name) { ft_SetPopulationFilename(this, name); }
-	int GetPlayerCurrencySpent(CTFPlayer *player) { return ft_GetPlayerCurrencySpent(this, player); }
-	void JumpToWave(int wave, float money = -1.0f)	{        ft_JumpToWave (this, wave, money); }
+	CUtlVector< CUpgradeInfo > * GetPlayerUpgradeHistory(CTFPlayer *player)      { return ft_GetPlayerUpgradeHistory(this, player); }
+	void SetPopulationFilename(const char *name)                                 { ft_SetPopulationFilename(this, name); }
+	int GetPlayerCurrencySpent(CTFPlayer *player)                                { return ft_GetPlayerCurrencySpent(this, player); }
+	void JumpToWave(int wave, float money = -1.0f)                               {        ft_JumpToWave (this, wave, money); }
+	PlayerUpgradeHistory * FindOrAddPlayerUpgradeHistory(CSteamID steamid)	     { return ft_FindOrAddPlayerUpgradeHistory (this, steamid); }
+	void SetCheckpoint(int wave)                                                 {        ft_SetCheckpoint (this, wave); }
 	
 	using SteamIDMap = CUtlMap<uint64_t, int>;
 	DECL_EXTRACT(SteamIDMap, m_RespecPoints);
@@ -46,6 +49,10 @@ private:
 	static MemberFuncThunk<CPopulationManager *, void, const char*> ft_SetPopulationFilename;
 	static MemberFuncThunk<CPopulationManager *, int, CTFPlayer *> ft_GetPlayerCurrencySpent;
 	static MemberFuncThunk<CPopulationManager *, void, int, float> ft_JumpToWave;
+	static MemberFuncThunk<CPopulationManager *, PlayerUpgradeHistory *, CSteamID> ft_FindOrAddPlayerUpgradeHistory;
+	static MemberFuncThunk<CPopulationManager *, void, int> ft_SetCheckpoint;
+	
+	
 	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;
@@ -310,6 +317,13 @@ struct EventInfo
 {
 	CFmtStrN<256> target; // +0x000
 	CFmtStrN<256> action; // +0x10c
+};
+
+struct PlayerUpgradeHistory
+{	
+	CSteamID m_steamId;							// which player this snapshot is for
+	CUtlVector< CUpgradeInfo > m_upgradeVector;	 
+	int m_currencySpent;
 };
 
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;

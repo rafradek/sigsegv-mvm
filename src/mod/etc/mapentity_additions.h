@@ -4,6 +4,8 @@
 #include "util/lua.h"
 #include "util/prop_helper.h"
 
+class PlayerUpgradeHistory;
+
 namespace Mod::Etc::Mapentity_Additions
 {
 
@@ -148,10 +150,21 @@ namespace Mod::Etc::Mapentity_Additions
         virtual bool Test(CBaseEntity *ent) {return rtti_cast<T>(ent);}
     };
 
+    struct MyPlayerUpgradeHistory
+    {
+        CSteamID m_steamId;							// which player this snapshot is for
+        std::vector< CUpgradeInfo > m_upgradeVector;	 
+        int m_currencySpent;
+    };
     struct ChangeLevelInfo
     {
         bool set = false;
+        bool setInitialize = false;
+        bool setInitializeCurrency = false;
+        int startingCurrency = 0;
         std::string mission;
+        int currencyCollected = 0;
+        std::vector<MyPlayerUpgradeHistory> playerUpgradeHistory;
 
     };
     extern ChangeLevelInfo change_level_info;

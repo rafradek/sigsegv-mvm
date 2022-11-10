@@ -1572,8 +1572,37 @@ namespace Mod::Etc::Mapentity_Additions
             CCommand command = CCommand(2, commandn);
 
             tf_mvm_popfile(command);
+            change_level_info.setInitialize = true;
+            change_level_info.setInitializeCurrency = true;
             change_level_info.set = false;
         }
+    }
+    
+    DETOUR_DECL_MEMBER(bool, CPopulationManager_Initialize)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CPopulationManager_Initialize)();
+        
+        if (change_level_info.setInitializeCurrency) {
+            g_pPopulationManager->m_nStartingCurrency = change_level_info.startingCurrency + change_level_info.currencyCollected;
+        }
+        if (change_level_info.setInitialize) {
+            
+            //TFGameRules()->DistributeCurrencyAmount(change_level_info.startingCurrency - g_pPopulationManager->m_nStartingCurrency + change_level_info.currencyCollected, nullptr, true, true, false);
+            for (auto &historySave : change_level_info.playerUpgradeHistory) {
+                auto history = g_pPopulationManager->FindOrAddPlayerUpgradeHistory(historySave.m_steamId);
+                history->m_currencySpent = historySave.m_currencySpent;
+                history->m_upgradeVector.CopyArray(historySave.m_upgradeVector.data(), historySave.m_upgradeVector.size());
+            }
+            g_pPopulationManager->SetCheckpoint(0);
+            change_level_info.setInitialize = false;
+        }
+        return ret;
+	}
+
+    DETOUR_DECL_MEMBER(void, CPopulationManager_ResetMap)
+	{
+		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
+        change_level_info.setInitializeCurrency = false;
     }
 
     RefCount rc_ServerOnly;
@@ -1729,6 +1758,9 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_ShouldTransmit, "CBaseEntity::ShouldTransmit");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState, "CBaseEntity::DispatchUpdateTransmitState");
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_Initialize, "CPopulationManager::Initialize");
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
+            
 
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
@@ -1773,6 +1805,8 @@ namespace Mod::Etc::Mapentity_Additions
             
             MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
+            
+            
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

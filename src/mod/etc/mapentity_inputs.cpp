@@ -609,6 +609,20 @@ namespace Mod::Etc::Mapentity_Additions
             char *mission = strtok(NULL,"|");
             change_level_info.set = mission != nullptr;
             change_level_info.mission = mission != nullptr ? mission : "";
+            change_level_info.playerUpgradeHistory.clear();
+            if (mission != nullptr) {
+                change_level_info.startingCurrency = g_pPopulationManager->m_nStartingCurrency;
+                change_level_info.currencyCollected = MannVsMachineStats_GetAcquiredCredits();
+                ForEachTFPlayer([](CTFPlayer *player){
+                    if (player->IsRealPlayer()) {
+                        auto &history = *g_pPopulationManager->FindOrAddPlayerUpgradeHistory(player->GetSteamID());
+                        auto &historySave = change_level_info.playerUpgradeHistory.emplace_back();
+                        historySave.m_currencySpent = history.m_currencySpent;
+                        historySave.m_steamId = history.m_steamId;
+                        historySave.m_upgradeVector.insert(historySave.m_upgradeVector.end(), history.m_upgradeVector.begin(), history.m_upgradeVector.end());
+                    }
+                });
+            }
             engine->ChangeLevel(map, nullptr);
             //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
         }},
