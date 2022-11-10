@@ -56,6 +56,11 @@
 					type "sym"
 					sym  "_ZN10CTFNavMesh19CollectBuiltObjectsEP10CUtlVectorIP11CBaseObject10CUtlMemoryIS2_iEEi"
 				}
+				"CTFNavMesh::RecomputeInternalData"
+				{
+					type "sym"
+					sym  "_ZN10CTFNavMesh21RecomputeInternalDataEv"
+				}
 				
 				"CNavArea::GetExtent"
 				{

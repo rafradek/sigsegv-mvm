@@ -6582,6 +6582,21 @@
 					type "sym"
 					sym  "_ZN13CTFWeaponBase14SendWeaponAnimEi"
 				}
+				"CEconEntity::ReapplyProvision"
+				{
+					type "sym"
+					sym  "_ZN11CEconEntity16ReapplyProvisionEv"
+				}
+				"CAttributeManager::AddProvider"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager11AddProviderEP11CBaseEntity"
+				}
+				"CAttributeManager::RemoveProvider"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager14RemoveProviderEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

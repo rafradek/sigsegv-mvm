@@ -31,6 +31,10 @@ namespace Util::Lua
 
     int event_meta = LUA_NOREF;
 
+    int savedata_meta = LUA_NOREF;
+
+    std::unordered_map<std::string, variant_t> save_data;
+
     static void stackDump (lua_State *L) {
       int i;
       int top = lua_gettop(L);
@@ -1858,8 +1862,7 @@ namespace Util::Lua
         const char *varName = luaL_checkstring(l, 2);
 
         if (varName == nullptr) {
-            lua_pushnil(l);
-            return 1;
+            return 0;
         }
 
         // Check for sendprop$ prefix in name, if so, force reading sendprop instead of datamap
@@ -2962,6 +2965,27 @@ namespace Util::Lua
         return 1;
     }
 
+    int LSavedataGet(lua_State *l)
+    {
+        auto find = save_data.find(luaL_checkstring(l,2));
+        if (find != save_data.end()) {
+            LFromVariant(l, find->second);
+        }
+        else {
+            lua_pushnil(l);
+        }
+        
+        return 1;
+    }
+
+    int LSavedataSet(lua_State *l)
+    {
+        variant_t var;
+        LToVariant(l, 3, var);
+        save_data[luaL_checkstring(l,2)] = var;
+        
+        return 0;
+    }
 
     static const struct luaL_Reg vectorlib_f [] = {
         {"__call", LVectorNew},
@@ -3126,6 +3150,12 @@ namespace Util::Lua
         {nullptr, nullptr},
     };
 
+    static const struct luaL_Reg savedata_m [] = {
+        {"__index", LSavedataGet},
+        {"__newindex", LSavedataSet},
+        {nullptr, nullptr},
+    };
+
     THINK_FUNC_DECL(ScriptModuleTick)
     {
         
@@ -3188,6 +3218,14 @@ namespace Util::Lua
         luaL_newmetatable(l, "event");
         luaL_setfuncs(l, event_m, 0);
         m_iEventMeta = event_meta = luaL_ref(l, LUA_REGISTRYINDEX);
+
+        luaL_newmetatable(l, "savedata");
+        luaL_setfuncs(l, savedata_m, 0);
+        m_iSavedataMeta = savedata_meta = luaL_ref(l, LUA_REGISTRYINDEX);
+        
+        lua_newtable(l);
+        luaL_setmetatable(l, "savedata");
+        lua_setglobal(l, "DataTransfer");
         //lua_rawsetp(l, LUA_REGISTRYINDEX, (void*)entity_meta);
 
         //lua_pushstring(l, "__index");
@@ -3347,6 +3385,7 @@ namespace Util::Lua
         entity_table_store = m_iEntityTableStorage;
         prop_meta = m_iPropMeta;
         event_meta = m_iEventMeta;
+        savedata_meta = m_iSavedataMeta;
     }
 
     void LuaState::CallGlobal(const char *str, int numargs) {

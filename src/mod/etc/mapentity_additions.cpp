@@ -1593,6 +1593,7 @@ namespace Mod::Etc::Mapentity_Additions
                 history->m_currencySpent = historySave.m_currencySpent;
                 history->m_upgradeVector.CopyArray(historySave.m_upgradeVector.data(), historySave.m_upgradeVector.size());
             }
+            Mod::Pop::PopMgr_Extensions::RestoreStateInfoBetweenMissions();
             g_pPopulationManager->SetCheckpoint(0);
             change_level_info.setInitialize = false;
         }

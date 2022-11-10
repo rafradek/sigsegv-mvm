@@ -3214,3 +3214,12 @@ WaveSchedule
 
 // Ignored by bots
 // "ignored by bots" 1
+
+// Apply attributes to victim on hit with the weapon. Format: attribute|value|duration ...
+// "add attributes on hit" "move speed bonus|0.3|2|head scale|3|2"
+
+// Apply attributes to self on hit with the weapon. Format: attribute|value|duration ...
+// "self add attributes on hit" "move speed bonus|0.3|2|head scale|3|2"
+
+// Apply attributes to self on kill with the weapon. Format: attribute|value|duration ...
+// "add attributes on kill" "move speed bonus|0.3|2|head scale|3|2"

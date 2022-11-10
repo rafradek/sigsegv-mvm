@@ -165,7 +165,9 @@ namespace Mod::Etc::Mapentity_Additions
         std::string mission;
         int currencyCollected = 0;
         std::vector<MyPlayerUpgradeHistory> playerUpgradeHistory;
-
+        std::map<CSteamID, std::set<int>> selectedLoadoutItems;
+		std::map<CSteamID, std::set<int>> boughtLoadoutItems;
+        int loadoutItemsCount;
     };
     extern ChangeLevelInfo change_level_info;
 

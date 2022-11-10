@@ -2545,4 +2545,34 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4574"
+    {
+        "name"	"add attributes on hit"
+        "attribute_class"	"add_attributes_on_hit"
+        "attribute_type"    "string"
+        "description_string"	"Attribute on hit"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4575"
+    {
+        "name"	"add attributes on kill"
+        "attribute_class"	"add_attributes_on_kill"
+        "attribute_type"    "string"
+        "description_string"	"Attribute on kill"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4576"
+    {
+        "name"	"self add attributes on hit"
+        "attribute_class"	"self_add_attributes_on_hit"
+        "attribute_type"    "string"
+        "description_string"	"Attribute on hit"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

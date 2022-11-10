@@ -76,6 +76,7 @@ namespace Util::Lua
         int m_iEntityTableStorage = LUA_NOREF;
         int m_iPropMeta = LUA_NOREF;
         int m_iEventMeta = LUA_NOREF;
+        int m_iSavedataMeta = LUA_NOREF;
 
         bool m_bTimerLoop = false;
 

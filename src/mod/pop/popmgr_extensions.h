@@ -18,5 +18,7 @@ namespace Mod::Pop::PopMgr_Extensions {
 	int GetMaxSpectators();
 	bool SpyNoSapUnownedBuildings();
 	int GetMaxRobotLimit();
+	void SaveStateInfoBetweenMissions();
+	void RestoreStateInfoBetweenMissions();
 }
 #endif

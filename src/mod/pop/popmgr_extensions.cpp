@@ -1141,7 +1141,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::string> m_Description;
 		std::vector<ExtraLoadoutItem> m_ExtraLoadoutItems;
 		bool m_ExtraLoadoutItemsNotify;
-		std::unordered_map<CTFPlayer *, std::set<int>> m_SelectedLoadoutItems;
+		std::map<CSteamID, std::set<int>> m_SelectedLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItemsCheckpoint;
 
@@ -1258,6 +1258,22 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		return false;
+	}
+
+	void SaveStateInfoBetweenMissions()
+	{
+		Mod::Etc::Mapentity_Additions::change_level_info.selectedLoadoutItems = state.m_SelectedLoadoutItems;
+		Mod::Etc::Mapentity_Additions::change_level_info.boughtLoadoutItems = state.m_BoughtLoadoutItems;
+		Mod::Etc::Mapentity_Additions::change_level_info.loadoutItemsCount = state.m_ExtraLoadoutItems.size();
+	}
+
+	void RestoreStateInfoBetweenMissions()
+	{
+		// Only restore selected loadout items if there are enough loadout items in the target mission
+		if (state.m_ExtraLoadoutItems.size() >= Mod::Etc::Mapentity_Additions::change_level_info.loadoutItemsCount) {
+			state.m_SelectedLoadoutItems = Mod::Etc::Mapentity_Additions::change_level_info.selectedLoadoutItems;
+			state.m_BoughtLoadoutItems = Mod::Etc::Mapentity_Additions::change_level_info.boughtLoadoutItems;
+		}
 	}
 
 	bool bot_killed_check = false;
@@ -1682,7 +1698,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
 			
-			auto find_loadout = state.m_SelectedLoadoutItems.find(player);
+			auto find_loadout = state.m_SelectedLoadoutItems.find(player->GetSteamID());
 			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
 				for(int itemnum : find_loadout->second) {
 					if (itemnum < (int) state.m_ExtraLoadoutItems.size()) {
@@ -1873,7 +1889,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		// Delete refundable custom weapons from player inventory
 		if (remove && !state.m_BoughtLoadoutItems.empty()) {
 			auto &playerItems = state.m_BoughtLoadoutItems[player->GetSteamID()];
-			auto &playerItemsSelected = state.m_SelectedLoadoutItems[player];
+			auto &playerItemsSelected = state.m_SelectedLoadoutItems[player->GetSteamID()];
 			for (auto it = playerItems.begin(); it != playerItems.end();) {
 				int id = *it;
 				if (state.m_ExtraLoadoutItems[id].allow_refund) {
@@ -3461,7 +3477,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			if (id >= state.m_ExtraLoadoutItems.size()) return;
 
-			auto &set = state.m_SelectedLoadoutItems[player];
+			auto &set = state.m_SelectedLoadoutItems[player->GetSteamID()];
 			auto find = set.find(id);
 			if (find != set.end()) {
 				set.erase(find);
@@ -3541,7 +3557,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					player->RemoveCurrency(item.cost);
 					state.m_BoughtLoadoutItems[steamid].insert(itemId);
 					// Equip bought item
-					auto &set = state.m_SelectedLoadoutItems[player];
+					auto &set = state.m_SelectedLoadoutItems[player->GetSteamID()];
 					for (auto it = set.begin(); it != set.end(); ) {
 						auto &item_compare = state.m_ExtraLoadoutItems[*it];
 						if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
@@ -3563,7 +3579,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 			if (FStrEq(menu->GetItemInfo(menuitem, nullptr), "Equip")) {
-				auto &set = state.m_SelectedLoadoutItems[player];
+				auto &set = state.m_SelectedLoadoutItems[player->GetSteamID()];
 				for (auto it = set.begin(); it != set.end(); ) {
 					auto &item_compare = state.m_ExtraLoadoutItems[*it];
 					if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
@@ -3578,7 +3594,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				set.insert(itemId);
 			}
 			if (FStrEq(menu->GetItemInfo(menuitem, nullptr), "Unequip")) {
-				auto &set = state.m_SelectedLoadoutItems[player];
+				auto &set = state.m_SelectedLoadoutItems[player->GetSteamID()];
 				set.erase(itemId);
 				regenerate = true;
 			}
@@ -4165,7 +4181,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			if ((class_index == item.class_index || item.class_index == 0) && wave >= item.min_wave && wave <= item.max_wave) {
 
-				bool selected = state.m_SelectedLoadoutItems[player].count(i);
+				bool selected = state.m_SelectedLoadoutItems[player->GetSteamID()].count(i);
 
 				if (item.hidden && !state.m_BoughtLoadoutItems[player->GetSteamID()].count(i)) {
 					continue;
@@ -4233,7 +4249,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 
 		if (state.m_BoughtLoadoutItems[steamid].count(itemId)) {
-			if (state.m_SelectedLoadoutItems[player].count(itemId)) {
+			if (state.m_SelectedLoadoutItems[steamid].count(itemId)) {
 				ItemDrawInfo info1("Unequip", ITEMDRAW_DEFAULT);
 				menu->AppendItem("Unequip", info1);
 			}
@@ -4640,7 +4656,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			player->GetSteamID(&steamid);
 			auto &playerItems = state.m_BoughtLoadoutItems[steamid];
 			auto &playerItemsCheckpoint = state.m_BoughtLoadoutItemsCheckpoint[steamid];
-			auto &playerItemsSelected = state.m_SelectedLoadoutItems[player];
+			auto &playerItemsSelected = state.m_SelectedLoadoutItems[steamid];
 			playerItems = playerItemsCheckpoint;
 			
 			for (auto it = playerItemsSelected.begin(); it != playerItemsSelected.end(); ) {
@@ -4764,7 +4780,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->GetSteamID(&steamid);
 				state.m_BoughtLoadoutItems[steamid].insert(i);
 
-				auto &set = state.m_SelectedLoadoutItems[player];
+				auto &set = state.m_SelectedLoadoutItems[steamid];
 				for (auto it = set.begin(); it != set.end(); ) {
 					auto &item_compare = state.m_ExtraLoadoutItems[*it];
 					if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
@@ -4793,7 +4809,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0) 
 					removed = true;
 
-				if (state.m_SelectedLoadoutItems[player].erase(i) != 0) 
+				if (state.m_SelectedLoadoutItems[steamid].erase(i) != 0) 
 					removed = true;
 				
 				if (removeNow && removed && (item.class_index == 0 || item.class_index == player->GetPlayerClass()->GetClassIndex()))
@@ -4810,7 +4826,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (state.m_BoughtLoadoutItems[steamid].erase(i) != 0) 
 				removedSomething = true;
 
-			if (state.m_SelectedLoadoutItems[player].erase(i) != 0) 
+			if (state.m_SelectedLoadoutItems[steamid].erase(i) != 0) 
 				removedSomething = true;
 		}
 		if (removedSomething) {

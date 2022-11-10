@@ -660,3 +660,6 @@ function AddEventCallback(name, callback) end
 ---@param id number id of the event callback
 ---@return nil
 function RemoveEventCallback(id) end
+
+-- Table for transfering data between missions and maps. Cannot store other tables
+DataTransfer = {}

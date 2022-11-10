@@ -622,6 +622,7 @@ namespace Mod::Etc::Mapentity_Additions
                         historySave.m_upgradeVector.insert(historySave.m_upgradeVector.end(), history.m_upgradeVector.begin(), history.m_upgradeVector.end());
                     }
                 });
+                Mod::Pop::PopMgr_Extensions::SaveStateInfoBetweenMissions();
             }
             engine->ChangeLevel(map, nullptr);
             //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);

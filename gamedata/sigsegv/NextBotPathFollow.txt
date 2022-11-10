@@ -29,6 +29,11 @@
 					type "sym"
 					sym  "_ZN12PathFollower6UpdateEP8INextBot"
 				}
+				"PathFollower::Invalidate"
+				{
+					type "sym"
+					sym  "_ZN12PathFollower10InvalidateEv"
+				}
 				"PathFollower::SetMinLookAheadDistance"
 				{
 					type "sym"

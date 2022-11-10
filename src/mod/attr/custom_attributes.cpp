@@ -2534,6 +2534,26 @@ namespace Mod::Attr::Custom_Attributes
 			player->SetGravity(gravity);
 	}
 
+	void ApplyAttributesFromString(CTFPlayer *player, const char *attributes) {
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = *it;
+				if (++it == tokens.end())
+					break;
+				auto value = stof(*it);
+				if (++it == tokens.end())
+					break;
+				auto duration = stof(*it);
+				player->AddCustomAttribute(attribute.c_str(), value, duration);
+				it++;
+			}
+		}
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
@@ -2603,6 +2623,12 @@ namespace Mod::Attr::Custom_Attributes
 						}
 					}
 				}
+				
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "add attributes on hit", attributes_string);
+				ApplyAttributesFromString(victim, attributes_string);
+
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "self add attributes on hit", attributes_string_self);
+				ApplyAttributesFromString(player, attributes_string_self);
 			}
 		}
 	}
@@ -3338,7 +3364,6 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFChargedSMG_SecondaryAttack)();
 	}
 
-
 	RefCount rc_AllowOverheal;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_OnKilledOther_Effects, CBaseEntity *other, const CTakeDamageInfo& info)
 	{
@@ -3382,6 +3407,12 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), overheal_allow, overheal_from_heal_on_kill);
+			
+			auto weapon = rtti_cast<CEconEntity *>(info.GetWeapon());
+			if (weapon != nullptr) {
+				GET_STRING_ATTRIBUTE(weapon->GetItem()->GetAttributeList(), "add attributes on kill", attributes_string);
+				ApplyAttributesFromString(player, attributes_string);
+			}
 		}
 
 		SCOPED_INCREMENT_IF(rc_AllowOverheal, overheal_allow != 0);
