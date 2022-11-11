@@ -434,6 +434,7 @@ public:
 	void HandleCommand_JoinClass(const char *pClassName, bool b1 = true) { ft_HandleCommand_JoinClass       (this, pClassName, b1); }
 	
 	void AddCustomAttribute(const char *s1, float f1, float f2) { ft_AddCustomAttribute       (this, s1, f1, f2); }
+	void AddCustomAttribute(const char *s1, const std::string &val, float f2);
 	void RemoveCustomAttribute(const char *s1)                  { ft_RemoveCustomAttribute    (this, s1); }
 	void RemoveAllCustomAttributes()                            { ft_RemoveAllCustomAttributes(this); }
 	void ReapplyPlayerUpgrades()                                { ft_ReapplyPlayerUpgrades  (this); }

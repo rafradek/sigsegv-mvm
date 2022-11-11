@@ -912,7 +912,7 @@ namespace Mod::Etc::Mapentity_Additions
             char *value = strtok(NULL,"|");
 
             if (player != nullptr && value != nullptr) {
-                player->AddCustomAttribute(attr, atof(value), -1.0f);
+                player->AddCustomAttribute(attr, value, -1.0f);
             }
         }},
         {"RemovePlayerAttribute"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){

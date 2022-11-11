@@ -591,3 +591,12 @@ void CTFPlayer::GiveDefaultItemsNoAmmo()
 	// 	this->GetAttributeManager()->RemoveProvider(provider);
 	// }
 }
+
+void CTFPlayer::AddCustomAttribute(const char *s1, const std::string &val, float f2)
+{
+	attribute_data_union_t value;
+	auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(s1);
+	if (attrDef != nullptr && LoadAttributeDataUnionFromString(attrDef, value, val)) {
+		this->AddCustomAttribute(s1, value.m_Float, f2);
+	}
+}

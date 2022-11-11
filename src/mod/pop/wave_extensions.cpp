@@ -410,7 +410,9 @@ namespace Mod::Pop::Wave_Extensions
 			}
 			if (classname == 0) {
 				if (GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()) != nullptr) {
-					waves[wave].player_attributes[subkey->GetName()] = subkey->GetFloat();
+					attribute_data_union_t value;
+					LoadAttributeDataUnionFromString(GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()), value, subkey->GetString());
+					waves[wave].player_attributes[subkey->GetName()] = value.m_Float;
 					DevMsg("Parsed attribute %s %f\n", subkey->GetName(),subkey->GetFloat());
 				}
 			}
@@ -418,7 +420,9 @@ namespace Mod::Pop::Wave_Extensions
 				waves[wave].defined_class_attributes = true;
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					if (GetItemSchema()->GetAttributeDefinitionByName(subkey2->GetName()) != nullptr) {
-						waves[wave].player_attributes_class[classname][subkey2->GetName()] = subkey2->GetFloat();
+						attribute_data_union_t value;
+						LoadAttributeDataUnionFromString(GetItemSchema()->GetAttributeDefinitionByName(subkey2->GetName()), value, subkey2->GetString());
+						waves[wave].player_attributes_class[classname][subkey2->GetName()] = value.m_Float;
 						DevMsg("Parsed attribute %s %f\n", subkey2->GetName(),subkey2->GetFloat());
 					}
 				}

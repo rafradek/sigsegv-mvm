@@ -6597,6 +6597,16 @@
 					type "sym"
 					sym  "_ZN17CAttributeManager14RemoveProviderEP11CBaseEntity"
 				}
+				"CAttributeManager::ApplyAttributeStringWrapper"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager27ApplyAttributeStringWrapperE8string_tP11CBaseEntityS0_P10CUtlVectorIS2_10CUtlMemoryIS2_iEE"
+				}
+				"CAttributeManager::ApplyAttributeString"
+				{
+					type "sym"
+					sym  "_ZN17CAttributeManager20ApplyAttributeStringE8string_tP11CBaseEntityS0_P10CUtlVectorIS2_10CUtlMemoryIS2_iEE"
+				}
 				
 			}
 			"addrs_group"

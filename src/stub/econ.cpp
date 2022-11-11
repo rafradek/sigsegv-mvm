@@ -147,13 +147,16 @@ using CExtract_CEconItemDefinition_m_nEquipRegionMask    = IExtractStub;
 MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> CEconItemDefinition::ft_BInitFromKV("CEconItemDefinition::BInitFromKV");
 
 MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeFloatWrapper("CAttributeManager::ApplyAttributeFloatWrapper");
+MemberFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeStringWrapper("CAttributeManager::ApplyAttributeStringWrapper");
 MemberFuncThunk<const CAttributeManager *, int> CAttributeManager::ft_GetGlobalCacheVersion("CAttributeManager::GetGlobalCacheVersion");
 MemberFuncThunk<CAttributeManager *, void>  CAttributeManager::ft_ClearCache("CAttributeManager::ClearCache [clone]");
 MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> CAttributeManager::ft_AddProvider("CAttributeManager::AddProvider");
 MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> CAttributeManager::ft_RemoveProvider("CAttributeManager::RemoveProvider");
 
 MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloatWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloatWrapper");
+MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeStringWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeStringWrapper");
 MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloat(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloat");
+MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeString(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeString");
 
 StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool>     CAttributeManager::ft_AttribHookValue_int  ("CAttributeManager::AttribHookValue<int>");
 StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool> CAttributeManager::ft_AttribHookValue_float("CAttributeManager::AttribHookValue<float>");
@@ -464,4 +467,23 @@ void ForEachItemAttribute(CEconItemView *item, std::function<bool (const CEconIt
 {
 	AttributeIteratorWrapper it(onNormal, onString);
 	item->IterateAttributes(&it);
+}
+
+template<> string_t CAttributeManager::AttribHookValue<string_t>(string_t value, string_t attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec)
+{
+	if (ent == nullptr)
+		return value;
+
+	CAttributeManager *mgr = nullptr;
+	if (ent->IsPlayer()) {
+		mgr = const_cast<CTFPlayer *>(reinterpret_cast<const CTFPlayer *>(ent))->GetAttributeManager();
+	}
+	else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
+		mgr = const_cast<CEconEntity *>(reinterpret_cast<const CEconEntity *>(ent))->GetAttributeManager();
+	}
+	if (mgr == nullptr)
+		return value;
+
+	return mgr->ApplyAttributeStringWrapper(value, const_cast<CBaseEntity *>(ent), attr, vec);
+	//return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, vec, b1); 
 }

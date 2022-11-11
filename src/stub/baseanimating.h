@@ -3,6 +3,7 @@
 
 
 #include "stub/baseentity.h"
+#include "stub/ihasattributes.h"
 
 
 class CAttributeManager;
@@ -89,8 +90,6 @@ private:
 
 class CBaseAnimatingOverlay : public CBaseAnimating {};
 class CBaseFlex : public CBaseAnimatingOverlay {};
-
-class IHasAttributes {};
 
 class CEconEntity : public CBaseAnimating, public IHasAttributes
 {

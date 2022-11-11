@@ -462,6 +462,7 @@ WARN_IGNORE__REORDER()
 WARN_RESTORE()
 #include <icliententity.h>
 #include <icliententitylist.h>
+#include <gamestringpool.h>
 
 #define DECLARE_PREDICTABLE()
 #include <collisionproperty.h>

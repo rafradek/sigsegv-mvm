@@ -2,7 +2,13 @@
 #define _INCLUDE_SIGSEGV_POOLED_STRING_H_
 
 #include "util/autolist.h"
-#include "stub/misc.h"
+
+namespace Link
+{
+	extern bool link_finished;
+	bool InitAll();
+	inline bool LinkFinished() { return link_finished; };
+}
 
 class PooledString : public AutoList<PooledString>
 {
@@ -31,6 +37,13 @@ inline const char *PStr()
 {
     static PooledString pooled(lit);
     return pooled.Get();
+}
+
+template<FixedString lit>
+inline string_t PStrT()
+{
+    static PooledString pooled(lit);
+    return (string_t) pooled;
 }
 
 inline const char *operator ""_PStr(const char *str, size_t size)

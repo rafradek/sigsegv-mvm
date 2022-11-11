@@ -4,6 +4,7 @@
 
 #include "stub/tf_shareddefs.h"
 #include "weapon_parse.h"
+#include "stub/ihasattributes.h"
 
 
 class CEconItem;
@@ -22,6 +23,8 @@ public:
 	
 	float ApplyAttributeFloatWrapper(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return vt_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
 	float ApplyAttributeFloat( float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = NULL ) { return vt_ApplyAttributeFloat(this, flValue, pInitiator, iszAttribHook, pItemList);}
+	string_t ApplyAttributeStringWrapper( string_t strValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = NULL ) { return ft_ApplyAttributeStringWrapper(this, strValue, pInitiator, iszAttribHook, pItemList);}
+	string_t ApplyAttributeString( string_t strValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = NULL ) { return vt_ApplyAttributeString(this, strValue, pInitiator, iszAttribHook, pItemList);}
 	int GetGlobalCacheVersion( ) const                                  { return ft_GetGlobalCacheVersion(this);}
 	void ClearCache() { ft_ClearCache(this);}
 
@@ -33,15 +36,21 @@ public:
 	template<typename T>
 	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool literalString = true);
 
+	template<typename T>
+	static T AttribHookValue(T value, string_t attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr);
+
 
 	//The function is virtual originally, but since there are no derivates it should be safe to make it a regular function link, for speed
 	static MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeFloatWrapper;
+	static MemberFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> ft_ApplyAttributeStringWrapper;
 	static MemberFuncThunk<const CAttributeManager *, int> ft_GetGlobalCacheVersion;
 	static MemberFuncThunk<CAttributeManager *, void> ft_ClearCache;
 	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_AddProvider;
 	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_RemoveProvider;
 	
+	static MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeStringWrapper;
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloatWrapper;
+	static MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeString;
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloat;
 
 	static StaticFuncThunk<int, int, const char *, const CBaseEntity *, CUtlVector<CBaseEntity *> *, bool>     ft_AttribHookValue_int;

@@ -428,14 +428,6 @@ private:
 };
 
 
-namespace Link
-{
-	extern bool link_finished;
-	bool InitAll();
-	inline bool LinkFinished() { return link_finished; };
-}
-
-
 /* for those times when you want to call a vfunc in the base class, not through
  * the vtable */
 template<class C, typename RET, typename... PARAMS>

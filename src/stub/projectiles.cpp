@@ -115,6 +115,8 @@ MemberVFuncThunk<CTFGrenadePipebombProjectile *, void, int> CTFGrenadePipebombPr
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrenadePipebombProjectile, m_hLauncher, CTFGrenadePipebombProjectile);
 IMPL_SENDPROP(bool, CTFGrenadePipebombProjectile, m_bTouched, CTFGrenadePipebombProjectile);
 IMPL_SENDPROP(int, CTFGrenadePipebombProjectile, m_iType, CTFGrenadePipebombProjectile);
+IMPL_SENDPROP(bool, CTFGrenadePipebombProjectile, m_bDefensiveBomb, CTFGrenadePipebombProjectile);
+IMPL_RELATIVE(float, CTFGrenadePipebombProjectile, m_flFullDamage, m_bDefensiveBomb, -sizeof(float));
 
 MemberVFuncThunk<CTFProjectile_Throwable *, Vector, const Vector &, const Vector &, const Vector &, float> CTFProjectile_Throwable::vt_GetVelocityVector(TypeName<CTFProjectile_Throwable>(), "CTFProjectile_Throwable::GetVelocityVector");
 MemberVFuncThunk<CTFProjectile_Throwable *, const AngularImpulse> CTFProjectile_Throwable::vt_GetAngularImpulse(TypeName<CTFProjectile_Throwable>(), "CTFProjectile_Throwable::GetAngularImpulse");

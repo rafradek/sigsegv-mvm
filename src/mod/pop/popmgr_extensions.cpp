@@ -5638,8 +5638,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			if (classname == 0) {
 				if (GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()) != nullptr) {
-					state.m_PlayerAttributes[subkey->GetName()] = subkey->GetFloat();
-					DevMsg("Parsed attribute %s %f\n", subkey->GetName(),subkey->GetFloat());
+					attribute_data_union_t value;
+					LoadAttributeDataUnionFromString(GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()), value, subkey->GetString());
+					state.m_PlayerAttributes[subkey->GetName()] = value.m_Float;
+					const char* pstr;
+					CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
+					DevMsg("Parsed attribute %s %f %s\n", subkey->GetName(),value.m_Float,pstr);
 				}
 			}
 			else 
@@ -5647,7 +5651,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bDeclaredClassAttrib = true;
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					if (GetItemSchema()->GetAttributeDefinitionByName(subkey2->GetName()) != nullptr) {
-						state.m_PlayerAttributesClass[classname][subkey2->GetName()] = subkey2->GetFloat();
+						attribute_data_union_t value;
+						LoadAttributeDataUnionFromString(GetItemSchema()->GetAttributeDefinitionByName(subkey2->GetName()), value, subkey2->GetString());
+						state.m_PlayerAttributesClass[classname][subkey2->GetName()] = value.m_Float;
 						DevMsg("Parsed attribute %s %f\n", subkey2->GetName(),subkey2->GetFloat());
 					}
 				}

@@ -173,6 +173,8 @@ public:
 
 	DECL_SENDPROP(bool, m_bTouched);
 	DECL_SENDPROP(int, m_iType);
+	DECL_SENDPROP(bool, m_bDefensiveBomb);
+	DECL_RELATIVE(float, m_flFullDamage);
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);

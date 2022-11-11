@@ -16,10 +16,7 @@ namespace Mod::Perf::Attributes_Optimize
     {
         const char *name;
         float in;
-        //float in_alt;
         float out;
-        //float out_alt;
-        //unsigned int call_ctr = 0;
     };
 
     struct EntityAttribCache
