@@ -322,11 +322,11 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event)
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event, int data)
 	{
 		if (rc_CTFPointWeaponMimic_Fire) return;
 
-		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event);
+		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
 	}
 	
 

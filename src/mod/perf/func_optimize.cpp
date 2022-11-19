@@ -299,32 +299,9 @@ namespace Mod::Perf::Func_Optimize
 		}
 	};
 
-    ETFCond rune_conds[] = {
-		TF_COND_RUNE_STRENGTH,
-		TF_COND_RUNE_HASTE,
-		TF_COND_RUNE_REGEN,
-		TF_COND_RUNE_RESIST,
-		TF_COND_RUNE_VAMPIRE,
-		TF_COND_RUNE_REFLECT,
-		TF_COND_RUNE_PRECISION,
-		TF_COND_RUNE_AGILITY,
-		TF_COND_RUNE_KNOCKOUT,
-		TF_COND_RUNE_KING,
-		TF_COND_RUNE_PLAGUE,
-		TF_COND_RUNE_SUPERNOVA
-	};
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_GetCarryingRuneType)
 	{
-		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
-		auto condData = shared->GetCondData();
-		int size = ARRAY_SIZE(rune_conds);
-		for (int i = 0; i < size; i++) {
-			auto cond = rune_conds[i];
-			if (condData.InCond(cond) ) {
-				return i;
-			}
-		}
-		return -1;
+		return reinterpret_cast<CTFPlayerShared *>(this)->GetCarryingRuneType();
 		//return DETOUR_MEMBER_CALL(CTFPlayerShared_GetCarryingRuneType)();
 	}
 
@@ -631,6 +608,139 @@ namespace Mod::Perf::Func_Optimize
 		
 	}
 
+    template<typename Functor>
+	inline void ForAllPotentiallyVisibleAreas(Functor func, CNavArea *curArea)
+	{
+		int i;
+        auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
+        for ( i=0; i < potentiallyVisible.Count(); ++i )
+		{
+			CNavArea *area = potentiallyVisible[i].area;
+			if ( !area )
+				continue;
+
+			if ( potentiallyVisible[i].attributes == 0 )
+				continue;
+
+			func(area);
+		}
+
+		// for each inherited area
+		if ( !curArea->m_inheritVisibilityFrom->area )
+			return;
+
+		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
+
+		for ( i=0; i<inherited.Count(); ++i )
+		{
+			if ( !inherited[i].area )
+				continue;
+
+			if ( inherited[i].attributes == 0 )
+				continue;
+
+            func(inherited[i].area);
+		}
+	}
+
+    
+    template<typename Functor>
+	inline void ForAllPotentiallyVisibleAreasReverse(Functor func, CNavArea *curArea)
+	{
+		int i;
+        auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
+        for ( i=potentiallyVisible.Count()-1; i >= 0 ; --i )
+		{
+			CNavArea *area = potentiallyVisible[i].area;
+			if ( !area )
+				continue;
+
+			if ( potentiallyVisible[i].attributes == 0 )
+				continue;
+
+			func(area);
+		}
+
+		// for each inherited area
+		if ( !curArea->m_inheritVisibilityFrom->area )
+			return;
+
+		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
+
+		for ( i=inherited.Count()-1; i >= 0; --i )
+		{
+			if ( !inherited[i].area )
+				continue;
+
+			if ( inherited[i].attributes == 0 )
+				continue;
+
+            func(inherited[i].area);
+		}
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_OnNavAreaChanged, CNavArea *enteredArea, CNavArea *leftArea)
+	{
+        VPROF_BUDGET("CTFPlayer::OnNavAreaChanged", "NextBot")
+        auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!player->IsAlive())
+        {
+            return;
+        }
+        //CCycleCount time4;
+        //CTimeAdder timer4(&time4);
+        std::vector<CNavArea *> potentiallylVisibleAreas;
+        potentiallylVisibleAreas.reserve(enteredArea ? enteredArea->m_potentiallyVisibleAreas.Get().Count() + (enteredArea->m_inheritVisibilityFrom->area ? enteredArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas->Count() : 0) : 0);
+        //timer4.End();
+        
+        //CCycleCount time1;
+        //CCycleCount time2;
+        //CCycleCount time3;
+        
+        //CTimeAdder timer1(&time1);
+        if ( enteredArea )
+        {
+            ForAllPotentiallyVisibleAreasReverse([&](CNavArea *area){
+                potentiallylVisibleAreas.push_back(area);
+
+            }, enteredArea);
+        }
+        //timer1.End();
+
+        //CTimeAdder timer2(&time2);
+        if ( leftArea )
+        {
+            ForAllPotentiallyVisibleAreas([&](CNavArea *area)__attribute__((always_inline)){
+                bool found = false;
+                
+                for (auto it = potentiallylVisibleAreas.end() - 1; it != potentiallylVisibleAreas.begin() - 1; it--) {
+                    if (*it == area) {
+                        potentiallylVisibleAreas.erase(it);
+                        found = true;
+                        break;
+                    }
+                    //if (it == potentiallylVisibleAreas.begin()) break;
+                }
+                if (!found) {
+                    auto &actors = ((CTFNavArea *)area)->m_potentiallyVisibleActor.Get();
+                    for(int i = 0; i < 4; i++) {
+                        actors[i].FindAndFastRemove(player);
+                    }
+                }
+                
+            }, leftArea);
+        }
+        
+        //timer2.End();
+        //CTimeAdder timer3(&time3);
+        for (auto area : potentiallylVisibleAreas) {
+            ((CTFNavArea *)area)->AddPotentiallyVisibleActor(player);
+        }
+        //timer3.End();
+       // Msg("New area time %.9f %.9f %.9f %.9f\n", time1.GetSeconds(), time2.GetSeconds(), time3.GetSeconds(), time4.GetSeconds());
+	}
+
+
     class CMod : public IMod
 	{
 	public:
@@ -667,6 +777,7 @@ namespace Mod::Perf::Func_Optimize
             //MOD_ADD_DETOUR_MEMBER(CThreadLocalBase_Get, "CThreadLocalBase::Get");
             
             //MOD_ADD_DETOUR_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged, "CTFPlayer::OnNavAreaChanged");
             
 		}
         bool OnLoad() override {

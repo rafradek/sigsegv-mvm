@@ -163,7 +163,7 @@ private:
 
 	DECL_SENDPROP(gamerules_roundstate_t, m_iRoundState);
 	DECL_SENDPROP(int,                    m_iWinningTeam);
-	DECL_SENDPROP_RW(bool[33],            m_bTeamReady);
+	DECL_SENDPROP(bool[33],            m_bTeamReady);
 	DECL_SENDPROP(bool,                   m_bInSetup);
 	
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> ft_BroadcastSound;

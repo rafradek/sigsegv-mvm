@@ -138,7 +138,7 @@ using CExtract_CTFPlayerShared_m_ConditionData = IExtractStub;
 
 IMPL_SENDPROP(int, CTFConditionList, _condition_bits, CTFPlayer);
 
-MemberFuncThunk<CMultiplayerAnimState *, void> CMultiplayerAnimState::ft_OnNewModel("CMultiplayerAnimState::OnNewModel");
+MemberFuncThunk<CMultiPlayerAnimState *, void> CMultiPlayerAnimState::ft_OnNewModel("CMultiPlayerAnimState::OnNewModel");
 
 
 IMPL_SENDPROP(int,      CTFPlayerClassShared, m_iClass,         CTFPlayer);
@@ -283,6 +283,7 @@ MemberFuncThunk<      CTFPlayer *, void, const Vector &            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > CTFPlayer::ft_SetOffHandWeapon            ("CTFPlayer::SetOffHandWeapon");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_HolsterOffHandWeapon        ("CTFPlayer::HolsterOffHandWeapon");
 MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_CanMoveDuringTaunt          ("CTFPlayer::CanMoveDuringTaunt");
+MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::ft_GetRuneHealthBonus          ("CTFPlayer::GetRuneHealthBonus");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

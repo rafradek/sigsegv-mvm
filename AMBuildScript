@@ -265,6 +265,8 @@ class ExtensionConfig(object):
     ############################################################################
     if builder.options.opt == '1':
       cxx.cflags    += ['-O2']
+    #  cxx.cflags    += ['-march=sandybridge']
+    #  cxx.cflags    += ['-mtune=native']
     #  cxx.cflags    += ['-flto=auto']
       cxx.cflags    += ['-fno-builtin']
       

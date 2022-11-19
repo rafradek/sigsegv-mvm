@@ -258,10 +258,10 @@ public:
 	void SetFirstMoveChild(CBaseEntity *entity)   { this->m_hMoveChild = entity; }
 	void SetNextMovePeer(CBaseEntity *entity)     { this->m_hMovePeer = entity; }
 	const color32 GetRenderColor() const          { return this->m_clrRender; }
-	void SetRenderColorR(byte r)                  { this->m_clrRender->r = r; }
-	void SetRenderColorG(byte g)                  { this->m_clrRender->g = g; }
-	void SetRenderColorB(byte b)                  { this->m_clrRender->b = b; }
-	void SetRenderColorA(byte a)                  { this->m_clrRender->a = a; }
+	void SetRenderColorR(byte r)                  { this->m_clrRender.GetForModify().r = r; }
+	void SetRenderColorG(byte g)                  { this->m_clrRender.GetForModify().g = g; }
+	void SetRenderColorB(byte b)                  { this->m_clrRender.GetForModify().b = b; }
+	void SetRenderColorA(byte a)                  { this->m_clrRender.GetForModify().a = a; }
 	bool IsMarkedForDeletion() const              { return ((this->m_iEFlags & EFL_KILLME) != 0); }
 	bool BlocksLOS() const              		  { return ((this->m_iEFlags & EFL_DONTBLOCKLOS) == 0); }
 	void SetBlocksLOS(bool val)                   { if (val) this->m_iEFlags = this->m_iEFlags & ~EFL_DONTBLOCKLOS; else this->m_iEFlags = this->m_iEFlags | EFL_DONTBLOCKLOS;}
@@ -436,11 +436,11 @@ private:
 	DECL_SENDPROP   (unsigned char,        m_nRenderMode);
 	DECL_SENDPROP   (unsigned char,        m_MoveType);
 	DECL_SENDPROP   (unsigned char,        m_MoveCollide);
-	DECL_SENDPROP_RW(color32,              m_clrRender);
+	DECL_SENDPROP   (color32,              m_clrRender);
 	DECL_SENDPROP   (Vector,               m_vecVelocity);
 	DECL_SENDPROP   (Vector,               m_vecOrigin);
 	DECL_SENDPROP   (QAngle,               m_angRotation);
-	DECL_SENDPROP_RW(int,                  m_fEffects);
+	DECL_SENDPROP   (int,                  m_fEffects);
 	
 	static MemberFuncThunk<      CBaseEntity *, void>                                                    ft_Remove;
 	static MemberFuncThunk<      CBaseEntity *, void>                                                    ft_CalcAbsolutePosition;
@@ -542,7 +542,7 @@ private:
 
 inline CBaseEntity *GetContainingEntity(edict_t *pent)
 {
-	if (pent != nullptr && pent->GetUnknown() != nullptr) {
+	if (pent != nullptr) {
 		// return pent->GetUnknown()->GetBaseEntity();
 		// Optimization
 		return (CBaseEntity *)pent->GetUnknown();
@@ -718,7 +718,7 @@ BASEPTR CBaseEntity::ThinkSet(DERIVEDPTR func, float flNextThinkTime, const char
 inline void CBaseEntity::NetworkStateChanged()
 {
 	if (this->edict() == nullptr) return;
-	this->edict()->m_fStateFlags |= FL_EDICT_CHANGED;
+	this->edict()->m_fStateFlags |= FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED;
 }
 
 inline void CBaseEntity::NetworkStateChanged(void *pVar)

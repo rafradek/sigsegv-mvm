@@ -17,8 +17,8 @@ namespace Mod::Perf::Attributes_Optimize
 class CAttributeManager
 {
 public:
-	void NetworkStateChanged()           {}
-	void NetworkStateChanged(void *pVar) {}
+	void NetworkStateChanged()           { this->m_hOuter->NetworkStateChanged(); }
+	void NetworkStateChanged(void *pVar) { this->m_hOuter->NetworkStateChanged(pVar); }
 	
 	
 	float ApplyAttributeFloatWrapper(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return vt_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}

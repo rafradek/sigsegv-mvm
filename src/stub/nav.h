@@ -191,6 +191,21 @@ private:
 class CFuncNavAvoid : public CFuncNavCost {};
 class CFuncNavPrefer : public CFuncNavCost {};
 
+struct AreaBindInfo							// for pointer loading and binding
+{
+	union
+	{
+		CNavArea *area;
+		unsigned int id;
+	};
+
+	unsigned char attributes;				// VisibilityType
+
+	bool operator==( const AreaBindInfo &other ) const
+	{
+		return ( area == other.area );
+	}
+};
 
 class CNavArea
 {
@@ -210,6 +225,8 @@ public:
 	bool IsOverlapping(const Vector &vec, float tolerance) const                                    { return ft_IsOverlapping                        (this, vec, tolerance); }
 	
 	DECL_EXTRACT(CUtlVector<CHandle<CFuncNavCost>>, m_funcNavCostVector);
+	DECL_EXTRACT (CUtlVectorConservative<AreaBindInfo>, m_potentiallyVisibleAreas);
+	DECL_RELATIVE(AreaBindInfo, m_inheritVisibilityFrom);
 	
 private:
 	DECL_EXTRACT (Vector,     m_center);
@@ -237,13 +254,17 @@ public:
 	
 	bool IsBlocked(int teamID, bool ignoreNavBlockers = false) const { return ft_IsBlocked(this, teamID, ignoreNavBlockers); }
 	float GetCombatIntensity() const                                 { return ft_GetCombatIntensity(this); }
+	void AddPotentiallyVisibleActor(CBaseCombatCharacter *actor)     {        ft_AddPotentiallyVisibleActor(this, actor); }
 	
+	DECL_RELATIVE_RW(CUtlVector<CHandle<CBaseCombatCharacter>>[4], m_potentiallyVisibleActor);
 private:
 	DECL_EXTRACT(TFNavAttributeType, m_nAttributes);
 	DECL_EXTRACT(float[4],           m_IncursionDistances);
 	
 	static MemberFuncThunk<const CTFNavArea *, bool, int, bool> ft_IsBlocked;
 	static MemberFuncThunk<const CTFNavArea *, float>           ft_GetCombatIntensity;
+	static MemberFuncThunk<      CTFNavArea *, void, CBaseCombatCharacter *> ft_AddPotentiallyVisibleActor;
+	
 };
 
 

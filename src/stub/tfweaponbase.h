@@ -97,6 +97,7 @@ public:
 	float Energy_GetShotCost() const { return vt_Energy_GetShotCost(this); }
 	void Misfire()               { vt_Misfire(this); }
 	Vector GetParticleColor(int color) { return vt_GetParticleColor(this, color); }
+	int GetMaxHealthMod()              { return vt_GetMaxHealthMod(this); }
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
@@ -126,6 +127,7 @@ private:
 	static MemberVFuncThunk<const CTFWeaponBase *, float> vt_Energy_GetShotCost;
 	static MemberVFuncThunk<CTFWeaponBase *, void> vt_Misfire;
 	static MemberVFuncThunk<CTFWeaponBase *, Vector, int> vt_GetParticleColor;
+	static MemberVFuncThunk<CTFWeaponBase *, int> vt_GetMaxHealthMod;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {

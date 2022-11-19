@@ -296,12 +296,50 @@ using CExtract_CTFNavArea_m_IncursionDistances = IExtractStub;
 #endif
 
 
+#if defined _LINUX
+
+static constexpr uint8_t s_Buf_CNavArea_m_potentiallyVisibleAreas[] = {
+	0x8B, 0x45, 0x08,
+	0xC7, 0x80, 0x3C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+struct CExtract_CNavArea_m_potentiallyVisibleAreas : public IExtract<CUtlVectorConservative<AreaBindInfo> *>
+{
+	using T = CUtlVectorConservative<AreaBindInfo> *;
+
+	CExtract_CNavArea_m_potentiallyVisibleAreas() : IExtract<CUtlVectorConservative<AreaBindInfo> *>(sizeof(s_Buf_CNavArea_m_potentiallyVisibleAreas)) {}
+	
+	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
+	{
+		buf.CopyFrom(s_Buf_CNavArea_m_potentiallyVisibleAreas);
+		
+		mask.SetRange(0x03 + 2, 4, 0x00);
+		
+		return true;
+	}
+	
+	virtual const char *GetFuncName() const override   { return "CNavArea::ResetPotentiallyVisibleAreas"; }
+	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
+	virtual uint32_t GetFuncOffMax() const override    { return 0x0030; }
+	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 2; }
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val - 0x08); }
+};
+
+#elif defined _WINDOWS
+
+using CExtract_CNavArea_m_potentiallyVisibleAreas = IExtractStub;
+
+#endif
+
+
 IMPL_EXTRACT  (CUtlVector<CHandle<CFuncNavCost>>, CNavArea, m_funcNavCostVector, new CExtract_CNavArea_m_funcNavCostVector());
 IMPL_EXTRACT  (Vector,                            CNavArea, m_center,            new CExtract_CNavArea_m_center());
 IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags,    new CExtract_CNavArea_m_attributeFlags());
 IMPL_RELATIVE (CNavArea *,                        CNavArea, m_parent,            m_attributeFlags, (116 - 80));
 IMPL_REL_AFTER(int,                               CNavArea, m_parentHow,         m_parent);
 IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
+IMPL_EXTRACT  (CUtlVectorConservative<AreaBindInfo>, CNavArea, m_potentiallyVisibleAreas, new CExtract_CNavArea_m_potentiallyVisibleAreas());
+IMPL_RELATIVE (AreaBindInfo,                      CNavArea, m_inheritVisibilityFrom, m_potentiallyVisibleAreas, -sizeof(AreaBindInfo));
 
 MemberFuncThunk <const CNavArea *, void, Extent *>                               CNavArea::ft_GetExtent                            ("CNavArea::GetExtent");
 MemberFuncThunk <const CNavArea *, void, const Vector *, Vector *>               CNavArea::ft_GetClosestPointOnArea                ("CNavArea::GetClosestPointOnArea");
@@ -312,11 +350,13 @@ MemberFuncThunk <const CNavArea *, bool, const Vector &>                        
 MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                  CNavArea::ft_IsOverlapping                        ("CNavArea::IsOverlapping");
 
 
-IMPL_EXTRACT(TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
-IMPL_EXTRACT(float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
+IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
+IMPL_EXTRACT (float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
+IMPL_RELATIVE(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes, sizeof(TFNavAttributeType));
 
 MemberFuncThunk<const CTFNavArea *, bool, int, bool> CTFNavArea::ft_IsBlocked         ("CTFNavArea::IsBlocked");
 MemberFuncThunk<const CTFNavArea *, float>           CTFNavArea::ft_GetCombatIntensity("CTFNavArea::GetCombatIntensity");
+MemberFuncThunk<      CTFNavArea *, void, CBaseCombatCharacter *> CTFNavArea::ft_AddPotentiallyVisibleActor("CTFNavArea::AddPotentiallyVisibleActor");
 
 
 MemberFuncThunk<const CNavMesh *, CNavArea *, const Vector&, float>                        CNavMesh::ft_GetNavArea_vec                          ("CNavMesh::GetNavArea [vec]");

@@ -5641,9 +5641,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					attribute_data_union_t value;
 					LoadAttributeDataUnionFromString(GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName()), value, subkey->GetString());
 					state.m_PlayerAttributes[subkey->GetName()] = value.m_Float;
-					const char* pstr;
-					CopyStringAttributeValueToCharPointerOutput(value.m_String, &pstr);
-					DevMsg("Parsed attribute %s %f %s\n", subkey->GetName(),value.m_Float,pstr);
+					DevMsg("Parsed attribute %s %f\n", subkey->GetName(),value.m_Float);
 				}
 			}
 			else 

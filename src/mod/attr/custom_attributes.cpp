@@ -2631,17 +2631,17 @@ namespace Mod::Attr::Custom_Attributes
 		auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
 		if (ent != nullptr && weapon != nullptr) {
 			
-			CFastTimer timer1;
-			timer1.Start();
+			//CFastTimer timer1;
+			//timer1.Start();
 			GET_STRING_ATTRIBUTE(weapon, custom_hit_sound, str);
-			timer1.End();
+			//timer1.End();
 			
-			CFastTimer timer2;
-			timer2.Start();
-			const char * varname = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_hit_sound">()).ToCStrOrNull(); //STRING(CAttributeManager::AttribHookValue<string_t>(MAKE_STRING(""), PStrT<"custom_hit_sound">(), player));
-			timer2.End();
+			//CFastTimer timer2;
+			//timer2.Start();
+			//const char * varname = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_hit_sound">()).ToCStrOrNull(); //STRING(CAttributeManager::AttribHookValue<string_t>(MAKE_STRING(""), PStrT<"custom_hit_sound">(), player));
+			//timer2.End();
 
-			Msg("Hit sound %s vs %s %.9f %.9f %d\n", str, varname, timer1.GetDuration().GetSeconds(), timer2.GetDuration().GetSeconds(), player->GetAttributeManager()->m_CachedResults->Count());
+			//Msg("Hit sound %s vs %s %.9f %.9f %d\n", str, varname, timer1.GetDuration().GetSeconds(), timer2.GetDuration().GetSeconds(), player->GetAttributeManager()->m_CachedResults->Count());
 			if (str != nullptr) {
 				PrecacheSound(str);
 				ent->EmitSound(str);
@@ -5123,6 +5123,48 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SendWeaponAnim)(activity);
 	}
 
+	inline int GetMaxHealthForBuffing(CTFPlayer *player) {
+		int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
+		iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
+
+		CTFWeaponBase *pWeapon = player->GetActiveTFWeapon();
+		if (pWeapon != nullptr)
+		{
+			iMax += pWeapon->GetMaxHealthMod();
+		}
+		auto sword = rtti_cast<CTFSword *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_MELEE));
+		if (sword != nullptr) {
+			iMax += sword->GetSwordHealthMod();
+		}
+
+		auto &shared = player->m_Shared.Get();
+		// Some Powerup Runes increase your Max Health
+		if (shared.GetCarryingRuneType() != -1) {
+			iMax += player->GetRuneHealthBonus();
+		}
+
+		if (shared.InCond(TF_COND_HALLOWEEN_GIANT))
+		{
+			static ConVarRef tf_halloween_giant_health_scale("tf_halloween_giant_health_scale");
+			return iMax * tf_halloween_giant_health_scale.GetFloat();
+		}
+
+		return iMax;
+	}
+	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxHealthForBuffing)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		return GetMaxHealthForBuffing(player);
+	}
+	
+	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxHealth)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
+		int iMax = GetMaxHealthForBuffing(player);
+		iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH_NONBUFFED);
+		return MAX(iMax, 1);
+	}
+
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
@@ -5893,6 +5935,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_IsPassiveWeapon, "CTFWeaponBase::IsPassiveWeapon");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_GetMaxClip1, "CBaseCombatWeapon::GetMaxClip1");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_AutoFiresFullClip, "CTFWeaponBase::AutoFiresFullClip");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealthForBuffing, "CTFPlayer::GetMaxHealthForBuffing");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealth, "CTFPlayer::GetMaxHealth");
 
 		//  Fix burn time mult not working by making fire deal damage faster
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Burn, "CTFPlayerShared::Burn");

@@ -313,7 +313,7 @@ public:
 	#ifdef __GNUC__
 	//#warning TODO: ensure that operator[] returns reference types and that their constness is correct
 	#endif
-	template<typename A> inline auto operator[](const A& idx) const { return this->Get()[idx]; }
+	template<typename A> inline auto& operator[](const A& idx) const { return this->Get()[idx]; }
 	
 	template<typename A> inline void SetIndex(const A val, int index)
 	{ 
@@ -379,6 +379,12 @@ protected:
 // This is public because sometimes the conversion operator does not do their job correctly
 public:
 	Ref_t   Get  () const { return *this->GetPtr  (); }
+	RefRW_t GetForModify() const { 
+		if constexpr (NET) {
+			PROP->StateChanged(reinterpret_cast<void *>(this->GetInstanceBaseAddr()), this->GetPtrRW());
+		}
+		return *this->GetPtrRW(); 
+	}
 
 protected:
 	/* pointer getters */
@@ -447,6 +453,7 @@ struct CPropAccessor<CHandle<U>, T_ARGS> final : public CPropAccessorHandle<U, T
 #define DECL_EXTRACT(    TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Extract,  false, false)
 #define DECL_EXTRACT_RW( TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Extract,  false, true )
 #define DECL_RELATIVE(   TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Relative, false, false)
+#define DECL_RELATIVE_RW(TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Relative, false, true )
 
 
 // for IMPL_SENDPROP, add an additional argument for the "remote name" (e.g. in CBaseEntity, m_MoveType's remote name is "movetype")

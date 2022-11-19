@@ -6,6 +6,7 @@
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/tfweaponbase.h"
+#include "stub/tf_objective_resource.h"
 #include <forward_list>
 #include "stub/sendprop.h"
 #include "util/iterate.h"
@@ -127,49 +128,66 @@ private:
 
 namespace Mod::Perf::SendProp_Optimize
 {
-    
+
     SendTable *playerSendTable;
     ServerClass *playerServerClass;
+
     // key: prop offset, value: prop index
 
     struct PropIndexData
     {
-        int offset = 0;
+        unsigned short offset = 0;
+        unsigned short element = 0;
         unsigned short index1 = PROP_INDEX_INVALID;
         unsigned short index2 = PROP_INDEX_INVALID;
     };
 
-    std::vector<PropIndexData> prop_offset_sendtable;
-
-    // key: prop index value: write bit index
-    std::vector<unsigned short> player_prop_write_offset[ABSOLUTE_PLAYER_LIMIT];
-
-    std::vector<int> player_prop_value_old[ABSOLUTE_PLAYER_LIMIT];
-
-    unsigned short *player_prop_offsets;
-
+    struct SpecialSendPropCalc
+    {
+        const int index;
+        int baseoffset = 0;
+        const SendProp *prop;
+        const SendProp *datatable;
+    };
+    bool *player_local_exclusive_send_proxy;
     // prop indexes that are stopped from being send to players
     unsigned char *player_prop_cull;
 
-    bool *player_local_exclusive_send_proxy;
+    class ServerClassCache
+    {
+    public:
+        std::vector<PropIndexData> prop_offset_sendtable;
 
-    CSendNode **player_send_nodes;
+        //std::vector<SpecialSendPropCalc> prop_special;
+
+        unsigned short *prop_offsets;
+
+        //CSendNode **send_nodes;
+
+        bool firsttime = true;
+    };
+
+    struct PropWriteOffset
+    {
+        unsigned short offset;
+        unsigned short size;
+    };
+    // key: prop index value: write bit index
+    std::vector<PropWriteOffset> prop_write_offset[MAX_EDICTS];
+
+    std::vector<int> prop_value_old[MAX_EDICTS];
+    unsigned short entity_frame_bit_size[MAX_EDICTS];
+
+    std::unordered_map<ServerClass *, ServerClassCache> server_class_cache;
+    ServerClassCache *player_class_cache = nullptr;
 
     // This can be set to force a full update
-    bool force_player_update[ABSOLUTE_PLAYER_LIMIT];
+    //bool force_player_update[MAX_EDICTS];
 
     // This is used to check if a player had a forced full update
-    bool player_not_force_updated[ABSOLUTE_PLAYER_LIMIT];
-
-    bool firsttime = true;
-    bool lastFullEncode = false;
+    //bool not_force_updated[MAX_EDICTS];
     
     CSharedEdictChangeInfo *g_SharedEdictChangeInfo;
-
-    int full_updates = 0;
-    int last_tick = 0;
-
-    std::unordered_map<const SendTable *, CPropMapStack *> pm_stacks;
 
     SendTableProxyFn datatable_sendtable_proxy;
     edict_t * world_edict;
@@ -189,7 +207,9 @@ namespace Mod::Perf::SendProp_Optimize
 	const int objectID)
 	{
         if (rc_SendTable_WriteAllDeltaProps) {
-            if (objectID > 0 && objectID <= gpGlobals->maxClients) {
+            
+            Msg("Calc delta %d %s %d %d\n", objectID, pTable->GetName(), nMaxDeltaProps, nToBits);
+            //if (objectID > 0 && objectID <= gpGlobals->maxClients) {
                 bf_read toBits( "SendTable_CalcDelta/toBits", pToState, BitByte(nToBits), nToBits );
                 CDeltaBitsReader toBitsReader( &toBits );
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
@@ -223,7 +243,7 @@ namespace Mod::Perf::SendProp_Optimize
                     toBitsReader.SkipPropData(pProp);
                     lastoffsetpostskip = toBits.GetNumBitsRead();
                 }
-            }
+            //}
         }
         int result = DETOUR_STATIC_CALL(SendTable_CalcDelta)(pTable, pFromState, nFromBits, pToState, nToBits, pDeltaProps, nMaxDeltaProps, objectID);
         return result;
@@ -268,39 +288,36 @@ namespace Mod::Perf::SendProp_Optimize
 
     int count_tick;
 
-    static inline bool DoEncodePlayer(edict_t *edict, int objectID, CFrameSnapshot *snapshot) {
-        ServerClass *serverclass = playerServerClass;
+    CSendProxyRecipients recip;
+    int edictnotfullchanged = 0;
+    static inline bool DoEncode(ServerClass *serverclass, ServerClassCache &cache, edict_t *edict, int objectID, CFrameSnapshot *snapshot) {
+        CBaseEntity *entity = (CBaseEntity *)edict->GetUnknown();
 
-        player_not_force_updated[objectID - 1] = false;
+        //not_force_updated[objectID] = false;
 
-        SendTable *pTable = playerServerClass->m_pTable;
-        if (player_prop_value_old[objectID - 1].empty()) {
-            player_prop_value_old[objectID - 1].resize(prop_offset_sendtable.size());
-        }
-
-        if (player_prop_write_offset[objectID - 1].empty()) {
-            player_prop_write_offset[objectID - 1].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
+        SendTable *pTable = serverclass->m_pTable;
+        if (prop_value_old[objectID].size() != cache.prop_offset_sendtable.size()) {
+            prop_value_old[objectID].resize(cache.prop_offset_sendtable.size());
         }
         
-        int offsetcount = prop_offset_sendtable.size();
-        auto old_value_data = player_prop_value_old[objectID - 1].data();
-        auto write_offset_data = player_prop_write_offset[objectID - 1].data();
+        int offsetcount = cache.prop_offset_sendtable.size();
+        auto old_value_data = prop_value_old[objectID].data();
         //DevMsg("crash3\n");
 
         int propOffsets[100];
+        int propOffsetsElement[100];
         int propChangeOffsets = 0;
 
-        void * pStruct = edict->GetUnknown();
+        char * pStruct = (char *)edict->GetUnknown();
 
         // Remember last write offsets 
         // player_prop_write_offset_last[objectID - 1] = player_prop_write_offset[objectID - 1];
-        CTFPlayer *player = ToTFPlayer(GetContainingEntity(edict));
-        bool bot = player != nullptr && player->IsBot();
+        bool bot = entity->GetFlags() & FL_FAKECLIENT;
         for (int i = 0; i < offsetcount; i++) {
-            PropIndexData &data = prop_offset_sendtable[i];
+            PropIndexData &data = cache.prop_offset_sendtable[i];
             int valuepre = old_value_data[i];
             int valuepost = *(int*)(pStruct + data.offset);
-            if (valuepre != valuepost ) {
+            if (valuepre != valuepost) {
                 if (propChangeOffsets >= 100) {
                     return false;
                 }
@@ -309,188 +326,197 @@ namespace Mod::Perf::SendProp_Optimize
 
                 old_value_data[i] = valuepost;
                 if (!(bot && player_prop_cull[data.index1] < 254 && player_local_exclusive_send_proxy[player_prop_cull[data.index1]])) {
+                    propOffsetsElement[propChangeOffsets] = data.element;
                     propOffsets[propChangeOffsets++] = data.index1;
                 }
 
                 if (data.index2 != PROP_INDEX_INVALID && !(bot && player_prop_cull[data.index2] < 254 && player_local_exclusive_send_proxy[player_prop_cull[data.index2]])) {
                     propOffsets[propChangeOffsets++] = data.index2;
                 }
+                
                 //DevMsg("Detected value change prop vector %d %d %s\n", vec_prop_offsets[j], i, pPrecalc->m_Props[i]->GetName());
             }
         }
+        // for (auto &prop : prop_special) {
+        //     void *data = pStruct;
+        //     Msg("Data pre %d %d %d %s\n",prop.baseoffset, data, pStruct, prop.prop->GetName());
+        //     if (prop.datatable != nullptr) {
+        //         data = prop.datatable->GetDataTableProxyFn()(prop.datatable, pStruct + prop.baseoffset, pStruct + prop.baseoffset + prop.datatable->GetOffset(), &recip, objectID);
+        //     }
+        //     Msg("Data post %d %d %s\n", data, pStruct, prop.prop->GetName());
+        //     DVariant var;
+        //     var.m_Type = (SendPropType)prop.prop->m_Type;
+        //     prop.prop->GetProxyFn()( 
+        //                     prop.prop,
+        //                     pStruct, 
+        //                     data + prop.prop->GetOffset(), 
+        //                     &var, 
+        //                     0, // iElement
+        //                     objectID
+        //                     );
+        // }
 
-        if (!firsttime) {
-            bool force_update = force_player_update[objectID - 1];
-            force_player_update[objectID - 1] = false;
+        if (!cache.firsttime) {
+            if (prop_write_offset[objectID].size() != pTable->m_pPrecalc->m_Props.Count() + 1) {
+                prop_write_offset[objectID].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
+                //Msg("Bad size %s\n", entity->GetClassname());
+                return false;
+            }
+            auto write_offset_data = prop_write_offset[objectID].data();
 
-            int edictnum = objectID;
-            edict_t *edict = INDEXENT(objectID);
+            CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
+            PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket( objectID, edict->m_NetworkSerialNumber /*snapshot->m_pEntities[ edictnum ].m_nSerialNumber*/ );
             
-            // Prevent bots from having punch angle set, which in turn prevents full edict changes
-            //CTFPlayer *player = ToTFPlayer(GetContainingEntity(edict));
-            //if (player != nullptr && player->IsBot()) {
-            //    player->m_Local->m_vecPunchAngle->Init();
-            //    player->m_Local->m_vecPunchAngleVel->Init();
-            //}
+            if (pPrevFrame != nullptr) {
+                CSendTablePrecalc *pPrecalc = pTable->m_pPrecalc;
 
-            if ((edict->m_fStateFlags & FL_EDICT_CHANGED) && !force_update) {
+                //Copy previous frame data
+                const void *oldFrameData = pPrevFrame->GetData();
+                unsigned short &frameDataLength = entity_frame_bit_size[objectID];
                 
-                CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
-                PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket( objectID, edict->m_NetworkSerialNumber /*snapshot->m_pEntities[ edictnum ].m_nSerialNumber*/ );
-                
-                if (pPrevFrame != nullptr) {
-                    CSendTablePrecalc *pPrecalc = pTable->m_pPrecalc;
+                ALIGN4 char packedData[4096] ALIGN4_POST;
+                memcpy(packedData, oldFrameData, pPrevFrame->GetNumBytes());
 
-                    //Copy previous frame data
-                    const void *oldFrameData = pPrevFrame->GetData();
-                    const int oldFrameDataLegth = pPrevFrame->GetNumBits();
-                    
-                    ALIGN4 char packedData[4096] ALIGN4_POST;
-                    memcpy(packedData, oldFrameData, pPrevFrame->GetNumBytes());
+                bf_write prop_writer("packed data writer", packedData, sizeof(packedData));
+                bf_read prop_reader("packed data reader", packedData, sizeof(packedData));
+                IChangeFrameList *pChangeFrame = NULL;
 
-                    bf_write prop_writer("packed data writer", packedData, sizeof(packedData));
-                    bf_read prop_reader("packed data reader", packedData, sizeof(packedData));
-                    IChangeFrameList *pChangeFrame = NULL;
-
-                    // Insertion sort on prop indexes 
-                    int i = 1;
-                    while (i < propChangeOffsets) {
-                        int x = propOffsets[i];
-                        int j = i - 1;
-                        while (j >= 0 && propOffsets[j] > x) {
-                                propOffsets[j+1] = propOffsets[j];
-                            j = j - 1;
-                        }
-                        propOffsets[j+1] = x;
-                        i = i + 1;
+                // Insertion sort on prop indexes 
+                int i = 1;
+                while (i < propChangeOffsets) {
+                    int x = propOffsets[i];
+                    int j = i - 1;
+                    while (j >= 0 && propOffsets[j] > x) {
+                            propOffsets[j+1] = propOffsets[j];
+                        j = j - 1;
                     }
-
-                    int total_bit_offset_change = 0;
-                    //DevMsg("offsets %d %d\n", propChangeOffsets, p->m_nChangeOffsets);
-
-                    //unsigned char sizetestbuf[DT_MAX_STRING_BUFFERSIZE+2];
-                    //bf_write sizetestbuf_write("packed data writer", sizetestbuf, 16);
-
-                    //int bit_offsetg = player_prop_write_offset[objectID - 1][player_prop_write_offset[objectID - 1].size()-1];
-                    //DevMsg("max write offset %d %d\n", bit_offsetg, propChangeOffsets);
-
-                    PropTypeFns *encode_fun = g_PropTypeFns;
-                    for (int i = 0; i < propChangeOffsets; i++) {
-
-                        //DevMsg("prop %d %d\n", i, propOffsets[i]);
-                        int bit_offset = write_offset_data[propOffsets[i]];
-
-                        prop_writer.SeekToBit(bit_offset);
-                        prop_reader.Seek(bit_offset);
-                        DVariant var;
-                        const SendProp *pProp = pPrecalc->m_Props[propOffsets[i]];
-
-                        //DevMsg("max write offset %d %s %d\n", propOffsets[i], pProp->GetName(), bit_offset);
-
-
-                        void *pStructBaseOffset;
-                        
-                        pStructBaseOffset = pStruct + player_prop_offsets[propOffsets[i]] - pProp->GetOffset();
-
-                        var.m_Type = (SendPropType)pProp->m_Type;
-                        pProp->GetProxyFn()( 
-                            pProp,
-                            pStructBaseOffset, 
-                            pStructBaseOffset + pProp->GetOffset(), 
-                            &var, 
-                            0, // iElement
-                            edictnum
-                            );
-
-                        //DevMsg("prop %d %d %d %s %s\n",player_prop_offsets[propOffsets[i]], propOffsets[i], pStructBaseOffset + pProp->GetOffset(),pProp->GetName(), var.ToString());
-                        
-                        int varlen = true;//pProp->GetFlags() & (SPROP_COORD_MP | SPROP_COORD_MP_LOWPRECISION | SPROP_COORD_MP_INTEGRAL | SPROP_VARINT);
-
-                        DecodeInfo decodeInfo;
-                        decodeInfo.m_pRecvProp = nullptr; // Just skip the data if the proxies are screwed.
-                        decodeInfo.m_pProp = pProp;
-                        decodeInfo.m_pIn = &prop_reader;
-                        decodeInfo.m_ObjectID = edictnum;
-                        decodeInfo.m_Value.m_Type = (SendPropType)pProp->m_Type;
-                        encode_fun[pProp->m_Type].Decode(&decodeInfo);
-
-                        //sizetestbuf_write.SeekToBit(0);
-                        encode_fun[pProp->m_Type].Encode( 
-                            (const unsigned char *) pStructBaseOffset, 
-                            &var, 
-                            pProp, 
-                            &prop_writer, 
-                            edictnum
-                            ); 
-                    
-                        //if (varlen) {
-                            
-
-                            int bit_offset_change = prop_writer.GetNumBitsWritten() - prop_reader.GetNumBitsRead();
-
-                            // Move all bits left or right
-                            if (bit_offset_change != 0) {
-                                //DevMsg("offset change %s\n", pProp->GetName());
-                                return false;
-                                
-                                /*DevMsg("offset change %s %d %d %d %d\n", pProp->GetName(), propOffsets[i], bit_offset_change, sizetestbuf_write.GetNumBitsWritten(), (prop_reader.GetNumBitsRead() - bit_offset));
-                                int propcount = pPrecalc->m_Props.Count();
-                                for (int j = propOffsets[i] + 1; j < propcount; j++) {
-                                    player_prop_write_offset[objectID - 1][j] += bit_offset_change;
-                                }
-                                
-                                char movedata[4096];
-                                bf_read prop_reader_move("packed data reader", movedata, 4096);
-                                prop_reader_move.Seek(prop_reader.GetNumBitsRead());
-                                memcpy(movedata, pOut->GetData(), Bits2Bytes(pPrevFrame->GetNumBits() + total_bit_offset_change));
-                                
-                                pOut->WriteBits(sizetestbuf, sizetestbuf_write.GetNumBitsWritten());
-                                
-                                bit_offset = pOut->GetNumBitsWritten();
-
-                                pOut->WriteBitsFromBuffer(&prop_reader_move, (pPrevFrame->GetNumBits() + total_bit_offset_change) - prop_reader.GetNumBitsRead());
-                                pOut->SeekToBit(bit_offset);
-
-                                total_bit_offset_change += bit_offset_change;*/
-                                /*prop_reader.Seek(bit_offset + prop_reader.GetNumBitsRead());
-                                
-                                unsigned char shift[18000];
-                                bf_write shift_write("packed data writer", shift, 18000);
-                                shift_write.*/
-
-                            }
-                            //else {
-                            //    prop_writer.WriteBits(sizetestbuf, sizetestbuf_write.GetNumBitsWritten());
-                            //}
-                        //}
-                    }
-
-                    if (hltv != nullptr && hltv->IsActive()) {
-                        pChangeFrame = pPrevFrame->m_pChangeFrameList;
-                        pChangeFrame = pChangeFrame->Copy();
-                    }
-                    else {
-                        pChangeFrame = pPrevFrame->SnagChangeFrameList();
-                    } 
-
-                    pChangeFrame->SetChangeTick( propOffsets, propChangeOffsets, snapshot->m_nTickCount );
-
-                    //unsigned char tempData[ sizeof( CSendProxyRecipients ) * MAX_DATATABLE_PROXIES ];
-                    CUtlMemory< CSendProxyRecipients > recip(pPrevFrame->GetRecipients(), pTable->m_pPrecalc->m_nDataTableProxies );
-
-                    {
-                        PackedEntity *pPackedEntity = snapmgr.CreatePackedEntity( snapshot, edictnum );
-                        pPackedEntity->m_pChangeFrameList = pChangeFrame;
-                        pPackedEntity->SetServerAndClientClass( serverclass, NULL );
-                        pPackedEntity->AllocAndCopyPadded( packedData, pPrevFrame->GetNumBytes() );
-                        pPackedEntity->SetRecipients( recip );
-                        
-                    }
-                    edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
-                    
-                    player_not_force_updated[objectID - 1] = true;
-                    return true;
+                    propOffsets[j+1] = x;
+                    i = i + 1;
                 }
+
+                int total_bit_offset_change = 0;
+                //DevMsg("offsets %d %d\n", propChangeOffsets, p->m_nChangeOffsets);
+
+                unsigned char sizetestbuf[DT_MAX_STRING_BUFFERSIZE+2];
+                bf_write sizetestbuf_write("packed data writer", sizetestbuf, sizeof(sizetestbuf));
+                bf_read sizetestbuf_read("packed data reader", sizetestbuf, sizeof(sizetestbuf));
+
+                //int bit_offsetg = player_prop_write_offset[objectID - 1][player_prop_write_offset[objectID - 1].size()-1];
+                //DevMsg("max write offset %d %d\n", bit_offsetg, propChangeOffsets);
+
+                PropTypeFns *encode_fun = g_PropTypeFns;
+                for (int i = 0; i < propChangeOffsets; i++) {
+                    
+                    //DevMsg("prop %d %d\n", i, propOffsets[i]);
+                    int bit_offset = write_offset_data[propOffsets[i]].offset;
+                    if (bit_offset == 65535) {
+                        continue;
+                    }
+
+                    //prop_reader.Seek(bit_offset);
+                    DVariant var;
+                    const SendProp *pProp = pPrecalc->m_Props[propOffsets[i]];
+
+                    //DevMsg("max write offset %d %s %d\n", propOffsets[i], pProp->GetName(), bit_offset);
+
+
+                    void *pStructBaseOffset;
+                    
+                    pStructBaseOffset = pStruct + cache.prop_offsets[propOffsets[i]] - pProp->GetOffset();
+
+                    var.m_Type = (SendPropType)pProp->m_Type;
+                    pProp->GetProxyFn()( 
+                        pProp,
+                        pStructBaseOffset, 
+                        pStructBaseOffset + pProp->GetOffset(), 
+                        &var, 
+                        0, // iElement
+                        objectID
+                        );
+
+                    //DevMsg("prop %d %d %d %s %s\n",player_prop_offsets[propOffsets[i]], propOffsets[i], pStructBaseOffset + pProp->GetOffset(),pProp->GetName(), var.ToString());
+
+                    // DecodeInfo decodeInfo;
+                    // decodeInfo.m_pRecvProp = nullptr; // Just skip the data if the proxies are screwed.
+                    // decodeInfo.m_pProp = pProp;
+                    // decodeInfo.m_pIn = &prop_reader;
+                    // decodeInfo.m_ObjectID = objectID;
+                    // decodeInfo.m_Value.m_Type = (SendPropType)pProp->m_Type;
+                    // encode_fun[pProp->m_Type].Decode(&decodeInfo);
+
+                    sizetestbuf_write.SeekToBit(0);
+                    encode_fun[pProp->m_Type].Encode( 
+                        (const unsigned char *) pStructBaseOffset, 
+                        &var, 
+                        pProp, 
+                        &sizetestbuf_write, 
+                        objectID
+                        ); 
+                
+                    int bit_size = write_offset_data[propOffsets[i]].size;
+
+                    int bit_offset_change = sizetestbuf_write.GetNumBitsWritten() - (bit_size);
+
+                    // Move all bits left or right
+                    if (bit_offset_change != 0) {
+                        // Msg("offset change %d %s %d %s %d %d oldSize: %d new: %d\n", bit_offset_change, entity->GetClassname(), propOffsets[i], pProp->GetName(), prop_writer.GetNumBitsWritten(), bit_size + bit_offset, bit_size, sizetestbuf_write.GetNumBitsWritten());
+                        
+                        if (bit_offset_change < 0) {
+                            prop_reader.Seek(bit_offset + bit_size);
+                            prop_writer.SeekToBit(bit_offset + sizetestbuf_write.GetNumBitsWritten());
+                            prop_writer.WriteBitsFromBuffer(&prop_reader, frameDataLength - prop_reader.m_iCurBit);
+                        }
+                        else {
+                            
+                            for (int j = frameDataLength; j >= bit_offset + bit_size;) {
+                                int bitsRead = Min(j - (bit_offset + bit_size), 32);
+                                if (bitsRead <= 0) break;
+
+                                j-=bitsRead;
+                                prop_reader.Seek(j);
+                                uint var = prop_reader.ReadUBitLong(bitsRead);
+                                prop_writer.SeekToBit(j + bit_offset_change);
+                                prop_writer.WriteUBitLong(var, bitsRead);
+                            }
+                        }
+                        int propcount = pPrecalc->m_Props.Count();
+                        write_offset_data[propOffsets[i]].size = sizetestbuf_write.GetNumBitsWritten();
+                        for (int j = propOffsets[i] + 1; j < propcount; j++) {
+                            write_offset_data[j].offset += bit_offset_change;
+                        }
+                        
+                        frameDataLength+=bit_offset_change;
+                    }
+                    prop_writer.SeekToBit(bit_offset);
+                    sizetestbuf_read.Seek(0);
+                    prop_writer.WriteBitsFromBuffer(&sizetestbuf_read, sizetestbuf_write.GetNumBitsWritten());
+                }
+
+                if (hltv != nullptr && hltv->IsActive()) {
+                    pChangeFrame = pPrevFrame->m_pChangeFrameList;
+                    pChangeFrame = pChangeFrame->Copy();
+                }
+                else {
+                    pChangeFrame = pPrevFrame->SnagChangeFrameList();
+                } 
+
+                pChangeFrame->SetChangeTick( propOffsets, propChangeOffsets, snapshot->m_nTickCount );
+
+                //unsigned char tempData[ sizeof( CSendProxyRecipients ) * MAX_DATATABLE_PROXIES ];
+                CUtlMemory< CSendProxyRecipients > recip(pPrevFrame->GetRecipients(), pTable->m_pPrecalc->m_nDataTableProxies );
+
+                {
+                    PackedEntity *pPackedEntity = snapmgr.CreatePackedEntity( snapshot, objectID );
+                    pPackedEntity->m_pChangeFrameList = pChangeFrame;
+                    pPackedEntity->SetServerAndClientClass( serverclass, NULL );
+                    pPackedEntity->AllocAndCopyPadded( packedData, Bits2Bytes(frameDataLength) );
+                    pPackedEntity->SetRecipients( recip );
+                    
+                }
+                edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
+                
+                //not_force_updated[objectID] = true;
+                return true;
             }
         }
         return false;
@@ -506,7 +532,8 @@ namespace Mod::Perf::SendProp_Optimize
         const int nCheckProps
         )
     {
-        if (pTable == playerSendTable) {
+        //if (pTable == playerSendTable) {
+        if (objectID >= 0) {
             if ( nCheckProps == 0 ) {
                 // Write single final zero bit, signifying that there no changed properties
                 pOut->WriteOneBit( 0 );
@@ -516,21 +543,31 @@ namespace Mod::Perf::SendProp_Optimize
 	        bf_read inputBuffer( "SendTable_WritePropList->inputBuffer", pState, BitByte( nBits ), nBits );
 
             auto pPrecalc = pTable->m_pPrecalc;
-            unsigned short *offset_data = player_prop_write_offset[objectID - 1].data();
+            auto offset_data = prop_write_offset[objectID].data();
+            //Msg("Write Prop List %d %s %d\n", objectID, pTable->GetName(), prop_write_offset[objectID].size());
+            if (prop_write_offset[objectID].empty()) {
+                DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+                return;
+            }
             for (int i = 0; i < nCheckProps; i++) {
                 int propid = pCheckProps[i];
-                int offset = offset_data[propid];
-                if (offset == 0)
+                int offset = offset_data[propid].offset;
+                if (offset == 0 || offset == 65535)
                     continue;
                 
-                auto pProp = pPrecalc->m_Props[propid];
                 
 			    deltaBitsWriter.WritePropIndex(propid);
 
-                int len;
-                inputBuffer.Seek( offset );
-                g_PropTypeFns[ pProp->GetType() ].SkipProp( pProp, &inputBuffer );
-                len = inputBuffer.GetNumBitsRead() - offset;
+                int len = offset_data[propid].size;
+                inputBuffer.Seek(offset);
+                pOut->WriteBitsFromBuffer(&inputBuffer, len);
+                
+                // auto pProp = pPrecalc->m_Props[propid];
+                // int len;
+                // inputBuffer.Seek( offset );
+                // g_PropTypeFns[ pProp->GetType() ].SkipProp( pProp, &inputBuffer );
+                // len = inputBuffer.GetNumBitsRead() - offset;
+                // pOut->WriteBitsFromBuffer(&inputBuffer, len);
 
                 /*int j = propid+1;
                 do {
@@ -539,8 +576,8 @@ namespace Mod::Perf::SendProp_Optimize
                 }
                 while (len < 0);*/
 
-                inputBuffer.Seek(offset);
-                pOut->WriteBitsFromBuffer(&inputBuffer, len);
+                
+                
             }
             //CTimeAdder timer(&timespent1);
             //DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
@@ -645,6 +682,7 @@ namespace Mod::Perf::SendProp_Optimize
 
         //CFastTimer timer;
         //timer.Start();
+        VPROF_BUDGET("CParallelProcessor<PackWork_t>::Run", "Encoding entities");
         int player_index_end = 0;
         int max_players = gpGlobals->maxClients;
         CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
@@ -652,93 +690,122 @@ namespace Mod::Perf::SendProp_Optimize
             PackWork_t *work_i = work + i;
             edict_t *edict = work_i->pEdict;
             int objectID = work_i->nIdx;
-            if (objectID > max_players) {
-                player_index_end = i;
-                break;
-            }
+            //if (objectID > max_players) {
+            //   player_index_end = i;
+            //    break;
+            //}
 
             if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
-                if (snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber))
+                if (snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber)) {
                     continue;
+                }
             }
-
-            if (GetContainingEntity(edict)->IsPlayer()) {
-                lastFullEncode = !DoEncodePlayer(edict, objectID, work_i->pSnapshot );
+            
+            CBaseEntity *entity = GetContainingEntity(edict);
+            ServerClass *serverclass = objectID > 0 && objectID <= gpGlobals->maxClients ? playerServerClass : entity->GetServerClass();
+            ServerClassCache &cache = objectID > 0 && objectID <= gpGlobals->maxClients ? *player_class_cache : server_class_cache[serverclass];
+            
+            if (!(edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)) {
+                
+                bool lastFullEncode = !DoEncode(serverclass, cache, edict, objectID, work_i->pSnapshot );
                 if (!lastFullEncode)
                     continue;
+                //Msg("Fail to encode %s\n", entity->GetClassname());
             }
-
+            //else {
+            //    Msg("Is full flag %s\n", entity->GetClassname());
+            //}
+            //Msg("Full encode %s\n", entity->GetClassname());
             edict->m_fStateFlags |= FL_EDICT_CHANGED;
             PackWork_t_Process(*work_i);
 
             // Update player prop write offsets
             
             PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket( objectID, edict->m_NetworkSerialNumber /*snapshot->m_pEntities[ edictnum ].m_nSerialNumber*/ );
-            if (pPrevFrame != nullptr && GetContainingEntity(edict)->IsPlayer()) {
-                SendTable *pTable = playerServerClass->m_pTable;
-                if (player_prop_write_offset[objectID - 1].empty()) {
-                    player_prop_write_offset[objectID - 1].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
+            if (pPrevFrame != nullptr) {
+
+                int offsetcount = cache.prop_offset_sendtable.size();
+                if (prop_value_old[objectID].size() != offsetcount) {
+                    prop_value_old[objectID].resize(offsetcount);
+                }
+                auto old_value_data = prop_value_old[objectID].data();
+                auto pStruct = (char *)edict->GetUnknown();
+                for (int i = 0; i < offsetcount; i++) {
+                    PropIndexData &data = cache.prop_offset_sendtable[i];
+                    old_value_data[i] = *(int*)(pStruct + data.offset);
+                }
+
+                SendTable *pTable = serverclass->m_pTable;
+                int propcount = pTable->m_pPrecalc->m_Props.Count();
+                if (prop_write_offset[objectID].size() != propcount + 1) {
+                    prop_write_offset[objectID].resize(propcount + 1);
                 }
 
                 bf_read toBits( "SendTable_CalcDelta/toBits", pPrevFrame->GetData(), BitByte(pPrevFrame->GetNumBits()), pPrevFrame->GetNumBits() );
                 CDeltaBitsReader toBitsReader( &toBits );
 
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
-                int propcount = pTable->m_pPrecalc->m_Props.Count();
-                unsigned short *offset_data = player_prop_write_offset[objectID - 1].data();
+                auto offset_data = prop_write_offset[objectID].data();
                 
                 // Required for later writeproplist
-                offset_data[pTable->m_pPrecalc->m_Props.Count()] = pPrevFrame->GetNumBits() + 7;
+                offset_data[propcount].offset = pPrevFrame->GetNumBits() + 7;
 
                 int lastbit = 0;
-                int lastprop = 0;
+                int lastprop = -1;
                 for ( ; iToProp < MAX_DATATABLE_PROPS; iToProp = toBitsReader.ReadNextPropIndex())
                 { 
                     const SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
-                    /*if (iToProp != lastprop + 1) {
+                    if (iToProp != lastprop + 1) {
                         for (int i = lastprop + 1; i < iToProp; i++) {
-                            offset_data[i] = 65535;
+                            offset_data[i].offset = 65535;
+                            //Msg("Set offset data %s %d to invalid\n", pTable->GetName(), i);
                         }
-                    }*/
+                    }
                     int write_offset = toBits.GetNumBitsRead();
-                    
                     //if (toBits.GetNumBitsRead() - lastbit != 7) {
                     //    write_offset |= PROP_INDEX_WRITE_LENGTH_NOT_7_BIT;
                     //}
 
-                    offset_data[iToProp] = write_offset;
+                    offset_data[iToProp].offset = write_offset;
 
                     toBitsReader.SkipPropData(pProp);
+                    int lastbitbefore = lastbit;
                     lastbit = toBits.GetNumBitsRead();
+                    offset_data[iToProp].size = lastbit - write_offset;
+
+                    //Msg("Prop %d %s propdatasize: %d nextpropindexsize: %d\n", iToProp, entity->GetClassname(), lastbit - write_offset, write_offset - lastbitbefore);
                     lastprop = iToProp; 
                 }
-                firsttime = false;
+                for (lastprop++; lastprop < propcount; lastprop++) {
+                    offset_data[lastprop].offset = 65535;
+                }
+                entity_frame_bit_size[objectID] = toBits.GetNumBitsRead();
+                cache.firsttime = false;
             }
         }
+        //Msg("Pack time %.9f %.9f %.9f %.9f %.9f\n", time.GetSeconds(), time2.GetSeconds(), time3.GetSeconds(), time4.GetSeconds(), time5.GetSeconds());
         //timer.End();
         //DevMsg("Timer encode players %.9f\n", timer.GetDuration().GetSeconds());
-        for (int i = player_index_end; i < items; i++) {
-            PackWork_t *work_i = work + i;
-            edict_t *edict = work_i->pEdict;
-            int objectID = work_i->nIdx;
-            if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
-                bool send = snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber);
-                if (send) {
-                    continue;
-                }
-            }
-            //CFastTimer timer2;
-            //timer2.Start();
-            edict->m_fStateFlags |= FL_EDICT_CHANGED;
-            PackWork_t_Process(*work_i);
-            //timer2.End();
-            //DevMsg("Timer encode other %s %.9f\n", GetContainingEntity(edict)->GetClassname() ,timer2.GetDuration().GetSeconds());
-        }
+        // for (int i = player_index_end; i < items; i++) {
+        //     PackWork_t *work_i = work + i;
+        //     edict_t *edict = work_i->pEdict;
+        //     int objectID = work_i->nIdx;
+        //     if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
+        //         bool send = snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber);
+        //         if (send) {
+        //             continue;
+        //         }
+        //     }
+        //     //CFastTimer timer2;
+        //     //timer2.Start();
+        //     edict->m_fStateFlags |= FL_EDICT_CHANGED;
+        //     PackWork_t_Process(*work_i);
+        //     //timer2.End();
+        //     //DevMsg("Timer encode other %s %.9f\n", GetContainingEntity(edict)->GetClassname() ,timer2.GetDuration().GetSeconds());
+        // }
         //DETOUR_MEMBER_CALL(CParallelProcessor_PackWork_t_Run)(work_do.data(), work_do.size(), maxthreads, pool);
         //DevMsg("duration for %d %f\n", maxthreads, timer.GetDuration().GetSeconds());
     }
-
-    ConVar cvar_crash("sig_crash", "0", FCVAR_NONE);
 
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
@@ -747,7 +814,7 @@ namespace Mod::Perf::SendProp_Optimize
 
         bool isplayer = mgr->m_hOuter != nullptr && mgr->m_hOuter->IsPlayer();
         if (isplayer && !called_by_weapon) {
-            force_player_update[ENTINDEX(mgr->m_hOuter) - 1] = true;
+            //force_player_update[ENTINDEX(mgr->m_hOuter) - 1] = true;
         }
         if (!isplayer)
             called_by_weapon++;
@@ -759,20 +826,20 @@ namespace Mod::Perf::SendProp_Optimize
     DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
-        force_player_update[ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1] = true;
+        reinterpret_cast<CTFPlayer *>(this)->NetworkStateChanged();
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_RemoveObject)(object);
-        force_player_update[ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1] = true;
+        reinterpret_cast<CTFPlayer *>(this)->NetworkStateChanged();
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
         auto shared = reinterpret_cast<CTFPlayerShared *>(this);
         if (pProvider != shared->GetConditionProvider(nCond))
-            force_player_update[ENTINDEX(shared->GetOuter()) - 1] = true;
+            reinterpret_cast<CTFPlayer *>(shared->GetOuter())->NetworkStateChanged();
             
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
@@ -782,7 +849,81 @@ namespace Mod::Perf::SendProp_Optimize
 
     DETOUR_DECL_MEMBER(IChangeInfoAccessor *, CBaseEdict_GetChangeAccessor)
 	{
+        //return DETOUR_MEMBER_CALL(CBaseEdict_GetChangeAccessor)();
+        // auto ent = GetContainingEntity(reinterpret_cast<edict_t *>(this));
+        // if (ent != nullptr && ent->IsPlayer()) {
+        //     ConVarRef developer("developer");
+        //     if (developer.GetBool() && !ToTFPlayer(ent)->IsBot()) {
+        //         Msg("ChangeAcc %d %d %d %d\n", reinterpret_cast<edict_t *>(this)->m_EdictIndex, world_accessor->GetChangeInfo(), world_accessor->GetChangeInfoSerialNumber(), reinterpret_cast<edict_t *>(this)->m_fStateFlags & FL_FULL_EDICT_CHANGED);
+        //         if (reinterpret_cast<edict_t *>(this)->m_fStateFlags & FL_FULL_EDICT_CHANGED)
+        //             raise(SIGTRAP);
+        //     }
+        // //     
+        // }
+        world_accessor->SetChangeInfoSerialNumber(g_SharedEdictChangeInfo->m_iSerialNumber);
+        world_accessor->SetChangeInfo(0);
+        g_SharedEdictChangeInfo->m_ChangeInfos[0].m_nChangeOffsets=0;
         return world_accessor;
+    }
+
+    DETOUR_DECL_MEMBER(void , CAnimationLayer_StudioFrameAdvance, float flInterval, CBaseAnimating *pOwner)
+	{
+        
+        int oldFlags = pOwner->edict()->m_fStateFlags;
+        DETOUR_MEMBER_CALL(CAnimationLayer_StudioFrameAdvance)(flInterval, pOwner);
+        if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
+    }
+    
+    DETOUR_DECL_MEMBER(void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
+	{
+        auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
+        int oldFlags = flags;
+        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_FastRemoveLayer)(layer);
+        if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
+    }
+
+    DETOUR_DECL_MEMBER(void , CBaseAnimatingOverlay_StudioFrameAdvance)
+	{;
+        auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
+        int oldFlags = flags;
+        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_StudioFrameAdvance)();
+        if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
+    }
+
+    DETOUR_DECL_MEMBER(void , CBaseAnimatingOverlay_SetLayerCycle, int layer, float cycle)
+	{
+        auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
+        int oldFlags = flags;
+        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_SetLayerCycle)(layer, cycle);
+        if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
+    }
+
+    DETOUR_DECL_MEMBER(void , CMultiPlayerAnimState_AddToGestureSlot, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
+	{
+        auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
+        int oldFlags = flags;
+        DETOUR_MEMBER_CALL(CMultiPlayerAnimState_AddToGestureSlot)(iGestureSlot, iGestureActivity, bAutoKill);
+        flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
+    }
+
+    DETOUR_DECL_MEMBER(void , CMultiPlayerAnimState_RestartGesture, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
+	{
+        auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
+        int oldFlags = flags;
+        DETOUR_MEMBER_CALL(CMultiPlayerAnimState_RestartGesture)(iGestureSlot, iGestureActivity, bAutoKill);
+        flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_D2)
+	{
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        auto edict = entity->edict();
+        if (edict != nullptr) {
+            prop_write_offset[edict->m_EdictIndex].clear();
+            prop_value_old[edict->m_EdictIndex].clear();
+            entity_frame_bit_size[edict->m_EdictIndex] = 0;
+        }
+        DETOUR_MEMBER_CALL(CBaseEntity_D2)();
     }
 
     DETOUR_DECL_STATIC(void, PackEntities_Normal, int clientCount, CGameClient **clients, CFrameSnapshot *snapshot)
@@ -807,8 +948,8 @@ namespace Mod::Perf::SendProp_Optimize
         }
 
         DETOUR_STATIC_CALL(PackEntities_Normal)(clientCount, clients, snapshot);
-        g_SharedEdictChangeInfo->m_nChangeInfos = MAX_EDICT_CHANGE_INFOS;
-        world_accessor->SetChangeInfoSerialNumber(0);
+        //g_SharedEdictChangeInfo->m_nChangeInfos = MAX_EDICT_CHANGE_INFOS;
+        //world_accessor->SetChangeInfoSerialNumber(0);
 
     }
 
@@ -846,11 +987,11 @@ namespace Mod::Perf::SendProp_Optimize
     DETOUR_DECL_STATIC(void*, SendProxy_SendPredictableId, const SendProp *pProp, const void *pStruct, const void *pVarData, CSendProxyRecipients *pRecipients, int objectID)
     {
         auto result = DETOUR_STATIC_CALL(SendProxy_SendPredictableId)( pProp, pStruct, pVarData, pRecipients, objectID);
-        if (result == nullptr && objectID <= gpGlobals->maxClients && objectID != 0 ) {
+        if (result == nullptr ) {
             pRecipients->ClearAllRecipients();
-            return (void *) pVarData;
+            
         }
-        return nullptr;
+        return (void *) pVarData;
     }
 
     DETOUR_DECL_STATIC(void*, SendProxy_SendHealersDataTable, const SendProp *pProp, const void *pStruct, const void *pVarData, CSendProxyRecipients *pRecipients, int objectID)
@@ -860,6 +1001,15 @@ namespace Mod::Perf::SendProp_Optimize
             pRecipients->ClearAllRecipients();
         }
         return (void *) pVarData;
+    }
+    
+    DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
+    {
+        DETOUR_MEMBER_CALL(CPopulationManager_SetPopulationFilename)(filename);
+        // Original function uses MAKE_STRING to set file name, which is bad
+        if (TFObjectiveResource() != nullptr) {
+            TFObjectiveResource()->m_iszMvMPopfileName = AllocPooledString(filename);
+        }
     }
 
     static MemberFuncThunk<INetworkStringTableContainer *, void, int> ft_DirectUpdate("CNetworkStringTableContainer::DirectUpdate");
@@ -966,6 +1116,42 @@ namespace Mod::Perf::SendProp_Optimize
         }
         return DETOUR_MEMBER_CALL(CBaseServer_GetClassBaseline)(pClass, pData, pDatalen);
     }*/
+    void *stringSendProxy;
+    void *vectorXYSendProxy;
+    void *qAnglesSendProxy;
+    void *colorSendProxy;
+    void *ehandleSendProxy;
+    void *intAddOneSendProxy;
+    void *shortAddOneSendProxy;
+    void *stringTSendProxy;
+    bool IsStandardPropProxy(SendVarProxyFn proxyFn) {
+        
+        static SendVarProxyFn standardProxies[] {
+            gamedll->GetStandardSendProxies()->m_FloatToFloat,
+            gamedll->GetStandardSendProxies()->m_Int16ToInt32,
+            gamedll->GetStandardSendProxies()->m_Int32ToInt32,
+            gamedll->GetStandardSendProxies()->m_Int8ToInt32,
+            gamedll->GetStandardSendProxies()->m_UInt16ToInt32,
+            gamedll->GetStandardSendProxies()->m_UInt32ToInt32,
+            gamedll->GetStandardSendProxies()->m_UInt8ToInt32,
+            gamedll->GetStandardSendProxies()->m_VectorToVector,
+            (SendVarProxyFn)stringSendProxy,
+            (SendVarProxyFn)vectorXYSendProxy,
+            (SendVarProxyFn)qAnglesSendProxy,
+            (SendVarProxyFn)colorSendProxy,
+            (SendVarProxyFn)ehandleSendProxy,
+            (SendVarProxyFn)intAddOneSendProxy,
+            (SendVarProxyFn)shortAddOneSendProxy,
+            (SendVarProxyFn)stringTSendProxy,
+            
+        };
+        for (auto standardProxy : standardProxies) {
+            if (standardProxy == proxyFn) {
+                return true;
+            }
+        }
+        return proxyFn == nullptr;
+    }
 
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -976,7 +1162,15 @@ namespace Mod::Perf::SendProp_Optimize
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             //MOD_ADD_DETOUR_STATIC(SendTable_Encode,   "SendTable_Encode");
             MOD_ADD_DETOUR_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
-            MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,   "CAttributeManager::ClearCache [clone]");
+            MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_SetLayerCycle,"CBaseAnimatingOverlay::SetLayerCycle");
+            MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_AddToGestureSlot,"CMultiPlayerAnimState::AddToGestureSlot");
+            MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_RestartGesture,"CMultiPlayerAnimState::RestartGesture");
+            
+            
+            //MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,   "CAttributeManager::ClearCache [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
@@ -987,15 +1181,28 @@ namespace Mod::Perf::SendProp_Optimize
 			//MOD_ADD_DETOUR_MEMBER(PackedEntity_GetPropsChangedAfterTick, "PackedEntity::GetPropsChangedAfterTick");
 		    MOD_ADD_DETOUR_STATIC(SendTable_CullPropsFromProxies, "SendTable_CullPropsFromProxies");
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendPredictableId, "SendProxy_SendPredictableId");
-		    MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
+		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
 			MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2,"~CBaseEntity [D2]");
+            
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");
+            //MOD_ADD_DETOUR_MEMBER(CServerDatatableStack_RecurseAndCallProxies,"CServerDatatableStack::RecurseAndCallProxies");
 			//MOD_ADD_DETOUR_MEMBER(CBaseServer_GetClassBaseline,   "CBaseServer::GetClassBaseline");
             
 			//MOD_ADD_DETOUR_STATIC(SendTable_WriteAllDeltaProps, "SendTable_WriteAllDeltaProps");
             
 		}
-
-        virtual void PreLoad() {
+        virtual void PreLoad() override
+        {
+            stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
+            vectorXYSendProxy = AddrManager::GetAddr("SendProxy_VectorXYToVectorXY");
+            qAnglesSendProxy = AddrManager::GetAddr("SendProxy_QAngles");
+            colorSendProxy = AddrManager::GetAddr("SendProxy_Color32ToInt");
+            ehandleSendProxy = AddrManager::GetAddr("SendProxy_EHandleToInt");
+            intAddOneSendProxy = AddrManager::GetAddr("SendProxy_IntAddOne");
+            shortAddOneSendProxy = AddrManager::GetAddr("SendProxy_ShortAddOne");
+            stringTSendProxy = AddrManager::GetAddr("SendProxy_StringT_To_String");
+            
 			g_SharedEdictChangeInfo = engine->GetSharedEdictChangeInfo();
             SendTable &table = DT_TFPlayer_g_SendTable;
             playerSendTable = &table;
@@ -1003,60 +1210,179 @@ namespace Mod::Perf::SendProp_Optimize
             playerServerClass = &svclass;
 		}
 
-        void AddOffsetToList(int offset, int index) {
-            int size = prop_offset_sendtable.size();
+        void AddOffsetToList(ServerClassCache &cache, int offset, int index, int element) {
+            int size = cache.prop_offset_sendtable.size();
             for (int i = 0; i < size; i++) {
-                if (prop_offset_sendtable[i].offset == (unsigned short) offset) {
-                    prop_offset_sendtable[i].index2 = (unsigned short) index;
+                if (cache.prop_offset_sendtable[i].offset == (unsigned short) offset) {
+                    cache.prop_offset_sendtable[i].index2 = (unsigned short) index;
                     return;
                 }
             }
-            prop_offset_sendtable.emplace_back();
-            PropIndexData &data = prop_offset_sendtable.back();
+            cache.prop_offset_sendtable.emplace_back();
+            PropIndexData &data = cache.prop_offset_sendtable.back();
             data.offset = (unsigned short) offset;
             data.index1 = (unsigned short) index;
+            data.element = (unsigned short) element;
         };
 
         SendTableProxyFn local_sendtable_proxy;
 
-        void RecurseStack(unsigned char* stack, CSendNode *node, CSendTablePrecalc *precalc)
+        void PropScan(int off, SendTable *s_table, int &index)
+        {
+            for (int i = 0; i < s_table->GetNumProps(); ++i) {
+                SendProp *s_prop = s_table->GetProp(i);
+
+                if (s_prop->GetDataTable() != nullptr) {
+                    PropScan(off + s_prop->GetOffset(), s_prop->GetDataTable(), index);
+                }
+                else {
+                    //Msg("Scan Data table for %d %s %d is %d %d %d\n", index, s_prop->GetName(),  off + s_prop->GetOffset(), off, s_prop->GetProxyFn(), s_prop->GetDataTableProxyFn());
+                    index++;
+                    //onfound(s_prop, off + s_prop->GetOffset());
+                }
+            }
+        }
+
+        void RecurseStack(ServerClassCache &cache, unsigned char* stack, CSendNode *node, CSendTablePrecalc *precalc)
         {
             //stack[node->m_RecursiveProxyIndex] = strcmp(node->m_pTable->GetName(), "DT_TFNonLocalPlayerExclusive") == 0;
             stack[node->m_RecursiveProxyIndex] = node->m_DataTableProxyIndex;
             if (node->m_DataTableProxyIndex < 254) {
-                player_send_nodes[node->m_DataTableProxyIndex] = node;
+                //cache.send_nodes[node->m_DataTableProxyIndex] = node;
                 player_local_exclusive_send_proxy[node->m_DataTableProxyIndex] = precalc->m_DatatableProps[node->m_iDatatableProp]->GetDataTableProxyFn() == local_sendtable_proxy;
             }
             
-            //Msg("data %d %d %s %d\n", node->m_RecursiveProxyIndex, stack[node->m_RecursiveProxyIndex], node->m_pTable->GetName(), node->m_nRecursiveProps);
+            //("data %d %d %s %d\n", node->m_RecursiveProxyIndex, stack[node->m_RecursiveProxyIndex], node->m_pTable->GetName(), node->m_nRecursiveProps);
             for (int i = 0; i < node->m_Children.Count(); i++) {
                 CSendNode *child = node->m_Children[i];
-                RecurseStack(stack, child, precalc);
+                RecurseStack(cache, stack, child, precalc);
             }
         }
 
         virtual bool OnLoad() {
-            //DevMsg("Crash1\n");
             CStandardSendProxies* sendproxies = gamedll->GetStandardSendProxies();
             datatable_sendtable_proxy = sendproxies->m_DataTableToDataTable;
             local_sendtable_proxy = sendproxies->m_SendLocalDataTable;
-            int propcount = playerSendTable->m_pPrecalc->m_Props.Count();
-            //DevMsg("%s %d %d\n", pTable->GetName(), propcount, pTable->GetNumProps());
             
-            CPropMapStack pmStack( playerSendTable->m_pPrecalc, sendproxies );
-            player_prop_offsets = new unsigned short[propcount];
-            player_prop_cull = new unsigned char[propcount];
+            player_prop_cull = new unsigned char[playerSendTable->m_pPrecalc->m_Props.Count()];
             player_local_exclusive_send_proxy = new bool[playerSendTable->m_pPrecalc->m_nDataTableProxies];
-            player_send_nodes = new CSendNode *[playerSendTable->m_pPrecalc->m_nDataTableProxies];
-            pmStack.Init();
+            for(ServerClass *serverclass = gamedll->GetAllServerClasses(); serverclass->m_pNext != nullptr; serverclass = serverclass->m_pNext) {
+                //DevMsg("Crash1\n");
+                auto &serverClassCache = server_class_cache[serverclass];
+                SendTable *sendTable = serverclass->m_pTable;
+                int propcount = sendTable->m_pPrecalc->m_Props.Count();
+                //DevMsg("%s %d %d\n", pTable->GetName(), propcount, pTable->GetNumProps());
+                
+                CPropMapStack pmStack( sendTable->m_pPrecalc, sendproxies );
+                serverClassCache.prop_offsets = new unsigned short[propcount];
+                //serverClassCache.send_nodes = new CSendNode *[playerSendTable->m_pPrecalc->m_nDataTableProxies];
+                pmStack.Init();
+                bool debug = strcmp(sendTable->GetName(), "DT_TFObjectiveResource") == 0;
 
-            //int reduce_coord_prop_offset = 0;
+                //int reduce_coord_prop_offset = 0;
 
-            //DevMsg("Crash2\n");
+                //DevMsg("Crash2\n");
+                int t = 0;
+                PropScan(0,sendTable, t);
+                unsigned char proxyStack[256];
+
+                RecurseStack(serverClassCache, proxyStack, &sendTable->m_pPrecalc->m_Root , sendTable->m_pPrecalc);
+
+                for (int iToProp = 0; iToProp < sendTable->m_pPrecalc->m_Props.Count(); iToProp++)
+                { 
+                    const SendProp *pProp = sendTable->m_pPrecalc->m_Props[iToProp];
+
+                    pmStack.SeekToProp( iToProp );
+
+                    
+                    //player_local_exclusive_send_proxy[proxyStack[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]] = player_prop_cull[iToProp] < 254 && pProp->GetDataTableProxyFn() == sendproxies->m_SendLocalDataTable;
+                    
+                    //bool local2 = pProp->GetDataTableProxyFn() == sendproxies->m_SendLocalDataTable;
+                // bool local = player_local_exclusive_send_proxy[player_prop_cull[iToProp]];
+                    //Msg("Local %s %d %d %d %d\n",pProp->GetName(), local, local2, sendproxies->m_SendLocalDataTable, pProp->GetDataTableProxyFn());
+
+                    if (serverclass == playerServerClass) {
+                        player_prop_cull[iToProp] = proxyStack[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]];
+                    }
+                    if ((int)pmStack.GetCurStructBase() != 0) {
+
+                        int offset = pProp->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
+                        
+                        int elementCount = 1;
+                        int elementStride = 0;
+                        int propIdToUse = iToProp;
+                        int offsetToUse = offset;
+                        if ( pProp->GetType() == DPT_Array )
+                        {
+                            offset = pProp->GetArrayProp()->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
+                            elementCount = pProp->m_nElements;
+                            elementStride = pProp->m_ElementStride;
+                            pProp = pProp->GetArrayProp();
+                            offsetToUse = (int)pmStack.GetCurStructBase() - 1;
+                        }
+
+                        serverClassCache.prop_offsets[propIdToUse] = offsetToUse;
+
+
+                        //if (pProp->GetType() == DPT_Vector || pProp->GetType() == DPT_Vector )
+                        //    propIndex |= PROP_INDEX_VECTOR_ELEM_MARKER;
+                        
+                    // if (IsStandardPropProxy(pProp->GetProxyFn())) {
+
+                            if ( offset != 0)
+                            {
+                                int offset_off = offset;
+                                for ( int j = 0; j < elementCount; j++ )
+                                {
+                                    if (debug) {
+                                        Msg("Add offset for %s %d\n", pProp->GetName(), offset_off);
+                                    }
+                                    AddOffsetToList(serverClassCache, offset_off, propIdToUse, j);
+                                    if (pProp->GetType() == DPT_Vector) {
+                                        AddOffsetToList(serverClassCache, offset_off + 4, propIdToUse, j);
+                                        AddOffsetToList(serverClassCache, offset_off + 8, propIdToUse, j);
+                                    }
+                                    else if (pProp->GetType() == DPT_VectorXY) {
+                                        AddOffsetToList(serverClassCache, offset_off + 4, propIdToUse, j);
+                                    }
+                                    offset_off += elementStride;
+                                }
+                            }
+                        ///}
+                        //else {
+                        //    prop_special.push_back({iToProp, pmStack.m_iBaseOffset[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]], pProp, nullptr});
+                        //}
+                    }
+                    else {
+                        //serverClassCache.prop_special.push_back({iToProp, pmStack.m_iBaseOffset[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]], pProp, pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]});
+                        //serverClassCache.prop_offsets[iToProp] = pProp->GetOffset();
+                    }
+                    //Msg("Data table for %d %s %d is %d %d %d %d\n", iToProp, pProp->GetName(),  pProp->GetOffset() + (int)pmStack.GetCurStructBase() - 1, (int)pmStack.GetCurStructBase(), pProp->GetProxyFn(), pProp->GetDataTableProxyFn(), pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]) ;
+
+                    //int bitsread_pre = toBits.GetNumBitsRead();
+
+                    /*if (pProp->GetFlags() & SPROP_COORD_MP)) {
+                        if ((int)pmStack.GetCurStructBase() != 0) {
+                            reduce_coord_prop_offset += toBits.GetNumBitsRead() - bitsread_pre;
+                            player_prop_coord.push_back(iToProp);
+                            Msg("bits: %d\n", toBits.GetNumBitsRead() - bitsread_pre);
+                        }
+                    }*/
+                }
+                
+                //Msg("End\n");
+
+                // for (auto &prop : serverClassCache.prop_special) {
+                //     Msg("Special prop %d %s %d\n", prop.index, prop.prop->GetName(), prop.datatable);
+                // }
+                world_edict = INDEXENT(0);
+                if (world_edict != nullptr){
+                    world_accessor = static_cast<CVEngineServer *>(engine)->GetChangeAccessorStatic(world_edict);
+                    world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
+                }
+            }
+            player_class_cache = &server_class_cache[playerServerClass];
             
-            unsigned char proxyStack[256];
-
-            RecurseStack(proxyStack, &playerSendTable->m_pPrecalc->m_Root , playerSendTable->m_pPrecalc);
 
             void *predictable_id_func = nullptr;
             for (int i = 0; i < playerSendTable->m_pPrecalc->m_DatatableProps.Count(); i++) {
@@ -1066,86 +1392,9 @@ namespace Mod::Perf::SendProp_Optimize
                 }
             }
 
-            for (int iToProp = 0; iToProp < playerSendTable->m_pPrecalc->m_Props.Count(); iToProp++)
-            { 
-                const SendProp *pProp = playerSendTable->m_pPrecalc->m_Props[iToProp];
-
-                pmStack.SeekToProp( iToProp );
-
-                
-                //player_local_exclusive_send_proxy[proxyStack[playerSendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]] = player_prop_cull[iToProp] < 254 && pProp->GetDataTableProxyFn() == sendproxies->m_SendLocalDataTable;
-                
-                //bool local2 = pProp->GetDataTableProxyFn() == sendproxies->m_SendLocalDataTable;
-               // bool local = player_local_exclusive_send_proxy[player_prop_cull[iToProp]];
-                //Msg("Local %s %d %d %d %d\n",pProp->GetName(), local, local2, sendproxies->m_SendLocalDataTable, pProp->GetDataTableProxyFn());
-
-                player_prop_cull[iToProp] = proxyStack[playerSendTable->m_pPrecalc->m_PropProxyIndices[iToProp]];
-                if ((int)pmStack.GetCurStructBase() != 0) {
-
-                    int offset = pProp->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
-                    
-                    int elementCount = 1;
-                    int elementStride = 0;
-                    int propIdToUse = iToProp;
-                    if ( pProp->GetType() == DPT_Array )
-                    {
-                        offset = pProp->GetArrayProp()->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
-                        elementCount = pProp->m_nElements;
-                        elementStride = pProp->m_ElementStride;
-                        pProp = pProp->GetArrayProp();
-                        propIdToUse -= iToProp - 1;
-                    }
-
-                    player_prop_offsets[propIdToUse] = offset;
-
-
-                    //if (pProp->GetType() == DPT_Vector || pProp->GetType() == DPT_Vector )
-                    //    propIndex |= PROP_INDEX_VECTOR_ELEM_MARKER;
-
-                    if ( offset != 0)
-                    {
-                        int offset_off = offset;
-                        for ( int j = 0; j < elementCount; j++ )
-                        {
-                            AddOffsetToList(offset_off, propIdToUse);
-                            if (pProp->GetType() == DPT_Vector) {
-                                AddOffsetToList(offset_off + 4, propIdToUse);
-                                AddOffsetToList(offset_off + 8, propIdToUse);
-                            }
-                            else if (pProp->GetType() == DPT_VectorXY) {
-                                AddOffsetToList(offset_off + 4, propIdToUse);
-                            }
-                            offset_off += elementStride;
-                        }
-                    }
-                
-                }
-                else {
-                    player_prop_offsets[iToProp] = -1;
-                }
-
-                //int bitsread_pre = toBits.GetNumBitsRead();
-
-                /*if (pProp->GetFlags() & SPROP_COORD_MP)) {
-                    if ((int)pmStack.GetCurStructBase() != 0) {
-                        reduce_coord_prop_offset += toBits.GetNumBitsRead() - bitsread_pre;
-                        player_prop_coord.push_back(iToProp);
-                        Msg("bits: %d\n", toBits.GetNumBitsRead() - bitsread_pre);
-                    }
-                }*/
-            }
-            
-            //Msg("End\n");
-
-            world_edict = INDEXENT(0);
-            if (world_edict != nullptr){
-                world_accessor = static_cast<CVEngineServer *>(engine)->GetChangeAccessorStatic(world_edict);
-                world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
-            }
-
-            CDetour *detour = new CDetour("SendProxy_SendPredictableId", predictable_id_func, GET_STATIC_CALLBACK(SendProxy_SendPredictableId), GET_STATIC_INNERPTR(SendProxy_SendPredictableId));
-            this->AddDetour(detour);
-            return detour->Load();
+            //CDetour *detour = new CDetour("SendProxy_SendPredictableId", predictable_id_func, GET_STATIC_CALLBACK(SendProxy_SendPredictableId), GET_STATIC_INNERPTR(SendProxy_SendPredictableId));
+            //this->AddDetour(detour);
+            return true;//detour->Load();
         }
 
         virtual void OnUnload() override

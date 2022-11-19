@@ -378,7 +378,7 @@ public:
 private:
 	DECL_RELATIVE   (bool, m_bTouched);
 	DECL_RELATIVE   (bool, m_bPulled);
-	DECL_SENDPROP_RW(bool, m_bDistributed);
+	DECL_SENDPROP   (bool, m_bDistributed);
 	DECL_EXTRACT    (int,  m_nAmount);
 	
 	static MemberVFuncThunk<const CCurrencyPack *, bool> vt_AffectedByRadiusCollection;

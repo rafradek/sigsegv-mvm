@@ -20,6 +20,8 @@ namespace Mod::Attr::Custom_Attributes
 		MULT_CREDIT_COLLECT_RANGE,
 		NOT_SOLID,
 		IGNORED_BY_BOTS,
+		ADD_MAXHEALTH,
+		ADD_MAXHEALTH_NONBUFFED,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -58,7 +60,9 @@ namespace Mod::Attr::Custom_Attributes
 		"mult_duck_speed",
 		"mult_credit_collect_range",
 		"not_solid",
-		"ignored_by_bots"
+		"ignored_by_bots",
+		"add_maxhealth",
+		"add_maxhealth_nonbuffed"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {

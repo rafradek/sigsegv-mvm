@@ -532,10 +532,10 @@ public:
 							m_pSendProxies = pSendProxies;
 						}
 
-	bool IsNonPointerModifyingProxy( SendTableProxyFn fn, const CStandardSendProxies *pSendProxies )
+	static bool IsNonPointerModifyingProxy( SendTableProxyFn fn, const CStandardSendProxies *pSendProxies )
 	{
-		if ( fn == m_pSendProxies->m_DataTableToDataTable ||
-			 fn == m_pSendProxies->m_SendLocalDataTable )
+		if ( fn == pSendProxies->m_DataTableToDataTable ||
+			 fn == pSendProxies->m_SendLocalDataTable )
 		{
 			return true;
 		}
@@ -576,16 +576,23 @@ public:
 	{
 		// Remember where the game code pointed us for this datatable's data so 
 		m_pProxies[ pNode->m_RecursiveProxyIndex ] = pStructBase;
+		
+		//const SendProp *pProp = m_pPropMapStackPrecalc->m_DatatableProps[pNode->m_iDatatableProp];
 
 		for ( int iChild=0; iChild < pNode->m_Children.Count(); iChild++ )
 		{
 			CSendNode *pCurChild = pNode->m_Children[iChild];
+			const SendProp *pChildProp = m_pPropMapStackPrecalc->m_DatatableProps[pCurChild->m_iDatatableProp];
 			
 			unsigned char *pNewStructBase = NULL;
 			if ( pStructBase )
 			{
 				pNewStructBase = CallPropProxy( pCurChild, pCurChild->m_iDatatableProp, pStructBase );
 			}
+			m_pIsPointerModifyingProxy[pCurChild->m_RecursiveProxyIndex] = 
+				IsNonPointerModifyingProxy(pChildProp->GetDataTableProxyFn(), m_pSendProxies) ? 
+					m_pIsPointerModifyingProxy[pNode->m_RecursiveProxyIndex] : pChildProp;
+			m_iBaseOffset[pCurChild->m_RecursiveProxyIndex] = (int)pStructBase;
 
 			RecurseAndCallProxies( pCurChild, pNewStructBase );
 		}
@@ -594,6 +601,15 @@ public:
 public:
 	CSendTablePrecalc *m_pPropMapStackPrecalc;
 	const CStandardSendProxies *m_pSendProxies;
+	const SendProp *m_pIsPointerModifyingProxy[MAX_PROXY_RESULTS] {nullptr};
+	int m_iBaseOffset[MAX_PROXY_RESULTS] {0};
+};
+
+class CServerDatatableStack : public CDatatableStack
+{
+public:
+	CSendTablePrecalc					*m_pPrecalc;
+	CUtlMemory<CSendProxyRecipients>	*m_pRecipients;
 };
 
 class CFrameSnapshotEntry

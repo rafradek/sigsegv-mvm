@@ -87,8 +87,7 @@ namespace Mod::Etc::Entity_Limit_Manager
     GlobalThunk<int> s_RemoveImmediateSemaphore("s_RemoveImmediateSemaphore");
 	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
 	{
-        int entityCount = engine->GetEntityCount();//gEntList->m_iNumEdicts;
-        //Msg("entity %d %d \n", entityCount, reinterpret_cast<CGameServer *>(sv)->GetNumEdicts());
+        int entityCount = engine->GetEntityCount();
         // Check if there is a useable free edict. If not, try to find a recently freed edict and make it useable
         bool success = false;
         if (reinterpret_cast<CGameServer *>(sv)->GetNumEdicts() > 2044) {
@@ -102,14 +101,12 @@ namespace Mod::Etc::Entity_Limit_Manager
             for ( ;; )
             {
                 iBit = freeEdicts.FindNextSetBit( iBit + 1 );
-                //Msg("free edict %d\n", iBit);
                 if ( iBit < 0 )
                     break;
                 auto edict = worldEdict + iBit;
                 if ((edict->freetime < 2 ) || ( svtime - edict->freetime >= 1.0)) {
                     // There is an useable edict
                     edictToUse = nullptr;
-                    //Msg("Useable edict %d\n", iBit);
                     success = true;
                     break;
                 }
@@ -123,7 +120,6 @@ namespace Mod::Etc::Entity_Limit_Manager
             if (edictToUse != nullptr) {
                 success = true;
                 edictToUse->freetime = 0;
-                //Msg("Turn edict useable %d\n", edictToUse->m_EdictIndex);
             }
             // Try to find a marked for deletion entity and clear it
             if (!success) {
@@ -138,16 +134,10 @@ namespace Mod::Etc::Entity_Limit_Manager
                         edict->freetime = 0;
                     }
                     success = true;
-                    //Msg("Delete entity %d\n", edict->m_EdictIndex);
                 }
             }
-            //timer.End();
-            //Msg("Find useable entity %.9f\n", timer.GetDuration().GetSeconds());
         }
         if (!success && entityCount > 2044) {
-            //CFastTimer timer;
-            //timer.Start();
-            //bool isEffectEntity = strcmp(className, "instanced_scripted_scene") == 0 || strcmp(className, "env_spritetrail") == 0;
             // Remove scripted scene first
             CBaseEntity *entityToDelete = nullptr;
             auto scriptedScene = servertools->FindEntityByClassname(nullptr, "instanced_scripted_scene");
@@ -164,17 +154,6 @@ namespace Mod::Etc::Entity_Limit_Manager
                     return true;
                 });
             }
-            /*if (entityToDelete == nullptr && isEffectEntity) {
-
-                // Scripted scenes are not important, can be removed as they spawn
-                if (strcmp(className, "instanced_scripted_scene") == 0) {
-                    remove_this_scene_entity = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
-                    return remove_this_scene_entity;
-                }
-                else {
-                    return nullptr;
-                }
-            }*/
             bool notifyDelete = false;
             if (entityToDelete == nullptr) {
                 // Delete projectiles, starting from oldest. Also delete grounded arrows

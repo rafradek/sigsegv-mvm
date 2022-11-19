@@ -19,7 +19,7 @@ namespace Mod::Anim::Player_UpdateModel_AnimState_Fix
 		DevMsg("[Player #%d \"%s\"] In CTFPlayer::UpdateModel, calling m_PlayerAnimState->OnNewModel()\n", ENTINDEX(player), player->GetPlayerName());
 		
 		// doing the call in one step results in some kind of OO error
-		CMultiplayerAnimState *m_PlayerAnimState = player->m_PlayerAnimState;
+		CMultiPlayerAnimState *m_PlayerAnimState = player->m_PlayerAnimState;
 		m_PlayerAnimState->OnNewModel();
 	//	player->m_PlayerAnimState->OnNewModel();
 		

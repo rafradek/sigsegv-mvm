@@ -518,7 +518,7 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateChargeMeter, "CTFPlayerShared::UpdateChargeMeter");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndClassSpecialSkill, "CTFPlayer::EndClassSpecialSkill");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TeamFortress_CalculateMaxSpeed, "CTFPlayer::TeamFortress_CalculateMaxSpeed");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealthForBuffing, "CTFPlayer::GetMaxHealthForBuffing");
+			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealthForBuffing, "CTFPlayer::GetMaxHealthForBuffing");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SecondaryAttack, "CTFMinigun::SecondaryAttack");
 			MOD_ADD_DETOUR_MEMBER(CTFFists_SecondaryAttack, "CTFFists::SecondaryAttack");
 			MOD_ADD_DETOUR_MEMBER(CTFFists_Punch, "CTFFists::Punch");

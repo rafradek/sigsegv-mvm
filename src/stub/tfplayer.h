@@ -11,7 +11,6 @@ class CTFWeaponBase;
 class CTFPlayer;
 class CTFItem;
 class CTFWearable;
-class TFPlayerClassData_t;
 enum ETFFlagType : int32_t;
 
 enum PlayerAnimEvent_t : int32_t
@@ -223,6 +222,17 @@ enum ETFCond : int32_t
 	TF_COND_COUNT,
 };
 
+struct TFPlayerClassData_t
+{
+	char		m_szClassName[128];
+	char		m_szModelName[128];
+	char		m_szHWMModelName[128];
+	char		m_szHandModelName[128];
+	char		m_szLocalizableName[128];
+	float		m_flMaxSpeed;
+	int			m_nMaxHealth;
+};
+
 struct bleed_struct_t
 {
 	CHandle<CTFPlayer>		hBleedingAttacker;
@@ -253,15 +263,19 @@ public:
 	bool m_bPrevActive;
 };
 
-class CMultiplayerAnimState
+class CMultiPlayerAnimState
 {
 public:
 	void OnNewModel() { ft_OnNewModel(this); }
+	uintptr_t vtable;
+	bool	m_bForceAimYaw;
+	CUtlVector<int> m_aGestureSlots;
+	CBasePlayer *m_pPlayer;
 	
 private:
-	static MemberFuncThunk<CMultiplayerAnimState *, void> ft_OnNewModel;
+	static MemberFuncThunk<CMultiPlayerAnimState *, void> ft_OnNewModel;
 };
-class CTFPlayerAnimState : public CMultiplayerAnimState {};
+class CTFPlayerAnimState : public CMultiPlayerAnimState {};
 
 class CUpgradeInfo
 {
@@ -321,6 +335,7 @@ public:
 	void SetState(int nState)      { this->m_nPlayerState = nState; }
 	bool InState(int nState) const { return (this->m_nPlayerState == nState); }
 	inline CondData GetCondData()  { return CondData{(uint *)((uintptr_t)this + s_prop_m_nPlayerCond.GetOffsetDirect())}; }
+	int GetCarryingRuneType();
 	
 	void AddCond(ETFCond cond, float duration = -1.0f, CBaseEntity *provider = nullptr) {        ft_AddCond                   (this, cond, duration, provider); }
 	void RemoveCond(ETFCond cond, bool b1 = false)                                      {        ft_RemoveCond                (this, cond, b1); }
@@ -338,6 +353,7 @@ public:
 	void SetDefaultItemChargeMeters()                                                   {        ft_SetDefaultItemChargeMeters(this); }
 	void SetItemChargeMeter(loadout_positions_t slot, float value)                      {        ft_SetItemChargeMeter        (this, slot, value); }
 	void Burn(CTFPlayer *igniter, CTFWeaponBase *weapon, float duration = 10.0f)        {        ft_Burn        (this, igniter, weapon, duration); }
+
 	DECL_SENDPROP(float,       m_flCloakMeter);
 	DECL_SENDPROP(float,       m_flEnergyDrinkMeter);
 	DECL_SENDPROP(float,       m_flHypeMeter);
@@ -476,6 +492,8 @@ public:
 	
 	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
+	int GetRuneHealthBonus() { return ft_GetRuneHealthBonus (this); }
+
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
 
@@ -570,6 +588,7 @@ private:
 	static MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > ft_SetOffHandWeapon;
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_HolsterOffHandWeapon;
     static MemberFuncThunk<      CTFPlayer *, bool                            > ft_CanMoveDuringTaunt;
+    static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetRuneHealthBonus;
 	
 	
 	
@@ -633,6 +652,34 @@ inline CTFPlayer *ToTFPlayer(CBaseEntity *pEntity)
 	return static_cast<CTFPlayer *>(pEntity);
 
 	// return rtti_cast<CTFPlayer *>(pEntity);
+}
+
+static ETFCond rune_conds[] = {
+	TF_COND_RUNE_STRENGTH,
+	TF_COND_RUNE_HASTE,
+	TF_COND_RUNE_REGEN,
+	TF_COND_RUNE_RESIST,
+	TF_COND_RUNE_VAMPIRE,
+	TF_COND_RUNE_REFLECT,
+	TF_COND_RUNE_PRECISION,
+	TF_COND_RUNE_AGILITY,
+	TF_COND_RUNE_KNOCKOUT,
+	TF_COND_RUNE_KING,
+	TF_COND_RUNE_PLAGUE,
+	TF_COND_RUNE_SUPERNOVA
+};
+
+inline int CTFPlayerShared::GetCarryingRuneType()
+{
+	auto condData = this->GetCondData();
+	int size = ARRAY_SIZE(rune_conds);
+	for (int i = 0; i < size; i++) {
+		auto cond = rune_conds[i];
+		if (condData.InCond(cond) ) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 int GetNumberOfTFConds();

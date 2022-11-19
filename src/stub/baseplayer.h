@@ -77,7 +77,7 @@ public:
 	DECL_SENDPROP(bool,  m_bDucking);
 	DECL_SENDPROP(bool,  m_bInDuckJump);
 	DECL_SENDPROP(float, m_flDucktime);
-	DECL_SENDPROP_RW(float, m_flStepSize);
+	DECL_SENDPROP(float, m_flStepSize);
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
