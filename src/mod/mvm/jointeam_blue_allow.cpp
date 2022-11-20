@@ -1436,9 +1436,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch,                  "CTFPlayer::Touch");
 			
 			// Allow blue players to appear on the scoreboard
-			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,                  "SV_ComputeClientPacks");
-			MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,                  "SendTable_WritePropList");
-			MOD_ADD_DETOUR_MEMBER(CBaseServer_WriteDeltaEntities, "CBaseServer::WriteDeltaEntities");
+			MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks,           "SV_ComputeClientPacks");
+			MOD_ADD_DETOUR_STATIC_PRIORITY(SendTable_WritePropList,"SendTable_WritePropList", HIGH);
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_WriteDeltaEntities,  "CBaseServer::WriteDeltaEntities");
 			
 			// Robot part fix?
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled, "CTFGameRules::PlayerKilled");
