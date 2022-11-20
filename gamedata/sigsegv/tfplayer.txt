@@ -1049,6 +1049,16 @@
 					type "sym"
 					sym  "_ZNK11CBasePlayer8IsPlayerEv"
 				}
+				"CTFPlayer::GetRuneHealthBonus"
+				{
+					type "sym"
+					sym  "_ZNK9CTFPlayer18GetRuneHealthBonusEv"
+				}
+				"CTFPlayer::GetMaxHealth"
+				{
+					type "sym"
+					sym  "_ZNK9CTFPlayer12GetMaxHealthEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

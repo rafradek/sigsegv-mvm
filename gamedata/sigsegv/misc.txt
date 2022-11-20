@@ -2228,7 +2228,7 @@
 					sym  "_ZN24CTeamplayRoundBasedRules18GetNextRespawnWaveEiP11CBasePlayer"
 				}
 				
-				"CMultiplayerAnimState::OnNewModel"
+				"CMultiPlayerAnimState::OnNewModel"
 				{
 					type "sym"
 					sym  "_ZN21CMultiPlayerAnimState10OnNewModelEv"
@@ -5769,7 +5769,36 @@
 					type "sym"
 					sym  "_Z24SendProxy_StringToStringPK8SendPropPKvS3_P8DVariantii"
 				}
-				
+				"SendProxy_VectorXYToVectorXY"
+				{
+					type "sym"
+					sym  "_Z28SendProxy_VectorXYToVectorXYPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_QAngles"
+				{
+					type "sym"
+					sym  "_Z17SendProxy_QAnglesPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_Color32ToInt"
+				{
+					type "sym"
+					sym  "_Z22SendProxy_Color32ToIntPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_EHandleToInt"
+				{
+					type "sym"
+					sym  "_Z22SendProxy_EHandleToIntPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_IntAddOne"
+				{
+					type "sym"
+					sym  "_Z19SendProxy_IntAddOnePK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_ShortAddOne"
+				{
+					type "sym"
+					sym  "_Z21SendProxy_ShortAddOnePK8SendPropPKvS3_P8DVariantii"
+				}
 				"CBasePlayer::PlayerRunCommand"
 				{
 					type "sym"
@@ -6606,6 +6635,42 @@
 				{
 					type "sym"
 					sym  "_ZN17CAttributeManager20ApplyAttributeStringE8string_tP11CBaseEntityS0_P10CUtlVectorIS2_10CUtlMemoryIS2_iEE"
+				}
+				"CTFWeaponBase::GetMaxHealthMod"
+				{
+					type "sym"
+					sym  "_ZN13CTFWeaponBase15GetMaxHealthModEv"
+				}
+				"CServerDatatableStack::RecurseAndCallProxies"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN21CServerDatatableStack21RecurseAndCallProxiesEP9CSendNodePh"
+				}
+				"CBaseAnimatingOverlay::FastRemoveLayer"
+				{
+					type "sym"
+					sym  "_ZN21CBaseAnimatingOverlay15FastRemoveLayerEi"
+				}
+				"CBaseAnimatingOverlay::StudioFrameAdvance"
+				{
+					type "sym"
+					sym  "_ZN21CBaseAnimatingOverlay18StudioFrameAdvanceEv"
+				}
+				"CBaseAnimatingOverlay::SetLayerCycle"
+				{
+					type "sym"
+					sym  "_ZN21CBaseAnimatingOverlay13SetLayerCycleEif"
+				}
+				"CBaseFlex::ProcessSceneEvents"
+				{
+					type "sym"
+					sym  "_ZN9CBaseFlex18ProcessSceneEventsEv"
+				}
+				"CMultiPlayerAnimState::RestartGesture"
+				{
+					type "sym"
+					sym  "_ZN21CMultiPlayerAnimState14RestartGestureEi8Activityb"
 				}
 				
 			}

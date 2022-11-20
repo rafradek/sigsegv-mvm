@@ -112,6 +112,11 @@
 					type "sym"
 					sym  "_ZNK8CNavArea13IsOverlappingERK6Vectorf"
 				}
+				"CNavArea::ResetPotentiallyVisibleAreas"
+				{
+					type "sym"
+					sym  "_ZN8CNavArea28ResetPotentiallyVisibleAreasEv"
+				}
 				"CTFNavArea::IsBlocked"
 				{
 					type   "func knownvtidx"
@@ -133,6 +138,11 @@
 				{
 					type "sym"
 					sym  "_ZNK10CTFNavArea20GetNextIncursionAreaEi"
+				}
+				"CTFNavArea::AddPotentiallyVisibleActor"
+				{
+					type "sym"
+					sym  "_ZN10CTFNavArea26AddPotentiallyVisibleActorEP20CBaseCombatCharacter"
 				}
 				
 				"NavAreaTravelDistance<CTFBotPathCost>"

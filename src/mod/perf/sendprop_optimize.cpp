@@ -1277,7 +1277,6 @@ namespace Mod::Perf::SendProp_Optimize
                 serverClassCache.prop_offsets = new unsigned short[propcount];
                 //serverClassCache.send_nodes = new CSendNode *[playerSendTable->m_pPrecalc->m_nDataTableProxies];
                 pmStack.Init();
-                bool debug = strcmp(sendTable->GetName(), "DT_TFObjectiveResource") == 0;
 
                 //int reduce_coord_prop_offset = 0;
 
@@ -1334,9 +1333,6 @@ namespace Mod::Perf::SendProp_Optimize
                                 int offset_off = offset;
                                 for ( int j = 0; j < elementCount; j++ )
                                 {
-                                    if (debug) {
-                                        Msg("Add offset for %s %d\n", pProp->GetName(), offset_off);
-                                    }
                                     AddOffsetToList(serverClassCache, offset_off, propIdToUse, j);
                                     if (pProp->GetType() == DPT_Vector) {
                                         AddOffsetToList(serverClassCache, offset_off + 4, propIdToUse, j);
