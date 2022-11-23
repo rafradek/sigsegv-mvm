@@ -3142,6 +3142,120 @@ namespace Util::Lua
         return 1;
     }
 
+    const char *blacklisted_convars[] = {
+        "sv_password",
+        "sv_hostname",
+        "sv_rcon"
+    };
+
+    const char *blacklisted_convars_prefix[] = {
+        "sm_",
+        "sig_",
+        "rcon",
+    };
+
+    std::unordered_map<std::string, ConVar *> convar_cache;
+    ConVar *GetConvarCache(const char *name)
+    {
+        auto find = convar_cache.find(name);
+        ConVar *convar = nullptr;
+        if (find != convar_cache.end()) {
+            convar = find->second;
+        }
+        else {
+            bool found = false;
+            for (auto str : blacklisted_convars) {
+                if (FStrEq(name, str)) {
+                    found = true;
+                    break;
+                }
+            }
+            for (auto str : blacklisted_convars_prefix) {
+                if (StringStartsWith(name, str, false)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                convar = icvar->FindVar(name);
+            }
+            if (convar != nullptr && !convar->IsFlagSet(FCVAR_GAMEDLL)) {
+                convar = nullptr;
+            }
+            convar_cache[name] = convar;
+        }
+        return convar;
+    }
+    ConVar *GetConvarCacheCheck(lua_State *l)
+    {
+        auto name = luaL_checkstring(l, 1);
+        auto convar = GetConvarCache(name);
+        if (convar == nullptr) {
+            luaL_error(l, "Convar named %s is blocked or not a valid convar\n", name);
+        }
+        return convar;
+    }
+    int LConvarGetNumber(lua_State *l)
+    {
+        auto convar = GetConvarCacheCheck(l);
+        
+        if (convar != nullptr) {
+            lua_pushnumber(l,convar->GetFloat());
+        }
+        else {
+            lua_pushnil(l);
+        }
+        return 1;
+    }
+    int LConvarGetBoolean(lua_State *l)
+    {
+        auto convar = GetConvarCacheCheck(l);
+        
+        if (convar != nullptr) {
+            lua_pushboolean(l,convar->GetBool());
+        }
+        else {
+            lua_pushnil(l);
+        }
+        return 1;
+    }
+    int LConvarGetString(lua_State *l)
+    {
+        auto convar = GetConvarCacheCheck(l);
+        
+        if (convar != nullptr) {
+            lua_pushstring(l,convar->GetString());
+        }
+        else {
+            lua_pushnil(l);
+        }
+        return 1;
+    }
+    int LConvarSetValue(lua_State *l)
+    {
+        auto convar = GetConvarCacheCheck(l);
+        
+        if (convar != nullptr) {
+            cur_state->AddConVarValue(convar);
+            if (lua_isnumber(l, 2)) {
+                convar->SetValue((float)lua_tonumber(l, 2));
+            }
+            else if (lua_isboolean(l, 2)) {
+                convar->SetValue(lua_toboolean(l, 2));
+            }
+            else {
+                convar->SetValue(lua_tostring(l, 2));
+            }
+        }
+        return 0;
+    }
+    int LConvarIsValid(lua_State *l)
+    {
+        auto convar = GetConvarCache(luaL_checkstring(l, 1));
+        lua_pushboolean(l, convar != nullptr);
+        return 1;
+    }
+
     int LSavedataSet(lua_State *l)
     {
         variant_t var;
@@ -3329,6 +3443,15 @@ namespace Util::Lua
         {"RemoveCallback", LTempEntRemoveCallback},
         {nullptr, nullptr},
     };
+    
+    static const struct luaL_Reg convars_f [] = {
+        {"GetNumber", LConvarGetNumber},
+        {"GetString", LConvarGetString},
+        {"GetBoolean", LConvarGetBoolean},
+        {"SetValue", LConvarSetValue},
+        {"IsValid", LConvarIsValid},
+        {nullptr, nullptr},
+    };
 
     THINK_FUNC_DECL(ScriptModuleTick)
     {
@@ -3445,6 +3568,11 @@ namespace Util::Lua
         //luaL_setfuncs(l, tempents_f, 0);
         lua_setglobal(l, "tempents");
 
+        luaL_newlib(l, convars_f);
+        //lua_newtable(l);
+        //luaL_setfuncs(l, tempents_f, 0);
+        lua_setglobal(l, "convar");
+
         lua_newtable(l);
         m_iEntityTableStorage = entity_table_store = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -3472,7 +3600,9 @@ namespace Util::Lua
         RemoveIf(tempent_callbacks, [&](auto &callback){
             return callback.state == this;
         });
-        
+        for (auto &[convar, value] : convarValueToRestore) {
+            convar->SetValue(value.c_str());
+        }
         
         lua_close(l);
     }
@@ -3726,6 +3856,10 @@ namespace Util::Lua
                 this->Call(1, 0);
             }
         });
+    }
+
+    void LuaState::AddConVarValue(ConVar *convar) {
+        this->convarValueToRestore.try_emplace(convar, convar->GetString());
     }
 
     void LuaTimer::Destroy(lua_State *l) {

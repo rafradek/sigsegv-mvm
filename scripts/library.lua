@@ -56,7 +56,7 @@ function CVector:CopyUnpacked(x, y, z) end
 --It is possible to access entity netprops, datamap and custom variables like a typical field, like entity.m_iTeamNum or entity.m_iAmmo[1] (Arrays start from 1 instead of 0)
 --List of netprops https://raw.githubusercontent.com/powerlord/tf2-data/master/netprops.txt
 --List of datamap props https://raw.githubusercontent.com/powerlord/tf2-data/master/datamaps.txt
---Is is also possible to call entity inputs like a typical function, like entity.FireUser1()
+--Is is also possible to call entity inputs like a typical function, like entity:FireUser1()
 ---@class Entity
 local CEntity = {}
 
@@ -213,11 +213,13 @@ function CEntity:GetAllItems() end
 function CEntity:SetAttributeValue(name, value) end
 
 --Returns a table of all properties (datamap, sendprop, custom) as keys and their values.
+--Only use this function for debugging, it is slow compared to directly getting property value from entity
 --The table is read only, changes must be written to the entity itself, like entity.m_iTeamNum = 3
 ---@return table
 function CEntity:DumpProperties() end
 
 --Returns a table containing all inputs of the entity.
+--Use this function for debugging
 --The inputs can be called directly as functions. Example: `ent:FireUser1(value,activator,caller)`
 ---@return table
 function CEntity:DumpInputs() end
@@ -658,6 +660,7 @@ tempents = {}
 ---@param name string Name of the temporary entity
 ---@param props table Table that contains property names and their values
 ---@param recipients? Entity|table|nil Recipient(s) of the temporary entity. Can be a single player, a table of players, or nil to send to all players
+---@return nil
 function tempents.Send(name, props, recipients) end
 
 --Adds temporary entity callback. See https://raw.githubusercontent.com/powerlord/tf2-data/master/teprops.txt for a list of all available entities
@@ -670,6 +673,36 @@ function tempents.AddCallback(name, callback) end
 ---@param id number id of the entity callback
 ---@return nil
 function tempents.RemoveCallback(id) end
+
+
+convar = {}
+
+--Returns ConVar value as string
+---@param name string ConVar name
+---@return string
+function convar.GetString(name) end
+
+--Returns ConVar value as number
+---@param name string ConVar name
+---@return number
+function convar.GetNumber(name) end
+
+--Returns ConVar value as boolean
+---@param name string ConVar name
+---@return boolean
+function convar.GetBoolean(name) end
+
+--Sets ConVar value
+---@param name string ConVar name
+---@param value string|number|boolean ConVar value
+---@return nil
+function convar.SetValue(name, value) end
+
+--Checks if convar exists and is allowed to set
+---@param name string ConVar name
+---@return boolean `true` if convar can be set, `false` otherwise
+function convar.IsValid(name) end
+
 
 --Returns time in seconds since map load
 ---@return number
