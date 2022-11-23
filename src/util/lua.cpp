@@ -12,6 +12,7 @@
 #include "mod/etc/mapentity_additions.h"
 #include "mod/pop/pointtemplate.h"
 #include "stub/lagcompensation.h"
+#include "stub/tempent.h"
 #include "mod.h"
 
 class CStaticProp {};
@@ -156,6 +157,11 @@ namespace Util::Lua
     inline Vector *LVectorGetCheck(lua_State *l, int index)
     {
         return (Vector *)LCheckUserdata(l, index, vector_meta_ptr, "vector");
+    }
+
+    Vector *LVectorGetNoCheckNoInline(lua_State *l, int index)
+    {
+        return (Vector *)LGetUserdata(l, index, vector_meta_ptr);
     }
 
     inline Vector *LVectorGetNoCheck(lua_State *l, int index)
@@ -1145,18 +1151,103 @@ namespace Util::Lua
         }*/
     }
 
+    struct InputCacheEntry {
+        inputfunc_t inputptr = nullptr;
+        Mod::Etc::Mapentity_Additions::CustomInputFunction *custominputptr = nullptr;
+    };
+
+    /*bool CheckInput(CBaseEntity *entity) {
+
+        auto datamap = entity->GetDataDescMap();
+        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
+            // search through all the readable fields in the data description, looking for a match
+            for (int i = 0; i < dmap->dataNumFields; i++) {
+                if (dmap->dataDesc[i].fieldName != nullptr && strcmp(dmap->dataDesc[i].fieldName, nameNoArray.c_str()) == 0) {
+                    fieldtype_t fieldType = isVecAxis ? FIELD_FLOAT : dmap->dataDesc[i].fieldType;
+                    int offset = dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ] + extraOffset;
+                    
+                    offset += clamp(arrayPos, 0, (int)dmap->dataDesc[i].fieldSize) * (dmap->dataDesc[i].fieldSizeInBytes / dmap->dataDesc[i].fieldSize);
+
+                    datamap_cache.push_back({datamap, name, offset, fieldType, dmap->dataDesc[i].fieldSize});
+                    return datamap_cache.back();
+                }
+            }
+        }
+    }*/
+    std::vector<datamap_t *> input_cache_classes;
+    std::vector<std::pair<std::vector<std::string>, std::vector<InputCacheEntry>>> input_cache;
+
+    inline InputCacheEntry &LGetInputCacheEntry(CBaseEntity *entity, const std::string &name)
+    {
+        auto datamap = entity->GetDataDescMap();
+        size_t classIndex = 0;
+        for (; classIndex < input_cache_classes.size(); classIndex++) {
+            if (input_cache_classes[classIndex] == datamap) {
+                break;
+            }
+        }
+        if (classIndex >= input_cache_classes.size()) {
+            input_cache_classes.push_back(datamap);
+            input_cache.emplace_back();
+        }
+        auto &pair = input_cache[classIndex];
+        auto &names = pair.first;
+
+        size_t nameCount = names.size();
+        for (size_t i = 0; i < nameCount; i++ ) {
+            if (names[i] == name) {
+                return pair.second[i];
+            }
+        }
+        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
+            // search through all the readable fields in the data description, looking for a match
+            for (int i = 0; i < dmap->dataNumFields; i++) {
+                if (dmap->dataDesc[i].fieldName != nullptr && (dmap->dataDesc[i].flags & FTYPEDESC_INPUT) && (strcmp(dmap->dataDesc[i].externalName, name.c_str()) == 0)) {
+                    names.push_back(name);
+                    pair.second.push_back({dmap->dataDesc[i].inputFunc, nullptr});
+                    return pair.second.back();
+                }
+            }
+        }
+        auto func = Mod::Etc::Mapentity_Additions::GetCustomInput(entity, name[0] == '$' ? name.c_str() + 1 : name.c_str());
+        if (func != nullptr) {
+            names.push_back(name);
+            pair.second.push_back({nullptr, func});
+            return pair.second.back();
+        }
+        
+        names.push_back(name);
+        pair.second.push_back({nullptr, nullptr});
+        return pair.second.back();
+    }
+
     int LEntityAcceptInput(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
         const char *name = luaL_checkstring(l, 2);
-        variant_t variant;
-        if (lua_gettop(l) > 2)
-            LToVariant(l, 3, variant);
-
-        CBaseEntity *activator = lua_gettop(l) > 3 ? LEntityGetCheck(l, 4)->Get() : nullptr;
-        CBaseEntity *caller = lua_gettop(l) > 4 ? LEntityGetCheck(l, 5)->Get() : nullptr;
         
-        lua_pushboolean(l, entity->AcceptInput(name, activator, caller, variant, -1));
+        inputdata_t data;
+        
+        if (lua_gettop(l) > 2)
+            LToVariant(l, 3, data.value);
+        data.pActivator = lua_gettop(l) > 3 ? LEntityGetCheck(l, 4)->Get() : nullptr;
+        data.pCaller = lua_gettop(l) > 4 ? LEntityGetCheck(l, 5)->Get() : nullptr;
+        data.nOutputID = -1;
+
+        {
+            auto &cache = LGetInputCacheEntry(entity, name);
+            if (cache.custominputptr != nullptr) {
+                (*cache.custominputptr)(entity, name, data.pActivator, data.pCaller, data.value);
+                lua_pushboolean(l,true);
+            } 
+            else if(cache.inputptr != nullptr){
+                (entity->*cache.inputptr)(data);
+                lua_pushboolean(l,true);
+            }
+            else {
+                lua_pushboolean(l, entity->AcceptInput(name, data.pActivator, data.pCaller, data.value, -1));
+            }
+        }
         return 1;
     }
 
@@ -1577,35 +1668,10 @@ namespace Util::Lua
         }
         return 1;
     }
-    struct InputCacheEntry {
-        inputfunc_t inputptr = nullptr;
-        Mod::Etc::Mapentity_Additions::CustomInputFunction *custominputptr = nullptr;
-    };
-
-    /*bool CheckInput(CBaseEntity *entity) {
-
-        auto datamap = entity->GetDataDescMap();
-        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
-            // search through all the readable fields in the data description, looking for a match
-            for (int i = 0; i < dmap->dataNumFields; i++) {
-                if (dmap->dataDesc[i].fieldName != nullptr && strcmp(dmap->dataDesc[i].fieldName, nameNoArray.c_str()) == 0) {
-                    fieldtype_t fieldType = isVecAxis ? FIELD_FLOAT : dmap->dataDesc[i].fieldType;
-                    int offset = dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ] + extraOffset;
-                    
-                    offset += clamp(arrayPos, 0, (int)dmap->dataDesc[i].fieldSize) * (dmap->dataDesc[i].fieldSizeInBytes / dmap->dataDesc[i].fieldSize);
-
-                    datamap_cache.push_back({datamap, name, offset, fieldType, dmap->dataDesc[i].fieldSize});
-                    return datamap_cache.back();
-                }
-            }
-        }
-    }*/
-    std::vector<datamap_t *> input_cache_classes;
-    std::vector<std::pair<std::vector<std::string>, std::vector<InputCacheEntry>>> input_cache;
 
     struct ArrayProp
     {
-        CBaseEntity *entity;
+        EHANDLE entity;
         PropCacheEntry entry;
     };
 
@@ -1625,7 +1691,12 @@ namespace Util::Lua
         auto prop = (ArrayProp *) lua_touserdata(l, 1);
         int index = lua_tointeger(l, 2);
         luaL_argcheck(l, prop != nullptr, 1, "Userdata is null");
-        luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
+        luaL_argcheck(l, prop->entity.Get() != nullptr, 1, "Entity is null");
+        //luaL_argcheck(l, index > 0 && index <= prop->entry.arraySize, 2, "index out of range");
+        if (index > prop->entry.arraySize) {
+            lua_pushnil(l);
+            return 1;
+        }
 
         variant_t variant;
         ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
@@ -1637,15 +1708,17 @@ namespace Util::Lua
     {
         auto prop = (ArrayProp *) lua_touserdata(l, 1);
         luaL_argcheck(l, prop != nullptr, 1, "Userdata is null");
+        luaL_argcheck(l, prop->entity.Get() != nullptr, 1, "Entity is null");
         int index = lua_isnoneornil(l, 2) ? 0 : lua_tointeger(l, 2);
         index++;
         luaL_argcheck(l, index > 0, 2, "index out of range");
 
-        lua_pushinteger(l, index);
         if (index > prop->entry.arraySize) {
             lua_pushnil(l);
+            return 1;
         }
         else {
+            lua_pushinteger(l, index);
             variant_t variant;
             ReadProp(prop->entity, prop->entry, variant, index - 1, -1);
             LFromVariant(l, variant);
@@ -1681,52 +1754,8 @@ namespace Util::Lua
 
         variant_t variant;
         LToVariant(l, 3, variant);
-        WriteProp(prop->entity, prop->entry, variant, index, -1);
+        WriteProp(prop->entity, prop->entry, variant, index - 1, -1);
         return 0;
-    }
-
-    inline InputCacheEntry &LGetInputCacheEntry(CBaseEntity *entity, std::string &name)
-    {
-        auto datamap = entity->GetDataDescMap();
-        size_t classIndex = 0;
-        for (; classIndex < input_cache_classes.size(); classIndex++) {
-            if (input_cache_classes[classIndex] == datamap) {
-                break;
-            }
-        }
-        if (classIndex >= input_cache_classes.size()) {
-            input_cache_classes.push_back(datamap);
-            input_cache.emplace_back();
-        }
-        auto &pair = input_cache[classIndex];
-        auto &names = pair.first;
-
-        size_t nameCount = names.size();
-        for (size_t i = 0; i < nameCount; i++ ) {
-            if (names[i] == name) {
-                return pair.second[i];
-            }
-        }
-        for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
-            // search through all the readable fields in the data description, looking for a match
-            for (int i = 0; i < dmap->dataNumFields; i++) {
-                if (dmap->dataDesc[i].fieldName != nullptr && (dmap->dataDesc[i].flags & FTYPEDESC_INPUT) && (strcmp(dmap->dataDesc[i].externalName, name.c_str()) == 0)) {
-                    names.push_back(name);
-                    pair.second.push_back({dmap->dataDesc[i].inputFunc, nullptr});
-                    return pair.second.back();
-                }
-            }
-        }
-        auto func = Mod::Etc::Mapentity_Additions::GetCustomInput(entity, name[0] == '$' ? name.c_str() + 1 : name.c_str());
-        if (func != nullptr) {
-            names.push_back(name);
-            pair.second.push_back({nullptr, func});
-            return pair.second.back();
-        }
-        
-        names.push_back(name);
-        pair.second.push_back({nullptr, nullptr});
-        return pair.second.back();
     }
 
     int LEntityCallInputNormal(lua_State *l)
@@ -2437,19 +2466,66 @@ namespace Util::Lua
         return 1;
     }
 
+    int LEntityGetSteamId(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        lua_pushinteger(l, player->GetSteamID().ConvertToUint64());
+        return 1;
+    }
+
+    std::unordered_map<std::string, CHandle<CBaseEntity>> name_to_entity;
     int LFindEntityByName(lua_State *l)
     {
+        // Cache first entity with specific name
         const char *name = luaL_checkstring(l, 1);
         auto prevEntity = lua_gettop(l) < 2 ? nullptr : LEntityGetCheck(l, 2)->Get();
+        if (prevEntity == nullptr && name[0] != '@') {
+            auto &handle = name_to_entity[name];
+            auto entity = handle.Get();
+            if (entity == nullptr || !entity->NameMatches(name)) {
+                handle = entity = servertools->FindEntityByName(nullptr, name);
+            }
+            LEntityAlloc(l, handle);
+            return 1;
+        }
         LEntityAlloc(l, servertools->FindEntityByName(prevEntity, name));
         return 1;
     }
 
-    int LFindEntityByClassname(lua_State *l)
+    int LFindEntityByNameAfter(lua_State *l)
     {
         const char *name = luaL_checkstring(l, 1);
         auto prevEntity = lua_gettop(l) < 2 ? nullptr : LEntityGetCheck(l, 2)->Get();
+        
+        LEntityAlloc(l, servertools->FindEntityByName(prevEntity, name));
+        return 1;
+    }
+
+    std::unordered_map<std::string, CHandle<CBaseEntity>> classname_to_entity;
+    int LFindEntityByClassname(lua_State *l)
+    {
+        // Cache first entity with specific classname
+        const char *name = luaL_checkstring(l, 1);
+        auto prevEntity = lua_gettop(l) < 2 ? nullptr : LEntityGetCheck(l, 2)->Get();
+        if (prevEntity == nullptr && name[0] != '@') {
+            auto &handle = classname_to_entity[name];
+            auto entity = handle.Get();
+            if (entity == nullptr || !entity->ClassMatches(name)) {
+                handle = entity = servertools->FindEntityByClassname(nullptr, name);
+            }
+            LEntityAlloc(l, handle);
+            return 1;
+        }
         LEntityAlloc(l, servertools->FindEntityByClassname(prevEntity, name));
+        return 1;
+    }
+
+    int LFindEntityByClassnameAfter(lua_State *l)
+    {
+        const char *name = luaL_checkstring(l, 1);
+        auto prevEntity = lua_gettop(l) < 2 ? nullptr : LEntityGetCheck(l, 2)->Get();
+        
+        LEntityAlloc(l, servertools->FindEntityByName(prevEntity, name));
         return 1;
     }
 
@@ -2899,6 +2975,94 @@ namespace Util::Lua
         return 0;
     }
 
+    int LTempEntSend(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto temp = servertools->GetTempEntList();
+        while (temp != nullptr) {
+            if (strcmp(name, temp->GetName()) == 0) {
+                break;
+            }
+            else {
+                temp = temp->GetNext();
+            }
+        }
+        if (temp == nullptr) return 0;
+        luaL_checktype(l, 2, LUA_TTABLE);
+
+        lua_pushnil(l);
+        while (lua_next(l, 2) != 0) {
+            auto &cache = GetSendPropOffset(temp->GetServerClass(), lua_tostring(l, -2));
+            if (lua_type(l, -1) == LUA_TTABLE) {
+                // Table inside table
+                int len = lua_rawlen(l, -1);
+                for (int i = 1; i <= len; i++) {
+                    lua_rawgeti(l, -1, i);
+
+                    variant_t variant;
+                    LToVariant(l, -1, variant);
+                    WriteProp(temp, cache, variant, i-1, -1);
+                    lua_pop(l, 1);
+                }
+            }
+            variant_t variant;
+            LToVariant(l, -1, variant);
+            WriteProp(temp, cache, variant, 0, -1);
+            lua_pop(l, 1);
+        }
+        CRecipientFilter filter;
+        if (lua_type(l, 3) == LUA_TTABLE) {
+            lua_pushnil(l);
+            while (lua_next(l, 3) != 0) {
+                filter.AddRecipient(ToTFPlayer(LEntityGetOptional(l, -1)));
+                lua_pop(l, 1);
+            }
+        }
+        else if (lua_type(l, 3) == LUA_TUSERDATA) {
+            filter.AddRecipient(ToTFPlayer(LEntityGetOptional(l, 3)));
+        }
+        else {
+            filter.AddAllPlayers();
+        }
+        temp->Create(&filter);
+        return 0;
+    }
+
+    struct TempEntCallback
+    {   
+        LuaState *state;
+        std::string name;
+        int func;
+    };
+    std::vector<TempEntCallback> tempent_callbacks;
+
+    int LTempEntAddCallback(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        luaL_argcheck(l, strlen(name) > 0, 1, "tempent name empty");
+        luaL_checktype(l,2, LUA_TFUNCTION);
+        lua_pushvalue(l,2);
+        int func = luaL_ref(l, LUA_REGISTRYINDEX);
+        
+        tempent_callbacks.push_back({cur_state, name, func});
+        lua_pushinteger(l, func);
+        return 1;
+    }
+
+    int LTempEntRemoveCallback(lua_State *l)
+    {
+        int func = luaL_checkinteger(l, 1);
+        RemoveIf(tempent_callbacks, [&](auto &callback){ 
+            if (callback.state == cur_state && callback.func == func) {
+                luaL_unref(l, LUA_REGISTRYINDEX, func);
+                return true ;
+            }
+            return false ;
+        });
+
+        return 0;
+    }
+
     int LCurTime(lua_State *l)
     {
         lua_pushnumber(l, gpGlobals->curtime);
@@ -3018,7 +3182,9 @@ namespace Util::Lua
     static const struct luaL_Reg entitylib_f [] = {
         {"__call", LEntityNew},
         {"FindByName", LFindEntityByName},
+        {"FindByNameAfter", LFindEntityByNameAfter},
         {"FindByClass", LFindEntityByClassname},
+        {"FindByClassAfter", LFindEntityByClassnameAfter},
         {"FindAllByName", LFindAllEntityByName},
         {"FindAllByClass", LFindAllEntityByClassname},
         {"FindInBox", LFindAllEntityInBox},
@@ -3101,6 +3267,7 @@ namespace Util::Lua
         {"HideMenu", LEntityHideMenu},
         {"SnapEyeAngles", LEntitySnapEyeAngles},
         {"GetUserId", LEntityGetUserId},
+        {"GetSteamId", LEntityGetSteamId},
         {"__eq", LEntityEquals},
         {"__tostring", LEntityToString},
         {"__index", LEntityGetProp},
@@ -3153,6 +3320,13 @@ namespace Util::Lua
     static const struct luaL_Reg savedata_m [] = {
         {"__index", LSavedataGet},
         {"__newindex", LSavedataSet},
+        {nullptr, nullptr},
+    };
+    
+    static const struct luaL_Reg tempents_f [] = {
+        {"Send", LTempEntSend},
+        {"AddCallback", LTempEntAddCallback},
+        {"RemoveCallback", LTempEntRemoveCallback},
         {nullptr, nullptr},
     };
 
@@ -3266,6 +3440,11 @@ namespace Util::Lua
         //luaL_setfuncs(l, utillib_f, 0);
         lua_setglobal(l, "util");
 
+        luaL_newlib(l, tempents_f);
+        //lua_newtable(l);
+        //luaL_setfuncs(l, tempents_f, 0);
+        lua_setglobal(l, "tempents");
+
         lua_newtable(l);
         m_iEntityTableStorage = entity_table_store = luaL_ref(l, LUA_REGISTRYINDEX);
 
@@ -3290,6 +3469,10 @@ namespace Util::Lua
         RemoveIf(event_callbacks, [&](auto &callback){
             return callback.state == this;
         });
+        RemoveIf(tempent_callbacks, [&](auto &callback){
+            return callback.state == this;
+        });
+        
         
         lua_close(l);
     }
@@ -4123,6 +4306,7 @@ namespace Util::Lua
         
         return DETOUR_MEMBER_CALL(CBasePlayer_Touch)(other);
     }
+    
     class CGameEvent : public IGameEvent
     {
     public:
@@ -4273,6 +4457,81 @@ namespace Util::Lua
         }
 	}
 
+    DETOUR_DECL_MEMBER(void, CVEngineServer_PlaybackTempEntity, IRecipientFilter& filter, float delay, void *pSender, SendTable *pST, int classID)
+	{
+		
+        auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (pSender != nullptr && !tempent_callbacks.empty()) {
+            auto tempent = reinterpret_cast<CBaseTempEntity *>(pSender);
+            for (auto &callback : tempent_callbacks) {
+                if (callback.name == tempent->GetName()) {
+                    auto l = callback.state->GetState();
+                    lua_newtable(l);
+                    lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
+                    lua_pushvalue(l,-2);
+                    int off = 0;
+                    FindSendProp(off, pST, [&](SendProp *prop, int offset){
+                        PropCacheEntry entry;
+                        GetSendPropInfo(prop, entry, offset);
+                        if (entry.arraySize > 1) {
+                            lua_newtable(l);
+                        }
+                        for (int i = 0; i < entry.arraySize; i++) {
+                            variant_t variant;
+                            ReadProp(tempent, entry, variant, i, -1);
+                            //Msg("Sendprop %s = %s %d %d\n", prop->GetName(), variant.String(), entry.offset, entry.arraySize);
+
+                            LFromVariant(l, variant);
+                            if (entry.arraySize == 1) {
+                                lua_setfield(l, -2, prop->GetName());
+                            }
+                            else {
+                                lua_rawseti(l, -2, i + 1);
+                            }
+                        }
+                        if (entry.arraySize > 1) {
+                            lua_setfield(l, -2, prop->GetName());
+                        }
+                    });
+                    int err = callback.state->Call(1, 1);
+                    if (!err) {
+                        int result = luaL_optinteger(l, -1, ACTION_CONTINUE);
+                        if (result == ACTION_MODIFY) {
+                            lua_pop(l, 1);
+                            lua_pushnil(l);
+                            while (lua_next(l, -2) != 0) {
+                                auto &cache = GetSendPropOffset(tempent->GetServerClass(), lua_tostring(l, -2));
+                                if (lua_type(l, -1) == LUA_TTABLE) {
+                                    // Table inside table
+                                    int len = lua_rawlen(l, -1);
+                                    for (int i = 1; i <= len; i++) {
+                                        lua_rawgeti(l, -1, i);
+
+                                        variant_t variant;
+                                        LToVariant(l, -1, variant);
+                                        WriteProp(tempent, cache, variant, i-1, -1);
+                                        lua_pop(l, 1);
+                                    }
+                                }
+                                variant_t variant;
+                                LToVariant(l, -1, variant);
+                                WriteProp(tempent, cache, variant, 0, -1);
+                                lua_pop(l, 1);
+                            }
+                        }
+                        if (result == ACTION_STOP) {
+                            lua_pop(l,1);
+                            return;
+                        }
+                        lua_pop(l,1);
+                    }
+                }
+            }
+        } 
+        DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter, delay, pSender, pST, classID);
+	}
+
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -4308,6 +4567,8 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile, "CTFWeaponBaseGun::FireProjectile");
             MOD_ADD_DETOUR_MEMBER(CPlayerMove_StartCommand, "CPlayerMove::StartCommand");
+            MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");
+            
         }
 		
         virtual void PreLoad() override
@@ -4336,6 +4597,8 @@ namespace Util::Lua
             if (state != nullptr) { delete state; state = nullptr;}
 
             sendproxies = gamedll->GetStandardSendProxies();
+            classname_to_entity.clear();
+            name_to_entity.clear();
         }
 
 		virtual void FrameUpdatePostEntityThink() override

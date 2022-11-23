@@ -3441,7 +3441,7 @@
 				"CBaseTempEntity::GetServerClass"
 				{
 					type "sym"
-					sym  "_ZN15CBaseTempEntity6CreateER16IRecipientFilterf"
+					sym  "_ZN15CBaseTempEntity14GetServerClassEv"
 				}
 				"CAttributeList::SetRuntimeAttributeValue"
 				{
@@ -6652,11 +6652,6 @@
 					type "sym"
 					sym  "_ZN21CBaseAnimatingOverlay15FastRemoveLayerEi"
 				}
-				"CBaseAnimatingOverlay::StudioFrameAdvance"
-				{
-					type "sym"
-					sym  "_ZN21CBaseAnimatingOverlay18StudioFrameAdvanceEv"
-				}
 				"CBaseAnimatingOverlay::SetLayerCycle"
 				{
 					type "sym"
@@ -6666,11 +6661,6 @@
 				{
 					type "sym"
 					sym  "_ZN9CBaseFlex18ProcessSceneEventsEv"
-				}
-				"CMultiPlayerAnimState::RestartGesture"
-				{
-					type "sym"
-					sym  "_ZN21CMultiPlayerAnimState14RestartGestureEi8Activityb"
 				}
 				
 			}

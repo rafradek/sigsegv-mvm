@@ -136,17 +136,26 @@ PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, const std::string &n
 
     int offset = 0;
     SendProp *prop = nullptr;
-    FindSendProp(offset,serverClass->m_pTable, name.c_str(), prop);
+    bool vectorComponent = false;
+    if (!FindSendProp(offset,serverClass->m_pTable, name.c_str(), prop)) {
+        // Sometimes each component of vector is saved separately, check for their existence as well
+        if (FindSendProp(offset,serverClass->m_pTable, (name + "[0]").c_str(), prop)) {
+            vectorComponent = true;
+        }
+    }
 
     PropCacheEntry entry;
     GetSendPropInfo(prop, entry, offset);
+    if (vectorComponent && entry.fieldType == FIELD_FLOAT) {
+        entry.fieldType = FIELD_VECTOR;
+    }
     
     names.push_back(name);
     pair.second.push_back(entry);
     return pair.second.back();
 }
 
-void WriteProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
+void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
 {
     if (entry.offset > 0) {
         int offset = entry.offset + arrayPos * entry.elementStride;
@@ -166,7 +175,7 @@ void WriteProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, i
     }
 }
 
-void ReadProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
+void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
 {
     if (entry.offset > 0) {
         int offset = entry.offset + arrayPos * entry.elementStride;

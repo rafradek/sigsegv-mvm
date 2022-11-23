@@ -10,7 +10,36 @@
 
 constexpr long double operator"" _deg(long double deg)        { return deg * (M_PI / 180.0); }
 constexpr long double operator"" _deg(unsigned long long deg) { return (long double)deg * (M_PI / 180.0); }
+void StrLowerASCII(char *str);
 
+class CaseInsensitiveLess
+{
+public:
+    bool operator()(const std::string lhs, const std::string rhs) const
+    {
+        return stricmp(lhs.c_str(), rhs.c_str()) < 0;
+    }
+};
+
+class CaseInsensitveCompare 
+{
+public:
+	bool operator() (const std::string &lhs, const std::string &rhs) const
+	{
+		return stricmp(lhs.c_str(), rhs.c_str()) == 0;
+	}
+};
+
+class CaseInsensitveHash
+{
+public:
+	std::size_t operator() (std::string str) const
+	{
+		StrLowerASCII(str.data());
+
+		return std::hash<std::string>{}(str);
+	}
+};
 
 template<typename T,
 	typename U = std::remove_reference_t<T>,
@@ -594,6 +623,16 @@ inline void StrLowerCopy(const char *in, char *out, size_t len)
 
 		if (c == '\0') break;
 		i++;
+	}
+}
+
+inline void StrLowerASCII(char *str)
+{
+	while(*str) {
+		if (*str >= 'A' && *str <= 'Z') {
+			*str = *str + 32; 
+		}
+		str++;
 	}
 }
 

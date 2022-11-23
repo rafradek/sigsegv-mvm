@@ -582,6 +582,23 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::pair<std::string, int>> ifUpgradePresent;
 	};
 
+	enum SpawnLocationRelative
+	{
+		ANYWHERE,
+		BEHIND,
+		AHEAD
+	};
+
+	class SpawnLocationData
+	{
+	public:
+		std::string name;
+		float minDistance = 0;
+		float maxDistance = 1500;
+		bool advanced = false;
+		SpawnLocationRelative relative = ANYWHERE;
+	};
+
 	struct PopState
 	{
 		PopState() :
@@ -925,6 +942,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BuildingPointTemplates.clear();
 			this->m_Scripts.clear();
 			this->m_ScriptFiles.clear();
+			this->m_SpawnLocations.clear();
 		}
 		
 		bool  m_bGiantsDropRareSpells;
@@ -1161,6 +1179,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::string> m_Scripts;
 		std::vector<std::string> m_ScriptFiles;
 		CHandle<CBaseEntity> m_ScriptManager;
+		std::unordered_map<CSpawnLocation *, SpawnLocationData> m_SpawnLocations;
+
 	};
 	PopState state{};
 	
@@ -4874,6 +4894,146 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return result;
 	}
+	
+	class CTFNavAreaIncursionLess
+	{
+	public:
+		bool Less( const CTFNavArea *a, const CTFNavArea *b, void *pCtx )
+		{
+			int playerTeam = state.m_HumansMustJoinTeam.Get() ? TF_TEAM_BLUE : TF_TEAM_RED;
+			return a->GetIncursionDistance(playerTeam) < b->GetIncursionDistance(playerTeam);
+		}
+	};
+
+	inline float SkewedRandomValue()
+	{
+		float x = RandomFloat(0, 1.0f);
+		float y = RandomFloat(0, 1.0f);
+		return x < y ? y : x;	
+	}
+
+	DETOUR_DECL_MEMBER(int, CSpawnLocation_FindSpawnLocation, Vector& vSpawnPosition)
+	{
+		auto location = reinterpret_cast<CSpawnLocation *>(this);
+		
+		if (state.m_ScriptManager != nullptr) {
+			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
+			if (scriptManager->CheckGlobal("GetWaveSpawnLocation")) {
+				lua_pushstring(scriptManager->GetState(), state.m_SpawnLocations[location].name.c_str());
+				scriptManager->Call(1, 2);
+				int result = luaL_optinteger(scriptManager->GetState(), -2, -1);
+				if (result != -1) {
+                    auto vec = Util::Lua::LVectorGetNoCheckNoInline(scriptManager->GetState(), -1);
+					if (vec != nullptr) {
+						vSpawnPosition = *vec;
+					}
+					lua_settop(scriptManager->GetState(), 0);
+					return result;
+                }
+				lua_settop(scriptManager->GetState(), 0);
+			};
+		}
+
+		auto &data = state.m_SpawnLocations[location];
+		if (data.advanced) {
+			Msg("advanced spawn\n");
+			VPROF_BUDGET( "CSpawnLocation::FindSpawnLocationAdvanced", "NextBot" );
+
+			std::vector<Vector> playerPositions; 
+			CUtlSortVector<CTFNavArea *, CTFNavAreaIncursionLess> theaterAreaVector;
+
+			CTFNavArea::MakeNewTFMarker();
+
+			ForEachTFPlayer([&](CTFPlayer *player) {
+
+				if (!player->IsAlive() || !player->IsRealPlayer())
+					return;
+				playerPositions.push_back(player->GetAbsOrigin());
+				// collect areas surrounding this invader
+				CUtlVector< CNavArea * > nearbyAreaVector;
+				CollectSurroundingAreas( &nearbyAreaVector, player->GetLastKnownArea(), data.maxDistance );
+
+				for( int i=0; i<nearbyAreaVector.Count(); ++i )
+				{
+					CTFNavArea *area = (CTFNavArea *)nearbyAreaVector[i];
+					if ( !area->IsTFMarked() )
+					{		
+						area->TFMark();
+
+						if ( area->IsPotentiallyVisibleToTeam( player->GetTeamNumber() ) )
+							continue;
+
+						if ( !area->IsValidForWanderingPopulation() )
+							continue;
+
+						theaterAreaVector.Insert( area );
+					}
+				}
+			});
+
+			if (data.minDistance > 0) {
+				for (int i = theaterAreaVector.Count() - 1; i >= 0; i--) {
+					bool found = false;
+					for (auto &vec : playerPositions) {
+						if (theaterAreaVector[i]->GetCenter().DistToSqr(vec) < data.minDistance )
+						{
+							theaterAreaVector.FastRemove(i);
+							found = true;
+							break;
+						}
+					}
+					if (found) {
+						break;
+					}
+				}
+			}
+			
+			if ( theaterAreaVector.Count() == 0 )
+			{
+				return NULL;
+			}
+
+			const int maxRetries = 5;
+			CTFNavArea *spawnArea = NULL;
+
+			for( int r=0; r<maxRetries; ++r )
+			{
+				int which = 0;
+
+				switch(data.relative)
+				{
+				case AHEAD:
+					// areas are sorted from behind to ahead - weight the selection to choose ahead
+					which = SkewedRandomValue() * theaterAreaVector.Count();
+					break;
+
+				case BEHIND:
+					// areas are sorted from behind to ahead - weight the selection to choose behind
+					which = ( 1.0f - SkewedRandomValue() ) * theaterAreaVector.Count();
+					break;
+
+				case ANYWHERE:
+					// choose any valid area at random
+					which = RandomFloat( 0.0f, 1.0f ) * theaterAreaVector.Count();
+					break;
+				}
+
+				if ( which >= theaterAreaVector.Count() )
+					which = theaterAreaVector.Count()-1;
+
+				spawnArea = theaterAreaVector[ which ];
+
+
+				// well behaved spawn area
+				vSpawnPosition = spawnArea->GetCenter();
+				Msg("position %f %f %f %d \n", vSpawnPosition.x, vSpawnPosition.y, vSpawnPosition.z, spawnArea->GetTFAttributes());
+				return SPAWN_LOCATION_NAV;
+			}
+			Msg("Not found\n");
+			return SPAWN_LOCATION_NOT_FOUND;
+		}
+		return DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
+	}
 
 	DETOUR_DECL_MEMBER(void, CDynamicProp_Spawn)
 	{
@@ -4937,6 +5097,49 @@ namespace Mod::Pop::PopMgr_Extensions
 		int origItemDefId = ReplaceEconItemViewDefId(pItem);
 		DETOUR_MEMBER_CALL(CTFPlayer_RememberUpgrade)(pItem);
 		RestoreEconItemViewDefId(pItem, origItemDefId);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CSpawnLocation_Parse, KeyValues *kv)
+	{
+		const char *name = kv->GetName();
+		const char *value = kv->GetString();
+
+		if (*name == '\0')
+			return false;
+
+		if (FStrEq(name, "Where") || FStrEq(name, "ClosestPoint")) {
+			auto &data = state.m_SpawnLocations[reinterpret_cast<CSpawnLocation *>(this)];
+			
+			if (kv->GetFirstSubKey() != nullptr) {
+				data.name = "advanced";
+				data.advanced = true;
+				FOR_EACH_SUBKEY(kv, subkey) {
+					if (FStrEq(subkey->GetName(), "MinDistance")) {
+						data.minDistance = subkey->GetFloat();
+					}
+					else if (FStrEq(subkey->GetName(), "MaxDistance")) {
+						data.maxDistance = subkey->GetFloat();
+					}
+					else if (FStrEq(subkey->GetName(), "Relative")) {
+						if (FStrEq(subkey->GetString(), "Ahead")) {
+							data.relative = AHEAD;
+						}
+						else if (FStrEq(subkey->GetString(), "Behind")) {
+							data.relative = AHEAD;
+						}
+						else if (FStrEq(subkey->GetString(), "Anywhere")) {
+							data.relative = ANYWHERE;
+						}
+					}
+				}
+				return true;
+			}
+			else {
+				data.name = value;
+				return DETOUR_MEMBER_CALL(CSpawnLocation_Parse)(kv);
+			}
+		}
+		return false;
 	}
 
 	// DETOUR_DECL_STATIC(void, MessageWriteString,const char *name)
@@ -6917,6 +7120,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_STATIC(TranslateWeaponEntForClass, "TranslateWeaponEntForClass");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RememberUpgrade, "CTFPlayer::RememberUpgrade");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForgetFirstUpgradeForItem, "CTFPlayer::ForgetFirstUpgradeForItem");
+			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_FindSpawnLocation, "CSpawnLocation::FindSpawnLocation");
+			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_Parse, "CSpawnLocation::Parse");
 			
 			
 			

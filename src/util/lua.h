@@ -87,6 +87,8 @@ namespace Util::Lua
 
     void LFromVariant(lua_State *l, variant_t &variant);
     const EHANDLE *LEntityAlloc(lua_State *l, CBaseEntity *entity);
+    Vector *LVectorGetNoCheckNoInline(lua_State *l, int index);
+    
     bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, LuaEntityModule *mod, bool &result);
 }
 #endif

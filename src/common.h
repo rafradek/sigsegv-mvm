@@ -339,6 +339,7 @@ WARN_RESTORE()
 #include <utlstring.h>
 #define swap V_swap
 #include <utlvector.h>
+#include <UtlSortVector.h>
 #undef swap
 WARN_IGNORE__REORDER()
 #include <utlrbtree.h>

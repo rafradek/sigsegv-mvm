@@ -11,26 +11,6 @@ namespace Mod::MvM::Gamemode_Converter
 {
 	StaticFuncThunk<const char *, const char *, char *> ft_MapEntity_ParseToken("MapEntity_ParseToken");
     inline const char *MapEntity_ParseToken(const char *data, char *token) { return ft_MapEntity_ParseToken(data, token); }
-
-    class CaseInsensitveCompare 
-    {
-    public:
-        bool operator() (const std::string &lhs, const std::string &rhs) const
-        {
-            return stricmp(lhs.c_str(), rhs.c_str()) == 0;
-        }
-    };
-    
-    class CaseInsensitveHash
-    {
-    public:
-        std::size_t operator() (std::string str) const
-        {
-            boost::algorithm::to_lower(str);
-
-            return std::hash<std::string>{}(str);
-        }
-    };
     
 
     using ParsedEntity = std::unordered_multimap<std::string, std::string, CaseInsensitveHash, CaseInsensitveCompare>;

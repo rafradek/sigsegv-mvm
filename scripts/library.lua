@@ -361,6 +361,10 @@ function CEntity:SnapEyeAngles(angle) end
 ---@return number userid User id of of the player 
 function CEntity:GetUserId() end
 
+--Get player steam id
+---@return number steamid Steam id of of the player 
+function CEntity:GetSteamId() end
+
 ----------------
 -- Entity inputs
 ----------------
@@ -462,17 +466,27 @@ function CEntity:SetHUDVisibility(visible) end
 
 ents = {}
 
+--Finds matching entity by targetname. Trailing wildcards and @ selectors apply
+---@param name string
+---@return Entity|nil #Entity if found, nil otherwise
+function ents.FindByName(name) end
+
 --Finds first matching entity by targetname. Trailing wildcards and @ selectors apply
 ---@param name string
 ---@param prev ?Entity #Find next matching entity after this entity
 ---@return Entity|nil #Entity if found, nil otherwise
-function ents.FindByName(name, prev) end
+function ents.FindByNameAfter(name, prev) end
+
+--Finds matching entity by classname. Trailing wildcards and @ selectors apply
+---@param classname string
+---@return Entity|nil #Entity if found, nil otherwise
+function ents.FindByClass(classname) end
 
 --Finds first matching entity by classname. Trailing wildcards and @ selectors apply
 ---@param classname string
 ---@param prev ?Entity #Find next matching entity after this entity
 ---@return Entity|nil #Entity if found, nil otherwise
-function ents.FindByClass(classname, prev) end
+function ents.FindByClassAfter(classname, prev) end
 
 --Finds all matching entities by name. Trailing wildcards and @ selectors apply
 ---@param name string
@@ -637,6 +651,25 @@ function util.StartLagCompensation(player) end
 ---@return nil
 function util.FinishLagCompensation(player) end
 
+
+tempents = {}
+
+--Sends temporary entity such as explosion or particle. See https://raw.githubusercontent.com/powerlord/tf2-data/master/teprops.txt for a list of available entities
+---@param name string Name of the temporary entity
+---@param props table Table that contains property names and their values
+---@param recipients? Entity|table|nil Recipient(s) of the temporary entity. Can be a single player, a table of players, or nil to send to all players
+function tempents.Send(name, props, recipients) end
+
+--Adds temporary entity callback. See https://raw.githubusercontent.com/powerlord/tf2-data/master/teprops.txt for a list of all available entities
+---@param name string Name of the temporary entity
+---@param callback function Callback function with parameters: propTable (contains entity property values). Return ACTION_MODIFY to send entity to clients with modified values, ACTION_STOP to stop the entity from being send to clients.
+---@return number id id for later removal with `RemoveCallback(id)` function
+function tempents.AddCallback(name, callback) end
+
+--Removes temporary entity callback
+---@param id number id of the entity callback
+---@return nil
+function tempents.RemoveCallback(id) end
 
 --Returns time in seconds since map load
 ---@return number

@@ -11,8 +11,8 @@ struct PropCacheEntry
     int elementStride = 0;
 };
 
-void WriteProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
-void ReadProp(CBaseEntity *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
+void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
+void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis);
 
 void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset);
 void GetDataMapInfo(typedescription_t &desc, PropCacheEntry &entry);

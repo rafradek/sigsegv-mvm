@@ -170,7 +170,7 @@ struct Extent
 				lo.z <= other.lo.z + tolerance && hi.z >= other.hi.z - tolerance);
 	}
 };
-
+const float StepHeight = 18.0f;
 
 class CFuncNavCost : public CBaseEntity
 {
@@ -207,7 +207,47 @@ struct AreaBindInfo							// for pointer loading and binding
 	}
 };
 
-class CNavArea
+struct NavConnect
+{
+	union
+	{
+		unsigned int id;
+		CNavArea *area;
+	};
+
+	mutable float length;
+};
+
+#define MAX_NAV_TEAMS 2
+#define NUM_DIRECTIONS 4
+
+class CNavAreaCriticalData
+{
+protected:
+	/* 0  */	Vector m_nwCorner;											// north-west corner position (2D mins)
+	/* 12 */	Vector m_seCorner;											// south-east corner position (2D maxs)
+	/* 24 */	float m_invDxCorners;
+	/* 28 */	float m_invDyCorners;
+	/* 32 */	float m_neZ;												// height of the implicit corner defined by (m_seCorner.x, m_nwCorner.y, m_neZ)
+	/* 36 */	float m_swZ;												// height of the implicit corner defined by (m_nwCorner.x, m_seCorner.y, m_neZ)
+	/* 40 */	Vector m_center;											// centroid of area
+
+	/* 52 */	unsigned char m_playerCount[ MAX_NAV_TEAMS ];				// the number of players currently in this area
+
+	/* 54 */	bool m_isBlocked[ MAX_NAV_TEAMS ];							// if true, some part of the world is preventing movement through this nav area
+
+	/* 56 */	unsigned int m_marker;										// used to flag the area as visited
+	/* 60 */	float m_totalCost;											// the distance so far plus an estimate of the distance left
+	/* 64 */	float m_costSoFar;											// distance travelled so far
+
+	/* 68 */	CNavArea *m_nextOpen, *m_prevOpen;							// only valid if m_openMarker == m_masterMarker
+	/* 76 */	unsigned int m_openMarker;									// if this equals the current marker value, we are on the open list
+
+	/* 80 */	int	m_attributeFlags;										// set of attribute bit flags (see NavAttributeType)
+	/* 84 */	CUtlVectorUltraConservative<NavConnect, CUtlVectorUltraConservativeAllocator> m_connect[ NUM_DIRECTIONS ];				// a list of adjacent areas for each direction
+};
+
+class CNavArea : public CNavAreaCriticalData
 {
 public:
 	const Vector& GetCenter() const    { return this->m_center; }
@@ -215,7 +255,18 @@ public:
 	CNavArea *GetParent() const        { return this->m_parent; }
 	int GetParentHow() const           { return this->m_parentHow; }
 	float GetCostSoFar() const         { return this->m_costSoFar; }
+	void SetCostSoFar(float cost)      { this->m_costSoFar = cost; }
+	void SetParent(CNavArea *parent)   { this->m_parent = parent; }
+	void SetTotalCost(float cost)      { this->m_totalCost = cost; }
 	
+	int GetAdjacentCount(int dir) const	{ return m_connect[dir].Count(); }
+	CNavArea *GetAdjacentArea( int dir, int i ) const {
+		if ((i < 0) || (i >= m_connect[dir].Count()))
+			return nullptr;
+		return m_connect[dir][i].area;
+	}
+	CUtlVectorUltraConservative<NavConnect, CUtlVectorUltraConservativeAllocator> &GetAdjacentVector(int dir)	{ return m_connect[dir]; }
+
 	void GetExtent(Extent *extent) const                                                            {        ft_GetExtent                            (this, extent); }
 	void GetClosestPointOnArea(const Vector& pos, Vector *close) const                              {        ft_GetClosestPointOnArea                (this, &pos, close); }
 	float ComputeAdjacentConnectionHeightChange(const CNavArea *destinationArea) const              { return ft_ComputeAdjacentConnectionHeightChange(this, destinationArea); }
@@ -223,17 +274,43 @@ public:
 	void DrawFilled(int r, int g, int b, int a, float deltaT, bool noDepthTest, float margin) const {        vt_DrawFilled                           (this, r, g, b, a, deltaT, noDepthTest, margin); }
 	bool Contains(const Vector &vec) const                                                          { return ft_Contains                             (this, vec); }
 	bool IsOverlapping(const Vector &vec, float tolerance) const                                    { return ft_IsOverlapping                        (this, vec, tolerance); }
+	void RemoveFromOpenList()                                                                       { return ft_RemoveFromOpenList                   (this); }
+	void AddToOpenList()                                                                            { return ft_AddToOpenList                        (this); }
+	bool IsBlocked(int teamID, bool ignoreNavBlockers = false) const                                { return vt_IsBlocked                            (this, teamID, ignoreNavBlockers); }
+	bool IsPotentiallyVisibleToTeam(int teamID) const                                               { return vt_IsPotentiallyVisibleToTeam           (this, teamID); }
+	void CollectAdjacentAreas(CUtlVector<CNavArea *> *vector)                                       { return ft_CollectAdjacentAreas                 (this, vector); }
 	
+
 	DECL_EXTRACT(CUtlVector<CHandle<CFuncNavCost>>, m_funcNavCostVector);
 	DECL_EXTRACT (CUtlVectorConservative<AreaBindInfo>, m_potentiallyVisibleAreas);
 	DECL_RELATIVE(AreaBindInfo, m_inheritVisibilityFrom);
+
+	static void ClearSearchLists()	{ ft_ClearSearchLists(); }
+	static bool IsOpenListEmpty()	{ return m_openList.GetRef() == nullptr; }
+	static void MakeNewMarker()		{ ++m_masterMarker; if (m_masterMarker == 0) m_masterMarker.GetRef() = 1; }
+	void Mark()						{ m_marker = m_masterMarker; }
+	BOOL IsMarked() const			{ return (m_marker == m_masterMarker) ? true : false; }
+	static GlobalThunk<uint> m_masterMarker;
+	static GlobalThunk<CNavArea *> m_openList;
 	
+	static CNavArea *PopOpenList() {
+		if (m_openList) {
+			CNavArea *area = m_openList;
+		
+			area->RemoveFromOpenList();
+			area->m_prevOpen = NULL;
+			area->m_nextOpen = NULL;
+
+			return area;
+		}
+		return nullptr;
+	}
 private:
 	DECL_EXTRACT (Vector,     m_center);
-	DECL_EXTRACT (int,        m_attributeFlags);
+	DECL_EXTRACT (int,        m_attributeFlags_a);
 	DECL_RELATIVE(CNavArea *, m_parent);
 	DECL_RELATIVE(int,        m_parentHow);
-	DECL_EXTRACT (float,      m_costSoFar);
+	//DECL_EXTRACT (float,      m_costSoFar);
 	
 	static MemberFuncThunk <const CNavArea *, void, Extent *>                               ft_GetExtent;
 	static MemberFuncThunk <const CNavArea *, void, const Vector *, Vector *>               ft_GetClosestPointOnArea;
@@ -242,6 +319,13 @@ private:
 	static MemberVFuncThunk<const CNavArea *, void, int, int, int, int, float, bool, float> vt_DrawFilled;
 	static MemberFuncThunk <const CNavArea *, bool, const Vector &>                         ft_Contains;
 	static MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                  ft_IsOverlapping;
+	static MemberVFuncThunk<const CNavArea *, bool, int, bool>                              vt_IsBlocked;
+	static MemberFuncThunk <      CNavArea *, void>                                         ft_AddToOpenList;
+	static MemberFuncThunk <      CNavArea *, void>                                         ft_RemoveFromOpenList;
+	static MemberVFuncThunk<const CNavArea *, bool, int>                                    vt_IsPotentiallyVisibleToTeam;
+	static MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               ft_CollectAdjacentAreas;
+
+	static StaticFuncThunk<void>                              ft_ClearSearchLists;
 };
 
 class CTFNavArea : public CNavArea
@@ -252,18 +336,27 @@ public:
 	bool IsInCombat() const                             { return (this->GetCombatIntensity() > 0.01f); }
 	float GetIncursionDistance(int team) const          { return this->m_IncursionDistances[team]; }
 	
-	bool IsBlocked(int teamID, bool ignoreNavBlockers = false) const { return ft_IsBlocked(this, teamID, ignoreNavBlockers); }
 	float GetCombatIntensity() const                                 { return ft_GetCombatIntensity(this); }
 	void AddPotentiallyVisibleActor(CBaseCombatCharacter *actor)     {        ft_AddPotentiallyVisibleActor(this, actor); }
+	void TFMark()                                                    {        ft_TFMark(this); }
+	bool IsTFMarked()                                                { return ft_IsTFMarked(this); }
+	bool IsValidForWanderingPopulation()                             { return ft_IsValidForWanderingPopulation(this); }
+	
+
+	static void MakeNewTFMarker() { ft_MakeNewTFMarker(); }
+
+	static StaticFuncThunk<void>                              ft_MakeNewTFMarker;
 	
 	DECL_RELATIVE_RW(CUtlVector<CHandle<CBaseCombatCharacter>>[4], m_potentiallyVisibleActor);
 private:
 	DECL_EXTRACT(TFNavAttributeType, m_nAttributes);
 	DECL_EXTRACT(float[4],           m_IncursionDistances);
 	
-	static MemberFuncThunk<const CTFNavArea *, bool, int, bool> ft_IsBlocked;
 	static MemberFuncThunk<const CTFNavArea *, float>           ft_GetCombatIntensity;
 	static MemberFuncThunk<      CTFNavArea *, void, CBaseCombatCharacter *> ft_AddPotentiallyVisibleActor;
+	static MemberFuncThunk<      CTFNavArea *, void> ft_TFMark;
+	static MemberFuncThunk<      CTFNavArea *, bool> ft_IsTFMarked;
+	static MemberFuncThunk<      CTFNavArea *, bool> ft_IsValidForWanderingPopulation;
 	
 };
 
@@ -325,5 +418,5 @@ inline bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vect
 	return ft_NavAreaBuildPath_CTFBotPathCost(startArea, goalArea, goalPos, *reinterpret_cast<CTFBotPathCost *>(&costFunc), closestArea, maxPathLength, teamID, ignoreNavBlockers);
 }
 
-
+void CollectSurroundingAreas(CUtlVector< CNavArea * > *nearbyAreaVector, CNavArea *startArea, float travelDistanceLimit = 1500.0f, float maxStepUpLimit = StepHeight, float maxDropDownLimit = 100.0f);
 #endif

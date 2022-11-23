@@ -117,6 +117,37 @@
 					type "sym"
 					sym  "_ZN8CNavArea28ResetPotentiallyVisibleAreasEv"
 				}
+				"CNavArea::ClearSearchLists"
+				{
+					type "sym"
+					sym  "_ZN8CNavArea16ClearSearchListsEv"
+				}
+				"CNavArea::AddToOpenList"
+				{
+					type "sym"
+					sym  "_ZN8CNavArea13AddToOpenListEv"
+				}
+				"CNavArea::IsBlocked"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea9IsBlockedEib"
+				}
+				"CNavArea::RemoveFromOpenList"
+				{
+					type "sym"
+					sym  "_ZN8CNavArea18RemoveFromOpenListEv"
+				}
+				"CNavArea::IsPotentiallyVisibleToTeam"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea26IsPotentiallyVisibleToTeamEi"
+				}
+				"CNavArea::CollectAdjacentAreas"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea20CollectAdjacentAreasEP10CUtlVectorIPS_10CUtlMemoryIS1_iEE"
+				}
+				
 				"CTFNavArea::IsBlocked"
 				{
 					type   "func knownvtidx"
@@ -143,6 +174,21 @@
 				{
 					type "sym"
 					sym  "_ZN10CTFNavArea26AddPotentiallyVisibleActorEP20CBaseCombatCharacter"
+				}
+				"CTFNavArea::MakeNewTFMarker"
+				{
+					type "sym"
+					sym  "_ZN10CTFNavArea15MakeNewTFMarkerEv"
+				}
+				"CTFNavArea::TFMark"
+				{
+					type "sym"
+					sym  "_ZN10CTFNavArea6TFMarkEv"
+				}
+				"CTFNavArea::IsTFMarked"
+				{
+					type "sym"
+					sym  "_ZNK10CTFNavArea10IsTFMarkedEv"
 				}
 				
 				"NavAreaTravelDistance<CTFBotPathCost>"

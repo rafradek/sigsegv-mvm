@@ -736,6 +736,14 @@ ACTION_MODIFY               = 2 -- Continue event with modified values
 ACTION_HANDLED              = 3 -- Stop original event, but pretend it happened
 
 ----------------
+-- Return values for GetWaveSpawnLocation
+----------------
+SPAWN_LOCATION_NOT_FOUND  = 0 -- Do not spawn bots at this location
+SPAWN_LOCATION_NAV        = 1 -- Spawn bots at nav area center below position specified by 2nd vector return value
+SPAWN_LOCATION_TELEPORTER = 2 -- Spawn bots at position specified by 2nd vector return value, and to teleport effects
+
+
+----------------
 -- Table structures
 ----------------
 

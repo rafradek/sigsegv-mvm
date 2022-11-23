@@ -21,6 +21,7 @@
 #include "stub/sendprop.cpp"
 #include "stub/strings.cpp"
 #include "stub/team.cpp"
+#include "stub/tempent.cpp"
 #include "stub/tf_objective_resource.cpp"
 #include "stub/tf_player_resource.cpp"
 #include "stub/tfbot.cpp"

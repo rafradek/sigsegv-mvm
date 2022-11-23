@@ -334,10 +334,10 @@ using CExtract_CNavArea_m_potentiallyVisibleAreas = IExtractStub;
 
 IMPL_EXTRACT  (CUtlVector<CHandle<CFuncNavCost>>, CNavArea, m_funcNavCostVector, new CExtract_CNavArea_m_funcNavCostVector());
 IMPL_EXTRACT  (Vector,                            CNavArea, m_center,            new CExtract_CNavArea_m_center());
-IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags,    new CExtract_CNavArea_m_attributeFlags());
-IMPL_RELATIVE (CNavArea *,                        CNavArea, m_parent,            m_attributeFlags, (116 - 80));
+IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags_a,  new CExtract_CNavArea_m_attributeFlags());
+IMPL_RELATIVE (CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, (116 - 80));
 IMPL_REL_AFTER(int,                               CNavArea, m_parentHow,         m_parent);
-IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
+//IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
 IMPL_EXTRACT  (CUtlVectorConservative<AreaBindInfo>, CNavArea, m_potentiallyVisibleAreas, new CExtract_CNavArea_m_potentiallyVisibleAreas());
 IMPL_RELATIVE (AreaBindInfo,                      CNavArea, m_inheritVisibilityFrom, m_potentiallyVisibleAreas, -sizeof(AreaBindInfo));
 
@@ -348,15 +348,28 @@ MemberFuncThunk <const CNavArea *, float, float, float>                         
 MemberVFuncThunk<const CNavArea *, void, int, int, int, int, float, bool, float> CNavArea::vt_DrawFilled                           (TypeName<CNavArea>(), "CNavArea::DrawFilled");
 MemberFuncThunk <const CNavArea *, bool, const Vector &>                         CNavArea::ft_Contains                             ("CNavArea::Contains");
 MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                  CNavArea::ft_IsOverlapping                        ("CNavArea::IsOverlapping");
+MemberVFuncThunk<const CNavArea *, bool, int, bool>                              CNavArea::vt_IsBlocked                            (TypeName<CNavArea>(), "CNavArea::IsBlocked");
+MemberFuncThunk <      CNavArea *, void>                                         CNavArea::ft_AddToOpenList                        ("CNavArea::AddToOpenList");
+MemberFuncThunk <      CNavArea *, void>                                         CNavArea::ft_RemoveFromOpenList                   ("CNavArea::RemoveFromOpenList");
+MemberVFuncThunk<const CNavArea *, bool, int>                                    CNavArea::vt_IsPotentiallyVisibleToTeam           (TypeName<CNavArea>(), "CNavArea::IsPotentiallyVisibleToTeam");
+MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               CNavArea::ft_CollectAdjacentAreas                 ("CNavArea::CollectAdjacentAreas");
 
+StaticFuncThunk<void>                              CNavArea::ft_ClearSearchLists("CNavArea::ClearSearchLists");
+
+GlobalThunk<uint>       CNavArea::m_masterMarker("CNavArea::m_masterMarker");
+GlobalThunk<CNavArea *> CNavArea::m_openList("CNavArea::m_openList");
 
 IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
 IMPL_EXTRACT (float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
 IMPL_RELATIVE(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes, sizeof(TFNavAttributeType));
 
-MemberFuncThunk<const CTFNavArea *, bool, int, bool> CTFNavArea::ft_IsBlocked         ("CTFNavArea::IsBlocked");
 MemberFuncThunk<const CTFNavArea *, float>           CTFNavArea::ft_GetCombatIntensity("CTFNavArea::GetCombatIntensity");
 MemberFuncThunk<      CTFNavArea *, void, CBaseCombatCharacter *> CTFNavArea::ft_AddPotentiallyVisibleActor("CTFNavArea::AddPotentiallyVisibleActor");
+MemberFuncThunk<      CTFNavArea *, void> CTFNavArea::ft_TFMark("CTFNavArea::TFMark");
+MemberFuncThunk<      CTFNavArea *, bool> CTFNavArea::ft_IsTFMarked("CTFNavArea::IsTFMarked");
+MemberFuncThunk<      CTFNavArea *, bool> CTFNavArea::ft_IsValidForWanderingPopulation("CTFNavArea::IsValidForWanderingPopulation");
+
+StaticFuncThunk<void>                     CTFNavArea::ft_MakeNewTFMarker("CTFNavArea::MakeNewTFMarker");
 
 
 MemberFuncThunk<const CNavMesh *, CNavArea *, const Vector&, float>                        CNavMesh::ft_GetNavArea_vec                          ("CNavMesh::GetNavArea [vec]");
@@ -379,3 +392,69 @@ GlobalThunk<CUtlVector<CTFNavArea *>> TheNavAreas("TheNavAreas");
 
 StaticFuncThunk<float, CNavArea *, CNavArea *, CTFBotPathCost&, float>                                        ft_NavAreaTravelDistance_CTFBotPathCost("NavAreaTravelDistance<CTFBotPathCost>");
 StaticFuncThunk<bool, CNavArea *, CNavArea *, const Vector *, CTFBotPathCost&, CNavArea **, float, int, bool> ft_NavAreaBuildPath_CTFBotPathCost     ("NavAreaBuildPath<CTFBotPathCost>");
+
+void CollectSurroundingAreas( CUtlVector< CNavArea * > *nearbyAreaVector, CNavArea *startArea, float travelDistanceLimit, float maxStepUpLimit, float maxDropDownLimit)
+{
+	nearbyAreaVector->RemoveAll();
+
+	if ( startArea )
+	{
+		CNavArea::MakeNewMarker();
+		CNavArea::ClearSearchLists();
+
+		startArea->AddToOpenList();
+		startArea->SetTotalCost( 0.0f );
+		startArea->SetCostSoFar( 0.0f );
+		startArea->SetParent( NULL );
+		startArea->Mark();
+
+		CUtlVector<CNavArea *> areas;
+		while( !CNavArea::IsOpenListEmpty() )
+		{
+			// get next area to check
+			CNavArea *area = CNavArea::PopOpenList();
+
+			if ( travelDistanceLimit > 0.0f && area->GetCostSoFar() > travelDistanceLimit )
+				continue;
+
+			if ( area->GetParent() )
+			{
+				float deltaZ = area->GetParent()->ComputeAdjacentConnectionHeightChange( area );
+
+				if ( deltaZ > maxStepUpLimit )
+					continue;
+
+				if ( deltaZ < -maxDropDownLimit )
+					continue;
+			}
+
+			nearbyAreaVector->AddToTail( area );
+
+			// mark here to ensure all marked areas are also valid areas that are in the collection
+			area->Mark();
+
+			// search adjacent outgoing connections
+			areas.RemoveAll();
+			area->CollectAdjacentAreas(&areas);
+			for (auto adjArea : areas) {
+
+				if ( adjArea->IsBlocked( TEAM_ANY ) )
+				{
+					continue;
+				}
+
+				if ( !adjArea->IsMarked() )
+				{
+					adjArea->SetTotalCost( 0.0f );
+					adjArea->SetParent( area );
+
+					// compute approximate travel distance from start area of search
+					float distAlong = area->GetCostSoFar();
+					distAlong += ( adjArea->GetCenter() - area->GetCenter() ).Length();
+					adjArea->SetCostSoFar( distAlong );
+					adjArea->AddToOpenList();
+				}
+			}
+		}
+	}
+}

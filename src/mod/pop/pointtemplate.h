@@ -4,6 +4,7 @@
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
 #include <boost/algorithm/string.hpp>
+#include "util/misc.h"
 
 #include "link/link.h"
 #include "prop.h"
@@ -25,34 +26,6 @@ struct InputInfoTemplate
 	std::string input;
 	std::string param;
 	float delay;
-};
-
-struct CaseInsensitiveLess
-{
-    bool operator()(const std::string lhs, const std::string rhs) const
-    {
-        return stricmp(lhs.c_str(), rhs.c_str()) < 0;
-    }
-};
-
-class CaseInsensitveCompare 
-{
-public:
-	bool operator() (const std::string &lhs, const std::string &rhs) const
-	{
-		return stricmp(lhs.c_str(), rhs.c_str()) == 0;
-	}
-};
-
-class CaseInsensitveHash
-{
-public:
-	std::size_t operator() (std::string str) const
-	{
-		boost::algorithm::to_lower(str);
-
-		return std::hash<std::string>{}(str);
-	}
 };
 
 using EntityKeys = std::multimap<std::string,std::string, CaseInsensitiveLess>;

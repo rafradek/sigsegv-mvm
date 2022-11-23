@@ -41,6 +41,7 @@ namespace Mod::Attr::Custom_Attributes
 		IS_PASSIVE_WEAPON,
 		MOD_MAX_PRIMARY_CLIP_OVERRIDE,
 		AUTO_FIRES_FULL_CLIP,
+		MOD_MAXHEALTH_DRAIN_RATE,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -78,7 +79,8 @@ namespace Mod::Attr::Custom_Attributes
 		"passive_reload",
 		"is_passive_weapon",
 		"mod_max_primary_clip_override",
-		"auto_fires_full_clip"
+		"auto_fires_full_clip",
+		"mod_maxhealth_drain_rate"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled

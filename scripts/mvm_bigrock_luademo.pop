@@ -51,6 +51,14 @@ WaveSchedule
 		function OnWaveSpawnTank(tank, wave)
 			print('wave spawn tank', tank, wave)
 		end
+
+		-- Called when the wave spawns bot at location, can be used to override spawn position
+		function GetWaveSpawnLocation(name)
+			print('GetWaveSpawnLocation', tank, wave)
+			if (name == 'spawnbot_tp')
+				return SPAWN_LOCATION_TELEPORTER, Vector(0,0,1200)
+			
+		end
 		"
 
 		Script "
