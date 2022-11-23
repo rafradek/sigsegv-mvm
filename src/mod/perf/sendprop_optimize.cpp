@@ -532,11 +532,14 @@ namespace Mod::Perf::SendProp_Optimize
         const int nCheckProps
         )
     {
-        //if (pTable == playerSendTable) {
         if (objectID >= 0) {
             if ( nCheckProps == 0 ) {
                 // Write single final zero bit, signifying that there no changed properties
                 pOut->WriteOneBit( 0 );
+                return;
+            }
+            if (prop_write_offset[objectID].empty()) {
+                DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
                 return;
             }
             CDeltaBitsWriter deltaBitsWriter( pOut );
@@ -544,45 +547,19 @@ namespace Mod::Perf::SendProp_Optimize
 
             auto pPrecalc = pTable->m_pPrecalc;
             auto offset_data = prop_write_offset[objectID].data();
-            //Msg("Write Prop List %d %s %d\n", objectID, pTable->GetName(), prop_write_offset[objectID].size());
-            if (prop_write_offset[objectID].empty()) {
-                DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
-                return;
-            }
             for (int i = 0; i < nCheckProps; i++) {
                 int propid = pCheckProps[i];
                 int offset = offset_data[propid].offset;
                 if (offset == 0 || offset == 65535)
                     continue;
                 
-                
+
 			    deltaBitsWriter.WritePropIndex(propid);
 
                 int len = offset_data[propid].size;
                 inputBuffer.Seek(offset);
                 pOut->WriteBitsFromBuffer(&inputBuffer, len);
-                
-                // auto pProp = pPrecalc->m_Props[propid];
-                // int len;
-                // inputBuffer.Seek( offset );
-                // g_PropTypeFns[ pProp->GetType() ].SkipProp( pProp, &inputBuffer );
-                // len = inputBuffer.GetNumBitsRead() - offset;
-                // pOut->WriteBitsFromBuffer(&inputBuffer, len);
-
-                /*int j = propid+1;
-                do {
-                    len = offset_data[j] - offset - 7;
-                    j++;
-                }
-                while (len < 0);*/
-
-                
-                
             }
-            //CTimeAdder timer(&timespent1);
-            //DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
-            //timer.End();
-            //DevMsg("Write prop list time %d %.9f\n", gpGlobals->tickcount, timer.GetDuration().GetSeconds());
                 
             return;
         }

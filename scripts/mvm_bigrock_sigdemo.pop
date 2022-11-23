@@ -2893,6 +2893,15 @@ WaveSchedule
 // "brick"
 // "repel"
 // "breadmonster"
+// "spellfireball" 
+// "spelllightningorb" 
+// "spellkartorb" 
+// "spellbats" 
+// "spellmirv" - Pumpkin bombs, only works if the owner has spellbook equipped
+// "spelltransposeteleport" 
+// "spellmeteorshower" 
+// "spellspawnboss" 
+// "spellspawnhorde" - Summon skeletons, only works if the owner has spellbook equipped
 // "override projectile type extra" "mechanicalarmorb"
 
 // Deal additional damage based on fraction of target current health

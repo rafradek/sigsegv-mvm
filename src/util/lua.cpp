@@ -66,6 +66,17 @@ namespace Util::Lua
       printf("\n");  /* end the listing */
     }
 
+    inline const char *LOptToString(lua_State *l, int index, const char *defValue = "", const char *trueValue = "1", const char *falseValue = "0")
+    {
+        if (lua_type(l, index) == LUA_TBOOLEAN){
+            return lua_toboolean(l, index) ? trueValue : falseValue;
+        }
+        else {
+            auto str = lua_tostring(l, index);
+            return str != nullptr ? str : defValue;
+        }
+    }
+
     void ConstructPrint(lua_State *l, int index, std::string &str)
     {
         int args = lua_gettop(l);
@@ -556,7 +567,7 @@ namespace Util::Lua
         lua_pushnil(l);
         while (lua_next(l, 2) != 0) {
             if (lua_type(l, -2) == LUA_TSTRING) {
-                entity->KeyValue(lua_tostring(l, -2), lua_tostring(l, -1));
+                entity->KeyValue(lua_tostring(l, -2), LOptToString(l, -1, "0"));
             }
             lua_pop(l, 1);
         }
@@ -642,7 +653,7 @@ namespace Util::Lua
                     lua_pushnil(l);
                     while (lua_next(l, -1) != 0) {
                         if (lua_type(l, -2) == LUA_TSTRING) {
-                            params[lua_tostring(l, -2)] = lua_tostring(l, -1);
+                            params[lua_tostring(l, -2)] = LOptToString(l, -1, "");
                         }
                         lua_pop(l, 1);
                     }
@@ -823,8 +834,7 @@ namespace Util::Lua
 
     int LEntityGetClassname(lua_State *l)
     {
-        auto *handle = LEntityGetCheck(l, 1);
-        auto entity = handle->Get();
+        auto entity = LEntityGetNonNull(l, 1);
         lua_pushstring(l, entity->GetClassname());
         return 1;
     }
@@ -1496,7 +1506,7 @@ namespace Util::Lua
         else {
             id = luaL_checkinteger(l, 2);
         }
-        auto value = lua_tostring(l, 3);
+        auto value = LOptToString(l, 3, nullptr);
 
         CAttributeList *list = nullptr;
         if (entity->IsPlayer()) {
@@ -2161,7 +2171,7 @@ namespace Util::Lua
                 if (lua_type(l, -2) == LUA_TSTRING) {
                     auto attrdef = GetItemSchema()->GetAttributeDefinitionByName(lua_tostring(l, -2));
                     if (attrdef != nullptr) {
-                        view->GetAttributeList().AddStringAttribute(attrdef, lua_tostring(l, -1));
+                        view->GetAttributeList().AddStringAttribute(attrdef, LOptToString(l, -1, ""));
                     }
                 }
                 lua_pop(l, 1);
@@ -2425,7 +2435,7 @@ namespace Util::Lua
             }
             // Simple string entry
             else {
-                const char *name = lua_tostring(l, -1);
+                const char *name = LOptToString(l, -1, "");
                 if (name != nullptr) {
                     bool enabled = name[0] != '!';
                     ItemDrawInfo info1(enabled ? name : name + 1, enabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
@@ -2977,7 +2987,7 @@ namespace Util::Lua
 
     int LTempEntSend(lua_State *l)
     {
-        auto name = lua_tostring(l, 1);
+        auto name = luaL_checkstring(l, 1);
         auto temp = servertools->GetTempEntList();
         while (temp != nullptr) {
             if (strcmp(name, temp->GetName()) == 0) {
@@ -2992,7 +3002,7 @@ namespace Util::Lua
 
         lua_pushnil(l);
         while (lua_next(l, 2) != 0) {
-            auto &cache = GetSendPropOffset(temp->GetServerClass(), lua_tostring(l, -2));
+            auto &cache = GetSendPropOffset(temp->GetServerClass(), luaL_checkstring(l, -2));
             if (lua_type(l, -1) == LUA_TTABLE) {
                 // Table inside table
                 int len = lua_rawlen(l, -1);
@@ -3038,7 +3048,7 @@ namespace Util::Lua
 
     int LTempEntAddCallback(lua_State *l)
     {
-        auto name = lua_tostring(l, 1);
+        auto name = luaL_checkstring(l, 1);
         luaL_argcheck(l, strlen(name) > 0, 1, "tempent name empty");
         luaL_checktype(l,2, LUA_TFUNCTION);
         lua_pushvalue(l,2);
@@ -3244,7 +3254,7 @@ namespace Util::Lua
                 convar->SetValue(lua_toboolean(l, 2));
             }
             else {
-                convar->SetValue(lua_tostring(l, 2));
+                convar->SetValue(luaL_tolstring(l, 2, nullptr));
             }
         }
         return 0;
@@ -4492,7 +4502,7 @@ namespace Util::Lua
                             lua_pushnil(l);
                             while (lua_next(l, -2)) {
                                 lua_pushvalue(l, -2);
-                                event->SetString(lua_tostring(l, -1), lua_tostring(l, -2));
+                                event->SetString(LOptToString(l, -1, ""), LOptToString(l, -2, ""));
                                 lua_pop(l, 2);
                             }
                         }
