@@ -1171,7 +1171,12 @@ WaveSchedule
         Objective DestroySentries
 
 		InitialCooldown 20
-		Where spawnbot
+		Where [$SIGSEGV] // Advanced where syntax
+		{
+			Relative Behind // Spawn relative to player position Bots will try to spawn in hidden areas. Possible values: Ahead, Behind, Anywhere (default: Anywhere)
+			MaxDistance 3000 // Max distance from players (default: 1500)
+			MinDistance 1500 // Min distance from players (default: 0)
+		}
 		BeginAtWave 1
 		RunForThisManyWaves 9
 
