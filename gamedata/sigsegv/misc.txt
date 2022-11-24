@@ -6662,6 +6662,11 @@
 					type "sym"
 					sym  "_ZN9CBaseFlex18ProcessSceneEventsEv"
 				}
+				"CTFGameRules::SetupOnRoundStart"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules17SetupOnRoundStartEv"
+				}
 				
 			}
 			"addrs_group"

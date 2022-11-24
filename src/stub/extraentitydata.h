@@ -142,6 +142,7 @@ public:
     float turn_power            = 0.0f;
     float min_dot_product       = -0.25f;
     float aim_time              = 9999.0f;
+    float aim_start_time        = 0.0f;
     float acceleration          = 0.0f;
     float acceleration_time     = 9999.0f;
     float acceleration_start    = 0.0f;

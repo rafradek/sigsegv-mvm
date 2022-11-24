@@ -3237,3 +3237,6 @@ WaveSchedule
 
 // Apply attributes to self on kill with the weapon. Format: attribute|value|duration ...
 // "add attributes on kill" "move speed bonus|0.3|2|head scale|3|2"
+
+// How many seconds before the projectile starts homing, if turn power is set
+// "mod projectile heat aim start time" 3

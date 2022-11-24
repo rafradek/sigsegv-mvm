@@ -146,6 +146,11 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 					if (aim_time != 0.0f)
 						homing.aim_time = aim_time;
 
+					float aim_start_time = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aim_time, mod_projectile_heat_aim_start_time);
+					if (aim_start_time != 0.0f)
+						homing.aim_start_time = aim_time;
+
 					float acceleration_time = 0.0f;
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, acceleration_time, projectile_acceleration_time);
 					if (acceleration_time != 0.0f)
@@ -247,7 +252,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 		// Faster projectiles update faster
 		float interval = (3000.0f / speed_calculated) * 0.014f;
 		
-		if (homing.turn_power != 0.0f && time < homing.aim_time && gpGlobals->tickcount % (int)ceil(interval / gpGlobals->interval_per_tick) == 0) {
+		if (homing.turn_power != 0.0f && time >= homing.aim_start_time && time < homing.aim_time && gpGlobals->tickcount % (int)ceil(interval / gpGlobals->interval_per_tick) == 0) {
 			Vector target_vec = vec3_origin;
 
 			if (homing.follow_crosshair) {

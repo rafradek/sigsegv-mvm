@@ -2575,4 +2575,14 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4577"
+    {
+        "name"	"mod projectile heat aim start time"
+        "attribute_class"	"mod_projectile_heat_aim_start_time"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

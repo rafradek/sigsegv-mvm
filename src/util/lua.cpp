@@ -1162,7 +1162,7 @@ namespace Util::Lua
     }
 
     struct InputCacheEntry {
-        inputfunc_t inputptr = nullptr;
+        typedescription_t *inputptr = nullptr;
         Mod::Etc::Mapentity_Additions::CustomInputFunction *custominputptr = nullptr;
     };
 
@@ -1212,9 +1212,9 @@ namespace Util::Lua
         for (datamap_t *dmap = datamap; dmap != NULL; dmap = dmap->baseMap) {
             // search through all the readable fields in the data description, looking for a match
             for (int i = 0; i < dmap->dataNumFields; i++) {
-                if (dmap->dataDesc[i].fieldName != nullptr && (dmap->dataDesc[i].flags & FTYPEDESC_INPUT) && (strcmp(dmap->dataDesc[i].externalName, name.c_str()) == 0)) {
+                if (dmap->dataDesc[i].fieldName != nullptr && (dmap->dataDesc[i].flags & FTYPEDESC_INPUT) && (stricmp(dmap->dataDesc[i].externalName, name.c_str()) == 0)) {
                     names.push_back(name);
-                    pair.second.push_back({dmap->dataDesc[i].inputFunc, nullptr});
+                    pair.second.push_back({dmap->dataDesc+i, nullptr});
                     return pair.second.back();
                 }
             }
@@ -1251,7 +1251,13 @@ namespace Util::Lua
                 lua_pushboolean(l,true);
             } 
             else if(cache.inputptr != nullptr){
-                (entity->*cache.inputptr)(data);
+                data.value.Convert(cache.inputptr->fieldType);
+                if (cache.inputptr->inputFunc != nullptr) {
+                    (entity->*cache.inputptr->inputFunc)(data);
+                }
+                else {
+                    data.value.SetOther(((char*)entity) + cache.inputptr->fieldOffset[TD_OFFSET_NORMAL]);
+                }
                 lua_pushboolean(l,true);
             }
             else {
@@ -1770,14 +1776,21 @@ namespace Util::Lua
 
     int LEntityCallInputNormal(lua_State *l)
     {
-        auto func = MakePtrToMemberFunc<CBaseEntity, void, inputdata_t &>((void *)(uintptr_t) lua_tointeger(l, lua_upvalueindex(1)));
+        auto desc = (typedescription_t *) lua_tointeger(l, lua_upvalueindex(1));
+        auto func = desc->inputFunc;
         auto entity = LEntityGetNonNull(l, 1);
         inputdata_t data;
         LToVariant(l, 2, data.value);
+        data.value.Convert(desc->fieldType);
         data.pActivator = LEntityGetOptional(l, 3);
         data.pCaller = LEntityGetOptional(l, 4);
         data.nOutputID = -1;
-        (entity->*func)(data);
+        if (func != nullptr) {
+            (entity->*func)(data);
+        }
+        else {
+            data.value.SetOther(((char*)entity) + desc->fieldOffset[TD_OFFSET_NORMAL]);
+        }
 
         return 0;
     }
@@ -1853,7 +1866,7 @@ namespace Util::Lua
 
         auto &input = LGetInputCacheEntry(entity, varNameStr);
         if (input.inputptr != nullptr) {
-            lua_pushinteger(l, (uintptr_t) GetAddrOfMemberFunc(input.inputptr));
+            lua_pushinteger(l, (uintptr_t) input.inputptr);
             lua_pushcclosure(l, LEntityCallInputNormal,1);
             return 1;
         } 

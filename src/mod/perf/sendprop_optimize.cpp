@@ -501,7 +501,8 @@ namespace Mod::Perf::SendProp_Optimize
                 } 
 
                 pChangeFrame->SetChangeTick( propOffsets, propChangeOffsets, snapshot->m_nTickCount );
-
+                
+                SV_EnsureInstanceBaseline( serverclass, objectID, packedData, Bits2Bytes(frameDataLength) );
                 //unsigned char tempData[ sizeof( CSendProxyRecipients ) * MAX_DATATABLE_PROXIES ];
                 CUtlMemory< CSendProxyRecipients > recip(pPrevFrame->GetRecipients(), pTable->m_pPrecalc->m_nDataTableProxies );
 
@@ -685,8 +686,9 @@ namespace Mod::Perf::SendProp_Optimize
             if (!(edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)) {
                 
                 bool lastFullEncode = !DoEncode(serverclass, cache, edict, objectID, work_i->pSnapshot );
-                if (!lastFullEncode)
+                if (!lastFullEncode) {
                     continue;
+                }
                 //Msg("Fail to encode %s\n", entity->GetClassname());
             }
             //else {

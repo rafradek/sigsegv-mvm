@@ -6,28 +6,57 @@
 
 namespace Mod::Perf::MvM_Load_Popfile
 {
-#if 0 // new re-implementation
-	
-	
+	RefCount rc_CPopulationManager_SetPopulationFilename;
+	DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
+    {
+		SCOPED_INCREMENT(rc_CPopulationManager_SetPopulationFilename);
+        DETOUR_MEMBER_CALL(CPopulationManager_SetPopulationFilename)(filename);
+    }
+
 	RefCount rc_tf_mvm_popfile;
 	DETOUR_DECL_STATIC(void, tf_mvm_popfile, const CCommand& args)
 	{
-		
+		SCOPED_INCREMENT(rc_tf_mvm_popfile);
+		DETOUR_STATIC_CALL(tf_mvm_popfile)(args);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CPopulationManager_ResetMap)
 	{
-		
+		if (rc_tf_mvm_popfile > 0 && rc_CPopulationManager_SetPopulationFilename == 0) return;
+		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
 	}
 	
+	RefCount rc_CPopulationManager_JumpToWave;
+	DETOUR_DECL_MEMBER(void, CPopulationManager_JumpToWave, unsigned int wave, float f1)
+	{
+		SCOPED_INCREMENT_IF(rc_CPopulationManager_JumpToWave, f1 == 0);
+		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
+	}
 	
+	RefCount rc_CTFGameRules_SetupOnRoundStart;
+	DETOUR_DECL_MEMBER(void, CTFGameRules_SetupOnRoundStart)
+	{
+		SCOPED_INCREMENT(rc_CTFGameRules_SetupOnRoundStart);
+		DETOUR_MEMBER_CALL(CTFGameRules_SetupOnRoundStart)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CPopulationManager_Initialize)
+	{
+		if (rc_CPopulationManager_JumpToWave > 0 && rc_CTFGameRules_SetupOnRoundStart == 0) return true;
+		return DETOUR_MEMBER_CALL(CPopulationManager_Initialize)();
+	}
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Perf:MvM_Load_Popfile")
 		{
 			MOD_ADD_DETOUR_STATIC(tf_mvm_popfile,              "tf_mvm_popfile");
-			MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_ResetMap, "CPopulationManager::ResetMap", HIGHEST);
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename, "CPopulationManager::SetPopulationFilename");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_Initialize, "CPopulationManager::Initialize", HIGHEST);
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_SetupOnRoundStart, "CTFGameRules::SetupOnRoundStart");
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave, "CPopulationManager::JumpToWave");
 		}
 	};
 	CMod s_Mod;
@@ -38,7 +67,6 @@ namespace Mod::Perf::MvM_Load_Popfile
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
-#endif
 	
 	
 #if 0
