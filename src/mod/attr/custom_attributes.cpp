@@ -3514,6 +3514,12 @@ namespace Mod::Attr::Custom_Attributes
 				ret *= value;
 			}
 		}
+		
+		float speedHp = GetFastAttributeFloat(player, 1.0f, MOVE_SPEED_AS_HEALTH_DECREASES);
+		if (speedHp != 1.0f) {
+			speedHp = RemapValClamped(player->GetHealth(), speedHp, 1.0f, player->GetMaxHealth() * 0.15f, player->GetMaxHealth() * 0.85f);
+			ret *= speedHp;
+		}
 
 		return ret;
 	}
@@ -6083,6 +6089,15 @@ namespace Mod::Attr::Custom_Attributes
 						in_upgrade_zone[index] = false;
 						attribute_info_strings[index].clear();
 						ClearAttributeDisplay(player);
+					}
+				});
+			}
+
+			if (gpGlobals->tickcount % 16 == 5) { 
+				ForEachTFPlayer([&](CTFPlayer *player){
+					auto speed = GetFastAttributeFloat(player, 1.0, MOVE_SPEED_AS_HEALTH_DECREASES);
+					if (speed != 1.0f) {
+						player->TeamFortress_SetSpeed();
 					}
 				});
 			}

@@ -3240,3 +3240,6 @@ WaveSchedule
 
 // How many seconds before the projectile starts homing, if turn power is set
 // "mod projectile heat aim start time" 3
+
+// Multiply move speed up to x with decreasing health
+// "move speed as health decreases" 2

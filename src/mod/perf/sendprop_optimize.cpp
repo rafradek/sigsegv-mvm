@@ -10,6 +10,7 @@
 #include <forward_list>
 #include "stub/sendprop.h"
 #include "util/iterate.h"
+#include "util/misc.h"
 
 int global_frame_list_counter = 0;
 bool is_client_hltv = false;
@@ -501,7 +502,6 @@ namespace Mod::Perf::SendProp_Optimize
                 } 
 
                 pChangeFrame->SetChangeTick( propOffsets, propChangeOffsets, snapshot->m_nTickCount );
-                
                 SV_EnsureInstanceBaseline( serverclass, objectID, packedData, Bits2Bytes(frameDataLength) );
                 //unsigned char tempData[ sizeof( CSendProxyRecipients ) * MAX_DATATABLE_PROXIES ];
                 CUtlMemory< CSendProxyRecipients > recip(pPrevFrame->GetRecipients(), pTable->m_pPrecalc->m_nDataTableProxies );
@@ -523,6 +523,7 @@ namespace Mod::Perf::SendProp_Optimize
         return false;
     }
 
+    ConVar test_write_props("test_write_props", "0");
     DETOUR_DECL_STATIC(void, SendTable_WritePropList,
         const SendTable *pTable,
         const void *pState,
@@ -533,6 +534,10 @@ namespace Mod::Perf::SendProp_Optimize
         const int nCheckProps
         )
     {
+        if (test_write_props.GetBool()) {
+        DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+                return;
+        }
         if (objectID >= 0) {
             if ( nCheckProps == 0 ) {
                 // Write single final zero bit, signifying that there no changed properties
@@ -1161,7 +1166,7 @@ namespace Mod::Perf::SendProp_Optimize
 		    MOD_ADD_DETOUR_STATIC(SendTable_CullPropsFromProxies, "SendTable_CullPropsFromProxies");
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendPredictableId, "SendProxy_SendPredictableId");
 		    //MOD_ADD_DETOUR_STATIC(SendProxy_SendHealersDataTable, "SendProxy_SendHealersDataTable");
-			MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
+			//MOD_ADD_DETOUR_STATIC(CreateEntityByName,                "CreateEntityByName");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2,"~CBaseEntity [D2]");
             
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");

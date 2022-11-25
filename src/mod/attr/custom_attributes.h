@@ -22,6 +22,7 @@ namespace Mod::Attr::Custom_Attributes
 		IGNORED_BY_BOTS,
 		ADD_MAXHEALTH,
 		ADD_MAXHEALTH_NONBUFFED,
+		MOVE_SPEED_AS_HEALTH_DECREASES,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -63,7 +64,8 @@ namespace Mod::Attr::Custom_Attributes
 		"not_solid",
 		"ignored_by_bots",
 		"add_maxhealth",
-		"add_maxhealth_nonbuffed"
+		"add_maxhealth_nonbuffed",
+		"move_speed_as_health_decreases"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
