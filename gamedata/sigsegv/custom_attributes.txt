@@ -2585,4 +2585,14 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4578"
+    {
+        "name"	"move speed as health decreases"
+        "attribute_class"	"move_speed_as_health_decreases"
+        "description_string"	"Up to (+-)%p% move speed as health decreases"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }
