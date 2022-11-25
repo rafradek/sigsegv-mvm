@@ -367,6 +367,18 @@ function CEntity:GetUserId() end
 ---@return number steamid Steam id of of the player 
 function CEntity:GetSteamId() end
 
+--Get client ConVar value
+---@param name string Name of the ConVar
+---@return string value Value of the client ConVar
+function CEntity:GetClientConVar(name) end
+
+--Set client ConVar value for bots
+---@param name string Name of the ConVar
+---@param value string Value of the ConVar
+---@return nil
+function CEntity:SetFakeClientConVar(name, value) end
+
+
 ----------------
 -- Entity inputs
 ----------------
@@ -702,6 +714,19 @@ function convar.SetValue(name, value) end
 ---@param name string ConVar name
 ---@return boolean `true` if convar can be set, `false` otherwise
 function convar.IsValid(name) end
+
+--Get client ConVar value
+---@param player Entity Player to get the value from
+---@param name string Name of the ConVar
+---@return string value Value of the client ConVar
+function convar.GetClientValue(player, name) end
+
+--Set client ConVar value for bots
+---@param bot Entity Bot to get the value from
+---@param name string Name of the ConVar
+---@param value string Value of the ConVar
+---@return nil
+function convar.SetFakeClientValue(bot, name, value) end
 
 
 --Returns time in seconds since map load

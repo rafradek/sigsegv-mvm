@@ -3278,6 +3278,18 @@ namespace Util::Lua
         lua_pushboolean(l, convar != nullptr);
         return 1;
     }
+    int LConvarGetClientValue(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        lua_pushstring(l, engine->GetClientConVarValue(player->entindex(), luaL_checkstring(l, 2)));
+        return 1;
+    }
+    int LConvarSetFakeClientValue(lua_State *l)
+    {
+        auto player = LPlayerGetNonNull(l, 1);
+        engine->SetFakeClientConVarValue(player->edict(), luaL_checkstring(l, 2), LOptToString(l, 2));
+        return 0;
+    }
 
     int LSavedataSet(lua_State *l)
     {
@@ -3405,6 +3417,8 @@ namespace Util::Lua
         {"SnapEyeAngles", LEntitySnapEyeAngles},
         {"GetUserId", LEntityGetUserId},
         {"GetSteamId", LEntityGetSteamId},
+        {"GetClientConVar", LConvarGetClientValue},
+        {"SetFakeClientConVar", LConvarSetFakeClientValue},
         {"__eq", LEntityEquals},
         {"__tostring", LEntityToString},
         {"__index", LEntityGetProp},
@@ -3473,6 +3487,8 @@ namespace Util::Lua
         {"GetBoolean", LConvarGetBoolean},
         {"SetValue", LConvarSetValue},
         {"IsValid", LConvarIsValid},
+        {"GetClientValue", LConvarGetClientValue},
+        {"SetFakeClientValue", LConvarSetFakeClientValue},
         {nullptr, nullptr},
     };
 
