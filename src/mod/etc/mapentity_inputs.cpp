@@ -292,7 +292,7 @@ namespace Mod::Etc::Mapentity_Additions
     THINK_FUNC_DECL(FakeParentModuleTick)
     {
         auto data = this->GetEntityModule<FakeParentModule>("fakeparent");
-        if (data == nullptr || data->m_hParent == nullptr) return;
+        if (data == nullptr) return;
 
         if (data->m_hParent == nullptr && data->m_bParentSet) {
             variant_t variant;
