@@ -254,7 +254,7 @@ function CEntity:InCond(condition) end
 
 --Get player that provided the condition. Check TF_COND_* globals for the list of conditions
 ---@param condition number
----@return boolean
+---@return Entity
 function CEntity:GetConditionProvider(condition) end
 
 --Stun a player, slowing him down and/or making him unable to attack. Check TF_STUNFLAG_* globals

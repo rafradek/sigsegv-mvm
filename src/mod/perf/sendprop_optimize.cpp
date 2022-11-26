@@ -460,8 +460,8 @@ namespace Mod::Perf::SendProp_Optimize
 
                     // Move all bits left or right
                     if (bit_offset_change != 0) {
-                        // Msg("offset change %d %s %d %s %d %d oldSize: %d new: %d\n", bit_offset_change, entity->GetClassname(), propOffsets[i], pProp->GetName(), prop_writer.GetNumBitsWritten(), bit_size + bit_offset, bit_size, sizetestbuf_write.GetNumBitsWritten());
-                        
+                         // Msg("offset change %d %s %d %s %d %d oldSize: %d new: %d\n", bit_offset_change, entity->GetClassname(), propOffsets[i], pProp->GetName(), prop_writer.GetNumBitsWritten(), bit_size + bit_offset, bit_size, sizetestbuf_write.GetNumBitsWritten());
+                         
                         if (bit_offset_change < 0) {
                             prop_reader.Seek(bit_offset + bit_size);
                             prop_writer.SeekToBit(bit_offset + sizetestbuf_write.GetNumBitsWritten());
@@ -483,7 +483,8 @@ namespace Mod::Perf::SendProp_Optimize
                         int propcount = pPrecalc->m_Props.Count();
                         write_offset_data[propOffsets[i]].size = sizetestbuf_write.GetNumBitsWritten();
                         for (int j = propOffsets[i] + 1; j < propcount; j++) {
-                            write_offset_data[j].offset += bit_offset_change;
+                            if (write_offset_data[j].offset != 65535)
+                                write_offset_data[j].offset += bit_offset_change;
                         }
                         
                         frameDataLength+=bit_offset_change;
@@ -729,7 +730,11 @@ namespace Mod::Perf::SendProp_Optimize
                 CDeltaBitsReader toBitsReader( &toBits );
 
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
+                
                 auto offset_data = prop_write_offset[objectID].data();
+                for (int i = 0; i < iToProp; i++) {
+                    offset_data[i].offset = 65535;
+                }
                 
                 // Required for later writeproplist
                 offset_data[propcount].offset = pPrevFrame->GetNumBits() + 7;
