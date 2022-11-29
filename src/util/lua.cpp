@@ -3300,6 +3300,54 @@ namespace Util::Lua
         return 0;
     }
 
+    int LPrecacheModel(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto preload = lua_toboolean(l, 2);
+        lua_pushinteger(l, CBaseEntity::PrecacheModel(name, preload));
+        return 1;
+    }
+    int LPrecacheScriptSound(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        lua_pushinteger(l, CBaseEntity::PrecacheScriptSound(name));
+        return 1;
+    }
+    int LPrecacheSound(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto preload = lua_toboolean(l, 2);
+        lua_pushboolean(l, enginesound->PrecacheSound(name, preload));
+        return 1;
+    }
+    int LPrecacheSentenceFile(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto preload = lua_toboolean(l, 2);
+        lua_pushinteger(l, engine->PrecacheSentenceFile(name, preload));
+        return 1;
+    }
+    int LPrecacheDecal(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto preload = lua_toboolean(l, 2);
+        lua_pushinteger(l, engine->PrecacheDecal(name, preload));
+        return 1;
+    }
+    int LPrecacheGeneric(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        auto preload = lua_toboolean(l, 2);
+        lua_pushinteger(l, engine->PrecacheGeneric(name, preload));
+        return 1;
+    }
+    int LPrecacheParticle(lua_State *l)
+    {
+        auto name = lua_tostring(l, 1);
+        PrecacheParticleSystem(name);
+        return 0;
+    }
+
     static const struct luaL_Reg vectorlib_f [] = {
         {"__call", LVectorNew},
         {nullptr, nullptr},
@@ -3491,6 +3539,17 @@ namespace Util::Lua
         {"SetFakeClientValue", LConvarSetFakeClientValue},
         {nullptr, nullptr},
     };
+    
+    static const struct luaL_Reg precache_f [] = {
+        {"PrecacheModel", LPrecacheModel},
+        {"PrecacheGeneric", LPrecacheGeneric},
+        {"PrecacheSound", LPrecacheSound},
+        {"PrecacheScriptSound", LPrecacheScriptSound},
+        {"PrecacheSentenceFile", LPrecacheSentenceFile},
+        {"PrecacheParticle", LPrecacheParticle},
+        {"PrecacheDecal", LPrecacheDecal},
+        {nullptr, nullptr},
+    };
 
     THINK_FUNC_DECL(ScriptModuleTick)
     {
@@ -3611,6 +3670,11 @@ namespace Util::Lua
         //lua_newtable(l);
         //luaL_setfuncs(l, tempents_f, 0);
         lua_setglobal(l, "convar");
+
+        luaL_newlib(l, precache_f);
+        //lua_newtable(l);
+        //luaL_setfuncs(l, tempents_f, 0);
+        lua_setglobal(l, "precache");
 
         lua_newtable(l);
         m_iEntityTableStorage = entity_table_store = luaL_ref(l, LUA_REGISTRYINDEX);

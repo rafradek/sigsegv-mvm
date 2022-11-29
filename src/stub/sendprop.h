@@ -532,7 +532,7 @@ public:
 							m_pSendProxies = pSendProxies;
 						}
 
-	static bool IsNonPointerModifyingProxy( SendTableProxyFn fn, const CStandardSendProxies *pSendProxies )
+	static inline bool IsNonPointerModifyingProxy( SendTableProxyFn fn, const CStandardSendProxies *pSendProxies )
 	{
 		if ( fn == pSendProxies->m_DataTableToDataTable ||
 			 fn == pSendProxies->m_SendLocalDataTable )

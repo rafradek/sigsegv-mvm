@@ -729,6 +729,49 @@ function convar.GetClientValue(player, name) end
 function convar.SetFakeClientValue(bot, name, value) end
 
 
+precache = {}
+
+--Precaches model with specified path if not precached yet
+---@param name string path to the model file
+---@param preload? boolean = `false`. If the model should be preloaded
+---@return number index model index
+function precache.PrecacheModel(name, preload) end
+
+--Precaches soundscript with specified name if not precached yet
+---@param name string name of the soundscript
+---@return number handle sound handle index
+function precache.PrecacheScriptSound(name) end
+
+--Precaches sound file with specified path if not precached yet
+---@param name string path to the sound file
+---@param preload? boolean = `false`. If the sound should be preloaded
+---@return boolean success `true` on success, `false` on failure
+function precache.PrecacheSound(name, preload) end
+
+--Precaches sentence file with specified path if not precached yet
+---@param name string path to the sentence file
+---@param preload? boolean = `false`. If the sentence file should be preloaded
+---@return number index sentence file index
+function precache.PrecacheSentenceFile(name, preload) end
+
+--Precaches decal file with specified path if not precached yet
+---@param name string path to the decal file
+---@param preload? boolean = `false`. If the decal should be preloaded
+---@return number index decal file index
+function precache.PrecacheDecal(name, preload) end
+
+--Precaches generic file with specified path if not precached yet
+---@param name string path to the generic file
+---@param preload? boolean = `false`. If the generic file should be preloaded
+---@return number index generic file index
+function precache.PrecacheGeneric(name, preload) end
+
+--Precaches particle with specified name if not precached yet
+---@param name string name of the particle
+---@return nil
+function precache.PrecacheParticle(name) end
+
+
 --Returns time in seconds since map load
 ---@return number
 function CurTime() end

@@ -40,10 +40,10 @@ namespace Mod::Perf::MvM_Load_Popfile
 		DETOUR_MEMBER_CALL(CTFGameRules_SetupOnRoundStart)();
 	}
 
-	DETOUR_DECL_MEMBER(bool, CPopulationManager_Initialize)
+	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		if (rc_CPopulationManager_JumpToWave > 0 && rc_CTFGameRules_SetupOnRoundStart == 0) return true;
-		return DETOUR_MEMBER_CALL(CPopulationManager_Initialize)();
+		return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
 	}
 
 	class CMod : public IMod
@@ -54,7 +54,7 @@ namespace Mod::Perf::MvM_Load_Popfile
 			MOD_ADD_DETOUR_STATIC(tf_mvm_popfile,              "tf_mvm_popfile");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_ResetMap, "CPopulationManager::ResetMap", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename, "CPopulationManager::SetPopulationFilename");
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_Initialize, "CPopulationManager::Initialize", HIGHEST);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_Parse, "CPopulationManager::Parse", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_SetupOnRoundStart, "CTFGameRules::SetupOnRoundStart");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave, "CPopulationManager::JumpToWave");
 		}
