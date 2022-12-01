@@ -57,7 +57,7 @@ public:
 
 	virtual void	SetChangeTick( const int *pPropIndices, int nPropIndices, const int iTick )
 	{
-        bool same = m_LastChangeTicks.size() == nPropIndices;
+        bool same = (int)m_LastChangeTicks.size() == nPropIndices;
         m_LastChangeTicks.resize(nPropIndices);
 		for ( int i=0; i < nPropIndices; i++ )
 		{
@@ -225,7 +225,7 @@ namespace Mod::Perf::SendProp_Optimize
                 bf_read toBits( "SendTable_CalcDelta/toBits", pToState, BitByte(nToBits), nToBits );
                 CDeltaBitsReader toBitsReader( &toBits );
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
-                int lastprop = 0;
+                unsigned int lastprop = 0;
                 int lastoffset = 0;
                 int lastoffsetpostskip = 0;
                 for ( ; ; iToProp = toBitsReader.ReadNextPropIndex())
@@ -336,7 +336,8 @@ namespace Mod::Perf::SendProp_Optimize
             int firstPropIndex = propPropProxy[child->m_DataTableProxyIndex];
             if (firstPropIndex != 65535) {
                 bool prevWritten = propWriteOffset[firstPropIndex].offset != 65535;
-                return (newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten);
+                if ((newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten))
+                    return true;
             }
 
             if (!child->m_Children.IsEmpty() && newBase != nullptr)
@@ -414,7 +415,7 @@ namespace Mod::Perf::SendProp_Optimize
         // }
 
         if (!cache.firsttime) {
-            if (prop_write_offset[objectID].size() != pTable->m_pPrecalc->m_Props.Count() + 1) {
+            if ((int) prop_write_offset[objectID].size() != pTable->m_pPrecalc->m_Props.Count() + 1) {
                 prop_write_offset[objectID].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
                 //Msg("Bad size %s\n", entity->GetClassname());
                 return false;
@@ -477,7 +478,7 @@ namespace Mod::Perf::SendProp_Optimize
                     //DevMsg("max write offset %d %s %d\n", propOffsets[i], pProp->GetName(), bit_offset);
 
 
-                    void *pStructBaseOffset;
+                    char *pStructBaseOffset;
                     
                     pStructBaseOffset = pStruct + cache.prop_offsets[propOffsets[i]] - pProp->GetOffset();
 
@@ -750,20 +751,20 @@ namespace Mod::Perf::SendProp_Optimize
             PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket( objectID, edict->m_NetworkSerialNumber /*snapshot->m_pEntities[ edictnum ].m_nSerialNumber*/ );
             if (pPrevFrame != nullptr) {
 
-                int offsetcount = cache.prop_offset_sendtable.size();
+                uint offsetcount = cache.prop_offset_sendtable.size();
                 if (prop_value_old[objectID].size() != offsetcount) {
                     prop_value_old[objectID].resize(offsetcount);
                 }
                 auto old_value_data = prop_value_old[objectID].data();
                 auto pStruct = (char *)edict->GetUnknown();
-                for (int i = 0; i < offsetcount; i++) {
+                for (uint i = 0; i < offsetcount; i++) {
                     PropIndexData &data = cache.prop_offset_sendtable[i];
                     old_value_data[i] = *(int*)(pStruct + data.offset);
                 }
 
                 SendTable *pTable = serverclass->m_pTable;
                 int propcount = pTable->m_pPrecalc->m_Props.Count();
-                if (prop_write_offset[objectID].size() != propcount + 1) {
+                if ((int) prop_write_offset[objectID].size() != propcount + 1) {
                     prop_write_offset[objectID].resize(propcount + 1);
                 }
 
@@ -773,7 +774,7 @@ namespace Mod::Perf::SendProp_Optimize
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
                 
                 auto offset_data = prop_write_offset[objectID].data();
-                for (int i = 0; i < iToProp; i++) {
+                for (uint i = 0; i < iToProp; i++) {
                     offset_data[i].offset = 65535;
                 }
                 
@@ -785,8 +786,8 @@ namespace Mod::Perf::SendProp_Optimize
                 for ( ; iToProp < MAX_DATATABLE_PROPS; iToProp = toBitsReader.ReadNextPropIndex())
                 { 
                     const SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
-                    if (iToProp != lastprop + 1) {
-                        for (int i = lastprop + 1; i < iToProp; i++) {
+                    if ((int)iToProp != lastprop + 1) {
+                        for (int i = lastprop + 1; i < (int) iToProp; i++) {
                             offset_data[i].offset = 65535;
                             //Msg("Set offset data %s %d to invalid\n", pTable->GetName(), i);
                         }
@@ -1328,9 +1329,6 @@ namespace Mod::Perf::SendProp_Optimize
                 for (int iToProp = 0; iToProp < sendTable->m_pPrecalc->m_Props.Count(); iToProp++)
                 { 
                     const SendProp *pProp = sendTable->m_pPrecalc->m_Props[iToProp];
-                    if (sendTable == playerSendTable) {
-                        Msg("Prop %d %d %s\n", sendTable->m_pPrecalc->m_PropProxyIndices[iToProp], iToProp, pProp->GetName());
-                    }
 
                     pmStack.SeekToProp( iToProp );
 
@@ -1341,7 +1339,7 @@ namespace Mod::Perf::SendProp_Optimize
                 // bool local = player_local_exclusive_send_proxy[player_prop_cull[iToProp]];
                     //Msg("Local %s %d %d %d %d\n",pProp->GetName(), local, local2, sendproxies->m_SendLocalDataTable, pProp->GetDataTableProxyFn());
 
-                    int dataTableIndex = proxyStack[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]];
+                    auto dataTableIndex = proxyStack[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]];
                     serverClassCache->prop_cull[iToProp] = dataTableIndex;
                     if (dataTableIndex < sendTable->m_pPrecalc->m_nDataTableProxies) {
                         serverClassCache->prop_propproxy_first[dataTableIndex] = iToProp;
@@ -1423,13 +1421,13 @@ namespace Mod::Perf::SendProp_Optimize
             
             
 
-            void *predictable_id_func = nullptr;
-            for (int i = 0; i < playerSendTable->m_pPrecalc->m_DatatableProps.Count(); i++) {
-                const char *name  = playerSendTable->m_pPrecalc->m_DatatableProps[i]->GetName();
-                if (strcmp(name, "predictable_id") == 0) {
-                    predictable_id_func = playerSendTable->m_pPrecalc->m_DatatableProps[i]->GetDataTableProxyFn();
-                }
-            }
+            // void *predictable_id_func = nullptr;
+            // for (int i = 0; i < playerSendTable->m_pPrecalc->m_DatatableProps.Count(); i++) {
+            //     const char *name  = playerSendTable->m_pPrecalc->m_DatatableProps[i]->GetName();
+            //     if (strcmp(name, "predictable_id") == 0) {
+            //         predictable_id_func = playerSendTable->m_pPrecalc->m_DatatableProps[i]->GetDataTableProxyFn();
+            //     }
+            // }
 
             //CDetour *detour = new CDetour("SendProxy_SendPredictableId", predictable_id_func, GET_STATIC_CALLBACK(SendProxy_SendPredictableId), GET_STATIC_INNERPTR(SendProxy_SendPredictableId));
             //this->AddDetour(detour);
