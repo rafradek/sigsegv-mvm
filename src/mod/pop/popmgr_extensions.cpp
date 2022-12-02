@@ -26,9 +26,9 @@
 #include "mod/etc/mapentity_additions.h"
 #include <fmt/core.h>
 
-WARN_IGNORE__REORDER()
-#include <../server/vote_controller.h>
-WARN_RESTORE()
+// WARN_IGNORE__REORDER()
+// #include <../server/vote_controller.h>
+// WARN_RESTORE()
 
 
 #define UNW_LOCAL_ONLY

@@ -3997,9 +3997,9 @@ namespace Util::Lua
         }
     }
 
-	DETOUR_DECL_STATIC(int, DispatchSpawn, CBaseEntity *entity)
+	DETOUR_DECL_STATIC(int, DispatchSpawn, CBaseEntity *entity, bool flag)
 	{
-        auto result = DETOUR_STATIC_CALL(DispatchSpawn)(entity);
+        auto result = DETOUR_STATIC_CALL(DispatchSpawn)(entity, flag);
         auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr && !entity->IsPlayer()) {
             mod->FireCallback(ON_SPAWN);

@@ -318,6 +318,7 @@ class IVideoRecorder;
 #undef   NO_STRING_T
 #undef WEAK_STRING_T
 #include "sdk2013/platform.h"
+#include "sdk2013/const.h"
 #include <interface.h>
 #include "sdk2013/commonmacros.h"
 #include "sdk2013/basetypes.h"
@@ -331,6 +332,7 @@ WARN_RESTORE()
 #include "sdk2013/vector.h"
 #include "sdk2013/vector4d.h"
 #include "sdk2013/mathlib.h"
+#include "sdk2013/basehandle.h"
 #include <string_t.h>
 #include <annotations.h>
 WARN_IGNORE__CLASS_MEMACCESS()
@@ -487,6 +489,8 @@ WARN_RESTORE()
 #endif
 
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_BASEHANDLE_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_COLOR_H);
@@ -494,6 +498,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR2D_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR4D_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_MATHLIB_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H);

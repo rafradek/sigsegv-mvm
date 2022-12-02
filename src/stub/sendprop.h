@@ -591,7 +591,7 @@ public:
 			}
 			m_pIsPointerModifyingProxy[pCurChild->m_RecursiveProxyIndex] = 
 				IsNonPointerModifyingProxy(pChildProp->GetDataTableProxyFn(), m_pSendProxies) ? 
-					m_pIsPointerModifyingProxy[pNode->m_RecursiveProxyIndex] : pChildProp;
+					m_pIsPointerModifyingProxy[pNode->m_RecursiveProxyIndex] : pCurChild;
 			m_iBaseOffset[pCurChild->m_RecursiveProxyIndex] = (int)pStructBase;
 
 			RecurseAndCallProxies( pCurChild, pNewStructBase );
@@ -601,7 +601,7 @@ public:
 public:
 	CSendTablePrecalc *m_pPropMapStackPrecalc;
 	const CStandardSendProxies *m_pSendProxies;
-	const SendProp *m_pIsPointerModifyingProxy[MAX_PROXY_RESULTS] {nullptr};
+	const CSendNode *m_pIsPointerModifyingProxy[MAX_PROXY_RESULTS] {nullptr};
 	int m_iBaseOffset[MAX_PROXY_RESULTS] {0};
 };
 
@@ -695,27 +695,6 @@ static inline void Int_Encode( const unsigned char *pStruct, DVariant *pVar, con
 
 		nValue &= nPreserveBits;
 		nValue |= nSignExtension;
-
-#ifdef DBGFLAG_ASSERT
-		// Assert that either the property is unsigned and in valid range,
-		// or signed with a consistent sign extension in the high bits
-		if ( pProp->m_nBits < 32 )
-		{
-			if ( pProp->GetFlags() & SPROP_UNSIGNED )
-			{
-				AssertMsg3( nValue == pVar->m_Int, "Unsigned prop %s needs more bits? Expected %i == %i", pProp->GetName(), nValue, pVar->m_Int );
-			}
-			else 
-			{
-				AssertMsg3( nValue == pVar->m_Int, "Signed prop %s needs more bits? Expected %i == %i", pProp->GetName(), nValue, pVar->m_Int );
-			}
-		}
-		else
-		{
-			// This should never trigger, but I'm leaving it in for old-time's sake.
-			Assert( nValue == pVar->m_Int );
-		}
-#endif
 
 		pOut->WriteUBitLong( nValue, pProp->m_nBits, false );
 	}
@@ -821,6 +800,64 @@ static inline void String_Encode( const unsigned char *pStruct, DVariant *pVar, 
 	pOut->WriteUBitLong( len, DT_MAX_STRING_BITS );
 	pOut->WriteBits( pVar->m_pString, len * 8 );
 }
+
+static inline int Array_GetLength( const unsigned char *pStruct, const SendProp *pProp, int objectID )
+{
+	// Get the array length from the proxy.
+	ArrayLengthSendProxyFn proxy = pProp->GetArrayLengthProxy();
+	
+	if ( proxy )
+	{
+		int nElements = proxy( pStruct, objectID );
+		
+		// Make sure it's not too big.
+		if ( nElements > pProp->GetNumElements() )
+		{
+			Assert( false );
+			nElements = pProp->GetNumElements();
+		}
+
+		return nElements;
+	}
+	else
+	{	
+		return pProp->GetNumElements();
+	}
+}
+
+static inline void Array_Encode( const unsigned char *pStruct, DVariant *pVar, const SendProp *pProp, bf_write *pOut, int objectID )
+{
+	SendProp *pArrayProp = pProp->GetArrayProp();
+	AssertMsg( pArrayProp, "Array_Encode: missing m_pArrayProp for SendProp '%s'.", pProp->m_pVarName );
+	
+	int nElements = Array_GetLength( pStruct, pProp, objectID );
+
+	// Write the number of elements.
+	pOut->WriteUBitLong( nElements, Q_log2( pProp->GetNumElements() ) + 1);
+
+	unsigned char *pCurStructOffset = (unsigned char*)pStruct + pArrayProp->GetOffset();
+	for ( int iElement=0; iElement < nElements; iElement++ )
+	{
+		DVariant var;
+
+		// Call the proxy to get the value, then encode.
+		pArrayProp->GetProxyFn()( pArrayProp, pStruct, pCurStructOffset, &var, iElement, objectID );
+		g_PropTypeFns[pArrayProp->GetType()].Encode( pStruct, &var, pArrayProp, pOut, objectID ); 
+		
+		pCurStructOffset += pProp->GetElementStride();
+	}
+}
+
+using PropEncodeFunc = void (*)( const unsigned char *pStruct, DVariant *pVar, const SendProp *pProp, bf_write *pOut, int objectID );
+static PropEncodeFunc encode_functions[DPT_NUMSendPropTypes] {
+	Int_Encode,
+	Float_Encode,
+	Vector_Encode,
+	VectorXY_Encode,
+	String_Encode,
+	Array_Encode,
+	nullptr,
+};
 
 class CClientFrame
 {

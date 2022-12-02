@@ -13,10 +13,10 @@ namespace Mod::Sniper::Charge_Uncap
 		0xf3, 0x0f, 0x59, 0x40, 0x10,                   // +0011  mulss xmm0,dword ptr [eax+0x10]
 		0x8d, 0x83, 0xdc, 0x07, 0x00, 0x00,             // +0016  lea eax,[ebx+m_flChargedDamage]
 		0xf3, 0x0f, 0x58, 0x83, 0xdc, 0x07, 0x00, 0x00, // +001C  addss xmm0,dword ptr [ebx+m_flChargedDamage]
-		0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0024  mov dword ptr [esp+8],4
-		0x89, 0x54, 0x24, 0x04,                         // +002C  mov [esp+4],edx
-		0x89, 0x04, 0x24,                               // +0030  mov [esp],eax
-		0xf3, 0x0f, 0x5d, 0x05, 0xb0, 0x75, 0x1b, 0x01, // +0033  minss xmm0,[150.0f]
+//		0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0024  mov dword ptr [esp+8],4
+		//0x89, 0x54, 0x24, 0x04,                         // +002C  mov [esp+4],edx
+		//0x89, 0x04, 0x24,                               // +0030  mov [esp],eax
+		//0xf3, 0x0f, 0x5d, 0x05, 0xb0, 0x75, 0x1b, 0x01, // +0033  minss xmm0,[150.0f]
 	};
 	
 	struct CPatch_UncapChargeRate_CTFSniperRifle : public CPatch
@@ -35,7 +35,7 @@ namespace Mod::Sniper::Charge_Uncap
 			
 			mask.SetRange(0x04 + 4, 4, 0x00);
 			mask.SetRange(0x0c + 4, 1, 0x00);
-			mask.SetRange(0x33 + 4, 4, 0x00);
+			//mask.SetRange(0x33 + 4, 4, 0x00);
 			
 			return true;
 		}
@@ -45,7 +45,6 @@ namespace Mod::Sniper::Charge_Uncap
 			/* NOP out the MINSS instruction */
 			buf .SetRange(0x04, 8, 0x90);
 			mask.SetRange(0x04, 8, 0xff);
-			
 			return true;
 		}
 		
@@ -61,10 +60,10 @@ namespace Mod::Sniper::Charge_Uncap
 		0xf3, 0x0f, 0x59, 0x40, 0x10,                   // +0011  mulss xmm0,dword ptr [eax+0x10]
 		0x8d, 0x83, 0xdc, 0x07, 0x00, 0x00,             // +0016  lea eax,[ebx+m_flChargedDamage]
 		0xf3, 0x0f, 0x58, 0x83, 0xdc, 0x07, 0x00, 0x00, // +001C  addss xmm0,dword ptr [ebx+m_flChargedDamage]
-		0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0024  mov dword ptr [esp+8],4
-		0x89, 0x54, 0x24, 0x04,                         // +002C  mov [esp+4],edx
-		0x89, 0x04, 0x24,                               // +0030  mov [esp],eax
-		0xf3, 0x0f, 0x5d, 0x05, 0xb0, 0x75, 0x1b, 0x01, // +0033  minss xmm0,[150.0f]
+		//0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0024  mov dword ptr [esp+8],4
+		//0x89, 0x54, 0x24, 0x04,                         // +002C  mov [esp+4],edx
+		//0x89, 0x04, 0x24,                               // +0030  mov [esp],eax
+		//0xf3, 0x0f, 0x5d, 0x05, 0xb0, 0x75, 0x1b, 0x01, // +0033  minss xmm0,[150.0f]
 	};
 	
 	struct CPatch_UncapChargeRate_CTFSniperRifleClassic : public CPatch
@@ -83,7 +82,7 @@ namespace Mod::Sniper::Charge_Uncap
 			
 			mask.SetRange(0x04 + 4, 4, 0x00);
 			mask.SetRange(0x0c + 4, 1, 0x00);
-			mask.SetRange(0x33 + 4, 4, 0x00);
+			//mask.SetRange(0x33 + 4, 4, 0x00);
 			
 			return true;
 		}
@@ -167,7 +166,7 @@ namespace Mod::Sniper::Charge_Uncap
 		CMod() : IMod("Sniper:Charge_Uncap")
 		{
 			this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifle());
-			this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifleClassic());
+			//this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifleClassic());
 		}
 	};
 	CMod s_Mod;

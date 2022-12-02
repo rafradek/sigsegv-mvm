@@ -16,16 +16,16 @@ namespace Mod::MvM::Human_Death_Yells
 		0x8b, 0x83, 0x00, 0x00, 0x00, 0x00,       // +0011  mov eax,[ebx+CTFPlayer::m_LastDamageType]
 		
 		0xa8, 0x20,                               // +0017  test al,DMG_FALL
-		0x75, 0x00,                               // +0019  jnz +0xXX
+		0x0F, 0x85, 0x8C, 0x00, 0x00, 0x00,       // +0019  jnz +0xXX
 		
-		0xa8, 0x40,                               // +001B  test al,DMG_BLAST
-		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +001D  jnz +0xXXXXXXXX
+		0xa8, 0x40,                               // +001F  test al,DMG_BLAST
+		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +0021  jnz +0xXXXXXXXX
 		
-		0xa9, 0x00, 0x00, 0x10, 0x00,             // +0023  test eax,DMG_CRITICAL
-		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +0028  jnz +0xXXXXXXXX
+		0xa9, 0x00, 0x00, 0x10, 0x00,             // +0027  test eax,DMG_CRITICAL
+		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +002C  jnz +0xXXXXXXXX
 		
-		0xa8, 0x80,                               // +002E  test al,DMG_CLUB
-		0x74, 0x00,                               // +0030  jz +0xXX
+		0xa8, 0x80,                               // +0032  test al,DMG_CLUB
+		0x74, 0x00,                               // +0034  jz +0xXX
 	};
 	
 	struct CPatch_CTFPlayer_DeathSound : public CPatch
@@ -48,11 +48,11 @@ namespace Mod::MvM::Human_Death_Yells
 			mask.SetRange(0x02 + 1, 1, 0x00);
 			mask.SetRange(0x0b + 2, 4, 0x00);
 			mask.SetRange(0x11 + 2, 4, 0x00); // hypothetically we could get the offset for CTFPlayer::m_LastDamageType
-			mask.SetRange(0x19 + 1, 1, 0x00);
-			mask.SetRange(0x1d + 2, 4, 0x00);
-			mask.SetRange(0x23 + 2, 4, 0x00);
-			mask.SetRange(0x28 + 2, 4, 0x00);
-			mask.SetRange(0x30 + 1, 1, 0x00);
+			mask.SetRange(0x19 + 2, 4, 0x00);
+			mask.SetRange(0x21 + 2, 4, 0x00);
+			mask.SetRange(0x27 + 2, 4, 0x00);
+			mask.SetRange(0x2c + 2, 4, 0x00);
+			mask.SetRange(0x34 + 1, 1, 0x00);
 			
 			return true;
 		}
@@ -104,7 +104,7 @@ namespace Mod::MvM::Human_Death_Yells
 			
 			this->AddPatch(new CPatch_CTFPlayer_DeathSound());
 			
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_DeathSound, "CTFPlayer::DeathSound", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
 		}
 	};

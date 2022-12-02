@@ -5757,7 +5757,7 @@
 				"DispatchSpawn"
 				{
 					type "sym"
-					sym  "_Z13DispatchSpawnP11CBaseEntity"
+					sym  "_Z13DispatchSpawnP11CBaseEntityb"
 				}
 				"SendProxy_StringT_To_String"
 				{
@@ -6666,6 +6666,23 @@
 				{
 					type "sym"
 					sym  "_ZN12CTFGameRules17SetupOnRoundStartEv"
+				}
+				"CSingleUserRecipientFilter::CSingleUserRecipientFilter"
+				{
+					type "sym"
+					sym  "_ZN26CSingleUserRecipientFilterC2EPK11CBasePlayer"
+				}
+				"SendProxy_AngleToFloat"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z22SendProxy_AngleToFloatPK8SendPropPKvS3_P8DVariantii"
+				}
+				"SendProxy_Empty"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZL15SendProxy_EmptyPK8SendPropPKvS3_P8DVariantii"
 				}
 				
 			}
