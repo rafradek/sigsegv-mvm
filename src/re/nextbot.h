@@ -48,11 +48,11 @@ template<typename T> class Action;
 SIZE_CHECK(CKnownEntity,               0x0030); // 0x002d
 SIZE_CHECK(INextBotEventResponder,     0x0004);
 SIZE_CHECK(IContextualQuery,           0x0004);
-SIZE_CHECK(INextBotComponent,          0x0014);
-SIZE_CHECK(IIntention,                 0x0018);
-SIZE_CHECK(IBody,                      0x0014);
-SIZE_CHECK(ILocomotion,                0x0058);
-SIZE_CHECK(IVision,                    0x00c4);
+SIZE_CHECK(INextBotComponent,          0x0018);
+SIZE_CHECK(IIntention,                 0x001c);
+SIZE_CHECK(IBody,                      0x0018);
+SIZE_CHECK(ILocomotion,                0x005c);
+SIZE_CHECK(IVision,                    0x00c8);
 SIZE_CHECK(INextBot,                   0x0060);
 SIZE_CHECK(Behavior<CTFBot>,           0x0050);
 SIZE_CHECK(Action<CTFBot>,             0x0034); // 0x0032

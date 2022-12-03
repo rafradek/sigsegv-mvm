@@ -27,6 +27,10 @@ public:
 	
 	bool IsLinked() const { return this->m_bLinked; }
 	virtual bool ClientSide() { return false; }
+
+	virtual const char *GetNameDebug() { return nullptr; }
+	virtual const char *GetTypeDebug() { return nullptr; }
+	virtual uintptr_t GetAddressDebug() { return 0; }
 	
 protected:
 	ILinkage() {}
@@ -70,6 +74,10 @@ public:
 		return (*this->GetFuncPtr())(args...);
 	}
 	
+	virtual const char *GetNameDebug() { return m_pszFuncName; }
+	virtual const char *GetTypeDebug() { return "STATIC_FUNC"; }
+	virtual uintptr_t GetAddressDebug() { return (uintptr_t) m_pFuncPtr; }
+
 private:
 	virtual void ForceAddr(uintptr_t addr) override { this->m_pFuncPtr = (FPtr)addr; }
 	
@@ -104,6 +112,10 @@ public:
 //		DevMsg("MemberFuncThunk::Link OK 0x%08x \"%s\"\n", (uintptr_t)this->m_pFuncPtr, this->m_pszFuncName);
 		return true;
 	}
+	
+	virtual const char *GetNameDebug() { return m_pszFuncName; }
+	virtual const char *GetTypeDebug() { return "MEMBER_FUNC"; }
+	virtual uintptr_t GetAddressDebug() { return (uintptr_t)m_pFuncPtr; }
 	
 protected:
 	const void *GetFuncPtr() const { return this->m_pFuncPtr; }
@@ -213,7 +225,11 @@ public:
 //		DevMsg("MemberVFuncThunk::Link OK +0x%x \"%s\"\n", this->m_iVTIndex * 4, this->m_pszFuncName);
 		return true;
 	}
-	
+
+	virtual const char *GetNameDebug() { return m_pszFuncName; }
+	virtual const char *GetTypeDebug() { return "VIRTUAL_FUNC"; }
+	virtual uintptr_t GetAddressDebug() { return GetVTableIndex() * sizeof(uintptr_t); }
+
 protected:
 	int GetVTableIndex() const { return this->m_iVTIndex; }
 	
@@ -327,6 +343,10 @@ public:
 	}
 	
 	inline T& GetRef() const { return *this->m_pObjPtr; }
+	
+	virtual const char *GetNameDebug() { return m_pszObjName; }
+	virtual const char *GetTypeDebug() { return "GLOBAL"; }
+	virtual uintptr_t GetAddressDebug() { return  (uintptr_t) this->m_pObjPtr; }
 	
 protected:
 	inline T *GetPtr() const { return this->m_pObjPtr; }

@@ -297,7 +297,7 @@ namespace Mod::Util::Client_Cmds
 	// TODO: another version that allows affecting other players?
 	void CC_AddCond(CTFPlayer *player, const CCommand& args)
 	{
-		if (args.ArgC() != 2 && args.ArgC() != 3) {
+		if (args.ArgC() != 2 && args.ArgC() != 3 && args.ArgC() != 4) {
 			ClientMsg(player, "[sig_addcond] Usage: any of the following:\n"
 				"  sig_addcond <cond_number>            | add condition by number (unlimited duration)\n"
 				"  sig_addcond <cond_name>              | add condition by name (unlimited duration)\n"
@@ -306,7 +306,6 @@ namespace Mod::Util::Client_Cmds
 				"  (condition names are \"TF_COND_*\"; look them up in tf.fgd or on the web)\n");
 			return;
 		}
-		
 		ETFCond cond = TF_COND_INVALID;
 		if (StringToIntStrict(args[1], (int&)cond)) {
 			if (!IsValidTFConditionNumber(cond)) {
@@ -321,9 +320,18 @@ namespace Mod::Util::Client_Cmds
 			}
 		}
 		
+		std::vector<CBasePlayer *> vec;
+
+		if (args.ArgC() > 2) {
+			GetSMTargets(player, args[2], vec);
+		}
+		else {
+			vec.push_back(player);
+		}
+		
 		float duration = -1.0f;
-		if (args.ArgC() == 3) {
-			if (!StringToFloatStrict(args[2], duration)) {
+		if (args.ArgC() > 3) {
+			if (!StringToFloatStrict(args[3], duration)) {
 				ClientMsg(player, "[sig_addcond] Error: %s is not a valid condition duration\n", args[2]);
 				return;
 			}
@@ -337,7 +345,13 @@ namespace Mod::Util::Client_Cmds
 		float        before_duration = player->m_Shared->GetConditionDuration(cond);
 		CBaseEntity *before_provider = player->m_Shared->GetConditionProvider(cond);
 		
-		player->m_Shared->AddCond(cond, duration);
+		if (vec.empty()) {
+			ClientMsg(player, "[sig_addattr] Error: no matching target found for \"%s\".\n", args[2]);
+			return;
+		}
+		for (auto target : vec) {
+			ToTFPlayer(target)->m_Shared->AddCond(cond, duration);
+		}
 		
 		bool         after_incond   = player->m_Shared->InCond(cond);
 		float        after_duration = player->m_Shared->GetConditionDuration(cond);

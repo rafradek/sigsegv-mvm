@@ -295,8 +295,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				TFGameRules()->SetCustomUpgradesFile("scripts/items/mvm_upgrades.txt");
 				convalue = "scripts/items/"+convalue;
 				TFGameRules()->SetCustomUpgradesFile(convalue.c_str());
-				convalue = "download/"+convalue;
-				TFGameRules()->SetCustomUpgradesFile(convalue.c_str());
 				if (force && last_custom_upgrades != convalue) {
 					received_message_tick = true;
 					PrintToChatAll("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)");
@@ -4921,8 +4919,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (scriptManager->CheckGlobal("GetWaveSpawnLocation")) {
 				lua_pushstring(scriptManager->GetState(), state.m_SpawnLocations[location].name.c_str());
 				scriptManager->Call(1, 2);
-				int result = luaL_optinteger(scriptManager->GetState(), -2, -1);
-				if (result != -1) {
+				int isint = 0;
+				int result = lua_tointegerx(scriptManager->GetState(), -2, &isint);
+				if (result != -1 && isint) {
                     auto vec = Util::Lua::LVectorGetNoCheckNoInline(scriptManager->GetState(), -1);
 					if (vec != nullptr) {
 						vSpawnPosition = *vec;

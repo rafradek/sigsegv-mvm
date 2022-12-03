@@ -25,10 +25,10 @@ autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 l
 cd ..
 mkdir -p alliedmodders
 cd alliedmodders
-git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.10-dev
+git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.11-dev
 git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
 git clone hl2sdk-proxy-repo hl2sdk-sdk2013 -b sdk2013
-git clone https://github.com/alliedmodders/metamod-source mmsource-1.10 -b 1.10-dev
+git clone https://github.com/alliedmodders/metamod-source -b 1.11-dev
 git clone https://github.com/alliedmodders/ambuild
 ```
 

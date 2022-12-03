@@ -20,7 +20,6 @@ public:
 
 	void SetGroundNormal(const Vector &vec) { m_groundNormal = vec; }
 
-private:
 	NextBotCombatCharacter *m_nextBot;
 
 	Vector m_priorPos;										// last update's position
