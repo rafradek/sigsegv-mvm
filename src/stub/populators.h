@@ -317,6 +317,8 @@ struct EventInfo
 {
 	CFmtStrN<256> target; // +0x000
 	CFmtStrN<256> action; // +0x10c
+	CFmtStrN<256> param; // +0x10c
+	float delay;
 };
 
 struct PlayerUpgradeHistory

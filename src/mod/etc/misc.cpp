@@ -7,6 +7,7 @@
 #include "stub/nextbot_cc.h"
 #include "stub/gamerules.h"
 #include "stub/nav.h"
+#include "stub/misc.h"
 #include "util/backtrace.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
@@ -478,8 +479,8 @@ namespace Mod::Etc::Misc
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
 		CBaseEntity::PrecacheModel(STRING(entity->GetModelName()));
 		DETOUR_MEMBER_CALL(CFuncIllusionary_Spawn)();
-	}
-
+	}	
+	
     class CMod : public IMod
 	{
 	public:
@@ -541,5 +542,76 @@ namespace Mod::Etc::Misc
 		"Mod: Stuff i am lazy to make into separate mods",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
+
+
+	extern ConVar sig_etc_max_total_script_files_count;
+	DETOUR_DECL_STATIC(void, Script_StringToFile, const char *filename, const char *string)
+	{
+		// Delete oldest files if over the limit
+		char filepath[512];
+		snprintf(filepath, sizeof(filepath), "%s/scriptdata/%s",g_SMAPI->GetBaseDir(), filename);
+		struct stat stats;
+		std::string oldestFile;
+		time_t oldestFileTime = LONG_MAX;
+		int fileCount = 0;
+
+		// If a new file is created, do the over the limit check
+		if (stat(filepath, &stats) != 0) {
+			char path[512];
+			snprintf(path, sizeof(path), "%s/scriptdata", g_SMAPI->GetBaseDir());
+			DIR *dir;
+			dirent *ent;
+
+			if ((dir = opendir(path)) != nullptr) {
+
+				// Count the files
+				while ((ent = readdir(dir)) != nullptr) {
+					fileCount++;
+				}
+				rewinddir(dir);
+				
+				// Delete 10% of the files if getting over the limit
+				if (fileCount > sig_etc_max_total_script_files_count.GetInt()) {
+					std::vector<std::pair<std::string, time_t>> scriptNameAndModify;
+					
+					while ((ent = readdir(dir)) != nullptr) {
+						if (ent->d_type != DT_DIR) {
+							snprintf(filepath, sizeof(filepath), "%s/%s", path, ent->d_name);
+							stat(filepath, &stats);
+							time_t time = stats.st_mtim.tv_sec;
+							scriptNameAndModify.push_back({filepath, time});
+						}
+					}
+					std::sort(scriptNameAndModify.begin(), scriptNameAndModify.end(), [](std::pair<std::string, time_t> &pair1, std::pair<std::string, time_t> &pair2){
+						return pair1.second < pair2.second;
+					});
+					scriptNameAndModify.resize(sig_etc_max_total_script_files_count.GetInt() / 10 + 1);
+					for (auto &pair : scriptNameAndModify) {
+						unlink(pair.first.c_str());
+					}
+					
+				}
+				closedir(dir);
+			}
+		}
+		DETOUR_STATIC_CALL(Script_StringToFile)(filename, string);
+	}
+
+	class CMod_ScriptSaveLimit : public IMod
+	{
+	public:
+		CMod_ScriptSaveLimit() : IMod("Etc:Misc:ScriptSaveLimit")
+		{
+			// Limit string to file
+			MOD_ADD_DETOUR_STATIC(Script_StringToFile, "Script_StringToFile");
+		}
+	};
+	CMod_ScriptSaveLimit s_ModScriptSaveLimit;
+
+	ConVar sig_etc_max_total_script_files_count("sig_etc_max_total_script_files_count", "100000", FCVAR_NOTIFY,
+		"Mod: Max total count of files created by vscript",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_ModScriptSaveLimit.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }

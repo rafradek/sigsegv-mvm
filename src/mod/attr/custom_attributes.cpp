@@ -3517,7 +3517,7 @@ namespace Mod::Attr::Custom_Attributes
 		
 		float speedHp = GetFastAttributeFloat(player, 1.0f, MOVE_SPEED_AS_HEALTH_DECREASES);
 		if (speedHp != 1.0f) {
-			speedHp = RemapValClamped(player->GetHealth(), speedHp, 1.0f, player->GetMaxHealth() * 0.15f, player->GetMaxHealth() * 0.85f);
+			speedHp = RemapValClamped(player->GetHealth(), player->GetMaxHealth() * 0.15f, player->GetMaxHealth() * 0.85f, speedHp, 1.0f);
 			ret *= speedHp;
 		}
 
@@ -3534,6 +3534,14 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_MakeBleed, CTFPlayer *attacker, CTFWeaponBase *weapon, float bleedTime, int bleeddmg, bool perm, int val)
 	{
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		if (attacker == player) {
+			int noSelfEffect = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( weapon != nullptr ? (CBaseEntity*)weapon : attacker, noSelfEffect, no_self_effect);
+			if (noSelfEffect != 0) {
+				return;
+			}
+		}
 		if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
 			return;
 		}
@@ -3562,7 +3570,14 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iRemoveDamageType, remove_damage_type);
 			info.SetDamageType(info.GetDamageType() & ~(iRemoveDamageType));
 		}
-
+		// Use construction pda as sentry weapon
+		auto sentry = ToBaseObject(info.GetInflictor());
+		if (sentry == nullptr && info.GetInflictor() != nullptr) {
+			sentry = ToBaseObject(info.GetInflictor()->GetOwnerEntity());
+		}
+		if (sentry != nullptr && info.GetWeapon() == nullptr && sentry->GetBuilder() != nullptr) {
+			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
+		}
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
 		//Fire input on hit
@@ -4936,6 +4951,15 @@ namespace Mod::Attr::Custom_Attributes
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		//Msg("Igniter: %d Weapon: %d %s Duration: %f\n", igniter, weapon, weapon != nullptr ? weapon->GetClassname() : "", duration);
 		float remainingFlameTime = shared->m_flFlameRemoveTime;
+		
+		if (igniter == shared->GetOuter()) {
+			int noSelfEffect = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( weapon != nullptr ? (CBaseEntity*)weapon : igniter, noSelfEffect, no_self_effect);
+			if (noSelfEffect != 0) {
+				return;
+			}
+		}
+
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;

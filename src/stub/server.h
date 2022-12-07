@@ -142,6 +142,20 @@ private:
 	static MemberFuncThunk<CNetworkStringTable *, void>                   ft_DeleteAllStrings;
 };
 
+class CNetworkStringTableItem
+{
+	struct itemchange_s {
+		int				tick;
+		int				length;
+		unsigned char	*data;
+	};
+	unsigned char	*m_pUserData;
+	int				m_nUserDataLength;
+	int				m_nTickChanged;
+	int				m_nTickCreated;
+	CUtlVector< itemchange_s > *m_pChangeList;	
+};
+
 abstract_class IEntityFactory
 {
 public:

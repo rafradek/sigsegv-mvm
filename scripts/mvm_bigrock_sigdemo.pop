@@ -3243,3 +3243,6 @@ WaveSchedule
 
 // Multiply move speed up to x with decreasing health
 // "move speed as health decreases" 2
+
+// "Cannot ignite or cause bleeding to the wielder"
+// "no self effect" 1

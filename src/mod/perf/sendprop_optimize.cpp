@@ -431,7 +431,7 @@ namespace Mod::Perf::SendProp_Optimize
             }
 
             int firstPropIndex = propPropProxy[child->m_DataTableProxyIndex];
-            if (firstPropIndex != 65535) {
+            if (firstPropIndex != 65535 && firstPropIndex >= 0 && firstPropIndex < precalc->m_Props.Count()) {
                 bool prevWritten = propWriteOffset[firstPropIndex].offset != 65535;
                 if ((newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten))
                     return true;
@@ -727,8 +727,11 @@ namespace Mod::Perf::SendProp_Optimize
         }
         return false;
     }
-
-    ConVar test_write_props("test_write_props", "0");
+    RefCount rc_CHLTVClient_SendSnapshot;
+    DETOUR_DECL_MEMBER(void, CHLTVClient_SendSnapshot, CClientFrame *frame) {
+        SCOPED_INCREMENT(rc_CHLTVClient_SendSnapshot);
+        DETOUR_MEMBER_CALL(CHLTVClient_SendSnapshot)(frame);
+    }
     DETOUR_DECL_STATIC(void, SendTable_WritePropList,
         const SendTable *pTable,
         const void *pState,
@@ -739,11 +742,7 @@ namespace Mod::Perf::SendProp_Optimize
         const int nCheckProps
         )
     {
-        if (test_write_props.GetBool()) {
-        DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
-                return;
-        }
-        if (objectID >= 0) {
+        if (rc_CHLTVClient_SendSnapshot == 0 && objectID >= 0) {
             if ( nCheckProps == 0 ) {
                 // Write single final zero bit, signifying that there no changed properties
                 pOut->WriteOneBit( 0 );
@@ -1181,6 +1180,8 @@ namespace Mod::Perf::SendProp_Optimize
 	public:
 		CMod() : IMod("Perf:SendProp_Optimize")
 		{
+            
+            MOD_ADD_DETOUR_MEMBER(CHLTVClient_SendSnapshot,"CHLTVClient::SendSnapshot");
             MOD_ADD_DETOUR_MEMBER(CParallelProcessor_PackWork_t_Run,   "CParallelProcessor<PackWork_t>::Run");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             MOD_ADD_DETOUR_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
@@ -1371,9 +1372,9 @@ namespace Mod::Perf::SendProp_Optimize
                             }
                         }
                         else {
-                            if (sendTable == playerSendTable) {
-                                Msg("prop %d %s %d\n", iToProp, pProp->GetName(), offset);
-                            }
+                            // if (sendTable == playerSendTable) {
+                            //     Msg("prop %d %s %d\n", iToProp, pProp->GetName(), offset);
+                            // }
                             serverClassCache->prop_special.push_back({propIdToUse});
                         }
                     }

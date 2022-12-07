@@ -2595,4 +2595,14 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4579"
+    {
+        "name"	"no self effect"
+        "attribute_class"	"no_self_effect"
+        "description_string"	"Cannot ignite or cause bleeding to the wielder"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

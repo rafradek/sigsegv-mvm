@@ -422,6 +422,25 @@ inline float CBaseEntity::GetCustomVariableFloat(float defValue)
 }
 
 template<FixedString lit>
+inline int CBaseEntity::GetCustomVariableInt(int defValue)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    if (var.value.FieldType() != FIELD_INTEGER) var.value.Convert(FIELD_INTEGER);
+                    return var.value.Int();
+                }
+            }
+        }
+    }
+    return defValue;
+}
+
+template<FixedString lit>
 inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
 {
    auto data = this->GetExtraEntityData();

@@ -6684,6 +6684,41 @@
 					type "sym"
 					sym  "_ZL15SendProxy_EmptyPK8SendPropPKvS3_P8DVariantii"
 				}
+				"Script_StringToFile"
+				{
+					type "sym"
+					sym  "_ZL19Script_StringToFilePKcS0_"
+				}
+				"CHLTVClient::SendSnapshot"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CHLTVClient12SendSnapshotEP12CClientFrame"
+				}
+				"CHLTVServer::BroadcastLocalChat"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CHLTVServer18BroadcastLocalChatEPKcS1_"
+				}
+				"CBaseClient::Disconnect"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseClient10DisconnectEPKcz"
+				}
+				"CBaseClient::ActivatePlayer"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseClient14ActivatePlayerEv"
+				}
+				"CBaseClient::OnSignonStateFull"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseClient17OnSignonStateFullEv"
+				}
 				
 			}
 			"addrs_group"

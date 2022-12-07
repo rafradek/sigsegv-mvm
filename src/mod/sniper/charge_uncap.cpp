@@ -11,9 +11,9 @@ namespace Mod::Sniper::Charge_Uncap
 		0xf3, 0x0f, 0x5d, 0x05, 0x30, 0x97, 0x2a, 0x01, // +0004  minss xmm0,[100.0f]
 		0xf3, 0x0f, 0x11, 0x45, 0xc8,                   // +000C  movss [ebp-0x38],xmm0
 		0xf3, 0x0f, 0x59, 0x40, 0x10,                   // +0011  mulss xmm0,dword ptr [eax+0x10]
-		0x8d, 0x83, 0xdc, 0x07, 0x00, 0x00,             // +0016  lea eax,[ebx+m_flChargedDamage]
-		0xf3, 0x0f, 0x58, 0x83, 0xdc, 0x07, 0x00, 0x00, // +001C  addss xmm0,dword ptr [ebx+m_flChargedDamage]
-//		0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0024  mov dword ptr [esp+8],4
+		0x8d, 0x45, 0xd8,                               // +0016  lea eax, [ebp+s2]
+		0xf3, 0x0f, 0x58, 0x83, 0xdc, 0x07, 0x00, 0x00, // +0019  addss xmm0,dword ptr [ebx+m_flChargedDamage]
+		//0xc7, 0x44, 0x24, 0x08, 0x04, 0x00, 0x00, 0x00, // +0021  mov dword ptr [esp+8],4
 		//0x89, 0x54, 0x24, 0x04,                         // +002C  mov [esp+4],edx
 		//0x89, 0x04, 0x24,                               // +0030  mov [esp],eax
 		//0xf3, 0x0f, 0x5d, 0x05, 0xb0, 0x75, 0x1b, 0x01, // +0033  minss xmm0,[150.0f]
@@ -30,8 +30,8 @@ namespace Mod::Sniper::Charge_Uncap
 			int off__CTFSniperRifle_m_flChargedDamage;
 			if (!Prop::FindOffset(off__CTFSniperRifle_m_flChargedDamage, "CTFSniperRifle", "m_flChargedDamage")) return false;
 			
-			buf.SetDword(0x16 + 2, (uint32_t)off__CTFSniperRifle_m_flChargedDamage);
-			buf.SetDword(0x1c + 4, (uint32_t)off__CTFSniperRifle_m_flChargedDamage);
+			//buf.SetDword(0x16 + 2, (uint32_t)off__CTFSniperRifle_m_flChargedDamage);
+			buf.SetDword(0x19 + 4, (uint32_t)off__CTFSniperRifle_m_flChargedDamage);
 			
 			mask.SetRange(0x04 + 4, 4, 0x00);
 			mask.SetRange(0x0c + 4, 1, 0x00);
@@ -166,7 +166,7 @@ namespace Mod::Sniper::Charge_Uncap
 		CMod() : IMod("Sniper:Charge_Uncap")
 		{
 			this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifle());
-			//this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifleClassic());
+			this->AddPatch(new CPatch_UncapChargeRate_CTFSniperRifleClassic());
 		}
 	};
 	CMod s_Mod;

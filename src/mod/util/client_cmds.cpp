@@ -1831,21 +1831,25 @@ namespace Mod::Util::Client_Cmds
 					textparam.holdTime = 1.1f;
 					textparam.fxTime = 1.0f;
 					
-					ForEachTFPlayer([&](CTFPlayer *player) {
-						if (!player->IsBot() && ENTINDEX(player) < ARRAYSIZE(cpu_show_player) && cpu_show_player[ENTINDEX(player)] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[ENTINDEX(player)] == 1)) {
+					for (int i = 1; i < ARRAYSIZE(cpu_show_player); i++) {
+						auto player = UTIL_PlayerByIndex(i);
+						if (player != nullptr && !player->IsBot() && cpu_show_player[i] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[i] == 1)) {
 							std::string str;
-							if (highCpu || cpu_show_player[ENTINDEX(player)] == 1) {
+							if (highCpu || cpu_show_player[i] == 1) {
 								str += fmt::format("CPU Usage {:.1f}%\n", (float)(cpu_usage * 100));
 							}
-							if (highEdict || cpu_show_player[ENTINDEX(player)] == 1) {
+							if (highEdict || cpu_show_player[i] == 1) {
 								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
 							}
-							if (highEnt || cpu_show_player[ENTINDEX(player)] == 1) {
+							if (highEnt || cpu_show_player[i] == 1) {
 								str += fmt::format("Logic Entities: {}/2048\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
 							}
 							UTIL_HudMessage(player, textparam, str.c_str());
 						}
-					});
+						if (player == nullptr || player->IsBot()) {
+							cpu_show_player[i] = 0;
+						}
+					}
 					
 				}
 			}
