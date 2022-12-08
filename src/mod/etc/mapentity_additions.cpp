@@ -537,15 +537,15 @@ namespace Mod::Etc::Mapentity_Additions
             }
 		});
 
-    DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName)
+
+    DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName, IEntityFindFilter *filter)
 	{
+		auto entList = reinterpret_cast<CGlobalEntityList *>(this);
         if (szName == nullptr || szName[0] == '\0') return nullptr;
 
-        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByClassname(entity, realname);});
+        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return entList->FindEntityByClassname(entity, realname, filter);});
 
-        if (!cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
-
-		auto entList = reinterpret_cast<CBaseEntityList *>(this);
+        if (!cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName, filter);
 
         string_t lowercaseStr;
         if (last_entity_name == szName) {

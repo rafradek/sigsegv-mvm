@@ -989,7 +989,7 @@
 				"CGlobalEntityList::FindEntityByClassname"
 				{
 					type "pattern"
-					sym  "_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+					sym  "_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKcP17IEntityFindFilter"
 					seg  "text"
 					seek "558bec5356578bf98b4d0885c974158b01ff50088b3081e6ff0f00004603f68b34f7eb068bb70400010085f674318b5d0c8b3e85ff75106880a47010ff1574f26a1083c404eb11395f5c741c538bcfe8ac9ffaff84c075108b760c85f675d25f5e33c05b5dc208008bc75f5e5b5dc20800"
 					mask "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffff00000000ffff00000000ffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

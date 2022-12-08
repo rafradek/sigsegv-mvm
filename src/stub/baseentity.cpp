@@ -3,6 +3,8 @@
 //#include "util/iterate.h"
 #include "stub/objects.h"
 
+MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
+
 MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> CServerNetworkProperty::ft_AttachEdict("CServerNetworkProperty::AttachEdict");
 
 IMPL_DATAMAP(string_t,               CBaseEntity, m_target);

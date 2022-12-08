@@ -9,9 +9,14 @@
 // TODO
 class CGlobalEntityList : public CBaseEntityList {
 public:
+	CBaseEntity *FindEntityByClassname(CBaseEntity *prev, const char *classname, IEntityFindFilter *filter) { return ft_FindEntityByClassname(this, prev, classname, filter); }
+
 	int m_iHighestEnt;
 	int m_iNumEnts;
 	int m_iNumEdicts;
+
+private:
+	static MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> ft_FindEntityByClassname;
 };
 
 

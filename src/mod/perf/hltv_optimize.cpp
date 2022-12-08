@@ -81,7 +81,6 @@ namespace Mod::Perf::HLTV_Optimize
             }
         }
         if (hasplayer && hltvclient != nullptr) {
-            //Msg("Frames to keepa %d\n", hltvserver->CountClientFrames());
             if (hltvServerEmpty) {
                 int tickcount = 32.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
                 int framec = hltvserver->CountClientFrames() - 2;
@@ -112,7 +111,6 @@ namespace Mod::Perf::HLTV_Optimize
             static ConVarRef snapshotrate("tv_snapshotrate");
             static ConVarRef delay("tv_delay");
             int tickcount = 1.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
-            int framesToKeep = 2 + delay.GetFloat() / gpGlobals->interval_per_tick;
             if (delay.GetFloat() <= 0) {
                 int framec = hltvserver->CountClientFrames() - 2;
                 for (int i = 0; i < framec; i++)

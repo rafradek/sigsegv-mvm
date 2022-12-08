@@ -11,13 +11,13 @@ namespace Mod::Perf::Flame_Breakable_Collision
 		DETOUR_MEMBER_CALL(CTFFlameEntity_FlameThink)();
 	}
 	
-	DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName)
+	DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName, IEntityFindFilter *filter)
 	{
 		if (rc_CTFFlameEntity_FlameThink > 0 && strcmp(szName, "func_breakable") == 0) {
 			return nullptr;
 		}
 		
-		return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName);
+		return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName, filter);
 	}
 	
 	

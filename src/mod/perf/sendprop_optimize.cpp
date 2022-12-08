@@ -150,7 +150,6 @@ namespace Mod::Perf::SendProp_Optimize
     struct SpecialDataTableCalc
     {
         std::vector<int> propIndexes;
-        int startPropIndex;
         int baseOffset;
     };
     bool *player_local_exclusive_send_proxy;
@@ -162,7 +161,7 @@ namespace Mod::Perf::SendProp_Optimize
 
         std::vector<SpecialSendPropCalc> prop_special;
 
-        std::unordered_map<const CSendNode *, SpecialDataTableCalc> datatable_special;
+        std::unordered_map<const SendProp *, SpecialDataTableCalc> datatable_special;
 
         unsigned short *prop_offsets;
 
@@ -339,67 +338,23 @@ namespace Mod::Perf::SendProp_Optimize
         }
     }
 
-    unsigned char sizetestbufspecial[DT_MAX_STRING_BUFFERSIZE+2];
-    bf_write sizetestbufspecial_write("packed data writer", sizetestbufspecial, sizeof(sizetestbufspecial));
-    CSendProxyRecipients static_recip;
-    CCycleCount timea1;
-    CCycleCount timea2;
-    inline void RecurseStackSpecialTable(int entindex, CSendTablePrecalc *precalc, unsigned char *base, const CSendNode *node) {
-            auto prop = precalc->m_DatatableProps[node->m_iDatatableProp];
-
-            //Msg("Table %s %s %d\n", prop->GetName(), node->m_pTable->GetName(), base);
-            unsigned char *newBase = nullptr;
-            newBase = (unsigned char*)prop->GetDataTableProxyFn()( 
-                    prop,
-                    base, 
-                    base + prop->GetOffset(), 
-                    &static_recip,
-                    entindex
-                    );
-
-            if (newBase != nullptr) {
-                int propCount = node->m_pTable->m_nProps;
-
-                for (int j = 0; j < propCount; j++) {
-                    DVariant var;
-                    SendProp *pProp = node->m_pTable->GetProp(j);
-
-                    unsigned char *pStructBaseOffset;
-                    pStructBaseOffset = newBase;
-                    CTimeAdder timer1(&timea1);
-                    //Msg("prop %s %d\n", pProp->GetName(), newBase);
-                    var.m_Type = (SendPropType)pProp->m_Type;
-                    pProp->GetProxyFn()( 
-                        pProp,
-                        pStructBaseOffset, 
-                        pStructBaseOffset + pProp->GetOffset(), 
-                        &var, 
-                        0, // iElement
-                        entindex
-                        );
-                    timer1.End();
-
-                    CTimeAdder timer2(&timea2);
-                    sizetestbufspecial_write.SeekToBit(0);
-                    g_PropTypeFns[pProp->m_Type].Encode( 
-                        (const unsigned char *) pStructBaseOffset, 
-                        &var, 
-                        pProp, 
-                        &sizetestbufspecial_write, 
-                        entindex
-                        ); 
-                    timer2.End();
-                }
-                for (int i = 0; i < node->m_Children.Count(); i++) {
-                    CSendNode *child = node->m_Children[i];
-                    RecurseStackSpecialTable(entindex, precalc, newBase, child);
-                }
+    inline bool AreBitsDifferent(bf_read *bf1, bf_read *bf2, int bits)
+    {
+        int dWords = bits >> 5;
+        for (int i = 0; i < dWords; i++) {
+            uint bits1 = bf1->ReadUBitLong(32);
+            uint bits2 = bf2->ReadUBitLong(32);
+            if (bits1 != bits2) {
+                return true;
             }
+        }
+        int remainder = bits - (dWords << 5);
+        return remainder != 0 && bf1->ReadUBitLong(remainder) != bf2->ReadUBitLong(remainder);
     }
 
     int count_tick;
     int recursecount = 0;
-
+    CSendProxyRecipients static_recip;
     inline bool RecurseStackRecipients(unsigned short *propPropProxy, PropWriteOffset *propWriteOffset, int entindex, CSendTablePrecalc *precalc, unsigned char *base, CUtlMemory<CSendProxyRecipients> *recipients, CSendNode *node) {
         bool needFullReload = false;
         for (int i = 0; i < node->m_Children.Count(); i++) {
@@ -430,31 +385,21 @@ namespace Mod::Perf::SendProp_Optimize
                     );
             }
 
-            int firstPropIndex = propPropProxy[child->m_DataTableProxyIndex];
-            if (firstPropIndex != 65535 && firstPropIndex >= 0 && firstPropIndex < precalc->m_Props.Count()) {
-                bool prevWritten = propWriteOffset[firstPropIndex].offset != 65535;
-                if ((newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten))
-                    return true;
+            if (child->m_DataTableProxyIndex < precalc->m_nDataTableProxies) {
+                int firstPropIndex = propPropProxy[child->m_DataTableProxyIndex];
+                if (firstPropIndex != 65535 && firstPropIndex >= 0 && firstPropIndex < precalc->m_Props.Count()) {
+                    bool prevWritten = propWriteOffset[firstPropIndex].offset != 65535;
+                    
+                    if ((newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten)) {
+                        return true;
+                    }
+                }
             }
 
             if (!child->m_Children.IsEmpty() && newBase != nullptr)
                 needFullReload |= RecurseStackRecipients(propPropProxy, propWriteOffset, entindex, precalc, newBase, recipients, child);
         }
         return needFullReload;
-    }
-
-    inline bool AreBitsDifferent(bf_read *bf1, bf_read *bf2, int bits)
-    {
-        int dWords = bits >> 5;
-        for (int i = 0; i < dWords; i++) {
-            uint bits1 = bf1->ReadUBitLong(32);
-            uint bits2 = bf2->ReadUBitLong(32);
-            if (bits1 != bits2) {
-                return true;
-            }
-        }
-        int remainder = bits - (dWords << 5);
-        return remainder != 0 && bf1->ReadUBitLong(remainder) != bf2->ReadUBitLong(remainder);
     }
 
     CSendProxyRecipients recip;
@@ -528,7 +473,6 @@ namespace Mod::Perf::SendProp_Optimize
         if (!cache.firsttime) {
             if ((int) prop_write_offset[objectID].size() != pTable->m_pPrecalc->m_Props.Count() + 1) {
                 prop_write_offset[objectID].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
-                //Msg("Bad size %s\n", entity->GetClassname());
                 return false;
             }
             auto write_offset_data = prop_write_offset[objectID].data();
@@ -557,23 +501,6 @@ namespace Mod::Perf::SendProp_Optimize
                 int propsChanged[100];
                 int propsChangedCount = 0;
                 PropTypeFns *encode_fun = g_PropTypeFns;
-                // if (!cache.prop_special.empty()) {
-                //     for (auto &prop : cache.prop_special) {
-                //         if (propChangeOffsets >= 100) return false;
-                //         propOffsets[propChangeOffsets++] = prop.index;
-                //     }
-                // }
-                
-                // if (!cache.datatable_special.empty()) {
-                //     TIME_SCOPE2(recurseSpecial);
-                //     for (auto &[node, special] : cache.datatable_special) {
-                //         //Msg("Base Offset %d\n", special.baseOffset);
-                //         RecurseStackSpecialTable(objectID, pTable->m_pPrecalc, (unsigned char *)pStruct + special.baseOffset - 1, node);
-                //     }
-                //     Msg("Time spent %.9f %.9f\n", timea1.GetSeconds(), timea2.GetSeconds());
-                //     timea1.Init();
-                //     timea2.Init();
-                // }
                 //{
                 //    TIME_SCOPE2(encodeprop);
                 // Insertion sort on prop indexes 
@@ -864,12 +791,7 @@ namespace Mod::Perf::SendProp_Optimize
                 if (!lastFullEncode) {
                     continue;
                 }
-                //Msg("Fail to encode %s\n", entity->GetClassname());
             }
-            //else {
-            //    Msg("Is full flag %s\n", entity->GetClassname());
-            //}
-            //Msg("Full encode %s\n", entity->GetClassname());
             edict->m_fStateFlags |= FL_EDICT_CHANGED;
             PackWork_t_Process(*work_i);
 
@@ -1379,11 +1301,12 @@ namespace Mod::Perf::SendProp_Optimize
                         }
                     }
                     else {
-                        auto &datatableSpecial = serverClassCache->datatable_special[pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]];
+                        auto &datatableSpecial = serverClassCache->datatable_special[sendTable->m_pPrecalc->m_DatatableProps[pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]->m_iDatatableProp]];
                         
                         //serverClassCache->prop_special.push_back({iToProp, pmStack.m_iBaseOffset[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]], pProp, pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]});
                         datatableSpecial.propIndexes.push_back(iToProp);
                         datatableSpecial.baseOffset = pmStack.m_iBaseOffset[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]];
+
                         serverClassCache->prop_offsets[iToProp] = pProp->GetOffset();
                     }
                     //Msg("Data table for %d %s %d is %d %d %d %d\n", iToProp, pProp->GetName(),  pProp->GetOffset() + (int)pmStack.GetCurStructBase() - 1, (int)pmStack.GetCurStructBase(), pProp->GetProxyFn(), pProp->GetDataTableProxyFn(), pmStack.m_pIsPointerModifyingProxy[sendTable->m_pPrecalc->m_PropProxyIndices[iToProp]]) ;
