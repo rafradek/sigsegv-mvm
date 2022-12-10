@@ -3104,6 +3104,27 @@ namespace Util::Lua
         return 1;
     }
 
+    int LFireEvent(lua_State *l)
+    {
+        auto name = luaL_checkstring(l, 1);
+        auto event = gameeventmanager->CreateEvent(name);
+        if (event == nullptr) {
+            lua_pushboolean(l, false);
+            return 1;
+        }
+        luaL_checktype(l, 2, LUA_TTABLE);
+
+        lua_pushnil(l);
+        
+        while (lua_next(l, 2) != 0) {
+            event->SetString(LOptToString(l, -2), LOptToString(l, -1));
+            lua_pop(l, 1);
+        }
+        gameeventmanager->FireEvent(event);
+        lua_pushboolean(l, true);
+        return 1;
+    }
+
     struct EventCallback
     {   
         LuaState *state;
@@ -3644,6 +3665,7 @@ namespace Util::Lua
         lua_register(l, "IsValid", LIsValid);
         lua_register(l, "AddEventCallback", LAddEventCallback);
         lua_register(l, "RemoveEventCallback", LRemoveEventCallback);
+        lua_register(l, "FireEvent", LFireEvent);
         
 
         luaL_newlib(l, entitylib_f);

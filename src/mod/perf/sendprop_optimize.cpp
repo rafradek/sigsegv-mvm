@@ -15,7 +15,13 @@
 int global_frame_list_counter = 0;
 bool is_client_hltv = false;
 
+// Write offset that indicates that prop is absent and not written into the frame
+#define PROP_WRITE_OFFSET_ABSENT 65535
 
+// Invalid prop index for datatable 
+#define INVALID_PROP_INDEX 65535
+
+// IChangeFrameList implementation that avoids copying for less cpu/memory consumption
 class CachedChangeFrameList : public IChangeFrameList
 {
 public:
@@ -387,9 +393,9 @@ namespace Mod::Perf::SendProp_Optimize
 
             if (child->m_DataTableProxyIndex < precalc->m_nDataTableProxies) {
                 int firstPropIndex = propPropProxy[child->m_DataTableProxyIndex];
-                if (firstPropIndex != 65535 && firstPropIndex >= 0 && firstPropIndex < precalc->m_Props.Count()) {
-                    bool prevWritten = propWriteOffset[firstPropIndex].offset != 65535;
-                    
+                if (firstPropIndex != INVALID_PROP_INDEX && firstPropIndex >= 0 && firstPropIndex < precalc->m_Props.Count()) {
+                    bool prevWritten = propWriteOffset[firstPropIndex].offset != PROP_WRITE_OFFSET_ABSENT;
+
                     if ((newBase != nullptr && !prevWritten) || (newBase == nullptr && prevWritten)) {
                         return true;
                     }
@@ -600,7 +606,7 @@ namespace Mod::Perf::SendProp_Optimize
                         int propcount = pPrecalc->m_Props.Count();
                         write_offset_data[propId].size = sizetestbuf_write.GetNumBitsWritten();
                         for (int j = propId + 1; j < propcount; j++) {
-                            if (write_offset_data[j].offset != 65535)
+                            if (write_offset_data[j].offset != PROP_WRITE_OFFSET_ABSENT)
                                 write_offset_data[j].offset += bit_offset_change;
                         }
                         
@@ -687,7 +693,7 @@ namespace Mod::Perf::SendProp_Optimize
             for (int i = 0; i < nCheckProps; i++) {
                 int propid = pCheckProps[i];
                 int offset = offset_data[propid].offset;
-                if (offset == 0 || offset == 65535)
+                if (offset == 0 || offset == PROP_WRITE_OFFSET_ABSENT)
                     continue;
                 
 
@@ -824,7 +830,7 @@ namespace Mod::Perf::SendProp_Optimize
                 
                 auto offset_data = prop_write_offset[objectID].data();
                 for (uint i = 0; i < iToProp; i++) {
-                    offset_data[i].offset = 65535;
+                    offset_data[i].offset = PROP_WRITE_OFFSET_ABSENT;
                 }
                 
                 // Required for later writeproplist
@@ -837,7 +843,7 @@ namespace Mod::Perf::SendProp_Optimize
                     const SendProp *pProp = pTable->m_pPrecalc->m_Props[iToProp];
                     if ((int)iToProp != lastprop + 1) {
                         for (int i = lastprop + 1; i < (int) iToProp; i++) {
-                            offset_data[i].offset = 65535;
+                            offset_data[i].offset = PROP_WRITE_OFFSET_ABSENT;
                             //Msg("Set offset data %s %d to invalid\n", pTable->GetName(), i);
                         }
                     }
@@ -857,7 +863,7 @@ namespace Mod::Perf::SendProp_Optimize
                     lastprop = iToProp; 
                 }
                 for (lastprop++; lastprop < propcount; lastprop++) {
-                    offset_data[lastprop].offset = 65535;
+                    offset_data[lastprop].offset = PROP_WRITE_OFFSET_ABSENT;
                 }
                 entity_frame_bit_size[objectID] = toBits.GetNumBitsRead();
                 cache.firsttime = false;
@@ -1229,7 +1235,7 @@ namespace Mod::Perf::SendProp_Optimize
                 serverClassCache->prop_cull = new unsigned char[sendTable->m_pPrecalc->m_Props.Count()];
                 serverClassCache->prop_propproxy_first = new unsigned short[sendTable->m_pPrecalc->m_nDataTableProxies];
                 for (int i = 0; i < sendTable->m_pPrecalc->m_nDataTableProxies; i++) {
-                    serverClassCache->prop_propproxy_first[i] = 65535;
+                    serverClassCache->prop_propproxy_first[i] = INVALID_PROP_INDEX;
                 }
 
                 for (int iToProp = 0; iToProp < sendTable->m_pPrecalc->m_Props.Count(); iToProp++)

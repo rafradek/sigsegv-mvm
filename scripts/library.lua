@@ -795,5 +795,11 @@ function AddEventCallback(name, callback) end
 ---@return nil
 function RemoveEventCallback(id) end
 
+--Fires a game event to clients. See https://wiki.alliedmods.net/Team_Fortress_2_Events
+---@param name string Name of the event
+---@param props table Table that contains property names and their values
+---@return boolean success `true` on success, `false` otherwise
+function FireEvent(name, props) end
+
 -- Table for transfering data between missions and maps. Cannot store other tables
 DataTransfer = {}
