@@ -3308,7 +3308,7 @@ namespace Util::Lua
     int LConvarSetFakeClientValue(lua_State *l)
     {
         auto player = LPlayerGetNonNull(l, 1);
-        engine->SetFakeClientConVarValue(player->edict(), luaL_checkstring(l, 2), LOptToString(l, 2));
+        engine->SetFakeClientConVarValue(player->edict(), luaL_checkstring(l, 2), LOptToString(l, 3));
         return 0;
     }
 
