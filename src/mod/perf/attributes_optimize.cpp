@@ -31,15 +31,7 @@ namespace Mod::Perf::Attributes_Optimize
         //CUtlVector<AttribCache> attribs_int;
     };
     
-    EntityAttribCache* attrib_manager_cache_sp[2048] = {nullptr};
-    //CUtlVector<EntityAttribCache> attrib_manager_cache;
-    //std::vector<EntityAttribCache*> attrib_manager_cache;
-    //std::unordered_map<CAttributeManager *, EntityAttribCache*> attrib_manager_mgr_cache;
-    CBaseEntity *last_entity;
-    CBaseEntity *last_entity_2;
-    CBaseEntity *next_entity;
-    EntityAttribCache *last_manager;
-    EntityAttribCache *last_manager_2;
+    EntityAttribCache* attrib_manager_cache_sp[MAX_EDICTS] = {nullptr};
     
     int last_cache_version;
 
@@ -102,10 +94,7 @@ namespace Mod::Perf::Attributes_Optimize
             index_insert = attribs.AddToTail();
 
         entity_cache->count = attribs.Count();
-        //else {
-        //    attribs[index_insert].in_alt = attribs[index_insert].in;
-        //    attribs[index_insert].out_alt = attribs[index_insert].out;
-        //}
+        
         attribs[index_insert].in = value;
         attribs[index_insert].out = result;
         attribs[index_insert].name = attr;
@@ -118,7 +107,6 @@ namespace Mod::Perf::Attributes_Optimize
     }
 
     inline float GetAttribValue(float value, const char *attr, CBaseEntity *ent, bool isint) {
-        
         // if (isint) {
         //     callshookint++;
         // }
@@ -144,23 +132,13 @@ namespace Mod::Perf::Attributes_Optimize
 
         //CTimeAdder timer(&timespent_entity);
         EntityAttribCache *entity_cache = nullptr;
-        if (last_entity == ent) {
-            entity_cache = last_manager;
-        }
-        else {
-            entity_cache = attrib_manager_cache_sp[ENTINDEX(ent)];
+        entity_cache = attrib_manager_cache_sp[ent->entindex()];
+        if (entity_cache == nullptr) {
+            entity_cache = CreateNewCacheEntry(ent);
             if (entity_cache == nullptr) {
-                entity_cache = CreateNewCacheEntry(ent);
-                if (entity_cache == nullptr) {
-                    return value;
-                }
-                //DevMsg("Count %d %d\n",attrib_manager_cache.size(), entity_cache->mgr);
+                return value;
             }
-            
-            //last_entity_2 = last_entity;
-            //last_manager_2 = last_manager;
-            last_entity = ent;
-            last_manager = entity_cache;
+            //DevMsg("Count %d %d\n",attrib_manager_cache.size(), entity_cache->mgr);
         }
         //timer.End();
 
@@ -231,6 +209,8 @@ namespace Mod::Perf::Attributes_Optimize
     }
 
     float GetAttribValueOptimizedIfEnabled(float value, const char *attr, CBaseEntity *ent, bool isint, bool literalString) {
+        if (ent == nullptr) return value;
+
         if (!Enabled() || !literalString) {
             return CAttributeManager::ft_AttribHookValue_float(value, attr, ent, nullptr, literalString);
         }
@@ -239,7 +219,6 @@ namespace Mod::Perf::Attributes_Optimize
 
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
-        //callshookfloat++;
         if (attr == nullptr || ent == nullptr)
             return value;
         
@@ -259,9 +238,7 @@ namespace Mod::Perf::Attributes_Optimize
             return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
         }
 
-        float result = GetAttribValue(static_cast<float>(value), attr, const_cast<CBaseEntity *>(ent), true);
-
-        return RoundFloatToInt(result);
+        return RoundFloatToInt(GetAttribValue(static_cast<float>(value), attr, const_cast<CBaseEntity *>(ent), true));
 	}
 
     int callsapply = 0;
@@ -280,6 +257,7 @@ namespace Mod::Perf::Attributes_Optimize
         if (mgr->m_hOuter != nullptr) {
             auto cache = attrib_manager_cache_sp[mgr->m_hOuter->entindex()];
             if (cache != nullptr) {
+                cache->last_name = nullptr;
                 cache->attribs.Purge();
                 cache->count = 0;
                 //cache->attribs_int.Purge();
@@ -290,11 +268,10 @@ namespace Mod::Perf::Attributes_Optimize
     void RemoveAttributeManager(CBaseEntity *entity) {
         
         int index = ENTINDEX(entity);
-        if (entity == last_entity) {
-            last_entity = nullptr;
+        if (attrib_manager_cache_sp[index] != nullptr) {
+            delete attrib_manager_cache_sp[index];
+            attrib_manager_cache_sp[index] = nullptr;
         }
-        delete attrib_manager_cache_sp[index];
-        attrib_manager_cache_sp[index] = nullptr;
     }
 
     DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
@@ -387,6 +364,7 @@ namespace Mod::Perf::Attributes_Optimize
             if(last_cache_version != cache_version) {
                 for (auto cache : attrib_manager_cache_sp) {
                     if (cache != nullptr) {
+                        cache->last_name = nullptr;
                         cache->attribs.Purge();
                         cache->count = 0;
                         //cache->attribs_int.Purge();

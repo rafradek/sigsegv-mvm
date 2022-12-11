@@ -6719,6 +6719,16 @@
 					type "sym"
 					sym  "_ZN11CBaseClient17OnSignonStateFullEv"
 				}
+				"CTFProjectile_Flare::SendDeathNotice"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Flare15SendDeathNoticeEv"
+				}
+				"CTFGameRules::DeathNotice"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameRules11DeathNoticeEP11CBasePlayerRK15CTakeDamageInfoPKc"
+				}
 				
 			}
 			"addrs_group"

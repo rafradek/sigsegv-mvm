@@ -331,6 +331,14 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 
 		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
 	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_SendDeathNotice)
+	{
+		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
+		if (flare->GetOwnerEntity() != nullptr && ToTFPlayer(flare->GetOwnerEntity()) == nullptr) return;
+
+		DETOUR_MEMBER_CALL(CTFProjectile_Flare_SendDeathNotice)();
+	}
 	
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_ModifyFireBulletsDamage, CTakeDamageInfo* dmgInfo)
@@ -561,6 +569,9 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
+
+			// Fix non player owners of projectiles causing crashes
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_SendDeathNotice,    "CTFProjectile_Flare::SendDeathNotice");
 			
 		}
 	};

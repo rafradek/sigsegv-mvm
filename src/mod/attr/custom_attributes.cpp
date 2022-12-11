@@ -3578,6 +3578,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (sentry != nullptr && info.GetWeapon() == nullptr && sentry->GetBuilder() != nullptr) {
 			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
 		}
+
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
 		//Fire input on hit
@@ -3656,6 +3657,20 @@ namespace Mod::Attr::Custom_Attributes
 		return damage;
 	}
 	
+	DETOUR_DECL_MEMBER(void, CTFGameRules_DeathNotice, CBasePlayer *pVictim, const CTakeDamageInfo &info, const char* eventName)
+	{
+		// Restore sentry damage weapon to null if it was previously set to pda, for correct killstreak counting
+		CTakeDamageInfo infoc = info;
+		auto sentry = ToBaseObject(info.GetInflictor());
+		if (sentry == nullptr) {
+			sentry = ToBaseObject(info.GetInflictor()->GetOwnerEntity());
+		}
+		if (sentry != nullptr && info.GetWeapon() == sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA)) {
+			infoc.SetWeapon(nullptr);
+		}
+		DETOUR_MEMBER_CALL(CTFGameRules_DeathNotice)(pVictim, infoc, eventName);
+	}
+
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_GetMaxBuffedHealth, bool flag1, bool flag2)
 	{
 		static ConVarRef tf_max_health_boost("tf_max_health_boost");
@@ -5449,8 +5464,10 @@ namespace Mod::Attr::Custom_Attributes
         if (entity == last_fast_attrib_entity) {
             last_fast_attrib_entity = nullptr;
         }
-        delete fast_attribute_cache[index];
-        fast_attribute_cache[index] = nullptr;
+		if (fast_attribute_cache[index] != nullptr) {
+			delete fast_attribute_cache[index];
+			fast_attribute_cache[index] = nullptr;
+		}
     }
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
@@ -5956,6 +5973,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_MakeBleed, "CTFPlayerShared::MakeBleed");
             MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_SendWeaponAnim, "CTFWeaponBase::SendWeaponAnim");
+            MOD_ADD_DETOUR_MEMBER(CTFGameRules_DeathNotice, "CTFGameRules::DeathNotice");
 			
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
             //MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");

@@ -932,8 +932,7 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				float attr = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, attr, mult_dmg);
+				CAttributeManager::ft_AttribHookValue_float(1.0f, "mult_dmg", weapon, nullptr, true);
 			}
 			timer.End();
 			
@@ -941,8 +940,7 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				int attr = 1;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, attr, mult_dmg);
+				CAttributeManager::ft_AttribHookValue_int(1, "mult_dmg", weapon, nullptr, true);
 			}
 			timer.End();
 			
