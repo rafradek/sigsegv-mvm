@@ -3662,10 +3662,10 @@ namespace Mod::Attr::Custom_Attributes
 		// Restore sentry damage weapon to null if it was previously set to pda, for correct killstreak counting
 		CTakeDamageInfo infoc = info;
 		auto sentry = ToBaseObject(info.GetInflictor());
-		if (sentry == nullptr) {
+		if (sentry == nullptr && info.GetInflictor() != nullptr) {
 			sentry = ToBaseObject(info.GetInflictor()->GetOwnerEntity());
 		}
-		if (sentry != nullptr && info.GetWeapon() == sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA)) {
+		if (sentry != nullptr && sentry->GetBuilder() != nullptr && info.GetWeapon() == sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA)) {
 			infoc.SetWeapon(nullptr);
 		}
 		DETOUR_MEMBER_CALL(CTFGameRules_DeathNotice)(pVictim, infoc, eventName);
