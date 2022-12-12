@@ -169,10 +169,13 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 					player->SetTeamNumber(mimic->GetTeamNumber());
 					weapon->m_bCurrentAttackIsCrit = mimic->m_bCrits;
 					projectile = weapon->FireProjectile(player);
-					player->SetTeamNumber(oldTeam);
 					player->SetActiveWeapon(oldActive);
 					shooting_weapon = nullptr;
 
+					auto pipebomb = rtti_cast<CTFGrenadePipebombProjectile *>(projectile);
+					if (pipebomb != nullptr && (pipebomb->m_iType == 1 || pipebomb->m_iType == 2)) {
+						mimic->m_Pipebombs.Get().AddToTail(pipebomb);
+					}
 					if (tempPlayer) {
 						weapon->SetOwnerEntity(nullptr);
 						weapon->SetOwner(nullptr);
@@ -181,10 +184,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 							projectile->SetTeamNumber(mimicTeam);
 							if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
 								rtti_cast<CBaseGrenade *>(projectile)->SetThrower(mimic);
-								auto pipebomb = rtti_cast<CTFGrenadePipebombProjectile *>(projectile);
-								if (pipebomb != nullptr && (pipebomb->m_iType == 1 || pipebomb->m_iType == 2)) {
-									mimic->m_Pipebombs.Get().AddToTail(pipebomb);
-								}
 							}
 							if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
 								rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(mimic);
