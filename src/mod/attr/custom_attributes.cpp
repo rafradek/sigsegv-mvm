@@ -5071,6 +5071,8 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CCurrencyPack_MyTouch, CBasePlayer *player)
 	{
+		if (GetFastAttributeFloat(player, 1.0f, MULT_CREDIT_COLLECT_RANGE) <= 0) return false;
+		
 		int nCurHealth = player->GetHealth();
 		int nMaxHealth = player->GetMaxHealth();
 		bool ret = DETOUR_MEMBER_CALL(CCurrencyPack_MyTouch)(player);
