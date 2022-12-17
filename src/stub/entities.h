@@ -602,6 +602,23 @@ public:
 	DECL_DATAMAP (float, m_flBurnDuration);
 };
 
+class CSprite : public CBaseEntity
+{
+	
+};
+
+class CSpriteTrail : public CSprite
+{
+public:
+	DECL_SENDPROP(float, m_flLifeTime);
+};
+
+class CTriggerCatapult : public CBaseTrigger
+{
+public:
+	DECL_DATAMAP (float[34], m_flRefireDelay);
+};
+
 extern GlobalThunk<CBaseEntity *> g_WorldEntity;
 
 inline CBaseEntity* GetWorldEntity() {

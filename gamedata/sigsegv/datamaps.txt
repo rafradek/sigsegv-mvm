@@ -45,6 +45,7 @@
 				"CPropVehicleDriveable" "_ZN21CPropVehicleDriveable9m_DataMapE"
 				"CBaseAnimating"       "_ZN14CBaseAnimating9m_DataMapE"
 				"CTriggerIgnite"       "_ZN14CTriggerIgnite9m_DataMapE"
+				"CTriggerCatapult"     "_ZN16CTriggerCatapult9m_DataMapE"
 			}
 		}
 	}

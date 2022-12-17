@@ -325,6 +325,10 @@ IMPL_DATAMAP (float, CPropVehicleDriveable, m_bLocked);
 
 IMPL_DATAMAP (float, CTriggerIgnite, m_flBurnDuration);
 
+IMPL_SENDPROP(float, CSpriteTrail, m_flLifeTime, CSpriteTrail);
+
+IMPL_DATAMAP (float[34], CTriggerCatapult, m_flRefireDelay);
+
 MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_HandleEntryExitFinish(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandleEntryExitFinish");
 MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");
 MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> CBaseServerVehicle::vt_HandlePassengerExit(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerExit");

@@ -7,6 +7,7 @@
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/tfweaponbase.h"
+#include "stub/tf_objective_resource.h"
 #include "sdk2013/mempool.h"
 #include "mem/protect.h"
 
@@ -41,6 +42,9 @@ namespace Mod::Perf::Input_Optimize
             if (player->IsFakeClient())  continue;
             
             engine->ClientPrintf(player->edict(), str);
+        }
+        if (TFObjectiveResource() != nullptr && FindCaseSensitive(STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()), "mvm_winterbridge_rc6_adv_corrupted_catharsis") != nullptr) {
+            Msg("%s", str);
         }
     }
 

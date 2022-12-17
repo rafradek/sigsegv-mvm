@@ -90,6 +90,8 @@ IMPL_SENDPROP(bool, CTFProjectile_Rocket, m_bCritical, CTFProjectile_Rocket);
 IMPL_EXTRACT(float, CTFProjectile_Arrow, m_flTimeInit, new CExtract_CTFProjectile_Arrow_ArrowTouch());
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bCritical, CTFProjectile_Arrow);
 IMPL_RELATIVE(CUtlVector<int>, CTFProjectile_Arrow, m_HitEntities, m_flTimeInit, -sizeof(CUtlVector<int>));
+IMPL_RELATIVE(EHANDLE, CTFProjectile_Arrow, m_pTrail, m_bCritical, -sizeof(bool) * 2 - sizeof(EHANDLE));
+IMPL_RELATIVE(bool, CTFProjectile_Arrow, m_bPenetrate, m_bCritical, sizeof(bool));
 
 MemberFuncThunk<CTFProjectile_Arrow *, void, CBaseEntity *> CTFProjectile_Arrow::ft_SetScorer("CTFProjectile_Arrow::SetScorer");
 

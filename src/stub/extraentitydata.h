@@ -147,6 +147,8 @@ public:
     float acceleration_time     = 9999.0f;
     float acceleration_start    = 0.0f;
     float gravity               = 0.0f;
+    bool homed_in               = false;
+    QAngle homed_in_angle;
 };
 
 class ExtraEntityDataProjectile : public ExtraEntityData

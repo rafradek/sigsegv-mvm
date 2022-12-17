@@ -6729,6 +6729,26 @@
 					type "sym"
 					sym  "_ZN12CTFGameRules11DeathNoticeEP11CBasePlayerRK15CTakeDamageInfoPKc"
 				}
+				"CTFProjectile_Arrow::CreateTrail"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow11CreateTrailEv"
+				}
+				"CTFProjectile_Arrow::BreakArrow"
+				{
+					type "sym"
+					sym  "_ZN19CTFProjectile_Arrow10BreakArrowEv"
+				}
+				"CTriggerCatapult::OnLaunchedVictim"
+				{
+					type "sym"
+					sym  "_ZN16CTriggerCatapult16OnLaunchedVictimEP11CBaseEntity"
+				}
+				"CSpellPickup::ItemCanBeTouchedByPlayer"
+				{
+					type "sym"
+					sym  "_ZN12CSpellPickup24ItemCanBeTouchedByPlayerEP11CBasePlayer"
+				}
 				
 			}
 			"addrs_group"

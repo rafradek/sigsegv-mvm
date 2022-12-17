@@ -2605,10 +2605,10 @@ WaveSchedule
 // On death: x% chance of being immediately revived at spawn with 1 health
 // "teleport instead of die" 0.5
 
-// Flare and rocket homing seek power in degrees per second
+// Projectile homing seek power in degrees per second
 // "mod projectile heat seek power" 360
 
-// Rocket max error in aim in degrees
+// Projectile max error in aim in degrees
 // "mod projectile heat aim error" 90
 
 // Damage vs same class multipler
@@ -3246,3 +3246,12 @@ WaveSchedule
 
 // "Cannot ignite or cause bleeding to the wielder"
 // "no self effect" 1
+
+// When the arrow bounces, allow it to hit the same target again
+// "reset arrow hits on bounce" 1
+
+// Projectiles bounce off hit targets
+// "arrow target bounce speed" 1
+
+// Cannot pickup spells
+// "cannot pickup spells" 1

@@ -125,6 +125,8 @@ public:
 	DECL_EXTRACT(float, m_flTimeInit);
 	DECL_SENDPROP(bool, m_bCritical);
 	DECL_RELATIVE(CUtlVector<int>, m_HitEntities);
+	DECL_RELATIVE(EHANDLE, m_pTrail);
+	DECL_RELATIVE(bool, m_bPenetrate);
 
 	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
 

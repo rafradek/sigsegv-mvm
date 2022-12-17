@@ -323,14 +323,24 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				QAngle angToTarget;
 				VectorAngles(target_vec - proj->WorldSpaceCenter(), angToTarget);
 
-				pNewAngVelocity->x = Clamp(Approach(AngleDiff(angToTarget.x, pNewAngles->x) * 4.0f, pNewAngVelocity->x, homing.turn_power), -360.0f, 360.0f);
-				pNewAngVelocity->y = Clamp(Approach(AngleDiff(angToTarget.y, pNewAngles->y) * 4.0f, pNewAngVelocity->y, homing.turn_power), -360.0f, 360.0f);
-				pNewAngVelocity->z = Clamp(Approach(AngleDiff(angToTarget.z, pNewAngles->z) * 4.0f, pNewAngVelocity->z, homing.turn_power), -360.0f, 360.0f);
+				homing.homed_in = true;
+				homing.homed_in_angle = angToTarget;
+				
+			}
+			else {
+				homing.homed_in = false;
 			}
 		}
 
-		if (time < homing.aim_time)
+		if (homing.homed_in) {
+			float ticksPerSecond = 1.0f / gpGlobals->frametime;
+			pNewAngVelocity->x = (ApproachAngle(homing.homed_in_angle.x, pNewAngles->x, homing.turn_power * gpGlobals->frametime) - pNewAngles->x) * ticksPerSecond;
+			pNewAngVelocity->y = (ApproachAngle(homing.homed_in_angle.y, pNewAngles->y, homing.turn_power * gpGlobals->frametime) - pNewAngles->y) * ticksPerSecond;
+			pNewAngVelocity->z = (ApproachAngle(homing.homed_in_angle.z, pNewAngles->z, homing.turn_power * gpGlobals->frametime) - pNewAngles->z) * ticksPerSecond;
+		}
+		if (time < homing.aim_time) {
 			*pNewAngles += (*pNewAngVelocity * gpGlobals->frametime);
+		}
 		
 		Vector vecOrientation;
 		AngleVectors(*pNewAngles, &vecOrientation);

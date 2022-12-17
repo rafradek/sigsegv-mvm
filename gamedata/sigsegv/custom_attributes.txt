@@ -2605,4 +2605,34 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4580"
+    {
+        "name"	"reset arrow hits on bounce"
+        "attribute_class"	"reset_arrow_hits_on_bounce"
+        "description_string"	"Hits targets for another time after bounce"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4581"
+    {
+        "name"	"arrow target bounce speed"
+        "attribute_class"	"arrow_target_bounce_speed"
+        "description_string"	"Projectiles bounce off hit targets"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4582"
+    {
+        "name"	"cannot pickup spells"
+        "attribute_class"	"cannot_pickup_spells"
+        "description_string"	"Cannot pickup spells"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

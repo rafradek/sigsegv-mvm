@@ -1229,14 +1229,55 @@ namespace Mod::Attr::Custom_Attributes
 		fire_bullet_num_shot = 0;
 	}
 	
+	bool BounceArrow(CTFProjectile_Arrow *arrow, float bounce_speed) {
+		trace_t &tr = CBaseEntity::GetTouchTrace();
+		if (tr.DidHit()) {
+			Vector pre_vel = arrow->GetAbsVelocity();
+			Vector &normal = tr.plane.normal;
+			Vector mirror_vel = (pre_vel - 2 * (pre_vel.Dot(normal)) * normal) * bounce_speed;
+			arrow->SetAbsVelocity(mirror_vel);
+			QAngle angles;
+			VectorAngles(mirror_vel, angles);
+			arrow->SetAbsAngles(angles);
+			int resetHits = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), resetHits, reset_arrow_hits_on_bounce);
+			if (resetHits != 0) {
+				arrow->SetCustomVariable("HitEntities", Variant(arrow->GetCustomVariableInt<"HitEntities">() + Max(0, arrow->m_HitEntities->Count()-1)));
+				arrow->m_HitEntities->RemoveAll();
+			}
+			return true;
+		}
+		return false;
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_StrikeTarget, mstudiobbox_t *bbox, CBaseEntity *ent)
 	{
 		int can_headshot = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFProjectile_Arrow *>(this)->GetOriginalLauncher(), can_headshot, cannot_be_headshot);
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), can_headshot, cannot_be_headshot);
 		if (can_headshot != 0 && bbox->group == HITGROUP_HEAD) {
 			bbox->group = HITGROUP_CHEST;
 		}
-		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_StrikeTarget)(bbox, ent);
+		
+		float bounce_speed_target = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed_target, arrow_target_bounce_speed);
+		if (bounce_speed_target != 0) {
+			BounceArrow(arrow, bounce_speed_target);
+		}
+
+		// Do not break penetration arrows when hitting friendly ubered target
+		if (arrow->m_bPenetrate && ToTFPlayer(ent) != nullptr && ToTFPlayer(ent)->m_Shared->IsInvulnerable() && ent->GetTeamNumber() == arrow->GetTeamNumber()) {
+			return true;
+		}
+		auto ret = DETOUR_MEMBER_CALL(CTFProjectile_Arrow_StrikeTarget)(bbox, ent);
+		if (!ret && bounce_speed_target == 0) {
+			float bounce_speed = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
+			if (bounce_speed != 0) {
+				BounceArrow(arrow, bounce_speed);
+			}
+		}
+		return ret;
 	}
 
 	RefCount rc_CBaseEntity_DispatchTraceAttack;
@@ -2761,16 +2802,25 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_ArrowTouch, CBaseEntity *pOther)
 	{
 		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
-
+		auto launcher = arrow->GetOriginalLauncher();
 		if (pOther->IsBaseObject() && pOther->GetTeamNumber() == arrow->GetTeamNumber() && ToBaseObject(pOther)->HasSapper()) {
 			int can_damage_sappers = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), can_damage_sappers, set_dmg_apply_to_sapper);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(launcher, can_damage_sappers, set_dmg_apply_to_sapper);
 
 			if (can_damage_sappers != 0) {
 				if (rtti_cast<CObjectSapper *>(pOther->FirstMoveChild()) != nullptr) {
 					pOther = pOther->FirstMoveChild();
-					DevMsg("Set other entity\n");
 				}
+			}
+		}
+
+		if (gpGlobals->curtime - arrow->m_flTimeInit >= 10.0f) {
+			float lifetime = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, lifetime, projectile_lifetime);
+			float bounce = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, bounce, grenade_bounce_speed);
+			if (lifetime != 0 || bounce != 0) {
+				arrow->m_flTimeInit = gpGlobals->curtime - 9.0f;
 			}
 		}
 
@@ -2779,7 +2829,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (pOther->IsAlive() && pOther->GetTeamNumber() != arrow->GetTeamNumber() && pOther->MyCombatCharacterPointer() != nullptr) {
 			float snapRadius = 0;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), snapRadius, arrow_snap_to_next_target_radius);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, snapRadius, arrow_snap_to_next_target_radius);
 			if (snapRadius > 0) {
 				const int maxCollectedEntities = 128;
 				CBaseEntity	*pObjects[ maxCollectedEntities ];
@@ -2828,10 +2878,40 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		int iPenetrateLimit = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), iPenetrateLimit, projectile_penetration_limit);
-		if (iPenetrateLimit != 0 && arrow->m_HitEntities->Count() >= iPenetrateLimit + 1) {
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(launcher, iPenetrateLimit, projectile_penetration_limit);
+		if (iPenetrateLimit != 0 && arrow->m_HitEntities->Count() + arrow->GetCustomVariableInt<"HitEntities">() >= iPenetrateLimit + 1) {
 			arrow->Remove();
 		}
+	}
+
+	THINK_FUNC_DECL(UpdateArrowTrail)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		auto launcher = arrow->GetOriginalLauncher();
+
+		float bounce = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, bounce, grenade_bounce_speed);
+		float lifetime = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, lifetime, projectile_lifetime);
+		if (bounce != 0) {
+			arrow->SetNextThink(-1, "FadeTrail");
+		}
+		float targetBounce = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(launcher, targetBounce, arrow_target_bounce_speed);
+		if (targetBounce != 0) {
+			arrow->CollisionProp()->SetSolidFlags(arrow->CollisionProp()->GetSolidFlags() & ~(FSOLID_NOT_SOLID | FSOLID_TRIGGER));
+		}
+		
+		else if (lifetime != 0) {
+			arrow->SetNextThink(gpGlobals->curtime + lifetime, "FadeTrail");
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_CreateTrail)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CreateTrail)();
+		THINK_FUNC_SET(arrow, UpdateArrowTrail, gpGlobals->curtime+0.01f);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFRadiusDamageInfo_ApplyToEntity, CBaseEntity *ent)
@@ -3983,24 +4063,25 @@ namespace Mod::Attr::Custom_Attributes
 		float bounce_speed = 0;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
 		if (bounce_speed != 0) {
-			trace_t &tr = CBaseEntity::GetTouchTrace();
-			//Vector velDir = arrow->GetAbsVelocity();
-			//VectorNormalize(velDir);
-			//Vector vecSpot = arrow->GetAbsOrigin() - velDir * 32;
-			//UTIL_TraceLine(vecSpot, vecSpot + velDir * 64, MASK_SOLID, arrow, COLLISION_GROUP_DEBRIS, &tr);
-
-			if (tr.DidHit()) {
-				Vector pre_vel = arrow->GetAbsVelocity();
-				Vector &normal = tr.plane.normal;
-				Vector mirror_vel = (pre_vel - 2 * (pre_vel.Dot(normal)) * normal) * bounce_speed;
-				arrow->SetAbsVelocity(mirror_vel);
-				QAngle angles;
-				VectorAngles(mirror_vel, angles);
-				arrow->SetAbsAngles(angles);
+			if (BounceArrow(arrow, bounce_speed)) {
 				return;
 			}
 		}
 		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CheckSkyboxImpact)(pOther);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_BreakArrow)
+	{
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+		float bounce_speed = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
+		if (bounce_speed != 0) return;
+
+		float target_bounce_speed = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), target_bounce_speed, arrow_target_bounce_speed);
+		if (target_bounce_speed != 0) return;
+
+		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_BreakArrow)();
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_CalculateObjectCost, CTFPlayer *builder, int object)
@@ -5169,6 +5250,13 @@ namespace Mod::Attr::Custom_Attributes
 		
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SendWeaponAnim)(activity);
 	}
+	
+    DETOUR_DECL_MEMBER(bool, CSpellPickup_ItemCanBeTouchedByPlayer, CBasePlayer *player)
+	{
+		int cannotPickup = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotPickup, cannot_pickup_spells);
+        return DETOUR_MEMBER_CALL(CSpellPickup_ItemCanBeTouchedByPlayer)(player);
+    }
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
@@ -5976,6 +6064,9 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_SendWeaponAnim, "CTFWeaponBase::SendWeaponAnim");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_DeathNotice, "CTFGameRules::DeathNotice");
+            MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CreateTrail, "CTFProjectile_Arrow::CreateTrail");
+            MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_BreakArrow, "CTFProjectile_Arrow::BreakArrow");
+			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
             //MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");

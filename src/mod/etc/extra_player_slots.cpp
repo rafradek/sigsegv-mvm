@@ -846,6 +846,17 @@ namespace Mod::Etc::Extra_Player_Slots
 		return DETOUR_STATIC_CALL(Host_Changelevel)(fromSave, mapname, start);
     }
     
+
+	DETOUR_DECL_MEMBER(void, CTriggerCatapult_OnLaunchedVictim, CBaseEntity *pVictim)
+	{
+        if (pVictim != nullptr && pVictim->IsPlayer() && pVictim->entindex() > DEFAULT_MAX_PLAYERS) {
+            auto catapult = reinterpret_cast<CTriggerCatapult *>(this);
+            catapult->m_flRefireDelay.Get()[0] = gpGlobals->curtime + 0.5f;
+            return;
+        }
+		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
+	}
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -912,6 +923,8 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetNextSpawnClassname, "CTFBot::GetNextSpawnClassname");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
             MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
+            
+            MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
             
             
             
