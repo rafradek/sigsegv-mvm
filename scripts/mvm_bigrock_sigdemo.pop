@@ -3090,16 +3090,16 @@ WaveSchedule
 // Fire rate multiplier between bursts
 // "burst fire rate mult" 2
 
-// Accuracy multiplier, continous attacking increases/decreases accuracy up to specified value over the duration of "continous accuracy time" attribute. Overwrites "spread penalty" attribute
+// Accuracy multiplier, continous attacking increases/decreases accuracy up to specified value over the duration of "continous accuracy time" attribute. Overwrites "spread penalty" and "projectile spread angle mult" attributes
 // "continous accuracy mult" 3
 
-// How long in seconds should the weapon be fired continously to reach full "continous accuracy mult" value
+// How long in seconds should the weapon be fired continously to reach full "continous accuracy mult" value and "projectile spread angle mult" attributes
 // "continous accuracy time" 1
 
-// Accuracy multiplier when ducking. Overwrites "spread penalty" attribute
+// Accuracy multiplier when ducking. Overwrites "spread penalty" attribute and "projectile spread angle mult" attributes
 // "duck accuracy mult" 0.5
 
-// Accuracy multiplier when moving. Overwrites "spread penalty" attribute
+// Accuracy multiplier when moving. Overwrites "spread penalty" attribute and "projectile spread angle mult" attributes
 // "move accuracy mult" 2
 
 // Automatically fire full clip
@@ -3261,3 +3261,6 @@ WaveSchedule
 
 // Bullet spread additive. Does not affect clientside effects
 // "add spread" 1
+
+// Projectile spread angle multiplier
+// "projectile spread angle mult" 3
