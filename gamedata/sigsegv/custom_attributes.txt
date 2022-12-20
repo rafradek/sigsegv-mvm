@@ -2635,4 +2635,24 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4583"
+    {
+        "name"	"mult max health"
+        "attribute_class"	"add_maxhealth"
+        "description_string"	"(+-)%p% Max health"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4583"
+    {
+        "name"	"add spread"
+        "attribute_class"	"mult_spread_scale"
+        "description_string"	"(+-)%d bullet spread"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

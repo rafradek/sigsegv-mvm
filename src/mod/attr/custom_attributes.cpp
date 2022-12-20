@@ -2604,6 +2604,14 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_IsDeflectable)() && IsDeflectable(ent);
 	}
 
+	DETOUR_DECL_MEMBER(int, CTFGrenadePipebombProjectile_OnTakeDamage, CTakeDamageInfo &info)
+	{
+		auto ent = reinterpret_cast<CTFGrenadePipebombProjectile *>(this);
+		if (!IsDeflectable(ent)) {
+			return 0;
+		}
+		return DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_OnTakeDamage)(info);
+	}
 	// Stop short circuit from deflecting the projectile
 	
 	RefCount rc_CTFProjectile_MechanicalArmOrb_CheckForProjectiles;
@@ -5736,7 +5744,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr && player->GetHealth() > 0) {
-			float change = new_value.m_Float - old_value.m_Float;
+			float change = strcmp(pAttrDef->GetDescriptionFormat(), "value_is_additive") == 0 ? new_value.m_Float - old_value.m_Float : player->GetMaxHealth() * (1 - (old_value.m_Float / new_value.m_Float));
 			float maxHealth = player->GetMaxHealth();
 			float preMaxHealth = maxHealth - change;
 			float overheal = MAX(0, player->GetHealth() - preMaxHealth);
@@ -5950,6 +5958,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_IsDeflectable, "CTFProjectile_Flare::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyBall_IsDeflectable, "CTFProjectile_EnergyBall::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_IsDeflectable, "CTFGrenadePipebombProjectile::IsDeflectable");
+			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_OnTakeDamage, "CTFGrenadePipebombProjectile::OnTakeDamage");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_InSameTeam, "CBaseEntity::InSameTeam");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnAddBalloonHead, "CTFPlayerShared::OnAddBalloonHead");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");

@@ -6749,6 +6749,11 @@
 					type "sym"
 					sym  "_ZN12CSpellPickup24ItemCanBeTouchedByPlayerEP11CBasePlayer"
 				}
+				"CTFGrenadePipebombProjectile::OnTakeDamage"
+				{
+					type "sym"
+					sym  "_ZN28CTFGrenadePipebombProjectile12OnTakeDamageERK15CTakeDamageInfo"
+				}
 				
 			}
 			"addrs_group"
