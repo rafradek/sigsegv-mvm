@@ -2205,7 +2205,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (player->IsBot() || state.m_DisallowedClasses[plclass] == -1)
 			return false;
 
-		Msg("CheckPlayerLimit\n");
 		int taken_slots[10];
 		for (int i=0; i < 10; i++)
 			taken_slots[i] = 0;

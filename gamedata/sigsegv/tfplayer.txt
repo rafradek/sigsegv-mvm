@@ -1059,6 +1059,16 @@
 					type "sym"
 					sym  "_ZNK9CTFPlayer12GetMaxHealthEv"
 				}
+				"CTFPlayer::CanDisguise"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer11CanDisguiseEv"
+				}
+				"CTFPlayer::CanGoInvisible"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer14CanGoInvisibleEb"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

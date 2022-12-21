@@ -291,9 +291,11 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 	for (auto &box : brush_entity_bounding_box) {
 		box.entity->SetModel(TEMPLATE_BRUSH_MODEL);
 		box.entity->SetSolid(SOLID_BBOX);
-		Vector min, max;
-		UTIL_StringToVector(min.Base(), box.min.c_str());
-		UTIL_StringToVector(max.Base(), box.max.c_str());
+		Vector strMin, strMax;
+		UTIL_StringToVector(strMin.Base(), box.min.c_str());
+		UTIL_StringToVector(strMax.Base(), box.max.c_str());
+		Vector min(Min(strMin.x, strMax.x), Min(strMin.y, strMax.y), Min(strMin.z, strMax.z));
+		Vector max(Max(strMin.x, strMax.x), Max(strMin.y, strMax.y), Max(strMin.z, strMax.z));
 		//sscanf(box.min.c_str(), "%f %f %f", &min.x, &min.y, &min.z);
 		//sscanf(box.max.c_str(), "%f %f %f", &max.x, &max.y, &max.z);
 		if (fast_whole_map_trigger.GetBool() && ((max.z - min.z) * (max.y - min.y) * (max.x - min.x)) > 4500.0f * 4500.0f * 4500.0f  && box.entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {

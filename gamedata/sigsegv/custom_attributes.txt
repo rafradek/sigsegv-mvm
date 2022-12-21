@@ -2655,4 +2655,34 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4584"
+    {
+        "name"	"always allow disguise"
+        "attribute_class"	"always_allow_disguise"
+        "description_string"	"always allow disguising"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4585"
+    {
+        "name"	"always allow cloak"
+        "attribute_class"	"always_allow_cloak"
+        "description_string"	"always allow cloaking"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4586"
+    {
+        "name"	"always allow teleport"
+        "attribute_class"	"always_allow_teleport"
+        "description_string"	"always allow teleporting"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

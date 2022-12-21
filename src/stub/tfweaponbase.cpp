@@ -50,6 +50,7 @@ IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iViewModelInde
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_nViewModelIndex,       CBaseCombatWeapon);
 IMPL_SENDPROP(bool,                          CBaseCombatWeapon, m_bFlipViewModel,        CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iWorldModelIndex,      CBaseCombatWeapon);
+IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_bDisguiseWeapon,       CBaseCombatWeapon);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bReloadsSingly);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
 

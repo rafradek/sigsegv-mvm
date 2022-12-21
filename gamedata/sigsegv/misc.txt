@@ -6754,6 +6754,24 @@
 					type "sym"
 					sym  "_ZN28CTFGrenadePipebombProjectile12OnTakeDamageERK15CTakeDamageInfo"
 				}
+				"CTriggerMoved::EnumElement"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN13CTriggerMoved11EnumElementEP13IHandleEntity"
+				}
+				"CStaticProp::Init"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CStaticProp4InitEiR16StaticPropLump_tP7model_t"
+				}
+				"CStaticPropMgr::IsStaticProp (CBaseHandle)"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZNK14CStaticPropMgr12IsStaticPropE11CBaseHandle"
+				}
 				
 			}
 			"addrs_group"

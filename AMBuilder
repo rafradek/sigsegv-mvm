@@ -178,6 +178,7 @@ sourceFiles += [
   'src/mod/etc/ratelimit_exclude.cpp',
   'src/mod/etc/release_source_mutex.cpp',
   'src/mod/etc/server_allow_wait_command.cpp',
+  'src/mod/etc/static_prop_handle_fix.cpp',
   'src/mod/etc/suppress_nb_event_messages.cpp',
   'src/mod/etc/target_changegravity_improved.cpp',
   'src/mod/etc/vehicle_fix.cpp',

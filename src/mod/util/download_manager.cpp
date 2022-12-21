@@ -219,7 +219,13 @@ namespace Mod::Util::Download_Manager
 		}
 	}
 
-	std::unordered_map<std::string, bool> files_add;
+	struct FileCasePresent
+	{
+		bool hasLowercase = false;
+		bool hasNormal = false;
+	};
+
+	std::unordered_map<std::string, FileCasePresent> files_add;
 	bool printmissing = false;
 	bool missingfilemention = false;
 	CHandle<CTFPlayer> mission_owner;
@@ -234,14 +240,18 @@ namespace Mod::Util::Download_Manager
 
 		if (files_add.count(value)) return;
 
+		std::string valueLowercase = value;
+		boost::algorithm::to_lower(valueLowercase);
+
 		std::string pathfull = game_path;
 		pathfull += "/";
 		pathfull += cvar_downloadpath.GetString();
 		pathfull += "/";
-		pathfull += value;
+		
 		std::string pathfullLowercase = pathfull;
 
-		boost::algorithm::to_lower(pathfullLowercase);
+		pathfull += value;
+		pathfullLowercase += valueLowercase;
 
 		
 		bool customNormalCase = access(pathfull.c_str(), F_OK) == 0;
@@ -264,13 +274,13 @@ namespace Mod::Util::Download_Manager
 		}
 
 		if (add) {
-			files_add[value] = true;
+			files_add[value] = {customNormalCase, customLowerCase};
 		}
 		else
-			files_add[value] = false;
+			files_add[value] = {false, false};
 			
 		if (custom) {
-			if (StringEndsWith(value.c_str(),".vmt")){
+			if (StringEndsWith(value.c_str(),".vmt", false)){
 
 				KeyValues *kvroot = KeyValuesFromFile(customNormalCase ? pathfull.c_str() : pathfullLowercase.c_str(), value.c_str());
 				KeyValues *kv = kvroot;
@@ -298,7 +308,7 @@ namespace Mod::Util::Download_Manager
 					kvroot->deleteThis();
 				}
 			}
-			if (StringEndsWith(value.c_str(),".mdl")){
+			if (StringEndsWith(value.c_str(),".mdl", false)){
 				char texname[128];
 				char texdir[128];
 				
@@ -574,7 +584,10 @@ namespace Mod::Util::Download_Manager
 		bool saved_lock = engine->LockNetworkStringTables(false);
 
 		for (auto &entry : files_add) {
-			if (entry.second) {
+			if (entry.second.hasLowercase) {
+				downloadables->AddString(true, boost::algorithm::to_lower_copy(entry.first).c_str());
+			}
+			if (entry.second.hasNormal) {
 				//Msg("%s\n", entry.first.c_str());
 				downloadables->AddString(true, entry.first.c_str());
 			}
@@ -1087,15 +1100,19 @@ namespace Mod::Util::Download_Manager
 							else {
 								auto range = missing_files.equal_range(event->wd);
 								for (auto it = range.first; it != range.second;) {
-									std::string &str = it->second;
-									if (str.ends_with(event->name)) {
+									const auto &str = it->second;
+									if (StringEndsWith(str.c_str(), event->name, false)) {
+										// File name with the case as the one on the disk
+										auto realFileName = str;
+										realFileName.replace(str.size() - strlen(event->name), strlen(event->name), event->name);
+
 										INetworkStringTable *downloadables = networkstringtable->FindTable("downloadables");
 										bool saved_lock = engine->LockNetworkStringTables(false);
-										downloadables->AddString(true, str.c_str());
+										downloadables->AddString(true, realFileName.c_str());
 										engine->LockNetworkStringTables(saved_lock);
 										
 										if (mission_owner != nullptr) {
-											PrintToChat(CFmtStr("File no longer missing: %s\n", str.c_str()), mission_owner);
+											PrintToChat(CFmtStr("File no longer missing: %s\n", realFileName.c_str()), mission_owner);
 										}
 										it = missing_files.erase(it);
 									}

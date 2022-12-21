@@ -5259,6 +5259,38 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SendWeaponAnim)(activity);
 	}
 	
+    DETOUR_DECL_MEMBER(bool, CTFPlayer_CanDisguise)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		int alwaysAllowDisguise = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, alwaysAllowDisguise, always_allow_disguise);
+		if (alwaysAllowDisguise != 0) {
+			return true;
+		}
+        return DETOUR_MEMBER_CALL(CTFPlayer_CanDisguise)();
+    }
+	
+    DETOUR_DECL_MEMBER(bool, CTFPlayer_CanGoInvisible, bool flagcheck)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		int alwaysAllowCloak = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, alwaysAllowCloak, always_allow_cloak);
+		if (alwaysAllowCloak != 0) {
+			return true;
+		}
+        return DETOUR_MEMBER_CALL(CTFPlayer_CanGoInvisible)(flagcheck);
+    }
+	
+    DETOUR_DECL_MEMBER(bool, CObjectTeleporter_PlayerCanBeTeleported, CTFPlayer *player)
+	{
+		int alwaysAllowTeleport = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, alwaysAllowTeleport, always_allow_teleport);
+		if (alwaysAllowTeleport != 0) {
+			return true;
+		}
+        return DETOUR_MEMBER_CALL(CObjectTeleporter_PlayerCanBeTeleported)(player);
+    }
+	
     DETOUR_DECL_MEMBER(bool, CSpellPickup_ItemCanBeTouchedByPlayer, CBasePlayer *player)
 	{
 		int cannotPickup = 0;
@@ -6075,6 +6107,9 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_DeathNotice, "CTFGameRules::DeathNotice");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CreateTrail, "CTFProjectile_Arrow::CreateTrail");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_BreakArrow, "CTFProjectile_Arrow::BreakArrow");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanDisguise, "CTFPlayer::CanDisguise");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanGoInvisible, "CTFPlayer::CanGoInvisible");
+            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported");
 			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");

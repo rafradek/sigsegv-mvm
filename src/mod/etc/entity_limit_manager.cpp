@@ -154,6 +154,62 @@ namespace Mod::Etc::Entity_Limit_Manager
                     return true;
                 });
             }
+            
+            // Delete disguise wearables
+            if (entityToDelete == nullptr) {
+                ForEachTFPlayer([&](CTFPlayer *player) {
+                    for (int i = 0; i < player->GetNumWearables(); i++) {
+                        auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
+                        if (tfwearable != nullptr && tfwearable->m_bDisguiseWearable ) {
+                            entityToDelete = tfwearable;
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+            }
+            // Reserve some slots for projectiles
+            if (IBaseProjectileAutoList::AutoList().Count() < 64) {
+                // Delete disguise weapons not in main slot
+                if (entityToDelete == nullptr) {
+                    ForEachEntityByClassname("tf_weapon*", [&](CBaseEntity *e){
+                        auto weapon = rtti_cast<CTFWeaponBase *>(e);
+                        if (weapon != nullptr && weapon->m_bDisguiseWeapon && weapon->IsEffectActive(EF_NODRAW)) {
+                            entityToDelete = weapon;
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+                // Delete most wearables (bots)
+                if (entityToDelete == nullptr) {
+                    ForEachTFPlayer([&](CTFPlayer *player) {
+                        if (player->IsFakeClient()) {
+                            for (int i = 0; i < player->GetNumWearables(); i++) {
+                                auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
+                                if (tfwearable != nullptr && tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex()) >= LOADOUT_POSITION_HEAD) {
+                                    entityToDelete = tfwearable;
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    });
+                }
+                // Delete most wearables (others)
+                if (entityToDelete == nullptr) {
+                    ForEachTFPlayer([&](CTFPlayer *player) {
+                        for (int i = 0; i < player->GetNumWearables(); i++) {
+                            auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
+                            if (tfwearable != nullptr && tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex()) >= LOADOUT_POSITION_HEAD ) {
+                                entityToDelete = tfwearable;
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }
+            }
             bool notifyDelete = false;
             if (entityToDelete == nullptr) {
                 // Delete projectiles, starting from oldest. Also delete grounded arrows
@@ -255,4 +311,22 @@ namespace Mod::Etc::Entity_Limit_Manager
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 
+    void IterateKv(KeyValues *kv) {
+        FOR_EACH_SUBKEY(kv, subkey) {
+            if (subkey->GetFirstSubKey() != nullptr) {
+                IterateKv(subkey);
+            }
+            else {
+                Msg("%s -> %s\n", subkey->GetName(), subkey->GetString());
+            }
+        }
+    }
+    CON_COMMAND(sig_test_keyvalue, "")
+    {
+        KeyValues *kv = new KeyValues("t");
+        if (kv->LoadFromFile(filesystem, "testkv", "GAME")) {
+            IterateKv(kv);
+        }
+        kv->deleteThis();
+    }
 }

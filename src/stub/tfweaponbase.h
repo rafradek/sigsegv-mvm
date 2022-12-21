@@ -47,6 +47,7 @@ public:
 	DECL_SENDPROP(int,   m_nViewModelIndex);
 	DECL_SENDPROP(int,   m_iWorldModelIndex);
 	DECL_SENDPROP(bool,  m_bFlipViewModel);
+	DECL_SENDPROP(bool,  m_bDisguiseWeapon);
 	DECL_DATAMAP(bool,   m_bReloadsSingly);
 	DECL_DATAMAP(bool,   m_bInReload);
 	
