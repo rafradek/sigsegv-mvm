@@ -6760,12 +6760,6 @@
 					type "sym"
 					sym  "_ZN13CTriggerMoved11EnumElementEP13IHandleEntity"
 				}
-				"CStaticProp::Init"
-				{
-					lib "engine"
-					type "sym"
-					sym  "_ZN11CStaticProp4InitEiR16StaticPropLump_tP7model_t"
-				}
 				"CStaticPropMgr::IsStaticProp (CBaseHandle)"
 				{
 					lib "engine"

@@ -50,7 +50,6 @@ IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iViewModelInde
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_nViewModelIndex,       CBaseCombatWeapon);
 IMPL_SENDPROP(bool,                          CBaseCombatWeapon, m_bFlipViewModel,        CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iWorldModelIndex,      CBaseCombatWeapon);
-IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_bDisguiseWeapon,       CBaseCombatWeapon);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bReloadsSingly);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
 
@@ -84,6 +83,7 @@ IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearable,          CT
 IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearableViewModel, CTFWeaponBase);
 IMPL_SENDPROP(bool                , CTFWeaponBase, m_bBeingRepurposedForTaunt,CTFWeaponBase);
 IMPL_SENDPROP(float               , CTFWeaponBase, m_flReloadPriorNextFire,   CTFWeaponBase);
+IMPL_SENDPROP(int,                  CTFWeaponBase, m_bDisguiseWeapon,         CTFWeaponBase);
 IMPL_RELATIVE(bool                , CTFWeaponBase, m_bCurrentAttackIsCrit, m_flReloadPriorNextFire, +10);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
