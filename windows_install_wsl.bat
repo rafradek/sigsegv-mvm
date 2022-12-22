@@ -49,7 +49,7 @@ echo echo -
 echo echo ----------------------
 echo echo INSTALLATION COMPLETE!
 echo echo ----------------------
-echo echo To run the game server, enter the newly created TFServer directory and run the Run Server.bat file
+echo echo To run the game server, enter the newly created TF2Server directory and run the Run Server.bat file
 
 echo pause
 echo start /b "" cmd /c del "%%~f0"^&exit /b
