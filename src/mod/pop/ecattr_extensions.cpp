@@ -58,6 +58,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		float turn_power            = 10.0f;
 		float min_dot_product       = -0.25f;
 		float aim_time              = 9999.0f;
+		float aim_time_start        = 0.0f;
 		float acceleration          = 0.0f;
 		float acceleration_time     = 9999.0f;
 		float acceleration_start    = 0.0f;
@@ -579,6 +580,8 @@ namespace Mod::Pop::ECAttr_Extensions
 				hr.min_dot_product = Clamp(subkey->GetFloat(), -1.0f, 1.0f);
 			} else if (FStrEq(name, "MaxAimError")) {
 				hr.min_dot_product = std::cos(DEG2RAD(Clamp(subkey->GetFloat(), 0.0f, 180.0f)));
+			} else if (FStrEq(name, "AimStartTime")) {
+				hr.aim_time_start = subkey->GetFloat();
 			} else if (FStrEq(name, "AimTime")) {
 				hr.aim_time = subkey->GetFloat();
 			} else if (FStrEq(name, "Acceleration")) {
@@ -2086,7 +2089,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		float time = (float)(ent->m_flSimulationTime) - (float)(ent->m_flAnimTime);
 
-		if (time < hr->aim_time && gpGlobals->tickcount % (int)(physics_interval / gpGlobals->interval_per_tick) == 0) {
+		if (time < hr->aim_time && time >= hr->aim_time_start && gpGlobals->tickcount % (int)(physics_interval / gpGlobals->interval_per_tick) == 0) {
 			Vector target_vec = vec3_origin;
 
 			if (hr->follow_crosshair) {

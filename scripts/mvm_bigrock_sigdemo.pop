@@ -1481,6 +1481,7 @@ WaveSchedule
 					TurnPower 30 //How fast should the rocket rotate to face the target (Default: 10)
 					MaxAimError 50 //Max angle between rocket and the target (Default: 105)
 					AimTime 1 //How long should the rocket be aiming (Default: 9999)
+					AimStartTime 1 //How many seconds before the rocket should be aiming (Default: 0)
 					Acceleration 1000 //Acceleration in hu (Default: 0)
 					AccelerationTime 0.1 //How long should the rocket accelerate (Default: 9999)
 					AccelerationStartTime 1 //Time before rockets start accelerating (Default: 0)
