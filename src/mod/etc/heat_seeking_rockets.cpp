@@ -147,9 +147,9 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 						homing.aim_time = aim_time;
 
 					float aim_start_time = 0.0f;
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aim_time, mod_projectile_heat_aim_start_time);
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aim_start_time, mod_projectile_heat_aim_start_time);
 					if (aim_start_time != 0.0f)
-						homing.aim_start_time = aim_time;
+						homing.aim_start_time = aim_start_time;
 
 					float acceleration_time = 0.0f;
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, acceleration_time, projectile_acceleration_time);
