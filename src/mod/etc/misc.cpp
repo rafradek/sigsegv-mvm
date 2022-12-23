@@ -97,11 +97,13 @@ namespace Mod::Etc::Misc
 		bool firstminisentry = true;
 		CTFPlayer *player = (CTFPlayer *)(pStruct);
 		for (int i = 0; i <= iElement; i++) {
-			CBaseObject *obj = player->GetObject(i);
-			if (obj != nullptr && obj->m_bDisposableBuilding) {
-				if (!firstminisentry)
-					iElement++;
-				firstminisentry = false;
+			if (i < player->GetObjectCount()) {
+				CBaseObject *obj = player->GetObject(i);
+				if (obj != nullptr && obj->m_bDisposableBuilding) {
+					if (!firstminisentry)
+						iElement++;
+					firstminisentry = false;
+				}
 			}
 		}
 		DETOUR_STATIC_CALL(SendProxy_PlayerObjectList)(pProp, pStruct, pData, pOut, iElement, objectID);
@@ -114,11 +116,13 @@ namespace Mod::Etc::Misc
 		CTFPlayer *player = (CTFPlayer *)(pStruct);
 		bool firstminisentry = true;
 		for (int i = 0; i < count; i++) {
-			CBaseObject *obj = player->GetObject(i);
-			if (obj != nullptr && obj->m_bDisposableBuilding) {
-				if (!firstminisentry)
-					count--;
-				firstminisentry = false;
+			if (i < player->GetObjectCount()) {
+				CBaseObject *obj = player->GetObject(i);
+				if (obj != nullptr && obj->m_bDisposableBuilding) {
+					if (!firstminisentry)
+						count--;
+					firstminisentry = false;
+				}
 			}
 		}
 		return count;
