@@ -746,6 +746,17 @@ namespace Mod::Attr::Custom_Attributes
 			
 		killer_weapon = info.GetWeapon();
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		
+		int destroyBuildingsOnDeath = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, destroyBuildingsOnDeath, destroy_buildings_on_death);
+		if (destroyBuildingsOnDeath != 0) {
+			for (int i = player->GetObjectCount() - 1; i >= 0 ; i--) {
+				auto obj = player->GetObject(i);
+				if (obj != nullptr) {
+					obj->DetonateObject();
+				}
+			}
+		}
 		killer_weapon = nullptr;
 
 		ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
@@ -5298,6 +5309,22 @@ namespace Mod::Attr::Custom_Attributes
         return DETOUR_MEMBER_CALL(CSpellPickup_ItemCanBeTouchedByPlayer)(player);
     }
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllOwnedEntitiesFromWorld, bool explode)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		int destroyBuildingsOnDeath = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, destroyBuildingsOnDeath, destroy_buildings_on_death);
+		if (destroyBuildingsOnDeath != 0) {
+			for (int i = player->GetObjectCount() - 1; i >= 0 ; i--) {
+				auto obj = player->GetObject(i);
+				if (obj != nullptr) {
+					obj->DetonateObject();
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+	}
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -6110,6 +6137,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanDisguise, "CTFPlayer::CanDisguise");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanGoInvisible, "CTFPlayer::CanGoInvisible");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllOwnedEntitiesFromWorld, "CTFPlayer::RemoveAllOwnedEntitiesFromWorld");
+			
 			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");

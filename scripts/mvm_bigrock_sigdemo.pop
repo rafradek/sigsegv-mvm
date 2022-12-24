@@ -2699,10 +2699,10 @@ WaveSchedule
 // "arrow mastery" 1
 
 // Custom item model name
-// "custom item model"
+// "custom item model" "model.mdl"
 
-// Custom weapon fire sound. Does not work for the weapon owner
-// "custom weapon fire sound"
+// Custom weapon fire sound. The weapon owner hears both the original and the custom sound
+// "custom weapon fire sound" "sound.wav"
 
 // Bullets explode in x radius on hit (147 is rocket launcher radius)
 // "explosive bullets" 100
@@ -2713,11 +2713,11 @@ WaveSchedule
 // Fire multiple projectiles at once
 // "mult projectile count" 4
 
-// Projectile trail particle name
-// "projectile trail particle"
+// Projectile trail particle name. Put ~ before the particle name to delete original trail particle
+// "projectile trail particle" "~pyrovision_flaregun_trail_crit_red"
 
 // Explosion particle name
-// "explosion particle"
+// "explosion particle" "merasmus_bomb_explosion"
 
 // Restores sydney sleeper explosion on headshot
 // "radius sleeper" 1
@@ -3274,3 +3274,6 @@ WaveSchedule
 
 // Always allow the player to teleport
 // "always allow teleport" 1
+
+// Destroy owned buildings on death
+// "destroy buildings on death" 1

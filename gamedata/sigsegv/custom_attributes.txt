@@ -2685,4 +2685,15 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4587"
+    {
+        "name"	"destroy buildings on death"
+        "attribute_class"	"destroy_buildings_on_death"
+        "description_string"	"Owned buildings are destroyed on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    
 }
