@@ -251,7 +251,6 @@ namespace Mod::MvM::Player_Limit
 	int GetMaxNonSpectatorPlayers() {
 		int red, blu, spectators, robots;
 		GetSlotCounts(red, blu, spectators, robots);
-        Msg("red %d blu %d\n", red, blu);
 		return red + blu;
 	}
 
