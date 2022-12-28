@@ -82,7 +82,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		"Bots should use robot voice if they are humans");	
 
 	ConVar cvar_vanilla_mode("sig_vanilla_mode", "0", FCVAR_NONE,	
-		"Disable most mods");	
+		"Disable most mods", 
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			if (flOldValue == 0 && ((ConVar *)pConVar)->GetFloat() != 0) {
+				engine->ServerCommand("exec sigsegv_convars_vanilla.cfg");
+			}
+			else if (flOldValue != 0 && ((ConVar *)pConVar)->GetFloat() == 0) {
+				engine->ServerCommand("sig_cvar_load");
+			}
+		});
 	
 	ConVar cvar_use_teleport("sig_mvm_bots_use_teleporters", "1", FCVAR_NOTIFY,
 		"Blue humans in MvM: bots use player teleporters");
