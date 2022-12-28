@@ -12,6 +12,7 @@
 #include "mod/pop/popmgr_extensions.h"
 #include "stub/sendprop.h"
 #include "stub/server.h"
+#include "mod/mvm/player_limit.h"
 
 // TODO: move to common.h
 #include <igamemovement.h>
@@ -316,7 +317,10 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	
 	
 	ConVar cvar_max("sig_mvm_jointeam_blue_allow_max", "-1", FCVAR_NOTIFY,
-		"Blue humans in MvM: max humans to allow on blue team (-1 for no limit)");
+		"Blue humans in MvM: max humans to allow on blue team (-1 for no limit)",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			Mod::MvM::Player_Limit::RecalculateSlots();
+		});
 	
 	ConVar cvar_flag_pickup("sig_mvm_bluhuman_flag_pickup", "0", FCVAR_NOTIFY,
 		"Blue humans in MvM: allow picking up the flag");
@@ -1594,12 +1598,17 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		"Mod: permit client command 'jointeam blue' from human players",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+			
+			Mod::MvM::Player_Limit::RecalculateSlots();
 		});
 	
 	/* default: admin-only mode ENABLED */
 	ConVar cvar_adminonly("sig_mvm_jointeam_blue_allow_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Mod: restrict this mod's functionality to SM admins only"
-		" [NOTE: missions with WaveSchedule param AllowJoinTeamBlue 1 will OVERRIDE this and allow non-admins for the duration of the mission]");
+		" [NOTE: missions with WaveSchedule param AllowJoinTeamBlue 1 will OVERRIDE this and allow non-admins for the duration of the mission]",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			Mod::MvM::Player_Limit::RecalculateSlots();
+		});
 
 	// force blue team joining, also loads the mod if not loaded
 	ConVar cvar_force("sig_mvm_jointeam_blue_allow_force", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
@@ -1609,5 +1618,11 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				s_Mod.Toggle(true);
 			else
 				s_Mod.Toggle(cvar_enable.GetBool());
+			Mod::MvM::Player_Limit::RecalculateSlots();
 		});
+
+	bool PlayersCanJoinBlueTeam()
+	{
+		return s_Mod.IsEnabled() && (cvar_force.GetBool() || (cvar_max.GetInt() != 0 && !cvar_adminonly.GetBool()));
+	}
 }

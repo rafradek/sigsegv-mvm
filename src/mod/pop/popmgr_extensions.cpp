@@ -23,7 +23,9 @@
 #include "stub/nextbot_cc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
+#include "util/value_override.h"
 #include "mod/etc/mapentity_additions.h"
+#include "mod/pop/popmgr_extensions.h"
 #include <fmt/core.h>
 
 // WARN_IGNORE__REORDER()
@@ -66,155 +68,7 @@ namespace Mod::Etc::Mapentity_Additions
 
 namespace Mod::Pop::PopMgr_Extensions
 {
-	int iGetTeamAssignmentOverride = 6;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_GetTeamAssignmentOverride[] = {
-		0x8D, 0xB6, 0x00, 0x00, 0x00, 0x00, // +0000
-		0xB8, 0x06, 0x00, 0x00, 0x00, // +0006
-		0x2B, 0x45, 0xC4, // +000B
-		0x29, 0xF0, // +000E
-		0x85, 0xC0, // +0010
-
-		//0xc7, 0x84, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [ebx+eax*4+m_Visuals],0x00000000
-		//0x8b, 0x04, 0x85, 0x00, 0x00, 0x00, 0x00,                         // +000B  mov eax,g_TeamVisualSections[eax*4]
-	};
-
-	struct CPatch_GetTeamAssignmentOverride : public CPatch
-	{
-		CPatch_GetTeamAssignmentOverride() : CPatch(sizeof(s_Buf_GetTeamAssignmentOverride)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_GetTeamAssignmentOverride);
-			
-			mask.SetRange(0x06 + 1, 4, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetRange(0x06+1, 1, iGetTeamAssignmentOverride);
-			mask.SetRange(0x06+1, 4, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetRange(0x06+1, 1, iGetTeamAssignmentOverride);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGameRules::GetTeamAssignmentOverride"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0100; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0300; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CExtract_GetTeamAssignmentOverride = IExtractStub;
-
-	#endif
-
-	int iClientConnected = 9;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_CTFGameRules_ClientConnected[] = {
-		0x31, 0xC0, // +0000
-		0x83, 0xFE, 0x09, // +0002
-	};
-
-	struct CPatch_CTFGameRules_ClientConnected : public CPatch
-	{
-		CPatch_CTFGameRules_ClientConnected() : CPatch(sizeof(s_Buf_CTFGameRules_ClientConnected)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CTFGameRules_ClientConnected);
-			
-			mask.SetRange(0x02 + 2, 1, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetRange(0x02+2, 1, iClientConnected);
-			mask.SetRange(0x02+2, 1, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetRange(0x02+2, 1, iClientConnected);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGameRules::ClientConnected"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0030; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0100; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CExtract_GetTeamAssignmentOverride = IExtractStub;
-
-	#endif
-
-	int iPreClientUpdate = 6;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_CTFGCServerSystem_PreClientUpdate[] = {
-		0x8B, 0x5D, 0xB0, // +0000
-		0x83, 0xC3, 0x06, // +0003
-	};
-
-	struct CPatch_CTFGCServerSystem_PreClientUpdate : public CPatch
-	{
-		CPatch_CTFGCServerSystem_PreClientUpdate() : CPatch(sizeof(s_Buf_CTFGCServerSystem_PreClientUpdate)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CTFGCServerSystem_PreClientUpdate);
-			
-			mask.SetRange(0x03 + 2, 1, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate);
-			mask.SetRange(0x03+2, 1, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGCServerSystem::PreClientUpdate"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0350; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0600; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CPatch_CTFGCServerSystem_PreClientUpdate = IExtractStub;
-
-	#endif
-	
-	int GetVisibleMaxPlayers();
-	void SetVisibleMaxPlayers();
 	void ResendUpgradeFile(bool force);
-	void ResetMaxRedTeamPlayers(int resetTo);
-	void ResetMaxTotalPlayers(int resetTo);
-	void SetMaxSpectators(int resetTo);
-
-	void TogglePatches();
 
 	ConVar cvar_custom_upgrades_file("sig_mvm_custom_upgrades_file", "", FCVAR_NONE,
 		"Set upgrades file to specified one",
@@ -235,17 +89,6 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	ConVar cvar_bots_bleed("sig_mvm_bots_bleed", "0", FCVAR_NOTIFY,
 		"Bots should bleed");
-
-	ConVar cvar_max_red_players("sig_mvm_red_team_max_players", "0", FCVAR_NOTIFY,
-		"Set max red team count",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (cvar_max_red_players.GetInt() > 0)
-				ResetMaxRedTeamPlayers(cvar_max_red_players.GetInt());
-			else
-				ResetMaxRedTeamPlayers(6);
-				
-			SetVisibleMaxPlayers();
-		});	
 
     ConVar cvar_modded_pvp{"sig_modded_pvp", "0", FCVAR_NOTIFY,
         "Allow more mods to work in non-MvM gamemodes"};
@@ -306,141 +149,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	const char g_sSounds[10][24] = {"", "Scout.No03",   "Sniper.No04", "Soldier.No01",
 		"Demoman.No03", "Medic.No03",  "heavy.No02",
 		"Pyro.No01",    "Spy.No02",    "Engineer.No03"};
-
-	template<typename T>
-	class IPopOverride
-	{
-	public:
-		virtual ~IPopOverride() {}
-		
-		bool IsOverridden() const { return this->m_bOverridden; }
-		
-		void Reset()
-		{
-			if (this->m_bOverridden) {
-				this->Restore();
-				this->m_bOverridden = false;
-			}
-		}
-		void Set(const T& val)
-		{
-			if (!this->m_bOverridden) {
-				this->Backup();
-				this->m_bOverridden = true;
-			}
-			this->SetValue(val);
-		}
-		T Get() { return this->GetValue(); }
-		
-	protected:
-		virtual T GetValue() = 0;
-		virtual void SetValue(const T& val) = 0;
-		
-	private:
-		void Backup()
-		{
-			this->m_Backup = this->GetValue();
-		}
-		void Restore()
-		{
-			this->SetValue(this->m_Backup);
-		}
-		
-		bool m_bOverridden = false;
-		T m_Backup;
-	};
-	
-	
-	// TODO: consider rewriting this in terms of IConVarOverride from util/misc.h
-	template<typename T>
-	class CPopOverride_ConVar : public IPopOverride<T>
-	{
-	public:
-		CPopOverride_ConVar(const char *name) :
-			m_pszConVarName(name) {}
-		
-		virtual T GetValue() override { return ConVar_GetValue<T>(MyConVar()); }
-		
-		virtual void SetValue(const T& val) override
-		{
-			/* set the ConVar value in a manner that circumvents:
-			 * - FCVAR_NOTIFY notifications
-			 * - minimum value limits
-			 * - maximum value limits
-			 */
-			
-			int old_flags   = MyConVar().Ref_Flags();
-			bool old_hasmin = MyConVar().Ref_HasMin();
-			bool old_hasmax = MyConVar().Ref_HasMax();
-			
-			MyConVar().Ref_Flags() &= ~FCVAR_NOTIFY;
-			MyConVar().Ref_HasMin() = false;
-			MyConVar().Ref_HasMax() = false;
-			
-			ConVar_SetValue<T>(MyConVar(), val);
-			
-			MyConVar().Ref_Flags()  = old_flags;
-			MyConVar().Ref_HasMin() = old_hasmin;
-			MyConVar().Ref_HasMax() = old_hasmax;
-		}
-		
-	private:
-		ConVarRef& MyConVar()
-		{
-			if (this->m_pConVar == nullptr) {
-				this->m_pConVar = std::unique_ptr<ConVarRef>(new ConVarRef(this->m_pszConVarName));
-			}
-			return *(this->m_pConVar);
-		}
-		
-		const char *m_pszConVarName;
-		std::unique_ptr<ConVarRef> m_pConVar;
-	};
-	
-	
-
-	// TODO: fix problems related to client-side convar tf_medieval_thirdperson:
-	// - players start out in first person, until they taunt or respawn or whatever
-	// - players do not get forced back into first person upon popfile switch if the new pop doesn't have this enabled
-	// see: firstperson/thirdperson client-side concommands are FCVAR_SERVER_CAN_EXECUTE in TF2; might be a solution
-	//      static ConCommand thirdperson( "thirdperson", ::CAM_ToThirdPerson, "Switch to thirdperson camera.", FCVAR_CHEAT | FCVAR_SERVER_CAN_EXECUTE );
-	//      static ConCommand firstperson( "firstperson", ::CAM_ToFirstPerson, "Switch to firstperson camera.", FCVAR_SERVER_CAN_EXECUTE );
-	// also: just generally look at SetAppropriateCamera in the client DLL
-	struct CPopOverride_MedievalMode : public IPopOverride<bool>
-	{
-		virtual bool GetValue() override                { return TFGameRules()->IsInMedievalMode(); }
-		virtual void SetValue(const bool& val) override { TFGameRules()->Set_m_bPlayingMedieval(val); }
-	};
-	
-	
-	class CPopOverride_CustomUpgradesFile : public IPopOverride<std::string>
-	{
-	public:
-		virtual std::string GetValue() override
-		{
-			std::string val = TFGameRules()->GetCustomUpgradesFile();
-			
-			if (val == "") {
-				val = "scripts/items/mvm_upgrades.txt";
-			}
-			
-			return val;
-		}
-		
-		virtual void SetValue(const std::string& val) override
-		{
-			std::string real_val = val;
-			
-			if (real_val == "") {
-				real_val = "scripts/items/mvm_upgrades.txt";
-			}
-			
-			if (this->GetValue() != real_val) {
-				ConColorMsg(Color(0x00, 0xff, 0xff, 0xff), "CPopOverride_CustomUpgradesFile: SetCustomUpgradesFile(\"%s\")\n", real_val.c_str());
-				TFGameRules()->SetCustomUpgradesFile(real_val.c_str());
-			}
-		}
-	};
 	
 	
 	class ExtraTankPath
@@ -634,7 +342,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_ImprovedAirblast                ("sig_bot_improved_airblast"),
 			m_FlagCarrierMovementPenalty      ("tf_mvm_bot_flag_carrier_movement_penalty"),
 			m_TextPrintSpeed                  ("sig_text_print_speed"),
-			m_AllowSpectators                 ("mp_allowspectators"),
 			m_TeleporterUberDuration          ("tf_mvm_engineer_teleporter_uber_duration"),
 			m_BluHumanTeleport                ("sig_mvm_bluhuman_teleport"),
 			m_BluHumanTeleportPlayer          ("sig_mvm_bluhuman_teleport_player"),
@@ -696,6 +403,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_SendBotsToSpectatorImmediately  ("sig_send_bots_to_spectator_immediately"),
 			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity"),
 			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all"),
+			m_MaxSpectators                   ("sig_mvm_spectator_max_players"),
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
 			
@@ -730,8 +438,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bDisplayRobotDeathNotice = false;
 			this->m_flRespawnWaveTimeBlue = -1.0f;
 			//this->m_iRedTeamMaxPlayers = 0;
-			this->m_iTotalMaxPlayers = 0;
-			this->m_iTotalSpectators = -1;
 			this->m_bPlayerMinigiant = false;
 			this->m_fPlayerScale = -1.0f;
 			this->m_iPlayerMiniBossMinRespawnTime = -1;
@@ -799,7 +505,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AimTrackingIntervalMultiplier.Reset();
 			this->m_ImprovedAirblast   .Reset();
 			this->m_FlagCarrierMovementPenalty   .Reset();
-			this->m_AllowSpectators.Reset();
 			this->m_TeleporterUberDuration.Reset();
 			this->m_BluHumanTeleport.Reset();
 			this->m_BluHumanTeleportPlayer.Reset();
@@ -861,6 +566,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SendBotsToSpectatorImmediately.Reset();
 			this->m_PathTrackIsServerEntity.Reset();
 			this->m_FastWholeMapTriggersAll.Reset();
+			this->m_MaxSpectators.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -966,10 +672,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		float m_flRespawnWaveTimeBlue;
 		float m_bFixedRespawnWaveTimeBlue;
 		//float m_iRedTeamMaxPlayers;
-		float m_iTotalMaxPlayers;
 		bool m_bPlayerMinigiant;
 		float m_fPlayerScale;
-		int m_iTotalSpectators;
 		int m_iPlayerMiniBossMinRespawnTime;
 		bool m_bPlayerRobotUsePlayerAnimation;
 		int m_iEscortBotCountOffset;
@@ -1004,108 +708,108 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
 		
-		CPopOverride_MedievalMode        m_MedievalMode;
-		CPopOverride_ConVar<bool>        m_SpellsEnabled;
-		CPopOverride_ConVar<bool>        m_GrapplingHook;
-		CPopOverride_ConVar<bool>        m_RespecEnabled;
-		CPopOverride_ConVar<int>         m_RespecLimit;
-		CPopOverride_ConVar<float>       m_BonusRatioHalf;
-		CPopOverride_ConVar<float>       m_BonusRatioFull;
-		CPopOverride_ConVar<bool>        m_FixedBuybacks;
-		CPopOverride_ConVar<int>         m_BuybacksPerWave;
-		CPopOverride_ConVar<int>         m_DeathPenalty;
-		CPopOverride_ConVar<bool>        m_SentryBusterFriendlyFire;
-		CPopOverride_ConVar<bool>        m_BotPushaway;
-		CPopOverride_ConVar<bool> m_HumansMustJoinTeam;
+		CValueOverride_MedievalMode        m_MedievalMode;
+		CValueOverride_ConVar<bool>        m_SpellsEnabled;
+		CValueOverride_ConVar<bool>        m_GrapplingHook;
+		CValueOverride_ConVar<bool>        m_RespecEnabled;
+		CValueOverride_ConVar<int>         m_RespecLimit;
+		CValueOverride_ConVar<float>       m_BonusRatioHalf;
+		CValueOverride_ConVar<float>       m_BonusRatioFull;
+		CValueOverride_ConVar<bool>        m_FixedBuybacks;
+		CValueOverride_ConVar<int>         m_BuybacksPerWave;
+		CValueOverride_ConVar<int>         m_DeathPenalty;
+		CValueOverride_ConVar<bool>        m_SentryBusterFriendlyFire;
+		CValueOverride_ConVar<bool>        m_BotPushaway;
+		CValueOverride_ConVar<bool> m_HumansMustJoinTeam;
 		
-		CPopOverride_ConVar<bool> m_AllowJoinTeamBlue;
-		CPopOverride_ConVar<int>  m_AllowJoinTeamBlueMax;
-		CPopOverride_ConVar<bool> m_BluHumanFlagPickup;
-		CPopOverride_ConVar<bool> m_BluHumanFlagCapture;
-		CPopOverride_ConVar<bool> m_BluHumanInfiniteCloak;
-		CPopOverride_ConVar<bool> m_BluHumanInfiniteAmmo;
-		CPopOverride_ConVar<int>  m_SetCreditTeam;
-		CPopOverride_ConVar<bool> m_EnableDominations;
-		CPopOverride_ConVar<int>  m_RobotLimit;
-		CPopOverride_ConVar<int> m_BotsHumans;
-		CPopOverride_ConVar<int> m_ForceHoliday;
-		CPopOverride_ConVar<bool> m_VanillaMode;
-		CPopOverride_ConVar<float> m_BodyPartScaleSpeed;
-		CPopOverride_ConVar<bool> m_SandmanStuns;
-		CPopOverride_ConVar<bool> m_MedigunShieldDamage;
-		CPopOverride_ConVar<bool> m_StandableHeads;
-		CPopOverride_ConVar<bool> m_NoRomevisionCosmetics;
-		CPopOverride_ConVar<bool> m_CreditsBetterRadiusCollection;
-		CPopOverride_ConVar<float> m_AimTrackingIntervalMultiplier;
-		CPopOverride_ConVar<bool> m_ImprovedAirblast;
-		CPopOverride_ConVar<float> m_FlagCarrierMovementPenalty;
-		CPopOverride_ConVar<float> m_TextPrintSpeed;
-		CPopOverride_ConVar<bool> m_AllowSpectators;
-		CPopOverride_ConVar<float> m_TeleporterUberDuration;
-		CPopOverride_ConVar<bool> m_BluHumanTeleport;
-		CPopOverride_ConVar<bool> m_BluHumanTeleportPlayer;
-		CPopOverride_ConVar<bool> m_BotsUsePlayerTeleporters;
-		CPopOverride_ConVar<int> m_RedTeamMaxPlayers;
-		CPopOverride_ConVar<bool> m_MaxSpeedEnable;
-		CPopOverride_ConVar<float> m_MaxSpeedLimit;
-		CPopOverride_ConVar<float> m_MaxVelocity;
-		CPopOverride_ConVar<bool> m_BotRunFast;
-		CPopOverride_ConVar<bool> m_BotRunFastJump;
-		CPopOverride_ConVar<bool> m_BotRunFastUpdate;
-		CPopOverride_ConVar<float> m_ConchHealthOnHitRegen;
-		CPopOverride_ConVar<float> m_MarkOnDeathLifetime;
-		CPopOverride_ConVar<int> m_VacNumCharges;
-		CPopOverride_ConVar<float> m_DoubleDonkWindow;
-		CPopOverride_ConVar<float> m_ConchSpeedBoost;
-		CPopOverride_ConVar<float> m_StealthDamageReduction;
-		CPopOverride_ConVar<bool> m_AllowFlagCarrierToFight;
-		CPopOverride_ConVar<bool> m_HealOnKillOverhealMelee;
-		CPopOverride_ConVar<int> m_MaxActiveZombie;
-		CPopOverride_ConVar<float> m_HHHAttackRange;
-		CPopOverride_ConVar<float> m_HHHChaseRange;
-		CPopOverride_ConVar<float> m_HHHChaseDuration;
-		CPopOverride_ConVar<float> m_HHHQuitRange;
-		CPopOverride_ConVar<float> m_HHHTerrifyRange;
-		CPopOverride_ConVar<int> m_HHHHealthBase;
-		CPopOverride_ConVar<int> m_HHHHealthPerPlayer;
-		CPopOverride_ConVar<bool> m_ForceRobotBleed;
-		CPopOverride_ConVar<bool> m_BotHumansHaveRobotVoice;
-		CPopOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
-		CPopOverride_ConVar<std::string> m_EyeParticle;
-		CPopOverride_ConVar<int> m_BotEscortCount;
-		CPopOverride_ConVar<bool> m_CustomAttrDisplay;
-		CPopOverride_ConVar<float> m_Accelerate;
-		CPopOverride_ConVar<float> m_AirAccelerate;
-		CPopOverride_ConVar<bool> m_TurboPhysics;
-		CPopOverride_ConVar<bool> m_UpgradeStationRegenCreators;
-		CPopOverride_ConVar<bool> m_UpgradeStationRegen;
-		CPopOverride_ConVar<bool> m_AllowBluePlayerReanimators;
-		CPopOverride_ConVar<bool> m_BluVelocityRemoveLimit;
-		CPopOverride_ConVar<bool> m_FastEntityNameLookup;
-		CPopOverride_ConVar<bool> m_AllowMultipleSappers;
-		CPopOverride_ConVar<float> m_EngineerPushRange;
-		CPopOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
-		CPopOverride_ConVar<float> m_DefaultBossScale;
-		CPopOverride_ConVar<bool> m_FastWholeMapTriggers;
-		CPopOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
-		CPopOverride_ConVar<bool> m_BluHumanSpawnProtection;
-		CPopOverride_ConVar<bool> m_TvEnable;
-		CPopOverride_ConVar<bool> m_AllowBotsExtraSlots;
-		CPopOverride_ConVar<bool> m_AutoWeaponStrip;
-		CPopOverride_ConVar<bool> m_RemoveOffhandViewmodel;
-		CPopOverride_ConVar<bool> m_RemoveBotExpressions;
-		CPopOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
-		CPopOverride_ConVar<bool> m_NoRobotFootsteps;
-		CPopOverride_ConVar<float> m_SentryHintBombForwardRange;
-		CPopOverride_ConVar<float> m_SentryHintBombBackwardRange;
-		CPopOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
-		CPopOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
-		CPopOverride_ConVar<bool> m_PathTrackIsServerEntity;
-		CPopOverride_ConVar<float> m_FastWholeMapTriggersAll;		
+		CValueOverride_ConVar<bool> m_AllowJoinTeamBlue;
+		CValueOverride_ConVar<int>  m_AllowJoinTeamBlueMax;
+		CValueOverride_ConVar<bool> m_BluHumanFlagPickup;
+		CValueOverride_ConVar<bool> m_BluHumanFlagCapture;
+		CValueOverride_ConVar<bool> m_BluHumanInfiniteCloak;
+		CValueOverride_ConVar<bool> m_BluHumanInfiniteAmmo;
+		CValueOverride_ConVar<int>  m_SetCreditTeam;
+		CValueOverride_ConVar<bool> m_EnableDominations;
+		CValueOverride_ConVar<int>  m_RobotLimit;
+		CValueOverride_ConVar<int> m_BotsHumans;
+		CValueOverride_ConVar<int> m_ForceHoliday;
+		CValueOverride_ConVar<bool> m_VanillaMode;
+		CValueOverride_ConVar<float> m_BodyPartScaleSpeed;
+		CValueOverride_ConVar<bool> m_SandmanStuns;
+		CValueOverride_ConVar<bool> m_MedigunShieldDamage;
+		CValueOverride_ConVar<bool> m_StandableHeads;
+		CValueOverride_ConVar<bool> m_NoRomevisionCosmetics;
+		CValueOverride_ConVar<bool> m_CreditsBetterRadiusCollection;
+		CValueOverride_ConVar<float> m_AimTrackingIntervalMultiplier;
+		CValueOverride_ConVar<bool> m_ImprovedAirblast;
+		CValueOverride_ConVar<float> m_FlagCarrierMovementPenalty;
+		CValueOverride_ConVar<float> m_TextPrintSpeed;
+		CValueOverride_ConVar<float> m_TeleporterUberDuration;
+		CValueOverride_ConVar<bool> m_BluHumanTeleport;
+		CValueOverride_ConVar<bool> m_BluHumanTeleportPlayer;
+		CValueOverride_ConVar<bool> m_BotsUsePlayerTeleporters;
+		CValueOverride_ConVar<int> m_RedTeamMaxPlayers;
+		CValueOverride_ConVar<bool> m_MaxSpeedEnable;
+		CValueOverride_ConVar<float> m_MaxSpeedLimit;
+		CValueOverride_ConVar<float> m_MaxVelocity;
+		CValueOverride_ConVar<bool> m_BotRunFast;
+		CValueOverride_ConVar<bool> m_BotRunFastJump;
+		CValueOverride_ConVar<bool> m_BotRunFastUpdate;
+		CValueOverride_ConVar<float> m_ConchHealthOnHitRegen;
+		CValueOverride_ConVar<float> m_MarkOnDeathLifetime;
+		CValueOverride_ConVar<int> m_VacNumCharges;
+		CValueOverride_ConVar<float> m_DoubleDonkWindow;
+		CValueOverride_ConVar<float> m_ConchSpeedBoost;
+		CValueOverride_ConVar<float> m_StealthDamageReduction;
+		CValueOverride_ConVar<bool> m_AllowFlagCarrierToFight;
+		CValueOverride_ConVar<bool> m_HealOnKillOverhealMelee;
+		CValueOverride_ConVar<int> m_MaxActiveZombie;
+		CValueOverride_ConVar<float> m_HHHAttackRange;
+		CValueOverride_ConVar<float> m_HHHChaseRange;
+		CValueOverride_ConVar<float> m_HHHChaseDuration;
+		CValueOverride_ConVar<float> m_HHHQuitRange;
+		CValueOverride_ConVar<float> m_HHHTerrifyRange;
+		CValueOverride_ConVar<int> m_HHHHealthBase;
+		CValueOverride_ConVar<int> m_HHHHealthPerPlayer;
+		CValueOverride_ConVar<bool> m_ForceRobotBleed;
+		CValueOverride_ConVar<bool> m_BotHumansHaveRobotVoice;
+		CValueOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
+		CValueOverride_ConVar<std::string> m_EyeParticle;
+		CValueOverride_ConVar<int> m_BotEscortCount;
+		CValueOverride_ConVar<bool> m_CustomAttrDisplay;
+		CValueOverride_ConVar<float> m_Accelerate;
+		CValueOverride_ConVar<float> m_AirAccelerate;
+		CValueOverride_ConVar<bool> m_TurboPhysics;
+		CValueOverride_ConVar<bool> m_UpgradeStationRegenCreators;
+		CValueOverride_ConVar<bool> m_UpgradeStationRegen;
+		CValueOverride_ConVar<bool> m_AllowBluePlayerReanimators;
+		CValueOverride_ConVar<bool> m_BluVelocityRemoveLimit;
+		CValueOverride_ConVar<bool> m_FastEntityNameLookup;
+		CValueOverride_ConVar<bool> m_AllowMultipleSappers;
+		CValueOverride_ConVar<float> m_EngineerPushRange;
+		CValueOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
+		CValueOverride_ConVar<float> m_DefaultBossScale;
+		CValueOverride_ConVar<bool> m_FastWholeMapTriggers;
+		CValueOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
+		CValueOverride_ConVar<bool> m_BluHumanSpawnProtection;
+		CValueOverride_ConVar<bool> m_TvEnable;
+		CValueOverride_ConVar<bool> m_AllowBotsExtraSlots;
+		CValueOverride_ConVar<bool> m_AutoWeaponStrip;
+		CValueOverride_ConVar<bool> m_RemoveOffhandViewmodel;
+		CValueOverride_ConVar<bool> m_RemoveBotExpressions;
+		CValueOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
+		CValueOverride_ConVar<bool> m_NoRobotFootsteps;
+		CValueOverride_ConVar<float> m_SentryHintBombForwardRange;
+		CValueOverride_ConVar<float> m_SentryHintBombBackwardRange;
+		CValueOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
+		CValueOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
+		CValueOverride_ConVar<bool> m_PathTrackIsServerEntity;
+		CValueOverride_ConVar<float> m_FastWholeMapTriggersAll;
+		CValueOverride_ConVar<int> m_MaxSpectators;		
 		
 		
-		//CPopOverride_CustomUpgradesFile m_CustomUpgradesFile;
-		CPopOverride_ConVar<std::string> m_CustomUpgradesFile;
+		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
+		CValueOverride_ConVar<std::string> m_CustomUpgradesFile;
 		
 		std::vector<PointTemplateInfo>				m_SpawnTemplates;
 		std::vector<PlayerPointTemplateInfo>        m_PlayerSpawnTemplates;
@@ -2666,19 +2370,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 	// 	return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);
 	// }
-
-	DETOUR_DECL_MEMBER(void, CTFGCServerSystem_PreClientUpdate)
-	{
-		DETOUR_MEMBER_CALL(CTFGCServerSystem_PreClientUpdate)();
-		if (IsMannVsMachineMode() && cvar_max_red_players.GetInt() > 0) {
-			static ConVarRef visible_max_players("sv_visiblemaxplayers");
-			int maxplayers = visible_max_players.GetInt() + cvar_max_red_players.GetInt() - 6;
-			if (state.m_iTotalMaxPlayers > 0 && maxplayers > state.m_iTotalMaxPlayers)
-				maxplayers = state.m_iTotalMaxPlayers;
-			visible_max_players.SetValue(maxplayers);
-			
-		}
-	}
 	/*DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *ent, Vector *vec)
 	{
 		DevMsg ("abletosee1\n");
@@ -2747,31 +2438,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
 	}
-
-	DETOUR_DECL_MEMBER(bool, CTFGameRules_ClientConnected, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
-	{
-		auto gamerules = reinterpret_cast<CTFGameRules *>(this);
-		
-		if (gamerules->IsMannVsMachineMode() && state.m_iTotalSpectators >= 0) {
-			int spectators = 0;
-			int assigned = 0;
-			ForEachTFPlayer([&](CTFPlayer *player){
-				if(player->IsRealPlayer()) {
-					if (player->GetTeamNumber() == TF_TEAM_BLUE || player->GetTeamNumber() == TF_TEAM_RED)
-						assigned++;
-					else
-						spectators++;
-				}
-			});
-			if (spectators >= state.m_iTotalSpectators && assigned >= GetVisibleMaxPlayers()) {
-				strcpy(reject, "Exceeded total spectator count of the mission");
-				return false;
-			}
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ClientConnected)(pEntity, pszName, pszAddress, reject, maxrejectlen);
-	}
-
 
 	DETOUR_DECL_MEMBER(float, CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn, CBasePlayer *player)
 	{
@@ -5044,45 +4710,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER(int, CTFGameRules_GetTeamAssignmentOverride, CTFPlayer *pPlayer, int iWantedTeam, bool b1)
-	{
-		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
-			&& iWantedTeam == TF_TEAM_RED) {
-				
-			int totalPlayers = 0;
-			ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [&totalPlayers, pPlayer](CTFPlayer *player){
-				if (player->IsRealPlayer() && pPlayer != player) {
-					totalPlayers += 1;
-				}
-			});
-
-			if (totalPlayers < iGetTeamAssignmentOverride) {
-				Log( "MVM assigned %s to defending team (%d more slots remaining after us)\n", pPlayer->GetPlayerName(), iGetTeamAssignmentOverride - totalPlayers - 1 );
-				// Set Their Currency
-				int nRoundCurrency = MannVsMachineStats_GetAcquiredCredits();
-				nRoundCurrency += g_pPopulationManager->m_nStartingCurrency;
-
-				// deduct any cash that has already been spent
-				int spentCurrency = g_pPopulationManager->GetPlayerCurrencySpent(pPlayer);
-				pPlayer->SetCurrency(nRoundCurrency - spentCurrency);
-				return TF_TEAM_RED;
-			}
-			else {
-				// no room
-				Log( "MVM assigned %s to spectator, all slots for defending team are in use, or reserved for lobby members\n",
-				     pPlayer->GetPlayerName() );
-				return TEAM_SPECTATOR;
-			}
-			
-		}
-
-		/* it's important to let the call happen, because pPlayer->m_nCurrency
-		 * is set to its proper value in the call (stupid, but whatever) */
-		auto iResult = DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
-		
-		return iResult;
-	}
-
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RememberUpgrade, int iPlayerClass, CEconItemView *pItem, int iUpgrade, int nCost, bool bDowngrade )
 	{
 		int origItemDefId = ReplaceEconItemViewDefId(pItem);
@@ -6169,8 +5796,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->UpdateModel();
 			}
 		});
-				
-		SetVisibleMaxPlayers();
 
 		string_t popfileName = TFObjectiveResource()->m_iszMvMPopfileName;
 		if (state.m_LastMissionName != STRING(popfileName)) {
@@ -6180,9 +5805,6 @@ namespace Mod::Pop::PopMgr_Extensions
 	//	if ( state.m_iRedTeamMaxPlayers > 0) {
 	//		ResetMaxRedTeamPlayers(6);
 	//	}
-		if ( state.m_iTotalMaxPlayers > 0) {
-			ResetMaxTotalPlayers(10);
-		}
 
 		std::string prevNavFile = state.m_CustomNavFile;
 		state.Reset();
@@ -6261,7 +5883,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				scriptManager->Call(1, 0);
 			}
 		}
-		TogglePatches();
 //		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
 	}
@@ -6419,7 +6040,6 @@ namespace Mod::Pop::PopMgr_Extensions
 						state.m_AllowJoinTeamBlueMax.Set(6);
 					if (!state.m_SetCreditTeam.IsOverridden() )
 						state.m_SetCreditTeam.Set(3);
-					SetVisibleMaxPlayers();
 					ForEachTFPlayer([&](CTFPlayer *player){
 						if(player->GetTeamNumber() == TF_TEAM_RED && !player->IsBot()){
 							player->ForceChangeTeam(TF_TEAM_BLUE, true);
@@ -6430,10 +6050,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_HumansMustJoinTeam.Set(false);
 			} else if (FStrEq(name, "AllowJoinTeamBlue")) {
 				state.m_AllowJoinTeamBlue.Set(subkey->GetBool());
-				SetVisibleMaxPlayers();
 			} else if (FStrEq(name, "AllowJoinTeamBlueMax")) {
 				state.m_AllowJoinTeamBlueMax.Set(subkey->GetInt());
-				SetVisibleMaxPlayers();
 			} else if (FStrEq(name, "BluHumanFlagPickup")) {
 				state.m_BluHumanFlagPickup.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BluHumanFlagCapture")) {
@@ -6608,7 +6226,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "MaxTotalPlayers")) {
 
 			} else if (FStrEq(name, "MaxSpectators")) {
-				SetMaxSpectators(subkey->GetInt());
+				state.m_MaxSpectators.Set(subkey->GetInt());
 			} else if (FStrEq(name, "ItemWhitelist")) {
 				Parse_ItemWhitelist(subkey);
 			} else if (FStrEq(name, "ItemBlacklist")) {
@@ -6857,112 +6475,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		return result;
 	}
-
-	
-	void ResetMaxRedTeamPlayers(int resetTo) {
-		int redplayers = 0;
-		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->GetTeamNumber() == TF_TEAM_RED && player->IsRealPlayer())
-				redplayers += 1;
-		});
-		if (redplayers > resetTo) {
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() == TF_TEAM_RED && redplayers > resetTo && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
-					player->ForceChangeTeam(TEAM_SPECTATOR, false);
-					redplayers -= 1;
-				}
-			});
-		}
-		if (resetTo > 0) {
-			iGetTeamAssignmentOverride = resetTo;
-			iPreClientUpdate = GetVisibleMaxPlayers();
-		}
-		else {
-			iGetTeamAssignmentOverride = 6;
-			iPreClientUpdate = 6;
-		}
-		TogglePatches();
-	}
-	void SetMaxSpectators(int resetTo) {
-		
-		int spectators = 0;
-		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->GetTeamNumber() < 2 && player->IsRealPlayer())
-				spectators += 1;
-		});
-		if (spectators > resetTo) {
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() < TF_TEAM_RED && spectators > resetTo && player->IsRealPlayer()) {
-					player->HandleCommand_JoinTeam("red");
-
-					if (player->GetTeamNumber() >= TF_TEAM_RED) {
-						spectators -= 1;
-					}
-					else if (!PlayerIsSMAdmin(player)){
-						// Kick if cannot switch to red team
-						engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
-						spectators -= 1;
-					}
-					else {
-						PrintToChat("This mission has a reduced spectator count. If you weren't an admin, you would have been kicked\n", player);
-					}
-				}
-			});
-		}
-		state.m_iTotalSpectators = resetTo;
-	}
-	int GetMaxSpectators()
-	{
-		return state.m_iTotalSpectators;
-	}
-	void ResetMaxTotalPlayers(int resetTo) {
-		
-		int totalplayers = 0;
-		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->IsRealPlayer())
-				totalplayers += 1;
-		});
-		if (totalplayers > resetTo) {
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() < 2 && totalplayers > resetTo && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
-					engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
-					totalplayers -= 1;
-				}
-			});
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() >= 2 && totalplayers > state.m_iTotalMaxPlayers && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
-					engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
-					totalplayers -= 1;
-				}
-			});
-		}
-		if (resetTo > 0)
-			iClientConnected = std::max(5, resetTo - 1);
-		else 
-			iClientConnected = 9;
-		TogglePatches();
-	}
-
-	int GetVisibleMaxPlayers() {
-		int max = 6;
-		if (cvar_max_red_players.GetInt() > 0)
-			max = cvar_max_red_players.GetInt();
-		
-		static ConVarRef sig_mvm_jointeam_blue_allow("sig_mvm_jointeam_blue_allow");
-		static ConVarRef sig_mvm_jointeam_blue_allow_max("sig_mvm_jointeam_blue_allow_max");
-		if (sig_mvm_jointeam_blue_allow.GetInt() != 0 && sig_mvm_jointeam_blue_allow_max.GetInt() > 0)
-			max += sig_mvm_jointeam_blue_allow_max.GetInt();
-		
-		static ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
-		if (sig_mvm_jointeam_blue_allow_force.GetInt() != 0 && sig_mvm_jointeam_blue_allow_max.GetInt() > 0)
-			max = sig_mvm_jointeam_blue_allow_max.GetInt();
-		return max;
-	}
-
-	void SetVisibleMaxPlayers() {
-		iPreClientUpdate = GetVisibleMaxPlayers();
-		TogglePatches();
-	}
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -7114,7 +6626,6 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride", LOWEST);
 			MOD_ADD_DETOUR_STATIC(TranslateWeaponEntForClass, "TranslateWeaponEntForClass");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RememberUpgrade, "CTFPlayer::RememberUpgrade");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForgetFirstUpgradeForItem, "CTFPlayer::ForgetFirstUpgradeForItem");
@@ -7142,9 +6653,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			//team_size_extract.Check();
 			//int value = team_size_extract.Extract();
 			//DevMsg("Team Size Extract %d\n", value);
-			this->AddPatch(new CPatch_GetTeamAssignmentOverride());
-			//this->AddPatch(new CPatch_CTFGameRules_ClientConnected());
-			this->AddPatch(new CPatch_CTFGCServerSystem_PreClientUpdate());
 		}
 		
 		virtual void OnUnload() override
@@ -7172,7 +6680,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void LevelInitPreEntity() override
 		{
-			
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
 
@@ -7221,7 +6728,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (strlen(cvar_custom_upgrades_file.GetString()) > 0) {
 				ResendUpgradeFile(true);
 			}
-			SetVisibleMaxPlayers();
 		}
 
 		virtual void LevelShutdownPostEntity() override
@@ -7284,35 +6790,7 @@ namespace Mod::Pop::PopMgr_Extensions
 						}
 					}
 				});
-			if (state.m_iTotalSpectators >= 0) {
-				int spectators = 0;
-				ForEachTFPlayer([&](CTFPlayer *player){
-					
-					if(player->IsRealPlayer()) {
-						if (!(player->GetTeamNumber() == TF_TEAM_BLUE || player->GetTeamNumber() == TF_TEAM_RED))
-							spectators++;
-					}
-				});
-				state.m_AllowSpectators.Set(spectators < state.m_iTotalSpectators);
-				if (spectators > state.m_iTotalSpectators) {
-					ForEachTFPlayer([&](CTFPlayer *player) {
-						if (player->GetTeamNumber() < TF_TEAM_RED && spectators > state.m_iTotalSpectators && player->IsRealPlayer()) {
-							player->HandleCommand_JoinTeam("red");
-
-							if (player->GetTeamNumber() >= TF_TEAM_RED) {
-								spectators -= 1;
-							}
-							else if (!PlayerIsSMAdmin(player)){
-								// Kick if cannot switch to red team
-								engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
-								spectators -= 1;
-							}
-						}
-					});
-				}
-				//ConVarRef allowspectators("mp_allowspectators");
-				//allowspectators.SetValue(spectators >= state.m_iTotalSpectators ? "0" : "1");
-			}
+			
 
 			// If send to spectator immediately is checked, check for any dead non spectator bot
 			if (bot_killed_check) {
@@ -7364,11 +6842,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
 	CMod s_Mod;
-	
-	void TogglePatches() {
-		s_Mod.ToggleAllPatches(false);
-		s_Mod.ToggleAllPatches(true);
-	}
 	
 	ConVar cvar_enable("sig_pop_popmgr_extensions", "0", FCVAR_NOTIFY,
 		"Mod: enable extended KV in CPopulationManager::Parse",

@@ -204,6 +204,7 @@ sourceFiles += [
   'src/mod/mvm/jointeam_blue_allow.cpp',
   'src/mod/mvm/medigunshield_damage.cpp',
   'src/mod/mvm/no_halloween_souls.cpp',
+  'src/mod/mvm/player_limit.cpp',
   'src/mod/mvm/refund_exploit_fix.cpp',
   'src/mod/mvm/robosapper_override.cpp',
   'src/mod/mvm/robot_limit.cpp',

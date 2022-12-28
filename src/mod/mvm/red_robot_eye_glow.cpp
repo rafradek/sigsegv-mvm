@@ -6,7 +6,7 @@
 #include "stub/extraentitydata.h"
 #include "util/iterate.h"
 
-namespace Mod::Pop::Red_Robot_Eye_Glow
+namespace Mod::MvM::Red_Robot_Eye_Glow
 {
     ConVar cvar_eye_particle("sig_mvm_eye_particle", "", FCVAR_NOTIFY,
 		"Mod: add eye particle to models");

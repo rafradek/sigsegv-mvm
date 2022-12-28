@@ -3,6 +3,7 @@
 #include "stub/populators.h"
 #include "stub/gamerules.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "mod/mvm/player_limit.h"
 #include "util/scope.h"
 #include "util/iterate.h"
 #include "util/admin.h"
@@ -96,8 +97,7 @@ namespace Mod::MvM::Robot_Limit
 
 	int GetMvMInvaderLimit() { return cvar_override.GetInt(); }
 
-	// Clients may crash when a bot at extra slot joined after they spawned, so all the extra slots get occupied at once as soon as a player joins. 
-	// Those extra slots must stay unused to respect the max robot limit
+	// Get max slot number that the bots may occupy
 	int GetMaxAllowedSlot()
 	{
 		//return gpGlobals->maxClients;
@@ -105,10 +105,8 @@ namespace Mod::MvM::Robot_Limit
 		if (!sig_etc_extra_player_slots_allow_bots.GetBool()) return 33;
 		
 		static ConVarRef tv_enable("tv_enable");
-		static ConVarRef visible_max_players("sv_visiblemaxplayers");
-		int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
-
-		return GetMvMInvaderLimit() + visible_max_players.GetInt() + specs + (tv_enable.GetBool() ? 1 : 0);
+		int red, blu, spectators, robots;
+		return Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
 	}
 	
 	
@@ -119,11 +117,13 @@ namespace Mod::MvM::Robot_Limit
 	{
 		// When extra bot slots are enabled, always kick bots in slots considered reserved for players
 		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
-		static ConVarRef visible_max_players("sv_visiblemaxplayers");
 		static ConVarRef tv_enable("tv_enable");
-		int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
+
+		int red, blu, spectators, robots;
+		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
+
 		if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
-			int playerReservedSlots = specs + visible_max_players.GetInt();
+			int playerReservedSlots = red + blu + spectators;
 			
 			for (int i = 0; i < mvm_bots.Count(); i++) {
 				if (ENTINDEX(mvm_bots[i]) <= playerReservedSlots) {

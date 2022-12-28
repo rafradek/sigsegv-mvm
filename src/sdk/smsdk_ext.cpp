@@ -82,7 +82,7 @@ IThreader *threader = NULL;
 ILibrarySys *libsys = NULL;
 #endif
 #if defined SMEXT_ENABLE_PLUGINSYS
-SourceMod::IPluginManager *plsys;
+SourceMod::IPluginManager *plsys = NULL;
 #endif
 #if defined SMEXT_ENABLE_MENUS
 IMenuManager *menus = NULL;

@@ -12,6 +12,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/tf_player_resource.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "mod/mvm/player_limit.h"
 #include "util/iterate.h"
 #include <gamemovement.h>
 
@@ -156,10 +157,8 @@ namespace Mod::Etc::Extra_Player_Slots
                 }
                 else {
                     if (TFGameRules()->IsMannVsMachineMode()) {
-                        static ConVarRef visible_max_players("sv_visiblemaxplayers");
-                        static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
-                        int specs = MAX(0, Mod::Pop::PopMgr_Extensions::GetMaxSpectators());
-                        desiredSlot = Clamp(visible_max_players.GetInt() + sig_mvm_robot_limit_override.GetInt() - 1 + specs + (tv_enable.GetBool() ? 1 : 0), DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
+                        int red, blu, spectators, robots;
+                        desiredSlot = Clamp(Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) - 1, DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
                     }
                     else {
                         desiredSlot = gpGlobals->maxClients - 1;

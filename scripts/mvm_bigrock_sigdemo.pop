@@ -94,7 +94,7 @@ WaveSchedule
 	// BLU Players Options //
 	//////////////////////////
 	// BLU players also are affected by BLU robot options 
-	AllowJoinTeamBlue 1 [$SIGSEGV] //If it is possible to join team blue
+	AllowJoinTeamBlue 1 [$SIGSEGV] //If it is possible to join team blue (with 'jointeam blue' client command unless forced)
 	AllowJoinTeamBlueMax 4 [$SIGSEGV] //How many players can join the blue team
 	HumansMustJoinTeam blue [$SIGSEGV] //Set to blue to force players join the blu team
 	ReverseWinConditions 1 [$SIGSEGV] //Player team wins if bots deliver the bomb
