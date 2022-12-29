@@ -34,7 +34,7 @@ def CopyFiles(src, dest, files):
     source_path = os.path.join(builder.sourcePath, src, source_file)
     builder.AddCopy(source_path, dest_entry)
 
-# Include files 
+# Include files
 #CopyFiles('include', 'addons/sourcemod/scripting/include',
 #  [
 #    'sample.inc',
@@ -103,6 +103,8 @@ CopyFiles('scripts', 'custom/sigsegv/scripts',
 )
 
 builder.AddCopy('cfg/sigsegv_convars.cfg', folder_map['cfg'])
+builder.AddCopy('cfg/sigsegv_convars_pvp.cfg', folder_map['cfg'])
+builder.AddCopy('cfg/sigsegv_convars_vanilla.cfg', folder_map['cfg'])
 builder.AddCopy('sigsegv.autoload', folder_map['addons/sourcemod/extensions'])
 builder.AddCopy('scripts/mvm_bigrock_sigdemo.pop', folder_map['custom/sigsegv/scripts/population'])
 builder.AddCopy('scripts/mvm_bigrock_luademo.pop', folder_map['custom/sigsegv/scripts/population'])
