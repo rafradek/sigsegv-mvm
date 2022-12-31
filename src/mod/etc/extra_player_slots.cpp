@@ -42,7 +42,7 @@ namespace Mod::Etc::Extra_Player_Slots
 		});
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
-		"Fixes voice chat indicator showing with more than 64 slots, but also disables all talk and causes ");
+		"Fixes voice chat indicator showing with more than 64 slots");
 
     ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "1", FCVAR_NOTIFY,
 		"Does not display death cam when killed by players in extra slots");
