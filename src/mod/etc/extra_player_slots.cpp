@@ -3,6 +3,7 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "util/value_override.h"
 #include "stub/strings.h"
 #include "stub/tfplayer.h"
 #include "stub/gamerules.h"
@@ -41,7 +42,7 @@ namespace Mod::Etc::Extra_Player_Slots
 		});
 
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
-		"Fixes voice chat indicator showing with more than 64 slots, but also disables all of voice chat");
+		"Fixes voice chat indicator showing with more than 64 slots, but also disables all talk and causes ");
 
     ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "1", FCVAR_NOTIFY,
 		"Does not display death cam when killed by players in extra slots");
@@ -392,13 +393,14 @@ namespace Mod::Etc::Extra_Player_Slots
         gpGlobals->maxClients = oldMaxClients;
     }
 
-    int last_player_connect_time = 0;
-    int last_player_connect_time_ack = 0;
+    constexpr int VOICE_MAX_PLAYERS = ((DEFAULT_MAX_PLAYERS + 31) / 32) * 32; 
+    GlobalThunk<CBitVec<VOICE_MAX_PLAYERS>[DEFAULT_MAX_PLAYERS]>  g_SentGameRulesMasks("g_SentGameRulesMasks");
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_ClientConnected, edict_t *edict)
 	{
-        last_player_connect_time = gpGlobals->tickcount;
         if (ENTINDEX(edict) > DEFAULT_MAX_PLAYERS) return;
+        
         DETOUR_MEMBER_CALL(CVoiceGameMgr_ClientConnected)(edict);
+        g_SentGameRulesMasks.GetRef()[ENTINDEX(edict) - 1].SetAll();
     }
 
     DETOUR_DECL_MEMBER(void, CHLTVDirector_BuildActivePlayerList)
@@ -519,16 +521,20 @@ namespace Mod::Etc::Extra_Player_Slots
         return ret;
     }
 
-    float talk_time[64];
+    float talk_time[VOICE_MAX_PLAYERS];
+    
     
     class CVoiceGameMgr {};
     MemberFuncThunk<CVoiceGameMgr *, void>  ft_CVoiceGameMgr_UpdateMasks("CVoiceGameMgr::UpdateMasks");
+    StaticFuncThunk<bool, IClient *, int, char*, int64>  ft_SV_BroadcastVoiceData("SV_BroadcastVoiceData");
+
     void *voicemgr = nullptr;
-    DETOUR_DECL_STATIC(bool, SV_BroadcastVoiceData, IClient * pClient, int nBytes, char * data, int64 xuid)
+    DETOUR_DECL_STATIC(bool, SV_BroadcastVoiceData, IClient * pClient, int nBytes, char *data, int64 xuid)
     {
-        if (gpGlobals->maxClients > 64 && pClient->GetPlayerSlot() < 64) {
+        if (gpGlobals->maxClients > VOICE_MAX_PLAYERS && pClient->GetPlayerSlot() < VOICE_MAX_PLAYERS) {
+            
             // Force update player voice masks
-            bool update = talk_time[pClient->GetPlayerSlot()] < gpGlobals->curtime - 1;
+            bool update = talk_time[pClient->GetPlayerSlot()] < gpGlobals->curtime - 0.5f;
             talk_time[pClient->GetPlayerSlot()] = gpGlobals->curtime;
             if (update && voicemgr != nullptr) {
                 ft_CVoiceGameMgr_UpdateMasks((CVoiceGameMgr *)voicemgr);
@@ -537,36 +543,32 @@ namespace Mod::Etc::Extra_Player_Slots
         return DETOUR_STATIC_CALL(SV_BroadcastVoiceData)(pClient, nBytes, data, xuid);
     }
 
+    CValueOverride_ConVar<bool> sv_alltalk("sv_alltalk");
     DETOUR_DECL_MEMBER(bool, CVoiceGameMgrHelper_CanPlayerHearPlayer, CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity)
 	{
-        if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
-            // This clears out the errorname voice status for the first time player joins the server
-            if (last_player_connect_time > last_player_connect_time_ack) {
-                last_player_connect_time_ack = gpGlobals->tickcount;
-            }
-            if (last_player_connect_time_ack == gpGlobals->tickcount) 
-                return true;
+        if (gpGlobals->maxClients > VOICE_MAX_PLAYERS && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
 
-            if (ENTINDEX(pTalker) > 64)
+            if (ENTINDEX(pTalker) > VOICE_MAX_PLAYERS)
                 return false;
             
-            if ((gpGlobals->maxClients > 127 || ENTINDEX(pTalker) % 64 < gpGlobals->maxClients % 64) && talk_time[ENTINDEX(pTalker) - 1] + 1.0f < gpGlobals->curtime)
+            if ((gpGlobals->maxClients > (VOICE_MAX_PLAYERS * 2 - 1) || ENTINDEX(pTalker) % VOICE_MAX_PLAYERS < gpGlobals->maxClients % VOICE_MAX_PLAYERS) && talk_time[ENTINDEX(pTalker) - 1] + 0.5f < gpGlobals->curtime)
                  return false;
         }
-
+        if (sv_alltalk.GetOriginalValue()) {
+            return true;
+        }
         return DETOUR_MEMBER_CALL(CVoiceGameMgrHelper_CanPlayerHearPlayer)(pListener, pTalker, bProximity);
     }
 
     DETOUR_DECL_MEMBER(void, CVoiceGameMgr_UpdateMasks)
 	{
         voicemgr = this;
-        static ConVarRef sv_alltalk("sv_alltalk");
-        if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool() && sv_alltalk.GetBool()) {
-            sv_alltalk.SetValue(false);
+        if (gpGlobals->maxClients > VOICE_MAX_PLAYERS && sig_etc_extra_player_slots_voice_display_fix.GetBool() && sv_alltalk.Get()) {
+            sv_alltalk.Set(false);
         }
 
         DETOUR_MEMBER_CALL(CVoiceGameMgr_UpdateMasks)();
-        
+        sv_alltalk.Reset();
         // if (restoreAllTalk) {
         //     sv_alltalk.SetValue(true);
         // }
@@ -952,17 +954,7 @@ namespace Mod::Etc::Extra_Player_Slots
             if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                 engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
             }
-            static bool saved_old_alltalk = false;
-            static bool old_alltalk = false;
-            static ConVarRef sv_alltalk("sv_alltalk");
-            if (gpGlobals->maxClients > 64 && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
-                saved_old_alltalk = true;
-                old_alltalk = sv_alltalk.GetBool();
-            }
-            else if (saved_old_alltalk) {
-                saved_old_alltalk = false;
-                sv_alltalk.SetValue(old_alltalk);
-            }
+            sv_alltalk.Reset();
             for (auto &time : talk_time) {
                 time = -100.0f;
             }
@@ -970,7 +962,6 @@ namespace Mod::Etc::Extra_Player_Slots
 
         virtual void LevelShutdownPostEntity() override
 		{
-            last_player_connect_time_ack = 0;
             //Msg("Has %d\n", sig_etc_extra_player_slots_allow_bots.GetBool());
             bool enable = MapHasExtraSlots(nextmap.c_str());
             if (!enable && gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS) {

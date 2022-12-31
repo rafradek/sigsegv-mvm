@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_SIGSEGV_UTIL_VALUE_OVERRIDE_H_
 #define _INCLUDE_SIGSEGV_UTIL_VALUE_OVERRIDE_H_
 
+#include <stub/gamerules.h> 
 #include <util/misc.h> 
 
 template<typename T>
@@ -28,6 +29,7 @@ public:
         this->SetValue(val);
     }
     T Get() { return this->GetValue(); }
+    T GetOriginalValue() { return m_bOverridden ? m_Backup : this->GetValue(); }
     
 protected:
     virtual T GetValue() = 0;

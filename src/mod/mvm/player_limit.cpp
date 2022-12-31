@@ -343,11 +343,11 @@ namespace Mod::MvM::Player_Limit
 		static ConVarRef tv_enable("tv_enable");
 
 
-		int freeSlots = MAX_PLAYERS - robots - tv_enable.GetBool() ? 1 : 0;
+		int freeSlots = MAX_PLAYERS - robots - (tv_enable.GetBool() ? 1 : 0);
 		if (spectators == -1) {
 			spectators = Max(0, freeSlots - red - blu);
 		}
-		return red + blu + spectators + robots + tv_enable.GetBool() ? 1 : 0;
+		return red + blu + spectators + robots + (tv_enable.GetBool() ? 1 : 0);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_ClientConnected, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)

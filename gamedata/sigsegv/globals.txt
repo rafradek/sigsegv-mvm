@@ -106,7 +106,7 @@
 				"g_pszMPConcepts" "g_pszMPConcepts"
 				"CNavArea::m_masterMarker" "_ZN8CNavArea14m_masterMarkerE"
 				"CNavArea::m_openList" "_ZN8CNavArea10m_openListE"
-				
+				"g_SentGameRulesMasks" "g_SentGameRulesMasks"
 			}
 			
 			"addrs_group"

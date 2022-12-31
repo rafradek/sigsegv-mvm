@@ -327,6 +327,7 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 				DispatchSpawn(projectile);
 			}
+			retval = projectile;
 		}
 		else if (strcmp(name, "stunball") == 0) {
 
@@ -347,6 +348,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 			}
+			retval = projectile;
 		}
 		else if (strcmp(name, "ornament") == 0) {
 
@@ -367,6 +369,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 			}
+			retval = projectile;
 		}
 		else if (strcmp(name, "jarate") == 0 || strcmp(name, "madmilk") == 0 || strcmp(name, "cleaver") == 0 || strcmp(name, "gas") == 0) {
 			Vector eye_angles_fwd, eye_angles_up, eye_angles_right;
@@ -396,6 +399,7 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->m_bCritical = weapon->m_bCurrentAttackIsCrit;
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 			}
+			retval = projectile;
 		}
 		else if (strcmp(name, "brick") == 0 || strcmp(name, "repel") == 0 || strcmp(name, "breadmonster") == 0 || strcmp(name, "throwable") == 0) {
 			const char *classname;
@@ -427,6 +431,7 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->InitGrenade(vecVelocity, angVelocity, player, weapon->GetTFWpnData());
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 			}
+			retval = projectile;
 		}
 		else if (strcmp(name, "spellfireball") == 0 || strcmp(name, "spelllightningorb") == 0 || strcmp(name, "spellkartorb") == 0) {
 			const char *classname;
@@ -464,6 +469,7 @@ namespace Mod::Attr::Custom_Attributes
 
 				DispatchSpawn( pRocket );
 			}
+			retval = pRocket;
 		}
 		
 		else if (strcmp(name, "spellbats") == 0 || strcmp(name, "spellmirv") == 0 || strcmp(name, "spelltransposeteleport") == 0 || strcmp(name, "spellmeteorshower") == 0 || strcmp(name, "spellspawnboss") == 0 || strcmp(name, "spellspawnhorde") == 0) {
@@ -489,6 +495,7 @@ namespace Mod::Attr::Custom_Attributes
 				pGrenade->SetDamage(weapon->GetProjectileDamage());
 				pGrenade->m_flFullDamage = 0;
 			}
+			retval = pGrenade;
 		}
 		if (doEffect) {
 			if (weapon->ShouldPlayFireAnim()) {
