@@ -3288,7 +3288,7 @@ WaveSchedule
 // "custom sentry model" "models/buildables/sentry"
 
 // Custom dispenser model file name or prefix
-// "custom dispener model" "models/buildables/dispenser"
+// "custom dispenser model" "models/buildables/dispenser"
 
 // Custom teleporter model file name or prefix
 // "custom teleporter model" "models/buildables/teleporter"
