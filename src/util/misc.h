@@ -296,6 +296,10 @@ auto select_random(const Container& container)
 	return select_random(begin(container), end(container));
 }
 
+inline variant_t Variant() {
+	return variant_t();
+}
+
 template<class T>
 inline variant_t Variant(T value) {
 	return variant_t();

@@ -522,6 +522,7 @@ namespace Mod::Etc::Extra_Player_Slots
     }
 
     float talk_time[VOICE_MAX_PLAYERS];
+    float talk_start_time[VOICE_MAX_PLAYERS];
     
     
     class CVoiceGameMgr {};
@@ -529,15 +530,18 @@ namespace Mod::Etc::Extra_Player_Slots
     StaticFuncThunk<bool, IClient *, int, char*, int64>  ft_SV_BroadcastVoiceData("SV_BroadcastVoiceData");
 
     void *voicemgr = nullptr;
+
     DETOUR_DECL_STATIC(bool, SV_BroadcastVoiceData, IClient * pClient, int nBytes, char *data, int64 xuid)
     {
         if (gpGlobals->maxClients > VOICE_MAX_PLAYERS && pClient->GetPlayerSlot() < VOICE_MAX_PLAYERS) {
             
             // Force update player voice masks
-            bool update = talk_time[pClient->GetPlayerSlot()] < gpGlobals->curtime - 0.5f;
+            bool update = talk_time[pClient->GetPlayerSlot()] < gpGlobals->curtime - 5.0f;
             talk_time[pClient->GetPlayerSlot()] = gpGlobals->curtime;
             if (update && voicemgr != nullptr) {
+                talk_start_time[pClient->GetPlayerSlot()] = gpGlobals->curtime;
                 ft_CVoiceGameMgr_UpdateMasks((CVoiceGameMgr *)voicemgr);
+
             }
         }    
         return DETOUR_STATIC_CALL(SV_BroadcastVoiceData)(pClient, nBytes, data, xuid);
@@ -551,7 +555,7 @@ namespace Mod::Etc::Extra_Player_Slots
             if (ENTINDEX(pTalker) > VOICE_MAX_PLAYERS)
                 return false;
             
-            if ((gpGlobals->maxClients > (VOICE_MAX_PLAYERS * 2 - 1) || ENTINDEX(pTalker) % VOICE_MAX_PLAYERS < gpGlobals->maxClients % VOICE_MAX_PLAYERS) && talk_time[ENTINDEX(pTalker) - 1] + 0.5f < gpGlobals->curtime)
+            if ((gpGlobals->maxClients > (VOICE_MAX_PLAYERS * 2 - 1) || ENTINDEX(pTalker) % VOICE_MAX_PLAYERS < gpGlobals->maxClients % VOICE_MAX_PLAYERS) && talk_time[ENTINDEX(pTalker) - 1] + 5.0f < gpGlobals->curtime)
                  return false;
         }
         if (sv_alltalk.GetOriginalValue()) {
@@ -858,7 +862,7 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
 	}
 
-	class CMod : public IMod, public IModCallbackListener
+	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Perf:Extra_Player_Slots")
@@ -945,6 +949,35 @@ namespace Mod::Etc::Extra_Player_Slots
 
         }
 
+        virtual void FrameUpdatePostEntityThink() override
+        {
+            for (int i = 1; i <= gpGlobals->maxClients; i++) {
+                auto player = UTIL_PlayerByIndex(i);
+                if (player != nullptr) {
+                    float timeSinceStartTalk = gpGlobals->curtime - talk_start_time[i - 1];
+                    float timeSinceTalk = gpGlobals->curtime - talk_time[i - 1];
+                    if (timeSinceStartTalk > 0 && timeSinceStartTalk < gpGlobals->frametime * 2) {
+                        gamehelpers->HintTextMsg(i, "Please wait 3 seconds before talking");
+                    }
+                    else if (timeSinceStartTalk > 1 && timeSinceStartTalk < 1 + gpGlobals->frametime * 2) {
+                        gamehelpers->HintTextMsg(i, "Please wait 2 seconds before talking");
+                    }
+                    else if (timeSinceStartTalk > 2 && timeSinceStartTalk < 2 + gpGlobals->frametime * 2) {
+                        gamehelpers->HintTextMsg(i, "Please wait 1 seconds before talking");
+                    }
+                    else if (timeSinceStartTalk > 3 && timeSinceStartTalk < 3 + gpGlobals->frametime * 2) {
+                        gamehelpers->HintTextMsg(i, "You may talk now");
+                    }
+                    else if (timeSinceTalk > 5 && timeSinceTalk < 5 + gpGlobals->frametime) {
+                        gamehelpers->HintTextMsg(i, " ");
+                    }
+                    else if (timeSinceTalk >= 5 + gpGlobals->frametime && timeSinceTalk < 5 + gpGlobals->frametime * 2) {
+                        gamehelpers->HintTextMsg(i, "");
+                    }
+                }
+            }
+        }
+
         virtual void LevelInitPreEntity() override
 		{
             player33_fake_team_num = -1;
@@ -956,6 +989,9 @@ namespace Mod::Etc::Extra_Player_Slots
             }
             sv_alltalk.Reset();
             for (auto &time : talk_time) {
+                time = -100.0f;
+            }
+            for (auto &time : talk_start_time) {
                 time = -100.0f;
             }
         }

@@ -809,7 +809,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 	DETOUR_DECL_MEMBER(void, CObjectTeleporter_DeterminePlaybackRate)
 	{
-		CBaseObject *obj = reinterpret_cast<CBaseObject *>(this);
+		CObjectTeleporter *obj = reinterpret_cast<CObjectTeleporter *>(this);
 		CTFPlayer *builder = ToTFPlayer(obj->GetBuilder());
 		bool changedteam = !cvar_teleport_player.GetBool() && builder != nullptr && IsMvMBlueHuman(builder);
 		
@@ -817,7 +817,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			obj->SetTeamNumber(TF_TEAM_RED);
 
 		DETOUR_MEMBER_CALL(CObjectTeleporter_DeterminePlaybackRate)();
-
+		if (obj->m_iState == 1) {
+			StopParticleEffects(obj);
+		}
 		if (changedteam)
 			obj->SetTeamNumber(TF_TEAM_BLUE);
 

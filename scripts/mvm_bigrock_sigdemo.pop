@@ -178,7 +178,7 @@ WaveSchedule
 	//////////////////////////
 	// Fixes                //
 	//////////////////////////
-	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player
+	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player. TF2 update added SetCustomModelWithClassAnimations which uses animations automatically
 	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
 
 
@@ -3277,3 +3277,21 @@ WaveSchedule
 
 // Destroy owned buildings on death
 // "destroy buildings on death" 1
+
+// Sentry bullet weapon name. Can be a custom weapon name
+// "sentry bullet weapon" "TF_WEAPON_ROCKETLAUNCHER"
+
+// Sentry rocket weapon name. Can be a custom weapon name
+// "sentry rocket weapon" "TF_WEAPON_ROCKETLAUNCHER"
+
+// Custom sentry model file name or prefix
+// "custom sentry model" "models/buildables/sentry"
+
+// Custom dispenser model file name or prefix
+// "custom dispener model" "models/buildables/dispenser"
+
+// Custom teleporter model file name or prefix
+// "custom teleporter model" "models/buildables/teleporter"
+
+// Sentry rocket ammo multiplier
+// "mult sentry rocket ammo" 3

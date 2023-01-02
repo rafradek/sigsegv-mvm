@@ -2004,18 +2004,41 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
 	}
 
+	inline bool UseBuildingKeyvalues(CBaseObject *object)
+	{
+		return object->GetBuilder() == nullptr || object->GetCustomVariableInt<"attributeoverride">() == 1;
+	}
+
+	template<FixedString lit>
+	inline float GetBuildingAttributeFloat(CBaseObject *object, const char *attribute)
+	{
+		if (!UseBuildingKeyvalues(object)) return 1.0f;
+		float rate = object->GetCustomVariableFloat<lit>(1.0f);
+		if (object->GetBuilder() != nullptr) {
+			rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
+		}
+		return rate;
+	}
+
+	CTFProjectile_SentryRocket *sentry_gun_rocket = nullptr;
+	RefCount rc_CObjectSentrygun_FireRocket;
 	DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FireRocket)
 	{
+		SCOPED_INCREMENT(rc_CObjectSentrygun_FireRocket);
+
+		sentry_gun_rocket = nullptr;
 		bool ret = DETOUR_MEMBER_CALL(CObjectSentrygun_FireRocket)();
 		if (ret) {
 			auto sentrygun = reinterpret_cast<CObjectSentrygun *>(this);
 			CTFPlayer *owner = sentrygun->GetBuilder();
 			if (owner != nullptr) {
-				float fireRocketRate = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(owner,fireRocketRate,mult_firerocket_rate);
+				float fireRocketRate = sentrygun->GetCustomVariableFloat<"rocketfireratemult">(1.0f);
 				if (fireRocketRate != 1.0f) {
 					sentrygun->m_flNextRocketFire = (sentrygun->m_flNextRocketFire - gpGlobals->curtime) * fireRocketRate + gpGlobals->curtime;
 				}
+			}
+			if (sentry_gun_rocket != nullptr) {
+				sentry_gun_rocket->SetDamage(sentry_gun_rocket->GetDamage()*GetBuildingAttributeFloat<"damagemult">(sentrygun, "mult_engy_sentry_damage"));
 			}
 		}
 		return ret;
@@ -2028,9 +2051,8 @@ namespace Mod::Attr::Custom_Attributes
 			auto obj = reinterpret_cast<CBaseObject *>(this);
 			CTFPlayer *owner = obj->GetBuilder();
 			if (owner != nullptr) {
-				int maxLevel = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(owner,maxLevel,building_max_level);
-				if (maxLevel != 0) {
+				int maxLevel = obj->GetCustomVariableInt<"maxlevel">();
+				if (maxLevel > 0) {
 					return obj->m_iUpgradeLevel < maxLevel;
 				}
 			}
@@ -2038,13 +2060,23 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	template<FixedString lit>
+	inline float GetBuildingAttributeInt(CBaseObject *object, const char *attribute)
+	{
+		if (!UseBuildingKeyvalues(object)) return 0;
+		float rate = object->GetCustomVariableInt<lit>(0);
+		if (object->GetBuilder() != nullptr) {
+			rate -= CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
+		}
+		return rate;
+	}
+
 	DETOUR_DECL_MEMBER(void, CBaseObject_StartUpgrading)
 	{
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
 		if (owner != nullptr) {
-			int maxLevel = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(owner,maxLevel,building_max_level);
+			int maxLevel = obj->GetCustomVariableInt<"maxlevel">();
 			if (maxLevel > 0 && obj->m_iUpgradeLevel >= maxLevel) {
 				servertools->SetKeyValue(obj, "defaultupgrade", CFmtStr("%d", maxLevel - 1));
 				return;
@@ -2060,32 +2092,35 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
 		if (owner != nullptr) {
 			int rapidTick = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(owner,rapidTick,sentry_rapid_fire);
-			if (rapidTick > 0) {
+			if (obj->GetCustomVariableInt<"rapidfire">() != 0) {
 				//static BASEPTR addr = reinterpret_cast<BASEPTR> (AddrManager::GetAddr("CObjectSentrygun::SentryThink"));
 				obj->ThinkSet(&CObjectSentrygun::SentryThink, gpGlobals->curtime, "SentrygunContext");
 			}
 		}
 	}
 
+	void SetBuildingStuff(CBaseObject *obj, CTFPlayer *builder)
+	{
+		int color = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( builder, color, building_color_rgb);
+		if (color != 0) {
+			obj->SetRenderColorR(color >> 16);
+			obj->SetRenderColorG((color >> 8) & 255);
+			obj->SetRenderColorB(color & 255);
+		}
+		float scale = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( builder, scale, building_scale);
+		if (scale != 1.0f) {
+			obj->SetModelScale(scale);
+		}
+	}
 	DETOUR_DECL_MEMBER(void, CBaseObject_StartBuilding, CBaseEntity *builder)
 	{
 		DETOUR_MEMBER_CALL(CBaseObject_StartBuilding)(builder);
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
 		if (owner != nullptr) {
-			int color = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( owner, color, building_color_rgb);
-			if (color != 0) {
-				obj->SetRenderColorR(color >> 16);
-				obj->SetRenderColorG((color >> 8) & 255);
-				obj->SetRenderColorB(color & 255);
-			}
-			float scale = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( owner, scale, building_scale);
-			if (scale != 1.0f) {
-				obj->SetModelScale(scale);
-			}
+			SetBuildingStuff(obj, owner);
 		}
 	}
 
@@ -2094,19 +2129,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CBaseObject_StartPlacement)(builder);
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		if (builder != nullptr) {
-			
-			int color = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( builder, color, building_color_rgb);
-			if (color != 0) {
-				obj->SetRenderColorR(color >> 16);
-				obj->SetRenderColorG((color >> 8) & 255);
-				obj->SetRenderColorB(color & 255);
-			}
-			float scale = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( builder, scale, building_scale);
-			if (scale != 1.0f) {
-				obj->SetModelScale(scale);
-			}
+			SetBuildingStuff(obj, builder);
 		}
 	}
 
@@ -2801,7 +2824,15 @@ namespace Mod::Attr::Custom_Attributes
 			if (iCannotTeleport != 0)
 				return;
 		}
+		bool restore = false;
+		if (tele->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(tele, "bidirectional_teleport")) {
+			tele->m_iTeleportType = 1;
+			restore = true;
+		}
 		DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterTouch)(player);
+		if (restore) {
+			tele->m_iTeleportType = 2;
+		}
 	}
 
 	DETOUR_DECL_MEMBER(float, CWeaponMedigun_GetTargetRange)
@@ -3800,21 +3831,28 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFPlayer_TakeHealth)(flHealth, bitsDamageType);
 	}
 
-	CTFPlayer *dispenser_owner = nullptr;
+	CObjectDispenser *dispenser_provider = nullptr;
+	DETOUR_DECL_MEMBER(bool, CObjectDispenser_DispenseAmmo, CTFPlayer *player)
+	{
+		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
+		return DETOUR_MEMBER_CALL(CObjectDispenser_DispenseAmmo)(player);
+	}
+
 	DETOUR_DECL_MEMBER(int, CObjectDispenser_DispenseMetal, CTFPlayer *player)
 	{
-		dispenser_owner = reinterpret_cast<CObjectDispenser *>(this)->GetBuilder();
+		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
 		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_DispenseMetal)(player);
-		dispenser_owner = nullptr;
 		return ret;
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_GiveAmmo, int amount, int type, bool sound, int source)
 	{
-		if (dispenser_owner != nullptr) {
-			float mult = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(dispenser_owner, mult, mult_dispenser_rate);
+		if (dispenser_provider != nullptr && type == TF_AMMO_METAL) {
+			float mult = dispenser_provider->GetCustomVariableFloat<"ratemult">(1.0f);
 			amount = amount * mult;
+		}
+		if (dispenser_provider != nullptr && type != TF_AMMO_METAL) {
+			amount *= GetBuildingAttributeFloat<"ratemult">(dispenser_provider, "mult_dispenser_rate");
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayer_GiveAmmo)(amount, type, sound, source);
 	}
@@ -5329,7 +5367,417 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+		// Make it so that if the buildings still persist after bot is removed, they no longer listen to attribute changes
+		for (int i = player->GetObjectCount() - 1; i >= 0 ; i--) {
+			auto obj = player->GetObject(i);
+			if (obj != nullptr) {
+				obj->SetCustomVariable("attributeoverride", Variant(1));
+			}
+		}
 		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+	}
+
+	class SentryWeaponModule : public EntityModule
+	{
+	public:
+        SentryWeaponModule() {}
+        SentryWeaponModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		CHandle<CTFWeaponBaseGun> weapon;
+		std::string lastWeaponName;
+	};
+
+	CBaseEntity *ShootSentryWeaponProjectile(CBaseEntity *sentry, CTFPlayer *player, const char *weaponName, const char *moduleName, const Vector &vecOrigin, const QAngle &vecAngles)
+	{
+		bool tempPlayer = false;
+		auto sentryTeam = sentry->GetTeamNumber() != 0 ? sentry->GetTeamNumber() : TF_TEAM_BLUE;
+		if (player == nullptr) {
+			tempPlayer = true;
+			
+			CTFPlayer *anyTeamPlayer = nullptr;
+			ForEachTFPlayer([&](CTFPlayer *playerl){
+				if (playerl->GetTeamNumber() == sentryTeam) {
+					player = playerl;
+				}
+				anyTeamPlayer = playerl;
+			});
+			if (player == nullptr) {
+				player = anyTeamPlayer;
+			}
+		}
+		if (player == nullptr) return nullptr;
+
+		auto mod = sentry->GetOrCreateEntityModule<SentryWeaponModule>(moduleName);
+		CTFWeaponBaseGun *weapon = mod->weapon;
+		// Create new weapon if not created yet
+		if (weapon == nullptr || mod->lastWeaponName != weaponName) {
+			if (weapon != nullptr) {
+				weapon->Remove();
+			}
+			auto item = CreateItemByName(player, weaponName);
+			weapon = rtti_cast<CTFWeaponBaseGun *>(item);
+			if (weapon != nullptr) {
+				mod->lastWeaponName = weaponName;
+				mod->weapon = weapon;
+			}
+			else if (item != nullptr) {
+				item->Remove();
+			}
+		}
+		// Move the owner player to mimic position
+		Vector oldPos = player->GetAbsOrigin();
+		QAngle oldAng = player->EyeAngles();
+		Vector oldPunchAngle = player->m_Local->m_vecPunchAngle;
+		player->pl->v_angle = vecAngles;
+		Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
+		player->SetAbsOrigin(vecOrigin - eyeOffset);
+		// Fire the weapon
+		if (weapon != nullptr) {
+			weapon->SetTeamNumber(sentryTeam);
+			if (weapon->GetOwner() != player) {
+				weapon->SetOwnerEntity(player);
+				weapon->SetOwner(player);
+			}
+			
+			weapon->SetAbsOrigin(vecOrigin);
+			weapon->SetAbsAngles(vecAngles);
+
+			auto oldActive = player->GetActiveWeapon();
+			player->SetActiveWeapon(weapon);
+			int oldTeam = player->GetTeamNumber();
+			player->SetTeamNumber(sentry->GetTeamNumber());
+			weapon->m_bCurrentAttackIsCrit = false;
+			auto projectile = weapon->FireProjectile(player);
+			player->SetActiveWeapon(oldActive);
+			player->SetTeamNumber(oldTeam);
+			if (projectile != nullptr) {
+				auto scorerInterface = rtti_cast<IScorer *>(projectile);
+				if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player) {
+					projectile->SetOwnerEntity(sentry);
+				}
+			}
+			if (tempPlayer) {
+				weapon->SetOwnerEntity(nullptr);
+				weapon->SetOwner(nullptr);
+				if (projectile != nullptr) {
+					projectile->SetOwnerEntity(sentry);
+					projectile->SetTeamNumber(sentryTeam);
+					if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
+						rtti_cast<CBaseGrenade *>(projectile)->SetThrower(sentry);
+					}
+					if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
+						rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(sentry);
+					else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
+						rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(sentry);
+					else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
+						rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(sentry);
+					else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
+						rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(sentry);
+					else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
+						rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(sentry);
+				}
+			}
+			return projectile;
+		}
+		player->SetAbsOrigin(oldPos);
+		player->pl->v_angle = oldAng;
+		player->m_Local->m_vecPunchAngle = oldPunchAngle;
+		return nullptr;
+	}
+
+	DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
+	{
+		auto player = ToTFPlayer(pScorer);
+		if (rc_CObjectSentrygun_FireRocket) {
+			auto weaponName = pOwner->GetCustomVariable<"rocketweapon">();
+			if (weaponName != nullptr && weaponName[0] != '\0') {
+				auto proj = ShootSentryWeaponProjectile(pOwner, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
+        		pOwner->FireCustomOutput<"onshootweaponrocket">(proj != nullptr ? proj : pOwner, pOwner, Variant());
+				return nullptr;
+			}
+		}
+		auto ret = DETOUR_STATIC_CALL(CTFProjectile_SentryRocket_Create)(vecOrigin, vecAngles, pOwner, pScorer);
+		sentry_gun_rocket = ret;
+		return ret;
+	}
+
+	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj);
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
+	{
+        DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
+		ChangeBuildingProperties(reinterpret_cast<CTFPlayer *>(this), object);
+    }
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveObject, CBaseObject *object)
+	{
+        DETOUR_MEMBER_CALL(CTFPlayer_RemoveObject)(object);
+    }
+
+    DETOUR_DECL_MEMBER(float, CObjectDispenser_GetHealRate)
+	{
+        auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetHealRate)();
+		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
+		ret *= GetBuildingAttributeFloat<"ratemult">(dispenser, "mult_dispenser_rate");
+		return ret;
+    }
+
+    DETOUR_DECL_MEMBER(void, CObjectTeleporter_TeleporterThink)
+	{
+		auto teleporter = reinterpret_cast<CObjectTeleporter *>(this);
+		int prestate = teleporter->m_iState;
+		bool restore = false;
+		if (teleporter->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(teleporter, "bidirectional_teleport")) {
+			teleporter->m_iTeleportType = 1;
+			restore = true;
+		}
+        DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterThink)();
+		if (prestate == 3 && teleporter->m_iState == 6) {
+			float rechargeDurationPre = teleporter->m_flCurrentRechargeDuration;
+			float rate = GetBuildingAttributeFloat<"rechargeratemult">(teleporter, "mult_teleporter_recharge_rate");
+			teleporter->m_flCurrentRechargeDuration *= rate;
+			teleporter->m_flRechargeTime += rechargeDurationPre * (rate - 1);
+		}
+		if (restore) {
+			teleporter->m_iTeleportType = 2;
+		}
+    }
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_StartUpgrading)
+	{
+		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
+		CTFPlayer *owner = obj->GetBuilder();
+
+		DETOUR_MEMBER_CALL(CObjectSentrygun_StartUpgrading)();
+		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo");
+		if (!obj->m_bCarryDeploy) {
+			obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Spawn)
+	{
+		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
+
+		DETOUR_MEMBER_CALL(CObjectSentrygun_Spawn)();
+		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo");
+		obj->m_iMaxAmmoRockets *= obj->GetCustomVariableFloat<"rocketammomult">(1.0f);
+		obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
+		obj->m_iAmmoRockets = obj->m_iMaxAmmoRockets;
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_TeleporterSend, CTFPlayer *player)
+	{
+		auto obj = reinterpret_cast<CObjectTeleporter *>(this);
+
+		DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterSend)(player);
+		if (player != nullptr && obj->GetCustomVariableInt<"speedboost">() != 0) {
+			player->m_Shared->AddCond(TF_COND_SPEED_BOOST, 4.0f);
+		}
+	}
+
+	VHOOK_DECL(void, CObjectSentrygun_FireBullets, FireBulletsInfo_t &info)
+	{
+		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
+		auto player = ToTFPlayer(info.m_pAttacker);
+		auto weaponName = obj->GetCustomVariable<"bulletweapon">();
+		if (weaponName != nullptr && weaponName[0] != '\0') {
+			QAngle ang;
+			VectorAngles(info.m_vecDirShooting, ang);
+			auto proj = ShootSentryWeaponProjectile(obj, player, weaponName, "weaponbullet", info.m_vecSrc, ang);
+        	obj->FireCustomOutput<"onshootweaponbullet">(proj != nullptr ? proj : proj, obj, Variant());
+			return;
+		}
+		VHOOK_CALL(CObjectSentrygun_FireBullets)(info);
+		info.m_flDamage *= GetBuildingAttributeFloat<"damagemult">(obj, "mult_engy_sentry_damage");
+	}
+
+	DETOUR_DECL_MEMBER(float, CObjectDispenser_GetDispenserRadius)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetDispenserRadius)();
+		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
+		ret *= GetBuildingAttributeFloat<"radiusmult">(dispenser, "mult_dispenser_radius");
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SentryRotate)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range");
+		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryRotate)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Attack)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range");
+		float nextAttackPre = sentry->m_flNextAttack;
+		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
+		if (nextAttackPre != sentry->m_flNextAttack) {
+			float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate");
+			sentry->m_flFireRate *= rate;
+			if (rate != 1.0f) {
+				sentry->m_flNextAttack = gpGlobals->curtime + ((sentry->m_iUpgradeLevel == 1 ? 0.2 : 0.1) * sentry->m_flFireRate);
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SetModel, const char *model)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		const char *newModelPrefix = sentry->GetCustomVariable<"sentrymodelprefix">();
+		std::string oldModelPrefix = "models/buildables/sentry"s;
+		std::string newModel;
+		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+			newModel = newModelPrefix;
+			if (!StringEndsWith(newModelPrefix, ".mdl")) {
+				if (oldModelPrefix + "1_blueprint.mdl"s == model) {
+					newModel += "1_blueprint.mdl";
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = model;
+					}
+				}
+				else if (oldModelPrefix + "1.mdl"s == model) {
+					newModel += "1.mdl"s;
+				}
+				else if (oldModelPrefix + "1_heavy.mdl"s == model) {
+					newModel += "1_heavy.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "1.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "2.mdl"s == model) {
+					newModel += "2.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "1.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "2_heavy.mdl"s == model) {
+					newModel += "2_heavy.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "2.mdl"s;
+						if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+							newModel = newModelPrefix + "1.mdl"s;
+						}
+					}
+				}
+				else if (oldModelPrefix + "3.mdl"s == model) {
+					newModel += "3.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "1.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "3_heavy.mdl"s == model) {
+					newModel += "3_heavy.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "3.mdl"s;
+						if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+							newModel = newModelPrefix + "1.mdl"s;
+						}
+					}
+				}
+			}
+			model = newModel.c_str();
+			CBaseEntity::PrecacheModel(model);
+		}
+		DETOUR_MEMBER_CALL(CObjectSentrygun_SetModel)(model);
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_SetModel, const char *model)
+	{
+		auto tele = reinterpret_cast<CObjectTeleporter *>(this);
+		const char *newModelPrefix = tele->GetCustomVariable<"teleportermodelprefix">();
+		std::string oldModelPrefix = "models/buildables/teleporter"s;
+		std::string newModel;
+		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+			newModel = newModelPrefix;
+			if (!StringEndsWith(newModelPrefix, ".mdl")) {
+				if (oldModelPrefix + "_blueprint_enter.mdl"s == model) {
+					newModel += "_blueprint_enter.mdl";
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = model;
+					}
+				}
+				else if (oldModelPrefix + "_blueprint_exit.mdl"s == model) {
+					newModel += "_blueprint_exit.mdl";
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = model;
+					}
+				}
+				else if (oldModelPrefix + "_light.mdl"s == model) {
+					newModel += "_light.mdl"s;
+				}
+				else if (oldModelPrefix == model) {
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_light.mdl"s;
+					}
+				}
+			}
+			model = newModel.c_str();
+			CBaseEntity::PrecacheModel(model);
+		}
+		DETOUR_MEMBER_CALL(CObjectTeleporter_SetModel)(model);
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectDispenser_SetModel, const char *model)
+	{
+		auto disp = reinterpret_cast<CObjectDispenser *>(this);
+		const char *newModelPrefix = disp->GetCustomVariable<"dispensermodelprefix">();
+		std::string oldModelPrefix = "models/buildables/dispenser"s;
+		std::string newModel;
+		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+			newModel = newModelPrefix;
+			
+			if (!StringEndsWith(newModelPrefix, ".mdl")) {
+				if (oldModelPrefix + "blueprint.mdl"s == model) {
+					newModel += "blueprint.mdl";
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = model;
+					}
+				}
+				else if (oldModelPrefix + "_light.mdl"s == model) {
+					newModel += "_light.mdl"s;
+				}
+				else if (oldModelPrefix == model) {
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_light.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "_lvl2_light.mdl"s == model) {
+					newModel += "_lvl2_light.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_light.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "_lvl2.mdl"s == model) {
+					newModel += "_lvl2.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_lvl2_light.mdl"s;
+						if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+							newModel = newModelPrefix + "_light.mdl"s;
+						}
+					}
+				}
+				else if (oldModelPrefix + "_lvl3_light.mdl"s == model) {
+					newModel += "_lvl3_light.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_light.mdl"s;
+					}
+				}
+				else if (oldModelPrefix + "_lvl3.mdl"s == model) {
+					newModel += "_lvl3.mdl"s;
+					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+						newModel = newModelPrefix + "_lvl3_light.mdl"s;
+						if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
+							newModel = newModelPrefix + "_light.mdl"s;
+						}
+					}
+				}
+			}
+			model = newModel.c_str();
+			CBaseEntity::PrecacheModel(model);
+		}
+		DETOUR_MEMBER_CALL(CObjectDispenser_SetModel)(model);
 	}
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
@@ -5937,6 +6385,45 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
+	{
+		if (obj != nullptr && obj->GetCustomVariableInt<"attributeoverride">() == 0) {
+			obj->SetCustomVariable("fireratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_firerate", player)));
+			obj->SetCustomVariable("rangemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_range", player)));
+			obj->SetCustomVariable("radiusmult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_dispenser_radius", player)));
+			obj->SetCustomVariable("damagemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_engy_sentry_damage", player)));
+			obj->SetCustomVariable("bidirectional", Variant(CAttributeManager::AttribHookValue(0, "bidirectional_teleport", player)));
+			obj->SetCustomVariable("maxlevel", Variant(CAttributeManager::AttribHookValue(0, "building_max_level", player)));
+			obj->SetCustomVariable("rapidfire", Variant(CAttributeManager::AttribHookValue(0, "sentry_rapid_fire", player)));
+			obj->SetCustomVariable("ammomult", Variant(CAttributeManager::AttribHookValue(1.0f, "mvm_sentry_ammo", player)));
+			obj->SetCustomVariable("rocketfireratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_firerocket_rate", player)));
+			obj->SetCustomVariable("ratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_dispenser_rate", player)));
+			obj->SetCustomVariable("rechargeratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_teleporter_recharge_rate", player)));
+			obj->SetCustomVariable("speedboost", Variant(CAttributeManager::AttribHookValue(0, "mod_teleporter_speed_boost", player)));
+			obj->SetCustomVariable("rocketammomult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_ammo", player)));
+			obj->SetCustomVariable("bulletweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_bullet_weapon">())));
+			obj->SetCustomVariable("rocketweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_rocket_weapon">())));
+			obj->SetCustomVariable("sentrymodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_sentry_model">())));
+			obj->SetCustomVariable("dispensermodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_dispenser_model">())));
+			obj->SetCustomVariable("teleportermodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_teleporter_model">())));
+		}
+	}
+
+	void ChangeBuildingsProperties(CTFPlayer *player)
+	{
+		for (int i = 0; i < player->GetObjectCount(); i++) {
+			ChangeBuildingProperties(player, player->GetObject(i));
+		}
+	}
+
+	void OnBuildingChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			ChangeBuildingsProperties(player);
+		}
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -6145,6 +6632,18 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanGoInvisible, "CTFPlayer::CanGoInvisible");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllOwnedEntitiesFromWorld, "CTFPlayer::RemoveAllOwnedEntitiesFromWorld");
+			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject, "CTFPlayer::AddObject");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject, "CTFPlayer::RemoveObject");
+            MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetHealRate, "CObjectDispenser::GetHealRate");
+            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_TeleporterThink, "CObjectTeleporter::TeleporterThink");
+            MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
+            MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetDispenserRadius, "CObjectDispenser::GetDispenserRadius");
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SentryRotate, "CObjectSentrygun::SentryRotate");
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Attack, "CObjectSentrygun::Attack");
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SetModel, "CObjectSentrygun::SetModel");
+            MOD_ADD_DETOUR_MEMBER(CObjectDispenser_SetModel, "CObjectDispenser::SetModel");
+            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_SetModel, "CObjectTeleporter::SetModel");
 			
 			
 			
@@ -6246,7 +6745,22 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("mult_maxammo_secondary", OnSecondaryAmmoChange);
 				RegisterCallback("mult_maxammo_grenades1", OnGrenadeAmmoChange);
 				RegisterCallback("mult_maxammo_metal", OnMetalChange);
-				
+				RegisterCallback("mult_sentry_firerate", OnBuildingChange);
+				RegisterCallback("mult_sentry_range", OnBuildingChange);
+				RegisterCallback("mult_dispenser_radius", OnBuildingChange);
+				RegisterCallback("mult_engy_sentry_damage", OnBuildingChange);
+				RegisterCallback("bidirectional_teleport", OnBuildingChange);
+				RegisterCallback("building_max_level", OnBuildingChange);
+				RegisterCallback("sentry_rapid_fire", OnBuildingChange);
+				RegisterCallback("mvm_sentry_ammo", OnBuildingChange);
+				RegisterCallback("mult_firerocket_rate", OnBuildingChange);
+				RegisterCallback("mult_dispenser_rate", OnBuildingChange);
+				RegisterCallback("mult_teleporter_recharge_rate", OnBuildingChange);
+				RegisterCallback("mod_teleporter_speed_boost", OnBuildingChange);
+				RegisterCallback("mult_sentry_rocket_ammo", OnBuildingChange);
+				RegisterCallback("custom_sentry_model", OnBuildingChange);
+				RegisterCallback("custom_dispenser_model", OnBuildingChange);
+				RegisterCallback("custom_teleporter_model", OnBuildingChange);
 			}
 		}
 

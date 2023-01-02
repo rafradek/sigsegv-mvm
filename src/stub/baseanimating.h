@@ -53,6 +53,7 @@ public:
 	DECL_SENDPROP   (int,   m_nSequence);
 	DECL_DATAMAP   (bool,   m_bSequenceFinished);
 	DECL_SENDPROP  (CHandle<CBaseEntity>, m_hLightingOrigin);
+	DECL_SENDPROP   (float,   m_flPlaybackRate);
 	
 private:
 	DECL_SENDPROP   (float, m_flModelScale);

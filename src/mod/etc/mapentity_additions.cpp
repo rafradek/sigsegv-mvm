@@ -1721,6 +1721,41 @@ namespace Mod::Etc::Mapentity_Additions
         }*/
     }
 
+	DETOUR_DECL_MEMBER(void, CObjectTeleporter_RecieveTeleportingPlayer, CTFPlayer *player)
+	{
+        auto tele = reinterpret_cast<CObjectTeleporter *>(this);
+		DETOUR_MEMBER_CALL(CObjectTeleporter_RecieveTeleportingPlayer)(player);
+        if (player != nullptr) {
+            tele->FireCustomOutput<"onteleportreceive">(player, tele, Variant());
+        }
+	}
+
+	VHOOK_DECL(void, CObjectSentrygun_FireBullets, FireBulletsInfo_t &info)
+	{
+        VHOOK_CALL(CObjectSentrygun_FireBullets)(info);
+        auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+        sentry->FireCustomOutput<"onshootbullet">(sentry, sentry, Variant());
+    }
+
+    CBaseEntity *sentry_gun_rocket = nullptr;
+    DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
+	{
+		auto ret = DETOUR_STATIC_CALL(CTFProjectile_SentryRocket_Create)(vecOrigin, vecAngles, pOwner, pScorer);
+		sentry_gun_rocket = ret;
+		return ret;
+	}
+
+    DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FireRocket)
+	{
+		sentry_gun_rocket = nullptr;
+		bool ret = DETOUR_MEMBER_CALL(CObjectSentrygun_FireRocket)();
+		if (ret && sentry_gun_rocket != nullptr) {
+            auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+            sentry->FireCustomOutput<"onshootrocket">(sentry_gun_rocket, sentry, Variant());
+		}
+		return ret;
+	}
+
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1807,7 +1842,11 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
             
-            
+            // Extra outputs for objects
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_RecieveTeleportingPlayer, "CObjectTeleporter::RecieveTeleportingPlayer");
+			MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
+			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FireRocket, "CObjectSentrygun::FireRocket");
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

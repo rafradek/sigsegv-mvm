@@ -10,6 +10,7 @@ IMPL_SENDPROP(float, CBaseAnimating, m_flModelScale, CBaseAnimating);
 IMPL_SENDPROP(float, CBaseAnimating, m_flCycle,      CBaseAnimating);
 IMPL_SENDPROP(int,   CBaseAnimating, m_nHitboxSet,   CBaseAnimating);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseAnimating, m_hLightingOrigin, CBaseAnimating);
+IMPL_SENDPROP(float, CBaseAnimating, m_flPlaybackRate, CBaseAnimating);
 
 IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceFinished);
 

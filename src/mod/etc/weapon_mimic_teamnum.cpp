@@ -148,6 +148,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				// Move the owner player to mimic position
 				Vector oldPos = player->GetAbsOrigin();
 				QAngle oldAng = player->EyeAngles();
+				Vector oldPunchAngle = player->m_Local->m_vecPunchAngle;
 				player->pl->v_angle = mimic->GetAbsAngles();
 				Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
 				player->SetAbsOrigin(mimic->GetAbsOrigin() - eyeOffset);
@@ -170,6 +171,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 					weapon->m_bCurrentAttackIsCrit = mimic->m_bCrits;
 					projectile = weapon->FireProjectile(player);
 					player->SetActiveWeapon(oldActive);
+					player->SetTeamNumber(oldTeam);
 					shooting_weapon = nullptr;
 
 					auto pipebomb = rtti_cast<CTFGrenadePipebombProjectile *>(projectile);
@@ -200,6 +202,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				}
 				player->SetAbsOrigin(oldPos);
 				player->pl->v_angle = oldAng;
+				player->m_Local->m_vecPunchAngle = oldPunchAngle;
 			}
 		}
 		else if (mimic->m_nWeaponType == 4) {

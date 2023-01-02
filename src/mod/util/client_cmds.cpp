@@ -1809,7 +1809,7 @@ namespace Mod::Util::Client_Cmds
 					extern ConVar cvar_cpushowlevel;
 					bool highCpu = cvar_cpushowlevel.GetInt() < (int) (cpu_usage * 100);
 					bool highEdict = engine->GetEntityCount() /* gEntList->m_iNumEdicts*/ > 1900;
-					bool highEnt = (gEntList->m_iNumEnts - gEntList->m_iNumEdicts) > 1500;
+					bool highEnt = (gEntList->m_iNumEnts - gEntList->m_iNumEdicts) > 4500;
 
 					hudtextparms_t textparam;
 					textparam.channel = 5;
@@ -1840,7 +1840,7 @@ namespace Mod::Util::Client_Cmds
 								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
 							}
 							if (highEnt || cpu_show_player[i] == 1) {
-								str += fmt::format("Logic Entities: {}/2048\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
+								str += fmt::format("Logic Entities: {}/6143\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
 							}
 							UTIL_HudMessage(player, textparam, str.c_str());
 						}

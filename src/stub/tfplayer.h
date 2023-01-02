@@ -516,6 +516,7 @@ public:
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
+	DECL_SENDPROP   (float,      m_flTauntYaw);
 	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
 	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);
     DECL_SENDPROP   (float,      m_flVehicleReverseTime);
@@ -524,6 +525,7 @@ public:
     DECL_RELATIVE   (float,      m_flTauntMoveAccelerationTime);
     DECL_RELATIVE   (float,      m_flTauntTurnSpeed);
     DECL_RELATIVE   (float,      m_flTauntTurnAccelerationTime);
+    DECL_RELATIVE   (CEconItemView, m_TauntEconItemView);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }

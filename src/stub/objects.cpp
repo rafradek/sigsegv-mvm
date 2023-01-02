@@ -70,6 +70,11 @@ IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoRockets,    CObjectSentrygun);
 IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoRockets, m_iAmmoRockets, 4);
 IMPL_RELATIVE(unsigned int, CObjectSentrygun, m_nShieldLevel, m_iAmmoRockets, 44);
 IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSentrygun_FireRocket());
+IMPL_SENDPROP(int, CObjectSentrygun, m_bPlayerControlled, CObjectSentrygun);
+IMPL_RELATIVE(int, CObjectSentrygun, m_flSentryRange, m_bPlayerControlled, -sizeof(float));
+IMPL_SENDPROP(int, CObjectSentrygun, m_iState, CObjectSentrygun);
+IMPL_RELATIVE(int, CObjectSentrygun, m_flNextAttack, m_iState, sizeof(int));
+IMPL_RELATIVE(int, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + sizeof(int));
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");
@@ -82,6 +87,12 @@ MemberVFuncThunk<CBaseObject *, void>                CBaseObject::vt_InitializeM
 MemberVFuncThunk<CBaseObject *, void>                CBaseObject::vt_FinishedBuilding             (TypeName<CBaseObject>(), "CBaseObject::FinishedBuilding");
 MemberVFuncThunk<CBaseObject *, int>                 CBaseObject::vt_GetMiniBuildingStartingHealth(TypeName<CBaseObject>(), "CBaseObject::GetMiniBuildingStartingHealth");
 MemberVFuncThunk<CBaseObject *, int>                 CBaseObject::vt_GetMaxHealthForCurrentLevel  (TypeName<CBaseObject>(), "CBaseObject::GetMaxHealthForCurrentLevel");
+
+
+IMPL_DATAMAP(int, CObjectTeleporter, m_iTeleportType);
+IMPL_SENDPROP(float, CObjectTeleporter, m_flRechargeTime, CObjectTeleporter);
+IMPL_SENDPROP(float, CObjectTeleporter, m_flCurrentRechargeDuration, CObjectTeleporter);
+IMPL_SENDPROP(int, CObjectTeleporter, m_iState, CObjectTeleporter);
 
 
 GlobalThunk<CUtlVector<IBaseObjectAutoList *>> IBaseObjectAutoList::m_IBaseObjectAutoListAutoList("IBaseObjectAutoList::m_IBaseObjectAutoListAutoList");

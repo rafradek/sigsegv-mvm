@@ -46,6 +46,7 @@
 				"CBaseAnimating"       "_ZN14CBaseAnimating9m_DataMapE"
 				"CTriggerIgnite"       "_ZN14CTriggerIgnite9m_DataMapE"
 				"CTriggerCatapult"     "_ZN16CTriggerCatapult9m_DataMapE"
+				"CObjectTeleporter"    "_ZN17CObjectTeleporter9m_DataMapE"
 			}
 		}
 	}

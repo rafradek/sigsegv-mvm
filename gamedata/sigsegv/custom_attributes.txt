@@ -2645,7 +2645,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4583"
+    "4584"
     {
         "name"	"add spread"
         "attribute_class"	"mult_spread_scale"
@@ -2655,7 +2655,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4584"
+    "4585"
     {
         "name"	"always allow disguise"
         "attribute_class"	"always_allow_disguise"
@@ -2665,7 +2665,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4585"
+    "4586"
     {
         "name"	"always allow cloak"
         "attribute_class"	"always_allow_cloak"
@@ -2675,7 +2675,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4586"
+    "4587"
     {
         "name"	"always allow teleport"
         "attribute_class"	"always_allow_teleport"
@@ -2685,12 +2685,77 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4587"
+    "4588"
     {
         "name"	"destroy buildings on death"
         "attribute_class"	"destroy_buildings_on_death"
         "description_string"	"Owned buildings are destroyed on death"
         "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4589"
+    {
+        "name"	"sentry bullet weapon"
+        "attribute_class"	"sentry_bullet_weapon"
+		"attribute_type"	"string"
+        "description_string"	"Sentry bullet weapon"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4590"
+    {
+        "name"	"sentry rocket weapon"
+        "attribute_class"	"sentry_rocket_weapon"
+		"attribute_type"	"string"
+        "description_string"	"Sentry rocket weapon"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4591"
+    {
+        "name"	"custom sentry model"
+        "attribute_class"	"custom_sentry_model"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4592"
+    {
+        "name"	"custom dispenser model"
+        "attribute_class"	"custom_dispenser_model"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4593"
+    {
+        "name"	"custom teleporter model"
+        "attribute_class"	"custom_teleporter_model"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4594"
+    {
+        "name"	"mult sentry rocket ammo"
+        "attribute_class"	"mult_sentry_rocket_ammo"
+        "description_string"	"(+-)%p% sentry rocket ammo capacity"
+        "description_format"	"value_is_percentage"
         "hidden"	"0"
         "effect_type"	"positive"
         "stored_as_integer"	"0"

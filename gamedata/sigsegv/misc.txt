@@ -6766,6 +6766,61 @@
 					type "sym"
 					sym  "_ZNK14CStaticPropMgr12IsStaticPropE11CBaseHandle"
 				}
+				"CObjectDispenser::GetHealRate"
+				{
+					type "sym"
+					sym  "_ZNK16CObjectDispenser11GetHealRateEv"
+				}
+				"CObjectDispenser::DispenseAmmo"
+				{
+					type "sym"
+					sym  "_ZN16CObjectDispenser12DispenseAmmoEP9CTFPlayer"
+				}
+				"CObjectTeleporter::TeleporterThink"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter15TeleporterThinkEv"
+				}
+				"CObjectSentrygun::StartUpgrading"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun14StartUpgradingEv"
+				}
+				"CObjectSentrygun::Spawn"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun5SpawnEv"
+				}
+				"CObjectTeleporter::TeleporterSend"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter14TeleporterSendEP9CTFPlayer"
+				}
+				"CObjectSentrygun::SentryRotate"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun12SentryRotateEv"
+				}
+				"CObjectSentrygun::SetModel"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun8SetModelEPKc"
+				}
+				"CObjectDispenser::SetModel"
+				{
+					type "sym"
+					sym  "_ZN16CObjectDispenser8SetModelEPKc"
+				}
+				"CObjectTeleporter::SetModel"
+				{
+					type "sym"
+					sym  "_ZN17CObjectTeleporter8SetModelEPKc"
+				}
+				"CObjectSentrygun::FoundTarget"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun11FoundTargetEP11CBaseEntityRK6Vectorb"
+				}
 				
 			}
 			"addrs_group"

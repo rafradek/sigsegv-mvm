@@ -223,11 +223,14 @@ IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlay
 IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
 IMPL_RELATIVE(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_bMatchSafeToLeave, +16);
 IMPL_SENDPROP(float,                CTFPlayer, m_flVehicleReverseTime, CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flTauntYaw, CTFPlayer);
 IMPL_RELATIVE(bool,                 CTFPlayer, m_bTauntForceMoveForward, m_flVehicleReverseTime, sizeof(float));
 IMPL_RELATIVE(float,                CTFPlayer, m_flTauntForceMoveForwardSpeed, m_flVehicleReverseTime, sizeof(float) * 2);
 IMPL_RELATIVE(float,                CTFPlayer, m_flTauntMoveAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 3);
 IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnSpeed, m_flVehicleReverseTime, sizeof(float) * 4);
 IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 5);
+// You could extract offset from CTFPlayer::PlayTauntRemapInputScene alternatively
+IMPL_RELATIVE(CEconItemView,        CTFPlayer, m_TauntEconItemView, m_flVehicleReverseTime, sizeof(float) * 7 + sizeof(EHANDLE) + sizeof(EHANDLE) + sizeof(bool) * 4 + sizeof(float) + sizeof(CUtlString) + sizeof(float) + sizeof(CUtlString));
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
 CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", NetworkStateChanged_CTFPlayer_m_angEyeAngles);

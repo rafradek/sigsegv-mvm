@@ -100,13 +100,24 @@ public:
 	DECL_SENDPROP(int, m_iAmmoRockets);
 	DECL_RELATIVE(int, m_iMaxAmmoRockets);
     DECL_RELATIVE(unsigned int, m_nShieldLevel);
+	DECL_SENDPROP(int, m_iState);
+	DECL_RELATIVE(int, m_flSentryRange);
+	DECL_SENDPROP(int, m_bPlayerControlled);
+	DECL_RELATIVE(int, m_flFireRate);
+	DECL_RELATIVE(int, m_flNextAttack);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
 	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;
 };
 
 
-class CObjectTeleporter : public CBaseObject {};
+class CObjectTeleporter : public CBaseObject {
+public:
+	DECL_DATAMAP(int, m_iTeleportType);
+	DECL_SENDPROP(float, m_flRechargeTime);
+	DECL_SENDPROP(float, m_flCurrentRechargeDuration);
+	DECL_SENDPROP(int, m_iState);
+};
 
 
 /* Source2007: game/shared/tf/ihasbuildpoints.h */
