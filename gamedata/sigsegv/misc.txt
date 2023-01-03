@@ -6821,6 +6821,11 @@
 					type "sym"
 					sym  "_ZN16CObjectSentrygun11FoundTargetEP11CBaseEntityRK6Vectorb"
 				}
+				"CObjectSentrygun::EmitSentrySound"
+				{
+					type "sym"
+					sym  "_ZN16CObjectSentrygun15EmitSentrySoundEPKc"
+				}
 				
 			}
 			"addrs_group"
