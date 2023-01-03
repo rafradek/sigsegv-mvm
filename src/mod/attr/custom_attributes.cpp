@@ -5593,6 +5593,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (!obj->m_bCarryDeploy) {
 			obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
 		}
+		obj->m_iAmmoRockets = obj->m_iMaxAmmoRockets;
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Spawn)
@@ -5601,6 +5602,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		DETOUR_MEMBER_CALL(CObjectSentrygun_Spawn)();
 		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
+		obj->m_iMaxAmmoRockets *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
 		obj->m_iMaxAmmoRockets *= GetBuildingAttributeFloat<"rocketammomult">(obj, "mult_sentry_rocket_ammo", false);
 		obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
 		obj->m_iAmmoRockets = obj->m_iMaxAmmoRockets;
@@ -6723,6 +6725,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject, "CTFPlayer::RemoveObject");
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetHealRate, "CObjectDispenser::GetHealRate");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_TeleporterThink, "CObjectTeleporter::TeleporterThink");
+            MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_StartUpgrading, "CObjectSentrygun::StartUpgrading");
+            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_TeleporterSend, "CObjectTeleporter::TeleporterSend");
             MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetDispenserRadius, "CObjectDispenser::GetDispenserRadius");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SentryRotate, "CObjectSentrygun::SentryRotate");
@@ -6736,6 +6740,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Spawn,    "CObjectSentrygun::Spawn");
 			
 			
 			
