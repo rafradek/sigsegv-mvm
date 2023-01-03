@@ -2012,7 +2012,6 @@ namespace Mod::Attr::Custom_Attributes
 	template<FixedString lit>
 	inline float GetBuildingAttributeFloat(CBaseObject *object, const char *attribute, bool overrideDefaultLogic)
 	{
-		//if (!UseBuildingKeyvalues(object)) return 1.0f;
 		float rate = object->GetCustomVariableFloat<lit>(1.0f);
 		if (overrideDefaultLogic && !UseBuilderAttributes(object)) {
 			rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
@@ -2020,16 +2019,12 @@ namespace Mod::Attr::Custom_Attributes
 		if (!overrideDefaultLogic && UseBuilderAttributes(object)) {
 			rate *= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
 		}
-		//if (object->GetBuilder() != nullptr) {
-		//	rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
-		//}
 		return rate;
 	}
 
 	template<FixedString lit>
 	inline float GetBuildingAttributeInt(CBaseObject *object, const char *attribute, bool overrideDefaultLogic)
 	{
-		//if (!UseBuildingKeyvalues(object)) return 1.0f;
 		float rate = object->GetCustomVariableInt<lit>(0);
 		if (overrideDefaultLogic && !UseBuilderAttributes(object)) {
 			rate -= CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
@@ -2037,9 +2032,6 @@ namespace Mod::Attr::Custom_Attributes
 		if (!overrideDefaultLogic && UseBuilderAttributes(object)) {
 			rate += CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
 		}
-		//if (object->GetBuilder() != nullptr) {
-		//	rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
-		//}
 		return rate;
 	}
 
@@ -3860,12 +3852,14 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
 		return DETOUR_MEMBER_CALL(CObjectDispenser_DispenseAmmo)(player);
+		dispenser_provider = nullptr;
 	}
 
 	DETOUR_DECL_MEMBER(int, CObjectDispenser_DispenseMetal, CTFPlayer *player)
 	{
 		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
 		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_DispenseMetal)(player);
+		dispenser_provider = nullptr;
 		return ret;
 	}
 
