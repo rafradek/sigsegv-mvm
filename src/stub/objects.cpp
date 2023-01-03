@@ -73,8 +73,8 @@ IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSe
 IMPL_SENDPROP(int, CObjectSentrygun, m_bPlayerControlled, CObjectSentrygun);
 IMPL_RELATIVE(int, CObjectSentrygun, m_flSentryRange, m_bPlayerControlled, -sizeof(float));
 IMPL_SENDPROP(int, CObjectSentrygun, m_iState, CObjectSentrygun);
-IMPL_RELATIVE(int, CObjectSentrygun, m_flNextAttack, m_iState, sizeof(int));
-IMPL_RELATIVE(int, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + sizeof(int));
+IMPL_RELATIVE(float, CObjectSentrygun, m_flNextAttack, m_iState, sizeof(int));
+IMPL_RELATIVE(float, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + sizeof(int));
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");

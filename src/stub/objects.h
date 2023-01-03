@@ -103,8 +103,8 @@ public:
 	DECL_SENDPROP(int, m_iState);
 	DECL_RELATIVE(int, m_flSentryRange);
 	DECL_SENDPROP(int, m_bPlayerControlled);
-	DECL_RELATIVE(int, m_flFireRate);
-	DECL_RELATIVE(int, m_flNextAttack);
+	DECL_RELATIVE(float, m_flFireRate);
+	DECL_RELATIVE(float, m_flNextAttack);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
 	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;

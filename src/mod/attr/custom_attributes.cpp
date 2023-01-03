@@ -2004,20 +2004,55 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
 	}
 
-	inline bool UseBuildingKeyvalues(CBaseObject *object)
+	inline bool UseBuilderAttributes(CBaseObject *object)
 	{
-		return object->GetBuilder() == nullptr || object->GetCustomVariableInt<"attributeoverride">() == 1;
+		return object->GetBuilder() != nullptr && object->GetCustomVariableInt<"attributeoverride">() == 0;
 	}
 
 	template<FixedString lit>
-	inline float GetBuildingAttributeFloat(CBaseObject *object, const char *attribute)
+	inline float GetBuildingAttributeFloat(CBaseObject *object, const char *attribute, bool overrideDefaultLogic)
 	{
-		if (!UseBuildingKeyvalues(object)) return 1.0f;
+		//if (!UseBuildingKeyvalues(object)) return 1.0f;
 		float rate = object->GetCustomVariableFloat<lit>(1.0f);
-		if (object->GetBuilder() != nullptr) {
+		if (overrideDefaultLogic && !UseBuilderAttributes(object)) {
 			rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
 		}
+		if (!overrideDefaultLogic && UseBuilderAttributes(object)) {
+			rate *= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
+		}
+		//if (object->GetBuilder() != nullptr) {
+		//	rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
+		//}
 		return rate;
+	}
+
+	template<FixedString lit>
+	inline float GetBuildingAttributeInt(CBaseObject *object, const char *attribute, bool overrideDefaultLogic)
+	{
+		//if (!UseBuildingKeyvalues(object)) return 1.0f;
+		float rate = object->GetCustomVariableInt<lit>(0);
+		if (overrideDefaultLogic && !UseBuilderAttributes(object)) {
+			rate -= CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
+		}
+		if (!overrideDefaultLogic && UseBuilderAttributes(object)) {
+			rate += CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
+		}
+		//if (object->GetBuilder() != nullptr) {
+		//	rate /= CAttributeManager::AttribHookValue(1.0f, attribute, object->GetBuilder());
+		//}
+		return rate;
+	}
+
+	template<FixedString lit, FixedString attribute>
+	inline const char *GetBuildingAttributeString(CBaseObject *object)
+	{
+		//if (!UseBuildingKeyvalues(object)) return 1.0f;
+		const char *str = object->GetCustomVariable<lit>(0);
+		auto player = ToTFPlayer(object->GetBuilder());
+		if ((str == nullptr || str[0] == '\0') && player != nullptr) {
+			str = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<attribute>()).ToCStrOrNull();
+		}
+		return str;
 	}
 
 	CTFProjectile_SentryRocket *sentry_gun_rocket = nullptr;
@@ -2032,13 +2067,13 @@ namespace Mod::Attr::Custom_Attributes
 			auto sentrygun = reinterpret_cast<CObjectSentrygun *>(this);
 			CTFPlayer *owner = sentrygun->GetBuilder();
 			if (owner != nullptr) {
-				float fireRocketRate = sentrygun->GetCustomVariableFloat<"rocketfireratemult">(1.0f);
+				float fireRocketRate = GetBuildingAttributeFloat<"rocketfireratemult">(sentrygun, "mult_firerocket_rate", false);
 				if (fireRocketRate != 1.0f) {
 					sentrygun->m_flNextRocketFire = (sentrygun->m_flNextRocketFire - gpGlobals->curtime) * fireRocketRate + gpGlobals->curtime;
 				}
 			}
 			if (sentry_gun_rocket != nullptr) {
-				sentry_gun_rocket->SetDamage(sentry_gun_rocket->GetDamage()*GetBuildingAttributeFloat<"damagemult">(sentrygun, "mult_engy_sentry_damage"));
+				sentry_gun_rocket->SetDamage(sentry_gun_rocket->GetDamage()*GetBuildingAttributeFloat<"damagemult">(sentrygun, "mult_engy_sentry_damage", true));
 			}
 		}
 		return ret;
@@ -2051,7 +2086,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto obj = reinterpret_cast<CBaseObject *>(this);
 			CTFPlayer *owner = obj->GetBuilder();
 			if (owner != nullptr) {
-				int maxLevel = obj->GetCustomVariableInt<"maxlevel">();
+				int maxLevel = GetBuildingAttributeInt<"maxlevel">(obj, "building_max_level", false);
 				if (maxLevel > 0) {
 					return obj->m_iUpgradeLevel < maxLevel;
 				}
@@ -2060,23 +2095,12 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
-	template<FixedString lit>
-	inline float GetBuildingAttributeInt(CBaseObject *object, const char *attribute)
-	{
-		if (!UseBuildingKeyvalues(object)) return 0;
-		float rate = object->GetCustomVariableInt<lit>(0);
-		if (object->GetBuilder() != nullptr) {
-			rate -= CAttributeManager::AttribHookValue(0, attribute, object->GetBuilder());
-		}
-		return rate;
-	}
-
 	DETOUR_DECL_MEMBER(void, CBaseObject_StartUpgrading)
 	{
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
 		if (owner != nullptr) {
-			int maxLevel = obj->GetCustomVariableInt<"maxlevel">();
+			int maxLevel = GetBuildingAttributeInt<"maxlevel">(obj, "building_max_level", false);
 			if (maxLevel > 0 && obj->m_iUpgradeLevel >= maxLevel) {
 				servertools->SetKeyValue(obj, "defaultupgrade", CFmtStr("%d", maxLevel - 1));
 				return;
@@ -2092,7 +2116,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
 		if (owner != nullptr) {
 			int rapidTick = 0;
-			if (obj->GetCustomVariableInt<"rapidfire">() != 0) {
+			if (GetBuildingAttributeInt<"rapidfire">(obj, "sentry_rapid_fire", false) != 0) {
 				//static BASEPTR addr = reinterpret_cast<BASEPTR> (AddrManager::GetAddr("CObjectSentrygun::SentryThink"));
 				obj->ThinkSet(&CObjectSentrygun::SentryThink, gpGlobals->curtime, "SentrygunContext");
 			}
@@ -2825,7 +2849,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 		}
 		bool restore = false;
-		if (tele->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(tele, "bidirectional_teleport")) {
+		if (tele->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(tele, "bidirectional_teleport", true)) {
 			tele->m_iTeleportType = 1;
 			restore = true;
 		}
@@ -3848,11 +3872,11 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(int, CTFPlayer_GiveAmmo, int amount, int type, bool sound, int source)
 	{
 		if (dispenser_provider != nullptr && type == TF_AMMO_METAL) {
-			float mult = dispenser_provider->GetCustomVariableFloat<"ratemult">(1.0f);
+			float mult = GetBuildingAttributeFloat<"ratemult">(dispenser_provider, "mult_dispenser_rate", false);
 			amount = amount * mult;
 		}
 		if (dispenser_provider != nullptr && type != TF_AMMO_METAL) {
-			amount *= GetBuildingAttributeFloat<"ratemult">(dispenser_provider, "mult_dispenser_rate");
+			amount *= GetBuildingAttributeFloat<"ratemult">(dispenser_provider, "mult_dispenser_rate", true);
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayer_GiveAmmo)(amount, type, sound, source);
 	}
@@ -5353,6 +5377,7 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotPickup, cannot_pickup_spells);
         return DETOUR_MEMBER_CALL(CSpellPickup_ItemCanBeTouchedByPlayer)(player);
     }
+	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj);
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllOwnedEntitiesFromWorld, bool explode)
 	{
@@ -5367,14 +5392,21 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		// Make it so that if the buildings still persist after bot is removed, they no longer listen to attribute changes
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
+	{
+		// Make it so that if the buildings still persist after bot is removed, copy the attributes over
+		auto player = reinterpret_cast<CTFBot *>(this);
 		for (int i = player->GetObjectCount() - 1; i >= 0 ; i--) {
 			auto obj = player->GetObject(i);
-			if (obj != nullptr) {
-				obj->SetCustomVariable("attributeoverride", Variant(1));
+			if (obj != nullptr && obj->GetCustomVariableInt<"attributeoverride">() == 0) {
+				ChangeBuildingProperties(player, obj);
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
 	}
 
 	class SentryWeaponModule : public EntityModule
@@ -5488,8 +5520,8 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
 	{
 		auto player = ToTFPlayer(pScorer);
-		if (rc_CObjectSentrygun_FireRocket) {
-			auto weaponName = pOwner->GetCustomVariable<"rocketweapon">();
+		if (rc_CObjectSentrygun_FireRocket && ToBaseObject(pOwner) != nullptr) {
+			auto weaponName = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(ToBaseObject(pOwner));
 			if (weaponName != nullptr && weaponName[0] != '\0') {
 				auto proj = ShootSentryWeaponProjectile(pOwner, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
         		pOwner->FireCustomOutput<"onshootweaponrocket">(proj != nullptr ? proj : pOwner, pOwner, Variant());
@@ -5506,7 +5538,6 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
-		ChangeBuildingProperties(reinterpret_cast<CTFPlayer *>(this), object);
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveObject, CBaseObject *object)
@@ -5518,7 +5549,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
         auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetHealRate)();
 		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
-		ret *= GetBuildingAttributeFloat<"ratemult">(dispenser, "mult_dispenser_rate");
+		ret *= GetBuildingAttributeFloat<"ratemult">(dispenser, "mult_dispenser_rate", true);
 		return ret;
     }
 
@@ -5527,14 +5558,14 @@ namespace Mod::Attr::Custom_Attributes
 		auto teleporter = reinterpret_cast<CObjectTeleporter *>(this);
 		int prestate = teleporter->m_iState;
 		bool restore = false;
-		if (teleporter->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(teleporter, "bidirectional_teleport")) {
+		if (teleporter->m_iTeleportType == 2 && GetBuildingAttributeInt<"bidirectional">(teleporter, "bidirectional_teleport", true)) {
 			teleporter->m_iTeleportType = 1;
 			restore = true;
 		}
         DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterThink)();
 		if (prestate == 3 && teleporter->m_iState == 6) {
 			float rechargeDurationPre = teleporter->m_flCurrentRechargeDuration;
-			float rate = GetBuildingAttributeFloat<"rechargeratemult">(teleporter, "mult_teleporter_recharge_rate");
+			float rate = GetBuildingAttributeFloat<"rechargeratemult">(teleporter, "mult_teleporter_recharge_rate", true);
 			teleporter->m_flCurrentRechargeDuration *= rate;
 			teleporter->m_flRechargeTime += rechargeDurationPre * (rate - 1);
 		}
@@ -5549,7 +5580,7 @@ namespace Mod::Attr::Custom_Attributes
 		CTFPlayer *owner = obj->GetBuilder();
 
 		DETOUR_MEMBER_CALL(CObjectSentrygun_StartUpgrading)();
-		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo");
+		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
 		if (!obj->m_bCarryDeploy) {
 			obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
 		}
@@ -5560,8 +5591,8 @@ namespace Mod::Attr::Custom_Attributes
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 
 		DETOUR_MEMBER_CALL(CObjectSentrygun_Spawn)();
-		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo");
-		obj->m_iMaxAmmoRockets *= obj->GetCustomVariableFloat<"rocketammomult">(1.0f);
+		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
+		obj->m_iMaxAmmoRockets *= GetBuildingAttributeFloat<"rocketammomult">(obj, "mult_sentry_rocket_ammo", false);
 		obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
 		obj->m_iAmmoRockets = obj->m_iMaxAmmoRockets;
 	}
@@ -5580,7 +5611,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 		auto player = ToTFPlayer(info.m_pAttacker);
-		auto weaponName = obj->GetCustomVariable<"bulletweapon">();
+		auto weaponName = GetBuildingAttributeString<"bulletweapon", "sentry_bullet_weapon">(obj);
 		if (weaponName != nullptr && weaponName[0] != '\0') {
 			QAngle ang;
 			VectorAngles(info.m_vecDirShooting, ang);
@@ -5588,36 +5619,36 @@ namespace Mod::Attr::Custom_Attributes
         	obj->FireCustomOutput<"onshootweaponbullet">(proj != nullptr ? proj : proj, obj, Variant());
 			return;
 		}
+		info.m_flDamage *= GetBuildingAttributeFloat<"damagemult">(obj, "mult_engy_sentry_damage", true);
 		VHOOK_CALL(CObjectSentrygun_FireBullets)(info);
-		info.m_flDamage *= GetBuildingAttributeFloat<"damagemult">(obj, "mult_engy_sentry_damage");
 	}
 
 	DETOUR_DECL_MEMBER(float, CObjectDispenser_GetDispenserRadius)
 	{
 		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetDispenserRadius)();
 		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
-		ret *= GetBuildingAttributeFloat<"radiusmult">(dispenser, "mult_dispenser_radius");
+		ret *= GetBuildingAttributeFloat<"radiusmult">(dispenser, "mult_dispenser_radius", true);
 		return ret;
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SentryRotate)
 	{
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
-		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range");
+		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range", true);
 		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryRotate)();
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Attack)
 	{
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
-		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range");
+		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range", true);
 		float nextAttackPre = sentry->m_flNextAttack;
 		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
 		if (nextAttackPre != sentry->m_flNextAttack) {
-			float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate");
+			float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate", true);
 			sentry->m_flFireRate *= rate;
 			if (rate != 1.0f) {
-				sentry->m_flNextAttack = gpGlobals->curtime + ((sentry->m_iUpgradeLevel == 1 ? 0.2 : 0.1) * sentry->m_flFireRate);
+				sentry->m_flNextAttack = gpGlobals->curtime + ((sentry->m_iUpgradeLevel == 1 ? 0.2f : 0.1f) * sentry->m_flFireRate);
 			}
 		}
 	}
@@ -5625,7 +5656,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SetModel, const char *model)
 	{
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
-		const char *newModelPrefix = sentry->GetCustomVariable<"sentrymodelprefix">();
+		const char *newModelPrefix = GetBuildingAttributeString<"sentrymodelprefix", "custom_sentry_model">(sentry);
 		std::string oldModelPrefix = "models/buildables/sentry"s;
 		std::string newModel;
 		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
@@ -5686,7 +5717,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CObjectTeleporter_SetModel, const char *model)
 	{
 		auto tele = reinterpret_cast<CObjectTeleporter *>(this);
-		const char *newModelPrefix = tele->GetCustomVariable<"teleportermodelprefix">();
+		const char *newModelPrefix = GetBuildingAttributeString<"teleportermodelprefix", "custom_teleporter_model">(tele);
 		std::string oldModelPrefix = "models/buildables/teleporter"s;
 		std::string newModel;
 		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
@@ -5722,7 +5753,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CObjectDispenser_SetModel, const char *model)
 	{
 		auto disp = reinterpret_cast<CObjectDispenser *>(this);
-		const char *newModelPrefix = disp->GetCustomVariable<"dispensermodelprefix">();
+		const char *newModelPrefix = GetBuildingAttributeString<"dispensermodelprefix", "custom_dispenser_model">(disp);
 		std::string oldModelPrefix = "models/buildables/dispenser"s;
 		std::string newModel;
 		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
@@ -6387,7 +6418,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
-		if (obj != nullptr && obj->GetCustomVariableInt<"attributeoverride">() == 0) {
+		if (obj != nullptr) {
 			obj->SetCustomVariable("fireratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_firerate", player)));
 			obj->SetCustomVariable("rangemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_range", player)));
 			obj->SetCustomVariable("radiusmult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_dispenser_radius", player)));
@@ -6413,14 +6444,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		for (int i = 0; i < player->GetObjectCount(); i++) {
 			ChangeBuildingProperties(player, player->GetObject(i));
-		}
-	}
-
-	void OnBuildingChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
-	{
-		auto player = GetPlayerOwnerOfAttributeList(list);
-		if (player != nullptr) {
-			ChangeBuildingsProperties(player);
 		}
 	}
 
@@ -6644,6 +6667,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_SetModel, "CObjectSentrygun::SetModel");
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_SetModel, "CObjectDispenser::SetModel");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_SetModel, "CObjectTeleporter::SetModel");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "CTFBot::Event_Killed");
 			
 			
 			
@@ -6745,22 +6769,6 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("mult_maxammo_secondary", OnSecondaryAmmoChange);
 				RegisterCallback("mult_maxammo_grenades1", OnGrenadeAmmoChange);
 				RegisterCallback("mult_maxammo_metal", OnMetalChange);
-				RegisterCallback("mult_sentry_firerate", OnBuildingChange);
-				RegisterCallback("mult_sentry_range", OnBuildingChange);
-				RegisterCallback("mult_dispenser_radius", OnBuildingChange);
-				RegisterCallback("mult_engy_sentry_damage", OnBuildingChange);
-				RegisterCallback("bidirectional_teleport", OnBuildingChange);
-				RegisterCallback("building_max_level", OnBuildingChange);
-				RegisterCallback("sentry_rapid_fire", OnBuildingChange);
-				RegisterCallback("mvm_sentry_ammo", OnBuildingChange);
-				RegisterCallback("mult_firerocket_rate", OnBuildingChange);
-				RegisterCallback("mult_dispenser_rate", OnBuildingChange);
-				RegisterCallback("mult_teleporter_recharge_rate", OnBuildingChange);
-				RegisterCallback("mod_teleporter_speed_boost", OnBuildingChange);
-				RegisterCallback("mult_sentry_rocket_ammo", OnBuildingChange);
-				RegisterCallback("custom_sentry_model", OnBuildingChange);
-				RegisterCallback("custom_dispenser_model", OnBuildingChange);
-				RegisterCallback("custom_teleporter_model", OnBuildingChange);
 			}
 		}
 
