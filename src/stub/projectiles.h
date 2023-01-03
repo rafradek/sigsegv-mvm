@@ -101,6 +101,9 @@ private:
 	static MemberFuncThunk<CTFProjectile_Rocket *, void, CBaseEntity *> ft_SetScorer;
 };
 class CTFProjectile_SentryRocket : public CTFProjectile_Rocket {};
+
+class CTFProjectile_BallOfFire : public CTFProjectile_Rocket {};
+
 class CTFProjectile_Flare : public CTFBaseRocket {
 public:
 	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }

@@ -1177,10 +1177,11 @@ namespace Mod::Attr::Custom_Attributes
 
 	const char *weapon_sound_override = nullptr;
 	CBasePlayer *weapon_sound_override_owner = nullptr;
+	CTFWeaponBase *shooting_sentry_weapon = nullptr;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		if ((index == SINGLE || index == BURST || index == MELEE_MISS || index == MELEE_HIT || index == MELEE_HIT_WORLD || index == RELOAD || index == SPECIAL1 || index == SPECIAL3)) {
-			auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
 			int weaponid = weapon->GetWeaponID();
 			// Allow SPECIAL1 sound for Cow Mangler and SPECIAL3 sound for short circuit
@@ -1212,7 +1213,14 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_CTFPlayer_TraceAttack && index == BURST && rtti_cast<CTFMinigun *>(reinterpret_cast<CTFWeaponBase *>(this)) != nullptr) {
 			return;
 		}
+		auto oldOwner = weapon->GetOwner();
+		if (shooting_sentry_weapon == weapon) {	
+			weapon->SetOwner(nullptr);
+		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+		if (shooting_sentry_weapon == weapon) {	
+			weapon->SetOwner(oldOwner);
+		}
 		weapon_sound_override = nullptr;
 	}
 
@@ -5478,12 +5486,16 @@ namespace Mod::Attr::Custom_Attributes
 		int oldTeam = player->GetTeamNumber();
 		player->SetTeamNumber(sentry->GetTeamNumber());
 		weapon->m_bCurrentAttackIsCrit = false;
+		shooting_sentry_weapon = weapon;
 		auto projectile = weapon->FireProjectile(player);
+		shooting_sentry_weapon = nullptr;
 		player->SetActiveWeapon(oldActive);
 		player->SetTeamNumber(oldTeam);
+
 		if (projectile != nullptr) {
 			auto scorerInterface = rtti_cast<IScorer *>(projectile);
-			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player) {
+			// If the projectile has an IScorer interface, it is fine to make the sentry the owner of the projectile. (Unless its Dragon's fury projectile where it crashes)
+			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player && rtti_cast<CTFProjectile_BallOfFire *>(projectile) == nullptr) {
 				projectile->SetOwnerEntity(sentry);
 			}
 		}
@@ -5806,6 +5818,46 @@ namespace Mod::Attr::Custom_Attributes
 			CBaseEntity::PrecacheModel(model);
 		}
 		DETOUR_MEMBER_CALL(CObjectDispenser_SetModel)(model);
+	}
+
+
+    VHOOK_DECL(void, CObjectSentrygun_UpdateOnRemove)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		auto modbullet = sentry->GetEntityModule<SentryWeaponModule>("weaponbullet");
+		if (modbullet != nullptr && modbullet->weapon != nullptr) {
+			modbullet->weapon->Remove();
+		}
+		auto modrocket = sentry->GetEntityModule<SentryWeaponModule>("weaponrocket");
+		if (modrocket != nullptr && modrocket->weapon != nullptr) {
+			modrocket->weapon->Remove();
+		}
+		VHOOK_CALL(CObjectSentrygun_UpdateOnRemove)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_EmitSentrySound, const char *sound)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		if (strcmp(sound, "Building_Sentrygun.FireRocket") == 0) {
+			auto rocketSound = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(sentry);
+			if (rocketSound[0] != '\0') {
+				return;
+			}
+		}
+		else if (StringStartsWith(sound, "Building_Sentrygun.Fire") || StringStartsWith(sound, "Building_Sentrygun.Shaft")) {
+			auto bulletSound = GetBuildingAttributeString<"bulletweapon", "sentry_bullet_weapon">(sentry);
+			if (bulletSound[0] != '\0') {
+				return;
+			}
+		}
+		DETOUR_MEMBER_CALL(CObjectSentrygun_EmitSentrySound)(sound);
+	}
+
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
+	{
+		if (cmd == nullptr) return;
+
+		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
 	}
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
@@ -6665,6 +6717,9 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_SetModel, "CObjectDispenser::SetModel");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_SetModel, "CObjectTeleporter::SetModel");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "CTFBot::Event_Killed");
+            MOD_ADD_VHOOK(CObjectSentrygun_UpdateOnRemove, TypeName<CObjectSentrygun>(), "CBaseEntity::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_EmitSentrySound, "CObjectSentrygun::EmitSentrySound");
+			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
 			
 			
 			
