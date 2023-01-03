@@ -651,15 +651,16 @@ namespace Mod::Attr::Custom_Attributes
 		return proj;
 	}
 
+	CTFWeaponBase *shooting_sentry_weapon = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
 	{
-		if (fire_projectile_multi)
+		if (fire_projectile_multi && shooting_sentry_weapon == nullptr)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
-		if (fire_projectile_multi)
+		if (fire_projectile_multi && shooting_sentry_weapon == nullptr)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
 	}
 	
@@ -1177,7 +1178,6 @@ namespace Mod::Attr::Custom_Attributes
 
 	const char *weapon_sound_override = nullptr;
 	CBasePlayer *weapon_sound_override_owner = nullptr;
-	CTFWeaponBase *shooting_sentry_weapon = nullptr;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
@@ -6197,6 +6197,20 @@ namespace Mod::Attr::Custom_Attributes
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_DoFireEffects)
+	{
+		if (shooting_sentry_weapon != nullptr) return;
+
+		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event, int data)
+	{
+		if (shooting_sentry_weapon != nullptr) return;
+
+		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
+	}
 	
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
@@ -6720,6 +6734,8 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_VHOOK(CObjectSentrygun_UpdateOnRemove, TypeName<CObjectSentrygun>(), "CBaseEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_EmitSentrySound, "CObjectSentrygun::EmitSentrySound");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			
 			
 			
