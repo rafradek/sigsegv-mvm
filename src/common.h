@@ -333,7 +333,7 @@ WARN_RESTORE()
 #include "sdk2013/vector4d.h"
 #include "sdk2013/mathlib.h"
 #include "sdk2013/basehandle.h"
-#include <string_t.h>
+#include "sdk2013/string_t.h"
 #include <annotations.h>
 WARN_IGNORE__CLASS_MEMACCESS()
 #include <utlmemory.h>
@@ -502,6 +502,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_STRING_T_H);
 
 
 /* AMTL */

@@ -119,10 +119,12 @@ namespace Mod::Attr::Custom_Attributes
 	const char * varname = GetStringAttribute(attrlist, inddef_##varname);
 
 #define GET_STRING_ATTRIBUTE(entity, name, varname) \
-	const char * varname = entity->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, entity, PStrT<#name>()).ToCStrOrNull();
+	const char * varname = entity->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, entity, PStrT<#name>()).ToCStr(); \
+	if (varname[0] == '\0') varname = nullptr;
 
 #define GET_STRING_ATTRIBUTE_NO_CACHE(entity, name, varname) \
-	const char * varname = entity->GetAttributeManager()->ApplyAttributeString(NULL_STRING, entity, PStrT<#name>()).ToCStrOrNull();
+	const char * varname = entity->GetAttributeManager()->ApplyAttributeString(NULL_STRING, entity, PStrT<#name>()).ToCStr(); \
+	if (varname[0] == '\0') varname = nullptr;
 	
 	const char *GetStringAttribute(CAttributeList &attrlist, int index) {
 		auto attr = attrlist.GetAttributeByID(index);
@@ -2039,10 +2041,10 @@ namespace Mod::Attr::Custom_Attributes
 	inline const char *GetBuildingAttributeString(CBaseObject *object)
 	{
 		//if (!UseBuildingKeyvalues(object)) return 1.0f;
-		const char *str = object->GetCustomVariable<lit>(0);
+		const char *str = object->GetCustomVariable<lit>("");
 		auto player = ToTFPlayer(object->GetBuilder());
 		if ((str == nullptr || str[0] == '\0') && player != nullptr) {
-			str = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<attribute>()).ToCStrOrNull();
+			str = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<attribute>()).ToCStr();
 		}
 		return str;
 	}
@@ -5450,6 +5452,10 @@ namespace Mod::Attr::Custom_Attributes
 				item->Remove();
 			}
 		}
+		if (weapon == nullptr) return nullptr;
+			
+		// Fire the weapon
+
 		// Move the owner player to mimic position
 		Vector oldPos = player->GetAbsOrigin();
 		QAngle oldAng = player->EyeAngles();
@@ -5457,58 +5463,55 @@ namespace Mod::Attr::Custom_Attributes
 		player->pl->v_angle = vecAngles;
 		Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
 		player->SetAbsOrigin(vecOrigin - eyeOffset);
-		// Fire the weapon
-		if (weapon != nullptr) {
-			weapon->SetTeamNumber(sentryTeam);
-			if (weapon->GetOwner() != player) {
-				weapon->SetOwnerEntity(player);
-				weapon->SetOwner(player);
-			}
-			
-			weapon->SetAbsOrigin(vecOrigin);
-			weapon->SetAbsAngles(vecAngles);
 
-			auto oldActive = player->GetActiveWeapon();
-			player->SetActiveWeapon(weapon);
-			int oldTeam = player->GetTeamNumber();
-			player->SetTeamNumber(sentry->GetTeamNumber());
-			weapon->m_bCurrentAttackIsCrit = false;
-			auto projectile = weapon->FireProjectile(player);
-			player->SetActiveWeapon(oldActive);
-			player->SetTeamNumber(oldTeam);
+		weapon->SetTeamNumber(sentryTeam);
+		if (weapon->GetOwner() != player) {
+			weapon->SetOwnerEntity(player);
+			weapon->SetOwner(player);
+		}
+		
+		weapon->SetAbsOrigin(vecOrigin);
+		weapon->SetAbsAngles(vecAngles);
+
+		auto oldActive = player->GetActiveWeapon();
+		player->SetActiveWeapon(weapon);
+		int oldTeam = player->GetTeamNumber();
+		player->SetTeamNumber(sentry->GetTeamNumber());
+		weapon->m_bCurrentAttackIsCrit = false;
+		auto projectile = weapon->FireProjectile(player);
+		player->SetActiveWeapon(oldActive);
+		player->SetTeamNumber(oldTeam);
+		if (projectile != nullptr) {
+			auto scorerInterface = rtti_cast<IScorer *>(projectile);
+			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player) {
+				projectile->SetOwnerEntity(sentry);
+			}
+		}
+		if (tempPlayer) {
+			weapon->SetOwnerEntity(nullptr);
+			weapon->SetOwner(nullptr);
 			if (projectile != nullptr) {
-				auto scorerInterface = rtti_cast<IScorer *>(projectile);
-				if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player) {
-					projectile->SetOwnerEntity(sentry);
+				projectile->SetOwnerEntity(sentry);
+				projectile->SetTeamNumber(sentryTeam);
+				if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
+					rtti_cast<CBaseGrenade *>(projectile)->SetThrower(sentry);
 				}
+				if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
+					rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(sentry);
+				else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
+					rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(sentry);
+				else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
+					rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(sentry);
+				else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
+					rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(sentry);
+				else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
+					rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(sentry);
 			}
-			if (tempPlayer) {
-				weapon->SetOwnerEntity(nullptr);
-				weapon->SetOwner(nullptr);
-				if (projectile != nullptr) {
-					projectile->SetOwnerEntity(sentry);
-					projectile->SetTeamNumber(sentryTeam);
-					if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
-						rtti_cast<CBaseGrenade *>(projectile)->SetThrower(sentry);
-					}
-					if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
-						rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(sentry);
-					else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
-						rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(sentry);
-					else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
-						rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(sentry);
-					else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
-						rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(sentry);
-					else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
-						rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(sentry);
-				}
-			}
-			return projectile;
 		}
 		player->SetAbsOrigin(oldPos);
 		player->pl->v_angle = oldAng;
 		player->m_Local->m_vecPunchAngle = oldPunchAngle;
-		return nullptr;
+		return projectile;
 	}
 
 	DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
@@ -5516,7 +5519,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = ToTFPlayer(pScorer);
 		if (rc_CObjectSentrygun_FireRocket && ToBaseObject(pOwner) != nullptr) {
 			auto weaponName = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(ToBaseObject(pOwner));
-			if (weaponName != nullptr && weaponName[0] != '\0') {
+			if (weaponName[0] != '\0') {
 				auto proj = ShootSentryWeaponProjectile(pOwner, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
         		pOwner->FireCustomOutput<"onshootweaponrocket">(proj != nullptr ? proj : pOwner, pOwner, Variant());
 				return nullptr;
@@ -5606,7 +5609,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 		auto player = ToTFPlayer(info.m_pAttacker);
 		auto weaponName = GetBuildingAttributeString<"bulletweapon", "sentry_bullet_weapon">(obj);
-		if (weaponName != nullptr && weaponName[0] != '\0') {
+		if (weaponName[0] != '\0') {
 			QAngle ang;
 			VectorAngles(info.m_vecDirShooting, ang);
 			auto proj = ShootSentryWeaponProjectile(obj, player, weaponName, "weaponbullet", info.m_vecSrc, ang);
@@ -5653,7 +5656,7 @@ namespace Mod::Attr::Custom_Attributes
 		const char *newModelPrefix = GetBuildingAttributeString<"sentrymodelprefix", "custom_sentry_model">(sentry);
 		std::string oldModelPrefix = "models/buildables/sentry"s;
 		std::string newModel;
-		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+		if (newModelPrefix[0] != '\0') {
 			newModel = newModelPrefix;
 			if (!StringEndsWith(newModelPrefix, ".mdl")) {
 				if (oldModelPrefix + "1_blueprint.mdl"s == model) {
@@ -5714,7 +5717,7 @@ namespace Mod::Attr::Custom_Attributes
 		const char *newModelPrefix = GetBuildingAttributeString<"teleportermodelprefix", "custom_teleporter_model">(tele);
 		std::string oldModelPrefix = "models/buildables/teleporter"s;
 		std::string newModel;
-		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+		if (newModelPrefix[0] != '\0') {
 			newModel = newModelPrefix;
 			if (!StringEndsWith(newModelPrefix, ".mdl")) {
 				if (oldModelPrefix + "_blueprint_enter.mdl"s == model) {
@@ -5750,7 +5753,7 @@ namespace Mod::Attr::Custom_Attributes
 		const char *newModelPrefix = GetBuildingAttributeString<"dispensermodelprefix", "custom_dispenser_model">(disp);
 		std::string oldModelPrefix = "models/buildables/dispenser"s;
 		std::string newModel;
-		if (newModelPrefix != nullptr && newModelPrefix[0] != '\0') {
+		if (newModelPrefix[0] != '\0') {
 			newModel = newModelPrefix;
 			
 			if (!StringEndsWith(newModelPrefix, ".mdl")) {
