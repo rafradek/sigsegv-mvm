@@ -230,6 +230,7 @@ namespace Mod::Util::Download_Manager
 	bool missingfilemention = false;
 	CHandle<CTFPlayer> mission_owner;
 	std::unordered_multimap<int, std::string> missing_files;
+	std::unordered_map<std::string, int> missing_files_dirs;
 
 	void WatchMissingFile(std::string &path);
 
@@ -651,7 +652,7 @@ namespace Mod::Util::Download_Manager
 		filesystem->FindClose(mapHandle);
 		filesystem->AddSearchPath(origMapFile, "GAME");
 		Msg("Missing files:\n");
-		int pathfullLength = strlen(game_path) + 1 + strlen(cvar_downloadpath.GetString()) + 1;
+		size_t pathfullLength = strlen(game_path) + 1 + strlen(cvar_downloadpath.GetString()) + 1;
 		for (auto &entry : missing_files) {
 			if (!entry.second.ends_with(".phy") && entry.second.length() > pathfullLength) {
 				Msg("%s\n", entry.second.c_str() + pathfullLength);
@@ -983,7 +984,9 @@ namespace Mod::Util::Download_Manager
 	{
 		if (inotify_fd >= 0) {
 			std::string pathDir = path.substr(0,path.rfind('/'));
-			missing_files.emplace(inotify_add_watch(inotify_fd, pathDir.c_str(), IN_MASK_CREATE | IN_CREATE | IN_MOVED_TO), path);
+
+			auto find = missing_files_dirs.find(pathDir);
+			missing_files.emplace(find != missing_files_dirs.end() ? find->second : inotify_add_watch(inotify_fd, pathDir.c_str(), IN_CREATE | IN_MOVED_TO), path);
 		}
 	}
 

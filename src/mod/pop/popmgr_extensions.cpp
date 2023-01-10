@@ -6539,7 +6539,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//	MOD_ADD_DETOUR_MEMBER(CPopulationManager_PostInitialize, "CPopulationManager::PostInitialize");
 			
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_Parse, "CPopulationManager::Parse");
-			MOD_ADD_DETOUR_MEMBER(CPopulationManager_IsValidPopfile, "CPopulationManager::IsValidPopfile");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CPopulationManager_IsValidPopfile, "CPopulationManager::IsValidPopfile", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(KeyValues_LoadFromFile,   "KeyValues::LoadFromFile");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOverrideStepSound, "CTFPlayer::GetOverrideStepSound");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");

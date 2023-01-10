@@ -1111,7 +1111,7 @@ namespace Mod::Attr::Custom_Attributes
 		
 		GET_STRING_ATTRIBUTE_NO_CACHE(ent, attachment_name, attachmentname);
 		if (attachmentname != nullptr) {
-			ent->SetEffects(ent->GetEffects() & ~(EF_BONEMERGE));
+			ApplyAttachmentAttributesToEntity(owner, ent, ent);
 		}
 		THINK_FUNC_SET(ent, WarpaintAttributeCorrection, gpGlobals->curtime);
 	}

@@ -6826,7 +6826,11 @@
 					type "sym"
 					sym  "_ZN16CObjectSentrygun15EmitSentrySoundEPKc"
 				}
-				
+				"CBasePlayer::SetModel"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer8SetModelEPKc"
+				}
 			}
 			"addrs_group"
 			{

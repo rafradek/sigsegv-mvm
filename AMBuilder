@@ -208,6 +208,7 @@ sourceFiles += [
   'src/mod/mvm/refund_exploit_fix.cpp',
   'src/mod/mvm/robosapper_override.cpp',
   'src/mod/mvm/robot_limit.cpp',
+  'src/mod/mvm/wave_spawn_at_once.cpp',
 #  'src/mod/mvm/romevision_disable.cpp',
   'src/mod/mvm/sapper_allow_multiple_active.cpp',
   'src/mod/mvm/sentrybuster_enhancements.cpp',

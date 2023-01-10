@@ -2,6 +2,7 @@
 #include "stub/populators.h"
 #include "stub/nextbot_cc.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "util/value_override.h"
 #include "util/scope.h"
 
 namespace Mod::MvM::Robot_Multiplier
@@ -15,14 +16,15 @@ namespace Mod::MvM::Robot_Multiplier
 		"Starting cash multiplier for robot multiplier mode");
 
 
+    CValueOverride_ConVar<int> sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
-		static ConVarRef robotMax("sig_mvm_robot_limit_override");
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
 		auto manager = reinterpret_cast<CPopulationManager *>(this);
 		manager->m_nStartingCurrency = manager->m_nStartingCurrency * (manager->m_nStartingCurrency < 3000 ? sig_mvm_robot_multiplier_currency_start.GetFloat() : sig_mvm_robot_multiplier_currency.GetFloat());
 		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
-		robotMax.SetValue(realMult * Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit());
+		
+		sig_mvm_robot_limit_override.Set(realMult * Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit());
 		return ret;
 	}
 
@@ -101,6 +103,10 @@ namespace Mod::MvM::Robot_Multiplier
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn,      "CTankSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_Parse,      "CPopulationManager::Parse");
 			MOD_ADD_DETOUR_MEMBER(CMissionPopulator_Parse,      "CMissionPopulator::Parse");
+		}
+
+		virtual void OnDisable() override {
+			sig_mvm_robot_limit_override.Reset();
 		}
 	};
 	CMod s_Mod;

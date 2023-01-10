@@ -709,8 +709,8 @@ namespace Mod::Cond::Reprogrammed
 	DETOUR_DECL_MEMBER(bool, CObjectSapper_IsValidRoboSapperTarget, CTFPlayer *player)
 	{
 		auto result = DETOUR_MEMBER_CALL(CObjectSapper_IsValidRoboSapperTarget)(player);
-
-		return result || (player != nullptr && player->IsAlive() && player->m_Shared->InCond(TF_COND_REPROGRAMMED) && !player->m_Shared->IsInvulnerable() && !player->m_Shared->InCond(TF_COND_SAPPED));
+		auto builder = reinterpret_cast<CObjectSapper *>(this)->GetBuilder();
+		return result || (player != nullptr && !(builder != nullptr && player->GetTeamNumber() == builder->GetTeamNumber()) && player->IsAlive() && player->m_Shared->InCond(TF_COND_REPROGRAMMED) && !player->m_Shared->IsInvulnerable() && !player->m_Shared->InCond(TF_COND_SAPPED));
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Disguise, int team, int iclass, CTFPlayer *victim, bool onKill)
