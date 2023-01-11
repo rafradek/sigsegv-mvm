@@ -6831,6 +6831,37 @@
 					type "sym"
 					sym  "_ZN11CBasePlayer8SetModelEPKc"
 				}
+				"CPlayer::IsSourceTV"
+				{
+					lib "sourcemodcore"
+					type "sym"
+					sym  "_ZNK7CPlayer10IsSourceTVEv"
+				}
+				"CPlayer::GetIClient"
+				{
+					lib "sourcemodcore"
+					type "sym"
+					sym  "_ZNK7CPlayer10GetIClientEv"
+				}
+				"PlayerManager::OnClientPutInServer"
+				{
+					lib "sourcemodcore"
+					type "sym"
+					sym  "_ZN13PlayerManager19OnClientPutInServerEP7edict_tPKc"
+				}
+				"CPlayer::GetEdict"
+				{
+					lib "sourcemodcore"
+					type "sym"
+					sym  "_ZN7CPlayer8GetEdictEv"
+				}
+				"PlayerManager::GetPlayerByIndex"
+				{
+					lib "sourcemodcore"
+					type "sym"
+					sym  "_ZNK13PlayerManager16GetPlayerByIndexEi"
+				}
+				
 			}
 			"addrs_group"
 			{
