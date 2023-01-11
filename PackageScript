@@ -13,11 +13,18 @@ folder_list = [
   'addons/sourcemod/gamedata',
   'addons/sourcemod/gamedata/sigsegv',
 #  'addons/sourcemod/configs',
-  'custom/sigsegv/resource',
-  'custom/sigsegv/scripts',
   'cfg',
-  'custom/sigsegv/scripts/population'
 ]
+if not Extension.optimize_mods_only:
+  folder_list += [
+    'custom/sigsegv/resource',
+    'custom/sigsegv/scripts'
+  ]
+  if not 'mods_mvm' in Extension.exclude:
+    folder_list += [
+      'custom/sigsegv/scripts/population'
+    ]
+  
 
 # Create the distribution folder hierarchy.
 folder_map = {}
