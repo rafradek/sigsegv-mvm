@@ -88,6 +88,7 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	
 	this->LoadSoundOverrides();
 	
+	LibMgr::SetPtr(Library::SOURCEMODCORE,      menus);
 	PreScan::DoScans();
 	if (!g_GCHook.LoadAll(error, maxlength)) goto fail;
 	

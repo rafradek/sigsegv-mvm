@@ -3299,5 +3299,5 @@ WaveSchedule
 // Midair accuracy multiplier
 // "midair accuracy mult" 2
 
-// damage bonus for every target hit by explosion
+// Damage bonus for every target hit by explosion
 // "add damage per target" 0.5

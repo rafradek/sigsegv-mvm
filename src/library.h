@@ -18,6 +18,7 @@ enum class Library : int
 	VGUI,
 	VPHYSICS,
 	VSTDLIB,
+	SOURCEMODCORE,
 };
 
 

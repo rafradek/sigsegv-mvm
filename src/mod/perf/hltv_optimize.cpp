@@ -13,6 +13,7 @@
 #include "util/iterate.h"
 #include <gamemovement.h>
 
+class CPlayer {};
 namespace Mod::Perf::HLTV_Optimize
 {
 
@@ -30,6 +31,7 @@ namespace Mod::Perf::HLTV_Optimize
 
     float old_snapshotrate = 16.0f;
     RefCount rc_CHLTVServer_RunFrame;
+    int create_hltv_bot = 0;
 	DETOUR_DECL_MEMBER(void, CHLTVServer_RunFrame)
 	{
         static bool limitSnapshotRate = false;
@@ -74,7 +76,9 @@ namespace Mod::Perf::HLTV_Optimize
         if (hasplayer && hltvclient == nullptr && sv->IsActive()) {
             DevMsg("spawning sourcetv\n");
             static ConVarRef tv_name("tv_name");
+            create_hltv_bot = -1;
             CBaseClient *client = reinterpret_cast<CBaseServer *>(sv)->CreateFakeClient(tv_name.GetString());
+            create_hltv_bot = 0;
             if (client != nullptr) {
                 DevMsg("spawning sourcetv client %d\n", client->GetPlayerSlot());
                 reinterpret_cast<CHLTVServer *>(this)->StartMaster(client);
@@ -191,6 +195,24 @@ namespace Mod::Perf::HLTV_Optimize
 		DETOUR_MEMBER_CALL(CBasePlayer_PhysicsSimulate)();
 	}
 
+    DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
+	{
+        auto result = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        if (create_hltv_bot == -1 && result != nullptr) {
+            create_hltv_bot = result->m_nClientSlot + 1;
+        }
+        return result;
+    }
+
+    MemberFuncThunk<CPlayer *, edict_t *> ft_CPlayer_GetEdict("CPlayer::GetEdict");
+    DETOUR_DECL_MEMBER(bool, CPlayer_IsSourceTV)
+    {
+        auto player = reinterpret_cast<CPlayer *>(this);
+        auto edict = ft_CPlayer_GetEdict(player);
+        auto ctfplayer = reinterpret_cast<CTFPlayer *>(edict->GetUnknown());
+        auto result = DETOUR_MEMBER_CALL(CPlayer_IsSourceTV)();
+        return result || (ctfplayer != nullptr && (create_hltv_bot == edict->m_EdictIndex || ctfplayer->IsHLTV()));
+    }
 
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -209,6 +231,9 @@ namespace Mod::Perf::HLTV_Optimize
 
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
+
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,              "CBaseServer::GetFreeClient");
+			MOD_ADD_DETOUR_MEMBER(CPlayer_IsSourceTV,              "CPlayer::IsSourceTV");
                         
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
