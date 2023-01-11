@@ -457,7 +457,8 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		bool allowJoinTeamBluNoAdmin = !cvar_adminonly.GetBool() || Mod::Pop::PopMgr_Extensions::PopFileIsOverridingJoinTeamBlueConVarOn() || cvar_force.GetBool();
 		//DevMsg("Get team assignment %d %d %d\n", iWantedTeam, cvar_force.GetBool());
 		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
-			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam != TEAM_SPECTATOR && iResult == TEAM_SPECTATOR && allowJoinTeamBluNoAdmin) || (iWantedTeam == TEAM_SPECTATOR && cvar_spectator_is_blu.GetBool() && allowJoinTeamBluNoAdmin) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
+			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam != TEAM_SPECTATOR && iResult == TEAM_SPECTATOR && allowJoinTeamBluNoAdmin) 
+				|| (iWantedTeam == TEAM_SPECTATOR && cvar_spectator_is_blu.GetBool() && !cvar_force.GetBool() && allowJoinTeamBluNoAdmin) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
 			// NOTE: if the pop file had custom param 'AllowJoinTeamBlue 1', then disregard admin-only restrictions
 			if (allowJoinTeamBluNoAdmin || PlayerIsSMAdmin(pPlayer)) {
 				if (cvar_max.GetInt() < 0 || GetMvMBlueHumanCount() < cvar_max.GetInt()) {
