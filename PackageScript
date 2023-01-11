@@ -85,22 +85,22 @@ CopyFiles('gamedata/sigsegv', 'addons/sourcemod/gamedata/sigsegv',
 #    'configfile.cfg',
 #  ]
 #)
+if not Extension.optimize_mods_only:
+  # Resource files
+  CopyFiles('resource', 'custom/sigsegv/resource',
+    [
+      'sigsegv_events.res',
+    ]
+  )
 
-# Resource files
-CopyFiles('resource', 'custom/sigsegv/resource',
-  [
-    'sigsegv_events.res',
-  ]
-)
-
-# Script files
-CopyFiles('scripts', 'custom/sigsegv/scripts',
-  [
-    'sigsegv_sound_overrides.txt',
-    'globals.lua',
-    'library.lua'
-  ]
-)
+  # Script files
+  CopyFiles('scripts', 'custom/sigsegv/scripts',
+    [
+      'sigsegv_sound_overrides.txt',
+      'globals.lua',
+      'library.lua'
+    ]
+  )
 
 if Extension.optimize_mods_only:
   builder.AddCopy('cfg/sigsegv_convars_optimize_only.cfg', 'cfg/sigsegv_convars.cfg')
@@ -108,12 +108,12 @@ elif 'mods_mvm' in Extension.exclude:
   builder.AddCopy('cfg/sigsegv_convars_no_mvm.cfg', 'cfg/sigsegv_convars.cfg')
 else:
   builder.AddCopy('cfg/sigsegv_convars.cfg', folder_map['cfg'])
+  builder.AddCopy('cfg/sigsegv_convars_pvp.cfg', folder_map['cfg'])
+  builder.AddCopy('cfg/sigsegv_convars_vanilla.cfg', folder_map['cfg'])
+  builder.AddCopy('scripts/mvm_bigrock_sigdemo.pop', folder_map['custom/sigsegv/scripts/population'])
+  builder.AddCopy('scripts/mvm_bigrock_luademo.pop', folder_map['custom/sigsegv/scripts/population'])
 
-builder.AddCopy('cfg/sigsegv_convars_pvp.cfg', folder_map['cfg'])
-builder.AddCopy('cfg/sigsegv_convars_vanilla.cfg', folder_map['cfg'])
 builder.AddCopy('sigsegv.autoload', 'addons/sourcemod/extensions/' + Extension.name + '.autoload')
-builder.AddCopy('scripts/mvm_bigrock_sigdemo.pop', folder_map['custom/sigsegv/scripts/population'])
-builder.AddCopy('scripts/mvm_bigrock_luademo.pop', folder_map['custom/sigsegv/scripts/population'])
 
 # Copy binaries.
 for cxx_task in Extension.extensions:
