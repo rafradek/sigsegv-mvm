@@ -49,14 +49,14 @@ namespace Mod::MvM::Player_Limit
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf .SetRange(0x06+1, 1, iGetTeamAssignmentOverride);
+			buf .SetDword(0x06+1, iGetTeamAssignmentOverride);
 			mask.SetRange(0x06+1, 4, 0xff);
 			
 			return true;
 		}
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf .SetRange(0x06+1, 1, iGetTeamAssignmentOverride);
+			buf .SetDword(0x06+1, iGetTeamAssignmentOverride);
 			
 			return true;
 		}
@@ -95,14 +95,14 @@ namespace Mod::MvM::Player_Limit
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf .SetRange(0x02+2, 1, iClientConnected);
+			buf .SetRange(0x02+2, 1, iClientConnected & 0x7F);
 			mask.SetRange(0x02+2, 1, 0xff);
 			
 			return true;
 		}
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf .SetRange(0x02+2, 1, iClientConnected);
+			buf .SetRange(0x02+2, 1, iClientConnected & 0x7F);
 			
 			return true;
 		}
@@ -141,14 +141,14 @@ namespace Mod::MvM::Player_Limit
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate);
+			buf .SetRange(0x03+2, 1, iPreClientUpdate & 0x7F);
 			mask.SetRange(0x03+2, 1, 0xff);
 			
 			return true;
 		}
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate);
+			buf .SetRange(0x03+2, 1, iPreClientUpdate & 0x7F);
 			
 			return true;
 		}
@@ -328,10 +328,30 @@ namespace Mod::MvM::Player_Limit
 
 		spectators = GetMaxSpectators();
 		
+		static ConVarRef tv_enable("tv_enable");
+		int tvSlots = (tv_enable.GetBool() ? 1 : 0);
+
 		static ConVarRef sig_mvm_jointeam_blue_allow("sig_mvm_jointeam_blue_allow");
 		static ConVarRef sig_mvm_jointeam_blue_allow_max("sig_mvm_jointeam_blue_allow_max");
+		static ConVarRef sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players");
+		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
+
 		if (sig_mvm_jointeam_blue_allow.GetInt() != 0) {
-			blu = sig_mvm_jointeam_blue_allow_max.GetInt() >= 0 ? sig_mvm_jointeam_blue_allow_max.GetInt() : gpGlobals->maxClients - robots - red - Max(spectators, 0);
+			if (sig_mvm_jointeam_blue_allow_max.GetInt() > 0) {
+				blu = sig_mvm_jointeam_blue_allow_max.GetInt();
+			}
+			else {
+				if (sig_etc_extra_player_slots_allow_players.GetBool()) {
+					blu = gpGlobals->maxClients - robots - red - Max(spectators, 0) - tvSlots;
+				}
+				else if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
+					blu = Min(gpGlobals->maxClients - robots - red - Max(spectators, 0) - tvSlots, MAX_PLAYERS - red - Max(spectators, 0) - tvSlots);
+				}
+				else {
+					blu = MAX_PLAYERS - robots - red - Max(spectators, 0) - tvSlots;
+				}
+				
+			}
         } 
 		
 		static ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
@@ -340,14 +360,13 @@ namespace Mod::MvM::Player_Limit
 			red = 0;
 		}
 
-		static ConVarRef tv_enable("tv_enable");
 
 
-		int freeSlots = MAX_PLAYERS - robots - (tv_enable.GetBool() ? 1 : 0);
+		int freeSlots = MAX_PLAYERS - robots - tvSlots;
 		if (spectators == -1) {
 			spectators = Max(0, freeSlots - red - blu);
 		}
-		return red + blu + spectators + robots + (tv_enable.GetBool() ? 1 : 0);
+		return red + blu + spectators + robots + tvSlots;
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_ClientConnected, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)

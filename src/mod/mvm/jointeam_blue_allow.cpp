@@ -348,6 +348,9 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		
 	ConVar cvar_no_footsteps("sig_mvm_jointeam_blue_no_footsteps", "0", FCVAR_NOTIFY,
 		"Blue humans in MvM: No robot footsteps");
+		
+	ConVar cvar_spectator_is_blu("sig_mvm_jointeam_blue_spectator", "0", FCVAR_NOTIFY,
+		"Blue humans in MvM: Force spectators to join blue team");
 	
 	std::map<CHandle<CTFPlayer>, float> player_deploy_time; 
 	// TODO: probably need to add in a check for TF_COND_REPROGRAMMED here and:
@@ -450,14 +453,13 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 		
 		extern ConVar cvar_force;
+		extern ConVar cvar_adminonly;
+		bool allowJoinTeamBluNoAdmin = !cvar_adminonly.GetBool() || Mod::Pop::PopMgr_Extensions::PopFileIsOverridingJoinTeamBlueConVarOn() || cvar_force.GetBool();
 		//DevMsg("Get team assignment %d %d %d\n", iWantedTeam, cvar_force.GetBool());
-
 		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
-			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
+			&& ((iWantedTeam == TF_TEAM_BLUE && iResult != iWantedTeam) || (iWantedTeam != TEAM_SPECTATOR && iResult == TEAM_SPECTATOR && allowJoinTeamBluNoAdmin) || (iWantedTeam == TEAM_SPECTATOR && cvar_spectator_is_blu.GetBool() && allowJoinTeamBluNoAdmin) || (iWantedTeam == TF_TEAM_RED && cvar_force.GetBool())) ) {
 			// NOTE: if the pop file had custom param 'AllowJoinTeamBlue 1', then disregard admin-only restrictions
-			extern ConVar cvar_adminonly;
-			if (cvar_force.GetBool() || Mod::Pop::PopMgr_Extensions::PopFileIsOverridingJoinTeamBlueConVarOn() ||
-				!cvar_adminonly.GetBool() || PlayerIsSMAdmin(pPlayer)) {
+			if (allowJoinTeamBluNoAdmin || PlayerIsSMAdmin(pPlayer)) {
 				if (cvar_max.GetInt() < 0 || GetMvMBlueHumanCount() < cvar_max.GetInt()) {
 					DevMsg("Player #%d \"%s\" requested team %d but was forced onto team %d; overriding to allow them to join team %d.\n",
 						ENTINDEX(pPlayer), pPlayer->GetPlayerName(), iWantedTeam, iResult, iWantedTeam);

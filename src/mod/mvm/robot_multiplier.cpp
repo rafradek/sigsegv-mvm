@@ -49,7 +49,6 @@ namespace Mod::MvM::Robot_Multiplier
 			wavespawn->m_maxActive *= cvar_enable.GetInt();
 			if (wavespawn->m_waitBetweenSpawns < 5) {
 				wavespawn->m_waitBetweenSpawns = 5;
-				
 			}
 			else {
 				wavespawn->m_waitBetweenSpawns /= cvar_enable.GetInt();

@@ -606,6 +606,7 @@ namespace Mod::Etc::Mapentity_Additions
             V_strncpy(param_tokenized, Value.String(), sizeof(param_tokenized));
             
             char *map = strtok(param_tokenized,"|");
+#ifndef NO_MVM
             char *mission = strtok(NULL,"|");
             change_level_info.set = mission != nullptr;
             change_level_info.mission = mission != nullptr ? mission : "";
@@ -624,6 +625,7 @@ namespace Mod::Etc::Mapentity_Additions
                 });
                 Mod::Pop::PopMgr_Extensions::SaveStateInfoBetweenMissions();
             }
+#endif
             engine->ChangeLevel(map, nullptr);
             //TFGameRules()->DistributeCurrencyAmount(val, nullptr, true, true, false);
         }},
@@ -1241,6 +1243,7 @@ namespace Mod::Etc::Mapentity_Additions
                 CTFPlayer* player = ToTFPlayer(ent);
                 player->PlaySpecificSequence(Value.String());
         }},
+#ifndef NO_MVM
         {"AwardExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player = ToTFPlayer(ent);
                 std::string str = Value.String();
@@ -1251,6 +1254,16 @@ namespace Mod::Etc::Mapentity_Additions
                 std::string str = Value.String();
                 Mod::Pop::PopMgr_Extensions::AwardExtraItem(player, str, true);
         }},
+        {"StripExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player = ToTFPlayer(ent);
+                std::string str = Value.String();
+                Mod::Pop::PopMgr_Extensions::StripExtraItem(player, str, true);
+        }},
+        {"ResetExtraItems"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player = ToTFPlayer(ent);
+                Mod::Pop::PopMgr_Extensions::ResetExtraItems(player);
+        }},
+#endif
         {"TauntFromItem2"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 
                 CTFPlayer* player{ToTFPlayer(ent)};
@@ -1347,7 +1360,9 @@ namespace Mod::Etc::Mapentity_Additions
 
                 CEconItemView *view = CEconItemView::Create();
                 view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+#ifndef NO_MVM
                 Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(itemName, view);
+#endif
                 for (size_t i = 1; i < v.size() - 1; i+=2) {
                     CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(std::string(v[i]).c_str());
                     if (attr_def == nullptr) {
@@ -1367,15 +1382,6 @@ namespace Mod::Etc::Mapentity_Additions
         {"Taunt"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player{ToTFPlayer(ent)};
                 player->Taunt(TAUNT_BASE_WEAPON, 0);
-        }},
-        {"StripExtraItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-                CTFPlayer* player = ToTFPlayer(ent);
-                std::string str = Value.String();
-                Mod::Pop::PopMgr_Extensions::StripExtraItem(player, str, true);
-        }},
-        {"ResetExtraItems"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-                CTFPlayer* player = ToTFPlayer(ent);
-                Mod::Pop::PopMgr_Extensions::ResetExtraItems(player);
         }}
     });
 
@@ -1435,7 +1441,9 @@ namespace Mod::Etc::Mapentity_Additions
                     auto item = CEconItemView::Create();
                     item->Init(item_def->m_iItemDefIndex, item_def->m_iItemQuality, 9999, 0);
                     item->m_iItemID = (RandomInt(INT_MIN, INT_MAX) << 16) + ENTINDEX(ent);
+#ifndef NO_MVM
                     Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(name, item);
+#endif
                     auto &vars = GetCustomVariables(ent);
                     for (auto &var : vars) {
                         auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(STRING(var.key));

@@ -1267,7 +1267,9 @@ namespace Mod::Util::Client_Cmds
 
 		CEconItemView *view = CEconItemView::Create();
 		view->Init(item_def->m_iItemDefIndex, 6, 9999, 0);
+#ifndef NO_MVM
 		Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(args[2], view);
+#endif
 		for (int i = 3; i < args.ArgC() - 1; i+=2) {
 			CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(args[i]);
 			if (attr_def == nullptr) {

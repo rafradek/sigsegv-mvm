@@ -4,6 +4,7 @@
 #include "util/autolist.h"
 #include "stub/tfbot.h"
 #include "stub/strings.h"
+#include "mod/attr/custom_attributes.h"
 
 #include "re/path.h"
 
@@ -301,11 +302,6 @@ private:
 
     CTFBotMoveTo *m_pNext = nullptr;
 };
-
-const char *GetItemName(const CEconItemView *view);
-const char *GetItemName(const CEconItemView *view, bool &is_custom);
-const char *GetItemNameForDisplay(int item_defid);
-const char *GetItemNameForDisplay(const CEconItemView *view);
 
 class ItemListEntry
 {
@@ -660,9 +656,6 @@ void ApplyPendingTask(CTFBot *bot, std::vector<std::shared_ptr<PeriodicTask>> &p
 void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<DelayedAddCond> &delayed_addconds);
 
 bool LoadUserDataFile(CRC32_t &value, const char *filename);
-
-void LoadItemNames();
-bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
 
 class ShootTemplateData;
 CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc);

@@ -15,6 +15,16 @@ pushd build/release
 	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
 popd
 
+mkdir -p build/release/optimize-only
+pushd build/release/optimize-only
+	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --optimize-mods-only
+popd
+
+mkdir -p build/release/no-mvm
+pushd build/release/no-mvm
+	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --exclude-mods-mvm
+popd
+
 # mkdir -p build/clang
 # pushd build/clang
 # 	CC=clang CXX=clang++ $CONFIGURE $PATHS --sdks=tf2 --enable-debug

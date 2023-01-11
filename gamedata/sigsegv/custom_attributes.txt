@@ -55,7 +55,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    //Special mode for revolver: each hit increases damage, up to x times. Likely does not work 
+    //Special mode for revolver: each hit increases damage, up to x times. Likely does not work
     "4329"
     {
         "name"	"extra damage on hit penalty"
@@ -1675,7 +1675,7 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
-    //Heal 
+    //Heal
     "4483"
     {
         "name"	"overheal from heal on kill"
@@ -2760,5 +2760,22 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    
+    "4595"
+    {
+        "name"	"midair accuracy mult"
+        "attribute_class"	"midair_accuracy_mult"
+        "description_string"	"(+-)%p% accurate when midair"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4596"
+    {
+        "name"	"add damage per target"
+        "attribute_class"	"add_damage_per_target"
+        "description_string"	"(+-)%p% damage for every target hit by explosion"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

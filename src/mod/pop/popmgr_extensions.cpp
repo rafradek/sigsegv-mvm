@@ -412,6 +412,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_PathTrackIsServerEntity         ("sig_etc_path_track_is_server_entity"),
 			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all"),
 			m_MaxSpectators                   ("sig_mvm_spectator_max_players"),
+			m_JointeamBlueSpectator           ("sig_mvm_jointeam_blue_spectator"),
+			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
 			
@@ -575,6 +577,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_PathTrackIsServerEntity.Reset();
 			this->m_FastWholeMapTriggersAll.Reset();
 			this->m_MaxSpectators.Reset();
+			this->m_JointeamBlueSpectator.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -813,7 +816,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
 		CValueOverride_ConVar<bool> m_PathTrackIsServerEntity;
 		CValueOverride_ConVar<float> m_FastWholeMapTriggersAll;
-		CValueOverride_ConVar<int> m_MaxSpectators;		
+		CValueOverride_ConVar<int> m_MaxSpectators;
+		CValueOverride_ConVar<bool> m_JointeamBlueSpectator;
 		
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -6058,6 +6062,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_HumansMustJoinTeam.Set(false);
 			} else if (FStrEq(name, "AllowJoinTeamBlue")) {
 				state.m_AllowJoinTeamBlue.Set(subkey->GetBool());
+				state.m_JointeamBlueSpectator.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowJoinTeamBlueMax")) {
 				state.m_AllowJoinTeamBlueMax.Set(subkey->GetInt());
 			} else if (FStrEq(name, "BluHumanFlagPickup")) {

@@ -43,6 +43,7 @@ namespace Mod::Attr::Custom_Attributes
 		MOD_MAX_PRIMARY_CLIP_OVERRIDE,
 		AUTO_FIRES_FULL_CLIP,
 		MOD_MAXHEALTH_DRAIN_RATE,
+		MIDAIR_ACCURACY_MULT,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -82,7 +83,8 @@ namespace Mod::Attr::Custom_Attributes
 		"is_passive_weapon",
 		"mod_max_primary_clip_override",
 		"auto_fires_full_clip",
-		"mod_maxhealth_drain_rate"
+		"mod_maxhealth_drain_rate",
+		"midair_accuracy_mult"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled
@@ -91,5 +93,12 @@ namespace Mod::Attr::Custom_Attributes
 	// For calls outside of custom attributes mod, returns value if the mod is disabled
     int GetFastAttributeIntExternal(CBaseEntity *entity, int value, int name);
 }
+
+const char *GetItemName(const CEconItemView *view);
+const char *GetItemName(const CEconItemView *view, bool &is_custom);
+const char *GetItemNameForDisplay(int item_defid);
+const char *GetItemNameForDisplay(const CEconItemView *view);
+void LoadItemNames();
+bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
 
 #endif

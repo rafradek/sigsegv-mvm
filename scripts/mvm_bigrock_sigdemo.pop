@@ -3295,3 +3295,9 @@ WaveSchedule
 
 // Sentry rocket ammo multiplier
 // "mult sentry rocket ammo" 3
+
+// Midair accuracy multiplier
+// "midair accuracy mult" 2
+
+// damage bonus for every target hit by explosion
+// "add damage per target" 0.5

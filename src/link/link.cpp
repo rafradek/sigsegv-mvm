@@ -17,7 +17,7 @@ namespace Link
 		vtable_staticprop = RTTI::GetVTable("11CStaticProp");
 		DevMsg("Link::InitAll BEGIN\n");
 		
-		for (auto link : AutoList<ILinkage>::List()) {
+		for (auto link : AutoListNoDelete<ILinkage>::List()) {
 			if (ClientFactory() == nullptr && link->ClientSide()) continue;
 
 			link->InvokeLink();
@@ -38,14 +38,14 @@ namespace Link
 	{
 		size_t len_obj = 0;
 	//	size_t len_mem = 0;
-		for (auto prop : AutoList<ILinkage>::List()) {
+		for (auto prop : AutoListNoDelete<ILinkage>::List()) {
 			if (prop->GetNameDebug() == nullptr) continue;
 			len_obj = Max(len_obj, strlen(prop->GetNameDebug()));
 	//		len_mem = Max(len_mem, strlen(prop->GetMemberName()));
 		}
 		
 		std::vector<ILinkage *> links_sorted;
-		for (auto prop : AutoList<ILinkage>::List()) {
+		for (auto prop : AutoListNoDelete<ILinkage>::List()) {
 			if (prop->GetNameDebug() == nullptr) continue;
 			links_sorted.push_back(prop);
 		}

@@ -455,12 +455,16 @@ struct CPropAccessor<CHandle<U>, T_ARGS> final : public CPropAccessorHandle<U, T
 #define DECL_RELATIVE(   TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Relative, false, false)
 #define DECL_RELATIVE_RW(TYPE, PROPNAME) DECL_PROP(TYPE, PROPNAME, Relative, false, true )
 
+template<typename T>
+static void CallNetworkStateChanged(void *obj, void *var)
+{
+	reinterpret_cast<T *>(obj)->NetworkStateChanged(var);
+}
 
 // for IMPL_SENDPROP, add an additional argument for the "remote name" (e.g. in CBaseEntity, m_MoveType's remote name is "movetype")
 #define IMPL_SENDPROP(TYPE, CLASSNAME, PROPNAME, SVCLASS, ...) \
-	void NetworkStateChanged_##CLASSNAME##_##PROPNAME(void *obj, void *var) { reinterpret_cast<CLASSNAME *>(obj)->NetworkStateChanged(var); } \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_SendProp CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, #SVCLASS, &NetworkStateChanged_##CLASSNAME##_##PROPNAME, ##__VA_ARGS__)
+	CProp_SendProp CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, #SVCLASS, &CallNetworkStateChanged<CLASSNAME>, ##__VA_ARGS__)
 #define IMPL_DATAMAP(TYPE, CLASSNAME, PROPNAME) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
 	CProp_DataMap CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME)

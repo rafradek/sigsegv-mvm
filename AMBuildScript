@@ -50,6 +50,8 @@ class ExtensionConfig(object):
     self.mms_root = None
     self.sm_root = None
     self.exclude = []
+    self.optimize_mods_only = False
+    self.name = 'sigsegv'
 
   @property
   def tag(self):
@@ -107,19 +109,29 @@ class ExtensionConfig(object):
     self.mms_root = Normalize(self.mms_root)
 
   def configure(self):
-    if builder.options.exclude_mods_debug:
-      self.exclude += ['mods_debug']
-    if builder.options.exclude_mods_visualize:
-      self.exclude += ['mods_visualize']
-    if builder.options.exclude_mods_vgui:
-      self.exclude += ['mods_vgui']
-    
     cxx = builder.DetectCxx()
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
     elif cxx.vendor == 'msvc':
       self.configure_msvc(cxx)
+
+    self.name = 'sigsegv'
+
+    if builder.options.exclude_mods_debug:
+      self.exclude += ['mods_debug']
+    if builder.options.exclude_mods_visualize:
+      self.exclude += ['mods_visualize']
+    if builder.options.exclude_mods_vgui:
+      self.exclude += ['mods_vgui']
+    if builder.options.exclude_mods_mvm:
+      self.exclude += ['mods_mvm']
+      cxx.defines += ['NO_MVM']
+      self.name += '-no-mvm'
+    if builder.options.optimize_mods_only:
+      self.optimize_mods_only = True
+      cxx.defines += ['OPTIMIZE_MODS_ONLY']
+      self.name += '-optimize-only'
 
     # Optimization
 #    if builder.options.opt == '1':
@@ -188,6 +200,7 @@ class ExtensionConfig(object):
 #   cxx.cflags += ['-Winvalid-pch']
     cxx.cflags += ['-Wno-unknown-pragmas']
     cxx.cflags += ['-pthread']
+    cxx.cflags += ['-ffunction-sections']
 #   cxx.cflags += ['-gsplit-dwarf']
 #   cxx.cflags += ['-feliminate-dwarf2-dups']
 #   cxx.cflags += ['-gz']

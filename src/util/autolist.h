@@ -39,6 +39,26 @@ private:
 	static inline std::vector<T *> *s_List = nullptr;
 };
 
+/// @brief Auto list, but does not delete the the element from the list when the object is destroyed. For use with static lifetime objects
+/// @tparam T 
+template<typename T>
+class AutoListNoDelete
+{
+public:
+	AutoListNoDelete()
+	{
+		s_List.push_back(static_cast<T *>(this));
+	}
+	
+	static const std::vector<T *>& List()
+	{
+		return s_List;
+	}
+	
+private:
+	
+	inline static std::vector<T *> s_List;
+};
 
 template<typename T, typename K>
 class AutoMultiMap

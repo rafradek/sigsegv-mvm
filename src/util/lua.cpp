@@ -617,6 +617,7 @@ namespace Util::Lua
         return player;
     }
 
+#ifndef NO_MVM
     int LEntitySpawnTemplate(lua_State *l)
     {
         auto templ = FindPointTemplate(luaL_checkstring(l, 1));
@@ -673,6 +674,7 @@ namespace Util::Lua
         }
         return 1;
     }    
+#endif
 
     int LEntityEquals(lua_State *l)
     {
@@ -3416,7 +3418,9 @@ namespace Util::Lua
         {"AddCreateCallback", LEntityAddCreateCallback},
         {"RemoveCreateCallback", LEntityRemoveCreateCallback},
         {"GetPlayerByUserId", LPlayerByUserID},
+#ifndef NO_MVM
         {"SpawnTemplate", LEntitySpawnTemplate},
+#endif
         {nullptr, nullptr},
     };
 

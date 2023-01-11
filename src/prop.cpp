@@ -37,31 +37,42 @@ void ListProps(bool fail_only)
 	});
 	
 	MAT_SINGLE_THREAD_BLOCK {
-		Msg("%-8s  %7s  %-*s  %s\n", "KIND", "VALUE", len_obj, "CLASS", "MEMBER");
-		for (auto prop : props_sorted) {
-			const char *n_obj = prop->GetObjectName();
-			const char *n_mem = prop->GetMemberName();
-			const char *kind  = prop->GetKind();
-			
-			switch (prop->GetState()) {
-			case IProp::State::INITIAL:
-			{	
-				if (!fail_only)
-					Msg("%-8s  %7s  %-*s  %s\n", kind, "INIT", len_obj, n_obj, n_mem);
-				break;
+		bool display = !fail_only;
+		if (!display) {
+			for (auto prop : props_sorted) {
+				if (prop->GetState() == IProp::State::FAIL) {
+					display = true;
+					break;
+				}
 			}
-			case IProp::State::OK:
-			{
-				int off = -1;
-				prop->GetOffset(off);
-				if (!fail_only)
-					Msg("%-8s  +0x%04x  %-*s  %s\n", kind, off, len_obj, n_obj, n_mem);
-				break;
-			}
-			case IProp::State::FAIL:
-				//if (strncmp(n_obj, "C_", 2) != 0 || IsClient())
-					Msg("%-8s  %7s  %-*s  %s\n", kind, "FAIL", len_obj, n_obj, n_mem);
-				break;
+		}
+		if (display) {
+			Msg("%-8s  %7s  %-*s  %s\n", "KIND", "VALUE", len_obj, "CLASS", "MEMBER");
+			for (auto prop : props_sorted) {
+				const char *n_obj = prop->GetObjectName();
+				const char *n_mem = prop->GetMemberName();
+				const char *kind  = prop->GetKind();
+				
+				switch (prop->GetState()) {
+				case IProp::State::INITIAL:
+				{	
+					if (!fail_only)
+						Msg("%-8s  %7s  %-*s  %s\n", kind, "INIT", len_obj, n_obj, n_mem);
+					break;
+				}
+				case IProp::State::OK:
+				{
+					int off = -1;
+					prop->GetOffset(off);
+					if (!fail_only)
+						Msg("%-8s  +0x%04x  %-*s  %s\n", kind, off, len_obj, n_obj, n_mem);
+					break;
+				}
+				case IProp::State::FAIL:
+					//if (strncmp(n_obj, "C_", 2) != 0 || IsClient())
+						Msg("%-8s  %7s  %-*s  %s\n", kind, "FAIL", len_obj, n_obj, n_mem);
+					break;
+				}
 			}
 		}
 	}

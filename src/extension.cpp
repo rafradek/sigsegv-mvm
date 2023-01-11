@@ -78,8 +78,9 @@ IClientMode *g_pClientMode = nullptr;
 
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-
+#ifndef OPTIMIZE_MODS_ONLY
 	ColorSpew::Enable();
+#endif
 	
 	if (gameeventmanager != nullptr) {
 		gameeventmanager->LoadEventsFromFile("resource/sigsegv_events.res");
@@ -138,8 +139,10 @@ void CExtSigsegv::SDK_OnUnload()
 	LibMgr::Unload();
 	
 	g_GCHook.UnloadAll();
-	
+
+#ifndef OPTIMIZE_MODS_ONLY
 	ColorSpew::Disable();
+#endif
 
 	UnloadAllCustomThinkFunc();
 }
@@ -272,7 +275,10 @@ bool CExtSigsegv::SDK_OnMetamodUnload(char *error, size_t maxlength)
 
 bool CExtSigsegv::RegisterConCommandBase(ConCommandBase *pCommand)
 {
-	ConVar_Restore::Register(pCommand);
+	// Save only new commands
+	if (icvar->FindVar(pCommand->GetName()) == nullptr) {
+		ConVar_Restore::Register(pCommand);
+	}
 	
 	META_REGCVAR(pCommand);
 	return true;
@@ -281,7 +287,6 @@ bool CExtSigsegv::RegisterConCommandBase(ConCommandBase *pCommand)
 
 void CExtSigsegv::LevelInitPreEntity()
 {
-	DevMsg("extsig\n");
 	this->LoadSoundOverrides();
 }
 

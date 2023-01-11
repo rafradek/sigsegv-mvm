@@ -22,6 +22,8 @@ builder.options.add_option('--enable-optimize', action='store_const', const='1',
 builder.options.add_option('--enable-experimental', action='store_const', const='1', dest='experimental', help='Enable experimental/incomplete features')
 builder.options.add_option('--exclude-mods-debug', action='store_const', const='1', dest='exclude_mods_debug', help='Don\'t compile any mods in the Debug group')
 builder.options.add_option('--exclude-mods-visualize', action='store_const', const='1', dest='exclude_mods_visualize', help='Don\'t compile any mods in the Visualize group')
+builder.options.add_option('--exclude-mods-mvm', action='store_const', const='1', dest='exclude_mods_mvm', help='Don\'t compile any mods in the MvM group')
+builder.options.add_option('--optimize-mods-only', action='store_const', const='1', dest='optimize_mods_only', help='Only compile optimize mods')
 builder.options.add_option('--exclude-vgui', action='store_const', const='1', dest='exclude_mods_vgui', help='Don\'t compile any mods in the VGUI group')
 builder.options.add_option('-s', '--sdks', default='all', dest='sdks', help='Build against specified SDKs; valid args are "all", "present", or comma-delimited list of engine names (default: %default)')
 

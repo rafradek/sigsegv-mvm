@@ -233,7 +233,7 @@ IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_
 IMPL_RELATIVE(CEconItemView,        CTFPlayer, m_TauntEconItemView, m_flVehicleReverseTime, sizeof(float) * 7 + sizeof(EHANDLE) + sizeof(EHANDLE) + sizeof(bool) * 4 + sizeof(float) + sizeof(CUtlString) + sizeof(float) + sizeof(CUtlString));
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
-CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", NetworkStateChanged_CTFPlayer_m_angEyeAngles);
+CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", &CallNetworkStateChanged<CTFPlayer>);
 
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");
@@ -325,8 +325,6 @@ int GetNumberOfTFConds()
 {
 	static int iNumTFConds =
 	[]{
-		ConColorMsg(Color(0xff, 0x00, 0xff, 0xff), "GetNumberOfTFConds: in lambda\n");
-		
 		const SegInfo& info_seg_server_rodata = LibMgr::GetInfo(Library::SERVER).GetSeg(Segment::RODATA);
 		
 		constexpr char prefix[] = "TF_COND_";
@@ -420,6 +418,7 @@ CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *pla
 	return ft_GetEconItemViewByLoadoutSlot(player, slot, ent); 
 }
 
+#ifndef OPTIMIZE_MODS_ONLY
 CEconEntity *CreateItemByName(CTFPlayer *player, const char *item_name)
 {
 	auto item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
@@ -428,7 +427,9 @@ CEconEntity *CreateItemByName(CTFPlayer *player, const char *item_name)
 		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
 
 		if (entity != nullptr) {
+#ifndef NO_MVM
 			Mod::Pop::PopMgr_Extensions::AddCustomWeaponAttributes(item_name, entity->GetItem());
+#endif
 			DispatchSpawn(entity);
 		}
 		return entity;
@@ -519,6 +520,7 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 	entity->GiveTo(player);
 	return true;
 }
+#endif
 
 CEconEntity *CTFPlayer::GetEconEntityByName(const char *name)
 {

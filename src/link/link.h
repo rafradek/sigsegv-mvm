@@ -7,10 +7,10 @@
 #include "util/rtti.h"
 
 
-class ILinkage : public AutoList<ILinkage>
+class ILinkage : public AutoListNoDelete<ILinkage>
 {
 public:
-	virtual ~ILinkage() {}
+	//virtual ~ILinkage() {}
 	
 	void InvokeLink()
 	{
@@ -43,20 +43,16 @@ private:
 };
 
 
-template<typename RET, typename... PARAMS>
-class StaticFuncThunk : public ILinkage
+class StaticFuncThunkBase : public ILinkage
 {
 public:
-	using RetType = RET;
-	using FPtr = RET (*)(PARAMS...);
-	
-	StaticFuncThunk(const char *n_func) :
+	StaticFuncThunkBase(const char *n_func) :
 		m_pszFuncName(n_func) {}
-	
+
 	virtual bool Link() override
 	{
 		if (this->m_pFuncPtr == nullptr) {
-			this->m_pFuncPtr = (FPtr)AddrManager::GetAddr(this->m_pszFuncName);
+			this->m_pFuncPtr = AddrManager::GetAddr(this->m_pszFuncName);
 			if (this->m_pFuncPtr == nullptr) {
 				Warning("StaticFuncThunk::Link FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
 				return false;
@@ -65,29 +61,42 @@ public:
 		
 		return true;
 	}
+
+	virtual const char *GetNameDebug() { return m_pszFuncName; }
+	virtual const char *GetTypeDebug() { return "STATIC_FUNC"; }
+	virtual uintptr_t GetAddressDebug() { return (uintptr_t) m_pFuncPtr; }
+	const void *GetFuncPtr() const { return this->m_pFuncPtr; }
+
+private:
+	virtual void ForceAddr(uintptr_t addr) override { this->m_pFuncPtr = (const void *)addr; }
+	
+	
+	const char *m_pszFuncName;
+	
+	const void *m_pFuncPtr = nullptr;
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
+};
+
+template<typename RET, typename... PARAMS>
+class StaticFuncThunk
+{
+public:
+	using RetType = RET;
+	using FPtr = RET (*)(PARAMS...);
+	
+	StaticFuncThunk(const char *n_func) : link(n_func) {}
 	
 	inline RET operator()(PARAMS... args) const
 	{
 #ifdef DEBUG
-		assert(this->GetFuncPtr() != nullptr); 
+		assert(link.GetFuncPtr() != nullptr); 
 #endif
-		return (*this->GetFuncPtr())(args...);
+		return (*(FPtr)link.GetFuncPtr())(args...);
 	}
-	
-	virtual const char *GetNameDebug() { return m_pszFuncName; }
-	virtual const char *GetTypeDebug() { return "STATIC_FUNC"; }
-	virtual uintptr_t GetAddressDebug() { return (uintptr_t) m_pFuncPtr; }
-
+	bool IsLinked() const { return link.IsLinked(); }
 private:
-	virtual void ForceAddr(uintptr_t addr) override { this->m_pFuncPtr = (FPtr)addr; }
-	
-	FPtr GetFuncPtr() const { return this->m_pFuncPtr; }
-	
-	const char *m_pszFuncName;
-	
-	FPtr m_pFuncPtr = nullptr;
-
-	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
+	StaticFuncThunkBase link;
 };
 
 //template<class C, typename RET, typename... PARAMS>
@@ -116,8 +125,6 @@ public:
 	virtual const char *GetNameDebug() { return m_pszFuncName; }
 	virtual const char *GetTypeDebug() { return "MEMBER_FUNC"; }
 	virtual uintptr_t GetAddressDebug() { return (uintptr_t)m_pFuncPtr; }
-	
-protected:
 	const void *GetFuncPtr() const { return this->m_pFuncPtr; }
 	
 private:
@@ -131,26 +138,28 @@ private:
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk : public MemberFuncThunkBase//<C, RET, PARAMS...>
+class MemberFuncThunk//<C, RET, PARAMS...>
 {
 public:
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
+		link/*<C, RET, PARAMS...>*/(n_func) {}
+private:
+	MemberFuncThunkBase link;
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk<C *, RET, PARAMS...> : public MemberFuncThunkBase//<C, RET, PARAMS...>
+class MemberFuncThunk<C *, RET, PARAMS...> //<C, RET, PARAMS...>
 {
 public:
 	using FPtr = RET (C::*)(PARAMS...);
 	
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
+		link(n_func) {}
 	
 	inline RET operator()(const C *obj, PARAMS... args) const = delete;
 	inline RET operator()(      C *obj, PARAMS... args) const
 	{
-		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
+		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(link.GetFuncPtr());
 #ifdef DEBUG
 		assert(pFunc != nullptr);
 		assert(obj   != nullptr);
@@ -158,21 +167,23 @@ public:
 		
 		return (obj->*pFunc)(args...);
 	}
+private:
+	MemberFuncThunkBase link;
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberFuncThunk<const C *, RET, PARAMS...> : public MemberFuncThunkBase//<C, RET, PARAMS...>
+class MemberFuncThunk<const C *, RET, PARAMS...>//<C, RET, PARAMS...>
 {
 public:
 	using FPtr = RET (C::*)(PARAMS...) const;
 	
 	MemberFuncThunk(const char *n_func) :
-		MemberFuncThunkBase/*<C, RET, PARAMS...>*/(n_func) {}
+		link/*<C, RET, PARAMS...>*/(n_func) {}
 	
 	inline RET operator()(      C *obj, PARAMS... args) const = delete;
 	inline RET operator()(const C *obj, PARAMS... args) const
 	{
-		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(this->GetFuncPtr());
+		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(link.GetFuncPtr());
 #ifdef DEBUG
 			assert(pFunc != nullptr);
 			assert(obj   != nullptr);
@@ -180,6 +191,8 @@ public:
 		
 		return (obj->*pFunc)(args...);
 	}
+private:
+	MemberFuncThunkBase link;
 };
 
 
@@ -229,8 +242,6 @@ public:
 	virtual const char *GetNameDebug() { return m_pszFuncName; }
 	virtual const char *GetTypeDebug() { return "VIRTUAL_FUNC"; }
 	virtual uintptr_t GetAddressDebug() { return GetVTableIndex() * sizeof(uintptr_t); }
-
-protected:
 	int GetVTableIndex() const { return this->m_iVTIndex; }
 	
 private:
@@ -245,29 +256,31 @@ private:
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberVFuncThunk : public MemberVFuncThunkBase
+class MemberVFuncThunk
 {
 public:
 	using RetType = RET;
 	
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
-		MemberVFuncThunkBase(n_vtable, n_func) {}
+		link(n_vtable, n_func) {}
+private:
+	MemberVFuncThunkBase link;
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberVFuncThunk<C *, RET, PARAMS...> : public MemberVFuncThunkBase
+class MemberVFuncThunk<C *, RET, PARAMS...>
 {
 public:
 	using RetType = RET;
 	using FPtr = RET (C::*)(PARAMS...);
 	
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
-		MemberVFuncThunkBase(n_vtable, n_func) {}
+		link(n_vtable, n_func) {}
 	
 	inline RET operator()(const C *obj, PARAMS... args) const = delete;
 	inline RET operator()(      C *obj, PARAMS... args) const
 	{
-		int vt_index = this->GetVTableIndex();
+		int vt_index = link.GetVTableIndex();
 		
 #ifdef DEBUG
 		assert(vt_index != -1);
@@ -278,22 +291,24 @@ public:
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
 		return (obj->*pFunc)(args...);
 	}
+private:
+	MemberVFuncThunkBase link;
 };
 
 template<class C, typename RET, typename... PARAMS>
-class MemberVFuncThunk<const C *, RET, PARAMS...> : public MemberVFuncThunkBase
+class MemberVFuncThunk<const C *, RET, PARAMS...>
 {
 public:
 	using RetType = RET;
 	using FPtr = RET (C::*)(PARAMS...) const;
 	
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
-		MemberVFuncThunkBase(n_vtable, n_func) {}
+		link(n_vtable, n_func) {}
 	
 	inline RET operator()(      C *obj, PARAMS... args) const = delete;
 	inline RET operator()(const C *obj, PARAMS... args) const
 	{
-		int vt_index = this->GetVTableIndex();
+		int vt_index = link.GetVTableIndex();
 		
 #ifdef DEBUG
 		assert(vt_index != -1);
@@ -304,20 +319,21 @@ public:
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
 		return (obj->*pFunc)(args...);
 	}
+private:
+	MemberVFuncThunkBase link;
 };
 
 
-template<typename T>
-class GlobalThunk : public ILinkage
+class GlobalThunkBase : public ILinkage
 {
 public:
-	GlobalThunk(const char *n_obj) :
+	GlobalThunkBase(const char *n_obj) :
 		m_pszObjName(n_obj) {}
 	
 	virtual bool Link() override
 	{
 		if (this->m_pObjPtr == nullptr) {
-			this->m_pObjPtr = (T *)AddrManager::GetAddr(this->m_pszObjName);
+			this->m_pObjPtr = AddrManager::GetAddr(this->m_pszObjName);
 			if (this->m_pObjPtr == nullptr) {
 				Warning("GlobalThunk::Link FAIL \"%s\": can't find global addr\n", this->m_pszObjName);
 				return false;
@@ -327,6 +343,26 @@ public:
 //		DevMsg("GlobalThunk::Link OK 0x%08x \"%s\"\n", (uintptr_t)this->m_pObjPtr, this->m_pszObjName);
 		return true;
 	}
+	
+	virtual const char *GetNameDebug() { return m_pszObjName; }
+	virtual const char *GetTypeDebug() { return "GLOBAL"; }
+	virtual uintptr_t GetAddressDebug() { return  (uintptr_t) this->m_pObjPtr; }
+	void *m_pObjPtr = nullptr;
+
+private:
+	virtual void ForceAddr(uintptr_t addr) override { this->m_pObjPtr = (void *)addr; }
+	
+	const char *m_pszObjName;
+	
+
+	virtual bool ClientSide() override { return strnicmp(this->m_pszObjName, "[client]", strlen("[client]")) == 0; }
+};
+
+template<typename T>
+class GlobalThunk
+{
+public:
+	GlobalThunk(const char *n_obj) : link(n_obj) {}
 	
 	inline operator T&() const
 	{
@@ -342,23 +378,12 @@ public:
 		return this->GetRef();
 	}
 	
-	inline T& GetRef() const { return *this->m_pObjPtr; }
-	
-	virtual const char *GetNameDebug() { return m_pszObjName; }
-	virtual const char *GetTypeDebug() { return "GLOBAL"; }
-	virtual uintptr_t GetAddressDebug() { return  (uintptr_t) this->m_pObjPtr; }
+	inline T& GetRef() const { return *(T *)link.m_pObjPtr; }
 	
 protected:
-	inline T *GetPtr() const { return this->m_pObjPtr; }
-	
+	inline T *GetPtr() const { return (T *)link.m_pObjPtr; }
 private:
-	virtual void ForceAddr(uintptr_t addr) override { this->m_pObjPtr = (T *)addr; }
-	
-	const char *m_pszObjName;
-	
-	T *m_pObjPtr = nullptr;
-
-	virtual bool ClientSide() override { return strnicmp(this->m_pszObjName, "[client]", strlen("[client]")) == 0; }
+	GlobalThunkBase link;
 };
 
 template<typename T>

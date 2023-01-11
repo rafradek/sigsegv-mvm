@@ -1582,6 +1582,7 @@ namespace Mod::Etc::Mapentity_Additions
 	{
 		auto ret = DETOUR_MEMBER_CALL(CPopulationManager_Initialize)();
         
+#ifndef NO_MVM
         if (change_level_info.setInitializeCurrency) {
             g_pPopulationManager->m_nStartingCurrency = change_level_info.startingCurrency + change_level_info.currencyCollected;
         }
@@ -1597,6 +1598,7 @@ namespace Mod::Etc::Mapentity_Additions
             g_pPopulationManager->SetCheckpoint(0);
             change_level_info.setInitialize = false;
         }
+#endif
         return ret;
 	}
 
