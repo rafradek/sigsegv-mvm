@@ -1816,7 +1816,7 @@ namespace Mod::Attr::Custom_Attributes
 				float dmg_mult = 1.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_friendly_fire);
 				dmg *= dmg_mult;
-				if (dmg < 0.0f) {
+				if (dmg < 0.0f && pVictim->IsPlayer()) {
 					HealPlayer(ToTFPlayer(pVictim), ToTFPlayer(info.GetAttacker()), rtti_cast<CEconEntity *>(info.GetWeapon()), -dmg, true, DMG_GENERIC);
 					return 0;
 				}
