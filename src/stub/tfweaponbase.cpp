@@ -183,6 +183,7 @@ IMPL_SENDPROP(CHandle<CBaseCombatWeapon>, CBaseViewModel, m_hWeapon,         CBa
 
 MemberFuncThunk<CBaseViewModel *, void, bool> CBaseViewModel::ft_SetControlPanelsActive("CBaseViewModel::SetControlPanelsActive");
 MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_SpawnControlPanels("CBaseViewModel::SpawnControlPanels");
+MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_DestroyControlPanels("CBaseViewModel::DestroyControlPanels");
 
 MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> CBaseViewModel::vt_SetWeaponModel(TypeName<CBaseViewModel>(), "CBaseViewModel::SetWeaponModel");
 

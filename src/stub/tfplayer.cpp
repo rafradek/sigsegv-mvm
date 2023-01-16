@@ -175,6 +175,7 @@ IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtr
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iTauntIndex,   CTFPlayer);
 IMPL_RELATIVE(CUtlVector<bleed_struct_t>, CTFPlayerShared, m_BleedInfo, m_iTauntIndex, -sizeof(CUtlVector<bleed_struct_t>));
+IMPL_SENDPROP(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hDisguiseWeapon,CTFPlayer);
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");
@@ -231,6 +232,10 @@ IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnSpeed, m_flVehicleRe
 IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 5);
 // You could extract offset from CTFPlayer::PlayTauntRemapInputScene alternatively
 IMPL_RELATIVE(CEconItemView,        CTFPlayer, m_TauntEconItemView, m_flVehicleReverseTime, sizeof(float) * 7 + sizeof(EHANDLE) + sizeof(EHANDLE) + sizeof(bool) * 4 + sizeof(float) + sizeof(CUtlString) + sizeof(float) + sizeof(CUtlString));
+IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hRagdoll,               CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_iCampaignMedals,        CTFPlayer);
+IMPL_RELATIVE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, - sizeof(CUtlVector<CHandle<CTFWeaponBase>>));
+
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
 CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", &CallNetworkStateChanged<CTFPlayer>);
@@ -287,6 +292,7 @@ MemberFuncThunk<      CTFPlayer *, void, CTFWeaponBase *           > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_HolsterOffHandWeapon        ("CTFPlayer::HolsterOffHandWeapon");
 MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_CanMoveDuringTaunt          ("CTFPlayer::CanMoveDuringTaunt");
 MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::ft_GetRuneHealthBonus          ("CTFPlayer::GetRuneHealthBonus");
+MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ClearDisguiseWeaponList     ("CTFPlayer::ClearDisguiseWeaponList");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

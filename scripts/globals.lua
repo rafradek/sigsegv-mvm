@@ -1003,6 +1003,46 @@ function table.GetKeys(tab)
 	return keys
 end
 
+-- Return a deep copy of the table, also copying the nested tables. Does not copy metatables
+---@param tab table The table to copy
+function table.DeepCopy(tab)
+	return table._DeepCopy(tab, {})
+end
+
+---@param tab table The table to copy
+---@param done? table Ignore this parameter
+function table._DeepCopy(tab, done)
+    done = done or {}
+	local result = {}
+
+	for k, v in pairs(tab) do
+		if type(v) == "table" then
+            if not done[v] then
+                result[k] = table.DeepCopy(v, done)
+                done[v] = result[k]
+            else
+                result[k] = done[v]
+            end
+        else
+            result[k] = v
+        end
+	end
+
+	return result
+end
+
+-- Return a shallow copy of the table. Copies references of nested tables rather than their contents
+---@param tab table The table to copy
+function table.ShallowCopy(tab)
+	local result = {}
+
+	for k, v in pairs(tab) do
+        result[k] = v
+	end
+
+	return result
+end
+
 --Prints an array of strings, should be used as a function inside timer.Create
 function PrintDelay(t)
     --Initialize print index

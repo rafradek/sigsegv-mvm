@@ -375,9 +375,10 @@ public:
 	DECL_RELATIVE(float,       m_flFlameBurnTime);
 	DECL_RELATIVE(float,       m_flFlameRemoveTime);
 	DECL_SENDPROP(float,       m_flInvisChangeCompleteTime);
-	DECL_RELATIVE(bool,       m_bMotionCloak);
-	DECL_SENDPROP(int,        m_iTauntIndex);
+	DECL_RELATIVE(bool,        m_bMotionCloak);
+	DECL_SENDPROP(int,         m_iTauntIndex);
 	DECL_RELATIVE(CUtlVector<bleed_struct_t>, m_BleedInfo);
+	DECL_SENDPROP(CHandle<CTFWeaponBase>, m_hDisguiseWeapon);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
@@ -492,7 +493,8 @@ public:
 	
 	bool InAirDueToKnockback( void ) { return (!(GetFlags() & FL_ONGROUND) && (m_nWaterLevel == WL_NotInWater) && ( m_Shared->InCond( TF_COND_BLASTJUMPING ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK ) || m_Shared->InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) ) ); }
 	
-	int GetRuneHealthBonus() { return ft_GetRuneHealthBonus (this); }
+	int GetRuneHealthBonus()       { return ft_GetRuneHealthBonus (this); }
+	void ClearDisguiseWeaponList() { ft_ClearDisguiseWeaponList(this); }
 
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
@@ -526,6 +528,9 @@ public:
     DECL_RELATIVE   (float,      m_flTauntTurnSpeed);
     DECL_RELATIVE   (float,      m_flTauntTurnAccelerationTime);
     DECL_RELATIVE   (CEconItemView, m_TauntEconItemView);
+	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hRagdoll);
+	DECL_SENDPROP   (int,        m_iCampaignMedals);
+	DECL_RELATIVE   (CUtlVector<CHandle<CTFWeaponBase>>, m_hDisguiseWeaponList);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
@@ -591,7 +596,7 @@ private:
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_HolsterOffHandWeapon;
     static MemberFuncThunk<      CTFPlayer *, bool                            > ft_CanMoveDuringTaunt;
     static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetRuneHealthBonus;
-	
+    static MemberFuncThunk<      CTFPlayer *, void                            > ft_ClearDisguiseWeaponList;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

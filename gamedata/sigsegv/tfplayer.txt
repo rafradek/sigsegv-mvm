@@ -1069,6 +1069,31 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer14CanGoInvisibleEb"
 				}
+				"CTFPlayer::ClearDisguiseWeaponList"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer23ClearDisguiseWeaponListEv"
+				}
+				"CTFPlayerShared::DetermineDisguiseWeapon"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared23DetermineDisguiseWeaponEb"
+				}
+				"CTFPlayerShared::DetermineDisguiseWearables"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared26DetermineDisguiseWearablesEv"
+				}
+				"CTFPlayer::CreateDisguiseWeaponList"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer24CreateDisguiseWeaponListEPS_"
+				}
+				"CTFPlayerShared::RemoveDisguiseWeapon"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared20RemoveDisguiseWeaponEv"
+				}
 				
 			//	"GetTFConditionName"
 			//	{

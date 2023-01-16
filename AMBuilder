@@ -80,19 +80,10 @@ sourceFiles += [
 #  'src/entity/trigger_gravity_improved.cpp',
 ]
 
-if not Extension.optimize_mods_only:
-  sourceFiles += [
-  'src/concolor.cpp',
-  'src/util_commands.cpp',
-
-  'src/util/expression_eval.cpp',
-  'src/util/expression_eval_functions.cpp',
-  'src/util/lua.cpp',
-  ]
-
 sourceFiles += [
   
-  'src/mod/etc/extraentitydata.cpp',
+  'src/mod/common/commands.cpp',
+  'src/mod/common/extraentitydata.cpp',
   
   'src/mod/perf/attributes_optimize.cpp',
   'src/mod/perf/input_optimize.cpp',
@@ -107,6 +98,17 @@ sourceFiles += [
   'src/mod/perf/virtual_call_optimize.cpp',
   'src/mod/perf/func_optimize.cpp',
 ]
+
+if not Extension.optimize_mods_only:
+  sourceFiles += [
+  'src/concolor.cpp',
+  'src/util_commands.cpp',
+
+  'src/util/expression_eval.cpp',
+  'src/util/expression_eval_functions.cpp',
+  'src/util/lua.cpp',
+  ]
+
 
 if not Extension.optimize_mods_only:
   sourceFiles += [

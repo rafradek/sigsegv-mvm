@@ -14,6 +14,7 @@
 #include "stub/lagcompensation.h"
 #include "stub/tempent.h"
 #include "mod.h"
+#include "mod/common/commands.h"
 
 class CStaticProp {};
 
@@ -4902,6 +4903,14 @@ namespace Util::Lua
 	};
 	CMod s_Mod;
     
+    ModCommandClient sig_lua_prof_start("sig_lua_prof_start", [](CTFPlayer *player, const CCommand& args){
+        profile[ENTINDEX(player)] = 1;
+    });
+
+    ModCommandClient sig_lua_prof_end("sig_lua_prof_end", [](CTFPlayer *player, const CCommand& args){
+        profile[ENTINDEX(player)] = 1;
+    });
+
 	ConVar cvar_enable("sig_util_lua", "1", FCVAR_NOTIFY,
 		"Mod: Lua",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){

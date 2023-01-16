@@ -1758,6 +1758,46 @@ namespace Mod::Etc::Mapentity_Additions
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(CCaptureFlag *, CTFBot_GetFlagToFetch)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+        std::vector<CCaptureFlag *> disabledFlags;
+        for (int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i) {
+			auto flag = rtti_scast<CCaptureFlag *>(ICaptureFlagAutoList::AutoList()[i]);
+			if (flag == nullptr) continue;
+
+            variant_t val;
+            if (!flag->IsDisabled() && flag->GetCustomVariableVariant<"filter">(val)) {
+                val.Convert(FIELD_EHANDLE);
+                auto filterEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
+                if (filterEnt != nullptr && !filterEnt->PassesFilter(flag, bot)) {
+                    flag->SetDisabled(true);
+                    disabledFlags.push_back(flag);
+                }
+            }
+        }
+		auto result = DETOUR_MEMBER_CALL(CTFBot_GetFlagToFetch)();
+        for (auto flag : disabledFlags) {
+            flag->SetDisabled(false);
+        }
+		return result;
+	}
+
+	DETOUR_DECL_MEMBER(void, CCaptureFlag_FlagTouch, CBaseEntity *other)
+	{
+		auto flag = reinterpret_cast<CCaptureFlag *>(this);
+        variant_t val;
+        if (flag->GetCustomVariableVariant<"filter">(val)) {
+            val.Convert(FIELD_EHANDLE);
+            auto filterEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
+            if (filterEnt != nullptr && !filterEnt->PassesFilter(flag, other)) {
+                return;
+            }
+        }
+		DETOUR_MEMBER_CALL(CCaptureFlag_FlagTouch)(other);
+	}
+    
+
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1798,6 +1838,9 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState, "CBaseEntity::DispatchUpdateTransmitState");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_Initialize, "CPopulationManager::Initialize");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
+            
+            MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagToFetch, "CTFBot::GetFlagToFetch");
+            MOD_ADD_DETOUR_MEMBER(CCaptureFlag_FlagTouch, "CCaptureFlag::FlagTouch");
             
 
             // Execute -1 delay events immediately

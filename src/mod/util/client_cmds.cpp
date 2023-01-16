@@ -19,6 +19,7 @@
 #include "mod/pop/popmgr_extensions.h"
 #include <sys/resource.h>
 #include <fmt/core.h>
+#include "mod/common/commands.h"
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -39,19 +40,19 @@ namespace Mod::Util::Client_Cmds
 	void CC_SetPlayerScale(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_setplayerscale] Usage:  sig_setplayerscale <scale>\n");
+			ModCommandResponse("[sig_setplayerscale] Usage:  sig_setplayerscale <scale>\n");
 			return;
 		}
 		
 		float scale = 1.0f;
 		if (!StringToFloatStrict(args[1], scale)) {
-			ClientMsg(player, "[sig_setplayerscale] Error: couldn't parse \"%s\" as a floating-point number.\n", args[1]);
+			ModCommandResponse("[sig_setplayerscale] Error: couldn't parse \"%s\" as a floating-point number.\n", args[1]);
 			return;
 		}
 		
 		player->SetModelScale(scale);
 		
-		ClientMsg(player, "[sig_setplayerscale] Set scale of player %s to %.2f.\n", player->GetPlayerName(), scale);
+		ModCommandResponse("[sig_setplayerscale] Set scale of player %s to %.2f.\n", player->GetPlayerName(), scale);
 	}
 	
 	
@@ -59,7 +60,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_SetPlayerModel(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_setplayermodel] Usage:  sig_setplayermodel <model_path>\n");
+			ModCommandResponse("[sig_setplayermodel] Usage:  sig_setplayermodel <model_path>\n");
 			return;
 		}
 		
@@ -68,7 +69,7 @@ namespace Mod::Util::Client_Cmds
 		player->GetPlayerClass()->SetCustomModel(model_path, true);
 		player->UpdateModel();
 		
-		ClientMsg(player, "[sig_setplayermodel] Set model of player %s to \"%s\".\n", player->GetPlayerName(), model_path);
+		ModCommandResponse("[sig_setplayermodel] Set model of player %s to \"%s\".\n", player->GetPlayerName(), model_path);
 	}
 	
 
@@ -76,21 +77,21 @@ namespace Mod::Util::Client_Cmds
 	void CC_ResetPlayerModel(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
-			ClientMsg(player, "[sig_resetplayermodel] Usage:  sig_resetplayermodel\n");
+			ModCommandResponse("[sig_resetplayermodel] Usage:  sig_resetplayermodel\n");
 			return;
 		}
 		
 		player->GetPlayerClass()->SetCustomModel(nullptr, true);
 		player->UpdateModel();
 		
-		ClientMsg(player, "[sig_resetplayermodel] Reset model of player %s to the default.\n", player->GetPlayerName());
+		ModCommandResponse("[sig_resetplayermodel] Reset model of player %s to the default.\n", player->GetPlayerName());
 	}
 	
 	
 	void CC_UnEquip(CTFPlayer *player, const CCommand& args)
 	{
 		auto l_usage = [=]{
-			ClientMsg(player, "[sig_unequip] Usage: any of the following:\n"
+			ModCommandResponse("[sig_unequip] Usage: any of the following:\n"
 				"  sig_unequip <item_name>          | item names that include spaces need quotes\n"
 				"  sig_unequip <item_def_index>     | item definition indexes can be found in the item schema\n"
 				"  sig_unequip slot <slot_name>     | slot names are in the item schema (look for \"item_slot\")\n"
@@ -103,7 +104,7 @@ namespace Mod::Util::Client_Cmds
 		if (args.ArgC() == 2) {
 			// TODO: help
 			if (FStrEq(args[1], "help")) {
-				ClientMsg(player, "[sig_unequip] UNIMPLEMENTED: help\n");
+				ModCommandResponse("[sig_unequip] UNIMPLEMENTED: help\n");
 				return;
 			}
 			
@@ -121,7 +122,7 @@ namespace Mod::Util::Client_Cmds
 				}
 				
 				if (item_def == nullptr) {
-					ClientMsg(player, "[sig_unequip] Error: couldn't find any items in the item schema matching \"%s\"\n", args[1]);
+					ModCommandResponse("[sig_unequip] Error: couldn't find any items in the item schema matching \"%s\"\n", args[1]);
 					return;
 				}
 			}
@@ -137,7 +138,7 @@ namespace Mod::Util::Client_Cmds
 				if (item_view == nullptr) continue;
 				
 				if (all || item_view->GetItemDefIndex() == item_def->m_iItemDefIndex) {
-					ClientMsg(player, "[sig_unequip] Unequipped weapon %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(item_view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex())));
+					ModCommandResponse("[sig_unequip] Unequipped weapon %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(item_view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex())));
 					
 					player->Weapon_Detach(weapon);
 					weapon->Remove();
@@ -154,7 +155,7 @@ namespace Mod::Util::Client_Cmds
 				if (item_view == nullptr) continue;
 				
 				if (all || item_view->GetItemDefIndex() == item_def->m_iItemDefIndex) {
-					ClientMsg(player, "[sig_unequip] Unequipped cosmetic %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(item_view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex())));
+					ModCommandResponse("[sig_unequip] Unequipped cosmetic %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(item_view->GetStaticData()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex())));
 					
 					player->RemoveWearable(wearable);
 					
@@ -162,20 +163,20 @@ namespace Mod::Util::Client_Cmds
 				}
 			}
 			
-			ClientMsg(player, "[sig_unequip] Unequipped %d weapons and %d cosmetics.\n", n_weapons_removed, n_wearables_removed);
+			ModCommandResponse("[sig_unequip] Unequipped %d weapons and %d cosmetics.\n", n_weapons_removed, n_wearables_removed);
 			return;
 		} else if (args.ArgC() == 3) {
 			if (FStrEq(args[1], "slot")) {
 				int slot = -1;
 				if (StringToIntStrict(args[2], slot)) {
 					if (!IsValidLoadoutSlotNumber(slot)) {
-						ClientMsg(player, "[sig_unequip] Error: %s is not a valid loadout slot number\n", args[2]);
+						ModCommandResponse("[sig_unequip] Error: %s is not a valid loadout slot number\n", args[2]);
 						return;
 					}
 				} else {
 					slot = GetLoadoutSlotByName(args[2]);
 					if (!IsValidLoadoutSlotNumber(slot)) {
-						ClientMsg(player, "[sig_unequip] Error: %s is not a valid loadout slot name\n", args[2]);
+						ModCommandResponse("[sig_unequip] Error: %s is not a valid loadout slot name\n", args[2]);
 						return;
 					}
 				}
@@ -192,7 +193,7 @@ namespace Mod::Util::Client_Cmds
 						if (econ_entity->IsBaseCombatWeapon()) {
 							auto weapon = rtti_cast<CBaseCombatWeapon *>(econ_entity);
 							
-							ClientMsg(player, "[sig_unequip] Unequipped weapon %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(slot));
+							ModCommandResponse("[sig_unequip] Unequipped weapon %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(slot));
 							
 							player->Weapon_Detach(weapon);
 							weapon->Remove();
@@ -201,24 +202,24 @@ namespace Mod::Util::Client_Cmds
 						} else if (econ_entity->IsWearable()) {
 							auto wearable = rtti_cast<CEconWearable *>(econ_entity);
 							
-							ClientMsg(player, "[sig_unequip] Unequipped cosmetic %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(slot));
+							ModCommandResponse("[sig_unequip] Unequipped cosmetic %s from slot %s\n", item_view->GetStaticData()->GetName(), GetLoadoutSlotName(slot));
 							
 							player->RemoveWearable(wearable);
 							
 							++n_wearables_removed;
 						} else {
-							ClientMsg(player, "[sig_unequip] Unequipped unexpected entity with classname \"%s\" from slot %s\n", econ_entity->GetClassname(), GetLoadoutSlotName(slot));
+							ModCommandResponse("[sig_unequip] Unequipped unexpected entity with classname \"%s\" from slot %s\n", econ_entity->GetClassname(), GetLoadoutSlotName(slot));
 							
 							econ_entity->Remove();
 						}
 					}
 				} while (econ_entity != nullptr);
 				
-				ClientMsg(player, "[sig_unequip] Unequipped %d weapons and %d cosmetics.\n", n_weapons_removed, n_wearables_removed);
+				ModCommandResponse("[sig_unequip] Unequipped %d weapons and %d cosmetics.\n", n_weapons_removed, n_wearables_removed);
 				return;
 			} else if (FStrEq(args[1], "region")) {
 				// TODO: region_name
-				ClientMsg(player, "[sig_unequip] UNIMPLEMENTED: region\n");
+				ModCommandResponse("[sig_unequip] UNIMPLEMENTED: region\n");
 				return;
 			} else {
 				l_usage();
@@ -298,7 +299,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_AddCond(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2 && args.ArgC() != 3 && args.ArgC() != 4) {
-			ClientMsg(player, "[sig_addcond] Usage: any of the following:\n"
+			ModCommandResponse("[sig_addcond] Usage: any of the following:\n"
 				"  sig_addcond <cond_number>            | add condition by number (unlimited duration)\n"
 				"  sig_addcond <cond_name>              | add condition by name (unlimited duration)\n"
 				"  sig_addcond <cond_number> <duration> | add condition by number (limited duration)\n"
@@ -309,13 +310,13 @@ namespace Mod::Util::Client_Cmds
 		ETFCond cond = TF_COND_INVALID;
 		if (StringToIntStrict(args[1], (int&)cond)) {
 			if (!IsValidTFConditionNumber(cond)) {
-				ClientMsg(player, "[sig_addcond] Error: %s is not a valid condition number (valid range: 0-%d inclusive)\n", args[1], GetNumberOfTFConds() - 1);
+				ModCommandResponse("[sig_addcond] Error: %s is not a valid condition number (valid range: 0-%d inclusive)\n", args[1], GetNumberOfTFConds() - 1);
 				return;
 			}
 		} else {
 			cond = GetTFConditionFromName(args[1]);
 			if (!IsValidTFConditionNumber(cond)) {
-				ClientMsg(player, "[sig_addcond] Error: %s is not a valid condition name\n", args[1]);
+				ModCommandResponse("[sig_addcond] Error: %s is not a valid condition name\n", args[1]);
 				return;
 			}
 		}
@@ -332,11 +333,11 @@ namespace Mod::Util::Client_Cmds
 		float duration = -1.0f;
 		if (args.ArgC() > 3) {
 			if (!StringToFloatStrict(args[3], duration)) {
-				ClientMsg(player, "[sig_addcond] Error: %s is not a valid condition duration\n", args[2]);
+				ModCommandResponse("[sig_addcond] Error: %s is not a valid condition duration\n", args[2]);
 				return;
 			}
 			if (duration < 0.0f) {
-				ClientMsg(player, "[sig_addcond] Error: the condition duration cannot be negative\n");
+				ModCommandResponse("[sig_addcond] Error: the condition duration cannot be negative\n");
 				return;
 			}
 		}
@@ -346,7 +347,7 @@ namespace Mod::Util::Client_Cmds
 		CBaseEntity *before_provider = player->m_Shared->GetConditionProvider(cond);
 		
 		if (vec.empty()) {
-			ClientMsg(player, "[sig_addattr] Error: no matching target found for \"%s\".\n", args[2]);
+			ModCommandResponse("[sig_addattr] Error: no matching target found for \"%s\".\n", args[2]);
 			return;
 		}
 		for (auto target : vec) {
@@ -357,7 +358,7 @@ namespace Mod::Util::Client_Cmds
 		float        after_duration = player->m_Shared->GetConditionDuration(cond);
 		CBaseEntity *after_provider = player->m_Shared->GetConditionProvider(cond);
 		
-		ClientMsg(player, "[sig_addcond] Adding condition %s (%d) to player %s:\n"
+		ModCommandResponse("[sig_addcond] Adding condition %s (%d) to player %s:\n"
 			"\n"
 			"            In Cond: %s\n"
 			"  BEFORE:  Duration: %s\n"
@@ -380,7 +381,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_RemoveCond(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_removecond] Usage: any of the following:\n"
+			ModCommandResponse("[sig_removecond] Usage: any of the following:\n"
 				"  sig_removecond <cond_number> | remove condition by number\n"
 				"  sig_removecond <cond_name>   | remove condition by name\n"
 				"  (condition names are \"TF_COND_*\"; look them up in tf.fgd or on the web)\n");
@@ -390,13 +391,13 @@ namespace Mod::Util::Client_Cmds
 		ETFCond cond = TF_COND_INVALID;
 		if (StringToIntStrict(args[1], (int&)cond)) {
 			if (!IsValidTFConditionNumber(cond)) {
-				ClientMsg(player, "[sig_removecond] Error: %s is not a valid condition number (valid range: 0-%d inclusive)\n", args[1], GetNumberOfTFConds() - 1);
+				ModCommandResponse("[sig_removecond] Error: %s is not a valid condition number (valid range: 0-%d inclusive)\n", args[1], GetNumberOfTFConds() - 1);
 				return;
 			}
 		} else {
 			cond = GetTFConditionFromName(args[1]);
 			if (!IsValidTFConditionNumber(cond)) {
-				ClientMsg(player, "[sig_removecond] Error: %s is not a valid condition name\n", args[1]);
+				ModCommandResponse("[sig_removecond] Error: %s is not a valid condition name\n", args[1]);
 				return;
 			}
 		}
@@ -411,7 +412,7 @@ namespace Mod::Util::Client_Cmds
 		float        after_duration = player->m_Shared->GetConditionDuration(cond);
 		CBaseEntity *after_provider = player->m_Shared->GetConditionProvider(cond);
 		
-		ClientMsg(player, "[sig_removecond] Removing condition %s (%d) from player %s:\n"
+		ModCommandResponse("[sig_removecond] Removing condition %s (%d) from player %s:\n"
 			"\n"
 			"            In Cond: %s\n"
 			"  BEFORE:  Duration: %s\n"
@@ -434,7 +435,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_ListConds(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
-			ClientMsg(player, "[sig_listconds] Usage:  sig_listconds\n");
+			ModCommandResponse("[sig_listconds] Usage:  sig_listconds\n");
 			return;
 		}
 		
@@ -470,23 +471,23 @@ namespace Mod::Util::Client_Cmds
 		}
 		
 		if (conds.empty()) {
-			ClientMsg(player, "[sig_listconds] Player %s is currently in zero conditions\n", player->GetPlayerName());
+			ModCommandResponse("[sig_listconds] Player %s is currently in zero conditions\n", player->GetPlayerName());
 			return;
 		}
 		
-		ClientMsg(player, "[sig_listconds] Player %s conditions:\n\n", player->GetPlayerName());
+		ModCommandResponse("[sig_listconds] Player %s conditions:\n\n", player->GetPlayerName());
 		
 		width_cond     = std::max(width_cond + 4, strlen("CONDITION"));
 		width_duration = std::max(width_duration, strlen("DURATION"));
 		width_provider = std::max(width_provider, strlen("PROVIDER"));
 		
-		ClientMsg(player, "%-*s  %-*s  %-*s\n",
+		ModCommandResponse("%-*s  %-*s  %-*s\n",
 			(int)width_cond,     "CONDITION",
 			(int)width_duration, "DURATION",
 			(int)width_provider, "PROVIDER");
 		
 		for (const auto& cond : conds) {
-			ClientMsg(player, "%-*s  %-*s  %-*s\n",
+			ModCommandResponse("%-*s  %-*s  %-*s\n",
 				(int)width_cond,     CFmtStr("%-3d %s", (int)cond.num, cond.str_name.c_str()).Get(),
 				(int)width_duration, cond.str_duration.c_str(),
 				(int)width_provider, cond.str_provider.c_str());
@@ -498,7 +499,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_SetHealth(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_sethealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_sethealth] Usage: any of the following:\n"
 				"  sig_sethealth <hp_value>    | set your health to the given HP value\n"
 				"  sig_sethealth <percent>%%max | set your health to the given percentage of your max health\n"
 				"  sig_sethealth <percent>%%cur | set your health to the given percentage of your current health\n");
@@ -516,11 +517,11 @@ namespace Mod::Util::Client_Cmds
 		} else if (sscanf(args[1], "%f%zn", &value, &pos) == 1 && (pos == strlen(args[1]))) {
 			hp = RoundFloatToInt(value);
 		} else {
-			ClientMsg(player, "[sig_sethealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
+			ModCommandResponse("[sig_sethealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
 			return;
 		}
 		
-		ClientMsg(player, "[sig_sethealth] Setting health of player %s to %d (previous health: %d).\n",
+		ModCommandResponse("[sig_sethealth] Setting health of player %s to %d (previous health: %d).\n",
 			player->GetPlayerName(), hp, player->GetHealth());
 		
 		player->SetHealth(hp);
@@ -531,7 +532,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_AddHealth(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_addhealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_addhealth] Usage: any of the following:\n"
 				"  sig_addhealth <hp_value>    | increase your health by the given HP value\n"
 				"  sig_addhealth <percent>%%max | increase your health by the given percentage of your max health\n"
 				"  sig_addhealth <percent>%%cur | increase your health by the given percentage of your current health\n");
@@ -549,11 +550,11 @@ namespace Mod::Util::Client_Cmds
 		} else if (sscanf(args[1], "%f%zn", &value, &pos) == 1 && (pos == strlen(args[1]))) {
 			hp = RoundFloatToInt(value);
 		} else {
-			ClientMsg(player, "[sig_addhealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
+			ModCommandResponse("[sig_addhealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
 			return;
 		}
 		
-		ClientMsg(player, "[sig_addhealth] Increasing health of player %s by %d (previous health: %d).\n",
+		ModCommandResponse("[sig_addhealth] Increasing health of player %s by %d (previous health: %d).\n",
 			player->GetPlayerName(), hp, player->GetHealth());
 		
 		player->SetHealth(player->GetHealth() + hp);
@@ -564,7 +565,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_SubHealth(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n"
 				"  sig_subhealth <percent>%%max | decrease your health by the given percentage of your max health\n"
 				"  sig_subhealth <percent>%%cur | decrease your health by the given percentage of your current health\n");
@@ -582,11 +583,11 @@ namespace Mod::Util::Client_Cmds
 		} else if (sscanf(args[1], "%f%zn", &value, &pos) == 1 && (pos == strlen(args[1]))) {
 			hp = RoundFloatToInt(value);
 		} else {
-			ClientMsg(player, "[sig_subhealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
+			ModCommandResponse("[sig_subhealth] Error: '%s' is not a HP value or max-health/current-health percentage\n", args[1]);
 			return;
 		}
 		
-		ClientMsg(player, "[sig_subhealth] Decreasing health of player %s by %d (previous health: %d).\n",
+		ModCommandResponse("[sig_subhealth] Decreasing health of player %s by %d (previous health: %d).\n",
 			player->GetPlayerName(), hp, player->GetHealth());
 		
 		player->SetHealth(player->GetHealth() - hp);
@@ -624,7 +625,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_Reset_Animation(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
@@ -673,7 +674,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_Team(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 2) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
@@ -701,7 +702,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_GiveItem(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 2) {
-			ClientMsg(player, "[sig_subhealth] Usage: any of the following:\n"
+			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
 				"  sig_subhealth <hp_value>    | decrease your health by the given HP value\n");
 			return;
 		}
@@ -721,11 +722,11 @@ namespace Mod::Util::Client_Cmds
 			//anim_player->SetModel(player_model);
 
 			if (studio_robot == nullptr) {
-				ClientMsg(player, "%s is null\n", robot_model);
+				ModCommandResponse("%s is null\n", robot_model);
 				break;
 			}
 			else if (studio_player == nullptr) {
-				ClientMsg(player, "%s is null\n", player_model);
+				ModCommandResponse("%s is null\n", player_model);
 				break;
 			}
 
@@ -744,9 +745,9 @@ namespace Mod::Util::Client_Cmds
 				bones.erase(bone->pszName());
 			}
 
-			Msg("Missing bones on class %d\n", i);
+			ModCommandResponse("Missing bones on class %d\n", i);
 			for (auto &string : bones) {
-				Msg("%s\n", string);
+				ModCommandResponse("%s\n", string);
 			}
 		}
 		//engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
@@ -1088,7 +1089,7 @@ namespace Mod::Util::Client_Cmds
 
 			displaystr += CFmtStr("projectile cast: %.9f", timer.GetDuration().GetSeconds());
 
-			ClientMsg(player, "%s", displaystr.c_str());
+			ModCommandResponse("%s", displaystr.c_str());
 			displaystr = "";
 			displaystr += CFmtStr("\n\nrtti_cast casting tests: \n\n");
 			displaystr += CFmtStr("(tfplayer)entity->player %d | ", rtti_cast<CTFPlayer *>(testent));
@@ -1105,7 +1106,7 @@ namespace Mod::Util::Client_Cmds
 			displaystr += CFmtStr("(tfplayer)entity->object %d | ", rtti_cast<CBaseObject *>(testent));
 			displaystr += CFmtStr("(tfplayer)player->object %d | ", rtti_cast<CBaseObject *>(player));
 
-			ClientMsg(player, "%s", displaystr.c_str());
+			ModCommandResponse("%s", displaystr.c_str());
 			displaystr = "";
 			displaystr += CFmtStr("\n\nupcast casting tests: \n\n");
 			displaystr += CFmtStr("(tfplayer)entity->player %d | ", static_cast<const std::type_info *>(rtti_base_entity)->__do_upcast(rtti_tf_player, (void **)&testent));
@@ -1248,20 +1249,20 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			displaystr += CFmtStr("threadlocalmine time: %.9f\n", timer.GetDuration().GetSeconds());
 		}
-		ClientMsg(player, "%s", displaystr.c_str());
+		ModCommandResponse("%s", displaystr.c_str());
 	}
 
 	void CC_Taunt(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 3) {
-			ClientMsg(player, "[sig_taunt] Usage: any of the following:\n"
+			ModCommandResponse("[sig_taunt] Usage: any of the following:\n"
 				"  sig_taunt <target> <tauntname> [attribute] [value] ...   | start taunt of name\n");
 			return;
 		}
 
 		auto item_def = GetItemSchema()->GetItemDefinitionByName(args[2]);
 		if (item_def == nullptr) {
-			ClientMsg(player, "[sig_taunt] Error: no matching item \"%s\".\n", args[2]);
+			ModCommandResponse("[sig_taunt] Error: no matching item \"%s\".\n", args[2]);
 			return;
 		}
 
@@ -1281,14 +1282,14 @@ namespace Mod::Util::Client_Cmds
 
 			if (attr_def != nullptr) {
 				view->GetAttributeList().AddStringAttribute(attr_def, args[i + 1]);
-				ClientMsg(player, "[sig_taunt] Added attribute \"%s\" = \"%s\". \n", attr_def->GetName(), args[i + 1]);
+				ModCommandResponse("[sig_taunt] Added attribute \"%s\" = \"%s\". \n", attr_def->GetName(), args[i + 1]);
 			}
 		}
 
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec);
 		if (vec.empty()) {
-			ClientMsg(player, "[sig_taunt] Error: no matching target found for \"%s\".\n", args[1]);
+			ModCommandResponse("[sig_taunt] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 		for (CBasePlayer *target : vec) {
@@ -1300,7 +1301,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 4) {
-			ClientMsg(player, "[sig_addattr] Usage: any of the following:\n"
+			ModCommandResponse("[sig_addattr] Usage: any of the following:\n"
 				"  sig_addattr <target> <attribute> <value> [slot]   | add attribute to held item\n");
 			return;
 		}
@@ -1313,7 +1314,7 @@ namespace Mod::Util::Client_Cmds
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec, target_names, 64);
 		if (vec.empty()) {
-			ClientMsg(player, "[sig_addattr] Error: no matching target found for \"%s\".\n", args[1]);
+			ModCommandResponse("[sig_addattr] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 
@@ -1341,17 +1342,17 @@ namespace Mod::Util::Client_Cmds
 				}
 				
 				if (attr_def == nullptr) {
-					ClientMsg(player, "[sig_addattr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", args[2]);
+					ModCommandResponse("[sig_addattr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", args[2]);
 					return;
 				}
 				list->AddStringAttribute(attr_def, args[3]);
 			}
 			else {
-				ClientMsg(player, "[sig_addattr] Error: couldn't find any item in slot\"%d\".\n", slot);
+				ModCommandResponse("[sig_addattr] Error: couldn't find any item in slot\"%d\".\n", slot);
 				return;
 			}
 		}
-		ClientMsg(player, "[sig_addattr] Successfully added attribute %s = %s to %s.\n", args[2], args[3], target_names);
+		ModCommandResponse("[sig_addattr] Successfully added attribute %s = %s to %s.\n", args[2], args[3], target_names);
 	}
 
 	bool allow_create_dropped_weapon = false;
@@ -1360,7 +1361,7 @@ namespace Mod::Util::Client_Cmds
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec);
 		if (vec.empty()) {
-			ClientMsg(player, "[sig_dropitem] Error: no matching target found for \"%s\".\n", args[1]);
+			ModCommandResponse("[sig_dropitem] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 
@@ -1375,7 +1376,7 @@ namespace Mod::Util::Client_Cmds
 				allow_create_dropped_weapon = false;
 			}
 			else {
-				ClientMsg(player, "[sig_dropitem] Error: couldn't find any item.\n");
+				ModCommandResponse("[sig_dropitem] Error: couldn't find any item.\n");
 			}
 		}
 	}
@@ -1387,7 +1388,7 @@ namespace Mod::Util::Client_Cmds
 	{
 		GetSMTargets(player, args[1], modelplayertargets);
 		if (modelplayertargets.empty()) {
-			ClientMsg(player, "[sig_giveeveryitem] Error: no matching target found for \"%s\".\n", args[1]);
+			ModCommandResponse("[sig_giveeveryitem] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 		int items = 0;
@@ -1420,8 +1421,8 @@ namespace Mod::Util::Client_Cmds
 			
 		}
 
-		ClientMsg(player, "items: %d\n", modelmap.size());
-		ClientMsg(player, "items medals: %d\n", modelmapmedal.size());
+		ModCommandResponse("items: %d\n", modelmap.size());
+		ModCommandResponse("items medals: %d\n", modelmapmedal.size());
 	}
 	
 	void CC_DumpInventory(CTFPlayer *player, const CCommand& args)
@@ -1433,7 +1434,7 @@ namespace Mod::Util::Client_Cmds
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec);
 		if (vec.empty()) {
-			ClientMsg(player, "[sig_listitemattr] Error: no matching target found for \"%s\".\n", args[1]);
+			ModCommandResponse("[sig_listitemattr] Error: no matching target found for \"%s\".\n", args[1]);
 			return;
 		}
 		std::string displaystr;
@@ -1443,18 +1444,17 @@ namespace Mod::Util::Client_Cmds
 				if (view != nullptr) {
 					auto &attrs = view->GetAttributeList().Attributes();
 
-					ClientMsg(player, "Item %s:\n", view->GetItemDefinition()->GetName());
+					ModCommandResponse("Item %s:\n", view->GetItemDefinition()->GetName());
 
 					class Wrapper : public IEconItemAttributeIterator
 					{
 					public:
-						Wrapper(CTFPlayer *player) : m_player(player) {}
 
 						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
 						{
 							attribute_data_union_t valueu;
 							valueu.m_UInt = value;
-							ClientMsg(m_player, "%s = %f (%d) (%.17en)\n", pAttrDef->GetName(), valueu.m_Float, valueu.m_UInt, valueu.m_Float);
+							ModCommandResponse("%s = %f (%d) (%.17en)\n", pAttrDef->GetName(), valueu.m_Float, valueu.m_UInt, valueu.m_Float);
 							return true;
 						}
 						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, float                                    value) const { return true; }
@@ -1463,25 +1463,22 @@ namespace Mod::Util::Client_Cmds
 						{
 							const char *pstr;
 							CopyStringAttributeValueToCharPointerOutput(&value, &pstr);
-							ClientMsg(m_player, "%s = %s\n", pAttrDef->GetName(), pstr);
+							ModCommandResponse("%s = %s\n", pAttrDef->GetName(), pstr);
 							return true;
 						}
 
 						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_DynamicRecipeComponent& value) const { return true; }
 						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_ItemSlotCriteria&       value) const { return true; }
 						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_WorldItemPlacement&     value) const { return true; }
-
-					private:
-						CTFPlayer *m_player;
 					};
 
-					Wrapper wrapper(player);
+					Wrapper wrapper;
 					view->IterateAttributes(&wrapper);
-					ClientMsg(player, "\n");
+					ModCommandResponse("\n");
 				}
 			});
 		}
-		ClientMsg(player, "%s", displaystr.c_str());
+		ModCommandResponse("%s", displaystr.c_str());
 	}
 
 	void CC_Sprays(CTFPlayer *player, const CCommand& args)
@@ -1489,7 +1486,7 @@ namespace Mod::Util::Client_Cmds
 		for (int i = 0; i < sv->GetClientCount(); i++) {
 			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(i));
 			if (client != nullptr) {
-				DevMsg("Spray apply %x %d %d\n", client->m_nCustomFiles[0].crc, client->m_nClientSlot, client->m_nEntityIndex);
+				ModCommandResponse("Spray apply %x %d %d\n", client->m_nCustomFiles[0].crc, client->m_nClientSlot, client->m_nEntityIndex);
 			}
 		}
 	}
@@ -1506,7 +1503,7 @@ namespace Mod::Util::Client_Cmds
 		CPropVehicleDriveable *vehicle = reinterpret_cast<CPropVehicle *>(CreateEntityByName("prop_vehicle_driveable"));
 		if (vehicle != nullptr) {
 			DevMsg("Vehicle spawned\n");
-			vehicle->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,100,0));
+			vehicle->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,0,100));
 			vehicle->KeyValue("actionScale", "1");
 			vehicle->KeyValue("spawnflags", "1");
 			if (FStrEq(type, "car")) {
@@ -1558,9 +1555,9 @@ namespace Mod::Util::Client_Cmds
 	
 	void CC_ClientCvar(CTFPlayer *player, const CCommand& args)
 	{
-		ClientMsg(player, "Command %d\n", args.ArgC());
+		ModCommandResponse("Command %d\n", args.ArgC());
 		if (args.ArgC() == 2) {
-			ClientMsg(player, "%s\n", engine->GetClientConVarValue(ENTINDEX(player), args[1]));
+			ModCommandResponse("%s\n", engine->GetClientConVarValue(ENTINDEX(player), args[1]));
 		}
 	}
 
@@ -1596,7 +1593,7 @@ namespace Mod::Util::Client_Cmds
     void CC_CvarNoCheat(CTFPlayer* player, const CCommand& args)
     {
         const auto usage{[&player]{
-            ClientMsg(player, 
+            ModCommandResponse(
                     "[sig_nocheat] Removes/toggles cheat flag on a cvar\n"
                     "[sig_nocheat] Usage: sig_nocheat <cvar> [cvars...]\n");
         }};
@@ -1606,16 +1603,16 @@ namespace Mod::Util::Client_Cmds
             std::strcpy(cvar_str.get(), args[i]);
             CConVarOverride_Flags cvar{cvar_str.get(), FCVAR_NONE, FCVAR_CHEAT};
             if(!cvar.IsValid()){
-                ClientMsg(player,
+                ModCommandResponse(
                         "[sig_nocheat] Unknown cvar %s\n", args[i]);
                 continue;
             }
             auto[it, inserted]{cvar_overrides.insert(std::move(cvar))};
             const bool removed{it->Toggle()};
             if(removed) 
-                ClientMsg(player, "[sig_nocheat] Toggled %s (on)\n", args[i]);
+                ModCommandResponse("[sig_nocheat] Toggled %s (on)\n", args[i]);
             else
-                ClientMsg(player, "[sig_nocheat] Toggled %s (off)\n", args[i]);
+                ModCommandResponse("[sig_nocheat] Toggled %s (off)\n", args[i]);
             if(inserted)
                 cvar_strs.push_back(std::move(cvar_str));
         }
@@ -1630,10 +1627,10 @@ namespace Mod::Util::Client_Cmds
                 return c.IsEnabled();
             })
         };
-        ClientMsg(player, "[sig_nocheat_list] Overridden cvars: %d (%d on)\n",
+        ModCommandResponse("[sig_nocheat_list] Overridden cvars: %d (%d on)\n",
                 cvar_overrides.size(), enabled_count);
         for(const auto& c : cvar_overrides){
-            ClientMsg(player, "%s (%s)\n", c.m_pszConVarName, 
+            ModCommandResponse("%s (%s)\n", c.m_pszConVarName, 
                     c.IsEnabled() ? "on" : "off");
         }
     }
@@ -1641,14 +1638,14 @@ namespace Mod::Util::Client_Cmds
     void CC_Expression(CTFPlayer* player, const CCommand& args)
     {
 		if (args.ArgC() < 2) {
-			ClientMsg(player, "[sig_expresion] Usage: sig_expression <expression>\n");
+			ModCommandResponse("[sig_expresion] Usage: sig_expression <expression>\n");
 			return;
 		}
 		variant_t value;
 		variant_t value2;
 		Evaluation expr(value);
 		expr.Evaluate(args[1], player, player, player, value2);
-		ClientMsg(player, "Result: %s\n", value.String());
+		ModCommandResponse("Result: %s\n", value.String());
     }
 
 	void CC_Expression_Func(CTFPlayer* player, const CCommand& args)
@@ -1658,12 +1655,12 @@ namespace Mod::Util::Client_Cmds
 		Evaluation::GetFunctionInfoStrings(functions);
 		for (auto &function : functions) {
 			if (buf.size() + function.size() > 1000) {
-				ClientMsg(player, "%s", buf);
+				ModCommandResponse("%s", buf);
 				buf.clear();
 			}
 			buf += function;
 		}
-		ClientMsg(player, "%s", buf);
+		ModCommandResponse("%s", buf);
 	}
 
 	void CC_Expression_Vars(CTFPlayer* player, const CCommand& args)
@@ -1673,12 +1670,12 @@ namespace Mod::Util::Client_Cmds
 		Evaluation::GetVariableStrings(vars);
 		for (auto &var : vars) {
 			if (buf.size() + var.size() > 1000) {
-				ClientMsg(player, "%s", buf);
+				ModCommandResponse("%s", buf);
 				buf.clear();
 			}
 			buf += var;
 		}
-		ClientMsg(player, "%s", buf);
+		ModCommandResponse("%s", buf);
 	}
 
 	int cpu_show_player[34] {};
@@ -1686,7 +1683,7 @@ namespace Mod::Util::Client_Cmds
 	void CC_Cpu_Usage(CTFPlayer* player, const CCommand& args)
     {
 		if (args.ArgC() < 2) {
-			ClientMsg(player, "[sig_expresion] Usage: sig_cpu_usage [never|default|always]\n");
+			ModCommandResponse("[sig_expresion] Usage: sig_cpu_usage [never|default|always]\n");
 			return;
 		}
 		if (FStrEq(args[1], "never")) {
@@ -1698,66 +1695,6 @@ namespace Mod::Util::Client_Cmds
 		else if (FStrEq(args[1], "always")) {
 			cpu_show_player[ENTINDEX(player)] = 1;
 		}
-	}
-
-	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
-	// (also make this change in Util:Make_Item)
-	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
-		{ "sig_setplayerscale",   CC_SetPlayerScale   },
-		{ "sig_setplayermodel",   CC_SetPlayerModel   },
-		{ "sig_resetplayermodel", CC_ResetPlayerModel },
-		{ "sig_unequip",          CC_UnEquip          },
-		{ "sig_addcond",          CC_AddCond          },
-		{ "sig_removecond",       CC_RemoveCond       },
-		{ "sig_listconds",        CC_ListConds        },
-		{ "sig_sethealth",        CC_SetHealth        },
-		{ "sig_addhealth",        CC_AddHealth        },
-		{ "sig_subhealth",        CC_SubHealth        },
-		{ "sig_animation",        CC_Animation        },
-		{ "sig_resetanim",        CC_Reset_Animation  },
-		{ "sig_teamset",          CC_Team             },
-		{ "sig_giveitemcreator",  CC_GiveItem         },
-		{ "sig_benchmark",        CC_Benchmark        },
-		{ "sig_taunt",            CC_Taunt            },
-		{ "sig_addattr",          CC_AddAttr          },
-		{ "sig_dropitem",         CC_DropItem         },
-		{ "sig_giveeveryitem",    CC_GiveEveryItem    },
-		{ "sig_getmissingbones",  CC_GetMissingBones  },
-		{ "sig_listitemattr",     CC_DumpItems        },
-		{ "sig_sprays",           CC_Sprays           },
-		{ "sig_vehicle",          CC_Vehicle          },
-		{ "sig_playscene",        CC_PlayScene        },
-		{ "sig_getclientcvar",    CC_ClientCvar       },
-		{ "sig_dropmarker",       CC_DropMarker       },
-        { "sig_nocheat",          CC_CvarNoCheat      },
-        { "sig_nocheat_list",     CC_CvarNoCheatList  },
-        { "sig_expression",           CC_Expression     },
-        { "sig_expression_functions", CC_Expression_Func},
-        { "sig_expression_vars",      CC_Expression_Vars},
-        { "sig_cpu_usage",        CC_Cpu_Usage        },
-		
-	};
-
-	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-			auto it = cmds.find(args[0]);
-			if (it != cmds.end()) {
-				extern ConVar cvar_adminonly;
-				if (!cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player)) {
-					auto func = (*it).second;
-					(*func)(player, args);
-				} else {
-					ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first);
-				}
-				
-				return true;
-			}
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
 	}
 	
 	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner, const char *pszModelName, const CEconItemView *pItemView)
@@ -1785,10 +1722,7 @@ namespace Mod::Util::Client_Cmds
 	public:
 		CMod() : IMod("Util:Client_Cmds")
 		{
-			
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
-			
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
@@ -1879,6 +1813,56 @@ namespace Mod::Util::Client_Cmds
 	};
 	CMod s_Mod;
 	
+	/* default: admin-only mode ENABLED */
+	ConVar cvar_adminonly("sig_util_client_cmds_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
+		"Utility: restrict this mod's functionality to SM admins only");
+
+	class ClientCmdsCommand : public ModCommand
+	{
+	public:
+		ClientCmdsCommand(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
+
+		virtual bool CanPlayerCall(CTFPlayer *player) { return player == nullptr || !cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player); }
+	};
+
+	class ClientCmdsCommandClient : public ModCommand
+	{
+	public:
+		ClientCmdsCommandClient(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
+
+		virtual bool CanPlayerCall(CTFPlayer *player) { return player != nullptr && (!cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player)); }
+	};
+
+	ClientCmdsCommandClient sig_setplayerscale("sig_setplayerscale", CC_SetPlayerScale, &s_Mod);
+	ClientCmdsCommandClient sig_setplayermodel("sig_setplayermodel", CC_SetPlayerModel, &s_Mod);
+	ClientCmdsCommandClient sig_resetplayermodel("sig_resetplayermodel", CC_ResetPlayerModel, &s_Mod);
+	ClientCmdsCommandClient sig_unequip("sig_unequip", CC_UnEquip, &s_Mod);
+	ClientCmdsCommandClient sig_addcond("sig_addcond", CC_AddCond, &s_Mod);
+	ClientCmdsCommandClient sig_removecond("sig_removecond", CC_RemoveCond, &s_Mod);
+	ClientCmdsCommandClient sig_listconds("sig_listconds", CC_ListConds, &s_Mod);
+	ClientCmdsCommandClient sig_sethealth("sig_sethealth", CC_SetHealth, &s_Mod);
+	ClientCmdsCommandClient sig_animation("sig_animation", CC_Animation, &s_Mod);
+	ClientCmdsCommandClient sig_resetanim("sig_resetanim", CC_Reset_Animation, &s_Mod);
+	ClientCmdsCommandClient sig_teamset("sig_teamset", CC_Team, &s_Mod);
+	ClientCmdsCommandClient sig_giveitemcreator("sig_giveitemcreator", CC_GiveItem, &s_Mod);
+	ClientCmdsCommandClient sig_benchmark("sig_benchmark", CC_Benchmark, &s_Mod);
+	ClientCmdsCommand sig_taunt("sig_taunt", CC_Taunt, &s_Mod);
+	ClientCmdsCommand sig_addattr("sig_addattr", CC_AddAttr, &s_Mod);
+	ClientCmdsCommand sig_dropitem("sig_dropitem", CC_DropItem, &s_Mod);
+	ClientCmdsCommand sig_giveeveryitem("sig_giveeveryitem", CC_GiveEveryItem, &s_Mod);
+	ClientCmdsCommand sig_getmissingbones("sig_getmissingbones", CC_GetMissingBones, &s_Mod);
+	ClientCmdsCommand sig_listitemattr("sig_listitemattr", CC_DumpItems, &s_Mod);
+	ClientCmdsCommand sig_sprays("sig_sprays", CC_Sprays, &s_Mod);
+	ClientCmdsCommandClient sig_vehicle("sig_vehicle", CC_Vehicle, &s_Mod);
+	ClientCmdsCommand sig_playscene("sig_playscene", CC_PlayScene, &s_Mod);
+	ClientCmdsCommandClient sig_getclientcvar("sig_getclientcvar", CC_ClientCvar, &s_Mod);
+	ClientCmdsCommand sig_dropmarker("sig_dropmarker", CC_DropMarker, &s_Mod);
+	ClientCmdsCommand sig_nocheat("sig_nocheat", CC_CvarNoCheat, &s_Mod);
+	ClientCmdsCommand sig_nocheat_list("sig_nocheat_list", CC_CvarNoCheatList, &s_Mod);
+	ClientCmdsCommand sig_expression("sig_expression", CC_Expression, &s_Mod);
+	ClientCmdsCommand sig_expression_functions("sig_expression_functions", CC_Expression_Func, &s_Mod);
+	ClientCmdsCommand sig_expression_vars("sig_expression_vars", CC_Expression_Vars, &s_Mod);
+	ModCommandClient sig_cpu_usage("sig_cpu_usage", CC_Cpu_Usage, &s_Mod);
 	
 	/* by way of incredibly annoying persistent requests from Hell-met,
 	 * I've acquiesced and made this mod convar non-notifying (sigh) */
@@ -1887,12 +1871,7 @@ namespace Mod::Util::Client_Cmds
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
-	
-	/* default: admin-only mode ENABLED */
-	ConVar cvar_adminonly("sig_util_client_cmds_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
-		"Utility: restrict this mod's functionality to SM admins only");
-		
-	/* default: admin-only mode ENABLED */
+
 	ConVar cvar_cpushowlevel("sig_util_client_cmds_show_cpu_min_level", "99", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Minimum cpu usage percentage to start displaying to admins by default");
 }

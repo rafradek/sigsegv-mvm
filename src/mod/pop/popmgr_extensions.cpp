@@ -27,6 +27,7 @@
 #include "mod/etc/mapentity_additions.h"
 #include "mod/pop/popmgr_extensions.h"
 #include <fmt/core.h>
+#include "mod/common/commands.h"
 
 // WARN_IGNORE__REORDER()
 // #include <../server/vote_controller.h>
@@ -3965,46 +3966,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		return menu;
 	}
 	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-			if (strcmp(args[0], "sig_missioninfo") == 0) {
-				DisplayMainMissionInfo(player);
-				return true;
-			}
-			else if (strcmp(args[0], "sig_missionitems") == 0) {
-				DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), false);
-				return true;
-			}
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
-	
-	DETOUR_DECL_STATIC(void, Host_Say, edict_t *edict, const CCommand& args, bool team )
-	{
-		CBaseEntity *entity = GetContainingEntity(edict);
-		if (edict != nullptr) {
-			const char *p = args.ArgS();
-			int len = strlen(p);
-			if (*p == '"')
-			{
-				p++;
-				len -=2;
-			}
-			if (strncmp(p, "!missioninfo",len) == 0 || strncmp(p, "/missioninfo",len) == 0) {
-				DisplayMainMissionInfo(ToTFPlayer(entity));
-				return;
-			}
-			if (strncmp(p, "!missionitems",len) == 0 || strncmp(p, "/missionitems",len) == 0) {
-				DisplayExtraLoadoutItemsClass(ToTFPlayer(entity), ToTFPlayer(entity)->GetPlayerClass()->GetClassIndex(), false);
-				return;
-			}
-		}
-		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
-	}
-	
 	RefCount rc_CTFPlayer_ModifyOrAppendCriteria;
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ModifyOrAppendCriteria, void *criteria)
@@ -6217,7 +6178,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "Ribit")) {
 				state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
 			} else if (FStrEq(name, "MaxRedPlayers")) {
-				state.m_RedTeamMaxPlayers.Set(subkey->GetInt());
+				static ConVarRef sig_mvm_player_limit_change("sig_mvm_player_limit_change");
+				if (sig_mvm_player_limit_change.GetInt() >= 0)
+					state.m_RedTeamMaxPlayers.Set(subkey->GetInt());
 				//if (state.m_iRedTeamMaxPlayers > 0)
 				//	ResetMaxRedTeamPlayers(state.m_iRedTeamMaxPlayers);
 			} else if (FStrEq(name, "PlayerMiniBossMinRespawnTime")) {
@@ -6575,8 +6538,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_RollNewSpell,              "CTFSpellBook::RollNewSpell");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_SetSelectedSpell,          "CTFSpellBook::SetSelectedSpell");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade,          "CUpgrades::PlayerPurchasingUpgrade");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,          "CTFPlayer::ClientCommand");
-			MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
 			
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ModifyOrAppendCriteria, "CTFPlayer::ModifyOrAppendCriteria");
@@ -6855,6 +6816,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
 	CMod s_Mod;
+
+	ModCommandClient sig_missioninfo("sig_missioninfo", [](CTFPlayer *player, const CCommand& args){
+		DisplayMainMissionInfo(player);
+	}, &s_Mod);
+
+	ModCommandClient sig_missionitems("sig_missionitems", [](CTFPlayer *player, const CCommand& args){
+		DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), false);
+	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_pop_popmgr_extensions", "0", FCVAR_NOTIFY,
 		"Mod: enable extended KV in CPopulationManager::Parse",

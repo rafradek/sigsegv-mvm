@@ -1,15 +1,27 @@
 #!/bin/bash
 
 pushd build/release
-	ambuild &
+	(
+		ambuild
+		cd package
+		type zip >/dev/null 2>&1 && zip -q -FSr ../package-linux.zip *
+	) &
 popd
 
 pushd build/release/optimize-only
-	ambuild &
+	(
+		ambuild
+		cd package
+		type zip >/dev/null 2>&1 && zip -q -FSr ../../package-linux-optimize-only.zip *
+	) &
 popd
 
 pushd build/release/no-mvm
-	ambuild &
+	(
+		ambuild
+		cd package
+		type zip >/dev/null 2>&1 && zip -q -FSr ../../package-linux-no-mvm.zip *
+	) &
 popd
 
 wait

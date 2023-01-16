@@ -6861,6 +6861,16 @@
 					type "sym"
 					sym  "_ZNK13PlayerManager16GetPlayerByIndexEi"
 				}
+				"CBaseViewModel::DestroyControlPanels"
+				{
+					type "sym"
+					sym  "_ZN14CBaseViewModel20DestroyControlPanelsEv"
+				}
+				"CCaptureFlag::FlagTouch"
+				{
+					type "sym"
+					sym  "_ZN12CCaptureFlag9FlagTouchEP11CBaseEntity"
+				}
 				
 			}
 			"addrs_group"

@@ -163,6 +163,49 @@ namespace Mod::MvM::Player_Limit
 
 	#endif
 
+	#if defined _LINUX
+
+	static constexpr uint8_t s_Buf_CTFGCServerSystem_PreClientUpdate2[] = {
+		0xBB, 0x06, 0x00, 0x00, 0x00
+	};
+
+	struct CPatch_CTFGCServerSystem_PreClientUpdate2 : public CPatch
+	{
+		CPatch_CTFGCServerSystem_PreClientUpdate2() : CPatch(sizeof(s_Buf_CTFGCServerSystem_PreClientUpdate2)) {}
+		
+		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
+		{
+			buf.CopyFrom(s_Buf_CTFGCServerSystem_PreClientUpdate2);
+			
+			//mask.SetRange(0x05 + 1, 4, 0x00);
+			
+			return true;
+		}
+		
+		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
+		{
+			buf .SetDword(0x00+1, iPreClientUpdate & 0x7F);
+			mask.SetRange(0x00+1, 4, 0xff);
+			
+			return true;
+		}
+		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
+		{
+			buf .SetDword(0x00+1, iPreClientUpdate & 0x7F);
+			
+			return true;
+		}
+		virtual const char *GetFuncName() const override   { return "CTFGCServerSystem::PreClientUpdate"; }
+		virtual uint32_t GetFuncOffMin() const override    { return 0x0500; }
+		virtual uint32_t GetFuncOffMax() const override    { return 0x0700; }
+	};
+
+	#elif defined _WINDOWS
+
+	using CPatch_CTFGCServerSystem_PreClientUpdate = IExtractStub;
+
+	#endif
+
     void TogglePatches();
     void RecalculateSlots();
     void ResetMaxRedTeamPlayers(int resetTo);
@@ -170,24 +213,12 @@ namespace Mod::MvM::Player_Limit
     extern ConVar cvar_enable;
     extern ConVar cvar_max_red_players;
     
-    void ToggleModActive() {
-        if (cvar_enable.GetInt() != 0 && cvar_enable.GetInt() != 2) {
-            return;
-        }
-        bool activate = false;
-        if (cvar_max_red_players.GetInt() > 0) {
-            activate = true;
-        }
-        if (Mod::MvM::JoinTeam_Blue_Allow::PlayersCanJoinBlueTeam()) {
-            activate = true;
-        }
-        cvar_enable.SetValue(activate ? 2 : 0);
-    }
+    void ToggleModActive();
 
 	ConVar cvar_max_red_players("sig_mvm_red_team_max_players", "0", FCVAR_NOTIFY,
 		"Set max red team count. 0 = Default",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){ 
-
+			
 			if (cvar_max_red_players.GetInt() > 0) {
 				ResetMaxRedTeamPlayers(cvar_max_red_players.GetInt());
 			}
@@ -300,8 +331,11 @@ namespace Mod::MvM::Player_Limit
 	}
 
 	void SetVisibleMaxPlayers() {
-
-		iPreClientUpdate = GetMaxNonSpectatorPlayers();
+		static ConVarRef sig_etc_extra_player_slots("sig_etc_extra_player_slots");
+		static ConVarRef sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count");
+		static ConVarRef sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players");
+		int maxSlots = sig_etc_extra_player_slots.GetBool() && sig_etc_extra_player_slots_allow_players.GetBool() ? sig_etc_extra_player_slots.GetInt() : MAX_PLAYERS;
+		iPreClientUpdate = Min(maxSlots, GetMaxNonSpectatorPlayers());
 		TogglePatches();
 	}
 
@@ -463,6 +497,7 @@ namespace Mod::MvM::Player_Limit
             
             this->AddPatch(new CPatch_CTFGameRules_ClientConnected());
             this->AddPatch(new CPatch_CTFGCServerSystem_PreClientUpdate());
+            this->AddPatch(new CPatch_CTFGCServerSystem_PreClientUpdate2());
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -526,10 +561,21 @@ namespace Mod::MvM::Player_Limit
 	};
 	CMod s_Mod;
 
+	void ToggleModActive() {
+        bool activate = cvar_enable.GetInt() > 0;
+        if (cvar_max_red_players.GetInt() > 0) {
+            activate = true;
+        }
+        if (Mod::MvM::JoinTeam_Blue_Allow::PlayersCanJoinBlueTeam()) {
+            activate = true;
+        }
+		s_Mod.Toggle(activate);
+    }
+
 	ConVar cvar_enable("sig_mvm_player_limit_change", "0", FCVAR_NONE,
-		"Mod: Change mvm player limits. Set to -1 to never allow missions or player limit convars to change this value",
+		"Mod: Change mvm player limits. Set to -1 to never allow missions to change this value",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetInt() > 0);
+			ToggleModActive();
 		});
 	
 	void TogglePatches() {

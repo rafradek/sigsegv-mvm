@@ -61,6 +61,40 @@ namespace Mod::Etc::Entity_Limit_Manager
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateExpression)();
     }
 
+    CTFPlayer *disguise_weapon_player = nullptr;
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_DetermineDisguiseWeapon, bool forcePrimary)
+	{
+        auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+        disguise_weapon_player = shared->GetOuter();
+        EHANDLE prevDisguiseWeapon = shared->m_hDisguiseWeapon.Get();
+        DETOUR_MEMBER_CALL(CTFPlayerShared_DetermineDisguiseWeapon)(forcePrimary);
+        if (prevDisguiseWeapon != shared->m_hDisguiseWeapon && prevDisguiseWeapon != nullptr) {
+            prevDisguiseWeapon->Remove();
+        }
+        disguise_weapon_player = nullptr;
+    }
+
+    CTFPlayer *disguise_wearables_player = nullptr;
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_DetermineDisguiseWearables)
+	{
+        disguise_wearables_player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+        DETOUR_MEMBER_CALL(CTFPlayerShared_DetermineDisguiseWearables)();
+        disguise_wearables_player = nullptr;
+    }
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_CreateDisguiseWeaponList, CTFPlayer *target)
+	{   
+        disguise_weapon_player = reinterpret_cast<CTFPlayer *>(this);
+        DETOUR_MEMBER_CALL(CTFPlayer_CreateDisguiseWeaponList)(target);
+        disguise_weapon_player = nullptr;
+    }
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_RemoveDisguiseWeapon, CTFPlayer *target)
+	{
+
+    }
+   
+    CBaseEntity *simulated_entity = nullptr;
     CBaseEntity *remove_this_scene_entity = nullptr;
     DETOUR_DECL_STATIC(float, InstancedScriptedScene, CBaseFlex *pActor, const char *pszScene, EHANDLE *phSceneEnt,
 							 float flPostDelay, bool bIsBackground, AI_Response *response,
@@ -139,6 +173,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         }
         if (!success && entityCount > 2044) {
             // Remove scripted scene first
+            bool notifyDelete = false;
             CBaseEntity *entityToDelete = nullptr;
             auto scriptedScene = servertools->FindEntityByClassname(nullptr, "instanced_scripted_scene");
             if (scriptedScene != nullptr) {
@@ -147,22 +182,45 @@ namespace Mod::Etc::Entity_Limit_Manager
             if (entityToDelete == nullptr) {
                 // Delete trails
                 ForEachEntityByClassname("env_spritetrail", [&](CBaseEntity *trail) {
-                    if (rtti_cast<CBaseProjectile *>(trail->GetMoveParent()) != nullptr) {
+                    if (rtti_cast<CBaseProjectile *>(trail->GetMoveParent()) != nullptr && trail != simulated_entity) {
                         entityToDelete = trail;
                         return false;
                     }
                     return true;
                 });
             }
-            
+            // Delete ragdolls
+            if (entityToDelete == nullptr) {
+                ForEachTFPlayer([&](CTFPlayer *player) {
+                    if (player->m_hRagdoll != nullptr && player->m_hRagdoll != simulated_entity) {
+                        entityToDelete = player->m_hRagdoll;
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            // Delete spy bot vgui_screen
+            if (entityToDelete == nullptr) {
+                
+                ForEachEntityByClassname("vgui_screen", [&](CBaseEntity *screen) {
+                    if (screen != simulated_entity && rtti_cast<CBaseViewModel *>(screen->GetMoveParent()) != nullptr && ToTFPlayer(screen->GetMoveParent()->GetMoveParent()) != nullptr && ToTFPlayer(screen->GetMoveParent()->GetMoveParent())->IsFakeClient()) {
+                        
+                        entityToDelete = screen;
+                        return false;
+                    }
+                    return true;
+                });
+            }
             // Delete disguise wearables
             if (entityToDelete == nullptr) {
                 ForEachTFPlayer([&](CTFPlayer *player) {
-                    for (int i = 0; i < player->GetNumWearables(); i++) {
-                        auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
-                        if (tfwearable != nullptr && tfwearable->m_bDisguiseWearable ) {
-                            entityToDelete = tfwearable;
-                            return false;
+                    if (player != disguise_wearables_player) {
+                        for (int i = 0; i < player->GetNumWearables(); i++) {
+                            auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
+                            if (tfwearable != nullptr && tfwearable->m_bDisguiseWearable && tfwearable != simulated_entity) {
+                                entityToDelete = tfwearable;
+                                return false;
+                            }
                         }
                     }
                     return true;
@@ -172,24 +230,44 @@ namespace Mod::Etc::Entity_Limit_Manager
             if (IBaseProjectileAutoList::AutoList().Count() < 64) {
                 // Delete disguise weapons not in main slot
                 if (entityToDelete == nullptr) {
-                    ForEachEntityByClassname("tf_weapon*", [&](CBaseEntity *e){
-                        auto weapon = rtti_cast<CTFWeaponBase *>(e);
-                        if (weapon != nullptr && weapon->m_bDisguiseWeapon && weapon->IsEffectActive(EF_NODRAW)) {
-                            entityToDelete = weapon;
+                    ForEachTFPlayer([&](CTFPlayer *player) {
+                        if (player != disguise_weapon_player && player != disguise_wearables_player && !player->m_hDisguiseWeaponList->IsEmpty() && player->m_hDisguiseWeaponList->Tail() != simulated_entity) {
+                            entityToDelete = player->m_hDisguiseWeaponList->Tail();
+                            player->m_hDisguiseWeaponList->RemoveMultipleFromTail(1);
                             return false;
                         }
                         return true;
                     });
                 }
+                // Delete viewmodels for bots
+                if (entityToDelete == nullptr) {
+                    notifyDelete = true;
+                    for (int i = 1; i >= 0; i--) {
+                        ForEachTFPlayer([&](CTFPlayer *player) {
+                            if (player->IsFakeClient()) {
+                                auto viewmodel = player->GetViewModel(i);
+                                if (viewmodel != nullptr && viewmodel != simulated_entity) {
+                                    entityToDelete = viewmodel;
+                                    return false;
+                                }
+                            }
+                            return true;
+                        });
+                    }
+                }
                 // Delete most wearables (bots)
                 if (entityToDelete == nullptr) {
+                    notifyDelete = true;
                     ForEachTFPlayer([&](CTFPlayer *player) {
                         if (player->IsFakeClient()) {
                             for (int i = 0; i < player->GetNumWearables(); i++) {
                                 auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
-                                if (tfwearable != nullptr && tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex()) >= LOADOUT_POSITION_HEAD) {
-                                    entityToDelete = tfwearable;
-                                    return false;
+                                if (tfwearable != nullptr && tfwearable != simulated_entity) {
+                                    int slot = tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+                                    if (slot >= LOADOUT_POSITION_HEAD && slot != LOADOUT_POSITION_ACTION) {
+                                        entityToDelete = tfwearable;
+                                        return false;
+                                    }
                                 }
                             }
                         }
@@ -198,27 +276,31 @@ namespace Mod::Etc::Entity_Limit_Manager
                 }
                 // Delete most wearables (others)
                 if (entityToDelete == nullptr) {
+                    notifyDelete = true;
                     ForEachTFPlayer([&](CTFPlayer *player) {
                         for (int i = 0; i < player->GetNumWearables(); i++) {
                             auto tfwearable = static_cast<CTFWearable *>(player->GetWearable(i));
-                            if (tfwearable != nullptr && tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex()) >= LOADOUT_POSITION_HEAD ) {
-                                entityToDelete = tfwearable;
-                                return false;
+                            if (tfwearable != nullptr && tfwearable != simulated_entity) {
+                                int slot = tfwearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+                                if (slot >= LOADOUT_POSITION_HEAD && slot != LOADOUT_POSITION_ACTION) {
+                                    entityToDelete = tfwearable;
+                                    return false;
+                                }
                             }
                         }
                         return true;
                     });
                 }
             }
-            bool notifyDelete = false;
             if (entityToDelete == nullptr) {
                 // Delete projectiles, starting from oldest. Also delete grounded arrows
 
-                notifyDelete = true;
                 float oldestProjectileTime = -1;
                 for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
 
                     auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+                    if (proj == simulated_entity) continue;
+                    
                     float time = (float)(proj->m_flSimulationTime) - (float)(proj->m_flAnimTime);
 
                     // Syringes are going to despawn faster
@@ -251,7 +333,6 @@ namespace Mod::Etc::Entity_Limit_Manager
             if (entityToDelete != nullptr) {
                 //Msg("Deleted entity %d %s %.9f\n", entityToDelete->entindex(), entityToDelete->GetClassname(), timer.GetDuration().GetSeconds());
                 auto edict = entityToDelete->edict();
-                //ClientMsgAll("deleted %d\n", notifyDelete);
                 if (notifyDelete) {
                     SendConsoleMessageToAdmins("ENTITY limit reached, removing entity %s\n", entityToDelete->GetClassname());
                 }
@@ -274,8 +355,10 @@ namespace Mod::Etc::Entity_Limit_Manager
         // Needed so that the game will not crash simulating immediately removed entities
         if (!removed_entities_immediate.empty() && removed_entities_immediate.count(entity)) {
             return;
-        } 
+        }
+        simulated_entity = entity; 
         DETOUR_STATIC_CALL(Physics_SimulateEntity)(entity);
+        simulated_entity = nullptr;
     }
 
     class CMod : public IMod, IFrameUpdatePostEntityThinkListener
@@ -289,6 +372,11 @@ namespace Mod::Etc::Entity_Limit_Manager
             
             MOD_ADD_DETOUR_STATIC(InstancedScriptedScene, "InstancedScriptedScene");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_UpdateExpression, "CTFPlayer::UpdateExpression");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_DetermineDisguiseWeapon, "CTFPlayerShared::DetermineDisguiseWeapon");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_DetermineDisguiseWearables, "CTFPlayerShared::DetermineDisguiseWearables");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateDisguiseWeaponList, "CTFPlayer::CreateDisguiseWeaponList");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_RemoveDisguiseWeapon, "CTFPlayerShared::RemoveDisguiseWeapon");
+            
 			MOD_ADD_DETOUR_STATIC(CreateEntityByName, "CreateEntityByName");
 			MOD_ADD_DETOUR_STATIC(Physics_SimulateEntity, "Physics_SimulateEntity");
         }

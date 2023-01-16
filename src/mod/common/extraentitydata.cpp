@@ -80,7 +80,7 @@ namespace Mod::Etc::ExtraEntityData
     class CMod : public IMod
     {
     public:
-        CMod() : IMod("Etc:ExtraEntityData")
+        CMod() : IMod("Common:ExtraEntityData")
         {
             //MOD_ADD_DETOUR_MEMBER(CBaseEntity_CBaseEntity, "CBaseEntity::CBaseEntity");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2, "~CBaseEntity [D2]");

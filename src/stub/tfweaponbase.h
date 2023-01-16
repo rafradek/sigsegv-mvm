@@ -359,6 +359,7 @@ public:
 
 	void SetControlPanelsActive(bool enable) { ft_SetControlPanelsActive(this, enable); }
 	void SpawnControlPanels()                { ft_SpawnControlPanels(this); }
+	void DestroyControlPanels()              { ft_DestroyControlPanels(this); }
 
 	void SetWeaponModel(const char *model, CBaseCombatWeapon *weapon) { return vt_SetWeaponModel(this, model, weapon); }
 	
@@ -369,6 +370,7 @@ private:
 
 	static MemberFuncThunk<CBaseViewModel *, void, bool> ft_SetControlPanelsActive;
 	static MemberFuncThunk<CBaseViewModel *, void> ft_SpawnControlPanels;
+	static MemberFuncThunk<CBaseViewModel *, void> ft_DestroyControlPanels;
 
 	static MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> vt_SetWeaponModel;
 };

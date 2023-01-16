@@ -5786,7 +5786,8 @@ namespace Mod::Attr::Custom_Attributes
 				else if (oldModelPrefix + "_light.mdl"s == model) {
 					newModel += "_light.mdl"s;
 				}
-				else if (oldModelPrefix == model) {
+				else if (oldModelPrefix + ".mdl"s == model) {
+					newModel += ".mdl"s;
 					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
 						newModel = newModelPrefix + "_light.mdl"s;
 					}
@@ -5808,8 +5809,8 @@ namespace Mod::Attr::Custom_Attributes
 			newModel = newModelPrefix;
 			
 			if (!StringEndsWith(newModelPrefix, ".mdl")) {
-				if (oldModelPrefix + "blueprint.mdl"s == model) {
-					newModel += "blueprint.mdl";
+				if (oldModelPrefix + "_blueprint.mdl"s == model) {
+					newModel += "_blueprint.mdl"s;
 					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
 						newModel = model;
 					}
@@ -5817,7 +5818,8 @@ namespace Mod::Attr::Custom_Attributes
 				else if (oldModelPrefix + "_light.mdl"s == model) {
 					newModel += "_light.mdl"s;
 				}
-				else if (oldModelPrefix == model) {
+				else if (oldModelPrefix + ".mdl"s == model) {
+					newModel += ".mdl"s;
 					if (!filesystem->FileExists(newModel.c_str(), "GAME")) {
 						newModel = newModelPrefix + "_light.mdl"s;
 					}

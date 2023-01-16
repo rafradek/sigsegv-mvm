@@ -213,6 +213,7 @@ public:
 	bool IsHome()           { return (this->m_nFlagStatus == TF_FLAGINFO_NONE); }
 	bool IsStolen()         { return (this->m_nFlagStatus == TF_FLAGINFO_STOLEN); }
 	bool IsDisabled() const { return this->m_bDisabled; }
+	void SetDisabled(bool disabled)      { this->m_bDisabled = disabled; }
 	
 private:
 	DECL_SENDPROP(bool, m_bDisabled);

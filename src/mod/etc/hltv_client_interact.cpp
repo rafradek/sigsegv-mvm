@@ -3,6 +3,7 @@
 #include "stub/server.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "mod/common/commands.h"
 
 namespace Mod::Etc::HLTV_Client_Interact
 {
@@ -83,26 +84,6 @@ namespace Mod::Etc::HLTV_Client_Interact
         }
 
     }
-    
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-			if (strcmp(args[0], "sig_tvspectators") == 0) {
-                std::string str("Spectators:\n");
-                for (int i = 0; i < hltv->GetClientCount(); i++) {
-                    IClient *cl = hltv->GetClient(i);
-                    str += cl->GetClientName();
-                    str += '\n';
-                }
-                ClientMsg(player, str.c_str());
-                return true;
-            }
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
-
 
 	class CMod : public IMod
 	{
@@ -111,7 +92,6 @@ namespace Mod::Etc::HLTV_Client_Interact
 		{
 			MOD_ADD_DETOUR_MEMBER(CHLTVClient_ExecuteStringCommand,              "CHLTVClient::ExecuteStringCommand");
 			MOD_ADD_DETOUR_MEMBER(CHLTVServer_ConnectClient,                     "CHLTVServer::ConnectClient");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand,                       "CTFPlayer::ClientCommand");
             MOD_ADD_VHOOK(CHLTVClient_Disconnect, TypeName<CHLTVClient>(),       "CBaseClient::Disconnect");
             MOD_ADD_VHOOK(CBaseClient_ActivatePlayer, TypeName<CHLTVClient>(),   "CBaseClient::ActivatePlayer");
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
@@ -120,6 +100,16 @@ namespace Mod::Etc::HLTV_Client_Interact
 	};
 	CMod s_Mod;
     
+    ModCommand sig_tvspectators("sig_tvspectators", [](CTFPlayer *player, const CCommand& args){
+		std::string str("Spectators:\n");
+        for (int i = 0; i < hltv->GetClientCount(); i++) {
+            IClient *cl = hltv->GetClient(i);
+            str += cl->GetClientName();
+            str += '\n';
+        }
+        ModCommandResponse("%s", str.c_str());
+	}, &s_Mod);
+
 	ConVar cvar_enable("sig_etc_hltv_client_interact", "0", FCVAR_NOTIFY,
 		"Mod: allow HLTV clients to interact with server players",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){

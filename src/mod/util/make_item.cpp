@@ -6,6 +6,7 @@
 #include "util/misc.h"
 #include "util/clientmsg.h"
 #include "util/admin.h"
+#include "mod/common/commands.h"
 
 
 // TODO 20170825:
@@ -28,18 +29,15 @@
 
 namespace Mod::Util::Make_Item
 {
-	const CSteamID *GetCommandClientSteamID(const char *func, CTFPlayer *player)
+	const CSteamID GetCommandClientSteamID(const char *func, CTFPlayer *player)
 	{
-		const CSteamID *steamid = engine->GetClientSteamID(player->edict());
-		if (steamid == nullptr) {
-			Msg("[sig_util_make_item] %s: GetClientSteamID returned nullptr\n", func);
-			return nullptr;
+		CSteamID steamid;
+		if (player != nullptr) {
+			auto steamidptr = engine->GetClientSteamID(player->edict());
+			if (steamidptr != nullptr) {
+				steamid = *steamidptr;
+			}
 		}
-		if (!steamid->IsValid()) {
-			Msg("[sig_util_make_item] %s: Client's Steam ID is invalid\n", func);
-			return nullptr;
-		}
-		
 		return steamid;
 	}
 	
@@ -85,31 +83,30 @@ namespace Mod::Util::Make_Item
 	
 	void CC_Clear(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Clear", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Clear", player);
 		
-		auto it = state.find(*steamid);
+		auto it = state.find(steamid);
 		if (it == state.end()) {
-			ClientMsg(player, "[sig_makeitem_clear] No item is in progress; nothing to clear.\n");
+			ModCommandResponse("[sig_makeitem_clear] No item is in progress; nothing to clear.\n");
 			return;
 		}
 		
 		CEconItemView *item_view = (*it).second;
 		if (item_view != nullptr) {
-			ClientMsg(player, "[sig_makeitem_clear] Clearing out information for unfinished item \"%s\".\n", item_view->GetStaticData()->GetName());
+			ModCommandResponse("[sig_makeitem_clear] Clearing out information for unfinished item \"%s\".\n", item_view->GetStaticData()->GetName());
 		}
 		
 		state.erase(it);
 	}
 	
 
-	void Start(CTFPlayer *player, const char *name, const CSteamID *steamid)
+	void Start(CTFPlayer *player, const char *name, CSteamID steamid)
 	{
-		auto it = state.find(*steamid);
+		auto it = state.find(steamid);
 		if (it != state.end()) {
 			CEconItemView *item_view = (*it).second;
 			if (item_view != nullptr) {
-				ClientMsg(player, "[sig_makeitem_start] Warning: discarding information for unfinished item \"%s\".\n", item_view->GetStaticData()->GetName());
+				ModCommandResponse("[sig_makeitem_start] Warning: discarding information for unfinished item \"%s\".\n", item_view->GetStaticData()->GetName());
 			}
 			
 			state.erase(it);
@@ -125,23 +122,23 @@ namespace Mod::Util::Make_Item
 		}
 		
 		if (item_def == nullptr) {
-			ClientMsg(player, "[sig_makeitem_start] Error: couldn't find any items in the item schema matching \"%s\".\n", name);
+			ModCommandResponse("[sig_makeitem_start] Error: couldn't find any items in the item schema matching \"%s\".\n", name);
 			return;
 		}
 		
 		/* insert new element into the map */
-		CEconItemView *item_view = state[*steamid];
+		CEconItemView *item_view = state[steamid];
 		item_view->Init(item_def->m_iItemDefIndex, item_def->m_iItemQuality, 9999, 0);
 		
-		ClientMsg(player, "\n[sig_makeitem_start] Started making item \"%s\".\n\n", item_def->GetName());
+		ModCommandResponse("\n[sig_makeitem_start] Started making item \"%s\".\n\n", item_def->GetName());
 	}
 	
 	void CC_Start(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Start", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Start", player);
+		
 		if (args.ArgC() != 2) {
-			ClientMsg(player, "[sig_makeitem_start] Usage: any of the following:\n"
+			ModCommandResponse("[sig_makeitem_start] Usage: any of the following:\n"
 				"  sig_makeitem_start <item_name>      | item names that include spaces need quotes\n"
 				"  sig_makeitem_start <item_def_index> | item definition indexes can be found in the item schema\n");
 			return;
@@ -151,13 +148,11 @@ namespace Mod::Util::Make_Item
 	
 	void AddAttr(CTFPlayer *player, const char *name, const char *value)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_AddAttr", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_AddAttr", player);
 		
-		
-		auto it = state.find(*steamid);
+		auto it = state.find(steamid);
 		if (it == state.end()) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Error: you need to do sig_makeitem_start before you can do sig_makeitem_add_attr.\n");
+			ModCommandResponse("[sig_makeitem_add_attr] Error: you need to do sig_makeitem_start before you can do sig_makeitem_add_attr.\n");
 			return;
 		}
 		
@@ -173,19 +168,19 @@ namespace Mod::Util::Make_Item
 		}
 		
 		if (attr_def == nullptr) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", name);
+			ModCommandResponse("[sig_makeitem_add_attr] Error: couldn't find any attributes in the item schema matching \"%s\".\n", name);
 			return;
 		}
 		item_view->GetAttributeList().AddStringAttribute(attr_def, value);
 
-		ClientMsg(player, "[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), value);
+		ModCommandResponse("[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), value);
 	}
 	
 	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
 	{
 
 		if (args.ArgC() != 3) {
-			ClientMsg(player, "[sig_makeitem_add_attr] Usage: any of the following:\n"
+			ModCommandResponse("[sig_makeitem_add_attr] Usage: any of the following:\n"
 				"  sig_makeitem_add_attr <attr_name> <value>      | attribute names that include spaces need quotes\n"
 				"  sig_makeitem_add_attr <attr_def_index> <value> | attribute definition indexes can be found in the item schema\n");
 			return;
@@ -193,15 +188,15 @@ namespace Mod::Util::Make_Item
 		AddAttr(player, args[1], args[2]);
 	}
 
-	void Give_Common(CTFPlayer *player, CTFPlayer *recipient, const char *cmd_name, const CSteamID *steamid, bool no_remove, const char* custom_class)
+	void Give_Common(CTFPlayer *player, CTFPlayer *recipient, const char *cmd_name, CSteamID steamid, bool no_remove, const char* custom_class)
 	{
 		// possible ways to use this command:
 		// - 0 args: give to me
 		// - 1 args: give to steam ID, or user ID, or player name exact match, or player name unique-partial-match
 		
-		auto it = state.find(*steamid);
+		auto it = state.find(steamid);
 		if (it == state.end()) {
-			ClientMsg(player, "[%s] Error: you need to do sig_makeitem_start before you can do %s.\n", cmd_name, cmd_name);
+			ModCommandResponse("[%s] Error: you need to do sig_makeitem_start before you can do %s.\n", cmd_name, cmd_name);
 			return;
 		}
 		
@@ -211,9 +206,9 @@ namespace Mod::Util::Make_Item
 		if (slot == -1) {
 			slot = item_view->GetStaticData()->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 			if (slot == -1) {
-				ClientMsg(player, "[%s] WARNING: failed to determine this item's loadout slot for the current player class; weird things may occur.\n", cmd_name);
+				ModCommandResponse("[%s] WARNING: failed to determine this item's loadout slot for the current player class; weird things may occur.\n", cmd_name);
 			} else {
-				ClientMsg(player, "[%s] WARNING: using best-guess loadout slot #%d (\"%s\"). Not guaranteed to work perfectly for this class.\n", cmd_name, slot, GetLoadoutSlotName(slot));
+				ModCommandResponse("[%s] WARNING: using best-guess loadout slot #%d (\"%s\"). Not guaranteed to work perfectly for this class.\n", cmd_name, slot, GetLoadoutSlotName(slot));
 			}
 		}
 		
@@ -230,7 +225,7 @@ namespace Mod::Util::Make_Item
 					unsigned int mask2 = wearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetEquipRegionMask();
 					
 					if ((mask1 & mask2) != 0) {
-						ClientMsg(player, "[%s] Removing conflicting wearable \"%s\". (Equip group info: old %08x, new %08x, overlap %08x)\n",
+						ModCommandResponse("[%s] Removing conflicting wearable \"%s\". (Equip group info: old %08x, new %08x, overlap %08x)\n",
 							cmd_name, wearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), mask2, mask1, (mask1 & mask2));
 						recipient->RemoveWearable(wearable);
 					}
@@ -245,16 +240,16 @@ namespace Mod::Util::Make_Item
 					if (old_econ_entity->IsBaseCombatWeapon()) {
 						auto old_weapon = ToBaseCombatWeapon(old_econ_entity);
 						
-						ClientMsg(player, "[%s] Removing old weapon \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_weapon->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), slot, GetLoadoutSlotName(slot));
+						ModCommandResponse("[%s] Removing old weapon \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_weapon->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), slot, GetLoadoutSlotName(slot));
 						recipient->Weapon_Detach(old_weapon);
 						old_weapon->Remove();
 					} else if (old_econ_entity->IsWearable()) {
 						auto old_wearable = rtti_cast<CEconWearable *>(old_econ_entity);
 						
-						ClientMsg(player, "[%s] Removing old wearable \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_wearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), slot, GetLoadoutSlotName(slot));
+						ModCommandResponse("[%s] Removing old wearable \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_wearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetName(), slot, GetLoadoutSlotName(slot));
 						recipient->RemoveWearable(old_wearable);
 					} else {
-						ClientMsg(player, "[%s] Removing old entity \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_econ_entity->GetClassname(), slot, GetLoadoutSlotName(slot));
+						ModCommandResponse("[%s] Removing old entity \"%s\" from slot #%d (\"%s\").\n", cmd_name, old_econ_entity->GetClassname(), slot, GetLoadoutSlotName(slot));
 						old_econ_entity->Remove();
 					}
 				} else {
@@ -271,11 +266,11 @@ namespace Mod::Util::Make_Item
 				econ_ent->Validate();
 				econ_ent->GiveTo(recipient);
 			} else {
-				ClientMsg(player, "[%s] Failure: GiveNamedItem returned a non-CEconEntity!\n", cmd_name);
+				ModCommandResponse("[%s] Failure: GiveNamedItem returned a non-CEconEntity!\n", cmd_name);
 				return;
 			}
 		} else {
-			ClientMsg(player, "[%s] Failure: GiveNamedItem returned nullptr!\n", cmd_name);
+			ModCommandResponse("[%s] Failure: GiveNamedItem returned nullptr!\n", cmd_name);
 			return;
 		}
 		
@@ -288,7 +283,7 @@ namespace Mod::Util::Make_Item
 			//const char *buf = nullptr;
 			int attr_num = 1;
 			
-			ClientMsg(player, "[%s] Created item \"%s\" with the following %d attributes:\n", cmd_name, item_view->GetStaticData()->GetName(), item_view->GetAttributeList().Attributes().Count());
+			ModCommandResponse("[%s] Created item \"%s\" with the following %d attributes:\n", cmd_name, item_view->GetStaticData()->GetName(), item_view->GetAttributeList().Attributes().Count());
 			for (CEconItemAttribute& attr : item_view->GetAttributeList().Attributes()) {
 				CEconItemAttributeDefinition *attr_def = attr.GetStaticData();
 				
@@ -296,18 +291,18 @@ namespace Mod::Util::Make_Item
 				//CopyStringAttributeValueToCharPointerOutput(attr.GetValuePtr()->m_String, &buf);
 				int pad = ((int)attr_name_len_max - (int)strlen(attr_def->GetName()));
 				
-				ClientMsg(player, "[%s]   [%2d] \"%s\"%*s \"%s\"\n", cmd_name, attr_num, attr_def->GetName(), pad, "", buf);
+				ModCommandResponse("[%s]   [%2d] \"%s\"%*s \"%s\"\n", cmd_name, attr_num, attr_def->GetName(), pad, "", buf);
 				++attr_num;
 			}
-			ClientMsg(player, "[%s] And gave it to player \"%s\".\n\n", cmd_name, recipient->GetPlayerName());
+			ModCommandResponse("[%s] And gave it to player \"%s\".\n\n", cmd_name, recipient->GetPlayerName());
 		} else {
-			ClientMsg(player, "[%s] Created item \"%s\" with 0 attributes and gave it to player \"%s\".\n\n", cmd_name, item_view->GetStaticData()->GetName(), recipient->GetPlayerName());
+			ModCommandResponse("[%s] Created item \"%s\" with 0 attributes and gave it to player \"%s\".\n\n", cmd_name, item_view->GetStaticData()->GetName(), recipient->GetPlayerName());
 		}
 		
 		
 	}
 	
-	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool no_remove)
+	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool no_remove)
 	{
 		if (args.ArgC() == 1)
 			Give_Common(player, player, cmd_name, steamid, no_remove, nullptr);
@@ -318,18 +313,17 @@ namespace Mod::Util::Make_Item
 				Give_Common(player, ToTFPlayer(target), cmd_name, steamid, no_remove, nullptr);
 			}
 		}
-		state.erase(*steamid);
+		state.erase(steamid);
 	}
 
 	void CC_Give(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Give", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Give", player);
 		
-		ClientMsg(player, "\n");
+		ModCommandResponse("\n");
 		
 		if (args.ArgC() != 1 && args.ArgC() != 2) {
-			ClientMsg(player, "[sig_makeitem_give] Usage: any of the following:\n"
+			ModCommandResponse("[sig_makeitem_give] Usage: any of the following:\n"
 				"  sig_makeitem_give               | give to yourself\n"
 				"  sig_makeitem_give <player_name> | give to the player with this name (names with spaces need quotes)\n"
 				"  sig_makeitem_give <steam_id>    | give to the player with this Steam ID\n"
@@ -342,13 +336,12 @@ namespace Mod::Util::Make_Item
 	
 	void CC_Give_NoRemove(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_NoRemove", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Give_NoRemove", player);
 		
-		ClientMsg(player, "\n");
+		ModCommandResponse("\n");
 		
 		if (args.ArgC() != 1 && args.ArgC() != 2) {
-			ClientMsg(player, "[sig_makeitem_give_noremove] Usage: same as sig_makeitem_give.\n"
+			ModCommandResponse("[sig_makeitem_give_noremove] Usage: same as sig_makeitem_give.\n"
 				"  (This version of the command won't remove pre-existing items that have equip region or item slot conflicts.)\n");
 			return;
 		}
@@ -356,15 +349,14 @@ namespace Mod::Util::Make_Item
 		CC_Give_Common(player, args, "sig_makeitem_give_noremove", steamid, true);
 	}
 
-	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, const CSteamID *steamid, bool noremove, const char *custom_class)
+	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool noremove, const char *custom_class)
 	{
-		state.erase(*steamid);
+		state.erase(steamid);
 
-		ClientMsg(player, "\n");
+		ModCommandResponse("\n");
 		
 		std::vector<CBasePlayer *> vec;
 
-		
 		if (args.ArgC() > 2) { 
 			GetSMTargets(player, args[1], vec);
 			if (vec.empty())
@@ -372,9 +364,14 @@ namespace Mod::Util::Make_Item
 			
 			Start(player, args[2], steamid);
 		}
-		else {
+		else if(player != nullptr && args.ArgC() == 2) {
 			vec.push_back(player);
 			Start(player, args[1], steamid);
+		}
+		else {
+			ModCommandResponse("[%s] Usage:\n"
+				"  %s [target] <item> [<attribute name> <attribute value>]...\n", cmd_name, cmd_name);
+			return;
 		}
 
 
@@ -388,75 +385,56 @@ namespace Mod::Util::Make_Item
 		for(CBasePlayer *target : vec) {
 			Give_Common(player, ToTFPlayer(target), "sig_makeitem", steamid, noremove, custom_class);
 		}
-		state.erase(*steamid);
+		state.erase(steamid);
 	}
 
 	void CC_Give_OneLine(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
 		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);
 	}
 	
 	void CC_Give_OneLine_NoRemove(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine_NoRemove", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Give_OneLine_NoRemove", player);
 		Give_OneLine(player, args, "sig_makeitem_noremove", steamid, true, nullptr);
 	}
 
 	void CC_Give_Custom_Class(CTFPlayer *player, const CCommand& args)
 	{
-		const CSteamID *steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
-		if (steamid == nullptr) return;
+		auto steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
 		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);
 	}
-	// TODO: use an std::unordered_map so we don't have to do any V_stricmp's at all for lookups
-	// (also make this change in Util:Client_Cmds)
-	static const std::map<const char *, void (*)(CTFPlayer *, const CCommand&), VStricmpLess> cmds {
-		{ "sig_makeitem_help",          CC_Help          },
-		{ "sig_makeitem_clear",         CC_Clear         },
-		{ "sig_makeitem_start",         CC_Start         },
-		{ "sig_makeitem_add_attr",      CC_AddAttr       },
-		{ "sig_makeitem_give",          CC_Give          },
-		{ "sig_makeitem_give_noremove", CC_Give_NoRemove },
-		{ "sig_makeitem",               CC_Give_OneLine },
-		{ "sig_makeitem_noremove",      CC_Give_OneLine_NoRemove },
-	};
-	
-	
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-			auto it = cmds.find(args[0]);
-			if (it != cmds.end()) {
-				extern ConVar cvar_adminonly;
-				if (!cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player)) {
-					auto func = (*it).second;
-					(*func)(player, args);
-				} else {
-					ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first);
-				}
-				
-				return true;
-			}
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
-	
-	
+
 	class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Util:Make_Item")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
 		}
 	};
 	CMod s_Mod;
 	
+	/* default: admin-only mode ENABLED */
+	ConVar cvar_adminonly("sig_util_make_item_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
+		"Utility: restrict this mod's functionality to SM admins only");
+	
+	class MakeItemCommand : public ModCommand
+	{
+	public:
+		MakeItemCommand(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
+
+		virtual bool CanPlayerCall(CTFPlayer *player) { return player == nullptr || !cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player); }
+	};
+
+	MakeItemCommand sig_makeitem_help("sig_makeitem_help", CC_Help, &s_Mod);
+	MakeItemCommand sig_makeitem_clear("sig_makeitem_clear", CC_Clear, &s_Mod);
+	MakeItemCommand sig_makeitem_start("sig_makeitem_start", CC_Start, &s_Mod);
+	MakeItemCommand sig_makeitem_add_attr("sig_makeitem_add_attr", CC_AddAttr, &s_Mod);
+	MakeItemCommand sig_makeitem_give("sig_makeitem_give", CC_Give, &s_Mod);
+	MakeItemCommand sig_makeitem_give_noremove("sig_makeitem_give_noremove", CC_Give_NoRemove, &s_Mod);
+	MakeItemCommand sig_makeitem("sig_makeitem", CC_Give_OneLine, &s_Mod);
+	MakeItemCommand sig_makeitem_noremove("sig_makeitem_noremove", CC_Give_OneLine_NoRemove, &s_Mod);
 	
 	/* by way of incredibly annoying persistent requests from Hell-met,
 	 * I've acquiesced and made this mod convar non-notifying (sigh) */
@@ -465,10 +443,6 @@ namespace Mod::Util::Make_Item
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
-	
-	/* default: admin-only mode ENABLED */
-	ConVar cvar_adminonly("sig_util_make_item_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
-		"Utility: restrict this mod's functionality to SM admins only");
 	
 	
 #if 0 // REMOVE THIS CODE (OR MOVE IT ELSEWHERE) ===============================

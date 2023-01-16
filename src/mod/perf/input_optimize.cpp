@@ -10,6 +10,7 @@
 #include "stub/tf_objective_resource.h"
 #include "sdk2013/mempool.h"
 #include "mem/protect.h"
+#include "mod/common/commands.h"
 
 #define EVENT_FIRE_ALWAYS	-1
 
@@ -38,13 +39,14 @@ namespace Mod::Perf::Input_Optimize
     {
         CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
         for (auto &player : message_listeners) {
-            if (player == nullptr)       continue;
-            if (player->IsFakeClient())  continue;
-            
-            engine->ClientPrintf(player->edict(), str);
-        }
-        if (TFObjectiveResource() != nullptr && FindCaseSensitive(STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()), "mvm_winterbridge_rc6_adv_corrupted_catharsis") != nullptr) {
-            Msg("%s", str);
+            if (player.ToInt() == INVALID_EHANDLE_INDEX) {
+                Msg("%s\n", str);
+            }
+            else if (player != nullptr) {
+                if (player->IsFakeClient())  continue;
+                
+                engine->ClientPrintf(player->edict(), str);
+            }
         }
     }
 
@@ -207,28 +209,6 @@ namespace Mod::Perf::Input_Optimize
         return false;
     }
 
-    DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr) {
-            if (FStrEq(args[0], "sig_print_input")) {
-                int activate;
-                if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
-                    message_listeners.insert(player);
-                    message_listeners_empty = false;
-                    ClientMsg(player, "Reading input/output debug info\n");
-                }
-                else {
-                    message_listeners.erase(player);
-                    message_listeners_empty = message_listeners.empty();
-                }
-                return true;
-            }
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
-
     class CMod : public IMod, IModCallbackListener
 	{
 	public:
@@ -236,7 +216,6 @@ namespace Mod::Perf::Input_Optimize
 		{
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput", LOWEST);
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput", LOWEST);
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
             //MOD_ADD_DETOUR_MEMBER(CEventQueue_ServiceEvents, "CEventQueue::ServiceEvents");
             
 		}
@@ -250,7 +229,19 @@ namespace Mod::Perf::Input_Optimize
         }
 	};
 	CMod s_Mod;
-	
+
+	ModCommand sig_print_input("sig_print_input", [](CTFPlayer *player, const CCommand& args){
+		int activate;
+        if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
+            message_listeners.insert(player);
+            message_listeners_empty = false;
+            ModCommandResponse("Reading input/output debug info\n");
+        }
+        else {
+            message_listeners.erase(player);
+            message_listeners_empty = message_listeners.empty();
+        }
+	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_perf_input_optimize", "0", FCVAR_NOTIFY,
 		"Mod: Optimize input/output entity links",
