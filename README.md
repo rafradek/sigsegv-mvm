@@ -5,6 +5,16 @@ gigantic, obese SourceMod extension library of sigsegv's TF2 mods (mostly MvM re
 
 How to run a TF2 server on Windows using WSL: https://github.com/rafradek/sigsegv-mvm/wiki/Installing-on-Windows-with-WSL
 
+# Installing
+Download a package (optimize-only, no-mvm, or full) from releases and extract it into server tf directory. Edit cfg/sigsegv_convars.cfg to enable or disable features
+
+## No MvM version
+* Extra player slots
+* Hundreds of new [attributes](https://sigwiki.potato.tf/index.php/List_of_custom_attributes)
+* tf_point_weapon_mimic teamnum fix
+* 
+
+
 # How to build
 
 On Ubuntu 20.04:
