@@ -21,10 +21,10 @@ namespace Mod::Etc::Mapentity_Additions
     };
 
     bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable);
-    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, std::string &name, variant_t &variable, int arrayPos, int vecAxis);
+    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const std::string &name, variant_t &variable, int arrayPos, int vecAxis);
     
     bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const char *name, variant_t &variable);
-    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, std::string &name, variant_t &variable, int arrayPos, int vecAxis);
+    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const std::string &name, variant_t &variable, int arrayPos, int vecAxis);
 
     extern bool allow_create_dropped_weapon;
 

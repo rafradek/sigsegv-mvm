@@ -86,6 +86,7 @@ sourceFiles += [
   'src/mod/common/extraentitydata.cpp',
   
   'src/mod/perf/attributes_optimize.cpp',
+  'src/mod/perf/filesystem_optimize.cpp',
   'src/mod/perf/input_optimize.cpp',
   'src/mod/perf/hltv_optimize.cpp',
   'src/mod/perf/flame_breakable_collision.cpp',
@@ -113,6 +114,8 @@ if not Extension.optimize_mods_only:
 if not Extension.optimize_mods_only:
   sourceFiles += [
     
+    'src/mod/bot/interrupt_action.cpp',
+
     'src/mod/attr/blockbackstab_oldstyle.cpp',
     'src/mod/attr/customprojectilemodel_precache.cpp',
     'src/mod/attr/healonkill_overheal_melee.cpp',

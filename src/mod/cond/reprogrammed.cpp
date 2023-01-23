@@ -780,11 +780,13 @@ namespace Mod::Cond::Reprogrammed
 
 			return playerVector->Count();
 		}
-		if (rc_CollectPlayers_Enemy && !reentrancy && team == TEAM_SPECTATOR) {
+		if (rc_CollectPlayers_Enemy && !reentrancy) {
 			reentrancy = true;
-			CollectPlayers(playerVector, TF_TEAM_RED, isAlive, shouldAppend);
+			CollectPlayers(playerVector, team == TEAM_SPECTATOR ? TF_TEAM_RED : TEAM_SPECTATOR, isAlive, shouldAppend);
+			if (team == TEAM_SPECTATOR) {
+				team = TF_TEAM_BLUE;
+			}
 			shouldAppend = true;
-			team = TF_TEAM_BLUE;
 			reentrancy = false;
 		}
 		
@@ -792,12 +794,11 @@ namespace Mod::Cond::Reprogrammed
 			reentrancy = true;
 			if (rc_CBaseObject_FindSnapToBuildPos_spec) {
 				CollectPlayers(playerVector, team == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED, isAlive, shouldAppend);
-				shouldAppend = true;
 			}
 			else {
 				CollectPlayers(playerVector, TEAM_SPECTATOR, isAlive, shouldAppend);
-				shouldAppend = true;
 			}
+			shouldAppend = true;
 			reentrancy = false;
 		}
 		
@@ -915,8 +916,14 @@ namespace Mod::Cond::Reprogrammed
 		
 		if (entityme->GetTeamNumber() == TEAM_SPECTATOR) {
 			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
-			if (entityhit != nullptr && entityhit->IsPlayer() && entityme->GetTeamNumber() == entityhit->GetTeamNumber()) {
-				return false;
+			if (entityhit != nullptr && entityhit->IsPlayer()) {
+				if (entityme->GetTeamNumber() == entityhit->GetTeamNumber()) {
+					return false;
+				}
+				else if (Mod::Attr::Custom_Attributes::GetFastAttributeIntExternal(entityme, 0, Mod::Attr::Custom_Attributes::NOT_SOLID_TO_PLAYERS) == 0 && 
+					Mod::Attr::Custom_Attributes::GetFastAttributeIntExternal(entityhit, 0, Mod::Attr::Custom_Attributes::NOT_SOLID_TO_PLAYERS) == 0){
+					return true;
+				}
 			}
 			if (entityhit != nullptr && entityhit->IsBaseObject()) {
 				if (entityme->GetTeamNumber() != entityhit->GetTeamNumber() && Mod::Attr::Custom_Attributes::GetFastAttributeIntExternal(entityme, 0, Mod::Attr::Custom_Attributes::NOT_SOLID_TO_PLAYERS) == 0) {

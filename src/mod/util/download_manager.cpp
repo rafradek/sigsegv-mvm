@@ -1001,7 +1001,7 @@ namespace Mod::Util::Download_Manager
 			MOD_ADD_DETOUR_MEMBER(CServerGameDLL_ServerActivate, "CServerGameDLL::ServerActivate");
 
 			// Faster implementation of findFileInDirCaseInsensitive, instead of looking for any matching file with a different case, only look for files with lowercase letters instead
-			MOD_ADD_DETOUR_STATIC(findFileInDirCaseInsensitive, "findFileInDirCaseInsensitive");
+			//MOD_ADD_DETOUR_STATIC(findFileInDirCaseInsensitive, "findFileInDirCaseInsensitive");
 		}
 		virtual bool OnLoad() override
 		{
@@ -1256,7 +1256,7 @@ namespace Mod::Util::Download_Manager
 	
 	
 	ConVar cvar_enable("sig_util_download_manager", "0", FCVAR_NOTIFY,
-		"Utility: add custom downloads to the downloadables string table and tweak some things",
+		"Utility: add custom downloads from popfiles to the downloadables string table in a smart way, generates map list for mvm map votes. Recommended to set sig_perf_filesystem_optimize 1",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});

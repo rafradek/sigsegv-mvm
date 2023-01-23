@@ -740,8 +740,40 @@ namespace Mod::Perf::Func_Optimize
        // Msg("New area time %.9f %.9f %.9f %.9f\n", time1.GetSeconds(), time2.GetSeconds(), time3.GetSeconds(), time4.GetSeconds());
 	}
 
+	CTFBot *bot_additem;
+	int bot_classnum = TF_CLASS_UNDEFINED;
+	const char *item_name;
+    RefCount rc_CTFBot_AddItem;
+	std::unordered_map<std::string, CTFItemDefinition*> item_defs;
+    DETOUR_DECL_MEMBER(void, CTFBot_AddItem, const char *item)
+	{
+		SCOPED_INCREMENT(rc_CTFBot_AddItem);
+		//clock_t start = clock();
+		item_name = item;
+		bot_additem = reinterpret_cast<CTFBot *>(this);
+		bot_classnum = bot_additem->GetPlayerClass()->GetClassIndex();
+		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
+	}
 
-    class CMod : public IMod
+    DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang, const char *name)
+	{
+		if (rc_CTFBot_AddItem > 0) {
+            CTFItemDefinition *item_def = nullptr;
+            auto find = item_defs.find(item_name);
+            if (find != item_defs.end()) {
+                item_def = find->second;
+            }
+            else {
+                item_def = static_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(item_name));
+                item_defs[item_name] = item_def;
+            }
+            if (item_def != nullptr) {
+                return ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex,vec, ang, 6, 9999, item_def->GetItemClass());
+            }
+        }
+        return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
+    }
+    class CMod : public IMod, public IModCallbackListener
 	{
 	public:
 		CMod() : IMod("Perf::Func_Optimize")
@@ -778,15 +810,30 @@ namespace Mod::Perf::Func_Optimize
             
             //MOD_ADD_DETOUR_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged, "CTFPlayer::OnNavAreaChanged");
+
+            // Fix lag when spawning items on bots
+            MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
             
 		}
-        bool OnLoad() override {
+
+        virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+        virtual void LevelInitPreEntity() override 
+        {
+            item_defs.clear();
+        }
+
+        virtual bool OnLoad() override 
+        {
             GEconItemSchema_addr = (uintptr_t)AddrManager::GetAddr("GEconItemSchema");
             GetItemSchema_addr = (uintptr_t)AddrManager::GetAddr("GetItemSchema");
             CThreadLocalBase_Get_addr = (uintptr_t)AddrManager::GetAddr("CThreadLocalBase::Get");
             return true;
         }
-        void OnEnablePost() override {
+
+        virtual void OnEnablePost() override 
+        {
             schema = GetItemSchema();
             world_edict = INDEXENT(0);
             // auto addr = (uint8_t *)AddrManager::GetAddr("CEconItemView::GetStaticData");

@@ -83,7 +83,7 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
 
-    bool SetCustomVariable(CBaseEntity *entity, std::string &key, variant_t &value, bool create = true, bool find = true, int vecIndex = -1)
+    bool SetCustomVariable(CBaseEntity *entity, const std::string &key, variant_t &value, bool create = true, bool find = true, int vecIndex = -1)
     {
         if (value.FieldType() == FIELD_STRING) {
             ParseNumberOrVectorFromString(value.String(), value);
@@ -166,7 +166,7 @@ namespace Mod::Etc::Mapentity_Additions
         return SetEntityVariable(entity, type, nameNoArray, variable, arrayPos, vecAxis);
     }
 
-    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, std::string &name, variant_t &variable, int arrayPos, int vecAxis) {
+    bool SetEntityVariable(CBaseEntity *entity, GetInputType type, const std::string &name, variant_t &variable, int arrayPos, int vecAxis) {
         bool found = false;
 
         if (type == ANY) {
@@ -180,7 +180,9 @@ namespace Mod::Etc::Mapentity_Additions
             found = SetCustomVariable(entity, name, variable, type != VARIABLE_NO_CREATE, type != VARIABLE_NO_FIND, vecAxis);
         }
         else if (type == KEYVALUE) {
-            
+            if (name[0] == '$') {
+                return SetCustomVariable(entity, name.substr(1), variable, VARIABLE, vecAxis);
+            }
             if (vecAxis != -1) {
                 Vector vec;
                 variant_t variant;
@@ -227,7 +229,7 @@ namespace Mod::Etc::Mapentity_Additions
         return GetEntityVariable(entity, type, nameNoArray, variable, arrayPos, vecAxis);
     }
 
-    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, std::string &name, variant_t &variable, int arrayPos, int vecAxis) {
+    bool GetEntityVariable(CBaseEntity *entity, GetInputType type, const std::string &name, variant_t &variable, int arrayPos, int vecAxis) {
         bool found = false;
 
         if (type == ANY) {

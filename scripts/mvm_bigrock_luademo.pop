@@ -12,7 +12,7 @@ WaveSchedule
 	// scripts/globals.lua is always parsed before other scripts
 	// You can also look at scripts/library.lua for available API functions
 	// The mod uses lua version 5.4 . Lua Programming guide: https://www.lua.org/pil/1.html . Quick Reference available at https://www.lua.org/manual/5.4/ 
-	// A single LuaScript block can contain up to 2047 characters, otherwise the scripts must be split into separate blocks
+	// A single LuaScript block can contain up to 4095 characters, otherwise the scripts must be split into separate blocks
 	LuaScript 
 	{
 		Script "
@@ -90,6 +90,11 @@ WaveSchedule
 			player:AddCallback(ON_START_TOUCH, function(ent, other, pos, normal) print('Player start touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
 			player:AddCallback(ON_END_TOUCH, function(ent, other, pos, normal) print('Player end touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
 			player:AddCallback(ON_SHOULD_COLLIDE, function(ent, other) print('Player collide '..tostring(ent)..' '..tostring(other)) end)
+			player:AddCallback(ON_EQUIP_ITEM, function(ent, weapon) 
+				weapon:AddCallback(ON_FIRE_WEAPON_PRE, function(weapon)
+					print('fire weapon pre '..tostring(weapon))
+				end)
+			end)
 
 			AddEventCallback('player_death', function(event) PrintTable(event); event.crit_type=2; event.weapon = 'fdfs'; event.assister = event.attacker; return ACTION_MODIFY end)
 		end

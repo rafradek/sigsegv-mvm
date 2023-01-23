@@ -1637,20 +1637,6 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_OnEnd)(actor, nextaction);
 	}
 
-	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotTacticalMonitor_OnCommandString, CTFBot *actor, const char *cmd)
-	{
-		if (actor->IsAlive() && V_strnicmp(cmd, "interrupt_action", strlen("interrupt_action")) == 0) {
-			
-			auto action = reinterpret_cast<Action<CTFBot> *>(this);
-
-			
-
-			return EventDesiredResult<CTFBot>::SuspendFor(CreateInterruptAction(actor, cmd), "Executing interrupt task");
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnCommandString)(actor, cmd);
-	}
-
 	DETOUR_DECL_MEMBER(bool, CSquadSpawner_Parse, KeyValues *kv_orig)
 	{
 		auto spawner = reinterpret_cast<CSquadSpawner *>(this);
@@ -2061,7 +2047,6 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Suppress fire removal when flag is dropped fix
 			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_OnEnd, "CTFBotDeliverFlag::OnEnd");
-			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_OnCommandString, "CTFBotTacticalMonitor::OnCommandString");
 			//MOD_ADD_DETOUR_MEMBER(Action_CTFBot_OnKilled, "Action<CTFBot>::OnKilled");
 
 			// Fix disband action memory leak
