@@ -331,11 +331,7 @@ namespace Mod::MvM::Player_Limit
 	}
 
 	void SetVisibleMaxPlayers() {
-		static ConVarRef sig_etc_extra_player_slots("sig_etc_extra_player_slots");
-		static ConVarRef sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count");
-		static ConVarRef sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players");
-		int maxSlots = sig_etc_extra_player_slots.GetBool() && sig_etc_extra_player_slots_allow_players.GetBool() ? sig_etc_extra_player_slots.GetInt() : MAX_PLAYERS;
-		iPreClientUpdate = Min(maxSlots, GetMaxNonSpectatorPlayers());
+		iPreClientUpdate = Min(MAX_PLAYERS, GetMaxNonSpectatorPlayers());
 		TogglePatches();
 	}
 
