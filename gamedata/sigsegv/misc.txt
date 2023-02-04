@@ -6871,7 +6871,11 @@
 					type "sym"
 					sym  "_ZN12CCaptureFlag9FlagTouchEP11CBaseEntity"
 				}
-				
+				"LookupWeaponInfoSlot"
+				{
+					type "sym"
+					sym  "_Z20LookupWeaponInfoSlotPKc"
+				}
 			}
 			"addrs_group"
 			{
