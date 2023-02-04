@@ -3301,3 +3301,6 @@ WaveSchedule
 
 // Damage bonus for every target hit by explosion
 // "add damage per target" 0.5
+
+// Projectile self detonation time in seconds
+// "projectile detonate time" 0.5
