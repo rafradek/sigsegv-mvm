@@ -105,6 +105,26 @@ namespace Mod::Pop::PopMgr_Extensions
 	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY,
 		"Bots should be send to spectator immediately after dying");
 
+	ConVar cvar_banned_missions_file("sig_banned_missions_file", "banned_missions.txt", FCVAR_NOTIFY,
+		"Location of a file containing banned missions list", 
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			std::string poplistStr;
+			CUtlVector<CUtlString> vec;	
+			CPopulationManager::FindDefaultPopulationFileShortNames(vec);
+			FOR_EACH_VEC(vec, i)
+			{
+				poplistStr += vec[i];
+				poplistStr += '\n';
+			}
+			bool saved_lock = engine->LockNetworkStringTables(false);
+			INetworkStringTable *strtablepoplist = networkstringtable->FindTable("ServerPopFiles");
+			if (strtablepoplist != nullptr) {
+				if (!poplistStr.empty() && strtablepoplist->GetNumStrings() > 0)
+					strtablepoplist->SetStringUserData(0, poplistStr.size() + 1, poplistStr.c_str());
+			}
+			engine->LockNetworkStringTables(saved_lock);
+		});
+
     bool IsMannVsMachineMode(){
         return cvar_modded_pvp.GetBool() 
             ? true 
@@ -4218,7 +4238,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_STATIC_CALL(CPopulationManager_FindDefaultPopulationFileShortNames)(vec);
 		
 		KeyValues *kv = new KeyValues("kv");
-		if (kv->LoadFromFile(filesystem, "banned_missions.txt")) {
+		if (kv->LoadFromFile(filesystem, cvar_banned_missions_file.GetString())) {
 			FOR_EACH_SUBKEY(kv, kv_mission) {
 				if (stricmp(kv_mission->GetName(), STRING(gpGlobals->mapname)) == 0) {
 					vec.FindAndRemove(kv_mission->GetString());

@@ -68,13 +68,13 @@ namespace Mod::Util::Download_Manager
 	void ResetVoteMapList();
 
 	bool server_activated = false;
-	ConVar cvar_resource_file("sig_util_download_manager_resource_file", "tf_mvm_missioncycle.res", FCVAR_NONE, "Download Manager: Mission cycle file to write to",
+	ConVar cvar_resource_file("sig_util_download_manager_resource_file", "tf_mvm_missioncycle.res", FCVAR_NONE, "Download Manager: Mission cycle file to write to. If set to empty string, vote list is not automatically updated",
 		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
 			if (server_activated)
 				ResetVoteMapList();
 		});
 
-	ConVar cvar_mapcycle_file("sig_util_download_manager_maplist_file", "cfg/mapcycle.txt", FCVAR_NONE, "Download Manager: Map cycle file to write to",
+	ConVar cvar_mapcycle_file("sig_util_download_manager_maplist_file", "cfg/mapcycle.txt", FCVAR_NONE, "Download Manager: Map cycle file to write to. If set to empty string, vote list is not automatically updated",
 		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
 			if (server_activated)
 				ResetVoteMapList();
@@ -677,6 +677,9 @@ namespace Mod::Util::Download_Manager
 
 	void ResetVoteMapList() 
 	{
+		if (strlen(cvar_resource_file.GetString()) == 0 || strlen(cvar_mapcycle_file.GetString()) == 0) {
+			return;
+		}
 		case_sensitive_toggle = true;
 		CFastTimer timer1;
 		timer1.Start();
@@ -722,8 +725,10 @@ namespace Mod::Util::Download_Manager
 		kv->SaveToFile(filesystem, cvar_resource_file.GetString());
 		kv->deleteThis();
 
-		engine->ServerCommand("tf_mvm_missioncyclefile empty\n");
-		engine->ServerCommand(CFmtStr("tf_mvm_missioncyclefile %s\n",cvar_resource_file.GetString()));
+		static ConVarRef tf_mvm_missioncyclefile("tf_mvm_missioncyclefile");
+		std::string prevMissionCycleFile = tf_mvm_missioncyclefile.GetString();
+		tf_mvm_missioncyclefile.SetValue("empty");
+		tf_mvm_missioncyclefile.SetValue(prevMissionCycleFile.c_str());
 
 		std::string resourceFileWrite = fmt::format("{}/{}wr", game_path, cvar_mapcycle_file.GetString());
 		FILE *mapcycle = fopen(resourceFileWrite.c_str(), "w");

@@ -187,6 +187,11 @@ MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_DestroyControlPanels(
 
 MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> CBaseViewModel::vt_SetWeaponModel(TypeName<CBaseViewModel>(), "CBaseViewModel::SetWeaponModel");
 
+StaticFuncThunk<WEAPON_FILE_INFO_HANDLE, const char *> ft_LookupWeaponInfoSlot("LookupWeaponInfoSlot");
+WEAPON_FILE_INFO_HANDLE LookupWeaponInfoSlot(const char * className) { return ft_LookupWeaponInfoSlot(className); }
+
+StaticFuncThunk<FileWeaponInfo_t *, WEAPON_FILE_INFO_HANDLE> ft_GetFileWeaponInfoFromHandle("GetFileWeaponInfoFromHandle");
+FileWeaponInfo_t *GetFileWeaponInfoFromHandle(WEAPON_FILE_INFO_HANDLE handle) { return ft_GetFileWeaponInfoFromHandle(handle); }
 
 static StaticFuncThunk<bool, int> ft_WeaponID_IsSniperRifle("WeaponID_IsSniperRifle");
 bool WeaponID_IsSniperRifle(int id) { return ft_WeaponID_IsSniperRifle(id); }

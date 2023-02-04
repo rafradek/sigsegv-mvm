@@ -2467,17 +2467,28 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		int team = pTarget->GetTeamNumber();
 		CBaseEntity *projOwner = pTarget->GetOwnerEntity();
+		auto projEntity = rtti_cast<CBaseProjectile *>(pTarget);
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		if (projEntity != nullptr && projEntity->IsDestroyable()) {
+			int destroyProj = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, destroyProj, airblast_destroy_projectile);
+			if (destroyProj != 0) {
+				weapon->EmitSound("Halloween.HeadlessBossAxeHitWorld");
+				projEntity->Destroy(false, true);
+				return true;
+			}
+		}
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_DeflectEntity)(pTarget, pOwner, vecForward, vecCenter, vecSize);
 		if (result) {
 			int deflectKeepTeam = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER ( reinterpret_cast<CTFWeaponBase *>(this), deflectKeepTeam, reflect_keep_team );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER ( weapon, deflectKeepTeam, reflect_keep_team );
 			if (deflectKeepTeam != 0) {
 				pTarget->SetTeamNumber(team);
 				pTarget->SetOwnerEntity(projOwner);
 			}
 
 			int reflectMagnet = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), reflectMagnet, reflect_magnet);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, reflectMagnet, reflect_magnet);
 			if (reflectMagnet != 0) {
 				IPhysicsObject *physics = pTarget->VPhysicsGetObject();
 
@@ -2502,7 +2513,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			float deflectStrength = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(reinterpret_cast<CTFWeaponBase *>(this), deflectStrength, mult_reflect_velocity);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, deflectStrength, mult_reflect_velocity);
 			if (deflectStrength != 1.0f) {
 				IPhysicsObject *physics = pTarget->VPhysicsGetObject();
 
@@ -7049,6 +7060,10 @@ namespace Mod::Attr::Custom_Attributes
 
 std::map<int, std::string> g_Itemnames;
 std::map<int, std::string> g_Attribnames;
+
+const char *GetAttributeName(int attributeIndex) {
+    return g_Attribnames[attributeIndex].c_str();
+}
 
 const char *GetItemName(const CEconItemView *view) {
     bool val;
