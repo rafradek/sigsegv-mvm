@@ -7,56 +7,51 @@
 
 typedef struct CustomFile_s
 {
-	CRC32_t			crc;	//file CRC
-	unsigned int	reqID;	// download request ID
+	CRC32_t			crc;
+	unsigned int	reqID;
 } CustomFile_t;
 
 class CBaseClient : public IGameEventListener2, public IClient, public IClientMessageHandler {
 public:
 	virtual void UpdateUserSettings();
 	int				m_nClientSlot;	
-	// entity index of this client (different from clientSlot+1 in HLTV and Replay mode):
 	int				m_nEntityIndex;	
 	
-	int				m_UserID;			// identifying number on server
-	char			m_Name[MAX_PLAYER_NAME_LENGTH];			// for printing to other people
-	char			m_GUID[SIGNED_GUID_LEN + 1]; // the clients CD key
+	int				m_UserID;
+	char			m_Name[MAX_PLAYER_NAME_LENGTH];
+	char			m_GUID[SIGNED_GUID_LEN + 1];
 
-	CSteamID		m_SteamID;			// This is valid when the client is authenticated
+	CSteamID		m_SteamID;
 	
-	uint32			m_nFriendsID;		// client's friends' ID
+	uint32			m_nFriendsID;
 	char			m_FriendsName[MAX_PLAYER_NAME_LENGTH];
 
-	KeyValues		*m_ConVars;			// stores all client side convars
-	bool			m_bConVarsChanged;	// true if convars updated and not changes process yet
-	bool			m_bInitialConVarsSet; // Has the client sent their initial set of convars
-	bool			m_bSendServerInfo;	// true if we need to send server info packet to start connect
-	IServer		*m_Server;			// pointer to server object
-	bool			m_bIsHLTV;			// if this a HLTV proxy ?
-	bool			m_bIsReplay;		// if this is a Replay proxy ?
-	int				m_clientChallenge;	// client's challenge he sent us, we use to auth replies
+	KeyValues		*m_ConVars;
+	bool			m_bConVarsChanged;
+	bool			m_bInitialConVarsSet;
+	bool			m_bSendServerInfo;
+	IServer		*m_Server;
+	bool			m_bIsHLTV;
+	bool			m_bIsReplay;
+	int				m_clientChallenge;
 	
-	// Client sends this during connection, so we can see if
-	//  we need to send sendtable info or if the .dll matches
 	CRC32_t			m_nSendtableCRC;
 
-	// a client can have couple of cutomized files distributed to all other players
 	CustomFile_t	m_nCustomFiles[MAX_CUSTOM_FILES];
-	int				m_nFilesDownloaded;	// counter of how many files we downloaded from this client
+	int				m_nFilesDownloaded;
 
-	INetChannel		*m_NetChannel;		// The client's net connection.
-	int				m_nSignonState;		// connection state
-	int				m_nDeltaTick;		// -1 = no compression.  This is where the server is creating the
-										// compressed info from.
-	int				m_nStringTableAckTick; // Highest tick acked for string tables (usually m_nDeltaTick, except when it's -1)
-	int				m_nSignonTick;		// tick the client got his signon data
-	void * m_pLastSnapshot;	// last send snapshot
+	INetChannel		*m_NetChannel;
+	int				m_nSignonState;
+	int				m_nDeltaTick;
+	int				m_nStringTableAckTick;
+	int				m_nSignonTick;
+	void * m_pLastSnapshot;
 	int pad;
 
-	CFrameSnapshot	*m_pBaseline;			// current entity baselines as a snapshot
-	int				m_nBaselineUpdateTick;	// last tick we send client a update baseline signal or -1
-	CBitVec<MAX_EDICTS>	m_BaselinesSent;	// baselines sent with last update
-	int				m_nBaselineUsed;		// 0/1 toggling flag, singaling client what baseline to use
+	CFrameSnapshot	*m_pBaseline;
+	int				m_nBaselineUpdateTick;
+	CBitVec<MAX_EDICTS>	m_BaselinesSent;
+	int				m_nBaselineUsed;
 
 	int				m_nForceWaitForTick;
 	
@@ -119,23 +114,22 @@ public:
 	void UpdateMirrorTable (int tick) { ft_UpdateMirrorTable(this, tick); }
 	void DeleteAllStrings ()          { ft_DeleteAllStrings(this); }
 
-	TABLEID					m_id;
-	char					*m_pszTableName;
-	// Must be a power of 2, so encoding can determine # of bits to use based on log2
-	int						m_nMaxEntries;
-	int						m_nEntryBits;
-	int						m_nTickCount;
-	int						m_nLastChangedTick;
-	bool					m_bChangeHistoryEnabled : 1;
-	bool					m_bLocked : 1;
-	bool					m_bAllowClientSideAddString : 1;
-	bool					m_bUserDataFixedSize : 1;
-	bool					m_bIsFilenames : 1;
-	int						m_nUserDataSize;
-	int						m_nUserDataSizeBits;
-	pfnStringChanged		m_changeFunc;
-	void					*m_pObject;
-	CNetworkStringTable		*m_pMirrorTable;
+	TABLEID				m_id;
+	char				*m_pszTableName;
+	int					m_nMaxEntries;
+	int					m_nEntryBits;
+	int					m_nTickCount;
+	int					m_nLastChangedTick;
+	bool				m_bChangeHistoryEnabled : 1;
+	bool				m_bLocked : 1;
+	bool				m_bAllowClientSideAddString : 1;
+	bool				m_bUserDataFixedSize : 1;
+	bool				m_bIsFilenames : 1;
+	int					m_nUserDataSize;
+	int					m_nUserDataSizeBits;
+	pfnStringChanged	m_changeFunc;
+	void				*m_pObject;
+	CNetworkStringTable	*m_pMirrorTable;
 
 private:
 	static MemberFuncThunk<CNetworkStringTable *, void, int>              ft_UpdateMirrorTable;
