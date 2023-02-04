@@ -520,6 +520,16 @@ namespace Mod::Attr::Custom_Attributes
 		this->Remove();
 	};
 
+	THINK_FUNC_DECL(ProjectileDetonate) {
+		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
+		trace_t tr;
+		Vector vecSpot = proj->GetAbsOrigin();
+		UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+
+		proj->Explode(&tr, GetContainingEntity(INDEXENT(0)));
+	};
+
+
 	THINK_FUNC_DECL(ProjectileSoundDelay) {
 		this->Remove();
 	};
@@ -584,6 +594,22 @@ namespace Mod::Attr::Custom_Attributes
 
 				if (attr_lifetime != 0.0f) {
 					THINK_FUNC_SET(proj, ProjectileLifetime, gpGlobals->curtime + attr_lifetime);
+					//proj->ThinkSet(&ProjectileLifetime::Update, gpGlobals->curtime + attr_lifetime, "ProjLifetime");
+				}
+
+				float detonateTime = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, detonateTime, projectile_detonate_time);
+
+				if (detonateTime != 0.0f) {
+					if (rtti_cast<CTFBaseRocket *>(proj) != nullptr) {
+						THINK_FUNC_SET(proj, ProjectileDetonate, gpGlobals->curtime + detonateTime);
+					}
+					else {
+						auto grenade = rtti_cast<CTFWeaponBaseGrenadeProj *>(proj);
+						if (grenade != nullptr) {
+							grenade->SetDetonateTimerLength(detonateTime);
+						}
+					}
 					//proj->ThinkSet(&ProjectileLifetime::Update, gpGlobals->curtime + attr_lifetime, "ProjLifetime");
 				}
 				GET_STRING_ATTRIBUTE(weapon, projectile_trail_particle, particlename);
