@@ -1,5 +1,6 @@
 #include "convar_restore.h"
 #include "mem/detour.h"
+#include <boost/tokenizer.hpp>
 
 class CEmptyConVar : public ConVar {};
 
@@ -67,8 +68,19 @@ namespace ConVar_Restore
 			file.PutChar('"');
 
 			if (var->GetHelpText() != nullptr && *(var->GetHelpText())) {
-				file.PutString("		// ");
-				file.PutString(var->GetHelpText());
+				
+				std::string help(var->GetHelpText());
+				boost::tokenizer<boost::char_separator<char>> tokens(help, boost::char_separator<char>("\n"));
+
+				bool first = true;
+				for (auto &token : tokens) {
+					if (!first) {
+						file.PutChar('\n');
+					}
+					first = false;
+					file.PutString("		// ");
+					file.PutString(token.c_str());
+				}
 			}
 
 			file.PutChar('\n');

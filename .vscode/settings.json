@@ -81,7 +81,9 @@
         "cstdbool": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "*.ipp": "cpp",
+        "codecvt": "cpp"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [

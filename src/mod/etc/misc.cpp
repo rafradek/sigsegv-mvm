@@ -21,7 +21,7 @@ namespace Mod::Etc::Misc
 	{
 		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
 
-		if (strcmp(ent->GetClassname(), "tf_projectile_balloffire") == 0) {
+		if (TFGameRules()->IsMannVsMachineMode() && strcmp(ent->GetClassname(), "tf_projectile_balloffire") == 0) {
 			return false;
 		}
 
@@ -175,62 +175,6 @@ namespace Mod::Etc::Misc
 			}
 		}
 
-	}
-
-	DETOUR_DECL_MEMBER(int, CHeadlessHatman_OnTakeDamage_Alive, const CTakeDamageInfo& info)
-	{
-		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
-		float healthPercentage = (float)npc->GetHealth() / (float)npc->GetMaxHealth();
-
-		if (g_pMonsterResource.GetRef() != nullptr)
-		{
-			if (healthPercentage <= 0.0f)
-			{
-				g_pMonsterResource->m_iBossHealthPercentageByte = 0;
-			}
-			else
-			{
-				g_pMonsterResource->m_iBossHealthPercentageByte = (int) (healthPercentage * 255.0f);
-			}
-		}
-		return DETOUR_MEMBER_CALL(CHeadlessHatman_OnTakeDamage_Alive)(info);
-	}
-
-	DETOUR_DECL_MEMBER(void, CHeadlessHatman_Spawn)
-	{
-		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
-		
-		if (g_pMonsterResource.GetRef() != nullptr)
-		{
-			g_pMonsterResource->m_iBossHealthPercentageByte = 255;
-		}
-		DETOUR_MEMBER_CALL(CHeadlessHatman_Spawn)();
-	}
-
-	DETOUR_DECL_MEMBER(void, CHeadlessHatman_D2)
-	{
-		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
-		if (g_pMonsterResource.GetRef() != nullptr && g_pMonsterResource)
-		{
-			g_pMonsterResource->m_iBossHealthPercentageByte = 0;
-		}
-		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
-	{
-		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
-		auto thrower = ToTFPlayer(proj->GetThrower());
-		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, thrower != nullptr && FindCaseInsensitive(thrower->GetPlayerName(), "smoke") != nullptr);
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
-	}
-
-	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
-	{
-		if (!rc_DoNotOverrideSmoke && strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
-			name = "hightower_explosion";
-		}
-		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
 	}
 
 	bool ActivateShield(CTFPlayer *player)
@@ -490,7 +434,7 @@ namespace Mod::Etc::Misc
 	public:
 		CMod() : IMod("Etc:Misc")
 		{
-            // Make dragons fury projectile non reflectable
+            // Make dragons fury projectile non reflectable in mvm
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_IsDeflectable, "CTFProjectile_Rocket::IsDeflectable");
 
 			// Make unowned sentry rocket deal damage
@@ -508,15 +452,6 @@ namespace Mod::Etc::Misc
 
 			// Drop flag to last bot nav area
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
-
-			// Allow HHH to have a healthbar
-			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_OnTakeDamage_Alive, "CHeadlessHatman::OnTakeDamage_Alive");
-			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_Spawn,           "CHeadlessHatman::Spawn");
-			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
-			
-			// Replace buster smoke with something else
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Explode, "CTFWeaponBaseGrenadeProj::Explode");
-			MOD_ADD_DETOUR_STATIC_PRIORITY(DispatchParticleEffect, "DispatchParticleEffect [overload 3]", HIGH);
 
 			// Allow non demos to use shields and benefit from eyelander heads
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoClassSpecialSkill, "CTFPlayer::DoClassSpecialSkill");
@@ -543,7 +478,14 @@ namespace Mod::Etc::Misc
 	CMod s_Mod;
 
     ConVar cvar_enable("sig_etc_misc", "0", FCVAR_NOTIFY,
-		"Mod: Stuff i am lazy to make into separate mods",
+		"Mod:\nDisables reflection of Dragon's Fury projectiles in MvM gamemode"
+		"\nAutomatically destroy oldest disposable sentry when building new one"
+		"\nAllow all classes to fully benefit from shield, eyelander, tf_weapon_builder          "
+		"\nFixes:"
+		"\nSnap unreachable dropped mvm bomb to last nav area"
+		"\nFix unowned sentry's rockets not dealing damage"
+		"\nFix penetration arrows colliding with bounding boxes of various entities"
+		"\nFix specific CFuncIllusionary crash",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
@@ -613,9 +555,103 @@ namespace Mod::Etc::Misc
 	};
 	CMod_ScriptSaveLimit s_ModScriptSaveLimit;
 
-	ConVar sig_etc_max_total_script_files_count("sig_etc_max_total_script_files_count", "100000", FCVAR_NOTIFY,
+	ConVar sig_etc_max_total_script_files_count("sig_etc_max_total_script_files_count", "0", FCVAR_NOTIFY,
 		"Mod: Max total count of files created by vscript",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_ModScriptSaveLimit.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
+	{
+		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
+		auto thrower = ToTFPlayer(proj->GetThrower());
+		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, thrower != nullptr && FindCaseInsensitive(thrower->GetPlayerName(), "smoke") != nullptr);
+		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
+	}
+
+	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
+	{
+		if (!rc_DoNotOverrideSmoke && strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
+			name = "hightower_explosion";
+		}
+		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
+	}
+
+	class CMod_SentryBusterParticleChange : public IMod
+	{
+	public:
+		CMod_SentryBusterParticleChange() : IMod("Etc:Misc:SentryBusterParticleChange")
+		{
+			
+			// Replace buster smoke with something else
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Explode, "CTFWeaponBaseGrenadeProj::Explode");
+			MOD_ADD_DETOUR_STATIC_PRIORITY(DispatchParticleEffect, "DispatchParticleEffect [overload 3]", HIGH);
+		}
+	};
+	CMod_SentryBusterParticleChange s_SentryBusterParticleChange;
+
+	ConVar sig_etc_sentry_buster_particle_change("sig_etc_sentry_buster_particle_change", "0", FCVAR_NOTIFY,
+		"Mod: Replace sentry buster smoke with payload bomb particles",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_SentryBusterParticleChange.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
+
+	DETOUR_DECL_MEMBER(int, CHeadlessHatman_OnTakeDamage_Alive, const CTakeDamageInfo& info)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		float healthPercentage = (float)npc->GetHealth() / (float)npc->GetMaxHealth();
+
+		if (g_pMonsterResource.GetRef() != nullptr)
+		{
+			if (healthPercentage <= 0.0f)
+			{
+				g_pMonsterResource->m_iBossHealthPercentageByte = 0;
+			}
+			else
+			{
+				g_pMonsterResource->m_iBossHealthPercentageByte = (int) (healthPercentage * 255.0f);
+			}
+		}
+		return DETOUR_MEMBER_CALL(CHeadlessHatman_OnTakeDamage_Alive)(info);
+	}
+
+	DETOUR_DECL_MEMBER(void, CHeadlessHatman_Spawn)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		
+		if (g_pMonsterResource.GetRef() != nullptr)
+		{
+			g_pMonsterResource->m_iBossHealthPercentageByte = 255;
+		}
+		DETOUR_MEMBER_CALL(CHeadlessHatman_Spawn)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CHeadlessHatman_D2)
+	{
+		auto npc = reinterpret_cast<CHeadlessHatman *>(this);
+		if (g_pMonsterResource.GetRef() != nullptr && g_pMonsterResource)
+		{
+			g_pMonsterResource->m_iBossHealthPercentageByte = 0;
+		}
+		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
+	}
+
+	class CMod_HHHHealthBar : public IMod
+	{
+	public:
+		CMod_HHHHealthBar() : IMod("Etc:Misc:HHHHealthBar")
+		{
+			// Allow HHH to have a healthbar
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_OnTakeDamage_Alive, "CHeadlessHatman::OnTakeDamage_Alive");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_Spawn,           "CHeadlessHatman::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CHeadlessHatman_D2,           "CHeadlessHatman [D2]");
+		}
+	};
+	CMod_HHHHealthBar s_HHHHealthBar;
+
+	ConVar sig_etc_hhh_health_bar("sig_etc_hhh_health_bar", "0", FCVAR_NOTIFY,
+		"Mod: Display boss health bar on HHH",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_HHHHealthBar.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
