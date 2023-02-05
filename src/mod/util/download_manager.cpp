@@ -777,8 +777,12 @@ namespace Mod::Util::Download_Manager
 			if (!maplistStr.empty() && strtablemaplist->GetNumStrings() > 0)
 				strtablemaplist->SetStringUserData(0, maplistStr.size() + 1, maplistStr.c_str());
 
-			if (!poplistStr.empty() && strtablepoplist->GetNumStrings() > 0)
+			if (strtablepoplist->GetNumStrings() == 0 && !poplistStr.empty()) {
+				strtablepoplist->AddString(true, "ServerPopFiles", poplistStr.size() + 1, poplistStr.c_str());
+			}
+			if (strtablepoplist->GetNumStrings() > 0) {
 				strtablepoplist->SetStringUserData(0, poplistStr.size() + 1, poplistStr.c_str());
+			}
 		}
 		engine->LockNetworkStringTables(saved_lock);
 		timer2.End();

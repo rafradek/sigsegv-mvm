@@ -119,8 +119,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			bool saved_lock = engine->LockNetworkStringTables(false);
 			INetworkStringTable *strtablepoplist = networkstringtable->FindTable("ServerPopFiles");
 			if (strtablepoplist != nullptr) {
-				if (!poplistStr.empty() && strtablepoplist->GetNumStrings() > 0)
+				if (strtablepoplist->GetNumStrings() == 0 && !poplistStr.empty()) {
+					strtablepoplist->AddString(true, "ServerPopFiles", poplistStr.size() + 1, poplistStr.c_str());
+				}
+				if (strtablepoplist->GetNumStrings() > 0) {
 					strtablepoplist->SetStringUserData(0, poplistStr.size() + 1, poplistStr.c_str());
+				}
 			}
 			engine->LockNetworkStringTables(saved_lock);
 		});
