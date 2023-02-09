@@ -293,6 +293,7 @@ MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_CanMoveDuringTaunt          ("CTFPlayer::CanMoveDuringTaunt");
 MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::ft_GetRuneHealthBonus          ("CTFPlayer::GetRuneHealthBonus");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ClearDisguiseWeaponList     ("CTFPlayer::ClearDisguiseWeaponList");
+MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > CTFPlayer::ft_GetLoadoutItem              ("CTFPlayer::GetLoadoutItem");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

@@ -503,6 +503,10 @@ namespace Mod::Perf::Func_Optimize
     MemberFuncThunk<CModelLoader *, void> CModelLoader_FlushDynamicModels("CModelLoader::FlushDynamicModels");
     DETOUR_DECL_MEMBER(int, CModelInfoServer_RegisterDynamicModel, const char *model, bool isClient)
 	{
+        int index = modelinfo->GetModelIndex(model);
+        if (index != -1) {
+            return index;
+        }
         auto ret = DETOUR_MEMBER_CALL(CModelInfoServer_RegisterDynamicModel)(model, isClient);
         CModelLoader_FlushDynamicModels(modelloader.GetRef());
         return ret;

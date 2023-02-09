@@ -495,6 +495,7 @@ public:
 	
 	int GetRuneHealthBonus()       { return ft_GetRuneHealthBonus (this); }
 	void ClearDisguiseWeaponList() { ft_ClearDisguiseWeaponList(this); }
+	CEconItemView *GetLoadoutItem(int classIndex, int slot) { return ft_GetLoadoutItem(this, classIndex, slot); }
 
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
@@ -597,6 +598,7 @@ private:
     static MemberFuncThunk<      CTFPlayer *, bool                            > ft_CanMoveDuringTaunt;
     static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetRuneHealthBonus;
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_ClearDisguiseWeaponList;
+    static MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > ft_GetLoadoutItem;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

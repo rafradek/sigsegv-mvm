@@ -30,11 +30,11 @@ class IPredictionSystem
 {
 public:
 	void *vtable;
-	IPredictionSystem	*m_pNextSystem;
-	int				m_bSuppressEvent;
-	CBaseEntity			*m_pSuppressHost;
+	IPredictionSystem *m_pNextSystem;
+	int m_bSuppressEvent;
+	CBaseEntity *m_pSuppressHost;
 
-	int					m_nStatusPushed;
+	int m_nStatusPushed;
 };
 
 namespace Mod::Attr::Custom_Attributes

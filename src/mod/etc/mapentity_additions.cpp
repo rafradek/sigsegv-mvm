@@ -476,8 +476,9 @@ namespace Mod::Etc::Mapentity_Additions
                                 
                                 if ((GetEntityVariable(nextentity, DATAMAP, varname.c_str(), variant) && variant.Entity() != nullptr) || 
                                     (GetEntityVariable(nextentity, SENDPROP, varname.c_str(), variant) && variant.Entity() != nullptr) || 
-                                    (GetEntityVariable(nextentity, VARIABLE, varname.c_str(), variant) && variant.Entity() != nullptr)) {
-                                        
+                                    (GetEntityVariable(nextentity, VARIABLE, varname.c_str(), variant))) {
+
+                                    variant.Convert(FIELD_EHANDLE);
                                     return variant.Entity();
                                 }
                                 else {
