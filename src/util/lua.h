@@ -68,6 +68,11 @@ namespace Util::Lua
 
         void AddConVarValue(ConVar *convar);
 
+        const std::list<LuaTimer> &GetTimers() { return timers; }
+        const std::unordered_set<CBaseEntity *> &GetCallbackEntities() { return callbackEntities; }
+        const std::unordered_map<ConVar *, std::string> &GetOverriddenConvars() { return convarValueToRestore; }
+        size_t GetMemoryUsageBytes() { return m_iMemoryUsage; }
+
     private:
         std::list<LuaTimer>::iterator DestroyTimer(std::list<LuaTimer>::iterator it);
         lua_State *l;
@@ -87,6 +92,7 @@ namespace Util::Lua
         int m_iNextTimerID = 0;
         std::unordered_set<CBaseEntity *> callbackEntities;
         std::unordered_map<ConVar *, std::string> convarValueToRestore; 
+        size_t m_iMemoryUsage = 0;
     };
 
     void LFromVariant(lua_State *l, variant_t &variant);

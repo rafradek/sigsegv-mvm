@@ -15,6 +15,7 @@
 #include "stub/tempent.h"
 #include "mod.h"
 #include "mod/common/commands.h"
+#include <fmt/core.h>
 
 class CStaticProp {};
 
@@ -3583,9 +3584,72 @@ namespace Util::Lua
         this->SetNextThink(gpGlobals->curtime + 6.0f, "ScriptModuleTick");
     }
 
+    static void *LuaMemoryAllocator(void *ud, void *ptr, size_t osize, size_t nsize) {
+        *(size_t *)ud += nsize - (ptr == null ? 0 : osize);
+        if (nsize == 0) {
+            free(ptr);
+            return NULL;
+        }
+        else
+            return realloc(ptr, nsize);
+    }
+
+    static int LuaPanic(lua_State *L) {
+        const char *msg = lua_tostring(L, -1);
+        if (msg == NULL) msg = "error object is not a string";
+        lua_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
+                                msg);
+        return 0;  /* return to Lua to abort */
+    }
+
+    static void warnfoff(void *ud, const char *message, int tocont);
+    static void warnfon (void *ud, const char *message, int tocont);
+
+    static int checkcontrol(lua_State *L, const char *message, int tocont) {
+        if (tocont || *(message++) != '@')  /* not a control message? */
+            return 0;
+        else {
+            if (strcmp(message, "off") == 0)
+            lua_setwarnf(L, warnfoff, L);  /* turn warnings off */
+            else if (strcmp(message, "on") == 0)
+            lua_setwarnf(L, warnfon, L);   /* turn warnings on */
+            return 1;  /* it was a control message */
+        }
+    }
+
+    static void warnfoff(void *ud, const char *message, int tocont) {
+        checkcontrol((lua_State *)ud, message, tocont);
+    }
+    /*
+    ** Writes the message and handle 'tocont', finishing the message
+    ** if needed and setting the next warn function.
+    */
+    static void warnfcont (void *ud, const char *message, int tocont) {
+        lua_State *L = (lua_State *)ud;
+        lua_writestringerror("%s", message);  /* write message */
+        if (tocont)  /* not the last part? */
+            lua_setwarnf(L, warnfcont, L);  /* to be continued */
+        else {  /* last part */
+            lua_writestringerror("%s", "\n");  /* finish message with end-of-line */
+            lua_setwarnf(L, warnfon, L);  /* next call is a new message */
+        }
+    }
+
+
+    static void warnfon (void *ud, const char *message, int tocont) {
+        if (checkcontrol((lua_State *)ud, message, tocont))  /* control message? */
+            return;  /* nothing else to be done */
+        lua_writestringerror("%s", "Lua warning: ");  /* start a new warning */
+        warnfcont(ud, message, tocont);  /* finish processing */
+    }
+
     LuaState::LuaState() 
     {
-        l = luaL_newstate();
+        l = lua_newstate(LuaMemoryAllocator, &this->m_iMemoryUsage);
+        if (l != nullptr) {
+            lua_atpanic(l, &LuaPanic);
+            lua_setwarnf(l, warnfoff, l);  /* default is warnings off */
+        }
         luaL_openlibs(l);
 
         // Blacklist some stuff
@@ -4875,13 +4939,18 @@ namespace Util::Lua
             }
             script_exec_time_tick = 0.0;
             if (gpGlobals->tickcount % 66 == 0) {
-                for (int i = 0; i < 34; i++) {
+                char output[256];
+                snprintf(output, sizeof(output), "Lua script execution time: [avg: %.9fs (%d%%)| max: %.9fs (%d%%)]\n", script_exec_time / 66, (int)(script_exec_time * 100), script_exec_time_tick_max, (int)((script_exec_time_tick_max / 0.015) * 100));
+                for (int i = 1; i < 34; i++) {
                     if (profile[i]) {
                         auto player = UTIL_PlayerByIndex(i);
                         if (player != nullptr) {
-                            ClientMsg(player, "Lua script execution time: [avg: %.9fs (%d%%)| max: %.9fs (%d%%)]\n", script_exec_time / 66, (int)(script_exec_time * 100), script_exec_time_tick_max, (int)((script_exec_time_tick_max / 0.015) * 100) );
+                            ClientMsg(player, "%s", output);
                         }
                     }
+                }
+                if (profile[0]) {
+                    Msg("%s", output);
                 }
                 script_exec_time = 0;
                 script_exec_time_tick_max = 0;
@@ -4905,12 +4974,103 @@ namespace Util::Lua
 	};
 	CMod s_Mod;
     
-    ModCommandClient sig_lua_prof_start("sig_lua_prof_start", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_lua_prof_start("sig_lua_prof_start", [](CTFPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 1;
     });
 
-    ModCommandClient sig_lua_prof_end("sig_lua_prof_end", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_lua_prof_end("sig_lua_prof_end", [](CTFPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 1;
+    });
+
+    ModCommand sig_lua_debug_list("sig_lua_debug_list", [](CTFPlayer *player, const CCommand& args){
+        if(args.ArgC() <= 1) {
+            ModCommandResponse("sig_lua_debug_list [all|summary|events|entcreate|tempents|timers|convars|entcallbacks]\n", event_callbacks.size());
+            return;
+        }
+        std::string response;
+        bool summary = FStrEq(args[1], "all") || FStrEq(args[1], "summary");
+        bool all = FStrEq(args[1], "all");
+        if (summary || FStrEq(args[1], "events")) {
+            response += fmt::format("Event Callback Count: {}\n", event_callbacks.size());
+        }
+        if (all || FStrEq(args[1], "events")) {
+            for (auto &callback : event_callbacks) {
+                response += fmt::format("Event callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
+            }
+        }
+        response += '\n';
+        if (summary || FStrEq(args[1], "entcreate")) {
+            response += fmt::format("Entity Create Callback Count: {}\n", entity_create_callbacks.size());
+        }
+        if (all || FStrEq(args[1], "entcreate")) {
+            for (auto &callback : entity_create_callbacks) {
+                response += fmt::format("Entity create callback ID: {}; Classname: {}{}\n", callback.func, STRING(callback.classname), callback.wildcard ? "*" : "");
+            }
+        }
+        response += '\n';
+        if (summary || FStrEq(args[1], "tempents")) {
+            response += fmt::format("TempEnt Callback Count: {}\n", tempent_callbacks.size());
+        }
+        if (all || FStrEq(args[1], "tempents")) {
+            for (auto &callback : tempent_callbacks) {
+                response += fmt::format("TempEnt callback ID: {}; Name: {}\n", callback.func, callback.name.c_str());
+            }
+        }
+        response += '\n';
+        if (!LuaState::List().empty())
+        {
+            for(auto state : LuaState::List()) {
+                response += "-----------------\n"s;
+                if (summary) {
+                    response += fmt::format("Lua state memory usage: {} Bytes\n", state->GetMemoryUsageBytes());
+                }
+                auto &timers = state->GetTimers();
+                if (summary || FStrEq(args[1], "timers")) {
+                    response += fmt::format("Timer Count: {}\n", timers.size());
+                }
+                if (all || FStrEq(args[1], "timers")) {
+                    for (auto &timer : timers) {
+                        response += fmt::format("Timer ID: {}; Delay: {}s; Repeats left: {}; Next call in: {}s\n", timer.m_iID, timer.m_flDelay, timer.m_iRepeats, timer.m_flNextCallTime - gpGlobals->curtime);
+                    }
+                }
+                auto &convars = state->GetOverriddenConvars();
+                if (summary || FStrEq(args[1], "convars")) {
+                    response += fmt::format("Convar Override Count: {}\n", convars.size());
+                }
+                if (all || FStrEq(args[1], "convars")) {
+                    for (auto &convar : convars) {
+                        response += fmt::format("Convar name: {}; value now: {}; value pre: {}\n", convar.first->GetName(), convar.first->GetString(), convar.second.c_str());
+                    }
+                }
+                auto &entities = state->GetCallbackEntities();
+                if (summary || FStrEq(args[1], "entcallbacks")) {
+                    response += fmt::format("Entities with callbacks count: {}\n", entities.size());
+                }
+                int entityCallbackCount = 0;
+                for (auto entity : entities) {
+                    auto mod = entity->GetOrCreateEntityModule<LuaEntityModule>("luaentity");
+                    
+                    for (int type = 0; type < CALLBACK_TYPE_COUNT; type++) {
+                        for (auto &callback : mod->callbacks[type]) {
+                            if (callback.state == state && !callback.deleted) {
+                                entityCallbackCount++;
+                                if (all || FStrEq(args[1], "entcallbacks")) {
+                                    response += fmt::format("Entity callback ID: {}; Type: {}; Entity class: {}; Entity name: {}; Entity handle: {}; func: {}\n", callback.id, type, entity->GetClassname(), STRING(entity->GetEntityName()), entity->GetRefEHandle().ToInt(), callback.func);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (summary || FStrEq(args[1], "entcallbacks")) {
+                    response += fmt::format("Total entity callback count: {}\n", entityCallbackCount);
+                }
+                response += "-----------------\n"s;
+            }
+        }
+        auto strings = BreakStringsForMultiPrint(response, player == nullptr ? 237 : 1021, '\n');
+        for (auto &string : strings) {
+            ModCommandResponse("%s", string.c_str());
+        }
     });
 
 	ConVar cvar_enable("sig_util_lua", "1", FCVAR_NOTIFY,

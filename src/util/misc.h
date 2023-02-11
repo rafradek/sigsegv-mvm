@@ -972,3 +972,5 @@ public:
 	}
 };
 #endif
+
+std::vector<std::string> BreakStringsForMultiPrint(std::string string, size_t maxSize, char breakChar);

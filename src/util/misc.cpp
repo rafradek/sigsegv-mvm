@@ -103,3 +103,27 @@ void EntityMatrix::InitFromEntityLocal( CBaseEntity *entity )
 	((VMatrix *)this)->SetupMatrixOrgAngles( entity->GetLocalOrigin(), entity->GetLocalAngles() );
 }
 
+std::vector<std::string> BreakStringsForMultiPrint(std::string string, size_t maxSize, char breakChar)
+{
+	std::vector<std::string> result;
+	size_t pos = 0;
+	size_t posBeginString = 0;
+	while(true) {
+		bool stop = false;
+		while(true) {
+			size_t nextpos = string.find(breakChar, pos);
+			if (nextpos - posBeginString > maxSize) break;
+
+			if (nextpos == std::string::npos) {
+				stop = true;
+				break;
+			}
+			pos = nextpos + 1;
+		}
+		if (pos == posBeginString) break;
+		result.push_back(string.substr(posBeginString, pos - posBeginString));
+		posBeginString = pos;
+		if (stop) break;
+	}
+	return result;
+}
