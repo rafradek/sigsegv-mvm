@@ -3575,6 +3575,15 @@ namespace Mod::Attr::Custom_Attributes
 		const char *pszChargeOffSound;
 	};
 
+	class ChargeOverrideModule : public EntityModule
+	{
+	public:
+		ChargeOverrideModule(CBaseEntity *entity) {}
+
+		int condOverride[6] = {-1, -1, -1, -1, -1, -1};
+		EHANDLE condOverrideProvider[6];
+	};
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetChargeEffect, int iCharge, bool bState, bool bInstant, MedigunEffects_t& effects, float flWearOffTime, CTFPlayer *pProvider)
 	{
 		addcond_provider = pProvider;
@@ -3587,8 +3596,19 @@ namespace Mod::Attr::Custom_Attributes
 		
 		ETFCond old_cond = effects.eCondition;
 		ETFCond old_wearing_cond = effects.eWearingOffCondition;
-		
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		if (bState && iCondOverride == 0) {
+			auto mod = player->GetEntityModule<ChargeOverrideModule>("chargeoverride");
+			if (mod != nullptr && iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride)) {
+				mod->condOverride[iCharge] = -1;
+			}
+		}
 		if (iCondOverride != 0) {
+			auto mod = player->GetOrCreateEntityModule<ChargeOverrideModule>("chargeoverride");
+			if (iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride)) {
+				mod->condOverride[iCharge] = bState ? iCondOverride : -1;
+				mod->condOverrideProvider[iCharge] = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
+			}
 			effects.eCondition = (ETFCond) (iCondOverride & 255);
 			effects.eWearingOffCondition = (ETFCond) TF_COND_COUNT;
 		}
@@ -3605,6 +3625,36 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter(), LOADOUT_POSITION_MELEE);
 		DETOUR_MEMBER_CALL(CTFPlayerShared_PulseMedicRadiusHeal)();
+	}
+
+	GlobalThunk<MedigunEffects_t[]> g_MedigunEffects("g_MedigunEffects");
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_TestAndExpireChargeEffect, int type)
+	{
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		auto mod = player->GetEntityModule<ChargeOverrideModule>("chargeoverride");
+		auto &effect = g_MedigunEffects.GetRef()[type];
+		ETFCond old_cond = effect.eCondition;
+		ETFCond old_wearing_cond = effect.eWearingOffCondition;
+		if (mod != nullptr && mod->condOverride[type] != -1) {
+			effect.eCondition = (ETFCond) (mod->condOverride[type] & 255);
+			effect.eWearingOffCondition = (ETFCond) TF_COND_COUNT;
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayerShared_TestAndExpireChargeEffect)(type);
+		if (mod != nullptr && mod->condOverride[type] != -1) {
+			auto weapon = rtti_cast<CWeaponMedigun *>(mod->condOverrideProvider[type].Get());
+			if (player->m_Shared->InCond(mod->condOverride[type])) {
+				if (weapon == nullptr || (weapon->GetHealTarget() != player && weapon->GetOwner() != player) || weapon->GetTFPlayerOwner()->GetActiveTFWeapon() != weapon || !weapon->IsChargeReleased()) {
+					player->m_Shared->RemoveCond(mod->condOverride[type]);
+				}
+			}
+			if (!player->m_Shared->InCond(mod->condOverride[type])) {
+				mod->condOverride[type] = -1;
+			}
+			effect.eCondition = old_cond;
+			effect.eWearingOffCondition = old_wearing_cond;
+		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetRevengeCrits, int crits)
@@ -6819,6 +6869,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Spawn,    "CObjectSentrygun::Spawn");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_TestAndExpireChargeEffect,    "CTFPlayerShared::TestAndExpireChargeEffect");
+			
 			
 			
 			

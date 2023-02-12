@@ -321,11 +321,14 @@ public:
 	float GetHealRate() { return vt_GetHealRate(this); }
 	float GetCharge() const { return this->m_flChargeLevel; }
 	void SetCharge(float charge) { this->m_flChargeLevel = charge; }
+	bool IsChargeReleased() const { return this->m_bChargeRelease; }
 	
 private:
 	static MemberVFuncThunk<CWeaponMedigun *, float> vt_GetHealRate;
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hHealingTarget);
 	DECL_SENDPROP(float, m_flChargeLevel);
+	DECL_SENDPROP(bool, m_bChargeRelease);
+	
 };
 
 class CTFFlameThrower : public CTFWeaponBaseGun

@@ -165,6 +165,7 @@ MemberVFuncThunk<CWeaponMedigun *, float> CWeaponMedigun::vt_GetHealRate(TypeNam
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CWeaponMedigun, m_hHealingTarget, CWeaponMedigun);
 IMPL_SENDPROP(float, CWeaponMedigun, m_flChargeLevel, CWeaponMedigun);
+IMPL_SENDPROP(bool, CWeaponMedigun, m_bChargeRelease, CWeaponMedigun);
 
 IMPL_SENDPROP(int, CTFWeaponBuilder, m_iObjectType, CTFWeaponBuilder);
 IMPL_SENDPROP(int, CTFWeaponBuilder, m_iObjectMode, CTFWeaponBuilder);
