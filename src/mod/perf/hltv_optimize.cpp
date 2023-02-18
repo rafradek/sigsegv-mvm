@@ -1,15 +1,13 @@
 #include "mod.h"
-#include "stub/tfbot.h"
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
-#include "stub/tfplayer.h"
+#include "stub/baseplayer.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/team.h"
-#include "stub/tfweaponbase.h"
-#include "stub/tf_player_resource.h"
+#include "stub/baseweapon.h"
 #include "util/iterate.h"
 #include <gamemovement.h>
 
@@ -44,7 +42,7 @@ namespace Mod::Perf::HLTV_Optimize
         bool tv_enabled = tv_enable.GetBool();
 
         hltvServerEmpty = hltvserver->GetNumClients() == 0;
-        auto state = TFGameRules()->State_Get();
+        auto state = TeamplayRoundBasedRules()->State_Get();
 
         bool hasplayer = tv_maxclients.GetInt() != 0;
         IClient * hltvclient = nullptr;
@@ -175,14 +173,16 @@ namespace Mod::Perf::HLTV_Optimize
         }
     }
 
+#ifdef SE_TF2
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PhysicsSimulate)
 	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
+		auto player = reinterpret_cast<CBasePlayer *>(this);
 		if (player->GetTeamNumber() <= TEAM_SPECTATOR && !player->IsAlive() && gpGlobals->curtime - player->GetDeathTime() > 1.0f && gpGlobals->tickcount % 64 != 0)
 			return;
             
 		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PhysicsSimulate)();
 	}
+#endif
 
     DETOUR_DECL_MEMBER(void, CBasePlayer_PhysicsSimulate)
 	{
@@ -209,9 +209,9 @@ namespace Mod::Perf::HLTV_Optimize
     {
         auto player = reinterpret_cast<CPlayer *>(this);
         auto edict = ft_CPlayer_GetEdict(player);
-        auto ctfplayer = reinterpret_cast<CTFPlayer *>(edict->GetUnknown());
+        auto cbaseplayer = reinterpret_cast<CBasePlayer *>(edict->GetUnknown());
         auto result = DETOUR_MEMBER_CALL(CPlayer_IsSourceTV)();
-        return result || (ctfplayer != nullptr && (create_hltv_bot == edict->m_EdictIndex || ctfplayer->IsHLTV()));
+        return result || (cbaseplayer != nullptr && (create_hltv_bot == edict->m_EdictIndex || cbaseplayer->IsHLTV()));
     }
 
 	class CMod : public IMod, public IModCallbackListener
@@ -229,7 +229,9 @@ namespace Mod::Perf::HLTV_Optimize
 			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_RestoreTick, "CNetworkStringTable::RestoreTick");
 			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_UpdateMirrorTable,                     "CNetworkStringTable::UpdateMirrorTable");
 
+#ifdef SE_TF2
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
+#endif
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
 
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,              "CBaseServer::GetFreeClient");

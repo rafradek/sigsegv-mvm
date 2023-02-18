@@ -192,9 +192,6 @@ typedef struct
 
 extern GlobalThunk<CFrameSnapshotManager> g_FrameSnapshotManager;
 extern GlobalThunk<PropTypeFns[DPT_NUMSendPropTypes]> g_PropTypeFns;
-extern GlobalThunk<SendTable> DT_TFPlayer_g_SendTable;
-extern GlobalThunk<ServerClass> g_CTFPlayer_ClassReg;
-
 class CDeltaBitsWriter
 {
 public:

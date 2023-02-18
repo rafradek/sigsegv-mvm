@@ -7,7 +7,7 @@
 #include "stub/player_util.h"
 #include "stub/tfweaponbase.h"
 #include "stub/objects.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/gamerules.h"
 #include "stub/usermessages_sv.h"
 #include "stub/particles.h"
@@ -278,7 +278,7 @@ namespace Mod::Attr::Custom_Attributes
 					continue;
 
 				CBaseProjectile *pProjectile = static_cast< CBaseProjectile* >( pObjects[i] );
-				if ( pProjectile->ClassMatches("tf_projectile*") && pProjectile->IsDestroyable() )
+				if ( pProjectile->ClassMatches("tf_projectile*") && pProjectile->IsDestroyable(false) )
 				{
 					pProjectile->Destroy( false, true );
 
@@ -2495,7 +2495,7 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseEntity *projOwner = pTarget->GetOwnerEntity();
 		auto projEntity = rtti_cast<CBaseProjectile *>(pTarget);
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		if (projEntity != nullptr && projEntity->IsDestroyable()) {
+		if (projEntity != nullptr && projEntity->IsDestroyable(false)) {
 			int destroyProj = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, destroyProj, airblast_destroy_projectile);
 			if (destroyProj != 0) {
@@ -6033,8 +6033,8 @@ namespace Mod::Attr::Custom_Attributes
 	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
-	std::vector<std::string> attribute_info_strings[34];
-	float attribute_info_display_time[34];
+	std::vector<std::string> attribute_info_strings[MAX_PLAYERS + 1];
+	float attribute_info_display_time[MAX_PLAYERS + 1];
 
 	void DisplayAttributeString(CTFPlayer *player, int num)
 	{
@@ -6160,7 +6160,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot)
 	{
-		if (!cvar_display_attrs.GetBool() || (size_t)ENTINDEX(target) >= ARRAYSIZE(attribute_info_strings))
+		if (!cvar_display_attrs.GetBool() || (size_t)ENTINDEX(target) >= ARRAYSIZE(attribute_info_strings) || (size_t)ENTINDEX(player) >= ARRAYSIZE(attribute_info_display_time))
 			return;
 			
 		bool display_stock = player != target;
@@ -6294,7 +6294,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		int id = ENTINDEX(reinterpret_cast<CTFPlayer *>(this)) - 1;
 
-		if (id < 0 || id > 32)
+		if (id < 0 || id > MAX_PLAYERS)
 			return;
 
 		attribute_info_strings[id].clear();
@@ -7013,11 +7013,11 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			if (gpGlobals->tickcount % 16 == 0) { 
 				ForEachTFPlayer([&](CTFPlayer *player){
-					static bool in_upgrade_zone[34];
+					static bool in_upgrade_zone[MAX_PLAYERS + 1];
 
 					int index = ENTINDEX(player) - 1;
 
-					if (player->IsBot() || index > 33) return;
+					if (player->IsBot() || index > MAX_PLAYERS) return;
 
 					if (player->m_Shared->m_bInUpgradeZone) {
 						in_upgrade_zone[index] = true;

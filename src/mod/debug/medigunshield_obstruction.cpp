@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "util/scope.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/rtti.h"
 #include "re/nextbot.h"
 #include "stub/tfbot.h"

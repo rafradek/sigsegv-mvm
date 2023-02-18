@@ -37,7 +37,7 @@ namespace Mod::Attr::Custom_Attributes
 namespace Mod::Util::Client_Cmds
 {
 	// TODO: another version that allows setting a different player's scale...?
-	void CC_SetPlayerScale(CTFPlayer *player, const CCommand& args)
+	void CC_SetPlayerScale(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_setplayerscale] Usage:  sig_setplayerscale <scale>\n");
@@ -57,7 +57,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows setting a different player's model...?
-	void CC_SetPlayerModel(CTFPlayer *player, const CCommand& args)
+	void CC_SetPlayerModel(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_setplayermodel] Usage:  sig_setplayermodel <model_path>\n");
@@ -74,7 +74,7 @@ namespace Mod::Util::Client_Cmds
 	
 
 	// TODO: another version that allows resetting a different player's model...?
-	void CC_ResetPlayerModel(CTFPlayer *player, const CCommand& args)
+	void CC_ResetPlayerModel(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
 			ModCommandResponse("[sig_resetplayermodel] Usage:  sig_resetplayermodel\n");
@@ -88,7 +88,7 @@ namespace Mod::Util::Client_Cmds
 	}
 	
 	
-	void CC_UnEquip(CTFPlayer *player, const CCommand& args)
+	void CC_UnEquip(CCommandPlayer *player, const CCommand& args)
 	{
 		auto l_usage = [=]{
 			ModCommandResponse("[sig_unequip] Usage: any of the following:\n"
@@ -296,7 +296,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_AddCond(CTFPlayer *player, const CCommand& args)
+	void CC_AddCond(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2 && args.ArgC() != 3 && args.ArgC() != 4) {
 			ModCommandResponse("[sig_addcond] Usage: any of the following:\n"
@@ -378,7 +378,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_RemoveCond(CTFPlayer *player, const CCommand& args)
+	void CC_RemoveCond(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_removecond] Usage: any of the following:\n"
@@ -432,7 +432,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_ListConds(CTFPlayer *player, const CCommand& args)
+	void CC_ListConds(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
 			ModCommandResponse("[sig_listconds] Usage:  sig_listconds\n");
@@ -496,7 +496,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_SetHealth(CTFPlayer *player, const CCommand& args)
+	void CC_SetHealth(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_sethealth] Usage: any of the following:\n"
@@ -529,7 +529,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_AddHealth(CTFPlayer *player, const CCommand& args)
+	void CC_AddHealth(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_addhealth] Usage: any of the following:\n"
@@ -562,7 +562,7 @@ namespace Mod::Util::Client_Cmds
 	
 	
 	// TODO: another version that allows affecting other players?
-	void CC_SubHealth(CTFPlayer *player, const CCommand& args)
+	void CC_SubHealth(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 2) {
 			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
@@ -593,7 +593,7 @@ namespace Mod::Util::Client_Cmds
 		player->SetHealth(player->GetHealth() - hp);
 	}
 	
-	void CC_Animation(CTFPlayer *player, const CCommand& args)
+	void CC_Animation(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() == 3) {
 
@@ -622,7 +622,7 @@ namespace Mod::Util::Client_Cmds
 		
 	}
 
-	void CC_Reset_Animation(CTFPlayer *player, const CCommand& args)
+	void CC_Reset_Animation(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() != 1) {
 			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
@@ -671,7 +671,7 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
-	void CC_Team(CTFPlayer *player, const CCommand& args)
+	void CC_Team(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 2) {
 			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
@@ -699,7 +699,7 @@ namespace Mod::Util::Client_Cmds
 		//player->StateTransition(TF_STATE_ACTIVE);
 	}
 
-	void CC_GiveItem(CTFPlayer *player, const CCommand& args)
+	void CC_GiveItem(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 2) {
 			ModCommandResponse("[sig_subhealth] Usage: any of the following:\n"
@@ -711,7 +711,7 @@ namespace Mod::Util::Client_Cmds
 		//engine->ServerExecute();
 	}
 
-	void CC_GetMissingBones(CTFPlayer *player, const CCommand& args)
+	void CC_GetMissingBones(CCommandPlayer *player, const CCommand& args)
 	{
 		for (int i = 1; i < 10; i++) {
 			const char *robot_model = g_szBotModels[i];
@@ -767,7 +767,7 @@ namespace Mod::Util::Client_Cmds
 	PooledString pstr("pooled");
 	CThreadLocalInt threadlocal;
 	CThreadRWLock threadlock;
-	void CC_Benchmark(CTFPlayer *player, const CCommand& args)
+	void CC_Benchmark(CCommandPlayer *player, const CCommand& args)
 	{
 		
 		if (args.ArgC() < 3) {
@@ -1252,7 +1252,7 @@ namespace Mod::Util::Client_Cmds
 		ModCommandResponse("%s", displaystr.c_str());
 	}
 
-	void CC_Taunt(CTFPlayer *player, const CCommand& args)
+	void CC_Taunt(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 3) {
 			ModCommandResponse("[sig_taunt] Usage: any of the following:\n"
@@ -1298,7 +1298,7 @@ namespace Mod::Util::Client_Cmds
 		CEconItemView::Destroy(view);
 	}
 	
-	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
+	void CC_AddAttr(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 4) {
 			ModCommandResponse("[sig_addattr] Usage: any of the following:\n"
@@ -1356,7 +1356,7 @@ namespace Mod::Util::Client_Cmds
 	}
 
 	bool allow_create_dropped_weapon = false;
-	void CC_DropItem(CTFPlayer *player, const CCommand& args)
+	void CC_DropItem(CCommandPlayer *player, const CCommand& args)
 	{
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec);
@@ -1384,7 +1384,7 @@ namespace Mod::Util::Client_Cmds
 	std::map<std::string, int> modelmapmedal;
 	std::vector<CBasePlayer *> modelplayertargets;
 
-	void CC_GiveEveryItem(CTFPlayer *player, const CCommand& args)
+	void CC_GiveEveryItem(CCommandPlayer *player, const CCommand& args)
 	{
 		GetSMTargets(player, args[1], modelplayertargets);
 		if (modelplayertargets.empty()) {
@@ -1425,11 +1425,11 @@ namespace Mod::Util::Client_Cmds
 		ModCommandResponse("items medals: %d\n", modelmapmedal.size());
 	}
 	
-	void CC_DumpInventory(CTFPlayer *player, const CCommand& args)
+	void CC_DumpInventory(CCommandPlayer *player, const CCommand& args)
 	{
 	}
 
-	void CC_DumpItems(CTFPlayer *player, const CCommand& args)
+	void CC_DumpItems(CCommandPlayer *player, const CCommand& args)
 	{
 		std::vector<CBasePlayer *> vec;
 		GetSMTargets(player, args[1], vec);
@@ -1481,7 +1481,7 @@ namespace Mod::Util::Client_Cmds
 		ModCommandResponse("%s", displaystr.c_str());
 	}
 
-	void CC_Sprays(CTFPlayer *player, const CCommand& args)
+	void CC_Sprays(CCommandPlayer *player, const CCommand& args)
 	{
 		for (int i = 0; i < sv->GetClientCount(); i++) {
 			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(i));
@@ -1491,7 +1491,7 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
-	void CC_Vehicle(CTFPlayer *player, const CCommand& args)
+	void CC_Vehicle(CCommandPlayer *player, const CCommand& args)
 	{
 		const char *type = "car";
 		const char *model = "models/buggy.mdl";
@@ -1542,7 +1542,7 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 	
-	void CC_PlayScene(CTFPlayer *player, const CCommand& args)
+	void CC_PlayScene(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() == 2) {
 			ForEachTFPlayer([&](CTFPlayer *playerl){
@@ -1553,7 +1553,7 @@ namespace Mod::Util::Client_Cmds
 		
 	}
 	
-	void CC_ClientCvar(CTFPlayer *player, const CCommand& args)
+	void CC_ClientCvar(CCommandPlayer *player, const CCommand& args)
 	{
 		ModCommandResponse("Command %d\n", args.ArgC());
 		if (args.ArgC() == 2) {
@@ -1561,7 +1561,7 @@ namespace Mod::Util::Client_Cmds
 		}
 	}
 
-	void CC_DropMarker(CTFPlayer *player, const CCommand& args)
+	void CC_DropMarker(CCommandPlayer *player, const CCommand& args)
 	{
 		if (args.ArgC() < 2) return;
 
@@ -1678,7 +1678,7 @@ namespace Mod::Util::Client_Cmds
 		ModCommandResponse("%s", buf);
 	}
 
-	int cpu_show_player[34] {};
+	int cpu_show_player[MAX_PLAYERS + 1] {};
 	float cpu_usage = 0;
 	void CC_Cpu_Usage(CTFPlayer* player, const CCommand& args)
     {
@@ -1822,7 +1822,7 @@ namespace Mod::Util::Client_Cmds
 	public:
 		ClientCmdsCommand(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
 
-		virtual bool CanPlayerCall(CTFPlayer *player) { return player == nullptr || !cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player); }
+		virtual bool CanPlayerCall(CCommandPlayer *player) { return player == nullptr || !cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player); }
 	};
 
 	class ClientCmdsCommandClient : public ModCommand
@@ -1830,7 +1830,7 @@ namespace Mod::Util::Client_Cmds
 	public:
 		ClientCmdsCommandClient(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
 
-		virtual bool CanPlayerCall(CTFPlayer *player) { return player != nullptr && (!cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player)); }
+		virtual bool CanPlayerCall(CCommandPlayer *player) { return player != nullptr && (!cvar_adminonly.GetBool() || PlayerIsSMAdminOrBot(player)); }
 	};
 
 	ClientCmdsCommandClient sig_setplayerscale("sig_setplayerscale", CC_SetPlayerScale, &s_Mod);

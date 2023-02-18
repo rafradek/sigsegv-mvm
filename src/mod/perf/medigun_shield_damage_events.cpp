@@ -1,3 +1,4 @@
+#ifdef SE_TF2
 #include "mod.h"
 #include "stub/tf_shareddefs.h"
 
@@ -60,3 +61,4 @@ namespace Mod::Perf::Medigun_Shield_Damage_Events
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+#endif

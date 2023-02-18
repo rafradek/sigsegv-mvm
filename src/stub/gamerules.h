@@ -149,8 +149,11 @@ public:
 	void SetTeamReady(int iIndex, bool ready)       { NULL_RET( ); this->m_bTeamReady.SetIndex(ready, iIndex); }
 	bool InSetup()                     { NULL_RET(false        ); return this->m_bInSetup; }
 	void SetInSetup(bool setup)        { NULL_RET( );             m_bInSetup = setup; }
-	
+#ifdef SE_TF2	
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0, CBasePlayer *player = nullptr) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags, player); }
+#else
+	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
+#endif
 	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
 	void State_Transition(gamerules_roundstate_t newState)                           { NULL_RET(    );        ft_State_Transition            (this, newState); }
 	void SetForceMapReset(bool reset)                                                { NULL_RET(    );        ft_SetForceMapReset            (this, reset); }
@@ -158,15 +161,19 @@ public:
 	
 	float GetNextRespawnWave(int iTeam, CBasePlayer *pPlayer) { NULL_RET(0.0f); return vt_GetNextRespawnWave(this, iTeam, pPlayer); }
 	
-	DECL_SENDPROP(bool[33],               m_bPlayerReady);
+	DECL_SENDPROP(bool[MAX_PLAYERS],               m_bPlayerReady);
 private:
 
 	DECL_SENDPROP(gamerules_roundstate_t, m_iRoundState);
 	DECL_SENDPROP(int,                    m_iWinningTeam);
-	DECL_SENDPROP(bool[33],            m_bTeamReady);
+	DECL_SENDPROP(bool[MAX_PLAYERS],            m_bTeamReady);
 	DECL_SENDPROP(bool,                   m_bInSetup);
 	
+#ifdef SE_TF2
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> ft_BroadcastSound;
+#else
+	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
+#endif
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         ft_GetMinTimeWhenPlayerMaySpawn;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> ft_State_Transition;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   ft_SetForceMapReset;
@@ -174,6 +181,7 @@ private:
 	static MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *> vt_GetNextRespawnWave;
 };
 
+#ifdef SE_TF2
 class CTFGameRules : public CTeamplayRoundBasedRules
 {
 public:
@@ -203,7 +211,7 @@ public:
 	void Set_m_bPlayingMannVsMachine(bool val) { NULL_RET(); this->m_bPlayingMannVsMachine = val; }
 	void SetRestartRoundTime(float time)       { NULL_RET(); this->m_flRestartRoundTime    = time; }
 	
-	DECL_SENDPROP(int[34],         m_ePlayerWantsRematch);
+	DECL_SENDPROP(int[MAX_PLAYERS + 1],         m_ePlayerWantsRematch);
 private:
 	DECL_SENDPROP(bool,           m_bPlayingMedieval);
 	DECL_SENDPROP(bool,           m_bPlayingMannVsMachine);
@@ -226,7 +234,7 @@ private:
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };
-
+#endif
 
 inline void CGameRulesProxy::NotifyNetworkStateChanged()
 {
@@ -246,7 +254,7 @@ inline const CViewVectors *CGameRules::GetViewVectors() const
 	return vt_GetViewVectors(this);
 }
 
-
+#ifdef SE_TF2
 inline void CTFGameRules::SetCustomUpgradesFile(const char *path)
 {
 	NULL_RET();
@@ -262,7 +270,7 @@ inline void CTFGameRules::SetCustomUpgradesFile(const char *path)
 	
 	this->SetCustomUpgradesFile(inputdata);
 }
-
+#endif
 
 extern GlobalThunk<CGameRules *> g_pGameRules;
 inline CGameRules *GameRules()
@@ -277,7 +285,9 @@ inline CGameRules *GameRules()
 inline CMultiplayRules          *MultiplayRules()          { return reinterpret_cast<CMultiplayRules          *>(GameRules()); }
 inline CTeamplayRules           *TeamplayGameRules()       { return reinterpret_cast<CTeamplayRules           *>(GameRules()); }
 inline CTeamplayRoundBasedRules *TeamplayRoundBasedRules() { return reinterpret_cast<CTeamplayRoundBasedRules *>(GameRules()); }
+#ifdef SE_TF2
 inline CTFGameRules             *TFGameRules()             { return reinterpret_cast<CTFGameRules             *>(GameRules()); }
+#endif
 
 
 const char *GetRoundStateName(gamerules_roundstate_t state);

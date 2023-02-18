@@ -9,7 +9,7 @@
 #include "mod/pop/common.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "stub/upgrades.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/strings.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/populators.h"

@@ -3,7 +3,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/projectiles.h"
 #include "stub/objects.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/nextbot_cc.h"
 #include "stub/gamerules.h"
 #include "stub/nav.h"

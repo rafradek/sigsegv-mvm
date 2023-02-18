@@ -351,6 +351,7 @@ MemberFuncThunk <const CNavArea *, bool, const Vector &, float>                 
 MemberVFuncThunk<const CNavArea *, bool, int, bool>                              CNavArea::vt_IsBlocked                            (TypeName<CNavArea>(), "CNavArea::IsBlocked");
 MemberFuncThunk <      CNavArea *, void>                                         CNavArea::ft_AddToOpenList                        ("CNavArea::AddToOpenList");
 MemberFuncThunk <      CNavArea *, void>                                         CNavArea::ft_RemoveFromOpenList                   ("CNavArea::RemoveFromOpenList");
+MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             CNavArea::vt_IsPotentiallyVisible                 (TypeName<CNavArea>(), "CNavArea::IsPotentiallyVisible");
 MemberVFuncThunk<const CNavArea *, bool, int>                                    CNavArea::vt_IsPotentiallyVisibleToTeam           (TypeName<CNavArea>(), "CNavArea::IsPotentiallyVisibleToTeam");
 MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               CNavArea::ft_CollectAdjacentAreas                 ("CNavArea::CollectAdjacentAreas");
 
@@ -359,6 +360,7 @@ StaticFuncThunk<void>                              CNavArea::ft_ClearSearchLists
 GlobalThunk<uint>       CNavArea::m_masterMarker("CNavArea::m_masterMarker");
 GlobalThunk<CNavArea *> CNavArea::m_openList("CNavArea::m_openList");
 
+#ifdef SE_TF2
 IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
 IMPL_EXTRACT (float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
 IMPL_RELATIVE(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes, sizeof(TFNavAttributeType));
@@ -371,6 +373,8 @@ MemberFuncThunk<      CTFNavArea *, bool> CTFNavArea::ft_IsValidForWanderingPopu
 
 StaticFuncThunk<void>                     CTFNavArea::ft_MakeNewTFMarker("CTFNavArea::MakeNewTFMarker");
 
+#endif
+
 
 MemberFuncThunk<const CNavMesh *, CNavArea *, const Vector&, float>                        CNavMesh::ft_GetNavArea_vec                          ("CNavMesh::GetNavArea [vec]");
 MemberFuncThunk<const CNavMesh *, CNavArea *, CBaseEntity *, int, float>                   CNavMesh::ft_GetNavArea_ent                          ("CNavMesh::GetNavArea [ent]");
@@ -382,6 +386,7 @@ MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>       
 MemberFuncThunk<CNavMesh *, int>                                                           CNavMesh::ft_Load                                    ("CNavMesh::Load");
 
 
+#ifdef SE_TF2
 MemberFuncThunk<CTFNavMesh *, void, CUtlVector<CBaseObject *> *, int> CTFNavMesh::ft_CollectBuiltObjects("CTFNavMesh::CollectBuiltObjects");
 MemberFuncThunk<CTFNavMesh *, void>                                   CTFNavMesh::ft_RecomputeInternalData("CTFNavMesh::RecomputeInternalData");
 
@@ -392,6 +397,8 @@ GlobalThunk<CUtlVector<CTFNavArea *>> TheNavAreas("TheNavAreas");
 
 StaticFuncThunk<float, CNavArea *, CNavArea *, CTFBotPathCost&, float>                                        ft_NavAreaTravelDistance_CTFBotPathCost("NavAreaTravelDistance<CTFBotPathCost>");
 StaticFuncThunk<bool, CNavArea *, CNavArea *, const Vector *, CTFBotPathCost&, CNavArea **, float, int, bool> ft_NavAreaBuildPath_CTFBotPathCost     ("NavAreaBuildPath<CTFBotPathCost>");
+
+#endif
 
 void CollectSurroundingAreas( CUtlVector< CNavArea * > *nearbyAreaVector, CNavArea *startArea, float travelDistanceLimit, float maxStepUpLimit, float maxDropDownLimit)
 {

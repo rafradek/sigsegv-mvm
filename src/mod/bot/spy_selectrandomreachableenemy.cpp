@@ -1,7 +1,7 @@
 #include "mod.h"
 #include "stub/tfbot.h"
 #include "stub/tf_shareddefs.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/iterate.h"
 #include "stub/tfbot_behavior.h"
 

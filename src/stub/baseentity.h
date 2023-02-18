@@ -9,14 +9,21 @@
 // TODO
 class CGlobalEntityList : public CBaseEntityList {
 public:
+#ifdef SE_TF2
 	CBaseEntity *FindEntityByClassname(CBaseEntity *prev, const char *classname, IEntityFindFilter *filter) { return ft_FindEntityByClassname(this, prev, classname, filter); }
-
+#else
+	CBaseEntity *FindEntityByClassname(CBaseEntity *prev, const char *classname) { return ft_FindEntityByClassname(this, prev, classname); }
+#endif
 	int m_iHighestEnt;
 	int m_iNumEnts;
 	int m_iNumEdicts;
 
 private:
+#ifdef SE_TF2
 	static MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> ft_FindEntityByClassname;
+#else
+	static MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *> ft_FindEntityByClassname;
+#endif
 };
 
 
@@ -347,7 +354,9 @@ public:
 	void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)                            {        vt_Teleport                      (this, newPosition, newAngles, newVelocity); }
 	int GetMaxHealth() const                                                                                                { return vt_GetMaxHealth                  (this); }
 	bool IsAlive()                                                                                                          { return vt_IsAlive                       (this); }
+#ifdef SE_TF2	
 	float GetDefaultItemChargeMeterValue() const                                                                            { return vt_GetDefaultItemChargeMeterValue(this); }
+#endif
 	bool IsDeflectable()																									{ return vt_IsDeflectable                 (this); }
 	void SetParent(CBaseEntity *entity, int attachment)                                                                     {        vt_SetParent                     (this, entity, attachment); }
 	bool IsPlayer()	const																									{ return vt_IsPlayer                      (this); }
@@ -397,7 +406,9 @@ public:
 	DECL_SENDPROP(int,    m_fFlags);
 	DECL_DATAMAP (int,    m_nNextThinkTick);
 	DECL_SENDPROP(char,   m_lifeState);
+#ifdef SE_TF2
 	DECL_SENDPROP(int[4], m_nModelIndexOverrides);
+#endif
 	DECL_SENDPROP(bool,   m_iTextureFrameIndex);
 	DECL_DATAMAP(float,      m_flLocalTime);
 	DECL_DATAMAP(float,      m_flAnimTime);
@@ -434,8 +445,12 @@ private:
 	DECL_DATAMAP(float,                  m_flGravity);
 	DECL_DATAMAP(QAngle,                 m_vecAngVelocity);
 	
+#ifdef SE_TF2
+	DECL_SENDPROP(int,                  m_iMaxHealth);
+#else
+	DECL_DATAMAP(int,                   m_iMaxHealth);
+#endif
 	DECL_SENDPROP_RW(CCollisionProperty,   m_Collision);
-	DECL_SENDPROP   (int,                  m_iMaxHealth);
 	DECL_SENDPROP   (int,                  m_iHealth);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hGroundEntity);
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hOwnerEntity);
@@ -514,7 +529,9 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, const Vector *>             vt_Teleport;
 	static MemberVFuncThunk<const CBaseEntity *, int>                                                              vt_GetMaxHealth;
 	static MemberVFuncThunk<      CBaseEntity *, bool>                                                             vt_IsAlive;
+#ifdef SE_TF2
 	static MemberVFuncThunk<const CBaseEntity *, float>                                                            vt_GetDefaultItemChargeMeterValue;
+#endif
 	static MemberVFuncThunk<      CBaseEntity *, bool>                                                             vt_IsDeflectable;
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *, int>                                         vt_SetParent;
 	static MemberVFuncThunk<const CBaseEntity *, bool>                                                             vt_IsPlayer;

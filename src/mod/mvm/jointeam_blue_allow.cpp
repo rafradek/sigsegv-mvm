@@ -1057,19 +1057,19 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 				someone_pressed_score = true;
 			}
 		});
-		int prevTeamNum[34];
+		int prevTeamNum[MAX_PLAYERS + 1];
 		if (someone_pressed_score || someone_spec) {
-			for (int i = 0; i < 34; i++) {
+			for (int i = 0; i < MAX_PLAYERS + 1; i++) {
 				prevTeamNum[i] = PlayerResource()->m_iTeam[i];
 				if (prevTeamNum[i] > TEAM_SPECTATOR) {
 					PlayerResource()->m_iTeam.SetIndex(gpGlobals->tickcount % 2, i);
 				}
 			}
 		}
-		bool prevIsGiant[34];
+		bool prevIsGiant[MAX_PLAYERS + 1];
 		if (cvar_no_footsteps.GetBool()) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (IsMvMBlueHuman(player)) {
+				if (IsMvMBlueHuman(player) && ENTINDEX(player) < MAX_PLAYERS + 1) {
 					bool isBoss = player->IsMiniBoss();
 					prevIsGiant[ENTINDEX(player)] = isBoss;
 					player->SetMiniBoss(true);
@@ -1081,14 +1081,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
 		if (someone_pressed_score) {
-			for (int i = 0; i < 34; i++) {
+			for (int i = 0; i < MAX_PLAYERS + 1; i++) {
 				PlayerResource()->m_iTeam.SetIndex(prevTeamNum[i], i);
 			}
 		}
 		
 		if (cvar_no_footsteps.GetBool()) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (IsMvMBlueHuman(player)) {
+				if (IsMvMBlueHuman(player) && ENTINDEX(player) < MAX_PLAYERS + 1) {
 					bool isBoss = prevIsGiant[ENTINDEX(player)];
 					player->SetMiniBoss(isBoss);
 					if (!isBoss && player->GetActiveTFWeapon() != nullptr) {
@@ -1149,7 +1149,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 			m_iPrevBonusPoints = 0;
 		}
 	};
-	ScoreStats score_stats[34];
+	ScoreStats score_stats[MAX_PLAYERS + 1];
 
 	void DisplayScoreboard(CTFPlayer *playerShow);
 
@@ -1497,7 +1497,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 		virtual void FrameUpdatePostEntityThink() override
 		{
-			static bool prevPressedScore[34];
+			static bool prevPressedScore[MAX_PLAYERS + 1];
 			if (TFGameRules()->IsMannVsMachineMode()) {
 				ForEachTFPlayer([](CTFPlayer *player){
 					if (player->GetTeamNumber() != TF_TEAM_BLUE) return;

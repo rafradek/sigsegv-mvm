@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "stub/nav.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/gamerules.h"
 #include "stub/tf_objective_resource.h"
 #include "util/scope.h"

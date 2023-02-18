@@ -4,9 +4,11 @@
 
 #include "prop.h"
 #include "link/link.h"
-#include "stub/tf_shareddefs.h"
-#include "stub/entities.h"
 
+#ifdef SE_TF2
+#include "stub/tf_shareddefs.h"
+#include "stub/tfentities.h"
+#endif
 
 class CBaseObject;
 class CTFBotPathCost;
@@ -277,6 +279,7 @@ public:
 	void RemoveFromOpenList()                                                                       { return ft_RemoveFromOpenList                   (this); }
 	void AddToOpenList()                                                                            { return ft_AddToOpenList                        (this); }
 	bool IsBlocked(int teamID, bool ignoreNavBlockers = false) const                                { return vt_IsBlocked                            (this, teamID, ignoreNavBlockers); }
+	bool IsPotentiallyVisible(CNavArea *area) const                                                 { return vt_IsPotentiallyVisible                 (this, area); }
 	bool IsPotentiallyVisibleToTeam(int teamID) const                                               { return vt_IsPotentiallyVisibleToTeam           (this, teamID); }
 	void CollectAdjacentAreas(CUtlVector<CNavArea *> *vector)                                       { return ft_CollectAdjacentAreas                 (this, vector); }
 	
@@ -322,12 +325,14 @@ private:
 	static MemberVFuncThunk<const CNavArea *, bool, int, bool>                              vt_IsBlocked;
 	static MemberFuncThunk <      CNavArea *, void>                                         ft_AddToOpenList;
 	static MemberFuncThunk <      CNavArea *, void>                                         ft_RemoveFromOpenList;
+	static MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             vt_IsPotentiallyVisible;
 	static MemberVFuncThunk<const CNavArea *, bool, int>                                    vt_IsPotentiallyVisibleToTeam;
 	static MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               ft_CollectAdjacentAreas;
 
 	static StaticFuncThunk<void>                              ft_ClearSearchLists;
 };
 
+#ifdef SE_TF2
 class CTFNavArea : public CNavArea
 {
 public:
@@ -359,6 +364,7 @@ private:
 	static MemberFuncThunk<      CTFNavArea *, bool> ft_IsValidForWanderingPopulation;
 	
 };
+#endif
 
 
 class CNavMesh
@@ -385,6 +391,7 @@ private:
 	static MemberFuncThunk<      CNavMesh *, int>                                                     ft_Load;
 };
 
+#ifdef SE_TF2
 class CTFNavMesh : public CNavMesh
 {
 public:
@@ -417,6 +424,7 @@ inline bool NavAreaBuildPath(CNavArea *startArea, CNavArea *goalArea, const Vect
 	/* we call NavAreaBuildPath<CTFBotPathCost> for all functor types; should be okay */
 	return ft_NavAreaBuildPath_CTFBotPathCost(startArea, goalArea, goalPos, *reinterpret_cast<CTFBotPathCost *>(&costFunc), closestArea, maxPathLength, teamID, ignoreNavBlockers);
 }
+#endif
 
 void CollectSurroundingAreas(CUtlVector< CNavArea * > *nearbyAreaVector, CNavArea *startArea, float travelDistanceLimit = 1500.0f, float maxStepUpLimit = StepHeight, float maxDropDownLimit = 100.0f);
 #endif

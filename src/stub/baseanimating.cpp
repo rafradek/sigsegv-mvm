@@ -1,6 +1,8 @@
 #include "stub/baseanimating.h"
+#ifdef SE_TF2
 #include "stub/econ.h"
 #include "stub/tfweaponbase.h"
+#endif
 
 
 IMPL_SENDPROP(int,   CBaseAnimating, m_nSkin,        CBaseAnimating);
@@ -41,6 +43,8 @@ MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimatin
 MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_StudioFrameAdvance(TypeName<CBaseAnimating>(), "CBaseAnimating::StudioFrameAdvance");
 MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_RefreshCollisionBounds(TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");
 
+
+#ifdef SE_TF2
 IMPL_SENDPROP(bool, CEconEntity, m_bValidatedAttachedEntity, CEconEntity);
 
 MemberFuncThunk<CEconEntity *, void> CEconEntity::ft_DebugDescribe("CEconEntity::DebugDescribe");
@@ -72,6 +76,7 @@ void CEconEntity::Validate()
 		}
 	}
 }
+#endif SE_TF2
 
 StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize("UTIL_SetSize");
 StaticFuncThunk<float, CBaseFlex *, const char *, EHANDLE *, float, bool, void *, bool, IRecipientFilter *> ft_InstancedScriptedScene("InstancedScriptedScene");

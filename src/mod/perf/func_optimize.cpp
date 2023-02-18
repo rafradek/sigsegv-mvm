@@ -2,18 +2,25 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#ifdef SE_TF2
 #include "stub/tfplayer.h"
+#endif
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
+#ifdef SE_TF2
 #include "stub/tfweaponbase.h"
+#include "stub/tfbot.h"
+#include "stub/strings.h"
+#endif
 #include "stub/extraentitydata.h"
+#include "stub/nav.h"
 #include "sdk2013/mempool.h"
 #include "mem/protect.h"
 #include "util/prop_helper.h"
-#include "stub/strings.h"
-#include "stub/tfbot.h"
-#include <utlsymbol.h> 
+#include <utlsymbol.h>
+#include "stub/trace.h"
+ 
 
 namespace Mod::Perf::Func_Optimize
 {   
@@ -97,6 +104,7 @@ namespace Mod::Perf::Func_Optimize
         std::string name;
 	};
 
+#ifdef SE_TF2
     constexpr uint8_t s_Buf_CEconItemView_GetStaticData[] = {
         0x55,                      //push   ebp 0
         0x89, 0xe5,                   //mov    ebp,esp 1
@@ -477,6 +485,7 @@ namespace Mod::Perf::Func_Optimize
         }
         return nullptr;
 	}
+#endif
 
     edict_t *world_edict = nullptr;
     DETOUR_DECL_STATIC(CBasePlayer *, UTIL_PlayerByIndex, int slot)
@@ -534,6 +543,8 @@ namespace Mod::Perf::Func_Optimize
 	{
         
     }
+    
+#ifdef SE_TF2
     DETOUR_DECL_STATIC(void, CTFPlayer_PrecacheMvM)
 	{
         DETOUR_STATIC_CALL(CTFPlayer_PrecacheMvM)();
@@ -777,16 +788,148 @@ namespace Mod::Perf::Func_Optimize
         }
         return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
     }
+
+    bool IsOnNav(CBaseEntity *entity, float maxZDistance, float maxXYDistance)
+	{
+		auto subjectCombat = entity->MyCombatCharacterPointer();
+		if (subjectCombat != nullptr) {
+			auto area = subjectCombat->GetLastKnownArea();
+			if (area != nullptr) {
+				
+				auto &vec = entity->GetAbsOrigin();
+				bool contains = area->IsOverlapping(vec,maxXYDistance);
+				float z = area->GetZ(vec.x, vec.y);
+				if (!contains || z - vec.z > maxZDistance) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+#endif
+
+    // class CSPlayerBoneOffsets : public EntityModule 
+    // {
+    // public:
+    //     CSPlayerBoneOffsets(CBaseEntity *owner) : EntityModule(owner) {}
+    //     Vector boneOffsets[5];
+    //     QAngle boneAngleStored[5];
+    //     Vector bonePosCalculated[5];
+    //     int boneOffsetsTick[5] {0,0,0,0,0};
+    // };
+
+    
+    // RefCount rc_CCSBot_IsVisible;
+    // DETOUR_DECL_MEMBER(Vector *, CCSBot_GetPartPosition, CBasePlayer *player, int partType)
+	// {
+    //     if (!rc_CCSBot_IsVisible) return DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+        
+    //     auto me = reinterpret_cast<CBasePlayer *>(this);
+    //     auto mod = me->GetOrCreateEntityModule<CSPlayerBoneOffsets>("boneoffsets");
+    //     int partTypeIndex = 0;
+    //     switch (partType) {
+    //         case 1: partTypeIndex = 0; break;
+    //         case 2: partTypeIndex = 1; break;
+    //         case 4: partTypeIndex = 2; break;
+    //         case 8: partTypeIndex = 3; break;
+    //         case 16: partTypeIndex = 4; break;
+    //     }
+    //     if (gpGlobals->tickcount > mod->boneOffsetsTick[partTypeIndex] + 6) {
+    //         auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+    //         mod->boneOffsets[partTypeIndex] = *vec - player->GetAbsOrigin(); 
+    //         //mod->boneAngleStored[partTypeIndex] = player->GetAbsAngles(); 
+    //         mod->boneOffsetsTick[partTypeIndex] = gpGlobals->tickcount;
+    //         return vec;
+    //     }
+    //     else {
+    //         auto boneOffset = mod->boneOffsets[partTypeIndex];
+    //         auto bonePosCalculated = &mod->bonePosCalculated[partTypeIndex];
+    //         //Vector boneOffsetResult;
+    //         //VectorRotate(boneOffset, player->GetAbsAngles() - mod->boneAngleStored[partTypeIndex], boneOffsetResult);
+    //         *bonePosCalculated = player->GetAbsOrigin() + boneOffset;
+    //         //auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+    //         //Msg("Diff %f %f %f\n", vec->x - bonePosCalculated->x, vec->y - bonePosCalculated->y, vec->z - bonePosCalculated->z);
+    //         return bonePosCalculated;
+    //     }
+    //     //auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+    //     //Msg("Part %d offset %f %f %f\n", partType, vec->x - player->GetAbsOrigin().x, vec->y - player->GetAbsOrigin().y, vec->z - player->GetAbsOrigin().z);
+    //     //return vec;
+    // }
+
+    // DETOUR_DECL_MEMBER(bool, CCSBot_IsVisible, CBasePlayer *player, bool testFov, unsigned char *visParts)
+	// {
+    //     SCOPED_INCREMENT(rc_CCSBot_IsVisible);
+    //     {
+    //         TIME_SCOPE2(potentiallyvisiblecalc);
+    //         auto me = reinterpret_cast<CBasePlayer *>(this);
+    //         Vector origin = player->GetAbsOrigin();
+    //         Vector center = player->CollisionProp()->OBBCenter();
+    //         if (testFov && !me->FInViewCone(origin+center)) return false;
+    //         Vector ourEyePos = me->EyePosition();
+    //         Vector mins = player->CollisionProp()->OBBMins();
+    //         Vector maxs = player->CollisionProp()->OBBMaxs();
+    //         Vector fwd;
+    //         Vector right;
+    //         AngleVectors(player->GetAbsAngles(), &fwd, &right, nullptr);
+
+    //         bool potentiallyVisible = false;
+    //         for (const Vector &pos : {origin + Vector(0,0,5), maxs + origin, Vector(maxs.x, mins.y, maxs.z) + origin, Vector(mins.x, mins.y, maxs.z) + origin, Vector(mins.x, maxs.y, mins.z + 8) + origin, center + origin, player->EyePosition(), origin + Vector(0,0,45) + fwd * 60, origin + Vector(0,0,45) + right * 60, origin + Vector(0,0,45) - right * 60} ) {
+    //             trace_t result;
+    //             CTraceFilterIgnorePlayers traceFilter( nullptr, COLLISION_GROUP_NONE );
+    //             UTIL_TraceLine( ourEyePos, pos, MASK_VISIBLE_AND_NPCS, &traceFilter, &result );
+    //             //Msg("Our %f %f %f\n", pos.x - player->GetAbsOrigin().x, pos.y - player->GetAbsOrigin().y, pos.z - player->GetAbsOrigin().z);
+    //             if (result.fraction == 1.0f) {
+    //                 potentiallyVisible = true;
+    //                 break;
+    //             }
+    //         }
+    //         //if (!potentiallyVisible) return false;
+    //     }
+    //     TIME_SCOPE2(realcalc);
+    //     // trace_t result;
+    //     // CTraceFilterNoNPCsOrPlayer traceFilter( ignore, COLLISION_GROUP_NONE );
+    //     // UTIL_TraceLine( EyePositionConst(), pos, MASK_VISIBLE_AND_NPCS, &traceFilter, &result );
+
+    //     // if (result.fraction != 1.0f)
+	// 	// return false;
+
+    //     // if (myArea != nullptr && theirArea != nullptr) {
+    //     //     bool isVisible = myArea->IsPotentiallyVisible(theirArea);
+    //     //     Msg("\n");
+    //     //     if (!isVisible) {
+    //     //         return false;
+    //     //     }
+    //     // }
+    //     auto ret = DETOUR_MEMBER_CALL(CCSBot_IsVisible)(player,testFov,visParts);
+    //     // static int last_tick = 0;
+    //     // static int visible_potentially = 0;
+    //     // static int visible_potentially_not = 0;
+    //     // if (ret) {
+    //     //     if (potentiallyVisible) {
+    //     //         visible_potentially++;
+    //     //     }
+    //     //     else {
+    //     //         visible_potentially_not++;
+    //     //     }
+    //     // }
+    //     // if (last_tick != gpGlobals->tickcount) {
+    //     //     Msg("Potentially visible test: correct %d fail %d\n", visible_potentially, visible_potentially_not);
+    //     // }
+    //     // last_tick = gpGlobals->tickcount;
+    //     return ret;
+    // }
+
     class CMod : public IMod, public IModCallbackListener
 	{
 	public:
 		CMod() : IMod("Perf::Func_Optimize")
 		{
+			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
+#ifdef SE_TF2
 			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
 			this->AddPatch(new CPatch_CTFPlayerShared_InCond());
 			this->AddPatch(new CPatch_CEconItemView_GetStaticData());
 			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
-			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
             
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink", LOW);
@@ -799,13 +942,15 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Weapon_Equip, "CBasePlayer::Weapon_Equip");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot", HIGHEST);
             MOD_ADD_DETOUR_STATIC(UTIL_PlayerByIndex, "UTIL_PlayerByIndex");
+#endif
 
             // Those detours disable multithreading for mdl load to get rid of performance affecting locks
             MOD_ADD_DETOUR_STATIC(CBaseEntity_PrecacheModel, "CBaseEntity::PrecacheModel");
             MOD_ADD_DETOUR_MEMBER(CModelInfoServer_RegisterDynamicModel, "CModelInfoServer::RegisterDynamicModel");
-            MOD_ADD_DETOUR_STATIC(CTFPlayer_PrecacheMvM, "CTFPlayer::PrecacheMvM");
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::BeginLock"));
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::EndLock"));
+#ifdef SE_TF2
+            MOD_ADD_DETOUR_STATIC(CTFPlayer_PrecacheMvM, "CTFPlayer::PrecacheMvM");
             
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed, "CTFPlayer::SpeakConceptIfAllowed");
             MOD_ADD_DETOUR_MEMBER(CTFBot_AvoidPlayers, "CTFBot::AvoidPlayers");
@@ -818,11 +963,17 @@ namespace Mod::Perf::Func_Optimize
             // Fix lag when spawning items on bots
             MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
+#endif
+#ifdef SE_CSS
+            //MOD_ADD_DETOUR_MEMBER(CCSBot_IsVisible, "CCSBot::IsVisible");
+            //MOD_ADD_DETOUR_MEMBER(CCSBot_GetPartPosition, "CCSBot::GetPartPosition");
+#endif
             
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
+#ifdef SE_TF2
         virtual void LevelInitPreEntity() override 
         {
             item_defs.clear();
@@ -835,10 +986,14 @@ namespace Mod::Perf::Func_Optimize
             CThreadLocalBase_Get_addr = (uintptr_t)AddrManager::GetAddr("CThreadLocalBase::Get");
             return true;
         }
+#endif
+
 
         virtual void OnEnablePost() override 
         {
+#ifdef SE_TF2
             schema = GetItemSchema();
+#endif
             world_edict = INDEXENT(0);
             // auto addr = (uint8_t *)AddrManager::GetAddr("CEconItemView::GetStaticData");
             // Msg("Post enable:");

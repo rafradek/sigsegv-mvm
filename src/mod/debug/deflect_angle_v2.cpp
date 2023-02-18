@@ -2,7 +2,7 @@
 #include "util/scope.h"
 #include "stub/tfplayer.h"
 #include "stub/tf_shareddefs.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 
 
 namespace Mod::Debug::Deflect_Angle_v2

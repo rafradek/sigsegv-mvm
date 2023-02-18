@@ -7,6 +7,7 @@
 		"#supported"
 		{
 			engine "tf2"
+			engine "css"
 		}
 		
 		"sigsegv"
@@ -84,7 +85,9 @@
 				"CSceneEntity::m_pcvSndMixahead" "_ZN12CSceneEntity16m_pcvSndMixaheadE"
 
 				"DT_TFPlayer::g_SendTable" "_ZN11DT_TFPlayer11g_SendTableE"
+				"DT_CSPlayer::g_SendTable" "_ZN11DT_CSPlayer11g_SendTableE"
 				"g_CTFPlayer_ClassReg" "_ZL20g_CTFPlayer_ClassReg"
+				"g_CCSPlayer_ClassReg" "_ZL20g_CCSPlayer_ClassReg"
 				
 				"g_MedigunEffects" "g_MedigunEffects"
 				"g_pMonsterResource" "g_pMonsterResource"

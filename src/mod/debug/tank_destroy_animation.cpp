@@ -1,5 +1,5 @@
 #include "mod.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/scope.h"
 
 

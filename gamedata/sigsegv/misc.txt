@@ -7,6 +7,7 @@
 		"#supported"
 		{
 			engine "tf2"
+			engine "css"
 		}
 		
 		"sigsegv"
@@ -986,15 +987,6 @@
 					sym  "_ZNK11CBaseEntity13GetModelIndexEv"
 				}
 				
-				"CGlobalEntityList::FindEntityByClassname"
-				{
-					type "pattern"
-					sym  "_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKcP17IEntityFindFilter"
-					seg  "text"
-					seek "558bec5356578bf98b4d0885c974158b01ff50088b3081e6ff0f00004603f68b34f7eb068bb70400010085f674318b5d0c8b3e85ff75106880a47010ff1574f26a1083c404eb11395f5c741c538bcfe8ac9ffaff84c075108b760c85f675d25f5e33c05b5dc208008bc75f5e5b5dc20800"
-					mask "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffff00000000ffff00000000ffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-				}
-				
 				"CTFFlameEntity::FlameThink"
 				{
 					type    "func ebpprologue vprof"
@@ -1933,12 +1925,6 @@
 				{
 					type "sym"
 					sym  "_ZN17CBaseCombatWeapon4DropERK6Vector"
-				}
-				
-				"CTeamplayRoundBasedRules::BroadcastSound"
-				{
-					type "sym"
-					sym  "_ZN24CTeamplayRoundBasedRules14BroadcastSoundEiPKciP11CBasePlayer"
 				}
 				
 				"tf_mvm_popfile"
@@ -3086,11 +3072,6 @@
 				{
 					type "sym"
 					sym  "_ZN11CTFRevolver19CanFireCriticalShotEbP11CBaseEntity"
-				}
-				"CBaseProjectile::IsDestroyable"
-				{
-					type "sym"
-					sym  "_ZN15CBaseProjectile13IsDestroyableEb"
 				}
 				"CBaseProjectile::Destroy"
 				{
@@ -6876,6 +6857,57 @@
 					type "sym"
 					sym  "_Z20LookupWeaponInfoSlotPKc"
 				}
+				"CBasePlayer::ClientCommand"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer13ClientCommandERK8CCommand"
+				}
+				"CBaseMultiplayerPlayer::SpeakConceptIfAllowed"
+				{
+					type "sym"
+					sym  "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
+				}
+				"CBaseCombatCharacter::ShouldGib"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter9ShouldGibERK15CTakeDamageInfo"
+				}
+				"CBasePlayer::ForceRespawn"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer12ForceRespawnEv"
+				}
+				"CBasePlayer::CreateViewModel"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer15CreateViewModelEi"
+				}
+				"CBasePlayer::EquipWearable"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
+				}
+				"CBasePlayer::Weapon_Equip"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer12Weapon_EquipEP17CBaseCombatWeapon"
+				}
+				"CBasePlayer::ShowViewPortPanel"
+				{
+					type "sym"
+					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
+				}
+				"CBasePlayer::IsPlayer"
+				{
+					type "sym"
+					sym  "_ZNK11CBasePlayer8IsPlayerEv"
+				}
+				"CBaseCombatCharacter::FInViewCone"
+				{
+					type "sym"
+					sym  "_ZN20CBaseCombatCharacter11FInViewConeERK6Vector"
+				}
+				
 			}
 			"addrs_group"
 			{
@@ -6904,10 +6936,6 @@
 				
 				"CBaseCombatCharacter::GetBossType" "_ZNK20CBaseCombatCharacter11GetBossTypeEv"
 				
-				"CTeam::GetName"       "_ZNK5CTeam7GetNameEv"
-				"CTeam::GetNumPlayers" "_ZNK5CTeam13GetNumPlayersEv"
-				"CTeam::GetPlayer"     "_ZNK5CTeam9GetPlayerEi"
-				"CTeam::GetTeamNumber" "_ZNK5CTeam13GetTeamNumberEv"
 				
 				"CTFTeam::GetNumObjects" "_ZN7CTFTeam13GetNumObjectsEi"
 				"CTFTeam::GetObject"     "_ZN7CTFTeam9GetObjectEi"
@@ -6992,4 +7020,99 @@
 			}
 		}
 	}
+	"#default"
+	{
+		"#supported"
+		{
+			engine "css"
+		}
+		"sigsegv"
+		{
+			"addrs"
+			{
+				"CGlobalEntityList::FindEntityByClassname"
+				{
+					type "sym"
+					sym  "_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				}
+				"CTeamplayRoundBasedRules::BroadcastSound"
+				{
+					type "sym"
+					sym  "_ZN24CTeamplayRoundBasedRules14BroadcastSoundEiPKci"
+				}
+				"CBaseProjectile::IsDestroyable"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile13IsDestroyableEv"
+				}
+				"CCSBot::IsVisible"
+				{
+					type "sym"
+					sym  "_ZNK6CCSBot9IsVisibleEP9CCSPlayerbPh"
+				}
+				"CCSBot::GetPartPosition"
+				{
+					type "sym"
+					sym  "_ZNK6CCSBot15GetPartPositionEP9CCSPlayerNS_15VisiblePartTypeE"
+				}
+				
+			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym"
+					lib  "server"
+				}
+				"CTeam::GetName"       "_ZN5CTeam7GetNameEv"
+				"CTeam::GetNumPlayers" "_ZN5CTeam13GetNumPlayersEv"
+				"CTeam::GetPlayer"     "_ZN5CTeam9GetPlayerEi"
+				"CTeam::GetTeamNumber" "_ZNK5CTeam13GetTeamNumberEv"
+			}
+		}
+	}
+	"#default"
+	{
+		"#supported"
+		{
+			engine "tf"
+		}
+		"sigsegv"
+		{
+			"addrs"
+			{
+				"CGlobalEntityList::FindEntityByClassname"
+				{
+					type "pattern"
+					sym  "_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKcP17IEntityFindFilter"
+					seg  "text"
+					seek "558bec5356578bf98b4d0885c974158b01ff50088b3081e6ff0f00004603f68b34f7eb068bb70400010085f674318b5d0c8b3e85ff75106880a47010ff1574f26a1083c404eb11395f5c741c538bcfe8ac9ffaff84c075108b760c85f675d25f5e33c05b5dc208008bc75f5e5b5dc20800"
+					mask "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffff00000000ffff00000000ffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+				}
+				"CTeamplayRoundBasedRules::BroadcastSound"
+				{
+					type "sym"
+					sym  "_ZN24CTeamplayRoundBasedRules14BroadcastSoundEiPKciP11CBasePlayer"
+				}
+				"CBaseProjectile::IsDestroyable"
+				{
+					type "sym"
+					sym  "_ZN15CBaseProjectile13IsDestroyableEb"
+				}
+			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym"
+					lib  "server"
+				}
+				"CTeam::GetName"       "_ZNK5CTeam7GetNameEv"
+				"CTeam::GetNumPlayers" "_ZNK5CTeam13GetNumPlayersEv"
+				"CTeam::GetPlayer"     "_ZNK5CTeam9GetPlayerEi"
+				"CTeam::GetTeamNumber" "_ZNK5CTeam13GetTeamNumberEv"
+			}
+		}
+	}
+
 }

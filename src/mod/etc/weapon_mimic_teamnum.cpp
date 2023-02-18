@@ -2,7 +2,7 @@
 #include "stub/baseentity.h"
 #include "stub/extraentitydata.h"
 #include "stub/projectiles.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/misc.h"
 #include "util/misc.h"
 #include "PlayerState.h"

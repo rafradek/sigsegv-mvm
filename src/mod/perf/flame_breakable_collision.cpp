@@ -1,3 +1,4 @@
+#ifdef SE_TF2
 #include "mod.h"
 #include "util/scope.h"
 
@@ -39,3 +40,4 @@ namespace Mod::Perf::Flame_Breakable_Collision
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+#endif

@@ -1,12 +1,17 @@
 #include "mod.h"
 #include "util/scope.h"
 #include "util/clientmsg.h"
+#include "stub/baseplayer.h"
+#ifdef SE_TF2
 #include "stub/tfplayer.h"
+#endif
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
-#include "stub/tfweaponbase.h"
+#include "stub/baseweapon.h"
+#ifdef SE_TF2
 #include "stub/tf_objective_resource.h"
+#endif
 #include <forward_list>
 #include "stub/sendprop.h"
 #include "util/iterate.h"
@@ -892,7 +897,8 @@ namespace Mod::Perf::SendProp_Optimize
         //DETOUR_MEMBER_CALL(CParallelProcessor_PackWork_t_Run)(work_do.data(), work_do.size(), maxthreads, pool);
         //DevMsg("duration for %d %f\n", maxthreads, timer.GetDuration().GetSeconds());
     }
-        
+
+#ifdef SE_TF2
     DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
@@ -913,6 +919,7 @@ namespace Mod::Perf::SendProp_Optimize
             
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
+#endif
 
     IChangeInfoAccessor *world_accessor = nullptr;
     CEdictChangeInfo *world_change_info = nullptr;
@@ -968,6 +975,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
+#ifdef SE_TF2
     DETOUR_DECL_MEMBER(void , CMultiPlayerAnimState_AddToGestureSlot, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
 	{
         auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
@@ -983,6 +991,7 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CMultiPlayerAnimState_RestartGesture)(iGestureSlot, iGestureActivity, bAutoKill);
         flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
+#endif
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_D2)
 	{
@@ -1003,7 +1012,7 @@ namespace Mod::Perf::SendProp_Optimize
         for (int i = 1; i <= gpGlobals->maxClients; i++) {
             edict_t *edict = worldedict + i;
             if (!edict->IsFree() && edict->m_fStateFlags & (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED)) {
-                CTFPlayer *ent = reinterpret_cast<CTFPlayer *>(GetContainingEntity(edict));
+                CBasePlayer *ent = reinterpret_cast<CBasePlayer *>(GetContainingEntity(edict));
                 bool isalive = ent->IsAlive();
                 if (ent->GetFlags() & FL_FAKECLIENT && (!isalive && ent->GetDeathTime() + 1.0f < gpGlobals->curtime)) {
                     edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
@@ -1054,6 +1063,7 @@ namespace Mod::Perf::SendProp_Optimize
         return pRet;
     }
     
+#ifdef SE_TF2
     DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
     {
         DETOUR_MEMBER_CALL(CPopulationManager_SetPopulationFilename)(filename);
@@ -1062,6 +1072,7 @@ namespace Mod::Perf::SendProp_Optimize
             TFObjectiveResource()->m_iszMvMPopfileName = AllocPooledString(filename);
         }
     }
+#endif
 
     static MemberFuncThunk<INetworkStringTableContainer *, void, int> ft_DirectUpdate("CNetworkStringTableContainer::DirectUpdate");
 
@@ -1117,20 +1128,20 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_SetLayerCycle,"CBaseAnimatingOverlay::SetLayerCycle");
+
+#ifdef SE_TF2
             MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_AddToGestureSlot,"CMultiPlayerAnimState::AddToGestureSlot");
             MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_RestartGesture,"CMultiPlayerAnimState::RestartGesture");
-            
-            
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");
+#endif
             MOD_ADD_DETOUR_STATIC(PackEntities_Normal,   "PackEntities_Normal");
             MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,   "SendTable_WritePropList");
             MOD_ADD_DETOUR_STATIC(AllocChangeFrameList,   "AllocChangeFrameList");
 		    MOD_ADD_DETOUR_STATIC(SendTable_CullPropsFromProxies, "SendTable_CullPropsFromProxies");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2,"~CBaseEntity [D2]");
-            
-            MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");
             
 		}
         virtual void PreLoad() override
@@ -1147,10 +1158,16 @@ namespace Mod::Perf::SendProp_Optimize
             emptySendProxy = AddrManager::GetAddr("SendProxy_Empty");
             
 			g_SharedEdictChangeInfo = engine->GetSharedEdictChangeInfo();
-            SendTable &table = DT_TFPlayer_g_SendTable;
-            playerSendTable = &table;
-            ServerClass &svclass = g_CTFPlayer_ClassReg;
-            playerServerClass = &svclass;
+
+            // Find player class (has DT_BasePlayer as a baseclass table)
+            for(ServerClass *serverclass = gamedll->GetAllServerClasses(); serverclass->m_pNext != nullptr; serverclass = serverclass->m_pNext) {
+                for (int i = 0; i < serverclass->m_pTable->GetNumProps(); i++) {
+                    if (serverclass->m_pTable->GetProp(i)->GetDataTable() != nullptr && strcmp(serverclass->m_pTable->GetProp(i)->GetDataTable()->GetName(), "DT_BasePlayer") == 0 ) {
+                        playerSendTable = serverclass->m_pTable;
+                        playerServerClass = serverclass;
+                    }
+                }
+            }
 		}
 
         void AddOffsetToList(ServerClassCache &cache, int offset, int index, int element) {

@@ -100,7 +100,7 @@ namespace Mod::Etc::HLTV_Client_Interact
 	};
 	CMod s_Mod;
     
-    ModCommand sig_tvspectators("sig_tvspectators", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_tvspectators("sig_tvspectators", [](CCommandPlayer *player, const CCommand& args){
 		std::string str("Spectators:\n");
         for (int i = 0; i < hltv->GetClientCount(); i++) {
             IClient *cl = hltv->GetClient(i);

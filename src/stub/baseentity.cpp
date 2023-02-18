@@ -1,9 +1,15 @@
 #include "stub/baseentity.h"
 #include "stub/baseplayer.h"
 //#include "util/iterate.h"
+#ifdef SE_TF2
 #include "stub/objects.h"
+#endif
 
+#ifdef SE_TF2
 MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
+#else
+MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
+#endif
 
 MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> CServerNetworkProperty::ft_AttachEdict("CServerNetworkProperty::AttachEdict");
 
@@ -41,10 +47,14 @@ IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_iParentAttachment,  CBaseEntity);
 
+#ifdef SE_TF2
+IMPL_SENDPROP(int,                  CBaseEntity, m_iMaxHealth,           CBaseObject);
+#else
+IMPL_DATAMAP(int,                  CBaseEntity, m_iMaxHealth);
+#endif
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTextureFrameIndex,   CBaseEntity);
 IMPL_SENDPROP(CCollisionProperty,   CBaseEntity, m_Collision,            CBaseEntity);
 IMPL_SENDPROP(int,                  CBaseEntity, m_iTeamNum,             CBaseEntity);
-IMPL_SENDPROP(int,                  CBaseEntity, m_iMaxHealth,           CBaseObject);
 IMPL_SENDPROP(int,                  CBaseEntity, m_iHealth,              CBasePlayer);
 IMPL_SENDPROP(char,                 CBaseEntity, m_lifeState,            CBasePlayer);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseEntity, m_hGroundEntity,        CBasePlayer);
@@ -54,7 +64,10 @@ IMPL_SENDPROP(int,                  CBaseEntity, m_CollisionGroup,       CBaseEn
 IMPL_SENDPROP(unsigned char,        CBaseEntity, m_nRenderMode,          CBaseEntity);
 IMPL_SENDPROP(unsigned char,        CBaseEntity, m_MoveType,             CBaseEntity, "movetype");
 IMPL_SENDPROP(unsigned char,        CBaseEntity, m_MoveCollide,          CBaseEntity, "movecollide");
+
+#ifdef SE_TF2
 IMPL_SENDPROP(int[4],               CBaseEntity, m_nModelIndexOverrides, CBaseEntity);
+#endif
 IMPL_SENDPROP(color32,              CBaseEntity, m_clrRender,            CBaseEntity);
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecVelocity,          CBaseGrenade);
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecOrigin,            CBaseEntity);
@@ -126,7 +139,9 @@ MemberVFuncThunk<      CBaseEntity *, INextBot *                                
 MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, const Vector *            > CBaseEntity::vt_Teleport                      (TypeName<CBaseEntity>(), "CBaseEntity::Teleport");
 MemberVFuncThunk<const CBaseEntity *, int                                                             > CBaseEntity::vt_GetMaxHealth                  (TypeName<CBaseEntity>(), "CBaseEntity::GetMaxHealth");
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsAlive                       (TypeName<CBaseEntity>(), "CBaseEntity::IsAlive");
+#ifdef SE_TF2
 MemberVFuncThunk<const CBaseEntity *, float                                                           > CBaseEntity::vt_GetDefaultItemChargeMeterValue(TypeName<CBaseEntity>(), "CBaseEntity::GetDefaultItemChargeMeterValue");
+#endif
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsDeflectable                 (TypeName<CBaseEntity>(), "CBaseEntity::IsDeflectable");
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *, int                                        > CBaseEntity::vt_SetParent                     (TypeName<CBaseEntity>(), "CBaseEntity::SetParent");
 MemberVFuncThunk<const CBaseEntity *, bool                                                            > CBaseEntity::vt_IsPlayer                      (TypeName<CBaseEntity>(), "CBaseEntity::IsPlayer");

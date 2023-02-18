@@ -1,4 +1,5 @@
 #include "stub/misc.h"
+#include "util/misc.h"
 
 
 /* duplicate definition is fine; fixes linker errors */
@@ -283,7 +284,7 @@ void PrintToChatAll(const char *str)
 	engine->MessageEnd();
 }
 
-void PrintToChat(const char *str, CTFPlayer *player)
+void PrintToChat(const char *str, CBasePlayer *player)
 {
 	int msg_type = usermessages->LookupUserMessage("SayText2");
 	if (msg_type == -1) return;

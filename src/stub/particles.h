@@ -81,16 +81,18 @@ inline const char * GetParticleSystemNameFromIndex(int index)
 	return ft_GetParticleSystemNameFromIndex(index);
 }
 
-static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");
-inline void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID = -1, int nSound = 11 /*SPECIAL1*/, int iCustomParticle = INVALID_STRING_INDEX )
-{
-	ft_TE_TFExplosion(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
-}
-
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const char *, const CEffectData &> ft_TE_DispatchEffect("TE_DispatchEffect");
 inline void TE_DispatchEffect( IRecipientFilter &filter, float delay, const Vector &pos, const char *pName, const CEffectData &data )
 {
 	ft_TE_DispatchEffect(filter, delay, pos, pName, data);
+}
+
+#ifdef SE_TF2
+
+static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");
+inline void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID = -1, int nSound = 11 /*SPECIAL1*/, int iCustomParticle = INVALID_STRING_INDEX )
+{
+	ft_TE_TFExplosion(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
 }
 
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int> ft_TE_TFBlood("TE_TFBlood");
@@ -105,7 +107,10 @@ inline void TE_TFParticleEffect(IRecipientFilter& recipement, float value, char 
 	ft_TE_TFParticleEffect(recipement,value,name,vector,angles,entity,attach);
 }
 
+#endif
 
+
+#ifdef SE_TF2
 static StaticFuncThunk<void, IRecipientFilter&,
 	float,
 	const char *,
@@ -133,6 +138,7 @@ inline void TE_TFParticleEffectComplex
 {
 	ft_TE_TFParticleEffectComplex(filter,flDelay,pszParticleName,vecOrigin,vecAngles,pOptionalColors,pOptionalControlPoint1, pEntity, eAttachType, vecStart);
 }
+#endif
 
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);
 void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t iAttachType, CBaseEntity *pEntity, const char *pszAttachmentName, Vector vecOrigin, bool hasOrigin, Vector vecColor1, Vector vecColor2, bool bUseColors, bool bResetAllParticlesOnEntity,  te_tf_particle_effects_control_point_t *controlPoint, IRecipientFilter *pFilter);

@@ -59,8 +59,6 @@ MemberFuncThunk<CFrameSnapshotManager *, PackedEntity*, CFrameSnapshot*, int> CF
 
 GlobalThunk<CFrameSnapshotManager> g_FrameSnapshotManager("g_FrameSnapshotManager");
 GlobalThunk<PropTypeFns[DPT_NUMSendPropTypes]> g_PropTypeFns("g_PropTypeFns");
-GlobalThunk<SendTable> DT_TFPlayer_g_SendTable("DT_TFPlayer::g_SendTable");
-GlobalThunk<ServerClass> g_CTFPlayer_ClassReg("g_CTFPlayer_ClassReg");
 
 CDatatableStack::CDatatableStack( CSendTablePrecalc *pPrecalc, unsigned char *pStructBase, int objectID )
 {

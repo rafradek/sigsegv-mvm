@@ -1,3 +1,4 @@
+#if SE_TF2
 #include "link/link.h"
 #include "re/nextbot.h"
 #include "re/path.h"
@@ -419,3 +420,5 @@ template<> void Action<CTFBot>::PrintStateToConsole() const                     
 /* NextBotManager */
 void NextBotManager::CollectAllBots(CUtlVector<INextBot *> *nextbots) {        ft_NextBotManager_CollectAllBots(this, nextbots); }
 NextBotManager& TheNextBots()                                         { return ft_TheNextBots                  (); }
+
+#endif

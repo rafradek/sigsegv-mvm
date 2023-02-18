@@ -4,7 +4,7 @@
 
 #include "mod/ai/mvm_defender_bots/trackers.h"
 #include "stub/tfplayer.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 
 
 namespace Mod::AI::MvM_Defender_Bots

@@ -2,7 +2,7 @@
 #include "stub/populators.h"
 #include "mod/pop/kv_conditional.h"
 #include "stub/usermessages_sv.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/nextbot_cc_behavior.h"
 #include "stub/objects.h"
 #include "stub/gamerules.h"

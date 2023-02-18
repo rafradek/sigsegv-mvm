@@ -12,7 +12,11 @@ public:
 	CBaseEntity *GetOriginalLauncher() const { return this->m_hOriginalLauncher; }
 
 	int GetProjectileType() const            { return vt_GetProjectileType(this); }
+#ifdef SE_TF2
+	bool IsDestroyable(bool flag) const            { return vt_IsDestroyable(this, flag); }
+#else
 	bool IsDestroyable() const            { return vt_IsDestroyable(this); }
+#endif
 	void Destroy(bool blinkOut = true, bool breakRocket = false) const            { return vt_Destroy(this, blinkOut, breakRocket); }
 	void SetLauncher(CBaseEntity *launcher)  { vt_SetLauncher(this, launcher); }
 	
@@ -20,7 +24,11 @@ private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOriginalLauncher);
 	
 	static MemberVFuncThunk<const CBaseProjectile *, int> vt_GetProjectileType;
+#ifdef SE_TF2
+	static MemberVFuncThunk<const CBaseProjectile *, bool, bool> vt_IsDestroyable;
+#else
 	static MemberVFuncThunk<const CBaseProjectile *, bool> vt_IsDestroyable;
+#endif
 	static MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> vt_Destroy;
 	static MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> vt_SetLauncher;
 };
@@ -36,6 +44,7 @@ private:
 	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;
 };
 
+#ifdef SE_TF2
 class CThrownGrenade : public CBaseGrenade {};
 class CBaseGrenadeConcussion : public CBaseGrenade {};
 class CBaseGrenadeContact : public CBaseGrenade {};
@@ -269,7 +278,7 @@ class CTFProjectile_SpellLightningOrb : public CTFProjectile_SpellFireball {};
 class CTFProjectile_SpellKartOrb : public CTFProjectile_SpellFireball {};
 class CTFProjectile_SpellKartBats : public CTFProjectile_SpellBats {};
 
-
+#endif
 class IBaseProjectileAutoList
 {
 public:

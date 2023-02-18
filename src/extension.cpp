@@ -5,7 +5,7 @@
 #include "mod.h"
 #include "addr/addr.h"
 #include "addr/prescan.h"
-#include "stub/tfplayer.h"
+#include "stub/baseplayer.h"
 #include "gameconf.h"
 #include "prop.h"
 #include "util/pooled_string.h"
@@ -13,7 +13,9 @@
 //#include "disasm/disasm.h"
 #include "factory.h"
 #include "concolor.h"
+#ifdef SE_TF2
 #include "re/nextbot.h"
+#endif
 #include "version.h"
 #include "convar_restore.h"
 //#include "entity.h"
@@ -130,8 +132,10 @@ void CExtSigsegv::SDK_OnUnload()
 
 	IGameSystem::Remove(this);
 	
+#ifdef SE_TF2
 	IHotplugActionBase::UnloadAll();
 //	IHotplugEntity::UninstallAll();
+#endif
 	
 	g_ModManager.Unload();
 	CDetouredFunc::CleanUp();

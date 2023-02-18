@@ -1,3 +1,4 @@
+#ifdef SE_TF2
 #include "re/path.h"
 #include "stub/tfbot.h"
 
@@ -200,3 +201,4 @@ CTFBotPathCost::CTFBotPathCost(CTFBot *actor, RouteType rtype) :
 		this->m_EnemyObjects.RemoveAll();
 	}
 }
+#endif

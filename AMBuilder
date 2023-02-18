@@ -477,84 +477,85 @@ for sdk_name in Extension.sdks:
   
   binary = Extension.HL2Config(project, projectName + '.ext.' + sdk.ext, sdk)
 
-## build libstrcompat
-#if builder.target.platform == 'linux':
-#  _, libstrcompat = builder.AddCommand(
-#    inputs  = [ os.path.join('libs', 'strcompat', file) for file in [ 'Makefile', 'strcompat.cpp', 'strcompat.h' ] ],
-#    outputs = [ os.path.join('libs', 'libstrcompat', 'libstrcompat.so') ],
-#    argv    = [ '/bin/sh', '-c', 'echo "libstrcompat needs to be rebuilt! manually run \'make\' in a GCC 4.8.x environment!" >&2; false' ],
-#  )
-#  binary.compiler.sourcedeps += libstrcompat
+  ## build libstrcompat
+  #if builder.target.platform == 'linux':
+  #  _, libstrcompat = builder.AddCommand(
+  #    inputs  = [ os.path.join('libs', 'strcompat', file) for file in [ 'Makefile', 'strcompat.cpp', 'strcompat.h' ] ],
+  #    outputs = [ os.path.join('libs', 'libstrcompat', 'libstrcompat.so') ],
+  #    argv    = [ '/bin/sh', '-c', 'echo "libstrcompat needs to be rebuilt! manually run \'make\' in a GCC 4.8.x environment!" >&2; false' ],
+  #  )
+  #  binary.compiler.sourcedeps += libstrcompat
 
 
-# always touch autogen.h, so that src/version.c will be forced to rebuild;
-# otherwise GetBuildDate and GetBuildTime would contain stale information
-_, autogen = builder.AddCommand(
-  inputs  = builder.ALWAYS_DIRTY,
-  outputs = [ 'autogen.h' ],
-  argv    = [ 'touch', 'autogen.h' ],
-)
-binary.compiler.sourcedeps += autogen
+  # always touch autogen.h, so that src/version.c will be forced to rebuild;
+  # otherwise GetBuildDate and GetBuildTime would contain stale information
+  builder.AddFolder(projectName+sdk.ext)
+  _, autogen = builder.AddCommand(
+    inputs  = builder.ALWAYS_DIRTY,
+    outputs = [ projectName+sdk.ext+'/autogen.h' ],
+    argv    = [ 'touch', projectName+sdk.ext+'/autogen.h' ],
+  )
+  binary.compiler.sourcedeps += autogen
 
 
-# PCH for GCC only (breaks Clang autogen.h dependency detection)
-#if 'gcc' in binary.compiler.version.vendor_name:
-#  project.sources = [ 'src/common.h' ] + project.sources
+  # PCH for GCC only (breaks Clang autogen.h dependency detection)
+  #if 'gcc' in binary.compiler.version.vendor_name:
+  #  project.sources = [ 'src/common.h' ] + project.sources
 
-binary.compiler.cflags += [ '-include', 'common.h' ]
+  binary.compiler.cflags += [ '-include', 'common.h' ]
 
-binary.compiler.linkflags += [
-  '-liberty',
-#  os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'libcapstone.a'),
-  os.path.join(builder.currentSourcePath, 'libs', 'ann', 'lib', 'libANN.a'),
-  os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src', 'liblua.a'),
-]
-
-if builder.options.debug == '1':
   binary.compiler.linkflags += [
-    '-lunwind',
-    '-lunwind-x86',
+    '-liberty',
+  #  os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'libcapstone.a'),
+    os.path.join(builder.currentSourcePath, 'libs', 'ann', 'lib', 'libANN.a'),
+    os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src', 'liblua.a'),
   ]
 
-binary.compiler.includes += [
-  os.path.join(builder.buildPath), # for autogen.h
-  os.path.join(builder.currentSourcePath, 'libs', 'udis86'),
-  os.path.join(builder.currentSourcePath, 'libs', 'lz4', 'lib'),
-  os.path.join(builder.currentSourcePath, 'libs', 'lodepng'),
-  os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'include'),
-  os.path.join(builder.currentSourcePath, 'libs', 'ann', 'include'),
-  os.path.join(builder.currentSourcePath, 'libs', 'fmt', 'include'),
-  os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src'),
-]
+  if builder.options.debug == '1':
+    binary.compiler.linkflags += [
+      '-lunwind',
+      '-lunwind-x86',
+    ]
 
-# add libstrcompat dependency (for Linux only)
-# if builder.target.platform == 'linux':
-#   binary.compiler.includes += [
-#     os.path.join(builder.currentSourcePath, 'libs', 'strcompat'),
-#   ]
-#   binary.compiler.linkflags += [
-#     '-lstrcompat',
-#     '-L' + os.path.join(builder.currentSourcePath, 'libs', 'strcompat'), '-Wl,-rpath=./tf/addons/sourcemod/extensions',
-#   ]
+  binary.compiler.includes += [
+    os.path.join(builder.buildPath, projectName+sdk.ext), # for autogen.h
+    os.path.join(builder.currentSourcePath, 'libs', 'udis86'),
+    os.path.join(builder.currentSourcePath, 'libs', 'lz4', 'lib'),
+    os.path.join(builder.currentSourcePath, 'libs', 'lodepng'),
+    os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'include'),
+    os.path.join(builder.currentSourcePath, 'libs', 'ann', 'include'),
+    os.path.join(builder.currentSourcePath, 'libs', 'fmt', 'include'),
+    os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src'),
+  ]
 
-# use NASM to assemble src/mem/wrapper.s into wrapper.o
-# (TODO: find a better way to do this that's less of an ugly hack)
-if builder.target.platform == 'linux':
-  wrapper_src = os.path.join(builder.currentSourcePath, 'src', 'mem', 'wrapper.s')
-  wrapper_obj = 'wrapper.o'
-  _, wrapper = builder.AddCommand(
-    inputs  = [wrapper_src],
-    outputs = [wrapper_obj],
-    argv    = ['nasm',
-               '-f', 'elf32',
-               '-g', '-F', 'dwarf',
-               '-Wall',
-               '-Ox',
-               '-o', wrapper_obj,
-               wrapper_src]
-  )
-  binary.compiler.sourcedeps += wrapper
-  binary.compiler.linkflags  += [os.path.join('..', wrapper_obj)]
+  # add libstrcompat dependency (for Linux only)
+  # if builder.target.platform == 'linux':
+  #   binary.compiler.includes += [
+  #     os.path.join(builder.currentSourcePath, 'libs', 'strcompat'),
+  #   ]
+  #   binary.compiler.linkflags += [
+  #     '-lstrcompat',
+  #     '-L' + os.path.join(builder.currentSourcePath, 'libs', 'strcompat'), '-Wl,-rpath=./tf/addons/sourcemod/extensions',
+  #   ]
+
+  # use NASM to assemble src/mem/wrapper.s into wrapper.o
+  # (TODO: find a better way to do this that's less of an ugly hack)
+  if builder.target.platform == 'linux':
+    wrapper_src = os.path.join(builder.currentSourcePath, 'src', 'mem', 'wrapper.s')
+    wrapper_obj = projectName+sdk.ext+'/wrapper.o'
+    _, wrapper = builder.AddCommand(
+      inputs  = [wrapper_src],
+      outputs = [wrapper_obj],
+      argv    = ['nasm',
+                '-f', 'elf32',
+                '-g', '-F', 'dwarf',
+                '-Wall',
+                '-Ox',
+                '-o', wrapper_obj,
+                wrapper_src]
+    )
+    binary.compiler.sourcedeps += wrapper
+    binary.compiler.linkflags  += [os.path.join('..', wrapper_obj)]
 
 
 Extension.extensions = builder.Add(project)

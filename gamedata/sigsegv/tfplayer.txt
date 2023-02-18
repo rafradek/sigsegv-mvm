@@ -639,16 +639,6 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer9PainSoundERK15CTakeDamageInfo"
 				}
-				"CBasePlayer::EquipWearable"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
-				}
-				"CBasePlayer::Weapon_Equip"
-				{
-					type "sym"
-					sym  "_ZN9CTFPlayer12Weapon_EquipEP17CBaseCombatWeapon"
-				}
 				"CTFPlayer::UseActionSlotItemPressed"
 				{
 					type "sym"
@@ -874,11 +864,6 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase"
 				}
-				"CBasePlayer::ShowViewPortPanel"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
-				}
 				"CTFPlayer::PlayScene"
 				{
 					type "sym"
@@ -1043,11 +1028,6 @@
 				{
 					type "sym"
 					sym  "_ZNK15CTFPlayerShared19GetCarryingRuneTypeEv"
-				}
-				"CBasePlayer::IsPlayer"
-				{
-					type "sym"
-					sym  "_ZNK11CBasePlayer8IsPlayerEv"
 				}
 				"CTFPlayer::GetRuneHealthBonus"
 				{

@@ -2,6 +2,7 @@
 	"#default" {
 		"#supported" {
 			engine "tf2"
+			engine "css"
 		}
 		
 		"sigsegv" {

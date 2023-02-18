@@ -3,7 +3,7 @@
 #include "re/path.h"
 #include "stub/tfbot.h"
 #include "stub/gamerules.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/iterate.h"
 
 #include "mod/ai/mvm_defender_bots/helpers.h"

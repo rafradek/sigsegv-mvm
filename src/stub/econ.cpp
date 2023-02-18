@@ -8,7 +8,6 @@
 
 // #include <strcompat.h>
 
-
 using const_char_ptr = const char *;
 
 #if defined _LINUX

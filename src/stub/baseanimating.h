@@ -92,6 +92,7 @@ private:
 class CBaseAnimatingOverlay : public CBaseAnimating {};
 class CBaseFlex : public CBaseAnimatingOverlay {};
 
+#ifdef SE_TF2
 class CEconEntity : public CBaseAnimating, public IHasAttributes
 {
 public:
@@ -117,6 +118,7 @@ private:
 	static MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   vt_GiveTo;
 	static MemberVFuncThunk<CEconEntity *, void>                  vt_ReapplyProvision;
 };
+#endif
 
 extern StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize;
 inline void UTIL_SetSize( CBaseEntity * entity, const Vector * min, const Vector * max )

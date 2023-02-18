@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "stub/baseentity.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 
 
 namespace Mod::Etc::Trigger_Filter_Fix

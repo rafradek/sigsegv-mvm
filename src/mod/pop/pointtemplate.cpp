@@ -1,5 +1,5 @@
 #include "mod.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/gamerules.h"
 #include "stub/tfplayer.h"
 #include "stub/extraentitydata.h"

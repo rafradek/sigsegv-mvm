@@ -1,3 +1,4 @@
+#if SE_TF2
 #include "link/link.h"
 #include "abi.h"
 
@@ -79,4 +80,5 @@ IContextualQuery::~IContextualQuery()             { assert(false); }
 // TODO: why didn't we have to hook up the RTTI?
 // will dynamic_cast's be broken?
 
+#endif
 #endif

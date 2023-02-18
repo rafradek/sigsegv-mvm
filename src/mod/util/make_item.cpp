@@ -73,7 +73,7 @@ namespace Mod::Util::Make_Item
 	static std::map<CSteamID, CEconItemViewWrapper> state;
 	
 	
-	void CC_Help(CTFPlayer *player, const CCommand& args)
+	void CC_Help(CCommandPlayer *player, const CCommand& args)
 	{
 		// TODO
 		// show usage info for all commands
@@ -81,7 +81,7 @@ namespace Mod::Util::Make_Item
 	}
 	
 	
-	void CC_Clear(CTFPlayer *player, const CCommand& args)
+	void CC_Clear(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Clear", player);
 		
@@ -133,7 +133,7 @@ namespace Mod::Util::Make_Item
 		ModCommandResponse("\n[sig_makeitem_start] Started making item \"%s\".\n\n", item_def->GetName());
 	}
 	
-	void CC_Start(CTFPlayer *player, const CCommand& args)
+	void CC_Start(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Start", player);
 		
@@ -176,7 +176,7 @@ namespace Mod::Util::Make_Item
 		ModCommandResponse("[sig_makeitem_add_attr] Added attribute \"%s\" with value \"%s\".\n", attr_def->GetName(), value);
 	}
 	
-	void CC_AddAttr(CTFPlayer *player, const CCommand& args)
+	void CC_AddAttr(CCommandPlayer *player, const CCommand& args)
 	{
 
 		if (args.ArgC() != 3) {
@@ -302,7 +302,7 @@ namespace Mod::Util::Make_Item
 		
 	}
 	
-	void CC_Give_Common(CTFPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool no_remove)
+	void CC_Give_Common(CCommandPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool no_remove)
 	{
 		if (args.ArgC() == 1)
 			Give_Common(player, player, cmd_name, steamid, no_remove, nullptr);
@@ -316,7 +316,7 @@ namespace Mod::Util::Make_Item
 		state.erase(steamid);
 	}
 
-	void CC_Give(CTFPlayer *player, const CCommand& args)
+	void CC_Give(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Give", player);
 		
@@ -334,7 +334,7 @@ namespace Mod::Util::Make_Item
 		CC_Give_Common(player, args, "sig_makeitem_give", steamid, false);
 	}
 	
-	void CC_Give_NoRemove(CTFPlayer *player, const CCommand& args)
+	void CC_Give_NoRemove(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Give_NoRemove", player);
 		
@@ -349,7 +349,7 @@ namespace Mod::Util::Make_Item
 		CC_Give_Common(player, args, "sig_makeitem_give_noremove", steamid, true);
 	}
 
-	void Give_OneLine(CTFPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool noremove, const char *custom_class)
+	void Give_OneLine(CCommandPlayer *player, const CCommand& args, const char *cmd_name, CSteamID steamid, bool noremove, const char *custom_class)
 	{
 		state.erase(steamid);
 
@@ -388,19 +388,19 @@ namespace Mod::Util::Make_Item
 		state.erase(steamid);
 	}
 
-	void CC_Give_OneLine(CTFPlayer *player, const CCommand& args)
+	void CC_Give_OneLine(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
 		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);
 	}
 	
-	void CC_Give_OneLine_NoRemove(CTFPlayer *player, const CCommand& args)
+	void CC_Give_OneLine_NoRemove(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Give_OneLine_NoRemove", player);
 		Give_OneLine(player, args, "sig_makeitem_noremove", steamid, true, nullptr);
 	}
 
-	void CC_Give_Custom_Class(CTFPlayer *player, const CCommand& args)
+	void CC_Give_Custom_Class(CCommandPlayer *player, const CCommand& args)
 	{
 		auto steamid = GetCommandClientSteamID("CC_Give_OneLine", player);
 		Give_OneLine(player, args, "sig_makeitem", steamid, false, nullptr);

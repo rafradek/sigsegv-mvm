@@ -1,8 +1,9 @@
+#ifdef SE_TF2
 #include "mod.h"
 #include "stub/tf_shareddefs.h"
 #include "stub/tfweaponbase.h"
 #include "util/scope.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/rtti.h"
 #include "re/nextbot.h"
 #include "stub/tfbot.h"
@@ -58,3 +59,4 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+#endif

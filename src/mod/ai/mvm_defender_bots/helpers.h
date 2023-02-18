@@ -3,7 +3,7 @@
 
 
 #include "stub/gamerules.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/tfbot.h"
 
 

@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "stub/tfbot.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/strings.h"
 #include "stub/usermessages_sv.h"
 #include "util/iterate.h"

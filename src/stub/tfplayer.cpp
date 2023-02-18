@@ -1,6 +1,6 @@
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/strings.h"
 #include "stub/misc.h"
 #include "mod/pop/popmgr_extensions.h"
@@ -137,8 +137,6 @@ using CExtract_CTFPlayerShared_m_ConditionData = IExtractStub;
 #endif
 
 IMPL_SENDPROP(int, CTFConditionList, _condition_bits, CTFPlayer);
-
-MemberFuncThunk<CMultiPlayerAnimState *, void> CMultiPlayerAnimState::ft_OnNewModel("CMultiPlayerAnimState::OnNewModel");
 
 
 IMPL_SENDPROP(int,      CTFPlayerClassShared, m_iClass,         CTFPlayer);

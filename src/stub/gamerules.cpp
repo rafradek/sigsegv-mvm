@@ -23,11 +23,15 @@ MemberVFuncThunk<CTeamplayRules *, void, int, bool, bool>                  CTeam
 
 IMPL_SENDPROP(gamerules_roundstate_t, CTeamplayRoundBasedRules, m_iRoundState,  CTeamplayRoundBasedRulesProxy);
 IMPL_SENDPROP(int,                    CTeamplayRoundBasedRules, m_iWinningTeam, CTeamplayRoundBasedRulesProxy);
-IMPL_SENDPROP(bool[33],               CTeamplayRoundBasedRules, m_bPlayerReady, CTeamplayRoundBasedRulesProxy);
-IMPL_SENDPROP(bool[33],               CTeamplayRoundBasedRules, m_bTeamReady,   CTeamplayRoundBasedRulesProxy);
+IMPL_SENDPROP(bool[MAX_PLAYERS],               CTeamplayRoundBasedRules, m_bPlayerReady, CTeamplayRoundBasedRulesProxy);
+IMPL_SENDPROP(bool[MAX_PLAYERS],               CTeamplayRoundBasedRules, m_bTeamReady,   CTeamplayRoundBasedRulesProxy);
 IMPL_SENDPROP(bool,                   CTeamplayRoundBasedRules, m_bInSetup,     CTeamplayRoundBasedRulesProxy);
 
+#ifdef SE_TF2
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> CTeamplayRoundBasedRules::ft_BroadcastSound("CTeamplayRoundBasedRules::BroadcastSound");
+#else
+MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> CTeamplayRoundBasedRules::ft_BroadcastSound("CTeamplayRoundBasedRules::BroadcastSound");
+#endif
 MemberFuncThunk<CTeamplayRoundBasedRules *, float, CBasePlayer *>         CTeamplayRoundBasedRules::ft_GetMinTimeWhenPlayerMaySpawn("CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn");
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> CTeamplayRoundBasedRules::ft_State_Transition            ("CTeamplayRoundBasedRules::State_Transition");
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   CTeamplayRoundBasedRules::ft_SetForceMapReset            ("CTeamplayRoundBasedRules::SetForceMapReset");
@@ -35,11 +39,12 @@ MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, float>             CTeamp
 MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *>   CTeamplayRoundBasedRules::vt_GetNextRespawnWave(TypeName<CTeamplayRoundBasedRules>(), "CTeamplayRoundBasedRules::GetNextRespawnWave");
 
 
+#ifdef SE_TF2
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMedieval,      CTFGameRulesProxy);
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMannVsMachine, CTFGameRulesProxy);
 IMPL_SENDPROP(char[MAX_PATH], CTFGameRules, m_pszCustomUpgradesFile, CTFGameRulesProxy);
 IMPL_SENDPROP(float,           CTFGameRules, m_flRestartRoundTime, CTFGameRulesProxy);
-IMPL_SENDPROP(int[34],         CTFGameRules, m_ePlayerWantsRematch, CTFGameRulesProxy);
+IMPL_SENDPROP(int[MAX_PLAYERS + 1],         CTFGameRules, m_ePlayerWantsRematch, CTFGameRulesProxy);
 
 MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *, int, unsigned short, CMannVsMachineUpgrades *> CTFGameRules::ft_CanUpgradeWithAttrib               ("CTFGameRules::CanUpgradeWithAttrib");
 MemberFuncThunk<CTFGameRules *, int, CMannVsMachineUpgrades *, int, int, CTFPlayer *>             CTFGameRules::ft_GetCostForUpgrade                  ("CTFGameRules::GetCostForUpgrade");
@@ -55,6 +60,7 @@ MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                              
 MemberFuncThunk<CTFGameRules *, bool>                                                             CTFGameRules::ft_IsCompetitiveMode                  ("CTFGameRules::IsCompetitiveMode");
 
 MemberVFuncThunk<CTFGameRules *, bool> CTFGameRules::vt_FlagsMayBeCapped(TypeName<CTFGameRules>(), "CTFGameRules::FlagsMayBeCapped");
+#endif
 
 
 GlobalThunk<CGameRules *> g_pGameRules("g_pGameRules");

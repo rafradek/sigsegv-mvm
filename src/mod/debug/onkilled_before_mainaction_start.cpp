@@ -1,7 +1,7 @@
 #include "mod.h"
 #include "re/nextbot.h"
 #include "stub/tfbot_behavior.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 
 
 //class CTFBotTacticalMonitor : public Action<CTFBot> {};

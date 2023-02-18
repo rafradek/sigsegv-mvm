@@ -1,7 +1,7 @@
 #include "mod.h"
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "util/scope.h"
 #include "stub/upgrades.h"
 #include "stub/gamerules.h"

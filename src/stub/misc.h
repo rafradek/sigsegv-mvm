@@ -4,7 +4,7 @@
 
 #include "link/link.h"
 #include "stub/usermessages_sv.h"
-#include "stub/tfplayer.h"
+#include "stub/baseplayer.h"
 
 
 class CTFBotMvMEngineerTeleportSpawn;
@@ -96,7 +96,7 @@ void TE_PlayerDecal(IRecipientFilter& filter, float delay, const Vector* pos, in
 
 void PrintToChatAll(const char *str);
 
-void PrintToChat(const char *str, CTFPlayer *player);
+void PrintToChat(const char *str, CBasePlayer *player);
 
 class CEventQueue {
 public:

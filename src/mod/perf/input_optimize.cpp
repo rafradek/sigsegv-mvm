@@ -2,12 +2,10 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
-#include "stub/tfplayer.h"
+#include "stub/baseplayer.h"
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
-#include "stub/tfweaponbase.h"
-#include "stub/tf_objective_resource.h"
 #include "sdk2013/mempool.h"
 #include "mem/protect.h"
 #include "mod/common/commands.h"
@@ -230,7 +228,7 @@ namespace Mod::Perf::Input_Optimize
 	};
 	CMod s_Mod;
 
-	ModCommand sig_print_input("sig_print_input", [](CTFPlayer *player, const CCommand& args){
+	ModCommand sig_print_input("sig_print_input", [](CCommandPlayer *player, const CCommand& args){
 		int activate;
         if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
             message_listeners.insert(player);

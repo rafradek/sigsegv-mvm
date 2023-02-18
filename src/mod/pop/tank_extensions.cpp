@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "mod/pop/kv_conditional.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/populators.h"
 #include "stub/strings.h"
 #include "stub/extraentitydata.h"

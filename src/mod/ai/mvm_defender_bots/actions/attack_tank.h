@@ -5,7 +5,7 @@
 #include "re/nextbot.h"
 #include "re/path.h"
 #include "stub/tfbot.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 
 
 namespace Mod::AI::MvM_Defender_Bots

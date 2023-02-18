@@ -1,5 +1,5 @@
 #include "mod.h"
-#include "stub/tfplayer.h"
+#include "stub/baseplayer.h"
 #include "stub/misc.h"
 #include "util/misc.h"
 #include "util/admin.h"
@@ -29,7 +29,7 @@ enum class ModCommandExecuteType
 };
 
 ModCommandExecuteType last_mod_command_execute_type = ModCommandExecuteType::SERVER_CONSOLE;
-CTFPlayer *last_mod_command_execute_player = nullptr;
+CBasePlayer *last_mod_command_execute_player = nullptr;
 
 void ModConsoleCommand(const CCommand &args)
 {
@@ -71,7 +71,7 @@ namespace Mod::Common::Commands
 {
     DETOUR_DECL_STATIC(void, Host_Say, edict_t *edict, const CCommand& args, bool team )
 	{
-		CTFPlayer *player = ToTFPlayer(GetContainingEntity(edict));
+		CCommandPlayer *player = (CCommandPlayer*) (GetContainingEntity(edict));
 		if (player != nullptr) {
 			const char *p = args.ArgS();
 			int len = strlen(p) - 1;
@@ -117,9 +117,9 @@ namespace Mod::Common::Commands
 		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
 	}
 
-    DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
+    DETOUR_DECL_MEMBER(bool, CBasePlayer_ClientCommand, const CCommand& args)
 	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
+		auto player = reinterpret_cast<CBasePlayer *>(this);
 		if (player != nullptr) {
 			std::string commandLower = args[0];
             boost::algorithm::to_lower(commandLower);
@@ -138,10 +138,10 @@ namespace Mod::Common::Commands
             }
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
+		return DETOUR_MEMBER_CALL(CBasePlayer_ClientCommand)(args);
 	}
 
-    ModCommand sig_help("sig_help", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_help("sig_help", [](CCommandPlayer *player, const CCommand& args){
         for (auto &[name, command] : commands) {
             if ((command->mod == nullptr || command->mod->IsEnabled()) && command->CanPlayerCall(player)) {
                 auto text = command->command.GetHelpText();
@@ -186,7 +186,7 @@ namespace Mod::Common::Commands
 		CMod() : IMod("Common:Commands")
 		{
             MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
+            MOD_ADD_DETOUR_MEMBER(CBasePlayer_ClientCommand, "CBasePlayer::ClientCommand");
 		}
         virtual bool EnableByDefault() override { return true; }
 	};

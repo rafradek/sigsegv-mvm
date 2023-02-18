@@ -332,7 +332,11 @@ WARN_RESTORE()
 #include "sdk2013/vector.h"
 #include "sdk2013/vector4d.h"
 #include "sdk2013/mathlib.h"
+#ifdef SE_TF2
 #include "sdk2013/basehandle.h"
+#else
+#include <basehandle.h>
+#endif
 #include "sdk2013/string_t.h"
 #include <annotations.h>
 WARN_IGNORE__CLASS_MEMACCESS()
@@ -379,13 +383,21 @@ WARN_RESTORE()
 #include <npcevent.h>
 #include <dt_send.h>
 #include <bitbuf.h>
+#ifdef SE_TF2
 #include "sdk2013/eiface.h"
+#else
+#include <eiface.h>
+#endif
 #include <ispatialpartition.h>
 #include <random.h>
 #include <ai_activity.h>
 #include <igameevents.h>
 #include <inetmessage.h>
+#ifdef SE_TF2
 #include "sdk2013/inetchannel.h"
+#else
+#include <inetchannel.h>
+#endif
 #include <irecipientfilter.h>
 //#include <usermessages.h>
 #include <cdll_int.h>
@@ -439,7 +451,11 @@ WARN_RESTORE()
 #include <model_types.h>
 #include <idedicatedexports.h>
 #include <icommandline.h>
+#ifdef SE_TF2
 #include "sdk2013/iserver.h"
+#else
+#include <iserver.h>
+#endif
 #include <iclient.h>
 #include <datacache/imdlcache.h>
 WARN_IGNORE__SIGN_COMPARE()
@@ -490,7 +506,9 @@ WARN_RESTORE()
 
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
+#ifdef SE_TF2
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_BASEHANDLE_H);
+#endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_COLOR_H);

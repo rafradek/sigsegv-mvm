@@ -1,6 +1,6 @@
 #include "mod.h"
 #include "stub/baseentity.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/gamerules.h"
 #include "stub/populators.h"
 #include "stub/tfbot.h"

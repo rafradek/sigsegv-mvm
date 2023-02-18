@@ -18,6 +18,7 @@ WinLinuxMac = ['windows', 'linux', 'mac']
 
 PossibleSDKs = {
   'tf2':  SDK('HL2SDKTF2', '2.tf2', '11', 'TF2', WinLinuxMac, 'sdk2013'),
+  'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'sdk2013'),
 }
 
 def ResolveEnvPath(env, folder):
@@ -428,8 +429,8 @@ class ExtensionConfig(object):
       os.path.join(mms_path, 'sourcehook'),
     ]
 
-    defines = ['SE_' + PossibleSDKs[i].define + '=' + PossibleSDKs[i].code for i in PossibleSDKs]
-    compiler.defines += defines
+    defines = 'SE_' + sdk.define + '=' + sdk.code
+    compiler.defines.append(defines)
 
     paths = [
       ['public'],

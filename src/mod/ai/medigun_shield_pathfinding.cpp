@@ -16,7 +16,7 @@ namespace Mod::Perf::Medigun_Shield_Pathfinding_ShouldHitEntity
 		
 		if (result) {
 			CBaseEntity *ent = EntityFromEntityHandle(pEntity);
-			if (ENTINDEX(ent) > 33) {
+			if (!ent->IsPlayer()) {
 				return !ent->IsCombatItem();
 			}
 		}
@@ -48,7 +48,7 @@ namespace Mod::Perf::Medigun_Shield_Pathfinding_IsEntityTraversable
 	DETOUR_DECL_MEMBER(bool, CTFBotLocomotion_IsEntityTraversable, CBaseEntity *ent, ILocomotion::TraverseWhenType ttype)
 	{
 		auto result = DETOUR_MEMBER_CALL(CTFBotLocomotion_IsEntityTraversable)(ent, ttype);
-		if (!result && ENTINDEX(ent) > 33) {
+		if (!result && !ent->IsPlayer()) {
 			return ent->IsCombatItem();
 		}
 		

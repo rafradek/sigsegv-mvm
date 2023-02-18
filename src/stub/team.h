@@ -41,7 +41,7 @@ private:
 // g_Teams
 // GetGlobalTeam
 // GetNumberOfTeams
-
+#ifdef SE_TF2
 
 class CTFTeam : public CTeam
 {
@@ -74,5 +74,6 @@ private:
 extern GlobalThunk<CTFTeamManager> s_TFTeamManager;
 inline CTFTeamManager *TFTeamMgr() { return &(s_TFTeamManager.GetRef()); }
 
+#endif
 
 #endif

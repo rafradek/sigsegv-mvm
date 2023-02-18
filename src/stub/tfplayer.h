@@ -263,18 +263,6 @@ public:
 	bool m_bPrevActive;
 };
 
-class CMultiPlayerAnimState
-{
-public:
-	void OnNewModel() { ft_OnNewModel(this); }
-	uintptr_t vtable;
-	bool	m_bForceAimYaw;
-	CUtlVector<int> m_aGestureSlots;
-	CBasePlayer *m_pPlayer;
-	
-private:
-	static MemberFuncThunk<CMultiPlayerAnimState *, void> ft_OnNewModel;
-};
 class CTFPlayerAnimState : public CMultiPlayerAnimState {};
 
 class CUpgradeInfo
@@ -711,6 +699,5 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 
 extern StaticFuncThunk<TFPlayerClassData_t *, uint> ft_GetPlayerClassData;
 inline TFPlayerClassData_t *GetPlayerClassData(uint index) { return ft_GetPlayerClassData(index); }
-
 
 #endif

@@ -1,3 +1,4 @@
+#ifdef SE_TF2
 #include "mod.h"
 #include "util/scope.h"
 #include "stub/tfplayer.h"
@@ -170,3 +171,5 @@ namespace Mod::Perf::Squad_Escort_Optimize
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+
+#endif

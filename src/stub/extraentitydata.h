@@ -2,8 +2,13 @@
 #define _INCLUDE_SIGSEGV_STUB_EXTRAENTITYDATA_H_
 
 #include "stub/baseentity.h"
+#ifdef SE_TF2
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
+#else
+#include "stub/baseplayer.h"
+#include "stub/baseweapon.h"
+#endif
 #include "stub/projectiles.h"
 #include "util/pooled_string.h"
 #include <boost/algorithm/string.hpp>
@@ -175,8 +180,9 @@ public:
     }
 
     //float[FastAttributes::ATTRIB_COUNT_PLAYER] fast_attrib_cache_data;
-
+#ifdef SE_TF2
     CHandle<CEconEntity> quickItemInLoadoutSlot[LOADOUT_POSITION_COUNT];
+#endif
 
     float lastHurtSpeakTime = 0.0f;
 
@@ -209,6 +215,7 @@ public:
     bool m_bHasTarget;
 };
 
+#ifdef SE_TF2
 class ExtraEntityDataWeaponSpawner : public ExtraEntityData
 {
 public:
@@ -216,6 +223,7 @@ public:
     
     std::vector<CHandle<CBaseEntity>> m_SpawnedWeapons;
 };
+#endif
 
 /////////////
 
@@ -235,7 +243,7 @@ inline ExtraEntityDataWithAttributes *GetExtraEntityDataWithAttributes(CBaseEnti
     return static_cast<ExtraEntityDataWithAttributes *>(data);
 }
 
-inline ExtraEntityDataPlayer *GetExtraPlayerData(CTFPlayer *entity, bool create = true) {
+inline ExtraEntityDataPlayer *GetExtraPlayerData(CBasePlayer *entity, bool create = true) {
     ExtraEntityData *data = entity->m_extraEntityData;
     if (create && entity->m_extraEntityData == nullptr) {
         data = entity->m_extraEntityData = new ExtraEntityDataPlayer(entity);
@@ -251,7 +259,7 @@ inline ExtraEntityDataCombatWeapon *GetExtraWeaponData(CBaseCombatWeapon *entity
     return static_cast<ExtraEntityDataCombatWeapon *>(data);
 }
 
-inline ExtraEntityDataBot *GetExtraBotData(CTFPlayer *entity, bool create = true) {
+inline ExtraEntityDataBot *GetExtraBotData(CBasePlayer *entity, bool create = true) {
     ExtraEntityData *data = entity->m_extraEntityData;
     if (create && entity->m_extraEntityData == nullptr) {
         data = entity->m_extraEntityData = new ExtraEntityDataBot(entity);
@@ -283,6 +291,7 @@ inline ExtraEntityDataTriggerDetector *GetExtraTriggerDetectorData(CBaseEntity *
     return static_cast<ExtraEntityDataTriggerDetector *>(data);
 }
 
+#ifdef SE_TF2
 inline ExtraEntityDataWeaponSpawner *GetExtraWeaponSpawnerData(CBaseEntity *entity, bool create = true) {
     ExtraEntityData *data = entity->m_extraEntityData;
     if (create && entity->m_extraEntityData == nullptr) {
@@ -290,7 +299,7 @@ inline ExtraEntityDataWeaponSpawner *GetExtraWeaponSpawnerData(CBaseEntity *enti
     }
     return static_cast<ExtraEntityDataWeaponSpawner *>(data);
 }
-
+#endif
 
 template< typename DataClass, typename EntityClass>
 inline DataClass *GetExtraData(EntityClass *entity, bool create = true) {
@@ -311,7 +320,6 @@ inline DataClass *GetExtraData(CBaseEntity *entity, bool create = true) {
 }
 
 inline ExtraEntityData *CreateExtraData(CBaseEntity *entity) {
-    static PooledString weapon_spawner("$weapon_spawner");
     ExtraEntityData *data = GetExtraEntityDataWithAttributes(entity, true);
     if (data != nullptr) {
         return data;
@@ -332,9 +340,11 @@ inline ExtraEntityData *CreateExtraData(CBaseEntity *entity) {
         return entity->m_extraEntityData = new ExtraEntityDataTriggerDetector(trigger);
     }
 
-    if (entity->GetClassname() == weapon_spawner) {
+#ifdef SE_TF2
+    if (entity->GetClassname() == PStr<"$weapon_spawner">()) {
         return entity->m_extraEntityData = new ExtraEntityDataWeaponSpawner(trigger);
     }
+#endif
 
     return entity->m_extraEntityData = new ExtraEntityData(entity);
 }

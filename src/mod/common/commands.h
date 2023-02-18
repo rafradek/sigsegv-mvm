@@ -1,9 +1,17 @@
 #ifndef _INCLUDE_SIGSEGV_MOD_COMMON_COMMANDS_H_
 #define _INCLUDE_SIGSEGV_MOD_COMMON_COMMANDS_H_
 
-typedef void (*ModCommandCallbackFn)(CTFPlayer *, const CCommand&);
+#ifdef SE_TF2
+#include "stub/tfplayer.h"
+#define CCommandPlayer CTFPlayer
+#else
+#include "stub/baseplayer.h"
+#define CCommandPlayer CBasePlayer
+#endif
 
 #include "util/admin.h"
+
+typedef void (*ModCommandCallbackFn)(CCommandPlayer *, const CCommand&);
 
 void ModCommandResponse(const char *fmt, ...);
 
@@ -14,7 +22,7 @@ public:
 
     ~ModCommand();
 
-    virtual bool CanPlayerCall(CTFPlayer *player)
+    virtual bool CanPlayerCall(CCommandPlayer *player)
     {
         return true;
     }
@@ -30,7 +38,7 @@ class ModCommandAdmin : public ModCommand
 public:
     ModCommandAdmin(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
 
-    virtual bool CanPlayerCall(CTFPlayer *player)
+    virtual bool CanPlayerCall(CCommandPlayer *player)
     {
         return player == nullptr || PlayerIsSMAdminOrBot(player);
     }
@@ -41,7 +49,7 @@ class ModCommandClient : public ModCommand
 public:
     ModCommandClient(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
 
-    virtual bool CanPlayerCall(CTFPlayer *player)
+    virtual bool CanPlayerCall(CCommandPlayer *player)
     {
         return player != nullptr;
     }
@@ -52,7 +60,7 @@ class ModCommandClientAdmin : public ModCommand
 public:
     ModCommandClientAdmin(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
 
-    virtual bool CanPlayerCall(CTFPlayer *player)
+    virtual bool CanPlayerCall(CCommandPlayer *player)
     {
         return player != nullptr && PlayerIsSMAdminOrBot(player);
     }

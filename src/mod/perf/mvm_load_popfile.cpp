@@ -1,9 +1,9 @@
+#ifdef SE_TF2
 #include "mod.h"
 #include "stub/gamerules.h"
 #include "stub/tf_objective_resource.h"
 #include "util/scope.h"
 #include "util/backtrace.h"
-
 
 namespace Mod::Perf::MvM_Load_Popfile
 {
@@ -70,3 +70,5 @@ namespace Mod::Perf::MvM_Load_Popfile
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+
+#endif

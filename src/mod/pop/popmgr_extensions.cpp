@@ -1,5 +1,5 @@
 #include "mod.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/extraentitydata.h"
 #include "stub/projectiles.h"
 #include "stub/player_util.h"
@@ -1247,7 +1247,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		static bool callfrom = false;
 		if (!callfrom && IsMannVsMachineMode()) {
 			const char *sound = params.m_pSoundName;
-			if (iEntIndex > 0 && iEntIndex < 34 && strncmp(sound,"mvm/player/footsteps/robostep",26) == 0){
+			if (iEntIndex > 0 && iEntIndex < MAX_PLAYERS + 1 && strncmp(sound,"mvm/player/footsteps/robostep",26) == 0){
 				filter = CReliableBroadcastRecipientFilter();
 				edict_t *edict = INDEXENT( iEntIndex );
 				if ( edict && !edict->IsFree() )
@@ -2125,7 +2125,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	//std::vector<CHandle<CTFPlayer>> spawned_players_first_tick;
 	//extern GlobalThunk<CTETFParticleEffect> g_TETFParticleEffect;
 
-	bool received_mission_message_tick[33] = {false};
+	bool received_mission_message_tick[MAX_PLAYERS] = {false};
 
 	THINK_FUNC_DECL(DelayMissionInfoSend)
 	{
@@ -6824,7 +6824,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			received_message_tick = false;
-			for (int i = 0 ; i < 33; i++)
+			for (int i = 0 ; i < MAX_PLAYERS; i++)
 				received_mission_message_tick[i] = false;
 
 			if (checkClassLimitNextTick) {
@@ -6841,11 +6841,11 @@ namespace Mod::Pop::PopMgr_Extensions
 	};
 	CMod s_Mod;
 
-	ModCommandClient sig_missioninfo("sig_missioninfo", [](CTFPlayer *player, const CCommand& args){
+	ModCommandClient sig_missioninfo("sig_missioninfo", [](CCommandPlayer *player, const CCommand& args){
 		DisplayMainMissionInfo(player);
 	}, &s_Mod);
 
-	ModCommandClient sig_missionitems("sig_missionitems", [](CTFPlayer *player, const CCommand& args){
+	ModCommandClient sig_missionitems("sig_missionitems", [](CCommandPlayer *player, const CCommand& args){
 		DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), false);
 	}, &s_Mod);
 	

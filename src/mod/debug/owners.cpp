@@ -1,5 +1,5 @@
 #include "mod.h"
-#include "stub/entities.h"
+#include "stub/tfentities.h"
 #include "stub/objects.h"
 #include "stub/tfplayer.h"
 #include "util/stringpool.h"

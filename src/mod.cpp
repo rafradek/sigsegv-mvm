@@ -262,7 +262,7 @@ void IMod::Toggle(bool enable)
 	this->ToggleAllDetours(enable);
 	this->ToggleAllVirtualHooks(enable);
 	
-	if (!preEnabled && enable) {
+	if (!preEnabled && enable && !this->m_bFailed) {
 		this->OnEnablePost();
 	} 
 }

@@ -4305,11 +4305,11 @@ namespace Util::Lua
 	}
     
 
-    bool profile[34] = {};
+    bool profile[MAX_PLAYERS + 1] = {};
     DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr && ENTINDEX(player) < 34) {
+		if (player != nullptr && ENTINDEX(player) < MAX_PLAYERS + 1) {
             if (FStrEq(args[0], "sig_lua_prof_start")) {
                 profile[ENTINDEX(player)] = 1;
                 return true;
@@ -4941,7 +4941,7 @@ namespace Util::Lua
             if (gpGlobals->tickcount % 66 == 0) {
                 char output[256];
                 snprintf(output, sizeof(output), "Lua script execution time: [avg: %.9fs (%d%%)| max: %.9fs (%d%%)]\n", script_exec_time / 66, (int)(script_exec_time * 100), script_exec_time_tick_max, (int)((script_exec_time_tick_max / 0.015) * 100));
-                for (int i = 1; i < 34; i++) {
+                for (int i = 1; i < MAX_PLAYERS + 1; i++) {
                     if (profile[i]) {
                         auto player = UTIL_PlayerByIndex(i);
                         if (player != nullptr) {
@@ -4974,15 +4974,15 @@ namespace Util::Lua
 	};
 	CMod s_Mod;
     
-    ModCommand sig_lua_prof_start("sig_lua_prof_start", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_lua_prof_start("sig_lua_prof_start", [](CCommandPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 1;
     });
 
-    ModCommand sig_lua_prof_end("sig_lua_prof_end", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_lua_prof_end("sig_lua_prof_end", [](CCommandPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 1;
     });
 
-    ModCommand sig_lua_debug_list("sig_lua_debug_list", [](CTFPlayer *player, const CCommand& args){
+    ModCommand sig_lua_debug_list("sig_lua_debug_list", [](CCommandPlayer *player, const CCommand& args){
         if(args.ArgC() <= 1) {
             ModCommandResponse("sig_lua_debug_list [all|summary|events|entcreate|tempents|timers|convars|entcallbacks]\n", event_callbacks.size());
             return;

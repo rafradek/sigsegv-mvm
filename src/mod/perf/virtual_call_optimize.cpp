@@ -2,11 +2,16 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#ifdef SE_TF2
 #include "stub/tfbot.h"
+#include "stub/tfweaponbase.h"
+#else
+#include "stub/baseplayer.h"
+#include "stub/baseweapon.h"
+#endif
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
-#include "stub/tfweaponbase.h"
 #include "sdk2013/mempool.h"
 #include "mem/protect.h"
 #include "util/prop_helper.h"
@@ -822,10 +827,11 @@ namespace Mod::Perf::Virtual_Call_Optimize
             //this->AddPatch(new CPatch_CBaseEntity_GetBaseEntity());
             this->AddPatch(new CPatch_CBaseEntity_GetTeamNumber());
             
+#ifdef SE_TF2
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CBasePlayer>(), "CBasePlayer::IsBotOfType");
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CTFPlayer>(), "CBasePlayer::IsBotOfType");
             MOD_ADD_VHOOK(CTFBot_IsBotOfType, TypeName<CTFBot>(), "CBasePlayer::IsBotOfType");
-
+#endif
 		}
 	};
 	CMod s_Mod;

@@ -21,9 +21,11 @@ public:
 	CBaseCombatWeapon *GetWeapon(int i) const  { return this->m_hMyWeapons[i]; }
 	static_assert(MAX_WEAPONS == 48);
 	
+#ifdef SE_TF2
 	void AddGlowEffect()                                                        {        ft_AddGlowEffect     (this); }
 	void RemoveGlowEffect()                                                     {        ft_RemoveGlowEffect  (this); }
 	bool IsGlowEffectActive()                                                   { return ft_IsGlowEffectActive(this); }
+#endif
 	bool IsAbleToSee(const CBaseEntity *entity, FieldOfViewCheckType checkFOV)  { return ft_IsAbleToSee_ent   (this, entity, checkFOV); }
 	bool IsAbleToSee(CBaseCombatCharacter *pBCC, FieldOfViewCheckType checkFOV) { return ft_IsAbleToSee_bcc   (this, pBCC, checkFOV); }
 	void SetBloodColor(int nBloodColor)                                         {        ft_SetBloodColor     (this, nBloodColor); }
@@ -40,15 +42,21 @@ public:
 	int GiveAmmo(int iCount, int iAmmoIndex, bool bSuppressSound = false)  { return vt_GiveAmmo           (this, iCount, iAmmoIndex, bSuppressSound); }
 	int GetAmmoCount(int iAmmoIndex) const                                 { return vt_GetAmmoCount       (this, iAmmoIndex); }
 	bool ShouldGib(const CTakeDamageInfo& info)                            { return vt_ShouldGib          (this, info); }
+	bool FInViewCone(const Vector& vec)                                    { return vt_FInViewCone        (this, vec); }
+
+#ifdef SE_TF2
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
+#endif
 	void ClearLastKnownArea()                                              {        vt_ClearLastKnownArea (this); }
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>,              m_hActiveWeapon);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], m_hMyWeapons);
 	
+#ifdef SE_TF2
 	static MemberFuncThunk<CBaseCombatCharacter *, void>                                               ft_AddGlowEffect;
 	static MemberFuncThunk<CBaseCombatCharacter *, void>                                               ft_RemoveGlowEffect;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool>                                               ft_IsGlowEffectActive;
+#endif
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, const CBaseEntity *, FieldOfViewCheckType>    ft_IsAbleToSee_ent;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatCharacter *, FieldOfViewCheckType> ft_IsAbleToSee_bcc;
 	static MemberFuncThunk<CBaseCombatCharacter *, void, int>                                          ft_SetBloodColor;
@@ -65,10 +73,27 @@ private:
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int, int, int, bool>            vt_GiveAmmo;
 	static MemberVFuncThunk<const CBaseCombatCharacter *, int, int>                       vt_GetAmmoCount;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   vt_ShouldGib;
+	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            vt_FInViewCone;
+#ifdef SE_TF2
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int>                            vt_GetBossType;
+#endif
 	static MemberVFuncThunk<      CBaseCombatCharacter *, void>                           vt_ClearLastKnownArea;
 };
 
+#ifdef SE_TF2
+class CMultiPlayerAnimState
+{
+public:
+	void OnNewModel() { ft_OnNewModel(this); }
+	uintptr_t vtable;
+	bool	m_bForceAimYaw;
+	CUtlVector<int> m_aGestureSlots;
+	CBasePlayer *m_pPlayer;
+	
+private:
+	static MemberFuncThunk<CMultiPlayerAnimState *, void> ft_OnNewModel;
+};
+#endif
 
 class CPlayerLocalData
 {
@@ -109,8 +134,10 @@ public:
 	const char *GetPlayerName()             { return this->m_szNetname; }
 	float MaxSpeed() const                  { return this->m_flMaxspeed; }
 	int GetUserID()                         { return engine->GetPlayerUserId(this->edict()); }
+#ifdef SE_TF2
 	int GetNumWearables() const             { return this->m_hMyWearables->Count(); }
 	CEconWearable *GetWearable(int i) const { return this->m_hMyWearables[i]; }
+#endif
 	
 	/* easy-but-slow calls via IPlayerInfo */
 	const char *GetNetworkIDString() const { return this->GetPlayerInfo()->GetNetworkIDString(); }
@@ -133,7 +160,11 @@ public:
 	void ForceButtons(int nButtons)                                                    {        ft_ForceButtons  (this, nButtons); }
 	void UnforceButtons(int nButtons)                                                  {        ft_UnforceButtons(this, nButtons); }
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
+	
+#ifdef SE_TF2
 	void EquipWearable(CEconWearable *wearable)									{ vt_EquipWearable     (this, wearable); }
+	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
+#endif
 	
 	bool IsBot() const                                                   { return vt_IsBot               (this); }
 	bool IsBotOfType(int type) const                                     { return vt_IsBotOfType         (this, type); }
@@ -142,9 +173,10 @@ public:
 	void ForceRespawn()                                                  {        vt_ForceRespawn        (this); }
 	Vector Weapon_ShootPosition()                                        { return vt_Weapon_ShootPosition(this); }
 	float GetPlayerMaxSpeed()                                            { return vt_GetPlayerMaxSpeed   (this); }
-	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
+#ifdef SE_TF2
 	void ChangeTeam(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {        vt_ChangeTeam_bool3    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
+#endif
 	CBaseEntity *FindUseEntity()                                         { return vt_FindUseEntity      (this); }
 	void LeaveVehicle(const Vector &pos = vec3_origin, const QAngle &ang = vec3_angle) { return vt_LeaveVehicle       (this, pos, ang); }
 	void CreateViewModel(int index)                                      { return vt_CreateViewModel(this, index); }
@@ -169,7 +201,9 @@ private:
 	DECL_SENDPROP(float,                              m_flDeathTime);
 	DECL_SENDPROP(int,                                m_iObserverMode);
 	DECL_SENDPROP(float,                              m_flMaxspeed);
+#ifdef SE_TF2
 	DECL_SENDPROP(CUtlVector<CHandle<CEconWearable>>, m_hMyWearables);
+#endif
 	
 	DECL_DATAMAP(char[32],     m_szNetname);
 	DECL_DATAMAP(bool,         m_bDuckToggled);
