@@ -1,5 +1,6 @@
 # sigsegv-mvm
-gigantic, obese SourceMod extension library of sigsegv's TF2 mods (mostly MvM related)
+gigantic, obese SourceMod extension library of sigsegv's and rafradek's TF2/CS:S mods (mostly MvM related)
+For CS:S, only optimize-only package is provided
 
 # Tips
 
