@@ -8,6 +8,20 @@
 		{
 			engine "tf2"
 			engine "css"
+			engine "ep1"
+			engine "ep2"
+			engine "hl2dm"
+			engine "dods"
+			engine "sdk2013"
+			engine "l4d"
+			engine "nd"
+			engine "l4d2"
+			engine "blade"
+			engine "insurgency"
+			engine "contagion"
+			engine "bms"
+			engine "doi"
+			engine "pkvii"
 		}
 		
 		"sigsegv"
@@ -7025,6 +7039,20 @@
 		"#supported"
 		{
 			engine "css"
+			engine "ep1"
+			engine "ep2"
+			engine "hl2dm"
+			engine "dods"
+			engine "sdk2013"
+			engine "l4d"
+			engine "nd"
+			engine "l4d2"
+			engine "blade"
+			engine "insurgency"
+			engine "contagion"
+			engine "bms"
+			engine "doi"
+			engine "pkvii"
 		}
 		"sigsegv"
 		{
@@ -7074,16 +7102,18 @@
 				"CTeam::GetPlayer"     "_ZN5CTeam9GetPlayerEi"
 				"CTeam::GetTeamNumber" "_ZNK5CTeam13GetTeamNumberEv"
 			}
+			
 		}
 	}
 	"#default"
 	{
 		"#supported"
 		{
-			engine "tf"
+			engine "tf2"
 		}
 		"sigsegv"
 		{
+			
 			"addrs"
 			{
 				"CGlobalEntityList::FindEntityByClassname"

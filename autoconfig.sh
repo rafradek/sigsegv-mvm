@@ -17,7 +17,7 @@ popd
 
 mkdir -p build/release/optimize-only
 pushd build/release/optimize-only
-	CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2,css,csgo --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --optimize-mods-only
+	CC=gcc CXX=g++ $CONFIGURE $PATHS --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --optimize-mods-only
 popd
 
 mkdir -p build/release/no-mvm
