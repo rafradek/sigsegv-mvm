@@ -119,7 +119,7 @@ namespace Mod::Common::Commands
 
     DETOUR_DECL_MEMBER(bool, CBasePlayer_ClientCommand, const CCommand& args)
 	{
-		auto player = reinterpret_cast<CBasePlayer *>(this);
+		auto player = reinterpret_cast<CCommandPlayer *>(this);
 		if (player != nullptr) {
 			std::string commandLower = args[0];
             boost::algorithm::to_lower(commandLower);
@@ -140,6 +140,12 @@ namespace Mod::Common::Commands
 		
 		return DETOUR_MEMBER_CALL(CBasePlayer_ClientCommand)(args);
 	}
+
+    DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
+	{
+        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        ClientMsg((CBasePlayer *)GetContainingEntity(edict), "rafradek's srcds performance optimizer loaded\n");
+    }
 
     ModCommand sig_help("sig_help", [](CCommandPlayer *player, const CCommand& args){
         for (auto &[name, command] : commands) {
@@ -187,6 +193,7 @@ namespace Mod::Common::Commands
 		{
             MOD_ADD_DETOUR_STATIC(Host_Say, "Host_Say");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_ClientCommand, "CBasePlayer::ClientCommand");
+            MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
 		}
         virtual bool EnableByDefault() override { return true; }
 	};

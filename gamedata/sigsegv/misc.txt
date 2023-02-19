@@ -7055,6 +7055,11 @@
 					type "sym"
 					sym  "_ZNK6CCSBot15GetPartPositionEP9CCSPlayerNS_15VisiblePartTypeE"
 				}
+				"CCSBot::FindMostDangerousThreat"
+				{
+					type "sym"
+					sym  "_ZN6CCSBot23FindMostDangerousThreatEv"
+				}
 				
 			}
 			"addrs_group"

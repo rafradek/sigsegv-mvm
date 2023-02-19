@@ -19,7 +19,11 @@
 
 namespace Mod::Etc::Extra_Player_Slots
 {
+#ifdef SE_TF2
     constexpr int DEFAULT_MAX_PLAYERS = 33;
+#elif definded(SE_CSS)
+    constexpr int DEFAULT_MAX_PLAYERS = 65;
+#endif
     inline bool ExtraSlotsEnabled();
     
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
