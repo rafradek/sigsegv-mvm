@@ -28,6 +28,8 @@ public:
 	void Misfire()               { vt_Misfire(this); }
 	Vector GetParticleColor(int color) { return vt_GetParticleColor(this, color); }
 	int GetMaxHealthMod()              { return vt_GetMaxHealthMod(this); }
+	float GetAfterburnRateOnHit()        { return vt_GetAfterburnRateOnHit(this); }
+	
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
 	DECL_SENDPROP(float,                m_flEffectBarRegenTime);
@@ -59,6 +61,7 @@ private:
 	static MemberVFuncThunk<CTFWeaponBase *, void> vt_Misfire;
 	static MemberVFuncThunk<CTFWeaponBase *, Vector, int> vt_GetParticleColor;
 	static MemberVFuncThunk<CTFWeaponBase *, int> vt_GetMaxHealthMod;
+	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetAfterburnRateOnHit;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {

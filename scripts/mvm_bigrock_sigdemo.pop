@@ -22,8 +22,9 @@ WaveSchedule
 	BunnyHop 1 [$SIGSEGV] // Allow bunnyhopping. 1 enables auto bhop. 2 disables auto bhop (default: 0)
 	AllowMultipleSappers 1 [$SIGSEGV] // Allow spies to place multiple active sappers (default: 0) 
 	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
-
+	BurnTimeFasterBurn 1 [$SIGSEGV] //For players, burn time bonus increases afterburn damage frequency instead of duration (default: 1)
 	
+
 	//////////////////////////
 	// Credits options      //
 	//////////////////////////
@@ -3304,3 +3305,6 @@ WaveSchedule
 
 // Projectile self detonation time in seconds
 // "projectile detonate time" 0.5
+
+// Delay between afterburn damage multiplier
+// "mult afterburn delay" 2

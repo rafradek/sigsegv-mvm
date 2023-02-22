@@ -1,3 +1,4 @@
+#ifndef CSGO_SEPARETE_
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Math primitives.
@@ -4286,4 +4287,5 @@ FPExceptionEnabler::~FPExceptionEnabler()
 	// Reset the exception state.
 	_controlfp_s(0, mOldValues, _MCW_EM);
 }
+#endif
 #endif

@@ -640,7 +640,7 @@ inline void StrLowerASCII(char *str)
 	}
 }
 
-inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
+inline bool NamesMatch(const char *pszQuery, string_t nameToMatch)
 {
 	if ( nameToMatch == NULL_STRING )
 		return (!pszQuery || *pszQuery == 0 || *pszQuery == '*');
@@ -652,6 +652,9 @@ inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
 		unsigned char cName = *pszNameToMatch;
 		unsigned char cQuery = *pszQuery;
 		// simple ascii case conversion
+		
+		if (cName > 'A' && cName < 'Z') cName &= ~(32);
+		if (cQuery > 'A' && cQuery < 'Z') cQuery &= ~(32);
 		if (cName != cQuery) break;
 		++pszNameToMatch;
 		++pszQuery;
@@ -660,7 +663,6 @@ inline bool NamesMatchCaseSensitve(const char *pszQuery, string_t nameToMatch)
 	if ( *pszQuery == 0 && *pszNameToMatch == 0 )
 		return true;
 
-	// @TODO (toml 03-18-03): Perhaps support real wildcards. Right now, only thing supported is trailing *
 	if ( *pszQuery == '*' )
 		return true;
 
@@ -730,17 +732,21 @@ inline bool ParseNumberOrVectorFromString(const char *str, variant_t &value)
 
 inline const char *FindCaseInsensitive(const char *string, const char* needle)
 {
-	const char *result = nullptr;
+	const char *result = string;
 	const char *needleadv = needle;
 	char c;
+	char cNeedle;
 	while((c = (*string++)) != '\0') {
-		if ((c & ~(32)) == (*needleadv & ~(32))) {
+		if (c > 'A' && c < 'Z') c &= ~(32);
+		cNeedle = *needleadv++;
+		if (cNeedle == '\0') {
+			return result;
+		}
+		if (cNeedle > 'A' && cNeedle < 'Z') cNeedle &= ~(32);
+
+		if (c == cNeedle) {
 			if (result == nullptr) {
 				result = string - 1;
-			}
-			needleadv++;
-			if (*needleadv == '\0') {
-				return result;
 			}
 		}
 		else {
@@ -753,17 +759,19 @@ inline const char *FindCaseInsensitive(const char *string, const char* needle)
 
 inline const char *FindCaseSensitive(const char *string, const char* needle)
 {
-	const char *result = nullptr;
+	const char *result = string;
 	const char *needleadv = needle;
 	char c;
+	char cNeedle;
 	while((c = (*string++)) != '\0') {
-		if (c == *needleadv) {
+		cNeedle = *needleadv++;
+		if (cNeedle == '\0') {
+			return result;
+		}
+
+		if (c == cNeedle) {
 			if (result == nullptr) {
 				result = string - 1;
-			}
-			needleadv++;
-			if (*needleadv == '\0') {
-				return result;
 			}
 		}
 		else {
@@ -776,28 +784,24 @@ inline const char *FindCaseSensitive(const char *string, const char* needle)
 
 inline const char *FindCaseSensitiveReverse(const char *string, const char* needle)
 {
-	size_t sizeh = strlen(string) - 1;
+	size_t sizeh = strlen(string);
 	size_t sizen = strlen(needle);
-	const char *result = nullptr;
-	const char *needleadv = needle + sizeh;
-	string += sizeh;
+	const char *result = string;
+	const char *needleadv = needle + sizen;
 	char c;
+	char cNeedle;
 	const char *end = string + sizeh;
 	while(end != string) {
-		end--;
-		c = *end;
-		if (c == *needleadv) {
-			if (result == nullptr) {
-				result = end;
-			}
-			needleadv--;
-			if (*needleadv == '\0') {
-				return result;
-			}
+		c = *--end;
+		cNeedle = *--needleadv;
+		if (needleadv == needle) return result;
+
+		if (c == cNeedle) {
+			result = end;
 		}
 		else {
 			result = nullptr;
-			needleadv = needle + sizeh;
+			needleadv = needle + sizen;
 		}
 	}
 	return nullptr;
@@ -805,28 +809,26 @@ inline const char *FindCaseSensitiveReverse(const char *string, const char* need
 
 inline const char *FindCaseInsensitiveReverse(const char *string, const char* needle)
 {
-	size_t sizeh = strlen(string) - 1;
+	size_t sizeh = strlen(string);
 	size_t sizen = strlen(needle);
-	const char *result = nullptr;
-	const char *needleadv = needle + sizeh;
-	string += sizeh;
+	const char *result = string;
+	const char *needleadv = needle + sizen;
 	char c;
+	char cNeedle;
 	const char *end = string + sizeh;
 	while(end != string) {
-		end--;
-		c = *end;
-		if ((c & ~(32)) == ((*needleadv) & ~(32))) {
-			if (result == nullptr) {
-				result = end;
-			}
-			needleadv--;
-			if (*needleadv == '\0') {
-				return result;
-			}
+		c = *--end;
+		if (c > 'A' && c < 'Z') c &= ~(32);
+		cNeedle = *--needleadv;
+		if (needleadv == needle) return result;
+		if (cNeedle > 'A' && cNeedle < 'Z') cNeedle &= ~(32);
+
+		if (c == cNeedle) {
+			result = end;
 		}
 		else {
 			result = nullptr;
-			needleadv = needle + sizeh;
+			needleadv = needle + sizen;
 		}
 	}
 	return nullptr;
@@ -940,10 +942,17 @@ static const char *nexttoken(char *token, size_t nMaxTokenLen, const char *str, 
 	return(++str);
 }
 
+#ifndef CSGO_SEPARETE_
 template <size_t maxLenInChars> inline const char *nexttoken( OUT_Z_ARRAY char (&pToken)[maxLenInChars], const char *str, char sep)
 {
 	return nexttoken( pToken, maxLenInChars, str, sep );
 }
+#else
+template <size_t maxLenInChars> inline const char *nexttoken(char (&pToken)[maxLenInChars], const char *str, char sep)
+{
+	return nexttoken( pToken, maxLenInChars, str, sep );
+}
+#endif
 
 class EntityMatrix : public VMatrix
 {

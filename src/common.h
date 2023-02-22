@@ -317,28 +317,54 @@ class IVideoRecorder;
 #define RAD_TELEMETRY_DISABLED
 #undef   NO_STRING_T
 #undef WEAK_STRING_T
+#ifdef CSGO_SEPARETE_
+#include <platform.h>
+#include <const.h>
+#include <interface.h>
+#include <commonmacros.h>
+#include <basetypes.h>
+#include "sdkcsgo/basetypes.h"
+#else
 #include "sdk2013/platform.h"
 #include "sdk2013/const.h"
 #include <interface.h>
 #include "sdk2013/commonmacros.h"
 #include "sdk2013/basetypes.h"
+#endif
+
 WARN_IGNORE__ADDRESS()
 #include <dbg.h>
 WARN_RESTORE()
 #undef COMPILE_TIME_ASSERT
 #define COMPILE_TIME_ASSERT(pred) static_assert(pred)
+
+#ifndef CSGO_SEPARETE_
 #include "sdk2013/Color.h"
+#include "sdk2013/threadtools.h"
 #include "sdk2013/vector2d.h"
 #include "sdk2013/vector.h"
 #include "sdk2013/vector4d.h"
 #include "sdk2013/mathlib.h"
+#else
+#include <Color.h>
+#include "sdkcsgo/threadtools.h"
+#include <vector2d.h>
+#include <vector.h>
+#include <vector4d.h>
+#include <mathlib.h>
+#endif
+
 #ifdef SE_TF2
 #include "sdk2013/basehandle.h"
 #else
 #include <basehandle.h>
 #endif
 #include "sdk2013/string_t.h"
+
+#ifndef CSGO_SEPARETE_
 #include <annotations.h>
+#endif
+
 WARN_IGNORE__CLASS_MEMACCESS()
 #include <utlmemory.h>
 WARN_RESTORE()
@@ -356,7 +382,12 @@ WARN_IGNORE__SIGN_COMPARE()
 WARN_RESTORE()
 #include <shareddefs.h>
 #include <icvar.h>
+#ifndef CSGO_SEPARETE_
 #include "sdk2013/convar.h"
+#else
+#include <convar.h>
+#endif
+
 #include <fmtstr.h>
 #include <KeyValues.h>
 #include <ehandle.h>
@@ -367,27 +398,43 @@ WARN_RESTORE()
 #include <iserverentity.h>
 WARN_IGNORE__ADDRESS()
 WARN_IGNORE__NONNULL_COMPARE()
+#ifndef CSGO_SEPARETE_
 #include <edict.h>
+#else
+#include "sdkcsgo/edict.h"
+#endif
 WARN_RESTORE()
 WARN_RESTORE()
 #include <IEngineTrace.h>
 #include <IStaticPropMgr.h>
 #include <ivdebugoverlay.h>
 #include "sdk2013/debugoverlay_shared.h"
+#include <dt_send.h>
 #include <util_shared.h>
 #undef EntityFromEntityHandle
 #include "sdk2013/ientityhandle.h"
 #define EntityFromEntityHandle MyEntityFromEntityHandle
 #include <ai_activity.h>
 #include <usercmd.h>
+#ifndef CSGO_SEPARETE_
 #include <npcevent.h>
-#include <dt_send.h>
+#endif
 #include <bitbuf.h>
 #ifdef SE_TF2
 #include "sdk2013/eiface.h"
 #else
 #include <eiface.h>
 #endif
+#ifndef CSGO_SEPARETE_
+#include "sdk2013/imaterialsystem_V081.h"
+#include <materialsystem/imaterial.h>
+#endif
+#ifndef CSGO_SEPARETE_
+#include <toolframework/itoolentity.h>
+#else
+#include "sdkcsgo/itoolentity.h"
+#endif
+#include <datamap.h>
 #include <ispatialpartition.h>
 #include <random.h>
 #include <ai_activity.h>
@@ -400,7 +447,9 @@ WARN_RESTORE()
 #endif
 #include <irecipientfilter.h>
 //#include <usermessages.h>
+#ifndef CSGO_SEPARETE_
 #include <cdll_int.h>
+#endif
 #include <iclientnetworkable.h>
 #include <utldict.h>
 #include <mp_shareddefs.h>
@@ -408,14 +457,13 @@ WARN_IGNORE__REORDER()
 #include <bitmap/imageformat.h>
 WARN_RESTORE()
 //#include <materialsystem/imaterialsystem.h>
-#include "sdk2013/imaterialsystem_V081.h"
-#include <materialsystem/imaterial.h>
 #include <particle_parse.h>
 #include <effect_dispatch_data.h>
 #include <SoundEmitterSystem/isoundemittersystembase.h>
 #include <IEngineSound.h>
 #include <igamesystem.h>
 #include <vphysics_interface.h>
+#ifndef CSGO_SEPARETE_
 WARN_IGNORE__CLASS_MEMACCESS()
 #include <studio.h>
 WARN_RESTORE()
@@ -423,6 +471,7 @@ WARN_IGNORE__REORDER()
 #include <istudiorender.h>
 WARN_RESTORE()
 #include <ivmodelrender.h>
+#endif
 #include <vcollide_parse.h>
 #include <steam/steamclientpublic.h>
 #include <netadr.h>
@@ -430,14 +479,18 @@ WARN_IGNORE__NULL_DEREFERENCE()
 #include <iclientrenderable.h>
 WARN_RESTORE()
 #include <toolframework/ienginetool.h>
-#include <toolframework/itoolentity.h>
 WARN_IGNORE__REORDER()
 #include <vprof.h>
 WARN_RESTORE()
 #include <networkstringtabledefs.h>
+
+#ifndef CSGO_SEPARETE_
 #include <valve_minmax_off.h>
+#endif
 #include <stringpool.h>
 #include <filesystem.h>
+
+#ifndef CSGO_SEPARETE_
 #include <vgui/IVGui.h>
 #include <vgui/IInput.h>
 #include <vgui/IPanel.h>
@@ -447,6 +500,8 @@ WARN_RESTORE()
 #include <vgui/IInputInternal.h>
 #include <vgui/ISurface.h>
 #include <VGuiMatSurface/IMatSystemSurface.h>
+#endif
+
 #include <IKeyValuesSystem.h>
 #include <model_types.h>
 #include <idedicatedexports.h>
@@ -467,9 +522,11 @@ WARN_RESTORE()
 #include <icliententity.h>
 #include <client_class.h>
 #include <../server/iscorer.h>
+#ifndef CSGO_SEPARETE_
 #include <../client/iclientmode.h>
 WARN_IGNORE__CONVERSION_NULL()
 #include <vgui_controls/Frame.h>
+#endif
 WARN_RESTORE()
 #include <soundflags.h>
 #include <overlaytext.h>
@@ -504,6 +561,7 @@ WARN_RESTORE()
 #define LINUX 1
 #endif
 
+#ifndef CSGO_SEPARETE_
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
 #ifdef SE_TF2
@@ -521,6 +579,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_STRING_T_H);
+#endif
 
 
 /* AMTL */

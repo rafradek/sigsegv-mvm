@@ -524,20 +524,20 @@ namespace Mod::Etc::Mapentity_Additions
     ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_NONE, "Converts all entity names to lowercase for faster lookup", 
         [](IConVar *pConVar, const char *pOldValue, float flOldValue){
             // Immediately convert every name and classname to lowercase
-            if (static_cast<ConVar *>(pConVar)->GetBool()) {
-                ForEachEntity([](CBaseEntity *entity){
-                    if (entity->GetEntityName() != NULL_STRING) {
-                        char *lowercase = stackalloc(strlen(STRING(entity->GetEntityName())) + 1);
-                        StrLowerCopy(STRING(entity->GetEntityName()), lowercase);
-                        entity->SetName(AllocPooledString(lowercase));
-                    }
-                    if (entity->GetClassnameString() != NULL_STRING) {
-                        char *lowercase = stackalloc(strlen(STRING(entity->GetClassnameString())) + 1);
-                        StrLowerCopy(STRING(entity->GetClassnameString()), lowercase);
-                        entity->SetClassname(AllocPooledString(lowercase));
-                    }
-                });
-            }
+            // if (static_cast<ConVar *>(pConVar)->GetBool()) {
+            //     ForEachEntity([](CBaseEntity *entity){
+            //         if (entity->GetEntityName() != NULL_STRING) {
+            //             char *lowercase = stackalloc(strlen(STRING(entity->GetEntityName())) + 1);
+            //             StrLowerCopy(STRING(entity->GetEntityName()), lowercase);
+            //             entity->SetName(AllocPooledString(lowercase));
+            //         }
+            //         if (entity->GetClassnameString() != NULL_STRING) {
+            //             char *lowercase = stackalloc(strlen(STRING(entity->GetClassnameString())) + 1);
+            //             StrLowerCopy(STRING(entity->GetClassnameString()), lowercase);
+            //             entity->SetClassname(AllocPooledString(lowercase));
+            //         }
+            //     });
+            // }
 		});
 
 
@@ -558,9 +558,10 @@ namespace Mod::Etc::Mapentity_Additions
             last_entity_name = szName;
             int length = strlen(szName);
             last_entity_name_wildcard = szName[length - 1] == '*';
-            char *lowercase = (char *)stackalloc(length + 1);
-            StrLowerCopy(szName, lowercase);
-            last_entity_lowercase = lowercaseStr = AllocPooledString(lowercase);
+            //char *lowercase = (char *)stackalloc(length + 1);
+            //StrLowerCopy(szName, lowercase);
+            last_entity_lowercase = lowercaseStr = AllocPooledString(szName);
+            //Msg("FindByClassname %s %s\n", szName, lowercase);
         }
         
         const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
@@ -573,12 +574,13 @@ namespace Mod::Etc::Mapentity_Additions
                     continue;
                 }
 
-                if (ent->GetClassnameString() == lowercaseStr) {
+                if (ent->GetClassnameString() == lowercaseStr && (filter == nullptr || filter->ShouldFindEntity(ent))) {
                     return ent;
                 }
             }
         }
         else {
+            //Msg("Wildcard search %s %s\n", lowercaseStr, szName);
             for ( ;pInfo; pInfo = pInfo->m_pNext ) {
                 CBaseEntity *ent = (CBaseEntity *)pInfo->m_pEntity;
                 if (!ent) {
@@ -586,7 +588,7 @@ namespace Mod::Etc::Mapentity_Additions
                     continue;
                 }
 
-                if (NamesMatchCaseSensitve(STRING(lowercaseStr), ent->GetClassnameString())) {
+                if (NamesMatch(STRING(lowercaseStr), ent->GetClassnameString()) && (filter == nullptr || filter->ShouldFindEntity(ent))) {
                     return ent;
                 }
             }
@@ -614,9 +616,12 @@ namespace Mod::Etc::Mapentity_Additions
             last_entity_name = szName;
             int length = strlen(szName);
             last_entity_name_wildcard = szName[length - 1] == '*';
-            char *lowercase = (char *)stackalloc(length + 1);
-            StrLowerCopy(szName, lowercase);
-            last_entity_lowercase = lowercaseStr = AllocPooledString(lowercase);
+            //char *lowercase = (char *)stackalloc(length + 1);
+            //StrLowerCopy(szName, lowercase);
+            last_entity_lowercase = lowercaseStr = AllocPooledString(szName);
+            //if (last_entity_name_wildcard) {
+            //    Msg("FindByName %s %s %s %s %s is same%d %d\n", szName, lowercase, AllocPooledString(lowercase), STRING(last_entity_lowercase), STRING(lowercaseStr), FindCaseInsensitive("ABACAD", "bac"), AllocPooledString("AAAAA") == AllocPooledString("aaaaa"));
+            //}
         }
         
         const CEntInfo *pInfo = pStartEntity ? entList->GetEntInfoPtr(pStartEntity->GetRefEHandle())->m_pNext : entList->FirstEntInfo();
@@ -645,7 +650,7 @@ namespace Mod::Etc::Mapentity_Additions
                     continue;
                 }
                 
-                if (NamesMatchCaseSensitve(STRING(lowercaseStr), ent->GetEntityName()))
+                if (NamesMatch(STRING(lowercaseStr), ent->GetEntityName()))
                 {
                     if (pFilter && !pFilter->ShouldFindEntity(ent)) continue;
 
@@ -751,12 +756,17 @@ namespace Mod::Etc::Mapentity_Additions
             variant.SetInt(info.GetDamage());
             entity->FireCustomOutput<"ondamageblocked">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
         }
-        if (alive && !entity->IsAlive()) {
-            variant_t variant;
-            variant.SetInt(damage);
-            entity->FireCustomOutput<"ondeath">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
-        }
         return damage;
+	}
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_Event_Killed, CTakeDamageInfo &info)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+		DETOUR_MEMBER_CALL(CBaseEntity_Event_Killed)(info);
+        
+        variant_t variant;
+        variant.SetInt(info.GetDamage());
+        entity->FireCustomOutput<"ondeath">(info.GetAttacker() != nullptr ? info.GetAttacker() : entity, entity, variant);
 	}
 
     DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, CTakeDamageInfo &info)
@@ -836,20 +846,20 @@ namespace Mod::Etc::Mapentity_Additions
     DETOUR_DECL_MEMBER(bool, CBaseEntity_KeyValue, const char *szKeyName, const char *szValue)
 	{
         CBaseEntity *parse_ent = reinterpret_cast<CBaseEntity *>(this);
-        if (cvar_fast_lookup.GetBool()) {
-            if (FStrEq(szKeyName, "targetname")) {
-                char *lowercase = stackalloc(strlen(szValue) + 1);
-                StrLowerCopy(szValue, lowercase);
-                parse_ent->SetName(AllocPooledString(lowercase));
-                return true;
-            }
-            else if (FStrEq(szKeyName, "classname")) {
-                char *lowercase = stackalloc(strlen(szValue) + 1);
-                StrLowerCopy(szValue, lowercase);
-                parse_ent->SetClassname(AllocPooledString(lowercase));
-                return true;
-            }
-        }
+        // if (cvar_fast_lookup.GetBool()) {
+        //     if (FStrEq(szKeyName, "targetname")) {
+        //         char *lowercase = stackalloc(strlen(szValue) + 1);
+        //         StrLowerCopy(szValue, lowercase);
+        //         parse_ent->SetName(AllocPooledString(lowercase));
+        //         return true;
+        //     }
+        //     else if (FStrEq(szKeyName, "classname")) {
+        //         char *lowercase = stackalloc(strlen(szValue) + 1);
+        //         StrLowerCopy(szValue, lowercase);
+        //         parse_ent->SetClassname(AllocPooledString(lowercase));
+        //         return true;
+        //     }
+        // }
         if (szKeyName[0] == '$') {
             ParseCustomOutput(parse_ent, szKeyName + 1, szValue);
         }
@@ -866,23 +876,21 @@ namespace Mod::Etc::Mapentity_Additions
 
             auto tank = rtti_cast<CTFTankBoss *>(ents->Tail().Get());
             if (tank != nullptr) {
-                char *lowercase = stackalloc(strlen(STRING(tank->GetEntityName())) + 1);
-                StrLowerCopy(STRING(tank->GetEntityName()), lowercase);
-                tank->SetName(AllocPooledString(lowercase));
+                tank->SetName(AllocPooledString(STRING(tank->GetEntityName())));
             }
         }
         return result;
     }
     
-    DETOUR_DECL_MEMBER(void, CBaseEntity_PostConstructor, const char *classname)
-	{
-        if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
-            char *lowercase = stackalloc(strlen(classname) + 1);
-            StrLowerCopy(classname, lowercase, 255);
-            reinterpret_cast<CBaseEntity *>(this)->SetClassname(AllocPooledString(lowercase));
-        }
-        return DETOUR_MEMBER_CALL(CBaseEntity_PostConstructor)(classname);
-    }
+    // DETOUR_DECL_MEMBER(void, CBaseEntity_PostConstructor, const char *classname)
+	// {
+    //     if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
+    //         char *lowercase = stackalloc(strlen(classname) + 1);
+    //         StrLowerCopy(classname, lowercase, 255);
+    //         reinterpret_cast<CBaseEntity *>(this)->SetClassname(AllocPooledString(lowercase));
+    //     }
+    //     return DETOUR_MEMBER_CALL(CBaseEntity_PostConstructor)(classname);
+    // }
 
     PooledString filter_keyvalue_class("$filter_keyvalue");
     PooledString filter_variable_class("$filter_variable");
@@ -1817,6 +1825,7 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByName, "CGlobalEntityList::FindEntityByName");
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByClassname, "CGlobalEntityList::FindEntityByClassname");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage, "CBaseEntity::TakeDamage", HIGHEST);
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_Event_Killed, "CBaseEntity::Event_Killed");
             MOD_ADD_DETOUR_MEMBER(CBaseObject_InitializeMapPlacedObject, "CBaseObject::InitializeMapPlacedObject");
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_CommitSuicide, "CBasePlayer::CommitSuicide");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");

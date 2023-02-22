@@ -126,10 +126,10 @@ inline void ByteBuf::Dump() const
 	
 	DevMsg("   %*s__00_01_02_03__04_05_06_07__08_09_0A_0B__0C_0D_0E_0F__\n", addr_digits, "");
 	for (size_t i = 0; i < this->GetSize(); i += bytes_per_line) {
-		std::string line = CFmtStrN<16>("+0x%0*X", addr_digits, i).Get();
+		std::string line = (const char *) CFmtStrN<16>("+0x%0*X", addr_digits, i);
 		
 		for (size_t j = i; j < this->GetSize() && j < i + bytes_per_line; ++j) {
-			line += CFmtStrN<16>("%*s%02X", ((j % bytes_per_group == 0) ? 2 : 1), "", this->m_Buf[j]).Get();
+			line += (const char *) CFmtStrN<16>("%*s%02X", ((j % bytes_per_group == 0) ? 2 : 1), "", this->m_Buf[j]);
 		}
 		
 		DevMsg("%s\n", line.c_str());

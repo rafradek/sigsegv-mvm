@@ -2787,4 +2787,13 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4598"
+    {
+        "name"	"mult afterburn delay"
+        "attribute_class"	"mult_afterburn_delay"
+        "description_string"	"(+-)%p% afterburn damage delay"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

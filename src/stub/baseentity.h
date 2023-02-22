@@ -89,6 +89,7 @@ class INextBot;
 class ExtraEntityData;
 class EntityModule;
 class IHasAttributes;
+class CBaseAnimating;
 
 class CEventAction
 {
@@ -597,7 +598,18 @@ inline int ENTINDEX_NATIVE(CBaseEntity *entity)
 
 inline edict_t *INDEXENT(int iEdictNum)
 {
+#ifndef CSGO_SEPARETE_
 	return engine->PEntityOfEntIndex(iEdictNum);
+#else
+	if ( gpGlobals->pEdicts )
+	{
+		edict_t *pEdict = gpGlobals->pEdicts + iEdictNum;
+		if ( pEdict->IsFree() )
+			return nullptr;
+		return pEdict;
+	}
+	return nullptr;
+#endif
 }
 
 inline bool FNullEnt(const edict_t *pent)

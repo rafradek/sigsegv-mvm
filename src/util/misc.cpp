@@ -11,9 +11,9 @@ static void HexDump_Internal(LINE_FUNC&& line_func, const void *ptr, size_t len,
 		
 		char buf[256];
 		if (absolute) {
-			V_sprintf_safe(buf, "%08x:  %*s  %*s  %*s  %*s  |%*s|\n", (uintptr_t)ptr + i, 11, "", 11, "", 11, "", 11, "", n, "");
+			V_snprintf(buf, sizeof(buf), "%08x:  %*s  %*s  %*s  %*s  |%*s|\n", (uintptr_t)ptr + i, 11, "", 11, "", 11, "", 11, "", n, "");
 		} else {
-			V_sprintf_safe(buf, "%06x:  %*s  %*s  %*s  %*s  |%*s|\n", i, 11, "", 11, "", 11, "", 11, "", n, "");
+			V_snprintf(buf, sizeof(buf), "%06x:  %*s  %*s  %*s  %*s  |%*s|\n", i, 11, "", 11, "", 11, "", 11, "", n, "");
 		}
 		
 		for (size_t j = 0; j < n; ++j) {

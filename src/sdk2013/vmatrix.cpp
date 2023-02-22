@@ -1,3 +1,4 @@
+#ifndef CSGO_SEPARETE_
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
@@ -1293,3 +1294,4 @@ void MatrixBuildPerspectiveOffCenterX( VMatrix& dst, double flFovX, double flAsp
 }
 #endif // !_STATIC_LINKED || _SHARED_LIB
 
+#endif

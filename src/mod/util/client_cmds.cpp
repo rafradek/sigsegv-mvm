@@ -1845,7 +1845,7 @@ namespace Mod::Util::Client_Cmds
 	ClientCmdsCommandClient sig_resetanim("sig_resetanim", CC_Reset_Animation, &s_Mod);
 	ClientCmdsCommandClient sig_teamset("sig_teamset", CC_Team, &s_Mod);
 	ClientCmdsCommandClient sig_giveitemcreator("sig_giveitemcreator", CC_GiveItem, &s_Mod);
-	ClientCmdsCommandClient sig_benchmark("sig_benchmark", CC_Benchmark, &s_Mod);
+	ClientCmdsCommand sig_benchmark("sig_benchmark", CC_Benchmark, &s_Mod);
 	ClientCmdsCommand sig_taunt("sig_taunt", CC_Taunt, &s_Mod);
 	ClientCmdsCommand sig_addattr("sig_addattr", CC_AddAttr, &s_Mod);
 	ClientCmdsCommand sig_dropitem("sig_dropitem", CC_DropItem, &s_Mod);

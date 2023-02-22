@@ -5258,6 +5258,9 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CObjectSentrygun_ValidTargetPlayer)(pPlayer, vecStart, vecEnd);
 	}
 
+	ConVar sig_attr_burn_time_faster_burn("sig_attr_burn_time_faster_burn", "1", FCVAR_NOTIFY, 
+		"Mod: For non bot players in mvm mode, burn time bonus increases afterburn damage frequency instead of duration");
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
@@ -5271,14 +5274,30 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-
+		if (remainingFlameTime < 0.0f) {
+			remainingFlameTime = 0.0f;
+		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_wpn_burntime);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_afterburn_delay);
+			if (sig_attr_burn_time_faster_burn.GetBool() && TFGameRules()->IsMannVsMachineMode() && igniter != nullptr && !igniter->IsBot()) {
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_wpn_burntime);
+			}
+			else {
+				float multBurnTime = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, multBurnTime, mult_wpn_burntime);
+				float durationReal = (duration < 0.0f && weapon != nullptr ? weapon->GetAfterburnRateOnHit() : duration ) * multBurnTime;
+				if (multBurnTime > 1.0f && shared->m_flFlameRemoveTime > 9.9f && durationReal * multBurnTime > 10.0f) {
+					shared->m_flFlameRemoveTime = Min(10 * multBurnTime, remainingFlameTime + durationReal * multBurnTime);
+					//Msg("Set remove time to %f\n", shared->m_flFlameRemoveTime);
+				}
+			}
+
 			if (mult > 1.0f) {
 				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
 			}
+			
 		}
 	}
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ConditionGameRulesThink)
@@ -5301,7 +5320,11 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		if (nextFlameTime != shared->m_flFlameBurnTime && shared->m_hBurnWeapon != nullptr) {
 			float mult = 1.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_wpn_burntime);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_afterburn_delay);
+			
+			if (sig_attr_burn_time_faster_burn.GetBool() && TFGameRules()->IsMannVsMachineMode() && shared->m_hBurnWeapon->GetTFPlayerOwner() != nullptr && !shared->m_hBurnWeapon->GetTFPlayerOwner()->IsBot()) {
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, mult, mult_wpn_burntime);
+			}
 			if (mult > 1.0f) {
 				shared->m_flFlameRemoveTime += ((1.0f - 1.0f/mult) * 0.5f);
 				shared->m_flFlameBurnTime -= ((1.0f - 1.0f/mult) * 0.5f);
@@ -5434,7 +5457,7 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 
-	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_GetAfterburnRateOnHit)
+	DETOUR_DECL_MEMBER(float, CTFWeaponBase_GetAfterburnRateOnHit)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		float burn_duration = 0.0f;

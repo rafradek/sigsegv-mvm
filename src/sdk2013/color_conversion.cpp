@@ -1,3 +1,4 @@
+#ifndef CSGO_SEPARETE_
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Color conversion routines.
@@ -638,4 +639,5 @@ void VectorToColorRGBExp32( const Vector& vin, ColorRGBExp32 &c )
 	c.exponent = ( signed char )exponent;
 }
 
+#endif
 #endif

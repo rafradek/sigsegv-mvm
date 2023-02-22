@@ -213,7 +213,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	if (MaterialSystemFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(MaterialSystem, g_pMaterialSystem, MATERIAL_SYSTEM_INTERFACE_VERSION);
 	}
-	
+#ifndef CSGO_SEPARETE_
 	if (VGUIFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(VGUI, g_pVGui,              VGUI_IVGUI_INTERFACE_VERSION);
 		GET_IFACE_OPTIONAL(VGUI, g_pVGuiInput,         VGUI_INPUT_INTERFACE_VERSION);
@@ -235,6 +235,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 		GET_IFACE_REQUIRED(Client, cl_entitylist, VCLIENTENTITYLIST_INTERFACE_VERSION);
 		GET_IFACE_OPTIONAL(Client, clienttools,   VCLIENTTOOLS_INTERFACE_VERSION);
 	}
+#endif
 	
 	if (DedicatedFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(Dedicated, dedicated, VENGINE_DEDICATEDEXPORTS_API_VERSION);
@@ -298,9 +299,11 @@ void CExtSigsegv::LevelInitPreEntity()
 
 void CExtSigsegv::LoadSoundOverrides()
 {
+#ifndef CSGO_SEPARETE_
 	if (soundemitterbase != nullptr) {
 		soundemitterbase->AddSoundOverrides("scripts/sigsegv_sound_overrides.txt", true);
 	}
+#endif
 }
 
 IdentityToken_t *CExtSigsegv::GetIdentity() const

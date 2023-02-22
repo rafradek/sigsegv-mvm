@@ -745,10 +745,8 @@ namespace Util::Lua
     {
         auto entity = LEntityGetNonNull(l, 1);
         auto name = luaL_checkstring(l, 2);
-        char nameLower[1024];
-        StrLowerCopy(name, nameLower);
 
-        entity->SetName(AllocPooledString(nameLower));
+        entity->SetName(AllocPooledString(name));
         return 0;
     }
 
@@ -4105,7 +4103,7 @@ namespace Util::Lua
 		auto entity = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
         if (entity != nullptr && !entity_create_callbacks.empty()) {
             for(auto &callback : entity_create_callbacks) {
-                if (entity->GetClassnameString() == callback.classname || (callback.wildcard && NamesMatchCaseSensitve(STRING(callback.classname), entity->GetClassnameString()))) {
+                if (entity->GetClassnameString() == callback.classname || (callback.wildcard && NamesMatch(STRING(callback.classname), entity->GetClassnameString()))) {
                     auto l = callback.state->GetState();
                     lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                     LEntityAlloc(l, entity);

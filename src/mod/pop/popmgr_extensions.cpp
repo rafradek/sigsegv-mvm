@@ -438,6 +438,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_FastWholeMapTriggersAll         ("sig_pop_pointtemplate_fast_whole_map_trigger_all"),
 			m_MaxSpectators                   ("sig_mvm_spectator_max_players"),
 			m_JointeamBlueSpectator           ("sig_mvm_jointeam_blue_spectator"),
+			m_BurnTimeFasterBurn              ("sig_attr_burn_time_faster_burn"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -603,6 +604,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_FastWholeMapTriggersAll.Reset();
 			this->m_MaxSpectators.Reset();
 			this->m_JointeamBlueSpectator.Reset();
+			this->m_BurnTimeFasterBurn.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -843,7 +845,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverride_ConVar<float> m_FastWholeMapTriggersAll;
 		CValueOverride_ConVar<int> m_MaxSpectators;
 		CValueOverride_ConVar<bool> m_JointeamBlueSpectator;
-		
+		CValueOverride_ConVar<bool> m_BurnTimeFasterBurn;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverride_ConVar<std::string> m_CustomUpgradesFile;
@@ -6211,6 +6213,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_iPlayerMiniBossMinRespawnTime = subkey->GetInt();
 			} else if (FStrEq(name, "PlayerRobotsUsePlayerAnimation")) {
 				state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
+			} else if (FStrEq(name, "BurnTimeFasterBurn")) {
+				state.m_BurnTimeFasterBurn.Set(subkey->GetBool());
 			//} else if (FStrEq(name, "FlagEscortCountOffset")) {
 			//	state.m_iEscortBotCountOffset = subkey->GetInt();
 			} else if (FStrEq(name, "WaveStartCountdown")) {

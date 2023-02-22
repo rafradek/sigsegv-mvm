@@ -290,7 +290,7 @@ const char *variant_t::ToString( void ) const
 	case FIELD_EHANDLE:
 		{
 			auto entity = Entity();
-			const char *pszName = entity ? (entity->GetEntityName() != NULL_STRING && *STRING(entity->GetEntityName()) != '\0' ? STRING(entity->GetEntityName()) : CFmtStr("@h@%d(%s)", entity->GetRefEHandle().ToInt(), entity->GetClassname()).Get( )) : "<<null entity>>";
+			const char *pszName = entity ? (entity->GetEntityName() != NULL_STRING && *STRING(entity->GetEntityName()) != '\0' ? STRING(entity->GetEntityName()) : (const char *)CFmtStr("@h@%d(%s)", entity->GetRefEHandle().ToInt(), entity->GetClassname())) : "<<null entity>>";
 			Q_strncpy( szBuf, pszName, sizeof(szBuf) );
 			return (szBuf);
 		}

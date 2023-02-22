@@ -15,7 +15,7 @@ namespace Mod::Perf::SmokeStack_FS_Thrash
 				smokestack->m_strMaterialModel = AllocPooledString(szValue);
 			} else {
 				char str[512];
-				V_sprintf_safe(str, "%s.vmt", szValue);
+				V_snprintf(str, sizeof(str), "%s.vmt", szValue);
 				smokestack->m_strMaterialModel = AllocPooledString(str);
 			}
 			
