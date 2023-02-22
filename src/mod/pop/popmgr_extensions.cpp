@@ -4092,6 +4092,17 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGainInstantSpawn)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		//DevMsg(" Check spawn\n");
+		if (state.m_bNoRespawnMidwave && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !player->IsBot() && state.m_PlayersByWaveStart.count(player) == 0 ) {
+			//DevMsg("Stop Spawn\n");
+			return false;
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGainInstantSpawn)();
+	}
+
 	DETOUR_DECL_MEMBER(void, CHeadlessHatmanAttack_RecomputeHomePosition)
 	{
 		if (state.m_bHHHNoControlPointLogic) {
@@ -6581,6 +6592,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(NextBotManager_ShouldUpdate, "NextBotManager::ShouldUpdate");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldGainInstantSpawn, "CTFPlayer::ShouldGainInstantSpawn");
+			
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_StartCurrentWave, "CPopulationManager::StartCurrentWave");
 			MOD_ADD_DETOUR_MEMBER(CHeadlessHatmanAttack_RecomputeHomePosition, "CHeadlessHatmanAttack::RecomputeHomePosition");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveCurrency, "CTFPlayer::RemoveCurrency");

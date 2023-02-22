@@ -1516,7 +1516,7 @@ namespace Mod::Attr::Custom_Attributes
 		return speed * DETOUR_MEMBER_CALL(CTFShotgunBuildingRescue_GetProjectileSpeed)();
 	}
 
-	int GetDamageType(CTFWeaponBase *weapon, int value)
+	int GetDamageType(CBaseCombatWeapon *weapon, int value)
 	{
 		int headshot = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, headshot, can_headshot);
@@ -3849,6 +3849,8 @@ namespace Mod::Attr::Custom_Attributes
 
 		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
+			info.SetDamageType(GetDamageType(weapon, info.GetDamageType()));
+
 			int iAddDamageType = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iAddDamageType, add_damage_type);
 			info.AddDamageType(iAddDamageType);
@@ -3865,6 +3867,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (sentry != nullptr && info.GetWeapon() == nullptr && sentry->GetBuilder() != nullptr) {
 			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
 		}
+
 
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
