@@ -254,6 +254,7 @@ if not Extension.optimize_mods_only:
     'src/mod/prof/tier2_renderutils.cpp',
 
     'src/mod/mvm/blu_velocity_limit_remove.cpp',
+    'src/mod/mvm/buyback_exploit_fix.cpp',
     'src/mod/mvm/changebotattributes_crash_fix.cpp',
     'src/mod/mvm/changeclass_anytime.cpp',
     'src/mod/mvm/chat_unrestrict.cpp',

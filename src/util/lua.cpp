@@ -4304,22 +4304,6 @@ namespace Util::Lua
     
 
     bool profile[MAX_PLAYERS + 1] = {};
-    DETOUR_DECL_MEMBER(bool, CTFPlayer_ClientCommand, const CCommand& args)
-	{
-		auto player = reinterpret_cast<CTFPlayer *>(this);
-		if (player != nullptr && ENTINDEX(player) < MAX_PLAYERS + 1) {
-            if (FStrEq(args[0], "sig_lua_prof_start")) {
-                profile[ENTINDEX(player)] = 1;
-                return true;
-            }
-            if (FStrEq(args[0], "sig_lua_prof_end")) {
-                profile[ENTINDEX(player)] = 0;
-                return true;
-            }
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
-	}
     
     DETOUR_DECL_MEMBER(void, CBaseEntity_Event_Killed, CTakeDamageInfo &info)
 	{
@@ -4875,7 +4859,6 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_UpdateOnRemove, "CTFPlayer::UpdateOnRemove");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_ClientCommand, "CTFPlayer::ClientCommand");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_Event_Killed, "CBaseEntity::Event_Killed");
             MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Event_Killed, "CBaseCombatCharacter::Event_Killed");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
@@ -4977,7 +4960,7 @@ namespace Util::Lua
     });
 
     ModCommand sig_lua_prof_end("sig_lua_prof_end", [](CCommandPlayer *player, const CCommand& args){
-        profile[ENTINDEX(player)] = 1;
+        profile[ENTINDEX(player)] = 0;
     });
 
     ModCommand sig_lua_debug_list("sig_lua_debug_list", [](CCommandPlayer *player, const CCommand& args){
