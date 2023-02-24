@@ -5911,7 +5911,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		"PlayerItemEquipSpawnTemplate",
 		"PlayerShootTemplate",
 		"BuildingSpawnTemplate",
-		"LuaScript"
+		"LuaScript",
+		"LuaScriptFile"
 	};
 	DETOUR_DECL_MEMBER(void, KeyValues_MergeBaseKeys, CUtlVector<KeyValues *> &keys)
 	{

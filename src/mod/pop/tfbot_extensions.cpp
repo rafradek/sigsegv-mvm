@@ -1601,22 +1601,22 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, Action_CTFBot_InvokeOnEnd, CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *nextaction)
-	{
-		auto action = reinterpret_cast<Action<CTFBot> *>(this);
-		//DevMsg("Message1\n");
-		DevMsg("InvokeEndAction %s %d %d:", action->GetName(), action, nextaction);
-		if (actor != nullptr) {
-		//DevMsg("Message2\n");
-			DevMsg(" botname: %s", actor->GetPlayerName());
-		}
-		if (nextaction != nullptr) {
-			//DevMsg("Message3\n");
-			DevMsg(" nextaction: %s", nextaction->GetName());
-		}
-		DevMsg("\n");
-		DETOUR_MEMBER_CALL(Action_CTFBot_InvokeOnEnd)(actor, behavior, nextaction);
-	}
+	// DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, Action_CTFBot_InvokeOnEnd, CTFBot *actor, Behavior<CTFBot> *behavior, Action<CTFBot> *nextaction)
+	// {
+	// 	auto action = reinterpret_cast<Action<CTFBot> *>(this);
+	// 	//DevMsg("Message1\n");
+	// 	DevMsg("InvokeEndAction %s %d %d:", action->GetName(), action, nextaction);
+	// 	if (actor != nullptr) {
+	// 	//DevMsg("Message2\n");
+	// 		DevMsg(" botname: %s", actor->GetPlayerName());
+	// 	}
+	// 	if (nextaction != nullptr) {
+	// 		//DevMsg("Message3\n");
+	// 		DevMsg(" nextaction: %s", nextaction->GetName());
+	// 	}
+	// 	DevMsg("\n");
+	// 	DETOUR_MEMBER_CALL(Action_CTFBot_InvokeOnEnd)(actor, behavior, nextaction);
+	// }
 
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, Action_CTFBot_OnKilled, CTFBot *actor, const CTakeDamageInfo& info)
 	{
@@ -1789,7 +1789,8 @@ namespace Mod::Pop::TFBot_Extensions
 	
 	DETOUR_DECL_MEMBER(bool, CBasePlayer_GetSteamID, CSteamID *pID)
 	{
-		if (this == nullptr) return false;
+		auto ptr = reinterpret_cast<CBasePlayer *>(this);
+		if (ptr == nullptr) return false;
 		
 		return DETOUR_MEMBER_CALL(CBasePlayer_GetSteamID)(pID);
 	}
