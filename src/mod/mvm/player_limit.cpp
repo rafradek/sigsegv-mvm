@@ -276,7 +276,7 @@ namespace Mod::MvM::Player_Limit
     
 	int GetMaxSpectators()
 	{
-		return sig_mvm_spectator_max_players.GetBool();
+		return sig_mvm_spectator_max_players.GetInt();
 	}
 
 	int GetMaxNonSpectatorPlayers() {
@@ -545,7 +545,7 @@ namespace Mod::MvM::Player_Limit
 							}
 							else if (!PlayerIsSMAdmin(player)){
 								// Kick if cannot switch to red team
-								engine->ServerCommand(CFmtStr("kickid %d %s\n", player->GetUserID(), "Exceeded total player limit for the mission"));
+								engine->ServerCommand(CFmtStr("kickid %d %s (%d max spec, %d cur spec)\n", player->GetUserID(), "Exceeded total player limit for the mission ",sig_mvm_spectator_max_players.GetInt(), spectators));
 								spectators -= 1;
 							}
 						}

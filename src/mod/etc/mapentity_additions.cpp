@@ -1018,6 +1018,25 @@ namespace Mod::Etc::Mapentity_Additions
 
                 return pEntity->GetAbsOrigin().WithinAABox(min + center, max + center);
             }
+            if (classname == filter_itemname_class && pEntity != nullptr) {
+                const char *type = filter->GetCustomVariable<"type">("ItemName");
+                auto entry = Parse_ItemListEntry(type, filter->GetCustomVariable<"item">(""), nullptr);
+                if (pEntity->MyCombatWeaponPointer() != nullptr) {
+                    return entry->Matches(pEntity->GetClassname(), pEntity->MyCombatWeaponPointer()->GetItem());
+                }
+                else if (pEntity->IsPlayer()) {
+                    bool found = false;
+                    ForEachTFPlayerEconEntity(ToTFPlayer(pEntity), [&](CEconEntity *ent){
+                        if (entry->Matches(ent->GetClassname(), ent->GetItem())) {
+                            found = true;
+                            return false;
+                        }
+                        return true;
+                    });
+                    return found;
+                }
+                return false;
+            }
         }
         return DETOUR_MEMBER_CALL(CBaseFilter_PassesFilterImpl)(pCaller, pEntity);
 	}
