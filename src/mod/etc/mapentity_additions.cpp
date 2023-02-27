@@ -926,6 +926,8 @@ namespace Mod::Etc::Mapentity_Additions
                 }
 
                 const char *name = filter->GetCustomVariable<"name">();
+                if (name == nullptr) return false;
+                
                 variant_t valuecmp;
                 filter->GetCustomVariableVariant<"value">(valuecmp);
                 const char *compare = filter->GetCustomVariable<"compare">();
