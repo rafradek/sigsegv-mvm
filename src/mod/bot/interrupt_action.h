@@ -4,7 +4,7 @@
 #include "util/autolist.h"
 #include "stub/tfbot.h"
 #include "stub/strings.h"
-#include "mod/attr/custom_attributes.h"
+#include "mod/item/item_common.h"
 
 #include "re/path.h"
 

@@ -2,6 +2,7 @@
 #include "stub/tfplayer.h"
 #include "stub/projectiles.h"
 #include "stub/tfweaponbase.h"
+#include "stub/tfentities.h"
 #include "stub/server.h"
 #include "util/pooled_string.h"
 #include "util/iterate.h"
@@ -227,7 +228,8 @@ namespace Mod::Etc::Entity_Limit_Manager
                 });
             }
             // Reserve some slots for projectiles
-            if (IBaseProjectileAutoList::AutoList().Count() < 64) {
+            auto &projList = IBaseProjectileAutoList::AutoList();
+            if (projList.Count() < 64) {
                 // Delete disguise weapons not in main slot
                 if (entityToDelete == nullptr) {
                     ForEachTFPlayer([&](CTFPlayer *player) {
@@ -254,6 +256,12 @@ namespace Mod::Etc::Entity_Limit_Manager
                             return true;
                         });
                     }
+                }
+                
+                // Remove currency packs
+                auto &currencyList = ICurrencyPackAutoList::AutoList();
+                if (!currencyList.IsEmpty()) {
+                    entityToDelete = rtti_scast<CCurrencyPack *>(currencyList[0]);
                 }
                 // Delete most wearables (bots)
                 if (entityToDelete == nullptr) {
@@ -296,9 +304,9 @@ namespace Mod::Etc::Entity_Limit_Manager
                 // Delete projectiles, starting from oldest. Also delete grounded arrows
 
                 float oldestProjectileTime = -1;
-                for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
+                for (int i = 0; i < projList.Count(); ++i) {
 
-                    auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+                    auto proj = rtti_scast<CBaseProjectile *>(projList[i]);
                     if (proj == simulated_entity) continue;
                     
                     float time = (float)(proj->m_flSimulationTime) - (float)(proj->m_flAnimTime);

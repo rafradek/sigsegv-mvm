@@ -2,7 +2,7 @@
 import os, sys
 
 class SDK(object):
-  def __init__(self, sdk, ext, aDef, name, platform, dir):
+  def __init__(self, sdk, ext, aDef, name, platform, dir, ddl_dir):
     self.folder = 'hl2sdk-' + dir
     self.envvar = sdk
     self.ext = ext
@@ -11,15 +11,18 @@ class SDK(object):
     self.platform = platform
     self.name = dir
     self.path = None # Actual path
+    self.ddl_dir = ddl_dir
+    self.ddl_path = None # Actual path
 
 WinOnly = ['windows']
 WinLinux = ['windows', 'linux']
 WinLinuxMac = ['windows', 'linux', 'mac']
 
 PossibleSDKs = {
-  'tf2':  SDK('HL2SDKTF2', '2.tf2', '11', 'TF2', WinLinuxMac, 'sdk2013'),
-  'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'sdk2013'),
-  'other':  SDK('HL2SDKCSS', '2.other', '6', 'OTHER', WinLinuxMac, 'sdk2013'),
+  'tf2':  SDK('HL2SDKTF2', '2.tf2', '11', 'TF2', WinLinuxMac, 'sdk2013', 'tf2'),
+  'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'sdk2013', 'css'),
+  'other':  SDK('HL2SDKCSS', '2.other', '6', 'OTHER', WinLinuxMac, 'sdk2013', 'sdk2013'),
+  #'otherl4d':  SDK('HL2SDKL4D', '2.l4d', '6', 'L4D', WinLinuxMac, 'sdk2013', 'l4d'),
 }
 
 def ResolveEnvPath(env, folder):
@@ -71,14 +74,17 @@ class ExtensionConfig(object):
       if builder.target.platform in sdk.platform:
         if builder.options.hl2sdk_root:
           sdk_path = os.path.join(builder.options.hl2sdk_root, sdk.folder)
+          ddl_path = os.path.join(builder.options.hl2sdk_root, 'hl2sdk-' + sdk.ddl_dir)
         else:
           sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
+          ddl_path = ResolveEnvPath(sdk.envvar, 'hl2sdk-' + sdk.ddl_dir)
         if sdk_path is None or not os.path.isdir(sdk_path):
           if use_all or sdk_name in sdk_list:
             raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
           continue
         if use_all or use_present or sdk_name in sdk_list:
           sdk.path = Normalize(sdk_path)
+          sdk.ddl_path = Normalize(ddl_path)
           self.sdks[sdk_name] = sdk
 
     if len(self.sdks) < 1:
@@ -480,17 +486,19 @@ class ExtensionConfig(object):
       compiler.includes += [os.path.join(sdk.path, *path)]
 
     if builder.target.platform == 'linux':
-      if sdk.name == 'episode1':
-        lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name in ['sdk2013', 'bms']:
-        lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
+      if sdk.ddl_dir == 'episode1':
+        ddl_lib_folder = os.path.join(sdk.ddl_path, 'linux_sdk')
+      elif sdk.ddl_dir in ['sdk2013', 'bms']:
+        ddl_lib_folder = os.path.join(sdk.ddl_path, 'lib', 'public', 'linux32')
       else:
-        lib_folder = os.path.join(sdk.path, 'lib', 'linux')
+        ddl_lib_folder = os.path.join(sdk.ddl_path, 'lib', 'linux')
+      
+      lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
     elif builder.target.platform == 'mac':
       if sdk.name in ['sdk2013', 'bms']:
-        lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
+        ddl_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
       else:
-        lib_folder = os.path.join(sdk.path, 'lib', 'mac')
+        ddl_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if builder.target.platform in ['linux', 'mac']:
       if sdk.name in ['sdk2013', 'bms']:
@@ -505,13 +513,13 @@ class ExtensionConfig(object):
         ]
 
       if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
-        compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
+        compiler.postlink += [compiler.Dep(os.path.join(ddl_lib_folder, 'interfaces_i486.a'))]
 
     dynamic_libs = []
     if builder.target.platform == 'linux':
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
+      if sdk.ddl_dir in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
+      elif sdk.ddl_dir in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
@@ -527,7 +535,7 @@ class ExtensionConfig(object):
         compiler.linkflags.append(compiler.Dep(lib_path))
 
     for library in dynamic_libs:
-      source_path = os.path.join(lib_folder, library)
+      source_path = os.path.join(ddl_lib_folder, library)
       output_path = os.path.join(binary.localFolder, library)
 
       def make_linker(source_path, output_path):

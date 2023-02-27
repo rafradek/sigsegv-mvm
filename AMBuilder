@@ -115,6 +115,8 @@ if not Extension.optimize_mods_only:
 if not Extension.optimize_mods_only:
   sourceFiles += [
     
+    'src/mod/item/item_common.cpp',
+    
     'src/mod/bot/interrupt_action.cpp',
 
     'src/mod/attr/blockbackstab_oldstyle.cpp',

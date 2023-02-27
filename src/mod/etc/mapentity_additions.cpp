@@ -29,6 +29,7 @@
 #include "util/expression_eval.h"
 #include "mod/etc/mapentity_additions.h"
 #include "stub/trace.h"
+#include "mod/item/item_common.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -1297,7 +1298,9 @@ namespace Mod::Etc::Mapentity_Additions
         const char *classname = filter->GetClassname();
         if (classname[0] == '$') {
             if (classname == filter_itemname_class && info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
-                return FStrEq(filter->GetCustomVariable<"item">(), info.GetWeapon()->MyCombatWeaponPointer()->GetItem()->GetItemDefinition()->GetName());
+                const char *type = filter->GetCustomVariable<"type">("ItemName");
+                auto entry = Parse_ItemListEntry(type, filter->GetCustomVariable<"item">(""), nullptr);
+                return entry->Matches(info.GetWeapon()->GetClassname(), info.GetWeapon()->MyCombatWeaponPointer()->GetItem());
             }
             if (classname == filter_specialdamagetype_class && info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
 				float iDmgType = 0;

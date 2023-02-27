@@ -327,7 +327,11 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 #else
+#if SOURCE_ENGINE == SE_L4D
+	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, "ServerGameDLL005");
+#else
 	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+#endif
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
 	// Shim to avoid hooking shims
 	engine = (IVEngineServer *) ismm->GetEngineFactory()("VEngineServer023", nullptr);

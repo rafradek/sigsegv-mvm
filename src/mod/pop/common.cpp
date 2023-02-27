@@ -11,29 +11,6 @@ namespace Mod::Pop::Wave_Extensions
 	void ParseColorsAndPrint(const char *line, float gameTextDelay, int &linenum, CTFPlayer* player = nullptr);
 }
 
-ItemListEntry_Similar::ItemListEntry_Similar(const char *name) : m_strName(name)
-{
-    auto itemDef = reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinitionByName(name));
-    if (itemDef != nullptr && Mod::Pop::PopMgr_Extensions::GetCustomWeaponItemDef(name) == nullptr) {
-        m_strLogName = itemDef->GetKeyValues()->GetString("item_logname");
-        m_strBaseName = itemDef->GetKeyValues()->GetString("base_item_name");
-        m_bCanCompareByLogName = !m_strLogName.empty() || !m_strBaseName.empty();
-        m_iBaseDefIndex = itemDef->m_iItemDefIndex;
-        m_strBaseClassMelee = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED) == LOADOUT_POSITION_MELEE && FStrEq(itemDef->GetKeyValues()->GetString("item_quality"), "normal") ? itemDef->GetItemClass() : "";
-    }
-}
-
-bool AreItemsSimilar(const CEconItemView *item_view, bool compare_by_log_name, const std::string &base_name, const std::string &log_name, const std::string &base_melee_class, const char *classname, int base_defindex)
-{
-    return (compare_by_log_name 
-        && FStrEq(base_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"))
-        && ((!base_name.empty() && item_view->m_iItemDefinitionIndex != 772 /* Baby Face's Blaster*/) 
-        || FStrEq(log_name.c_str(), item_view->GetItemDefinition()->GetKeyValues()->GetString("item_logname"))))
-        || ((item_view->m_iItemDefinitionIndex == 212 || item_view->m_iItemDefinitionIndex == 947 || item_view->m_iItemDefinitionIndex == 297) && base_defindex == 30) // Invis
-        || ((item_view->m_iItemDefinitionIndex == 737) && base_defindex == 25) // Build PDA
-        || (base_melee_class == classname && FStrEq(item_view->GetItemDefinition()->GetKeyValues()->GetString("base_item_name"), "Frying Pan"));
-}
-
 int INPUT_TYPE_COUNT=7;
 const char *INPUT_TYPE[] = {
     "Primary",

@@ -93,13 +93,4 @@ namespace Mod::Attr::Custom_Attributes
 	// For calls outside of custom attributes mod, returns value if the mod is disabled
     int GetFastAttributeIntExternal(CBaseEntity *entity, int value, int name);
 }
-
-const char *GetItemName(const CEconItemView *view);
-const char *GetItemName(const CEconItemView *view, bool &is_custom);
-const char *GetItemNameForDisplay(int item_defid);
-const char *GetItemNameForDisplay(const CEconItemView *view);
-const char *GetAttributeName(int attributeIndex);
-void LoadItemNames();
-bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
-
 #endif

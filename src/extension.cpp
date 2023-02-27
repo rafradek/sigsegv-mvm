@@ -183,7 +183,11 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	Msg("CExtSigsegv: compiled @ %s %s\n", GetBuildDate(), GetBuildTime());
 	
 	GET_IFACE_REQUIRED(Engine,     engine,            INTERFACEVERSION_VENGINESERVER);
+#if SOURCE_ENGINE != SE_L4D
 	GET_IFACE_REQUIRED(Server,     gamedll,           INTERFACEVERSION_SERVERGAMEDLL);
+#else
+	GET_IFACE_REQUIRED(Server,     gamedll,           "ServerGameDLL005");
+#endif
 	GET_IFACE_REQUIRED(FileSystem, filesystem,        FILESYSTEM_INTERFACE_VERSION);
 	GET_IFACE_REQUIRED(Server,     serverGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
 	
@@ -317,10 +321,12 @@ CON_COMMAND(sig_build, "")
 	Msg("%s %s\n", GetBuildDate(), GetBuildTime());
 }
 
+#ifndef SE_L4D
 CON_COMMAND(sig_cpu_usage, "")
 {
 	Msg("%f\n", GetCPUUsage());
 }
+#endif
 
 CON_COMMAND(sig_memory_stats, "")
 {

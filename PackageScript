@@ -122,18 +122,33 @@ else:
 
 builder.AddCopy('sigsegv.autoload', 'addons/sourcemod/extensions/' + Extension.name + '.autoload')
 
+l4dlinks = [
+  "csgo",
+  "pvkii",
+  "blade",
+]
+
 # Copy binaries.
 for cxx_task in Extension.extensions:
   src = os.path.join('..', cxx_task.binary.path)
   # binary marked as using 'other' engine is the "default engine"
   name = os.path.basename(cxx_task.binary.path).replace(".2.other", "")
-    
+
   dst = os.path.join('addons', 'sourcemod', 'extensions', name)
   builder.AddCommand(
     inputs  = [ cxx_task.binary ],
     argv    = [ 'cp', '--remove-destination', src, dst ],
     outputs = [ dst ],
   )
+  
+  if ".2.l4d" in cxx_task.binary.path:
+    for l4dlink in l4dlinks:
+      dst_link = os.path.join('addons', 'sourcemod', 'extensions', name.replace(".2.l4d", ".2." + l4dlink))
+      builder.AddCommand(
+        inputs  = [ cxx_task.binary ],
+        argv    = [ 'ln', '-s', './'+os.path.basename(cxx_task.binary.path), dst_link ],
+        outputs = [ dst_link ],
+      )
 #  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
 
 # Copy libstrcompat (Linux only)
