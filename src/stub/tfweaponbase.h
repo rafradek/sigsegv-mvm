@@ -247,6 +247,10 @@ class CTFLunchBox_Drink : public CTFLunchBox {};
 
 class CTFJar : public CTFWeaponBaseGun {};
 
+class CTFShotgun : public CTFWeaponBaseGun {};
+class CTFScatterGun : public CTFShotgun {};
+class CTFSodaPopper : public CTFScatterGun {};
+
 class CWeaponMedigun : public CTFWeaponBase
 {
 public:

@@ -2,7 +2,7 @@
 import os, sys
 
 class SDK(object):
-  def __init__(self, sdk, ext, aDef, name, platform, dir, ddl_dir):
+  def __init__(self, sdk, ext, aDef, name, platform, dir, dll_dir):
     self.folder = 'hl2sdk-' + dir
     self.envvar = sdk
     self.ext = ext
@@ -11,8 +11,8 @@ class SDK(object):
     self.platform = platform
     self.name = dir
     self.path = None # Actual path
-    self.ddl_dir = ddl_dir
-    self.ddl_path = None # Actual path
+    self.dll_dir = dll_dir
+    self.dll_path = None # Actual path
 
 WinOnly = ['windows']
 WinLinux = ['windows', 'linux']
@@ -74,17 +74,17 @@ class ExtensionConfig(object):
       if builder.target.platform in sdk.platform:
         if builder.options.hl2sdk_root:
           sdk_path = os.path.join(builder.options.hl2sdk_root, sdk.folder)
-          ddl_path = os.path.join(builder.options.hl2sdk_root, 'hl2sdk-' + sdk.ddl_dir)
+          dll_path = os.path.join(builder.options.hl2sdk_root, 'hl2sdk-' + sdk.dll_dir)
         else:
           sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
-          ddl_path = ResolveEnvPath(sdk.envvar, 'hl2sdk-' + sdk.ddl_dir)
+          dll_path = ResolveEnvPath(sdk.envvar, 'hl2sdk-' + sdk.dll_dir)
         if sdk_path is None or not os.path.isdir(sdk_path):
           if use_all or sdk_name in sdk_list:
             raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
           continue
         if use_all or use_present or sdk_name in sdk_list:
           sdk.path = Normalize(sdk_path)
-          sdk.ddl_path = Normalize(ddl_path)
+          sdk.dll_path = Normalize(dll_path)
           self.sdks[sdk_name] = sdk
 
     if len(self.sdks) < 1:
@@ -486,19 +486,19 @@ class ExtensionConfig(object):
       compiler.includes += [os.path.join(sdk.path, *path)]
 
     if builder.target.platform == 'linux':
-      if sdk.ddl_dir == 'episode1':
-        ddl_lib_folder = os.path.join(sdk.ddl_path, 'linux_sdk')
-      elif sdk.ddl_dir in ['sdk2013', 'bms']:
-        ddl_lib_folder = os.path.join(sdk.ddl_path, 'lib', 'public', 'linux32')
+      if sdk.dll_dir == 'episode1':
+        dll_lib_folder = os.path.join(sdk.dll_path, 'linux_sdk')
+      elif sdk.dll_dir in ['sdk2013', 'bms']:
+        dll_lib_folder = os.path.join(sdk.dll_path, 'lib', 'public', 'linux32')
       else:
-        ddl_lib_folder = os.path.join(sdk.ddl_path, 'lib', 'linux')
+        dll_lib_folder = os.path.join(sdk.dll_path, 'lib', 'linux')
       
       lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
     elif builder.target.platform == 'mac':
       if sdk.name in ['sdk2013', 'bms']:
-        ddl_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
+        dll_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
       else:
-        ddl_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'mac')
+        dll_lib_folder = lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if builder.target.platform in ['linux', 'mac']:
       if sdk.name in ['sdk2013', 'bms']:
@@ -513,13 +513,13 @@ class ExtensionConfig(object):
         ]
 
       if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
-        compiler.postlink += [compiler.Dep(os.path.join(ddl_lib_folder, 'interfaces_i486.a'))]
+        compiler.postlink += [compiler.Dep(os.path.join(dll_lib_folder, 'interfaces_i486.a'))]
 
     dynamic_libs = []
     if builder.target.platform == 'linux':
-      if sdk.ddl_dir in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
+      if sdk.dll_dir in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.ddl_dir in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
+      elif sdk.dll_dir in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
@@ -535,7 +535,7 @@ class ExtensionConfig(object):
         compiler.linkflags.append(compiler.Dep(lib_path))
 
     for library in dynamic_libs:
-      source_path = os.path.join(ddl_lib_folder, library)
+      source_path = os.path.join(dll_lib_folder, library)
       output_path = os.path.join(binary.localFolder, library)
 
       def make_linker(source_path, output_path):

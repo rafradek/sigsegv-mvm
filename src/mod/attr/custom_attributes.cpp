@@ -1759,6 +1759,21 @@ namespace Mod::Attr::Custom_Attributes
 					dmgmult *= flReducedHealthBonus;
 				}
 				dmg *= dmgmult;
+
+				int critfromback = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critfromback, crit_from_behind);
+				Vector toEnt = pVictim->GetAbsOrigin() - info.GetAttacker()->GetAbsOrigin();
+				if (critfromback != 0) {
+					Vector entForward;
+					AngleVectors(pVictim->EyeAngles(), &entForward);
+					toEnt.z = 0;
+					toEnt.NormalizeInPlace();
+					if (DotProduct(toEnt, entForward) > 0.7071f)	// 75 degrees from center (total of 150)
+					{
+						info.SetCritType(CTakeDamageInfo::CRIT_FULL);
+						info.AddDamageType(DMG_CRITICAL);
+					}
+				}
 			}
 
 			float iDmgCurrentHealth = 0.0f;
@@ -3179,11 +3194,11 @@ namespace Mod::Attr::Custom_Attributes
 	
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
-	RefCount rc_CTFPlayerShared_AddCondWatch;
 	RefCount rc_CTFPlayerShared_RemoveCond;
 	RefCount rc_CTFPlayerShared_InCond;
 	CBaseEntity *addcond_provider = nullptr;
 	CBaseEntity *addcond_provider_item = nullptr;
+	ETFCond addcond_specific_cond = TF_COND_INVALID;
 	RefCount rc_CTFPlayerShared_PulseRageBuff;
 
 	int aoe_in_sphere_max_hit_count = 0;
@@ -3201,7 +3216,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (rc_CTFPlayerShared_AddCond)
         {
-			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 
 			if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
 				return;
@@ -3262,7 +3277,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (rc_CTFPlayerShared_RemoveCond)
         {
-			if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
@@ -3382,7 +3397,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
-		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
 		
 		auto wep = reinterpret_cast<CTFWeaponInvis *>(this);
 		addcond_provider = wep->GetTFPlayerOwner();
@@ -3403,7 +3417,9 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
+		addcond_specific_cond = TF_COND_STEALTHED;
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponInvis_ActivateInvisibilityWatch)();
+		addcond_specific_cond = TF_COND_INVALID;
 		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 		return result;
 	}
@@ -3412,7 +3428,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
-		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		addcond_provider = me->GetOuter();
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
@@ -3422,7 +3437,9 @@ namespace Mod::Attr::Custom_Attributes
 			me->GetOuter()->HolsterOffHandWeapon();
 		}
 		ReplaceCond(*me, TF_COND_STEALTHED);
+		addcond_specific_cond = TF_COND_STEALTHED;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_FadeInvis)(mult);
+		addcond_specific_cond = TF_COND_INVALID;
 		ReplaceBackCond(*me, TF_COND_STEALTHED);
 	}
 
@@ -3430,7 +3447,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
-		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondWatch);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		bool isSpy = me->GetOuter()->IsPlayerClass(TF_CLASS_SPY);
 		if (isSpy) {
@@ -3445,7 +3461,9 @@ namespace Mod::Attr::Custom_Attributes
 			} 
 			ReplaceCond(*me, TF_COND_STEALTHED);
 		}
+		addcond_specific_cond = TF_COND_STEALTHED;
 		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateCloakMeter)();
+		addcond_specific_cond = TF_COND_INVALID;
 		if (isSpy) {
 			ReplaceBackCond(*me, TF_COND_STEALTHED);
 		}
@@ -3528,10 +3546,46 @@ namespace Mod::Attr::Custom_Attributes
 	addcond_provider = reinterpret_cast<CBaseEntity *>(this)->GetOwnerEntity(); \
 	addcond_provider_item = reinterpret_cast<CBaseEntity *>(this); \
 	
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateEnergyDrinkMeter)
+	{
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		addcond_provider = player;
+		addcond_provider_item = rtti_cast<CTFSodaPopper *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_PRIMARY));
+		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond); \
+		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond); \
+		if (addcond_provider_item != nullptr) {
+			ReplaceCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
+		}
+		addcond_specific_cond = TF_COND_SODAPOPPER_HYPE;
+		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateEnergyDrinkMeter)();
+		addcond_specific_cond = TF_COND_INVALID;
+		if (addcond_provider_item != nullptr) {
+			ReplaceBackCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetScoutHypeMeter, float meter)
+	{
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		addcond_provider = player;
+		addcond_provider_item = rtti_cast<CTFSodaPopper *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_PRIMARY));
+		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_RemoveCond, addcond_provider_item != nullptr);
+		if (addcond_provider_item != nullptr) {
+			ReplaceCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_SetScoutHypeMeter)(meter);
+		if (addcond_provider_item != nullptr) {
+			ReplaceBackCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
+		}
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFSodaPopper_SecondaryAttack)
 	{
 		WEAPON_USE_DETOUR
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_SODAPOPPER_HYPE);
 		DETOUR_MEMBER_CALL(CTFSodaPopper_SecondaryAttack)();
+		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_SODAPOPPER_HYPE);
 	}
 
 	DETOUR_DECL_STATIC(void, JarExplode, int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeapon, CBaseEntity *pWeapon, const Vector& vContactPoint, int iTeam, float flRadius, ETFCond cond, float flDuration, const char *pszImpactEffect, const char *text2 )
@@ -6769,6 +6823,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_PulseRageBuff, "CTFPlayerShared::PulseRageBuff");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoTauntAttack, "CTFPlayer::DoTauntAttack");
 			MOD_ADD_DETOUR_MEMBER(CTFSodaPopper_SecondaryAttack, "CTFSodaPopper::SecondaryAttack");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetScoutHypeMeter, "CTFPlayerShared::SetScoutHypeMeter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter");
 			MOD_ADD_DETOUR_STATIC(JarExplode, "JarExplode");
 			MOD_ADD_DETOUR_MEMBER(CTFGasManager_OnCollide, "CTFGasManager::OnCollide");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetChargeEffect, "CTFPlayerShared::SetChargeEffect");

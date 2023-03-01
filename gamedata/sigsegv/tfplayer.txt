@@ -1074,7 +1074,16 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared20RemoveDisguiseWeaponEv"
 				}
-				
+				"CTFPlayerShared::SetScoutHypeMeter"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared17SetScoutHypeMeterEf"
+				}
+				"CTFPlayerShared::UpdateEnergyDrinkMeter"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared22UpdateEnergyDrinkMeterEv"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"
