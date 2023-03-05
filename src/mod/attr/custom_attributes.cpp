@@ -1130,6 +1130,15 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+		
+		GET_STRING_ATTRIBUTE(entity, custom_view_model, viewmodel);
+		if (viewmodel != nullptr) {
+			
+			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
+			if (weapon != nullptr) {
+				weapon->SetCustomViewModel(viewmodel);
+			}
+		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateModelToClass)
@@ -6591,6 +6600,20 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnCustomViewModelChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto weapon = rtti_cast<CTFWeaponBase *>(ent);
+			if (weapon != nullptr) {
+				const char *value;
+				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &value);
+				weapon->SetCustomViewModel(changeType == AttributeChangeType::REMOVE || value == nullptr ? "" : value);
+			}
+		}
+	}
+
 	void OnMiniBossChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
@@ -7050,6 +7073,8 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("mult_maxammo_secondary", OnSecondaryAmmoChange);
 				RegisterCallback("mult_maxammo_grenades1", OnGrenadeAmmoChange);
 				RegisterCallback("mult_maxammo_metal", OnMetalChange);
+				RegisterCallback("custom_view_model", OnCustomViewModelChange);
+				
 			}
 		}
 

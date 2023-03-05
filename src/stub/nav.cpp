@@ -335,6 +335,7 @@ using CExtract_CNavArea_m_potentiallyVisibleAreas = IExtractStub;
 IMPL_EXTRACT  (CUtlVector<CHandle<CFuncNavCost>>, CNavArea, m_funcNavCostVector, new CExtract_CNavArea_m_funcNavCostVector());
 IMPL_EXTRACT  (Vector,                            CNavArea, m_center,            new CExtract_CNavArea_m_center());
 IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags_a,  new CExtract_CNavArea_m_attributeFlags());
+IMPL_RELATIVE (uint32,                            CNavArea, m_nVisTestCounter,   m_funcNavCostVector, -sizeof(uint32));
 IMPL_RELATIVE (CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, (116 - 80));
 IMPL_REL_AFTER(int,                               CNavArea, m_parentHow,         m_parent);
 //IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
@@ -359,6 +360,7 @@ StaticFuncThunk<void>                              CNavArea::ft_ClearSearchLists
 
 GlobalThunk<uint>       CNavArea::m_masterMarker("CNavArea::m_masterMarker");
 GlobalThunk<CNavArea *> CNavArea::m_openList("CNavArea::m_openList");
+GlobalThunk<uint32>     CNavArea::s_nCurrVisTestCounter("CNavArea::s_nCurrVisTestCounter");
 
 #ifdef SE_TF2
 IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());

@@ -18,6 +18,7 @@ public:
 	CTFWeaponInfo const& GetTFWpnData() const { return ft_GetTFWeaponData(this); }
 	void StartEffectBarRegen()   { ft_StartEffectBarRegen(this); }
 	bool DeflectProjectiles()    { return ft_DeflectProjectiles(this); }
+	void SetCustomViewModel(const char *model) {        ft_SetCustomViewModel(this, model); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
@@ -40,7 +41,6 @@ public:
 	DECL_SENDPROP(float, m_flReloadPriorNextFire);
 	DECL_SENDPROP(bool,  m_bDisguiseWeapon);
 	DECL_RELATIVE(bool,  m_bCurrentAttackIsCrit);
-	
 
 	
 private:
@@ -51,6 +51,7 @@ private:
 	static MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> ft_GetTFWeaponData;
 	static MemberFuncThunk<CTFWeaponBase *, void> ft_StartEffectBarRegen;
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_DeflectProjectiles;
+	static MemberFuncThunk<CTFWeaponBase *, void, const char *> ft_SetCustomViewModel;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;

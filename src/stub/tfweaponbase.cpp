@@ -54,6 +54,7 @@ MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_CalcIsAttackCritical("C
 MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> CTFWeaponBase::ft_GetTFWeaponData("CTFWeaponBase::GetTFWpnData");
 MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_StartEffectBarRegen("CTFWeaponBase::StartEffectBarRegen");
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_DeflectProjectiles("CTFWeaponBase::DeflectProjectiles");
+MemberFuncThunk<CTFWeaponBase *, void, const char *> CTFWeaponBase::ft_SetCustomViewModel("CBaseCombatWeapon::SetCustomViewModel");
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");

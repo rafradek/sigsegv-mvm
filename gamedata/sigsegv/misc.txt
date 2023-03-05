@@ -6921,7 +6921,11 @@
 					type "sym"
 					sym  "_ZN20CBaseCombatCharacter11FInViewConeERK6Vector"
 				}
-				
+				"CBaseCombatWeapon::SetCustomViewModel"
+				{
+					type "sym"
+					sym  "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
+				}
 			}
 			"addrs_group"
 			{

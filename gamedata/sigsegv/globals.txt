@@ -124,6 +124,8 @@
 				"CNavArea::m_masterMarker" "_ZN8CNavArea14m_masterMarkerE"
 				"CNavArea::m_openList" "_ZN8CNavArea10m_openListE"
 				"g_SentGameRulesMasks" "g_SentGameRulesMasks"
+				"CNavArea::s_nCurrVisTestCounter" "_ZN8CNavArea21s_nCurrVisTestCounterE"
+				
 			}
 			
 			"addrs_group"

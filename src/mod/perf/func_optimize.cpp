@@ -626,35 +626,43 @@ namespace Mod::Perf::Func_Optimize
     template<typename Functor>
 	inline void ForAllPotentiallyVisibleAreas(Functor func, CNavArea *curArea)
 	{
+        CNavArea::s_nCurrVisTestCounter++;
 		int i;
         auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
-        for ( i=0; i < potentiallyVisible.Count(); ++i )
+        for (i=0; i < potentiallyVisible.Count(); ++i)
 		{
 			CNavArea *area = potentiallyVisible[i].area;
-			if ( !area )
+			if (!area)
 				continue;
 
-			if ( potentiallyVisible[i].attributes == 0 )
+            area->m_nVisTestCounter = CNavArea::s_nCurrVisTestCounter;
+
+			if (potentiallyVisible[i].attributes == 0)
 				continue;
 
 			func(area);
 		}
 
 		// for each inherited area
-		if ( !curArea->m_inheritVisibilityFrom->area )
+		if (!curArea->m_inheritVisibilityFrom->area)
 			return;
 
 		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
 
-		for ( i=0; i<inherited.Count(); ++i )
+		for (i=0; i<inherited.Count(); ++i)
 		{
-			if ( !inherited[i].area )
+			auto &inheritedVisible = inherited[i];
+            auto area = inheritedVisible.area;
+			if (!area)
 				continue;
 
-			if ( inherited[i].attributes == 0 )
+            if (area->m_nVisTestCounter == CNavArea::s_nCurrVisTestCounter)
+                continue;
+
+			if (inheritedVisible.attributes == 0)
 				continue;
 
-            func(inherited[i].area);
+            func(area);
 		}
 	}
 
@@ -662,35 +670,43 @@ namespace Mod::Perf::Func_Optimize
     template<typename Functor>
 	inline void ForAllPotentiallyVisibleAreasReverse(Functor func, CNavArea *curArea)
 	{
+        CNavArea::s_nCurrVisTestCounter++;
 		int i;
         auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
         for ( i=potentiallyVisible.Count()-1; i >= 0 ; --i )
 		{
 			CNavArea *area = potentiallyVisible[i].area;
-			if ( !area )
+			if (!area)
 				continue;
+            
+            area->m_nVisTestCounter = CNavArea::s_nCurrVisTestCounter;
 
-			if ( potentiallyVisible[i].attributes == 0 )
+			if (potentiallyVisible[i].attributes == 0)
 				continue;
 
 			func(area);
 		}
 
 		// for each inherited area
-		if ( !curArea->m_inheritVisibilityFrom->area )
+		if (!curArea->m_inheritVisibilityFrom->area)
 			return;
 
 		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
 
-		for ( i=inherited.Count()-1; i >= 0; --i )
+		for (i=inherited.Count()-1; i >= 0; --i)
 		{
-			if ( !inherited[i].area )
+            auto &inheritedVisible = inherited[i];
+            auto area = inheritedVisible.area;
+			if (!area)
 				continue;
 
-			if ( inherited[i].attributes == 0 )
+            if (area->m_nVisTestCounter == CNavArea::s_nCurrVisTestCounter)
+                continue;
+
+			if (inheritedVisible.attributes == 0)
 				continue;
 
-            func(inherited[i].area);
+            func(area);
 		}
 	}
 
@@ -702,8 +718,7 @@ namespace Mod::Perf::Func_Optimize
         {
             return;
         }
-        //CCycleCount time4;
-        //CTimeAdder timer4(&time4);
+
         std::vector<CNavArea *> potentiallylVisibleAreas;
         potentiallylVisibleAreas.reserve(enteredArea ? enteredArea->m_potentiallyVisibleAreas.Get().Count() + (enteredArea->m_inheritVisibilityFrom->area ? enteredArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas->Count() : 0) : 0);
         //timer4.End();

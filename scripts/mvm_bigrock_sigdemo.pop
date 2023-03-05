@@ -3308,3 +3308,6 @@ WaveSchedule
 
 // Delay between afterburn damage multiplier
 // "mult afterburn delay" 2
+
+// Custom view model. This typically affects first person hands and their animations
+// "custom view model" "models/model.mdl"

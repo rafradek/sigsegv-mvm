@@ -2796,4 +2796,14 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4599"
+    {
+        "name"	"custom view model"
+        "attribute_class"	"custom_view_model"
+		"attribute_type"	"string"
+        "description_string"	"custom view model"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

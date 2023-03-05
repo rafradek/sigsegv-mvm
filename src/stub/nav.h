@@ -287,6 +287,7 @@ public:
 	DECL_EXTRACT(CUtlVector<CHandle<CFuncNavCost>>, m_funcNavCostVector);
 	DECL_EXTRACT (CUtlVectorConservative<AreaBindInfo>, m_potentiallyVisibleAreas);
 	DECL_RELATIVE(AreaBindInfo, m_inheritVisibilityFrom);
+	DECL_RELATIVE(uint32, m_nVisTestCounter);
 
 	static void ClearSearchLists()	{ ft_ClearSearchLists(); }
 	static bool IsOpenListEmpty()	{ return m_openList.GetRef() == nullptr; }
@@ -295,6 +296,7 @@ public:
 	BOOL IsMarked() const			{ return (m_marker == m_masterMarker) ? true : false; }
 	static GlobalThunk<uint> m_masterMarker;
 	static GlobalThunk<CNavArea *> m_openList;
+	static GlobalThunk<uint32> s_nCurrVisTestCounter;
 	
 	static CNavArea *PopOpenList() {
 		if (m_openList) {

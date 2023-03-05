@@ -199,7 +199,7 @@ MemberVFuncThunk<const CEconItemView *, int> CEconItemView::vt_GetItemDefIndex(T
 IMPL_SENDPROP(CEconItemView, CAttributeContainer, m_Item, CEconEntity);
 
 
-void CEconItemAttributeDefinition::ConvertValueToString(attribute_data_union_t& value, char *buf, size_t buf_len)
+void CEconItemAttributeDefinition::ConvertValueToString(const attribute_data_union_t& value, char *buf, size_t buf_len)
 {
 	/* if BConvertStringToEconAttributeValue was called with b1 = true, then
 	 * calling ConvertEconAttributeValueToString will render the stored-as-float
