@@ -1808,7 +1808,7 @@ namespace Mod::Attr::Custom_Attributes
 
 			if (info.GetAttacker() != nullptr && info.GetAttacker()->GetGroundEntity() == nullptr) {
 				float dmg_mult = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_while_airborne);
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_while_midair);
 				dmg *= dmg_mult;
 			}
 

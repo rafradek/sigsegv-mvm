@@ -2809,7 +2809,7 @@
     "4600"
     {
         "name"	"mult dmg while midair"
-        "attribute_class"	"custom_view_model"
+        "attribute_class"	"mult_dmg_while_midair"
         "description_string"	"(+-)%p% damage while midair"
         "description_format"	"value_is_percentage"
         "hidden"	"0"
