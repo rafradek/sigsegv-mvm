@@ -2806,4 +2806,53 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4600"
+    {
+        "name"	"mult dmg while midair"
+        "attribute_class"	"custom_view_model"
+        "description_string"	"(+-)%p% damage while midair"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4601"
+    {
+        "name"	"hidden string attribute 1"
+        "attribute_class"	"string_data_attribute_1"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+		"attribute_type"	"string"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4602"
+    {
+        "name"	"hidden string attribute 2"
+        "attribute_class"	"string_data_attribute_2"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+		"attribute_type"	"string"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4603"
+    {
+        "name"	"hidden string attribute 3"
+        "attribute_class"	"string_data_attribute_3"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+		"attribute_type"	"string"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4604"
+    {
+        "name"	"hidden string attribute 4"
+        "attribute_class"	"string_data_attribute_4"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+		"attribute_type"	"string"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

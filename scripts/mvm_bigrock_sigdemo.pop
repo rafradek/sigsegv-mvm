@@ -3311,3 +3311,12 @@ WaveSchedule
 
 // Custom view model. This typically affects first person hands and their animations
 // "custom view model" "models/model.mdl"
+
+// Damage multiplier while midair
+// "mult dmg while midair" "0.5"
+
+// Attribute for storing hidden text in items
+// "hidden string attribute 1" "abc"
+// "hidden string attribute 2" "abc"
+// "hidden string attribute 3" "abc"
+// "hidden string attribute 4" "abc"

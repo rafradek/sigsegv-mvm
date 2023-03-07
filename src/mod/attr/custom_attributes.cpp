@@ -1806,6 +1806,12 @@ namespace Mod::Attr::Custom_Attributes
 				dmg += (pVictim->GetMaxHealth() - pVictim->GetHealth()) * iDmgMissingHealth;
 			}
 
+			if (info.GetAttacker() != nullptr && info.GetAttacker()->GetGroundEntity() == nullptr) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_while_airborne);
+				dmg *= dmg_mult;
+			}
+
 			auto playerVictim = ToTFPlayer(pVictim);
 			if (playerVictim != nullptr) {
 				int iDmgType = 0;
