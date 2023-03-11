@@ -725,6 +725,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	RefCount rc_stop_our_team_deflect;
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Swing, CTFPlayer *player)
 	{
 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Swing)(player);
@@ -740,6 +741,7 @@ namespace Mod::Attr::Custom_Attributes
 		int airblast = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( weapon, airblast, melee_airblast);
 		if (airblast > 0) {
+			SCOPED_INCREMENT(rc_stop_our_team_deflect);
 			weapon->DeflectProjectiles();
 		}
 		float protection = 0;
@@ -2540,6 +2542,10 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseEntity *projOwner = pTarget->GetOwnerEntity();
 		auto projEntity = rtti_cast<CBaseProjectile *>(pTarget);
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+
+		if (rc_stop_our_team_deflect && pTarget->GetTeamNumber() == pOwner->GetTeamNumber()) {
+			return false;
+		}
 		if (projEntity != nullptr && projEntity->IsDestroyable(false)) {
 			int destroyProj = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, destroyProj, airblast_destroy_projectile);
