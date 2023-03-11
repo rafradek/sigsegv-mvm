@@ -12,6 +12,7 @@
 #include "stub/usermessages_sv.h"
 #include "stub/particles.h"
 #include "stub/misc.h"
+#include "stub/nextbot_cc.h"
 #include "stub/trace.h"
 #include "stub/upgrades.h"
 #include "mod/pop/common.h"
@@ -1779,18 +1780,21 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				dmg *= dmgmult;
 
-				int critfromback = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critfromback, crit_from_behind);
-				Vector toEnt = pVictim->GetAbsOrigin() - info.GetAttacker()->GetAbsOrigin();
-				if (critfromback != 0) {
-					Vector entForward;
-					AngleVectors(pVictim->EyeAngles(), &entForward);
-					toEnt.z = 0;
-					toEnt.NormalizeInPlace();
-					if (DotProduct(toEnt, entForward) > 0.7071f)	// 75 degrees from center (total of 150)
-					{
-						info.SetCritType(CTakeDamageInfo::CRIT_FULL);
-						info.AddDamageType(DMG_CRITICAL);
+				// Crit from behind should not work on tanks
+				if (rtti_cast<CTFTankBoss *>(pVictim) == nullptr) {
+					int critfromback = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critfromback, crit_from_behind);
+					Vector toEnt = pVictim->GetAbsOrigin() - info.GetAttacker()->GetAbsOrigin();
+					if (critfromback != 0) {
+						Vector entForward;
+						AngleVectors(pVictim->EyeAngles(), &entForward);
+						toEnt.z = 0;
+						toEnt.NormalizeInPlace();
+						if (DotProduct(toEnt, entForward) > 0.7071f)	// 75 degrees from center (total of 150)
+						{
+							info.SetCritType(CTakeDamageInfo::CRIT_FULL);
+							info.AddDamageType(DMG_CRITICAL);
+						}
 					}
 				}
 			}
