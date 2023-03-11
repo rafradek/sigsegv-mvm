@@ -2990,7 +2990,7 @@ WaveSchedule
 // Grenades and arrows bounce off walls, retaining x% of speed after each bounce
 // "grenade bounce speed" 0.8
 
-// Grenades explode on direct hits even if the grenade already touched a wall, dealing x% additional damage
+// Grenades explode on direct hits even if the grenade already touched a wall, dealing x% additional damage. Can be also used on arrows to increase damage after bounce
 // "grenade bounce damage" 0.3
 
 // Gravity for arrows and flares. 0 is default gravity. For grenades and stickybombs, any value will disable gravity

@@ -453,6 +453,25 @@ inline int CBaseEntity::GetCustomVariableInt(int defValue)
 }
 
 template<FixedString lit>
+inline bool CBaseEntity::GetCustomVariableBool(bool defValue)
+{
+    auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    if (var.value.FieldType() != FIELD_BOOLEAN) var.value.Convert(FIELD_BOOLEAN);
+                    return var.value.Bool();
+                }
+            }
+        }
+    }
+    return defValue;
+}
+
+template<FixedString lit>
 inline Vector CBaseEntity::GetCustomVariableVector(const Vector &defValue)
 {
    auto data = this->GetExtraEntityData();

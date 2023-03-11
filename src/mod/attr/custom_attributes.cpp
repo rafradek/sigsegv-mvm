@@ -1333,6 +1333,16 @@ namespace Mod::Attr::Custom_Attributes
 				arrow->SetCustomVariable("HitEntities", Variant(arrow->GetCustomVariableInt<"HitEntities">() + Max(0, arrow->m_HitEntities->Count()-1)));
 				arrow->m_HitEntities->RemoveAll();
 			}
+			
+			if (!arrow->GetCustomVariableBool<"bounced">()) {
+				float bounce_damage = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_damage, grenade_bounce_damage);
+				if (bounce_damage != 0) {
+					arrow->SetCustomVariable("bounced", Variant(true));
+					arrow->SetDamage(arrow->GetDamage() * (1 + bounce_damage));
+				}
+			}
+
 			return true;
 		}
 		return false;
@@ -4356,6 +4366,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
+		
 		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CheckSkyboxImpact)(pOther);
 	}
 

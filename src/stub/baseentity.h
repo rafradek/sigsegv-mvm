@@ -221,6 +221,8 @@ public:
 	template<FixedString lit>
 	int GetCustomVariableInt(int defValue = 0);
 	template<FixedString lit>
+	bool GetCustomVariableBool(bool defValue = false);
+	template<FixedString lit>
 	Vector GetCustomVariableVector(const Vector &defValue = vec3_origin);
 	template<FixedString lit>
 	QAngle GetCustomVariableAngle(const QAngle &defValue = vec3_angle);
