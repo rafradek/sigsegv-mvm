@@ -3734,13 +3734,21 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayerShared_TestAndExpireChargeEffect)(type);
 		if (mod != nullptr && mod->condOverride[type] != -1) {
 			auto weapon = rtti_cast<CWeaponMedigun *>(mod->condOverrideProvider[type].Get());
-			if (player->m_Shared->InCond(mod->condOverride[type])) {
-				if (weapon == nullptr || (weapon->GetHealTarget() != player && weapon->GetOwner() != player) || weapon->GetTFPlayerOwner()->GetActiveTFWeapon() != weapon || !weapon->IsChargeReleased()) {
-					player->m_Shared->RemoveCond(mod->condOverride[type]);
+			auto condOverride = mod->condOverride[type];
+			for (int i = 0; i < 4; i++) {
+				
+				int addcond = (condOverride >> (i * 8)) & 255;
+				//DevMsg("add cond post %d\n", addcond);
+				if (addcond != 0) {
+					if (player->m_Shared->InCond(addcond)) {
+						if (weapon == nullptr || (weapon->GetHealTarget() != player && weapon->GetOwner() != player) || weapon->GetTFPlayerOwner()->GetActiveTFWeapon() != weapon || !weapon->IsChargeReleased()) {
+							player->m_Shared->RemoveCond(addcond);
+						}
+					}
+					if (!player->m_Shared->InCond(addcond)) {
+						mod->condOverride[type] = -1;
+					}
 				}
-			}
-			if (!player->m_Shared->InCond(mod->condOverride[type])) {
-				mod->condOverride[type] = -1;
 			}
 			effect.eCondition = old_cond;
 			effect.eWearingOffCondition = old_wearing_cond;
