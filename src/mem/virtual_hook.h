@@ -27,7 +27,7 @@ public:
 	
 	void Toggle(bool enable) { if (this->m_bEnabled && !enable) DoDisable(); else if(!this->m_bEnabled && enable) DoEnable(); }
 
-private:
+protected:
 	const char *m_pszVTableName;
 	const char *m_pszFuncName;
 	std::string m_szName;
@@ -36,6 +36,7 @@ private:
     bool m_bLoaded = false;
 
 	void **m_pFuncPtr;
+	int m_iOffset;
 
 	void *m_pCallback;
 	void **m_pInner;
@@ -44,26 +45,18 @@ private:
     friend class CVirtualHookFunc;
 };
 
-// typedef VTableToInnerPtr = std::vector<std::pair<void *, void *>;
-
-// class CVirtualHookInherit : public CVirtualHook
-// {
-// public:
-// 	/* by addr name */
-// 	CVirtualHookInherit(const char *class_name, const char *func_name, void *callback, VTableToInnerPtr &vtable_to_inner_ptr) : m_pszVTableName(class_name), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_VTableToInnerPtr(vtable_to_inner_ptr) {};
+class CVirtualHookInherit : public CVirtualHook
+{
+public:
+	/* by addr name */
+	CVirtualHookInherit(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : CVirtualHook(class_name, func_name, callback, inner_ptr) {};
 	
-// 	virtual bool DoLoad() override;
-// 	virtual void DoUnload() override;
+	virtual void DoEnable() override;
+	virtual void DoDisable() override;
 	
-// 	virtual void DoEnable() override;
-// 	virtual void DoDisable() override;
-
-// 	virtual void SetInner(void **inner, void *vtable) override;
-	
-// private:
-// 	VTableToInnerPtr &m_VTableToInnerPtr;
-//     friend class CVirtualHookFunc;
-// };
+private:
+    friend class CVirtualHookFunc;
+};
 
 class CVirtualHookFunc
 {

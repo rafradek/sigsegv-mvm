@@ -3320,3 +3320,9 @@ WaveSchedule
 // "hidden string attribute 2" "abc"
 // "hidden string attribute 3" "abc"
 // "hidden string attribute 4" "abc"
+
+// Keep custom medigun uber effect after the beam is disconnected until the uber meter runs out
+// "medigun keep charged effect" 1
+
+// Don't collide with other projectiles
+// "ignores other projectiles" 1

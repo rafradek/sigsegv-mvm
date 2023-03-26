@@ -308,4 +308,9 @@ namespace RTTI
 	{
 		return s_RTTI;
 	}
+
+	const std::unordered_map<std::string, const void **> &GetAllVTable()
+	{
+		return s_VT;
+	}
 }

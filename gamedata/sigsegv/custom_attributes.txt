@@ -2855,4 +2855,22 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4605"
+    {
+        "name"	"medigun keep charged effect"
+        "attribute_class"	"medigun_keep_charged_effect"
+        "description_string"	"(+-)%p% damage while midair"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4606"
+    {
+        "name"	"ignores other projectiles"
+        "attribute_class"	"ignores_other_projectiles"
+        "description_string"	"(+-)%p% damage while midair"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

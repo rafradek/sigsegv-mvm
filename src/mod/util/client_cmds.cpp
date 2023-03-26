@@ -347,7 +347,7 @@ namespace Mod::Util::Client_Cmds
 		CBaseEntity *before_provider = player->m_Shared->GetConditionProvider(cond);
 		
 		if (vec.empty()) {
-			ModCommandResponse("[sig_addattr] Error: no matching target found for \"%s\".\n", args[2]);
+			ModCommandResponse("[sig_addcond] Error: no matching target found for \"%s\".\n", args[2]);
 			return;
 		}
 		for (auto target : vec) {

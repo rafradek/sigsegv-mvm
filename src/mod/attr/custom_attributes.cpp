@@ -658,6 +658,14 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 
+				int ignoresOtherProjectiles = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, ignoresOtherProjectiles, ignores_other_projectiles);
+				if (ignoresOtherProjectiles != 0) {
+					proj->SetCollisionGroup(TFCOLLISION_GROUP_ROCKET_BUT_NOT_WITH_OTHER_ROCKETS);
+				}
+
+				//proj->SetCustomVariable("colfilter", );
+
 				GET_STRING_ATTRIBUTE(weapon, projectile_sound, soundname);
 				if (soundname != nullptr) {
 					PrecacheSound(soundname);
@@ -1763,16 +1771,16 @@ namespace Mod::Attr::Custom_Attributes
 				float dmgmult = 1.0f;
 				if ( health < halfHealth )
 				{
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), dmgmult, mult_dmg_bonus_while_half_dead );
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmgmult, mult_dmg_bonus_while_half_dead );
 				}
 				else
 				{
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), dmgmult, mult_dmg_penalty_while_half_alive );
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmgmult, mult_dmg_penalty_while_half_alive );
 				}
 
 				// Some weapons change damage based on player's health
 				float flReducedHealthBonus = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetAttacker(), flReducedHealthBonus, mult_dmg_with_reduced_health );
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), flReducedHealthBonus, mult_dmg_with_reduced_health );
 				if ( flReducedHealthBonus != 1.0f )
 				{
 					float flHealthFraction = clamp( health / maxHealth, 0.0f, 1.0f );
@@ -3693,9 +3701,12 @@ namespace Mod::Attr::Custom_Attributes
 				mod->condOverride[iCharge] = -1;
 			}
 		}
+		int medigunKeepChargedEffect = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider, medigunKeepChargedEffect, medigun_keep_charged_effect);
+		
 		if (iCondOverride != 0) {
 			auto mod = player->GetOrCreateEntityModule<ChargeOverrideModule>("chargeoverride");
-			if (iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride)) {
+			if (iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride) && medigunKeepChargedEffect == 0) {
 				mod->condOverride[iCharge] = bState ? iCondOverride : -1;
 				mod->condOverrideProvider[iCharge] = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			}
@@ -6459,7 +6470,15 @@ namespace Mod::Attr::Custom_Attributes
 
 		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
 	}
-	
+
+	VHOOK_DECL(bool, CBaseProjectile_ShouldCollide, int collisionGroup, int contentsMask)
+	{
+		Msg("should\n");
+		return false;
+
+		return VHOOK_CALL(CBaseProjectile_ShouldCollide)(collisionGroup, contentsMask);
+	}
+
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
 		CBaseEntity *outer = mgr->m_hOuter;
@@ -6629,7 +6648,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto player = GetPlayerOwnerOfAttributeList(list);
 			CBaseEntity *ent = manager->m_hOuter;
 			auto econentity = rtti_cast<CEconEntity *>(ent);
-			if (econentity != nullptr) {
+			if (econentity != nullptr && new_value.m_String != nullptr) {
 				UpdateCustomModel(player, econentity, *list);
 			}
 		}
@@ -6641,7 +6660,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (manager != nullptr) {
 			CBaseEntity *ent = manager->m_hOuter;
 			auto weapon = rtti_cast<CTFWeaponBase *>(ent);
-			if (weapon != nullptr) {
+			if (weapon != nullptr && new_value.m_String != nullptr) {
 				const char *value;
 				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &value);
 				weapon->SetCustomViewModel(changeType == AttributeChangeType::REMOVE || value == nullptr ? "" : value);
@@ -7006,6 +7025,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Spawn,    "CObjectSentrygun::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_TestAndExpireChargeEffect,    "CTFPlayerShared::TestAndExpireChargeEffect");
+            //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
 			
 			

@@ -263,6 +263,8 @@ protected:
 	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour), IDetour::priority))
 #define MOD_ADD_VHOOK(detour, class_name, func_name) \
 	this->AddVirtualHook(new CVirtualHook(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
+#define MOD_ADD_VHOOK_INHERIT(detour, class_name, func_name) \
+	this->AddVirtualHook(new CVirtualHookInherit(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
 
 
 #endif

@@ -70,6 +70,9 @@ namespace RTTI
 	
 	template<typename T> const rtti_t *GetRTTI()   { return GetRTTI  (TypeName<T>()); }
 	template<typename T> const void  **GetVTable() { return GetVTable(TypeName<T>()); }
+
+	const std::unordered_map<std::string, const rtti_t *> &GetAllRTTI();
+	const std::unordered_map<std::string, const void **> &GetAllVTable();
 }
 
 
