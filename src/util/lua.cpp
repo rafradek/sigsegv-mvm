@@ -2359,6 +2359,8 @@ namespace Util::Lua
         }
         virtual ~LuaMenuHandler()
         {
+            if (invalid) return;
+
             luaL_unref(state->GetState(), LUA_REGISTRYINDEX, tableRef);
         }
 
