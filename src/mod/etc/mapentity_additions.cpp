@@ -1831,7 +1831,28 @@ namespace Mod::Etc::Mapentity_Additions
         }
 		DETOUR_MEMBER_CALL(CCaptureFlag_FlagTouch)(other);
 	}
-    
+
+	DETOUR_DECL_MEMBER(bool, CFlagDetectionZone_EntityIsFlagCarrier, CBaseEntity *other)
+	{
+		auto trigger = reinterpret_cast<CBaseTrigger *>(this);
+        variant_t val;
+        auto player = ToTFPlayer(other);
+        if (player != nullptr && player->GetItem() != nullptr) {
+            trigger->GetCustomVariableVariant<"filter">(val);
+            val.Convert(FIELD_EHANDLE);
+            auto filterEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
+            if (filterEnt != nullptr && !filterEnt->PassesFilter(player->GetItem(), other)) {
+                return false;
+            }
+            trigger->GetCustomVariableVariant<"filterplayer">(val);
+            val.Convert(FIELD_EHANDLE);
+            auto filterPlayerEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
+            if (filterPlayerEnt != nullptr && !filterPlayerEnt->PassesFilter(player, other)) {
+                return false;
+            }
+        }
+		return DETOUR_MEMBER_CALL(CFlagDetectionZone_EntityIsFlagCarrier)(other);
+	}
 
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1877,6 +1898,8 @@ namespace Mod::Etc::Mapentity_Additions
             
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagToFetch, "CTFBot::GetFlagToFetch");
             MOD_ADD_DETOUR_MEMBER(CCaptureFlag_FlagTouch, "CCaptureFlag::FlagTouch");
+            MOD_ADD_DETOUR_MEMBER(CFlagDetectionZone_EntityIsFlagCarrier, "CFlagDetectionZone::EntityIsFlagCarrier");
+            
             
 
             // Execute -1 delay events immediately

@@ -53,24 +53,13 @@
 					sym    "_Z26TranslateWeaponEntForClassPKci"
 					uniref "pszWpnEntTranslationList"
 				}
-				
-				"CBaseEntity::CalcAbsolutePosition"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity20CalcAbsolutePositionEv"
-				}
+
 				"CBaseEntity::DispatchTraceAttack"
 				{
 					type "fixed"
 					sym  "_ZN11CBaseEntity19DispatchTraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
 					addr  "0x18c830"
 					build "3277805"
-				}
-				
-				"CBasePlayer::IsBot"
-				{
-					type "sym"
-					sym  "_ZNK11CBasePlayer5IsBotEv"
 				}
 				
 				"CTFGameRules::PushAllPlayersAway"
@@ -374,12 +363,6 @@
 					build "3283568"
 				}
 				
-				"CBasePlayer::CommitSuicide"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13CommitSuicideEbb"
-				}
-				
 				"CUserMessages::LookupUserMessage"
 				{
 					type "sym"
@@ -425,17 +408,6 @@
 					type "sym"
 					sym  "_ZN19CTFRadiusDamageInfo13ApplyToEntityEP11CBaseEntity"
 				}
-				"CBaseEntity::TakeDamage"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity10TakeDamageERK15CTakeDamageInfo"
-				}
-				
-				"CBaseEntity::EyeAngles"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EyeAnglesEv"
-				}
 				
 				"CObjectDispenser::DispenseThink"
 				{
@@ -446,49 +418,6 @@
 				{
 					type "sym"
 					sym  "_ZN16CObjectDispenser18GetDispenserRadiusEv"
-				}
-				
-				"CBaseEntity::EyePosition"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11EyePositionEv"
-				}
-				
-				"CBaseEntity::KeyValue"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8KeyValueEPKcS1_"
-				}
-				"CBaseEntity::GetKeyValue"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11GetKeyValueEPKcPci"
-				}
-				"CBaseEntity::SetOwnerEntity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14SetOwnerEntityEPS_"
-				}
-				
-				"CBaseEntity::SetAbsOrigin"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12SetAbsOriginERK6Vector"
-				}
-				"CBaseEntity::SetAbsAngles"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12SetAbsAnglesERK6QAngle"
-				}
-				"CBaseEntity::SetAbsVelocity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14SetAbsVelocityERK6Vector"
-				}
-				"CBaseEntity::Spawn"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity5SpawnEv"
 				}
 				
 				"CBaseObject::StartPlacement"
@@ -547,12 +476,6 @@
 				{
 					type "sym"
 					sym  "_ZN20ICaptureFlagAutoList30m_ICaptureFlagAutoListAutoListE"
-				}
-				
-				"CBaseEntity::Remove"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity6RemoveEv"
 				}
 				
 				"UTIL_EntitiesInSphere"
@@ -629,43 +552,6 @@
 					sym  "_Z19StopParticleEffectsP11CBaseEntity"
 				}
 				
-				// const char *, float, float *
-				"CBaseEntity::EmitSound [member: normal]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundEPKcfPf"
-				}
-				// const char *, HSOUNDSCRIPTHANDLE&, float, float *
-				"CBaseEntity::EmitSound [member: normal + handle]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundEPKcRsfPf"
-				}
-				// IRecipientFilter&, int, const char *, const Vector *, float, float *
-				"CBaseEntity::EmitSound [static: normal]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriPKcPK6VectorfPf"
-				}
-				// IRecipientFilter&, int, const char *, short&, const Vector *, float, float *
-				"CBaseEntity::EmitSound [static: normal + handle]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriPKcRsPK6VectorfPf"
-				}
-				// IRecipientFilter&, int, const EmitSound_t&
-				"CBaseEntity::EmitSound [static: emitsound]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriRK11EmitSound_t"
-				}
-				// IRecipientFilter&, int, const EmitSound_t&, short&
-				"CBaseEntity::EmitSound [static: emitsound + handle]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriRK11EmitSound_tRs"
-				}
-				
 				"IGameSystem::Add"
 				{
 					type  "pattern"
@@ -685,28 +571,10 @@
 				//	mask "ffffffffffffffffffffffff00000000ffffffffff00000000ff00000000ffffff00000000ff00000000ffffffff00000000ffffffffffff00ffffffffffffffff00000000ff00000000ffffffffff"
 				}
 				
-				"CBaseEntity::PhysicsSimulate"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity15PhysicsSimulateEv"
-				}
-				
 				"CTFBaseProjectile::FlyThink"
 				{
 					type "sym"
 					sym  "_ZN17CTFBaseProjectile8FlyThinkEv"
-				}
-				
-				"CBaseEntity::GetVelocity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11GetVelocityEP6VectorS1_"
-				}
-				
-				"CBaseEntity::WorldSpaceCenter"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity16WorldSpaceCenterEv"
 				}
 				
 				"net_blocksize"
@@ -750,23 +618,6 @@
 					type "sym"
 					sym  "_ZN8CNetChan25GetMaxRoutablePayloadSizeEv"
 					lib  "engine"
-				}
-				
-				"CTFWeaponBaseGun::FirePipeBomb"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun12FirePipeBombEP9CTFPlayeri"
-				}
-				
-				"CBaseEntity::CreateNoSpawn"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13CreateNoSpawnEPKcRK6VectorRK6QAnglePS_"
-				}
-				"CBaseEntity::Create"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity6CreateEPKcRK6VectorRK6QAnglePS_"
 				}
 				
 				"WeaponID_IsSniperRifle"
@@ -867,18 +718,6 @@
 					sym  "_ZN12CTFGameRules20IsUpgradeTierEnabledEP9CTFPlayerii"
 				}
 				
-				"CBaseCombatCharacter::GetLastKnownArea"
-				{
-					type "sym"
-					sym  "_ZNK20CBaseCombatCharacter16GetLastKnownAreaEv"
-				}
-				
-				"CBasePlayer::GetSteamID"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer10GetSteamIDEP8CSteamID"
-				}
-				
 				"CMannVsMachineStats::GetUpgradeSpending"
 				{
 					type "sym"
@@ -918,23 +757,12 @@
 					sym  "_ZN10CTFPowerup11GetLifeTimeEv"
 				}
 				
-				"CBaseEntity::GetNextThink"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12GetNextThinkEPKc"
-				}
-				
 				"CCurrencyPack::SetAmount"
 				{
 					type "sym"
 					sym  "_ZN13CCurrencyPack9SetAmountEf"
 				}
 				
-				"CBaseCombatCharacter::Weapon_GetSlot"
-				{
-					type "sym"
-					sym  "_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi"
-				}
 				
 				"CTFTankBoss::TankBossThink"
 				{
@@ -977,28 +805,10 @@
 					sym  "_ZN20ICaptureZoneAutoList30m_ICaptureZoneAutoListAutoListE"
 				}
 				
-				"CBaseEntity::IsCombatItem"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity12IsCombatItemEv"
-				}
-				
-				"CTFWeaponBase::DeflectEntity"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase13DeflectEntityEP11CBaseEntityP9CTFPlayerR6Vector"
-				}
-				
 				"CTraceFilterSimple::ShouldHitEntity"
 				{
 					type "sym"
 					sym  "_ZN18CTraceFilterSimple15ShouldHitEntityEP13IHandleEntityi"
-				}
-				
-				"CBaseEntity::GetModelIndex"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity13GetModelIndexEv"
 				}
 				
 				"CTFFlameEntity::FlameThink"
@@ -1015,55 +825,10 @@
 					sym  "_ZN18CTFWeaponBaseMelee13GetSwingRangeEv"
 				}
 				
-				"CBaseCombatWeapon::IsMeleeWeapon"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon13IsMeleeWeaponEv"
-				}
-				
-				"CBaseCombatCharacter::Weapon_CanSwitchTo"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter18Weapon_CanSwitchToEP17CBaseCombatWeapon"
-				}
-				
-				"CBaseCombatCharacter::Weapon_Switch"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter13Weapon_SwitchEP17CBaseCombatWeaponi"
-				}
-				
-				"CBaseCombatCharacter::AddGlowEffect"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter13AddGlowEffectEv"
-				}
-				"CBaseCombatCharacter::RemoveGlowEffect"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter16RemoveGlowEffectEv"
-				}
-				"CBaseCombatCharacter::IsGlowEffectActive"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter18IsGlowEffectActiveEv"
-				}
-				
 				"SendProxy_UInt8ToInt32"
 				{
 					type "sym"
 					sym  "_Z22SendProxy_UInt8ToInt32PK8SendPropPKvS3_P8DVariantii"
-				}
-				
-				"CBaseCombatCharacter::IsAbleToSee [CBaseEntity *]"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter11IsAbleToSeeEPK11CBaseEntityNS_20FieldOfViewCheckTypeE"
-				}
-				"CBaseCombatCharacter::IsAbleToSee [CBaseCombatCharacter *]"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter11IsAbleToSeeEPS_NS_20FieldOfViewCheckTypeE"
 				}
 				
 				"CBaseAnimating::LookupSequence"
@@ -1165,18 +930,6 @@
 					lib  "engine"
 				}
 				
-				"CBasePlayer::Weapon_ShootPosition"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer20Weapon_ShootPositionEv"
-				}
-				
-				"CBaseEntity::MyCombatCharacterPointer"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity24MyCombatCharacterPointerEv"
-				}
-				
 				"CTFWeaponBaseMelee::DoSwingTraceInternal"
 				{
 					type "sym"
@@ -1229,12 +982,6 @@
 					sym  "_ZN15CTFGameMovement15ProcessMovementEP11CBasePlayerP9CMoveData"
 				}
 				
-				"CBaseCombatCharacter::SetBloodColor"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter13SetBloodColorEi"
-				}
-				
 				"CUtlConstStringBase<char>::Set"
 				{
 					type "sym"
@@ -1274,12 +1021,6 @@
 				{
 					type "sym"
 					sym  "_ZN16CRecipientFilter21RemoveRecipientsByPVSERK6Vector"
-				}
-				
-				"CBasePlayer::PlayStepSound"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13PlayStepSoundER6VectorP13surfacedata_tfb"
 				}
 				
 				"SV_ReplicateConVarChange"
@@ -1325,12 +1066,6 @@
 					sym  "_ZN14CTFFlameEntity6CreateERK6VectorRK6QAngleP11CBaseEntityfifbb"
 				}
 				
-				"CBaseCombatCharacter::GiveAmmo"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter8GiveAmmoEiib"
-				}
-				
 				"CLagCompensationManager::StartLagCompensation"
 				{
 					type "sym"
@@ -1364,30 +1099,6 @@
 				{
 					type "sym"
 					sym  "_Z22Physics_SimulateEntityP11CBaseEntity"
-				}
-				
-				"CBaseEntity::PhysicsNoclip"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13PhysicsNoclipEv"
-				}
-				
-				"CBaseEntity::PhysicsRunThink"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity15PhysicsRunThinkENS_14thinkmethods_tE"
-				}
-				
-				"CBaseEntity::PhysicsRunSpecificThink"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity23PhysicsRunSpecificThinkEiMS_FvvE"
-				}
-				
-				"CBaseEntity::PhysicsDispatchThink"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity20PhysicsDispatchThinkEMS_FvvE"
 				}
 				
 				"CTFFlameEntity::Spawn"
@@ -1439,22 +1150,10 @@
 					sym  "_ZN9CBaseFlex13AddSceneEventEP12CChoreoSceneP12CChoreoEventP11CBaseEntity"
 				}
 				
-				"CBaseEntity::IsBSPModel"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity10IsBSPModelEv"
-				}
-				
 				"FindHullIntersection"
 				{
 					type "sym"
 					sym  "_Z20FindHullIntersectionRK6VectorR10CGameTraceS1_S1_P11CBaseEntity"
-				}
-				
-				"CBaseEntity::ShouldCollide"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity13ShouldCollideEii"
 				}
 				
 				"CGameRules::ShouldCollide"
@@ -1529,22 +1228,10 @@
 					sym  "_ZN16CTFMechanicalArm11ShockAttackEv"
 				}
 				
-				"CBasePlayer::SetPlayerName"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13SetPlayerNameEPKc"
-				}
-				
 				"CBaseObject::SetPlasmaDisabled"
 				{
 					type "sym"
 					sym  "_ZN11CBaseObject17SetPlasmaDisabledEf"
-				}
-				
-				"CBasePlayer::GetPlayerMaxSpeed"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer17GetPlayerMaxSpeedEv"
 				}
 				
 				"CBaseObject::HasSapper"
@@ -1587,60 +1274,6 @@
 				{
 					type "sym"
 					sym  "_ZNK12CTFGameRules20GetCurrentMatchGroupEv"
-				}
-				
-				"CBaseCombatCharacter::GetAmmoCount"
-				{
-					type "sym"
-					sym  "_ZNK20CBaseCombatCharacter12GetAmmoCountEi"
-				}
-				
-				"CBaseCombatWeapon::GetMaxClip1"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon11GetMaxClip1Ev"
-				}
-				
-				"CBaseCombatWeapon::GetMaxClip2"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon11GetMaxClip2Ev"
-				}
-				"CBaseCombatWeapon::PrimaryAttack"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon13PrimaryAttackEv"
-				}
-				"CBaseCombatWeapon::SecondaryAttack"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon15SecondaryAttackEv"
-				}
-				"CBaseCombatWeapon::CanPerformSecondaryAttack"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon25CanPerformSecondaryAttackEv"
-				}
-				"CTFWeaponBase::PrimaryAttack"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase13PrimaryAttackEv"
-				}
-				"CTFWeaponBase::SecondaryAttack"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase15SecondaryAttackEv"
-				}
-				"CBaseEntity::DrawDebugGeometryOverlays"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity25DrawDebugGeometryOverlaysEv"
-				}
-				
-				"CBaseCombatCharacter::OnTakeDamage"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter12OnTakeDamageERK15CTakeDamageInfo"
 				}
 				
 				"CTFSniperRifleDecap::GetCount"
@@ -1734,12 +1367,6 @@
 					lib    "engine"
 				}
 				
-				"CBaseCombatWeapon::HasAmmo"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon7HasAmmoEv"
-				}
-				
 				"CObjectSapper::IsValidRoboSapperTarget"
 				{
 					type "sym"
@@ -1770,12 +1397,6 @@
 					sym  "_ZN14CTFSniperRifle19CanFireCriticalShotEbP11CBaseEntity"
 				}
 				
-				"CTFWeaponBase::CanFireCriticalShot"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase19CanFireCriticalShotEbP11CBaseEntity"
-				}
-				
 				"CTFProjectile_Arrow::StrikeTarget"
 				{
 					type "sym"
@@ -1788,11 +1409,6 @@
 					sym  "_ZNK12CTFGameRules19IsPVEModeControlledEP11CBaseEntity"
 				}
 				
-				"CBaseEntity::ChangeTeam"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity10ChangeTeamEi"
-				}
 				
 				"SendProxy_LengthTable"
 				{
@@ -1803,23 +1419,8 @@
 					mask "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 				}
 				
-				"CBaseEntity::SetModelIndexOverride"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity21SetModelIndexOverrideEii"
-				}
 				
-				"CBaseEntity::SetModelIndex"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13SetModelIndexEi"
-				}
 				
-				"CBaseEntity::GetModelName"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity12GetModelNameEv"
-				}
 				
 				"Con_ColorPrint"
 				{
@@ -1875,12 +1476,6 @@
 					sym  "_ZN9CUpgrades12UpgradeTouchEP11CBaseEntity"
 				}
 				
-				"CTFWeaponBase::GetShootSound"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase13GetShootSoundEi"
-				}
-				
 				"IBaseObjectAutoList::m_IBaseObjectAutoListAutoList"
 				{
 					type "sym"
@@ -1905,12 +1500,6 @@
 					sym  "_ZN12CTFGameRules19BetweenRounds_StartEv"
 				}
 				
-				"CBaseEntity::EntityText"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity10EntityTextEiPKcfiiii"
-				}
-				
 				"CBaseObject::InitializeMapPlacedObject"
 				{
 					type "sym"
@@ -1929,28 +1518,11 @@
 					sym  "_ZN11CBaseObject14UpdateOnRemoveEv"
 				}
 				
-				"CBaseCombatWeapon::Equip"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon5EquipEP20CBaseCombatCharacter"
-				}
-				
-				"CBaseCombatWeapon::Drop"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon4DropERK6Vector"
-				}
 				
 				"tf_mvm_popfile"
 				{
 					type "sym"
 					sym  "_ZL14tf_mvm_popfileRK8CCommand"
-				}
-				
-				"CBaseEntity::AcceptInput"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11AcceptInputEPKcPS_S2_9variant_ti"
 				}
 				
 				"CTeamplayRoundBasedRules::State_Enter"
@@ -1981,37 +1553,6 @@
 					type "sym"
 					sym  "_ZN12CTFGameRules24ApplyOnDamageModifyRulesER15CTakeDamageInfoP11CBaseEntityb"
 				}
-				
-				"CTFWeaponBaseGun::FireRocket"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun10FireRocketEP9CTFPlayeri"
-				}
-				"CTFWeaponBaseGun::FireFlameRocket"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun15FireFlameRocketEP9CTFPlayer"
-				}
-				"CTFWeaponBaseGun::FireArrow"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun9FireArrowEP9CTFPlayer16ProjectileType_t"
-				}
-				"CTFWeaponBaseGun::FireFlare"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun9FireFlareEP9CTFPlayer"
-				}
-				"CTFWeaponBaseGun::FireJar"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun7FireJarEP9CTFPlayer"
-				}
-				"CTFWeaponBaseGun::FireNail"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun8FireNailEP9CTFPlayeri"
-				}
 				"CTFJar::FireJar"
 				{
 					type "sym"
@@ -2037,11 +1578,6 @@
 					type "sym"
 					sym  "_ZN10CTFCleaver19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
 				}
-				"CBaseEntity::SetModel"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8SetModelEPKc"
-				}
 				
 				"CTFProjectile_Arrow::ArrowTouch"
 				{
@@ -2061,46 +1597,16 @@
 					sym  "_ZN18CTraceFilterSimpleC1EPK13IHandleEntityiPFbPS0_iE"
 				}
 				
-				"CBaseEntity::PerformCustomPhysics"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity20PerformCustomPhysicsEP6VectorS1_P6QAngleS3_"
-				}
-				
-				"CBaseEntity::SetMoveType"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11SetMoveTypeE10MoveType_t13MoveCollide_t"
-				}
-				
 				"CTFProjectile_Rocket::Spawn"
 				{
 					type "sym"
 					sym  "_ZN20CTFProjectile_Rocket5SpawnEv"
 				}
 				
-				"CBaseEntity::CalcAbsoluteVelocity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity20CalcAbsoluteVelocityEv"
-				}
-				
-				"CTFWeaponBase::ApplyOnHitAttributes"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase20ApplyOnHitAttributesEP11CBaseEntityP9CTFPlayerRK15CTakeDamageInfo"
-				}
-				
 				"CTFBaseRocket::GetOwnerPlayer"
 				{
 					type "sym"
 					sym  "_ZNK13CTFBaseRocket14GetOwnerPlayerEv"
-				}
-				
-				"CBaseEntity::PrecacheScriptSound"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity19PrecacheScriptSoundEPKc"
 				}
 				
 				"PointInRespawnRoom"
@@ -2140,40 +1646,6 @@
 					sym  "_ZN14CBaseAnimating16GetNumBodyGroupsEv"
 				}
 				
-				"CBaseCombatWeapon::GetViewModel"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon12GetViewModelEi"
-				}
-				"CBaseCombatWeapon::GetWorldModel"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon13GetWorldModelEv"
-				}
-				
-				"CBaseEntity::GetModel"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8GetModelEv"
-				}
-				
-				"CBasePlayer::GetViewModel"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer12GetViewModelEib"
-				}
-				
-				"CBaseEntity::PrecacheModel"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13PrecacheModelEPKcb"
-				}
-				"CBaseEntity::PrecacheSound"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13PrecacheSoundEPKc"
-				}
-				
 				"CEconItemDefinition::BInitFromKV"
 				{
 					type "sym"
@@ -2186,17 +1658,6 @@
 					sym  "_Z19CheckValveSignaturePKvjS0_j"
 				}
 				
-				"CTFWeaponBase::GetViewModel"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase12GetViewModelEi"
-				}
-				
-				"CBaseCombatWeapon::SetViewModel"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon12SetViewModelEv"
-				}
 				
 				"CTFAmmoPack::Create"
 				{
@@ -2294,41 +1755,7 @@
 					sym  "_ZN14CBaseAnimating16GetPoseParameterEPKc"
 				}
 				
-				"CBasePlayer::DisableButtons"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer14DisableButtonsEi"
-				}
 				
-				"CBasePlayer::EnableButtons"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13EnableButtonsEi"
-				}
-				
-				"CBasePlayer::ForceButtons"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer12ForceButtonsEi"
-				}
-				
-				"CBasePlayer::UnforceButtons"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer14UnforceButtonsEi"
-				}
-				
-				"CBaseEntity::NameMatchesComplex"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity18NameMatchesComplexEPKc"
-				}
-				
-				"CBaseEntity::ClassMatchesComplex"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity19ClassMatchesComplexEPKc"
-				}
 				
 				"CTFGameRules::ClientCommandKeyValues"
 				{
@@ -2340,12 +1767,6 @@
 				{
 					type "sym"
 					sym  "_ZN11CPlayerMove12StartCommandEP11CBasePlayerP8CUserCmd"
-				}
-				
-				"CBaseCombatCharacter::UpdateLastKnownArea"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter19UpdateLastKnownAreaEv"
 				}
 				
 				"CTFGameRules::DistributeCurrencyAmount"
@@ -2383,12 +1804,6 @@
 				{
 					type "sym"
 					sym  "_ZN11CSmokeStack8KeyValueEPKcS1_"
-				}
-				
-				"CBaseEntity::ParseMapData"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12ParseMapDataEP14CEntityMapData"
 				}
 				
 				"CEconEntity::DebugDescribe"
@@ -2435,17 +1850,7 @@
 					lib  "tier0"
 				}
 				
-				"CBaseEntity::Activate"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8ActivateEv"
-				}
 				
-				"CTFWeaponBase::IsSilentKiller"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase14IsSilentKillerEv"
-				}
 				
 				"CanScatterGunKnockBack"
 				{
@@ -2477,18 +1882,6 @@
 					sym  "_ZL16CheckMedicResist7ETFCondS_P9CTFPlayerfRfbS2_\\.isra\\..*"
 				}
 				
-				"CBaseEntity::GetDamage"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9GetDamageEv"
-				}
-				
-				"CBaseEntity::SetDamage"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9SetDamageEf"
-				}
-				
 				"CBaseGrenade::SetDamage"
 				{
 					type "sym"
@@ -2511,30 +1904,6 @@
 				{
 					type "sym"
 					sym  "_ZN14CTFCompoundBow19GetProjectileDamageEv"
-				}
-				
-				"CTFWeaponBaseGun::GetProjectileDamage"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun19GetProjectileDamageEv"
-				}
-				
-				"CBaseEntity::FVisible [ent]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8FVisibleEPS_iPS0_"
-				}
-				
-				"CBaseEntity::FVisible [vec]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8FVisibleERK6VectoriPPS_"
-				}
-				
-				"CBaseEntity::Touch"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity5TouchEPS_"
 				}
 				
 				"CCurrencyPack::AffectedByRadiusCollection"
@@ -2573,23 +1942,6 @@
 					sym  "_ZN18CTFWeaponBaseMelee15SecondaryAttackEv"
 				}
 				
-				"CTFWeaponBase::CanPerformSecondaryAttack"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase25CanPerformSecondaryAttackEv"
-				}
-				
-				"CTFWeaponBase::ItemPostFrame"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase13ItemPostFrameEv"
-				}
-				
-				"CTFWeaponBase::ItemBusyFrame"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase13ItemBusyFrameEv"
-				}
 				
 				"CEconEntity::GetAttributeContainer"
 				{
@@ -2701,29 +2053,7 @@
 					sym  "_ZNK17CTFItemDefinition14GetLoadoutSlotEi"
 				}
 				
-				"CBasePlayer::RemoveWearable"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer14RemoveWearableEP13CEconWearable"
-				}
 				
-				"CBaseEntity::IsBaseCombatWeapon"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity18IsBaseCombatWeaponEv"
-				}
-				
-				"CBaseEntity::IsWearable"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity10IsWearableEv"
-				}
-				
-				"CBaseCombatCharacter::Weapon_Detach"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter13Weapon_DetachEP17CBaseCombatWeapon"
-				}
 				
 				"ItemGeneration"
 				{
@@ -2779,18 +2109,6 @@
 					sym  "_ZNK15CEconItemSchema27GetEquipRegionBitMaskByNameEPKc"
 				}
 				
-				"CBaseEntity::SetNextThink [index]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12SetNextThinkEif"
-				}
-				
-				"CBaseEntity::SetNextThink [name]"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12SetNextThinkEfPKc"
-				}
-				
 				"CUpgrades::PlayerPurchasingUpgrade"
 				{
 					type "sym"
@@ -2809,41 +2127,11 @@
 					sym  "_ZN10CTFPowerup10ValidTouchEP11CBasePlayer"
 				}
 				
-				"CBaseEntity::DrawDebugTextOverlays"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity21DrawDebugTextOverlaysEv"
-				}
-				
-				"CBaseEntity::MyNextBotPointer"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16MyNextBotPointerEv"
-				}
-				
-				"CBasePlayer::SnapEyeAngles"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13SnapEyeAnglesERK6QAngle"
-				}
-				
-				"CBaseEntity::Teleport"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_"
-				}
-				
 				"DataTable_Warning"
 				{
 					type "sym"
 					sym  "_Z17DataTable_WarningPKcz"
 					lib  "engine"
-				}
-				
-				"CTFWeaponBaseGun::GetCustomProjectileModel"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun24GetCustomProjectileModelEP17CAttribute_String"
 				}
 				
 				"CopyStringAttributeValueToCharPointerOutput"
@@ -2895,11 +2183,6 @@
 					lib  "engine"
 				}
 				
-				"CBasePlayer::ChangeTeam [int, bool, bool, bool]"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer10ChangeTeamEibbb"
-				}
 				"Cbuf_Execute"
 				{
 					type "sym"
@@ -3017,16 +2300,6 @@
 					type "sym"
 					sym  "_ZN16CTFMedigunShield6CreateEP9CTFPlayer"
 				}
-				"CTFWeaponBaseGun::GetProjectileSpeed"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun18GetProjectileSpeedEv"
-				}
-				"CTFWeaponBase::GetProjectileFireSetup"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase22GetProjectileFireSetupEP9CTFPlayer6VectorPS2_P6QAnglebf"
-				}
 				"CTFFlameManager::GetFlameDamageScale"
 				{
 					type "sym"
@@ -3041,11 +2314,6 @@
 				{
 					type "sym"
 					sym  "_ZN20CTFObjectiveResource36DecrementMannVsMachineWaveClassCountE8string_tj"
-				}
-				"CTFWeaponBase::CalcIsAttackCritical"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase20CalcIsAttackCriticalEv"
 				}
 				"CTFProjectile_HealingBolt::CanHeadshot"
 				{
@@ -3123,11 +2391,6 @@
 					type "sym"
 					sym  "_Z22PrecacheParticleSystemPKc"
 				}
-				"CBaseCombatCharacter::SwitchToNextBestWeapon"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter22SwitchToNextBestWeaponEP17CBaseCombatWeapon"
-				}
 				"CTeamplayRoundBasedRules::SetForceMapReset"
 				{
 					type "sym"
@@ -3152,16 +2415,6 @@
 				{
 					type "sym"
 					sym  "_ZN19CTFProjectile_Arrow6CreateERK6VectorRK6QAngleff16ProjectileType_tP11CBaseEntityS8_"
-				}
-				"CTFWeaponBaseGun::GetProjectileGravity"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun20GetProjectileGravityEv"
-				}
-				"CTFWeaponBaseGun::GetWeaponProjectileType"
-				{
-					type "sym"
-					sym  "_ZNK16CTFWeaponBaseGun23GetWeaponProjectileTypeEv"
 				}
 				"CBaseProjectile::SetLauncher"
 				{
@@ -3243,11 +2496,6 @@
 					type "sym"
 					sym  "_Z14TE_TFExplosionR16IRecipientFilterfRK6VectorS3_iiiii"
 				}
-				"CTFWeaponBaseGun::ModifyProjectile"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun16ModifyProjectileEP11CBaseEntity"
-				}
 				"GetParticleSystemIndex"
 				{
 					type "sym"
@@ -3277,11 +2525,6 @@
 				{
 					type "sym"
 					sym  "_ZN24CTFProjectile_EnergyRing18GetInitialVelocityEv"
-				}
-				"CTFWeaponBaseGun::FireEnergyBall"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun14FireEnergyBallEP9CTFPlayerb"
 				}
 				"CTFWeaponBaseMelee::OnSwingHit"
 				{
@@ -3317,11 +2560,6 @@
 				{
 					type "sym"
 					sym  "_ZNK16CRecipientFilter20IgnorePredictionCullEv"
-				}
-				"CTFWeaponBase::GetDamageType"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase13GetDamageTypeEv"
 				}
 				"CMatchInfo::GetNumActiveMatchPlayers"
 				{
@@ -3398,30 +2636,10 @@
 					type "sym"
 					sym  "_ZN13CObjectSapper13IsParentValidEv"
 				}
-				"CBaseCombatWeapon::SetWeaponVisible"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon16SetWeaponVisibleEb"
-				}
-				"CBaseEntity::StopSound"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9StopSoundEPKc"
-				}
 				"CTFGameRules::ShouldRespawnQuickly"
 				{
 					type "sym"
 					sym  "_ZN12CTFGameRules20ShouldRespawnQuicklyEP11CBasePlayer"
-				}
-				"CBaseEntity::SetParent"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity9SetParentEPS_i"
-				}
-				"CBaseEntity::UpdateOnRemove"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14UpdateOnRemoveEv"
 				}
 				"TE_PlayerAnimEvent"
 				{
@@ -3442,16 +2660,6 @@
 				{
 					type "sym"
 					sym  "_ZN14CAttributeList24SetRuntimeAttributeValueEPK28CEconItemAttributeDefinitionf"
-				}
-				"CTFWeaponBase::Deploy"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase6DeployEv"
-				}
-				"CTFWeaponBase::Holster"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase7HolsterEP17CBaseCombatWeapon"
 				}
 				"CTFBaseRocket::SetDamage"
 				{
@@ -3624,16 +2832,6 @@
 					type "sym"
 					sym  "_ZN11CTFTankBoss14UpdateOnRemoveEv"
 				}
-				"CBaseEntity::IsPlayer"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity8IsPlayerEv"
-				}
-				"CBaseEntity::IsBaseObject"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity12IsBaseObjectEv"
-				}
 				"CTraceFilterObject::ShouldHitEntity"
 				{
 					type "sym"
@@ -3692,25 +2890,10 @@
 					lib  "engine"
 					sym  "_ZN19CClientFrameManager18DeleteClientFramesEi"
 				}
-				"CBasePlayer::IsFakeClient"
-				{
-					type "sym"
-					sym  "_ZNK11CBasePlayer12IsFakeClientEv"
-				}
 				"CTFRobotArm::Smack"
 				{
 					type "sym"
 					sym  "_ZN11CTFRobotArm5SmackEv"
-				}
-				"CTFWeaponBase::GetTFPlayerOwner"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase16GetTFPlayerOwnerEv"
-				}
-				"CBaseEntity::GetTransmitState"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16GetTransmitStateEv"
 				}
 				"CServerGameEnts::CheckTransmit"
 				{
@@ -3812,16 +2995,6 @@
 					type "sym"
 					sym  "_ZN18CCollisionProperty24MarkPartitionHandleDirtyEv"
 				}
-				"CBasePlayer::IsBotOfType"
-				{
-					type "sym"
-					sym  "_ZNK11CBasePlayer11IsBotOfTypeEi"
-				}
-				"CBaseEntity::MyCombatWeaponPointer"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity21MyCombatWeaponPointerEv"
-				}
 				"INextBotComponent::GetBot"
 				{
 					type "sym"
@@ -3836,16 +3009,6 @@
 				{
 					type "sym"
 					sym  "_ZN9CUpgrades5SpawnEv"
-				}
-				"CBaseEntity::GetParametersForSound"
-				{
-					type "sym"
-					sym  "CBaseEntity::GetParametersForSound"
-				}
-				"CBaseCombatWeapon::WeaponSound"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon11WeaponSoundE13WeaponSound_tf"
 				}
 				"CTFGrenadePipebombProjectile::IsDeflectable"
 				{
@@ -3882,11 +3045,6 @@
 				{
 					type "sym"
 					sym  "_ZN15CTFPlayerShared21OnRemoveHalloweenTinyEv"
-				}
-				"CBaseEntity::InSameTeam"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity10InSameTeamEPKS_"
 				}
 				"CBaseTrigger::InputStartTouch"
 				{
@@ -3982,11 +3140,6 @@
 				{
 					type "sym"
 					sym  "_ZN12CTFGameRules10CleanUpMapEv"
-				}
-				"CBaseEntity::ReadKeyField"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12ReadKeyFieldEPKcP9variant_t"
 				}
 				"CGameUI::Deactivate"
 				{
@@ -4229,11 +3382,6 @@
 					lib  "engine"
 					sym  "_ZN14CCommandBuffer7AddTextEPKci"
 				}
-				"CBasePlayer::PhysicsSimulate"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer15PhysicsSimulateEv"
-				}
 				"CHLTVServer::UpdateTick"
 				{
 					type "sym"
@@ -4394,11 +3542,6 @@
 					type "sym"
 					sym  "_ZN11CTFAmmoPack12InitAmmoPackEP9CTFPlayerP13CTFWeaponBaseibbf"
 				}
-				"CBaseEntity::OnTakeDamage"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
-				}
 				"CTFPowerup::DropSingleInstance"
 				{
 					type "sym"
@@ -4484,16 +3627,6 @@
 					type "sym"
 					sym  "_ZNK19CTFPointWeaponMimic15GetFiringAnglesEv"
 				}
-				"CBaseEntity::FireBullets"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
-				}
-				"CBaseEntity::ModifyFireBulletsDamage"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity23ModifyFireBulletsDamageEP15CTakeDamageInfo"
-				}
 				"CTriggerHurt::HurtEntity"
 				{
 					type "sym"
@@ -4546,11 +3679,6 @@
 				{
 					type "sym"
 					sym  "_Z21SpawnHierarchicalListiP19HierarchicalSpawn_tb"
-				}
-				"CBaseEntity::VPhysicsInitStatic"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity18VPhysicsInitStaticEv"
 				}
 				"NextBotCombatCharacter [D0]"
 				{
@@ -4644,11 +3772,6 @@
 					type "sym regex"
 					sym  "_ZN15CTFFlameThrower14SetWeaponStateEi\\.part\\..*"
 				}
-				"CBaseCombatWeapon::GetShootSound"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon13GetShootSoundEi"
-				}
 				"CTriggerCamera::Enable"
 				{
 					type "sym"
@@ -4684,11 +3807,6 @@
 					type "sym"
 					sym  "_ZN17CBaseEntityOutput16ParseEventActionEPKc"
 				}
-				"CTFWeaponBase::GetPenetrateType"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase16GetPenetrateTypeEv"
-				}
 				"CTFBaseRocket::RocketTouch"
 				{
 					type "sym"
@@ -4714,11 +3832,6 @@
 					type "sym"
 					sym  "_ZN9variant_t7ConvertE11_fieldtypes"
 				}
-				"CBaseEntity::GetTouchTrace"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13GetTouchTraceEv"
-				}
 				"CreateSpellSpawnZombie"
 				{
 					type "sym"
@@ -4739,20 +3852,10 @@
 					type "sym"
 					sym  "_ZN15CTFGameMovement15PlayerSolidMaskEb"
 				}
-				"CBaseEntity::GetServerClass"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14GetServerClassEv"
-				}
 				"CBaseFilter::PassesFilterImpl"
 				{
 					type "sym"
 					sym  "_ZN11CBaseFilter16PassesFilterImplEP11CBaseEntityS1_"
-				}
-				"CTFWeaponBase::Reload"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase6ReloadEv"
 				}
 				"CMannVsMachineChangeChallengeIssue::ExecuteCommand"
 				{
@@ -4775,11 +3878,6 @@
 					sym  "_ZN14CTriggerCameraD2Ev"
 				}
 				
-				"CBaseEntity::CBaseEntity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntityC2Eb"
-				}
 				"~CBaseEntity [D2]"
 				{
 					type "sym"
@@ -4810,11 +3908,6 @@
 					type "sym"
 					sym  "_ZN18CCollisionProperty18SetCollisionBoundsERK6VectorS2_"
 				}  
-				"CBaseEntity::GetBaseAnimating"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16GetBaseAnimatingEv"
-				} 
 				"UTIL_StringToVector"
 				{
 					type "sym"
@@ -4850,11 +3943,6 @@
 					type "sym"
 					sym  "_ZN12CBaseTrigger8ActivateEv"
 				}
-				"CBaseEntity::GetDataObject"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13GetDataObjectEi"
-				}
 				"CPointTeleport::Activate"
 				{
 					type "sym"
@@ -4874,11 +3962,6 @@
 				{
 					type "sym"
 					sym  "_ZN16CTFDroppedWeapon18InitPickedUpWeaponEP9CTFPlayerP13CTFWeaponBase"
-				}
-				"CBaseCombatWeapon::GetPrimaryAmmoType"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon18GetPrimaryAmmoTypeEv"
 				}
 				"CBaseAnimating::GetAttachment"
 				{
@@ -4927,16 +4010,6 @@
 					type "sym"
 					sym  "_ZN18CBaseServerVehicle9SetupMoveEP11CBasePlayerP8CUserCmdP11IMoveHelperP9CMoveData"
 				}
-				"CBaseEntity::TakeHealth"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity10TakeHealthEfi"
-				}
-				"CBaseEntity::PassesDamageFilter"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity18PassesDamageFilterERK15CTakeDamageInfo"
-				}
 				"CBaseServerVehicle::GetExitAnimToUse"
 				{
 					type "sym"
@@ -4966,26 +4039,6 @@
 				{
 					type "sym"
 					sym  "_ZN18CBaseServerVehicle19HandlePassengerExitEP20CBaseCombatCharacter"
-				}
-				"CBasePlayer::FindUseEntity"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13FindUseEntityEv"
-				}
-				"CBasePlayer::GetInVehicle"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei"
-				}
-				"CBasePlayer::LeaveVehicle"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer12LeaveVehicleERK6VectorRK6QAngle"
-				}
-				"CBaseEntity::PhysicsSolidMaskForEntity"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity25PhysicsSolidMaskForEntityEv"
 				}
 				"CPropVehicleDriveable::Spawn"
 				{
@@ -5021,16 +4074,6 @@
 				{
 					type "sym"
 					sym  "_ZN19CTFProjectile_Arrow5SpawnEv"
-				}
-				"CBasePlayer::EyeAngles"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer9EyeAnglesEv"
-				}
-				"CTFWeaponBaseGun::PrimaryAttack"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun13PrimaryAttackEv"
 				}
 				"CTFBaseProjectile::GetDamageType"
 				{
@@ -5077,11 +4120,6 @@
 					type "sym"
 					sym  "_Z17StopScriptedSceneP9CBaseFlex7CHandleI11CBaseEntityE"
 				}
-				"CBaseCombatCharacter::CalculatePhysicsStressDamage"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter28CalculatePhysicsStressDamageEP23vphysics_objectstress_tP14IPhysicsObject"
-				}
 				"CTFBaseProjectile::Spawn"
 				{
 					type "sym"
@@ -5101,11 +4139,6 @@
 				{
 					type "sym"
 					sym  "_ZN14CAttributeList36NotifyManagerOfAttributeValueChangesEv"
-				}
-				"CTFWeaponBase::GetSpreadAngles"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase15GetSpreadAnglesEv"
 				}
 				"CAttributeList::SetRuntimeAttributeRefundableCurrency"
 				{
@@ -5172,30 +4205,10 @@
 					type "sym"
 					sym  "_ZN16CTFWeaponBuilder10SetSubTypeEi"
 				}
-				"CTFWeaponBase::Equip"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase5EquipEP20CBaseCombatCharacter"
-				}
 				"CTFWeaponBuilder::CanDeploy"
 				{
 					type "sym"
 					sym  "_ZN16CTFWeaponBuilder9CanDeployEv"
-				}
-				"CBaseCombatWeapon::SetSubType"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon10SetSubTypeEi"
-				}
-				"CTFWeaponBase::UpdateHands"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase11UpdateHandsEv"
-				}
-				"CBaseEntity::ShouldTransmit"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14ShouldTransmitEPK18CCheckTransmitInfo"
 				}
 				"CLaserDot::Create"
 				{
@@ -5213,11 +4226,6 @@
 					lib "dedicated"
 					sym  "_Z28findFileInDirCaseInsensitivePKcPcj"
 				}
-				"CBaseCombatCharacter::ClearLastKnownArea"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter18ClearLastKnownAreaEv"
-				}
 				"CWeaponMedigun::RemoveHealingTarget"
 				{
 					type "sym"
@@ -5227,26 +4235,6 @@
 				{
 					type "sym"
 					sym  "_ZN14CWeaponMedigun18StartHealingTargetEP11CBaseEntity"
-				}
-				"CTFWeaponBase::Energy_GetMaxEnergy"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase19Energy_GetMaxEnergyEv"
-				}
-				"CTFWeaponBase::Energy_Recharge"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase15Energy_RechargeEv"
-				}
-				"CTFWeaponBase::IsEnergyWeapon"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase14IsEnergyWeaponEv"
-				}
-				"CTFWeaponBase::Energy_GetShotCost"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase18Energy_GetShotCostEv"
 				}
 				"CVoteController::IsValidVoter"
 				{
@@ -5294,21 +4282,6 @@
 					type "sym"
 					sym  "_ZN14CServerGameDLL9LevelInitEPKcS1_S1_S1_bb"
 				}
-				"CBaseCombatWeapon::ItemPostFrame"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon13ItemPostFrameEv"
-				}
-				"CBasePlayer::ItemPostFrame"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13ItemPostFrameEv"
-				}
-				"CTFWeaponBaseGun::ZoomIn"
-				{
-					type "sym"
-					sym  "_ZN16CTFWeaponBaseGun6ZoomInEv"
-				}
 				"CSpawnLocation::FindSpawnLocation"
 				{
 					type "sym"
@@ -5331,40 +4304,15 @@
 					type "sym"
 					sym  "_ZN24CTFProjectile_EnergyBall7ExplodeEP10CGameTraceP11CBaseEntity"
 				}
-				"CBaseEntity::GetTeamNumber"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity13GetTeamNumberEv"
-				}
 				"CObjectSentrygun::Attack"
 				{
 					type "sym"
 					sym  "_ZN16CObjectSentrygun6AttackEv"
 				}
-				"CTFWeaponBase::ApplyFireDelay"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase14ApplyFireDelayEf"
-				}
 				"CEventAction::CEventAction [C2]"
 				{
 					type "sym"
 					sym  "_ZN12CEventActionC2EPKc"
-				}
-				"CTFWeaponBase::Misfire"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase7MisfireEv"
-				}
-				"CBaseEntity::GetDamageType"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity13GetDamageTypeEv"
-				}
-				"CTFWeaponBase::CheckReloadMisfire"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
 				}
 				"CTFStunBall::ApplyBallImpactEffectOnVictim"
 				{
@@ -5402,16 +4350,6 @@
 					type "sym"
 					sym  "_ZNK24CTFProjectile_EnergyRing15ShouldPenetrateEv"
 				}
-				"CBaseEntity::StartTouch"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity10StartTouchEPS_"
-				}
-				"CBaseEntity::EndTouch"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity8EndTouchEPS_"
-				}
 				"CAttributeManager::ProvideTo"
 				{
 					type "sym"
@@ -5422,25 +4360,10 @@
 					type "sym"
 					sym  "_ZN17CAttributeManager15StopProvidingToEP11CBaseEntity"
 				}
-				"CTFWeaponBase::GetParticleColor"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase16GetParticleColorEi"
-				}
 				"CTFProjectile_EnergyRing::Create"
 				{
 					type "sym"
 					sym  "_ZN24CTFProjectile_EnergyRing6CreateEP16CTFWeaponBaseGunRK6VectorRK6QAngleffP11CBaseEntityS9_S2_S2_b"
-				}
-				"CBaseEntity::SetTransmitState"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16SetTransmitStateEi"
-				}
-				"CBaseCombatWeapon::UpdateTransmitState"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon19UpdateTransmitStateEv"
 				}
 				"CServerGameClients::GetPlayerLimits"
 				{
@@ -5616,11 +4539,6 @@
 					type "sym"
 					sym  "_ZN18CServerGameClients12ClientActiveEP7edict_tb"
 				}
-				"CBaseEntity::PostClientActive"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16PostClientActiveEv"
-				}
 				"ClientActive"
 				{
 					type "sym"
@@ -5630,11 +4548,6 @@
 				{
 					type "sym"
 					sym  "_ZN17CTFPlayerResource24SetPlayerClassWhenKilledEii"
-				}
-				"CBasePlayer::UpdatePlayerSound"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer17UpdatePlayerSoundEv"
 				}
 				"CSoundEnt::Initialize"
 				{
@@ -5706,11 +4619,6 @@
 				{
 					type "sym"
 					sym  "_ZN15CTFGameMovement10CheckWaterEv"
-				}
-				"CBaseCombatWeapon::SetViewModelIndex"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon17SetViewModelIndexEi"
 				}
 				"SV_BroadcastVoiceData"
 				{
@@ -5794,26 +4702,6 @@
 					type "sym"
 					sym  "_Z21SendProxy_ShortAddOnePK8SendPropPKvS3_P8DVariantii"
 				}
-				"CBasePlayer::PlayerRunCommand"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
-				}
-				"CBaseEntity::FireNamedOutput"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity15FireNamedOutputEPKc9variant_tPS_S3_f"
-				}
-				"CBaseEntity::Event_Killed"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity12Event_KilledERK15CTakeDamageInfo"
-				}
-				"CBaseCombatCharacter::Event_Killed"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter12Event_KilledERK15CTakeDamageInfo"
-				}
 				"CTraceFilterEntity::ShouldHitEntity"
 				{
 					type "sym"
@@ -5823,11 +4711,6 @@
 				{
 					type "sym"
 					sym  "_ZN15CCollisionEvent13ShouldCollideEP14IPhysicsObjectS1_PvS2_"
-				}
-				"CBasePlayer::Touch"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer5TouchEP11CBaseEntity"
 				}
 				"CTFTankBossBody::GetSolidMask"
 				{
@@ -5947,30 +4830,10 @@
 					type "sym"
 					sym  "_ZN24CTFWeaponBaseGrenadeProj11InitGrenadeERK6VectorS2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
 				}
-				"CTFWeaponBase::GetTFWpnData"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase12GetTFWpnDataEv"
-				}
-				"CBaseEntity::VPhysicsDestroyObject"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity21VPhysicsDestroyObjectEv"
-				}
 				"CServerNetworkProperty::AttachEdict"
 				{
 					type "sym"
 					sym  "_ZN22CServerNetworkProperty11AttachEdictEP7edict_t"
-				}
-				"CBaseEntity::TransformStepData_WorldToParent"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity31TransformStepData_WorldToParentEPS_"
-				}
-				"CBaseEntity::TransformStepData_ParentToParent"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity32TransformStepData_ParentToParentEPS_S0_"
 				}
 				"CObjectSentrygun::ValidTargetPlayer"
 				{
@@ -6062,11 +4925,6 @@
 					type "sym"
 					sym  "_ZN6CTFJar12TossJarThinkEv"
 				}
-				"CBaseCombatWeapon::SetOwner"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon8SetOwnerEP20CBaseCombatCharacter"
-				}
 				"GetKilleaterWeaponFromDamageInfo::CTakeDamageInfo"
 				{
 					type "sym"
@@ -6102,11 +4960,6 @@
 					type "sym"
 					sym  "_ZN11CBaseObject18FindSnapToBuildPosEPS_"
 				}
-				"CTFWeaponBase::StartEffectBarRegen"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase19StartEffectBarRegenEv"
-				}
 				"CTFProjectile_ThrowableRepel::SetCustomPipebombModel"
 				{
 					type "sym"
@@ -6132,25 +4985,10 @@
 					type "sym"
 					sym  "_Z39EconItemInterface_OnOwnerKillEaterEventP18IEconItemInterfaceP9CTFPlayerS2_18kill_eater_event_ti"
 				}
-				"CTFWeaponBase::ItemHolsterFrame"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase16ItemHolsterFrameEv"
-				}
-				"CBaseCombatWeapon::CheckReload"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon11CheckReloadEv"
-				}
 				"CTFGameRules::FlPlayerFallDamage"
 				{
 					type "sym"
 					sym  "_ZN12CTFGameRules18FlPlayerFallDamageEP11CBasePlayer"
-				}
-				"CBaseEntity::ApplyAbsVelocityImpulse"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity23ApplyAbsVelocityImpulseERK6Vector"
 				}
 				"CGameMovement::CheckFalling"
 				{
@@ -6256,16 +5094,6 @@
 					type "sym"
 					sym  "_ZN18CParticleSystemMgr4InitEP20IParticleSystemQuery"
 				}
-				"CTFWeaponBase::GetInitialAfterburnDuration"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase27GetInitialAfterburnDurationEv"
-				}
-				"CTFWeaponBase::GetAfterburnRateOnHit"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase21GetAfterburnRateOnHitEv"
-				}
 				"CTriggerIgnite::BurnEntities"
 				{
 					type "sym"
@@ -6285,21 +5113,6 @@
 				{
 					type "sym"
 					sym  "_ZN14CEntityFactoryI9CGameTextE6CreateEPKc"
-				}
-				"CBaseEntity::SetLocalOrigin"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14SetLocalOriginERK6Vector"
-				}
-				"CBaseEntity::SetLocalAngles"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14SetLocalAnglesERK6QAngle"
-				}
-				"CBaseEntity::SetLocalVelocity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity16SetLocalVelocityERK6Vector"
 				}
 				"CEntityFactory<CTrainingAnnotation>::Create"
 				{
@@ -6376,26 +5189,6 @@
 					type "sym"
 					sym  "_ZN14CEntityFactoryI10CPointHurtE6CreateEPKc"
 				}
-				"CBaseEntity::GetBaseEntity"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity13GetBaseEntityEv"
-				}
-				"CBaseEntity::GetNetworkable"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14GetNetworkableEv"
-				}
-				"CBaseEntity::GetCollideable"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity14GetCollideableEv"
-				}
-				"CBaseEntity::GetRefEHandle"
-				{
-					type "sym"
-					sym  "_ZNK11CBaseEntity13GetRefEHandleEv"
-				}
 				"CServerNetworkProperty::GetEdict"
 				{
 					type "sym"
@@ -6467,25 +5260,10 @@
 					type "sym"
 					sym  "_Z15GEconItemSchemav"
 				}
-				"CTFWeaponBase::IsPassiveWeapon"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase15IsPassiveWeaponEv"
-				}
 				"GetFileWeaponInfoFromHandle"
 				{
 					type "sym"
 					sym  "_Z27GetFileWeaponInfoFromHandlet"
-				}
-				"CBaseCombatWeapon::GetWpnData"
-				{
-					type "sym"
-					sym  "_ZNK17CBaseCombatWeapon10GetWpnDataEv"
-				}
-				"CTFWeaponBase::AutoFiresFullClip"
-				{
-					type "sym"
-					sym  "_ZNK13CTFWeaponBase17AutoFiresFullClipEv"
 				}
 				"CStaticPropMgr::IsStaticProp"
 				{
@@ -6581,11 +5359,6 @@
 					type "sym"
 					sym  "_ZNK16CThreadLocalBase3GetEv"
 				}
-				"CBaseEntity::TraceAttack"
-				{
-					type "sym"
-					sym  "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
-				}
 				"CTakeDamageInfo::Init"
 				{
 					type "sym"
@@ -6595,16 +5368,6 @@
 				{
 					type "sym"
 					sym  "_ZN22CBaseMultiplayerPlayer27ShouldRunRateLimitedCommandEPKc"
-				}
-				"CBaseCombatCharacter::Weapon_Equip"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter12Weapon_EquipEP17CBaseCombatWeapon"
-				}
-				"CTFWeaponBase::SendWeaponAnim"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase14SendWeaponAnimEi"
 				}
 				"CEconEntity::ReapplyProvision"
 				{
@@ -6630,11 +5393,6 @@
 				{
 					type "sym"
 					sym  "_ZN17CAttributeManager20ApplyAttributeStringE8string_tP11CBaseEntityS0_P10CUtlVectorIS2_10CUtlMemoryIS2_iEE"
-				}
-				"CTFWeaponBase::GetMaxHealthMod"
-				{
-					type "sym"
-					sym  "_ZN13CTFWeaponBase15GetMaxHealthModEv"
 				}
 				"CServerDatatableStack::RecurseAndCallProxies"
 				{
@@ -6821,11 +5579,6 @@
 					type "sym"
 					sym  "_ZN16CObjectSentrygun15EmitSentrySoundEPKc"
 				}
-				"CBasePlayer::SetModel"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer8SetModelEPKc"
-				}
 				"CPlayer::IsSourceTV"
 				{
 					lib "sourcemodcore"
@@ -6871,61 +5624,12 @@
 					type "sym"
 					sym  "_Z20LookupWeaponInfoSlotPKc"
 				}
-				"CBasePlayer::ClientCommand"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13ClientCommandERK8CCommand"
-				}
 				"CBaseMultiplayerPlayer::SpeakConceptIfAllowed"
 				{
 					type "sym"
 					sym  "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
 				}
-				"CBaseCombatCharacter::ShouldGib"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter9ShouldGibERK15CTakeDamageInfo"
-				}
-				"CBasePlayer::ForceRespawn"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer12ForceRespawnEv"
-				}
-				"CBasePlayer::CreateViewModel"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer15CreateViewModelEi"
-				}
-				"CBasePlayer::EquipWearable"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
-				}
-				"CBasePlayer::Weapon_Equip"
-				{
-					type "sym"
-					sym  "_ZN9CTFPlayer12Weapon_EquipEP17CBaseCombatWeapon"
-				}
-				"CBasePlayer::ShowViewPortPanel"
-				{
-					type "sym"
-					sym  "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues"
-				}
-				"CBasePlayer::IsPlayer"
-				{
-					type "sym"
-					sym  "_ZNK11CBasePlayer8IsPlayerEv"
-				}
-				"CBaseCombatCharacter::FInViewCone"
-				{
-					type "sym"
-					sym  "_ZN20CBaseCombatCharacter11FInViewConeERK6Vector"
-				}
-				"CBaseCombatWeapon::SetCustomViewModel"
-				{
-					type "sym"
-					sym  "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
-				}
+				
 			}
 			"addrs_group"
 			{
@@ -6943,17 +5647,152 @@
 				"UTIL_Remove [IServerNetworkable *]" "_Z11UTIL_RemoveP18IServerNetworkable"
 				"UTIL_Remove [CBaseEntity *]"        "_Z11UTIL_RemoveP11CBaseEntity"
 				
-				"CBaseEntity::ThinkSet"                       "_ZN11CBaseEntity8ThinkSetEMS_FvvEfPKc"
-				"CBaseEntity::GetMaxHealth"                   "_ZNK11CBaseEntity12GetMaxHealthEv"
-				"CBaseEntity::IsDeflectable"				  "_ZN11CBaseEntity13IsDeflectableEv"
-				"CBaseEntity::IsAlive"                        "_ZN11CBaseEntity7IsAliveEv"
+				"CBaseEntity::ThinkSet" 				"_ZN11CBaseEntity8ThinkSetEMS_FvvEfPKc"
+				"CBaseEntity::GetMaxHealth" "_ZNK11CBaseEntity12GetMaxHealthEv"
+				"CBaseEntity::IsDeflectable" "_ZN11CBaseEntity13IsDeflectableEv"
+				"CBaseEntity::IsAlive" "_ZN11CBaseEntity7IsAliveEv"
 				"CBaseEntity::GetDefaultItemChargeMeterValue" "_ZNK11CBaseEntity30GetDefaultItemChargeMeterValueEv"
-				"CBaseEntity::DispatchUpdateTransmitState"    "_ZN11CBaseEntity27DispatchUpdateTransmitStateEv"
-				"CBaseEntity::SetEffects"                     "_ZN11CBaseEntity10SetEffectsEi"
-				"CBaseEntity::AddEffects"                     "_ZN11CBaseEntity10AddEffectsEi"
-				
+				"CBaseEntity::DispatchUpdateTransmitState" "_ZN11CBaseEntity27DispatchUpdateTransmitStateEv"
+				"CBaseEntity::SetEffects" "_ZN11CBaseEntity10SetEffectsEi"
+				"CBaseEntity::AddEffects" "_ZN11CBaseEntity10AddEffectsEi"
+				"CBaseEntity::TakeDamage" "_ZN11CBaseEntity10TakeDamageERK15CTakeDamageInfo"
+				"CBaseEntity::EyeAngles" "_ZN11CBaseEntity9EyeAnglesEv"
+				"CBaseEntity::CalcAbsolutePosition" "_ZN11CBaseEntity20CalcAbsolutePositionEv"
+				"CBaseEntity::EyePosition" "_ZN11CBaseEntity11EyePositionEv"
+				"CBaseEntity::KeyValue" "_ZN11CBaseEntity8KeyValueEPKcS1_"
+				"CBaseEntity::GetKeyValue" "_ZN11CBaseEntity11GetKeyValueEPKcPci"
+				"CBaseEntity::SetOwnerEntity" "_ZN11CBaseEntity14SetOwnerEntityEPS_"
+				"CBaseEntity::SetAbsOrigin" "_ZN11CBaseEntity12SetAbsOriginERK6Vector"
+				"CBaseEntity::SetAbsAngles" "_ZN11CBaseEntity12SetAbsAnglesERK6QAngle"
+				"CBaseEntity::SetAbsVelocity" "_ZN11CBaseEntity14SetAbsVelocityERK6Vector"
+				"CBaseEntity::Spawn" "_ZN11CBaseEntity5SpawnEv"
+				"CBaseEntity::Remove" "_ZN11CBaseEntity6RemoveEv"
+				// const char *, float, float *
+				"CBaseEntity::EmitSound [member: normal]" "_ZN11CBaseEntity9EmitSoundEPKcfPf"
+				// const char *, HSOUNDSCRIPTHANDLE&, float, float *
+				"CBaseEntity::EmitSound [member: normal + handle]" "_ZN11CBaseEntity9EmitSoundEPKcRsfPf"
+				// IRecipientFilter&, int, const char *, const Vector *, float, float *
+				"CBaseEntity::EmitSound [static: normal]" "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriPKcPK6VectorfPf"
+				// IRecipientFilter&, int, const char *, short&, const Vector *, float, float *
+				"CBaseEntity::EmitSound [static: normal + handle]" "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriPKcRsPK6VectorfPf"
+				// IRecipientFilter&, int, const EmitSound_t&
+				"CBaseEntity::EmitSound [static: emitsound]" "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriRK11EmitSound_t"
+				// IRecipientFilter&, int, const EmitSound_t&, short&
+				"CBaseEntity::EmitSound [static: emitsound + handle]" "_ZN11CBaseEntity9EmitSoundER16IRecipientFilteriRK11EmitSound_tRs"
+				"CBaseEntity::PhysicsSimulate" "_ZN11CBaseEntity15PhysicsSimulateEv"
+				"CBaseEntity::GetVelocity" "_ZN11CBaseEntity11GetVelocityEP6VectorS1_"
+				"CBaseEntity::WorldSpaceCenter" "_ZNK11CBaseEntity16WorldSpaceCenterEv"
+				"CBaseEntity::CreateNoSpawn" "_ZN11CBaseEntity13CreateNoSpawnEPKcRK6VectorRK6QAnglePS_"
+				"CBaseEntity::Create" "_ZN11CBaseEntity6CreateEPKcRK6VectorRK6QAnglePS_"
+				"CBaseEntity::GetNextThink" "_ZN11CBaseEntity12GetNextThinkEPKc"
+				"CBaseEntity::IsCombatItem" "_ZNK11CBaseEntity12IsCombatItemEv"
+				"CBaseEntity::GetModelIndex" "_ZNK11CBaseEntity13GetModelIndexEv"
+				"CBaseEntity::MyCombatCharacterPointer" "_ZN11CBaseEntity24MyCombatCharacterPointerEv"
+				"CBaseEntity::PhysicsNoclip" "_ZN11CBaseEntity13PhysicsNoclipEv"
+				"CBaseEntity::PhysicsRunThink" "_ZN11CBaseEntity15PhysicsRunThinkENS_14thinkmethods_tE"
+				"CBaseEntity::PhysicsRunSpecificThink" "_ZN11CBaseEntity23PhysicsRunSpecificThinkEiMS_FvvE"
+				"CBaseEntity::PhysicsDispatchThink" "_ZN11CBaseEntity20PhysicsDispatchThinkEMS_FvvE"
+				"CBaseEntity::IsBSPModel" "_ZNK11CBaseEntity10IsBSPModelEv"
+				"CBaseEntity::ShouldCollide" "_ZNK11CBaseEntity13ShouldCollideEii"
+				"CBaseEntity::DrawDebugGeometryOverlays" "_ZN11CBaseEntity25DrawDebugGeometryOverlaysEv"
+				"CBaseEntity::ChangeTeam" "_ZN11CBaseEntity10ChangeTeamEi"
+				"CBaseEntity::SetModelIndexOverride" "_ZN11CBaseEntity21SetModelIndexOverrideEii"
+				"CBaseEntity::SetModelIndex" "_ZN11CBaseEntity13SetModelIndexEi"
+				"CBaseEntity::GetModelName" "_ZNK11CBaseEntity12GetModelNameEv"
+				"CBaseEntity::EntityText" "_ZN11CBaseEntity10EntityTextEiPKcfiiii"
+				"CBaseEntity::AcceptInput" "_ZN11CBaseEntity11AcceptInputEPKcPS_S2_9variant_ti"
+				"CBaseEntity::SetModel" "_ZN11CBaseEntity8SetModelEPKc"
+				"CBaseEntity::PerformCustomPhysics" "_ZN11CBaseEntity20PerformCustomPhysicsEP6VectorS1_P6QAngleS3_"
+				"CBaseEntity::SetMoveType" "_ZN11CBaseEntity11SetMoveTypeE10MoveType_t13MoveCollide_t"
+				"CBaseEntity::CalcAbsoluteVelocity" "_ZN11CBaseEntity20CalcAbsoluteVelocityEv"
+				"CBaseEntity::PrecacheScriptSound" "_ZN11CBaseEntity19PrecacheScriptSoundEPKc"
+				"CBaseEntity::GetModel" "_ZN11CBaseEntity8GetModelEv"
+				"CBaseEntity::PrecacheModel" "_ZN11CBaseEntity13PrecacheModelEPKcb"
+				"CBaseEntity::PrecacheSound" "_ZN11CBaseEntity13PrecacheSoundEPKc"
+				"CBaseEntity::NameMatchesComplex" "_ZN11CBaseEntity18NameMatchesComplexEPKc"
+				"CBaseEntity::ClassMatchesComplex" "_ZN11CBaseEntity19ClassMatchesComplexEPKc"
+				"CBaseEntity::ParseMapData" "_ZN11CBaseEntity12ParseMapDataEP14CEntityMapData"
+				"CBaseEntity::Activate" "_ZN11CBaseEntity8ActivateEv"
+				"CBaseEntity::GetDamage" "_ZN11CBaseEntity9GetDamageEv"
+				"CBaseEntity::SetDamage" "_ZN11CBaseEntity9SetDamageEf"
+				"CBaseEntity::FVisible [ent]" "_ZN11CBaseEntity8FVisibleEPS_iPS0_"
+				"CBaseEntity::FVisible [vec]" "_ZN11CBaseEntity8FVisibleERK6VectoriPPS_"
+				"CBaseEntity::Touch" "_ZN11CBaseEntity5TouchEPS_"
+				"CBaseEntity::IsBaseCombatWeapon" "_ZNK11CBaseEntity18IsBaseCombatWeaponEv"
+				"CBaseEntity::IsWearable" "_ZNK11CBaseEntity10IsWearableEv"
+				"CBaseEntity::SetNextThink [index]" "_ZN11CBaseEntity12SetNextThinkEif"
+				"CBaseEntity::SetNextThink [name]" "_ZN11CBaseEntity12SetNextThinkEfPKc"
+				"CBaseEntity::DrawDebugTextOverlays" "_ZN11CBaseEntity21DrawDebugTextOverlaysEv"
+				"CBaseEntity::MyNextBotPointer" "_ZN11CBaseEntity16MyNextBotPointerEv"
+				"CBaseEntity::Teleport" "_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_"
+				"CBaseEntity::StopSound" "_ZN11CBaseEntity9StopSoundEPKc"
+				"CBaseEntity::SetParent" "_ZN11CBaseEntity9SetParentEPS_i"
+				"CBaseEntity::UpdateOnRemove" "_ZN11CBaseEntity14UpdateOnRemoveEv"
+				"CBaseEntity::IsPlayer" "_ZNK11CBaseEntity8IsPlayerEv"
+				"CBaseEntity::IsBaseObject" "_ZNK11CBaseEntity12IsBaseObjectEv"
+				"CBaseEntity::GetTransmitState" "_ZN11CBaseEntity16GetTransmitStateEv"
+				"CBaseEntity::MyCombatWeaponPointer" "_ZN11CBaseEntity21MyCombatWeaponPointerEv"
+				"CBaseEntity::GetParametersForSound" "CBaseEntity::GetParametersForSound"
+				"CBaseEntity::InSameTeam" "_ZNK11CBaseEntity10InSameTeamEPKS_"
+				"CBaseEntity::ReadKeyField" "_ZN11CBaseEntity12ReadKeyFieldEPKcP9variant_t"
+				"CBaseEntity::OnTakeDamage" "_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
+				"CBaseEntity::FireBullets" "_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
+				"CBaseEntity::ModifyFireBulletsDamage" "_ZN11CBaseEntity23ModifyFireBulletsDamageEP15CTakeDamageInfo"
+				"CBaseEntity::VPhysicsInitStatic" "_ZN11CBaseEntity18VPhysicsInitStaticEv"
+				"CBaseEntity::GetTouchTrace" "_ZN11CBaseEntity13GetTouchTraceEv"
+				"CBaseEntity::GetServerClass" "_ZN11CBaseEntity14GetServerClassEv"
+				"CBaseEntity::CBaseEntity" "_ZN11CBaseEntityC2Eb"
+				"CBaseEntity::GetBaseAnimating" "_ZN11CBaseEntity16GetBaseAnimatingEv" 
+				"CBaseEntity::GetDataObject" "_ZN11CBaseEntity13GetDataObjectEi"
+				"CBaseEntity::TakeHealth" "_ZN11CBaseEntity10TakeHealthEfi"
+				"CBaseEntity::PassesDamageFilter" "_ZN11CBaseEntity18PassesDamageFilterERK15CTakeDamageInfo"
+				"CBaseEntity::PhysicsSolidMaskForEntity" "_ZNK11CBaseEntity25PhysicsSolidMaskForEntityEv"
+				"CBaseEntity::ShouldTransmit" "_ZN11CBaseEntity14ShouldTransmitEPK18CCheckTransmitInfo"
+				"CBaseEntity::GetTeamNumber" "_ZNK11CBaseEntity13GetTeamNumberEv"
+				"CBaseEntity::GetDamageType" "_ZNK11CBaseEntity13GetDamageTypeEv"
+				"CBaseEntity::StartTouch" "_ZN11CBaseEntity10StartTouchEPS_"
+				"CBaseEntity::EndTouch" "_ZN11CBaseEntity8EndTouchEPS_"
+				"CBaseEntity::SetTransmitState" "_ZN11CBaseEntity16SetTransmitStateEi"
+				"CBaseEntity::PostClientActive" "_ZN11CBaseEntity16PostClientActiveEv"
+				"CBaseEntity::FireNamedOutput" "_ZN11CBaseEntity15FireNamedOutputEPKc9variant_tPS_S3_f"
+				"CBaseEntity::Event_Killed" "_ZN11CBaseEntity12Event_KilledERK15CTakeDamageInfo"
+				"CBaseEntity::VPhysicsDestroyObject" "_ZN11CBaseEntity21VPhysicsDestroyObjectEv"
+				"CBaseEntity::TransformStepData_WorldToParent" "_ZN11CBaseEntity31TransformStepData_WorldToParentEPS_"
+				"CBaseEntity::TransformStepData_ParentToParent" "_ZN11CBaseEntity32TransformStepData_ParentToParentEPS_S0_"
+				"CBaseEntity::ApplyAbsVelocityImpulse" "_ZN11CBaseEntity23ApplyAbsVelocityImpulseERK6Vector"
+				"CBaseEntity::SetLocalOrigin" "_ZN11CBaseEntity14SetLocalOriginERK6Vector"
+				"CBaseEntity::SetLocalAngles" "_ZN11CBaseEntity14SetLocalAnglesERK6QAngle"
+				"CBaseEntity::SetLocalVelocity" "_ZN11CBaseEntity16SetLocalVelocityERK6Vector"
+				"CBaseEntity::GetBaseEntity" "_ZN11CBaseEntity13GetBaseEntityEv"
+				"CBaseEntity::GetNetworkable" "_ZN11CBaseEntity14GetNetworkableEv"
+				"CBaseEntity::GetCollideable" "_ZN11CBaseEntity14GetCollideableEv"
+				"CBaseEntity::GetRefEHandle" "_ZNK11CBaseEntity13GetRefEHandleEv"
+				"CBaseEntity::TraceAttack" "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+
 				"CBaseCombatCharacter::GetBossType" "_ZNK20CBaseCombatCharacter11GetBossTypeEv"
 				
+				"CBaseCombatCharacter::GetLastKnownArea" "_ZNK20CBaseCombatCharacter16GetLastKnownAreaEv" 
+				"CBaseCombatCharacter::Weapon_GetSlot" "_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi" 
+				"CBaseCombatCharacter::Weapon_CanSwitchTo" "_ZN20CBaseCombatCharacter18Weapon_CanSwitchToEP17CBaseCombatWeapon" 
+				"CBaseCombatCharacter::Weapon_Switch" "_ZN20CBaseCombatCharacter13Weapon_SwitchEP17CBaseCombatWeaponi" 
+				"CBaseCombatCharacter::AddGlowEffect" "_ZN20CBaseCombatCharacter13AddGlowEffectEv" 
+				"CBaseCombatCharacter::RemoveGlowEffect" "_ZN20CBaseCombatCharacter16RemoveGlowEffectEv" 
+				"CBaseCombatCharacter::IsGlowEffectActive" "_ZN20CBaseCombatCharacter18IsGlowEffectActiveEv" 
+				"CBaseCombatCharacter::IsAbleToSee [CBaseEntity *]" "_ZN20CBaseCombatCharacter11IsAbleToSeeEPK11CBaseEntityNS_20FieldOfViewCheckTypeE" 
+				"CBaseCombatCharacter::IsAbleToSee [CBaseCombatCharacter *]" "_ZN20CBaseCombatCharacter11IsAbleToSeeEPS_NS_20FieldOfViewCheckTypeE" 
+				"CBaseCombatCharacter::SetBloodColor" "_ZN20CBaseCombatCharacter13SetBloodColorEi" 
+				"CBaseCombatCharacter::GiveAmmo" "_ZN20CBaseCombatCharacter8GiveAmmoEiib" 
+				"CBaseCombatCharacter::GetAmmoCount" "_ZNK20CBaseCombatCharacter12GetAmmoCountEi" 
+				"CBaseCombatCharacter::OnTakeDamage" "_ZN20CBaseCombatCharacter12OnTakeDamageERK15CTakeDamageInfo" 
+				"CBaseCombatCharacter::UpdateLastKnownArea" "_ZN20CBaseCombatCharacter19UpdateLastKnownAreaEv" 
+				"CBaseCombatCharacter::Weapon_Detach" "_ZN20CBaseCombatCharacter13Weapon_DetachEP17CBaseCombatWeapon" 
+				"CBaseCombatCharacter::SwitchToNextBestWeapon" "_ZN20CBaseCombatCharacter22SwitchToNextBestWeaponEP17CBaseCombatWeapon" 
+				"CBaseCombatCharacter::CalculatePhysicsStressDamage" "_ZN20CBaseCombatCharacter28CalculatePhysicsStressDamageEP23vphysics_objectstress_tP14IPhysicsObject" 
+				"CBaseCombatCharacter::ClearLastKnownArea" "_ZN20CBaseCombatCharacter18ClearLastKnownAreaEv" 
+				"CBaseCombatCharacter::Event_Killed" "_ZN20CBaseCombatCharacter12Event_KilledERK15CTakeDamageInfo" 
+				"CBaseCombatCharacter::Weapon_Equip" "_ZN20CBaseCombatCharacter12Weapon_EquipEP17CBaseCombatWeapon" 
+				"CBaseCombatCharacter::ShouldGib" "_ZN20CBaseCombatCharacter9ShouldGibERK15CTakeDamageInfo" 
+				"CBaseCombatCharacter::FInViewCone" "_ZN20CBaseCombatCharacter11FInViewConeERK6Vector" 
 				
 				"CTFTeam::GetNumObjects" "_ZN7CTFTeam13GetNumObjectsEi"
 				"CTFTeam::GetObject"     "_ZN7CTFTeam9GetObjectEi"
@@ -6965,7 +5804,41 @@
 				"CTeamplayRules::SetWinningTeam" "_ZN14CTeamplayRules14SetWinningTeamEiibbbb"
 				
 				"CTFGameRules::CTFGameRules [C1]" "_ZN12CTFGameRulesC1Ev"
-				
+
+				"CBasePlayer::IsBot" "_ZNK11CBasePlayer5IsBotEv" 
+				"CBasePlayer::CommitSuicide" "_ZN11CBasePlayer13CommitSuicideEbb" 
+				"CBasePlayer::GetSteamID" "_ZN11CBasePlayer10GetSteamIDEP8CSteamID" 
+				"CBasePlayer::Weapon_ShootPosition" "_ZN11CBasePlayer20Weapon_ShootPositionEv" 
+				"CBasePlayer::PlayStepSound" "_ZN11CBasePlayer13PlayStepSoundER6VectorP13surfacedata_tfb" 
+				"CBasePlayer::SetPlayerName" "_ZN11CBasePlayer13SetPlayerNameEPKc" 
+				"CBasePlayer::GetPlayerMaxSpeed" "_ZN11CBasePlayer17GetPlayerMaxSpeedEv" 
+				"CBasePlayer::GetViewModel" "_ZN11CBasePlayer12GetViewModelEib" 
+				"CBasePlayer::DisableButtons" "_ZN11CBasePlayer14DisableButtonsEi" 
+				"CBasePlayer::EnableButtons" "_ZN11CBasePlayer13EnableButtonsEi" 
+				"CBasePlayer::ForceButtons" "_ZN11CBasePlayer12ForceButtonsEi" 
+				"CBasePlayer::UnforceButtons" "_ZN11CBasePlayer14UnforceButtonsEi"
+				"CBasePlayer::RemoveWearable" "_ZN11CBasePlayer14RemoveWearableEP13CEconWearable" 
+				"CBasePlayer::SnapEyeAngles" "_ZN11CBasePlayer13SnapEyeAnglesERK6QAngle" 
+				"CBasePlayer::ChangeTeam [int, bool, bool, bool]" "_ZN11CBasePlayer10ChangeTeamEibbb" 
+				"CBasePlayer::IsFakeClient" "_ZNK11CBasePlayer12IsFakeClientEv" 
+				"CBasePlayer::IsBotOfType" "_ZNK11CBasePlayer11IsBotOfTypeEi" 
+				"CBasePlayer::PhysicsSimulate" "_ZN11CBasePlayer15PhysicsSimulateEv" 
+				"CBasePlayer::FindUseEntity" "_ZN11CBasePlayer13FindUseEntityEv" 
+				"CBasePlayer::GetInVehicle" "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei" 
+				"CBasePlayer::LeaveVehicle" "_ZN11CBasePlayer12LeaveVehicleERK6VectorRK6QAngle" 
+				"CBasePlayer::EyeAngles" "_ZN11CBasePlayer9EyeAnglesEv" 
+				"CBasePlayer::ItemPostFrame" "_ZN11CBasePlayer13ItemPostFrameEv" 
+				"CBasePlayer::UpdatePlayerSound" "_ZN11CBasePlayer17UpdatePlayerSoundEv" 
+				"CBasePlayer::PlayerRunCommand" "_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper" 
+				"CBasePlayer::Touch" "_ZN11CBasePlayer5TouchEP11CBaseEntity" 
+				"CBasePlayer::ClientCommand" "_ZN11CBasePlayer13ClientCommandERK8CCommand" 
+				"CBasePlayer::ForceRespawn" "_ZN11CBasePlayer12ForceRespawnEv" 
+				"CBasePlayer::CreateViewModel" "_ZN11CBasePlayer15CreateViewModelEi" 
+				"CBasePlayer::EquipWearable" "_ZN11CBasePlayer13EquipWearableEP13CEconWearable" 
+				"CBasePlayer::Weapon_Equip" "_ZN9CTFPlayer12Weapon_EquipEP17CBaseCombatWeapon" 
+				"CBasePlayer::ShowViewPortPanel" "_ZN11CBasePlayer17ShowViewPortPanelEPKcbP9KeyValues" 
+				"CBasePlayer::IsPlayer" "_ZNK11CBasePlayer8IsPlayerEv"
+				"CBasePlayer::SetModel" "_ZN11CBasePlayer8SetModelEPKc"
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
 				
 				"CEyeballBossIdle::OnStart" "_ZN16CEyeballBossIdle7OnStartEP12CEyeballBossP6ActionIS0_E
@@ -7009,16 +5882,99 @@
 				
 				"InventoryManager"   "_Z16InventoryManagerv"
 				"TFInventoryManager" "_Z18TFInventoryManagerv"
+				
+				"CBaseCombatWeapon::IsMeleeWeapon" "_ZNK17CBaseCombatWeapon13IsMeleeWeaponEv"
+				
+				"CBaseCombatWeapon::GetMaxClip1" "_ZNK17CBaseCombatWeapon11GetMaxClip1Ev"
+				
+				"CBaseCombatWeapon::GetMaxClip2" "_ZNK17CBaseCombatWeapon11GetMaxClip2Ev"
+				"CBaseCombatWeapon::PrimaryAttack" "_ZN17CBaseCombatWeapon13PrimaryAttackEv"
+				"CBaseCombatWeapon::SecondaryAttack" "_ZN17CBaseCombatWeapon15SecondaryAttackEv"
+				"CBaseCombatWeapon::CanPerformSecondaryAttack" "_ZNK17CBaseCombatWeapon25CanPerformSecondaryAttackEv"
+				"CBaseCombatWeapon::Equip" "_ZN17CBaseCombatWeapon5EquipEP20CBaseCombatCharacter"
+				"CBaseCombatWeapon::Drop" "_ZN17CBaseCombatWeapon4DropERK6Vector"
+				"CBaseCombatWeapon::HasAmmo" "_ZN17CBaseCombatWeapon7HasAmmoEv"
+				"CBaseCombatWeapon::GetViewModel" "_ZNK17CBaseCombatWeapon12GetViewModelEi"
+				"CBaseCombatWeapon::GetWorldModel" "_ZNK17CBaseCombatWeapon13GetWorldModelEv"
+				"CBaseCombatWeapon::WeaponSound" "_ZN17CBaseCombatWeapon11WeaponSoundE13WeaponSound_tf"
+				"CBaseCombatWeapon::GetShootSound" "_ZNK17CBaseCombatWeapon13GetShootSoundEi"
+				"CBaseCombatWeapon::GetPrimaryAmmoType" "_ZNK17CBaseCombatWeapon18GetPrimaryAmmoTypeEv"
+				"CBaseCombatWeapon::SetSubType" "_ZN17CBaseCombatWeapon10SetSubTypeEi"
+				"CBaseCombatWeapon::ItemPostFrame" "_ZN17CBaseCombatWeapon13ItemPostFrameEv"
+				"CBaseCombatWeapon::UpdateTransmitState" "_ZN17CBaseCombatWeapon19UpdateTransmitStateEv"
+				"CBaseCombatWeapon::SetViewModelIndex" "_ZN17CBaseCombatWeapon17SetViewModelIndexEi"
+				"CBaseCombatWeapon::SetOwner" "_ZN17CBaseCombatWeapon8SetOwnerEP20CBaseCombatCharacter"
+				"CBaseCombatWeapon::CheckReload" "_ZN17CBaseCombatWeapon11CheckReloadEv"
+				"CBaseCombatWeapon::GetWpnData" "_ZNK17CBaseCombatWeapon10GetWpnDataEv"
+				"CBaseCombatWeapon::SetViewModel" "_ZN17CBaseCombatWeapon12SetViewModelEv"
+				"CBaseCombatWeapon::SetWeaponVisible" "_ZN17CBaseCombatWeapon16SetWeaponVisibleEb"
+				"CBaseCombatWeapon::SetCustomViewModel" "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
-				
+				"CTFWeaponBase::DeflectEntity" "_ZN13CTFWeaponBase13DeflectEntityEP11CBaseEntityP9CTFPlayerR6Vector"
+				"CTFWeaponBase::PrimaryAttack" "_ZN13CTFWeaponBase13PrimaryAttackEv"
+				"CTFWeaponBase::SecondaryAttack" "_ZN13CTFWeaponBase15SecondaryAttackEv"
+				"CTFWeaponBase::CanFireCriticalShot" "_ZN13CTFWeaponBase19CanFireCriticalShotEbP11CBaseEntity"
+				"CTFWeaponBase::GetShootSound" "_ZNK13CTFWeaponBase13GetShootSoundEi"
+				"CTFWeaponBase::ApplyOnHitAttributes" "_ZN13CTFWeaponBase20ApplyOnHitAttributesEP11CBaseEntityP9CTFPlayerRK15CTakeDamageInfo"
+				"CTFWeaponBase::GetViewModel" "_ZNK13CTFWeaponBase12GetViewModelEi"
+				"CTFWeaponBase::IsSilentKiller" "_ZN13CTFWeaponBase14IsSilentKillerEv"
+				"CTFWeaponBase::CanPerformSecondaryAttack" "_ZNK13CTFWeaponBase25CanPerformSecondaryAttackEv"
+				"CTFWeaponBase::ItemPostFrame" "_ZN13CTFWeaponBase13ItemPostFrameEv"
+				"CTFWeaponBase::ItemBusyFrame" "_ZN13CTFWeaponBase13ItemBusyFrameEv"
+				"CTFWeaponBase::GetProjectileFireSetup" "_ZN13CTFWeaponBase22GetProjectileFireSetupEP9CTFPlayer6VectorPS2_P6QAnglebf"
+				"CTFWeaponBase::CalcIsAttackCritical" "_ZN13CTFWeaponBase20CalcIsAttackCriticalEv"
+				"CTFWeaponBase::GetDamageType" "_ZNK13CTFWeaponBase13GetDamageTypeEv"
+				"CTFWeaponBase::Deploy" "_ZN13CTFWeaponBase6DeployEv"
+				"CTFWeaponBase::Holster" "_ZN13CTFWeaponBase7HolsterEP17CBaseCombatWeapon"
+				"CTFWeaponBase::GetTFPlayerOwner" "_ZNK13CTFWeaponBase16GetTFPlayerOwnerEv"
+				"CTFWeaponBase::GetPenetrateType" "_ZNK13CTFWeaponBase16GetPenetrateTypeEv"
+				"CTFWeaponBase::Reload" "_ZN13CTFWeaponBase6ReloadEv"
+				"CTFWeaponBase::GetSpreadAngles" "_ZN13CTFWeaponBase15GetSpreadAnglesEv"
+				"CTFWeaponBase::Equip" "_ZN13CTFWeaponBase5EquipEP20CBaseCombatCharacter"
+				"CTFWeaponBase::UpdateHands" "_ZN13CTFWeaponBase11UpdateHandsEv"
+				"CTFWeaponBase::Energy_GetMaxEnergy" "_ZNK13CTFWeaponBase19Energy_GetMaxEnergyEv"
+				"CTFWeaponBase::Energy_Recharge" "_ZN13CTFWeaponBase15Energy_RechargeEv"
+				"CTFWeaponBase::IsEnergyWeapon" "_ZNK13CTFWeaponBase14IsEnergyWeaponEv"
+				"CTFWeaponBase::Energy_GetShotCost" "_ZNK13CTFWeaponBase18Energy_GetShotCostEv"
+				"CTFWeaponBase::ApplyFireDelay" "_ZNK13CTFWeaponBase14ApplyFireDelayEf"
+				"CTFWeaponBase::Misfire" "_ZN13CTFWeaponBase7MisfireEv"
+				"CTFWeaponBase::CheckReloadMisfire" "_ZN13CTFWeaponBase18CheckReloadMisfireEv"
+				"CTFWeaponBase::GetParticleColor" "_ZN13CTFWeaponBase16GetParticleColorEi"
+				"CTFWeaponBase::GetTFWpnData" "_ZNK13CTFWeaponBase12GetTFWpnDataEv"
+				"CTFWeaponBase::StartEffectBarRegen" "_ZN13CTFWeaponBase19StartEffectBarRegenEv"
+				"CTFWeaponBase::ItemHolsterFrame" "_ZN13CTFWeaponBase16ItemHolsterFrameEv"
+				"CTFWeaponBase::GetInitialAfterburnDuration" "_ZNK13CTFWeaponBase27GetInitialAfterburnDurationEv"
+				"CTFWeaponBase::GetAfterburnRateOnHit" "_ZNK13CTFWeaponBase21GetAfterburnRateOnHitEv"
+				"CTFWeaponBase::IsPassiveWeapon" "_ZNK13CTFWeaponBase15IsPassiveWeaponEv"
+				"CTFWeaponBase::AutoFiresFullClip" "_ZNK13CTFWeaponBase17AutoFiresFullClipEv"
+				"CTFWeaponBase::SendWeaponAnim" "_ZN13CTFWeaponBase14SendWeaponAnimEi"
+				"CTFWeaponBase::GetMaxHealthMod" "_ZN13CTFWeaponBase15GetMaxHealthModEv"
+
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
 				"CTFWeaponBaseGun::RemoveProjectileAmmo" "_ZN16CTFWeaponBaseGun20RemoveProjectileAmmoEP9CTFPlayer"
 				"CTFWeaponBaseGun::ShouldPlayFireAnim"   "_ZN16CTFWeaponBaseGun18ShouldPlayFireAnimEv"
 				"CTFWeaponBaseGun::UpdatePunchAngles"    "_ZN16CTFWeaponBaseGun17UpdatePunchAnglesEP9CTFPlayer"
+				"CTFWeaponBaseGun::FireRocket" "_ZN16CTFWeaponBaseGun10FireRocketEP9CTFPlayeri"
+				"CTFWeaponBaseGun::FireFlameRocket" "_ZN16CTFWeaponBaseGun15FireFlameRocketEP9CTFPlayer"
+				"CTFWeaponBaseGun::FireArrow" "_ZN16CTFWeaponBaseGun9FireArrowEP9CTFPlayer16ProjectileType_t"
+				"CTFWeaponBaseGun::FireFlare" "_ZN16CTFWeaponBaseGun9FireFlareEP9CTFPlayer"
+				"CTFWeaponBaseGun::FireJar" "_ZN16CTFWeaponBaseGun7FireJarEP9CTFPlayer"
+				"CTFWeaponBaseGun::FireNail" "_ZN16CTFWeaponBaseGun8FireNailEP9CTFPlayeri"
+				"CTFWeaponBaseGun::FirePipeBomb" "_ZN16CTFWeaponBaseGun12FirePipeBombEP9CTFPlayeri"
+				"CTFWeaponBaseGun::GetProjectileDamage" "_ZN16CTFWeaponBaseGun19GetProjectileDamageEv"
+				"CTFWeaponBaseGun::GetCustomProjectileModel" "_ZN16CTFWeaponBaseGun24GetCustomProjectileModelEP17CAttribute_String"
+				"CTFWeaponBaseGun::GetProjectileSpeed" "_ZN16CTFWeaponBaseGun18GetProjectileSpeedEv"
+				"CTFWeaponBaseGun::GetProjectileGravity" "_ZN16CTFWeaponBaseGun20GetProjectileGravityEv"
+				"CTFWeaponBaseGun::GetWeaponProjectileType" "_ZNK16CTFWeaponBaseGun23GetWeaponProjectileTypeEv"
+				"CTFWeaponBaseGun::ModifyProjectile" "_ZN16CTFWeaponBaseGun16ModifyProjectileEP11CBaseEntity"
+				"CTFWeaponBaseGun::FireEnergyBall" "_ZN16CTFWeaponBaseGun14FireEnergyBallEP9CTFPlayerb"
+				"CTFWeaponBaseGun::PrimaryAttack" "_ZN16CTFWeaponBaseGun13PrimaryAttackEv"
+				"CTFWeaponBaseGun::ZoomIn" "_ZN16CTFWeaponBaseGun6ZoomInEv"
 				
+				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 			}
 			"addrs_group"
 			{
