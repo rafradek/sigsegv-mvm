@@ -1109,20 +1109,25 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			else if (weapon != nullptr && owner != nullptr && !owner->IsFakeClient()) {
 				auto entry = FindCustomModelEntry(weapon);
-				if (entry != nullptr && entry->wearable != nullptr && entry->wearable->GetModelIndex() != model_index) {
-					entry->wearable->Remove();
-					entry->wearable = nullptr;
+				if (entry != nullptr) {
+					if (entry->wearable != nullptr && entry->wearable->GetModelIndex() != model_index) {
+						entry->wearable->Remove();
+						entry->wearable = nullptr;
+					}
+					if (entry->wearable_vm != nullptr && entry->wearable_vm->GetModelIndex() != model_index) {
+						entry->wearable_vm->Remove();
+						entry->wearable_vm = nullptr;
+					}
+					entry->model_index = model_index;
 				}
-				if (entry != nullptr && entry->wearable_vm != nullptr && entry->wearable_vm->GetModelIndex() != model_index) {
-					entry->wearable_vm->Remove();
-					entry->wearable_vm = nullptr;
+				else {
+					entity->SetRenderMode(kRenderTransAlpha);
+					entity->AddEffects(EF_NOSHADOW);
+					entity->SetRenderColorA(0);
+					weapon->m_bBeingRepurposedForTaunt = true;
+					model_entries.push_back({weapon, nullptr, nullptr, model_index});
+					CreateWeaponWearables(model_entries.back());
 				}
-				entity->SetRenderMode(kRenderTransAlpha);
-				entity->AddEffects(EF_NOSHADOW);
-				entity->SetRenderColorA(0);
-				weapon->m_bBeingRepurposedForTaunt = true;
-				model_entries.push_back({weapon, nullptr, nullptr, model_index});
-				CreateWeaponWearables(model_entries.back());
 			}
 			else {
 				for (int i = 0; i < MAX_VISION_MODES; ++i) {
@@ -1130,13 +1135,14 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		else if (modelname == nullptr) {
+		else {
 			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
 			if (weapon != nullptr ) {
 				auto entry = FindCustomModelEntry(weapon);
 				if (entry != nullptr) {
 					weapon->SetRenderMode(kRenderNormal);
 					entity->SetRenderColorA(255);
+					weapon->m_bBeingRepurposedForTaunt = false;
 					entry->weapon = nullptr;
 				}
 			}
