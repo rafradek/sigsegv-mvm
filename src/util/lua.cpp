@@ -4576,14 +4576,14 @@ namespace Util::Lua
         }
         return false;
     }
-    
+
     DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
-        auto entity1 = EntityFromEntityHandle(ent1);
-        auto entity2 = EntityFromEntityHandle(ent2);
         
-        if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr)
+        if (ent1 != ent2 && ent2 != nullptr)
         {
+            auto entity1 = (CBaseEntity *)(ent1);
+            auto entity2 = (CBaseEntity *)(ent2);
             bool result;
             auto mod1 = entity1->GetEntityModule<LuaEntityModule>("luaentity");
             if (mod1 != nullptr && DoCollideTestInternal(entity1, entity2, mod1, result)) {

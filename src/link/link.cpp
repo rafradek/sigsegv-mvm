@@ -7,7 +7,7 @@
 #define LINK_NONFATAL
 //#endif
 
-
+void *vtable_staticprop = nullptr;
 namespace Link
 {
 	bool link_finished = false;
