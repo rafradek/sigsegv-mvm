@@ -444,6 +444,14 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFBot_dtor2)();
 	}
 	
+	THINK_FUNC_DECL(HideBossBar)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		if (!bot->IsAlive()) {
+			bot->m_bUseBossHealthBar = false;
+		}
+	}
+	
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_StateEnter, int nState)
 	{
@@ -487,6 +495,14 @@ namespace Mod::Pop::TFBot_Extensions
 			if (bot != nullptr) {
 			//	DevMsg("Bot #%d [\"%s\"]: StateLeave %s, clearing data\n", ENTINDEX(bot), bot->GetPlayerName(), GetStateName(bot->StateGet()));
 				ClearDataForBot(bot);
+			}
+		}
+
+		if (player->StateGet() == TF_STATE_ACTIVE) {
+			CTFBot *bot = ToTFBot(player);
+			// Prevent boss bar from lingering
+			if (bot != nullptr && bot->m_bUseBossHealthBar) {
+				THINK_FUNC_SET(bot, HideBossBar, gpGlobals->curtime + 3.0f);
 			}
 		}
 		
@@ -1966,7 +1982,7 @@ namespace Mod::Pop::TFBot_Extensions
 		}
         return VHOOK_CALL(CObjectTeleporter_KeyValue)(szKeyName, szValue);
     }
-	
+
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{

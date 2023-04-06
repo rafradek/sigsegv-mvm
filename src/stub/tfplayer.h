@@ -520,6 +520,7 @@ public:
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hRagdoll);
 	DECL_SENDPROP   (int,        m_iCampaignMedals);
 	DECL_RELATIVE   (CUtlVector<CHandle<CTFWeaponBase>>, m_hDisguiseWeaponList);
+	DECL_SENDPROP(bool,         m_bUseBossHealthBar);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
