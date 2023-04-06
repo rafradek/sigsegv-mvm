@@ -19,6 +19,7 @@ public:
 #endif
 	void Destroy(bool blinkOut = true, bool breakRocket = false) const            { return vt_Destroy(this, blinkOut, breakRocket); }
 	void SetLauncher(CBaseEntity *launcher)  { vt_SetLauncher(this, launcher); }
+	bool CanCollideWithTeammates()  { return vt_CanCollideWithTeammates(this); }
 	
 private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOriginalLauncher);
@@ -31,6 +32,7 @@ private:
 #endif
 	static MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> vt_Destroy;
 	static MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> vt_SetLauncher;
+	static MemberVFuncThunk<CBaseProjectile *, bool> vt_CanCollideWithTeammates;
 };
 
 class CBaseGrenade : public CBaseProjectile 

@@ -5975,6 +5975,9 @@
 				"CTFWeaponBaseGun::ZoomIn" "_ZN16CTFWeaponBaseGun6ZoomInEv"
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
+				
+				"CBaseProjectile::CanCollideWithTeammates" "_ZNK15CBaseProjectile23CanCollideWithTeammatesEv"
+			
 			}
 			"addrs_group"
 			{

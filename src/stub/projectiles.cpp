@@ -64,6 +64,7 @@ MemberVFuncThunk<const CBaseProjectile *, bool> CBaseProjectile::vt_IsDestroyabl
 #endif
 MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> CBaseProjectile::vt_Destroy(TypeName<CBaseProjectile>(), "CBaseProjectile::Destroy");
 MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> CBaseProjectile::vt_SetLauncher(TypeName<CBaseProjectile>(), "CBaseProjectile::SetLauncher");
+MemberVFuncThunk<CBaseProjectile *, bool> CBaseProjectile::vt_CanCollideWithTeammates(TypeName<CBaseProjectile>(), "CBaseProjectile::CanCollideWithTeammates");
 
 MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> CBaseGrenade::ft_GetThrower("CBaseGrenade::GetThrower");
 MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> CBaseGrenade::ft_SetThrower("CBaseGrenade::SetThrower");

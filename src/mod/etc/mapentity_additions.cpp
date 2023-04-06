@@ -1507,12 +1507,21 @@ namespace Mod::Etc::Mapentity_Additions
         }
         return false;
     }
+
     DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
         auto entity1 = EntityFromEntityHandle(ent1);
         auto entity2 = EntityFromEntityHandle(ent2);
         
         if (entity1 != entity2 && entity1 != nullptr && entity2 != nullptr) {
+            //Put here to improve performance, implement spectator team projectiles not colliding with teammates
+            if (entity1->GetTeamNumber() == TEAM_SPECTATOR && entity2->GetTeamNumber() == TEAM_SPECTATOR && ((entity1->m_fFlags & FL_CLIENT && entity2->m_fFlags & FL_GRENADE))) {
+                auto proj = rtti_cast<CBaseProjectile *>(entity2);
+                if (proj != nullptr && !proj->CanCollideWithTeammates()) {
+                    return false;
+                }
+            }
+
             bool result;
             variant_t val;
             if (entity1->GetCustomVariableVariant<"colfilter">(val) && DoCollideTestInternal(entity1, entity2, result, val)) {
