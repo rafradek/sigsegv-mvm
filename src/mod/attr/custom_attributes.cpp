@@ -1977,6 +1977,26 @@ namespace Mod::Attr::Custom_Attributes
 		}
     };
 	EmptyHandler empty_handler_def;
+
+	VHOOK_DECL(void, CUpgrades_StartTouch, CBaseEntity *pOther)
+	{
+		if (TFGameRules()->IsMannVsMachineMode()) {
+			CTFPlayer *player = ToTFPlayer(pOther);
+			if (player != nullptr) {
+				int cannotUpgrade = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
+				if (cannotUpgrade) {
+#ifndef NO_MVM
+                    if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex()) && menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), nullptr) != MenuSource_BaseMenu) {
+                        Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), true);
+					}
+#endif
+				}
+			}
+		}
+		
+		VHOOK_CALL(CUpgrades_StartTouch)(pOther);
+	}
 	
 	DETOUR_DECL_MEMBER(void, CUpgrades_UpgradeTouch, CBaseEntity *pOther)
 	{
@@ -1987,11 +2007,6 @@ namespace Mod::Attr::Custom_Attributes
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
 				if (cannotUpgrade) {
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
-#ifndef NO_MVM
-                    if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex()) && menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), nullptr) != MenuSource_BaseMenu) {
-                        Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), true);
-					}
-#endif
 					return;
 				}
 			}
@@ -6845,6 +6860,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects,    "CObjectSapper::ApplyRoboSapperEffects");
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_IsParentValid,    "CObjectSapper::IsParentValid");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsAllowedToTaunt,    "CTFPlayer::IsAllowedToTaunt");
+			MOD_ADD_VHOOK(CUpgrades_StartTouch, TypeName<CUpgrades>(), "CBaseTrigger::StartTouch");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_UpgradeTouch, "CUpgrades::UpgradeTouch");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_EndTouch, "CUpgrades::EndTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemPostFrame, "CTFWeaponBase::ItemPostFrame");

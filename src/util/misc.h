@@ -195,23 +195,24 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 	static int tickLast_##name = 0; \
 	static int counter_##name = 0; \
     static CCycleCount cycle_##name; \
+	counter_##name++;\
+	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
+		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
+        cycle_##name.Init(); \
+		counter_##name = 0;\
+		tickLast_##name = gpGlobals->tickcount;\
+	}\
 	class CTimeScopeMsg_##name \
 	{ \
 	public: \
-		CTimeScopeMsg_##name() { } \
+		CTimeScopeMsg_##name() : m_Timer(&cycle_##name) { } \
 		~CTimeScopeMsg_##name() \
 		{ \
 			m_Timer.End(); \
 		} \
 	private:	\
-		CTimeAdder m_Timer(&cycle_##name);\
+		CTimeAdder m_Timer;\
 	} name##_TSM; \
-	counter_##name++;\
-	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
-		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
-		counter_##name = 0;\
-		tickLast_##name = gpGlobals->tickcount;\
-	}\
 
 #define TIME_SCOPE2(name) \
 	class CTimeScopeMsg_##name \
@@ -306,6 +307,14 @@ inline variant_t Variant(T value) {
 }
 
 template<>
+inline variant_t Variant<bool>(bool value)
+{
+	variant_t var;
+	var.SetBool(value);
+	return var;
+}
+
+template<>
 inline variant_t Variant<float>(float value)
 {
 	variant_t var;
@@ -329,6 +338,29 @@ inline variant_t Variant<string_t>(string_t value)
 	return var;
 }
 
+template<>
+inline variant_t Variant<Vector>(Vector value)
+{
+	variant_t var;
+	var.SetVector3D(value);
+	return var;
+}
+
+template<>
+inline variant_t Variant<color32>(color32 value)
+{
+	variant_t var;
+	var.SetColor32(value);
+	return var;
+}
+
+template<>
+inline variant_t Variant<CBaseEntity *>(CBaseEntity * value)
+{
+	variant_t var;
+	var.SetEntity(value);
+	return var;
+}
 
 #if 0
 class CEntitySphereQuery

@@ -403,6 +403,13 @@ namespace Mod::Perf::Func_Optimize
 	static int tickLast_##name = 0; \
 	static int counter_##name = 0; \
     static CCycleCount cycle_##name; \
+	counter_##name++;\
+	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
+		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
+        cycle_##name.Init(); \
+		counter_##name = 0;\
+		tickLast_##name = gpGlobals->tickcount;\
+	}\
 	class CTimeScopeMsg_##name \
 	{ \
 	public: \
@@ -414,13 +421,6 @@ namespace Mod::Perf::Func_Optimize
 	private:	\
 		CTimeAdder m_Timer;\
 	} name##_TSM; \
-	counter_##name++;\
-	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
-		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
-        cycle_##name.Init(); \
-		counter_##name = 0;\
-		tickLast_##name = gpGlobals->tickcount;\
-	}\
 
     DETOUR_DECL_MEMBER(CTFItemDefinition *, CEconItemView_GetStaticData)
 	{

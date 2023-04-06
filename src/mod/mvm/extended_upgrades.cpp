@@ -1419,6 +1419,9 @@ namespace Mod::MvM::Extended_Upgrades
             ForEachTFPlayer([&](CTFPlayer *player){
                 if (player->IsBot()) return;
 
+                if (!player->m_Shared->m_bInUpgradeZone && player->GetCustomVariableBool<"wasinupgradezone">()) {
+                    player->SetCustomVariable("wasinupgradezone", Variant(false));
+                }
                 if (player->m_Shared->m_bInUpgradeZone && !upgrades.empty() && in_upgrade_zone.count(player) == 0) {
                     in_upgrade_zone.insert(player);
                     auto kv = new KeyValues("MvM_UpgradesBegin");
@@ -1461,8 +1464,11 @@ namespace Mod::MvM::Extended_Upgrades
                                 StartUpgradeListForPlayer(player, -1, 0);
                         }
                         else if (!found_any && has_extra && !WeaponHasValidUpgrades(nullptr, player)) {
-                            StartMenuForPlayer(player);
-                            Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, class_index, true);
+                            if (!player->GetCustomVariableBool<"wasinupgradezone">()) {
+                                player->SetCustomVariable("wasinupgradezone", Variant(true));
+                                StartMenuForPlayer(player);
+                                Mod::Pop::PopMgr_Extensions::DisplayExtraLoadoutItemsClass(player, class_index, true);
+                            }
                         }
                         else {
                             StartMenuForPlayer(player);

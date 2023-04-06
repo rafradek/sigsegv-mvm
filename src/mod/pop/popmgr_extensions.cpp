@@ -1891,10 +1891,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized of mission %s\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get(), STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()));
 			if (state.m_ScriptManager != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-				if (scriptManager != nullptr && scriptManager->CheckGlobal("OnWaveInit")) {
-					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
-					scriptManager->Call(1, 0);
-				}
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+				scriptManager->CallGlobalCallback("OnWaveInit", 1, 0);
 			}
 		}
 		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
@@ -1916,10 +1914,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (state.m_ScriptManager != nullptr) {
 			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
 
-			if (scriptManager->CheckGlobal(success ? "OnWaveSuccess" : "OnWaveFail")) {
-				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
-				scriptManager->Call(1, 0);
-			}
+			lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount + (origSuccess ? 1 : 0));
+				
+			scriptManager->CallGlobalCallback(success ? "OnWaveSuccess" : "OnWaveFail", 1, 0);
 		}
 
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
@@ -4534,18 +4531,16 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto player = ToTFBot(ents->Tail());
 			if (player != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-				if (scriptManager->CheckGlobal("OnWaveSpawnBot")) {
-					Util::Lua::LEntityAlloc(scriptManager->GetState(), player);
-					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
-					lua_newtable(scriptManager->GetState());
-					int idx = 1;
-					for (auto &tag : player->m_Tags) {
-						lua_pushstring(scriptManager->GetState(), tag.Get());
-						lua_rawseti(scriptManager->GetState(), -2, idx);
-						idx++;
-					}
-					scriptManager->Call(3, 0);
+				Util::Lua::LEntityAlloc(scriptManager->GetState(), player);
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+				lua_newtable(scriptManager->GetState());
+				int idx = 1;
+				for (auto &tag : player->m_Tags) {
+					lua_pushstring(scriptManager->GetState(), tag.Get());
+					lua_rawseti(scriptManager->GetState(), -2, idx);
+					idx++;
 				}
+				scriptManager->CallGlobalCallback("OnWaveSpawnBot", 3, 0);
 			}
 		}
 		return result;
@@ -4558,11 +4553,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto entity = ents->Tail();
 			if (entity != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-				if (scriptManager->CheckGlobal("OnWaveSpawnTank")) {
-					Util::Lua::LEntityAlloc(scriptManager->GetState(), entity);
-					lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
-					scriptManager->Call(2, 0);
-				}
+				Util::Lua::LEntityAlloc(scriptManager->GetState(), entity);
+				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+				scriptManager->CallGlobalCallback("OnWaveSpawnTank", 2, 0);
 			}
 		}
 		return result;
@@ -4591,9 +4584,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		if (state.m_ScriptManager != nullptr) {
 			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-			if (scriptManager->CheckGlobal("GetWaveSpawnLocation")) {
-				lua_pushstring(scriptManager->GetState(), state.m_SpawnLocations[location].name.c_str());
-				scriptManager->Call(1, 2);
+			lua_pushstring(scriptManager->GetState(), state.m_SpawnLocations[location].name.c_str());
+			if (scriptManager->CallGlobalCallback("GetWaveSpawnLocation", 1, 2)) {
 				int isint = 0;
 				int result = lua_tointegerx(scriptManager->GetState(), -2, &isint);
 				if (result != -1 && isint) {
@@ -4604,8 +4596,8 @@ namespace Mod::Pop::PopMgr_Extensions
 					lua_settop(scriptManager->GetState(), 0);
 					return result;
                 }
-				lua_settop(scriptManager->GetState(), 0);
-			};
+			}
+			lua_settop(scriptManager->GetState(), 0);
 		}
 
 		auto &data = state.m_SpawnLocations[location];
@@ -4997,6 +4989,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			item.item = CEconItemView::Create();
 			item.item->Init(item_def->m_iItemDefIndex);
 			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey2;
+			// Make stock quality items unique quality
+			if (item.item->m_iEntityQuality == 0) {
+				item.item->m_iEntityQuality = 6;
+			}
 			std::string name;
 			if (state.m_CustomWeapons.find(item_name) != state.m_CustomWeapons.end()) {
 				name = item_name;
@@ -5888,10 +5884,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		if (state.m_ScriptManager != nullptr) {
 			auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-			if (scriptManager->CheckGlobal("OnWaveReset")) {
-				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
-				scriptManager->Call(1, 0);
-			}
+			lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
+			scriptManager->CallGlobalCallback("OnWaveReset", 1, 0);
 		}
 //		THINK_FUNC_SET(g_pPopulationManager, DoSprayDecal, gpGlobals->curtime+1.0f);
 		return ret;
