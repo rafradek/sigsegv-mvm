@@ -1970,14 +1970,6 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
-    class EmptyHandler : public IMenuHandler
-    {
-    public:
-        EmptyHandler() : IMenuHandler() {
-		}
-    };
-	EmptyHandler empty_handler_def;
-
 	VHOOK_DECL(void, CUpgrades_StartTouch, CBaseEntity *pOther)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
@@ -2026,14 +2018,7 @@ namespace Mod::Attr::Custom_Attributes
 					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
 #ifndef NO_MVM
 					if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex())) {
-        				menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
-						auto panel = menus->GetDefaultStyle()->CreatePanel();
-						ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
-						panel->DrawItem(info1);
-						ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
-						panel->DrawItem(info2);
-						panel->SetSelectableKeys(255);
-						panel->SendDisplay(ENTINDEX(player), &empty_handler_def, 1);
+        				CancelClientMenu(player);
 					}
 #endif
 				}

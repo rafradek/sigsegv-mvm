@@ -2048,6 +2048,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
+        void *menu = nullptr;
+        if (menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu) == MenuSource_BaseMenu && menu != nullptr) {
+			auto title = ((IBaseMenu *)menu)->GetDefaultTitle();
+			if (title != nullptr && StringStartsWith(title, "Extra loadout items")) {
+				CancelClientMenu(player);
+			}
+		}
+
 		// Avoid infinite loop
 		if (rc_CTFPlayer_HandleCommand_JoinClass < 10 && player->GetTeamNumber() >= TF_TEAM_RED)
 			CheckPlayerClassLimit(player);
@@ -3779,14 +3787,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		
         menu->Display(ENTINDEX(player), 10);
 	}
-	
-	class EmptyHandler : public IMenuHandler
-	{
-	public:
-		EmptyHandler() : IMenuHandler() {
-		}
-	};
-	EmptyHandler empty_handler_def;
 
 	THINK_FUNC_DECL(PlayerExtraLoadoutMenuThink)
 	{
@@ -3799,14 +3799,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (autoHide) {
 				nextThink = true;
 				if (!player->m_Shared->m_bInUpgradeZone && !PointInRespawnRoom(player, player->GetAbsOrigin(), false)) {
-					menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
-					auto panel = menus->GetDefaultStyle()->CreatePanel();
-					ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
-					panel->DrawItem(info1);
-					ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
-					panel->DrawItem(info2);
-					panel->SetSelectableKeys(255);
-					panel->SendDisplay(ENTINDEX(player), &empty_handler_def, 1);
+					CancelClientMenu(player);
 					return;
 				}
 			}

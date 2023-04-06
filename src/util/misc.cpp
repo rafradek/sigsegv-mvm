@@ -1,6 +1,8 @@
 #include "util/misc.h"
 #include "stub/baseentity.h"
 #include "stub/baseanimating.h"
+#include "stub/baseplayer.h"
+#include "stub/usermessages_sv.h"
 
 template<typename LINE_FUNC>
 static void HexDump_Internal(LINE_FUNC&& line_func, const void *ptr, size_t len, bool absolute)
@@ -126,4 +128,32 @@ std::vector<std::string> BreakStringsForMultiPrint(std::string string, size_t ma
 		if (stop) break;
 	}
 	return result;
+}
+
+void CancelClientMenu(CBasePlayer *player)
+{
+	menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
+	CRecipientFilter filter;
+	filter.AddRecipient(player);
+	int msg_type = usermessages->LookupUserMessage("ShowMenu");
+	bf_write *msg = engine->UserMessageBegin(&filter, msg_type);
+
+	if (msg != nullptr) {
+		msg->WriteShort(1);
+		msg->WriteByte(0);
+		msg->WriteByte(false);
+		msg->WriteString("\n");
+
+		engine->MessageEnd();
+	}
+	msg = engine->UserMessageBegin(&filter, msg_type);
+
+	if (msg != nullptr) {
+		msg->WriteShort(0);
+		msg->WriteByte(0);
+		msg->WriteByte(false);
+		msg->WriteString(" ");
+
+		engine->MessageEnd();
+	}
 }

@@ -1104,37 +1104,11 @@ namespace Mod::MvM::Extended_Upgrades
 
         menu->Display(ENTINDEX(player), 0);
     }
-
-    class EmptyHandler : public IMenuHandler
-    {
-    public:
-        EmptyHandler() : IMenuHandler() {
-		}
-    };
-	EmptyHandler empty_handler_def;
     
     void StopMenuForPlayer(CTFPlayer *player) {
         //if (select_type_menus.find(player) == select_type_menus.end()) return;
         //DevMsg("Stopped menu\n");
-        void *menu = nullptr;
-        menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu);
-        //select_type_menus[player];
-        
-        //    Msg("Menu CancelClient %d\n", menu);
-        menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
-        //menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu);
-        //    Msg("Menu Cancel %d\n", menu);
-        //if (menu != nullptr)
-        //    menus->CancelMenu((IBaseMenu *)menu);
-        //menu->Destroy();
-
-        auto panel = menus->GetDefaultStyle()->CreatePanel();
-        ItemDrawInfo info1("", ITEMDRAW_RAWLINE);
-        panel->DrawItem(info1);
-        ItemDrawInfo info2("", ITEMDRAW_RAWLINE);
-        panel->DrawItem(info2);
-        panel->SetSelectableKeys(255);
-        panel->SendDisplay(ENTINDEX(player), &empty_handler_def, 1);
+        CancelClientMenu(player);
 
         // menu = menus->GetDefaultStyle()->CreateMenu(new SelectUpgradeWeaponHandler(player), g_Ext.GetIdentity());
         // menu->SetDefaultTitle(" ");
