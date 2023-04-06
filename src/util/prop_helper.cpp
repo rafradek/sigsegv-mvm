@@ -1,6 +1,7 @@
 
 #include <util/prop_helper.h>
 #include <stub/misc.h>
+#include <stub/sendprop.h>
 
 std::vector<ServerClass *> send_prop_cache_classes;
 std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> send_prop_cache;
@@ -9,11 +10,10 @@ std::vector<datamap_t *> datamap_cache_classes;
 std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> datamap_cache;
 
 void *stringSendProxy = nullptr;
-CStandardSendProxies* sendproxies = nullptr;
 
-
-bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, int index = -1)
+bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, DatatableProxyVector &usedTables, int index = -1)
 {
+    static CStandardSendProxies* sendproxies = gamedll->GetStandardSendProxies();
     for (int i = 0; i < s_table->GetNumProps(); ++i) {
         SendProp *s_prop = s_table->GetProp(i);
         
@@ -38,16 +38,35 @@ bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&pro
                     continue;
                 }
             }
+            if (s_prop->GetDataTable() != nullptr) {
+                bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
+                int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+                if (modifying) {
+                    usedTables.push_back({s_prop, off - oldOffset});
+                    off = 0;
+                }
+            }
             prop = s_prop;
             return true;
         }
         
         if (s_prop->GetDataTable() != nullptr) {
+            bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
+            int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
             off += s_prop->GetOffset();
-            if (FindSendProp(off, s_prop->GetDataTable(), name, prop, index)) {
+            if (modifying) {
+                usedTables.push_back({s_prop, off - oldOffset});
+                off = 0;
+            }
+                
+            if (FindSendProp(off, s_prop->GetDataTable(), name, prop, usedTables, index)) {
                 return true;
             }
             off -= s_prop->GetOffset();
+            if (modifying) {
+                usedTables.pop_back();
+                off = oldOffset;
+            }
         }
     }
     
@@ -137,27 +156,37 @@ PropCacheEntry &GetSendPropOffset(ServerClass *serverClass, const std::string &n
     int offset = 0;
     SendProp *prop = nullptr;
     bool vectorComponent = false;
-    if (!FindSendProp(offset,serverClass->m_pTable, name.c_str(), prop)) {
+    PropCacheEntry entry;
+    if (!FindSendProp(offset,serverClass->m_pTable, name.c_str(), prop, entry.usedTables)) {
         // Sometimes each component of vector is saved separately, check for their existence as well
-        if (FindSendProp(offset,serverClass->m_pTable, (name + "[0]").c_str(), prop)) {
+        if (FindSendProp(offset,serverClass->m_pTable, (name + "[0]").c_str(), prop, entry.usedTables)) {
             vectorComponent = true;
         }
     }
+    
 
-    PropCacheEntry entry;
     GetSendPropInfo(prop, entry, offset);
     if (vectorComponent && entry.fieldType == FIELD_FLOAT) {
         entry.fieldType = FIELD_VECTOR;
     }
-    
     names.push_back(name);
     pair.second.push_back(entry);
     return pair.second.back();
 }
 
+CSendProxyRecipients static_recip;
 void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
 {
     if (entry.offset > 0) {
+        void *base = entity;
+        void *newBase = base;
+        for (auto &[prop, offset] : entry.usedTables) {
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, base + offset, &static_recip, 0);
+            if (newBase != nullptr) {
+                base = newBase;
+            }
+        }
+
         int offset = entry.offset + arrayPos * entry.elementStride;
         fieldtype_t fieldType = entry.fieldType;
         if (vecAxis != -1) {
@@ -166,11 +195,11 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
         }
 
         if (fieldType == FIELD_CHARACTER && entry.arraySize > 1) {
-            V_strncpy(((char*)entity) + offset, variant.String(), entry.arraySize);
+            V_strncpy(((char*)base) + offset, variant.String(), entry.arraySize);
         }
         else {
             variant.Convert(fieldType);
-            variant.SetOther(((char*)entity) + offset);
+            variant.SetOther(((char*)base) + offset);
         }
     }
 }
@@ -178,6 +207,15 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
 void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
 {
     if (entry.offset > 0) {
+        void *base = entity;
+        void *newBase = base;
+        for (auto &[prop, offset] : entry.usedTables) {
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, base + offset, &static_recip, 0);
+            if (newBase != nullptr) {
+                base = newBase;
+            }
+        }
+        
         int offset = entry.offset + arrayPos * entry.elementStride;
         fieldtype_t fieldType = entry.fieldType;
         if (vecAxis != -1) {
@@ -186,10 +224,10 @@ void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int array
         }
 
         if (fieldType == FIELD_CHARACTER && entry.arraySize > 1) {
-            variant.SetString(AllocPooledString(((char*)entity) + offset));
+            variant.SetString(AllocPooledString(((char*)base) + offset));
         }
         else {
-            variant.Set(fieldType, ((char*)entity) + offset);
+            variant.Set(fieldType, ((char*)base) + offset);
         }
         if (fieldType == FIELD_POSITION_VECTOR) {
             variant.Convert(FIELD_VECTOR);
