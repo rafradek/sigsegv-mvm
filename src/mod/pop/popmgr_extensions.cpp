@@ -5898,6 +5898,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		"FlagResetTime",
 		"ExtraSpawnPoint",
 		"ExtraTankPath",
+		"CustomWeapon",
+		"ExtraLoadoutItems",
 		"DisallowUpgrade",
 		"SpawnTemplate",
 		"PlayerSpawnTemplate",

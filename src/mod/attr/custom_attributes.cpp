@@ -420,7 +420,6 @@ namespace Mod::Attr::Custom_Attributes
 			CTFProjectile_Throwable *projectile = rtti_cast<CTFProjectile_Throwable *>(CBaseEntity::CreateNoSpawn(classname, vecSrc, player->EyeAngles(), player));
 			if (projectile != nullptr) {
 				projectile->SetPipebombMode();
-				projectile->SetLauncher(weapon);
 				projectile->m_bCritical = weapon->m_bCurrentAttackIsCrit;
 				
 				DispatchSpawn(projectile);
@@ -433,6 +432,7 @@ namespace Mod::Attr::Custom_Attributes
 				AngularImpulse angVelocity = projectile->GetAngularImpulse();
 
 				projectile->InitGrenade(vecVelocity, angVelocity, player, weapon->GetTFWpnData());
+				projectile->SetLauncher(weapon);
 				projectile->SetDamage( weapon->GetProjectileDamage() );
 			}
 			retval = projectile;
