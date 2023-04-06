@@ -3373,6 +3373,27 @@ namespace Util::Lua
         return 0;
     }
 
+    int LAddGlobalCallback(lua_State *l)
+    {
+        const char *name = luaL_checkstring(l, 1);
+        luaL_argcheck(l, strlen(name) > 0, 1, "event name empty");
+        luaL_checktype(l,2, LUA_TFUNCTION);
+        lua_pushvalue(l,2);
+        int func = luaL_ref(l, LUA_REGISTRYINDEX);
+        
+        cur_state->AddGlobalCallback(name, func);
+        lua_pushinteger(l, func);
+        return 1;
+    }
+
+    int LRemoveGlobalCallback(lua_State *l)
+    {
+        int func = luaL_checkinteger(l, 1);
+        cur_state->RemoveGlobalCallback(func);
+
+        return 0;
+    }
+
     static const struct luaL_Reg vectorlib_f [] = {
         {"__call", LVectorNew},
         {nullptr, nullptr},
@@ -3734,6 +3755,8 @@ namespace Util::Lua
         lua_register(l, "IsValid", LIsValid);
         lua_register(l, "AddEventCallback", LAddEventCallback);
         lua_register(l, "RemoveEventCallback", LRemoveEventCallback);
+        lua_register(l, "AddGlobalCallback", LAddGlobalCallback);
+        lua_register(l, "RemoveGlobalCallback", LRemoveEventCallback);
         lua_register(l, "FireEvent", LFireEvent);
         
 
@@ -3942,7 +3965,7 @@ namespace Util::Lua
         if (type != LUA_TNIL) {
             return true;
         }
-        lua_pop(l, -1);
+        lua_pop(l, 1);
         return false;
     }
     void LuaState::UpdateTimers() {
@@ -4045,15 +4068,58 @@ namespace Util::Lua
     void LuaState::Activate() {
         // Tell scripts about every connected player so far
         ForEachTFPlayer([&](CTFPlayer *player){
-            if (this->CheckGlobal("OnPlayerConnected")) {
-                LEntityAlloc(l, player);
-                this->Call(1, 0);
-            }
+            LEntityAlloc(l, player);
+            this->CallGlobalCallback("OnPlayerConnected", 1, 0);
         });
     }
 
     void LuaState::AddConVarValue(ConVar *convar) {
         this->convarValueToRestore.try_emplace(convar, convar->GetString());
+    }
+
+    void LuaState::RemoveGlobalCallback(int reffunc) {
+        RemoveIf(globalCallbacks, [&](auto &callback){ 
+            if (callback.m_iRefFunc == reffunc) {
+                luaL_unref(l, LUA_REGISTRYINDEX, reffunc);
+                return true ;
+            }
+            return false ;
+        });
+    }
+
+    
+    bool LuaState::CallGlobalCallback(const char *name, int numargs, int numret) {
+        auto l = this->GetState();
+        bool firedCallback = false;
+
+        if (this->CheckGlobal(name)) {
+            for (int i = 0; i < numargs; i++) {
+                lua_pushvalue(l, -numargs - 1);
+            }
+            firedCallback = this->Call(numargs, numret) == 0;
+            if (!firedCallback) {
+                lua_pop(l, 1);
+            }
+        }
+        for (auto &callback : globalCallbacks) {
+            if (callback.m_Name == name) {
+                if (firedCallback)
+                    lua_pop(l, numret);
+                lua_rawgeti(l, LUA_REGISTRYINDEX, callback.m_iRefFunc);
+                for (int i = 0; i < numargs; i++) {
+                    lua_pushvalue(l, -numargs - 1);
+                }
+                firedCallback = this->Call(numargs, numret) == 0;
+                if (!firedCallback) {
+                    lua_pop(l, 1);
+                }
+            }
+        }
+        
+        for (int i = 0; i < numargs; i++) {
+            lua_remove(l, -1 - (firedCallback ? numret : 0));
+        }
+        return firedCallback;
     }
 
     void LuaTimer::Destroy(lua_State *l) {
@@ -4254,11 +4320,8 @@ namespace Util::Lua
 	{
         DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
         for(auto state : LuaState::List()) {
-            
-            if (state->CheckGlobal("OnPlayerConnected")) {
-                LEntityAlloc(state->GetState(), GetContainingEntity(edict));
-                state->Call(1, 0);
-            }
+            LEntityAlloc(state->GetState(), GetContainingEntity(edict));
+            state->CallGlobalCallback("OnPlayerConnected", 1, 0);
         }
     }
 
@@ -4267,11 +4330,8 @@ namespace Util::Lua
         auto player = reinterpret_cast<CTFPlayer *>(this);
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
         for(auto state : LuaState::List()) {
-            
-            if (state->CheckGlobal("OnPlayerDisconnected")) {
-                LEntityAlloc(state->GetState(), player);
-                state->Call(1, 0);
-            }
+            LEntityAlloc(state->GetState(), player);
+            state->CallGlobalCallback("OnPlayerDisconnected", 1, 0);
         }
     }
 
@@ -4516,11 +4576,7 @@ namespace Util::Lua
         }
         return false;
     }
-    enum
-    {
-        // This bit will be set in GetRefEHandle for all static props
-        STATICPROP_EHANDLE_MASK = 0x40000000
-    };
+    
     DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
         auto entity1 = EntityFromEntityHandle(ent1);
@@ -4945,10 +5001,7 @@ namespace Util::Lua
             if (!LuaState::List().empty())
             {
                 for(auto state : LuaState::List()) {
-                    
-                    if (state->CheckGlobal("OnGameTick")) {
-                        state->Call(0, 0);
-                    }
+                    state->CallGlobalCallback("OnGameTick", 0, 0);
                 }
             }
 		}

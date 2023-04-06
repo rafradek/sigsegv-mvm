@@ -801,5 +801,16 @@ function RemoveEventCallback(id) end
 ---@return boolean success `true` on success, `false` otherwise
 function FireEvent(name, props) end
 
+--Adds global callback. Can be used to add multiple OnGameTick, OnWaveStart, etc. callbacks
+---@param name string Name of the callback
+---@param callback function Callback function
+---@return number id id for later removal with `RemoveGlobalCallback(id)` function
+function AddGlobalCallback(name, props) end
+
+--Removes global callback
+---@param id number id of the global callback
+---@return nil
+function RemoveGlobalCallback(id) end
+
 -- Table for transfering data between missions and maps. Cannot store other tables
 DataTransfer = {}

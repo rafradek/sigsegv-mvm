@@ -9,7 +9,11 @@ extern "C" {
 
 namespace Util::Lua
 {
-
+    struct GlobalCallback
+    {
+        std::string m_Name;
+        int m_iRefFunc;
+    };
     class LuaEntityModule;
 
     class LuaTimer
@@ -51,6 +55,8 @@ namespace Util::Lua
 
         int Call(int numargs, int numret);
 
+        bool CallGlobalCallback(const char *name, int numargs, int numret);
+
         void UpdateTimers();
 
         virtual void TimerAdded() {}
@@ -72,6 +78,8 @@ namespace Util::Lua
         const std::unordered_set<CBaseEntity *> &GetCallbackEntities() { return callbackEntities; }
         const std::unordered_map<ConVar *, std::string> &GetOverriddenConvars() { return convarValueToRestore; }
         size_t GetMemoryUsageBytes() { return m_iMemoryUsage; }
+        void AddGlobalCallback(const char *name, int reffunc) { globalCallbacks.push_back({name, reffunc}); };
+        void RemoveGlobalCallback(int reffunc);
 
     private:
         std::list<LuaTimer>::iterator DestroyTimer(std::list<LuaTimer>::iterator it);
@@ -92,6 +100,7 @@ namespace Util::Lua
         int m_iNextTimerID = 0;
         std::unordered_set<CBaseEntity *> callbackEntities;
         std::unordered_map<ConVar *, std::string> convarValueToRestore; 
+        std::list<GlobalCallback> globalCallbacks;
         size_t m_iMemoryUsage = 0;
     };
 
