@@ -340,3 +340,44 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
 
     return true;
 }
+
+CON_COMMAND(sig_gen_rand, "")
+{
+    CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );
+    for (int i = 253; i < 4000; i++)
+    {
+        auto def = GetItemSchema()->GetAttributeDefinition(i);
+        if (def != nullptr) {
+            const char *name = def->GetKeyValues()->GetString("name", "");
+            const char *attrClass = def->GetKeyValues()->GetString("attribute_class", "");
+            const char *type = def->GetKeyValues()->GetString("description_format", "");
+            const char *attrType = def->GetKeyValues()->GetString("attribute_type", "");
+            const char *positive = def->GetKeyValues()->GetString("effect_type", "");
+            
+            if (attrType[0] != '\0') continue;
+
+            file.PutString("    { name = \"");
+            file.PutString(name);
+            file.PutString("\", type = \"");
+            file.PutString(type[0] == '\0' ? "additive" : type + 9);
+            file.PutString("\", clas = \"");
+            file.PutString(attrClass);
+            file.PutString("\", positive = ");
+            file.PutString(!FStrEq(positive, "negative") ? "true" : "false");
+            file.PutString(", chance = 1.0, ");
+            if (FStrEq(positive, "neutral")) {
+                file.PutString("neutral = true, ");
+            }
+            if (FStrEq(type + 9, "additive")) {
+                file.PutString("minStrength = 0.25, maxStrength = 0.25, weight0 = 4.0");
+            }
+            else {
+                file.PutString("multStrength = 1.0, weight0 = 1.0");
+            }
+            file.PutString(", requirements = \n        { }\n    },\n");
+        }
+    }
+    char path_sm[PLATFORM_MAX_PATH];
+    g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_gen.nut");
+    filesystem->WriteFile(path_sm, "GAME", file);
+}

@@ -805,7 +805,7 @@ function FireEvent(name, props) end
 ---@param name string Name of the callback
 ---@param callback function Callback function
 ---@return number id id for later removal with `RemoveGlobalCallback(id)` function
-function AddGlobalCallback(name, props) end
+function AddGlobalCallback(name, callback) end
 
 --Removes global callback
 ---@param id number id of the global callback
