@@ -5884,9 +5884,7 @@
 				"TFInventoryManager" "_Z18TFInventoryManagerv"
 				
 				"CBaseCombatWeapon::IsMeleeWeapon" "_ZNK17CBaseCombatWeapon13IsMeleeWeaponEv"
-				
 				"CBaseCombatWeapon::GetMaxClip1" "_ZNK17CBaseCombatWeapon11GetMaxClip1Ev"
-				
 				"CBaseCombatWeapon::GetMaxClip2" "_ZNK17CBaseCombatWeapon11GetMaxClip2Ev"
 				"CBaseCombatWeapon::PrimaryAttack" "_ZN17CBaseCombatWeapon13PrimaryAttackEv"
 				"CBaseCombatWeapon::SecondaryAttack" "_ZN17CBaseCombatWeapon15SecondaryAttackEv"
@@ -5977,6 +5975,9 @@
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				
 				"CBaseProjectile::CanCollideWithTeammates" "_ZNK15CBaseProjectile23CanCollideWithTeammatesEv"
+
+				"CBaseObject::FindBuildPointOnPlayer" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector"
+				
 			
 			}
 			"addrs_group"
