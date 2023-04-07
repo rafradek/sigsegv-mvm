@@ -12,7 +12,8 @@ public:
 	int GetType() const               { return this->m_iObjectType; }
 	int GetObjectMode() const         { return this->m_iObjectMode; }
 	CTFPlayer *GetBuilder() const     { return this->m_hBuilder; }
-	CBaseEntity *GetBuiltOnEntity() const     { return this->m_hBuiltOnEntity; }
+	CBaseEntity *GetBuiltOnEntity() const      { return this->m_hBuiltOnEntity; }
+	void SetBuiltOnEntity(CBaseEntity *entity) { this->m_hBuiltOnEntity = entity; }
 	
 	// avoid situations where we accidentally do the wrong thing
 	void SetHealth(int amt) = delete;

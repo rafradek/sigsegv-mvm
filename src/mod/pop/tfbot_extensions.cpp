@@ -1982,7 +1982,25 @@ namespace Mod::Pop::TFBot_Extensions
 		}
         return VHOOK_CALL(CObjectTeleporter_KeyValue)(szKeyName, szValue);
     }
-
+	
+	DETOUR_DECL_MEMBER(bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
+	{
+		auto object = reinterpret_cast<CBaseObject *>(this);
+		CBaseEntity *oldBuildOnEntity = object->GetBuiltOnEntity();
+		float oldNearestPoint = flNearestPoint;
+		Vector oldNearestBuildPoint = vecNearestBuildPoint;
+		auto result = DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
+		if (result && oldBuildOnEntity != nullptr) {
+			Vector forward;
+			AngleVectors(pBuilder->EyeAngles(), &forward);
+			if (DotProduct((oldNearestBuildPoint - pBuilder->EyePosition()).Normalized(), forward) > DotProduct((vecNearestBuildPoint - pBuilder->EyePosition()).Normalized(), forward)) {
+				object->SetBuiltOnEntity(oldBuildOnEntity);
+				flNearestPoint = oldNearestPoint;
+				vecNearestBuildPoint = oldNearestBuildPoint; 
+			}
+		}
+		return result;
+	}
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2108,6 +2126,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
 			//MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectCloserThreat, "CTFBotMainAction::SelectCloserThreat");
 			
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
 			
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
