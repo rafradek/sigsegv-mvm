@@ -19,7 +19,7 @@ namespace Mod::Prof::Frame_Prof
 		DETOUR_STATIC_CALL(_Host_RunFrame)(dt);
         timer.End();
         if (floor(gpGlobals->curtime/5) != floor(prevTime) ) {
-            DevMsg("Frame time: %f\n", timespent.GetSeconds()/5);
+            Msg("Frame time: %f\n", timespent.GetSeconds()/5);
             timespent.Init();
             prevTime = gpGlobals->curtime/5;
         }

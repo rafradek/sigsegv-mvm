@@ -53,19 +53,20 @@ bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&pro
         if (s_prop->GetDataTable() != nullptr) {
             bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
             int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+            int oldOffReal = off;
             off += s_prop->GetOffset();
             if (modifying) {
                 usedTables.push_back({s_prop, off - oldOffset});
                 off = 0;
             }
-                
+
             if (FindSendProp(off, s_prop->GetDataTable(), name, prop, usedTables, index)) {
                 return true;
             }
             off -= s_prop->GetOffset();
             if (modifying) {
+                off = oldOffReal;
                 usedTables.pop_back();
-                off = oldOffset;
             }
         }
     }
