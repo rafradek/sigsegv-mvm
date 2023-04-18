@@ -3345,7 +3345,7 @@ WaveSchedule
 // "sapper sap allies" 1
 
 // Custom sapper model prefix or full model path
-// "custom sapper model" "models\buildables\sd_sapper"
+// "custom sapper model" "models/buildables/sd_sapper"
 
 // Custom sapper sound
 // "custom sapper sound" "Weapon_Sapper.Timer"
