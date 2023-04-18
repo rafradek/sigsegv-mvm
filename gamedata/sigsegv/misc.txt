@@ -5977,8 +5977,28 @@
 				"CBaseProjectile::CanCollideWithTeammates" "_ZNK15CBaseProjectile23CanCollideWithTeammatesEv"
 
 				"CBaseObject::FindBuildPointOnPlayer" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector"
+				"CBaseObject::AttachObjectToObject" "_ZN11CBaseObject20AttachObjectToObjectEP11CBaseEntityiR6Vector"
+
+				"CObjectSapper::GetSapperModelName" "_ZN13CObjectSapper18GetSapperModelNameE13SapperModel_tPKc"
+				"CObjectSapper::GetSapperSoundName" "_ZN13CObjectSapper18GetSapperSoundNameEv"
+				"CObjectSapper::UpdateOnRemove" "_ZN13CObjectSapper14UpdateOnRemoveEv"
+
+				"CTFProjectile_Cleaver::GetDamage" "_ZN21CTFProjectile_Cleaver9GetDamageEv"
+
+				"CTFProjectile_ThrowableBreadMonster::GetDamage" "_ZN35CTFProjectile_ThrowableBreadMonster9GetDamageEv"
+
+				"CTFProjectile_ThrowableRepel::GetDamage" "_ZN28CTFProjectile_ThrowableRepel9GetDamageEv"
+
+				"CTFProjectile_ThrowableBrick::GetDamage" "_ZN28CTFProjectile_ThrowableBrick9GetDamageEv"
+
+				"CTFStunBall::GetDamage" "_ZN11CTFStunBall9GetDamageEv"
+
+				"CGameMovement::FullNoClipMove" "_ZN13CGameMovement14FullNoClipMoveEff"
+
+				"CTFCompoundBow::Reload" "_ZN14CTFCompoundBow6ReloadEv"
+
+				"CTFPipebombLauncher::Deploy" "_ZN19CTFPipebombLauncher6DeployEv"
 				
-			
 			}
 			"addrs_group"
 			{

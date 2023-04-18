@@ -28,6 +28,11 @@
 					type "sym"
 					sym  "_ZN16PlayerLocomotion8ApproachERK6Vectorf"
 				}
+				"PlayerLocomotion::IsOnGround"
+				{
+					type "sym"
+					sym  "_ZNK16PlayerLocomotion10IsOnGroundEv"
+				}
 			}
 		}
 	}

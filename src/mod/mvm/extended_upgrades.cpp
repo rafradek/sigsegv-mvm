@@ -211,6 +211,14 @@ namespace Mod::MvM::Extended_Upgrades
         return slot;
     }
 
+    ConVar sig_mvm_extended_upgrades_add_for_uninteded_class("sig_mvm_extended_upgrades_add_for_uninteded_class", "1", FCVAR_NOTIFY,
+		"Mod: add regular upgrades to extended upgrades menu when upgrading weapons for unintended class"); 
+
+    bool IsWeaponUnintendedForPlayer(CTFPlayer *player, CEconEntity *entity)
+    {
+        return sig_mvm_extended_upgrades_add_for_uninteded_class.GetBool() && !Mod::Pop::PopMgr_Extensions::ExtendedUpgradesOnly() && entity->GetItem()->GetItemDefinition()->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex()) == -1;
+    }
+
     void FireOutputs(std::vector<std::string> &outputs, variant_t &defaultValue, CBaseEntity *activator, CBaseEntity *caller)
     {
         for(const auto &output : outputs){
@@ -338,13 +346,22 @@ namespace Mod::MvM::Extended_Upgrades
             
             if (info == nullptr)
                 return;
-                
+
+            CEconEntity *ent = GetEconEntityAtLoadoutSlot(this->player, this->slot);
+            bool unintendedClassWeapon = ent != nullptr && IsWeaponUnintendedForPlayer(this->player, ent);
+            
+            if (info[0] == 'r') {
+                int upgrade_id = strtol(info+1, nullptr, 10);
+                g_hUpgradeEntity->PlayerPurchasingUpgrade(this->player, this->slot, upgrade_id, false, false, false);
+                StartUpgradeListForPlayer(this->player, this->slot, (item / 7) * 7);
+                return;
+            }
             int upgrade_id = strtol(info, nullptr, 10);
             if (upgrade_id < 1000)
                 BuyUpgrade(upgrades[upgrade_id], this->slot, this->player, false, false);
             else if ((upgrade_id == 1000) && (!Mod::Pop::PopMgr_Extensions::ExtendedUpgradesNoUndo())) {
                 DevMsg("Undoing %d %d\n", extended_upgrades_start_index, CMannVsMachineUpgradeManager::Upgrades().Count());
-                for (int i = extended_upgrades_start_index; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
+                for (int i = unintendedClassWeapon ? 0 : extended_upgrades_start_index; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
                     CMannVsMachineUpgrades &upgr = CMannVsMachineUpgradeManager::Upgrades()[i];
                     int cur_step;
                     bool over_cap;
@@ -864,6 +881,22 @@ namespace Mod::MvM::Extended_Upgrades
     }
 
     bool WeaponHasValidUpgrades(CEconEntity *item, CTFPlayer *player) {
+        int iCannotUpgrade = 0;
+        CALL_ATTRIB_HOOK_INT_ON_OTHER (item, iCannotUpgrade, cannot_be_upgraded );
+        if (iCannotUpgrade > 0) {
+            return false;
+        }
+        if (item != nullptr && IsWeaponUnintendedForPlayer(player, item)) {
+            int slot = GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player->GetPlayerClass()->GetClassIndex());
+            auto count = extended_upgrades_start_index == -1 ? CMannVsMachineUpgradeManager::Upgrades().Count() : extended_upgrades_start_index;
+            for (int i = 0; i < count; i++) {
+                auto &upgrade = CMannVsMachineUpgradeManager::Upgrades()[i];
+                auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade.m_szAttribute);
+                if (attrDef != nullptr && upgrade.m_iUIGroup == 0 && TFGameRules()->CanUpgradeWithAttrib(player, slot, attrDef->GetIndex(), &upgrade)) {
+                    return true;
+                }
+            }
+        }
         for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
             std::string reason = "";
@@ -961,6 +994,32 @@ namespace Mod::MvM::Extended_Upgrades
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 
+        if (item != nullptr && IsWeaponUnintendedForPlayer(player, item)) {
+            auto count = extended_upgrades_start_index == -1 ? CMannVsMachineUpgradeManager::Upgrades().Count() : extended_upgrades_start_index;
+            for (int i = 0; i < count; i++) {
+                auto &upgrade = CMannVsMachineUpgradeManager::Upgrades()[i];
+                auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(upgrade.m_szAttribute);
+                if (attrDef != nullptr && upgrade.m_iUIGroup == 0 && TFGameRules()->CanUpgradeWithAttrib(player, slot, attrDef->GetIndex(), &upgrade)) {
+                    
+                    int cur_step;
+                    bool over_cap;
+                    int max_step = GetUpgradeStepData(player, slot, i, cur_step, over_cap);
+
+                    std::string name;
+                    attribute_data_union_t value;
+                    const char *descFormat = attrDef->GetKeyValues()->GetString("description_format");
+                    value.m_Float = upgrade.m_flIncrement + (FStrEq(descFormat, "value_is_additive") || FStrEq(descFormat, "value_is_additive_percentage") ? 0.0f : 1.0f);
+                    FormatAttributeString(name, attrDef, value, true);
+                    std::string line = fmt::format("{} ({}/{}) ${}", name.c_str(), cur_step, max_step, TFGameRules()->GetCostForUpgrade(&upgrade, slot, player->GetPlayerClass()->GetClassIndex(), player));
+                    ItemDrawInfo info1(line.c_str(), 
+                        cur_step >= max_step || player->GetCurrency() < upgrade.m_nCost ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+                    
+                    static char buf[5];
+                    snprintf(buf, sizeof(buf), "r%d", (int)i);
+                    menu->AppendItem(buf, info1);
+                }
+            }
+        }
         for (size_t i = 0; i < upgrades.size(); i++) {
             auto upgrade = upgrades[i];
             std::string disabled_reason;
@@ -1185,8 +1244,9 @@ namespace Mod::MvM::Extended_Upgrades
 	{
 		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
-		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED)
-			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED) {
+        	slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+        }
 		return slot;
 	}
 
@@ -1194,7 +1254,6 @@ namespace Mod::MvM::Extended_Upgrades
 	{
         SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
         player_is_downgrading = sell;
-        DevMsg("PlayerPurchasing %d %d %d %d\n", itemslot, upgradeslot, sell, free);
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
 	}
 
@@ -1265,6 +1324,7 @@ namespace Mod::MvM::Extended_Upgrades
     RefCount rc_GetUpgradeStepData;
     DETOUR_DECL_STATIC(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CEconEntity **entity)
 	{
+        SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
         auto result = DETOUR_STATIC_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
         if (rc_GetUpgradeStepData && entity != nullptr && rtti_cast<CTFPowerupBottle *>(*entity) != nullptr) {
             *entity = nullptr;
@@ -1351,7 +1411,7 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetCostForUpgrade, "CTFGameRules::GetCostForUpgrade");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
-            //MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
+            MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
 

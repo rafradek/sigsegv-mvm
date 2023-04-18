@@ -439,6 +439,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_MaxSpectators                   ("sig_mvm_spectator_max_players"),
 			m_JointeamBlueSpectator           ("sig_mvm_jointeam_blue_spectator"),
 			m_BurnTimeFasterBurn              ("sig_attr_burn_time_faster_burn"),
+			m_UpgradesUnintendedClassWeapons  ("sig_mvm_extended_upgrades_add_for_uninteded_class"),
+			m_AnimationsUnintendedClassWeapons("sig_etc_unintended_class_weapon_viewmodel"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -605,6 +607,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_MaxSpectators.Reset();
 			this->m_JointeamBlueSpectator.Reset();
 			this->m_BurnTimeFasterBurn.Reset();
+			this->m_UpgradesUnintendedClassWeapons.Reset();
+			this->m_AnimationsUnintendedClassWeapons.Reset();
 			
 			this->m_CustomUpgradesFile.Reset();
 			this->m_TextPrintSpeed.Reset();
@@ -846,6 +850,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverride_ConVar<int> m_MaxSpectators;
 		CValueOverride_ConVar<bool> m_JointeamBlueSpectator;
 		CValueOverride_ConVar<bool> m_BurnTimeFasterBurn;
+		CValueOverride_ConVar<bool> m_UpgradesUnintendedClassWeapons;
+		CValueOverride_ConVar<bool> m_AnimationsUnintendedClassWeapons;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverride_ConVar<std::string> m_CustomUpgradesFile;
@@ -927,6 +933,11 @@ namespace Mod::Pop::PopMgr_Extensions
 	
 	bool ExtendedUpgradesNoUndo(){ // this is very maintainable yes
 		return Mod::Pop::PopMgr_Extensions::state.m_bExtendedUpgradesNoUndo;
+	}
+	
+	bool ExtendedUpgradesOnly()
+	{ 
+		return Mod::Pop::PopMgr_Extensions::state.m_bExtendedUpgradesOnly;
 	}
 	
 	bool PlayerUsesRobotModel(CTFPlayer *player)
@@ -1443,11 +1454,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return slot;
 	}
+
+	bool loadout_slot_replace_disabled = false;
+	void DisableLoadoutSlotReplace(bool disable)
+	{
+		loadout_slot_replace_disabled = disable;
+	}
+	
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
 	{
 		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
 		auto item_def = reinterpret_cast<CTFItemDefinition *>(this);
-		return slot == -1 && classIndex != TF_CLASS_UNDEFINED && item_def->m_iItemDefIndex != 0 ? LoadoutSlotReplace(slot, item_def, classIndex) : slot;
+		return slot == -1 && !loadout_slot_replace_disabled && classIndex != TF_CLASS_UNDEFINED && item_def->m_iItemDefIndex != 0 ? LoadoutSlotReplace(slot, item_def, classIndex) : slot;
 	}
 
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerInventory_GetItemInLoadout, int pclass, int slot)
@@ -2712,6 +2730,10 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
+		auto player = ToTFPlayer(owner);
+		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty()) {
+			ent->SetCustomViewModel(state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].c_str());
+		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
 		if (!state.m_WeaponSpawnTemplates.empty() && rc_CTFPlayer_Spawn == 0) {
 			if (ToTFBot(owner) == nullptr) {
@@ -2829,6 +2851,109 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		state.m_SpellBookNextRollTier.erase(entity);
     }
+
+	bool IsUpgradeAllowed(CTFPlayer *player, int itemslot, int upgradeslot)
+	{
+		const char *upgradename = CMannVsMachineUpgradeManager::Upgrades()[upgradeslot].m_szAttribute;
+		if (upgradename == nullptr) return true;
+		
+		for (std::string &str : state.m_DisallowedUpgrades)
+		{
+			if (strtol(str.c_str(), nullptr, 0) == upgradeslot + 1)
+			{	
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+				return false;
+			}
+			else if (FStrEq(upgradename, str.c_str())) {
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+				return false;
+			}
+		}
+		for (auto &entry : state.m_DisallowedUpgradesExtra)
+		{
+			// Check name
+			bool nameMatch = strtol(entry.name.c_str(), nullptr, 0) == upgradeslot + 1 || FStrEq(upgradename, entry.name.c_str());
+			if (!nameMatch) continue;
+				
+			// Check upgrade level
+			int cur_step;
+			bool over_cap;
+			int max_step = GetUpgradeStepData(player, itemslot, upgradeslot, cur_step, over_cap);
+
+			if (cur_step < entry.max) continue;
+
+			// Check item match
+			bool foundMatch = true;
+			std::string incompatibleItem;
+			if (!entry.entries.empty()) {
+				foundMatch = false;
+				if (entry.checkAllSlots) {
+					ForEachTFPlayerEconEntity(player, [&](CEconEntity *item){
+						if (item != nullptr && item->GetItem() != nullptr) {
+							for(auto &entry : entry.entries) {
+								if (entry->Matches(item->GetClassname(), item->GetItem())) {
+									foundMatch = true;
+									incompatibleItem = GetItemNameForDisplay(item->GetItem());
+									return false;
+								}
+							}
+						}
+						return true;
+					});
+					
+				}
+				else {
+					auto item = GetEconEntityAtLoadoutSlot(player, itemslot);
+					if (item != nullptr && item->GetItem() != nullptr) {
+						for(auto &entry : entry.entries) {
+							if (entry->Matches(item->GetClassname(), item->GetItem())) {
+								foundMatch = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if (foundMatch && !entry.ifUpgradePresent.empty()) {
+				foundMatch = false;
+				for (auto [name, level] : entry.ifUpgradePresent) {
+					for (int i = 0; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
+						const char *upgradename2 = CMannVsMachineUpgradeManager::Upgrades()[i].m_szAttribute;
+						if (FStrEq(upgradename2, name.c_str())) {
+							
+							int cur_step;
+							bool over_cap;
+							int max_step = GetUpgradeStepData(player, itemslot, i, cur_step, over_cap);
+
+							if (cur_step >= level) {
+								foundMatch = true;
+								incompatibleItem = name;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			if (foundMatch) {
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission\n%s%s", entry.max != 0 ? "more ": "", upgradename, 
+				incompatibleItem.c_str(), !incompatibleItem.empty() ? " blocks this upgrade" : ""));
+				return false;
+			}
+		}
+		return true;
+	}
+
+    DETOUR_DECL_MEMBER(bool, CTFGameRules_CanUpgradeWithAttrib, CTFPlayer *player, int slot, int defindex, CMannVsMachineUpgrades *upgrade)
+	{
+		int upgradeslot = (uintptr_t)upgrade - (uintptr_t)CMannVsMachineUpgradeManager::Upgrades().Base();
+		if (!IsUpgradeAllowed(player, slot, upgradeslot)) {
+			return false;
+		}
+
+        return DETOUR_MEMBER_CALL(CTFGameRules_CanUpgradeWithAttrib)(player, slot, defindex, upgrade);
+    }
 	
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
@@ -2836,91 +2961,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
 			
 			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
-				const char *upgradename = upgrade->GetUpgradeAttributeName(upgradeslot);
-				for (std::string &str : state.m_DisallowedUpgrades)
-				{
-					if (strtol(str.c_str(), nullptr, 0) == upgradeslot + 1)
-					{	
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
-						return;
-					}
-					else if (FStrEq(upgradename, str.c_str())) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
-						return;
-					}
-				}
-				for (auto &entry : state.m_DisallowedUpgradesExtra)
-				{
-					// Check name
-					bool nameMatch = strtol(entry.name.c_str(), nullptr, 0) == upgradeslot + 1 || FStrEq(upgradename, entry.name.c_str());
-					if (!nameMatch) continue;
-						
-					// Check upgrade level
-                    int cur_step;
-                    bool over_cap;
-                    int max_step = GetUpgradeStepData(player, itemslot, upgradeslot, cur_step, over_cap);
-
-					if (cur_step < entry.max) continue;
-
-					// Check item match
-					bool foundMatch = true;
-					std::string incompatibleItem;
-					if (!entry.entries.empty()) {
-						foundMatch = false;
-						if (entry.checkAllSlots) {
-							ForEachTFPlayerEconEntity(player, [&](CEconEntity *item){
-								if (item != nullptr && item->GetItem() != nullptr) {
-									for(auto &entry : entry.entries) {
-										if (entry->Matches(item->GetClassname(), item->GetItem())) {
-											foundMatch = true;
-											incompatibleItem = GetItemNameForDisplay(item->GetItem());
-											return false;
-										}
-									}
-								}
-								return true;
-							});
-							
-						}
-						else {
-							auto item = GetEconEntityAtLoadoutSlot(player, itemslot);
-							if (item != nullptr && item->GetItem() != nullptr) {
-								for(auto &entry : entry.entries) {
-									if (entry->Matches(item->GetClassname(), item->GetItem())) {
-										foundMatch = true;
-										break;
-									}
-								}
-							}
-						}
-					}
-
-					if (foundMatch && !entry.ifUpgradePresent.empty()) {
-						foundMatch = false;
-						for (auto [name, level] : entry.ifUpgradePresent) {
-							for (int i = 0; i < CMannVsMachineUpgradeManager::Upgrades().Count(); i++) {
-								const char *upgradename2 = upgrade->GetUpgradeAttributeName(i);
-								if (FStrEq(upgradename2, name.c_str())) {
-									
-									int cur_step;
-									bool over_cap;
-									int max_step = GetUpgradeStepData(player, itemslot, i, cur_step, over_cap);
-
-									if (cur_step >= level) {
-										foundMatch = true;
-										incompatibleItem = name;
-										break;
-									}
-								}
-							}
-						}
-					}
-					
-					if (foundMatch) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission\n%s%s", entry.max != 0 ? "more ": "", upgradename, 
-						incompatibleItem.c_str(), !incompatibleItem.empty() ? " blocks this upgrade" : ""));
-						return;
-					}
+				if (!IsUpgradeAllowed(player, itemslot, upgradeslot)) {
+					return false;
 				}
 			}
 		}
@@ -3236,16 +3278,17 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 				else if (state.m_bExtraLoadoutItemsAllowEquipOutsideSpawn) {
 					player->GiveDefaultItemsNoAmmo();
-				}
-				if (!TFGameRules()->InSetup()) {
-					auto &item = state.m_ExtraLoadoutItems[id];
-					auto weapon = rtti_cast<CTFWeaponBase *>(player->GetEntityForLoadoutSlot(item.loadout_slot));
-					if (weapon != nullptr) {
-						weapon->m_iClip1 = 0;
-						weapon->m_iClip2 = 0;
-						weapon->m_flEnergy = 0;
+					if (!TFGameRules()->InSetup()) {
+						auto &item = state.m_ExtraLoadoutItems[id];
+						auto weapon = rtti_cast<CTFWeaponBase *>(player->GetEntityForLoadoutSlot(item.loadout_slot));
+						if (weapon != nullptr) {
+							weapon->m_iClip1 = 0;
+							weapon->m_iClip2 = 0;
+							weapon->m_flEnergy = 0;
+						}
 					}
 				}
+				
 			}
 			
 			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), autoHide);
@@ -3275,7 +3318,7 @@ namespace Mod::Pop::PopMgr_Extensions
         }
 
         virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int menuitem) {
-			auto item = state.m_ExtraLoadoutItems[itemId];
+			auto &item = state.m_ExtraLoadoutItems[itemId];
 			bool regenerate = false;
 			CSteamID steamid;
 			player->GetSteamID(&steamid);
@@ -3333,8 +3376,16 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 				else if (state.m_bExtraLoadoutItemsAllowEquipOutsideSpawn) {
 					player->GiveDefaultItemsNoAmmo();
-				}
 
+					if (!TFGameRules()->InSetup()) {
+						auto weapon = rtti_cast<CTFWeaponBase *>(player->GetEntityForLoadoutSlot(item.loadout_slot));
+						if (weapon != nullptr) {
+							weapon->m_iClip1 = 0;
+							weapon->m_iClip2 = 0;
+							weapon->m_flEnergy = 0;
+						}
+					}
+				}
 			}
 			
 			DisplayExtraLoadoutItemsClass(player, player->GetPlayerClass()->GetClassIndex(), autoHide);
@@ -5900,6 +5951,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		"PlayerItemEquipSpawnTemplate",
 		"PlayerShootTemplate",
 		"BuildingSpawnTemplate",
+		"ExtendedUpgrades",
 		"LuaScript",
 		"LuaScriptFile"
 	};
@@ -6380,6 +6432,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_SentryHintMinDistanceFromBomb.Set(subkey->GetFloat());
 			} else if (FStrEq(name, "PathTrackIsServerEntity")) {
 				state.m_PathTrackIsServerEntity.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowUpgradesForUnintendedClassWeapons")) {
+				state.m_UpgradesUnintendedClassWeapons.Set(subkey->GetBool());
+			} else if (FStrEq(name, "UseOriginalAnimsForUnintendedClassWeapons")) {
+				state.m_AnimationsUnintendedClassWeapons.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;
@@ -6636,6 +6692,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ForgetFirstUpgradeForItem, "CTFPlayer::ForgetFirstUpgradeForItem");
 			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_FindSpawnLocation, "CSpawnLocation::FindSpawnLocation");
 			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_Parse, "CSpawnLocation::Parse");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
 			
 			
 			

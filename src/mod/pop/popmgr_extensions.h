@@ -3,6 +3,7 @@
 
 namespace Mod::Pop::PopMgr_Extensions {
     bool ExtendedUpgradesNoUndo();
+    bool ExtendedUpgradesOnly();
     IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index, bool autoHide);
     IBaseMenu *DisplayExtraLoadoutItems(CTFPlayer *player, bool autoHide);
     bool HasExtraLoadoutItems(int class_index);
@@ -20,5 +21,6 @@ namespace Mod::Pop::PopMgr_Extensions {
 	int GetMaxRobotLimit();
 	void SaveStateInfoBetweenMissions();
 	void RestoreStateInfoBetweenMissions();
+	void DisableLoadoutSlotReplace(bool disable);
 }
 #endif
