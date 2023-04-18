@@ -5,6 +5,7 @@
 
 std::map<int, std::string> g_Itemnames;
 std::map<int, std::string> g_Attribnames;
+std::map<int, std::string> g_AttribnamesShort;
 
 ItemListEntry_Similar::ItemListEntry_Similar(const char *name) : m_strName(name)
 {
@@ -137,22 +138,33 @@ void GenerateItemNames() {
             auto def = GetItemSchema()->GetAttributeDefinition(i);
             if (def != nullptr) {
                 const char *str = def->GetKeyValues()->GetString("description_string", "#")+1;
-                if (str[0] != '\0')
+                if (str[0] != '\0') {
                     g_Attribnames[i] = strings[KeyValues::CallGetSymbolForString(str, false)];
+                    auto find = strings.find(KeyValues::CallGetSymbolForString(CFmtStr("%s_shortdesc",str), false));
+                    if (find != strings.end()) {
+                        g_AttribnamesShort[i] = find->second;
+                    }
+                }
             }
         }
        // timer3.End();
         //Msg("Def time %.9f\n", timer3.GetDuration().GetSeconds());
 
         char path_sm[PLATFORM_MAX_PATH];
-        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data.dat");
+        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data2.dat");
         CUtlBuffer fileout( 0, 0, 0 );
         fileout.PutInt64(filesystem->GetFileTime("resource/tf_english.txt", "GAME"));
 
         fileout.PutInt(g_Itemnames.size());
+        fileout.PutInt(g_AttribnamesShort.size());
         fileout.PutInt(g_Attribnames.size());
         for (auto &entry : g_Itemnames) {
             fileout.PutInt(entry.first);
+            fileout.PutString(entry.second.c_str());
+        }
+        
+        for (auto &entry : g_AttribnamesShort) {
+            fileout.PutUnsignedShort(entry.first);
             fileout.PutString(entry.second.c_str());
         }
         
@@ -170,7 +182,7 @@ void GenerateItemNames() {
 void LoadItemNames() {
     if (g_Itemnames.empty() || g_Attribnames.empty()) {
         char path_sm[PLATFORM_MAX_PATH];
-        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data.dat");
+        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data2.dat");
 
         long time = filesystem->GetFileTime("resource/tf_english.txt", "GAME");
         CUtlBuffer file( 0, 0, 0 );
@@ -183,6 +195,7 @@ void LoadItemNames() {
                 return;
             }
             int num_itemnames = file.GetInt();
+            int num_attrnames_short = file.GetInt();
             int num_attrnames = file.GetInt();
             char buf[256];
             for (int i = 0; i < num_itemnames; i++) {
@@ -191,10 +204,19 @@ void LoadItemNames() {
                 g_Itemnames[id] = buf;
             }
 
+            for (int i = 0; i < num_attrnames_short; i++) {
+                int id = file.GetUnsignedShort();
+                file.GetString<256>(buf);
+                g_AttribnamesShort[id] = buf;
+            }
+
             for (int i = 0; i < num_attrnames; i++) {
                 int id = file.GetUnsignedShort();
                 file.GetString<256>(buf);
                 g_Attribnames[id] = buf;
+                if (!g_AttribnamesShort.contains(id)) {
+                   g_AttribnamesShort[id] = buf;
+                }
             }
         }
         else {
@@ -204,7 +226,7 @@ void LoadItemNames() {
     }
 }
 
-bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value) {
+bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value, bool shortDescription) {
     DevMsg("inspecting attr\n");
     if (attr_def == nullptr)
         return false;
@@ -222,7 +244,7 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
         if (format[0] != '#')
             return false;
         
-        string = g_Attribnames[attr_def->GetIndex()];
+        string = shortDescription ? g_AttribnamesShort[attr_def->GetIndex()] : g_Attribnames[attr_def->GetIndex()];
         int val_pos = string.find("%s1");
         if (val_pos != -1) {
             const char *desc_format = kv->GetString("description_format");

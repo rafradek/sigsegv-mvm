@@ -145,6 +145,7 @@ IMPL_SENDPROP(string_t, CTFPlayerClassShared, m_iszCustomModel, CTFPlayer);
 IMPL_SENDPROP(bool,     CTFPlayerClassShared, m_bUseClassAnimations, CTFPlayer);
 
 MemberFuncThunk<CTFPlayerClassShared *, void, const char *, bool> CTFPlayerClassShared::ft_SetCustomModel("CTFPlayerClassShared::SetCustomModel");
+MemberFuncThunk<CTFPlayerClassShared *, const char *, int> CTFPlayerClassShared::ft_GetHandModelName("CTFPlayerClassShared::GetHandModelName");
 
 
 IMPL_SENDPROP(float,       CTFPlayerShared, m_flCloakMeter,            CTFPlayer);

@@ -6,6 +6,7 @@ IMPL_SENDPROP(float,                         CBaseCombatWeapon, m_flTimeWeaponId
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iState,                CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iPrimaryAmmoType,      CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iSecondaryAmmoType,    CBaseCombatWeapon);
+IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_nCustomViewmodelModelIndex, CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iClip1,                CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iClip2,                CBaseCombatWeapon);
 IMPL_SENDPROP(CHandle<CBaseCombatCharacter>, CBaseCombatWeapon, m_hOwner,                CBaseCombatWeapon);
@@ -20,6 +21,7 @@ IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
 MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWeapon("CBaseCombatWeapon::IsMeleeWeapon");
 MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> CBaseCombatWeapon::ft_SetOwner("CBaseCombatWeapon::SetOwner");
 MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> CBaseCombatWeapon::ft_GetWpnData("CBaseCombatWeapon::GetWpnData");
+MemberFuncThunk<CBaseCombatWeapon *, void, const char *> CBaseCombatWeapon::ft_SetCustomViewModel("CBaseCombatWeapon::SetCustomViewModel");
 
 MemberVFuncThunk<const CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetMaxClip1  (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetMaxClip1");
 MemberVFuncThunk<const CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetMaxClip2  (TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetMaxClip2");

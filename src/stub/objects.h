@@ -21,7 +21,10 @@ public:
 	void SetHealth(float amt)              {        ft_SetHealth        (this, amt); }
 	void SetPlasmaDisabled(float duration) {        ft_SetPlasmaDisabled(this, duration); }
 	bool HasSapper()                       { return ft_HasSapper        (this); }
-	
+
+	bool FindBuildPointOnPlayer(CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint) { return ft_FindBuildPointOnPlayer(this, pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint); }
+	void AttachObjectToObject(CBaseEntity *pEntity, int iPoint, Vector &vecOrigin)                                                {        ft_AttachObjectToObject(this, pEntity, iPoint, vecOrigin); }
+
 	void StartPlacement(CTFPlayer *pPlayer)   {        vt_StartPlacement               (this, pPlayer); }
 	bool StartBuilding(CBaseEntity *pBuilder) { return vt_StartBuilding                (this, pBuilder); }
 	void DetonateObject()                     {        vt_DetonateObject               (this); }
@@ -44,6 +47,8 @@ public:
 	DECL_SENDPROP(bool,               m_bCarried);
 	DECL_SENDPROP(bool,               m_bCarryDeploy);
 	DECL_SENDPROP(int,                m_iKills);
+	DECL_SENDPROP(Vector,             m_vecBuildMaxs);
+	DECL_RELATIVE(Vector,             m_vecBuildOrigin);
 	
 	
 private:
@@ -55,6 +60,9 @@ private:
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetHealth;
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetPlasmaDisabled;
 	static MemberFuncThunk<CBaseObject *, bool>        ft_HasSapper;
+
+	static MemberFuncThunk<CBaseObject *, bool, CTFPlayer *, CBasePlayer *, float &, Vector &> ft_FindBuildPointOnPlayer;
+	static MemberFuncThunk<CBaseObject *, void, CBaseEntity *, int, Vector &> ft_AttachObjectToObject;
 	
 	static MemberVFuncThunk<CBaseObject *, void, CTFPlayer *>   vt_StartPlacement;
 	static MemberVFuncThunk<CBaseObject *, bool, CBaseEntity *> vt_StartBuilding;

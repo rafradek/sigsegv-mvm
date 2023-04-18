@@ -41,6 +41,7 @@ WaveSchedule
 	UpgradeStationKeepWeapons 1 [$SIGSEGV] // Prevent upgrading from changing weapons to current loadout items (default: 0)
 	CustomUpgradesFile "mvm_upgrades_sigsegv_extra_v19.txt" [$SIGSEGV] //Custom upgrades file. File must be named mvm_upgrades_x.txt, then send to the server
 	// ExtendedUpgradesOnly 1 [$SIGSEGV] // Do not display regular upgrade menu, only show extended upgrades (default: 0)
+	AllowUpgradesForUnintendedClassWeapons 1 [$SIGSEGV] // Allow upgrading weapons given to unintended class (default: 1)
 
 
 	//////////////////////////
@@ -89,6 +90,7 @@ WaveSchedule
 	ConchSpeedBoost 10 [$SIGSEGV] // Speed boost provided by the Conch, limited to 40% total speed increase (default: 105)
 	StealthDamageReduction 0.1 [$SIGSEGV] // Damage reduction provided by invis watch (default: 0.8)
 	HealOnKillOverhealMelee 1 [$SIGSEGV] // Heal on kill with melee weapons overheal (default: 1)
+	UseOriginalAnimsForUnintendedClassWeapons 1 [$SIGSEGV] // Use original weapon animations when given to unintended class (default: 0)
 
 
 	//////////////////////////
@@ -3326,3 +3328,33 @@ WaveSchedule
 
 // Don't collide with other projectiles
 // "ignores other projectiles" 1
+
+// This weapon always gibs killed enemies
+// "weapon always gib" 1
+
+// This weapon never gibs killed enemies
+// "weapon never gib" 1
+
+// Always gib on death
+// "always gib" 1
+
+// Never gib on death
+// "never gib" 1
+
+// Sap ally players instead of enemies
+// "sapper sap allies" 1
+
+// Custom sapper model prefix or full model path
+// "custom sapper model" "models\buildables\sd_sapper"
+
+// Custom sapper sound
+// "custom sapper sound" "Weapon_Sapper.Timer"
+
+// Give noclip. 1 for regular player speed, use any other value to override
+// "no clip" 1
+
+// Ignite arrows
+// "arrow ignite" 1
+
+// Use weapon animations of the weapon original class if the weapon is given to unintended class
+// "use original class weapon animations" 1

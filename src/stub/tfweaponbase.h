@@ -5,7 +5,10 @@
 #include "stub/tfplayer.h"
 #include "stub/tfentities.h"
 
-class CTFWeaponInfo : public FileWeaponInfo_t { };
+class CTFWeaponInfo : public FileWeaponInfo_t { 
+public:
+	int m_nDamage;
+};
 
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter
 {
@@ -18,7 +21,6 @@ public:
 	CTFWeaponInfo const& GetTFWpnData() const { return ft_GetTFWeaponData(this); }
 	void StartEffectBarRegen()   { ft_StartEffectBarRegen(this); }
 	bool DeflectProjectiles()    { return ft_DeflectProjectiles(this); }
-	void SetCustomViewModel(const char *model) {        ft_SetCustomViewModel(this, model); }
 	
 	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
 	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
@@ -51,7 +53,6 @@ private:
 	static MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> ft_GetTFWeaponData;
 	static MemberFuncThunk<CTFWeaponBase *, void> ft_StartEffectBarRegen;
 	static MemberFuncThunk<CTFWeaponBase *, bool> ft_DeflectProjectiles;
-	static MemberFuncThunk<CTFWeaponBase *, void, const char *> ft_SetCustomViewModel;
 	
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetWeaponID;
 	static MemberVFuncThunk<const CTFWeaponBase *, int> vt_GetPenetrateType;
@@ -120,6 +121,8 @@ public:
 //	float GetChargeBeginTime() { return vt_GetChargeBeginTime(this); }
 	float GetChargeMaxTime()   { return vt_GetChargeMaxTime  (this); }
 	float GetCurrentCharge()   { return vt_GetCurrentCharge  (this); }
+
+	DECL_SENDPROP(bool, m_bArrowAlight);
 	
 private:
 //	static MemberVFuncThunk<CTFCompoundBow *, bool>  vt_CanCharge;
@@ -297,6 +300,7 @@ class CBaseViewModel : public CBaseAnimating
 {
 public:
 	CBaseCombatWeapon *GetWeapon() const { return this->m_hWeapon; }
+	CBaseEntity *GetOwner() const { return this->m_hOwner; }
 
 	void SetControlPanelsActive(bool enable) { ft_SetControlPanelsActive(this, enable); }
 	void SpawnControlPanels()                { ft_SpawnControlPanels(this); }

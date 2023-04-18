@@ -287,6 +287,8 @@ public:
 	int GetClassIndex() const { return this->m_iClass; }
 	void SetClassIndex(int iClass) { this->m_iClass = iClass; }
 	void SetCustomModel(const char *pszModelPath, bool bUseClassAnimations = true) { ft_SetCustomModel(this, pszModelPath, bUseClassAnimations); }
+	const char *GetHandModelName(int handIndex) { return ft_GetHandModelName(this, handIndex); }
+	
 	// TODO: accessor for m_iszClassIcon
 	// TODO: accessor for m_iszCustomModel
 	const char *GetCustomModel() { return STRING((string_t)this->m_iszCustomModel);}
@@ -297,6 +299,7 @@ private:
 	DECL_SENDPROP(string_t, m_iszClassIcon);
 	DECL_SENDPROP(string_t, m_iszCustomModel);
 	static MemberFuncThunk<CTFPlayerClassShared *, void, const char *, bool> ft_SetCustomModel;
+	static MemberFuncThunk<CTFPlayerClassShared *, const char *, int> ft_GetHandModelName;
 };
 class CTFPlayerClass : public CTFPlayerClassShared {};
 

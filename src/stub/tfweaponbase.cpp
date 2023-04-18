@@ -54,7 +54,6 @@ MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_CalcIsAttackCritical("C
 MemberFuncThunk<const CTFWeaponBase *, CTFWeaponInfo const &> CTFWeaponBase::ft_GetTFWeaponData("CTFWeaponBase::GetTFWpnData");
 MemberFuncThunk<CTFWeaponBase *, void> CTFWeaponBase::ft_StartEffectBarRegen("CTFWeaponBase::StartEffectBarRegen");
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_DeflectProjectiles("CTFWeaponBase::DeflectProjectiles");
-MemberFuncThunk<CTFWeaponBase *, void, const char *> CTFWeaponBase::ft_SetCustomViewModel("CBaseCombatWeapon::SetCustomViewModel");
 
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetWeaponID(     TypeName<CTFBonesaw>(),     "CTFBonesaw::GetWeaponID");
 MemberVFuncThunk<const CTFWeaponBase *, int> CTFWeaponBase::vt_GetPenetrateType(TypeName<CTFSniperRifle>(), "CTFSniperRifle::GetPenetrateType");
@@ -84,6 +83,8 @@ MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> CTFWeaponBaseGun
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");
 MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeMaxTime(  TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeMaxTime");
 MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetCurrentCharge(  TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetCurrentCharge");
+
+IMPL_SENDPROP(bool, CTFCompoundBow, m_bArrowAlight, CTFCompoundBow);
 
 
 IMPL_SENDPROP(CTFMinigun::MinigunState_t, CTFMinigun, m_iWeaponState, CTFMinigun);

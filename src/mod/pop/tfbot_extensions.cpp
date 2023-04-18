@@ -2126,6 +2126,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
 			//MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectCloserThreat, "CTFBotMainAction::SelectCloserThreat");
 			
+			// Sap the closest bot to the cursor
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
 			
 

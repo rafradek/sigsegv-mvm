@@ -63,6 +63,8 @@ IMPL_SENDPROP(bool,               CBaseObject, m_bPlacing, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarried, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarryDeploy, CBaseObject);
 IMPL_SENDPROP(int,                CBaseObject, m_iKills, CObjectSentrygun);
+IMPL_SENDPROP(Vector,             CBaseObject, m_vecBuildMaxs, CBaseObject);
+IMPL_RELATIVE(Vector,             CBaseObject, m_vecBuildOrigin, m_vecBuildMaxs, -sizeof(Vector) * 2);
 
 IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoShells,     CObjectSentrygun);
 IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoShells,  m_iAmmoShells, 4);
@@ -79,6 +81,9 @@ IMPL_RELATIVE(float, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + s
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");
 MemberFuncThunk<CBaseObject *, bool>        CBaseObject::ft_HasSapper        ("CBaseObject::HasSapper");
+
+MemberFuncThunk<CBaseObject *, bool, CTFPlayer *, CBasePlayer *, float &, Vector &> CBaseObject::ft_FindBuildPointOnPlayer("CBaseObject::FindBuildPointOnPlayer");
+MemberFuncThunk<CBaseObject *, void, CBaseEntity *, int, Vector &>                  CBaseObject::ft_AttachObjectToObject  ("CBaseObject::AttachObjectToObject");
 
 MemberVFuncThunk<CBaseObject *, void, CTFPlayer *>   CBaseObject::vt_StartPlacement               (TypeName<CBaseObject>(), "CBaseObject::StartPlacement");
 MemberVFuncThunk<CBaseObject *, bool, CBaseEntity *> CBaseObject::vt_StartBuilding                (TypeName<CBaseObject>(), "CBaseObject::StartBuilding");

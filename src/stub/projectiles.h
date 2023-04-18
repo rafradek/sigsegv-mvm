@@ -141,6 +141,8 @@ public:
 	DECL_RELATIVE(CUtlVector<int>, m_HitEntities);
 	DECL_RELATIVE(EHANDLE, m_pTrail);
 	DECL_RELATIVE(bool, m_bPenetrate);
+	DECL_SENDPROP(bool, m_bArrowAlight);
+	
 
 	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
 

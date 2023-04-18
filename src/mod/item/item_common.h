@@ -9,10 +9,11 @@ const char *GetItemNameForDisplay(int item_defid);
 const char *GetItemNameForDisplay(const CEconItemView *view);
 const char *GetAttributeName(int attributeIndex);
 void LoadItemNames();
-bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value);
+bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value, bool shortDescription = false);
 
 extern std::map<int, std::string> g_Itemnames;
 extern std::map<int, std::string> g_Attribnames;
+extern std::map<int, std::string> g_AttribnamesShort;
 
 static const char *loadoutStrings[] = 
 {
