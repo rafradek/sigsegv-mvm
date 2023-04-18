@@ -199,3 +199,4 @@ namespace Mod::Common::Commands
 	};
 	CMod s_Mod;
 }
+ConVar sig_allow_user_debug_commands("sig_allow_user_debug_commands", 0, FCVAR_NONE, "Allow non admin users to run debug (sig_cpu_usage, sig_print_input) commands");

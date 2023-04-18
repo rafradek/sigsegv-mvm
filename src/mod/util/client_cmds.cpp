@@ -1862,7 +1862,7 @@ namespace Mod::Util::Client_Cmds
 	ClientCmdsCommand sig_expression("sig_expression", CC_Expression, &s_Mod);
 	ClientCmdsCommand sig_expression_functions("sig_expression_functions", CC_Expression_Func, &s_Mod);
 	ClientCmdsCommand sig_expression_vars("sig_expression_vars", CC_Expression_Vars, &s_Mod);
-	ModCommandClient sig_cpu_usage("sig_cpu_usage", CC_Cpu_Usage, &s_Mod);
+	ModCommandDebug sig_cpu_usage("sig_cpu_usage", CC_Cpu_Usage, &s_Mod);
 	
 	/* by way of incredibly annoying persistent requests from Hell-met,
 	 * I've acquiesced and made this mod convar non-notifying (sigh) */

@@ -66,4 +66,16 @@ public:
     }
 };
 
+extern ConVar sig_allow_user_debug_commands;
+class ModCommandDebug : public ModCommand
+{
+public:
+    ModCommandDebug(const char *name, ModCommandCallbackFn callback, IMod *mod = nullptr, const char *helpString = "", int flags = 0) : ModCommand(name, callback, mod, helpString, flags) {}
+
+    virtual bool CanPlayerCall(CCommandPlayer *player)
+    {
+        return player == nullptr && (PlayerIsSMAdminOrBot(player) || sig_allow_user_debug_commands.GetBool());
+    }
+};
+
 #endif

@@ -234,7 +234,7 @@ namespace Mod::Perf::Input_Optimize
 	};
 	CMod s_Mod;
 
-	ModCommand sig_print_input("sig_print_input", [](CCommandPlayer *player, const CCommand& args){
+	ModCommandDebug sig_print_input("sig_print_input", [](CCommandPlayer *player, const CCommand& args){
 		int activate;
         if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
             message_listeners.insert(player);
