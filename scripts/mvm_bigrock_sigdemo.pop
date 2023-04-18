@@ -3358,3 +3358,9 @@ WaveSchedule
 
 // Use weapon animations of the weapon original class if the weapon is given to unintended class
 // "use original class weapon animations" 1
+
+// Deals up to x damage depending on distance (2048 hu by default)
+// "mult dmg before distance" 2
+
+// Custom distance for "mult dmg before distance"
+// "mult dmg before distance specify" 1000

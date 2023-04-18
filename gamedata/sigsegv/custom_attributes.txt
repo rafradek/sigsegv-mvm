@@ -2967,4 +2967,22 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4617"
+    {
+        "name"	"mult dmg before distance"
+        "attribute_class"	"mult_dmg_before_distance"
+        "description_string"	"Deals up to (+-)% damage, the closer to the target"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4618"
+    {
+        "name"	"mult dmg before distance specify"
+        "attribute_class"	"mult_dmg_before_distance_specify"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

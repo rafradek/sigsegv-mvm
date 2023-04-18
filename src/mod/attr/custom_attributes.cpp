@@ -1869,6 +1869,26 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 			}
+			
+
+			//Allow some attacks to do more damage based on attributes
+
+			if (info.GetAttacker() != nullptr) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_before_distance);
+				if (dmg_mult != 1.0f) {
+					float maxDist = 2048.0f;
+					float maxDistSpec = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), maxDistSpec, mult_dmg_before_distance_specify);
+					if (maxDistSpec != 0.0f) {
+						maxDist = maxDistSpec;
+					}
+					float distance = info.GetAttacker()->GetAbsOrigin().DistTo(pVictim->GetAbsOrigin());
+					dmg_mult = RemapValClamped(distance, 0, maxDist, dmg_mult, 1.0f);
+				}
+
+				dmg *= dmg_mult;
+			}
 
 			float iDmgCurrentHealth = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
