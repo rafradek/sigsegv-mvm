@@ -5010,15 +5010,15 @@ namespace Util::Lua
 	};
 	CMod s_Mod;
     
-    ModCommand sig_lua_prof_start("sig_lua_prof_start", [](CCommandPlayer *player, const CCommand& args){
+    ModCommandDebug sig_lua_prof_start("sig_lua_prof_start", [](CCommandPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 1;
     });
 
-    ModCommand sig_lua_prof_end("sig_lua_prof_end", [](CCommandPlayer *player, const CCommand& args){
+    ModCommandDebug sig_lua_prof_end("sig_lua_prof_end", [](CCommandPlayer *player, const CCommand& args){
         profile[ENTINDEX(player)] = 0;
     });
 
-    ModCommand sig_lua_debug_list("sig_lua_debug_list", [](CCommandPlayer *player, const CCommand& args){
+    ModCommandDebug sig_lua_debug_list("sig_lua_debug_list", [](CCommandPlayer *player, const CCommand& args){
         if(args.ArgC() <= 1) {
             ModCommandResponse("sig_lua_debug_list [all|summary|events|entcreate|tempents|timers|convars|entcallbacks]\n", event_callbacks.size());
             return;

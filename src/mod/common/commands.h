@@ -74,7 +74,7 @@ public:
 
     virtual bool CanPlayerCall(CCommandPlayer *player)
     {
-        return player == nullptr && (PlayerIsSMAdminOrBot(player) || sig_allow_user_debug_commands.GetBool());
+        return player == nullptr || (PlayerIsSMAdminOrBot(player) || sig_allow_user_debug_commands.GetBool());
     }
 };
 

@@ -442,6 +442,14 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
 	}
 
+	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
+	{
+		auto item_def = reinterpret_cast<CTFItemDefinition *>(this);
+		if (classIndex == TF_CLASS_UNDEFINED && StringStartsWith(item_def->GetItemClass(), "tf_weapon_revolver")) return LOADOUT_POSITION_PRIMARY;
+
+		return DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -473,6 +481,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 			// Allow to taunt with some other class weapons
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt,     "CTFPlayer::Taunt");
+
+			// Let revolver weapon to be used with other secondary weapon on non spy
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFItemDefinition_GetLoadoutSlot,     "CTFItemDefinition::GetLoadoutSlot", LOWEST);
         }
     } s_Mod;
     
