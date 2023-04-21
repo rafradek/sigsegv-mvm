@@ -2971,7 +2971,7 @@
     {
         "name"	"mult dmg before distance"
         "attribute_class"	"mult_dmg_before_distance"
-        "description_string"	"Deals up to (+-)% damage, the closer to the target"
+        "description_string"	"Deals up to (+-)%p% damage, the closer to the target"
         "description_format"	"value_is_percentage"
         "hidden"	"0"
         "effect_type"	"positive"
@@ -2984,5 +2984,42 @@
         "description_format"	"value_is_additive"
         "hidden"	"1"
         "effect_type"	"positive"
+    }
+    "4619"
+    {
+        "name"	"mult_item_meter_charge_rate 2"
+        "attribute_class"	"mult_item_meter_charge_rate"
+        "description_string"	"(+-)%p% recharge rate"
+        "description_format"	"value_is_inverted_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4620"
+    {
+        "name"	"clip size upgrade atomic 2"
+        "attribute_class"	"mult_clipsize_upgrade_atomic"
+        "description_string"	"(+-)%d clip size"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4621"
+    {
+        "name"	"charge recharge rate increased 2"
+        "attribute_class"	"charge_recharge_rate"
+        "description_string"	"(+-)%p% recharge rate"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4622"
+    {
+        "name"	"mult sentry rocket projectile speed"
+        "attribute_class"	"mult_sentry_rocket_projectile_speed"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
     }
 }

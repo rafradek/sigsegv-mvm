@@ -25,6 +25,7 @@
 #include <boost/tokenizer.hpp>
 #include "mod/attr/custom_attributes.h"
 #include "mod/item/item_common.h"
+#include "mod/etc/mapentity_additions.h"
 
 
 class CDmgAccumulator;
@@ -1019,6 +1020,7 @@ namespace Mod::Attr::Custom_Attributes
 		CHandle<CTFWearable> wearable;
 		CHandle<CTFWearable> wearable_vm;
 		int model_index;
+		bool temporaryVisible = false;
 	};
 	std::vector<CustomModelEntry> model_entries;
 
@@ -1167,7 +1169,8 @@ namespace Mod::Attr::Custom_Attributes
 					entity->SetRenderMode(kRenderTransAlpha);
 					entity->AddEffects(EF_NOSHADOW);
 					entity->SetRenderColorA(0);
-					weapon->m_bBeingRepurposedForTaunt = true;
+					auto mod = entity->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+					mod->props["m_bBeingRepurposedForTaunt"] = {Variant(true), Variant(true)};
 					model_entries.push_back({weapon, nullptr, nullptr, model_index});
 					CreateWeaponWearables(model_entries.back());
 				}
@@ -1185,7 +1188,8 @@ namespace Mod::Attr::Custom_Attributes
 				if (entry != nullptr) {
 					weapon->SetRenderMode(kRenderNormal);
 					entity->SetRenderColorA(255);
-					weapon->m_bBeingRepurposedForTaunt = false;
+					auto mod = entity->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+					mod->props.erase("m_bBeingRepurposedForTaunt");
 					entry->weapon = nullptr;
 				}
 			}
@@ -1764,9 +1768,19 @@ namespace Mod::Attr::Custom_Attributes
 		return weapon->GetProjectileDamage() / weapon->GetTFWpnData().m_nDamage;
 	}
 
+	CBaseEntity *shooting_sentry = nullptr;
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
-		
+		// For custom sentry weapons, use sentry damage falloff
+		if (shooting_sentry != nullptr) {
+			info.SetInflictor(shooting_sentry);
+		}
+
+		CBaseEntity *oldInflictor = nullptr;
+		if (info.GetInflictor() != nullptr && info.GetInflictor()->GetOwnerEntity() != nullptr && info.GetInflictor()->GetOwnerEntity()->IsBaseObject() && info.GetInflictor()->GetCustomVariableBool<"customsentryweapon">()) {
+			oldInflictor = info.GetInflictor();
+			info.SetInflictor(info.GetInflictor()->GetOwnerEntity());
+		}
 		//Allow halloween kart to do more damage based on attributes
 
 		if (info.GetAttacker() != nullptr && info.GetAttacker()->IsPlayer() && info.GetDamageCustom() == TF_DMG_CUSTOM_KART)
@@ -1958,6 +1972,11 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+
+		if (oldInflictor != nullptr) {
+			info.SetInflictor(oldInflictor);
+		}
+
 		if ((info.GetDamageType() & DMG_CRITICAL) && info.GetWeapon() != nullptr) {
 			float crit = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), crit, mult_crit_dmg);
@@ -1984,6 +2003,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+
 		return ret;
 	}
 
@@ -2275,6 +2295,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			if (sentry_gun_rocket != nullptr) {
 				sentry_gun_rocket->SetDamage(sentry_gun_rocket->GetDamage()*GetBuildingAttributeFloat<"damagemult">(sentrygun, "mult_engy_sentry_damage", true));
+				sentry_gun_rocket->SetAbsVelocity(sentry_gun_rocket->GetAbsVelocity()*GetBuildingAttributeFloat<"projspeedmult">(sentrygun, "mult_sentry_rocket_projectile_speed", false));
 			}
 		}
 		return ret;
@@ -5842,12 +5863,15 @@ namespace Mod::Attr::Custom_Attributes
 		player->SetTeamNumber(sentry->GetTeamNumber());
 		weapon->m_bCurrentAttackIsCrit = false;
 		shooting_sentry_weapon = weapon;
+		shooting_sentry = sentry;
 		auto projectile = weapon->FireProjectile(player);
+		shooting_sentry = nullptr;
 		shooting_sentry_weapon = nullptr;
 		player->SetActiveWeapon(oldActive);
 		player->SetTeamNumber(oldTeam);
 
 		if (projectile != nullptr) {
+			projectile->SetCustomVariable("customsentryweapon", Variant(true));
 			auto scorerInterface = rtti_cast<IScorer *>(projectile);
 			// If the projectile has an IScorer interface, it is fine to make the sentry the owner of the projectile. (Unless its Dragon's fury projectile where it crashes)
 			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player && rtti_cast<CTFProjectile_BallOfFire *>(projectile) == nullptr) {
@@ -7073,6 +7097,7 @@ namespace Mod::Attr::Custom_Attributes
 			obj->SetCustomVariable("rechargeratemult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_teleporter_recharge_rate", player)));
 			obj->SetCustomVariable("speedboost", Variant(CAttributeManager::AttribHookValue(0, "mod_teleporter_speed_boost", player)));
 			obj->SetCustomVariable("rocketammomult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_ammo", player)));
+			obj->SetCustomVariable("projspeedmult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_projectile_speed", player)));
 			obj->SetCustomVariable("bulletweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_bullet_weapon">())));
 			obj->SetCustomVariable("rocketweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_rocket_weapon">())));
 			obj->SetCustomVariable("sentrymodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_sentry_model">())));
@@ -7528,8 +7553,16 @@ namespace Mod::Attr::Custom_Attributes
 					continue;
 				}
 				
-				if (!entry.weapon->m_bBeingRepurposedForTaunt)
-					entry.weapon->m_bBeingRepurposedForTaunt = true;
+				if (entry.weapon->m_bBeingRepurposedForTaunt) {
+					entry.weapon->SetRenderMode(kRenderNormal);
+					entry.weapon->SetRenderColorA(255);
+					entry.temporaryVisible = true;
+				}
+				else if (entry.temporaryVisible) {
+					entry.weapon->SetRenderMode(kRenderTransAlpha);
+					entry.weapon->SetRenderColorA(0);
+					entry.temporaryVisible = false;
+				}
 
 				if (entry.wearable_vm == nullptr || entry.wearable == nullptr) {
 					if (entry.wearable != nullptr)
@@ -7539,7 +7572,7 @@ namespace Mod::Attr::Custom_Attributes
 
 					CreateWeaponWearables(entry);
 				}
-				if (entry.weapon->IsEffectActive(EF_NODRAW)) {
+				if (entry.weapon->IsEffectActive(EF_NODRAW) || entry.temporaryVisible) {
 					/*if (entry.wearable != nullptr)
 						entry.wearable->Remove();
 					if (entry.wearable_vm != nullptr)

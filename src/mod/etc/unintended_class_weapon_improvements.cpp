@@ -40,6 +40,14 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	bool OnEquipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
 	{
 		if (weapon->m_nCustomViewmodelModelIndex != mod->properHandModelIndex) return false;
+		
+		if (mod->wearable != nullptr) {
+			mod->wearable->Remove();
+		}
+		if (mod->wearableWeapon != nullptr) {
+			mod->wearableWeapon->Remove();
+		}
+		
 		weapon->SetModel(mod->properHandModel);
 		weapon->m_iViewModelIndex = mod->properHandModelIndex;
 		auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
@@ -50,7 +58,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		mod->wearable = wearable_vm;
 
         // Don't create wearable imitating weapon model if a custom model is being used
-        if (!weapon->m_bBeingRepurposedForTaunt) {
+		const char *customModel = weapon->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, weapon, PStrT<"custom_item_model">()).ToCStr();
+        if (customModel == nullptr || customModel[0] == '\0' ) {
             auto wearable_vm_weapon = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
             wearable_vm_weapon->Spawn();
             wearable_vm_weapon->GiveTo(owner);
