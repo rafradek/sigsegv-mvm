@@ -6,6 +6,11 @@
 #include "util/clientmsg.h"
 #include "util/misc.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "util/iterate.h"
+#include "stub/misc.h"
+#include <fmt/format.h>
+#include "mod/item/item_common.h"
+#include "stub/gamerules.h"
 
 
 namespace Mod::Etc::Unintended_Class_Weapon_Improvements
@@ -47,7 +52,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->wearableWeapon != nullptr) {
 			mod->wearableWeapon->Remove();
 		}
-		
+
 		weapon->SetModel(mod->properHandModel);
 		weapon->m_iViewModelIndex = mod->properHandModelIndex;
 		auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
@@ -86,23 +91,32 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
     ConVar cvar_enable_viewmodel("sig_etc_unintended_class_weapon_viewmodel", "0", FCVAR_NOTIFY,
 		"Mod: use proper class viewmodel animations for unintended player class weapons");
 
-    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
+    ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY,
+		"Mod: fix max ammo count for unintented player class weapons");
+
+    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *ownerBase)
 	{
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(ownerBase);
 		
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
-		
 		auto weapon = rtti_cast<CTFWeaponBase *>(ent);
+
+		if (weapon == nullptr || weapon->GetItem() == nullptr) return;
+
+		auto owner = weapon->GetTFPlayerOwner();
+		auto def = weapon->GetItem()->GetItemDefinition();
+
+		if (owner == nullptr) return;
+
+		auto classIndex = owner->GetPlayerClass()->GetClassIndex();
+
 		int otherClassViewmodel = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(ent, otherClassViewmodel, use_original_class_weapon_animations);
 
-		if (weapon != nullptr && (cvar_enable_viewmodel.GetBool() || otherClassViewmodel != 0) && weapon->GetItem() != nullptr) {
+		if (cvar_enable_viewmodel.GetBool() || otherClassViewmodel != 0) {
 			
 			// Use viewmodel of a real class if applicable
-			auto owner = weapon->GetTFPlayerOwner();
-			if (owner != nullptr && owner->IsRealPlayer() && owner->GetViewModel() != nullptr && weapon->m_nViewModelIndex == 0) {
-				auto def = weapon->GetItem()->GetItemDefinition();
-				auto classIndex = owner->GetPlayerClass()->GetClassIndex();
+			if (owner->IsRealPlayer() && owner->GetViewModel() != nullptr && weapon->m_nViewModelIndex == 0) {
 				bool goodAnims = (FStrEq(weapon->GetClassname(), "tf_weapon_handgun_scout_secondary") && classIndex == TF_CLASS_ENGINEER) 
 					|| ((FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_hwg") || FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_soldier") || FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_pyro")) 
 					&& (classIndex == TF_CLASS_SOLDIER || classIndex == TF_CLASS_HEAVYWEAPONS || classIndex == TF_CLASS_PYRO));
@@ -135,7 +149,61 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #endif
 			}
 		}
+
+		// Fix up ammo count
+		if (sig_etc_unintended_class_weapon_fix_ammo.GetBool()) {
+			int ammoType = weapon->m_iPrimaryAmmoType;
+#ifndef NO_MVM
+			Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(true);
+#endif
+			if ((ammoType == TF_AMMO_PRIMARY || ammoType == TF_AMMO_SECONDARY) && def->GetLoadoutSlot(classIndex) == -1) {
+				int properClass = -1;
+				for (int i = 1; i < 10; i++) {
+					if (def->GetLoadoutSlot(i) != -1) {
+						properClass = i;
+						break;
+					}
+				}
+				if (properClass != -1) {
+
+					int ammoProper = GetPlayerClassData(properClass)->m_aAmmoMax[ammoType];
+					int ammoOur = GetPlayerClassData(classIndex)->m_aAmmoMax[ammoType];
+					if (ammoOur == 0) ammoOur = 1;
+					auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(ammoType == TF_AMMO_PRIMARY ? "max ammo primary mult" : "max ammo secondary mult");
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attrDef, (float)ammoProper / (float)ammoOur);
+				}
+			}
+#ifndef NO_MVM
+			Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(false);
+#endif
+		}
+
+#ifndef NO_MVM
+		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(true);
+#endif
+		if (def->GetLoadoutSlot(classIndex) == -1) {
+			weapon->SetCustomVariable("isunintendedclass", Variant(true));
+		}
+#ifndef NO_MVM
+		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(false);
+#endif
 	} 
+
+	DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *player)
+	{
+		CTFWearable *wearable = reinterpret_cast<CTFWearable *>(this);
+
+#ifndef NO_MVM
+		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(true);
+#endif
+		if (wearable->GetItem() != nullptr && wearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(ToTFPlayer(player)->GetPlayerClass()->GetClassIndex()) == -1) {
+			wearable->SetCustomVariable("isunintendedclass", Variant(true));
+		}
+#ifndef NO_MVM
+		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(false);
+#endif
+		DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
+	}
 
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
 	{
@@ -285,8 +353,13 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (charging) {
 			player->GetPlayerClass()->SetClassIndex(TF_CLASS_DEMOMAN);
 		}
+
 		float ret = DETOUR_MEMBER_CALL(CTFPlayer_TeamFortress_CalculateMaxSpeed)(flag);
 		
+		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_SCOUT && player->Weapon_OwnsThisID(TF_WEAPON_PEP_BRAWLER_BLASTER)) {
+			ret *= RemapValClamped( player->m_Shared->m_flHypeMeter, 0.0f, 100.0f, 1.0f, 1.45f );
+		}
+
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
 			auto sword = rtti_cast<CTFSword *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_MELEE));
 			if (sword != nullptr) {
@@ -459,7 +532,126 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
 	}
 
-    class CMod : public IMod
+	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
+	{
+		if (pPlayer == nullptr) {
+			DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale); 
+			return;
+		}
+
+		int restoreClass = -1;
+		int classIndex = pPlayer->GetPlayerClass()->GetClassIndex();
+		if ((0x08 /*kRageBuffFlag_OnBurnDamageDealt*/ & iRequiredBuffFlags) && classIndex != TF_CLASS_PYRO) {
+			auto weapon = rtti_cast<CTFFlameThrower *>(pPlayer->GetEntityForLoadoutSlot(LOADOUT_POSITION_PRIMARY));
+			if (weapon != nullptr && CAttributeManager::AttribHookValue<int>(0, "set_buff_type", weapon) != 0) {
+				pPlayer->GetPlayerClass()->SetClassIndex(TF_CLASS_PYRO);
+				restoreClass = classIndex;
+			}
+		}
+		if ((0x01 /*kRageBuffFlag_OnDamageDealt*/ & iRequiredBuffFlags) && classIndex != TF_CLASS_SOLDIER) {
+			auto weapon = rtti_cast<CTFBuffItem *>(pPlayer->GetEntityForLoadoutSlot(LOADOUT_POSITION_SECONDARY));
+			if (weapon != nullptr && CAttributeManager::AttribHookValue<int>(0, "set_buff_type", weapon) != 0) {
+				pPlayer->GetPlayerClass()->SetClassIndex(TF_CLASS_SOLDIER);
+				restoreClass = classIndex;
+			}
+		}
+		if ((0x10 /*kRageBuffFlag_OnHeal*/ & iRequiredBuffFlags) && classIndex != TF_CLASS_MEDIC) {
+			auto weapon = rtti_cast<CWeaponMedigun *>(pPlayer->GetEntityForLoadoutSlot(LOADOUT_POSITION_SECONDARY));
+			if (weapon != nullptr && CAttributeManager::AttribHookValue<int>(0, "generate_rage_on_heal", weapon) != 0) {
+				pPlayer->GetPlayerClass()->SetClassIndex(TF_CLASS_MEDIC);
+				restoreClass = classIndex;
+			}
+		}
+		if ((0x01 /*kRageBuffFlag_OnDamageDealt*/ & iRequiredBuffFlags) && classIndex != TF_CLASS_HEAVYWEAPONS) {
+			auto weapon = rtti_cast<CTFMinigun *>(pPlayer->GetActiveTFWeapon());
+			if (weapon != nullptr && CAttributeManager::AttribHookValue<int>(0, "generate_rage_on_dmg", weapon) != 0) {
+				pPlayer->GetPlayerClass()->SetClassIndex(TF_CLASS_HEAVYWEAPONS);
+				restoreClass = classIndex;
+			}
+		}
+		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+		if (restoreClass != -1) {
+			pPlayer->GetPlayerClass()->SetClassIndex(restoreClass);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateEnergyDrinkMeter)
+	{
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		int restoreClass = -1;
+		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_SCOUT && (rtti_cast<CTFLunchBox_Drink *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_SECONDARY)) != nullptr 
+			|| rtti_cast<CTFSodaPopper *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_PRIMARY)) != nullptr)) {
+			restoreClass = player->GetPlayerClass()->GetClassIndex();
+			player->GetPlayerClass()->SetClassIndex(TF_CLASS_SCOUT);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateEnergyDrinkMeter)();
+		if (restoreClass != -1) {
+			player->GetPlayerClass()->SetClassIndex(restoreClass);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (event != nullptr && strcmp(event->GetName(), "player_death") == 0) {
+			auto assister = ToTFPlayer(UTIL_PlayerByUserId(event->GetInt("assister")));
+			auto attacker = ToTFPlayer(UTIL_PlayerByUserId(event->GetInt("attacker")));
+			if (assister != nullptr && assister != attacker && assister->GetPlayerClass()->GetClassIndex() != TF_CLASS_SNIPER) {
+				auto weapon = assister->GetActiveTFWeapon();
+				float rageOnAssist = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, rageOnAssist, rage_on_assists);
+				if (rageOnAssist != 0) {
+					assister->m_Shared->m_flRageMeter = Min(100.0f, assister->m_Shared->m_flRageMeter + rageOnAssist);
+				}
+			}
+			if (attacker != nullptr && attacker->GetPlayerClass()->GetClassIndex() != TF_CLASS_SNIPER) {
+				auto weapon = attacker->GetActiveTFWeapon();
+				float rageOnKill = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, rageOnKill, rage_on_kill);
+				if (rageOnKill != 0) {
+					attacker->m_Shared->m_flRageMeter = Min(100.0f, attacker->m_Shared->m_flRageMeter + rageOnKill);
+				}
+			}
+		}
+		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
+	{
+		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CanAirDash)();
+		if (!ret) {
+			auto player = reinterpret_cast<CTFPlayer *>(this);
+			if (!player->IsPlayerClass(TF_CLASS_SCOUT) && player->m_Shared->InCond(TF_COND_SODAPOPPER_HYPE)) {
+				return player->m_Shared->m_iAirDash < 5;
+			}
+		}
+		return ret;
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
+	{
+		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_SCOUT)
+		{
+			// Lose hype on take damage
+			int iHypeResetsOnTakeDamage = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, iHypeResetsOnTakeDamage, lose_hype_on_take_damage);
+			if ( iHypeResetsOnTakeDamage != 0 )
+			{
+				// Loose x hype on jump
+				player->m_Shared->m_flHypeMeter = Max(0.0f, player->m_Shared->m_flHypeMeter - iHypeResetsOnTakeDamage * info.GetDamage());
+				player->TeamFortress_SetSpeed();
+			}
+		}
+		return damage;
+	}
+
+    ConVar sig_etc_unintended_class_weapon_display_meters("sig_etc_unintended_class_weapon_display_meters", "1", FCVAR_NOTIFY,
+		"Mod: display meters for unintended player class weapons");
+
+    class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Etc:Unintended_Class_Weapon_Improvements")
@@ -469,6 +661,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy,     "CTFWeaponBase::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster,     "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove");
+			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,     "CTFWearable::Equip");
 
 			// Allow non demos to use shields and benefit from eyelander heads
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoClassSpecialSkill, "CTFPlayer::DoClassSpecialSkill");
@@ -491,13 +684,170 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			// Allow to taunt with some other class weapons
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt,     "CTFPlayer::Taunt");
 
+			// Allow HandleRageGain to work with weapons on other classes
+			MOD_ADD_DETOUR_STATIC(HandleRageGain,     "HandleRageGain");
+
 			// Let revolver weapon to be used with other secondary weapon on non spy
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFItemDefinition_GetLoadoutSlot,     "CTFItemDefinition::GetLoadoutSlot", LOWEST);
+
+			// Fix drink and soda popper usage on non scout
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter");
+
+			// Make focus work on other classes
+			MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");
+
+			// Make soda popper hype work on non scout
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanAirDash, "CTFPlayer::CanAirDash");
+
+			// Lose hype on take damage for all classes
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
+			
+        }
+
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled() && sig_etc_unintended_class_weapon_display_meters.GetBool(); }
+
+        virtual void FrameUpdatePostEntityThink() override
+        {
+			// Draw meters
+			for (int i = gpGlobals->tickcount % 4; i < gpGlobals->maxClients; i+=4) {
+				auto player = ToTFPlayer(UTIL_PlayerByIndex(i));
+				if (player == nullptr || !player->IsRealPlayer()) continue;
+
+				std::string message;
+				auto classIndex = player->GetPlayerClass()->GetClassIndex();
+				ForEachTFPlayerEconEntity(player, [player, classIndex, &message](CEconEntity *item){
+					if (!item->GetCustomVariableBool<"isunintendedclass">()) return;
+
+					auto weapon = rtti_cast<CTFWeaponBase *>(item);
+					if (weapon == nullptr) {
+						if (classIndex != TF_CLASS_DEMOMAN && rtti_cast<CTFWearableDemoShield *>(item) != nullptr) {
+							message += fmt::format("Charge: {:.0f}%\n", player->m_Shared->m_flChargeMeter.Get());
+						}
+					}
+					auto weaponid = 0;
+					if (weapon != nullptr) {
+						const char *itemClass = item->GetClassname();
+						weaponid = weapon->GetWeaponID();
+						if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_PIPEBOMBLAUNCHER) {
+							message += fmt::format("Stickies: {}\n", rtti_cast<CTFPipebombLauncher *>(item)->m_iPipebombCount.Get());
+						}
+						else if (classIndex != TF_CLASS_MEDIC && weaponid == TF_WEAPON_MEDIGUN) {
+							message += fmt::format("Ubercharge: {}%\n", (int)(rtti_cast<CWeaponMedigun *>(item)->GetCharge() * 100));
+							int generate = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, generate, generate_rage_on_heal);
+							if (generate != 0) {
+								message += fmt::format("Shield: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+							}
+						}
+						else if (classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAMETHROWER) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
+							if (buff != 0) {
+								message += fmt::format("MMMPH: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+							}
+						}
+						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_BUFF_ITEM) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
+							if (buff != 4 && buff != 0) {
+								message += fmt::format("Rage: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+							}
+						}
+						else if (classIndex != TF_CLASS_HEAVYWEAPONS && weaponid == TF_WEAPON_MINIGUN) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, generate_rage_on_dmg);
+							if (buff != 0) {
+								message += fmt::format("Rage: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+							}
+						}
+						// else if (classIndex != TF_CLASS_SCOUT && weaponid == TF_WEAPON_LUNCHBOX) {
+						// 	message += fmt::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
+						// }
+						// else if (classIndex != TF_CLASS_SCOUT && rtti_cast<CTFLunchBox_Drink *>(item) != nullptr) {
+						// 	message += fmt::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
+						// }
+						else if (classIndex != TF_CLASS_SCOUT && (weaponid == TF_WEAPON_SODA_POPPER || weaponid == TF_WEAPON_PEP_BRAWLER_BLASTER)) {
+							message += fmt::format("Hype: {:.0f}%\n", round(player->m_Shared->m_flHypeMeter.Get()));
+						}
+						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_ROCKETLAUNCHER && rtti_cast<CTFRocketLauncher_AirStrike *>(weapon) != nullptr) {
+							message += fmt::format("Kills: {}\n", player->m_Shared->m_iDecapitations.Get());
+						}
+						else if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_SWORD && rtti_cast<CTFSword *>(weapon) != nullptr) {
+							message += fmt::format("Heads: {}\n", player->m_Shared->m_iDecapitations.Get());
+						}
+						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE_DECAP) {
+							message += fmt::format("Heads: {}\n", player->m_Shared->m_iDecapitations.Get());
+						}
+						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE) {
+							float buff = 0;
+							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, set_buff_type);
+							if (buff != 0) {
+								message += fmt::format("Focus: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+							}
+						}
+						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_CHARGED_SMG) {
+							message += fmt::format("Crikey: {:.0f}%\n", rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
+						}
+						else if ((classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAREGUN_REVENGE)
+						|| (classIndex != TF_CLASS_ENGINEER && weaponid == TF_WEAPON_SENTRY_REVENGE)) {
+							message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+						}
+						else if (classIndex != TF_CLASS_SPY && weaponid == TF_WEAPON_REVOLVER) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, sapper_kills_collect_crits);
+							if (buff != 0) {
+								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+							}
+							
+						}
+						float regen = weapon->InternalGetEffectBarRechargeTime();
+						if (regen != 0.0f) {
+							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(weapon->GetEffectBarProgress() * 100));
+						}
+					}
+					auto meterItem = rtti_cast<IHasGenericMeter *>(item);
+					if (meterItem != nullptr && weaponid != TF_WEPON_FLAME_BALL) {
+						int type = 0;
+						CALL_ATTRIB_HOOK_INT_ON_OTHER(item, type, item_meter_charge_type);
+						if (type != 0) {
+							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(player->m_Shared->m_flItemChargeMeter[item->GetItem()->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED)]));
+						}
+					}
+				});
+
+				auto activeWeapon = player->GetActiveTFWeapon();
+				if (activeWeapon != nullptr) {
+					if (activeWeapon->IsEnergyWeapon() && activeWeapon->GetItem()->GetItemDefinition()->GetLoadoutSlot(classIndex) == -1) {
+						message += fmt::format("Energy: {:.0f}%\n", round(activeWeapon->m_flEnergy / activeWeapon->Energy_GetMaxEnergy() * 100));
+					}
+				}
+				
+				if (message.empty()) continue;
+
+				hudtextparms_t textparam;
+				textparam.channel = 2;
+				textparam.x = 0.8f;
+				textparam.y = 0.75f;
+				textparam.effect = 0;
+				textparam.r1 = 255;
+				textparam.r2 = 255;
+				textparam.b1 = 255;
+				textparam.b2 = 255;
+				textparam.g1 = 255;
+				textparam.g2 = 255;
+				textparam.a1 = 0;
+				textparam.a2 = 0; 
+				textparam.fadeinTime = 0.f;
+				textparam.fadeoutTime = 0.15f;
+				textparam.holdTime = 0.15f;
+				textparam.fxTime = 1.0f;
+				UTIL_HudMessage(player, textparam, message.c_str());
+			}
         }
     } s_Mod;
     
     ConVar cvar_enable("sig_etc_unintended_class_weapon_improvements", "0", FCVAR_NOTIFY,
-		"Mod: allow all classes to fully benefit from shield, eyelander, tf_weapon_builder",
+		"Mod: allow all classes to fully benefit from shield, eyelander, tf_weapon_builder, and others. Must be set for the above 3 convars to work",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});

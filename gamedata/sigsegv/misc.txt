@@ -5804,6 +5804,8 @@
 				"CTeamplayRules::SetWinningTeam" "_ZN14CTeamplayRules14SetWinningTeamEiibbbb"
 				
 				"CTFGameRules::CTFGameRules [C1]" "_ZN12CTFGameRulesC1Ev"
+				"CTFGameRules::GetAssister" "_ZN12CTFGameRules11GetAssisterEP11CBasePlayerS1_P11CBaseEntity"
+				
 
 				"CBasePlayer::IsBot" "_ZNK11CBasePlayer5IsBotEv" 
 				"CBasePlayer::CommitSuicide" "_ZN11CBasePlayer13CommitSuicideEbb" 
@@ -5949,6 +5951,8 @@
 				"CTFWeaponBase::AutoFiresFullClip" "_ZNK13CTFWeaponBase17AutoFiresFullClipEv"
 				"CTFWeaponBase::SendWeaponAnim" "_ZN13CTFWeaponBase14SendWeaponAnimEi"
 				"CTFWeaponBase::GetMaxHealthMod" "_ZN13CTFWeaponBase15GetMaxHealthModEv"
+				"CTFWeaponBase::InternalGetEffectBarRechargeTime" "_ZN13CTFWeaponBase32InternalGetEffectBarRechargeTimeEv"
+				"CTFWeaponBase::GetEffectBarProgress" "_ZN13CTFWeaponBase20GetEffectBarProgressEv"
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"

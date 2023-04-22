@@ -2854,6 +2854,8 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	bool IsUpgradeAllowed(CTFPlayer *player, int itemslot, int upgradeslot)
 	{
+		if (upgradeslot < 0 || upgradeslot >= CMannVsMachineUpgradeManager::Upgrades().Count()) return true;
+
 		const char *upgradename = CMannVsMachineUpgradeManager::Upgrades()[upgradeslot].m_szAttribute;
 		if (upgradename == nullptr) return true;
 		

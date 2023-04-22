@@ -175,6 +175,9 @@ IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, 
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iTauntIndex,   CTFPlayer);
 IMPL_RELATIVE(CUtlVector<bleed_struct_t>, CTFPlayerShared, m_BleedInfo, m_iTauntIndex, -sizeof(CUtlVector<bleed_struct_t>));
 IMPL_SENDPROP(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hDisguiseWeapon,CTFPlayer);
+IMPL_SENDPROP(int,         CTFPlayerShared, m_iDecapitations,            CTFPlayer);
+IMPL_SENDPROP(int,         CTFPlayerShared, m_iRevengeCrits,             CTFPlayer);
+IMPL_SENDPROP(float[10],   CTFPlayerShared, m_flItemChargeMeter,         CTFPlayer);
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");

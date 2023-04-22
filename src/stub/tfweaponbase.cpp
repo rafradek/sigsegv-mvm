@@ -65,6 +65,8 @@ MemberVFuncThunk<CTFWeaponBase *, void>  CTFWeaponBase::vt_Misfire(TypeName<CTFW
 MemberVFuncThunk<CTFWeaponBase *, Vector, int> CTFWeaponBase::vt_GetParticleColor(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetParticleColor");
 MemberVFuncThunk<CTFWeaponBase *, int> CTFWeaponBase::vt_GetMaxHealthMod(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetMaxHealthMod");
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetAfterburnRateOnHit(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetAfterburnRateOnHit");
+MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_InternalGetEffectBarRechargeTime(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::InternalGetEffectBarRechargeTime");
+MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetEffectBarProgress(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetEffectBarProgress");
 
 
 MemberVFuncThunk<CTFWeaponBaseGun *, float> CTFWeaponBaseGun::vt_GetProjectileGravity(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetProjectileGravity") ;
@@ -97,6 +99,7 @@ MemberVFuncThunk<CTFSniperRifle *, float> CTFSniperRifle::vt_SniperRifleChargeRa
 
 IMPL_SENDPROP(float, CTFSniperRifle, m_flChargedDamage, CTFSniperRifle);
 
+IMPL_SENDPROP(int, CTFPipebombLauncher, m_iPipebombCount, CTFPipebombLauncher);
 
 MemberFuncThunk<CTFSpellBook *, void, int>                  CTFSpellBook::ft_RollNewSpell("CTFSpellBook::RollNewSpell");
 
@@ -104,6 +107,8 @@ IMPL_SENDPROP(int, CTFSpellBook, m_iSelectedSpellIndex, CTFSpellBook);
 IMPL_SENDPROP(int, CTFSpellBook, m_iSpellCharges, CTFSpellBook);
 
 MemberFuncThunk<CTFSniperRifleDecap *, int> CTFSniperRifleDecap::ft_GetCount("CTFSniperRifleDecap::GetCount");
+
+IMPL_SENDPROP(float, CTFChargedSMG, m_flMinicritCharge, CTFChargedSMG);
 
 IMPL_EXTRACT(float, CTFWeaponBaseMelee, m_flSmackTime, new CExtract_CTFWeaponBaseMelee_Holster());
 

@@ -3022,4 +3022,24 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4623"
+    {
+        "name"	"max ammo primary mult"
+        "attribute_class"	"mult_maxammo_primary"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4624"
+    {
+        "name"	"max ammo secondary mult"
+        "attribute_class"	"mult_maxammo_secondary"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_percentage"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

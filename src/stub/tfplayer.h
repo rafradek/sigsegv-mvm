@@ -231,6 +231,10 @@ struct TFPlayerClassData_t
 	char		m_szLocalizableName[128];
 	float		m_flMaxSpeed;
 	int			m_nMaxHealth;
+	int			m_nMaxArmor;
+	int			m_aWeapons[6];
+	int			m_aGrenades[2];
+	int			m_aAmmoMax[TF_AMMO_COUNT];
 };
 
 struct bleed_struct_t
@@ -370,6 +374,9 @@ public:
 	DECL_SENDPROP(int,         m_iTauntIndex);
 	DECL_RELATIVE(CUtlVector<bleed_struct_t>, m_BleedInfo);
 	DECL_SENDPROP(CHandle<CTFWeaponBase>, m_hDisguiseWeapon);
+	DECL_SENDPROP(int,         m_iDecapitations);
+	DECL_SENDPROP(int,         m_iRevengeCrits);
+	DECL_SENDPROP(float[10],   m_flItemChargeMeter);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);

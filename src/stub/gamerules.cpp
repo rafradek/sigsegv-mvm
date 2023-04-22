@@ -58,6 +58,7 @@ MemberFuncThunk<CTFGameRules *, bool, CBaseEntity *>                            
 MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                                        CTFGameRules::ft_DropSpellPickup                    ("CTFGameRules::DropSpellPickup");
 MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                CTFGameRules::ft_CanPlayerUseRespec                 ("CTFGameRules::CanPlayerUseRespec");
 MemberFuncThunk<CTFGameRules *, bool>                                                             CTFGameRules::ft_IsCompetitiveMode                  ("CTFGameRules::IsCompetitiveMode");
+MemberFuncThunk<CTFGameRules *, CBasePlayer *, CBasePlayer *, CBasePlayer *, CBaseEntity *>       CTFGameRules::ft_GetAssister                        ("CTFGameRules::GetAssister");
 
 MemberVFuncThunk<CTFGameRules *, bool> CTFGameRules::vt_FlagsMayBeCapped(TypeName<CTFGameRules>(), "CTFGameRules::FlagsMayBeCapped");
 #endif

@@ -154,10 +154,10 @@ public:
 #else
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
 #endif
-	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                         { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
-	void State_Transition(gamerules_roundstate_t newState)                           { NULL_RET(    );        ft_State_Transition            (this, newState); }
-	void SetForceMapReset(bool reset)                                                { NULL_RET(    );        ft_SetForceMapReset            (this, reset); }
-	void SetTeamRespawnWaveTime(int team, float time)                                { NULL_RET(    );        ft_SetTeamRespawnWaveTime      (this, team, time); }
+	float GetMinTimeWhenPlayerMaySpawn(CBasePlayer *pPlayer)                           { NULL_RET(0.0f); return ft_GetMinTimeWhenPlayerMaySpawn(this, pPlayer); }
+	void State_Transition(gamerules_roundstate_t newState)                             { NULL_RET(    );        ft_State_Transition            (this, newState); }
+	void SetForceMapReset(bool reset)                                                  { NULL_RET(    );        ft_SetForceMapReset            (this, reset); }
+	void SetTeamRespawnWaveTime(int team, float time)                                  { NULL_RET(    );        ft_SetTeamRespawnWaveTime      (this, team, time); }
 	
 	float GetNextRespawnWave(int iTeam, CBasePlayer *pPlayer) { NULL_RET(0.0f); return vt_GetNextRespawnWave(this, iTeam, pPlayer); }
 	
@@ -178,6 +178,7 @@ private:
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, gamerules_roundstate_t> ft_State_Transition;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, bool>                   ft_SetForceMapReset;
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, float>             ft_SetTeamRespawnWaveTime;
+
 	static MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *> vt_GetNextRespawnWave;
 };
 
@@ -204,6 +205,7 @@ public:
 	void DropSpellPickup(const Vector &pos, int tier)                                                            { NULL_RET(     );        ft_DropSpellPickup                    (this, pos, tier); }
 	bool CanPlayerUseRespec(CTFPlayer *player)                                                                   { NULL_RET(false); return ft_CanPlayerUseRespec                 (this, player); }
 	bool IsCompetitiveMode()                                                                                     { NULL_RET(false); return ft_IsCompetitiveMode                  (this); }
+	CBasePlayer * GetAssister(CBasePlayer *victim, CBasePlayer *scorer, CBaseEntity *inflictor)                  { NULL_RET(nullptr); return ft_GetAssister        (this, victim, scorer, inflictor); }
 
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
@@ -231,6 +233,7 @@ private:
 	static MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                                        ft_DropSpellPickup;
 	static MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                ft_CanPlayerUseRespec;
 	static MemberFuncThunk<CTFGameRules *, bool>                                                             ft_IsCompetitiveMode;
+	static MemberFuncThunk<CTFGameRules *, CBasePlayer *, CBasePlayer *, CBasePlayer *, CBaseEntity *>       ft_GetAssister;
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };

@@ -22,16 +22,18 @@ public:
 	void StartEffectBarRegen()   { ft_StartEffectBarRegen(this); }
 	bool DeflectProjectiles()    { return ft_DeflectProjectiles(this); }
 	
-	int GetWeaponID() const      { return vt_GetWeaponID     (this); }
-	int GetPenetrateType() const { return vt_GetPenetrateType(this); }
+	int GetWeaponID() const                  { return vt_GetWeaponID     (this); }
+	int GetPenetrateType() const             { return vt_GetPenetrateType(this); }
 	void GetProjectileFireSetup(CTFPlayer *player, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammaates, float flEndDist) {        vt_GetProjectileFireSetup (this, player, vecOffset, vecSrc, angForward, bHitTeammaates, flEndDist); }
 	bool ShouldRemoveInvisibilityOnPrimaryAttack() const { return vt_ShouldRemoveInvisibilityOnPrimaryAttack(this); }
-	bool IsEnergyWeapon() const { return vt_IsEnergyWeapon(this); }
-	float Energy_GetShotCost() const { return vt_Energy_GetShotCost(this); }
-	void Misfire()               { vt_Misfire(this); }
-	Vector GetParticleColor(int color) { return vt_GetParticleColor(this, color); }
-	int GetMaxHealthMod()              { return vt_GetMaxHealthMod(this); }
-	float GetAfterburnRateOnHit()        { return vt_GetAfterburnRateOnHit(this); }
+	bool IsEnergyWeapon() const              { return vt_IsEnergyWeapon(this); }
+	float Energy_GetShotCost() const         { return vt_Energy_GetShotCost(this); }
+	void Misfire()                           {        vt_Misfire(this); }
+	Vector GetParticleColor(int color)       { return vt_GetParticleColor(this, color); }
+	int GetMaxHealthMod()                    { return vt_GetMaxHealthMod(this); }
+	float GetAfterburnRateOnHit()            { return vt_GetAfterburnRateOnHit(this); }
+	float InternalGetEffectBarRechargeTime() { return vt_InternalGetEffectBarRechargeTime(this); }
+	float GetEffectBarProgress()             { return vt_GetEffectBarProgress(this); }
 	
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
@@ -64,6 +66,8 @@ private:
 	static MemberVFuncThunk<CTFWeaponBase *, Vector, int> vt_GetParticleColor;
 	static MemberVFuncThunk<CTFWeaponBase *, int> vt_GetMaxHealthMod;
 	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetAfterburnRateOnHit;
+	static MemberVFuncThunk<CTFWeaponBase *, float> vt_InternalGetEffectBarRechargeTime;
+	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetEffectBarProgress;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {
@@ -92,7 +96,10 @@ private:
 	static MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> vt_FireProjectile;
 };
 
-class CTFPipebombLauncher : public CTFWeaponBaseGun {};
+class CTFPipebombLauncher : public CTFWeaponBaseGun {
+public:
+	DECL_SENDPROP(int, m_iPipebombCount);
+};
 
 class CTFGrenadeLauncher : public CTFWeaponBaseGun {};
 
@@ -175,6 +182,15 @@ private:
 	static MemberFuncThunk<CTFSniperRifleDecap *, int> ft_GetCount;
 };
 
+class CTFSMG : public CTFWeaponBaseGun {};
+class CTFChargedSMG : public CTFSMG {
+public:
+	DECL_SENDPROP(float, m_flMinicritCharge);
+};
+
+class CTFRocketLauncher : public CTFWeaponBaseGun {};
+class CTFRocketLauncher_AirStrike : public CTFRocketLauncher {};
+
 
 class CTFWeaponBaseMelee : public CTFWeaponBase
 {
@@ -254,6 +270,7 @@ class CTFJar : public CTFWeaponBaseGun {};
 class CTFShotgun : public CTFWeaponBaseGun {};
 class CTFScatterGun : public CTFShotgun {};
 class CTFSodaPopper : public CTFScatterGun {};
+class CTFPEPBrawlerBlaster : public CTFScatterGun {};
 
 class CWeaponMedigun : public CTFWeaponBase
 {
