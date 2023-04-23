@@ -786,11 +786,25 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 							}
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_CHARGED_SMG) {
-							message += fmt::format("Crikey: {:.0f}%\n", rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
+							float buff = 0;
+							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, minicrit_boost_charge_rate);
+							if (buff != 0) {
+								message += fmt::format("Crikey: {:.0f}%\n", rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
+							}
 						}
-						else if ((classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAREGUN_REVENGE)
-						|| (classIndex != TF_CLASS_ENGINEER && weaponid == TF_WEAPON_SENTRY_REVENGE)) {
-							message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+						else if (classIndex != TF_CLASS_ENGINEER && weaponid == TF_WEAPON_SENTRY_REVENGE) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, sentry_killed_revenge);
+							if (buff != 0) {
+								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+							}
+						}
+						else if ((classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAREGUN_REVENGE)) {
+							int buff = 0;
+							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, extinguish_revenge);
+							if (buff != 0) {
+								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+							}
 						}
 						else if (classIndex != TF_CLASS_SPY && weaponid == TF_WEAPON_REVOLVER) {
 							int buff = 0;
