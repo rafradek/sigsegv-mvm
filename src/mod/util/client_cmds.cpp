@@ -20,6 +20,7 @@
 #include <sys/resource.h>
 #include <fmt/core.h>
 #include "mod/common/commands.h"
+#include "mod/common/text_hud.h"
 
 namespace Mod::Attr::Custom_Attributes
 {
@@ -1778,7 +1779,7 @@ namespace Mod::Util::Client_Cmds
 							if (highEnt || cpu_show_player[i] == 1) {
 								str += fmt::format("Logic Entities: {}/6143\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
 							}
-							UTIL_HudMessage(player, textparam, str.c_str());
+							DisplayHudMessageAutoChannel(player, textparam, str.c_str(), 2);
 						}
 						if (player == nullptr || player->IsBot()) {
 							cpu_show_player[i] = 0;

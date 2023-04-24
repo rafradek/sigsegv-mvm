@@ -13,6 +13,7 @@
 #include "stub/sendprop.h"
 #include "stub/server.h"
 #include "mod/mvm/player_limit.h"
+#include "mod/common/text_hud.h"
 
 // TODO: move to common.h
 #include <igamemovement.h>
@@ -1572,7 +1573,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 					if (gpGlobals->tickcount % 5 == 0 && !(player->m_nButtons & IN_SCORE)) {
 						hudtextparms_t textparam;
-						textparam.channel = 1;
+						textparam.channel = 0;
 						textparam.x = 0.042f;
 						textparam.y = 0.93f;
 						textparam.effect = 0;
@@ -1588,7 +1589,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 						textparam.fadeoutTime = 0.f;
 						textparam.holdTime = 0.5f;
 						textparam.fxTime = 1.0f;
-						UTIL_HudMessage(player, textparam, CFmtStr("$%d", player->GetCurrency()));
+						DisplayHudMessageAutoChannel(player, textparam, CFmtStr("$%d", player->GetCurrency()), 3);
 					}
 				});
 			}

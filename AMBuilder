@@ -127,6 +127,8 @@ if not Extension.optimize_mods_only:
     
     'src/mod/cond/enhanced_cmds.cpp',
     'src/mod/cond/reprogrammed.cpp',
+
+    'src/mod/common/text_hud.cpp',
     
     'src/mod/demo/stringtable_limit.cpp',
     

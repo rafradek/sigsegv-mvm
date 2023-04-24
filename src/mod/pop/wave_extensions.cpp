@@ -666,7 +666,7 @@ namespace Mod::Pop::Wave_Extensions
 			if (linenum == 0 && servertools->FindEntityByName(nullptr, "wave_explanation_text") == nullptr) {
 				CBaseEntity *textent = CreateEntityByName("game_text");
 				servertools->SetKeyValue(textent, "targetname", "wave_explanation_text");
-				servertools->SetKeyValue(textent, "channel", "0");
+				servertools->SetKeyValue(textent, "channel", "1");
 				servertools->SetKeyValue(textent, "effect", "2");
 				servertools->SetKeyValue(textent, "fadeout", "0.5");
 				servertools->SetKeyValue(textent, "fxtime", "0.5");

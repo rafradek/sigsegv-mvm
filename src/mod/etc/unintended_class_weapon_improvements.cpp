@@ -11,6 +11,7 @@
 #include <fmt/format.h>
 #include "mod/item/item_common.h"
 #include "stub/gamerules.h"
+#include "mod/common/text_hud.h"
 
 
 namespace Mod::Etc::Unintended_Class_Weapon_Improvements
@@ -839,7 +840,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				if (message.empty()) continue;
 
 				hudtextparms_t textparam;
-				textparam.channel = 2;
+				textparam.channel = 1;
 				textparam.x = 0.8f;
 				textparam.y = 0.75f;
 				textparam.effect = 0;
@@ -855,7 +856,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				textparam.fadeoutTime = 0.15f;
 				textparam.holdTime = 0.15f;
 				textparam.fxTime = 1.0f;
-				UTIL_HudMessage(player, textparam, message.c_str());
+				DisplayHudMessageAutoChannel(player, textparam, message.c_str(), 1);
 			}
         }
     } s_Mod;

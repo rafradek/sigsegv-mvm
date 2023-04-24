@@ -6971,7 +6971,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto attr = list->GetAttributeByID(pAttrDef->GetIndex());
 
-		if (attr != nullptr) {
+		if (attr != nullptr && attr->GetValuePtr()->m_UInt > 0x40000000 ) {
 			attr->GetValuePtr()->m_UInt = attr->GetValuePtr()->m_Float;
 		}
 	}
