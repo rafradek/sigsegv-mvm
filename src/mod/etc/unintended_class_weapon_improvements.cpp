@@ -244,7 +244,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
         int playerClass = player->GetPlayerClass()->GetClassIndex();
-        if (!player->m_Shared->InCond(TF_COND_TAUNTING) && player->GetActiveTFWeapon()->GetItem()->GetItemDefinition()->GetLoadoutSlot(playerClass) == -1) {
+        if (!player->m_Shared->InCond(TF_COND_TAUNTING) && player->GetActiveTFWeapon() != nullptr && player->GetActiveTFWeapon()->GetItem() != nullptr && player->GetActiveTFWeapon()->GetItem()->GetItemDefinition()->GetLoadoutSlot(playerClass) == -1) {
             int validClass = -1;
             for (int i = 1; i < 10; i++) {
                 if (player->GetActiveTFWeapon()->GetItem()->GetItemDefinition()->GetLoadoutSlot(i) != -1) {

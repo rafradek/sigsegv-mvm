@@ -50,7 +50,7 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
 
     auto nextbot = actor->MyNextBotPointer();
     
-    bool inRange = actor->GetAbsOrigin().DistToSqr(pos) < m_fDistanceSq && !(look != vec3_origin && !actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look));
+    bool inRange = actor->GetAbsOrigin().DistToSqr(pos) < m_fDistanceSq && !(look != vec3_origin && this->m_hTargetAim != nullptr && !actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look));
     if (!inRange) {
         if (this->m_ctRecomputePath.IsElapsed()) {
             this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
