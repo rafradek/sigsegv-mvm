@@ -290,7 +290,6 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			/* for now, replace the teamnum argument with TEAM_INVALID */
 			buf.SetAll(0x90);
 			
 			mask.SetAll(0xFF);
@@ -300,7 +299,6 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			/* set the teamnum argument to the actual user-requested teamnum */
 			buf.SetAll(0x90);
 			
 			return true;
@@ -828,11 +826,16 @@ namespace Mod::Perf::Func_Optimize
 	public:
 		CMod() : IMod("Perf::Func_Optimize")
 		{
+            // Rewrite CKnownEntity::OperatorEquals to compare handle indexes instead of entity pointers
 			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
 #ifdef SE_TF2
+            // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
 			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
+            // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
 			this->AddPatch(new CPatch_CTFPlayerShared_InCond());
+            // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
 			this->AddPatch(new CPatch_CEconItemView_GetStaticData());
+            // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
 			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
             
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
@@ -842,9 +845,12 @@ namespace Mod::Perf::Func_Optimize
             //MOD_ADD_DETOUR_STATIC(GEconItemSchema, "GEconItemSchema");
             //MOD_ADD_DETOUR_STATIC(GetItemSchema, "GetItemSchema");
             
+            // Optimize CTFPlayer::GetEntityForLoadoutSlot by using an array that contains items for every slot
             MOD_ADD_DETOUR_MEMBER(CBasePlayer_EquipWearable, "CBasePlayer::EquipWearable");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Weapon_Equip, "CBasePlayer::Weapon_Equip");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot", HIGHEST);
+            
+            // Optimize UTIL_PlayerByIndex so that it reads player pointer from (edict + offset) directly
             MOD_ADD_DETOUR_STATIC(UTIL_PlayerByIndex, "UTIL_PlayerByIndex");
 #endif
 
@@ -856,7 +862,9 @@ namespace Mod::Perf::Func_Optimize
 #ifdef SE_TF2
             MOD_ADD_DETOUR_STATIC(CTFPlayer_PrecacheMvM, "CTFPlayer::PrecacheMvM");
             
+            // Prevent player hurt from triggering speak too often
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed, "CTFPlayer::SpeakConceptIfAllowed");
+            // Update bot push vector at smaller frequency
             MOD_ADD_DETOUR_MEMBER(CTFBot_AvoidPlayers, "CTFBot::AvoidPlayers");
             
             //MOD_ADD_DETOUR_MEMBER(CThreadLocalBase_Get, "CThreadLocalBase::Get");

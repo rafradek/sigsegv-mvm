@@ -1387,6 +1387,8 @@ namespace Mod::Etc::Mapentity_Additions
 
     DETOUR_DECL_MEMBER(void, CEventAction_CEventAction, const char *name)
 	{
+        if (name == nullptr) { DETOUR_MEMBER_CALL(CEventAction_CEventAction)(name); return; }
+
         //TIME_SCOPE2(cevent)
         char *newname = nullptr;
         const char *findthis = FindCaseSensitive(name, "$$=");

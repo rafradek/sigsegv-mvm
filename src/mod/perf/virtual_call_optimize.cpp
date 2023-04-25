@@ -816,6 +816,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
             // MOD_ADD_DETOUR_MEMBER(CStaticProp_Init, "CStaticProp::Init");
             // MOD_ADD_DETOUR_MEMBER(CSpatialPartition_CreateHandle, "CSpatialPartition::CreateHandle");
 
+            // Rewrite those functions with assumption that an entity handle is static prop if vtable is of static prop
             this->AddPatch(new CPatch_CStaticPropMgr_IsStaticProp());
             this->AddPatch(new CPatch_CStaticPropMgr_GetStaticProp());
             this->AddPatch(new CPatch_CStaticPropMgr_GetStaticPropIndex());
@@ -823,11 +824,13 @@ namespace Mod::Perf::Virtual_Call_Optimize
             // this->AddPatch(new CPatch_CStaticProp_GetEntityHandle());
             // this->AddPatch(new CPatch_CStaticProp_GetRefEHandle());
             
+            // Rewrite those functions but with less instructions therefore faster
             this->AddPatch(new CPatch_CBasePlayer_IsPlayer());
             //this->AddPatch(new CPatch_CBaseEntity_GetBaseEntity());
             this->AddPatch(new CPatch_CBaseEntity_GetTeamNumber());
             
 #ifdef SE_TF2
+            // Automatically assume that IsBotOfType is asking for bots of type 1337 (CTFBot)
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CBasePlayer>(), "CBasePlayer::IsBotOfType");
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CTFPlayer>(), "CBasePlayer::IsBotOfType");
             MOD_ADD_VHOOK(CTFBot_IsBotOfType, TypeName<CTFBot>(), "CBasePlayer::IsBotOfType");

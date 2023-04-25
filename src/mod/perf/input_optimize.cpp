@@ -218,9 +218,10 @@ namespace Mod::Perf::Input_Optimize
 	public:
 		CMod() : IMod("Perf::Input_Optimize")
 		{
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput", LOWEST);
+            // Rewrite those functions, but now it only actually formats the debug message if debug is enabled
+            // VScript modified this function in some way so it is disabled for now
+			// MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput", LOWEST);
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput", LOWEST);
-            //MOD_ADD_DETOUR_MEMBER(CEventQueue_ServiceEvents, "CEventQueue::ServiceEvents");
             
 		}
 
