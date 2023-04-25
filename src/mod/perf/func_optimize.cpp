@@ -158,7 +158,8 @@ namespace Mod::Perf::Func_Optimize
 		}
 	};
     
-    
+    // Rewrites the function to be like:
+    // return (int *)(&m_nPlayerCond)[index >> 8] & (index & 31);
     constexpr uint8_t s_Buf_CTFPlayerShared_InCond[] = {
         //0x55,                      //push   ebp 0
         //0x89, 0xe5,                   //mov    ebp,esp 1

@@ -28,30 +28,7 @@ namespace Mod::Perf::Input_Optimize
     }
 
     GlobalThunk<CUtlMemoryPool> g_EntityListPool("g_EntityListPool");
-
-    std::set<CHandle<CBasePlayer>> message_listeners;
-    bool message_listeners_empty = true;
-
-    template<typename... ARGS>
-    void SendMessageToListeners(const char *fmt, ARGS&&... args)
-    {
-        CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
-        static ConVarRef developer("developer");
-        if (developer.GetInt() >= 2) {
-            Msg("%s", (const char *)str);
-        }
-        for (auto &player : message_listeners) {
-            if ((uint)player.ToInt() == INVALID_EHANDLE_INDEX) {
-                Msg("%s", (const char *)str);
-            }
-            else if (player != nullptr) {
-                if (player->IsFakeClient())  continue;
-                
-                engine->ClientPrintf(player->edict(), str);
-            }
-        }
-    }
-
+    
     DETOUR_DECL_MEMBER(void, CBaseEntityOutput_FireOutput, variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
     {
         static ConVarRef developer("developer");
@@ -82,8 +59,8 @@ namespace Mod::Perf::Input_Optimize
                 g_EventQueue.GetRef().AddEvent( STRING(ev->m_iTarget), STRING(ev->m_iTargetInput), ValueOverride, ev->m_flDelay, pActivator, pCaller, ev->m_iIDStamp );
             }
 
-            if (!message_listeners_empty || developer.GetInt() >= 2) {
-                SendMessageToListeners(
+            if (developer.GetInt() >= 2) {
+                DevMsg(
                     "(%0.2f) output: (%s,%s) -> (%s,%s,%.1f)(%s)\n",
                     engine->GetServerTime(),
                     pCaller ? pCaller->GetClassname() : "NULL",
@@ -104,8 +81,8 @@ namespace Mod::Perf::Input_Optimize
                 ev->m_nTimesToFire--;
                 if (ev->m_nTimesToFire == 0)
                 {
-                    if (!message_listeners_empty || developer.GetInt() >= 2) {
-                        SendMessageToListeners("Removing from action list: (%s,%s) -> (%s,%s)\n", pCaller ? pCaller->GetClassname() : "NULL", pCaller ? STRING(pCaller->GetEntityName()) : "NULL", STRING(ev->m_iTarget), STRING(ev->m_iTargetInput));
+                    if (developer.GetInt() >= 2) {
+                        DevMsg("Removing from action list: (%s,%s) -> (%s,%s)\n", pCaller ? pCaller->GetClassname() : "NULL", pCaller ? STRING(pCaller->GetEntityName()) : "NULL", STRING(ev->m_iTarget), STRING(ev->m_iTargetInput));
                     }
                     bRemove = true;
                 }
@@ -156,8 +133,8 @@ namespace Mod::Perf::Input_Optimize
                 {
                     if ( !Q_stricmp(dmap->dataDesc[i].externalName, szInputName) )
                     {
-                        if (!message_listeners_empty || developer.GetInt() >= 2) {
-                            SendMessageToListeners("(%0.2f) input %s: %s.%s(%s)\n", gpGlobals->curtime, pCaller != nullptr ? STRING(pCaller->GetEntityName()) : "<no caller>", ent->GetEntityName(), szInputName, Value.String());
+                        if (developer.GetInt() >= 2) {
+                            DevMsg("(%0.2f) input %s: %s.%s(%s)\n", gpGlobals->curtime, pCaller != nullptr ? STRING(pCaller->GetEntityName()) : "<no caller>", ent->GetEntityName(), szInputName, Value.String());
                         }
 
                         // convert the value if necessary
@@ -167,8 +144,8 @@ namespace Mod::Perf::Input_Optimize
                             {
                                 if ( !Value.Convert( (fieldtype_t)dmap->dataDesc[i].fieldType ) )
                                 {
-                                    if (!message_listeners_empty || developer.GetInt() >= 2) {
-                                        SendMessageToListeners("!! ERROR: bad input/output link:\n!! %s(%s,%s) doesn't match type from %s(%s)\n", 
+                                    if (developer.GetInt() >= 2) {
+                                        DevMsg("!! ERROR: bad input/output link:\n!! %s(%s,%s) doesn't match type from %s(%s)\n", 
                                             ent->GetClassname(), STRING(ent->GetEntityName()), szInputName, 
                                             ( pCaller != NULL ) ? pCaller->GetClassname() : "<null>",
                                             ( pCaller != NULL ) ? STRING(pCaller->GetEntityName()) : "<null>");
@@ -207,13 +184,13 @@ namespace Mod::Perf::Input_Optimize
                 }
             }
         }
-        if (!message_listeners_empty || developer.GetInt() >= 2) {
-            SendMessageToListeners("unhandled input: (%s) -> (%s,%s)\n", szInputName, ent->GetClassname(), STRING(ent->GetEntityName())/*,", from (%s,%s)" STRING(pCaller->m_iClassname), STRING(pCaller->m_iName)*/ );
+        if (developer.GetInt() >= 2) {
+            DevMsg("unhandled input: (%s) -> (%s,%s)\n", szInputName, ent->GetClassname(), STRING(ent->GetEntityName())/*,", from (%s,%s)" STRING(pCaller->m_iClassname), STRING(pCaller->m_iName)*/ );
         }
         return false;
     }
 
-    class CMod : public IMod, IModCallbackListener
+    class CMod : public IMod
 	{
 	public:
 		CMod() : IMod("Perf::Input_Optimize")
@@ -224,29 +201,8 @@ namespace Mod::Perf::Input_Optimize
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput", LOWEST);
             
 		}
-
-        virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
-
-        virtual void LevelInitPreEntity() override
-        {
-            message_listeners.clear();
-            message_listeners_empty = true;
-        }
 	};
 	CMod s_Mod;
-
-	ModCommandDebug sig_print_input("sig_print_input", [](CCommandPlayer *player, const CCommand& args){
-		int activate;
-        if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
-            message_listeners.insert(player);
-            message_listeners_empty = false;
-            ModCommandResponse("Reading input/output debug info\n");
-        }
-        else {
-            message_listeners.erase(player);
-            message_listeners_empty = message_listeners.empty();
-        }
-	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_perf_input_optimize", "0", FCVAR_NOTIFY,
 		"Mod: Optimize input/output entity links",

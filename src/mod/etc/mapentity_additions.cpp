@@ -30,6 +30,7 @@
 #include "mod/etc/mapentity_additions.h"
 #include "stub/trace.h"
 #include "mod/item/item_common.h"
+#include "mod/common/commands.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -50,6 +51,30 @@ namespace Mod::Etc::Mapentity_Additions
     };
 
     std::vector<std::pair<string_t, CHandle<CBaseEntity>>> entity_listeners;
+
+    std::set<CHandle<CBasePlayer>> message_listeners;
+    bool message_listeners_empty = true;
+
+    template<typename... ARGS>
+    void SendMessageToListeners(const char *fmt, ARGS&&... args)
+    {
+        CFmtStrN<1024> str(fmt, std::forward<ARGS>(args)...);
+        static ConVarRef developer("developer");
+        //if (developer.GetInt() >= 2) {
+        //    Msg("%s", (const char *)str);
+        //}
+        for (auto &player : message_listeners) {
+            if ((uint)player.ToInt() == INVALID_EHANDLE_INDEX) {
+                Msg("%s", (const char *)str);
+            }
+            else if (player != nullptr) {
+                if (player->IsFakeClient())  continue;
+                
+                engine->ClientPrintf(player->edict(), str);
+            }
+        }
+    }
+
 
     ChangeLevelInfo change_level_info;
     int waveToJumpNextTick = -1;
@@ -337,6 +362,40 @@ namespace Mod::Etc::Mapentity_Additions
         return nullptr;
     }
 
+    void EntityOutputPrintDebug(CBaseEntityOutput *output, variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
+    {
+        CEventAction *ev = output->m_ActionList;
+        CEventAction *prev = NULL;
+        while (ev != NULL)
+        {
+            SendMessageToListeners(
+                "(%0.2f) output: (%s,%s) -> (%s,%s,%.1f)(%s)\n",
+                engine->GetServerTime(),
+                pCaller ? pCaller->GetClassname() : "NULL",
+                pCaller ? STRING(pCaller->GetEntityName()) : "NULL",
+                STRING(ev->m_iTarget),
+                STRING(ev->m_iTargetInput),
+                ev->m_flDelay,
+                STRING(ev->m_iParameter) );
+
+            if (ev->m_nTimesToFire == 0)
+            {
+                SendMessageToListeners("Removing from action list: (%s,%s) -> (%s,%s)\n", pCaller ? pCaller->GetClassname() : "NULL", pCaller ? STRING(pCaller->GetEntityName()) : "NULL", STRING(ev->m_iTarget), STRING(ev->m_iTargetInput));
+            }
+
+            prev = ev;
+            ev = ev->m_pNext;
+        }
+    }
+    DETOUR_DECL_MEMBER(void, CBaseEntityOutput_FireOutput, variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
+    {
+        if (!message_listeners_empty) {
+            EntityOutputPrintDebug(reinterpret_cast<CBaseEntityOutput *>(this), Value, pActivator, pCaller, fDelay);
+        }
+
+        DETOUR_MEMBER_CALL(CBaseEntityOutput_FireOutput)(Value, pActivator, pCaller, fDelay);
+    }
+
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
     {
         CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
@@ -355,8 +414,15 @@ namespace Mod::Etc::Mapentity_Additions
                 return true;
             }
         }
-
-        return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
+        if (!message_listeners_empty) {
+            SendMessageToListeners("(%0.2f) input %s: %s.%s(%s)\n", gpGlobals->curtime, pCaller != nullptr ? STRING(pCaller->GetEntityName()) : "<no caller>", ent->GetEntityName(), szInputName, Value.String());
+        }
+        auto ret = DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
+        
+        if (!ret && !message_listeners_empty) {
+            SendMessageToListeners("unhandled input: (%s) -> (%s,%s)\n", szInputName, ent->GetClassname(), STRING(ent->GetEntityName())/*,", from (%s,%s)" STRING(pCaller->m_iClassname), STRING(pCaller->m_iName)*/ );
+        }
+        return ret;
     }
 
     void ActivateLoadedInput()
@@ -1871,6 +1937,7 @@ namespace Mod::Etc::Mapentity_Additions
 		CMod() : IMod("Etc:Mapentity_Additions")
 		{
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_InputIgnitePlayer, "CTFPlayer::InputIgnitePlayer");
+			MOD_ADD_DETOUR_MEMBER(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
@@ -2001,6 +2068,9 @@ namespace Mod::Etc::Mapentity_Additions
         { 
             ResetPropDataCache();
             entity_listeners.clear();
+
+            message_listeners.clear();
+            message_listeners_empty = true;
         }
 
         virtual void FrameUpdatePostEntityThink() override
@@ -2027,6 +2097,18 @@ namespace Mod::Etc::Mapentity_Additions
 	};
 	CMod s_Mod;
 	
+	ModCommandDebug sig_print_input("sig_print_input", [](CCommandPlayer *player, const CCommand& args){
+		int activate;
+        if (args.ArgC() == 2 && StringToIntStrict(args[1], activate) && activate) {
+            message_listeners.insert(player);
+            message_listeners_empty = false;
+            ModCommandResponse("Reading input/output debug info\n");
+        }
+        else {
+            message_listeners.erase(player);
+            message_listeners_empty = message_listeners.empty();
+        }
+	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_etc_mapentity_additions", "0", FCVAR_NOTIFY,
 		"Mod: tell maps that sigsegv extension is loaded",

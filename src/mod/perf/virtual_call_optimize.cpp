@@ -824,7 +824,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
             // this->AddPatch(new CPatch_CStaticProp_GetEntityHandle());
             // this->AddPatch(new CPatch_CStaticProp_GetRefEHandle());
             
-            // Rewrite those functions but with less instructions therefore faster
+            // Rewrite those functions but with less instructions (no prologue) therefore faster
             this->AddPatch(new CPatch_CBasePlayer_IsPlayer());
             //this->AddPatch(new CPatch_CBaseEntity_GetBaseEntity());
             this->AddPatch(new CPatch_CBaseEntity_GetTeamNumber());
