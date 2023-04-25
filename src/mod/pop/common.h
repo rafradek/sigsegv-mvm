@@ -120,6 +120,7 @@ public:
     int repeats = 0;
     float duration = 0.1f;
     bool if_target = false;
+    bool if_no_target = false;
 
     int health_below = 0;
     int health_above = 0;

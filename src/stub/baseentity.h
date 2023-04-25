@@ -190,7 +190,7 @@ class CBaseEntity : public IServerEntity
 {
 public:
 	/* inline */
-	edict_t *edict() const { return this->NetworkProp()->GetEdict(); }
+	edict_t *edict() const { return this->NetworkProp()->GetProp(); }
 	int entindex() const;
 	const Vector& GetAbsOrigin() const;
 	const QAngle& GetAbsAngles() const;

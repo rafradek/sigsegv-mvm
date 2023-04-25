@@ -151,7 +151,13 @@ template<class C, typename RET, typename... PARAMS>
 class MemberFuncThunk<C *, RET, PARAMS...> //<C, RET, PARAMS...>
 {
 public:
+
+// For gcc thiscall callconv, `this` is essentally the first argument of a function, so call the function like a static, this way 'fat' function pointers can be avoided
+#ifdef __GNUC__
+	using FPtr = RET (*)(C*, PARAMS...);
+#else
 	using FPtr = RET (C::*)(PARAMS...);
+#endif
 	
 	MemberFuncThunk(const char *n_func) :
 		link(n_func) {}
@@ -159,13 +165,22 @@ public:
 	inline RET operator()(const C *obj, PARAMS... args) const = delete;
 	inline RET operator()(      C *obj, PARAMS... args) const
 	{
+#ifdef __GNUC__
+		FPtr pFunc= (FPtr)link.GetFuncPtr();
+#else
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(link.GetFuncPtr());
+#endif
+
 #ifdef DEBUG
 		assert(pFunc != nullptr);
 		assert(obj   != nullptr);
 #endif
-		
+
+#ifdef __GNUC__
+		return (*pFunc)(obj, args...);
+#else
 		return (obj->*pFunc)(args...);
+#endif
 	}
 private:
 	MemberFuncThunkBase link;
@@ -175,7 +190,13 @@ template<class C, typename RET, typename... PARAMS>
 class MemberFuncThunk<const C *, RET, PARAMS...>//<C, RET, PARAMS...>
 {
 public:
+
+// Slightly shrink stuff
+#ifdef __GNUC__
+	using FPtr = RET (*)(const C*, PARAMS...);
+#else
 	using FPtr = RET (C::*)(PARAMS...) const;
+#endif
 	
 	MemberFuncThunk(const char *n_func) :
 		link/*<C, RET, PARAMS...>*/(n_func) {}
@@ -183,13 +204,22 @@ public:
 	inline RET operator()(      C *obj, PARAMS... args) const = delete;
 	inline RET operator()(const C *obj, PARAMS... args) const
 	{
+#ifdef __GNUC__
+		FPtr pFunc= (FPtr)link.GetFuncPtr();
+#else
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(link.GetFuncPtr());
+#endif
+
 #ifdef DEBUG
 			assert(pFunc != nullptr);
 			assert(obj   != nullptr);
 #endif
 		
+#ifdef __GNUC__
+		return (*pFunc)(obj, args...);
+#else
 		return (obj->*pFunc)(args...);
+#endif
 	}
 private:
 	MemberFuncThunkBase link;
@@ -272,7 +302,11 @@ class MemberVFuncThunk<C *, RET, PARAMS...>
 {
 public:
 	using RetType = RET;
+#ifdef __GNUC__
+	using FPtr = RET (*)(C*, PARAMS...);
+#else
 	using FPtr = RET (C::*)(PARAMS...);
+#endif
 	
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
 		link(n_vtable, n_func) {}
@@ -288,8 +322,12 @@ public:
 #endif
 		
 		auto pVT = *reinterpret_cast<void **const *>(obj);
+#ifdef __GNUC__
+		return (*(FPtr)pVT[vt_index])(obj, args...);
+#else
 		FPtr pFunc = MakePtrToMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
 		return (obj->*pFunc)(args...);
+#endif
 	}
 private:
 	MemberVFuncThunkBase link;
@@ -300,7 +338,11 @@ class MemberVFuncThunk<const C *, RET, PARAMS...>
 {
 public:
 	using RetType = RET;
+#ifdef __GNUC__
+	using FPtr = RET (*)(const C*, PARAMS...);
+#else
 	using FPtr = RET (C::*)(PARAMS...) const;
+#endif
 	
 	MemberVFuncThunk(const char *n_vtable, const char *n_func) :
 		link(n_vtable, n_func) {}
@@ -316,8 +358,13 @@ public:
 #endif
 		
 		auto pVT = *reinterpret_cast<void **const *>(obj);
+		
+#ifdef __GNUC__
+		return (*(FPtr)pVT[vt_index])(obj, args...);
+#else
 		FPtr pFunc = MakePtrToConstMemberFunc<C, RET, PARAMS...>(pVT[vt_index]);
 		return (obj->*pFunc)(args...);
+#endif
 	}
 private:
 	MemberVFuncThunkBase link;

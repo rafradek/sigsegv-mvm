@@ -1047,6 +1047,7 @@ WaveSchedule
 				Duration 5 //Duration of a looping taunt (Default: 0.1)
 				// Name "Taunt: Kazotsky Kick" //If set, uses this item taunt instead of default
 				IfSeeTarget 1 //When set to 1, this task activates only when the bot can see the target player (Default 0 - Always activate)
+				// IfNoTarget 1 //When set to 1, this task activates only when the bot does not have a target (Default 0 - Always activate)
 				IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 				//IfHealthAbove 100 //When set, the task activates only when the bot health is above specified value
 			}

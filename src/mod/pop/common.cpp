@@ -705,7 +705,8 @@ void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, 
         if (gpGlobals->curtime >= pending_task_impl.nextTaskTime && (pending_task.health_below == 0 || bot->GetHealth() <= pending_task.health_below)) {
             const CKnownEntity *threat;
             if ((pending_task.health_above > 0 && bot->GetHealth() <= pending_task.health_above) || (
-                    pending_task.if_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr ))) {
+                    pending_task.if_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr ))
+                    || (pending_task.if_no_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) != nullptr && threat->GetEntity() != nullptr ))) {
                 if (pending_task.health_below > 0)
                     pending_task_impl.nextTaskTime = gpGlobals->curtime;
 
@@ -839,6 +840,9 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
         }
         else if (FStrEq(name, "IfSeeTarget")) {
             task.if_target=subkey->GetBool();
+        }
+        else if (FStrEq(name, "IfNoTarget")) {
+            task.if_no_target=subkey->GetBool();
         }
         else if (FStrEq(name, "IfHealthBelow")) {
             task.health_below=subkey->GetInt();
