@@ -1084,6 +1084,11 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared22UpdateEnergyDrinkMeterEv"
 				}
+				"CTFPlayerShared::OnRemoveStunned"
+				{
+					type "sym"
+					sym  "_ZN15CTFPlayerShared15OnRemoveStunnedEv"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

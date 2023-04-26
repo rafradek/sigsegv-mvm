@@ -184,6 +184,16 @@ namespace Mod::Etc::Misc
 		DETOUR_MEMBER_CALL(CFuncIllusionary_Spawn)();
 	}	
 	
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnRemoveStunned)
+	{
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		auto weapon = shared->GetOuter()->GetActiveTFWeapon();
+		if (weapon != nullptr) {
+			weapon->RemoveEffects(EF_NODRAW);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_OnRemoveStunned)();
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -210,6 +220,10 @@ namespace Mod::Etc::Misc
 
 			// Fix cfuncillusionary crash
 			MOD_ADD_DETOUR_MEMBER(CFuncIllusionary_Spawn, "CFuncIllusionary::Spawn");
+
+			// Fix stun disappearing weapons
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnRemoveStunned, "CTFPlayerShared::OnRemoveStunned");
+			
 		}
 	};
 	CMod s_Mod;
@@ -221,7 +235,8 @@ namespace Mod::Etc::Misc
 		"\nSnap unreachable dropped mvm bomb to last nav area"
 		"\nFix unowned sentry's rockets not dealing damage"
 		"\nFix penetration arrows colliding with bounding boxes of various entities"
-		"\nFix specific CFuncIllusionary crash",
+		"\nFix specific CFuncIllusionary crash"
+		"\nFix stun disappearing weapons",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
