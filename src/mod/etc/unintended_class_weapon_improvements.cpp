@@ -182,7 +182,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #ifndef NO_MVM
 		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(true);
 #endif
-		if (def->GetLoadoutSlot(classIndex) == -1) {
+		if (def->GetLoadoutSlot(classIndex) == -1 && !weapon->m_bDisguiseWeapon) {
 			weapon->SetCustomVariable("isunintendedclass", Variant(true));
 		}
 #ifndef NO_MVM
@@ -197,7 +197,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #ifndef NO_MVM
 		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(true);
 #endif
-		if (wearable->GetItem() != nullptr && wearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(ToTFPlayer(player)->GetPlayerClass()->GetClassIndex()) == -1) {
+		if (wearable->GetItem() != nullptr && !wearable->m_bDisguiseWearable && wearable->GetItem()->GetItemDefinition()->GetLoadoutSlot(ToTFPlayer(player)->GetPlayerClass()->GetClassIndex()) == -1) {
 			wearable->SetCustomVariable("isunintendedclass", Variant(true));
 		}
 #ifndef NO_MVM

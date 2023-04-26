@@ -831,7 +831,7 @@ namespace Mod::Util::Client_Cmds
 
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				check = bot != nullptr && bot->IsPlayer() && rtti_cast<INextBot *>(bot);
+				check = rtti_cast<INextBot *>(bot) != nullptr;
 			}
 			timer.End();
 			
@@ -839,7 +839,7 @@ namespace Mod::Util::Client_Cmds
 			
 			timer.Start(); 
 			for(int i = 0; i < times; i++) {
-				check = bot != nullptr && bot->IsPlayer() && rtti_cast<CTFBot *>(bot);
+				check = rtti_cast<CTFBot *>(bot) != nullptr;
 			}
 			timer.End();
 			

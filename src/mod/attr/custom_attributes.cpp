@@ -1587,7 +1587,7 @@ namespace Mod::Attr::Custom_Attributes
 		return speed * DETOUR_MEMBER_CALL(CTFShotgunBuildingRescue_GetProjectileSpeed)();
 	}
 
-	int GetDamageType(CBaseCombatWeapon *weapon, int value)
+	int GetDamageType(CEconEntity *weapon, int value)
 	{
 		int headshot = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, headshot, can_headshot);
@@ -4058,16 +4058,18 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
 		bool was_alive = entity->IsAlive();
 
-		auto weapon = ToBaseCombatWeapon(info.GetWeapon());
-		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
-			info.SetDamageType(GetDamageType(weapon, info.GetDamageType()));
+		//auto weapon = ToBaseCombatWeapon(info.GetWeapon());
+		auto econEntity = rtti_cast<CEconEntity *>(info.GetWeapon());
+		
+		if (econEntity != nullptr && info.GetAttacker() != nullptr && econEntity->GetItem() != nullptr) {
+			info.SetDamageType(GetDamageType(econEntity, info.GetDamageType()));
 
 			int iAddDamageType = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iAddDamageType, add_damage_type);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(econEntity, iAddDamageType, add_damage_type);
 			info.AddDamageType(iAddDamageType);
 
 			int iRemoveDamageType = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iRemoveDamageType, remove_damage_type);
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(econEntity, iRemoveDamageType, remove_damage_type);
 			info.SetDamageType(info.GetDamageType() & ~(iRemoveDamageType));
 		}
 		// Use construction pda as sentry weapon
@@ -4083,10 +4085,10 @@ namespace Mod::Attr::Custom_Attributes
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 
 		//Fire input on hit
-		if (weapon != nullptr && info.GetAttacker() != nullptr && weapon->GetItem() != nullptr) {
+		if (econEntity != nullptr && info.GetAttacker() != nullptr && econEntity->GetItem() != nullptr) {
 			{
-				GET_STRING_ATTRIBUTE(weapon, fire_input_on_hit, input);
-				GET_STRING_ATTRIBUTE(weapon, fire_input_on_hit_name_restrict, filter);
+				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit, input);
+				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit_name_restrict, filter);
 				
 				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
 					char input_tokenized[512];
@@ -4121,8 +4123,8 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			if (was_alive && !entity->IsAlive()) {
-				GET_STRING_ATTRIBUTE(weapon, fire_input_on_kill, input);
-				GET_STRING_ATTRIBUTE(weapon, fire_input_on_kill_name_restrict, filter);
+				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_kill, input);
+				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_kill_name_restrict, filter);
 				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
 					char input_tokenized[256];
 					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
