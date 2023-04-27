@@ -114,17 +114,17 @@ CTFBotMedicRetreat *CTFBotMedicRetreat::New()
 
 // Inlined in the code
 // static MemberFuncThunk<CTFBotSniperLurk *, void> ft_CTFBotSniperLurk_ctor("CTFBotSniperLurk::CTFBotSniperLurk [C1]");
-#if TOOLCHAIN_FIXES
 CTFBotSniperLurk *CTFBotSniperLurk::New()
 {
 	// TODO: verify sizeof(CTFBotSniperLurk) in the game code at runtime
 	// TODO: verify that the addr for the ctor actually exists
 	
-	auto action = reinterpret_cast<CTFBotSniperLurk *>(::operator new(sizeof(CTFBotSniperLurk)));
-	ft_CTFBotSniperLurk_ctor(action);
+	auto action = new CTFBotSniperLurk(); //reinterpret_cast<CTFBotSniperLurk *>(::operator new(sizeof(CTFBotSniperLurk)));
+	//memset(action, 0, sizeof(CTFBotSniperLurk));
+	action->OverwriteVTPtrs<CTFBotSniperLurk, CTFBotSniperLurk, IContextualQuery>();
+	//ft_CTFBotSniperLurk_ctor(action);
 	return action;
 }
-#endif
 
 
 CTFBotSpyInfiltrate *CTFBotSpyInfiltrate::New()
@@ -165,3 +165,5 @@ MemberFuncThunk<const CTFBotMainAction *, const CKnownEntity *, CTFBot *, const 
 MemberVFuncThunk<CTFBotEscortSquadLeader *, ActionResult<CTFBot>, CTFBot*, float> CTFBotEscortSquadLeader::vt_Update(TypeName<CTFBotEscortSquadLeader>(),"CTFBotEscortSquadLeader::Update");
 
 StaticFuncThunk<bool, bool, bool, CHandle<CTFBotHintEngineerNest> *> CTFBotMvMEngineerHintFinder::ft_FindHint("CTFBotMvMEngineerHintFinder::FindHint");
+
+MemberFuncThunk<CTFBotTacticalMonitor *, Action<CTFBot> *, CTFBot *> CTFBotTacticalMonitor::ft_InitialContainedAction("CTFBotTacticalMonitor::InitialContainedAction");

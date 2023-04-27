@@ -1383,6 +1383,7 @@ WaveSchedule
 					//SuicideBomber - Uses sentry buster AI, but targets players instead. Might crash servers
 					//Idle - Sit in spawn and wait
 					//Passive - Sit at spawn position, until an active threat is in vision
+					//Medic - Use medic AI
 				Item "The Short Circuit"
 				DesiredAttackRange 100 [$SIGSEGV] // How close to the target the bot should want to move when trying to attack. For melee weapons, default is 100. For other weapons except sniper rifles - 500
 				MoveBehindEnemy 1 [$SIGSEGV] // Should the bot try to get behind the target, similar to how the Spy bot behaves. Instead of 1 you can also specify custom distance at which the bot will start strafing around the target (default: 0) 
@@ -2271,7 +2272,12 @@ WaveSchedule
 							Delay 1 //Time before the first fire input starts (Default: 10)
 							Repeats 1 //How many times should bot use the fire input in total (Default: 0 - Infinite)
 							Target "4.813873 -1628.718506 451.714722"
+							OnDoneChangeAttributes "Action3" // When the task is done, switch to this EventChangeAttributes
 						}
+					}
+					Action3
+					{
+						ActionOverride Spy [$SIGSEGV]  // Override existing action with another
 					}
 				}
 			}

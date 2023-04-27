@@ -41,6 +41,11 @@ class PlayerBody : public IBody {
 MemberVFuncThunk<PlayerBody *, CBaseEntity*                                                          > PlayerBody::vt_GetEntity                  (TypeName<PlayerBody>(), "PlayerBody::GetEntity");
 
 
+namespace Mod::Pop::TFBot_Extensions
+{
+	void SetActionOverride(CTFBot *bot, const char *action);
+}
+
 #ifdef ADD_EXTATTR
 namespace Mod::Pop::ECAttr_Extensions
 {
@@ -168,6 +173,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		float move_behind_enemy = 0;
 
 		CRC32_t spray_file;
+
+		std::string action_override;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -875,6 +882,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.desired_attack_range = kv->GetFloat();
 		} else if (FStrEq(name, "MoveBehindEnemy")) {
 			data.move_behind_enemy = kv->GetFloat();
+		} else if (FStrEq(name, "ActionOverride")) {
+			data.action_override = kv->GetString();
 		} else {
 			found = false;
 		}
@@ -1106,204 +1115,209 @@ namespace Mod::Pop::ECAttr_Extensions
 	void ApplyCurrentEventChangeAttributes(CTFBot *bot)
 	{
 		auto data = GetDataForBot(bot);
-		if (data != nullptr) {
-			for(auto ititem = data->custom_attrs.begin(); ititem != data->custom_attrs.end(); ititem++) {
+		if (data == nullptr) return;
 
-				ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity) {
-					CEconItemView *item_view = entity->GetItem();
-					if (item_view == nullptr) return;
-					//DevMsg("Compare item to name %s %s\n",item_view->GetStaticData()->GetName(), ititem->first.c_str());
-					if (FStrEq(item_view->GetStaticData()->GetName(), ititem->first.c_str())) {
-						//DevMsg("Custom attrib count %d\n ",ititem->second.size());
-						for(auto itattr = ititem->second.begin(); itattr != ititem->second.end(); itattr++) {
-							DevMsg("Added custom attribute %s\n",itattr->first.c_str());
-							
-							cell_t result = 0;
-							custom_item_set_attribute->PushCell(ENTINDEX(entity));
-							custom_item_set_attribute->PushString(itattr->first.c_str());
-							custom_item_set_attribute->PushString(itattr->second.c_str());
-							custom_item_set_attribute->Execute(&result);
-					
-						//	engine->ServerCommand(CFmtStr("ce_mvm_set_attribute %d \"%s\" %s\n", ENTINDEX(entity), itattr->first.c_str(), itattr->second.c_str()));
-						//	engine->ServerExecute();
+		for(auto ititem = data->custom_attrs.begin(); ititem != data->custom_attrs.end(); ititem++) {
+
+			ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity) {
+				CEconItemView *item_view = entity->GetItem();
+				if (item_view == nullptr) return;
+				//DevMsg("Compare item to name %s %s\n",item_view->GetStaticData()->GetName(), ititem->first.c_str());
+				if (FStrEq(item_view->GetStaticData()->GetName(), ititem->first.c_str())) {
+					//DevMsg("Custom attrib count %d\n ",ititem->second.size());
+					for(auto itattr = ititem->second.begin(); itattr != ititem->second.end(); itattr++) {
+						DevMsg("Added custom attribute %s\n",itattr->first.c_str());
+						
+						cell_t result = 0;
+						custom_item_set_attribute->PushCell(ENTINDEX(entity));
+						custom_item_set_attribute->PushString(itattr->first.c_str());
+						custom_item_set_attribute->PushString(itattr->second.c_str());
+						custom_item_set_attribute->Execute(&result);
+				
+					//	engine->ServerCommand(CFmtStr("ce_mvm_set_attribute %d \"%s\" %s\n", ENTINDEX(entity), itattr->first.c_str(), itattr->second.c_str()));
+					//	engine->ServerExecute();
+					}
+				}
+			});
+		}
+
+		ApplyAddCond(bot, data->addconds, delayed_addconds);
+		ApplyPendingTask(bot, data->periodic_tasks, pending_periodic_tasks);
+
+		if (data->skin != -1){
+			bot->SetForcedSkin(data->skin);
+		}
+		else
+			bot->ResetForcedSkin();
+
+		
+		static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
+		static ConVarRef sig_mvm_bots_bleed("sig_mvm_bots_bleed");
+		if (!data->use_custom_model.empty()) {
+			
+			bot->GetPlayerClass()->SetCustomModel(data->use_custom_model.c_str(), true);
+			bot->UpdateModel();
+			bot->SetBloodColor(DONT_BLEED);
+			
+			// TODO: RomeVision...?
+		} else if (data->use_buster_model) {
+			
+			// here we mimic what CMissionPopulator::UpdateMissionDestroySentries does
+			bot->GetPlayerClass()->SetCustomModel("models/bots/demo/bot_sentry_buster.mdl", true);
+			bot->UpdateModel();
+			bot->SetBloodColor(DONT_BLEED);
+			
+			// TODO: filter-out addition of Romevision cosmetics to UseBusterModel bots
+			// TODO: manually add Romevision cosmetic for SentryBuster to UseBusterModel bots
+		} else if (data->use_human_model != 0 || sig_mvm_bots_are_humans.GetBool()) {
+			
+			bool can_be_sapped = data->use_human_model == 2 || sig_mvm_bots_are_humans.GetInt() == 2;
+			// calling SetCustomModel with a nullptr string *seems* to reset the model
+			// dunno what the bool parameter should be; I think it doesn't matter for the nullptr case
+			bot->GetPlayerClass()->SetCustomModel(nullptr, true);
+			bot->UpdateModel();
+			bot->SetBloodColor(BLOOD_COLOR_RED);
+			
+			//Cannot be sapped custom attribute
+			if (!can_be_sapped) {
+				auto sap_def = GetItemSchema()->GetAttributeDefinitionByName("cannot be sapped");
+				if (sap_def != nullptr)
+					bot->GetAttributeList()->SetRuntimeAttributeValue(sap_def, 1.0f);
+			}
+			
+			// TODO: filter-out addition of Romevision cosmetics to UseHumanModel bots
+		}
+
+		if (HasRobotBlood(bot)) {
+			bot->SetBloodColor(BLOOD_COLOR_RED);
+		}
+
+		if (data->use_human_animations && data->use_human_model == 0) {
+			CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+			DevMsg("Use human anims %d\n", wearable != nullptr);
+			if (wearable != nullptr) {
+				
+				wearable->m_bValidatedAttachedEntity = true;
+				wearable->GiveTo(bot);
+				servertools->SetKeyValue(bot, "rendermode", "1");
+				bot->SetRenderColorA(0);
+				bot->EquipWearable(wearable);
+				const char *path = bot->GetPlayerClass()->GetCustomModel();
+				int model_index = CBaseEntity::PrecacheModel(path);
+				wearable->SetModelIndex(model_index);
+				for (int j = 0; j < MAX_VISION_MODES; ++j) {
+					wearable->SetModelIndexOverride(j, model_index);
+				}
+				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
+			}
+			
+		}
+
+		for (const auto& pair : data->item_colors) {
+			const char *item_name     = pair.first.c_str();
+			const color32& item_color = pair.second;
+
+			CEconEntity *entity = bot->GetEconEntityByName(item_name);
+			if (entity != nullptr) {
+				DevMsg("CTFBotSpawner %08x: applying color %02X%02X%02X to item \"%s\"\n",
+					(uintptr_t)&data, item_color.r, item_color.g, item_color.b, item_name);
+				
+				entity->SetRenderColorR(item_color.r);
+				entity->SetRenderColorG(item_color.g);
+				entity->SetRenderColorB(item_color.b);
+			}
+		}
+
+		for (const auto& pair : data->item_models) {
+			const char *item_name     = pair.first.c_str();
+			const char *item_model = pair.second.c_str();
+			
+			CEconEntity *entity = bot->GetEconEntityByName(item_name);
+			if (entity != nullptr) {
+				int model_index = CBaseEntity::PrecacheModel(item_model);
+				entity->SetModelIndex(model_index);
+				for (int i = 0; i < MAX_VISION_MODES; ++i) {
+					entity->SetModelIndexOverride(i, model_index);
+				}
+			}
+		}
+
+		CTFWearable *pActionSlotEntity = bot->GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_ACTION );
+		if ( pActionSlotEntity  != nullptr) {
+
+			// get the equipped item and see what it is
+			CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
+			if (pPowerupBottle  != nullptr) {
+				int val=0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(pPowerupBottle, val, powerup_charges);
+				pPowerupBottle->m_usNumCharges = val;
+			}
+		}
+
+		for (const auto& pair : data->custom_weapon_models) {
+			int slot         = pair.first;
+			const char *path = pair.second.c_str();
+			
+			CBaseEntity *item;
+			if ((item = bot->GetEquippedWearableForLoadoutSlot(slot)) == nullptr &&
+				(item = bot->Weapon_GetSlot(slot)) == nullptr) {
+				DevMsg("CTFBotSpawner %08x: can't find item slot %d for CustomWeaponModel\n",
+					(uintptr_t)&data, slot);
+				continue;
+			}
+			
+			DevMsg("CTFBotSpawner %08x: item slot %d is entity #%d classname \"%s\"\n",
+				(uintptr_t)&data, slot, ENTINDEX(item), item->GetClassname());
+			
+			DevMsg("CTFBotSpawner %08x: changing item model to \"%s\"\n",
+				(uintptr_t)&data, path);
+			
+			int model_index = CBaseEntity::PrecacheModel(path);
+			for (int i = 0; i < MAX_VISION_MODES; ++i) {
+				item->SetModelIndexOverride(i, model_index);
+			}
+		}
+
+		if (!data->bodygroup.empty()) {
+			THINK_FUNC_SET(bot, SetBodygroup, gpGlobals->curtime + 0.1f);
+		}
+
+		if (data->custom_eye_particle != "" || data->eye_particle_color) {
+			THINK_FUNC_SET(bot, EyeParticle, gpGlobals->curtime + 0.1f);
+		}
+
+		//Replenish clip, if clip bonus is being applied
+		for (int i = 0; i < bot->WeaponCount(); ++i) {
+			CBaseCombatWeapon *weapon = bot->GetWeapon(i);
+			if (weapon == nullptr) continue;
+			
+			int fire_when_full = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_when_full, auto_fires_full_clip);
+
+			if (fire_when_full == 0)
+				weapon->m_iClip1 = weapon->GetMaxClip1();
+		}
+
+		CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(bot) - 1));
+		client->m_nCustomFiles[0].crc = data->spray_file;
+
+		if (!data->strip_item.empty()) {
+			for (std::string &itemname : data->strip_item) {
+				ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity){
+					if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemname.c_str())) {
+						if (entity->MyCombatWeaponPointer() != nullptr) {
+							bot->Weapon_Detach(entity->MyCombatWeaponPointer());
 						}
+						entity->Remove();
 					}
 				});
 			}
-
-			ApplyAddCond(bot, data->addconds, delayed_addconds);
-			ApplyPendingTask(bot, data->periodic_tasks, pending_periodic_tasks);
-
-			if (data->skin != -1){
-				bot->SetForcedSkin(data->skin);
-			}
-			else
-				bot->ResetForcedSkin();
-
-			
-			static ConVarRef sig_mvm_bots_are_humans("sig_mvm_bots_are_humans");
-			static ConVarRef sig_mvm_bots_bleed("sig_mvm_bots_bleed");
-			if (!data->use_custom_model.empty()) {
-				
-				bot->GetPlayerClass()->SetCustomModel(data->use_custom_model.c_str(), true);
-				bot->UpdateModel();
-				bot->SetBloodColor(DONT_BLEED);
-				
-				// TODO: RomeVision...?
-			} else if (data->use_buster_model) {
-				
-				// here we mimic what CMissionPopulator::UpdateMissionDestroySentries does
-				bot->GetPlayerClass()->SetCustomModel("models/bots/demo/bot_sentry_buster.mdl", true);
-				bot->UpdateModel();
-				bot->SetBloodColor(DONT_BLEED);
-				
-				// TODO: filter-out addition of Romevision cosmetics to UseBusterModel bots
-				// TODO: manually add Romevision cosmetic for SentryBuster to UseBusterModel bots
-			} else if (data->use_human_model != 0 || sig_mvm_bots_are_humans.GetBool()) {
-				
-				bool can_be_sapped = data->use_human_model == 2 || sig_mvm_bots_are_humans.GetInt() == 2;
-				// calling SetCustomModel with a nullptr string *seems* to reset the model
-				// dunno what the bool parameter should be; I think it doesn't matter for the nullptr case
-				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
-				bot->UpdateModel();
-				bot->SetBloodColor(BLOOD_COLOR_RED);
-				
-				//Cannot be sapped custom attribute
-				if (!can_be_sapped) {
-					auto sap_def = GetItemSchema()->GetAttributeDefinitionByName("cannot be sapped");
-					if (sap_def != nullptr)
-						bot->GetAttributeList()->SetRuntimeAttributeValue(sap_def, 1.0f);
-				}
-				
-				// TODO: filter-out addition of Romevision cosmetics to UseHumanModel bots
-			}
-
-			if (HasRobotBlood(bot)) {
-				bot->SetBloodColor(BLOOD_COLOR_RED);
-			}
-
-			if (data->use_human_animations && data->use_human_model == 0) {
-				CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
-				DevMsg("Use human anims %d\n", wearable != nullptr);
-				if (wearable != nullptr) {
-					
-					wearable->m_bValidatedAttachedEntity = true;
-					wearable->GiveTo(bot);
-					servertools->SetKeyValue(bot, "rendermode", "1");
-					bot->SetRenderColorA(0);
-					bot->EquipWearable(wearable);
-					const char *path = bot->GetPlayerClass()->GetCustomModel();
-					int model_index = CBaseEntity::PrecacheModel(path);
-					wearable->SetModelIndex(model_index);
-					for (int j = 0; j < MAX_VISION_MODES; ++j) {
-						wearable->SetModelIndexOverride(j, model_index);
-					}
-					bot->GetPlayerClass()->SetCustomModel(nullptr, true);
-				}
-				
-			}
-
-			for (const auto& pair : data->item_colors) {
-				const char *item_name     = pair.first.c_str();
-				const color32& item_color = pair.second;
-
-				CEconEntity *entity = bot->GetEconEntityByName(item_name);
-				if (entity != nullptr) {
-					DevMsg("CTFBotSpawner %08x: applying color %02X%02X%02X to item \"%s\"\n",
-						(uintptr_t)&data, item_color.r, item_color.g, item_color.b, item_name);
-					
-					entity->SetRenderColorR(item_color.r);
-					entity->SetRenderColorG(item_color.g);
-					entity->SetRenderColorB(item_color.b);
-				}
-			}
-
-			for (const auto& pair : data->item_models) {
-				const char *item_name     = pair.first.c_str();
-				const char *item_model = pair.second.c_str();
-				
-				CEconEntity *entity = bot->GetEconEntityByName(item_name);
-				if (entity != nullptr) {
-					int model_index = CBaseEntity::PrecacheModel(item_model);
-					entity->SetModelIndex(model_index);
-					for (int i = 0; i < MAX_VISION_MODES; ++i) {
-						entity->SetModelIndexOverride(i, model_index);
-					}
-				}
-			}
-
-			CTFWearable *pActionSlotEntity = bot->GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_ACTION );
-			if ( pActionSlotEntity  != nullptr) {
-
-				// get the equipped item and see what it is
-				CTFPowerupBottle *pPowerupBottle = rtti_cast< CTFPowerupBottle* >( pActionSlotEntity );
-				if (pPowerupBottle  != nullptr) {
-					int val=0;
-					CALL_ATTRIB_HOOK_INT_ON_OTHER(pPowerupBottle, val, powerup_charges);
-					pPowerupBottle->m_usNumCharges = val;
-				}
-			}
-
-			for (const auto& pair : data->custom_weapon_models) {
-				int slot         = pair.first;
-				const char *path = pair.second.c_str();
-				
-				CBaseEntity *item;
-				if ((item = bot->GetEquippedWearableForLoadoutSlot(slot)) == nullptr &&
-					(item = bot->Weapon_GetSlot(slot)) == nullptr) {
-					DevMsg("CTFBotSpawner %08x: can't find item slot %d for CustomWeaponModel\n",
-						(uintptr_t)&data, slot);
-					continue;
-				}
-				
-				DevMsg("CTFBotSpawner %08x: item slot %d is entity #%d classname \"%s\"\n",
-					(uintptr_t)&data, slot, ENTINDEX(item), item->GetClassname());
-				
-				DevMsg("CTFBotSpawner %08x: changing item model to \"%s\"\n",
-					(uintptr_t)&data, path);
-				
-				int model_index = CBaseEntity::PrecacheModel(path);
-				for (int i = 0; i < MAX_VISION_MODES; ++i) {
-					item->SetModelIndexOverride(i, model_index);
-				}
-			}
-
-			if (!data->bodygroup.empty()) {
-				THINK_FUNC_SET(bot, SetBodygroup, gpGlobals->curtime + 0.1f);
-			}
-
-			if (data->custom_eye_particle != "" || data->eye_particle_color) {
-				THINK_FUNC_SET(bot, EyeParticle, gpGlobals->curtime + 0.1f);
-			}
-
-			//Replenish clip, if clip bonus is being applied
-			for (int i = 0; i < bot->WeaponCount(); ++i) {
-				CBaseCombatWeapon *weapon = bot->GetWeapon(i);
-				if (weapon == nullptr) continue;
-				
-				int fire_when_full = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, fire_when_full, auto_fires_full_clip);
-
-				if (fire_when_full == 0)
-					weapon->m_iClip1 = weapon->GetMaxClip1();
-			}
-
-			CBaseClient *client = static_cast<CBaseClient *> (sv->GetClient(ENTINDEX(bot) - 1));
-			client->m_nCustomFiles[0].crc = data->spray_file;
-
-			if (!data->strip_item.empty()) {
-				for (std::string &itemname : data->strip_item) {
-					ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity){
-						if (entity->GetItem() != nullptr && FStrEq(entity->GetItem()->GetItemDefinition()->GetName(), itemname.c_str())) {
-							if (entity->MyCombatWeaponPointer() != nullptr) {
-								bot->Weapon_Detach(entity->MyCombatWeaponPointer());
-							}
-							entity->Remove();
-						}
-					});
-				}
-				bot->EquipBestWeaponForThreat(nullptr);
-			}
+			bot->EquipBestWeaponForThreat(nullptr);
+		}
+		Msg("ActionBC %s\n", data->action_override.c_str());
+		if (!data->action_override.empty()) {
+			Msg("Do %s\n", data->action_override.c_str());
+			Mod::Pop::TFBot_Extensions::SetActionOverride(bot, data->action_override.c_str());
 		}
 	}
 	

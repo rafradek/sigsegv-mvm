@@ -62,7 +62,7 @@ namespace Mod::Pop::TFBot_Extensions
 			this->m_PathFollower.SetMinLookAheadDistance(actor->GetDesiredPathLookAheadRange());
 			
 			this->m_hTarget = nullptr;
-			
+
 			return this->m_Attack->OnStart(actor, action);
 		}
 		
@@ -509,36 +509,34 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_StateLeave)();
 	}
 	
-	void Parse_Action(CTFBotSpawner *spawner, KeyValues *kv)
-	{
-		const char *value = kv->GetString();
-		
+	void Parse_Action(SpawnerData &data, const char *value)
+	{	
 		if (FStrEq(value, "Default")) {
-			spawners[spawner].action = ACTION_Default;
+			data.action = ACTION_Default;
 		} else if (FStrEq(value, "FetchFlag")) {
-			spawners[spawner].action = ACTION_FetchFlag;
+			data.action = ACTION_FetchFlag;
 		} else if (FStrEq(value, "PushToCapturePoint")) {
-			spawners[spawner].action = ACTION_PushToCapturePoint;
+			data.action = ACTION_PushToCapturePoint;
 		} else if (FStrEq(value, "Mobber")) {
-			spawners[spawner].action = ACTION_Mobber;
+			data.action = ACTION_Mobber;
 		} else if (FStrEq(value, "Spy")) {
-			spawners[spawner].action = ACTION_BotSpyInfiltrate;
-		//} else if (FStrEq(value, "Medic")) {
-		//	spawners[spawner].action = ACTION_MedicHeal;
+			data.action = ACTION_BotSpyInfiltrate;
+		} else if (FStrEq(value, "Medic")) {
+			data.action = ACTION_MedicHeal;
 		} else if (FStrEq(value, "Sniper")) {
-			spawners[spawner].action = ACTION_SniperLurk;
+			data.action = ACTION_SniperLurk;
 		} else if (FStrEq(value, "SuicideBomber")) {
-			spawners[spawner].action = ACTION_DestroySentries;
+			data.action = ACTION_DestroySentries;
 		} else if (FStrEq(value, "EscortFlag")) {
-			spawners[spawner].action = ACTION_EscortFlag;
+			data.action = ACTION_EscortFlag;
 		} else if (FStrEq(value, "Idle")) {
-			spawners[spawner].action = ACTION_Idle;
+			data.action = ACTION_Idle;
 		} else if (FStrEq(value, "Passive")) {
-			spawners[spawner].action = ACTION_Passive;
+			data.action = ACTION_Passive;
 		} else {
 			Warning("Unknown value \'%s\' for TFBot Action.\n", value);
 		}
-		DevMsg("Parse action %d %s \n", spawners[spawner].action, value); 
+		DevMsg("Parse action %d %s \n", data.action, value); 
 	}
 	
 	void Parse_EventChangeAttributesSig(CTFBotSpawner *spawner, KeyValues *kv)
@@ -669,7 +667,7 @@ namespace Mod::Pop::TFBot_Extensions
 			} else if (Parse_PeriodicTask(spawners[spawner].periodic_tasks, subkey, name)) {
 
 			} else if (FStrEq(name, "Action")) {
-				Parse_Action(spawner, subkey);
+				Parse_Action(spawners[spawner], subkey->GetString());
 			} else if (FStrEq(name, "EventChangeAttributesSig")) {
 				Parse_EventChangeAttributesSig(spawner, subkey);
 			} else if (FStrEq(name, "ForceRomeVision")) {
@@ -996,6 +994,23 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_MEMBER_CALL(CTFGameRules_ClientConnected)(pEntity, pszName, pszAddress, reject, maxrejectlen);
 	}
 
+	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotScenarioMonitor_InitialContainedAction, CTFBot *actor)
+	{
+		auto data = GetDataForBot(actor);
+		int restoreClass = -1;
+		if (data != nullptr) {
+			if (data->action == ACTION_MedicHeal) {
+				restoreClass = actor->GetPlayerClass()->GetClassIndex();
+				actor->GetPlayerClass()->SetClassIndex(TF_CLASS_MEDIC);
+			}
+		}
+		auto *action = DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_InitialContainedAction)(actor);
+		if (restoreClass != -1) {
+			actor->GetPlayerClass()->SetClassIndex(restoreClass);
+		}
+		return action;
+	}
+
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotScenarioMonitor_DesiredScenarioAndClassAction, CTFBot *actor)
 	{
 		auto data = GetDataForBot(actor);
@@ -1074,7 +1089,33 @@ namespace Mod::Pop::TFBot_Extensions
 		}*/
 		return action;
 	}
-	
+
+	void SetActionOverride(CTFBot *bot, const char *action) {
+		auto data = GetDataForBot(bot);
+		if (data != nullptr) {
+			Parse_Action(*data, action);
+			bot->MyNextBotPointer()->OnCommandString("switch_action_override");
+		}
+	}
+
+	VHOOK_DECL(EventDesiredResult<CTFBot>, CTFBotScenarioMonitor_OnCommandString, CTFBot *actor, const char *cmd)
+	{
+		auto data = GetDataForBot(actor);
+		if (data != nullptr && actor->IsAlive() && StringStartsWith(cmd, "switch_action_override", false)) {
+			return EventDesiredResult<CTFBot>::SuspendFor(reinterpret_cast<CTFBotTacticalMonitor *>(this)->InitialContainedActionTactical(actor), "Switch to a different action");
+		}
+		if (data != nullptr && actor->IsAlive() && StringStartsWith(cmd, "switch_action", false)) {
+			
+			auto action = reinterpret_cast<Action<CTFBot> *>(this);
+
+			CCommand command = CCommand();
+    		command.Tokenize(cmd);
+			Parse_Action(*data, command[1]);
+			return EventDesiredResult<CTFBot>::SuspendFor(reinterpret_cast<CTFBotTacticalMonitor *>(action)->InitialContainedActionTactical(actor), "Switch to a different action");
+		}
+		
+		return VHOOK_CALL(CTFBotScenarioMonitor_OnCommandString)(actor, cmd);
+	}
 	
 
 	DETOUR_DECL_MEMBER(void, CTFBotTacticalMonitor_AvoidBumpingEnemies, CTFBot *actor)
@@ -2020,6 +2061,7 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			
+			MOD_ADD_DETOUR_MEMBER(CTFBotScenarioMonitor_InitialContainedAction, "CTFBotScenarioMonitor::InitialContainedAction");
 			MOD_ADD_DETOUR_MEMBER(CTFBotScenarioMonitor_DesiredScenarioAndClassAction, "CTFBotScenarioMonitor::DesiredScenarioAndClassAction");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotScenarioMonitor_Update, "CTFBotScenarioMonitor::Update");
@@ -2128,6 +2170,9 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			// Sap the closest bot to the cursor
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
+
+			// Switch action command
+			MOD_ADD_VHOOK(CTFBotScenarioMonitor_OnCommandString, TypeName<CTFBotScenarioMonitor>(), "CTFBotTacticalMonitor::OnCommandString");
 			
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");

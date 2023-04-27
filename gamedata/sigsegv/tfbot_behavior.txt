@@ -104,6 +104,11 @@
 					type "sym"
 					sym  "_ZN21CTFBotScenarioMonitor29DesiredScenarioAndClassActionEP6CTFBot"
 				}
+				"CTFBotScenarioMonitor::InitialContainedAction"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotScenarioMonitor22InitialContainedActionEP6CTFBot"
+				}
 				
 				"CTFBotMvMEngineerTeleportSpawn::Update"
 				{
@@ -312,7 +317,6 @@
 					type "sym"
 					sym  "_ZN21CTFBotTacticalMonitor19AvoidBumpingEnemiesEP6CTFBot"
 				}
-				
 				"CTFBotSpyAttack::Update"
 				{
 					type "sym"

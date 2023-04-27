@@ -117,12 +117,12 @@ SIZE_CHECK(CTFBotMedicHeal, 0x9058);
 class CTFBotSniperLurk : public ActionStub<CTFBot>
 {
 public:
-#if TOOLCHAIN_FIXES
 	static CTFBotSniperLurk *New();
-#endif
+
 	
 protected:
-	CTFBotSniperLurk() = delete;
+	CTFBotSniperLurk() = default;
+	//CTFBotSniperLurk() = delete;
 	
 private:
 	CountdownTimer           m_ctPatience;      // +0x0034
@@ -213,6 +213,9 @@ SIZE_CHECK(CTFBotUseItem, 0x0044);
 
 class CTFBotMissionSuicideBomber : public ActionStub<CTFBot>
 {
+public:
+	static CTFBotMissionSuicideBomber *New();
+	
 protected:
 	CTFBotMissionSuicideBomber() = delete;
 	
@@ -280,6 +283,20 @@ public:
 	CHandle< CTFPlayer > m_chasePlayer;
 	PathFollower m_path;
 	CountdownTimer m_repathTimer;
+};
+
+class CTFBotScenarioMonitor : public ActionStub<CTFBot>
+{
+
+};
+
+
+class CTFBotTacticalMonitor : public ActionStub<CTFBot>
+{
+public:
+	Action<CTFBot> *InitialContainedActionTactical(CTFBot *actor) { return ft_InitialContainedAction(this, actor); }
+private:
+	static MemberFuncThunk<CTFBotTacticalMonitor *, Action<CTFBot> *, CTFBot *> ft_InitialContainedAction;
 };
 
 #endif
