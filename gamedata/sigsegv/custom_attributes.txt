@@ -3042,4 +3042,14 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4625"
+    {
+        "name"	"minigun full movement"
+        "attribute_class"	"minigun_full_movement"
+        "description_string"	"Can move while ducking when shooting"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }
