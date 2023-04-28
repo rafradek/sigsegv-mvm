@@ -52,6 +52,14 @@ namespace Mod::Etc::Misc
 			DETOUR_MEMBER_CALL(CTFProjectile_Arrow_ArrowTouch)(pOther);
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyRing_ProjectileTouch, CBaseEntity *pOther)
+	{
+		auto proj = reinterpret_cast<CTFProjectile_EnergyRing *>(this);
+		
+		if (AllowHit(proj, pOther))
+			DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFProjectile_BallOfFire_RocketTouch, CBaseEntity *pOther)
 	{
 		auto arrow = reinterpret_cast<CBaseEntity *>(this);
@@ -219,6 +227,7 @@ namespace Mod::Etc::Misc
 
 			// Makes penetration arrows not collide with bounding boxes of various entities
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_ArrowTouch, "CTFProjectile_Arrow::ArrowTouch");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_ProjectileTouch, "CTFProjectile_EnergyRing::ProjectileTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
 
 			// Allow to construct disposable sentries by destroying the oldest ones
@@ -251,7 +260,7 @@ namespace Mod::Etc::Misc
 		"\nFix penetration arrows colliding with bounding boxes of various entities"
 		"\nFix specific CFuncIllusionary crash"
 		"\nFix stun disappearing weapons"
-		"\nFix crash with firing too many arrows",
+		"\nFix crash with firing too many arrows"
 		"\nFix crash when trying to detonate non grenades on pipebomb launcher",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

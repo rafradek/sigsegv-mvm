@@ -6424,6 +6424,31 @@ namespace Mod::Attr::Custom_Attributes
 		}
         DETOUR_MEMBER_CALL(CGameMovement_FullNoClipMove)(speed, accel);
     }
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayerMove_SetupMove, CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move)
+	{
+		bool restoreCond = false;
+		if ((ucmd->buttons & IN_JUMP) || (player->GetFlags() & FL_DUCKING)) {
+			auto tfplayer = ToTFPlayer(player);
+			if (tfplayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_HEAVYWEAPONS && tfplayer->m_Shared->GetCondData().InCond(TF_COND_AIMING)) {
+				int minigunFullMovement = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(tfplayer, minigunFullMovement, minigun_full_movement);
+				if (minigunFullMovement != 0) {
+					tfplayer->m_Shared->GetCondData().RemoveCondBit(TF_COND_AIMING);
+					restoreCond = true;
+				}
+			}
+		}
+
+        DETOUR_MEMBER_CALL(CTFPlayerMove_SetupMove)(player, ucmd, pHelper, move);
+		
+		if (restoreCond) {
+			auto tfplayer = ToTFPlayer(player);
+			tfplayer->m_Shared->GetCondData().AddCondBit(TF_COND_AIMING);
+		}
+    }
+
+	
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7364,7 +7389,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_IsOnGround, "PlayerLocomotion::IsOnGround");
 			MOD_ADD_DETOUR_MEMBER(CGameMovement_FullNoClipMove, "CGameMovement::FullNoClipMove");
 			MOD_ADD_VHOOK(CTFCompoundBow_Deploy, TypeName<CTFCompoundBow>(), "CTFPipebombLauncher::Deploy");
-			
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerMove_SetupMove, "CTFPlayerMove::SetupMove");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

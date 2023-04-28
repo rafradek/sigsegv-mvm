@@ -3371,3 +3371,6 @@ WaveSchedule
 
 // Custom distance for "mult dmg before distance"
 // "mult dmg before distance specify" 1000
+
+// Can move while ducking when shooting. Bots can also jump
+// "minigun full movement" 1
