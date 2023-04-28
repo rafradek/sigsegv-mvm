@@ -79,7 +79,8 @@ IMPL_SENDPROP(Vector,               CTFBaseRocket, m_vInitialVelocity, CTFBaseRo
 IMPL_SENDPROP(int,                  CTFBaseRocket, m_iDeflected,       CTFBaseRocket);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFBaseRocket, m_hLauncher,        CTFBaseRocket);
 
-MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> CTFBaseRocket::vt_Explode(TypeName<CTFBaseRocket>(), "CTFBaseRocket::Explode");
+MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> CTFBaseRocket::vt_Explode    (TypeName<CTFBaseRocket>(), "CTFBaseRocket::Explode");
+MemberVFuncThunk<const CTFBaseRocket *, int>                      CTFBaseRocket::vt_GetWeaponID(TypeName<CTFBaseRocket>(), "CTFBaseRocket::GetWeaponID");
 
 MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwnerPlayer("CTFBaseRocket::GetOwnerPlayer");
 

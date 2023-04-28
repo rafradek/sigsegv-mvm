@@ -72,7 +72,8 @@ private:
 
 class CTFWeaponBaseGun : public CTFWeaponBase {
 public:
-	void UpdatePunchAngles(CTFPlayer *pPlayer) { ft_UpdatePunchAngles(this, pPlayer); }
+	void UpdatePunchAngles(CTFPlayer *pPlayer)                 {        ft_UpdatePunchAngles(this, pPlayer); }
+
 	float GetProjectileGravity() {return vt_GetProjectileGravity(this);}
 	float GetProjectileSpeed()  {return vt_GetProjectileSpeed(this);}
 	int GetWeaponProjectileType() const {return vt_GetWeaponProjectileType(this);}
@@ -82,14 +83,15 @@ public:
 	void DoFireEffects()                          {        vt_DoFireEffects       (this); }
 	bool ShouldPlayFireAnim()                     { return vt_ShouldPlayFireAnim  (this); }
 	CBaseEntity *FireProjectile(CTFPlayer *pPlayer) { return vt_FireProjectile  (this, pPlayer); }
+	
 private:
+	static MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> ft_UpdatePunchAngles;
+
 	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileGravity;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileSpeed;
 	static MemberVFuncThunk<const CTFWeaponBaseGun *, int> vt_GetWeaponProjectileType;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, float> vt_GetProjectileDamage;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void, CBaseAnimating *> vt_ModifyProjectile;
-	static MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> ft_UpdatePunchAngles;
-	
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> vt_RemoveProjectileAmmo;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void>              vt_DoFireEffects;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, bool>              vt_ShouldPlayFireAnim;
@@ -99,6 +101,7 @@ private:
 class CTFPipebombLauncher : public CTFWeaponBaseGun {
 public:
 	DECL_SENDPROP(int, m_iPipebombCount);
+	DECL_RELATIVE(CUtlVector<EHANDLE>, m_Pipebombs);
 };
 
 class CTFGrenadeLauncher : public CTFWeaponBaseGun {};

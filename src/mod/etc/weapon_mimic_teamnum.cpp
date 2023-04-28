@@ -370,12 +370,14 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         return projectile;
 	}
 
-    DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Arrow_Create, const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer)
+    DETOUR_DECL_STATIC(CTFProjectile_Arrow *, CTFProjectile_Arrow_Create, const Vector &vecOrigin, const QAngle &vecAngles, const float fSpeed, const float fGravity, int projectileType, CBaseEntity *pOwner, CBaseEntity *pScorer)
 	{
 		if (scorer != nullptr) {
 			pScorer = scorer;
 		}
         projectile = DETOUR_STATIC_CALL(CTFProjectile_Arrow_Create)(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);
+		Msg("Proj %d\n", projectile);
+		raise(SIGINT);
         return projectile;
 	}
 	

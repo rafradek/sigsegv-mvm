@@ -1314,9 +1314,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 			bot->EquipBestWeaponForThreat(nullptr);
 		}
-		Msg("ActionBC %s\n", data->action_override.c_str());
 		if (!data->action_override.empty()) {
-			Msg("Do %s\n", data->action_override.c_str());
 			Mod::Pop::TFBot_Extensions::SetActionOverride(bot, data->action_override.c_str());
 		}
 	}

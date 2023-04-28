@@ -70,7 +70,8 @@ class CTFBaseRocket  : public CBaseProjectile
 public:
 	CBaseEntity *GetLauncher() const { return this->m_hLauncher; }
 
-	void Explode( trace_t *pTrace, CBaseEntity *pOther ) { vt_Explode(this, pTrace, pOther); }
+	void Explode( trace_t *pTrace, CBaseEntity *pOther ) {        vt_Explode(this, pTrace, pOther); }
+	int GetWeaponID() const                              { return vt_GetWeaponID(this); }
 
 	CBasePlayer *GetOwnerPlayer() const { return ft_GetOwnerPlayer(this); }
 	
@@ -81,6 +82,7 @@ private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
 	
 	static MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> vt_Explode;
+	static MemberVFuncThunk<const CTFBaseRocket *, int>                      vt_GetWeaponID;
 
 	static MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> ft_GetOwnerPlayer;
 };

@@ -5987,6 +5987,10 @@
 				"CObjectSapper::GetSapperSoundName" "_ZN13CObjectSapper18GetSapperSoundNameEv"
 				"CObjectSapper::UpdateOnRemove" "_ZN13CObjectSapper14UpdateOnRemoveEv"
 
+				"CTFBaseRocket::GetWeaponID" "_ZNK13CTFBaseRocket11GetWeaponIDEv"
+
+				"CTFProjectile_Arrow::GetWeaponID" "_ZNK19CTFProjectile_Arrow11GetWeaponIDEv"
+
 				"CTFProjectile_Cleaver::GetDamage" "_ZN21CTFProjectile_Cleaver9GetDamageEv"
 
 				"CTFProjectile_ThrowableBreadMonster::GetDamage" "_ZN35CTFProjectile_ThrowableBreadMonster9GetDamageEv"
@@ -6002,6 +6006,8 @@
 				"CTFCompoundBow::Reload" "_ZN14CTFCompoundBow6ReloadEv"
 
 				"CTFPipebombLauncher::Deploy" "_ZN19CTFPipebombLauncher6DeployEv"
+				"CTFPipebombLauncher::FireProjectile" "_ZN19CTFPipebombLauncher14FireProjectileEP9CTFPlayer"
+				
 				
 			}
 			"addrs_group"
