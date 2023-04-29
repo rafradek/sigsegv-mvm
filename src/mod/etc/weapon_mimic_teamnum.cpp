@@ -376,8 +376,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			pScorer = scorer;
 		}
         projectile = DETOUR_STATIC_CALL(CTFProjectile_Arrow_Create)(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);
-		Msg("Proj %d\n", projectile);
-		raise(SIGINT);
         return projectile;
 	}
 	
