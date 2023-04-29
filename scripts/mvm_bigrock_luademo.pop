@@ -89,7 +89,7 @@ WaveSchedule
 			player:AddCallback(ON_TOUCH, function(ent, other, pos, normal) print('Player touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
 			player:AddCallback(ON_START_TOUCH, function(ent, other, pos, normal) print('Player start touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
 			player:AddCallback(ON_END_TOUCH, function(ent, other, pos, normal) print('Player end touch '..tostring(ent)..' '..tostring(other)..' '..tostring(pos)..' '..tostring(normal)) end)
-			player:AddCallback(ON_SHOULD_COLLIDE, function(ent, other) print('Player collide '..tostring(ent)..' '..tostring(other)) end)
+			player:AddCallback(ON_SHOULD_COLLIDE, function(ent, other, cause) print('Player collide '..tostring(ent)..' '..tostring(other)..' '..tostring(cause == ON_SHOULD_COLLIDE_CAUSE_FIRE_WEAPON)) end)
 			player:AddCallback(ON_EQUIP_ITEM, function(ent, weapon) 
 				weapon:AddCallback(ON_FIRE_WEAPON_PRE, function(weapon)
 					print('fire weapon pre '..tostring(weapon))

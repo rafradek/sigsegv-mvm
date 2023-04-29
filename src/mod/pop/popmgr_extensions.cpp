@@ -4069,6 +4069,10 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	DETOUR_DECL_MEMBER(bool, CEngineSoundServer_PrecacheSound,const char *sound, bool flag1, bool flag2)
 	{
+		if (sound && sound[0] <= ' ') {
+			Warning("Trying to precache bad sound file name: %s\n", sound);
+			return false;
+		}
 		// Add different volume sounds to precache
 		if (sound && sound[0] == '=') {
 			char *pos;

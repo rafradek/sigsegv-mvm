@@ -706,7 +706,7 @@ ON_PROVIDE_ITEMS = 12       -- Player only callback. Called when loadout items a
 ON_TOUCH = 13               -- Called every tick the entity is touched. Callback function parameters: entity, other, hitPos, hitNormal
 ON_START_TOUCH = 14         -- Callback function parameters: entity, other, hitPos, hitNormal
 ON_END_TOUCH = 15           -- Callback function parameters: entity, other, hitPos, hitNormal
-ON_SHOULD_COLLIDE = 16      -- Callback function parameters: entity, other. Return false to disable collision, true to enable
+ON_SHOULD_COLLIDE = 16      -- Callback function parameters: entity, other, cause. Return false to disable collision, true to enable
 ON_HOLSTER_WEAPON = 17      -- Player only callback. Callback function parameters: entity, oldWeapon, newWeapon. Return false to stop holstering the weapon
 ON_FIRE_WEAPON_PRE = 18     -- Weapon only callback. Callback function parameters: entity. Return ACTION_STOP to prevent weapon from firing, ACTION_HANDLED to stop projectile from being fired but still consume ammo
 ON_FIRE_WEAPON_POST = 19    -- Weapon only callback. Callback function parameters: entity, projectile.
@@ -742,6 +742,11 @@ SPAWN_LOCATION_NOT_FOUND  = 0 -- Do not spawn bots at this location
 SPAWN_LOCATION_NAV        = 1 -- Spawn bots at nav area center below position specified by 2nd vector return value
 SPAWN_LOCATION_TELEPORTER = 2 -- Spawn bots at position specified by 2nd vector return value, and to teleport effects
 
+----------------
+-- Causes for ON_SHOULD_COLLIDE
+----------------
+ON_SHOULD_COLLIDE_CAUSE_FIRE_WEAPON = 0 -- Caused by firing weapons
+ON_SHOULD_COLLIDE_CAUSE_OTHER       = 1 -- Caused from any other source
 
 ----------------
 -- Table structures

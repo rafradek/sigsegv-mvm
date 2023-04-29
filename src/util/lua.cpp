@@ -4543,6 +4543,13 @@ namespace Util::Lua
 		}
 	};
 
+    RefCount rc_CTFWeaponBaseGun_FireProjectile;
+    enum ShouldCollideSource
+    {
+        ON_FIRE_WEAPON,
+        OTHER,
+    };
+
     bool DoCollideTestInternal(CBaseEntity *entity1, CBaseEntity *entity2, LuaEntityModule *mod, bool &result) {
         if (!mod->callbacks[ON_SHOULD_COLLIDE].empty()) {
             auto &callbackList = mod->callbacks[ON_SHOULD_COLLIDE];
@@ -4553,7 +4560,8 @@ namespace Util::Lua
                 lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                 LEntityAlloc(l, entity1);
                 LEntityAlloc(l, entity2);
-                mod->CallCallback(callbackList, it, 2, 1);
+                lua_pushinteger(l, rc_CTFWeaponBaseGun_FireProjectile > 0 ? ON_FIRE_WEAPON : OTHER);
+                mod->CallCallback(callbackList, it, 3, 1);
                 if (lua_type(l, -1) == LUA_TBOOLEAN) {
                     result = lua_toboolean(l, -1);
                     lua_settop(l, 0);
@@ -4761,6 +4769,8 @@ namespace Util::Lua
         }
 
         if (action == ACTION_CONTINUE) {
+            
+            SCOPED_INCREMENT(rc_CTFWeaponBaseGun_FireProjectile);
             DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
         }
  		
@@ -4789,6 +4799,7 @@ namespace Util::Lua
 
         CBaseAnimating *proj = nullptr;
         if (action == ACTION_CONTINUE) {
+            SCOPED_INCREMENT(rc_CTFWeaponBaseGun_FireProjectile);
             proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
         }
 
