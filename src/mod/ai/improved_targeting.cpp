@@ -202,7 +202,20 @@ namespace Mod::AI::Improved_Targeting
 
 		return DETOUR_MEMBER_CALL(CTFBot_IsExplosiveProjectileWeapon)(weapon);
 	}
-
+	
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMedicHeal_Update, CTFBot *me, float interval)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFBotMedicHeal_Update)(me, interval);
+		auto medigun = rtti_cast<CWeaponMedigun *>(me->GetActiveTFWeapon());
+		auto medigunHasTarget = medigun != nullptr && medigun->GetHealTarget() == reinterpret_cast<CTFBotMedicHeal *>(this)->GetPatient();
+		if (medigun && medigunHasTarget && me->ExtAttr()[CTFBot::ExtendedAttr::MEDIC_LOOK_AT_THREATS]) {
+			const CKnownEntity *threat = me->GetVisionInterface()->GetPrimaryKnownThreat(false);
+			if (threat != nullptr && threat->GetEntity() != nullptr) {
+				me->GetBodyInterface()->AimHeadTowards(threat->GetEntity(), IBody::LookAtPriorityType::OVERRIDE_ALL, 0.15f, nullptr, "Look at threat");
+			}
+		}
+		return result;
+	}
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -215,6 +228,7 @@ namespace Mod::AI::Improved_Targeting
 			MOD_ADD_DETOUR_MEMBER(CTFBot_Touch,                               "CTFBot::Touch");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_SuspectSpy,                          "CTFBot::SuspectSpy");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_IsExplosiveProjectileWeapon,         "CTFBot::IsExplosiveProjectileWeapon");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMedicHeal_Update,                     "CTFBotMedicHeal::Update");
 		}
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

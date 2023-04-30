@@ -95,6 +95,7 @@ public:
 #if TOOLCHAIN_FIXES
 	static CTFBotMedicHeal *New();
 #endif
+	CTFPlayer *GetPatient() { return m_hPatient; }
 	
 protected:
 	CTFBotMedicHeal() = default;

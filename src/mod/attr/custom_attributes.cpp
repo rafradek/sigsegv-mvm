@@ -4854,13 +4854,7 @@ namespace Mod::Attr::Custom_Attributes
 			LoadAttributeDataUnionFromString(attribute, value, ""s);
 		}
 		else {
-			const char *desc_format = attribute->GetKeyValues()->GetString("description_format");
-			if (FStrEq(desc_format, "value_is_percentage") || FStrEq(desc_format, "value_is_inverted_percentage")) {
-				value.m_Float = 1.0f;
-			}
-			else {
-				value.m_Float = 0.0f;
-			}
+			return attribute->GetDefaultValue();
 		}
 	}
 
@@ -6945,7 +6939,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr && player->GetHealth() > 0) {
-			float change = strcmp(pAttrDef->GetDescriptionFormat(), "value_is_additive") == 0 ? new_value.m_Float - old_value.m_Float : player->GetMaxHealth() * (1 - (old_value.m_Float / new_value.m_Float));
+			float change = pAttrDef->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_ADDITIVE ? new_value.m_Float - old_value.m_Float : player->GetMaxHealth() * (1 - (old_value.m_Float / new_value.m_Float));
 			float maxHealth = player->GetMaxHealth();
 			float preMaxHealth = maxHealth - change;
 			float overheal = MAX(0, player->GetHealth() - preMaxHealth);

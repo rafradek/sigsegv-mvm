@@ -4,7 +4,7 @@
 namespace Mod::MvM::Extended_Upgrades
 {
 
-	void Parse_ExtendedUpgrades(KeyValues *kv);
+	void Parse_ExtendedUpgrades(KeyValues *kv, bool v2);
 	void ClearUpgrades();
 	int GetExtendedUpgradesStartIndex();
 }

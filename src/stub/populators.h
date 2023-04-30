@@ -6,6 +6,14 @@
 #include "stub/tfbot.h"
 
 
+struct EventInfo
+{
+	CFmtStrN<256> target; // +0x000
+	CFmtStrN<256> action; // +0x10c
+	CFmtStrN<256> param; // +0x10c
+	float delay;
+};
+
 class CWave;
 class CUpgradeInfo;
 class PlayerUpgradeHistory;
@@ -110,16 +118,16 @@ public:
 	bool m_bWaitBetweenSpawnAfterDeath;
 
 	CFmtStr m_startWaveWarningSound;
-	void *m_startWaveOutput;
+	EventInfo *m_startWaveOutput;
 
 	CFmtStr m_firstSpawnWarningSound;
-	void *m_firstSpawnOutput;
+	EventInfo *m_firstSpawnOutput;
 
 	CFmtStr m_lastSpawnWarningSound;
-	void *m_lastSpawnOutput;
+	EventInfo *m_lastSpawnOutput;
 
 	CFmtStr m_doneWarningSound;
-	void *m_doneOutput;
+	EventInfo *m_doneOutput;
 
 	int		m_totalCurrency;
 	int		m_unallocatedCurrency;
@@ -195,9 +203,9 @@ public:
 	CUtlVector< WaveClassCount_t > m_nWaveClassCounts;
 	int	m_totalCurrency;
 
-	void *m_startOutput;
-	void *m_doneOutput;
-	void *m_initOutput;
+	EventInfo *m_startOutput;
+	EventInfo *m_doneOutput;
+	EventInfo *m_initOutput;
 
 	CFmtStr m_description;
 	CFmtStr m_soundName;
@@ -311,14 +319,6 @@ class CRandomChoiceSpawner : public IPopulationSpawner
 public:
 	CUtlVector<IPopulationSpawner *> m_SubSpawners;
 	CUtlVector<int> m_Indexes;
-};
-
-struct EventInfo
-{
-	CFmtStrN<256> target; // +0x000
-	CFmtStrN<256> action; // +0x10c
-	CFmtStrN<256> param; // +0x10c
-	float delay;
 };
 
 struct PlayerUpgradeHistory

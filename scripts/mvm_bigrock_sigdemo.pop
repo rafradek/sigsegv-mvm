@@ -2039,6 +2039,7 @@ WaveSchedule
 				Health 4500
 				Skill Expert
 				ClassIcon medic_armored_giant
+				ExtAttr MedicLookAtThreats [$SIGSEGV] //Medic turns around to look at threats
 				WeaponRestrictions SecondaryOnly
 				Attributes MiniBoss
 				Attributes ProjectileShield

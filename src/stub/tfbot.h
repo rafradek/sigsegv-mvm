@@ -298,6 +298,7 @@ public:
 			IGNORE_REAL_PLAYERS = 9,
 			IGNORE_BOTS = 10,
 			NO_SPAWN_PROTECTION_FIX = 11,
+			MEDIC_LOOK_AT_THREATS = 12,
 		};
 
 		ExtendedAttr& operator=(const ExtendedAttr&) = default;

@@ -4946,7 +4946,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					CEconItemView *view = CEconItemView::Create();
 					view->Init(item_def->m_iItemDefIndex);
-					view->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey;
+					view->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey << 32;
 					
 					std::string name;
 					if (state.m_CustomWeapons.find(subkey->GetString()) != state.m_CustomWeapons.end()) {
@@ -5038,7 +5038,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (item_def != nullptr) {
 			item.item = CEconItemView::Create();
 			item.item->Init(item_def->m_iItemDefIndex);
-			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey2;
+			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey2 << 32;
 			// Make stock quality items unique quality
 			if (item.item->m_iEntityQuality == 0) {
 				item.item->m_iEntityQuality = 6;
@@ -5958,6 +5958,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		"PlayerShootTemplate",
 		"BuildingSpawnTemplate",
 		"ExtendedUpgrades",
+		"ExtendedUpgradesV2",
 		"LuaScript",
 		"LuaScriptFile"
 	};
@@ -6319,7 +6320,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "HandModelOverride")) {
 				Parse_HandModelOverride(subkey);
 			} else if (FStrEq(name, "ExtendedUpgrades")) {
-				Mod::MvM::Extended_Upgrades::Parse_ExtendedUpgrades(subkey);
+				Mod::MvM::Extended_Upgrades::Parse_ExtendedUpgrades(subkey, false);
+			} else if (FStrEq(name, "ExtendedUpgradesV2")) {
+				Mod::MvM::Extended_Upgrades::Parse_ExtendedUpgrades(subkey, true);
 			} else if (FStrEq(name, "SpawnTemplate")) {
 				auto templ_info = Parse_SpawnTemplate(subkey);
 				if (templ_info.templ == nullptr)

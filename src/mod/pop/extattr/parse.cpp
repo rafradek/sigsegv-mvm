@@ -49,6 +49,9 @@ namespace Mod::Pop::ExtAttr::Parse
 			} else if (V_stricmp(val, "DisableSpawnProtectionFix") == 0) {
 				DevMsg("  found: ExtAttr DisableSpawnProtectionFix\n");
 				ext->TurnOn(CTFBot::ExtendedAttr::NO_SPAWN_PROTECTION_FIX);
+			} else if (V_stricmp(val, "MedicLookAtThreats") == 0) {
+				DevMsg("  found: ExtAttr MedicLookAtThreats\n");
+				ext->TurnOn(CTFBot::ExtendedAttr::MEDIC_LOOK_AT_THREATS);
 			} else {
 				Warning("TFBotSpawner: Invalid extended attribute '%s'\n", val);
 			}

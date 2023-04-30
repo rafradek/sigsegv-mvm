@@ -278,7 +278,7 @@ public:
 	// TODO: MAKE THIS STUFF PRIVATE AND USE ACCESSORS INSTEAD!
 	uint32_t vtable;
 	KeyValues *m_pKV;
-	short m_iItemDefIndex;
+	item_definition_index_t m_iItemDefIndex;
 	bool m_bEnabled;
 	byte m_iMinILevel;
 	byte m_iMaxILevel;
@@ -362,7 +362,7 @@ public:
 	void IterateAttributes(IEconItemAttributeIterator *iter) const                                    {        ft_IterateAttributes     (this, iter); }
 	const char *GetPlayerDisplayModel(int classindex, int team) const                                      { return ft_GetPlayerDisplayModel(this, classindex, team); }
 
-	DECL_DATAMAP(uint16,         m_iItemDefinitionIndex);
+	DECL_DATAMAP(item_definition_index_t, m_iItemDefinitionIndex);
 	DECL_DATAMAP(int,            m_iEntityQuality);
 	DECL_DATAMAP(int,            m_iEntityLevel);
 	DECL_DATAMAP(int64,          m_iItemID);
@@ -398,6 +398,15 @@ public:
 private:
 	static MemberFuncThunk<CEconItem *, attribute_t &>                       ft_AddDynamicAttributeInternal;
 };
+
+enum AttributeDescriptionFormat
+{
+	ATTDESCFORM_VALUE_IS_PERCENTAGE,
+	ATTDESCFORM_VALUE_IS_INVERTED_PERCENTAGE,
+	ATTDESCFORM_VALUE_IS_ADDITIVE,
+	ATTDESCFORM_VALUE_IS_ADDITIVE_PERCENTAGE,
+};
+
 class CEconItemAttributeDefinition
 {
 public:
@@ -408,7 +417,9 @@ public:
 	
 	const char *GetName             (const char *fallback = nullptr) const { return this->GetKVString("name",               fallback); }
 	const char *GetAttributeClass   (const char *fallback = nullptr) const { return this->GetKVString("attribute_class",    fallback); }
-	const char *GetDescriptionFormat(const char *fallback = nullptr) const { return this->GetKVString("description_format", fallback); }
+	int GetDescriptionFormat() const { return m_iDescriptionFormat; }
+	bool IsMultiplicative() const { return m_iDescriptionFormat == ATTDESCFORM_VALUE_IS_PERCENTAGE || m_iDescriptionFormat == ATTDESCFORM_VALUE_IS_INVERTED_PERCENTAGE; }
+	float GetDefaultValue() const { return IsMultiplicative() ? 1.0f : 0.0f; }
 	
 	
 	template<typename T> bool IsType() const { return (dynamic_cast<T *>(this->GetType()) != nullptr); }
