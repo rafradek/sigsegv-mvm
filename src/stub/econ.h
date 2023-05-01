@@ -451,6 +451,7 @@ private:
 	int m_pad4;
 	int m_pad5;
 	int m_pad6;
+	int m_pad7;
 	int m_iDescriptionFormat;
 	// ...
 };
