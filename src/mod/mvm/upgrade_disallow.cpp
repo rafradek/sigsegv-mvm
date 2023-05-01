@@ -31,8 +31,7 @@ namespace Mod::MvM::Upgrade_Disallow
 						auto attr = entity->GetItem()->GetAttributeList().GetAttributeByID(attr_def->GetIndex());
 						if (attr != nullptr) {
 							float increment = CMannVsMachineUpgradeManager::Upgrades()[upgradeslot].m_flIncrement;
-							const char *desc = attr_def->GetDescriptionFormat();
-							float defValue = FStrEq(desc, "value_is_percentage") || FStrEq(desc, "value_is_inverted_percentage") ? 1.0f : 0.0f;
+							float defValue = attr_def->GetDefaultValue();
 							if (attr->GetValuePtr()->m_Float > defValue && increment < 0) {
 								return;
 							}
