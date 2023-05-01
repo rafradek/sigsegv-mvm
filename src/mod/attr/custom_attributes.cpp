@@ -4854,7 +4854,7 @@ namespace Mod::Attr::Custom_Attributes
 			LoadAttributeDataUnionFromString(attribute, value, ""s);
 		}
 		else {
-			return attribute->GetDefaultValue();
+			value.m_Float = attribute->GetDefaultValue();
 		}
 	}
 
