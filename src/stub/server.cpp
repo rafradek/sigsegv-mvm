@@ -10,7 +10,8 @@ MemberFuncThunk<CHLTVServer *, void> CHLTVServer::ft_RemoveOldestFrame("CClientF
 
 MemberFuncThunk<CBaseServer *, CBaseClient *, const char *> CBaseServer::ft_CreateFakeClient("CBaseServer::CreateFakeClient");
 
-MemberVFuncThunk<CBaseServer *, float>                  CBaseServer::vt_GetCPUUsage(TypeName<CBaseServer>(), "CBaseServer::GetCPUUsage");
+MemberVFuncThunk<CBaseServer *, float>                  CBaseServer::vt_GetCPUUsage    (TypeName<CBaseServer>(), "CBaseServer::GetCPUUsage");
+MemberVFuncThunk<CBaseServer *, void, int>              CBaseServer::vt_UserInfoChanged(TypeName<CBaseServer>(), "CBaseServer::UserInfoChanged");
 
 
 MemberFuncThunk<CGameClient *, bool>              CGameClient::ft_ShouldSendMessages("CGameClient::ShouldSendMessages");

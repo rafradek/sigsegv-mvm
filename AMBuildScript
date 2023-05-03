@@ -186,6 +186,7 @@ class ExtensionConfig(object):
     cxx.defines += ['PLATFORM_X86']
     cxx.defines += ['FMT_HEADER_ONLY']
     cxx.defines += ['LUAJIT_ENABLE_LUA52COMPAT']
+    cxx.defines += ['VERSION_SAFE_STEAM_API_INTERFACES']
     
     ############################################################################
     # C & C++ COMPILER #########################################################

@@ -10,12 +10,18 @@
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/team.h"
+#include "stub/objects.h"
 #include "stub/tfweaponbase.h"
 #include "stub/tf_player_resource.h"
+#include "stub/lagcompensation.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "mod/mvm/player_limit.h"
+#include "mod/common/text_hud.h"
 #include "util/iterate.h"
+#include <steam/steam_gameserver.h>
+#include <steam/isteamgameserver.h>
 #include <gamemovement.h>
+#include <worldsize.h>
 
 namespace Mod::Etc::Extra_Player_Slots
 {
@@ -50,6 +56,10 @@ namespace Mod::Etc::Extra_Player_Slots
 
     ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "1", FCVAR_NOTIFY,
 		"Does not display death cam when killed by players in extra slots");
+
+    ConVar sig_etc_extra_player_slots_show_player_names("sig_etc_extra_player_slots_show_player_names", "0", FCVAR_NOTIFY,
+		"Show player names in extra player slots when mouse over");
+    
     
     RefCount rc_CBaseServer_CreateFakeClient_HLTV;
     RefCount rc_CBaseServer_CreateFakeClient;
@@ -83,8 +93,8 @@ namespace Mod::Etc::Extra_Player_Slots
 						break;
 					}
 				}
-				kv->deleteThis();
 			}
+            kv->deleteThis();
 		}
 		filesystem->FindClose(missionHandle);
         return false;
@@ -116,12 +126,17 @@ namespace Mod::Etc::Extra_Player_Slots
         force_create_at_slot = slot;
     }
 
+    bool DebugForcePlayersUseExtraSlots()
+    {
+        return false;
+    }
+
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
         auto server = reinterpret_cast<CBaseServer *>(this);
         if (server == hltv || ((!ExtraSlotsEnabled() || gpGlobals->maxClients < DEFAULT_MAX_PLAYERS + 1) && force_create_at_slot == -1)) return DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
 
-        if (rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
+        if (DebugForcePlayersUseExtraSlots() || rc_CBaseServer_CreateFakeClient || force_create_at_slot != -1) {
 			static ConVarRef tv_enable("tv_enable");
             std::vector<CBaseClient *> clientList;
 
@@ -209,33 +224,86 @@ namespace Mod::Etc::Extra_Player_Slots
 		    maxplayers = sig_etc_extra_player_slots_count.GetInt();
 	}
 
+    edict_t *world_edict = nullptr;
+    std::vector<CLagCompensationManager *> lag_compensation_copies;
+
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FrameUpdatePostEntityThink)
 	{
         int preMaxPlayers = gpGlobals->maxClients;
 
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            // Run lag compensation using multiple copies of compensation managers. Each manager manages 33 players. For each manager copy extra 33 slots into the first 33 edict slots
+            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
+            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+
+            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
+                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
+                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                gpGlobals->maxClients = slotsCopy;
+                (reinterpret_cast<Detour_CLagCompensationManager_FrameUpdatePostEntityThink *>(lag_compensation_copies[i - 1])->*Actual)();
+            }
+            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_FrameUpdatePostEntityThink)();
         gpGlobals->maxClients = preMaxPlayers;
 	}
 	
+    int player_move_entindex = 0;
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
 	{
 		int preMaxPlayers = gpGlobals->maxClients;
-
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            if (!player->IsRealPlayer() || player->GetObserverMode() != OBS_MODE_NONE) {
+                for (int i = 1; i < (gpGlobals->maxClients + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
+                    (reinterpret_cast<Detour_CLagCompensationManager_StartLagCompensation *>(lag_compensation_copies[i - 1])->*Actual)(player, cmd);
+                }
+                DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+                return;
+            }
+            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
+            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+
+            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
+                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
+                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                for (int j = 1; j <= slotsCopy; j++) {
+                    (world_edict+j)->m_EdictIndex = j;
+                }
+                gpGlobals->maxClients = slotsCopy;
+                player_move_entindex = -i * DEFAULT_MAX_PLAYERS;
+                (reinterpret_cast<Detour_CLagCompensationManager_StartLagCompensation *>(lag_compensation_copies[i - 1])->*Actual)(player, cmd);
+            }
+            player_move_entindex = 0;
+            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
         gpGlobals->maxClients = preMaxPlayers;
 	}
 	
+    DETOUR_DECL_MEMBER(void, CLagCompensationManager_BacktrackPlayer, CBasePlayer *player, float flTargetTime)
+	{
+        player->NetworkProp()->GetProp()->m_EdictIndex+=player_move_entindex;
+		DETOUR_MEMBER_CALL(CLagCompensationManager_BacktrackPlayer)(player, flTargetTime);
+        player->NetworkProp()->GetProp()->m_EdictIndex-=player_move_entindex;
+    }
+
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
 	{
 		int preMaxPlayers = gpGlobals->maxClients;
 
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
+            edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
+            memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
+
+            for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
+                int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
+                memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                gpGlobals->maxClients = slotsCopy;
+                (reinterpret_cast<Detour_CLagCompensationManager_FinishLagCompensation *>(lag_compensation_copies[i - 1])->*Actual)(player);
+            }
+            memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
             gpGlobals->maxClients = DEFAULT_MAX_PLAYERS;
         }
 		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
@@ -623,35 +691,49 @@ namespace Mod::Etc::Extra_Player_Slots
     std::deque<KillEvent> kill_events;
     int player33_fake_team_num=-1;
     float player33_fake_kill_time=FLT_MIN;
+
+    bool CanUseThisPlayerForChangeName(int i, CBasePlayer *playeri, std::vector<CBasePlayer *> &checkVec) {
+        bool found = false;
+        for (auto &event : kill_events) {
+            for (auto index : event.fakePlayersIndex) {
+                if (index == i) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (found) return false;
+
+        for (auto player : checkVec) {
+            if (player == playeri) {
+                found = true;
+                break;
+            }
+        }
+
+        return !found;
+    }
     
     CBasePlayer *FindFreeFakePlayer(std::vector<CBasePlayer *> &checkVec) 
     {
+        // Find a player to use, first a bot, then a real player
         for (int i = DEFAULT_MAX_PLAYERS; i >= 1; i--) {
-            bool found = false;
 
             auto playeri = UTIL_PlayerByIndex(i);
             if (playeri == nullptr) continue;
 
             if (playeri->IsRealPlayer()) continue;
+            if (!CanUseThisPlayerForChangeName(i, playeri, checkVec)) continue;
 
-            for (auto &event : kill_events) {
-                for (auto index : event.fakePlayersIndex) {
-                    if (index == i) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-            if (found) continue;
+            return playeri;
+        }
 
-            for (auto player : checkVec) {
-                if (ENTINDEX(player) == i) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) continue;
+        for (int i = DEFAULT_MAX_PLAYERS; i >= 1; i--) {
+
+            auto playeri = UTIL_PlayerByIndex(i);
+            if (playeri == nullptr) continue;
+            if (!CanUseThisPlayerForChangeName(i, playeri, checkVec)) continue;
 
             return playeri;
         }
@@ -694,6 +776,9 @@ namespace Mod::Etc::Extra_Player_Slots
             if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS || ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(assister) > DEFAULT_MAX_PLAYERS) {
                 std::vector<CBasePlayer *> participants;
                 std::vector<CBasePlayer *> fakePlayers;
+                fakePlayers.push_back(victim);
+                fakePlayers.push_back(attacker);
+                fakePlayers.push_back(assister);
                 stopMoreEvents = true;
                 duplicate = gameeventmanager->DuplicateEvent(event);
                 if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS) {
@@ -730,12 +815,17 @@ namespace Mod::Etc::Extra_Player_Slots
                 //gameeventmanager->SerializeEvent(duplicate);
                 kill_events.push_back({gpGlobals->curtime, duplicate});
                 for (size_t i = 0; i < participants.size(); i++) {
-                    kill_events.back().fakePlayersOldNames[i] = fakePlayers[i]->GetPlayerName();
-                    kill_events.back().fakePlayersIndex[i] = ENTINDEX(fakePlayers[i]);
+                    auto fakePlayer = fakePlayers[i+3];
+                    kill_events.back().fakePlayersOldNames[i] = fakePlayer->GetPlayerName();
+                    kill_events.back().fakePlayersIndex[i] = ENTINDEX(fakePlayer);
                     kill_events.back().fakePlayersTeams[i] = participants[i]->GetTeamNumber();
-                    fakePlayers[i]->SetPlayerName(participants[i]->GetPlayerName());
-                    engine->SetFakeClientConVarValue(fakePlayers[i]->edict(), "name", participants[i]->GetPlayerName());
-                    TFPlayerResource()->m_iTeam.SetIndex(participants[i]->GetTeamNumber(), fakePlayers[i]->entindex());
+                    fakePlayer->SetPlayerName(participants[i]->GetPlayerName());
+                    auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(fakePlayer->entindex()-1));
+                    clientFakePlayer->m_ConVars->SetString("name", participants[i]->GetPlayerName());
+                    V_strncpy(clientFakePlayer->m_Name, participants[i]->GetPlayerName(), sizeof(clientFakePlayer->m_Name));
+                    clientFakePlayer->m_bConVarsChanged = true;
+                    static_cast<CBaseServer *>(sv)->UserInfoChanged(clientFakePlayer->m_nClientSlot);
+                    TFPlayerResource()->m_iTeam.SetIndex(participants[i]->GetTeamNumber(), fakePlayer->entindex());
                 }
                 player33_fake_kill_time = gpGlobals->curtime;
                 //player33_fake_team_num = copyNameFromPlayer->GetTeamNumber();
@@ -781,9 +871,15 @@ namespace Mod::Etc::Extra_Player_Slots
                         if (killEvent.fakePlayersIndex[i] != -1 && killEvent.fakePlayersIndex[i] != DEFAULT_MAX_PLAYERS) {
                             
                             auto player = UTIL_PlayerByIndex(killEvent.fakePlayersIndex[i]);
-                            if (player != nullptr)
+                            if (player != nullptr) {
                                 player->SetPlayerName(killEvent.fakePlayersOldNames[i].c_str());
-                            engine->SetFakeClientConVarValue(INDEXENT(killEvent.fakePlayersIndex[i]), "name", killEvent.fakePlayersOldNames[i].c_str());
+                                auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(player->entindex()-1));
+                                V_strncpy(clientFakePlayer->m_Name, killEvent.fakePlayersOldNames[i].c_str(), sizeof(clientFakePlayer->m_Name));
+                                clientFakePlayer->m_ConVars->SetString("name", killEvent.fakePlayersOldNames[i].c_str());
+                                clientFakePlayer->m_bConVarsChanged = true;
+                                static_cast<CBaseServer *>(sv)->UserInfoChanged(clientFakePlayer->m_nClientSlot);
+                                //engine->SetFakeClientConVarValue(INDEXENT(killEvent.fakePlayersIndex[i]), "name", killEvent.fakePlayersOldNames[i].c_str());
+                            }
                         }
                     }
 
@@ -811,16 +907,9 @@ namespace Mod::Etc::Extra_Player_Slots
         //if (players > DEFAULT_MAX_PLAYERS) {
         //    players = DEFAULT_MAX_PLAYERS;
         //}
-        static ConVarRef sv_visiblemaxplayers("sv_visiblemaxplayers");
-        int oldsv_visiblemaxplayers = -1; 
-        if (sv_visiblemaxplayers.GetInt() > DEFAULT_MAX_PLAYERS) {
-            oldsv_visiblemaxplayers = sv_visiblemaxplayers.GetInt();
-            sv_visiblemaxplayers.SetValue(DEFAULT_MAX_PLAYERS);
-        }
+        int val = FixSlotCrashPre();
         DETOUR_MEMBER_CALL(CSteam3Server_SendUpdatedServerDetails)();
-        if (oldsv_visiblemaxplayers != -1) {
-            sv_visiblemaxplayers.SetValue(oldsv_visiblemaxplayers);
-        }
+        FixSlotCrashPost(val);
         //players = oldPlayers;
     }
 
@@ -881,6 +970,7 @@ namespace Mod::Etc::Extra_Player_Slots
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_GetPlayerLimits, "CServerGameClients::GetPlayerLimits");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FrameUpdatePostEntityThink, "CLagCompensationManager::FrameUpdatePostEntityThink");
             MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation,  "CLagCompensationManager::StartLagCompensation");
+            MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer,  "CLagCompensationManager::BacktrackPlayer");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_FinishLagCompensation, "CLagCompensationManager::FinishLagCompensation");
 			//MOD_ADD_DETOUR_STATIC(SendProxy_PlayerList,    "SendProxy_PlayerList");
 		    MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
@@ -952,35 +1042,84 @@ namespace Mod::Etc::Extra_Player_Slots
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
+        void PrepareLagCompensation()
+        {
+            // Setup additional lag compensation managers
+            for (auto manager : lag_compensation_copies) {
+                delete manager;
+            }
+            lag_compensation_copies.clear();
+            for (int i = 1; i < (gpGlobals->maxClients + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
+                auto copiedLagManager = reinterpret_cast<CLagCompensationManager *>(::operator new(0x1FFFF));
+                memcpy(copiedLagManager, &g_LagCompensationManager.GetRef(), 0x1FFFF);
+                lag_compensation_copies.push_back(copiedLagManager);
+            }
+        }
         virtual void OnEnablePost() override
 		{
-
+            world_edict = INDEXENT(0);
+            PrepareLagCompensation();
         }
 
         virtual void FrameUpdatePostEntityThink() override
         {
-            for (int i = 1; i <= gpGlobals->maxClients; i++) {
-                auto player = UTIL_PlayerByIndex(i);
-                if (player != nullptr) {
-                    float timeSinceStartTalk = gpGlobals->curtime - talk_start_time[i - 1];
-                    float timeSinceTalk = gpGlobals->curtime - talk_time[i - 1];
-                    if (timeSinceStartTalk > 0 && timeSinceStartTalk < gpGlobals->frametime * 2) {
-                        gamehelpers->HintTextMsg(i, "Please wait 3 seconds before talking");
+            if (gpGlobals->maxClients > VOICE_MAX_PLAYERS && sig_etc_extra_player_slots_voice_display_fix.GetBool()) {
+                for (int i = 1; i <= gpGlobals->maxClients; i++) {
+                    auto player = UTIL_PlayerByIndex(i);
+                    if (player != nullptr && player->IsRealPlayer()) {
+                        float timeSinceStartTalk = gpGlobals->curtime - talk_start_time[i - 1];
+                        float timeSinceTalk = gpGlobals->curtime - talk_time[i - 1];
+                        if (timeSinceStartTalk > 0 && timeSinceStartTalk < gpGlobals->frametime * 2) {
+                            gamehelpers->HintTextMsg(i, "Please wait 3 seconds before talking");
+                        }
+                        else if (timeSinceStartTalk > 1 && timeSinceStartTalk < 1 + gpGlobals->frametime * 2) {
+                            gamehelpers->HintTextMsg(i, "Please wait 2 seconds before talking");
+                        }
+                        else if (timeSinceStartTalk > 2 && timeSinceStartTalk < 2 + gpGlobals->frametime * 2) {
+                            gamehelpers->HintTextMsg(i, "Please wait 1 seconds before talking");
+                        }
+                        else if (timeSinceStartTalk > 3 && timeSinceStartTalk < 3 + gpGlobals->frametime * 2) {
+                            gamehelpers->HintTextMsg(i, "You may talk now");
+                        }
+                        else if (timeSinceTalk > 5 && timeSinceTalk < 5 + gpGlobals->frametime) {
+                            gamehelpers->HintTextMsg(i, " ");
+                        }
+                        else if (timeSinceTalk >= 5 + gpGlobals->frametime && timeSinceTalk < 5 + gpGlobals->frametime * 2) {
+                            gamehelpers->HintTextMsg(i, "");
+                        }
                     }
-                    else if (timeSinceStartTalk > 1 && timeSinceStartTalk < 1 + gpGlobals->frametime * 2) {
-                        gamehelpers->HintTextMsg(i, "Please wait 2 seconds before talking");
-                    }
-                    else if (timeSinceStartTalk > 2 && timeSinceStartTalk < 2 + gpGlobals->frametime * 2) {
-                        gamehelpers->HintTextMsg(i, "Please wait 1 seconds before talking");
-                    }
-                    else if (timeSinceStartTalk > 3 && timeSinceStartTalk < 3 + gpGlobals->frametime * 2) {
-                        gamehelpers->HintTextMsg(i, "You may talk now");
-                    }
-                    else if (timeSinceTalk > 5 && timeSinceTalk < 5 + gpGlobals->frametime) {
-                        gamehelpers->HintTextMsg(i, " ");
-                    }
-                    else if (timeSinceTalk >= 5 + gpGlobals->frametime && timeSinceTalk < 5 + gpGlobals->frametime * 2) {
-                        gamehelpers->HintTextMsg(i, "");
+                }
+            }
+            if (ExtraSlotsEnabled() && sig_etc_extra_player_slots_show_player_names.GetBool() && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool())) {
+                for (int i = 1 + gpGlobals->tickcount % 2; i <= gpGlobals->maxClients; i+=2) {
+                    auto player = (CTFPlayer *)(world_edict + i)->GetUnknown();
+                    if (player != nullptr && player->IsRealPlayer()) {
+                        CBaseEntity *target = nullptr; 
+                        if ((player->GetObserverMode() == OBS_MODE_DEATHCAM || player->GetObserverMode() == OBS_MODE_CHASE) && player->m_hObserverTarget != nullptr && player->m_hObserverTarget != player) {
+                            target = player->m_hObserverTarget;
+                        }
+                        else {
+                            trace_t tr;
+                            Vector eyePos = player->EyePosition();
+                            Vector start, end;
+                            Vector forward;
+                            player->EyeVectors(&forward);
+                            VectorMA(eyePos, MAX_TRACE_LENGTH, forward, end);
+                            VectorMA(eyePos, 10, forward, start);
+                            UTIL_TraceLine(start, end, MASK_SOLID | CONTENTS_DEBRIS, player, COLLISION_GROUP_NONE, &tr);
+                            target = tr.m_pEnt;
+                        }
+                        auto playerHit = ToTFPlayer(target);
+                        auto objectHit = ToBaseObject(target);
+                        if (objectHit != nullptr) {
+                            playerHit = objectHit->GetBuilder();
+                        }
+                        if (playerHit != nullptr && playerHit->entindex() > DEFAULT_MAX_PLAYERS) {
+                            if (playerHit->GetTeamNumber() == player->GetTeamNumber()) {
+                                auto textParams = WhiteTextParams(5, -1, 0.65f, 0.06f);
+                                DisplayHudMessageAutoChannel(player, textParams, playerHit->GetPlayerName(), 4);
+                            }
+                        }
                     }
                 }
             }
@@ -1002,6 +1141,7 @@ namespace Mod::Etc::Extra_Player_Slots
             for (auto &time : talk_start_time) {
                 time = -100.0f;
             }
+            PrepareLagCompensation();
         }
 
         virtual void LevelShutdownPostEntity() override

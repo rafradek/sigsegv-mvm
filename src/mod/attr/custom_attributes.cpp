@@ -1201,6 +1201,8 @@ namespace Mod::Attr::Custom_Attributes
 			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
 			if (weapon != nullptr) {
 				weapon->SetCustomViewModel(viewmodel);
+				weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(viewmodel);
+				weapon->SetModel(viewmodel);
 			}
 		}
 	}
@@ -6442,7 +6444,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
     }
 
-	
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -6984,6 +6985,16 @@ namespace Mod::Attr::Custom_Attributes
 				const char *value;
 				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &value);
 				weapon->SetCustomViewModel(changeType == AttributeChangeType::REMOVE || value == nullptr ? "" : value);
+				if (changeType == AttributeChangeType::REMOVE || value == nullptr || value[0] == '\0') {
+					weapon->SetViewModel();
+					weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(weapon->GetViewModel());
+					weapon->SetModel(weapon->GetViewModel());
+				}
+				else {
+					weapon->SetCustomViewModel(value);
+					weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(value);
+					weapon->SetModel(value);
+				}
 			}
 		}
 	}

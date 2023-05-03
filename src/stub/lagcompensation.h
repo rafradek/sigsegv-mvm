@@ -9,8 +9,9 @@
 #include <../server/ilagcompensationmanager.h>
 #undef lagcompensation
 
+class CLagCompensationManager : public CAutoGameSystemPerFrame, public ILagCompensationManager {};
 
 extern GlobalThunk<ILagCompensationManager *> lagcompensation;
-
+extern GlobalThunk<CLagCompensationManager> g_LagCompensationManager;
 
 #endif

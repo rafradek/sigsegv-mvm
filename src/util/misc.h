@@ -1017,3 +1017,6 @@ public:
 std::vector<std::string> BreakStringsForMultiPrint(std::string string, size_t maxSize, char breakChar);
 
 void CancelClientMenu(CBasePlayer *player);
+
+int FixSlotCrashPre();
+void FixSlotCrashPost(int val);

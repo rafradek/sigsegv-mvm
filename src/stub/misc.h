@@ -83,7 +83,7 @@ void PrecacheParticleSystem(const char *name);
 
 bool CRC_File(CRC32_t *crcvalue, const char *pszFileName);
 
-void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message);
+void UTIL_HudMessage(CBasePlayer *player, const hudtextparms_t & params, const char *message);
 
 void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid);
 

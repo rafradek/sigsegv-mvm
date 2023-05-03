@@ -26,8 +26,10 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		CHandle<CBaseEntity> wearable;
 		CHandle<CBaseEntity> wearableWeapon;
 		int oldModelIndex;
-		const char *properHandModel;
+		const char *properHandModel = nullptr;
 		int properHandModelIndex;
+		CHandle<CBaseEntity> playerModelWearable;
+		const char *properPlayerModel = nullptr;
 	};
 
     THINK_FUNC_DECL(HideViewModel)
@@ -53,6 +55,22 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->wearableWeapon != nullptr) {
 			mod->wearableWeapon->Remove();
 		}
+		if (mod->playerModelWearable != nullptr) {
+			mod->playerModelWearable->Remove();
+		}
+
+		if (mod->properPlayerModel != nullptr) {
+			auto wearable_player = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+			wearable_player->Spawn();
+			wearable_player->GiveTo(owner);
+			wearable_player->SetModelIndex(CBaseEntity::PrecacheModel(GetPlayerClassData(owner->GetPlayerClass()->GetClassIndex())->m_szModelName));
+			wearable_player->m_bValidatedAttachedEntity = true;
+			mod->playerModelWearable = wearable_player;
+			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
+			owner->m_nRenderFX = 6;
+		}
+
+		if (mod->properHandModel == nullptr) return true;
 
 		weapon->SetModel(mod->properHandModel);
 		weapon->m_iViewModelIndex = mod->properHandModelIndex;
@@ -75,6 +93,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
         }
 		owner->GetViewModel()->AddEffects(EF_NODRAW);
 		THINK_FUNC_SET(owner->GetViewModel(), HideViewModel, gpGlobals->curtime);
+
 		return true;
 	}
 
@@ -86,10 +105,20 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->wearableWeapon != nullptr) {
 			mod->wearableWeapon->Remove();
 		}
+		if (mod->playerModelWearable != nullptr) {
+			mod->playerModelWearable->Remove();
+		}
+		if (mod->properPlayerModel != nullptr) {
+			owner->GetPlayerClass()->SetCustomModel("");
+			owner->m_nRenderFX = 0;
+		}
 		return true;
 	}
 
     ConVar cvar_enable_viewmodel("sig_etc_unintended_class_weapon_viewmodel", "0", FCVAR_NOTIFY,
+		"Mod: use proper class viewmodel animations for unintended player class weapons");
+
+    ConVar cvar_enable_playermodel("sig_etc_unintended_class_weapon_player_model", "0", FCVAR_NOTIFY,
 		"Mod: use proper class viewmodel animations for unintended player class weapons");
 
     ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY,
@@ -114,10 +143,13 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		int otherClassViewmodel = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(ent, otherClassViewmodel, use_original_class_weapon_animations);
 
-		if (cvar_enable_viewmodel.GetBool() || otherClassViewmodel != 0) {
+		int otherClassPlayerModel = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(ent, otherClassPlayerModel, use_original_class_player_animations);
+
+		if (cvar_enable_viewmodel.GetBool() || otherClassViewmodel != 0 || otherClassPlayerModel != 0) {
 			
 			// Use viewmodel of a real class if applicable
-			if (owner->IsRealPlayer() && owner->GetViewModel() != nullptr && weapon->m_nViewModelIndex == 0) {
+			if (((owner->IsRealPlayer() && owner->GetViewModel() != nullptr) || (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool())) && weapon->m_nViewModelIndex == 0) {
 				bool goodAnims = (FStrEq(weapon->GetClassname(), "tf_weapon_handgun_scout_secondary") && classIndex == TF_CLASS_ENGINEER) 
 					|| ((FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_hwg") || FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_soldier") || FStrEq(weapon->GetClassname(), "tf_weapon_shotgun_pyro")) 
 					&& (classIndex == TF_CLASS_SOLDIER || classIndex == TF_CLASS_HEAVYWEAPONS || classIndex == TF_CLASS_PYRO));
@@ -134,12 +166,17 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 					}
 					if (properClass != -1) {
 						auto mod = weapon->GetOrCreateEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-						mod->oldModelIndex = CBaseEntity::PrecacheModel(weapon->GetViewModel());
-						mod->properHandModel = GetPlayerClassData(properClass)->m_szHandModelName;
-						mod->properHandModelIndex = CBaseEntity::PrecacheModel(mod->properHandModel);
-						weapon->SetCustomViewModel(mod->properHandModel);
-						weapon->m_iViewModelIndex = mod->properHandModelIndex;
-						weapon->SetModel(mod->properHandModel);
+						if ((otherClassViewmodel != 0 || cvar_enable_viewmodel.GetBool()) && owner->GetViewModel() != nullptr) {
+							mod->oldModelIndex = CBaseEntity::PrecacheModel(weapon->GetViewModel());
+							mod->properHandModel = GetPlayerClassData(properClass)->m_szHandModelName;
+							mod->properHandModelIndex = CBaseEntity::PrecacheModel(mod->properHandModel);
+							weapon->SetCustomViewModel(mod->properHandModel);
+							weapon->m_iViewModelIndex = mod->properHandModelIndex;
+							weapon->SetModel(mod->properHandModel);
+						}
+						if (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool()) {
+							mod->properPlayerModel = GetPlayerClassData(properClass)->m_szModelName;
+						}
 						if (weapon == owner->GetActiveTFWeapon()) {
 							OnEquipUnintendedClassWeapon(owner, weapon, mod);
 						}

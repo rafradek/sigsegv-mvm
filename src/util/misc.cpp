@@ -157,3 +157,30 @@ void CancelClientMenu(CBasePlayer *player)
 		engine->MessageEnd();
 	}
 }
+
+#ifdef SE_TF2
+    constexpr int DEFAULT_MAX_PLAYERS = 33;
+#else
+	constexpr int DEFAULT_MAX_PLAYERS = 65;
+#endif
+int FixSlotCrashPre()
+{
+	static ConVarRef sv_visiblemaxplayers("sv_visiblemaxplayers");
+	int oldsv_visiblemaxplayers = 256; 
+	if (sv_visiblemaxplayers.GetInt() <= 0 && sv->GetMaxClients() > DEFAULT_MAX_PLAYERS) {
+		oldsv_visiblemaxplayers = sv_visiblemaxplayers.GetInt();
+		sv_visiblemaxplayers.SetValue(DEFAULT_MAX_PLAYERS);
+	}
+	else if (sv_visiblemaxplayers.GetInt() > DEFAULT_MAX_PLAYERS) {
+		oldsv_visiblemaxplayers = sv_visiblemaxplayers.GetInt();
+		sv_visiblemaxplayers.SetValue(DEFAULT_MAX_PLAYERS);
+	}
+	return oldsv_visiblemaxplayers;
+}
+void FixSlotCrashPost(int val)
+{
+	static ConVarRef sv_visiblemaxplayers("sv_visiblemaxplayers");
+	if (val != 256) {
+		sv_visiblemaxplayers.SetValue(val);
+	}
+}

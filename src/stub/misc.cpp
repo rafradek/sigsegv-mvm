@@ -87,8 +87,8 @@ void PrecacheParticleSystem(const char *name) { ft_PrecacheParticleSystem(name);
 static StaticFuncThunk<bool, CRC32_t *, const char *> ft_CRC_File("CRC_File");
 bool CRC_File(CRC32_t *crcvalue, const char *pszFileName) { return ft_CRC_File(crcvalue, pszFileName); }
 
-static StaticFuncThunk<void, CBasePlayer *, hudtextparms_t &, const char *> ft_UTIL_HudMessage("UTIL_HudMessage");
-void UTIL_HudMessage(CBasePlayer *player, hudtextparms_t & params, const char *message) { ft_UTIL_HudMessage(player, params, message); }
+static StaticFuncThunk<void, CBasePlayer *, const hudtextparms_t &, const char *> ft_UTIL_HudMessage("UTIL_HudMessage");
+void UTIL_HudMessage(CBasePlayer *player, const hudtextparms_t & params, const char *message) { ft_UTIL_HudMessage(player, params, message); }
 
 static StaticFuncThunk<void, CGameTrace *, int> ft_UTIL_PlayerDecalTrace("UTIL_PlayerDecalTrace");
 void UTIL_PlayerDecalTrace(CGameTrace *tr, int playerid) { ft_UTIL_PlayerDecalTrace(tr, playerid); }

@@ -44,7 +44,9 @@
                 "NO_HOOK_MALLOC",
                 "NO_MALLOC_OVERRIDE",
                 "T_HEADER_ONLY",
-                "_LINUX"
+                "_LINUX",
+                "VERSION_SAFE_STEAM_API_INTERFACES",
+                "LUAJIT_ENABLE_LUA52COMPAT"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

@@ -64,11 +64,13 @@ public:
     CBaseClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
 	
 	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
+	void     UserInfoChanged(int slot) { vt_UserInfoChanged(this, slot); }
     int &GetMaxClientsRef() {return *(int *)((uintptr_t)(this) + 0x14C);}
 private:
     static MemberFuncThunk<CBaseServer *, CBaseClient *, const char *>              ft_CreateFakeClient;
 	
 	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
+	static MemberVFuncThunk<CBaseServer *, void, int>          vt_UserInfoChanged;
 };
 
 class CGameServer : public CBaseServer
