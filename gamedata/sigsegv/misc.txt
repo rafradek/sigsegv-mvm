@@ -5629,7 +5629,6 @@
 					type "sym"
 					sym  "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
 				}
-				
 			}
 			"addrs_group"
 			{
@@ -5953,6 +5952,7 @@
 				"CTFWeaponBase::GetMaxHealthMod" "_ZN13CTFWeaponBase15GetMaxHealthModEv"
 				"CTFWeaponBase::InternalGetEffectBarRechargeTime" "_ZN13CTFWeaponBase32InternalGetEffectBarRechargeTimeEv"
 				"CTFWeaponBase::GetEffectBarProgress" "_ZN13CTFWeaponBase20GetEffectBarProgressEv"
+				"CTFWeaponBase::GetActivityWeaponRole" "_ZNK13CTFWeaponBase21GetActivityWeaponRoleEv"
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
@@ -6007,7 +6007,8 @@
 
 				"CTFPipebombLauncher::Deploy" "_ZN19CTFPipebombLauncher6DeployEv"
 				"CTFPipebombLauncher::FireProjectile" "_ZN19CTFPipebombLauncher14FireProjectileEP9CTFPlayer"
-				
+
+				"CLagCompensationManager::BacktrackPlayer" "_ZN23CLagCompensationManager15BacktrackPlayerEP11CBasePlayerf"
 				
 			}
 			"addrs_group"
@@ -6025,6 +6026,9 @@
 				"Vector_CompareDeltas"	"_Z20Vector_CompareDeltasPK8SendPropP7bf_readS3_"
 				"String_CompareDeltas"	"_Z20String_CompareDeltasPK8SendPropP7bf_readS3_"
 				"Int64_CompareDeltas"	"_Z19Int64_CompareDeltasPK8SendPropP7bf_readS3_"
+
+				"CBaseClient::SetName"	"_ZN11CBaseClient7SetNameEPKc"
+				
 			}
 		}
 	}

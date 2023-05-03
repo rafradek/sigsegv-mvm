@@ -3052,4 +3052,13 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4626"
+    {
+        "name"	"use original class player animations"
+        "attribute_class"	"use_original_class_player_animations"
+        "description_string"	"Arrows are always lit"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

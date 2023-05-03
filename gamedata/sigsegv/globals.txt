@@ -125,7 +125,8 @@
 				"CNavArea::m_openList" "_ZN8CNavArea10m_openListE"
 				"g_SentGameRulesMasks" "g_SentGameRulesMasks"
 				"CNavArea::s_nCurrVisTestCounter" "_ZN8CNavArea21s_nCurrVisTestCounterE"
-				
+				"g_LagCompensationManager" "_ZL24g_LagCompensationManager"
+				"s_SteamGameServerAPIContext" "_ZL27s_SteamGameServerAPIContext"
 			}
 			
 			"addrs_group"
