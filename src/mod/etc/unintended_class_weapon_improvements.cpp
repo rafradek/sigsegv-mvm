@@ -688,6 +688,18 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return damage;
 	}
 
+	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxAmmo, int ammoIndex, int classIndex)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxAmmo)(ammoIndex, classIndex);
+		if (ammoIndex == TF_AMMO_GRENADES1 && ret == 0) {
+			return 1;
+		}
+		if (ammoIndex == TF_AMMO_GRENADES2 && ret == 0) {
+			return 1;
+		}
+		return ret;
+	}
+	
     ConVar sig_etc_unintended_class_weapon_display_meters("sig_etc_unintended_class_weapon_display_meters", "1", FCVAR_NOTIFY,
 		"Mod: display meters for unintended player class weapons");
 
@@ -741,6 +753,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 			// Lose hype on take damage for all classes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
+
+			// Allow grenades from other items
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxAmmo, "CTFPlayer::GetMaxAmmo");
 			
         }
 

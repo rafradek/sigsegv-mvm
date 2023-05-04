@@ -2445,12 +2445,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		return ret;
 	}*/
-	
+	bool ShouldSentryBeIgnored(CTFBot *bot, CBaseObject *object)
+	{
+		return bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && (object->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && object->GetBuilder() == nullptr) || object->GetTeamNumber() == bot->GetTeamNumber());
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		if (ent->IsBaseObject()) {
 			CTFBot *bot = static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
-			if (bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && (ent->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && ToBaseObject(ent)->GetBuilder() == nullptr))) {
+			if (ShouldSentryBeIgnored(bot, ToBaseObject(ent))) {
 				return true;
 			}
 		}
@@ -2462,12 +2466,22 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		if (me->m_enemySentry != nullptr)
 		{
-			auto obj = ToBaseObject(me->m_enemySentry);
-			if (obj->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && obj->GetBuilder() == nullptr)) {
+			if (ShouldSentryBeIgnored(me, ToBaseObject(me->m_enemySentry))) {
 				me->m_enemySentry = nullptr;
 			}
 		}
 		return DETOUR_MEMBER_CALL(CTFBotSpyInfiltrate_Update)(me,interval);
+	}
+
+	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotSpyLurk_Update, CTFBot *me, float interval)
+	{
+		if (me->m_enemySentry != nullptr)
+		{
+			if (ShouldSentryBeIgnored(me, ToBaseObject(me->m_enemySentry))) {
+				me->m_enemySentry = nullptr;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFBotSpyLurk_Update)(me,interval);
 	}
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_AdjustMinPlayerSpawnTime)
@@ -2731,7 +2745,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto player = ToTFPlayer(owner);
-		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty()) {
+		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0) {
 			ent->SetCustomViewModel(state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].c_str());
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
@@ -4946,7 +4960,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					CEconItemView *view = CEconItemView::Create();
 					view->Init(item_def->m_iItemDefIndex);
-					view->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey << 32;
+					view->m_iItemID = RandomInt(INT_MIN, INT_MAX) + ((int64_t)((uintptr_t)subkey) << 32);
 					
 					std::string name;
 					if (state.m_CustomWeapons.find(subkey->GetString()) != state.m_CustomWeapons.end()) {
@@ -5038,7 +5052,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (item_def != nullptr) {
 			item.item = CEconItemView::Create();
 			item.item->Init(item_def->m_iItemDefIndex);
-			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + (uintptr_t)subkey2 << 32;
+			item.item->m_iItemID = RandomInt(INT_MIN, INT_MAX) + ((int64_t)((uintptr_t)subkey2) << 32);
 			// Make stock quality items unique quality
 			if (item.item->m_iEntityQuality == 0) {
 				item.item->m_iEntityQuality = 6;
@@ -6678,7 +6692,8 @@ namespace Mod::Pop::PopMgr_Extensions
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_SetViewModel, "CBaseCombatWeapon::SetViewModel");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerClassShared_GetHandModelName, "CTFPlayerClassShared::GetHandModelName");
-            //MOD_ADD_DETOUR_MEMBER(CTFBotSpyInfiltrate_Update, "CTFBotSpyInfiltrate::Update");
+            MOD_ADD_DETOUR_MEMBER(CTFBotSpyInfiltrate_Update, "CTFBotSpyInfiltrate::Update");
+            MOD_ADD_DETOUR_MEMBER(CTFBotSpyLurk_Update, "CTFBotSpyLurk::Update");
 
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_2, "DispatchParticleEffect [overload 2]");
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_3, "DispatchParticleEffect [overload 3]");

@@ -1770,12 +1770,15 @@ namespace Mod::Attr::Custom_Attributes
 		return weapon->GetProjectileDamage() / weapon->GetTFWpnData().m_nDamage;
 	}
 
-	CBaseEntity *shooting_sentry = nullptr;
+	CBaseObject *shooting_sentry = nullptr;
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
 		// For custom sentry weapons, use sentry damage falloff
 		if (shooting_sentry != nullptr) {
 			info.SetInflictor(shooting_sentry);
+			if (shooting_sentry->GetBuilder() == nullptr) {
+				info.SetAttacker(shooting_sentry);
+			}
 		}
 
 		CBaseEntity *oldInflictor = nullptr;
@@ -2218,21 +2221,6 @@ namespace Mod::Attr::Custom_Attributes
 				mod->totalAccuracyApplied = applyAccuracy;
 			}
 		}
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemPostFrame)
-	{
-		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		OnWeaponUpdate(weapon);
-		
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemPostFrame)();
-	}
-	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemBusyFrame)
-	{
-		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		OnWeaponUpdate(weapon);
-
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
 	}
 
 	inline bool UseBuilderAttributes(CBaseObject *object)
@@ -5152,7 +5140,9 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
-
+		if (weapon != nullptr) {
+			OnWeaponUpdate(weapon);
+		}
 		if (pressedM2) {
 			player->m_nButtons |= IN_ATTACK2;
 		}
@@ -5797,7 +5787,7 @@ namespace Mod::Attr::Custom_Attributes
 		std::string lastWeaponName;
 	};
 
-	CBaseEntity *ShootSentryWeaponProjectile(CBaseEntity *sentry, CTFPlayer *player, const char *weaponName, const char *moduleName, const Vector &vecOrigin, const QAngle &vecAngles)
+	CBaseEntity *ShootSentryWeaponProjectile(CBaseObject *sentry, CTFPlayer *player, const char *weaponName, const char *moduleName, const Vector &vecOrigin, const QAngle &vecAngles)
 	{
 		bool tempPlayer = false;
 		auto sentryTeam = sentry->GetTeamNumber() != 0 ? sentry->GetTeamNumber() : TF_TEAM_BLUE;
@@ -5906,10 +5896,11 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
 	{
 		auto player = ToTFPlayer(pScorer);
-		if (rc_CObjectSentrygun_FireRocket && ToBaseObject(pOwner) != nullptr) {
-			auto weaponName = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(ToBaseObject(pOwner));
+		auto object = ToBaseObject(pOwner);
+		if (rc_CObjectSentrygun_FireRocket && object != nullptr) {
+			auto weaponName = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(object);
 			if (weaponName[0] != '\0') {
-				auto proj = ShootSentryWeaponProjectile(pOwner, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
+				auto proj = ShootSentryWeaponProjectile(object, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
         		pOwner->FireCustomOutput<"onshootweaponrocket">(proj != nullptr ? proj : pOwner, pOwner, Variant());
 				return nullptr;
 			}
@@ -7194,8 +7185,6 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_VHOOK(CUpgrades_StartTouch, TypeName<CUpgrades>(), "CBaseTrigger::StartTouch");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_UpgradeTouch, "CUpgrades::UpgradeTouch");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_EndTouch, "CUpgrades::EndTouch");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemPostFrame, "CTFWeaponBase::ItemPostFrame");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemBusyFrame, "CTFWeaponBase::ItemBusyFrame");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FireRocket, "CObjectSentrygun::FireRocket");
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_StartUpgrading, "CBaseObject::StartUpgrading");
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_CanBeUpgraded, "CBaseObject::CanBeUpgraded");
