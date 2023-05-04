@@ -480,6 +480,11 @@
 					type "sym"
 					sym  "_ZN12CTFBotAttack6UpdateEP6CTFBotf"
 				}
+				"CTFBotSpyLurk::Update"
+				{
+					type "sym"
+					sym  "_ZN13CTFBotSpyLurk6UpdateEP6CTFBotf"
+				}
 				
 			}
 		}
