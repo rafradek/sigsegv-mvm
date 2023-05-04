@@ -30,6 +30,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		int properHandModelIndex;
 		CHandle<CBaseEntity> playerModelWearable;
 		const char *properPlayerModel = nullptr;
+		const char *oldPlayerModel = nullptr;
 	};
 
     THINK_FUNC_DECL(HideViewModel)
@@ -47,7 +48,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 	bool OnEquipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
 	{
-		if (weapon->m_nCustomViewmodelModelIndex != mod->properHandModelIndex) return false;
 		
 		if (mod->wearable != nullptr) {
 			mod->wearable->Remove();
@@ -63,13 +63,14 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			auto wearable_player = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
 			wearable_player->Spawn();
 			wearable_player->GiveTo(owner);
-			wearable_player->SetModelIndex(CBaseEntity::PrecacheModel(GetPlayerClassData(owner->GetPlayerClass()->GetClassIndex())->m_szModelName));
+			wearable_player->SetModelIndex(CBaseEntity::PrecacheModel(mod->oldPlayerModel));
 			wearable_player->m_bValidatedAttachedEntity = true;
 			mod->playerModelWearable = wearable_player;
 			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
 			owner->m_nRenderFX = 6;
 		}
 
+		if (weapon->m_nCustomViewmodelModelIndex != mod->properHandModelIndex) return false;
 		if (mod->properHandModel == nullptr) return true;
 
 		weapon->SetModel(mod->properHandModel);
@@ -109,7 +110,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			mod->playerModelWearable->Remove();
 		}
 		if (mod->properPlayerModel != nullptr) {
-			owner->GetPlayerClass()->SetCustomModel("");
+			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerModel);
 			owner->m_nRenderFX = 0;
 		}
 		return true;
@@ -119,7 +120,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		"Mod: use proper class viewmodel animations for unintended player class weapons");
 
     ConVar cvar_enable_playermodel("sig_etc_unintended_class_weapon_player_model", "0", FCVAR_NOTIFY,
-		"Mod: use proper class viewmodel animations for unintended player class weapons");
+		"Mod: use proper class player animations for unintended player class weapons");
 
     ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY,
 		"Mod: fix max ammo count for unintented player class weapons");
@@ -176,6 +177,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						}
 						if (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool()) {
 							mod->properPlayerModel = GetPlayerClassData(properClass)->m_szModelName;
+							mod->oldPlayerModel = owner->GetPlayerClass()->GetCustomModel();
 						}
 						if (weapon == owner->GetActiveTFWeapon()) {
 							OnEquipUnintendedClassWeapon(owner, weapon, mod);
@@ -899,7 +901,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
     } s_Mod;
     
     ConVar cvar_enable("sig_etc_unintended_class_weapon_improvements", "0", FCVAR_NOTIFY,
-		"Mod: allow all classes to fully benefit from shield, eyelander, tf_weapon_builder, and others. Must be set for the above 3 convars to work",
+		"Mod: allow all classes to fully benefit from shield, eyelander, tf_weapon_builder, and others. Must be set for the above 4 convars to work",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});

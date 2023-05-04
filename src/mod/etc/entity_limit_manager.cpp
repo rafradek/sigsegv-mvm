@@ -4,6 +4,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/tfentities.h"
 #include "stub/server.h"
+#include "stub/extraentitydata.h"
 #include "util/pooled_string.h"
 #include "util/iterate.h"
 #include "util/clientmsg.h"
@@ -407,22 +408,165 @@ namespace Mod::Etc::Entity_Limit_Manager
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 
-    void IterateKv(KeyValues *kv) {
-        FOR_EACH_SUBKEY(kv, subkey) {
-            if (subkey->GetFirstSubKey() != nullptr) {
-                IterateKv(subkey);
-            }
-            else {
-                Msg("%s -> %s\n", subkey->GetName(), subkey->GetString());
-            }
-        }
+
+    RefCount rc_ServerOnly;
+    ConVar cvar_path_track_is_server_entity("sig_etc_path_track_is_server_entity", "1", FCVAR_NOTIFY,
+		"Mod: make path_track a server entity, which saves edicts");
+    DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CPathTrack_Create, const char *classname)
+	{
+        SCOPED_INCREMENT_IF(rc_ServerOnly, cvar_path_track_is_server_entity.GetBool());
+        return DETOUR_MEMBER_CALL(CEntityFactory_CPathTrack_Create)(classname);
     }
-    CON_COMMAND(sig_test_keyvalue, "")
+
+
+    THINK_FUNC_DECL(PlaceholderThink)
     {
-        KeyValues *kv = new KeyValues("t");
-        if (kv->LoadFromFile(filesystem, "testkv", "GAME")) {
-            IterateKv(kv);
+        variant_t val;
+        this->GetCustomVariableVariant<"placeholderorig">(val);
+        auto entity = val.Entity().Get();
+        this->GetCustomVariableVariant<"placeholdermove">(val);
+        auto move = val.Entity().Get();
+        auto animating = entity != nullptr ? entity->GetBaseAnimating() : nullptr;
+        this->GetCustomVariableVariant<"placeholderlight">(val);
+        bool light = val.Bool();
+
+        if (move == nullptr || entity == nullptr || ((light && (animating == nullptr || animating->m_hLightingOrigin != this)) || (!light && entity->GetMoveParent() != this ))) {
+            this->Remove();
+            return;
         }
-        kv->deleteThis();
+        this->SetAbsOrigin(move->GetAbsOrigin());
+        this->SetAbsAngles(move->GetAbsAngles());
+        this->SetNextThink(gpGlobals->curtime + 0.01f, "PlaceholderThink");
     }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_SetParent, CBaseEntity *parent, int iAttachment)
+	{
+        CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
+        if (parent != nullptr && entity->edict() != nullptr && parent->edict() == nullptr && rtti_cast<CLogicalEntity *>(parent) == nullptr) {
+            auto placeholder = CreateEntityByName("point_teleport");
+            variant_t val;
+            val.SetEntity(entity);
+            placeholder->SetCustomVariable("placeholderorig", val);
+            val.SetEntity(parent);
+            placeholder->SetCustomVariable("placeholdermove", val);
+            val.SetBool(true);
+            placeholder->SetCustomVariable("placeholderparent", val);
+            THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
+            placeholder->SetAbsOrigin(parent->GetAbsOrigin());
+            placeholder->SetAbsAngles(parent->GetAbsAngles());
+            parent = placeholder;
+        }
+        DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(parent, iAttachment);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseAnimating_SetLightingOrigin, CBaseEntity *entity)
+	{
+        CBaseAnimating *animating = reinterpret_cast<CBaseAnimating *>(this);
+        if (entity != nullptr && entity->edict() == nullptr) {
+            auto placeholder = CreateEntityByName("point_teleport");
+            variant_t val;
+            val.SetEntity(animating);
+            placeholder->SetCustomVariable("placeholderorig", val);
+            val.SetEntity(entity);
+            placeholder->SetCustomVariable("placeholdermove", val);
+            val.SetBool(true);
+            placeholder->SetCustomVariable("placeholderlight", val);
+            THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
+            entity = placeholder;
+        }
+        DETOUR_MEMBER_CALL(CBaseAnimating_SetLightingOrigin)(entity);
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_CBaseEntity, bool serverOnly)
+	{
+        DETOUR_MEMBER_CALL(CBaseEntity_CBaseEntity)(rc_ServerOnly || serverOnly);
+        if (rc_ServerOnly) {
+            auto entity = reinterpret_cast<CBaseEntity *>(this);
+            entity->AddEFlags(65536); //EFL_FORCE_ALLOW_MOVEPARENT
+        }
+        /*auto entity = reinterpret_cast<CBaseEntity *>(this);
+        if (entity->IsPlayer()) {
+            entity->m_extraEntityData = new ExtraEntityDataPlayer(entity);
+        }
+        else if (entity->IsBaseCombatWeapon()) {
+            entity->m_extraEntityData = new ExtraEntityDataCombatWeapon(entity);
+        }*/
+    }
+
+#define MAKE_ENTITY_SERVERSIDE(name) \
+    DETOUR_DECL_MEMBER(IServerNetworkable *, name, const char *classname) \
+	{\
+        SCOPED_INCREMENT(rc_ServerOnly);\
+        return DETOUR_MEMBER_CALL(name)(classname);\
+    }\
+
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHintSentrygun_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHintTeleporterExit_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHint_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavAvoid_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavPrefer_Create);
+    // Trigger entities cannot be made serverside
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CFuncNavPrerequisite_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvEntityMaker_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CGameText_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTrainingAnnotation_Create);
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTriggerMultiple_Create);
+    //MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTriggerHurt_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFHudNotify_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CRagdollMagnet_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvShake_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTeamplayRoundWin_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CEnvViewPunch_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFForceRespawn_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointEntity_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointNavInterface_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointClientCommand_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointServerCommand_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointPopulatorInterface_Create);
+    MAKE_ENTITY_SERVERSIDE(CEntityFactory_CPointHurt_Create);
+
+    class CModConvertServerside : public IMod
+	{
+	public:
+		CModConvertServerside() : IMod("Etc:Entity_Limit_Manager_Convert_Serverside")
+		{
+            // Make some entities server only
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_CBaseEntity, "CBaseEntity::CBaseEntity");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPathTrack_Create, "CEntityFactory<CPathTrack>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHint_Create, "CEntityFactory<CTFBotHint>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHintSentrygun_Create, "CEntityFactory<CTFBotHintSentrygun>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFBotHintTeleporterExit_Create,  "CEntityFactory<CTFBotHintTeleporterExit>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavAvoid_Create,  "CEntityFactory<CFuncNavAvoid>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrefer_Create,  "CEntityFactory<CFuncNavPrefer>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CFuncNavPrerequisite_Create,  "CEntityFactory<CFuncNavPrerequisite>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvEntityMaker_Create,  "CEntityFactory<CEnvEntityMaker>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CGameText_Create,  "CEntityFactory<CGameText>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTrainingAnnotation_Create,  "CEntityFactory<CTrainingAnnotation>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTriggerMultiple_Create,  "CEntityFactory<CTriggerMultiple>::Create");
+            //MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTriggerHurt_Create,  "CEntityFactory<CTriggerHurt>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFHudNotify_Create,  "CEntityFactory<CTFHudNotify>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CRagdollMagnet_Create,  "CEntityFactory<CRagdollMagnet>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvShake_Create,  "CEntityFactory<CEnvShake>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTeamplayRoundWin_Create,  "CEntityFactory<CTeamplayRoundWin>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CEnvViewPunch_Create,  "CEntityFactory<CEnvViewPunch>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CTFForceRespawn_Create,  "CEntityFactory<CTFForceRespawn>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointEntity_Create,  "CEntityFactory<CPointEntity>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointNavInterface_Create,  "CEntityFactory<CPointNavInterface>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointClientCommand_Create,  "CEntityFactory<CPointClientCommand>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointServerCommand_Create,  "CEntityFactory<CPointServerCommand>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointPopulatorInterface_Create,  "CEntityFactory<CPointPopulatorInterface>::Create");
+            MOD_ADD_DETOUR_MEMBER(CEntityFactory_CPointHurt_Create,  "CEntityFactory<CPointHurt>::Create");
+            
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetLightingOrigin,  "CBaseAnimating::SetLightingOrigin");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_SetParent, "CBaseEntity::SetParent");
+        }
+    };
+	CModConvertServerside s_ModConvertServerside;
+	
+	
+	ConVar cvar_enable_convert_serverside("sig_etc_entity_limit_manager_convert_server_entity", "0", FCVAR_NOTIFY,
+		"Mod: convert some entities to serverside entities to save edicts",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_ModConvertServerside.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
 }

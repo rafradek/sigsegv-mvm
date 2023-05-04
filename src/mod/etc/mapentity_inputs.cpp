@@ -2112,7 +2112,7 @@ namespace Mod::Etc::Mapentity_Additions
             ent->DispatchUpdateTransmitState();
         }},
         {"VScriptFunc$"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-            ent->AcceptInput("RunScriptCode", pActivator, pCaller, Variant(AllocPooledString(CFmtStr("%s(%s)", szInputName + strlen("VScriptFunc$"), Value.String()))), -1);
+            ent->AcceptInput("RunScriptCode", pActivator, pCaller, Variant(AllocPooledString(CFmtStr(Value.FieldType() == FIELD_STRING ? "%s(\"%s\")" : "%s(%s)", szInputName + strlen("VScriptFunc$"), Value.String()))), -1);
         }},
     });
 }

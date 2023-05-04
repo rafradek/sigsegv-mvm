@@ -5908,6 +5908,7 @@
 				"CBaseCombatWeapon::SetViewModel" "_ZN17CBaseCombatWeapon12SetViewModelEv"
 				"CBaseCombatWeapon::SetWeaponVisible" "_ZN17CBaseCombatWeapon16SetWeaponVisibleEb"
 				"CBaseCombatWeapon::SetCustomViewModel" "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
+				"CBaseCombatWeapon::GetSlot" "_ZNK17CBaseCombatWeapon7GetSlotEv"
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"

@@ -3375,3 +3375,9 @@ WaveSchedule
 
 // Can move while ducking when shooting. Bots can also jump
 // "minigun full movement" 1
+
+// Use player animations of the weapon original class if the weapon is given to unintended class
+// "use original class player animations" 1
+
+// Sentry rocket projectile speed multiplier
+// "mult sentry rocket projectile speed" 2
