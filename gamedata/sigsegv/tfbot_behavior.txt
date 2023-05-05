@@ -485,7 +485,6 @@
 					type "sym"
 					sym  "_ZN13CTFBotSpyLurk6UpdateEP6CTFBotf"
 				}
-				
 			}
 		}
 	}

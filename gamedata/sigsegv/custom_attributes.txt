@@ -3061,4 +3061,50 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
+    "4627"
+    {
+        "name"	"crit on cond"
+        "attribute_class"	"crit_on_cond"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4628"
+    {
+        "name"	"minicrit on cond"
+        "attribute_class"	"minicrit_on_cond"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4629"
+    {
+        "name"	"add attributes when active"
+        "attribute_class"	"add_attributes_when_active"
+		"attribute_type"	"string"
+        "description_string"	"Arrows are always lit"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4630"
+    {
+        "name"	"radial cond"
+        "attribute_class"	"radial_cond"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4631"
+    {
+        "name"	"mult explosion radius direct hit"
+        "attribute_class"	"mult_explosion_radius_direct_hit"
+        "description_string"	"(+-)%p% explosion radius on direct hit"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

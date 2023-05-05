@@ -5989,7 +5989,8 @@
 				"CObjectSapper::UpdateOnRemove" "_ZN13CObjectSapper14UpdateOnRemoveEv"
 
 				"CTFBaseRocket::GetWeaponID" "_ZNK13CTFBaseRocket11GetWeaponIDEv"
-
+				"CTFBaseRocket::GetRadius" "_ZN13CTFBaseRocket9GetRadiusEv"
+				
 				"CTFProjectile_Arrow::GetWeaponID" "_ZNK19CTFProjectile_Arrow11GetWeaponIDEv"
 
 				"CTFProjectile_Cleaver::GetDamage" "_ZN21CTFProjectile_Cleaver9GetDamageEv"

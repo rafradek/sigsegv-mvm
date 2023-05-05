@@ -3381,3 +3381,15 @@ WaveSchedule
 
 // Sentry rocket projectile speed multiplier
 // "mult sentry rocket projectile speed" 2
+
+// Critical hit when the enemy has specified cond
+// "crit on cond" 13
+
+// Add attributes when the weapon is active
+// "add attributes when active" "move speed bonus|2|damage bonus|2"
+
+// Add conditions and attributes on hit in a radius
+// "radial cond" 400
+
+// Explosion radius multiplier on direct hit
+// "mult explosion radius direct hit" 2

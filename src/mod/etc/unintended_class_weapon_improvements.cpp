@@ -125,9 +125,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
     ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY,
 		"Mod: fix max ammo count for unintented player class weapons");
 
-    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *ownerBase)
+    DETOUR_DECL_MEMBER(void, CTFWeaponBase_UpdateHands)
 	{
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(ownerBase);
+		DETOUR_MEMBER_CALL(CTFWeaponBase_UpdateHands)();
 		
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto weapon = rtti_cast<CTFWeaponBase *>(ent);
@@ -168,8 +168,11 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 					if (properClass != -1) {
 						auto mod = weapon->GetOrCreateEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
 						if ((otherClassViewmodel != 0 || cvar_enable_viewmodel.GetBool()) && owner->GetViewModel() != nullptr) {
-							mod->oldModelIndex = CBaseEntity::PrecacheModel(weapon->GetViewModel());
-							mod->properHandModel = GetPlayerClassData(properClass)->m_szHandModelName;
+							mod->oldModelIndex = weapon->GetModelIndex();
+							int oldClass = owner->GetPlayerClass()->GetClassIndex();
+							owner->GetPlayerClass()->SetClassIndex(properClass);
+							mod->properHandModel = weapon->GetViewModel(); //GetPlayerClassData(properClass)->m_szHandModelName;
+							owner->GetPlayerClass()->SetClassIndex(oldClass);
 							mod->properHandModelIndex = CBaseEntity::PrecacheModel(mod->properHandModel);
 							weapon->SetCustomViewModel(mod->properHandModel);
 							weapon->m_iViewModelIndex = mod->properHandModelIndex;
@@ -709,7 +712,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		CMod() : IMod("Etc:Unintended_Class_Weapon_Improvements")
 		{
 			// Allow to use viewmodels of the original class
-			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip,     "CBaseCombatWeapon::Equip");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFWeaponBase_UpdateHands,     "CTFWeaponBase::UpdateHands", HIGH);
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy,     "CTFWeaponBase::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster,     "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove");

@@ -872,6 +872,7 @@ DefaultTakeDamageInfo = {
     Damage = 0,
     DamageType = DMG_GENERIC, -- Damage type, see DMG_* globals. Can be combined with | operator
     DamageCustom = TF_DMG_CUSTOM_NONE, -- Custom damage type, see TF_DMG_* globals
+    CritType = 0, -- Crit type, 0 = no crit, 1 = mini crit, 2 = normal crit
     DamagePosition = Vector(0,0,0), -- Where the target was hit at
     DamageForce = Vector(0,0,0), -- Knockback force of the attack
     ReportedPosition = Vector(0,0,0) -- Where the attacker attacked from

@@ -2745,7 +2745,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto player = ToTFPlayer(owner);
-		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0) {
+		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0 && ent->GetItem() != nullptr && ent->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0) {
 			ent->SetCustomViewModel(state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].c_str());
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);

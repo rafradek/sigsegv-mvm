@@ -902,6 +902,7 @@ namespace Mod::Attr::Custom_Attributes
 	int hit_entities_explosive_max = 0;
 
 	bool minicrit = false;
+	CBaseEntity *hit_explode_direct = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFGameRules_RadiusDamage, CTFRadiusDamageInfo& info)
 	{
 		SCOPED_INCREMENT(rc_CTFGameRules_RadiusDamage);
@@ -935,6 +936,11 @@ namespace Mod::Attr::Custom_Attributes
 		hit_entities_explosive = 0;
 		hit_entities_explosive_max = GetFastAttributeInt(weapon, 0, MAX_AOE_TARGETS);
 
+		if (hit_explode_direct != nullptr && hit_explode_direct->MyCombatCharacterPointer() != nullptr) {
+			float radiusMult = 1;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.m_DmgInfo->GetWeapon(), radiusMult, mult_explosion_radius_direct_hit );
+			info.m_flRadius *= radiusMult;
+		}
 		float damagePerTarget = 0;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.m_DmgInfo->GetWeapon(), damagePerTarget, add_damage_per_target );
 		float dmgBase = info.m_DmgInfo->GetDamage() * damagePerTarget;
@@ -1021,6 +1027,7 @@ namespace Mod::Attr::Custom_Attributes
 		CHandle<CTFWearable> wearable_vm;
 		int model_index;
 		bool temporaryVisible = false;
+		bool createVMWearable = true;
 	};
 	std::vector<CustomModelEntry> model_entries;
 
@@ -1102,7 +1109,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void CreateWeaponWearables(CustomModelEntry &entry)
 	{
-		if (entry.wearable_vm == nullptr) {
+		if (entry.wearable_vm == nullptr && entry.createVMWearable) {
 			auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
 			wearable_vm->Spawn();
 			wearable_vm->GiveTo(entry.weapon->GetTFPlayerOwner());
@@ -1133,7 +1140,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return DETOUR_MEMBER_CALL(CTFWeaponInvis_GetViewModel)(index);
 	}
-
 	void UpdateCustomModel(CTFPlayer *owner, CEconEntity *entity, CAttributeList &attrlist) {
 		
 
@@ -1171,7 +1177,7 @@ namespace Mod::Attr::Custom_Attributes
 					entity->SetRenderColorA(0);
 					auto mod = entity->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
 					mod->props["m_bBeingRepurposedForTaunt"] = {Variant(true), Variant(true)};
-					model_entries.push_back({weapon, nullptr, nullptr, model_index});
+					model_entries.push_back({weapon, nullptr, nullptr, model_index, entity->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0});
 					CreateWeaponWearables(model_entries.back());
 				}
 			}
@@ -1194,16 +1200,18 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_UpdateHands)
+	{
+		DETOUR_MEMBER_CALL(CTFWeaponBase_UpdateHands)();
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		GET_STRING_ATTRIBUTE(weapon, custom_view_model, viewmodel);
 		
-		GET_STRING_ATTRIBUTE(entity, custom_view_model, viewmodel);
 		if (viewmodel != nullptr) {
-			
-			auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(entity));
-			if (weapon != nullptr) {
-				weapon->SetCustomViewModel(viewmodel);
-				weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(viewmodel);
-				weapon->SetModel(viewmodel);
-			}
+			weapon->SetCustomViewModel(viewmodel);
+			weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(viewmodel);
+			weapon->SetModel(viewmodel);
 		}
 	}
 
@@ -1264,7 +1272,9 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use = 0;
 		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
 		ExplosionCustomSet(proj);
+		hit_explode_direct = pOther;
 		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
+		hit_explode_direct = nullptr;
 
 		particle_to_use = 0;
 	}
@@ -1273,7 +1283,9 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto proj = reinterpret_cast<CTFProjectile_EnergyBall *>(this);
 		ExplosionCustomSet(proj);
+		hit_explode_direct = pOther;
 		DETOUR_MEMBER_CALL(CTFProjectile_EnergyBall_Explode)(pTrace, pOther);
+		hit_explode_direct = nullptr;
 	}
 
 	DETOUR_DECL_STATIC(void, TE_TFExplosion, IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID, int nSound, int iCustomParticle)
@@ -1780,7 +1792,8 @@ namespace Mod::Attr::Custom_Attributes
 				info.SetAttacker(shooting_sentry);
 			}
 		}
-
+		bool restoreMinicritBoostOnKill = false;
+		auto playerVictim = ToTFPlayer(pVictim);
 		CBaseEntity *oldInflictor = nullptr;
 		if (info.GetInflictor() != nullptr && info.GetInflictor()->GetOwnerEntity() != nullptr && info.GetInflictor()->GetOwnerEntity()->IsBaseObject() && info.GetInflictor()->GetCustomVariableBool<"customsentryweapon">()) {
 			oldInflictor = info.GetInflictor();
@@ -1936,7 +1949,6 @@ namespace Mod::Attr::Custom_Attributes
 				dmg *= dmg_mult;
 			}
 
-			auto playerVictim = ToTFPlayer(pVictim);
 			if (playerVictim != nullptr) {
 				int iDmgType = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), iDmgType, special_damage_type);
@@ -1957,6 +1969,22 @@ namespace Mod::Attr::Custom_Attributes
 				if (playerVictim->InAirDueToKnockback()) {
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetWeapon(), dmg_mult, mult_dmg_vs_airborne );
 				}
+				
+				int critOnCond = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critOnCond, crit_on_cond);
+				if (critOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)critOnCond)) {
+					info.SetCritType(CTakeDamageInfo::CRIT_FULL);
+					info.AddDamageType(DMG_CRITICAL);
+				}
+				int miniCritOnCond = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), miniCritOnCond, minicrit_on_cond);
+				if (miniCritOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)miniCritOnCond)) {
+					if (ToTFPlayer(info.GetAttacker()) != nullptr) {
+						restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_MINICRITBOOSTED_ON_KILL);
+						ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().AddCondBit(TF_COND_MINICRITBOOSTED_ON_KILL);
+						//info.SetCritType(CTakeDamageInfo::CRIT_MINI);
+					}
+				}
 
 				dmg *= dmg_mult;
 			}
@@ -1967,6 +1995,7 @@ namespace Mod::Attr::Custom_Attributes
 					dmg *= dmg_mult;
 				}
 			}
+			
 			info.SetDamage(dmg);
 		}
 		
@@ -1978,6 +2007,9 @@ namespace Mod::Attr::Custom_Attributes
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
 
+		if (restoreMinicritBoostOnKill) {
+			ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().RemoveCondBit(TF_COND_MINICRITBOOSTED_ON_KILL);
+		}
 		if (oldInflictor != nullptr) {
 			info.SetInflictor(oldInflictor);
 		}
@@ -2504,8 +2536,10 @@ namespace Mod::Attr::Custom_Attributes
 				proj->m_bTouched = false;
 			}
 		}
+		hit_explode_direct = ent;
 		
 		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(ent);
+		hit_explode_direct = nullptr;
 	}
 
 	DETOUR_DECL_STATIC(bool, PropDynamic_CollidesWithGrenades, CBaseEntity *ent)
@@ -3002,6 +3036,21 @@ namespace Mod::Attr::Custom_Attributes
 						player->TakeDamage(CTakeDamageInfo(player, player, weapon, vec3_origin, vec3_origin, (health * -1), DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
 					}
 				}
+				std::vector<CTFPlayer *> condVictims {victim};
+				std::vector<CTFPlayer *> condAllies {player};
+				float radialCondRadiusSq = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, radialCondRadiusSq, radial_cond);
+				radialCondRadiusSq *= radialCondRadiusSq;
+				if (radialCondRadiusSq != 0) {
+					ForEachTFPlayer([&](CTFPlayer *playerl) {
+						if (playerl != player && playerl->GetTeamNumber() == player->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(player->GetAbsOrigin())) {
+							condAllies.push_back(playerl);
+						}
+						else if (playerl != victim && playerl->GetTeamNumber() != player->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(victim->GetAbsOrigin())) {
+							condVictims.push_back(playerl);
+						}
+					});
+				}
 
 				int removecond_attr = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, removecond_attr, remove_cond_on_hit);
@@ -3009,7 +3058,7 @@ namespace Mod::Attr::Custom_Attributes
 					for (int i = 0; i < 4; i++) {
 						int removecond = (removecond_attr >> (i * 8)) & 255;
 						if (removecond != 0) {
-							victim->m_Shared->RemoveCond((ETFCond)removecond);
+							for (auto victim : condVictims) victim->m_Shared->RemoveCond((ETFCond)removecond);
 						}
 					}
 				}
@@ -3025,13 +3074,13 @@ namespace Mod::Attr::Custom_Attributes
 					for (int i = 0; i < 4; i++) {
 						int addcond = (addcond_attr >> (i * 8)) & 255;
 						if (addcond != 0) {
-							victim->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
+							for (auto victim : condVictims) victim->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
 						}
 					}
 				}
 
 				int self_addcond_attr = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, self_addcond_attr, self_cond_on_hit);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, self_addcond_attr, self_add_cond_on_hit);
 				if (self_addcond_attr != 0) {
 					float addcond_duration = 0.0f;
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, addcond_duration, self_add_cond_on_hit_duration);
@@ -3041,16 +3090,16 @@ namespace Mod::Attr::Custom_Attributes
 					for (int i = 0; i < 4; i++) {
 						int addcond = (self_addcond_attr >> (i * 8)) & 255;
 						if (addcond != 0) {
-							player->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
+							for (auto ally : condAllies) ally->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
 						}
 					}
 				}
 				
 				GET_STRING_ATTRIBUTE(weapon, add_attributes_on_hit, attributes_string);
-				ApplyAttributesFromString(victim, attributes_string);
+				for (auto victim : condVictims) ApplyAttributesFromString(victim, attributes_string);
 
 				GET_STRING_ATTRIBUTE(weapon, self_add_attributes_on_hit, attributes_string_self);
-				ApplyAttributesFromString(player, attributes_string_self);
+				for (auto ally : condAllies) ApplyAttributesFromString(ally, attributes_string_self);
 			}
 		}
 	}
@@ -3960,6 +4009,18 @@ namespace Mod::Attr::Custom_Attributes
 					 player->TakeHealth( iDeltaHealth, DMG_IGNORE_MAXHEALTH );
 				}
 			}
+			std::vector<CTFPlayer *> condAllies {player};
+			float radialCondRadiusSq = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), radialCondRadiusSq, radial_cond);
+			radialCondRadiusSq *= radialCondRadiusSq;
+			if (radialCondRadiusSq != 0) {
+				ForEachTFPlayer([&](CTFPlayer *playerl) {
+					if (playerl != player && playerl->GetTeamNumber() == player->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(player->GetAbsOrigin())) {
+						condAllies.push_back(playerl);
+					}
+				});
+			}
+
 			int addcond_attr = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), addcond_attr, add_cond_on_kill);
 			if (addcond_attr != 0) {
@@ -3971,7 +4032,7 @@ namespace Mod::Attr::Custom_Attributes
 				for (int i = 0; i < 4; i++) {
 					int addcond = (addcond_attr >> (i * 8)) & 255;
 					if (addcond != 0) {
-						player->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
+						for (auto ally : condAllies) ally->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
 					}
 				}
 			}
@@ -3980,7 +4041,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto weapon = rtti_cast<CEconEntity *>(info.GetWeapon());
 			if (weapon != nullptr) {
 				GET_STRING_ATTRIBUTE(weapon, add_attributes_on_kill, attributes_string);
-				ApplyAttributesFromString(player, attributes_string);
+				for (auto ally : condAllies) ApplyAttributesFromString(ally, attributes_string);
 			}
 		}
 
@@ -4632,6 +4693,47 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
 	}
 
+	void RemoveOnActiveAttributes(CEconEntity *weapon, const char *attributes)
+	{
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName((*it).c_str());
+				if (++it == tokens.end())
+					break;
+				auto value = *it;
+				if (attribute != nullptr) {
+					weapon->GetItem()->GetAttributeList().RemoveAttribute(attribute);
+				}
+				it++;
+			}
+		}
+	}
+
+	void AddOnActiveAttributes(CEconEntity *weapon, const char *attributes)
+	{
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+				if (++it == tokens.end())
+					break;
+				auto value = *it;
+				
+				if (attribute != nullptr) {
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attribute, std::atof(value.c_str()));
+				}
+				it++;
+			}
+		}
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
@@ -4656,6 +4758,9 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 			}
+			
+			GET_STRING_ATTRIBUTE(weapon, add_attributes_when_active, attributes);
+			RemoveOnActiveAttributes(weapon, attributes);
 		}
 		weapon->GetOrCreateEntityModule<WeaponModule>("weapon")->consecutiveShotsScore = 0.0f;
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
@@ -6435,6 +6540,14 @@ namespace Mod::Attr::Custom_Attributes
 		}
     }
 
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		GET_STRING_ATTRIBUTE(wep, add_attributes_when_active, attributes);
+		AddOnActiveAttributes(wep, attributes);
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+	}
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7104,6 +7217,27 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnAddAttributesWhenActive(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CEconEntity *>(ent);
+			if (econentity != nullptr) {
+				if (changeType == AttributeChangeType::REMOVE || changeType == AttributeChangeType::UPDATE) {
+					const char *oldValue;
+					CopyStringAttributeValueToCharPointerOutput(old_value.m_String, &oldValue);
+					RemoveOnActiveAttributes(econentity, oldValue);
+				}
+				if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+					const char *newValue;
+					CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+					AddOnActiveAttributes(econentity, newValue);
+				}
+			}
+		}
+	}
+
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
 		if (obj != nullptr) {
@@ -7384,6 +7518,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CGameMovement_FullNoClipMove, "CGameMovement::FullNoClipMove");
 			MOD_ADD_VHOOK(CTFCompoundBow_Deploy, TypeName<CTFCompoundBow>(), "CTFPipebombLauncher::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerMove_SetupMove, "CTFPlayerMove::SetupMove");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -7491,6 +7627,7 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("custom_view_model", OnCustomViewModelChange);
 				RegisterCallback("paintkit_proto_def_index", OnPaintkitChange);
 				RegisterCallback("no_clip", OnNoClipChange);
+				RegisterCallback("add_attributes_when_active", OnAddAttributesWhenActive);
 				
 			}
 		}
@@ -7585,7 +7722,7 @@ namespace Mod::Attr::Custom_Attributes
 					entry.temporaryVisible = false;
 				}
 
-				if (entry.wearable_vm == nullptr || entry.wearable == nullptr) {
+				if ((entry.wearable_vm == nullptr && entry.createVMWearable) || entry.wearable == nullptr) {
 					if (entry.wearable != nullptr)
 						entry.wearable->Remove();
 					if (entry.wearable_vm != nullptr)
