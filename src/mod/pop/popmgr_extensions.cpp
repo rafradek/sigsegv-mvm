@@ -28,6 +28,8 @@
 #include "mod/pop/popmgr_extensions.h"
 #include <fmt/core.h>
 #include "mod/common/commands.h"
+#include "mod/common/text_hud.h"
+#include "mod/attr/custom_attributes.h"
 
 // WARN_IGNORE__REORDER()
 // #include <../server/vote_controller.h>
@@ -507,6 +509,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bSpellbookRateSet = false;
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			this->m_iRobotLimitSetByMission = 22;
+			this->m_bPlayerBombCarrierBuffs = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -749,6 +752,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bSpellbookRateSet;
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
+		bool m_bPlayerBombCarrierBuffs;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverride_ConVar<bool>        m_SpellsEnabled;
@@ -2447,7 +2451,8 @@ namespace Mod::Pop::PopMgr_Extensions
 	}*/
 	bool ShouldSentryBeIgnored(CTFBot *bot, CBaseObject *object)
 	{
-		return bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && (object->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && object->GetBuilder() == nullptr) || object->GetTeamNumber() == bot->GetTeamNumber());
+		return bot != nullptr && bot->IsPlayerClass(TF_CLASS_SPY) && (object->GetMoveParent() != nullptr || (state.m_bSpyNoSapUnownedBuildings && object->GetBuilder() == nullptr) || object->GetTeamNumber() == bot->GetTeamNumber() || 
+			!Mod::Attr::Custom_Attributes::CanSapBuilding(object));
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
@@ -4789,6 +4794,57 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_RememberUpgrade)(pItem);
 		RestoreEconItemViewDefId(pItem, origItemDefId);
 	}
+	void BombUpgradeCommon(CBaseEntity *carrier, int level, float timeToNextUpgrade, int conceptIndex, const char *particle)
+	{
+		TFObjectiveResource()->m_nFlagCarrierUpgradeLevel = level;
+		TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime;
+		TFObjectiveResource()->m_flMvMNextBombUpgradeTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime + timeToNextUpgrade;
+		ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [conceptIndex](CTFPlayer *player){ player->SpeakConceptIfAllowed(conceptIndex); });
+		DispatchParticleEffect( particle, PATTACH_POINT_FOLLOW, carrier, "head" );
+	}
+	THINK_FUNC_DECL(BombUpgradeLevel1) {
+		ConVarRef tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade("tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade");
+		BombUpgradeCommon(this,1, tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, "mvm_levelup1");
+	}
+	THINK_FUNC_DECL(BombUpgradeLevel2) {
+		ConVarRef tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade("tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade");
+		ConVarRef tf_mvm_bot_flag_carrier_health_regen("tf_mvm_bot_flag_carrier_health_regen");
+		BombUpgradeCommon(this, 2, tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, "mvm_levelup2");
+	}
+	THINK_FUNC_DECL(BombUpgradeLevel3) {
+		BombUpgradeCommon(this, 3, -1, MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, "mvm_levelup3");
+	}
+
+	DETOUR_DECL_MEMBER(void, CCaptureFlag_PickUp, CTFPlayer *player, bool invisible)
+	{
+		DETOUR_MEMBER_CALL(CCaptureFlag_PickUp)(player, invisible);
+		auto flag = reinterpret_cast<CCaptureFlag *>(this);
+		if (player->GetItem() == flag && player->IsRealPlayer() && state.m_bPlayerBombCarrierBuffs) {
+			if (player->IsMiniBoss()) {
+				TFObjectiveResource()->m_nFlagCarrierUpgradeLevel = 4;
+				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = -1;
+				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = -1;
+			}
+			else {
+				ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
+				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = gpGlobals->curtime;
+				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = gpGlobals->curtime + tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat();
+				//THINK_FUNC_SET(player, BombUpgradeLevel1, tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat());
+			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Taunt, taunts_t index, int taunt_concept)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
+
+		if (player->GetItem() != nullptr && player->IsRealPlayer() && state.m_bPlayerBombCarrierBuffs && player->m_Shared->InCond(TF_COND_TAUNTING)) {
+			player->SetCustomVariable("taunttime", Variant(gpGlobals->curtime));
+		}
+	}
+
 
 	DETOUR_DECL_MEMBER(bool, CSpawnLocation_Parse, KeyValues *kv)
 	{
@@ -6480,6 +6536,8 @@ namespace Mod::Pop::PopMgr_Extensions
 						}
 					}
 				}
+			} else if (FStrEq(name, "AllowBombBuffsForPlayerCarriers")) {
+				state.m_bPlayerBombCarrierBuffs = subkey->GetBool();
 			} else if (FStrEq(name, "LuaScriptFile")) {
 				state.m_ScriptFiles.push_back(subkey->GetString());
 			} else if (FStrEq(name, "ForceRedMoney")) {
@@ -6717,7 +6775,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_FindSpawnLocation, "CSpawnLocation::FindSpawnLocation");
 			MOD_ADD_DETOUR_MEMBER(CSpawnLocation_Parse, "CSpawnLocation::Parse");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
-			
+			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_PickUp, "CCaptureFlag::PickUp");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
 			
 			
 			
@@ -6845,6 +6904,68 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			if (!IsMannVsMachineMode()) return;
 			
+					
+			if (state.m_bPlayerBombCarrierBuffs && gpGlobals->tickcount % 8 == 5) {
+				ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
+				ConVarRef tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade("tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade");
+				ConVarRef tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade("tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade");
+				ConVarRef tf_mvm_bot_flag_carrier_health_regen("tf_mvm_bot_flag_carrier_health_regen");
+				ForEachTFPlayer([&](CTFPlayer *player){
+					if (player->GetItem() != nullptr && player->IsRealPlayer() && TFObjectiveResource()->m_nFlagCarrierUpgradeLevel < 4U ) {
+						auto navArea = static_cast<CTFNavArea *>(player->GetLastKnownArea());
+						if (TFObjectiveResource()->m_flMvMNextBombUpgradeTime != -1 && navArea != nullptr && navArea->HasTFAttributes(player->GetTeamNumber() == TF_TEAM_RED ? RED_SPAWN_ROOM : BLUE_SPAWN_ROOM)) {
+							TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = gpGlobals->curtime;
+							TFObjectiveResource()->m_flMvMNextBombUpgradeTime = gpGlobals->curtime + tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat();
+							//THINK_FUNC_SET(player, BombUpgradeLevel1, tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat());
+						}
+
+						if (TFObjectiveResource()->m_nFlagCarrierUpgradeLevel >= 1U && !player->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
+							if (gpGlobals->curtime - 3.3f > TFObjectiveResource()->m_flMvMBaseBombUpgradeTime) {
+								float range = 450.0f * 450.0f;
+								ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(player->GetTeamNumber()),[&](CTFPlayer *playerally){
+									if (playerally->IsAlive() && playerally->GetAbsOrigin().DistToSqr(player->GetAbsOrigin()) < range) {
+										playerally->m_Shared->AddCond(TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 1.2f);
+									}
+								});
+							}
+						}
+
+						if (TFObjectiveResource()->m_flMvMNextBombUpgradeTime != -1 && TFObjectiveResource()->m_flMvMNextBombUpgradeTime <= gpGlobals->curtime) {
+							if (!player->m_Shared->InCond(TF_COND_TAUNTING)) {
+								auto params = WhiteTextParams(5, -1, 0.8, 0.5);
+								DisplayHudMessageAutoChannel(player, params, CFmtStr("Taunt to upgrade to bomb level %d\n", TFObjectiveResource()->m_nFlagCarrierUpgradeLevel+1),7);
+							}
+							else if (player->GetCustomVariableFloat<"taunttime">() > TFObjectiveResource()->m_flMvMNextBombUpgradeTime){
+								TFGameRules()->BroadcastSound(255, "MVM.Warning");
+								switch (TFObjectiveResource()->m_nFlagCarrierUpgradeLevel) {
+									case 0: {
+										BombUpgradeCommon(player, 1, tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, "mvm_levelup1"); 
+										player->GetItem()->FireCustomOutput<"onbombupgradelevel1">(player, player->GetItem(), Variant());
+										break;
+									} 
+									case 1: {
+										BombUpgradeCommon(player, 2, tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, "mvm_levelup2");
+										player->GetItem()->FireCustomOutput<"onbombupgradelevel2">(player, player->GetItem(), Variant());
+										if (!player->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
+											player->GetAttributeList()->SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("SET BONUS: health regen set bonus"), tf_mvm_bot_flag_carrier_health_regen.GetFloat());
+										}
+										break;
+									}
+									case 2: {
+										BombUpgradeCommon(player, 3, -1, MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, "mvm_levelup3");
+										player->GetItem()->FireCustomOutput<"onbombupgradelevel3">(player, player->GetItem(), Variant());
+										if (!player->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
+											player->m_Shared->AddCond(TF_COND_CRITBOOSTED);
+										}
+										break;
+									}
+								}
+							}
+						}
+					}
+				});
+			}
+
 			if (state.m_flRemoveGrapplingHooks >= 0.0f) {
 				ForEachEntityByClassnameRTTI<CTFProjectile_GrapplingHook>("tf_projectile_grapplinghook", [](CTFProjectile_GrapplingHook *proj){
 					float dt = gpGlobals->curtime - proj->m_flTimeInit;

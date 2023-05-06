@@ -3107,4 +3107,14 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4632"
+    {
+        "name"	"buildings cannot be sapped"
+        "attribute_class"	"buildings_cannot_be_sapped"
+        "description_string"	"Buildings cannot be sapped"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    
 }

@@ -94,5 +94,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled
     int GetFastAttributeIntExternal(CBaseEntity *entity, int value, int name);
+	
+	bool CanSapBuilding(CBaseObject *obj);
 }
 #endif

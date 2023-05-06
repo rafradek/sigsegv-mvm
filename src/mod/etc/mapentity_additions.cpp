@@ -31,6 +31,7 @@
 #include "stub/trace.h"
 #include "mod/item/item_common.h"
 #include "mod/common/commands.h"
+#include "stub/tf_objective_resource.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -1815,6 +1816,44 @@ namespace Mod::Etc::Mapentity_Additions
         }
 		return DETOUR_MEMBER_CALL(CFlagDetectionZone_EntityIsFlagCarrier)(other);
 	}
+    
+    RefCount rc_CTFBotDeliverFlag_UpgradeOverTime;
+	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
+	{
+        SCOPED_INCREMENT_IF(rc_CTFBotDeliverFlag_UpgradeOverTime, bot->GetItem() != nullptr && bot->GetItem()->GetCustomVariableBool<"disablebuffs">());
+		auto result = DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+        if (result && bot->GetItem() != nullptr) {
+            switch (TFObjectiveResource()->m_nFlagCarrierUpgradeLevel) {
+                case 1: bot->GetItem()->FireCustomOutput<"onbombupgradelevel1">(bot, bot->GetItem(), Variant()); break;
+                case 2: bot->GetItem()->FireCustomOutput<"onbombupgradelevel2">(bot, bot->GetItem(), Variant()); break;
+                case 3: bot->GetItem()->FireCustomOutput<"onbombupgradelevel3">(bot, bot->GetItem(), Variant()); break;
+            }
+            if (bot->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
+                bot->GetAttributeList()->RemoveAttribute(GetItemSchema()->GetAttributeDefinitionByName("health regen"));
+            }
+        }
+        return result;
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
+	{
+        if (rc_CTFBotDeliverFlag_UpgradeOverTime) return;
+
+		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+    }
+
+    DETOUR_DECL_MEMBER(void, CCaptureFlag_Drop, CTFPlayer *pPlayer, bool bVisible, bool bThrown, bool bMessage)
+	{
+		DETOUR_MEMBER_CALL(CCaptureFlag_Drop)(pPlayer, bVisible, bThrown, bMessage);
+        auto flag = reinterpret_cast<CCaptureFlag *>(this);
+        flag->FireCustomOutput<"ondrop">(pPlayer, flag, Variant());
+    }
+    DETOUR_DECL_MEMBER(void, CCaptureFlag_PickUp, CTFPlayer *player, bool invisible)
+	{
+		DETOUR_MEMBER_CALL(CCaptureFlag_PickUp)(player, invisible);
+		auto flag = reinterpret_cast<CCaptureFlag *>(this);
+        flag->FireCustomOutput<"onpickup">(player, flag, Variant());
+    }
 
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1884,6 +1923,13 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FireRocket, "CObjectSentrygun::FireRocket");
+
+            // Extra MvM bomb flag functionality
+			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime, "CTFBotDeliverFlag::UpgradeOverTime");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
+			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_PickUp, "CCaptureFlag::PickUp");
+			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
+            
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");

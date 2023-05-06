@@ -175,6 +175,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		CRC32_t spray_file;
 
 		std::string action_override;
+		std::vector<std::string> ignore_bots_with_tags;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -884,6 +885,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.move_behind_enemy = kv->GetFloat();
 		} else if (FStrEq(name, "ActionOverride")) {
 			data.action_override = kv->GetString();
+		} else if (FStrEq(name, "IgnoreBotsWithTag")) {
+			data.ignore_bots_with_tags.push_back(kv->GetString());
 		} else {
 			found = false;
 		}
@@ -2526,6 +2529,28 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 		return result;
 	}
+
+	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
+	{
+		auto botTarget = ToTFBot(ent);
+		if (botTarget != nullptr && !botTarget->m_Tags->IsEmpty()) {
+			IVision *vision = reinterpret_cast<IVision *>(this);
+			CTFBot *actor = static_cast<CTFBot *>(vision->GetBot()->GetEntity());
+			auto *data = GetDataForBot(actor);
+
+			if (data != nullptr && !data->ignore_bots_with_tags.empty()) {
+				for (auto &tagIgnore : data->ignore_bots_with_tags) {
+					for (auto &tag : botTarget->m_Tags) {
+						if (FStrEq(tag.Get(), tagIgnore.c_str())) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2599,6 +2624,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBot_GetDesiredAttackRange, "CTFBot::GetDesiredAttackRange");
 			MOD_ADD_DETOUR_MEMBER(CTFBotAttack_Update, "CTFBotAttack::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
+			
 			
 		}
 

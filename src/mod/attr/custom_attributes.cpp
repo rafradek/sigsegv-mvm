@@ -6548,6 +6548,24 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
 	}
 
+	bool CanSapBuilding(CBaseObject *obj) {
+		return GetBuildingAttributeInt<"cannotbesapped">(obj, "buildings_cannot_be_sapped", false) == 0;
+	}
+
+	DETOUR_DECL_MEMBER(bool, CBaseObject_FindNearestBuildPoint, CBaseEntity *pEntity, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint, bool bIgnoreChecks)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+
+		auto obj = ToBaseObject(pEntity);
+		if (obj != nullptr) {
+			if (!CanSapBuilding(obj)) {
+				return false;
+			}
+		}
+
+		return DETOUR_MEMBER_CALL(CBaseObject_FindNearestBuildPoint)(pEntity, pBuilder, flNearestPoint, vecNearestBuildPoint, bIgnoreChecks);
+	}
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7255,6 +7273,7 @@ namespace Mod::Attr::Custom_Attributes
 			obj->SetCustomVariable("speedboost", Variant(CAttributeManager::AttribHookValue(0, "mod_teleporter_speed_boost", player)));
 			obj->SetCustomVariable("rocketammomult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_ammo", player)));
 			obj->SetCustomVariable("projspeedmult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_projectile_speed", player)));
+			obj->SetCustomVariable("cannotbesapped", Variant(CAttributeManager::AttribHookValue(0, "buildings_cannot_be_sapped", player)));
 			obj->SetCustomVariable("bulletweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_bullet_weapon">())));
 			obj->SetCustomVariable("rocketweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_rocket_weapon">())));
 			obj->SetCustomVariable("sentrymodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_sentry_model">())));
@@ -7520,6 +7539,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerMove_SetupMove, "CTFPlayerMove::SetupMove");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindNearestBuildPoint, "CBaseObject::FindNearestBuildPoint");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
