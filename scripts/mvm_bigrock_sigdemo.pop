@@ -3400,3 +3400,9 @@ WaveSchedule
 
 // Buldings cannot be sapped
 // "buildings cannot be sapped" 1
+
+// Damage multiplier on direct hit
+// "mult dmg direct hit" 2
+
+// Explosion particle on direct hit
+// "explosion particle on direct hit" "particle"

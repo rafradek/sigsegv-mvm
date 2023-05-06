@@ -864,7 +864,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
 	}
 
-	void GetExplosionParticle(CTFPlayer *player, CTFWeaponBase *weapon, int &particle) {
+	void GetExplosionParticle(CTFPlayer *player, CTFWeaponBase *weapon, int &particle, int &particleDirectHit) {
 		int no_particle = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, no_particle, no_explosion_particles);
 		if (no_particle) {
@@ -879,20 +879,31 @@ namespace Mod::Attr::Custom_Attributes
 				precached.insert(particlename);
 			}
 			particle = GetParticleSystemIndex(particlename);
-			DevMsg("Expl part %s\n",particlename);
+		}
+
+		GET_STRING_ATTRIBUTE(weapon, explosion_particle_on_direct_hit, particlenameDirect);
+		if (particlenameDirect != nullptr) {
+			if (precached.find(particlenameDirect) == precached.end()) {
+				PrecacheParticleSystem(particlenameDirect);
+				precached.insert(particlenameDirect);
+			}
+			particle = GetParticleSystemIndex(particlenameDirect);
 		}
 	}
 
 	int particle_to_use = 0;
+	int particle_to_use_direct_hit = 0;
 
 	CTFWeaponBaseGun *stickbomb = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFStickBomb_Smack)
 	{	
 		stickbomb = reinterpret_cast<CTFWeaponBaseGun*>(this);
 		particle_to_use = 0;
-		GetExplosionParticle(stickbomb->GetTFPlayerOwner(), stickbomb,particle_to_use);
+		particle_to_use_direct_hit = 0;
+		GetExplosionParticle(stickbomb->GetTFPlayerOwner(), stickbomb,particle_to_use, particle_to_use_direct_hit);
 		DETOUR_MEMBER_CALL(CTFStickBomb_Smack)();
 		stickbomb = nullptr;
+		particle_to_use_direct_hit = 0;
 		particle_to_use = 0;
 	}
 
@@ -1243,7 +1254,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto launcher = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(proj->GetOriginalLauncher()));
 		if (launcher != nullptr) {
-			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use);
+			GetExplosionParticle(launcher->GetTFPlayerOwner(), launcher,particle_to_use, particle_to_use_direct_hit);
 			GET_STRING_ATTRIBUTE(launcher, custom_impact_sound, sound);
 			
 			if (sound != nullptr) {
@@ -1256,6 +1267,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
 	{
 		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
 		
 		if (bounce_damage_bonus != 0.0f) {
@@ -1265,11 +1277,13 @@ namespace Mod::Attr::Custom_Attributes
 		ExplosionCustomSet(proj);
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
 		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Explode, trace_t *pTrace, CBaseEntity *pOther)
 	{
 		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
 		ExplosionCustomSet(proj);
 		hit_explode_direct = pOther;
@@ -1277,6 +1291,7 @@ namespace Mod::Attr::Custom_Attributes
 		hit_explode_direct = nullptr;
 
 		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyBall_Explode, trace_t *pTrace, CBaseEntity *pOther)
@@ -1294,6 +1309,9 @@ namespace Mod::Attr::Custom_Attributes
 		//if (nEntIndex > 0 && (playerbase = UTIL_PlayerByIndex(nEntIndex)) != nullptr) {
 		if (particle_to_use != 0)
 			iCustomParticle = particle_to_use;
+
+		if (particle_to_use_direct_hit != 0 && nEntIndex > 0 && UTIL_PlayerByIndex(nEntIndex) != nullptr)
+			iCustomParticle = particle_to_use_direct_hit;
 
 		if (particle_to_use == -1) return;
 
@@ -1499,10 +1517,11 @@ namespace Mod::Attr::Custom_Attributes
 						force_send_client = false;
 					}
 					int customparticle = INVALID_STRING_INDEX;
-					GetExplosionParticle(ToTFPlayer(weapon->GetOwnerEntity()), weapon, customparticle);
+					int customparticleDirectHit = INVALID_STRING_INDEX;
+					GetExplosionParticle(ToTFPlayer(weapon->GetOwnerEntity()), weapon, customparticle, customparticleDirectHit);
 
 					if (customparticle != -1)
-						TE_TFExplosion( filter, 0.0f, ptr->endpos, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, ENTINDEX(info.GetAttacker()), -1, 11/*SPECIAL1*/, customparticle );
+						TE_TFExplosion( filter, 0.0f, ptr->endpos, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, ENTINDEX(info.GetAttacker()), -1, 11/*SPECIAL1*/, ToBaseCombatCharacter(ptr->m_pEnt) != nullptr ? customparticleDirectHit : customparticle);
 
 					CTFRadiusDamageInfo radiusinfo;
 					CTakeDamageInfo info2( weapon, weapon->GetOwnerEntity(), weapon, vec3_origin, ptr->endpos, info.GetDamage(), (infomod.GetDamageType() | DMG_BLAST) & (~DMG_BULLET), infomod.GetDamageCustom() );
@@ -1517,9 +1536,11 @@ namespace Mod::Attr::Custom_Attributes
 					radiusinfo.m_flFalloff = 0.5f;
 
 					Vector origpos = weapon->GetAbsOrigin();
+					hit_explode_direct = ptr->m_pEnt;
 					weapon->SetAbsOrigin(ptr->endpos - (weapon->WorldSpaceCenter() - origpos));
 					TFGameRules()->RadiusDamage( radiusinfo );
 					weapon->SetAbsOrigin(origpos);
+					hit_explode_direct = nullptr;
 					DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info2, vecDir, ptr, pAccumulator);
 					return;
 				}
@@ -1980,8 +2001,8 @@ namespace Mod::Attr::Custom_Attributes
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), miniCritOnCond, minicrit_on_cond);
 				if (miniCritOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)miniCritOnCond)) {
 					if (ToTFPlayer(info.GetAttacker()) != nullptr) {
-						restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_MINICRITBOOSTED_ON_KILL);
-						ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().AddCondBit(TF_COND_MINICRITBOOSTED_ON_KILL);
+						restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_NOHEALINGDAMAGEBUFF);
+						ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().AddCondBit(TF_COND_NOHEALINGDAMAGEBUFF);
 						//info.SetCritType(CTakeDamageInfo::CRIT_MINI);
 					}
 				}
@@ -1996,6 +2017,11 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 			
+			if (pVictim == hit_explode_direct) {
+				float dmg_mult = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_direct_hit);
+				dmg *= dmg_mult;
+			}
 			info.SetDamage(dmg);
 		}
 		
@@ -2008,7 +2034,7 @@ namespace Mod::Attr::Custom_Attributes
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
 
 		if (restoreMinicritBoostOnKill) {
-			ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().RemoveCondBit(TF_COND_MINICRITBOOSTED_ON_KILL);
+			ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().RemoveCondBit(TF_COND_NOHEALINGDAMAGEBUFF);
 		}
 		if (oldInflictor != nullptr) {
 			info.SetInflictor(oldInflictor);

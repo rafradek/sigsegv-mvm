@@ -3116,5 +3116,24 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4633"
+    {
+        "name"	"mult dmg direct hit"
+        "attribute_class"	"mult_dmg_direct_hit"
+        "description_string"	"(+-)%p% damage on direct hit"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
+    "4634"
+    {
+        "name"	"explosion particle on direct hit"
+        "attribute_class"	"explosion_particle_on_direct_hit"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
     
 }
