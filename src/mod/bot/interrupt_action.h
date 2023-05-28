@@ -8,15 +8,17 @@
 
 #include "re/path.h"
 
-class CTFBotMoveTo : public IHotplugAction<CTFBot>
+template<class Actor>
+class CTFBotMoveTo : public IHotplugAction<Actor>
 {
 public:
-    CTFBotMoveTo() {}
+    CTFBotMoveTo() : m_ChasePath(0) {}
     virtual ~CTFBotMoveTo() {
         if (this->m_pNext != nullptr) {
             delete this->m_pNext;
         }
     }
+    void Init(Actor *actor, const char *cmd);
 
     void SetTargetPos(Vector &target_pos)
     {
@@ -85,9 +87,9 @@ public:
 
     virtual const char *GetName() const override { return "Interrupt Action"; }
 
-    virtual ActionResult<CTFBot> OnStart(CTFBot *actor, Action<CTFBot> *action) override;
-    virtual ActionResult<CTFBot> Update(CTFBot *actor, float dt) override;
-    virtual EventDesiredResult<CTFBot> OnCommandString(CTFBot *actor, const char *cmd) override;
+    virtual ActionResult<Actor> OnStart(Actor *actor, Action<Actor> *action) override;
+    virtual ActionResult<Actor> Update(Actor *actor, float dt) override;
+    virtual EventDesiredResult<Actor> OnCommandString(Actor *actor, const char *cmd) override;
 
 private:
 
@@ -108,11 +110,17 @@ private:
     bool m_bAlwaysLook = false;
     std::string m_strOnDoneAttributes = "";
     PathFollower m_PathFollower;
+    ChasePath m_ChasePath;
     CountdownTimer m_ctRecomputePath;
     CountdownTimer m_ctDoneAction;
 
     CTFBotMoveTo *m_pNext = nullptr;
 };
 
-CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd);
+template<class Actor>
+inline CTFBotMoveTo<Actor> *CreateInterruptAction(Actor *actor, const char *cmd) {
+    auto interrupt_action = new CTFBotMoveTo<Actor>();
+    interrupt_action->Init(actor, cmd);
+    return interrupt_action;
+}
 #endif

@@ -204,10 +204,20 @@ bool IHasVirtualHooks::ToggleAllVirtualHooks(bool enable)
 
 void IMod::InvokeLoad()
 {
+	if (this->m_bLoaded) return;
+
 	if (this->IsClientSide() && ClientFactory() == nullptr) return;
 
 	DevMsg("IMod::InvokeLoad: \"%s\"\n", this->GetName());
-	
+	for (auto &requiredModStr : this->GetRequiredMods()) {
+		for (auto mod : AutoList<IMod>::List()) {
+			if (requiredModStr == mod->GetName()) {
+				mod->InvokeLoad();
+				mod->m_ModsRequiringMe.push_back(this);
+			}
+		}
+	}
+
 	this->PreLoad();
 	
 	bool ok_patch  = this->LoadPatches();
@@ -252,7 +262,22 @@ void IMod::Toggle(bool enable)
 	} else {
 		DevMsg("IMod::Toggle: \"%s\" %s\n", this->GetName(), (enable ? "ON" : "OFF"));
 	}
-	
+
+	if (enable) {
+		for (auto &requiredModStr : this->GetRequiredMods()) {
+			for (auto mod : AutoList<IMod>::List()) {
+				if (requiredModStr == mod->GetName() && !mod->IsEnabled()) {
+					mod->Toggle(true);
+				}
+			}
+		}
+	}
+	else {
+		for (auto mod : this->m_ModsRequiringMe) {
+			mod->Toggle(false);
+		}
+	}
+
 	/* call OnEnable/OnDisable, set enabled state, etc */
 	bool preEnabled = this->IsEnabled();
 	IToggleable::Toggle(enable);
@@ -276,7 +301,7 @@ void CModManager::Load()
 	DevMsg("CModManager::Load\n");
 	
 	IGameSystem::Add(this);
-	
+
 	for (auto mod : AutoList<IMod>::List()) {
 		mod->InvokeLoad();
 		

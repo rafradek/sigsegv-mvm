@@ -243,7 +243,13 @@ void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int array
 }
 
 void GetDataMapInfo(typedescription_t &desc, PropCacheEntry &entry) {
-    entry.fieldType = desc.fieldType;
+    auto fieldType = desc.fieldType;
+    if (fieldType == FIELD_MODELNAME || fieldType == FIELD_SOUNDNAME) fieldType = FIELD_STRING;
+    if (fieldType == FIELD_TIME) fieldType = FIELD_FLOAT;
+    if (fieldType == FIELD_TICK || fieldType == FIELD_MODELINDEX || fieldType == FIELD_MATERIALINDEX) fieldType = FIELD_INTEGER;
+
+    entry.fieldType = fieldType;
+    
     entry.offset = desc.fieldOffset[ TD_OFFSET_NORMAL ];
     
     entry.arraySize = (int)desc.fieldSize;

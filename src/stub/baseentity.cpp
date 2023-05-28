@@ -135,7 +135,7 @@ MemberVFuncThunk<      CBaseEntity *, void, float                               
 MemberVFuncThunk<      CBaseEntity *, bool, CBaseEntity *, int, CBaseEntity **                        > CBaseEntity::vt_FVisible_ent                  (TypeName<CBaseEntity>(), "CBaseEntity::FVisible [ent]");
 MemberVFuncThunk<      CBaseEntity *, bool, const Vector&, int, CBaseEntity **                        > CBaseEntity::vt_FVisible_vec                  (TypeName<CBaseEntity>(), "CBaseEntity::FVisible [vec]");
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                                             > CBaseEntity::vt_Touch                         (TypeName<CBaseEntity>(), "CBaseEntity::Touch");
-MemberVFuncThunk<      CBaseEntity *, INextBot *                                                      > CBaseEntity::vt_MyNextBotPointer              (TypeName<CBaseEntity>(), "CBaseEntity::MyNextBotPointer");
+MemberVFuncThunk<const CBaseEntity *, INextBot *                                                      > CBaseEntity::vt_MyNextBotPointer              (TypeName<CBaseEntity>(), "CBaseEntity::MyNextBotPointer");
 MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, const Vector *            > CBaseEntity::vt_Teleport                      (TypeName<CBaseEntity>(), "CBaseEntity::Teleport");
 MemberVFuncThunk<const CBaseEntity *, int                                                             > CBaseEntity::vt_GetMaxHealth                  (TypeName<CBaseEntity>(), "CBaseEntity::GetMaxHealth");
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsAlive                       (TypeName<CBaseEntity>(), "CBaseEntity::IsAlive");
@@ -157,6 +157,7 @@ MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                       
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                                             > CBaseEntity::vt_EndTouch                      (TypeName<CBaseEntity>(), "CBaseEntity::EndTouch");
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_PostClientActive              (TypeName<CBaseEntity>(), "CBaseEntity::PostClientActive");
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_VPhysicsDestroyObject         (TypeName<CBaseEntity>(), "CBaseEntity::VPhysicsDestroyObject");
+MemberVFuncThunk<      CBaseEntity *, uint                                                            > CBaseEntity::vt_PhysicsSolidMaskForEntity     (TypeName<CBaseEntity>(), "CBaseEntity::PhysicsSolidMaskForEntity");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");

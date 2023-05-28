@@ -4,13 +4,20 @@
 
 #include "link/link.h"
 #include "stub/baseplayer.h"
+#include "re/nextbot.h"
 
-
-class IBody;
 class CPathTrack;
 
 
-class NextBotCombatCharacter : public CBaseCombatCharacter {};
+class NextBotCombatCharacter : public CBaseCombatCharacter {
+public:
+	ILocomotion *GetLocomotionInterface() const                        { return this->MyNextBotPointer()->GetLocomotionInterface(); }
+	IBody *GetBodyInterface() const                                    { return this->MyNextBotPointer()->GetBodyInterface(); }
+	IVision *GetVisionInterface() const                                { return this->MyNextBotPointer()->GetVisionInterface(); }
+	IIntention *GetIntentionInterface() const                          { return this->MyNextBotPointer()->GetIntentionInterface(); }
+
+private:
+};
 
 
 class CTFBaseBoss : public NextBotCombatCharacter
@@ -66,8 +73,15 @@ public:
 		SKELETON_SMALL  = 2,
 	};
 	
+	ILocomotion *GetLocomotionInterface() const                        { return this->m_pLocomotionInterface; }
+	IBody *GetBodyInterface() const                                    { return this->m_pBodyInterface; }
+	IIntention *GetIntentionInterface() const                          { return this->m_pIntentionInterface; }
+
 	static CZombie *SpawnAtPos(const Vector& pos, float duration, int team, CBaseEntity *owner, SkeletonType_t type) { return ft_SpawnAtPos(pos, duration, team, owner, type); }
 	
+	DECL_EXTRACT (IIntention *, m_pIntentionInterface);
+	DECL_RELATIVE(ILocomotion *, m_pLocomotionInterface);
+	DECL_RELATIVE(IBody *, m_pBodyInterface);
 	// ???                 +0x8BC
 	// m_pIntention        +0x8C0
 	// m_pLocomotion       +0x8C4
@@ -94,5 +108,17 @@ private:
 	static GlobalThunk<CUtlVector<IZombieAutoList *>> m_IZombieAutoListAutoList;
 };
 
-
+class CBotNPCArcher : public NextBotCombatCharacter
+{	
+public:
+	ILocomotion *GetLocomotionInterface() const                        { return this->m_pLocomotionInterface; }
+	IBody *GetBodyInterface() const                                    { return this->m_pBodyInterface; }
+	IIntention *GetIntentionInterface() const                          { return this->m_pIntentionInterface; }
+	
+	DECL_EXTRACT (IIntention *, m_pIntentionInterface);
+	DECL_RELATIVE(ILocomotion *, m_pLocomotionInterface);
+	DECL_RELATIVE(IBody *, m_pBodyInterface);
+	DECL_RELATIVE(CBaseAnimating *, m_bow);
+	DECL_RELATIVE(Vector, m_eyeOffset);
+};
 #endif

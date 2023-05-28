@@ -39,13 +39,13 @@ struct ForceItem
 
 struct ForceItems
 {
-	std::vector<ForceItem> items[12] = {};
-	std::vector<ForceItem> items_no_remove[12] = {};
+	std::vector<ForceItem> items[TF_CLASS_COUNT+2] = {};
+	std::vector<ForceItem> items_no_remove[TF_CLASS_COUNT+2] = {};
     bool parsed = false;
 
     void Clear() {
         
-        for (int i=0; i < 12; i++)
+        for (int i=0; i < TF_CLASS_COUNT+2; i++)
         {
             items[i].clear();
             items_no_remove[i].clear();
@@ -121,6 +121,8 @@ public:
     float duration = 0.1f;
     bool if_target = false;
     bool if_no_target = false;
+    float if_range_target_min = 0.0f;
+    float if_range_target_max = -1.0f;
 
     int health_below = 0;
     int health_above = 0;
@@ -155,12 +157,12 @@ static void ApplyForceItems(ForceItems &force_items, CTFPlayer *player, bool mar
     int player_class = player->GetPlayerClass()->GetClassIndex();
     ApplyForceItemsClass(force_items.items[0], player, false, false, mark);
     ApplyForceItemsClass(force_items.items[player_class], player, false, false, mark);
-    ApplyForceItemsClass(force_items.items[11], player, false, true, mark);
+    ApplyForceItemsClass(force_items.items[TF_CLASS_COUNT+1], player, false, true, mark);
 
     if (remove_items_only) {
         ApplyForceItemsClass(force_items.items_no_remove[0], player, true, false, mark);
         ApplyForceItemsClass(force_items.items_no_remove[player_class], player, true, false, mark);
-        ApplyForceItemsClass(force_items.items_no_remove[11], player, true, true, mark);
+        ApplyForceItemsClass(force_items.items_no_remove[TF_CLASS_COUNT+1], player, true, true, mark);
     }
 }
 
@@ -184,8 +186,8 @@ static void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremov
         }
     }
     FOR_EACH_SUBKEY(kv, subkey) {
-        int classname = 11;
-        for(int i=1; i < 11; i++){
+        int classname = TF_CLASS_COUNT+1;
+        for(int i=1; i < TF_CLASS_COUNT; i++){
             if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
                 classname=i;
                 break;

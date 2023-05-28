@@ -687,6 +687,705 @@
 					type "sym"
 					sym  "_ZNK6ActionI6CTFBotE19PrintStateToConsoleEv"
 				}
+				"Action<CZombie>::~Action [D2]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieED2Ev"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x00"
+				}
+				"Action<CZombie>::FirstContainedResponder [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZNK6ActionI7CZombieE23FirstContainedResponderEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x01"
+				}
+				"Action<CZombie>::NextContainedResponder [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZNK6ActionI7CZombieE22NextContainedResponderEP22INextBotEventResponder"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x02"
+				}
+				"Action<CZombie>::OnLeaveGround [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnLeaveGroundEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x03"
+				}
+				"Action<CZombie>::OnLandOnGround [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnLandOnGroundEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x04"
+				}
+				"Action<CZombie>::OnContact [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnContactEP11CBaseEntityP10CGameTrace"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x05"
+				}
+				"Action<CZombie>::OnMoveToSuccess [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnMoveToSuccessEPK4Path"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x06"
+				}
+				"Action<CZombie>::OnMoveToFailure [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnMoveToFailureEPK4Path17MoveToFailureType"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x07"
+				}
+				"Action<CZombie>::OnStuck [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnStuckEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x08"
+				}
+				"Action<CZombie>::OnUnStuck [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnUnStuckEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x09"
+				}
+				"Action<CZombie>::OnPostureChanged [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnPostureChangedEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0a"
+				}
+				"Action<CZombie>::OnAnimationActivityComplete [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE27OnAnimationActivityCompleteEi"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0b"
+				}
+				"Action<CZombie>::OnAnimationActivityInterrupted [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE30OnAnimationActivityInterruptedEi"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0c"
+				}
+				"Action<CZombie>::OnAnimationEvent [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnAnimationEventEP11animevent_t"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0d"
+				}
+				"Action<CZombie>::OnIgnite [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnIgniteEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0e"
+				}
+				"Action<CZombie>::OnInjured [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnInjuredERK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x0f"
+				}
+				"Action<CZombie>::OnKilled [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnKilledERK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x10"
+				}
+				"Action<CZombie>::OnOtherKilled [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnOtherKilledEP20CBaseCombatCharacterRK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x11"
+				}
+				"Action<CZombie>::OnSight [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnSightEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x12"
+				}
+				"Action<CZombie>::OnLostSight [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE11OnLostSightEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x13"
+				}
+				"Action<CZombie>::OnSound [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnSoundEP11CBaseEntityRK6VectorP9KeyValues"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x14"
+				}
+				"Action<CZombie>::OnSpokeConcept [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnSpokeConceptEP20CBaseCombatCharacterPKcP11AI_Response"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x15"
+				}
+				"Action<CZombie>::OnWeaponFired [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnWeaponFiredEP20CBaseCombatCharacterP17CBaseCombatWeapon"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x16"
+				}
+				"Action<CZombie>::OnNavAreaChanged [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnNavAreaChangedEP8CNavAreaS3_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x17"
+				}
+				"Action<CZombie>::OnModelChanged [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnModelChangedEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x18"
+				}
+				"Action<CZombie>::OnPickUp [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnPickUpEP11CBaseEntityP20CBaseCombatCharacter"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x19"
+				}
+				"Action<CZombie>::OnDrop [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE6OnDropEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1a"
+				}
+				"Action<CZombie>::OnActorEmoted [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnActorEmotedEP20CBaseCombatCharacteri"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1b"
+				}
+				"Action<CZombie>::OnCommandAttack [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandAttackEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1c"
+				}
+				"Action<CZombie>::OnCommandApproach(vec) [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE17OnCommandApproachERK6Vectorf"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1d"
+				}
+				"Action<CZombie>::OnCommandApproach(ent) [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE17OnCommandApproachEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1e"
+				}
+				"Action<CZombie>::OnCommandRetreat [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnCommandRetreatEP11CBaseEntityf"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x1f"
+				}
+				"Action<CZombie>::OnCommandPause [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnCommandPauseEf"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x20"
+				}
+				"Action<CZombie>::OnCommandResume [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandResumeEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x21"
+				}
+				"Action<CZombie>::OnCommandString [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandStringEPKc"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x22"
+				}
+				"Action<CZombie>::OnShoved [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnShovedEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x23"
+				}
+				"Action<CZombie>::OnBlinded [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnBlindedEP11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x24"
+				}
+				"Action<CZombie>::OnTerritoryContested [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE20OnTerritoryContestedEi"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x25"
+				}
+				"Action<CZombie>::OnTerritoryCaptured [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE19OnTerritoryCapturedEi"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x26"
+				}
+				"Action<CZombie>::OnTerritoryLost [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnTerritoryLostEi"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x27"
+				}
+				"Action<CZombie>::OnWin [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE5OnWinEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x28"
+				}
+				"Action<CZombie>::OnLose [INER]"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE6OnLoseEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x29"
+				}
+				"Action<CZombie>::IsNamed"
+				{
+					type   "func knownvtidx"
+					sym    "_ZNK6ActionI7CZombieE7IsNamedEPKc"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x2b"
+				}
+				"Action<CZombie>::GetFullName"
+				{
+					type   "func knownvtidx"
+					sym    "_ZNK6ActionI7CZombieE11GetFullNameEv"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x2c"
+				}
+				"Action<CZombie>::OnStart"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnStartEPS0_PS1_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x2d"
+				}
+				"Action<CZombie>::Update"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE6UpdateEPS0_f"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x2e"
+				}
+				"Action<CZombie>::OnEnd"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE5OnEndEPS0_PS1_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x2f"
+				}
+				"Action<CZombie>::OnSuspend"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnSuspendEPS0_PS1_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x30"
+				}
+				"Action<CZombie>::OnResume"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnResumeEPS0_PS1_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x31"
+				}
+				"Action<CZombie>::InitialContainedAction"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE22InitialContainedActionEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x32"
+				}
+				"Action<CZombie>::OnLeaveGround"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnLeaveGroundEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x33"
+				}
+				"Action<CZombie>::OnLandOnGround"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnLandOnGroundEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x34"
+				}
+				"Action<CZombie>::OnContact"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnContactEPS0_P11CBaseEntityP10CGameTrace"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x35"
+				}
+				"Action<CZombie>::OnMoveToSuccess"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnMoveToSuccessEPS0_PK4Path"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x36"
+				}
+				"Action<CZombie>::OnMoveToFailure"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnMoveToFailureEPS0_PK4Path17MoveToFailureType"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x37"
+				}
+				"Action<CZombie>::OnStuck"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnStuckEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x38"
+				}
+				"Action<CZombie>::OnUnStuck"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnUnStuckEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x39"
+				}
+				"Action<CZombie>::OnPostureChanged"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnPostureChangedEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3a"
+				}
+				"Action<CZombie>::OnAnimationActivityComplete"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE27OnAnimationActivityCompleteEPS0_i"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3b"
+				}
+				"Action<CZombie>::OnAnimationActivityInterrupted"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE30OnAnimationActivityInterruptedEPS0_i"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3c"
+				}
+				"Action<CZombie>::OnAnimationEvent"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnAnimationEventEPS0_P11animevent_t"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3d"
+				}
+				"Action<CZombie>::OnIgnite"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnIgniteEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3e"
+				}
+				"Action<CZombie>::OnInjured"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnInjuredEPS0_RK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x3f"
+				}
+				"Action<CZombie>::OnKilled"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnKilledEPS0_RK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x40"
+				}
+				"Action<CZombie>::OnOtherKilled"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnOtherKilledEPS0_P20CBaseCombatCharacterRK15CTakeDamageInfo"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x41"
+				}
+				"Action<CZombie>::OnSight"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnSightEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x42"
+				}
+				"Action<CZombie>::OnLostSight"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE11OnLostSightEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x43"
+				}
+				"Action<CZombie>::OnSound"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE7OnSoundEPS0_P11CBaseEntityRK6VectorP9KeyValues"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x44"
+				}
+				"Action<CZombie>::OnSpokeConcept"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnSpokeConceptEPS0_P20CBaseCombatCharacterPKcP11AI_Response"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x45"
+				}
+				"Action<CZombie>::OnWeaponFired"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnWeaponFiredEPS0_P20CBaseCombatCharacterP17CBaseCombatWeapon"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x46"
+				}
+				"Action<CZombie>::OnNavAreaChanged"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnNavAreaChangedEPS0_P8CNavAreaS4_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x47"
+				}
+				"Action<CZombie>::OnModelChanged"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnModelChangedEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x48"
+				}
+				"Action<CZombie>::OnPickUp"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnPickUpEPS0_P11CBaseEntityP20CBaseCombatCharacter"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x49"
+				}
+				"Action<CZombie>::OnDrop"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE6OnDropEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4a"
+				}
+				"Action<CZombie>::OnActorEmoted"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE13OnActorEmotedEPS0_P20CBaseCombatCharacteri"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4b"
+				}
+				"Action<CZombie>::OnCommandAttack"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandAttackEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4c"
+				}
+				"Action<CZombie>::OnCommandApproach(vec)"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE17OnCommandApproachEPS0_RK6Vectorf"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4d"
+				}
+				"Action<CZombie>::OnCommandApproach(ent)"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE17OnCommandApproachEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4e"
+				}
+				"Action<CZombie>::OnCommandRetreat"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE16OnCommandRetreatEPS0_P11CBaseEntityf"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x4f"
+				}
+				"Action<CZombie>::OnCommandPause"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE14OnCommandPauseEPS0_f"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x50"
+				}
+				"Action<CZombie>::OnCommandResume"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandResumeEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x51"
+				}
+				"Action<CZombie>::OnCommandString"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnCommandStringEPS0_PKc"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x52"
+				}
+				"Action<CZombie>::OnShoved"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE8OnShovedEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x53"
+				}
+				"Action<CZombie>::OnBlinded"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE9OnBlindedEPS0_P11CBaseEntity"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x54"
+				}
+				"Action<CZombie>::OnTerritoryContested"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE20OnTerritoryContestedEPS0_i"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x55"
+				}
+				"Action<CZombie>::OnTerritoryCaptured"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE19OnTerritoryCapturedEPS0_i"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x56"
+				}
+				"Action<CZombie>::OnTerritoryLost"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE15OnTerritoryLostEPS0_i"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x57"
+				}
+				"Action<CZombie>::OnWin"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE5OnWinEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x58"
+				}
+				"Action<CZombie>::OnLose"
+				{
+					type   "func knownvtidx"
+					sym    "_ZN6ActionI7CZombieE6OnLoseEPS0_"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x59"
+				}
+				"Action<CZombie>::IsAbleToBlockMovementOf"
+				{
+					type   "func knownvtidx"
+					sym    "_ZNK6ActionI7CZombieE23IsAbleToBlockMovementOfEPK8INextBot"
+					vtable ".?AV?$Action@VCZombie@@@@"
+					idx    "0x5a"
+				}
+				
+				"Action<CZombie>::ApplyResult"
+				{
+					type "sym"
+					sym  "_ZN6ActionI7CZombieE11ApplyResultEPS0_P8BehaviorIS0_E12ActionResultIS0_E"
+				}
+				"Action<CZombie>::InvokeOnEnd"
+				{
+					type "fixed"
+					addr  "0x19c2b0"
+					//type "sym"
+					//sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
+				}
+				"Action<CZombie>::InvokeOnEnd [clone]"
+				{
+					type "sym regex"
+					sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_\\.part\\..*"
+				}
+				"Action<CZombie>::InvokeOnResume"
+				{
+					type "sym"
+					sym  "_ZN6ActionI7CZombieE14InvokeOnResumeEPS0_P8BehaviorIS0_EPS1_"
+				}
+				"Action<CZombie>::BuildDecoratedName"
+				{
+					type "sym"
+					sym  "_ZNK6ActionI7CZombieE18BuildDecoratedNameEPcPKS1_"
+				}
+				"Action<CZombie>::DebugString"
+				{
+					type "sym"
+					sym  "_ZNK6ActionI7CZombieE11DebugStringEv"
+				}
+				"Action<CZombie>::PrintStateToConsole"
+				{
+					type "sym"
+					sym  "_ZNK6ActionI7CZombieE19PrintStateToConsoleEv"
+				}
+				"CZombieIntention::CZombieIntention"
+				{
+					type "sym"
+					sym  "_ZN16CZombieIntentionC2EP7CZombie"
+				}
+				"CZombieIntention::Reset"
+				{
+					type "sym"
+					sym  "_ZN16CZombieIntention5ResetEv"
+				}
+				"CZombieIntention::Update"
+				{
+					type "sym"
+					sym  "_ZN16CZombieIntention6UpdateEv"
+				}
+				"CZombieIntention::~CZombieIntention"
+				{
+					type "sym"
+					sym  "_ZN16CZombieIntentionD2Ev"
+				}
+				"CBotNPCArcherIntention::CBotNPCArcherIntention"
+				{
+					type "sym"
+					sym  "_ZN13CBotNPCArcher22CBotNPCArcherIntentionC2EPS_"
+				}
+				"CBotNPCArcherIntention::Reset"
+				{
+					type "sym"
+					sym  "_ZN13CBotNPCArcher22CBotNPCArcherIntention5ResetEv"
+				}
+				
 			}
 		}
 	}

@@ -3135,5 +3135,13 @@
         "hidden"	"1"
         "effect_type"	"positive"
     }
-    
+    "4635"
+    {
+        "name"	"cannot upgrade bomb"
+        "attribute_class"	"cannot_upgrade_bomb"
+        "description_string"	"Cannot upgrade the bomb as a carrier"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+    }
 }

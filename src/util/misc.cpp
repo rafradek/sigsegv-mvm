@@ -184,3 +184,11 @@ void FixSlotCrashPost(int val)
 		sv_visiblemaxplayers.SetValue(val);
 	}
 }
+
+void FireEyeTrace(trace_t &tr, CBaseEntity *entity, float range, int mask, int collisionGroup) {
+	Vector start = entity->EyePosition();
+	Vector end, forward;
+	AngleVectors(entity->EyeAngles(), &forward);
+	VectorMA(start, range, forward, end);
+	UTIL_TraceLine(start, end, MASK_SOLID | CONTENTS_DEBRIS, entity, COLLISION_GROUP_NONE, &tr);
+}

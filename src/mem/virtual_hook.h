@@ -10,8 +10,9 @@ class CVirtualHook
 {
 public:
 	/* by addr name */
-	CVirtualHook(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : m_pszVTableName(class_name), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_pInner(inner_ptr) {};
-	
+	CVirtualHook(const char *class_name, const char *class_name_for_calc_offset, const char *func_name, void *callback, void **inner_ptr) : m_pszVTableName(class_name), m_pszVTableNameForCalcOffset(class_name_for_calc_offset), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_pInner(inner_ptr) {};
+	CVirtualHook(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : CVirtualHook(class_name, class_name, func_name, callback, inner_ptr) {}
+
 	virtual bool DoLoad();
 	virtual void DoUnload();
 	
@@ -27,8 +28,17 @@ public:
 	
 	void Toggle(bool enable) { if (this->m_bEnabled && !enable) DoDisable(); else if(!this->m_bEnabled && enable) DoEnable(); }
 
+	void Install(void *objectptr, int vtableSize = 512);
+	void Uninstall(void *objectptr);
+
+	// Set function in vtable to this function and return old function
+	void *AddToVTable(void **vtable);
+
+	int GetOffset() { return m_iOffset; }
+
 protected:
 	const char *m_pszVTableName;
+	const char *m_pszVTableNameForCalcOffset;
 	const char *m_pszFuncName;
 	std::string m_szName;
 	
@@ -86,6 +96,9 @@ private:
 
 #define VHOOK_CALL(name) (this->*Actual)
 
+// For per object virtual hooks
+#define VHOOK_CALL_OBJSPEC(name, ...) (this->*MakePtrToMemberFunc<Vhook_##name, __VA_ARGS__>((*((void ***)this)-5)[vhook_##name->GetOffset()]))
+
 #define VHOOK_DECL(ret, name, ...) \
 	class Vhook_##name \
 	{ \
@@ -93,7 +106,7 @@ private:
 		ret callback(__VA_ARGS__); \
 		static ret (Vhook_##name::* Actual)(__VA_ARGS__); \
 	}; \
-	static CDetour *vhook_##name = nullptr; \
+	static CVirtualHook *vhook_##name = nullptr; \
 	ret (Vhook_##name::* Vhook_##name::Actual)(__VA_ARGS__) = nullptr; \
 	ret Vhook_##name::callback(__VA_ARGS__)
 

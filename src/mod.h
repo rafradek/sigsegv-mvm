@@ -143,6 +143,8 @@ public:
 	
 	virtual void Toggle(bool enable) override;
 
+	virtual std::vector<std::string> GetRequiredMods() { return {}; } 
+
 	virtual bool IsClientSide() { return false; }
 	
 protected:
@@ -178,6 +180,8 @@ private:
 	
 	bool m_bFailed = false;
 	bool m_bLoaded = false;
+
+	std::vector<IMod *> m_ModsRequiringMe;
 	
 	friend class CModManager;
 };
@@ -263,6 +267,8 @@ protected:
 	this->AddDetour(new CDetour(addr, GET_STATIC_CALLBACK(detour), GET_STATIC_INNERPTR(detour), IDetour::priority))
 #define MOD_ADD_VHOOK(detour, class_name, func_name) \
 	this->AddVirtualHook(new CVirtualHook(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
+#define MOD_ADD_VHOOK2(detour, class_name, class_name_for_offset_calc, func_name) \
+	this->AddVirtualHook(new CVirtualHook(class_name, class_name_for_offset_calc, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
 #define MOD_ADD_VHOOK_INHERIT(detour, class_name, func_name) \
 	this->AddVirtualHook(new CVirtualHookInherit(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
 

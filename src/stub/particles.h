@@ -87,6 +87,30 @@ inline void TE_DispatchEffect( IRecipientFilter &filter, float delay, const Vect
 	ft_TE_DispatchEffect(filter, delay, pos, pName, data);
 }
 
+static StaticFuncThunk<void, IRecipientFilter&, float, int, int, const Vector&, const QAngle &, const Vector&, int, int> ft_TE_PhysicsProp("TE_PhysicsProp");
+inline void TE_PhysicsProp( IRecipientFilter& filter, float delay, int modelindex, int skin, const Vector& pos, const QAngle &angles, const Vector& vel, int flags, int effects )
+{
+	ft_TE_PhysicsProp(filter, delay, modelindex, skin, pos, angles, vel, flags, effects);
+}
+
+static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const QAngle&, const Vector&, const Vector&, int, int, int, float, int> ft_TE_BreakModel("TE_BreakModel");
+inline void TE_BreakModel(IRecipientFilter& filter, float delay,
+	const Vector& pos, const QAngle &angles, const Vector& size, const Vector& vel, 
+	int modelindex, int randomization, int count, float time, int flags)
+{
+	ft_TE_BreakModel(filter, delay, pos, angles, size, vel, modelindex, randomization, count, time, flags);
+}
+
+static StaticFuncThunk<void, IRecipientFilter&, float, const Vector *, const Vector *, int, int, int, int, float, float, float, int, float, int, int, int, int, int> ft_TE_BeamPoints("TE_BeamPoints");
+inline void TE_BeamPoints(IRecipientFilter& filter, float delay,
+	const Vector *start, const Vector *end, int modelindex, int haloindex, int startframe, int framerate,
+	float life, float width, float endWidth, int fadeLength, float amplitude, int r, int g, int b, int a, int speed)
+{
+	ft_TE_BeamPoints(filter, delay, start, end, modelindex, haloindex, startframe, framerate, life, width, endWidth, fadeLength, amplitude, r, g, b, a, speed);
+}
+
+void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
+
 #ifdef SE_TF2
 
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");

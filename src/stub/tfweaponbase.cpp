@@ -67,6 +67,7 @@ MemberVFuncThunk<CTFWeaponBase *, int> CTFWeaponBase::vt_GetMaxHealthMod(TypeNam
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetAfterburnRateOnHit(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetAfterburnRateOnHit");
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_InternalGetEffectBarRechargeTime(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::InternalGetEffectBarRechargeTime");
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetEffectBarProgress(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetEffectBarProgress");
+MemberVFuncThunk<CTFWeaponBase *, void, CBaseEntity *, CTFPlayer *, const CTakeDamageInfo &> CTFWeaponBase::vt_ApplyOnHitAttributes(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::ApplyOnHitAttributes");
 
 
 MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::ft_UpdatePunchAngles("CTFWeaponBaseGun::UpdatePunchAngles");
@@ -80,6 +81,7 @@ MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::vt_Rem
 MemberVFuncThunk<CTFWeaponBaseGun *, void>              CTFWeaponBaseGun::vt_DoFireEffects       (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::DoFireEffects");
 MemberVFuncThunk<CTFWeaponBaseGun *, bool>              CTFWeaponBaseGun::vt_ShouldPlayFireAnim  (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ShouldPlayFireAnim");
 MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> CTFWeaponBaseGun::vt_FireProjectile(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::FireProjectile");
+MemberVFuncThunk<CTFWeaponBaseGun *, int >              CTFWeaponBaseGun::vt_GetAmmoPerShot      (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetAmmoPerShot");
 
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");

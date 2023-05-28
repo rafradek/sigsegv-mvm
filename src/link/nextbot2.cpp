@@ -7,20 +7,33 @@
 
 class Dummy {};
 
-
 static MemberFuncThunk<Dummy *, void> ft_PathFollower_ctor_C1("PathFollower::PathFollower [C1]");
+static MemberFuncThunk<Dummy *, void> ft_PathFollower_ctor_C2("PathFollower::PathFollower [C2]");
 static MemberFuncThunk<Dummy *, void> ft_PathFollower_dtor_D1("PathFollower::~PathFollower [D1]");
+static MemberFuncThunk<Dummy *, void> ft_PathFollower_dtor_D0("PathFollower::~PathFollower [D0]");
+static MemberFuncThunk<Dummy *, void> ft_PathFollower_dtor_D2("PathFollower::~PathFollower [D2]");
+
+static MemberFuncThunk<Dummy *, void> ft_ChasePath_dtor_D2("ChasePath::~ChasePath [D2]");
+static MemberFuncThunk<Dummy *, void> ft_ChasePath_dtor_D0("ChasePath::~ChasePath [D0]");
 
 static MemberFuncThunk<Dummy *, void> ft_Action_dtor_D2("Action<CTFBot>::~Action [D2]");
+static MemberFuncThunk<Dummy *, void> ft_Action_CZombie_dtor_D2("Action<CZombie>::~Action [D2]");
 
 extern "C"
 {
 	/* ctors */
 	void _ZN12PathFollowerC1Ev(void *_this) { ft_PathFollower_ctor_C1(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN12PathFollowerC2Ev(void *_this) { ft_PathFollower_ctor_C2(reinterpret_cast<Dummy *>(_this)); }
 	
 	/* dtors */
 	void _ZN12PathFollowerD1Ev(void *_this) { ft_PathFollower_dtor_D1(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN12PathFollowerD0Ev(void *_this) { ft_PathFollower_dtor_D0(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN12PathFollowerD2Ev(void *_this) { ft_PathFollower_dtor_D2(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN9ChasePathD2Ev(void *_this) { ft_ChasePath_dtor_D2(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN9ChasePathD0Ev(void *_this) { ft_ChasePath_dtor_D0(reinterpret_cast<Dummy *>(_this)); }
 	void _ZN6ActionI6CTFBotED2Ev(void *_this) { ft_Action_dtor_D2(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN6ActionI7CZombieED2Ev(void *_this) { ft_Action_CZombie_dtor_D2(reinterpret_cast<Dummy *>(_this)); }
+	void _ZN6ActionI13CBotNPCArcherED2Ev(void *_this) { ft_Action_CZombie_dtor_D2(reinterpret_cast<Dummy *>(_this)); }
 }
 
 
@@ -53,6 +66,9 @@ THUNK_VTABLE(16IContextualQuery, 0x40);
 
 THUNK_TYPEINFO_SINGLE(8INextBot);
 THUNK_VTABLE(8INextBot, 0x200);
+
+THUNK_TYPEINFO_SINGLE(9ChasePath);
+THUNK_VTABLE(9ChasePath, 0x200);
 
 #elif defined _MSC_VER
 

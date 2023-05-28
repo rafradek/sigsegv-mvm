@@ -13,16 +13,46 @@
 		{
 			"addrs"
 			{
-				"IBody::Update"
+				
+			}
+			
+			"addrs_group"
+			{
+				"[common]"
 				{
 					type "sym"
-					sym  "_ZN5IBody6UpdateEv"
+					lib  "server"
 				}
-				"PlayerBody::GetEntity"
-				{
-					type "sym"
-					sym  "_ZN10PlayerBody9GetEntityEv"
-				}
+				"IBody::IsHeadSteady" "_ZNK5IBody12IsHeadSteadyEv"
+				"IBody::GetHeadSteadyDuration" "_ZNK5IBody21GetHeadSteadyDurationEv"
+				"IBody::ClearPendingAimReply" "_ZN5IBody20ClearPendingAimReplyEv"
+				"IBody::SetDesiredPosture" "_ZN5IBody17SetDesiredPostureENS_11PostureTypeE"
+				"IBody::GetDesiredPosture" "_ZNK5IBody17GetDesiredPostureEv"
+				"IBody::IsDesiredPosture" "_ZNK5IBody16IsDesiredPostureENS_11PostureTypeE"
+				"IBody::GetActualPosture" "_ZNK5IBody16GetActualPostureEv"
+				"IBody::IsActualPosture" "_ZNK5IBody15IsActualPostureENS_11PostureTypeE"
+				"IBody::GetHeadAimSubjectLeadTime" "_ZNK5IBody25GetHeadAimSubjectLeadTimeEv"
+				"IBody::GetActivity" "_ZNK5IBody11GetActivityEv"
+				"IBody::IsActivity" "_ZNK5IBody10IsActivityE8Activity"
+				"IBody::StartActivity" "_ZN5IBody13StartActivityE8Activityj"
+				"IBody::GetEyePosition" "_ZNK5IBody14GetEyePositionEv"
+				"IBody::GetViewVector" "_ZNK5IBody13GetViewVectorEv"
+				"IBody::GetHullHeight" "_ZNK5IBody13GetHullHeightEv"
+				"IBody::GetHullWidth" "_ZNK5IBody12GetHullWidthEv"
+				"IBody::GetStandHullHeight" "_ZNK5IBody18GetStandHullHeightEv"
+				"IBody::GetCrouchHullHeight" "_ZNK5IBody19GetCrouchHullHeightEv"
+				"IBody::GetHullMaxs" "_ZNK5IBody11GetHullMaxsEv"
+				"IBody::GetHullMins" "_ZNK5IBody11GetHullMinsEv"
+				"IBody::Update" "_ZN5IBody6UpdateEv"
+				"IBody::IsHeadAimingOnTarget" "_ZNK5IBody20IsHeadAimingOnTargetEv"
+				
+
+				"CBotNPCBody::GetSolidMask" "_ZNK11CBotNPCBody12GetSolidMaskEv"
+				"CBotNPCBody::AimHeadTowards [Vector]" "_ZN11CBotNPCBody14AimHeadTowardsERK6VectorN5IBody18LookAtPriorityTypeEfP13INextBotReplyPKc"
+				"CBotNPCBody::AimHeadTowards [CBaseEntity *]" "_ZN11CBotNPCBody14AimHeadTowardsEP11CBaseEntityN5IBody18LookAtPriorityTypeEfP13INextBotReplyPKc"
+				"CBotNPCBody::CBotNPCBody" "_ZN11CBotNPCBodyC2EP8INextBot"
+				
+				"PlayerBody::GetEntity" "_ZN10PlayerBody9GetEntityEv"
 			}
 		}
 	}

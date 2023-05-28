@@ -31,6 +31,7 @@
 #include "stub/populators.cpp"
 #include "stub/econ.cpp"
 #include "stub/nextbot_cc.cpp"
+#include "stub/nextbot_etc.cpp"
 #include "stub/tf_objective_resource.cpp"
 #include "stub/tf_player_resource.cpp"
 #include "stub/tfbot.cpp"

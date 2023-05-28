@@ -1229,11 +1229,6 @@ namespace Mod::Etc::Mapentity_Additions
                 CTFPlayer* player = ToTFPlayer(ent);
                 player->Regenerate(true);
         }},
-        {"BotCommand"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
-                CTFBot* bot = ToTFBot(ent);
-                if (bot != nullptr)
-                    bot->MyNextBotPointer()->OnCommandString(Value.String());
-        }},
         {"ResetInventory"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player = ToTFPlayer(ent);
                 
@@ -2114,5 +2109,12 @@ namespace Mod::Etc::Mapentity_Additions
         {"VScriptFunc$"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             ent->AcceptInput("RunScriptCode", pActivator, pCaller, Variant(AllocPooledString(CFmtStr(Value.FieldType() == FIELD_STRING ? "%s(\"%s\")" : "%s(%s)", szInputName + strlen("VScriptFunc$"), Value.String()))), -1);
         }},
+        {"BotCommand"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (ent->MyNextBotPointer() != nullptr)
+                ent->MyNextBotPointer()->OnCommandString(Value.String());
+        }},
+        {"StopParticleEffects"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            StopParticleEffects(ent);
+        }}
     });
 }

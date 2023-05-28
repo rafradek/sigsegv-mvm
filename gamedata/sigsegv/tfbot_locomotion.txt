@@ -33,7 +33,6 @@
 					type "sym"
 					sym  "_ZN16CTFBotLocomotion6UpdateEv"
 				}
-				
 			}
 		}
 	}

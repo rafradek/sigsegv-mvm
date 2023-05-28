@@ -1051,6 +1051,8 @@ WaveSchedule
 				// IfNoTarget 1 //When set to 1, this task activates only when the bot does not have a target (Default 0 - Always activate)
 				IfHealthBelow 100 //When set, the task activates only when the bot health is below specified value
 				//IfHealthAbove 100 //When set, the task activates only when the bot health is above specified value
+				// MaxTargetRange 150 // If set, the task activates only when the target is within specified units away
+				// MinTargetRange 50 // If set, the task activates only when the target is more than specified units away
 			}
 			VoiceCommand [$SIGSEGV]  //Periodacally uses voice commands
 			{
@@ -2304,6 +2306,7 @@ WaveSchedule
 				Class Soldier
 				WeaponRestrictions SecondaryOnly
 				AimTrackingInterval 0 [$SIGSEGV] //Override aim tracking time. 0.05 - expert 1.0 - easy
+				HeadRotateSpeed 2000 [$SIGSEGV] // Head rotate speed. Set to 10000 automatically if AimTrackingInterval is less than 0.05 (Default: 1000)
 				FastUpdate 1 [$SIGSEGV] //If set, the bot ai updates every tick
 				DropWeapon 1 [$SIGSEGV] //If set, bot will drop a weapon on death. The weapon cannot be upgraded
 				ItemAttributes
@@ -3389,6 +3392,9 @@ WaveSchedule
 // Critical hit when the enemy has specified cond
 // "crit on cond" 13
 
+// Mini crit hit when the enemy has specified cond
+// "minicrit on cond" 13
+
 // Add attributes when the weapon is active
 // "add attributes when active" "move speed bonus|2|damage bonus|2"
 
@@ -3406,3 +3412,6 @@ WaveSchedule
 
 // Explosion particle on direct hit
 // "explosion particle on direct hit" "particle"
+
+// Bomb cannot be upgraded
+// "cannot upgrade bomb" "1"

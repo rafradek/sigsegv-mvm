@@ -42,6 +42,7 @@ IBotManager *botmanager               = nullptr;
 
 IPhysics *physics                = nullptr;
 IPhysicsCollision *physcollision = nullptr;
+IPhysicsSurfaceProps *physprops  = nullptr;
 
 ISoundEmitterSystemBase *soundemitterbase = nullptr;
 
@@ -206,6 +207,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	
 	GET_IFACE_REQUIRED(VPhysics, physics,       VPHYSICS_INTERFACE_VERSION);
 	GET_IFACE_REQUIRED(VPhysics, physcollision, VPHYSICS_COLLISION_INTERFACE_VERSION);
+	GET_IFACE_REQUIRED(VPhysics, physprops,     VPHYSICS_SURFACEPROPS_INTERFACE_VERSION);
 	
 	GET_IFACE_OPTIONAL(Engine, debugoverlay, VDEBUG_OVERLAY_INTERFACE_VERSION);
 	GET_IFACE_OPTIONAL(Engine, enginetools,  VENGINETOOL_INTERFACE_VERSION);

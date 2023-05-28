@@ -162,6 +162,11 @@
 					type "sym"
 					sym  "_ZNK8CNavArea20CollectAdjacentAreasEP10CUtlVectorIPS_10CUtlMemoryIS1_iEE"
 				}
+				"CNavArea::IsCompletelyVisible"
+				{
+					type "sym"
+					sym  "_ZNK8CNavArea19IsCompletelyVisibleEPKS_"
+				}
 				
 				"CTFNavArea::IsBlocked"
 				{

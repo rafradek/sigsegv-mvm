@@ -19,51 +19,15 @@
 					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace.\\isra\\..*"
 				}
 				
-				"NextBotGroundLocomotion::GetMaxYawRate"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion13GetMaxYawRateEv"
-				}
-				
 				"CTFBaseBossLocomotion::FaceTowards"
 				{
 					type "sym"
 					sym  "_ZN21CTFBaseBossLocomotion11FaceTowardsERK6Vector"
 				}
-				"NextBotGroundLocomotion::GetGravity"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion10GetGravityEv"
-				}
-				"NextBotGroundLocomotion::IsOnGround"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion10IsOnGroundEv"
-				}
-				"NextBotGroundLocomotion::DetectCollision"
-				{
-					type "sym"
-					sym  "_ZN23NextBotGroundLocomotion15DetectCollisionEP10CGameTraceRiRK6VectorS5_S5_S5_"
-				}
-				"NextBotGroundLocomotion::Approach"
-				{
-					type "sym"
-					sym  "_ZN23NextBotGroundLocomotion8ApproachERK6Vectorf"
-				}
-				"NextBotGroundLocomotion::Update"
-				{
-					type "sym"
-					sym  "_ZN23NextBotGroundLocomotion6UpdateEv"
-				}
 				"CTFBaseBossLocomotion::GetStepHeight"
 				{
 					type "sym"
 					sym  "_ZNK21CTFBaseBossLocomotion13GetStepHeightEv"
-				}
-				"NextBotGroundLocomotion::GetGroundNormal"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion15GetGroundNormalEv"
 				}
 				"CZombieLocomotion::GetRunSpeed"
 				{
@@ -90,16 +54,6 @@
 					type "sym"
 					sym  "_ZN22CEyeballBossLocomotion8ApproachERK6Vectorf"
 				}
-				"NextBotGroundLocomotion::GetMaxAcceleration"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion18GetMaxAccelerationEv"
-				}
-				"NextBotGroundLocomotion::GetMaxDeceleration"
-				{
-					type "sym"
-					sym  "_ZNK23NextBotGroundLocomotion18GetMaxDecelerationEv"
-				}
 				"ILocomotion::StuckMonitor"
 				{
 					type "sym"
@@ -110,6 +64,32 @@
 					type "sym"
 					sym  "_ZNK16PlayerLocomotion15GetDesiredSpeedEv"
 				}
+
+			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym"
+					lib  "server"
+				}
+				"NextBotGroundLocomotion::GetGroundNormal" "_ZNK23NextBotGroundLocomotion15GetGroundNormalEv" 
+				"NextBotGroundLocomotion::GetMaxAcceleration" "_ZNK23NextBotGroundLocomotion18GetMaxAccelerationEv" 
+				"NextBotGroundLocomotion::GetGravity" "_ZNK23NextBotGroundLocomotion10GetGravityEv" 
+				"NextBotGroundLocomotion::NextBotGroundLocomotion" "_ZN23NextBotGroundLocomotionC2EP8INextBot"
+				"NextBotGroundLocomotion::GetMaxDeceleration" "_ZNK23NextBotGroundLocomotion18GetMaxDecelerationEv"
+				"NextBotGroundLocomotion::IsOnGround" "_ZNK23NextBotGroundLocomotion10IsOnGroundEv" 
+				"NextBotGroundLocomotion::DetectCollision" "_ZN23NextBotGroundLocomotion15DetectCollisionEP10CGameTraceRiRK6VectorS5_S5_S5_" 
+				"NextBotGroundLocomotion::Approach" "_ZN23NextBotGroundLocomotion8ApproachERK6Vectorf" 
+				"NextBotGroundLocomotion::Update" "_ZN23NextBotGroundLocomotion6UpdateEv" 
+				"NextBotGroundLocomotion::GetMaxYawRate" "_ZNK23NextBotGroundLocomotion13GetMaxYawRateEv"
+				"NextBotGroundLocomotion::GetMaxJumpHeight" "_ZNK23NextBotGroundLocomotion16GetMaxJumpHeightEv"
+				"NextBotGroundLocomotion::GetDeathDropHeight" "_ZNK23NextBotGroundLocomotion18GetDeathDropHeightEv"
+				"NextBotGroundLocomotion::GetWalkSpeed" "_ZNK23NextBotGroundLocomotion12GetWalkSpeedEv"
+				"NextBotGroundLocomotion::ClimbUpToLedge" "_ZN23NextBotGroundLocomotion14ClimbUpToLedgeERK6VectorS2_PK11CBaseEntity"
+				"NextBotGroundLocomotion::ApplyAccumulatedApproach" "_ZN23NextBotGroundLocomotion24ApplyAccumulatedApproachEv"
+				
+				"GroundLocomotionCollisionTraceFilter::ShouldHitEntity" "_ZN36GroundLocomotionCollisionTraceFilter15ShouldHitEntityEP13IHandleEntityi"
 				
 			}
 		}

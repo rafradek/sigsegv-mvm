@@ -39,3 +39,4 @@ MemberVFuncThunk<      CBaseCombatWeapon *, char const *, int>            CBaseC
 MemberVFuncThunk<      CBaseCombatWeapon *, int>                          CBaseCombatWeapon::vt_GetPrimaryAmmoType(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::GetPrimaryAmmoType");
 MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    CBaseCombatWeapon::vt_SetSubType(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::SetSubType");
 MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_CheckReload(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CheckReload");
+MemberVFuncThunk<      CBaseCombatWeapon *, Activity, Activity, bool *>   CBaseCombatWeapon::vt_ActivityOverride(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::ActivityOverride");

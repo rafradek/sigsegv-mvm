@@ -80,8 +80,10 @@ enum : int32_t
 	TF_CLASS_PYRO,
 	TF_CLASS_SPY,
 	TF_CLASS_ENGINEER,
+	TF_CLASS_CIVILIAN,
 	
 	TF_CLASS_COUNT,
+	TF_CLASS_RANDOM
 };
 
 
@@ -711,4 +713,8 @@ bool GiveItemToPlayer(CTFPlayer *player, CEconEntity *entity, bool no_remove, bo
 extern StaticFuncThunk<TFPlayerClassData_t *, uint> ft_GetPlayerClassData;
 inline TFPlayerClassData_t *GetPlayerClassData(uint index) { return ft_GetPlayerClassData(index); }
 
+extern StaticFuncThunk<void, CTFPlayer *, unsigned int, float, float> ft_HandleRageGain;
+inline void HandleRageGain(CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale) { ft_HandleRageGain(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);}
+
+extern GlobalThunk<Vector[TF_CLASS_COUNT]> g_TFClassViewVectors;
 #endif

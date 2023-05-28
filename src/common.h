@@ -97,6 +97,7 @@ class IBotManager;
 
 class IPhysics;
 class IPhysicsCollision;
+class IPhysicsSurfaceProps;
 
 class ISoundEmitterSystemBase;
 
@@ -160,6 +161,7 @@ extern IBotManager *botmanager;
 
 extern IPhysics *physics;
 extern IPhysicsCollision *physcollision;
+extern IPhysicsSurfaceProps *physprops;
 
 extern ISoundEmitterSystemBase *soundemitterbase;
 
@@ -513,6 +515,7 @@ WARN_RESTORE()
 #endif
 #include <iclient.h>
 #include <datacache/imdlcache.h>
+#include <datacache/idatacache.h>
 WARN_IGNORE__SIGN_COMPARE()
 WARN_IGNORE__REORDER()
 #include <materialsystem/imesh.h>

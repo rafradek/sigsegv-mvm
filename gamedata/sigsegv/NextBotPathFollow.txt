@@ -18,10 +18,25 @@
 					type "sym"
 					sym  "_ZN12PathFollowerC1Ev"
 				}
+				"PathFollower::PathFollower [C2]"
+				{
+					type "sym"
+					sym  "_ZN12PathFollowerC2Ev"
+				}
 				"PathFollower::~PathFollower [D1]"
 				{
 					type "sym"
 					sym  "_ZN12PathFollowerD1Ev"
+				}
+				"PathFollower::~PathFollower [D0]"
+				{
+					type "sym"
+					sym  "_ZN12PathFollowerD0Ev"
+				}
+				"PathFollower::~PathFollower [D2]"
+				{
+					type "sym"
+					sym  "_ZN12PathFollowerD2Ev"
 				}
 				
 				"PathFollower::Update"

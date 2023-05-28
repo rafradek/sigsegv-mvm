@@ -13,7 +13,21 @@
 		{
 			"addrs"
 			{
-				
+				"ChasePath::~ChasePath [D2]"
+				{
+					type "sym"
+					sym  "_ZN9ChasePathD2Ev"
+				}
+				"ChasePath::~ChasePath [D0]"
+				{
+					type "sym"
+					sym  "_ZN9ChasePathD0Ev"
+				}
+				"ChasePath::Update"
+				{
+					type "sym"
+					sym  "_ZN9ChasePath6UpdateEP8INextBotP11CBaseEntityRK9IPathCostP6Vector"
+				}
 			}
 		}
 	}

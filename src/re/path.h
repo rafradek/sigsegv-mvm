@@ -17,6 +17,7 @@ class CNavArea;
 class INextBot;
 class CBaseCombatCharacter;
 class CTFBot;
+class CZombie;
 enum NavDirType : int32_t;
 
 
@@ -60,8 +61,25 @@ private:
 };
 SIZE_CHECK(CTFBotPathCost, 0x2c);
 
+
+class CZombiePathCost : public IPathCost
+{
+public:
+	CZombiePathCost( CZombie *actor ) : m_Actor(actor) {};
+	~CZombiePathCost();
+	
+	virtual float operator()(CNavArea *area1, CNavArea *area2, const CNavLadder *ladder, const CFuncElevator *elevator, float f1) const override;
+	
+private:
+	CZombie *m_Actor;                          // +0x04
+};
+SIZE_CHECK(CTFBotPathCost, 0x2c);
+
 #warning REMOVE ME / MOVE ME ELSEWHERE!
 inline CTFBotPathCost::~CTFBotPathCost() {}
+
+#warning REMOVE ME / MOVE ME ELSEWHERE!
+inline CZombiePathCost::~CZombiePathCost() {}
 
 
 #endif

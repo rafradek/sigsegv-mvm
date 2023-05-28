@@ -354,6 +354,7 @@ MemberFuncThunk <      CNavArea *, void>                                        
 MemberFuncThunk <      CNavArea *, void>                                         CNavArea::ft_RemoveFromOpenList                   ("CNavArea::RemoveFromOpenList");
 MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             CNavArea::vt_IsPotentiallyVisible                 (TypeName<CNavArea>(), "CNavArea::IsPotentiallyVisible");
 MemberVFuncThunk<const CNavArea *, bool, int>                                    CNavArea::vt_IsPotentiallyVisibleToTeam           (TypeName<CNavArea>(), "CNavArea::IsPotentiallyVisibleToTeam");
+MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             CNavArea::vt_IsCompletelyVisible                  (TypeName<CNavArea>(), "CNavArea::IsCompletelyVisible");
 MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               CNavArea::ft_CollectAdjacentAreas                 ("CNavArea::CollectAdjacentAreas");
 
 StaticFuncThunk<void>                              CNavArea::ft_ClearSearchLists("CNavArea::ClearSearchLists");

@@ -38,6 +38,7 @@
 					type "sym"
 					sym  "_ZNK8INextBot18IsRangeGreaterThanERK6Vectorf"
 				}
+				
 			}
 		}
 	}

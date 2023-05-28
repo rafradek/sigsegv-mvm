@@ -81,7 +81,7 @@ namespace Mod::Pop::Wave_Extensions
 		std::vector<PointTemplateInfo>   templ;
 		std::vector<std::shared_ptr<PointTemplateInstance>>   templ_inst;
 		std::vector<ETFCond>  addconds;
-		std::vector<ETFCond>  addconds_class[11] = {};
+		std::vector<ETFCond>  addconds_class[TF_CLASS_COUNT] = {};
 		std::vector<ItemAttributes> item_attributes;
 		ForceItems force_items;
 		
@@ -90,7 +90,7 @@ namespace Mod::Pop::Wave_Extensions
 		bool finishing_wave_causes_wave_loss = false;
 		bool finishing_wave_and_player_wipe_causes_wave_loss = false;
 		bool defined_class_attributes = false;
-		std::map<std::string,float> player_attributes_class[11] = {};
+		std::map<std::string,float> player_attributes_class[TF_CLASS_COUNT] = {};
 		std::map<std::string,float> player_attributes;
 		int custom_wave_number = INT_MIN;
 		int custom_max_wave_number = INT_MIN;

@@ -8,10 +8,17 @@ bool CVirtualHook::DoLoad()
     if (this->m_bLoaded) return true;
     
     const void **pVT  = nullptr;
+    const void **pVTForCalcOffset  = nullptr;
 	const void *pFunc = nullptr;
 
     pVT = RTTI::GetVTable(this->m_pszVTableName);
     if (pVT == nullptr) {
+        DevMsg("CVirtualHook::FAIL \"%s\": can't find vtable\n", this->m_pszFuncName);
+        return false;
+    }
+
+    pVTForCalcOffset = RTTI::GetVTable(this->m_pszVTableNameForCalcOffset);
+    if (pVTForCalcOffset == nullptr) {
         DevMsg("CVirtualHook::FAIL \"%s\": can't find vtable\n", this->m_pszFuncName);
         return false;
     }
@@ -24,7 +31,7 @@ bool CVirtualHook::DoLoad()
     
     bool found = false;
     for (int i = 0; i < 0x1000; ++i) {
-        if (pVT[i] == pFunc) {
+        if (pVTForCalcOffset[i] == pFunc) {
             this->m_pFuncPtr = const_cast<void **>(pVT + i);
             this->m_iOffset = i;
             found = true;
@@ -62,14 +69,43 @@ void CVirtualHook::DoDisable()
     }
 }
 
+void *CVirtualHook::AddToVTable(void **vtable)
+{
+    auto oldFunc = vtable[this->m_iOffset];
+    vtable[this->m_iOffset] = this->m_pCallback;
+    this->SetInner(oldFunc, vtable);
+    return oldFunc;
+}
+
+void CVirtualHook::Install(void *objectptr, int vtableSize)
+{
+    void **vtable = *((void ***)objectptr);
+    void **vtableToCopy = vtable-4;
+
+    void **newVtable = new void *[vtableSize];
+    newVtable[0] = vtable;
+    memcpy(newVtable+1, vtableToCopy, vtableSize-5 * sizeof(void *));
+    newVtable[this->m_iOffset+5] = *this->m_pFuncPtr;
+    *(void ***)objectptr = newVtable+5;
+}
+
+void CVirtualHook::Uninstall(void *objectptr)
+{
+    void **vtable = *((void ***)objectptr);
+    void **origTable = *((void ***)vtable-5);
+    delete vtable;
+    *((void ***)objectptr) = origTable;
+}
+
+
 void CVirtualHookInherit::DoEnable()
 {
     if (!this->m_bEnabled && this->m_bLoaded) {
         auto origfunc = *this->m_pFuncPtr;
         for (auto &[name, vtable] : RTTI::GetAllVTable()) {
             void *result = *this->m_pFuncPtr;
-            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((void **)this->m_pVTable-1), &result)) {
-                CVirtualHookFunc::Find(this->m_pFuncPtr, *vtable).AddVirtualHook(this);
+            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const std::type_info **)this->m_pVTable-1), &result)) {
+                CVirtualHookFunc::Find(this->m_pFuncPtr, (void *) *vtable).AddVirtualHook(this);
             }
         }
         
@@ -83,8 +119,8 @@ void CVirtualHookInherit::DoDisable()
         auto origfunc = *this->m_pFuncPtr;
         for (auto &[name, vtable] : RTTI::GetAllVTable()) {
             void *result = *this->m_pFuncPtr;
-            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((void **)this->m_pVTable-1), &result)) {
-                CVirtualHookFunc::Find(this->m_pFuncPtr, *vtable).RemoveVirtualHook(this);
+            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const std::type_info **)this->m_pVTable-1), &result)) {
+                CVirtualHookFunc::Find(this->m_pFuncPtr, (void *) *vtable).RemoveVirtualHook(this);
             }
         }
         this->m_bEnabled = false;

@@ -706,7 +706,9 @@ void UpdatePeriodicTasks(std::vector<PeriodicTaskImpl> &pending_periodic_tasks, 
             const CKnownEntity *threat;
             if ((pending_task.health_above > 0 && bot->GetHealth() <= pending_task.health_above) || (
                     pending_task.if_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr ))
-                    || (pending_task.if_no_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) != nullptr && threat->GetEntity() != nullptr ))) {
+                    || (pending_task.if_no_target && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) != nullptr && threat->GetEntity() != nullptr ))
+                    || (pending_task.if_range_target_min > 0 && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr || threat->GetEntity()->GetAbsOrigin().DistTo(bot->GetAbsOrigin()) < pending_task.if_range_target_min ))
+                    || (pending_task.if_range_target_max != -1 && ((threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(true)) == nullptr || threat->GetEntity() == nullptr || threat->GetEntity()->GetAbsOrigin().DistTo(bot->GetAbsOrigin()) > pending_task.if_range_target_max))) {
                 if (pending_task.health_below > 0)
                     pending_task_impl.nextTaskTime = gpGlobals->curtime;
 
@@ -843,6 +845,12 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
         }
         else if (FStrEq(name, "IfNoTarget")) {
             task.if_no_target=subkey->GetBool();
+        }
+        else if (FStrEq(name, "MinTargetRange")) {
+            task.if_range_target_min=subkey->GetFloat();
+        }
+        else if (FStrEq(name, "MaxTargetRange")) {
+            task.if_range_target_max=subkey->GetFloat();
         }
         else if (FStrEq(name, "IfHealthBelow")) {
             task.health_below=subkey->GetInt();

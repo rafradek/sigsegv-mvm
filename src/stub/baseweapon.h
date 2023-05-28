@@ -5,6 +5,13 @@
 #include "stub/entities.h"
 #include "weapon_parse.h"
 
+typedef struct
+{
+	int			baseAct;
+	int			weaponAct;
+	bool		required;
+} acttable_t;
+
 class CBaseCombatWeapon : 
 #ifdef SE_TF2 
 public CEconEntity
@@ -36,6 +43,7 @@ public:
 	int GetPrimaryAmmoType()                               { return vt_GetPrimaryAmmoType (this); }
 	void SetSubType(int type)                              {        vt_SetSubType (this, type); }
 	void CheckReload()                                     {        vt_CheckReload (this); }
+	Activity ActivityOverride(Activity base, bool *required){return vt_ActivityOverride (this, base, required); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -79,6 +87,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatWeapon *, int>                          vt_GetPrimaryAmmoType;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    vt_SetSubType;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_CheckReload;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, Activity, Activity, bool *>   vt_ActivityOverride;
 	
 };
 #endif

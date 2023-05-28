@@ -14,7 +14,7 @@
 #define NUM_TRAVERSE_TYPES 9
 
 
-template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, const Vector& goal, CTFBotPathCost& cost_func, float maxPathLength, bool b1)
+template<class PathCost> bool Path::Compute(INextBot *nextbot, const Vector& goal, PathCost& cost_func, float maxPathLength, bool b1)
 {
 	VPROF_BUDGET("Path::Compute(goal)", "NextBotSpiky");
 	
@@ -100,7 +100,7 @@ template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, const Vector& g
 	return success;
 }
 
-template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, CBaseCombatCharacter *subject, CTFBotPathCost& cost_func, float maxPathLength, bool b1)
+template<class PathCost> bool Path::Compute(INextBot *nextbot, CBaseCombatCharacter *subject, PathCost& cost_func, float maxPathLength, bool b1)
 {
 	VPROF_BUDGET("Path::Compute(subject)", "NextBotSpiky");
 	
@@ -187,6 +187,10 @@ template<> bool Path::Compute<CTFBotPathCost>(INextBot *nextbot, CBaseCombatChar
 	return success;
 }
 
+template bool Path::Compute(INextBot *nextbot, CBaseCombatCharacter *subject, CTFBotPathCost& cost_func, float maxPathLength, bool b1);
+template bool Path::Compute(INextBot *nextbot, CBaseCombatCharacter *subject, CZombiePathCost& cost_func, float maxPathLength, bool b1);
+template bool Path::Compute(INextBot *nextbot, const Vector&subject, CTFBotPathCost& cost_func, float maxPathLength, bool b1);
+template bool Path::Compute(INextBot *nextbot, const Vector&subject, CZombiePathCost& cost_func, float maxPathLength, bool b1);
 
 CTFBotPathCost::CTFBotPathCost(CTFBot *actor, RouteType rtype) :
 	m_Actor(actor), m_iRouteType(rtype)

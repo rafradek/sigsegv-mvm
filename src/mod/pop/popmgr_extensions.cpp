@@ -181,9 +181,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 	}
 
-	const char g_sSounds[10][24] = {"", "Scout.No03",   "Sniper.No04", "Soldier.No01",
+	const char g_sSounds[TF_CLASS_COUNT][24] = {"", "Scout.No03",   "Sniper.No04", "Soldier.No01",
 		"Demoman.No03", "Medic.No03",  "heavy.No02",
-		"Pyro.No01",    "Spy.No02",    "Engineer.No03"};
+		"Pyro.No01",    "Spy.No02",    "Engineer.No03", "Scout.No03"};
 	
 	
 	class ExtraTankPath
@@ -627,13 +627,13 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_SprayDecals     .clear();
 			this->m_Player_anim_cosmetics.clear();
 
-			for (int i=0; i < 10; i++)
+			for (int i=0; i < TF_CLASS_COUNT; i++)
 				this->m_DisallowedClasses[i] = -1;
 
-			for (int i=0; i < 10; i++)
+			for (int i=0; i < TF_CLASS_COUNT; i++)
 				this->m_PlayerAttributesClass[i].clear();
 
-			for (int i=0; i < 10; i++)
+			for (int i=0; i < TF_CLASS_COUNT; i++)
 				this->m_PlayerAddCondClass[i].clear();
 
 			this->m_ForceItems.Clear();
@@ -883,12 +883,12 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		std::unordered_set<CTFPlayer*> m_PlayerUpgradeSend;
 
-		int m_DisallowedClasses[11];
+		int m_DisallowedClasses[TF_CLASS_COUNT];
 
 		std::map<std::string,float> m_PlayerAttributes;
-		std::map<std::string,float> m_PlayerAttributesClass[11] = {};
+		std::map<std::string,float> m_PlayerAttributesClass[TF_CLASS_COUNT] = {};
 		std::vector<ETFCond> m_PlayerAddCond;
-		std::vector<ETFCond> m_PlayerAddCondClass[11] = {};
+		std::vector<ETFCond> m_PlayerAddCondClass[TF_CLASS_COUNT] = {};
 		ForceItems m_ForceItems;
 
 
@@ -897,8 +897,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
 		std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_ItemEquipTemplates;
 
-		std::unordered_set<std::string> m_MissingRobotBones[11];
-		string_t m_CachedRobotModelIndex[22];
+		std::unordered_set<std::string> m_MissingRobotBones[TF_CLASS_COUNT];
+		string_t m_CachedRobotModelIndex[TF_CLASS_COUNT * 2];
 
 		std::vector<std::pair<int, int>> m_SpellBookNormalRoll;
 		std::vector<std::pair<int, int>> m_SpellBookRareRoll;
@@ -921,7 +921,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::string m_CustomNavFile;
 		std::string m_LastMissionName;
 		
-		std::string m_HandModelOverride[11];
+		std::string m_HandModelOverride[TF_CLASS_COUNT];
 
 		std::unordered_map<std::string, std::string> m_ParticleOverride;
 
@@ -949,7 +949,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		auto class_shared = player->GetPlayerClass();
 		int class_index = class_shared->GetClassIndex();
 		string_t player_model = MAKE_STRING(class_shared->GetCustomModel());
-		return player_model == state.m_CachedRobotModelIndex[class_index] || player_model == state.m_CachedRobotModelIndex[class_index + 10];
+		return player_model == state.m_CachedRobotModelIndex[class_index] || player_model == state.m_CachedRobotModelIndex[class_index + TF_CLASS_COUNT];
 	}
 
 	std::list<CHandle<CBaseAnimating>> item_loading_queue;
@@ -1967,8 +1967,8 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (player->IsBot() || state.m_DisallowedClasses[plclass] == -1)
 			return false;
 
-		int taken_slots[10];
-		for (int i=0; i < 10; i++)
+		int taken_slots[TF_CLASS_COUNT];
+		for (int i=0; i < TF_CLASS_COUNT; i++)
 			taken_slots[i] = 0;
 
 		ForEachTFPlayer([&](CTFPlayer *playerin){
@@ -1998,7 +1998,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
 
 				if (do_switch) {
-					for (int i=1; i < 10; i++){
+					for (int i=1; i < TF_CLASS_COUNT; i++){
 						if(state.m_DisallowedClasses[i] == -1 || taken_slots[i] < state.m_DisallowedClasses[i]){
 							player->HandleCommand_JoinClass(g_aRawPlayerClassNames[i]);
 							break;
@@ -2038,7 +2038,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		if (rc_CTFPlayer_HandleCommand_JoinClass <= 1 && !player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED) {
 			int class_index = 0;
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < TF_CLASS_COUNT; i++) {
 				if (FStrEq(pClassName, g_aRawPlayerClassNames[i])) {
 					class_index = i;
 					break;
@@ -2167,7 +2167,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
 		
 		bool player_empty = state.m_PlayerAttributes.empty();
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < TF_CLASS_COUNT; i++) {
 			if (!state.m_PlayerAttributesClass[i].empty()) {
 				player_empty = false;
 				break;
@@ -2322,7 +2322,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(const char *, CTFPlayerClassShared_GetHandModelName, int handIndex)
 	{
 		auto shared = reinterpret_cast<CTFPlayerClassShared *>(this);
-		if (!state.m_HandModelOverride[shared->GetClassIndex()].empty()) {
+		if (!state.m_HandModelOverride[shared->GetClassIndex()].empty() && Mod::Attr::Custom_Attributes::IsCustomViewmodelAllowed(shared->GetOuter())) {
 			return state.m_HandModelOverride[shared->GetClassIndex()].c_str();
 		}
 		return DETOUR_MEMBER_CALL(CTFPlayerClassShared_GetHandModelName)(handIndex);
@@ -2750,7 +2750,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto player = ToTFPlayer(owner);
-		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0 && ent->GetItem() != nullptr && ent->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0) {
+		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && Mod::Attr::Custom_Attributes::IsCustomViewmodelAllowed(player) && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0 && ent->GetItem() != nullptr && ent->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0) {
 			ent->SetCustomViewModel(state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].c_str());
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
@@ -3455,7 +3455,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				menu->AppendItem("itemattributes", info1);
 			}
 			bool player_empty = state.m_PlayerAttributes.empty();
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < TF_CLASS_COUNT; i++) {
 				if (!state.m_PlayerAttributesClass[i].empty()) {
 					player_empty = false;
 					break;
@@ -3703,7 +3703,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			menu->AppendItem("0", info1);
 		}
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < TF_CLASS_COUNT; i++) {
 			if (!state.m_PlayerAttributesClass[i].empty()) {
 				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
@@ -3756,22 +3756,22 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetDefaultTitle("Forced items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
-		bool has_class[11] = {0};
+		bool has_class[TF_CLASS_COUNT] = {0};
 
 		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
-			for (int i = 0; i < 11; i++) {
+			for (int i = 0; i < TF_CLASS_COUNT; i++) {
 				auto &vec = items_class[i]; 
 				if (!vec.empty()) {
 					has_class[i] = true;
-					if (i == 0 || i == 10) {
-						for (int j = 1; j < 10; j++) {
+					if (i == 0 || i == TF_CLASS_COUNT) {
+						for (int j = 1; j < TF_CLASS_COUNT; j++) {
 							has_class[j] = true;
 						}
 					}
 				}
 			}
 		}
-		for (int i = 1; i < 10; i++) {
+		for (int i = 1; i < TF_CLASS_COUNT; i++) {
 			if (has_class[i]) {
 				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
@@ -3791,7 +3791,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
-			for (auto &vec : {items_class[id], items_class[0], items_class[10]}) {
+			for (auto &vec : {items_class[id], items_class[0], items_class[TF_CLASS_COUNT]}) {
 				for (size_t i = 0; i < vec.size(); i++) {
 					auto &item = vec[i];
 					char buf[256];
@@ -3813,13 +3813,13 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetDefaultTitle("Extra loadout items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
-		bool has_class[10] = {0};
+		bool has_class[TF_CLASS_COUNT] = {0};
 
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
 			auto &item = state.m_ExtraLoadoutItems[i];
 			
 			if (item.class_index == 0) {
-				for (int j = 0; j < 10; j++) {
+				for (int j = 0; j < TF_CLASS_COUNT; j++) {
 					has_class[j] = true;
 				}
 			}
@@ -3827,7 +3827,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				has_class[item.class_index] = true;
 			}
 		}
-		for (int i = 1; i < 10; i++) {
+		for (int i = 1; i < TF_CLASS_COUNT; i++) {
 			if (has_class[i]) {
 				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
@@ -3904,7 +3904,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetDefaultTitle("Extra loadout items");
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
-		bool has_class[10] = {0};
+		bool has_class[TF_CLASS_COUNT] = {0};
 
 		bool hasHidden = false;
 		int wave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
@@ -3917,7 +3917,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 
 			if (item.class_index == 0) {
-				for (int j = 0; j < 10; j++) {
+				for (int j = 0; j < TF_CLASS_COUNT; j++) {
 					has_class[j] = true;
 				}
 			}
@@ -3925,7 +3925,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				has_class[item.class_index] = true;
 			}
 		}
-		for (int i = 1; i < 10; i++) {
+		for (int i = 1; i < TF_CLASS_COUNT; i++) {
 			if (has_class[i]) {
 				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
@@ -4794,25 +4794,24 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_RememberUpgrade)(pItem);
 		RestoreEconItemViewDefId(pItem, origItemDefId);
 	}
-	void BombUpgradeCommon(CBaseEntity *carrier, int level, float timeToNextUpgrade, int conceptIndex, const char *particle)
+
+	class FlagUpgradeModule : public EntityModule {
+	public:
+		FlagUpgradeModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		float nextUpgradeStartTime = -1.0f;
+		float nextUpgradeFinishTime = -1.0f;
+		int level = 0;
+	};
+
+	void BombUpgradeCommon(CBaseEntity *carrier, int level, float timeToNextUpgrade, int conceptIndex, const char *particle, FlagUpgradeModule *mod)
 	{
+		mod->level = level;
 		TFObjectiveResource()->m_nFlagCarrierUpgradeLevel = level;
-		TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime;
-		TFObjectiveResource()->m_flMvMNextBombUpgradeTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime + timeToNextUpgrade;
+		TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = mod->nextUpgradeStartTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime;
+		TFObjectiveResource()->m_flMvMNextBombUpgradeTime = mod->nextUpgradeFinishTime = timeToNextUpgrade == -1 ? -1 : gpGlobals->curtime + timeToNextUpgrade;
 		ForEachTFPlayerOnTeam(TFTeamMgr()->GetTeam(TF_TEAM_RED), [conceptIndex](CTFPlayer *player){ player->SpeakConceptIfAllowed(conceptIndex); });
 		DispatchParticleEffect( particle, PATTACH_POINT_FOLLOW, carrier, "head" );
-	}
-	THINK_FUNC_DECL(BombUpgradeLevel1) {
-		ConVarRef tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade("tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade");
-		BombUpgradeCommon(this,1, tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, "mvm_levelup1");
-	}
-	THINK_FUNC_DECL(BombUpgradeLevel2) {
-		ConVarRef tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade("tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade");
-		ConVarRef tf_mvm_bot_flag_carrier_health_regen("tf_mvm_bot_flag_carrier_health_regen");
-		BombUpgradeCommon(this, 2, tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, "mvm_levelup2");
-	}
-	THINK_FUNC_DECL(BombUpgradeLevel3) {
-		BombUpgradeCommon(this, 3, -1, MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, "mvm_levelup3");
 	}
 
 	DETOUR_DECL_MEMBER(void, CCaptureFlag_PickUp, CTFPlayer *player, bool invisible)
@@ -4820,15 +4819,21 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL(CCaptureFlag_PickUp)(player, invisible);
 		auto flag = reinterpret_cast<CCaptureFlag *>(this);
 		if (player->GetItem() == flag && player->IsRealPlayer() && state.m_bPlayerBombCarrierBuffs) {
-			if (player->IsMiniBoss()) {
+			auto mod = flag->GetOrCreateEntityModule<FlagUpgradeModule>("flagupgrademodule");
+			int cannotUpgrade = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotUpgrade, cannot_upgrade_bomb);
+			if (player->IsMiniBoss() || cannotUpgrade != 0) {
+				mod->level = 4;
 				TFObjectiveResource()->m_nFlagCarrierUpgradeLevel = 4;
-				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = -1;
-				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = -1;
+				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = mod->nextUpgradeStartTime = -1;
+				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = mod->nextUpgradeFinishTime = -1;
 			}
 			else {
-				ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
-				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = gpGlobals->curtime;
-				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = gpGlobals->curtime + tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat();
+				mod->level = 0;
+				static ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
+				TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = mod->nextUpgradeStartTime = gpGlobals->curtime;
+				TFObjectiveResource()->m_flMvMNextBombUpgradeTime = mod->nextUpgradeFinishTime = gpGlobals->curtime + tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat();
+				Msg("Finish time %f %f %f\n", mod->nextUpgradeStartTime, mod->nextUpgradeFinishTime, gpGlobals->curtime);
 				//THINK_FUNC_SET(player, BombUpgradeLevel1, tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat());
 			}
 		}
@@ -5140,7 +5145,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				continue;
 			}
 			int classname = 0;
-			for(int i=1; i < 11; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -5164,7 +5169,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int amount_classes_blacklisted = 0;
 		int class_not_blacklisted = 0;
 		FOR_EACH_SUBKEY(kv, subkey) {
-			for(int i=1; i < 11; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					if (state.m_DisallowedClasses[i] != 0 && subkey->GetInt() == 0) {
 						amount_classes_blacklisted+=1;
@@ -5177,7 +5182,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 
 		if (amount_classes_blacklisted == 8) {
-			for(int i=1; i < 10; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if (state.m_DisallowedClasses[i] != 0) {	
 					state.m_bSingleClassAllowed = i;
 				}
@@ -5584,7 +5589,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 11; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -5618,7 +5623,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 11; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -5726,7 +5731,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		FOR_EACH_SUBKEY(kv, subkey) {
 			int classname = 0;
-			for(int i=1; i < 11; i++){
+			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
 					classname=i;
 					break;
@@ -6834,9 +6839,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 
 			// Precache bones that are not available on robot models
-			for (int i = 1; i < 10; i++) {
+			for (int i = 1; i < TF_CLASS_COUNT; i++) {
 				state.m_CachedRobotModelIndex[i] = AllocPooledString(g_szBotModels[i]);
-				state.m_CachedRobotModelIndex[i+10] = AllocPooledString(g_szBotBossModels[i]);
+				state.m_CachedRobotModelIndex[i+TF_CLASS_COUNT] = AllocPooledString(g_szBotBossModels[i]);
 				const char *robot_model = g_szBotModels[i];
 				const char *player_model = CFmtStr("models/player/%s.mdl", g_aRawPlayerClassNamesShort[i]);
 
@@ -6880,7 +6885,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.Reset();
 			state.m_PlayerUpgradeSend.clear();
 			
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < TF_CLASS_COUNT; i++)
 				state.m_MissingRobotBones[i].clear();
 		}
 		
@@ -6906,16 +6911,23 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 					
 			if (state.m_bPlayerBombCarrierBuffs && gpGlobals->tickcount % 8 == 5) {
-				ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
-				ConVarRef tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade("tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade");
-				ConVarRef tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade("tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade");
-				ConVarRef tf_mvm_bot_flag_carrier_health_regen("tf_mvm_bot_flag_carrier_health_regen");
+				static ConVarRef tf_mvm_bot_flag_carrier_interval_to_1st_upgrade("tf_mvm_bot_flag_carrier_interval_to_1st_upgrade");
+				static ConVarRef tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade("tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade");
+				static ConVarRef tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade("tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade");
+				static ConVarRef tf_mvm_bot_flag_carrier_health_regen("tf_mvm_bot_flag_carrier_health_regen");
 				ForEachTFPlayer([&](CTFPlayer *player){
-					if (player->GetItem() != nullptr && player->IsRealPlayer() && TFObjectiveResource()->m_nFlagCarrierUpgradeLevel < 4U ) {
+					if (player->GetItem() != nullptr && player->IsRealPlayer()) {
+						auto mod = player->GetItem()->GetOrCreateEntityModule<FlagUpgradeModule>("flagupgrademodule");
+						
+						int cannotUpgrade = 0;
+						CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotUpgrade, cannot_upgrade_bomb);
+						if (mod->level == 4 || cannotUpgrade) return;
+
 						auto navArea = static_cast<CTFNavArea *>(player->GetLastKnownArea());
-						if (TFObjectiveResource()->m_flMvMNextBombUpgradeTime != -1 && navArea != nullptr && navArea->HasTFAttributes(player->GetTeamNumber() == TF_TEAM_RED ? RED_SPAWN_ROOM : BLUE_SPAWN_ROOM)) {
-							TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = gpGlobals->curtime;
-							TFObjectiveResource()->m_flMvMNextBombUpgradeTime = gpGlobals->curtime + tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat();
+						if (mod->nextUpgradeFinishTime != -1.0f && navArea != nullptr && navArea->HasTFAttributes(player->GetTeamNumber() == TF_TEAM_RED ? RED_SPAWN_ROOM : BLUE_SPAWN_ROOM)) {
+							float duration = mod->nextUpgradeFinishTime - mod->nextUpgradeStartTime;
+							TFObjectiveResource()->m_flMvMBaseBombUpgradeTime = mod->nextUpgradeStartTime = gpGlobals->curtime;
+							TFObjectiveResource()->m_flMvMNextBombUpgradeTime = mod->nextUpgradeFinishTime = gpGlobals->curtime + duration;
 							//THINK_FUNC_SET(player, BombUpgradeLevel1, tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat());
 						}
 
@@ -6930,21 +6942,21 @@ namespace Mod::Pop::PopMgr_Extensions
 							}
 						}
 
-						if (TFObjectiveResource()->m_flMvMNextBombUpgradeTime != -1 && TFObjectiveResource()->m_flMvMNextBombUpgradeTime <= gpGlobals->curtime) {
+						if (mod->nextUpgradeFinishTime != -1.0f && mod->nextUpgradeFinishTime <= gpGlobals->curtime) {
 							if (!player->m_Shared->InCond(TF_COND_TAUNTING)) {
 								auto params = WhiteTextParams(5, -1, 0.8, 0.5);
 								DisplayHudMessageAutoChannel(player, params, CFmtStr("Taunt to upgrade to bomb level %d\n", TFObjectiveResource()->m_nFlagCarrierUpgradeLevel+1),7);
 							}
-							else if (player->GetCustomVariableFloat<"taunttime">() > TFObjectiveResource()->m_flMvMNextBombUpgradeTime){
+							else if (player->GetCustomVariableFloat<"taunttime">() > mod->nextUpgradeFinishTime){
 								TFGameRules()->BroadcastSound(255, "MVM.Warning");
 								switch (TFObjectiveResource()->m_nFlagCarrierUpgradeLevel) {
 									case 0: {
-										BombUpgradeCommon(player, 1, tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, "mvm_levelup1"); 
+										BombUpgradeCommon(player, 1, tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, "mvm_levelup1", mod); 
 										player->GetItem()->FireCustomOutput<"onbombupgradelevel1">(player, player->GetItem(), Variant());
 										break;
 									} 
 									case 1: {
-										BombUpgradeCommon(player, 2, tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, "mvm_levelup2");
+										BombUpgradeCommon(player, 2, tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat(), MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, "mvm_levelup2", mod);
 										player->GetItem()->FireCustomOutput<"onbombupgradelevel2">(player, player->GetItem(), Variant());
 										if (!player->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
 											player->GetAttributeList()->SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("SET BONUS: health regen set bonus"), tf_mvm_bot_flag_carrier_health_regen.GetFloat());
@@ -6952,10 +6964,10 @@ namespace Mod::Pop::PopMgr_Extensions
 										break;
 									}
 									case 2: {
-										BombUpgradeCommon(player, 3, -1, MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, "mvm_levelup3");
+										BombUpgradeCommon(player, 3, -1, MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, "mvm_levelup3", mod);
 										player->GetItem()->FireCustomOutput<"onbombupgradelevel3">(player, player->GetItem(), Variant());
 										if (!player->GetItem()->GetCustomVariableBool<"disablebuffs">()) {
-											player->m_Shared->AddCond(TF_COND_CRITBOOSTED);
+											player->m_Shared->AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
 										}
 										break;
 									}

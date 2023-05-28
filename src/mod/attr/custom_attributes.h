@@ -96,5 +96,7 @@ namespace Mod::Attr::Custom_Attributes
     int GetFastAttributeIntExternal(CBaseEntity *entity, int value, int name);
 	
 	bool CanSapBuilding(CBaseObject *obj);
+
+	bool IsCustomViewmodelAllowed(CTFPlayer *player);
 }
 #endif

@@ -102,11 +102,14 @@
 				"DT_CSPlayer::g_SendTable" "_ZN11DT_CSPlayer11g_SendTableE"
 				"g_CTFPlayer_ClassReg" "_ZL20g_CTFPlayer_ClassReg"
 				"g_CCSPlayer_ClassReg" "_ZL20g_CCSPlayer_ClassReg"
+				"g_CBaseAnimating_ClassReg" "_ZL25g_CBaseAnimating_ClassReg"
+				
 				
 				"g_MedigunEffects" "g_MedigunEffects"
 				"g_pMonsterResource" "g_pMonsterResource"
 				
 				"CBaseEntity::m_nPredictionRandomSeed" "_ZN11CBaseEntity23m_nPredictionRandomSeedE"
+				"CBaseEntity::m_nPredictionRandomSeedServer" "_ZN11CBaseEntity29m_nPredictionRandomSeedServerE"
 				"g_RecipientFilterPredictionSystem" "_ZL33g_RecipientFilterPredictionSystem"
 				
 				"g_pPlayerResource" "g_pPlayerResource"
@@ -127,6 +130,8 @@
 				"CNavArea::s_nCurrVisTestCounter" "_ZN8CNavArea21s_nCurrVisTestCounterE"
 				"g_LagCompensationManager" "_ZL24g_LagCompensationManager"
 				"s_SteamGameServerAPIContext" "_ZL27s_SteamGameServerAPIContext"
+				"s_acttableMelee" "s_acttableMelee"
+				"g_TFClassViewVectors" "g_TFClassViewVectors"
 			}
 			
 			"addrs_group"

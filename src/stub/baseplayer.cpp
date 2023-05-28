@@ -51,6 +51,7 @@ MemberFuncThunk<CBaseCombatCharacter *, void, int>                              
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_Weapon_Detach     ("CBaseCombatCharacter::Weapon_Detach");
 MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                                                CBaseCombatCharacter::ft_SwitchToNextBestWeapon     ("CBaseCombatCharacter::SwitchToNextBestWeapon");
 MemberFuncThunk<CBaseCombatCharacter *, void, int, int>															  CBaseCombatCharacter::ft_SetAmmoCount      ("CBaseCombatCharacter::SetAmmoCount");
+MemberFuncThunk<CBaseCombatCharacter *, Vector, const CTakeDamageInfo &>                                          CBaseCombatCharacter::ft_CalcDamageForceVector("CBaseCombatCharacter::CalcDamageForceVector");
 
 MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       CBaseCombatCharacter::vt_Weapon_GetSlot     (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_GetSlot");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      CBaseCombatCharacter::vt_Weapon_CanSwitchTo (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::Weapon_CanSwitchTo");
@@ -62,11 +63,18 @@ MemberVFuncThunk<      CBaseCombatCharacter *, int, int, int, bool>            C
 MemberVFuncThunk<const CBaseCombatCharacter *, int, int>                       CBaseCombatCharacter::vt_GetAmmoCount       (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetAmmoCount");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   CBaseCombatCharacter::vt_ShouldGib          (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::ShouldGib");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            CBaseCombatCharacter::vt_FInViewCone        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::FInViewCone");
+MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&, const Vector&> CBaseCombatCharacter::vt_BecomeRagdoll(TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::BecomeRagdoll");
 
 #ifdef SE_TF2
 MemberVFuncThunk<      CBaseCombatCharacter *, int>                            CBaseCombatCharacter::vt_GetBossType        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetBossType");
 #endif
 MemberVFuncThunk<      CBaseCombatCharacter *, void>                           CBaseCombatCharacter::vt_ClearLastKnownArea (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::ClearLastKnownArea");
+MemberVFuncThunk<      CBaseCombatCharacter *, void, int, int>                 CBaseCombatCharacter::vt_RemoveAmmo         (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::RemoveAmmo");
+
+
+StaticFuncThunk<const char *, int> CAI_BaseNPC::ft_GetActivityName("CAI_BaseNPC::GetActivityName");
+StaticFuncThunk<int, const char *> CAI_BaseNPC::ft_GetActivityID("CAI_BaseNPC::GetActivityID");
+
 
 #ifdef SE_TF2
 MemberFuncThunk<CMultiPlayerAnimState *, void> CMultiPlayerAnimState::ft_OnNewModel("CMultiPlayerAnimState::OnNewModel");
@@ -92,6 +100,7 @@ IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
 IMPL_DATAMAP(int,          CBasePlayer, m_nButtons);
 IMPL_DATAMAP(float,        CBasePlayer, m_flStepSoundTime);
+IMPL_DATAMAP(float,        CBasePlayer, m_fLerpTime);
 IMPL_RELATIVE(CUserCmd *,  CBasePlayer, m_pCurrentCommand, m_flStepSoundTime, -sizeof(QAngle) - sizeof(int) - sizeof(uintptr_t));
 
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());

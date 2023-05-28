@@ -131,3 +131,9 @@ void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t i
 		TE_DispatchEffect( filter, 0.0f, data.m_vOrigin, "ParticleEffect", data);
 	}
 }
+
+
+void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r, int g, int b, int a, float width) {
+	CBroadcastRecipientFilter filter;
+	TE_BeamPoints(filter, 0.0f, &start, &end, CBaseEntity::PrecacheModel("materials/sprites/laser.vmt"), 0, 0, 0, life, width, width, 7, 0.0, r, g, b, a, 0);
+}

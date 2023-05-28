@@ -396,6 +396,7 @@ ETFCond GetTFConditionFromName(const char *name)
 StaticFuncThunk<int, CUtlVector<CTFPlayer *> *, int, bool, bool> ft_CollectPlayers_CTFPlayer("CollectPlayers<CTFPlayer>");
 StaticFuncThunk<void, CBasePlayer *, int, int> ft_TE_PlayerAnimEvent("TE_PlayerAnimEvent");
 StaticFuncThunk<TFPlayerClassData_t *, uint> ft_GetPlayerClassData("GetPlayerClassData");
+StaticFuncThunk<void, CTFPlayer *, unsigned int, float, float> ft_HandleRageGain("HandleRageGain");
 
 CEconItemView *CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(CTFPlayer *player, int slot, CEconEntity **ent)
 { 
@@ -433,8 +434,8 @@ CEconEntity *CreateItemByName(CTFPlayer *player, const char *item_name)
 {
 	auto item_def = GetItemSchema()->GetItemDefinitionByName(item_name);
 	if (item_def != nullptr) {
-		const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player->GetPlayerClass()->GetClassIndex());
-		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player->WorldSpaceCenter(), vec3_angle, 1, 6, classname));
+		const char *classname = TranslateWeaponEntForClass_improved(item_def->GetItemClass(), player != nullptr ? player->GetPlayerClass()->GetClassIndex() : 0);
+		CEconEntity *entity = static_cast<CEconEntity *>(ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex, player != nullptr ? player->WorldSpaceCenter() : vec3_origin, vec3_angle, 1, 6, classname));
 
 		if (entity != nullptr) {
 #ifndef NO_MVM
@@ -616,3 +617,5 @@ void CTFPlayer::AddCustomAttribute(const char *s1, const std::string &val, float
 		this->AddCustomAttribute(s1, value.m_Float, f2);
 	}
 }
+
+GlobalThunk<Vector[TF_CLASS_COUNT]> g_TFClassViewVectors("g_TFClassViewVectors");

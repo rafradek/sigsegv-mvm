@@ -1730,6 +1730,15 @@ namespace Mod::Etc::Mapentity_Additions
         }
 	}
 
+	GlobalThunk<CHandle<CBaseEntity>> s_lastTeleporter("s_lastTeleporter");
+    DETOUR_DECL_STATIC(void, OnBotTeleported, CTFBot *player)
+    {
+		DETOUR_STATIC_CALL(OnBotTeleported)(player);
+        if (s_lastTeleporter.GetRef() != nullptr) {
+            s_lastTeleporter.GetRef()->FireCustomOutput<"onteleportreceive">(player, s_lastTeleporter.GetRef(), Variant());
+        }
+    }
+
 	VHOOK_DECL(void, CObjectSentrygun_FireBullets, FireBulletsInfo_t &info)
 	{
         VHOOK_CALL(CObjectSentrygun_FireBullets)(info);
@@ -1920,6 +1929,7 @@ namespace Mod::Etc::Mapentity_Additions
             
             // Extra outputs for objects
 			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_RecieveTeleportingPlayer, "CObjectTeleporter::RecieveTeleportingPlayer");
+			MOD_ADD_DETOUR_STATIC(OnBotTeleported, "OnBotTeleported");
 			MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FireRocket, "CObjectSentrygun::FireRocket");

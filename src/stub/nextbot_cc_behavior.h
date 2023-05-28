@@ -6,6 +6,27 @@
 #include "re/path.h"
 #include "stub/nextbot_cc.h"
 
+class CBotNPCBody : public IBody
+{
+public:
+	int m_currentActivity;
+	int m_moveXPoseParameter;	
+	int m_moveYPoseParameter;
+	QAngle m_desiredAimAngles;
+};
+
+class CZombieIntention : public IIntention
+{
+public:
+	Behavior< CZombie > *m_behavior;
+};
+
+class CBotNPCArcherIntention : public IIntention
+{
+public:
+	Behavior< CBotNPCArcher > *m_behavior;
+};
+
 
 class CEyeballBossIdle : public Action<CEyeballBoss>
 {

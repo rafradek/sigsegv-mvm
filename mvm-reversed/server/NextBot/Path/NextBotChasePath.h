@@ -7,10 +7,15 @@
 class ChasePath : public PathFollower
 {
 public:
-	ChasePath();
-	virtual ~ChasePath();
+	ChasePath(int chaseType) : PathFollower() {
+		m_ctTimer1.Invalidate();
+		m_ctTimer2.Invalidate();
+		m_ctTimer3.Invalidate();
+		m_chaseType = chaseType;
+	}
+	virtual ~ChasePath() {};
 	
-	virtual void Invalidate() override;
+	//virtual void Invalidate() override;
 	
 	virtual void Update(INextBot *nextbot, CBaseEntity *ent, const IPathCost& cost_func, Vector *vec);
 	virtual float GetLeadRadius() const;
@@ -29,7 +34,7 @@ protected:
 	CountdownTimer m_ctTimer2; // +0x47e0
 	CountdownTimer m_ctTimer3; // +0x47ec
 	CHandle<CBaseEntity> m_hChaseSubject;
-	PAD(pad_47fc, 0x4);
+	int m_chaseType;
 	// 47fc dword 0 or possibly 1
 };
 

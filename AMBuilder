@@ -109,6 +109,7 @@ if not Extension.optimize_mods_only:
   'src/util/expression_eval.cpp',
   'src/util/expression_eval_functions.cpp',
   'src/util/lua.cpp',
+  'src/util/entity.cpp',
   ]
 
 
@@ -129,6 +130,7 @@ if not Extension.optimize_mods_only:
     'src/mod/cond/reprogrammed.cpp',
 
     'src/mod/common/text_hud.cpp',
+    'src/mod/common/weapon_shoot.cpp',
     
     'src/mod/demo/stringtable_limit.cpp',
     
@@ -155,7 +157,6 @@ if not Extension.optimize_mods_only:
     'src/mod/etc/ratelimit_exclude.cpp',
     'src/mod/etc/release_source_mutex.cpp',
     'src/mod/etc/server_allow_wait_command.cpp',
-#   'src/mod/etc/static_prop_handle_fix.cpp',
     'src/mod/etc/suppress_nb_event_messages.cpp',
     'src/mod/etc/target_changegravity_improved.cpp',
     'src/mod/etc/vehicle_fix.cpp',
@@ -197,6 +198,12 @@ if not Extension.optimize_mods_only:
     'src/util/firehose_recv.cpp',
     'src/util/firehose_send.cpp',
     'src/util/socket_old.cpp',
+
+    'src/mod/ai/npc_nextbot/npc_nextbot.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_actions.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_body.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_locomotion.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_vision.cpp',
 
     'src/mod/ai/engiebot_dispensers.cpp',
     'src/mod/ai/engiebot_nopush.cpp',

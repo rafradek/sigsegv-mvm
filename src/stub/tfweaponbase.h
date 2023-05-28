@@ -8,6 +8,15 @@
 class CTFWeaponInfo : public FileWeaponInfo_t { 
 public:
 	int m_nDamage;
+	int m_nBulletsPerShot;
+	float m_flRange;
+	float m_flSpread;
+	float m_flPunchAngle;
+	float m_flTimeFireDelay;
+	float m_flTimeIdle;
+	float m_flTimeIdleEmpty;
+	float m_flTimeReloadStart;
+	float m_flTimeReload;
 };
 
 class CTFWeaponBase : public CBaseCombatWeapon, public IHasGenericMeter
@@ -34,6 +43,7 @@ public:
 	float GetAfterburnRateOnHit()            { return vt_GetAfterburnRateOnHit(this); }
 	float InternalGetEffectBarRechargeTime() { return vt_InternalGetEffectBarRechargeTime(this); }
 	float GetEffectBarProgress()             { return vt_GetEffectBarProgress(this); }
+	void ApplyOnHitAttributes(CBaseEntity *pVictimBaseEntity, CTFPlayer *pAttacker, const CTakeDamageInfo &info) { return vt_ApplyOnHitAttributes(this, pVictimBaseEntity, pAttacker, info); }
 	
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
@@ -68,6 +78,7 @@ private:
 	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetAfterburnRateOnHit;
 	static MemberVFuncThunk<CTFWeaponBase *, float> vt_InternalGetEffectBarRechargeTime;
 	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetEffectBarProgress;
+	static MemberVFuncThunk<CTFWeaponBase *, void, CBaseEntity *, CTFPlayer *, const CTakeDamageInfo &> vt_ApplyOnHitAttributes;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {
@@ -83,6 +94,7 @@ public:
 	void DoFireEffects()                          {        vt_DoFireEffects       (this); }
 	bool ShouldPlayFireAnim()                     { return vt_ShouldPlayFireAnim  (this); }
 	CBaseEntity *FireProjectile(CTFPlayer *pPlayer) { return vt_FireProjectile  (this, pPlayer); }
+	int GetAmmoPerShot()                          { return vt_GetAmmoPerShot(this); }
 	
 private:
 	static MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> ft_UpdatePunchAngles;
@@ -96,6 +108,7 @@ private:
 	static MemberVFuncThunk<CTFWeaponBaseGun *, void>              vt_DoFireEffects;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, bool>              vt_ShouldPlayFireAnim;
 	static MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> vt_FireProjectile;
+	static MemberVFuncThunk<CTFWeaponBaseGun *, int >              vt_GetAmmoPerShot;
 };
 
 class CTFPipebombLauncher : public CTFWeaponBaseGun {

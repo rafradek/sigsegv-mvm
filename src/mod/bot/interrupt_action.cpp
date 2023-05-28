@@ -1,12 +1,18 @@
 #include "mod.h"
 #include "mod/bot/interrupt_action.h"
+#include "stub/nextbot_cc.h"
 #include "util/iterate.h"
+#include "mod/ai/npc_nextbot/npc_nextbot.h"
+#include "util/entity.h"
 
-ActionResult<CTFBot> CTFBotMoveTo::OnStart(CTFBot *actor, Action<CTFBot> *action)
+template <class Actor>
+ActionResult<Actor> CTFBotMoveTo<Actor>::OnStart(Actor *actor, Action<Actor> *action)
 {
-    this->m_PathFollower.SetMinLookAheadDistance(actor->GetDesiredPathLookAheadRange());
+    auto tfbot = ToTFBot(actor);
+    actor->GetLocomotionInterface()->Reset();
+    this->m_PathFollower.SetMinLookAheadDistance(tfbot != nullptr ? tfbot->GetDesiredPathLookAheadRange() : 250.0f);
     
-    return ActionResult<CTFBot>::Continue();
+    return ActionResult<Actor>::Continue();
 }
 
 std::map<CHandle<CBaseEntity>, std::string> change_attributes_delay;
@@ -22,14 +28,17 @@ THINK_FUNC_DECL(ChangeAttributes) {
     change_attributes_delay.erase(bot);
 }
 
-ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
+template <class Actor>
+ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
 {
     if (!actor->IsAlive())
-        return ActionResult<CTFBot>::Done();
-        
-    const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
-    if (threat != nullptr) {
-        actor->EquipBestWeaponForThreat(threat);
+        return ActionResult<Actor>::Done();
+    
+    auto vision = actor->GetVisionInterface();
+    auto tfbot = ToTFBot(actor);
+    const CKnownEntity *threat = vision->GetPrimaryKnownThreat(false);
+    if (threat != nullptr && tfbot != nullptr) {
+        tfbot->EquipBestWeaponForThreat(threat);
     }
     
     Vector pos = vec3_origin;
@@ -50,14 +59,31 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
 
     auto nextbot = actor->MyNextBotPointer();
     
-    bool inRange = actor->GetAbsOrigin().DistToSqr(pos) < m_fDistanceSq && !(look != vec3_origin && this->m_hTargetAim != nullptr && !actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look));
+    bool inRange = actor->GetAbsOrigin().DistToSqr(pos) < m_fDistanceSq && !(look != vec3_origin && this->m_hTargetAim != nullptr && !vision->IsLineOfSightClearToEntity(this->m_hTargetAim, &look));
     if (!inRange) {
-        if (this->m_ctRecomputePath.IsElapsed()) {
+        if (this->m_hTarget != nullptr) {
+            if (tfbot != nullptr) {
+                CTFBotPathCost cost_func(tfbot, DEFAULT_ROUTE);
+                this->m_ChasePath.Update(nextbot, this->m_hTarget, cost_func, nullptr);
+            }
+            else {
+                CZombiePathCost cost_func((CZombie *) actor);
+                this->m_ChasePath.Update(nextbot, this->m_hTarget, cost_func, nullptr);
+            }
+        }
+        else if (this->m_ctRecomputePath.IsElapsed()) {
             this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
             
             if (pos != vec3_origin) {
-                CTFBotPathCost cost_func(actor, DEFAULT_ROUTE);
-                this->m_PathFollower.Compute(nextbot, pos, cost_func, 0.0f, true);
+                this->m_ChasePath.Invalidate();
+                if (tfbot != nullptr) {
+                    CTFBotPathCost cost_func(tfbot, DEFAULT_ROUTE);
+                    this->m_PathFollower.Compute(nextbot, pos, cost_func, 0.0f, true);
+                }
+                else {
+                    CZombiePathCost cost_func((CZombie *) actor);
+                    this->m_PathFollower.Compute(nextbot, pos, cost_func, 0.0f, true);
+                }
             }
         }
     }
@@ -86,45 +112,62 @@ ActionResult<CTFBot> CTFBotMoveTo::Update(CTFBot *actor, float dt)
         if (this->m_strName != "") {
             variant_t variant;
             variant.SetString(AllocPooledString(this->m_strName.c_str()));
-            actor->FireCustomOutput<"onactiondone">(actor, actor, variant);
+            ((CBaseEntity *)actor)->FireCustomOutput<"onactiondone">(actor, actor, variant);
         }
         if (this->m_pNext != nullptr) {
             auto nextAction = this->m_pNext;
             this->m_pNext = nullptr;
-            return ActionResult<CTFBot>::ChangeTo(nextAction, "Switch to next interrupt action in queue");
+            return ActionResult<Actor>::ChangeTo(nextAction, "Switch to next interrupt action in queue");
         }
-        return ActionResult<CTFBot>::Done( "Successfully moved to area" );
+        return ActionResult<Actor>::Done( "Successfully moved to area" );
     }
-
-    this->m_PathFollower.Update(nextbot);
+    
+    if (this->m_hTarget == nullptr) {
+        this->m_ChasePath.Invalidate();
+        this->m_PathFollower.Update(nextbot);
+    }
     
     if (look != vec3_origin) {
         
         bool look_now = !m_bKillLook || m_bAlwaysLook;
         if (m_bKillLook) {
-            look_now |= actor->HasAttribute(CTFBot::ATTR_IGNORE_ENEMIES);
-            if ((this->m_hTargetAim != nullptr && actor->GetVisionInterface()->IsLineOfSightClearToEntity(this->m_hTargetAim, &look))) {
+            look_now |= tfbot != nullptr && tfbot->HasAttribute(CTFBot::ATTR_IGNORE_ENEMIES);
+            if (this->m_hTargetAim != nullptr && vision->IsLineOfSightClearToEntity(this->m_hTargetAim, &look)) {
                 look_now = true;
                 if (actor->GetBodyInterface()->IsHeadAimingOnTarget()) {
-                    actor->EquipBestWeaponForThreat(nullptr);
-			        actor->PressFireButton();
+                    if (tfbot != nullptr) {
+                        tfbot->EquipBestWeaponForThreat(nullptr);
+			            tfbot->PressFireButton();
+                    }
+                    else {
+                        auto mod = ((CBaseEntity *)actor)->GetEntityModule<Mod::AI::NPC_Nextbot::MyNextbotModule>("mynextbotmodule");
+                        if (mod != nullptr) {
+                            mod->SetShooting(true);
+                        }
+                    }
                 }
             }
         }
 
         if (look_now) {
-            actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
+            if (this->m_hTargetAim != nullptr) {
+                actor->GetBodyInterface()->AimHeadTowards(this->m_hTargetAim, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
+            }
+            else {
+                actor->GetBodyInterface()->AimHeadTowards(look, IBody::LookAtPriorityType::OVERRIDE_ALL, 0.2f, NULL, "Aiming at target we need to destroy to progress");
+            }
         }
     }
 
-    return ActionResult<CTFBot>::Continue();
+    return ActionResult<Actor>::Continue();
 }
 
-EventDesiredResult<CTFBot> CTFBotMoveTo::OnCommandString(CTFBot *actor, const char *cmd)
+template <class Actor>
+EventDesiredResult<Actor> CTFBotMoveTo<Actor>::OnCommandString(Actor *actor, const char *cmd)
 {
 
     if (V_stricmp(cmd, "stop interrupt action") == 0) {
-        return EventDesiredResult<CTFBot>::Done("Stopping interrupt action");
+        return EventDesiredResult<Actor>::Done("Stopping interrupt action");
     }
     else if (V_strnicmp(cmd, "interrupt_action_queue", strlen("interrupt_action_queue")) == 0) {
         CTFBotMoveTo *action = this;
@@ -132,11 +175,11 @@ EventDesiredResult<CTFBot> CTFBotMoveTo::OnCommandString(CTFBot *actor, const ch
             action = action->m_pNext;
         }
         action->m_pNext = CreateInterruptAction(actor, cmd);
-        return EventDesiredResult<CTFBot>::Sustain("Add to queue");
+        return EventDesiredResult<Actor>::Sustain("Add to queue");
     }
     else if (V_stricmp(cmd, "clear_interrupt_action_queue") == 0) {
         delete this->m_pNext;
-        return EventDesiredResult<CTFBot>::Sustain("Clear queue");
+        return EventDesiredResult<Actor>::Sustain("Clear queue");
     }
     else if (V_stricmp(cmd, "remove_interrupt_action_queue_name") == 0) {
         CTFBotMoveTo *action = this;
@@ -151,17 +194,17 @@ EventDesiredResult<CTFBot> CTFBotMoveTo::OnCommandString(CTFBot *actor, const ch
             }
             action = action->m_pNext;
         }
-        return EventDesiredResult<CTFBot>::Sustain("Delete from queue");
+        return EventDesiredResult<Actor>::Sustain("Delete from queue");
     }
     
-    return EventDesiredResult<CTFBot>::Continue();
+    return EventDesiredResult<Actor>::Continue();
 }
 
-CBaseEntity *SelectTargetByName(CTFBot *actor, const char *name)
+CBaseEntity *SelectTargetByName(CBaseCombatCharacter *actor, const char *name)
 {
     CBaseEntity *target = servertools->FindEntityByName(nullptr, name, actor);
     if (target == nullptr && FStrEq(name,"RandomEnemy")) {
-        target = actor->SelectRandomReachableEnemy();
+        target = SelectRandomReachableEnemy(actor->GetTeamNumber());
     }
     else if (target == nullptr && FStrEq(name, "ClosestPlayer")) {
         float closest_dist = FLT_MAX;
@@ -195,17 +238,16 @@ CBaseEntity *SelectTargetByName(CTFBot *actor, const char *name)
     return target;
 
 }
-
-CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd) {
+template<class Actor>
+void CTFBotMoveTo<Actor>::Init(Actor *actor, const char *cmd) {
     CCommand command = CCommand();
     command.Tokenize(cmd);
     
     const char *other_target = "";
 
-    auto interrupt_action = new CTFBotMoveTo();
     for (int i = 1; i < command.ArgC(); i++) {
         if (strcmp(command[i], "-name") == 0) {
-            interrupt_action->SetName(command[i+1]);
+            this->SetName(command[i+1]);
             i++;
         }
         else if (strcmp(command[i], "-pos") == 0) {
@@ -214,7 +256,7 @@ CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd) {
             pos.y = strtof(command[i+2], nullptr);
             pos.z = strtof(command[i+3], nullptr);
 
-            interrupt_action->SetTargetPos(pos);
+            this->SetTargetPos(pos);
             i += 3;
         }
         else if (strcmp(command[i], "-lookpos") == 0) {
@@ -223,55 +265,56 @@ CTFBotMoveTo *CreateInterruptAction(CTFBot *actor, const char *cmd) {
             pos.y = strtof(command[i+2], nullptr);
             pos.z = strtof(command[i+3], nullptr);
 
-            interrupt_action->SetTargetAimPos(pos);
+            this->SetTargetAimPos(pos);
             i += 3;
         }
         else if (strcmp(command[i], "-posent") == 0) {
             if (strcmp(other_target, command[i+1]) == 0) {
-                interrupt_action->SetTargetPosEntity(interrupt_action->GetTargetAimPosEntity());
+                this->SetTargetPosEntity(this->GetTargetAimPosEntity());
             }
             else {
                 CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
                 other_target = command[i+1];
-                interrupt_action->SetTargetPosEntity(target);
+                this->SetTargetPosEntity(target);
             }
             i++;
         }
         else if (strcmp(command[i], "-lookposent") == 0) {
             if (strcmp(other_target, command[i+1]) == 0) {
-                interrupt_action->SetTargetAimPosEntity(interrupt_action->GetTargetPosEntity());
+                this->SetTargetAimPosEntity(this->GetTargetPosEntity());
             }
             else {
                 CBaseEntity *target = SelectTargetByName(actor, command[i+1]);
                 other_target = command[i+1];
-                interrupt_action->SetTargetAimPosEntity(target);
+                this->SetTargetAimPosEntity(target);
             }
             i++;
         }
         else if (strcmp(command[i], "-duration") == 0) {
-            interrupt_action->SetDuration(strtof(command[i+1], nullptr));
+            this->SetDuration(strtof(command[i+1], nullptr));
             i++;
         }
         else if (strcmp(command[i], "-waituntildone") == 0) {
-            interrupt_action->SetWaitUntilDone(true);
+            this->SetWaitUntilDone(true);
         }
         else if (strcmp(command[i], "-killlook") == 0) {
-            interrupt_action->SetKillLook(true);
+            this->SetKillLook(true);
         }
         else if (strcmp(command[i], "-alwayslook") == 0) {
-            interrupt_action->SetAlwaysLook(true);
+            this->SetAlwaysLook(true);
         }
         else if (strcmp(command[i], "-ondoneattributes") == 0) {
-            interrupt_action->SetOnDoneAttributes(command[i+1]);
+            this->SetOnDoneAttributes(command[i+1]);
             i++;
         }
         else if (strcmp(command[i], "-distance") == 0) {
-            interrupt_action->SetMaxDistance(strtof(command[i+1], nullptr));
+            this->SetMaxDistance(strtof(command[i+1], nullptr));
             i++;
         }
     }	
-    return interrupt_action;
 }
+template class CTFBotMoveTo<CTFBot>;
+template class CTFBotMoveTo<CBotNPCArcher>;
 
 namespace Mod::Common::Interrupt_Action
 {

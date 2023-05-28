@@ -155,6 +155,8 @@ public:
 	CBaseEntity *m_pOuter;
 	// CBaseTransmitProxy *m_pTransmitProxy;
 	edict_t	*m_pPev;
+	PVSInfo_t m_PVSInfo;
+	ServerClass *m_pServerClass;
 	// ...
 private:
 	static MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> ft_AttachEdict;
@@ -206,6 +208,7 @@ public:
 	bool HasSpawnFlags(int flags) const;
 	void WorldToEntitySpace(const Vector &in, Vector *pOut) const;     
 	void EntityToWorldSpace(const Vector &in, Vector *pOut) const;    
+	void GetVectors(Vector* pForward, Vector* pRight, Vector* pUp) const;
 
 	template<class ModuleType>
 	ModuleType *GetEntityModule(const char* name);
@@ -353,7 +356,7 @@ public:
 	bool FVisible(CBaseEntity *pEntity, int traceMask = MASK_BLOCKLOS, CBaseEntity **ppBlocker = nullptr)                   { return vt_FVisible_ent                  (this, pEntity, traceMask, ppBlocker); }
 	bool FVisible(const Vector& vecTarget, int traceMask = MASK_BLOCKLOS, CBaseEntity **ppBlocker = nullptr)                { return vt_FVisible_vec                  (this, vecTarget, traceMask, ppBlocker); }
 	void Touch(CBaseEntity *pOther)                                                                                         {        vt_Touch                         (this, pOther); }
-	INextBot *MyNextBotPointer()                                                                                            { return vt_MyNextBotPointer              (this); }
+	INextBot *MyNextBotPointer() const                                                                                      { return vt_MyNextBotPointer              (this); }
 	void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)                            {        vt_Teleport                      (this, newPosition, newAngles, newVelocity); }
 	int GetMaxHealth() const                                                                                                { return vt_GetMaxHealth                  (this); }
 	bool IsAlive()                                                                                                          { return vt_IsAlive                       (this); }
@@ -375,6 +378,7 @@ public:
 	void EndTouch(CBaseEntity *entity)                                                                                      { return vt_EndTouch                      (this, entity); }
 	void PostClientActive()                                                                                                 { return vt_PostClientActive              (this); }
 	void VPhysicsDestroyObject()                                                                                            {        vt_VPhysicsDestroyObject         (this); }
+	uint PhysicsSolidMaskForEntity()                                                                                        { return vt_PhysicsSolidMaskForEntity     (this); }
 	
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
@@ -528,7 +532,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, bool, CBaseEntity *, int, CBaseEntity **>                         vt_FVisible_ent;
 	static MemberVFuncThunk<      CBaseEntity *, bool, const Vector&, int, CBaseEntity **>                         vt_FVisible_vec;
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_Touch;
-	static MemberVFuncThunk<      CBaseEntity *, INextBot *>                                                       vt_MyNextBotPointer;
+	static MemberVFuncThunk<const CBaseEntity *, INextBot *>                                                       vt_MyNextBotPointer;
 	static MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, const Vector *>             vt_Teleport;
 	static MemberVFuncThunk<const CBaseEntity *, int>                                                              vt_GetMaxHealth;
 	static MemberVFuncThunk<      CBaseEntity *, bool>                                                             vt_IsAlive;
@@ -550,6 +554,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_EndTouch;
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_PostClientActive;
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_VPhysicsDestroyObject;
+	static MemberVFuncThunk<      CBaseEntity *, uint>                                                             vt_PhysicsSolidMaskForEntity;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
@@ -686,6 +691,21 @@ inline const matrix3x4_t& CBaseEntity::EntityToWorldTransform() const
 		const_cast<CBaseEntity *>(this)->CalcAbsolutePosition();
 	}
 	return this->m_rgflCoordinateFrame;
+}
+
+inline void CBaseEntity::GetVectors(Vector* pForward, Vector* pRight, Vector* pUp) const
+{
+	auto entityToWorld = this->EntityToWorldTransform();
+	if (pForward != nullptr) {
+		MatrixGetColumn(entityToWorld, 0, *pForward);
+	}
+	if (pRight != nullptr) {
+		MatrixGetColumn(entityToWorld, 1, *pRight);
+		*pRight *= -1.0f;
+	}
+	if (pUp != nullptr) {
+		MatrixGetColumn(entityToWorld, 1, *pUp);
+	}
 }
 
 inline bool CBaseEntity::NameMatches(const char *pszNameOrWildcard)

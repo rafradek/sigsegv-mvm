@@ -13,8 +13,15 @@ IMPL_SENDPROP(float, CBaseAnimating, m_flCycle,      CBaseAnimating);
 IMPL_SENDPROP(int,   CBaseAnimating, m_nHitboxSet,   CBaseAnimating);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseAnimating, m_hLightingOrigin, CBaseAnimating);
 IMPL_SENDPROP(float, CBaseAnimating, m_flPlaybackRate, CBaseAnimating);
+IMPL_SENDPROP(float[24], CBaseAnimating, m_flPoseParameter, CBaseAnimating);
+IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseAnimating, m_hLightingOriginRelative,  CBaseAnimating);
 
 IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceFinished);
+IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceLoops);
+IMPL_DATAMAP(float,  CBaseAnimating, m_flGroundSpeed);
+
+IMPL_RELATIVE   (DataCacheHandle_t, CBaseAnimating, m_boneCacheHandle, m_hLightingOriginRelative, sizeof(string_t) * 2);
+IMPL_RELATIVE   (unsigned short, CBaseAnimating, m_fBoneCacheFlags, m_hLightingOriginRelative, sizeof(string_t) * 2 + sizeof(DataCacheHandle_t));
 
 MemberFuncThunk<CBaseAnimating *, void, float, float>              CBaseAnimating::ft_SetModelScale       ("CBaseAnimating::SetModelScale");
 MemberFuncThunk<CBaseAnimating *, void, float, bool>               CBaseAnimating::ft_DrawServerHitboxes  ("CBaseAnimating::DrawServerHitboxes");
@@ -27,10 +34,11 @@ MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, int>                             CBaseAnimating::ft_GetNumBones         ("CBaseAnimating::GetNumBones");
 MemberFuncThunk<CBaseAnimating *, void>                            CBaseAnimating::ft_ResetSequenceInfo   ("CBaseAnimating::ResetSequenceInfo");
 MemberFuncThunk<CBaseAnimating *, void, int>                       CBaseAnimating::ft_ResetSequence       ("CBaseAnimating::ResetSequence");
-//MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    CBaseAnimating::ft_GetModelPtr         ("CBaseAnimating::GetModelPtr");
+MemberFuncThunk<CBaseAnimating *, CStudioHdr *>                    CBaseAnimating::ft_GetModelPtr         ("CBaseAnimating::GetModelPtr");
 MemberFuncThunk<CBaseAnimating *, int, CStudioHdr *, const char *> CBaseAnimating::ft_LookupPoseParameter ("CBaseAnimating::LookupPoseParameter");
 MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_GetPoseParameter_int("CBaseAnimating::GetPoseParameter [int]");
 MemberFuncThunk<CBaseAnimating *, float, const char *>             CBaseAnimating::ft_GetPoseParameter_str("CBaseAnimating::GetPoseParameter [str]");
+MemberFuncThunk<CBaseAnimating *, float, CStudioHdr *, int, float> CBaseAnimating::ft_SetPoseParameter    ("CBaseAnimating::SetPoseParameter");
 MemberFuncThunk<CBaseAnimating *, void, int, matrix3x4_t&>         CBaseAnimating::ft_GetBoneTransform    ("CBaseAnimating::GetBoneTransform");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupBone          ("CBaseAnimating::LookupBone");
 MemberFuncThunk<CBaseAnimating *, int, const char *>               CBaseAnimating::ft_LookupAttachment    ("CBaseAnimating::LookupAttachment");
@@ -39,9 +47,20 @@ MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, bool, int, Vector&, QAngle&>     CBaseAnimating::ft_GetAttachment       ("CBaseAnimating::GetAttachment");
 MemberFuncThunk<CBaseAnimating *, bool, int, matrix3x4_t&>         CBaseAnimating::ft_GetAttachment2      ("CBaseAnimating::GetAttachment [matrix]");
 MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimating::ft_GetAttachmentBone   ("CBaseAnimating::GetAttachmentBone");
+MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_SequenceDuration    ("CBaseAnimating::SequenceDuration");
 
-MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_StudioFrameAdvance(TypeName<CBaseAnimating>(), "CBaseAnimating::StudioFrameAdvance");
-MemberVFuncThunk<CBaseAnimating *, void>               CBaseAnimating::vt_RefreshCollisionBounds(TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");
+MemberVFuncThunk<CBaseAnimating *, void>                   CBaseAnimating::vt_StudioFrameAdvance     (TypeName<CBaseAnimating>(), "CBaseAnimating::StudioFrameAdvance");
+MemberVFuncThunk<CBaseAnimating *, void>                   CBaseAnimating::vt_RefreshCollisionBounds (TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");
+MemberVFuncThunk<CBaseAnimating *, void, CBaseAnimating *> CBaseAnimating::vt_DispatchAnimEvents     (TypeName<CBaseAnimating>(), "CBaseAnimating::DispatchAnimEvents");
+
+
+MemberFuncThunk<CBaseAnimatingOverlay *, int, Activity, bool> CBaseAnimatingOverlay::ft_AddGesture("CBaseAnimatingOverlay::AddGesture");
+MemberFuncThunk<CBaseAnimatingOverlay *, int, int, bool> CBaseAnimatingOverlay::ft_AddGestureSequence("CBaseAnimatingOverlay::AddGestureSequence");
+MemberFuncThunk<CBaseAnimatingOverlay *, void, Activity> CBaseAnimatingOverlay::ft_RemoveGesture("CBaseAnimatingOverlay::RemoveGesture");
+MemberFuncThunk<CBaseAnimatingOverlay *, void> CBaseAnimatingOverlay::ft_RemoveAllGestures("CBaseAnimatingOverlay::RemoveAllGestures");
+MemberFuncThunk<CBaseAnimatingOverlay *, void, Activity, bool, bool> CBaseAnimatingOverlay::ft_RestartGesture("CBaseAnimatingOverlay::RestartGesture");
+MemberFuncThunk<CBaseAnimatingOverlay *, float, int> CBaseAnimatingOverlay::ft_GetLayerDuration("CBaseAnimatingOverlay::GetLayerDuration");
+MemberFuncThunk<CBaseAnimatingOverlay *, void, int, float> CBaseAnimatingOverlay::ft_SetLayerDuration("CBaseAnimatingOverlay::SetLayerDuration");
 
 
 #ifdef SE_TF2
@@ -53,6 +72,7 @@ MemberVFuncThunk<CEconEntity *, CAttributeContainer *> CEconEntity::vt_GetAttrib
 MemberVFuncThunk<CEconEntity *, CAttributeManager *>   CEconEntity::vt_GetAttributeManager  (TypeName<CEconEntity>(), "CEconEntity::GetAttributeManager");
 MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   CEconEntity::vt_GiveTo               (TypeName<CEconEntity>(), "CEconEntity::GiveTo");
 MemberVFuncThunk<CEconEntity *, void>                  CEconEntity::vt_ReapplyProvision     (TypeName<CEconEntity>(), "CEconEntity::ReapplyProvision");
+MemberVFuncThunk<CEconEntity *, bool, CBaseCombatCharacter *, bool> CEconEntity::vt_UpdateBodygroups(TypeName<CEconEntity>(), "CEconEntity::UpdateBodygroups");
 
 CEconItemView *CEconEntity::GetItem()
 {
@@ -81,3 +101,4 @@ void CEconEntity::Validate()
 StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize("UTIL_SetSize");
 StaticFuncThunk<float, CBaseFlex *, const char *, EHANDLE *, float, bool, void *, bool, IRecipientFilter *> ft_InstancedScriptedScene("InstancedScriptedScene");
 StaticFuncThunk<void, CBaseFlex *, EHANDLE> ft_StopScriptedScene("StopScriptedScene");
+StaticFuncThunk<int, CStudioHdr *, int, int> ft_SelectWeightedSequence("SelectWeightedSequence");

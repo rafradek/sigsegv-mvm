@@ -20,6 +20,7 @@
 #include "util/prop_helper.h"
 #include <utlsymbol.h>
 #include "stub/trace.h"
+#include "util/iterate.h"
  
 
 namespace Mod::Perf::Func_Optimize
@@ -397,30 +398,6 @@ namespace Mod::Perf::Func_Optimize
         return schema;
 	}
 
-    
-#define AVERAGE_TIME2(name) \
-	static int tickLast_##name = 0; \
-	static int counter_##name = 0; \
-    static CCycleCount cycle_##name; \
-	counter_##name++;\
-	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
-		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
-        cycle_##name.Init(); \
-		counter_##name = 0;\
-		tickLast_##name = gpGlobals->tickcount;\
-	}\
-	class CTimeScopeMsg_##name \
-	{ \
-	public: \
-		CTimeScopeMsg_##name() : m_Timer(&cycle_##name) { } \
-		~CTimeScopeMsg_##name() \
-		{ \
-			m_Timer.End(); \
-		} \
-	private:	\
-		CTimeAdder m_Timer;\
-	} name##_TSM; \
-
     DETOUR_DECL_MEMBER(CTFItemDefinition *, CEconItemView_GetStaticData)
 	{
 		auto me = reinterpret_cast<CEconItemView *>(this);
@@ -622,93 +599,6 @@ namespace Mod::Perf::Func_Optimize
 		
 	}
 
-    template<typename Functor>
-	inline void ForAllPotentiallyVisibleAreas(Functor func, CNavArea *curArea)
-	{
-        CNavArea::s_nCurrVisTestCounter++;
-		int i;
-        auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
-        for (i=0; i < potentiallyVisible.Count(); ++i)
-		{
-			CNavArea *area = potentiallyVisible[i].area;
-			if (!area)
-				continue;
-
-            area->m_nVisTestCounter = CNavArea::s_nCurrVisTestCounter;
-
-			if (potentiallyVisible[i].attributes == 0)
-				continue;
-
-			func(area);
-		}
-
-		// for each inherited area
-		if (!curArea->m_inheritVisibilityFrom->area)
-			return;
-
-		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
-
-		for (i=0; i<inherited.Count(); ++i)
-		{
-			auto &inheritedVisible = inherited[i];
-            auto area = inheritedVisible.area;
-			if (!area)
-				continue;
-
-            if (area->m_nVisTestCounter == CNavArea::s_nCurrVisTestCounter)
-                continue;
-
-			if (inheritedVisible.attributes == 0)
-				continue;
-
-            func(area);
-		}
-	}
-
-    
-    template<typename Functor>
-	inline void ForAllPotentiallyVisibleAreasReverse(Functor func, CNavArea *curArea)
-	{
-        CNavArea::s_nCurrVisTestCounter++;
-		int i;
-        auto &potentiallyVisible = curArea->m_potentiallyVisibleAreas.Get();
-        for ( i=potentiallyVisible.Count()-1; i >= 0 ; --i )
-		{
-			CNavArea *area = potentiallyVisible[i].area;
-			if (!area)
-				continue;
-            
-            area->m_nVisTestCounter = CNavArea::s_nCurrVisTestCounter;
-
-			if (potentiallyVisible[i].attributes == 0)
-				continue;
-
-			func(area);
-		}
-
-		// for each inherited area
-		if (!curArea->m_inheritVisibilityFrom->area)
-			return;
-
-		CUtlVectorConservative<AreaBindInfo> &inherited = curArea->m_inheritVisibilityFrom->area->m_potentiallyVisibleAreas;
-
-		for (i=inherited.Count()-1; i >= 0; --i)
-		{
-            auto &inheritedVisible = inherited[i];
-            auto area = inheritedVisible.area;
-			if (!area)
-				continue;
-
-            if (area->m_nVisTestCounter == CNavArea::s_nCurrVisTestCounter)
-                continue;
-
-			if (inheritedVisible.attributes == 0)
-				continue;
-
-            func(area);
-		}
-	}
-
     DETOUR_DECL_MEMBER(void, CTFPlayer_OnNavAreaChanged, CNavArea *enteredArea, CNavArea *leftArea)
 	{
         VPROF_BUDGET("CTFPlayer::OnNavAreaChanged", "NextBot")
@@ -822,6 +712,42 @@ namespace Mod::Perf::Func_Optimize
 	}
 #endif
 
+    int player_move_entindex = 0;
+	
+	ConVar sig_perf_lagcomp_bench("sig_perf_lagcomp_bench", "0", FCVAR_NOTIFY,
+		"Mod: Optimize common calls");
+
+    bool restorebot = false;
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
+	{
+        if (player->IsBot() && sig_perf_lagcomp_bench.GetBool()) {
+            player->m_fFlags &= ~FL_FAKECLIENT;
+            player->m_fLerpTime = player->entindex() * 0.015f;
+            restorebot = true;
+        }
+		int preMaxPlayers = gpGlobals->maxClients;
+		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+        if (restorebot) {
+            player->m_fFlags |= FL_FAKECLIENT;
+            restorebot = false;
+        }
+	}
+	
+    DETOUR_DECL_MEMBER(void, CLagCompensationManager_BacktrackPlayer, CBasePlayer *player, float flTargetTime)
+	{
+        if (restorebot) {
+            Msg("Backtracking amount %f\n", gpGlobals->curtime - flTargetTime);
+        }
+		DETOUR_MEMBER_CALL(CLagCompensationManager_BacktrackPlayer)(player, flTargetTime);
+    }
+
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
+	{
+		int preMaxPlayers = gpGlobals->maxClients;
+		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
+	}
+
+
     class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -877,6 +803,10 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
 #endif
+            // Optimize lag compensation by reusing previous bone caches
+            MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
+            //MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
+            
             
 		}
 
@@ -900,10 +830,31 @@ namespace Mod::Perf::Func_Optimize
 
         virtual void OnEnablePost() override 
         {
+            world_edict = INDEXENT(0);
 #ifdef SE_TF2
             schema = GetItemSchema();
+
+            // In case the mod was toggled on/off, restore the quick item in loadout slot optimizations
+            ForEachTFPlayer([](CTFPlayer *player){
+                auto data = GetExtraPlayerData(player);
+                ForEachTFPlayerEconEntity(player, [data, player](CEconEntity *entity){
+
+                    auto item = entity->GetItem() ;
+                    if (item == nullptr) return;
+
+                    auto itemDef = item->GetItemDefinition();
+                    if (itemDef == nullptr) return;
+
+                    auto slot = itemDef->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+                    if (slot == -1 && itemDef->m_iItemDefIndex != 0) {
+                        slot = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+                    }
+                    if (slot >= 0 && slot < LOADOUT_POSITION_COUNT && (data->quickItemInLoadoutSlot[slot] == nullptr || data->quickItemInLoadoutSlot[slot]->GetOwnerEntity() != player) ) {
+                        data->quickItemInLoadoutSlot[slot] = entity;
+                    }
+                });
+            });
 #endif
-            world_edict = INDEXENT(0);
             // auto addr = (uint8_t *)AddrManager::GetAddr("CEconItemView::GetStaticData");
             // Msg("Post enable:");
             // for (int i = 0; i<48;i++) {

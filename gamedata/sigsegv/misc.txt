@@ -3000,6 +3000,11 @@
 					type "sym"
 					sym  "_ZNK17INextBotComponent6GetBotEv"
 				}
+				"INextBotComponent::Upkeep"
+				{
+					type "sym"
+					sym  "_ZN17INextBotComponent6UpkeepEv"
+				}
 				"CTFGameRules::GetKillingWeaponName"
 				{
 					type "sym"
@@ -3601,11 +3606,6 @@
 				{
 					type "sym"
 					sym  "_ZN28CTFGrenadePipebombProjectile15StickybombTouchEP11CBaseEntity"
-				}
-				"CZombie::OnTakeDamage_Alive"
-				{
-					type "sym"
-					sym  "_ZN7CZombie18OnTakeDamage_AliveERK15CTakeDamageInfo"
 				}
 				"CTFWeaponBaseGrenadeProj::SetDetonateTimerLength"
 				{
@@ -5629,6 +5629,12 @@
 					type "sym"
 					sym  "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
 				}
+
+				"UTIL_PlayerBulletTrace"
+				{
+					type "sym"
+					sym  "_ZL22UTIL_PlayerBulletTraceRK6VectorS1_S1_jP12ITraceFilterP10CGameTrace_constprop_737"
+				}
 			}
 			"addrs_group"
 			{
@@ -5768,8 +5774,19 @@
 				"CBaseEntity::GetRefEHandle" "_ZNK11CBaseEntity13GetRefEHandleEv"
 				"CBaseEntity::TraceAttack" "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
 
+				"CBaseAnimatingOverlay::AddGesture" "_ZN21CBaseAnimatingOverlay10AddGestureE8Activityb"
+				"CBaseAnimatingOverlay::RestartGesture" "_ZN21CBaseAnimatingOverlay14RestartGestureE8Activitybb"
+				"CBaseAnimatingOverlay::AddGestureSequence" "_ZN21CBaseAnimatingOverlay18AddGestureSequenceEib"
+				"CBaseAnimatingOverlay::RemoveGesture" "_ZN21CBaseAnimatingOverlay13RemoveGestureE8Activity"
+				"CBaseAnimatingOverlay::RemoveAllGestures" "_ZN21CBaseAnimatingOverlay17RemoveAllGesturesEv"
+				"CBaseAnimatingOverlay::GetLayerDuration" "_ZN21CBaseAnimatingOverlay16GetLayerDurationEi"
+				"CBaseAnimatingOverlay::SetLayerDuration" "_ZN21CBaseAnimatingOverlay16SetLayerDurationEif"
+
+				"CBaseAnimating::SetPoseParameter" "_ZN14CBaseAnimating16SetPoseParameterEP10CStudioHdrif"
+				"CBaseAnimating::DispatchAnimEvents" "_ZN14CBaseAnimating18DispatchAnimEventsEPS_"
+				"CBaseAnimating::SequenceDuration" "_ZN14CBaseAnimating16SequenceDurationEi"
+
 				"CBaseCombatCharacter::GetBossType" "_ZNK20CBaseCombatCharacter11GetBossTypeEv"
-				
 				"CBaseCombatCharacter::GetLastKnownArea" "_ZNK20CBaseCombatCharacter16GetLastKnownAreaEv" 
 				"CBaseCombatCharacter::Weapon_GetSlot" "_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi" 
 				"CBaseCombatCharacter::Weapon_CanSwitchTo" "_ZN20CBaseCombatCharacter18Weapon_CanSwitchToEP17CBaseCombatWeapon" 
@@ -5792,7 +5809,13 @@
 				"CBaseCombatCharacter::Weapon_Equip" "_ZN20CBaseCombatCharacter12Weapon_EquipEP17CBaseCombatWeapon" 
 				"CBaseCombatCharacter::ShouldGib" "_ZN20CBaseCombatCharacter9ShouldGibERK15CTakeDamageInfo" 
 				"CBaseCombatCharacter::FInViewCone" "_ZN20CBaseCombatCharacter11FInViewConeERK6Vector" 
+				"CBaseCombatCharacter::CalcDamageForceVector" "_ZN20CBaseCombatCharacter21CalcDamageForceVectorERK15CTakeDamageInfo" 
+				"CBaseCombatCharacter::BecomeRagdoll" "_ZN20CBaseCombatCharacter13BecomeRagdollERK15CTakeDamageInfoRK6Vector" 
+				"CBaseCombatCharacter::RemoveAmmo" "_ZN20CBaseCombatCharacter10RemoveAmmoEii" 
 				
+				"CAI_BaseNPC::GetActivityName" "_ZN11CAI_BaseNPC15GetActivityNameEi"
+				"CAI_BaseNPC::GetActivityID" "_ZN11CAI_BaseNPC13GetActivityIDEPKc"
+
 				"CTFTeam::GetNumObjects" "_ZN7CTFTeam13GetNumObjectsEi"
 				"CTFTeam::GetObject"     "_ZN7CTFTeam9GetObjectEi"
 				
@@ -5804,7 +5827,6 @@
 				
 				"CTFGameRules::CTFGameRules [C1]" "_ZN12CTFGameRulesC1Ev"
 				"CTFGameRules::GetAssister" "_ZN12CTFGameRules11GetAssisterEP11CBasePlayerS1_P11CBaseEntity"
-				
 
 				"CBasePlayer::IsBot" "_ZNK11CBasePlayer5IsBotEv" 
 				"CBasePlayer::CommitSuicide" "_ZN11CBasePlayer13CommitSuicideEbb" 
@@ -5842,18 +5864,33 @@
 				"CBasePlayer::SetModel" "_ZN11CBasePlayer8SetModelEPKc"
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
 				
+				"CEyeballBoss::GetLocomotionInterface" "_ZNK12CEyeballBoss22GetLocomotionInterfaceEv"
+				"CEyeballBoss::GetVisionInterface" "_ZNK12CEyeballBoss18GetVisionInterfaceEv"
+
 				"CEyeballBossIdle::OnStart" "_ZN16CEyeballBossIdle7OnStartEP12CEyeballBossP6ActionIS0_E
 				"CEyeballBossIdle::OnStart" "_ZN16CEyeballBossIdle7OnStartEP12CEyeballBossP6ActionIS0_E"
 				"CEyeballBossIdle::Update"  "_ZN16CEyeballBossIdle6UpdateEP12CEyeballBossf"
 
 				"CEyeballBossDead::Update" "_ZN16CEyeballBossDead6UpdateEP12CEyeballBossf"
 
+				
+				"CZombie::CZombie"      "_ZN7CZombieC2Ev"
 				"CZombie::Spawn"      "_ZN7CZombie5SpawnEv"
 				"CZombie::SpawnAtPos" "_ZN7CZombie10SpawnAtPosERK6VectorfiP11CBaseEntityNS_14SkeletonType_tE"
+				"CZombie::UpdateOnRemove" "_ZN7CZombie14UpdateOnRemoveEv"
+				"CZombie::Event_Killed" "_ZN7CZombie12Event_KilledERK15CTakeDamageInfo"
+				"CZombie::OnTakeDamage_Alive" "_ZN7CZombie18OnTakeDamage_AliveERK15CTakeDamageInfo"
+				"CZombie::GetIntentionInterface" "_ZNK7CZombie21GetIntentionInterfaceEv"
 
 				"IZombieAutoList::m_IZombieAutoListAutoList" "_ZN15IZombieAutoList25m_IZombieAutoListAutoListE"
 
 				"CZombieBehavior::OnKilled" "_ZN15CZombieBehavior8OnKilledEP7CZombieRK15CTakeDamageInfo"
+				"CZombiePathCost::operator()" "_ZNK15CZombiePathCostclEP8CNavAreaS1_PK10CNavLadderPK13CFuncElevatorf"
+				
+				"CBotNPCArcher::CBotNPCArcher" "_ZN13CBotNPCArcherC2Ev"
+				"CBotNPCArcher::GetIntentionInterface" "_ZNK13CBotNPCArcher21GetIntentionInterfaceEv"
+				"CBotNPCArcher::D1Thunk" "_ZThn2188_N13CBotNPCArcherD1Ev"
+				"CBotNPCArcher::Spawn" "_ZN13CBotNPCArcher5SpawnEv"
 
 				"CTeamplayRoundBasedRules::SetTeamRespawnWaveTime" "_ZN24CTeamplayRoundBasedRules22SetTeamRespawnWaveTimeEif"
 
@@ -5883,7 +5920,9 @@
 				
 				"InventoryManager"   "_Z16InventoryManagerv"
 				"TFInventoryManager" "_Z18TFInventoryManagerv"
-				
+
+				"CEconEntity::UpdateBodygroups" "_ZN11CEconEntity16UpdateBodygroupsEP20CBaseCombatCharacteri"
+
 				"CBaseCombatWeapon::IsMeleeWeapon" "_ZNK17CBaseCombatWeapon13IsMeleeWeaponEv"
 				"CBaseCombatWeapon::GetMaxClip1" "_ZNK17CBaseCombatWeapon11GetMaxClip1Ev"
 				"CBaseCombatWeapon::GetMaxClip2" "_ZNK17CBaseCombatWeapon11GetMaxClip2Ev"
@@ -5909,6 +5948,8 @@
 				"CBaseCombatWeapon::SetWeaponVisible" "_ZN17CBaseCombatWeapon16SetWeaponVisibleEb"
 				"CBaseCombatWeapon::SetCustomViewModel" "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
 				"CBaseCombatWeapon::GetSlot" "_ZNK17CBaseCombatWeapon7GetSlotEv"
+				"CBaseCombatWeapon::ActivityOverride" "_ZN17CBaseCombatWeapon16ActivityOverrideE8ActivityPb"
+				
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
@@ -5976,6 +6017,8 @@
 				"CTFWeaponBaseGun::FireEnergyBall" "_ZN16CTFWeaponBaseGun14FireEnergyBallEP9CTFPlayerb"
 				"CTFWeaponBaseGun::PrimaryAttack" "_ZN16CTFWeaponBaseGun13PrimaryAttackEv"
 				"CTFWeaponBaseGun::ZoomIn" "_ZN16CTFWeaponBaseGun6ZoomInEv"
+				"CTFWeaponBaseGun::GetAmmoPerShot" "_ZN16CTFWeaponBaseGun14GetAmmoPerShotEv"
+				
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				
@@ -6012,7 +6055,16 @@
 				"CTFPipebombLauncher::FireProjectile" "_ZN19CTFPipebombLauncher14FireProjectileEP9CTFPlayer"
 
 				"CLagCompensationManager::BacktrackPlayer" "_ZN23CLagCompensationManager15BacktrackPlayerEP11CBasePlayerf"
+
+				"SelectWeightedSequence" "_Z22SelectWeightedSequenceP10CStudioHdrii"
+				"CTraceFilterIgnorePlayers::ShouldHitEntity" "_ZN25CTraceFilterIgnorePlayers15ShouldHitEntityEP13IHandleEntityi"
 				
+				"TE_PhysicsProp" "_Z14TE_PhysicsPropR16IRecipientFilterfiiRK6VectorRK6QAngleS3_ii"
+				"TE_BreakModel" "_Z13TE_BreakModelR16IRecipientFilterfRK6VectorRK6QAngleS3_S3_iiifi"
+				"TE_BeamLaser" "_Z12TE_BeamLaserR16IRecipientFilterfiiiiiifffifiiiii"
+				"TE_BeamPoints" "_Z13TE_BeamPointsR16IRecipientFilterfPK6VectorS3_iiiifffifiiiii"
+
+				"IgnoreActorsTraceFilterFunction" "_Z31IgnoreActorsTraceFilterFunctionP13IHandleEntityi"
 			}
 			"addrs_group"
 			{

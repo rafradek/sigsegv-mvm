@@ -59,6 +59,8 @@ MemberFuncThunk<CTFGameRules *, void, const Vector &, int>                      
 MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                CTFGameRules::ft_CanPlayerUseRespec                 ("CTFGameRules::CanPlayerUseRespec");
 MemberFuncThunk<CTFGameRules *, bool>                                                             CTFGameRules::ft_IsCompetitiveMode                  ("CTFGameRules::IsCompetitiveMode");
 MemberFuncThunk<CTFGameRules *, CBasePlayer *, CBasePlayer *, CBasePlayer *, CBaseEntity *>       CTFGameRules::ft_GetAssister                        ("CTFGameRules::GetAssister");
+MemberFuncThunk<CTFGameRules *, bool, CTakeDamageInfo &, CBaseEntity *, bool>                     CTFGameRules::ft_ApplyOnDamageModifyRules           ("CTFGameRules::ApplyOnDamageModifyRules");
+MemberFuncThunk<CTFGameRules *, float, const CTakeDamageInfo &, CBaseEntity *, CTFGameRules::DamageModifyExtras_t &> CTFGameRules::ft_ApplyOnDamageAliveModifyRules ("CTFGameRules::ApplyOnDamageAliveModifyRules");
 
 MemberVFuncThunk<CTFGameRules *, bool> CTFGameRules::vt_FlagsMayBeCapped(TypeName<CTFGameRules>(), "CTFGameRules::FlagsMayBeCapped");
 #endif

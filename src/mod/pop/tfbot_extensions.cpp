@@ -1786,7 +1786,7 @@ namespace Mod::Pop::TFBot_Extensions
 	RefCount rc_CTFPlayer_Regenerate;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Regenerate, bool ammo)
 	{
-		SCOPED_INCREMENT_IF(rc_CTFPlayer_Regenerate,reinterpret_cast<CTFPlayer *>(this)->IsBot());
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_Regenerate,TFGameRules()->IsMannVsMachineMode() && reinterpret_cast<CTFPlayer *>(this)->IsBot());
 		DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
 	}
 
@@ -1870,19 +1870,6 @@ namespace Mod::Pop::TFBot_Extensions
 		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
 		vision_subject = nullptr;
 		vision_entity_melee = false;
-
-		return ret;
-	}
-
-	DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClearToEntity, CBaseEntity *subject, Vector *visibleSpot)
-	{
-		CFastTimer timer;
-		timer.Start();
-		bool ret = DETOUR_MEMBER_CALL(IVision_IsLineOfSightClearToEntity)(subject, visibleSpot);
-		timer.End();
-		if (rc_IVision_IsAbleToSee) {
-			Msg("LineOfSight %.9f %d\n", timer.GetDuration().GetSeconds(), gpGlobals->tickcount);
-		}
 
 		return ret;
 	}
@@ -2043,6 +2030,40 @@ namespace Mod::Pop::TFBot_Extensions
 		return result;
 	}
 	
+	RefCount rc_CTFBotDeliverFlag_UpgradeOverTime;
+	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
+	{
+        SCOPED_INCREMENT(rc_CTFBotDeliverFlag_UpgradeOverTime);
+		auto result = DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+
+        return result;
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
+	{
+        if (rc_CTFBotDeliverFlag_UpgradeOverTime && nCond == TF_COND_CRITBOOSTED) nCond = TF_COND_CRITBOOSTED_USER_BUFF;
+
+		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+    }
+
+	int current_ai_team_num = -1;
+	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_Update)
+	{
+		current_ai_team_num = reinterpret_cast<CTFBot *>(this)->GetTeamNumber();
+		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_Update)();
+		current_ai_team_num = -1;
+	}
+
+
+    DETOUR_DECL_STATIC(bool, IgnoreActorsTraceFilterFunction, IHandleEntity *handle, int contents)
+	{
+		CBaseEntity *entity = EntityFromEntityHandle(handle);
+		
+		if (entity != nullptr && entity->IsCombatItem() && current_ai_team_num == entity->GetTeamNumber()) return false;
+		
+		return DETOUR_STATIC_CALL(IgnoreActorsTraceFilterFunction)(entity, contents);
+    }
+	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2164,7 +2185,6 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Fix god spots
 			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee2");
-			//MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
 			//MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectCloserThreat, "CTFBotMainAction::SelectCloserThreat");
 			
@@ -2173,6 +2193,14 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Switch action command
 			MOD_ADD_VHOOK(CTFBotScenarioMonitor_OnCommandString, TypeName<CTFBotScenarioMonitor>(), "CTFBotTacticalMonitor::OnCommandString");
+
+			// Use condition 34 as crit boost instead of cond 11 to fix it being removed from other sources
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
+			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime, "CTFBotDeliverFlag::UpgradeOverTime");
+
+			// Make medigun shields not block los
+			MOD_ADD_DETOUR_STATIC(IgnoreActorsTraceFilterFunction, "IgnoreActorsTraceFilterFunction");
+			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_Update, "NextBotPlayer<CTFPlayer>::Update");
 			
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");

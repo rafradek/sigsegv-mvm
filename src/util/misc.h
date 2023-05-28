@@ -362,6 +362,19 @@ inline variant_t Variant<CBaseEntity *>(CBaseEntity * value)
 	return var;
 }
 
+template<class T>
+inline T GetVariantValueConvert(variant_t &var);
+
+template<> inline bool GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_BOOLEAN) var.Convert(FIELD_BOOLEAN); return var.Bool(); }
+template<> inline int GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_INTEGER) var.Convert(FIELD_INTEGER); return var.Int(); }
+template<> inline float GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_FLOAT) var.Convert(FIELD_FLOAT); return var.Float(); }
+template<> inline string_t GetVariantValueConvert(variant_t &var) { return var.StringID(); }
+template<> inline const char *GetVariantValueConvert(variant_t &var) { return var.String(); }
+template<> inline Vector GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_VECTOR) var.Convert(FIELD_VECTOR); Vector vec; var.Vector3D(vec); return vec; }
+template<> inline QAngle GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_VECTOR) var.Convert(FIELD_VECTOR); QAngle ang; var.Vector3D(*((Vector *)&ang)); return ang; }
+template<> inline color32 GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_COLOR32) var.Convert(FIELD_COLOR32); return var.Color32(); }
+template<> inline CBaseEntity *GetVariantValueConvert(variant_t &var) { if (var.FieldType() != FIELD_EHANDLE) var.Convert(FIELD_EHANDLE); return var.Entity(); }
+
 #if 0
 class CEntitySphereQuery
 {
@@ -1012,7 +1025,6 @@ public:
 		return VMul3x3Transpose( vVec );
 	}
 };
-#endif
 
 std::vector<std::string> BreakStringsForMultiPrint(std::string string, size_t maxSize, char breakChar);
 
@@ -1020,3 +1032,114 @@ void CancelClientMenu(CBasePlayer *player);
 
 int FixSlotCrashPre();
 void FixSlotCrashPost(int val);
+
+void FireEyeTrace(trace_t &trace, CBaseEntity *entity, float range = 8192, int mask = MASK_SOLID, int collisionGroup = COLLISION_GROUP_NONE);
+
+
+// Countdown Timer but fully inline
+class CountdownTimerInline
+{
+public:
+	CountdownTimerInline( void )
+	{
+		m_timestamp = -1.0f;
+		m_duration = 0.0f;
+	}
+
+	void Reset( void )
+	{
+		m_timestamp = Now() + m_duration;
+	}		
+
+	void Start( float duration )
+	{
+		m_timestamp = Now() + duration;
+		m_duration = duration;
+	}
+
+	void Invalidate( void )
+	{
+		m_timestamp = -1.0f;
+	}		
+
+	bool HasStarted( void ) const
+	{
+		return (m_timestamp > 0.0f);
+	}
+
+	bool IsElapsed( void ) const
+	{
+		return (Now() > m_timestamp);
+	}
+
+	float GetElapsedTime( void ) const
+	{
+		return Now() - m_timestamp + m_duration;
+	}
+
+	float GetRemainingTime( void ) const
+	{
+		return (m_timestamp - Now());
+	}
+
+	/// return original countdown time
+	float GetCountdownDuration( void ) const
+	{
+		return (m_timestamp > 0.0f) ? m_duration : 0.0f;
+	}
+
+private:
+	float m_duration;
+	float m_timestamp;
+	inline float Now( void ) const {return gpGlobals->curtime; }
+};
+
+class IntervalTimerInline
+{
+public:
+	IntervalTimerInline( void )
+	{
+		m_timestamp = -1.0f;
+	}
+
+	void Reset( void )
+	{
+		m_timestamp = Now();
+	}		
+
+	void Start( void )
+	{
+		m_timestamp = Now();
+	}
+
+	void Invalidate( void )
+	{
+		m_timestamp = -1.0f;
+	}		
+
+	bool HasStarted( void ) const
+	{
+		return (m_timestamp > 0.0f);
+	}
+
+	/// if not started, elapsed time is very large
+	float GetElapsedTime( void ) const
+	{
+		return (HasStarted()) ? (Now() - m_timestamp) : 99999.9f;
+	}
+
+	bool IsLessThen( float duration ) const
+	{
+		return (Now() - m_timestamp < duration) ? true : false;
+	}
+
+	bool IsGreaterThen( float duration ) const
+	{
+		return (Now() - m_timestamp > duration) ? true : false;
+	}
+
+private:
+	float m_timestamp;
+	float Now( void ) const {return gpGlobals->curtime; }
+};
+#endif

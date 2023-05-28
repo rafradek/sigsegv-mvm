@@ -16,6 +16,8 @@
 #include "stub/trace.h"
 #include "stub/team.h"
 #include "stub/upgrades.h"
+#include "stub/tf_objective_resource.h"
+#include "stub/server.h"
 #include "mod/pop/common.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "util/iterate.h"
@@ -26,6 +28,9 @@
 #include "mod/attr/custom_attributes.h"
 #include "mod/item/item_common.h"
 #include "mod/etc/mapentity_additions.h"
+#include "mod/common/weapon_shoot.h"
+#include "mod/common/commands.h"
+#include <fmt/core.h>
 
 
 class CDmgAccumulator;
@@ -704,16 +709,15 @@ namespace Mod::Attr::Custom_Attributes
 		return proj;
 	}
 
-	CTFWeaponBase *shooting_sentry_weapon = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
 	{
-		if (fire_projectile_multi && shooting_sentry_weapon == nullptr)
+		if (fire_projectile_multi)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
-		if (fire_projectile_multi && shooting_sentry_weapon == nullptr)
+		if (fire_projectile_multi)
 			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
 	}
 
@@ -949,11 +953,15 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (hit_explode_direct != nullptr && hit_explode_direct->MyCombatCharacterPointer() != nullptr) {
 			float radiusMult = 1;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.m_DmgInfo->GetWeapon(), radiusMult, mult_explosion_radius_direct_hit );
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, radiusMult, mult_explosion_radius_direct_hit );
 			info.m_flRadius *= radiusMult;
+			
+			float dmg_mult = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmg_mult, mult_dmg_direct_hit);
+			info.m_DmgInfo->SetDamage(info.m_DmgInfo->GetDamage() * dmg_mult);
 		}
 		float damagePerTarget = 0;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.m_DmgInfo->GetWeapon(), damagePerTarget, add_damage_per_target );
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, damagePerTarget, add_damage_per_target );
 		float dmgBase = info.m_DmgInfo->GetDamage() * damagePerTarget;
 		if (damagePerTarget != 0 && info.m_DmgInfo->GetAttacker() != nullptr) {
 			const int maxCollectedEntities = 128;
@@ -1219,7 +1227,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		GET_STRING_ATTRIBUTE(weapon, custom_view_model, viewmodel);
 		
-		if (viewmodel != nullptr) {
+		if (viewmodel != nullptr && weapon->GetTFPlayerOwner() != nullptr && IsCustomViewmodelAllowed(weapon->GetTFPlayerOwner())) {
 			weapon->SetCustomViewModel(viewmodel);
 			weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(viewmodel);
 			weapon->SetModel(viewmodel);
@@ -1357,13 +1365,7 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 		}
 		auto oldOwner = weapon->GetOwner();
-		if (shooting_sentry_weapon == weapon) {	
-			weapon->SetOwner(nullptr);
-		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
-		if (shooting_sentry_weapon == weapon) {	
-			weapon->SetOwner(oldOwner);
-		}
 		weapon_sound_override = nullptr;
 	}
 
@@ -1803,16 +1805,8 @@ namespace Mod::Attr::Custom_Attributes
 		return weapon->GetProjectileDamage() / weapon->GetTFWpnData().m_nDamage;
 	}
 
-	CBaseObject *shooting_sentry = nullptr;
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
-		// For custom sentry weapons, use sentry damage falloff
-		if (shooting_sentry != nullptr) {
-			info.SetInflictor(shooting_sentry);
-			if (shooting_sentry->GetBuilder() == nullptr) {
-				info.SetAttacker(shooting_sentry);
-			}
-		}
 		bool restoreMinicritBoostOnKill = false;
 		auto playerVictim = ToTFPlayer(pVictim);
 		CBaseEntity *oldInflictor = nullptr;
@@ -2015,12 +2009,6 @@ namespace Mod::Attr::Custom_Attributes
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_tanks);
 					dmg *= dmg_mult;
 				}
-			}
-			
-			if (pVictim == hit_explode_direct) {
-				float dmg_mult = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_direct_hit);
-				dmg *= dmg_mult;
 			}
 			info.SetDamage(dmg);
 		}
@@ -2810,7 +2798,6 @@ namespace Mod::Attr::Custom_Attributes
 				float stompTime = GetFastAttributeFloat(player, 0.0f, STOMP_PLAYER_TIME);
 
 				if (stompTime == 0.0f || (gpGlobals->curtime - player->GetOrCreateEntityModule<PlayerTouchModule>("playertouch")->touchTimes[toucher]) > stompTime) {
-					float stomp = 0.0f;
 					CTakeDamageInfo info(player, player, player->GetActiveTFWeapon(), vec3_origin, vec3_origin, stomp, DMG_BLAST);
 					toucher->TakeDamage(info);
 					if (stompTime != 0.0f)
@@ -4953,7 +4940,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_GetSpreadAngles)();
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		auto eye = weapon->GetTFPlayerOwner()->EyeAngles();
+		auto eye = weapon->GetOwner()->EyeAngles();
 		if (eye != ret) {
 			auto diff = ret - eye;
 			auto mod = weapon->GetEntityModule<WeaponModule>("weapon");
@@ -5145,7 +5132,7 @@ namespace Mod::Attr::Custom_Attributes
 		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
 		auto knife = reinterpret_cast<CTFKnife *>(this);
 
-		if (*piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && !knife->GetTFPlayerOwner()->IsBot() && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss() ) {
+		if (*piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && knife->GetTFPlayerOwner() != nullptr && !knife->GetTFPlayerOwner()->IsBot() && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss() ) {
 			
 			//int backstabs = backstab_count[pTarget];
 
@@ -5318,7 +5305,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, flReducedHealthBonus, mult_postfiredelay_with_reduced_health );
 			if ( flReducedHealthBonus != 1.0f )
 			{
-				flReducedHealthBonus = RemapValClamped( weapon->GetTFPlayerOwner()->GetHealth() / weapon->GetTFPlayerOwner()->GetMaxHealth(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f );
+				flReducedHealthBonus = RemapValClamped( weapon->GetOwner()->GetHealth() / weapon->GetOwner()->GetMaxHealth(), 0.2f, 0.9f, flReducedHealthBonus, 1.0f );
 				delay *= flReducedHealthBonus;
 			}
 		}
@@ -5612,6 +5599,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		
 		//Msg("Igniter: %d Weapon: %d %s Duration: %f\n", igniter, weapon, weapon != nullptr ? weapon->GetClassname() : "", duration);
 		float remainingFlameTime = shared->m_flFlameRemoveTime;
 		
@@ -5625,6 +5613,19 @@ namespace Mod::Attr::Custom_Attributes
 		if (remainingFlameTime < 0.0f) {
 			remainingFlameTime = 0.0f;
 		}
+		// Don't remove exisiting afterburn if the current one deals more damage
+		if (remainingFlameTime > 0.5f && shared->m_hBurnWeapon != nullptr && shared->m_hBurnWeapon != weapon) {
+
+			float currentFlameDmg = 4;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(shared->m_hBurnWeapon, currentFlameDmg, mult_wpn_burndmg);
+			float newFlameDmg = 4;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, newFlameDmg, mult_wpn_burndmg);
+
+			if (currentFlameDmg > newFlameDmg) {
+				return;
+			}
+		}
+		
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;
@@ -5823,6 +5824,9 @@ namespace Mod::Attr::Custom_Attributes
 		if (ent->IsPlayer() && GetFastAttributeInt(ent, 0, IGNORED_BY_BOTS) ) {
 			return true;
 		}
+		if (ent->IsBaseObject() && GetBuildingAttributeInt<"ignoredbybots">(static_cast<CBaseObject *>(ent), "ignored_by_bots", false) != 0) {
+			return true;
+		}
 		
 		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 	}
@@ -5922,21 +5926,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		bool tempPlayer = false;
 		auto sentryTeam = sentry->GetTeamNumber() != 0 ? sentry->GetTeamNumber() : TF_TEAM_BLUE;
-		if (player == nullptr) {
-			tempPlayer = true;
-			
-			CTFPlayer *anyTeamPlayer = nullptr;
-			ForEachTFPlayer([&](CTFPlayer *playerl){
-				if (playerl->GetTeamNumber() == sentryTeam) {
-					player = playerl;
-				}
-				anyTeamPlayer = playerl;
-			});
-			if (player == nullptr) {
-				player = anyTeamPlayer;
-			}
-		}
-		if (player == nullptr) return nullptr;
 
 		auto mod = sentry->GetOrCreateEntityModule<SentryWeaponModule>(moduleName);
 		CTFWeaponBaseGun *weapon = mod->weapon;
@@ -5945,7 +5934,7 @@ namespace Mod::Attr::Custom_Attributes
 			if (weapon != nullptr) {
 				weapon->Remove();
 			}
-			auto item = CreateItemByName(player, weaponName);
+			auto item = CreateItemByName(nullptr, weaponName);
 			weapon = rtti_cast<CTFWeaponBaseGun *>(item);
 			if (weapon != nullptr) {
 				mod->lastWeaponName = weaponName;
@@ -5960,67 +5949,10 @@ namespace Mod::Attr::Custom_Attributes
 		// Fire the weapon
 
 		// Move the owner player to mimic position
-		Vector oldPos = player->GetAbsOrigin();
-		QAngle oldAng = player->EyeAngles();
-		Vector oldPunchAngle = player->m_Local->m_vecPunchAngle;
-		player->pl->v_angle = vecAngles;
-		Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
-		player->SetAbsOrigin(vecOrigin - eyeOffset);
-
-		weapon->SetTeamNumber(sentryTeam);
-		if (weapon->GetOwner() != player) {
-			weapon->SetOwnerEntity(player);
-			weapon->SetOwner(player);
-		}
-		
-		weapon->SetAbsOrigin(vecOrigin);
-		weapon->SetAbsAngles(vecAngles);
-
-		auto oldActive = player->GetActiveWeapon();
-		player->SetActiveWeapon(weapon);
-		int oldTeam = player->GetTeamNumber();
-		player->SetTeamNumber(sentry->GetTeamNumber());
-		weapon->m_bCurrentAttackIsCrit = false;
-		shooting_sentry_weapon = weapon;
-		shooting_sentry = sentry;
-		auto projectile = weapon->FireProjectile(player);
-		shooting_sentry = nullptr;
-		shooting_sentry_weapon = nullptr;
-		player->SetActiveWeapon(oldActive);
-		player->SetTeamNumber(oldTeam);
-
+		auto projectile = Mod::Common::Weapon_Shoot::FireWeapon(sentry, weapon, vecOrigin, vecAngles, false, false);
 		if (projectile != nullptr) {
 			projectile->SetCustomVariable("customsentryweapon", Variant(true));
-			auto scorerInterface = rtti_cast<IScorer *>(projectile);
-			// If the projectile has an IScorer interface, it is fine to make the sentry the owner of the projectile. (Unless its Dragon's fury projectile where it crashes)
-			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player && rtti_cast<CTFProjectile_BallOfFire *>(projectile) == nullptr) {
-				projectile->SetOwnerEntity(sentry);
-			}
 		}
-		if (tempPlayer) {
-			weapon->SetOwnerEntity(nullptr);
-			weapon->SetOwner(nullptr);
-			if (projectile != nullptr) {
-				projectile->SetOwnerEntity(sentry);
-				projectile->SetTeamNumber(sentryTeam);
-				if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
-					rtti_cast<CBaseGrenade *>(projectile)->SetThrower(sentry);
-				}
-				if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
-					rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(sentry);
-				else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
-					rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(sentry);
-				else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
-					rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(sentry);
-				else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
-					rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(sentry);
-				else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
-					rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(sentry);
-			}
-		}
-		player->SetAbsOrigin(oldPos);
-		player->pl->v_angle = oldAng;
-		player->m_Local->m_vecPunchAngle = oldPunchAngle;
 		return projectile;
 	}
 
@@ -6592,6 +6524,84 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CBaseObject_FindNearestBuildPoint)(pEntity, pBuilder, flNearestPoint, vecNearestBuildPoint, bIgnoreChecks);
 	}
 
+	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
+	{
+		int cannotUpgrade = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, cannotUpgrade, cannot_upgrade_bomb);
+		if (cannotUpgrade) return false;
+
+        return DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+	}
+
+	IForward *viewmodels_enabled_forward;
+	IForward *viewmodels_toggle_forward;
+	std::string disallowed_viewmodel_path;
+	bool players_informed_about_viewmodel[ABSOLUTE_PLAYER_LIMIT];
+	bool players_viewmodel_disallowed[ABSOLUTE_PLAYER_LIMIT];
+	bool IsCustomViewmodelAllowed(CTFPlayer *player) {
+		if (players_viewmodel_disallowed[player->entindex()]) return false;
+		if (players_informed_about_viewmodel[player->entindex()]) return true;
+
+		players_informed_about_viewmodel[player->entindex()] = true;
+		char pathinfo[512];
+		snprintf(pathinfo, 512, "%si%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
+		auto file = fopen(pathinfo, "w");
+		if (file) {
+			fclose(file);
+		}
+
+		PrintToChat("This mission uses custom hand models. If you see error instead of hands, enable downloads, get the asset pack, or type !defaulthands\n", player);
+
+		return true;
+	}
+
+	DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
+	{
+        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+		char path[512];
+		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), ((CTFPlayer*) edict->GetUnknown())->GetSteamID().ConvertToUint64());
+		char pathinfo[512];
+		snprintf(pathinfo, 512, "%si%llu", disallowed_viewmodel_path.c_str(), ((CTFPlayer*) edict->GetUnknown())->GetSteamID().ConvertToUint64());
+
+		cell_t result = access(path, F_OK) != 0;
+		viewmodels_enabled_forward->PushCell(edict->m_EdictIndex);
+		viewmodels_enabled_forward->Execute(&result);
+        players_viewmodel_disallowed[edict->m_EdictIndex] = !result;
+        players_informed_about_viewmodel[edict->m_EdictIndex] = access(path, F_OK) == 0;
+    }
+
+	ModCommandClient sig_defaulthands("sig_defaulthands", [](CCommandPlayer *player, const CCommand& args){
+		players_informed_about_viewmodel[player->entindex()] = true;
+		auto &disallowed = players_viewmodel_disallowed[player->entindex()];
+		disallowed = !disallowed;
+
+		char path[512];
+		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
+		if (disallowed) {
+			auto file = fopen(path, "w");
+			if (file) {
+				fclose(file);
+			}
+			ForEachTFPlayerEconEntity(player, [](CEconEntity *ent){
+				if (ent->MyCombatWeaponPointer() != nullptr) {
+					ent->MyCombatWeaponPointer()->SetCustomViewModel("");
+					ent->MyCombatWeaponPointer()->m_iViewModelIndex = CBaseEntity::PrecacheModel(ent->MyCombatWeaponPointer()->GetViewModel());
+					ent->MyCombatWeaponPointer()->SetModel(ent->MyCombatWeaponPointer()->GetViewModel());
+				}
+			});
+		}
+		else {
+			remove(path);
+		}
+
+		viewmodels_toggle_forward->PushCell(player->entindex());
+		viewmodels_toggle_forward->PushCell(disallowed);
+		viewmodels_toggle_forward->Execute();
+		PrintToChat(disallowed ? "Disabled custom hand models\n" : "Enabled custom hand models. Change class to apply changes\n", player);
+	});
+
+	
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -6926,20 +6936,6 @@ namespace Mod::Attr::Custom_Attributes
         RemoveAttributeManager(entity);
     }
 
-	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_DoFireEffects)
-	{
-		if (shooting_sentry_weapon != nullptr) return;
-
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event, int data)
-	{
-		if (shooting_sentry_weapon != nullptr) return;
-
-		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
-	}
-
 	VHOOK_DECL(bool, CBaseProjectile_ShouldCollide, int collisionGroup, int contentsMask)
 	{
 		Msg("should\n");
@@ -7129,11 +7125,13 @@ namespace Mod::Attr::Custom_Attributes
 		if (manager != nullptr) {
 			CBaseEntity *ent = manager->m_hOuter;
 			auto weapon = rtti_cast<CTFWeaponBase *>(ent);
-			if (weapon != nullptr && new_value.m_String != nullptr) {
+			auto player = GetPlayerOwnerOfAttributeList(list);
+			if (weapon != nullptr && new_value.m_String != nullptr && player != nullptr) {
 				const char *value;
 				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &value);
-				weapon->SetCustomViewModel(changeType == AttributeChangeType::REMOVE || value == nullptr ? "" : value);
-				if (changeType == AttributeChangeType::REMOVE || value == nullptr || value[0] == '\0') {
+				bool allowed = IsCustomViewmodelAllowed(player);
+				weapon->SetCustomViewModel(changeType == AttributeChangeType::REMOVE || value == nullptr || !allowed ? "" : value);
+				if (changeType == AttributeChangeType::REMOVE || value == nullptr || value[0] == '\0' || !allowed) {
 					weapon->SetViewModel();
 					weapon->m_iViewModelIndex = CBaseEntity::PrecacheModel(weapon->GetViewModel());
 					weapon->SetModel(weapon->GetViewModel());
@@ -7300,6 +7298,7 @@ namespace Mod::Attr::Custom_Attributes
 			obj->SetCustomVariable("rocketammomult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_ammo", player)));
 			obj->SetCustomVariable("projspeedmult", Variant(CAttributeManager::AttribHookValue(1.0f, "mult_sentry_rocket_projectile_speed", player)));
 			obj->SetCustomVariable("cannotbesapped", Variant(CAttributeManager::AttribHookValue(0, "buildings_cannot_be_sapped", player)));
+			obj->SetCustomVariable("ignoredbybots", Variant(CAttributeManager::AttribHookValue(0, "ignored_by_bots", player)));
 			obj->SetCustomVariable("bulletweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_bullet_weapon">())));
 			obj->SetCustomVariable("rocketweapon", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"sentry_rocket_weapon">())));
 			obj->SetCustomVariable("sentrymodelprefix", Variant(player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_sentry_model">())));
@@ -7542,8 +7541,6 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_VHOOK(CObjectSentrygun_UpdateOnRemove, TypeName<CObjectSentrygun>(), "CBaseEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_EmitSentrySound, "CObjectSentrygun::EmitSentrySound");
 			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Spawn,    "CObjectSentrygun::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_TestAndExpireChargeEffect,    "CTFPlayerShared::TestAndExpireChargeEffect");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFBot_ShouldGib,    "CTFBot::ShouldGib", HIGH);
@@ -7566,6 +7563,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindNearestBuildPoint, "CBaseObject::FindNearestBuildPoint");
+			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime, "CTFBotDeliverFlag::UpgradeOverTime");
+			MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
+			
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -7682,6 +7682,15 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			if (GetItemSchema() != nullptr)
 				LoadAttributes();
+			
+			const char *game_path = g_SMAPI->GetBaseDir();
+			char path_sm[PLATFORM_MAX_PATH];
+        	g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/disallowed_viewmodels/");
+			disallowed_viewmodel_path = path_sm;
+			mkdir(path_sm, 0766);
+
+			viewmodels_enabled_forward = forwards->CreateForward("SIG_IsCustomViewmodelEnabled", ET_Hook, 1, NULL, Param_Cell);
+			viewmodels_toggle_forward = forwards->CreateForward("SIG_ToggleCustomViewmodel", ET_Hook, 2, NULL, Param_Cell, Param_Cell);
 			return true;
 		}
 
@@ -7699,6 +7708,8 @@ namespace Mod::Attr::Custom_Attributes
 
 		virtual void OnUnload() override
 		{
+			forwards->ReleaseForward(viewmodels_enabled_forward);
+			forwards->ReleaseForward(viewmodels_toggle_forward);
 			precached.clear();
 		}
 		
@@ -7835,6 +7846,8 @@ namespace Mod::Attr::Custom_Attributes
                 last_cache_version = cache_version;
             }
 		}
+		
+		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot"};}
 	};
 	CMod s_Mod;
 	

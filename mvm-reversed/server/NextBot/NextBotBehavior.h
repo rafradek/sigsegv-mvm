@@ -31,6 +31,13 @@ public:
 	void Update(T *actor, float dt);
 	void DestroyAction(Action<T> *action);
 	
+	void SetAction(Action<T> *newBehavior) {
+		
+		if (this->m_MainAction != nullptr) {
+			delete this->m_MainAction;
+		}
+		this->m_MainAction = newBehavior;
+	}
 private:
 	Action<T> *m_MainAction;                             // +0x08
 	CFmtStrN<32> m_strName;                              // +0x0c

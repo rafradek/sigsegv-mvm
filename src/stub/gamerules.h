@@ -206,6 +206,15 @@ public:
 	bool CanPlayerUseRespec(CTFPlayer *player)                                                                   { NULL_RET(false); return ft_CanPlayerUseRespec                 (this, player); }
 	bool IsCompetitiveMode()                                                                                     { NULL_RET(false); return ft_IsCompetitiveMode                  (this); }
 	CBasePlayer * GetAssister(CBasePlayer *victim, CBasePlayer *scorer, CBaseEntity *inflictor)                  { NULL_RET(nullptr); return ft_GetAssister        (this, victim, scorer, inflictor); }
+	bool ApplyOnDamageModifyRules(CTakeDamageInfo &info, CBaseEntity *victim, bool allowDamage)                  { NULL_RET(false); return ft_ApplyOnDamageModifyRules           (this, info, victim, allowDamage); }
+	struct DamageModifyExtras_t
+	{
+		bool bIgniting;
+		bool bSelfBlastDmg;
+		bool bSendPreFeignDamage;
+		bool bPlayDamageReductionSound;
+	};
+	float ApplyOnDamageAliveModifyRules(const CTakeDamageInfo &info, CBaseEntity *victim, DamageModifyExtras_t& modify){ NULL_RET( 0.0f); return ft_ApplyOnDamageAliveModifyRules     (this, info, victim, modify); }
 
 	bool FlagsMayBeCapped() { NULL_RET(false); return vt_FlagsMayBeCapped(this); }
 	
@@ -234,6 +243,8 @@ private:
 	static MemberFuncThunk<CTFGameRules *, bool, CTFPlayer *>                                                ft_CanPlayerUseRespec;
 	static MemberFuncThunk<CTFGameRules *, bool>                                                             ft_IsCompetitiveMode;
 	static MemberFuncThunk<CTFGameRules *, CBasePlayer *, CBasePlayer *, CBasePlayer *, CBaseEntity *>       ft_GetAssister;
+	static MemberFuncThunk<CTFGameRules *, bool, CTakeDamageInfo &, CBaseEntity *, bool>                     ft_ApplyOnDamageModifyRules;
+	static MemberFuncThunk<CTFGameRules *, float, const CTakeDamageInfo &, CBaseEntity *, DamageModifyExtras_t &>  ft_ApplyOnDamageAliveModifyRules;
 	
 	static MemberVFuncThunk<CTFGameRules *, bool> vt_FlagsMayBeCapped;
 };

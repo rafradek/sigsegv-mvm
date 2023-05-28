@@ -32,6 +32,7 @@ public:
 	bool Weapon_Detach(CBaseCombatWeapon *pWeapon)                              { return ft_Weapon_Detach     (this, pWeapon); }
 	bool SwitchToNextBestWeapon(CBaseCombatWeapon *weapon)                      { return ft_SwitchToNextBestWeapon(this, weapon); }
 	void SetAmmoCount(int count, int ammoIndex)                                 {        ft_SetAmmoCount      (this, count, ammoIndex); }
+	Vector CalcDamageForceVector(const CTakeDamageInfo &info)                   { return ft_CalcDamageForceVector(this, info); }
 	
 	CBaseCombatWeapon *Weapon_GetSlot(int slot) const                      { return vt_Weapon_GetSlot     (this, slot); }
 	bool Weapon_CanSwitchTo(CBaseCombatWeapon *pWeapon)                    { return vt_Weapon_CanSwitchTo (this, pWeapon); }
@@ -43,6 +44,9 @@ public:
 	int GetAmmoCount(int iAmmoIndex) const                                 { return vt_GetAmmoCount       (this, iAmmoIndex); }
 	bool ShouldGib(const CTakeDamageInfo& info)                            { return vt_ShouldGib          (this, info); }
 	bool FInViewCone(const Vector& vec)                                    { return vt_FInViewCone        (this, vec); }
+	bool BecomeRagdoll(const CTakeDamageInfo& info, const Vector &force)   { return vt_BecomeRagdoll      (this, info, force); }
+	void RemoveAmmo(int amount, int type)                                  { return vt_RemoveAmmo         (this, amount, type); }
+	
 
 #ifdef SE_TF2
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
@@ -63,6 +67,7 @@ private:
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_Weapon_Detach;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool, CBaseCombatWeapon *>                          ft_SwitchToNextBestWeapon;
 	static MemberFuncThunk<CBaseCombatCharacter *, void, int, int>                                     ft_SetAmmoCount;
+	static MemberFuncThunk<CBaseCombatCharacter *, Vector, const CTakeDamageInfo &>                    ft_CalcDamageForceVector;
 	
 	static MemberVFuncThunk<const CBaseCombatCharacter *, CBaseCombatWeapon *, int>       vt_Weapon_GetSlot;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, CBaseCombatWeapon *>      vt_Weapon_CanSwitchTo;
@@ -74,10 +79,22 @@ private:
 	static MemberVFuncThunk<const CBaseCombatCharacter *, int, int>                       vt_GetAmmoCount;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   vt_ShouldGib;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            vt_FInViewCone;
+	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&, const Vector&> vt_BecomeRagdoll;
 #ifdef SE_TF2
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int>                            vt_GetBossType;
 #endif
 	static MemberVFuncThunk<      CBaseCombatCharacter *, void>                           vt_ClearLastKnownArea;
+	static MemberVFuncThunk<      CBaseCombatCharacter *, void, int, int>                 vt_RemoveAmmo;
+};
+
+class CAI_BaseNPC : public CBaseCombatCharacter 
+{
+public:
+	static const char *GetActivityName(int id) { return ft_GetActivityName(id); }
+	static int GetActivityID(const char *name) { return ft_GetActivityID(name); }
+private:
+	static StaticFuncThunk<const char *, int> ft_GetActivityName;
+	static StaticFuncThunk<int, const char *> ft_GetActivityID;
 };
 
 #ifdef SE_TF2
@@ -194,6 +211,7 @@ public:
 	DECL_SENDPROP_RW(CPlayerState, pl);
 	DECL_DATAMAP(float,         m_flStepSoundTime);
 	DECL_RELATIVE(CUserCmd *,   m_pCurrentCommand);
+	DECL_DATAMAP(float,          m_fLerpTime);
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

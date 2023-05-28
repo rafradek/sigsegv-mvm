@@ -7,6 +7,7 @@
 #include "util/misc.h"
 #include "PlayerState.h"
 #include "mod/etc/mapentity_additions.h"
+#include "mod/common/weapon_shoot.h"
 #include "util/iterate.h"
 
 
@@ -101,108 +102,38 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		
 		const char *weaponName = mimic->GetCustomVariable<"weaponname">();
 		if (weaponName != nullptr) {
-			bool tempPlayer = false;
-			auto player = ToTFPlayer(mimic->GetOwnerEntity());
-			auto mimicTeam = mimic->GetTeamNumber() != 0 ? mimic->GetTeamNumber() : TF_TEAM_BLUE;
-			if (player == nullptr) {
-				tempPlayer = true;
-				
-				CTFPlayer *anyTeamPlayer = nullptr;
-				ForEachTFPlayer([&](CTFPlayer *playerl){
-					if (playerl->GetTeamNumber() == mimicTeam) {
-						player = playerl;
+			auto mod = mimic->GetOrCreateEntityModule<MimicModule>("weaponmimic");
+			CTFWeaponBaseGun *weapon = mod->weapon;
+			// Create new weapon if not created yet
+			if (weapon == nullptr || mod->lastWeaponName != weaponName) {
+				if (weapon != nullptr) {
+					weapon->Remove();
+				}
+				auto item = CreateItemByName(nullptr, weaponName);
+				weapon = rtti_cast<CTFWeaponBaseGun *>(item);
+				if (weapon != nullptr) {
+					mod->lastWeaponName = weaponName;
+					mod->weapon = weapon;
+					for (auto& [attr,value] : mod->attribs) {
+						CEconItemAttributeDefinition *def = GetItemSchema()->GetAttributeDefinitionByName(attr.c_str());
+						if (def != nullptr) {
+							mod->weapon->GetItem()->GetAttributeList().AddStringAttribute(def, value);
+						}
 					}
-					anyTeamPlayer = playerl;
-				});
-				if (player == nullptr) {
-					player = anyTeamPlayer;
+					variant_t var;
+					var.SetEntity(mimic);
+					weapon->SetCustomVariable("mimicent", var);
+				}
+				else if (item != nullptr) {
+					item->Remove();
 				}
 			}
-			if (player != nullptr) {
-				auto mod = mimic->GetOrCreateEntityModule<MimicModule>("weaponmimic");
-				CTFWeaponBaseGun *weapon = mod->weapon;
-				// Create new weapon if not created yet
-				if (weapon == nullptr || mod->lastWeaponName != weaponName) {
-					if (weapon != nullptr) {
-						weapon->Remove();
-					}
-					auto item = CreateItemByName(player, weaponName);
-					weapon = rtti_cast<CTFWeaponBaseGun *>(item);
-					if (weapon != nullptr) {
-						mod->lastWeaponName = weaponName;
-						mod->weapon = weapon;
-						for (auto& [attr,value] : mod->attribs) {
-							CEconItemAttributeDefinition *def = GetItemSchema()->GetAttributeDefinitionByName(attr.c_str());
-							if (def != nullptr) {
-								mod->weapon->GetItem()->GetAttributeList().AddStringAttribute(def, value);
-							}
-						}
-						variant_t var;
-						var.SetEntity(mimic);
-						weapon->SetCustomVariable("mimicent", var);
-					}
-					else if (item != nullptr) {
-						item->Remove();
-					}
+			if (weapon != nullptr) {
+				projectile = Mod::Common::Weapon_Shoot::FireWeapon(mimic, weapon, mimic->GetAbsOrigin(), mimic->GetAbsAngles(), mimic->m_bCrits, false, TF_TEAM_BLUE);
+				auto pipebomb = rtti_cast<CTFGrenadePipebombProjectile *>(projectile);
+				if (pipebomb != nullptr && (pipebomb->m_iType == 1 || pipebomb->m_iType == 2)) {
+					mimic->m_Pipebombs.Get().AddToTail(pipebomb);
 				}
-				// Move the owner player to mimic position
-				Vector oldPos = player->GetAbsOrigin();
-				QAngle oldAng = player->EyeAngles();
-				Vector oldPunchAngle = player->m_Local->m_vecPunchAngle;
-				player->pl->v_angle = mimic->GetAbsAngles();
-				Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
-				player->SetAbsOrigin(mimic->GetAbsOrigin() - eyeOffset);
-				// Fire the weapon
-				if (weapon != nullptr) {
-					weapon->SetTeamNumber(mimicTeam);
-					if (weapon->GetOwner() != player) {
-						weapon->SetOwnerEntity(player);
-						weapon->SetOwner(player);
-					}
-					
-					weapon->SetAbsOrigin(mimic->GetAbsOrigin());
-					weapon->SetAbsAngles(mimic->GetAbsAngles());
-
-					shooting_weapon = weapon;
-					auto oldActive = player->GetActiveWeapon();
-					player->SetActiveWeapon(weapon);
-					int oldTeam = player->GetTeamNumber();
-					player->SetTeamNumber(mimic->GetTeamNumber());
-					weapon->m_bCurrentAttackIsCrit = mimic->m_bCrits;
-					projectile = weapon->FireProjectile(player);
-					player->SetActiveWeapon(oldActive);
-					player->SetTeamNumber(oldTeam);
-					shooting_weapon = nullptr;
-
-					auto pipebomb = rtti_cast<CTFGrenadePipebombProjectile *>(projectile);
-					if (pipebomb != nullptr && (pipebomb->m_iType == 1 || pipebomb->m_iType == 2)) {
-						mimic->m_Pipebombs.Get().AddToTail(pipebomb);
-					}
-					if (tempPlayer) {
-						weapon->SetOwnerEntity(nullptr);
-						weapon->SetOwner(nullptr);
-						if (projectile != nullptr) {
-							projectile->SetOwnerEntity(mimic);
-							projectile->SetTeamNumber(mimicTeam);
-							if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
-								rtti_cast<CBaseGrenade *>(projectile)->SetThrower(mimic);
-							}
-							if (rtti_cast<CTFProjectile_Rocket *>(projectile) != nullptr)
-								rtti_cast<CTFProjectile_Rocket *>(projectile)->SetScorer(mimic);
-							else if (rtti_cast<CTFBaseProjectile *>(projectile) != nullptr)
-								rtti_cast<CTFBaseProjectile *>(projectile)->SetScorer(mimic);
-							else if (rtti_cast<CTFProjectile_Arrow *>(projectile) != nullptr)
-								rtti_cast<CTFProjectile_Arrow *>(projectile)->SetScorer(mimic);
-							else if (rtti_cast<CTFProjectile_Flare *>(projectile) != nullptr)
-								rtti_cast<CTFProjectile_Flare *>(projectile)->SetScorer(mimic);
-							else if (rtti_cast<CTFProjectile_EnergyBall *>(projectile) != nullptr)
-								rtti_cast<CTFProjectile_EnergyBall *>(projectile)->SetScorer(mimic);
-						}
-					}
-				}
-				player->SetAbsOrigin(oldPos);
-				player->pl->v_angle = oldAng;
-				player->m_Local->m_vecPunchAngle = oldPunchAngle;
 			}
 		}
 		else if (mimic->m_nWeaponType == 4) {
@@ -305,41 +236,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         }
 		scorer = nullptr;
 		mimicFire = nullptr;
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
-	{
-		if (rc_CTFPointWeaponMimic_Fire) return;
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
-	{
-		if (rc_CTFPointWeaponMimic_Fire) return;
-
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_DoFireEffects)
-	{
-		if (rc_CTFPointWeaponMimic_Fire) return;
-
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event, int data)
-	{
-		if (rc_CTFPointWeaponMimic_Fire) return;
-
-		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
-	}
-
-	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_SendDeathNotice)
-	{
-		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
-		if (flare->GetOwnerEntity() != nullptr && ToTFPlayer(flare->GetOwnerEntity()) == nullptr) return;
-
-		DETOUR_MEMBER_CALL(CTFProjectile_Flare_SendDeathNotice)();
 	}
 	
 
@@ -475,27 +371,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		}
 		return DETOUR_MEMBER_CALL(CTFBaseProjectile_GetDamageType)();
 	}
-	
-	DETOUR_DECL_STATIC(CTFWeaponBase *, GetKilleaterWeaponFromDamageInfo, CTakeDamageInfo &info)
-	{
-		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr && info.GetWeapon()->MyCombatWeaponPointer()->GetOwner() == nullptr) return nullptr;
-		return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)( info);
-	}
 
-	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent_Batched, void *pEconInterface, class CTFPlayer *pOwner, class CTFPlayer *pVictim, int eEventType, int nIncrementValue)
-	{
-		if (pOwner == nullptr) return;
-		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent_Batched)(pEconInterface, pOwner, pVictim, eEventType, nIncrementValue);
-	}
-
-	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent, void *pEconEntity, CTFPlayer *pOwner, CTFPlayer *pVictim, int eEventType, int nIncrementValue)
-	{
-		if (pOwner == nullptr) return;
-		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent)(pEconEntity, pOwner, pVictim, eEventType, nIncrementValue);
-	}
-
-	
-	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -505,43 +381,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			if (rtti_cast<CTFPointWeaponMimic *>(info.GetInflictor()) != nullptr) {
 				player->m_hObserverTarget = info.GetInflictor();
 			}
-			else {
-				variant_t var;
-				info.GetInflictor()->GetCustomVariableVariant<"mimicent">(var);
-				if (var.Entity() != nullptr) {
-					player->m_hObserverTarget = var.Entity();
-				}
-			}
-		}
-		if (mimicFire != nullptr) {
-			player->m_hObserverTarget = mimicFire;
-		}
-	}
-
-	class CDmgAccumulator;
-	DETOUR_DECL_MEMBER(void, CBaseEntity_DispatchTraceAttack, CTakeDamageInfo& info, const Vector& vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
-	{
-		if (shooting_weapon != nullptr && ToTFPlayer(mimicFire->GetOwnerEntity()) == nullptr) {
-			info.SetAttacker(mimicFire);
-			info.SetInflictor(shooting_weapon);
-		}
-		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
-	}
-
-	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
-	{
-		if (shooting_weapon != nullptr && mimicFire != nullptr) {
-			if (mimicFire->GetCustomVariableFloat<"weaponnosound">()) {
-				return;
-			}
-			auto me = reinterpret_cast<CBaseCombatWeapon *>(this);
-			auto oldOwner = me->GetOwner();
-			me->SetOwner(nullptr);
-			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
-			me->SetOwner(oldOwner);
-		}
-		else {
-			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
 		}
 	}
 
@@ -560,22 +399,12 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Spawn,  "CTFPointWeaponMimic::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetKillingWeaponName,  "CTFGameRules::GetKillingWeaponName");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseProjectile_GetDamageType,  "CTFBaseProjectile::GetDamageType");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_RemoveProjectileAmmo,  "CTFWeaponBaseGun::RemoveProjectileAmmo");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_UpdatePunchAngles,  "CTFWeaponBaseGun::UpdatePunchAngles");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_DoFireEffects,  "CTFWeaponBaseGun::DoFireEffects");
-			MOD_ADD_DETOUR_STATIC(GetKilleaterWeaponFromDamageInfo,  "GetKilleaterWeaponFromDamageInfo");
-			MOD_ADD_DETOUR_STATIC(EconItemInterface_OnOwnerKillEaterEvent_Batched,  "EconItemInterface_OnOwnerKillEaterEvent_Batched");
-			MOD_ADD_DETOUR_STATIC(EconItemInterface_OnOwnerKillEaterEvent,  "EconItemInterface_OnOwnerKillEaterEvent");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,  "CTFPlayer::Event_Killed");
-			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
-			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
-
-			// Fix non player owners of projectiles causing crashes
-			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_SendDeathNotice,    "CTFProjectile_Flare::SendDeathNotice");
 			
 		}
+
+		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot"};}
 	};
 	CMod s_Mod;
 

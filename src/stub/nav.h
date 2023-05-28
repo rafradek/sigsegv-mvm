@@ -280,6 +280,7 @@ public:
 	void AddToOpenList()                                                                            { return ft_AddToOpenList                        (this); }
 	bool IsBlocked(int teamID, bool ignoreNavBlockers = false) const                                { return vt_IsBlocked                            (this, teamID, ignoreNavBlockers); }
 	bool IsPotentiallyVisible(CNavArea *area) const                                                 { return vt_IsPotentiallyVisible                 (this, area); }
+	bool IsCompletelyVisible(CNavArea *area) const                                                  { return vt_IsCompletelyVisible                  (this, area); }
 	bool IsPotentiallyVisibleToTeam(int teamID) const                                               { return vt_IsPotentiallyVisibleToTeam           (this, teamID); }
 	void CollectAdjacentAreas(CUtlVector<CNavArea *> *vector)                                       { return ft_CollectAdjacentAreas                 (this, vector); }
 	
@@ -328,6 +329,7 @@ private:
 	static MemberFuncThunk <      CNavArea *, void>                                         ft_AddToOpenList;
 	static MemberFuncThunk <      CNavArea *, void>                                         ft_RemoveFromOpenList;
 	static MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             vt_IsPotentiallyVisible;
+	static MemberVFuncThunk<const CNavArea *, bool, CNavArea *>                             vt_IsCompletelyVisible;
 	static MemberVFuncThunk<const CNavArea *, bool, int>                                    vt_IsPotentiallyVisibleToTeam;
 	static MemberFuncThunk <      CNavArea *, void, CUtlVector<CNavArea *> *>               ft_CollectAdjacentAreas;
 

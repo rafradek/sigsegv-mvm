@@ -129,43 +129,43 @@ CONTENTS_HITBOX			= 0x40000000	-- use accurate hitboxes on trace
 ----------------
 -- Masks
 ----------------
-MASK_ALL					= (0xFFFFFFFF) -- everything that is normally solid
+MASK_ALL					= (0xFFFFFFFF)
 
-MASK_SOLID					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- everything that blocks player movement
+MASK_SOLID					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- everything that is normally solid
 
-MASK_PLAYERSOLID			= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_PLAYERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- blocks npc movement
+MASK_PLAYERSOLID			= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_PLAYERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- everything that blocks player movement
 
-MASK_NPCSOLID				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- water physics in these contents
+MASK_NPCSOLID				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) -- blocks npc movement
 
-MASK_WATER					= (CONTENTS_WATER|CONTENTS_MOVEABLE|CONTENTS_SLIME) -- everything that blocks lighting
+MASK_WATER					= (CONTENTS_WATER|CONTENTS_MOVEABLE|CONTENTS_SLIME) -- water physics in these contents
 
-MASK_OPAQUE					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE) -- everything that blocks lighting, but with monsters added.
+MASK_OPAQUE					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE) -- everything that blocks lighting
 
-MASK_OPAQUE_AND_NPCS		= (MASK_OPAQUE|CONTENTS_MONSTER) -- everything that blocks line of sight for AI
+MASK_OPAQUE_AND_NPCS		= (MASK_OPAQUE|CONTENTS_MONSTER) -- everything that blocks lighting, but with monsters added.
 
-MASK_BLOCKLOS				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_BLOCKLOS) -- everything that blocks line of sight for AI plus NPCs
+MASK_BLOCKLOS				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_BLOCKLOS) -- everything that blocks line of sight for AI
 
-MASK_BLOCKLOS_AND_NPCS		= (MASK_BLOCKLOS|CONTENTS_MONSTER) -- everything that blocks line of sight for players
+MASK_BLOCKLOS_AND_NPCS		= (MASK_BLOCKLOS|CONTENTS_MONSTER) -- everything that blocks line of sight for AI plus NPCs
 
-MASK_VISIBLE					= (MASK_OPAQUE|CONTENTS_IGNORE_NODRAW_OPAQUE) -- everything that blocks line of sight for players, but with monsters added.
+MASK_VISIBLE					= (MASK_OPAQUE|CONTENTS_IGNORE_NODRAW_OPAQUE) -- everything that blocks line of sight for players
 
-MASK_VISIBLE_AND_NPCS		= (MASK_OPAQUE_AND_NPCS|CONTENTS_IGNORE_NODRAW_OPAQUE) -- bullets see these as solid
+MASK_VISIBLE_AND_NPCS		= (MASK_OPAQUE_AND_NPCS|CONTENTS_IGNORE_NODRAW_OPAQUE) -- everything that blocks line of sight for players, but with monsters added.
 
-MASK_SHOT					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_HITBOX) -- non-raycasted weapons see this as solid = (includes grates)
+MASK_SHOT					= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_HITBOX) -- bullets see these as solid
 
-MASK_SHOT_HULL				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_GRATE) -- hits solids = (not grates) and passes through everything else
+MASK_SHOT_HULL				= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_GRATE) -- non-raycasted weapons see this as solid = (includes grates)
 
-MASK_SHOT_PORTAL			= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER) -- everything normally solid, except monsters = (world+brush only)
+MASK_SHOT_PORTAL			= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER) -- hits solids = (not grates) and passes through everything else
 
-MASK_SOLID_BRUSHONLY		= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_GRATE) -- everything normally solid for player movement, except monsters = (world+brush only)
+MASK_SOLID_BRUSHONLY		= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_GRATE) -- everything normally solid, except monsters = (world+brush only)
 
-MASK_PLAYERSOLID_BRUSHONLY	= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_PLAYERCLIP|CONTENTS_GRATE) -- everything normally solid for npc movement, except monsters = (world+brush only)
+MASK_PLAYERSOLID_BRUSHONLY	= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_PLAYERCLIP|CONTENTS_GRATE) -- everything normally solid for player movement, except monsters = (world+brush only)
 
-MASK_NPCSOLID_BRUSHONLY		= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) -- just the world, used for route rebuilding
+MASK_NPCSOLID_BRUSHONLY		= (CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) -- everything normally solid for npc movement, except monsters = (world+brush only)
 
-MASK_NPCWORLDSTATIC			= (CONTENTS_SOLID|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) -- These are things that can split areaportals
+MASK_NPCWORLDSTATIC			= (CONTENTS_SOLID|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) -- just the world, used for route rebuilding
 
-MASK_SPLITAREAPORTAL		= (CONTENTS_WATER|CONTENTS_SLIME)
+MASK_SPLITAREAPORTAL		= (CONTENTS_WATER|CONTENTS_SLIME) -- These are things that can split areaportals
 
 MASK_DEADSOLID				= (CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_WINDOW|CONTENTS_GRATE) -- everything that blocks corpse movement
 
