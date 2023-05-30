@@ -647,7 +647,6 @@ namespace Mod::AI::NPC_Nextbot
             this->m_pEntity->GetBodyInterface()->SetDesiredPosture(oldPosture);
             this->m_flAcceleration = data->m_flMaxSpeed*10;
             this->m_flDeceleration = data->m_flMaxSpeed*10;
-            Msg("acceleration set to %f\n", this->m_flAcceleration);
             this->m_strHurtSound = this->m_bIsRobot ? robot_hurt_sounds[classIndex] : player_hurt_sounds[classIndex];
             enginesound->PrecacheSound(this->m_strHurtSound);
             this->m_strDeathSound = this->m_bIsRobot ? robot_death_sounds[classIndex] : player_death_sounds[classIndex];
@@ -682,6 +681,7 @@ namespace Mod::AI::NPC_Nextbot
         bool forceDuck = false;
         string_t skill = PStrT<"normal">();
         auto prevNotSolid = this->m_bNotSolidToPlayers;
+        bool transformClass = false;
         for (auto &var : entity->GetExtraEntityData()->GetCustomVariables()) {
             if (var.key == PStrT<"movespeed">()) this->m_flMaxRunningSpeed = GetVariantValueConvert<float>(var.value);
             else if (var.key == PStrT<"duckmovespeed">()) this->m_flDuckSpeed = GetVariantValueConvert<float>(var.value);
@@ -738,7 +738,15 @@ namespace Mod::AI::NPC_Nextbot
                     this->m_DeathEffectType = NONE;
                 }
             }
+            else if (var.key == PStrT<"class">()) transformClass |= this->m_strPlayerClass != GetVariantValueConvert<string_t>(var.value); 
+            else if (var.key == PStrT<"robot">()) transformClass |= this->m_bIsRobot != GetVariantValueConvert<bool>(var.value);
+            else if (var.key == PStrT<"zombie">()) transformClass |= this->m_bIsZombie != GetVariantValueConvert<bool>(var.value);
+            else if (var.key == PStrT<"giant">()) transformClass |= this->m_bIsRobotGiant != GetVariantValueConvert<bool>(var.value);
             
+        }
+        if (transformClass) {
+            TransformToClass(GetClassIndexFromString(entity->GetCustomVariable<"class">("sniper")));
+            return;
         }
         if (!trackingset) {
             if (skill == PStrT<"normal">()) {
@@ -827,7 +835,7 @@ namespace Mod::AI::NPC_Nextbot
             
             
 		}
-        virtual bool EnableByDefault() override { return true; }
+        virtual bool EnableByDefault() override { return false; }
 
         virtual bool OnLoad() override
         {
@@ -892,7 +900,7 @@ namespace Mod::AI::NPC_Nextbot
             }
         }
 
-		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot"};}
+		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot", "AI:My_Nextbot_Unlag"};}
 	};
 	CMod s_Mod;
 	

@@ -11,6 +11,7 @@
 #include "stub/tf_objective_resource.h"
 #include "stub/particles.h"
 #include "stub/nextbot_etc.h"
+#include "util/value_override.h"
 
 namespace Mod::Pop::Tank_Extensions
 {
@@ -20,8 +21,10 @@ namespace Mod::Pop::Tank_Extensions
 		bool disable_smokestack =  false;
 		float scale             =  1.00f;
 		bool force_romevision   =  false;
-		float max_turn_rate     =    NAN;
-		float gravity           =    NAN;
+		float max_turn_rate     =   0.0f;
+		bool max_turn_rate_set  =  false;
+		float gravity           =   0.0f;
+		bool gravity_set        =  false;
 		string_t icon           = MAKE_STRING("tank");
 		bool is_miniboss        =   true;
 		bool is_crit           	=  false;
@@ -263,6 +266,7 @@ namespace Mod::Pop::Tank_Extensions
 			} else if (FStrEq(name, "MaxTurnRate")) {
 			//	DevMsg("Got \"MaxTurnRate\" = %f\n", subkey->GetFloat());
 				spawners[spawner].max_turn_rate = subkey->GetFloat();
+				spawners[spawner].max_turn_rate_set = true;
 			} else if (FStrEq(name, "ClassIcon")) {
 			//	DevMsg("Got \"IconOverride\" = \"%s\"\n", subkey->GetString());
 				spawners[spawner].icon = AllocPooledString(subkey->GetString());
@@ -290,6 +294,7 @@ namespace Mod::Pop::Tank_Extensions
 			} else if (FStrEq(name, "Gravity")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				spawners[spawner].gravity = subkey->GetFloat();
+				spawners[spawner].gravity_set = true;
 			} else if (FStrEq(name, "Template")) {
 			//	DevMsg("Got \"IsMiniBoss\" = %d\n", subkey->GetBool());
 				KeyValues *templates = g_pPopulationManager->m_pTemplates;
@@ -663,7 +668,7 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(float, NextBotGroundLocomotion_GetGravity)
 	{
 		if (rc_CTFTankBoss_TankBossThink) {
-			if (thinking_tank_data != nullptr && !std::isnan(thinking_tank_data->gravity)) {
+			if (thinking_tank_data != nullptr && thinking_tank_data->gravity_set) {
 				return thinking_tank_data->gravity;
 			}
 		}
@@ -740,28 +745,23 @@ namespace Mod::Pop::Tank_Extensions
 		}
 	}
 
+	CValueOverride_ConVar<float> tf_base_boss_max_turn_rate("tf_base_boss_max_turn_rate");
 	DETOUR_DECL_MEMBER(void, CTFBaseBossLocomotion_FaceTowards, const Vector& vec)
 	{
 		auto loco = reinterpret_cast<NextBotGroundLocomotion *>(this);
 		auto tank = static_cast<CTFTankBoss *>(loco->GetBot()->GetEntity());
 		
-		static ConVarRef tf_base_boss_max_turn_rate("tf_base_boss_max_turn_rate");
-		
 		SpawnerData *data = FindSpawnerDataForTank(tank);
 
 		float prev_pitch = tank->GetLocalAngles().x;
 
-		float saved_rate = NAN; 
-
-		if (data != nullptr && !std::isnan(data->max_turn_rate) && tf_base_boss_max_turn_rate.IsValid()) {
-			saved_rate = tf_base_boss_max_turn_rate.GetFloat();
-			tf_base_boss_max_turn_rate.SetValue(data->max_turn_rate);
+		if (data != nullptr && data->max_turn_rate_set) {
+			tf_base_boss_max_turn_rate.Set(data->max_turn_rate);
 		}
 	
 		DETOUR_MEMBER_CALL(CTFBaseBossLocomotion_FaceTowards)(vec);
 
-		if (!std::isnan(saved_rate))
-			tf_base_boss_max_turn_rate.SetValue(saved_rate);
+		tf_base_boss_max_turn_rate.Reset();
 	}
 	
 	DETOUR_DECL_MEMBER(string_t, CTankSpawner_GetClassIcon, int index)

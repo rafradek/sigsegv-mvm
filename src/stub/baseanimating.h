@@ -102,6 +102,32 @@ private:
 
 };
 
+class CBaseAnimatingOverlay;
+
+class CAnimationLayer {
+public:
+	int		m_fFlags;
+	bool	m_bSequenceFinished;
+	bool	m_bLooping;
+	int		m_nSequence;
+	float	m_flCycle;
+	float	m_flPrevCycle;
+	float	m_flWeight;
+	float	m_flPlaybackRate;
+	float	m_flBlendIn;
+	float	m_flBlendOut; 
+	float	m_flKillRate;
+	float	m_flKillDelay;
+	float	m_flLayerAnimtime;
+	float	m_flLayerFadeOuttime;
+	Activity	m_nActivity;
+	int		m_nPriority;
+	int m_nOrder;
+	float	m_flLastEventCheck;
+	float	m_flLastAccess;
+	CBaseAnimatingOverlay *m_pOwnerEntity;
+};
+
 class CBaseAnimatingOverlay : public CBaseAnimating {
 public:
 	int AddGesture(Activity act, bool autoKill = true) {return ft_AddGesture(this, act, autoKill); }
@@ -112,6 +138,7 @@ public:
 	float GetLayerDuration(int layer) { return ft_GetLayerDuration(this, layer); }
 	void SetLayerDuration(int layer, float duration) { ft_SetLayerDuration(this, layer, duration); }
 
+	DECL_SENDPROP (CUtlVector<CAnimationLayer>, m_AnimOverlay);
 private:
 	static MemberFuncThunk<CBaseAnimatingOverlay *, int, Activity, bool> ft_AddGesture;
 	static MemberFuncThunk<CBaseAnimatingOverlay *, int, int, bool> ft_AddGestureSequence;

@@ -6065,6 +6065,9 @@
 				"TE_BeamPoints" "_Z13TE_BeamPointsR16IRecipientFilterfPK6VectorS3_iiiifffifiiiii"
 
 				"IgnoreActorsTraceFilterFunction" "_Z31IgnoreActorsTraceFilterFunctionP13IHandleEntityi"
+				"CKickIssue::RequestCallVote" "_ZN10CKickIssue15RequestCallVoteEiPKcR20vote_create_failed_tRi"
+
+				
 			}
 			"addrs_group"
 			{

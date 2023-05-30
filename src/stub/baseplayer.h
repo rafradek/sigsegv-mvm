@@ -212,6 +212,7 @@ public:
 	DECL_DATAMAP(float,         m_flStepSoundTime);
 	DECL_RELATIVE(CUserCmd *,   m_pCurrentCommand);
 	DECL_DATAMAP(float,          m_fLerpTime);
+	DECL_DATAMAP(bool,          m_bLagCompensation);
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }

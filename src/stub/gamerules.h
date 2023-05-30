@@ -143,6 +143,7 @@ class CTeamplayRoundBasedRules : public CTeamplayRules
 {
 public:
 	gamerules_roundstate_t State_Get() { NULL_RET(GR_STATE_INIT); return this->m_iRoundState; }
+	void State_SetDirect(gamerules_roundstate_t state) { NULL_RET( ); this->m_iRoundState = state; }
 	int GetWinningTeam()               { NULL_RET(TEAM_INVALID ); return this->m_iWinningTeam; }
 	bool IsPlayerReady(int iIndex)     { NULL_RET(false        ); return this->m_bPlayerReady[iIndex]; }
 	bool IsTeamReady(int iIndex)       { NULL_RET(false        ); return this->m_bTeamReady[iIndex]; }

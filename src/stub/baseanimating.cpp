@@ -54,6 +54,8 @@ MemberVFuncThunk<CBaseAnimating *, void>                   CBaseAnimating::vt_Re
 MemberVFuncThunk<CBaseAnimating *, void, CBaseAnimating *> CBaseAnimating::vt_DispatchAnimEvents     (TypeName<CBaseAnimating>(), "CBaseAnimating::DispatchAnimEvents");
 
 
+IMPL_SENDPROP (CUtlVector<CAnimationLayer>, CBaseAnimatingOverlay, m_AnimOverlay, CBaseAnimatingOverlay);
+
 MemberFuncThunk<CBaseAnimatingOverlay *, int, Activity, bool> CBaseAnimatingOverlay::ft_AddGesture("CBaseAnimatingOverlay::AddGesture");
 MemberFuncThunk<CBaseAnimatingOverlay *, int, int, bool> CBaseAnimatingOverlay::ft_AddGestureSequence("CBaseAnimatingOverlay::AddGestureSequence");
 MemberFuncThunk<CBaseAnimatingOverlay *, void, Activity> CBaseAnimatingOverlay::ft_RemoveGesture("CBaseAnimatingOverlay::RemoveGesture");
