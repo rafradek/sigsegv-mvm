@@ -678,7 +678,7 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(bool, NextBotGroundLocomotion_IsOnGround)
 	{
 		if (rc_CTFTankBoss_TankBossThink) {
-			if (thinking_tank_data != nullptr && thinking_tank_data->gravity <= 0) {
+			if (thinking_tank_data != nullptr && thinking_tank_data->gravity_set && thinking_tank_data->gravity <= 0) {
 				return true;
 			}
 		}
@@ -688,7 +688,7 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(float, CTFBaseBossLocomotion_GetStepHeight)
 	{
 		if (rc_CTFTankBoss_TankBossThink) {
-			if (thinking_tank_data != nullptr && thinking_tank_data->gravity <= 0) {
+			if (thinking_tank_data != nullptr && thinking_tank_data->gravity_set && thinking_tank_data->gravity <= 0) {
 				return 0.0f;
 			}
 		}
@@ -706,7 +706,7 @@ namespace Mod::Pop::Tank_Extensions
 				thinking_tank->SetAbsOrigin(offset);
 			}
 			
-			if (thinking_tank_data->gravity == 0.0f)
+			if (thinking_tank_data->gravity == 0.0f && thinking_tank_data->gravity_set)
 			{
 				auto loco = reinterpret_cast<NextBotGroundLocomotion *>(this);
 				Vector move = loco->GetApproachPos();
@@ -725,7 +725,7 @@ namespace Mod::Pop::Tank_Extensions
 		DETOUR_MEMBER_CALL(NextBotGroundLocomotion_Update)();
 		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr) {
 			
-			if (thinking_tank_data->gravity == 0.0f)
+			if (thinking_tank_data->gravity == 0.0f && thinking_tank_data->gravity_set)
 			{
 				Vector tank_pos = thinking_tank->GetAbsOrigin();
 				tank_pos.z = prev_posz;
