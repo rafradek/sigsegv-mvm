@@ -1805,10 +1805,118 @@ namespace Mod::Attr::Custom_Attributes
 		return weapon->GetProjectileDamage() / weapon->GetTFWpnData().m_nDamage;
 	}
 
+	void ApplyAttributesFromString(CTFPlayer *player, const char *attributes) {
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = *it;
+				if (++it == tokens.end())
+					break;
+				auto value = *it;
+				if (++it == tokens.end())
+					break;
+				auto duration = stof(*it);
+				player->AddCustomAttribute(attribute.c_str(), value, duration);
+				it++;
+			}
+		}
+	}
+	
+	void ApplyOnHitAttributes(CTFWeaponBase *weapon, CBaseEntity *victim, CBaseEntity *attacker, const CTakeDamageInfo &info) {
+		GET_STRING_ATTRIBUTE(weapon, custom_hit_sound, str);
+		if (str != nullptr) {
+			PrecacheSound(str);
+			victim->EmitSound(str);
+		}
+		CTFPlayer *playerVictim = ToTFPlayer(victim);
+		CTFPlayer *playerAttacker = ToTFPlayer(attacker);
+		if (victim != nullptr && victim != attacker) {
+			float damageReturnsAsHealth = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, damageReturnsAsHealth, damage_returns_as_health);
+			if (damageReturnsAsHealth != 0.0f) {
+				float health = damageReturnsAsHealth * info.GetDamage();
+				if (health >= 0) {
+					attacker->TakeHealth(health, DMG_GENERIC);
+				} 
+				else {
+					attacker->TakeDamage(CTakeDamageInfo(attacker, attacker, weapon, vec3_origin, vec3_origin, (health * -1), DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
+				}
+			}
+
+			std::vector<CTFPlayer *> condVictims; if (playerVictim != nullptr) condVictims.push_back(playerVictim);
+			std::vector<CTFPlayer *> condAllies; if (playerAttacker != nullptr) condAllies.push_back(playerAttacker);
+			float radialCondRadiusSq = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, radialCondRadiusSq, radial_cond);
+			radialCondRadiusSq *= radialCondRadiusSq;
+			if (radialCondRadiusSq != 0) {
+				ForEachTFPlayer([&](CTFPlayer *playerl) {
+					if (playerl != attacker && playerl->GetTeamNumber() == attacker->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(attacker->GetAbsOrigin())) {
+						condAllies.push_back(playerl);
+					}
+					else if (playerl != victim && playerl->GetTeamNumber() != attacker->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(victim->GetAbsOrigin())) {
+						condVictims.push_back(playerl);
+					}
+				});
+			}
+
+			int removecond_attr = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, removecond_attr, remove_cond_on_hit);
+			if (removecond_attr != 0) {
+				for (int i = 0; i < 4; i++) {
+					int removecond = (removecond_attr >> (i * 8)) & 255;
+					if (removecond != 0) {
+						for (auto victim : condVictims) victim->m_Shared->RemoveCond((ETFCond)removecond);
+					}
+				}
+			}
+
+			int addcond_attr = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, addcond_attr, add_cond_on_hit);
+			if (addcond_attr != 0) {
+				float addcond_duration = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, addcond_duration, add_cond_on_hit_duration);
+				if (addcond_duration == 0.0f) {
+					addcond_duration = -1.0f;
+				}
+				for (int i = 0; i < 4; i++) {
+					int addcond = (addcond_attr >> (i * 8)) & 255;
+					if (addcond != 0) {
+						for (auto victim : condVictims) victim->m_Shared->AddCond((ETFCond)addcond, addcond_duration, playerAttacker);
+					}
+				}
+			}
+
+			int self_addcond_attr = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, self_addcond_attr, self_add_cond_on_hit);
+			if (self_addcond_attr != 0) {
+				float addcond_duration = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, addcond_duration, self_add_cond_on_hit_duration);
+				if (addcond_duration == 0.0f) {
+					addcond_duration = -1.0f;
+				}
+				for (int i = 0; i < 4; i++) {
+					int addcond = (self_addcond_attr >> (i * 8)) & 255;
+					if (addcond != 0) {
+						for (auto ally : condAllies) ally->m_Shared->AddCond((ETFCond)addcond, addcond_duration, playerAttacker);
+					}
+				}
+			}
+			GET_STRING_ATTRIBUTE(weapon, add_attributes_on_hit, attributes_string);
+			for (auto victim : condVictims) ApplyAttributesFromString(victim, attributes_string);
+
+			GET_STRING_ATTRIBUTE(weapon, self_add_attributes_on_hit, attributes_string_self);
+			for (auto ally : condAllies) ApplyAttributesFromString(ally, attributes_string_self);
+		}
+	}
+
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
 		bool restoreMinicritBoostOnKill = false;
 		auto playerVictim = ToTFPlayer(pVictim);
+		auto weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon());
 		CBaseEntity *oldInflictor = nullptr;
 		if (info.GetInflictor() != nullptr && info.GetInflictor()->GetOwnerEntity() != nullptr && info.GetInflictor()->GetOwnerEntity()->IsBaseObject() && info.GetInflictor()->GetCustomVariableBool<"customsentryweapon">()) {
 			oldInflictor = info.GetInflictor();
@@ -1865,30 +1973,30 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr) {
+		if (weapon != nullptr) {
 			
 			float dmg = info.GetDamage();
 
 			// Allow mult_dmg_bonus_while_half_dead mult_dmg_penalty_while_half_alive mult_dmg_with_reduced_health
 			// to work on non melee weapons
 			//
-			if (info.GetAttacker() != nullptr && !info.GetWeapon()->MyCombatWeaponPointer()->IsMeleeWeapon()) {
+			if (info.GetAttacker() != nullptr && !weapon->IsMeleeWeapon()) {
 				float maxHealth = info.GetAttacker()->GetMaxHealth();
 				float health = info.GetAttacker()->GetHealth();
 				float halfHealth = maxHealth * 0.5f;
 				float dmgmult = 1.0f;
 				if ( health < halfHealth )
 				{
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmgmult, mult_dmg_bonus_while_half_dead );
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmgmult, mult_dmg_bonus_while_half_dead );
 				}
 				else
 				{
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmgmult, mult_dmg_penalty_while_half_alive );
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmgmult, mult_dmg_penalty_while_half_alive );
 				}
 
 				// Some weapons change damage based on player's health
 				float flReducedHealthBonus = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), flReducedHealthBonus, mult_dmg_with_reduced_health );
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, flReducedHealthBonus, mult_dmg_with_reduced_health );
 				if ( flReducedHealthBonus != 1.0f )
 				{
 					float flHealthFraction = clamp( health / maxHealth, 0.0f, 1.0f );
@@ -1901,7 +2009,7 @@ namespace Mod::Attr::Custom_Attributes
 				// Crit from behind should not work on tanks
 				if (rtti_cast<CTFTankBoss *>(pVictim) == nullptr) {
 					int critfromback = 0;
-					CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critfromback, crit_from_behind);
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, critfromback, crit_from_behind);
 					Vector toEnt = pVictim->GetAbsOrigin() - info.GetAttacker()->GetAbsOrigin();
 					if (critfromback != 0) {
 						Vector entForward;
@@ -1922,11 +2030,11 @@ namespace Mod::Attr::Custom_Attributes
 
 			if (info.GetAttacker() != nullptr) {
 				float dmg_mult = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_before_distance);
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmg_mult, mult_dmg_before_distance);
 				if (dmg_mult != 1.0f) {
 					float maxDist = 2048.0f;
 					float maxDistSpec = 0.0f;
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), maxDistSpec, mult_dmg_before_distance_specify);
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, maxDistSpec, mult_dmg_before_distance_specify);
 					if (maxDistSpec != 0.0f) {
 						maxDist = maxDistSpec;
 					}
@@ -1938,21 +2046,21 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			float iDmgCurrentHealth = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgCurrentHealth, dmg_current_health);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, iDmgCurrentHealth, dmg_current_health);
 			if (iDmgCurrentHealth != 0.0f)
 			{
 				dmg += pVictim->GetHealth() * iDmgCurrentHealth;
 			}
 
 			float iDmgMaxHealth = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgMaxHealth, dmg_max_health);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, iDmgMaxHealth, dmg_max_health);
 			if (iDmgMaxHealth != 0.0f)
 			{
 				dmg += pVictim->GetMaxHealth() * iDmgMaxHealth;
 			}
 
 			float iDmgMissingHealth = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), iDmgMissingHealth, dmg_missing_health);
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, iDmgMissingHealth, dmg_missing_health);
 			if (iDmgMissingHealth != 0.0f)
 			{
 				dmg += (pVictim->GetMaxHealth() - pVictim->GetHealth()) * iDmgMissingHealth;
@@ -1960,13 +2068,13 @@ namespace Mod::Attr::Custom_Attributes
 
 			if (info.GetAttacker() != nullptr && info.GetAttacker()->GetGroundEntity() == nullptr) {
 				float dmg_mult = 1.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_while_midair);
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmg_mult, mult_dmg_while_midair);
 				dmg *= dmg_mult;
 			}
 
 			if (playerVictim != nullptr) {
 				int iDmgType = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), iDmgType, special_damage_type);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, iDmgType, special_damage_type);
 				float dmg_mult = 1.0f;
 				if (iDmgType == 1) {
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pVictim, dmg_mult, dmg_taken_mult_from_special_damage_type_1);
@@ -1978,21 +2086,21 @@ namespace Mod::Attr::Custom_Attributes
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pVictim, dmg_mult, dmg_taken_mult_from_special_damage_type_3);
 				}
 				if (playerVictim->IsMiniBoss()) {
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_giants);
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmg_mult, mult_dmg_vs_giants);
 				}
 
 				if (playerVictim->InAirDueToKnockback()) {
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( info.GetWeapon(), dmg_mult, mult_dmg_vs_airborne );
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( weapon, dmg_mult, mult_dmg_vs_airborne );
 				}
 				
 				int critOnCond = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), critOnCond, crit_on_cond);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, critOnCond, crit_on_cond);
 				if (critOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)critOnCond)) {
 					info.SetCritType(CTakeDamageInfo::CRIT_FULL);
 					info.AddDamageType(DMG_CRITICAL);
 				}
 				int miniCritOnCond = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), miniCritOnCond, minicrit_on_cond);
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, miniCritOnCond, minicrit_on_cond);
 				if (miniCritOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)miniCritOnCond)) {
 					if (ToTFPlayer(info.GetAttacker()) != nullptr) {
 						restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_NOHEALINGDAMAGEBUFF);
@@ -2006,7 +2114,7 @@ namespace Mod::Attr::Custom_Attributes
 			else if (pVictim->MyNextBotPointer() != nullptr) {
 				if (pVictim->ClassMatches("tank_boss")) {
 					float dmg_mult = 1.0f;
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(info.GetWeapon(), dmg_mult, mult_dmg_vs_tanks);
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, dmg_mult, mult_dmg_vs_tanks);
 					dmg *= dmg_mult;
 				}
 			}
@@ -2021,6 +2129,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
 
+		// ApplyOnHit for non players
+		if ((info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer()) && weapon != nullptr) {
+			ApplyOnHitAttributes(weapon, pVictim, info.GetAttacker(), info);
+		}
 		if (restoreMinicritBoostOnKill) {
 			ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().RemoveCondBit(TF_COND_NOHEALINGDAMAGEBUFF);
 		}
@@ -2992,129 +3104,11 @@ namespace Mod::Attr::Custom_Attributes
 			player->SetGravity(gravity);
 	}
 
-	void ApplyAttributesFromString(CTFPlayer *player, const char *attributes) {
-		if (attributes != nullptr) {
-			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
-
-			auto it = tokens.begin();
-			while (it != tokens.end()) {
-				auto attribute = *it;
-				if (++it == tokens.end())
-					break;
-				auto value = *it;
-				if (++it == tokens.end())
-					break;
-				auto duration = stof(*it);
-				player->AddCustomAttribute(attribute.c_str(), value, duration);
-				it++;
-			}
-		}
-	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
-		
-		auto weapon = static_cast<CTFWeaponBase *>(ToBaseCombatWeapon(info.GetWeapon()));
-		if (ent != nullptr && weapon != nullptr) {
-			
-			//CFastTimer timer1;
-			//timer1.Start();
-			GET_STRING_ATTRIBUTE(weapon, custom_hit_sound, str);
-			//timer1.End();
-			
-			//CFastTimer timer2;
-			//timer2.Start();
-			//const char * varname = player->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, player, PStrT<"custom_hit_sound">()).ToCStrOrNull(); //STRING(CAttributeManager::AttribHookValue<string_t>(MAKE_STRING(""), PStrT<"custom_hit_sound">(), player));
-			//timer2.End();
-
-			//Msg("Hit sound %s vs %s %.9f %.9f %d\n", str, varname, timer1.GetDuration().GetSeconds(), timer2.GetDuration().GetSeconds(), player->GetAttributeManager()->m_CachedResults->Count());
-			if (str != nullptr) {
-				PrecacheSound(str);
-				ent->EmitSound(str);
-			}
-			
-			CTFPlayer *victim = ToTFPlayer(ent);
-			if (victim != nullptr && victim != player) {
-
-				float damageReturnsAsHealth = 0.0f;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, damageReturnsAsHealth, damage_returns_as_health);
-				if (damageReturnsAsHealth != 0.0f) {
-					float health = damageReturnsAsHealth * info.GetDamage();
-					if (health >= 0) {
-						player->TakeHealth(health, DMG_GENERIC);
-					} 
-					else {
-						player->TakeDamage(CTakeDamageInfo(player, player, weapon, vec3_origin, vec3_origin, (health * -1), DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
-					}
-				}
-				std::vector<CTFPlayer *> condVictims {victim};
-				std::vector<CTFPlayer *> condAllies {player};
-				float radialCondRadiusSq = 0;
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, radialCondRadiusSq, radial_cond);
-				radialCondRadiusSq *= radialCondRadiusSq;
-				if (radialCondRadiusSq != 0) {
-					ForEachTFPlayer([&](CTFPlayer *playerl) {
-						if (playerl != player && playerl->GetTeamNumber() == player->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(player->GetAbsOrigin())) {
-							condAllies.push_back(playerl);
-						}
-						else if (playerl != victim && playerl->GetTeamNumber() != player->GetTeamNumber() && radialCondRadiusSq > playerl->GetAbsOrigin().DistToSqr(victim->GetAbsOrigin())) {
-							condVictims.push_back(playerl);
-						}
-					});
-				}
-
-				int removecond_attr = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, removecond_attr, remove_cond_on_hit);
-				if (removecond_attr != 0) {
-					for (int i = 0; i < 4; i++) {
-						int removecond = (removecond_attr >> (i * 8)) & 255;
-						if (removecond != 0) {
-							for (auto victim : condVictims) victim->m_Shared->RemoveCond((ETFCond)removecond);
-						}
-					}
-				}
-
-				int addcond_attr = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, addcond_attr, add_cond_on_hit);
-				if (addcond_attr != 0) {
-					float addcond_duration = 0.0f;
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, addcond_duration, add_cond_on_hit_duration);
-					if (addcond_duration == 0.0f) {
-						addcond_duration = -1.0f;
-					}
-					for (int i = 0; i < 4; i++) {
-						int addcond = (addcond_attr >> (i * 8)) & 255;
-						if (addcond != 0) {
-							for (auto victim : condVictims) victim->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
-						}
-					}
-				}
-
-				int self_addcond_attr = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, self_addcond_attr, self_add_cond_on_hit);
-				if (self_addcond_attr != 0) {
-					float addcond_duration = 0.0f;
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, addcond_duration, self_add_cond_on_hit_duration);
-					if (addcond_duration == 0.0f) {
-						addcond_duration = -1.0f;
-					}
-					for (int i = 0; i < 4; i++) {
-						int addcond = (self_addcond_attr >> (i * 8)) & 255;
-						if (addcond != 0) {
-							for (auto ally : condAllies) ally->m_Shared->AddCond((ETFCond)addcond, addcond_duration, player);
-						}
-					}
-				}
-				
-				GET_STRING_ATTRIBUTE(weapon, add_attributes_on_hit, attributes_string);
-				for (auto victim : condVictims) ApplyAttributesFromString(victim, attributes_string);
-
-				GET_STRING_ATTRIBUTE(weapon, self_add_attributes_on_hit, attributes_string_self);
-				for (auto ally : condAllies) ApplyAttributesFromString(ally, attributes_string_self);
-			}
-		}
+		ApplyOnHitAttributes(reinterpret_cast<CTFWeaponBase *>(this), ent, player, info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_MakeScaledBuilding, CTFPlayer *player)

@@ -1995,7 +1995,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				filter.AddRecipient(player);
 				CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
 
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission"));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, state.m_DisallowedClasses[plclass] > 0 ? CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission") : CFmtStr("%s %s", classname,"is not allowed in this mission"));
 
 				if (do_switch) {
 					for (int i=1; i < TF_CLASS_COUNT; i++){
@@ -2983,7 +2983,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			if (upgradeslot >= 0 && upgradeslot < CMannVsMachineUpgradeManager::Upgrades().Count()) {
 				if (!IsUpgradeAllowed(player, itemslot, upgradeslot)) {
-					return false;
+					return;
 				}
 			}
 		}
@@ -5181,10 +5181,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 
-		if (amount_classes_blacklisted == 8) {
+		if (amount_classes_blacklisted >= 8) {
 			for(int i=1; i < TF_CLASS_COUNT; i++){
 				if (state.m_DisallowedClasses[i] != 0) {	
 					state.m_bSingleClassAllowed = i;
+					break;
 				}
 			}
 		}
