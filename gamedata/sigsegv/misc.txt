@@ -5785,6 +5785,7 @@
 				"CBaseAnimating::SetPoseParameter" "_ZN14CBaseAnimating16SetPoseParameterEP10CStudioHdrif"
 				"CBaseAnimating::DispatchAnimEvents" "_ZN14CBaseAnimating18DispatchAnimEventsEPS_"
 				"CBaseAnimating::SequenceDuration" "_ZN14CBaseAnimating16SequenceDurationEi"
+				"CBaseAnimating::InvalidateBoneCache" "_ZN14CBaseAnimating19InvalidateBoneCacheEv"
 
 				"CBaseCombatCharacter::GetBossType" "_ZNK20CBaseCombatCharacter11GetBossTypeEv"
 				"CBaseCombatCharacter::GetLastKnownArea" "_ZNK20CBaseCombatCharacter16GetLastKnownAreaEv" 
@@ -6066,6 +6067,8 @@
 
 				"IgnoreActorsTraceFilterFunction" "_Z31IgnoreActorsTraceFilterFunctionP13IHandleEntityi"
 				"CKickIssue::RequestCallVote" "_ZN10CKickIssue15RequestCallVoteEiPKcR20vote_create_failed_tRi"
+
+				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
 				
 			}

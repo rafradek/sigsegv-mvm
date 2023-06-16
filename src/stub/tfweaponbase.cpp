@@ -325,6 +325,8 @@ const char *TranslateWeaponEntForClass_improved(const char *name, int classnum)
 			return "tf_weapon_club";
 		case TF_CLASS_SPY:
 			return "tf_weapon_knife";
+		case TF_CLASS_CIVILIAN:
+			return "tf_weapon_fireaxe";
 		}
 	}
 	

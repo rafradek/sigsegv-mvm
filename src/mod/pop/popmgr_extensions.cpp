@@ -510,6 +510,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			this->m_iRobotLimitSetByMission = 22;
 			this->m_bPlayerBombCarrierBuffs = false;
+			this->m_bAllowCivilian = false;
 			
 			this->m_MedievalMode            .Reset();
 			this->m_SpellsEnabled           .Reset();
@@ -753,6 +754,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
 		bool m_bPlayerBombCarrierBuffs;
+		bool m_bAllowCivilian;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverride_ConVar<bool>        m_SpellsEnabled;
@@ -1417,7 +1419,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_STATIC(const char *, TranslateWeaponEntForClass, const char *name, int classIndex)
 	{
 		auto result = DETOUR_STATIC_CALL(TranslateWeaponEntForClass)(name, classIndex);
-		if (result != nullptr && result[0] == '\0') {
+		if ((result != nullptr && result[0] == '\0') || classIndex == TF_CLASS_CIVILIAN) {
 			return TranslateWeaponEntForClass_improved(name, classIndex);
 		}
 		return result;
@@ -1479,8 +1481,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
 
-		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
-			
+		if (IsMannVsMachineMode() && player != nullptr) {
 			auto find_loadout = state.m_SelectedLoadoutItems.find(player->GetSteamID());
 			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
 				for(int itemnum : find_loadout->second) {
@@ -1501,7 +1502,9 @@ namespace Mod::Pop::PopMgr_Extensions
 					}
 				}
 			}
-			
+		}
+
+		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
 			if (!state.m_ItemReplace.empty()) {
 				const char *classname = TranslateWeaponEntForClass_improved(result->GetItemDefinition()->GetKeyValues()->GetString("item_class"), pclass);
 				bool found = false;
@@ -2033,6 +2036,10 @@ namespace Mod::Pop::PopMgr_Extensions
 	RefCount rc_CTFPlayer_HandleCommand_JoinClass;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
+		if (!IsMannVsMachineMode()) {
+			DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+			return;
+		}
 		SCOPED_INCREMENT(rc_CTFPlayer_HandleCommand_JoinClass);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
@@ -2049,14 +2056,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 
-		/*if (!player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED && !player->m_Shared->m_bInUpgradeZone && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
-			if (FStrEq(pClassName, "random") || FStrEq(pClassName, "civilian")) {
-				player->m_Shared->m_iDesiredPlayerClass = 10;
-				player->ForceRespawn();
-				return;
-			}
-		}*/
-
 		
 		if (g_pPopulationManager != nullptr && !player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE) {
 			if (player->m_nCanPurchaseUpgradesCount > 0) {
@@ -2068,7 +2067,19 @@ namespace Mod::Pop::PopMgr_Extensions
 				return;
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+
+		bool execJoinClass = true;
+
+		if (!player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED && state.m_bAllowCivilian && !player->m_Shared->m_bInUpgradeZone && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
+			if (FStrEq(pClassName, "random") || FStrEq(pClassName, "civilian")) {
+				player->m_Shared->m_iDesiredPlayerClass = 10;
+				player->ForceRespawn();
+				execJoinClass = false;
+			}
+		}
+
+		if (execJoinClass)
+			DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
         void *menu = nullptr;
         if (menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu) == MenuSource_BaseMenu && menu != nullptr) {
@@ -5938,6 +5949,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	//		ResetMaxRedTeamPlayers(6);
 	//	}
 
+		bool prevAllowCivilian = state.m_bAllowCivilian;
 		std::string prevNavFile = state.m_CustomNavFile;
 		state.Reset();
 		
@@ -5952,6 +5964,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		reading_popfile = true;
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
 		reading_popfile = false;
+
+		// Reset civilian players back to normal
+		if (prevAllowCivilian && !state.m_bAllowCivilian) {
+			ForEachTFPlayer([](CTFPlayer *player){
+				if (player->IsRealPlayer() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_CIVILIAN) {
+					player->HandleCommand_JoinClass("random");
+				}
+			});
+		}
 
 		// Reset nav mesh
 		if (state.m_CustomNavFile != prevNavFile) {
@@ -6521,6 +6542,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_UpgradesUnintendedClassWeapons.Set(subkey->GetBool());
 			} else if (FStrEq(name, "UseOriginalAnimsForUnintendedClassWeapons")) {
 				state.m_AnimationsUnintendedClassWeapons.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowCivilianClass")) {
+				state.m_bAllowCivilian = subkey->GetBool();
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;

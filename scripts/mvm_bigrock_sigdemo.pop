@@ -24,6 +24,7 @@ WaveSchedule
 	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
 	BurnTimeFasterBurn 1 [$SIGSEGV] //For players, burn time bonus increases afterburn damage frequency instead of duration (default: 1)
 	AllowBombBuffsForPlayerCarriers 1 [$SIGSEGV] // Allow bomb buffs for player bomb carriers (default: 0)
+	AllowCivilianClass 1 [$SIGSEGV] // Allow selection of civilian class via random class or join_class civilian command (default: 0)
 	
 
 	//////////////////////////

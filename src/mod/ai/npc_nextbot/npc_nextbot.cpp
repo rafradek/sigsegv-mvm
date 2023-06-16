@@ -255,8 +255,11 @@ namespace Mod::AI::NPC_Nextbot
             }
             mod->TransformToClass(GetClassIndexFromString(bot->GetCustomVariable<"class">("sniper")));
 
-	        bot->m_fFlags |= FL_NPC;
-            UTIL_SetSize(bot, &VEC_HULL_MIN, &VEC_HULL_MAX);
+            bot->m_fFlags |= FL_NPC;
+            
+            if (bot->GetCustomVariableBool<"useplayercollisionbounds">()) {
+                UTIL_SetSize(bot, &VEC_HULL_MIN, &VEC_HULL_MAX);
+            }
         }
 	}
 
@@ -526,7 +529,51 @@ namespace Mod::AI::NPC_Nextbot
     VHOOK_DECL(bool, CBotNPCArcher_ShouldGib, const CTakeDamageInfo &info)
     {
         auto me = reinterpret_cast<CBotNPCArcher *>(this);
-        return GetNextbotModule(me)->m_DeathEffectType == MyNextbotModule::GIB;
+        auto deathEffectType = GetNextbotModule(me)->m_DeathEffectType;
+        if (deathEffectType == MyNextbotModule::GIB) return true;
+        if (deathEffectType == MyNextbotModule::RAGDOLL) return false;
+
+        if (info.GetWeapon() != nullptr) {
+			int shouldGib = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), shouldGib, weapon_always_gib);
+			if (shouldGib != 0) { 
+				return true;
+			}
+
+			int shouldNotGib = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(info.GetWeapon(), shouldNotGib, weapon_never_gib);
+			if (shouldNotGib != 0) { 
+				return false;
+			}
+		}
+
+        if ( info.GetDamageType() & DMG_CRITICAL )
+        {
+            int iAlwaysGibOnCrit = 0;
+            CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iAlwaysGibOnCrit, crit_kill_will_gib );
+            if ( iAlwaysGibOnCrit )
+                return true;
+        }
+
+        int iCritOnHardHit = 0;
+        CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iCritOnHardHit, crit_on_hard_hit );
+        if ( iCritOnHardHit == 0 )
+        {
+            // Only blast & half falloff damage can gib.
+            if ( ( (info.GetDamageType() & DMG_BLAST) == 0 ) &&
+                ( (info.GetDamageType() & DMG_HALF_FALLOFF) == 0 ) )
+                return false;
+        }
+
+        // Explosive crits always gib.
+        if ( info.GetDamageType() & DMG_CRITICAL )
+            return true;
+
+        // Hard hits also gib.
+        if ( me->GetHealth() <= -10 )
+            return true;
+
+        return false;
     }
     
     
@@ -627,6 +674,11 @@ namespace Mod::AI::NPC_Nextbot
             if (this->m_hZombieCosmetic != nullptr) {
                 this->m_hZombieCosmetic->Remove();
             }
+            auto modelOverride = this->m_pEntity->GetCustomVariable<"model">();
+            this->m_strModel = MAKE_STRING(modelOverride);
+            if (modelOverride != nullptr) {
+                model = modelOverride;
+            }
             CBaseEntity::PrecacheModel(model);
             
             if (this->m_bIsZombie) {
@@ -642,7 +694,9 @@ namespace Mod::AI::NPC_Nextbot
             }
 
             this->m_pEntity->SetModel(model);
-            UTIL_SetSize(this->m_pEntity, &VEC_HULL_MIN, &VEC_HULL_MAX);
+            if (this->m_bUsePlayerBounds = this->m_pEntity->GetCustomVariableBool<"useplayercollisionbounds">()) {
+                UTIL_SetSize(this->m_pEntity, &VEC_HULL_MIN, &VEC_HULL_MAX);
+            }
             this->SetEyeOffset();
             this->m_pEntity->GetBodyInterface()->SetDesiredPosture(oldPosture);
             this->m_flAcceleration = data->m_flMaxSpeed*10;
@@ -742,6 +796,8 @@ namespace Mod::AI::NPC_Nextbot
             else if (var.key == PStrT<"robot">()) transformClass |= this->m_bIsRobot != GetVariantValueConvert<bool>(var.value);
             else if (var.key == PStrT<"zombie">()) transformClass |= this->m_bIsZombie != GetVariantValueConvert<bool>(var.value);
             else if (var.key == PStrT<"giant">()) transformClass |= this->m_bIsRobotGiant != GetVariantValueConvert<bool>(var.value);
+            else if (var.key == PStrT<"model">()) transformClass |= this->m_strModel != GetVariantValueConvert<string_t>(var.value);
+            else if (var.key == PStrT<"useplayercollisionbounds">()) transformClass |= this->m_bUsePlayerBounds != GetVariantValueConvert<bool>(var.value);
             
         }
         if (transformClass) {
@@ -906,7 +962,7 @@ namespace Mod::AI::NPC_Nextbot
 	
 	
 	ConVar cvar_enable("sig_ai_my_nextbot", "0", FCVAR_NOTIFY,
-		"Mod: create more nexbots",
+		"Mod: Add new NPC $bot_npc entity",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});

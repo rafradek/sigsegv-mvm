@@ -15,6 +15,23 @@ namespace Mod::Common::Weapon_Shoot
     RefCount rc_FireWeapon;
 	RefCount rc_FireWeapon_RemoveAmmo;
 
+	class ShooterWeaponModule : public EntityModule
+	{
+	public:
+        ShooterWeaponModule() {}
+        ShooterWeaponModule(CBaseEntity *entity) : EntityModule(entity) {}
+        virtual ~ShooterWeaponModule() {
+			for (auto proj : m_ProjectilesToRemove) {
+				proj->Remove();
+			}
+		}
+        void AddProjectileToRemove(CBaseEntity *entity) {
+			m_ProjectilesToRemove.push_back(entity);
+		}
+	private:
+		std::vector<CHandle<CBaseEntity>> m_ProjectilesToRemove;
+	};
+
 	GlobalThunk<int> m_nPredictionRandomSeedServer("CBaseEntity::m_nPredictionRandomSeedServer");
 	GlobalThunk<int> m_nPredictionRandomSeed("CBaseEntity::m_nPredictionRandomSeed");
     CBaseEntity *FireWeapon(CBaseEntity *shooter, CTFWeaponBaseGun *weapon, const Vector &vecOrigin, const QAngle &vecAngles, bool isCrit, bool removeAmmo, int teamDefault)
@@ -90,9 +107,13 @@ namespace Mod::Common::Weapon_Shoot
             projectile->SetCustomVariable("shooterent", Variant(shooter));
 
             auto scorerInterface = rtti_cast<IScorer *>(projectile);
-			// If the projectile has an IScorer interface, it is fine to make the shooter the owner of the projectile. (Unless its Dragon's fury projectile where it crashes)
-			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player && rtti_cast<CTFProjectile_BallOfFire *>(projectile) == nullptr) {
+			// If the projectile has an IScorer interface, it is fine to make the shooter the owner of the projectile
+			if (scorerInterface != nullptr && projectile->GetOwnerEntity() == player) {
 				projectile->SetOwnerEntity(shooter);
+			}
+			// Dragon's fury projectiles must be removed when the weapon is removed
+			if (rtti_cast<CTFProjectile_BallOfFire *>(projectile) != nullptr) {
+				weapon->GetOrCreateEntityModule<ShooterWeaponModule>("shooterweaponmodule")->AddProjectileToRemove(projectile);
 			}
         }
         if (tempPlayer) {
@@ -234,6 +255,8 @@ namespace Mod::Common::Weapon_Shoot
 		}
 	}
 
+	
+	bool dragons_fury_burning = false;
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
 		// For shooter weapons, calculate damage falloff from the shooter
@@ -245,7 +268,25 @@ namespace Mod::Common::Weapon_Shoot
 				info.SetAttacker(shooter);
 			}
 		}
-        return DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+
+		// For non player owner dragon's fury, implement 3x damage bonus here
+		if (dragons_fury_burning) {
+			info.SetDamage(info.GetDamage() * 3);
+		}
+
+        auto result = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+
+		if (info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer()) {
+			auto playerVictim = ToTFPlayer(pVictim);
+			auto projInflictor = rtti_cast<CBaseProjectile *>(info.GetInflictor());
+			if (playerVictim != nullptr && projInflictor != nullptr) {
+				auto weaponProj = rtti_cast<CTFWeaponBase *>(projInflictor->GetOriginalLauncher());
+				if (weaponProj != nullptr && weaponProj->GetAfterburnRateOnHit() > 0) {
+					playerVictim->m_Shared->Burn(playerVictim, weaponProj, weaponProj->GetAfterburnRateOnHit());
+				}
+			}
+		}
+		return result;
     }
 
 	// DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, CGameTrace *, UTIL_PlayerBulletTrace, Vector &vec1, Vector &vec2, Vector &vec3, uint val1, ITraceFilter *filter, CGameTrace *trace)
@@ -269,6 +310,21 @@ namespace Mod::Common::Weapon_Shoot
 		}
 
         return DETOUR_MEMBER_CALL(CTraceFilterSimple_CTraceFilterSimple)(passentity, collisionGroup, pExtraShouldHitCheckFn);
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFProjectile_BallOfFire_Burn, CBaseEntity *entity)
+	{
+		auto player = ToTFPlayer(entity);
+		auto owner = reinterpret_cast<CTFProjectile_BallOfFire *>(this)->GetOwnerEntity();
+		if (player != nullptr && (owner == nullptr || !owner->IsPlayer()) && player->m_Shared->InCond(TF_COND_BURNING)) {
+			player->m_Shared->GetCondData().RemoveCondBit(TF_COND_BURNING);
+			dragons_fury_burning = true;
+		}
+        DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_Burn)(entity);
+		if (dragons_fury_burning) {
+			player->m_Shared->GetCondData().AddCondBit(TF_COND_BURNING);
+			dragons_fury_burning = false;
+		}
     }
 
 
@@ -295,8 +351,10 @@ namespace Mod::Common::Weapon_Shoot
 
 			// Fix non player owners of projectiles causing crashes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_SendDeathNotice,    "CTFProjectile_Flare::SendDeathNotice");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_Burn,    "CTFProjectile_BallOfFire::Burn");
 
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FPlayerCanTakeDamage,    "CTFGameRules::FPlayerCanTakeDamage");
+
 			//MOD_ADD_DETOUR_MEMBER(CTraceFilterSimple_CTraceFilterSimple,    "CTraceFilterSimple::CTraceFilterSimple");
 			//MOD_ADD_DETOUR_MEMBER(IEngineTrace_TraceRay,    "IEngineTrace::TraceRay");
 			//MOD_ADD_DETOUR_STATIC(UTIL_PlayerBulletTrace,    "UTIL_PlayerBulletTrace");

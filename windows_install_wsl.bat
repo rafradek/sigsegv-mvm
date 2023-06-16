@@ -11,6 +11,8 @@ echo @echo off
 echo cd /d "%%~dp0"
 echo echo Setting default wsl version to 2
 echo wsl --set-default-version  2
+echo echo wait 30 seconds
+echo timeout 30 /nobreak
 echo echo -
 echo echo ----------------------
 echo echo Installing ubuntu
@@ -100,7 +102,7 @@ if not exist "%windir%\System32\bash.exe" (
     echo -------------
     echo -------------
     echo Reboot system to continue installation
-    choice /C YN /M "Do you want to reboot the system now? [Y/N]"
+    choice /C YN /M "Do you want to reboot the system now?"
     if errorlevel 2 (
     echo Reboot the system later to continue
     ) else (

@@ -86,7 +86,7 @@ namespace Mod::AI::NPC_Nextbot
         // For performance, entities on nav area that is fully visible from our nav area are considered visible
         auto entity = reinterpret_cast<IVision *>(this)->GetBot()->GetEntity();
         auto subjectCombat = subject->MyCombatCharacterPointer();
-        if (subjectCombat != nullptr && IsOnNav(subjectCombat, 20, 4) && IsOnNav(entity, 20, 4) && entity->GetLastKnownArea()->IsCompletelyVisible(subjectCombat->GetLastKnownArea())) {
+        if (subjectCombat != nullptr && IsOnNav(subjectCombat, 20, 4) && IsOnNav(entity, 20, 4) && entity->GetLastKnownArea() != nullptr && entity->GetLastKnownArea()->IsCompletelyVisible(subjectCombat->GetLastKnownArea())) {
             return true;
         }
         return VHOOK_CALL(MyNextbotVision_IsAbleToSee)(subject, checkFOV, visibleSpot);

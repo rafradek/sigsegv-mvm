@@ -47,7 +47,10 @@ MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, bool, int, Vector&, QAngle&>     CBaseAnimating::ft_GetAttachment       ("CBaseAnimating::GetAttachment");
 MemberFuncThunk<CBaseAnimating *, bool, int, matrix3x4_t&>         CBaseAnimating::ft_GetAttachment2      ("CBaseAnimating::GetAttachment [matrix]");
 MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimating::ft_GetAttachmentBone   ("CBaseAnimating::GetAttachmentBone");
+#ifdef SE_TF2
 MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_SequenceDuration    ("CBaseAnimating::SequenceDuration");
+#endif
+MemberFuncThunk<CBaseAnimating *, void>                            CBaseAnimating::ft_InvalidateBoneCache ("CBaseAnimating::InvalidateBoneCache");
 
 MemberVFuncThunk<CBaseAnimating *, void>                   CBaseAnimating::vt_StudioFrameAdvance     (TypeName<CBaseAnimating>(), "CBaseAnimating::StudioFrameAdvance");
 MemberVFuncThunk<CBaseAnimating *, void>                   CBaseAnimating::vt_RefreshCollisionBounds (TypeName<CBaseAnimating>(), "CBaseAnimating::RefreshCollisionBounds");

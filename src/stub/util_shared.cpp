@@ -1,5 +1,6 @@
 /* implementations for some functions from game/shared/util_shared.cpp */
-
+#include "link/link.h"
+#include "stub/baseentity.h"
 
 float UTIL_VecToYaw( const Vector &vec )
 {
@@ -45,6 +46,12 @@ Vector UTIL_YawToVector( float yaw )
 	return ret;
 }
 
+StaticFuncThunk<void, CBaseEntity *, const Vector &, const Vector &, unsigned int, const IHandleEntity *, int, trace_t *> ft_UTIL_TraceEntity("UTIL_TraceEntity [IHandleEntity]");
+void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Vector &vecAbsEnd, 
+					  unsigned int mask, const IHandleEntity *pIgnore, int nCollisionGroup, trace_t *ptr )
+{
+	ft_UTIL_TraceEntity(pEntity, vecAbsStart, vecAbsEnd, mask, pIgnore, nCollisionGroup, ptr);
+}
 
 float IntervalTimer::Now( void ) const
 {

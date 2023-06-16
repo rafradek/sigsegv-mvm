@@ -116,6 +116,13 @@ if not Extension.optimize_mods_only:
 if not Extension.optimize_mods_only:
   sourceFiles += [
     
+    'src/mod/ai/npc_nextbot/npc_nextbot.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_unlag.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_actions.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_body.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_locomotion.cpp',
+    'src/mod/ai/npc_nextbot/npc_nextbot_vision.cpp',
+    
     'src/mod/item/item_common.cpp',
     
     'src/mod/bot/interrupt_action.cpp',
@@ -198,12 +205,6 @@ if not Extension.optimize_mods_only:
     'src/util/firehose_recv.cpp',
     'src/util/firehose_send.cpp',
     'src/util/socket_old.cpp',
-
-    'src/mod/ai/npc_nextbot/npc_nextbot.cpp',
-    'src/mod/ai/npc_nextbot/npc_nextbot_actions.cpp',
-    'src/mod/ai/npc_nextbot/npc_nextbot_body.cpp',
-    'src/mod/ai/npc_nextbot/npc_nextbot_locomotion.cpp',
-    'src/mod/ai/npc_nextbot/npc_nextbot_vision.cpp',
 
     'src/mod/ai/engiebot_dispensers.cpp',
     'src/mod/ai/engiebot_nopush.cpp',

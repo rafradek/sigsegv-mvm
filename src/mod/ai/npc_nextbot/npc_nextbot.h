@@ -87,17 +87,22 @@ namespace Mod::AI::NPC_Nextbot
 	{
 	public:
 		LagCompensatedEntity(CBaseAnimatingOverlay *entity) { this->entity = entity; }
+		virtual bool WantsLagCompensation(CBasePlayer *player, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits);
+
 		CBaseAnimatingOverlay *entity;
 		CUtlFixedLinkedList< LagRecord > track;
 		bool restore;
 		LagRecord restoreData;
 		LagRecord changeData;
+
 	};
 
     class MyNextbotModule : public EntityModule, public LagCompensatedEntity
     {
     public:
         MyNextbotModule(CBaseEntity *entity) : EntityModule(entity), LagCompensatedEntity((CBaseAnimatingOverlay *)entity), m_pEntity((CBotNPCArcher *)entity) {}
+
+		virtual bool WantsLagCompensation(CBasePlayer *player, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits) override;
 
 		void SetShooting(bool shoot) { this->m_bShouldShoot = shoot; }
 
@@ -200,6 +205,8 @@ namespace Mod::AI::NPC_Nextbot
 		bool m_bIsRobotGiant = false;
 		bool m_bNoFootsteps = false;
 		const char *m_strFootstepSound = "";
+		string_t m_strModel = NULL_STRING;
+		bool m_bUsePlayerBounds = true;
 		bool m_bIsZombie = false;
 		CHandle<CBaseAnimating> m_hZombieCosmetic;
 

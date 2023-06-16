@@ -44,7 +44,10 @@ public:
 	bool GetAttachment(int id, Vector& vec, QAngle& ang)                   { return ft_GetAttachment       (this, id, vec, ang); }
 	bool GetAttachment(int id, matrix3x4_t &transform)                     { return ft_GetAttachment2       (this, id, transform); }
 	int GetAttachmentBone(int id)                                          { return ft_GetAttachmentBone   (this, id); }
+#ifdef SE_TF2
 	float SequenceDuration(int sequence)                                   { return ft_SequenceDuration    (this, sequence); }
+#endif
+	void InvalidateBoneCache()                                             {        ft_InvalidateBoneCache (this); }
 	
 
 	void RefreshCollisionBounds()                                          {        vt_RefreshCollisionBounds(this); }
@@ -94,7 +97,10 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, int, int>                        ft_GetAttachmentBone;
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupAttachment;
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupSequence;
+#ifdef SE_TF2
 	static MemberFuncThunk<CBaseAnimating *, float, int>                      ft_SequenceDuration;
+#endif
+	static MemberFuncThunk<CBaseAnimating *, void>                            ft_InvalidateBoneCache;
 
 	static MemberVFuncThunk<CBaseAnimating *, void>                   vt_RefreshCollisionBounds;
 	static MemberVFuncThunk<CBaseAnimating *, void>                   vt_StudioFrameAdvance;
@@ -138,7 +144,7 @@ public:
 	float GetLayerDuration(int layer) { return ft_GetLayerDuration(this, layer); }
 	void SetLayerDuration(int layer, float duration) { ft_SetLayerDuration(this, layer, duration); }
 
-	DECL_SENDPROP (CUtlVector<CAnimationLayer>, m_AnimOverlay);
+	DECL_SENDPROP_RW (CUtlVector<CAnimationLayer>, m_AnimOverlay);
 private:
 	static MemberFuncThunk<CBaseAnimatingOverlay *, int, Activity, bool> ft_AddGesture;
 	static MemberFuncThunk<CBaseAnimatingOverlay *, int, int, bool> ft_AddGestureSequence;

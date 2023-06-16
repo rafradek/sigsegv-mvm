@@ -25,7 +25,9 @@ public:
 	bool IsMeleeWeapon() const { return ft_IsMeleeWeapon(this); }
 	void SetOwner(CBaseCombatCharacter *owner) { return ft_SetOwner(this, owner); }
 	FileWeaponInfo_t const &GetWpnData() const       { return ft_GetWpnData(this); }
+#ifdef SE_TF2
 	void SetCustomViewModel(const char *model) {        ft_SetCustomViewModel(this, model); }
+#endif
 	
 	int GetMaxClip1() const                                { return vt_GetMaxClip1  (this); }
 	int GetMaxClip2() const                                { return vt_GetMaxClip2  (this); }
@@ -52,7 +54,9 @@ public:
 	DECL_SENDPROP(int,   m_iState);
 	DECL_SENDPROP(int,   m_iPrimaryAmmoType);
 	DECL_SENDPROP(int,   m_iSecondaryAmmoType);
+#ifdef SE_TF2
 	DECL_SENDPROP(short,   m_nCustomViewmodelModelIndex);
+#endif
 	DECL_SENDPROP(int,   m_iClip1);
 	DECL_SENDPROP(int,   m_iClip2);
 	DECL_SENDPROP(int,   m_iViewModelIndex);
@@ -69,7 +73,9 @@ private:
 	static MemberFuncThunk<const CBaseCombatWeapon *, bool> ft_IsMeleeWeapon;
 	static MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> ft_SetOwner;
 	static MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> ft_GetWpnData;
+#ifdef SE_TF2
 	static MemberFuncThunk<CBaseCombatWeapon *, void, const char *> ft_SetCustomViewModel;
+#endif
 	
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip1;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip2;

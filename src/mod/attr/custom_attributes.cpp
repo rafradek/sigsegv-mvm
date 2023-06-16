@@ -2129,8 +2129,8 @@ namespace Mod::Attr::Custom_Attributes
 
 		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
 
-		// ApplyOnHit for non players
-		if ((info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer()) && weapon != nullptr) {
+		// ApplyOnHit for non players and vs buildings
+		if ((info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer() || pVictim->IsBaseObject()) && weapon != nullptr) {
 			ApplyOnHitAttributes(weapon, pVictim, info.GetAttacker(), info);
 		}
 		if (restoreMinicritBoostOnKill) {
@@ -3108,7 +3108,8 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
-		ApplyOnHitAttributes(reinterpret_cast<CTFWeaponBase *>(this), ent, player, info);
+		if (ent != nullptr)
+			ApplyOnHitAttributes(reinterpret_cast<CTFWeaponBase *>(this), ent, player, info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_MakeScaledBuilding, CTFPlayer *player)
@@ -5619,7 +5620,6 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;
@@ -5911,6 +5911,10 @@ namespace Mod::Attr::Custom_Attributes
 	public:
         SentryWeaponModule() {}
         SentryWeaponModule(CBaseEntity *entity) : EntityModule(entity) {}
+        virtual ~SentryWeaponModule() {
+			if (weapon != nullptr)
+				weapon->Remove();
+		}
 
 		CHandle<CTFWeaponBaseGun> weapon;
 		std::string lastWeaponName;
