@@ -3487,7 +3487,6 @@ namespace Mod::Attr::Custom_Attributes
 						addcond_overridden = true;
 					}
 				}
-				return;
 			}
 
 			auto *weapon = rtti_cast<CEconEntity *>(addcond_provider_item);

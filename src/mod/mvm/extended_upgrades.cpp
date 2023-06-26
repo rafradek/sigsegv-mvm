@@ -1541,7 +1541,6 @@ namespace Mod::MvM::Extended_Upgrades
         if (upgrade >= 0 && upgrade <= CMannVsMachineUpgradeManager::Upgrades().Count()) {
             auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
             auto attribDef = GetItemSchema()->GetAttributeDefinitionByName(upgradeInfo.m_szAttribute);
-            DevMsg("IsString %s (%d)\n",upgradeInfo.m_szAttribute, attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>());
 
             if (attribDef != nullptr && attribDef->IsType<CSchemaAttributeType_String>()) {
                 CAttributeList *attribList = nullptr;
