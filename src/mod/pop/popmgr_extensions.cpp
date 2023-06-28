@@ -2074,7 +2074,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (FStrEq(pClassName, "random") || FStrEq(pClassName, "civilian")) {
 				player->m_Shared->m_iDesiredPlayerClass = 10;
 				player->ForceRespawn();
+				auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+				mod->props["m_iDesiredPlayerClass"] = {Variant(1), Variant(1)};
 				execJoinClass = false;
+			}
+			else {
+				auto mod = player->GetEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+				if (mod != nullptr) {
+					mod->props.erase("m_iDesiredPlayerClass");
+				}
 			}
 		}
 

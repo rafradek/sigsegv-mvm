@@ -3144,4 +3144,24 @@
         "hidden"	"0"
         "effect_type"	"positive"
     }
+    "4636"
+    {
+        "name"	"max ammo primary additive"
+        "attribute_class"	"max_ammo_primary_additive"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4637"
+    {
+        "name"	"max ammo secondary additive"
+        "attribute_class"	"max_ammo_secondary_additive"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

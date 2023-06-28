@@ -6597,6 +6597,27 @@ namespace Mod::Attr::Custom_Attributes
 		PrintToChat(disallowed ? "Disabled custom hand models\n" : "Enabled custom hand models. Change class to apply changes\n", player);
 	});
 
+	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxAmmo, int ammoIndex, int classIndex)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		int ammoValueChange = 0;
+		if (ammoIndex == TF_AMMO_PRIMARY) {
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, ammoValueChange, max_ammo_primary_additive);
+		}
+		else if (ammoIndex == TF_AMMO_SECONDARY) {
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, ammoValueChange, max_ammo_secondary_additive);
+		}
+		if (ammoValueChange != 0) {
+			GetPlayerClassData(classIndex == -1 ? player->GetPlayerClass()->GetClassIndex() : classIndex)->m_aAmmoMax[ammoIndex] += ammoValueChange;
+		}
+		auto ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxAmmo)(ammoIndex, classIndex);
+		if (ammoValueChange != 0) {
+			GetPlayerClassData(classIndex == -1 ? player->GetPlayerClass()->GetClassIndex() : classIndex)->m_aAmmoMax[ammoIndex] -= ammoValueChange;
+		}
+		return ret;
+	}
+
 	
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
@@ -7201,13 +7222,22 @@ namespace Mod::Attr::Custom_Attributes
 		float ammoFraction[TF_AMMO_COUNT] {0.0f};
 	};
 
-	void AdjustAmmo(CTFPlayer *player, int ammoType, attribute_data_union_t old_value, attribute_data_union_t new_value)
+	void AdjustAmmo(CTFPlayer *player, int ammoType, attribute_data_union_t old_value, attribute_data_union_t new_value, bool additive)
 	{
-		auto mod = player->GetOrCreateEntityModule<AmmoFractionModule>("ammofraction");
-		if (mod->ammoFraction[ammoType] != 0 && player->GetAmmoCount(ammoType) * (new_value.m_Float / old_value.m_Float) >= player->GetMaxAmmo(ammoType)) {
+		if (additive) {
+			float oldVal = (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float));
+			if (oldVal == 0) {
+				player->SetAmmoCount(player->GetMaxAmmo(ammoType), ammoType);
+				return;
+			}
+		}
+		float multIncrease = additive ? player->GetMaxAmmo(ammoType) / (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float)) : new_value.m_Float / old_value.m_Float;
+		Msg("Increase %f %d\n", multIncrease, additive);
+		auto mod = player->GetOrCreateEntityModule<AmmoFractionModule>("amraction");
+		if (mod->ammoFraction[ammoType] != 0 && player->GetAmmoCount(ammoType) * multIncrease >= player->GetMaxAmmo(ammoType)) {
 			mod->ammoFraction[ammoType] = 0;
 		}
-		float ammo = (player->GetAmmoCount(ammoType) +  mod->ammoFraction[ammoType]) * (new_value.m_Float / old_value.m_Float);
+		float ammo = (player->GetAmmoCount(ammoType) +  mod->ammoFraction[ammoType]) * multIncrease;
 		float fraction = ammo - (int) ammo;
 		player->SetAmmoCount(ammo, ammoType);
 		mod->ammoFraction[ammoType] = fraction;
@@ -7217,7 +7247,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			AdjustAmmo(player, TF_AMMO_PRIMARY, old_value, new_value);
+			AdjustAmmo(player, TF_AMMO_PRIMARY, old_value, new_value, !pAttrDef->IsMultiplicative());
 		}
 	}
 
@@ -7225,7 +7255,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			AdjustAmmo(player, TF_AMMO_SECONDARY, old_value, new_value);
+			AdjustAmmo(player, TF_AMMO_SECONDARY, old_value, new_value, !pAttrDef->IsMultiplicative());
 		}
 	}
 
@@ -7233,7 +7263,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			AdjustAmmo(player, TF_AMMO_GRENADES1, old_value, new_value);
+			AdjustAmmo(player, TF_AMMO_GRENADES1, old_value, new_value, !pAttrDef->IsMultiplicative());
 		}
 	}
 
@@ -7241,7 +7271,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
-			AdjustAmmo(player, TF_AMMO_METAL, old_value, new_value);
+			AdjustAmmo(player, TF_AMMO_METAL, old_value, new_value, !pAttrDef->IsMultiplicative());
 		}
 	}
 
@@ -7562,6 +7592,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindNearestBuildPoint, "CBaseObject::FindNearestBuildPoint");
 			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime, "CTFBotDeliverFlag::UpgradeOverTime");
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxAmmo, "CTFPlayer::GetMaxAmmo");
 			
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");

@@ -6070,7 +6070,7 @@
 
 				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
-				
+				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
 			}
 			"addrs_group"
 			{

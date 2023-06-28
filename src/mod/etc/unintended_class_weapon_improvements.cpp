@@ -211,9 +211,18 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 					int ammoProper = GetPlayerClassData(properClass)->m_aAmmoMax[ammoType];
 					int ammoOur = GetPlayerClassData(classIndex)->m_aAmmoMax[ammoType];
-					if (ammoOur == 0) ammoOur = 1;
-					auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(ammoType == TF_AMMO_PRIMARY ? "max ammo primary mult" : "max ammo secondary mult");
-					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attrDef, (float)ammoProper / (float)ammoOur);
+					const char *attrib;
+					float value;
+					if (ammoOur != 0) {
+						attrib = ammoType == TF_AMMO_PRIMARY ? "max ammo primary mult" : "max ammo secondary mult";
+						value = (float)ammoProper / (float)ammoOur;
+					}
+					else {
+						attrib = ammoType == TF_AMMO_PRIMARY ? "max ammo primary additive" : "max ammo secondary additive";
+						value = (float)ammoProper;
+					}
+					auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(attrib);
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attrDef, value);
 				}
 			}
 #ifndef NO_MVM
