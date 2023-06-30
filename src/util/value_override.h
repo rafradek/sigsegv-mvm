@@ -60,7 +60,8 @@ class CValueOverride_ConVar : public IValueOverride<T>
 public:
     CValueOverride_ConVar(const char *name) :
         m_pszConVarName(name) {}
-    
+
+protected:
     virtual T GetValue() override { return ConVar_GetValue<T>(MyConVar()); }
     
     virtual void SetValue(const T& val) override
@@ -117,7 +118,7 @@ struct CValueOverride_MedievalMode : public IValueOverride<bool>
 
 class CValueOverride_CustomUpgradesFile : public IValueOverride<std::string>
 {
-public:
+protected:
     virtual std::string GetValue() override
     {
         std::string val = TFGameRules()->GetCustomUpgradesFile();

@@ -871,6 +871,95 @@ bool Parse_PeriodicTask(std::vector<std::shared_ptr<PeriodicTask>> &periodic_tas
     return true;
 }
 
+void Parse_ForceItem(KeyValues *kv, ForceItems &force_items, bool noremove)
+{
+    force_items.parsed = true;
+    if (kv->GetString() != nullptr)
+    {
+        CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(kv->GetString());
+        
+        DevMsg("Parse item %s\n", kv->GetString());
+        if (item_def != nullptr) {
+            auto &items = noremove ? force_items.items_no_remove : force_items.items;
+            items[0].push_back({kv->GetString(), item_def});
+            DevMsg("Add\n");
+        }
+    }
+    FOR_EACH_SUBKEY(kv, subkey) {
+        int classname = TF_CLASS_COUNT+1;
+        for(int i=1; i < TF_CLASS_COUNT; i++){
+            if(FStrEq(g_aRawPlayerClassNames[i],subkey->GetName())){
+                classname=i;
+                break;
+            }
+        }
+        FOR_EACH_SUBKEY(subkey, subkey2) {
+            Msg("Class %d\n", classname);
+            if (subkey2->GetFirstSubKey() != nullptr) {
+                CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetName());
+                if (item_def != nullptr) {
+                    auto &items = noremove ? force_items.items_no_remove : force_items.items;
+                    items[classname].push_back({subkey2->GetString(), item_def, Parse_ItemListEntry(subkey2->GetFirstSubKey(), "ForceItem")});
+                }
+            }
+            else {
+                CEconItemDefinition *item_def = GetItemSchema()->GetItemDefinitionByName(subkey2->GetString());
+                if (item_def != nullptr) {
+                    auto &items = noremove ? force_items.items_no_remove : force_items.items;
+                    items[classname].push_back({subkey2->GetString(), item_def, nullptr});
+                }
+            }
+        }
+    }
+    
+    DevMsg("Parsed attributes\n");
+}
+
+void Parse_ItemAttributes(KeyValues *kv, std::vector<ItemAttributes> &attibs)
+{
+    ItemAttributes item_attributes;// = state.m_ItemAttributes.emplace_back();
+    bool hasname = false;
+
+    FOR_EACH_SUBKEY(kv, subkey) {
+        //std::unique_ptr<ItemListEntry> key=std::make_unique<ItemListEntry_Classname>("");
+        if (strnicmp(subkey->GetName(), "ItemEntry", strlen("ItemEntry")) == 0) {
+            Parse_ItemAttributes(subkey, attibs);
+        } else if (FStrEq(subkey->GetName(), "Classname")) {
+            DevMsg("ItemAttrib: Add Classname entry: \"%s\"\n", subkey->GetString());
+            hasname = true;
+            item_attributes.entry = std::make_unique<ItemListEntry_Classname>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "ItemName")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add Name entry: \"%s\"\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_Name>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "SimilarToItem")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add SimilarTo entry: \"%s\"\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_Similar>(subkey->GetString());
+        } else if (FStrEq(subkey->GetName(), "DefIndex")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add DefIndex entry: %d\n", subkey->GetInt());
+            item_attributes.entry = std::make_unique<ItemListEntry_DefIndex>(subkey->GetInt());
+        } else if (FStrEq(subkey->GetName(), "ItemSlot")) {
+            hasname = true;
+            DevMsg("ItemAttrib: Add ItemSlot entry: %s\n", subkey->GetString());
+            item_attributes.entry = std::make_unique<ItemListEntry_ItemSlot>(subkey->GetString());
+        } else {
+            CEconItemAttributeDefinition *attr_def = GetItemSchema()->GetAttributeDefinitionByName(subkey->GetName());
+            
+            if (attr_def == nullptr) {
+                Warning("[popmgr_extensions] Error: couldn't find any attributes in the item schema matching \"%s\".\n", subkey->GetName());
+            }
+            else
+                item_attributes.attributes[attr_def] = subkey->GetString();
+        }
+    }
+    if (hasname) {
+
+        attibs.push_back(std::move(item_attributes));//erase(item_attributes);
+    }
+}
+
 void ApplyAddCond(CTFBot *bot, std::vector<AddCond> &addconds, std::vector<DelayedAddCond> &delayed_addconds)
 {
     for (auto addcond : addconds) {
@@ -953,7 +1042,7 @@ bool LoadUserDataFile(CRC32_t &value, const char *filename) {
     return true;
 }
 
-void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool respect_class, bool mark)
+void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool no_remove, bool no_respect_class, bool mark)
 {
     for (auto &pair : items) {
         if (pair.entry != nullptr) {
@@ -968,7 +1057,7 @@ void ApplyForceItemsClass(std::vector<ForceItem> &items, CTFPlayer *player, bool
             if (!found)
                 return;
         }
-        CEconEntity *entity = GiveItemByName(player, pair.name.c_str(), no_remove, respect_class);
+        CEconEntity *entity = GiveItemByName(player, pair.name.c_str(), no_remove, no_respect_class);
         
         if (entity != nullptr) {
             // 1 - ForceItem from Wave, can replace extra loadout item

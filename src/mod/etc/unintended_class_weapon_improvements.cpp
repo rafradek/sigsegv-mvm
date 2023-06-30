@@ -30,7 +30,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		int properHandModelIndex;
 		CHandle<CBaseEntity> playerModelWearable;
 		const char *properPlayerModel = nullptr;
-		const char *oldPlayerModel = nullptr;
+		int oldPlayerModel;
+		std::string oldPlayerCustomModel;
 	};
 
     THINK_FUNC_DECL(HideViewModel)
@@ -63,7 +64,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			auto wearable_player = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
 			wearable_player->Spawn();
 			wearable_player->GiveTo(owner);
-			wearable_player->SetModelIndex(CBaseEntity::PrecacheModel(mod->oldPlayerModel));
+			wearable_player->SetModelIndex(mod->oldPlayerModel);
 			wearable_player->m_bValidatedAttachedEntity = true;
 			mod->playerModelWearable = wearable_player;
 			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
@@ -86,6 +87,18 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		const char *customModel = weapon->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, weapon, PStrT<"custom_item_model">()).ToCStr();
         if (customModel == nullptr || customModel[0] == '\0' ) {
             auto wearable_vm_weapon = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
+			wearable_vm_weapon->GetItem()->Init(weapon->GetItem()->m_iItemDefinitionIndex);
+			int tint = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, tint, set_item_tint_rgb);
+			if (tint != 0)
+				wearable_vm_weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("set item tint rgb"), tint);
+			int style = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, style, item_style_override);
+			if (style != 0)
+				wearable_vm_weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("item style override"), style);
+			wearable_vm_weapon->UpdateBodygroups(owner, true);
+			wearable_vm_weapon->SetRenderColorR(0);
+			wearable_vm_weapon->GetItem()->m_bInitialized = true;
             wearable_vm_weapon->Spawn();
             wearable_vm_weapon->GiveTo(owner);
             wearable_vm_weapon->SetModelIndex(weapon->m_iWorldModelIndex);
@@ -110,7 +123,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			mod->playerModelWearable->Remove();
 		}
 		if (mod->properPlayerModel != nullptr) {
-			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerModel);
+			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerCustomModel.c_str());
 			owner->m_nRenderFX = 0;
 		}
 		return true;
@@ -180,7 +193,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						}
 						if (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool()) {
 							mod->properPlayerModel = GetPlayerClassData(properClass)->m_szModelName;
-							mod->oldPlayerModel = owner->GetPlayerClass()->GetCustomModel();
+							mod->oldPlayerCustomModel = owner->GetPlayerClass()->GetCustomModel();
+							mod->oldPlayerModel = owner->GetModelIndex();
 						}
 						if (weapon == owner->GetActiveTFWeapon()) {
 							OnEquipUnintendedClassWeapon(owner, weapon, mod);

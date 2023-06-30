@@ -340,6 +340,56 @@ namespace Mod::Pop::PopMgr_Extensions
 		SpawnLocationRelative relative = ANYWHERE;
 	};
 
+	template<typename T>
+	class CValueOverridePopfile_ConVar : public CValueOverride_ConVar<T>
+	{
+	public:
+		CValueOverridePopfile_ConVar(const char *name) : CValueOverride_ConVar<T>(name) {}
+	
+		void Reset(bool pre)
+		{
+			if (pre) {
+				m_delayedReset = true;
+				IValueOverride<T>::Reset();
+			}
+			else {
+				if (m_delayedReset) {
+					m_delayedReset = false;
+					if (m_bValueSetAfterDelay)
+						SetValue(m_valueSetAfterDelay);
+
+					m_bValueSetAfterDelay = false;
+				}
+			}
+		}
+	
+	protected:
+	
+		virtual T GetValue() override
+		{
+			if (m_delayedReset && this->m_bValueSetAfterDelay) {
+				return m_valueSetAfterDelay;
+			}
+			return CValueOverride_ConVar<T>::GetValue();
+		}
+
+		virtual void SetValue(const T& val) override
+		{
+			if (m_delayedReset) {
+				m_valueSetAfterDelay = val;
+				m_bValueSetAfterDelay = true;
+				return;
+			}
+
+			CValueOverride_ConVar<T>::SetValue(val);
+		}
+
+	private:
+		bool m_bValueSetAfterDelay;
+		T m_valueSetAfterDelay;
+		bool m_delayedReset = false;
+	};
+
 	struct PopState
 	{
 		PopState() :
@@ -443,15 +493,125 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BurnTimeFasterBurn              ("sig_attr_burn_time_faster_burn"),
 			m_UpgradesUnintendedClassWeapons  ("sig_mvm_extended_upgrades_add_for_uninteded_class"),
 			m_AnimationsUnintendedClassWeapons("sig_etc_unintended_class_weapon_viewmodel"),
+			m_bAllowCivilian                  ("sig_etc_allow_civilian_class"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
 			
 		{
-			this->Reset();
+			this->Reset(false);
 		}
 		
-		void Reset()
+		void ResetCVars(bool pre)
+		{
+
+			this->m_SpellsEnabled           .Reset(pre);
+			this->m_GrapplingHook           .Reset(pre);
+			this->m_RespecEnabled           .Reset(pre);
+			this->m_RespecLimit             .Reset(pre);
+			this->m_BonusRatioHalf          .Reset(pre);
+			this->m_BonusRatioFull          .Reset(pre);
+			this->m_FixedBuybacks           .Reset(pre);
+			this->m_BuybacksPerWave         .Reset(pre);
+			this->m_DeathPenalty            .Reset(pre);
+			this->m_SentryBusterFriendlyFire.Reset(pre);
+			this->m_BotPushaway             .Reset(pre);
+			this->m_HumansMustJoinTeam      .Reset(pre);
+			this->m_BotsHumans      .Reset(pre);
+			this->m_ForceHoliday      .Reset(pre);
+			
+			this->m_AllowJoinTeamBlue   .Reset(pre);
+			this->m_AllowJoinTeamBlueMax.Reset(pre);
+			this->m_BluHumanFlagPickup  .Reset(pre);
+			this->m_BluHumanFlagCapture .Reset(pre);
+			this->m_BluHumanInfiniteCloak.Reset(pre);
+			this->m_BluHumanInfiniteAmmo.Reset(pre);
+			this->m_SetCreditTeam       .Reset(pre);
+			this->m_EnableDominations   .Reset(pre);
+			this->m_RobotLimit          .Reset(pre);
+			this->m_VanillaMode          .Reset(pre);
+			this->m_BodyPartScaleSpeed   .Reset(pre);
+			this->m_SandmanStuns        .Reset(pre);
+			this->m_StandableHeads      .Reset(pre);
+			this->m_MedigunShieldDamage .Reset(pre);
+			this->m_NoRomevisionCosmetics.Reset(pre);
+			this->m_CreditsBetterRadiusCollection.Reset(pre);
+			this->m_AimTrackingIntervalMultiplier.Reset(pre);
+			this->m_ImprovedAirblast   .Reset(pre);
+			this->m_FlagCarrierMovementPenalty   .Reset(pre);
+			this->m_TeleporterUberDuration.Reset(pre);
+			this->m_BluHumanTeleport.Reset(pre);
+			this->m_BluHumanTeleportPlayer.Reset(pre);
+			this->m_BotsUsePlayerTeleporters.Reset(pre);
+			this->m_RedTeamMaxPlayers.Reset(pre);
+			this->m_MaxSpeedEnable.Reset(pre);
+			this->m_MaxSpeedLimit.Reset(pre);
+			this->m_BotRunFast.Reset(pre);
+			this->m_BotRunFastJump.Reset(pre);
+			this->m_BotRunFastUpdate.Reset(pre);
+			this->m_MaxVelocity.Reset(pre);
+			this->m_ConchHealthOnHitRegen.Reset(pre);
+			this->m_MarkOnDeathLifetime.Reset(pre);
+			this->m_VacNumCharges.Reset(pre);
+			this->m_DoubleDonkWindow.Reset(pre);
+			this->m_ConchSpeedBoost.Reset(pre);
+			this->m_StealthDamageReduction.Reset(pre);
+			this->m_AllowFlagCarrierToFight.Reset(pre);
+			this->m_HealOnKillOverhealMelee.Reset(pre);
+			this->m_MaxActiveZombie.Reset(pre);
+			this->m_HHHChaseDuration.Reset(pre);
+			this->m_HHHChaseRange.Reset(pre);
+			this->m_HHHHealthBase.Reset(pre);
+			this->m_HHHQuitRange.Reset(pre);
+			this->m_HHHAttackRange.Reset(pre);
+			this->m_HHHHealthPerPlayer.Reset(pre);
+			this->m_HHHTerrifyRange.Reset(pre);
+			this->m_ForceRobotBleed.Reset(pre);
+			this->m_BotHumansHaveRobotVoice.Reset(pre);
+			this->m_BotHumansHaveEyeGlow.Reset(pre);
+			this->m_EyeParticle.Reset(pre);
+			this->m_BotEscortCount.Reset(pre);
+			this->m_CustomAttrDisplay.Reset(pre);
+			this->m_Accelerate.Reset(pre);
+			this->m_AirAccelerate.Reset(pre);
+			this->m_TurboPhysics.Reset(pre);
+			this->m_UpgradeStationRegenCreators.Reset(pre);
+			this->m_UpgradeStationRegen.Reset(pre);
+			this->m_AllowBluePlayerReanimators.Reset(pre);
+			this->m_BluVelocityRemoveLimit.Reset(pre);
+			this->m_FastEntityNameLookup.Reset(pre);
+			this->m_AllowMultipleSappers.Reset(pre);
+			this->m_EngineerPushRange.Reset(pre);
+			this->m_FixHuntsmanDamageBonus.Reset(pre);
+			this->m_DefaultBossScale.Reset(pre);
+			this->m_FastWholeMapTriggers.Reset(pre);
+			this->m_BluHumanSpawnNoShoot.Reset(pre);
+			this->m_BluHumanSpawnProtection.Reset(pre);
+			this->m_TvEnable.Reset(pre);
+			this->m_AllowBotsExtraSlots.Reset(pre);
+			this->m_AutoWeaponStrip.Reset(pre);
+			this->m_RemoveOffhandViewmodel.Reset(pre);
+			this->m_RemoveBotExpressions.Reset(pre);
+			this->m_ExtraBotSlotsNoDeathcam.Reset(pre);
+			this->m_NoRobotFootsteps.Reset(pre);
+			this->m_SentryHintBombForwardRange.Reset(pre);
+			this->m_SentryHintBombBackwardRange.Reset(pre);
+			this->m_SentryHintMinDistanceFromBomb.Reset(pre);
+			this->m_SendBotsToSpectatorImmediately.Reset(pre);
+			this->m_PathTrackIsServerEntity.Reset(pre);
+			this->m_FastWholeMapTriggersAll.Reset(pre);
+			this->m_MaxSpectators.Reset(pre);
+			this->m_JointeamBlueSpectator.Reset(pre);
+			this->m_BurnTimeFasterBurn.Reset(pre);
+			this->m_UpgradesUnintendedClassWeapons.Reset(pre);
+			this->m_AnimationsUnintendedClassWeapons.Reset(pre);
+			this->m_bAllowCivilian.Reset(pre);
+			
+			this->m_CustomUpgradesFile.Reset(pre);
+			this->m_TextPrintSpeed.Reset(pre);
+		}
+
+		void Reset(bool popfileReset)
 		{
 			this->m_bGiantsDropRareSpells   = false;
 			this->m_flSpellDropRateCommon   = 1.00f;
@@ -510,113 +670,12 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			this->m_iRobotLimitSetByMission = 22;
 			this->m_bPlayerBombCarrierBuffs = false;
-			this->m_bAllowCivilian = false;
 			
 			this->m_MedievalMode            .Reset();
-			this->m_SpellsEnabled           .Reset();
-			this->m_GrapplingHook           .Reset();
-			this->m_RespecEnabled           .Reset();
-			this->m_RespecLimit             .Reset();
-			this->m_BonusRatioHalf          .Reset();
-			this->m_BonusRatioFull          .Reset();
-			this->m_FixedBuybacks           .Reset();
-			this->m_BuybacksPerWave         .Reset();
-			this->m_DeathPenalty            .Reset();
-			this->m_SentryBusterFriendlyFire.Reset();
-			this->m_BotPushaway             .Reset();
-			this->m_HumansMustJoinTeam      .Reset();
-			this->m_BotsHumans      .Reset();
-			this->m_ForceHoliday      .Reset();
-			
-			this->m_AllowJoinTeamBlue   .Reset();
-			this->m_AllowJoinTeamBlueMax.Reset();
-			this->m_BluHumanFlagPickup  .Reset();
-			this->m_BluHumanFlagCapture .Reset();
-			this->m_BluHumanInfiniteCloak.Reset();
-			this->m_BluHumanInfiniteAmmo.Reset();
-			this->m_SetCreditTeam       .Reset();
-			this->m_EnableDominations   .Reset();
-			this->m_RobotLimit          .Reset();
-			this->m_VanillaMode          .Reset();
-			this->m_BodyPartScaleSpeed   .Reset();
-			this->m_SandmanStuns        .Reset();
-			this->m_StandableHeads      .Reset();
-			this->m_MedigunShieldDamage .Reset();
-			this->m_NoRomevisionCosmetics.Reset();
-			this->m_CreditsBetterRadiusCollection.Reset();
-			this->m_AimTrackingIntervalMultiplier.Reset();
-			this->m_ImprovedAirblast   .Reset();
-			this->m_FlagCarrierMovementPenalty   .Reset();
-			this->m_TeleporterUberDuration.Reset();
-			this->m_BluHumanTeleport.Reset();
-			this->m_BluHumanTeleportPlayer.Reset();
-			this->m_BotsUsePlayerTeleporters.Reset();
-			this->m_RedTeamMaxPlayers.Reset();
-			this->m_MaxSpeedEnable.Reset();
-			this->m_MaxSpeedLimit.Reset();
-			this->m_BotRunFast.Reset();
-			this->m_BotRunFastJump.Reset();
-			this->m_BotRunFastUpdate.Reset();
-			this->m_MaxVelocity.Reset();
-			this->m_ConchHealthOnHitRegen.Reset();
-			this->m_MarkOnDeathLifetime.Reset();
-			this->m_VacNumCharges.Reset();
-			this->m_DoubleDonkWindow.Reset();
-			this->m_ConchSpeedBoost.Reset();
-			this->m_StealthDamageReduction.Reset();
-			this->m_AllowFlagCarrierToFight.Reset();
-			this->m_HealOnKillOverhealMelee.Reset();
-			this->m_MaxActiveZombie.Reset();
-			this->m_HHHChaseDuration.Reset();
-			this->m_HHHChaseRange.Reset();
-			this->m_HHHHealthBase.Reset();
-			this->m_HHHQuitRange.Reset();
-			this->m_HHHAttackRange.Reset();
-			this->m_HHHHealthPerPlayer.Reset();
-			this->m_HHHTerrifyRange.Reset();
-			this->m_ForceRobotBleed.Reset();
-			this->m_BotHumansHaveRobotVoice.Reset();
-			this->m_BotHumansHaveEyeGlow.Reset();
-			this->m_EyeParticle.Reset();
-			this->m_BotEscortCount.Reset();
-			this->m_CustomAttrDisplay.Reset();
-			this->m_Accelerate.Reset();
-			this->m_AirAccelerate.Reset();
-			this->m_TurboPhysics.Reset();
-			this->m_UpgradeStationRegenCreators.Reset();
-			this->m_UpgradeStationRegen.Reset();
-			this->m_AllowBluePlayerReanimators.Reset();
-			this->m_BluVelocityRemoveLimit.Reset();
-			this->m_FastEntityNameLookup.Reset();
-			this->m_AllowMultipleSappers.Reset();
-			this->m_EngineerPushRange.Reset();
-			this->m_FixHuntsmanDamageBonus.Reset();
-			this->m_DefaultBossScale.Reset();
-			this->m_FastWholeMapTriggers.Reset();
-			this->m_BluHumanSpawnNoShoot.Reset();
-			this->m_BluHumanSpawnProtection.Reset();
-			this->m_TvEnable.Reset();
-			this->m_AllowBotsExtraSlots.Reset();
-			this->m_AutoWeaponStrip.Reset();
-			this->m_RemoveOffhandViewmodel.Reset();
-			this->m_RemoveBotExpressions.Reset();
-			this->m_ExtraBotSlotsNoDeathcam.Reset();
-			this->m_NoRobotFootsteps.Reset();
-			this->m_SentryHintBombForwardRange.Reset();
-			this->m_SentryHintBombBackwardRange.Reset();
-			this->m_SentryHintMinDistanceFromBomb.Reset();
-			this->m_SendBotsToSpectatorImmediately.Reset();
-			this->m_PathTrackIsServerEntity.Reset();
-			this->m_FastWholeMapTriggersAll.Reset();
-			this->m_MaxSpectators.Reset();
-			this->m_JointeamBlueSpectator.Reset();
-			this->m_BurnTimeFasterBurn.Reset();
-			this->m_UpgradesUnintendedClassWeapons.Reset();
-			this->m_AnimationsUnintendedClassWeapons.Reset();
-			
-			this->m_CustomUpgradesFile.Reset();
-			this->m_TextPrintSpeed.Reset();
-			
+			if (!popfileReset) {
+				this->ResetCVars(true);
+				this->ResetCVars(false);
+			}
 			this->m_DisableSounds   .clear();
 			this->m_OverrideSounds  .clear();
 			this->m_ItemWhitelist   .clear();
@@ -754,113 +813,113 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
 		bool m_bPlayerBombCarrierBuffs;
-		bool m_bAllowCivilian;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
-		CValueOverride_ConVar<bool>        m_SpellsEnabled;
-		CValueOverride_ConVar<bool>        m_GrapplingHook;
-		CValueOverride_ConVar<bool>        m_RespecEnabled;
-		CValueOverride_ConVar<int>         m_RespecLimit;
-		CValueOverride_ConVar<float>       m_BonusRatioHalf;
-		CValueOverride_ConVar<float>       m_BonusRatioFull;
-		CValueOverride_ConVar<bool>        m_FixedBuybacks;
-		CValueOverride_ConVar<int>         m_BuybacksPerWave;
-		CValueOverride_ConVar<int>         m_DeathPenalty;
-		CValueOverride_ConVar<bool>        m_SentryBusterFriendlyFire;
-		CValueOverride_ConVar<bool>        m_BotPushaway;
-		CValueOverride_ConVar<bool> m_HumansMustJoinTeam;
+		CValueOverridePopfile_ConVar<bool>        m_SpellsEnabled;
+		CValueOverridePopfile_ConVar<bool>        m_GrapplingHook;
+		CValueOverridePopfile_ConVar<bool>        m_RespecEnabled;
+		CValueOverridePopfile_ConVar<int>         m_RespecLimit;
+		CValueOverridePopfile_ConVar<float>       m_BonusRatioHalf;
+		CValueOverridePopfile_ConVar<float>       m_BonusRatioFull;
+		CValueOverridePopfile_ConVar<bool>        m_FixedBuybacks;
+		CValueOverridePopfile_ConVar<int>         m_BuybacksPerWave;
+		CValueOverridePopfile_ConVar<int>         m_DeathPenalty;
+		CValueOverridePopfile_ConVar<bool>        m_SentryBusterFriendlyFire;
+		CValueOverridePopfile_ConVar<bool>        m_BotPushaway;
+		CValueOverridePopfile_ConVar<bool> m_HumansMustJoinTeam;
 		
-		CValueOverride_ConVar<bool> m_AllowJoinTeamBlue;
-		CValueOverride_ConVar<int>  m_AllowJoinTeamBlueMax;
-		CValueOverride_ConVar<bool> m_BluHumanFlagPickup;
-		CValueOverride_ConVar<bool> m_BluHumanFlagCapture;
-		CValueOverride_ConVar<bool> m_BluHumanInfiniteCloak;
-		CValueOverride_ConVar<bool> m_BluHumanInfiniteAmmo;
-		CValueOverride_ConVar<int>  m_SetCreditTeam;
-		CValueOverride_ConVar<bool> m_EnableDominations;
-		CValueOverride_ConVar<int>  m_RobotLimit;
-		CValueOverride_ConVar<int> m_BotsHumans;
-		CValueOverride_ConVar<int> m_ForceHoliday;
-		CValueOverride_ConVar<bool> m_VanillaMode;
-		CValueOverride_ConVar<float> m_BodyPartScaleSpeed;
-		CValueOverride_ConVar<bool> m_SandmanStuns;
-		CValueOverride_ConVar<bool> m_MedigunShieldDamage;
-		CValueOverride_ConVar<bool> m_StandableHeads;
-		CValueOverride_ConVar<bool> m_NoRomevisionCosmetics;
-		CValueOverride_ConVar<bool> m_CreditsBetterRadiusCollection;
-		CValueOverride_ConVar<float> m_AimTrackingIntervalMultiplier;
-		CValueOverride_ConVar<bool> m_ImprovedAirblast;
-		CValueOverride_ConVar<float> m_FlagCarrierMovementPenalty;
-		CValueOverride_ConVar<float> m_TextPrintSpeed;
-		CValueOverride_ConVar<float> m_TeleporterUberDuration;
-		CValueOverride_ConVar<bool> m_BluHumanTeleport;
-		CValueOverride_ConVar<bool> m_BluHumanTeleportPlayer;
-		CValueOverride_ConVar<bool> m_BotsUsePlayerTeleporters;
-		CValueOverride_ConVar<int> m_RedTeamMaxPlayers;
-		CValueOverride_ConVar<bool> m_MaxSpeedEnable;
-		CValueOverride_ConVar<float> m_MaxSpeedLimit;
-		CValueOverride_ConVar<float> m_MaxVelocity;
-		CValueOverride_ConVar<bool> m_BotRunFast;
-		CValueOverride_ConVar<bool> m_BotRunFastJump;
-		CValueOverride_ConVar<bool> m_BotRunFastUpdate;
-		CValueOverride_ConVar<float> m_ConchHealthOnHitRegen;
-		CValueOverride_ConVar<float> m_MarkOnDeathLifetime;
-		CValueOverride_ConVar<int> m_VacNumCharges;
-		CValueOverride_ConVar<float> m_DoubleDonkWindow;
-		CValueOverride_ConVar<float> m_ConchSpeedBoost;
-		CValueOverride_ConVar<float> m_StealthDamageReduction;
-		CValueOverride_ConVar<bool> m_AllowFlagCarrierToFight;
-		CValueOverride_ConVar<bool> m_HealOnKillOverhealMelee;
-		CValueOverride_ConVar<int> m_MaxActiveZombie;
-		CValueOverride_ConVar<float> m_HHHAttackRange;
-		CValueOverride_ConVar<float> m_HHHChaseRange;
-		CValueOverride_ConVar<float> m_HHHChaseDuration;
-		CValueOverride_ConVar<float> m_HHHQuitRange;
-		CValueOverride_ConVar<float> m_HHHTerrifyRange;
-		CValueOverride_ConVar<int> m_HHHHealthBase;
-		CValueOverride_ConVar<int> m_HHHHealthPerPlayer;
-		CValueOverride_ConVar<bool> m_ForceRobotBleed;
-		CValueOverride_ConVar<bool> m_BotHumansHaveRobotVoice;
-		CValueOverride_ConVar<bool> m_BotHumansHaveEyeGlow;
-		CValueOverride_ConVar<std::string> m_EyeParticle;
-		CValueOverride_ConVar<int> m_BotEscortCount;
-		CValueOverride_ConVar<bool> m_CustomAttrDisplay;
-		CValueOverride_ConVar<float> m_Accelerate;
-		CValueOverride_ConVar<float> m_AirAccelerate;
-		CValueOverride_ConVar<bool> m_TurboPhysics;
-		CValueOverride_ConVar<bool> m_UpgradeStationRegenCreators;
-		CValueOverride_ConVar<bool> m_UpgradeStationRegen;
-		CValueOverride_ConVar<bool> m_AllowBluePlayerReanimators;
-		CValueOverride_ConVar<bool> m_BluVelocityRemoveLimit;
-		CValueOverride_ConVar<bool> m_FastEntityNameLookup;
-		CValueOverride_ConVar<bool> m_AllowMultipleSappers;
-		CValueOverride_ConVar<float> m_EngineerPushRange;
-		CValueOverride_ConVar<bool> m_FixHuntsmanDamageBonus;
-		CValueOverride_ConVar<float> m_DefaultBossScale;
-		CValueOverride_ConVar<bool> m_FastWholeMapTriggers;
-		CValueOverride_ConVar<bool> m_BluHumanSpawnNoShoot;
-		CValueOverride_ConVar<bool> m_BluHumanSpawnProtection;
-		CValueOverride_ConVar<bool> m_TvEnable;
-		CValueOverride_ConVar<bool> m_AllowBotsExtraSlots;
-		CValueOverride_ConVar<bool> m_AutoWeaponStrip;
-		CValueOverride_ConVar<bool> m_RemoveOffhandViewmodel;
-		CValueOverride_ConVar<bool> m_RemoveBotExpressions;
-		CValueOverride_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
-		CValueOverride_ConVar<bool> m_NoRobotFootsteps;
-		CValueOverride_ConVar<float> m_SentryHintBombForwardRange;
-		CValueOverride_ConVar<float> m_SentryHintBombBackwardRange;
-		CValueOverride_ConVar<float> m_SentryHintMinDistanceFromBomb;
-		CValueOverride_ConVar<bool> m_SendBotsToSpectatorImmediately;
-		CValueOverride_ConVar<bool> m_PathTrackIsServerEntity;
-		CValueOverride_ConVar<float> m_FastWholeMapTriggersAll;
-		CValueOverride_ConVar<int> m_MaxSpectators;
-		CValueOverride_ConVar<bool> m_JointeamBlueSpectator;
-		CValueOverride_ConVar<bool> m_BurnTimeFasterBurn;
-		CValueOverride_ConVar<bool> m_UpgradesUnintendedClassWeapons;
-		CValueOverride_ConVar<bool> m_AnimationsUnintendedClassWeapons;
+		CValueOverridePopfile_ConVar<bool> m_AllowJoinTeamBlue;
+		CValueOverridePopfile_ConVar<int>  m_AllowJoinTeamBlueMax;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanFlagPickup;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanFlagCapture;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanInfiniteCloak;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanInfiniteAmmo;
+		CValueOverridePopfile_ConVar<int>  m_SetCreditTeam;
+		CValueOverridePopfile_ConVar<bool> m_EnableDominations;
+		CValueOverridePopfile_ConVar<int>  m_RobotLimit;
+		CValueOverridePopfile_ConVar<int> m_BotsHumans;
+		CValueOverridePopfile_ConVar<int> m_ForceHoliday;
+		CValueOverridePopfile_ConVar<bool> m_VanillaMode;
+		CValueOverridePopfile_ConVar<float> m_BodyPartScaleSpeed;
+		CValueOverridePopfile_ConVar<bool> m_SandmanStuns;
+		CValueOverridePopfile_ConVar<bool> m_MedigunShieldDamage;
+		CValueOverridePopfile_ConVar<bool> m_StandableHeads;
+		CValueOverridePopfile_ConVar<bool> m_NoRomevisionCosmetics;
+		CValueOverridePopfile_ConVar<bool> m_CreditsBetterRadiusCollection;
+		CValueOverridePopfile_ConVar<float> m_AimTrackingIntervalMultiplier;
+		CValueOverridePopfile_ConVar<bool> m_ImprovedAirblast;
+		CValueOverridePopfile_ConVar<float> m_FlagCarrierMovementPenalty;
+		CValueOverridePopfile_ConVar<float> m_TextPrintSpeed;
+		CValueOverridePopfile_ConVar<float> m_TeleporterUberDuration;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanTeleport;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanTeleportPlayer;
+		CValueOverridePopfile_ConVar<bool> m_BotsUsePlayerTeleporters;
+		CValueOverridePopfile_ConVar<int> m_RedTeamMaxPlayers;
+		CValueOverridePopfile_ConVar<bool> m_MaxSpeedEnable;
+		CValueOverridePopfile_ConVar<float> m_MaxSpeedLimit;
+		CValueOverridePopfile_ConVar<float> m_MaxVelocity;
+		CValueOverridePopfile_ConVar<bool> m_BotRunFast;
+		CValueOverridePopfile_ConVar<bool> m_BotRunFastJump;
+		CValueOverridePopfile_ConVar<bool> m_BotRunFastUpdate;
+		CValueOverridePopfile_ConVar<float> m_ConchHealthOnHitRegen;
+		CValueOverridePopfile_ConVar<float> m_MarkOnDeathLifetime;
+		CValueOverridePopfile_ConVar<int> m_VacNumCharges;
+		CValueOverridePopfile_ConVar<float> m_DoubleDonkWindow;
+		CValueOverridePopfile_ConVar<float> m_ConchSpeedBoost;
+		CValueOverridePopfile_ConVar<float> m_StealthDamageReduction;
+		CValueOverridePopfile_ConVar<bool> m_AllowFlagCarrierToFight;
+		CValueOverridePopfile_ConVar<bool> m_HealOnKillOverhealMelee;
+		CValueOverridePopfile_ConVar<int> m_MaxActiveZombie;
+		CValueOverridePopfile_ConVar<float> m_HHHAttackRange;
+		CValueOverridePopfile_ConVar<float> m_HHHChaseRange;
+		CValueOverridePopfile_ConVar<float> m_HHHChaseDuration;
+		CValueOverridePopfile_ConVar<float> m_HHHQuitRange;
+		CValueOverridePopfile_ConVar<float> m_HHHTerrifyRange;
+		CValueOverridePopfile_ConVar<int> m_HHHHealthBase;
+		CValueOverridePopfile_ConVar<int> m_HHHHealthPerPlayer;
+		CValueOverridePopfile_ConVar<bool> m_ForceRobotBleed;
+		CValueOverridePopfile_ConVar<bool> m_BotHumansHaveRobotVoice;
+		CValueOverridePopfile_ConVar<bool> m_BotHumansHaveEyeGlow;
+		CValueOverridePopfile_ConVar<std::string> m_EyeParticle;
+		CValueOverridePopfile_ConVar<int> m_BotEscortCount;
+		CValueOverridePopfile_ConVar<bool> m_CustomAttrDisplay;
+		CValueOverridePopfile_ConVar<float> m_Accelerate;
+		CValueOverridePopfile_ConVar<float> m_AirAccelerate;
+		CValueOverridePopfile_ConVar<bool> m_TurboPhysics;
+		CValueOverridePopfile_ConVar<bool> m_UpgradeStationRegenCreators;
+		CValueOverridePopfile_ConVar<bool> m_UpgradeStationRegen;
+		CValueOverridePopfile_ConVar<bool> m_AllowBluePlayerReanimators;
+		CValueOverridePopfile_ConVar<bool> m_BluVelocityRemoveLimit;
+		CValueOverridePopfile_ConVar<bool> m_FastEntityNameLookup;
+		CValueOverridePopfile_ConVar<bool> m_AllowMultipleSappers;
+		CValueOverridePopfile_ConVar<float> m_EngineerPushRange;
+		CValueOverridePopfile_ConVar<bool> m_FixHuntsmanDamageBonus;
+		CValueOverridePopfile_ConVar<float> m_DefaultBossScale;
+		CValueOverridePopfile_ConVar<bool> m_FastWholeMapTriggers;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanSpawnNoShoot;
+		CValueOverridePopfile_ConVar<bool> m_BluHumanSpawnProtection;
+		CValueOverridePopfile_ConVar<bool> m_TvEnable;
+		CValueOverridePopfile_ConVar<bool> m_AllowBotsExtraSlots;
+		CValueOverridePopfile_ConVar<bool> m_AutoWeaponStrip;
+		CValueOverridePopfile_ConVar<bool> m_RemoveOffhandViewmodel;
+		CValueOverridePopfile_ConVar<bool> m_RemoveBotExpressions;
+		CValueOverridePopfile_ConVar<bool> m_ExtraBotSlotsNoDeathcam;
+		CValueOverridePopfile_ConVar<bool> m_NoRobotFootsteps;
+		CValueOverridePopfile_ConVar<float> m_SentryHintBombForwardRange;
+		CValueOverridePopfile_ConVar<float> m_SentryHintBombBackwardRange;
+		CValueOverridePopfile_ConVar<float> m_SentryHintMinDistanceFromBomb;
+		CValueOverridePopfile_ConVar<bool> m_SendBotsToSpectatorImmediately;
+		CValueOverridePopfile_ConVar<bool> m_PathTrackIsServerEntity;
+		CValueOverridePopfile_ConVar<float> m_FastWholeMapTriggersAll;
+		CValueOverridePopfile_ConVar<int> m_MaxSpectators;
+		CValueOverridePopfile_ConVar<bool> m_JointeamBlueSpectator;
+		CValueOverridePopfile_ConVar<bool> m_BurnTimeFasterBurn;
+		CValueOverridePopfile_ConVar<bool> m_UpgradesUnintendedClassWeapons;
+		CValueOverridePopfile_ConVar<bool> m_AnimationsUnintendedClassWeapons;
+		CValueOverridePopfile_ConVar<bool> m_bAllowCivilian;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
-		CValueOverride_ConVar<std::string> m_CustomUpgradesFile;
+		CValueOverridePopfile_ConVar<std::string> m_CustomUpgradesFile;
 		
 		std::vector<PointTemplateInfo>				m_SpawnTemplates;
 		std::vector<PlayerPointTemplateInfo>        m_PlayerSpawnTemplates;
@@ -1029,6 +1088,9 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	bool AddCustomWeaponAttributes(std::string name, CEconItemView *view)
 	{
+		auto &index = view->m_iItemDefinitionIndex.Get();
+		// Specific bit added to out of bounds definition index to more easily identify item as custom;
+		*(int *)(&index) |= 0x00800000;
 		auto entrywep = state.m_CustomWeapons.find(name);
 		if (entrywep != state.m_CustomWeapons.end()) {
 			for (auto& entry : entrywep->second.attributes) {
@@ -2068,26 +2130,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 
-		bool execJoinClass = true;
-
-		if (!player->IsBot() && player->GetTeamNumber() >= TF_TEAM_RED && state.m_bAllowCivilian && !player->m_Shared->m_bInUpgradeZone && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
-			if (FStrEq(pClassName, "random") || FStrEq(pClassName, "civilian")) {
-				player->m_Shared->m_iDesiredPlayerClass = 10;
-				player->ForceRespawn();
-				auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
-				mod->props["m_iDesiredPlayerClass"] = {Variant(1), Variant(1)};
-				execJoinClass = false;
-			}
-			else {
-				auto mod = player->GetEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
-				if (mod != nullptr) {
-					mod->props.erase("m_iDesiredPlayerClass");
-				}
-			}
-		}
-
-		if (execJoinClass)
-			DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 
         void *menu = nullptr;
         if (menus->GetDefaultStyle()->GetClientMenu(ENTINDEX(player), &menu) == MenuSource_BaseMenu && menu != nullptr) {
@@ -2205,10 +2248,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_ForceItems.parsed ||
 			state.m_bSniperAllowHeadshots ||
 			state.m_bSniperHideLasers ||
-			!state.m_RespecEnabled.GetValue() ||
-			state.m_RespecLimit.GetValue() ||
-			state.m_ImprovedAirblast.GetValue() ||
-			state.m_SandmanStuns.GetValue() ||
+			!state.m_RespecEnabled.Get() ||
+			state.m_RespecLimit.Get() ||
+			state.m_ImprovedAirblast.Get() ||
+			state.m_SandmanStuns.Get() ||
 			state.m_bNoReanimators
 		)) { 
 			PrintToChat("\x07""7fd4ffType !missioninfo in chat to check custom mission information\n",player);
@@ -3508,20 +3551,20 @@ namespace Mod::Pop::PopMgr_Extensions
 				ItemDrawInfo info1("No laser on Sniper bots", ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
-			if (!state.m_RespecEnabled.GetValue()) {
+			if (!state.m_RespecEnabled.Get()) {
 				ItemDrawInfo info1("Upgrade refunding disabled", ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
-			if (state.m_RespecLimit.GetValue() != 0) {
+			if (state.m_RespecLimit.Get() != 0) {
 				static ConVarRef tf_mvm_respec_credit_goal("tf_mvm_respec_credit_goal");
-				ItemDrawInfo info1(CFmtStr("Collect %d credits to earn an upgrade refund, up to %d times", tf_mvm_respec_credit_goal.GetInt(), state.m_RespecLimit.GetValue()), ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(CFmtStr("Collect %d credits to earn an upgrade refund, up to %d times", tf_mvm_respec_credit_goal.GetInt(), state.m_RespecLimit.Get()), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
-			if (state.m_ImprovedAirblast.GetValue()) {
+			if (state.m_ImprovedAirblast.Get()) {
 				ItemDrawInfo info1("Pyro bots can airblast grenades and arrows", ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
-			if (state.m_SandmanStuns.GetValue()) {
+			if (state.m_SandmanStuns.Get()) {
 				ItemDrawInfo info1("Sandman balls can stun enemy targets", ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
@@ -4792,7 +4835,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CDynamicProp_Spawn)
 	{
 		DETOUR_MEMBER_CALL(CDynamicProp_Spawn)();
-		if (state.m_NoRomevisionCosmetics.GetValue()) {
+		if (state.m_NoRomevisionCosmetics.Get()) {
 			auto entity = reinterpret_cast<CBaseEntity *>(this);
 			if (FStrEq(STRING(entity->GetModelName()), "models/bots/boss_bot/carrier_parts.mdl")) {
 				entity->SetModelIndexOverride(VISION_MODE_ROME, entity->GetModelIndex());
@@ -5957,9 +6000,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	//		ResetMaxRedTeamPlayers(6);
 	//	}
 
-		bool prevAllowCivilian = state.m_bAllowCivilian;
 		std::string prevNavFile = state.m_CustomNavFile;
-		state.Reset();
+		state.Reset(true);
+		state.ResetCVars(true);
 		
 	//	Redirects parsing errors to the client
 		if (cvar_parse_errors.GetBool()) {
@@ -5973,14 +6016,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
 		reading_popfile = false;
 
-		// Reset civilian players back to normal
-		if (prevAllowCivilian && !state.m_bAllowCivilian) {
-			ForEachTFPlayer([](CTFPlayer *player){
-				if (player->IsRealPlayer() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_CIVILIAN) {
-					player->HandleCommand_JoinClass("random");
-				}
-			});
-		}
+		state.ResetCVars(false);
 
 		// Reset nav mesh
 		if (state.m_CustomNavFile != prevNavFile) {
@@ -6551,7 +6587,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "UseOriginalAnimsForUnintendedClassWeapons")) {
 				state.m_AnimationsUnintendedClassWeapons.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowCivilianClass")) {
-				state.m_bAllowCivilian = subkey->GetBool();
+				state.m_bAllowCivilian.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;
@@ -6839,7 +6875,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual void OnUnload() override
 		{
-			state.Reset();
+			state.Reset(false);
 		}
 		
 		virtual void OnEnable() override
@@ -6855,14 +6891,14 @@ namespace Mod::Pop::PopMgr_Extensions
                     menus->GetDefaultStyle()->CancelClientMenu(ENTINDEX(player));
             });
 			usermsgs->UnhookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
-			state.Reset();
+			state.Reset(false);
 		}
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void LevelInitPreEntity() override
 		{
-			state.Reset();
+			state.Reset(false);
 			state.m_PlayerUpgradeSend.clear();
 
 		}
@@ -6914,7 +6950,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual void LevelShutdownPostEntity() override
 		{
-			state.Reset();
+			state.Reset(false);
 			state.m_PlayerUpgradeSend.clear();
 			
 			for (int i = 0; i < TF_CLASS_COUNT; i++)
@@ -7117,7 +7153,7 @@ namespace Mod::Pop::PopMgr_Extensions
             const char* value_c_str{cvar_custom_popfile.GetString()};
             std::string_view value{value_c_str};
             if(value == ""){
-                state.Reset();
+                state.Reset(false);
                 ForEachTFPlayer([](CTFPlayer* player){
                     player->GetAttributeList()->DestroyAllAttributes();        
                 });
@@ -7130,7 +7166,8 @@ namespace Mod::Pop::PopMgr_Extensions
                         value_c_str);
                 return;
             }
-            state.Reset();
+            state.Reset(true);
+			state.ResetCVars(true);
             ForEachTFPlayer([](CTFPlayer* player){
                 if(player == nullptr) return;
                 if(player->GetAttributeList() != nullptr)
@@ -7152,6 +7189,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			reading_popfile = true;
             if(kv->LoadFromFile(filesystem, value_c_str))
                 Parse_Popfile(kv, filesystem);
+			state.ResetCVars(false);
 			reading_popfile = false;
             ConVarRef restart_cvar{"mp_restartgame_immediate"};
             restart_cvar.SetValue(1);

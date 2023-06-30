@@ -6019,7 +6019,8 @@
 				"CTFWeaponBaseGun::PrimaryAttack" "_ZN16CTFWeaponBaseGun13PrimaryAttackEv"
 				"CTFWeaponBaseGun::ZoomIn" "_ZN16CTFWeaponBaseGun6ZoomInEv"
 				"CTFWeaponBaseGun::GetAmmoPerShot" "_ZN16CTFWeaponBaseGun14GetAmmoPerShotEv"
-				
+
+				"CTFWeaponInvis::CleanupInvisibilityWatch" "_ZN14CTFWeaponInvis24CleanupInvisibilityWatchEv"
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				

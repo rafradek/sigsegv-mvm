@@ -3469,6 +3469,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (rc_CTFPlayerShared_RemoveCond)
         {
+			Msg("Remove Cond %d %d\n", addcond_specific_cond, nCond);
 			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
@@ -3477,6 +3478,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(attribProvider, iCondOverride, effect_cond_override);
 			addcond_overridden = false;
 
+			Msg("Remove Cond2 %d %d %d\n", addcond_provider_item, addcond_provider, iCondOverride);
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
 				for (int i = 0; i < 4; i++) {
@@ -3495,6 +3497,7 @@ namespace Mod::Attr::Custom_Attributes
 				GET_STRING_ATTRIBUTE(weapon, effect_add_attributes, attribs);
 				
 				if (attribs != nullptr) {
+					Msg("Remove Cond3 %s\n", attribs);
 					std::string str(attribs);
 					//Msg("attribs, %s\n", attribs);
 					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
@@ -3541,7 +3544,11 @@ namespace Mod::Attr::Custom_Attributes
 		// return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
 	}
 
+	RefCount rc_ReplaceCond;
 	void ReplaceCond(CTFPlayerShared &shared, ETFCond cond) {
+		rc_ReplaceCond.Increment();
+		if (rc_ReplaceCond > 1) return;
+
 		auto condData = shared.GetCondData();
 		if (!condData.InCond(cond)) {
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
@@ -3564,6 +3571,8 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 	void ReplaceBackCond(CTFPlayerShared &shared, ETFCond cond) {
+		rc_ReplaceCond.Decrement();
+		if (rc_ReplaceCond > 0) return;
 		auto condData = shared.GetCondData();
 		if (condData.InCond(cond)) {
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
@@ -3596,32 +3605,31 @@ namespace Mod::Attr::Custom_Attributes
 		int iCondOverride = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(wep, iCondOverride, effect_cond_override);
 
-		if (iCondOverride != 0) {
-			if (!wep->GetTFPlayerOwner()->m_Shared->InCond(TF_COND_STEALTHED)) {
-
-				int mode = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(wep, mode, set_weapon_mode);
-				if (mode != 1)
-					wep->GetTFPlayerOwner()->SetOffHandWeapon(wep);
-
-				wep->GetTFPlayerOwner()->m_Shared->m_bMotionCloak = mode == 2;
-			}
-		}
 		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 		addcond_specific_cond = TF_COND_STEALTHED;
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponInvis_ActivateInvisibilityWatch)();
 		addcond_specific_cond = TF_COND_INVALID;
 		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
+		if (result && iCondOverride != 0) {
+			int mode = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(wep, mode, set_weapon_mode);
+			if (mode != 1)
+				wep->GetTFPlayerOwner()->SetOffHandWeapon(wep);
+
+			wep->GetTFPlayerOwner()->m_Shared->m_bMotionCloak = mode == 2;
+		}
 		return result;
 	}
 
+	RefCount rc_CTFWeaponInvis_CleanupInvisibilityWatch;
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_FadeInvis, float mult)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		addcond_provider = me->GetOuter();
-		addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
+		if (!rc_CTFWeaponInvis_CleanupInvisibilityWatch)
+			addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
 		int iCondOverride = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
 		if (iCondOverride) {
@@ -3658,6 +3666,18 @@ namespace Mod::Attr::Custom_Attributes
 		if (isSpy) {
 			ReplaceBackCond(*me, TF_COND_STEALTHED);
 		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponInvis_CleanupInvisibilityWatch)
+	{
+		SCOPED_INCREMENT(rc_CTFWeaponInvis_CleanupInvisibilityWatch);
+		auto wep = reinterpret_cast<CTFWeaponInvis *>(this);
+		addcond_provider = wep->GetTFPlayerOwner();
+		addcond_provider_item = wep;
+		
+		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
+		DETOUR_MEMBER_CALL(CTFWeaponInvis_CleanupInvisibilityWatch)();
+		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_SpyDeadRingerDeath, const CTakeDamageInfo& info)
@@ -7232,7 +7252,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		float multIncrease = additive ? player->GetMaxAmmo(ammoType) / (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float)) : new_value.m_Float / old_value.m_Float;
-		Msg("Increase %f %d\n", multIncrease, additive);
 		auto mod = player->GetOrCreateEntityModule<AmmoFractionModule>("amraction");
 		if (mod->ammoFraction[ammoType] != 0 && player->GetAmmoCount(ammoType) * multIncrease >= player->GetMaxAmmo(ammoType)) {
 			mod->ammoFraction[ammoType] = 0;
@@ -7535,6 +7554,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateCloakMeter, "CTFPlayerShared::UpdateCloakMeter");
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_CleanupInvisibilityWatch, "CTFWeaponInvis::CleanupInvisibilityWatch");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);

@@ -140,9 +140,13 @@ void GenerateItemNames() {
                 const char *str = def->GetKeyValues()->GetString("description_string", "#")+1;
                 if (str[0] != '\0') {
                     g_Attribnames[i] = strings[KeyValues::CallGetSymbolForString(str, false)];
-                    auto find = strings.find(KeyValues::CallGetSymbolForString(CFmtStr("%s_shortdesc",str), false));
-                    if (find != strings.end()) {
+                    int shortDescSymbol = KeyValues::CallGetSymbolForString(CFmtStr("%s_shortdesc",str), false);
+                    auto find = strings.find(shortDescSymbol);
+                    if (shortDescSymbol != -1 && find != strings.end()) {
                         g_AttribnamesShort[i] = find->second;
+                    }
+                    else {
+                        g_AttribnamesShort[i] = g_Attribnames[i];
                     }
                 }
             }
@@ -151,7 +155,7 @@ void GenerateItemNames() {
         //Msg("Def time %.9f\n", timer3.GetDuration().GetSeconds());
 
         char path_sm[PLATFORM_MAX_PATH];
-        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data2.dat");
+        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data3.dat");
         CUtlBuffer fileout( 0, 0, 0 );
         fileout.PutInt64(filesystem->GetFileTime("resource/tf_english.txt", "GAME"));
 
@@ -182,7 +186,7 @@ void GenerateItemNames() {
 void LoadItemNames() {
     if (g_Itemnames.empty() || g_Attribnames.empty()) {
         char path_sm[PLATFORM_MAX_PATH];
-        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data2.dat");
+        g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_item_data3.dat");
 
         long time = filesystem->GetFileTime("resource/tf_english.txt", "GAME");
         CUtlBuffer file( 0, 0, 0 );
@@ -234,7 +238,7 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
     DevMsg("inspecting attr index %d\n", attr_def->GetIndex());
     KeyValues *kv = attr_def->GetKeyValues();
     const char *format = kv->GetString("description_string");
-    if (kv->GetBool("hidden") || format == nullptr)
+    if ((!shortDescription && kv->GetBool("hidden")) || format == nullptr)
         return false;
 
     
