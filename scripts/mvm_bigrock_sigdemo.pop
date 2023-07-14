@@ -2500,6 +2500,35 @@ WaveSchedule
 		{
 			Name "wave01a"
 			Where spawnbot
+			TotalCount 10
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			Support 1
+			BotNPC [$SIGSEGV] // BotNPC spawner. Spawns an npc bot entity
+			{
+				IsCrit 1 // Shows icon as critical (Default: 0)
+				IsMiniBoss 1 // Shows icon as mini boss (Default: 1)
+				ClassIcon Soldier // ClassIcon to use
+				SpawnCurrencyPack 1 // If set, the boss will drop money on death. Otherwise its distributed automatically (Default: 1)
+				TeamNum 3 // Team number for NPC (2 - red, 3 - blu, 0 - neutral) (Default: 0)
+				Health 11111 // Boss health, 0 means default health (Default: 0)
+				// Origin "0 100 0" // If set, spawns boss at the specified position rather than at where location
+				SpreadRadius "200 200 0" // Randomly spreads halloween boss in x y z coordinates
+				StickToGround 6000 // Stick spawned boss to ground, as long as its up to x units above the ground
+				DamageMultiplier 10 // Damage multiplier
+				// SpawnAtEntity "entity" // If set, spawns boss at the entity location instead of where location
+				SpawnTemplate "WeaponMimic" // Spawn PointTemplate at entity
+				MoveSpeed 1000 // Some custom or regular key/variable
+			}
+		}
+		
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
 			TotalCount 1
 			MaxActive 1
 			SpawnCount 1

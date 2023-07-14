@@ -305,6 +305,9 @@ namespace Mod::Cond::Reprogrammed
 		if (player->IsBot()) {
 			if (player->GetTeamNumber() == TF_TEAM_BLUE) {
 				DevMsg("  currently on TF_TEAM_BLUE: calling ForceChangeTeam(TF_TEAM_RED)\n");
+				if (player->m_Shared->InCond(TF_COND_DISGUISING)) {
+					player->m_Shared->RemoveCond(TF_COND_DISGUISING);
+				}
 				player->ForceChangeTeam(TF_TEAM_RED, false);
 			} else {
 				DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
@@ -324,6 +327,9 @@ namespace Mod::Cond::Reprogrammed
 			stop_auto_assignment = true;
 			if (player->GetTeamNumber() == TF_TEAM_BLUE) {
 				
+				if (player->m_Shared->InCond(TF_COND_DISGUISING)) {
+					player->m_Shared->RemoveCond(TF_COND_DISGUISING);
+				}
 				player->ForceChangeTeam(TF_TEAM_RED, false);
 
 				if (cvar_hellmet.GetBool()) {
@@ -332,6 +338,9 @@ namespace Mod::Cond::Reprogrammed
 			}
 			else {
 
+				if (player->m_Shared->InCond(TF_COND_DISGUISING)) {
+					player->m_Shared->RemoveCond(TF_COND_DISGUISING);
+				}
 				player->ForceChangeTeam(TF_TEAM_BLUE, false);
 
 				if (cvar_hellmet.GetBool()) {

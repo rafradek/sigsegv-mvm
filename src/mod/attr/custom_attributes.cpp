@@ -1130,6 +1130,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (entry.wearable_vm == nullptr && entry.createVMWearable) {
 			auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
+			CopyVisualAttributes(entry.weapon->GetTFPlayerOwner(), entry.weapon, wearable_vm);
 			wearable_vm->Spawn();
 			wearable_vm->GiveTo(entry.weapon->GetTFPlayerOwner());
 			wearable_vm->SetModelIndex(entry.model_index);
@@ -1140,6 +1141,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (entry.wearable == nullptr) {
 			auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+			CopyVisualAttributes(entry.weapon->GetTFPlayerOwner(), entry.weapon, wearable);
 			wearable->Spawn();
 			wearable->GiveTo(entry.weapon->GetTFPlayerOwner());
 			wearable->SetModelIndex(entry.model_index);
@@ -1174,9 +1176,11 @@ namespace Mod::Attr::Custom_Attributes
 				// owner->GetViewModel(weapon->m_nViewModelIndex)->SetControlPanelsActive(true);
 
 			}
-			else if (owner != nullptr && rtti_cast<CTFWeaponBuilder *>(weapon) != nullptr) {
-				entity->SetModelIndex(model_index);
-			}
+			// else if (owner != nullptr && rtti_cast<CTFWeaponBuilder *>(weapon) != nullptr) {
+			// 	for (int i = 0; i < MAX_VISION_MODES; ++i) {
+			// 		entity->SetModelIndexOverride(i, model_index);
+			// 	}
+			// }
 			else if (weapon != nullptr && owner != nullptr && !owner->IsFakeClient()) {
 				auto entry = FindCustomModelEntry(weapon);
 				if (entry != nullptr) {
@@ -3469,7 +3473,6 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		if (rc_CTFPlayerShared_RemoveCond)
         {
-			Msg("Remove Cond %d %d\n", addcond_specific_cond, nCond);
 			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
 
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
@@ -3478,7 +3481,6 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(attribProvider, iCondOverride, effect_cond_override);
 			addcond_overridden = false;
 
-			Msg("Remove Cond2 %d %d %d\n", addcond_provider_item, addcond_provider, iCondOverride);
 			// Allow up to 4 addconds with bit shifting
 			if (iCondOverride != 0) {
 				for (int i = 0; i < 4; i++) {
@@ -3497,7 +3499,6 @@ namespace Mod::Attr::Custom_Attributes
 				GET_STRING_ATTRIBUTE(weapon, effect_add_attributes, attribs);
 				
 				if (attribs != nullptr) {
-					Msg("Remove Cond3 %s\n", attribs);
 					std::string str(attribs);
 					//Msg("attribs, %s\n", attribs);
 					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
@@ -4481,7 +4482,7 @@ namespace Mod::Attr::Custom_Attributes
 		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pData, pCurWeaponItem, pNewWeaponItem, pWpnEntity);
 		
 		if (pCurWeaponItem != nullptr && pNewWeaponItem != nullptr) {
-			DevMsg("%lld %lld %d %s %s\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem));
+			DevMsg("itemsmatch %lld %lld %d %s %s %d %d\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem), pCurWeaponItem->m_iItemDefinitionIndex.Get(), pNewWeaponItem->m_iItemDefinitionIndex.Get());
 		}
 		if (!ret && rc_CTFPlayer_Regenerate) {
 			if (pWpnEntity != nullptr) {
@@ -6638,7 +6639,105 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFWeaponBuilder_StartPlacement)
+	{
+		DETOUR_MEMBER_CALL(CTFWeaponBuilder_StartPlacement)();
+		auto builder = reinterpret_cast<CTFWeaponBuilder *>(this);
+
+		string_t attrTest = NULL_STRING;
+		switch (builder->m_iObjectType) {
+			case OBJ_SENTRYGUN: attrTest = PStrT<"sentry_toolbox_model">(); break;
+			case OBJ_DISPENSER: attrTest = PStrT<"dispenser_toolbox_model">(); break;
+			case OBJ_TELEPORTER: attrTest = PStrT<"teleporter_toolbox_model">(); break;
+		}
+		
+		if (attrTest != NULL_STRING) {
+		 	auto model = builder->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, builder->GetTFPlayerOwner(), attrTest).ToCStr();
+			
+			auto kv = builder->GetItem()->GetStaticData()->GetKeyValues()->FindKey("used_by_classes");
+			if (kv != nullptr && kv->FindKey("spy") != nullptr && (model == nullptr || model[0] == '\0')) {
+				model = "models/weapons/c_models/c_toolbox/c_toolbox.mdl";
+			}
+			Msg("SomeModel %s\n", model);
+		 	if (model != nullptr && model[0] != '\0') {
+		 		builder->SetCustomVariable("custombuildingviewmodel", Variant(true));
+				auto oldCustomModel = builder->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, builder, PStrT<"custom_item_model">());
+		 		builder->SetCustomVariable("custombuildingviewmodelrestore", Variant(oldCustomModel));
+				builder->GetItem()->GetAttributeList().AddStringAttribute(GetItemSchema()->GetAttributeDefinitionByName("custom item model"), model);
+		// 		builder->SetCustomViewModel(model);
+		// 		builder->m_iViewModelIndex = CBaseEntity::PrecacheModel(model);
+		// 		builder->SetModel(model);
+			}
+		}
+		
+	}
 	
+	DETOUR_DECL_MEMBER(void, CTFWeaponBuilder_StopPlacement)
+	{
+		DETOUR_MEMBER_CALL(CTFWeaponBuilder_StopPlacement)();
+		auto builder = reinterpret_cast<CTFWeaponBuilder *>(this);
+
+		if (builder->GetCustomVariableBool<"custombuildingviewmodel">()) {
+			builder->SetCustomVariable("custombuildingviewmodel", Variant(false));
+			auto modelRestore = builder->GetCustomVariable<"custombuildingviewmodelrestore">();
+			if (modelRestore != nullptr) {
+				builder->GetItem()->GetAttributeList().AddStringAttribute(GetItemSchema()->GetAttributeDefinitionByName("custom item model"), modelRestore);
+			}
+			builder->SetCustomVariable("custombuildingviewmodel", Variant(false));
+		// 	builder->SetCustomViewModel("");
+		// 	builder->SetViewModel();
+		// 	builder->m_iViewModelIndex = CBaseEntity::PrecacheModel(builder->GetViewModel());
+		// 	builder->SetModel(builder->GetViewModel());
+		// 	builder->SetCustomVariable("custombuildingviewmodel", Variant(false));
+		}
+	}
+
+	VHOOK_DECL(Activity, CTFWeaponBuilder_TranslateViewmodelHandActivityInternal, Activity base)
+	{
+		auto ret = VHOOK_CALL(CTFWeaponBuilder_TranslateViewmodelHandActivityInternal)(base);
+		//Msg("Base %s Res %s\n", CAI_BaseNPC::GetActivityName(base), CAI_BaseNPC::GetActivityName(ret));
+		return ret;
+	}
+
+	VHOOK_DECL(bool, CTFWeaponBuilder_SendWeaponAnim, Activity act)
+	{
+		auto builder = reinterpret_cast<CTFWeaponBuilder *>(this);
+		if (builder->m_iObjectType != OBJ_ATTACHMENT_SAPPER) {
+			auto kv = builder->GetItem()->GetStaticData()->GetKeyValues()->FindKey("used_by_classes");
+			if (kv != nullptr && kv->FindKey("spy") != nullptr) {
+				if (act == CAI_BaseNPC::GetActivityID("ACT_VM_IDLE")) {
+					act = CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_IDLE");
+				}
+				if (act == CAI_BaseNPC::GetActivityID("ACT_VM_DRAW")) {
+					act = CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_DRAW");
+				}
+			}
+		}
+		auto ret = VHOOK_CALL(CTFWeaponBuilder_SendWeaponAnim)(act);
+		return ret;
+	}
+	
+	
+	DETOUR_DECL_MEMBER(int, CEconItemView_GetAnimationSlot)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetAnimationSlot)();
+		//Msg("Slot %d\n", ret);
+		return ret;
+	}
+	
+	DETOUR_DECL_MEMBER(int, CTFWeaponBase_GetViewModelWeaponRole)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_GetViewModelWeaponRole)();
+		//Msg("SlotRole %d\n", ret);
+		return ret;
+	}
+	
+	DETOUR_DECL_MEMBER(Activity, CEconItemDefinition_GetActivityOverride, int team, Activity base)
+	{
+		auto ret = DETOUR_MEMBER_CALL(CEconItemDefinition_GetActivityOverride)(team, base);
+		//Msg("ActivityOverride %d %d\n", base, ret);
+		return ret;
+	}
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
@@ -6867,7 +6966,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
-			if (entity->GetItem() != nullptr && entity->GetItem() != view && entity->GetItem()->GetStaticData()->m_iItemDefIndex != 0) {
+			if (entity->GetItem() != nullptr && entity->GetItem() != view && entity->GetItem()->GetStaticData()->m_iItemDefIndex != 0 && entity->GetItem()->m_iEntityLevel != 414918 /*Entity level for custom model wearables*/) {
 				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock || entity->GetItem()->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
 			}
 		});
@@ -7613,6 +7712,13 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime, "CTFBotDeliverFlag::UpgradeOverTime");
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxAmmo, "CTFPlayer::GetMaxAmmo");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBuilder_StartPlacement, "CTFWeaponBuilder::StartPlacement");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBuilder_StopPlacement, "CTFWeaponBuilder::StopPlacement");
+			MOD_ADD_VHOOK2(CTFWeaponBuilder_TranslateViewmodelHandActivityInternal, TypeName<CTFWeaponBuilder>(), TypeName<CEconEntity>(), "CEconEntity::TranslateViewmodelHandActivityInternal");
+			MOD_ADD_VHOOK(CTFWeaponBuilder_SendWeaponAnim, TypeName<CTFWeaponBuilder>(), "CTFWeaponBase::SendWeaponAnim");
+			MOD_ADD_DETOUR_MEMBER(CEconItemView_GetAnimationSlot, "CEconItemView::GetAnimationSlot");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetViewModelWeaponRole, "CTFWeaponBase::GetViewModelWeaponRole");
+			MOD_ADD_DETOUR_MEMBER(CEconItemDefinition_GetActivityOverride, "CEconItemDefinition::GetActivityOverride");
 			
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");

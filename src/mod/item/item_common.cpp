@@ -367,6 +367,28 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
     return true;
 }
 
+void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity *copyTo)
+{
+    copyTo->GetItem()->Init(copyFrom->GetItem()->m_iItemDefinitionIndex, 9999, 414918);
+    int tint = 0;
+    CALL_ATTRIB_HOOK_INT_ON_OTHER(copyFrom, tint, set_item_tint_rgb);
+    if (tint != 0)
+        copyTo->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("set item tint rgb"), tint);
+    int style = 0;
+    CALL_ATTRIB_HOOK_INT_ON_OTHER(copyFrom, style, item_style_override);
+    if (style != 0)
+        copyTo->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("item style override"), style);
+
+    auto paintkitAttr = copyFrom->GetItem()->GetAttributeList().GetAttributeByName("paintkit_proto_def_index");
+    if (paintkitAttr != nullptr)
+        copyTo->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("paintkit_proto_def_index"), paintkitAttr->GetValue().m_Float);
+    float texture = 0;
+    CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(copyFrom, texture, set_item_texture_wear);
+    if (texture != 0)
+        copyTo->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("set_item_texture_wear"), texture);
+    copyTo->UpdateBodygroups(player, true);
+}
+
 CON_COMMAND(sig_gen_rand, "")
 {
     CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );

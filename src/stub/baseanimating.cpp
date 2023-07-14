@@ -78,6 +78,7 @@ MemberVFuncThunk<CEconEntity *, CAttributeManager *>   CEconEntity::vt_GetAttrib
 MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   CEconEntity::vt_GiveTo               (TypeName<CEconEntity>(), "CEconEntity::GiveTo");
 MemberVFuncThunk<CEconEntity *, void>                  CEconEntity::vt_ReapplyProvision     (TypeName<CEconEntity>(), "CEconEntity::ReapplyProvision");
 MemberVFuncThunk<CEconEntity *, bool, CBaseCombatCharacter *, bool> CEconEntity::vt_UpdateBodygroups(TypeName<CEconEntity>(), "CEconEntity::UpdateBodygroups");
+MemberVFuncThunk<CEconEntity *, Activity, Activity>    CEconEntity::vt_TranslateViewmodelHandActivityInternal(TypeName<CEconEntity>(), "CEconEntity::TranslateViewmodelHandActivityInternal");
 
 CEconItemView *CEconEntity::GetItem()
 {

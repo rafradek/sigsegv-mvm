@@ -87,8 +87,13 @@ namespace Mod::Etc::Allow_Civilian_Class
 		
 		virtual void OnEnable() override
 		{
-
-		}
+			auto civData = GetPlayerClassData(TF_CLASS_CIVILIAN);
+			civData->m_aAmmoMax[TF_AMMO_PRIMARY] = 1;
+			civData->m_aAmmoMax[TF_AMMO_SECONDARY] = 1;
+			civData->m_aAmmoMax[TF_AMMO_METAL] = 100;
+			civData->m_aAmmoMax[TF_AMMO_GRENADES1] = 1;
+			civData->m_aAmmoMax[TF_AMMO_GRENADES2] = 1;
+		}	
 		
 		virtual void OnDisable() override
 		{

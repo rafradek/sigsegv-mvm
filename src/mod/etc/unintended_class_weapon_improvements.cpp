@@ -87,18 +87,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		const char *customModel = weapon->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, weapon, PStrT<"custom_item_model">()).ToCStr();
         if (customModel == nullptr || customModel[0] == '\0' ) {
             auto wearable_vm_weapon = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
-			wearable_vm_weapon->GetItem()->Init(weapon->GetItem()->m_iItemDefinitionIndex);
-			int tint = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, tint, set_item_tint_rgb);
-			if (tint != 0)
-				wearable_vm_weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("set item tint rgb"), tint);
-			int style = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, style, item_style_override);
-			if (style != 0)
-				wearable_vm_weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("item style override"), style);
-			wearable_vm_weapon->UpdateBodygroups(owner, true);
-			wearable_vm_weapon->SetRenderColorR(0);
-			wearable_vm_weapon->GetItem()->m_bInitialized = true;
+			CopyVisualAttributes(owner, weapon, wearable_vm_weapon);
             wearable_vm_weapon->Spawn();
             wearable_vm_weapon->GiveTo(owner);
             wearable_vm_weapon->SetModelIndex(weapon->m_iWorldModelIndex);
@@ -109,6 +98,21 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		THINK_FUNC_SET(owner->GetViewModel(), HideViewModel, gpGlobals->curtime);
 
 		return true;
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerClassShared_SetCustomModel, const char *s1, bool b1)
+	{
+		auto player = reinterpret_cast<CTFPlayerClassShared *>(this)->GetOuter();
+		auto weapon = player->GetActiveTFWeapon();
+		if (weapon != nullptr) {
+			auto mod = weapon->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
+			if (mod != nullptr && mod->playerModelWearable != nullptr) {
+				mod->playerModelWearable->SetModelIndex(CBaseEntity::PrecacheModel(s1 != nullptr && s1[0] != '\0' ? s1 : GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_szModelName));
+				return;
+			}
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
 	}
 
 	bool OnUnequipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
@@ -740,6 +744,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster,     "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,     "CTFWearable::Equip");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerClassShared_SetCustomModel,     "CTFPlayerClassShared::SetCustomModel", LOW);
 
 			// Allow non demos to use shields and benefit from eyelander heads
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoClassSpecialSkill, "CTFPlayer::DoClassSpecialSkill");
@@ -786,6 +791,11 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
         }
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled() && sig_etc_unintended_class_weapon_display_meters.GetBool(); }
+
+		virtual void LevelInitPostEntity() override
+		{
+			CBaseEntity::PrecacheModel("models/weapons/c_models/c_engineer_gunslinger.mdl");
+        }
 
         virtual void FrameUpdatePostEntityThink() override
         {

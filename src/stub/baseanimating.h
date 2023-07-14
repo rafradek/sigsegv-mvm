@@ -169,6 +169,7 @@ public:
 	void GiveTo(CBaseEntity *ent)                {        vt_GiveTo(this, ent); }
 	void ReapplyProvision()                      {        vt_ReapplyProvision(this); }
 	bool UpdateBodygroups(CBaseCombatCharacter *owner, bool enable) { return vt_UpdateBodygroups(this, owner, enable); }
+	Activity TranslateViewmodelHandActivityInternal(Activity base) { return vt_TranslateViewmodelHandActivityInternal(this, base); }
 	
 	CEconItemView *GetItem();
 	
@@ -184,6 +185,7 @@ private:
 	static MemberVFuncThunk<CEconEntity *, void, CBaseEntity *>   vt_GiveTo;
 	static MemberVFuncThunk<CEconEntity *, void>                  vt_ReapplyProvision;
 	static MemberVFuncThunk<CEconEntity *, bool, CBaseCombatCharacter *, bool> vt_UpdateBodygroups;
+	static MemberVFuncThunk<CEconEntity *, Activity, Activity>    vt_TranslateViewmodelHandActivityInternal;
 };
 #endif
 

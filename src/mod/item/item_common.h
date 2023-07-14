@@ -282,4 +282,6 @@ static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(const char* type, cons
     }
     return ptr;
 }
+
+void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity *copyTo);
 #endif

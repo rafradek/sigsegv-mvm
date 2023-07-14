@@ -29,6 +29,155 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 	std::map<CHandle<CBaseEntity>, CHalloweenBossSpawner *> boss_spawners;
 
+	class CBotNPCSpawner;
+
+	std::map<CHandle<CBaseEntity>, CBotNPCSpawner *> bot_npc_spawners;
+
+	class CBotNPCSpawner : public IPopulationSpawner
+	{
+	public:
+		CBotNPCSpawner( IPopulator *populator ) : IPopulationSpawner(populator)
+		{
+			m_Populator = rtti_cast<CWaveSpawnPopulator *>(populator);
+		};
+
+		virtual ~CBotNPCSpawner() {
+			for (auto it = bot_npc_spawners.begin(); it != bot_npc_spawners.end();) {
+				if (it->second == this) {
+					it = bot_npc_spawners.erase(it);
+				}
+				else {
+					it++;
+				}
+			}
+		}
+
+		virtual bool IsWhereRequired( void ) const
+		{
+			return !m_bSetOrigin && m_SpawnAtEntity.empty();
+		}
+		
+		virtual bool IsMiniBoss( int nSpawnNum = -1 ) override { return m_bIsMiniBoss; }
+		virtual string_t GetClassIcon( int nSpawnNum = -1 ) { return m_strClassIcon; }
+		
+		virtual bool HasEventChangeAttributes( const char* pszEventName ) const override { return false; }
+
+		virtual bool HasAttribute( CTFBot::AttributeType type, int nSpawnNum = -1 )
+		{ 
+			if (type == CTFBot::ATTR_ALWAYS_CRIT)
+				return m_bIsCrit;
+			else
+				return false;
+		}
+
+		virtual bool Parse( KeyValues *data ) override
+		{
+			FOR_EACH_SUBKEY(data, subkey) {
+				const char *name = subkey->GetName();
+				if (FStrEq(name, "IsMiniBoss")) {
+					m_bIsMiniBoss = subkey->GetBool();
+				}
+				else if (FStrEq(name, "IsCrit")) {
+					m_bIsCrit = subkey->GetBool();
+				}
+				else if (FStrEq(name, "ClassIcon")) {
+					m_strClassIcon = AllocPooledString(subkey->GetString());
+				}
+				else if (FStrEq(name, "SpawnCurrencyPack")) {
+					m_bSpawnCurrencyPack = subkey->GetString();
+				}
+				else if (FStrEq(name, "SpawnTemplate")) {
+					m_Attachements.push_back(Parse_SpawnTemplate(subkey));
+				} else if (FStrEq(name, "SpreadRadius")) {
+					sscanf(subkey->GetString(), "%f %f %f", &m_SpreadRadius.x, &m_SpreadRadius.y, &m_SpreadRadius.z);
+					m_bHasSpreadRadius = true;
+				} else if (FStrEq(name, "Origin")) {
+					m_bSetOrigin = true;
+					sscanf(subkey->GetString(),"%f %f %f", &m_Origin.x, &m_Origin.y, &m_Origin.z);
+				} else if (FStrEq(name, "StickToGround")) {
+					m_fStickToGround = subkey->GetFloat();
+				} else if (FStrEq(name, "SpawnAtEntity")) {
+					m_SpawnAtEntity = subkey->GetString();
+				} else if (FStrEq(name, "Health")) {
+					m_EntityKeys.emplace("maxhealth", Variant(subkey->GetString()));
+					m_EntityKeys.emplace("health", Variant(subkey->GetString()));
+				} else {
+					m_EntityKeys.emplace(name, Variant(subkey->GetString()));
+				}
+			}
+			return true;
+		}
+
+		virtual bool Spawn( const Vector &here, CUtlVector<CHandle<CBaseEntity>> *ents ) override
+		{
+			Vector spawnpos = m_bSetOrigin || !m_SpawnAtEntity.empty() ? m_Origin : here;
+
+			if (!m_SpawnAtEntity.empty()) {
+				CBaseEntity *entity_target = servertools->FindEntityByName(nullptr, m_SpawnAtEntity.c_str());
+				if (entity_target == nullptr) {
+					return false;
+				}
+				spawnpos += entity_target->GetAbsOrigin();
+			}
+			// Spread entites and stick them to the ground
+			if (m_bHasSpreadRadius) {
+				spawnpos.x += RandomFloat(-m_SpreadRadius.x, m_SpreadRadius.x);
+				spawnpos.y += RandomFloat(-m_SpreadRadius.y, m_SpreadRadius.y);
+				spawnpos.z += RandomFloat(-m_SpreadRadius.z, m_SpreadRadius.z);
+			}
+
+			if (m_fStickToGround != 0.0f) {
+				trace_t result;
+				UTIL_TraceHull(spawnpos, spawnpos + Vector(0,0, -m_fStickToGround), VEC_HULL_MIN, VEC_HULL_MAX, MASK_NPCSOLID | MASK_PLAYERSOLID, null, COLLISION_GROUP_PLAYER_MOVEMENT, &result);
+				if (result.DidHit()) {
+					spawnpos = result.endpos;
+				}
+			}
+
+			auto npc = CreateEntityByName("$bot_npc");
+
+			npc->SetAbsOrigin(spawnpos);
+			for (auto &[key, value] : m_EntityKeys) {
+				npc->SetCustomVariable(key.c_str(), value);
+				npc->KeyValue(key.c_str(), value.String());
+			}
+
+			for (auto it1 = m_Attachements.begin(); it1 != m_Attachements.end(); ++it1) {
+				it1->SpawnTemplate(npc);
+			}
+
+			ents->AddToTail(npc);
+			bot_npc_spawners[npc] = this;
+
+			return true;
+		}
+		
+		CWaveSpawnPopulator *m_Populator = nullptr;
+		string_t m_strClassIcon = NULL_STRING;
+		bool m_bSpawnCurrencyPack = true;
+		std::vector<CHandle<CBaseEntity>> m_Instances;
+		
+		float m_fLifetime = FLT_MAX;
+		float m_fSpeed = FLT_MAX;
+		float m_fDmgMult = 1.0f;
+		bool m_bFastUpdate = false;
+
+	private:
+		bool m_bIsMiniBoss = true;
+		bool m_bIsCrit = false;
+		std::vector<PointTemplateInfo> m_Attachements;
+		int m_Type = (int) CHalloweenBaseBoss::INVALID;
+		int m_iTeamNum = 5;
+		int m_iHealth = 0;
+		bool m_bSetOrigin = false;
+		bool m_bHasSpreadRadius = false;
+		float m_fStickToGround = 0.0f;
+		Vector m_SpreadRadius;
+		Vector m_Origin;
+		std::string m_SpawnAtEntity = "";
+		std::multimap<std::string,variant_t, CaseInsensitiveLess> m_EntityKeys;
+	};
+
 	class CPointTemplateSpawner : public IPopulationSpawner
 	{
 	public:
@@ -537,6 +686,18 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			return spawner;
 		}
 
+		else if (FStrEq(data->GetName(), "BotNPC")) {
+			CBotNPCSpawner *spawner = new CBotNPCSpawner(populator);
+
+			if (!spawner->Parse(data))
+			{
+				Warning( "Warning reading BotNPC spawner definition\n" );
+				delete spawner;
+				return nullptr;
+			}
+			return spawner;
+		}
+
 		auto result = DETOUR_STATIC_CALL(IPopulationSpawner_ParseSpawner)(populator, data);
 
 		return result;
@@ -669,6 +830,15 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	{
 		auto find = boss_spawners.find(entity);
 		if (find != boss_spawners.end()) {
+			return find->second;
+		}
+		return nullptr;
+	}
+
+	CBotNPCSpawner *GetNPCBotInfo(CBaseEntity *entity)
+	{
+		auto find = bot_npc_spawners.find(entity);
+		if (find != bot_npc_spawners.end()) {
 			return find->second;
 		}
 		return nullptr;
@@ -843,6 +1013,48 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 	}
 
+	void DeleteNPC(CBaseEntity *boss, CBotNPCSpawner *spawner)
+	{
+		if (spawner == nullptr && boss != nullptr) {
+			spawner = GetNPCBotInfo(boss);
+		}
+
+		if (spawner == nullptr)
+			return;
+
+		auto populator = spawner->m_Populator;
+		if (populator != nullptr) {
+			int currency = populator->GetCurrencyAmountPerDeath();
+
+			if (currency > 0) {
+				if (!spawner->m_bSpawnCurrencyPack || boss == nullptr) {
+					TFGameRules()->DistributeCurrencyAmount(currency, nullptr, true, true, false);
+				}
+				else {
+					QAngle angRand = vec3_angle;
+					angRand.y = RandomFloat( -180.0f, 180.0f );
+					CCurrencyPackCustom *pCurrencyPack = static_cast<CCurrencyPackCustom *>(CBaseEntity::CreateNoSpawn("item_currencypack_custom", boss->GetAbsOrigin(), angRand, nullptr));
+
+					if (pCurrencyPack)
+					{
+						pCurrencyPack->SetAmount( currency );
+						Vector vecImpulse = RandomVector( -1,1 );
+						vecImpulse.z = 1;
+						VectorNormalize( vecImpulse );
+						Vector vecVelocity = vecImpulse * 250.0;
+
+						DispatchSpawn( pCurrencyPack );
+						pCurrencyPack->DropSingleInstance( vecVelocity, nullptr, 0, 0 );
+					}
+				}
+			}
+		}
+		if (spawner->m_strClassIcon != NULL_STRING ) {
+			CTFObjectiveResource *res = TFObjectiveResource();
+			res->DecrementMannVsMachineWaveClassCount(spawner->m_strClassIcon, 1 | 8);
+		}
+	}
+
 	void DeleteBoss(CBaseEntity *boss, CHalloweenBossSpawner *spawner)
 	{
 		if (spawner == nullptr && boss != nullptr) {
@@ -892,6 +1104,12 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			auto inst = it->first;
 			DeleteBoss(inst, spawner);
 			it = boss_spawners.erase(it);
+		}
+		for (auto it = bot_npc_spawners.begin(); it != bot_npc_spawners.end();) {
+			auto spawner = it->second;
+			auto inst = it->first;
+			DeleteNPC(inst, spawner);
+			it = bot_npc_spawners.erase(it);
 		}
 		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
 	}
@@ -1087,6 +1305,17 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				if (spawner != nullptr && spawner->m_bFastUpdate && inst->MyNextBotPointer() != nullptr) {
 					reinterpret_cast<NextBotData *>(inst->MyNextBotPointer())->m_bScheduledForNextTick = true;
 				}
+			}
+			for (auto it = bot_npc_spawners.begin(); it != bot_npc_spawners.end();) {
+				auto spawner = it->second;
+				auto inst = it->first;
+				if (inst == nullptr || !inst->IsAlive()) {
+					DeleteNPC(inst, spawner);
+					it = bot_npc_spawners.erase(it);
+					continue;
+				}
+
+				it++;
 			}
 		}
 	};

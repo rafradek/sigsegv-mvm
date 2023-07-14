@@ -139,6 +139,9 @@ inline void ForEachTFPlayerEconEntity(CTFPlayer *player, const FUNCTOR& func)
 	for (int i = 0; i < player->GetNumWearables(); i++) {
 		CEconWearable *wearable = player->GetWearable(i);
 		if (wearable == nullptr) continue;
+
+		// Ignore helper custom model wearables
+		if (wearable->GetItem()->m_iEntityLevel == 414918) continue;
 		
 		if (!CALL_FUNCTOR(T *)(func, wearable)) break;
 	}

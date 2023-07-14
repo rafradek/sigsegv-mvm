@@ -1502,13 +1502,28 @@ namespace Mod::Pop::PopMgr_Extensions
 	}
 
 	RefCount rc_CTFPlayer_GiveDefaultItems;
+	RefCount rc_CTFPlayer_ValidateWeapons;
 	std::unordered_set<CEconItemDefinition *> is_item_replacement;
 	CEconItemView *item_view_replacement = nullptr;
 	DETOUR_DECL_MEMBER(void , CTFPlayer_GiveDefaultItems)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_GiveDefaultItems);
-		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (IsMannVsMachineMode() && player != nullptr) {
+			auto find_loadout = state.m_SelectedLoadoutItems.find(player->GetSteamID());
+			if (find_loadout != state.m_SelectedLoadoutItems.end()) {
+				for(int itemnum : find_loadout->second) {
+					if (itemnum < (int) state.m_ExtraLoadoutItems.size()) {
+						auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
+						if (extraitem.item != nullptr && (extraitem.class_index == player->GetPlayerClass()->GetClassIndex() || extraitem.class_index == 0)) {
+							is_item_replacement.insert(extraitem.item->GetItemDefinition());
+						}
+					}
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 		if (!player->IsBot()) {
 			ApplyOrClearRobotModel(player);
 		}
@@ -1517,7 +1532,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 	int LoadoutSlotReplace(int slot, CTFItemDefinition *item_def, int classIndex) 
 	{
-		if (rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) {
+		if (rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || rc_CTFPlayer_ValidateWeapons || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) {
 			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 		}
 		return slot;
@@ -1536,12 +1551,16 @@ namespace Mod::Pop::PopMgr_Extensions
 		return slot == -1 && !loadout_slot_replace_disabled && classIndex != TF_CLASS_UNDEFINED && item_def->m_iItemDefIndex != 0 ? LoadoutSlotReplace(slot, item_def, classIndex) : slot;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ValidateWeapons, TFPlayerClassData_t *pData, bool bResetWeapons)
+	{
+		SCOPED_INCREMENT(rc_CTFPlayer_ValidateWeapons);
+		DETOUR_MEMBER_CALL(CTFPlayer_ValidateWeapons)(pData, bResetWeapons);
+	}
+
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerInventory_GetItemInLoadout, int pclass, int slot)
 	{
 		auto inventory = reinterpret_cast<CTFPlayerInventory *>(this);
 		CTFPlayer *player = (CTFPlayer *) UTIL_PlayerBySteamID(inventory->m_OwnerId);
-
-		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
 
 		if (IsMannVsMachineMode() && player != nullptr) {
 			auto find_loadout = state.m_SelectedLoadoutItems.find(player->GetSteamID());
@@ -1565,6 +1584,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 		}
+
+		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
+		Msg("Item in loadout %d %d %d %s\n", pclass, slot, result != nullptr ? result->GetItem()->m_iItemDefinitionIndex.Get() : -1, result != nullptr ? GetItemNameForDisplay(result->GetItem()), "no");
 
 		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
 			if (!state.m_ItemReplace.empty()) {
@@ -2569,7 +2591,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		if (event != nullptr && strcmp(event->GetName(), "player_death") == 0 && (event->GetInt( "death_flags" ) & 0x0200 /*TF_DEATH_MINIBOSS*/) == 0) {
 			auto player = UTIL_PlayerByUserId(event->GetInt("userid"));
-			if (player != nullptr && player->GetTeamNumber() == TF_TEAM_BLUE && (!player->IsBot() || state.m_bDisplayRobotDeathNotice) )
+			if (player != nullptr && (player->GetTeamNumber() == TF_TEAM_BLUE || ToTFPlayer(player)->m_Shared->InCond(TF_COND_REPROGRAMMED)) && (!player->IsBot() || state.m_bDisplayRobotDeathNotice) )
 				event->SetInt("death_flags", (event->GetInt( "death_flags" ) | 0x0200));
 		}
 
@@ -2812,7 +2834,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto player = ToTFPlayer(owner);
-		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && Mod::Attr::Custom_Attributes::IsCustomViewmodelAllowed(player) && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && ent->m_nViewModelIndex == 0 && ent->GetItem() != nullptr && ent->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0) {
+		if (player != nullptr && ent->m_nCustomViewmodelModelIndex == 0 && !state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].empty() && Mod::Attr::Custom_Attributes::IsCustomViewmodelAllowed(player) && ent->m_nViewModelIndex == 0 && ent->GetItem() != nullptr && ent->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0 ) {
 			ent->SetCustomViewModel(state.m_HandModelOverride[player->GetPlayerClass()->GetClassIndex()].c_str());
 		}
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
@@ -6400,8 +6422,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bPlayerMinigiant = subkey->GetBool();
 			} else if (FStrEq(name, "PlayerScale")) {
 				state.m_fPlayerScale = subkey->GetFloat();
-			} else if (FStrEq(name, "DisplayRobotDeathNotice")) {
-				state.m_bDisplayRobotDeathNotice = subkey->GetBool();
 			} else if (FStrEq(name, "Ribit")) {
 				state.m_bPlayerRobotUsePlayerAnimation = subkey->GetBool();
 			} else if (FStrEq(name, "MaxRedPlayers")) {
@@ -6850,6 +6870,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_PickUp, "CCaptureFlag::PickUp");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ValidateWeapons, "CTFPlayer::ValidateWeapons");
 			
 			
 			
