@@ -1586,7 +1586,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 
 		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
-		Msg("Item in loadout %d %d %d %s\n", pclass, slot, result != nullptr ? result->GetItem()->m_iItemDefinitionIndex.Get() : -1, result != nullptr ? GetItemNameForDisplay(result->GetItem()), "no");
+		//Msg("Item in loadout %d %d %d %s\n", pclass, slot, result != nullptr ? result->GetItem()->m_iItemDefinitionIndex.Get() : -1, result != nullptr ? GetItemNameForDisplay(result->GetItem()), "no");
 
 		if (result != nullptr && result->GetItemDefinition() != nullptr && IsMannVsMachineMode() && player != nullptr) {
 			if (!state.m_ItemReplace.empty()) {

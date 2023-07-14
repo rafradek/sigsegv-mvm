@@ -1089,6 +1089,11 @@
 					type "sym"
 					sym  "_ZN15CTFPlayerShared15OnRemoveStunnedEv"
 				}
+				"CTFPlayer::ValidateWeapons"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer15ValidateWeaponsEP19TFPlayerClassData_tb"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"

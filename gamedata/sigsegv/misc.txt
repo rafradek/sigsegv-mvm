@@ -5923,6 +5923,8 @@
 				"TFInventoryManager" "_Z18TFInventoryManagerv"
 
 				"CEconEntity::UpdateBodygroups" "_ZN11CEconEntity16UpdateBodygroupsEP20CBaseCombatCharacteri"
+				"CEconEntity::TranslateViewmodelHandActivityInternal" "_ZN11CEconEntity38TranslateViewmodelHandActivityInternalE8Activity"
+				"CEconEntity::TranslateViewmodelHandActivity" "_ZN11CEconEntity30TranslateViewmodelHandActivityE8Activity"
 
 				"CBaseCombatWeapon::IsMeleeWeapon" "_ZNK17CBaseCombatWeapon13IsMeleeWeaponEv"
 				"CBaseCombatWeapon::GetMaxClip1" "_ZNK17CBaseCombatWeapon11GetMaxClip1Ev"
@@ -5950,7 +5952,7 @@
 				"CBaseCombatWeapon::SetCustomViewModel" "_ZN17CBaseCombatWeapon18SetCustomViewModelEPKc"
 				"CBaseCombatWeapon::GetSlot" "_ZNK17CBaseCombatWeapon7GetSlotEv"
 				"CBaseCombatWeapon::ActivityOverride" "_ZN17CBaseCombatWeapon16ActivityOverrideE8ActivityPb"
-				
+				"CBaseCombatWeapon::SetIdealActivity" "_ZN17CBaseCombatWeapon16SetIdealActivityE8Activity"
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
@@ -5996,6 +5998,7 @@
 				"CTFWeaponBase::InternalGetEffectBarRechargeTime" "_ZN13CTFWeaponBase32InternalGetEffectBarRechargeTimeEv"
 				"CTFWeaponBase::GetEffectBarProgress" "_ZN13CTFWeaponBase20GetEffectBarProgressEv"
 				"CTFWeaponBase::GetActivityWeaponRole" "_ZNK13CTFWeaponBase21GetActivityWeaponRoleEv"
+				"CTFWeaponBase::GetViewModelWeaponRole" "_ZN13CTFWeaponBase22GetViewModelWeaponRoleEv"
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
@@ -6021,6 +6024,9 @@
 				"CTFWeaponBaseGun::GetAmmoPerShot" "_ZN16CTFWeaponBaseGun14GetAmmoPerShotEv"
 
 				"CTFWeaponInvis::CleanupInvisibilityWatch" "_ZN14CTFWeaponInvis24CleanupInvisibilityWatchEv"
+
+				"CTFWeaponBuilder::StartPlacement" "_ZN16CTFWeaponBuilder14StartPlacementEv"
+				"CTFWeaponBuilder::StopPlacement" "_ZN16CTFWeaponBuilder13StopPlacementEv"
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				
@@ -6072,6 +6078,10 @@
 				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
 				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
+
+				"CEconItemView::GetAnimationSlot" "_ZNK13CEconItemView16GetAnimationSlotEv"
+
+				"CEconItemDefinition::GetActivityOverride" "_ZNK19CEconItemDefinition19GetActivityOverrideEi8Activity"
 			}
 			"addrs_group"
 			{

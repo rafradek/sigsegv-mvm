@@ -3164,4 +3164,37 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4638"
+    {
+        "name"	"sentry toolbox model"
+        "attribute_class"	"sentry_toolbox_model"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4639"
+    {
+        "name"	"dispenser toolbox model"
+        "attribute_class"	"dispenser_toolbox_model"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4640"
+    {
+        "name"	"teleporter toolbox model"
+        "attribute_class"	"teleporter_toolbox_model"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }
