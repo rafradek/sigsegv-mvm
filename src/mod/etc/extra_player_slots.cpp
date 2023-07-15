@@ -23,6 +23,25 @@
 #include <gamemovement.h>
 #include <worldsize.h>
 
+class SVC_ServerInfo
+{
+public:
+    uintptr_t vtable;
+    uintptr_t pad;
+	bool				m_bReliable;	// true if message should be send reliable
+	INetChannel			*m_NetChannel;	// netchannel this message is from/for
+    IServerMessageHandler *m_pMessageHandler;
+    int			m_nProtocol;	// protocol version
+	int			m_nServerCount;	// number of changelevels since server start
+	bool		m_bIsDedicated;  // dedicated server ?	
+	bool		m_bIsHLTV;		// HLTV server ?
+	bool		m_bIsReplay;	// Replay server ?
+	char		m_cOS;			// L = linux, W = Win32
+	CRC32_t		m_nMapCRC;		// server map CRC (only used by older demos)
+	MD5Value_t	m_nMapMD5;		// server map MD5
+	int			m_nMaxClients;	// max number of clients on server
+};
+
 namespace Mod::Etc::Extra_Player_Slots
 {
 #ifdef SE_TF2
@@ -959,6 +978,20 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
 	}
 
+    GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
+    DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
+	{
+        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        if (edict->m_EdictIndex > 33)
+            GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
+	{
+        DETOUR_MEMBER_CALL(CBaseServer_FillServerInfo)(serverinfo);
+        serverinfo.m_nMaxClients = 33;
+    }
+
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1028,6 +1061,8 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
+            MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
+            MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
             
             
             

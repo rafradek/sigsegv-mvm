@@ -794,7 +794,7 @@ namespace Mod::Perf::SendProp_Optimize
             }
             
             CBaseEntity *entity = GetContainingEntity(edict);
-            ServerClass *serverclass = objectID > 0 && objectID <= gpGlobals->maxClients ? playerServerClass : entity->NetworkProp()->GetServerClass();
+            ServerClass *serverclass =  entity->NetworkProp()->GetServerClass();
             ServerClassCache &cache = *GetServerClassCache(serverclass->m_pTable);
             
             if (!(edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)) {

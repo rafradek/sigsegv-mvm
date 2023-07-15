@@ -1530,9 +1530,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		is_item_replacement.clear();
 	}
 
+	RefCount rc_CTFInventoryManager_GetBaseItemForClass;
 	int LoadoutSlotReplace(int slot, CTFItemDefinition *item_def, int classIndex) 
 	{
-		if (rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || rc_CTFPlayer_ValidateWeapons || (rc_CTFPlayer_GiveDefaultItems && is_item_replacement.count(item_def))) {
+		if (!rc_CTFInventoryManager_GetBaseItemForClass && (rc_GetEntityForLoadoutSlot || rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot || rc_CTFPlayer_ValidateWeapons || rc_CTFPlayer_GiveDefaultItems)) {
 			slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
 		}
 		return slot;
@@ -1542,6 +1543,12 @@ namespace Mod::Pop::PopMgr_Extensions
 	void DisableLoadoutSlotReplace(bool disable)
 	{
 		loadout_slot_replace_disabled = disable;
+	}
+
+	DETOUR_DECL_MEMBER(CEconItemView *, CTFInventoryManager_GetBaseItemForClass, int pclass, int slot)
+	{
+		SCOPED_INCREMENT(rc_CTFInventoryManager_GetBaseItemForClass);
+		return DETOUR_MEMBER_CALL(CTFInventoryManager_GetBaseItemForClass)(pclass, slot);
 	}
 	
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
@@ -6871,6 +6878,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_PickUp, "CCaptureFlag::PickUp");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ValidateWeapons, "CTFPlayer::ValidateWeapons");
+			MOD_ADD_DETOUR_MEMBER(CTFInventoryManager_GetBaseItemForClass, "CTFInventoryManager::GetBaseItemForClass");
 			
 			
 			

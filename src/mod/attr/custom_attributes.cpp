@@ -6658,7 +6658,6 @@ namespace Mod::Attr::Custom_Attributes
 			if (kv != nullptr && kv->FindKey("spy") != nullptr && (model == nullptr || model[0] == '\0')) {
 				model = "models/weapons/c_models/c_toolbox/c_toolbox.mdl";
 			}
-			Msg("SomeModel %s\n", model);
 		 	if (model != nullptr && model[0] != '\0') {
 		 		builder->SetCustomVariable("custombuildingviewmodel", Variant(true));
 				auto oldCustomModel = builder->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, builder, PStrT<"custom_item_model">());
