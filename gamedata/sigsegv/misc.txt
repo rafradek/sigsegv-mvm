@@ -6100,6 +6100,7 @@
 				"Int64_CompareDeltas"	"_Z19Int64_CompareDeltasPK8SendPropP7bf_readS3_"
 
 				"CBaseClient::SetName"	"_ZN11CBaseClient7SetNameEPKc"
+				"CBaseServer::FillServerInfo" "_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
 				
 			}
 		}
