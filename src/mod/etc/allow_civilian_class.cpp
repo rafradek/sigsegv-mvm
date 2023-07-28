@@ -70,6 +70,26 @@ namespace Mod::Etc::Allow_Civilian_Class
         } 
         return result;
     }
+	
+	THINK_FUNC_DECL(WeaponVisRestore)
+	{
+		this->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop")->props.erase("m_hActiveWeapon");
+	}
+
+	DETOUR_DECL_MEMBER(bool, IGameEventManager2_FireEvent, IGameEvent *event, bool bDontBroadcast)
+	{
+		auto mgr = reinterpret_cast<IGameEventManager2 *>(this);
+		
+		if (event != nullptr && strcmp(event->GetName(), "post_inventory_application") == 0) {
+			auto player = UTIL_PlayerByUserId(event->GetInt("userid"));
+			if (player != nullptr) {
+				THINK_FUNC_SET(player, WeaponVisRestore, gpGlobals->curtime + 1.0f);
+				player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop")->props["m_hActiveWeapon"] = {Variant<CBaseEntity *>(nullptr), Variant<CBaseEntity *>(nullptr)};
+			}
+		}
+		
+		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+	}
 
 	class CMod : public IMod
 	{
@@ -78,6 +98,7 @@ namespace Mod::Etc::Allow_Civilian_Class
             this->AddPatch(new CPatch_HandleCommand_JoinClass());
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_HandleCommand_JoinClass,             "CTFPlayer::HandleCommand_JoinClass", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerInventory_GetItemInLoadout,           "CTFPlayerInventory::GetItemInLoadout", LOWEST);
+			//MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent,           "IGameEventManager2::FireEvent");
         }
 
 		virtual void PreLoad() override

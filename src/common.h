@@ -382,7 +382,11 @@ WARN_RESTORE()
 WARN_IGNORE__SIGN_COMPARE()
 #include <utlbuffer.h>
 WARN_RESTORE()
+#ifdef SE_TF2
+#include "sdk2013/shareddefs.h"
+#else
 #include <shareddefs.h>
+#endif
 #include <icvar.h>
 #ifndef CSGO_SEPARETE_
 #include "sdk2013/convar.h"
@@ -569,6 +573,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
 #ifdef SE_TF2
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_BASEHANDLE_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
 #endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);

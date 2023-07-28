@@ -15,6 +15,7 @@
 #include "stub/tf_player_resource.h"
 #include "stub/lagcompensation.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "mod/etc/mapentity_additions.h"
 #include "mod/mvm/player_limit.h"
 #include "mod/common/text_hud.h"
 #include "util/iterate.h"
@@ -45,7 +46,7 @@ public:
 namespace Mod::Etc::Extra_Player_Slots
 {
 #ifdef SE_TF2
-    constexpr int DEFAULT_MAX_PLAYERS = 33;
+    constexpr int DEFAULT_MAX_PLAYERS = 101;
 #elif definded(SE_CSS)
     constexpr int DEFAULT_MAX_PLAYERS = 65;
 #endif
@@ -978,19 +979,50 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
 	}
 
-    GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
-    DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
-	{
-        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
-        if (edict->m_EdictIndex > 33)
-            GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
-    }
+    // GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
+    // GlobalThunk<ServerClass> g_CBaseCombatWeapon_ClassReg("g_CBaseCombatWeapon_ClassReg");
+    // GlobalThunk<ServerClass> g_CBaseAnimating_ClassReg("g_CBaseAnimating_ClassReg");
+    // DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
+	// {
+    //     DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+    //     if (edict->m_EdictIndex > DEFAULT_MAX_PLAYERS)
+    //         GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
+    // }
 
-    DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
-	{
-        DETOUR_MEMBER_CALL(CBaseServer_FillServerInfo)(serverinfo);
-        serverinfo.m_nMaxClients = 33;
-    }
+    // DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
+	// {
+    //     DETOUR_MEMBER_CALL(CBaseServer_FillServerInfo)(serverinfo);
+    //     serverinfo.m_nMaxClients = DEFAULT_MAX_PLAYERS;
+    // }
+
+    // THINK_FUNC_DECL(FixUpItemModelThink)
+    // {
+    //     auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+    //     auto mod = this->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+    //     mod->props["m_nModelIndex"] = {Variant(weapon->m_iWorldModelIndex.Get()), Variant(weapon->m_iWorldModelIndex.Get())};
+    //     this->SetNextThink(gpGlobals->curtime+0.1f, "FixUpItemModelThink");
+    // }
+
+    // DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
+	// {
+	// 	CBaseCombatWeapon *weapon = reinterpret_cast<CBaseCombatWeapon *>(this); 
+	// 	DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+    //     if (owner != nullptr && owner->IsPlayer() && owner->entindex() > DEFAULT_MAX_PLAYERS) {
+    //         weapon->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
+
+    //         THINK_FUNC_SET(weapon, FixUpItemModelThink, gpGlobals->curtime);
+    //     }
+    // }
+
+    
+	// DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *player)
+	// {
+	// 	CTFWearable *wearable = reinterpret_cast<CTFWearable *>(this); 
+	// 	DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
+    //     if (player != nullptr && player->entindex() > DEFAULT_MAX_PLAYERS) {
+    //         wearable->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
+    //     }
+    // }
 
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1061,9 +1093,11 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
-            MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
-            MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
-            
+            // MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
+
+            // MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
+            // MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
+            // MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
             
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");

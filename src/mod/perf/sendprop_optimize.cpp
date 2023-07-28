@@ -498,7 +498,7 @@ namespace Mod::Perf::SendProp_Optimize
                 const void *oldFrameData = pPrevFrame->GetData();
                 unsigned short &frameDataLength = entity_frame_bit_size[objectID];
                 
-                ALIGN4 char packedData[4096] ALIGN4_POST;
+                ALIGN4 char packedData[8192] ALIGN4_POST;
                 memcpy(packedData, oldFrameData, pPrevFrame->GetNumBytes());
 
                 bf_write prop_writer("packed data writer", packedData, sizeof(packedData));
