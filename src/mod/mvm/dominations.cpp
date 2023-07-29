@@ -10,8 +10,9 @@
 namespace Mod::MvM::Dominations
 {
 	constexpr uint8_t s_Buf[] = {
-		0x80, 0xbf, 0x6d, 0x0c, 0x00, 0x00, 0x00, // +0000  cmp byte ptr [edi+m_bPlayingMannVsMachine],0x0
-		0x74, 0x0c,                               // +0007  jz -0x34
+		0x80, 0xbf, 0x72, 0x09, 0x00, 0x00, 0x00, // +0000  cmp byte ptr [edi+m_bPlayingMannVsMachine],0x0
+		0x89, 0x45, 0xd8,                         // +0007  mov ecx,eax
+		0x75, 0xcc,                               // +000a  jnz -0x34
 	};
 	
 	struct CPatch_CTFGameRules_CalcDominationAndRevenge : public CPatch
@@ -31,7 +32,7 @@ namespace Mod::MvM::Dominations
 			
 			buf.SetDword(0x00 + 2, (uint32_t)off_CTFGameRules_m_bPlayingMannVsMachine);
 			
-			mask[0x07 + 1] = 0x00;
+			mask[0x0a + 1] = 0x00;
 			
 			return true;
 		}
@@ -39,8 +40,8 @@ namespace Mod::MvM::Dominations
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* NOP out the conditional jump for MvM mode */
-			buf[0x07] = 0xEB;
-			mask.SetRange(0x07, 1, 0xff);
+			buf .SetRange(0x0a, 2, 0x90);
+			mask.SetRange(0x0a, 2, 0xff);
 			
 			return true;
 		}
@@ -64,3 +65,4 @@ namespace Mod::MvM::Dominations
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 }
+

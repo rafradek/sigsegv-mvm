@@ -53,7 +53,7 @@ WaveSchedule
 	SniperHideLasers 1 [$SIGSEGV] //If set, snipers will not display lasers when aiming
 	SentryBusterFriendlyFire 0 [$SIGSEGV] //If set to 0, buster will not damage robots (default: 1)
 	BotPushaway 0 [$SIGSEGV] //Should bots push each other away (default: 1)
-	AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 57 bots instead of 26. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key. Map reload recommended after change (default: 0)
+	AllowBotExtraSlots 1 [$SIGSEGV] // Allows you to set RobotLimit up to 94 bots instead of 26. Must be placed before RobotLimit. Bots will prefer normal slots by default unless the TFBot has the PreferExtraSlots 1 key (default: 0)
 	ExtraBotSlotsNoDeathcam 1 [$SIGSEGV] // If bots in extra slots kill a player, the bot name in deathcam with display as ERRORNAME. If you don't like that you can turn deathcam off (default: 1)
 	RobotLimit 18 [$SIGSEGV] //Sets a robot limit. You can increase or decrease it, but increasing it will reduce max spectator and player count (you need to set MaxSpectators below 5). 26 is maximum value to keep 6 players active (default: 22)
 	EnableDominations 1 [$SIGSEGV] //Should enable player to bot dominations

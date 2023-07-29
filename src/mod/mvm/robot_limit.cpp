@@ -16,6 +16,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 namespace Mod::Etc::Extra_Player_Slots
 {
 	void SetForceCreateAtSlot(int slot);
+	bool ExtraSlotsEnabledForBots();
 }
 
 namespace Mod::MvM::Robot_Limit
@@ -56,44 +57,6 @@ namespace Mod::MvM::Robot_Limit
 			}
 			
 		});
-	
-	bool has_extra_bot_mission = false;
-
-	void ScanMissionsForExtraBots() 
-	{
-		has_extra_bot_mission = false;
-		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
-		if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
-			has_extra_bot_mission = true;
-			return;
-		}
-
-		FileFindHandle_t missionHandle;
-		const char *map = STRING(gpGlobals->mapname);
-		char poppathfind[256];
-		snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
-		for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
-						missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
-			
-			char poppath[256];
-			snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
-			KeyValues *kv = new KeyValues("kv");
-			kv->UsesConditionals(false);
-			if (kv->LoadFromFile(filesystem, poppath)) {
-				FOR_EACH_SUBKEY(kv, subkey) {
-
-					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
-						has_extra_bot_mission = true;
-						//Msg("Found extra bot mission\n");
-						break;
-					}
-				}
-				kv->deleteThis();
-				if (has_extra_bot_mission) break;
-			}
-		}
-		filesystem->FindClose(missionHandle);
-	}
 
 	int GetMvMInvaderLimit() { return cvar_override.GetInt(); }
 
@@ -101,8 +64,7 @@ namespace Mod::MvM::Robot_Limit
 	int GetMaxAllowedSlot()
 	{
 		//return gpGlobals->maxClients;
-		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
-		if (!sig_etc_extra_player_slots_allow_bots.GetBool()) return 33;
+		if (!Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledForBots()) return MAX_PLAYERS;
 		
 		static ConVarRef tv_enable("tv_enable");
 		int red, blu, spectators, robots;
@@ -116,18 +78,17 @@ namespace Mod::MvM::Robot_Limit
 	void CheckForMaxInvadersAndKickExtras(CUtlVector<CTFPlayer *>& mvm_bots)
 	{
 		// When extra bot slots are enabled, always kick bots in slots considered reserved for players
-		static ConVarRef sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots");
 		static ConVarRef tv_enable("tv_enable");
 
 		int red, blu, spectators, robots;
 		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
 
-		if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
+		if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledForBots()) {
 			int playerReservedSlots = red + blu + spectators;
 			
 			for (int i = 0; i < mvm_bots.Count(); i++) {
 				if (ENTINDEX(mvm_bots[i]) <= playerReservedSlots) {
-					engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
+					engine->ServerCommand(CFmtStr("kickid %d kick bot in player reserved slot\n", mvm_bots[i]->GetUserID()));
 					mvm_bots.Remove(i);
 					i--;
 				}
@@ -139,7 +100,7 @@ namespace Mod::MvM::Robot_Limit
 		int maxAllowedSlot = GetMaxAllowedSlot();
 		for (int i = 0; i < mvm_bots.Count(); i++) {
 			if (ENTINDEX(mvm_bots[i]) > MAX_PLAYERS && ENTINDEX(mvm_bots[i]) > maxAllowedSlot) {
-				engine->ServerCommand(CFmtStr("kickid %d\n", mvm_bots[i]->GetUserID()));
+				engine->ServerCommand(CFmtStr("kickid %d kick bot over the maximum allowed slot\n", mvm_bots[i]->GetUserID()));
 				mvm_bots.Remove(i);
 				i--;
 			}
@@ -194,7 +155,7 @@ namespace Mod::MvM::Robot_Limit
 
 			/* now, kick the bots we nominated */
 			for (auto bot : bots_to_kick) {
-				engine->ServerCommand(CFmtStr("kickid %d\n", bot->GetUserID()));
+				engine->ServerCommand(CFmtStr("kickid %d kick nominated bot over the limit\n", bot->GetUserID()));
 			}
 		}
 	}
@@ -441,7 +402,6 @@ namespace Mod::MvM::Robot_Limit
 
 		virtual void LevelInitPreEntity() override
 		{
-			ScanMissionsForExtraBots();
 		}
 		
 	};

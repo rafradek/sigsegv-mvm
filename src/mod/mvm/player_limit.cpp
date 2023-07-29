@@ -12,7 +12,10 @@
 #include "util/admin.h"
 #include "mod/mvm/player_limit.h"
 
-
+namespace Mod::Etc::Extra_Player_Slots
+{
+	bool ExtraSlotsEnabledExternal();
+}
 namespace Mod::MvM::JoinTeam_Blue_Allow
 {
     bool PlayersCanJoinBlueTeam();
@@ -133,10 +136,10 @@ namespace Mod::MvM::Player_Limit
 				blu = sig_mvm_jointeam_blue_allow_max.GetInt();
 			}
 			else {
-				if (sig_etc_extra_player_slots_allow_players.GetBool()) {
+				if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledExternal() && sig_etc_extra_player_slots_allow_players.GetBool()) {
 					blu = gpGlobals->maxClients - robots - red - Max(spectators, 0) - tvSlots;
 				}
-				else if (sig_etc_extra_player_slots_allow_bots.GetBool()) {
+				else if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledExternal() && sig_etc_extra_player_slots_allow_bots.GetBool()) {
 					blu = Min(gpGlobals->maxClients - robots - red - Max(spectators, 0) - tvSlots, MAX_PLAYERS - red - Max(spectators, 0) - tvSlots);
 				}
 				else {

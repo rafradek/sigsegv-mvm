@@ -401,7 +401,19 @@ namespace Mod::Pop::PopMgr_Extensions
 		virtual void SetValue(const T& val) override
 		{
 			CValueOverridePopfile_ConVar<T>::SetValue(val);
-	
+			int redplayers = 0;
+			ForEachTFPlayer([&](CTFPlayer *player) {
+				if (player->GetTeamNumber() == TF_TEAM_RED && player->IsRealPlayer())
+					redplayers += 1;
+			});
+			if (redplayers > this->GetValue()) {
+				ForEachTFPlayer([&](CTFPlayer *player) {
+					if (player->GetTeamNumber() == TF_TEAM_RED && redplayers > this->GetValue() && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
+						player->ForceChangeTeam(TEAM_SPECTATOR, false);
+						redplayers -= 1;
+					}
+				});
+			}
 		}
 	};
 
@@ -686,6 +698,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iEnemyTeamForReverse = TF_TEAM_RED;
 			this->m_iRobotLimitSetByMission = 22;
 			this->m_bPlayerBombCarrierBuffs = false;
+			this->m_bEnable100Slots = false;
 			
 			this->m_MedievalMode            .Reset();
 			if (!popfileReset) {
@@ -829,6 +842,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iEnemyTeamForReverse;
 		int m_iRobotLimitSetByMission;
 		bool m_bPlayerBombCarrierBuffs;
+		bool m_bEnable100Slots;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverridePopfile_ConVar<bool>        m_SpellsEnabled;
@@ -6734,6 +6748,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		return result;
 	}
+    StaticFuncThunk<void, int> ft_SetupMaxPlayers("SetupMaxPlayers");
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -6942,8 +6957,42 @@ namespace Mod::Pop::PopMgr_Extensions
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
+		bool MapHasExtraSlots(const char *map) 
+		{
+			if (gpGlobals->maxClients >= MAX_PLAYERS) return true;
+
+			FileFindHandle_t missionHandle;
+			char poppathfind[256];
+			snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
+			for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
+							missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
+				
+				char poppath[256];
+				snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
+				KeyValues *kv = new KeyValues("kv");
+				kv->UsesConditionals(false);
+				if (kv->LoadFromFile(filesystem, poppath)) {
+					FOR_EACH_SUBKEY(kv, subkey) {
+
+						if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+							return true;
+							break;
+						}
+					}
+				}
+				kv->deleteThis();
+			}
+			filesystem->FindClose(missionHandle);
+			return false;
+		}
+
 		virtual void LevelInitPreEntity() override
 		{
+			if (MapHasExtraSlots(STRING(gpGlobals->mapname)) && gpGlobals->maxClients < MAX_PLAYERS && CommandLine()->FindParm("-unrestricted_maxplayers")) {
+				changelevel_maxplayers = true;
+                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+            }
+
 			state.Reset(false);
 			state.m_PlayerUpgradeSend.clear();
 
@@ -7001,6 +7050,11 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			for (int i = 0; i < TF_CLASS_COUNT; i++)
 				state.m_MissingRobotBones[i].clear();
+
+				
+			if (changelevel_maxplayers) {
+				ft_SetupMaxPlayers(MAX_PLAYERS);
+			}
 		}
 		
 		virtual void FrameUpdatePostEntityThink() override
@@ -7173,6 +7227,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
+		bool changelevel_maxplayers = false;
 	};
 	CMod s_Mod;
 

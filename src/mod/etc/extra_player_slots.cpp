@@ -52,6 +52,8 @@ namespace Mod::Etc::Extra_Player_Slots
 #endif
     inline bool ExtraSlotsEnabled();
     
+    extern ConVar cvar_enable;
+
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
 		"Extra player slot count. Requires map restart to function");
 
@@ -87,6 +89,16 @@ namespace Mod::Etc::Extra_Player_Slots
     inline bool ExtraSlotsEnabled()
     {
         return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS;
+    }
+
+    bool ExtraSlotsEnabledForBots()
+    {
+        return ExtraSlotsEnabled() && cvar_enable.GetBool() && sig_etc_extra_player_slots_allow_bots.GetBool();
+    }
+
+    bool ExtraSlotsEnabledExternal()
+    {
+        return ExtraSlotsEnabled() && cvar_enable.GetBool();
     }
 
     bool MapHasExtraSlots(const char *map) 
@@ -979,50 +991,50 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
 	}
 
-    // GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
-    // GlobalThunk<ServerClass> g_CBaseCombatWeapon_ClassReg("g_CBaseCombatWeapon_ClassReg");
-    // GlobalThunk<ServerClass> g_CBaseAnimating_ClassReg("g_CBaseAnimating_ClassReg");
-    // DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
-	// {
-    //     DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
-    //     if (edict->m_EdictIndex > DEFAULT_MAX_PLAYERS)
-    //         GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
-    // }
+    GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
+    GlobalThunk<ServerClass> g_CBaseCombatWeapon_ClassReg("g_CBaseCombatWeapon_ClassReg");
+    GlobalThunk<ServerClass> g_CBaseAnimating_ClassReg("g_CBaseAnimating_ClassReg");
+    DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
+	{
+        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        if (edict->m_EdictIndex > DEFAULT_MAX_PLAYERS)
+            GetContainingEntity(edict)->NetworkProp()->m_pServerClass = &g_CBaseCombatCharacter_ClassReg.GetRef();
+    }
 
-    // DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
-	// {
-    //     DETOUR_MEMBER_CALL(CBaseServer_FillServerInfo)(serverinfo);
-    //     serverinfo.m_nMaxClients = DEFAULT_MAX_PLAYERS;
-    // }
+    DETOUR_DECL_MEMBER(void, CBaseServer_FillServerInfo, SVC_ServerInfo &serverinfo)
+	{
+        DETOUR_MEMBER_CALL(CBaseServer_FillServerInfo)(serverinfo);
+        serverinfo.m_nMaxClients = DEFAULT_MAX_PLAYERS;
+    }
 
-    // THINK_FUNC_DECL(FixUpItemModelThink)
-    // {
-    //     auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
-    //     auto mod = this->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
-    //     mod->props["m_nModelIndex"] = {Variant(weapon->m_iWorldModelIndex.Get()), Variant(weapon->m_iWorldModelIndex.Get())};
-    //     this->SetNextThink(gpGlobals->curtime+0.1f, "FixUpItemModelThink");
-    // }
+    THINK_FUNC_DECL(FixUpItemModelThink)
+    {
+        auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+        auto mod = this->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+        mod->props["m_nModelIndex"] = {Variant(weapon->m_iWorldModelIndex.Get()), Variant(weapon->m_iWorldModelIndex.Get())};
+        this->SetNextThink(gpGlobals->curtime+0.1f, "FixUpItemModelThink");
+    }
 
-    // DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
-	// {
-	// 	CBaseCombatWeapon *weapon = reinterpret_cast<CBaseCombatWeapon *>(this); 
-	// 	DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
-    //     if (owner != nullptr && owner->IsPlayer() && owner->entindex() > DEFAULT_MAX_PLAYERS) {
-    //         weapon->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
+    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
+	{
+		CBaseCombatWeapon *weapon = reinterpret_cast<CBaseCombatWeapon *>(this); 
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+        if (owner != nullptr && owner->IsPlayer() && owner->entindex() > DEFAULT_MAX_PLAYERS) {
+            weapon->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
 
-    //         THINK_FUNC_SET(weapon, FixUpItemModelThink, gpGlobals->curtime);
-    //     }
-    // }
+            THINK_FUNC_SET(weapon, FixUpItemModelThink, gpGlobals->curtime);
+        }
+    }
 
     
-	// DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *player)
-	// {
-	// 	CTFWearable *wearable = reinterpret_cast<CTFWearable *>(this); 
-	// 	DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
-    //     if (player != nullptr && player->entindex() > DEFAULT_MAX_PLAYERS) {
-    //         wearable->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
-    //     }
-    // }
+	DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *player)
+	{
+		CTFWearable *wearable = reinterpret_cast<CTFWearable *>(this); 
+		DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
+        if (player != nullptr && player->entindex() > DEFAULT_MAX_PLAYERS) {
+            wearable->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
+        }
+    }
 
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1093,12 +1105,14 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_STATIC(Host_Changelevel, "Host_Changelevel");
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
-            // MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
-
-            // MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
-            // MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
-            // MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
             
+#ifdef SE_TF2
+            MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
+
+            MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
+            MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
+            MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
+#endif
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
