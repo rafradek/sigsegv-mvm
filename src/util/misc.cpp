@@ -159,7 +159,7 @@ void CancelClientMenu(CBasePlayer *player)
 }
 
 #ifdef SE_TF2
-    constexpr int DEFAULT_MAX_PLAYERS = 33;
+    constexpr int DEFAULT_MAX_PLAYERS = 100;
 #else
 	constexpr int DEFAULT_MAX_PLAYERS = 65;
 #endif

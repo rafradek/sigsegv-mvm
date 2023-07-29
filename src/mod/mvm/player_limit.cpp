@@ -19,216 +19,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 }
 namespace Mod::MvM::Player_Limit
 {
-    // Overrides maximum number of red players that can join at the moment
-	int iGetTeamAssignmentOverride = 6;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_GetTeamAssignmentOverride[] = {
-		0x8D, 0xB6, 0x00, 0x00, 0x00, 0x00, // +0000
-		0xB8, 0x06, 0x00, 0x00, 0x00, // +0006
-		0x2B, 0x45, 0xC4, // +000B
-		0x29, 0xF0, // +000E
-		0x85, 0xC0, // +0010
-
-		//0xc7, 0x84, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [ebx+eax*4+m_Visuals],0x00000000
-		//0x8b, 0x04, 0x85, 0x00, 0x00, 0x00, 0x00,                         // +000B  mov eax,g_TeamVisualSections[eax*4]
-	};
-
-	struct CPatch_GetTeamAssignmentOverride : public CPatch
-	{
-		CPatch_GetTeamAssignmentOverride() : CPatch(sizeof(s_Buf_GetTeamAssignmentOverride)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_GetTeamAssignmentOverride);
-			
-			mask.SetRange(0x06 + 1, 4, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetDword(0x06+1, iGetTeamAssignmentOverride);
-			mask.SetRange(0x06+1, 4, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetDword(0x06+1, iGetTeamAssignmentOverride);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGameRules::GetTeamAssignmentOverride"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0100; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0300; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CExtract_GetTeamAssignmentOverride = IExtractStub;
-
-	#endif
-
-    // Overrides maximum number of players that may join the server
-	int iClientConnected = 9;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_CTFGameRules_ClientConnected[] = {
-		0x31, 0xC0, // +0000
-		0x83, 0xFE, 0x09, // +0002
-	};
-
-	struct CPatch_CTFGameRules_ClientConnected : public CPatch
-	{
-		CPatch_CTFGameRules_ClientConnected() : CPatch(sizeof(s_Buf_CTFGameRules_ClientConnected)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CTFGameRules_ClientConnected);
-			
-			mask.SetRange(0x02 + 2, 1, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetRange(0x02+2, 1, iClientConnected & 0x7F);
-			mask.SetRange(0x02+2, 1, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetRange(0x02+2, 1, iClientConnected & 0x7F);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGameRules::ClientConnected"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0030; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0100; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CExtract_GetTeamAssignmentOverride = IExtractStub;
-
-	#endif
-
-    // Overrides max visible player count
-	int iPreClientUpdate = 6;
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_CTFGCServerSystem_PreClientUpdate[] = {
-		0x8B, 0x5D, 0xB0, // +0000
-		0x83, 0xC3, 0x06, // +0003
-	};
-
-	struct CPatch_CTFGCServerSystem_PreClientUpdate : public CPatch
-	{
-		CPatch_CTFGCServerSystem_PreClientUpdate() : CPatch(sizeof(s_Buf_CTFGCServerSystem_PreClientUpdate)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CTFGCServerSystem_PreClientUpdate);
-			
-			mask.SetRange(0x03 + 2, 1, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate & 0x7F);
-			mask.SetRange(0x03+2, 1, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetRange(0x03+2, 1, iPreClientUpdate & 0x7F);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGCServerSystem::PreClientUpdate"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0350; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0600; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CPatch_CTFGCServerSystem_PreClientUpdate = IExtractStub;
-
-	#endif
-
-	#if defined _LINUX
-
-	static constexpr uint8_t s_Buf_CTFGCServerSystem_PreClientUpdate2[] = {
-		0xBB, 0x06, 0x00, 0x00, 0x00
-	};
-
-	struct CPatch_CTFGCServerSystem_PreClientUpdate2 : public CPatch
-	{
-		CPatch_CTFGCServerSystem_PreClientUpdate2() : CPatch(sizeof(s_Buf_CTFGCServerSystem_PreClientUpdate2)) {}
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CTFGCServerSystem_PreClientUpdate2);
-			
-			//mask.SetRange(0x05 + 1, 4, 0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf .SetDword(0x00+1, iPreClientUpdate & 0x7F);
-			mask.SetRange(0x00+1, 4, 0xff);
-			
-			return true;
-		}
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			buf .SetDword(0x00+1, iPreClientUpdate & 0x7F);
-			
-			return true;
-		}
-		virtual const char *GetFuncName() const override   { return "CTFGCServerSystem::PreClientUpdate"; }
-		virtual uint32_t GetFuncOffMin() const override    { return 0x0500; }
-		virtual uint32_t GetFuncOffMax() const override    { return 0x0700; }
-	};
-
-	#elif defined _WINDOWS
-
-	using CPatch_CTFGCServerSystem_PreClientUpdate = IExtractStub;
-
-	#endif
 
     void TogglePatches();
     void RecalculateSlots();
     void ResetMaxRedTeamPlayers(int resetTo);
 
     extern ConVar cvar_enable;
-    extern ConVar cvar_max_red_players;
     
     void ToggleModActive();
-
-	ConVar cvar_max_red_players("sig_mvm_red_team_max_players", "0", FCVAR_NOTIFY,
-		"Set max red team count. 0 = Default",
-		[](IConVar *pConVar, const char *pOldValue, float flOldValue){ 
-			
-			if (cvar_max_red_players.GetInt() > 0) {
-				ResetMaxRedTeamPlayers(cvar_max_red_players.GetInt());
-			}
-			else {
-				ResetMaxRedTeamPlayers(6);
-			}
-
-			RecalculateSlots();
-		});	
-
 
     CValueOverride_ConVar<bool> allowspectators("mp_allowspectators");
 
@@ -236,43 +34,11 @@ namespace Mod::MvM::Player_Limit
 		"Set max spectator team count. -1 = Default",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){ 
             RecalculateSlots();
-
             if (((ConVar *)pConVar)->GetInt() < 0 && flOldValue >= 0) {
                 allowspectators.Reset();
             }
 		});	
-	
-    
-	THINK_FUNC_DECL(MoveRedPlayers)
-	{
-		int redplayers = 0;
-		ForEachTFPlayer([&](CTFPlayer *player) {
-			if (player->GetTeamNumber() == TF_TEAM_RED && player->IsRealPlayer())
-				redplayers += 1;
-		});
-		if (redplayers > iGetTeamAssignmentOverride) {
-			ForEachTFPlayer([&](CTFPlayer *player) {
-				if (player->GetTeamNumber() == TF_TEAM_RED && redplayers > iGetTeamAssignmentOverride && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {
-					player->ForceChangeTeam(TEAM_SPECTATOR, false);
-					redplayers -= 1;
-				}
-			});
-		}
-	}
 
-	void ResetMaxRedTeamPlayers(int resetTo) {
-        
-		if (g_pPopulationManager != nullptr) {
-			THINK_FUNC_SET(g_pPopulationManager, MoveRedPlayers, gpGlobals->curtime);
-		}
-		if (resetTo > 0) {
-			iGetTeamAssignmentOverride = resetTo;
-		}
-		else {
-			iGetTeamAssignmentOverride = 6;
-		}
-		TogglePatches();
-	}
     
 	int GetMaxSpectators()
 	{
@@ -316,40 +82,36 @@ namespace Mod::MvM::Player_Limit
 			});
 		}
 	}
+
+    CValueOverride_ConVar<int> override_tf_mvm_max_connected_players("tf_mvm_max_connected_players");
+    CValueOverride_ConVar<int> override_tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
 	
 	void ResetMaxTotalPlayers(int resetTo) {
 		maxTotalPlayers = resetTo;
 		if (g_pPopulationManager != nullptr) {
 			THINK_FUNC_SET(g_pPopulationManager, KickPlayersOverLimit, gpGlobals->curtime);
 		}
-		if (resetTo > 0)
-			iClientConnected = std::max(5, resetTo - 1);
-		else 
-			iClientConnected = 9;
-		TogglePatches();
-        SetVisibleMaxPlayers();
-	}
 
-	void SetVisibleMaxPlayers() {
-		iPreClientUpdate = Min(MAX_PLAYERS, GetMaxNonSpectatorPlayers());
-		TogglePatches();
+		if (resetTo > 0)
+			override_tf_mvm_max_connected_players.Set(std::max(6, resetTo));
+		else 
+			override_tf_mvm_max_connected_players.Reset();
 	}
 
     void RecalculateSlots() {
         ToggleModActive();
-        SetVisibleMaxPlayers();
 		ResetMaxTotalPlayers();
     }
 
 	int GetSlotCounts(int &red, int &blu, int &spectators, int &robots) 
 	{
-		red = 6;
-		spectators = 4;
-		blu = 0;
-		if (cvar_max_red_players.GetInt() > 0)
-			red = cvar_max_red_players.GetInt();
+		//static ConVarRef tf_mvm_max_connected_players("tf_mvm_max_connected_players");
+		static ConVarRef tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
 
+		red = tf_mvm_defenders_team_size.GetInt();
+		blu = 0;
 		robots = 22;
+		
 		static ConVarRef sig_mvm_robot_limit("sig_mvm_robot_limit");
 		static ConVarRef sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
 		if (sig_mvm_robot_limit.GetBool()) {
@@ -389,7 +151,6 @@ namespace Mod::MvM::Player_Limit
 			blu = sig_mvm_jointeam_blue_allow_max.GetInt() >= 0 ? sig_mvm_jointeam_blue_allow_max.GetInt() : gpGlobals->maxClients - robots - Max(spectators, 0);
 			red = 0;
 		}
-
 
 
 		int freeSlots = MAX_PLAYERS - robots - tvSlots;
@@ -442,6 +203,7 @@ namespace Mod::MvM::Player_Limit
 
 	DETOUR_DECL_MEMBER(int, CTFGameRules_GetTeamAssignmentOverride, CTFPlayer *pPlayer, int iWantedTeam, bool b1)
 	{
+		static ConVarRef tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
 		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsRealPlayer()
 			&& iWantedTeam == TF_TEAM_RED) {
 				
@@ -452,8 +214,8 @@ namespace Mod::MvM::Player_Limit
 				}
 			});
 
-			if (totalPlayers < iGetTeamAssignmentOverride) {
-				Log( "MVM assigned %s to defending team (%d more slots remaining after us)\n", pPlayer->GetPlayerName(), iGetTeamAssignmentOverride - totalPlayers - 1 );
+			if (totalPlayers < tf_mvm_defenders_team_size.GetInt()) {
+				Log( "MVM assigned %s to defending team (%d more slots remaining after us)\n", pPlayer->GetPlayerName(), tf_mvm_defenders_team_size.GetInt() - totalPlayers - 1 );
 				// Set Their Currency
 				int nRoundCurrency = MannVsMachineStats_GetAcquiredCredits();
 				nRoundCurrency += g_pPopulationManager->m_nStartingCurrency;
@@ -479,6 +241,17 @@ namespace Mod::MvM::Player_Limit
 		return iResult;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFGCServerSystem_PreClientUpdate)
+	{
+		int red, blu, spectators, robots;
+		GetSlotCounts(red, blu, spectators, robots);
+
+		static CValueOverride_ConVar<int> tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
+		tf_mvm_defenders_team_size.Set(red + blu);
+		DETOUR_MEMBER_CALL(CTFGCServerSystem_PreClientUpdate)();
+		tf_mvm_defenders_team_size.Reset();
+	}
+
     //CPatch_GetTeamAssignmentOverride patchTeamAssignmentOverride;
     //CPatch_CTFGameRules_ClientConnected patchCTFGameRules_ClientConnected;
     //CPatch_CTFGCServerSystem_PreClientUpdate patchCTFGCServerSystem_PreClientUpdate;
@@ -490,10 +263,7 @@ namespace Mod::MvM::Player_Limit
 		{
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_GetTeamAssignmentOverride, "CTFGameRules::GetTeamAssignmentOverride", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_ClientConnected, "CTFGameRules::ClientConnected");
-            
-            this->AddPatch(new CPatch_CTFGameRules_ClientConnected());
-            this->AddPatch(new CPatch_CTFGCServerSystem_PreClientUpdate());
-            this->AddPatch(new CPatch_CTFGCServerSystem_PreClientUpdate2());
+			MOD_ADD_DETOUR_MEMBER(CTFGCServerSystem_PreClientUpdate,   "CTFGCServerSystem::PreClientUpdate");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -503,23 +273,6 @@ namespace Mod::MvM::Player_Limit
             if (!TFGameRules()->IsMannVsMachineMode()) {
                 allowspectators.Reset();
             }
-
-			// Find a 10 players mvm plugin, and disable it, while also enabling 10 players here
-			auto pluginIt = plsys->GetPluginIterator();
-			while (pluginIt->MorePlugins()) {
-				auto plugin = pluginIt->GetPlugin();
-				if (FindCaseInsensitive(plugin->GetFilename(), "tf2mvm10plr") != nullptr) {
-					plsys->UnloadPlugin(plugin);
-					if (cvar_max_red_players.GetInt() == 0) {
-						cvar_max_red_players.SetValue(10);
-					}
-					break;
-				}
-				
-				pluginIt->NextPlugin();
-			}
-			pluginIt->Release();
-            SetVisibleMaxPlayers();
         }
 
         virtual void FrameUpdatePostEntityThink() override
@@ -558,10 +311,7 @@ namespace Mod::MvM::Player_Limit
 	CMod s_Mod;
 
 	void ToggleModActive() {
-        bool activate = cvar_enable.GetInt() > 0;
-        if (cvar_max_red_players.GetInt() > 0) {
-            activate = true;
-        }
+        bool activate = cvar_enable.GetInt() > 0 || sig_mvm_spectator_max_players.GetInt() >= 0;
         if (Mod::MvM::JoinTeam_Blue_Allow::PlayersCanJoinBlueTeam()) {
             activate = true;
         }
@@ -573,11 +323,4 @@ namespace Mod::MvM::Player_Limit
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ToggleModActive();
 		});
-	
-	void TogglePatches() {
-        if (s_Mod.IsEnabled()) {
-            s_Mod.ToggleAllPatches(false);
-            s_Mod.ToggleAllPatches(true);
-        }
-	}
 }

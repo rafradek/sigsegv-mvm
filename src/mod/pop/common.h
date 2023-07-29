@@ -180,7 +180,15 @@ static void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player, std
     // Item attributes are ignored when picking up dropped weapons
     float dropped_weapon_attr = 0.0f;
     FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("is dropped weapon"), &dropped_weapon_attr);
+
     if (dropped_weapon_attr != 0.0f)
+        return;
+
+    // Item attributes are ignored when custom weapon
+    float custom_weapon_attr = 0.0f;
+    FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("custom weapon id"), &custom_weapon_attr);
+
+    if (custom_weapon_attr != 0.0f)
         return;
 
     DevMsg("ReapplyItemUpgrades %f\n", dropped_weapon_attr);

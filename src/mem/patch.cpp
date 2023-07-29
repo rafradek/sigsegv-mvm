@@ -57,6 +57,10 @@ bool CPatch::Check()
 		DevMsg("CPatch::Check: addr_min %08x\n", addr_min);
 		DevMsg("CPatch::Check: addr_max %08x\n", addr_max);
 	}
+	for (int i = 0; i < this->m_BufVerify.GetSize(); i++) {
+		DevMsg("%02x ", this->m_BufVerify[i]);
+	}
+	DevMsg("\n");
 	
 	CScan<PatchScanner> scan(CAddrAddrBounds((void *)addr_min, (void *)addr_max), this->m_BufVerify, this->m_MaskVerify);
 	if (!scan.ExactlyOneMatch()) {

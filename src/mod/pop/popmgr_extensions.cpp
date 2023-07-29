@@ -390,6 +390,22 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_delayedReset = false;
 	};
 
+	
+	template<typename T>
+	class CValueOverridePopfilePlayerCount_ConVar : public CValueOverridePopfile_ConVar<T>
+	{
+	public:
+		CValueOverridePopfilePlayerCount_ConVar(const char *name) : CValueOverridePopfile_ConVar<T>(name) {}
+	
+	protected:
+		virtual void SetValue(const T& val) override
+		{
+			CValueOverridePopfile_ConVar<T>::SetValue(val);
+	
+		}
+	};
+
+
 	struct PopState
 	{
 		PopState() :
@@ -431,7 +447,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BluHumanTeleport                ("sig_mvm_bluhuman_teleport"),
 			m_BluHumanTeleportPlayer          ("sig_mvm_bluhuman_teleport_player"),
 			m_BotsUsePlayerTeleporters        ("sig_mvm_bots_use_teleporters"),
-			m_RedTeamMaxPlayers               ("sig_mvm_red_team_max_players"),
+			m_RedTeamMaxPlayers               ("tf_mvm_defenders_team_size"),
 			m_MaxSpeedEnable                  ("sig_etc_override_speed_limit"),
 			m_MaxSpeedLimit                   ("sig_etc_override_speed_limit_value"),
 			m_MaxVelocity                     ("sv_maxvelocity"),
@@ -854,7 +870,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<bool> m_BluHumanTeleport;
 		CValueOverridePopfile_ConVar<bool> m_BluHumanTeleportPlayer;
 		CValueOverridePopfile_ConVar<bool> m_BotsUsePlayerTeleporters;
-		CValueOverridePopfile_ConVar<int> m_RedTeamMaxPlayers;
+		CValueOverridePopfilePlayerCount_ConVar<int> m_RedTeamMaxPlayers;
 		CValueOverridePopfile_ConVar<bool> m_MaxSpeedEnable;
 		CValueOverridePopfile_ConVar<float> m_MaxSpeedLimit;
 		CValueOverridePopfile_ConVar<float> m_MaxVelocity;
@@ -1090,9 +1106,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		auto &index = view->m_iItemDefinitionIndex.Get();
 		// Specific bit added to out of bounds definition index to more easily identify item as custom;
-		*(int *)(&index) |= 0x00800000;
 		auto entrywep = state.m_CustomWeapons.find(name);
 		if (entrywep != state.m_CustomWeapons.end()) {
+			*(int *)(&index) |= 0x00800000;
 			for (auto& entry : entrywep->second.attributes) {
 				view->GetAttributeList().AddStringAttribute(entry.first, entry.second);
 			}
@@ -6435,6 +6451,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				static ConVarRef sig_mvm_player_limit_change("sig_mvm_player_limit_change");
 				if (sig_mvm_player_limit_change.GetInt() >= 0)
 					state.m_RedTeamMaxPlayers.Set(subkey->GetInt());
+				
 				//if (state.m_iRedTeamMaxPlayers > 0)
 				//	ResetMaxRedTeamPlayers(state.m_iRedTeamMaxPlayers);
 			} else if (FStrEq(name, "PlayerMiniBossMinRespawnTime")) {
