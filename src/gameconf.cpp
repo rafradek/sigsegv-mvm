@@ -44,44 +44,6 @@ static const char *const configs[] = {
 CSigsegvGameConf g_GCHook;
 
 
-// =============================================================================
-// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
-
-// SM's GameConfigManager caches CGameConfig objects by filename, and provides
-// no public interface for evicting them from the cache; and there's really no
-// other way to do this that doesn't involve violating the interface boundary;
-// so, we're just forced to do horrible ugly stupid stuff like this instead...
-
-#include <am-refcounting.h>
-
-class CGameConfig : public ITextListener_SMC, public IGameConfig, public ke::Refcounted<CGameConfig>
-{
-public:
-	bool IsStale() const
-	{
-		assert(this->GetRefCount() > 0);
-		return this->GetRefCount() > 1;
-	}
-	
-	void EvictFromCacheAndClose()
-	{
-		while (this->GetRefCount() > 1) {
-			this->Release();
-		}
-		gameconfs->CloseGameConfigFile(this);
-	}
-	
-private:
-	uintptr_t GetRefCount() const
-	{
-		return *reinterpret_cast<const uintptr_t *>(static_cast<const ke::Refcounted<CGameConfig> *>(this));
-	}
-};
-
-// HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
-// =============================================================================
-
-
 bool CSigsegvGameConf::LoadAll(char *error, size_t maxlen)
 {
 	gameconfs->AddUserConfigHook("sigsegv", this);
@@ -96,14 +58,6 @@ bool CSigsegvGameConf::LoadAll(char *error, size_t maxlen)
 			return false;
 		} else if (conf == nullptr) {
 			return false;
-		}
-		
-		auto conf_internal = static_cast<CGameConfig *>(conf);
-		if (conf_internal->IsStale()) {
-			Warning("GameData warning: file '%s' is stale; evicting from cache and re-loading.\n", *c_name);
-			conf_internal->EvictFromCacheAndClose();
-			--c_name;
-			continue;
 		}
 		
 		this->m_GameConfs.push_back(conf);
@@ -271,7 +225,7 @@ SMCResult CSigsegvGameConf::AddrEntry_End()
 	DevMsg("}\n");
 #endif
 	
-	for (const std::string& key : { "type" }) {
+	for (const std::string& key : { "type"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -331,7 +285,7 @@ SMCResult CSigsegvGameConf::AddrGroup_End()
 	#warning move debug dumping into the entry loop
 #endif
 	
-	for (const std::string& key : { "type", "lib" }) {
+	for (const std::string& key : { "type"s, "lib"s }) {
 		if (common_kv.find(key) == common_kv.end()) {
 			DevMsg("GameData error: addr group lacks required common key \"%s\"\n", key.c_str());
 			return SMCResult_HaltFail;
@@ -473,7 +427,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Sym()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym" }) {
+	for (const std::string& key : { "sym"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -493,7 +447,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Sym_Regex()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym" }) {
+	for (const std::string& key : { "sym"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -513,7 +467,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Fixed()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "addr", "build" }) {
+	for (const std::string& key : { "sym"s, "addr"s, "build"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -535,7 +489,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Pattern()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "seg", "seek", "mask" }) {
+	for (const std::string& key : { "sym"s, "seg"s, "seek"s, "mask"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -558,7 +512,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_DataDescMap()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "class" }) {
+	for (const std::string& key : { "sym"s, "class"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -579,7 +533,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_KnownVTIdx()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "vtable", "idx" }) {
+	for (const std::string& key : { "sym"s, "vtable"s, "idx"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -601,7 +555,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_DataMap_VThunk()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "datamap", "func", "vtable" }) {
+	for (const std::string& key : { "sym"s, "datamap"s, "func"s, "vtable"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -624,7 +578,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_EBPPrologue_UniqueRef()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "uniref" }) {
+	for (const std::string& key : { "sym"s, "uniref"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -645,7 +599,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_EBPPrologue_UniqueStr()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "unistr" }) {
+	for (const std::string& key : { "sym"s, "unistr"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -666,7 +620,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_EBPPrologue_UniqueStr_KnownVTIdx
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "unistr", "vtable", "idx" }) {
+	for (const std::string& key : { "sym"s, "unistr"s, "vtable"s, "idx"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -689,7 +643,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_EBPPrologue_NonUniqueStr_KnownVT
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "str", "vtable", "idx" }) {
+	for (const std::string& key : { "sym"s, "str"s, "vtable"s, "idx"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -712,7 +666,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_Func_EBPPrologue_VProf()
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "sym", "v_name", "v_group" }) {
+	for (const std::string& key : { "sym"s, "v_name"s, "v_group"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
@@ -734,7 +688,7 @@ SMCResult CSigsegvGameConf::AddrEntry_Load_ConCommandBase(bool is_command)
 	const auto& name = this->m_AddrEntry_State.m_Name;
 	const auto& kv   = this->m_AddrEntry_State.m_KeyValues;
 	
-	for (const std::string& key : { "name" }) {
+	for (const std::string& key : { "name"s }) {
 		if (kv.find(key) == kv.end()) {
 			DevMsg("GameData error: addr \"%s\" lacks required key \"%s\"\n", name.c_str(), key.c_str());
 			return SMCResult_HaltFail;
