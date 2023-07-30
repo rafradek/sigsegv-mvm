@@ -46,11 +46,12 @@ autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 l
 cd ..
 mkdir -p alliedmodders
 cd alliedmodders
-git clone --recursive https://github.com/alliedmodders/sourcemod --branch 1.11-dev
-git clone --mirror https://github.com/alliedmodders/hl2sdk hl2sdk-proxy-repo
-git clone hl2sdk-proxy-repo hl2sdk-sdk2013 -b sdk2013
-git clone https://github.com/alliedmodders/metamod-source -b 1.11-dev
-git clone https://github.com/alliedmodders/ambuild
+git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
+git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
+git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b tf2 hl2sdk-tf2
+git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
+git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
+git clone https://github.com/alliedmodders/ambuild --depth 1
 ```
 
 4. Install AMBuild. Also add ~/.local/bin to PATH variable (Not needed if ambuild is installed as root)
@@ -69,7 +70,7 @@ python2 python-is-python2
 ```
 cd ../sigsegv-mvm
 git submodule init
-git submodule update
+git submodule update --depth 1
 cd libs/udis86
 ./autogen.sh
 ./configure
@@ -94,7 +95,7 @@ cd ../..
 python-is-python3
 ```
 
-9. Update autoconfig.sh with correct hl2sdk, metamod, sourcemod paths
+9. If hl2sdk, metamod, sourcemod directory is placed in a custom location, Update autoconfig.sh with correct paths
 
 10. Run autoconfig.sh
 
@@ -113,5 +114,9 @@ mkdir -p build
 cd build
 ambuild
 ```
+Build output is created in the current directory
 
-Build output is created in the current directory 
+Build and create full, no-mvm, optimize-only packages (they can be found in build/release):
+```
+./multibuild.sh
+```
