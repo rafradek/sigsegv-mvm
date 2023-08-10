@@ -1114,6 +1114,44 @@ CBaseAnimating * TemplateShootSpawn(std::vector<ShootTemplateData> &templates, C
     return nullptr;
 }
 
+
+void ApplyItemAttributes(CEconItemView *item_view, CTFPlayer *player, std::vector<ItemAttributes> &item_attribs_vec) {
+
+    // Ignore helper custom model wearables
+    if (item_view->m_iEntityLevel == 414918) return;
+    
+    // Item attributes are ignored when picking up dropped weapons
+    float dropped_weapon_attr = 0.0f;
+    FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("is dropped weapon"), &dropped_weapon_attr);
+
+    if (dropped_weapon_attr != 0.0f)
+        return;
+
+    // Item attributes are ignored when custom weapon
+    float custom_weapon_attr = 0.0f;
+    FindAttribute(&item_view->GetAttributeList(), GetItemSchema()->GetAttributeDefinitionByName("custom weapon id"), &custom_weapon_attr);
+
+    if (custom_weapon_attr != 0.0f)
+        return;
+
+    bool found = false;
+    const char *classname = item_view->GetItemDefinition()->GetItemClass();
+    std::map<CEconItemAttributeDefinition *, std::string> *attribs;
+    for (auto& item_attributes : item_attribs_vec) {
+        if (item_attributes.entry->Matches(classname, item_view)) {
+            attribs = &(item_attributes.attributes);
+            found = true;
+            break;
+        }
+    }
+    if (found && attribs != nullptr) {
+        CEconItemView *view = item_view;
+        for (auto& entry : *attribs) {
+            view->GetAttributeList().AddStringAttribute(entry.first, entry.second);
+        }
+    }
+}
+
 void GenerateReferences()
 {
     KeyValues *kvin = new KeyValues("Lang");

@@ -85,9 +85,11 @@ protected:
 
 	int			m_GrowMode;	// GROW_ enum.
 
-	// FIXME: Change m_ppMemBlob into a growable array?
-	void			*m_pHeadOfFreeList;
 	int				m_BlocksAllocated;
+	// FIXME: Change m_ppMemBlob into a growable array?
+public:
+	void			*m_pHeadOfFreeList;
+private:
 	int				m_PeakAlloc;
 	unsigned short	m_nAlignment;
 	unsigned short	m_NumBlobs;

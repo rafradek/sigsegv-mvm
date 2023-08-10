@@ -59,7 +59,8 @@ namespace Mod::Attr::Custom_Attributes
 	CBaseEntity *last_fast_attrib_entity = nullptr;
 	float *CreateNewAttributeCache(CBaseEntity *entity) {
 
-		if (rtti_cast<IHasAttributes *>(entity) == nullptr) return nullptr;
+		IHasAttributes *attributes = entity->m_pAttributes;
+		if (attributes == nullptr) return nullptr;
 		
 		int count = entity->IsPlayer() ? (int)ATTRIB_COUNT_PLAYER : (int)ATTRIB_COUNT_ITEM;
 		float *attrib_cache = new float[count];
@@ -74,15 +75,11 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 	float SetAttributeCacheEntry(CBaseEntity *entity, float value, int name, float *attrib_cache) {
-		CAttributeManager *mgr = nullptr;
-		if (entity->IsPlayer()) {
-            mgr = reinterpret_cast<CTFPlayer *>(entity)->GetAttributeManager();
-        }
-        else if (entity->IsBaseCombatWeapon() || entity->IsWearable()) {
-            mgr = reinterpret_cast<CEconEntity *>(entity)->GetAttributeManager();
-        }
-        if (mgr == nullptr)
-            return value;
+		IHasAttributes *attributes = entity->m_pAttributes;
+		if (attributes == nullptr) 
+			return value;
+		
+		CAttributeManager *mgr = attributes->GetAttributeManager();
 
 		float result = mgr->ApplyAttributeFloat(value, entity, AllocPooledString_StaticConstantStringPointer(entity->IsPlayer() ? fast_attribute_classes_player[name] : fast_attribute_classes_item[name]));
 		attrib_cache[name] = result;
@@ -5468,20 +5465,20 @@ namespace Mod::Attr::Custom_Attributes
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
 		if (item != nullptr) {
 			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
-			
-			attribute_data_union_t oldValue;
 
-			FOR_EACH_VEC(attrs, i) {
-				auto &attr = attrs[i];
-				OnAttributeChanged(&item->GetItem()->GetAttributeList(), attr.GetStaticData(), oldValue, attr.GetValue(), AttributeChangeType::ADD);
-			}
+			attribute_data_union_t oldValue;
+			
+			ForEachItemAttribute(item->GetItem(), [&](const CEconItemAttributeDefinition *def,  attribute_data_union_t val){
+				OnAttributeChanged(&item->GetItem()->GetAttributeList(), def, oldValue, val, AttributeChangeType::ADD);
+				return true;
+			});
 		}
     }
 	
 	CBaseEntity *stop_provider_entity = nullptr;
 	DETOUR_DECL_MEMBER(void, CAttributeManager_StopProvidingTo, CBaseEntity *entity)
     {
-        DETOUR_MEMBER_CALL(CAttributeManager_StopProvidingTo)(entity);
+        DETOUR_MEMBER_CALL(CAttributeManager_StopProvidingTo)(entity); 
 		auto manager = reinterpret_cast<CAttributeManager *>(this);
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
 		if (item != nullptr) {
@@ -5490,10 +5487,12 @@ namespace Mod::Attr::Custom_Attributes
 			
 			attribute_data_union_t newValue;
 			stop_provider_entity = entity;
-			FOR_EACH_VEC(attrs, i) {
-				auto &attr = attrs[i];
-				OnAttributeChanged(&attrlist, attr.GetStaticData(), attr.GetValue(), newValue, AttributeChangeType::REMOVE);
-			}
+			
+			ForEachItemAttribute(item->GetItem(), [&](const CEconItemAttributeDefinition *def,  attribute_data_union_t val){
+				OnAttributeChanged(&attrlist, def, val, newValue, AttributeChangeType::REMOVE);
+				return true;
+			});
+
 			stop_provider_entity = nullptr;
 		}
     }
@@ -6363,21 +6362,25 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGib)(info);
 	}
 	
+	std::string sapperModelName;
 	DETOUR_DECL_MEMBER(const char *, CObjectSapper_GetSapperModelName, int nModel, const char *pchModelName)
 	{
 		auto sapper = reinterpret_cast<CObjectSapper *>(this);
 		
-		if (sapper->GetBuilder() != nullptr) {
-			GET_STRING_ATTRIBUTE(sapper->GetBuilder(), custom_sapper_model, model);
+		if (sapper->GetBuilder() != nullptr && sapper->GetBuilder()->IsPlayer()) {
+			//const char *value = entity->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, sapper->GetBuilder(), PStrT<"custom_sapper_model">()).ToCStr();
+			GET_STRING_ATTRIBUTE_NO_CACHE(sapper->GetBuilder(), custom_sapper_model, model);
 			if (model != nullptr) {
 				if (StringEndsWith(model, ".mdl", false)) {
 					return model;
 				}
 				if (nModel > 0) {
-					return CFmtStr("%s_placement.mdl",model);
+					sapperModelName = fmt::format("{}_placement.mdl", model);
+					return sapperModelName.c_str();
 				}
 				else {
-					return CFmtStr("%s_placed.mdl",model);
+					sapperModelName = fmt::format("{}_placed.mdl", model);
+					return sapperModelName.c_str();
 				}
 			}
 		}
@@ -6556,8 +6559,15 @@ namespace Mod::Attr::Custom_Attributes
 	std::string disallowed_viewmodel_path;
 	bool players_informed_about_viewmodel[ABSOLUTE_PLAYER_LIMIT];
 	bool players_viewmodel_disallowed[ABSOLUTE_PLAYER_LIMIT];
+	bool players_viewmodel_informed_about_disallowed[ABSOLUTE_PLAYER_LIMIT];
 	bool IsCustomViewmodelAllowed(CTFPlayer *player) {
-		if (players_viewmodel_disallowed[player->entindex()]) return false;
+		if (players_viewmodel_disallowed[player->entindex()]) {
+			if (!players_viewmodel_informed_about_disallowed[player->entindex()]) {
+				PrintToChat("Custom hand models disabled. Type !defaulthands to enable\n", player);
+				players_viewmodel_informed_about_disallowed[player->entindex()] = true;
+			}
+			return false;
+		}
 		if (players_informed_about_viewmodel[player->entindex()]) return true;
 
 		players_informed_about_viewmodel[player->entindex()] = true;
@@ -6586,6 +6596,7 @@ namespace Mod::Attr::Custom_Attributes
 		viewmodels_enabled_forward->Execute(&result);
         players_viewmodel_disallowed[edict->m_EdictIndex] = !result;
         players_informed_about_viewmodel[edict->m_EdictIndex] = access(path, F_OK) == 0;
+		players_viewmodel_informed_about_disallowed[edict->m_EdictIndex] = true;
     }
 
 	ModCommandClient sig_defaulthands("sig_defaulthands", [](CCommandPlayer *player, const CCommand& args){
@@ -6612,6 +6623,7 @@ namespace Mod::Attr::Custom_Attributes
 			remove(path);
 		}
 
+		players_viewmodel_informed_about_disallowed[player->entindex()] = true;
 		viewmodels_toggle_forward->PushCell(player->entindex());
 		viewmodels_toggle_forward->PushCell(disallowed);
 		viewmodels_toggle_forward->Execute();
@@ -6854,7 +6866,7 @@ namespace Mod::Attr::Custom_Attributes
 			CEconItemAttribute &attr = attrs[i];
 			CEconItemAttributeDefinition *attr_def = attr.GetStaticData();
 			
-			if ((!display_stock && attr_def->GetIndex() < 4000) || attr_def == nullptr)
+			if (attr_def == nullptr || (!display_stock && attr_def->GetIndex() < 4000))
 				continue;
 
 			std::string format_str;
@@ -7187,6 +7199,8 @@ namespace Mod::Attr::Custom_Attributes
 	void OnAttributeChanged(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
 		if (pAttrDef == nullptr) return;
+
+		if (list->GetManager() == nullptr) return;
 		
 		// auto manager = list->GetManager();
 		// if (manager != nullptr) {
@@ -7537,7 +7551,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch, "CTFPlayer::Touch");
 			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ReapplyItemUpgrades, "CTFPlayer::ReapplyItemUpgrades");
-			MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound, "CBaseCombatWeapon::WeaponSound");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_IsDeflectable, "CTFProjectile_Rocket::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_IsDeflectable, "CTFProjectile_Arrow::IsDeflectable");

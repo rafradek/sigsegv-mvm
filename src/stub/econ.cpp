@@ -436,7 +436,8 @@ void CAttributeList::RemoveAttributeByDefID(int def_idx)
 class AttributeIteratorWrapper : public IEconItemAttributeIterator
 {
 public:
-	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString) : onNormal(onNormal), onString(onString) {}
+	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString) : onNormal(onNormal), onString(onString), singleCallback(false) {}
+	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onAttrib) : onNormal(onAttrib), singleCallback(true) {}
 
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
 	{
@@ -448,6 +449,11 @@ public:
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const uint64&                            value) const { return true; }
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String&                 value) const
 	{
+		if (singleCallback) {
+			attribute_data_union_t valueu;
+			valueu.m_String = &value;
+			return onNormal(pAttrDef, valueu);
+		}
 		const char *pstr;
 		CopyStringAttributeValueToCharPointerOutput(&value, &pstr);
 		return onString(pAttrDef, pstr);
@@ -459,12 +465,19 @@ public:
 
 	std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal;
 	std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString;
+	bool singleCallback;
 
 };
 
 void ForEachItemAttribute(CEconItemView *item, std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString)
 {
 	AttributeIteratorWrapper it(onNormal, onString);
+	item->IterateAttributes(&it);
+}
+
+void ForEachItemAttribute(CEconItemView *item, std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onAttrib)
+{
+	AttributeIteratorWrapper it(onAttrib);
 	item->IterateAttributes(&it);
 }
 

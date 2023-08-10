@@ -53,19 +53,12 @@ namespace Mod::Perf::Attributes_Optimize
 
     EntityAttribCache* CreateNewCacheEntry(CBaseEntity *ent)
     {
-        CAttributeManager *mgr = nullptr;
-
-        if (ent->IsPlayer()) {
-            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
-        }
-        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
-            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
-        }
+        IHasAttributes *attributes = ent->m_pAttributes;
         
-        if (mgr == nullptr) {
-            //timer.End();
+        if (attributes == nullptr)
             return nullptr;
-        }
+
+        CAttributeManager *mgr = attributes->GetAttributeManager();
 
         EntityAttribCache *entity_cache = new EntityAttribCache();
         entity_cache->mgr = mgr;
@@ -77,15 +70,12 @@ namespace Mod::Perf::Attributes_Optimize
 
     float CalculateAttribValue(CBaseEntity *ent, float value, const char *attr, int index_insert, EntityAttribCache* entity_cache)
     {
-        CAttributeManager *mgr = nullptr;
-        if (ent->IsPlayer()) {
-            mgr = reinterpret_cast<CTFPlayer *>(ent)->GetAttributeManager();
-        }
-        else if (ent->IsBaseCombatWeapon() || ent->IsWearable()) {
-            mgr = reinterpret_cast<CEconEntity *>(ent)->GetAttributeManager();
-        }
-        if (mgr == nullptr)
+        IHasAttributes *attributes = ent->m_pAttributes;
+        
+        if (attributes == nullptr)
             return value;
+
+        CAttributeManager *mgr = attributes->GetAttributeManager();
             
         float result = mgr->ApplyAttributeFloat(value, ent, AllocPooledString_StaticConstantStringPointer(attr));
 

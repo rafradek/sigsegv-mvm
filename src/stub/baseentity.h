@@ -157,6 +157,7 @@ public:
 	edict_t	*m_pPev;
 	PVSInfo_t m_PVSInfo;
 	ServerClass *m_pServerClass;
+	EHANDLE m_hParent;
 	// ...
 private:
 	static MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> ft_AttachEdict;

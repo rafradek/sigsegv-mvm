@@ -1597,13 +1597,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	};
 	CMod s_Mod;
 	
-	
+	void ToggleModActive();
+
 	/* by way of incredibly annoying persistent requests from Hell-met,
 	 * I've acquiesced and made this mod convar non-notifying (sigh) */
 	ConVar cvar_enable("sig_mvm_jointeam_blue_allow", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Mod: permit client command 'jointeam blue' from human players",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+			ToggleModActive();
 			
 			Mod::MvM::Player_Limit::RecalculateSlots();
 		});
@@ -1620,12 +1621,14 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	ConVar cvar_force("sig_mvm_jointeam_blue_allow_force", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Mod: force players to join blue team",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (static_cast<ConVar *>(pConVar)->GetBool())
-				s_Mod.Toggle(true);
-			else
-				s_Mod.Toggle(cvar_enable.GetBool());
+			ToggleModActive();
 			Mod::MvM::Player_Limit::RecalculateSlots();
 		});
+	
+	void ToggleModActive()
+	{
+		s_Mod.Toggle(cvar_enable.GetBool() || cvar_force.GetBool());
+	}
 
 	bool PlayersCanJoinBlueTeam()
 	{

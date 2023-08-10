@@ -57,6 +57,10 @@ namespace Mod::MvM::Player_Limit
     void ResetMaxTotalPlayers(int resetTo);
 
 	void ResetMaxTotalPlayers() {
+		if (!cvar_enable.GetBool()) {
+			ResetMaxTotalPlayers(0);
+			return;
+		}
 		int red, blu, spectators, robots;
 		GetSlotCounts(red, blu, spectators, robots);
 		ResetMaxTotalPlayers(red + blu + spectators);
@@ -278,6 +282,13 @@ namespace Mod::MvM::Player_Limit
             }
         }
 
+		virtual void OnDisable() override
+		{
+			override_tf_mvm_defenders_team_size.Reset();
+			override_tf_mvm_max_connected_players.Reset();
+			allowspectators.Reset();
+		}
+
         virtual void FrameUpdatePostEntityThink() override
 		{
             if (!TFGameRules()->IsMannVsMachineMode()) return;
@@ -324,6 +335,6 @@ namespace Mod::MvM::Player_Limit
 	ConVar cvar_enable("sig_mvm_player_limit_change", "0", FCVAR_NONE,
 		"Mod: Change mvm player limits. Set to -1 to never allow missions to change this value",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			ToggleModActive();
+			RecalculateSlots();
 		});
 }

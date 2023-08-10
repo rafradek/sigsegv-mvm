@@ -345,6 +345,8 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	public:
 		CValueOverridePopfile_ConVar(const char *name) : CValueOverride_ConVar<T>(name) {}
+
+		~CValueOverridePopfile_ConVar() { IValueOverride<T>::Reset(); }
 	
 		void Reset(bool pre)
 		{
@@ -396,6 +398,8 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 	public:
 		CValueOverridePopfilePlayerCount_ConVar(const char *name) : CValueOverridePopfile_ConVar<T>(name) {}
+		
+		~CValueOverridePopfilePlayerCount_ConVar() { IValueOverride<T>::Reset(); }
 	
 	protected:
 		virtual void SetValue(const T& val) override
@@ -1122,7 +1126,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		// Specific bit added to out of bounds definition index to more easily identify item as custom;
 		auto entrywep = state.m_CustomWeapons.find(name);
 		if (entrywep != state.m_CustomWeapons.end()) {
-			*(int *)(&index) |= 0x00800000;
+			*(int *)(&index) |= CUSTOM_WEAPON_ID_MASK;
 			for (auto& entry : entrywep->second.attributes) {
 				view->GetAttributeList().AddStringAttribute(entry.first, entry.second);
 			}
@@ -1881,6 +1885,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ReapplyItemUpgrades, CEconItemView *item_view)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
+
 		if (IsMannVsMachineMode() && !player->IsBot() /*player->GetTeamNumber() == TF_TEAM_RED*/) {
 			if (!state.m_ItemAttributes.empty()) {
 				ApplyItemAttributes(item_view, player, state.m_ItemAttributes);
@@ -2223,23 +2228,21 @@ namespace Mod::Pop::PopMgr_Extensions
 	void ApplyPlayerAttributes(CTFPlayer *player) {
 		int classname = player->GetPlayerClass()->GetClassIndex();
 		for(auto it = state.m_PlayerAttributes.begin(); it != state.m_PlayerAttributes.end(); ++it){
-			auto attr = player->GetAttributeList()->GetAttributeByName(it->first.c_str());
-			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
-				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
-				if (attr_def != nullptr) {
+			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
+			if (attr_def != nullptr) {
+				auto attr = player->GetAttributeList()->GetAttributeByID(attr_def->GetIndex());
+				if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
 					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
-					player->TeamFortress_SetSpeed();
 				}
 			}
 		}
 		
 		for(auto it = state.m_PlayerAttributesClass[classname].begin(); it != state.m_PlayerAttributesClass[classname].end(); ++it){
-			auto attr = player->GetAttributeList()->GetAttributeByName(it->first.c_str());
-			if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
-				auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
-				if (attr_def != nullptr) {
+			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(it->first.c_str());
+			if (attr_def != nullptr) {
+				auto attr = player->GetAttributeList()->GetAttributeByID(attr_def->GetIndex());
+				if (attr == nullptr || it->second != attr->GetValuePtr()->m_Float) {
 					player->GetAttributeList()->SetRuntimeAttributeValue(attr_def, it->second);
-					player->TeamFortress_SetSpeed();
 				}
 			}
 		}

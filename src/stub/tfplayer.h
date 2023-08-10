@@ -402,7 +402,7 @@ private:
 	static MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > ft_Burn;
 };
 
-class CTFPlayer : public CBaseMultiplayerPlayer, public IHasAttributes
+class CTFPlayer : public CBaseMultiplayerPlayer
 {
 public:
 	CTFPlayerClass *GetPlayerClass()             { return &m_PlayerClass; }

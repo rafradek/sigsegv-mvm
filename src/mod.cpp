@@ -420,8 +420,14 @@ void CModManager::CC_ListMods(const CCommand& cmd)
 		info.name = fullname.substr(off_sep + 1);
 		
 		if (mod->m_bLoaded) {
-			info.c_status = c_good;
-			info.status   = "OK";
+			if (mod->IsEnabled()) {
+				info.c_status = c_good;
+				info.status   = "OK";
+			}
+			else {
+				info.c_status = c_normal;
+				info.status   = "DISABLED";
+			}
 		} else {
 			if (mod->m_bFailed) {
 				info.c_status = c_bad;

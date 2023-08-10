@@ -633,6 +633,9 @@ public:
     // State information
     CFrameSnapshotEntry		*m_pEntities;	
 	int						m_nNumEntities; // = sv.num_edicts
+	
+	unsigned short			*m_pValidEntities; 
+	int						m_nValidEntities;
 };
 
 struct PackWork_t

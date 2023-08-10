@@ -26,6 +26,7 @@ SMEXT_LINK(&g_Ext);
 
 IFileSystem *filesystem                          = nullptr;
 IServerGameClients *serverGameClients            = nullptr;
+IServerGameEnts *serverGameEnts                  = nullptr;
 ICvar *icvar                                     = nullptr;
 IServer *sv                                      = nullptr;
 ISpatialPartition *partition                     = nullptr;
@@ -151,6 +152,7 @@ void CExtSigsegv::SDK_OnUnload()
 #endif
 
 	UnloadAllCustomThinkFunc();
+	Msg("SDK unload\n");
 }
 
 void CExtSigsegv::SDK_OnAllLoaded()
@@ -191,6 +193,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 #endif
 	GET_IFACE_REQUIRED(FileSystem, filesystem,        FILESYSTEM_INTERFACE_VERSION);
 	GET_IFACE_REQUIRED(Server,     serverGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
+	GET_IFACE_REQUIRED(Server,     serverGameEnts,    INTERFACEVERSION_SERVERGAMEENTS);
 	
 	GET_IFACE_REQUIRED(Engine, icvar,              CVAR_INTERFACE_VERSION);
 	GET_IFACE_REQUIRED(Engine, partition,          INTERFACEVERSION_SPATIALPARTITION);
@@ -281,6 +284,8 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 
 bool CExtSigsegv::SDK_OnMetamodUnload(char *error, size_t maxlength)
 {
+	
+	Msg("metamod SDK unload\n");
 	return true;
 }
 

@@ -2,6 +2,11 @@
 #define _INCLUDE_SIGSEGV_MOD_POP_POPMGR_EXTENSIONS_H_
 
 namespace Mod::Pop::PopMgr_Extensions {
+	constexpr int CUSTOM_WEAPON_ID_MASK = 0x0080000;
+	inline bool ItemViewIsCustomWeapon(CEconItemView *view) {
+		auto &index = view->m_iItemDefinitionIndex.Get();
+		return *(int *)(&index) & CUSTOM_WEAPON_ID_MASK;
+	}
     bool ExtendedUpgradesNoUndo();
     bool ExtendedUpgradesOnly();
     IBaseMenu *DisplayExtraLoadoutItemsClass(CTFPlayer *player, int class_index, bool autoHide);

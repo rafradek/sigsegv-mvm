@@ -83,7 +83,8 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "*.ipp": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "future": "cpp"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [

@@ -1250,6 +1250,38 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			displaystr += CFmtStr("threadlocalmine time: %.9f\n", timer.GetDuration().GetSeconds());
 		}
+		else if (strcmp(args[2], "mgrtime") == 0) {
+			IHasAttributes *attrs = player->m_pAttributes;
+			attrs = rtti_cast<IHasAttributes *>(player);
+			CAttributeManager *mgr = attrs->GetAttributeManager();
+			mgr = player->GetAttributeManager();
+
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				attrs = player->m_pAttributes;
+				mgr = attrs->GetAttributeManager();
+			}
+			timer.End();
+			displaystr += CFmtStr("pattributes time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				attrs = rtti_cast<IHasAttributes *>(player);
+				mgr = attrs->GetAttributeManager();
+			}
+			timer.End();
+			displaystr += CFmtStr("rtti ihasattributes time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				if (player->IsPlayer()) {
+					mgr = player->GetAttributeManager();
+				}
+				else if (player->IsBaseCombatWeapon() || player->IsWearable()) {
+					mgr = reinterpret_cast<CEconEntity *>(player)->GetAttributeManager();
+				}
+			}
+			timer.End();
+			displaystr += CFmtStr("check ihasattributes time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
 		ModCommandResponse("%s", displaystr.c_str());
 	}
 
@@ -1688,13 +1720,16 @@ namespace Mod::Util::Client_Cmds
 			return;
 		}
 		if (FStrEq(args[1], "never")) {
-			cpu_show_player[ENTINDEX(player)] = 2;
+			cpu_show_player[ENTINDEX(player)] = 3;
 		}
 		else if (FStrEq(args[1], "default")) {
 			cpu_show_player[ENTINDEX(player)] = 0;
 		}
 		else if (FStrEq(args[1], "always")) {
 			cpu_show_player[ENTINDEX(player)] = 1;
+		}
+		else if (FStrEq(args[1], "extra")) {
+			cpu_show_player[ENTINDEX(player)] = 2;
 		}
 	}
 	
@@ -1718,12 +1753,40 @@ namespace Mod::Util::Client_Cmds
 		return result;
 	}
 
+    CCycleCount timespent;
+    CCycleCount timespentShow;
+    CCycleCount timespentStart;
+    CCycleCount timespentEnd;
+    float prevTime = 0.0f;
+
+	DETOUR_DECL_STATIC(void, Host_ShowIPCCallCount)
+	{
+		DETOUR_STATIC_CALL(Host_ShowIPCCallCount)();
+		timespentEnd.Sample();
+		timespent.m_Int64 += timespentEnd.m_Int64 - timespentStart.m_Int64;
+        if (floor(gpGlobals->curtime) != floor(prevTime) ) {
+			timespentShow = timespent;
+            timespent.Init();
+            prevTime = gpGlobals->curtime;
+        }
+	}
+
+	
+
+	DETOUR_DECL_MEMBER(void, CMapReslistGenerator_RunFrame)
+	{
+		timespentStart.Sample();
+		DETOUR_MEMBER_CALL(CMapReslistGenerator_RunFrame)();
+	}
+
 	class CMod : public IMod, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:Client_Cmds")
 		{
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
+			MOD_ADD_DETOUR_STATIC(Host_ShowIPCCallCount,               "Host_ShowIPCCallCount");
+			MOD_ADD_DETOUR_MEMBER(CMapReslistGenerator_RunFrame,               "CMapReslistGenerator::RunFrame");
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
@@ -1744,10 +1807,9 @@ namespace Mod::Util::Client_Cmds
 					s_lastUsage = currentUsage;
 
 					extern ConVar cvar_cpushowlevel;
-					bool highCpu = cvar_cpushowlevel.GetInt() < (int) (cpu_usage * 100);
+					bool highCpu = cvar_cpushowlevel.GetInt() < (int)(timespentShow.GetSeconds() * 100); //(int) (cpu_usage * 100);
 					bool highEdict = engine->GetEntityCount() /* gEntList->m_iNumEdicts*/ > 1900;
 					bool highEnt = (gEntList->m_iNumEnts - gEntList->m_iNumEdicts) > 4500;
-
 					hudtextparms_t textparam;
 					textparam.channel = 5;
 					textparam.x = 1.0f;
@@ -1768,15 +1830,19 @@ namespace Mod::Util::Client_Cmds
 					
 					for (int i = 1; i < ARRAYSIZE(cpu_show_player); i++) {
 						auto player = UTIL_PlayerByIndex(i);
-						if (player != nullptr && !player->IsBot() && cpu_show_player[i] != 2 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || cpu_show_player[i] == 1)) {
+						bool alwaysShow = cpu_show_player[i] == 1 || cpu_show_player[i] == 2;
+						if (player != nullptr && !player->IsBot() && cpu_show_player[i] != 3 && PlayerIsSMAdmin(player) && (highCpu || highEdict || highEnt || alwaysShow)) {
 							std::string str;
-							if (highCpu || cpu_show_player[i] == 1) {
-								str += fmt::format("CPU Usage {:.1f}%\n", (float)(cpu_usage * 100));
+							if (highCpu || alwaysShow) {
+								str += fmt::format("Frame Time: {:.1f}%\n", timespentShow.GetSeconds() * 100);
 							}
-							if (highEdict || cpu_show_player[i] == 1) {
+							if (cpu_show_player[i] == 2) {
+								str += fmt::format("CPU Usage: {:.1f}%\n", (float)(cpu_usage * 100));
+							}
+							if (highEdict || alwaysShow) {
 								str += fmt::format("Networked Entities: {}/2048\n", engine->GetEntityCount()/*gEntList->m_iNumEdicts*/);
 							}
-							if (highEnt || cpu_show_player[i] == 1) {
+							if (highEnt || alwaysShow) {
 								str += fmt::format("Logic Entities: {}/6143\n", gEntList->m_iNumEnts - gEntList->m_iNumEdicts);
 							}
 							DisplayHudMessageAutoChannel(player, textparam, str.c_str(), 2);

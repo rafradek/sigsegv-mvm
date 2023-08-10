@@ -9,6 +9,11 @@ class CAttributeList;
 class IHasAttributes
 {
 public:
+    virtual CAttributeManager	*GetAttributeManager() = 0;
+	virtual CAttributeContainer	*GetAttributeContainer() = 0;
+	virtual CBaseEntity			*GetAttributeOwner() = 0;
+	virtual CAttributeList		*GetAttributeList() = 0;
+	virtual void				ReapplyProvision() = 0;
 };
 
 #endif

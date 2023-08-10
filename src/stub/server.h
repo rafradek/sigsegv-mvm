@@ -13,7 +13,12 @@ typedef struct CustomFile_s
 
 class CBaseClient : public IGameEventListener2, public IClient, public IClientMessageHandler {
 public:
-	virtual void UpdateUserSettings();
+	virtual void UpdateUserSettings() = 0;
+
+	void UpdateSendState()                     { vt_UpdateSendState(this); }
+	void SendSnapshot(CClientFrame * frame)    { vt_SendSnapshot(this, frame); }
+	bool UpdateAcknowledgedFramecount(int tick){ return vt_UpdateAcknowledgedFramecount(this, tick); }
+	
 	int				m_nClientSlot;	
 	int				m_nEntityIndex;	
 	
@@ -56,6 +61,11 @@ public:
 	int				m_nForceWaitForTick;
 	
 	bool			m_bFakePlayer;
+private:
+	static MemberVFuncThunk<CBaseClient *, void>                 vt_UpdateSendState;
+	static MemberVFuncThunk<CBaseClient *, void, CClientFrame *> vt_SendSnapshot;
+	static MemberVFuncThunk<CBaseClient *, bool, int>            vt_UpdateAcknowledgedFramecount;
+	
 };
 
 class CBaseServer : public IServer
@@ -92,14 +102,20 @@ private:
     static MemberFuncThunk<CHLTVServer *, void>                ft_RemoveOldestFrame;
 };
 
-class CGameClient 
+class CGameClient : public CBaseClient
 {
 public:
     bool ShouldSendMessages()                      { return ft_ShouldSendMessages(this); }
+    void SetupPackInfo(CFrameSnapshot * snapshot)  { return ft_SetupPackInfo(this, snapshot); }
+    void SetupPrevPackInfo()                       { return ft_SetupPrevPackInfo(this); }
+    CClientFrame *GetSendFrame()                   { return ft_GetSendFrame(this); }
 	//bool SpawnServer(const char *szMapName, const char *szMapFile, const char *startspot)  { return ft_SpawnServer(this, szMapName, szMapFile, startspot); }
     
 private:
-    static MemberFuncThunk<CGameClient *, bool>              ft_ShouldSendMessages;
+    static MemberFuncThunk<CGameClient *, bool>                   ft_ShouldSendMessages;
+    static MemberFuncThunk<CGameClient *, void, CFrameSnapshot *> ft_SetupPackInfo;
+    static MemberFuncThunk<CGameClient *, void>                   ft_SetupPrevPackInfo;
+    static MemberFuncThunk<CGameClient *, CClientFrame *>         ft_GetSendFrame;
 };
 
 class CHLTVClient : public CBaseClient {

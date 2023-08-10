@@ -158,7 +158,7 @@ private:
 class CBaseFlex : public CBaseAnimatingOverlay {};
 
 #ifdef SE_TF2
-class CEconEntity : public CBaseAnimating, public IHasAttributes
+class CEconEntity : public CBaseAnimating
 {
 public:
 	void DebugDescribe() { ft_DebugDescribe(this); }

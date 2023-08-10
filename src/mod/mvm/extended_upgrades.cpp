@@ -1457,6 +1457,7 @@ namespace Mod::MvM::Extended_Upgrades
 	{
         SCOPED_INCREMENT_IF(rc_CUpgrades_GrantOrRemoveAllUpgrades, remove);
         bool respec = remove && refund;
+        std::vector<std::pair<CEconEntity *, CEconItemAttributeDefinition *>> attributesToRemove;
         if (respec) {
             for (int upgrade = 0; upgrade < CMannVsMachineUpgradeManager::Upgrades().Count(); upgrade++) {
                 auto &upgradeInfo = CMannVsMachineUpgradeManager::Upgrades()[upgrade];
@@ -1468,12 +1469,12 @@ namespace Mod::MvM::Extended_Upgrades
 
                         auto item = GetEconEntityAtLoadoutSlot(player, iItemSlot);
                         if ((iItemSlot == -1 && upgradeInfo.m_iUIGroup == 1) || (item != nullptr && item->GetItem() != nullptr && upgradeInfo.m_iUIGroup != 1)) {
+                            
                             int currentUpgrade = 0;
                             if (upgrade >= extended_upgrades_start_index && extended_upgrades_start_index != -1 && upgrade < extended_upgrades_start_index + (int)upgrades.size()) {
                                 bool overCap = false;
                                 GetUpgradeStepData(player, iItemSlot, upgrade, currentUpgrade, overCap);
                             }
-
                             if (currentUpgrade > 0) {
                                 auto upgradeInfoExtra = upgrades[upgrade - extended_upgrades_start_index];
                                 if (upgradeInfoExtra->on_downgrade_outputs.size() > 0) {
@@ -1484,13 +1485,13 @@ namespace Mod::MvM::Extended_Upgrades
                                     }
                                 }
                             }
-
-                            if (iItemSlot != -1) {
-                                item->GetItem()->GetAttributeList().RemoveAttribute(attribDef);
-                            }
                         }
                     }
                 }
+            }
+
+            for (auto &[item, attribDef] : attributesToRemove) {
+                item->GetItem()->GetAttributeList().RemoveAttribute(attribDef);
             }
 
             

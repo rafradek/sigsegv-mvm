@@ -3,6 +3,7 @@
 
 #include <stub/gamerules.h> 
 #include <util/misc.h> 
+#include <util/autolist.h> 
 
 template<typename T>
 class IValueOverride
@@ -61,6 +62,13 @@ public:
     CValueOverride_ConVar(const char *name) :
         m_pszConVarName(name) {}
 
+    CValueOverride_ConVar(IConVar *convar) :
+        m_pConVar(std::unique_ptr<ConVarRef>(new ConVarRef(convar))) {}
+
+    ~CValueOverride_ConVar() {
+        IValueOverride<T>::Reset();
+    }
+
 protected:
     virtual T GetValue() override { return ConVar_GetValue<T>(MyConVar()); }
     
@@ -100,7 +108,10 @@ private:
     std::unique_ptr<ConVarRef> m_pConVar;
 };
 
+#define CONVAR_OVERRIDE(name, type, value) static ConVarRef name##cv(#name); CValueOverride_ConVar<type> name(name##cv.GetLinkedConVar()); name.SetValue(value);
 
+
+#ifdef SE_TF2
 
 // TODO: fix problems related to client-side convar tf_medieval_thirdperson:
 // - players start out in first person, until they taunt or respawn or whatever
@@ -114,7 +125,6 @@ struct CValueOverride_MedievalMode : public IValueOverride<bool>
     virtual bool GetValue() override                { return TFGameRules()->IsInMedievalMode(); }
     virtual void SetValue(const bool& val) override { TFGameRules()->Set_m_bPlayingMedieval(val); }
 };
-
 
 class CValueOverride_CustomUpgradesFile : public IValueOverride<std::string>
 {
@@ -144,4 +154,6 @@ protected:
         }
     }
 };
+#endif
+
 #endif

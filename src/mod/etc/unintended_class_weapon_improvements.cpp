@@ -17,7 +17,15 @@
 namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 {
 
-	
+	class PlayerMaxAmmoOverride : public EntityModule
+	{
+	public:
+		PlayerMaxAmmoOverride(CBaseEntity *entity) : EntityModule(entity) {};
+
+		int maxAmmo;
+		CHandle<CTFPlayer> owner;
+	};
+
 	class UnintendedClassViewmodelOverride : public EntityModule
 	{
 	public:
@@ -32,6 +40,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		const char *properPlayerModel = nullptr;
 		int oldPlayerModel;
 		std::string oldPlayerCustomModel;
+		CHandle<CTFPlayer> owner;
 	};
 
     THINK_FUNC_DECL(HideViewModel)
@@ -50,6 +59,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	bool OnEquipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
 	{
 		
+		mod->owner = owner;
 		if (mod->wearable != nullptr) {
 			mod->wearable->Remove();
 		}
@@ -210,7 +220,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #endif
 			}
 		}
-
 		// Fix up ammo count
 		if (sig_etc_unintended_class_weapon_fix_ammo.GetBool()) {
 			int ammoType = weapon->m_iPrimaryAmmoType;
@@ -219,28 +228,20 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #endif
 			if ((ammoType == TF_AMMO_PRIMARY || ammoType == TF_AMMO_SECONDARY) && def->GetLoadoutSlot(classIndex) == -1) {
 				int properClass = -1;
-				for (int i = 1; i < 10; i++) {
+				for (int i = 1; i < TF_CLASS_COUNT; i++) {
 					if (def->GetLoadoutSlot(i) != -1) {
 						properClass = i;
 						break;
 					}
 				}
 				if (properClass != -1) {
-
 					int ammoProper = GetPlayerClassData(properClass)->m_aAmmoMax[ammoType];
-					int ammoOur = GetPlayerClassData(classIndex)->m_aAmmoMax[ammoType];
-					const char *attrib;
-					float value;
-					if (ammoOur != 0) {
-						attrib = ammoType == TF_AMMO_PRIMARY ? "max ammo primary mult" : "max ammo secondary mult";
-						value = (float)ammoProper / (float)ammoOur;
-					}
-					else {
-						attrib = ammoType == TF_AMMO_PRIMARY ? "max ammo primary additive" : "max ammo secondary additive";
-						value = (float)ammoProper;
-					}
-					auto attrDef = GetItemSchema()->GetAttributeDefinitionByName(attrib);
-					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attrDef, value);
+					int preAmmo = GetPlayerClassData(classIndex)->m_aAmmoMax[ammoType];
+					float mult = owner->GetMaxAmmo(ammoType) != 0 ? (float)owner->GetAmmoCount(ammoType) / (float)owner->GetMaxAmmo(ammoType) : 1.0f;
+					auto ammoMod = weapon->GetOrCreateEntityModule<PlayerMaxAmmoOverride>("playermaxammo");
+					ammoMod->maxAmmo = ammoProper;
+					ammoMod->owner = owner;
+					owner->SetAmmoCount(owner->GetMaxAmmo(ammoType) * mult, ammoType);
 				}
 			}
 #ifndef NO_MVM
@@ -296,15 +297,37 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
         return DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
     }
 
+	DETOUR_DECL_MEMBER(bool, CBaseCombatCharacter_Weapon_Detach, CBaseCombatWeapon *weapon)
+	{
+		if (weapon == nullptr)
+			return false;
+		
+		auto player = ToTFPlayer(reinterpret_cast<CBaseCombatCharacter *>(this));
+		float mult = -1.0f;
+		auto ammoMod = weapon->GetEntityModule<PlayerMaxAmmoOverride>("playermaxammo");
+		if (player != nullptr && ammoMod) {
+			mult = player->GetMaxAmmo(weapon->m_iPrimaryAmmoType) != 0 ? (float)player->GetAmmoCount(weapon->m_iPrimaryAmmoType) / (float)player->GetMaxAmmo(weapon->m_iPrimaryAmmoType) : 0.0f;
+		}
+		auto result = DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
+		if (ammoMod != nullptr) {
+			weapon->RemoveEntityModule("playermaxammo");
+
+			if (mult != -1.0f && weapon != nullptr && ammoMod != nullptr) {
+				player->SetAmmoCount(player->GetMaxAmmo(weapon->m_iPrimaryAmmoType) * mult, weapon->m_iPrimaryAmmoType);
+			}
+		}
+		return result;
+	}
+
     DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
 	{
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
+		auto weapon = rtti_cast<CTFWeaponBase *>(entity);
+
 		auto mod = entity->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-		if (mod != nullptr) {
-			auto weapon = rtti_cast<CTFWeaponBase *>(entity);
-			if (weapon != nullptr && weapon->GetTFPlayerOwner() != nullptr) {
-				OnUnequipUnintendedClassWeapon(weapon->GetTFPlayerOwner(), weapon, mod);
-			}
+
+		if (mod != nullptr && weapon != nullptr && mod->owner != nullptr) {
+			OnUnequipUnintendedClassWeapon(mod->owner, weapon, mod);
 		}
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
     }
@@ -720,7 +743,26 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxAmmo, int ammoIndex, int classIndex)
 	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		bool restore = false;
+		int valueRestore = 0;
+		for (int i = 0; i < MAX_WEAPONS; i++) {
+			auto weapon = player->GetWeapon(i);
+			if (weapon != nullptr && weapon->m_iPrimaryAmmoType == ammoIndex) {
+				auto mod = weapon->GetEntityModule<PlayerMaxAmmoOverride>("playermaxammo");
+				if (mod != nullptr) {
+					restore = true;
+					auto playerClass = GetPlayerClassData(classIndex > 0 ? classIndex : player->GetPlayerClass()->GetClassIndex());
+					valueRestore = playerClass->m_aAmmoMax[ammoIndex];
+					playerClass->m_aAmmoMax[ammoIndex] = mod->maxAmmo;
+					break;
+				}
+			}
+		}
 		auto ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxAmmo)(ammoIndex, classIndex);
+		if (restore) {
+			GetPlayerClassData(classIndex > 0 ? classIndex : player->GetPlayerClass()->GetClassIndex())->m_aAmmoMax[ammoIndex] = valueRestore;
+		}
 		if (ammoIndex == TF_AMMO_GRENADES1 && ret == 0) {
 			return 1;
 		}
@@ -787,6 +829,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 			// Allow grenades from other items
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxAmmo, "CTFPlayer::GetMaxAmmo");
+			
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach, "CBaseCombatCharacter::Weapon_Detach");
 			
         }
 
