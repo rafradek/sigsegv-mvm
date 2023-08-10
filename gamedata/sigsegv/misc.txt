@@ -6100,8 +6100,25 @@
 				"Int64_CompareDeltas"	"_Z19Int64_CompareDeltasPK8SendPropP7bf_readS3_"
 
 				"CBaseClient::SetName"	"_ZN11CBaseClient7SetNameEPKc"
+				"CBaseClient::UpdateSendState" "_ZN11CBaseClient15UpdateSendStateEv"
+				"CBaseClient::SendSnapshot" "_ZN11CBaseClient12SendSnapshotEP12CClientFrame"
+				"CBaseClient::UpdateAcknowledgedFramecount" "_ZN11CBaseClient28UpdateAcknowledgedFramecountEi"
 				"CBaseServer::FillServerInfo" "_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
+
+				"CGameClient::SetupPackInfo" "_ZN11CGameClient13SetupPackInfoEP14CFrameSnapshot"
+				"CGameClient::SetupPrevPackInfo" "_ZN11CGameClient17SetupPrevPackInfoEv"
+				"CGameClient::GetSendFrame" "_ZN11CGameClient12GetSendFrameEv"
 				
+				"CParallelProcessor<CGameClient *>::Run" "_ZN18CParallelProcessorIP11CGameClient21CFuncJobItemProcessorIS1_EE3RunEPS1_jiP11IThreadPool"
+
+				"CVEngineServer::BuildEntityClusterList" "_ZN14CVEngineServer22BuildEntityClusterListEP7edict_tP9PVSInfo_t"
+
+				"CMapReslistGenerator::RunFrame" "_ZN20CMapReslistGenerator8RunFrameEv"
+
+				"Host_ShowIPCCallCount" "_Z21Host_ShowIPCCallCountv"
+
+				"CUtlMemoryPool::Alloc [engine]" "_ZN14CUtlMemoryPool5AllocEv"
+				"CUtlMemoryPool::Free [engine]" "_ZN14CUtlMemoryPool4FreeEPv"
 			}
 		}
 	}
