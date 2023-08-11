@@ -41,6 +41,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		int oldPlayerModel;
 		std::string oldPlayerCustomModel;
 		CHandle<CTFPlayer> owner;
+
+		int overridePlayerAnimClass = -1;
+		bool overridePlayerAnimClassApplied = false;
 	};
 
     THINK_FUNC_DECL(HideViewModel)
@@ -66,19 +69,30 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->wearableWeapon != nullptr) {
 			mod->wearableWeapon->Remove();
 		}
+		bool hasPlayerAnimOverride = mod->playerModelWearable != nullptr;
 		if (mod->playerModelWearable != nullptr) {
 			mod->playerModelWearable->Remove();
 		}
 
-		if (mod->properPlayerModel != nullptr) {
+		if (mod->overridePlayerAnimClass != -1) {
+			mod->playerModelWearable = nullptr;
 			auto wearable_player = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+			
+			mod->properPlayerModel = GetPlayerClassData(mod->overridePlayerAnimClass)->m_szModelName;
+			
+			if (!hasPlayerAnimOverride) {
+				mod->oldPlayerCustomModel = owner->GetPlayerClass()->GetCustomModel();
+				mod->oldPlayerModel = owner->GetModelIndex();
+			}
+
+			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
+			mod->overridePlayerAnimClassApplied = true;
+			owner->m_nRenderFX = 6;
 			wearable_player->Spawn();
 			wearable_player->GiveTo(owner);
 			wearable_player->SetModelIndex(mod->oldPlayerModel);
 			wearable_player->m_bValidatedAttachedEntity = true;
 			mod->playerModelWearable = wearable_player;
-			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
-			owner->m_nRenderFX = 6;
 		}
 
 		if (weapon->m_nCustomViewmodelModelIndex != mod->properHandModelIndex) return false;
@@ -116,7 +130,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto weapon = player->GetActiveTFWeapon();
 		if (weapon != nullptr) {
 			auto mod = weapon->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-			if (mod != nullptr && mod->playerModelWearable != nullptr) {
+			if (mod != nullptr && mod->playerModelWearable != nullptr && mod->overridePlayerAnimClassApplied) {
+				mod->oldPlayerCustomModel = s1;
 				mod->playerModelWearable->SetModelIndex(CBaseEntity::PrecacheModel(s1 != nullptr && s1[0] != '\0' ? s1 : GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_szModelName));
 				return;
 			}
@@ -136,7 +151,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->playerModelWearable != nullptr) {
 			mod->playerModelWearable->Remove();
 		}
-		if (mod->properPlayerModel != nullptr) {
+		if (mod->overridePlayerAnimClass != -1) {
+			mod->overridePlayerAnimClassApplied = false;
 			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerCustomModel.c_str());
 			owner->m_nRenderFX = 0;
 		}
@@ -174,7 +190,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		int otherClassPlayerModel = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(ent, otherClassPlayerModel, use_original_class_player_animations);
 
-		if (cvar_enable_viewmodel.GetBool() || otherClassViewmodel != 0 || otherClassPlayerModel != 0) {
+		if (cvar_enable_viewmodel.GetBool() || cvar_enable_playermodel.GetBool() || otherClassViewmodel != 0 || otherClassPlayerModel != 0) {
 			
 			// Use viewmodel of a real class if applicable
 			if (((owner->IsRealPlayer() && owner->GetViewModel() != nullptr) || (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool())) && weapon->m_nViewModelIndex == 0) {
@@ -206,9 +222,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 							weapon->SetModel(mod->properHandModel);
 						}
 						if (otherClassPlayerModel != 0 || cvar_enable_playermodel.GetBool()) {
-							mod->properPlayerModel = GetPlayerClassData(properClass)->m_szModelName;
-							mod->oldPlayerCustomModel = owner->GetPlayerClass()->GetCustomModel();
-							mod->oldPlayerModel = owner->GetModelIndex();
+							mod->overridePlayerAnimClass = properClass;
 						}
 						if (weapon == owner->GetActiveTFWeapon()) {
 							OnEquipUnintendedClassWeapon(owner, weapon, mod);
