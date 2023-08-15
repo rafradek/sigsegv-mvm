@@ -7221,9 +7221,14 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 	}
+	
+	ConVar sig_attr_speed_health_ammo_recalculate("sig_attr_speed_health_ammo_recalculate", "1", FCVAR_NOTIFY,
+		"Recalculate current health, ammo, move speed when attribute changes. May affect other plugins. Requires sig_attr_custom 1");
 
 	void OnMoveSpeedChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
+		if (!sig_attr_speed_health_ammo_recalculate.GetBool()) return;
+
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
 			player->TeamFortress_SetSpeed();
@@ -7232,6 +7237,8 @@ namespace Mod::Attr::Custom_Attributes
 
 	void OnMaxHealthChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
 	{
+		if (!sig_attr_speed_health_ammo_recalculate.GetBool()) return;
+
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr && player->GetHealth() > 0) {
 			float change = pAttrDef->GetDescriptionFormat() == ATTDESCFORM_VALUE_IS_ADDITIVE ? new_value.m_Float - old_value.m_Float : player->GetMaxHealth() * (1 - (old_value.m_Float / new_value.m_Float));
@@ -7356,6 +7363,8 @@ namespace Mod::Attr::Custom_Attributes
 
 	void AdjustAmmo(CTFPlayer *player, int ammoType, attribute_data_union_t old_value, attribute_data_union_t new_value, bool additive)
 	{
+		if (!sig_attr_speed_health_ammo_recalculate.GetBool()) return;
+
 		if (additive) {
 			float oldVal = (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float));
 			if (oldVal == 0) {

@@ -141,6 +141,8 @@ private:
 
 namespace Mod::Perf::SendProp_Optimize
 {
+
+    constexpr int FL_PACK_WAIT (1 << 25);
     BS::thread_pool threadPool(1);
     BS::thread_pool threadPoolPackWork(1);
 
@@ -447,7 +449,9 @@ namespace Mod::Perf::SendProp_Optimize
         // Remember last write offsets 
         // player_prop_write_offset_last[objectID - 1] = player_prop_write_offset[objectID - 1];
         auto &player_prop_cull = player_class_cache->prop_cull;
-        bool bot = serverclass == playerServerClass && entity->GetFlags() & FL_FAKECLIENT;
+        auto isPlayer = serverclass == playerServerClass;
+        bool bot = isPlayer && entity->GetFlags() & FL_FAKECLIENT;
+
         for (int i = 0; i < offsetcount; i++) {
             PropIndexData &data = cache.prop_offset_sendtable[i];
             int valuepre = old_value_data[i];
@@ -774,8 +778,11 @@ namespace Mod::Perf::SendProp_Optimize
 
     bool specialway = false;
 
+    std::atomic<int> computedPackClientIndex = 0;
+    std::atomic<int> checkTransmitCurrentIndex = -1;
+    std::atomic<int> fullPackCurrentIndex = -1;
     
-    void PackWork(PackWork_t *work, long items, int maxthreads, int curthread)
+    void PackWork(PackWork_t *work, size_t items)
     {
         /*CFastTimer timer;
         maxthreads = cvar_threads.GetInt();
@@ -793,12 +800,11 @@ namespace Mod::Perf::SendProp_Optimize
         //CFastTimer timer;
         //timer.Start();
         VPROF_BUDGET("CParallelProcessor<PackWork_t>::Run", "Encoding entities");
-        int player_index_end = 0;
         int max_players = gpGlobals->maxClients;
         CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
+        bool parallel = IsParallel();
 
-        // Multi threaded behavior: start from curthread index, process every maxthreads entity 
-        for (int i = curthread; i < items; i+= maxthreads) {
+        for (size_t i = 0; i < items; i++) {
             PackWork_t *work_i = work + i;
             edict_t *edict = work_i->pEdict;
             int objectID = work_i->nIdx;
@@ -806,28 +812,33 @@ namespace Mod::Perf::SendProp_Optimize
             //   player_index_end = i;
             //    break;
             //}
+    
+            bool isParallelPlayerPack = parallel && edict->m_fStateFlags & FL_PACK_WAIT;
 
             if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
                 if (snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber)) {
                     continue;
                 }
             }
-            //pack[concurrencyPackIndex]++;
             
-            CBaseEntity *entity = GetContainingEntity(edict);
+            //pack[concurrencyPackIndex]++;
+            CBaseEntity *entity = (CBaseEntity *)edict->GetUnknown();
             ServerClass *serverclass =  entity->NetworkProp()->GetServerClass();
             ServerClassCache &cache = *GetServerClassCache(serverclass->m_pTable);
             
             if (!(edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)) {
                 bool lastFullEncode = !DoEncode(serverclass, cache, edict, objectID, work_i->pSnapshot );
                 if (!lastFullEncode) {
+
                     continue;
                 }
+                
             }
-            if (!IsParallel())
+            if (!parallel)
                 edict->m_fStateFlags |= FL_EDICT_CHANGED;
 
             PackWork_t_Process(*work_i);
+            fullPackCurrentIndex = -1;
 
             // Update player prop write offsets
             
@@ -927,7 +938,7 @@ namespace Mod::Perf::SendProp_Optimize
             return;
         }
 
-        PackWork(work, items, 1, 0);
+        PackWork(work, items);
     }
 
     RefCount rc_SV_ComputeClientPacks;
@@ -990,69 +1001,78 @@ namespace Mod::Perf::SendProp_Optimize
             return;
         }
 
-        int taskCount = (int) threadPool.get_thread_count();
-        int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
-
-        for (int i = 0; i < packWorkTaskCount; i++) {
-            threadPoolPackWork.push_task([&](int num){
-                PackWork_t *workFull = new PackWork_t[snapshot->m_nValidEntities];
-                for (int i = 0; i < snapshot->m_nValidEntities; i++) {
-                    auto &curWork = workFull[i];
-                    curWork.nIdx = snapshot->m_pValidEntities[i];
-                    curWork.pEdict = world_edict + curWork.nIdx;
-                    curWork.pSnapshot = snapshot;
-                } 
-                PackWork(workFull, snapshot->m_nValidEntities, packWorkTaskCount, num);
-                delete[] workFull;
-            }, i);
-        }
-        computedPackInfos = 0;
-        checkTransmitComplete = -1;
-        
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
             edict_t *edict = world_edict + clients[clientIndex]->m_nEntityIndex;
+            edict->m_fStateFlags |= FL_PACK_WAIT;
             if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
                 engine->BuildEntityClusterList(edict, &static_cast<CServerNetworkProperty *>(edict->GetNetworkable())->m_PVSInfo);
                 edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
             }
         }
+
+        computedPackInfos = 0;
+        computedPackClientIndex = -1;
+        checkTransmitComplete = -1;
+        int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
+        int taskCount = (int) threadPool.get_thread_count();
+
+
         threadPool.push_task([&](){
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
-                clients[clientIndex]->SetupPackInfo(snapshot);
+                auto client = clients[clientIndex];
+                client->SetupPackInfo(snapshot);
                 computedPackInfos++;
+                computedPackClientIndex = client->m_nEntityIndex;
+            }
+            computedPackClientIndex = MAX_EDICTS;
+            
+            for (int i = 0; i < packWorkTaskCount; i++) {
+                threadPoolPackWork.push_task([&](int num){
+                    size_t workEntryCount = snapshot->m_nValidEntities/packWorkTaskCount+1;
+                    PackWork_t *workEntities = (PackWork_t *) operator new[](workEntryCount * sizeof(PackWork_t));
+                    size_t workEntitiesCount = 0;
+                    for (int i = num; i < snapshot->m_nValidEntities; i += packWorkTaskCount) {
+                        PackWork_t &work = workEntities[workEntitiesCount++];
+                        work.nIdx = snapshot->m_pValidEntities[i];
+                        work.pEdict = world_edict + work.nIdx;
+                        work.pSnapshot = snapshot;
+                    }
+                    PackWork(workEntities, workEntitiesCount);
+                    delete[] workEntities;
+                }, i);
+            }
+            threadPoolPackWork.wait_for_tasks();
+            for (int i = 0; i < taskCount && i < clientCount; i++) {
+                threadPool.push_task([&](int num){
+                    for (int clientIndex = num; clientIndex < clientCount; clientIndex += taskCount) {
+                        while(checkTransmitComplete < clientIndex) {  }
+
+                        auto client = clients[clientIndex];
+                        if (client->m_bIsHLTV || client->m_bIsReplay) continue;
+                        CClientFrame *pFrame = client->GetSendFrame();
+                        if (pFrame) {
+                            client->SendSnapshot(pFrame);
+                            client->UpdateSendState();
+                        }
+                    }
+                }, i);
             }
         });
-
-        for (int i = 0; i < taskCount; i++) {
-            threadPool.push_task([&](int num){
-                threadPoolPackWork.wait_for_tasks();
-                
-                for (int clientIndex = num; clientIndex < clientCount; clientIndex += taskCount) {
-                    while(checkTransmitComplete < clientIndex) { }
-
-                    auto client = clients[clientIndex];
-                    if (client->m_bIsHLTV || client->m_bIsReplay) continue;
-                    CClientFrame *pFrame = client->GetSendFrame();
-                    if (pFrame) {
-                        CFastTimer time;
-                        time.Start();
-                        client->SendSnapshot(pFrame);
-                        client->UpdateSendState();
-                        time.End();
-                    }
-                }
-            }, i);
-        }
+        // for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
+        //     auto client = clients[clientIndex];
+        //     playerProcessMutex[client->m_nClientSlot].unlock();
+        // }
         
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            
             while (computedPackInfos <= clientIndex) {};
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
+            //checkTransmitCurrentIndex = client->m_nEntityIndex;
             serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities  /*validEdictsSplit[num], validEdictCountSplit[num]*/);
+            //checkTransmitCurrentIndex = -1;
             checkTransmitComplete = clientIndex;
         }
-
+        checkTransmitComplete = ABSOLUTE_PLAYER_LIMIT;
         threadPoolPackWork.wait_for_tasks();
 
         SCOPED_INCREMENT(rc_SV_ComputeClientPacks);
@@ -1072,24 +1092,24 @@ namespace Mod::Perf::SendProp_Optimize
         for (int i = 0; i < snapshot->m_nValidEntities; i++) {
             int edictID = snapshot->m_pValidEntities[i];
             edict_t *edict = world_edict + edictID;
-            edict->m_fStateFlags &= ~(FL_FULL_EDICT_CHANGED|FL_EDICT_CHANGED);
+            edict->m_fStateFlags &= ~(FL_FULL_EDICT_CHANGED|FL_EDICT_CHANGED|FL_PACK_WAIT);
         }
 
         threadPool.wait_for_tasks();
         
         for (int i = 0; i < clientCount; i++) {
-            // CGameClient *client = clients[i];
-            //     if (client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
-            //         CClientFrame *pFrame = client->GetSendFrame();
-            //         if ( pFrame )
-            //         {
-            //             client->m_pLastSnapshot = pFrame->GetSnapshot(); 
-            //             client->UpdateAcknowledgedFramecount( pFrame->tick_count );
-            //             client->m_nForceWaitForTick = -1;
-            //             client->m_nDeltaTick = pFrame->tick_count;
-            //             //Msg("Client %d %d %d %d\n", client->m_nForceWaitForTick, client->m_pLastSnapshot == pFrame->GetSnapshot(), client->m_nDeltaTick, pFrame->tick_count);
-            //         }
-            //     }
+            CGameClient *client = clients[i];
+                if (client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
+                    CClientFrame *pFrame = client->GetSendFrame();
+                    if ( pFrame )
+                    {
+                        client->m_pLastSnapshot = pFrame->GetSnapshot(); 
+                        client->UpdateAcknowledgedFramecount( pFrame->tick_count );
+                        client->m_nForceWaitForTick = -1;
+                        client->m_nDeltaTick = pFrame->tick_count;
+                        //Msg("Client %d %d %d %d\n", client->m_nForceWaitForTick, client->m_pLastSnapshot == pFrame->GetSnapshot(), client->m_nDeltaTick, pFrame->tick_count);
+                    }
+                }
             clients[i] = nullptr;
         }
 	}

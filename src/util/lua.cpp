@@ -2115,7 +2115,7 @@ namespace Util::Lua
     {
         auto player = LPlayerGetNonNull(l, 1);
         int condition = luaL_checkinteger(l, 2);
-        lua_pushinteger(l, player->m_Shared->InCond((ETFCond)condition));
+        lua_pushboolean(l, player->m_Shared->InCond((ETFCond)condition));
         return 1;
     }
 
