@@ -770,17 +770,9 @@ namespace Mod::Perf::SendProp_Optimize
         //
     }
 
-    constexpr int MAX_CONCURRENT_PACKS = 8;
-    unsigned short validEdictsSplit[MAX_CONCURRENT_PACKS][MAX_EDICTS];
-    int validEdictCountSplit[MAX_CONCURRENT_PACKS];
-
     uintptr_t packinfoOffset = 0;
 
-    bool specialway = false;
-
     std::atomic<int> computedPackClientIndex = 0;
-    std::atomic<int> checkTransmitCurrentIndex = -1;
-    std::atomic<int> fullPackCurrentIndex = -1;
     
     void PackWork(PackWork_t *work, size_t items)
     {
@@ -838,7 +830,6 @@ namespace Mod::Perf::SendProp_Optimize
                 edict->m_fStateFlags |= FL_EDICT_CHANGED;
 
             PackWork_t_Process(*work_i);
-            fullPackCurrentIndex = -1;
 
             // Update player prop write offsets
             
@@ -1058,18 +1049,12 @@ namespace Mod::Perf::SendProp_Optimize
                 }, i);
             }
         });
-        // for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-        //     auto client = clients[clientIndex];
-        //     playerProcessMutex[client->m_nClientSlot].unlock();
-        // }
-        
+
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
             while (computedPackInfos <= clientIndex) {};
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
-            //checkTransmitCurrentIndex = client->m_nEntityIndex;
-            serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities  /*validEdictsSplit[num], validEdictCountSplit[num]*/);
-            //checkTransmitCurrentIndex = -1;
+            serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities);
             checkTransmitComplete = clientIndex;
         }
         checkTransmitComplete = ABSOLUTE_PLAYER_LIMIT;
@@ -1098,18 +1083,18 @@ namespace Mod::Perf::SendProp_Optimize
         threadPool.wait_for_tasks();
         
         for (int i = 0; i < clientCount; i++) {
-            CGameClient *client = clients[i];
-                if (client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
-                    CClientFrame *pFrame = client->GetSendFrame();
-                    if ( pFrame )
-                    {
-                        client->m_pLastSnapshot = pFrame->GetSnapshot(); 
-                        client->UpdateAcknowledgedFramecount( pFrame->tick_count );
-                        client->m_nForceWaitForTick = -1;
-                        client->m_nDeltaTick = pFrame->tick_count;
-                        //Msg("Client %d %d %d %d\n", client->m_nForceWaitForTick, client->m_pLastSnapshot == pFrame->GetSnapshot(), client->m_nDeltaTick, pFrame->tick_count);
-                    }
-                }
+            // CGameClient *client = clients[i];
+            //     if (client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
+            //         CClientFrame *pFrame = client->GetSendFrame();
+            //         if ( pFrame )
+            //         {
+            //             client->m_pLastSnapshot = pFrame->GetSnapshot(); 
+            //             client->UpdateAcknowledgedFramecount( pFrame->tick_count );
+            //             client->m_nForceWaitForTick = -1;
+            //             client->m_nDeltaTick = pFrame->tick_count;
+            //             //Msg("Client %d %d %d %d\n", client->m_nForceWaitForTick, client->m_pLastSnapshot == pFrame->GetSnapshot(), client->m_nDeltaTick, pFrame->tick_count);
+            //         }
+            //     }
             clients[i] = nullptr;
         }
 	}
