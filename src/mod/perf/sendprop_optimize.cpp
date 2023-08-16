@@ -964,6 +964,8 @@ namespace Mod::Perf::SendProp_Optimize
 
     std::atomic<int> computedPackInfos = 0;
     std::atomic<int> checkTransmitComplete = 0;
+    std::atomic<bool> packWorkFinished = false;
+    std::atomic<bool> setupPackInfoFinished = false;
 
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  CGameClient **clients, CFrameSnapshot *snapshot)
 	{
@@ -1004,9 +1006,8 @@ namespace Mod::Perf::SendProp_Optimize
         computedPackInfos = 0;
         computedPackClientIndex = -1;
         checkTransmitComplete = -1;
+        packWorkFinished = false;
         int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
-        int taskCount = (int) threadPool.get_thread_count();
-
 
         threadPool.push_task([&](){
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
@@ -1014,9 +1015,14 @@ namespace Mod::Perf::SendProp_Optimize
                 client->SetupPackInfo(snapshot);
                 computedPackInfos++;
                 computedPackClientIndex = client->m_nEntityIndex;
+                if (clientIndex % 8 == 0) {
+                    computedPackInfos.notify_all();
+                }
             }
+            computedPackInfos.notify_all();
             computedPackClientIndex = MAX_EDICTS;
             
+
             for (int i = 0; i < packWorkTaskCount; i++) {
                 threadPoolPackWork.push_task([&](int num){
                     size_t workEntryCount = snapshot->m_nValidEntities/packWorkTaskCount+1;
@@ -1033,10 +1039,11 @@ namespace Mod::Perf::SendProp_Optimize
                 }, i);
             }
             threadPoolPackWork.wait_for_tasks();
-            for (int i = 0; i < taskCount && i < clientCount; i++) {
-                threadPool.push_task([&](int num){
-                    for (int clientIndex = num; clientIndex < clientCount; clientIndex += taskCount) {
-                        while(checkTransmitComplete < clientIndex) {  }
+            packWorkFinished = true;
+            for (int i = 0; i < packWorkTaskCount && i < clientCount; i++) {
+                threadPoolPackWork.push_task([&](int num){
+                    for (int clientIndex = num; clientIndex < clientCount; clientIndex += packWorkTaskCount) {
+                        while (checkTransmitComplete < clientIndex) {checkTransmitComplete.wait(checkTransmitComplete.load());};
 
                         auto client = clients[clientIndex];
                         if (client->m_bIsHLTV || client->m_bIsReplay) continue;
@@ -1048,17 +1055,25 @@ namespace Mod::Perf::SendProp_Optimize
                     }
                 }, i);
             }
+            packWorkFinished.notify_all();
         });
 
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            while (computedPackInfos <= clientIndex) {};
+            while (computedPackInfos <= clientIndex) {computedPackInfos.wait(computedPackInfos.load());};
+
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
             serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities);
             checkTransmitComplete = clientIndex;
+            if (clientIndex % 8 == 0) {
+                checkTransmitComplete.notify_all();
+            }
         }
+        
         checkTransmitComplete = ABSOLUTE_PLAYER_LIMIT;
-        threadPoolPackWork.wait_for_tasks();
+        checkTransmitComplete.notify_all();
+
+        packWorkFinished.wait(false);
 
         SCOPED_INCREMENT(rc_SV_ComputeClientPacks);
         DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
@@ -1081,6 +1096,7 @@ namespace Mod::Perf::SendProp_Optimize
         }
 
         threadPool.wait_for_tasks();
+        threadPoolPackWork.wait_for_tasks();
         
         for (int i = 0; i < clientCount; i++) {
             // CGameClient *client = clients[i];
@@ -1298,12 +1314,8 @@ namespace Mod::Perf::SendProp_Optimize
         return proxyFn == nullptr;
     }
 
-    int threadCountPackWork[] {1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4};
-    int threadCountOther[]    {1, 1, 1, 2, 2, 3, 4, 4, 5, 6, 6};
-
     void SetThreadCount(int threadCount) {
-        threadPool.reset(threadCountOther[threadCount]);
-        threadPoolPackWork.reset(threadCountPackWork[threadCount]);
+        threadPoolPackWork.reset(Max(1,threadCount));
     }
 	class CMod : public IMod, public IModCallbackListener
 	{
@@ -1665,7 +1677,7 @@ namespace Mod::Perf::SendProp_Optimize
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 
-    ConVar cvar_threads("sig_network_threads", "4", FCVAR_NONE, "Additional threads used for networking", true, 0, true, 10, 
+    ConVar cvar_threads("sig_network_threads", "2", FCVAR_NONE, "Additional threads used for networking", true, 0, true, 10, 
     [](IConVar *pConVar, const char *pOldValue, float flOldValue){
         if (s_Mod.IsEnabled()) {
             SetThreadCount(cvar_threads.GetInt());
