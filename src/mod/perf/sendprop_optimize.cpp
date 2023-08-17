@@ -771,8 +771,6 @@ namespace Mod::Perf::SendProp_Optimize
     }
 
     uintptr_t packinfoOffset = 0;
-
-    std::atomic<int> computedPackClientIndex = 0;
     
     void PackWork(PackWork_t *work, size_t items)
     {
@@ -962,8 +960,9 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(pInfo, pEdictIndices, nEdicts);
     }
 
-    std::atomic<int> computedPackInfos = 0;
-    std::atomic<int> checkTransmitComplete = 0;
+    std::atomic<bool> computedPackInfos[ABSOLUTE_PLAYER_LIMIT];
+    std::atomic<bool> checkTransmitComplete[ABSOLUTE_PLAYER_LIMIT];
+
     std::atomic<bool> packWorkFinished = false;
     std::atomic<bool> setupPackInfoFinished = false;
 
@@ -995,6 +994,8 @@ namespace Mod::Perf::SendProp_Optimize
         }
 
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
+            computedPackInfos[clientIndex] = false;
+            checkTransmitComplete[clientIndex] = false;
             edict_t *edict = world_edict + clients[clientIndex]->m_nEntityIndex;
             edict->m_fStateFlags |= FL_PACK_WAIT;
             if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
@@ -1003,9 +1004,6 @@ namespace Mod::Perf::SendProp_Optimize
             }
         }
 
-        computedPackInfos = 0;
-        computedPackClientIndex = -1;
-        checkTransmitComplete = -1;
         packWorkFinished = false;
         int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
 
@@ -1013,14 +1011,9 @@ namespace Mod::Perf::SendProp_Optimize
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
                 auto client = clients[clientIndex];
                 client->SetupPackInfo(snapshot);
-                computedPackInfos++;
-                computedPackClientIndex = client->m_nEntityIndex;
-                if (clientIndex % 8 == 0) {
-                    computedPackInfos.notify_all();
-                }
+                computedPackInfos[clientIndex] = true;
+                computedPackInfos[clientIndex].notify_all();
             }
-            computedPackInfos.notify_all();
-            computedPackClientIndex = MAX_EDICTS;
             
 
             for (int i = 0; i < packWorkTaskCount; i++) {
@@ -1043,7 +1036,7 @@ namespace Mod::Perf::SendProp_Optimize
             for (int i = 0; i < packWorkTaskCount && i < clientCount; i++) {
                 threadPoolPackWork.push_task([&](int num){
                     for (int clientIndex = num; clientIndex < clientCount; clientIndex += packWorkTaskCount) {
-                        while (checkTransmitComplete < clientIndex) {checkTransmitComplete.wait(checkTransmitComplete.load());};
+                        while (!checkTransmitComplete[clientIndex]) checkTransmitComplete[clientIndex].wait(false);
 
                         auto client = clients[clientIndex];
                         if (client->m_bIsHLTV || client->m_bIsReplay) continue;
@@ -1059,26 +1052,20 @@ namespace Mod::Perf::SendProp_Optimize
         });
 
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            while (computedPackInfos <= clientIndex) {computedPackInfos.wait(computedPackInfos.load());};
+            while (!computedPackInfos[clientIndex]) computedPackInfos[clientIndex].wait(false);
 
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
             serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities);
-            checkTransmitComplete = clientIndex;
-            if (clientIndex % 8 == 0) {
-                checkTransmitComplete.notify_all();
-            }
+            checkTransmitComplete[clientIndex] = true;
+            checkTransmitComplete[clientIndex].notify_all();
         }
-        
-        checkTransmitComplete = ABSOLUTE_PLAYER_LIMIT;
-        checkTransmitComplete.notify_all();
 
         packWorkFinished.wait(false);
 
         SCOPED_INCREMENT(rc_SV_ComputeClientPacks);
         DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
 
-        computedPackInfos = 0;
         for (int i = 0; i < clientCount; i++) {
             CGameClient *client = clients[i];
             if (!client->m_bIsHLTV && !client->m_bIsReplay) continue;
