@@ -118,8 +118,10 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
             wearable_vm_weapon->m_bValidatedAttachedEntity = true;
             mod->wearableWeapon = wearable_vm_weapon;
         }
-		owner->GetViewModel()->AddEffects(EF_NODRAW);
-		THINK_FUNC_SET(owner->GetViewModel(), HideViewModel, gpGlobals->curtime);
+		if (owner->GetViewModel() != nullptr) {
+			owner->GetViewModel()->AddEffects(EF_NODRAW);
+			THINK_FUNC_SET(owner->GetViewModel(), HideViewModel, gpGlobals->curtime);
+		}
 
 		return true;
 	}
@@ -156,6 +158,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerCustomModel.c_str());
 			if (owner->IsAlive())
 				owner->m_nRenderFX = 0;
+		}
+		if (owner->GetViewModel() != nullptr) {
+			owner->GetViewModel()->SetNextThink(-1, "HideViewModel");
 		}
 		return true;
 	}
