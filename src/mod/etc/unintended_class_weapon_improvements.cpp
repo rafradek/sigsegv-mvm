@@ -297,7 +297,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto mod = wep->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
 		if (mod != nullptr && wep->GetTFPlayerOwner() != nullptr) {
 			OnEquipUnintendedClassWeapon(wep->GetTFPlayerOwner(), wep, mod);
-			Msg("EQUIP\n");
 		}
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
 	}
@@ -309,7 +308,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto mod = weapon->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
 		if (mod != nullptr && weapon->GetTFPlayerOwner() != nullptr) {
 			OnUnequipUnintendedClassWeapon(weapon->GetTFPlayerOwner(), weapon, mod);
-			Msg("UNEQUIP\n");
 		}
         return DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
     }
