@@ -1102,6 +1102,15 @@ namespace Mod::Perf::SendProp_Optimize
         }
 	}
 
+    DETOUR_DECL_MEMBER(void, CParallelProcessor_CGameClient_Run, CGameClient **clients, long items, long maxthreads, void *pool)
+	{
+        if (IsParallel()) {
+            return;
+        }
+
+        DETOUR_MEMBER_CALL(CParallelProcessor_CGameClient_Run)(clients, items, maxthreads, pool);
+    }
+
 #ifdef SE_TF2
     DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
 	{
@@ -1336,6 +1345,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CServerGameEnts_CheckTransmit,"CServerGameEnts::CheckTransmit");
             MOD_ADD_DETOUR_MEMBER(CGameClient_SetupPackInfo,"CGameClient::SetupPackInfo");
 			MOD_ADD_DETOUR_STATIC_PRIORITY(SV_ComputeClientPacks, "SV_ComputeClientPacks", LOWEST);
+			MOD_ADD_DETOUR_MEMBER(CParallelProcessor_CGameClient_Run, "CParallelProcessor<CGameClient *>::Run");
 		}
         virtual void PreLoad() override
         {
@@ -1623,8 +1633,10 @@ namespace Mod::Perf::SendProp_Optimize
         virtual void OnEnable() override
 		{
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
+            ConVarRef sv_parallel_sendsnapshot("sv_parallel_sendsnapshot");
             ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
+            sv_parallel_sendsnapshot.SetValue(false);
             //sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
@@ -1645,8 +1657,10 @@ namespace Mod::Perf::SendProp_Optimize
             world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
             
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
+            ConVarRef sv_parallel_sendsnapshot("sv_parallel_sendsnapshot");
             ConVarRef sv_instancebaselines("sv_instancebaselines");
             sv_parallel_packentities.SetValue(true);
+            sv_parallel_sendsnapshot.SetValue(false);
             //sv_instancebaselines.SetValue(false);
             ConVarRef sv_maxreplay("sv_maxreplay");
             if (sv_maxreplay.GetFloat() == 0.0f) {
