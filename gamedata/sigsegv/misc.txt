@@ -5874,6 +5874,7 @@
 
 				"CEyeballBossDead::Update" "_ZN16CEyeballBossDead6UpdateEP12CEyeballBossf"
 
+				"NextBotCombatCharacter::Spawn" "_ZN22NextBotCombatCharacter5SpawnEv"
 				
 				"CZombie::CZombie"      "_ZN7CZombieC2Ev"
 				"CZombie::Spawn"      "_ZN7CZombie5SpawnEv"
