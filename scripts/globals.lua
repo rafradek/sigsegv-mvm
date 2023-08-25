@@ -751,12 +751,12 @@ ON_SHOULD_COLLIDE_CAUSE_OTHER       = 1 -- Caused from any other source
 ----------------
 -- Causes for ON_SHOULD_COLLIDE
 ----------------
-MENU_CANCEL_DISCONNECTED = -1,	-- Client dropped from the server
-MENU_CANCEL_INTERRUPTED = -2,	-- Client was interrupted with another menu
-MENU_CANCEL_EXIT = -3,			-- Client selected "exit" on a paginated menu
-MENU_CANCEL_NODISPLAY = -4,	    -- Menu could not be displayed to the client
-MENU_CANCEL_TIMEOUT = -5,		-- Menu timed out
-MENU_CANCEL_EXITBACK = -6,		-- Client selected "exit back" on a paginated menu
+MENU_CANCEL_DISCONNECTED = -1	-- Client dropped from the server
+MENU_CANCEL_INTERRUPTED = -2	-- Client was interrupted with another menu
+MENU_CANCEL_EXIT = -3			-- Client selected "exit" on a paginated menu
+MENU_CANCEL_NODISPLAY = -4	    -- Menu could not be displayed to the client
+MENU_CANCEL_TIMEOUT = -5		-- Menu timed out
+MENU_CANCEL_EXITBACK = -6		-- Client selected "exit back" on a paginated menu
 ----------------
 -- Table structures
 ----------------
