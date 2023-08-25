@@ -526,6 +526,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_UpgradesUnintendedClassWeapons  ("sig_mvm_extended_upgrades_add_for_uninteded_class"),
 			m_AnimationsUnintendedClassWeapons("sig_etc_unintended_class_weapon_viewmodel"),
 			m_bAllowCivilian                  ("sig_etc_allow_civilian_class"),
+			m_bNPCLagCompensation             ("sig_ai_lag_compensation_npc"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -638,6 +639,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_UpgradesUnintendedClassWeapons.Reset(pre);
 			this->m_AnimationsUnintendedClassWeapons.Reset(pre);
 			this->m_bAllowCivilian.Reset(pre);
+			this->m_bNPCLagCompensation.Reset(pre);
 			
 			this->m_CustomUpgradesFile.Reset(pre);
 			this->m_TextPrintSpeed.Reset(pre);
@@ -951,6 +953,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<bool> m_UpgradesUnintendedClassWeapons;
 		CValueOverridePopfile_ConVar<bool> m_AnimationsUnintendedClassWeapons;
 		CValueOverridePopfile_ConVar<bool> m_bAllowCivilian;
+		CValueOverridePopfile_ConVar<bool> m_bNPCLagCompensation;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverridePopfile_ConVar<std::string> m_CustomUpgradesFile;
@@ -6649,6 +6652,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_AnimationsUnintendedClassWeapons.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowCivilianClass")) {
 				state.m_bAllowCivilian.Set(subkey->GetBool());
+			} else if (FStrEq(name, "NPCLagCompensation")) {
+				state.m_bNPCLagCompensation.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;

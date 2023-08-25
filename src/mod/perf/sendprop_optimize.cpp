@@ -142,7 +142,6 @@ private:
 namespace Mod::Perf::SendProp_Optimize
 {
 
-    constexpr int FL_PACK_WAIT (1 << 25);
     BS::thread_pool threadPool(1);
     BS::thread_pool threadPoolPackWork(1);
 
@@ -802,8 +801,6 @@ namespace Mod::Perf::SendProp_Optimize
             //   player_index_end = i;
             //    break;
             //}
-    
-            bool isParallelPlayerPack = parallel && edict->m_fStateFlags & FL_PACK_WAIT;
 
             if (!(edict->m_fStateFlags & FL_EDICT_CHANGED)) {
                 if (snapmgr.UsePreviouslySentPacket(work_i->pSnapshot, objectID, edict->m_NetworkSerialNumber)) {
@@ -997,7 +994,6 @@ namespace Mod::Perf::SendProp_Optimize
             computedPackInfos[clientIndex] = false;
             checkTransmitComplete[clientIndex] = false;
             edict_t *edict = world_edict + clients[clientIndex]->m_nEntityIndex;
-            edict->m_fStateFlags |= FL_PACK_WAIT;
             if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
                 engine->BuildEntityClusterList(edict, &static_cast<CServerNetworkProperty *>(edict->GetNetworkable())->m_PVSInfo);
                 edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
@@ -1079,7 +1075,7 @@ namespace Mod::Perf::SendProp_Optimize
         for (int i = 0; i < snapshot->m_nValidEntities; i++) {
             int edictID = snapshot->m_pValidEntities[i];
             edict_t *edict = world_edict + edictID;
-            edict->m_fStateFlags &= ~(FL_FULL_EDICT_CHANGED|FL_EDICT_CHANGED|FL_PACK_WAIT);
+            edict->m_fStateFlags &= ~(FL_FULL_EDICT_CHANGED|FL_EDICT_CHANGED);
         }
 
         threadPool.wait_for_tasks();

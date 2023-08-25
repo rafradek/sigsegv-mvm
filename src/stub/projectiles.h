@@ -115,7 +115,13 @@ private:
 };
 class CTFProjectile_SentryRocket : public CTFProjectile_Rocket {};
 
-class CTFProjectile_BallOfFire : public CTFProjectile_Rocket {};
+class CTFProjectile_BallOfFire : public CTFProjectile_Rocket 
+{
+public:
+	DECL_SENDPROP(Vector, m_vecInitialVelocity);
+	DECL_RELATIVE(bool, m_bLandedBonusDamage);
+	
+};
 
 class CTFProjectile_Flare : public CTFBaseRocket {
 public:

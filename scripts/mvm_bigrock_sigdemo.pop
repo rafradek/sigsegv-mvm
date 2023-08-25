@@ -178,6 +178,7 @@ WaveSchedule
 	TextPrintTime 7 [$SIGSEGV] // How fast a line from the wave description is displayed in the middle of the screen. Use 0 to disable (default: 4)
 	NoMissionInfo 0 [$SIGSEGV] // Disable !missioninfo command (default: 0)
 	WaveStartCountdown 9 [$SIGSEGV] // Wave start countdown duration once all players are ready. Values below 10 disable announcer, values below 9 disable starting music (default: 10)
+	NPCLagCompensation 1 [$SIGSEGV] // Lag compensate zombies, bosses and tanks (default: 0)
 
 
 	//////////////////////////

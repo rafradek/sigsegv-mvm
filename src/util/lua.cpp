@@ -3710,11 +3710,15 @@ namespace Util::Lua
         luaL_newmetatable(l, "vector");
         luaL_setfuncs(l, vectorlib_m, 0);
         m_pVectorMeta = vector_meta_ptr = lua_topointer(l, -1);
+        lua_pushvalue(l, -1);
+        lua_setglobal(l, "CVector");
         m_iVectorMeta = vector_meta = luaL_ref(l, LUA_REGISTRYINDEX);
 
         luaL_newmetatable(l, "entity");
         luaL_setfuncs(l, entitylib_m, 0);
         m_pEntityMeta = entity_meta_ptr = lua_topointer(l, -1);
+        lua_pushvalue(l, -1);
+        lua_setglobal(l, "CEntity");
         m_iEntityMeta = entity_meta = luaL_ref(l, LUA_REGISTRYINDEX);
 
         luaL_newmetatable(l, "prop");

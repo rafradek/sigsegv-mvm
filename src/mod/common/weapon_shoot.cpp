@@ -316,15 +316,10 @@ namespace Mod::Common::Weapon_Shoot
 	{
 		auto player = ToTFPlayer(entity);
 		auto owner = reinterpret_cast<CTFProjectile_BallOfFire *>(this)->GetOwnerEntity();
-		if (player != nullptr && (owner == nullptr || !owner->IsPlayer()) && player->m_Shared->InCond(TF_COND_BURNING)) {
-			player->m_Shared->GetCondData().RemoveCondBit(TF_COND_BURNING);
-			dragons_fury_burning = true;
+		if ((owner == nullptr || !owner->IsPlayer())) {
+			reinterpret_cast<CTFProjectile_BallOfFire *>(this)->m_bLandedBonusDamage = true;
 		}
         DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_Burn)(entity);
-		if (dragons_fury_burning) {
-			player->m_Shared->GetCondData().AddCondBit(TF_COND_BURNING);
-			dragons_fury_burning = false;
-		}
     }
 
 

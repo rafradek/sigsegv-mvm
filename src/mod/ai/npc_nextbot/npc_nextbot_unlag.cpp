@@ -53,11 +53,20 @@ namespace Mod::AI::NPC_Nextbot
 		trace_t tr;
 		VPROF_BUDGET( "RestorePlayerTo", "CLagCompensationManager" );
         uint solidMask = entity->PhysicsSolidMaskForEntity();
-        
-		UTIL_TraceEntity( entity, vWantedPos, vWantedPos, solidMask, entity, entity->GetCollisionGroup(), &tr );
+        Vector delta = entity->GetAbsOrigin() - vWantedPos;
+        //Msg("Lag comp restore pos %f %f %f\n", delta.x, delta.y, delta.z);
+        CTraceFilterSimple filter(entity, entity->GetCollisionGroup());
+        Vector mins = entity->CollisionProp()->OBBMins();
+        Vector maxs = entity->CollisionProp()->OBBMaxs();
+        mins.z = Min(mins.z + 6.0f, maxs.z);
+		UTIL_TraceHull(vWantedPos, vWantedPos, mins, maxs, solidMask, &filter, &tr);
+        //Msg("ToGroundDiff %f\n", vWantedPos.z - tr.endpos.z);
+         //UTIL_TraceEntity( entity, vWantedPos+ Vector(0,0,1.0f), vWantedPos+ Vector(0,0,1.0f), solidMask, entity, entity->GetCollisionGroup(), &tr );
 		if ( tr.startsolid || tr.allsolid )
 		{
-
+            if (tr.m_pEnt != nullptr) {
+                Msg("Lag comp restore fail %s\n", tr.m_pEnt->GetClassname());
+            }
 			UTIL_TraceEntity( entity, entity->GetLocalOrigin(), vWantedPos, solidMask, entity, entity->GetCollisionGroup(), &tr );
 			if ( tr.startsolid || tr.allsolid )
 			{
@@ -75,6 +84,7 @@ namespace Mod::AI::NPC_Nextbot
 		{
 			// Cool, the player can go back to whence he came.
 			entity->SetLocalOrigin(tr.endpos);
+            Msg("Lag comp restore success %f %f %f\n", delta.x, delta.y, delta.z);
 		}
 	}
 
@@ -335,6 +345,7 @@ namespace Mod::AI::NPC_Nextbot
 		for (LagCompensatedEntity *lagcompent : AutoList<LagCompensatedEntity>::List()) {
             auto entity = lagcompent->entity;
 			
+            Msg("Lag comp restore %d\n", lagcompent->restore);
 			if (!lagcompent->restore) continue;
 
 			LagRecord *restore = &lagcompent->restoreData;
@@ -623,4 +634,36 @@ namespace Mod::AI::NPC_Nextbot
         }
 	};
 	CModUnlag s_ModUnlag;
+
+    class LagCompensationModule : public EntityModule, public LagCompensatedEntity
+    {
+    public:
+        LagCompensationModule(CBaseEntity *entity) : EntityModule(entity), LagCompensatedEntity((CBaseAnimatingOverlay *)entity) {}
+    };
+
+    DETOUR_DECL_MEMBER(void, NextBotCombatCharacter_Spawn)
+	{
+		DETOUR_MEMBER_CALL(NextBotCombatCharacter_Spawn)();
+        auto entity = reinterpret_cast<NextBotCombatCharacter *>(this);
+        if (!FStrEq(entity->GetClassname(), "$bot_npc")) {
+            entity->GetOrCreateEntityModule<LagCompensationModule>("lagcomp");
+        }
+    }
+
+    class CModUnlagNPCGlobal : public IMod
+	{
+	public:
+		CModUnlagNPCGlobal() : IMod("AI:My_Nextbot_UnlagNPCGlobal")
+		{
+            MOD_ADD_DETOUR_MEMBER(NextBotCombatCharacter_Spawn,  "NextBotCombatCharacter::Spawn");
+		}
+		virtual std::vector<std::string> GetRequiredMods() { return {"AI:My_Nextbot_Unlag"};}
+	};
+	CModUnlagNPCGlobal s_ModUnlagNPCGlobal;
+
+    ConVar cvar_enable_unlagnpcglobal("sig_ai_lag_compensation_npc", "0", FCVAR_NOTIFY,
+		"Mod: Lag compensate all NPC entities such as bosses, zombies etc",
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			s_ModUnlagNPCGlobal.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+		});
 }

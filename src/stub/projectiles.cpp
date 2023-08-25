@@ -111,6 +111,11 @@ MemberFuncThunk<CTFProjectile_Arrow *, void, CBaseEntity *> CTFProjectile_Arrow:
 
 StaticFuncThunk<CTFProjectile_Arrow *,const Vector &, const QAngle &, const float, const float, int, CBaseEntity *, CBaseEntity *> CTFProjectile_Arrow::ft_Create("CTFProjectile_Arrow::Create");
 
+
+IMPL_SENDPROP(Vector, CTFProjectile_BallOfFire, m_vecInitialVelocity, CTFProjectile_BallOfFire);
+IMPL_RELATIVE(bool, CTFProjectile_BallOfFire, m_bLandedBonusDamage, m_vecInitialVelocity, sizeof(Vector) + sizeof(bool) * 3);
+
+
 IMPL_SENDPROP(int,    CTFWeaponBaseGrenadeProj, m_iDeflected,       CTFWeaponBaseGrenadeProj);
 IMPL_SENDPROP(bool,   CTFWeaponBaseGrenadeProj, m_bCritical,        CTFWeaponBaseGrenadeProj);
 IMPL_SENDPROP(Vector, CTFWeaponBaseGrenadeProj, m_vInitialVelocity, CTFWeaponBaseGrenadeProj);
