@@ -1485,6 +1485,9 @@ namespace Mod::MvM::Extended_Upgrades
                                     }
                                 }
                             }
+                            if (iItemSlot != -1) {
+                                attributesToRemove.push_back({item, attribDef});
+                            }
                         }
                     }
                 }
