@@ -6852,7 +6852,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFFlameManager_OnCollide, CBaseEntity* entity, int value)
 	{
 		auto flame = reinterpret_cast<CBaseEntity *>(this);
-		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, GetFastAttributeInt(flame->GetOwnerEntity()->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE) > 0);
+		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, flame->GetOwnerEntity() != nullptr && GetFastAttributeInt(flame->GetOwnerEntity()->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE) > 0);
 
 		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
 	}
