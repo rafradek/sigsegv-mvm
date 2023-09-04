@@ -69,11 +69,13 @@ namespace Mod::MvM::Player_Limit
     int maxTotalPlayers = 10;
 	THINK_FUNC_DECL(KickPlayersOverLimit)
 	{
+		if (maxTotalPlayers == 0) return;
 		int totalplayers = 0;
 		ForEachTFPlayer([&](CTFPlayer *player) {
 			if (player->IsRealPlayer())
 				totalplayers += 1;
 		});
+		
 		if (totalplayers > maxTotalPlayers) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
 				if (player->GetTeamNumber() < 2 && totalplayers > maxTotalPlayers && player->IsRealPlayer() && !PlayerIsSMAdmin(player)) {

@@ -152,7 +152,6 @@ void CExtSigsegv::SDK_OnUnload()
 #endif
 
 	UnloadAllCustomThinkFunc();
-	Msg("SDK unload\n");
 }
 
 void CExtSigsegv::SDK_OnAllLoaded()
@@ -284,8 +283,6 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 
 bool CExtSigsegv::SDK_OnMetamodUnload(char *error, size_t maxlength)
 {
-	
-	Msg("metamod SDK unload\n");
 	return true;
 }
 

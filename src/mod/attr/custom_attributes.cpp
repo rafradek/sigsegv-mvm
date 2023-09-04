@@ -185,26 +185,71 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CWeaponMedigun_AllowedToHealTarget, CBaseEntity *target)
 	{
 		bool ret = DETOUR_MEMBER_CALL(CWeaponMedigun_AllowedToHealTarget)(target);
+		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+		auto owner = medigun->GetOwnerEntity();
+
 		if (!ret && target != nullptr && target->IsBaseObject()) {
-			auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
-			auto owner = medigun->GetOwnerEntity();
-			
-			if (owner != nullptr && target->GetTeamNumber() == owner->GetTeamNumber()) {
+			float attackEnemy = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemy, medigun_attack_enemy );
+			if (owner != nullptr && (target->GetTeamNumber() == owner->GetTeamNumber() || attackEnemy != 0)) {
 				int can_heal = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER( medigun, can_heal, medic_machinery_beam );
 				return can_heal != 0;
 			}
 			
 		}
+		if (!ret && target != nullptr && target->IsPlayer() && target->GetTeamNumber() != owner->GetTeamNumber()) {
+			float attackEnemy = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemy, medigun_attack_enemy );
+			if (attackEnemy != 0) {
+				return true;
+			}
+		}
 		return ret;
 	}
+	class MedigunAttackModule : public EntityModule
+	{
+	public:
+		MedigunAttackModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		CHandle<CBaseEntity> lastTarget;
+		float attackStartTime;
+		float lastAttackTime;
+		float maxOverheal = 1.5f;
+
+	};
 
 	DETOUR_DECL_MEMBER(void, CWeaponMedigun_HealTargetThink)
 	{
-		DETOUR_MEMBER_CALL(CWeaponMedigun_HealTargetThink)();
 		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+		auto owner = medigun->GetTFPlayerOwner();
 		CBaseEntity *healobject = medigun->GetHealTarget();
-		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() ) {
+		if (healobject != nullptr && healobject->GetTeamNumber() != owner->GetTeamNumber()) {
+			auto attackModule = medigun->GetOrCreateEntityModule<MedigunAttackModule>("medigunattack");
+			if (attackModule->lastTarget != healobject) {
+				attackModule->lastTarget = healobject;
+				attackModule->attackStartTime = gpGlobals->curtime;
+				attackModule->lastAttackTime = gpGlobals->curtime - 0.1f;
+			}
+			float attackEnemy = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemy, medigun_attack_enemy );
+			float mult = RemapValClamped(gpGlobals->curtime - attackModule->attackStartTime, 0, 5, 1, 3);
+			int healthPre = healobject->GetHealth();
+			CTakeDamageInfo info(owner, owner, medigun, vec3_origin, vec3_origin, medigun->GetHealRate() * attackEnemy * mult * (gpGlobals->curtime - attackModule->lastAttackTime), owner->m_Shared->IsCritBoosted() ? (DMG_GENERIC | DMG_CRITICAL) : DMG_GENERIC);
+			healobject->TakeDamage(info);
+			if (healthPre > healobject->GetHealth()) {
+				int maxBuff = owner->GetMaxHealthForBuffing() * attackModule->maxOverheal;
+				if (maxBuff - owner->GetHealth() > 0) {
+					owner->TakeHealth(Min(maxBuff - owner->GetHealth(), healthPre - healobject->GetHealth()), DMG_IGNORE_MAXHEALTH);
+				}
+			}
+
+			
+			attackModule->lastAttackTime = gpGlobals->curtime;
+		}
+
+		DETOUR_MEMBER_CALL(CWeaponMedigun_HealTargetThink)();
+		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() && healobject->GetTeamNumber() == owner->GetTeamNumber()) {
 			int can_heal = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( medigun, can_heal, medic_machinery_beam );
 			auto object = ToBaseObject(healobject);
@@ -3075,6 +3120,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	RefCount rc_CTFProjectile_Arrow_ArrowTouch;
 
+	RefCount rc_CTFFlameManager_OnCollide;
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_InSameTeam, CBaseEntity *other)
 	{
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
@@ -3083,6 +3129,9 @@ namespace Mod::Attr::Custom_Attributes
 			if (!IsDeflectable(static_cast<CBaseProjectile *>(ent))) {
 				return true;
 			}
+		}
+		if (rc_CTFFlameManager_OnCollide) {
+			return false;
 		}
 /*
 		if ((ent->m_fFlags & FL_GRENADE) && (other->m_fFlags & FL_GRENADE) && strncmp(ent->GetClassname(), "tf_projectile", strlen("tf_projectile")) == 0) {
@@ -3384,6 +3433,10 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
 	}
+
+	RefCount rc_CWeaponMedigun_StartHealingTarget;
+	CTFPlayer *startHealingTargetHealer;
+	CBaseEntity *startHealingTarget;
 	
 	RefCount rc_CTFPlayerShared_AddCondIn;
 	RefCount rc_CTFPlayerShared_AddCond;
@@ -5176,6 +5229,16 @@ namespace Mod::Attr::Custom_Attributes
 			++it;
 		}
 	}
+	
+	class MedigunDrainModule : public EntityModule
+	{
+	public:
+		MedigunDrainModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		float maxOverheal = 1.0f;
+		bool healingReduced = false;
+		float healFraction = 0.0f;
+	};
 
 	DETOUR_DECL_MEMBER(void, CWeaponMedigun_RemoveHealingTarget, bool flag)
 	{
@@ -5191,10 +5254,18 @@ namespace Mod::Attr::Custom_Attributes
 				RemoveMedigunAttributes(medigun->GetTFPlayerOwner(), attribsOwner);
 			}
 		}
-		
+		auto attackModule = medigun->GetEntityModule<MedigunAttackModule>("medigunattack");
+		if (attackModule != nullptr) {
+			if (attackModule->lastTarget != nullptr && medigun->GetTFPlayerOwner() != nullptr) {
+				medigun->GetTFPlayerOwner()->m_Shared->StopHealing(medigun->GetTFPlayerOwner());
+			}
+			attackModule->lastTarget = nullptr;
+		}
+	
         DETOUR_MEMBER_CALL(CWeaponMedigun_RemoveHealingTarget)(flag);
 
     }
+
 	void AddMedigunAttributes(CTFPlayer *target, const char *attribs)
 	{
 		std::string str(attribs);
@@ -5214,24 +5285,49 @@ namespace Mod::Attr::Custom_Attributes
 			++it;
 		}
 	}
+
+	RefCount rc_CWeaponMedigun_StartHealingTarget_Drain;
 	DETOUR_DECL_MEMBER(void, CWeaponMedigun_StartHealingTarget, CBaseEntity *targete)
 	{
 		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
 		
 		auto target = ToTFPlayer(targete);
+		auto owner = medigun->GetTFPlayerOwner();
 		if (target != nullptr) {
 			GET_STRING_ATTRIBUTE(medigun, medigun_passive_attributes, attribs);
 			if (attribs != nullptr) {
 				AddMedigunAttributes(target, attribs);
 			}
 			GET_STRING_ATTRIBUTE(medigun, medigun_passive_attributes_owner, attribsOwner);
-			if (attribsOwner != nullptr && medigun->GetTFPlayerOwner() != nullptr) {
-				AddMedigunAttributes(medigun->GetTFPlayerOwner(), attribsOwner);
+			if (attribsOwner != nullptr && owner != nullptr) {
+				AddMedigunAttributes(owner, attribsOwner);
+			}
+		}
+		float attacking = 0;
+		if (owner != nullptr && target != nullptr && target != owner && target->GetTeamNumber() != owner->GetTeamNumber()) {
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, attacking, medigun_attack_enemy);
+			if (attacking != 0) {
+				targete = owner;
+			}
+		}
+		float drain = 0;
+		if (owner != nullptr && target != nullptr && target != owner && target->GetTeamNumber() == owner->GetTeamNumber()) {
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, drain, medigun_self_drain);
+			if (drain != 0) {
+				auto mod = medigun->GetOrCreateEntityModule<MedigunDrainModule>("medigundrain");
+				mod->healingReduced = false;
+				mod->healFraction = 0;
 			}
 		}
 		
-        DETOUR_MEMBER_CALL(CWeaponMedigun_StartHealingTarget)(targete);
 
+		SCOPED_INCREMENT_IF(rc_CWeaponMedigun_StartHealingTarget, attacking != 0 && owner->m_Shared->FindHealerIndex(owner) == -1);
+		SCOPED_INCREMENT_IF(rc_CWeaponMedigun_StartHealingTarget_Drain, drain != 0);
+		startHealingTargetHealer = owner;
+		startHealingTarget = targete;
+        DETOUR_MEMBER_CALL(CWeaponMedigun_StartHealingTarget)(targete);
+		startHealingTarget = nullptr;
+		startHealingTargetHealer = nullptr;
     }
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Energy_Recharge)
@@ -5662,12 +5758,15 @@ namespace Mod::Attr::Custom_Attributes
 			
 		}
 	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ConditionGameRulesThink)
 	{
 		//TIME_SCOPE2(GameRulesThink);
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		float nextFlameTime = shared->m_flFlameBurnTime;
+
 		DETOUR_MEMBER_CALL(CTFPlayerShared_ConditionGameRulesThink)();
+
 		auto &bleedVec = shared->m_BleedInfo.Get();
 		FOR_EACH_VEC(bleedVec, i) {
 			auto &info = bleedVec[i];
@@ -6750,6 +6849,108 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFFlameManager_OnCollide, CBaseEntity* entity, int value)
+	{
+		auto flame = reinterpret_cast<CBaseEntity *>(this);
+		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, GetFastAttributeInt(flame->GetOwnerEntity()->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE) > 0);
+
+		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Heal, CBaseEntity *pHealer, float flAmount, float flOverhealBonus, float flOverhealDecayMult, bool bDispenserHeal, CTFPlayer *pHealScorer)
+	{
+		if (rc_CWeaponMedigun_StartHealingTarget) { 
+			flAmount = 0.01f;
+			if (ToTFPlayer(pHealer) != nullptr && ToTFPlayer(pHealer)->GetActiveTFWeapon() != nullptr) {
+				auto attackModule = ToTFPlayer(pHealer)->GetActiveTFWeapon()->GetEntityModule<MedigunAttackModule>("medigunattack");
+				if (attackModule != nullptr) {
+					attackModule->maxOverheal = flOverhealBonus;
+				}
+			}
+		}
+		if (rc_CWeaponMedigun_StartHealingTarget_Drain && ToTFPlayer(pHealer) != nullptr && ToTFPlayer(pHealer)->GetActiveTFWeapon() != nullptr) {
+			auto mod = ToTFPlayer(pHealer)->GetActiveTFWeapon()->GetEntityModule<MedigunDrainModule>("medigundrain");
+			if (mod != nullptr) {
+				mod->maxOverheal = flOverhealBonus;
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_Heal)(pHealer, flAmount, flOverhealBonus, flOverhealDecayMult, bDispenserHeal, pHealScorer);
+	}
+
+	DETOUR_DECL_MEMBER(void, CWeaponMedigun_SecondaryAttack)
+	{
+		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+		auto owner = medigun->GetTFPlayerOwner();
+		CBaseEntity *healRestore = nullptr;
+		if (owner != nullptr && medigun->GetHealTarget() != nullptr && medigun->GetHealTarget()->GetTeamNumber() != owner->GetTeamNumber()) {
+			float attacking = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, attacking, medigun_attack_enemy);
+			if (attacking != 0) {
+				healRestore = medigun->GetHealTarget();
+				medigun->SetHealTarget(nullptr);
+			}
+		}
+		DETOUR_MEMBER_CALL(CWeaponMedigun_SecondaryAttack)();
+		if (healRestore != nullptr) {
+			medigun->SetHealTarget(healRestore);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CWeaponMedigun_CycleResistType)
+	{
+		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+		auto owner = medigun->GetTFPlayerOwner();
+		CBaseEntity *healRestore = nullptr;
+		if (owner != nullptr && medigun->GetHealTarget() != nullptr && medigun->GetHealTarget()->GetTeamNumber() != owner->GetTeamNumber()) {
+			float attacking = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, attacking, medigun_attack_enemy);
+			if (attacking != 0) {
+				healRestore = medigun->GetHealTarget();
+				medigun->SetHealTarget(nullptr);
+			}
+		}
+		DETOUR_MEMBER_CALL(CWeaponMedigun_CycleResistType)();
+		if (healRestore != nullptr) {
+			medigun->SetHealTarget(healRestore);
+		}
+	}
+
+	DETOUR_DECL_MEMBER(bool, CWeaponMedigun_FindAndHealTargets)
+	{
+		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+		auto owner = medigun->GetTFPlayerOwner();
+		auto result = DETOUR_MEMBER_CALL(CWeaponMedigun_FindAndHealTargets)();
+		auto target = ToTFPlayer(medigun->GetHealTarget());
+		if (result && owner != nullptr && target != nullptr && target->GetTeamNumber() == owner->GetTeamNumber()) {
+			float drain = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, drain, medigun_self_drain);
+			auto mod = medigun->GetEntityModule<MedigunDrainModule>("medigundrain");
+			if (drain != 0 && mod != nullptr) {
+				float heal = medigun->GetHealRate() * drain * gpGlobals->frametime * RemapValClamped( gpGlobals->curtime - target->m_flLastDamageTime, 10, 15, 1.0, 3.0 ) + mod->healFraction;
+				float maxbuff = target->GetMaxHealthForBuffing() * mod->maxOverheal;
+				int healInt = heal;
+				mod->healFraction = heal - healInt;
+				if (healInt > 0 && target->GetHealth() < maxbuff * 0.98 && owner->GetHealth() > 1) {
+					owner->SetHealth(Max(owner->GetHealth() - healInt, 1));
+				}
+				if (owner->GetHealth() <= 1 && !mod->healingReduced) {
+					mod->healingReduced = true;
+					int healIndex = target->m_Shared->FindHealerIndex(owner);
+					if (healIndex != -1) {
+						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= 0.1f;
+					}
+				}
+				if (owner->GetHealth() > 1 && mod->healingReduced) {
+					mod->healingReduced = false;
+					int healIndex = target->m_Shared->FindHealerIndex(owner);
+					if (healIndex != -1) {
+						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= 10.0f;
+					}
+				}
+			}
+		}
+		return result;
+	}
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7741,7 +7942,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CEconItemView_GetAnimationSlot, "CEconItemView::GetAnimationSlot");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetViewModelWeaponRole, "CTFWeaponBase::GetViewModelWeaponRole");
 			MOD_ADD_DETOUR_MEMBER(CEconItemDefinition_GetActivityOverride, "CEconItemDefinition::GetActivityOverride");
-			
+			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_OnCollide, "CTFFlameManager::OnCollide");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Heal, "CTFPlayerShared::Heal");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_SecondaryAttack, "CWeaponMedigun::SecondaryAttack");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_CycleResistType, "CWeaponMedigun::CycleResistType");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_FindAndHealTargets, "CWeaponMedigun::FindAndHealTargets");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

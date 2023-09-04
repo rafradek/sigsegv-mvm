@@ -969,6 +969,7 @@ namespace Mod::MvM::Extended_Upgrades
 
     bool from_buy_upgrade_free = false;
     bool upgrade_success = false;
+    bool buying_upgrade = false;
 
     bool BuyUpgrade(UpgradeInfo *upgrade,/* CEconEntity *item*/ int slot, CTFPlayer *player, bool free, bool downgrade) {
         if (g_hUpgradeEntity.GetRef() == nullptr) {
@@ -994,6 +995,7 @@ namespace Mod::MvM::Extended_Upgrades
         if (upgrade->force_upgrade_slot != -2) {
             override_slot = upgrade->force_upgrade_slot;
         }
+        buying_upgrade = true;
         g_hUpgradeEntity->PlayerPurchasingUpgrade(player, override_slot, upgrade->mvm_upgrade_index, downgrade, free, false);
 
         if (upgrade_success) {
@@ -1025,6 +1027,12 @@ namespace Mod::MvM::Extended_Upgrades
             auto itemInSlot = GetEconEntityAtLoadoutSlot(player, slot);
             FireOutputs(upgrade->on_upgrade_outputs, variant, player,  itemInSlot == nullptr ? (CBaseEntity *)player : (CBaseEntity *)itemInSlot);
         }
+        static ConVarRef sig_mvm_upgradestation_regen_improved("sig_mvm_upgradestation_regen_improved");
+        // Give weapons now, so that the secondary upgrades are not applied to switched weapons
+        if (!sig_mvm_upgradestation_regen_improved.GetBool()) {
+            player->GiveDefaultItems();
+        }
+        buying_upgrade = false;
             //if (!free)
             //    player->RemoveCurrency(cost);
 
@@ -1606,6 +1614,13 @@ namespace Mod::MvM::Extended_Upgrades
         }
         return DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
     }
+    DETOUR_DECL_MEMBER(void, CTFPlayer_GiveDefaultItems)
+	{
+		if (rc_CUpgrades_PlayerPurchasingUpgrade > 0 && buying_upgrade) {
+            return;
+        }
+        DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+    }
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1620,6 +1635,9 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
+
+            // Don't reset weapons in the middle of applying secondary attributes
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveDefaultItems, "CTFPlayer::GiveDefaultItems");
 
             // Fix message overload when refunding
             MOD_ADD_DETOUR_MEMBER(CUpgrades_GrantOrRemoveAllUpgrades, "CUpgrades::GrantOrRemoveAllUpgrades");

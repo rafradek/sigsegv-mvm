@@ -292,6 +292,7 @@ class CWeaponMedigun : public CTFWeaponBase
 {
 public:
 	CBaseEntity *GetHealTarget() const { return this->m_hHealingTarget; }
+	void SetHealTarget(CBaseEntity *target) { this->m_hHealingTarget = target; }
 	float GetHealRate() { return vt_GetHealRate(this); }
 	float GetCharge() const { return this->m_flChargeLevel; }
 	void SetCharge(float charge) { this->m_flChargeLevel = charge; }

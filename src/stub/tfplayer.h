@@ -321,6 +321,19 @@ private:
 	uint *data;
 };
 
+struct healers_t
+{
+	EHANDLE	pHealer;
+	float	flAmount;
+	float   flHealAccum;
+	float	flOverhealBonus;
+	float	flOverhealDecayMult;
+	bool	bDispenserHeal;
+	EHANDLE pHealScorer;
+	int		iKillsWhileBeingHealed; // for engineer achievement ACHIEVEMENT_TF_ENGINEER_TANK_DAMAGE
+	float	flHealedLastSecond;
+};
+
 class CTFPlayerShared
 {
 public:
@@ -350,6 +363,10 @@ public:
 	void SetDefaultItemChargeMeters()                                                   {        ft_SetDefaultItemChargeMeters(this); }
 	void SetItemChargeMeter(loadout_positions_t slot, float value)                      {        ft_SetItemChargeMeter        (this, slot, value); }
 	void Burn(CTFPlayer *igniter, CTFWeaponBase *weapon, float duration = 10.0f)        {        ft_Burn        (this, igniter, weapon, duration); }
+	bool IsCritBoosted() const                                                          { return ft_IsCritBoosted             (this); }
+	void Heal(CBaseEntity *pHealer, float flAmount, float flOverhealBonus, float flOverhealDecayMult, bool bDispenserHeal, CTFPlayer *pHealScorer) { ft_Heal (this, pHealer, flAmount, flOverhealBonus, flOverhealDecayMult, bDispenserHeal, pHealScorer); }
+	float StopHealing(CBaseEntity *pHealer)                                             { return ft_StopHealing               (this, pHealer); }
+	int FindHealerIndex(CBaseEntity *pHealer)                                           { return ft_FindHealerIndex           (this, pHealer); }
 
 	DECL_SENDPROP(float,       m_flCloakMeter);
 	DECL_SENDPROP(float,       m_flEnergyDrinkMeter);
@@ -379,6 +396,8 @@ public:
 	DECL_SENDPROP(int,         m_iDecapitations);
 	DECL_SENDPROP(int,         m_iRevengeCrits);
 	DECL_SENDPROP(float[10],   m_flItemChargeMeter);
+	DECL_SENDPROP(int,         m_nHalloweenBombHeadStage);
+	DECL_RELATIVE(CUtlVector<healers_t>, m_aHealers);
 	
 private:
 	DECL_SENDPROP(int,         m_nPlayerState);
@@ -400,6 +419,10 @@ private:
 	static MemberFuncThunk<      CTFPlayerShared *, void                                > ft_SetDefaultItemChargeMeters;
 	static MemberFuncThunk<      CTFPlayerShared *, void, loadout_positions_t, float    > ft_SetItemChargeMeter;
 	static MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > ft_Burn;
+	static MemberFuncThunk<const CTFPlayerShared *, bool                                > ft_IsCritBoosted;
+	static MemberFuncThunk<      CTFPlayerShared *, void, CBaseEntity *, float, float, float, bool, CTFPlayer *> ft_Heal;
+	static MemberFuncThunk<      CTFPlayerShared *, float, CBaseEntity *                > ft_StopHealing;
+	static MemberFuncThunk<      CTFPlayerShared *, int, CBaseEntity *                  > ft_FindHealerIndex;
 };
 
 class CTFPlayer : public CBaseMultiplayerPlayer
@@ -445,6 +468,7 @@ public:
 	CBaseObject *GetObject(int id)                               { return ft_GetObject                      (this, id); }
 	int GetObjectCount()                                         { return ft_GetObjectCount                 (this); }
 	void StateTransition(int state)                              {        ft_StateTransition                (this, state); }
+    int GetMaxHealthForBuffing() const                           { return ft_GetMaxHealthForBuffing         (this); }
 
 	void HandleCommand_JoinTeam(const char *pTeamName)                   { ft_HandleCommand_JoinTeam        (this, pTeamName); }
 	void HandleCommand_JoinTeam_NoMenus(const char *pTeamName)           { ft_HandleCommand_JoinTeam_NoMenus(this, pTeamName); }
@@ -532,7 +556,8 @@ public:
 	DECL_SENDPROP   (CHandle<CBaseEntity>, m_hRagdoll);
 	DECL_SENDPROP   (int,        m_iCampaignMedals);
 	DECL_RELATIVE   (CUtlVector<CHandle<CTFWeaponBase>>, m_hDisguiseWeaponList);
-	DECL_SENDPROP(bool,         m_bUseBossHealthBar);
+	DECL_SENDPROP   (bool,       m_bUseBossHealthBar);
+	DECL_SENDPROP   (float,      m_flLastDamageTime);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
@@ -600,6 +625,7 @@ private:
     static MemberFuncThunk<      CTFPlayer *, int                             > ft_GetRuneHealthBonus;
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_ClearDisguiseWeaponList;
     static MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > ft_GetLoadoutItem;
+    static MemberFuncThunk<const CTFPlayer *, int                             > ft_GetMaxHealthForBuffing;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

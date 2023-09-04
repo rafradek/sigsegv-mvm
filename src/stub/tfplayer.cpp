@@ -178,6 +178,8 @@ IMPL_SENDPROP(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hDisguiseWeapon,CTFPlay
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iDecapitations,            CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iRevengeCrits,             CTFPlayer);
 IMPL_SENDPROP(float[10],   CTFPlayerShared, m_flItemChargeMeter,         CTFPlayer);
+IMPL_SENDPROP(int,         CTFPlayerShared, m_nHalloweenBombHeadStage,   CTFPlayer);
+IMPL_RELATIVE(CUtlVector<healers_t>, CTFPlayerShared, m_aHealers, m_nHalloweenBombHeadStage, sizeof(int) + sizeof(uintptr_t));
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");
@@ -195,6 +197,10 @@ MemberFuncThunk<const CTFPlayerShared *, bool                                > C
 MemberFuncThunk<      CTFPlayerShared *, void                                > CTFPlayerShared::ft_SetDefaultItemChargeMeters("CTFPlayerShared::SetDefaultItemChargeMeters");
 MemberFuncThunk<      CTFPlayerShared *, void, loadout_positions_t, float    > CTFPlayerShared::ft_SetItemChargeMeter        ("CTFPlayerShared::SetItemChargeMeter");
 MemberFuncThunk<      CTFPlayerShared *, void, CTFPlayer *, CTFWeaponBase*, float   > CTFPlayerShared::ft_Burn 					 ("CTFPlayerShared::Burn");
+MemberFuncThunk<const CTFPlayerShared *, bool                                > CTFPlayerShared::ft_IsCritBoosted             ("CTFPlayerShared::IsCritBoosted");
+MemberFuncThunk<      CTFPlayerShared *, void, CBaseEntity *, float, float, float, bool, CTFPlayer *> CTFPlayerShared::ft_Heal("CTFPlayerShared::Heal");
+MemberFuncThunk<      CTFPlayerShared *, float, CBaseEntity *                > CTFPlayerShared::ft_StopHealing              ("CTFPlayerShared::StopHealing");
+MemberFuncThunk<      CTFPlayerShared *, int, CBaseEntity *                  > CTFPlayerShared::ft_FindHealerIndex          ("CTFPlayerShared::FindHealerIndex");
 
 
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
@@ -238,6 +244,7 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hRagdoll,               CTFPlay
 IMPL_SENDPROP(int,                  CTFPlayer, m_iCampaignMedals,        CTFPlayer);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, - sizeof(CUtlVector<CHandle<CTFWeaponBase>>));
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bUseBossHealthBar,      CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flLastDamageTime,       CTFPlayer);
 
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
@@ -297,6 +304,7 @@ MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::ft_GetRuneHealthBonus          ("CTFPlayer::GetRuneHealthBonus");
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ClearDisguiseWeaponList     ("CTFPlayer::ClearDisguiseWeaponList");
 MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > CTFPlayer::ft_GetLoadoutItem              ("CTFPlayer::GetLoadoutItem");
+MemberFuncThunk<const CTFPlayer *, int                             > CTFPlayer::ft_GetMaxHealthForBuffing      ("CTFPlayer::GetMaxHealthForBuffing");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

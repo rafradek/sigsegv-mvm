@@ -392,6 +392,7 @@ enum : uint32_t
 	
 	/* for TakeHealth() calls only: */
 	DMG_IGNORE_MAXHEALTH   = DMG_BULLET,
+	DMG_IGNORE_DEBUFFS     = DMG_SLASH
 };
 
 enum : int32_t
