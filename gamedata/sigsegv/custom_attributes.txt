@@ -3197,4 +3197,24 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4641"
+    {
+        "name"	"medigun attack enemy"
+        "attribute_class"	"medigun_attack_enemy"
+        "description_string"	"Can attack enemies, dealing damage equal to %p% heal rate"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4642"
+    {
+        "name"	"medigun self drain"
+        "attribute_class"	"medigun_self_drain"
+        "description_string"	"Drain health equal to %p% heal rate from the user when healing"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

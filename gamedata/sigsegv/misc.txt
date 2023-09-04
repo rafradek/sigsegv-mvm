@@ -6028,6 +6028,10 @@
 
 				"CTFWeaponBuilder::StartPlacement" "_ZN16CTFWeaponBuilder14StartPlacementEv"
 				"CTFWeaponBuilder::StopPlacement" "_ZN16CTFWeaponBuilder13StopPlacementEv"
+
+				"CWeaponMedigun::SecondaryAttack" "_ZN14CWeaponMedigun15SecondaryAttackEv"
+				"CWeaponMedigun::CycleResistType" "_ZN14CWeaponMedigun15CycleResistTypeEv"
+				"CWeaponMedigun::FindAndHealTargets" "_ZN14CWeaponMedigun18FindAndHealTargetsEv"
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				

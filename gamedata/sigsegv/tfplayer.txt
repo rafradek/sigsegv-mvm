@@ -1119,6 +1119,10 @@
 				
 				"CTFPlayerShared::SetDefaultItemChargeMeters" "_ZN15CTFPlayerShared26SetDefaultItemChargeMetersEv"
 				"CTFPlayerShared::SetItemChargeMeter"         "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf"
+				"CTFPlayerShared::Heal"                       "_ZN15CTFPlayerShared4HealEP11CBaseEntityfffbP9CTFPlayer"
+				"CTFPlayerShared::StopHealing"                "_ZN15CTFPlayerShared11StopHealingEP11CBaseEntity"
+				"CTFPlayerShared::FindHealerIndex"            "_ZN15CTFPlayerShared15FindHealerIndexEP11CBaseEntity"
+				
 			}
 		}
 	}
