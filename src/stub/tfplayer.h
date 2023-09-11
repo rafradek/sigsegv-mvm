@@ -557,7 +557,6 @@ public:
 	DECL_SENDPROP   (int,        m_iCampaignMedals);
 	DECL_RELATIVE   (CUtlVector<CHandle<CTFWeaponBase>>, m_hDisguiseWeaponList);
 	DECL_SENDPROP   (bool,       m_bUseBossHealthBar);
-	DECL_SENDPROP   (float,      m_flLastDamageTime);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }

@@ -6926,25 +6926,26 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(medigun, drain, medigun_self_drain);
 			auto mod = medigun->GetEntityModule<MedigunDrainModule>("medigundrain");
 			if (drain != 0 && mod != nullptr) {
-				float heal = medigun->GetHealRate() * drain * gpGlobals->frametime * RemapValClamped( gpGlobals->curtime - target->m_flLastDamageTime, 10, 15, 1.0, 3.0 ) + mod->healFraction;
+				float heal = medigun->GetHealRate() * drain * gpGlobals->frametime * RemapValClamped( gpGlobals->curtime - target->m_flMvMLastDamageTime, 10, 15, 1.0, 3.0 ) + mod->healFraction;
 				float maxbuff = target->GetMaxHealthForBuffing() * mod->maxOverheal;
 				int healInt = heal;
 				mod->healFraction = heal - healInt;
 				if (healInt > 0 && target->GetHealth() < maxbuff * 0.98 && owner->GetHealth() > 1) {
 					owner->SetHealth(Max(owner->GetHealth() - healInt, 1));
 				}
+				drain = Min(drain, 0.999f);
 				if (owner->GetHealth() <= 1 && !mod->healingReduced) {
 					mod->healingReduced = true;
 					int healIndex = target->m_Shared->FindHealerIndex(owner);
 					if (healIndex != -1) {
-						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= 0.1f;
+						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= (1.0f-drain);
 					}
 				}
 				if (owner->GetHealth() > 1 && mod->healingReduced) {
 					mod->healingReduced = false;
 					int healIndex = target->m_Shared->FindHealerIndex(owner);
 					if (healIndex != -1) {
-						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= 10.0f;
+						target->m_Shared->m_aHealers.Get()[healIndex].flAmount *= 1/(1.0f-drain);
 					}
 				}
 			}

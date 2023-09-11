@@ -244,7 +244,6 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hRagdoll,               CTFPlay
 IMPL_SENDPROP(int,                  CTFPlayer, m_iCampaignMedals,        CTFPlayer);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, - sizeof(CUtlVector<CHandle<CTFWeaponBase>>));
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bUseBossHealthBar,      CTFPlayer);
-IMPL_SENDPROP(float,                CTFPlayer, m_flLastDamageTime,       CTFPlayer);
 
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);

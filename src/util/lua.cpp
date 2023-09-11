@@ -2921,7 +2921,7 @@ namespace Util::Lua
         auto id = luaL_checkinteger(l, 1);
         auto def = GetItemSchema()->GetItemDefinition(id);
         if (def != nullptr)
-            lua_pushstring(l, def->GetItemName());
+            lua_pushstring(l, def->GetName());
         else
             lua_pushnil(l);
         return 1;
