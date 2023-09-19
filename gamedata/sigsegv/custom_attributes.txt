@@ -3217,4 +3217,56 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    //Item description
+    "4643"
+    {
+        "name"	"fire input on attack"
+        "attribute_class"	"fire_input_on_attack"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4644"
+    {
+        "name"	"stun on hit"
+        "attribute_class"	"stun_on_hit"
+        "description_string"	"On Hit: Stun target for %d seconds"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4645"
+    {
+        "name"	"stun on hit no giants"
+        "attribute_class"	"stun_on_hit_no_giants"
+        "description_string"	"Cannot stun giants"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4646"
+    {
+        "name"	"stun on hit type"
+        "attribute_class"	"stun_on_hit_type"
+        "attribute_type"    "string"
+        "description_string"	"Cannot stun giants"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4647"
+    {
+        "name"	"stun on hit slow"
+        "attribute_class"	"stun_on_hit_slow"
+        "description_string"	"Stun slows players by %p%"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

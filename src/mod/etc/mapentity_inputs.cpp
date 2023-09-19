@@ -1377,6 +1377,19 @@ namespace Mod::Etc::Mapentity_Additions
         {"Taunt"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer* player{ToTFPlayer(ent)};
                 player->Taunt(TAUNT_BASE_WEAPON, 0);
+        }},
+        {"Stun"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                Value.Convert(FIELD_FLOAT);
+                CTFPlayer* player = ToTFPlayer(ent);
+                player->m_Shared->StunPlayer(Value.Float(), 1.0f, TF_STUNFLAG_BONKSTUCK, ToTFPlayer(pActivator));
+        }},
+        {"Slowdown"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer* player = ToTFPlayer(ent);
+                const std::string_view input{Value.String()};
+                const auto v{vi::split_str(input, "|")};
+                auto slowdown = vi::from_str<float>(v[0]);
+                auto duration = vi::from_str<float>(v[1]);
+                player->m_Shared->StunPlayer(duration.value_or(9999.0f), slowdown.value_or(1.0f), TF_STUNFLAG_SLOWDOWN, ToTFPlayer(pActivator));
         }}
     });
 

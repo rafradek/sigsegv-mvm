@@ -92,6 +92,8 @@ namespace Mod::AI::Improved_Targeting
 
 	DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotMainAction_GetHealerOfThreat, const CKnownEntity *threat)
 	{
+		if (reinterpret_cast<CTFBotMainAction *>(this)->GetActor() == nullptr) return threat;
+
 		if (thread_bot_caller != nullptr) {
 			CTFBot *actor = ToTFBot(thread_bot_caller->GetEntity());
 			if (actor != nullptr && actor->m_nBotSkill > 0 && actor->IsMiniBoss()) {

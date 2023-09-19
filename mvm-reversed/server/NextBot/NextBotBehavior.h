@@ -373,9 +373,10 @@ public:
 	
 	virtual bool IsAbleToBlockMovementOf(const INextBot *nextbot) const;
 	
+	T *GetActor() const;
+	
 protected:
 	Behavior<T> *GetBehavior() const;
-	T *GetActor() const;
 	
 private:
 	Action<T> *ApplyResult(T *actor, Behavior<T> *behavior, ActionResult<T> result);

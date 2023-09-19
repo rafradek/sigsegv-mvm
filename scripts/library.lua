@@ -84,7 +84,7 @@ function CEntity:GetHandleIndex() end
 function CEntity:GetNetIndex() end
 
 ---@return nil
-function CEntity:Spawn() end
+function CEntity:DispatchSpawn() end
 
 ---@return nil
 function CEntity:Activate() end

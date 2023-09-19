@@ -347,6 +347,40 @@ namespace Mod::Attr::Custom_Attributes
 		auto me = reinterpret_cast<CTFProjectile_ThrowableRepel *>(this);
 		me->SetModel("models/weapons/w_models/w_baseball.mdl");
 	}
+
+	void FireInputAttribute(const char *input, const char *filter, const variant_t &defValue, CBaseEntity *inflictor, CBaseEntity *activator, CBaseEntity *caller, float delay)
+	{
+		if (input != nullptr && (filter == nullptr || caller->NameMatches(filter))) {
+			char input_tokenized[512];
+			V_strncpy(input_tokenized, input, sizeof(input_tokenized));
+			
+			char *target = strtok(input_tokenized,"^");
+			char *input = strtok(NULL,"^");
+			char *param = strtok(NULL,"^");
+			
+			if (target != nullptr && input != nullptr) {
+				variant_t variant1;
+				if (param != nullptr) {
+					string_t m_iParameter = AllocPooledString(param);
+					variant1.SetString(m_iParameter);
+				}
+				else {
+					variant1 = defValue;
+				}
+				
+				if (FStrEq(target, "!self")) {
+					caller->AcceptInput(input, activator, caller, variant1,-1);
+				}
+				else if (FStrEq(target, "!projectile") && inflictor != nullptr) {
+					inflictor->AcceptInput(input, activator, caller, variant1,-1);
+				}
+				else {
+					CEventQueue &que = g_EventQueue;
+					que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,delay,activator, caller,-1);
+				}
+			}
+		}
+	}
 	
 	CBaseAnimating *SpawnCustomProjectile(const char *name, CTFWeaponBaseGun *weapon, CTFPlayer *player, bool doEffect)
 	{
@@ -736,6 +770,8 @@ namespace Mod::Attr::Custom_Attributes
 					proj->EmitSound(soundname);
 				}
 			}
+			GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
+			FireInputAttribute(input, nullptr, Variant(proj), proj, player, weapon, -1.0f);
 		}
 
 		int shoot_projectiles = 0;
@@ -1955,6 +1991,37 @@ namespace Mod::Attr::Custom_Attributes
 
 			GET_STRING_ATTRIBUTE(weapon, self_add_attributes_on_hit, attributes_string_self);
 			for (auto ally : condAllies) ApplyAttributesFromString(ally, attributes_string_self);
+		}
+
+		float stunDuration = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stunDuration, stun_on_hit);
+
+		int stunNoGiants = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, stunNoGiants, stun_on_hit_no_giants);
+
+		if (playerVictim != nullptr && stunDuration != 0.0f && (stunNoGiants == 0 || !playerVictim->IsMiniBoss())) {
+			GET_STRING_ATTRIBUTE(weapon, stun_on_hit_type, stunType);
+			int stunId = TF_STUNFLAG_BONKSTUCK | TF_STUNFLAG_NOSOUNDOREFFECT;
+			if (stunType != nullptr) {
+				if (FStrEq(stunType, "movement")) {
+					stunId = TF_STUNFLAG_SLOWDOWN;
+				}
+				else if (FStrEq(stunType, "panic")) {
+					stunId = TF_STUNFLAG_SLOWDOWN | TF_STUNFLAG_NOSOUNDOREFFECT | TF_STUNFLAG_THIRDPERSON;
+				}
+				else if (FStrEq(stunType, "bonk")) {
+					stunId = TF_STUNFLAG_BONKSTUCK;
+				}
+				else if (FStrEq(stunType, "ghost")) {
+					stunId = TF_STUNFLAG_SLOWDOWN | TF_STUNFLAG_GHOSTEFFECT | TF_STUNFLAG_THIRDPERSON;
+				}
+				else if (FStrEq(stunType, "bigbonk")) {
+					stunId = TF_STUNFLAG_CHEERSOUND | TF_STUNFLAG_BONKSTUCK;
+				}
+			}
+			float stunSlow = 0.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stunSlow, stun_on_hit_slow);
+			playerVictim->m_Shared->StunPlayer(stunDuration, stunSlow, stunId, playerAttacker);
 		}
 	}
 
@@ -4219,71 +4286,14 @@ namespace Mod::Attr::Custom_Attributes
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit, input);
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit_name_restrict, filter);
 				
-				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
-					char input_tokenized[512];
-					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
-					
-					char *target = strtok(input_tokenized,"^");
-					char *input = strtok(NULL,"^");
-					char *param = strtok(NULL,"^");
-					
-					if (target != nullptr && input != nullptr) {
-						variant_t variant1;
-						if (param != nullptr) {
-							string_t m_iParameter = AllocPooledString(param);
-							variant1.SetString(m_iParameter);
-						}
-						else {
-							variant1.SetInt(damage);
-						}
-						
-						if (FStrEq(target, "!self")) {
-							entity->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
-						}
-						else if (FStrEq(target, "!projectile") && info.GetInflictor() != nullptr) {
-							info.GetInflictor()->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
-						}
-						else {
-							CEventQueue &que = g_EventQueue;
-							que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,0,info.GetAttacker(), entity,-1);
-						}
-					}
-				}
+				FireInputAttribute(input, filter, Variant(damage), info.GetInflictor(), info.GetAttacker(), entity, 0.0f);
 			}
 
 			if (was_alive && !entity->IsAlive()) {
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_kill, input);
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_kill_name_restrict, filter);
-				if (input != nullptr && (filter == nullptr || entity->NameMatches(filter))) {
-					char input_tokenized[256];
-					V_strncpy(input_tokenized, input, sizeof(input_tokenized));
-					
-					char *target = strtok(input_tokenized,"^");
-					char *input = strtok(NULL,"^");
-					char *param = strtok(NULL,"^");
-					
-					if (target != nullptr && input != nullptr) {
-						variant_t variant1;
-						if (param != nullptr) {
-							string_t m_iParameter = AllocPooledString(param);
-							variant1.SetString(m_iParameter);
-						}
-						else {
-							variant1.SetInt(damage);
-						}
-						
-						if (FStrEq(target, "!self")) {
-							entity->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
-						}
-						else if (FStrEq(target, "!projectile") && info.GetInflictor() != nullptr) {
-							info.GetInflictor()->AcceptInput(input,info.GetAttacker(), entity,variant1,-1);
-						}
-						else {
-							CEventQueue &que = g_EventQueue;
-							que.AddEvent(STRING(AllocPooledString(target)),STRING(AllocPooledString(input)),variant1,0,info.GetAttacker(), entity,-1);
-						}
-					}
-				}
+
+				FireInputAttribute(input, filter, Variant(damage), info.GetInflictor(), info.GetAttacker(), entity, 0.0f);
 			}
 		}
 		return damage;
@@ -6952,6 +6962,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return result;
 	}
+
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseMelee*>(this);
+		auto player = weapon->GetTFPlayerOwner();
+		GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
+		FireInputAttribute(input, nullptr, Variant(), nullptr, player, weapon, -1.0f);
+ 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+	}
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7137,8 +7157,10 @@ namespace Mod::Attr::Custom_Attributes
 		if (weapon != nullptr)
 			view = weapon->GetItem();
 
-		if (slot >= 0)
-			view = CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot(target, slot);
+		if (slot >= 0) {
+			auto ent = GetEconEntityAtLoadoutSlot(target, slot);
+			view = ent != nullptr ? ent->GetItem() : nullptr;
+		}
 
 		auto mod = player->GetOrCreateEntityModule<AttributeInfoModule>("attributeinfo");
 
@@ -7948,6 +7970,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_SecondaryAttack, "CWeaponMedigun::SecondaryAttack");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_CycleResistType, "CWeaponMedigun::CycleResistType");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_FindAndHealTargets, "CWeaponMedigun::FindAndHealTargets");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

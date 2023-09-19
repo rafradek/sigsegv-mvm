@@ -81,6 +81,8 @@ namespace Util::Lua
         void AddGlobalCallback(const char *name, int reffunc) { globalCallbacks.push_back({name, reffunc}); };
         void RemoveGlobalCallback(int reffunc);
 
+        CEconItemAttributeDefinition *GetAttributeDefinitionByNameCached(const char *name);
+
     private:
         std::list<LuaTimer>::iterator DestroyTimer(std::list<LuaTimer>::iterator it);
         lua_State *l;
@@ -102,6 +104,8 @@ namespace Util::Lua
         std::unordered_map<ConVar *, std::string> convarValueToRestore; 
         std::list<GlobalCallback> globalCallbacks;
         size_t m_iMemoryUsage = 0;
+
+        std::unordered_map<std::string, CEconItemAttributeDefinition *> attributeIdCache;
     };
 
     void LFromVariant(lua_State *l, variant_t &variant);

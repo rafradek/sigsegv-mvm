@@ -3446,3 +3446,21 @@ WaveSchedule
 
 // Bomb cannot be upgraded
 // "cannot upgrade bomb" "1"
+
+// Custom carried by player sentry toolbox model 
+// "sentry toolbox model" "models/weapons/c_models/c_toolbox/c_toolbox.mdl"
+
+// Custom carried by player dispenser toolbox model
+// "dispenser toolbox model" "models/weapons/c_models/c_toolbox/c_toolbox.mdl"
+
+// Custom carried by player teleporter toolbox model
+// "teleporter toolbox model" "models/weapons/c_models/c_toolbox/c_toolbox.mdl"
+
+// Can attack enemies, dealing damage equal to % heal rate"
+// "medigun attack enemy" 1.1
+
+// Drain health equal to % heal rate from the user when healin
+// "medigun self drain" 0.6
+
+// Fire input on attack. Player is !activator, projectile is !projectile (must be input target), weapon is !self
+// "fire input on attack" "!activator^SetHealth^0"

@@ -1533,7 +1533,7 @@ namespace Util::Lua
         CEconItemAttributeDefinition *def;
         
         if (name != nullptr) {
-            def = GetItemSchema()->GetAttributeDefinitionByName(name);
+            def = cur_state->GetAttributeDefinitionByNameCached(name);
         }
         else {
             def = GetItemSchema()->GetAttributeDefinition(id);
@@ -2184,7 +2184,7 @@ namespace Util::Lua
             lua_pushnil(l);
             while (lua_next(l, 3) != 0) {
                 if (lua_type(l, -2) == LUA_TSTRING) {
-                    auto attrdef = GetItemSchema()->GetAttributeDefinitionByName(lua_tostring(l, -2));
+                    auto attrdef = cur_state->GetAttributeDefinitionByNameCached(lua_tostring(l, -2));
                     if (attrdef != nullptr) {
                         view->GetAttributeList().AddStringAttribute(attrdef, LOptToString(l, -1, ""));
                     }
@@ -2953,7 +2953,7 @@ namespace Util::Lua
     int LUtilGetAttributeDefinitionIndexByName(lua_State *l)
     {
         auto name = luaL_checkstring(l, 1);
-        auto def = GetItemSchema()->GetAttributeDefinitionByName(name);
+        auto def = cur_state->GetAttributeDefinitionByNameCached(name);
         
         if (def != nullptr)
             lua_pushinteger(l, def->GetIndex());
@@ -4129,6 +4129,15 @@ namespace Util::Lua
     void LuaTimer::Destroy(lua_State *l) {
         luaL_unref(l, LUA_REGISTRYINDEX, m_iRefFunc);
         luaL_unref(l, LUA_REGISTRYINDEX, m_iRefParam);
+    }
+    
+    CEconItemAttributeDefinition *LuaState::GetAttributeDefinitionByNameCached(const char *name)
+    {
+        auto find = this->attributeIdCache.find(name);
+        if (find != this->attributeIdCache.end()) {
+            return find->second;
+        }
+        return this->attributeIdCache[name] = GetItemSchema()->GetAttributeDefinitionByName(name);
     }
 
     LuaState *state = nullptr;

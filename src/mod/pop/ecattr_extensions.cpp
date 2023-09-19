@@ -240,16 +240,6 @@ namespace Mod::Pop::ECAttr_Extensions
 		CHANGE
 	};
 
-	void ClearAllData()
-	{
-		ecattr_map.clear();
-		extdata.clear();
-		item_defs.clear();
-		item_custom_remap.clear();
-		delayed_addconds.clear();
-		pending_periodic_tasks.clear();
-	}
-
 	void ClearDataForBot(CTFBot *bot, ClearAction clear_action)
 	{
 		if (clear_action != DESTRUCT) {
@@ -288,6 +278,19 @@ namespace Mod::Pop::ECAttr_Extensions
 				++it;
 			}
 		}
+	}
+
+	void ClearAllData()
+	{
+		for (auto &[bot, data] : ecattr_map) {
+			ClearDataForBot(bot, DIE);
+		}
+		ecattr_map.clear();
+		extdata.clear();
+		item_defs.clear();
+		item_custom_remap.clear();
+		delayed_addconds.clear();
+		pending_periodic_tasks.clear();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBot_dtor0)

@@ -6087,6 +6087,8 @@
 				"CEconItemView::GetAnimationSlot" "_ZNK13CEconItemView16GetAnimationSlotEv"
 
 				"CEconItemDefinition::GetActivityOverride" "_ZNK19CEconItemDefinition19GetActivityOverrideEi8Activity"
+
+				"CVoteController::TryCastVote" "_ZN15CVoteController11TryCastVoteEiPKc"
 			}
 			"addrs_group"
 			{
