@@ -282,8 +282,8 @@ namespace Mod::Pop::ECAttr_Extensions
 
 	void ClearAllData()
 	{
-		for (auto &[bot, data] : ecattr_map) {
-			ClearDataForBot(bot, DIE);
+		while(ecattr_map.begin() != ecattr_map.end()) {
+			ClearDataForBot(ecattr_map.begin()->first, DIE);
 		}
 		ecattr_map.clear();
 		extdata.clear();
