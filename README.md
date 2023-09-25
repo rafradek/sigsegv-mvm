@@ -28,7 +28,7 @@ Download a package (optimize-only, no-mvm, or full) from releases and extract it
 
 # How to build
 
-On Ubuntu 20.04:
+On Ubuntu 22.04:
 
 1. Add x86 architecture if not installed yet
 ```
