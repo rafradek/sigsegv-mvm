@@ -32,14 +32,14 @@ static const char *loadoutStrings[] =
     "Action",		// LOADOUT_POSITION_ACTION,
     "Misc 2",   	// LOADOUT_POSITION_MISC2
 
-    "taunt",		// LOADOUT_POSITION_TAUNT
-    "",				// LOADOUT_POSITION_TAUNT2
-    "",				// LOADOUT_POSITION_TAUNT3
-    "",				// LOADOUT_POSITION_TAUNT4
-    "",				// LOADOUT_POSITION_TAUNT5
-    "",				// LOADOUT_POSITION_TAUNT6
-    "",				// LOADOUT_POSITION_TAUNT7
-    "",				// LOADOUT_POSITION_TAUNT8
+    "Taunt 1",		// LOADOUT_POSITION_TAUNT
+    "Taunt 2",		// LOADOUT_POSITION_TAUNT2
+    "Taunt 3",		// LOADOUT_POSITION_TAUNT3
+    "Taunt 4",		// LOADOUT_POSITION_TAUNT4
+    "Taunt 5",		// LOADOUT_POSITION_TAUNT5
+    "Taunt 6",		// LOADOUT_POSITION_TAUNT6
+    "Taunt 7",		// LOADOUT_POSITION_TAUNT7
+    "Taunt 8",		// LOADOUT_POSITION_TAUNT8
 };
 	
 static int GetSlotFromString(const char *string) {
@@ -66,6 +66,22 @@ static int GetSlotFromString(const char *string) {
         slot = 9;
     else if (V_stricmp(string, "Misc2") == 0)
         slot = 10;
+    else if (V_stricmp(string, "Taunt") == 0)
+        slot = 11;
+    else if (V_stricmp(string, "Taunt2") == 0)
+        slot = 12;
+    else if (V_stricmp(string, "Taunt3") == 0)
+        slot = 13;
+    else if (V_stricmp(string, "Taunt4") == 0)
+        slot = 14;
+    else if (V_stricmp(string, "Taunt5") == 0)
+        slot = 15;
+    else if (V_stricmp(string, "Taunt6") == 0)
+        slot = 16;
+    else if (V_stricmp(string, "Taunt7") == 0)
+        slot = 17;
+    else if (V_stricmp(string, "Taunt8") == 0)
+        slot = 18;
     else
         slot = strtol(string, nullptr, 10);
     return slot;
@@ -283,5 +299,6 @@ static std::unique_ptr<ItemListEntry> Parse_ItemListEntry(const char* type, cons
     return ptr;
 }
 
+CTFWeaponBase *CreateCustomWeaponModelPlaceholder(CTFPlayer *owner, CTFWeaponBase *weapon, int modelIndex);
 void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity *copyTo);
 #endif

@@ -6085,6 +6085,8 @@
 				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
 
 				"CEconItemView::GetAnimationSlot" "_ZNK13CEconItemView16GetAnimationSlotEv"
+				"CEconItemView::GetSkin" "_ZNK13CEconItemView7GetSkinEib"
+				"CEconItemView::GetPlayerDisplayModel" "_ZNK13CEconItemView21GetPlayerDisplayModelEii"
 
 				"CEconItemDefinition::GetActivityOverride" "_ZNK19CEconItemDefinition19GetActivityOverrideEi8Activity"
 

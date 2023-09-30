@@ -674,7 +674,7 @@ namespace Mod::Pop::Wave_Extensions
 				servertools->SetKeyValue(textent, "x", "-1");
 				servertools->SetKeyValue(textent, "y", "0.25");
 				servertools->SetKeyValue(textent, "spawnflags", "0");
-				textent->Spawn();
+				DispatchSpawn(textent);
 				textent->Activate();
 			}
 			//textent->AcceptInput("Display",player,player,variant,-1);
@@ -869,7 +869,7 @@ namespace Mod::Pop::Wave_Extensions
 		sentry->SetAbsOrigin(origin);
 		sentry->SetAbsAngles(angles);
 		
-		sentry->Spawn();
+		DispatchSpawn(sentry);
 		
 		sentry->ChangeTeam(teamnum);
 		sentry->m_nDefaultUpgradeLevel = level - 1;

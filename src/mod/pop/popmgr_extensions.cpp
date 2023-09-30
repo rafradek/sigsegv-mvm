@@ -238,7 +238,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			/* now call Spawn() on each node */
 			for (CPathTrack *node : this->m_PathNodes) {
 				DevMsg("ExtraTankPath: Spawn \"%s\"\n", STRING(node->GetEntityName()));
-				node->Spawn();
+				DispatchSpawn(node);
 			}
 			
 			/* now call Activate() on each node */
@@ -525,7 +525,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_BurnTimeFasterBurn              ("sig_attr_burn_time_faster_burn"),
 			m_UpgradesUnintendedClassWeapons  ("sig_mvm_extended_upgrades_add_for_uninteded_class"),
 			m_AnimationsUnintendedClassWeapons("sig_etc_unintended_class_weapon_viewmodel"),
-			m_bAllowCivilian                  ("sig_etc_allow_civilian_class"),
+			m_AllowCivilian                   ("sig_etc_allow_civilian_class"),
 			m_bNPCLagCompensation             ("sig_ai_lag_compensation_npc"),
 			
 
@@ -638,7 +638,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_BurnTimeFasterBurn.Reset(pre);
 			this->m_UpgradesUnintendedClassWeapons.Reset(pre);
 			this->m_AnimationsUnintendedClassWeapons.Reset(pre);
-			this->m_bAllowCivilian.Reset(pre);
+			this->m_AllowCivilian.Reset(pre);
 			this->m_bNPCLagCompensation.Reset(pre);
 			
 			this->m_CustomUpgradesFile.Reset(pre);
@@ -952,7 +952,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<bool> m_BurnTimeFasterBurn;
 		CValueOverridePopfile_ConVar<bool> m_UpgradesUnintendedClassWeapons;
 		CValueOverridePopfile_ConVar<bool> m_AnimationsUnintendedClassWeapons;
-		CValueOverridePopfile_ConVar<bool> m_bAllowCivilian;
+		CValueOverridePopfile_ConVar<int>  m_AllowCivilian;
 		CValueOverridePopfile_ConVar<bool> m_bNPCLagCompensation;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
@@ -1476,7 +1476,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				//CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
 				//DevMsg("Use human anims %d\n", wearable != nullptr);
 				if (wearable != nullptr) {
-					wearable->Spawn();
+					DispatchSpawn(wearable);
 					wearable->m_bValidatedAttachedEntity = true;
 					wearable->GiveTo(player);
 					player->m_nRenderFX = 6;
@@ -5425,7 +5425,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		servertools->SetKeyValue(spawnpoint, "startdisabled", start_disabled ? "1" : "0");
 		
-		spawnpoint->Spawn();
+		DispatchSpawn(spawnpoint);
 		spawnpoint->Activate();
 		
 		state.m_ExtraSpawnPoints.emplace_back(spawnpoint);
@@ -6651,7 +6651,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "UseOriginalAnimsForUnintendedClassWeapons")) {
 				state.m_AnimationsUnintendedClassWeapons.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowCivilianClass")) {
-				state.m_bAllowCivilian.Set(subkey->GetBool());
+				state.m_AllowCivilian.Set(subkey->GetInt());
 			} else if (FStrEq(name, "NPCLagCompensation")) {
 				state.m_bNPCLagCompensation.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {

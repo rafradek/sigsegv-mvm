@@ -262,6 +262,15 @@ inline CBaseEntity* GetWorldEntity() {
 	return g_WorldEntity;
 }
 
+class CParticleSystem : public CBaseEntity
+{
+public:
+	DECL_DATAMAP (bool, m_bStartActive);
+	DECL_DATAMAP (string_t, m_iszEffectName);
+	DECL_SENDPROP(CHandle<CBaseEntity>[63], m_hControlPointEnts);
+};
+
+
 // 20151007a
 
 // CTFPlayer::Event_Killed

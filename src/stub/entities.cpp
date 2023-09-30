@@ -111,6 +111,10 @@ IMPL_DATAMAP (float, CPropVehicleDriveable, m_bLocked);
 
 IMPL_SENDPROP(float, CSpriteTrail, m_flLifeTime, CSpriteTrail);
 
+IMPL_DATAMAP (bool, CParticleSystem, m_bStartActive);
+IMPL_DATAMAP (string_t, CParticleSystem, m_iszEffectName);
+IMPL_SENDPROP(CHandle<CBaseEntity>[63], CParticleSystem, m_hControlPointEnts, CParticleSystem);
+
 MemberVFuncThunk<CBaseServerVehicle *, void, bool, bool> CBaseServerVehicle::vt_HandleEntryExitFinish(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandleEntryExitFinish");
 MemberVFuncThunk<CBaseServerVehicle *, void, CBasePlayer *, CUserCmd *,  void *, void *> CBaseServerVehicle::vt_SetupMove(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::SetupMove");
 MemberVFuncThunk<CBaseServerVehicle *, bool, CBaseCombatCharacter *> CBaseServerVehicle::vt_HandlePassengerExit(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::HandlePassengerExit");

@@ -72,7 +72,7 @@ namespace Mod::Common::Weapon_Shoot
         Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
         player->SetAbsOrigin(vecOrigin - eyeOffset);
         // Fire the weapon
-        weapon->SetTeamNumber(shooterTeam);
+        weapon->ChangeTeam(shooterTeam);
         if (weapon->GetOwner() != player) {
             weapon->SetOwnerEntity(player);
             weapon->SetOwner(player);
@@ -121,7 +121,7 @@ namespace Mod::Common::Weapon_Shoot
             weapon->SetOwner(nullptr);
             if (projectile != nullptr) {
                 projectile->SetOwnerEntity(shooter);
-                projectile->SetTeamNumber(shooterTeam);
+                projectile->ChangeTeam(shooterTeam);
                 if (rtti_cast<CBaseGrenade *>(projectile) != nullptr) {
                     rtti_cast<CBaseGrenade *>(projectile)->SetThrower(shooter);
                 }

@@ -233,6 +233,8 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			float attackEnemy = 0;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemy, medigun_attack_enemy );
+			float attackEnemyHealMult = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemyHealMult, medigun_attack_enemy_heal_mult );
 			float mult = RemapValClamped(gpGlobals->curtime - attackModule->attackStartTime, 0, 5, 1, 3);
 			int healthPre = healobject->GetHealth();
 			CTakeDamageInfo info(owner, owner, medigun, vec3_origin, vec3_origin, medigun->GetHealRate() * attackEnemy * mult * (gpGlobals->curtime - attackModule->lastAttackTime), owner->m_Shared->IsCritBoosted() ? (DMG_GENERIC | DMG_CRITICAL) : DMG_GENERIC);
@@ -240,7 +242,7 @@ namespace Mod::Attr::Custom_Attributes
 			if (healthPre > healobject->GetHealth()) {
 				int maxBuff = owner->GetMaxHealthForBuffing() * attackModule->maxOverheal;
 				if (maxBuff - owner->GetHealth() > 0) {
-					owner->TakeHealth(Min(maxBuff - owner->GetHealth(), healthPre - healobject->GetHealth()), DMG_IGNORE_MAXHEALTH);
+					owner->TakeHealth(Min(maxBuff - owner->GetHealth(), (int)((healthPre - healobject->GetHealth()) * attackEnemyHealMult)), DMG_IGNORE_MAXHEALTH);
 				}
 			}
 
@@ -771,7 +773,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 			GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
-			FireInputAttribute(input, nullptr, Variant(proj), proj, player, weapon, -1.0f);
+			FireInputAttribute(input, nullptr, Variant((CBaseEntity *)proj), proj, player, weapon, -1.0f);
 		}
 
 		int shoot_projectiles = 0;
@@ -1117,11 +1119,143 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	class MedigunCustomBeamModule : public EntityModule, public AutoList<MedigunCustomBeamModule>
+	{
+	public:
+		MedigunCustomBeamModule(CBaseEntity *entity) : EntityModule(entity), medigun(static_cast<CWeaponMedigun *>(entity)) { 
+			RecalcEffects();
+		}
+		
+		~MedigunCustomBeamModule() {
+			if (particles != nullptr) {
+				particles->Remove();
+			}
+			if (particlesAttach != nullptr) {
+				particlesAttach->Remove();
+			}
+			if (chargeEffect != nullptr) {
+				chargeEffect->Remove();
+			}
+		} 
+
+		void RecalcEffects() {
+			
+			GET_STRING_ATTRIBUTE(medigun, medigun_particle, medigunParticle);
+			GET_STRING_ATTRIBUTE(medigun, medigun_particle_enemy, medigunParticleEnemy);
+			GET_STRING_ATTRIBUTE(medigun, medigun_particle_release, medigunParticleRelease);
+			GET_STRING_ATTRIBUTE(medigun, medigun_particle_spark, medigunParticleSpark);
+
+			if (medigunParticle != nullptr && medigunParticle[0] == '~') {
+				effectImmediateDestroy = true;
+				medigunParticle++; 
+			}
+			if (medigunParticle != nullptr && medigunParticleEnemy[0] == '~') {
+				effectImmediateDestroy = true;
+				medigunParticleEnemy++; 
+			}
+			if (medigunParticle != nullptr && medigunParticleRelease[0] == '~') {
+				effectImmediateDestroy = true;
+				medigunParticleRelease++; 
+			}
+
+			effectBlu = PStrT<"medicgun_beam_blue">();
+			effectRed = PStrT<"medicgun_beam_red">();
+			effectTargetBlu = PStrT<"medicgun_beam_blue_targeted">();
+			effectTargetRed = PStrT<"medicgun_beam_red_targeted">();
+			effectReleaseBlu = PStrT<"medicgun_beam_blue_invun">();
+			effectReleaseRed = PStrT<"medicgun_beam_red_invun">();
+			effectObjects = PStrT<"medicgun_beam_machinery">();
+			effectEnemyBlu = PStrT<"medicgun_beam_blue_targeted">();
+			effectEnemyRed = PStrT<"medicgun_beam_red_targeted">();
+			effectSparkBlu = PStrT<"medicgun_invulnstatus_fullcharge_blue">();
+			effectSparkRed = PStrT<"medicgun_invulnstatus_fullcharge_red">();
+			if (medigunParticleEnemy == nullptr && medigunParticle != nullptr) {
+				medigunParticleEnemy = medigunParticle;
+			}
+			if (medigunParticleRelease == nullptr && medigunParticle != nullptr) {
+				medigunParticleRelease = medigunParticle;
+			}
+			
+			if (medigunParticle != nullptr) {
+				effectObjects = AllocPooledString(CFmtStr("%s_machinery", medigunParticle));
+				if (GetParticleSystemIndex(STRING(effectObjects)) == 0) {
+					effectObjects = AllocPooledString(medigunParticle);
+				}
+				effectRed = AllocPooledString(CFmtStr("%s_red", medigunParticle));
+				if (GetParticleSystemIndex(STRING(effectRed)) == 0) {
+					effectRed = AllocPooledString(medigunParticle);
+				}
+				effectTargetRed = AllocPooledString(CFmtStr("%s_red_targeted", medigunParticle));
+				if (GetParticleSystemIndex(STRING(effectTargetRed)) == 0) {
+					effectTargetRed = effectRed;
+				}
+				effectBlu = AllocPooledString(CFmtStr("%s_blue", medigunParticle));
+				if (GetParticleSystemIndex(STRING(effectBlu)) == 0) {
+					effectBlu = AllocPooledString(medigunParticle);
+				}
+				effectTargetBlu = AllocPooledString(CFmtStr("%s_blue_targeted", medigunParticle));
+				if (GetParticleSystemIndex(STRING(effectTargetBlu)) == 0) {
+					effectTargetBlu = effectRed;
+				}
+			}
+			if (medigunParticleRelease != nullptr) {
+				effectReleaseRed = AllocPooledString(CFmtStr("%s_red_invun", medigunParticleRelease));
+				if (GetParticleSystemIndex(STRING(effectReleaseRed)) == 0) {
+					effectReleaseRed = AllocPooledString(medigunParticleRelease);
+				}
+				effectReleaseBlu = AllocPooledString(CFmtStr("%s_blue_invun", medigunParticleRelease));
+				if (GetParticleSystemIndex(STRING(effectReleaseBlu)) == 0) {
+					effectReleaseRed = AllocPooledString(medigunParticleRelease);
+				}
+			}
+			if (medigunParticleEnemy != nullptr) {
+				effectEnemyRed = AllocPooledString(CFmtStr("%s_red", medigunParticleEnemy));
+				if (GetParticleSystemIndex(STRING(effectEnemyRed)) == 0) {
+					effectEnemyRed = AllocPooledString(medigunParticleEnemy);
+				}
+				effectEnemyBlu = AllocPooledString(CFmtStr("%s_blue", medigunParticleEnemy));
+				if (GetParticleSystemIndex(STRING(effectEnemyBlu)) == 0) {
+					effectEnemyBlu = AllocPooledString(medigunParticleEnemy);
+				}
+			}
+			if (medigunParticleSpark != nullptr) {
+				effectSparkRed = AllocPooledString(CFmtStr("%s_red", medigunParticleSpark));
+				if (GetParticleSystemIndex(STRING(effectSparkRed)) == 0) {
+					effectSparkRed = AllocPooledString(medigunParticleSpark);
+				}
+				effectSparkBlu = AllocPooledString(CFmtStr("%s_blue", medigunParticleSpark));
+				if (GetParticleSystemIndex(STRING(effectSparkBlu)) == 0) {
+					effectSparkBlu = AllocPooledString(medigunParticleSpark);
+				}
+			}
+		}
+
+		CWeaponMedigun *medigun;
+		string_t lastEffect = NULL_STRING;
+		string_t effectBlu;
+		string_t effectRed;
+		string_t effectTargetBlu;
+		string_t effectTargetRed;
+		string_t effectReleaseBlu;
+		string_t effectReleaseRed;
+		string_t effectObjects;
+		string_t effectEnemyBlu;
+		string_t effectEnemyRed;
+		string_t effectSparkBlu;
+		string_t effectSparkRed;
+		bool effectImmediateDestroy = false;
+
+		CHandle<CParticleSystem> particles;
+		CHandle<CParticleSystem> particlesAttach;
+		CHandle<CParticleSystem> chargeEffect;
+		CHandle<CBaseEntity> prevTarget;
+	};
+
 	struct CustomModelEntry
 	{
 		CHandle<CTFWeaponBase> weapon;
-		CHandle<CTFWearable> wearable;
-		CHandle<CTFWearable> wearable_vm;
+		CHandle<CEconEntity> wearable;
+		CHandle<CBaseEntity> wearable_vm;
 		int model_index;
 		bool temporaryVisible = false;
 		bool createVMWearable = true;
@@ -1206,10 +1340,10 @@ namespace Mod::Attr::Custom_Attributes
 
 	void CreateWeaponWearables(CustomModelEntry &entry)
 	{
-		if (entry.wearable_vm == nullptr && entry.createVMWearable) {
+		if ((entry.wearable_vm == nullptr || entry.wearable_vm->IsMarkedForDeletion()) && entry.createVMWearable) {
 			auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
 			CopyVisualAttributes(entry.weapon->GetTFPlayerOwner(), entry.weapon, wearable_vm);
-			wearable_vm->Spawn();
+			DispatchSpawn(wearable_vm);
 			wearable_vm->GiveTo(entry.weapon->GetTFPlayerOwner());
 			wearable_vm->SetModelIndex(entry.model_index);
 			wearable_vm->m_bValidatedAttachedEntity = true;
@@ -1217,16 +1351,11 @@ namespace Mod::Attr::Custom_Attributes
 			entry.wearable_vm = wearable_vm;
 		}
 
-		if (entry.wearable == nullptr) {
-			auto wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
-			CopyVisualAttributes(entry.weapon->GetTFPlayerOwner(), entry.weapon, wearable);
-			wearable->Spawn();
-			wearable->GiveTo(entry.weapon->GetTFPlayerOwner());
-			wearable->SetModelIndex(entry.model_index);
-			wearable->m_bValidatedAttachedEntity = true;
+		if (entry.wearable == nullptr || entry.wearable->IsMarkedForDeletion()) {
+			auto wearable = CreateCustomWeaponModelPlaceholder(entry.weapon->GetTFPlayerOwner(), entry.weapon, entry.model_index);
 			ApplyAttachmentAttributesToEntity(entry.weapon->GetTFPlayerOwner(), wearable, entry.weapon);
-
 			entry.wearable = wearable;
+			entry.weapon->SetCustomVariable("custommodelwearable", Variant((CBaseEntity *) wearable));
 		}
 	}
 
@@ -1278,8 +1407,12 @@ namespace Mod::Attr::Custom_Attributes
 					entity->SetRenderColorA(0);
 					auto mod = entity->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
 					mod->props["m_bBeingRepurposedForTaunt"] = {Variant(true), Variant(true)};
-					model_entries.push_back({weapon, nullptr, nullptr, model_index, entity->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0});
-					CreateWeaponWearables(model_entries.back());
+					model_entries.push_back({weapon, nullptr, nullptr, model_index, false, entity->GetItem()->GetItemDefinition()->GetKeyValues()->GetInt("attach_to_hands", 0) != 0});
+					if (rtti_cast<CWeaponMedigun *>(entity) != nullptr) {
+						entity->GetOrCreateEntityModule<MedigunCustomBeamModule>("mediguncustombeam");
+					}
+					entry = &model_entries.back();
+					CreateWeaponWearables(*entry);
 				}
 			}
 			else {
@@ -2933,7 +3066,7 @@ namespace Mod::Attr::Custom_Attributes
 			int deflectKeepTeam = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER ( weapon, deflectKeepTeam, reflect_keep_team );
 			if (deflectKeepTeam != 0) {
-				pTarget->SetTeamNumber(team);
+				pTarget->ChangeTeam(team);
 				pTarget->SetOwnerEntity(projOwner);
 			}
 
@@ -3518,13 +3651,26 @@ namespace Mod::Attr::Custom_Attributes
 	int aoe_in_sphere_hit_count = 0;
 
 
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond2, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		if (pProvider != player && (nCond == TF_COND_URINE || nCond == TF_COND_MAD_MILK || nCond == TF_COND_MARKEDFORDEATH || nCond == TF_COND_MARKEDFORDEATH_SILENT)) {
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flDuration, mult_debuff_duration);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond2)(nCond, flDuration, pProvider);
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCondIn);
 		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 
-		if (pProvider != player && (nCond == TF_COND_URINE || nCond == TF_COND_MAD_MILK || nCond == TF_COND_MARKEDFORDEATH || nCond == TF_COND_MARKEDFORDEATH_SILENT)) {
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flDuration, mult_debuff_duration);
+		if (pProvider != player && pProvider != nullptr && pProvider->IsPlayer()) {
+			int immune = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, immune, effect_immunity);
+			if (immune != 0) {
+				return;
+			}
 		}
 
 		if (rc_CTFPlayerShared_AddCond)
@@ -3966,6 +4112,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		int condOverride[6] = {-1, -1, -1, -1, -1, -1};
 		EHANDLE condOverrideProvider[6];
+		const char *condOverrideAttributes[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	};
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetChargeEffect, int iCharge, bool bState, bool bInstant, MedigunEffects_t& effects, float flWearOffTime, CTFPlayer *pProvider)
@@ -3974,17 +4121,22 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider_item = pProvider != nullptr ? GetEconEntityAtLoadoutSlot(pProvider, LOADOUT_POSITION_SECONDARY) : nullptr;
 		int iCondOverride = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider, iCondOverride, effect_cond_override);
+		const char *effectAttributes = addcond_provider_item != nullptr ? ((CEconEntity *)addcond_provider_item)->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, addcond_provider_item, PStrT<"effect_add_attributes">()).ToCStr(): "";
 		
-		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_AddCond, iCondOverride != 0);
-		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_RemoveCond, iCondOverride != 0);
+		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_AddCond, iCondOverride != 0 || effectAttributes[0] != '\0');
+		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_RemoveCond, iCondOverride != 0 || effectAttributes[0] != '\0');
 		
 		ETFCond old_cond = effects.eCondition;
 		ETFCond old_wearing_cond = effects.eWearingOffCondition;
 		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		if (iCondOverride == 0 && effectAttributes[0] != '\0') {
+			iCondOverride = old_cond;
+		}
 		if (bState && iCondOverride == 0) {
 			auto mod = player->GetEntityModule<ChargeOverrideModule>("chargeoverride");
 			if (mod != nullptr && iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride)) {
 				mod->condOverride[iCharge] = -1;
+				mod->condOverrideAttributes[iCharge] = nullptr;
 			}
 		}
 		int medigunKeepChargedEffect = 0;
@@ -3995,6 +4147,8 @@ namespace Mod::Attr::Custom_Attributes
 			if (iCharge >= 0 && iCharge < (int) ARRAY_SIZE(mod->condOverride) && medigunKeepChargedEffect == 0) {
 				mod->condOverride[iCharge] = bState ? iCondOverride : -1;
 				mod->condOverrideProvider[iCharge] = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
+				if (effectAttributes[0] != '\0')
+					mod->condOverrideAttributes[iCharge] = effectAttributes;
 			}
 			effects.eCondition = (ETFCond) (iCondOverride & 255);
 			effects.eWearingOffCondition = (ETFCond) TF_COND_COUNT;
@@ -4016,6 +4170,27 @@ namespace Mod::Attr::Custom_Attributes
 
 	GlobalThunk<MedigunEffects_t[]> g_MedigunEffects("g_MedigunEffects");
 	
+
+	void RemoveMedigunAttributes(CTFPlayer *target, const char *attribs)
+	{
+		std::string str(attribs);
+		boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+		auto it = tokens.begin();
+		while (it != tokens.end()) {
+			auto attribute = *it;
+			if (++it == tokens.end())
+				break;
+
+			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(attribute.c_str());
+			if (attr_def != nullptr) {
+				target->GetAttributeList()->RemoveAttribute(attr_def);
+				target->TeamFortress_SetSpeed();
+			}
+			++it;
+		}
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_TestAndExpireChargeEffect, int type)
 	{
 		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
@@ -4032,6 +4207,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (mod != nullptr && mod->condOverride[type] != -1) {
 			auto weapon = rtti_cast<CWeaponMedigun *>(mod->condOverrideProvider[type].Get());
 			auto condOverride = mod->condOverride[type];
+			bool removeAttrs = false;
 			for (int i = 0; i < 4; i++) {
 				
 				int addcond = (condOverride >> (i * 8)) & 255;
@@ -4040,6 +4216,7 @@ namespace Mod::Attr::Custom_Attributes
 					if (player->m_Shared->InCond(addcond)) {
 						if (weapon == nullptr || (weapon->GetHealTarget() != player && weapon->GetOwner() != player) || weapon->GetTFPlayerOwner()->GetActiveTFWeapon() != weapon || !weapon->IsChargeReleased()) {
 							player->m_Shared->RemoveCond(addcond);
+							removeAttrs = true;
 						}
 					}
 					if (!player->m_Shared->InCond(addcond)) {
@@ -4047,6 +4224,8 @@ namespace Mod::Attr::Custom_Attributes
 					}
 				}
 			}
+			if (removeAttrs && mod->condOverrideAttributes[type] != nullptr)
+				RemoveMedigunAttributes(player, mod->condOverrideAttributes[type]);
 			effect.eCondition = old_cond;
 			effect.eWearingOffCondition = old_wearing_cond;
 		}
@@ -4822,6 +5001,15 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	class AltFireAttributesModule : public EntityModule
+	{
+	public:
+		AltFireAttributesModule(CBaseEntity *entity) : EntityModule(entity) {
+		}
+
+		bool active = false;
+	};
+
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
@@ -4854,6 +5042,12 @@ namespace Mod::Attr::Custom_Attributes
 		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
 		if (GetFastAttributeInt(weapon, 0, PASSIVE_RELOAD) != 0) {
 			weapon->m_bInReload = true;
+		}
+		
+		GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, altattribs);
+		if (altattribs != nullptr) {
+			RemoveOnActiveAttributes(weapon, altattribs);
+			weapon->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs")->active = false;
 		}
 		return result;
 	}
@@ -5219,26 +5413,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return ret;
 	}
-
-	void RemoveMedigunAttributes(CTFPlayer *target, const char *attribs)
-	{
-		std::string str(attribs);
-		boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
-
-		auto it = tokens.begin();
-		while (it != tokens.end()) {
-			auto attribute = *it;
-			if (++it == tokens.end())
-				break;
-
-			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(attribute.c_str());
-			if (attr_def != nullptr) {
-				target->GetAttributeList()->RemoveAttribute(attr_def);
-				target->TeamFortress_SetSpeed();
-			}
-			++it;
-		}
-	}
 	
 	class MedigunDrainModule : public EntityModule
 	{
@@ -5276,7 +5450,7 @@ namespace Mod::Attr::Custom_Attributes
 
     }
 
-	void AddMedigunAttributes(CTFPlayer *target, const char *attribs)
+	void AddMedigunAttributes(CAttributeList *target, const char *attribs)
 	{
 		std::string str(attribs);
 		boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
@@ -5289,8 +5463,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto &value = *it;
 			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(attribute.c_str());
 			if (attr_def != nullptr) {
-				target->GetAttributeList()->SetRuntimeAttributeValue(attr_def, strtof(value.c_str(), nullptr));
-				target->TeamFortress_SetSpeed();
+				target->SetRuntimeAttributeValue(attr_def, strtof(value.c_str(), nullptr));
 			}
 			++it;
 		}
@@ -5306,11 +5479,13 @@ namespace Mod::Attr::Custom_Attributes
 		if (target != nullptr) {
 			GET_STRING_ATTRIBUTE(medigun, medigun_passive_attributes, attribs);
 			if (attribs != nullptr) {
-				AddMedigunAttributes(target, attribs);
+				AddMedigunAttributes(target->GetAttributeList(), attribs);
+				target->TeamFortress_SetSpeed();
 			}
 			GET_STRING_ATTRIBUTE(medigun, medigun_passive_attributes_owner, attribsOwner);
 			if (attribsOwner != nullptr && owner != nullptr) {
-				AddMedigunAttributes(owner, attribsOwner);
+				AddMedigunAttributes(owner->GetAttributeList(), attribsOwner);
+				owner->TeamFortress_SetSpeed();
 			}
 		}
 		float attacking = 0;
@@ -5373,11 +5548,17 @@ namespace Mod::Attr::Custom_Attributes
 					pressedM2 = true;
 				}
 			}
+			// if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
+			// 	player->m_flNextAttack = gpGlobals->curtime - 0.1f;
+			// }
 		}
 
 		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
 		if (weapon != nullptr) {
 			OnWeaponUpdate(weapon);
+			// if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
+			// 	player->m_flNextAttack = gpGlobals->curtime + 0.1f;
+			// }
 		}
 		if (pressedM2) {
 			player->m_nButtons |= IN_ATTACK2;
@@ -6972,6 +7153,86 @@ namespace Mod::Attr::Custom_Attributes
  		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
 	}
 
+	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		int humanVoice = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, humanVoice, use_human_voice);
+		if (humanVoice != 0) {
+			return "";
+		}
+		int robotVoice = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, robotVoice, use_robot_voice);
+		if (robotVoice != 0) {
+			return "MVM_";
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_GetSceneSoundToken)();
+	}
+
+	GlobalThunkRW<CBasePlayer *> CBaseEntity_m_pPredictionPlayer("CBaseEntity::m_pPredictionPlayer");
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemPostFrame)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		auto player = weapon->GetTFPlayerOwner();
+		if (player != nullptr) {
+			auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+			if (mod != nullptr && player->m_nButtons & IN_ATTACK2 && !mod->active) {
+				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
+				if (attribs != nullptr) {
+					AddMedigunAttributes(&weapon->GetItem()->GetAttributeList(), attribs);
+				}
+				mod->active = true;
+			}
+			else if (mod != nullptr && !(player->m_nButtons & IN_ATTACK2) && mod->active) {
+				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
+				if (attribs != nullptr) {
+					RemoveOnActiveAttributes(weapon, attribs);
+				}
+				mod->active = false;
+			}
+		}
+		float duration = GetFastAttributeFloat(weapon, 0.0f, ALT_FIRE_ATTACK);
+		if (duration != 0.0f) {
+			auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+		}
+		if (player != nullptr && player->m_nButtons & IN_ATTACK2 && weapon->m_flNextPrimaryAttack <= gpGlobals->curtime && weapon->m_flNextSecondaryAttack <= gpGlobals->curtime) {
+			
+			float duration = GetFastAttributeFloat(weapon, 0.0f, ALT_FIRE_ATTACK);
+			if (duration != 0.0f) {
+				CBasePlayer *oldPredictPlayer = CBaseEntity_m_pPredictionPlayer;
+				
+				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
+				CBaseEntity_m_pPredictionPlayer.GetRef() = nullptr;
+				weapon->PrimaryAttack();
+				weapon->m_flNextSecondaryAttack = gpGlobals->curtime + (weapon->m_flNextPrimaryAttack - gpGlobals->curtime) * duration;
+				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldPredictPlayer;
+				CBaseEntity_m_pPredictionPlayer.GetRef() = oldPredictPlayer;
+			}
+		}
+		
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemPostFrame)();
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemBusyFrame)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		auto player = weapon->GetTFPlayerOwner();
+
+		bool restore = false;
+		if (player != nullptr && player->m_nButtons & IN_ATTACK2) {
+			if (GetFastAttributeFloat(weapon, 0.0f, ALT_FIRE_ATTACK) != 0.0f) {
+				restore = !(player->m_nButtons & IN_ATTACK);
+				player->m_nButtons |= IN_ATTACK;
+			}
+		}
+		
+		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
+
+		if (restore) {
+			player->m_nButtons &= ~(IN_ATTACK);
+		}
+	}
+
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -7201,7 +7462,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
-			if (entity->GetItem() != nullptr && entity->GetItem() != view && entity->GetItem()->GetStaticData()->m_iItemDefIndex != 0 && entity->GetItem()->m_iEntityLevel != 414918 /*Entity level for custom model wearables*/) {
+			if (entity->GetItem() != nullptr && entity->GetItem() != view && entity->GetItem()->GetStaticData()->m_iItemDefIndex != 0) {
 				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock || entity->GetItem()->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
 			}
 		});
@@ -7671,6 +7932,32 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnMedigunBeamChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CWeaponMedigun *>(ent);
+			if (econentity != nullptr) {
+				econentity->GetOrCreateEntityModule<MedigunCustomBeamModule>("mediguncustombeam")->RecalcEffects();
+			}
+		}
+	}
+
+	void OnAltFireAttributesChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto manager = list->GetManager();
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CEconEntity *>(ent);
+			if (econentity != nullptr) {
+				Msg("Created\n");
+				econentity->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs");
+			}
+		}
+	}
+
+
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
 		if (obj != nullptr) {
@@ -7807,6 +8094,7 @@ namespace Mod::Attr::Custom_Attributes
 			
 
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond", HIGHEST);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond2, "CTFPlayerShared::AddCond", HIGH);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_RemoveCond, "CTFPlayerShared::RemoveCond", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_PulseRageBuff, "CTFPlayerShared::PulseRageBuff");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoTauntAttack, "CTFPlayer::DoTauntAttack");
@@ -7971,6 +8259,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_CycleResistType, "CWeaponMedigun::CycleResistType");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_FindAndHealTargets, "CWeaponMedigun::FindAndHealTargets");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemPostFrame, "CTFWeaponBase::ItemPostFrame");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemBusyFrame, "CTFWeaponBase::ItemBusyFrame");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -8079,6 +8370,11 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("paintkit_proto_def_index", OnPaintkitChange);
 				RegisterCallback("no_clip", OnNoClipChange);
 				RegisterCallback("add_attributes_when_active", OnAddAttributesWhenActive);
+				RegisterCallback("medigun_particle", OnMedigunBeamChange);
+				RegisterCallback("medigun_particle_enemy", OnMedigunBeamChange);
+				RegisterCallback("medigun_particle_release", OnMedigunBeamChange);
+				RegisterCallback("medigun_particle_spark", OnMedigunBeamChange);
+				RegisterCallback("alt_fire_attributes", OnAltFireAttributesChange);
 				
 			}
 		}
@@ -8192,7 +8488,7 @@ namespace Mod::Attr::Custom_Attributes
 
 					CreateWeaponWearables(entry);
 				}
-				if (entry.weapon->IsEffectActive(EF_NODRAW) || entry.temporaryVisible) {
+				if (entry.weapon->IsEffectActive(EF_NODRAW) || entry.temporaryVisible || entry.weapon->m_iState != WEAPON_IS_ACTIVE) {
 					/*if (entry.wearable != nullptr)
 						entry.wearable->Remove();
 					if (entry.wearable_vm != nullptr)
@@ -8234,6 +8530,110 @@ namespace Mod::Attr::Custom_Attributes
 				entry.sticky->SetAbsOrigin(entry.sticked->GetAbsOrigin() + entry.offset);
 				i++;
 			}
+
+			for (auto entry : AutoList<MedigunCustomBeamModule>::List()) {
+				auto medigun = entry->medigun;
+				auto owner = medigun->GetTFPlayerOwner();
+				auto healTarget = medigun->GetHealTarget();
+				if (owner == nullptr) {
+					continue;
+				}
+
+				string_t preferredParticle = NULL_STRING;
+				if (healTarget != nullptr) {
+
+					bool enemy = false;
+					if (owner->GetTeamNumber() != healTarget->GetTeamNumber()) {
+						float attackEnemy = 0;
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( medigun, attackEnemy, medigun_attack_enemy );
+						enemy = attackEnemy != 0;
+					}
+					if (healTarget->IsBaseObject()) {
+						preferredParticle = entry->effectObjects;
+					}
+					else if (enemy) {
+						preferredParticle = owner->GetTeamNumber() == TF_TEAM_BLUE ? entry->effectEnemyBlu : entry->effectEnemyRed;
+					}
+					else if (medigun->IsChargeReleased()) {
+						preferredParticle = owner->GetTeamNumber() == TF_TEAM_BLUE ? entry->effectReleaseBlu : entry->effectReleaseRed;
+					}
+					else if (owner->IsRealPlayer() && healTarget->IsPlayer()) {
+						preferredParticle = owner->GetTeamNumber() == TF_TEAM_BLUE ? entry->effectTargetBlu : entry->effectTargetRed;
+					}
+					else {
+						preferredParticle = owner->GetTeamNumber() == TF_TEAM_BLUE ? entry->effectBlu : entry->effectRed;
+					}
+				}
+
+				if (entry->particles != nullptr && (healTarget != entry->prevTarget || healTarget == nullptr || preferredParticle != entry->lastEffect)) {
+					if (entry->effectImmediateDestroy) {
+						entry->particles->SetParent(nullptr, -1);
+						entry->particles->SetAbsOrigin(Vector(16384,16384,16384));
+						THINK_FUNC_SET(entry->particles, ProjectileLifetime, gpGlobals->curtime + 0.1f);
+					}
+					else {
+						entry->particles->Remove();
+					}	
+					entry->particles = nullptr;
+
+					if (entry->particlesAttach != nullptr) {
+						if (entry->effectImmediateDestroy) {
+							entry->particlesAttach->SetParent(nullptr, -1);
+							entry->particlesAttach->SetAbsOrigin(Vector(16384,16384,16384));
+							THINK_FUNC_SET(entry->particlesAttach, ProjectileLifetime, gpGlobals->curtime + 0.1f);
+							entry->particlesAttach = nullptr;
+						}
+						else {
+							entry->particlesAttach->Remove();
+						}	
+					}
+				}
+				if (healTarget != nullptr && entry->particles == nullptr) {
+					
+					auto particlesAttach = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
+					particlesAttach->m_iszEffectName = preferredParticle;
+					particlesAttach->SetAbsOrigin(healTarget->WorldSpaceCenter() + Vector(0, 0, 4));
+					particlesAttach->SetParent(healTarget, -1);
+					particlesAttach->SetLocalAngles(vec3_angle);
+					entry->particlesAttach = particlesAttach;
+					DispatchSpawn(particlesAttach);
+					particlesAttach->Activate();
+
+					auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
+					particles->m_iszEffectName = preferredParticle;
+					particles->m_hControlPointEnts.Get()[0] = particlesAttach;
+					particles->m_bStartActive = true;
+					DispatchSpawn(particles);
+					particles->Activate();
+					entry->particles = particles;
+					particles->SetParent(owner, -1);
+					particles->SetLocalOrigin(Vector(0,-8.0f,owner->CollisionProp()->OBBMaxs().z * 0.65f));
+					particles->SetLocalAngles(vec3_angle);
+					entry->prevTarget = healTarget;
+					StopParticleEffects(entry->medigun);
+					entry->lastEffect = preferredParticle;
+				}
+				bool displayCharge = !owner->m_Shared->InCond(TF_COND_TAUNTING) && owner->GetActiveWeapon() == entry->medigun && (entry->medigun->IsChargeReleased() || entry->medigun->GetCharge() >= 1.0f);
+				if (entry->chargeEffect != nullptr && !displayCharge) {
+					entry->chargeEffect->Remove();
+					entry->chargeEffect = nullptr;
+				}
+				if (entry->chargeEffect == nullptr && displayCharge) {
+					auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
+					particles->m_iszEffectName = owner->GetTeamNumber() == TF_TEAM_BLUE ? entry->effectSparkBlu : entry->effectSparkRed;
+					particles->m_bStartActive = true;
+					DispatchSpawn(particles);
+					particles->Activate();
+					entry->chargeEffect = particles;
+					particles->SetParent(entry->medigun, -1);
+					particles->SetLocalOrigin(Vector(27.0f,-8.0f,owner->CollisionProp()->OBBMaxs().z * 0.22f));
+					particles->SetLocalAngles(vec3_angle);
+				}
+				if (entry->particles != nullptr || entry->chargeEffect != nullptr) {
+					StopParticleEffects(entry->medigun);
+				}
+				
+			}
 			// The function does not make use of this pointer, so its safe to convert to CAttributeManager
 			static int last_cache_version = 0;
             int cache_version = reinterpret_cast<CAttributeManager *>(this)->GetGlobalCacheVersion();
@@ -8252,7 +8652,7 @@ namespace Mod::Attr::Custom_Attributes
             }
 		}
 		
-		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot"};}
+		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot", "Item:Item_Common"};}
 	};
 	CMod s_Mod;
 	

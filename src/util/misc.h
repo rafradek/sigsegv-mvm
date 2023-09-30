@@ -302,9 +302,7 @@ inline variant_t Variant() {
 }
 
 template<class T>
-inline variant_t Variant(T value) {
-	return variant_t();
-}
+inline variant_t Variant(T value);
 
 template<>
 inline variant_t Variant<bool>(bool value)

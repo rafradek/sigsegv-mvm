@@ -39,6 +39,7 @@ using CExtract_CBasePlayer_SetVCollisionState = IExtractStub;
 
 IMPL_SENDPROP(CHandle<CBaseCombatWeapon>,              CBaseCombatCharacter, m_hActiveWeapon, CBaseCombatCharacter);
 IMPL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], CBaseCombatCharacter, m_hMyWeapons,    CBaseCombatCharacter);
+IMPL_SENDPROP(float,                                   CBaseCombatCharacter, m_flNextAttack,  CBaseCombatCharacter);
 
 #ifdef SE_TF2
 MemberFuncThunk<CBaseCombatCharacter *, void>                                                                     CBaseCombatCharacter::ft_AddGlowEffect     ("CBaseCombatCharacter::AddGlowEffect");
@@ -99,6 +100,7 @@ IMPL_DATAMAP(bool,         CBasePlayer, m_bAllowInstantSpawn);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hViewEntity);
 IMPL_DATAMAP(CHandle<CBaseEntity>, CBasePlayer, m_hVehicle);
 IMPL_DATAMAP(int,          CBasePlayer, m_nButtons);
+IMPL_DATAMAP(int,          CBasePlayer, m_afButtonLast);
 IMPL_DATAMAP(float,        CBasePlayer, m_flStepSoundTime);
 IMPL_DATAMAP(float,        CBasePlayer, m_fLerpTime);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bLagCompensation);

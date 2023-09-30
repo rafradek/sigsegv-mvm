@@ -134,6 +134,8 @@
 				"s_SteamGameServerAPIContext" "_ZL27s_SteamGameServerAPIContext"
 				"s_acttableMelee" "s_acttableMelee"
 				"g_TFClassViewVectors" "g_TFClassViewVectors"
+
+				"CBaseEntity::m_pPredictionPlayer" "_ZN11CBaseEntity19m_pPredictionPlayerE"
 			}
 			
 			"addrs_group"

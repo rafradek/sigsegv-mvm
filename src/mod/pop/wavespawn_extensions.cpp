@@ -99,10 +99,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				} else if (FStrEq(name, "SpawnAtEntity")) {
 					m_SpawnAtEntity = subkey->GetString();
 				} else if (FStrEq(name, "Health")) {
-					m_EntityKeys.emplace("maxhealth", Variant(subkey->GetString()));
-					m_EntityKeys.emplace("health", Variant(subkey->GetString()));
+					m_EntityKeys.emplace("maxhealth", Variant(AllocPooledString(subkey->GetString())));
+					m_EntityKeys.emplace("health", Variant(AllocPooledString(subkey->GetString())));
 				} else {
-					m_EntityKeys.emplace(name, Variant(subkey->GetString()));
+					m_EntityKeys.emplace(name, Variant(AllocPooledString(subkey->GetString())));
 				}
 			}
 			return true;
@@ -294,7 +294,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					if (count > 0) {
 						if (spawner_sentinel == nullptr) {
 							spawner_sentinel = CreateEntityByName("logic_relay");
-							spawner_sentinel->Spawn();
+							DispatchSpawn(spawner_sentinel);
 							spawner_sentinel->Activate();
 						}
 						ents->AddToTail(spawner_sentinel);

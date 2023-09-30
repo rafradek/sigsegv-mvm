@@ -130,7 +130,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			dispenser->m_nDefaultUpgradeLevel = 2;
 			dispenser->SetAbsOrigin(this->m_hHint->GetAbsOrigin());
 			dispenser->SetAbsAngles(this->m_hHint->GetAbsAngles());
-			dispenser->Spawn();
+			DispatchSpawn(dispenser);
 			
 			dispenser->StartPlacement(actor);
 			

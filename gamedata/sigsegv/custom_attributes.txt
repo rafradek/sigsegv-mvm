@@ -3269,4 +3269,119 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4648"
+    {
+        "name"	"medigun attack enemy heal mult"
+        "attribute_class"	"medigun_attack_enemy_heal_mult"
+        "description_string"	"%p% of damage dealt is returned as health"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4649"
+    {
+        "name"	"medigun attack enemy heal mult"
+        "attribute_class"	"medigun_attack_enemy_heal_mult"
+        "description_string"	"%p% of damage dealt is returned as health"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4650"
+    {
+        "name"	"medigun particle"
+        "attribute_class"	"medigun_particle"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4651"
+    {
+        "name"	"medigun particle enemy"
+        "attribute_class"	"medigun_particle_enemy"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4652"
+    {
+        "name"	"medigun particle release"
+        "attribute_class"	"medigun_particle_release"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4653"
+    {
+        "name"	"medigun particle spark"
+        "attribute_class"	"medigun_particle_spark"
+		"attribute_type"	"string"
+        "description_string"	"(+-)%p% sentry rocket projectile speed"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4654"
+    {
+        "name"	"effect immunity"
+        "attribute_class"	"effect_immunity"
+        "description_string"	"Immune to effects applied by allies and enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4655"
+    {
+        "name"	"use human voice"
+        "attribute_class"	"use_human_voice"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4656"
+    {
+        "name"	"use robot voice"
+        "attribute_class"	"use_robot_voice"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4657"
+    {
+        "name"	"alt fire attack"
+        "attribute_class"	"alt_fire_attack"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4658"
+    {
+        "name"	"alt fire attributes"
+        "attribute_class"	"alt_fire_attributes"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

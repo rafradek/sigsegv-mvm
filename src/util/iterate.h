@@ -132,7 +132,7 @@ inline void ForEachTFPlayer(const FUNCTOR& func)
 
 #ifdef _INCLUDE_SIGSEGV_STUB_ENTITIES_H_
 template<typename FUNCTOR>
-inline void ForEachTFPlayerEconEntity(CTFPlayer *player, const FUNCTOR& func)
+inline void ForEachTFPlayerEconEntity(CTFPlayer *player, const FUNCTOR& func, bool ignoreHelpers = true)
 {
 	using T = CEconEntity;
 	
@@ -141,7 +141,7 @@ inline void ForEachTFPlayerEconEntity(CTFPlayer *player, const FUNCTOR& func)
 		if (wearable == nullptr) continue;
 
 		// Ignore helper custom model wearables
-		if (wearable->GetItem()->m_iEntityLevel == 414918) continue;
+		if (ignoreHelpers && wearable->GetItem()->m_iEntityLevel == 414918) continue;
 		
 		if (!CALL_FUNCTOR(T *)(func, wearable)) break;
 	}

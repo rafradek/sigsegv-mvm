@@ -186,6 +186,7 @@ IMPL_DATAMAP(CAttributeList, CEconItemView, m_AttributeList);
 IMPL_DATAMAP(CAttributeList, CEconItemView, m_NetworkedDynamicAttributesForDemos);
 IMPL_DATAMAP(bool,           CEconItemView, m_bOnlyIterateItemViewAttributes);
 IMPL_SENDPROP(uint32,        CEconItemView, m_iAccountID, CEconEntity);
+IMPL_SENDPROP(int,           CEconItemView, m_iTeamNumber, CEconEntity);
 
 MemberFuncThunk<      CEconItemView *, void>                              CEconItemView::ft_ctor         ("CEconItemView::CEconItemView [C1]");
 MemberFuncThunk<      CEconItemView *, void, int, int, int, unsigned int> CEconItemView::ft_Init         ("CEconItemView::Init");

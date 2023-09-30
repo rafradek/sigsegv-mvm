@@ -41,6 +41,7 @@ IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser2);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser3);
 IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
 IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
+IMPL_DATAMAP(void (CBaseEntity::*)(CBaseEntity *), CBaseEntity, m_pfnTouch);
 IMPL_RELATIVE(ExtraEntityData *,     CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
 IMPL_RELATIVE(IHasAttributes *,      CBaseEntity, m_pAttributes, m_iMaxHealth, -0x0c);
 IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);

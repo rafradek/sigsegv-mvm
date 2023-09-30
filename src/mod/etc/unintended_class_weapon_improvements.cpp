@@ -33,7 +33,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 		CHandle<CBaseEntity> wearable;
 		CHandle<CBaseEntity> wearableWeapon;
-		int oldModelIndex;
+		int oldModelIndex  = -1;
 		const char *properHandModel = nullptr;
 		int properHandModelIndex;
 		CHandle<CBaseEntity> playerModelWearable;
@@ -61,7 +61,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 	bool OnEquipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
 	{
-		
 		mod->owner = owner;
 		if (mod->wearable != nullptr) {
 			mod->wearable->Remove();
@@ -76,7 +75,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 		if (mod->overridePlayerAnimClass != -1) {
 			mod->playerModelWearable = nullptr;
-			auto wearable_player = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
+			 //static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));
 			
 			mod->properPlayerModel = GetPlayerClassData(mod->overridePlayerAnimClass)->m_szModelName;
 			
@@ -88,10 +87,11 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
 			mod->overridePlayerAnimClassApplied = true;
 			owner->m_nRenderFX = 6;
-			wearable_player->Spawn();
-			wearable_player->GiveTo(owner);
-			wearable_player->SetModelIndex(mod->oldPlayerModel);
-			wearable_player->m_bValidatedAttachedEntity = true;
+			auto wearable_player = CreateCustomWeaponModelPlaceholder(owner, weapon, mod->oldPlayerModel);
+			//DispatchSpawn(wearable_player);
+			//wearable_player->GiveTo(owner);
+			//wearable_player->SetModelIndex(mod->oldPlayerModel);
+			//wearable_player->m_bValidatedAttachedEntity = true;
 			mod->playerModelWearable = wearable_player;
 		}
 
@@ -101,7 +101,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		weapon->SetModel(mod->properHandModel);
 		weapon->m_iViewModelIndex = mod->properHandModelIndex;
 		auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
-		wearable_vm->Spawn();
+		DispatchSpawn(wearable_vm);
 		wearable_vm->GiveTo(owner);
 		wearable_vm->SetModelIndex(mod->oldModelIndex);
 		wearable_vm->m_bValidatedAttachedEntity = true;
@@ -112,7 +112,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
         if (customModel == nullptr || customModel[0] == '\0' ) {
             auto wearable_vm_weapon = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
 			CopyVisualAttributes(owner, weapon, wearable_vm_weapon);
-            wearable_vm_weapon->Spawn();
+            DispatchSpawn(wearable_vm_weapon);
             wearable_vm_weapon->GiveTo(owner);
             wearable_vm_weapon->SetModelIndex(weapon->m_iWorldModelIndex);
             wearable_vm_weapon->m_bValidatedAttachedEntity = true;
@@ -217,7 +217,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 					if (properClass != -1) {
 						auto mod = weapon->GetOrCreateEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
 						if ((otherClassViewmodel != 0 || cvar_enable_viewmodel.GetBool()) && owner->GetViewModel() != nullptr) {
-							mod->oldModelIndex = weapon->GetModelIndex();
+							if (mod->oldModelIndex == -1)
+								mod->oldModelIndex = weapon->GetModelIndex();
 							int oldClass = owner->GetPlayerClass()->GetClassIndex();
 							owner->GetPlayerClass()->SetClassIndex(properClass);
 							mod->properHandModel = weapon->GetViewModel(); //GetPlayerClassData(properClass)->m_szHandModelName;
@@ -1013,6 +1014,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				DisplayHudMessageAutoChannel(player, textparam, message.c_str(), 1);
 			}
         }
+
+		virtual std::vector<std::string> GetRequiredMods() { return {"Item:Item_Common"};}
     } s_Mod;
     
     ConVar cvar_enable("sig_etc_unintended_class_weapon_improvements", "0", FCVAR_NOTIFY,

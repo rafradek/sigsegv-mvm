@@ -916,7 +916,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 					ForEachTFPlayerEconEntity(bot, [&](CEconEntity *entity) {
 						entity->ChangeTeam(TEAM_SPECTATOR);
-					});
+					}, false);
 				}
 				
 				if (data.prefer_extra_slots) {

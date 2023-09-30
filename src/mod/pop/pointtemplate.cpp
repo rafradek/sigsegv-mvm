@@ -184,7 +184,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 			parent_helper = CreateEntityByName("point_teleport");
 			parent_helper->SetAbsOrigin(parent->GetAbsOrigin());
 			parent_helper->SetAbsAngles(parent->GetAbsAngles());
-			parent_helper->Spawn();
+			DispatchSpawn(parent_helper);
 			parent_helper->Activate();
 			templ_inst->entities.push_back(parent_helper);
 			templ_inst->parent_helper = parent_helper;

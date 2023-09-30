@@ -52,6 +52,9 @@ public:
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
 #endif
 	void ClearLastKnownArea()                                              {        vt_ClearLastKnownArea (this); }
+
+	DECL_SENDPROP(float, m_flNextAttack);
+
 private:
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>,              m_hActiveWeapon);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], m_hMyWeapons);
@@ -154,6 +157,7 @@ public:
 #ifdef SE_TF2
 	int GetNumWearables() const             { return this->m_hMyWearables->Count(); }
 	CEconWearable *GetWearable(int i) const { return this->m_hMyWearables[i]; }
+	void RemoveWearableFromList(int i) const{ return this->m_hMyWearables->Remove(i); }
 #endif
 	
 	/* easy-but-slow calls via IPlayerInfo */
@@ -207,6 +211,7 @@ public:
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hViewEntity);
 	DECL_DATAMAP (CHandle<CBaseEntity>, m_hVehicle);
 	DECL_DATAMAP(int,          m_nButtons);
+	DECL_DATAMAP(int,          m_afButtonLast);
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hObserverTarget);
 	DECL_SENDPROP_RW(CPlayerState, pl);
 	DECL_DATAMAP(float,         m_flStepSoundTime);
@@ -221,7 +226,7 @@ private:
 	DECL_SENDPROP(int,                                m_iObserverMode);
 	DECL_SENDPROP(float,                              m_flMaxspeed);
 #ifdef SE_TF2
-	DECL_SENDPROP(CUtlVector<CHandle<CEconWearable>>, m_hMyWearables);
+	DECL_SENDPROP_RW(CUtlVector<CHandle<CEconWearable>>, m_hMyWearables);
 #endif
 	
 	DECL_DATAMAP(char[32],     m_szNetname);

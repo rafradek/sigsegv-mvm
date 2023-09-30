@@ -1450,6 +1450,8 @@ WaveSchedule
 				UseHumanAnimations 1 [$SIGSEGV] // Use normal class animations instead of a bot / custom model ones
 
 				RingOfFire 15 [$SIGSEGV] //Enable Ring of Fire from Huo Long Heater. Value is damage done by the ring
+				PreferClass Sniper // Prefer those classes over other
+				PreferClass Spy
 			}
 		}
 		WaveSpawn

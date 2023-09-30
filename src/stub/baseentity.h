@@ -436,6 +436,7 @@ public:
 	DECL_RELATIVE(CBaseHandle,          m_RefEHandle);
 	DECL_SENDPROP(int,                  m_iTeamNum);
 	DECL_DATAMAP(string_t,               m_iClassname);
+	DECL_DATAMAP(void (CBaseEntity::*)(CBaseEntity *), m_pfnTouch);
 	
 	
 private:

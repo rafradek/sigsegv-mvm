@@ -371,6 +371,7 @@ public:
 	DECL_DATAMAP(CAttributeList, m_NetworkedDynamicAttributesForDemos);
 	DECL_DATAMAP(bool,           m_bOnlyIterateItemViewAttributes);
 	DECL_SENDPROP(uint32,        m_iAccountID);
+	DECL_SENDPROP(int,           m_iTeamNumber);
 	
 	int GetItemDefIndex() const { return vt_GetItemDefIndex(this); }
 	

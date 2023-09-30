@@ -10,6 +10,7 @@
 
 namespace Mod::Etc::Allow_Civilian_Class
 {
+	extern ConVar cvar_enable;
 	constexpr uint8_t s_Buf_HandleCommand_JoinClass[] = {
 		0x83, 0xFE, 0x0A,                   // +0000 cmp     esi, 0Ah
         0x0F, 0x84, 0x97, 0xFB, 0xFF, 0xFF  // +0003 jz      loc_F5DEF7
@@ -43,7 +44,7 @@ namespace Mod::Etc::Allow_Civilian_Class
     DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
         auto player = reinterpret_cast<CTFPlayer *>(this);
-        if (!disabling && !player->IsBot() && FStrEq(pClassName, "random")) {
+        if (!disabling && !player->IsBot() && FStrEq(pClassName, "random") && cvar_enable.GetInt() != 2) {
             pClassName = "civilian";
         }
         
@@ -52,7 +53,7 @@ namespace Mod::Etc::Allow_Civilian_Class
 
         if (player->m_Shared->m_iDesiredPlayerClass == TF_CLASS_CIVILIAN) {
             auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
-			mod->props["m_iDesiredPlayerClass"] = {Variant(TF_CLASS_SCOUT), Variant(TF_CLASS_SCOUT)};
+			mod->props["m_iDesiredPlayerClass"] = {Variant((int)TF_CLASS_SCOUT), Variant((int)TF_CLASS_SCOUT)};
         }
 		else if (prevClassCivilian) {
             auto mod = player->GetEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");

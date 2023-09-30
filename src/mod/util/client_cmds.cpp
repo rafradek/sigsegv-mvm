@@ -1569,7 +1569,7 @@ namespace Mod::Util::Client_Cmds
 
 			vehicle->KeyValue("model", model);
 			vehicle->KeyValue("vehiclescript", script);
-			vehicle->Spawn();
+			DispatchSpawn(vehicle);
 			vehicle->Activate();
 			vehicle->m_flMinimumSpeedToEnterExit = 100;
 		}

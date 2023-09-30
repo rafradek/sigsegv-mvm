@@ -334,7 +334,9 @@ class CBaseViewModel : public CBaseAnimating
 {
 public:
 	CBaseCombatWeapon *GetWeapon() const { return this->m_hWeapon; }
+	void SetWeapon(CBaseCombatWeapon *weapon) { this->m_hWeapon = weapon; }
 	CBaseEntity *GetOwner() const { return this->m_hOwner; }
+	void SetOwner(CBaseEntity *owner) { this->m_hOwner = owner; }
 
 	void SetControlPanelsActive(bool enable) { ft_SetControlPanelsActive(this, enable); }
 	void SpawnControlPanels()                { ft_SpawnControlPanels(this); }

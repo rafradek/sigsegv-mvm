@@ -1,7 +1,11 @@
+#include "mod.h"
 #include "stub/tfplayer.h"
+#include "stub/econ.h"
 #include "util/misc.h"
 #include "mod/item/item_common.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "stub/extraentitydata.h"
+#include "mod/etc/mapentity_additions.h"
 
 std::map<int, std::string> g_Itemnames;
 std::map<int, std::string> g_Attribnames;
@@ -369,7 +373,10 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
 
 void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity *copyTo)
 {
-    copyTo->GetItem()->Init(copyFrom->GetItem()->m_iItemDefinitionIndex, 9999, 414918);
+    //copyTo->GetItem()->Init(copyFrom->GetItem()->m_iItemDefinitionIndex, 9999, 414918);
+    copyTo->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop")->props["m_iItemDefinitionIndex"] = {Variant((int)copyFrom->GetItem()->m_iItemDefinitionIndex), Variant((int)copyFrom->GetItem()->m_iItemDefinitionIndex)};
+    copyTo->GetItem()->m_iEntityLevel = 414918;
+    copyTo->GetItem()->m_iEntityQuality = copyFrom->GetItem()->m_iItemDefinitionIndex;
     int tint = 0;
     CALL_ATTRIB_HOOK_INT_ON_OTHER(copyFrom, tint, set_item_tint_rgb);
     if (tint != 0)
@@ -388,6 +395,30 @@ void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity 
         copyTo->GetItem()->GetAttributeList().SetRuntimeAttributeValue(GetItemSchema()->GetAttributeDefinitionByName("set_item_texture_wear"), texture);
     copyTo->UpdateBodygroups(player, true);
 }
+
+CTFWeaponBase *CreateCustomWeaponModelPlaceholder(CTFPlayer *owner, CTFWeaponBase *weapon, int modelIndex) 
+{
+    auto wearable = static_cast<CTFWeaponBase *>(CreateEntityByName("tf_weapon_laser_pointer"));
+    wearable->GetItem()->Init(weapon->GetItem()->m_iItemDefinitionIndex, 9999, 9999, 887);
+    CopyVisualAttributes(owner, weapon, wearable);
+    wearable->m_pfnTouch = nullptr;
+    wearable->ChangeTeam(owner->GetTeamNumber());
+    wearable->GetItem()->m_iTeamNumber = owner->GetTeamNumber();
+    DispatchSpawn(wearable);
+    wearable->SetOwner(owner);
+    wearable->SetOwnerEntity(owner);
+    wearable->SetParent(owner, -1);
+    wearable->AddEffects(EF_BONEMERGE|EF_BONEMERGE_FASTCULL);
+    wearable->m_iState = WEAPON_IS_ACTIVE;
+    wearable->m_iWorldModelIndex = modelIndex;
+    wearable->SetModelIndex(modelIndex);
+    for (int i = 0; i < MAX_VISION_MODES; ++i) {
+    	wearable->SetModelIndexOverride(i, modelIndex);
+    }
+    wearable->m_bValidatedAttachedEntity = true;
+    return wearable;
+}
+
 
 CON_COMMAND(sig_gen_rand, "")
 {
@@ -428,4 +459,48 @@ CON_COMMAND(sig_gen_rand, "")
     char path_sm[PLATFORM_MAX_PATH];
     g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_gen.nut");
     filesystem->WriteFile(path_sm, "GAME", file);
+}
+
+namespace Mod::Item::Common
+{   
+    
+	DETOUR_DECL_MEMBER(int, CEconItemView_GetSkin, int team, bool viewmodel)
+	{
+        auto view = reinterpret_cast<CEconItemView *>(this);
+        if (view->m_iEntityLevel == 414918 && view->m_iItemDefinitionIndex == 0) {
+            view->m_iItemDefinitionIndex = view->m_iEntityQuality;
+        }
+        auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetSkin)(team, viewmodel);
+        if (view->m_iEntityLevel == 414918) {
+            view->m_iItemDefinitionIndex = 0;
+        }
+
+        return ret;
+    }
+
+	DETOUR_DECL_MEMBER(const char *, CEconItemView_GetPlayerDisplayModel, int playerclass, int team)
+	{
+        auto view = reinterpret_cast<CEconItemView *>(this);
+        if (view->m_iEntityLevel == 414918 && view->m_iItemDefinitionIndex == 0) {
+            view->m_iItemDefinitionIndex = view->m_iEntityQuality;
+        }
+        auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetPlayerDisplayModel)(playerclass, team);
+        if (view->m_iEntityLevel == 414918) {
+            view->m_iItemDefinitionIndex = 0;
+        }
+
+        return ret;
+    }
+
+
+    class CMod : public IMod
+    {
+    public:
+        CMod() : IMod("Item:Item_Common")
+        {
+            MOD_ADD_DETOUR_MEMBER(CEconItemView_GetSkin,                "CEconItemView::GetSkin");
+            MOD_ADD_DETOUR_MEMBER(CEconItemView_GetPlayerDisplayModel,  "CEconItemView::GetPlayerDisplayModel");
+        }
+    };
+    CMod s_Mod;
 }

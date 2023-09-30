@@ -1623,6 +1623,13 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ToggleModActive();
 			Mod::MvM::Player_Limit::RecalculateSlots();
+			if (cvar_force.GetBool()) {
+				ForEachTFPlayer([&](CTFPlayer *player) {
+					if (player->GetTeamNumber() == TF_TEAM_RED && player->IsRealPlayer()) {
+						player->HandleCommand_JoinTeam("blue");
+					}
+				});
+			}
 		});
 	
 	void ToggleModActive()

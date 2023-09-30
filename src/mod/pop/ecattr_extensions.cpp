@@ -176,6 +176,8 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		std::string action_override;
 		std::vector<std::string> ignore_bots_with_tags;
+
+		std::vector<int> preferred_classes;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -890,6 +892,8 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.action_override = kv->GetString();
 		} else if (FStrEq(name, "IgnoreBotsWithTag")) {
 			data.ignore_bots_with_tags.push_back(kv->GetString());
+		} else if (FStrEq(name, "PreferClass")) {
+			data.preferred_classes.push_back(GetClassIndexFromString(kv->GetString()));
 		} else {
 			found = false;
 		}
@@ -1797,6 +1801,29 @@ namespace Mod::Pop::ECAttr_Extensions
 				/* do the exact same thing as the game code does when the bot has WeaponRestrictions MeleeOnly */
 				if (data->use_melee_threat_prioritization) {
 					return action->SelectCloserThreat(actor, threat1, threat2);
+				}
+				if (!data->preferred_classes.empty() && threat1 != nullptr && threat2 != nullptr) {
+					auto player1 = ToTFPlayer(threat1->GetEntity());
+					auto player2 = ToTFPlayer(threat2->GetEntity());
+					if (player1 != nullptr && player2 != nullptr) {
+						int priority1 = 999;
+						int priority2 = 999;
+						for (size_t i = 0; i < data->preferred_classes.size(); i++) {
+							int playerClass = data->preferred_classes[i];
+							if (playerClass == player1->GetPlayerClass()->GetClassIndex()) {
+								priority1 = i;
+							}
+							if (playerClass == player2->GetPlayerClass()->GetClassIndex()) {
+								priority2 = i;
+							}
+						}
+						if (priority1 < priority2) {
+							return threat1;
+						}
+						else if (priority1 > priority2) {
+							return threat2;
+						}
+					}
 				}
 			}
 		}
