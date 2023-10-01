@@ -3269,7 +3269,7 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    "4649"
+    "4648"
     {
         "name"	"medigun attack enemy heal mult"
         "attribute_class"	"medigun_attack_enemy_heal_mult"
@@ -3371,6 +3371,16 @@
         "description_string"	""
         "description_format"	"value_is_additive"
         "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4659"
+    {
+        "name"	"no revive"
+        "attribute_class"	"no_revive"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }

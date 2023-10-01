@@ -696,6 +696,11 @@
 					type "sym"
 					sym  "_ZNK15CEconItemSchema28GetAttributeDefinitionByNameEPKc"
 				}
+				"CEconItemSchema::GetAttributeDefinitionByName [non-const]"
+				{
+					type "sym"
+					sym  "_ZN15CEconItemSchema28GetAttributeDefinitionByNameEPKc"
+				}
 				
 				"CTFGameRules::CanUpgradeWithAttrib"
 				{
@@ -3952,11 +3957,6 @@
 				{
 					type "sym"
 					sym  "_ZN15CGameStringPool23LevelShutdownPostEntityEv"
-				}
-				"CEconItemView::GetPlayerDisplayModel"
-				{
-					type "sym"
-					sym  "_ZNK13CEconItemView21GetPlayerDisplayModelEii"
 				}
 				"CTFDroppedWeapon::InitPickedUpWeapon"
 				{
