@@ -1282,6 +1282,32 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			displaystr += CFmtStr("check ihasattributes time: %.9f\n", timer.GetDuration().GetSeconds());
 		}
+		else if (strcmp(args[2], "attrdef") == 0) {
+			std::unordered_map<std::string, CEconItemAttributeDefinition *, CaseInsensitiveHash, CaseInsensitiveCompare> map;
+			// map["shuffle crate item def min"] = GetItemSchema()->GetAttributeDefinitionByName("shuffle crate item def min");
+			// map["grenade no spin"] = GetItemSchema()->GetAttributeDefinitionByName("grenade no spin");
+			// map["grenade detonation damage penalty"] = GetItemSchema()->GetAttributeDefinitionByName("grenade detonation damage penalty");
+			// map["taunt turn acceleration time"] = GetItemSchema()->GetAttributeDefinitionByName("taunt turn acceleration time");
+			// GetItemSchema()->GetAttributeDefinition(690);
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				GetItemSchema()->GetAttributeDefinitionByName("shuffle crate item def min");
+			}
+			timer.End();
+			displaystr += CFmtStr("attribute by name time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				GetItemSchema()->GetAttributeDefinition(690);
+			}
+			timer.End();
+			displaystr += CFmtStr("attribute by id time: %.9f\n", timer.GetDuration().GetSeconds());
+			timer.Start();
+			for(int i = 0; i < times; i++) {
+				map.find("grenade detonation damage penalty");
+			}
+			timer.End();
+			displaystr += CFmtStr("attribute by name our time: %.9f\n", timer.GetDuration().GetSeconds());
+		}
 		ModCommandResponse("%s", displaystr.c_str());
 	}
 

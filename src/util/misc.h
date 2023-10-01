@@ -21,16 +21,16 @@ public:
     }
 };
 
-class CaseInsensitveCompare 
+class CaseInsensitiveCompare 
 {
 public:
 	bool operator() (const std::string &lhs, const std::string &rhs) const
 	{
-		return stricmp(lhs.c_str(), rhs.c_str()) == 0;
+		return lhs.size() == rhs.size() && stricmp(lhs.c_str(), rhs.c_str()) == 0;
 	}
 };
 
-class CaseInsensitveHash
+class CaseInsensitiveHash
 {
 public:
 	std::size_t operator() (std::string str) const

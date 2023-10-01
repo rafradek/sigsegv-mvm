@@ -13,7 +13,7 @@ namespace Mod::MvM::Gamemode_Converter
     inline const char *MapEntity_ParseToken(const char *data, char *token) { return ft_MapEntity_ParseToken(data, token); }
     
 
-    using ParsedEntity = std::unordered_multimap<std::string, std::string, CaseInsensitveHash, CaseInsensitveCompare>;
+    using ParsedEntity = std::unordered_multimap<std::string, std::string, CaseInsensitiveHash, CaseInsensitiveCompare>;
 
     bool IsMvMMapCheck(const char *entities)
     {

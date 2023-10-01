@@ -3461,7 +3461,7 @@ WaveSchedule
 // Can attack enemies, dealing damage equal to % heal rate"
 // "medigun attack enemy" 1.1
 
-// Drain health equal to % heal rate from the user when healin
+// Drain health equal to % heal rate from the user when healing
 // "medigun self drain" 0.6
 
 // Fire input on attack. Player is !activator, projectile is !projectile (must be input target), weapon is !self
@@ -3513,3 +3513,6 @@ WaveSchedule
 
 // Attributes to apply when alt fire button is pressed
 // "alt fire attack attributes" "fire rate bonus|2|damage bonus|2"
+
+// No revive marker on death
+// "no revive" 1

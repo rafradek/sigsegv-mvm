@@ -692,6 +692,20 @@ namespace Mod::Perf::Func_Optimize
         }
         return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
     }
+	std::unordered_map<std::string, CEconItemAttributeDefinition *> attributeCache;
+
+    DETOUR_DECL_MEMBER(CEconItemAttributeDefinition *, CEconItemSchema_GetAttributeDefinitionByName, const char *name)
+	{
+        std::string str {name};
+        StrLowerASCII(str.data());
+        auto find = attributeCache.find(str);
+        if (find != attributeCache.end()) {
+            return find->second;
+        }
+		auto attr = DETOUR_MEMBER_CALL(CEconItemSchema_GetAttributeDefinitionByName)(name);
+        attributeCache[str] = attr;
+        return attr;
+    }
 
     bool IsOnNav(CBaseEntity *entity, float maxZDistance, float maxXYDistance)
 	{
@@ -802,6 +816,8 @@ namespace Mod::Perf::Func_Optimize
             // Fix lag when spawning items on bots
             MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
+
+            MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetAttributeDefinitionByName, "CEconItemSchema::GetAttributeDefinitionByName [non-const]");
 #endif
             // Optimize lag compensation by reusing previous bone caches
             MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");

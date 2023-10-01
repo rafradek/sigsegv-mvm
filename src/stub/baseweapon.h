@@ -66,6 +66,8 @@ public:
 	DECL_SENDPROP(bool,  m_bFlipViewModel);
 	DECL_DATAMAP(bool,   m_bReloadsSingly);
 	DECL_DATAMAP(bool,   m_bInReload);
+	DECL_DATAMAP(int,    m_nIdealSequence);
+	DECL_DATAMAP(Activity,m_IdealActivity);
 	
 	
 private:

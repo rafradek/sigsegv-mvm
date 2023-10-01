@@ -560,7 +560,7 @@ void PointTemplateInstance::OnKilledParent(bool cleared) {
 	this->has_parent = false;
 }
 
-std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> g_templates;
+std::unordered_map<std::string, PointTemplate, CaseInsensitiveHash, CaseInsensitiveCompare> g_templates;
 
 std::vector<std::shared_ptr<PointTemplateInstance>> g_templateInstances;
 FixupNames g_fixupNames;

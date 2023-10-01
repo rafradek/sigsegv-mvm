@@ -112,9 +112,9 @@ PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
 bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
 
 PointTemplate *FindPointTemplate(const std::string &str);
-extern std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> g_templates;
+extern std::unordered_map<std::string, PointTemplate, CaseInsensitiveHash, CaseInsensitiveCompare> g_templates;
 
-inline std::unordered_map<std::string, PointTemplate, CaseInsensitveHash, CaseInsensitveCompare> &Point_Templates()
+inline std::unordered_map<std::string, PointTemplate, CaseInsensitiveHash, CaseInsensitiveCompare> &Point_Templates()
 {
 	return g_templates;
 }

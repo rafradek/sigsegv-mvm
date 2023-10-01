@@ -175,7 +175,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		Vector m_SpreadRadius;
 		Vector m_Origin;
 		std::string m_SpawnAtEntity = "";
-		std::multimap<std::string,variant_t, CaseInsensitiveLess> m_EntityKeys;
+		std::unordered_multimap<std::string,variant_t, CaseInsensitiveHash, CaseInsensitiveCompare> m_EntityKeys;
 	};
 
 	class CPointTemplateSpawner : public IPopulationSpawner

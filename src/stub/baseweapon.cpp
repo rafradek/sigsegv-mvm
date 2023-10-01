@@ -18,11 +18,14 @@ IMPL_SENDPROP(bool,                          CBaseCombatWeapon, m_bFlipViewModel
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iWorldModelIndex,      CBaseCombatWeapon);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bReloadsSingly);
 IMPL_DATAMAP(bool,                           CBaseCombatWeapon, m_bInReload);
+IMPL_DATAMAP(int,                            CBaseCombatWeapon, m_nIdealSequence);
+IMPL_DATAMAP(Activity,                       CBaseCombatWeapon, m_IdealActivity);
 
 
 MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWeapon("CBaseCombatWeapon::IsMeleeWeapon");
 MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> CBaseCombatWeapon::ft_SetOwner("CBaseCombatWeapon::SetOwner");
 MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> CBaseCombatWeapon::ft_GetWpnData("CBaseCombatWeapon::GetWpnData");
+MemberFuncThunk<const CBaseCombatWeapon *, bool, Activity> CBaseCombatWeapon::ft_SetIdealActivity("CBaseCombatWeapon::SetIdealActivity");
 #ifdef SE_TF2
 MemberFuncThunk<CBaseCombatWeapon *, void, const char *> CBaseCombatWeapon::ft_SetCustomViewModel("CBaseCombatWeapon::SetCustomViewModel");
 #endif

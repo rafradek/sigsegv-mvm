@@ -642,6 +642,8 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFJar_TossJarThink)();
 	}
 
+	RefCount rc_AltFireAttack;
+
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
@@ -770,6 +772,9 @@ namespace Mod::Attr::Custom_Attributes
 				if (soundname != nullptr) {
 					PrecacheSound(soundname);
 					proj->EmitSound(soundname);
+				}
+				if (rc_AltFireAttack) {
+					proj->SetCustomVariable("isaltfire", Variant(true));
 				}
 			}
 			GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
@@ -4426,12 +4431,68 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayerShared_MakeBleed)(attacker, weapon, bleedTime, bleeddmg, perm, val);
 	}
 
+	void RemoveOnActiveAttributes(CEconEntity *weapon, const char *attributes)
+	{
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName((*it).c_str());
+				if (++it == tokens.end())
+					break;
+				auto value = *it;
+				if (attribute != nullptr) {
+					weapon->GetItem()->GetAttributeList().RemoveAttribute(attribute);
+				}
+				it++;
+			}
+		}
+	}
+
+	void AddOnActiveAttributes(CEconEntity *weapon, const char *attributes)
+	{
+		if (attributes != nullptr) {
+			std::string str(attributes);
+			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+			auto it = tokens.begin();
+			while (it != tokens.end()) {
+				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+				if (++it == tokens.end())
+					break;
+				auto value = *it;
+				
+				if (attribute != nullptr) {
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attribute, std::atof(value.c_str()));
+				}
+				it++;
+			}
+		}
+	}
+
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
 
 		CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
 		bool was_alive = entity->IsAlive();
+
+		CTFWeaponBase *weaponAltFire = nullptr;
+		if (info.GetInflictor() != nullptr && info.GetAttacker() != nullptr && info.GetInflictor()->GetCustomVariableBool<"isaltfire">()) {
+			auto proj = rtti_cast<CBaseProjectile *>(info.GetInflictor());
+			auto player = ToTFPlayer(info.GetAttacker());
+			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr && player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
+				weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+				if (weaponAltFire != nullptr) {
+					GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+					if (attribs != nullptr) {
+						AddOnActiveAttributes(weaponAltFire, attribs);
+					}
+				}
+			}
+		}
 
 		//auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		auto econEntity = rtti_cast<CEconEntity *>(info.GetWeapon());
@@ -4473,6 +4534,13 @@ namespace Mod::Attr::Custom_Attributes
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_kill_name_restrict, filter);
 
 				FireInputAttribute(input, filter, Variant(damage), info.GetInflictor(), info.GetAttacker(), entity, 0.0f);
+			}
+		}
+
+		if (weaponAltFire != nullptr) {
+			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+			if (attribs != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, attribs);
 			}
 		}
 		return damage;
@@ -4958,47 +5026,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
-	}
-
-	void RemoveOnActiveAttributes(CEconEntity *weapon, const char *attributes)
-	{
-		if (attributes != nullptr) {
-			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
-
-			auto it = tokens.begin();
-			while (it != tokens.end()) {
-				auto attribute = GetItemSchema()->GetAttributeDefinitionByName((*it).c_str());
-				if (++it == tokens.end())
-					break;
-				auto value = *it;
-				if (attribute != nullptr) {
-					weapon->GetItem()->GetAttributeList().RemoveAttribute(attribute);
-				}
-				it++;
-			}
-		}
-	}
-
-	void AddOnActiveAttributes(CEconEntity *weapon, const char *attributes)
-	{
-		if (attributes != nullptr) {
-			std::string str(attributes);
-			boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
-
-			auto it = tokens.begin();
-			while (it != tokens.end()) {
-				auto attribute = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
-				if (++it == tokens.end())
-					break;
-				auto value = *it;
-				
-				if (attribute != nullptr) {
-					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attribute, std::atof(value.c_str()));
-				}
-				it++;
-			}
-		}
 	}
 
 	class AltFireAttributesModule : public EntityModule
@@ -5548,9 +5575,11 @@ namespace Mod::Attr::Custom_Attributes
 					pressedM2 = true;
 				}
 			}
-			// if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
-			// 	player->m_flNextAttack = gpGlobals->curtime - 0.1f;
-			// }
+			if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
+				auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+				player->SetCustomVariable("nextattackreset", Variant(gpGlobals->tickcount));
+				mod->props["m_flNextAttack"] = {Variant(gpGlobals->curtime + 0.4f), Variant(gpGlobals->curtime + 0.4f)};
+			}
 		}
 
 		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
@@ -5559,6 +5588,12 @@ namespace Mod::Attr::Custom_Attributes
 			// if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
 			// 	player->m_flNextAttack = gpGlobals->curtime + 0.1f;
 			// }
+		}
+		auto nextAttackReset = player->GetCustomVariableInt<"nextattackreset">();
+		if (nextAttackReset != 0 && nextAttackReset != gpGlobals->tickcount) {
+			player->SetCustomVariable("nextattackreset", Variant(0));
+			auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
+			mod->props.erase("m_flNextAttack");
 		}
 		if (pressedM2) {
 			player->m_nButtons |= IN_ATTACK2;
@@ -6071,10 +6106,17 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
+	CBasePlayer *playerAnimSender = nullptr;
 	DETOUR_DECL_MEMBER(void, CVEngineServer_PlaybackTempEntity, IRecipientFilter& filter, float delay, const void *pSender, const SendTable *pST, int classID)
 	{
+		if (playerAnimSender != nullptr) {
+			CRecipientFilter filter2;
+			filter2.CopyFrom(filter);
+			filter2.AddRecipient(playerAnimSender);
+			DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter2, delay, pSender, pST, classID);
+			return;
+		}
 		DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter, delay, pSender, pST, classID);
-		Msg("TempEnt %s \n", pST->GetName());
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TraceAttack, const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, void *pAccumulator)
@@ -7203,6 +7245,7 @@ namespace Mod::Attr::Custom_Attributes
 				
 				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
 				CBaseEntity_m_pPredictionPlayer.GetRef() = nullptr;
+				SCOPED_INCREMENT(rc_AltFireAttack);
 				weapon->PrimaryAttack();
 				weapon->m_flNextSecondaryAttack = gpGlobals->curtime + (weapon->m_flNextPrimaryAttack - gpGlobals->curtime) * duration;
 				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldPredictPlayer;
@@ -7232,6 +7275,33 @@ namespace Mod::Attr::Custom_Attributes
 			player->m_nButtons &= ~(IN_ATTACK);
 		}
 	}
+	
+	DETOUR_DECL_STATIC(CTFReviveMarker *, CTFReviveMarker_Create, CTFPlayer *player)
+	{
+		int noRevive = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, noRevive, no_revive);
+		if (noRevive != 0) {
+			return nullptr;
+		}
+		
+		return DETOUR_STATIC_CALL(CTFReviveMarker_Create)(player);
+	}
+
+	DETOUR_DECL_STATIC(void, TE_PlayerAnimEvent, CBasePlayer *player, int anim, int data)
+	{
+		if (rc_AltFireAttack) {
+			playerAnimSender = player;
+		}
+		DETOUR_STATIC_CALL(TE_PlayerAnimEvent)(player, anim, data);
+		playerAnimSender = nullptr;
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CBaseCombatWeapon_SetIdealActivity, Activity act)
+	{
+		Msg("Activity %s\n", CAI_BaseNPC::GetActivityName(act));
+		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetIdealActivity)(act);
+	}
+
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
@@ -8262,6 +8332,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemPostFrame, "CTFWeaponBase::ItemPostFrame");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemBusyFrame, "CTFWeaponBase::ItemBusyFrame");
+			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create, "CTFReviveMarker::Create");
+			MOD_ADD_DETOUR_STATIC(TE_PlayerAnimEvent, "TE_PlayerAnimEvent");
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_SetIdealActivity, "CBaseCombatWeapon::SetIdealActivity");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -8269,7 +8342,7 @@ namespace Mod::Attr::Custom_Attributes
 			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
-            //MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");
+            MOD_ADD_DETOUR_MEMBER(CVEngineServer_PlaybackTempEntity, "CVEngineServer::PlaybackTempEntity");
 			
 
 		//  Some optimization for attributes
