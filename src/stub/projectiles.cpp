@@ -66,6 +66,9 @@ MemberVFuncThunk<const CBaseProjectile *, void, bool, bool> CBaseProjectile::vt_
 MemberVFuncThunk<CBaseProjectile *, void, CBaseEntity*> CBaseProjectile::vt_SetLauncher(TypeName<CBaseProjectile>(), "CBaseProjectile::SetLauncher");
 MemberVFuncThunk<CBaseProjectile *, bool> CBaseProjectile::vt_CanCollideWithTeammates(TypeName<CBaseProjectile>(), "CBaseProjectile::CanCollideWithTeammates");
 
+	
+IMPL_SENDPROP(float, CBaseGrenade, m_DmgRadius, CBaseGrenade);
+
 MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> CBaseGrenade::ft_GetThrower("CBaseGrenade::GetThrower");
 MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> CBaseGrenade::ft_SetThrower("CBaseGrenade::SetThrower");
 

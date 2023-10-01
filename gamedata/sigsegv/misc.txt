@@ -5954,6 +5954,7 @@
 				"CBaseCombatWeapon::GetSlot" "_ZNK17CBaseCombatWeapon7GetSlotEv"
 				"CBaseCombatWeapon::ActivityOverride" "_ZN17CBaseCombatWeapon16ActivityOverrideE8ActivityPb"
 				"CBaseCombatWeapon::SetIdealActivity" "_ZN17CBaseCombatWeapon16SetIdealActivityE8Activity"
+				"CBaseCombatWeapon::HasPrimaryAmmo" "_ZN17CBaseCombatWeapon14HasPrimaryAmmoEv"
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
@@ -6091,6 +6092,9 @@
 				"CEconItemDefinition::GetActivityOverride" "_ZNK19CEconItemDefinition19GetActivityOverrideEi8Activity"
 
 				"CVoteController::TryCastVote" "_ZN15CVoteController11TryCastVoteEiPKc"
+
+				"CCollisionEvent::PostCollision" "_ZN15CCollisionEvent13PostCollisionEP17vcollisionevent_t"
+				
 			}
 			"addrs_group"
 			{

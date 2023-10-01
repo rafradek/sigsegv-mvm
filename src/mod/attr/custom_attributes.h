@@ -46,6 +46,8 @@ namespace Mod::Attr::Custom_Attributes
 		MOD_MAXHEALTH_DRAIN_RATE,
 		MIDAIR_ACCURACY_MULT,
 		ALT_FIRE_ATTACK,
+		NO_ATTACK,
+		MOD_AMMO_PER_SHOT,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -88,7 +90,9 @@ namespace Mod::Attr::Custom_Attributes
 		"auto_fires_full_clip",
 		"mod_maxhealth_drain_rate",
 		"midair_accuracy_mult",
-		"alt_fire_attack"
+		"alt_fire_attack",
+		"no_attack",
+		"mod_ammo_per_shot"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled

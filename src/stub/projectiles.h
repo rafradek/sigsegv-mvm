@@ -41,6 +41,8 @@ public:
 	CBaseEntity *GetThrower() const { return ft_GetThrower(this); }
 	void SetThrower(CBaseEntity *entity) { ft_SetThrower(this, entity); }
 
+	DECL_SENDPROP(float, m_DmgRadius);
+
 private:
 	static MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> ft_GetThrower;
 	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;

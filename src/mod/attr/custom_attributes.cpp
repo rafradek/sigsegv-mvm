@@ -250,6 +250,16 @@ namespace Mod::Attr::Custom_Attributes
 			attackModule->lastAttackTime = gpGlobals->curtime;
 		}
 
+
+		if (healobject != nullptr && !healobject->IsPlayer()) {
+			medigun->SetCustomVariable("healingnonplayer", Variant(true));
+		}
+
+		if (medigun->GetCustomVariableBool<"healingnonplayer">() && healobject == nullptr) {
+			medigun->SetHealTarget(nullptr);
+			medigun->SetCustomVariable("healingnonplayer", Variant(false));
+		}
+
 		DETOUR_MEMBER_CALL(CWeaponMedigun_HealTargetThink)();
 		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() && healobject->GetTeamNumber() == owner->GetTeamNumber()) {
 			int can_heal = 0;
@@ -685,6 +695,15 @@ namespace Mod::Attr::Custom_Attributes
 			fire_projectile_multi = true;
 
 			if (proj != nullptr) {
+
+				int projType = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, projType, override_projectile_type);
+				if (projType != 0) {
+					auto grenadeProj = rtti_cast<CTFWeaponBaseGrenadeProj *>(proj);
+					if (grenadeProj != nullptr && grenadeProj->m_DmgRadius == 0) {
+						grenadeProj->m_DmgRadius = 146.0f;
+					}
+				}
 				float attr_lifetime = 0.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, attr_lifetime, projectile_lifetime);
 
@@ -1842,6 +1861,14 @@ namespace Mod::Attr::Custom_Attributes
 		float speed = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
 		return speed * DETOUR_MEMBER_CALL(CTFShotgunBuildingRescue_GetProjectileSpeed)();
+	}
+
+	DETOUR_DECL_MEMBER(float, CTFWeaponBaseGun_GetProjectileSpeed)
+	{
+		auto bow = reinterpret_cast<CTFWeaponBase *>(this);
+		float speed = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
+		return speed;
 	}
 
 	int GetDamageType(CEconEntity *weapon, int value)
@@ -4465,7 +4492,7 @@ namespace Mod::Attr::Custom_Attributes
 				auto value = *it;
 				
 				if (attribute != nullptr) {
-					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValue(attribute, std::atof(value.c_str()));
+					weapon->GetItem()->GetAttributeList().AddStringAttribute(attribute, value);
 				}
 				it++;
 			}
@@ -5076,6 +5103,12 @@ namespace Mod::Attr::Custom_Attributes
 			RemoveOnActiveAttributes(weapon, altattribs);
 			weapon->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs")->active = false;
 		}
+
+		if (weapon->GetCustomVariableBool<"noattackreset">()) {
+			static int noAttackId = GetItemSchema()->GetAttributeDefinitionByName("no_attack")->GetIndex();
+			weapon->SetCustomVariable("noattackreset", Variant(false));
+			weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 0);
+		}
 		return result;
 	}
 
@@ -5472,6 +5505,10 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			attackModule->lastTarget = nullptr;
 		}
+		if (medigun->GetCustomVariableBool<"healingnonplayer">()) {
+			medigun->SetHealTarget(nullptr);
+			medigun->SetCustomVariable("healingnonplayer", Variant(false));
+		}
 	
         DETOUR_MEMBER_CALL(CWeaponMedigun_RemoveHealingTarget)(flag);
 
@@ -5490,7 +5527,7 @@ namespace Mod::Attr::Custom_Attributes
 			auto &value = *it;
 			auto attr_def = GetItemSchema()->GetAttributeDefinitionByName(attribute.c_str());
 			if (attr_def != nullptr) {
-				target->SetRuntimeAttributeValue(attr_def, strtof(value.c_str(), nullptr));
+				target->AddStringAttribute(attr_def, value);
 			}
 			++it;
 		}
@@ -5596,7 +5633,23 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				mod->active = false;
 			}
+
+			int ammoPerShot = GetFastAttributeInt(weapon, 0, MOD_AMMO_PER_SHOT);
+			if (ammoPerShot > 1) {
+				bool hasAmmo = weapon->GetMaxClip1() != -1 ? weapon->m_iClip1 >= ammoPerShot : player->GetAmmoCount(weapon->m_iPrimaryAmmoType) >= ammoPerShot;
+				int noAttack = GetFastAttributeInt(weapon, 0, NO_ATTACK);
+				static int noAttackId = GetItemSchema()->GetAttributeDefinitionByName("no_attack")->GetIndex();
+				if (noAttack != 0 && hasAmmo) {
+					weapon->SetCustomVariable("noattackreset", Variant(false));
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 0);
+				}
+				else if (noAttack == 0 && !hasAmmo) {
+					weapon->SetCustomVariable("noattackreset", Variant(true));
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 1);
+				}
+			}
 		}
+		
 
 		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
 		if (weapon != nullptr) {
@@ -7318,6 +7371,92 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_STATIC_CALL(TE_PlayerAnimEvent)(player, anim, data);
 		playerAnimSender = nullptr;
 	}
+	
+    DETOUR_DECL_MEMBER(void, CBaseEntity_Touch, CBaseEntity *other)
+	{
+		CTFWeaponBase *weaponAltFire = nullptr;
+        auto ent = reinterpret_cast<CBaseEntity *>(this);
+		if (ent->GetCustomVariableBool<"isaltfire">()) {
+			auto proj = rtti_cast<CBaseProjectile *>(ent);
+			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
+				auto player = ToTFPlayer(proj->GetOriginalLauncher()->GetOwnerEntity());
+				if (player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
+					weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+					if (weaponAltFire != nullptr) {
+						GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+						if (attribs != nullptr) {
+							AddOnActiveAttributes(weaponAltFire, attribs);
+						}
+					}
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
+
+		if (weaponAltFire != nullptr) {
+			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+			if (attribs != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, attribs);
+			}
+		}
+    }
+	
+    DETOUR_DECL_MEMBER(void, CCollisionEvent_PostCollision, vcollisionevent_t *event)
+	{
+		CBaseEntity *grenade = nullptr;
+		for (int i = 0; i < 2; i++) {
+			auto entity = reinterpret_cast<CBaseEntity *>(event->pObjects[i]->GetGameData());
+			if (entity != nullptr && entity->GetCustomVariableBool<"isaltfire">()) {
+				grenade = entity;
+				break;
+			}
+		}
+		CTFWeaponBase *weaponAltFire = nullptr;
+
+		if (grenade != nullptr) {
+			auto proj = rtti_cast<CBaseProjectile *>(grenade);
+			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
+				auto player = ToTFPlayer(proj->GetOriginalLauncher()->GetOwnerEntity());
+				if (player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
+					weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+					if (weaponAltFire != nullptr) {
+						GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+						if (attribs != nullptr) {
+							AddOnActiveAttributes(weaponAltFire, attribs);
+						}
+					}
+				}
+			}
+		}
+        DETOUR_MEMBER_CALL(CCollisionEvent_PostCollision)(event);
+
+		if (weaponAltFire != nullptr) {
+			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
+			if (attribs != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, attribs);
+			}
+		}
+    }
+
+    DETOUR_DECL_MEMBER(bool, CBaseCombatWeapon_HasPrimaryAmmo)
+	{
+		auto entity = reinterpret_cast<CBaseCombatWeapon *>(this);
+
+		int modAmmoCount = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(entity, modAmmoCount, mod_ammo_per_shot);
+		if (modAmmoCount > 1) {
+			if (entity->GetMaxClip1() != -1 && entity->m_iClip1 >= modAmmoCount) {
+				return true;
+			}
+			auto owner = ToTFPlayer(entity->GetOwner());
+			if (owner != nullptr && owner->GetAmmoCount( entity->m_iPrimaryAmmoType ) >= modAmmoCount) {
+				return true;
+			}
+		}
+
+        return DETOUR_MEMBER_CALL(CBaseCombatWeapon_HasPrimaryAmmo)();
+    }
+
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
@@ -8037,7 +8176,6 @@ namespace Mod::Attr::Custom_Attributes
 			CBaseEntity *ent = manager->m_hOuter;
 			auto econentity = rtti_cast<CEconEntity *>(ent);
 			if (econentity != nullptr) {
-				Msg("Created\n");
 				econentity->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs");
 			}
 		}
@@ -8109,6 +8247,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFCrossbow_GetProjectileSpeed,    "CTFCrossbow::GetProjectileSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFGrapplingHook_GetProjectileSpeed,    "CTFGrapplingHook::GetProjectileSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFShotgunBuildingRescue_GetProjectileSpeed,    "CTFShotgunBuildingRescue::GetProjectileSpeed");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_GetProjectileSpeed,        "CTFWeaponBaseGun::GetProjectileSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Explode,    "CTFWeaponBaseGrenadeProj::Explode");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Explode,    "CTFBaseRocket::Explode");
 
@@ -8351,7 +8490,10 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create, "CTFReviveMarker::Create");
 			MOD_ADD_DETOUR_STATIC(TE_PlayerAnimEvent, "TE_PlayerAnimEvent");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_SetIdealActivity, "CBaseCombatWeapon::SetIdealActivity");
-			
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_Touch, "CBaseEntity::Touch");
+			MOD_ADD_DETOUR_MEMBER(CCollisionEvent_PostCollision, "CCollisionEvent::PostCollision");
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_HasPrimaryAmmo, "CBaseCombatWeapon::HasPrimaryAmmo");
+
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
 			

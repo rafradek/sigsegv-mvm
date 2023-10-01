@@ -1509,12 +1509,6 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
 	}
 	
-
-	DETOUR_DECL_MEMBER(float, CTFWeaponBaseGun_GetProjectileSpeed)
-	{
-		return 1.0f;
-	}
-
 	DETOUR_DECL_MEMBER(bool, CTFBot_IsBarrageAndReloadWeapon, CTFWeaponBase *gun)
 	{
 		if (TFGameRules()->IsMannVsMachineMode()) {
@@ -2111,7 +2105,6 @@ namespace Mod::Pop::TFBot_Extensions
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsMiniBoss,        "CTFPlayer::IsMiniBoss");
 			//MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_SetBloodColor,        "CBaseCombatCharacter::SetBloodColor");
 			//MOD_ADD_DETOUR_MEMBER(CBaseAnimating_SetModelScale,        "CBaseAnimating::SetModelScale");
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_GetProjectileSpeed,        "CTFWeaponBaseGun::GetProjectileSpeed");
 			
 			/* Hold fire until full reload on all weapons fix */
 			MOD_ADD_DETOUR_MEMBER(CTFBot_IsBarrageAndReloadWeapon,        "CTFBot::IsBarrageAndReloadWeapon");
