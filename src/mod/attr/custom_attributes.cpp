@@ -5580,6 +5580,22 @@ namespace Mod::Attr::Custom_Attributes
 				player->SetCustomVariable("nextattackreset", Variant(gpGlobals->tickcount));
 				mod->props["m_flNextAttack"] = {Variant(gpGlobals->curtime + 0.4f), Variant(gpGlobals->curtime + 0.4f)};
 			}
+			
+			auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+			if (mod != nullptr && player->m_nButtons & IN_ATTACK2 && !mod->active) {
+				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
+				if (attribs != nullptr) {
+					AddMedigunAttributes(&weapon->GetItem()->GetAttributeList(), attribs);
+				}
+				mod->active = true;
+			}
+			else if (mod != nullptr && !(player->m_nButtons & IN_ATTACK2) && mod->active) {
+				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
+				if (attribs != nullptr) {
+					RemoveOnActiveAttributes(weapon, attribs);
+				}
+				mod->active = false;
+			}
 		}
 
 		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
@@ -7211,32 +7227,19 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetSceneSoundToken)();
 	}
 
+	THINK_FUNC_DECL(SetActivityThink)
+	{
+		static int activityAttack = CAI_BaseNPC::GetActivityID("ACT_VM_PRIMARYATTACK");
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal(activityAttack));
+	};
+
+	bool idealActivitySet = false;
 	GlobalThunkRW<CBasePlayer *> CBaseEntity_m_pPredictionPlayer("CBaseEntity::m_pPredictionPlayer");
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemPostFrame)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		auto player = weapon->GetTFPlayerOwner();
-		if (player != nullptr) {
-			auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
-			if (mod != nullptr && player->m_nButtons & IN_ATTACK2 && !mod->active) {
-				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
-				if (attribs != nullptr) {
-					AddMedigunAttributes(&weapon->GetItem()->GetAttributeList(), attribs);
-				}
-				mod->active = true;
-			}
-			else if (mod != nullptr && !(player->m_nButtons & IN_ATTACK2) && mod->active) {
-				GET_STRING_ATTRIBUTE(weapon, alt_fire_attributes, attribs);
-				if (attribs != nullptr) {
-					RemoveOnActiveAttributes(weapon, attribs);
-				}
-				mod->active = false;
-			}
-		}
-		float duration = GetFastAttributeFloat(weapon, 0.0f, ALT_FIRE_ATTACK);
-		if (duration != 0.0f) {
-			auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
-		}
 		if (player != nullptr && player->m_nButtons & IN_ATTACK2 && weapon->m_flNextPrimaryAttack <= gpGlobals->curtime && weapon->m_flNextSecondaryAttack <= gpGlobals->curtime) {
 			
 			float duration = GetFastAttributeFloat(weapon, 0.0f, ALT_FIRE_ATTACK);
@@ -7245,8 +7248,18 @@ namespace Mod::Attr::Custom_Attributes
 				
 				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
 				CBaseEntity_m_pPredictionPlayer.GetRef() = nullptr;
-				SCOPED_INCREMENT(rc_AltFireAttack);
-				weapon->PrimaryAttack();
+				static int activityIdle = CAI_BaseNPC::GetActivityID("ACT_VM_IDLE");
+				Activity activityPre = weapon->m_IdealActivity;
+				{
+					SCOPED_INCREMENT(rc_AltFireAttack);
+					weapon->PrimaryAttack();
+				}
+				// To fix attack animation not playing, enforce idle animation for a tick before switching to attack
+				if (idealActivitySet) {
+					weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal(activityIdle));
+					THINK_FUNC_SET(weapon, SetActivityThink, gpGlobals->curtime);
+					idealActivitySet = false;
+				}
 				weapon->m_flNextSecondaryAttack = gpGlobals->curtime + (weapon->m_flNextPrimaryAttack - gpGlobals->curtime) * duration;
 				g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldPredictPlayer;
 				CBaseEntity_m_pPredictionPlayer.GetRef() = oldPredictPlayer;
@@ -7254,6 +7267,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		
 		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemPostFrame)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CBaseCombatWeapon_SetIdealActivity, Activity act)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		static int activityAttack = CAI_BaseNPC::GetActivityID("ACT_VM_PRIMARYATTACK");
+		if (rc_AltFireAttack && weapon->m_IdealActivity == act && act == weapon->TranslateViewmodelHandActivityInternal(activityAttack)) {
+			idealActivitySet = true;
+		}
+		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetIdealActivity)(act);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemBusyFrame)
@@ -7295,13 +7318,6 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_STATIC_CALL(TE_PlayerAnimEvent)(player, anim, data);
 		playerAnimSender = nullptr;
 	}
-	
-	DETOUR_DECL_MEMBER(bool, CBaseCombatWeapon_SetIdealActivity, Activity act)
-	{
-		Msg("Activity %s\n", CAI_BaseNPC::GetActivityName(act));
-		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetIdealActivity)(act);
-	}
-
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
