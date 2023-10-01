@@ -3466,3 +3466,50 @@ WaveSchedule
 
 // Fire input on attack. Player is !activator, projectile is !projectile (must be input target), weapon is !self
 // "fire input on attack" "!activator^SetHealth^0"
+
+// Stun target on hit duration
+// "stun on hit" "4"
+
+// Giant robots cannot be stunned
+// "stun on hit no giants" 1
+
+// Stun on hit type:
+// movement
+// panic
+// bonk
+// ghost
+// bigbonk
+// "stun on hit type" "movement"
+
+// Movement penalty applied with "movement" stun on hit type
+// "stun on hit slow" 0.4
+
+// Multiplier of health gained from attacking enemies
+// "medigun attack enemy heal mult" 3
+
+// Medigun custom particle. Automatically uses _red and _blue particles when not specified. Sometimes ~ has to be added so that the particle disappears when needed
+// "medigun particle" "passtime_beam"
+
+// Medigun custom particle when attacking enemies. Sometimes ~ has to be added so that the particle disappears when needed
+// "medigun particle enemy" "~dxhr_arm_muzzleflash2"
+
+// Medigun custom particle when uber is released. Sometimes ~ has to be added so that the particle disappears when needed
+// "medigun particle release" "~dxhr_arm_muzzleflash2"
+
+// Medigun custom particle for full charge sparks.
+// "medigun particle spark" "medicgun_invulnstatus_fullcharge"
+
+// Immune to effects applied by other players
+// "effect immunity" 1
+
+// Use robot voicelines
+// "use robot voice" 1
+
+// Use human voicelines
+// "use human voice" 1
+
+// Alt fire fires an attack. Value higher than 1 specifies fire rate multipler when using secondary attack
+// "alt fire attack" 1
+
+// Attributes to apply when alt fire button is pressed
+// "alt fire attack attributes" "fire rate bonus|2|damage bonus|2"
