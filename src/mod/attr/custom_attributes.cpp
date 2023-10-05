@@ -1364,6 +1364,8 @@ namespace Mod::Attr::Custom_Attributes
 
 	void CreateWeaponWearables(CustomModelEntry &entry)
 	{
+		if (entry.weapon->GetTFPlayerOwner() == nullptr) return;
+		
 		if ((entry.wearable_vm == nullptr || entry.wearable_vm->IsMarkedForDeletion()) && entry.createVMWearable) {
 			auto wearable_vm = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable_vm"));
 			CopyVisualAttributes(entry.weapon->GetTFPlayerOwner(), entry.weapon, wearable_vm);

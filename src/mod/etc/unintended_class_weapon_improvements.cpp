@@ -970,9 +970,23 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 							}
 							
 						}
-						float regen = weapon->InternalGetEffectBarRechargeTime();
-						if (regen != 0.0f) {
-							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(weapon->GetEffectBarProgress() * 100));
+						bool showEffectRegen = true;
+						if (weaponid == TF_WEAPON_BUILDER) {
+							auto builder = rtti_cast<CTFWeaponBuilder *>(item);
+							showEffectRegen = builder != nullptr && builder->m_aBuildableObjectTypes[3];
+						}
+
+						if (showEffectRegen) {
+							float regen = weapon->InternalGetEffectBarRechargeTime();
+							if (regen != 0.0f) {
+								float progress = weapon->GetEffectBarProgress();
+								if (progress <= 1) {
+									message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(weapon->GetEffectBarProgress() * 100));
+								}
+								else {
+									message += fmt::format("{}: -%\n", GetItemNameForDisplay(item->GetItem()));
+								}
+							}
 						}
 					}
 					auto meterItem = rtti_cast<IHasGenericMeter *>(item);
