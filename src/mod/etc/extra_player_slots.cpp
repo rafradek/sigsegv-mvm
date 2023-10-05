@@ -57,7 +57,7 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
 		"Extra player slot count. Requires map restart to function");
 
-    ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY,
+    ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Allow bots to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			if (sig_etc_extra_player_slots_allow_bots.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
@@ -76,7 +76,7 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_voice_display_fix("sig_etc_extra_player_slots_voice_display_fix", "0", FCVAR_NOTIFY,
 		"Fixes voice chat indicator showing with more than 64 slots");
 
-    ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "1", FCVAR_NOTIFY,
+    ConVar sig_etc_extra_player_slots_no_death_cam("sig_etc_extra_player_slots_no_death_cam", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Does not display death cam when killed by players in extra slots");
 
     ConVar sig_etc_extra_player_slots_show_player_names("sig_etc_extra_player_slots_show_player_names", "0", FCVAR_NOTIFY,

@@ -1094,6 +1094,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer15ValidateWeaponsEP19TFPlayerClassData_tb"
 				}
+				"CTFPlayer::OnTauntSucceeded"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer16OnTauntSucceededEPKcii"
+				}
 			//	"GetTFConditionName"
 			//	{
 			//		type "sym"
@@ -1116,6 +1121,8 @@
 				
 				"CTFPlayer::RemoveInvisibility" "_ZN9CTFPlayer18RemoveInvisibilityEv"
 				"CTFPlayer::CheckBlockBackstab" "_ZN9CTFPlayer18CheckBlockBackstabEPS_"
+				"CTFPlayer::RemoveOwnedProjectiles" "_ZN9CTFPlayer22RemoveOwnedProjectilesEv"
+				"CTFPlayer::MaybeDrawRailgunBeam" "_ZN9CTFPlayer20MaybeDrawRailgunBeamEP16IRecipientFilterP13CTFWeaponBaseRK6VectorS6_"
 				
 				"CTFPlayerShared::SetDefaultItemChargeMeters" "_ZN15CTFPlayerShared26SetDefaultItemChargeMetersEv"
 				"CTFPlayerShared::SetItemChargeMeter"         "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf"

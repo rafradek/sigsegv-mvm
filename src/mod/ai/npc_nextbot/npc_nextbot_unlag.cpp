@@ -465,6 +465,8 @@ namespace Mod::AI::NPC_Nextbot
 	{
 		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
 		if (reinterpret_cast<CLagCompensationManager *>(this) != &g_LagCompensationManager.GetRef()) return;
+
+        if (cmd == nullptr) return;
         //DONT LAG COMP AGAIN THIS FRAME IF THERES ALREADY ONE IN PROGRESS
         //IF YOU'RE HITTING THIS THEN IT MEANS THERES A CODE BUG
         if (currentPlayer)
@@ -661,7 +663,7 @@ namespace Mod::AI::NPC_Nextbot
 	};
 	CModUnlagNPCGlobal s_ModUnlagNPCGlobal;
 
-    ConVar cvar_enable_unlagnpcglobal("sig_ai_lag_compensation_npc", "0", FCVAR_NOTIFY,
+    ConVar cvar_enable_unlagnpcglobal("sig_ai_lag_compensation_npc", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: Lag compensate all NPC entities such as bosses, zombies etc",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_ModUnlagNPCGlobal.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

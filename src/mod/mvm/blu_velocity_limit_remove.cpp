@@ -57,7 +57,7 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
     };
 	CMod s_Mod;
 
-    ConVar cvar_enable("sig_mvm_blu_velocity_limit_remove", "0", FCVAR_NOTIFY,
+    ConVar cvar_enable("sig_mvm_blu_velocity_limit_remove", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: remove velocity limit for blu team",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

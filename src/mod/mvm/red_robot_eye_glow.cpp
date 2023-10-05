@@ -8,13 +8,13 @@
 
 namespace Mod::MvM::Red_Robot_Eye_Glow
 {
-    ConVar cvar_eye_particle("sig_mvm_eye_particle", "", FCVAR_NOTIFY,
+    ConVar cvar_eye_particle("sig_mvm_eye_particle", "", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: add eye particle to models");
 
-    ConVar cvar_human_eye_particle("sig_mvm_human_eye_particle", "0", FCVAR_NOTIFY,
+    ConVar cvar_human_eye_particle("sig_mvm_human_eye_particle", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: add eye particle to humans");
     
-    ConVar cvar_extended_difficulty_colors("sig_mvm_eye_extended_difficulty_colors", "0", FCVAR_NOTIFY,
+    ConVar cvar_extended_difficulty_colors("sig_mvm_eye_extended_difficulty_colors", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: special eye colors for normal and expert bots");
 
     void SetEyeColorForDiff(Vector &vec, int difficulty, bool isspec) {

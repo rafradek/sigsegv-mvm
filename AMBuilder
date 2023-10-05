@@ -132,6 +132,8 @@ if not Extension.optimize_mods_only:
     'src/mod/attr/healonkill_overheal_melee.cpp',
     'src/mod/attr/undocumented.cpp',
     'src/mod/attr/custom_attributes.cpp',
+
+    'src/mod/bot/bot_player_slot_reorder.cpp',
     
     'src/mod/cond/enhanced_cmds.cpp',
     'src/mod/cond/reprogrammed.cpp',

@@ -33,7 +33,7 @@ namespace Mod::MvM::Player_Limit
 
     CValueOverride_ConVar<bool> allowspectators("mp_allowspectators");
 
-    ConVar sig_mvm_spectator_max_players("sig_mvm_spectator_max_players", "-1", FCVAR_NOTIFY,
+    ConVar sig_mvm_spectator_max_players("sig_mvm_spectator_max_players", "-1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Set max spectator team count. -1 = Default",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){ 
             RecalculateSlots();

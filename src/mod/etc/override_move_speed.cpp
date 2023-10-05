@@ -84,7 +84,7 @@ namespace Mod::Etc::Override_Move_Speed
 	}
 	
 	
-	ConVar cvar_limit("sig_etc_override_speed_limit_value", "-1", FCVAR_NOTIFY,
+	ConVar cvar_limit("sig_etc_override_speed_limit_value", "-1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Etc: player movement speed limit when overridden (use -1 for no limit)");
 	
 	
@@ -124,7 +124,7 @@ namespace Mod::Etc::Override_Move_Speed
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_etc_override_speed_limit", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_etc_override_speed_limit", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Etc: override the 520 HU/s player move speed limit",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

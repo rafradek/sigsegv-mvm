@@ -5773,6 +5773,7 @@
 				"CBaseEntity::GetCollideable" "_ZN11CBaseEntity14GetCollideableEv"
 				"CBaseEntity::GetRefEHandle" "_ZNK11CBaseEntity13GetRefEHandleEv"
 				"CBaseEntity::TraceAttack" "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+				"CBaseEntity::GetTracerType" "_ZN11CBaseEntity13GetTracerTypeEv"
 
 				"CBaseAnimatingOverlay::AddGesture" "_ZN21CBaseAnimatingOverlay10AddGestureE8Activityb"
 				"CBaseAnimatingOverlay::RestartGesture" "_ZN21CBaseAnimatingOverlay14RestartGestureE8Activitybb"
@@ -5822,6 +5823,8 @@
 				
 				"CTFTeamManager::GetTeam"     "_ZN14CTFTeamManager7GetTeamEi"
 				"CTFTeamManager::IsValidTeam" "_ZN14CTFTeamManager11IsValidTeamEi"
+
+				"CGameRules::DefaultFOV"   "_ZN10CGameRules10DefaultFOVEv"
 				
 				"CTeamplayRules::SetStalemate"   "_ZN14CTeamplayRules12SetStalemateEibb"
 				"CTeamplayRules::SetWinningTeam" "_ZN14CTeamplayRules14SetWinningTeamEiibbbb"
@@ -5864,6 +5867,8 @@
 				"CBasePlayer::IsPlayer" "_ZNK11CBasePlayer8IsPlayerEv"
 				"CBasePlayer::SetModel" "_ZN11CBasePlayer8SetModelEPKc"
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
+				"CBasePlayer::SetFOV" "_ZN11CBasePlayer6SetFOVEP11CBaseEntityifi"
+				"CBasePlayer::SetScriptOverlayMaterial" "_ZN11CBasePlayer24SetScriptOverlayMaterialEPKc"
 				
 				"CEyeballBoss::GetLocomotionInterface" "_ZNK12CEyeballBoss22GetLocomotionInterfaceEv"
 				"CEyeballBoss::GetVisionInterface" "_ZNK12CEyeballBoss18GetVisionInterfaceEv"
@@ -6062,6 +6067,8 @@
 				"CTFStunBall::GetDamage" "_ZN11CTFStunBall9GetDamageEv"
 
 				"CGameMovement::FullNoClipMove" "_ZN13CGameMovement14FullNoClipMoveEff"
+				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
+				"CGameMovement::PlayerMove" "_ZN13CGameMovement10PlayerMoveEv"
 
 				"CTFCompoundBow::Reload" "_ZN14CTFCompoundBow6ReloadEv"
 
@@ -6083,7 +6090,7 @@
 
 				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
-				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
+				"CEconItemSchema::Reset" "_ZN15CEconItemSchema5ResetEv"
 
 				"CEconItemView::GetAnimationSlot" "_ZNK13CEconItemView16GetAnimationSlotEv"
 				"CEconItemView::GetSkin" "_ZNK13CEconItemView7GetSkinEib"
@@ -6095,6 +6102,9 @@
 
 				"CCollisionEvent::PostCollision" "_ZN15CCollisionEvent13PostCollisionEP17vcollisionevent_t"
 				
+				"CPointPush::PushThink" "_ZN10CPointPush9PushThinkEv"
+
+				"TE_FireBullets" "_Z14TE_FireBulletsiRK6VectorRK6QAngleiiifb"
 			}
 			"addrs_group"
 			{

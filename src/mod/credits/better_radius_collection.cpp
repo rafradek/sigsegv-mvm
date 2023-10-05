@@ -92,7 +92,7 @@ namespace Mod::Credits::Better_Radius_Collection
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_credits_better_radius_collection", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_credits_better_radius_collection", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: rewrite currency pack collection code to eliminate problematic aspects of the magnet effect",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

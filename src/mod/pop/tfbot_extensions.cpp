@@ -1359,7 +1359,7 @@ namespace Mod::Pop::TFBot_Extensions
 //		return "";
 //	}
 
-	ConVar improved_airblast    ("sig_bot_improved_airblast", "0", FCVAR_NOTIFY, "Bots can reflect grenades stickies and arrows, makes them aware of new JI airblast");
+	ConVar improved_airblast    ("sig_bot_improved_airblast", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Bots can reflect grenades stickies and arrows, makes them aware of new JI airblast");
 
 	CTFBot *bot_shouldfirecompressionblast = nullptr;
 	RefCount rc_CTFBot_ShouldFireCompressionBlast;
@@ -2012,7 +2012,7 @@ namespace Mod::Pop::TFBot_Extensions
 		float oldNearestPoint = flNearestPoint;
 		Vector oldNearestBuildPoint = vecNearestBuildPoint;
 		auto result = DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
-		if (result && oldBuildOnEntity != nullptr) {
+		if (result && oldBuildOnEntity != nullptr && oldNearestPoint != 9999) {
 			Vector forward;
 			AngleVectors(pBuilder->EyeAngles(), &forward);
 			if (DotProduct((oldNearestBuildPoint - pBuilder->EyePosition()).Normalized(), forward) > DotProduct((vecNearestBuildPoint - pBuilder->EyePosition()).Normalized(), forward)) {
@@ -2057,6 +2057,59 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		return DETOUR_STATIC_CALL(IgnoreActorsTraceFilterFunction)(entity, contents);
     }
+
+	DETOUR_DECL_MEMBER(void, CTFBot_Spawn)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		bot->m_pWaveSpawnPopulator = nullptr;
+		DETOUR_MEMBER_CALL(CTFBot_Spawn)();
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveOwnedProjectiles)
+	{
+		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode()) {
+			auto player = reinterpret_cast<CTFPlayer *>(this);
+			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
+				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
+				auto world = GetWorldEntity();
+				if (proj->GetOwnerEntity() == player) {
+					proj->SetOwnerEntity(world);
+					if (rtti_cast<CBaseGrenade *>(proj) != nullptr) {
+						rtti_cast<CBaseGrenade *>(proj)->SetThrower(world);
+					}
+					if (rtti_cast<CTFProjectile_Rocket *>(proj) != nullptr)
+						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(world);
+					else if (rtti_cast<CTFBaseProjectile *>(proj) != nullptr)
+						rtti_cast<CTFBaseProjectile *>(proj)->SetScorer(world);
+					else if (rtti_cast<CTFProjectile_Arrow *>(proj) != nullptr)
+						rtti_cast<CTFProjectile_Arrow *>(proj)->SetScorer(world);
+					else if (rtti_cast<CTFProjectile_Flare *>(proj) != nullptr)
+						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(world);
+					else if (rtti_cast<CTFProjectile_EnergyBall *>(proj) != nullptr)
+						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(world);
+
+					
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveOwnedProjectiles)();
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
+	{
+		bool sappedNotStunned = false;
+		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode()) {
+			sappedNotStunned = target->m_Shared->InCond( TF_COND_SAPPED ) && !target->m_Shared->IsControlStunned();
+			if (sappedNotStunned)
+				target->m_Shared->GetCondData().RemoveCondBit(TF_COND_SAPPED);
+		}
+		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
+
+		if (sappedNotStunned) {
+			target->m_Shared->GetCondData().AddCondBit(TF_COND_SAPPED);
+		}
+		return ret;
+	}
 	
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2195,7 +2248,14 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_STATIC(IgnoreActorsTraceFilterFunction, "IgnoreActorsTraceFilterFunction");
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_Update, "NextBotPlayer<CTFPlayer>::Update");
 			
+			// Fix bots giving cash after being manually put out of spectator
+			MOD_ADD_DETOUR_MEMBER(CTFBot_Spawn, "CTFBot::Spawn");
 
+			// Stop projectiles from disappearing after team change
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveOwnedProjectiles, "CTFPlayer::RemoveOwnedProjectiles");
+
+			// Remove frontstabbing from sapped not stunned bots
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

@@ -331,6 +331,8 @@ struct PlayerUpgradeHistory
 extern StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere;
 extern StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes;
 extern StaticFuncThunk<int, int, bool> ft_MannVsMachineStats_GetAcquiredCredits;
+extern StaticFuncThunk<void, EventInfo *, const char *> ft_FireEvent;
+extern StaticFuncThunk<EventInfo *, KeyValues *> ft_ParseEvent;
 
 
 inline bool IsSpaceToSpawnHere(const Vector& pos)
@@ -346,5 +348,15 @@ inline bool ParseDynamicAttributes(CTFBot::EventChangeAttributes_t &event, KeyVa
 inline int MannVsMachineStats_GetAcquiredCredits(int wave = -1, bool bonus = true)
 {
 	return ft_MannVsMachineStats_GetAcquiredCredits(wave, bonus);
+}
+
+inline void FireEvent(EventInfo *info, const char *name)
+{
+	return ft_FireEvent(info, name);
+}
+
+inline EventInfo *ParseEvent(KeyValues *kv)
+{
+	return ft_ParseEvent(kv);
 }
 #endif

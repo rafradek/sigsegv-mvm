@@ -40,7 +40,7 @@ namespace Mod::Robot::Standable_Heads
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_robot_standable_heads", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_robot_standable_heads", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: remove the sliding force that prevents players from standing on robots' heads",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

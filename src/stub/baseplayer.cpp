@@ -92,6 +92,9 @@ IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
 IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
 IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData,   m_flFallVelocity, CBasePlayer);
+#ifdef SE_TF2
+IMPL_SENDPROP(char[260], CPlayerLocalData, m_szScriptOverlayMaterial, CBasePlayer);
+#endif
 
 IMPL_DATAMAP(char[32],     CBasePlayer, m_szNetname);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bDuckToggled);
@@ -118,6 +121,8 @@ IMPL_SENDPROP(CUtlVector<CHandle<CEconWearable>>, CBasePlayer, m_hMyWearables,  
 #endif
 IMPL_SENDPROP(CHandle<CBaseEntity>,               CBasePlayer, m_hObserverTarget, CBasePlayer);
 IMPL_SENDPROP(CPlayerState,                       CBasePlayer, pl,              CBasePlayer);
+IMPL_SENDPROP(int,                                CBasePlayer, m_iDefaultFOV,   CBasePlayer);
+IMPL_SENDPROP(int,                                CBasePlayer, m_iFOV,          CBasePlayer);
 
 MemberFuncThunk<CBasePlayer *, void, Vector *, Vector *, Vector *> CBasePlayer::ft_EyeVectors    ("CBasePlayer::EyeVectors");
 MemberFuncThunk<CBasePlayer *, bool, CSteamID *>                   CBasePlayer::ft_GetSteamID    ("CBasePlayer::GetSteamID");
@@ -131,6 +136,7 @@ MemberFuncThunk<CBasePlayer *, void, const QAngle&>                CBasePlayer::
 #ifdef SE_TF2
 MemberFuncThunk<      CBasePlayer *, void, int, bool, bool, bool>  CBasePlayer::ft_ChangeTeam_base    ("CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 #endif
+MemberFuncThunk<      CBasePlayer *, bool, CBaseEntity *, int, float, int> CBasePlayer::ft_SetFOV             ("CBasePlayer::SetFOV");
 
 MemberVFuncThunk<const CBasePlayer *, bool>                        CBasePlayer::vt_IsFakeClient        (TypeName<CBasePlayer>(), "CBasePlayer::IsFakeClient");
 MemberVFuncThunk<const CBasePlayer *, bool>                        CBasePlayer::vt_IsBot               (TypeName<CBasePlayer>(), "CBasePlayer::IsBot");

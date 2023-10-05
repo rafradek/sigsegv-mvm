@@ -13,10 +13,10 @@
 
 namespace Mod::Etc::Entity_Limit_Manager
 {
-    ConVar sig_etc_entity_limit_manager_viewmodel("sig_etc_entity_limit_manager_viewmodel", "1", FCVAR_NOTIFY,
+    ConVar sig_etc_entity_limit_manager_viewmodel("sig_etc_entity_limit_manager_viewmodel", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Remove usused offhand viewmodel entity for other classes than spy");
 
-    ConVar sig_etc_entity_limit_manager_remove_expressions("sig_etc_entity_limit_manager_remove_expressions", "0", FCVAR_NOTIFY,
+    ConVar sig_etc_entity_limit_manager_remove_expressions("sig_etc_entity_limit_manager_remove_expressions", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Remove expressions for bots (like yelling when firing minigun). Reduces entity count by 1 per bot");
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
@@ -410,7 +410,7 @@ namespace Mod::Etc::Entity_Limit_Manager
 
 
     RefCount rc_ServerOnly;
-    ConVar cvar_path_track_is_server_entity("sig_etc_path_track_is_server_entity", "1", FCVAR_NOTIFY,
+    ConVar cvar_path_track_is_server_entity("sig_etc_path_track_is_server_entity", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: make path_track a server entity, which saves edicts");
     DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CPathTrack_Create, const char *classname)
 	{

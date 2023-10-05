@@ -73,18 +73,18 @@ namespace Mod::Pop::PopMgr_Extensions
 {
 	void ResendUpgradeFile(bool force);
 
-	ConVar cvar_custom_upgrades_file("sig_mvm_custom_upgrades_file", "", FCVAR_NONE,
+	ConVar cvar_custom_upgrades_file("sig_mvm_custom_upgrades_file", "", FCVAR_GAMEDLL,
 		"Set upgrades file to specified one",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ResendUpgradeFile(true);
 		});	
-	ConVar cvar_bots_are_humans("sig_mvm_bots_are_humans", "0", FCVAR_NONE,
+	ConVar cvar_bots_are_humans("sig_mvm_bots_are_humans", "0", FCVAR_GAMEDLL,
 		"Bots should use human models");	
 
-	ConVar cvar_human_bots_robot_voice("sig_mvm_human_bots_robot_voice", "0", FCVAR_NONE,
+	ConVar cvar_human_bots_robot_voice("sig_mvm_human_bots_robot_voice", "0", FCVAR_GAMEDLL,
 		"Bots should use robot voice if they are humans");	
 
-	ConVar cvar_vanilla_mode("sig_vanilla_mode", "0", FCVAR_NONE,	
+	ConVar cvar_vanilla_mode("sig_vanilla_mode", "0", FCVAR_GAMEDLL,	
 		"Disable most mods", 
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			if (flOldValue == 0 && ((ConVar *)pConVar)->GetFloat() != 0) {
@@ -95,16 +95,16 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		});
 	
-	ConVar cvar_use_teleport("sig_mvm_bots_use_teleporters", "1", FCVAR_NOTIFY,
+	ConVar cvar_use_teleport("sig_mvm_bots_use_teleporters", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: bots use player teleporters");
 
-	ConVar cvar_bots_bleed("sig_mvm_bots_bleed", "0", FCVAR_NOTIFY,
+	ConVar cvar_bots_bleed("sig_mvm_bots_bleed", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Bots should bleed");
 
     ConVar cvar_modded_pvp{"sig_modded_pvp", "0", FCVAR_NOTIFY,
         "Allow more mods to work in non-MvM gamemodes"};
 
-	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY,
+	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Bots should be send to spectator immediately after dying");
 
 	ConVar cvar_banned_missions_file("sig_banned_missions_file", "banned_missions.txt", FCVAR_NOTIFY,
@@ -787,6 +787,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_Scripts.clear();
 			this->m_ScriptFiles.clear();
 			this->m_SpawnLocations.clear();
+
+			this->m_missionUnloadOutput.clear();
 		}
 		
 		bool  m_bGiantsDropRareSpells;
@@ -990,7 +992,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		ForceItems m_ForceItems;
 
 
-		std::map<std::string, CustomWeapon> m_CustomWeapons;
+		std::unordered_map<std::string, CustomWeapon, CaseInsensitiveHash, CaseInsensitiveCompare> m_CustomWeapons;
 
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
 		std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_ItemEquipTemplates;
@@ -1030,6 +1032,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CHandle<CBaseEntity> m_ScriptManager;
 		std::unordered_map<CSpawnLocation *, SpawnLocationData> m_SpawnLocations;
 
+		std::vector<InputInfoTemplate> m_missionUnloadOutput;
 	};
 	PopState state{};
 	
@@ -5556,35 +5559,15 @@ namespace Mod::Pop::PopMgr_Extensions
 			const char *cname = subkey->GetName();
 			if (FStrEq(cname, "OnSpawnOutput") || FStrEq(cname, "OnParentKilledOutput") || FStrEq(cname, "OnAllKilledOutput")){
 				
-				//auto input = templ.onspawn_inputs.emplace(templ.onspawn_inputs.end());
-				std::string target;
-				std::string action;
-				float delay = 0.0f;
-				std::string param;
-				FOR_EACH_SUBKEY(subkey, subkey2) {
-					const char *name = subkey2->GetName();
-					if (FStrEq(name, "Target")) {
-						target = subkey2->GetString();
-					}
-					else if (FStrEq(name, "Action")) {
-						action = subkey2->GetString();
-					}
-					else if (FStrEq(name, "Delay")) {
-						delay = subkey2->GetFloat();
-					}
-					else if (FStrEq(name, "Param")) {
-						param = subkey2->GetString();
-					}
-				}
-
+				auto inputInfo = Parse_InputInfoTemplate(subkey);
 				if (FStrEq(cname, "OnSpawnOutput")) {
-					templ.on_spawn_triggers.push_back({target, action, param, delay});
+					templ.on_spawn_triggers.push_back(inputInfo);
 				}
 				else if (FStrEq(cname, "OnParentKilledOutput")) {
-					templ.on_parent_kill_triggers.push_back({target, action, param, delay});
+					templ.on_parent_kill_triggers.push_back(inputInfo);
 				}
 				else if (FStrEq(cname, "OnAllKilledOutput")) {
-					templ.on_kill_triggers.push_back({target, action, param, delay});
+					templ.on_kill_triggers.push_back(inputInfo);
 				}
 				
 				//DevMsg("Added onspawn %s %s \n", input->target.c_str(), input->input.c_str());
@@ -6019,6 +6002,8 @@ namespace Mod::Pop::PopMgr_Extensions
 	RefCount rc_CPopulationManager_Parse;
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
+		TriggerList(nullptr, state.m_missionUnloadOutput, nullptr);
+
 		Msg("Parse\n");
 	//	DevMsg("CPopulationManager::Parse\n");
 		ForEachTFPlayer([&](CTFPlayer *player){
@@ -6046,8 +6031,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				auto find = state.m_Player_anim_cosmetics.find(player);
 				if (find != state.m_Player_anim_cosmetics.end() && find->second != nullptr) {
 					find->second->Remove();
-					servertools->SetKeyValue(player, "rendermode", "0");
-					player->SetRenderColorA(255);
+					player->m_nRenderFX = 0;
 					state.m_Player_anim_cosmetics.erase(find);
 				}
 
@@ -6075,7 +6059,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			LocalSpewOutputFunc = GetSpewOutputFunc();
 			SpewOutputFunc(Spew_ClientForward);
 		}
-		
+
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
 		reading_popfile = true;
 		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
@@ -6681,6 +6665,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_ScriptFiles.push_back(subkey->GetString());
 			} else if (FStrEq(name, "ForceRedMoney")) {
 				state.m_bForceRedMoney = subkey->GetBool();
+			} else if (FStrEq(name, "MissionUnloadOutput")) {
+				state.m_missionUnloadOutput.push_back(Parse_InputInfoTemplate(subkey));
 			} else if (FStrEq(name, "CustomNavFile")) {
 				char strippedFile[128];
 				V_StripExtension(subkey->GetString(), strippedFile, sizeof(strippedFile));

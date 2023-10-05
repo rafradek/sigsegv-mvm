@@ -8,14 +8,14 @@
 
 namespace Mod::MvM::Weapon_AntiGrief
 {
-	ConVar cvar_scorchshot   ("sig_mvm_weapon_antigrief_scorchshot",   "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Scorch Shot");
-	ConVar cvar_loosecannon  ("sig_mvm_weapon_antigrief_loosecannon",  "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Loose Cannon");
-	ConVar cvar_forceanature ("sig_mvm_weapon_antigrief_forceanature", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Force-A-Nature");
-	ConVar cvar_shortstop    ("sig_mvm_weapon_antigrief_shortstop", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Shortstop");
-	ConVar cvar_moonshot     ("sig_mvm_weapon_antigrief_moonshot", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from the Moonshot");
-	ConVar cvar_stunonhit    ("sig_mvm_weapon_antigrief_stunonhit", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from stun on hit attributes");
-	ConVar cvar_airborne_rage("sig_mvm_weapon_antigrief_airborne_rage", "1", FCVAR_NOTIFY, "Disable knockback and stun effects vs giant robots from minigun rage when airborne");
-	ConVar cvar_stunball     ("sig_mvm_stunball_stun", "1", FCVAR_NOTIFY, "Balls now stun players");
+	ConVar cvar_scorchshot   ("sig_mvm_weapon_antigrief_scorchshot",   "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Scorch Shot");
+	ConVar cvar_loosecannon  ("sig_mvm_weapon_antigrief_loosecannon",  "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Loose Cannon");
+	ConVar cvar_forceanature ("sig_mvm_weapon_antigrief_forceanature", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Force-A-Nature");
+	ConVar cvar_shortstop    ("sig_mvm_weapon_antigrief_shortstop", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Shortstop");
+	ConVar cvar_moonshot     ("sig_mvm_weapon_antigrief_moonshot", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Moonshot");
+	ConVar cvar_stunonhit    ("sig_mvm_weapon_antigrief_stunonhit", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from stun on hit attributes");
+	ConVar cvar_airborne_rage("sig_mvm_weapon_antigrief_airborne_rage", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from minigun rage when airborne");
+	ConVar cvar_stunball     ("sig_mvm_stunball_stun", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Balls now stun players");
 	
 	
 	static inline bool BotIsAGiant(const CTFPlayer *player)

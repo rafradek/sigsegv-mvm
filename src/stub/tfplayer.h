@@ -11,6 +11,7 @@ class CTFWeaponBase;
 class CTFPlayer;
 class CTFItem;
 class CTFWearable;
+class CWaveSpawnPopulator;
 enum ETFFlagType : int32_t;
 
 enum PlayerAnimEvent_t : int32_t
@@ -543,6 +544,7 @@ public:
 	DECL_SENDPROP   (short,      m_iTauntItemDefIndex);
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
+	DECL_RELATIVE   (CWaveSpawnPopulator *, m_pWaveSpawnPopulator);
 	DECL_SENDPROP   (float,      m_flTauntYaw);
 	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
 	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);

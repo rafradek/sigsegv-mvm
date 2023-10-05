@@ -3384,4 +3384,68 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4660"
+    {
+        "name"	"fire input on effect"
+        "attribute_class"	"fire_input_on_effect"
+		"attribute_type"	"string"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4661"
+    {
+        "name"	"additional step sound"
+        "attribute_class"	"additional_step_sound"
+		"attribute_type"	"string"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4662"
+    {
+        "name"	"fov override"
+        "attribute_class"	"fov_override"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4663"
+    {
+        "name"	"hud overlay"
+        "attribute_class"	"hud_overlay"
+		"attribute_type"	"string"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4664"
+    {
+        "name"	"fire input on taunt"
+        "attribute_class"	"fire_input_on_taunt"
+		"attribute_type"	"string"
+        "description_string"	"No reanimator on death"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4665"
+    {
+        "name"	"displace touched enemies"
+        "attribute_class"	"displace_touched_enemies"
+        "description_string"	"Push away enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

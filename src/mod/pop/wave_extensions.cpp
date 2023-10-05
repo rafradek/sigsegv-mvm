@@ -563,7 +563,7 @@ namespace Mod::Pop::Wave_Extensions
 		return nullptr;
 	}
 
-	ConVar sig_text_print_speed("sig_text_print_speed", "4");
+	ConVar sig_text_print_speed("sig_text_print_speed", "4", FCVAR_GAMEDLL);
 	void ParseColorsAndPrint(const char *line, float gameTextDelay, int &linenum, CTFPlayer* player = nullptr)
 	{
 		std::vector<char> output;

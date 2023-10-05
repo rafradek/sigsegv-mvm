@@ -77,6 +77,8 @@ IMPL_RELATIVE(int, CObjectSentrygun, m_flSentryRange, m_bPlayerControlled, -size
 IMPL_SENDPROP(int, CObjectSentrygun, m_iState, CObjectSentrygun);
 IMPL_RELATIVE(float, CObjectSentrygun, m_flNextAttack, m_iState, sizeof(int));
 IMPL_RELATIVE(float, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + sizeof(int));
+IMPL_SENDPROP(CHandle<CBaseEntity>, CObjectSentrygun, m_hEnemy, CObjectSentrygun);
+IMPL_RELATIVE(float, CObjectSentrygun, m_flNextRocketAttack, m_hEnemy, -sizeof(float));
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");

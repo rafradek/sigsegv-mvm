@@ -31,7 +31,7 @@ namespace Mod::AI::EngieBot_NoPush
 		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_Update)(actor, dt);
 	}
 
-	ConVar cvar_reducerange("sig_ai_engiebot_pushrange", "0", FCVAR_NOTIFY,
+	ConVar cvar_reducerange("sig_ai_engiebot_pushrange", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: reduce push range");
 
 	/* would prefer to detour CTFGameRules::PushAllPlayersAway, but it's hard to reliably locate on Windows */

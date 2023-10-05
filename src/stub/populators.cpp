@@ -182,3 +182,5 @@ MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > IPopula
 StaticFuncThunk<bool, const Vector&> ft_IsSpaceToSpawnHere("IsSpaceToSpawnHere");
 StaticFuncThunk<bool, CTFBot::EventChangeAttributes_t &, KeyValues *> ft_ParseDynamicAttributes("ParseDynamicAttributes");
 StaticFuncThunk<int, int, bool> ft_MannVsMachineStats_GetAcquiredCredits("MannVsMachineStats_GetAcquiredCredits");
+StaticFuncThunk<void, EventInfo *, const char *> ft_FireEvent("FireEvent");
+StaticFuncThunk<EventInfo *, KeyValues *> ft_ParseEvent("ParseEvent");

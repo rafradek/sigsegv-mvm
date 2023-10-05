@@ -47,7 +47,7 @@ namespace Mod::MvM::Robot_Limit
 		THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
 	}
 
-	ConVar cvar_override("sig_mvm_robot_limit_override", "22", FCVAR_NOTIFY,
+	ConVar cvar_override("sig_mvm_robot_limit_override", "22", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: override the max number of MvM robots that are allowed to be spawned at once (normally 22)",
 		true, 0, false, 0,
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){

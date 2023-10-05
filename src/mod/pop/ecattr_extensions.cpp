@@ -178,6 +178,9 @@ namespace Mod::Pop::ECAttr_Extensions
 		std::vector<std::string> ignore_bots_with_tags;
 
 		std::vector<int> preferred_classes;
+
+		int fov = -1;
+		bool seeThroughWalls = false;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -242,24 +245,32 @@ namespace Mod::Pop::ECAttr_Extensions
 		CHANGE
 	};
 
+	void ResetHumanAnimations(CTFBot *bot, EventChangeAttributesData *data)
+	{
+		if (data != nullptr && data->use_human_animations && data->use_human_model == 0) {
+			for(int i = 0; i < bot->GetNumWearables(); i++) {
+				CEconWearable *wearable = bot->GetWearable(i);
+				if (wearable != nullptr && wearable->GetCustomVariableBool<"humananimation">()) {
+					int model_index = wearable->m_nModelIndexOverrides[0];
+					bot->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
+					wearable->Remove();
+				}
+			}
+			if (bot->m_nRenderFX == 6) {
+				bot->m_nRenderFX = 0;
+			}
+		}
+	}
 	void ClearDataForBot(CTFBot *bot, ClearAction clear_action)
 	{
 		if (clear_action != DESTRUCT) {
 			
 			auto data = GetDataForBot(bot);
-			if (data != nullptr && data->use_human_animations && data->use_human_model == 0) {
-				for(int i = 0; i < bot->GetNumWearables(); i++) {
-					CEconWearable *wearable = bot->GetWearable(i);
-					if (wearable != nullptr && wearable->GetItem() != nullptr && wearable->GetItem()->m_iItemDefinitionIndex == PLAYER_ANIM_WEARABLE_ITEM_ID) {
-						int model_index = wearable->m_nModelIndexOverrides[0];
-						bot->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
-						wearable->Remove();
-					}
-				}
-				if (bot->GetRenderMode() == 1) {
-					servertools->SetKeyValue(bot, "rendermode", "0");
-					bot->SetRenderColorA(255);
-				}
+			ResetHumanAnimations(bot, data);
+
+			if (data != nullptr && data->fov != -1) {
+				bot->m_iDefaultFOV = 90;
+				bot->SetFOV(bot, 0, 0.0f, 0);
 			}
 		}
 		
@@ -410,11 +421,11 @@ namespace Mod::Pop::ECAttr_Extensions
 		return result;
 	}
 
-	ConVar cvar_no_romevision("sig_no_romevision_cosmetics", "0", FCVAR_NONE,
+	ConVar cvar_no_romevision("sig_no_romevision_cosmetics", "0", FCVAR_GAMEDLL,
 		"Disable romevision cosmetics");
-	ConVar cvar_auto_strip("sig_auto_weapon_strip", "0", FCVAR_NONE,
+	ConVar cvar_auto_strip("sig_auto_weapon_strip", "0", FCVAR_GAMEDLL,
 		"Automatically strip unused weapons");
-	ConVar cvar_creators_custom_item("sig_creators_custom_item", "0", FCVAR_NONE,
+	ConVar cvar_creators_custom_item("sig_creators_custom_item", "0", FCVAR_GAMEDLL,
 		"Enable fallback to creators custom item");
 
 	void Parse_WeaponResist(EventChangeAttributesData &data, KeyValues *kv)
@@ -894,6 +905,10 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.ignore_bots_with_tags.push_back(kv->GetString());
 		} else if (FStrEq(name, "PreferClass")) {
 			data.preferred_classes.push_back(GetClassIndexFromString(kv->GetString()));
+		} else if (FStrEq(name, "FOV")) {
+			data.fov = kv->GetInt();
+		} else if (FStrEq(name, "SeeThroughWalls")) {
+			data.seeThroughWalls = kv->GetBool();
 		} else {
 			found = false;
 		}
@@ -1203,15 +1218,13 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 
 		if (data->use_human_animations && data->use_human_model == 0) {
-			CEconWearable *wearable = static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
+			CTFWearable *wearable = static_cast<CTFWearable *>(CreateEntityByName("tf_wearable"));//static_cast<CEconWearable *>(ItemGeneration()->SpawnItem(PLAYER_ANIM_WEARABLE_ITEM_ID, Vector(0,0,0), QAngle(0,0,0), 6, 9999, "tf_wearable"));
 			DevMsg("Use human anims %d\n", wearable != nullptr);
 			if (wearable != nullptr) {
-				
+				DispatchSpawn(wearable);
 				wearable->m_bValidatedAttachedEntity = true;
 				wearable->GiveTo(bot);
-				servertools->SetKeyValue(bot, "rendermode", "1");
-				bot->SetRenderColorA(0);
-				bot->EquipWearable(wearable);
+				bot->m_nRenderFX = 6;
 				const char *path = bot->GetPlayerClass()->GetCustomModel();
 				int model_index = CBaseEntity::PrecacheModel(path);
 				wearable->SetModelIndex(model_index);
@@ -1219,6 +1232,7 @@ namespace Mod::Pop::ECAttr_Extensions
 					wearable->SetModelIndexOverride(j, model_index);
 				}
 				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
+				wearable->SetCustomVariable("humananimation", Variant(true));
 			}
 			
 		}
@@ -1326,6 +1340,11 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 		if (!data->action_override.empty()) {
 			Mod::Pop::TFBot_Extensions::SetActionOverride(bot, data->action_override.c_str());
+		}
+
+		if (data->fov != -1) {
+			bot->m_iDefaultFOV = data->fov;
+			bot->SetFOV(bot, data->fov, 0.0f, 0);
 		}
 	}
 	
@@ -1655,7 +1674,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		return DETOUR_MEMBER_CALL(CTFBotMainAction_SelectTargetPoint)(nextbot,subject);
 	}
 
-	ConVar cvar_head_tracking_interval("sig_head_tracking_interval_multiplier", "1", FCVAR_NONE,	
+	ConVar cvar_head_tracking_interval("sig_head_tracking_interval_multiplier", "1", FCVAR_GAMEDLL,	
 		"Head tracking interval multiplier");	
 	DETOUR_DECL_MEMBER(float, CTFBotBody_GetHeadAimTrackingInterval)
 	{
@@ -2458,6 +2477,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_Event_Killed, HasRobotBlood(player));
+		ResetHumanAnimations(ToTFBot(player), GetDataForBot(player));
 		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
 	}
 	
@@ -2580,6 +2600,43 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 	}
+	
+	RefCount rc_IVision_IsAbleToSee;
+	DETOUR_DECL_MEMBER(bool, CNavArea_IsPotentiallyVisible, CNavArea *area)
+	{
+		if (rc_IVision_IsAbleToSee) {
+			return true;
+		}
+		return DETOUR_MEMBER_CALL(CNavArea_IsPotentiallyVisible)(area);
+	}
+
+	DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *subject, int checkFOV, Vector *visibleSpot)
+	{
+		IVision *vision = reinterpret_cast<IVision *>(this);
+		CTFBot *actor = ToTFBot(vision->GetBot()->GetEntity());
+		bool wallhack = false;
+		if (actor != nullptr) {
+			auto *data = GetDataForBot(actor);
+			if (data != nullptr && data->seeThroughWalls) {
+				wallhack = true;
+			}
+
+			if (actor->m_iFOV > 180) {
+				checkFOV = 1;
+			}
+		}
+
+		SCOPED_INCREMENT_IF(rc_IVision_IsAbleToSee, wallhack);
+		return DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
+	}
+	
+	DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClearToEntity, CBaseEntity *subject, Vector *visibleSpot)
+	{
+		if (rc_IVision_IsAbleToSee) {
+			return true;
+		}
+		return DETOUR_MEMBER_CALL(IVision_IsLineOfSightClearToEntity)(subject, visibleSpot);
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2655,6 +2712,9 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBotAttack_Update, "CTFBotAttack::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");
+			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee2");
+			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
+			MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
 			
 			
 		}

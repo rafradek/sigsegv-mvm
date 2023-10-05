@@ -1062,10 +1062,11 @@ namespace Mod::Cond::Reprogrammed
 		return ret;
 	}
 
+	ConVar sig_cond_reprogrammed_neutral_spy_disguise("sig_cond_reprogrammed_neutral_spy_disguise", "0", FCVAR_GAMEDLL, "Make neutral bots ignore disguised spies");
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
 	{
 		CTFBot *me = reinterpret_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity());
-		if (me->GetTeamNumber() != TEAM_SPECTATOR) return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		if (me->GetTeamNumber() != TEAM_SPECTATOR || !sig_cond_reprogrammed_neutral_spy_disguise.GetBool()) return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
 		
 		auto player = ToTFPlayer(ent);
 		int restoreTeam = -1;

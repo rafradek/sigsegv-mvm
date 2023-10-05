@@ -24,6 +24,7 @@ namespace Mod::Attr::Custom_Attributes
 		ADD_MAXHEALTH_NONBUFFED,
 		MOVE_SPEED_AS_HEALTH_DECREASES,
 		NO_CLIP,
+		DISPLACE_TOUCHED_ENEMIES,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -71,7 +72,8 @@ namespace Mod::Attr::Custom_Attributes
 		"add_maxhealth",
 		"add_maxhealth_nonbuffed",
 		"move_speed_as_health_decreases",
-		"no_clip"
+		"no_clip",
+		"displace_touched_enemies"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {

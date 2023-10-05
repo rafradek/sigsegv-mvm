@@ -114,6 +114,8 @@ public:
 	DECL_SENDPROP(int, m_bPlayerControlled);
 	DECL_RELATIVE(float, m_flFireRate);
 	DECL_RELATIVE(float, m_flNextAttack);
+	DECL_SENDPROP(CHandle<CBaseEntity>, m_hEnemy);
+	DECL_RELATIVE(float, m_flNextRocketAttack);
 private:
 	static MemberVFuncThunk<CObjectSentrygun *, QAngle &> vt_GetTurretAngles;
 	static MemberFuncThunk<CObjectSentrygun *, void> ft_SentryThink;

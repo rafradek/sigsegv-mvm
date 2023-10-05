@@ -229,6 +229,7 @@ IMPL_SENDPROP(short,                CTFPlayer, m_iTauntItemDefIndex  ,   CTFPlay
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlayer);
+IMPL_RELATIVE(CWaveSpawnPopulator *,CTFPlayer, m_pWaveSpawnPopulator, m_bMatchSafeToLeave, sizeof(int));
 IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
 IMPL_RELATIVE(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_bMatchSafeToLeave, +16);
 IMPL_SENDPROP(float,                CTFPlayer, m_flVehicleReverseTime, CTFPlayer);

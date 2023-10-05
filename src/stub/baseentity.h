@@ -380,6 +380,7 @@ public:
 	void PostClientActive()                                                                                                 { return vt_PostClientActive              (this); }
 	void VPhysicsDestroyObject()                                                                                            {        vt_VPhysicsDestroyObject         (this); }
 	uint PhysicsSolidMaskForEntity()                                                                                        { return vt_PhysicsSolidMaskForEntity     (this); }
+	const char *GetTracerType() const                                                                                       { return vt_GetTracerType                 (this); }
 	
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
@@ -557,6 +558,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_PostClientActive;
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_VPhysicsDestroyObject;
 	static MemberVFuncThunk<      CBaseEntity *, uint>                                                             vt_PhysicsSolidMaskForEntity;
+	static MemberVFuncThunk<const CBaseEntity *, const char *>                                                     vt_GetTracerType;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;

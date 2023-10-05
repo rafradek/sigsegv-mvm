@@ -37,7 +37,7 @@ namespace Mod::MvM::Sapper_Allow_Multiple_Active
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_mvm_sapper_allow_multiple_active", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_mvm_sapper_allow_multiple_active", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: allow multiple sappers to exist per player simultaneously in MvM mode",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

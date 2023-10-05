@@ -317,40 +317,40 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 	};
 	
 	
-	ConVar cvar_max("sig_mvm_jointeam_blue_allow_max", "-1", FCVAR_NOTIFY,
+	ConVar cvar_max("sig_mvm_jointeam_blue_allow_max", "-1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: max humans to allow on blue team (-1 for no limit)",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			Mod::MvM::Player_Limit::RecalculateSlots();
 		});
 	
-	ConVar cvar_flag_pickup("sig_mvm_bluhuman_flag_pickup", "0", FCVAR_NOTIFY,
+	ConVar cvar_flag_pickup("sig_mvm_bluhuman_flag_pickup", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: allow picking up the flag");
-	ConVar cvar_flag_capture("sig_mvm_bluhuman_flag_capture", "0", FCVAR_NOTIFY,
+	ConVar cvar_flag_capture("sig_mvm_bluhuman_flag_capture", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: allow scoring a flag Capture by carrying it to the capture zone");
 	
-	ConVar cvar_spawn_protection("sig_mvm_bluhuman_spawn_protection", "1", FCVAR_NOTIFY,
+	ConVar cvar_spawn_protection("sig_mvm_bluhuman_spawn_protection", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: enable spawn protection invulnerability");
-	ConVar cvar_spawn_no_shoot("sig_mvm_bluhuman_spawn_noshoot", "1", FCVAR_NOTIFY,
+	ConVar cvar_spawn_no_shoot("sig_mvm_bluhuman_spawn_noshoot", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: when spawn protection invulnerability is enabled, disallow shooting from spawn");
 	
-	ConVar cvar_infinite_cloak("sig_mvm_bluhuman_infinite_cloak", "1", FCVAR_NOTIFY,
+	ConVar cvar_infinite_cloak("sig_mvm_bluhuman_infinite_cloak", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: enable infinite spy cloak meter");
-	ConVar cvar_infinite_cloak_deadringer("sig_mvm_bluhuman_infinite_cloak_deadringer", "0", FCVAR_NOTIFY,
+	ConVar cvar_infinite_cloak_deadringer("sig_mvm_bluhuman_infinite_cloak_deadringer", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: enable infinite spy cloak meter (Dead Ringer)");
 
-	ConVar cvar_infinite_ammo("sig_mvm_bluhuman_infinite_ammo", "1", FCVAR_NOTIFY,
+	ConVar cvar_infinite_ammo("sig_mvm_bluhuman_infinite_ammo", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: infinite ammo");
 
-	ConVar cvar_teleport("sig_mvm_bluhuman_teleport", "0", FCVAR_NOTIFY,
+	ConVar cvar_teleport("sig_mvm_bluhuman_teleport", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: teleport to engiebot teleport");
 
-	ConVar cvar_teleport_player("sig_mvm_bluhuman_teleport_player", "0", FCVAR_NOTIFY,
+	ConVar cvar_teleport_player("sig_mvm_bluhuman_teleport_player", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: teleport bots and players to player teleport exit");
 		
-	ConVar cvar_no_footsteps("sig_mvm_jointeam_blue_no_footsteps", "0", FCVAR_NOTIFY,
+	ConVar cvar_no_footsteps("sig_mvm_jointeam_blue_no_footsteps", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: No robot footsteps");
 		
-	ConVar cvar_spectator_is_blu("sig_mvm_jointeam_blue_spectator", "0", FCVAR_NOTIFY,
+	ConVar cvar_spectator_is_blu("sig_mvm_jointeam_blue_spectator", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Blue humans in MvM: Force spectators to join blue team");
 	
 	std::map<CHandle<CTFPlayer>, float> player_deploy_time; 
@@ -483,7 +483,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		return iResult;
 	}
 	
-	ConVar cvar_allow_reanimators("sig_mvm_jointeam_blue_allow_revive", "0", FCVAR_NOTIFY, "Allow reanimators for the blue players");
+	ConVar cvar_allow_reanimators("sig_mvm_jointeam_blue_allow_revive", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Allow reanimators for the blue players");
 	DETOUR_DECL_STATIC(CTFReviveMarker *, CTFReviveMarker_Create, CTFPlayer *player)
 	{
 		if (!cvar_allow_reanimators.GetBool() && IsMvMBlueHuman(player)) {
@@ -1601,7 +1601,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 
 	/* by way of incredibly annoying persistent requests from Hell-met,
 	 * I've acquiesced and made this mod convar non-notifying (sigh) */
-	ConVar cvar_enable("sig_mvm_jointeam_blue_allow", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
+	ConVar cvar_enable("sig_mvm_jointeam_blue_allow", "0", /*FCVAR_NOTIFY*/FCVAR_NONE | FCVAR_GAMEDLL,
 		"Mod: permit client command 'jointeam blue' from human players",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ToggleModActive();
@@ -1610,7 +1610,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		});
 	
 	/* default: admin-only mode ENABLED */
-	ConVar cvar_adminonly("sig_mvm_jointeam_blue_allow_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE,
+	ConVar cvar_adminonly("sig_mvm_jointeam_blue_allow_adminonly", "1", /*FCVAR_NOTIFY*/FCVAR_NONE | FCVAR_GAMEDLL,
 		"Mod: restrict this mod's functionality to SM admins only"
 		" [NOTE: missions with WaveSchedule param AllowJoinTeamBlue 1 will OVERRIDE this and allow non-admins for the duration of the mission]",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
@@ -1618,7 +1618,7 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		});
 
 	// force blue team joining, also loads the mod if not loaded
-	ConVar cvar_force("sig_mvm_jointeam_blue_allow_force", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
+	ConVar cvar_force("sig_mvm_jointeam_blue_allow_force", "0", /*FCVAR_NOTIFY*/FCVAR_NONE | FCVAR_GAMEDLL,
 		"Mod: force players to join blue team",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ToggleModActive();

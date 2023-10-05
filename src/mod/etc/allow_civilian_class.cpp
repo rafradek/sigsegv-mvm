@@ -133,7 +133,7 @@ namespace Mod::Etc::Allow_Civilian_Class
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_etc_allow_civilian_class", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_etc_allow_civilian_class", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: allow civilian class to be picked",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

@@ -46,7 +46,7 @@ namespace Mod::Etc::Instant_Scaling
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_etc_instant_scaling", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_etc_instant_scaling", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: make hand/head/torso scaling instantaneous in MvM mode",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

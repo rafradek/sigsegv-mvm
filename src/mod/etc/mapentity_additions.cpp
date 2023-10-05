@@ -589,7 +589,7 @@ namespace Mod::Etc::Mapentity_Additions
     bool last_entity_name_wildcard = false;
     string_t last_entity_lowercase = NULL_STRING;
 
-    ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_NONE, "Converts all entity names to lowercase for faster lookup", 
+    ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_GAMEDLL, "Converts all entity names to lowercase for faster lookup", 
         [](IConVar *pConVar, const char *pOldValue, float flOldValue){
             // Immediately convert every name and classname to lowercase
             // if (static_cast<ConVar *>(pConVar)->GetBool()) {
@@ -1813,13 +1813,13 @@ namespace Mod::Etc::Mapentity_Additions
             trigger->GetCustomVariableVariant<"filter">(val);
             val.Convert(FIELD_EHANDLE);
             auto filterEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
-            if (filterEnt != nullptr && !filterEnt->PassesFilter(player->GetItem(), other)) {
+            if (filterEnt != nullptr && !filterEnt->PassesFilter(trigger, player->GetItem())) {
                 return false;
             }
             trigger->GetCustomVariableVariant<"filterplayer">(val);
             val.Convert(FIELD_EHANDLE);
             auto filterPlayerEnt = rtti_cast<CBaseFilter *>(val.Entity().Get());
-            if (filterPlayerEnt != nullptr && !filterPlayerEnt->PassesFilter(player, other)) {
+            if (filterPlayerEnt != nullptr && !filterPlayerEnt->PassesFilter(trigger, player)) {
                 return false;
             }
         }
@@ -1862,6 +1862,77 @@ namespace Mod::Etc::Mapentity_Additions
 		DETOUR_MEMBER_CALL(CCaptureFlag_PickUp)(player, invisible);
 		auto flag = reinterpret_cast<CCaptureFlag *>(this);
         flag->FireCustomOutput<"onpickup">(player, flag, Variant());
+    }
+	
+    CBaseFilter *pushFilter = nullptr;
+    CBaseFilter *pushEntity = nullptr;
+	DETOUR_DECL_MEMBER(void, CPointPush_PushThink)
+	{
+		auto push = reinterpret_cast<CBaseEntity *>(this);
+        bool hasFilter = false;
+        variant_t val;
+        if (push->GetCustomVariableVariant<"filter">(val)) {
+            val.Convert(FIELD_EHANDLE);
+            pushEntity = push;
+            pushFilter = rtti_cast<CBaseFilter *>(val.Entity().Get());
+        }
+		DETOUR_MEMBER_CALL(CPointPush_PushThink)();
+        pushFilter = nullptr;
+        pushEntity = nullptr;
+	}
+
+    DETOUR_DECL_STATIC(int, UTIL_EntitiesInSphere, const Vector& center, float radius, CFlaggedEntitiesEnum *pEnum)
+	{
+		auto result = DETOUR_STATIC_CALL(UTIL_EntitiesInSphere)(center, radius, pEnum);
+        if (pushFilter != nullptr) {
+            auto list = pEnum->GetList();
+            for (auto i = 0; i < pEnum->GetCount(); i++) {
+                if (!pushFilter->PassesFilter(pushEntity, list[i])) {
+                    for (auto j = i + 1; j < pEnum->GetCount(); j++) {
+                        list[j-1] = list[j];
+                    }
+                    result--;
+                }
+            }
+        }
+        return result;
+	}
+
+
+    CBaseEntity *seeEntity = nullptr;
+    DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClear, const Vector &pos)
+	{
+		seeEntity = reinterpret_cast<IVision *>(this)->GetBot()->GetEntity();
+		auto result = DETOUR_MEMBER_CALL(IVision_IsLineOfSightClear)(pos);
+        seeEntity = nullptr;
+        return result;
+	}
+	
+	DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClearToEntity, CBaseEntity *subject, Vector *visibleSpot)
+	{
+		seeEntity = reinterpret_cast<IVision *>(this)->GetBot()->GetEntity();
+		auto result = DETOUR_MEMBER_CALL(IVision_IsLineOfSightClearToEntity)(subject, visibleSpot);
+        seeEntity = nullptr;
+        return result;
+	}
+    
+    VHOOK_DECL(bool, CFuncWall_ShouldCollide, int collisionGroup, int contentsMask)
+    {
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        if (entity->GetClassname() == PStr<"$func_block_los">()) {
+            if (!(contentsMask & CONTENTS_BLOCKLOS)) return false;
+
+            variant_t val;
+            if (seeEntity != nullptr && entity->GetCustomVariableVariant<"filter">(val)) {
+                val.Convert(FIELD_EHANDLE);
+                auto filter = rtti_cast<CBaseFilter *>(val.Entity().Get());
+                if (filter != nullptr) {
+                    return filter->PassesFilter(entity, seeEntity);
+                }
+            }
+            return true;
+        }
+        return VHOOK_CALL(CFuncWall_ShouldCollide)(collisionGroup, contentsMask);
     }
 
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
@@ -1940,6 +2011,13 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_PickUp, "CCaptureFlag::PickUp");
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
             
+            // Filter for point_push
+			MOD_ADD_DETOUR_MEMBER(CPointPush_PushThink, "CPointPush::PushThink");
+			MOD_ADD_DETOUR_STATIC(UTIL_EntitiesInSphere, "UTIL_EntitiesInSphere");
+
+			MOD_ADD_VHOOK(CFuncWall_ShouldCollide, "9CFuncWall", "CBaseEntity::ShouldCollide");
+			MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
+            MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClear, "IVision::IsLineOfSightClear");
     
 
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
@@ -1960,6 +2038,7 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_itemname");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_specialdamagetype");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("trigger_multiple"), "$trigger_detector");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("func_wall"), "$func_block_los");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$weapon_spawner");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$math_vector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$entity_spawn_detector");

@@ -110,6 +110,8 @@ public:
 
 PointTemplateInfo Parse_SpawnTemplate(KeyValues *kv);
 bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv);
+InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv);
+void TriggerList(CBaseEntity *activator, std::vector<InputInfoTemplate> &triggers, PointTemplateInstance *inst);
 
 PointTemplate *FindPointTemplate(const std::string &str);
 extern std::unordered_map<std::string, PointTemplate, CaseInsensitiveHash, CaseInsensitiveCompare> g_templates;

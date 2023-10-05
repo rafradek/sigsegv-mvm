@@ -952,6 +952,7 @@ DefaultSpawnTemplateInfo = {
 ---@return table result
 function table.JoinArray(...)
     local result = {}
+    local arg = {...}
     for i = 1, #arg do
         local argtable = arg[i]
         for k, v in pairs(argtable) do
@@ -966,6 +967,7 @@ end
 ---@return table result
 function table.JoinTable(...)
     local result = {}
+    local arg = {...}
     for i = 1, #arg do
         local argtable = arg[i]
         for k, v in pairs(argtable) do

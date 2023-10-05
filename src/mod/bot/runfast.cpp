@@ -73,7 +73,7 @@ namespace Mod::Bot::RunFast
 		}
 	}
 
-	ConVar cvar_fast_update("sig_bot_runfast_fast_update", "0", FCVAR_NONE,
+	ConVar cvar_fast_update("sig_bot_runfast_fast_update", "0", FCVAR_GAMEDLL,
 		"Etc: player movement speed limit when overridden (use -1 for no limit)");
 
 	RefCount rc_CTFBotMainAction_Update;
@@ -89,7 +89,7 @@ namespace Mod::Bot::RunFast
 		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
 	}
 	
-	ConVar cvar_jump("sig_bot_runfast_allowjump", "0", FCVAR_NONE,
+	ConVar cvar_jump("sig_bot_runfast_allowjump", "0", FCVAR_GAMEDLL,
 		"Etc: player movement speed limit when overridden (use -1 for no limit)");
 
 	DETOUR_DECL_MEMBER(void, PlayerLocomotion_Jump)
@@ -113,7 +113,7 @@ namespace Mod::Bot::RunFast
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_bot_runfast", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_bot_runfast", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: make super-fast bot locomotion feasible",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

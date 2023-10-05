@@ -7,7 +7,7 @@
 namespace Mod::MvM::UpgradeStation_Regen_Improved
 {
 	RefCount rc_CUpgrades_PlayerPurchasingUpgrade;
-	ConVar cvar_only_creators("sig_mvm_upgradestation_creators", "0", FCVAR_NOTIFY,
+	ConVar cvar_only_creators("sig_mvm_upgradestation_creators", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"The mod only affects creators.tf weapons");
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int slot, int tier, bool sell, bool free, bool b3)
@@ -86,7 +86,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_mvm_upgradestation_regen_improved", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_mvm_upgradestation_regen_improved", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: fix annoying aspects of the health+ammo regen provided by the upgrade station",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

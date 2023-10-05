@@ -322,6 +322,51 @@ namespace Mod::Common::Weapon_Shoot
         DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_Burn)(entity);
     }
 
+	DETOUR_DECL_STATIC(void, TE_FireBullets, int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngles, 
+					 int iWeaponID, int	iMode, int iSeed, float flSpread, bool bCritical)
+	{
+		if (rc_FireWeapon) return;
+        DETOUR_STATIC_CALL(TE_FireBullets)(iPlayerIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread, bCritical);
+	}
+
+	int customDamageTypeBullet = 0;
+	RefCount rc_FireWeaponDoTrace;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_FireBullet, CTFWeaponBase *weapon, FireBulletsInfo_t& info, bool bDoEffects, int nDamageType, int nCustomDamageType)
+	{
+		bool doTrace = false;
+		if (rc_FireWeapon) {
+			static int	tracerCount;
+			bDoEffects = true;
+			int ePenetrateType = weapon ? weapon->GetPenetrateType() : TF_DMG_CUSTOM_NONE;
+			if (ePenetrateType == TF_DMG_CUSTOM_NONE)
+				ePenetrateType = customDamageTypeBullet;
+			doTrace = ( ( info.m_iTracerFreq != 0 ) && ( tracerCount++ % info.m_iTracerFreq ) == 0 ) || (ePenetrateType == TF_DMG_CUSTOM_PENETRATE_ALL_PLAYERS);
+		}
+
+		SCOPED_INCREMENT_IF(rc_FireWeaponDoTrace, doTrace);
+
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_MaybeDrawRailgunBeam, IRecipientFilter *filter, CTFWeaponBase *weapon, const Vector &vStartPos, const Vector &vEndPos)
+	{
+		if (rc_FireWeaponDoTrace) {
+			te_tf_particle_effects_control_point_t cp;
+			cp.m_eParticleAttachment = PATTACH_ABSORIGIN;
+			cp.m_vecOffset = vEndPos;
+			DispatchParticleEffect(reinterpret_cast<CTFPlayer *>(this)->GetTracerType(), PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_MaybeDrawRailgunBeam)(filter, weapon, vStartPos, vEndPos);
+	}
+
+	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
+	{
+		if (cmd == nullptr) return;
+
+		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+	}
+
 
     class CMod : public IMod
     {
@@ -349,6 +394,15 @@ namespace Mod::Common::Weapon_Shoot
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_Burn,    "CTFProjectile_BallOfFire::Burn");
 
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FPlayerCanTakeDamage,    "CTFGameRules::FPlayerCanTakeDamage");
+
+			// Bullet tracers
+			MOD_ADD_DETOUR_STATIC(TE_FireBullets,  "TE_FireBullets");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_FireBullet,    "CTFPlayer::FireBullet");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_MaybeDrawRailgunBeam,    "CTFPlayer::MaybeDrawRailgunBeam");
+
+			// Fix lag compensation crash
+			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
+			//MOD_ADD_DETOUR_STATIC(UTIL_ParticleTracer,    "UTIL_ParticleTracer");
 
 			//MOD_ADD_DETOUR_MEMBER(CTraceFilterSimple_CTraceFilterSimple,    "CTraceFilterSimple::CTraceFilterSimple");
 			//MOD_ADD_DETOUR_MEMBER(IEngineTrace_TraceRay,    "IEngineTrace::TraceRay");

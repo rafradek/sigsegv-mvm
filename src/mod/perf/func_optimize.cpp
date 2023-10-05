@@ -696,6 +696,8 @@ namespace Mod::Perf::Func_Optimize
 
     DETOUR_DECL_MEMBER(CEconItemAttributeDefinition *, CEconItemSchema_GetAttributeDefinitionByName, const char *name)
 	{
+        if (name == nullptr) return nullptr;
+
         std::string str {name};
         StrLowerASCII(str.data());
         auto find = attributeCache.find(str);
@@ -705,6 +707,19 @@ namespace Mod::Perf::Func_Optimize
 		auto attr = DETOUR_MEMBER_CALL(CEconItemSchema_GetAttributeDefinitionByName)(name);
         attributeCache[str] = attr;
         return attr;
+    }
+
+    DETOUR_DECL_MEMBER(void, CEconItemSchema_Reset)
+	{
+        attributeCache.clear();
+        DETOUR_MEMBER_CALL(CEconItemSchema_Reset)();
+    }
+
+    DETOUR_DECL_MEMBER(bool, CEconItemSchema_BInitAttributes, KeyValues *kv, CUtlVector<CUtlString> *errors)
+	{
+        auto ret = DETOUR_MEMBER_CALL(CEconItemSchema_BInitAttributes)(kv, errors);
+        attributeCache.clear();
+        return ret;
     }
 
     bool IsOnNav(CBaseEntity *entity, float maxZDistance, float maxXYDistance)
@@ -818,6 +833,8 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
 
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetAttributeDefinitionByName, "CEconItemSchema::GetAttributeDefinitionByName [non-const]");
+            MOD_ADD_DETOUR_MEMBER(CEconItemSchema_Reset, "CEconItemSchema::Reset");
+            MOD_ADD_DETOUR_MEMBER(CEconItemSchema_BInitAttributes, "CEconItemSchema::BInitAttributes");
 #endif
             // Optimize lag compensation by reusing previous bone caches
             MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");

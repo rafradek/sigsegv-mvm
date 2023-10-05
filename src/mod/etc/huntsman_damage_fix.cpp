@@ -85,7 +85,7 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_etc_huntsman_damage_fix", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_etc_huntsman_damage_fix", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: fix the bug causing Huntsman base damage to be unaffected by multiplier attributes",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

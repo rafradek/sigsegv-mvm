@@ -15,7 +15,7 @@ int Template_Increment;
 
 #define TEMPLATE_BRUSH_MODEL "models/weapons/w_models/w_rocket.mdl"
 
-ConVar fast_whole_map_trigger("sig_pop_pointtemplate_fast_whole_map_trigger", "1", FCVAR_NOTIFY,
+ConVar fast_whole_map_trigger("sig_pop_pointtemplate_fast_whole_map_trigger", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: Make whole map triggers faster");
 
 class TemplateParentModule : public EntityModule
@@ -480,6 +480,30 @@ bool Parse_ShootTemplate(ShootTemplateData &data, KeyValues *kv)
 	return data.templ != nullptr;
 }
 
+InputInfoTemplate Parse_InputInfoTemplate(KeyValues *kv)
+{
+	std::string target;
+	std::string action;
+	float delay = 0.0f;
+	std::string param;
+	FOR_EACH_SUBKEY(kv, subkey) {
+		const char *name = subkey->GetName();
+		if (FStrEq(name, "Target")) {
+			target = subkey->GetString();
+		}
+		else if (FStrEq(name, "Action")) {
+			action = subkey->GetString();
+		}
+		else if (FStrEq(name, "Delay")) {
+			delay = subkey->GetFloat();
+		}
+		else if (FStrEq(name, "Param")) {
+			param = subkey->GetString();
+		}
+	}
+	return {target, action, param, delay};
+}
+
 PointTemplate *FindPointTemplate(const std::string &str) {
 
 	auto it = Point_Templates().find(str);
@@ -853,7 +877,7 @@ namespace Mod::Pop::PointTemplate
 		}
 	}
 
-	ConVar cvar_whole_map_trigger_all("sig_pop_pointtemplate_fast_whole_map_trigger_all", "0", FCVAR_NONE, "Mod: Optimize whole map triggers, the triggers must have higher volume than a cube with specified size");
+	ConVar cvar_whole_map_trigger_all("sig_pop_pointtemplate_fast_whole_map_trigger_all", "0", FCVAR_GAMEDLL, "Mod: Optimize whole map triggers, the triggers must have higher volume than a cube with specified size");
 	void CheckSetWholeMapTrigger(CBaseEntity *me)
 	{
 		WholeMapTriggerModule *mod;

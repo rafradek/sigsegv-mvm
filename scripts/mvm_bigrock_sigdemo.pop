@@ -1175,6 +1175,15 @@ WaveSchedule
 		}
 	}
 
+	// Output fired when the mission is unloaded or reloaded. Might be useful in specific circumstances. Delay must be set to -1 for the output to be fired before another mission loads
+	MissionUnloadOutput [$SIGSEGV]
+	{
+		Target "player"
+		Action "$displaytextchat"
+		Param "Reload"
+		Delay -1
+	}
+
 	Mission // sentry buster
 	{
         Objective DestroySentries
@@ -2311,6 +2320,8 @@ WaveSchedule
 				WeaponRestrictions SecondaryOnly
 				AimTrackingInterval 0 [$SIGSEGV] //Override aim tracking time. 0.05 - expert 1.0 - easy
 				HeadRotateSpeed 2000 [$SIGSEGV] // Head rotate speed. Set to 10000 automatically if AimTrackingInterval is less than 0.05 (Default: 1000)
+				FOV 30 [$SIGSEGV] // Custom FOV value
+				SeeThroughWalls 1 [$SIGSEGV] // See enemies through walls
 				FastUpdate 1 [$SIGSEGV] //If set, the bot ai updates every tick
 				DropWeapon 1 [$SIGSEGV] //If set, bot will drop a weapon on death. The weapon cannot be upgraded
 				ItemAttributes
@@ -3516,3 +3527,21 @@ WaveSchedule
 
 // No revive marker on death
 // "no revive" 1
+
+// Fire input when an addcond effect is applied by this weapon. Provider is !activator. The receiver is !caller
+// "fire input on effect" "!activator^SetHealth^0"
+
+// Additional step sound
+// "additional step sound" "MVM.BotStep"
+
+// Field of view override. Sniper rifles reset this
+// "fov override" "33"
+
+// Overlay material
+// "hud overlay" "effects/jarate_overlay"
+
+// Fire input when taunting
+// "fire input on taunt" "!activator^SetHealth^0"
+
+// Move enemies out of the way. Deal x damage per tick to stuck enemies
+// "displace touched enemies" 1

@@ -159,6 +159,7 @@ MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                       
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_PostClientActive              (TypeName<CBaseEntity>(), "CBaseEntity::PostClientActive");
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_VPhysicsDestroyObject         (TypeName<CBaseEntity>(), "CBaseEntity::VPhysicsDestroyObject");
 MemberVFuncThunk<      CBaseEntity *, uint                                                            > CBaseEntity::vt_PhysicsSolidMaskForEntity     (TypeName<CBaseEntity>(), "CBaseEntity::PhysicsSolidMaskForEntity");
+MemberVFuncThunk<const CBaseEntity *, const char *                                                    > CBaseEntity::vt_GetTracerType                 (TypeName<CBaseEntity>(), "CBaseEntity::GetTracerType");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");

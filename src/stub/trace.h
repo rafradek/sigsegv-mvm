@@ -23,6 +23,7 @@ public:
 	int GetCount() { return m_count; }
 	bool AddToList( CBaseEntity *pEntity );
 	CBaseEntity * Get(int i) { return m_pList[i]; }
+	CBaseEntity ** GetList() { return m_pList; }
 	
 private:
 	CBaseEntity		**m_pList;

@@ -38,7 +38,7 @@ namespace Mod::Attr::HealOnKill_Overheal_Melee
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_attr_healonkill_overheal_melee", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_attr_healonkill_overheal_melee", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: re-enable overheal from the \"heal_on_kill\" attribute for melee weapons",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

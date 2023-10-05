@@ -128,7 +128,10 @@ public:
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
 	DECL_SENDPROP(int,   m_iHideHUD);
 	DECL_SENDPROP(float,   m_flFallVelocity);
-	
+#ifdef SE_TF2
+	DECL_SENDPROP_RW(char[260], m_szScriptOverlayMaterial);
+#endif
+
 	inline void NetworkStateChanged()           { }
 	inline void NetworkStateChanged(void *pVar) { }
 
@@ -181,6 +184,7 @@ public:
 	void ForceButtons(int nButtons)                                                    {        ft_ForceButtons  (this, nButtons); }
 	void UnforceButtons(int nButtons)                                                  {        ft_UnforceButtons(this, nButtons); }
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
+	bool SetFOV(CBaseEntity *setter, int fov, float zoominRate, int zoomStart)         { return ft_SetFOV        (this, setter, fov, zoominRate, zoomStart); }
 	
 #ifdef SE_TF2
 	void EquipWearable(CEconWearable *wearable)									{ vt_EquipWearable     (this, wearable); }
@@ -216,8 +220,11 @@ public:
 	DECL_SENDPROP_RW(CPlayerState, pl);
 	DECL_DATAMAP(float,         m_flStepSoundTime);
 	DECL_RELATIVE(CUserCmd *,   m_pCurrentCommand);
-	DECL_DATAMAP(float,          m_fLerpTime);
+	DECL_DATAMAP(float,         m_fLerpTime);
 	DECL_DATAMAP(bool,          m_bLagCompensation);
+	DECL_SENDPROP(int,          m_iDefaultFOV);
+	DECL_SENDPROP(int,          m_iFOV);
+	
 	
 private:
 	IPlayerInfo *GetPlayerInfo() const { return playerinfomanager->GetPlayerInfo(this->edict()); }
@@ -244,6 +251,7 @@ private:
 	static MemberFuncThunk<CBasePlayer *, void, int>                          ft_UnforceButtons;
 	static MemberFuncThunk<CBasePlayer *, void, const QAngle&>                ft_SnapEyeAngles;
 	static MemberFuncThunk<      CBasePlayer *, void, int, bool, bool, bool>  ft_ChangeTeam_base;
+	static MemberFuncThunk<      CBasePlayer *, bool, CBaseEntity *, int, float, int> ft_SetFOV;
 	
 	static MemberVFuncThunk<const CBasePlayer *, bool>                        vt_IsFakeClient;
 	static MemberVFuncThunk<const CBasePlayer *, bool>                        vt_IsBot;

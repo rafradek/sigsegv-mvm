@@ -283,7 +283,7 @@ namespace Mod::MvM::Set_Credit_Team
 	CMod s_Mod;
 	
 	
-	ConVar cvar_enable("sig_mvm_set_credit_team", "0", FCVAR_NOTIFY,
+	ConVar cvar_enable("sig_mvm_set_credit_team", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: change which team is allowed to collect MvM credits (normally hardcoded to TF_TEAM_RED)",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			auto var = static_cast<ConVar *>(pConVar);

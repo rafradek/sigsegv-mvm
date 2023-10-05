@@ -165,13 +165,13 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return true;
 	}
 
-    ConVar cvar_enable_viewmodel("sig_etc_unintended_class_weapon_viewmodel", "0", FCVAR_NOTIFY,
+    ConVar cvar_enable_viewmodel("sig_etc_unintended_class_weapon_viewmodel", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: use proper class viewmodel animations for unintended player class weapons");
 
-    ConVar cvar_enable_playermodel("sig_etc_unintended_class_weapon_player_model", "0", FCVAR_NOTIFY,
+    ConVar cvar_enable_playermodel("sig_etc_unintended_class_weapon_player_model", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: use proper class player animations for unintended player class weapons");
 
-    ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY,
+    ConVar sig_etc_unintended_class_weapon_fix_ammo("sig_etc_unintended_class_weapon_fix_ammo", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: fix max ammo count for unintented player class weapons");
 
     DETOUR_DECL_MEMBER(void, CTFWeaponBase_UpdateHands)

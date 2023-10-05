@@ -969,7 +969,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		bIce |= is_ice;
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
+		DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
 	}
 
 	void GetExplosionParticle(CTFPlayer *player, CTFWeaponBase *weapon, int &particle, int &particleDirectHit) {
@@ -3025,6 +3025,8 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(static_attrib_t_BInitFromKV_SingleLine)(context, attribute, errors, b);
 	}
 
+	std::vector<CHandle<CTFPlayer>> displacePlayers;
+
 	DETOUR_DECL_MEMBER(bool, CTraceFilterObject_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
 		CTraceFilterSimple *filter = reinterpret_cast<CTraceFilterSimple*>(this);
@@ -3048,6 +3050,14 @@ namespace Mod::Attr::Custom_Attributes
 				int not_solid = GetFastAttributeInt(entityhit, 0, NOT_SOLID_TO_PLAYERS);
 				if (not_solid != 0)
 					return false;
+			}
+		}
+
+		if (entityhit_player && entityhit->GetTeamNumber() != entityme->GetTeamNumber()) {
+			int displace = GetFastAttributeFloat(entityme, 0.0f, DISPLACE_TOUCHED_ENEMIES);
+			if (displace != 0.0f) {
+				displacePlayers.push_back(static_cast<CTFPlayer *>(entityhit));
+				return false;
 			}
 		}
 
@@ -3729,9 +3739,8 @@ namespace Mod::Attr::Custom_Attributes
 					int addcond = (iCondOverride >> (i * 8)) & 255;
 					//DevMsg("add cond post %d\n", addcond);
 					if (addcond != 0) {
-						nCond = (ETFCond) addcond;
 						addcond_overridden = true;
-						DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+						DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)((ETFCond) addcond, flDuration, pProvider);
 						
 					}
 				}
@@ -3757,6 +3766,10 @@ namespace Mod::Attr::Custom_Attributes
 						player->AddCustomAttribute(attribute.c_str(), value, flDuration);
 						it++;
 					}
+				}
+				GET_STRING_ATTRIBUTE(weapon, fire_input_on_effect, input);
+				if (input != nullptr) {
+					FireInputAttribute(input, nullptr, Variant((int)nCond), nullptr, pProvider, player, 0.0f);
 				}
 			}
 			if (iCondOverride != 0) return;
@@ -4499,6 +4512,16 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	class AltFireAttributesModule : public EntityModule
+	{
+	public:
+		AltFireAttributesModule(CBaseEntity *entity) : EntityModule(entity) {
+		}
+
+		string_t attributes;
+		bool active = false;
+	};
+
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
@@ -4509,14 +4532,13 @@ namespace Mod::Attr::Custom_Attributes
 		CTFWeaponBase *weaponAltFire = nullptr;
 		if (info.GetInflictor() != nullptr && info.GetAttacker() != nullptr && info.GetInflictor()->GetCustomVariableBool<"isaltfire">()) {
 			auto proj = rtti_cast<CBaseProjectile *>(info.GetInflictor());
-			auto player = ToTFPlayer(info.GetAttacker());
-			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr && player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
-				weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
-				if (weaponAltFire != nullptr) {
-					GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-					if (attribs != nullptr) {
-						AddOnActiveAttributes(weaponAltFire, attribs);
-					}
+			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
+				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+				auto mod = proj->GetOriginalLauncher()->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+				if (weapon != nullptr && mod != nullptr && !mod->active) {
+					weaponAltFire = weapon;
+					AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+					mod->active = true;
 				}
 			}
 		}
@@ -4565,9 +4587,10 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		if (weaponAltFire != nullptr) {
-			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-			if (attribs != nullptr) {
-				RemoveOnActiveAttributes(weaponAltFire, attribs);
+			auto mod = weaponAltFire->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+			if (mod != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+				mod->active = false;
 			}
 		}
 		return damage;
@@ -5055,15 +5078,6 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
 	}
 
-	class AltFireAttributesModule : public EntityModule
-	{
-	public:
-		AltFireAttributesModule(CBaseEntity *entity) : EntityModule(entity) {
-		}
-
-		bool active = false;
-	};
-
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
@@ -5258,6 +5272,11 @@ namespace Mod::Attr::Custom_Attributes
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
 		
+		int fov;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, fov, fov_override);
+		if (fov != 0) {
+			player->SetFOV(player, fov, 0.1f, 0);
+		}
 		// for(auto entity : preSpawnItems) {
 		// 	if (!entity->IsMarkedForDeletion()) {
 				
@@ -5998,7 +6017,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CObjectSentrygun_ValidTargetPlayer)(pPlayer, vecStart, vecEnd);
 	}
 
-	ConVar sig_attr_burn_time_faster_burn("sig_attr_burn_time_faster_burn", "1", FCVAR_NOTIFY, 
+	ConVar sig_attr_burn_time_faster_burn("sig_attr_burn_time_faster_burn", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, 
 		"Mod: For non bot players in mvm mode, burn time bonus increases afterburn damage frequency instead of duration");
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Burn, CTFPlayer *igniter, CTFWeaponBase *weapon, float duration)
@@ -6504,12 +6523,28 @@ namespace Mod::Attr::Custom_Attributes
 		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range", true);
 		float nextAttackPre = sentry->m_flNextAttack;
 		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
-		if (nextAttackPre != sentry->m_flNextAttack) {
+		if (nextAttackPre < sentry->m_flNextAttack) {
 			float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate", true);
 			sentry->m_flFireRate *= rate;
 			if (rate != 1.0f) {
 				sentry->m_flNextAttack = gpGlobals->curtime + ((sentry->m_iUpgradeLevel == 1 ? 0.2f : 0.1f) * sentry->m_flFireRate);
 			}
+		}
+	}
+
+	DETOUR_DECL_MEMBER(void, CObjectSentrygun_FoundTarget, CBaseEntity *entity, const Vector &vecSoundCenter, bool noSound)
+	{
+		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
+		float nextAttackPre = sentry->m_flNextAttack;
+		float nextAttackRocket = sentry->m_flNextRocketAttack;
+		DETOUR_MEMBER_CALL(CObjectSentrygun_FoundTarget)(entity, vecSoundCenter, noSound);
+		float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate", false);
+		if (rate > 1) {
+			sentry->m_flNextAttack = nextAttackPre;
+		}
+		float rateRocket = GetBuildingAttributeFloat<"rocketfireratemult">(sentry, "mult_firerocket_rate", false);
+		if (rateRocket > 1) {
+			sentry->m_flNextRocketAttack = nextAttackRocket;
 		}
 	}
 
@@ -6704,13 +6739,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		DETOUR_MEMBER_CALL(CObjectSentrygun_EmitSentrySound)(sound);
-	}
-
-	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
-	{
-		if (cmd == nullptr) return;
-
-		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
 	}
 
 	bool OverrideGib(CTFPlayer *player, const CTakeDamageInfo& info, bool &result)
@@ -7379,24 +7407,22 @@ namespace Mod::Attr::Custom_Attributes
 		if (ent->GetCustomVariableBool<"isaltfire">()) {
 			auto proj = rtti_cast<CBaseProjectile *>(ent);
 			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
-				auto player = ToTFPlayer(proj->GetOriginalLauncher()->GetOwnerEntity());
-				if (player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
-					weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
-					if (weaponAltFire != nullptr) {
-						GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-						if (attribs != nullptr) {
-							AddOnActiveAttributes(weaponAltFire, attribs);
-						}
-					}
+				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+				auto mod = proj->GetOriginalLauncher()->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+				if (weapon != nullptr && mod != nullptr && !mod->active) {
+					weaponAltFire = weapon;
+					AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+					mod->active = true;
 				}
 			}
 		}
 		DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
 
 		if (weaponAltFire != nullptr) {
-			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-			if (attribs != nullptr) {
-				RemoveOnActiveAttributes(weaponAltFire, attribs);
+			auto mod = weaponAltFire->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+			if (mod != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+				mod->active = false;
 			}
 		}
     }
@@ -7414,26 +7440,25 @@ namespace Mod::Attr::Custom_Attributes
 		CTFWeaponBase *weaponAltFire = nullptr;
 
 		if (grenade != nullptr) {
+			
 			auto proj = rtti_cast<CBaseProjectile *>(grenade);
 			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
-				auto player = ToTFPlayer(proj->GetOriginalLauncher()->GetOwnerEntity());
-				if (player != nullptr && !(player->m_nButtons & IN_ATTACK2)) {
-					weaponAltFire = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
-					if (weaponAltFire != nullptr) {
-						GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-						if (attribs != nullptr) {
-							AddOnActiveAttributes(weaponAltFire, attribs);
-						}
-					}
+				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+				auto mod = proj->GetOriginalLauncher()->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+				if (weapon != nullptr && mod != nullptr && !mod->active) {
+					weaponAltFire = weapon;
+					AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+					mod->active = true;
 				}
 			}
 		}
         DETOUR_MEMBER_CALL(CCollisionEvent_PostCollision)(event);
 
 		if (weaponAltFire != nullptr) {
-			GET_STRING_ATTRIBUTE(weaponAltFire, alt_fire_attributes, attribs);
-			if (attribs != nullptr) {
-				RemoveOnActiveAttributes(weaponAltFire, attribs);
+			auto mod = weaponAltFire->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+			if (mod != nullptr) {
+				RemoveOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+				mod->active = false;
 			}
 		}
     }
@@ -7457,6 +7482,162 @@ namespace Mod::Attr::Custom_Attributes
         return DETOUR_MEMBER_CALL(CBaseCombatWeapon_HasPrimaryAmmo)();
     }
 
+	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayStepSound, Vector& vecOrigin, surfacedata_t *psurface, float fvol, bool force)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		GET_STRING_ATTRIBUTE(player, additional_step_sound, sound);
+		if (sound != nullptr) {
+			player->EmitSound(sound);
+		}
+		
+		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_OnTauntSucceeded, const char* pszSceneName, int iTauntIndex, int iTauntConcept)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		DETOUR_MEMBER_CALL(CTFPlayer_OnTauntSucceeded)(pszSceneName, iTauntIndex, iTauntConcept);
+		GET_STRING_ATTRIBUTE(player, fire_input_on_taunt, input);
+		FireInputAttribute(input, nullptr, Variant(AllocPooledString(pszSceneName)), nullptr, player, player, -1.0f);
+	}
+
+	DETOUR_DECL_MEMBER(void, CGameMovement_PlayerMove)
+	{
+		auto move = reinterpret_cast<CGameMovement *>(this);
+		auto player = move->player;
+
+		displacePlayers.clear();
+		DETOUR_MEMBER_CALL(CGameMovement_PlayerMove)();
+		if (displacePlayers.empty()) return;
+
+		for (auto &toucherH : displacePlayers) {
+			CTFPlayer *toucher = toucherH;
+
+			Vector bossGlobalMins = player->CollisionProp()->OBBMins() + player->GetAbsOrigin();
+			Vector bossGlobalMaxs = player->CollisionProp()->OBBMaxs() + player->GetAbsOrigin();
+
+			Vector playerGlobalMins = toucher->CollisionProp()->OBBMins() + toucher->GetAbsOrigin();
+			Vector playerGlobalMaxs = toucher->CollisionProp()->OBBMaxs() + toucher->GetAbsOrigin();
+
+			Vector newPlayerPos = toucher->GetAbsOrigin();
+
+
+			if ( playerGlobalMins.x > bossGlobalMaxs.x ||
+				playerGlobalMaxs.x < bossGlobalMins.x ||
+				playerGlobalMins.y > bossGlobalMaxs.y ||
+				playerGlobalMaxs.y < bossGlobalMins.y ||
+				playerGlobalMins.z > bossGlobalMaxs.z ||
+				playerGlobalMaxs.z < bossGlobalMins.z )
+			{
+				// no overlap
+				return;
+			}
+
+			Vector toPlayer = toucher->WorldSpaceCenter() - player->WorldSpaceCenter();
+
+			Vector overlap;
+			float signX, signY, signZ;
+
+			if ( toPlayer.x >= 0 )
+			{
+				overlap.x = bossGlobalMaxs.x - playerGlobalMins.x;
+				signX = 1.0f;
+			}
+			else
+			{
+				overlap.x = playerGlobalMaxs.x - bossGlobalMins.x;
+				signX = -1.0f;
+			}
+
+			if ( toPlayer.y >= 0 )
+			{
+				overlap.y = bossGlobalMaxs.y - playerGlobalMins.y;
+				signY = 1.0f;
+			}
+			else
+			{
+				overlap.y = playerGlobalMaxs.y - bossGlobalMins.y;
+				signY = -1.0f;
+			}
+
+			if ( toPlayer.z >= 0 )
+			{
+				overlap.z = bossGlobalMaxs.z - playerGlobalMins.z;
+				signZ = 1.0f;
+			}
+			else
+			{
+				// don't push player underground
+				overlap.z = 99999.9f; // playerGlobalMaxs.z - bossGlobalMins.z;
+				signZ = -1.0f;
+			}
+
+			float bloat = 5.0f;
+
+			if ( overlap.x < overlap.y )
+			{
+				if ( overlap.x < overlap.z )
+				{
+					// X is least overlap
+					newPlayerPos.x += signX * ( overlap.x + bloat );
+				}
+				else
+				{
+					// Z is least overlap
+					newPlayerPos.z += signZ * ( overlap.z + bloat );
+				}
+			}
+			else if ( overlap.z < overlap.y )
+			{
+				// Z is least overlap
+				newPlayerPos.z += signZ * ( overlap.z + bloat );
+			}
+			else
+			{
+				// Y is least overlap
+				newPlayerPos.y += signY * ( overlap.y + bloat );
+			}
+
+			// check if new location is valid
+			trace_t result;
+			Ray_t ray;
+			ray.Init( newPlayerPos, newPlayerPos, toucher->CollisionProp()->OBBMins(), toucher->CollisionProp()->OBBMaxs() );
+			UTIL_TraceRay( ray, MASK_PLAYERSOLID, toucher, COLLISION_GROUP_PLAYER_MOVEMENT, &result );
+
+			if ( result.DidHit() )
+			{
+				// Trace down from above to find safe ground
+				ray.Init( newPlayerPos + Vector( 0.0f, 0.0f, 32.0f ), newPlayerPos, toucher->CollisionProp()->OBBMins(), toucher->CollisionProp()->OBBMaxs() );
+				UTIL_TraceRay( ray, MASK_PLAYERSOLID, toucher, COLLISION_GROUP_PLAYER_MOVEMENT, &result );
+
+				if ( result.startsolid )
+				{
+					// player was crushed against something
+					toucher->TakeDamage( CTakeDamageInfo( player, player, nullptr, vec3_origin, vec3_origin, GetFastAttributeFloat(player, 0.0f, DISPLACE_TOUCHED_ENEMIES), DMG_CRUSH ) );
+					return;
+				}
+				else
+				{
+					// Use the trace end position
+					newPlayerPos = result.endpos;
+				}
+			}
+
+			toucher->SetAbsOrigin( newPlayerPos );
+		}
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
+	{
+		auto object = reinterpret_cast<CBaseObject *>(this);
+		
+		int cannotApply = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pTFPlayer, cannotApply, cannot_be_sapped);
+		if (cannotApply)
+			return false;
+		return DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
+	}
 
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
@@ -7500,7 +7681,7 @@ namespace Mod::Attr::Custom_Attributes
 	// 	return MAX(iMax, 1);
 	// }
 
-	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_NONE,	
+	ConVar cvar_display_attrs("sig_attr_display", "1", FCVAR_GAMEDLL,	
 		"Enable displaying custom attributes on the right side of the screen");	
 
 	class AttributeInfoModule : public EntityModule
@@ -8176,11 +8357,45 @@ namespace Mod::Attr::Custom_Attributes
 			CBaseEntity *ent = manager->m_hOuter;
 			auto econentity = rtti_cast<CEconEntity *>(ent);
 			if (econentity != nullptr) {
-				econentity->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs");
+				if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+					const char *newValue = nullptr;
+					CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+					if (newValue != nullptr && newValue[0] != '\0') {
+						econentity->GetOrCreateEntityModule<AltFireAttributesModule>("altfireattrs")->attributes = MAKE_STRING(newValue);
+						return;
+					}
+				}
+				econentity->RemoveEntityModule("altfireattrs");
 			}
 		}
 	}
 
+	void OnFOVChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			if (changeType == AttributeChangeType::REMOVE || new_value.m_Float == 0)
+				player->SetFOV(player, 0, 0.1f, 0);
+			else if (new_value.m_Float != 0)
+				player->SetFOV(player, new_value.m_Float, 0.1f, 0);
+		}
+	}
+
+	void OnOverlayChange(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+				const char *newValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+				if (newValue != nullptr && newValue[0] != '\0') {
+					V_strncpy(player->m_Local->m_szScriptOverlayMaterial.Get(), newValue, 260);
+					return;
+				}
+			}
+			player->m_Local->m_szScriptOverlayMaterial.Get()[0] = '\0';
+		}
+	}
 
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
@@ -8445,7 +8660,6 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFBot_Event_Killed, "CTFBot::Event_Killed");
             MOD_ADD_VHOOK(CObjectSentrygun_UpdateOnRemove, TypeName<CObjectSentrygun>(), "CBaseEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_EmitSentrySound, "CObjectSentrygun::EmitSentrySound");
-			MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_Spawn,    "CObjectSentrygun::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_TestAndExpireChargeEffect,    "CTFPlayerShared::TestAndExpireChargeEffect");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFBot_ShouldGib,    "CTFBot::ShouldGib", HIGH);
@@ -8493,6 +8707,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_Touch, "CBaseEntity::Touch");
 			MOD_ADD_DETOUR_MEMBER(CCollisionEvent_PostCollision, "CCollisionEvent::PostCollision");
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_HasPrimaryAmmo, "CBaseCombatWeapon::HasPrimaryAmmo");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PlayStepSound, "CBasePlayer::PlayStepSound");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTauntSucceeded, "CTFPlayer::OnTauntSucceeded");
+			MOD_ADD_DETOUR_MEMBER(CGameMovement_PlayerMove, "CGameMovement::PlayerMove");
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
+			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FoundTarget, "CObjectSentrygun::FoundTarget");
 
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -8606,6 +8825,8 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("medigun_particle_release", OnMedigunBeamChange);
 				RegisterCallback("medigun_particle_spark", OnMedigunBeamChange);
 				RegisterCallback("alt_fire_attributes", OnAltFireAttributesChange);
+				RegisterCallback("fov_override", OnFOVChange);
+				RegisterCallback("hud_overlay", OnOverlayChange);
 				
 			}
 		}

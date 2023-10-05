@@ -239,7 +239,7 @@ namespace Mod::MvM::Extended_Upgrades
         return slot;
     }
 
-    ConVar sig_mvm_extended_upgrades_add_for_uninteded_class("sig_mvm_extended_upgrades_add_for_uninteded_class", "1", FCVAR_NOTIFY,
+    ConVar sig_mvm_extended_upgrades_add_for_uninteded_class("sig_mvm_extended_upgrades_add_for_uninteded_class", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: add regular upgrades to extended upgrades menu when upgrading weapons for unintended class"); 
 
     bool IsWeaponUnintendedForPlayer(CTFPlayer *player, CEconEntity *entity)
