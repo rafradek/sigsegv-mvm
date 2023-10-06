@@ -139,6 +139,22 @@ private:
 	std::vector<int> m_LastChangeTicks;
 };
 
+struct carea_t
+{
+	int		numareaportals;
+	int		firstareaportal;
+	int		floodnum;							// if two areas have equal floodnums, they are connected
+	int		floodvalid;
+};
+
+class CCollisionBSPData
+{
+public:
+    uint8_t pad[0x224];
+    int numareas;
+    carea_t *map_areas;
+};
+
 namespace Mod::Perf::SendProp_Optimize
 {
 
@@ -963,6 +979,7 @@ namespace Mod::Perf::SendProp_Optimize
     std::atomic<bool> packWorkFinished = false;
     std::atomic<bool> setupPackInfoFinished = false;
 
+    GlobalThunk<CCollisionBSPData> g_BSPData("g_BSPData");
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  CGameClient **clients, CFrameSnapshot *snapshot)
 	{
         for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -999,6 +1016,12 @@ namespace Mod::Perf::SendProp_Optimize
                 edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
             }
         }
+        int numareas = g_BSPData.GetRef().numareas;
+        auto areas = g_BSPData.GetRef().map_areas;
+        static std::vector<uint16_t> floodnums;
+        if ((int)floodnums.size() < numareas * clientCount) {
+            floodnums.resize(numareas * clientCount);
+        }
 
         packWorkFinished = false;
         int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
@@ -1007,6 +1030,9 @@ namespace Mod::Perf::SendProp_Optimize
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
                 auto client = clients[clientIndex];
                 client->SetupPackInfo(snapshot);
+                for (int i = 0; i < numareas; i++) {
+                    floodnums[clientIndex * numareas + i] = (uint16_t) areas[i].floodnum;
+                }
                 computedPackInfos[clientIndex] = true;
                 computedPackInfos[clientIndex].notify_all();
             }
@@ -1052,6 +1078,9 @@ namespace Mod::Perf::SendProp_Optimize
 
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
+            for (int i = 0; i < numareas; i++) {
+                areas[i].floodnum = floodnums[clientIndex * numareas + i];
+            }
             serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities);
             checkTransmitComplete[clientIndex] = true;
             checkTransmitComplete[clientIndex].notify_all();

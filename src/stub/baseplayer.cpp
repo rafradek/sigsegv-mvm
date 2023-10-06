@@ -92,6 +92,8 @@ IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);
 IMPL_SENDPROP(bool, CPlayerLocalData,  m_bDrawViewmodel, CBasePlayer);
 IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData,   m_flFallVelocity, CBasePlayer);
+IMPL_SENDPROP(unsigned char[MAX_AREA_PORTAL_STATE_BYTES], CPlayerLocalData, m_chAreaPortalBits, CBasePlayer);
+IMPL_SENDPROP(unsigned char[MAX_AREA_STATE_BYTES], CPlayerLocalData, m_chAreaBits, CBasePlayer);
 #ifdef SE_TF2
 IMPL_SENDPROP(char[260], CPlayerLocalData, m_szScriptOverlayMaterial, CBasePlayer);
 #endif

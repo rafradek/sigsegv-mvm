@@ -6105,6 +6105,8 @@
 				"CPointPush::PushThink" "_ZN10CPointPush9PushThinkEv"
 
 				"TE_FireBullets" "_Z14TE_FireBulletsiRK6VectorRK6QAngleiiifb"
+
+				"CServerNetworkProperty::IsInPVS" "_ZN22CServerNetworkProperty7IsInPVSEPK18CCheckTransmitInfo"
 			}
 			"addrs_group"
 			{

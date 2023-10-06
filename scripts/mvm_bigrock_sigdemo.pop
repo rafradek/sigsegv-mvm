@@ -79,12 +79,13 @@ WaveSchedule
 	SentryHintMinDistanceFromBomb 1300 [$SIGSEGV] // How far the engineer spot must be behind the bomb (default: 1300)
 	DefaultMiniBossScale 1.6 [$SIGSEGV] // Default Giant Bot scale (default: 1.75) 
 	// CustomNavFile "mvm_bigrock_somecustomnav" [$SIGSEGV] // Custom nav file name
+	AllowBotsSapPlayers 1 [$SIGSEGV] // Allow bots to sap players (default: 0) 
 
 
 	//////////////////////////
 	// Weapon Options       //
 	//////////////////////////
-	SandmanStun 0 [$SIGSEGV] //Should the sandman ball stun players. 1 reverts the pre Jungle Inferno stun (default: 1)
+	SandmanStun 0 [$SIGSEGV] //Should the sandman ball stun players. 1 reverts the pre Jungle Inferno stun (default: 0)
 	ConchHealthOnHit 0.77 [$SIGSEGV] // Health on hit percentage for conch (default: 0.35)
 	MarkedForDeathLifetime 1 [$SIGSEGV] // Marked for death duration (default: 15)
 	VacNumCharges 16 [$SIGSEGV] // Number of charges for Vaccinator (default: 4)
@@ -3523,7 +3524,7 @@ WaveSchedule
 // "alt fire attack" 1
 
 // Attributes to apply when alt fire button is pressed
-// "alt fire attack attributes" "fire rate bonus|2|damage bonus|2"
+// "alt fire attributes" "fire rate bonus|2|damage bonus|2"
 
 // No revive marker on death
 // "no revive" 1

@@ -705,6 +705,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_iRobotLimitSetByMission = 22;
 			this->m_bPlayerBombCarrierBuffs = false;
 			this->m_bEnable100Slots = false;
+			this->m_bAllowBotsSapPlayers = false;
 			
 			this->m_MedievalMode            .Reset();
 			if (!popfileReset) {
@@ -851,6 +852,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		int m_iRobotLimitSetByMission;
 		bool m_bPlayerBombCarrierBuffs;
 		bool m_bEnable100Slots;
+		bool m_bAllowBotsSapPlayers;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverridePopfile_ConVar<bool>        m_SpellsEnabled;
@@ -4760,6 +4762,34 @@ namespace Mod::Pop::PopMgr_Extensions
 		return result;
 	}
 	
+	DETOUR_DECL_MEMBER(bool, CBaseObject_FindSnapToBuildPos, CBaseObject *pObjectOverride)
+	{
+		auto me = reinterpret_cast<CBaseObject *>(this);
+		auto builder = me->GetBuilder();
+		if (state.m_bAllowBotsSapPlayers && builder->IsBot()) {
+			Vector vecNearestBuildPoint = vec3_origin;
+			float flNearestPoint = 9999;
+			bool found = false;
+			CTFPlayer *victim = nullptr;
+			ForEachTFPlayer([&](CTFPlayer *player){
+				if (player->GetTeamNumber() != builder->GetTeamNumber() && me->FindBuildPointOnPlayer(player, builder, flNearestPoint, vecNearestBuildPoint)) {
+					victim = player;
+					found = true;
+				}
+			});
+			if (!found) {
+				me->AddEffects(EF_NODRAW);
+			}
+			else {
+				me->RemoveEffects(EF_NODRAW);
+				me->AttachObjectToObject(victim, 0, vecNearestBuildPoint);
+				me->m_vecBuildOrigin = vecNearestBuildPoint;
+			}
+			return found;
+		}
+		return DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+	}
+
 	class CTFNavAreaIncursionLess
 	{
 	public:
@@ -6638,6 +6668,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_AllowCivilian.Set(subkey->GetInt());
 			} else if (FStrEq(name, "NPCLagCompensation")) {
 				state.m_bNPCLagCompensation.Set(subkey->GetBool());
+			} else if (FStrEq(name, "AllowBotsSapPlayers")) {
+				state.m_bAllowBotsSapPlayers = subkey->GetBool();
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;

@@ -136,6 +136,7 @@
 				"g_TFClassViewVectors" "g_TFClassViewVectors"
 
 				"CBaseEntity::m_pPredictionPlayer" "_ZN11CBaseEntity19m_pPredictionPlayerE"
+				
 			}
 			
 			"addrs_group"
@@ -155,7 +156,7 @@
 				"s_StaticPropMgr" "_ZL15s_StaticPropMgr"
 				"modelloader" "modelloader"
 				"VTable for CStaticProp" "_ZTV11CStaticProp"
-				
+				"g_BSPData" "g_BSPData"
 			}
 		}
 	}

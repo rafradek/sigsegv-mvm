@@ -127,7 +127,11 @@ public:
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
 	DECL_SENDPROP(int,   m_iHideHUD);
-	DECL_SENDPROP(float,   m_flFallVelocity);
+	DECL_SENDPROP(float, m_flFallVelocity);
+	DECL_SENDPROP(unsigned char[MAX_AREA_PORTAL_STATE_BYTES], m_chAreaPortalBits);
+	DECL_SENDPROP(unsigned char[MAX_AREA_STATE_BYTES], m_chAreaBits);
+	
+	
 #ifdef SE_TF2
 	DECL_SENDPROP_RW(char[260], m_szScriptOverlayMaterial);
 #endif
