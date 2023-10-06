@@ -53,17 +53,30 @@ namespace Mod::MvM::Weapon_AntiGrief
 		DETOUR_MEMBER_CALL(CTFScatterGun_ApplyPostHitEffects)(info, victim);
 	}
 	RefCount rc_ForceANature2;
+	RefCount rc_AirborneRage;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyPushFromDamage, const CTakeDamageInfo& info, Vector vec)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
 		SCOPED_INCREMENT_IF(rc_ForceANature2, BotIsAGiant(player));
-
-		if (cvar_airborne_rage.GetBool() && BotIsAGiant(player) && !(player->GetFlags() & FL_ONGROUND))
-			return;
+		SCOPED_INCREMENT_IF(rc_AirborneRage, cvar_airborne_rage.GetBool() && BotIsAGiant(player) && !(player->GetFlags() & FL_ONGROUND) && info.GetAttacker() != player);
 			
 		DETOUR_MEMBER_CALL(CTFPlayer_ApplyPushFromDamage)(info, vec);
 	}
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		if (rc_AirborneRage) {
+			Vector v2 = *v1 * 0.33f;
+			DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(&v2);
+			return;
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
+	}
+	
 	
 	DETOUR_DECL_STATIC(bool, CanScatterGunKnockBack, CTFWeaponBase *scattergun, float damage, float distsqr)
 	{
@@ -160,6 +173,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			
 			MOD_ADD_DETOUR_MEMBER(CTFScatterGun_ApplyPostHitEffects, "CTFScatterGun::ApplyPostHitEffects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyPushFromDamage,     "CTFPlayer::ApplyPushFromDamage");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ApplyAbsVelocityImpulse,     "CTFPlayer::ApplyAbsVelocityImpulse");
 			MOD_ADD_DETOUR_STATIC(CanScatterGunKnockBack,            "CanScatterGunKnockBack");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ApplyOnHitAttributes,          "CTFWeaponBase::ApplyOnHitAttributes");
 			

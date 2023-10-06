@@ -98,10 +98,28 @@ void PrintToChatAll(const char *str);
 
 void PrintToChat(const char *str, CBasePlayer *player);
 
+struct EventQueuePrioritizedEvent_t
+{
+	float m_flFireTime;
+	string_t m_iTarget;
+	string_t m_iTargetInput;
+	EHANDLE m_pActivator;
+	EHANDLE m_pCaller;
+	int m_iOutputID;
+	EHANDLE m_pEntTarget;  // a pointer to the entity to target; overrides m_iTarget
+
+	variant_t m_VariantValue;	// variable-type parameter
+
+	EventQueuePrioritizedEvent_t *m_pNext;
+	EventQueuePrioritizedEvent_t *m_pPrev;
+};
+
 class CEventQueue {
 public:
 	void AddEvent( const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID ) {ft_AddEvent(this,target,targetInput,Value,fireDelay,pActivator,pCaller,outputID);}
 	void CancelEvents(CBaseEntity *entity) {ft_CancelEvents(this, entity);}
+	
+	EventQueuePrioritizedEvent_t m_Events;
 private:
 	static MemberFuncThunk< CEventQueue*, void, const char*,const char *, variant_t, float, CBaseEntity *, CBaseEntity *, int>   ft_AddEvent;
 	static MemberFuncThunk< CEventQueue*, void, CBaseEntity *>   ft_CancelEvents;

@@ -2320,7 +2320,7 @@ WaveSchedule
 				WeaponRestrictions SecondaryOnly
 				AimTrackingInterval 0 [$SIGSEGV] //Override aim tracking time. 0.05 - expert 1.0 - easy
 				HeadRotateSpeed 2000 [$SIGSEGV] // Head rotate speed. Set to 10000 automatically if AimTrackingInterval is less than 0.05 (Default: 1000)
-				FOV 30 [$SIGSEGV] // Custom FOV value
+				FOV 30 [$SIGSEGV] // Custom FOV value (Default: 90)
 				SeeThroughWalls 1 [$SIGSEGV] // See enemies through walls
 				FastUpdate 1 [$SIGSEGV] //If set, the bot ai updates every tick
 				DropWeapon 1 [$SIGSEGV] //If set, bot will drop a weapon on death. The weapon cannot be upgraded

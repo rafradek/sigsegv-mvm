@@ -1410,6 +1410,17 @@ namespace Mod::Etc::Mapentity_Additions
         DETOUR_MEMBER_CALL(CEventQueue_AddEvent_CBaseEntity)(target, targetInput, Value, fireDelay, pActivator, pCaller, outputID);
     }
 
+    DETOUR_DECL_MEMBER(void, CEventQueue_CancelEvents, CBaseEntity *caller)
+	{
+        auto que = reinterpret_cast<CEventQueue *>(this);
+        
+        for(auto event = que->m_Events.m_pNext; event != nullptr; event = event->m_pNext) {
+            if (event->m_pCaller == caller) {
+                event->m_iTarget = NULL_STRING;
+                event->m_pEntTarget = nullptr;
+            }
+        }
+    }
 
     DETOUR_DECL_MEMBER(void, CEventQueue_AddEvent, const char *target, const char *targetInput, variant_t Value, float fireDelay, CBaseEntity *pActivator, CBaseEntity *pCaller, int outputID)
 	{
@@ -1865,7 +1876,7 @@ namespace Mod::Etc::Mapentity_Additions
     }
 	
     CBaseFilter *pushFilter = nullptr;
-    CBaseFilter *pushEntity = nullptr;
+    CBaseEntity *pushEntity = nullptr;
 	DETOUR_DECL_MEMBER(void, CPointPush_PushThink)
 	{
 		auto push = reinterpret_cast<CBaseEntity *>(this);
@@ -1987,7 +1998,9 @@ namespace Mod::Etc::Mapentity_Additions
             // Execute -1 delay events immediately
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent_CBaseEntity, "CEventQueue::AddEvent [CBaseEntity]");
             MOD_ADD_DETOUR_MEMBER(CEventQueue_AddEvent, "CEventQueue::AddEvent");
-            
+
+            // Fix cancel pending crash
+            MOD_ADD_DETOUR_MEMBER(CEventQueue_CancelEvents, "CEventQueue::CancelEvents");
 
             // Fix camera despawn bug
             MOD_ADD_DETOUR_MEMBER(CTriggerCamera_Enable, "CTriggerCamera::Enable");
