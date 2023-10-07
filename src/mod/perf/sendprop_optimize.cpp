@@ -980,6 +980,16 @@ namespace Mod::Perf::SendProp_Optimize
     std::atomic<bool> setupPackInfoFinished = false;
 
     GlobalThunk<CCollisionBSPData> g_BSPData("g_BSPData");
+    
+    uint16_t *areasConnected = nullptr;
+    DETOUR_DECL_MEMBER(bool, CVEngineServer_CheckAreasConnected, int area1, int area2)
+	{
+        if (areasConnected != nullptr) {
+            return areasConnected[area1] == areasConnected[area2];
+        }
+        return DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(area1, area2);
+    }
+
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  CGameClient **clients, CFrameSnapshot *snapshot)
 	{
         for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -1078,10 +1088,9 @@ namespace Mod::Perf::SendProp_Optimize
 
             auto client = clients[clientIndex];
             auto transmit = (CCheckTransmitInfo *)((uintptr_t)client + packinfoOffset);
-            for (int i = 0; i < numareas; i++) {
-                areas[i].floodnum = floodnums[clientIndex * numareas + i];
-            }
+            areasConnected = floodnums.data() + (clientIndex * numareas);
             serverGameEnts->CheckTransmit(transmit, snapshot->m_pValidEntities, snapshot->m_nValidEntities);
+            areasConnected = nullptr;
             checkTransmitComplete[clientIndex] = true;
             checkTransmitComplete[clientIndex].notify_all();
         }
@@ -1368,6 +1377,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2,"~CBaseEntity [D2]");
 
             MOD_ADD_DETOUR_MEMBER(CServerGameEnts_CheckTransmit,"CServerGameEnts::CheckTransmit");
+            MOD_ADD_DETOUR_MEMBER(CVEngineServer_CheckAreasConnected,"CVEngineServer::CheckAreasConnected");
             MOD_ADD_DETOUR_MEMBER(CGameClient_SetupPackInfo,"CGameClient::SetupPackInfo");
 			MOD_ADD_DETOUR_STATIC_PRIORITY(SV_ComputeClientPacks, "SV_ComputeClientPacks", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(CParallelProcessor_CGameClient_Run, "CParallelProcessor<CGameClient *>::Run");
