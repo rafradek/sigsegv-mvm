@@ -362,7 +362,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void FireInputAttribute(const char *input, const char *filter, const variant_t &defValue, CBaseEntity *inflictor, CBaseEntity *activator, CBaseEntity *caller, float delay)
 	{
-		if (input != nullptr && (filter == nullptr || caller->NameMatches(filter))) {
+		if (input != nullptr && (filter == nullptr || caller->NameMatches(filter) || caller->ClassMatches(filter))) {
 			char input_tokenized[512];
 			V_strncpy(input_tokenized, input, sizeof(input_tokenized));
 			
