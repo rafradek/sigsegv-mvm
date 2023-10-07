@@ -6137,6 +6137,7 @@
 				"CParallelProcessor<CGameClient *>::Run" "_ZN18CParallelProcessorIP11CGameClient21CFuncJobItemProcessorIS1_EE3RunEPS1_jiP11IThreadPool"
 
 				"CVEngineServer::BuildEntityClusterList" "_ZN14CVEngineServer22BuildEntityClusterListEP7edict_tP9PVSInfo_t"
+				"CVEngineServer::CheckAreasConnected" "_ZN14CVEngineServer19CheckAreasConnectedEii"
 
 				"CMapReslistGenerator::RunFrame" "_ZN20CMapReslistGenerator8RunFrameEv"
 
