@@ -7,6 +7,7 @@
 #include "util/backtrace.h"
 #include "util/demangle.h"
 #include "util/misc.h"
+#include "stub/server.h"
 
 #include <udis86.h>
 
@@ -325,6 +326,8 @@ bool IDetour_SymNormal::DoLoad()
 			return false;
 		}
 	}
+
+	CDetouredFunc::Find(this->m_pFunc);
 	
 	return true;
 }
@@ -531,9 +534,10 @@ CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	m_pFunc(reinterpret_cast<uint8_t *>(func_ptr))
 {
 	TRACE("[this: %08x] [func: %08x]", (uintptr_t)this, (uintptr_t)func_ptr);
-	
-	this->CreateWrapper();
-	this->CreateTrampoline();
+	size_t len_prologue = Trampoline_CalcNumBytesToCopy(JmpRelImm32::Size(), this->m_pFunc);
+	this->m_TrueOriginalPrologue.resize(len_prologue);
+	memcpy(this->m_TrueOriginalPrologue.data(), this->m_pFunc, len_prologue);
+
 }
 CDetouredFunc::~CDetouredFunc()
 {
@@ -560,6 +564,21 @@ CDetouredFunc& CDetouredFunc::Find(void *func_ptr)
 	
 //	TRACE_EXIT("%s", (result.second ? "inserted" : "existing"));
 }
+
+CDetouredFunc *CDetouredFunc::FindOptional(void *func_ptr)
+{
+//	TRACE("%08x", (uintptr_t)func_ptr);
+	
+	auto it = s_FuncMap.find(func_ptr);
+	if (it == s_FuncMap.end()) {
+		return nullptr;
+	}
+	
+	return &(*it).second;
+	
+//	TRACE_EXIT("%s", (result.second ? "inserted" : "existing"));
+}
+
 
 
 void CDetouredFunc::CleanUp()
@@ -716,6 +735,8 @@ void CDetouredFunc::DestroyTrampoline()
 		TheExecMemManager()->FreeTrampoline(this->m_pTrampoline);
 		this->m_pTrampoline = nullptr;
 	}
+	this->m_OriginalPrologue.clear();
+	this->m_TrampolineCheck.clear();
 }
 
 
@@ -723,15 +744,16 @@ void CDetouredFunc::Reconfigure()
 {
 	TRACE("[this: %08x] with %zu detour(s)", (uintptr_t)this, this->m_Detours.size());
 	
-	this->ValidateWrapper();
-	this->ValidateTrampoline();
-	
+	this->DestroyWrapper();
+
 	this->UninstallJump();
+	this->DestroyTrampoline();
 	
 	void *jump_to = nullptr;
 	
 	if (!this->m_Detours.empty()) {
 
+		this->CreateTrampoline();
 		CDetour *first = this->m_Detours.front();
 		CDetour *last  = this->m_Detours.back();
 		
@@ -763,6 +785,8 @@ void CDetouredFunc::Reconfigure()
 	
 #if !defined _WINDOWS
 	if (!this->m_Traces.empty()) {
+
+		this->CreateWrapper();
 		if (jump_to != nullptr) {
 			this->m_pWrapperInner = jump_to;
 		} else {
@@ -790,6 +814,13 @@ void CDetouredFunc::InstallJump(void *target)
 	}
 	
 	this->ValidateOriginalPrologue();
+
+	if (!this->m_bModifiedByPatch && !this->Validate(this->m_pFunc, this->m_TrueOriginalPrologue, "ValidateTrueOriginalPrologue")) {
+		const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
+		if (func_name == nullptr) func_name = "???";
+		ConColorMsg(Color(0xff, 0xff, 0x60), "\"%s\" is probably already detoured by another plugin/extension\nThis might be fine, but to be safe you could enable sigsegv convars before other plugins\n", func_name);
+		ConColorMsg(Color(0xff, 0xff, 0x60), "Convars in sigsegv_convars.cfg are always loaded before sourcemod plugins\n");
+	}
 	
 	assert(!this->m_OriginalPrologue.empty());
 	
@@ -804,6 +835,19 @@ void CDetouredFunc::InstallJump(void *target)
 	this->m_bJumpInstalled = true;
 }
 
+void CDetouredFunc::TemponaryDisable()
+{
+	this->m_bModifiedByPatch = true;
+	if (this->m_bJumpInstalled) {
+		this->UninstallJump();
+	}
+}
+
+void CDetouredFunc::TemponaryEnable()
+{
+	this->Reconfigure();
+}
+
 void CDetouredFunc::UninstallJump()
 {
 	TRACE("[this: %08x]", (uintptr_t)this);
@@ -814,7 +858,16 @@ void CDetouredFunc::UninstallJump()
 		return;
 	}
 	
-	this->ValidateCurrentPrologue();
+	// Check if some extension had overriden our jump, but not when the game is in shutdown/restart state as it does not matter by then
+	int state = g_HostState.GetRef().m_currentState;
+	if (!this->ValidateCurrentPrologue() && (state == 6 || state == 7)) {
+		const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
+		if (func_name == nullptr) func_name = "???";
+		
+		ConColorMsg(Color(0xff, 0x60, 0x60), "\"%s\" detour validation failure!\n"
+		"This means that another plugin or extension had detoured this function, and those detours are now disabled\n", func_name);
+		ConColorMsg(Color(0xff, 0x60, 0x60), "You can avoid this problem by disabling the conflicting plugin/extension before changing sigsegv convars or unloading sigsegv, and enable the plugin afterwards\n");
+	}
 	
 	assert(!this->m_OriginalPrologue.empty());
 	
@@ -827,22 +880,27 @@ void CDetouredFunc::UninstallJump()
 }
 
 
-void CDetouredFunc::Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller)
+bool CDetouredFunc::Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller)
 {
 	const uint8_t *check_ptr = vec.data();
 	size_t         check_len = vec.size();
 	
-	if (memcmp(ptr, check_ptr, check_len) != 0) {
-		const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
-		if (func_name == nullptr) func_name = "???";
-		
-		/*Warning("CDetouredFunc::%s [func: \"%s\"]: validation failure!\n"
-			"Expected:\n%s"
-			"Actual:\n%s",
-			caller, func_name,
-			HexDump(check_ptr, check_len).c_str(),
-			HexDump(      ptr, check_len).c_str());*/
-	}
+	return memcmp(ptr, check_ptr, check_len) == 0;
+
+	// if (memcmp(ptr, check_ptr, check_len) != 0) {
+	// 	const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
+	// 	if (func_name == nullptr) func_name = "???";
+
+	// 	Warning("CDetouredFunc::%s [func: \"%s\"]: validation failure!\n"
+	// 		"Expected:\n%s"
+	// 		"Actual:\n%s",
+	// 		caller, func_name,
+	// 		HexDump(check_ptr, check_len).c_str(),
+	// 		HexDump(      ptr, check_len).c_str());
+
+	// 	return false;
+	// }
+	// return true;
 }
 
 

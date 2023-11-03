@@ -155,6 +155,7 @@ public:
     PackedEntity* GetPreviouslySentPacket( int iEntity, int iSerialNumber ) { return ft_GetPreviouslySentPacket(this, iEntity, iSerialNumber); }
     bool UsePreviouslySentPacket( CFrameSnapshot* pSnapshot, int entity, int entSerialNumber ) { return ft_UsePreviouslySentPacket(this, pSnapshot, entity, entSerialNumber); }
     PackedEntity*	CreatePackedEntity( CFrameSnapshot* pSnapshot, int entity ) { return ft_CreatePackedEntity(this, pSnapshot, entity); }
+    PackedEntity*	GetPackedEntity( CFrameSnapshot* pSnapshot, int entity ) { return ft_GetPackedEntity(this, pSnapshot, entity); }
 
 	CUtlLinkedList<CFrameSnapshot*, unsigned short>		m_FrameSnapshots;
     CClassMemoryPool< PackedEntity >					m_PackedEntitiesPool;
@@ -169,6 +170,7 @@ private:
     static MemberFuncThunk<CFrameSnapshotManager *, PackedEntity *, int, int>              ft_GetPreviouslySentPacket;
     static MemberFuncThunk<CFrameSnapshotManager *, bool, CFrameSnapshot*, int, int>       ft_UsePreviouslySentPacket;
     static MemberFuncThunk<CFrameSnapshotManager *, PackedEntity*, CFrameSnapshot*, int>   ft_CreatePackedEntity;
+    static MemberFuncThunk<CFrameSnapshotManager *, PackedEntity*, CFrameSnapshot*, int>   ft_GetPackedEntity;
 };
 
 typedef struct
@@ -703,5 +705,16 @@ private:
 
 	CFrameSnapshot		*m_pSnapshot;
 };
+
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_StringToString;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_VectorXYToVectorXY;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_QAngles;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_Color32ToInt;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_EHandleToInt;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_IntAddOne;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_ShortAddOne;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_StringT_To_String;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_AngleToFloat;
+extern GlobalThunk<SendVarProxyFn> DLLSendProxy_Empty;
 
 #endif

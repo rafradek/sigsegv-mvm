@@ -239,6 +239,7 @@ class ExtensionConfig(object):
     cxx.cxxflags += ['-Wno-invalid-offsetof']
     cxx.cxxflags += ['-fpermissive']
     cxx.cxxflags += ['-fno-stack-protector']
+    cxx.cxxflags += ['-Wno-overloaded-virtual']
 #   cxx.cxxflags += ['-ferror-limit=100']
 #   cxx.cxxflags += ['-arch i386']
 #   cxx.cxxflags += ['-Wno-invalid-constexpr']

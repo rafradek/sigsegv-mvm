@@ -31,6 +31,7 @@
 #include "mod/common/weapon_shoot.h"
 #include "mod/common/commands.h"
 #include <fmt/core.h>
+#include "util/vi.h"
 
 
 class CDmgAccumulator;
@@ -620,6 +621,25 @@ namespace Mod::Attr::Custom_Attributes
 		return retval;
 	}	
 
+	THINK_FUNC_DECL(ProjectileHitRadius) {
+		if (this->CollisionProp()->IsSolidFlagSet(FSOLID_NOT_SOLID)) {
+			this->SetNextThink(gpGlobals->curtime+0.001f, "ProjectileHitRadius");
+			return;
+		}
+		float size = this->GetCustomVariableFloat<"hitradius">();
+		Ray_t ray;
+		ray.Init( this->GetAbsOrigin() - this->GetAbsVelocity() * gpGlobals->frametime, this->GetAbsOrigin(), Vector(-size,-size,-size), Vector(size,size,size) );
+		CBaseEntity *ents[256];
+		int count = UTIL_EntitiesAlongRay(ents, sizeof(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
+		for (int i = 0; i < count; ++i) {
+
+			if (ents[i] == this || ents[i] == this->GetOwnerEntity() || ents[i]->m_takedamage != DAMAGE_YES || !ents[i]->CollisionProp()->IsSolid()) continue;
+			this->Touch(ents[i]);
+		}
+		this->SetNextThink(gpGlobals->curtime+0.001f, "ProjectileHitRadius");
+	};
+
+
 	THINK_FUNC_DECL(ProjectileLifetime) {
 		this->Remove();
 	};
@@ -711,9 +731,22 @@ namespace Mod::Attr::Custom_Attributes
 					THINK_FUNC_SET(proj, ProjectileLifetime, gpGlobals->curtime + attr_lifetime);
 					//proj->ThinkSet(&ProjectileLifetime::Update, gpGlobals->curtime + attr_lifetime, "ProjLifetime");
 				}
+				float attr_hit_radius = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, attr_hit_radius, projectile_hit_radius);
+
+				if (attr_hit_radius > 0.0f) {
+					proj->SetCustomVariable("hitradius", Variant(attr_hit_radius));
+					THINK_FUNC_SET(proj, ProjectileHitRadius, gpGlobals->curtime);
+				}
 
 				float detonateTime = 0.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, detonateTime, projectile_detonate_time);
+
+				int noclip = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, noclip, noclip_projectiles);
+				if (noclip != 0) {
+					proj->SetMoveType(MOVETYPE_NOCLIP);
+				}
 
 				if (detonateTime != 0.0f) {
 					if (rtti_cast<CTFBaseRocket *>(proj) != nullptr) {
@@ -1173,11 +1206,11 @@ namespace Mod::Attr::Custom_Attributes
 				effectImmediateDestroy = true;
 				medigunParticle++; 
 			}
-			if (medigunParticle != nullptr && medigunParticleEnemy[0] == '~') {
+			if (medigunParticleEnemy != nullptr && medigunParticleEnemy[0] == '~') {
 				effectImmediateDestroy = true;
 				medigunParticleEnemy++; 
 			}
-			if (medigunParticle != nullptr && medigunParticleRelease[0] == '~') {
+			if (medigunParticleRelease != nullptr && medigunParticleRelease[0] == '~') {
 				effectImmediateDestroy = true;
 				medigunParticleRelease++; 
 			}
@@ -2943,6 +2976,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		hit_explode_direct = ent;
+		Msg("Hit %s %d %d\n", ent->GetClassname(), ent->CollisionProp()->IsSolid(), ent->CollisionProp()->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ));
 		
 		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(ent);
 		hit_explode_direct = nullptr;
@@ -3678,6 +3712,18 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
 	}
 
+	DETOUR_DECL_MEMBER(bool, CTFPlayerShared_CanRecieveMedigunChargeEffect, int eType)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		int immune = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, immune, effect_immunity);
+		if (immune != 0) {
+			return false;
+		}
+
+		return DETOUR_MEMBER_CALL(CTFPlayerShared_CanRecieveMedigunChargeEffect)(eType);
+	} 
+
 	RefCount rc_CWeaponMedigun_StartHealingTarget;
 	CTFPlayer *startHealingTargetHealer;
 	CBaseEntity *startHealingTarget;
@@ -3695,12 +3741,25 @@ namespace Mod::Attr::Custom_Attributes
 	int aoe_in_sphere_hit_count = 0;
 
 
+	class AddCondAttributeImmunity : public EntityModule
+	{
+	public:
+		AddCondAttributeImmunity(CBaseEntity *entity) : EntityModule(entity) {}
+
+		std::vector<int> conds;
+		std::vector<CEconItemAttributeDefinition *> attributes;
+	};
+
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond2, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
 		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		if (pProvider != player && (nCond == TF_COND_URINE || nCond == TF_COND_MAD_MILK || nCond == TF_COND_MARKEDFORDEATH || nCond == TF_COND_MARKEDFORDEATH_SILENT)) {
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flDuration, mult_debuff_duration);
 		}
+
+		auto mod = player->GetEntityModule<AddCondAttributeImmunity>("addcondimmunity");
+		if (mod != nullptr && std::find(mod->conds.begin(), mod->conds.end(), (int) nCond) != mod->conds.end()) return;
+
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond2)(nCond, flDuration, pProvider);
 	}
 
@@ -5050,10 +5109,10 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
-		if( (cmd->buttons & 2) && (player->GetGroundEntity() == nullptr) && player->IsAlive() 
+		if( (cmd->buttons & IN_JUMP) && (player->GetGroundEntity() == nullptr) && player->IsAlive() 
 				/*&& (player->GetFlags() & 1) */ && GetFastAttributeInt(player, 0, ALLOW_BUNNY_HOP) == 1
 				 ){
-			cmd->buttons &= ~2;
+			cmd->buttons &= ~IN_JUMP;
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
 	}
@@ -5315,6 +5374,7 @@ namespace Mod::Attr::Custom_Attributes
 			value.m_Float = attribute->GetDefaultValue();
 		}
 	}
+	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list);
 
 	bool attribute_manager_no_clear_cache;
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
@@ -5322,6 +5382,12 @@ namespace Mod::Attr::Custom_Attributes
 		if (pAttrDef == nullptr) return;
 
 		auto list = reinterpret_cast<CAttributeList *>(this);
+		
+		auto owner = GetPlayerOwnerOfAttributeList(list);
+		if (owner != nullptr) {
+			auto mod = owner->GetEntityModule<AddCondAttributeImmunity>("addcondimmunity");
+			if (mod != nullptr && std::find(mod->attributes.begin(), mod->attributes.end(), pAttrDef) != mod->attributes.end()) return;
+		}
 		auto &attrs = list->Attributes();
 		int countpre = attrs.Count();
 
@@ -5665,6 +5731,35 @@ namespace Mod::Attr::Custom_Attributes
 					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 0);
 				}
 				else if (noAttack == 0 && !hasAmmo) {
+					weapon->SetCustomVariable("noattackreset", Variant(true));
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 1);
+				}
+			}
+
+			int holdFire = GetFastAttributeInt(weapon, 0, HOLD_FIRE_UNTIL_FULL_RELOAD);
+			if (holdFire != 0)
+			{
+				bool hasFullClip = weapon->IsEnergyWeapon() ? weapon->m_flEnergy >= weapon->Energy_GetMaxEnergy() : weapon->m_iClip1 >= weapon->GetMaxClip1();
+				bool isReloading = weapon->m_iReloadMode > 0;
+				int noAttack = GetFastAttributeInt(weapon, 0, NO_ATTACK);
+				static int noAttackId = GetItemSchema()->GetAttributeDefinitionByName("no_attack")->GetIndex();
+				bool autoFiresClip = GetFastAttributeInt(weapon, 0, AUTO_FIRES_FULL_CLIP) != 0;
+				if (isReloading) {
+					if (autoFiresClip) {
+						if (weapon->m_iClip1 > 0 && weapon->m_iClip1 < weapon->GetMaxClip1()) {
+							player->m_nButtons |= IN_ATTACK;
+						}
+					}
+					else {
+						player->m_nButtons &= ~IN_ATTACK;
+					}
+				}
+				//bool setNoAttack = isReloading && (weapon->m_iClip1 < weapon->GetMaxClip1() - 1 || gpGlobals->curtime + gpGlobals->interval_per_tick < weapon->m_flNextPrimaryAttack);
+				if (noAttack != 0 && !isReloading) {
+					weapon->SetCustomVariable("noattackreset", Variant(false));
+					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 0);
+				}
+				else if (noAttack == 0 && isReloading) {
 					weapon->SetCustomVariable("noattackreset", Variant(true));
 					weapon->GetItem()->GetAttributeList().SetRuntimeAttributeValueByDefID(noAttackId, 1);
 				}
@@ -8399,6 +8494,95 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnAddCondImmunity(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			auto mod = player->GetOrCreateEntityModule<AddCondAttributeImmunity>("addcondimmunity");
+
+			if (changeType == AttributeChangeType::REMOVE || changeType == AttributeChangeType::UPDATE) {
+				const char *oldValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(old_value.m_String, &oldValue);
+				if (oldValue != nullptr && oldValue[0] != '\0') {
+
+					const std::string_view input{oldValue};
+					const auto v{vi::split_str(input, "|")};
+					for(auto &val : v) {
+						auto cond = vi::from_str<int>(val);
+						if (cond.has_value()) {
+							mod->conds.erase(std::find(mod->conds.begin(), mod->conds.end(), cond.value()));
+						}
+					}
+				}
+			}
+
+			if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+				const char *newValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+				if (newValue != nullptr && newValue[0] != '\0') {
+					
+					const std::string_view input{newValue};
+					const auto v{vi::split_str(input, "|")};
+					for(auto &val : v) {
+						auto cond = vi::from_str<int>(val);
+						if (cond.has_value()) {
+							if (cond >= 0) {
+								player->m_Shared->RemoveCond((ETFCond)cond.value());
+							}
+							mod->conds.push_back(cond.value());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void OnAttributeImmunity(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		if (player != nullptr) {
+			auto mod = player->GetOrCreateEntityModule<AddCondAttributeImmunity>("addcondimmunity");
+			mod->attributes.clear();
+
+			if (changeType == AttributeChangeType::REMOVE || changeType == AttributeChangeType::UPDATE) {
+				const char *oldValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(old_value.m_String, &oldValue);
+				if (oldValue != nullptr && oldValue[0] != '\0') {
+					std::string str(oldValue);
+					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+					auto it = tokens.begin();
+					while (it != tokens.end()) {
+						auto attr = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+						if (attr != nullptr) {
+							mod->attributes.erase(std::find(mod->attributes.begin(), mod->attributes.end(), attr));
+						}
+						it++;
+					}
+				}
+			}
+
+			if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+				const char *newValue = nullptr;
+				CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+				if (newValue != nullptr && newValue[0] != '\0') {
+					std::string str(newValue);
+					boost::tokenizer<boost::char_separator<char>> tokens(str, boost::char_separator<char>("|"));
+
+					auto it = tokens.begin();
+					while (it != tokens.end()) {
+						auto attr = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
+						if (attr != nullptr) {
+							player->GetAttributeList()->RemoveAttribute(attr);
+							mod->attributes.push_back(attr);
+						}
+						it++;
+					}
+				}
+			}
+		}
+	}
+
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
 		if (obj != nullptr) {
@@ -8829,6 +9013,8 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("alt_fire_attributes", OnAltFireAttributesChange);
 				RegisterCallback("fov_override", OnFOVChange);
 				RegisterCallback("hud_overlay", OnOverlayChange);
+				RegisterCallback("addcond_immunity", OnAddCondImmunity);
+				RegisterCallback("attribute_immunity", OnAttributeImmunity);
 				
 			}
 		}

@@ -108,6 +108,7 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	
 	Prop::PreloadAll();
 	
+	g_pWorldEdict = engine->PEntityOfEntIndex(0);
 	IExecMemManager::Load();
 	g_ModManager.Load();
 	
@@ -304,6 +305,10 @@ void CExtSigsegv::LevelInitPreEntity()
 	this->LoadSoundOverrides();
 }
 
+void CExtSigsegv::LevelInitPostEntity()
+{
+	g_pWorldEdict = engine->PEntityOfEntIndex(0);
+}
 
 void CExtSigsegv::LoadSoundOverrides()
 {

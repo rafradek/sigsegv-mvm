@@ -20,7 +20,7 @@ bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&pro
         if (s_prop->GetName() != nullptr && strcmp(s_prop->GetName(), name) == 0) {
             off += s_prop->GetOffset();
             if (index >= 0) {
-                if (s_prop->GetDataTable() != nullptr && index < s_table->GetNumProps()) {
+                if (s_prop->GetDataTable() != nullptr && index < s_prop->GetDataTable()->GetNumProps()) {
                     prop = s_prop->GetDataTable()->GetProp(index);
                     off += prop->GetOffset();
                     return true;
@@ -90,25 +90,36 @@ void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset) {
             entry.elementStride = prop->GetDataTable()->GetProp(1)->GetOffset() - prop->GetDataTable()->GetProp(0)->GetOffset();
         }
     }
+    entry.prop = prop;
 
     if (prop->GetArrayProp() != nullptr) {
         prop = prop->GetArrayProp();
     }
 
+    if (prop->GetDataTable() != nullptr && prop->GetDataTable()->GetNumProps() > 0) {
+        prop = prop->GetDataTable()->GetProp(0);
+    }
+
     auto propType = prop->GetType();
     if (propType == DPT_Int) {
         
-        if (prop->m_nBits == 21 && (prop->GetFlags() & SPROP_UNSIGNED)) {
+        auto proxyfn = prop->GetProxyFn();
+        if ((prop->m_nBits == 21 && (prop->GetFlags() & SPROP_UNSIGNED)) || proxyfn == DLLSendProxy_EHandleToInt.GetRef()) {
             entry.fieldType = FIELD_EHANDLE;
+        }
+        else if ((prop->m_nBits == 32 && (prop->GetFlags() & SPROP_UNSIGNED)) && StringHasPrefixCaseSensitive(prop->GetName(), "m_clr")) {
+            entry.fieldType = FIELD_COLOR32;
         }
         else {
             static CStandardSendProxies* sendproxies = gamedll->GetStandardSendProxies();
-            auto proxyfn = prop->GetProxyFn();
             if (proxyfn == sendproxies->m_Int8ToInt32 || proxyfn == sendproxies->m_UInt8ToInt32) {
                 entry.fieldType = FIELD_CHARACTER;
             }
             else if (proxyfn == sendproxies->m_Int16ToInt32 || proxyfn == sendproxies->m_UInt16ToInt32) {
                 entry.fieldType = FIELD_SHORT;
+            }
+            else if (proxyfn == DLLSendProxy_Color32ToInt.GetRef()) {
+                entry.fieldType = FIELD_COLOR32;
             }
             else {
                 entry.fieldType = FIELD_INTEGER;
@@ -119,9 +130,8 @@ void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset) {
         entry.fieldType = FIELD_FLOAT;
     }
     else if (propType == DPT_String) {
-        static void* stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
         auto proxyfn = prop->GetProxyFn();
-        if (proxyfn != stringSendProxy) {
+        if (proxyfn != DLLSendProxy_StringToString) {
             entry.fieldType = FIELD_STRING;
         }
         else {
@@ -182,7 +192,7 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
         void *base = entity;
         void *newBase = base;
         for (auto &[prop, offset] : entry.usedTables) {
-            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, base + offset, &static_recip, 0);
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, ((char*)base) + offset, &static_recip, 0);
             if (newBase != nullptr) {
                 base = newBase;
             }
@@ -194,13 +204,14 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
             fieldType = FIELD_FLOAT;
             offset += vecAxis * sizeof(float);
         }
+        char *target = ((char*)base) + offset;
 
         if (fieldType == FIELD_CHARACTER && entry.arraySize > 1) {
-            V_strncpy(((char*)base) + offset, variant.String(), entry.arraySize);
+            V_strncpy(target, variant.String(), entry.arraySize);
         }
         else {
             variant.Convert(fieldType);
-            variant.SetOther(((char*)base) + offset);
+            variant.SetOther(target);
         }
     }
 }
@@ -211,7 +222,7 @@ void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int array
         void *base = entity;
         void *newBase = base;
         for (auto &[prop, offset] : entry.usedTables) {
-            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, base + offset, &static_recip, 0);
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, ((char*)base) + offset, &static_recip, 0);
             if (newBase != nullptr) {
                 base = newBase;
             }
@@ -303,4 +314,21 @@ void ResetPropDataCache() {
     send_prop_cache_classes.clear();
     datamap_cache.clear();
     datamap_cache_classes.clear();
+}
+
+int FindSendPropPrecalcIndex(SendTable *table, const std::string &name, int index, SendProp *&prop) {
+    prop = nullptr;
+    int offset = 0;
+    DatatableProxyVector usedTables;
+
+    if (FindSendProp(offset, table, name.c_str(), prop, usedTables, index)) {
+        auto precalc = table->m_pPrecalc;
+        int indexProp = -1;
+        for (int i = 0; i < precalc->m_Props.Count(); i++) {
+            if (precalc->m_Props[i] == prop) {
+                return i;
+            }
+        }
+    }
+    return -1;
 }

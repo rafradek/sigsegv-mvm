@@ -5774,6 +5774,7 @@
 				"CBaseEntity::GetRefEHandle" "_ZNK11CBaseEntity13GetRefEHandleEv"
 				"CBaseEntity::TraceAttack" "_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
 				"CBaseEntity::GetTracerType" "_ZN11CBaseEntity13GetTracerTypeEv"
+				"CBaseEntity::SetTransmit" "_ZN11CBaseEntity11SetTransmitEP18CCheckTransmitInfob"
 
 				"CBaseAnimatingOverlay::AddGesture" "_ZN21CBaseAnimatingOverlay10AddGestureE8Activityb"
 				"CBaseAnimatingOverlay::RestartGesture" "_ZN21CBaseAnimatingOverlay14RestartGestureE8Activitybb"
@@ -5831,6 +5832,7 @@
 				
 				"CTFGameRules::CTFGameRules [C1]" "_ZN12CTFGameRulesC1Ev"
 				"CTFGameRules::GetAssister" "_ZN12CTFGameRules11GetAssisterEP11CBasePlayerS1_P11CBaseEntity"
+				"CTFGameRules::GetBonusRoundTime" "_ZN12CTFGameRules17GetBonusRoundTimeEb"
 
 				"CBasePlayer::IsBot" "_ZNK11CBasePlayer5IsBotEv" 
 				"CBasePlayer::CommitSuicide" "_ZN11CBasePlayer13CommitSuicideEbb" 
@@ -5869,7 +5871,10 @@
 				"CBasePlayer::SetVCollisionState" "_ZN11CBasePlayer18SetVCollisionStateERK6VectorS2_i"
 				"CBasePlayer::SetFOV" "_ZN11CBasePlayer6SetFOVEP11CBaseEntityifi"
 				"CBasePlayer::SetScriptOverlayMaterial" "_ZN11CBasePlayer24SetScriptOverlayMaterialEPKc"
-				
+				"CBasePlayer::UpdateOnRemove" "_ZN11CBasePlayer14UpdateOnRemoveEv"
+				"CBasePlayer::Event_Killed" "_ZN11CBasePlayer12Event_KilledERK15CTakeDamageInfo"
+				"CBasePlayer::Spawn" "_ZN11CBasePlayer5SpawnEv"
+
 				"CEyeballBoss::GetLocomotionInterface" "_ZNK12CEyeballBoss22GetLocomotionInterfaceEv"
 				"CEyeballBoss::GetVisionInterface" "_ZNK12CEyeballBoss18GetVisionInterfaceEv"
 
@@ -5960,6 +5965,8 @@
 				"CBaseCombatWeapon::ActivityOverride" "_ZN17CBaseCombatWeapon16ActivityOverrideE8ActivityPb"
 				"CBaseCombatWeapon::SetIdealActivity" "_ZN17CBaseCombatWeapon16SetIdealActivityE8Activity"
 				"CBaseCombatWeapon::HasPrimaryAmmo" "_ZN17CBaseCombatWeapon14HasPrimaryAmmoEv"
+				"CBaseCombatWeapon::Holster" "_ZN17CBaseCombatWeapon7HolsterEPS_"
+				"CBaseCombatWeapon::Deploy" "_ZN17CBaseCombatWeapon7DeployEPS_"
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
@@ -6006,6 +6013,7 @@
 				"CTFWeaponBase::GetEffectBarProgress" "_ZN13CTFWeaponBase20GetEffectBarProgressEv"
 				"CTFWeaponBase::GetActivityWeaponRole" "_ZNK13CTFWeaponBase21GetActivityWeaponRoleEv"
 				"CTFWeaponBase::GetViewModelWeaponRole" "_ZN13CTFWeaponBase22GetViewModelWeaponRoleEv"
+				"CTFWeaponBase::OnActiveStateChanged" "_ZN13CTFWeaponBase20OnActiveStateChangedEi"
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
@@ -6054,6 +6062,8 @@
 				"CTFBaseRocket::GetWeaponID" "_ZNK13CTFBaseRocket11GetWeaponIDEv"
 				"CTFBaseRocket::GetRadius" "_ZN13CTFBaseRocket9GetRadiusEv"
 				
+				"CTFProjectile_Flare::Explode_Air" "_ZN19CTFProjectile_Flare11Explode_AirEP10CGameTraceib"
+
 				"CTFProjectile_Arrow::GetWeaponID" "_ZNK19CTFProjectile_Arrow11GetWeaponIDEv"
 
 				"CTFProjectile_Cleaver::GetDamage" "_ZN21CTFProjectile_Cleaver9GetDamageEv"
@@ -6066,6 +6076,9 @@
 
 				"CTFStunBall::GetDamage" "_ZN11CTFStunBall9GetDamageEv"
 
+				"CTFBall_Ornament::Explode" "_ZN16CTFBall_Ornament7ExplodeEP10CGameTracei"
+				"CTFBall_Ornament::PipebombTouch" "_ZN16CTFBall_Ornament13PipebombTouchEP11CBaseEntity"
+				
 				"CGameMovement::FullNoClipMove" "_ZN13CGameMovement14FullNoClipMoveEff"
 				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"
 				"CGameMovement::PlayerMove" "_ZN13CGameMovement10PlayerMoveEv"
@@ -6107,6 +6120,10 @@
 				"TE_FireBullets" "_Z14TE_FireBulletsiRK6VectorRK6QAngleiiifb"
 
 				"CServerNetworkProperty::IsInPVS" "_ZN22CServerNetworkProperty7IsInPVSEPK18CCheckTransmitInfo"
+
+				"CServerGameDLL::Shutdown" "_ZN14CServerGameDLL11DLLShutdownEv"
+
+				
 			}
 			"addrs_group"
 			{
@@ -6128,13 +6145,16 @@
 				"CBaseClient::UpdateSendState" "_ZN11CBaseClient15UpdateSendStateEv"
 				"CBaseClient::SendSnapshot" "_ZN11CBaseClient12SendSnapshotEP12CClientFrame"
 				"CBaseClient::UpdateAcknowledgedFramecount" "_ZN11CBaseClient28UpdateAcknowledgedFramecountEi"
-				"CBaseServer::FillServerInfo" "_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
 
 				"CGameClient::SetupPackInfo" "_ZN11CGameClient13SetupPackInfoEP14CFrameSnapshot"
 				"CGameClient::SetupPrevPackInfo" "_ZN11CGameClient17SetupPrevPackInfoEv"
 				"CGameClient::GetSendFrame" "_ZN11CGameClient12GetSendFrameEv"
 				
 				"CParallelProcessor<CGameClient *>::Run" "_ZN18CParallelProcessorIP11CGameClient21CFuncJobItemProcessorIS1_EE3RunEPS1_jiP11IThreadPool"
+
+				"CBaseServer::FillServerInfo" "_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
+				
+				"CGameServer::SendClientMessages" "_ZN11CGameServer18SendClientMessagesEb"
 
 				"CVEngineServer::BuildEntityClusterList" "_ZN14CVEngineServer22BuildEntityClusterListEP7edict_tP9PVSInfo_t"
 				"CVEngineServer::CheckAreasConnected" "_ZN14CVEngineServer19CheckAreasConnectedEii"
@@ -6145,6 +6165,13 @@
 
 				"CUtlMemoryPool::Alloc [engine]" "_ZN14CUtlMemoryPool5AllocEv"
 				"CUtlMemoryPool::Free [engine]" "_ZN14CUtlMemoryPool4FreeEPv"
+
+				"CFrameSnapshotManager::GetPackedEntity" "_ZN21CFrameSnapshotManager15GetPackedEntityEP14CFrameSnapshoti"
+
+				"SV_DetermineUpdateType" "_ZL22SV_DetermineUpdateTypeR16CEntityWriteInfo"
+
+				"InvalidateSharedEdictChangeInfo" "_Z32InvalidateSharedEdictChangeInfosv"
+				
 			}
 		}
 	}

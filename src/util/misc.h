@@ -196,7 +196,8 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 	static int counter_##name = 0; \
     static CCycleCount cycle_##name; \
 	counter_##name++;\
-	if (tickLast_##name + 66 < gpGlobals->tickcount ) {\
+	static thread_local int scope_##name = 0; \
+	if (tickLast_##name + 66 < gpGlobals->tickcount || tickLast_##name > gpGlobals->tickcount ) {\
 		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
         cycle_##name.Init(); \
 		counter_##name = 0;\
@@ -205,13 +206,15 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 	class CTimeScopeMsg_##name \
 	{ \
 	public: \
-		CTimeScopeMsg_##name() : m_Timer(&cycle_##name) { } \
+		CTimeScopeMsg_##name() { ++scope_##name; m_Timer.Start(); } \
 		~CTimeScopeMsg_##name() \
 		{ \
 			m_Timer.End(); \
+			if (--scope_##name == 0) \
+				cycle_##name += m_Timer.GetDuration(); \
 		} \
 	private:	\
-		CTimeAdder m_Timer;\
+		CFastTimer m_Timer;\
 	} name##_TSM; \
 
 #define TIME_SCOPE2(name) \
@@ -892,9 +895,9 @@ inline bool RemoveFirstElement(Container &container, UnaryPredicate p)
 template<class Container, class UnaryPredicate>
 inline void RemoveIf(Container &container, UnaryPredicate p)
 {
-	for (auto it = container.begin(); it != container.end();) {
+	for (auto it = container.rbegin(); it != container.rend();) {
 		if (p(*it)) {
-			it = container.erase(it);
+			it = decltype(it)(container.erase(std::next(it).base()));
 		}
 		else {
 			it++;

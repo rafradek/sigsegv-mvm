@@ -974,6 +974,34 @@ namespace Mod::Cond::Reprogrammed
 		
 		return DETOUR_MEMBER_CALL(CTFBotMedicHeal_IsVisibleToEnemy)(me, where);
 	}
+	
+	RefCount rc_CTFPlayer_ApplyPushFromDamage_block;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyPushFromDamage, const CTakeDamageInfo& info, Vector vec)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		auto block = (player->IsMiniBoss() || player->GetModelScale() > 1.0f) && player->GetTeamNumber() != TF_TEAM_BLUE;
+		auto playerAttacker = block ? ToTFPlayer(info.GetAttacker()) : nullptr;
+		if (block && playerAttacker != player && playerAttacker != nullptr && playerAttacker->m_Shared->m_bRageDraining 
+				&& playerAttacker->GetPlayerClass()->GetClassIndex() == TF_CLASS_HEAVYWEAPONS) {
+			int rage = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(playerAttacker, rage, generate_rage_on_dmg);
+			if (rage != 0) {
+				block = false;
+			} 
+		}
+		SCOPED_INCREMENT_IF(rc_CTFPlayer_ApplyPushFromDamage_block, block);
+		DETOUR_MEMBER_CALL(CTFPlayer_ApplyPushFromDamage)(info, vec);
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+		if (rc_CTFPlayer_ApplyPushFromDamage_block) return;
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
+	}
 
 	DETOUR_DECL_MEMBER(const char *, CTFWeaponBase_GetShootSound, int iIndex)
 	{

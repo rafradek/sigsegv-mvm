@@ -1129,6 +1129,8 @@
 				"CTFPlayerShared::Heal"                       "_ZN15CTFPlayerShared4HealEP11CBaseEntityfffbP9CTFPlayer"
 				"CTFPlayerShared::StopHealing"                "_ZN15CTFPlayerShared11StopHealingEP11CBaseEntity"
 				"CTFPlayerShared::FindHealerIndex"            "_ZN15CTFPlayerShared15FindHealerIndexEP11CBaseEntity"
+				"CTFPlayerShared::CanRecieveMedigunChargeEffect" "_ZNK15CTFPlayerShared29CanRecieveMedigunChargeEffectE20medigun_charge_types"
+				
 				
 			}
 		}

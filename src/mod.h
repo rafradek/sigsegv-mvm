@@ -271,6 +271,9 @@ protected:
 	this->AddVirtualHook(new CVirtualHook(class_name, class_name_for_offset_calc, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
 #define MOD_ADD_VHOOK_INHERIT(detour, class_name, func_name) \
 	this->AddVirtualHook(new CVirtualHookInherit(class_name, func_name, GET_VHOOK_CALLBACK(detour), GET_VHOOK_INNERPTR(detour)))
-
+#define MOD_ADD_REPLACE_FUNC_MEMBER(patch, addr) \
+	this->AddPatch(new CFuncReplace(__stop_##patch - __start_##patch, GetAddrOfMemberFunc(&FuncReplaceClass_##patch::callback), addr));
+#define MOD_ADD_REPLACE_FUNC_STATIC(patch, addr) \
+	this->AddPatch(new CFuncReplace(__stop_##patch - __start_##patch, &FuncReplace_##patch, addr));
 
 #endif

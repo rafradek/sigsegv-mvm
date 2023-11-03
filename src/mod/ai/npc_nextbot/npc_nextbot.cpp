@@ -869,12 +869,6 @@ namespace Mod::AI::NPC_Nextbot
         IEntityFactory *orig;
     };
 
-    class CEntityFactoryDictionary : public IEntityFactoryDictionary
-    {
-    public:
-        CUtlDict< IEntityFactory *, unsigned short > m_Factories;
-    };
-
     class CMod : public IMod
 	{
 	public:

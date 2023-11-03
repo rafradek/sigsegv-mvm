@@ -399,8 +399,10 @@ void CopyVisualAttributes(CTFPlayer *player, CEconEntity *copyFrom, CEconEntity 
 CTFWeaponBase *CreateCustomWeaponModelPlaceholder(CTFPlayer *owner, CTFWeaponBase *weapon, int modelIndex) 
 {
     auto wearable = static_cast<CTFWeaponBase *>(CreateEntityByName("tf_weapon_laser_pointer"));
-    wearable->GetItem()->Init(weapon->GetItem()->m_iItemDefinitionIndex, 9999, 9999, 887);
-    CopyVisualAttributes(owner, weapon, wearable);
+    wearable->GetItem()->Init(weapon != nullptr ? weapon->GetItem()->m_iItemDefinitionIndex : 492, 9999, 9999, 887);
+    if (weapon != nullptr) {
+        CopyVisualAttributes(owner, weapon, wearable);
+    }
     wearable->m_pfnTouch = nullptr;
     wearable->ChangeTeam(owner->GetTeamNumber());
     wearable->GetItem()->m_iTeamNumber = owner->GetTeamNumber();

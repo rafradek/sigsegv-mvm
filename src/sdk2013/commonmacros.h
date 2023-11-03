@@ -19,9 +19,9 @@
 // - make ClampedArray(Index|Element) constexpr
 
 // sigsegv: evil workaround for reinterpret_cast being illegal in constexpr
-#define _CONSTEXPR_RETURN_TYPE_PUN(_THAT) \
+#define _CONSTEXPR_RETURN_TYPE_PUN(_THIS, _THAT) \
 	union {                               \
-		decltype(this) pThis;             \
+		_THIS         *pThis;             \
 		_THAT         *pThat;             \
 	} u = { this };                       \
 	return *u.pThat

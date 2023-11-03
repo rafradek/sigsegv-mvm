@@ -84,12 +84,19 @@
         "stop_token": "cpp",
         "*.ipp": "cpp",
         "codecvt": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp",
+        "format": "cpp",
+        "span": "cpp",
+        "stdfloat": "cpp",
+        "cfenv": "cpp",
+        "valarray": "cpp"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [
         "lowercase-global"
     ],
-    "terminal.integrated.copyOnSelection": false,
+    "terminal.integrated.copyOnSelection": true,
     "cmake.configureOnOpen": false
 }

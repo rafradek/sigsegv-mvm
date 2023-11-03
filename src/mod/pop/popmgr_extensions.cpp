@@ -706,6 +706,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bPlayerBombCarrierBuffs = false;
 			this->m_bEnable100Slots = false;
 			this->m_bAllowBotsSapPlayers = false;
+			this->m_flLoseTime = -1.0f;
 			
 			this->m_MedievalMode            .Reset();
 			if (!popfileReset) {
@@ -853,6 +854,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bPlayerBombCarrierBuffs;
 		bool m_bEnable100Slots;
 		bool m_bAllowBotsSapPlayers;
+		float m_flLoseTime;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverridePopfile_ConVar<bool>        m_SpellsEnabled;
@@ -1451,6 +1453,26 @@ namespace Mod::Pop::PopMgr_Extensions
 //		SCOPED_INCREMENT(rc_CTFPlayer_GiveDefaultItems);
 //		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
 //	}
+	
+	THINK_FUNC_DECL(UpdateBodySkinPlayerWearable)
+	{
+		auto wearable = reinterpret_cast<CEconEntity *>(this);
+		auto owner = static_cast<CTFPlayer *>(this->GetOwnerEntity());
+		if (owner != nullptr) {
+			wearable->m_nSkin = owner->m_nSkin.Get();
+			wearable->SetTeamNumber(owner->GetTeamNumber());
+			wearable->SetRenderMode(owner->GetRenderMode());
+			auto color = owner->GetRenderColor();
+			wearable->SetRenderColorR(color.r);
+			wearable->SetRenderColorG(color.g);
+			wearable->SetRenderColorB(color.b);
+			wearable->SetRenderColorA(color.a);
+			if (wearable->GetModelScale() != owner->GetModelScale()) {
+				wearable->SetModelScale(owner->GetModelScale());
+			}
+		}
+		this->SetNextThink(gpGlobals->curtime + 0.01f, "UpdateBodySkinPlayerWearable");
+	}
 
 
 	void ApplyOrClearRobotModel(CTFPlayer *player)
@@ -1495,6 +1517,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					state.m_Player_anim_cosmetics[player] = wearable;
 					player->GetPlayerClass()->SetCustomModel("", true);
 					wearable->SetEffects(129);
+					THINK_FUNC_SET(wearable, UpdateBodySkinPlayerWearable, gpGlobals->curtime);
 				}
 			}
 			else {
@@ -4218,6 +4241,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
+	DETOUR_DECL_MEMBER(float, CTFGameRules_GetBonusRoundTime)
+	{
+		if (state.m_flLoseTime != -1.0f) {
+			return state.m_flLoseTime;
+		}
+		return DETOUR_MEMBER_CALL(CTFGameRules_GetBonusRoundTime)();
+	}
+
+
 	DETOUR_DECL_MEMBER(bool, CEngineSoundServer_PrecacheSound,const char *sound, bool flag1, bool flag2)
 	{
 		if (sound && sound[0] <= ' ') {
@@ -4333,9 +4365,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
-		if((state.m_iBunnyHop == 1) && player->IsAlive() && (cmd->buttons & 2) /*&& (player->GetFlags() & 1) */ && 
+		if((state.m_iBunnyHop == 1) && player->IsAlive() && (cmd->buttons & IN_JUMP) /*&& (player->GetFlags() & 1) */ && 
 				(player->GetGroundEntity() == nullptr) && !player->CanAirDash()){
-			cmd->buttons &= ~2;
+			cmd->buttons &= ~IN_JUMP;
 		}
 		// if (player->IsBot() && player->CanMoveDuringTaunt() && player->m_Shared->InCond(TF_COND_TAUNTING)) {
 		// 	QAngle angMoveAngle = cmd->viewangles;
@@ -6670,6 +6702,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bNPCLagCompensation.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowBotsSapPlayers")) {
 				state.m_bAllowBotsSapPlayers = subkey->GetBool();
+			} else if (FStrEq(name, "LoseTime")) {
+				state.m_flLoseTime = subkey->GetFloat();
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;

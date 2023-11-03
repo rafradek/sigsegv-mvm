@@ -87,7 +87,6 @@ class CGameRulesProxy : public CBaseEntity
 public:
 	static void NotifyNetworkStateChanged();
 	
-private:
 	static GlobalThunk<CGameRulesProxy *> s_pGameRulesProxy;
 };
 

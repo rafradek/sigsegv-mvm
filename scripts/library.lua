@@ -469,11 +469,11 @@ function CEntity:AddCurrency(currency) end
 function CEntity:RemoveCurrency(currency) end
 function CEntity:RefillAmmo() end
 function CEntity:Regenerate() end
-function CEntity:BotCommand() end
+function CEntity:BotCommand(command) end
 function CEntity:ResetInventory() end
 function CEntity:PlaySequence(name) end
 function CEntity:AwardExtraItem(name) end
-function CEntity:BleedDuration(duration) end
+function CEntity:BleedPlayer(duration) end
 -- For player only
 function CEntity:SetCustomModel(name) end
 function CEntity:SetHUDVisibility(visible) end

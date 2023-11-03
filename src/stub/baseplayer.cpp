@@ -86,6 +86,7 @@ IMPL_SENDPROP(bool,  CPlayerLocalData, m_bDucking,       CBasePlayer);
 IMPL_SENDPROP(bool,  CPlayerLocalData, m_bInDuckJump,    CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flDucktime,     CBasePlayer);
 //IMPL_SENDPROP(float, CPlayerLocalData, m_flDuckJumpTime, CBasePlayer);
+IMPL_SENDPROP(int, CPlayerLocalData, m_skybox3darea, CBasePlayer, "m_skybox3d.area");
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngle, CBasePlayer);
 IMPL_SENDPROP(Vector, CPlayerLocalData, m_vecPunchAngleVel, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData, m_flStepSize, CBasePlayer);

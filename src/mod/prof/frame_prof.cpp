@@ -1,5 +1,6 @@
 #include "mod.h"
 #include "util/scope.h"
+#include "stub/server.h"
 #include <sys/resource.h>
 
 
@@ -75,6 +76,39 @@ namespace Mod::Prof::Frame_Prof
 		auto result = DETOUR_MEMBER_CALL(CNetChan_SendDatagram)(bf);
 		return result;
 	}
+
+    DETOUR_DECL_MEMBER(bool, CGameClient_ShouldSendMessages)
+	{
+		auto client = reinterpret_cast<CGameClient *>(this);
+		auto result = DETOUR_MEMBER_CALL(CGameClient_ShouldSendMessages)();
+		if (!result && client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
+        	static ConVarRef sv_stressbots("sv_stressbots");
+			return sv_stressbots.GetBool();
+		}
+		return result;
+	}
+
+    DETOUR_DECL_MEMBER(void, CGameServer_SendClientMessages, bool sendSnapshots)
+	{
+		DETOUR_MEMBER_CALL(CGameServer_SendClientMessages)(sendSnapshots);
+        static ConVarRef sv_stressbots("sv_stressbots");
+        if (sv_stressbots.GetBool()) {
+            for (int i = 0; i < sv->GetClientCount(); i++) {
+                auto client = static_cast<CGameClient *>(sv->GetClient(i));
+                if (client->IsActive() && client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
+                    CClientFrame *pFrame = client->GetSendFrame();
+                    if ( pFrame )
+                    {
+                        client->m_pLastSnapshot = pFrame->GetSnapshot(); 
+                        client->UpdateAcknowledgedFramecount( pFrame->tick_count );
+                        client->m_nForceWaitForTick = -1;
+                        client->m_nDeltaTick = pFrame->tick_count;
+                    }
+                }
+            }
+        }
+	}
+
 	
 	class CMod : public IMod
 	{
@@ -85,6 +119,10 @@ namespace Mod::Prof::Frame_Prof
 			MOD_ADD_DETOUR_STATIC(Host_ShowIPCCallCount,               "Host_ShowIPCCallCount");
 			MOD_ADD_DETOUR_MEMBER(CMapReslistGenerator_RunFrame,               "CMapReslistGenerator::RunFrame");
 			//MOD_ADD_DETOUR_MEMBER(CNetChan_SendDatagram,               "CNetChan::SendDatagram");
+
+            // sv_stressbots: properly send snapshots to fake clients
+			MOD_ADD_DETOUR_MEMBER(CGameServer_SendClientMessages, "CGameServer::SendClientMessages");
+			MOD_ADD_DETOUR_MEMBER(CGameClient_ShouldSendMessages, "CGameClient::ShouldSendMessages");
 		}
 	};
 	CMod s_Mod;

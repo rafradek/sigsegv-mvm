@@ -1310,6 +1310,11 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
 
+		if (!mannvsmachine)  {
+			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			return;
+		}
+
 		if (bot->EquipRequiredWeapon())
 			return;
 
@@ -1325,13 +1330,7 @@ namespace Mod::Pop::TFBot_Extensions
 		for (int i = 0; i < MAX_WEAPONS; i++) {
 			CTFWeaponBase  *actionItem = static_cast< CTFWeaponBase *>( bot->GetWeapon( i ));
 			if (actionItem != nullptr) {
-				
-				if (actionItem->GetWeaponID() == TF_WEAPON_GRAPPLINGHOOK && threat && (!bot->GetGrapplingHookTarget() || RandomFloat(0.0f,1.0f) > 0.05f || bot->GetGrapplingHookTarget()->IsPlayer()) &&
-				 IsRangeGreaterThan(bot, *(threat->GetLastKnownPosition()), 200)) {
-					bot->Weapon_Switch( actionItem );
-					set = true;
-				}
-				else if (actionItem->GetWeaponID() == TF_WEAPON_SPELLBOOK && rtti_cast< CTFSpellBook* >( actionItem )->m_iSpellCharges > 0)
+				if (actionItem->GetWeaponID() == TF_WEAPON_SPELLBOOK && rtti_cast< CTFSpellBook* >( actionItem )->m_iSpellCharges > 0)
 				{
 					bot->Weapon_Switch( actionItem );	
 					set = true;
@@ -2111,6 +2110,23 @@ namespace Mod::Pop::TFBot_Extensions
 		return ret;
 	}
 	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
+	{
+		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
+		if (player->IsBot() && player->m_Shared->InCond(TF_COND_FREEZE_INPUT)) {
+			cmd->viewangles = player->EyeAngles(); // use the last save angles
+			cmd->forwardmove = 0.0f;
+			cmd->sidemove = 0.0f;
+			cmd->upmove = 0.0f;
+			cmd->buttons = 0;
+			cmd->weaponselect = 0;
+			cmd->weaponsubtype = 0;
+			cmd->mousedx = 0;
+			cmd->mousedy = 0;
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2256,6 +2272,10 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Remove frontstabbing from sapped not stunned bots
 			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
+
+			// Remove frontstabbing from sapped not stunned bots
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");
+			
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

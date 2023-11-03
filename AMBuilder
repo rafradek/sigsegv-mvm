@@ -84,6 +84,9 @@ sourceFiles += [
   
   'src/mod/common/commands.cpp',
   'src/mod/common/extraentitydata.cpp',
+
+  'src/mod/etc/sendprop_override.cpp',
+  'src/mod/etc/sendprop_override_extension.cpp',
   
   'src/mod/perf/attributes_optimize.cpp',
   'src/mod/perf/css_bot_vision_optimize.cpp',

@@ -45,6 +45,7 @@ IMPL_SENDPROP(CHandle<CTFWearable>, CTFWeaponBase, m_hExtraWearableViewModel, CT
 IMPL_SENDPROP(bool                , CTFWeaponBase, m_bBeingRepurposedForTaunt,CTFWeaponBase);
 IMPL_SENDPROP(float               , CTFWeaponBase, m_flReloadPriorNextFire,   CTFWeaponBase);
 IMPL_SENDPROP(int,                  CTFWeaponBase, m_bDisguiseWeapon,         CTFWeaponBase);
+IMPL_SENDPROP(int,                  CTFWeaponBase, m_iReloadMode,             CTFWeaponBase);
 IMPL_RELATIVE(bool                , CTFWeaponBase, m_bCurrentAttackIsCrit, m_flReloadPriorNextFire, +10);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
@@ -82,6 +83,9 @@ MemberVFuncThunk<CTFWeaponBaseGun *, void>              CTFWeaponBaseGun::vt_DoF
 MemberVFuncThunk<CTFWeaponBaseGun *, bool>              CTFWeaponBaseGun::vt_ShouldPlayFireAnim  (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ShouldPlayFireAnim");
 MemberVFuncThunk<CTFWeaponBaseGun *, CBaseEntity *,CTFPlayer *> CTFWeaponBaseGun::vt_FireProjectile(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::FireProjectile");
 MemberVFuncThunk<CTFWeaponBaseGun *, int >              CTFWeaponBaseGun::vt_GetAmmoPerShot      (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::GetAmmoPerShot");
+
+
+IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrapplingHook, m_hProjectile, CTFGrapplingHook);
 
 
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");

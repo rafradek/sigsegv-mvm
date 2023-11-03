@@ -235,8 +235,8 @@ public:
 
 
 #if USE_M64S
-	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(__m64); }
-	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m64); }
+	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(ShortVector, __m64); }
+	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const ShortVector, const __m64); }
 #endif
 
 	// Setter
@@ -294,8 +294,8 @@ public:
 	constexpr void Init(int ix = 0, int iy = 0, int iz = 0, int iw = 0 );
 
 #if USE_M64S
-	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(__m64); }
-	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m64); }
+	constexpr __m64 &AsM64() { _CONSTEXPR_RETURN_TYPE_PUN(IntVector4D, __m64); }
+	constexpr const __m64 &AsM64() const { _CONSTEXPR_RETURN_TYPE_PUN(const IntVector4D, const __m64); }
 #endif
 
 	// Setter
@@ -365,8 +365,8 @@ class TableVector
 public:
 	vec_t x, y, z;
 
-	constexpr operator Vector &()				{ _CONSTEXPR_RETURN_TYPE_PUN(Vector); }
-	constexpr operator const Vector &() const	{ _CONSTEXPR_RETURN_TYPE_PUN(const Vector); }
+	constexpr operator Vector &()				{ _CONSTEXPR_RETURN_TYPE_PUN(TableVector, Vector); }
+	constexpr operator const Vector &() const	{ _CONSTEXPR_RETURN_TYPE_PUN(const TableVector, const Vector); }
 
 	// array access...
 	constexpr vec_t& operator[](int i)
@@ -640,14 +640,14 @@ constexpr Vector2D& Vector::AsVector2D()
 {
 	static_assert(offsetof(Vector, x) == offsetof(Vector2D, x));
 	static_assert(offsetof(Vector, y) == offsetof(Vector2D, y));
-	_CONSTEXPR_RETURN_TYPE_PUN(Vector2D);
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector, Vector2D);
 }
 
 constexpr const Vector2D& Vector::AsVector2D() const
 {
 	static_assert(offsetof(Vector, x) == offsetof(Vector2D, x));
 	static_assert(offsetof(Vector, y) == offsetof(Vector2D, y));
-	_CONSTEXPR_RETURN_TYPE_PUN(const Vector2D);
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector, const Vector2D);
 }
 
 //-----------------------------------------------------------------------------

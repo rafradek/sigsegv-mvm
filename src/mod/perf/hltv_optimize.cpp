@@ -94,15 +94,6 @@ namespace Mod::Perf::HLTV_Optimize
             }
         }
 
-        if (!limitSnapshotRate && state != GR_STATE_RND_RUNNING && !hltvServerEmpty) {
-            limitSnapshotRate = true;
-            old_snapshotrate = snapshotrate.GetFloat();
-            snapshotrate.SetValue(cvar_rate_between_rounds.GetFloat());
-        }
-        else if (limitSnapshotRate && (state == GR_STATE_RND_RUNNING || !hltvServerEmpty)) {
-            limitSnapshotRate = false;
-            snapshotrate.SetValue(old_snapshotrate);
-        }
 		DETOUR_MEMBER_CALL(CHLTVServer_RunFrame)();
 	}
 
@@ -214,6 +205,39 @@ namespace Mod::Perf::HLTV_Optimize
         return result || (cbaseplayer != nullptr && (create_hltv_bot == edict->m_EdictIndex || cbaseplayer->IsHLTV()));
     }
 
+	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_RecordStringTables)
+	{
+        recording = true;
+        DETOUR_MEMBER_CALL(CHLTVDemoRecorder_RecordStringTables)();
+    }
+
+	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_StopRecording)
+	{
+        recording = false;
+        DETOUR_MEMBER_CALL(CHLTVDemoRecorder_StopRecording)();
+    }
+
+	DETOUR_DECL_MEMBER(bool, CGameClient_ShouldSendMessages)
+	{
+        auto client = reinterpret_cast<CGameClient *>(this);
+        if (!client->m_bIsHLTV) return DETOUR_MEMBER_CALL(CGameClient_ShouldSendMessages)();
+        static ConVarRef tv_snapshotrate("tv_snapshotrate");
+        float restore = FLT_MIN;
+        if (hltvServerEmpty && !recording) {
+            restore = tv_snapshotrate.GetFloat();
+            tv_snapshotrate.SetValue(1.0f);
+        }
+        else if (TeamplayRoundBasedRules()->State_Get() == GR_STATE_RND_RUNNING && hltvServerEmpty) {
+            restore = tv_snapshotrate.GetFloat();
+            tv_snapshotrate.SetValue(cvar_rate_between_rounds.GetFloat());
+        }
+        auto result = DETOUR_MEMBER_CALL(CGameClient_ShouldSendMessages)();
+        if (restore != FLT_MIN) {
+            tv_snapshotrate.SetValue(restore);
+        }
+        return result;
+    }
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -234,8 +258,14 @@ namespace Mod::Perf::HLTV_Optimize
 #endif
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
 
-			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,              "CBaseServer::GetFreeClient");
+			MOD_ADD_DETOUR_MEMBER(CBaseServer_GetFreeClient,       "CBaseServer::GetFreeClient");
 			MOD_ADD_DETOUR_MEMBER(CPlayer_IsSourceTV,              "CPlayer::IsSourceTV");
+
+            // Limit snapshot rate when between rounds or when hltv server is empty and not recording
+			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_RecordStringTables, "CHLTVDemoRecorder::RecordStringTables");
+			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording, "CHLTVDemoRecorder::StopRecording");
+			MOD_ADD_DETOUR_MEMBER(CGameClient_ShouldSendMessages, "CGameClient::ShouldSendMessages");
+            
                         
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");

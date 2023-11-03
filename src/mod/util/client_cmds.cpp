@@ -1308,6 +1308,21 @@ namespace Mod::Util::Client_Cmds
 			timer.End();
 			displaystr += CFmtStr("attribute by name our time: %.9f\n", timer.GetDuration().GetSeconds());
 		}
+		else if (strcmp(args[2], "incond") == 0) {
+
+			
+			for (int i = 1; i <= gpGlobals->maxClients; ++i) {
+				auto player = ToTFPlayer(UTIL_PlayerByIndex(i));
+				if (player != nullptr) {
+					timer.Start();
+					for(int i = 0; i < times; i++) {
+						player->m_Shared->InCond(TF_COND_BURNING_PYRO);
+					}
+					timer.End();
+					displaystr += CFmtStr("incond: %.9f\n", timer.GetDuration().GetSeconds());
+				}
+			}
+		}
 		ModCommandResponse("%s", displaystr.c_str());
 	}
 

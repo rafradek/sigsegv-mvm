@@ -157,6 +157,7 @@
 				"modelloader" "modelloader"
 				"VTable for CStaticProp" "_ZTV11CStaticProp"
 				"g_BSPData" "g_BSPData"
+				"g_HostState" "_ZL11g_HostState"
 			}
 		}
 	}

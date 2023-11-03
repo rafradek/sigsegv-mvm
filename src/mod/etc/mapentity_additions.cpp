@@ -1946,6 +1946,25 @@ namespace Mod::Etc::Mapentity_Additions
         return VHOOK_CALL(CFuncWall_ShouldCollide)(collisionGroup, contentsMask);
     }
 
+
+    class BlockLosFactory : public IEntityFactory
+    {
+    public:
+        BlockLosFactory(IEntityFactory *orig) : orig(orig) {}
+
+        virtual IServerNetworkable *Create( const char *pClassName ) {
+            
+            auto result = orig->Create(pClassName);
+            result->GetBaseEntity()->SetCollisionGroup(COLLISION_GROUP_DEBRIS);
+            return result;
+
+        }
+        virtual void Destroy( IServerNetworkable *pNetworkable ) {orig->Destroy(pNetworkable);}
+        virtual size_t GetEntitySize() {return orig->GetEntitySize();}
+
+        IEntityFactory *orig;
+    };
+
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2051,12 +2070,12 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_itemname");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("filter_base"), "$filter_specialdamagetype");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("trigger_multiple"), "$trigger_detector");
-                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("func_wall"), "$func_block_los");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$weapon_spawner");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$math_vector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$entity_spawn_detector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$script_manager");
             }
+            servertools->GetEntityFactoryDictionary()->InstallFactory(new BlockLosFactory(servertools->GetEntityFactoryDictionary()->FindFactory("func_wall")), "$func_block_los");
 
 			return true;
 		}
@@ -2065,6 +2084,11 @@ namespace Mod::Etc::Mapentity_Additions
         virtual void OnEnable() override
 		{
 
+        }
+
+        virtual void OnUnload() override
+        {
+            ((CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary())->m_Factories.Remove("$func_block_los");
         }
 
         virtual void LevelInitPreEntity() override

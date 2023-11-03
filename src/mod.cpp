@@ -245,9 +245,9 @@ void IMod::InvokeUnload()
 	
 	this->OnUnload();
 	
+	this->UnloadVirtualHooks();
 	this->UnloadDetours();
 	this->UnloadPatches();
-	this->UnloadVirtualHooks();
 }
 
 

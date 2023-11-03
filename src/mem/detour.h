@@ -222,6 +222,7 @@ public:
 	~CDetouredFunc();
 	
 	static CDetouredFunc& Find(void *func_ptr);
+	static CDetouredFunc *FindOptional(void *func_ptr);
 	
 	static void CleanUp();
 	
@@ -230,6 +231,9 @@ public:
 	
 	void AddTrace(ITrace *trace);
 	void RemoveTrace(ITrace *trace);
+
+	void TemponaryDisable();
+	void TemponaryEnable();
 	
 private:
 	void RemoveAllDetours();
@@ -246,11 +250,11 @@ private:
 	void UninstallJump();
 	
 	/* validation: ensuring that nothing else (e.g. SourceHook) has meddled with our bytes while we weren't looking */
-	void Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller);
-	void ValidateOriginalPrologue() { this->Validate(this->m_pFunc,       this->m_OriginalPrologue, "ValidateOriginalPrologue"); }
-	void ValidateCurrentPrologue()  { this->Validate(this->m_pFunc,       this->m_CurrentPrologue,  "ValidateCurrentPrologue" ); }
-	void ValidateWrapper()          { this->Validate(this->m_pWrapper,    this->m_WrapperCheck,     "ValidateWrapper"         ); }
-	void ValidateTrampoline()       { this->Validate(this->m_pTrampoline, this->m_TrampolineCheck,  "ValidateTrampoline"      ); }
+	bool Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec, const char *caller);
+	bool ValidateOriginalPrologue() { return this->Validate(this->m_pFunc,       this->m_OriginalPrologue, "ValidateOriginalPrologue"); }
+	bool ValidateCurrentPrologue()  { return this->Validate(this->m_pFunc,       this->m_CurrentPrologue,  "ValidateCurrentPrologue" ); }
+	bool ValidateWrapper()          { return this->Validate(this->m_pWrapper,    this->m_WrapperCheck,     "ValidateWrapper"         ); }
+	bool ValidateTrampoline()       { return this->Validate(this->m_pTrampoline, this->m_TrampolineCheck,  "ValidateTrampoline"      ); }
 	
 #if !defined _WINDOWS
 	void FuncPre();
@@ -264,19 +268,22 @@ private:
 	
 	bool m_bJumpInstalled = false;
 	
-	std::vector<uint8_t> m_OriginalPrologue; // backup of the original unmodified function prologue
+	std::vector<uint8_t> m_OriginalPrologue;     // backup of the original unmodified function prologue
+	std::vector<uint8_t> m_TrueOriginalPrologue; // FOR VALIDATION: copy of the original unmodified function prologue, done at extension start only
 	std::vector<uint8_t> m_CurrentPrologue;  // FOR VALIDATION: copy of what we believe the current hooked prologue should be
 	std::vector<uint8_t> m_WrapperCheck;     // FOR VALIDATION: copy of what we believe the wrapper contents should be
 	std::vector<uint8_t> m_TrampolineCheck;  // FOR VALIDATION: copy of what we believe the trampoline contents should be
 	
 	uint8_t *m_pWrapper    = nullptr;
 	uint8_t *m_pTrampoline = nullptr;
+
+	bool m_bModifiedByPatch = false;
 	
 #if !defined _WINDOWS
 	void *m_pWrapperPre   = reinterpret_cast<void *>(&WrapperPre);
 	void *m_pWrapperPost  = reinterpret_cast<void *>(&WrapperPost);
 	void *m_pWrapperInner = nullptr;
-	
+
 	/* we use this to store the actual-func's caller's return address */
 	static inline thread_local std::stack<uint32_t> s_WrapperCallerRetAddrs;
 	__fastcall static void WrapperPre(void *func_ptr, const uint32_t *retaddr_save);

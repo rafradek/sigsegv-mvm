@@ -59,6 +59,26 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		}
 	}
 
+	THINK_FUNC_DECL(UpdateBodySkinPlayerWearable)
+	{
+		auto wearable = reinterpret_cast<CEconEntity *>(this);
+		auto owner = static_cast<CTFPlayer *>(this->GetOwnerEntity());
+		if (owner != nullptr) {
+			wearable->m_nSkin = owner->m_nSkin.Get();
+			wearable->SetRenderMode(owner->GetRenderMode());
+			wearable->SetTeamNumber(owner->GetTeamNumber());
+			auto color = owner->GetRenderColor();
+			wearable->SetRenderColorR(color.r);
+			wearable->SetRenderColorG(color.g);
+			wearable->SetRenderColorB(color.b);
+			wearable->SetRenderColorA(color.a);
+			if (wearable->GetModelScale() != owner->GetModelScale()) {
+				wearable->SetModelScale(owner->GetModelScale());
+			}
+		}
+		this->SetNextThink(gpGlobals->curtime + 0.01f, "UpdateBodySkinPlayerWearable");
+	}
+
 	bool OnEquipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
 	{
 		mod->owner = owner;
@@ -88,6 +108,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			mod->overridePlayerAnimClassApplied = true;
 			owner->m_nRenderFX = 6;
 			auto wearable_player = CreateCustomWeaponModelPlaceholder(owner, weapon, mod->oldPlayerModel);
+			THINK_FUNC_SET(wearable_player, UpdateBodySkinPlayerWearable, gpGlobals->curtime);
 			//DispatchSpawn(wearable_player);
 			//wearable_player->GiveTo(owner);
 			//wearable_player->SetModelIndex(mod->oldPlayerModel);

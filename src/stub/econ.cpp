@@ -245,13 +245,11 @@ MemberFuncThunk<CEconItemSchema *, void, int, int, KeyValues *>                 
 
 
 static StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema("GetItemSchema");
-CTFItemSchema *GetItemSchema() { return ft_GetItemSchema(); }
 
 MemberFuncThunk<CEconItem *, attribute_t &>                       CEconItem::ft_AddDynamicAttributeInternal("CEconItem::AddDynamicAttributeInternal");
 
 
 static StaticFuncThunk<CItemGeneration *> ft_ItemGeneration("ItemGeneration");
-CItemGeneration *ItemGeneration() { return ft_ItemGeneration(); }
 
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_SpawnItem("CItemGeneration::SpawnItem");
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle const&, int, int, char const*> CItemGeneration::ft_SpawnItem_defid("CItemGeneration::SpawnItem [defIndex]");
@@ -345,23 +343,26 @@ CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
 bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str)
 {
 	//Pool of previously added string values
+	auto type = attr_def->GetType();
+	bool isString = attr_def->IsType<CSchemaAttributeType_String>();
 	static std::unordered_map<std::string, attribute_data_union_t> attribute_string_values;
-
-	auto entry = attribute_string_values.find(value_str);
-
-	if (entry == attribute_string_values.end()) {
-		//const char *value_cstr = STRING(AllocPooledString(value_str.c_str()));
-		
-		attr_def->GetType()->InitializeNewEconAttributeValue(&value);
-		if (!attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, value_str.c_str(), &value, true)) {
-			attr_def->GetType()->UnloadEconAttributeValue(&value);
-			return false;
+	if (isString) {
+		auto entry = attribute_string_values.find(value_str);
+		if (entry != attribute_string_values.end()) {
+			value = entry->second;
+			return true;
 		}
+	}
+
+	type->InitializeNewEconAttributeValue(&value);
+	if (!type->BConvertStringToEconAttributeValue(attr_def, value_str.c_str(), &value, true)) {
+		type->UnloadEconAttributeValue(&value);
+		return false;
+	}
+	if (isString) {
 		attribute_string_values[value_str] = value;
 	}
-	else {
-		value = attribute_string_values[value_str];
-	}
+
 	return true;
 }
 

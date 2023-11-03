@@ -2,6 +2,7 @@
 
 
 GlobalThunk<CHLTVServer *> hltv("hltv");
+GlobalThunk<CHostState>	g_HostState("g_HostState");
 
 MemberFuncThunk<CHLTVServer *, void, CBaseClient *> CHLTVServer::ft_StartMaster("CHLTVServer::StartMaster");
 MemberFuncThunk<CHLTVServer *, int> CHLTVServer::ft_CountClientFrames("CClientFrameManager::CountClientFrames");

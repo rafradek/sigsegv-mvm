@@ -1773,6 +1773,7 @@ namespace Util::Lua
         variant_t variant;
         LToVariant(l, 3, variant);
         WriteProp(prop->entity, prop->entry, variant, index - 1, -1);
+        prop->entity->NetworkStateChanged();
         return 0;
     }
 

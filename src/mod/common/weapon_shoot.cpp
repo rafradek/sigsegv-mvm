@@ -1,6 +1,7 @@
 #include "mod.h"
 #include "stub/extraentitydata.h"
 #include "stub/tfweaponbase.h"
+#include "stub/gamerules.h"
 #include "util/iterate.h"
 #include "util/misc.h"
 #include "stub/objects.h"
@@ -367,6 +368,32 @@ namespace Mod::Common::Weapon_Shoot
 		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_Explode_Air, trace_t *pTrace, int bitsDamageType, bool bSelfOnly)
+	{
+		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
+		if (ToTFPlayer(flare->GetOwnerEntity()) == nullptr)
+			flare->SetOwnerEntity(nullptr);
+		DETOUR_MEMBER_CALL(CTFProjectile_Flare_Explode_Air)(pTrace, bitsDamageType, bSelfOnly);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBall_Ornament_Explode, trace_t *pTrace, int bitsDamageType)
+	{
+		auto proj = reinterpret_cast<CTFBall_Ornament *>(this);
+		if (ToTFPlayer(proj->GetOwnerEntity()) == nullptr) {
+			DispatchParticleEffect(proj->GetOwnerEntity() != nullptr && proj->GetOwnerEntity()->GetTeamNumber() == TF_TEAM_RED ? "xms_ornament_smash_red" : "xms_ornament_smash_blue", proj->GetAbsOrigin(), proj->GetAbsAngles());
+			proj->EmitSound("BallBuster.OrnamentImpact");
+			CTakeDamageInfo info(proj, proj->GetOwnerEntity(), proj->GetLauncher(), vec3_origin, proj->GetAbsOrigin(), proj->GetDamage() * 0.9f, bitsDamageType, TF_DMG_CUSTOM_BASEBALL);
+			CTFRadiusDamageInfo radiusInfo;
+			radiusInfo.m_DmgInfo = &info;
+			radiusInfo.m_vecOrigin = proj->GetAbsOrigin();
+			radiusInfo.m_flRadius = 50.0f;
+			radiusInfo.m_unknown_1c = 0.0f;
+			TFGameRules()->RadiusDamage(radiusInfo);
+			proj->Remove();
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFBall_Ornament_Explode)(pTrace, bitsDamageType);
+	}
 
     class CMod : public IMod
     {
@@ -391,7 +418,9 @@ namespace Mod::Common::Weapon_Shoot
 
 			// Fix non player owners of projectiles causing crashes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_SendDeathNotice,    "CTFProjectile_Flare::SendDeathNotice");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_Explode_Air,    "CTFProjectile_Flare::Explode_Air");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_Burn,    "CTFProjectile_BallOfFire::Burn");
+			MOD_ADD_DETOUR_MEMBER(CTFBall_Ornament_Explode,    "CTFBall_Ornament::Explode");
 
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FPlayerCanTakeDamage,    "CTFGameRules::FPlayerCanTakeDamage");
 

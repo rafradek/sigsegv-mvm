@@ -1,6 +1,7 @@
 #include "mem/patch.h"
 #include "mem/scan.h"
 #include "mem/protect.h"
+#include "mem/detour.h"
 #include "util/rtti.h"
 
 
@@ -102,6 +103,10 @@ void CPatch::Apply()
 		return;
 	}
 	
+	auto detour = CDetouredFunc::FindOptional(this->m_pFuncAddr);
+	if (detour != nullptr) {
+		detour->TemponaryDisable();
+	}
 	uint8_t *ptr = (uint8_t *)((uintptr_t)this->m_pFuncAddr + this->m_iFuncOffActual);
 	
 	{
@@ -118,6 +123,9 @@ void CPatch::Apply()
 			*mem &= ~p_mask;
 			*mem |= (p_byte & p_mask);
 		}
+	}
+	if (detour != nullptr) {
+		detour->TemponaryEnable();
 	}
 	
 	this->m_bApplied = true;
@@ -140,6 +148,11 @@ void CPatch::UnApply()
 		return;
 	}
 	
+	auto detour = CDetouredFunc::FindOptional(this->m_pFuncAddr);
+	if (detour != nullptr) {
+		detour->TemponaryDisable();
+	}
+
 	uint8_t *ptr = (uint8_t *)((uintptr_t)this->m_pFuncAddr + this->m_iFuncOffActual);
 	
 	{
@@ -154,6 +167,10 @@ void CPatch::UnApply()
 			*mem &= ~p_mask;
 			*mem |= (r_byte & p_mask);
 		}
+	}
+	
+	if (detour != nullptr) {
+		detour->TemponaryEnable();
 	}
 	
 	this->m_bApplied = false;

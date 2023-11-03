@@ -3448,4 +3448,56 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4666"
+    {
+        "name"	"addcond immunity"
+        "attribute_class"	"addcond_immunity"
+		"attribute_type"	"string"
+        "description_string"	"Push away enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4667"
+    {
+        "name"	"attribute immunity"
+        "attribute_class"	"attribute_immunity"
+		"attribute_type"	"string"
+        "description_string"	"Push away enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4668"
+    {
+        "name"	"hold fire until full reload"
+        "attribute_class"	"hold_fire_until_full_reload"
+        "description_string"	"Hold fire until full reload"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4669"
+    {
+        "name"	"projectile hit radius"
+        "attribute_class"	"projectile_hit_radius"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4670"
+    {
+        "name"	"noclip projectiles"
+        "attribute_class"	"noclip_projectiles"
+        "description_string"	"Projectiles penetrate walls"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

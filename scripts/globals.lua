@@ -688,6 +688,18 @@ LOADOUT_POSITION_TAUNT7 = 17
 LOADOUT_POSITION_TAUNT8 = 18
 
 ----------------
+-- Ammo Type (m_iAmmo player field)
+----------------
+TF_AMMO_DUMMY     = 1;
+TF_AMMO_PRIMARY   = 2;
+TF_AMMO_SECONDARY = 3;
+TF_AMMO_METAL     = 4;
+TF_AMMO_GRENADES1 = 5;
+TF_AMMO_GRENADES2 = 6;
+TF_AMMO_GRENADES3 = 7;
+TF_AMMO_COUNT     = 8;
+
+----------------
 -- Entity callbacks
 ----------------
 ON_REMOVE = 0               -- Callback function parameters: entity

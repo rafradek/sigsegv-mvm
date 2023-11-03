@@ -186,5 +186,19 @@ public:
 	virtual const char *GetCannonicalName( const char *pClassName ) = 0;
 };
 
+class CEntityFactoryDictionary : public IEntityFactoryDictionary
+{
+public:
+	CUtlDict< IEntityFactory *, unsigned short > m_Factories;
+};
+
+
 extern GlobalThunk<CHLTVServer *> hltv;
+
+class CHostState
+{
+public:
+	int	m_currentState;
+};
+extern GlobalThunk<CHostState> g_HostState;
 #endif

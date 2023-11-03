@@ -181,6 +181,10 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		int fov = -1;
 		bool seeThroughWalls = false;
+
+		float grappleRange = 200;
+		bool removeGrappleClose = false;
+		bool noGrappleWalls = false;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -909,6 +913,12 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.fov = kv->GetInt();
 		} else if (FStrEq(name, "SeeThroughWalls")) {
 			data.seeThroughWalls = kv->GetBool();
+		} else if (FStrEq(name, "GrapplingHookRange")) {
+			data.grappleRange = kv->GetFloat();
+		} else if (FStrEq(name, "RemoveHookFromPlayerTargetWhenClose")) {
+			data.removeGrappleClose = kv->GetBool();
+		} else if (FStrEq(name, "NoGrappleWalls")) {
+			data.noGrappleWalls = kv->GetBool();
 		} else {
 			found = false;
 		}
@@ -1136,6 +1146,26 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 	}
+	
+	THINK_FUNC_DECL(UpdateBodySkinPlayerWearable)
+	{
+		auto wearable = reinterpret_cast<CEconEntity *>(this);
+		auto owner = static_cast<CTFPlayer *>(this->GetOwnerEntity());
+		if (owner != nullptr) {
+			wearable->m_nSkin = owner->m_nSkin.Get();
+			wearable->SetTeamNumber(owner->GetTeamNumber());
+			wearable->SetRenderMode(owner->GetRenderMode());
+			auto color = owner->GetRenderColor();
+			wearable->SetRenderColorR(color.r);
+			wearable->SetRenderColorG(color.g);
+			wearable->SetRenderColorB(color.b);
+			wearable->SetRenderColorA(color.a);
+			if (wearable->GetModelScale() != owner->GetModelScale()) {
+				wearable->SetModelScale(owner->GetModelScale());
+			}
+		}
+		this->SetNextThink(gpGlobals->curtime + 0.01f, "UpdateBodySkinPlayerWearable");
+	}
 
 	void ApplyCurrentEventChangeAttributes(CTFBot *bot)
 	{
@@ -1233,6 +1263,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
 				wearable->SetCustomVariable("humananimation", Variant(true));
+				THINK_FUNC_SET(wearable, UpdateBodySkinPlayerWearable, gpGlobals->curtime);
 			}
 			
 		}
@@ -1719,9 +1750,40 @@ namespace Mod::Pop::ECAttr_Extensions
 	
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_FireWeaponAtEnemy, CTFBot *actor)
 	{
-		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
 		auto data = GetDataForBot(actor);
 		auto weapon = actor->GetActiveTFWeapon();
+		if (weapon != nullptr && weapon->GetWeaponID() == TF_WEAPON_GRAPPLINGHOOK) {
+			static ConVarRef tf_bot_fire_weapon_allowed("tf_bot_fire_weapon_allowed");
+			bool canAttack = actor->IsAlive() && !actor->HasAttribute(CTFBot::ATTR_SUPPRESS_FIRE) && !actor->HasAttribute(CTFBot::ATTR_IGNORE_ENEMIES) && !actor->m_Shared->InCond(TF_COND_TAUNTING) && tf_bot_fire_weapon_allowed.GetBool() && !actor->HasAttribute(CTFBot::ATTR_ALWAYS_FIRE_WEAPON) ;
+
+			if (canAttack) {
+				auto threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
+				if (threat != nullptr && threat->GetEntity() != nullptr) {
+					auto grappleTarget = actor->GetGrapplingHookTarget();
+					bool pressButton = true;
+					if (grappleTarget != nullptr && grappleTarget->IsPlayer() && !(actor->m_nButtons & IN_ATTACK)) { 
+						pressButton = false;
+					}
+					if (grappleTarget != nullptr && !grappleTarget->IsPlayer() && grappleTarget->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin()) < 150 * 150) { 
+						pressButton = false;
+					}
+					if (data != nullptr && data->noGrappleWalls && grappleTarget != nullptr && !grappleTarget->IsPlayer()) { 
+						pressButton = false;
+					}
+					if (grappleTarget != nullptr && threat->GetEntity() != grappleTarget && DotProduct((threat->GetEntity()->GetAbsOrigin() - actor->GetAbsOrigin()).Normalized(), (grappleTarget->GetAbsOrigin() - actor->GetAbsOrigin()).Normalized()) < 0.1f) { 
+						pressButton = false;
+					}
+					if (pressButton) {
+						actor->PressFireButton(0.12f);
+					}
+					else {
+						actor->ReleaseFireButton();
+					}
+					return;
+				}
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
 		if (data != nullptr && data->rocket_jump_type > 0 && weapon != nullptr && !weapon->IsMeleeWeapon()) {
 			const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
 			if (weapon != nullptr && (data->rocket_jump_type == 1 || weapon->m_iClip1 >= weapon->GetMaxClip1()) && threat != nullptr && threat->GetEntity() != nullptr && actor->IsLineOfFireClear( threat->GetEntity()->EyePosition() )/*&& ShouldRocketJump(actor, weapon, data, true)*//*weapon != nullptr*/) {
@@ -1786,26 +1848,55 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 		return DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
 	}*/
+
+	bool IsRangeGreaterThan( CBaseEntity *bot, const Vector &pos, float range)
+	{
+		Vector to = pos - bot->GetAbsOrigin();
+		return to.IsLengthGreaterThan(range);
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFBot_EquipBestWeaponForThreat, const CKnownEntity * threat)
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
-		
-		bool use_best_weapon = false;
-		
-		auto data = GetDataForBot(bot);
-		if (data != nullptr && data->use_best_weapon) {
-			use_best_weapon = true;
+
+		if (!mannvsmachine || threat == nullptr || threat->GetEntity() == nullptr)  {
+			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			return;
 		}
 
-		if (use_best_weapon)
-			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+		if (bot->EquipRequiredWeapon())
+			return;
 
-		DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+		bool set = false;
+		for (int i = 0; i < MAX_WEAPONS; i++) {
+			CTFWeaponBase  *actionItem = static_cast< CTFWeaponBase *>( bot->GetWeapon( i ));
+			if (actionItem != nullptr) {
+				
+				if (actionItem->GetWeaponID() == TF_WEAPON_GRAPPLINGHOOK) {
+					auto data = GetDataForBot(bot);
+					auto range = data != nullptr ? data->grappleRange : 200;
+					CBaseEntity *target = threat->GetEntity();
 
-		if (use_best_weapon)
-			TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
+					auto grappledTo = bot->GetGrapplingHookTarget();
+
+					if ( IsRangeGreaterThan(bot, target->GetAbsOrigin(), range) && bot->IsLineOfFireClear(target)) {
+								bot->Weapon_Switch( actionItem );
+								set = true;
+					}
+					else if (bot->GetActiveTFWeapon() == actionItem) {
+						if (data != nullptr && data->removeGrappleClose && grappledTo != nullptr) {
+							auto grapplingHook = static_cast<CTFGrapplingHook *>(actionItem);
+							UTIL_Remove(grapplingHook->m_hProjectile);
+						}
+					}
+				}
+			}
+		}
+
+		if (!set)
+			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
 	}
 	
 	DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotMainAction_SelectMoreDangerousThreatInternal, const INextBot *nextbot, const CBaseCombatCharacter *them, const CKnownEntity *threat1, const CKnownEntity *threat2)
@@ -2196,10 +2287,13 @@ namespace Mod::Pop::ECAttr_Extensions
 					
 					float distsqr = rocket->WorldSpaceCenter().DistToSqr(player->WorldSpaceCenter());
 					if (distsqr < target_distsqr) {
+						bool noclip = rocket->GetMoveType() == MOVETYPE_NOCLIP;
 						trace_t tr;
-						UTIL_TraceLine(player->WorldSpaceCenter(), rocket->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
+						if (!noclip) {
+							UTIL_TraceLine(player->WorldSpaceCenter(), rocket->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
+						}
 						
-						if (!tr.DidHit() || tr.m_pEnt == rocket) {
+						if (noclip || !tr.DidHit() || tr.m_pEnt == rocket) {
 							target_player  = player;
 							target_distsqr = distsqr;
 						}
@@ -2322,6 +2416,16 @@ namespace Mod::Pop::ECAttr_Extensions
 		auto data = GetDataForBot(actor);
 		if (data != nullptr && data->fast_update) {
 			reinterpret_cast<NextBotData *>(actor->MyNextBotPointer())->m_bScheduledForNextTick = true;
+		}
+		
+		auto grappledTo = actor->GetGrapplingHookTarget();
+		
+		// Remove grappling hook if there is something in our way between the target and us
+		if (grappledTo != nullptr && !actor->IsLineOfFireClear(grappledTo)) {
+			
+			auto grapplingHook = rtti_cast<CTFGrapplingHook *>(actor->GetEntityForLoadoutSlot(LOADOUT_POSITION_ACTION));
+			if (grapplingHook != nullptr)
+				UTIL_Remove(grapplingHook->m_hProjectile);
 		}
 		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
 	}

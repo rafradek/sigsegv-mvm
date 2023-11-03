@@ -142,10 +142,10 @@ bool variant_t::Convert(fieldtype_t newType) {
 	}
 
 	switch (fieldType) {
-		case FIELD_INTEGER: case FIELD_CHARACTER: case FIELD_SHORT: {
+		case FIELD_INTEGER: case FIELD_CHARACTER: case FIELD_SHORT: case FIELD_COLOR32: {
 			switch ( newType ) {
 				case FIELD_FLOAT: SetFloat( (float) iVal ); return true;
-				case FIELD_CHARACTER: case FIELD_SHORT: case FIELD_INTEGER: fieldType = newType; return true;
+				case FIELD_CHARACTER: case FIELD_SHORT: case FIELD_INTEGER: case FIELD_COLOR32: fieldType = newType; return true;
 				case FIELD_BOOLEAN: SetBool( iVal != 0 ); return true;
 				case FIELD_EHANDLE: case FIELD_CLASSPTR: {
 					
@@ -166,6 +166,7 @@ bool variant_t::Convert(fieldtype_t newType) {
 				case FIELD_INTEGER: SetInt( (int) flVal ); return true;
 				case FIELD_CHARACTER: SetInt( (int) flVal); fieldType = FIELD_CHARACTER; return true;
 				case FIELD_SHORT: SetInt( (int) flVal); fieldType = FIELD_SHORT; return true;
+				case FIELD_COLOR32: SetInt( (int)flVal ); fieldType = FIELD_COLOR32; return true;
 				case FIELD_BOOLEAN: SetBool( flVal != 0 ); return true;
 			}
 			break;
@@ -199,13 +200,20 @@ bool variant_t::Convert(fieldtype_t newType) {
 				}
 
 				case FIELD_COLOR32: {
-					int nRed = 0;
+					uint nRed = 0;
 					int nGreen = 0;
 					int nBlue = 0;
 					int nAlpha = 255;
 
-					sscanf(STRING(iszVal), "%d %d %d %d", &nRed, &nGreen, &nBlue, &nAlpha);
-					SetColor32( nRed, nGreen, nBlue, nAlpha );
+					int result = sscanf(STRING(iszVal), "%u %d %d %d", &nRed, &nGreen, &nBlue, &nAlpha);
+					if (result > 1 || nRed <= 255) {
+						SetColor32( nRed, nGreen, nBlue, nAlpha );
+					}
+					// Raw integer value was probably entered
+					else {
+						this->iVal = (int) nRed;
+						this->fieldType = FIELD_COLOR32;
+					}
 					return true;
 				}
 

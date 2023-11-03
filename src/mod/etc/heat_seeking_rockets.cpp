@@ -302,10 +302,13 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 				//	float distsqr = proj->WorldSpaceCenter().DistToSqr(player->WorldSpaceCenter());
 				//	if (distsqr < target_distsqr) {
 					if (dotproduct > target_dotproduct) {
+						bool noclip = proj->GetMoveType() == MOVETYPE_NOCLIP;
 						trace_t tr;
-						UTIL_TraceLine(player->WorldSpaceCenter(), proj->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
+						if (!noclip) {
+							UTIL_TraceLine(player->WorldSpaceCenter(), proj->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &tr);
+						}
 						
-						if (!tr.DidHit() || tr.m_pEnt == proj) {
+						if (noclip || !tr.DidHit() || tr.m_pEnt == proj) {
 							target_player  = player;
 							target_dotproduct = dotproduct;
 						}

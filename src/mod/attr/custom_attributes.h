@@ -49,6 +49,7 @@ namespace Mod::Attr::Custom_Attributes
 		ALT_FIRE_ATTACK,
 		NO_ATTACK,
 		MOD_AMMO_PER_SHOT,
+		HOLD_FIRE_UNTIL_FULL_RELOAD,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -94,7 +95,8 @@ namespace Mod::Attr::Custom_Attributes
 		"midair_accuracy_mult",
 		"alt_fire_attack",
 		"no_attack",
-		"mod_ammo_per_shot"
+		"mod_ammo_per_shot",
+		"hold_fire_until_full_reload"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled

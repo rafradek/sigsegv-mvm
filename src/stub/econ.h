@@ -556,8 +556,8 @@ private:
 class CTFItemSchema : public CEconItemSchema {};
 
 
-CTFItemSchema *GetItemSchema();
-
+extern StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema;
+inline CTFItemSchema *GetItemSchema() { return ft_GetItemSchema(); }
 
 class CItemGeneration
 {
@@ -574,7 +574,8 @@ private:
 };
 
 
-CItemGeneration *ItemGeneration();
+extern StaticFuncThunk<CItemGeneration *> ft_ItemGeneration;
+inline CItemGeneration *ItemGeneration() { return ft_ItemGeneration(); }
 
 extern StaticFuncThunk<void, const CAttribute_String *, const char **> ft_CopyStringAttributeValueToCharPointerOutput;
 

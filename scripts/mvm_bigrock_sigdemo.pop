@@ -24,8 +24,8 @@ WaveSchedule
 	NoJoinMidwave 1 [$SIGSEGV] // If set to 1, players that joined the server midwave cannot spawn, unless they buyback (default: 0)
 	BurnTimeFasterBurn 1 [$SIGSEGV] //For players, burn time bonus increases afterburn damage frequency instead of duration (default: 1)
 	AllowBombBuffsForPlayerCarriers 1 [$SIGSEGV] // Allow bomb buffs for player bomb carriers (default: 0)
-	AllowCivilianClass 1 [$SIGSEGV] // Allow selection of civilian class via random class or join_class civilian command (default: 0)
-	
+	AllowCivilianClass 1 [$SIGSEGV] // Allow selection of civilian class via random class or join_class civilian command. 2 to require join_class civilian (default: 0)
+	LoseTime 5 [$SIGSEGV] // How long the lose duration is in seconds (default: 5)
 
 	//////////////////////////
 	// Credits options      //
@@ -2573,6 +2573,26 @@ WaveSchedule
 			}
 		}
 		
+		WaveSpawn
+		{
+			Name "wave01a"
+			Where spawnbot
+			TotalCount 1
+			MaxActive 1
+			SpawnCount 1
+			WaitBeforeStarting 0
+			WaitBetweenSpawns 0.25
+			TotalCurrency 200	
+			TFBot
+			{
+				Class Soldier
+				Attributes MiniBoss
+				Item TF_WEAPON_GRAPPLINGHOOK
+				GrapplingHookRange 100 // Minimum range to use grappling hook (Default: 200)
+				RemoveHookFromPlayerTargetWhenClose 1 // Remove hook when close to the target (Default: 0)
+				NoGrappleWalls 1 // Do not grapple to the walls (Default: 0)
+			}
+		}
 	}
 	
 }
@@ -3546,3 +3566,18 @@ WaveSchedule
 
 // Move enemies out of the way. Deal x damage per tick to stuck enemies
 // "displace touched enemies" 1
+
+// Immune to specific addconds, separated by |
+// "addcond immunity" "1|3"
+
+// Player immune to specific attributes, separated by |
+// "attribute immunity" "move speed bonus|damage bonus"
+
+// Hold fire until full reload
+// "hold fire until full reload" "1"
+
+// Projectile hit radius for damageable entities only
+// "projectile hit radius" 100
+
+// Projectiles penetrate walls. Cannot hit anything unless "projectile hit radius" is set
+// "noclip projectiles" 1

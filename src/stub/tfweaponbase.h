@@ -54,6 +54,7 @@ public:
 	DECL_SENDPROP(bool, m_bBeingRepurposedForTaunt);
 	DECL_SENDPROP(float, m_flReloadPriorNextFire);
 	DECL_SENDPROP(bool,  m_bDisguiseWeapon);
+	DECL_SENDPROP(int,   m_iReloadMode);
 	DECL_RELATIVE(bool,  m_bCurrentAttackIsCrit);
 
 	
@@ -207,6 +208,11 @@ public:
 class CTFRocketLauncher : public CTFWeaponBaseGun {};
 class CTFRocketLauncher_AirStrike : public CTFRocketLauncher {};
 
+class CTFGrapplingHook : public CTFRocketLauncher 
+{
+public:
+	DECL_SENDPROP(CHandle<CBaseEntity>, m_hProjectile);
+};
 
 class CTFWeaponBaseMelee : public CTFWeaponBase
 {

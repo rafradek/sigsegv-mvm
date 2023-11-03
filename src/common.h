@@ -543,7 +543,7 @@ WARN_RESTORE()
 #include <server_class.h>
 #include <dt_utlvector_common.h>
 WARN_IGNORE__REORDER()
-#include <../server/variant_t.h>
+#include "sdk2013/variant_t.h"
 WARN_RESTORE()
 #include <icliententity.h>
 #include <icliententitylist.h>
@@ -589,6 +589,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATERIALSYSTEM_IMATERIALSYSTEM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_STRING_T_H);
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_VARIANT_T_H);
 #endif
 
 

@@ -31,6 +31,8 @@ using BASEPTR       = void (CBaseEntity::*)();
 using ENTITYFUNCPTR = void (CBaseEntity::*)(CBaseEntity *pOther);
 using USEPTR        = void (CBaseEntity::*)(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
+// This is set in extension.cpp
+extern edict_t *g_pWorldEdict;
 
 struct inputdata_t
 {
@@ -147,7 +149,19 @@ public:
 		return m_pPev != nullptr ? m_pPev->m_EdictIndex : 0;
 	}
 
-	void AttachEdict(edict_t *required) { ft_AttachEdict(this, required); }
+	void AttachEdict(edict_t *required)    {        ft_AttachEdict(this, required); }
+	bool IsInPVS(CCheckTransmitInfo *info) { return ft_IsInPVS(this, info); }
+
+	inline int AreaNum() const
+	{
+		if (m_pPev != nullptr && ( ( m_pPev->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION ) != 0 ) )
+		{
+			m_pPev->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
+			engine->BuildEntityClusterList(m_pPev, &m_PVSInfo);
+		}
+		return m_PVSInfo.m_nAreaNum;
+	}
+	
 	inline edict_t *GetProp() {
 		return m_pPev;
 	}
@@ -155,12 +169,13 @@ public:
 	CBaseEntity *m_pOuter;
 	// CBaseTransmitProxy *m_pTransmitProxy;
 	edict_t	*m_pPev;
-	PVSInfo_t m_PVSInfo;
+	mutable PVSInfo_t m_PVSInfo;
 	ServerClass *m_pServerClass;
 	EHANDLE m_hParent;
 	// ...
 private:
 	static MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> ft_AttachEdict;
+	static MemberFuncThunk<      CServerNetworkProperty *, bool, CCheckTransmitInfo *> ft_IsInPVS;
 };
 
 /*class CEntInfo
@@ -273,6 +288,7 @@ public:
 	MoveCollide_t GetMoveCollide() const          { return (MoveCollide_t)(unsigned char)this->m_MoveCollide; }
 	void SetMoveCollide(MoveCollide_t val)        { this->m_MoveCollide = val; }
 	CBaseEntity *GetMoveParent() const            { return this->m_hMoveParent; }
+	EHANDLE GetMoveParentHandle() const           { return this->m_hMoveParent; }
 	CBaseEntity *FirstMoveChild() const           { return this->m_hMoveChild; }
 	CBaseEntity *NextMovePeer() const             { return this->m_hMovePeer; }
 	void SetMoveParent(CBaseEntity *entity)       { this->m_hMoveParent = entity; }
@@ -381,7 +397,9 @@ public:
 	void VPhysicsDestroyObject()                                                                                            {        vt_VPhysicsDestroyObject         (this); }
 	uint PhysicsSolidMaskForEntity()                                                                                        { return vt_PhysicsSolidMaskForEntity     (this); }
 	const char *GetTracerType() const                                                                                       { return vt_GetTracerType                 (this); }
-	
+	void SetTransmit(CCheckTransmitInfo *info, bool always)                                                                 {        vt_SetTransmit                   (this, info, always); }
+	int ShouldTransmit(CCheckTransmitInfo *info)                                                                            { return vt_ShouldTransmit                (this, info); }
+
 	/* static */
 	static CBaseEntity *Create(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                       { return ft_Create             (szName, vecOrigin, vecAngles, pOwner); }
 	static CBaseEntity *CreateNoSpawn(const char *szName, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner = nullptr)                                                                { return ft_CreateNoSpawn      (szName, vecOrigin, vecAngles, pOwner); }
@@ -559,6 +577,8 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_VPhysicsDestroyObject;
 	static MemberVFuncThunk<      CBaseEntity *, uint>                                                             vt_PhysicsSolidMaskForEntity;
 	static MemberVFuncThunk<const CBaseEntity *, const char *>                                                     vt_GetTracerType;
+	static MemberVFuncThunk<      CBaseEntity *, void, CCheckTransmitInfo *, bool>                                 vt_SetTransmit;
+	static MemberVFuncThunk<      CBaseEntity *, int, CCheckTransmitInfo *>                                        vt_ShouldTransmit;
 	
 
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
@@ -610,7 +630,8 @@ inline int ENTINDEX_NATIVE(CBaseEntity *entity)
 inline edict_t *INDEXENT(int iEdictNum)
 {
 #ifndef CSGO_SEPARETE_
-	return engine->PEntityOfEntIndex(iEdictNum);
+	auto edict = g_pWorldEdict + iEdictNum;
+	return !edict->IsFree() ? edict : nullptr;
 #else
 	if ( gpGlobals->pEdicts )
 	{
@@ -634,7 +655,7 @@ inline CBaseEntity *UTIL_EntityByIndex(int entityIndex)
 	
 	if (entityIndex > 0) {
 		edict_t *edict = INDEXENT(entityIndex);
-		if (edict != nullptr && !edict->IsFree()) {
+		if (edict != nullptr) {
 			entity = GetContainingEntity(edict);
 		}
 	}

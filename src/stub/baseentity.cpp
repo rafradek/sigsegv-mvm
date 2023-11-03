@@ -5,6 +5,9 @@
 #include "stub/objects.h"
 #endif
 
+// This is set in extension.cpp
+edict_t *g_pWorldEdict = nullptr;
+
 #ifdef SE_TF2
 MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
 #else
@@ -12,6 +15,7 @@ MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *>
 #endif
 
 MemberFuncThunk<      CServerNetworkProperty *, void, edict_t *> CServerNetworkProperty::ft_AttachEdict("CServerNetworkProperty::AttachEdict");
+MemberFuncThunk<      CServerNetworkProperty *, bool, CCheckTransmitInfo *> CServerNetworkProperty::ft_IsInPVS("CServerNetworkProperty::IsInPVS");
 
 IMPL_DATAMAP(string_t,               CBaseEntity, m_target);
 IMPL_DATAMAP(string_t,               CBaseEntity, m_iParent);
@@ -160,6 +164,8 @@ MemberVFuncThunk<      CBaseEntity *, void                                      
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_VPhysicsDestroyObject         (TypeName<CBaseEntity>(), "CBaseEntity::VPhysicsDestroyObject");
 MemberVFuncThunk<      CBaseEntity *, uint                                                            > CBaseEntity::vt_PhysicsSolidMaskForEntity     (TypeName<CBaseEntity>(), "CBaseEntity::PhysicsSolidMaskForEntity");
 MemberVFuncThunk<const CBaseEntity *, const char *                                                    > CBaseEntity::vt_GetTracerType                 (TypeName<CBaseEntity>(), "CBaseEntity::GetTracerType");
+MemberVFuncThunk<      CBaseEntity *, void, CCheckTransmitInfo *, bool                                > CBaseEntity::vt_SetTransmit                   (TypeName<CBaseEntity>(), "CBaseEntity::SetTransmit");
+MemberVFuncThunk<      CBaseEntity *, int, CCheckTransmitInfo *                                       > CBaseEntity::vt_ShouldTransmit                (TypeName<CBaseEntity>(), "CBaseEntity::ShouldTransmit");
 
 MemberFuncThunk<CBaseEntityOutput *, void, variant_t, CBaseEntity *, CBaseEntity *, float> CBaseEntityOutput::ft_FireOutput("CBaseEntityOutput::FireOutput");
 MemberFuncThunk<CBaseEntityOutput *, void, const char *                                  > CBaseEntityOutput::ft_ParseEventAction("CBaseEntityOutput::ParseEventAction");

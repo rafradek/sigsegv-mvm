@@ -156,8 +156,8 @@ public:
 	constexpr void Set( vec_t X, vec_t Y, vec_t Z, vec_t W );
 	void InitZero( void );
 
-	constexpr __m128 &AsM128() { _CONSTEXPR_RETURN_TYPE_PUN(__m128); }
-	constexpr const __m128 &AsM128() const { _CONSTEXPR_RETURN_TYPE_PUN(const __m128); }
+	constexpr __m128 &AsM128() { _CONSTEXPR_RETURN_TYPE_PUN(Vector4DAligned, __m128); }
+	constexpr const __m128 &AsM128() const { _CONSTEXPR_RETURN_TYPE_PUN(const Vector4DAligned, const __m128); }
 
 private:
 	// No copy constructors allowed if we're in optimal mode
@@ -298,22 +298,22 @@ constexpr vec_t Vector4D::operator[](int i) const
 
 constexpr Vector& Vector4D::AsVector3D()
 {
-	_CONSTEXPR_RETURN_TYPE_PUN(Vector);
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector4D, Vector);
 }
 
 constexpr Vector const& Vector4D::AsVector3D() const
 {
-	_CONSTEXPR_RETURN_TYPE_PUN(const Vector);
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector4D, const Vector);
 }
 
 constexpr Vector2D& Vector4D::AsVector2D()
 {
-	_CONSTEXPR_RETURN_TYPE_PUN(Vector2D);
+	_CONSTEXPR_RETURN_TYPE_PUN(Vector4D, Vector2D);
 }
 
 constexpr Vector2D const& Vector4D::AsVector2D() const
 {
-	_CONSTEXPR_RETURN_TYPE_PUN(const Vector2D);
+	_CONSTEXPR_RETURN_TYPE_PUN(const Vector4D, const Vector2D);
 }
 
 //-----------------------------------------------------------------------------

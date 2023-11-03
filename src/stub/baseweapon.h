@@ -33,6 +33,7 @@ public:
 	int GetMaxClip1() const                                { return vt_GetMaxClip1  (this); }
 	int GetMaxClip2() const                                { return vt_GetMaxClip2  (this); }
 	bool HasAmmo()                                         { return vt_HasAmmo      (this); }
+	bool HasPrimaryAmmo()                                  { return vt_HasPrimaryAmmo(this); }
 	void Equip(CBaseCombatCharacter *pOwner)               {        vt_Equip        (this, pOwner); }
 	void Drop(const Vector& vecVelocity)                   {        vt_Drop         (this, vecVelocity); }
 	const char *GetViewModel(int viewmodelindex = 0) const { return vt_GetViewModel (this, viewmodelindex); }
@@ -84,6 +85,7 @@ private:
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip1;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, int>                          vt_GetMaxClip2;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_HasAmmo;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, bool>                         vt_HasPrimaryAmmo;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void, CBaseCombatCharacter *> vt_Equip;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void, const Vector&>          vt_Drop;
 	static MemberVFuncThunk<const CBaseCombatWeapon *, const char *, int>            vt_GetViewModel;

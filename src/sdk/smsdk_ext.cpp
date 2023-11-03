@@ -137,6 +137,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 	SM_GET_IFACE(SOURCEMOD, g_pSM);
 	smutils = g_pSM;
+	SM_GET_IFACE(EXTENSIONMANAGER, smexts);
 #if defined SMEXT_ENABLE_HANDLESYS
 	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
 	handlesys = g_pHandleSys;

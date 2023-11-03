@@ -23,6 +23,17 @@
 #include "util/iterate.h"
  
 
+#ifdef SE_TF2
+REPLACE_FUNC_MEMBER(bool, CTFPlayerShared_InCond, int index) {
+    auto me = reinterpret_cast<CTFPlayerShared *>(this);
+    return me->GetCondData().InCond(index);
+}
+REPLACE_FUNC_MEMBER(CEconItemDefinition *, CEconItemView_GetStaticData) {
+    auto me = reinterpret_cast<CEconItemView *>(this);
+    return GetItemSchema()->GetItemDefinition(me->m_iItemDefinitionIndex);
+}
+#endif
+
 namespace Mod::Perf::Func_Optimize
 {   
     constexpr uint8_t s_Buf_CKnownEntity_OperatorEquals[] = {
@@ -106,114 +117,7 @@ namespace Mod::Perf::Func_Optimize
 	};
 
 #ifdef SE_TF2
-    constexpr uint8_t s_Buf_CEconItemView_GetStaticData[] = {
-        0x55,                      //push   ebp 0
-        0x89, 0xe5,                   //mov    ebp,esp 1
-        0x53,                      //push   ecx 3
-        0x83, 0xec, 0x14,                      //push   edx 4
-        0x8b, 0x45, 0x08,                //mov    ecx,DWORD PTR [ebp+0xc] 7
-        0x0f, 0xb7, 0x58, 0x04,               // mov    edx,DWORD PTR [ebp+0x8] a
-        0xE8, 0x6D, 0x8D, 0xFF, 0xFF,       //add    edx,0xcc b e
-        0x89, 0x04, 0x24,                   //test   ecx,ecx 13
-        0x89, 0x5c, 0x24, 0x04, // 16
-        0xe8, 0x61, 0x51, 0xfc, 0xff, //1a
-        0x83, 0xc4, 0x14,
-        0x5b,
-        0x5d,
-        0xc3,                      //ret
-	};
-        
-    struct CPatch_CEconItemView_GetStaticData : public CPatch
-	{
-		CPatch_CEconItemView_GetStaticData() : CPatch(sizeof(s_Buf_CEconItemView_GetStaticData)) {}
-		
-		virtual const char *GetFuncName() const override { return "CEconItemView::GetStaticData"; }
-		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x0000; } // @ +0x00af
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CEconItemView_GetStaticData);
-			
-			mask.SetAll(0x00);
-            mask[0] = 0xFF;
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-            buf[0x0a + 3] = (uint8_t)CEconItemView::s_prop_m_iItemDefinitionIndex.GetOffsetDirect();
-			mask.SetAll(0xFF);
-            
-            mask.SetDword(0x0e + 1, 0);
-            mask.SetDword(0x1a + 1, 0);
-			
-			return true;
-		}
-		
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-            buf[0x0a + 3] = (uint8_t)CEconItemView::s_prop_m_iItemDefinitionIndex.GetOffsetDirect();
-			return true;
-		}
-	};
-    
-    // Rewrites the function to be like:
-    // return (int *)(&m_nPlayerCond)[index >> 8] & (index & 31);
-    constexpr uint8_t s_Buf_CTFPlayerShared_InCond[] = {
-        //0x55,                      //push   ebp 0
-        //0x89, 0xe5,                   //mov    ebp,esp 1
-        0x51,                      //push   ecx 0
-        0x52,                      //push   edx 1
-        0x8b, 0x4c, 0x24, 0x10,                //mov    ecx,DWORD PTR [esp+0x8 + 0x8] 2
-        0x8b, 0x54, 0x24, 0x0C,               // mov    edx,DWORD PTR [esp+0x4 + 0x8] 6
-        0x81, 0xc2, 0xcc, 0x00, 0x00, 0x00,       //add    edx,0xcc a
-        0x85, 0xc9,                   //test   ecx,ecx
-        0x8d, 0x41, 0x1f,                //lea    eax,[ecx+0x1f]
-        0x0f, 0x49, 0xc1,                //cmovns eax,ecx
-        0xc1, 0xf8, 0x05,                //sar    eax,0x5
-        0x8b, 0x04, 0x82,                //mov    eax,DWORD PTR [edx+eax*4]
-        0xd3, 0xf8,                   //sar    eax,cl
-        0x83, 0xe0, 0x01,                //and    eax,0x1
-        0x5a,                      //pop    edx
-        0x59,                      //pop    ecx
-        //0x5d,                      //pop    ebp
-        0xc3,                      //ret
-	};
-        
-    struct CPatch_CTFPlayerShared_InCond: public CPatch
-	{
-		CPatch_CTFPlayerShared_InCond() : CPatch(sizeof(s_Buf_CTFPlayerShared_InCond)) {}
-		
-		virtual const char *GetFuncName() const override { return "CTFPlayerShared::InCond"; }
-		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x0000; } // @ +0x00af
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-            
-			buf.CopyFrom(s_Buf_CTFPlayerShared_InCond);
-			
-			mask.SetAll(0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-            buf.SetDword(0x0a + 2, CTFPlayerShared::s_prop_m_nPlayerCond.GetOffsetDirect());
-			mask.SetAll(0xFF);
-			
-			return true;
-		}
-		
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-            buf.SetDword(0x0a + 2, CTFPlayerShared::s_prop_m_nPlayerCond.GetOffsetDirect());
-			return true;
-		}
-	};
+
 	constexpr uint8_t s_Buf_CTFPlayerShared_ConditionGameRulesThink[] = {
         0x83, 0xC7, 0x01, //add     edi, 1
         0x83, 0xC3, 0x14, //add     ebx, sizeof(condition_source_t)
@@ -788,9 +692,9 @@ namespace Mod::Perf::Func_Optimize
             // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
 			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
             // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
-			this->AddPatch(new CPatch_CTFPlayerShared_InCond());
+            MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
-			this->AddPatch(new CPatch_CEconItemView_GetStaticData());
+            MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
             // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
 			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
             

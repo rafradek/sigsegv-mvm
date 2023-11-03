@@ -123,6 +123,7 @@ public:
 	DECL_SENDPROP(bool,  m_bInDuckJump);
 	DECL_SENDPROP(float, m_flDucktime);
 	DECL_SENDPROP(float, m_flStepSize);
+	DECL_SENDPROP(int, m_skybox3darea);
 	DECL_SENDPROP(Vector, m_vecPunchAngle);
 	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
@@ -315,8 +316,8 @@ inline CBasePlayer *UTIL_PlayerByIndex(int playerIndex)
 	
 	if (playerIndex > 0 && playerIndex <= gpGlobals->maxClients) {
 		edict_t *pPlayerEdict = INDEXENT(playerIndex);
-		if (pPlayerEdict != nullptr && !pPlayerEdict->IsFree()) {
-			pPlayer = reinterpret_cast<CBasePlayer *>(GetContainingEntity(pPlayerEdict));
+		if (pPlayerEdict != nullptr) {
+			pPlayer = reinterpret_cast<CBasePlayer *>(pPlayerEdict->GetUnknown());
 		}
 	}
 	

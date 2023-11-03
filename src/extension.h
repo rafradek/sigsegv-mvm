@@ -28,6 +28,7 @@ private:
 	// CBaseGameSystemPerFrame
 	virtual const char *Name() override { return "CExtSigsegv"; }
 	virtual void LevelInitPreEntity() override;
+	virtual void LevelInitPostEntity() override;
 	
 	void LoadSoundOverrides();
 

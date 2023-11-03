@@ -4,6 +4,7 @@
 #include "stub/baseplayer.h"
 #ifdef SE_TF2
 #include "stub/tfplayer.h"
+#include "stub/tfentities.h"
 #endif
 #include "stub/gamerules.h"
 #include "stub/misc.h"
@@ -11,12 +12,15 @@
 #include "stub/baseweapon.h"
 #ifdef SE_TF2
 #include "stub/tf_objective_resource.h"
+#include "stub/tfweaponbase.h"
 #endif
 #include <forward_list>
 #include "stub/sendprop.h"
 #include "util/iterate.h"
 #include "util/misc.h"
 #include "util/thread_pool.h"
+#include <link.h>
+#include <bitset>
 
 int global_frame_list_counter = 0;
 bool is_client_hltv = false;
@@ -154,6 +158,62 @@ public:
     int numareas;
     carea_t *map_areas;
 };
+CBitVec<2048> *transmitAlways = nullptr;
+
+NOINLINE void SetTransmitAlways(CServerNetworkProperty *netProp, bool bAlways) {
+    auto edict = netProp->m_pPev;
+    
+    int parentIndex = netProp->m_hParent.GetEntryIndex();
+    if ( bAlways || (parentIndex < MAX_EDICTS)) {
+        transmitAlways->Set(edict->m_EdictIndex);
+    }
+    else if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
+        edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
+        engine->BuildEntityClusterList(edict, &(netProp->m_PVSInfo));
+    }
+}
+
+auto ourfunc1 = &SetTransmitAlways;
+
+NOINLINE void SetTransmitParent(int parentIndex, CCheckTransmitInfo *pInfo, bool bAlways) {
+    CBaseEntity *parent = (CBaseEntity *)(g_pWorldEdict+parentIndex)->GetUnknown();
+
+    // Force our aiment and move parent to be sent.
+    if (parent != nullptr) {
+        parent->SetTransmit(pInfo, bAlways);
+    }
+}
+auto ourfunc2 = &SetTransmitParent;
+
+REPLACE_FUNC_MEMBER(void, CBaseEntity_SetTransmit, CCheckTransmitInfo *pInfo, bool bAlways)
+{
+    auto entity = reinterpret_cast<CBaseEntity *>(this);
+    CServerNetworkProperty *netProp = entity->NetworkProp();
+    int index = netProp->entindex();
+    int parentIndex = netProp->m_hParent.GetEntryIndex();
+
+    pInfo->m_pTransmitEdict->Set(index);
+
+    if (transmitAlways) {
+        (*ourfunc1)(netProp, bAlways);
+    }
+    if (parentIndex >= MAX_EDICTS || pInfo->m_pTransmitEdict->Get(parentIndex)) return;
+    (*ourfunc2)(parentIndex, pInfo, bAlways);
+}
+
+
+IChangeInfoAccessor *world_accessor = nullptr;
+CEdictChangeInfo *world_change_info = nullptr;
+CSharedEdictChangeInfo *g_SharedEdictChangeInfo;
+
+REPLACE_FUNC_MEMBER(IChangeInfoAccessor *, CBaseEdict_GetChangeAccessor)
+{
+    //world_accessor->SetChangeInfoSerialNumber(g_SharedEdictChangeInfo->m_iSerialNumber);
+    //world_accessor->SetChangeInfo(0);
+    //=0;
+    g_SharedEdictChangeInfo->m_ChangeInfos[0].m_nChangeOffsets = 0;
+    return world_accessor;
+}
 
 namespace Mod::Perf::SendProp_Optimize
 {
@@ -218,8 +278,6 @@ namespace Mod::Perf::SendProp_Optimize
 
     //std::unordered_map<SendTable *, ServerClassCache> server_class_cache;
     ServerClassCache *player_class_cache = nullptr;
-    
-    CSharedEdictChangeInfo *g_SharedEdictChangeInfo;
 
     SendTableProxyFn datatable_sendtable_proxy;
     SendTableProxyFn local_sendtable_proxy;
@@ -270,16 +328,6 @@ namespace Mod::Perf::SendProp_Optimize
     }
 
     CStandardSendProxies* sendproxies;
-    void *stringSendProxy;
-    void *vectorXYSendProxy;
-    void *qAnglesSendProxy;
-    void *angleSendProxy;
-    void *colorSendProxy;
-    void *ehandleSendProxy;
-    void *intAddOneSendProxy;
-    void *shortAddOneSendProxy;
-    void *stringTSendProxy;
-    void *emptySendProxy;
 
     inline void CallProxyFn(SendProp *prop, unsigned char *base, DVariant &var, int entindex) {
         SendVarProxyFn func = prop->GetProxyFn();
@@ -311,37 +359,31 @@ namespace Mod::Perf::SendProp_Optimize
             var.m_Vector[1] = vec[1];
             var.m_Vector[2] = vec[2];
         }
-        else if (func == vectorXYSendProxy) {
+        else if (func == DLLSendProxy_VectorXYToVectorXY.GetRef()) {
             auto &vec = *((Vector *)address);
             var.m_Vector[0] = vec[0];
             var.m_Vector[1] = vec[1];
         }
-        else if (func == qAnglesSendProxy) {
+        else if (func == DLLSendProxy_QAngles.GetRef()) {
             auto &vec = *((QAngle *)address);
             var.m_Vector[0] = anglemod(vec.x);
             var.m_Vector[1] = anglemod(vec.y);
             var.m_Vector[2] = anglemod(vec.z);
         }
-        else if (func == qAnglesSendProxy) {
-            auto &vec = *((QAngle *)address);
-            var.m_Vector[0] = anglemod(vec.x);
-            var.m_Vector[1] = anglemod(vec.y);
-            var.m_Vector[2] = anglemod(vec.z);
-        }
-        else if (func == stringSendProxy) {
+        else if (func == DLLSendProxy_StringToString.GetRef()) {
             var.m_pString = (const char *)address;
         }
-        else if (func == angleSendProxy) {
+        else if (func == DLLSendProxy_AngleToFloat.GetRef()) {
             var.m_Float = anglemod(*((float *)address));
         }
-        else if (func == colorSendProxy) {
+        else if (func == DLLSendProxy_Color32ToInt.GetRef()) {
             color32 *pIn = (color32*)address;
 	        var.m_Int = (int)(((unsigned int)pIn->r << 24) | ((unsigned int)pIn->g << 16) | ((unsigned int)pIn->b << 8) | ((unsigned int)pIn->a));
         }
-        else if (func == stringTSendProxy) {
+        else if (func == DLLSendProxy_StringT_To_String.GetRef()) {
             var.m_pString = STRING(*((string_t*)address));
         }
-        else if (func == ehandleSendProxy) {
+        else if (func == DLLSendProxy_EHandleToInt.GetRef()) {
             CBaseHandle *pHandle = (CBaseHandle*)address;
 
             if (pHandle && pHandle->Get()) {
@@ -352,7 +394,7 @@ namespace Mod::Perf::SendProp_Optimize
                 var.m_Int = INVALID_NETWORKED_EHANDLE_VALUE;
             }
         }
-        else if (func == emptySendProxy) {
+        else if (func == DLLSendProxy_Empty.GetRef()) {
 
         }
         else {
@@ -434,9 +476,9 @@ namespace Mod::Perf::SendProp_Optimize
     std::mutex createPackedEntityMutex;
     
     bool firstPack = true;
-    extern ConVar cvar_threads;
+    int threadNum = 0;
     inline bool IsParallel() {
-        return cvar_threads.GetInt() > 0 && !firstPack;
+        return threadNum > 0 && !firstPack;
     }
 
     CSendProxyRecipients recip;
@@ -514,9 +556,14 @@ namespace Mod::Perf::SendProp_Optimize
             prop_write_offset[objectID].resize(pTable->m_pPrecalc->m_Props.Count() + 1);
             return false;
         }
+        CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
+        if (propChangeOffsets == 0 && snapmgr.UsePreviouslySentPacket(snapshot, objectID, edict->m_NetworkSerialNumber)) {
+            if (!IsParallel())
+                edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
+            return true;
+        }
         auto write_offset_data = prop_write_offset[objectID].data();
 
-        CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
         PackedEntity *pPrevFrame = snapmgr.GetPreviouslySentPacket( objectID, edict->m_NetworkSerialNumber /*snapshot->m_pEntities[ edictnum ].m_nSerialNumber*/ );
         
         if (pPrevFrame != nullptr) {
@@ -960,6 +1007,65 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CGameClient_SetupPrevPackInfo)();
     }
 
+    uint16_t *areasConnected = nullptr;
+    GlobalThunk<CCollisionBSPData> g_BSPData("g_BSPData");
+    inline bool CheckAreasConnected(int area1, int area2)
+    {
+        if (areasConnected != nullptr) {
+            return areasConnected[area1] == areasConnected[area2];
+        }
+        auto &BSPData = g_BSPData.GetRef();
+        return BSPData.map_areas[area1].floodnum == BSPData.map_areas[area2].floodnum;
+    }
+
+    inline bool IsInPVS(CServerNetworkProperty *prop, CCheckTransmitInfo *pInfo)
+    {
+        int i;
+        auto &m_PVSInfo = prop->m_PVSInfo;
+        if (!m_PVSInfo.m_nAreaNum2) {
+            for ( i=0; i< pInfo->m_AreasNetworked; i++ ) {
+                int clientArea = pInfo->m_Areas[i];
+                if ( clientArea == m_PVSInfo.m_nAreaNum || CheckAreasConnected( clientArea, m_PVSInfo.m_nAreaNum ) )
+                    break;
+            }
+        }
+        else {
+            // doors can legally straddle two areas, so
+            // we may need to check another one
+            for ( i=0; i< pInfo->m_AreasNetworked; i++ )
+            {
+                int clientArea = pInfo->m_Areas[i];
+                if ( clientArea == m_PVSInfo.m_nAreaNum || clientArea == m_PVSInfo.m_nAreaNum2 )
+                    break;
+
+                if ( CheckAreasConnected( clientArea, m_PVSInfo.m_nAreaNum ) )
+                    break;
+
+                if ( CheckAreasConnected( clientArea, m_PVSInfo.m_nAreaNum2 ) )
+                    break;
+            }
+        }
+
+        if (i == pInfo->m_AreasNetworked) {
+            return false;
+        }
+
+        unsigned char *pPVS = ( unsigned char * )pInfo->m_PVS;
+        
+        if ( m_PVSInfo.m_nClusterCount < 0 ) {
+            return (engine->CheckHeadnodeVisible( m_PVSInfo.m_nHeadNode, pPVS, pInfo->m_nPVSSize ) != 0);
+        }
+        
+        for ( i = m_PVSInfo.m_nClusterCount; --i >= 0; ) {
+            int nCluster = m_PVSInfo.m_pClusters[i];
+            if ( ((int)(pPVS[nCluster >> 3])) & BitVec_BitInByte( nCluster ) )
+                return true;
+        }
+
+        return false;
+    }
+
+    bool firstTransmit = false;
     DETOUR_DECL_MEMBER(void, CServerGameEnts_CheckTransmit, CCheckTransmitInfo *pInfo, const unsigned short *pEdictIndices, int nEdicts)
 	{
         if (packinfoOffset == 0) {
@@ -970,7 +1076,128 @@ namespace Mod::Perf::SendProp_Optimize
             return;
         }
         
-        DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(pInfo, pEdictIndices, nEdicts);
+        static unsigned short edictsCheck[MAX_EDICTS];
+        static int nEdictsCheck = 0;
+        static unsigned short edictsAlwaysSend[MAX_EDICTS];
+        static int nEdictsAlwaysSend = 0;
+        auto player = (CBasePlayer *) GetContainingEntity(pInfo->m_pClientEnt);
+        bool isTV = player->IsReplay() || player->IsHLTV();
+        int skyBoxArea = player->m_Local->m_skybox3darea;
+        transmitAlways = pInfo->m_pTransmitAlways;
+        if (firstTransmit) {
+            std::bitset<MAX_EDICTS> addedToList;
+            firstTransmit = false;
+            nEdictsCheck = 0;
+            nEdictsAlwaysSend = 0;
+            std::vector<int> list;
+            for (auto i = 0; i < nEdicts; i++) {
+                uint16_t index = pEdictIndices[i];
+                if (addedToList.test(index)) continue;
+                edict_t *edict = g_pWorldEdict + index;
+                int nFlags = edict->m_fStateFlags & (FL_EDICT_DONTSEND|FL_EDICT_ALWAYS|FL_EDICT_PVSCHECK|FL_EDICT_FULLCHECK);
+
+                CBaseEntity *pEnt = ( CBaseEntity * )edict->GetUnknown();
+
+                if (nFlags & FL_EDICT_DONTSEND) {
+                    addedToList.set(index);
+                    continue;
+                }
+                if (nFlags & FL_EDICT_ALWAYS) {
+                    while(!pInfo->m_pTransmitEdict->Get(index)) {
+                        addedToList.set(index);
+                        pInfo->m_pTransmitEdict->Set(index);
+                        if (isTV) {
+                            pInfo->m_pTransmitAlways->Set(index);
+                        }
+                        edictsAlwaysSend[nEdictsAlwaysSend++] = index;
+                        auto networkable = (CServerNetworkProperty *) edict->GetNetworkable();
+                        if (networkable == nullptr) break;
+                        auto hParent = networkable->m_hParent.Get();
+                        if (hParent == nullptr) break;
+                        edict = hParent->edict();
+                        index = hParent->entindex();
+                    }
+                    continue;
+                }
+                list.clear();
+                int origIndex = index;
+                while (edict != nullptr) {
+                    addedToList.set(index);
+                    auto networkable = (CServerNetworkProperty *) edict->GetNetworkable();
+                    if (networkable == nullptr) break;
+                    auto hParent = networkable->m_hParent.Get();
+                    if (hParent == nullptr) break;
+                    edict = hParent->edict();
+                    index = hParent->entindex();
+                    if (addedToList.test(index)) break;
+                    list.push_back(index);
+                }
+                for (auto it = list.rbegin(); it != list.rend(); it++) {
+                    edictsCheck[nEdictsCheck++] = *it;
+                }
+                edictsCheck[nEdictsCheck++] = origIndex;
+            }
+        }
+        else {
+            for (auto i = 0; i < nEdictsAlwaysSend; i++) {
+                uint16_t index = edictsAlwaysSend[i];
+                edict_t *edict = g_pWorldEdict + index;
+                pInfo->m_pTransmitEdict->Set(index);
+                if (isTV) {
+                    pInfo->m_pTransmitAlways->Set(index);
+                }
+            }
+        }
+
+        for (auto i = 0; i < nEdictsCheck; i++) {
+            uint16_t index = edictsCheck[i];
+            if (pInfo->m_pTransmitEdict->Get(index)) continue;
+            edict_t *edict = g_pWorldEdict + index;
+            int nFlags = edict->m_fStateFlags & (FL_EDICT_DONTSEND|FL_EDICT_ALWAYS|FL_EDICT_PVSCHECK|FL_EDICT_FULLCHECK);
+            CBaseEntity *pEnt = ( CBaseEntity * )edict->GetUnknown();
+
+            if ( nFlags == FL_EDICT_FULLCHECK ) {
+                nFlags = pEnt->ShouldTransmit( pInfo );
+
+                if ( nFlags & FL_EDICT_ALWAYS ) {
+                    
+                    pEnt->SetTransmit( pInfo, true );
+                    continue;
+                }
+            }
+
+            if ( !( nFlags & FL_EDICT_PVSCHECK ) )
+                continue;
+            
+            CServerNetworkProperty *netProp = static_cast<CServerNetworkProperty*>( edict->GetNetworkable() );
+
+            // Always send entities in the player's 3d skybox.
+            // Sidenote: call of AreaNum() ensures that PVS data is up to date for this entity
+            if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
+                edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
+                engine->BuildEntityClusterList(edict, &(netProp->m_PVSInfo));
+            }
+            int areanum = netProp->m_PVSInfo.m_nAreaNum;
+
+            if (areanum == skyBoxArea) {
+                pEnt->SetTransmit( pInfo, true);
+                continue;
+            }
+
+            if (isTV || IsInPVS(netProp, pInfo)) {
+                // only send if entity is in PVS
+                pEnt->SetTransmit( pInfo, false );
+                continue;
+            }
+
+            int parentIndex = netProp->m_hParent.GetEntryIndex();
+            if (parentIndex <= MAX_EDICTS && pInfo->m_pTransmitEdict->Get(parentIndex)) {
+                pEnt->SetTransmit( pInfo, true );
+                continue;
+            }
+        }
+        //return DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(pInfo, pEdictIndices, nEdicts);
+
     }
 
     std::atomic<bool> computedPackInfos[ABSOLUTE_PLAYER_LIMIT];
@@ -978,10 +1205,7 @@ namespace Mod::Perf::SendProp_Optimize
 
     std::atomic<bool> packWorkFinished = false;
     std::atomic<bool> setupPackInfoFinished = false;
-
-    GlobalThunk<CCollisionBSPData> g_BSPData("g_BSPData");
     
-    uint16_t *areasConnected = nullptr;
     DETOUR_DECL_MEMBER(bool, CVEngineServer_CheckAreasConnected, int area1, int area2)
 	{
         if (areasConnected != nullptr) {
@@ -994,13 +1218,15 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         for (int i = 1; i <= gpGlobals->maxClients; i++) {
             edict_t *edict = world_edict + i;
-            if (!edict->IsFree() && edict->m_fStateFlags & (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED)) {
-                CBasePlayer *ent = reinterpret_cast<CBasePlayer *>(GetContainingEntity(edict));
+            if (!edict->IsFree() /*&& edict->m_fStateFlags & (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED)*/ && !(edict->m_fStateFlags & FL_EDICT_DONTSEND)) {
+                CBasePlayer *ent = reinterpret_cast<CBasePlayer *>(edict->GetUnknown());
+                if (ent == nullptr || !(ent->GetFlags() & FL_FAKECLIENT) || ent->IsHLTV() || ent->IsReplay()) continue;
                 bool isalive = ent->IsAlive();
-                if (ent->GetFlags() & FL_FAKECLIENT && (!isalive && ent->GetDeathTime() + 1.0f < gpGlobals->curtime)) {
+                if (!isalive && ent->GetDeathTime() + 1.0f < gpGlobals->curtime) {
                     edict->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
+                    edict->m_fStateFlags |= FL_EDICT_DONTSEND;
                 }
-                if (ent->GetFlags() & FL_FAKECLIENT && ((i + gpGlobals->tickcount) % 2) != 0) {
+                if ( (i + gpGlobals->tickcount) % 2 != 0) {
                     CBaseEntity *weapon = ent->GetActiveWeapon();
                     if (weapon != nullptr) {
                         weapon->edict()->m_fStateFlags &= ~(FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
@@ -1008,9 +1234,10 @@ namespace Mod::Perf::SendProp_Optimize
                 }
             }
         }
-
+        firstTransmit = true;
         if (!IsParallel()) {
             DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+
             if (firstPack && packinfoOffset != 0) {
                 firstPack = false;
             }
@@ -1035,6 +1262,7 @@ namespace Mod::Perf::SendProp_Optimize
 
         packWorkFinished = false;
         int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
+        CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
 
         threadPool.push_task([&](){
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
@@ -1054,9 +1282,15 @@ namespace Mod::Perf::SendProp_Optimize
                     PackWork_t *workEntities = (PackWork_t *) operator new[](workEntryCount * sizeof(PackWork_t));
                     size_t workEntitiesCount = 0;
                     for (int i = num; i < snapshot->m_nValidEntities; i += packWorkTaskCount) {
+                        int idx = snapshot->m_pValidEntities[i];
+                        auto edict = world_edict + idx;
+                        if ((edict->m_fStateFlags & FL_EDICT_DONTSEND) && ((CBaseEntity *)edict->GetUnknown())->FirstMoveChild() == nullptr 
+                            && snapmgr.UsePreviouslySentPacket(snapshot, idx, edict->m_NetworkSerialNumber)) {
+                            continue;
+                        } 
                         PackWork_t &work = workEntities[workEntitiesCount++];
-                        work.nIdx = snapshot->m_pValidEntities[i];
-                        work.pEdict = world_edict + work.nIdx;
+                        work.nIdx = idx;
+                        work.pEdict = edict;
                         work.pSnapshot = snapshot;
                     }
                     PackWork(workEntities, workEntitiesCount);
@@ -1118,20 +1352,9 @@ namespace Mod::Perf::SendProp_Optimize
 
         threadPool.wait_for_tasks();
         threadPoolPackWork.wait_for_tasks();
-        
+
         for (int i = 0; i < clientCount; i++) {
-            // CGameClient *client = clients[i];
-            //     if (client->m_bFakePlayer && !client->m_bIsHLTV && !client->m_bIsReplay) {
-            //         CClientFrame *pFrame = client->GetSendFrame();
-            //         if ( pFrame )
-            //         {
-            //             client->m_pLastSnapshot = pFrame->GetSnapshot(); 
-            //             client->UpdateAcknowledgedFramecount( pFrame->tick_count );
-            //             client->m_nForceWaitForTick = -1;
-            //             client->m_nDeltaTick = pFrame->tick_count;
-            //             //Msg("Client %d %d %d %d\n", client->m_nForceWaitForTick, client->m_pLastSnapshot == pFrame->GetSnapshot(), client->m_nDeltaTick, pFrame->tick_count);
-            //         }
-            //     }
+            CGameClient *client = clients[i];
             clients[i] = nullptr;
         }
 	}
@@ -1167,28 +1390,6 @@ namespace Mod::Perf::SendProp_Optimize
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
 #endif
-
-    IChangeInfoAccessor *world_accessor = nullptr;
-    CEdictChangeInfo *world_change_info = nullptr;
-
-    DETOUR_DECL_MEMBER(IChangeInfoAccessor *, CBaseEdict_GetChangeAccessor)
-	{
-        //return DETOUR_MEMBER_CALL(CBaseEdict_GetChangeAccessor)();
-        // auto ent = GetContainingEntity(reinterpret_cast<edict_t *>(this));
-        // if (ent != nullptr && ent->IsPlayer()) {
-        //     ConVarRef developer("developer");
-        //     if (developer.GetBool() && !ToTFPlayer(ent)->IsBot()) {
-        //         Msg("ChangeAcc %d %d %d %d\n", reinterpret_cast<edict_t *>(this)->m_EdictIndex, world_accessor->GetChangeInfo(), world_accessor->GetChangeInfoSerialNumber(), reinterpret_cast<edict_t *>(this)->m_fStateFlags & FL_FULL_EDICT_CHANGED);
-        //         if (reinterpret_cast<edict_t *>(this)->m_fStateFlags & FL_FULL_EDICT_CHANGED)
-        //             raise(SIGTRAP);
-        //     }
-        // //     
-        // }
-        world_accessor->SetChangeInfoSerialNumber(g_SharedEdictChangeInfo->m_iSerialNumber);
-        world_accessor->SetChangeInfo(0);
-        g_SharedEdictChangeInfo->m_ChangeInfos[0].m_nChangeOffsets=0;
-        return world_accessor;
-    }
 
     DETOUR_DECL_MEMBER(void , CAnimationLayer_StudioFrameAdvance, float flInterval, CBaseAnimating *pOwner)
 	{
@@ -1252,16 +1453,6 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CBaseEntity_D2)();
     }
 
-    DETOUR_DECL_STATIC(void, PackEntities_Normal, int clientCount, CGameClient **clients, CFrameSnapshot *snapshot)
-	{
-        
-
-        DETOUR_STATIC_CALL(PackEntities_Normal)(clientCount, clients, snapshot);
-        //g_SharedEdictChangeInfo->m_nChangeInfos = MAX_EDICT_CHANGE_INFOS;
-        //world_accessor->SetChangeInfoSerialNumber(0);
-
-    }
-
     /*DETOUR_DECL_MEMBER(int, SendTable_WriteAllDeltaProps, int iTick, int *iOutProps, int nMaxOutProps)
 	{
 		int result = DETOUR_MEMBER_CALL(SendTable_WriteAllDeltaProps)(iTick, iOutProps, nMaxOutProps);
@@ -1304,6 +1495,77 @@ namespace Mod::Perf::SendProp_Optimize
     }
 #endif
 
+
+    DETOUR_DECL_STATIC(void, InvalidateSharedEdictChangeInfo)
+    {
+        g_SharedEdictChangeInfo->m_iSerialNumber = 0;
+        g_SharedEdictChangeInfo->m_nChangeInfos = 1;
+        world_accessor->SetChangeInfoSerialNumber(0);
+        world_accessor->SetChangeInfo(0);
+    }
+
+#ifdef SE_TF2
+    THINK_FUNC_DECL(SetVisibleStateWeapon) {
+        auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+        if (weapon->GetOwnerEntity() != nullptr && (!weapon->GetOwnerEntity()->IsAlive() || (weapon->GetOwnerEntity()->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE))) {
+            this->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
+        }
+    }
+    THINK_FUNC_DECL(SetVisibleState) {
+        if (this->GetOwnerEntity() != nullptr && !this->GetOwnerEntity()->IsAlive()) {
+            this->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
+        }
+    }
+    DETOUR_DECL_MEMBER(void, CBasePlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CBasePlayer *>(this);
+		DETOUR_MEMBER_CALL(CBasePlayer_Event_Killed)(info);
+        for (int i = 0; i < player->GetNumWearables(); i++) {
+            CEconWearable *wearable = player->GetWearable(i);
+            if (wearable == nullptr) continue;
+            THINK_FUNC_SET(wearable,SetVisibleState, gpGlobals->curtime + 0.5f);
+        }
+        for (int i = 0; i < player->WeaponCount(); i++) {
+            CBaseCombatWeapon *weapon = player->GetWeapon(i);
+            if (weapon == nullptr) continue;
+            THINK_FUNC_SET(weapon,SetVisibleStateWeapon, gpGlobals->curtime + 0.5f);
+        }
+	}
+    
+    DETOUR_DECL_MEMBER(void, CTFWeaponBase_OnActiveStateChanged, int oldState)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		DETOUR_MEMBER_CALL(CTFWeaponBase_OnActiveStateChanged)(oldState);
+        int state = weapon->m_iState;
+        if (state == WEAPON_IS_ACTIVE) {
+            weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+        }
+        else if (weapon->GetOwnerEntity() != nullptr && weapon->GetOwnerEntity()->GetFlags() & FL_FAKECLIENT) {
+            THINK_FUNC_SET(weapon,SetVisibleStateWeapon, gpGlobals->curtime + 0.5f);
+        }
+	}
+#endif
+
+    DETOUR_DECL_MEMBER(void, CBasePlayer_Spawn)
+	{
+		auto player = reinterpret_cast<CBasePlayer *>(this);
+		DETOUR_MEMBER_CALL(CBasePlayer_Spawn)();
+        player->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+#ifdef SE_TF2
+        for (int i = 0; i < player->GetNumWearables(); i++) {
+            CEconWearable *wearable = player->GetWearable(i);
+            if (wearable == nullptr) continue;
+            wearable->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+        }
+#endif
+        for (int i = 0; i < player->WeaponCount(); i++) {
+            CBaseCombatWeapon *weapon = player->GetWeapon(i);
+            if (weapon == nullptr) continue;
+            if (!(player->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE))
+            weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+        }
+	}
+    
     static MemberFuncThunk<INetworkStringTableContainer *, void, int> ft_DirectUpdate("CNetworkStringTableContainer::DirectUpdate");
 
     class CNetworkStringTableContainer : public INetworkStringTableContainer
@@ -1326,15 +1588,15 @@ namespace Mod::Perf::SendProp_Optimize
             gamedll->GetStandardSendProxies()->m_UInt32ToInt32,
             gamedll->GetStandardSendProxies()->m_UInt8ToInt32,
             gamedll->GetStandardSendProxies()->m_VectorToVector,
-            (SendVarProxyFn)stringSendProxy,
-            (SendVarProxyFn)vectorXYSendProxy,
-            (SendVarProxyFn)qAnglesSendProxy,
-            (SendVarProxyFn)colorSendProxy,
-            (SendVarProxyFn)ehandleSendProxy,
-            (SendVarProxyFn)intAddOneSendProxy,
-            (SendVarProxyFn)shortAddOneSendProxy,
-            (SendVarProxyFn)stringTSendProxy,
-            
+            DLLSendProxy_StringToString.GetRef(),
+            DLLSendProxy_VectorXYToVectorXY.GetRef(),
+            DLLSendProxy_QAngles.GetRef(),
+            DLLSendProxy_Color32ToInt.GetRef(),
+            DLLSendProxy_EHandleToInt.GetRef(),
+            DLLSendProxy_IntAddOne.GetRef(),
+            DLLSendProxy_ShortAddOne.GetRef(),
+            DLLSendProxy_StringT_To_String.GetRef(),
+            DLLSendProxy_AngleToFloat.GetRef(),
         };
         for (auto standardProxy : standardProxies) {
             if (standardProxy == proxyFn) {
@@ -1345,8 +1607,10 @@ namespace Mod::Perf::SendProp_Optimize
     }
 
     void SetThreadCount(int threadCount) {
+        threadNum = threadCount;
         threadPoolPackWork.reset(Max(1,threadCount));
     }
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1356,7 +1620,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CHLTVClient_SendSnapshot,"CHLTVClient::SendSnapshot");
             MOD_ADD_DETOUR_MEMBER(CParallelProcessor_PackWork_t_Run,   "CParallelProcessor<PackWork_t>::Run");
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
-            MOD_ADD_DETOUR_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
+            MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
             MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
@@ -1370,30 +1634,30 @@ namespace Mod::Perf::SendProp_Optimize
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");
 #endif
-            MOD_ADD_DETOUR_STATIC(PackEntities_Normal,   "PackEntities_Normal");
             MOD_ADD_DETOUR_STATIC(SendTable_WritePropList,   "SendTable_WritePropList");
             MOD_ADD_DETOUR_STATIC(AllocChangeFrameList,   "AllocChangeFrameList");
 		    MOD_ADD_DETOUR_STATIC(SendTable_CullPropsFromProxies, "SendTable_CullPropsFromProxies");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_D2,"~CBaseEntity [D2]");
 
+            MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEntity_SetTransmit,"CBaseEntity::SetTransmit");
             MOD_ADD_DETOUR_MEMBER(CServerGameEnts_CheckTransmit,"CServerGameEnts::CheckTransmit");
             MOD_ADD_DETOUR_MEMBER(CVEngineServer_CheckAreasConnected,"CVEngineServer::CheckAreasConnected");
             MOD_ADD_DETOUR_MEMBER(CGameClient_SetupPackInfo,"CGameClient::SetupPackInfo");
 			MOD_ADD_DETOUR_STATIC_PRIORITY(SV_ComputeClientPacks, "SV_ComputeClientPacks", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(CParallelProcessor_CGameClient_Run, "CParallelProcessor<CGameClient *>::Run");
+            MOD_ADD_DETOUR_STATIC(InvalidateSharedEdictChangeInfo,   "InvalidateSharedEdictChangeInfo");
+
+            // Reduce some time spend in networking for dead players and their items
+#ifdef SE_TF2
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_Event_Killed, "CBasePlayer::Event_Killed");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_OnActiveStateChanged, "CTFWeaponBase::OnActiveStateChanged");
+#endif
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_Spawn, "CBasePlayer::Spawn");
+            
 		}
         virtual void PreLoad() override
         {
-            stringSendProxy = AddrManager::GetAddr("SendProxy_StringToString");
-            vectorXYSendProxy = AddrManager::GetAddr("SendProxy_VectorXYToVectorXY");
-            qAnglesSendProxy = AddrManager::GetAddr("SendProxy_QAngles");
-            colorSendProxy = AddrManager::GetAddr("SendProxy_Color32ToInt");
-            ehandleSendProxy = AddrManager::GetAddr("SendProxy_EHandleToInt");
-            intAddOneSendProxy = AddrManager::GetAddr("SendProxy_IntAddOne");
-            shortAddOneSendProxy = AddrManager::GetAddr("SendProxy_ShortAddOne");
-            stringTSendProxy = AddrManager::GetAddr("SendProxy_StringT_To_String");
-            angleSendProxy = AddrManager::GetAddr("SendProxy_AngleToFloat");
-            emptySendProxy = AddrManager::GetAddr("SendProxy_Empty");
+            
             
 			g_SharedEdictChangeInfo = engine->GetSharedEdictChangeInfo();
 
@@ -1677,6 +1941,7 @@ namespace Mod::Perf::SendProp_Optimize
             if (sv_maxreplay.GetFloat() == 0.0f) {
                 sv_maxreplay.SetValue(0.05f);
             }
+            extern ConVar cvar_threads;
             SetThreadCount(cvar_threads.GetInt());
         }
 
