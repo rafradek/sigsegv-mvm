@@ -2202,7 +2202,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ParseSharedTauntDataFromEconItemView, "CTFPlayer::ParseSharedTauntDataFromEconItemView");
 			
 			// Random choise spawner crash on parse fail fix
-			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_Parse, "CRandomChoiceSpawner::Parse");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CRandomChoiceSpawner_Parse, "CRandomChoiceSpawner::Parse", LOW);
 			MOD_ADD_DETOUR_STATIC_PRIORITY(IPopulationSpawner_ParseSpawner, "IPopulationSpawner::ParseSpawner", HIGHEST);
 
 			// Suppress fire removal when flag is dropped fix

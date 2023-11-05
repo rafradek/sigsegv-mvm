@@ -6971,7 +6971,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Taunt, "CTFPlayer::Taunt");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ValidateWeapons, "CTFPlayer::ValidateWeapons");
 			MOD_ADD_DETOUR_MEMBER(CTFInventoryManager_GetBaseItemForClass, "CTFInventoryManager::GetBaseItemForClass");
-			
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetBonusRoundTime, "CTFGameRules::GetBonusRoundTime");
 			
 			
 			

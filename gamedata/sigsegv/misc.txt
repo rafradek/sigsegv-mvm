@@ -6014,6 +6014,7 @@
 				"CTFWeaponBase::GetActivityWeaponRole" "_ZNK13CTFWeaponBase21GetActivityWeaponRoleEv"
 				"CTFWeaponBase::GetViewModelWeaponRole" "_ZN13CTFWeaponBase22GetViewModelWeaponRoleEv"
 				"CTFWeaponBase::OnActiveStateChanged" "_ZN13CTFWeaponBase20OnActiveStateChangedEi"
+				"CTFWeaponBase::CanHolster" "_ZNK13CTFWeaponBase10CanHolsterEv"
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
@@ -6061,6 +6062,7 @@
 
 				"CTFBaseRocket::GetWeaponID" "_ZNK13CTFBaseRocket11GetWeaponIDEv"
 				"CTFBaseRocket::GetRadius" "_ZN13CTFBaseRocket9GetRadiusEv"
+				"CTFBaseRocket::Destroy" "_ZN13CTFBaseRocket7DestroyEbb"
 				
 				"CTFProjectile_Flare::Explode_Air" "_ZN19CTFProjectile_Flare11Explode_AirEP10CGameTraceib"
 
@@ -6078,6 +6080,8 @@
 
 				"CTFBall_Ornament::Explode" "_ZN16CTFBall_Ornament7ExplodeEP10CGameTracei"
 				"CTFBall_Ornament::PipebombTouch" "_ZN16CTFBall_Ornament13PipebombTouchEP11CBaseEntity"
+
+				"CTFWeaponBaseGrenadeProj::Destroy" "_ZN24CTFWeaponBaseGrenadeProj7DestroyEbb"
 				
 				"CGameMovement::FullNoClipMove" "_ZN13CGameMovement14FullNoClipMoveEff"
 				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"

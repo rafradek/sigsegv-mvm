@@ -658,6 +658,12 @@ namespace Mod::Attr::Custom_Attributes
 		this->Remove();
 	};
 
+	THINK_FUNC_DECL(ProjectileDamageable) {
+		this->m_takedamage = DAMAGE_YES;
+		this->m_fFlags |= FL_OBJECT;
+		this->SetCustomVariable("takesdamage", Variant(true));
+	};
+
 	bool fire_projectile_multi = true;
 	int old_clip = 0;
 
@@ -742,6 +748,31 @@ namespace Mod::Attr::Custom_Attributes
 				float detonateTime = 0.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, detonateTime, projectile_detonate_time);
 
+				float explodeTime = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, explodeTime, projectile_explode_time);
+				if (explodeTime != 0) {
+					proj->SetCustomVariable("explodetime", Variant(explodeTime));
+				}
+
+				float health = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, health, projectile_health);
+				if (health != 0) {
+					proj->SetMaxHealth(health);
+					proj->SetHealth(health);
+					int takeDamageType = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, takeDamageType, projectile_take_damage_type);
+					proj->SetCustomVariable("takesdamagetype", Variant(takeDamageType));
+					float healthDelay = 0.0f;
+					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, healthDelay, projectile_take_damage_time);
+					if (healthDelay != 0.0f) {
+						THINK_FUNC_SET(proj, ProjectileDamageable, gpGlobals->curtime + healthDelay);
+					} else {
+						proj->m_takedamage = DAMAGE_YES;
+						proj->m_fFlags |= FL_OBJECT;
+						proj->SetCustomVariable("takesdamage", Variant(true));
+					}
+				}
+				
 				int noclip = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, noclip, noclip_projectiles);
 				if (noclip != 0) {
@@ -1546,11 +1577,24 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	THINK_FUNC_DECL(DelayExplodeGrenade) {
+		this->SetCustomVariable("explodedelaynow", Variant(true));
+		trace_t tr;
+		Vector vecSpot = this->GetAbsOrigin();
+		UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+		reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this)->Explode(&tr, this->GetDamageType());
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Explode, trace_t *pTrace, int bitsDamageType)
 	{
+		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
+		if (proj->GetCustomVariableFloat<"explodetime">() != 0.0f && !proj->GetCustomVariableBool<"explodedelaynow">()) {
+			if (proj->GetNextThink("DelayExplodeGrenade") <= 0)
+				THINK_FUNC_SET(proj, DelayExplodeGrenade, gpGlobals->curtime + proj->GetCustomVariableFloat<"explodetime">());
+			return;
+		} 
 		particle_to_use = 0;
 		particle_to_use_direct_hit = 0;
-		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
 		
 		if (bounce_damage_bonus != 0.0f) {
 			proj->SetDamage(proj->GetDamage() * (1 + bounce_damage_bonus));
@@ -1562,11 +1606,25 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use_direct_hit = 0;
 	}
 
+	THINK_FUNC_DECL(DelayExplodeRocket) {
+		this->SetCustomVariable("explodedelaynow", Variant(true));
+		trace_t tr;
+		Vector vecSpot = this->GetAbsOrigin();
+		UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+		reinterpret_cast<CTFBaseRocket *>(this)->Explode(&tr, GetWorldEntity());
+	}
+
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Explode, trace_t *pTrace, CBaseEntity *pOther)
 	{
+		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
+		if (proj->GetCustomVariableFloat<"explodetime">() != 0.0f && !proj->GetCustomVariableBool<"explodedelaynow">()) {
+			
+			if (proj->GetNextThink("DelayExplodeRocket") <= 0)
+				THINK_FUNC_SET(proj, DelayExplodeRocket, gpGlobals->curtime + proj->GetCustomVariableFloat<"explodetime">());
+			return;
+		} 
 		particle_to_use = 0;
 		particle_to_use_direct_hit = 0;
-		auto proj = reinterpret_cast<CTFBaseRocket *>(this);
 		ExplosionCustomSet(proj);
 		hit_explode_direct = pOther;
 		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
@@ -2976,7 +3034,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		hit_explode_direct = ent;
-		Msg("Hit %s %d %d\n", ent->GetClassname(), ent->CollisionProp()->IsSolid(), ent->CollisionProp()->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ));
 		
 		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(ent);
 		hit_explode_direct = nullptr;
@@ -4583,10 +4640,11 @@ namespace Mod::Attr::Custom_Attributes
 		bool active = false;
 	};
 
+	CBaseEntity *takeDamageAttacker = nullptr;
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, CTakeDamageInfo &info)
 	{
 		//DevMsg("Take damage damage %f\n", info.GetDamage());
-
+		takeDamageAttacker = info.GetAttacker();
 		CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
 		bool was_alive = entity->IsAlive();
 
@@ -4627,8 +4685,33 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
 		}
 
-
 		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+
+		CBaseProjectile *proj;
+		if (entity->m_takedamage == DAMAGE_YES && entity->GetCustomVariableBool<"takesdamage">() && (proj = rtti_cast<CBaseProjectile *>(entity)) != nullptr) {
+			int type = entity->GetCustomVariableInt<"takesdamagetype">();
+			CBaseEntity *thrower = proj->GetOwnerEntity();
+			CBaseGrenade *grenade = rtti_cast<CBaseGrenade *>(proj);
+			if (grenade != nullptr) {
+				thrower = grenade->GetThrower();
+			}
+			if (thrower == nullptr) thrower = proj;
+
+			if (type == 0 || (type == 1 && info.GetAttacker() == thrower) || (type == 2 && info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == thrower->GetTeamNumber()) 
+					|| (type == 3 && (info.GetAttacker() == nullptr || info.GetAttacker()->GetTeamNumber() != thrower->GetTeamNumber()))) {
+				proj->SetHealth(entity->GetHealth() - info.GetDamage());
+
+				if (proj->GetHealth() <= 0) {
+					if (proj->IsDestroyable(false)) {
+						proj->Destroy();
+					}
+					else {
+						proj->Remove();
+					}
+				}
+				damage = info.GetDamage();
+			}
+		}
 
 		//Fire input on hit
 		if (econEntity != nullptr && info.GetAttacker() != nullptr && econEntity->GetItem() != nullptr) {
@@ -4654,6 +4737,7 @@ namespace Mod::Attr::Custom_Attributes
 				mod->active = false;
 			}
 		}
+		takeDamageAttacker = nullptr;
 		return damage;
 	}
 	
@@ -7735,7 +7819,69 @@ namespace Mod::Attr::Custom_Attributes
 			return false;
 		return DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
 	}
+	
+	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Destroy)
+	{
+		auto rocket = reinterpret_cast<CTFBaseRocket *>(this);
+		int explode = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(rocket->GetOriginalLauncher(), explode, projectile_explode_on_destroy);
+		if (explode == 3 && takeDamageAttacker != nullptr && takeDamageAttacker->GetTeamNumber() != (rocket->GetOwnerEntity() != nullptr ? rocket->GetOwnerEntity() : rocket)->GetTeamNumber()) {
+			DETOUR_MEMBER_CALL(CTFBaseRocket_Destroy)();
+			return;
+		}
+		if (explode == 2 && takeDamageAttacker != nullptr) {
+			rocket->SetOwnerEntity(takeDamageAttacker);
+		}
+		if (explode != 0) {
+			trace_t tr;
+			Vector vecSpot = rocket->GetAbsOrigin();
+			UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, rocket, COLLISION_GROUP_NONE, &tr);
 
+			rocket->Explode(&tr, GetContainingEntity(INDEXENT(0)));
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFBaseRocket_Destroy)();
+	}
+	
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Destroy)
+	{
+		auto rocket = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
+		int explode = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(rocket->GetOriginalLauncher(), explode, projectile_explode_on_destroy);
+		if (explode == 3 && (takeDamageAttacker == nullptr || takeDamageAttacker->GetTeamNumber() != (rocket->GetThrower() != nullptr ? rocket->GetThrower() : rocket)->GetTeamNumber())) {
+			DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Destroy)();
+			return;
+		}
+		if (explode == 2 && takeDamageAttacker != nullptr) {
+			rocket->SetOwnerEntity(takeDamageAttacker);
+		}
+		if (explode != 0) {
+			trace_t tr;
+			Vector vecSpot = rocket->GetAbsOrigin();
+			UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, rocket, COLLISION_GROUP_NONE, &tr);
+
+			rocket->Explode(&tr, rocket->GetDamageType());
+			return;
+		}
+		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Destroy)();
+	}
+
+	
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CanHolster)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
+		int holdFire = GetFastAttributeInt(weapon, 0, HOLD_FIRE_UNTIL_FULL_RELOAD);
+		if (holdFire != 0)
+		{	
+			bool hasFullClip = weapon->IsEnergyWeapon() ? weapon->m_flEnergy >= weapon->Energy_GetMaxEnergy() : weapon->m_iClip1 >= weapon->GetMaxClip1();
+			bool isReloading = weapon->m_iReloadMode > 0;
+			if (isReloading) return false;
+
+			if (!hasFullClip && holdFire == 2) return false;
+		}
+		return DETOUR_MEMBER_CALL(CTFWeaponBase_CanHolster)();
+	}
+	
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
 	// 	int iMax = GetPlayerClassData(player->GetPlayerClass()->GetClassIndex())->m_nMaxHealth;
 	// 	iMax += GetFastAttributeInt(player, 0, ADD_MAXHEALTH);
@@ -8510,7 +8656,9 @@ namespace Mod::Attr::Custom_Attributes
 					for(auto &val : v) {
 						auto cond = vi::from_str<int>(val);
 						if (cond.has_value()) {
-							mod->conds.erase(std::find(mod->conds.begin(), mod->conds.end(), cond.value()));
+							auto find = std::find(mod->conds.begin(), mod->conds.end(), cond.value());
+							if (find != mod->conds.end())
+								mod->conds.erase(find);
 						}
 					}
 				}
@@ -8555,7 +8703,9 @@ namespace Mod::Attr::Custom_Attributes
 					while (it != tokens.end()) {
 						auto attr = GetItemSchema()->GetAttributeDefinitionByName(it->c_str());
 						if (attr != nullptr) {
-							mod->attributes.erase(std::find(mod->attributes.begin(), mod->attributes.end(), attr));
+							auto find = std::find(mod->attributes.begin(), mod->attributes.end(), attr);
+							if (find != mod->attributes.end())
+								mod->attributes.erase(find);
 						}
 						it++;
 					}
@@ -8742,7 +8892,7 @@ namespace Mod::Attr::Custom_Attributes
 
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnKilledOther_Effects ,"CTFPlayer::OnKilledOther_Effects");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TeamFortress_CalculateMaxSpeed ,"CTFPlayer::TeamFortress_CalculateMaxSpeed");
-			MOD_ADD_DETOUR_MEMBER(CBaseEntity_TakeDamage ,"CBaseEntity::TakeDamage");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseEntity_TakeDamage ,"CBaseEntity::TakeDamage", HIGH);
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetMaxBuffedHealth ,"CTFPlayerShared::GetMaxBuffedHealth");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TakeHealth ,"CTFPlayer::TakeHealth");
 			MOD_ADD_DETOUR_MEMBER(CObjectDispenser_DispenseMetal ,"CObjectDispenser::DispenseMetal");
@@ -8898,6 +9048,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CGameMovement_PlayerMove, "CGameMovement::PlayerMove");
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FoundTarget, "CObjectSentrygun::FoundTarget");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Destroy, "CTFWeaponBaseGrenadeProj::Destroy");
+			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Destroy, "CTFBaseRocket::Destroy");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CanHolster, "CTFWeaponBase::CanHolster");
 
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

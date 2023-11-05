@@ -2577,20 +2577,28 @@ WaveSchedule
 		{
 			Name "wave01a"
 			Where spawnbot
-			TotalCount 1
-			MaxActive 1
-			SpawnCount 1
+			TotalCount 2
+			MaxActive 2
+			SpawnCount 2
 			WaitBeforeStarting 0
 			WaitBetweenSpawns 0.25
 			TotalCurrency 200	
-			TFBot
+			RandomChoice
 			{
-				Class Soldier
-				Attributes MiniBoss
-				Item TF_WEAPON_GRAPPLINGHOOK
-				GrapplingHookRange 100 // Minimum range to use grappling hook (Default: 200)
-				RemoveHookFromPlayerTargetWhenClose 1 // Remove hook when close to the target (Default: 0)
-				NoGrappleWalls 1 // Do not grapple to the walls (Default: 0)
+				TFBot
+				{
+					Class Soldier
+					Attributes MiniBoss
+					Item TF_WEAPON_GRAPPLINGHOOK
+					GrapplingHookRange 100 // Minimum range to use grappling hook (Default: 200)
+					RemoveHookFromPlayerTargetWhenClose 1 // Remove hook when close to the target (Default: 0)
+					NoGrappleWalls 1 // Do not grapple to the walls (Default: 0)
+				}
+				TFBot
+				{
+					Class Heavy
+				}
+				Shuffle 1 [$SIGSEGV] // Ensure that every bot type rolls in even amount (Default: 0)
 			}
 		}
 	}
@@ -3573,7 +3581,7 @@ WaveSchedule
 // Player immune to specific attributes, separated by |
 // "attribute immunity" "move speed bonus|damage bonus"
 
-// Hold fire until full reload
+// Hold fire until full reload. Set to 2 to disable weapon switch if weapon is not fully loaded, even if not currently reloading
 // "hold fire until full reload" "1"
 
 // Projectile hit radius for damageable entities only
@@ -3581,3 +3589,27 @@ WaveSchedule
 
 // Projectiles penetrate walls. Cannot hit anything unless "projectile hit radius" is set
 // "noclip projectiles" 1
+
+// Projectiles have specified amount of health. Not every projectile is compatible, the owner cannot shoot his own non grenade projectiles. "custom projectile size" might be required to hit some projectiles with bullets
+// "projectile health" 100
+
+// Damage taken by projectile restrictions:
+// 0 - no restrictions
+// 1 - only owner can damage
+// 2 - own team only
+// 3 - enemies only
+// "projectile take damage type" 1
+
+// Time in seconds before projectile can take damage
+// "projectile take damage time" 0.25
+
+// Projectiles explode when destroyed. Can be one of those values:
+// 0 - do not explode
+// 1 - explode
+// 2 - explode, the damage belongs to the attacker
+// 3 - explode only if destroyed by same team
+// 
+// "projectile explode on destroy" 1
+
+// Projectiles detonate after delay in seconds
+// "projectile explode time" 1.0

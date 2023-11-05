@@ -44,10 +44,10 @@ namespace Mod::Etc::Allow_Civilian_Class
     DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinClass, const char *pClassName, bool b1)
 	{
         auto player = reinterpret_cast<CTFPlayer *>(this);
-        if (!disabling && !player->IsBot() && FStrEq(pClassName, "random") && cvar_enable.GetInt() != 2) {
+        if (!disabling && !player->IsBot() && FStrEq(pClassName, "random") && (cvar_enable.GetInt() != 2 || (cvar_enable.GetInt() == 2 && RandomInt(1, 10) == 10))) {
             pClassName = "civilian";
         }
-        
+
         bool prevClassCivilian = player->m_Shared->m_iDesiredPlayerClass == TF_CLASS_CIVILIAN || player->GetPlayerClass()->GetClassIndex() == TF_CLASS_CIVILIAN;
         DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
 

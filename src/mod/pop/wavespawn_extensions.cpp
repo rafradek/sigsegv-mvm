@@ -704,6 +704,25 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	}
 
 	bool last_wavespawn_hidden = false;
+	CWaveSpawnExtra *currentWaveSpawnExtra = nullptr;
+
+	void DoRandomChoiceShuffle(CRandomChoiceSpawner *spawner, int totalCount) {
+		spawner->m_Indexes.SetCount(totalCount);
+		if (spawner->m_SubSpawners.IsEmpty()) return;
+
+		std::vector<int> leftIndexes;
+		for (int i = 0; i < totalCount; i++) {
+			if (leftIndexes.empty()) {
+				for (int j = 0; j < spawner->m_SubSpawners.Count(); j++) {
+					leftIndexes.push_back(j);
+				}
+			}
+			int choice = RandomInt(0, leftIndexes.size() - 1);
+			spawner->m_Indexes[i] = leftIndexes[choice];
+			leftIndexes.erase(leftIndexes.begin() + choice);
+		}
+	}
+
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
@@ -714,6 +733,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			wavespawn->m_totalCurrency = 0;
 
 		wavespawn->extra = new CWaveSpawnExtra();
+		currentWaveSpawnExtra = wavespawn->extra;
 		
 		// make a temporary copy of the KV subtree for this populator
 		// the reason for this: `kv_orig` *might* be a ptr to a shared template KV subtree
@@ -775,6 +795,12 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (result && hidden && !wavespawn->m_bSupportWave && wave_parsing != nullptr) {
 			wave_parsing->m_iEnemyCount -= wavespawn->m_totalCount;
 		}
+
+		auto randomChoice = wavespawn->extra->randomChoiceShuffleSet;
+		if (randomChoice != nullptr) {
+			DoRandomChoiceShuffle(randomChoice, wavespawn->m_totalCount);
+		}
+		currentWaveSpawnExtra = nullptr;
 		
 		return result;
 	}
@@ -1013,6 +1039,46 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
 	}
 
+	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_Parse, KeyValues *kv_orig)
+	{
+		auto random = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		KeyValues *kv = kv_orig->MakeCopy();
+		
+		bool shuffle = false;
+		std::vector<KeyValues *> del_kv;
+		FOR_EACH_SUBKEY(kv, subkey) {
+			bool del = true;
+			const char *name = subkey->GetName();
+			if (FStrEq(name, "Shuffle")) {
+				shuffle = true;
+			}
+			else {
+				del = false;
+			}
+
+			if (del) {
+				del_kv.push_back(subkey);
+			}
+		}
+
+		for (auto subkey : del_kv) {
+			kv->RemoveSubKey(subkey);
+			subkey->deleteThis();
+		}
+
+		auto result = DETOUR_MEMBER_CALL(CRandomChoiceSpawner_Parse)(kv);
+		if (result && shuffle) {
+			if (currentWaveSpawnExtra != nullptr) {
+				currentWaveSpawnExtra->randomChoiceShuffleSet = random;
+			}
+			else {
+				DoRandomChoiceShuffle(random, 100);
+			}
+		}
+		kv->deleteThis();
+		return result;
+	}
+
 	void DeleteNPC(CBaseEntity *boss, CBotNPCSpawner *spawner)
 	{
 		if (spawner == nullptr && boss != nullptr) {
@@ -1179,6 +1245,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
 			MOD_ADD_DETOUR_MEMBER(CWave_Parse, "CWave::Parse");
 			MOD_ADD_DETOUR_MEMBER(CWave_AddClassType, "CWave::AddClassType");
+
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_Parse, "CRandomChoiceSpawner::Parse");
 			
 		}
 		

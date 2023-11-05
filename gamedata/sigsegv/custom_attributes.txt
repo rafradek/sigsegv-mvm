@@ -3500,4 +3500,54 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4671"
+    {
+        "name"	"projectile health"
+        "attribute_class"	"projectile_health"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4672"
+    {
+        "name"	"projectile take damage type"
+        "attribute_class"	"projectile_take_damage_type"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4673"
+    {
+        "name"	"projectile take damage time"
+        "attribute_class"	"projectile_take_damage_time"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4674"
+    {
+        "name"	"projectile explode on destroy"
+        "attribute_class"	"projectile_explode_on_destroy"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4675"
+    {
+        "name"	"projectile explode time"
+        "attribute_class"	"projectile_explode_time"
+        "description_string"	"Explodes after %ds delay"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

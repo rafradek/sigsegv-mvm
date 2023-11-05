@@ -165,12 +165,15 @@ private:
 
 };
 
+class CRandomChoiceSpawner;
+
 class CWaveSpawnExtra
 {
 public:
 	bool m_bHasTFBotSpawner;
 	CUtlVector<CWaveSpawnPopulator *> m_waitForAllDeadList;
 	CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
+	CRandomChoiceSpawner *randomChoiceShuffleSet = nullptr;
 };
 
 struct WaveClassCount_t
