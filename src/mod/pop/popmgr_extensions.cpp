@@ -706,7 +706,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_bPlayerBombCarrierBuffs = false;
 			this->m_bEnable100Slots = false;
 			this->m_bAllowBotsSapPlayers = false;
-			this->m_flLoseTime = -1.0f;
+			this->m_iLoseTime = -1;
 			
 			this->m_MedievalMode            .Reset();
 			if (!popfileReset) {
@@ -854,7 +854,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool m_bPlayerBombCarrierBuffs;
 		bool m_bEnable100Slots;
 		bool m_bAllowBotsSapPlayers;
-		float m_flLoseTime;
+		int m_iLoseTime;
 		
 		CValueOverride_MedievalMode        m_MedievalMode;
 		CValueOverridePopfile_ConVar<bool>        m_SpellsEnabled;
@@ -4241,10 +4241,10 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
-	DETOUR_DECL_MEMBER(float, CTFGameRules_GetBonusRoundTime)
+	DETOUR_DECL_MEMBER(int, CTFGameRules_GetBonusRoundTime)
 	{
-		if (state.m_flLoseTime != -1.0f) {
-			return state.m_flLoseTime;
+		if (state.m_iLoseTime != -1) {
+			return state.m_iLoseTime;
 		}
 		return DETOUR_MEMBER_CALL(CTFGameRules_GetBonusRoundTime)();
 	}
@@ -6703,7 +6703,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "AllowBotsSapPlayers")) {
 				state.m_bAllowBotsSapPlayers = subkey->GetBool();
 			} else if (FStrEq(name, "LoseTime")) {
-				state.m_flLoseTime = subkey->GetFloat();
+				state.m_iLoseTime = subkey->GetInt(__null, -1);
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;
