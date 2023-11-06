@@ -1702,6 +1702,18 @@ namespace Mod::Pop::TFBot_Extensions
 				no_wait_for_formation = subkey->GetBool();
 			} else if (FStrEq(name, "NoFormation")) {
 				no_formation = subkey->GetBool();
+			} else if (FStrEq(name, "NextSpawnerClone")) {
+				auto toCopy = subkey->GetNextKey();
+				if (toCopy != nullptr) {
+					auto next = toCopy->GetNextKey();
+					auto prev = toCopy;
+					for (int i = 1; i < subkey->GetInt(); i++) {
+						auto copy = toCopy->MakeCopy();
+						prev->SetNextKey(copy);
+						copy->SetNextKey(next);
+						prev = copy;
+					}
+				}
 			} else {
 				del = false;
 			}

@@ -1314,9 +1314,9 @@ WaveSchedule
 		{
 			Name "wave01a"
 			Where spawnbot
-			TotalCount 2
-			MaxActive 2
-			SpawnCount 2
+			TotalCount 5
+			MaxActive 5
+			SpawnCount 5
 			WaitBeforeStarting 0
 			WaitBetweenSpawns 7
 			TotalCurrency 200		
@@ -1332,6 +1332,7 @@ WaveSchedule
 					AddTemplate ScoutTemplate2 [$SIGSEGV] // If you want to add multiple templates in a single TFBot, use AddTemplate
 				}
 
+				NextSpawnerClone 4 [$SIGSEGV] // Clones spawner below this many times. Key below must be a spawner (Default: 1)
 				TFBot
 				{
 					Class Demoman
@@ -2585,6 +2586,7 @@ WaveSchedule
 			TotalCurrency 200	
 			RandomChoice
 			{
+				NextSpawnerClone 3 [$SIGSEGV] // Clones spawner below this many times. Key below must be a spawner (Default: 1)
 				TFBot
 				{
 					Class Soldier

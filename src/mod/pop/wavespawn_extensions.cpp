@@ -1052,6 +1052,19 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			if (FStrEq(name, "Shuffle")) {
 				shuffle = true;
 			}
+			else if (FStrEq(name, "NextSpawnerClone")) {
+				auto toCopy = subkey->GetNextKey();
+				if (toCopy != nullptr) {
+					auto next = toCopy->GetNextKey();
+					auto prev = toCopy;
+					for (int i = 1; i < subkey->GetInt(); i++) {
+						auto copy = toCopy->MakeCopy();
+						prev->SetNextKey(copy);
+						copy->SetNextKey(next);
+						prev = copy;
+					}
+				}
+			}
 			else {
 				del = false;
 			}

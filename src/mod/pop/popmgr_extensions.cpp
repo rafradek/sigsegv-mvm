@@ -6703,7 +6703,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			} else if (FStrEq(name, "AllowBotsSapPlayers")) {
 				state.m_bAllowBotsSapPlayers = subkey->GetBool();
 			} else if (FStrEq(name, "LoseTime")) {
-				state.m_iLoseTime = subkey->GetInt(__null, -1);
+				state.m_iLoseTime = subkey->GetInt();
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;
