@@ -1209,6 +1209,13 @@
 					// but in filesystem_stdio.* elsewhere
 				}
 				
+				"CBaseFileSystem::LoadKeyValues"
+				{
+					type "sym"
+					sym  "_ZN15CBaseFileSystem13LoadKeyValuesER9KeyValuesN11IFileSystem22KeyValuesPreloadType_tEPKcS5_"
+					lib  "dedicated"
+				}
+				
 				"CTFGameRules::SetNextMvMPopfile"
 				{
 					type "sym"
@@ -1959,13 +1966,7 @@
 					type "sym"
 					sym  "_ZN19CEconItemDefinition22BInitVisualBlockFromKVEP9KeyValuesP10CUtlVectorI10CUtlString10CUtlMemoryIS3_iEE"
 				}
-				
-				"CTFBaseRocket::Destroy"
-				{
-					type "sym"
-					sym  "_ZN13CTFBaseRocket7DestroyEbb"
-				}
-				
+
 				"CCaptureZone::ShimTouch"
 				{
 					type "sym"
