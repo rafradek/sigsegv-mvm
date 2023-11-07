@@ -126,4 +126,16 @@ private:
 };
 
 extern GlobalThunk<CEventQueue> g_EventQueue;
+
+class CSoundEmitterSystemBase : public ISoundEmitterSystemBase
+{
+public: 
+	bool InitSoundInternalParameter(const char *soundname, KeyValues *kv, CSoundParametersInternal &params) { return ft_InitSoundInternalParameter(this, soundname, kv, params); }
+	void AddSoundsFromFile(const char *filename, bool bPreload, bool bIsOverride, bool bRefresh)            { return ft_AddSoundsFromFile(this, filename, bPreload, bIsOverride, bRefresh); }
+
+private:
+	static MemberFuncThunk<CSoundEmitterSystemBase *, bool, const char *, KeyValues *, CSoundParametersInternal &> ft_InitSoundInternalParameter;
+	static MemberFuncThunk<CSoundEmitterSystemBase *, void, const char *, bool, bool, bool>                        ft_AddSoundsFromFile;
+};
+
 #endif

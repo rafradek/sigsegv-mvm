@@ -5677,12 +5677,10 @@ namespace Mod::Attr::Custom_Attributes
 			attackModule->lastTarget = nullptr;
 		}
 		if (medigun->GetCustomVariableBool<"healingnonplayer">()) {
-			medigun->SetHealTarget(nullptr);
 			medigun->SetCustomVariable("healingnonplayer", Variant(false));
 		}
 	
         DETOUR_MEMBER_CALL(CWeaponMedigun_RemoveHealingTarget)(flag);
-
     }
 
 	void AddMedigunAttributes(CAttributeList *target, const char *attribs)

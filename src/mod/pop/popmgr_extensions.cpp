@@ -6265,6 +6265,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		//return DETOUR_MEMBER_CALL(CPopulationManager_IsValidPopfile)(name);
 	}
     
+	KeyValues *loadKeyvaluesOverride = nullptr;
 	RefCount rc_Parse_Popfile;
     void Parse_Popfile(KeyValues* kv, IBaseFileSystem* filesystem)
     {
@@ -6757,6 +6758,14 @@ namespace Mod::Pop::PopMgr_Extensions
 				FOR_EACH_SUBKEY(subkey, subkey2) {
 					state.m_ParticleOverride[subkey2->GetName()] = subkey2->GetString();
 				}
+			} else if (FStrEq(name, "CustomScriptSounds")) {
+				KeyValues *soundKv = subkey->MakeCopy();
+				loadKeyvaluesOverride = soundKv->GetFirstSubKey();
+				((CSoundEmitterSystemBase *)soundemitterbase)->AddSoundsFromFile("popfile", true, true, true);
+				FOR_EACH_SUBKEY(subkey, soundSubkey) {
+					CBaseEntity::PrecacheScriptSound(soundSubkey->GetName());
+				}
+				loadKeyvaluesOverride = nullptr;
 			} else if (FStrEq(name, "BuildingSpawnTemplate")) {
 				Parse_PlayerBuildingSpawnTemplate(subkey);
 			} else if (FStrEq(name, "PrecacheScriptSound"))  { CBaseEntity::PrecacheScriptSound (subkey->GetString());
@@ -6789,6 +6798,16 @@ namespace Mod::Pop::PopMgr_Extensions
 			subkey->deleteThis();
 		}
     }
+	
+	DETOUR_DECL_MEMBER(bool, CBaseFileSystem_LoadKeyValues, KeyValues *kv, int type, char const *filename, char const *pPathID)
+	{
+		if (loadKeyvaluesOverride != nullptr) {
+			kv->SetNextKey(loadKeyvaluesOverride);
+			return true;
+		}
+		return DETOUR_MEMBER_CALL(CBaseFileSystem_LoadKeyValues)(kv, type, filename, pPathID);
+	}
+
 
 	RefCount rc_KeyValues_LoadFromFile;
 	DETOUR_DECL_MEMBER(bool, KeyValues_LoadFromFile, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID, bool refreshCache)
@@ -6972,6 +6991,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ValidateWeapons, "CTFPlayer::ValidateWeapons");
 			MOD_ADD_DETOUR_MEMBER(CTFInventoryManager_GetBaseItemForClass, "CTFInventoryManager::GetBaseItemForClass");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetBonusRoundTime, "CTFGameRules::GetBonusRoundTime");
+			MOD_ADD_DETOUR_MEMBER(CBaseFileSystem_LoadKeyValues, "CBaseFileSystem::LoadKeyValues");
 			
 			
 			

@@ -310,3 +310,6 @@ void PrintToChat(const char *str, CBasePlayer *player)
 	
 	engine->MessageEnd();
 }
+
+MemberFuncThunk<CSoundEmitterSystemBase *, bool, const char *, KeyValues *, CSoundParametersInternal &> CSoundEmitterSystemBase::ft_InitSoundInternalParameter("CSoundEmitterSystemBase::InitSoundInternalParameters");
+MemberFuncThunk<CSoundEmitterSystemBase *, void, const char *, bool, bool, bool>                        CSoundEmitterSystemBase::ft_AddSoundsFromFile("CSoundEmitterSystemBase::AddSoundsFromFile");

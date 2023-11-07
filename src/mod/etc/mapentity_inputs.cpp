@@ -2146,6 +2146,10 @@ namespace Mod::Etc::Mapentity_Additions
         {"SetSolidFlags"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             Value.Convert(FIELD_INTEGER);
             ent->CollisionProp()->SetSolidFlags(Value.Int());
+        }},
+        {"SetSolid"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Value.Convert(FIELD_INTEGER);
+            ent->CollisionProp()->SetSolid(Value.Int());
         }}
     });
 }

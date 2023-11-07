@@ -216,6 +216,20 @@ WaveSchedule
 	DisableSound "Announcer.MVM_Wave_End" [$SIGSEGV]
 	DisableSound "Announcer.MVM_Bonus" [$SIGSEGV]
 
+	// Define custom soundscripts
+	// Overrides persist until next map load, use OverrideSounds instead
+	CustomScriptSounds [$SIGSEGV] 
+	{
+		"Dropship" // Example
+		{
+			"channel"		"CHAN_STATIC"
+			"volume"		"1"
+			"pitch"			"100"
+			"soundlevel"  	"SNDLVL_150dB"
+			"wave"			")npc/combine_gunship/dropship_engine_distant_loop1.wav"
+		}
+	}
+
 	// Load a file that adds or overrides existing (server side sounds only) soundscripts.
 	// Overrides persist until next map load, use OverrideSounds instead
 	// If you made any changes to the file, you need to reload the map for it to take effect
@@ -1686,7 +1700,7 @@ WaveSchedule
 				PingSound "weapons/rocket_directhit_shoot_crit.wav" [$SIGSEGV] //Tank ping sound override
 				StartSound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Tank spawn sound
 				DeploySound "GoldPipe_MissionIntro.mp3" [$SIGSEGV] //Tank deploy sound
-				EngineLoopSound "Weapon_Minigun.Fire" [$SIGSEGV] //Tank engine sound override, will only loop if the sound was made to be looping.
+				EngineLoopSound "Dropship" [$SIGSEGV] //Tank engine sound override, will only loop if the sound was made to be looping. Only soundscripts are allowed, use CustomScriptSounds to add custom soundscripts
 				// DestroyTemplate "Blockade" [$SIGSEGV] //Override default tank destroy animation with template
 				TeamNum 2 [$SIGSEGV] //Override tank team (Default: 3)
 				OffsetZ 0 [$SIGSEGV] // Tank distance off the ground (Default: 0) 

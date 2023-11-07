@@ -1127,3 +1127,20 @@ function PrintTable(t, indent, done, output)
         end
     end
 end
+
+--Setups collision bounds for trigger entities
+---@param trigger Entity Trigger entity to setup bounds for
+---@param mins? Vector Trigger min bounds
+---@param maxs? Vector Trigger max bounds
+function SetupTriggerBounds(trigger, mins, maxs)
+    trigger:SetModel("models/weapons/w_models/w_rocket.mdl");
+    if mins then
+        trigger.m_vecMins = mins;
+        trigger.m_vecMinsPreScaled = mins;
+    end
+    if maxs then
+        trigger.m_vecMins = maxs;
+        trigger.m_vecMinsPreScaled = maxs;
+    end
+    trigger:SetSolid(SOLID_BBOX);
+end

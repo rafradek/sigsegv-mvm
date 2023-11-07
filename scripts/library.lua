@@ -443,6 +443,11 @@ function CEntity:HideToAll() end
 ---@return nil
 function CEntity:ShowToAll() end
 
+function CEntity:AddModule(name) end
+function CEntity:StopParticleEffects() end
+function CEntity:SetSolidFlags(flags) end
+function CEntity:SetSolid(solidType) end
+
 -------------
 -- Player inputs
 -------------
