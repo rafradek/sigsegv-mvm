@@ -4,6 +4,6 @@
 
 namespace Mod::Common::Weapon_Shoot
 {
-    CBaseEntity *FireWeapon(CBaseEntity *shooter, CTFWeaponBaseGun *weapon, const Vector &vecOrigin, const QAngle &vecAngles, bool isCrit, bool removeAmmo, int teamDefault = 0);
+    CBaseEntity *FireWeapon(CBaseEntity *shooter, CTFWeaponBaseGun *weapon, const Vector &vecOrigin, const QAngle &vecAngles, bool isCrit, bool removeAmmo, int teamDefault = 0, bool keepTempPlayerOwner = false);
 }
 #endif

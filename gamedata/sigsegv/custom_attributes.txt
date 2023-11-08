@@ -3550,4 +3550,26 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4676"
+    {
+        "name"	"shoot view punch angle"
+        "attribute_class"	"shoot_view_punch_angle"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4677"
+    {
+        "name"	"shoot view punch angle random"
+        "attribute_class"	"shoot_view_punch_angle_random"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

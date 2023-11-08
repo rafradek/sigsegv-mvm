@@ -680,6 +680,20 @@ namespace Mod::Attr::Custom_Attributes
 
 	RefCount rc_AltFireAttack;
 
+	void ApplyPunch(CTFPlayer *player, CTFWeaponBase *weapon) {
+		QAngle punch {vec3_angle};
+		GET_STRING_ATTRIBUTE(weapon, shoot_view_punch_angle, punchNormal);
+		if (punchNormal != nullptr) {
+			UTIL_StringToAnglesAlt(punch, punchNormal);
+		}
+		QAngle random {vec3_angle};
+		GET_STRING_ATTRIBUTE(weapon, shoot_view_punch_angle_random, punchRandom);
+		if (punchRandom != nullptr) {
+			UTIL_StringToAnglesAlt(random, punchRandom);
+		}
+		player->m_Local->m_vecPunchAngle += punch + QAngle(RandomFloat(-random.x, random.x),RandomFloat(-random.y, random.y),RandomFloat(-random.z, random.z));
+	}
+
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
@@ -865,7 +879,9 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		int shoot_projectiles = 0;
-			
+		
+		ApplyPunch(player, weapon);
+		
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, shoot_projectiles, attack_projectiles);
 		if (shoot_projectiles > 0) {
 			auto weapon = reinterpret_cast<CTFWeaponBase*>(this);
@@ -1683,6 +1699,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
+			Msg("Sound %d %d %d\n", rc_CTFPlayer_TraceAttack && index == BURST, weapon->GetOwner(), modelname != nullptr);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
 				if (rc_CTFPlayer_TraceAttack && index == BURST) return;
 				PrecacheSound(modelname);
@@ -1690,6 +1707,12 @@ namespace Mod::Attr::Custom_Attributes
 				weapon_sound_override = modelname;
 
 				weapon->GetOwner()->EmitSound(modelname, soundtime);
+				return;
+			}
+			else if (modelname != nullptr) {
+				if (rc_CTFPlayer_TraceAttack && index == BURST) return;
+				PrecacheSound(modelname);
+				weapon->EmitSound(modelname, soundtime);
 				return;
 			}
 		}
@@ -6565,7 +6588,7 @@ namespace Mod::Attr::Custom_Attributes
 		// Fire the weapon
 
 		// Move the owner player to mimic position
-		auto projectile = Mod::Common::Weapon_Shoot::FireWeapon(sentry, weapon, vecOrigin, vecAngles, false, false);
+		auto projectile = Mod::Common::Weapon_Shoot::FireWeapon(sentry, weapon, vecOrigin, vecAngles, false, false, 0, sentry->GetCustomVariableBool<"allowplayerattributes">());
 		if (projectile != nullptr) {
 			projectile->SetCustomVariable("customsentryweapon", Variant(true));
 		}
@@ -7468,6 +7491,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = weapon->GetTFPlayerOwner();
 		GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
 		FireInputAttribute(input, nullptr, Variant(), nullptr, player, weapon, -1.0f);
+		ApplyPunch(player, weapon);
  		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
 	}
 

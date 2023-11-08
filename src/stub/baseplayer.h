@@ -124,8 +124,8 @@ public:
 	DECL_SENDPROP(float, m_flDucktime);
 	DECL_SENDPROP(float, m_flStepSize);
 	DECL_SENDPROP(int, m_skybox3darea);
-	DECL_SENDPROP(Vector, m_vecPunchAngle);
-	DECL_SENDPROP(Vector, m_vecPunchAngleVel);
+	DECL_SENDPROP(QAngle, m_vecPunchAngle);
+	DECL_SENDPROP(QAngle, m_vecPunchAngleVel);
 	DECL_SENDPROP(bool,  m_bDrawViewmodel);
 	DECL_SENDPROP(int,   m_iHideHUD);
 	DECL_SENDPROP(float, m_flFallVelocity);

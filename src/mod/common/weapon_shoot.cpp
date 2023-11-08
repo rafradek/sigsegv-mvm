@@ -33,9 +33,10 @@ namespace Mod::Common::Weapon_Shoot
 		std::vector<CHandle<CBaseEntity>> m_ProjectilesToRemove;
 	};
 
+	bool fireKeepTempPlayerOwner = false;
 	GlobalThunk<int> m_nPredictionRandomSeedServer("CBaseEntity::m_nPredictionRandomSeedServer");
 	GlobalThunk<int> m_nPredictionRandomSeed("CBaseEntity::m_nPredictionRandomSeed");
-    CBaseEntity *FireWeapon(CBaseEntity *shooter, CTFWeaponBaseGun *weapon, const Vector &vecOrigin, const QAngle &vecAngles, bool isCrit, bool removeAmmo, int teamDefault)
+    CBaseEntity *FireWeapon(CBaseEntity *shooter, CTFWeaponBaseGun *weapon, const Vector &vecOrigin, const QAngle &vecAngles, bool isCrit, bool removeAmmo, int teamDefault, bool keepTempPlayerOwner)
     {
         if (weapon == nullptr) return nullptr;
         SCOPED_INCREMENT(rc_FireWeapon);
@@ -67,8 +68,8 @@ namespace Mod::Common::Weapon_Shoot
         // Move the owner player to shooter position
         Vector oldPos = player->GetAbsOrigin();
         QAngle oldAng = player->EyeAngles();
-        Vector oldPunchAngle = player->m_Local->m_vecPunchAngle;
-		player->m_Local->m_vecPunchAngle = vec3_origin;
+        QAngle oldPunchAngle = player->m_Local->m_vecPunchAngle;
+		player->m_Local->m_vecPunchAngle = vec3_angle;
         player->pl->v_angle = vecAngles;
         Vector eyeOffset = player->EyePosition() - player->GetAbsOrigin();
         player->SetAbsOrigin(vecOrigin - eyeOffset);
@@ -96,7 +97,9 @@ namespace Mod::Common::Weapon_Shoot
 		weapon->SetCollisionGroup(COLLISION_GROUP_VEHICLE_CLIP);
 		m_nPredictionRandomSeedServer.GetRef() = gpGlobals->tickcount * 434;
 		m_nPredictionRandomSeed.GetRef() = gpGlobals->tickcount * 434;
+		fireKeepTempPlayerOwner = keepTempPlayerOwner;
         projectile = weapon->FireProjectile(player);
+		fireKeepTempPlayerOwner = false;
 		shooter->SetCollisionGroup(oldSolid);
         player->SetActiveWeapon(oldActive);
         player->SetTeamNumber(oldTeam);
@@ -117,7 +120,10 @@ namespace Mod::Common::Weapon_Shoot
 				weapon->GetOrCreateEntityModule<ShooterWeaponModule>("shooterweaponmodule")->AddProjectileToRemove(projectile);
 			}
         }
-        if (tempPlayer) {
+		if (tempPlayer && keepTempPlayerOwner) {
+			weapon->SetCustomVariable("istempowner", Variant(true));
+		}
+        if (tempPlayer && !keepTempPlayerOwner) {
             weapon->SetOwnerEntity(nullptr);
             weapon->SetOwner(nullptr);
             if (projectile != nullptr) {
@@ -194,12 +200,28 @@ namespace Mod::Common::Weapon_Shoot
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFGameRules_DeathNotice, CBasePlayer *pVictim, const CTakeDamageInfo &info, const char* eventName)
+	{
+		CTakeDamageInfo infoc = info;
+		if (info.GetWeapon() != nullptr && info.GetWeapon()->GetCustomVariableBool<"istempowner">()) {
+			infoc.SetAttacker(info.GetInflictor());
+		}
+		DETOUR_MEMBER_CALL(CTFGameRules_DeathNotice)(pVictim, infoc, eventName);
+	}
+
 	class CDmgAccumulator;
 	DETOUR_DECL_MEMBER(void, CBaseEntity_DispatchTraceAttack, CTakeDamageInfo& info, const Vector& vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 	{
-		if (shooting_weapon != nullptr && ToTFPlayer(shooting_shooter->GetOwnerEntity()) == nullptr) {
-			info.SetAttacker(shooting_shooter);
-			info.SetInflictor(shooting_weapon);
+		if (shooting_weapon != nullptr) {
+			auto owner = shooting_shooter->GetOwnerEntity();
+			if (owner == nullptr && shooting_shooter->IsBaseObject()) {
+				owner = ((CBaseObject *) shooting_shooter)->GetBuilder();
+			}
+			if (ToTFPlayer(owner) == nullptr) {
+				if (!fireKeepTempPlayerOwner)
+					info.SetAttacker(shooting_shooter);
+				info.SetInflictor(shooting_weapon);
+			}
 		}
 		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
 	}
@@ -265,7 +287,7 @@ namespace Mod::Common::Weapon_Shoot
 		if (shooter != nullptr) {
 			info.SetInflictor(shooter);
             auto obj = ToBaseObject(shooter);
-			if ((obj == nullptr && shooter->GetOwnerEntity() == nullptr) || (obj != nullptr && obj->GetBuilder() == nullptr)) {
+			if (!fireKeepTempPlayerOwner && ((obj == nullptr && shooter->GetOwnerEntity() == nullptr) || (obj != nullptr && obj->GetBuilder() == nullptr))) {
 				info.SetAttacker(shooter);
 			}
 		}
@@ -284,6 +306,12 @@ namespace Mod::Common::Weapon_Shoot
 				auto weaponProj = rtti_cast<CTFWeaponBase *>(projInflictor->GetOriginalLauncher());
 				if (weaponProj != nullptr && weaponProj->GetAfterburnRateOnHit() > 0) {
 					playerVictim->m_Shared->Burn(playerVictim, weaponProj, weaponProj->GetAfterburnRateOnHit());
+				}
+			}
+			else if (playerVictim != nullptr && info.GetWeapon() != nullptr) {
+				auto weapon = rtti_cast<CTFWeaponBase *>(info.GetWeapon());
+				if (weapon != nullptr && weapon->GetAfterburnRateOnHit() > 0) {
+					playerVictim->m_Shared->Burn(playerVictim, weapon, weapon->GetAfterburnRateOnHit());
 				}
 			}
 		}
@@ -412,7 +440,8 @@ namespace Mod::Common::Weapon_Shoot
             
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed,  "CTFPlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchTraceAttack,    "CBaseEntity::DispatchTraceAttack");
-			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBaseCombatWeapon_WeaponSound,    "CBaseCombatWeapon::WeaponSound", HIGH);
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DeathNotice,    "CTFGameRules::DeathNotice");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoAnimationEvent,    "CTFPlayer::DoAnimationEvent");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ApplyOnDamageModifyRules, "CTFGameRules::ApplyOnDamageModifyRules");
 
