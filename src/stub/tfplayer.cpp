@@ -305,6 +305,7 @@ MemberFuncThunk<      CTFPlayer *, int                             > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_ClearDisguiseWeaponList     ("CTFPlayer::ClearDisguiseWeaponList");
 MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > CTFPlayer::ft_GetLoadoutItem              ("CTFPlayer::GetLoadoutItem");
 MemberFuncThunk<const CTFPlayer *, int                             > CTFPlayer::ft_GetMaxHealthForBuffing      ("CTFPlayer::GetMaxHealthForBuffing");
+MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_DoClassSpecialSkill         ("CTFPlayer::DoClassSpecialSkill");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");

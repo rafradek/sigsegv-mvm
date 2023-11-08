@@ -3065,6 +3065,7 @@
     {
         "name"	"crit on cond"
         "attribute_class"	"crit_on_cond"
+		"attribute_type"	"string"
         "description_string"	""
         "description_format"	"value_is_additive"
         "hidden"	"1"
@@ -3074,6 +3075,7 @@
     {
         "name"	"minicrit on cond"
         "attribute_class"	"minicrit_on_cond"
+		"attribute_type"	"string"
         "description_string"	""
         "description_format"	"value_is_additive"
         "hidden"	"1"

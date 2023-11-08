@@ -484,6 +484,7 @@ public:
 	void UseActionSlotItemPressed()								{ ft_UseActionSlotItemPressed  (this);  }
 	void UseActionSlotItemReleased()							{ ft_UseActionSlotItemReleased  (this); }
 	void RemoveCurrency(int currency)                           { ft_RemoveCurrency  (this, currency);  }
+	bool DoClassSpecialSkill()									{ return ft_DoClassSpecialSkill(this); }
 
 	CAttributeList *GetAttributeList()								{ return ft_GetAttributeList  (this); }
 	CAttributeManager *GetAttributeManager()						{ return ft_GetAttributeManager  (this); }
@@ -627,6 +628,7 @@ private:
     static MemberFuncThunk<      CTFPlayer *, void                            > ft_ClearDisguiseWeaponList;
     static MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > ft_GetLoadoutItem;
     static MemberFuncThunk<const CTFPlayer *, int                             > ft_GetMaxHealthForBuffing;
+	static MemberFuncThunk<      CTFPlayer *, bool                            > ft_DoClassSpecialSkill;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

@@ -770,6 +770,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			for (auto &item : this->m_ExtraLoadoutItems) {
 				CEconItemView::Destroy(item.item);
 			}
+			this->m_ExtraLoadoutItemsIDs.clear();
 			this->m_ExtraLoadoutItems.clear();
 			this->m_ExtraLoadoutItemsNotify = false;
 
@@ -1014,6 +1015,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::string> m_Description;
 		std::vector<ExtraLoadoutItem> m_ExtraLoadoutItems;
 		bool m_ExtraLoadoutItemsNotify;
+		std::unordered_map<uint64, CEconItemView *> m_ExtraLoadoutItemsIDs;
 		std::map<CSteamID, std::set<int>> m_SelectedLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItems;
 		std::map<CSteamID, std::set<int>> m_BoughtLoadoutItemsCheckpoint;
@@ -5042,6 +5044,17 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void *, CPlayerInventory_GetInventoryItemByItemID, unsigned long long param1, int* itemid)
+	{
+		auto result = DETOUR_MEMBER_CALL(CPlayerInventory_GetInventoryItemByItemID)(param1, itemid);
+		if (result == nullptr) {
+			auto find = state.m_ExtraLoadoutItemsIDs.find(param1);
+			if (find != state.m_ExtraLoadoutItemsIDs.end()) {
+				return find->second;
+			}
+		}
+		return result;
+	}
 
 	DETOUR_DECL_MEMBER(bool, CSpawnLocation_Parse, KeyValues *kv)
 	{
@@ -5326,6 +5339,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_ExtraLoadoutItemsNotify = true;
 			}
 			state.m_ExtraLoadoutItems.push_back(item);
+			state.m_ExtraLoadoutItemsIDs[item.item->m_iItemID] = item.item;
 		}
 	}
 
@@ -6971,12 +6985,14 @@ namespace Mod::Pop::PopMgr_Extensions
             MOD_ADD_DETOUR_STATIC(DispatchParticleEffect_7, "DispatchParticleEffect [overload 7]");
             MOD_ADD_DETOUR_MEMBER(CBaseObject_StartBuilding, "CBaseObject::StartBuilding");
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
+            MOD_ADD_DETOUR_MEMBER(CPlayerInventory_GetInventoryItemByItemID, "CPlayerInventory::GetInventoryItemByItemID");
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_UpdateTransmitState, "CBaseCombatWeapon::UpdateTransmitState");
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CCurrencyPack_Spawn, "CCurrencyPack::Spawn");
+			
 
 			MOD_ADD_DETOUR_MEMBER(CDynamicProp_Spawn, "CDynamicProp::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");

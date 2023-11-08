@@ -2485,20 +2485,34 @@ namespace Mod::Attr::Custom_Attributes
 				if (playerVictim->InAirDueToKnockback()) {
 					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( weapon, dmg_mult, mult_dmg_vs_airborne );
 				}
-				
-				int critOnCond = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, critOnCond, crit_on_cond);
-				if (critOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)critOnCond)) {
-					info.SetCritType(CTakeDamageInfo::CRIT_FULL);
-					info.AddDamageType(DMG_CRITICAL);
+
+				GET_STRING_ATTRIBUTE(weapon, crit_on_cond, critOnCond);
+				if (critOnCond != nullptr) {
+					while (*critOnCond != '\0') {
+						int cond = 0;
+						critOnCond = ParseToInt(critOnCond, cond);
+						if (playerVictim->m_Shared->InCond((ETFCond)cond)) {
+							info.SetCritType(CTakeDamageInfo::CRIT_FULL);
+							info.AddDamageType(DMG_CRITICAL);
+							break;
+						}
+						if (*critOnCond != '\0')
+							critOnCond++;
+					}
 				}
-				int miniCritOnCond = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, miniCritOnCond, minicrit_on_cond);
-				if (miniCritOnCond != 0 && playerVictim->m_Shared->InCond((ETFCond)miniCritOnCond)) {
-					if (ToTFPlayer(info.GetAttacker()) != nullptr) {
-						restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_NOHEALINGDAMAGEBUFF);
-						ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().AddCondBit(TF_COND_NOHEALINGDAMAGEBUFF);
-						//info.SetCritType(CTakeDamageInfo::CRIT_MINI);
+
+				GET_STRING_ATTRIBUTE(weapon, minicrit_on_cond, miniCritOnCond);
+				if (miniCritOnCond != nullptr && info.GetCritType() == CTakeDamageInfo::CRIT_NONE) {
+					while (*miniCritOnCond != '\0') {
+						int cond = 0;
+						miniCritOnCond = ParseToInt(miniCritOnCond, cond);
+						if (playerVictim->m_Shared->InCond((ETFCond)cond)) {
+							restoreMinicritBoostOnKill = !ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().InCond(TF_COND_NOHEALINGDAMAGEBUFF);
+							ToTFPlayer(info.GetAttacker())->m_Shared->GetCondData().AddCondBit(TF_COND_NOHEALINGDAMAGEBUFF);
+							break;
+						}
+						if (*miniCritOnCond != '\0')
+							miniCritOnCond++;
 					}
 				}
 
@@ -8596,7 +8610,10 @@ namespace Mod::Attr::Custom_Attributes
 				if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
 					const char *newValue;
 					CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
-					AddOnActiveAttributes(econentity, newValue);
+					auto weapon = rtti_cast<CTFWeaponBase *>(ent);
+					if (weapon != nullptr && weapon->m_iState == WEAPON_IS_ACTIVE) {
+						AddOnActiveAttributes(econentity, newValue);
+					}
 				}
 			}
 		}
@@ -9425,6 +9442,8 @@ namespace Mod::Attr::Custom_Attributes
 					particles->SetLocalAngles(vec3_angle);
 					entry->prevTarget = healTarget;
 					StopParticleEffects(entry->medigun);
+					if (owner->GetViewModel() != nullptr)
+						StopParticleEffects(owner->GetViewModel());
 					entry->lastEffect = preferredParticle;
 				}
 				bool displayCharge = !owner->m_Shared->InCond(TF_COND_TAUNTING) && owner->GetActiveWeapon() == entry->medigun && (entry->medigun->IsChargeReleased() || entry->medigun->GetCharge() >= 1.0f);
@@ -9445,6 +9464,8 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				if (entry->particles != nullptr || entry->chargeEffect != nullptr) {
 					StopParticleEffects(entry->medigun);
+					if (owner->GetViewModel() != nullptr)
+						StopParticleEffects(owner->GetViewModel());
 				}
 				
 			}

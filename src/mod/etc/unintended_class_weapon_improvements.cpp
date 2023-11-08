@@ -420,6 +420,16 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		}
 		return false; 
 	}
+	
+	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_SecondaryAttack)
+	{
+		auto weapon = reinterpret_cast<CTFWeaponBaseMelee *>(this);
+		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_SecondaryAttack)();
+		auto owner = weapon->GetTFPlayerOwner();
+		if (owner != nullptr && owner->m_Shared->InCond(TF_COND_STEALTHED)) {
+			owner->DoClassSpecialSkill();
+		}
+	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_DoClassSpecialSkill)
 	{
@@ -873,6 +883,9 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxAmmo, "CTFPlayer::GetMaxAmmo");
 			
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach, "CBaseCombatCharacter::Weapon_Detach");
+
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_SecondaryAttack, "CTFWeaponBaseMelee::SecondaryAttack");
+			
 			
         }
 
