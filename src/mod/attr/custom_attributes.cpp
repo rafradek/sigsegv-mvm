@@ -1699,7 +1699,6 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
-			Msg("Sound %d %d %d\n", rc_CTFPlayer_TraceAttack && index == BURST, weapon->GetOwner(), modelname != nullptr);
 			if (weapon->GetOwner() != nullptr && modelname != nullptr) {
 				if (rc_CTFPlayer_TraceAttack && index == BURST) return;
 				PrecacheSound(modelname);
