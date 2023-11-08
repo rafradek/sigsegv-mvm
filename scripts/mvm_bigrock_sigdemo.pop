@@ -3629,3 +3629,9 @@ WaveSchedule
 
 // Projectiles detonate after delay in seconds
 // "projectile explode time" 1.0
+
+// View punch angle when shooting
+// "shoot view punch angle" "-3 0 0"
+
+// View punch angle random variance when shooting
+// "shoot view punch angle random" "3 0 0"
