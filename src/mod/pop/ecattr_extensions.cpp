@@ -13,6 +13,7 @@
 #include "mod/pop/pointtemplate.h"
 #include "mod/pop/common.h"
 #include "mod/pop/popmgr_extensions.h"
+#include "stub/extraentitydata.h"
 
 
 // update data with every call to:
@@ -68,6 +69,15 @@ namespace Mod::Pop::ECAttr_Extensions
 		float acceleration_time     = 9999.0f;
 		float acceleration_start    = 0.0f;
 		float gravity               = 0.0f;
+	};
+
+	class HomingRocketModule : public EntityModule
+	{
+	public:
+		HomingRocketModule(CBaseEntity *owner) : EntityModule(owner) {}
+
+		bool init = false;
+		HomingRockets data;
 	};
 
 	enum AimAt
@@ -1895,8 +1905,23 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 
-		if (!set)
+		if (!set) {
+			bool use_best_weapon = false;
+			
+			auto data = GetDataForBot(bot);
+			if (data != nullptr && data->use_best_weapon) {
+				use_best_weapon = true;
+			}
+
+			if (use_best_weapon)
+				TFGameRules()->Set_m_bPlayingMannVsMachine(false);
+
 			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+
+			if (use_best_weapon)
+				TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
+		}
+
 	}
 	
 	DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotMainAction_SelectMoreDangerousThreatInternal, const INextBot *nextbot, const CBaseCombatCharacter *them, const CKnownEntity *threat1, const CKnownEntity *threat2)
@@ -2229,10 +2254,16 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		if ((strcmp(classname, "tf_projectile_rocket") == 0 || strcmp(classname, "tf_projectile_sentryrocket") == 0)) {
 			rocket = static_cast<CTFProjectile_Rocket *>(ent);
-			auto data = GetDataForBot(rtti_scast<IScorer *>(rocket)->GetScorer());
-			if (data != nullptr) {
-				hr = &data->homing_rockets;
+			auto mod = rocket->GetOrCreateEntityModule<HomingRocketModule>("homingrockettfbot");
+
+			if (!mod->init) {
+				mod->init = true;
+				auto data = GetDataForBot(rtti_scast<IScorer *>(rocket)->GetScorer());
+				if (data != nullptr) {
+					mod->data = data->homing_rockets;
+				}
 			}
+			hr = &mod->data;
 		} 
 		if (hr == nullptr || !hr->enable) {
 			DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);

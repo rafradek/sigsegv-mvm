@@ -12,10 +12,10 @@
 #include "stub/particles.h"
 #include "stub/nextbot_etc.h"
 #include "util/value_override.h"
+#include "mod/etc/mapentity_additions.h"
 
 namespace Mod::Pop::Tank_Extensions
 {
-
 	struct SpawnerData
 	{
 		bool disable_smokestack =  false;
@@ -778,12 +778,26 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_MEMBER_CALL(CTankSpawner_GetClassIcon)(index);
 	}
 
+	int restOfCurrency = -1;
 	RefCount rc_CTFTankBoss_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CTFTankBoss_Event_Killed, CTakeDamageInfo &info)
 	{
+		auto tank = reinterpret_cast<CTFTankBoss *>(this);
+		auto currency = tank->GetCurrencyValue();
+		if (currency > 1500) {
+			CCurrencyPackCustom *pCurrencyPack = static_cast<CCurrencyPackCustom *>(CBaseEntity::CreateNoSpawn("item_currencypack_custom", tank->GetAbsOrigin(), QAngle(0, RandomFloat(-180, 180), 0), nullptr));
+			if (pCurrencyPack != nullptr) {
+				pCurrencyPack->SetAmount(currency - 1500);
+				DispatchSpawn( pCurrencyPack );
+				Vector vel = Vector(RandomFloat(-1, 1), 1, RandomFloat(-1, 1)).Normalized() * 250;
+				pCurrencyPack->DropSingleInstance( vel, nullptr, 0, 0 );
+			}
+		}
+		restOfCurrency = MIN(1500, currency);
 		SCOPED_INCREMENT(rc_CTFTankBoss_Event_Killed);
 		
 		DETOUR_MEMBER_CALL(CTFTankBoss_Event_Killed)(info);
+		restOfCurrency = -1;
 	}
 
 	
@@ -1038,6 +1052,51 @@ namespace Mod::Pop::Tank_Extensions
 		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
 	}
 
+	DETOUR_DECL_MEMBER(int, CTFTankBoss_GetCurrencyValue)
+	{
+		auto result = DETOUR_MEMBER_CALL(CTFTankBoss_GetCurrencyValue)();
+		if (rc_CTFTankBoss_Event_Killed && restOfCurrency != -1) return restOfCurrency; 
+		return result;
+	}
+
+    Mod::Etc::Mapentity_Additions::ClassnameFilter tank_boss_filter("tank_boss", {
+        {"SetGravity"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            
+			auto data = FindSpawnerDataForTank((CTFTankBoss *)ent);
+			if (data != nullptr) {
+				Value.Convert(FIELD_FLOAT);
+				data->gravity_set = true;
+				data->gravity = Value.Float();
+			}
+        }},
+        {"SetImmobile"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            
+			auto data = FindSpawnerDataForTank((CTFTankBoss *)ent);
+			if (data != nullptr) {
+				Value.Convert(FIELD_BOOLEAN);
+				data->immobile = Value.Bool();
+			}
+        }},
+        {"SetOffsetZ"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            
+			auto data = FindSpawnerDataForTank((CTFTankBoss *)ent);
+			if (data != nullptr) {
+				Value.Convert(FIELD_FLOAT);
+				data->offsetz = Value.Float();
+			}
+        }},
+        {"SetTurnRate"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            
+			auto data = FindSpawnerDataForTank((CTFTankBoss *)ent);
+			if (data != nullptr) {
+				Value.Convert(FIELD_FLOAT);
+				data->max_turn_rate_set = true;
+				data->max_turn_rate = Value.Float();
+			}
+        }},
+    });
+
+
 	class CMod : public IMod, public IModCallbackListener
 	{
 	public:
@@ -1089,6 +1148,9 @@ namespace Mod::Pop::Tank_Extensions
 			// Tank flame damage fix
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_GetFlameDamageScale,        "CTFFlameManager::GetFlameDamageScale");
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_OnCollide,        "CTFFlameManager::OnCollide");
+
+			// Drop large amount of currency as a single pack
+			MOD_ADD_DETOUR_MEMBER(CTFTankBoss_GetCurrencyValue,        "CTFTankBoss::GetCurrencyValue");
 			
 		}
 		

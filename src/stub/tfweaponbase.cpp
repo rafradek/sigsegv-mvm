@@ -154,17 +154,6 @@ MemberFuncThunk<CTFFlameThrower *, float> CTFFlameThrower::ft_GetDeflectionRadiu
 IMPL_SENDPROP(int, CTFFlameThrower, m_iWeaponState, CTFFlameThrower);
 
 
-IMPL_SENDPROP(int,                        CBaseViewModel, m_nViewModelIndex, CBaseViewModel);
-IMPL_SENDPROP(CHandle<CBaseEntity>,       CBaseViewModel, m_hOwner,          CBaseViewModel);
-IMPL_SENDPROP(CHandle<CBaseCombatWeapon>, CBaseViewModel, m_hWeapon,         CBaseViewModel);
-
-
-MemberFuncThunk<CBaseViewModel *, void, bool> CBaseViewModel::ft_SetControlPanelsActive("CBaseViewModel::SetControlPanelsActive");
-MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_SpawnControlPanels("CBaseViewModel::SpawnControlPanels");
-MemberFuncThunk<CBaseViewModel *, void> CBaseViewModel::ft_DestroyControlPanels("CBaseViewModel::DestroyControlPanels");
-
-MemberVFuncThunk<CBaseViewModel *, void, const char *, CBaseCombatWeapon *> CBaseViewModel::vt_SetWeaponModel(TypeName<CBaseViewModel>(), "CBaseViewModel::SetWeaponModel");
-
 StaticFuncThunk<WEAPON_FILE_INFO_HANDLE, const char *> ft_LookupWeaponInfoSlot("LookupWeaponInfoSlot");
 WEAPON_FILE_INFO_HANDLE LookupWeaponInfoSlot(const char * className) { return ft_LookupWeaponInfoSlot(className); }
 

@@ -249,6 +249,9 @@ public:
 	bool GetCustomVariableVariant(variant_t &value);
 	bool GetCustomVariableByText(const char *key, variant_t &value);
 	bool SetCustomVariable(const char *key, const variant_t &value, bool create = true, bool find = true);
+	bool SetCustomVariable(string_t key, const variant_t &value, bool create = true, bool find = true);
+	template<FixedString lit>
+	bool SetCustomVariable(const variant_t &value, bool create = true, bool find = true);
 
     // Alert! Custom outputs must be defined in lowercase
 	template<FixedString lit>
@@ -456,7 +459,7 @@ public:
 	DECL_SENDPROP(int,                  m_iTeamNum);
 	DECL_DATAMAP(string_t,               m_iClassname);
 	DECL_DATAMAP(void (CBaseEntity::*)(CBaseEntity *), m_pfnTouch);
-	
+	DECL_DATAMAP(int,               m_iInitialTeamNum);
 	
 private:
 	DECL_DATAMAP(CServerNetworkProperty, m_Network);

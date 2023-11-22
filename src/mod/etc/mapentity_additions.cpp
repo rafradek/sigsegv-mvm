@@ -32,6 +32,7 @@
 #include "mod/item/item_common.h"
 #include "mod/common/commands.h"
 #include "stub/tf_objective_resource.h"
+#include "stub/team.h"
 
 namespace Mod::Etc::Mapentity_Additions
 {
@@ -159,7 +160,7 @@ namespace Mod::Etc::Mapentity_Additions
         entity->AddCustomOutput(namestr.c_str(), value);
         variant_t variant;
         variant.SetString(AllocPooledString(value));
-        SetCustomVariable(entity, namestr, variant);
+        SetEntityVariable(entity, ANY, namestr, variant, 0, -1);
 
         if (FStrEq(name, "modules")) {
             std::string str(value);
@@ -1306,6 +1307,178 @@ namespace Mod::Etc::Mapentity_Additions
         this->SetNextThink(gpGlobals->curtime + 0.1f, "WeaponSpawnerTick");
     }
 
+    char fakePopMgr[800] {};
+
+    RefCount rc_IsSpaceToSpawnHere_Allow;
+    
+    class TFBotSpawnModule : public EntityModule
+    {
+    public:
+        TFBotSpawnModule(CBaseEntity *entity) : EntityModule(entity) {
+            kv = new KeyValues("TFBot");
+            populator.m_PopMgr = g_pPopulationManager != nullptr ? g_pPopulationManager : (CPopulationManager *)fakePopMgr;
+        }
+
+        ~TFBotSpawnModule() {
+            kv->deleteThis();
+        }
+
+        KeyValues *kv;
+        IPopulator populator;
+    };
+
+    bool SpawnTFBot(CBaseEntity *base)
+    {
+        int tagLimit = base->GetCustomVariableInt<"spawnlimit">();
+        if (tagLimit != 0) {
+            int count = 0;
+            CTFPlayer *oldest = nullptr;
+            float oldestTime = FLT_MIN;
+            ForEachTFPlayer([&count, base, &oldest, &oldestTime](CTFPlayer *player){
+                if (player->IsAlive() && player->GetCustomVariableBool<"fromtfbotentity">() && FStrEq(player->GetCustomVariable<"spawnlimitname">(""), base->GetCustomVariable<"spawnlimitname">(""))) {
+                    count++;
+                    float time = gpGlobals->curtime - player->GetCustomVariableFloat<"fromtfbotentitytime">();
+                    if (time > oldestTime) {
+                        oldest = player;
+                        oldestTime = time;
+                    }
+                }
+            });
+            if (count >= tagLimit) {
+                auto action = base->GetCustomVariable<"spawnlimitaction">();
+                if (action == PStr<"killoldest">() && oldest != nullptr) {
+                    oldest->CommitSuicide();
+                }
+                else if (action == PStr<"specoldest">() && oldest != nullptr) {
+                    oldest->ForceChangeTeam(TEAM_SPECTATOR, false);
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        auto mod = base->GetOrCreateEntityModule<TFBotSpawnModule>("tfbotspawn");
+        auto spawner = IPopulationSpawner::ParseSpawner(&mod->populator, mod->kv);
+
+        bool spawned = false;
+        if (spawner != nullptr) {
+            CUtlVector<CHandle<CBaseEntity>> ents;
+            SCOPED_INCREMENT_IF(rc_IsSpaceToSpawnHere_Allow, !base->GetCustomVariableBool<"disallowspawnstuck">());
+            auto preState = TFGameRules()->State_Get();
+            bool restoreState = false;
+            if (!base->GetCustomVariable<"nospawnbetweenwaves">()) {
+                TFGameRules()->State_SetDirect(GR_STATE_RND_RUNNING);
+                restoreState = true;
+            }
+            if (spawner->Spawn(base->GetAbsOrigin(), &ents) && !ents.IsEmpty()) {
+                auto bot = ToTFBot(ents[0]);
+                if (bot != nullptr) {
+                    spawned = true;
+                    bot->SetName(base->GetEntityName());
+                    bot->SetAbsOrigin(base->GetAbsOrigin());
+                    bot->SetAbsAngles(base->GetAbsAngles());
+                    bot->SetAbsVelocity(base->GetAbsVelocity());
+                    if (base->GetTeamNumber() != 0) {
+                        bot->ForceChangeTeam(base->GetTeamNumber(), false);
+                        ForEachTFPlayerEconEntity(bot, [bot, base](CEconEntity *entity){
+                            entity->ChangeTeam(base->GetTeamNumber());
+                            entity->m_nSkin = base->GetTeamNumber() == TF_TEAM_BLUE ? 1 : 0;
+                        });
+                    }
+                    auto extraBotData = GetExtraBotData(bot);
+                    for (auto &var : base->GetExtraEntityData()->GetCustomVariables()) {
+                        extraBotData->GetCustomVariables().push_back(var);
+                    }
+                    for (auto &output : base->GetExtraEntityData()->GetCustomOutputs()) {
+                        extraBotData->GetCustomOutputs().push_back(output);
+                    }
+                    if (base->GetMoveParent() != nullptr) {
+                        auto modFakeParent = bot->GetOrCreateEntityModule<FakeParentModule>("fakeparent");
+                        modFakeParent->SetParent(base->GetMoveParent());
+                        bot->SetCustomVariable("positiononly", Variant(true));
+                        if (bot->m_iParentAttachment > 0) {
+                            bot->SetCustomVariable("attachmentindex", Variant((int)base->m_iParentAttachment.Get()));
+                        }
+                        bot->SetCustomVariable("fakeparentoffset", Variant(base->GetLocalOrigin()));
+                    }
+                    bot->SetCustomVariable("fromtfbotentity", Variant(true));
+                    bot->SetCustomVariable("fromtfbotentitytime", Variant(gpGlobals->curtime));
+                }
+                base->FireCustomOutput<"onbotspawn">(bot, base, Variant());
+                base->Remove();
+            }
+            if (restoreState) {
+                TFGameRules()->State_SetDirect(preState);
+            }
+            delete spawner;
+        }
+        else {
+            base->Remove();
+        }
+        return spawned;
+    }
+    bool SpawnTFBotRetry(CBaseEntity *base)
+    {
+        if(!SpawnTFBot(base)) {
+            base->FireCustomOutput<"onbotspawnfail">(base, base, Variant());
+            if (base->GetCustomVariableBool<"failspawnnoretry">()) {
+                base->Remove();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    THINK_FUNC_DECL(SpawnTFBotThink)
+    {
+        if(!SpawnTFBotRetry(this) && !this->GetCustomVariableBool<"manualspawn">()) {
+            this->SetNextThink(gpGlobals->curtime + 0.03f, "SpawnTFBotThink");
+        }
+    }
+    
+    DETOUR_DECL_STATIC(bool, IsSpaceToSpawnHere, const Vector& pos)
+	{
+        if (rc_IsSpaceToSpawnHere_Allow) return true;
+
+		return DETOUR_STATIC_CALL(IsSpaceToSpawnHere)(pos);
+	}
+
+    THINK_FUNC_DECL(TFBotClearCustomVars) {
+        if (this->GetExtraEntityData() != nullptr) return;
+
+        this->GetExtraEntityData()->GetCustomVariables().clear();
+        this->GetExtraEntityData()->GetCustomOutputs().clear();
+        this->RemoveEntityModule("fakeparent");
+        this->SetName(NULL_STRING);
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_StateEnter, int nState)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+
+        if (player->GetCustomVariableBool<"fromtfbotentity">()) {
+            player->SetParent(nullptr, -1);
+            player->GetPlayerClass()->SetClassIcon(NULL_STRING);
+            player->SetCustomVariable("fromtfbotentity", Variant(false));
+            THINK_FUNC_SET(player, TFBotClearCustomVars, gpGlobals->curtime);
+        }
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_StateEnter)(nState);
+	}
+
+    VHOOK_DECL(bool, CPointTeleport_KeyValue, const char *szKeyName, const char *szValue)
+	{
+        CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
+        if (szKeyName[0] == '=') {
+            auto mod = ent->GetOrCreateEntityModule<TFBotSpawnModule>("tfbotspawn");
+            auto kv = new KeyValues(szKeyName+1);
+            kv->SetString(nullptr, szValue);
+            mod->kv->AddSubKey(kv);
+            return true;
+        }
+        return VHOOK_CALL(CPointTeleport_KeyValue)(szKeyName, szValue);
+	}
+
     DETOUR_DECL_MEMBER(void, CPointTeleport_Activate)
 	{
         auto spawner = reinterpret_cast<CBaseEntity *>(this);
@@ -1313,6 +1486,11 @@ namespace Mod::Etc::Mapentity_Additions
             THINK_FUNC_SET(spawner, WeaponSpawnerTick, gpGlobals->curtime + 0.1f);
         }
         DETOUR_MEMBER_CALL(CPointTeleport_Activate)();
+        if (spawner->GetClassname() == PStr<"$tf_bot_spawn">()) {
+            if (!SpawnTFBotRetry(spawner) && !spawner->GetCustomVariableBool<"manualspawn">()) {
+                THINK_FUNC_SET(spawner, SpawnTFBotThink, gpGlobals->curtime);
+            }
+        }
     }
 
 	DETOUR_DECL_MEMBER(void, CTFDroppedWeapon_InitPickedUpWeapon, CTFPlayer *player, CTFWeaponBase *weapon)
@@ -1744,6 +1922,9 @@ namespace Mod::Etc::Mapentity_Additions
 	GlobalThunk<CHandle<CBaseEntity>> s_lastTeleporter("s_lastTeleporter");
     DETOUR_DECL_STATIC(void, OnBotTeleported, CTFBot *player)
     {
+        if (s_lastTeleporter.GetRef() == nullptr) {
+            s_lastTeleporter.GetRef() = player;
+        }
 		DETOUR_STATIC_CALL(OnBotTeleported)(player);
         if (s_lastTeleporter.GetRef() != nullptr) {
             s_lastTeleporter.GetRef()->FireCustomOutput<"onteleportreceive">(player, s_lastTeleporter.GetRef(), Variant());
@@ -1945,7 +2126,142 @@ namespace Mod::Etc::Mapentity_Additions
         }
         return VHOOK_CALL(CFuncWall_ShouldCollide)(collisionGroup, contentsMask);
     }
+    
+    GlobalThunk<float[3]> PackRatios("PackRatios");
+    DETOUR_DECL_MEMBER(void, CItem_ItemTouch, CBaseEntity *entity)
+    {
+        auto me = reinterpret_cast<CBaseEntity *>(this);
+        float oldPackRatios[3] {};
+        float *packRatiosArr = PackRatios.GetRef();
+        auto ratio = entity->GetCustomVariableFloat<"ratio">(-1.0f);
+        if (ratio != -1.0f) {
+            oldPackRatios[0] = packRatiosArr[0];
+            oldPackRatios[1] = packRatiosArr[1];
+            oldPackRatios[2] = packRatiosArr[2];
+            packRatiosArr[0] = ratio;
+            packRatiosArr[1] = ratio;
+            packRatiosArr[2] = ratio;
+        }
+        DETOUR_MEMBER_CALL(CItem_ItemTouch)(entity);
+        if (ratio != -1.0f) {
+            packRatiosArr[0] = oldPackRatios[0];
+            packRatiosArr[1] = oldPackRatios[1];
+            packRatiosArr[2] = oldPackRatios[2];
+        }
+    }
 
+    std::vector<std::pair<int,int>> botsToKick;
+    class TFBotCustomModule : public EntityModule
+    {
+    public:
+        TFBotCustomModule(CBaseEntity *entity) : EntityModule(entity), me((CTFBot *)entity) {
+            kv = new KeyValues("TFBot");
+            populator.m_PopMgr = g_pPopulationManager != nullptr ? g_pPopulationManager : (CPopulationManager *)fakePopMgr;
+        }
+
+        ~TFBotCustomModule() {
+            kv->deleteThis();
+            botsToKick.push_back({me->entindex() - 1, me->GetUserID()});
+        }
+
+        KeyValues *kv;
+        IPopulator populator;
+        CTFBot *me;
+        bool activated = false;
+    };
+
+    VHOOK_DECL(bool, CTFBot_KeyValue, const char *szKeyName, const char *szValue)
+	{
+        CBaseEntity *ent = reinterpret_cast<CBaseEntity *>(this);
+        if (szKeyName[0] == '=') {
+            auto mod = ent->GetEntityModule<TFBotCustomModule>("tfbotcustom");
+            if (mod != nullptr) {
+                auto kv = new KeyValues(szKeyName+1);
+                kv->SetString(nullptr, szValue);
+                mod->kv->AddSubKey(kv);
+                return true;
+            }
+        }
+        return VHOOK_CALL(CTFBot_KeyValue)(szKeyName, szValue);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFBot_Spawn)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+        auto mod = bot->GetEntityModule<TFBotCustomModule>("tfbotcustom");
+        if (mod != nullptr && !mod->activated) {
+            return;
+        }
+
+		DETOUR_MEMBER_CALL(CTFBot_Spawn)();
+	}
+
+    VHOOK_DECL(void, CTFBot_Activate)
+	{
+        auto bot = reinterpret_cast<CTFBot *>(this);
+        int teamInit = bot->m_iInitialTeamNum;
+        auto mod = bot->GetEntityModule<TFBotCustomModule>("tfbotcustom");
+        if (mod != nullptr) {
+            bot->m_iInitialTeamNum = 0;
+        }
+        VHOOK_CALL(CTFBot_Activate)();
+        if (mod != nullptr) {
+            mod->activated = true;
+            auto spawner = IPopulationSpawner::ParseSpawner(&mod->populator, mod->kv);
+            if (spawner != nullptr) {
+                CUtlVector<CHandle<CBaseEntity>> ents;
+                SCOPED_INCREMENT(rc_IsSpaceToSpawnHere_Allow);
+                auto preState = TFGameRules()->State_Get();
+                auto origin = bot->GetAbsOrigin();
+                TFGameRules()->State_SetDirect(GR_STATE_RND_RUNNING);
+                bot->ForceChangeTeam(TEAM_SPECTATOR, false);
+                auto &teamVec = TFTeamMgr()->GetTeam(TEAM_SPECTATOR)->m_aPlayers.Get();
+                teamVec.FindAndRemove(bot);
+                teamVec.AddToHead(bot);
+                
+                if (spawner->Spawn(origin, &ents) && !ents.IsEmpty()) {
+                    bot->SetAbsOrigin(origin);
+                }
+                TFGameRules()->State_SetDirect(preState);
+            }
+            if (teamInit != 0) {
+                bot->ForceChangeTeam(teamInit, false);
+                ForEachTFPlayerEconEntity(bot, [bot, teamInit](CEconEntity *entity){
+                    entity->ChangeTeam(teamInit);
+                    entity->m_nSkin = teamInit == TF_TEAM_BLUE ? 1 : 0;
+                });
+            }
+        }
+    }
+
+    THINK_FUNC_DECL(PlayerKickThink)
+    {
+        sv->GetClient(this->entindex() - 1)->Disconnect("Kicked dead bot after a delay");
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_StateLeave)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->StateGet() == TF_STATE_ACTIVE && player->GetEntityModule<TFBotCustomModule>("tfbotcustom") != nullptr) {
+            player->GetPlayerClass()->SetClassIcon(NULL_STRING);
+            if (player->GetCustomVariableFloat<"kickafterdeathdelay">(-1.0f) != -1.0f) {
+                THINK_FUNC_SET(player, PlayerKickThink, gpGlobals->curtime + player->GetCustomVariableFloat<"kickafterdeathdelay">(-1.0f));
+            }
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_StateLeave)();
+    }
+
+#ifndef NO_MVM
+    bool betweenWavesModifiedWaveBar = false;
+	DETOUR_DECL_MEMBER(void, CPopulationManager_UpdateObjectiveResource)
+	{
+        if (betweenWavesModifiedWaveBar) {
+            betweenWavesModifiedWaveBar = false;
+            return;
+        }
+		DETOUR_MEMBER_CALL(CPopulationManager_UpdateObjectiveResource)();
+	}
+#endif
 
     class BlockLosFactory : public IEntityFactory
     {
@@ -1960,6 +2276,27 @@ namespace Mod::Etc::Mapentity_Additions
 
         }
         virtual void Destroy( IServerNetworkable *pNetworkable ) {orig->Destroy(pNetworkable);}
+        virtual size_t GetEntitySize() {return orig->GetEntitySize();}
+
+        IEntityFactory *orig;
+    };
+
+    
+
+    class TFBotFactory : public IEntityFactory
+    {
+    public:
+        TFBotFactory(IEntityFactory *orig) : orig(orig) {}
+
+        virtual IServerNetworkable *Create( const char *pClassName ) {
+            
+            auto result = NextBotCreatePlayerBot<CTFBot>("TFBot", false);
+            if (result == nullptr) return nullptr;
+            result->AddEntityModule("tfbotcustom", new TFBotCustomModule(result));
+            return result->NetworkProp();
+
+        }
+        virtual void Destroy( IServerNetworkable *pNetworkable ) { orig->Destroy(pNetworkable); }
         virtual size_t GetEntitySize() {return orig->GetEntitySize();}
 
         IEntityFactory *orig;
@@ -2050,8 +2387,23 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_VHOOK(CFuncWall_ShouldCollide, "9CFuncWall", "CBaseEntity::ShouldCollide");
 			MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
             MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClear, "IVision::IsLineOfSightClear");
-    
 
+            // Ratio keyvalue for packs
+            MOD_ADD_DETOUR_MEMBER(CItem_ItemTouch, "CItem::ItemTouch");
+
+            // TFBot spawners
+			MOD_ADD_DETOUR_STATIC_PRIORITY(IsSpaceToSpawnHere, "IsSpaceToSpawnHere", HIGHEST);
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_StateEnter, "CTFPlayer::StateEnter");
+            MOD_ADD_VHOOK(CPointTeleport_KeyValue, "14CPointTeleport", "CBaseEntity::KeyValue");
+
+            MOD_ADD_VHOOK(CTFBot_KeyValue, TypeName<CTFBot>(), "CBaseEntity::KeyValue");
+            MOD_ADD_VHOOK(CTFBot_Activate, TypeName<CTFBot>(), "CBasePlayer::Activate");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StateLeave, "CTFPlayer::StateLeave");
+            MOD_ADD_DETOUR_MEMBER(CTFBot_Spawn, "CTFBot::Spawn");
+
+#ifndef NO_MVM
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_UpdateObjectiveResource, "CPopulationManager::UpdateObjectiveResource");
+#endif
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");
@@ -2074,8 +2426,11 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$math_vector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$entity_spawn_detector");
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("math_counter"), "$script_manager");
+                servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$tf_bot_spawn");
             }
             servertools->GetEntityFactoryDictionary()->InstallFactory(new BlockLosFactory(servertools->GetEntityFactoryDictionary()->FindFactory("func_wall")), "$func_block_los");
+            Msg("Create\n");
+            servertools->GetEntityFactoryDictionary()->InstallFactory(new TFBotFactory(servertools->GetEntityFactoryDictionary()->FindFactory("tf_bot")), "$tf_bot");
 
 			return true;
 		}
@@ -2089,6 +2444,7 @@ namespace Mod::Etc::Mapentity_Additions
         virtual void OnUnload() override
         {
             ((CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary())->m_Factories.Remove("$func_block_los");
+            ((CEntityFactoryDictionary *)servertools->GetEntityFactoryDictionary())->m_Factories.Remove("$tf_bot");
         }
 
         virtual void LevelInitPreEntity() override
@@ -2108,6 +2464,14 @@ namespace Mod::Etc::Mapentity_Additions
                 }
                 waveToJumpNextTick = -1;
             }
+
+            for (auto [slot,userid] : botsToKick) {
+                auto client = sv->GetClient(slot);
+                if (client != nullptr && client->GetUserID() == userid && (client->IsFakeClient() || client->IsConnected())) {
+                    client->Disconnect("$tf_bot entity removed");
+                }
+            }
+            botsToKick.clear();
         }
 
         virtual void LevelInitPostEntity() override

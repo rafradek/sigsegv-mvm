@@ -527,6 +527,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AnimationsUnintendedClassWeapons("sig_etc_unintended_class_weapon_viewmodel"),
 			m_AllowCivilian                   ("sig_etc_allow_civilian_class"),
 			m_bNPCLagCompensation             ("sig_ai_lag_compensation_npc"),
+			m_FixBotSpawningStalls            ("sig_pop_wavespawn_spawnbot_stall_fix"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -640,6 +641,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AnimationsUnintendedClassWeapons.Reset(pre);
 			this->m_AllowCivilian.Reset(pre);
 			this->m_bNPCLagCompensation.Reset(pre);
+			this->m_FixBotSpawningStalls.Reset(pre);
 			
 			this->m_CustomUpgradesFile.Reset(pre);
 			this->m_TextPrintSpeed.Reset(pre);
@@ -961,6 +963,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<bool> m_AnimationsUnintendedClassWeapons;
 		CValueOverridePopfile_ConVar<int>  m_AllowCivilian;
 		CValueOverridePopfile_ConVar<bool> m_bNPCLagCompensation;
+		CValueOverridePopfile_ConVar<bool> m_FixBotSpawningStalls;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverridePopfile_ConVar<std::string> m_CustomUpgradesFile;
@@ -971,6 +974,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::set<CHandle<CTFPlayer>>                m_PlayerSpawnOnceTemplatesAppliedTo;
 		std::vector<ShootTemplateData>              m_ShootTemplates;
 		std::vector<WeaponPointTemplateInfo>        m_WeaponSpawnTemplates;
+		std::vector<WeaponPointTemplateInfo>        m_WeaponDeploySpawnTemplates;
 
 		std::set<std::string>                       m_DisableSounds;
 		std::map<std::string,std::string>           m_OverrideSounds;
@@ -1001,6 +1005,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		std::map<CHandle<CTFPlayer>, CHandle<CEconWearable>> m_Player_anim_cosmetics;
 		std::unordered_map<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_ItemEquipTemplates;
+		std::unordered_multimap<CBaseEntity *, std::shared_ptr<PointTemplateInstance>> m_WeaponDeployTemplates;
 
 		std::unordered_set<std::string> m_MissingRobotBones[TF_CLASS_COUNT];
 		string_t m_CachedRobotModelIndex[TF_CLASS_COUNT * 2];
@@ -2882,25 +2887,47 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_UpdateTransmitState)();
 	}
 
-	// DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
-	// {
-	// 	auto wep = reinterpret_cast<CTFWeaponBase *>(this);
-	// 	auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
-	// 	if (ret) {
-	// 		wep->m_iState = WEAPON_IS_ACTIVE;
-	// 	}
-	// 	return ret;
-	// }
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		if (ret) {
+			if (!state.m_WeaponDeploySpawnTemplates.empty()) {
+				auto owner = wep->GetOwnerEntity();
+				if (ToTFBot(owner) == nullptr) {
+					for (auto &info : state.m_WeaponDeploySpawnTemplates) {
+						for (auto &entry : info.weapons) {
+							if (entry->Matches(wep->GetClassname(), wep->GetItem())) {
+								auto inst = info.info.SpawnTemplate(owner);
+								if (inst != nullptr)
+									state.m_WeaponDeployTemplates.emplace(wep,inst);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return ret;
+	}
 
-	// DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *pSwitchingTo)
-	// {
-	// 	auto wep = reinterpret_cast<CTFWeaponBase *>(this);
-	// 	auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(pSwitchingTo);
-	// 	if (ret) {
-	// 		wep->m_iState = WEAPON_IS_CARRIED_BY_PLAYER;
-	// 	}
-	// 	return ret;
-	// }
+	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *pSwitchingTo)
+	{
+		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
+		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(pSwitchingTo);
+		if (ret) {
+			if (!state.m_WeaponDeployTemplates.empty()) {
+				auto range = state.m_WeaponDeployTemplates.equal_range(wep);
+				for (auto it = range.first; it != range.second; it++) {
+					if (it->first == wep) {
+						it->second->OnKilledParent(false);
+					}
+				}
+				state.m_WeaponDeployTemplates.erase(wep);
+			}
+		}
+		return ret;
+	}
 
 	RefCount rc_CTFPlayer_Spawn;
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
@@ -2987,6 +3014,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (find != state.m_ItemEquipTemplates.end()) {
 			find->second->OnKilledParent(false);
 			state.m_ItemEquipTemplates.erase(find);
+		}
+		if (!state.m_WeaponDeployTemplates.empty()) {
+			auto range = state.m_WeaponDeployTemplates.equal_range(entity);
+			for (auto it = range.first; it != range.second; it++) {
+				if (it->first == entity) {
+					it->second->OnKilledParent(false);
+				}
+			}
+			state.m_WeaponDeployTemplates.erase(entity);
 		}
         DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
     }
@@ -6221,6 +6257,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		"PlayerSpawnTemplate",
 		"PlayerSpawnOnceTemplate",
 		"PlayerItemEquipSpawnTemplate",
+		"PlayerWeaponDeploySpawnTemplate",
 		"PlayerShootTemplate",
 		"BuildingSpawnTemplate",
 		"ExtendedUpgrades",
@@ -6606,6 +6643,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_WeaponSpawnTemplates.emplace_back();
 				WeaponPointTemplateInfo &info = state.m_WeaponSpawnTemplates.back();//
 				Parse_PlayerItemEquipSpawnTemplate(info, subkey);
+			} else if (FStrEq(name, "PlayerWeaponDeploySpawnTemplate")) {
+				state.m_WeaponDeploySpawnTemplates.emplace_back();
+				WeaponPointTemplateInfo &info = state.m_WeaponDeploySpawnTemplates.back();//
+				Parse_PlayerItemEquipSpawnTemplate(info, subkey);
 			} else if (FStrEq(name, "PlayerSpawnOnceTemplate")) {
 				PointTemplateInfo info = Parse_SpawnTemplate(subkey);
 				info.ignore_parent_alive_state = true;
@@ -6719,6 +6760,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_bAllowBotsSapPlayers = subkey->GetBool();
 			} else if (FStrEq(name, "LoseTime")) {
 				state.m_iLoseTime = subkey->GetInt();
+			} else if (FStrEq(name, "FixWavespawnReserveSlotsOnDisabledSpawnbot")) {
+				state.m_FixBotSpawningStalls.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;
@@ -6987,8 +7030,8 @@ namespace Mod::Pop::PopMgr_Extensions
             MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FindTarget, "CObjectSentrygun::FindTarget");
             MOD_ADD_DETOUR_MEMBER(CPlayerInventory_GetInventoryItemByItemID, "CPlayerInventory::GetInventoryItemByItemID");
             //MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_UpdateTransmitState, "CBaseCombatWeapon::UpdateTransmitState");
-            //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
-            //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
+            MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Spawn, "CTFBotSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn, "CTankSpawner::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CCurrencyPack_Spawn, "CCurrencyPack::Spawn");

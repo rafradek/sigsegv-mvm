@@ -2,6 +2,7 @@
 #include "mod/pop/kv_conditional.h"
 #include "mod/pop/pointtemplate.h"
 #include "stub/populators.h"
+#include "stub/tfplayer.h"
 #include "stub/nextbot_cc_behavior.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/gamerules.h"
@@ -521,7 +522,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		std::vector<std::string> last_spawn_message;
 		std::vector<std::string> done_message;
 		bool hidden = false;
+
 		CWaveSpawnPopulator::InternalStateType state;
+		bool hadSpawnState = false;
 	};
 	
 	std::map<CWaveSpawnPopulator *, WaveSpawnData> wavespawns;
@@ -611,9 +614,14 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	}
 
 	bool allWaiting = true;
+	CWaveSpawnPopulator *updatingWaveSpawn = nullptr;
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		int &slots = CWaveSpawnPopulator::m_reservedPlayerSlotCount.GetRef();
+		int preSlots = slots;
+		bool slotsRestore = false;
+
 		if (wavespawn->extra != nullptr) {
 			auto extra = wavespawn->extra;
 			for (int i = 0; i < extra->m_waitForAllSpawnedList.Count(); i++) {
@@ -630,7 +638,24 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (wavespawn->m_state != CWaveSpawnPopulator::DONE)
 			allWaiting = false;
 
+		if (wavespawn->extra != nullptr && wavespawn->extra->m_bPaused) {
+			if (wavespawn->extra->m_bHasTFBotSpawner && wavespawns[wavespawn].hadSpawnState)
+				CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
+			wavespawn->m_myReservedSlotCount = 0;
+			return;
+		}
+		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING && !wavespawn->extra->m_bHasTFBotSpawner) {
+			slots = -9999;
+			slotsRestore = true;
+		}
+
+		updatingWaveSpawn = wavespawn;
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+		updatingWaveSpawn = nullptr;
+
+		if (slotsRestore) {
+			slots = preSlots;
+		}
 	}
 
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_SetState, CWaveSpawnPopulator::InternalStateType state)
@@ -648,10 +673,20 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				DisplayMessages(wavespawns[wavespawn].first_spawn_message);
 				break;
 			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
-				DisplayMessages(wavespawns[wavespawn].last_spawn_message);
+				if (wavespawns[wavespawn].hadSpawnState) {
+					if (wavespawn->extra->m_bHasTFBotSpawner)
+						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
+					wavespawn->m_myReservedSlotCount = 0;
+					DisplayMessages(wavespawns[wavespawn].last_spawn_message);
+				}
 				break;
 			case CWaveSpawnPopulator::DONE:
-				DisplayMessages(wavespawns[wavespawn].done_message);
+				if (wavespawns[wavespawn].hadSpawnState) {
+					if (wavespawn->extra->m_bHasTFBotSpawner)
+						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
+					wavespawn->m_myReservedSlotCount = 0;
+					DisplayMessages(wavespawns[wavespawn].done_message);
+				}
 				break;
 		}
 		
@@ -763,6 +798,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				wavespawns[wavespawn].hidden = subkey->GetBool();
 				hidden = true;
 			}
+			else if ( FStrEq(name, "StartDisabled")) {
+				currentWaveSpawnExtra->m_bPaused = true;
+			}
 			else {
 				del = false;
 			}
@@ -810,6 +848,122 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (last_wavespawn_hidden && wave_parsing != nullptr) return;
 		DETOUR_MEMBER_CALL(CWave_AddClassType)(icon, count, flags);
 	}
+
+	ConVar sig_pop_wavespawn_spawnbot_stall_fix("sig_pop_wavespawn_spawnbot_stall_fix", "0", FCVAR_GAMEDLL, "Mod: Fix wavespawn reserving slots even when spawnbot is disabled");
+
+	DETOUR_DECL_MEMBER(int, CSpawnLocation_FindSpawnLocation, Vector& vSpawnPosition)
+	{
+		
+		auto result = DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
+		if (sig_pop_wavespawn_spawnbot_stall_fix.GetBool() && result == SPAWN_LOCATION_NOT_FOUND && updatingWaveSpawn != nullptr) {
+			
+			if (updatingWaveSpawn != nullptr && updatingWaveSpawn->extra->m_bHasTFBotSpawner)
+				CWaveSpawnPopulator::m_reservedPlayerSlotCount -= updatingWaveSpawn->m_myReservedSlotCount;
+			updatingWaveSpawn->m_myReservedSlotCount = 0;
+		}
+		return result;
+	}
+
+	void RemoveAllWaveEntities(bool supportOnly, bool allSpawnerTypes)
+	{
+		for(auto spawner : template_spawners) {
+			auto populator = spawner->m_Populator;
+			if ((populator != nullptr && populator->m_bSupportWave) || !supportOnly) {
+				auto &insts = spawner->m_Instances;
+				for (auto it = insts.begin(); it != insts.end(); it++) {
+					auto inst = it->first;
+					if (inst != nullptr && !inst->mark_delete) {
+						inst->OnKilledParent(false);
+					}
+				}
+				FOR_EACH_VEC(populator->m_activeVector, i) {
+					if (populator->m_activeVector[i] == spawner_sentinel) {
+						populator->m_activeVector.Remove(i);
+					}
+				}
+			}
+		}
+		
+		for(auto &entry : boss_spawners) {
+			auto spawner = entry.second;
+			auto boss = entry.first;
+			auto populator = spawner->m_Populator;
+			if ((populator != nullptr && populator->m_bSupportWave) || !supportOnly) {
+				if (boss != nullptr && boss->IsAlive()) {
+					//boss->Remove();
+					boss->TakeDamage(CTakeDamageInfo(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, vec3_origin, boss->GetHealth() * 6 + 1, DMG_PREVENT_PHYSICS_FORCE));
+				}
+			}
+		}
+		
+		for(auto &entry : bot_npc_spawners) {
+			auto spawner = entry.second;
+			auto boss = entry.first;
+			auto populator = spawner->m_Populator;
+			if ((populator != nullptr && populator->m_bSupportWave) || !supportOnly) {
+				if (boss != nullptr && boss->IsAlive()) {
+					//boss->Remove();
+					boss->TakeDamage(CTakeDamageInfo(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, vec3_origin, boss->GetHealth() * 6 + 1, DMG_PREVENT_PHYSICS_FORCE));
+				}
+			}
+		}
+
+		auto wave = g_pPopulationManager != nullptr ? g_pPopulationManager->GetCurrentWave() : nullptr;
+		if (allSpawnerTypes && wave != nullptr) {
+			for (auto waveSpawn : wave->m_WaveSpawns) {
+				if (!waveSpawn->m_bSupportWave && supportOnly) continue;
+
+				for (CBaseEntity *entity : waveSpawn->m_activeVector) {
+					if (entity == spawner_sentinel) {
+						continue;
+					}
+					auto player = ToTFPlayer(entity);
+					if (player != nullptr) {
+						player->CommitSuicide();
+						continue;
+					}
+					entity->TakeDamage(CTakeDamageInfo(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, vec3_origin, entity->GetHealth() * 6 + 1, DMG_PREVENT_PHYSICS_FORCE));
+					if (entity->IsAlive()) {
+						entity->Remove();
+					}
+				}
+			}
+		}
+	}
+
+	void RemoveWaveSpawnEntities(CWaveSpawnPopulator *populator) {
+		for(auto spawner : template_spawners) {
+			auto spPopulator = spawner->m_Populator;
+			if (spPopulator == populator) {
+				auto &insts = spawner->m_Instances;
+				for (auto it = insts.begin(); it != insts.end(); it++) {
+					auto inst = it->first;
+					if (inst != nullptr && !inst->mark_delete) {
+						inst->OnKilledParent(false);
+					}
+				}
+				FOR_EACH_VEC(populator->m_activeVector, i) {
+					if (populator->m_activeVector[i] == spawner_sentinel) {
+						populator->m_activeVector.Remove(i);
+					}
+				}
+			}
+		}
+		for (CBaseEntity *entity : populator->m_activeVector) {
+			if (entity == spawner_sentinel) {
+				continue;
+			}
+			auto player = ToTFPlayer(entity);
+			if (player != nullptr) {
+				player->CommitSuicide();
+				continue;
+			}
+			entity->TakeDamage(CTakeDamageInfo(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, vec3_origin, entity->GetHealth() * 6 + 1, DMG_PREVENT_PHYSICS_FORCE));
+			if (entity->IsAlive()) {
+				entity->Remove();
+			}
+		}
+	}
 	
 	DETOUR_DECL_MEMBER(void, CWave_ActiveWaveUpdate)
 	{
@@ -817,35 +971,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		allWaiting = true;
 		DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
 		if (wave->IsDoneWithNonSupportWaves()) {
-			for(auto spawner : template_spawners) {
-				auto populator = spawner->m_Populator;
-				if (populator != nullptr && populator->m_bSupportWave) {
-					auto &insts = spawner->m_Instances;
-					for (auto it = insts.begin(); it != insts.end(); it++) {
-						auto inst = it->first;
-						if (inst != nullptr && !inst->mark_delete) {
-							inst->OnKilledParent(false);
-						}
-					}
-					FOR_EACH_VEC(populator->m_activeVector, i) {
-						if (populator->m_activeVector[i] == spawner_sentinel) {
-							populator->m_activeVector.Remove(i);
-						}
-					}
-				}
-			}
-			
-			for(auto &entry : boss_spawners) {
-				auto spawner = entry.second;
-				auto boss = entry.first;
-				auto populator = spawner->m_Populator;
-				if (populator != nullptr && populator->m_bSupportWave) {
-					if (boss != nullptr && boss->IsAlive()) {
-						//boss->Remove();
-						boss->TakeDamage(CTakeDamageInfo(UTIL_EntityByIndex(0), UTIL_EntityByIndex(0), nullptr, vec3_origin, vec3_origin, boss->GetHealth() * 6 + 1, DMG_PREVENT_PHYSICS_FORCE));
-					}
-				}
-			}
+			RemoveAllWaveEntities(true, false);
 		}
 		if (allWaiting) {
 			wave->m_isEveryContainedWaveSpawnDone = true;
@@ -1254,6 +1380,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineStats_RoundEvent_WaveEnd, "CMannVsMachineStats::RoundEvent_WaveEnd");
 
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CSpawnLocation_FindSpawnLocation, "CSpawnLocation::FindSpawnLocation", HIGH);
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse, "CWaveSpawnPopulator::Parse");
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
 			MOD_ADD_DETOUR_MEMBER(CWave_Parse, "CWave::Parse");

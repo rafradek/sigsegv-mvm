@@ -28,6 +28,11 @@ static const char *SPELL_TYPE[] = {
     "All"
 };
 
+class IHasKillAllSpawner
+{
+    virtual void KillAll() = 0;
+};
+
 class ItemListEntry;
 
 struct ForceItem

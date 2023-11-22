@@ -4,6 +4,7 @@
 #include "stub/baseentity.h"
 #include "stub/econ.h"
 #include "stub/tfweaponbase.h"
+#include "stub/sendprop.h"
 #include "mod/pop/common.h"
 #include "util/iterate.h"
 #include "util/lua.h"
@@ -1567,7 +1568,8 @@ namespace Util::Lua
         return 1;
     }
 
-    void FindSendProp(int& off, SendTable *s_table, std::function<void(SendProp *, int)> onfound)
+    CStandardSendProxies* sendproxies = nullptr;
+    void FindSendProp(int& off, SendTable *s_table, DatatableProxyVector &usedTables, std::function<void(SendProp *, int)> onfound)
     {
         for (int i = 0; i < s_table->GetNumProps(); ++i) {
             SendProp *s_prop = s_table->GetProp(i);
@@ -1579,15 +1581,27 @@ namespace Util::Lua
                 onfound(s_prop, off + s_prop->GetOffset());
             }
             else if (s_prop->GetDataTable() != nullptr) {
+                bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
+                int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+                int oldOffReal = off;
                 off += s_prop->GetOffset();
-                FindSendProp(off, s_prop->GetDataTable(), onfound);
+                if (modifying) {
+                    usedTables.push_back({s_prop, off - oldOffset});
+                    off = 0;
+                }
+
+                FindSendProp(off, s_prop->GetDataTable(), usedTables, onfound);
+                
                 off -= s_prop->GetOffset();
+                if (modifying) {
+                    off = oldOffReal;
+                    usedTables.pop_back();
+                }
             }
         }
     }
 
     void *stringSendProxy = nullptr;
-    CStandardSendProxies* sendproxies = nullptr;
     int LEntityDumpProperties(lua_State *l)
     {
         auto entity = LEntityGetNonNull(l, 1);
@@ -1595,26 +1609,28 @@ namespace Util::Lua
         int off = 0;
         
         lua_newtable(l);
-        FindSendProp(off, entity->GetServerClass()->m_pTable, [&](SendProp *prop, int offset){
+        DatatableProxyVector v;
+        FindSendProp(off, entity->GetServerClass()->m_pTable, v, [&](SendProp *prop, int offset){
             PropCacheEntry entry;
+            entry.usedTables = v;
             GetSendPropInfo(prop, entry, offset);
-            if (entry.arraySize > 1) {
+            int realArraySize = !(entry.fieldType == FIELD_CHARACTER && entry.arraySize == DT_MAX_STRING_BUFFERSIZE) ? entry.arraySize : 1;
+            if (realArraySize > 1) {
                 lua_newtable(l);
             }
-            for (int i = 0; i < entry.arraySize; i++) {
+            for (int i = 0; i < realArraySize; i++) {
                 variant_t variant;
                 ReadProp(entity, entry, variant, i, -1);
-                //Msg("Sendprop %s = %s %d %d\n", prop->GetName(), variant.String(), entry.offset, entry.arraySize);
 
                 LFromVariant(l, variant);
-                if (entry.arraySize == 1) {
+                if (realArraySize == 1) {
                     lua_setfield(l, -2, prop->GetName());
                 }
                 else {
                     lua_rawseti(l, -2, i + 1);
                 }
             }
-            if (entry.arraySize > 1) {
+            if (realArraySize > 1) {
                 lua_setfield(l, -2, prop->GetName());
             }
         });
@@ -1625,23 +1641,24 @@ namespace Util::Lua
                 if (dmap->dataDesc[i].fieldName != nullptr) {
                     PropCacheEntry entry;
                     GetDataMapInfo(dmap->dataDesc[i], entry);
-                    if (entry.arraySize > 1) {
+                    int realArraySize = entry.fieldType != FIELD_CHARACTER ? entry.arraySize : 1;
+                    if (realArraySize > 1) {
                         lua_newtable(l);
                     }
-                    for (int j = 0; j < entry.arraySize; j++) {
+                    for (int j = 0; j < realArraySize; j++) {
                         variant_t variant;
                         ReadProp(entity, entry, variant, j, -1);
                         //Msg("Datamap %s = %s %d\n", dmap->dataDesc[i].fieldName, variant.String(), entry.offset);
 
                         LFromVariant(l, variant);
-                        if (entry.arraySize == 1) {
+                        if (realArraySize == 1) {
                             lua_setfield(l, -2, dmap->dataDesc[i].fieldName);
                         }
                         else {
                             lua_rawseti(l, -2, j + 1);
                         }
                     }
-                    if (entry.arraySize > 1) {
+                    if (realArraySize > 1) {
                         lua_setfield(l, -2, dmap->dataDesc[i].fieldName);
                     }
                 }
@@ -4866,8 +4883,10 @@ namespace Util::Lua
                     lua_rawgeti(l, LUA_REGISTRYINDEX, callback.func);
                     lua_pushvalue(l,-2);
                     int off = 0;
-                    FindSendProp(off, pST, [&](SendProp *prop, int offset){
+                    DatatableProxyVector v;
+                    FindSendProp(off, pST, v, [&](SendProp *prop, int offset){
                         PropCacheEntry entry;
+                        entry.usedTables = v;
                         GetSendPropInfo(prop, entry, offset);
                         if (entry.arraySize > 1) {
                             lua_newtable(l);

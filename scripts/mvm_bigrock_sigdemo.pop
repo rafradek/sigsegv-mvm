@@ -187,6 +187,7 @@ WaveSchedule
 	//////////////////////////
 	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player. TF2 update added SetCustomModelWithClassAnimations which uses animations automatically
 	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
+	FixWavespawnReserveSlotsOnDisabledSpawnbot 0 [$SIGSEGV] // Fix wavespawn reserving slots even when spawnbot is disabled (default: 0)
 
 
 	//////////////////////////
@@ -1018,6 +1019,13 @@ WaveSchedule
 		Name "WeaponMimic" // Name of the template
 		ItemName "The Black Box" // The item that must be equipped
 		Origin "0 0 50" //Position where to spawn the template
+		// Bone "bip_spine_2" //Player bone where the template would be positioned
+	}
+	PlayerWeaponDeploySpawnTemplate [$SIGSEGV] //Spawn custom player template, If a weapon is deployed
+	{
+		Name "WeaponMimic" // Name of the template
+		ItemName "The Black Box" // The item that must be equipped
+		Origin "0 0 25" //Position where to spawn the template
 		// Bone "bip_spine_2" //Player bone where the template would be positioned
 	}
 	PlayerShootTemplate [$SIGSEGV]  //Shoot defined point template. Template is spawned at player position in looking direction, forward velocity being applied to spawned entities
@@ -2220,10 +2228,7 @@ WaveSchedule
 				Attributes HoldFireUntilFullReload
 				WeaponRestrictions SecondaryOnly
 				
-				AddCond [$SIGSEGV] //Adds conditions to bots
-				{
-					Name "TF_COND_REPROGRAMMED" // Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
-				}
+				AddCond "TF_COND_REPROGRAMMED" [$SIGSEGV] //Condition to apply. List of available conditions https://wiki.teamfortress.com/wiki/Cheats#addcond
 			}
 		}	
 		WaveSpawn //WAVE 01a: 27 total, 9 active, Scout (melee only)
@@ -2374,10 +2379,7 @@ WaveSchedule
 					//Feet
 				AimOffset "0 0 10" [$SIGSEGV] //Aim this much higher than normally (default: 0 0 0)
 				AimLeadProjectileSpeed 1 [$SIGSEGV] //If set, the bot will lead their shots depending on player movement. Setting to 1 will determine projectile speed. Stacks with rocket and arrow leading unless overriden with AimAt
-				AddCond [$SIGSEGV] //Adds conditions to bots
-				{
-					Name "TF_COND_REPROGRAMMED_NEUTRAL" // New condition, makes bots join spectator team as alive players. Many ai tasks will be broken
-				}
+				AddCond "TF_COND_REPROGRAMMED_NEUTRAL" [$SIGSEGV] // New condition, makes bots join spectator team as alive players. Many ai tasks will be broken
 			}
 		}
 		WaveSpawn
@@ -2566,6 +2568,7 @@ WaveSchedule
 			WaitBetweenSpawns 0.25
 			TotalCurrency 200	
 			HideIcon 1 [$SIGSEGV] // Hides icons from the wave bar. Should use a ClassIcon different from visible ones 
+			StartDisabled 1 [$SIGSEGV] // The wavespawn starts disabled, until activated by $ResumeWavespawn input of point_populator_interface entity. Bot slots are not reserved while disabled
 			TFBot
 			{
 				Class Soldier
@@ -3635,3 +3638,39 @@ WaveSchedule
 
 // View punch angle random variance when shooting
 // "shoot view punch angle random" "3 0 0"
+
+// Custom additional item models, parameters in order: model path, player attachment name (leave empty for bonemerge, type "none" for no attachment), R G B color (leave empty for normal), offset, rotation, scale. Offset, rotation, scale only works if attachment name is not empty. Separate attachments with |
+// "custom item model attachment" "models/weapons/c_models/c_overhealer/c_overhealer.mdl,,33 55 99|models/weapons/c_models/c_claymore/c_claymore.mdl,effect_hand_R,,4 2 0,0 270 90,1.5"
+
+// Additional item model attribute
+// "custom item model attachment 2" "models/weapons/c_models/c_claymore/c_claymore.mdl,none,255 255 0,0 0 100,0 0 0,1.5"
+
+// Additional item model attribute
+// "custom item model attachment 3" ""
+
+// Custom additional item models in view model, parameters in order: model path, offset, rotation, scale. Offset, rotation, scale detach the model from main view model. Separate attachments with |
+// "custom item model attachment viewmodel" "models/weapons/c_models/c_overhealer/c_overhealer.mdl|models/weapons/c_models/c_claymore/c_claymore.mdl,4 2 0,0 270 90,1.5"
+
+// Additional item model attribute in view model
+// "custom item model attachment viewmodel 2" "models/weapons/c_models/c_claymore/c_claymore.mdl,0 0 100,0 0 0,1.5"
+
+// Additional item model attribute in view model
+// "custom item model attachment viewmodel 3" ""
+
+// Custom deploy sound
+// "custom weapon deploy sound" "sound.wav"
+
+// Spread angle (pitch, yaw, roll) pattern, the pattern cycles with each projectile fired
+// "spread angle pattern" "10 0 0|0 0 0|-10 0 0"
+
+// Spread offset (front, left, up) pattern, the pattern cycles with each projectile fired
+// "spread offset pattern" "0 10 0|0 0 0|0 -10 0"
+
+// Attribute pattern, cycles with each projectile fired. Attributes separated with |, cycles separated with &
+// "proj attribute pattern" "projectile speed increased|2|damage bonus|0.5&projectile speed decreased|0.5"
+
+// Reset the pattern this many seconds after last attack. By default, pattern is reset as soon as the player stops firing
+// "shoot pattern reset time" 1
+
+// Set to 1 to not rollback the pattern when reaching the last cycle
+// "shoot pattern no rollback" 1

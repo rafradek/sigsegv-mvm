@@ -91,7 +91,9 @@
         "span": "cpp",
         "stdfloat": "cpp",
         "cfenv": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "filesystem": "cpp",
+        "*.cfg": "c"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [

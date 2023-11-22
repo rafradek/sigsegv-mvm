@@ -686,13 +686,8 @@ inline void StrLowerASCII(char *str)
 	}
 }
 
-inline bool NamesMatch(const char *pszQuery, string_t nameToMatch)
+inline bool NamesMatch(const char *pszQuery, const char *pszNameToMatch)
 {
-	if ( nameToMatch == NULL_STRING )
-		return (!pszQuery || *pszQuery == 0 || *pszQuery == '*');
-
-	const char *pszNameToMatch = STRING(nameToMatch);
-
 	while ( *pszNameToMatch && *pszQuery )
 	{
 		unsigned char cName = *pszNameToMatch;
@@ -713,6 +708,11 @@ inline bool NamesMatch(const char *pszQuery, string_t nameToMatch)
 		return true;
 
 	return false;
+}
+
+inline bool NamesMatch(const char *pszQuery, string_t nameToMatch)
+{
+	return NamesMatch(pszQuery, STRING(nameToMatch));
 }
 
 inline bool UTIL_StringToVectorAlt(Vector &base, const char* string)

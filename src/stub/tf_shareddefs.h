@@ -497,6 +497,14 @@ enum
 #define IN_GRENADE2		(1 << 24)	// grenade 2
 #define	IN_ATTACK3		(1 << 25)
 
+#define MVM_CLASS_FLAG_NONE				0
+#define MVM_CLASS_FLAG_NORMAL			(1<<0)
+#define MVM_CLASS_FLAG_SUPPORT			(1<<1)
+#define MVM_CLASS_FLAG_MISSION			(1<<2)
+#define MVM_CLASS_FLAG_MINIBOSS			(1<<3)
+#define MVM_CLASS_FLAG_ALWAYSCRIT		(1<<4)
+#define MVM_CLASS_FLAG_SUPPORT_LIMITED	(1<<5)
+
 typedef enum
 {
 	AE_INVALID = -1,			// So we have something more succint to check for than '-1'

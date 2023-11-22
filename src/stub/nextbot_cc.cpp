@@ -109,6 +109,7 @@ using CExtract_CBotNPCArcher_m_pIntentionInterface = IExtractStub;
 
 #endif
 MemberVFuncThunk<CTFBaseBoss *, void> CTFBaseBoss::vt_UpdateCollisionBounds(TypeName<CTFBaseBoss>(), "CTFBaseBoss::UpdateCollisionBounds");
+MemberVFuncThunk<CTFBaseBoss *, int> CTFBaseBoss::vt_GetCurrencyValue(TypeName<CTFBaseBoss>(), "CTFBaseBoss::GetCurrencyValue");
 
 
 IMPL_EXTRACT (IBody *,             CTFTankBoss, m_pBodyInterface,  new CExtract_CTFTankBoss_m_pBodyInterface());

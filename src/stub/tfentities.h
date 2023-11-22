@@ -85,6 +85,7 @@ private:
 class CEconWearable : public CEconEntity
 {
 public:
+
 	void RemoveFrom(CBaseEntity *ent) { vt_RemoveFrom(this, ent); }
 	// TODO: CanEquip
 	// TODO: Equip
@@ -105,6 +106,7 @@ class CTFWearable : public CEconWearable, public IHasGenericMeter
 public:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hWeaponAssociatedWith);
 	DECL_SENDPROP(bool, m_bDisguiseWearable);
+	DECL_RELATIVE(bool, m_bAlwaysAllow);
 };
 
 class CTFWearableRobotArm   : public CTFWearable {};

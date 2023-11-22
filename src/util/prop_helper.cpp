@@ -11,7 +11,7 @@ std::vector<std::pair<std::vector<std::string>, std::vector<PropCacheEntry>>> da
 
 void *stringSendProxy = nullptr;
 
-bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, DatatableProxyVector &usedTables, int index = -1)
+bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&prop, DatatableProxyVector &usedTables, int index)
 {
     static CStandardSendProxies* sendproxies = gamedll->GetStandardSendProxies();
     for (int i = 0; i < s_table->GetNumProps(); ++i) {
@@ -136,6 +136,7 @@ void GetSendPropInfo(SendProp *prop, PropCacheEntry &entry, int offset) {
         }
         else {
             entry.fieldType = FIELD_CHARACTER;
+            entry.arraySize = DT_MAX_STRING_BUFFERSIZE;
         }
     }
     else if (propType == DPT_Vector || propType == DPT_VectorXY) {

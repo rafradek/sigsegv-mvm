@@ -15,7 +15,6 @@ namespace Mod::Attr::Custom_Attributes
 		MULT_STEP_HEIGHT,
 		IGNORE_PLAYER_CLIP,
 		ALLOW_BUNNY_HOP,
-		ALLOW_FRIENDLY_FIRE,
 		MULT_DUCK_SPEED,
 		MULT_CREDIT_COLLECT_RANGE,
 		NOT_SOLID,
@@ -25,6 +24,7 @@ namespace Mod::Attr::Custom_Attributes
 		MOVE_SPEED_AS_HEALTH_DECREASES,
 		NO_CLIP,
 		DISPLACE_TOUCHED_ENEMIES,
+		ALLOW_FRIENDLY_FIRE_PLAYER,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_PLAYER,
@@ -50,6 +50,7 @@ namespace Mod::Attr::Custom_Attributes
 		NO_ATTACK,
 		MOD_AMMO_PER_SHOT,
 		HOLD_FIRE_UNTIL_FULL_RELOAD,
+		ALLOW_FRIENDLY_FIRE,
 
 		// Add new entries above this line
 		ATTRIB_COUNT_ITEM,
@@ -65,7 +66,6 @@ namespace Mod::Attr::Custom_Attributes
 		"mult_step_height",
 		"ignore_player_clip",
 		"allow_bunny_hop",
-		"allow_friendly_fire",
 		"mult_duck_speed",
 		"mult_credit_collect_range",
 		"not_solid",
@@ -74,7 +74,8 @@ namespace Mod::Attr::Custom_Attributes
 		"add_maxhealth_nonbuffed",
 		"move_speed_as_health_decreases",
 		"no_clip",
-		"displace_touched_enemies"
+		"displace_touched_enemies",
+		"allow_friendly_fire"
 	};
 
 	static const char *fast_attribute_classes_item[ATTRIB_COUNT_ITEM] = {
@@ -96,7 +97,8 @@ namespace Mod::Attr::Custom_Attributes
 		"alt_fire_attack",
 		"no_attack",
 		"mod_ammo_per_shot",
-		"hold_fire_until_full_reload"
+		"hold_fire_until_full_reload",
+		"allow_friendly_fire"
 	};
 
 	// For calls outside of custom attributes mod, returns value if the mod is disabled

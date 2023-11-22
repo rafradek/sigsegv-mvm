@@ -60,8 +60,6 @@ private:
 	static MemberFuncThunk<CPopulationManager *, PlayerUpgradeHistory *, CSteamID> ft_FindOrAddPlayerUpgradeHistory;
 	static MemberFuncThunk<CPopulationManager *, void, int> ft_SetCheckpoint;
 	
-	
-	
 	static StaticFuncThunk<int, CUtlVector<CTFPlayer *> *> ft_CollectMvMBots;
 	static StaticFuncThunk<void, CUtlVector<CUtlString> &> ft_FindDefaultPopulationFileShortNames;
 };
@@ -74,7 +72,7 @@ class IPopulationSpawner;
 class IPopulator
 {
 public:
-	void **vtable;
+	virtual ~IPopulator() {};
 	IPopulationSpawner *m_Spawner;
 	CPopulationManager *m_PopMgr;
 };
@@ -159,10 +157,13 @@ public:
 	Vector m_vSpawnPosition;
 	
 	int GetCurrencyAmountPerDeath()                                       { return ft_GetCurrencyAmountPerDeath(this); }
+	void SetState(CWaveSpawnPopulator::InternalStateType state)           {        ft_SetState(this, state); }
 
+	static GlobalThunkRW<int> m_reservedPlayerSlotCount;
+	
 private:
 	static MemberFuncThunk<CWaveSpawnPopulator *, int> ft_GetCurrencyAmountPerDeath;
-
+	static MemberFuncThunk<CWaveSpawnPopulator *, void, CWaveSpawnPopulator::InternalStateType> ft_SetState;
 };
 
 class CRandomChoiceSpawner;
@@ -170,7 +171,8 @@ class CRandomChoiceSpawner;
 class CWaveSpawnExtra
 {
 public:
-	bool m_bHasTFBotSpawner;
+	bool m_bPaused = false;
+	bool m_bHasTFBotSpawner = false;
 	CUtlVector<CWaveSpawnPopulator *> m_waitForAllDeadList;
 	CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
 	CRandomChoiceSpawner *randomChoiceShuffleSet = nullptr;
@@ -273,6 +275,8 @@ public:
 	virtual bool HasAttribute( CTFBot::AttributeType type, int nSpawnNum = -1 ) { return false; }
 	virtual bool HasEventChangeAttributes( const char* pszEventName ) const = 0;
 
+	static IPopulationSpawner *ParseSpawner(IPopulator *populator, KeyValues *kv) { return ft_ParseSpawner(populator, kv); }
+
 	IPopulator *m_Populator;
 	
 private:
@@ -280,6 +284,8 @@ private:
 	static MemberVFuncThunk<IPopulationSpawner *, bool, int                       > vt_IsMiniBoss;
 	static MemberVFuncThunk<IPopulationSpawner *, bool, CTFBot::AttributeType, int> vt_HasAttribute;
 	static MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > vt_Parse;
+	
+	static StaticFuncThunk<IPopulationSpawner *, IPopulator *, KeyValues *> ft_ParseSpawner;
 };
 
 class CMobSpawner : public IPopulationSpawner

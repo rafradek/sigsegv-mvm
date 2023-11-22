@@ -94,13 +94,13 @@ void CDatatableStack::Init( bool bExplicitRoutes )
 	m_bInitted = true;
 }
 
-GlobalThunk<SendVarProxyFn> DLLSendProxy_StringToString("SendProxy_StringToString");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_VectorXYToVectorXY("SendProxy_VectorXYToVectorXY");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_QAngles("SendProxy_QAngles");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_Color32ToInt("SendProxy_Color32ToInt");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_EHandleToInt("SendProxy_EHandleToInt");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_IntAddOne("SendProxy_IntAddOne");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_ShortAddOne("SendProxy_ShortAddOne");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_StringT_To_String("SendProxy_StringT_To_String");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_AngleToFloat("SendProxy_AngleToFloat");
-GlobalThunk<SendVarProxyFn> DLLSendProxy_Empty("SendProxy_Empty");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_StringToString("SendProxy_StringToString");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_VectorXYToVectorXY("SendProxy_VectorXYToVectorXY");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_QAngles("SendProxy_QAngles");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_Color32ToInt("SendProxy_Color32ToInt");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_EHandleToInt("SendProxy_EHandleToInt");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_IntAddOne("SendProxy_IntAddOne");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_ShortAddOne("SendProxy_ShortAddOne");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_StringT_To_String("SendProxy_StringT_To_String");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_AngleToFloat("SendProxy_AngleToFloat");
+GlobalThunk<SendVarProxyFnRef> DLLSendProxy_Empty("SendProxy_Empty");

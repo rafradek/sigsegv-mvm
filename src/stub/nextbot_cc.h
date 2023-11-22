@@ -24,9 +24,11 @@ class CTFBaseBoss : public NextBotCombatCharacter
 {
 public:
 	void UpdateCollisionBounds() { vt_UpdateCollisionBounds(this); }
+	int GetCurrencyValue() { return vt_GetCurrencyValue(this); }
 	
 private:
 	static MemberVFuncThunk<CTFBaseBoss *, void> vt_UpdateCollisionBounds;
+	static MemberVFuncThunk<CTFBaseBoss *, int> vt_GetCurrencyValue;
 };
 
 class CTFTankBoss : public CTFBaseBoss

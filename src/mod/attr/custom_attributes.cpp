@@ -55,7 +55,7 @@ namespace Mod::Attr::Custom_Attributes
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
 	GlobalThunk<IPredictionSystem> g_RecipientFilterPredictionSystem("g_RecipientFilterPredictionSystem");
 
-	float *fast_attribute_cache[2048];
+	float *fast_attribute_cache[2048] {};
 
 	CBaseEntity *last_fast_attrib_entity = nullptr;
 	float *CreateNewAttributeCache(CBaseEntity *entity) {
@@ -694,6 +694,19 @@ namespace Mod::Attr::Custom_Attributes
 		player->m_Local->m_vecPunchAngle += punch + QAngle(RandomFloat(-random.x, random.x),RandomFloat(-random.y, random.y),RandomFloat(-random.z, random.z));
 	}
 
+	void AddMedigunAttributes(CAttributeList *target, const char *attribs);
+	void RemoveOnActiveAttributes(CEconEntity *weapon, const char *attributes);
+	
+	class AttackPatternModule : public EntityModule
+	{
+	public:
+		AttackPatternModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		int shootNum = 0;
+		float resetPatternTime = 0;
+	};
+
+
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
@@ -709,9 +722,15 @@ namespace Mod::Attr::Custom_Attributes
 			attr_projectile_count *= (weapon->IsEnergyWeapon() ? (weapon->Energy_GetMaxEnergy() / weapon->Energy_GetShotCost()) : weapon->m_iClip1);
 		}
 
+		int patternNoRollback = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, patternNoRollback, shoot_pattern_no_rollback);
+
+		GET_STRING_ATTRIBUTE(weapon, spread_angle_pattern, spreadPattern);
+		GET_STRING_ATTRIBUTE(weapon, spread_offset_pattern, offsetPattern);
+		GET_STRING_ATTRIBUTE(weapon, proj_attribute_pattern, attributePattern);
+		
 		CBaseAnimating *proj = nullptr;
 		//int seed = CBaseEntity::GetPredictionRandomSeed() & 255;
-		GET_STRING_ATTRIBUTE(weapon, override_projectile_type_extra, projectilename);
 		for (int i = 0; i < attr_projectile_count; i++) {
 
 			fire_projectile_multi = (i % num_shots) == 0;
@@ -720,17 +739,60 @@ namespace Mod::Attr::Custom_Attributes
 			//	RandomSeed(gpGlobals->tickcount + i);
 			//}
 
+			QAngle angleOffset = vec3_angle;
+			Vector originOffset = vec3_origin;
+			std::string attributePatternCurrent;
+
+			if (attributePattern != nullptr || spreadPattern != nullptr || offsetPattern != nullptr) {
+				auto spreadMod = weapon->GetOrCreateEntityModule<AttackPatternModule>("attackpattern");
+				if (gpGlobals->curtime > spreadMod->resetPatternTime) {
+					spreadMod->shootNum = 0;
+				}
+
+				if (spreadPattern != nullptr) {
+					const auto v{vi::split_str(spreadPattern, "|")};
+					int counter = patternNoRollback != 0 ? MIN(v.size() - 1, spreadMod->shootNum) : spreadMod->shootNum % v.size();
+					UTIL_StringToAnglesAlt(angleOffset,v[counter].data());
+				}
+
+				if (offsetPattern != nullptr) {
+					const auto v{vi::split_str(offsetPattern, "|")};
+					int counter = patternNoRollback != 0 ? MIN(v.size() - 1, spreadMod->shootNum) : spreadMod->shootNum % v.size();
+					Vector orig;
+					UTIL_StringToVectorAlt(orig,v[counter].data());
+					VectorRotate(orig, player->pl->v_angle, originOffset);
+				}
+
+				if (attributePattern != nullptr) {
+					const auto v{vi::split_str(attributePattern, "&")};
+					int counter = patternNoRollback != 0 ? MIN(v.size() - 1, spreadMod->shootNum) : spreadMod->shootNum % v.size();
+					attributePatternCurrent = v[counter];
+				}
+
+				spreadMod->shootNum++;
+			}
+
 			if (rtti_cast<CTFJar *>(weapon) != nullptr) {
 				weapon->StartEffectBarRegen();
 			}
 
+			GET_STRING_ATTRIBUTE(weapon, override_projectile_type_extra, projectilename);
+
+			player->pl->v_angle += angleOffset; 
+			player->SetLocalOrigin(player->GetLocalOrigin() + originOffset);
+			if (!attributePatternCurrent.empty()) {
+				AddMedigunAttributes(&weapon->GetItem()->GetAttributeList(), attributePatternCurrent.c_str());
+			}
+			
 			if (projectilename != nullptr) {
 				proj = SpawnCustomProjectile(projectilename, weapon, player, true);
-				
+
 			}
 			else {
 				proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
 			}
+			player->SetLocalOrigin(player->GetLocalOrigin() - originOffset);
+			player->pl->v_angle -= angleOffset; 
 			
 			fire_projectile_multi = true;
 
@@ -873,9 +935,16 @@ namespace Mod::Attr::Custom_Attributes
 				if (rc_AltFireAttack) {
 					proj->SetCustomVariable("isaltfire", Variant(true));
 				}
+
+				if (!attributePatternCurrent.empty()){
+					proj->SetCustomVariable("projattribs", Variant(AllocPooledString(attributePatternCurrent.c_str())));
+				}
 			}
 			GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
 			FireInputAttribute(input, nullptr, Variant((CBaseEntity *)proj), proj, player, weapon, -1.0f);
+			
+			if (!attributePatternCurrent.empty())
+				RemoveOnActiveAttributes(weapon, attributePatternCurrent.c_str());
 		}
 
 		int shoot_projectiles = 0;
@@ -948,6 +1017,11 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 	}
+	THINK_FUNC_DECL(BowIgniteDelay)
+	{
+		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
+		bow->m_bArrowAlight = true;
+	}
 
 	VHOOK_DECL(bool, CTFCompoundBow_Deploy)
 	{
@@ -956,9 +1030,8 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		int arrowIgnite = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(bow, arrowIgnite, arrow_ignite);
-		if (arrowIgnite != 0) {
-			bow->m_bArrowAlight = true;
-		}
+		if (arrowIgnite != 0)
+			THINK_FUNC_SET(bow, BowIgniteDelay, gpGlobals->curtime);
 		return result;
 	}
 
@@ -1453,6 +1526,7 @@ namespace Mod::Attr::Custom_Attributes
 			wearable_vm->GiveTo(entry.weapon->GetTFPlayerOwner());
 			wearable_vm->SetModelIndex(entry.model_index);
 			wearable_vm->m_bValidatedAttachedEntity = true;
+			//wearable_vm->SetParent(wearable_vm->GetMoveParent(), entry.weapon->GetTFPlayerOwner()->GetViewModel()->LookupAttachment("weapon_bone"));
 
 			entry.wearable_vm = wearable_vm;
 		}
@@ -1680,7 +1754,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		if ((index == SINGLE || index == BURST || index == MELEE_MISS || index == MELEE_HIT || index == MELEE_HIT_WORLD || index == RELOAD || index == SPECIAL1 || index == SPECIAL3)) {
+		if ((index == SINGLE || index == BURST || index == MELEE_MISS || index == MELEE_HIT || index == MELEE_HIT_WORLD || index == RELOAD || index == DEPLOY || index == SPECIAL1 || index == SPECIAL3)) {
 
 			int weaponid = weapon->GetWeaponID();
 			// Allow SPECIAL1 sound for Cow Mangler and SPECIAL3 sound for short circuit
@@ -1692,10 +1766,12 @@ namespace Mod::Attr::Custom_Attributes
 			static int custom_weapon_fire_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon fire sound")->GetIndex();
 			static int custom_weapon_impact_sound = GetItemSchema()->GetAttributeDefinitionByName("custom impact sound")->GetIndex();
 			static int custom_weapon_reload_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon reload sound")->GetIndex();
+			static int custom_weapon_deploy_sound = GetItemSchema()->GetAttributeDefinitionByName("custom weapon deploy sound")->GetIndex();
 			switch (index) {
 				case SINGLE: case BURST: case MELEE_MISS: case SPECIAL1: case SPECIAL3: attr_name = custom_weapon_fire_sound; break;
 				case MELEE_HIT: case MELEE_HIT_WORLD: attr_name = custom_weapon_impact_sound; break;
 				case RELOAD: attr_name = custom_weapon_reload_sound; break;
+				case DEPLOY: attr_name = custom_weapon_deploy_sound; break;
 			}
 			
 			const char *modelname = GetStringAttribute(weapon->GetItem()->GetAttributeList(), attr_name);
@@ -2949,10 +3025,15 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	inline int HasAllowFriendlyFire(CBaseEntity *launcher, CBaseEntity *player)
+	{
+		return GetFastAttributeInt(launcher != nullptr ? launcher : player, 0, launcher != nullptr ? (int)ALLOW_FRIENDLY_FIRE : (int)ALLOW_FRIENDLY_FIRE_PLAYER);
+	}
+
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_FPlayerCanTakeDamage, CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo& info)
 	{
 		if (pPlayer != nullptr && pAttacker != nullptr && pPlayer->GetTeamNumber() == pAttacker->GetTeamNumber()) {
-			int friendly = GetFastAttributeInt(pAttacker, 0, ALLOW_FRIENDLY_FIRE);
+			int friendly = HasAllowFriendlyFire(info.GetWeapon(), pAttacker);
 			if (friendly != 0)
 				return true;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, friendly, receive_friendly_fire);
@@ -2970,7 +3051,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto result = DETOUR_MEMBER_CALL(CTFPlayer_WantsLagCompensationOnEntity)(pPlayer, pCmd, pEntityTransmitBits);
 		
 		if (!result && player->GetTeamNumber() == pPlayer->GetTeamNumber()) {
-			int friendly = GetFastAttributeInt(player, 0, ALLOW_FRIENDLY_FIRE);
+			int friendly = HasAllowFriendlyFire(player->GetActiveWeapon(), player);
 			result = friendly != 0;
 		}
 		return result;
@@ -4697,6 +4778,18 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
+		CTFWeaponBase *weaponProjAttrs = nullptr;
+		if (info.GetInflictor() != nullptr && info.GetInflictor()->GetCustomVariable<"projattribs">() != nullptr) {
+			auto proj = rtti_cast<CBaseProjectile *>(info.GetInflictor());
+			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
+				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
+				if (weapon != nullptr && !weapon->GetCustomVariableBool<"projattribsapplied">()) {
+					weaponProjAttrs = weapon;
+					AddOnActiveAttributes(weaponProjAttrs, info.GetInflictor()->GetCustomVariable<"projattribs">());
+					weapon->SetCustomVariable<"projattribsapplied">(Variant(true));
+				}
+			}
+		}
 
 		//auto weapon = ToBaseCombatWeapon(info.GetWeapon());
 		auto econEntity = rtti_cast<CEconEntity *>(info.GetWeapon());
@@ -4772,6 +4865,10 @@ namespace Mod::Attr::Custom_Attributes
 				RemoveOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
 				mod->active = false;
 			}
+		}
+		if (weaponProjAttrs != nullptr) {
+			RemoveOnActiveAttributes(weaponProjAttrs, info.GetInflictor()->GetCustomVariable<"projattribs">());
+			weaponProjAttrs->SetCustomVariable<"projattribsapplied">(Variant(false));
 		}
 		takeDamageAttacker = nullptr;
 		return damage;
@@ -4999,7 +5096,11 @@ namespace Mod::Attr::Custom_Attributes
 				pszModelName = model;
 			}
 		}
-		return DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
+		auto wep = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
+		if (wep != nullptr && StringStartsWith(pItemView->GetItemDefinition()->GetItemClass(""), "tf_weapon_medigun")) {
+			wep->m_nBody = 1;
+		}
+		return wep;
 	}
 	
 	RefCount rc_CTFPlayer_Regenerate;
@@ -5189,12 +5290,13 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(float, CBaseProjectile_GetCollideWithTeammatesDelay)
 	{
 		int penetrate = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(reinterpret_cast<CBaseProjectile *>(this)->GetOriginalLauncher(), penetrate, penetrate_teammates);
+		auto launcher = reinterpret_cast<CBaseProjectile *>(this)->GetOriginalLauncher();
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(launcher, penetrate, penetrate_teammates);
 		if (penetrate) {
 			return 9999.0f;
 		}
 
-		int friendlyfire = GetFastAttributeInt(reinterpret_cast<CBaseProjectile *>(this)->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE);
+		int friendlyfire = HasAllowFriendlyFire(launcher, reinterpret_cast<CBaseProjectile *>(this)->GetOwnerEntity());
 		if (friendlyfire) {
 			return 0.0f;
 		}
@@ -5398,6 +5500,13 @@ namespace Mod::Attr::Custom_Attributes
 				else {
 					weapon->GetItem()->GetAttributeList().RemoveAttributeByDefID(auto_fires_full_clip_id);
 				}
+			}
+			
+			auto spreadMod = weapon->GetEntityModule<AttackPatternModule>("attackpattern");
+			if (spreadMod != nullptr) {
+				float patternResetTime = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, patternResetTime, shoot_pattern_reset_time);
+				spreadMod->resetPatternTime = gpGlobals->curtime + (patternResetTime != 0 ? patternResetTime : attackTime + gpGlobals->interval_per_tick);
 			}
 		}
 		g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldHost;
@@ -7397,7 +7506,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFFlameManager_OnCollide, CBaseEntity* entity, int value)
 	{
 		auto flame = reinterpret_cast<CBaseEntity *>(this);
-		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, flame->GetOwnerEntity() != nullptr && GetFastAttributeInt(flame->GetOwnerEntity()->GetOwnerEntity(), 0, ALLOW_FRIENDLY_FIRE) > 0);
+		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, flame->GetOwnerEntity() != nullptr && HasAllowFriendlyFire(flame->GetOwnerEntity(), flame->GetOwnerEntity()->GetOwnerEntity()));
 
 		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
 	}
@@ -7619,19 +7728,28 @@ namespace Mod::Attr::Custom_Attributes
     DETOUR_DECL_MEMBER(void, CBaseEntity_Touch, CBaseEntity *other)
 	{
 		CTFWeaponBase *weaponAltFire = nullptr;
+		CTFWeaponBase *weaponProjAttrs = nullptr;
         auto ent = reinterpret_cast<CBaseEntity *>(this);
-		if (ent->GetCustomVariableBool<"isaltfire">()) {
+		if (ent->GetExtraEntityData() != nullptr && (ent->GetCustomVariableBool<"isaltfire">() || ent->GetCustomVariable<"projattribs">() != nullptr)) {
 			auto proj = rtti_cast<CBaseProjectile *>(ent);
 			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
 				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
-				auto mod = proj->GetOriginalLauncher()->GetEntityModule<AltFireAttributesModule>("altfireattrs");
-				if (weapon != nullptr && mod != nullptr && !mod->active) {
-					weaponAltFire = weapon;
-					AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
-					mod->active = true;
+				if (weapon != nullptr) {
+					auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+					if (mod != nullptr && ent->GetCustomVariableBool<"isaltfire">() && !mod->active) {
+						weaponAltFire = weapon;
+						AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+						mod->active = true;
+					}
+					if (proj->GetCustomVariable<"projattribs">() != nullptr && !weapon->GetCustomVariableBool<"projattribsapplied">()) {
+						weaponProjAttrs = weapon;
+						AddOnActiveAttributes(weaponProjAttrs, proj->GetCustomVariable<"projattribs">());
+						weapon->SetCustomVariable<"projattribsapplied">(Variant(true));
+					}
 				}
 			}
 		}
+		
 		DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
 
 		if (weaponAltFire != nullptr) {
@@ -7641,6 +7759,10 @@ namespace Mod::Attr::Custom_Attributes
 				mod->active = false;
 			}
 		}
+		if (weaponProjAttrs != nullptr) {
+			RemoveOnActiveAttributes(weaponProjAttrs, ent->GetCustomVariable<"projattribs">());
+			weaponProjAttrs->SetCustomVariable<"projattribsapplied">(Variant(false));
+		}
     }
 	
     DETOUR_DECL_MEMBER(void, CCollisionEvent_PostCollision, vcollisionevent_t *event)
@@ -7648,23 +7770,30 @@ namespace Mod::Attr::Custom_Attributes
 		CBaseEntity *grenade = nullptr;
 		for (int i = 0; i < 2; i++) {
 			auto entity = reinterpret_cast<CBaseEntity *>(event->pObjects[i]->GetGameData());
-			if (entity != nullptr && entity->GetCustomVariableBool<"isaltfire">()) {
+			if (entity != nullptr && (entity->GetExtraEntityData() != nullptr && (entity->GetCustomVariableBool<"isaltfire">() || entity->GetCustomVariable<"projattribs">() != nullptr))) {
 				grenade = entity;
 				break;
 			}
 		}
 		CTFWeaponBase *weaponAltFire = nullptr;
+		CTFWeaponBase *weaponProjAttrs = nullptr;
 
 		if (grenade != nullptr) {
-			
 			auto proj = rtti_cast<CBaseProjectile *>(grenade);
 			if (proj != nullptr && proj->GetOriginalLauncher() != nullptr) {
 				auto weapon = rtti_cast<CTFWeaponBase *>(proj->GetOriginalLauncher());
-				auto mod = proj->GetOriginalLauncher()->GetEntityModule<AltFireAttributesModule>("altfireattrs");
-				if (weapon != nullptr && mod != nullptr && !mod->active) {
-					weaponAltFire = weapon;
-					AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
-					mod->active = true;
+				if (weapon != nullptr) {
+					auto mod = weapon->GetEntityModule<AltFireAttributesModule>("altfireattrs");
+					if (mod != nullptr && proj->GetCustomVariableBool<"isaltfire">() && !mod->active) {
+						weaponAltFire = weapon;
+						AddOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
+						mod->active = true;
+					}
+					if (proj->GetCustomVariable<"projattribs">() != nullptr && !weapon->GetCustomVariableBool<"projattribsapplied">()) {
+						weaponProjAttrs = weapon;
+						AddOnActiveAttributes(weaponProjAttrs, proj->GetCustomVariable<"projattribs">());
+						weapon->SetCustomVariable<"projattribsapplied">(Variant(true));
+					}
 				}
 			}
 		}
@@ -7676,6 +7805,10 @@ namespace Mod::Attr::Custom_Attributes
 				RemoveOnActiveAttributes(weaponAltFire, STRING(mod->attributes));
 				mod->active = false;
 			}
+		}
+		if (weaponProjAttrs != nullptr) {
+			RemoveOnActiveAttributes(weaponProjAttrs, grenade->GetCustomVariable<"projattribs">());
+			weaponProjAttrs->SetCustomVariable<"projattribsapplied">(Variant(false));
 		}
     }
 
@@ -8728,7 +8861,6 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
 			auto mod = player->GetOrCreateEntityModule<AddCondAttributeImmunity>("addcondimmunity");
-			mod->attributes.clear();
 
 			if (changeType == AttributeChangeType::REMOVE || changeType == AttributeChangeType::UPDATE) {
 				const char *oldValue = nullptr;
@@ -8765,6 +8897,107 @@ namespace Mod::Attr::Custom_Attributes
 							mod->attributes.push_back(attr);
 						}
 						it++;
+					}
+				}
+			}
+		}
+	}
+
+	class CustomModelAttachment : public EntityModule, public AutoList<CustomModelAttachment>
+	{
+	public:
+		CustomModelAttachment(CBaseEntity *entity) : EntityModule(entity), me((CTFWeaponBase *)entity) {}
+
+		~CustomModelAttachment() {
+			for (auto &[def, ent] : models) {
+				if (ent != nullptr) {
+					ent->Remove();
+				}
+			}
+		}
+
+		CTFWeaponBase *me;
+		bool prevStateActive = false;
+		std::unordered_multimap<const CEconItemAttributeDefinition *, CHandle<CBaseEntity>> models;
+	};
+
+	void OnCustomItemModelAttachment(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto manager = list->GetManager();
+		bool isVM = FStrEq(pAttrDef->GetAttributeClass(), "custom_item_model_attachment_viewmodel");
+		if (manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CTFWeaponBase *>(ent);
+			if (econentity != nullptr) {
+				auto player = ToTFPlayer(econentity->GetOwnerEntity());
+				if (player == nullptr) return;
+
+				auto mod = ent->GetOrCreateEntityModule<CustomModelAttachment>("custommodelattachment");
+				auto range = mod->models.equal_range(pAttrDef);
+				for (auto it = range.first; it != range.second; it++) {
+					CBaseEntity *ent = it->second;
+					if (ent != nullptr) {
+						ent->Remove();
+					}
+				}
+
+				if (changeType == AttributeChangeType::ADD || changeType == AttributeChangeType::UPDATE) {
+					const char *newValue = nullptr;
+					CopyStringAttributeValueToCharPointerOutput(new_value.m_String, &newValue);
+					if (newValue != nullptr && newValue[0] != '\0') {
+						
+						vi::for_each_split_str(newValue, "|", [econentity, player, isVM, mod, pAttrDef](auto str){
+							auto params = vi::split_str(str, ",");
+							if (params.empty()) return;
+
+							auto wearable = static_cast<CTFWearable *>(CreateEntityByName(isVM ? "tf_wearable_vm": "tf_wearable"));
+							DispatchSpawn(wearable);
+							wearable->GiveTo(player);
+							wearable->m_hWeaponAssociatedWith = econentity;
+							wearable->m_spawnflags |= (1 << 30);
+							wearable->m_bAlwaysAllow = true;
+							std::string model {params[0]};
+							wearable->SetModelIndex(CBaseEntity::PrecacheModel(model.c_str()));
+							wearable->m_bValidatedAttachedEntity = true;
+
+							size_t paramIndexOrigin = isVM ? 1 : 3;
+							size_t paramIndexAngles = isVM ? 2 : 4;
+							size_t paramIndexScale = isVM ? 3 : 5;
+							if (params.size() > paramIndexOrigin) {
+								auto paramsOrigin = vi::split_str(params[paramIndexOrigin], " ");
+								if (paramsOrigin.size() >= 3) {
+									wearable->RemoveEffects(EF_BONEMERGE);
+									wearable->SetLocalOrigin(Vector(vi::from_str<float>(paramsOrigin[0]).value_or(0), vi::from_str<float>(paramsOrigin[1]).value_or(0), vi::from_str<float>(paramsOrigin[2]).value_or(0)));
+								}
+							}
+							if (params.size() > paramIndexAngles) {
+								auto paramsAngles = vi::split_str(params[paramIndexAngles], " ");
+								if (paramsAngles.size() >= 3) {
+									wearable->RemoveEffects(EF_BONEMERGE);
+									wearable->SetLocalAngles(QAngle(vi::from_str<float>(paramsAngles[0]).value_or(0), vi::from_str<float>(paramsAngles[1]).value_or(0), vi::from_str<float>(paramsAngles[2]).value_or(0)));
+								}
+							}
+							if (params.size() > paramIndexScale) {
+								wearable->RemoveEffects(EF_BONEMERGE);
+								wearable->SetModelScale(vi::from_str<float>(params[paramIndexScale]).value_or(1));
+							}
+							if (!isVM) {
+								if (params.size() > 1 && !params[1].empty()) {
+									wearable->RemoveEffects(EF_BONEMERGE);
+									std::string attach {params[1]};
+									wearable->m_iParentAttachment = MAX(0, player->LookupAttachment(attach.c_str()));
+								}
+								if (params.size() > 2 && !params[2].empty()) {
+									auto paramsColor = vi::split_str(params[2], " ");
+									if (paramsColor.size() >= 3) {
+										wearable->SetRenderColorR(vi::from_str<int>(paramsColor[0]).value_or(0));
+										wearable->SetRenderColorG(vi::from_str<int>(paramsColor[1]).value_or(0));
+										wearable->SetRenderColorB(vi::from_str<int>(paramsColor[2]).value_or(0));
+									}
+								}
+							}
+							mod->models.emplace(pAttrDef, wearable);
+						});
 					}
 				}
 			}
@@ -9206,6 +9439,7 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("hud_overlay", OnOverlayChange);
 				RegisterCallback("addcond_immunity", OnAddCondImmunity);
 				RegisterCallback("attribute_immunity", OnAttributeImmunity);
+				RegisterCallback("custom_item_model_attachment", OnCustomItemModelAttachment);
 				
 			}
 		}
@@ -9360,6 +9594,17 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				entry.sticky->SetAbsOrigin(entry.sticked->GetAbsOrigin() + entry.offset);
 				i++;
+			}
+			for (auto entry : AutoList<CustomModelAttachment>::List()) {
+				bool visible = !entry->me->IsEffectActive(EF_NODRAW) && !entry->me->m_bBeingRepurposedForTaunt && entry->me->m_iState == WEAPON_IS_ACTIVE;
+				if (entry->prevStateActive != visible) {
+					for (auto &[def, ent] : entry->models) {
+						if (ent != nullptr) {
+							ent->SetEffects(visible ? ent->GetEffects() & (~EF_NODRAW) : ent->GetEffects() | EF_NODRAW);
+						}
+					}
+				}
+				entry->prevStateActive = visible;
 			}
 
 			for (auto entry : AutoList<MedigunCustomBeamModule>::List()) {

@@ -749,6 +749,21 @@ void Parse_AddCond(std::vector<AddCond> &addconds, KeyValues *kv)
     bool got_cond     = false;
     bool got_duration = false;
     bool got_delay    = false;
+
+    if (kv->GetFirstSubKey() == nullptr) {
+        if (kv->GetDataType() == KeyValues::TYPE_INT) {
+            addcond.cond = (ETFCond)kv->GetInt();
+            got_cond = true;
+        }
+        else {
+            addcond.cond = GetTFConditionFromName(kv->GetString());
+            if (addcond.cond != -1) {
+                got_cond = true;
+            } else {
+                Warning("Unrecognized condition name \"%s\" in AddCond block.\n", kv->GetString());
+            }
+        }
+    }
     
     FOR_EACH_SUBKEY(kv, subkey) {
         const char *name = subkey->GetName();

@@ -356,24 +356,17 @@ namespace Mod::MvM::Robot_Limit
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
 	}
 
-	GlobalThunkRW<int> CWaveSpawnPopulator_m_reservedPlayerSlotCount("CWaveSpawnPopulator::m_reservedPlayerSlotCount");
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
-		int old_slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
-		int &slots = CWaveSpawnPopulator_m_reservedPlayerSlotCount;
+		int offset = 0;
+		int &slots = CWaveSpawnPopulator::m_reservedPlayerSlotCount.GetRef();
 		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING) {
-			if (!Mod::Pop::WaveSpawn_Extensions::IsEnabled() || wavespawn->extra->m_bHasTFBotSpawner) {
-				// Override hardcoded 22 blue bot limit
-				slots = old_slots - (GetMvMInvaderLimit() - 22);
-			}
-			else {
-				// Do not restrict non bot spawners 
-				slots = -9999;
-			}
+			offset = - (GetMvMInvaderLimit() - 22);
 		}
+		slots += offset;
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
-		slots = old_slots;
+		slots -= offset;
 	}
 
 	class CMod : public IMod, public IModCallbackListener
@@ -391,7 +384,7 @@ namespace Mod::MvM::Robot_Limit
 
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse,  "CWaveSpawnPopulator::Parse");
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Parse,        "CTFBotSpawner::Parse");
-			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CWaveSpawnPopulator_Update, "CWaveSpawnPopulator::Update", LOW);
 
 			//MOD_ADD_DETOUR_MEMBER(CTFBotDead_Update, "CTFBotDead::Update");
 

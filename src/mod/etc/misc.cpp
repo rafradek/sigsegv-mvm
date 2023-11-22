@@ -212,6 +212,17 @@ namespace Mod::Etc::Misc
 		}
 		return proj;
 	}
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllWeapons)
+	{
+		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllWeapons)();
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		player->ClearDisguiseWeaponList();
+		if (player->m_Shared->m_hDisguiseWeapon != nullptr) {
+			player->m_Shared->m_hDisguiseWeapon->Remove();
+			player->m_Shared->m_hDisguiseWeapon = nullptr;
+		}
+	}
 
     class CMod : public IMod
 	{
@@ -246,6 +257,9 @@ namespace Mod::Etc::Misc
 
 			// Fix arrow crash when firing too fast
 			MOD_ADD_DETOUR_MEMBER(CTFPipebombLauncher_FireProjectile, "CTFPipebombLauncher::FireProjectile");
+
+			// Remove inactive disguise weapons on death
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllWeapons, "CTFPlayer::RemoveAllWeapons");
 			
 		}
 	};

@@ -1123,6 +1123,7 @@
 				"CTFPlayer::CheckBlockBackstab" "_ZN9CTFPlayer18CheckBlockBackstabEPS_"
 				"CTFPlayer::RemoveOwnedProjectiles" "_ZN9CTFPlayer22RemoveOwnedProjectilesEv"
 				"CTFPlayer::MaybeDrawRailgunBeam" "_ZN9CTFPlayer20MaybeDrawRailgunBeamEP16IRecipientFilterP13CTFWeaponBaseRK6VectorS6_"
+				"CTFPlayer::RemoveAllWeapons" "_ZN9CTFPlayer16RemoveAllWeaponsEv"
 				
 				"CTFPlayerShared::SetDefaultItemChargeMeters" "_ZN15CTFPlayerShared26SetDefaultItemChargeMetersEv"
 				"CTFPlayerShared::SetItemChargeMeter"         "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf"
@@ -1130,7 +1131,8 @@
 				"CTFPlayerShared::StopHealing"                "_ZN15CTFPlayerShared11StopHealingEP11CBaseEntity"
 				"CTFPlayerShared::FindHealerIndex"            "_ZN15CTFPlayerShared15FindHealerIndexEP11CBaseEntity"
 				"CTFPlayerShared::CanRecieveMedigunChargeEffect" "_ZNK15CTFPlayerShared29CanRecieveMedigunChargeEffectE20medigun_charge_types"
-				
+				"CTFPlayerShared::OnAddTeleported" "_ZN15CTFPlayerShared15OnAddTeleportedEv"
+				"CTFPlayerShared::OnRemoveTeleported" "_ZN15CTFPlayerShared18OnRemoveTeleportedEv"
 				
 			}
 		}

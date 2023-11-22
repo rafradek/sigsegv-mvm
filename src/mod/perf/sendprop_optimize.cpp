@@ -1505,6 +1505,25 @@ namespace Mod::Perf::SendProp_Optimize
     }
 
 #ifdef SE_TF2
+    THINK_FUNC_DECL(SetVisibleStateDelay) {
+		auto player = reinterpret_cast<CBasePlayer *>(this);
+        if (player->IsAlive()) return;
+        for (int i = 0; i < player->GetNumWearables(); i++) {
+            CEconWearable *wearable = player->GetWearable(i);
+            if (wearable == nullptr) continue;
+            wearable->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
+        }
+        for (int i = 0; i < player->WeaponCount(); i++) {
+            CBaseCombatWeapon *weapon = player->GetWeapon(i);
+            if (weapon == nullptr) continue;
+            weapon->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
+        }
+        for (int i = 0; i < MAX_VIEWMODELS; i++) {
+            CBaseEntity *viewmodel = player->GetViewModel(i, false);
+            if (viewmodel == nullptr) continue;
+            viewmodel->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
+        }
+    }
     THINK_FUNC_DECL(SetVisibleStateWeapon) {
         auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
         if (weapon->GetOwnerEntity() != nullptr && (!weapon->GetOwnerEntity()->IsAlive() || (weapon->GetOwnerEntity()->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE))) {
@@ -1520,16 +1539,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
 		auto player = reinterpret_cast<CBasePlayer *>(this);
 		DETOUR_MEMBER_CALL(CBasePlayer_Event_Killed)(info);
-        for (int i = 0; i < player->GetNumWearables(); i++) {
-            CEconWearable *wearable = player->GetWearable(i);
-            if (wearable == nullptr) continue;
-            THINK_FUNC_SET(wearable,SetVisibleState, gpGlobals->curtime + 0.5f);
-        }
-        for (int i = 0; i < player->WeaponCount(); i++) {
-            CBaseCombatWeapon *weapon = player->GetWeapon(i);
-            if (weapon == nullptr) continue;
-            THINK_FUNC_SET(weapon,SetVisibleStateWeapon, gpGlobals->curtime + 0.5f);
-        }
+        THINK_FUNC_SET(player,SetVisibleStateDelay, gpGlobals->curtime + 0.5f);
 	}
     
     DETOUR_DECL_MEMBER(void, CTFWeaponBase_OnActiveStateChanged, int oldState)
@@ -1563,6 +1573,11 @@ namespace Mod::Perf::SendProp_Optimize
             if (weapon == nullptr) continue;
             if (!(player->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE))
             weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+        }
+        for (int i = 0; i < MAX_VIEWMODELS; i++) {
+            CBaseEntity *viewmodel = player->GetViewModel(i, false);
+            if (viewmodel == nullptr) continue;
+            viewmodel->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
         }
 	}
     

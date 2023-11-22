@@ -43,10 +43,15 @@ namespace Mod::Etc::Mapentity_Additions
     class FakeParentModule : public EntityModule
     {
     public:
-        FakeParentModule(CBaseEntity *entity) : EntityModule(entity) {}
+        FakeParentModule(CBaseEntity *entity) : EntityModule(entity), m_pMe(entity) {}
+
+        void SetParent(CBaseEntity *parent);
+
         CHandle<CBaseEntity> m_hParent;
         bool m_bParentSet = false;
         bool m_bDeleteWithParent = false;
+        int m_nOldMoveType = 0;
+        CBaseEntity *m_pMe;
     };
 
     class MathVectorModule : public EntityModule

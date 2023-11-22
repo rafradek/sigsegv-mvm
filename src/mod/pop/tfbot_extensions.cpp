@@ -23,7 +23,8 @@
 #include <ctime>
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
-
+#include "mod/etc/mapentity_additions.h"
+#include "mod/etc/entity_limit_manager.h"
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
 
@@ -2082,12 +2083,12 @@ namespace Mod::Pop::TFBot_Extensions
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
 				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
-				auto world = GetWorldEntity();
+				auto world = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
+				if (rtti_cast<CBaseGrenade *>(proj) != nullptr && rtti_cast<CBaseGrenade *>(proj)->GetThrower() == player) {
+					rtti_cast<CBaseGrenade *>(proj)->SetThrower(world);
+				}
 				if (proj->GetOwnerEntity() == player) {
 					proj->SetOwnerEntity(world);
-					if (rtti_cast<CBaseGrenade *>(proj) != nullptr) {
-						rtti_cast<CBaseGrenade *>(proj)->SetThrower(world);
-					}
 					if (rtti_cast<CTFProjectile_Rocket *>(proj) != nullptr)
 						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(world);
 					else if (rtti_cast<CTFBaseProjectile *>(proj) != nullptr)
@@ -2098,8 +2099,6 @@ namespace Mod::Pop::TFBot_Extensions
 						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(world);
 					else if (rtti_cast<CTFProjectile_EnergyBall *>(proj) != nullptr)
 						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(world);
-
-					
 				}
 			}
 		}
@@ -2137,6 +2136,52 @@ namespace Mod::Pop::TFBot_Extensions
 			cmd->mousedy = 0;
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+	}
+	
+	class TeleportEffectModule : public EntityModule, public AutoList<TeleportEffectModule>
+	{
+	public:
+		TeleportEffectModule(CBaseEntity *entity) : EntityModule(entity), me(entity), spawntick(gpGlobals->tickcount) {}
+
+		CBaseEntity *me;
+		int spawntick;
+	};
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionAdded, ETFCond cond)
+	{
+		CTFPlayer* player = reinterpret_cast<CTFPlayerShared*>(this)->GetOuter();
+		if (cond == TF_COND_TELEPORTED && player->IsBot() && TFGameRules()->IsMannVsMachineMode()) {
+			// A limit of 4 teleport effects to prevent particle crash
+			if (AutoList<TeleportEffectModule>::List().size() >= 4) {
+				auto ent = AutoList<TeleportEffectModule>::List()[0]->me;
+				ent->Remove();
+				ent->RemoveEntityModule("tpeffects");
+			}
+			auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
+			particles->m_iszEffectName = player->GetTeamNumber() != TF_TEAM_RED ? PStrT<"bot_recent_teleport_blue">() : PStrT<"player_recent_teleport_red">();
+			particles->m_bStartActive = true;
+			DispatchSpawn(particles);
+			particles->Activate();
+			particles->SetParent(player, -1);
+			particles->SetLocalOrigin(vec3_origin);
+			particles->SetLocalAngles(vec3_angle);
+			Mod::Etc::Entity_Limit_Manager::MarkEntityAsDisposable(particles);
+			particles->AddEntityModule("tpeffects", new TeleportEffectModule(particles));
+			player->SetCustomVariable("tpparticles", Variant((CBaseEntity *)particles));
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionAdded)(cond);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionRemoved, ETFCond cond)
+	{
+		CTFPlayer* player = reinterpret_cast<CTFPlayerShared*>(this)->GetOuter();
+		if (cond == TF_COND_TELEPORTED && player->IsBot() && TFGameRules()->IsMannVsMachineMode()) {
+			variant_t value;
+			if (player->GetCustomVariableVariant<"tpparticles">(value) && value.Entity() != nullptr) {
+				value.Entity()->Remove();
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionRemoved)(cond);
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
@@ -2285,9 +2330,12 @@ namespace Mod::Pop::TFBot_Extensions
 			// Remove frontstabbing from sapped not stunned bots
 			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
 
-			// Remove frontstabbing from sapped not stunned bots
+			// Fix Freeze input cond on bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");
 			
+			// Add teleporter dust on bots
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionAdded, "CTFPlayerShared::OnConditionAdded");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionRemoved, "CTFPlayerShared::OnConditionRemoved");
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

@@ -60,7 +60,16 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
 
             int desiredSlot = GetHLTVSlot();
             if (!rc_CBaseServer_CreateFakeClient_HLTV) {
-                desiredSlot = gpGlobals->maxClients - 1;
+                // First set bots at slots 62-33. If thats not possible, go from 100
+                // Why slot 62? Because player index above 63 causes some glitches
+                bool hasFreeSlotInRange = false;
+                for (int i = MIN(62, gpGlobals->maxClients - 1); i >= 33; i--) {
+                    if (!server->GetClient(i)->IsConnected() && !server->GetClient(i)->IsFakeClient()) {
+                        hasFreeSlotInRange = true;
+                        break;
+                    }
+                }
+                desiredSlot = hasFreeSlotInRange ? MIN(62, gpGlobals->maxClients - 1) : gpGlobals->maxClients - 1;
             }
 
             for (int i = desiredSlot; i >= 0; i--) {

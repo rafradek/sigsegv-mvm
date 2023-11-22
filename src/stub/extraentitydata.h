@@ -26,11 +26,14 @@ public:
 class CustomVariable
 {
 public:
-    CustomVariable(const char *key, const variant_t &value)
+    CustomVariable(string_t key, const variant_t &value)
     {
-        this->key = AllocPooledString(key);
+        this->key = key;
         this->value = value;
     }
+
+    CustomVariable(const char *key, const variant_t &value) : CustomVariable(AllocPooledString(key), value) {}
+
     string_t key;
     variant_t value;
 };
@@ -566,6 +569,48 @@ inline bool CBaseEntity::SetCustomVariable(const char *key, const variant_t &val
     }
     if (!found && create) {
         list.emplace_back(key, value);
+        return true;
+    }
+    return false;
+}
+
+inline bool CBaseEntity::SetCustomVariable(string_t key, const variant_t &value, bool create, bool find)
+{
+    auto &list = GetExtraData(this)->GetCustomVariables();
+    bool found = false;
+    if (find) {
+        for (auto &var : list) {
+            if (var.key == key) {
+                var.value = value;
+                found = true;
+                return true;
+            }
+        }
+    }
+    if (!found && create) {
+        list.emplace_back(key, value);
+        return true;
+    }
+    return false;
+}
+
+template<FixedString lit>
+inline bool CBaseEntity::SetCustomVariable(const variant_t &value, bool create, bool find)
+{
+    auto &list = GetExtraData(this)->GetCustomVariables();
+    bool found = false;
+    static PooledString pooled(lit);
+    if (find) {
+        for (auto &var : list) {
+            if (var.key == pooled) {
+                var.value = value;
+                found = true;
+                return true;
+            }
+        }
+    }
+    if (!found && create) {
+        list.emplace_back((string_t)pooled, value);
         return true;
     }
     return false;

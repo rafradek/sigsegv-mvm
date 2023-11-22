@@ -5875,6 +5875,7 @@
 				"CBasePlayer::UpdateOnRemove" "_ZN11CBasePlayer14UpdateOnRemoveEv"
 				"CBasePlayer::Event_Killed" "_ZN11CBasePlayer12Event_KilledERK15CTakeDamageInfo"
 				"CBasePlayer::Spawn" "_ZN11CBasePlayer5SpawnEv"
+				"CBasePlayer::Activate" "_ZN11CBasePlayer8ActivateEv"
 
 				"CEyeballBoss::GetLocomotionInterface" "_ZNK12CEyeballBoss22GetLocomotionInterfaceEv"
 				"CEyeballBoss::GetVisionInterface" "_ZNK12CEyeballBoss18GetVisionInterfaceEv"
@@ -6093,6 +6094,12 @@
 				"CTFPipebombLauncher::Deploy" "_ZN19CTFPipebombLauncher6DeployEv"
 				"CTFPipebombLauncher::FireProjectile" "_ZN19CTFPipebombLauncher14FireProjectileEP9CTFPlayer"
 
+				"CItem::ItemTouch" "_ZN5CItem9ItemTouchEP11CBaseEntity"
+
+				"CTFBaseBoss::GetCurrencyValue" "_ZN11CTFBaseBoss16GetCurrencyValueEv"
+
+				"CTFTankBoss::GetCurrencyValue" "_ZN11CTFTankBoss16GetCurrencyValueEv"
+				
 				"CLagCompensationManager::BacktrackPlayer" "_ZN23CLagCompensationManager15BacktrackPlayerEP11CBasePlayerf"
 
 				"SelectWeightedSequence" "_Z22SelectWeightedSequenceP10CStudioHdrii"
@@ -6160,6 +6167,7 @@
 				"CBaseServer::FillServerInfo" "_ZN11CBaseServer14FillServerInfoER14SVC_ServerInfo"
 				
 				"CGameServer::SendClientMessages" "_ZN11CGameServer18SendClientMessagesEb"
+				"CGameServer::RemoveClientFromGame" "_ZN11CGameServer20RemoveClientFromGameEP11CBaseClient"
 
 				"CVEngineServer::BuildEntityClusterList" "_ZN14CVEngineServer22BuildEntityClusterListEP7edict_tP9PVSInfo_t"
 				"CVEngineServer::CheckAreasConnected" "_ZN14CVEngineServer19CheckAreasConnectedEii"

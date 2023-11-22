@@ -30,9 +30,17 @@
 #include "util/expression_eval.h"
 #include "mod/etc/mapentity_additions.h"
 
+#ifndef NO_MVM
+namespace Mod::Pop::WaveSpawn_Extensions
+{
+    void RemoveWaveSpawnEntities(CWaveSpawnPopulator *populator);
+}
+#endif
+
 namespace Mod::Etc::Mapentity_Additions
 {
-    
+    bool SpawnTFBotRetry(CBaseEntity *base);
+
     class CaseMenuHandler : public IMenuHandler
     {
     public:
@@ -298,6 +306,12 @@ namespace Mod::Etc::Mapentity_Additions
             variant_t variant;
             this->FireCustomOutput<"onfakeparentkilled">(this, this, variant);
             data->m_bParentSet = false;
+            if (!this->GetCustomVariableBool<"rotationonly">()) {
+                this->SetAbsVelocity(vec3_origin);
+                if (this->GetMoveType() == MOVETYPE_FLY) {
+                    this->SetMoveType(data->m_nOldMoveType);
+                }
+            }
             if (data->m_bDeleteWithParent) {
                 this->Remove();
                 return;
@@ -312,8 +326,9 @@ namespace Mod::Etc::Mapentity_Additions
 
         auto bone = this->GetCustomVariable<"bone">();
         auto attachment = this->GetCustomVariable<"attachment">();
-        bool posonly = this->GetCustomVariableFloat<"positiononly">();
-        bool rotationonly = this->GetCustomVariableFloat<"rotationonly">();
+        auto attachmentNum = this->GetCustomVariableInt<"attachmentindex">(-1);
+        bool posonly = this->GetCustomVariableBool<"positiononly">();
+        bool rotationonly = this->GetCustomVariableBool<"rotationonly">();
         Vector offset = this->GetCustomVariableVector<"fakeparentoffset">();
         QAngle offsetangle = this->GetCustomVariableAngle<"fakeparentrotation">();
         matrix3x4_t transform;
@@ -326,6 +341,10 @@ namespace Mod::Etc::Mapentity_Additions
             CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
             anim->GetAttachment(anim->LookupAttachment(attachment), transform);
         }
+        else if (attachmentNum != -1) {
+            CBaseAnimating *anim = rtti_cast<CBaseAnimating *>(parent);
+            anim->GetAttachment(attachmentNum, transform);
+        }
         else{
             transform = parent->EntityToWorldTransform();
         }
@@ -333,7 +352,7 @@ namespace Mod::Etc::Mapentity_Additions
         if (!rotationonly) {
             VectorTransform(offset, transform, pos);
             this->SetAbsOrigin(pos);
-            this->SetAbsVelocity(vec3_origin);
+            this->SetAbsVelocity(data->m_hParent->GetAbsVelocity());
         }
 
         if (!posonly) {
@@ -343,6 +362,24 @@ namespace Mod::Etc::Mapentity_Additions
         }
 
         this->SetNextThink(gpGlobals->curtime + 0.01f, "FakeParentModuleTick");
+    }
+
+    void FakeParentModule::SetParent(CBaseEntity *parent) {
+        if (this->m_hParent == nullptr && parent != nullptr && !this->m_pMe->GetCustomVariableBool<"rotationonly">()) {
+            this->m_nOldMoveType = this->m_pMe->GetMoveType();
+            this->m_pMe->SetMoveType(MOVETYPE_FLY);
+        }
+        if (this->m_hParent != nullptr && parent == nullptr && !this->m_pMe->GetCustomVariableBool<"rotationonly">()) {
+            this->m_pMe->SetAbsVelocity(vec3_origin);
+            if (this->m_pMe->GetMoveType() == MOVETYPE_FLY) {
+                this->m_pMe->SetMoveType(this->m_nOldMoveType);
+            }
+        }
+        this->m_bParentSet = parent != nullptr;
+        this->m_hParent = parent;
+        if (parent != nullptr) {
+            THINK_FUNC_SET(this->m_pMe, FakeParentModuleTick, gpGlobals->curtime);
+        }
     }
 
     THINK_FUNC_DECL(AimFollowModuleTick)
@@ -703,6 +740,191 @@ namespace Mod::Etc::Mapentity_Additions
             }
         }}
     });
+
+#ifndef NO_MVM
+    extern bool betweenWavesModifiedWaveBar;
+    ClassnameFilter point_populator_interface_filter("point_populator_interface", {
+        {"CollectCash"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            // Distribute cash from packs
+            int packsCurrency = TFObjectiveResource()->m_nMvMWorldMoney;
+            
+            for (int i = 0; i < ICurrencyPackAutoList::AutoList().Count(); ++i) {
+                auto pack = rtti_cast<CCurrencyPack *>(ICurrencyPackAutoList::AutoList()[i]);
+                if (pack == nullptr) continue;
+                pack->SetDistributed(true);
+                pack->Remove();
+            }
+            TFObjectiveResource()->m_nMvMWorldMoney = 0;
+            TFGameRules()->DistributeCurrencyAmount( packsCurrency, NULL, true, false, false );
+        }},
+        {"FinishWave"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager != nullptr) {
+                CWave *wave = g_pPopulationManager->GetCurrentWave();
+                ForEachTFBot([&](CTFBot *bot){
+					if (bot->GetTeamNumber() != TEAM_SPECTATOR) {
+						bot->CommitSuicide();
+						bot->ForceChangeTeam(TEAM_SPECTATOR, true);
+					}
+				});
+                if (wave != nullptr) {
+                    int unallocatedCurrency = 0;
+					FOR_EACH_VEC(wave->m_WaveSpawns, i) {
+						CWaveSpawnPopulator *wavespawn = wave->m_WaveSpawns[i];
+						if (wavespawn->m_unallocatedCurrency != -1) {
+							unallocatedCurrency += wavespawn->m_unallocatedCurrency;
+						}
+					}
+					TFGameRules()->DistributeCurrencyAmount( unallocatedCurrency, NULL, true, true, false );
+
+				    wave->ForceFinish();
+				    wave->ForceFinish();
+				    wave->WaveCompleteUpdate();
+                }
+            }
+        }},
+        {"FinishWaveNoUnspawnedMoney"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager != nullptr) {
+                CWave *wave = g_pPopulationManager->GetCurrentWave();
+                ForEachTFBot([&](CTFBot *bot){
+					if (bot->GetTeamNumber() != TEAM_SPECTATOR || bot->IsAlive()) {
+						bot->CommitSuicide();
+						bot->ForceChangeTeam(TEAM_SPECTATOR, true);
+					}
+				});
+                if (wave != nullptr) {
+				    wave->ForceFinish();
+				    wave->ForceFinish();
+				    wave->WaveCompleteUpdate();
+                }
+            }
+        }},
+        {"JumpToWave"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Value.Convert(FIELD_INTEGER);
+            int val = Value.Int();
+            if (g_pPopulationManager != nullptr) {
+                waveToJumpNextTick = val - 1;
+                waveToJumpNextTickMoney = val > 1 ? -1.0f : 1.0f;
+            }
+        }},
+        {"JumpToWaveCalculateMoney"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            Value.Convert(FIELD_INTEGER);
+            int val = Value.Int();
+            if (g_pPopulationManager != nullptr) {
+                waveToJumpNextTick = val - 1;
+                waveToJumpNextTickMoney = 1.0f;
+            }
+        }},
+        {"PauseWavespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager == nullptr) return;
+
+            CWave *wave = g_pPopulationManager->GetCurrentWave();
+            for (auto waveSpawn : wave->m_WaveSpawns) {
+                if (!NamesMatch(Value.String(), waveSpawn->m_name.Get())) continue;
+                if (waveSpawn->extra == nullptr) continue;
+
+                waveSpawn->extra->m_bPaused = true;
+            }
+        }},
+        {"ResumeWavespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager == nullptr) return;
+
+            CWave *wave = g_pPopulationManager->GetCurrentWave();
+            for (auto waveSpawn : wave->m_WaveSpawns) {
+                if (!NamesMatch(Value.String(), waveSpawn->m_name.Get())) continue;
+                if (waveSpawn->extra == nullptr) continue;
+
+                waveSpawn->extra->m_bPaused = false;
+            }
+        }},
+        {"ReduceFromWavespawn$"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager == nullptr) return;
+            Value.Convert(FIELD_INTEGER);
+            
+            const char *name = szInputName + strlen("ReduceFromWavespawn$");
+
+            CWave *wave = g_pPopulationManager->GetCurrentWave();
+            CTFObjectiveResource *res = TFObjectiveResource();
+            for (auto waveSpawn : wave->m_WaveSpawns) {
+                if (!NamesMatch(name, waveSpawn->m_name.Get())) continue;
+                if (waveSpawn->m_state >= CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD) continue;
+                if (waveSpawn->m_state < CWaveSpawnPopulator::SPAWNING) {
+                    waveSpawn->m_countSpawnedSoFar = 0;
+                }
+
+                int amountToReduce = Min(waveSpawn->m_totalCount - waveSpawn->m_countSpawnedSoFar, Value.Int());
+
+                if (waveSpawn->m_bSupportWave && !waveSpawn->m_bLimitedSupport) continue;
+
+                for (int i = waveSpawn->m_totalCount - amountToReduce; i < waveSpawn->m_totalCount; i++) {
+			        int currency = waveSpawn->GetCurrencyAmountPerDeath();
+                    TFGameRules()->DistributeCurrencyAmount( currency, NULL, true, true, false );
+
+                    auto str = waveSpawn->m_Spawner->GetClassIcon(i);
+                    if (str != NULL_STRING) {
+                        int flags = MVM_CLASS_FLAG_NORMAL;
+                        if (waveSpawn->m_Spawner->IsMiniBoss(i)) {
+                            flags |= MVM_CLASS_FLAG_MINIBOSS;
+                        }
+                        res->DecrementMannVsMachineWaveClassCount(waveSpawn->m_Spawner->GetClassIcon(i), waveSpawn->m_bLimitedSupport ? MVM_CLASS_FLAG_SUPPORT_LIMITED : flags);
+                        betweenWavesModifiedWaveBar = TFGameRules()->State_Get() != GR_STATE_RND_RUNNING;
+                    }
+                }
+                
+                waveSpawn->m_totalCount -= amountToReduce;
+                if (waveSpawn->m_totalCount <= waveSpawn->m_countSpawnedSoFar) {
+                    waveSpawn->SetState(CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD);
+                }
+            }
+        }},
+        {"FinishWavespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager == nullptr) return;
+
+            CWave *wave = g_pPopulationManager->GetCurrentWave();
+            CTFObjectiveResource *res = TFObjectiveResource();
+            for (auto waveSpawn : wave->m_WaveSpawns) {
+                if (!NamesMatch(Value.String(), waveSpawn->m_name.Get())) continue;
+                if (waveSpawn->m_state >= CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD) continue;
+                if (waveSpawn->m_state < CWaveSpawnPopulator::SPAWNING) {
+                    waveSpawn->m_countSpawnedSoFar = 0;
+                }
+
+                TFGameRules()->DistributeCurrencyAmount( waveSpawn->m_unallocatedCurrency, NULL, true, true, false );
+                waveSpawn->m_unallocatedCurrency = 0;
+                waveSpawn->SetState(CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD);
+                if (waveSpawn->m_bSupportWave && !waveSpawn->m_bLimitedSupport) continue;
+
+                for (int i = waveSpawn->m_countSpawnedSoFar; i < waveSpawn->m_totalCount; i++) {
+                    auto str = waveSpawn->m_Spawner->GetClassIcon(i);
+                    if (str != NULL_STRING) {
+                        int flags = MVM_CLASS_FLAG_NORMAL;
+                        if (waveSpawn->m_Spawner->IsMiniBoss(i)) {
+                            flags |= MVM_CLASS_FLAG_MINIBOSS;
+                        }
+                        res->DecrementMannVsMachineWaveClassCount(waveSpawn->m_Spawner->GetClassIcon(i), waveSpawn->m_bLimitedSupport ? MVM_CLASS_FLAG_SUPPORT_LIMITED : flags);
+                        betweenWavesModifiedWaveBar = TFGameRules()->State_Get() != GR_STATE_RND_RUNNING;
+                    }
+                }
+                
+                waveSpawn->m_totalCount = 0;
+            }
+        }},
+        {"KillWavespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            if (g_pPopulationManager == nullptr) return;
+            
+            CWave *wave = g_pPopulationManager->GetCurrentWave();
+            for (auto waveSpawn : wave->m_WaveSpawns) {
+                if (!FStrEq(waveSpawn->m_name.Get(), Value.String())) continue;
+                Mod::Pop::WaveSpawn_Extensions::RemoveWaveSpawnEntities(waveSpawn);
+            }
+        }}
+    });
+#endif
+    ClassnameFilter tf_point_nav_interface_filter("tf_point_nav_interface", {
+        {"ReloadNavAttributes"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            TheNavMesh->RecomputeInternalData();
+        }},
+    });
+    
     ClassnameFilter player_filter("player", {
         {"AllowClassAnimations"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             CTFPlayer *player = ToTFPlayer(ent);
@@ -754,6 +976,24 @@ namespace Mod::Etc::Mapentity_Additions
                 player->ForceRespawn();
                 player->Teleport(&pos, &ang, &vel);
                 
+            }
+        }},
+        {"SetTeamQuiet"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            CTFPlayer *player = ToTFPlayer(ent);
+            
+            if (player != nullptr) {
+                // Disable setup to allow class changing during waves in mvm
+                static ConVarRef endless("tf_mvm_endless_force_on");
+                endless.SetValue(true);
+
+                int index = strtol(Value.String(), nullptr, 10);
+                if (index > 0 && index < 10) {
+                    player->HandleCommand_JoinClass(g_aRawPlayerClassNames[index]);
+                }
+                else {
+                    player->HandleCommand_JoinClass(Value.String());
+                }
+                endless.SetValue(false);
             }
         }},
         {"ForceRespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
@@ -1117,19 +1357,40 @@ namespace Mod::Etc::Mapentity_Additions
                 if (slot != -1) {
                     weapon = player->Weapon_GetSlot(slot);
                 }
-                if (weapon != nullptr)
+                if (weapon == player->GetActiveTFWeapon()) {
+                    player->SwitchToNextBestWeapon(weapon);
+                }
+                if (weapon != nullptr) {
+                    player->Weapon_Detach(weapon);
                     weapon->Remove();
+                }
         }},
         {"RemoveItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer *player = ToTFPlayer(ent);
                 ForEachTFPlayerEconEntity(player, [&](CEconEntity *entity){
                     if (entity->GetItem() != nullptr && FStrEq(GetItemName(entity->GetItem()), Value.String())) {
                         if (entity->MyCombatWeaponPointer() != nullptr) {
+                            if (entity == player->GetActiveTFWeapon()) {
+                                player->SwitchToNextBestWeapon(entity->MyCombatWeaponPointer());
+                            }
                             player->Weapon_Detach(entity->MyCombatWeaponPointer());
                         }
                         entity->Remove();
                     }
                 });
+        }},
+        {"RemoveItemSlot"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+                CTFPlayer *player = ToTFPlayer(ent);
+                auto item = player->GetEntityForLoadoutSlot(Value.Int());
+                if (item != nullptr) {
+                    if (item->MyCombatWeaponPointer() != nullptr) {
+                        if (item == player->GetActiveTFWeapon()) {
+                            player->SwitchToNextBestWeapon(item->MyCombatWeaponPointer());
+                        }
+                        player->Weapon_Detach(item->MyCombatWeaponPointer());
+                    }
+                    item->Remove();
+                }
         }},
         {"GiveItem"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
                 CTFPlayer *player = ToTFPlayer(ent);
@@ -1961,11 +2222,7 @@ namespace Mod::Etc::Mapentity_Additions
             auto data = ent->GetOrCreateEntityModule<FakeParentModule>("fakeparent");
             CBaseEntity *target = FindTargetFromVariant(Value, ent, pActivator, pCaller);
             if (target != nullptr) {
-                data->m_hParent = target;
-                data->m_bParentSet = true;
-                if (ent->GetNextThink("FakeParentModuleTick") < gpGlobals->curtime) {
-                    THINK_FUNC_SET(ent, FakeParentModuleTick, gpGlobals->curtime + 0.01);
-                }
+                data->SetParent(target);
             }
         }},
         {"SetAimFollow"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
@@ -1984,8 +2241,7 @@ namespace Mod::Etc::Mapentity_Additions
         {"ClearFakeParent"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             auto data = ent->GetEntityModule<FakeParentModule>("fakeparent");
             if (data != nullptr) {
-                data->m_hParent = nullptr;
-                data->m_bParentSet = false;
+                data->SetParent(nullptr);
             }
         }},
         {"SetVar$"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
@@ -2150,6 +2406,12 @@ namespace Mod::Etc::Mapentity_Additions
         {"SetSolid"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             Value.Convert(FIELD_INTEGER);
             ent->CollisionProp()->SetSolid(Value.Int());
+        }}
+    });
+    
+    ClassnameFilter tf_bot_spawn_filter("$tf_bot_spawn", {
+        {"Spawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
+            SpawnTFBotRetry(ent);
         }}
     });
 }

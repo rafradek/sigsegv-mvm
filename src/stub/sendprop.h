@@ -706,15 +706,17 @@ private:
 	CFrameSnapshot		*m_pSnapshot;
 };
 
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_StringToString;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_VectorXYToVectorXY;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_QAngles;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_Color32ToInt;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_EHandleToInt;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_IntAddOne;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_ShortAddOne;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_StringT_To_String;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_AngleToFloat;
-extern GlobalThunk<SendVarProxyFn> DLLSendProxy_Empty;
+typedef void (SendVarProxyFnRef)( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID );
+
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_StringToString;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_VectorXYToVectorXY;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_QAngles;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_Color32ToInt;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_EHandleToInt;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_IntAddOne;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_ShortAddOne;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_StringT_To_String;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_AngleToFloat;
+extern GlobalThunk<SendVarProxyFnRef> DLLSendProxy_Empty;
 
 #endif

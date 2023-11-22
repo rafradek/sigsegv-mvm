@@ -322,10 +322,12 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	{
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
 		auto mod = wep->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-		if (mod != nullptr && wep->GetTFPlayerOwner() != nullptr) {
+		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		
+		if (result && mod != nullptr && wep->GetTFPlayerOwner() != nullptr) {
 			OnEquipUnintendedClassWeapon(wep->GetTFPlayerOwner(), wep, mod);
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		return result;
 	}
 
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
@@ -333,10 +335,12 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
         
 		auto mod = weapon->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-		if (mod != nullptr && weapon->GetTFPlayerOwner() != nullptr) {
+        auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+		
+		if (result && mod != nullptr && weapon->GetTFPlayerOwner() != nullptr) {
 			OnUnequipUnintendedClassWeapon(weapon->GetTFPlayerOwner(), weapon, mod);
 		}
-        return DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+		return result;
     }
 
 	DETOUR_DECL_MEMBER(bool, CBaseCombatCharacter_Weapon_Detach, CBaseCombatWeapon *weapon)

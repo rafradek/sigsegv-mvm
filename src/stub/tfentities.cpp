@@ -117,6 +117,7 @@ MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> CEconWearable::vt_UnEquip
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFWearable, m_hWeaponAssociatedWith, CTFWearable);
 IMPL_SENDPROP(bool, CTFWearable, m_bDisguiseWearable, CTFWearable);
+IMPL_RELATIVE(bool, CTFWearable, m_bAlwaysAllow, m_bDisguiseWearable, -sizeof(uintptr_t) * 2);
 
 MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_DoSpecialAction ( "CTFWearableDemoShield::DoSpecialAction");
 MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_EndSpecialAction( "CTFWearableDemoShield::EndSpecialAction");

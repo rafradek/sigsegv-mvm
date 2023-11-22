@@ -3574,4 +3574,128 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4678"
+    {
+        "name"	"custom item model attachment"
+        "attribute_class"	"custom_item_model_attachment"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4679"
+    {
+        "name"	"custom item model attachment 2"
+        "attribute_class"	"custom_item_model_attachment"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4680"
+    {
+        "name"	"custom item model attachment 3"
+        "attribute_class"	"custom_item_model_attachment"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4681"
+    {
+        "name"	"custom weapon deploy sound"
+        "attribute_class"	"custom_weapon_deploy_sound"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4682"
+    {
+        "name"	"custom item model attachment viewmodel"
+        "attribute_class"	"custom_item_model_attachment_viewmodel"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4683"
+    {
+        "name"	"custom item model attachment viewmodel 2"
+        "attribute_class"	"custom_item_model_attachment_viewmodel"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4684"
+    {
+        "name"	"custom item model attachment viewmodel 3"
+        "attribute_class"	"custom_item_model_attachment_viewmodel"
+		"attribute_type"	"string"
+        "description_string"	"melee cleave attack"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
+    "4685"
+    {
+        "name"	"spread angle pattern"
+        "attribute_class"	"spread_angle_pattern"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4686"
+    {
+        "name"	"spread offset pattern"
+        "attribute_class"	"spread_offset_pattern"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4687"
+    {
+        "name"	"proj attribute pattern"
+        "attribute_class"	"proj_attribute_pattern"
+		"attribute_type"	"string"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4688"
+    {
+        "name"	"shoot pattern reset time"
+        "attribute_class"	"shoot_pattern_reset_time"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4689"
+    {
+        "name"	"shoot pattern no rollback"
+        "attribute_class"	"shoot_pattern_no_rollback"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

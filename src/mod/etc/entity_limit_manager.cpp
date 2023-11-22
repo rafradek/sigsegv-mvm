@@ -10,9 +10,22 @@
 #include "util/clientmsg.h"
 #include "util/admin.h"
 #include "re/nextbot.h"
+#include "mod/etc/entity_limit_manager.h"
 
 namespace Mod::Etc::Entity_Limit_Manager
 {
+    class DisposableEntityModule : public EntityModule, public AutoList<DisposableEntityModule>
+    {
+    public:
+        DisposableEntityModule(CBaseEntity *entity) : EntityModule(entity), me(entity) {}
+
+        CBaseEntity *me;
+    };
+
+    void MarkEntityAsDisposable(CBaseEntity *entity) {
+        entity->GetOrCreateEntityModule<DisposableEntityModule>("disposableentity");
+    }
+
     ConVar sig_etc_entity_limit_manager_viewmodel("sig_etc_entity_limit_manager_viewmodel", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Remove usused offhand viewmodel entity for other classes than spy");
 
@@ -180,6 +193,10 @@ namespace Mod::Etc::Entity_Limit_Manager
             auto scriptedScene = servertools->FindEntityByClassname(nullptr, "instanced_scripted_scene");
             if (scriptedScene != nullptr) {
                 entityToDelete = scriptedScene;
+            }
+            // Entities marked as disposable
+            if (entityToDelete == nullptr && !AutoList<DisposableEntityModule>::List().empty() && !AutoList<DisposableEntityModule>::List()[0]->me->IsMarkedForDeletion()) {
+                entityToDelete = AutoList<DisposableEntityModule>::List()[0]->me;
             }
             if (entityToDelete == nullptr) {
                 // Delete trails

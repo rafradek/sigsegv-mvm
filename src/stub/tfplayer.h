@@ -296,9 +296,9 @@ public:
 	void SetCustomModel(const char *pszModelPath, bool bUseClassAnimations = true) { ft_SetCustomModel(this, pszModelPath, bUseClassAnimations); }
 	const char *GetHandModelName(int handIndex) { return ft_GetHandModelName(this, handIndex); }
 	
-	// TODO: accessor for m_iszClassIcon
-	// TODO: accessor for m_iszCustomModel
 	const char *GetCustomModel() { return STRING((string_t)this->m_iszCustomModel);}
+	const char *GetClassIcon() { return STRING((string_t)this->m_iszClassIcon);}
+	void SetClassIcon(string_t string) { this->m_iszClassIcon = string; }
 	
 	DECL_SENDPROP(bool,                 m_bUseClassAnimations);
 private:
