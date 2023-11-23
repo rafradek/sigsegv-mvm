@@ -4804,6 +4804,13 @@ namespace Mod::Attr::Custom_Attributes
 			int iRemoveDamageType = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(econEntity, iRemoveDamageType, remove_damage_type);
 			info.SetDamageType(info.GetDamageType() & ~(iRemoveDamageType));
+
+			int customDmgType = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(econEntity, customDmgType, custom_damage_type_override);
+			if (customDmgType != 0) {
+				if (customDmgType == -1) customDmgType = 0;
+				info.SetDamageCustom(customDmgType);
+			}
 		}
 		// Use construction pda as sentry weapon
 		auto sentry = ToBaseObject(info.GetInflictor());
@@ -8033,7 +8040,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Destroy)();
 	}
-
 	
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CanHolster)
 	{
@@ -8048,6 +8054,26 @@ namespace Mod::Attr::Custom_Attributes
 			if (!hasFullClip && holdFire == 2) return false;
 		}
 		return DETOUR_MEMBER_CALL(CTFWeaponBase_CanHolster)();
+	}
+
+	bool flareCritBefore = false;
+	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_Explode, CGameTrace *tr, CBaseEntity *ent)
+	{
+		flareCritBefore = reinterpret_cast<CTFProjectile_Flare *>(this)->m_bCritical; 
+		DETOUR_MEMBER_CALL(CTFProjectile_Flare_Explode)(tr, ent);
+	}
+
+	DETOUR_DECL_MEMBER(int, CTFProjectile_Flare_GetDamageType)
+	{
+		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
+		if (!flareCritBefore && flare->m_bCritical) {
+			int noCritOnBurning = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(flare->GetOriginalLauncher(), noCritOnBurning, flare_no_crit_burning);
+			if (noCritOnBurning != 0) {
+				flare->m_bCritical = false;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFProjectile_Flare_GetDamageType)();
 	}
 	
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
@@ -9322,6 +9348,8 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Destroy, "CTFWeaponBaseGrenadeProj::Destroy");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Destroy, "CTFBaseRocket::Destroy");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CanHolster, "CTFWeaponBase::CanHolster");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_Explode, "CTFProjectile_Flare::Explode");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_GetDamageType, "CTFProjectile_Flare::GetDamageType");
 
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

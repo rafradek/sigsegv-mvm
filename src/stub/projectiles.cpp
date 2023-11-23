@@ -92,6 +92,8 @@ MemberFuncThunk<CTFProjectile_EnergyBall *, void, CBaseEntity *> CTFProjectile_E
 
 MemberFuncThunk<CTFProjectile_Flare *, void, CBaseEntity *> CTFProjectile_Flare::ft_SetScorer("CTFProjectile_Flare::SetScorer");
 
+IMPL_SENDPROP(bool, CTFProjectile_Flare, m_bCritical, CTFProjectile_Flare);
+
 
 MemberFuncThunk<CTFProjectile_EnergyRing *, float> CTFProjectile_EnergyRing::ft_GetInitialVelocity("CTFProjectile_EnergyRing::GetInitialVelocity");
 

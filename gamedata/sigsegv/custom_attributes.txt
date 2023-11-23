@@ -3698,4 +3698,24 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4690"
+    {
+        "name"	"custom damage type override"
+        "attribute_class"	"custom_damage_type_override"
+        "description_string"	""
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    "4691"
+    {
+        "name"	"flare no crit burning"
+        "attribute_class"	"flare_no_crit_burning"
+        "description_string"	"Flares do not critically hit burning enemies"
+        "description_format"	"value_is_additive"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
 }

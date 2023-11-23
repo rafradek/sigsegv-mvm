@@ -128,6 +128,9 @@ public:
 class CTFProjectile_Flare : public CTFBaseRocket {
 public:
 	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }
+
+	DECL_SENDPROP(bool, m_bCritical);
+
 private:
 	static MemberFuncThunk<CTFProjectile_Flare *, void, CBaseEntity *> ft_SetScorer;
 };

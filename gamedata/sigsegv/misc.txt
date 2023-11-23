@@ -6067,6 +6067,7 @@
 				"CTFBaseRocket::Destroy" "_ZN13CTFBaseRocket7DestroyEbb"
 				
 				"CTFProjectile_Flare::Explode_Air" "_ZN19CTFProjectile_Flare11Explode_AirEP10CGameTraceib"
+				"CTFProjectile_Flare::GetDamageType" "_ZN19CTFProjectile_Flare13GetDamageTypeEv"
 
 				"CTFProjectile_Arrow::GetWeaponID" "_ZNK19CTFProjectile_Arrow11GetWeaponIDEv"
 

@@ -3674,3 +3674,9 @@ WaveSchedule
 
 // Set to 1 to not rollback the pattern when reaching the last cycle
 // "shoot pattern no rollback" 1
+
+// Change custom damage type to something else. Usually it only changes kill icon but sometimes it applies some effects. Available custom damage types: https://developer.valvesoftware.com/wiki/Team_Fortress_2/Scripting/Script_Functions/Constants#ETFDmgCustom
+// "custom damage type override" 47
+
+// Disable crit on burning players for flares
+// "flare no crit burning" 1
