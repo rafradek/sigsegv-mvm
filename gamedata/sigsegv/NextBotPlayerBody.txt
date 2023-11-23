@@ -23,7 +23,11 @@
 					type "sym"
 					sym  "_ZNK10PlayerBody12GetHullWidthEv"
 				}
-				
+				"PlayerBody::Upkeep"
+				{
+					type "sym"
+					sym  "_ZN10PlayerBody6UpkeepEv"
+				}
 			}
 		}
 	}

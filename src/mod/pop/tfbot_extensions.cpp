@@ -2125,7 +2125,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
 		if (player->IsBot() && player->m_Shared->InCond(TF_COND_FREEZE_INPUT)) {
-			cmd->viewangles = player->EyeAngles(); // use the last save angles
+			cmd->viewangles = vec3_angle;//player->EyeAngles(); // use the last save angles
 			cmd->forwardmove = 0.0f;
 			cmd->sidemove = 0.0f;
 			cmd->upmove = 0.0f;
@@ -2136,6 +2136,13 @@ namespace Mod::Pop::TFBot_Extensions
 			cmd->mousedy = 0;
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+	}
+	
+	DETOUR_DECL_MEMBER(void, PlayerBody_Upkeep)
+	{
+		auto body = reinterpret_cast<INextBotComponent *>(this);
+		if (static_cast<CTFPlayer *>(body->GetBot()->GetEntity())->m_Shared->InCond(TF_COND_FREEZE_INPUT)) return;
+		DETOUR_MEMBER_CALL(PlayerBody_Upkeep)();
 	}
 	
 	class TeleportEffectModule : public EntityModule, public AutoList<TeleportEffectModule>
@@ -2332,6 +2339,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 			// Fix Freeze input cond on bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");
+			MOD_ADD_DETOUR_MEMBER(PlayerBody_Upkeep, "PlayerBody::Upkeep");
 			
 			// Add teleporter dust on bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionAdded, "CTFPlayerShared::OnConditionAdded");
