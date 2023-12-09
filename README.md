@@ -38,7 +38,7 @@ apt update
 
 2. Install packages:
 ```
-autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32stdc++-7-dev lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
+autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
 ```
 
 3. Clone Sourcemod, Metamod, SDK repositories, and AMBuild
@@ -59,11 +59,6 @@ git clone https://github.com/alliedmodders/ambuild --depth 1
 pip install ./ambuild
 echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
-```
-
-5. Install packages:
-```
-python2 python-is-python2
 ```
 
 6. Init submodules:
@@ -88,11 +83,6 @@ mv lua-* lua
 cd lua
 make MYCFLAGS='-m32' MYLDFLAGS='-m32'
 cd ../..
-```
-
-8. Install packages:
-```
-python-is-python3
 ```
 
 9. If hl2sdk, metamod, sourcemod directory is placed in a custom location, Update autoconfig.sh with correct paths
