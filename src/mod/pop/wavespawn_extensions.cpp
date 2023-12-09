@@ -671,6 +671,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				break;
 			case CWaveSpawnPopulator::SPAWNING:
 				DisplayMessages(wavespawns[wavespawn].first_spawn_message);
+				wavespawns[wavespawn].hadSpawnState = true;
 				break;
 			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
 				if (wavespawns[wavespawn].hadSpawnState) {

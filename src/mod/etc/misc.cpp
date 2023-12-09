@@ -224,6 +224,14 @@ namespace Mod::Etc::Misc
 		}
 	}
 
+	VHOOK_DECL(bool, CZombie_ShouldCollide, int collisionGroup, int contentsMask)
+    {
+        if (collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT) {
+            return false;
+        }
+        return VHOOK_CALL(CZombie_ShouldCollide)(collisionGroup,contentsMask );
+    }
+
     class CMod : public IMod
 	{
 	public:
@@ -260,6 +268,9 @@ namespace Mod::Etc::Misc
 
 			// Remove inactive disguise weapons on death
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllWeapons, "CTFPlayer::RemoveAllWeapons");
+
+			// Remove collision with zombies
+			MOD_ADD_VHOOK(CZombie_ShouldCollide, TypeName<CZombie>(), "CBaseEntity::ShouldCollide");
 			
 		}
 	};

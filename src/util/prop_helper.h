@@ -3,7 +3,14 @@
 #ifndef _INCLUDE_SIGSEGV_UTIL_FROP_HELPER_H_
 #define _INCLUDE_SIGSEGV_UTIL_FROP_HELPER_H_
 
-using DatatableProxyVector = std::vector<std::pair<SendProp *, int>>;
+struct DatatableProxyOffset
+{
+    SendProp *prop;
+    int base;
+    int offset;
+};
+
+using DatatableProxyVector = std::vector<DatatableProxyOffset>;
 struct PropCacheEntry
 {
     int offset = 0;

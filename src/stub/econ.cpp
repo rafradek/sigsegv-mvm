@@ -244,12 +244,12 @@ MemberFuncThunk<CEconItemSchema *, bool, KeyValues *, CUtlVector<CUtlString> *> 
 MemberFuncThunk<CEconItemSchema *, void, int, int, KeyValues *>                        CEconItemSchema::ft_ItemTesting_CreateTestDefinition("CEconItemSchema::ItemTesting_CreateTestDefinition");
 
 
-static StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema("GetItemSchema");
+StaticFuncThunk<CTFItemSchema *> ft_GetItemSchema("GetItemSchema");
 
 MemberFuncThunk<CEconItem *, attribute_t &>                       CEconItem::ft_AddDynamicAttributeInternal("CEconItem::AddDynamicAttributeInternal");
 
 
-static StaticFuncThunk<CItemGeneration *> ft_ItemGeneration("ItemGeneration");
+StaticFuncThunk<CItemGeneration *> ft_ItemGeneration("ItemGeneration");
 
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, CEconItemView const*, Vector const&, QAngle const&, char const*> CItemGeneration::ft_SpawnItem("CItemGeneration::SpawnItem");
 MemberFuncThunk<CItemGeneration *, CBaseEntity *, int, Vector const&, QAngle const&, int, int, char const*> CItemGeneration::ft_SpawnItem_defid("CItemGeneration::SpawnItem [defIndex]");
@@ -453,7 +453,7 @@ public:
 	{
 		if (singleCallback) {
 			attribute_data_union_t valueu;
-			valueu.m_String = &value;
+			valueu.m_String = (CAttribute_String*) &value;
 			return onNormal(pAttrDef, valueu);
 		}
 		const char *pstr;

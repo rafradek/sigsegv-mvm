@@ -120,15 +120,31 @@ namespace Mod::Etc::Extra_Player_Slots
 				FOR_EACH_SUBKEY(kv, subkey) {
 
 					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+                        
+		                filesystem->FindClose(missionHandle);
+                        kv->deleteThis();
 						return true;
-						//Msg("Found extra bot mission\n");
-						break;
 					}
 				}
 			}
             kv->deleteThis();
 		}
 		filesystem->FindClose(missionHandle);
+    
+        snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s.pop", map);
+        KeyValues *kv = new KeyValues("kv");
+        kv->UsesConditionals(false);
+        if (kv->LoadFromFile(filesystem, poppathfind)) {
+            FOR_EACH_SUBKEY(kv, subkey) {
+
+                if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+                    kv->deleteThis();
+                    return true;
+                }
+            }
+        }
+        kv->deleteThis();
+
         return false;
 	}
 

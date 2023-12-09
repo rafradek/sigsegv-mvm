@@ -503,7 +503,7 @@ namespace Mod::Pop::TFBot_Extensions
 			CTFBot *bot = ToTFBot(player);
 			// Prevent boss bar from lingering
 			if (bot != nullptr && bot->m_bUseBossHealthBar) {
-				THINK_FUNC_SET(bot, HideBossBar, gpGlobals->curtime + 3.0f);
+				THINK_FUNC_SET(bot, HideBossBar, gpGlobals->curtime + 2.0f);
 			}
 		}
 		
@@ -2125,7 +2125,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
 		if (player->IsBot() && player->m_Shared->InCond(TF_COND_FREEZE_INPUT)) {
-			cmd->viewangles = vec3_angle;//player->EyeAngles(); // use the last save angles
+			//cmd->viewangles = vec3_angle;//player->EyeAngles(); // use the last save angles
 			cmd->forwardmove = 0.0f;
 			cmd->sidemove = 0.0f;
 			cmd->upmove = 0.0f;
@@ -2141,7 +2141,9 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(void, PlayerBody_Upkeep)
 	{
 		auto body = reinterpret_cast<INextBotComponent *>(this);
-		if (static_cast<CTFPlayer *>(body->GetBot()->GetEntity())->m_Shared->InCond(TF_COND_FREEZE_INPUT)) return;
+		auto player = static_cast<CTFPlayer *>(body->GetBot()->GetEntity());
+		if (player->m_Shared->InCond(TF_COND_FREEZE_INPUT)) return;
+		if (!player->m_bAllowMoveDuringTaunt && player->m_Shared->InCond(TF_COND_TAUNTING)) return;
 		DETOUR_MEMBER_CALL(PlayerBody_Upkeep)();
 	}
 	

@@ -6315,6 +6315,15 @@ namespace Mod::Pop::PopMgr_Extensions
 		return true;
 		//return DETOUR_MEMBER_CALL(CPopulationManager_IsValidPopfile)(name);
 	}
+
+	bool changelevel_maxplayers = false;
+	void SetAllowBotExtraSlot()
+	{
+		if (gpGlobals->maxClients < MAX_PLAYERS && CommandLine()->FindParm("-unrestricted_maxplayers")) {
+			changelevel_maxplayers = true;
+			engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
+		}
+	}
     
 	KeyValues *loadKeyvaluesOverride = nullptr;
 	RefCount rc_Parse_Popfile;
@@ -6732,6 +6741,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_AutoWeaponStrip.Set(subkey->GetBool());
 			} else if (FStrEq(name, "AllowBotExtraSlots")) {
 				state.m_AllowBotsExtraSlots.Set(subkey->GetBool());
+				if (subkey->GetBool()) {
+					SetAllowBotExtraSlot();
+				}
 			} else if (FStrEq(name, "RemoveUnusedOffhandViewmodel")) {
 				state.m_RemoveOffhandViewmodel.Set(subkey->GetBool());
 			} else if (FStrEq(name, "RemoveBotExpressions")) {
@@ -7114,23 +7126,37 @@ namespace Mod::Pop::PopMgr_Extensions
 					FOR_EACH_SUBKEY(kv, subkey) {
 
 						if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+							filesystem->FindClose(missionHandle);
+							kv->deleteThis();
 							return true;
-							break;
 						}
 					}
 				}
 				kv->deleteThis();
 			}
 			filesystem->FindClose(missionHandle);
+			snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s.pop", map);
+			KeyValues *kv = new KeyValues("kv");
+			kv->UsesConditionals(false);
+			if (kv->LoadFromFile(filesystem, poppathfind)) {
+				FOR_EACH_SUBKEY(kv, subkey) {
+
+					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
+						kv->deleteThis();
+						return true;
+					}
+				}
+			}
+			kv->deleteThis();
+
 			return false;
 		}
 
 		virtual void LevelInitPreEntity() override
 		{
-			if (MapHasExtraSlots(STRING(gpGlobals->mapname)) && gpGlobals->maxClients < MAX_PLAYERS && CommandLine()->FindParm("-unrestricted_maxplayers")) {
-				changelevel_maxplayers = true;
-                engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
-            }
+			if (MapHasExtraSlots(STRING(gpGlobals->mapname))) {
+				SetAllowBotExtraSlot();
+			}
 
 			state.Reset(false);
 			state.m_PlayerUpgradeSend.clear();
@@ -7193,6 +7219,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				
 			if (changelevel_maxplayers) {
 				ft_SetupMaxPlayers(MAX_PLAYERS);
+				changelevel_maxplayers = false;
 			}
 		}
 		
@@ -7366,7 +7393,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
-		bool changelevel_maxplayers = false;
 	};
 	CMod s_Mod;
 

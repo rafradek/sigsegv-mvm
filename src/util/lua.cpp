@@ -1582,11 +1582,11 @@ namespace Util::Lua
             }
             else if (s_prop->GetDataTable() != nullptr) {
                 bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
-                int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+                //int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
                 int oldOffReal = off;
                 off += s_prop->GetOffset();
                 if (modifying) {
-                    usedTables.push_back({s_prop, off - oldOffset});
+                    usedTables.push_back({s_prop, oldOffReal, off - oldOffReal});
                     off = 0;
                 }
 

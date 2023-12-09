@@ -167,7 +167,7 @@ NOINLINE void SetTransmitAlways(CServerNetworkProperty *netProp, bool bAlways) {
     if ( bAlways || (parentIndex < MAX_EDICTS)) {
         transmitAlways->Set(edict->m_EdictIndex);
     }
-    else if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
+    else if (edict != nullptr && edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
         edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
         engine->BuildEntityClusterList(edict, &(netProp->m_PVSInfo));
     }
@@ -917,7 +917,7 @@ namespace Mod::Perf::SendProp_Optimize
                 unsigned int iToProp = toBitsReader.ReadNextPropIndex();
                 
                 auto offset_data = prop_write_offset[objectID].data();
-                for (uint i = 0; i < iToProp; i++) {
+                for (uint i = 0; i < iToProp && iToProp < MAX_DATATABLE_PROPS; i++) {
                     offset_data[i].offset = PROP_WRITE_OFFSET_ABSENT;
                 }
                 

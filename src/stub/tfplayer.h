@@ -386,6 +386,7 @@ public:
 	DECL_SENDPROP(uint,        m_nPlayerCond);
 	DECL_SENDPROP(bool,        m_bLastDisguisedAsOwnTeam);
 	DECL_SENDPROP(int,         m_nDisguiseTeam);
+	DECL_SENDPROP(int,         m_nDesiredDisguiseTeam);
 	DECL_RELATIVE(CHandle<CTFWeaponBase>, m_hBurnWeapon);
 	DECL_RELATIVE(float,       m_flFlameBurnTime);
 	DECL_RELATIVE(float,       m_flFlameRemoveTime);
@@ -722,6 +723,11 @@ inline int CTFPlayerShared::GetCarryingRuneType()
 }
 
 int GetNumberOfTFConds();
+
+inline int GetExtraConditionCount()
+{
+	return ((GetNumberOfTFConds()+31) / 32) * 32;
+}
 
 bool IsValidTFConditionNumber(int num);
 ETFCond ClampTFConditionNumber(int num);

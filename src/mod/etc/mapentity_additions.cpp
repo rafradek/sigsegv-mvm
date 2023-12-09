@@ -912,6 +912,20 @@ namespace Mod::Etc::Mapentity_Additions
 		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
 	}
 
+    THINK_FUNC_DECL(OnSpawnOutputFire)
+    {
+        this->FireCustomOutput<"onspawn">(this, this, Variant());
+    }
+
+    DETOUR_DECL_MEMBER(void, CBaseEntity_Activate)
+	{
+        auto entity = reinterpret_cast<CBaseEntity *>(this);
+        DETOUR_MEMBER_CALL(CBaseEntity_Activate)();
+        if (entity->GetExtraEntityData() != nullptr) {
+            THINK_FUNC_SET(entity, OnSpawnOutputFire, gpGlobals->curtime);
+        }
+    }
+
     DETOUR_DECL_MEMBER(bool, CBaseEntity_KeyValue, const char *szKeyName, const char *szValue)
 	{
         CBaseEntity *parse_ent = reinterpret_cast<CBaseEntity *>(this);
@@ -2348,6 +2362,7 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagToFetch, "CTFBot::GetFlagToFetch");
             MOD_ADD_DETOUR_MEMBER(CCaptureFlag_FlagTouch, "CCaptureFlag::FlagTouch");
             MOD_ADD_DETOUR_MEMBER(CFlagDetectionZone_EntityIsFlagCarrier, "CFlagDetectionZone::EntityIsFlagCarrier");
+            MOD_ADD_DETOUR_MEMBER(CBaseEntity_Activate, "CBaseEntity::Activate");
             
             
 

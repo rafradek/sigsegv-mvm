@@ -478,10 +478,24 @@ namespace Mod::Cond::Reprogrammed
 		}
 	}
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
+	{
+		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
+
+		if (player->GetCustomVariableBool<"KilledAsNeutral">()) {
+			player->SetCustomVariable<"KilledAsNeutral">(Variant(false));
+		}
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+	}
+
 	void OnRemoveReprogrammedNeutral(CTFPlayer *player)
 	{
 		DevMsg("OnRemoveReprogrammedNeutral(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
 		
+		if (!player->IsAlive()) {
+			player->SetCustomVariable<"KilledAsNeutral">(Variant(true));
+		}
 		CTFBot *bot = ToTFBot(player);
 
 		if (player->GetTeamNumber() == TEAM_SPECTATOR) {
@@ -515,11 +529,6 @@ namespace Mod::Cond::Reprogrammed
 		}
 
 		return DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
-	}
-
-	inline int GetExtraConditionCount()
-	{
-		return ((GetNumberOfTFConds()+31) / 32) * 32;
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionAdded, ETFCond cond)
@@ -724,11 +733,13 @@ namespace Mod::Cond::Reprogrammed
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Disguise, int team, int iclass, CTFPlayer *victim, bool onKill)
 	{
-		if (onKill && TFGameRules()->IsMannVsMachineMode() && team == TF_TEAM_BLUE && reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetTeamNumber() == TF_TEAM_BLUE)
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		int ourTeam = shared->GetOuter()->GetTeamNumber();
+		if (onKill && TFGameRules()->IsMannVsMachineMode() && team == TF_TEAM_BLUE && ourTeam == TF_TEAM_BLUE)
 			team = TF_TEAM_RED;
 
-		if (team == TEAM_SPECTATOR && reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetTeamNumber() == TEAM_SPECTATOR ) {
-			auto bot = ToTFBot(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter());
+		if (team == TEAM_SPECTATOR && ourTeam == TEAM_SPECTATOR ) {
+			auto bot = ToTFBot(shared->GetOuter());
 			if (bot != nullptr) {
 				auto threat = bot->GetVisionInterface()->GetPrimaryKnownThreat(false);
 				ConVarRef sig_mvm_jointeam_blue_allow_force("sig_mvm_jointeam_blue_allow_force");
@@ -738,7 +749,15 @@ namespace Mod::Cond::Reprogrammed
 				}
 			}
 		}
+		bool setDisguiseTeamToSpec = false;
+		if (ourTeam != TEAM_SPECTATOR && victim != nullptr && (victim->IsAlive() || victim->GetCustomVariableBool<"KilledAsNeutral">())) {
+			team = GetEnemyTeam(ourTeam);
+			setDisguiseTeamToSpec = true;
+		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_Disguise)(team, iclass, victim, onKill);
+		if (setDisguiseTeamToSpec) {
+			shared->m_nDesiredDisguiseTeam = TEAM_SPECTATOR;
+		}
 	}
 
 	RefCount rc_CTFPlayer_ModifyOrAppendCriteria;
@@ -884,7 +903,7 @@ namespace Mod::Cond::Reprogrammed
 		for (int i = 0; i < team_spec->GetNumPlayers(); i++) {
 			CBasePlayer *bot = team_spec->GetPlayer(i);
 		//ForEachPlayer([&](CBasePlayer *bot) {
-			if (bot->IsBot() && bot->IsAlive()) {
+			if (bot != nullptr && bot->IsBot() && bot->IsAlive()) {
 				
 				spec_players.push_back(bot);
 			}
@@ -1146,6 +1165,19 @@ namespace Mod::Cond::Reprogrammed
         }
 		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
 	}
+	
+    DETOUR_DECL_MEMBER(void, CTFPlayerShared_RemoveAllCond)
+	{
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		int maxCond = shared->m_ConditionData->Count();
+		auto condData = shared->GetCondData();
+		for (int i = GetNumberOfTFConds(); i < maxCond; i++) {
+			if (condData.InCond(i)) {
+				shared->RemoveCond((ETFCond)i);
+			}
+		}
+		DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveAllCond)();
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1184,6 +1216,7 @@ namespace Mod::Cond::Reprogrammed
 
 			// Fix yer disguising as blue team when killing reprogrammed bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Disguise, "CTFPlayerShared::Disguise");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
 
 			// Stop red robots from doing halloween taunt
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ModifyOrAppendCriteria, "CTFPlayer::ModifyOrAppendCriteria");
@@ -1235,6 +1268,7 @@ namespace Mod::Cond::Reprogrammed
 
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_C2, "CTFPlayerShared::CTFPlayerShared");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_RemoveAllCond, "CTFPlayerShared::RemoveAllCond");
 			
 			// Fix spectator team bots death sound
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
@@ -1266,7 +1300,7 @@ namespace Mod::Cond::Reprogrammed
 		{
 			ForEachTFPlayer([](CTFPlayer *player){
 				auto &shared = player->m_Shared.Get();
-				int maxCond = GetExtraConditionCount();
+				int maxCond = shared.m_ConditionData->Count();
 				auto condData = shared.GetCondData();
 				for (int i = GetNumberOfTFConds(); i < maxCond; i++) {
 					if (condData.InCond(i)) {

@@ -981,14 +981,19 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(void, CTFCompoundBow_LaunchGrenade)
 	{
+		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
+		int arrowIgnite = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(bow, arrowIgnite, arrow_ignite);
+
+		if (arrowIgnite != 0) {
+			bow->m_bArrowAlight = true;
+		}
+
 		DETOUR_MEMBER_CALL(CTFCompoundBow_LaunchGrenade)();
 
 		int attib_arrow_mastery = 0;
-		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( bow, attib_arrow_mastery, arrow_mastery );
 		
-		int arrowIgnite = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(bow, arrowIgnite, arrow_ignite);
 		if (arrowIgnite != 0) {
 			THINK_FUNC_SET(bow, RelightBowArrow, gpGlobals->curtime + 0.1f);
 		}
@@ -1148,7 +1153,7 @@ namespace Mod::Attr::Custom_Attributes
 				PrecacheParticleSystem(particlenameDirect);
 				precached.insert(particlenameDirect);
 			}
-			particle = GetParticleSystemIndex(particlenameDirect);
+			particleDirectHit = GetParticleSystemIndex(particlenameDirect);
 		}
 	}
 
@@ -1808,6 +1813,26 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_STATIC_CALL(CBaseEntity_EmitSound)(filter, iEntIndex, sound, pOrigin, start, duration);
 	}
 
+	RefCount rc_CTFWeaponFlameBall_FireProjectile;
+	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponFlameBall_FireProjectile, CTFPlayer *player)
+	{
+		SCOPED_INCREMENT(rc_CTFWeaponFlameBall_FireProjectile);
+		return DETOUR_MEMBER_CALL(CTFWeaponFlameBall_FireProjectile)(player);
+	}
+
+	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound_member, const char *sound, float start, float duration)
+	{
+		auto entity = reinterpret_cast<CBaseEntity *>(this);
+		if (rc_CTFWeaponFlameBall_FireProjectile && (FStrEq(sound, "Weapon_DragonsFury.Single") || FStrEq(sound, "Weapon_DragonsFury.SingleCrit"))) {
+			auto fury = rtti_cast<CEconEntity *>(entity);
+			GET_STRING_ATTRIBUTE(fury, custom_weapon_fire_sound, soundfiring);
+			if (soundfiring != nullptr) {
+				sound = soundfiring;
+			}
+		}
+		DETOUR_MEMBER_CALL(CBaseEntity_EmitSound_member)(sound, start, duration);
+	}
+
 	int fire_bullet_num_shot = 0;
 	RefCount rc_CTFPlayer_FireBullet;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_FireBullet, CTFWeaponBase *weapon, FireBulletsInfo_t& info, bool bDoEffects, int nDamageType, int nCustomDamageType)
@@ -2263,7 +2288,15 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 	
+	
+	RefCount rc_ApplyOnHitAttributes;
+	bool IsApplyingOnHitAttributes()
+	{
+		return rc_ApplyOnHitAttributes;
+	}
+
 	void ApplyOnHitAttributes(CTFWeaponBase *weapon, CBaseEntity *victim, CBaseEntity *attacker, const CTakeDamageInfo &info) {
+		SCOPED_INCREMENT(rc_ApplyOnHitAttributes);
 		GET_STRING_ATTRIBUTE(weapon, custom_hit_sound, str);
 		if (str != nullptr) {
 			PrecacheSound(str);
@@ -4014,6 +4047,8 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_RemoveCond, ETFCond nCond, bool bool1)
 	{
+		auto *shared = reinterpret_cast<CTFPlayerShared *>(this);
+
 		if (rc_CTFPlayerShared_RemoveCond)
         {
 			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
@@ -4303,11 +4338,16 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateEnergyDrinkMeter)
 	{
-		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		auto player = shared->GetOuter();
 		addcond_provider = player;
 		addcond_provider_item = rtti_cast<CTFSodaPopper *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_PRIMARY));
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond); \
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond); \
+		if (player->GetPlayerClass()->GetClassIndex() == TF_CLASS_SCOUT && shared->GetConditionProvider(TF_COND_SODAPOPPER_HYPE) != nullptr) {
+			shared->m_flHypeMeter = Max(shared->m_flHypeMeter.Get(), 1.0f);
+		}
+		
 		if (addcond_provider_item != nullptr) {
 			ReplaceCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
 		}
@@ -5001,15 +5041,50 @@ namespace Mod::Attr::Custom_Attributes
 
 	}
 	
+	std::map<CSteamID, float> respawnTimesForId;
 	DETOUR_DECL_MEMBER(float, CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn, CBasePlayer *player)
 	{
-		float respawntime = GetFastAttributeFloat(player, 0.0f, MIN_RESPAWN_TIME);
-
-		if (respawntime != 0.0f && !(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
-			return player->GetDeathTime() + respawntime;
+		if (!(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
+			float respawntime = GetFastAttributeFloat(player, 0.0f, MIN_RESPAWN_TIME);
+			if (respawntime != 0) {
+				return player->GetDeathTime() + respawntime;
+			}
+			auto find = respawnTimesForId.find(player->GetSteamID());
+			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
+				Msg("time now this\n");
+				return find->second;
+			}
 		}
 
 		return DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn)(player);
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGainInstantSpawn)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
+			
+			auto find = respawnTimesForId.find(player->GetSteamID());
+			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
+				Msg("time now this\n");
+				return false;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGainInstantSpawn)();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToSpawn)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (!(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
+			
+			auto find = respawnTimesForId.find(player->GetSteamID());
+			if (find != respawnTimesForId.end() && find->second > gpGlobals->curtime) {
+				Msg("time now this\n");
+				return false;
+			}
+		}
+		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
@@ -6008,6 +6083,25 @@ namespace Mod::Attr::Custom_Attributes
 			// 	player->m_flNextAttack = gpGlobals->curtime + 0.1f;
 			// }
 		}
+
+		if (gpGlobals->tickcount % 3 == 2) {
+			for (int i = 0; i < player->GetNumWearables(); i++) {
+				auto wearable = player->GetWearable(i);
+				if (wearable != nullptr) {
+					
+					int addcond = GetFastAttributeInt(wearable, 0, ADD_COND_ON_ACTIVE);
+					if (addcond != 0) {
+						for (int i = 0; i < 3; i++) {
+							int addcond_single = (addcond >> (i * 8)) & 255;
+							if (addcond_single != 0) {
+								player->m_Shared->AddCond((ETFCond)addcond_single, 0.3f, player);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		auto nextAttackReset = player->GetCustomVariableInt<"nextattackreset">();
 		if (nextAttackReset != 0 && nextAttackReset != gpGlobals->tickcount) {
 			player->SetCustomVariable("nextattackreset", Variant(0));
@@ -7347,9 +7441,10 @@ namespace Mod::Attr::Custom_Attributes
 	{
         DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
 		char path[512];
-		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), ((CTFPlayer*) edict->GetUnknown())->GetSteamID().ConvertToUint64());
+		auto player = ((CTFPlayer*) edict->GetUnknown());
+		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
 		char pathinfo[512];
-		snprintf(pathinfo, 512, "%si%llu", disallowed_viewmodel_path.c_str(), ((CTFPlayer*) edict->GetUnknown())->GetSteamID().ConvertToUint64());
+		snprintf(pathinfo, 512, "%si%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
 
 		cell_t result = access(path, F_OK) != 0;
 		viewmodels_enabled_forward->PushCell(edict->m_EdictIndex);
@@ -8384,6 +8479,13 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		float respawntime = GetFastAttributeFloat(player, 0.0f, MIN_RESPAWN_TIME);
+
+		if (!player->IsAlive() && respawntime != 0.0f && !(player->IsBot() && TFGameRules()->IsMannVsMachineMode()) && !(TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS)) {
+			respawnTimesForId[player->GetSteamID()] = player->GetDeathTime() + respawntime;
+		}
+
         DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
@@ -9030,6 +9132,19 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnArrowIgnite(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		auto player = GetPlayerOwnerOfAttributeList(list);
+		auto manager = list->GetManager();
+		if (player != nullptr && manager != nullptr) {
+			CBaseEntity *ent = manager->m_hOuter;
+			auto econentity = rtti_cast<CTFCompoundBow *>(ent);
+			if (econentity != nullptr && player->GetActiveTFWeapon() == econentity) {
+				econentity->m_bArrowAlight = new_value.m_Float != 0;
+			}
+		}
+	}
+
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
 		if (obj != nullptr) {
@@ -9350,7 +9465,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_CanHolster, "CTFWeaponBase::CanHolster");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_Explode, "CTFProjectile_Flare::Explode");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Flare_GetDamageType, "CTFProjectile_Flare::GetDamageType");
-
+			MOD_ADD_DETOUR_MEMBER(CBaseEntity_EmitSound_member, "CBaseEntity::EmitSound [member: normal]");
+			MOD_ADD_DETOUR_MEMBER(CTFWeaponFlameBall_FireProjectile, "CTFWeaponFlameBall::FireProjectile");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldGainInstantSpawn, "CTFPlayer::ShouldGainInstantSpawn");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
+			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
 			
@@ -9468,6 +9587,8 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("addcond_immunity", OnAddCondImmunity);
 				RegisterCallback("attribute_immunity", OnAttributeImmunity);
 				RegisterCallback("custom_item_model_attachment", OnCustomItemModelAttachment);
+				RegisterCallback("custom_item_model_attachment_viewmodel", OnCustomItemModelAttachment);
+				RegisterCallback("arrow_ignite", OnArrowIgnite);
 				
 			}
 		}
@@ -9497,6 +9618,7 @@ namespace Mod::Attr::Custom_Attributes
 		{
 			precached.clear();
 			LoadAttributes();
+			respawnTimesForId.clear();
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return true; }
 
@@ -9519,6 +9641,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			if (!respawnTimesForId.empty() && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING) {
+				respawnTimesForId.clear();
+			}
+
 			if (gpGlobals->tickcount % 16 == 0) { 
 				ForEachTFPlayer([&](CTFPlayer *player){
 					static bool in_upgrade_zone[MAX_PLAYERS + 1];

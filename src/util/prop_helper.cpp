@@ -40,9 +40,9 @@ bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&pro
             }
             if (s_prop->GetDataTable() != nullptr) {
                 bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
-                int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+                //int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
                 if (modifying) {
-                    usedTables.push_back({s_prop, off - oldOffset});
+                    usedTables.push_back({s_prop, off - s_prop->GetOffset(), s_prop->GetOffset()});
                     off = 0;
                 }
             }
@@ -52,11 +52,11 @@ bool FindSendProp(int& off, SendTable *s_table, const char *name, SendProp *&pro
         
         if (s_prop->GetDataTable() != nullptr) {
             bool modifying = !CPropMapStack::IsNonPointerModifyingProxy(s_prop->GetDataTableProxyFn(), sendproxies);
-            int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
+            //int oldOffset = usedTables.empty() ? 0 : usedTables.back().second;
             int oldOffReal = off;
             off += s_prop->GetOffset();
             if (modifying) {
-                usedTables.push_back({s_prop, off - oldOffset});
+                usedTables.push_back({s_prop, oldOffReal,  off - oldOffReal});
                 off = 0;
             }
 
@@ -192,8 +192,8 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
     if (entry.offset > 0) {
         void *base = entity;
         void *newBase = base;
-        for (auto &[prop, offset] : entry.usedTables) {
-            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, ((char*)base) + offset, &static_recip, 0);
+        for (auto &[prop, baseoffset, offset] : entry.usedTables) {
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, ((char*)base) + baseoffset, ((char*)base) + baseoffset + offset , &static_recip, 0);
             if (newBase != nullptr) {
                 base = newBase;
             }
@@ -219,11 +219,11 @@ void WriteProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arra
 
 void ReadProp(void *entity, PropCacheEntry &entry, variant_t &variant, int arrayPos, int vecAxis)
 {
-    if (entry.offset > 0) {
+    if (entry.offset > 0 || entry.usedTables.size() > 0) {
         void *base = entity;
         void *newBase = base;
-        for (auto &[prop, offset] : entry.usedTables) {
-            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, base, ((char*)base) + offset, &static_recip, 0);
+        for (auto &[prop, baseoffset, offset] : entry.usedTables) {
+            newBase = (unsigned char*)prop->GetDataTableProxyFn()( prop, ((char*)base) + baseoffset, ((char*)base) + baseoffset + offset, &static_recip, 0);
             if (newBase != nullptr) {
                 base = newBase;
             }

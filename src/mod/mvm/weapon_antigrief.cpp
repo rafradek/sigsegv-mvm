@@ -6,6 +6,11 @@
 #include "stub/projectiles.h"
 
 
+namespace Mod::Attr::Custom_Attributes
+{
+	bool IsApplyingOnHitAttributes();
+}
+
 namespace Mod::MvM::Weapon_AntiGrief
 {
 	ConVar cvar_scorchshot   ("sig_mvm_weapon_antigrief_scorchshot",   "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Disable knockback and stun effects vs giant robots from the Scorch Shot");
@@ -102,7 +107,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	static inline bool ShouldBlock_ShortStop()   { return (cvar_shortstop.GetBool()   && rc_ShortStop > 0); }
 	static inline bool ShouldBlock_StunOnHit()   
 	{ 
-		if (cvar_stunonhit.GetBool() && rc_StunOnHit > 0 && weapon != nullptr) {
+		if (cvar_stunonhit.GetBool() && rc_StunOnHit > 0 && weapon != nullptr && !Mod::Attr::Custom_Attributes::IsApplyingOnHitAttributes()) {
 			float stundmg = 0.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stundmg, stun_on_damage);
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, stundmg, aoe_blast_on_damage);

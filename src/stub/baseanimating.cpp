@@ -102,7 +102,7 @@ void CEconEntity::Validate()
 		}
 	}
 }
-#endif SE_TF2
+#endif
 
 StaticFuncThunk<void, CBaseEntity *, const Vector *, const Vector *> ft_UTIL_SetSize("UTIL_SetSize");
 StaticFuncThunk<float, CBaseFlex *, const char *, EHANDLE *, float, bool, void *, bool, IRecipientFilter *> ft_InstancedScriptedScene("InstancedScriptedScene");
