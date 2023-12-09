@@ -6049,6 +6049,8 @@
 				"CWeaponMedigun::SecondaryAttack" "_ZN14CWeaponMedigun15SecondaryAttackEv"
 				"CWeaponMedigun::CycleResistType" "_ZN14CWeaponMedigun15CycleResistTypeEv"
 				"CWeaponMedigun::FindAndHealTargets" "_ZN14CWeaponMedigun18FindAndHealTargetsEv"
+
+				"CTFWeaponFlameBall::FireProjectile" "_ZN18CTFWeaponFlameBall14FireProjectileEP9CTFPlayer"
 				
 				"CFlagDetectionZone::EntityIsFlagCarrier" "_ZN18CFlagDetectionZone19EntityIsFlagCarrierEP11CBaseEntity"
 				
@@ -6135,8 +6137,6 @@
 				"CServerNetworkProperty::IsInPVS" "_ZN22CServerNetworkProperty7IsInPVSEPK18CCheckTransmitInfo"
 
 				"CServerGameDLL::Shutdown" "_ZN14CServerGameDLL11DLLShutdownEv"
-
-				
 			}
 			"addrs_group"
 			{
