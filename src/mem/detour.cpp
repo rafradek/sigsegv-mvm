@@ -315,7 +315,9 @@ bool IDetour_SymNormal::DoLoad()
 	TRACE("[this: %08x \"%s\"]", (uintptr_t)this, this->GetName());
 	
 	if (this->m_bFuncByName) {
+		addrLoadingDetour = true;
 		this->m_pFunc = reinterpret_cast<uint8_t *>(AddrManager::GetAddr(this->m_strFuncName.c_str()));
+		addrLoadingDetour = false;
 		if (this->m_pFunc == nullptr) {
 			Warning("IDetour_SymNormal::DoLoad: \"%s\": addr lookup failed for \"%s\"\n", this->GetName(), this->m_strFuncName.c_str());
 			return false;

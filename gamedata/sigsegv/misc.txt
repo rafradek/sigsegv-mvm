@@ -6139,6 +6139,54 @@
 
 				"CServerGameDLL::Shutdown" "_ZN14CServerGameDLL11DLLShutdownEv"
 			}
+			
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym regex"
+					lib  "server"
+				}
+				
+				"CBaseTrigger::StartTouch [clone]" "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity\\.part\\..*"
+				"UTIL_PlayerByIndex [clone]" "_Z18UTIL_PlayerByIndexi\\.part\\..*"
+				"CEconItemSchema::GetItemDefinitionByName [clone]" "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc\\.part\\..*"
+				"CTFGameRules::DropSpellPickup [clone]" "_ZNK12CTFGameRules15DropSpellPickupERK6Vectori\\.part\\..*"
+				"CBaseObject::FindBuildPointOnPlayer [clone]" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector\\.part\\..*"
+				"CTFPlayerShared::Burn [clone]" "_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef\\.part\\..*"
+				"CTFGameRules::PlayerReadyStatus_UpdatePlayerState [clone]" "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb\\.part\\..*"
+				"CTFPlayerShared::UpdateChargeMeter [clone]" "_ZN15CTFPlayerShared17UpdateChargeMeterEv\\.part\\..*"
+				"PassServerEntityFilter [clone]" "_Z22PassServerEntityFilterPK13IHandleEntityS1_\\.part\\..*"
+				"CTFPlayer::AddObject [clone]" "_ZN9CTFPlayer9AddObjectEP11CBaseObject\\.part\\..*"
+				"CObjectTeleporter::PlayerCanBeTeleported [clone]" "_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer\\.part\\..*"
+				"CGameMovement::CheckFalling [clone]" "_ZN13CGameMovement12CheckFallingEv\\.part\\..*"
+				"CVoteController::IsValidVoter [clone]" "_ZN15CVoteController12IsValidVoterEP11CBasePlayer\\.part\\..*"
+				"CTFPlayerShared::PulseMedicRadiusHeal [clone]" "_ZN15CTFPlayerShared20PulseMedicRadiusHealEv\\.part\\..*"
+				"CTriggerIgnite::BurnEntities [clone]" "_ZN14CTriggerIgnite12BurnEntitiesEv\\.part\\..*"
+				"CTFGameRules::CanUpgradeWithAttrib [clone]" "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades\\.part\\..*"
+				"Script_StringToFile [clone]" "_ZL19Script_StringToFilePKcS0_\\.part\\..*"
+				"CVoteController::TryCastVote [clone]" "_ZN15CVoteController11TryCastVoteEiPKc\\.part\\..*"
+				"CWeaponMedigun::CycleResistType [clone]" "_ZN14CWeaponMedigun15CycleResistTypeEv\\.part\\..*"
+				"CUpgrades::ApplyUpgradeToItem [clone]" "_ZN9CUpgrades18ApplyUpgradeToItemEP9CTFPlayerP13CEconItemViewiibb\\.part\\..*"
+				"CBaseAnimatingOverlay::FastRemoveLayer [clone]" "_ZN21CBaseAnimatingOverlay15FastRemoveLayerEi\\.part\\..*"
+				"CTFGameRules::CalcDominationAndRevenge [clone]" "_ZN12CTFGameRules24CalcDominationAndRevengeEP9CTFPlayerP11CBaseEntityS1_bPi\\.part\\..*"
+				"CTFPlayer::CanBuild [clone]" "_ZN9CTFPlayer8CanBuildEii\\.part\\..*"
+				"GetNextCommandEntity [clone]" "_Z20GetNextCommandEntityP11CBasePlayerPKcP11CBaseEntity\\.part\\..*"
+				"CTriggerHurt::HurtEntity [clone]" "_ZN12CTriggerHurt10HurtEntityEP11CBaseEntityf\\.part\\..*"
+				"CUpgrades::PlayerPurchasingUpgrade [clone]" "_ZN9CUpgrades23PlayerPurchasingUpgradeEP9CTFPlayeriibbb\\.part\\..*"
+				"CTFKnife::CanPerformBackstabAgainstTarget [clone]" "_ZN8CTFKnife31CanPerformBackstabAgainstTargetEP9CTFPlayer\\.part\\..*"
+				"CTFBotMainAction::Dodge [clone]" "_ZN16CTFBotMainAction5DodgeEP6CTFBot\\.part\\..*"
+				"CTFPlayerShared::UpdateCloakMeter [clone]" "_ZN15CTFPlayerShared16UpdateCloakMeterEv\\.part\\..*"
+				"CObjectSapper::ApplyRoboSapperEffects [clone]" "_ZN13CObjectSapper22ApplyRoboSapperEffectsEP9CTFPlayerf\\.part\\..*"
+				"CTFPlayerShared::UpdateEnergyDrinkMeter [clone]" "_ZN15CTFPlayerShared22UpdateEnergyDrinkMeterEv\\.part\\..*"
+				"CMultiPlayerAnimState::RestartGesture [clone]" "_ZN21CMultiPlayerAnimState14RestartGestureEi8Activityb\\.part\\..*"
+				"CGameMovement::GetPointContentsCached [clone]" "_ZN13CGameMovement22GetPointContentsCachedERK6Vectori\\.part\\..*"
+				"CPopulationManager::Initialize [clone]" "_ZN18CPopulationManager10InitializeEv\\.part\\..*"
+				"CTFPlayerShared::SetItemChargeMeter [clone]" "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf\\.part\\..*"
+				"CTFPlayer::ItemsMatch [clone]" "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase\\.part\\..*"
+				"CTFRadiusDamageInfo::ApplyToEntity [clone]" "_ZN19CTFRadiusDamageInfo13ApplyToEntityEP11CBaseEntity\\.part\\..*"
+				"CBasePlayer::GetInVehicle [clone]" "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei\\.part\\..*"
+			}
 			"addrs_group"
 			{
 				"[common]"
@@ -6177,6 +6225,7 @@
 				"CMapReslistGenerator::RunFrame" "_ZN20CMapReslistGenerator8RunFrameEv"
 
 				"Host_ShowIPCCallCount" "_Z21Host_ShowIPCCallCountv"
+				"Host_CheckDumpMemoryStats" "_Z25Host_CheckDumpMemoryStatsv"
 
 				"CUtlMemoryPool::Alloc [engine]" "_ZN14CUtlMemoryPool5AllocEv"
 				"CUtlMemoryPool::Free [engine]" "_ZN14CUtlMemoryPool4FreeEPv"
@@ -6186,6 +6235,17 @@
 				"SV_DetermineUpdateType" "_ZL22SV_DetermineUpdateTypeR16CEntityWriteInfo"
 
 				"InvalidateSharedEdictChangeInfo" "_Z32InvalidateSharedEdictChangeInfosv"
+				
+			}
+			"addrs_group"
+			{
+				"[common]"
+				{
+					type "sym regex"
+					lib  "engine"
+				}
+				"Host_ShowIPCCallCount [clone]" "_Z21Host_ShowIPCCallCountv\\.part\\..*"
+				"CHLTVDemoRecorder::StopRecording [clone]" "_ZN17CHLTVDemoRecorder13StopRecordingEv\\.part\\..*"
 				
 			}
 		}

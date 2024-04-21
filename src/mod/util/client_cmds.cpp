@@ -1800,9 +1800,9 @@ namespace Mod::Util::Client_Cmds
     CCycleCount timespentEnd;
     float prevTime = 0.0f;
 
-	DETOUR_DECL_STATIC(void, Host_ShowIPCCallCount)
+	DETOUR_DECL_STATIC(void, Host_CheckDumpMemoryStats)
 	{
-		DETOUR_STATIC_CALL(Host_ShowIPCCallCount)();
+		DETOUR_STATIC_CALL(Host_CheckDumpMemoryStats)();
 		timespentEnd.Sample();
 		timespent.m_Int64 += timespentEnd.m_Int64 - timespentStart.m_Int64;
         if (floor(gpGlobals->curtime) != floor(prevTime) ) {
@@ -1826,7 +1826,7 @@ namespace Mod::Util::Client_Cmds
 		CMod() : IMod("Util:Client_Cmds")
 		{
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
-			MOD_ADD_DETOUR_STATIC(Host_ShowIPCCallCount,               "Host_ShowIPCCallCount");
+			MOD_ADD_DETOUR_STATIC(Host_CheckDumpMemoryStats,               "Host_CheckDumpMemoryStats");
 			MOD_ADD_DETOUR_MEMBER(CMapReslistGenerator_RunFrame,               "CMapReslistGenerator::RunFrame");
 		}
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

@@ -8490,7 +8490,7 @@ namespace Mod::Attr::Custom_Attributes
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
 
-	DETOUR_DECL_MEMBER(void, CAttributeManager_ClearCache)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
         DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
 
@@ -9538,7 +9538,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetAfterburnRateOnHit, "CTFWeaponBase::GetAfterburnRateOnHit");
 
 		//  Fast attribute cache
-			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache");
+			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache [clone]");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove", LOWEST);
 		}
 

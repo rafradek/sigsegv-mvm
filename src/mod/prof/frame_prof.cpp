@@ -36,9 +36,9 @@ namespace Mod::Prof::Frame_Prof
 		prevOverflow = false;
 	}
 	
-	DETOUR_DECL_STATIC(void, Host_ShowIPCCallCount)
+	DETOUR_DECL_STATIC(void, Host_CheckDumpMemoryStats)
 	{
-		DETOUR_STATIC_CALL(Host_ShowIPCCallCount)();
+		DETOUR_STATIC_CALL(Host_CheckDumpMemoryStats)();
 		timespent2End.Sample();
 		timespent2.m_Int64 += timespent2End.m_Int64 - timespent2Start.m_Int64;
 		static struct rusage s_lastUsage;
@@ -116,7 +116,7 @@ namespace Mod::Prof::Frame_Prof
 		CMod() : IMod("Prof:Frame_Prof")
 		{
 			//MOD_ADD_DETOUR_STATIC(_Host_RunFrame,               "_Host_RunFrame");
-			MOD_ADD_DETOUR_STATIC(Host_ShowIPCCallCount,               "Host_ShowIPCCallCount");
+			MOD_ADD_DETOUR_STATIC(Host_CheckDumpMemoryStats,               "Host_CheckDumpMemoryStats");
 			MOD_ADD_DETOUR_MEMBER(CMapReslistGenerator_RunFrame,               "CMapReslistGenerator::RunFrame");
 			//MOD_ADD_DETOUR_MEMBER(CNetChan_SendDatagram,               "CNetChan::SendDatagram");
 

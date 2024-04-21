@@ -240,7 +240,7 @@ namespace Mod::Perf::Attributes_Optimize
 		return DETOUR_MEMBER_CALL(CAttributeManager_ApplyAttributeFloatWrapper)(val, ent, name, vec);
 	}
 
-    DETOUR_DECL_MEMBER(void, CAttributeManager_ClearCache)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
         DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
@@ -283,7 +283,7 @@ namespace Mod::Perf::Attributes_Optimize
 	public:
 		CMod() : IMod("Perf:Attributes_Optimize")
 		{
-			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache");
+			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache [clone]");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CEconEntity_UpdateOnRemove,     "CEconEntity::UpdateOnRemove", LOWEST);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_UpdateOnRemove,       "CTFPlayer::UpdateOnRemove", LOWEST);
 			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_int,   "CAttributeManager::AttribHookValue<int>");

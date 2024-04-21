@@ -6,6 +6,8 @@
 #include "util/autolist.h"
 
 
+extern bool addrLoadingDetour;
+
 class IAddr;
 
 class AddrManager
@@ -64,6 +66,7 @@ private:
 	uintptr_t m_iAddr = 0x00000000;
 };
 
+extern std::map<IAddr *, int> detourAddresses;
 
 #if defined _LINUX
 inline bool IAddr::FindAddrCommon(uintptr_t& addr) const { return this->FindAddrLinux(addr); }

@@ -3,6 +3,7 @@
 #include "mem/scan.h"
 #include "util/rtti.h"
 
+bool addrLoadingDetour = false;
 
 bool IAddr_Sym::FindAddrLinux(uintptr_t& addr) const
 {
@@ -497,4 +498,29 @@ bool IAddr_ConCommandBase::FindAddrLinux(uintptr_t& addr) const
 	#warning FINISH THIS!
 #endif
 	return false;
+}
+
+// Debug command for detecting detoured functions that have clone variants
+CON_COMMAND(sig_detect_clone_detours, "") {
+	for (auto it = detourAddresses.begin(); it != detourAddresses.end(); it++) {
+		auto addr = dynamic_cast<CAddr_Sym *>(it->first);
+		if (addr != nullptr) {
+			auto results = LibMgr::FindSymRegex(addr->GetLibrary(), CFmtStr("%s%s",addr->GetSymbol(),"\\.part\\..*"));
+			bool success      = std::get<0>(results);
+			std::string& name = std::get<1>(results);
+			void *sym_addr    = std::get<2>(results);
+			if (success) {
+				Msg("Has clone: %s\n", addr->GetName());
+			}
+			else {
+				auto results = LibMgr::FindSymRegex(addr->GetLibrary(), CFmtStr("%s%s",addr->GetSymbol(),"\\.isra\\..*"));
+				bool success      = std::get<0>(results);
+				std::string& name = std::get<1>(results);
+				void *sym_addr    = std::get<2>(results);
+				if (success) {
+					Msg("Has clone isra: %s\n", addr->GetName());
+				}
+			}
+		}
+	}
 }

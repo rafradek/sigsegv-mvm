@@ -334,3 +334,17 @@ size_t LibMgr::Seg_MaxStringLen()
 	
 	return max;
 }
+
+
+CON_COMMAND(sig_list_signatures, "") {
+	std::regex filter(args[1], std::regex_constants::ECMAScript);
+	for (auto &[lib, libname] : libnames) {
+		LibMgr::ForEachSym(lib, [&](const Symbol& sym){
+			if (std::regex_match(sym.name, filter, std::regex_constants::match_any)) {
+				Msg("Match: %s\n", sym.name.c_str());
+			}
+			return true;
+		});
+	}
+	
+}

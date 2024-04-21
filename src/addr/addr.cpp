@@ -67,7 +67,7 @@ void AddrManager::Load()
 	DevMsg("AddrManager::Load END\n");
 }
 
-
+std::map<IAddr *, int> detourAddresses;
 void *AddrManager::GetAddr(const char *name)
 {
 	auto it = s_Addrs.find(std::string(name));
@@ -96,6 +96,10 @@ void *AddrManager::GetAddr(const char *name)
 		}
 
 		return nullptr;
+	}
+
+	if (addrLoadingDetour && !detourAddresses.contains(addr)) {
+		detourAddresses[addr] = 0;
 	}
 	
 	return addr->GetAddr();
