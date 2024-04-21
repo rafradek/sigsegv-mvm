@@ -34,6 +34,7 @@
 					lib  "server"
 				}
 				
+				"CAmbientGeneric"      "_ZN15CAmbientGeneric9m_DataMapE"
 				"CBaseEntity"          "_ZN11CBaseEntity9m_DataMapE"
 				"CBaseObject"          "_ZN11CBaseObject9m_DataMapE"
 				"CBasePlayer"          "_ZN11CBasePlayer9m_DataMapE"

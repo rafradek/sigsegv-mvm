@@ -6,14 +6,12 @@
 static constexpr uint8_t s_Buf_CPopulationManager_m_RespecPoints[] = {
 	0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
-	0x57,                               // +0003  push edi
-	0x56,                               // +0004  push esi
-	0x53,                               // +0005  push ebx
-	0x83, 0xec, 0x3c,                   // +0006  sub esp,0x3c
-	0x8b, 0x5d, 0x08,                   // +0009  mov ebx,[ebp+this]
-	0x8d, 0x83, 0xe4, 0x06, 0x00, 0x00, // +000C  lea eax,[ebx+0xVVVVVVVV]
-	0x89, 0x04, 0x24,                   // +0012  mov [esp],eax
-	0xe8, 0xe6, 0x64, 0x00, 0x00,       // +0015  call CUtlRBTree<...>::RemoveAll
+	0x53,                               // +0003  push ebx
+	0x83, 0xec, 0x3c,                   // +0004  sub esp,0x3c
+	0x8b, 0x5d, 0x08,                   // +0007  mov ebx,[ebp+this]
+	0x8d, 0x83, 0xe4, 0x06, 0x00, 0x00, // +000A  lea eax,[ebx+0xVVVVVVVV]
+	0x50,                               // +0010  push eax
+	0xe8, 0xe6, 0x64, 0x00, 0x00,       // +0011  call CUtlRBTree<...>::RemoveAll
 };
 
 struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationManager::SteamIDMap *>
@@ -26,9 +24,9 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationM
 	{
 		buf.CopyFrom(s_Buf_CPopulationManager_m_RespecPoints);
 		
-		mask.SetRange(0x06 + 2, 1, 0x00);
-		mask.SetRange(0x0c + 2, 4, 0x00);
-		mask.SetRange(0x15 + 1, 4, 0x00);
+		mask.SetRange(0x04 + 2, 1, 0x00);
+		mask.SetRange(0x0a + 2, 4, 0x00);
+		mask.SetRange(0x11 + 1, 4, 0x00);
 		
 		return true;
 	}
@@ -36,7 +34,7 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationM
 	virtual const char *GetFuncName() const override   { return "CPopulationManager::ResetRespecPoints"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
-	virtual uint32_t GetExtractOffset() const override { return 0x000c + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x000a + 2; }
 	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val); }
 };
 
@@ -156,7 +154,7 @@ StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefau
 
 IMPL_EXTRACT(CPopulationManager::SteamIDMap, CPopulationManager, m_RespecPoints,   new CExtract_CPopulationManager_m_RespecPoints());
 IMPL_EXTRACT(bool,                           CPopulationManager, m_bAllocatedBots, new CExtract_CPopulationManager_m_bAllocatedBots());
-IMPL_EXTRACT(KeyValues *,                    CPopulationManager, m_pTemplates,     new CExtract_CPopulationManager_m_pTemplates());
+IMPL_RELATIVE(KeyValues *,                   CPopulationManager, m_pTemplates,     m_bAllocatedBots, -sizeof(bool) - sizeof(uintptr_t));
 IMPL_RELATIVE(int,                           CPopulationManager, m_nStartingCurrency, m_pTemplates, +12);
 
 
@@ -175,9 +173,9 @@ MemberFuncThunk<CWaveSpawnPopulator *, void, CWaveSpawnPopulator::InternalStateT
 MemberFuncThunk<CMissionPopulator *, bool, int> CMissionPopulator::ft_UpdateMission("CMissionPopulator::UpdateMission");
 
 
-MemberVFuncThunk<IPopulationSpawner *, string_t, int                   > IPopulationSpawner::vt_GetClassIcon(TypeName<IPopulationSpawner>(), "IPopulationSpawner::GetClassIcon");
-MemberVFuncThunk<IPopulationSpawner *, bool, int                       > IPopulationSpawner::vt_IsMiniBoss  (TypeName<IPopulationSpawner>(), "IPopulationSpawner::IsMiniBoss");
-MemberVFuncThunk<IPopulationSpawner *, bool, CTFBot::AttributeType, int> IPopulationSpawner::vt_HasAttribute(TypeName<IPopulationSpawner>(), "IPopulationSpawner::HasAttribute");
+MemberVFuncThunk<IPopulationSpawner *, string_t, int                   > IPopulationSpawner::vt_GetClassIcon(TypeName<CTankSpawner>(), "CTankSpawner::GetClassIcon");
+MemberVFuncThunk<IPopulationSpawner *, bool, int                       > IPopulationSpawner::vt_IsMiniBoss  (TypeName<CTankSpawner>(), "CTankSpawner::IsMiniBoss");
+MemberVFuncThunk<IPopulationSpawner *, bool, CTFBot::AttributeType, int> IPopulationSpawner::vt_HasAttribute(TypeName<CSquadSpawner>(), "CSquadSpawner::HasAttribute");
 MemberVFuncThunk<IPopulationSpawner *, bool, KeyValues *               > IPopulationSpawner::vt_Parse       (TypeName<CWaveSpawnPopulator>(), "CWaveSpawnPopulator::Parse");
 
 StaticFuncThunk<IPopulationSpawner *, IPopulator *, KeyValues *> IPopulationSpawner::ft_ParseSpawner("IPopulationSpawner::ParseSpawner");

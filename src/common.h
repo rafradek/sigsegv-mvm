@@ -342,7 +342,14 @@ WARN_RESTORE()
 #undef COMPILE_TIME_ASSERT
 #define COMPILE_TIME_ASSERT(pred) static_assert(pred)
 
-#ifndef CSGO_SEPARETE_
+#ifdef SE_TF2
+#include "sdk2013/Color.h"
+#include "sdktf2/threadtools.h"
+#include "sdk2013/vector2d.h"
+#include "sdk2013/vector.h"
+#include "sdk2013/vector4d.h"
+#include "sdk2013/mathlib.h"
+#elif !defined(CSGO_SEPARETE_)
 #include "sdk2013/Color.h"
 #include "sdk2013/threadtools.h"
 #include "sdk2013/vector2d.h"
@@ -576,6 +583,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
 #ifdef SE_TF2
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_BASEHANDLE_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
+static_assert(_SIGSEGV_SDKTF2_OVERRIDE__PUBLIC_THREADTOOLS_H);
 #endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);

@@ -147,7 +147,6 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			/* for now, replace the teamnum argument with TEAM_INVALID */
 			buf.SetDword(0x06 + 2, 0x01);
 			
 			mask.SetDword(0x6 + 2, 0xffffffff);
@@ -157,7 +156,6 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			/* set the teamnum argument to the actual user-requested teamnum */
 			buf.SetDword(0x06 + 2, 0x01);
 			buf[0x6] = 0x83;
 			
@@ -166,11 +164,11 @@ namespace Mod::Perf::Func_Optimize
 	};
     
     constexpr uint8_t s_Buf_CTFPlayer_GetEquippedWearableForLoadoutSlot[] = {
-        0xC7, 0x44, 0x24, 0x0C, 0x00, 0x00, 0x00, 0x00, // 0
-        0xC7, 0x44, 0x24, 0x08, 0x00, 0xCC, 0x1E, 0x01, // 8
-        0xC7, 0x44, 0x24, 0x04, 0xD0, 0xE2, 0x1B, 0x01, // 10
-        0x89, 0x04, 0x24, // 18
-        0xE8, 0x9F, 0x41, 0xFF, 0x00 //1b
+        0x6A, 0x00, // 0
+        0x68, 0xBC, 0x08, 0x21, 0x01, // 2
+        0x68, 0xB8, 0x11, 0x1E, 0x01, // 7
+        0x50, // C
+        0xE8, 0x5D, 0x0D, 0x0C, 0x00 // d
 	};
 	struct CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot: public CPatch
 	{
@@ -184,28 +182,24 @@ namespace Mod::Perf::Func_Optimize
 		{
 			buf.CopyFrom(s_Buf_CTFPlayer_GetEquippedWearableForLoadoutSlot);
 			
-			mask.SetDword(0x00 + 4, 0);
-			mask.SetDword(0x08 + 4, 0);
-			mask.SetDword(0x10 + 4, 0);
-			mask.SetDword(0x1b + 1, 0);
-			/* allow any 3-bit source register code */
-			mask[0x18 + 1] = 0b11000111;
+			mask.SetDword(0x02 + 1, 0);
+			mask.SetDword(0x07 + 1, 0);
+			mask.SetDword(0x0d + 1, 0);
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf.SetAll(0x90);
-			
-			mask.SetAll(0xFF);
+			buf.SetRange(0x0d, 5, 0x90);
+			mask.SetRange(0x0d, 5, 0xFF);
 			
 			return true;
 		}
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf.SetAll(0x90);
+			buf.SetRange(0x0d, 5, 0x90);
 			
 			return true;
 		}
@@ -690,7 +684,7 @@ namespace Mod::Perf::Func_Optimize
 			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
 #ifdef SE_TF2
             // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
-			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
+			// this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
             // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
             MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)

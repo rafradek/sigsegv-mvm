@@ -11,6 +11,14 @@
 		
 		"sigsegv"
 		{
+			"addrs"
+			{
+				"FireEvent"
+				{
+					type "sym regex"
+					sym "_ZL9FireEventP9EventInfoPKc\\.part\\..*"
+				}
+			}
 			"addrs_group"
 			{
 				"[common]"
@@ -121,7 +129,6 @@
 				"CSpawnLocation::Parse" "_ZN14CSpawnLocation5ParseEP9KeyValues"
 				
 				"ParseDynamicAttributes" "_ZL22ParseDynamicAttributesRN6CTFBot23EventChangeAttributes_tEP9KeyValues"
-				"FireEvent" "_ZL9FireEventP9EventInfoPKc"
 				"ParseEvent" "_ZL10ParseEventP9KeyValues"
 
 				"MannVsMachineStats_GetAcquiredCredits" "_Z37MannVsMachineStats_GetAcquiredCreditsib"

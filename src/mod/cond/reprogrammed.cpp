@@ -17,17 +17,16 @@
 namespace Mod::Cond::Reprogrammed
 {
 	constexpr uint8_t s_Buf_UpdateMission[] = {
-		0x8d, 0x45, 0xa8,                               // +0000  lea eax,[ebp-0x58]
-		0xc7, 0x44, 0x24, 0x0c, 0x00, 0x00, 0x00, 0x00, // +0003  mov dword ptr [esp+0xc],false
-		0xc7, 0x44, 0x24, 0x08, 0x01, 0x00, 0x00, 0x00, // +000B  mov dword ptr [esp+0x8],true
-		0xc7, 0x44, 0x24, 0x04, 0x03, 0x00, 0x00, 0x00, // +0013  mov dword ptr [esp+0x4],TF_TEAM_PVE_INVADERS
-		0x89, 0x04, 0x24,                               // +001B  mov [esp],eax
-		0xc7, 0x45, 0xa8, 0x00, 0x00, 0x00, 0x00,       // +001E  mov [ebp-0x58],0x00000000
-		0xc7, 0x45, 0xac, 0x00, 0x00, 0x00, 0x00,       // +0025  mov [ebp-0x54],0x00000000
-		0xc7, 0x45, 0xb0, 0x00, 0x00, 0x00, 0x00,       // +002C  mov [ebp-0x50],0x00000000
-		0xc7, 0x45, 0xb4, 0x00, 0x00, 0x00, 0x00,       // +0033  mov [ebp-0x4c],0x00000000
-		0xc7, 0x45, 0xb8, 0x00, 0x00, 0x00, 0x00,       // +003A  mov [ebp-0x48],0x00000000
-		0xe8,                                           // +0041  call CollectPlayers<CTFPlayer>
+		0xB9, 0x01, 0x00, 0x00, 0x00,                   // +0000  mov     ecx, 1
+		0xBA, 0x03, 0x00, 0x00, 0x00,                   // +0005  mov     edx, 3
+		0xC7, 0x45, 0xB8, 0x00, 0x00, 0x00, 0x00,       // +000A  mov     dword ptr [ebp-48h], 0
+		0x6A, 0x00,                                     // +0011  push    0
+		0x8D, 0x45, 0xB8,                               // +0013  lea     eax, [ebp-48h]
+		0xc7, 0x45, 0xac, 0x00, 0x00, 0x00, 0x00,       // +0016  mov [ebp-0x54],0x00000000
+		0xc7, 0x45, 0xb0, 0x00, 0x00, 0x00, 0x00,       // +001D  mov [ebp-0x50],0x00000000
+		0xc7, 0x45, 0xb4, 0x00, 0x00, 0x00, 0x00,       // +0024  mov [ebp-0x4c],0x00000000
+		0xc7, 0x45, 0xb8, 0x00, 0x00, 0x00, 0x00,       // +002b  mov [ebp-0x48],0x00000000
+		0xe8,                                           // +0032  call CollectPlayers<CTFPlayer>
 	};
 	
 	struct CPatch_CMissionPopulator_UpdateMission : public CPatch
@@ -42,12 +41,12 @@ namespace Mod::Cond::Reprogrammed
 		{
 			buf.CopyFrom(s_Buf_UpdateMission);
 			
-			mask.SetRange(0x00 + 2, 1, 0x00);
-			mask.SetRange(0x1e + 2, 1, 0x00);
-			mask.SetRange(0x25 + 2, 1, 0x00);
-			mask.SetRange(0x2c + 2, 1, 0x00);
-			mask.SetRange(0x33 + 2, 1, 0x00);
-			mask.SetRange(0x3a + 2, 1, 0x00);
+			mask.SetRange(0x0a + 2, 5, 0x00);
+			mask.SetRange(0x13 + 2, 1, 0x00);
+			mask.SetRange(0x16 + 2, 1, 0x00);
+			mask.SetRange(0x1d + 2, 1, 0x00);
+			mask.SetRange(0x24 + 2, 1, 0x00);
+			mask.SetRange(0x2b + 2, 1, 0x00);
 			
 			return true;
 		}
@@ -55,8 +54,8 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* change the teamnum to TEAM_ANY */
-			buf .SetDword(0x13 + 4, TEAM_ANY);
-			mask.SetDword(0x13 + 4, 0xffffffff);
+			buf .SetDword(0x05 + 1, TEAM_ANY);
+			mask.SetDword(0x05 + 1, 0xffffffff);
 			
 			return true;
 		}
@@ -73,10 +72,11 @@ namespace Mod::Cond::Reprogrammed
 	
 	
 	constexpr uint8_t s_Buf_CheckStuck[] = {
-		0x89, 0x04, 0x24,                   // +0000  mov [esp],eax
-		0xe8, 0x1e, 0x1d, 0x28, 0x00,       // +0003  call CBaseEntity::GetTeamNumber
-		0x83, 0xf8, 0x03,                   // +0008  cmp eax,TF_TEAM_PVE_INVADERS
-		0x0f, 0x84, 0xa5, 0x01, 0x00, 0x00, // +000B  jz +0x1a5
+		0x50,                               // +0000  push eax
+		0xe8, 0x1e, 0x1d, 0x28, 0x00,       // +0001  call CBaseEntity::GetTeamNumber
+		0x83, 0xC4, 0x10,                   // +0006  add esp, 10h
+		0x83, 0xf8, 0x03,                   // +0009  cmp eax,TF_TEAM_PVE_INVADERS
+		0x0f, 0x84, 0xa5, 0x01, 0x00, 0x00, // +000C  jz +0x1a5
 	};
 //	constexpr uint8_t s_Buf_CheckStuck_after[] = {
 //		0x89, 0x04, 0x24,                   // +0000  mov [esp],eax
@@ -107,9 +107,9 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* indirect call through pointer */
-			buf[0x03] = 0xff;
-			buf[0x04] = 0x15;
-			buf.SetDword(0x03 + 2, (uint32_t)&s_CBasePlayer_IsBot);
+			buf[0x01] = 0xff;
+			buf[0x02] = 0x15;
+			buf.SetDword(0x01 + 2, (uint32_t)&s_CBasePlayer_IsBot);
 			
 			/* pad out extra space with NOPs */
 			buf[0x09] = 0x90;
@@ -1245,7 +1245,7 @@ namespace Mod::Cond::Reprogrammed
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMissionDestroySentries());
 			
 			/* fix: make tf_resolve_stuck_players apply to all bots in MvM, rather than blu-team players */
-			this->AddPatch(new CPatch_CTFGameMovement_CheckStuck());
+			//this->AddPatch(new CPatch_CTFGameMovement_CheckStuck());
 
 			/* fix hardcoded teamnum check when forcing bots to move to team spec at round change */
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent, "CTFGameRules::FireGameEvent");

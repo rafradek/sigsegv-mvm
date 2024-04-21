@@ -139,6 +139,7 @@ static_assert(sizeof(static_attrib_t) == 0x8);
 
 typedef unsigned short attrib_definition_index_t;
 typedef unsigned short	item_definition_index_t;
+typedef uint32_t attrib_value_t;
 const attrib_definition_index_t INVALID_ATTRIB_DEF_INDEX = ((attrib_definition_index_t)-1);
 const item_definition_index_t INVALID_ITEM_DEF_INDEX = ((item_definition_index_t)-1);
 
@@ -255,13 +256,10 @@ private:
 };
 static_assert(sizeof(CAttributeList) == 0x1c);
 
-template<typename TypeOut, typename AttributeHolder>
-bool FindAttribute(const AttributeHolder *holder, const CEconItemAttributeDefinition *attrDef, TypeOut *out); 
+// static inline StaticFuncThunk<bool, const CAttributeList *, const CEconItemAttributeDefinition *, float *>    ft_FindAttribute_CAttributeList { "FindAttribute_UnsafeBitwiseCast<uint, float, CAttributeList>" };
 
-static inline StaticFuncThunk<bool, const CAttributeList *, const CEconItemAttributeDefinition *, float *>    ft_FindAttribute_CAttributeList { "FindAttribute_UnsafeBitwiseCast<uint, float, CAttributeList>" };
-
-template<> inline bool FindAttribute<float, CAttributeList>(const CAttributeList *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
-{ return ft_FindAttribute_CAttributeList(attrList, attrDef, out); }
+// template<> inline bool FindAttribute<float, CAttributeList>(const CAttributeList *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
+// { return ft_FindAttribute_CAttributeList(attrList, attrDef, out); }
 
 constexpr int NUM_VISUALS_BLOCKS    = 5;
 
@@ -303,6 +301,7 @@ public:
 	const char *GetItemClass(const char *fallback = nullptr) const { return this->GetKVString("item_class", fallback); }
 
 	bool BInitFromKV(KeyValues *keyvalues, CUtlVector<CUtlString> *errors) { return ft_BInitFromKV(this, keyvalues, errors); }
+	void IterateAttributes(IEconItemAttributeIterator *iterator) const { ft_IterateAttributes(this, iterator); }
 	
 private:
 	const char *GetKVString(const char *str, const char *fallback) const
@@ -315,6 +314,7 @@ private:
 	DECL_EXTRACT(unsigned int, m_nEquipRegionMask);
 
 	static MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> ft_BInitFromKV;
+	static MemberFuncThunk<const CEconItemDefinition *, void, IEconItemAttributeIterator *>    ft_IterateAttributes;
 };
 
 class CTFItemDefinition : public CEconItemDefinition
@@ -326,10 +326,10 @@ private:
 	static MemberFuncThunk<const CTFItemDefinition *, int, int> ft_GetLoadoutSlot;
 };
 
-static inline StaticFuncThunk<bool, const CTFItemDefinition *, const CEconItemAttributeDefinition *, float *> ft_FindAttribute_CTFItemDefinition { "FindAttribute_UnsafeBitwiseCast<uint, float, CTFItemDefinition>" };
+//static inline StaticFuncThunk<bool, const CTFItemDefinition *, const CEconItemAttributeDefinition *, float *> ft_FindAttribute_CTFItemDefinition { "FindAttribute_UnsafeBitwiseCast<uint, float, CTFItemDefinition>" };
 
-template<> inline bool FindAttribute<float, CTFItemDefinition>(const CTFItemDefinition *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
-{ return ft_FindAttribute_CTFItemDefinition(attrList, attrDef, out); }
+//template<> inline bool FindAttribute<float, CTFItemDefinition>(const CTFItemDefinition *attrList, const CEconItemAttributeDefinition *attrDef, float *out)
+//{ return ft_FindAttribute_CTFItemDefinition(attrList, attrDef, out); }
 
 class CEconItemView // DT_ScriptCreatedItem
 {
@@ -667,5 +667,100 @@ private:
 CInventoryManager   *InventoryManager();
 CTFInventoryManager *TFInventoryManager();
 
+template < typename TActualTypeInMemory, typename TTreatAsThisType = TActualTypeInMemory >
+class CAttributeIterator_GetTypedAttributeValue : public IEconItemAttributeIterator
+{
+public:
+	CAttributeIterator_GetTypedAttributeValue( const CEconItemAttributeDefinition *pAttrDef, TTreatAsThisType *outpValue )
+		: m_pAttrDef( pAttrDef )
+		, m_outpValue( outpValue )
+		, m_bFound( false )
+	{
 
+		Assert( m_pAttrDef );
+		Assert( outpValue );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, attrib_value_t value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, float value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, const uint64 & value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String & value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, const CAttribute_DynamicRecipeComponent & value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, const CAttribute_ItemSlotCriteria & value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	virtual bool OnIterateAttributeValue( const CEconItemAttributeDefinition *pAttrDef, const CAttribute_WorldItemPlacement & value ) const override
+	{
+		return OnIterateAttributeValueTyped( pAttrDef, value );
+	}
+
+	bool WasFound() const
+	{
+		return m_bFound;
+	}
+
+private:
+	template < typename TAnyOtherType >
+	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TAnyOtherType& value )
+	{
+		return true;
+	}
+
+	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TActualTypeInMemory& value )
+	{
+
+		if ( m_pAttrDef == pAttrDef )
+		{
+			m_bFound = true;
+			CopyAttributeValueToOutput( &value, reinterpret_cast<TTreatAsThisType *>( m_outpValue ) );
+		}
+			
+		return !m_bFound;
+	}
+
+private:
+	static void CopyAttributeValueToOutput( const TActualTypeInMemory *pValue, TTreatAsThisType *out_pValue )
+	{
+
+		*out_pValue = *reinterpret_cast<const TTreatAsThisType *>( pValue );
+	}
+
+private:
+	const CEconItemAttributeDefinition *m_pAttrDef;
+	TTreatAsThisType *m_outpValue;
+	bool m_bFound;
+};
+
+
+template<typename TypeOut, typename AttributeHolder>
+bool FindAttribute(const AttributeHolder *holder, const CEconItemAttributeDefinition *attrDef, TypeOut *out) {
+	if ( !attrDef )
+		return false;
+
+	CAttributeIterator_GetTypedAttributeValue<TypeOut, TypeOut> it( attrDef, out );
+	holder->IterateAttributes( &it );
+	return it.WasFound();
+}
 #endif

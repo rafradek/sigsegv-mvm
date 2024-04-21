@@ -6125,6 +6125,7 @@
 				"CEconItemView::GetPlayerDisplayModel" "_ZNK13CEconItemView21GetPlayerDisplayModelEii"
 
 				"CEconItemDefinition::GetActivityOverride" "_ZNK19CEconItemDefinition19GetActivityOverrideEi8Activity"
+				"CEconItemDefinition::IterateAttributes" "_ZNK19CEconItemDefinition17IterateAttributesEP26IEconItemAttributeIterator"
 
 				"CVoteController::TryCastVote" "_ZN15CVoteController11TryCastVoteEiPKc"
 

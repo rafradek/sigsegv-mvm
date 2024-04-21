@@ -1,5 +1,8 @@
 #include "stub/entities.h"
 
+IMPL_DATAMAP(bool,             CAmbientGeneric, m_fActive);
+IMPL_DATAMAP(string_t,         CAmbientGeneric, m_iszSound);
+
 IMPL_DATAMAP(int, CPathTrack, m_eOrientationType);
 
 IMPL_DATAMAP(string_t,             CEnvEntityMaker, m_iszTemplate);

@@ -5644,7 +5644,7 @@ namespace Mod::Attr::Custom_Attributes
 		
 		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
 		
-		int fov;
+		int fov = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, fov, fov_override);
 		if (fov != 0) {
 			player->SetFOV(player, fov, 0.1f, 0);
@@ -9321,7 +9321,10 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate ,"CTFPlayer::Regenerate");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemsMatch ,"CTFPlayer::ItemsMatch");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SetWeaponState ,"CTFMinigun::SetWeaponState");
+// Older GCC has trouble compiling it, easiest way is to just disable it
+#if !(defined(__GNUC__) && (__GNUC__ < 12))
 			MOD_ADD_DETOUR_MEMBER(CTFFlameThrower_SetWeaponState ,"CTFFlameThrower::SetWeaponState");
+#endif
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget ,"CTFProjectile_Arrow::StrikeTarget");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_FadeOut, "CTFProjectile_Arrow::FadeOut");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_CheckSkyboxImpact, "CTFProjectile_Arrow::CheckSkyboxImpact");

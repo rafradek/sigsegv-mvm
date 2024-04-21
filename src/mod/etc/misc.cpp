@@ -11,6 +11,7 @@
 #include "util/backtrace.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
+#include "util/iterate.h"
 #include "tier1/CommandBuffer.h"
 
 
@@ -232,6 +233,22 @@ namespace Mod::Etc::Misc
         return VHOOK_CALL(CZombie_ShouldCollide)(collisionGroup,contentsMask );
     }
 
+	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+        if (player->m_hObserverTarget != nullptr && !player->IsBot()) {
+			ForEachEntityByClassname("ambient_generic", [&](CBaseEntity *pEnt){
+				auto ambient = static_cast<CAmbientGeneric *>(pEnt);
+				if (ambient->m_fActive && StringEndsWith(STRING(ambient->m_iszSound.Get()), ".mp3")) {
+            		player->m_hObserverTarget = nullptr;
+					return false;
+				}
+				return true;
+			});
+        }
+	}
+
     class CMod : public IMod
 	{
 	public:
@@ -271,6 +288,9 @@ namespace Mod::Etc::Misc
 
 			// Remove collision with zombies
 			MOD_ADD_VHOOK(CZombie_ShouldCollide, TypeName<CZombie>(), "CBaseEntity::ShouldCollide");
+
+			// No deathcam if music is playing
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
 			
 		}
 	};

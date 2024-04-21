@@ -14,8 +14,8 @@
 
 [submodule "libs/udis86"]
 	path                   = libs/udis86
-	url                    = https://github.com/sigsegv-mvm/udis86.git
-	branch                 = sigsegv-mvm
+	url                    = https://github.com/canihavesomecoffee/udis86.git
+	branch                 = master
 	fetchRecurseSubmodules = true
 #	ignore                 = ???
 

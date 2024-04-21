@@ -3,44 +3,6 @@
 
 #if defined _LINUX
 
-static constexpr uint8_t s_Buf_CCurrencyPack_m_nAmount[] = {
-	0x55,                               // +0000  push ebp
-	0x89, 0xe5,                         // +0001  mov ebp,esp
-	0xf3, 0x0f, 0x10, 0x45, 0x0c,       // +0003  movss xmm0,[ebp+0xc]
-	0x8b, 0x45, 0x08,                   // +0008  mov eax,[ebp+this]
-	0xf3, 0x0f, 0x2c, 0xd0,             // +000B  cvttss2si edx,xmm0
-	0x89, 0x90, 0xfc, 0x04, 0x00, 0x00, // +000F  mov [eax+0xVVVVVVVV],edx
-	0x5d,                               // +0015  pop ebp
-	0xc3,                               // +0016  ret
-};
-
-struct CExtract_CCurrencyPack_m_nAmount : public IExtract<int *>
-{
-	CExtract_CCurrencyPack_m_nAmount() : IExtract<int *>(sizeof(s_Buf_CCurrencyPack_m_nAmount)) {}
-	
-	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
-	{
-		buf.CopyFrom(s_Buf_CCurrencyPack_m_nAmount);
-		
-		mask.SetRange(0x0f + 2, 4, 0x00);
-		
-		return true;
-	}
-	
-	virtual const char *GetFuncName() const override   { return "CCurrencyPack::SetAmount"; }
-	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
-	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
-	virtual uint32_t GetExtractOffset() const override { return 0x000f + 2; }
-};
-
-#elif defined _WINDOWS
-
-using CExtract_CCurrencyPack_m_nAmount = IExtractStub;
-
-#endif
-
-#if defined _LINUX
-
 static constexpr uint8_t s_Buf_CTeamControlPointMaster_m_ControlPoints[] = {
 	0x55,                                     // +0000  push ebp
 	0x89, 0xe5,                               // +0001  mov ebp,esp
@@ -106,11 +68,6 @@ IMPL_SENDPROP(short,                CTFReviveMarker, m_nRevives, CTFReviveMarker
 
 StaticFuncThunk<CTFReviveMarker *, CTFPlayer *> CTFReviveMarker::ft_Create ("CTFReviveMarker::Create");
 
-MemberVFuncThunk<const IHasGenericMeter *, bool>  IHasGenericMeter::vt_ShouldUpdateMeter    (TypeName<IHasGenericMeter>(), "IHasGenericMeter::ShouldUpdateMeter");
-MemberVFuncThunk<const IHasGenericMeter *, float> IHasGenericMeter::vt_GetMeterMultiplier   (TypeName<IHasGenericMeter>(), "IHasGenericMeter::GetMeterMultiplier");
-MemberVFuncThunk<      IHasGenericMeter *, void>  IHasGenericMeter::vt_OnResourceMeterFilled(TypeName<IHasGenericMeter>(), "IHasGenericMeter::OnResourceMeterFilled");
-MemberVFuncThunk<const IHasGenericMeter *, float> IHasGenericMeter::vt_GetChargeInterval    (TypeName<IHasGenericMeter>(), "IHasGenericMeter::GetChargeInterval");
-
 
 MemberVFuncThunk<CEconWearable *, void, CBaseEntity *> CEconWearable::vt_RemoveFrom(TypeName<CEconWearable>(), "CEconWearable::RemoveFrom");
 MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> CEconWearable::vt_UnEquip   (TypeName<CEconWearable>(), "CEconWearable::UnEquip");
@@ -158,7 +115,7 @@ IMPL_DATAMAP   (bool,           CFilterTFBotHasTag, m_bNegated);
 IMPL_REL_BEFORE(bool, CCurrencyPack, m_bTouched,     m_bPulled);      // 20151007a
 IMPL_REL_BEFORE(bool, CCurrencyPack, m_bPulled,      m_bDistributed); // 20151007a
 IMPL_SENDPROP  (bool, CCurrencyPack, m_bDistributed, CCurrencyPack);
-IMPL_EXTRACT   (int,  CCurrencyPack, m_nAmount, new CExtract_CCurrencyPack_m_nAmount());
+IMPL_RELATIVE  (int,  CCurrencyPack, m_nAmount, m_bTouched, -sizeof(CountdownTimer) - sizeof(int) - sizeof(uint32) - sizeof(int));
 
 MemberVFuncThunk<const CCurrencyPack *, bool> CCurrencyPack::vt_AffectedByRadiusCollection(TypeName<CCurrencyPack>(), "CCurrencyPack::AffectedByRadiusCollection");
 

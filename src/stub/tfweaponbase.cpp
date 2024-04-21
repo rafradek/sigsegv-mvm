@@ -7,9 +7,10 @@ static constexpr uint8_t s_Buf_CTFWeaponBaseMelee_Holster[] = {
 	0x57, 
 	0x56,
 	0x53, 
-	0x83, 0xEC, 0x7C, 
-	0x8B, 0x7D, 0x08,
-	0xC7, 0x87, 0xE0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x80, 0xBF //0c
+	0x83, 0xEC, 0x48, 
+	0x8B, 0x5D, 0x08,
+	0x8B, 0x7D, 0x0c,
+	0xC7, 0x83, 0xE0, 0x07, 0x00, 0x00, 0x00, 0x00, 0x80, 0xBF //0f
 };
 
 struct CExtract_CTFWeaponBaseMelee_Holster : public IExtract<float *>
@@ -24,7 +25,9 @@ struct CExtract_CTFWeaponBaseMelee_Holster : public IExtract<float *>
 		
 		//buf.SetDword(0x0c + 1, (uint32_t)AddrManager::GetAddr("gpGlobals"));
 		
-		mask.SetRange(0x0c + 2, 4, 0x00);
+		mask.SetRange(0x0f + 2, 4, 0x00);
+		mask.SetRange(0x06 + 2, 1, 0x00);
+		mask.SetRange(0x0f + 2, 1, 0x00);
 		//mask.SetRange(0x24 + 3, 4, 0x00);
 		//mask.SetRange(0x2b + 2, 4, 0x00);
 		
@@ -34,7 +37,7 @@ struct CExtract_CTFWeaponBaseMelee_Holster : public IExtract<float *>
 	virtual const char *GetFuncName() const override   { return "CTFWeaponBaseMelee::Holster"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
-	virtual uint32_t GetExtractOffset() const override { return 0x000c + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x000f + 2; }
 };
 
 IMPL_SENDPROP(float,                CTFWeaponBase, m_flLastFireTime,          CTFWeaponBase);

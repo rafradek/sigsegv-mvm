@@ -13,12 +13,12 @@ using const_char_ptr = const char *;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_perteamvisuals_t_m_Sounds[] = {
-	0x8b, 0x80, 0x00, 0x00, 0x00, 0x00,       // +0000  mov eax,[eax+m_Visuals]
-	0x85, 0xc0,                               // +0006  test eax,eax
+	0x8b, 0x88, 0x00, 0x00, 0x00, 0x00,       // +0000  mov ecx,[eax+m_Visuals]
+	0x85, 0xc9,                               // +0006  test ecx,ecx
 	0x74, 0x00,                               // +0008  jz +0x??
-	0x83, 0xfb, NUM_SHOOT_SOUND_TYPES-1,      // +000A  cmp ebx,NUM_SHOOT_SOUND_TYPES
+	0x83, 0xff, NUM_SHOOT_SOUND_TYPES-1,      // +000A  cmp edi,NUM_SHOOT_SOUND_TYPES
 	0x77, 0x00,                               // +000D  ja +0x??
-	0x8b, 0x84, 0x98, 0x00, 0x00, 0x00, 0x00, // +000F  mov eax,[eax+ebx*4+m_Sounds]
+	0x8b, 0x84, 0xb9, 0x00, 0x00, 0x00, 0x00, // +000F  mov eax,[ecx+edi*4+m_Sounds]
 };
 
 struct CExtract_perteamvisuals_t_m_Sounds : public IExtract<const_char_ptr (*)[NUM_SHOOT_SOUND_TYPES]>
@@ -63,7 +63,7 @@ using perteamvisuals_t_ptr = perteamvisuals_t *;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CEconItemDefinition_m_Visuals[] = {
-	0xc7, 0x84, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [ebx+eax*4+m_Visuals],0x00000000
+	0xc7, 0x84, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [esi+eax*4+m_Visuals],0x00000000
 	0x8b, 0x04, 0x85, 0x00, 0x00, 0x00, 0x00,                         // +000B  mov eax,g_TeamVisualSections[eax*4]
 };
 
@@ -99,10 +99,11 @@ using CExtract_CEconItemDefinition_m_Visuals = IExtractStub;
 
 static constexpr uint8_t s_Buf_CEconItemDefinition_EquipRegionMasks[] = {
 	0xe8, 0x00, 0x00, 0x00, 0x00,       // +0000  call CEconItemSchema::GetEquipRegionBitMaskByName
-	0x09, 0x83, 0x00, 0x00, 0x00, 0x00, // +0005  or [ebx+m_nEquipRegionBitMask],eax
-	0x83, 0xc6, 0x01,                   // +000B  add esi,1
-	0x8b, 0x85, 0x00, 0x00, 0x00, 0x00, // +000E  mov eax,[ebp+0xXXXXXXXX]
-	0x09, 0x83, 0x00, 0x00, 0x00, 0x00, // +0014  or [ebx+m_nEquipRegionMask],eax
+	0x09, 0x86, 0x00, 0x00, 0x00, 0x00, // +0005  or [esi+m_nEquipRegionBitMask],eax
+	0x83, 0xC4, 0x10,                   // +000B
+	0x83, 0xc7, 0x01,                   // +000E  add edi,1
+	0x8b, 0x85, 0x00, 0x00, 0x00, 0x00, // +0011  mov eax,[ebp+0xXXXXXXXX]
+	0x09, 0x86, 0x00, 0x00, 0x00, 0x00, // +0017  or [ebx+m_nEquipRegionMask],eax
 };
 
 struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<unsigned int *>
@@ -115,8 +116,11 @@ struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<unsigned 
 		
 		mask.SetDword(0x0000 + 1, 0x00000000);
 		mask.SetDword(0x0005 + 2, 0x00000000);
-		mask.SetDword(0x000e + 2, 0x00000000);
-		mask.SetDword(0x0014 + 2, 0x00000000);
+		mask[0x000b] = 0x00;
+		mask[0x000b+1] = 0x00;
+		mask[0x000b+2] = 0x00;
+		mask.SetDword(0x0011 + 2, 0x00000000);
+		mask.SetDword(0x0017 + 2, 0x00000000);
 		
 		return true;
 	}
@@ -133,7 +137,7 @@ struct CExtract_CEconItemDefinition_m_nEquipRegionBitMask : public CExtract_CEco
 
 struct CExtract_CEconItemDefinition_m_nEquipRegionMask : public CExtract_CEconItemDefinition_EquipRegionMasks
 {
-	virtual uint32_t GetExtractOffset() const override { return 0x0014 + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x0017 + 2; }
 };
 
 #elif defined _WINDOWS
@@ -144,6 +148,7 @@ using CExtract_CEconItemDefinition_m_nEquipRegionMask    = IExtractStub;
 #endif
 
 MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> CEconItemDefinition::ft_BInitFromKV("CEconItemDefinition::BInitFromKV");
+MemberFuncThunk<const CEconItemDefinition *, void, IEconItemAttributeIterator *>    CEconItemDefinition::ft_IterateAttributes("CEconItemDefinition::IterateAttributes");
 
 MemberFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeFloatWrapper("CAttributeManager::ApplyAttributeFloatWrapper");
 MemberFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::ft_ApplyAttributeStringWrapper("CAttributeManager::ApplyAttributeStringWrapper");

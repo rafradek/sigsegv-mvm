@@ -11,8 +11,8 @@ static constexpr uint8_t s_Buf_CTFProjectile_Arrow_ArrowTouch[] = {
 	0x56,                                           // +0004  push esi
 	0x53,                                           // +0005  push ebx
 	0x81, 0xec, 0xbc, 0x01, 0x00, 0x00,             // +0006  sub esp,0x1bc
-	0xa1, 0x30, 0x98, 0x77, 0x01,                   // +000C  mov eax,ds:gpGlobals
-	0x8b, 0x5d, 0x08,                               // +0011  mov ebx,[ebp+this]
+	0x8b, 0x5d, 0x08,                               // +000C  mov ebx,[ebp+this]
+	0xa1, 0x30, 0x98, 0x77, 0x01,                   // +000F  mov eax,ds:gpGlobals
 	0x8b, 0x7d, 0x0c,                               // +0014  mov edi,[ebp+arg_4]
 	0xf3, 0x0f, 0x10, 0x40, 0x0c,                   // +0017  movss xmm0,dword ptr [eax+0xc]
 	0xf3, 0x0f, 0x5c, 0x83, 0x10, 0x05, 0x00, 0x00, // +001C  subss xmm0,dword ptr [ebx+0xVVVVVVVV]
@@ -30,8 +30,9 @@ struct CExtract_CTFProjectile_Arrow_ArrowTouch : public IExtract<float *>
 	{
 		buf.CopyFrom(s_Buf_CTFProjectile_Arrow_ArrowTouch);
 		
-		buf.SetDword(0x0c + 1, (uint32_t)AddrManager::GetAddr("gpGlobals"));
+		buf.SetDword(0x0F + 1, (uint32_t)AddrManager::GetAddr("gpGlobals"));
 		
+		mask.SetRange(0x06 + 2, 4, 0x00);
 		mask.SetRange(0x1c + 4, 4, 0x00);
 		mask.SetRange(0x24 + 3, 4, 0x00);
 		mask.SetRange(0x2b + 2, 4, 0x00);

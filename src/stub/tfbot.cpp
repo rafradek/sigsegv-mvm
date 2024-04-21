@@ -120,12 +120,9 @@ using CExtract_CTFBot_m_Tags = IExtractStub;
 
 static constexpr uint8_t s_Buf_CTFBot_m_nBotAttrs[] = {
 	0xc7, 0x83, 0xb8, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [ebx+m_nMission],0x00000000
-	0xc7, 0x83, 0xd0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +000A  mov dword ptr [ebx+m_nBotAttrs],0x00000000
-	0x89, 0x5d, 0x08,                                           // +0014  mov [ebp+this],ebx
-	0x83, 0xc4, 0x24,                                           // +0017  add esp,0x24
-	0x5b,                                                       // +001A  pop ebx
-	0x5d,                                                       // +001B  pop ebp
-	0xe9,                                                       // +001C  jmp CTFBot::StopIdleSound
+	0x8B, 0x83, 0xE4, 0x28, 0x00, 0x00,                         // +000A  mov eax, [ebx+??]
+	0xc7, 0x83, 0xd0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0010  mov dword ptr [ebx+m_nBotAttrs],0x00000000
+	0x85, 0xC0,                                                  // +001A  test eax, eax
 };
 
 struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
@@ -139,8 +136,8 @@ struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
 		buf.CopyFrom(s_Buf_CTFBot_m_nBotAttrs);
 		
 		mask.SetRange(0x00 + 2, 4, 0x00);
-		mask.SetRange(0x0a + 2, 4, 0x00);
-		mask.SetRange(0x17 + 2, 1, 0x00);
+		mask.SetRange(0x0A + 2, 4, 0x00);
+		mask.SetRange(0x10 + 2, 4, 0x00);
 		
 		return true;
 	}
@@ -148,7 +145,7 @@ struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
 	virtual const char *GetFuncName() const override   { return "CTFBot::ChangeTeam"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0080; }
-	virtual uint32_t GetExtractOffset() const override { return 0x000a + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x0010 + 2; }
 };
 
 #elif defined _WINDOWS

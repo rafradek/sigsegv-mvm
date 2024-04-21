@@ -9,7 +9,11 @@
 class CPointEntity : public CBaseEntity {};
 
 
-class CAmbientGeneric : public CPointEntity {};
+class CAmbientGeneric : public CPointEntity {
+public:
+	DECL_DATAMAP(bool,               m_fActive);
+	DECL_DATAMAP(string_t,           m_iszSound);
+};
 
 
 class CPathTrack : public CPointEntity

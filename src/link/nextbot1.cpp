@@ -214,10 +214,10 @@ template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, EDR,              CBo
 template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, EDR,              CBotNPCArcher *>                                                      ft_Action_OnLose<CBotNPCArcher>(                             "Action<CZombie>::OnLose");
 template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, bool,             const INextBot *>                                              ft_Action_IsAbleToBlockMovementOf<CBotNPCArcher>(            "Action<CZombie>::IsAbleToBlockMovementOf");
 template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, Action<CBotNPCArcher> *, CBotNPCArcher *, Behavior<CBotNPCArcher> *, AR>                              ft_Action_ApplyResult<CBotNPCArcher>(                        "Action<CZombie>::ApplyResult");
-template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, void,             CBotNPCArcher *, Behavior<CBotNPCArcher> *, Action<CBotNPCArcher> *>                ft_Action_InvokeOnEnd<CBotNPCArcher>(                        "Action<CZombie>::InvokeOnEnd [clone]");
+template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, void,             CBotNPCArcher *, Behavior<CBotNPCArcher> *, Action<CBotNPCArcher> *>                ft_Action_InvokeOnEnd<CBotNPCArcher>(                        "Action<CZombie>::InvokeOnEnd");
 template<>  MemberFuncThunk<      Action<CBotNPCArcher> *, AR,               CBotNPCArcher *, Behavior<CBotNPCArcher> *, Action<CBotNPCArcher> *>                ft_Action_InvokeOnResume<CBotNPCArcher>(                     "Action<CZombie>::InvokeOnResume");
-template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, char *,           char[256], const Action<CBotNPCArcher> *>                             ft_Action_BuildDecoratedName<CBotNPCArcher>(                 "Action<CZombie>::BuildDecoratedName");
-template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, char *>                                                                          ft_Action_DebugString<CBotNPCArcher>(                        "Action<CZombie>::DebugString");
+template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, char *,           char[256], const Action<CBotNPCArcher> *>                             ft_Action_BuildDecoratedName<CBotNPCArcher>(                 "Action<CZombie>::BuildDecoratedName [clone]");
+//template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, char *>                                                                          ft_Action_DebugString<CBotNPCArcher>(                        "Action<CZombie>::DebugString [clone]");
 template<>  MemberFuncThunk<const Action<CBotNPCArcher> *, void>                                                                            ft_Action_PrintStateToConsole<CBotNPCArcher>(                "Action<CZombie>::PrintStateToConsole");
 
 #define AR   ActionResult<CTFBot>
@@ -312,10 +312,10 @@ template<>  MemberFuncThunk<      Action<CTFBot> *, EDR,              CTFBot *> 
 template<>  MemberFuncThunk<      Action<CTFBot> *, EDR,              CTFBot *>                                                      ft_Action_OnLose<CTFBot>(                             "Action<CTFBot>::OnLose");
 template<>  MemberFuncThunk<const Action<CTFBot> *, bool,             const INextBot *>                                              ft_Action_IsAbleToBlockMovementOf<CTFBot>(            "Action<CTFBot>::IsAbleToBlockMovementOf");
 template<>  MemberFuncThunk<      Action<CTFBot> *, Action<CTFBot> *, CTFBot *, Behavior<CTFBot> *, AR>                              ft_Action_ApplyResult<CTFBot>(                        "Action<CTFBot>::ApplyResult");
-template<>  MemberFuncThunk<      Action<CTFBot> *, void,             CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnEnd<CTFBot>(                        "Action<CTFBot>::InvokeOnEnd [clone]");
+template<>  MemberFuncThunk<      Action<CTFBot> *, void,             CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnEnd<CTFBot>(                        "Action<CTFBot>::InvokeOnEnd");
 template<>  MemberFuncThunk<      Action<CTFBot> *, AR,               CTFBot *, Behavior<CTFBot> *, Action<CTFBot> *>                ft_Action_InvokeOnResume<CTFBot>(                     "Action<CTFBot>::InvokeOnResume");
-template<>  MemberFuncThunk<const Action<CTFBot> *, char *,           char[256], const Action<CTFBot> *>                             ft_Action_BuildDecoratedName<CTFBot>(                 "Action<CTFBot>::BuildDecoratedName");
-template<>  MemberFuncThunk<const Action<CTFBot> *, char *>                                                                          ft_Action_DebugString<CTFBot>(                        "Action<CTFBot>::DebugString");
+template<>  MemberFuncThunk<const Action<CTFBot> *, char *,           char[256], const Action<CTFBot> *>                             ft_Action_BuildDecoratedName<CTFBot>(                 "Action<CTFBot>::BuildDecoratedName [clone]");
+//template<>  MemberFuncThunk<const Action<CTFBot> *, char *>                                                                          ft_Action_DebugString<CTFBot>(                        "Action<CTFBot>::DebugString [clone]");
 template<>  MemberFuncThunk<const Action<CTFBot> *, void>                                                                            ft_Action_PrintStateToConsole<CTFBot>(                "Action<CTFBot>::PrintStateToConsole");
 
 /* NextBotManager */

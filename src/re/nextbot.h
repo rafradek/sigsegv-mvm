@@ -332,7 +332,7 @@ template<class Actor> extern MemberFuncThunk<      Action<Actor> *, Action<Actor
 template<class Actor> extern MemberFuncThunk<      Action<Actor> *, void,             Actor *, Behavior<Actor> *, Action<Actor> *>                ft_Action_InvokeOnEnd;
 template<class Actor> extern MemberFuncThunk<      Action<Actor> *, AR,               Actor *, Behavior<Actor> *, Action<Actor> *>                ft_Action_InvokeOnResume;
 template<class Actor> extern MemberFuncThunk<const Action<Actor> *, char *,           char[256], const Action<Actor> *>                             ft_Action_BuildDecoratedName;
-template<class Actor> extern MemberFuncThunk<const Action<Actor> *, char *>                                                                          ft_Action_DebugString;
+//template<class Actor> extern MemberFuncThunk<const Action<Actor> *, char *>                                                                          ft_Action_DebugString;
 template<class Actor> extern MemberFuncThunk<const Action<Actor> *, void>                                                                            ft_Action_PrintStateToConsole;
 
 /* Action<CTFBot> */
@@ -429,7 +429,7 @@ template<class Actor> Action<Actor> *Action<Actor>::ApplyResult(Actor *actor, Be
 template<class Actor> void Action<Actor>::InvokeOnEnd(Actor *actor, Behavior<Actor> *behavior, Action<Actor> *action)                                        {        ft_Action_InvokeOnEnd                        <Actor>(this, actor, behavior, action);  }
 template<class Actor> ActionResult<Actor> Action<Actor>::InvokeOnResume(Actor *actor, Behavior<Actor> *behavior, Action<Actor> *action)                     { return ft_Action_InvokeOnResume                     <Actor>(this, actor, behavior, action);  }
 template<class Actor> char *Action<Actor>::BuildDecoratedName(char buf[256], const Action<Actor> *action) const                                                { return ft_Action_BuildDecoratedName                 <Actor>(this, buf, action);              }
-template<class Actor> char *Action<Actor>::DebugString() const                                                                                                  { return ft_Action_DebugString                        <Actor>(this);                           }
+template<class Actor> char *Action<Actor>::DebugString() const                                                                                                  { return "Actor"; }
 template<class Actor> void Action<Actor>::PrintStateToConsole() const                                                                                           {        ft_Action_PrintStateToConsole                <Actor>(this);                           }
 
 #if defined __GNUC__ && !defined __clang__

@@ -1735,6 +1735,11 @@ namespace Mod::Perf::SendProp_Optimize
         }
 
         virtual bool OnLoad() {
+// // Older GCC has trouble compiling it, easiest way is to just disable it
+// #if !(defined(__GNUC__) && (__GNUC__ < 12))
+//             Warning("Sigsegv-MvM must be compiled with at least GCC 12 to enable Sendprop Optimize");
+//             return false;
+// #endif
             sendproxies = gamedll->GetStandardSendProxies();
             datatable_sendtable_proxy = sendproxies->m_DataTableToDataTable;
             local_sendtable_proxy = sendproxies->m_SendLocalDataTable;

@@ -662,20 +662,20 @@
 					//type "sym"
 					//sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
 				}
-				"Action<CTFBot>::InvokeOnEnd [clone]"
+				"Action<CTFBot>::InvokeOnEnd"
 				{
 					type "sym regex"
-					sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_\\.part\\..*"
+					sym  "_ZN6ActionI6CTFBotE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_"
 				}
 				"Action<CTFBot>::InvokeOnResume"
 				{
 					type "sym"
 					sym  "_ZN6ActionI6CTFBotE14InvokeOnResumeEPS0_P8BehaviorIS0_EPS1_"
 				}
-				"Action<CTFBot>::BuildDecoratedName"
+				"Action<CTFBot>::BuildDecoratedName [clone]"
 				{
-					type "sym"
-					sym  "_ZNK6ActionI6CTFBotE18BuildDecoratedNameEPcPKS1_"
+					type "sym regex"
+					sym  "_ZNK6ActionI6CTFBotE18BuildDecoratedNameEPcPKS1_.\\isra\\..*"
 				}
 				"Action<CTFBot>::DebugString"
 				{
@@ -1330,20 +1330,20 @@
 					//type "sym"
 					//sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1__part_249"
 				}
-				"Action<CZombie>::InvokeOnEnd [clone]"
+				"Action<CZombie>::InvokeOnEnd"
 				{
-					type "sym regex"
-					sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_\\.part\\..*"
+					type "sym"
+					sym  "_ZN6ActionI7CZombieE11InvokeOnEndEPS0_P8BehaviorIS0_EPS1_"
 				}
 				"Action<CZombie>::InvokeOnResume"
 				{
 					type "sym"
 					sym  "_ZN6ActionI7CZombieE14InvokeOnResumeEPS0_P8BehaviorIS0_EPS1_"
 				}
-				"Action<CZombie>::BuildDecoratedName"
+				"Action<CZombie>::BuildDecoratedName [clone]"
 				{
-					type "sym"
-					sym  "_ZNK6ActionI7CZombieE18BuildDecoratedNameEPcPKS1_"
+					type "sym regex"
+					sym  "_ZNK6ActionI7CZombieE18BuildDecoratedNameEPcPKS1_.\\isra\\..*"
 				}
 				"Action<CZombie>::DebugString"
 				{

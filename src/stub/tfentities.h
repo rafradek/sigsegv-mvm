@@ -69,16 +69,10 @@ class CTFMedigunShield : public CBaseAnimating {};
 class IHasGenericMeter
 {
 public:
-	bool ShouldUpdateMeter() const   { return vt_ShouldUpdateMeter    (rtti_cast<const IHasGenericMeter *>(this)); }
-	float GetMeterMultiplier() const { return vt_GetMeterMultiplier   (rtti_cast<const IHasGenericMeter *>(this)); }
-	void OnResourceMeterFilled()     {        vt_OnResourceMeterFilled(rtti_cast<      IHasGenericMeter *>(this)); }
-	float GetChargeInterval() const  { return vt_GetChargeInterval    (rtti_cast<const IHasGenericMeter *>(this)); }
-	
-private:
-	static MemberVFuncThunk<const IHasGenericMeter *, bool>  vt_ShouldUpdateMeter;
-	static MemberVFuncThunk<const IHasGenericMeter *, float> vt_GetMeterMultiplier;
-	static MemberVFuncThunk<      IHasGenericMeter *, void>  vt_OnResourceMeterFilled;
-	static MemberVFuncThunk<const IHasGenericMeter *, float> vt_GetChargeInterval;
+	virtual bool ShouldUpdateMeter() const { return false; }
+	virtual float GetMeterMultiplier() const { return 0.0f; }
+	virtual void OnResourceMeterFilled() { return; }
+	virtual float GetChargeInterval() const { return 0.0f; }
 };
 
 
@@ -230,7 +224,7 @@ private:
 	DECL_RELATIVE   (bool, m_bTouched);
 	DECL_RELATIVE   (bool, m_bPulled);
 	DECL_SENDPROP   (bool, m_bDistributed);
-	DECL_EXTRACT    (int,  m_nAmount);
+	DECL_RELATIVE   (int,  m_nAmount);
 	
 	static MemberVFuncThunk<const CCurrencyPack *, bool> vt_AffectedByRadiusCollection;
 
