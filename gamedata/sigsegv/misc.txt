@@ -6148,13 +6148,18 @@
 					lib  "server"
 				}
 				
-				"CBaseTrigger::StartTouch [clone]" "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity\\.part\\..*"
-				"UTIL_PlayerByIndex [clone]" "_Z18UTIL_PlayerByIndexi\\.part\\..*"
-				"CEconItemSchema::GetItemDefinitionByName [clone]" "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc\\.part\\..*"
+				// Those functions are not worth using in detours over the original functions as of 24.04.2024
+				// "CBaseTrigger::StartTouch [clone]" "_ZN12CBaseTrigger10StartTouchEP11CBaseEntity\\.part\\..*"
+				// "UTIL_PlayerByIndex [clone]" "_Z18UTIL_PlayerByIndexi\\.part\\..*"
+				// "CEconItemSchema::GetItemDefinitionByName [clone]" "_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc\\.part\\..*"
+				// "CTFPlayerShared::Burn [clone]" "_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef\\.part\\..*"
+				// "CTFGameRules::PlayerReadyStatus_UpdatePlayerState [clone]" "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb\\.part\\..*"
+				// "CTFGameRules::CanUpgradeWithAttrib [clone]" "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades\\.part\\..*"
+				// "Script_StringToFile [clone]" "_ZL19Script_StringToFilePKcS0_\\.part\\..*"
+				// "GetNextCommandEntity [clone]" "_Z20GetNextCommandEntityP11CBasePlayerPKcP11CBaseEntity\\.part\\..*"
+
 				"CTFGameRules::DropSpellPickup [clone]" "_ZNK12CTFGameRules15DropSpellPickupERK6Vectori\\.part\\..*"
 				"CBaseObject::FindBuildPointOnPlayer [clone]" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector\\.part\\..*"
-				"CTFPlayerShared::Burn [clone]" "_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef\\.part\\..*"
-				"CTFGameRules::PlayerReadyStatus_UpdatePlayerState [clone]" "_ZN12CTFGameRules35PlayerReadyStatus_UpdatePlayerStateEP9CTFPlayerb\\.part\\..*"
 				"CTFPlayerShared::UpdateChargeMeter [clone]" "_ZN15CTFPlayerShared17UpdateChargeMeterEv\\.part\\..*"
 				"PassServerEntityFilter [clone]" "_Z22PassServerEntityFilterPK13IHandleEntityS1_\\.part\\..*"
 				"CTFPlayer::AddObject [clone]" "_ZN9CTFPlayer9AddObjectEP11CBaseObject\\.part\\..*"
@@ -6163,15 +6168,12 @@
 				"CVoteController::IsValidVoter [clone]" "_ZN15CVoteController12IsValidVoterEP11CBasePlayer\\.part\\..*"
 				"CTFPlayerShared::PulseMedicRadiusHeal [clone]" "_ZN15CTFPlayerShared20PulseMedicRadiusHealEv\\.part\\..*"
 				"CTriggerIgnite::BurnEntities [clone]" "_ZN14CTriggerIgnite12BurnEntitiesEv\\.part\\..*"
-				"CTFGameRules::CanUpgradeWithAttrib [clone]" "_ZN12CTFGameRules20CanUpgradeWithAttribEP9CTFPlayeritP22CMannVsMachineUpgrades\\.part\\..*"
-				"Script_StringToFile [clone]" "_ZL19Script_StringToFilePKcS0_\\.part\\..*"
 				"CVoteController::TryCastVote [clone]" "_ZN15CVoteController11TryCastVoteEiPKc\\.part\\..*"
 				"CWeaponMedigun::CycleResistType [clone]" "_ZN14CWeaponMedigun15CycleResistTypeEv\\.part\\..*"
 				"CUpgrades::ApplyUpgradeToItem [clone]" "_ZN9CUpgrades18ApplyUpgradeToItemEP9CTFPlayerP13CEconItemViewiibb\\.part\\..*"
 				"CBaseAnimatingOverlay::FastRemoveLayer [clone]" "_ZN21CBaseAnimatingOverlay15FastRemoveLayerEi\\.part\\..*"
 				"CTFGameRules::CalcDominationAndRevenge [clone]" "_ZN12CTFGameRules24CalcDominationAndRevengeEP9CTFPlayerP11CBaseEntityS1_bPi\\.part\\..*"
 				"CTFPlayer::CanBuild [clone]" "_ZN9CTFPlayer8CanBuildEii\\.part\\..*"
-				"GetNextCommandEntity [clone]" "_Z20GetNextCommandEntityP11CBasePlayerPKcP11CBaseEntity\\.part\\..*"
 				"CTriggerHurt::HurtEntity [clone]" "_ZN12CTriggerHurt10HurtEntityEP11CBaseEntityf\\.part\\..*"
 				"CUpgrades::PlayerPurchasingUpgrade [clone]" "_ZN9CUpgrades23PlayerPurchasingUpgradeEP9CTFPlayeriibbb\\.part\\..*"
 				"CTFKnife::CanPerformBackstabAgainstTarget [clone]" "_ZN8CTFKnife31CanPerformBackstabAgainstTargetEP9CTFPlayer\\.part\\..*"
@@ -6185,6 +6187,7 @@
 				"CTFPlayerShared::SetItemChargeMeter [clone]" "_ZN15CTFPlayerShared18SetItemChargeMeterE19loadout_positions_tf\\.part\\..*"
 				"CTFPlayer::ItemsMatch [clone]" "_ZN9CTFPlayer10ItemsMatchEP19TFPlayerClassData_tP13CEconItemViewS3_P13CTFWeaponBase\\.part\\..*"
 				"CTFRadiusDamageInfo::ApplyToEntity [clone]" "_ZN19CTFRadiusDamageInfo13ApplyToEntityEP11CBaseEntity\\.part\\..*"
+				
 				"CBasePlayer::GetInVehicle [clone]" "_ZN11CBasePlayer12GetInVehicleEP14IServerVehiclei\\.part\\..*"
 			}
 			"addrs_group"
