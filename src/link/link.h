@@ -229,8 +229,8 @@ private:
 class MemberVFuncThunkBase : public ILinkage
 {
 public:
-	MemberVFuncThunkBase(const char *n_vtable, const char *n_func) :
-		m_pszVTableName(n_vtable), m_pszFuncName(n_func) {}
+	MemberVFuncThunkBase(const char *n_vtable, const char *n_func, int entry_num = 0) :
+		m_pszVTableName(n_vtable), m_pszFuncName(n_func), m_iEntryNumber(entry_num) {}
 	
 	virtual bool Link() override
 	{
@@ -251,11 +251,14 @@ public:
 			}
 			
 			bool found = false;
+			int num = 0;
 			for (int i = 0; i < 0x1000; ++i) {
 				if (pVT[i] == pFunc) {
-					this->m_iVTIndex = i;
-					found = true;
-					break;
+					if(num++ >= m_iEntryNumber) {
+						this->m_iVTIndex = i;
+						found = true;
+						break;
+					}
 				}
 			}
 			
@@ -281,6 +284,8 @@ private:
 	const char *m_pszFuncName;
 	
 	int m_iVTIndex = -1;
+
+	int m_iEntryNumber = 0;
 
 	virtual bool ClientSide() override { return strnicmp(this->m_pszFuncName, "[client]", strlen("[client]")) == 0; }
 };
@@ -539,8 +544,8 @@ RET CallNonVirt(C *obj, const char *n_func, PARAMS... args)
 class VTOffFinder : public MemberVFuncThunkBase
 {
 public:
-	VTOffFinder(const char *n_vtable, const char *n_func) :
-		MemberVFuncThunkBase(n_vtable, n_func)
+	VTOffFinder(const char *n_vtable, const char *n_func, int entry_num = 0) :
+		MemberVFuncThunkBase(n_vtable, n_func, entry_num)
 	{
 		this->InvokeLink();
 	}

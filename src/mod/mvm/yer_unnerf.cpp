@@ -7,11 +7,11 @@
 namespace Mod::MvM::YER_Unnerf
 {
 	constexpr uint8_t s_Buf[] = {
-		0xa1, 0x00, 0x00, 0x00, 0x00,             // +0000  mov eax,[g_pGameRules]
-		0x85, 0xc0,                               // +0005  test eax,eax
-		0x74, 0x00,                               // +0007  jz +0xAA
-		0x80, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, // +0009  cmp byte ptr [eax+m_bPlayingMannVsMachine],0x0
-		0x74, 0x00,                               // +0010  jz +0xBB
+		0xa1, 0x5c, 0xf4, 0x7a, 0x01,              // +0x0000 mov     eax, ds:g_pGameRules
+		0x85, 0xc0,                                // +0x0005 test    eax, eax
+		0x74, 0x0d,                                // +0x0007 jz      short loc_950B4A
+		0x80, 0xb8, 0x72, 0x0c, 0x00, 0x00, 0x00,  // +0x0009 cmp     byte ptr [eax+0C72h], 0
+		0x0f, 0x85, 0x09, 0x02, 0x00, 0x00,        // +0x0010 jnz     loc_950D53
 	};
 	
 	struct CPatch_CTFKnife_PrimaryAttack : public CPatch
@@ -43,14 +43,8 @@ namespace Mod::MvM::YER_Unnerf
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			/* overwrite the CMP instruction with NOPs */
-			buf.SetRange(0x09, 7, 0x90);
-			
-			/* now drop in a 'cmp eax,eax' so the non-MvM mode jump will always occur */
-			buf[0x09 + 0] = 0x39;
-			buf[0x09 + 1] = 0xc0;
-			
-			mask.SetRange(0x09, 7, 0xff);
+			/* overwrite the CMP and jnz instruction with NOPs */
+			buf.SetRange(0x09, 13, 0x90);
 			
 			return true;
 		}

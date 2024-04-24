@@ -104,7 +104,7 @@ namespace Mod::Common::Common
 		return result;
 	}
 
-    DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
+    DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
         auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
         {
@@ -143,7 +143,7 @@ namespace Mod::Common::Common
 		{
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored", HIGH);
             MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
-            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
+            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter [clone]");
 		}
 	};
 	CMod s_Mod;

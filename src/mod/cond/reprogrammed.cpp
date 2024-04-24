@@ -79,10 +79,11 @@ namespace Mod::Cond::Reprogrammed
 		0x0f, 0x84, 0xa5, 0x01, 0x00, 0x00, // +000C  jz +0x1a5
 	};
 //	constexpr uint8_t s_Buf_CheckStuck_after[] = {
-//		0x89, 0x04, 0x24,                   // +0000  mov [esp],eax
-//		0xff, 0x15, 0xff, 0xff, 0xff, 0xff, // +0003  call [<STUB> CBaseEntity::IsBot]
-//		0x90, 0x90,                         // +0009  nop nop
-//		0x0f, 0x85, 0xa5, 0x01, 0x00, 0x00, // +000B  jnz +0x1a5
+//		0x50,                               // +0000  push eax
+//		0xff, 0x15, 0xff, 0xff, 0xff, 0xff, // +0001  call [<STUB> CBaseEntity::IsBot]
+//		0x83, 0xC4, 0x10,                   // +0007  add esp, 10h
+//		0x90, 0x90,                         // +000a  nop nop
+//		0x0f, 0x85, 0xa5, 0x01, 0x00, 0x00, // +000c  jnz +0x1a5
 //	};
 	
 	using FPtr_IsBot = bool (CBasePlayer:: *)() const;
@@ -98,28 +99,34 @@ namespace Mod::Cond::Reprogrammed
 		{
 			buf.CopyFrom(s_Buf_CheckStuck);
 			
-			mask.SetRange(0x03 + 1, 4, 0x00);
-			mask.SetRange(0x0b + 2, 4, 0x00);
+			mask.SetRange(0x01 + 1, 4, 0x00);
+			mask.SetRange(0x06 + 2, 1, 0x00);
+			mask.SetRange(0x0c + 2, 4, 0x00);
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+			// Move add esp
+			buf[0x09] = buf[0x08];
+			buf[0x08] = buf[0x07];
+			buf[0x07] = buf[0x06];
+
 			/* indirect call through pointer */
 			buf[0x01] = 0xff;
 			buf[0x02] = 0x15;
 			buf.SetDword(0x01 + 2, (uint32_t)&s_CBasePlayer_IsBot);
 			
 			/* pad out extra space with NOPs */
-			buf[0x09] = 0x90;
 			buf[0x0a] = 0x90;
+			buf[0x0b] = 0x90;
 			
 			/* invert the jump condition code */
-			buf[0x0c] = 0x85;
+			buf[0x0d] = 0x85;
 			
-			mask.SetRange(0x03, 0x08, 0xff);
-			mask[0x0c] = 0xff;
+			mask.SetRange(0x01, 0x0b, 0xff);
+			mask[0x0d] = 0xff;
 			
 			return true;
 		}
@@ -1094,7 +1101,7 @@ namespace Mod::Cond::Reprogrammed
 		return DETOUR_MEMBER_CALL(CTFPlayer_GetOpposingTFTeam)();
 	}
 
-	DETOUR_DECL_MEMBER(bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
 	{
 		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
 
@@ -1245,7 +1252,7 @@ namespace Mod::Cond::Reprogrammed
 			this->AddPatch(new CPatch_CMissionPopulator_UpdateMissionDestroySentries());
 			
 			/* fix: make tf_resolve_stuck_players apply to all bots in MvM, rather than blu-team players */
-			//this->AddPatch(new CPatch_CTFGameMovement_CheckStuck());
+			this->AddPatch(new CPatch_CTFGameMovement_CheckStuck());
 
 			/* fix hardcoded teamnum check when forcing bots to move to team spec at round change */
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_FireGameEvent, "CTFGameRules::FireGameEvent");
@@ -1261,7 +1268,7 @@ namespace Mod::Cond::Reprogrammed
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetOpposingTFTeam, "CTFPlayer::GetOpposingTFTeam");
 
 			// Allow spectator team bots to be backstabbed at any angle when sapped
-			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget [clone]");
 			
 			// Fix spectator team bots ignoring disguise
 			MOD_ADD_DETOUR_MEMBER(CTFBotVision_IsIgnored, "CTFBotVision::IsIgnored");

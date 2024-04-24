@@ -1361,7 +1361,7 @@ namespace Mod::MvM::Extended_Upgrades
         return DETOUR_MEMBER_CALL(CTFGameRules_GetCostForUpgrade)(upgrade, slot, classindex, player);
     }
 
-    DETOUR_DECL_MEMBER(attrib_definition_index_t, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, unsigned short, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
 	{
         attrib_definition_index_t result = DETOUR_MEMBER_CALL(CUpgrades_ApplyUpgradeToItem)(player, item, upgrade, cost, downgrade, fresh);
         upgrade_success = result != INVALID_ATTRIB_DEF_INDEX;
@@ -1402,7 +1402,7 @@ namespace Mod::MvM::Extended_Upgrades
 		return slot;
 	}
 
-    DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
         SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
         player_is_downgrading = sell;
@@ -1631,9 +1631,9 @@ namespace Mod::MvM::Extended_Upgrades
             MOD_ADD_DETOUR_MEMBER(CMannVsMachineUpgradeManager_LoadUpgradesFileFromPath, "CMannVsMachineUpgradeManager::LoadUpgradesFileFromPath");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_CanUpgradeWithAttrib, "CTFGameRules::CanUpgradeWithAttrib");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetCostForUpgrade, "CTFGameRules::GetCostForUpgrade");
-            MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem");
+            MOD_ADD_DETOUR_MEMBER(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFItemDefinition_GetLoadoutSlot, "CTFItemDefinition::GetLoadoutSlot");
-            MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+            MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade [clone]");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_RestoreCheckpoint, "CPopulationManager::RestoreCheckpoint");
 
             // Don't reset weapons in the middle of applying secondary attributes

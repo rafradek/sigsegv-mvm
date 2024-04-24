@@ -118,7 +118,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 //		DETOUR_MEMBER_CALL(CBaseEntity_AddEffects)(nEffects);
 //	}
 	
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_SetItemChargeMeter, loadout_positions_t slot, float value)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_SetItemChargeMeter, loadout_positions_t slot, float value)
 	{
 	//	ConColorMsg(Color(0xff, 0x00, 0xff), "  > CTFPlayerShared::SetItemChargeMeter(%d, %.2f): the_ent #%d '%s'\n",
 	//		(int)slot, value, ENTINDEX(the_ent), (the_ent != nullptr ? the_ent->GetClassname() : ""));
@@ -145,7 +145,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CheckBlockBackstab,                 "CTFPlayer::CheckBlockBackstab");
 			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ApplyAttributeFloatWrapper, "CAttributeManager::ApplyAttributeFloatWrapper");
 		//	MOD_ADD_DETOUR_MEMBER(CBaseEntity_AddEffects,                       "CBaseEntity::AddEffects");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetItemChargeMeter,           "CTFPlayerShared::SetItemChargeMeter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetItemChargeMeter,           "CTFPlayerShared::SetItemChargeMeter [clone]");
 		}
 	};
 	CMod s_Mod;

@@ -467,7 +467,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return result;
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateChargeMeter)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateChargeMeter)
 	{
 		auto player = reinterpret_cast<CTFPlayerShared *>(this);
 
@@ -724,7 +724,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateEnergyDrinkMeter)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateEnergyDrinkMeter)
 	{
 		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		int restoreClass = -1;
@@ -846,7 +846,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 			// Allow non demos to use shields and benefit from eyelander heads
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoClassSpecialSkill, "CTFPlayer::DoClassSpecialSkill");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateChargeMeter, "CTFPlayerShared::UpdateChargeMeter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateChargeMeter, "CTFPlayerShared::UpdateChargeMeter [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndClassSpecialSkill, "CTFPlayer::EndClassSpecialSkill");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TeamFortress_CalculateMaxSpeed, "CTFPlayer::TeamFortress_CalculateMaxSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealthForBuffing, "CTFPlayer::GetMaxHealthForBuffing");
@@ -872,7 +872,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFItemDefinition_GetLoadoutSlot,     "CTFItemDefinition::GetLoadoutSlot", LOWEST);
 
 			// Fix drink and soda popper usage on non scout
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter [clone]");
 
 			// Make focus work on other classes
 			MOD_ADD_DETOUR_MEMBER(IGameEventManager2_FireEvent, "IGameEventManager2::FireEvent");

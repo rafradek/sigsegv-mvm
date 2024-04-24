@@ -2017,7 +2017,7 @@ namespace Mod::Pop::TFBot_Extensions
         return VHOOK_CALL(CObjectTeleporter_KeyValue)(szKeyName, szValue);
     }
 	
-	DETOUR_DECL_MEMBER(bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
 	{
 		auto object = reinterpret_cast<CBaseObject *>(this);
 		CBaseEntity *oldBuildOnEntity = object->GetBuiltOnEntity();
@@ -2105,7 +2105,7 @@ namespace Mod::Pop::TFBot_Extensions
 		DETOUR_MEMBER_CALL(CTFPlayer_RemoveOwnedProjectiles)();
 	}
 	
-	DETOUR_DECL_MEMBER(bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
 	{
 		bool sappedNotStunned = false;
 		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode()) {
@@ -2317,7 +2317,7 @@ namespace Mod::Pop::TFBot_Extensions
 			//MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectCloserThreat, "CTFBotMainAction::SelectCloserThreat");
 			
 			// Sap the closest bot to the cursor
-			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer [clone]");
 
 			// Switch action command
 			MOD_ADD_VHOOK(CTFBotScenarioMonitor_OnCommandString, TypeName<CTFBotScenarioMonitor>(), "CTFBotTacticalMonitor::OnCommandString");
@@ -2337,7 +2337,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveOwnedProjectiles, "CTFPlayer::RemoveOwnedProjectiles");
 
 			// Remove frontstabbing from sapped not stunned bots
-			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget");
+			MOD_ADD_DETOUR_MEMBER(CTFKnife_CanPerformBackstabAgainstTarget, "CTFKnife::CanPerformBackstabAgainstTarget [clone]");
 
 			// Fix Freeze input cond on bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand");

@@ -1213,7 +1213,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(CTFGameRules_ShouldDropSpellPickup)();
 	}
 	
-	DETOUR_DECL_MEMBER(void, CTFGameRules_DropSpellPickup, const Vector& where, int tier)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFGameRules_DropSpellPickup, const Vector& where, int tier)
 	{
 	//	DevMsg("CTFGameRules::DropSpellPickup\n");
 		
@@ -3169,7 +3169,7 @@ namespace Mod::Pop::PopMgr_Extensions
         return DETOUR_MEMBER_CALL(CTFGameRules_CanUpgradeWithAttrib)(player, slot, defindex, upgrade);
     }
 	
-	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
 		if (!sell && !b3) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
@@ -6907,7 +6907,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup");
+			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_IsUsingSpells,                    "CTFGameRules::IsUsingSpells");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_ReapplyItemUpgrades,        "CTFPlayer::ReapplyItemUpgrades", LOWEST);
 			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create,                        "CTFReviveMarker::Create");
@@ -6983,7 +6983,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CEconEntity_UpdateOnRemove,              "CEconEntity::UpdateOnRemove");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_RollNewSpell,              "CTFSpellBook::RollNewSpell");
 			MOD_ADD_DETOUR_MEMBER(CTFSpellBook_SetSelectedSpell,          "CTFSpellBook::SetSelectedSpell");
-			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade,          "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade,          "CUpgrades::PlayerPurchasingUpgrade [clone]");
 			
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ModifyOrAppendCriteria, "CTFPlayer::ModifyOrAppendCriteria");

@@ -119,10 +119,11 @@ namespace Mod::Perf::Func_Optimize
 #ifdef SE_TF2
 
 	constexpr uint8_t s_Buf_CTFPlayerShared_ConditionGameRulesThink[] = {
-        0x83, 0xC7, 0x01, //add     edi, 1
-        0x83, 0xC3, 0x14, //add     ebx, sizeof(condition_source_t)
-        0x81, 0xFF, 0x82, 0x00, 0x00, 0x00 //cmp     edi, TF_COND_COUNT
-	};
+        0x84, 0xc0,                          // +0x0000 test    al, al
+        0x74, 0xe0,                          // +0x0002 jz      short loc_8C99E0
+        0x83, 0xfb, 0x1f,                    // +0x0004 cmp     ebx, 1Fh
+        0x0f, 0x86, 0xd7, 0x04, 0x00, 0x00,  // +0x0007 jbe     loc_8C9EE0
+    };
 	struct CPatch_CTFPlayerShared_ConditionGameRulesThink: public CPatch
 	{
 		CPatch_CTFPlayerShared_ConditionGameRulesThink() : CPatch(sizeof(s_Buf_CTFPlayerShared_ConditionGameRulesThink)) {}
@@ -134,30 +135,31 @@ namespace Mod::Perf::Func_Optimize
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_CTFPlayerShared_ConditionGameRulesThink);
-            buf[0x3 + 2] = sizeof(condition_source_t);
-            buf.SetDword(0x6 + 2, GetNumberOfTFConds());
+            // buf[0x3 + 2] = sizeof(condition_source_t);
+            // buf.SetDword(0x6 + 2, GetNumberOfTFConds());
 			
-			/* allow any 3-bit destination register code */
-			mask[0x0 + 1] = 0b11111000;
-			mask[0x3 + 1] = 0b11111000;
-			mask[0x6 + 1] = 0b11111000;
+			// /* allow any 3-bit destination register code */
+			// mask[0x0 + 1] = 0b11111000;
+			// mask[0x3 + 1] = 0b11111000;
+			// mask[0x6 + 1] = 0b11111000;
+            mask[0x02 + 1] = 0x00;
+            mask.SetDword(0x07 + 2, 0x00);
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf.SetDword(0x06 + 2, 0x01);
+			buf[0x04 + 2] = 0x00;
 			
-			mask.SetDword(0x6 + 2, 0xffffffff);
+			mask[0x04 + 2] = 0xFF;
 			
 			return true;
 		}
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf.SetDword(0x06 + 2, 0x01);
-			buf[0x6] = 0x83;
+			buf[0x04 + 2] = 0x00;
 			
 			return true;
 		}
@@ -684,7 +686,7 @@ namespace Mod::Perf::Func_Optimize
 			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
 #ifdef SE_TF2
             // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
-			// this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
+			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
             // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
             MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)

@@ -159,7 +159,7 @@ namespace Mod::Util::Vehicle_Fix
 	//THINK_FUNC_DECL(EnableCrosshair) {
 	//	reinterpret_cast<CTFPlayer *>(this)->m_Local->m_iHideHUD |= HIDEHUD_CROSSHAIR;
 	//}
-	DETOUR_DECL_MEMBER(bool, CBasePlayer_GetInVehicle, CBaseServerVehicle *vehicle, int mode)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CBasePlayer_GetInVehicle, CBaseServerVehicle *vehicle, int mode)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		auto ret = DETOUR_MEMBER_CALL(CBasePlayer_GetInVehicle)(vehicle, mode);

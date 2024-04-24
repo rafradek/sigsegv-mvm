@@ -8,7 +8,7 @@ class CTFPlayer;
 namespace Mod::Sound::Unused_Sapper
 {
 	RefCount rc_CObjectSapper_ApplyRoboSapperEffects;
-	DETOUR_DECL_MEMBER(bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
 	{
 		SCOPED_INCREMENT(rc_CObjectSapper_ApplyRoboSapperEffects);
 		return DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects)(target, duration);
@@ -29,7 +29,7 @@ namespace Mod::Sound::Unused_Sapper
 	public:
 		CMod() : IMod("Sound:Unused_Sapper")
 		{
-			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects, "CObjectSapper::ApplyRoboSapperEffects");
+			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects, "CObjectSapper::ApplyRoboSapperEffects [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed,      "CTFPlayer::SpeakConceptIfAllowed");
 		}
 	};

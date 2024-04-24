@@ -2699,7 +2699,7 @@ namespace Mod::Attr::Custom_Attributes
 		return ret;
 	}
 
-	DETOUR_DECL_MEMBER(void, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration) {
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration) {
 		int cannotApply = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(target, cannotApply, cannot_be_sapped);
 		if (!cannotApply)
@@ -3474,7 +3474,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void InspectAttributes(CTFPlayer *target, CTFPlayer *player, bool force, int slot = -2);
 
-	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool refund)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool refund)
 	{
 		if (!refund) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
@@ -3529,7 +3529,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
 	}
 
-	DETOUR_DECL_MEMBER(attrib_definition_index_t, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, unsigned short, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
 	{
 		if (rc_CTFPlayer_ReapplyItemUpgrades)
 		{
@@ -3814,7 +3814,7 @@ namespace Mod::Attr::Custom_Attributes
 		THINK_FUNC_SET(arrow, UpdateArrowTrail, gpGlobals->curtime+0.01f);
 	}
 
-	DETOUR_DECL_MEMBER(int, CTFRadiusDamageInfo_ApplyToEntity, CBaseEntity *ent)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, int, CTFRadiusDamageInfo_ApplyToEntity, CBaseEntity *ent)
 	{
 		auto info = reinterpret_cast<CTFRadiusDamageInfo *>(this);
 		if (hit_entities_explosive_max != 0 && hit_entities_explosive >= hit_entities_explosive_max)
@@ -4221,7 +4221,7 @@ namespace Mod::Attr::Custom_Attributes
 		ReplaceBackCond(*me, TF_COND_STEALTHED);
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateCloakMeter)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateCloakMeter)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
@@ -4336,7 +4336,7 @@ namespace Mod::Attr::Custom_Attributes
 	addcond_provider = reinterpret_cast<CBaseEntity *>(this)->GetOwnerEntity(); \
 	addcond_provider_item = reinterpret_cast<CBaseEntity *>(this); \
 	
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_UpdateEnergyDrinkMeter)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateEnergyDrinkMeter)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		auto player = shared->GetOuter();
@@ -4480,7 +4480,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayerShared_PulseMedicRadiusHeal)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_PulseMedicRadiusHeal)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
@@ -4572,7 +4572,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 	
-	DETOUR_DECL_MEMBER(void, CObjectSapper_ApplyRoboSapperEffects_Last, CTFPlayer *target, float duration) {
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CObjectSapper_ApplyRoboSapperEffects_Last, CTFPlayer *target, float duration) {
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		auto sapper = reinterpret_cast<CObjectSapper *>(this);
 		addcond_provider = sapper->GetBuilder();
@@ -5197,11 +5197,7 @@ namespace Mod::Attr::Custom_Attributes
 			DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
 		}
 	}
-
-	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemsMatch, void *pData, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity)
-	{
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pData, pCurWeaponItem, pNewWeaponItem, pWpnEntity);
-		
+	bool CTFPlayer_ItemsMatch_Func(bool ret, CTFPlayer *player, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity) {
 		if (pCurWeaponItem != nullptr && pNewWeaponItem != nullptr) {
 			DevMsg("itemsmatch %lld %lld %d %s %s %d %d\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem), pCurWeaponItem->m_iItemDefinitionIndex.Get(), pNewWeaponItem->m_iItemDefinitionIndex.Get());
 		}
@@ -5222,6 +5218,11 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		return ret;
+	}
+
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFPlayer_ItemsMatch, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity)
+	{
+		return CTFPlayer_ItemsMatch_Func(DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pCurWeaponItem, pNewWeaponItem, pWpnEntity), reinterpret_cast<CTFPlayer *>(this), pCurWeaponItem, pNewWeaponItem, pWpnEntity);
 	}
 
 	THINK_FUNC_DECL(MinigunClearSounds)
@@ -6532,7 +6533,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CGameMovement_CheckFalling)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CGameMovement_CheckFalling)
 	{
 		auto me = reinterpret_cast<CGameMovement *>(this);
 		auto player = reinterpret_cast<CTFPlayer *>(me->player);
@@ -6722,7 +6723,7 @@ namespace Mod::Attr::Custom_Attributes
         return DETOUR_MEMBER_CALL(CTFPlayer_CanGoInvisible)(flagcheck);
     }
 	
-    DETOUR_DECL_MEMBER(bool, CObjectTeleporter_PlayerCanBeTeleported, CTFPlayer *player)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectTeleporter_PlayerCanBeTeleported, CTFPlayer *player)
 	{
 		int alwaysAllowTeleport = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, alwaysAllowTeleport, always_allow_teleport);
@@ -6837,7 +6838,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj);
 
-	DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
     }
@@ -7652,7 +7653,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	DETOUR_DECL_MEMBER(void, CWeaponMedigun_CycleResistType)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CWeaponMedigun_CycleResistType)
 	{
 		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
 		auto owner = medigun->GetTFPlayerOwner();
@@ -8079,7 +8080,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 	
-	DETOUR_DECL_MEMBER(bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
 	{
 		auto object = reinterpret_cast<CBaseObject *>(this);
 		
@@ -9223,7 +9224,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPistol_ScoutSecondary_GetDamageType,    "CTFPistol_ScoutSecondary::GetDamageType");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_CanHolster,    "CTFMinigun::CanHolster");
-			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects,    "CObjectSapper::ApplyRoboSapperEffects");
+			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects,    "CObjectSapper::ApplyRoboSapperEffects [clone]");
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_IsParentValid,    "CObjectSapper::IsParentValid");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsAllowedToTaunt,    "CTFPlayer::IsAllowedToTaunt");
 			MOD_ADD_VHOOK(CUpgrades_StartTouch, TypeName<CUpgrades>(), "CBaseTrigger::StartTouch");
@@ -9257,9 +9258,9 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_DeflectEntity, "CTFWeaponBase::DeflectEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetKillingWeaponName, "CTFGameRules::GetKillingWeaponName");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Touch, "CTFPlayer::Touch");
-			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ReapplyItemUpgrades, "CTFPlayer::ReapplyItemUpgrades");
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem", LOWEST);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CUpgrades_ApplyUpgradeToItem, "CUpgrades::ApplyUpgradeToItem [clone]", LOWEST);
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_WeaponSound, "CBaseCombatWeapon::WeaponSound");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Rocket_IsDeflectable, "CTFProjectile_Rocket::IsDeflectable");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_IsDeflectable, "CTFProjectile_Arrow::IsDeflectable");
@@ -9274,7 +9275,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_GetTargetRange,          "CWeaponMedigun::GetTargetRange");
 			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport, "CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_ArrowTouch, "CTFProjectile_Arrow::ArrowTouch");
-			MOD_ADD_DETOUR_MEMBER(CTFRadiusDamageInfo_ApplyToEntity, "CTFRadiusDamageInfo::ApplyToEntity");
+			MOD_ADD_DETOUR_MEMBER(CTFRadiusDamageInfo_ApplyToEntity, "CTFRadiusDamageInfo::ApplyToEntity [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_BCanBurnEntityThisFrame,        "CTFFlameManager::BCanBurnEntityThisFrame");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_ProjectileTouch, "CTFProjectile_EnergyRing::ProjectileTouch");
@@ -9288,11 +9289,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoTauntAttack, "CTFPlayer::DoTauntAttack");
 			MOD_ADD_DETOUR_MEMBER(CTFSodaPopper_SecondaryAttack, "CTFSodaPopper::SecondaryAttack");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetScoutHypeMeter, "CTFPlayerShared::SetScoutHypeMeter");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateEnergyDrinkMeter, "CTFPlayerShared::UpdateEnergyDrinkMeter [clone]");
 			MOD_ADD_DETOUR_STATIC(JarExplode, "JarExplode");
 			MOD_ADD_DETOUR_MEMBER(CTFGasManager_OnCollide, "CTFGasManager::OnCollide");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetChargeEffect, "CTFPlayerShared::SetChargeEffect");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_PulseMedicRadiusHeal, "CTFPlayerShared::PulseMedicRadiusHeal");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_PulseMedicRadiusHeal, "CTFPlayerShared::PulseMedicRadiusHeal [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SetRevengeCrits, "CTFPlayerShared::SetRevengeCrits");
 			MOD_ADD_DETOUR_MEMBER(CTFFlareGun_Revenge_Deploy , "CTFFlareGun_Revenge::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFShotgun_Revenge_Deploy, "CTFShotgun_Revenge::Deploy");
@@ -9319,7 +9320,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DropAmmoPack, "CTFPlayer::DropAmmoPack");
 			MOD_ADD_DETOUR_STATIC(CTFDroppedWeapon_Create, "CTFDroppedWeapon::Create");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Regenerate ,"CTFPlayer::Regenerate");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemsMatch ,"CTFPlayer::ItemsMatch");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ItemsMatch ,"CTFPlayer::ItemsMatch [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFMinigun_SetWeaponState ,"CTFMinigun::SetWeaponState");
 // Older GCC has trouble compiling it, easiest way is to just disable it
 #if !(defined(__GNUC__) && (__GNUC__ < 12))
@@ -9372,16 +9373,16 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFJar_TossJarThink, "CTFJar::TossJarThink");
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableRepel_SetCustomPipebombModel, "CTFProjectile_ThrowableRepel::SetCustomPipebombModel");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_ItemHolsterFrame, "CTFWeaponBase::ItemHolsterFrame");
-            MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckFalling, "CGameMovement::CheckFalling");
+            MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckFalling, "CGameMovement::CheckFalling [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_ActivateInvisibilityWatch, "CTFWeaponInvis::ActivateInvisibilityWatch");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_FadeInvis, "CTFPlayerShared::FadeInvis");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateCloakMeter, "CTFPlayerShared::UpdateCloakMeter");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateCloakMeter, "CTFPlayerShared::UpdateCloakMeter [clone]");
             //MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpyDeadRingerDeath, "CTFPlayer::SpyDeadRingerDeath");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_CleanupInvisibilityWatch, "CTFWeaponInvis::CleanupInvisibilityWatch");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponInvis_GetViewModel, "CTFWeaponInvis::GetViewModel");
             MOD_ADD_DETOUR_MEMBER(CTFWearableDemoShield_DoCharge, "CTFWearableDemoShield::DoCharge");
-            MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects", LOWEST);
+            MOD_ADD_DETOUR_MEMBER_PRIORITY(CObjectSapper_ApplyRoboSapperEffects_Last, "CObjectSapper::ApplyRoboSapperEffects [clone]", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CCurrencyPack_MyTouch, "CCurrencyPack::MyTouch");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_TraceAttack, "CTFPlayer::TraceAttack");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_MakeBleed, "CTFPlayerShared::MakeBleed");
@@ -9392,10 +9393,10 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_BreakArrow, "CTFProjectile_Arrow::BreakArrow");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanDisguise, "CTFPlayer::CanDisguise");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanGoInvisible, "CTFPlayer::CanGoInvisible");
-            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported");
+            MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllOwnedEntitiesFromWorld, "CTFPlayer::RemoveAllOwnedEntitiesFromWorld");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject, "CTFPlayer::AddObject");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject, "CTFPlayer::AddObject [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject, "CTFPlayer::RemoveObject");
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetHealRate, "CObjectDispenser::GetHealRate");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_TeleporterThink, "CObjectTeleporter::TeleporterThink");
@@ -9446,7 +9447,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFFlameManager_OnCollide, "CTFFlameManager::OnCollide");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_Heal, "CTFPlayerShared::Heal");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_SecondaryAttack, "CWeaponMedigun::SecondaryAttack");
-			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_CycleResistType, "CWeaponMedigun::CycleResistType");
+			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_CycleResistType, "CWeaponMedigun::CycleResistType [clone]");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_FindAndHealTargets, "CWeaponMedigun::FindAndHealTargets");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_Smack, "CTFWeaponBaseMelee::Smack");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetSceneSoundToken, "CTFPlayer::GetSceneSoundToken");
@@ -9461,7 +9462,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PlayStepSound, "CBasePlayer::PlayStepSound");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTauntSucceeded, "CTFPlayer::OnTauntSucceeded");
 			MOD_ADD_DETOUR_MEMBER(CGameMovement_PlayerMove, "CGameMovement::PlayerMove");
-			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer");
+			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer [clone]");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FoundTarget, "CObjectSentrygun::FoundTarget");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGrenadeProj_Destroy, "CTFWeaponBaseGrenadeProj::Destroy");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_Destroy, "CTFBaseRocket::Destroy");

@@ -31,7 +31,7 @@ namespace Mod::MvM::RoboSapper_Override
 	}
 	
 	RefCount rc_CObjectSapper_ApplyRoboSapperEffects;
-	DETOUR_DECL_MEMBER(bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
 	{
 		SCOPED_INCREMENT(rc_CObjectSapper_ApplyRoboSapperEffects);
 		return DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects)(target, duration);
@@ -61,7 +61,7 @@ namespace Mod::MvM::RoboSapper_Override
 		CMod() : IMod("MvM:RoboSapper_Override")
 		{
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapper,        "CObjectSapper::ApplyRoboSapper");
-			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects, "CObjectSapper::ApplyRoboSapperEffects");
+			MOD_ADD_DETOUR_MEMBER(CObjectSapper_ApplyRoboSapperEffects, "CObjectSapper::ApplyRoboSapperEffects [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_StunPlayer,           "CTFPlayerShared::StunPlayer");
 		}
 	};

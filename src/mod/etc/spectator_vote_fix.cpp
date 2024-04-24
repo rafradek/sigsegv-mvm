@@ -4,7 +4,7 @@
 
 namespace Mod::MvM::Spectator_Vote_Fix
 {
-	DETOUR_DECL_MEMBER(int, CVoteController_TryCastVote, int index, const char *issue)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, int, CVoteController_TryCastVote, int index, const char *issue)
 	{
 		auto player = ToTFPlayer(UTIL_PlayerByIndex(index));
         static ConVarRef sv_vote_allow_spectators("sv_vote_allow_spectators");
@@ -20,7 +20,7 @@ namespace Mod::MvM::Spectator_Vote_Fix
 	public:
 		CMod() : IMod("Etc:Misc:SpectatorVoteFix")
 		{
-			MOD_ADD_DETOUR_MEMBER(CVoteController_TryCastVote, "CVoteController::TryCastVote");
+			MOD_ADD_DETOUR_MEMBER(CVoteController_TryCastVote, "CVoteController::TryCastVote [clone]");
 		}
 	};
 	CMod s_Mod;

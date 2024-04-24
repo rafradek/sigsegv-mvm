@@ -6,34 +6,27 @@
 namespace Mod::Bot::RunFast
 {
 	constexpr uint8_t s_Buf_Verify[] = {
-		0xff, 0x51, 0x54,                   // +0000  call Path::Compute<CTFBotPathCost>
-		0xc7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x40, // +0003  mov dword ptr [esp+0x4],2.0f
-		0xc7, 0x04, 0x24, 0x00, 0x00, 0x80, 0x3f,       // +000B  mov dword ptr [esp],1.0f
-		0xe8, 0xdc, 0xd8, 0xae, 0x00,                   // +0012  call RandomFloat
+		0xE8, 0xFA, 0x16, 0xFE, 0xFF, // +0000  call Path::Compute<CTFBotPathCost>
+		0x83, 0xC4, 0x18,             // +0005  add esp, 18h
+		0x68, 0x00, 0x00, 0x00, 0x40, // +0008  push 2.0f
+		0x68, 0x00, 0x00, 0x80, 0x3F, // +000D  push 1.0f
+		0xe8, 0xdc, 0xd8, 0xae, 0x00, // +0012  call RandomFloat
 	};
-	constexpr uint8_t s_Buf_Patch[] = {
-		0xff, 0x51, 0x54, // +0000  call Path::Compute<CTFBotPathCost>
-		0xd9, 0xee,                   // +0005  fldz
-		0x90, 0x90, 0x90, 0x90, 0x90, // +0007  nop nop nop nop nop
-		0x90, 0x90, 0x90, 0x90, 0x90, // +000C  nop nop nop nop nop
-		0x90, 0x90, 0x90, 0x90, 0x90, // +0011  nop nop nop nop nop
-		0x90, 0x90, 0x90,             // +0016  nop nop nop
-	};
-	static_assert(sizeof(s_Buf_Verify) == sizeof(s_Buf_Patch));
 	
 	struct CPatch_CTFBotPushToCapturePoint_Update : public CPatch
 	{
 		CPatch_CTFBotPushToCapturePoint_Update() : CPatch(sizeof(s_Buf_Verify)) {}
 		
 		virtual const char *GetFuncName() const override { return "CTFBotPushToCapturePoint::Update"; }
-		virtual uint32_t GetFuncOffMin() const override { return 0x0400; }
+		virtual uint32_t GetFuncOffMin() const override { return 0x0200; }
 		virtual uint32_t GetFuncOffMax() const override { return 0x0680; } // @ 0x01d3
 		
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_Verify);
 			
-			mask.SetRange(0x00 + 1, 2, 0x00);
+			mask.SetRange(0x00 + 1, 4, 0x00);
+			mask.SetRange(0x05 + 2, 1, 0x00);
 			mask.SetRange(0x12 + 1, 4, 0x00);
 			
 			return true;
@@ -41,10 +34,9 @@ namespace Mod::Bot::RunFast
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf.CopyFrom(s_Buf_Patch);
+			buf.SetRange(0x12, 5, 0x90);
 			
-			mask.SetAll(0xff);
-			mask.SetRange(0x00, 3, 0x00);
+			mask.SetRange(0x12, 5, 0xff);
 			
 			return true;
 		}

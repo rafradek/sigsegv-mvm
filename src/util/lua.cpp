@@ -4616,7 +4616,7 @@ namespace Util::Lua
         return false;
     }
 
-    DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
+    DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
         
         if (ent1 != ent2 && ent2 != nullptr)
@@ -4968,7 +4968,7 @@ namespace Util::Lua
             MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Deploy, "CTFWeaponBase::Deploy");
             MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_Holster, "CTFWeaponBase::Holster");
-            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
+            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter [clone]");
             MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_StartTouch, "CBaseEntity::StartTouch");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_EndTouch, "CBaseEntity::EndTouch");

@@ -18,7 +18,7 @@ namespace Mod::MvM::Upgrade_Disallow
 	ConVar cvar_burn_time("sig_mvm_upgrade_allow_burn_time", "1", FCVAR_NOTIFY,
 		"Should burn time be enabled");
 
-	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int itemslot, int upgradeslot, bool sell, bool free, bool b3)
 	{
 		if (!b3) {
 			auto upgrade = reinterpret_cast<CUpgrades *>(this);
@@ -134,7 +134,7 @@ namespace Mod::MvM::Upgrade_Disallow
 	public:
 		CMod() : IMod("MvM:Upgrade_Disallow")
 		{
-			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade [clone]");
 			MOD_ADD_DETOUR_STATIC(ApplyUpgrade_Default, "ApplyUpgrade_Default");
 		}
 	};

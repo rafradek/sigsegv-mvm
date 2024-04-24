@@ -7,7 +7,7 @@
 namespace Mod::MvM::Sapper_Allow_Multiple_Active
 {
 	RefCount rc_CTFPlayer_CanBuild__sapper;
-	DETOUR_DECL_MEMBER(int, CTFPlayer_CanBuild, int iObjectType, int iObjectMode)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,int, CTFPlayer_CanBuild, int iObjectType, int iObjectMode)
 	{
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_CanBuild__sapper, iObjectType == OBJ_ATTACHMENT_SAPPER);
 		return DETOUR_MEMBER_CALL(CTFPlayer_CanBuild)(iObjectType, iObjectMode);
@@ -30,7 +30,7 @@ namespace Mod::MvM::Sapper_Allow_Multiple_Active
 	public:
 		CMod() : IMod("MvM:Sapper_Allow_Multiple_Active")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanBuild,      "CTFPlayer::CanBuild");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanBuild,      "CTFPlayer::CanBuild [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetNumObjects, "CTFPlayer::GetNumObjects");
 		}
 	};

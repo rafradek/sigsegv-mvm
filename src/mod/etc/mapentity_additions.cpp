@@ -766,14 +766,14 @@ namespace Mod::Etc::Mapentity_Additions
 	}
     
     RefCount rc_CTriggerHurt_HurtEntity;
-    DETOUR_DECL_MEMBER(bool, CTriggerHurt_HurtEntity, CBaseEntity *other, float damage)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTriggerHurt_HurtEntity, CBaseEntity *other, float damage)
 	{
         SCOPED_INCREMENT(rc_CTriggerHurt_HurtEntity);
 		return DETOUR_MEMBER_CALL(CTriggerHurt_HurtEntity)(other, damage);
 	}
 
     RefCount rc_CTriggerIgnite_BurnEntities;
-    DETOUR_DECL_MEMBER(int, CTriggerIgnite_BurnEntities)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, int, CTriggerIgnite_BurnEntities)
 	{
         SCOPED_INCREMENT(rc_CTriggerIgnite_BurnEntities);
 		return DETOUR_MEMBER_CALL(CTriggerIgnite_BurnEntities)();
@@ -1780,7 +1780,7 @@ namespace Mod::Etc::Mapentity_Additions
         return false;
     }
 
-    DETOUR_DECL_STATIC(bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
+    DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
         if (ent1 != ent2 && ent2 != nullptr)
         {
@@ -1894,7 +1894,7 @@ namespace Mod::Etc::Mapentity_Additions
         }
     }
     
-    DETOUR_DECL_MEMBER(bool, CPopulationManager_Initialize)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CPopulationManager_Initialize)
 	{
 		auto ret = DETOUR_MEMBER_CALL(CPopulationManager_Initialize)();
         
@@ -2326,9 +2326,9 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
-			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity");
+			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_IgniteEntity, "CTriggerIgnite::IgniteEntity");
-			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_BurnEntities, "CTriggerIgnite::BurnEntities");
+			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_BurnEntities, "CTriggerIgnite::BurnEntities [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_SelfBurn, "CTFPlayerShared::SelfBurn");
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByName, "CGlobalEntityList::FindEntityByName");
 			MOD_ADD_DETOUR_MEMBER(CGlobalEntityList_FindEntityByClassname, "CGlobalEntityList::FindEntityByClassname");
@@ -2352,11 +2352,11 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_RoundCleanupShouldIgnore, "CTFGameRules::RoundCleanupShouldIgnore");
             MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldCreateEntity, "CTFGameRules::ShouldCreateEntity");
 			MOD_ADD_VHOOK(CMathCounter_Activate, TypeName<CMathCounter>(), "CBaseEntity::Activate");
-            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter");
+            MOD_ADD_DETOUR_STATIC(PassServerEntityFilter, "PassServerEntityFilter [clone]");
             MOD_ADD_DETOUR_MEMBER(CCollisionEvent_ShouldCollide, "CCollisionEvent::ShouldCollide");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_ShouldTransmit, "CBaseEntity::ShouldTransmit");
             MOD_ADD_DETOUR_MEMBER(CBaseEntity_DispatchUpdateTransmitState, "CBaseEntity::DispatchUpdateTransmitState");
-            MOD_ADD_DETOUR_MEMBER(CPopulationManager_Initialize, "CPopulationManager::Initialize");
+            MOD_ADD_DETOUR_MEMBER(CPopulationManager_Initialize, "CPopulationManager::Initialize [clone]");
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_ResetMap, "CPopulationManager::ResetMap");
             
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetFlagToFetch, "CTFBot::GetFlagToFetch");

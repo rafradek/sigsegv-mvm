@@ -211,7 +211,7 @@ namespace Mod::Perf::HLTV_Optimize
         DETOUR_MEMBER_CALL(CHLTVDemoRecorder_RecordStringTables)();
     }
 
-	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_StopRecording)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CHLTVDemoRecorder_StopRecording)
 	{
         recording = false;
         DETOUR_MEMBER_CALL(CHLTVDemoRecorder_StopRecording)();
@@ -263,7 +263,7 @@ namespace Mod::Perf::HLTV_Optimize
 
             // Limit snapshot rate when between rounds or when hltv server is empty and not recording
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_RecordStringTables, "CHLTVDemoRecorder::RecordStringTables");
-			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording, "CHLTVDemoRecorder::StopRecording");
+			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording, "CHLTVDemoRecorder::StopRecording [clone]");
 			MOD_ADD_DETOUR_MEMBER(CGameClient_ShouldSendMessages, "CGameClient::ShouldSendMessages");
             
                         

@@ -8,9 +8,8 @@ namespace Mod::MvM::Gib_Improvements
 {
 	constexpr uint8_t s_Buf[] = {
 		0xa1, 0x5c, 0x6c, 0x70, 0x01,             // +0000  mov eax,ds:g_pGameRules
-		0x31, 0xDB,                               // +0005
-		0x80, 0xb8, 0x7a, 0x09, 0x00, 0x00, 0x00, // +0007  cmp byte ptr [eax+m_bPlayingMannVsMachine],0x0
-		0x75, 0xE2        // +000E  jnz +0xXX
+		0x80, 0xb8, 0x7a, 0x09, 0x00, 0x00, 0x00, // +0005  cmp byte ptr [eax+m_bPlayingMannVsMachine],0x0
+		0x0F, 0x85, 0x26, 0x01, 0x00, 0x00        // +000C  jnz +0xXX
 	};
 	
 	struct CPatch_CTFPlayer_ShouldGib : public CPatch
@@ -32,9 +31,9 @@ namespace Mod::MvM::Gib_Improvements
 			if (!Prop::FindOffset(off__CTFGameRules_m_bPlayingMannVsMachine, "CTFGameRules", "m_bPlayingMannVsMachine")) return false;
 			
 			buf.SetDword(0x00 + 1, (uint32_t)addr__g_pGameRules);
-			buf.SetDword(0x07 + 2, (uint32_t)off__CTFGameRules_m_bPlayingMannVsMachine);
+			buf.SetDword(0x05 + 2, (uint32_t)off__CTFGameRules_m_bPlayingMannVsMachine);
 			
-			mask.SetRange(0x0e + 1, 1, 0x00);
+			mask.SetRange(0x0c + 2, 4, 0x00);
 			
 			return true;
 		}
@@ -42,8 +41,8 @@ namespace Mod::MvM::Gib_Improvements
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* NOP out the conditional jump for MvM mode */
-			buf .SetRange(0x0e, 2, 0x90);
-			mask.SetRange(0x0e, 2, 0xff);
+			buf .SetRange(0x0c, 6, 0x90);
+			mask.SetRange(0x0c, 6, 0xff);
 			
 			return true;
 		}

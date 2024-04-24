@@ -10,16 +10,16 @@
 namespace Mod::MvM::Dominations
 {
 	constexpr uint8_t s_Buf[] = {
-		0x80, 0xbf, 0x72, 0x09, 0x00, 0x00, 0x00, // +0000  cmp byte ptr [edi+m_bPlayingMannVsMachine],0x0
-		0x89, 0x45, 0xd8,                         // +0007  mov ecx,eax
-		0x75, 0xcc,                               // +000a  jnz -0x34
+		0x80, 0xbe, 0x72, 0x09, 0x00, 0x00, 0x00, // +0000  cmp byte ptr [esi+m_bPlayingMannVsMachine],0x0
+		0x89, 0xc2,                               // +0007  mov edx,eax
+		0x75, 0xcc,                               // +0009  jnz -0x34
 	};
 	
 	struct CPatch_CTFGameRules_CalcDominationAndRevenge : public CPatch
 	{
 		CPatch_CTFGameRules_CalcDominationAndRevenge() : CPatch(sizeof(s_Buf)) {}
 		
-		virtual const char *GetFuncName() const override { return "CTFGameRules::CalcDominationAndRevenge"; }
+		virtual const char *GetFuncName() const override { return "CTFGameRules::CalcDominationAndRevenge [clone]"; }
 		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
 		virtual uint32_t GetFuncOffMax() const override  { return 0x0100; } // @ 0x006c
 		
@@ -32,7 +32,7 @@ namespace Mod::MvM::Dominations
 			
 			buf.SetDword(0x00 + 2, (uint32_t)off_CTFGameRules_m_bPlayingMannVsMachine);
 			
-			mask[0x0a + 1] = 0x00;
+			mask[0x09 + 1] = 0x00;
 			
 			return true;
 		}
@@ -40,8 +40,8 @@ namespace Mod::MvM::Dominations
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* NOP out the conditional jump for MvM mode */
-			buf .SetRange(0x0a, 2, 0x90);
-			mask.SetRange(0x0a, 2, 0xff);
+			buf .SetRange(0x09, 2, 0x90);
+			mask.SetRange(0x09, 2, 0xff);
 			
 			return true;
 		}

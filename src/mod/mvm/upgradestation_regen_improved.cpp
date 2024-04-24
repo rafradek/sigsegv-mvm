@@ -10,7 +10,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	ConVar cvar_only_creators("sig_mvm_upgradestation_creators", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"The mod only affects creators.tf weapons");
 
-	DETOUR_DECL_MEMBER(void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int slot, int tier, bool sell, bool free, bool b3)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int slot, int tier, bool sell, bool free, bool b3)
 	{
 		SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
 		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, slot, tier, sell, free, b3);
@@ -79,7 +79,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	public:
 		CMod() : IMod("MvM:UpgradeStation_Regen_Improved")
 		{
-			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade");
+			MOD_ADD_DETOUR_MEMBER(CUpgrades_PlayerPurchasingUpgrade, "CUpgrades::PlayerPurchasingUpgrade [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GiveDefaultItems,        "CTFPlayer::GiveDefaultItems");
 		}
 	};

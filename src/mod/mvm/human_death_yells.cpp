@@ -7,27 +7,15 @@
 namespace Mod::MvM::Human_Death_Yells
 {
 	constexpr uint8_t s_Buf_CTFPlayer_DeathSound[] = {
-		0x85, 0xc0,                               // +0000  test eax,eax
-		0x74, 0x00,                               // +0002  jz +0xXX
-		
-		0x80, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, // +0004  cmp byte ptr [eax+CTFGameRules::m_bPlayingMannVsMachine],0
-		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +000B  jnz +0xXXXXXXXX
-		
-		0x8b, 0x83, 0x00, 0x00, 0x00, 0x00,       // +0011  mov eax,[ebx+CTFPlayer::m_LastDamageType]
-		
-		0xa8, 0x20,                               // +0017  test al,DMG_FALL
-		0x0F, 0x85, 0x8C, 0x00, 0x00, 0x00,       // +0019  jnz +0xXX
-		
-		0xa8, 0x40,                               // +001F  test al,DMG_BLAST
-		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +0021  jnz +0xXXXXXXXX
-		
-		0xa9, 0x00, 0x00, 0x10, 0x00,             // +0027  test eax,DMG_CRITICAL
-		0x0f, 0x85, 0x00, 0x00, 0x00, 0x00,       // +002C  jnz +0xXXXXXXXX
-		
-		0xa8, 0x80,                               // +0032  test al,DMG_CLUB
-		0x74, 0x00,                               // +0034  jz +0xXX
+		0x80, 0xbb, 0x24, 0x24, 0x00, 0x00, 0x00,  // +0x0000 cmp     byte ptr [ebx+2424h], 0
+		0x0f, 0x85, 0x0f, 0xff, 0xff, 0xff,        // +0x0007 jnz     loc_EF3B78
+		0x6a, 0x00,                                // +0x000d push    0
+		0x6a, 0x00,                                // +0x000f push    0
+		0x68, 0xbe, 0xb1, 0x21, 0x01,              // +0x0011 push    121B1BEh; "MVM.PlayerDied"
+		0x53,                                      // +0x0016 push    ebx
+		0xe8, 0x18, 0x32, 0x8e, 0xff,              // +0x0017 call    _ZN11CBaseEntity9EmitSoundEPKcfPf; CBaseEntity::EmitSound(char const*,float,float *)
 	};
-	
+
 	struct CPatch_CTFPlayer_DeathSound : public CPatch
 	{
 		CPatch_CTFPlayer_DeathSound() : CPatch(sizeof(s_Buf_CTFPlayer_DeathSound)) {}
@@ -39,30 +27,27 @@ namespace Mod::MvM::Human_Death_Yells
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_CTFPlayer_DeathSound);
-			
-			int off__m_bPlayingMannVsMachine;
-			if (!Prop::FindOffset(off__m_bPlayingMannVsMachine, "CTFGameRules", "m_bPlayingMannVsMachine")) return false;
-			
-			buf.SetDword(0x04 + 2, (uint32_t)off__m_bPlayingMannVsMachine);
-			
-			mask.SetRange(0x02 + 1, 1, 0x00);
-			mask.SetRange(0x0b + 2, 4, 0x00);
-			mask.SetRange(0x11 + 2, 4, 0x00); // hypothetically we could get the offset for CTFPlayer::m_LastDamageType
-			mask.SetRange(0x19 + 2, 4, 0x00);
-			mask.SetRange(0x21 + 2, 4, 0x00);
-			mask.SetRange(0x27 + 2, 4, 0x00);
-			mask.SetRange(0x2c + 2, 4, 0x00);
-			mask.SetRange(0x34 + 1, 1, 0x00);
+
+			mask.SetRange(0x00 + 2, 4, 0x00);
+			mask.SetRange(0x07 + 2, 4, 0x00);
+			mask.SetRange(0x11 + 1, 4, 0x00);
+			mask.SetRange(0x17 + 1, 4, 0x00);
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			/* always skip over the block for EmitSound("MVM.PlayerDied") */
-			buf .SetRange(0x0b, 6, 0x90);
-			mask.SetRange(0x0b, 6, 0xff);
+			// Avoid going into the branch playing mvm sound
+
+			// Change cmp 0 to 0x55
+			buf[0x06] = 0x55;
+			// Change jnz to jz
+			buf[0x08] = 0x84;
 			
+			
+			mask[0x06] = 0xFF;
+			mask[0x08] = 0xFF;
 			return true;
 		}
 	};

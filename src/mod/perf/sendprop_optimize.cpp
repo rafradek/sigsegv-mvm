@@ -1369,7 +1369,7 @@ namespace Mod::Perf::SendProp_Optimize
     }
 
 #ifdef SE_TF2
-    DETOUR_DECL_MEMBER(void, CTFPlayer_AddObject, CBaseObject *object)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
         reinterpret_cast<CTFPlayer *>(this)->NetworkStateChanged();
@@ -1399,7 +1399,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
     }
     
-    DETOUR_DECL_MEMBER(void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
 	{
         auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
         int oldFlags = flags;
@@ -1432,7 +1432,7 @@ namespace Mod::Perf::SendProp_Optimize
         flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
-    DETOUR_DECL_MEMBER(void , CMultiPlayerAnimState_RestartGesture, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void , CMultiPlayerAnimState_RestartGesture, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
 	{
         auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
         int oldFlags = flags;
@@ -1637,14 +1637,14 @@ namespace Mod::Perf::SendProp_Optimize
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
             MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
-            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer [clone]");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_SetLayerCycle,"CBaseAnimatingOverlay::SetLayerCycle");
 
 #ifdef SE_TF2
             MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_AddToGestureSlot,"CMultiPlayerAnimState::AddToGestureSlot");
-            MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_RestartGesture,"CMultiPlayerAnimState::RestartGesture");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject");
+            MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_RestartGesture,"CMultiPlayerAnimState::RestartGesture [clone]");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject,"CTFPlayer::RemoveObject");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_AddCond,"CTFPlayerShared::AddCond", LOWEST);
             MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename,"CPopulationManager::SetPopulationFilename");

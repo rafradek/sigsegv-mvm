@@ -443,7 +443,7 @@ namespace Mod::Etc::Extra_Player_Slots
         //Msg("Delete player %d %d\n", player->GetTeamNumber(), player);
     }
 
-	DETOUR_DECL_MEMBER(int, CGameMovement_GetPointContentsCached, const Vector &point, int slot)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, int, CGameMovement_GetPointContentsCached, const Vector &point, int slot)
 	{
         int oldIndex = -1;
         auto movement = reinterpret_cast<CGameMovement *>(this);
@@ -963,7 +963,7 @@ namespace Mod::Etc::Extra_Player_Slots
         //players = oldPlayers;
     }
 
-    DETOUR_DECL_MEMBER(void, CTFGameRules_CalcDominationAndRevenge, CTFPlayer *pAttacker, CBaseEntity *pWeapon, CTFPlayer *pVictim, bool bIsAssist, int *piDeathFlags)
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFGameRules_CalcDominationAndRevenge, CTFPlayer *pAttacker, CBaseEntity *pWeapon, CTFPlayer *pVictim, bool bIsAssist, int *piDeathFlags)
 	{
         if (ENTINDEX(pAttacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(pVictim) > DEFAULT_MAX_PLAYERS) return;
 
@@ -1072,7 +1072,7 @@ namespace Mod::Etc::Extra_Player_Slots
 		    MOD_ADD_DETOUR_STATIC(SendProxyArrayLength_PlayerArray,    "SendProxyArrayLength_PlayerArray");
 			MOD_ADD_DETOUR_MEMBER(CTeam_AddPlayer, "CTeam::AddPlayer");
 			//MOD_ADD_DETOUR_MEMBER(CTeam_RemovePlayer, "CTeam::RemovePlayer");
-			MOD_ADD_DETOUR_MEMBER(CGameMovement_GetPointContentsCached, "CGameMovement::GetPointContentsCached");
+			MOD_ADD_DETOUR_MEMBER(CGameMovement_GetPointContentsCached, "CGameMovement::GetPointContentsCached [clone]");
 
             
 			MOD_ADD_DETOUR_MEMBER(CTFGameStats_ResetPlayerStats, "CTFGameStats::ResetPlayerStats");
@@ -1116,7 +1116,7 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_MEMBER(CBaseClient_FireGameEvent, "CBaseClient::FireGameEvent");
             MOD_ADD_DETOUR_MEMBER(CGameMovement_CheckStuck, "CGameMovement::CheckStuck");
             MOD_ADD_DETOUR_MEMBER(CSteam3Server_SendUpdatedServerDetails, "CSteam3Server::SendUpdatedServerDetails");
-            MOD_ADD_DETOUR_MEMBER(CTFGameRules_CalcDominationAndRevenge, "CTFGameRules::CalcDominationAndRevenge");
+            MOD_ADD_DETOUR_MEMBER(CTFGameRules_CalcDominationAndRevenge, "CTFGameRules::CalcDominationAndRevenge [clone]");
             
             MOD_ADD_DETOUR_STATIC(SV_ComputeClientPacks, "SV_ComputeClientPacks");
             MOD_ADD_DETOUR_MEMBER(CTFBot_GetNextSpawnClassname, "CTFBot::GetNextSpawnClassname");

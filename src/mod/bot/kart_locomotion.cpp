@@ -29,13 +29,14 @@ namespace Mod::Bot::Kart_Locomotion
     };
 
 	/* don't do dodge strafing */
-	DETOUR_DECL_MEMBER(void, CTFBotMainAction_Dodge, CTFBot *actor)
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFBotMainAction_Dodge)
 	{
+		auto actor = reinterpret_cast<CTFPlayer *>(this);
 		if (actor->m_Shared->InCond(TF_COND_HALLOWEEN_KART) || actor->m_Shared->InCond(TF_COND_TAUNTING) || actor->m_hVehicle != nullptr) {
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBotMainAction_Dodge)(actor);
+		DETOUR_MEMBER_CALL(CTFBotMainAction_Dodge)();
 	}
 	
 	/* don't strafe and jump around when stuck */
@@ -152,7 +153,7 @@ namespace Mod::Bot::Kart_Locomotion
 	public:
 		CMod() : IMod("Bot:Kart_Locomotion")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_Dodge,   "CTFBotMainAction::Dodge");
+			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_Dodge,   "CTFBotMainAction::Dodge [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_OnStuck, "CTFBotMainAction::OnStuck");
 			
 			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_Approach, "PlayerLocomotion::Approach");
