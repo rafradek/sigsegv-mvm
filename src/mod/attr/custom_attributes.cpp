@@ -4471,7 +4471,7 @@ namespace Mod::Attr::Custom_Attributes
 					mod->condOverrideAttributes[iCharge] = effectAttributes;
 			}
 			effects.eCondition = (ETFCond) (iCondOverride & 255);
-			effects.eWearingOffCondition = (ETFCond) TF_COND_COUNT;
+			effects.eWearingOffCondition = (ETFCond) GetNumberOfTFConds();
 		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_SetChargeEffect)(iCharge, bState, bInstant, effects, flWearOffTime, pProvider);
 		if (iCondOverride != 0) {
@@ -4520,7 +4520,7 @@ namespace Mod::Attr::Custom_Attributes
 		ETFCond old_wearing_cond = effect.eWearingOffCondition;
 		if (mod != nullptr && mod->condOverride[type] != -1) {
 			effect.eCondition = (ETFCond) (mod->condOverride[type] & 255);
-			effect.eWearingOffCondition = (ETFCond) TF_COND_COUNT;
+			effect.eWearingOffCondition = (ETFCond) GetNumberOfTFConds();
 		}
 		
 		DETOUR_MEMBER_CALL(CTFPlayerShared_TestAndExpireChargeEffect)(type);

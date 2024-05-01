@@ -136,6 +136,44 @@ namespace Mod::Cond::Reprogrammed
 	FPtr_IsBot CPatch_CTFGameMovement_CheckStuck::s_CBasePlayer_IsBot = &CBasePlayer::IsBot;
 	
 	
+	constexpr uint8_t s_Buf_CTFPistol_ScoutPrimary_Push[] = {
+		0x83, 0xbb, 0x8c, 0x0e, 0x00, 0x00, 0x02,  // +0x0000 cmp     dword ptr [ebx+0E8Ch], 2
+		0x74, 0x70,                                // +0x0007 jz      short loc_971E40
+		0x83, 0xbd, 0xb4, 0xfe, 0xff, 0xff, 0xfe,  // +0x0009 cmp     [ebp+var_14C], 0FFFFFFFEh
+		0x74, 0x14,                                // +0x0010 jz      short loc_971DED
+	};
+	
+	struct CPatch_CTFPistol_ScoutPrimary_Push : public CPatch
+	{
+		CPatch_CTFPistol_ScoutPrimary_Push() : CPatch(sizeof(s_Buf_CTFPistol_ScoutPrimary_Push)) {}
+		
+		virtual const char *GetFuncName() const override { return "CTFPistol_ScoutPrimary::Push"; }
+		virtual uint32_t GetFuncOffMin() const override  { return 0x0060; }
+		virtual uint32_t GetFuncOffMax() const override  { return 0x0160; } // @ 0x0110
+		
+		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
+		{
+			buf.CopyFrom(s_Buf_CTFPistol_ScoutPrimary_Push);
+			
+			mask.SetRange(0x00 + 2, 4, 0x00);
+			mask.SetRange(0x07 + 1, 1, 0x00);
+			mask.SetRange(0x09 + 2, 1, 0x00);
+			mask.SetRange(0x10 + 1, 1, 0x00);
+			
+			return true;
+		}
+		
+		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
+		{
+			// Change jz to jnz (always jump)
+			buf[0x10] = 0x75;
+			mask[0x10] = 0xff;
+			
+			return true;
+		}
+		
+	};
+
 #if 0
 	constexpr uint8_t s_Buf_GetShootSound[] = {
 		0xe8, 0xf1, 0x51, 0x1a, 0x00,             // +0000  call CBaseEntity::GetTeamNumber
@@ -815,27 +853,28 @@ namespace Mod::Cond::Reprogrammed
 
 			return playerVector->Count();
 		}
-		if (rc_CollectPlayers_Enemy && !reentrancy) {
-			reentrancy = true;
-			CollectPlayers(playerVector, team == TEAM_SPECTATOR ? TF_TEAM_RED : TEAM_SPECTATOR, isAlive, shouldAppend);
-			if (team == TEAM_SPECTATOR) {
-				team = TF_TEAM_BLUE;
-			}
-			shouldAppend = true;
-			reentrancy = false;
-		}
+		// TF2 update inlined collectplayers here, using patch instead
+		// if (rc_CollectPlayers_Enemy && !reentrancy) {
+		// 	reentrancy = true;
+		// 	CollectPlayers(playerVector, team == TEAM_SPECTATOR ? TF_TEAM_RED : TEAM_SPECTATOR, isAlive, shouldAppend);
+		// 	if (team == TEAM_SPECTATOR) {
+		// 		team = TF_TEAM_BLUE;
+		// 	}
+		// 	shouldAppend = true;
+		// 	reentrancy = false;
+		// }
 		
-		if (rc_CBaseObject_FindSnapToBuildPos && !reentrancy) {
-			reentrancy = true;
-			if (rc_CBaseObject_FindSnapToBuildPos_spec) {
-				CollectPlayers(playerVector, team == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED, isAlive, shouldAppend);
-			}
-			else {
-				CollectPlayers(playerVector, TEAM_SPECTATOR, isAlive, shouldAppend);
-			}
-			shouldAppend = true;
-			reentrancy = false;
-		}
+		// if (rc_CBaseObject_FindSnapToBuildPos && !reentrancy) {
+		// 	reentrancy = true;
+		// 	if (rc_CBaseObject_FindSnapToBuildPos_spec) {
+		// 		CollectPlayers(playerVector, team == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED, isAlive, shouldAppend);
+		// 	}
+		// 	else {
+		// 		CollectPlayers(playerVector, TEAM_SPECTATOR, isAlive, shouldAppend);
+		// 	}
+		// 	shouldAppend = true;
+		// 	reentrancy = false;
+		// }
 		
 		if (team == TEAM_SPECTATOR && isAlive && !reentrancy) {
 			team = RandomInt(TEAM_SPECTATOR, TF_TEAM_BLUE);
@@ -1088,10 +1127,77 @@ namespace Mod::Cond::Reprogrammed
 	DETOUR_DECL_MEMBER(bool, CBaseObject_FindSnapToBuildPos, CBaseObject *pObjectOverride)
 	{
 		auto me = reinterpret_cast<CBaseObject *>(this);
-		SCOPED_INCREMENT(rc_CBaseObject_FindSnapToBuildPos);
-		SCOPED_INCREMENT_IF(rc_CBaseObject_FindSnapToBuildPos_spec, me->GetBuilder() != nullptr && me->GetBuilder()->GetTeamNumber() == TEAM_SPECTATOR);
-		return DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+		bool success = DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+		if (success) return true;
+
+		//SCOPED_INCREMENT(rc_CBaseObject_FindSnapToBuildPos);
+		//SCOPED_INCREMENT_IF(rc_CBaseObject_FindSnapToBuildPos_spec, me->GetBuilder() != nullptr && me->GetBuilder()->GetTeamNumber() == TEAM_SPECTATOR);
+		
+		if (!me->MustBeBuiltOnAttachmentPoint()) return false;
+
+		CTFPlayer *pPlayer = me->GetBuilder();
+
+		if ( !pPlayer ) return false;
+
+		bool bSnappedToPoint = false;
+		bool bShouldAttachToParent = false;
+
+		Vector vecNearestBuildPoint = vec3_origin;
+
+		// See if there are any nearby build positions to snap to
+		float flNearestPoint = 9999;
+		int i;
+
+		if (me->IsHostileUpgrade() && me->GetTeamNumber() == TEAM_SPECTATOR) return false;
+
+		CUtlVector< CTFPlayer * > playerVector;
+		CollectPlayers( &playerVector, TEAM_SPECTATOR, true );
+		FOR_EACH_VEC( playerVector, i )
+		{
+			if ( !playerVector[i]->IsBot() )
+				continue;
+
+			if ( me->FindBuildPointOnPlayer( playerVector[i], pPlayer, flNearestPoint, vecNearestBuildPoint ) )
+			{
+				bSnappedToPoint = true;
+				bShouldAttachToParent = true;
+			}
+		}
+
+		auto specTeam = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+		// look for nearby buildpoints on other objects
+		for ( i = 0; i < specTeam->GetNumObjects(); i++ )
+		{
+			CBaseObject *pObject = specTeam->GetObject(i);
+			if (pObject && !pObject->m_bPlacing)
+			{
+				if ( me->FindNearestBuildPoint( pObject, pPlayer, flNearestPoint, vecNearestBuildPoint, false) )
+				{
+					bSnappedToPoint = true;
+					bShouldAttachToParent = true;
+				}
+			}
+		}
+
+		if ( !bSnappedToPoint )
+		{
+			me->AddEffects( EF_NODRAW );
+		}
+		else
+		{
+			me->RemoveEffects( EF_NODRAW );
+
+			if ( bShouldAttachToParent )
+			{
+				me->AttachObjectToObject( me->GetBuiltOnEntity(), me->m_iBuiltOnPoint, vecNearestBuildPoint);
+			}
+
+			me->m_vecBuildOrigin = vecNearestBuildPoint;
+		}
+
+		return bSnappedToPoint;
 	}
+
 	DETOUR_DECL_MEMBER(CTFTeam *, CTFPlayer_GetOpposingTFTeam)
 	{
 		auto me = reinterpret_cast<CTFPlayer *>(this);
@@ -1281,7 +1387,9 @@ namespace Mod::Cond::Reprogrammed
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
 
 			// Fix spectator team shortstop push
-            MOD_ADD_DETOUR_MEMBER(CTFPistol_ScoutPrimary_Push, "CTFPistol_ScoutPrimary::Push");
+			// TF2 update inlined collectplayers here, using patch instead
+            //MOD_ADD_DETOUR_MEMBER(CTFPistol_ScoutPrimary_Push, "CTFPistol_ScoutPrimary::Push");
+			this->AddPatch(new CPatch_CTFPistol_ScoutPrimary_Push());
 
 			// Change sentry buster target if the sentry gun is on the same team
 			// MOD_ADD_DETOUR_MEMBER(CTFBotMissionSuicideBomber_Update,                  "CTFBotMissionSuicideBomber::Update");

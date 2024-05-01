@@ -21,9 +21,11 @@ public:
 	void SetHealth(float amt)              {        ft_SetHealth        (this, amt); }
 	void SetPlasmaDisabled(float duration) {        ft_SetPlasmaDisabled(this, duration); }
 	bool HasSapper()                       { return ft_HasSapper        (this); }
+	bool MustBeBuiltOnAttachmentPoint()    { return ft_MustBeBuiltOnAttachmentPoint(this); }
 
 	bool FindBuildPointOnPlayer(CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint) { return ft_FindBuildPointOnPlayer(this, pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint); }
 	void AttachObjectToObject(CBaseEntity *pEntity, int iPoint, Vector &vecOrigin)                                                {        ft_AttachObjectToObject(this, pEntity, iPoint, vecOrigin); }
+	bool FindNearestBuildPoint(CBaseEntity *pEntity, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint, bool bIgnoreChecks) { return ft_FindNearestBuildPoint(this, pEntity, pBuilder, flNearestPoint, vecNearestBuildPoint, bIgnoreChecks); }
 
 	void StartPlacement(CTFPlayer *pPlayer)   {        vt_StartPlacement               (this, pPlayer); }
 	bool StartBuilding(CBaseEntity *pBuilder) { return vt_StartBuilding                (this, pBuilder); }
@@ -32,6 +34,7 @@ public:
 	void FinishedBuilding()                   {        vt_FinishedBuilding             (this); }
 	int GetMiniBuildingStartingHealth()       { return vt_GetMiniBuildingStartingHealth(this); }
 	int GetMaxHealthForCurrentLevel()         { return vt_GetMaxHealthForCurrentLevel  (this); }
+	bool IsHostileUpgrade()                   { return vt_IsHostileUpgrade  (this); }
 
 	bool IsFunctional()                    { return !m_bBuilding && !m_bDisabled && !m_bPlacing && !m_bCarried; }
 	bool IsTargetable()                    { return !m_bPlacing && !m_bCarried; }
@@ -49,6 +52,7 @@ public:
 	DECL_SENDPROP(int,                m_iKills);
 	DECL_SENDPROP(Vector,             m_vecBuildMaxs);
 	DECL_RELATIVE(Vector,             m_vecBuildOrigin);
+	DECL_RELATIVE(int,                m_iBuiltOnPoint);
 	
 	
 private:
@@ -60,9 +64,11 @@ private:
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetHealth;
 	static MemberFuncThunk<CBaseObject *, void, float> ft_SetPlasmaDisabled;
 	static MemberFuncThunk<CBaseObject *, bool>        ft_HasSapper;
+	static MemberFuncThunk<CBaseObject *, bool>        ft_MustBeBuiltOnAttachmentPoint;
 
 	static MemberFuncThunk<CBaseObject *, bool, CTFPlayer *, CBasePlayer *, float &, Vector &> ft_FindBuildPointOnPlayer;
 	static MemberFuncThunk<CBaseObject *, void, CBaseEntity *, int, Vector &> ft_AttachObjectToObject;
+	static MemberFuncThunk<CBaseObject *, bool, CBaseEntity *, CBasePlayer *, float &, Vector &, bool> ft_FindNearestBuildPoint;
 	
 	static MemberVFuncThunk<CBaseObject *, void, CTFPlayer *>   vt_StartPlacement;
 	static MemberVFuncThunk<CBaseObject *, bool, CBaseEntity *> vt_StartBuilding;
@@ -71,6 +77,7 @@ private:
 	static MemberVFuncThunk<CBaseObject *, void>                vt_FinishedBuilding;
 	static MemberVFuncThunk<CBaseObject *, int>                 vt_GetMiniBuildingStartingHealth;
 	static MemberVFuncThunk<CBaseObject *, int>                 vt_GetMaxHealthForCurrentLevel;
+	static MemberVFuncThunk<CBaseObject *, bool>                vt_IsHostileUpgrade;
 };
 
 

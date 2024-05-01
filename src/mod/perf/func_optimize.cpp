@@ -119,47 +119,44 @@ namespace Mod::Perf::Func_Optimize
 #ifdef SE_TF2
 
 	constexpr uint8_t s_Buf_CTFPlayerShared_ConditionGameRulesThink[] = {
-        0x84, 0xc0,                          // +0x0000 test    al, al
-        0x74, 0xe0,                          // +0x0002 jz      short loc_8C99E0
-        0x83, 0xfb, 0x1f,                    // +0x0004 cmp     ebx, 1Fh
-        0x0f, 0x86, 0xd7, 0x04, 0x00, 0x00,  // +0x0007 jbe     loc_8C9EE0
+        0x81, 0xfb, 0x82, 0x00, 0x00, 0x00,  // +0x0000 cmp     ebx, TF_COND_COUNT - 1
+        0x0f, 0x84, 0xd3, 0x00, 0x00, 0x00,  // +0x0006 jz      loc_8C9ABF
+        0x83, 0xc3, 0x01,                    // +0x000c add     ebx, 1
     };
+
 	struct CPatch_CTFPlayerShared_ConditionGameRulesThink: public CPatch
 	{
 		CPatch_CTFPlayerShared_ConditionGameRulesThink() : CPatch(sizeof(s_Buf_CTFPlayerShared_ConditionGameRulesThink)) {}
 		
 		virtual const char *GetFuncName() const override { return "CTFPlayerShared::ConditionGameRulesThink"; }
-		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x0200; } // @ +0x00af
+		virtual uint32_t GetFuncOffMin() const override  { return 0x0060; }
+		virtual uint32_t GetFuncOffMax() const override  { return 0x0140; } // @ +0x00af
 		
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_CTFPlayerShared_ConditionGameRulesThink);
             // buf[0x3 + 2] = sizeof(condition_source_t);
-            // buf.SetDword(0x6 + 2, GetNumberOfTFConds());
+            buf.SetDword(0x0 + 2, GetNumberOfTFConds() - 1);
 			
-			// /* allow any 3-bit destination register code */
-			// mask[0x0 + 1] = 0b11111000;
-			// mask[0x3 + 1] = 0b11111000;
-			// mask[0x6 + 1] = 0b11111000;
-            mask[0x02 + 1] = 0x00;
-            mask.SetDword(0x07 + 2, 0x00);
+			/* allow any 3-bit destination register code */
+			mask[0x0 + 1] = 0b11111000;
+			mask[0xc + 1] = 0b11111000;
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
-			buf[0x04 + 2] = 0x00;
+			buf.SetDword(0x00 + 2, 0x01);
 			
-			mask[0x04 + 2] = 0xFF;
+			mask.SetDword(0x0 + 2, 0xffffffff);
 			
 			return true;
 		}
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
-			buf[0x04 + 2] = 0x00;
+			buf.SetDword(0x00 + 2, 0x01);
 			
 			return true;
 		}
@@ -685,19 +682,20 @@ namespace Mod::Perf::Func_Optimize
             // Rewrite CKnownEntity::OperatorEquals to compare handle indexes instead of entity pointers
 			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
 #ifdef SE_TF2
-            // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
-			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
-            // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
-            MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
-            // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
-            MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
-            // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
-			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
+            // Not enough speed up from condition optimization after update
+            // // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions are not updated here, they are updated in a detour instead (needed for another patch)
+			// this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
+            // // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
+            // MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
+            // // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
+            // MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
+            // // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
+			// this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
             
-            MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
-            MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink", LOW);
-            MOD_ADD_DETOUR_MEMBER(CTFConditionList_Add, "CTFConditionList::_Add");
-            MOD_ADD_DETOUR_MEMBER(CTFConditionList_Remove, "CTFConditionList::_Remove");
+            // MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
+            // MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink", LOW);
+            // MOD_ADD_DETOUR_MEMBER(CTFConditionList_Add, "CTFConditionList::_Add");
+            // MOD_ADD_DETOUR_MEMBER(CTFConditionList_Remove, "CTFConditionList::_Remove");
             //MOD_ADD_DETOUR_STATIC(GEconItemSchema, "GEconItemSchema");
             //MOD_ADD_DETOUR_STATIC(GetItemSchema, "GetItemSchema");
             
@@ -732,13 +730,15 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
 
+            // Cache for getting attribute definition by name
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetAttributeDefinitionByName, "CEconItemSchema::GetAttributeDefinitionByName [non-const]");
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_Reset, "CEconItemSchema::Reset");
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_BInitAttributes, "CEconItemSchema::BInitAttributes");
 #endif
             // Optimize lag compensation by reusing previous bone caches
-            MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
-            //MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
+            // Not enough difference in performance
+            // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
+            // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
             
             
 		}
@@ -805,4 +805,187 @@ namespace Mod::Perf::Func_Optimize
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
+
+//     class CMod1 : public IMod, public IModCallbackListener
+// 	{
+// 	public:
+// 		CMod1() : IMod("Perf::Func_Optimize")
+// 		{
+// #ifdef SE_TF2
+//             // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions < 32 are updated like other conditions (needed for another patch)
+// 			this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
+//             // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
+//             MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
+
+//             MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
+//             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink", LOW);
+//             MOD_ADD_DETOUR_MEMBER(CTFConditionList_Add, "CTFConditionList::_Add");
+//             MOD_ADD_DETOUR_MEMBER(CTFConditionList_Remove, "CTFConditionList::_Remove");
+// #endif
+// 		}
+
+//         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+// 	};
+// 	CMod1 s_Mod1;
+	
+	
+// 	ConVar cvar_enable1("sig_perf_func_optimize1", "0", FCVAR_NOTIFY,
+// 		"Mod: Optimize common calls",
+// 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+// 			s_Mod1.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+// 		});
+//     class CMod2 : public IMod, public IModCallbackListener
+// 	{
+// 	public:
+// 		CMod2() : IMod("Perf::Func_Optimize")
+// 		{
+//             // Rewrite CKnownEntity::OperatorEquals to compare handle indexes instead of entity pointers
+// 			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
+// #ifdef SE_TF2
+//             // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
+//             MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
+//             // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
+// 			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
+//             //MOD_ADD_DETOUR_STATIC(GEconItemSchema, "GEconItemSchema");
+//             //MOD_ADD_DETOUR_STATIC(GetItemSchema, "GetItemSchema");
+            
+//             // Optimize CTFPlayer::GetEntityForLoadoutSlot by using an array that contains items for every slot
+//             MOD_ADD_DETOUR_MEMBER(CBasePlayer_EquipWearable, "CBasePlayer::EquipWearable");
+//             MOD_ADD_DETOUR_MEMBER(CTFPlayer_Weapon_Equip, "CBasePlayer::Weapon_Equip");
+//             MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot", HIGHEST);
+            
+//             // Optimize UTIL_PlayerByIndex so that it reads player pointer from (edict + offset) directly
+//             MOD_ADD_DETOUR_STATIC(UTIL_PlayerByIndex, "UTIL_PlayerByIndex");
+// #endif
+// 		}
+
+//         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+// #ifdef SE_TF2
+
+//         virtual bool OnLoad() override 
+//         {
+//             return true;
+//         }
+// #endif
+
+
+//         virtual void OnEnablePost() override 
+//         {
+//             world_edict = INDEXENT(0);
+// #ifdef SE_TF2
+//             schema = GetItemSchema();
+
+//             // In case the mod was toggled on/off, restore the quick item in loadout slot optimizations
+//             ForEachTFPlayer([](CTFPlayer *player){
+//                 auto data = GetExtraPlayerData(player);
+//                 ForEachTFPlayerEconEntity(player, [data, player](CEconEntity *entity){
+
+//                     auto item = entity->GetItem() ;
+//                     if (item == nullptr) return;
+
+//                     auto itemDef = item->GetItemDefinition();
+//                     if (itemDef == nullptr) return;
+
+//                     auto slot = itemDef->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
+//                     if (slot == -1 && itemDef->m_iItemDefIndex != 0) {
+//                         slot = itemDef->GetLoadoutSlot(TF_CLASS_UNDEFINED);
+//                     }
+//                     if (slot >= 0 && slot < LOADOUT_POSITION_COUNT && (data->quickItemInLoadoutSlot[slot] == nullptr || data->quickItemInLoadoutSlot[slot]->GetOwnerEntity() != player) ) {
+//                         data->quickItemInLoadoutSlot[slot] = entity;
+//                     }
+//                 });
+//             });
+// #endif
+//             // auto addr = (uint8_t *)AddrManager::GetAddr("CEconItemView::GetStaticData");
+//             // Msg("Post enable:");
+//             // for (int i = 0; i<48;i++) {
+//             //     Msg(" %02hhX", *(addr+i));
+//             // }l
+            
+//             // Msg("\n");
+//         }
+// 	};
+// 	CMod2 s_Mod2;
+	
+	
+// 	ConVar cvar_enable2("sig_perf_func_optimize2", "0", FCVAR_NOTIFY,
+// 		"Mod: Optimize common calls",
+// 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+// 			s_Mod2.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+// 		});
+        
+//     class CMod3 : public IMod, public IModCallbackListener
+// 	{
+// 	public:
+// 		CMod3() : IMod("Perf::Func_Optimize")
+// 		{
+//             // Those detours disable multithreading for mdl load to get rid of performance affecting locks
+//             MOD_ADD_DETOUR_STATIC(CBaseEntity_PrecacheModel, "CBaseEntity::PrecacheModel");
+//             MOD_ADD_DETOUR_MEMBER(CModelInfoServer_RegisterDynamicModel, "CModelInfoServer::RegisterDynamicModel");
+// 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::BeginLock"));
+// 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::EndLock"));
+// 		}
+
+//         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+// 	};
+// 	CMod3 s_Mod3;
+	
+	
+// 	ConVar cvar_enable3("sig_perf_func_optimize3", "0", FCVAR_NOTIFY,
+// 		"Mod: Optimize common calls",
+// 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+// 			s_Mod3.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+// 		});
+        
+//     class CMod4 : public IMod, public IModCallbackListener
+// 	{
+// 	public:
+// 		CMod4() : IMod("Perf::Func_Optimize")
+// 		{
+// #ifdef SE_TF2
+//             MOD_ADD_DETOUR_STATIC(CTFPlayer_PrecacheMvM, "CTFPlayer::PrecacheMvM");
+            
+//             // Prevent player hurt from triggering speak too often
+//             MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed, "CTFPlayer::SpeakConceptIfAllowed");
+//             // Update bot push vector at smaller frequency
+//             MOD_ADD_DETOUR_MEMBER(CTFBot_AvoidPlayers, "CTFBot::AvoidPlayers");
+            
+//             //MOD_ADD_DETOUR_MEMBER(CThreadLocalBase_Get, "CThreadLocalBase::Get");
+            
+//             //MOD_ADD_DETOUR_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
+//             MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnNavAreaChanged, "CTFPlayer::OnNavAreaChanged");
+
+//             // Fix lag when spawning items on bots
+//             MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem, "CTFBot::AddItem");
+//             MOD_ADD_DETOUR_MEMBER_PRIORITY(CItemGeneration_GenerateRandomItem, "CItemGeneration::GenerateRandomItem", LOWEST);
+
+//             // Cache for getting attribute definition by name
+//             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_GetAttributeDefinitionByName, "CEconItemSchema::GetAttributeDefinitionByName [non-const]");
+//             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_Reset, "CEconItemSchema::Reset");
+//             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_BInitAttributes, "CEconItemSchema::BInitAttributes");
+// #endif
+//             // Optimize lag compensation by reusing previous bone caches
+//             // Not enough difference in performance
+//             // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
+//             // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
+// 		}
+
+//         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+
+// #ifdef SE_TF2
+//         virtual void LevelInitPreEntity() override 
+//         {
+//             item_defs.clear();
+//         }
+// #endif
+// 	};
+// 	CMod4 s_Mod4;
+	
+	
+// 	ConVar cvar_enable4("sig_perf_func_optimize4", "0", FCVAR_NOTIFY,
+// 		"Mod: Optimize common calls",
+// 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+// 			s_Mod4.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
+// 		});
 }
