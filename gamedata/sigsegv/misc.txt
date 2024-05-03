@@ -6059,6 +6059,9 @@
 				"CBaseObject::FindBuildPointOnPlayer" "_ZN11CBaseObject22FindBuildPointOnPlayerEP9CTFPlayerP11CBasePlayerRfR6Vector"
 				"CBaseObject::AttachObjectToObject" "_ZN11CBaseObject20AttachObjectToObjectEP11CBaseEntityiR6Vector"
 				"CBaseObject::FindNearestBuildPoint" "_ZN11CBaseObject21FindNearestBuildPointEP11CBaseEntityP11CBasePlayerRfR6Vectorb"
+				"CBaseObject::MustBeBuiltOnAttachmentPoint" "_ZNK11CBaseObject28MustBeBuiltOnAttachmentPointEv"
+				"CBaseObject::IsHostileUpgrade" "_ZN11CBaseObject16IsHostileUpgradeEv"
+				
 
 				"CObjectSapper::GetSapperModelName" "_ZN13CObjectSapper18GetSapperModelNameE13SapperModel_tPKc"
 				"CObjectSapper::GetSapperSoundName" "_ZN13CObjectSapper18GetSapperSoundNameEv"
