@@ -28,7 +28,9 @@ Download a package (optimize-only, no-mvm, or full) from releases and extract it
 
 # How to build
 
-On Ubuntu 22.04:
+This extension requires gcc 13 to build
+
+On Ubuntu 24.04:
 
 1. Add x86 architecture if not installed yet
 ```
