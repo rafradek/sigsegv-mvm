@@ -8350,7 +8350,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (!cvar_display_attrs.GetBool())
 			return;
 			
-		bool display_stock = player != target;
+		bool display_stock = player != target && TFGameRules()->IsMannVsMachineMode();
 
 		CTFWeaponBase *weapon = target->GetActiveTFWeapon();
 		CEconItemView *view = nullptr;
@@ -8379,11 +8379,6 @@ namespace Mod::Attr::Custom_Attributes
 
 		attribute_info_vec.push_back("");
 
-		if (display_stock) {
-			attribute_info_vec.back() += "Inspecting " ;
-			attribute_info_vec.back() += target->GetPlayerName();
-			attribute_info_vec.back() += "\n";
-		}
 		int indexstr = 0;
 
 		bool display_stock_item = display_stock || (view != nullptr && view->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
@@ -8405,6 +8400,10 @@ namespace Mod::Attr::Custom_Attributes
 				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock || entity->GetItem()->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
 			}
 		});
+
+		if (player != target && !attribute_info_vec.empty()) {
+			attribute_info_vec.insert(attribute_info_vec.begin(), fmt::format("Inspecting {}\n", target->GetPlayerName()));
+		}
 		
 		/*hudtextparms_t textparms;
 		textparms.channel = 2;

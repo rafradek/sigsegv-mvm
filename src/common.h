@@ -321,7 +321,13 @@ class IVideoRecorder;
 #define RAD_TELEMETRY_DISABLED
 #undef   NO_STRING_T
 #undef WEAK_STRING_T
-#ifdef CSGO_SEPARETE_
+#ifdef SE_TF2
+#include <platform.h>
+#include <const.h>
+#include <interface.h>
+#include <commonmacros.h>
+#include <basetypes.h>
+#elif defined(CSGO_SEPARETE_)
 #include <platform.h>
 #include <const.h>
 #include <interface.h>
@@ -343,12 +349,12 @@ WARN_RESTORE()
 #define COMPILE_TIME_ASSERT(pred) static_assert(pred)
 
 #ifdef SE_TF2
-#include "sdk2013/Color.h"
+#include <Color.h>
 #include "sdktf2/threadtools.h"
-#include "sdk2013/vector2d.h"
-#include "sdk2013/vector.h"
-#include "sdk2013/vector4d.h"
-#include "sdk2013/mathlib.h"
+#include <vector2d.h>
+#include <vector.h>
+#include <vector4d.h>
+#include <mathlib.h>
 #elif !defined(CSGO_SEPARETE_)
 #include "sdk2013/Color.h"
 #include "sdk2013/threadtools.h"
@@ -365,11 +371,7 @@ WARN_RESTORE()
 #include <mathlib.h>
 #endif
 
-#ifdef SE_TF2
-#include "sdk2013/basehandle.h"
-#else
 #include <basehandle.h>
-#endif
 #include "sdk2013/string_t.h"
 
 #ifndef CSGO_SEPARETE_
@@ -578,13 +580,11 @@ WARN_RESTORE()
 #endif
 
 #ifndef CSGO_SEPARETE_
+#ifdef SE_TF2
+static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
+#else
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
-#ifdef SE_TF2
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_BASEHANDLE_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
-static_assert(_SIGSEGV_SDKTF2_OVERRIDE__PUBLIC_THREADTOOLS_H);
-#endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_COLOR_H);
@@ -592,6 +592,7 @@ static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR2D_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_VECTOR4D_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_MATHLIB_MATHLIB_H);
+#endif
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER1_CONVAR_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__GAME_SHARED_DEBUGOVERLAY_SHARED_H);

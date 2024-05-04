@@ -21,7 +21,7 @@
 #include <utlsymbol.h>
 #include "stub/trace.h"
 #include "util/iterate.h"
- 
+#include "../mvm-reversed/server/NextBot/NextBotKnownEntity.h"
 
 #ifdef SE_TF2
 REPLACE_FUNC_MEMBER(bool, CTFPlayerShared_InCond, int index) {
@@ -34,55 +34,16 @@ REPLACE_FUNC_MEMBER(CEconItemDefinition *, CEconItemView_GetStaticData) {
 }
 #endif
 
+REPLACE_FUNC_MEMBER(bool, CKnownEntity_OperatorEquals, const CKnownEntity &other) {
+    auto me = reinterpret_cast<CKnownEntity *>(this);
+    return me->IsEqualInline(other);
+}
+
 namespace Mod::Perf::Func_Optimize
 {   
-    constexpr uint8_t s_Buf_CKnownEntity_OperatorEquals[] = {
-        /*0:*/  0x52,                      //push   edx
-        /*1:*/  0x8b, 0x44, 0x24, 0x08,    //         mov    eax,DWORD PTR [esp+0x8]
-        /*5:*/  0x8b, 0x50, 0x04,          //      mov    edx,DWORD PTR [eax+0x4]
-        /*8:*/  0x31, 0xc0,                //   xor    eax,eax
-        /*a:*/  0x83, 0xfa, 0xff,          //      cmp    edx,0xffffffff
-        /*d:*/  0x74, 0x0a,                //   je     19 <L125>
-        /*f:*/  0x8b, 0x44, 0x24, 0x0c,    //         mov    eax,DWORD PTR [esp+0xc]
-        /*13:*/ 0x39, 0x50, 0x04,          //      cmp    DWORD PTR [eax+0x4],edx
-        /*16:*/ 0x0f, 0x94, 0xc0,          //      sete   a
-        //00000019 <L125>:
-        /*19:*/ 0x5a,                      //pop edx
-        /*1a:*/ 0xc3,                      //ret
-	};
-
-    struct CPatch_CKnownEntity_OperatorEquals : public CPatch
-	{
-		CPatch_CKnownEntity_OperatorEquals() : CPatch(sizeof(s_Buf_CKnownEntity_OperatorEquals)) {}
-		
-		virtual const char *GetFuncName() const override { return "CKnownEntity::operator=="; }
-		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x0000; } // @ +0x00af
-		
-		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			buf.CopyFrom(s_Buf_CKnownEntity_OperatorEquals);
-			
-			mask.SetAll(0x00);
-			
-			return true;
-		}
-		
-		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
-		{
-			mask.SetAll(0xFF);
-			
-			return true;
-		}
-		
-		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
-		{
-			return true;
-		}
-	};
 
     constexpr uint8_t s_Buf_CMDLCache_BeginEndLock[] = {
-        0xc3,                      //ret
+        0xc3, 0x90,                      //ret
 	};
 
     struct CPatch_CMDLCache_BeginEndLock : public CPatch
@@ -104,6 +65,7 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+			buf.CopyFrom(s_Buf_CMDLCache_BeginEndLock);
 			mask.SetAll(0xFF);
 			
 			return true;
@@ -111,6 +73,7 @@ namespace Mod::Perf::Func_Optimize
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
+			buf.CopyFrom(s_Buf_CMDLCache_BeginEndLock);
 			return true;
 		}
         std::string name;
@@ -410,10 +373,13 @@ namespace Mod::Perf::Func_Optimize
 	}
     DETOUR_DECL_MEMBER(void, CMDLCache_BeginLock)
 	{
-        
+        AVERAGE_TIME(begin);
+        DETOUR_MEMBER_CALL(CMDLCache_BeginLock)();
     }
     DETOUR_DECL_MEMBER(void, CMDLCache_EndLock)
 	{
+        AVERAGE_TIME(end);
+        DETOUR_MEMBER_CALL(CMDLCache_EndLock)();
         
     }
     
@@ -680,22 +646,25 @@ namespace Mod::Perf::Func_Optimize
 		CMod() : IMod("Perf::Func_Optimize")
 		{
             // Rewrite CKnownEntity::OperatorEquals to compare handle indexes instead of entity pointers
-			this->AddPatch(new CPatch_CKnownEntity_OperatorEquals());
+            MOD_ADD_REPLACE_FUNC_MEMBER(CKnownEntity_OperatorEquals, "CKnownEntity::operator==");
+            
 #ifdef SE_TF2
             // Not enough speed up from condition optimization after update
             // // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions are not updated here, they are updated in a detour instead (needed for another patch)
 			// this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
             // // Rewrite CTFPlayerShared::InCond to remove extra check for conditions < 32
             // MOD_ADD_REPLACE_FUNC_MEMBER(CTFPlayerShared_InCond, "CTFPlayerShared::InCond");
-            // // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
-            // MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
-            // // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
-			// this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
             
             // MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_GetCarryingRuneType, "CTFPlayerShared::GetCarryingRuneType");
             // MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayerShared_ConditionGameRulesThink, "CTFPlayerShared::ConditionGameRulesThink", LOW);
             // MOD_ADD_DETOUR_MEMBER(CTFConditionList_Add, "CTFConditionList::_Add");
             // MOD_ADD_DETOUR_MEMBER(CTFConditionList_Remove, "CTFConditionList::_Remove");
+
+            // Rewrite CEconItemView::GetStaticData to not use dynamic_cast (always assume CEconItemDefintion is CTFItemDefintion)
+            MOD_ADD_REPLACE_FUNC_MEMBER(CEconItemView_GetStaticData, "CEconItemView::GetStaticData");
+            // Modify CTFPlayer::GetEquippedWearableForLoadoutSlot to not use dynamic_cast (always assume CEconWearable is CTFWearable)
+			this->AddPatch(new CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot());
+            
             //MOD_ADD_DETOUR_STATIC(GEconItemSchema, "GEconItemSchema");
             //MOD_ADD_DETOUR_STATIC(GetItemSchema, "GetItemSchema");
             
@@ -711,6 +680,8 @@ namespace Mod::Perf::Func_Optimize
             // Those detours disable multithreading for mdl load to get rid of performance affecting locks
             MOD_ADD_DETOUR_STATIC(CBaseEntity_PrecacheModel, "CBaseEntity::PrecacheModel");
             MOD_ADD_DETOUR_MEMBER(CModelInfoServer_RegisterDynamicModel, "CModelInfoServer::RegisterDynamicModel");
+            // MOD_ADD_DETOUR_MEMBER(CMDLCache_BeginLock, "CMDLCache::BeginLock");
+            // MOD_ADD_DETOUR_MEMBER(CMDLCache_EndLock, "CMDLCache::EndLock");
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::BeginLock"));
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::EndLock"));
 #ifdef SE_TF2

@@ -2,7 +2,8 @@
  * based on TF2 version 20151007a
  * server/NextBot/NextBotKnownEntity.h
  */
-
+#ifndef MVM_REVERSED_NEXTBOT_KNOWNENTITY
+#define MVM_REVERSED_NEXTBOT_KNOWNENTITY
 
 class CKnownEntity
 {
@@ -29,6 +30,10 @@ public:
 	virtual bool IsObsolete() const;
 	virtual bool operator==(const CKnownEntity& that) const;
 	virtual bool Is(CBaseEntity *ent) const;
+
+	inline bool IsEqualInline(const CKnownEntity& that) const {
+		return m_hEntity.IsValid() && that.m_hEntity.ToInt() == m_hEntity.ToInt();
+	}
 	
 private:
 	CHandle<CBaseEntity> m_hEntity;  // +0x04
@@ -41,3 +46,5 @@ private:
 	float m_flTimeLastBecameKnown;   // +0x28
 	bool m_bIsVisible;               // +0x2c
 };
+
+#endif
