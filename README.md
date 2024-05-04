@@ -28,7 +28,7 @@ Download a package (optimize-only, no-mvm, or full) from releases and extract it
 
 # How to build
 
-This extension requires gcc 13 to build
+This extension requires gcc 13 to build. For TF2, special modified hl2sdk-tf2 is used from https://github.com/TF2-DMB/hl2sdk-tf2
 
 On Ubuntu 24.04:
 
@@ -50,7 +50,7 @@ mkdir -p alliedmodders
 cd alliedmodders
 git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
 git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
-git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b tf2 hl2sdk-tf2
+git clone https://github.com/TF2-DMB/hl2sdk-tf2.git --depth 1 hl2sdk-tf2
 git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
 git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
 git clone https://github.com/alliedmodders/ambuild --depth 1
