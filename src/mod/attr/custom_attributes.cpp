@@ -7329,11 +7329,11 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER_PROJ_DAMAGE_MULT(CTFProjectile_ThrowableBreadMonster);
 	DETOUR_DECL_MEMBER_PROJ_DAMAGE_MULT(CTFStunBall);
 
-	DETOUR_DECL_MEMBER(bool, PlayerLocomotion_IsOnGround, const CCommand& args)
+	VHOOK_DECL(bool, PlayerLocomotion_IsOnGround, const CCommand& args)
 	{
         auto loco = reinterpret_cast<ILocomotion *>(this);
 		if (loco->GetBot()->GetEntity()->GetMoveType() == MOVETYPE_NOCLIP) return true;
-        return DETOUR_MEMBER_CALL(PlayerLocomotion_IsOnGround)(args);
+        return VHOOK_CALL(PlayerLocomotion_IsOnGround)(args);
     }
 
 	DETOUR_DECL_MEMBER(void, CGameMovement_FullNoClipMove, float speed, float accel)
@@ -9426,7 +9426,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_ThrowableBreadMonster_GetDamage, "CTFProjectile_ThrowableBreadMonster::GetDamage");
 			MOD_ADD_DETOUR_MEMBER(CTFStunBall_GetDamage, "CTFStunBall::GetDamage");
 			MOD_ADD_DETOUR_MEMBER(CObjectSapper_IsValidRoboSapperTarget, "CObjectSapper::IsValidRoboSapperTarget");
-			MOD_ADD_DETOUR_MEMBER(PlayerLocomotion_IsOnGround, "PlayerLocomotion::IsOnGround");
+			MOD_ADD_VHOOK(PlayerLocomotion_IsOnGround, "16PlayerLocomotion", "PlayerLocomotion::IsOnGround");
 			MOD_ADD_DETOUR_MEMBER(CGameMovement_FullNoClipMove, "CGameMovement::FullNoClipMove");
 			MOD_ADD_VHOOK(CTFCompoundBow_Deploy, TypeName<CTFCompoundBow>(), "CTFPipebombLauncher::Deploy");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerMove_SetupMove, "CTFPlayerMove::SetupMove");

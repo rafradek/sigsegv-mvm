@@ -1734,7 +1734,7 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		
 	}
-	DETOUR_DECL_MEMBER(float, PlayerBody_GetMaxHeadAngularVelocity)
+	VHOOK_DECL(float, PlayerBody_GetMaxHeadAngularVelocity)
 	{
 		auto body = reinterpret_cast<PlayerBody *>(this);
 
@@ -1755,7 +1755,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data != nullptr && data->tracking_interval >= 0.f && data->tracking_interval < 0.05f)
 			return 10000.0f;
 		else
-			return DETOUR_MEMBER_CALL(PlayerBody_GetMaxHeadAngularVelocity)();
+			return VHOOK_CALL(PlayerBody_GetMaxHeadAngularVelocity)();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_FireWeaponAtEnemy, CTFBot *actor)
@@ -2805,7 +2805,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectTargetPoint, "CTFBotMainAction::SelectTargetPoint");
 
 			MOD_ADD_DETOUR_MEMBER(CTFBotBody_GetHeadAimTrackingInterval, "CTFBotBody::GetHeadAimTrackingInterval");
-			MOD_ADD_DETOUR_MEMBER(PlayerBody_GetMaxHeadAngularVelocity, "PlayerBody::GetMaxHeadAngularVelocity");
+			MOD_ADD_VHOOK(PlayerBody_GetMaxHeadAngularVelocity, "10PlayerBody", "PlayerBody::GetMaxHeadAngularVelocity");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_EquipBestWeaponForThreat, "CTFBot::EquipBestWeaponForThreat");
 			MOD_ADD_DETOUR_MEMBER(CTFBotDeliverFlag_UpgradeOverTime,        "CTFBotDeliverFlag::UpgradeOverTime");
 			MOD_ADD_DETOUR_MEMBER(CTFBotMainAction_SelectMoreDangerousThreatInternal, "CTFBotMainAction::SelectMoreDangerousThreatInternal");

@@ -63,16 +63,24 @@ const char *TypeName(T *t, bool demangle = false)
 
 namespace RTTI
 {
+	struct VTableInfo
+	{
+		void **vtable;
+		size_t size;
+	};
+
 	void PreLoad();
 	
-	const rtti_t *GetRTTI  (const char *name);
-	const void  **GetVTable(const char *name);
+	const rtti_t    *GetRTTI  (const char *name);
+	const void     **GetVTable(const char *name);
+	const VTableInfo GetVTableInfo(const char *name);
 	
 	template<typename T> const rtti_t *GetRTTI()   { return GetRTTI  (TypeName<T>()); }
 	template<typename T> const void  **GetVTable() { return GetVTable(TypeName<T>()); }
 
 	const std::unordered_map<std::string, const rtti_t *> &GetAllRTTI();
-	const std::unordered_map<std::string, const void **> &GetAllVTable();
+	const std::unordered_map<std::string, const void **>  &GetAllVTable();
+	const std::unordered_map<std::string, VTableInfo>     &GetAllVTableInfo();
 }
 
 

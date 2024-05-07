@@ -105,7 +105,7 @@ void CPatch::Apply()
 	
 	auto detour = CDetouredFunc::FindOptional(this->m_pFuncAddr);
 	if (detour != nullptr) {
-		detour->TemponaryDisable();
+		detour->TemporaryDisable();
 	}
 	uint8_t *ptr = (uint8_t *)((uintptr_t)this->m_pFuncAddr + this->m_iFuncOffActual);
 	
@@ -125,7 +125,7 @@ void CPatch::Apply()
 		}
 	}
 	if (detour != nullptr) {
-		detour->TemponaryEnable();
+		detour->TemporaryEnable();
 	}
 	
 	this->m_bApplied = true;
@@ -150,7 +150,7 @@ void CPatch::UnApply()
 	
 	auto detour = CDetouredFunc::FindOptional(this->m_pFuncAddr);
 	if (detour != nullptr) {
-		detour->TemponaryDisable();
+		detour->TemporaryDisable();
 	}
 
 	uint8_t *ptr = (uint8_t *)((uintptr_t)this->m_pFuncAddr + this->m_iFuncOffActual);
@@ -170,7 +170,7 @@ void CPatch::UnApply()
 	}
 	
 	if (detour != nullptr) {
-		detour->TemponaryEnable();
+		detour->TemporaryEnable();
 	}
 	
 	this->m_bApplied = false;

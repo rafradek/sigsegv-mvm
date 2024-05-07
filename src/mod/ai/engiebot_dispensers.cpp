@@ -364,7 +364,7 @@ namespace Mod::AI::EngieBot_Dispensers
 	/* CTFBotMvMEngineerIdle::Update static_cast's the owner of the sentry hint
 	 * to a CObjectSentrygun and calls GetTurretAngles, which doesn't exist for
 	 * CObjectDispenser; this tweak should avoid the problem */
-	DETOUR_DECL_MEMBER(const QAngle&, CObjectDispenser_GetAvailableMetal)
+	VHOOK_DECL(const QAngle&, CObjectDispenser_GetAvailableMetal)
 	{
 		TRACE();
 		
@@ -374,7 +374,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			return obj->EyeAngles();
 		}
 		
-		return DETOUR_MEMBER_CALL(CObjectDispenser_GetAvailableMetal)();
+		return VHOOK_CALL(CObjectDispenser_GetAvailableMetal)();
 	}
 	
 	
@@ -423,7 +423,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotMvMEngineerIdle_Update, "CTFBotMvMEngineerIdle::Update");
 			
-			MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetAvailableMetal, "CObjectDispenser::GetAvailableMetal");
+			MOD_ADD_VHOOK(CObjectDispenser_GetAvailableMetal, TypeName<CObjectDispenser>(), "CObjectDispenser::GetAvailableMetal");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_SpeakConceptIfAllowed, "CTFPlayer::SpeakConceptIfAllowed");
 

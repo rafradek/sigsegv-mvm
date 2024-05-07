@@ -414,7 +414,7 @@ bool CDetour::DoLoad()
 	if (!this->EnsureUniqueInnerPtrs()) {
 		return false;
 	}
-	
+
 	s_LoadedDetours.push_back(this);
 	return true;
 }
@@ -540,6 +540,21 @@ CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	this->m_TrueOriginalPrologue.resize(len_prologue);
 	memcpy(this->m_TrueOriginalPrologue.data(), this->m_pFunc, len_prologue);
 
+	bool found = false;
+	for (auto &[vtname, pVTInfo] : RTTI::GetAllVTableInfo()) {
+        auto pVT = pVTInfo.vtable;
+		auto size = pVTInfo.size / sizeof(void *);
+		for (int i = 0; i < size; ++i) {
+			if (pVT[i] == func_ptr) {
+				this->m_FoundFuncPtrAndVTablePtr.emplace(const_cast<void **>(pVT + i), pVT);
+				found = true;
+			}
+		}
+	}
+
+	if (found) {
+		this->m_VirtualHookOptional = CVirtualHookBase(nullptr, CVirtualHookBase::DETOUR_HOOK);
+	}
 }
 CDetouredFunc::~CDetouredFunc()
 {
@@ -744,6 +759,13 @@ void CDetouredFunc::DestroyTrampoline()
 
 void CDetouredFunc::Reconfigure()
 {
+	for (auto &[pVFuncPtr, pVT] : this->m_FoundFuncPtrAndVTablePtr) {
+		auto vhook = CVirtualHookFunc::FindOptional(pVFuncPtr);
+		if (vhook != nullptr) {
+			vhook->RemoveVirtualHook(&this->m_VirtualHookOptional);
+		}
+	}
+
 	TRACE("[this: %08x] with %zu detour(s)", (uintptr_t)this, this->m_Detours.size());
 	
 	this->DestroyWrapper();
@@ -778,6 +800,10 @@ void CDetouredFunc::Reconfigure()
 			assert(detour->EnsureUniqueInnerPtrs());
 		}
 		
+		this->m_VirtualHookOptional = CVirtualHookBase(first->m_pCallback, CVirtualHookBase::DETOUR_HOOK);
+		for (auto &[pVFuncPtr, pVT] : this->m_FoundFuncPtrAndVTablePtr) {
+			CVirtualHookFunc::Find(pVFuncPtr, pVT).AddVirtualHook(&this->m_VirtualHookOptional);
+		}
 		jump_to = first->m_pCallback;
 		
 		/*TRACE_MSG("func jump -> detour[\"%s\"].callback [%08x]\n",
@@ -837,7 +863,7 @@ void CDetouredFunc::InstallJump(void *target)
 	this->m_bJumpInstalled = true;
 }
 
-void CDetouredFunc::TemponaryDisable()
+void CDetouredFunc::TemporaryDisable()
 {
 	this->m_bModifiedByPatch = true;
 	if (this->m_bJumpInstalled) {
@@ -845,7 +871,7 @@ void CDetouredFunc::TemponaryDisable()
 	}
 }
 
-void CDetouredFunc::TemponaryEnable()
+void CDetouredFunc::TemporaryEnable()
 {
 	this->Reconfigure();
 }

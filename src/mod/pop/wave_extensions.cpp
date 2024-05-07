@@ -951,7 +951,7 @@ namespace Mod::Pop::Wave_Extensions
 
 	void StopSoundLoop()
 	{
-		ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "[SoundLoop] StopSoundLoop \"%s\"\n", soundloop_active.c_str());
+		/* ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "[SoundLoop] StopSoundLoop \"%s\"\n", soundloop_active.c_str()); */
 		
 		if (TFGameRules() != nullptr) {
 			TFGameRules()->BroadcastSound(SOUND_FROM_LOCAL_PLAYER, soundloop_active.c_str(), SND_STOP);
@@ -966,7 +966,7 @@ namespace Mod::Pop::Wave_Extensions
 			StopSoundLoop();
 		}
 		
-		ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[SoundLoop] StartSoundLoop \"%s\"\n", filename.c_str());
+		/* ConColorMsg(Color(0x00, 0xff, 0x00, 0xff), "[SoundLoop] StartSoundLoop \"%s\"\n", filename.c_str()); */
 		
 		/* if filename is explicitly "", then don't play anything */
 		if (TFGameRules() != nullptr && filename != "") {
@@ -1155,9 +1155,9 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		auto oldState = TeamplayRoundBasedRules()->State_Get();
 		
-		ConColorMsg(Color(0xff, 0x00, 0xff, 0xff),
+		/* ConColorMsg(Color(0xff, 0x00, 0xff, 0xff),
 			"[SoundLoop] CTeamplayRoundBasedRules: %s -> %s\n",
-			GetRoundStateName(oldState), GetRoundStateName(newState));
+			GetRoundStateName(oldState), GetRoundStateName(newState)); */
 		
 		
 		if (oldState != GR_STATE_RND_RUNNING && newState == GR_STATE_RND_RUNNING) {

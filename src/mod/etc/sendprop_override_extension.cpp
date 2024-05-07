@@ -682,6 +682,12 @@ namespace Mod::Etc::SendProp_Override_Extension
             char err[256];
             extension = smexts->LoadExternal(&proxysendExtension, "proxysend", "proxysend.ext", err, 256);
             extensionSendproxy = smexts->LoadExternal(&sendproxyExtension, "SendProxy Manager", "sendproxy.ext", err, 256);
+            if (extension == nullptr) {
+                ConColorMsg(Color(0xff, 0x00, 0x00), "[Sigsegv-MvM] Proxysend extension cannot be loaded before this extension. This will cause issues\n");
+            }
+            if (extensionSendproxy == nullptr) {
+                ConColorMsg(Color(0xff, 0x00, 0x00), "[Sigsegv-MvM] SendProxy Manager extension cannot be loaded before this extension. This will cause issues\n");
+            }
         }
         virtual void OnDisable() override {
             if (extension != nullptr)

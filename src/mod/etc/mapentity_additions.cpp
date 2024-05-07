@@ -1936,6 +1936,7 @@ namespace Mod::Etc::Mapentity_Additions
 	GlobalThunk<CHandle<CBaseEntity>> s_lastTeleporter("s_lastTeleporter");
     DETOUR_DECL_STATIC(void, OnBotTeleported, CTFBot *player)
     {
+        Msg("AA %d %d\n", s_lastTeleporter.GetRef(), player);
         if (s_lastTeleporter.GetRef() == nullptr) {
             s_lastTeleporter.GetRef() = player;
         }

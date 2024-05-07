@@ -5,6 +5,7 @@
 #include "abi.h"
 #include "library.h"
 #include "util/scope.h"
+#include "mem/virtual_hook.h"
 
 
 class IDetour
@@ -232,8 +233,8 @@ public:
 	void AddTrace(ITrace *trace);
 	void RemoveTrace(ITrace *trace);
 
-	void TemponaryDisable();
-	void TemponaryEnable();
+	void TemporaryDisable();
+	void TemporaryEnable();
 	
 private:
 	void RemoveAllDetours();
@@ -278,6 +279,10 @@ private:
 	uint8_t *m_pTrampoline = nullptr;
 
 	bool m_bModifiedByPatch = false;
+
+	CVirtualHookBase m_VirtualHookOptional;
+	void *m_pVirtualHookInner;
+	std::set<std::pair<void **, void *>> m_FoundFuncPtrAndVTablePtr;
 	
 #if !defined _WINDOWS
 	void *m_pWrapperPre   = reinterpret_cast<void *>(&WrapperPre);

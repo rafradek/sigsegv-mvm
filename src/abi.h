@@ -103,7 +103,7 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTDynamicCast (
 
 /* use EAX/EDX/ECX register calling convention in GCC build ONLY */
 #if defined __GNUC__ && !defined __clang__
-#define __gcc_regcall [[gnu::regparm(3)]]
+#define __gcc_regcall [[gnu::regparm(3)]] [[gnu::sseregparm]]
 #else
 #define __gcc_regcall
 #endif

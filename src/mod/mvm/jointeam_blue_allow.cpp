@@ -1507,14 +1507,16 @@ namespace Mod::MvM::JoinTeam_Blue_Allow
 		}
 	}
 
-	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CVoteController_IsValidVoter, CBasePlayer *player)
+	// this argument optimized out, CTFPlayer becomes this
+	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CVoteController_IsValidVoter)
 	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
 		bool blueHuman = IsMvMBlueHuman(ToTFPlayer(player));
 		if (blueHuman) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 		}
 		
-		bool ret = DETOUR_MEMBER_CALL(CVoteController_IsValidVoter)(player);
+		bool ret = DETOUR_MEMBER_CALL(CVoteController_IsValidVoter)();
 
 		if (blueHuman) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(true);

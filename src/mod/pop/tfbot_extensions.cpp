@@ -2320,7 +2320,7 @@ namespace Mod::Pop::TFBot_Extensions
 			MOD_ADD_DETOUR_MEMBER(CBaseObject_FindBuildPointOnPlayer, "CBaseObject::FindBuildPointOnPlayer [clone]");
 
 			// Switch action command
-			MOD_ADD_VHOOK(CTFBotScenarioMonitor_OnCommandString, TypeName<CTFBotScenarioMonitor>(), "CTFBotTacticalMonitor::OnCommandString");
+			MOD_ADD_VHOOK(CTFBotScenarioMonitor_OnCommandString, TypeName<CTFBotScenarioMonitor>(), "Action<CTFBot>::OnCommandString");
 
 			// Use condition 34 as crit boost instead of cond 11 to fix it being removed from other sources
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond, "CTFPlayerShared::AddCond");

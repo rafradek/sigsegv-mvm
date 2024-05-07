@@ -38,6 +38,15 @@ bool CVirtualHook::DoLoad()
             break;
         }
     }
+
+    // If another Virtual Hook was already applied to this function 
+    if (!found) {
+        this->m_pFuncPtr = CVirtualHookFunc::FindFuncPtrByOriginalFuncAndVTable(pFunc, pVT);
+        if (this->m_pFuncPtr != nullptr) {
+            this->m_iOffset = ((ptrdiff_t)this->m_pFuncPtr - (ptrdiff_t)pVT) / sizeof(ptrdiff_t);
+            found = true;
+        }
+    }
     
     if (!found) {
         DevMsg("CVirtualHook::FAIL \"%s\": can't find func ptr in vtable\n", this->m_pszFuncName);
@@ -48,24 +57,20 @@ bool CVirtualHook::DoLoad()
     return true;
 }
 
-void CVirtualHook::DoUnload()
-{
-    DoDisable();
-}
-
 void CVirtualHook::DoEnable()
 {
-    if (!this->m_bEnabled && this->m_bLoaded) {
-        CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).AddVirtualHook(this);
-        this->m_bEnabled = true;
-    }
+    CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).AddVirtualHook(this);
 }
 
 void CVirtualHook::DoDisable()
 {
-    if (this->m_bEnabled) {
-        CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).RemoveVirtualHook(this);
-        this->m_bEnabled = false;
+    CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).RemoveVirtualHook(this);
+}
+
+void CVirtualHook::DoUnload()
+{
+    if (this->IsActive()) {
+        DoDisable();
     }
 }
 
@@ -95,6 +100,85 @@ void CVirtualHook::Uninstall(void *objectptr)
     void **origTable = *((void ***)vtable-5);
     delete vtable;
     *((void ***)objectptr) = origTable;
+}
+
+void CVirtualHook::ChangeVTable(void **newVT)
+{
+    bool wasEnabled = this->m_bEnabled;
+    if (wasEnabled) {
+        this->DoDisable();
+    }
+    
+    this->m_pVTable = newVT;
+    this->m_pFuncPtr = const_cast<void **>(newVT + this->m_iOffset);
+    if (wasEnabled) {
+        this->DoEnable();
+    }
+}
+
+bool CVirtualHookAll::DoLoad()
+{
+    if (this->m_bLoaded) return true;
+    
+
+    const void **pVT  = nullptr;
+    const void **pVTForCalcOffset  = nullptr;
+	const void *pFunc = nullptr;
+
+    
+    pFunc = AddrManager::GetAddr(this->m_pszFuncName);
+    if (pFunc == nullptr) {
+        DevMsg("CVirtualHook::FAIL \"%s\": can't find func addr\n", this->m_pszFuncName);
+        return false;
+    }
+    
+    bool found = false;
+    for (auto &[vtname, pVTInfo] : RTTI::GetAllVTableInfo()) {
+        auto pVT = pVTInfo.vtable;
+        for (int i = 0; i < pVTInfo.size / sizeof(void *); ++i) {
+            if (pVT[i] == pFunc) {
+                this->m_FoundFuncPtrAndVTablePtr.emplace(const_cast<void **>(pVT + i), pVT);
+                this->m_iOffset = i;
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found) {
+        DevMsg("CVirtualHook::FAIL \"%s\": can't find func ptr in any vtable\n", this->m_pszFuncName);
+        return false;
+    }
+
+    this->m_bLoaded = true;
+    this->m_pVTable = pVT;
+    return true;
+}
+
+void CVirtualHookAll::DoUnload()
+{
+    if (this->IsActive()) {
+        DoDisable();
+    }
+}
+
+void CVirtualHookAll::DoEnable()
+{
+    if (!this->m_bEnabled && this->m_bLoaded) {
+        
+        for (auto &[funcPtr, pVT] : this->m_FoundFuncPtrAndVTablePtr) {
+            //CVirtualHookFunc::Find(funcPtr, pVT).AddVirtualHook(this);
+        }
+        this->m_bEnabled = true;
+    }
+}
+
+void CVirtualHookAll::DoDisable()
+{
+    if (this->m_bEnabled) {
+        //CVirtualHookFunc::Find(this->m_pFuncPtr, this->m_pVTable).RemoveVirtualHook(this);
+        this->m_bEnabled = false;
+    }
 }
 
 
@@ -170,18 +254,38 @@ CVirtualHookFunc& CVirtualHookFunc::Find(void **func_ptr, void *vtable)
     return s_FuncMap.try_emplace(func_ptr, func_ptr, vtable).first->second;
 }
 
+CVirtualHookFunc* CVirtualHookFunc::FindOptional(void **func_ptr)
+{
+    auto find = s_FuncMap.find(func_ptr);
+    return find != s_FuncMap.end() ? &find->second : nullptr;
+}
+
+void **CVirtualHookFunc::FindFuncPtrByOriginalFuncAndVTable(const void *func, const void *vtable)
+{
+    for (auto &[func_ptr, hookFunc] : s_FuncMap) {
+        if (hookFunc.m_pVTable == vtable && hookFunc.m_pFuncInner == func) {
+            return hookFunc.m_pFuncPtr;
+        }
+    }
+    return nullptr;
+}
+
 CVirtualHookFunc::~CVirtualHookFunc()
 {
     UnloadAll();
 }
 
-void CVirtualHookFunc::AddVirtualHook(CVirtualHook *hook)
+void CVirtualHookFunc::AddVirtualHook(CVirtualHookBase *hook)
 {
     this->m_Hooks.push_back(hook);
+	std::sort(this->m_Hooks.begin(), this->m_Hooks.end(), [](CVirtualHookBase *&a, CVirtualHookBase *&b) {
+		return a->GetPriority() > b->GetPriority();
+	});
     DoHook();
 }
-void CVirtualHookFunc::RemoveVirtualHook(CVirtualHook *hook)
+void CVirtualHookFunc::RemoveVirtualHook(CVirtualHookBase *hook)
 {
+    int prec = this->m_Hooks.size();
     this->m_Hooks.erase(std::remove(this->m_Hooks.begin(), this->m_Hooks.end(), hook), this->m_Hooks.end());
     DoHook();
 }
@@ -210,15 +314,15 @@ void CVirtualHookFunc::DoHook()
     if (this->m_Hooks.empty()) return;
 
     this->m_bHooked = true;
-    CVirtualHook *first = this->m_Hooks.front();
-    CVirtualHook *last  = this->m_Hooks.back();
+    CVirtualHookBase *first = this->m_Hooks.front();
+    CVirtualHookBase *last  = this->m_Hooks.back();
     this->m_pFuncInner = *this->m_pFuncPtr;
 
     last->SetInner(this->m_pFuncInner, this->m_pVTable);
     
     for (int i = this->m_Hooks.size() - 2; i >= 0; --i) {
-        CVirtualHook *d1 = this->m_Hooks[i];
-        CVirtualHook *d2 = this->m_Hooks[i + 1];
+        CVirtualHookBase *d1 = this->m_Hooks[i];
+        CVirtualHookBase *d2 = this->m_Hooks[i + 1];
         
         d1->SetInner(d2->m_pCallback, this->m_pVTable);
     }

@@ -2,6 +2,7 @@
 #include "library.h"
 #include "mem/scan.h"
 #include "util/prof.h"
+#include "util/misc.h"
 
 #include <regex>
 
@@ -16,11 +17,14 @@ namespace RTTI
 	// Linux:   str typeinfo(T).name()     => void **
 	static std::unordered_map<std::string, const void **> s_VT;
 	
+	// Windows: str typeinfo(T).raw_name() => void **
+	// Linux:   str typeinfo(T).name()     => void **
+	static std::unordered_map<std::string, VTableInfo> s_VTInfo;
+	
 	
 	void PreLoad()
 	{
 		DevMsg("RTTI::PreLoad BEGIN\n");
-		
 		s_RTTI.clear();
 		s_VT.clear();
 		
@@ -271,6 +275,20 @@ namespace RTTI
 		
 		DevMsg("RTTI::PreLoad: found %u RTTI\n", s_RTTI.size());
 		DevMsg("RTTI::PreLoad: found %u VT\n", s_VT.size());
+
+		std::map<size_t, std::string> vtSwapped;
+		for (auto &[name, ptr] : s_VT) {
+			vtSwapped.emplace((size_t)ptr, name);
+		}
+		std::string prevName = "";
+		size_t prevPtr = 0U;
+		for (auto &[ptr, name] : vtSwapped) {
+			if (!prevName.empty()) {
+				s_VTInfo.emplace(prevName, VTableInfo((void **)prevPtr, Clamp(ptr - prevPtr, 0U, sizeof(size_t) * 2048)));
+			}
+			prevName = name;
+			prevPtr = ptr;
+		}
 		
 		// RTTI
 		// Linux: find all symbols of format "_ZTI"
@@ -312,5 +330,10 @@ namespace RTTI
 	const std::unordered_map<std::string, const void **> &GetAllVTable()
 	{
 		return s_VT;
+	}
+
+	const std::unordered_map<std::string, VTableInfo> &GetAllVTableInfo()
+	{
+		return s_VTInfo;
 	}
 }

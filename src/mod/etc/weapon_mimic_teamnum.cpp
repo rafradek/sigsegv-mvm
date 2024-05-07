@@ -84,7 +84,26 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			}
         }}
 	});
+	
+    VHOOK_DECL(void, CBaseEntity_ModifyFireBulletsDamage, CTakeDamageInfo* dmgInfo)
+	{
+		if (do_crits) {
+			dmgInfo->SetDamageType(dmgInfo->GetDamageType() | DMG_CRITICAL);
+		}
+		if (mimicFire != nullptr) {
+			variant_t variant;
+			variant.SetInt(-1);
+			mimicFire->GetCustomVariableVariant<"dmgtype">(variant);
+			variant.Convert(FIELD_INTEGER);
+			int dmgtype = variant.Int();
+			if (dmgtype != -1) {
+				dmgInfo->SetDamageType(dmgtype);
+			}
+		}
+        VHOOK_CALL(CBaseEntity_ModifyFireBulletsDamage)(dmgInfo);
+	}
 
+	CVirtualHook bulletDamageHook(TypeName<CBaseEntity>(), "CBaseEntity::ModifyFireBulletsDamage", GET_VHOOK_CALLBACK(CBaseEntity_ModifyFireBulletsDamage), GET_VHOOK_INNERPTR(CBaseEntity_ModifyFireBulletsDamage));
 	CTFWeaponBase *shooting_weapon = nullptr;
     DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
 	{
@@ -180,7 +199,10 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			}
 
 			do_crits = mimic->m_bCrits;
+			bulletDamageHook.ChangeVTable(*(void ***)mimic);
+			bulletDamageHook.DoEnable();
 			mimic->FireBullets(info);
+			bulletDamageHook.DoDisable();
 			do_crits = false;
 			projectile = nullptr;
 			
@@ -236,25 +258,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         }
 		scorer = nullptr;
 		mimicFire = nullptr;
-	}
-	
-
-    DETOUR_DECL_MEMBER(void, CBaseEntity_ModifyFireBulletsDamage, CTakeDamageInfo* dmgInfo)
-	{
-		if (do_crits) {
-			dmgInfo->SetDamageType(dmgInfo->GetDamageType() | DMG_CRITICAL);
-		}
-		if (mimicFire != nullptr) {
-			variant_t variant;
-			variant.SetInt(-1);
-			mimicFire->GetCustomVariableVariant<"dmgtype">(variant);
-			variant.Convert(FIELD_INTEGER);
-			int dmgtype = variant.Int();
-			if (dmgtype != -1) {
-				dmgInfo->SetDamageType(dmgtype);
-			}
-		}
-        DETOUR_MEMBER_CALL(CBaseEntity_ModifyFireBulletsDamage)(dmgInfo);
 	}
 
     DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Rocket_Create, CBaseEntity *pLauncher, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
@@ -389,8 +392,8 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	public:
 		CMod() : IMod("Etc:Weapon_Mimic_Teamnum")
 		{
+			bulletDamageHook.DoLoad();
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Fire, "CTFPointWeaponMimic::Fire");
-			MOD_ADD_DETOUR_MEMBER(CBaseEntity_ModifyFireBulletsDamage, "CBaseEntity::ModifyFireBulletsDamage");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Rocket_Create,  "CTFProjectile_Rocket::Create");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Arrow_Create,  "CTFProjectile_Arrow::Create");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_CreateNoSpawn,  "CBaseEntity::CreateNoSpawn");

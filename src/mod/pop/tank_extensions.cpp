@@ -665,24 +665,24 @@ namespace Mod::Pop::Tank_Extensions
 		return DETOUR_MEMBER_CALL(CBaseAnimating_LookupAttachment)(szName);
 	}
 	
-	DETOUR_DECL_MEMBER(float, NextBotGroundLocomotion_GetGravity)
+	VHOOK_DECL(float, CTFBaseBossLocomotion_GetGravity)
 	{
 		if (rc_CTFTankBoss_TankBossThink) {
 			if (thinking_tank_data != nullptr && thinking_tank_data->gravity_set) {
 				return thinking_tank_data->gravity;
 			}
 		}
-		return DETOUR_MEMBER_CALL(NextBotGroundLocomotion_GetGravity)();
+		return VHOOK_CALL(CTFBaseBossLocomotion_GetGravity)();
 	}
 	
-	DETOUR_DECL_MEMBER(bool, NextBotGroundLocomotion_IsOnGround)
+	VHOOK_DECL(bool, CTFBaseBossLocomotion_IsOnGround)
 	{
 		if (rc_CTFTankBoss_TankBossThink) {
 			if (thinking_tank_data != nullptr && thinking_tank_data->gravity_set && thinking_tank_data->gravity <= 0) {
 				return true;
 			}
 		}
-		return DETOUR_MEMBER_CALL(NextBotGroundLocomotion_IsOnGround)();
+		return VHOOK_CALL(CTFBaseBossLocomotion_IsOnGround)();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFBaseBossLocomotion_GetStepHeight)
@@ -1115,8 +1115,8 @@ namespace Mod::Pop::Tank_Extensions
 			MOD_ADD_DETOUR_MEMBER(CBaseAnimating_LookupAttachment, "CBaseAnimating::LookupAttachment");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBossLocomotion_FaceTowards, "CTFBaseBossLocomotion::FaceTowards");
-			MOD_ADD_DETOUR_MEMBER(NextBotGroundLocomotion_GetGravity, "NextBotGroundLocomotion::GetGravity");
-			MOD_ADD_DETOUR_MEMBER(NextBotGroundLocomotion_IsOnGround, "NextBotGroundLocomotion::IsOnGround");
+			MOD_ADD_VHOOK(CTFBaseBossLocomotion_GetGravity, "21CTFBaseBossLocomotion", "NextBotGroundLocomotion::GetGravity");
+			MOD_ADD_VHOOK(CTFBaseBossLocomotion_IsOnGround, "21CTFBaseBossLocomotion", "NextBotGroundLocomotion::IsOnGround");
 			MOD_ADD_DETOUR_MEMBER(NextBotGroundLocomotion_Update, "NextBotGroundLocomotion::Update");
 			MOD_ADD_DETOUR_MEMBER(CTFBaseBossLocomotion_GetStepHeight, "CTFBaseBossLocomotion::GetStepHeight");
 			

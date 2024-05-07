@@ -1398,8 +1398,12 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CAnimationLayer_StudioFrameAdvance)(flInterval, pOwner);
         if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
     }
-    
+
+#ifdef SE_TF2
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
+#else
+    DETOUR_DECL_MEMBER(void, CBaseAnimatingOverlay_FastRemoveLayer, int layer)
+#endif
 	{
         auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
         int oldFlags = flags;
@@ -1555,6 +1559,26 @@ namespace Mod::Perf::SendProp_Optimize
         }
 	}
 #endif
+    
+    DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_OnActiveStateChanged, int oldState)
+	{
+		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
+		DETOUR_MEMBER_CALL(CBaseCombatWeapon_OnActiveStateChanged)(oldState);
+        int state = weapon->m_iState;
+        Msg("OnActiveStateChanged %d %d %d %d %d %d\n", weapon->GetOwnerEntity(), ToBasePlayer(weapon->GetOwnerEntity()), state, weapon->edict()->m_fStateFlags & FL_EDICT_DONTSEND, weapon->edict()->m_fStateFlags & FL_EDICT_ALWAYS, weapon->edict()->m_fStateFlags & FL_EDICT_PVSCHECK);
+        if (state == WEAPON_IS_ACTIVE) {
+            weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+            auto player = ToBasePlayer(weapon->GetOwnerEntity());
+            if (player != nullptr) {
+                
+                CBaseEntity *viewmodel = player->GetViewModel(0, false);
+                if (viewmodel != nullptr) {
+                    viewmodel->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
+                    Msg("OnActiveStateChanged view %d %d %d\n", weapon->edict()->m_fStateFlags & FL_EDICT_DONTSEND, weapon->edict()->m_fStateFlags & FL_EDICT_ALWAYS, weapon->edict()->m_fStateFlags & FL_EDICT_PVSCHECK);
+                }
+            }
+        }
+	}
 
     DETOUR_DECL_MEMBER(void, CBasePlayer_Spawn)
 	{
@@ -1637,7 +1661,11 @@ namespace Mod::Perf::SendProp_Optimize
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
             MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
+#ifdef SE_TF2
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer [clone]");
+#else
+            MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
+#endif
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_SetLayerCycle,"CBaseAnimatingOverlay::SetLayerCycle");
 
@@ -1667,6 +1695,7 @@ namespace Mod::Perf::SendProp_Optimize
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_Event_Killed, "CBasePlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_OnActiveStateChanged, "CTFWeaponBase::OnActiveStateChanged");
 #endif
+			MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_OnActiveStateChanged, "CBaseCombatWeapon::OnActiveStateChanged");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_Spawn, "CBasePlayer::Spawn");
             
 		}

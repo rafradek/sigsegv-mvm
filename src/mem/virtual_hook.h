@@ -6,11 +6,43 @@
 #include "library.h"
 #include "util/scope.h"
 
-class CVirtualHook
+class CVirtualHookBase
+{
+public:
+	enum HookPriority : int
+	{
+		DETOUR_HOOK = -3,
+		LOWEST = -2,
+		LOW = -1,
+		NORMAL = 0,
+		HIGH = 1,
+		HIGHEST = 2
+	};
+
+	CVirtualHookBase() {}
+
+	CVirtualHookBase(void *callback, HookPriority priority = NORMAL) : m_pCallback(callback), m_Priority(priority) {}
+
+	virtual void SetInner(void *inner, void *vtable) { }
+	
+	int GetOffset() { return m_iOffset; }
+
+	HookPriority GetPriority() { return m_Priority; }
+	void SetPriority(HookPriority priority) { m_Priority = priority; }
+
+protected:
+	int m_iOffset;
+
+	void *m_pCallback;
+	HookPriority m_Priority;
+    friend class CVirtualHookFunc;
+};
+
+class CVirtualHook : public CVirtualHookBase
 {
 public:
 	/* by addr name */
-	CVirtualHook(const char *class_name, const char *class_name_for_calc_offset, const char *func_name, void *callback, void **inner_ptr) : m_pszVTableName(class_name), m_pszVTableNameForCalcOffset(class_name_for_calc_offset), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pCallback(callback), m_pInner(inner_ptr) {};
+	CVirtualHook(const char *class_name, const char *class_name_for_calc_offset, const char *func_name, void *callback, void **inner_ptr) : CVirtualHookBase(callback), m_pszVTableName(class_name), m_pszVTableNameForCalcOffset(class_name_for_calc_offset), m_pszFuncName(func_name), m_szName(std::string(class_name) + ";" + std::string(func_name)), m_pInner(inner_ptr) {};
 	CVirtualHook(const char *class_name, const char *func_name, void *callback, void **inner_ptr) : CVirtualHook(class_name, class_name, func_name, callback, inner_ptr) {}
 
 	virtual bool DoLoad();
@@ -23,18 +55,21 @@ public:
 
 	virtual void SetInner(void *inner, void *vtable) { *m_pInner = inner; }
 
+	// Change VTable, keep offset.
+	void ChangeVTable(void **newVT);
+
     bool IsLoaded() const { return this->m_bLoaded; }
 	bool IsActive() const { return this->m_bEnabled; }
 	
-	void Toggle(bool enable) { if (this->m_bEnabled && !enable) DoDisable(); else if(!this->m_bEnabled && enable) DoEnable(); }
+	void Toggle(bool enable) { if (this->m_bEnabled && !enable) DoDisable(); else if(!this->m_bEnabled && enable) DoEnable(); m_bEnabled = enable; }
 
+	// Create a copy of a vtable for the provided object with this virtual hook installed
 	void Install(void *objectptr, int vtableSize = 512);
+	// Restore original vtable of specified object. The object must have install function called on them
 	void Uninstall(void *objectptr);
 
 	// Set function in vtable to this function and return old function
 	void *AddToVTable(void **vtable);
-
-	int GetOffset() { return m_iOffset; }
 
 protected:
 	const char *m_pszVTableName;
@@ -46,13 +81,55 @@ protected:
     bool m_bLoaded = false;
 
 	void **m_pFuncPtr;
-	int m_iOffset;
 
-	void *m_pCallback;
 	void **m_pInner;
 
 	void *m_pVTable;
     friend class CVirtualHookFunc;
+};
+
+// Not safe until a single vhook callback can support multiple different hooks
+class CVirtualHookAll
+{
+public:
+	/* by addr name */
+	CVirtualHookAll(const char *func_name, void *callback, void **inner_ptr) : m_pszFuncName(func_name), m_szName("all;" + std::string(func_name)), m_pCallback(callback), m_pInner(inner_ptr) {};
+
+	virtual bool DoLoad();
+	virtual void DoUnload();
+	
+	virtual void DoEnable();
+	virtual void DoDisable();
+
+    virtual const char *GetName() { return m_szName.c_str(); };
+
+	virtual void SetInner(void *inner, void *vtable) { *m_pInner = inner; }
+
+    bool IsLoaded() const { return this->m_bLoaded; }
+	bool IsActive() const { return this->m_bEnabled; }
+	
+	void Toggle(bool enable) { if (this->m_bEnabled && !enable) DoDisable(); else if(!this->m_bEnabled && enable) DoEnable(); }
+
+	int GetOffset() { return m_iOffset; }
+
+protected:
+	const char *m_pszFuncName;
+	std::string m_szName;
+	
+    bool m_bEnabled = false;
+    bool m_bLoaded = false;
+
+	std::set<std::pair<void **, void *>> m_FoundFuncPtrAndVTablePtr;
+	void **m_pFuncPtr;
+
+	void *m_pVTable;
+
+	int m_iOffset;
+
+	void *m_pCallback;
+	void **m_pInner;
+    
+	friend class CVirtualHookFunc;
 };
 
 class CVirtualHookInherit : public CVirtualHook
@@ -71,26 +148,29 @@ private:
 class CVirtualHookFunc
 {
 public:
-	CVirtualHookFunc(void **func_ptr, void *vtable) : m_pFuncPtr(func_ptr), m_pVTable(vtable) {};
+	CVirtualHookFunc(void **func_ptr, void *vtable) : m_pFuncPtr(func_ptr), m_pVTable(vtable), m_pFuncInner(*func_ptr) {};
 	~CVirtualHookFunc();
 	
 	static CVirtualHookFunc& Find(void **func_ptr, void *vtable);
+	static CVirtualHookFunc* FindOptional(void **func_ptr);
+
+	static void **FindFuncPtrByOriginalFuncAndVTable(const void *func, const void *vtable);
 	
 	static void CleanUp();
 	
-	void AddVirtualHook(CVirtualHook *hook);
-	void RemoveVirtualHook(CVirtualHook *hook);
+	void AddVirtualHook(CVirtualHookBase *hook);
+	void RemoveVirtualHook(CVirtualHookBase *hook);
 
     void UnloadAll();
     void DoHook();
 private:
     void **m_pFuncPtr;
-    void *m_pFuncInner;
 	void *m_pVTable;
 
+    void *m_pFuncInner;
     bool m_bHooked = false;
 
-    std::vector<CVirtualHook *> m_Hooks;
+    std::vector<CVirtualHookBase *> m_Hooks;
     static inline std::map<void **, CVirtualHookFunc> s_FuncMap; 
 };
 
