@@ -5969,6 +5969,8 @@
 				"CBaseCombatWeapon::HasPrimaryAmmo" "_ZN17CBaseCombatWeapon14HasPrimaryAmmoEv"
 				"CBaseCombatWeapon::Holster" "_ZN17CBaseCombatWeapon7HolsterEPS_"
 				"CBaseCombatWeapon::Deploy" "_ZN17CBaseCombatWeapon7DeployEPS_"
+				"CBaseCombatWeapon::OnActiveStateChanged" "_ZN17CBaseCombatWeapon20OnActiveStateChangedEi"
+				
 
 				"CTFWeaponBase::ShouldRemoveInvisibilityOnPrimaryAttack" "_ZNK13CTFWeaponBase39ShouldRemoveInvisibilityOnPrimaryAttackEv"
 				"CTFWeaponBase::UpdateOnRemove"                          "_ZN13CTFWeaponBase14UpdateOnRemoveEv"
