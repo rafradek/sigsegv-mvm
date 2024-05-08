@@ -1,35 +1,21 @@
 #include "mod.h"
 #include "stub/gamerules.h"
+#include "stub/tfplayer.h"
 
 
 namespace Mod::Etc::Instant_Scaling
 {
 	ConVar cvar_scalespeed  ("sig_mvm_body_scale_speed",   "1", FCVAR_NONE, "Body scale speed mult");
-	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHandScaleSpeed)
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
 	{
-		if (TFGameRules()->IsMannVsMachineMode()) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)() * cvar_scalespeed.GetFloat();
+		DETOUR_MEMBER_CALL(CTFPlayer_TFPlayerThink)();
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (cvar_scalespeed.GetFloat() != 1.0f && TFGameRules()->IsMannVsMachineMode()) {
+			player->m_flHeadScale = Approach(player->GetDesiredHeadScale(), player->m_flHeadScale, (cvar_scalespeed.GetFloat()-1) * gpGlobals->frametime);
+			player->m_flHandScale = Approach(player->GetDesiredHandScale(), player->m_flHandScale, (cvar_scalespeed.GetFloat()-1) * gpGlobals->frametime);
+			player->m_flTorsoScale = Approach(player->GetDesiredTorsoScale(), player->m_flTorsoScale, (cvar_scalespeed.GetFloat()-1) * gpGlobals->frametime);
 		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)();
-	}
-	
-	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHeadScaleSpeed)
-	{
-		if (TFGameRules()->IsMannVsMachineMode()) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)() * cvar_scalespeed.GetFloat();
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)();
-	}
-	
-	DETOUR_DECL_MEMBER(float, CTFPlayer_GetTorsoScaleSpeed)
-	{
-		if (TFGameRules()->IsMannVsMachineMode()) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)() * cvar_scalespeed.GetFloat();
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)();
 	}
 	
 	
@@ -38,9 +24,7 @@ namespace Mod::Etc::Instant_Scaling
 	public:
 		CMod() : IMod("Etc:Instant_Scaling")
 		{
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetHandScaleSpeed,  "CTFPlayer::GetHandScaleSpeed");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetHeadScaleSpeed,  "CTFPlayer::GetHeadScaleSpeed");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetTorsoScaleSpeed, "CTFPlayer::GetTorsoScaleSpeed");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TFPlayerThink,  "CTFPlayer::TFPlayerThink");
 		}
 	};
 	CMod s_Mod;

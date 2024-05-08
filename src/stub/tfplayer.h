@@ -525,6 +525,10 @@ public:
 	void ClearDisguiseWeaponList() { ft_ClearDisguiseWeaponList(this); }
 	CEconItemView *GetLoadoutItem(int classIndex, int slot) { return ft_GetLoadoutItem(this, classIndex, slot); }
 
+	float GetDesiredHeadScale() { return ft_GetDesiredHeadScale(this); }
+	float GetDesiredHandScale() { return ft_GetDesiredHandScale(this); }
+	float GetDesiredTorsoScale() { return ft_GetDesiredTorsoScale(this); }
+
 	CEconEntity *GetEconEntityByName(const char *name);
 	CEconEntity *GetEconEntityById(int id);
 
@@ -562,6 +566,9 @@ public:
 	DECL_SENDPROP   (int,        m_iCampaignMedals);
 	DECL_RELATIVE   (CUtlVector<CHandle<CTFWeaponBase>>, m_hDisguiseWeaponList);
 	DECL_SENDPROP   (bool,       m_bUseBossHealthBar);
+	DECL_SENDPROP   (float,      m_flHeadScale);
+	DECL_SENDPROP   (float,      m_flTorsoScale);
+	DECL_SENDPROP   (float,      m_flHandScale);
 	
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
@@ -631,6 +638,9 @@ private:
     static MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > ft_GetLoadoutItem;
     static MemberFuncThunk<const CTFPlayer *, int                             > ft_GetMaxHealthForBuffing;
 	static MemberFuncThunk<      CTFPlayer *, bool                            > ft_DoClassSpecialSkill;
+	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredHeadScale;
+	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredHandScale;
+	static MemberFuncThunk<      CTFPlayer *, float                           > ft_GetDesiredTorsoScale;
 	
 	
 	static MemberFuncThunk<CTFPlayer *, CBaseEntity *, const char *, int, CEconItemView *, bool> vt_GiveNamedItem;

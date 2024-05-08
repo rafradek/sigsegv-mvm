@@ -246,6 +246,9 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hRagdoll,               CTFPlay
 IMPL_SENDPROP(int,                  CTFPlayer, m_iCampaignMedals,        CTFPlayer);
 IMPL_RELATIVE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, - sizeof(CUtlVector<CHandle<CTFWeaponBase>>));
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bUseBossHealthBar,      CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flHeadScale,            CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flTorsoScale,           CTFPlayer);
+IMPL_SENDPROP(float,                CTFPlayer, m_flHandScale,            CTFPlayer);
 
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
@@ -307,6 +310,9 @@ MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, CEconItemView *, int, int       > CTFPlayer::ft_GetLoadoutItem              ("CTFPlayer::GetLoadoutItem");
 MemberFuncThunk<const CTFPlayer *, int                             > CTFPlayer::ft_GetMaxHealthForBuffing      ("CTFPlayer::GetMaxHealthForBuffing");
 MemberFuncThunk<      CTFPlayer *, bool                            > CTFPlayer::ft_DoClassSpecialSkill         ("CTFPlayer::DoClassSpecialSkill");
+MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredHeadScale         ("CTFPlayer::GetDesiredHeadScale");
+MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredHandScale         ("CTFPlayer::GetDesiredHandScale");
+MemberFuncThunk<      CTFPlayer *, float                           > CTFPlayer::ft_GetDesiredTorsoScale        ("CTFPlayer::GetDesiredTorsoScale");
 
 
 MemberFuncThunk<      CTFPlayer *, float, const char *, float, void *, IRecipientFilter *> CTFPlayer::ft_PlayScene("CTFPlayer::PlayScene");
