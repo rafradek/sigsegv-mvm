@@ -321,7 +321,7 @@ class IVideoRecorder;
 #define RAD_TELEMETRY_DISABLED
 #undef   NO_STRING_T
 #undef WEAK_STRING_T
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include <platform.h>
 #include <const.h>
 #include <interface.h>
@@ -348,7 +348,7 @@ WARN_RESTORE()
 #undef COMPILE_TIME_ASSERT
 #define COMPILE_TIME_ASSERT(pred) static_assert(pred)
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include <Color.h>
 #include "sdktf2/threadtools.h"
 #include <vector2d.h>
@@ -393,7 +393,7 @@ WARN_RESTORE()
 WARN_IGNORE__SIGN_COMPARE()
 #include <utlbuffer.h>
 WARN_RESTORE()
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "sdk2013/shareddefs.h"
 #else
 #include <shareddefs.h>
@@ -437,7 +437,7 @@ WARN_RESTORE()
 #include <npcevent.h>
 #endif
 #include <bitbuf.h>
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "sdk2013/eiface.h"
 #else
 #include <eiface.h>
@@ -457,7 +457,7 @@ WARN_RESTORE()
 #include <ai_activity.h>
 #include <igameevents.h>
 #include <inetmessage.h>
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "sdk2013/inetchannel.h"
 #else
 #include <inetchannel.h>
@@ -523,7 +523,7 @@ WARN_RESTORE()
 #include <model_types.h>
 #include <idedicatedexports.h>
 #include <icommandline.h>
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "sdk2013/iserver.h"
 #else
 #include <iserver.h>
@@ -580,7 +580,7 @@ WARN_RESTORE()
 #endif
 
 #ifndef CSGO_SEPARETE_
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
 #else
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);

@@ -590,23 +590,8 @@ namespace Mod::Etc::Mapentity_Additions
     bool last_entity_name_wildcard = false;
     string_t last_entity_lowercase = NULL_STRING;
 
-    ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_GAMEDLL, "Converts all entity names to lowercase for faster lookup", 
+    ConVar cvar_fast_lookup("sig_etc_fast_entity_name_lookup", "1", FCVAR_GAMEDLL, "Speeds up entity lookup by name, but may cause issues with some maps or plugins", 
         [](IConVar *pConVar, const char *pOldValue, float flOldValue){
-            // Immediately convert every name and classname to lowercase
-            // if (static_cast<ConVar *>(pConVar)->GetBool()) {
-            //     ForEachEntity([](CBaseEntity *entity){
-            //         if (entity->GetEntityName() != NULL_STRING) {
-            //             char *lowercase = stackalloc(strlen(STRING(entity->GetEntityName())) + 1);
-            //             StrLowerCopy(STRING(entity->GetEntityName()), lowercase);
-            //             entity->SetName(AllocPooledString(lowercase));
-            //         }
-            //         if (entity->GetClassnameString() != NULL_STRING) {
-            //             char *lowercase = stackalloc(strlen(STRING(entity->GetClassnameString())) + 1);
-            //             StrLowerCopy(STRING(entity->GetClassnameString()), lowercase);
-            //             entity->SetClassname(AllocPooledString(lowercase));
-            //         }
-            //     });
-            // }
 		});
 
 
@@ -727,7 +712,7 @@ namespace Mod::Etc::Mapentity_Additions
                 }
             }
         }
-		return nullptr;
+        return nullptr;
 	}
 
     DETOUR_DECL_MEMBER(void, CTFMedigunShield_RemoveShield)
@@ -965,6 +950,18 @@ namespace Mod::Etc::Mapentity_Additions
         return result;
     }
     
+
+    DETOUR_DECL_MEMBER(void, CTeamRoundTimer_InputSetTime, inputdata_t& inputdata)
+	{
+		auto timer = reinterpret_cast<CBaseEntity *>(this);
+		
+		DETOUR_MEMBER_CALL(CTeamRoundTimer_InputSetTime)(inputdata);
+		
+        // On some gamemodes, the game spawns timers automatically, the names are not pooled and need to be in order for fast lookup to work
+        if (cvar_fast_lookup.GetBool()) {
+            timer->SetName(AllocPooledString(STRING(timer->GetEntityName())));
+        }
+    }
     // DETOUR_DECL_MEMBER(void, CBaseEntity_PostConstructor, const char *classname)
 	// {
     //     if (cvar_fast_lookup.GetBool() && !IsStrLower(classname)) {
@@ -2416,6 +2413,8 @@ namespace Mod::Etc::Mapentity_Additions
             MOD_ADD_VHOOK(CTFBot_Activate, TypeName<CTFBot>(), "CBasePlayer::Activate");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StateLeave, "CTFPlayer::StateLeave");
             MOD_ADD_DETOUR_MEMBER(CTFBot_Spawn, "CTFBot::Spawn");
+
+			MOD_ADD_DETOUR_MEMBER(CTeamRoundTimer_InputSetTime, "CTeamRoundTimer::InputSetTime");
 
 #ifndef NO_MVM
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_UpdateObjectiveResource, "CPopulationManager::UpdateObjectiveResource");

@@ -5,7 +5,7 @@
 #include "prop.h"
 #include "link/link.h"
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tf_shareddefs.h"
 #include "stub/tfentities.h"
 #endif
@@ -336,7 +336,7 @@ private:
 	static StaticFuncThunk<void>                              ft_ClearSearchLists;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CTFNavArea : public CNavArea
 {
 public:
@@ -395,7 +395,7 @@ private:
 	static MemberFuncThunk<      CNavMesh *, int>                                                     ft_Load;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CTFNavMesh : public CNavMesh
 {
 public:

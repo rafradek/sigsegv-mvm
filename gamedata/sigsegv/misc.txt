@@ -6091,7 +6091,12 @@
 				"CTFBall_Ornament::Explode" "_ZN16CTFBall_Ornament7ExplodeEP10CGameTracei"
 				"CTFBall_Ornament::PipebombTouch" "_ZN16CTFBall_Ornament13PipebombTouchEP11CBaseEntity"
 
+				"CTFPointWeaponMimic::InputFireMultiple" "_ZN19CTFPointWeaponMimic17InputFireMultipleER11inputdata_t"
+				"CTFPointWeaponMimic::InputFireOnce" "_ZN19CTFPointWeaponMimic13InputFireOnceER11inputdata_t"
+
 				"CTFWeaponBaseGrenadeProj::Destroy" "_ZN24CTFWeaponBaseGrenadeProj7DestroyEbb"
+
+				"CTeamRoundTimer::InputSetTime" "_ZN15CTeamRoundTimer12InputSetTimeER11inputdata_t"
 				
 				"CGameMovement::FullNoClipMove" "_ZN13CGameMovement14FullNoClipMoveEff"
 				"CGameMovement::ResetGetPointContentsCache" "_ZN13CGameMovement26ResetGetPointContentsCacheEv"

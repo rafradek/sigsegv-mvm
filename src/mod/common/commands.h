@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_SIGSEGV_MOD_COMMON_COMMANDS_H_
 #define _INCLUDE_SIGSEGV_MOD_COMMON_COMMANDS_H_
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfplayer.h"
 #define CCommandPlayer CTFPlayer
 #else

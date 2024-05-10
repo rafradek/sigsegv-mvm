@@ -363,7 +363,7 @@ GlobalThunk<uint>       CNavArea::m_masterMarker("CNavArea::m_masterMarker");
 GlobalThunk<CNavArea *> CNavArea::m_openList("CNavArea::m_openList");
 GlobalThunk<uint32>     CNavArea::s_nCurrVisTestCounter("CNavArea::s_nCurrVisTestCounter");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
 IMPL_EXTRACT (float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
 IMPL_RELATIVE(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes, sizeof(TFNavAttributeType));
@@ -389,7 +389,7 @@ MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>       
 MemberFuncThunk<CNavMesh *, int>                                                           CNavMesh::ft_Load                                    ("CNavMesh::Load");
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CTFNavMesh *, void, CUtlVector<CBaseObject *> *, int> CTFNavMesh::ft_CollectBuiltObjects("CTFNavMesh::CollectBuiltObjects");
 MemberFuncThunk<CTFNavMesh *, void>                                   CTFNavMesh::ft_RecomputeInternalData("CTFNavMesh::RecomputeInternalData");
 

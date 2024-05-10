@@ -44,7 +44,7 @@ public:
 	bool GetAttachment(int id, Vector& vec, QAngle& ang)                   { return ft_GetAttachment       (this, id, vec, ang); }
 	bool GetAttachment(int id, matrix3x4_t &transform)                     { return ft_GetAttachment2       (this, id, transform); }
 	int GetAttachmentBone(int id)                                          { return ft_GetAttachmentBone   (this, id); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	float SequenceDuration(int sequence)                                   { return ft_SequenceDuration    (this, sequence); }
 #endif
 	void InvalidateBoneCache()                                             {        ft_InvalidateBoneCache (this); }
@@ -97,7 +97,7 @@ private:
 	static MemberFuncThunk<CBaseAnimating *, int, int>                        ft_GetAttachmentBone;
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupAttachment;
 	static MemberFuncThunk<CBaseAnimating *, int, const char *>               ft_LookupSequence;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberFuncThunk<CBaseAnimating *, float, int>                      ft_SequenceDuration;
 #endif
 	static MemberFuncThunk<CBaseAnimating *, void>                            ft_InvalidateBoneCache;
@@ -157,7 +157,7 @@ private:
 
 class CBaseFlex : public CBaseAnimatingOverlay {};
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CEconEntity : public CBaseAnimating
 {
 public:

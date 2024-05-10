@@ -23,7 +23,7 @@
 #include "stub/trace.cpp"
 #include "stub/nav.cpp"
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfentities.cpp"
 #include "stub/tfweaponbase.cpp"
 #include "stub/objects.cpp"

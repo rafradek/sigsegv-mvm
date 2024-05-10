@@ -831,7 +831,8 @@ namespace Mod::Cond::Reprogrammed
 	
 	RefCount rc_CBaseObject_FindSnapToBuildPos;
 	RefCount rc_CBaseObject_FindSnapToBuildPos_spec;
-	RefCount rc_CollectPlayers_Enemy;
+	RefCount rc_CollectPlayers_SpecEnemy;
+	RefCount rc_CollectPlayers_SpecFriend;
 	DETOUR_DECL_STATIC(int, CollectPlayers_CTFPlayer, CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
 	{
 		static bool reentrancy = false;
@@ -876,8 +877,14 @@ namespace Mod::Cond::Reprogrammed
 		// 	reentrancy = false;
 		// }
 		
-		if (team == TEAM_SPECTATOR && isAlive && !reentrancy) {
+		if (team == TEAM_SPECTATOR && isAlive && !reentrancy && !rc_CollectPlayers_SpecFriend && !rc_CollectPlayers_SpecEnemy) {
 			team = RandomInt(TEAM_SPECTATOR, TF_TEAM_BLUE);
+		}
+
+		if (team == TEAM_SPECTATOR && rc_CollectPlayers_SpecEnemy) {
+
+			CollectPlayers(playerVector, TF_TEAM_RED, isAlive, shouldAppend);
+			CollectPlayers(playerVector, TF_TEAM_BLUE, isAlive, true);
 		}
 		return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);
 	}
@@ -1128,8 +1135,12 @@ namespace Mod::Cond::Reprogrammed
 	{
 		auto me = reinterpret_cast<CBaseObject *>(this);
 		bool success = DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+		
+		if (pObjectOverride != nullptr) return success;
+		
 		if (success) return true;
 
+		SCOPED_INCREMENT(rc_CollectPlayers_SpecFriend);
 		//SCOPED_INCREMENT(rc_CBaseObject_FindSnapToBuildPos);
 		//SCOPED_INCREMENT_IF(rc_CBaseObject_FindSnapToBuildPos_spec, me->GetBuilder() != nullptr && me->GetBuilder()->GetTeamNumber() == TEAM_SPECTATOR);
 		
@@ -1261,7 +1272,7 @@ namespace Mod::Cond::Reprogrammed
 
 	DETOUR_DECL_MEMBER(void, CTFPistol_ScoutPrimary_Push)
 	{
-		SCOPED_INCREMENT(rc_CollectPlayers_Enemy);
+		SCOPED_INCREMENT(rc_CollectPlayers_SpecEnemy);
 		DETOUR_MEMBER_CALL(CTFPistol_ScoutPrimary_Push)();
 	}
 

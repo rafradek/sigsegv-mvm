@@ -1,14 +1,14 @@
 #include "stub/baseentity.h"
 #include "stub/baseplayer.h"
 //#include "util/iterate.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/objects.h"
 #endif
 
 // This is set in extension.cpp
 edict_t *g_pWorldEdict = nullptr;
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *, IEntityFindFilter *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
 #else
 MemberFuncThunk<CGlobalEntityList *, CBaseEntity *, CBaseEntity *, const char *> CGlobalEntityList::ft_FindEntityByClassname("CGlobalEntityList::FindEntityByClassname");
@@ -53,7 +53,7 @@ IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_iParentAttachment,  CBaseEntity);
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(int,                  CBaseEntity, m_iMaxHealth,           CBaseObject);
 #else
 IMPL_DATAMAP(int,                  CBaseEntity, m_iMaxHealth);
@@ -71,7 +71,7 @@ IMPL_SENDPROP(unsigned char,        CBaseEntity, m_nRenderMode,          CBaseEn
 IMPL_SENDPROP(unsigned char,        CBaseEntity, m_MoveType,             CBaseEntity, "movetype");
 IMPL_SENDPROP(unsigned char,        CBaseEntity, m_MoveCollide,          CBaseEntity, "movecollide");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(int[4],               CBaseEntity, m_nModelIndexOverrides, CBaseEntity);
 #endif
 IMPL_SENDPROP(color32,              CBaseEntity, m_clrRender,            CBaseEntity);
@@ -145,7 +145,7 @@ MemberVFuncThunk<const CBaseEntity *, INextBot *                                
 MemberVFuncThunk<      CBaseEntity *, void, const Vector *, const QAngle *, const Vector *            > CBaseEntity::vt_Teleport                      (TypeName<CBaseEntity>(), "CBaseEntity::Teleport");
 MemberVFuncThunk<const CBaseEntity *, int                                                             > CBaseEntity::vt_GetMaxHealth                  (TypeName<CBaseEntity>(), "CBaseEntity::GetMaxHealth");
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsAlive                       (TypeName<CBaseEntity>(), "CBaseEntity::IsAlive");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberVFuncThunk<const CBaseEntity *, float                                                           > CBaseEntity::vt_GetDefaultItemChargeMeterValue(TypeName<CBaseEntity>(), "CBaseEntity::GetDefaultItemChargeMeterValue");
 #endif
 MemberVFuncThunk<      CBaseEntity *, bool                                                            > CBaseEntity::vt_IsDeflectable                 (TypeName<CBaseEntity>(), "CBaseEntity::IsDeflectable");

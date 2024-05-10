@@ -27,7 +27,7 @@ IMPL_SENDPROP(bool[MAX_PLAYERS],               CTeamplayRoundBasedRules, m_bPlay
 IMPL_SENDPROP(bool[MAX_PLAYERS],               CTeamplayRoundBasedRules, m_bTeamReady,   CTeamplayRoundBasedRulesProxy);
 IMPL_SENDPROP(bool,                   CTeamplayRoundBasedRules, m_bInSetup,     CTeamplayRoundBasedRulesProxy);
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> CTeamplayRoundBasedRules::ft_BroadcastSound("CTeamplayRoundBasedRules::BroadcastSound");
 #else
 MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> CTeamplayRoundBasedRules::ft_BroadcastSound("CTeamplayRoundBasedRules::BroadcastSound");
@@ -39,7 +39,7 @@ MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, float>             CTeamp
 MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *>   CTeamplayRoundBasedRules::vt_GetNextRespawnWave(TypeName<CTeamplayRoundBasedRules>(), "CTeamplayRoundBasedRules::GetNextRespawnWave");
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMedieval,      CTFGameRulesProxy);
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMannVsMachine, CTFGameRulesProxy);
 IMPL_SENDPROP(char[MAX_PATH], CTFGameRules, m_pszCustomUpgradesFile, CTFGameRulesProxy);

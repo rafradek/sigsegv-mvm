@@ -105,10 +105,10 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 
 	CVirtualHook bulletDamageHook(TypeName<CBaseEntity>(), "CBaseEntity::ModifyFireBulletsDamage", GET_VHOOK_CALLBACK(CBaseEntity_ModifyFireBulletsDamage), GET_VHOOK_INNERPTR(CBaseEntity_ModifyFireBulletsDamage));
 	CTFWeaponBase *shooting_weapon = nullptr;
-    DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
+	
+	void MimicFire(CTFPointWeaponMimic *mimic)
 	{
         SCOPED_INCREMENT(rc_CTFPointWeaponMimic_Fire);
-		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
 		mimicFire = mimic;
         projectile = nullptr;
 		grenade = false;
@@ -118,6 +118,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
 			scorer = mimic->GetOwnerEntity();
 		}
+		Msg("Mimic fire\n");
 		
 		const char *weaponName = mimic->GetCustomVariable<"weaponname">();
 		if (weaponName != nullptr) {
@@ -208,7 +209,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			
 		}
 		else {
-        	DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
+        	mimic->Fire();
 		}
 
         if (projectile != nullptr) {
@@ -258,6 +259,35 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
         }
 		scorer = nullptr;
 		mimicFire = nullptr;
+	}
+
+	// CTFPointWeaponMimic::Fire gets inlined, need to detour inputfireonce/inputfiremultiple
+    DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Fire)
+	{
+		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		if (!rc_CTFPointWeaponMimic_Fire) {
+			MimicFire(mimic);
+		}
+		else {
+			DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
+		}
+	}
+
+	
+    DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_InputFireOnce, inputdata_t& inputdata)
+	{
+		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		MimicFire(mimic);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_InputFireMultiple, inputdata_t& inputdata)
+	{
+		auto *mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
+		int nNumFires = Max( 1, abs(inputdata.value.Int()) );
+
+		while( nNumFires-- ) {
+			MimicFire(mimic);
+		}
 	}
 
     DETOUR_DECL_STATIC(CBaseEntity *, CTFProjectile_Rocket_Create, CBaseEntity *pLauncher, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
@@ -394,6 +424,8 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		{
 			bulletDamageHook.DoLoad();
 			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_Fire, "CTFPointWeaponMimic::Fire");
+			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_InputFireOnce, "CTFPointWeaponMimic::InputFireOnce");
+			MOD_ADD_DETOUR_MEMBER(CTFPointWeaponMimic_InputFireMultiple, "CTFPointWeaponMimic::InputFireMultiple");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Rocket_Create,  "CTFProjectile_Rocket::Create");
 			MOD_ADD_DETOUR_STATIC(CTFProjectile_Arrow_Create,  "CTFProjectile_Arrow::Create");
 			MOD_ADD_DETOUR_STATIC(CBaseEntity_CreateNoSpawn,  "CBaseEntity::CreateNoSpawn");

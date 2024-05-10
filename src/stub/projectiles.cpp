@@ -1,7 +1,7 @@
 #include "stub/projectiles.h"
 #include "mem/extract.h"
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFProjectile_Arrow_ArrowTouch[] = {
@@ -58,7 +58,7 @@ using CExtract_CTFProjectile_Arrow_ArrowTouch = IExtractStub;
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseProjectile, m_hOriginalLauncher, CBaseProjectile);
 
 MemberVFuncThunk<const CBaseProjectile *, int> CBaseProjectile::vt_GetProjectileType(TypeName<CBaseProjectile>(), "CBaseProjectile::GetProjectileType");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberVFuncThunk<const CBaseProjectile *, bool, bool> CBaseProjectile::vt_IsDestroyable(TypeName<CBaseProjectile>(), "CBaseProjectile::IsDestroyable");
 #else
 MemberVFuncThunk<const CBaseProjectile *, bool> CBaseProjectile::vt_IsDestroyable(TypeName<CBaseProjectile>(), "CBaseProjectile::IsDestroyable");
@@ -73,7 +73,7 @@ IMPL_SENDPROP(float, CBaseGrenade, m_DmgRadius, CBaseGrenade);
 MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> CBaseGrenade::ft_GetThrower("CBaseGrenade::GetThrower");
 MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> CBaseGrenade::ft_SetThrower("CBaseGrenade::SetThrower");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::SetDamage");
 MemberVFuncThunk<CTFBaseProjectile *, float> CTFBaseProjectile::vt_GetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::GetDamage");
 

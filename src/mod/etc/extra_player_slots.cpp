@@ -45,9 +45,9 @@ public:
 
 namespace Mod::Etc::Extra_Player_Slots
 {
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     constexpr int DEFAULT_MAX_PLAYERS = 101;
-#elif definded(SE_CSS)
+#elif definded(SE_IS_CSS)
     constexpr int DEFAULT_MAX_PLAYERS = 65;
 #endif
     inline bool ExtraSlotsEnabled();
@@ -1125,7 +1125,7 @@ namespace Mod::Etc::Extra_Player_Slots
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
             
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
 
             MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");

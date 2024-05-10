@@ -111,7 +111,7 @@ private:
 #define CONVAR_OVERRIDE(name, type, value) static ConVarRef name##cv(#name); CValueOverride_ConVar<type> name(name##cv.GetLinkedConVar()); name.SetValue(value);
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 
 // TODO: fix problems related to client-side convar tf_medieval_thirdperson:
 // - players start out in first person, until they taunt or respawn or whatever

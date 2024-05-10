@@ -1,4 +1,4 @@
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "re/path.h"
 #include "stub/tfbot.h"
 

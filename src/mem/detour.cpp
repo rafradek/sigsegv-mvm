@@ -531,6 +531,7 @@ void CFuncVProf::TracePost()
 	}
 }
 
+constexpr bool s_bGameHasOptimizedVirtuals = SOURCE_ENGINE == SE_TF2;
 
 CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	m_pFunc(reinterpret_cast<uint8_t *>(func_ptr))
@@ -540,20 +541,23 @@ CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	this->m_TrueOriginalPrologue.resize(len_prologue);
 	memcpy(this->m_TrueOriginalPrologue.data(), this->m_pFunc, len_prologue);
 
-	bool found = false;
-	for (auto &[vtname, pVTInfo] : RTTI::GetAllVTableInfo()) {
-        auto pVT = pVTInfo.vtable;
-		auto size = pVTInfo.size / sizeof(void *);
-		for (int i = 0; i < size; ++i) {
-			if (pVT[i] == func_ptr) {
-				this->m_FoundFuncPtrAndVTablePtr.emplace(const_cast<void **>(pVT + i), pVT);
-				found = true;
+	// For TF2, virtual calls can be optimized to be not called if the function is not overridden. Because of this detours also have to modify the vtables with matching functions
+	if (s_bGameHasOptimizedVirtuals) {
+		bool found = false;
+		for (auto &[vtname, pVTInfo] : RTTI::GetAllVTableInfo()) {
+			auto pVT = pVTInfo.vtable;
+			auto size = pVTInfo.size / sizeof(void *);
+			for (int i = 0; i < size; ++i) {
+				if (pVT[i] == func_ptr) {
+					this->m_FoundFuncPtrAndVTablePtr.emplace(const_cast<void **>(pVT + i), pVT);
+					found = true;
+				}
 			}
 		}
-	}
 
-	if (found) {
-		this->m_VirtualHookOptional = CVirtualHookBase(nullptr, CVirtualHookBase::DETOUR_HOOK);
+		if (found) {
+			this->m_VirtualHookOptional = CVirtualHookBase(nullptr, CVirtualHookBase::DETOUR_HOOK);
+		}
 	}
 }
 CDetouredFunc::~CDetouredFunc()

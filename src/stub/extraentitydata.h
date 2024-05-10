@@ -2,7 +2,7 @@
 #define _INCLUDE_SIGSEGV_STUB_EXTRAENTITYDATA_H_
 
 #include "stub/baseentity.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfplayer.h"
 #include "stub/tfweaponbase.h"
 #else
@@ -183,7 +183,7 @@ public:
     }
 
     //float[FastAttributes::ATTRIB_COUNT_PLAYER] fast_attrib_cache_data;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     CHandle<CEconEntity> quickItemInLoadoutSlot[LOADOUT_POSITION_COUNT];
 #endif
 
@@ -218,7 +218,7 @@ public:
     bool m_bHasTarget;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class ExtraEntityDataWeaponSpawner : public ExtraEntityData
 {
 public:
@@ -294,7 +294,7 @@ inline ExtraEntityDataTriggerDetector *GetExtraTriggerDetectorData(CBaseEntity *
     return static_cast<ExtraEntityDataTriggerDetector *>(data);
 }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 inline ExtraEntityDataWeaponSpawner *GetExtraWeaponSpawnerData(CBaseEntity *entity, bool create = true) {
     ExtraEntityData *data = entity->m_extraEntityData;
     if (create && entity->m_extraEntityData == nullptr) {
@@ -343,7 +343,7 @@ inline ExtraEntityData *CreateExtraData(CBaseEntity *entity) {
         return entity->m_extraEntityData = new ExtraEntityDataTriggerDetector(trigger);
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     if (entity->GetClassname() == PStr<"$weapon_spawner">()) {
         return entity->m_extraEntityData = new ExtraEntityDataWeaponSpawner(trigger);
     }

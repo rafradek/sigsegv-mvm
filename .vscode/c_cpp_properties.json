@@ -39,6 +39,7 @@
                 "LINUX",
                 "POSIX",
                 "SE_TF2=11",
+                "SE_IS_TF2",
                 "SOURCE_ENGINE=11",
                 "COMPILER_GCC",
                 "NO_HOOK_MALLOC",

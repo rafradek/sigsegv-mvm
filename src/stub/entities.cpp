@@ -13,7 +13,7 @@ IMPL_DATAMAP(bool,                 CEnvEntityMaker,   m_bPostSpawnUseAngles);
 
 MemberFuncThunk<CPathTrack *, CPathTrack *> CPathTrack::ft_GetNext("CPathTrack::GetNext");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_DATAMAP(float,                CItem, m_flNextResetCheckTime);
 #endif
 IMPL_DATAMAP(bool,                 CItem, m_bActivateWhenAtRest);

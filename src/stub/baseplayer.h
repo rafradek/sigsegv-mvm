@@ -21,7 +21,7 @@ public:
 	CBaseCombatWeapon *GetWeapon(int i) const  { return this->m_hMyWeapons[i]; }
 	static_assert(MAX_WEAPONS == 48);
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	void AddGlowEffect()                                                        {        ft_AddGlowEffect     (this); }
 	void RemoveGlowEffect()                                                     {        ft_RemoveGlowEffect  (this); }
 	bool IsGlowEffectActive()                                                   { return ft_IsGlowEffectActive(this); }
@@ -48,7 +48,7 @@ public:
 	void RemoveAmmo(int amount, int type)                                  { return vt_RemoveAmmo         (this, amount, type); }
 	
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	int GetBossType()                                                      { return vt_GetBossType        (this); }
 #endif
 	void ClearLastKnownArea()                                              {        vt_ClearLastKnownArea (this); }
@@ -59,7 +59,7 @@ private:
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>,              m_hActiveWeapon);
 	DECL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], m_hMyWeapons);
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberFuncThunk<CBaseCombatCharacter *, void>                                               ft_AddGlowEffect;
 	static MemberFuncThunk<CBaseCombatCharacter *, void>                                               ft_RemoveGlowEffect;
 	static MemberFuncThunk<CBaseCombatCharacter *, bool>                                               ft_IsGlowEffectActive;
@@ -83,7 +83,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   vt_ShouldGib;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            vt_FInViewCone;
 	static MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&, const Vector&> vt_BecomeRagdoll;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberVFuncThunk<      CBaseCombatCharacter *, int>                            vt_GetBossType;
 #endif
 	static MemberVFuncThunk<      CBaseCombatCharacter *, void>                           vt_ClearLastKnownArea;
@@ -100,7 +100,7 @@ private:
 	static StaticFuncThunk<int, const char *> ft_GetActivityID;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CMultiPlayerAnimState
 {
 public:
@@ -133,7 +133,7 @@ public:
 	DECL_SENDPROP(unsigned char[MAX_AREA_STATE_BYTES], m_chAreaBits);
 	
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	DECL_SENDPROP_RW(char[260], m_szScriptOverlayMaterial);
 #endif
 
@@ -162,7 +162,7 @@ public:
 	const char *GetPlayerName()             { return this->m_szNetname; }
 	float MaxSpeed() const                  { return this->m_flMaxspeed; }
 	int GetUserID()                         { return engine->GetPlayerUserId(this->edict()); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	int GetNumWearables() const             { return this->m_hMyWearables->Count(); }
 	CEconWearable *GetWearable(int i) const { return this->m_hMyWearables[i]; }
 	void RemoveWearableFromList(int i) const{ return this->m_hMyWearables->Remove(i); }
@@ -191,7 +191,7 @@ public:
 	void SnapEyeAngles(const QAngle& viewAngles)                                       {        ft_SnapEyeAngles (this, viewAngles); }
 	bool SetFOV(CBaseEntity *setter, int fov, float zoominRate, int zoomStart)         { return ft_SetFOV        (this, setter, fov, zoominRate, zoomStart); }
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	void EquipWearable(CEconWearable *wearable)									{ vt_EquipWearable     (this, wearable); }
 	void RemoveWearable(CEconWearable *wearable)                         {        vt_RemoveWearable      (this, wearable); }
 #endif
@@ -203,7 +203,7 @@ public:
 	void ForceRespawn()                                                  {        vt_ForceRespawn        (this); }
 	Vector Weapon_ShootPosition()                                        { return vt_Weapon_ShootPosition(this); }
 	float GetPlayerMaxSpeed()                                            { return vt_GetPlayerMaxSpeed   (this); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	void ChangeTeam(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {        vt_ChangeTeam_bool3    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 	void ChangeTeamBase(int iTeamNum, bool bAutoTeam, bool bSilent, bool b3) {    ft_ChangeTeam_base    (this, iTeamNum, bAutoTeam, bSilent, b3); }
 #endif
@@ -237,7 +237,7 @@ private:
 	DECL_SENDPROP(float,                              m_flDeathTime);
 	DECL_SENDPROP(int,                                m_iObserverMode);
 	DECL_SENDPROP(float,                              m_flMaxspeed);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	DECL_SENDPROP_RW(CUtlVector<CHandle<CEconWearable>>, m_hMyWearables);
 #endif
 	

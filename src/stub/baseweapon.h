@@ -13,7 +13,7 @@ typedef struct
 } acttable_t;
 
 class CBaseCombatWeapon : 
-#ifdef SE_TF2 
+#ifdef SE_IS_TF2 
 public CEconEntity
 #else
 public CBaseAnimating
@@ -26,7 +26,7 @@ public:
 	void SetOwner(CBaseCombatCharacter *owner) { return ft_SetOwner(this, owner); }
 	FileWeaponInfo_t const &GetWpnData() const       { return ft_GetWpnData(this); }
 	bool SetIdealActivity(Activity act) const        { return ft_SetIdealActivity(this, act); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	void SetCustomViewModel(const char *model) {        ft_SetCustomViewModel(this, model); }
 #endif
 	
@@ -56,7 +56,7 @@ public:
 	DECL_SENDPROP(int,   m_iState);
 	DECL_SENDPROP(int,   m_iPrimaryAmmoType);
 	DECL_SENDPROP(int,   m_iSecondaryAmmoType);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	DECL_SENDPROP(short,   m_nCustomViewmodelModelIndex);
 #endif
 	DECL_SENDPROP(int,   m_iClip1);
@@ -78,7 +78,7 @@ private:
 	static MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> ft_SetOwner;
 	static MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> ft_GetWpnData;
 	static MemberFuncThunk<const CBaseCombatWeapon *, bool, Activity> ft_SetIdealActivity;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberFuncThunk<CBaseCombatWeapon *, void, const char *> ft_SetCustomViewModel;
 #endif
 	

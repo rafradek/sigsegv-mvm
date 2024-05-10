@@ -149,7 +149,7 @@ public:
 	void SetTeamReady(int iIndex, bool ready)       { NULL_RET( ); this->m_bTeamReady.SetIndex(ready, iIndex); }
 	bool InSetup()                     { NULL_RET(false        ); return this->m_bInSetup; }
 	void SetInSetup(bool setup)        { NULL_RET( );             m_bInSetup = setup; }
-#ifdef SE_TF2	
+#ifdef SE_IS_TF2	
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0, CBasePlayer *player = nullptr) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags, player); }
 #else
 	void BroadcastSound(int iTeam, const char *sound, int iAdditionalSoundFlags = 0) { NULL_RET(    );        ft_BroadcastSound              (this, iTeam, sound, iAdditionalSoundFlags); }
@@ -169,7 +169,7 @@ private:
 	DECL_SENDPROP(bool[MAX_PLAYERS],            m_bTeamReady);
 	DECL_SENDPROP(bool,                   m_bInSetup);
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int, CBasePlayer *> ft_BroadcastSound;
 #else
 	static MemberFuncThunk<CTeamplayRoundBasedRules *, void, int, const char *, int> ft_BroadcastSound;
@@ -182,7 +182,7 @@ private:
 	static MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *> vt_GetNextRespawnWave;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CTFGameRules : public CTeamplayRoundBasedRules
 {
 public:
@@ -268,7 +268,7 @@ inline const CViewVectors *CGameRules::GetViewVectors() const
 	return vt_GetViewVectors(this);
 }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 inline void CTFGameRules::SetCustomUpgradesFile(const char *path)
 {
 	NULL_RET();
@@ -299,7 +299,7 @@ inline CGameRules *GameRules()
 inline CMultiplayRules          *MultiplayRules()          { return reinterpret_cast<CMultiplayRules          *>(GameRules()); }
 inline CTeamplayRules           *TeamplayGameRules()       { return reinterpret_cast<CTeamplayRules           *>(GameRules()); }
 inline CTeamplayRoundBasedRules *TeamplayRoundBasedRules() { return reinterpret_cast<CTeamplayRoundBasedRules *>(GameRules()); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 inline CTFGameRules             *TFGameRules()             { return reinterpret_cast<CTFGameRules             *>(GameRules()); }
 #endif
 

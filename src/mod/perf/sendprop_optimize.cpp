@@ -2,7 +2,7 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "stub/baseplayer.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfplayer.h"
 #include "stub/tfentities.h"
 #endif
@@ -10,7 +10,7 @@
 #include "stub/misc.h"
 #include "stub/server.h"
 #include "stub/baseweapon.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tf_objective_resource.h"
 #include "stub/tfweaponbase.h"
 #endif
@@ -1368,7 +1368,7 @@ namespace Mod::Perf::SendProp_Optimize
         DETOUR_MEMBER_CALL(CParallelProcessor_CGameClient_Run)(clients, items, maxthreads, pool);
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayer_AddObject, CBaseObject *object)
 	{
         DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
@@ -1399,7 +1399,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall,void , CBaseAnimatingOverlay_FastRemoveLayer, int layer)
 #else
     DETOUR_DECL_MEMBER(void, CBaseAnimatingOverlay_FastRemoveLayer, int layer)
@@ -1427,7 +1427,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER(void , CMultiPlayerAnimState_AddToGestureSlot, int iGestureSlot, Activity iGestureActivity, bool bAutoKill)
 	{
         auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
@@ -1488,7 +1488,7 @@ namespace Mod::Perf::SendProp_Optimize
         return pRet;
     }
     
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
     {
         DETOUR_MEMBER_CALL(CPopulationManager_SetPopulationFilename)(filename);
@@ -1508,7 +1508,7 @@ namespace Mod::Perf::SendProp_Optimize
         world_accessor->SetChangeInfo(0);
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     THINK_FUNC_DECL(SetVisibleStateDelay) {
 		auto player = reinterpret_cast<CBasePlayer *>(this);
         if (player->IsAlive()) return;
@@ -1585,7 +1585,7 @@ namespace Mod::Perf::SendProp_Optimize
 		auto player = reinterpret_cast<CBasePlayer *>(this);
 		DETOUR_MEMBER_CALL(CBasePlayer_Spawn)();
         player->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
         for (int i = 0; i < player->GetNumWearables(); i++) {
             CEconWearable *wearable = player->GetWearable(i);
             if (wearable == nullptr) continue;
@@ -1661,7 +1661,7 @@ namespace Mod::Perf::SendProp_Optimize
             //MOD_ADD_DETOUR_STATIC(SendTable_CalcDelta,   "SendTable_CalcDelta");
             MOD_ADD_REPLACE_FUNC_MEMBER(CBaseEdict_GetChangeAccessor,   "CBaseEdict::GetChangeAccessor");
             MOD_ADD_DETOUR_MEMBER(CAnimationLayer_StudioFrameAdvance,"CAnimationLayer::StudioFrameAdvance");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer [clone]");
 #else
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_FastRemoveLayer,"CBaseAnimatingOverlay::FastRemoveLayer");
@@ -1669,7 +1669,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_StudioFrameAdvance,"CBaseAnimatingOverlay::StudioFrameAdvance");
             MOD_ADD_DETOUR_MEMBER(CBaseAnimatingOverlay_SetLayerCycle,"CBaseAnimatingOverlay::SetLayerCycle");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_AddToGestureSlot,"CMultiPlayerAnimState::AddToGestureSlot");
             MOD_ADD_DETOUR_MEMBER(CMultiPlayerAnimState_RestartGesture,"CMultiPlayerAnimState::RestartGesture [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject,   "CTFPlayer::AddObject [clone]");
@@ -1691,7 +1691,7 @@ namespace Mod::Perf::SendProp_Optimize
             MOD_ADD_DETOUR_STATIC(InvalidateSharedEdictChangeInfo,   "InvalidateSharedEdictChangeInfo");
 
             // Reduce some time spend in networking for dead players and their items
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_Event_Killed, "CBasePlayer::Event_Killed");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_OnActiveStateChanged, "CTFWeaponBase::OnActiveStateChanged");
 #endif

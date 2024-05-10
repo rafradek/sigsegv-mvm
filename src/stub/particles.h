@@ -111,7 +111,7 @@ inline void TE_BeamPoints(IRecipientFilter& filter, float delay,
 
 void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");
 inline void TE_TFExplosion( IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID = -1, int nSound = 11 /*SPECIAL1*/, int iCustomParticle = INVALID_STRING_INDEX )
@@ -134,7 +134,7 @@ inline void TE_TFParticleEffect(IRecipientFilter& recipement, float value, char 
 #endif
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 static StaticFuncThunk<void, IRecipientFilter&,
 	float,
 	const char *,

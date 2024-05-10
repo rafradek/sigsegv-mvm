@@ -1,5 +1,5 @@
 #include "stub/baseanimating.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/econ.h"
 #include "stub/tfweaponbase.h"
 #endif
@@ -47,7 +47,7 @@ MemberFuncThunk<CBaseAnimating *, void, int, Vector&, QAngle&>     CBaseAnimatin
 MemberFuncThunk<CBaseAnimating *, bool, int, Vector&, QAngle&>     CBaseAnimating::ft_GetAttachment       ("CBaseAnimating::GetAttachment");
 MemberFuncThunk<CBaseAnimating *, bool, int, matrix3x4_t&>         CBaseAnimating::ft_GetAttachment2      ("CBaseAnimating::GetAttachment [matrix]");
 MemberFuncThunk<CBaseAnimating *, int, int>                        CBaseAnimating::ft_GetAttachmentBone   ("CBaseAnimating::GetAttachmentBone");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CBaseAnimating *, float, int>                      CBaseAnimating::ft_SequenceDuration    ("CBaseAnimating::SequenceDuration");
 #endif
 MemberFuncThunk<CBaseAnimating *, void>                            CBaseAnimating::ft_InvalidateBoneCache ("CBaseAnimating::InvalidateBoneCache");
@@ -68,7 +68,7 @@ MemberFuncThunk<CBaseAnimatingOverlay *, float, int> CBaseAnimatingOverlay::ft_G
 MemberFuncThunk<CBaseAnimatingOverlay *, void, int, float> CBaseAnimatingOverlay::ft_SetLayerDuration("CBaseAnimatingOverlay::SetLayerDuration");
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(bool, CEconEntity, m_bValidatedAttachedEntity, CEconEntity);
 
 MemberFuncThunk<CEconEntity *, void> CEconEntity::ft_DebugDescribe("CEconEntity::DebugDescribe");

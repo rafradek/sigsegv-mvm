@@ -13,7 +13,7 @@
 //#include "disasm/disasm.h"
 #include "factory.h"
 #include "concolor.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "re/nextbot.h"
 #endif
 #include "version.h"
@@ -135,7 +135,7 @@ void CExtSigsegv::SDK_OnUnload()
 
 	IGameSystem::Remove(this);
 	
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	IHotplugActionBase::UnloadAll();
 //	IHotplugEntity::UninstallAll();
 #endif

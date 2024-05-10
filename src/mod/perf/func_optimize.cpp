@@ -2,13 +2,13 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfplayer.h"
 #endif
 #include "stub/gamerules.h"
 #include "stub/misc.h"
 #include "stub/server.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfweaponbase.h"
 #include "stub/tfbot.h"
 #include "stub/strings.h"
@@ -23,7 +23,7 @@
 #include "util/iterate.h"
 #include "../mvm-reversed/server/NextBot/NextBotKnownEntity.h"
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 REPLACE_FUNC_MEMBER(bool, CTFPlayerShared_InCond, int index) {
     auto me = reinterpret_cast<CTFPlayerShared *>(this);
     return me->GetCondData().InCond(index);
@@ -79,7 +79,7 @@ namespace Mod::Perf::Func_Optimize
         std::string name;
 	};
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 
 	constexpr uint8_t s_Buf_CTFPlayerShared_ConditionGameRulesThink[] = {
         0x81, 0xfb, 0x82, 0x00, 0x00, 0x00,  // +0x0000 cmp     ebx, TF_COND_COUNT - 1
@@ -383,7 +383,7 @@ namespace Mod::Perf::Func_Optimize
         
     }
     
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
     DETOUR_DECL_STATIC(void, CTFPlayer_PrecacheMvM)
 	{
         DETOUR_STATIC_CALL(CTFPlayer_PrecacheMvM)();
@@ -648,7 +648,7 @@ namespace Mod::Perf::Func_Optimize
             // Rewrite CKnownEntity::OperatorEquals to compare handle indexes instead of entity pointers
             MOD_ADD_REPLACE_FUNC_MEMBER(CKnownEntity_OperatorEquals, "CKnownEntity::operator==");
             
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             // Not enough speed up from condition optimization after update
             // // Modify CTFPlayerShared::ConditionGameRulesThink so that conditions are not updated here, they are updated in a detour instead (needed for another patch)
 			// this->AddPatch(new CPatch_CTFPlayerShared_ConditionGameRulesThink());
@@ -684,7 +684,7 @@ namespace Mod::Perf::Func_Optimize
             // MOD_ADD_DETOUR_MEMBER(CMDLCache_EndLock, "CMDLCache::EndLock");
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::BeginLock"));
 			this->AddPatch(new CPatch_CMDLCache_BeginEndLock("CMDLCache::EndLock"));
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             MOD_ADD_DETOUR_STATIC(CTFPlayer_PrecacheMvM, "CTFPlayer::PrecacheMvM");
             
             // Prevent player hurt from triggering speak too often
@@ -716,7 +716,7 @@ namespace Mod::Perf::Func_Optimize
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
         virtual void LevelInitPreEntity() override 
         {
             item_defs.clear();
@@ -735,7 +735,7 @@ namespace Mod::Perf::Func_Optimize
         virtual void OnEnablePost() override 
         {
             world_edict = INDEXENT(0);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             schema = GetItemSchema();
 
             // In case the mod was toggled on/off, restore the quick item in loadout slot optimizations

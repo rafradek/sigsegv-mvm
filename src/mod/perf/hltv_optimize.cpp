@@ -164,7 +164,7 @@ namespace Mod::Perf::HLTV_Optimize
         }
     }
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PhysicsSimulate)
 	{
 		auto player = reinterpret_cast<CBasePlayer *>(this);
@@ -259,7 +259,7 @@ namespace Mod::Perf::HLTV_Optimize
 			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_RestoreTick, "CNetworkStringTable::RestoreTick");
 			MOD_ADD_DETOUR_MEMBER(CNetworkStringTable_UpdateMirrorTable,                     "CNetworkStringTable::UpdateMirrorTable");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PhysicsSimulate,  "NextBotPlayer<CTFPlayer>::PhysicsSimulate");
 #endif
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_PhysicsSimulate,              "CBasePlayer::PhysicsSimulate");
@@ -269,7 +269,7 @@ namespace Mod::Perf::HLTV_Optimize
 
             // Limit snapshot rate when between rounds or when hltv server is empty and not recording
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_RecordStringTables, "CHLTVDemoRecorder::RecordStringTables");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording_clone, "CHLTVDemoRecorder::StopRecording [clone]");
 #else
 			MOD_ADD_DETOUR_MEMBER(CHLTVDemoRecorder_StopRecording, "CHLTVDemoRecorder::StopRecording");

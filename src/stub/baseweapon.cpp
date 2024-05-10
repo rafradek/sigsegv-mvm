@@ -6,7 +6,7 @@ IMPL_SENDPROP(float,                         CBaseCombatWeapon, m_flTimeWeaponId
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iState,                CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iPrimaryAmmoType,      CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iSecondaryAmmoType,    CBaseCombatWeapon);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_nCustomViewmodelModelIndex, CBaseCombatWeapon);
 #endif
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iClip1,                CBaseCombatWeapon);
@@ -26,7 +26,7 @@ MemberFuncThunk<const CBaseCombatWeapon *, bool> CBaseCombatWeapon::ft_IsMeleeWe
 MemberFuncThunk<CBaseCombatWeapon *, void, CBaseCombatCharacter *> CBaseCombatWeapon::ft_SetOwner("CBaseCombatWeapon::SetOwner");
 MemberFuncThunk<const CBaseCombatWeapon *, FileWeaponInfo_t const &> CBaseCombatWeapon::ft_GetWpnData("CBaseCombatWeapon::GetWpnData");
 MemberFuncThunk<const CBaseCombatWeapon *, bool, Activity> CBaseCombatWeapon::ft_SetIdealActivity("CBaseCombatWeapon::SetIdealActivity");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CBaseCombatWeapon *, void, const char *> CBaseCombatWeapon::ft_SetCustomViewModel("CBaseCombatWeapon::SetCustomViewModel");
 #endif
 

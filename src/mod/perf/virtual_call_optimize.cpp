@@ -2,7 +2,7 @@
 #include "util/scope.h"
 #include "util/clientmsg.h"
 #include "util/misc.h"
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 #include "stub/tfbot.h"
 #include "stub/tfweaponbase.h"
 #else
@@ -829,7 +829,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
             //this->AddPatch(new CPatch_CBaseEntity_GetBaseEntity());
             this->AddPatch(new CPatch_CBaseEntity_GetTeamNumber());
             
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
             // Automatically assume that IsBotOfType is asking for bots of type 1337 (CTFBot)
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CBasePlayer>(), "CBasePlayer::IsBotOfType");
             MOD_ADD_VHOOK(CBasePlayer_IsBotOfType, TypeName<CTFPlayer>(), "CBasePlayer::IsBotOfType");

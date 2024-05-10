@@ -1,4 +1,4 @@
-#if SE_TF2
+#ifdef SE_IS_TF2
 #include "link/link.h"
 #include "abi.h"
 

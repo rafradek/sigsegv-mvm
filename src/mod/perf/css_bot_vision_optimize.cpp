@@ -1,4 +1,4 @@
-#ifdef SE_CSS
+#ifdef SE_IS_CSS
 #include "mod.h"
 #include "stub/baseplayer.h"
 #include "util/misc.h"

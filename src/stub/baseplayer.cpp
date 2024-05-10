@@ -41,7 +41,7 @@ IMPL_SENDPROP(CHandle<CBaseCombatWeapon>,              CBaseCombatCharacter, m_h
 IMPL_SENDPROP(CHandle<CBaseCombatWeapon>[MAX_WEAPONS], CBaseCombatCharacter, m_hMyWeapons,    CBaseCombatCharacter);
 IMPL_SENDPROP(float,                                   CBaseCombatCharacter, m_flNextAttack,  CBaseCombatCharacter);
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CBaseCombatCharacter *, void>                                                                     CBaseCombatCharacter::ft_AddGlowEffect     ("CBaseCombatCharacter::AddGlowEffect");
 MemberFuncThunk<CBaseCombatCharacter *, void>                                                                     CBaseCombatCharacter::ft_RemoveGlowEffect  ("CBaseCombatCharacter::RemoveGlowEffect");
 MemberFuncThunk<CBaseCombatCharacter *, bool>                                                                     CBaseCombatCharacter::ft_IsGlowEffectActive("CBaseCombatCharacter::IsGlowEffectActive");
@@ -66,7 +66,7 @@ MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&>   C
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, const Vector&>            CBaseCombatCharacter::vt_FInViewCone        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::FInViewCone");
 MemberVFuncThunk<      CBaseCombatCharacter *, bool, const CTakeDamageInfo&, const Vector&> CBaseCombatCharacter::vt_BecomeRagdoll(TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::BecomeRagdoll");
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberVFuncThunk<      CBaseCombatCharacter *, int>                            CBaseCombatCharacter::vt_GetBossType        (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::GetBossType");
 #endif
 MemberVFuncThunk<      CBaseCombatCharacter *, void>                           CBaseCombatCharacter::vt_ClearLastKnownArea (TypeName<CBaseCombatCharacter>(), "CBaseCombatCharacter::ClearLastKnownArea");
@@ -77,7 +77,7 @@ StaticFuncThunk<const char *, int> CAI_BaseNPC::ft_GetActivityName("CAI_BaseNPC:
 StaticFuncThunk<int, const char *> CAI_BaseNPC::ft_GetActivityID("CAI_BaseNPC::GetActivityID");
 
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<CMultiPlayerAnimState *, void> CMultiPlayerAnimState::ft_OnNewModel("CMultiPlayerAnimState::OnNewModel");
 #endif
 
@@ -95,7 +95,7 @@ IMPL_SENDPROP(int, CPlayerLocalData,   m_iHideHUD, CBasePlayer);
 IMPL_SENDPROP(float, CPlayerLocalData,   m_flFallVelocity, CBasePlayer);
 IMPL_SENDPROP(unsigned char[MAX_AREA_PORTAL_STATE_BYTES], CPlayerLocalData, m_chAreaPortalBits, CBasePlayer);
 IMPL_SENDPROP(unsigned char[MAX_AREA_STATE_BYTES], CPlayerLocalData, m_chAreaBits, CBasePlayer);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(char[260], CPlayerLocalData, m_szScriptOverlayMaterial, CBasePlayer);
 #endif
 
@@ -119,7 +119,7 @@ IMPL_SENDPROP(int,                                CBasePlayer, m_iObserverMode, 
 IMPL_SENDPROP(CPlayerLocalData,                   CBasePlayer, m_Local,         CBasePlayer);
 IMPL_SENDPROP(int,                                CBasePlayer, m_nTickBase,     CBasePlayer);
 IMPL_SENDPROP(float,                              CBasePlayer, m_flMaxspeed,    CBasePlayer);
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 IMPL_SENDPROP(CUtlVector<CHandle<CEconWearable>>, CBasePlayer, m_hMyWearables,  CBasePlayer);
 #endif
 IMPL_SENDPROP(CHandle<CBaseEntity>,               CBasePlayer, m_hObserverTarget, CBasePlayer);
@@ -136,7 +136,7 @@ MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_ForceButtons  ("CBasePlayer::ForceButtons");
 MemberFuncThunk<CBasePlayer *, void, int>                          CBasePlayer::ft_UnforceButtons("CBasePlayer::UnforceButtons");
 MemberFuncThunk<CBasePlayer *, void, const QAngle&>                CBasePlayer::ft_SnapEyeAngles ("CBasePlayer::SnapEyeAngles");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberFuncThunk<      CBasePlayer *, void, int, bool, bool, bool>  CBasePlayer::ft_ChangeTeam_base    ("CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 #endif
 MemberFuncThunk<      CBasePlayer *, bool, CBaseEntity *, int, float, int> CBasePlayer::ft_SetFOV             ("CBasePlayer::SetFOV");
@@ -148,7 +148,7 @@ MemberVFuncThunk<      CBasePlayer *, void, bool, bool>            CBasePlayer::
 MemberVFuncThunk<      CBasePlayer *, void>                        CBasePlayer::vt_ForceRespawn        (TypeName<CBasePlayer>(), "CBasePlayer::ForceRespawn");
 MemberVFuncThunk<      CBasePlayer *, Vector>                      CBasePlayer::vt_Weapon_ShootPosition(TypeName<CBasePlayer>(), "CBasePlayer::Weapon_ShootPosition");
 MemberVFuncThunk<      CBasePlayer *, float>                       CBasePlayer::vt_GetPlayerMaxSpeed   (TypeName<CBasePlayer>(), "CBasePlayer::GetPlayerMaxSpeed");
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 MemberVFuncThunk<      CBasePlayer *, void, CEconWearable *>       CBasePlayer::vt_RemoveWearable      (TypeName<CBasePlayer>(), "CBasePlayer::RemoveWearable");
 MemberVFuncThunk<      CBasePlayer *, void, int, bool, bool, bool> CBasePlayer::vt_ChangeTeam_bool3    (TypeName<CBasePlayer>(), "CBasePlayer::ChangeTeam [int, bool, bool, bool]");
 MemberVFuncThunk<CBasePlayer *, void, CEconWearable *>             CBasePlayer::vt_EquipWearable       (TypeName<CBasePlayer>(),"CBasePlayer::EquipWearable");

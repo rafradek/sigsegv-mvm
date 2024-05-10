@@ -39,7 +39,7 @@ public:
 
 class CItem : public CBaseAnimating
 {
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	DECL_DATAMAP(float,                m_flNextResetCheckTime);
 #endif
 	DECL_DATAMAP(bool,                 m_bActivateWhenAtRest);

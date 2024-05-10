@@ -41,7 +41,7 @@ private:
 // g_Teams
 // GetGlobalTeam
 // GetNumberOfTeams
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 
 class CTFTeam : public CTeam
 {

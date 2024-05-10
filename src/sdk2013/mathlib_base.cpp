@@ -1,4 +1,4 @@
-#if !defined(CSGO_SEPARETE_) && !defined(SE_TF2)
+#if !defined(CSGO_SEPARETE_) && !defined(SE_IS_TF2)
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Math primitives.

@@ -12,7 +12,7 @@ public:
 	CBaseEntity *GetOriginalLauncher() const { return this->m_hOriginalLauncher; }
 
 	int GetProjectileType() const            { return vt_GetProjectileType(this); }
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	bool IsDestroyable(bool flag) const            { return vt_IsDestroyable(this, flag); }
 #else
 	bool IsDestroyable() const            { return vt_IsDestroyable(this); }
@@ -25,7 +25,7 @@ private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hOriginalLauncher);
 	
 	static MemberVFuncThunk<const CBaseProjectile *, int> vt_GetProjectileType;
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 	static MemberVFuncThunk<const CBaseProjectile *, bool, bool> vt_IsDestroyable;
 #else
 	static MemberVFuncThunk<const CBaseProjectile *, bool> vt_IsDestroyable;
@@ -48,7 +48,7 @@ private:
 	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;
 };
 
-#ifdef SE_TF2
+#ifdef SE_IS_TF2
 class CThrownGrenade : public CBaseGrenade {};
 class CBaseGrenadeConcussion : public CBaseGrenade {};
 class CBaseGrenadeContact : public CBaseGrenade {};
