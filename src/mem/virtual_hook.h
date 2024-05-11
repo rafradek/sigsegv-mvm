@@ -21,7 +21,9 @@ public:
 
 	CVirtualHookBase() {}
 
-	CVirtualHookBase(void *callback, HookPriority priority = NORMAL) : m_pCallback(callback), m_Priority(priority) {}
+	CVirtualHookBase(void *callback, HookPriority priority = NORMAL, std::string name = ""s) : m_pCallback(callback), m_Priority(priority), m_szName(name) {}
+
+    virtual const char *GetName() { return m_szName.c_str(); };
 
 	virtual void SetInner(void *inner, void *vtable) { }
 	
@@ -35,7 +37,10 @@ protected:
 
 	void *m_pCallback;
 	HookPriority m_Priority;
-    friend class CVirtualHookFunc;
+
+	std::string m_szName;
+    
+	friend class CVirtualHookFunc;
 };
 
 class CVirtualHook : public CVirtualHookBase
@@ -51,8 +56,6 @@ public:
 	virtual void DoEnable();
 	virtual void DoDisable();
     
-    virtual const char *GetName() { return m_szName.c_str(); };
-
 	virtual void SetInner(void *inner, void *vtable) { *m_pInner = inner; }
 
 	// Change VTable, keep offset.
@@ -172,6 +175,8 @@ private:
 
     std::vector<CVirtualHookBase *> m_Hooks;
     static inline std::map<void **, CVirtualHookFunc> s_FuncMap; 
+	void *m_pFuncFirst = nullptr;
+	std::string m_szName;
 };
 
 #define VHOOK_CALL(name) (this->*Actual)

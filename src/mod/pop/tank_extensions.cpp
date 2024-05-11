@@ -1054,8 +1054,8 @@ namespace Mod::Pop::Tank_Extensions
 
 	DETOUR_DECL_MEMBER(int, CTFTankBoss_GetCurrencyValue)
 	{
+		if (rc_CTFTankBoss_Event_Killed && restOfCurrency != -1) return restOfCurrency;
 		auto result = DETOUR_MEMBER_CALL(CTFTankBoss_GetCurrencyValue)();
-		if (rc_CTFTankBoss_Event_Killed && restOfCurrency != -1) return restOfCurrency; 
 		return result;
 	}
 

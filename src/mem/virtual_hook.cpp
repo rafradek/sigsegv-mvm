@@ -2,6 +2,7 @@
 #include "addr/addr.h"
 #include "mem/protect.h"
 #include "util/rtti.h"
+#include "stub/server.h"
 
 bool CVirtualHook::DoLoad()
 {
@@ -282,12 +283,15 @@ void CVirtualHookFunc::AddVirtualHook(CVirtualHookBase *hook)
 		return a->GetPriority() > b->GetPriority();
 	});
     DoHook();
+    this->m_szName = this->m_Hooks.front()->GetName();
 }
 void CVirtualHookFunc::RemoveVirtualHook(CVirtualHookBase *hook)
 {
     int prec = this->m_Hooks.size();
     this->m_Hooks.erase(std::remove(this->m_Hooks.begin(), this->m_Hooks.end(), hook), this->m_Hooks.end());
     DoHook();
+    if (!this->m_Hooks.empty())
+        this->m_szName = this->m_Hooks.front()->GetName();
 }
 
 
@@ -302,6 +306,11 @@ void CVirtualHookFunc::CleanUp()
 void CVirtualHookFunc::UnloadAll()
 {
     if (this->m_bHooked) {
+        // Check if some extension had overriden our hook, but not when the game is in shutdown/restart state as it does not matter by then
+        int state = g_HostState.GetRef().m_currentState;
+        if (this->m_pFuncFirst != *this->m_pFuncPtr && (state == 6 || state == 7)) {
+            ConColorMsg(Color(0xff, 0x20, 0x20), "[Sigsegv-MvM] Some plugin/extension had hooked a virtual %s after this extension. It should be unloaded first (but it wasn't) before this extension. This can cause issues\n", this->m_szName.c_str());
+        }
         this->m_bHooked = false;
         MemProtModifier_RX_RWX(this->m_pFuncPtr, sizeof(void **));
         *this->m_pFuncPtr = this->m_pFuncInner;
@@ -328,4 +337,5 @@ void CVirtualHookFunc::DoHook()
     }
     MemProtModifier_RX_RWX(this->m_pFuncPtr, sizeof(void **));
     *this->m_pFuncPtr = first->m_pCallback;
+    this->m_pFuncFirst = first->m_pCallback;
 }

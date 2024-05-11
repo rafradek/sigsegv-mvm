@@ -446,6 +446,8 @@ namespace Mod::Etc::Mapentity_Additions
         ActivateLoadedInput();
 	}
 
+    RefCount rc_SpecialParsedNameFail;
+
     CBaseEntity *DoSpecialParsing(const char *szName, CBaseEntity *pStartEntity, const std::function<CBaseEntity *(CBaseEntity *, const char *)>& functor)
     {
         if (szName[0] == '@' && szName[1] != '\0') {
@@ -582,8 +584,8 @@ namespace Mod::Etc::Mapentity_Additions
                 }
             }
         }
-
-        return functor(pStartEntity, szName+1);
+        SCOPED_INCREMENT(rc_SpecialParsedNameFail);
+        return functor(pStartEntity, szName);
     }
 
     std::string last_entity_name;
@@ -600,7 +602,7 @@ namespace Mod::Etc::Mapentity_Additions
 		auto entList = reinterpret_cast<CGlobalEntityList *>(this);
         if (szName == nullptr || szName[0] == '\0') return nullptr;
 
-        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return entList->FindEntityByClassname(entity, realname, filter);});
+        if (szName[0] == '@' && !rc_SpecialParsedNameFail) return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return entList->FindEntityByClassname(entity, realname, filter);});
 
         if (!cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName, filter);
 
@@ -656,7 +658,7 @@ namespace Mod::Etc::Mapentity_Additions
 
         if (szName[0] == '@' && szName[1] == 'h' && szName[2] == '@') {  return pStartEntity == nullptr ? CHandle<CBaseEntity>::FromIndex(atoi(szName+3)) : nullptr; }
 
-        if (szName[0] == '@') return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
+        if (szName[0] == '@' && !rc_SpecialParsedNameFail) return DoSpecialParsing(szName, pStartEntity, [&](CBaseEntity *entity, const char *realname) {return servertools->FindEntityByName(entity, realname, pSearchingEntity, pActivator, pCaller, pFilter);});
 
         if (szName[0] == '!' || !cvar_fast_lookup.GetBool()) return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByName)(pStartEntity, szName, pSearchingEntity, pActivator, pCaller, pFilter);
         

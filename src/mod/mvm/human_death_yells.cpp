@@ -40,13 +40,11 @@ namespace Mod::MvM::Human_Death_Yells
 		{
 			// Avoid going into the branch playing mvm sound
 
-			// Change cmp 0 to 0x55
-			buf[0x06] = 0x55;
-			// Change jnz to jz
-			buf[0x08] = 0x84;
+			/* make the conditional jump unconditional */
+			buf[0x07] = 0x90;
+			buf[0x08] = 0xe9;
 			
-			
-			mask[0x06] = 0xFF;
+			mask[0x07] = 0xFF;
 			mask[0x08] = 0xFF;
 			return true;
 		}

@@ -804,7 +804,7 @@ void CDetouredFunc::Reconfigure()
 			assert(detour->EnsureUniqueInnerPtrs());
 		}
 		
-		this->m_VirtualHookOptional = CVirtualHookBase(first->m_pCallback, CVirtualHookBase::DETOUR_HOOK);
+		this->m_VirtualHookOptional = CVirtualHookBase(first->m_pCallback, CVirtualHookBase::DETOUR_HOOK, first->GetName());
 		for (auto &[pVFuncPtr, pVT] : this->m_FoundFuncPtrAndVTablePtr) {
 			CVirtualHookFunc::Find(pVFuncPtr, pVT).AddVirtualHook(&this->m_VirtualHookOptional);
 		}
