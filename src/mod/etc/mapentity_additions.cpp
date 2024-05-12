@@ -2446,7 +2446,6 @@ namespace Mod::Etc::Mapentity_Additions
                 servertools->GetEntityFactoryDictionary()->InstallFactory(servertools->GetEntityFactoryDictionary()->FindFactory("point_teleport"), "$tf_bot_spawn");
             }
             servertools->GetEntityFactoryDictionary()->InstallFactory(new BlockLosFactory(servertools->GetEntityFactoryDictionary()->FindFactory("func_wall")), "$func_block_los");
-            Msg("Create\n");
             servertools->GetEntityFactoryDictionary()->InstallFactory(new TFBotFactory(servertools->GetEntityFactoryDictionary()->FindFactory("tf_bot")), "$tf_bot");
 
 			return true;
