@@ -86,7 +86,7 @@ jobs:
         echo "Project built."
 
     - name: Upload build
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: build/release/*.zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: build
+        path: build/release/*.zip
