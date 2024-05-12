@@ -20,6 +20,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y pip autoconf libtool nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-13-multilib
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
         echo "Dependencies installed successfully."
 
     - name: Clone and install AMBuild
@@ -79,22 +80,7 @@ jobs:
         PATH=$HOME/.local/bin:$PATH
         pip list
         echo $PATH
-        PROJECT_DIR=$(pwd)
-        CONFIGURE=$(realpath configure.py)
-        PATHS="--hl2sdk-root=$PROJECT_DIR/../alliedmodders --mms-path=$PROJECT_DIR/../alliedmodders/metamod-source --sm-path=$PROJECT_DIR/../alliedmodders/sourcemod"
-
-        mkdir -p build/release
-        pushd build/release
-        CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
-        popd
-
-        pushd build/release/optimize-only
-        CC=gcc CXX=g++ $CONFIGURE $PATHS --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --optimize-mods-only
-        popd
-
-        pushd build/release/no-mvm
-        CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --exclude-mods-mvm
-        popd
+        ./autoconfig.sh
 
         ./multibuild.sh
         echo "Project built."
