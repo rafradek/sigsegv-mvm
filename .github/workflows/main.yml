@@ -48,6 +48,7 @@ jobs:
       run: |
         pushd ..
         mkdir -p alliedmodders
+        cd alliedmodders
         git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
         git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
         git clone https://github.com/TF2-DMB/hl2sdk-tf2.git --depth 1 hl2sdk-tf2
@@ -80,10 +81,10 @@ jobs:
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
+        ambuild
         ./autoconfig.sh
         mkdir -p build/release
         cd build/release
-        ambuild
         echo "Project built."
 
     - name: Execute multibuild for packaging
