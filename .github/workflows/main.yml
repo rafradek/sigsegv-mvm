@@ -46,8 +46,7 @@ jobs:
 
     - name: Clone sourcemod and hl2sdk
       run: |
-        pushd
-        cd ..
+        pushd ..
         mkdir -p alliedmodders
         git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
         git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
@@ -60,8 +59,7 @@ jobs:
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         git submodule update --init --recursive
-        pushd
-        cd libs/udis86
+        pushd libs/udis86
         ./autogen.sh
         ./configure
         make
@@ -69,8 +67,7 @@ jobs:
 
     - name: Build Lua
       run: |
-        pushd
-        cd libs
+        pushd libs
         wget https://www.lua.org/ftp/lua-5.4.4.tar.gz
         tar -xf lua-*.tar.gz
         rm lua-*.tar.gz
