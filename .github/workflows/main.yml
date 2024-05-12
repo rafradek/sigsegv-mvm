@@ -81,7 +81,9 @@ jobs:
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
-        ambuild
+        PATH=$HOME/.local/bin:$PATH
+        pip list
+        echo $PATH
         ./autoconfig.sh
         mkdir -p build/release
         cd build/release
