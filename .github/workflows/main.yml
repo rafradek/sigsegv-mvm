@@ -85,9 +85,8 @@ jobs:
         ./multibuild.sh
         echo "Project built."
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: build/release/*.zip
-        token: ${{ secrets.GITHUB_TOKEN }}
-        draft: true
+    - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/release/*.zip
