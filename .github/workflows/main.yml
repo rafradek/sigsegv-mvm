@@ -32,6 +32,8 @@ jobs:
         git clone https://github.com/alliedmodders/ambuild --depth 1
         cd ambuild
         python -m pip install .
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
+        source ~/.bashrc
 
     - name: Print Python packages and PATH
       run: |
@@ -42,13 +44,45 @@ jobs:
         echo "Python version: $(python --version)"
         python -m site
 
-    - name: Prepare build environment
+    - name: Clone sourcemod and hl2sdk
+      run: |
+        pushd
+        cd ..
+        mkdir -p alliedmodders
+        git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
+        git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
+        git clone https://github.com/TF2-DMB/hl2sdk-tf2.git --depth 1 hl2sdk-tf2
+        git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
+        git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
+        popd
+
+    - name: Build submodules
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         git submodule update --init --recursive
+        pushd
+        cd libs/udis86
+        ./autogen.sh
+        ./configure
+        make
+        popd
+
+    - name: Build Lua
+      run: |
+        pushd
+        cd libs
+        wget https://www.lua.org/ftp/lua-5.4.4.tar.gz
+        tar -xf lua-*.tar.gz
+        rm lua-*.tar.gz
+        mv lua-* lua
+        cd lua
+        make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        popd
 
     - name: Configure and build with AMBuild
       run: |
+        echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+        export PATH=$HOME/.local/bin:$PATH
         ./autoconfig.sh
         mkdir -p build/release
         cd build/release
