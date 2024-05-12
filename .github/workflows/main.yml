@@ -84,15 +84,25 @@ jobs:
         PATH=$HOME/.local/bin:$PATH
         pip list
         echo $PATH
-        ./autoconfig.sh
-        mkdir -p build/release
-        cd build/release
-        echo "Project built."
+        PROJECT_DIR=$(pwd)
+        CONFIGURE=$(realpath configure.py)
+        PATHS=--hl2sdk-root=$PROJECT_DIR/../alliedmodders --mms-path=$PROJECT_DIR/../alliedmodders/metamod-source --sm-path=$PROJECT_DIR/../alliedmodders/sourcemod"
 
-    - name: Execute multibuild for packaging
-      run: |
+        mkdir -p build/release
+        pushd build/release
+        CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
+        popd
+
+        pushd build/release/optimize-only
+        CC=gcc CXX=g++ $CONFIGURE $PATHS --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --optimize-mods-only
+        popd
+
+        pushd build/release/no-mvm
+        CC=gcc CXX=g++ $CONFIGURE $PATHS --sdks=tf2 --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui --exclude-mods-mvm
+        popd
+
         ./multibuild.sh
-        echo "Packaging completed."
+        echo "Project built."
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
