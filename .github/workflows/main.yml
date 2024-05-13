@@ -27,7 +27,7 @@ jobs:
         git clone https://github.com/alliedmodders/ambuild --depth 1
         cd ambuild
         pip install .
-        export PATH=~/.local/bin:$PATH'
+        export PATH=~/.local/bin:$PATH
         popd
 
     - name: Clone sourcemod and hl2sdk
