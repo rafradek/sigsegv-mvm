@@ -47,6 +47,7 @@ jobs:
     - name: Build submodules
       run: |
         pushd libs/udis86
+        export ACLOCAL_PATH="/usr/local/share/libtool"
         ./autogen.sh
         ./configure
         make
