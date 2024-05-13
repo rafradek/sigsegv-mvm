@@ -7,6 +7,10 @@ on:
 
 jobs:
   build-and-package:
+    defaults:
+      run:
+        shell: bash
+
     runs-on: ubuntu-latest
     container:
       image: rafradek/ubuntu2004dev:latest
@@ -19,18 +23,9 @@ jobs:
       run: |
         git clone https://github.com/alliedmodders/ambuild --depth 1
         cd ambuild
-        python -m pip install .
+        pip install .
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
         source ~/.bashrc
-
-    - name: Print Python packages and PATH
-      run: |
-        echo "Python packages:"
-        pip list
-        echo "PATH: $PATH"
-        echo "Python location: $(which python)"
-        echo "Python version: $(python --version)"
-        python -m site
 
     - name: Clone sourcemod and hl2sdk
       run: |
