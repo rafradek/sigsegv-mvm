@@ -14,11 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: rafradek/ubuntu2004dev:latest
-      submodules: recursive
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Clone and install AMBuild
       run: |
