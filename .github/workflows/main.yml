@@ -21,11 +21,14 @@ jobs:
 
     - name: Clone and install AMBuild
       run: |
+        pushd ..
+        mkdir -p alliedmodders
+        cd alliedmodders
         git clone https://github.com/alliedmodders/ambuild --depth 1
         cd ambuild
         pip install .
-        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
-        source ~/.bashrc
+        export PATH=~/.local/bin:$PATH'
+        popd
 
     - name: Clone sourcemod and hl2sdk
       run: |
@@ -41,7 +44,7 @@ jobs:
 
     - name: Build submodules
       run: |
-        echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+        git config --global --add safe.directory .
         git submodule update --init --recursive
         pushd libs/udis86
         ./autogen.sh
