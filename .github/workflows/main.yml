@@ -14,11 +14,29 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Checkout AMBuild
+      uses: actions/checkout@v4
+      with:
+        repository: alliedmodders/ambuild
+        path: alliedmodders/ambuild
+
+    - name: Checkout Sourcemod
+      uses: actions/checkout@v4
+      with:
+        repository: alliedmodders/sourcemod
+        path: alliedmodders/sourcemod
 
     - name: Clone and install AMBuild
       run: |
-        git clone https://github.com/alliedmodders/ambuild --depth 1
-        cd ambuild
+        pwd
+        ls -l
+        cd ..
+        pwd
+        ls -l
+        cd alliedmodders/ambuild
         python -m pip install .
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
         source ~/.bashrc
@@ -47,7 +65,6 @@ jobs:
     - name: Build submodules
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
-        git submodule update --init --recursive
         pushd libs/udis86
         ./autogen.sh
         ./configure
