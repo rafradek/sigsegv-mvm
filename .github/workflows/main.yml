@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install system dependencies
       run: |
@@ -85,8 +85,20 @@ jobs:
         ./multibuild.sh
         echo "Project built."
 
-    - name: Upload build
+    - name: Upload package-linux
       uses: actions/upload-artifact@v4
       with:
-        name: build
-        path: build/release/*.zip
+        name: package-linux
+        path: build/release/package-linux.zip
+
+    - name: Upload package-linux-optimize-only
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-linux-optimize-only
+        path: build/release/package-linux-optimize-only.zip
+
+    - name: Upload package-linux-no-mvm
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-linux-no-mvm
+        path: build/release/package-linux-no-mvm.zip
