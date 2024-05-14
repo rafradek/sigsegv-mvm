@@ -47,7 +47,7 @@ jobs:
     - name: Build submodules
       run: |
         pushd libs/udis86
-        export ACLOCAL_PATH="/usr/local/share/libtool"
+        export ACLOCAL_PATH="/usr/local/share/aclocal"
         ./autogen.sh
         ./configure
         make
@@ -64,17 +64,33 @@ jobs:
         make MYCFLAGS='-m32' MYLDFLAGS='-m32'
         popd
 
-    - name: Configure and build with AMBuild
+    - name: Configure
       run: |
         echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
         export PATH=$HOME/.local/bin:$PATH
         PATH=$HOME/.local/bin:$PATH
-        pip list
-        echo $PATH
         ./autoconfig.sh
 
-        ./multibuild.sh
-        echo "Project built."
+    - name: Build full
+      run:
+        cd build/release
+        $HOME/.local/bin/ambuild 
+        cd package
+        zip -y -q -FSr ../package-linux.zip *
+
+    - name: Build no-mvm
+      run:
+        cd build/release/no-mvm
+        $HOME/.local/bin/ambuild 
+        cd package
+        zip -y -q -FSr ../package-linux-no-mvm.zip *
+
+    - name: Build optimize-only
+      run:
+        cd build/release/optimize-only
+        $HOME/.local/bin/ambuild 
+        cd package
+        zip -y -q -FSr ../package-linux-optimize-only.zip *
 
     - name: Upload package-linux
       uses: actions/upload-artifact@v4
