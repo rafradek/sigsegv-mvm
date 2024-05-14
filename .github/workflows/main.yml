@@ -12,6 +12,7 @@ jobs:
         shell: bash
 
     runs-on: ubuntu-latest
+    # Ubuntu 20.04 container with all required dependencies and gcc 13
     container:
       image: rafradek/ubuntu2004dev:latest
 
@@ -82,14 +83,14 @@ jobs:
         cd build/release/no-mvm
         ambuild 
         cd package
-        zip -y -q -FSr ../package-linux-no-mvm.zip *
+        zip -y -q -FSr ../../package-linux-no-mvm.zip *
 
     - name: Build optimize-only
       run: |
         cd build/release/optimize-only
         ambuild 
         cd package
-        zip -y -q -FSr ../package-linux-optimize-only.zip *
+        zip -y -q -FSr ../../package-linux-optimize-only.zip *
 
     - name: Upload package-linux
       uses: actions/upload-artifact@v4
