@@ -47,7 +47,6 @@ jobs:
     - name: Build submodules
       run: |
         pushd libs/udis86
-        export ACLOCAL_PATH="/usr/local/share/aclocal"
         ./autogen.sh
         ./configure
         make
@@ -72,21 +71,21 @@ jobs:
         ./autoconfig.sh
 
     - name: Build full
-      run:
+      run: |
         cd build/release
         $HOME/.local/bin/ambuild 
         cd package
         zip -y -q -FSr ../package-linux.zip *
 
     - name: Build no-mvm
-      run:
+      run: |
         cd build/release/no-mvm
         $HOME/.local/bin/ambuild 
         cd package
         zip -y -q -FSr ../package-linux-no-mvm.zip *
 
     - name: Build optimize-only
-      run:
+      run: |
         cd build/release/optimize-only
         $HOME/.local/bin/ambuild 
         cd package
