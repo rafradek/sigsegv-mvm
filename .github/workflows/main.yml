@@ -1,0 +1,118 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-package:
+    defaults:
+      run:
+        shell: bash
+
+    runs-on: ubuntu-latest
+    # Ubuntu 20.04 container with all required dependencies and gcc 13
+    container:
+      image: rafradek/ubuntu2004dev:latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Clone and install AMBuild
+      run: |
+        pushd ..
+        mkdir -p alliedmodders
+        cd alliedmodders
+        git clone https://github.com/alliedmodders/ambuild --depth 1
+        cd ambuild
+        pip install .
+        export PATH=~/.local/bin:$PATH
+        popd
+
+    - name: Clone sourcemod and hl2sdk
+      run: |
+        pushd ..
+        mkdir -p alliedmodders
+        cd alliedmodders
+        git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
+        git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
+        git clone https://github.com/TF2-DMB/hl2sdk-tf2.git --depth 1 hl2sdk-tf2
+        git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
+        git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
+        popd
+
+    - name: Build submodules
+      run: |
+        pushd libs/udis86
+        ./autogen.sh
+        ./configure
+        make
+        popd
+
+    - name: Build Lua
+      run: |
+        pushd libs
+        wget https://www.lua.org/ftp/lua-5.4.4.tar.gz
+        tar -xf lua-*.tar.gz
+        rm lua-*.tar.gz
+        mv lua-* lua
+        cd lua
+        make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        popd
+
+    - name: Configure
+      run: |
+        echo "export PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+        export PATH=$HOME/.local/bin:$PATH
+        PATH=$HOME/.local/bin:$PATH
+        ./autoconfig.sh
+
+    - name: Build full
+      run: |
+        cd build/release
+        ambuild 
+        cd package
+        zip -y -q -FSr ../package-linux.zip *
+
+    - name: Build no-mvm
+      run: |
+        cd build/release/no-mvm
+        ambuild 
+        cd package
+        zip -y -q -FSr ../../package-linux-no-mvm.zip *
+
+    - name: Build optimize-only
+      run: |
+        cd build/release/optimize-only
+        ambuild 
+        cd package
+        zip -y -q -FSr ../../package-linux-optimize-only.zip *
+
+    - name: Upload package-linux
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-linux
+        path: build/release/package-linux.zip
+
+    - name: Upload package-linux-optimize-only
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-linux-optimize-only
+        path: build/release/package-linux-optimize-only.zip
+
+    - name: Upload package-linux-no-mvm
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-linux-no-mvm
+        path: build/release/package-linux-no-mvm.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/release/*.zip
+        token: ${{ secrets.GITHUB_TOKEN }}
+        draft: true
