@@ -336,7 +336,7 @@ class IVideoRecorder;
 #include "sdkcsgo/basetypes.h"
 #else
 #include "sdk2013/platform.h"
-#include "sdk2013/const.h"
+#include <const.h>
 #include <interface.h>
 #include "sdk2013/commonmacros.h"
 #include "sdk2013/basetypes.h"
@@ -584,7 +584,6 @@ WARN_RESTORE()
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
 #else
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_CONST_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_BASETYPES_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_COLOR_H);

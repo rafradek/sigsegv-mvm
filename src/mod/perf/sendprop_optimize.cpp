@@ -1565,7 +1565,6 @@ namespace Mod::Perf::SendProp_Optimize
 		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
 		DETOUR_MEMBER_CALL(CBaseCombatWeapon_OnActiveStateChanged)(oldState);
         int state = weapon->m_iState;
-        Msg("OnActiveStateChanged %d %d %d %d %d %d\n", weapon->GetOwnerEntity(), ToBasePlayer(weapon->GetOwnerEntity()), state, weapon->edict()->m_fStateFlags & FL_EDICT_DONTSEND, weapon->edict()->m_fStateFlags & FL_EDICT_ALWAYS, weapon->edict()->m_fStateFlags & FL_EDICT_PVSCHECK);
         if (state == WEAPON_IS_ACTIVE) {
             weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
             auto player = ToBasePlayer(weapon->GetOwnerEntity());
@@ -1574,7 +1573,6 @@ namespace Mod::Perf::SendProp_Optimize
                 CBaseEntity *viewmodel = player->GetViewModel(0, false);
                 if (viewmodel != nullptr) {
                     viewmodel->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
-                    Msg("OnActiveStateChanged view %d %d %d\n", weapon->edict()->m_fStateFlags & FL_EDICT_DONTSEND, weapon->edict()->m_fStateFlags & FL_EDICT_ALWAYS, weapon->edict()->m_fStateFlags & FL_EDICT_PVSCHECK);
                 }
             }
         }

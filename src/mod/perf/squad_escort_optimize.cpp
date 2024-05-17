@@ -72,7 +72,8 @@ namespace Mod::Perf::Squad_Escort_Optimize
 
         if (result.transition != ActionTransition::CONTINUE) {
             if (result.action != nullptr && result.action != action && result.action != action->m_actionToDoAfterSquadDisbands) {
-                delete result.action;
+                delete action->m_actionToDoAfterSquadDisbands;
+                action->m_actionToDoAfterSquadDisbands = result.action;
             }
             update_mark.erase(find);
             return;
@@ -86,12 +87,14 @@ namespace Mod::Perf::Squad_Escort_Optimize
 
         bool nexttick = nextbot->m_bScheduledForNextTick;
         
+        auto action = reinterpret_cast<CTFBotEscortSquadLeader *>(this);
+
         auto result = DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_Update)(actor, dt);
 
         if (!updatecall) {
             if (result.transition == ActionTransition::CONTINUE)
             {
-                update_mark[actor] = reinterpret_cast<CTFBotEscortSquadLeader *>(this);
+                update_mark[actor] = action;
                 actor->ThinkSet(&ThinkFunc_SquadAIUpdate::Update, gpGlobals->curtime + 0.03f, "SquadAIUpdate1");
                 actor->ThinkSet(&ThinkFunc_SquadAIUpdate::Update, gpGlobals->curtime + 0.06f, "SquadAIUpdate2");
                 actor->ThinkSet(&ThinkFunc_SquadAIUpdate::Update, gpGlobals->curtime + 0.09f, "SquadAIUpdate3");
@@ -108,7 +111,7 @@ namespace Mod::Perf::Squad_Escort_Optimize
 
     void OnDestroy(CTFBotEscortSquadLeader *ai)
     {
-        CTFBot *actor = ai->GetActorPublic();
+        CTFBot *actor = ai->GetActor();
         if (actor != nullptr)
         {
             update_mark.erase(actor);
