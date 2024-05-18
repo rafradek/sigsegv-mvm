@@ -46,6 +46,7 @@ namespace Mod::MvM::YER_Unnerf
 			/* overwrite the CMP and jnz instruction with NOPs */
 			buf.SetRange(0x09, 13, 0x90);
 			
+			mask.SetRange(0x09, 13, 0xff);
 			return true;
 		}
 	};

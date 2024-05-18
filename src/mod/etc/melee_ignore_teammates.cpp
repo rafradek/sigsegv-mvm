@@ -115,7 +115,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
 		if (rc_CTFWeaponBaseMelee_Smack > 0 && V_stricmp(attr, "melee_cleave_attack") == 0) {
-			return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, "projectile_penetration", ent, vec, b1);
+			value = DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, "projectile_penetration", ent, vec, b1);
 		}
 		
 		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
