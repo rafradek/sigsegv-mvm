@@ -675,7 +675,7 @@
 				"Action<CTFBot>::BuildDecoratedName [clone]"
 				{
 					type "sym regex"
-					sym  "_ZNK6ActionI6CTFBotE18BuildDecoratedNameEPcPKS1_.\\isra\\..*"
+					sym  "_ZNK6ActionI6CTFBotE18BuildDecoratedNameEPcPKS1_\\.isra\\..*"
 				}
 				"Action<CTFBot>::DebugString"
 				{
@@ -1343,7 +1343,7 @@
 				"Action<CZombie>::BuildDecoratedName [clone]"
 				{
 					type "sym regex"
-					sym  "_ZNK6ActionI7CZombieE18BuildDecoratedNameEPcPKS1_.\\isra\\..*"
+					sym  "_ZNK6ActionI7CZombieE18BuildDecoratedNameEPcPKS1_\\.isra\\..*"
 				}
 				"Action<CZombie>::DebugString"
 				{

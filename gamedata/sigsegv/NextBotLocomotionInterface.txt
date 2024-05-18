@@ -16,7 +16,7 @@
 				"ILocomotion::TraceHull"
 				{
 					type "sym regex"
-					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace.\\isra\\..*"
+					sym  "_ZNK11ILocomotion9TraceHullERK6VectorS2_S2_S2_jP12ITraceFilterP10CGameTrace\\.isra\\..*"
 				}
 				
 				"CTFBaseBossLocomotion::FaceTowards"
