@@ -576,9 +576,7 @@ class ExtensionConfig(object):
     binary = project.Configure(name, '{0} - {1}'.format(self.tag, sdk.name))
     return self.ConfigureForHL2(binary, sdk)
 
-Extension = ExtensionConfig()
-Extension.detectSDKs()
-Extension.configure()
+
 
 # Add additional buildscripts here
 BuildScripts = [
@@ -590,4 +588,34 @@ if builder.backend == 'amb2':
     'PackageScript',
   ]
 
-builder.Build(BuildScripts, { 'Extension': Extension})
+if builder.options.build_all:
+  Extension = ExtensionConfig()
+  builder.options.sdks = "tf2"
+  Extension.detectSDKs()
+  Extension.configure()
+
+  builder.Build(BuildScripts, { 'Extension': Extension, 'PackageDirSuffix': ''})
+
+  builder.options.exclude_mods_mvm = True
+  ExtensionNoMvM = ExtensionConfig()
+  builder.options.sdks = "tf2"
+  ExtensionNoMvM.detectSDKs()
+  ExtensionNoMvM.configure()
+
+  builder.Build(BuildScripts, { 'Extension': ExtensionNoMvM, 'PackageDirSuffix': '-no-mvm'})
+
+  builder.options.exclude_mods_mvm = False
+  builder.options.optimize_mods_only = True
+  
+  builder.options.sdks = "all"
+  ExtensionOptimizeOnly = ExtensionConfig()
+  ExtensionOptimizeOnly.detectSDKs()
+  ExtensionOptimizeOnly.configure()
+
+  builder.Build(BuildScripts, { 'Extension': ExtensionOptimizeOnly, 'PackageDirSuffix': '-optimize-only'})
+else:
+  Extension = ExtensionConfig()
+  Extension.detectSDKs()
+  Extension.configure()
+
+  builder.Build(BuildScripts, { 'Extension': Extension, 'PackageDirSuffix': ''})

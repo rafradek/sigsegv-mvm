@@ -1,35 +1,26 @@
 #!/bin/bash
 
-pushd build/release
+cd build/release
+ambuild
+
+pushd package
 	(
-		ambuild &&
-		(
-			cd package
-			rm -f ../package-linux.zip
-			type zip >/dev/null 2>&1 && zip -y -q -FSr ../package-linux.zip *
-		)
+		rm -f ../package-linux.zip
+		type zip >/dev/null 2>&1 && zip -y -q -FSr ../package-linux.zip *
 	) &
 popd
 
-pushd build/release/optimize-only
+pushd package-no-mvm
 	(
-		ambuild &&
-		(
-			cd package
-			rm -f ../../package-linux-optimize-only.zip
-			type zip >/dev/null 2>&1 && zip -y -q -FSr ../../package-linux-optimize-only.zip *
-		)
+		rm -f ../package-linux-no-mvm.zip
+		type zip >/dev/null 2>&1 && zip -y -q -FSr ../package-linux-no-mvm.zip *
 	) &
 popd
 
-pushd build/release/no-mvm
+pushd package-optimize-only
 	(
-		ambuild &&
-		(
-			cd package
-			rm -f ../../package-linux-no-mvm.zip
-			type zip >/dev/null 2>&1 && zip -y -q -FSr ../../package-linux-no-mvm.zip *
-		)
+		rm -f ../package-linux-optimize-only.zip
+		type zip >/dev/null 2>&1 && zip -y -q -FSr ../package-linux-optimize-only.zip *
 	) &
 popd
 

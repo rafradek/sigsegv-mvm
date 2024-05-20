@@ -24,6 +24,7 @@ builder.options.add_option('--exclude-mods-debug', action='store_const', const='
 builder.options.add_option('--exclude-mods-visualize', action='store_const', const='1', dest='exclude_mods_visualize', help='Don\'t compile any mods in the Visualize group')
 builder.options.add_option('--exclude-mods-mvm', action='store_const', const='1', dest='exclude_mods_mvm', help='Don\'t compile any mods in the MvM group')
 builder.options.add_option('--optimize-mods-only', action='store_const', const='1', dest='optimize_mods_only', help='Only compile optimize mods')
+builder.options.add_option('--build-all', action='store_const', const='1', dest='build_all', help='Build additional optimize-mods and no-mvm packages')
 builder.options.add_option('--exclude-vgui', action='store_const', const='1', dest='exclude_mods_vgui', help='Don\'t compile any mods in the VGUI group')
 builder.options.add_option('-s', '--sdks', default='all', dest='sdks', help='Build against specified SDKs; valid args are "all", "present", or comma-delimited list of engine names (default: %default)')
 

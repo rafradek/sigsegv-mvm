@@ -613,6 +613,37 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return ret;
 	}
 
+	void StateChanged(CWaveSpawnPopulator *wavespawn, CWaveSpawnPopulator::InternalStateType state) {
+		auto &data = wavespawns[wavespawn];
+		data.state = state;
+		switch (state) {
+			case CWaveSpawnPopulator::PRE_SPAWN_DELAY:
+				DisplayMessages(data.start_spawn_message);
+				break;
+			case CWaveSpawnPopulator::SPAWNING:
+				DisplayMessages(data.first_spawn_message);
+				data.hadSpawnState = true;
+				break;
+			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
+				if (data.hadSpawnState) {
+					if (wavespawn->extra->m_bHasTFBotSpawner)
+						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
+					wavespawn->m_myReservedSlotCount = 0;
+					DisplayMessages(data.last_spawn_message);
+				}
+				break;
+			case CWaveSpawnPopulator::DONE:
+				if (data.hadSpawnState) {
+					if (wavespawn->extra->m_bHasTFBotSpawner)
+						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
+					wavespawn->m_myReservedSlotCount = 0;
+					DisplayMessages(data.done_message);
+				}
+				break;
+		}
+		return;
+	}
+
 	bool allWaiting = true;
 	CWaveSpawnPopulator *updatingWaveSpawn = nullptr;
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
@@ -649,8 +680,13 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			slotsRestore = true;
 		}
 
+		auto statePre = wavespawn->m_state;
 		updatingWaveSpawn = wavespawn;
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+		// CWaveSpawnPopulator::SetState got partially inlined (for other states than done and wait for dead), need to manually check for changes
+		if (statePre != wavespawn->m_state && wavespawn->m_state != CWaveSpawnPopulator::DONE && wavespawn->m_state != CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD) {
+			StateChanged(wavespawn, wavespawn->m_state);
+		}
 		updatingWaveSpawn = nullptr;
 
 		if (slotsRestore) {
@@ -664,32 +700,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (state == wavespawn->m_state)
 			return;
 			
-		wavespawns[wavespawn].state = state;
-		switch (state) {
-			case CWaveSpawnPopulator::PRE_SPAWN_DELAY:
-				DisplayMessages(wavespawns[wavespawn].start_spawn_message);
-				break;
-			case CWaveSpawnPopulator::SPAWNING:
-				DisplayMessages(wavespawns[wavespawn].first_spawn_message);
-				wavespawns[wavespawn].hadSpawnState = true;
-				break;
-			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
-				if (wavespawns[wavespawn].hadSpawnState) {
-					if (wavespawn->extra->m_bHasTFBotSpawner)
-						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
-					wavespawn->m_myReservedSlotCount = 0;
-					DisplayMessages(wavespawns[wavespawn].last_spawn_message);
-				}
-				break;
-			case CWaveSpawnPopulator::DONE:
-				if (wavespawns[wavespawn].hadSpawnState) {
-					if (wavespawn->extra->m_bHasTFBotSpawner)
-						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
-					wavespawn->m_myReservedSlotCount = 0;
-					DisplayMessages(wavespawns[wavespawn].done_message);
-				}
-				break;
-		}
+		StateChanged(wavespawn, state);
 		
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
 		

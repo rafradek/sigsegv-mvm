@@ -1,6 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os, sys
 
+print("name " + Extension.name + " suffix " + PackageDirSuffix)
 projectName = Extension.name
 
 # smsdk_ext.cpp will be automatically added later

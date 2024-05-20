@@ -387,6 +387,7 @@ MemberFuncThunk<const CNavMesh *, bool, const Vector&, float *, Vector *>       
 // This is inlined in the code
 // MemberFuncThunk<CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>               CNavMesh::ft_CollectAreasOverlappingExtent_CTFNavArea("CNavMesh::CollectAreasOverlappingExtent<CTFNavArea>");
 MemberFuncThunk<CNavMesh *, int>                                                           CNavMesh::ft_Load                                    ("CNavMesh::Load");
+MemberFuncThunk<      CNavMesh *, void, bool>                                              CNavMesh::ft_BeginGeneration                         ("CNavMesh::BeginGeneration");
 
 
 #ifdef SE_IS_TF2

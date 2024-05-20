@@ -380,6 +380,7 @@ public:
 	CNavArea *GetNearestNavArea(CBaseEntity *pEntity, int nFlags = GETNAVAREA_CHECK_GROUND, float maxDist = 10000.0f) const                                                { return ft_GetNearestNavArea_ent                   (this, pEntity, nFlags, maxDist); }
 	bool GetGroundHeight(const Vector& pos, float *height, Vector *normal = nullptr) const                                                                                 { return ft_GetGroundHeight                         (this, pos, height, normal); }
 	int Load()                                                                                                                                                             { return ft_Load                                    (this); }
+	void BeginGeneration(bool incremental)                                                                                                                                 { return ft_BeginGeneration                         (this, incremental); }
 #if TOOLCHAIN_FIXES
 	void CollectAreasOverlappingExtent(const Extent& extent, CUtlVector<CTFNavArea *> *outVector)                                                                          {        ft_CollectAreasOverlappingExtent_CTFNavArea(this, extent, outVector); }
 #endif
@@ -393,6 +394,7 @@ private:
 	// This is inlined in the code
 	// static MemberFuncThunk<      CNavMesh *, void, const Extent&, CUtlVector<CTFNavArea *> *>         ft_CollectAreasOverlappingExtent_CTFNavArea;
 	static MemberFuncThunk<      CNavMesh *, int>                                                     ft_Load;
+	static MemberFuncThunk<      CNavMesh *, void, bool>                                              ft_BeginGeneration;
 };
 
 #ifdef SE_IS_TF2

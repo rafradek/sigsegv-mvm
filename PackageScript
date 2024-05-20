@@ -3,7 +3,7 @@ import os
 
 # This is where the files will be output to
 # package is the default
-builder.SetBuildFolder('package')
+builder.SetBuildFolder('package' + PackageDirSuffix)
 
 # Add any folders you need to this list
 folder_list = [

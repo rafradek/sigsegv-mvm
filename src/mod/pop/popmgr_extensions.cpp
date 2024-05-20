@@ -1166,6 +1166,32 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_BoughtLoadoutItems = Mod::Etc::Mapentity_Additions::change_level_info.boughtLoadoutItems;
 		}
 	}
+	
+	bool ShouldDropSpellPickup(CBasePlayer *killed)
+	{
+		if (IsMannVsMachineMode()) {
+			
+			CTFBot *bot = ToTFBot(killed);
+			if (bot == nullptr) return false;
+
+			// Prevent popmgr_extensions from spawning default spell
+			if (killed->GetCustomVariableInt<"spelldropped">() == gpGlobals->tickcount) return false;
+
+			if (!state.m_SpellsEnabled.Get()) return false;
+			if (state.m_iSpellDropForTeam != 0 && bot->GetTeamNumber() != state.m_iSpellDropForTeam) return false;
+
+			float rnd  = RandomFloat(0.0f, 1.0f);
+			float rate = (bot->IsMiniBoss() ? state.m_flSpellDropRateGiant : state.m_flSpellDropRateCommon);
+			
+			if (rnd > rate) {
+	//			DevMsg("  %.3f > %.3f, returning false\n", rnd, rate);
+				return false;
+			}
+			
+	//		DevMsg("  %.3f <= %.3f, returning true\n", rnd, rate);
+			return true;
+		}
+	}
 
 	bool bot_killed_check = false;
 	RefCount rc_CTFGameRules_PlayerKilled;
@@ -1186,31 +1212,10 @@ namespace Mod::Pop::PopMgr_Extensions
 				object->m_iKills -= 4;
 			}
 		}
-	}
-	
-	DETOUR_DECL_MEMBER(bool, CTFGameRules_ShouldDropSpellPickup)
-	{
-	//	DevMsg("CTFGameRules::ShouldDropSpellPickup\n");
-		
-		if (IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
-			CTFBot *bot = ToTFBot(killed);
-			if (bot == nullptr) return false;
-			if (!state.m_SpellsEnabled.Get()) return false;
-			if (state.m_iSpellDropForTeam != 0 && bot->GetTeamNumber() != state.m_iSpellDropForTeam) return false;
 
-			float rnd  = RandomFloat(0.0f, 1.0f);
-			float rate = (bot->IsMiniBoss() ? state.m_flSpellDropRateGiant : state.m_flSpellDropRateCommon);
-			
-			if (rnd > rate) {
-	//			DevMsg("  %.3f > %.3f, returning false\n", rnd, rate);
-				return false;
-			}
-			
-	//		DevMsg("  %.3f <= %.3f, returning true\n", rnd, rate);
-			return true;
+		if (ShouldDropSpellPickup(killed)) {
+			TFGameRules()->DropSpellPickup(killed->GetAbsOrigin(), 0);
 		}
-		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ShouldDropSpellPickup)();
 	}
 	
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFGameRules_DropSpellPickup, const Vector& where, int tier)
@@ -6906,7 +6911,6 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_IsUsingSpells,                    "CTFGameRules::IsUsingSpells");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_ReapplyItemUpgrades,        "CTFPlayer::ReapplyItemUpgrades", LOWEST);

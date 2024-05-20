@@ -71,26 +71,9 @@ jobs:
         PATH=$HOME/.local/bin:$PATH
         ./autoconfig.sh
 
-    - name: Build full
+    - name: Build
       run: |
-        cd build/release
-        ambuild 
-        cd package
-        zip -y -q -FSr ../package-linux.zip *
-
-    - name: Build no-mvm
-      run: |
-        cd build/release/no-mvm
-        ambuild 
-        cd package
-        zip -y -q -FSr ../../package-linux-no-mvm.zip *
-
-    - name: Build optimize-only
-      run: |
-        cd build/release/optimize-only
-        ambuild 
-        cd package
-        zip -y -q -FSr ../../package-linux-optimize-only.zip *
+        ./multibuild.sh
 
     - name: Upload package-linux
       uses: actions/upload-artifact@v4

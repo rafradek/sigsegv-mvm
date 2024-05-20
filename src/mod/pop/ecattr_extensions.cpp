@@ -2537,7 +2537,8 @@ namespace Mod::Pop::ECAttr_Extensions
 				float rnd  = RandomFloat(0.0f, 1.0f);
 				float rate_rare = data->spell_drop_rate_rare;
 				float rate_common = rate_rare + data->spell_drop_rate_common;
-				
+				// Prevent popmgr_extensions from spawning default spell
+				killed->SetCustomVariable<"spelldropped">(Variant(gpGlobals->tickcount));
 				if (rnd < rate_rare) {
 					TFGameRules()->DropSpellPickup(pVictim->GetAbsOrigin(), 1);
 				}
@@ -2550,21 +2551,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 	}
-	
-	DETOUR_DECL_MEMBER(bool, CTFGameRules_ShouldDropSpellPickup)
-	{
-	//	DevMsg("CTFGameRules::ShouldDropSpellPickup\n");
-		
-		if (TFGameRules()->IsMannVsMachineMode() && rc_CTFGameRules_PlayerKilled > 0) {
-			auto *data = GetDataForBot(killed);
-			if (data != nullptr && (data->spell_drop)) {
-				return false;
-			}
-		}
-		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ShouldDropSpellPickup)();
-	}
-	
+
 	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayStepSound, Vector& vecOrigin, surfacedata_t *psurface, float fvol, bool force)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -2833,8 +2820,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_PressCrouchButton, "NextBotPlayer<CTFPlayer>::PressCrouchButton");
 			MOD_ADD_DETOUR_MEMBER(NextBotPlayer_CTFPlayer_ReleaseCrouchButton, "NextBotPlayer<CTFPlayer>::ReleaseCrouchButton");
 			
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
-			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_ShouldDropSpellPickup,            "CTFGameRules::ShouldDropSpellPickup", HIGH);
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled",HIGH);
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CBasePlayer_PlayStepSound,                     "CBasePlayer::PlayStepSound",     HIGH);
 
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage_Alive, "CTFPlayer::OnTakeDamage_Alive");
