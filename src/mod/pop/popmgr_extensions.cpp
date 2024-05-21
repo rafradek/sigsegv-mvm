@@ -1191,6 +1191,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	//		DevMsg("  %.3f <= %.3f, returning true\n", rnd, rate);
 			return true;
 		}
+		return false;
 	}
 
 	bool bot_killed_check = false;
@@ -6270,47 +6271,66 @@ namespace Mod::Pop::PopMgr_Extensions
 		"LuaScript",
 		"LuaScriptFile"
 	};
-	DETOUR_DECL_MEMBER(void, KeyValues_MergeBaseKeys, CUtlVector<KeyValues *> &keys)
+	KeyValues *lastMergedKeyValues = nullptr;
+	RefCount rc_KeyValues_LoadFromBuffer;
+	RefCount rc_KeyValues_RecursiveMergeKeyValues;
+	DETOUR_DECL_MEMBER(void, KeyValues_RecursiveMergeKeyValues, KeyValues *included)
 	{
-		if (reading_popfile) {
+		SCOPED_INCREMENT(rc_KeyValues_RecursiveMergeKeyValues);
+		if (reading_popfile && rc_KeyValues_RecursiveMergeKeyValues <= 1 && rc_KeyValues_LoadFromBuffer) {
 			auto kv = reinterpret_cast<KeyValues *>(this);
 			KeyValues *appendKvFirst = nullptr;
 			KeyValues *appendKvLast = nullptr;
-			for (int i = 0; i < keys.Count(); i++) {
-				std::vector<KeyValues *> del_kv;
-				FOR_EACH_SUBKEY(keys[i], subkey) {
-					auto name = subkey->GetName();
-					for (size_t j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
-						if (FStrEq(name, include_instead_of_merging_key_names[j])) {
-							auto kvCopy = subkey->MakeCopy();
-							if (appendKvFirst == nullptr) {
-								appendKvFirst = kvCopy;
-							}
-							if (appendKvLast != nullptr) {
-								appendKvLast->SetNextKey(kvCopy);
-							}
-							appendKvLast = kvCopy;
-							del_kv.push_back(subkey);
+
+			std::vector<KeyValues *> del_kv;
+			FOR_EACH_SUBKEY(included, subkey) {
+				auto name = subkey->GetName();
+				for (size_t j = 0; j < ARRAYSIZE(include_instead_of_merging_key_names); j++) {
+					if (FStrEq(name, include_instead_of_merging_key_names[j])) {
+						auto kvCopy = subkey->MakeCopy();
+						if (appendKvFirst == nullptr) {
+							appendKvFirst = kvCopy;
 						}
+						if (appendKvLast != nullptr) {
+							appendKvLast->SetNextKey(kvCopy);
+						}
+						appendKvLast = kvCopy;
+						del_kv.push_back(subkey);
 					}
 				}
-				for (auto subkey : del_kv) {
-				//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
-					keys[i]->RemoveSubKey(subkey);
-					subkey->deleteThis();
-				}
 			}
+			for (auto subkey : del_kv) {
+			//	DevMsg("Deleting key \"%s\"\n", subkey->GetName());
+				included->RemoveSubKey(subkey);
+				subkey->deleteThis();
+			}
+
 			if (appendKvFirst != nullptr) {
-				if (kv->GetFirstSubKey() != nullptr) {
-					appendKvLast->SetNextKey(kv->GetFirstSubKey()->GetNextKey());
-					kv->GetFirstSubKey()->SetNextKey(appendKvFirst);
+				if (lastMergedKeyValues != nullptr) {
+					appendKvLast->SetNextKey(lastMergedKeyValues->GetNextKey());
+					lastMergedKeyValues->SetNextKey(appendKvFirst);
 				}
 				else {
-					kv->AddSubKey(appendKvFirst);
+					if (kv->GetFirstSubKey() != nullptr) {
+						appendKvLast->SetNextKey(kv->GetFirstSubKey()->GetNextKey());
+						kv->GetFirstSubKey()->SetNextKey(appendKvFirst);
+					}
+					else {
+						kv->AddSubKey(appendKvFirst);
+					}
+					lastMergedKeyValues = appendKvLast;
 				}
+				
 			}
 		}
-		DETOUR_MEMBER_CALL(KeyValues_MergeBaseKeys)(keys);
+		DETOUR_MEMBER_CALL(KeyValues_RecursiveMergeKeyValues)(included);
+	}
+
+	DETOUR_DECL_MEMBER(bool, KeyValues_LoadFromBuffer, char const *resourceName, CUtlBuffer &buf, IBaseFileSystem* pFileSystem, const char *pPathID)
+	{
+		SCOPED_INCREMENT(rc_KeyValues_LoadFromBuffer);
+		lastMergedKeyValues = nullptr;
+		return DETOUR_MEMBER_CALL(KeyValues_LoadFromBuffer)(resourceName, buf, pFileSystem, pPathID);
 	}
 
 	RefCount rc_CPopulationManager_IsValidPopfile;
@@ -7028,7 +7048,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetCheckpoint, "CPopulationManager::SetCheckpoint");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetEntityForLoadoutSlot, "CTFPlayer::GetEntityForLoadoutSlot");
             MOD_ADD_DETOUR_MEMBER(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, "CTFPlayerSharedUtils::GetEconItemViewByLoadoutSlot");
-            MOD_ADD_DETOUR_MEMBER(KeyValues_MergeBaseKeys, "KeyValues::MergeBaseKeys");
+            MOD_ADD_DETOUR_MEMBER(KeyValues_RecursiveMergeKeyValues, "KeyValues::RecursiveMergeKeyValues");
+            MOD_ADD_DETOUR_MEMBER(KeyValues_LoadFromBuffer, "KeyValues::LoadFromBuffer");
 			
 			
             //MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateHands, "CTFWeaponBase::UpdateHands");
