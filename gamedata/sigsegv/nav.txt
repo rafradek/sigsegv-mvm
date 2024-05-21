@@ -65,6 +65,11 @@
 					type "sym"
 					sym  "_ZN8CNavMesh4LoadEv"
 				}
+				"CNavMesh::BeginGeneration"
+				{
+					type "sym"
+					sym  "_ZN8CNavMesh15BeginGenerationEb"
+				}
 				
 				"CTFNavMesh::CollectBuiltObjects"
 				{

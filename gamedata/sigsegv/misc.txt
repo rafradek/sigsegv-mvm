@@ -354,6 +354,16 @@
 					type "sym"
 					sym  "_ZN9KeyValues13MergeBaseKeysER10CUtlVectorIPS_10CUtlMemoryIS1_iEE"
 				}
+				"KeyValues::RecursiveMergeKeyValues"
+				{
+					type "sym"
+					sym  "_ZN9KeyValues23RecursiveMergeKeyValuesEPS_"
+				}
+				"KeyValues::LoadFromBuffer"
+				{
+					type "sym"
+					sym  "_ZN9KeyValues14LoadFromBufferEPKcR10CUtlBufferP15IBaseFileSystemS1_"
+				}
 				
 				"CBasePlayer::EyeVectors"
 				{
