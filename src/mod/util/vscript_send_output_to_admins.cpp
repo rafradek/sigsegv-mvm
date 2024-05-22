@@ -24,7 +24,6 @@ namespace Mod::Util::VScript_Send_Output_To_Admins
 	};
 
 	int lastErrorTick = 0; 
-	ITimer *messageTimer = nullptr;
 	bool Error(ScriptErrorLevel_t eLevel, const char *text) {
 		int errorsNumDisplay = 0;
 		// Error is called per line, count multiple lines as one error
@@ -48,7 +47,7 @@ namespace Mod::Util::VScript_Send_Output_To_Admins
 		return true;
 	};
 
-    class CMod : public IMod, IFrameUpdatePostEntityThinkListener
+    class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
 		CMod() : IMod("Util:VScript_Send_Output_To_Admins")
@@ -56,10 +55,14 @@ namespace Mod::Util::VScript_Send_Output_To_Admins
 
 		}
 
-		virtual bool ShouldReceiveCallbacks() const override { return errorCounter > 0 && (lastNotifyTime + 5.0f < gpGlobals->curtime || gpGlobals->curtime < lastNotifyTime); }
+		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 		
 		virtual void FrameUpdatePostEntityThink() override
 		{
+			if (errorCounter == 0) return;
+
+			if (gpGlobals->curtime >= lastNotifyTime && lastNotifyTime + 5.0f > gpGlobals->curtime) return;
+
 			ForEachPlayer([](CBasePlayer *player){
 				if (PlayerIsSMAdmin(player)) {
 					PrintToChat(errorCounter > 1 ? CFmtStr("%d VScript errors had occured. Check console for details", errorCounter) : "A VScript error had occured. Check console for details", player);
@@ -69,15 +72,25 @@ namespace Mod::Util::VScript_Send_Output_To_Admins
 			errorCounter = 0;
 		}
 
-		virtual void OnEnable() override {
+		virtual void LevelInitPreEntity() override {
+			if (g_pScriptVM != nullptr) {
+				g_pScriptVM->SetOutputCallback(&Output);
+				g_pScriptVM->SetErrorCallback(&Error);
+			}
+		}
 
-			g_pScriptVM->SetOutputCallback(&Output);
-			g_pScriptVM->SetErrorCallback(&Error);
+		virtual void OnEnable() override {
+			if (g_pScriptVM != nullptr) {
+				g_pScriptVM->SetOutputCallback(&Output);
+				g_pScriptVM->SetErrorCallback(&Error);
+			}
 		}
 
 		virtual void OnDisable() override {
-			g_pScriptVM->SetOutputCallback(nullptr);
-			g_pScriptVM->SetErrorCallback(nullptr);
+			if (g_pScriptVM != nullptr) {
+				g_pScriptVM->SetOutputCallback(nullptr);
+				g_pScriptVM->SetErrorCallback(nullptr);
+			}
 		}
 	};
 	CMod s_Mod;
