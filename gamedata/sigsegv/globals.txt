@@ -137,6 +137,7 @@
 				"PackRatios" "PackRatios"
 
 				"CBaseEntity::m_pPredictionPlayer" "_ZN11CBaseEntity19m_pPredictionPlayerE"
+				"g_pScriptVM" "g_pScriptVM"
 				
 			}
 			
