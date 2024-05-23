@@ -5686,7 +5686,7 @@ namespace Mod::Attr::Custom_Attributes
 			value.m_Float = attribute->GetDefaultValue();
 		}
 	}
-	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list);
+	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list, bool ifProviding = true);
 
 	bool attribute_manager_no_clear_cache;
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
@@ -5695,7 +5695,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		auto list = reinterpret_cast<CAttributeList *>(this);
 		
-		auto owner = GetPlayerOwnerOfAttributeList(list);
+		auto owner = GetPlayerOwnerOfAttributeList(list, false);
 		if (owner != nullptr) {
 			auto mod = owner->GetEntityModule<AddCondAttributeImmunity>("addcondimmunity");
 			if (mod != nullptr && std::find(mod->attributes.begin(), mod->attributes.end(), pAttrDef) != mod->attributes.end()) return;
@@ -6293,11 +6293,12 @@ namespace Mod::Attr::Custom_Attributes
 		}
     }
 	
-	
+	RefCount rc_ProvidingAttributes;
 	DETOUR_DECL_MEMBER(void, CAttributeManager_ProvideTo, CBaseEntity *entity)
     {
-        DETOUR_MEMBER_CALL(CAttributeManager_ProvideTo)(entity);
+		SCOPED_INCREMENT(rc_ProvidingAttributes);
 		auto manager = reinterpret_cast<CAttributeManager *>(this);
+        DETOUR_MEMBER_CALL(CAttributeManager_ProvideTo)(entity);
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
 		if (item != nullptr) {
 			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
@@ -6314,6 +6315,7 @@ namespace Mod::Attr::Custom_Attributes
 	CBaseEntity *stop_provider_entity = nullptr;
 	DETOUR_DECL_MEMBER(void, CAttributeManager_StopProvidingTo, CBaseEntity *entity)
     {
+		SCOPED_INCREMENT(rc_ProvidingAttributes);
         DETOUR_MEMBER_CALL(CAttributeManager_StopProvidingTo)(entity); 
 		auto manager = reinterpret_cast<CAttributeManager *>(this);
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
@@ -8572,12 +8574,12 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
-	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list)
+	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list, bool ifProviding)
 	{
 		auto manager = list->GetManager();
 		if (manager != nullptr) {
 			auto player = ToTFPlayer(manager->m_hOuter);
-			if (player == nullptr && manager->m_hOuter != nullptr) {
+			if (player == nullptr && manager->m_hOuter != nullptr && (!ifProviding || manager->IsProvidingTo(manager->m_hOuter->GetOwnerEntity()))) {
 				player = ToTFPlayer(manager->m_hOuter->GetOwnerEntity());
 			}
 			if (player == nullptr && stop_provider_entity != nullptr) {
@@ -9145,6 +9147,20 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 
+	void OnProvideOnActive(CAttributeList *list, const CEconItemAttributeDefinition *pAttrDef, attribute_data_union_t old_value, attribute_data_union_t new_value, AttributeChangeType changeType)
+	{
+		if (!rc_ProvidingAttributes) {
+			auto manager = list->GetManager();
+			if (manager != nullptr) {
+				CBaseEntity *ent = manager->m_hOuter;
+				auto econentity = rtti_cast<CEconEntity *>(ent);
+				if (econentity != nullptr) {
+					econentity->ReapplyProvision();
+				}
+			}
+		}
+	}
+
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj)
 	{
 		if (obj != nullptr) {
@@ -9592,6 +9608,7 @@ namespace Mod::Attr::Custom_Attributes
 				RegisterCallback("custom_item_model_attachment", OnCustomItemModelAttachment);
 				RegisterCallback("custom_item_model_attachment_viewmodel", OnCustomItemModelAttachment);
 				RegisterCallback("arrow_ignite", OnArrowIgnite);
+				RegisterCallback("provide_on_active", OnProvideOnActive);
 				
 			}
 		}

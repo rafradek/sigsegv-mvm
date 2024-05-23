@@ -156,6 +156,7 @@ MemberFuncThunk<const CAttributeManager *, int> CAttributeManager::ft_GetGlobalC
 MemberFuncThunk<CAttributeManager *, void>  CAttributeManager::ft_ClearCache("CAttributeManager::ClearCache [clone]");
 MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> CAttributeManager::ft_AddProvider("CAttributeManager::AddProvider");
 MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> CAttributeManager::ft_RemoveProvider("CAttributeManager::RemoveProvider");
+MemberFuncThunk<CAttributeManager *, bool, CBaseEntity *> CAttributeManager::ft_IsProvidingTo("CAttributeManager::IsProvidingTo");
 
 MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeFloatWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeFloatWrapper");
 MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> CAttributeManager::vt_ApplyAttributeStringWrapper(TypeName<CAttributeManager>(), "CAttributeManager::ApplyAttributeStringWrapper");

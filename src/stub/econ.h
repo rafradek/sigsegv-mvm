@@ -30,8 +30,10 @@ public:
 
 	void AddProvider(CBaseEntity *provider)    {        ft_AddProvider(this, provider);}
 	void RemoveProvider(CBaseEntity *provider) {        ft_RemoveProvider(this, provider);}
+	bool IsProvidingTo(CBaseEntity *receiver)  { return ft_IsProvidingTo(this, receiver);}
 
 	float ApplyAttributeFloatWrapperFunc(float flValue, CBaseEntity *pInitiator, string_t iszAttribHook, CUtlVector<CBaseEntity*> *pItemList = nullptr) { return ft_ApplyAttributeFloatWrapper(this, flValue, pInitiator, iszAttribHook, pItemList);}
+
 	
 	template<typename T>
 	static T AttribHookValue(T value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec = nullptr, bool literalString = true);
@@ -47,6 +49,7 @@ public:
 	static MemberFuncThunk<CAttributeManager *, void> ft_ClearCache;
 	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_AddProvider;
 	static MemberFuncThunk<CAttributeManager *, void, CBaseEntity *> ft_RemoveProvider;
+	static MemberFuncThunk<CAttributeManager *, bool, CBaseEntity *> ft_IsProvidingTo;
 	
 	static MemberVFuncThunk<CAttributeManager *, string_t, string_t, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeStringWrapper;
 	static MemberVFuncThunk<CAttributeManager *, float, float, CBaseEntity *, string_t, CUtlVector<CBaseEntity*> *> vt_ApplyAttributeFloatWrapper;
