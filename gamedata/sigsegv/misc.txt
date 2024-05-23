@@ -5925,6 +5925,8 @@
 				"CAttributeList::RemoveAttribute"        "_ZN14CAttributeList15RemoveAttributeEPK28CEconItemAttributeDefinition"
 				"CAttributeList::RemoveAttributeByIndex" "_ZN14CAttributeList22RemoveAttributeByIndexEi"
 				"CAttributeList::DestroyAllAttributes"   "_ZN14CAttributeList20DestroyAllAttributesEv"
+
+				"CAttributeManager::IsProvidingTo" "_ZNK17CAttributeManager13IsProvidingToEP11CBaseEntity"
 				
 				"CEconWearable::RemoveFrom" "_ZN13CEconWearable10RemoveFromEP11CBaseEntity"
 				"CEconWearable::UnEquip"    "_ZN13CEconWearable7UnEquipEP11CBasePlayer"
