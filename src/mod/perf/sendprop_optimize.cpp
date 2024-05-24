@@ -1372,8 +1372,8 @@ namespace Mod::Perf::SendProp_Optimize
             }
         }
 
-        delete entitiesWithNotUpdatedChangedProps;
-        delete entitiesWithNotUpdatedFullyChangedProps;
+        delete[] entitiesWithNotUpdatedChangedProps;
+        delete[] entitiesWithNotUpdatedFullyChangedProps;
 
         threadPool.wait_for_tasks();
         threadPoolPackWork.wait_for_tasks();
