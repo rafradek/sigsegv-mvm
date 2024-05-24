@@ -2050,7 +2050,7 @@ namespace Mod::Perf::SendProp_Optimize
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
 
-    ConVar cvar_threads("sig_network_threads", "2", FCVAR_NONE, "Additional threads used for networking", true, 0, true, 10, 
+    ConVar cvar_threads("sig_network_threads", "3", FCVAR_NONE, "Additional threads used for networking", true, 0, true, 10, 
     [](IConVar *pConVar, const char *pOldValue, float flOldValue){
         if (s_Mod.IsEnabled()) {
             SetThreadCount(cvar_threads.GetInt());
