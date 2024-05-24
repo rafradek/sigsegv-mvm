@@ -105,6 +105,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			}
 
 			owner->GetPlayerClass()->SetCustomModel(mod->properPlayerModel);
+			owner->UpdateModel();
 			mod->overridePlayerAnimClassApplied = true;
 			owner->m_nRenderFX = 6;
 			auto wearable_player = CreateCustomWeaponModelPlaceholder(owner, weapon, mod->oldPlayerModel);
@@ -177,6 +178,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod->overridePlayerAnimClass != -1) {
 			mod->overridePlayerAnimClassApplied = false;
 			owner->GetPlayerClass()->SetCustomModel(mod->oldPlayerCustomModel.c_str());
+			owner->UpdateModel();
 			if (owner->IsAlive())
 				owner->m_nRenderFX = 0;
 		}

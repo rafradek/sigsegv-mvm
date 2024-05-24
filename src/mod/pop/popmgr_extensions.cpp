@@ -2511,6 +2511,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				if (find->second != nullptr) {
 					int model_index = find->second->m_nModelIndexOverrides[0];
 					player->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
+					player->UpdateModel();
 					find->second->Remove();
 				}
 			}

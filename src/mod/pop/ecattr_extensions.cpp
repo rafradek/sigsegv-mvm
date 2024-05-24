@@ -267,6 +267,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				if (wearable != nullptr && wearable->GetCustomVariableBool<"humananimation">()) {
 					int model_index = wearable->m_nModelIndexOverrides[0];
 					bot->GetPlayerClass()->SetCustomModel(modelinfo->GetModelName(modelinfo->GetModel(model_index)), true);
+					bot->UpdateModel();
 					wearable->Remove();
 				}
 			}
@@ -1272,6 +1273,7 @@ namespace Mod::Pop::ECAttr_Extensions
 					wearable->SetModelIndexOverride(j, model_index);
 				}
 				bot->GetPlayerClass()->SetCustomModel(nullptr, true);
+				bot->UpdateModel();
 				wearable->SetCustomVariable("humananimation", Variant(true));
 				THINK_FUNC_SET(wearable, UpdateBodySkinPlayerWearable, gpGlobals->curtime);
 			}

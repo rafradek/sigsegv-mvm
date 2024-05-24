@@ -82,7 +82,7 @@ namespace Mod::Cond::Reprogrammed
 //		0x50,                               // +0000  push eax
 //		0xff, 0x15, 0xff, 0xff, 0xff, 0xff, // +0001  call [<STUB> CBaseEntity::IsBot]
 //		0x83, 0xC4, 0x10,                   // +0007  add esp, 10h
-//		0x90, 0x90,                         // +000a  nop nop
+//		0x84, 0xc0,                         // +000a  test al, al
 //		0x0f, 0x85, 0xa5, 0x01, 0x00, 0x00, // +000c  jnz +0x1a5
 //	};
 	
@@ -118,9 +118,9 @@ namespace Mod::Cond::Reprogrammed
 			buf[0x02] = 0x15;
 			buf.SetDword(0x01 + 2, (uint32_t)&s_CBasePlayer_IsBot);
 			
-			/* pad out extra space with NOPs */
-			buf[0x0a] = 0x90;
-			buf[0x0b] = 0x90;
+			/* test result */
+			buf[0x0a] = 0x84;
+			buf[0x0b] = 0xc0;
 			
 			/* invert the jump condition code */
 			buf[0x0d] = 0x85;

@@ -1216,6 +1216,7 @@ namespace Mod::Perf::SendProp_Optimize
 
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  CGameClient **clients, CFrameSnapshot *snapshot)
 	{
+        // Do not network dead bots and reduce update rate for their weapons
         for (int i = 1; i <= gpGlobals->maxClients; i++) {
             edict_t *edict = world_edict + i;
             if (!edict->IsFree() /*&& edict->m_fStateFlags & (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED)*/ && !(edict->m_fStateFlags & FL_EDICT_DONTSEND)) {
@@ -1244,6 +1245,7 @@ namespace Mod::Perf::SendProp_Optimize
             return;
         }
 
+        // Synchronous compute first
         for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
             computedPackInfos[clientIndex] = false;
             checkTransmitComplete[clientIndex] = false;
@@ -1264,6 +1266,10 @@ namespace Mod::Perf::SendProp_Optimize
         int packWorkTaskCount = (int) threadPoolPackWork.get_thread_count();
         CFrameSnapshotManager &snapmgr = g_FrameSnapshotManager;
 
+        std::vector<edict_t *> *entitiesWithNotUpdatedChangedProps = new std::vector<edict_t *>[packWorkTaskCount];
+        std::vector<edict_t *> *entitiesWithNotUpdatedFullyChangedProps = new std::vector<edict_t *>[packWorkTaskCount];
+
+        // Threaded networking starts here
         threadPool.push_task([&](){
             for (int clientIndex = 0; clientIndex < clientCount; clientIndex ++) {
                 auto client = clients[clientIndex];
@@ -1278,14 +1284,22 @@ namespace Mod::Perf::SendProp_Optimize
 
             for (int i = 0; i < packWorkTaskCount; i++) {
                 threadPoolPackWork.push_task([&](int num){
+                    entitiesWithNotUpdatedChangedProps[num].reserve(8);
+                    entitiesWithNotUpdatedFullyChangedProps[num].reserve(2);
                     size_t workEntryCount = snapshot->m_nValidEntities/packWorkTaskCount+1;
                     PackWork_t *workEntities = (PackWork_t *) operator new[](workEntryCount * sizeof(PackWork_t));
                     size_t workEntitiesCount = 0;
                     for (int i = num; i < snapshot->m_nValidEntities; i += packWorkTaskCount) {
                         int idx = snapshot->m_pValidEntities[i];
                         auto edict = world_edict + idx;
+                        // Don't update props for non networked entities
                         if ((edict->m_fStateFlags & FL_EDICT_DONTSEND) && ((CBaseEntity *)edict->GetUnknown())->FirstMoveChild() == nullptr 
                             && snapmgr.UsePreviouslySentPacket(snapshot, idx, edict->m_NetworkSerialNumber)) {
+
+                            if (edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)
+                                entitiesWithNotUpdatedFullyChangedProps->push_back(edict);
+                            else if (edict->m_fStateFlags & FL_EDICT_CHANGED)
+                                entitiesWithNotUpdatedChangedProps->push_back(edict);
                             continue;
                         } 
                         PackWork_t &work = workEntities[workEntitiesCount++];
@@ -1348,6 +1362,16 @@ namespace Mod::Perf::SendProp_Optimize
             int edictID = snapshot->m_pValidEntities[i];
             edict_t *edict = world_edict + edictID;
             edict->m_fStateFlags &= ~(FL_FULL_EDICT_CHANGED|FL_EDICT_CHANGED);
+        }
+
+        for (int i = 0; i < packWorkTaskCount; i++) {
+            for (auto edict : entitiesWithNotUpdatedChangedProps[i]) {
+                edict->m_fStateFlags |= FL_EDICT_CHANGED;
+            }
+
+            for (auto edict : entitiesWithNotUpdatedFullyChangedProps[i]) {
+                edict->m_fStateFlags |= (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
+            }
         }
 
         threadPool.wait_for_tasks();
