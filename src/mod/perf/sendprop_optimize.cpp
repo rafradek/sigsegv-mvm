@@ -1284,8 +1284,6 @@ namespace Mod::Perf::SendProp_Optimize
 
             for (int i = 0; i < packWorkTaskCount; i++) {
                 threadPoolPackWork.push_task([&](int num){
-                    entitiesWithNotUpdatedChangedProps[num].reserve(8);
-                    entitiesWithNotUpdatedFullyChangedProps[num].reserve(2);
                     size_t workEntryCount = snapshot->m_nValidEntities/packWorkTaskCount+1;
                     PackWork_t *workEntities = (PackWork_t *) operator new[](workEntryCount * sizeof(PackWork_t));
                     size_t workEntitiesCount = 0;
@@ -1297,9 +1295,9 @@ namespace Mod::Perf::SendProp_Optimize
                             && snapmgr.UsePreviouslySentPacket(snapshot, idx, edict->m_NetworkSerialNumber)) {
 
                             if (edict->m_fStateFlags & FL_FULL_EDICT_CHANGED)
-                                entitiesWithNotUpdatedFullyChangedProps->push_back(edict);
+                                entitiesWithNotUpdatedFullyChangedProps[num].push_back(edict);
                             else if (edict->m_fStateFlags & FL_EDICT_CHANGED)
-                                entitiesWithNotUpdatedChangedProps->push_back(edict);
+                                entitiesWithNotUpdatedChangedProps[num].push_back(edict);
                             continue;
                         } 
                         PackWork_t &work = workEntities[workEntitiesCount++];
@@ -1373,6 +1371,9 @@ namespace Mod::Perf::SendProp_Optimize
                 edict->m_fStateFlags |= (FL_EDICT_CHANGED | FL_FULL_EDICT_CHANGED);
             }
         }
+
+        delete entitiesWithNotUpdatedChangedProps;
+        delete entitiesWithNotUpdatedFullyChangedProps;
 
         threadPool.wait_for_tasks();
         threadPoolPackWork.wait_for_tasks();
