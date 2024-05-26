@@ -54,7 +54,7 @@ namespace Mod::Etc::Extra_Player_Slots
     
     extern ConVar cvar_enable;
 
-    ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "34", FCVAR_NOTIFY,
+    ConVar sig_etc_extra_player_slots_count("sig_etc_extra_player_slots_count", "101", FCVAR_NOTIFY,
 		"Extra player slot count. Requires map restart to function");
 
     ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
@@ -808,6 +808,20 @@ namespace Mod::Etc::Extra_Player_Slots
                 return;
             }
         }
+        if (event->GetName() != nullptr && strcmp(event->GetName(), "player_hurt") == 0) {
+            IGameEvent *npchurt = gameeventmanager->CreateEvent("npc_hurt");
+            auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
+            if (npchurt && victim != nullptr) {
+				npchurt->SetInt("entindex", victim->entindex());
+				npchurt->SetInt("health", Max(0, victim->GetHealth()));
+				npchurt->SetInt("damageamount", event->GetInt("damageamount"));
+				npchurt->SetBool("crit", event->GetBool("crit"));
+				npchurt->SetInt("attacker_player", event->GetInt("attacker"));
+				npchurt->SetInt("weaponid", event->GetInt("weaponid"));
+
+				gameeventmanager->FireEvent(npchurt);
+			}
+        }
         // Replace extra slot client id with some other bot with lower id
         IGameEvent *duplicate = nullptr;
         const char *eventName = nullptr;
@@ -1054,6 +1068,16 @@ namespace Mod::Etc::Extra_Player_Slots
             wearable->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
         }
     }
+    
+    DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
+	{
+		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+        auto player = reinterpret_cast<CTFPlayer *>(this);
+        if (player->entindex() > DEFAULT_MAX_PLAYERS && player->m_hRagdoll != nullptr) {
+            player->m_hRagdoll->Remove();
+        }
+		return damage;
+	}
 
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1131,6 +1155,7 @@ namespace Mod::Etc::Extra_Player_Slots
             MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
             MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
 #endif
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");

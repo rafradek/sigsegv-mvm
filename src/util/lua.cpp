@@ -3893,7 +3893,7 @@ namespace Util::Lua
             return;
         }
         int fileSize = filesystem->Size(f);
-        if (fileSize > 200000) {
+        if (fileSize > 1000000) {
             SendWarningConsoleMessageToAdmins("Lua script file %s is too large\n", path);
             return;
         }
