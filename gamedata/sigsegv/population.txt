@@ -125,6 +125,9 @@
 				"CRandomChoiceSpawner::IsMiniBoss"   "_ZN20CRandomChoiceSpawner10IsMiniBossEi"
 				"CRandomChoiceSpawner::HasAttribute" "_ZN20CRandomChoiceSpawner12HasAttributeEN6CTFBot13AttributeTypeEi"
 				"CRandomChoiceSpawner::Parse"        "_ZN20CRandomChoiceSpawner5ParseEP9KeyValues"
+				"CRandomChoiceSpawner::GetClass"     "_ZN20CRandomChoiceSpawner8GetClassEi"
+				"CRandomChoiceSpawner::GetHealth"    "_ZN20CRandomChoiceSpawner9GetHealthEi"
+				
 				
 				"CSpawnLocation::Parse" "_ZN14CSpawnLocation5ParseEP9KeyValues"
 				
