@@ -72,6 +72,7 @@ MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetAfterburnRateOnHit
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_InternalGetEffectBarRechargeTime(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::InternalGetEffectBarRechargeTime");
 MemberVFuncThunk<CTFWeaponBase *, float> CTFWeaponBase::vt_GetEffectBarProgress(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetEffectBarProgress");
 MemberVFuncThunk<CTFWeaponBase *, void, CBaseEntity *, CTFPlayer *, const CTakeDamageInfo &> CTFWeaponBase::vt_ApplyOnHitAttributes(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::ApplyOnHitAttributes");
+MemberVFuncThunk<CTFWeaponBase *, int> CTFWeaponBase::vt_GetSkin(TypeName<CTFWeaponBase>(),  "CTFWeaponBase::GetSkin");
 
 
 MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::ft_UpdatePunchAngles("CTFWeaponBaseGun::UpdatePunchAngles");

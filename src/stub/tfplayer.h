@@ -369,6 +369,7 @@ public:
 	void Heal(CBaseEntity *pHealer, float flAmount, float flOverhealBonus, float flOverhealDecayMult, bool bDispenserHeal, CTFPlayer *pHealScorer) { ft_Heal (this, pHealer, flAmount, flOverhealBonus, flOverhealDecayMult, bDispenserHeal, pHealScorer); }
 	float StopHealing(CBaseEntity *pHealer)                                             { return ft_StopHealing               (this, pHealer); }
 	int FindHealerIndex(CBaseEntity *pHealer)                                           { return ft_FindHealerIndex           (this, pHealer); }
+	void RecalculatePlayerBodygroups()                                                  {        ft_RecalculatePlayerBodygroups(this); }
 
 	DECL_SENDPROP(float,       m_flCloakMeter);
 	DECL_SENDPROP(float,       m_flEnergyDrinkMeter);
@@ -426,6 +427,7 @@ private:
 	static MemberFuncThunk<      CTFPlayerShared *, void, CBaseEntity *, float, float, float, bool, CTFPlayer *> ft_Heal;
 	static MemberFuncThunk<      CTFPlayerShared *, float, CBaseEntity *                > ft_StopHealing;
 	static MemberFuncThunk<      CTFPlayerShared *, int, CBaseEntity *                  > ft_FindHealerIndex;
+	static MemberFuncThunk<      CTFPlayerShared *, void                                > ft_RecalculatePlayerBodygroups;
 };
 
 class CTFPlayer : public CBaseMultiplayerPlayer
@@ -443,6 +445,7 @@ public:
 	void SetCurrency(int currency) { this->m_nCurrency = currency; }
 	void SetMiniBoss(bool boss) { this->m_bIsMiniBoss = boss; }
 	void SetForcedSkin(int skin){ this->m_bForcedSkin = true; this->m_nForcedSkin = skin; }
+	bool IsForcedSkin()         { return this->m_bForcedSkin; }
 	int GetForcedSkin()         { return this->m_nForcedSkin; }
 	void ResetForcedSkin()      { this->m_bForcedSkin = false; this->m_nForcedSkin = 0; }
 
@@ -569,7 +572,7 @@ public:
 	DECL_SENDPROP   (float,      m_flHeadScale);
 	DECL_SENDPROP   (float,      m_flTorsoScale);
 	DECL_SENDPROP   (float,      m_flHandScale);
-	
+	DECL_SENDPROP   (int,        m_iPlayerSkinOverride);
 	
 	static void PrecacheMvM() { ft_PrecacheMVM(); }
 private:

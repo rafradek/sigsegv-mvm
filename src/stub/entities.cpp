@@ -112,6 +112,8 @@ IMPL_DATAMAP (CHandle<CBasePlayer>, CPropVehicleDriveable, m_hPlayer);
 IMPL_DATAMAP (float, CPropVehicleDriveable, m_nSpeed);
 IMPL_DATAMAP (float, CPropVehicleDriveable, m_bLocked);
 
+StaticFuncThunk<CSprite *, const char *, const Vector &, bool> CSprite::ft_SpriteCreate("CSprite::SpriteCreate");
+
 IMPL_SENDPROP(float, CSpriteTrail, m_flLifeTime, CSpriteTrail);
 
 IMPL_DATAMAP (bool, CParticleSystem, m_bStartActive);
@@ -126,3 +128,7 @@ MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> CBaseServerVehicle::vt_Get
 MemberVFuncThunk<CBaseServerVehicle *, CBaseEntity *> CBaseServerVehicle::vt_GetVehicleEnt(TypeName<CBaseServerVehicle>(), "CBaseServerVehicle::GetVehicleEnt");
 
 GlobalThunk<CBaseEntity *> g_WorldEntity("g_WorldEntity");
+
+MemberFuncThunk<CBeam *, void, CBaseEntity *, CBaseEntity *> CBeam::ft_EntsInit("CBeam::EntsInit");
+
+StaticFuncThunk<CBeam *, const char *, float> CBeam::ft_BeamCreate("CBeam::BeamCreate");

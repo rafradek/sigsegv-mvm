@@ -360,6 +360,7 @@ namespace Mod::Common::Weapon_Shoot
 
 	int customDamageTypeBullet = 0;
 	RefCount rc_FireWeaponDoTrace;
+    bool isCritTrace = false;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_FireBullet, CTFWeaponBase *weapon, FireBulletsInfo_t& info, bool bDoEffects, int nDamageType, int nCustomDamageType)
 	{
 		bool doTrace = false;
@@ -369,6 +370,7 @@ namespace Mod::Common::Weapon_Shoot
 			int ePenetrateType = weapon ? weapon->GetPenetrateType() : TF_DMG_CUSTOM_NONE;
 			if (ePenetrateType == TF_DMG_CUSTOM_NONE)
 				ePenetrateType = customDamageTypeBullet;
+            isCritTrace = nDamageType & DMG_CRITICAL;
 			doTrace = ( ( info.m_iTracerFreq != 0 ) && ( tracerCount++ % info.m_iTracerFreq ) == 0 ) || (ePenetrateType == TF_DMG_CUSTOM_PENETRATE_ALL_PLAYERS);
 		}
 
@@ -384,7 +386,8 @@ namespace Mod::Common::Weapon_Shoot
 			te_tf_particle_effects_control_point_t cp;
 			cp.m_eParticleAttachment = PATTACH_ABSORIGIN;
 			cp.m_vecOffset = vEndPos;
-			DispatchParticleEffect(reinterpret_cast<CTFPlayer *>(this)->GetTracerType(), PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
+			auto tracerName = reinterpret_cast<CTFPlayer *>(this)->GetTracerType();
+			DispatchParticleEffect(isCritTrace ? CFmtStr("%s_crit", tracerName).Get() : tracerName, PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
 		}
 		DETOUR_MEMBER_CALL(CTFPlayer_MaybeDrawRailgunBeam)(filter, weapon, vStartPos, vEndPos);
 	}

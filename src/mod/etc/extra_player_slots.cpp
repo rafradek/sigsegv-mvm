@@ -14,6 +14,7 @@
 #include "stub/tfweaponbase.h"
 #include "stub/tf_player_resource.h"
 #include "stub/lagcompensation.h"
+#include "stub/particles.h"
 #include "mod/pop/popmgr_extensions.h"
 #include "mod/etc/mapentity_additions.h"
 #include "mod/mvm/player_limit.h"
@@ -45,8 +46,11 @@ public:
 
 namespace Mod::Etc::Extra_Player_Slots
 {
+
 #ifdef SE_IS_TF2
     constexpr int DEFAULT_MAX_PLAYERS = 101;
+// Fake to clients that the players in extra slots are CBaseCombatCharacter to prevent forced disconnect
+#define FAKE_PLAYER_CLASS
 #elif definded(SE_IS_CSS)
     constexpr int DEFAULT_MAX_PLAYERS = 65;
 #endif
@@ -229,7 +233,8 @@ namespace Mod::Etc::Extra_Player_Slots
 #else
                     if (TFGameRules()->IsMannVsMachineMode()) {
                         int red, blu, spectators, robots;
-                        desiredSlot = Clamp(Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) - 1, DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
+                        desiredSlot = gpGlobals->maxClients - 1;
+                        //desiredSlot = Clamp(Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) - 1, DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
                     }
                     else {
                         desiredSlot = gpGlobals->maxClients - 1;
@@ -280,7 +285,7 @@ namespace Mod::Etc::Extra_Player_Slots
         int preMaxPlayers = gpGlobals->maxClients;
 
         if (preMaxPlayers > DEFAULT_MAX_PLAYERS) {
-            // Run lag compensation using multiple copies of compensation managers. Each manager manages 33 players. For each manager copy extra 33 slots into the first 33 edict slots
+            // Run lag compensation using multiple copies of compensation managers. Each manager manages MAX_PLAYERS players. For each manager copy extra MAX_PLAYERS slots into the first MAX_PLAYERS edict slots
             edict_t originalEdicts[DEFAULT_MAX_PLAYERS];
             memcpy(originalEdicts, world_edict+1, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
 
@@ -732,35 +737,33 @@ namespace Mod::Etc::Extra_Player_Slots
         float time;
         IGameEvent *event;
         bool send = false;
-        int fakePlayersIndex[3] {-1,-1,-1};
-        std::string fakePlayersOldNames[3];
-        int fakePlayersTeams[3] {-1, -1, -1};
+        std::string names[3];
+        std::string oldNames[3];
+        int teams[3] = {-1, -1, -1};
+        int usedPlayerIndexes[3] = {-1, -1, -1};
+        
+        std::vector<CBasePlayer *> participants;
+        bool prepared = false;
     };
+
     std::deque<KillEvent> kill_events;
-    int player33_fake_team_num=-1;
-    float player33_fake_kill_time=FLT_MIN;
 
     bool CanUseThisPlayerForChangeName(int i, CBasePlayer *playeri, std::vector<CBasePlayer *> &checkVec) {
-        bool found = false;
         for (auto &event : kill_events) {
-            for (auto index : event.fakePlayersIndex) {
-                if (index == i) {
-                    found = true;
-                    break;
+            for (int j = 0; j < 3; j++) {
+                if (event.usedPlayerIndexes[j] == i) {
+                    return false;
                 }
             }
-            if (found) break;
         }
-        if (found) return false;
 
         for (auto player : checkVec) {
             if (player == playeri) {
-                found = true;
-                break;
+                return false;
             }
         }
 
-        return !found;
+        return true;
     }
     
     CBasePlayer *FindFreeFakePlayer(std::vector<CBasePlayer *> &checkVec) 
@@ -786,7 +789,7 @@ namespace Mod::Etc::Extra_Player_Slots
             return playeri;
         }
 
-        return UTIL_PlayerByIndex(DEFAULT_MAX_PLAYERS);
+        return nullptr;
     }
 
     bool stopMoreEvents = false;
@@ -830,71 +833,37 @@ namespace Mod::Etc::Extra_Player_Slots
         }
         if ( eventName != nullptr && (strcmp(eventName, "player_death") == 0 || strcmp(eventName, "object_destroyed") == 0
               || StringStartsWith(eventName, "fish_notice"))) {
-            if (stopMoreEvents) {
-                return;
-            }
+
             auto victim = UTIL_PlayerByUserId(event->GetInt("userid"));
             auto attacker = UTIL_PlayerByUserId(event->GetInt("attacker"));
             auto assister = UTIL_PlayerByUserId(event->GetInt("assister"));
-            auto player33 = UTIL_PlayerByIndex(DEFAULT_MAX_PLAYERS);
             if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS || ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS || ENTINDEX(assister) > DEFAULT_MAX_PLAYERS) {
-                std::vector<CBasePlayer *> participants;
-                std::vector<CBasePlayer *> fakePlayers;
-                fakePlayers.push_back(victim);
-                fakePlayers.push_back(attacker);
-                fakePlayers.push_back(assister);
-                stopMoreEvents = true;
+                auto &killevent = kill_events.emplace_back();
                 duplicate = gameeventmanager->DuplicateEvent(event);
+                killevent.time = gpGlobals->curtime;
+                killevent.event = duplicate;
                 if (ENTINDEX(victim) > DEFAULT_MAX_PLAYERS) {
-                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    if (fakePlayer != nullptr) {
-                        duplicate->SetInt("userid", fakePlayer->GetUserID());
-                        fakePlayers.push_back(fakePlayer);
-                        participants.push_back(victim);
-                    }
+                    killevent.names[0] = victim->GetPlayerName();
+                    killevent.teams[0] = victim->GetTeamNumber();
+                }
+                else {
+                    killevent.participants.push_back(victim);
                 }
                 if (ENTINDEX(attacker) > DEFAULT_MAX_PLAYERS) {
-                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    if (fakePlayer != nullptr) {
-                        duplicate->SetInt("attacker", fakePlayer->GetUserID());
-                        fakePlayers.push_back(fakePlayer);
-                        participants.push_back(attacker);
-                    }
+                    killevent.names[1] = attacker->GetPlayerName();
+                    killevent.teams[1] = attacker->GetTeamNumber();
+                }
+                else {
+                    killevent.participants.push_back(attacker);
                 }
                 if (ENTINDEX(assister) > DEFAULT_MAX_PLAYERS) {
-                    auto fakePlayer = FindFreeFakePlayer(fakePlayers);
-                    if (fakePlayer != nullptr) {
-                        duplicate->SetInt("assister", fakePlayer->GetUserID());
-                        fakePlayers.push_back(fakePlayer);
-                        participants.push_back(assister);
-                    }
+                    killevent.names[2] = assister->GetPlayerName();
+                    killevent.teams[2] = assister->GetTeamNumber();
                 }
-                //auto fakePlayer = nullptr;
-                /*for (int i = DEFAULT_MAX_PLAYERS; i >= 1; i--) {
-                    auto player = UTIL_PlayerByIndex(i);
-                    if (player != nullptr && player->GetTeamNumber() == copyNameFromPlayer->GetTeamNumber() && player->GetName()) {
-                        
-                    }
-                }*/
-                //gameeventmanager->SerializeEvent(duplicate);
-                kill_events.push_back({gpGlobals->curtime, duplicate});
-                for (size_t i = 0; i < participants.size(); i++) {
-                    auto fakePlayer = fakePlayers[i+3];
-                    kill_events.back().fakePlayersOldNames[i] = fakePlayer->GetPlayerName();
-                    kill_events.back().fakePlayersIndex[i] = ENTINDEX(fakePlayer);
-                    kill_events.back().fakePlayersTeams[i] = participants[i]->GetTeamNumber();
-                    fakePlayer->SetPlayerName(participants[i]->GetPlayerName());
-                    auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(fakePlayer->entindex()-1));
-                    clientFakePlayer->m_ConVars->SetString("name", participants[i]->GetPlayerName());
-                    V_strncpy(clientFakePlayer->m_Name, participants[i]->GetPlayerName(), sizeof(clientFakePlayer->m_Name));
-                    clientFakePlayer->m_bConVarsChanged = true;
-                    static_cast<CBaseServer *>(sv)->UserInfoChanged(clientFakePlayer->m_nClientSlot);
-                    TFPlayerResource()->m_iTeam.SetIndex(participants[i]->GetTeamNumber(), fakePlayer->entindex());
+                else {
+                    killevent.participants.push_back(assister);
                 }
-                player33_fake_kill_time = gpGlobals->curtime;
-                //player33_fake_team_num = copyNameFromPlayer->GetTeamNumber();
                 return;
-                //event = duplicate;
             }
         }
         auto client = reinterpret_cast<CBaseClient *>(this);
@@ -904,12 +873,67 @@ namespace Mod::Etc::Extra_Player_Slots
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
 	{
         int realTeam = -1;
-		if (player33_fake_kill_time + 1 > gpGlobals->curtime) {
+		if (!kill_events.empty()) {
 
             for (auto it = kill_events.begin(); it != kill_events.end();){
                 auto &killEvent = (*it);
+
+
+                if (!killEvent.prepared) {
+                    
+                    // Stale events over 2 seconds, remove
+                    if (gpGlobals->curtime - killEvent.time > 2.0f) {
+                        gameeventmanager->FreeEvent(killEvent.event);
+                        it = kill_events.erase(it);
+                        continue;
+                    }
+
+                    bool hasFoundAll = true;
+                    CBasePlayer *players[3];
+                    auto restrictedPlayers = killEvent.participants;
+                    for (size_t i = 0; i < 3; i++) {
+                        if (killEvent.teams[i] != -1) {
+                            if (killEvent.teams[i] == killEvent.teams[i - 1] && killEvent.names[i] == killEvent.names[i - 1]) {
+                                players[i] = players[i - 1];
+                                continue;
+                            }
+                            auto player = FindFreeFakePlayer(restrictedPlayers);
+                            restrictedPlayers.push_back(player);
+                            if (player == nullptr && gpGlobals->curtime - killEvent.time > 1.9f) {
+                                player = UTIL_PlayerByIndex(DEFAULT_MAX_PLAYERS);
+                            }
+                            players[i] = player;
+                            if (player == nullptr){
+                                hasFoundAll = false;
+                            }
+                        }
+                    }
+                    if (hasFoundAll) {
+                        for (size_t i = 0; i < 3; i++) {
+                            if (killEvent.teams[i] != -1) {
+                                auto player = players[i];
+                                killEvent.oldNames[i] = player->GetPlayerName();
+                                killEvent.usedPlayerIndexes[i] = player->entindex();
+                                killEvent.event->SetInt(i == 0 ? "userid" : (i == 1 ? "attacker" : "assister"), player->GetUserID());
+                                
+                                player->SetPlayerName(killEvent.names[i].c_str());
+                                auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(player->entindex()-1));
+                                clientFakePlayer->m_ConVars->SetString("name", killEvent.names[i].c_str());
+                                V_strncpy(clientFakePlayer->m_Name, killEvent.names[i].c_str(), sizeof(clientFakePlayer->m_Name));
+                                clientFakePlayer->m_bConVarsChanged = true;
+                                static_cast<CBaseServer *>(sv)->UserInfoChanged(clientFakePlayer->m_nClientSlot);
+                            }
+                        }
+                        killEvent.time = gpGlobals->curtime;
+                        killEvent.prepared = true;
+                    }
+                    else {
+                        it++;
+                        continue;
+                    }
+                }
                 
-                if (killEvent.time + 0.2f < gpGlobals->curtime && !killEvent.send) {
+                if (gpGlobals->curtime - killEvent.time > 0.2f && !killEvent.send) {
                     killEvent.send = true;
                     sending_delayed_event = true;
                     for (int i = 0; i < sv->GetMaxClients(); i++) {
@@ -924,22 +948,22 @@ namespace Mod::Etc::Extra_Player_Slots
                 }
 
                 for (int i = 0; i < 3; i++) {
-                    if (killEvent.fakePlayersIndex[i] != -1) {
-                        TFPlayerResource()->m_iTeam.SetIndex(killEvent.fakePlayersTeams[i], killEvent.fakePlayersIndex[i]);
+                    if (killEvent.usedPlayerIndexes[i] != -1) {
+                        TFPlayerResource()->m_iTeam.SetIndex(killEvent.teams[i], killEvent.usedPlayerIndexes[i]);
                     }
                 }
 
-                if (killEvent.time + 0.35f < gpGlobals->curtime) {
+                if (gpGlobals->curtime - killEvent.time > 0.35f) {
                     
                     for (int i = 0; i < 3; i++) {
-                        if (killEvent.fakePlayersIndex[i] != -1 && killEvent.fakePlayersIndex[i] != DEFAULT_MAX_PLAYERS) {
-                            
-                            auto player = UTIL_PlayerByIndex(killEvent.fakePlayersIndex[i]);
+                        if (killEvent.usedPlayerIndexes[i] != -1 && killEvent.usedPlayerIndexes[i] != DEFAULT_MAX_PLAYERS) {
+                            auto player = UTIL_PlayerByIndex(killEvent.usedPlayerIndexes[i]);
                             if (player != nullptr) {
-                                player->SetPlayerName(killEvent.fakePlayersOldNames[i].c_str());
+                                auto &oldName = killEvent.oldNames[i];
+                                player->SetPlayerName(oldName.c_str());
                                 auto clientFakePlayer = static_cast<CBaseClient *>(sv->GetClient(player->entindex()-1));
-                                V_strncpy(clientFakePlayer->m_Name, killEvent.fakePlayersOldNames[i].c_str(), sizeof(clientFakePlayer->m_Name));
-                                clientFakePlayer->m_ConVars->SetString("name", killEvent.fakePlayersOldNames[i].c_str());
+                                V_strncpy(clientFakePlayer->m_Name, oldName.c_str(), sizeof(clientFakePlayer->m_Name));
+                                clientFakePlayer->m_ConVars->SetString("name", oldName.c_str());
                                 clientFakePlayer->m_bConVarsChanged = true;
                                 static_cast<CBaseServer *>(sv)->UserInfoChanged(clientFakePlayer->m_nClientSlot);
                                 //engine->SetFakeClientConVarValue(INDEXENT(killEvent.fakePlayersIndex[i]), "name", killEvent.fakePlayersOldNames[i].c_str());
@@ -1003,6 +1027,11 @@ namespace Mod::Etc::Extra_Player_Slots
         if (sig_etc_extra_player_slots_no_death_cam.GetBool() && ToTFPlayer(player->m_hObserverTarget) != nullptr && ENTINDEX(player->m_hObserverTarget) > DEFAULT_MAX_PLAYERS) {
             player->m_hObserverTarget = nullptr;
         }
+#ifdef FAKE_PLAYER_CLASS
+        if (ToBaseObject(player->m_hObserverTarget) != nullptr && ENTINDEX(ToBaseObject(player->m_hObserverTarget)->GetBuilder()) > DEFAULT_MAX_PLAYERS) {
+            player->m_hObserverTarget = nullptr;
+        }
+#endif
 	}
     
     std::string nextmap;
@@ -1023,6 +1052,7 @@ namespace Mod::Etc::Extra_Player_Slots
 		DETOUR_MEMBER_CALL(CTriggerCatapult_OnLaunchedVictim)(pVictim);
 	}
 
+#ifdef FAKE_PLAYER_CLASS
     GlobalThunk<ServerClass> g_CBasePlayer_ClassReg("g_CBasePlayer_ClassReg");
     GlobalThunk<ServerClass> g_CBaseCombatCharacter_ClassReg("g_CBaseCombatCharacter_ClassReg");
     GlobalThunk<ServerClass> g_CBaseCombatWeapon_ClassReg("g_CBaseCombatWeapon_ClassReg");
@@ -1068,16 +1098,102 @@ namespace Mod::Etc::Extra_Player_Slots
             wearable->NetworkProp()->m_pServerClass = &g_CBaseAnimating_ClassReg.GetRef();
         }
     }
-    
-    DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_CreateRagdollEntity, bool bShouldGib, bool bBurning, bool bUberDrop, bool bOnGround, bool bYER, bool bGold, bool bIce, bool bAsh, int iCustom, bool bClassic)
 	{
-		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
         auto player = reinterpret_cast<CTFPlayer *>(this);
-        if (player->entindex() > DEFAULT_MAX_PLAYERS && player->m_hRagdoll != nullptr) {
-            player->m_hRagdoll->Remove();
+        if (player->entindex() > DEFAULT_MAX_PLAYERS) {
+            if (bShouldGib) {
+                CPVSFilter filter(player->GetAbsOrigin());
+                bf_write *msg = engine->UserMessageBegin(&filter, usermessages->LookupUserMessage("BreakModel"));
+                msg->WriteShort(player->GetModelIndex());
+                msg->WriteBitVec3Coord(player->GetAbsOrigin());
+                msg->WriteBitAngles(player->GetAbsAngles());
+                msg->WriteShort(player->m_nSkin);
+                engine->MessageEnd();
+                player->AddEffects(EF_NODRAW);
+            }
+            return;
         }
-		return damage;
+		DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
 	}
+
+    DETOUR_DECL_MEMBER(void, CTFPlayer_CreateFeignDeathRagdoll, const CTakeDamageInfo& info, bool b1, bool b2, bool b3)
+	{
+        auto player = reinterpret_cast<CTFPlayer *>(this);
+        if (player->entindex() > DEFAULT_MAX_PLAYERS) return;
+		DETOUR_MEMBER_CALL(CTFPlayer_CreateFeignDeathRagdoll)(info, b1, b2, b3);
+	}
+    
+    VHOOK_DECL(bool, CWeaponMedigun_Deploy)
+	{
+        static auto attrDef = GetItemSchema()->GetAttributeDefinitionByName("medigun particle");
+        if (attrDef == nullptr) {
+            attrDef = GetItemSchema()->GetAttributeDefinitionByName("medigun particle");
+        }
+        auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
+        auto effect = medigun->GetItem()->GetAttributeList().GetAttributeByID(attrDef->GetIndex());
+        if (effect == nullptr && attrDef != nullptr) {
+            medigun->GetItem()->GetAttributeList().AddStringAttribute(attrDef, "medicgun_beam");
+        }
+		return VHOOK_CALL(CWeaponMedigun_Deploy)();
+	}
+
+    int customDamageTypeBullet = 0;
+	RefCount rc_FireWeaponDoTrace;
+    bool isCritTrace = false;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_FireBullet, CTFWeaponBase *weapon, FireBulletsInfo_t& info, bool bDoEffects, int nDamageType, int nCustomDamageType)
+	{
+		bool doTrace = false;
+        auto player = reinterpret_cast<CTFPlayer *>(this);
+		if (player->entindex() > DEFAULT_MAX_PLAYERS) {
+			static int	tracerCount;
+			bDoEffects = true;
+			int ePenetrateType = weapon ? weapon->GetPenetrateType() : TF_DMG_CUSTOM_NONE;
+			if (ePenetrateType == TF_DMG_CUSTOM_NONE)
+				ePenetrateType = customDamageTypeBullet;
+            isCritTrace = nDamageType & DMG_CRITICAL;
+			doTrace = ( ( info.m_iTracerFreq != 0 ) && ( tracerCount++ % info.m_iTracerFreq ) == 0 ) || (ePenetrateType == TF_DMG_CUSTOM_PENETRATE_ALL_PLAYERS);
+		}
+
+		SCOPED_INCREMENT_IF(rc_FireWeaponDoTrace, doTrace);
+
+		
+		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+	}
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_MaybeDrawRailgunBeam, IRecipientFilter *filter, CTFWeaponBase *weapon, const Vector &vStartPos, const Vector &vEndPos)
+	{
+		if (rc_FireWeaponDoTrace) {
+			te_tf_particle_effects_control_point_t cp;
+			cp.m_eParticleAttachment = PATTACH_ABSORIGIN;
+			cp.m_vecOffset = vEndPos;
+            auto tracerName = reinterpret_cast<CTFPlayer *>(this)->GetTracerType();
+			DispatchParticleEffect(isCritTrace ? CFmtStr("%s_crit", tracerName).Get() : tracerName, PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
+		}
+		DETOUR_MEMBER_CALL(CTFPlayer_MaybeDrawRailgunBeam)(filter, weapon, vStartPos, vEndPos);
+	}
+
+    int GetPlayerSkinNumber(CTFPlayer *player) {
+        if (player->IsForcedSkin()) {
+            return player->GetForcedSkin();
+        }
+        int team = player->GetTeamNumber();
+        if (player->m_Shared->InCond(TF_COND_DISGUISED)) {
+            team = player->m_Shared->m_nDisguiseTeam;
+        }
+
+        int skin = team == TF_TEAM_BLUE ? 1 : 0;
+
+        if (player->m_Shared->IsInvulnerable() && (!player->m_Shared->InCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED) || gpGlobals->curtime < player->m_flMvMLastDamageTime + 2.0f)) {
+            skin += 2;
+        }
+        if (player->m_iPlayerSkinOverride == 1) {
+            skin += player->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY ? 22 : 4;
+        }
+        return skin;
+    }
+#endif
 
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
@@ -1149,13 +1265,17 @@ namespace Mod::Etc::Extra_Player_Slots
             
             MOD_ADD_DETOUR_MEMBER(CTriggerCatapult_OnLaunchedVictim, "CTriggerCatapult::OnLaunchedVictim");
             
-#ifdef SE_IS_TF2
+#ifdef FAKE_PLAYER_CLASS
             MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
 
             MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
             MOD_ADD_DETOUR_MEMBER(CBaseCombatWeapon_Equip, "CBaseCombatWeapon::Equip");
             MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip, "CTFWearable::Equip");
-            MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage, "CTFPlayer::OnTakeDamage");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateRagdollEntity, "CTFPlayer::CreateRagdollEntity [args]");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_CreateFeignDeathRagdoll, "CTFPlayer::CreateFeignDeathRagdoll");
+            MOD_ADD_VHOOK(CWeaponMedigun_Deploy, TypeName<CWeaponMedigun>(), "CWeaponMedigun::Deploy");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_FireBullet, "CTFPlayer::FireBullet");
+            MOD_ADD_DETOUR_MEMBER(CTFPlayer_MaybeDrawRailgunBeam, "CTFPlayer::MaybeDrawRailgunBeam");
 #endif
             
 			//MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldTransmit,               "CTFPlayer::ShouldTransmit");
@@ -1217,6 +1337,176 @@ namespace Mod::Etc::Extra_Player_Slots
                     }
                 }
             }
+#ifdef FAKE_PLAYER_CLASS
+            if (ExtraSlotsEnabled()) {
+                for (int i = DEFAULT_MAX_PLAYERS + 1; i <= gpGlobals->maxClients; i++) {
+                    auto player = ToTFPlayer(UTIL_PlayerByIndex(i));
+                    if (player != nullptr) {
+                        if (player->m_hRagdoll != nullptr) {
+                            player->m_hRagdoll->Remove();
+                            player->m_hRagdoll = nullptr;
+                        }
+
+                        
+                        bool isRed = player->GetTeamNumber() == TF_TEAM_RED;
+                        bool isScoped = player->IsAlive() && player->m_Shared->InCond(TF_COND_AIMING) && rtti_cast<CTFSniperRifle *>(player->GetActiveWeapon()) != nullptr;
+                        bool wasScoped = player->GetCustomVariableBool<"wasscoped">();
+                        if (isScoped != wasScoped) {
+                            if (isScoped) {
+                                auto sprite = CSprite::SpriteCreate("sprites/glow01.vmt", player->GetAbsOrigin(), false);
+                                sprite->KeyValue("scale", "0.3");
+
+                                auto laser = CBeam::BeamCreate("sprites/laser.vmt", 2.0f);
+                                laser->EntsInit(laser, sprite);
+                                player->SetCustomVariable<"beament">(Variant((CBaseEntity *) laser));
+                                player->SetCustomVariable<"beamspriteent">(Variant((CBaseEntity *) sprite));
+                                sprite->SetRenderMode(kRenderTransAdd);
+                                sprite->SetRenderColorR(isRed ? 255 : 0);
+                                sprite->SetRenderColorG(isRed ? 0 : 0);
+                                sprite->SetRenderColorB(isRed ? 0 : 255);
+                                laser->SetRenderColorR(isRed ? 255 : 0);
+                                laser->SetRenderColorG(isRed ? 0 : 0);
+                                laser->SetRenderColorB(isRed ? 0 : 255);
+                                laser->SetParent(player, -1);
+                                sprite->SetParent(player, -1);
+                                laser->SetAbsOrigin(player->EyePosition());
+                            }
+                            else {
+                                variant_t beam;
+                                if (player->GetCustomVariableVariant<"beament">(beam) && beam.Entity() != nullptr) {
+                                    beam.Entity()->Remove();
+                                }
+                                variant_t sprite;
+                                if (player->GetCustomVariableVariant<"beamspriteent">(sprite) && sprite.Entity() != nullptr) {
+                                    sprite.Entity()->Remove();
+                                }
+
+                            }
+                            player->SetCustomVariable<"wasscoped">(Variant(isScoped));
+                        }
+
+                        if (!player->IsAlive() && gpGlobals->curtime - player->GetDeathTime() < 0.05f) continue;
+
+                        player->m_bClientSideAnimation = player->m_Shared->InCond(TF_COND_TAUNTING);
+                        bool refreshBodyGroup = false;
+                        
+                        for (int i = 0; i < player->WeaponCount(); i++) {
+                            auto weapon = player->GetWeapon(i);
+                            if (weapon != nullptr) {
+                                weapon->m_nSkin = static_cast<CTFWeaponBase *>(weapon)->GetSkin();
+                                weapon->m_nSequence = 0;
+                                if (!weapon->GetCustomVariableBool<"equipextraslots">()) {
+                                    weapon->SetCustomVariable<"equipextraslots">(Variant(true));
+                                    refreshBodyGroup = true;
+                                }
+                                bool isCurrentWeapon = weapon == player->GetActiveWeapon();
+                                bool wasCurrentWeapon = weapon->GetCustomVariableBool<"deployextraslots">();
+                                if (isCurrentWeapon != wasCurrentWeapon) {
+                                    weapon->SetCustomVariable<"deployextraslots">(Variant(isCurrentWeapon));
+                                    refreshBodyGroup = true;
+                                }
+                            }
+                        }
+                        
+                        for (int i = 0; i < player->GetNumWearables(); i++) {
+                            auto wearable = player->GetWearable(i);
+                            if (wearable != nullptr) {
+                                wearable->m_nSkin = wearable->GetSkin();
+                                if (!wearable->GetCustomVariableBool<"equipextraslots">()) {
+                                    wearable->SetCustomVariable<"equipextraslots">(Variant(true));
+                                    refreshBodyGroup = true;
+                                }
+                            }
+                        }
+
+                        if (refreshBodyGroup) {
+                            player->m_Shared->RecalculatePlayerBodygroups();
+                        }
+                        bool isCritical = player->m_Shared->IsCritBoosted();
+                        bool isMiniCritical = player->m_Shared->InCond(TF_COND_OFFENSEBUFF) || player->m_Shared->InCond(TF_COND_ENERGY_BUFF);
+                        constexpr color32 critWeaponColorRed(255,60,50,255);
+                        constexpr color32 critWeaponColorBlu(40,70,255,255);
+                        constexpr color32 baseColor(255,255,255,255);
+                        color32 desiredWeaponColor = baseColor;
+                        variant_t oldWeaponColorVariant;
+                        player->m_nSkin = GetPlayerSkinNumber(player);
+                        player->GetCustomVariableVariant<"oldweaponcolor">(oldWeaponColorVariant);
+                        color32 oldWeaponColor = oldWeaponColorVariant.Color32();
+                        if (isCritical) {
+                            desiredWeaponColor = isRed ? critWeaponColorRed : critWeaponColorBlu;
+                        }
+                        else if (isMiniCritical) {
+                            desiredWeaponColor = isRed ? color32(255, 140, 60, 255) : color32(70, 150, 255, 255);
+                        }
+                        if (desiredWeaponColor != oldWeaponColor) {
+                            for (int i = 0; i < player->WeaponCount(); i++) {
+                                auto weapon = player->GetWeapon(i);
+                                if (weapon != nullptr) {
+                                    auto color = weapon->GetRenderColor();
+                                    if (color.r == oldWeaponColor.r && color.g == oldWeaponColor.g && color.b == oldWeaponColor.b) {
+                                        weapon->SetRenderColorR(desiredWeaponColor.r);
+                                        weapon->SetRenderColorG(desiredWeaponColor.g);
+                                        weapon->SetRenderColorB(desiredWeaponColor.b);
+                                    }
+                                    if (isCritical) {
+                                        DispatchParticleEffect(isRed ? "critgun_weaponmodel_red" : "critgun_weaponmodel_blu", PATTACH_ABSORIGIN_FOLLOW, weapon, -1, false);
+                                    }
+                                    else {
+                                        StopParticleEffects(weapon);
+                                    }
+                                }
+                            }
+                            player->SetCustomVariable<"oldweaponcolor">(Variant(desiredWeaponColor));
+                        }
+                        
+                        constexpr color32 jarateColor(255,255,70,255);
+                        bool isJarated = player->m_Shared->InCond(TF_COND_URINE);
+                        bool wasJarated = player->GetCustomVariableBool<"wasjarated">();
+                        if (isJarated != wasJarated) {
+                            color32 desiredColor = isJarated ? jarateColor : baseColor;
+                            color32 oldColor = isJarated ? baseColor : jarateColor;
+                            auto color = player->GetRenderColor();
+                            if (color.r == oldColor.r && color.g == oldColor.g && color.b == oldColor.b) {
+                                player->SetRenderColorR(desiredColor.r);
+                                player->SetRenderColorG(desiredColor.g);
+                                player->SetRenderColorB(desiredColor.b);
+                            }
+                            if (isJarated) {
+                                DispatchParticleEffect("peejar_drips", PATTACH_ABSORIGIN_FOLLOW, player, -1, false);
+                            }
+                            else {
+                                StopParticleEffects(player);
+                            }
+                            player->SetCustomVariable<"wasjarated">(Variant(isJarated));
+                        }
+
+                        bool isMilked = player->m_Shared->InCond(TF_COND_MAD_MILK);
+                        bool wasMilked = player->GetCustomVariableBool<"wasmilked">();
+                        if (isMilked != wasMilked) {
+                            if (isMilked) {
+                                DispatchParticleEffect("peejar_drips_milk", PATTACH_ABSORIGIN_FOLLOW, player, -1, false);
+                            }
+                            else {
+                                StopParticleEffects(player);
+                            }
+                            player->SetCustomVariable<"wasmilked">(Variant(isMilked));
+                        }
+
+                        if (isScoped) {
+                            variant_t sprite;
+                            if (player->GetCustomVariableVariant<"beamspriteent">(sprite) && sprite.Entity() != nullptr) {
+                                
+                                Vector forward;
+                                player->EyeVectors(&forward);
+                                trace_t trace;
+		                        UTIL_TraceLine(player->EyePosition(), player->EyePosition() + forward * 8192, MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &trace);
+                                sprite.Entity()->SetAbsOrigin(trace.endpos);
+                            }
+                        }
+                    }
+                }
+            }
+#endif
             if (ExtraSlotsEnabled() && sig_etc_extra_player_slots_show_player_names.GetBool() && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool())) {
                 for (int i = 1 + gpGlobals->tickcount % 2; i <= gpGlobals->maxClients; i+=2) {
                     auto player = (CTFPlayer *)(world_edict + i)->GetUnknown();
@@ -1254,8 +1544,6 @@ namespace Mod::Etc::Extra_Player_Slots
 
         virtual void LevelInitPreEntity() override
 		{
-            player33_fake_team_num = -1;
-            player33_fake_kill_time=FLT_MIN;
             kill_events.clear();
 
             if (ExtraSlotsEnabled() && MapHasExtraSlots(STRING(gpGlobals->mapname)) && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {

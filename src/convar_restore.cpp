@@ -52,6 +52,9 @@ namespace ConVar_Restore
 			// 	Warning("ConVar_Restore::Save: ConVar \"%s\" is a duplicate\n", var->GetName());
 			// 	continue;
 			// }
+			if (var->IsFlagSet(FCVAR_DEVELOPMENTONLY)) {
+				continue;
+			}
 			if (var->IsFlagSet(FCVAR_NEVER_AS_STRING)) {
 				Warning("ConVar_Restore::Save: ConVar \"%s\" has unsupported flag FCVAR_NEVER_AS_STRING\n", var->GetName());
 				continue;

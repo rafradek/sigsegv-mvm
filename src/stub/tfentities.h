@@ -84,15 +84,17 @@ public:
 	// TODO: CanEquip
 	// TODO: Equip
 	void UnEquip(CBasePlayer *player) { vt_UnEquip   (this, player); }
+
+	int GetSkin()                     { return vt_GetSkin   (this); }
 	// TODO: OnWearerDeath
 	// TODO: GetDropType
 	// TODO: IsViewModelWearable
-	// TODO: GetSkin
 	// TODO: InternalSetPlayerDisplayModel
 	
 private:
 	static MemberVFuncThunk<CEconWearable *, void, CBaseEntity *> vt_RemoveFrom;
 	static MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> vt_UnEquip;
+	static MemberVFuncThunk<CEconWearable *, int>                 vt_GetSkin;
 };
 
 class CTFWearable : public CEconWearable, public IHasGenericMeter

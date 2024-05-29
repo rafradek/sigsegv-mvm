@@ -202,6 +202,7 @@ MemberFuncThunk<const CTFPlayerShared *, bool                                > C
 MemberFuncThunk<      CTFPlayerShared *, void, CBaseEntity *, float, float, float, bool, CTFPlayer *> CTFPlayerShared::ft_Heal("CTFPlayerShared::Heal");
 MemberFuncThunk<      CTFPlayerShared *, float, CBaseEntity *                > CTFPlayerShared::ft_StopHealing              ("CTFPlayerShared::StopHealing");
 MemberFuncThunk<      CTFPlayerShared *, int, CBaseEntity *                  > CTFPlayerShared::ft_FindHealerIndex          ("CTFPlayerShared::FindHealerIndex");
+MemberFuncThunk<      CTFPlayerShared *, void                                > CTFPlayerShared::ft_RecalculatePlayerBodygroups("CTFPlayerShared::RecalculatePlayerBodygroups");
 
 
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
@@ -249,6 +250,7 @@ IMPL_SENDPROP(bool,                 CTFPlayer, m_bUseBossHealthBar,      CTFPlay
 IMPL_SENDPROP(float,                CTFPlayer, m_flHeadScale,            CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flTorsoScale,           CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flHandScale,            CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_iPlayerSkinOverride,    CTFPlayer);
 
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);

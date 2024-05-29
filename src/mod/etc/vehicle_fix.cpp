@@ -345,7 +345,6 @@ namespace Mod::Util::Vehicle_Fix
 	
 	DETOUR_DECL_MEMBER(void, CPropVehicleDriveable_TraceAttack, const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, void *pAccumulator)
 	{
-		DevMsg("Has trace attack\n");
 		CTakeDamageInfo info2 = info;
 		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
 		float strength = vehicle->GetCustomVariableFloat<"meleeforce">(1.0f);
@@ -514,7 +513,7 @@ namespace Mod::Util::Vehicle_Fix
 			MOD_ADD_DETOUR_MEMBER(CBaseServerVehicle_GetExitAnimToUse, "CBaseServerVehicle::GetExitAnimToUse");
 			MOD_ADD_DETOUR_MEMBER(CPropVehicleDriveable_Use, "CPropVehicleDriveable::Use");
 			MOD_ADD_DETOUR_MEMBER(CMultiplayRules_VoiceCommand, "CMultiplayRules::VoiceCommand");
-			MOD_ADD_DETOUR_MEMBER(CBasePlayer_GetInVehicle, "CBasePlayer::GetInVehicle");
+			MOD_ADD_DETOUR_MEMBER(CBasePlayer_GetInVehicle, "CBasePlayer::GetInVehicle [clone]");
 			MOD_ADD_DETOUR_MEMBER(CBasePlayer_LeaveVehicle, "CBasePlayer::LeaveVehicle");
 			MOD_ADD_VHOOK(CPropVehicleDriveable_PhysicsSolidMaskForEntity, TypeName<CPropVehicleDriveable>(), "CBaseEntity::PhysicsSolidMaskForEntity");
 			MOD_ADD_VHOOK(CPropVehicleDriveable_OnTakeDamage, TypeName<CPropVehicleDriveable>(), "CBaseEntity::OnTakeDamage");
@@ -539,7 +538,7 @@ namespace Mod::Util::Vehicle_Fix
 			MOD_ADD_VHOOK(CPropVehicleDriveable_IsCombatItem, TypeName<CPropVehicleDriveable>(), "CBaseEntity::IsCombatItem");
 		}
 
-    virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
+    	virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
         virtual void LevelInitPreEntity() override
 		{

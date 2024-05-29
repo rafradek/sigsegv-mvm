@@ -185,13 +185,6 @@ namespace Mod::Etc::Misc
 		}
 
 	}
-
-	DETOUR_DECL_MEMBER(void, CFuncIllusionary_Spawn)
-	{
-		auto entity = reinterpret_cast<CBaseEntity *>(this);
-		CBaseEntity::PrecacheModel(STRING(entity->GetModelName()));
-		DETOUR_MEMBER_CALL(CFuncIllusionary_Spawn)();
-	}	
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnRemoveStunned)
 	{
@@ -201,17 +194,6 @@ namespace Mod::Etc::Misc
 			weapon->RemoveEffects(EF_NODRAW);
 		}
 		DETOUR_MEMBER_CALL(CTFPlayerShared_OnRemoveStunned)();
-	}
-	
-	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPipebombLauncher_FireProjectile, CTFPlayer *player)
-	{
-		auto proj = DETOUR_MEMBER_CALL(CTFPipebombLauncher_FireProjectile)(player);
-		auto weapon = reinterpret_cast<CTFPipebombLauncher *>(this);
-		if (rtti_cast<CTFGrenadePipebombProjectile *>(proj) == nullptr) {
-			weapon->m_Pipebombs->RemoveAll();
-			weapon->m_iPipebombCount = 0;
-		}
-		return proj;
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllWeapons)
@@ -274,14 +256,8 @@ namespace Mod::Etc::Misc
 			// Drop flag to last bot nav area
 			MOD_ADD_DETOUR_MEMBER(CCaptureFlag_Drop, "CCaptureFlag::Drop");
 
-			// Fix cfuncillusionary crash
-			MOD_ADD_DETOUR_MEMBER(CFuncIllusionary_Spawn, "CFuncIllusionary::Spawn");
-
 			// Fix stun disappearing weapons
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnRemoveStunned, "CTFPlayerShared::OnRemoveStunned");
-
-			// Fix arrow crash when firing too fast
-			MOD_ADD_DETOUR_MEMBER(CTFPipebombLauncher_FireProjectile, "CTFPipebombLauncher::FireProjectile");
 
 			// Remove inactive disguise weapons on death
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllWeapons, "CTFPlayer::RemoveAllWeapons");
@@ -291,7 +267,6 @@ namespace Mod::Etc::Misc
 
 			// No deathcam if music is playing
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
-			
 		}
 	};
 	CMod s_Mod;
@@ -301,12 +276,9 @@ namespace Mod::Etc::Misc
 		"\nAutomatically destroy oldest disposable sentry when building new one"
 		"\nFixes:"
 		"\nSnap unreachable dropped mvm bomb to last nav area"
-		"\nFix unowned sentry's rockets not dealing damage"
-		"\nFix penetration arrows colliding with bounding boxes of various entities"
-		"\nFix specific CFuncIllusionary crash"
-		"\nFix stun disappearing weapons"
-		"\nFix crash with firing too many arrows"
-		"\nFix crash when trying to detonate non grenades on pipebomb launcher",
+		"\nUnowned sentry's rockets not dealing damage"
+		"\nPenetration arrows colliding with bounding boxes of various entities"
+		"\nStun disappearing weapons",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});

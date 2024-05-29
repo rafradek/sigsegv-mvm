@@ -1584,6 +1584,14 @@ namespace Mod::Pop::ECAttr_Extensions
 				else
 					ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
 			}
+			else {
+				if (item_def->m_iItemDefIndex >= 30143 && item_def->m_iItemDefIndex <= 30161 && bot_additem != nullptr && bot_additem->entindex() > MAX_PLAYERS) {
+					for (int i = 0; i < 3; i++) {
+						reinterpret_cast<CEconEntity *>(ret)->SetModelIndexOverride(i, CBaseEntity::PrecacheModel("models/empty.mdl"));
+					}
+					reinterpret_cast<CEconEntity *>(ret)->SetModelIndexOverride(VISION_MODE_ROME, reinterpret_cast<CEconEntity *>(ret)->GetModelIndex());
+				}
+			}
 			
 
 			return ret;

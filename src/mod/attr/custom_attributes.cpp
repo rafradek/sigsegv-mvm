@@ -8804,8 +8804,17 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		float multIncrease = additive ? player->GetMaxAmmo(ammoType) / (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float)) : new_value.m_Float / old_value.m_Float;
+		float newAmmoRatio = additive ? player->GetMaxAmmo(ammoType) : new_value.m_Float;
+		float oldAmmoRatio = additive ? (player->GetMaxAmmo(ammoType) - (new_value.m_Float - old_value.m_Float)) : old_value.m_Float;
+
+		float multIncrease = newAmmoRatio / oldAmmoRatio;
 		auto mod = player->GetOrCreateEntityModule<AmmoFractionModule>("amraction");
+		// Old max ammo count was 0, restrore ammo to full
+		if (oldAmmoRatio == 0) {
+			mod->ammoFraction[ammoType] = 0;
+			player->SetAmmoCount(ammoType, player->GetMaxAmmo(ammoType));
+			return;
+		}
 		if (mod->ammoFraction[ammoType] != 0 && player->GetAmmoCount(ammoType) * multIncrease >= player->GetMaxAmmo(ammoType)) {
 			mod->ammoFraction[ammoType] = 0;
 		}
@@ -8819,6 +8828,9 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = GetPlayerOwnerOfAttributeList(list);
 		if (player != nullptr) {
+			int maxAmmoPre = player->GetMaxAmmo(TF_AMMO_PRIMARY);
+			int ammoPre = player->GetAmmoCount(TF_AMMO_PRIMARY);
+
 			AdjustAmmo(player, TF_AMMO_PRIMARY, old_value, new_value, !pAttrDef->IsMultiplicative());
 		}
 	}

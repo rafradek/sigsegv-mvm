@@ -5930,6 +5930,8 @@
 				
 				"CEconWearable::RemoveFrom" "_ZN13CEconWearable10RemoveFromEP11CBaseEntity"
 				"CEconWearable::UnEquip"    "_ZN13CEconWearable7UnEquipEP11CBasePlayer"
+				"CEconWearable::GetSkin"    "_ZN13CEconWearable7GetSkinEv"
+				
 				
 				"CPlayerInventory::DumpInventoryToConsole" "_ZN16CPlayerInventory22DumpInventoryToConsoleEb"
 				"CPlayerInventory::GetMaxItemCount"        "_ZNK16CPlayerInventory15GetMaxItemCountEv"
@@ -6031,6 +6033,8 @@
 				"CTFWeaponBase::GetViewModelWeaponRole" "_ZN13CTFWeaponBase22GetViewModelWeaponRoleEv"
 				"CTFWeaponBase::OnActiveStateChanged" "_ZN13CTFWeaponBase20OnActiveStateChangedEi"
 				"CTFWeaponBase::CanHolster" "_ZNK13CTFWeaponBase10CanHolsterEv"
+				"CTFWeaponBase::GetSkin" "_ZN13CTFWeaponBase7GetSkinEv"
+				
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
 				"CTFWeaponBaseGun::FireProjectile"       "_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
@@ -6063,6 +6067,7 @@
 				"CWeaponMedigun::SecondaryAttack" "_ZN14CWeaponMedigun15SecondaryAttackEv"
 				"CWeaponMedigun::CycleResistType" "_ZN14CWeaponMedigun15CycleResistTypeEv"
 				"CWeaponMedigun::FindAndHealTargets" "_ZN14CWeaponMedigun18FindAndHealTargetsEv"
+				"CWeaponMedigun::Deploy" "_ZN14CWeaponMedigun6DeployEv"
 
 				"CTFWeaponFlameBall::FireProjectile" "_ZN18CTFWeaponFlameBall14FireProjectileEP9CTFPlayer"
 				
@@ -6124,6 +6129,11 @@
 				"CTFBaseBoss::GetCurrencyValue" "_ZN11CTFBaseBoss16GetCurrencyValueEv"
 
 				"CTFTankBoss::GetCurrencyValue" "_ZN11CTFTankBoss16GetCurrencyValueEv"
+
+				"CBeam::BeamCreate" "_ZN5CBeam10BeamCreateEPKcf"
+				"CBeam::EntsInit" "_ZN5CBeam8EntsInitEP11CBaseEntityS1_"
+
+				"CSprite::SpriteCreate" "_ZN7CSprite12SpriteCreateEPKcRK6Vectorb"
 				
 				"CLagCompensationManager::BacktrackPlayer" "_ZN23CLagCompensationManager15BacktrackPlayerEP11CBasePlayerf"
 
@@ -6160,6 +6170,10 @@
 				"CServerNetworkProperty::IsInPVS" "_ZN22CServerNetworkProperty7IsInPVSEPK18CCheckTransmitInfo"
 
 				"CServerGameDLL::Shutdown" "_ZN14CServerGameDLL11DLLShutdownEv"
+
+				"ClientData_Update" "_Z17ClientData_UpdateP11CBasePlayer"
+
+				"GetCurrentSkyCamera" "_Z19GetCurrentSkyCamerav"
 			}
 			
 			"addrs_group"

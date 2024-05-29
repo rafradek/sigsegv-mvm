@@ -1135,7 +1135,7 @@
 				"CTFPlayerShared::OnAddTeleported" "_ZN15CTFPlayerShared15OnAddTeleportedEv"
 				"CTFPlayerShared::OnRemoveTeleported" "_ZN15CTFPlayerShared18OnRemoveTeleportedEv"
 				"CTFPlayerShared::RemoveAllCond" "_ZN15CTFPlayerShared13RemoveAllCondEv"
-				
+				"CTFPlayerShared::RecalculatePlayerBodygroups" "_ZN15CTFPlayerShared27RecalculatePlayerBodygroupsEv"
 			}
 		}
 	}

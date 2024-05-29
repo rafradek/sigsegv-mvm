@@ -66,6 +66,7 @@ public:
 	DECL_RELATIVE   (DataCacheHandle_t,  m_boneCacheHandle);
 	DECL_RELATIVE   (unsigned short,  m_fBoneCacheFlags);
 	DECL_SENDPROP  (CHandle<CBaseEntity>,  m_hLightingOriginRelative);
+	DECL_SENDPROP  (bool, m_bClientSideAnimation);
 	
 	
 private:

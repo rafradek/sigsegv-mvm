@@ -528,6 +528,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_AllowCivilian                   ("sig_etc_allow_civilian_class"),
 			m_bNPCLagCompensation             ("sig_ai_lag_compensation_npc"),
 			m_FixBotSpawningStalls            ("sig_pop_wavespawn_spawnbot_stall_fix"),
+			m_ExtraBotsReservedSlots          ("sig_pop_extra_bots_reserved_slots"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -964,6 +965,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<int>  m_AllowCivilian;
 		CValueOverridePopfile_ConVar<bool> m_bNPCLagCompensation;
 		CValueOverridePopfile_ConVar<bool> m_FixBotSpawningStalls;
+		CValueOverridePopfile_ConVar<bool> m_ExtraBotsReservedSlots;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverridePopfile_ConVar<std::string> m_CustomUpgradesFile;
@@ -6800,6 +6802,8 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_iLoseTime = subkey->GetInt();
 			} else if (FStrEq(name, "FixWavespawnReserveSlotsOnDisabledSpawnbot")) {
 				state.m_FixBotSpawningStalls.Set(subkey->GetBool());
+			} else if (FStrEq(name, "ExtraBotSlotsReservedNormalSlotCount")) {
+				state.m_ExtraBotsReservedSlots.Set(subkey->GetBool());
 			} else if (FStrEq(name, "EnemyTeamForReverse")) {
 				if (FStrEq(subkey->GetString(), "Red")) {
 					state.m_iEnemyTeamForReverse = 2;

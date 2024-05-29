@@ -25,10 +25,16 @@
 #include <boost/tokenizer.hpp>
 #include "mod/etc/mapentity_additions.h"
 #include "mod/etc/entity_limit_manager.h"
+#include "mod/mvm/player_limit.h"
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
 
 bool TeleportNearVictim(CTFBot *spy, CTFPlayer *victim, int dist) {return ft_TeleportNearVictim(spy,victim,dist);};
+
+namespace Mod::Etc::Extra_Player_Slots
+{
+	bool ExtraSlotsEnabledForBots();
+}
 
 namespace Mod::Pop::TFBot_Extensions
 {
@@ -282,6 +288,8 @@ namespace Mod::Pop::TFBot_Extensions
 		bool no_idle_sound = false;
 
 		bool prefer_extra_slots = false;
+
+		bool prefer_normal_slots = false;
 	};
 
 	std::unordered_map<CTFBotSpawner *, SpawnerData> spawners;
@@ -683,6 +691,8 @@ namespace Mod::Pop::TFBot_Extensions
 				spawners[spawner].no_idle_sound = subkey->GetBool();
 			} else if (FStrEq(name, "PreferExtraSlots")) {
 				spawners[spawner].prefer_extra_slots = subkey->GetBool();
+			} else if (FStrEq(name, "PreferNormalSlots")) {
+				spawners[spawner].prefer_normal_slots = subkey->GetBool();
 //#ifdef ENABLE_BROKEN_STUFF
 			} else if (FStrEq(name, "DropWeapon")) {
 				spawners[spawner].drop_weapon = subkey->GetBool();
@@ -720,8 +730,15 @@ namespace Mod::Pop::TFBot_Extensions
 		};
 		
 		l_postproc_ecattr(spawner, spawner->m_DefaultAttrs);
+		bool reserve = spawner->m_iClass == TF_CLASS_SPY || spawner->m_DefaultAttrs.m_nBotAttrs & (CTFBot::ATTR_USE_BOSS_HEALTH_BAR | CTFBot::ATTR_MINI_BOSS);
 		for (auto& ecattr : spawner->m_ECAttrs) {
 			l_postproc_ecattr(spawner, ecattr);
+
+			reserve |= ecattr.m_nBotAttrs & (CTFBot::ATTR_USE_BOSS_HEALTH_BAR | CTFBot::ATTR_MINI_BOSS);
+		}
+
+		if (reserve && Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledForBots() && !spawners[spawner].prefer_extra_slots) {
+			spawners[spawner].prefer_normal_slots = true;
 		}
 		
 		return result;
@@ -856,7 +873,6 @@ namespace Mod::Pop::TFBot_Extensions
 							
 							wearable->m_bValidatedAttachedEntity = true;
 							wearable->GiveTo(bot);
-							DevMsg("Created wearable %d\n",bot->GetPlayerClass()->GetClassIndex()*2 + i);
 							bot->EquipWearable(wearable);
 							const char *path = ROMEVISON_MODELS[bot->GetPlayerClass()->GetClassIndex()*2 + i];
 							int model_index = CBaseEntity::PrecacheModel(path);
@@ -919,18 +935,6 @@ namespace Mod::Pop::TFBot_Extensions
 						entity->ChangeTeam(TEAM_SPECTATOR);
 					}, false);
 				}
-				
-				if (data.prefer_extra_slots) {
-					// Swap the team vector contents back
-					auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
-					auto &vec = team->m_aPlayers.Get();
-					int count = vec.Count();
-					for (int i = 0; i < count/2; i++) {
-						auto swap = vec[count - 1 - i];
-						vec[count - 1 - i] = vec[i];
-						vec[i] = swap;
-					}
-				}
 
 				/*for (int i = 0; i < bot->WeaponCount(); i++) {
 					CBaseCombatWeapon *weapon = bot->GetWeapon(i);
@@ -955,30 +959,73 @@ namespace Mod::Pop::TFBot_Extensions
 		return DETOUR_STATIC_CALL(DoTeleporterOverride)(spawnEnt, vSpawnPosition, bClosestPointOnNav);
 	}
 
+	ConVar sig_pop_extra_bots_reserved_slots("sig_pop_extra_bots_reserved_slots", "8", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Reserve this many regual slots for giants/preferred bots when extra player slots is enabled");
+
 	RefCount rc_CTFBotSpawner_Spawn;
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		auto spawner = reinterpret_cast<CTFBotSpawner *>(this);
 		current_spawner = spawner;
 
+		bool swapSlots = false;
 		auto it = spawners.find(spawner);
-		if (it != spawners.end()) {
-			SpawnerData &data = (*it).second;
-			if (data.prefer_extra_slots) {
-				// Swap the team vector contents to use extra slots instead of normal
-				auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
-				auto &vec = team->m_aPlayers.Get();
-				int count = vec.Count();
-				for (int i = 0; i < count/2; i++) {
-					auto swap = vec[count - 1 - i];
-					vec[count - 1 - i] = vec[i];
-					vec[i] = swap;
+
+		if (Mod::Etc::Extra_Player_Slots::ExtraSlotsEnabledForBots()) {
+			
+			int red, blu, spectators, robots;
+			if (Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) >= MAX_PLAYERS) {
+
+				int countBotsNormalSlots = 0;
+				auto &teamVec = TFTeamMgr()->GetTeam(TEAM_SPECTATOR)->m_aPlayers.Get();
+				FOR_EACH_VEC(teamVec, i) {
+					if (teamVec[i]->entindex() <= MAX_PLAYERS) {
+						countBotsNormalSlots++;
+					}
+					else {
+						break;
+					}
 				}
+				if (countBotsNormalSlots < sig_pop_extra_bots_reserved_slots.GetInt()) {
+					swapSlots = true;
+				} 
+
+				if (it != spawners.end()) {
+					SpawnerData &data = (*it).second;
+					if (data.prefer_extra_slots) {
+						swapSlots = true;
+					}
+					if (data.prefer_normal_slots) {
+						swapSlots = false;
+					}
+				}
+			}
+		}
+
+		if (swapSlots) {
+			// Swap the team vector contents to use extra slots instead of normal
+			auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+			auto &vec = team->m_aPlayers.Get();
+			int count = vec.Count();
+			for (int i = 0; i < count/2; i++) {
+				auto swap = vec[count - 1 - i];
+				vec[count - 1 - i] = vec[i];
+				vec[i] = swap;
 			}
 		}
 		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
 		if (result && it != spawners.end()) {
 			OnBotSpawn(spawner,ents, (*it).second);
+		}
+		if (swapSlots) {
+			// Swap the team vector contents back
+			auto team = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+			auto &vec = team->m_aPlayers.Get();
+			int count = vec.Count();
+			for (int i = 0; i < count/2; i++) {
+				auto swap = vec[count - 1 - i];
+				vec[count - 1 - i] = vec[i];
+				vec[i] = swap;
+			}
 		}
 		return result;
 	}

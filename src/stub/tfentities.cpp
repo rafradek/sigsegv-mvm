@@ -71,6 +71,7 @@ StaticFuncThunk<CTFReviveMarker *, CTFPlayer *> CTFReviveMarker::ft_Create ("CTF
 
 MemberVFuncThunk<CEconWearable *, void, CBaseEntity *> CEconWearable::vt_RemoveFrom(TypeName<CEconWearable>(), "CEconWearable::RemoveFrom");
 MemberVFuncThunk<CEconWearable *, void, CBasePlayer *> CEconWearable::vt_UnEquip   (TypeName<CEconWearable>(), "CEconWearable::UnEquip");
+MemberVFuncThunk<CEconWearable *, int>                 CEconWearable::vt_GetSkin   (TypeName<CEconWearable>(), "CEconWearable::GetSkin");
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFWearable, m_hWeaponAssociatedWith, CTFWearable);
 IMPL_SENDPROP(bool, CTFWearable, m_bDisguiseWearable, CTFWearable);

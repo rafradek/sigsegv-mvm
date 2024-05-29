@@ -15,6 +15,7 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseAnimating, m_hLightingOrigin, CBaseAnim
 IMPL_SENDPROP(float, CBaseAnimating, m_flPlaybackRate, CBaseAnimating);
 IMPL_SENDPROP(float[24], CBaseAnimating, m_flPoseParameter, CBaseAnimating);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CBaseAnimating, m_hLightingOriginRelative,  CBaseAnimating);
+IMPL_SENDPROP(bool, CBaseAnimating, m_bClientSideAnimation,  CBaseAnimating);
 
 IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceFinished);
 IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceLoops);

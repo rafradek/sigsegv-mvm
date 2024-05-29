@@ -1081,6 +1081,8 @@ namespace Mod::Perf::SendProp_Optimize
         static unsigned short edictsAlwaysSend[MAX_EDICTS];
         static int nEdictsAlwaysSend = 0;
         auto player = (CBasePlayer *) GetContainingEntity(pInfo->m_pClientEnt);
+        if (player == nullptr) return;
+        
         bool isTV = player->IsReplay() || player->IsHLTV();
         int skyBoxArea = player->m_Local->m_skybox3darea;
         transmitAlways = pInfo->m_pTransmitAlways;

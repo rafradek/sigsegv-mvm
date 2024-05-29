@@ -251,7 +251,11 @@ class CMathCounter : public CLogicalEntity
 
 class CSprite : public CBaseEntity
 {
+public:
+	static CSprite *SpriteCreate(const char *name, const Vector &origin, bool animate) { return ft_SpriteCreate(name, origin, animate); }
 	
+private:
+	static StaticFuncThunk<CSprite *, const char *, const Vector &, bool> ft_SpriteCreate;
 };
 
 class CSpriteTrail : public CSprite
@@ -272,6 +276,23 @@ public:
 	DECL_DATAMAP (bool, m_bStartActive);
 	DECL_DATAMAP (string_t, m_iszEffectName);
 	DECL_SENDPROP(CHandle<CBaseEntity>[63], m_hControlPointEnts);
+};
+
+
+class CBeam : public CBaseEntity
+{
+public:
+	void EntsInit(CBaseEntity *start, CBaseEntity *end) { ft_EntsInit(this, start, end); }
+	
+	static CBeam *BeamCreate(const char *name, float width) { return ft_BeamCreate(name, width); }
+	
+	DECL_SENDPROP(float, m_fWidth);
+	DECL_SENDPROP(float, m_fEndWidth);
+	DECL_SENDPROP(float, m_fSpeed);
+private:
+	static MemberFuncThunk<CBeam *, void, CBaseEntity *, CBaseEntity *> ft_EntsInit;
+
+	static StaticFuncThunk<CBeam *, const char *, float> ft_BeamCreate;
 };
 
 

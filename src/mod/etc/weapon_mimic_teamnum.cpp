@@ -118,7 +118,6 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (mimic->GetOwnerEntity() != nullptr && mimic->GetOwnerEntity()->IsPlayer()) {
 			scorer = mimic->GetOwnerEntity();
 		}
-		Msg("Mimic fire\n");
 		
 		const char *weaponName = mimic->GetCustomVariable<"weaponname">();
 		if (weaponName != nullptr) {
