@@ -233,8 +233,7 @@ namespace Mod::Etc::Extra_Player_Slots
 #else
                     if (TFGameRules()->IsMannVsMachineMode()) {
                         int red, blu, spectators, robots;
-                        desiredSlot = gpGlobals->maxClients - 1;
-                        //desiredSlot = Clamp(Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) - 1, DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
+                        desiredSlot = Clamp(Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots) - 1, DEFAULT_MAX_PLAYERS - 1, server->GetMaxClients() - 1);
                     }
                     else {
                         desiredSlot = gpGlobals->maxClients - 1;
