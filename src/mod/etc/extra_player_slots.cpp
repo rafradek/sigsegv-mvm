@@ -64,7 +64,7 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_allow_bots("sig_etc_extra_player_slots_allow_bots", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Allow bots to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (sig_etc_extra_player_slots_allow_bots.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
+			if (sig_etc_extra_player_slots_allow_bots.GetBool() && cvar_enable.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
                 engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
             }
 		});
@@ -72,7 +72,7 @@ namespace Mod::Etc::Extra_Player_Slots
     ConVar sig_etc_extra_player_slots_allow_players("sig_etc_extra_player_slots_allow_players", "0", FCVAR_NOTIFY,
 		"Allow players to use extra player slots",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			if (sig_etc_extra_player_slots_allow_players.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
+			if (sig_etc_extra_player_slots_allow_players.GetBool() && cvar_enable.GetBool() && flOldValue == 0.0f && ExtraSlotsEnabled() && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt()) {
                 engine->ChangeLevel(STRING(gpGlobals->mapname), nullptr);
             }
 		});

@@ -114,7 +114,7 @@ namespace Mod::MvM::Gamemode_Converter
         bool shouldPlaceHatch = false;
         Vector hatchPropOrigin = vec3_origin;
 
-        std::list<ParsedEntity>::iterator captureZone;
+        std::list<ParsedEntity>::iterator captureZone = parsedEntities.end();
 
         for (auto it = parsedEntities.begin(); it != parsedEntities.end();) {
             auto &parsedEntity = *it;
@@ -591,10 +591,12 @@ namespace Mod::MvM::Gamemode_Converter
             hatchDestroyRelay.emplace("OnTrigger", "hatch_kill,Disable,,0.5,-1");
         }
 
-        captureZone->erase("teamnum");
-        captureZone->emplace("teamnum", "3");
-        captureZone->emplace("OnCapture", "bots_win,RoundWin,,0,-1");
-        captureZone->emplace("OnCapture", "hatch_bust_relay,trigger,,1,-1");
+        if (captureZone != parsedEntities.end()) {
+            captureZone->erase("teamnum");
+            captureZone->emplace("teamnum", "3");
+            captureZone->emplace("OnCapture", "bots_win,RoundWin,,0,-1");
+            captureZone->emplace("OnCapture", "hatch_bust_relay,trigger,,1,-1");
+        }
 
         WriteEntityString(entitiesStr, parsedEntities);
 

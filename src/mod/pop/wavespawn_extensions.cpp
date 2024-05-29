@@ -839,6 +839,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		// delete the temporary copy of the KV subtree
 		kv->deleteThis();
 
+		if (result && wavespawn->m_totalCount > 100000 && rtti_cast<CRandomChoiceSpawner *>(wavespawn->m_Spawner)) {
+			wavespawn->m_totalCount = 100000;
+			Warning("Total count of wavespawn %s reduced to 100000 to reduce RandomChoice related memory leaks\n", wavespawn->m_name.Get());
+		}
 		if (result && hidden) {
 			last_wavespawn_hidden = true;
 		}
@@ -1363,6 +1367,37 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return DETOUR_MEMBER_CALL(NextBotManager_ShouldUpdate)(bot);
 	}*/
 	
+	DETOUR_DECL_MEMBER(string_t, CRandomChoiceSpawner_GetClassIcon, int index)
+	{
+		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		if (spawner->m_SubSpawners.IsEmpty()) return NULL_STRING;
+		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetClassIcon)(index);
+	}
+	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_IsMiniBoss, int index)
+	{
+		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		if (spawner->m_SubSpawners.IsEmpty()) return false;
+		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_IsMiniBoss)(index);
+	}
+	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
+	{
+		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		if (spawner->m_SubSpawners.IsEmpty()) return false;
+		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_HasAttribute)(attr, index);
+	}
+	DETOUR_DECL_MEMBER(int, CRandomChoiceSpawner_GetClass, int index)
+	{
+		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		if (spawner->m_SubSpawners.IsEmpty()) return false;
+		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetClass)(index);
+	}
+	DETOUR_DECL_MEMBER(int, CRandomChoiceSpawner_GetHealth, int index)
+	{
+		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
+		if (spawner->m_SubSpawners.IsEmpty()) return false;
+		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetHealth)(index);
+	}
+	
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -1399,6 +1434,13 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			MOD_ADD_DETOUR_MEMBER(CWave_AddClassType, "CWave::AddClassType");
 
 			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_Parse, "CRandomChoiceSpawner::Parse");
+
+			// Fix CRandomChoiceSpawner crashes when the block is empty
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_GetClassIcon, "CRandomChoiceSpawner::GetClassIcon");
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_IsMiniBoss,   "CRandomChoiceSpawner::IsMiniBoss");
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_HasAttribute, "CRandomChoiceSpawner::HasAttribute");
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_GetClass, "CRandomChoiceSpawner::GetClass");
+			MOD_ADD_DETOUR_MEMBER(CRandomChoiceSpawner_GetHealth, "CRandomChoiceSpawner::GetHealth");
 			
 		}
 		
