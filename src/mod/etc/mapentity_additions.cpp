@@ -717,14 +717,18 @@ namespace Mod::Etc::Mapentity_Additions
         return nullptr;
 	}
 
-    DETOUR_DECL_MEMBER(void, CTFMedigunShield_RemoveShield)
+    DETOUR_DECL_MEMBER(void, CTFMedigunShield_UpdateShieldPosition)
+	{   
+		DETOUR_MEMBER_CALL(CTFMedigunShield_UpdateShieldPosition)();
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFMedigunShield_ShieldThink)
 	{
         CTFMedigunShield *shield = reinterpret_cast<CTFMedigunShield *>(this);
         int spawnflags = shield->m_spawnflags;
         //DevMsg("ShieldRemove %d f\n", spawnflags);
         
         if (spawnflags & 2) {
-            DevMsg("Spawnflags is 3\n");
             shield->SetModel("models/props_mvm/mvm_player_shield2.mdl");
         }
 
@@ -736,19 +740,6 @@ namespace Mod::Etc::Mapentity_Additions
             shield->SetBlocksLOS(false);
             return;
         }
-
-        
-		DETOUR_MEMBER_CALL(CTFMedigunShield_RemoveShield)();
-	}
-
-    DETOUR_DECL_MEMBER(void, CTFMedigunShield_UpdateShieldPosition)
-	{   
-		DETOUR_MEMBER_CALL(CTFMedigunShield_UpdateShieldPosition)();
-	}
-
-    DETOUR_DECL_MEMBER(void, CTFMedigunShield_ShieldThink)
-	{
-        
 		DETOUR_MEMBER_CALL(CTFMedigunShield_ShieldThink)();
 	}
     
@@ -2325,7 +2316,7 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CBaseEntityOutput_FireOutput, "CBaseEntityOutput::FireOutput");
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_AcceptInput, "CBaseEntity::AcceptInput");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_CleanUpMap, "CTFGameRules::CleanUpMap");
-			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_RemoveShield, "CTFMedigunShield::RemoveShield");
+			MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
 			MOD_ADD_DETOUR_MEMBER(CTriggerHurt_HurtEntity, "CTriggerHurt::HurtEntity [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_IgniteEntity, "CTriggerIgnite::IgniteEntity");
 			MOD_ADD_DETOUR_MEMBER(CTriggerIgnite_BurnEntities, "CTriggerIgnite::BurnEntities [clone]");
@@ -2422,7 +2413,6 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_UpdateObjectiveResource, "CPopulationManager::UpdateObjectiveResource");
 #endif
 		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_UpdateShieldPosition, "CTFMedigunShield::UpdateShieldPosition");
-		//	MOD_ADD_DETOUR_MEMBER(CTFMedigunShield_ShieldThink, "CTFMedigunShield::ShieldThink");
 		//	MOD_ADD_DETOUR_MEMBER(CBaseGrenade_SetDamage, "CBaseGrenade::SetDamage");
 		}
 
