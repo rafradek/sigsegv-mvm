@@ -502,7 +502,7 @@ private:
 	static MemberFuncThunk<      CEconItemAttribute *, void>                           ft_ctor;
 	static MemberFuncThunk<const CEconItemAttribute *, CEconItemAttributeDefinition *> ft_GetStaticData;
 	
-	uint32_t __pad00;
+	void *__pad00;
 	attrib_definition_index_t m_iAttributeDefinitionIndex;
 	attribute_data_union_t m_iRawValue32;
 	int m_nRefundableCurrency;

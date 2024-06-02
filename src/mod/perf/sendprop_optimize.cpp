@@ -1557,7 +1557,7 @@ namespace Mod::Perf::SendProp_Optimize
     }
     THINK_FUNC_DECL(SetVisibleStateWeapon) {
         auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
-        if (weapon->GetOwnerEntity() != nullptr && (!weapon->GetOwnerEntity()->IsAlive() || (weapon->GetOwnerEntity()->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE))) {
+        if (weapon->GetOwnerEntity() != nullptr && (!weapon->GetOwnerEntity()->IsAlive() || (weapon->GetOwnerEntity()->GetFlags() & FL_FAKECLIENT && weapon->m_iState != WEAPON_IS_ACTIVE && rtti_cast<CTFBuffItem *>(weapon) == nullptr))) {
             this->edict()->m_fStateFlags |= FL_EDICT_DONTSEND;
         }
     }

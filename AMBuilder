@@ -558,6 +558,9 @@ for sdk_name in Extension.sdks:
         os.path.join(builder.currentSourcePath, 'libs', 'liblua.a'),
         os.path.join(builder.buildPath, 'version.o')
       ]
+      binary.compiler.includes += [
+        os.path.join(builder.currentSourcePath, 'libs', 'ann', 'include')
+      ]
 
     if builder.options.debug == '1':
       binary.compiler.linkflags += [
@@ -571,7 +574,6 @@ for sdk_name in Extension.sdks:
       #os.path.join(builder.currentSourcePath, 'libs', 'lz4', 'lib'),
       #os.path.join(builder.currentSourcePath, 'libs', 'lodepng'),
       #os.path.join(builder.currentSourcePath, 'libs', 'capstone', 'include'),
-      #os.path.join(builder.currentSourcePath, 'libs', 'ann', 'include'),
       os.path.join(builder.currentSourcePath, 'libs', 'fmt', 'include'),
       os.path.join(builder.currentSourcePath, 'libs', 'lua', 'src'),
     ]
