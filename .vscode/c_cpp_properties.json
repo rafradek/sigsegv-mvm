@@ -47,7 +47,8 @@
                 "T_HEADER_ONLY",
                 "_LINUX",
                 "VERSION_SAFE_STEAM_API_INTERFACES",
-                "LUAJIT_ENABLE_LUA52COMPAT"
+                "LUAJIT_ENABLE_LUA52COMPAT",
+                "__cplusplus"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",

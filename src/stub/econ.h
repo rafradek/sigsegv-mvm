@@ -131,12 +131,12 @@ union attribute_data_union_t
 	CAttribute_WorldItemPlacement     *m_WorldItemPlacement;
 };
 #endif
-static_assert(sizeof(attribute_data_union_t) == 0x4);
+static_assert(sizeof(attribute_data_union_t) == sizeof(void *));
 
 struct static_attrib_t
 {
 	unsigned short m_iAttrIndex;    // +0x00
-	attribute_data_union_t m_Value; // +0x04
+	attribute_data_union_t m_Value; // +0x04 / +0x08
 };
 static_assert(sizeof(static_attrib_t) == 0x8);
 

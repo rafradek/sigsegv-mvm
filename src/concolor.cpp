@@ -1,7 +1,9 @@
 #include "concolor.h"
 #include "util/misc.h"
 
+#if 0
 #include <ANN/ANN.h>
+#endif
 
 
 namespace ColorSpew
@@ -114,6 +116,7 @@ namespace ColorSpew
 	ColorMap_ANSI16 map_ANSI16;
 	
 	
+#if 0
 	class ColorMap_ANSI256
 	{
 	public:
@@ -176,6 +179,7 @@ namespace ColorSpew
 		ANNkd_tree *m_Colors      = nullptr;
 	};
 	ColorMap_ANSI256 map_ANSI256;
+#endif
 	
 	
 	SpewRetval_t Spew_Return(SpewType_t type)
@@ -209,6 +213,7 @@ namespace ColorSpew
 		return s_SpewOutputBackup(type, pMsg);
 	}
 	
+#if 0
 	SpewRetval_t Spew_ANSI_256Colors(SpewType_t type, const char *pMsg)
 	{
 		int c = map_ANSI256.Map(*GetSpewOutputColor());
@@ -218,6 +223,7 @@ namespace ColorSpew
 		
 		return s_SpewOutputBackup(type, pMsg);
 	}
+#endif
 	
 	SpewRetval_t Spew_ANSI_TrueColor(SpewType_t type, const char *pMsg)
 	{
@@ -245,9 +251,11 @@ namespace ColorSpew
 			case CM_16_COLORS:
 				SpewOutputFunc(&Spew_ANSI_16Colors);
 				break;
+#if 0
 			case CM_256_COLORS:
 				SpewOutputFunc(&Spew_ANSI_256Colors);
 				break;
+#endif
 			case CM_TRUE_COLOR:
 				SpewOutputFunc(&Spew_ANSI_TrueColor);
 				break;

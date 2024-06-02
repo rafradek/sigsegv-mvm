@@ -12,7 +12,7 @@ cd ..
 
 mkdir -p build/release
 pushd build/release
-	CC=gcc CXX=g++ $CONFIGURE $PATHS --build-all --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
+	CC=gcc CXX=g++ $CONFIGURE $PATHS --targets=x86 --sdks=tf2 --build-all --enable-optimize --exclude-mods-debug --exclude-mods-visualize --exclude-vgui
 popd
 
 # mkdir -p build/release/optimize-only

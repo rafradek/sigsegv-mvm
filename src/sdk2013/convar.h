@@ -327,7 +327,11 @@ private:
 	uint32_t __PAD_0x24[0x3];
 };
 // sigsegv: sizeof(ConCommand) is known to be >= 0x24 and <= 0x30, as of TF2 20180626a
+#ifdef X64BITS
+static_assert(sizeof(ConCommand) >= 0x50 && sizeof(ConCommand) <= 0x60);
+#else
 static_assert(sizeof(ConCommand) >= 0x24 && sizeof(ConCommand) <= 0x30);
+#endif
 
 
 //-----------------------------------------------------------------------------

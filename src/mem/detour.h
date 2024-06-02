@@ -284,7 +284,7 @@ private:
 	void *m_pVirtualHookInner;
 	std::set<std::pair<void **, void *>> m_FoundFuncPtrAndVTablePtr;
 	
-#if !defined _WINDOWS
+#if !defined _WINDOWS && defined TRACE_DETOUR_ENABLED
 	void *m_pWrapperPre   = reinterpret_cast<void *>(&WrapperPre);
 	void *m_pWrapperPost  = reinterpret_cast<void *>(&WrapperPost);
 	void *m_pWrapperInner = nullptr;

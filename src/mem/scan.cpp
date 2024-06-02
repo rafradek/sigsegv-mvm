@@ -71,7 +71,7 @@ void CMultiScan::RunMultiScan()
 //	DevMsg("CMultiScan: BEGIN\n");
 	
 	unsigned int n_threads = Max(1U, std::thread::hardware_concurrency());
-	n_threads = Min(n_threads, this->m_Scanners.size());
+	n_threads = Min(n_threads, (uint) this->m_Scanners.size());
 	
 	std::vector<std::thread> threads;
 	for (unsigned int i = 0; i < n_threads; ++i) {

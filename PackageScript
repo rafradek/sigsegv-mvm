@@ -8,6 +8,7 @@ builder.SetBuildFolder('package' + PackageDirSuffix)
 # Add any folders you need to this list
 folder_list = [
   'addons/sourcemod/extensions',
+  'addons/sourcemod/extensions/x64',
 #  'addons/sourcemod/scripting',
 #  'addons/sourcemod/scripting/include',
   'addons/sourcemod/gamedata',
@@ -24,7 +25,11 @@ if not Extension.optimize_mods_only:
     folder_list += [
       'custom/sigsegv/scripts/population'
     ]
-  
+
+if 'x86_64' in Extension.target_archs:
+  folder_list.extend([
+    'addons/sourcemod/extensions/x64',
+  ])
 
 # Create the distribution folder hierarchy.
 folder_map = {}
@@ -134,7 +139,12 @@ for cxx_task in Extension.extensions:
   # binary marked as using 'other' engine is the "default engine"
   name = os.path.basename(cxx_task.binary.path).replace(".2.other", "")
 
-  dst = os.path.join('addons', 'sourcemod', 'extensions', name)
+  dst = ''
+  if cxx_task.target.arch == 'x86_64':
+    dst = os.path.join('addons', 'sourcemod', 'extensions', 'x64', name)
+  else:
+    dst = os.path.join('addons', 'sourcemod', 'extensions', name)
+
   builder.AddCommand(
     inputs  = [ cxx_task.binary ],
     argv    = [ 'cp', '--remove-destination', src, dst ],

@@ -24,3 +24,4 @@ MSVC/Report*.csv
 
 libs/lua/
 sigsegv-mvm.kdev4
+libs/*.a

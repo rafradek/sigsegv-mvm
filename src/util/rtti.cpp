@@ -284,7 +284,7 @@ namespace RTTI
 		size_t prevPtr = 0U;
 		for (auto &[ptr, name] : vtSwapped) {
 			if (!prevName.empty()) {
-				s_VTInfo.emplace(prevName, VTableInfo((void **)prevPtr, Clamp(ptr - prevPtr, 0U, sizeof(size_t) * 2048)));
+				s_VTInfo.emplace(prevName, VTableInfo((void **)prevPtr, Clamp(ptr - prevPtr, (size_t) 0U, sizeof(size_t) * 2048)));
 			}
 			prevName = name;
 			prevPtr = ptr;

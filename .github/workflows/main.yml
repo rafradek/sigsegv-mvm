@@ -49,8 +49,12 @@ jobs:
       run: |
         pushd libs/udis86
         ./autogen.sh
-        ./configure
+        ./configure --enable-static=yes
+        make CFLAGS="-m32" LDFLAGS="-m32"
+        mv libudis86/.libs/libudis86.a ../libudis86.a
+        make clean
         make
+        mv libudis86/.libs/libudis86.a ../libudis86x64.a
         popd
 
     - name: Build Lua
@@ -62,6 +66,10 @@ jobs:
         mv lua-* lua
         cd lua
         make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+        mv src/liblua.a ../liblua.a
+        make clean
+        make
+        mv src/liblua.a ../libluax64.a
         popd
 
     - name: Configure

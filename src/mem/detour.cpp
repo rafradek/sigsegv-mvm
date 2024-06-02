@@ -14,7 +14,7 @@
 #include <regex>
 
 
-#if !(defined(__i386) || defined(_M_IX86))
+#if !(defined(__i386) || defined(_M_IX86) || defined(__x86_64__) )
 #error Architecture must be IA32
 #endif
 
@@ -676,7 +676,7 @@ void CDetouredFunc::CreateWrapper()
 {
 	TRACE("[this: %08x]", (uintptr_t)this);
 	
-#if !defined _WINDOWS
+#if !defined _WINDOWS && defined TRACE_DETOUR_ENABLED
 	this->m_pWrapper = TheExecMemManager()->AllocWrapper();
 	{
 		MemProtModifier_RX_RWX(this->m_pWrapper, Wrapper::Size());
@@ -706,7 +706,7 @@ void CDetouredFunc::DestroyWrapper()
 {
 	TRACE("[this: %08x]", (uintptr_t)this);
 	
-#if !defined _WINDOWS
+#if !defined _WINDOWS && defined TRACE_DETOUR_ENABLED
 	if (this->m_pWrapper != nullptr) {
 		this->ValidateWrapper();
 		
@@ -815,7 +815,7 @@ void CDetouredFunc::Reconfigure()
 		this->InstallJump(first->m_pCallback);*/
 	}
 	
-#if !defined _WINDOWS
+#if !defined _WINDOWS && defined TRACE_DETOUR_ENABLED
 	if (!this->m_Traces.empty()) {
 
 		this->CreateWrapper();
@@ -936,7 +936,7 @@ bool CDetouredFunc::Validate(const uint8_t *ptr, const std::vector<uint8_t>& vec
 }
 
 
-#if !defined _WINDOWS
+#if !defined _WINDOWS && defined TRACE_DETOUR_ENABLED
 
 void CDetouredFunc::FuncPre()
 {
