@@ -27,26 +27,23 @@
  * or <http://www.sourcemod.net/license.php>.
  */
 
-// WARNING: VERY HEAVILY MODIFIED FROM ORIGINAL SOURCEMOD CODE!
-
 #ifndef _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
 #define _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
 
-#include <sp_vm_types.h>
-#include <sm_platform.h>
+
+//#include "common_logic.h"
+#include <am-hashmap.h>
+#include <memory>
 
 #ifdef PLATFORM_APPLE
 #include <CoreServices/CoreServices.h>
 #endif
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-
 struct DynLibInfo
 {
 	void *baseAddress;
 	size_t memorySize;
+	std::unique_ptr<char[]> originalCopy;
 };
 
 using SymbolTable = std::unordered_map<std::string, void *>;
@@ -57,31 +54,45 @@ struct Symbol
 	void *addr;
 };
 
-#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
+#if defined _LINUX || defined PLATFORM_APPLE
 struct LibSymbolTable
 {
 	LibSymbolTable(uintptr_t lib_base) : lib_base(lib_base) {}
-	
+
 	SymbolTable table;
 	uintptr_t lib_base;
-	size_t last_pos = 0;
+	uint32_t last_pos = 0;
 };
+#endif
+
+#ifdef _LINUX
+#ifndef PLATFORM_64BITS
+	using ElfHeader = Elf32_Ehdr;
+	using ElfSHeader = Elf32_Shdr;
+	using ElfSymbol = Elf32_Sym;
+#else
+    using ElfHeader = Elf64_Ehdr;
+	using ElfSHeader = Elf64_Shdr;
+	using ElfSymbol = Elf64_Sym;
+#endif
 #endif
 
 class MemoryUtils
 {
 public:
 	MemoryUtils();
-	~MemoryUtils() = default;
+public: // IMemoryUtils
+	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
 	void *ResolveSymbol(void *handle, const char *symbol);
+public:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
 	void ForEachSymbol(void *handle, const std::function<bool(const Symbol&)>& functor);
-#if defined PLATFORM_LINUX
-	void ForEachSection(void *handle, const std::function<void(const Elf32_Shdr *, const char *)>& functor);
+#if defined _LINUX
+	void ForEachSection(void *handle, const std::function<void(const ElfSHeader *, const char *)>& functor);
 #elif defined PLATFORM_WINDOWS
 	void ForEachSection(void *handle, const std::function<void(const IMAGE_SECTION_HEADER *)>& functor);
 #endif
-#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
+#if defined _LINUX || defined PLATFORM_APPLE
 private:
 	std::vector<LibSymbolTable> m_SymTables;
 #ifdef PLATFORM_APPLE
@@ -90,6 +101,8 @@ private:
 	SInt32 m_OSXMinor;
 #endif
 #endif
+	typedef ke::HashMap<void *, DynLibInfo, ke::PointerPolicy<void> > LibraryInfoMap;
+	LibraryInfoMap m_InfoMap;
 };
 
 extern MemoryUtils g_MemUtils;

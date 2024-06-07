@@ -17,6 +17,17 @@
 namespace Mod::Cond::Reprogrammed
 {
 	constexpr uint8_t s_Buf_UpdateMission[] = {
+#ifdef PLATFORM_64BITS
+		0xba, 0x01, 0x00, 0x00, 0x00,                    // +0x0000 mov     edx, 1
+		0x48, 0xc7, 0x45, 0x90, 0x00, 0x00, 0x00, 0x00,  // +0x0005 mov     [rbp+var_70], 0
+		0xbe, 0x03, 0x00, 0x00, 0x00,                    // +0x000d mov     esi, 3
+		0x48, 0x89, 0xc7,                                // +0x0012 mov     rdi, rax
+		0x48, 0xc7, 0x45, 0x98, 0x00, 0x00, 0x00, 0x00,  // +0x0015 mov     [rbp+var_68], 0
+		0x48, 0xc7, 0x45, 0xa0, 0x00, 0x00, 0x00, 0x00,  // +0x001d mov     [rbp+var_60], 0
+		0x48, 0xc7, 0x45, 0xa8, 0x00, 0x00, 0x00, 0x00,  // +0x0025 mov     [rbp+var_58], 0
+		0x48, 0x89, 0x85, 0x58, 0xff, 0xff, 0xff,        // +0x002d mov     [rbp+var_A8], rax
+		0xe8,                                            // +0x0034 call    _Z14CollectPlayersI9CTFPlayerEiP10CUtlVectorIPT_10CUtlMemoryIS3_iEEibb_isra_0_13; CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *,CUtlMemory<CTFPlayer *,int>> *,int,bool,bool) [clone]
+#else
 		0xB9, 0x01, 0x00, 0x00, 0x00,                   // +0000  mov     ecx, 1
 		0xBA, 0x03, 0x00, 0x00, 0x00,                   // +0005  mov     edx, 3
 		0xC7, 0x45, 0xB8, 0x00, 0x00, 0x00, 0x00,       // +000A  mov     dword ptr [ebp-48h], 0
@@ -27,6 +38,7 @@ namespace Mod::Cond::Reprogrammed
 		0xc7, 0x45, 0xb4, 0x00, 0x00, 0x00, 0x00,       // +0024  mov [ebp-0x4c],0x00000000
 		0xc7, 0x45, 0xb8, 0x00, 0x00, 0x00, 0x00,       // +002b  mov [ebp-0x48],0x00000000
 		0xe8,                                           // +0032  call CollectPlayers<CTFPlayer>
+#endif
 	};
 	
 	struct CPatch_CMissionPopulator_UpdateMission : public CPatch
@@ -40,13 +52,20 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_UpdateMission);
-			
+#ifdef PLATFORM_64BITS
+			mask.SetRange(0x05 + 3, 1, 0x00);
+			mask.SetRange(0x15 + 3, 1, 0x00);
+			mask.SetRange(0x1d + 3, 1, 0x00);
+			mask.SetRange(0x25 + 3, 1, 0x00);
+			mask.SetRange(0x2d + 3, 4, 0x00);
+#else
 			mask.SetRange(0x0a + 2, 5, 0x00);
 			mask.SetRange(0x13 + 2, 1, 0x00);
 			mask.SetRange(0x16 + 2, 1, 0x00);
 			mask.SetRange(0x1d + 2, 1, 0x00);
 			mask.SetRange(0x24 + 2, 1, 0x00);
 			mask.SetRange(0x2b + 2, 1, 0x00);
+#endif
 			
 			return true;
 		}
@@ -54,9 +73,13 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* change the teamnum to TEAM_ANY */
+#ifdef PLATFORM_64BITS
+			buf .SetDword(0x0d + 1, TEAM_ANY);
+			mask.SetDword(0x0d + 1, 0xffffffff);
+#else
 			buf .SetDword(0x05 + 1, TEAM_ANY);
 			mask.SetDword(0x05 + 1, 0xffffffff);
-			
+#endif
 			return true;
 		}
 	};
@@ -72,11 +95,17 @@ namespace Mod::Cond::Reprogrammed
 	
 	
 	constexpr uint8_t s_Buf_CheckStuck[] = {
+#ifdef PLATFORM_64BITS
+		0xe8, 0x85, 0x61, 0x2a, 0x00,        // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xf8, 0x03,                    // +0x0005 cmp     eax, TF_TEAM_PVE_INVADERS
+		0x0f, 0x84, 0x4c, 0x02, 0x00, 0x00,  // +0x0008 jz      loc_AAD7D0
+#else
 		0x50,                               // +0000  push eax
 		0xe8, 0x1e, 0x1d, 0x28, 0x00,       // +0001  call CBaseEntity::GetTeamNumber
 		0x83, 0xC4, 0x10,                   // +0006  add esp, 10h
 		0x83, 0xf8, 0x03,                   // +0009  cmp eax,TF_TEAM_PVE_INVADERS
 		0x0f, 0x84, 0xa5, 0x01, 0x00, 0x00, // +000C  jz +0x1a5
+#endif
 	};
 //	constexpr uint8_t s_Buf_CheckStuck_after[] = {
 //		0x50,                               // +0000  push eax
@@ -98,16 +127,30 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_CheckStuck);
-			
+
+#ifdef PLATFORM_64BITS
+			mask.SetRange(0x01 + 1, 4, 0x00);
+			mask.SetRange(0x08 + 2, 4, 0x00);
+#else
 			mask.SetRange(0x01 + 1, 4, 0x00);
 			mask.SetRange(0x06 + 2, 1, 0x00);
 			mask.SetRange(0x0c + 2, 4, 0x00);
+#endif
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+#ifdef PLATFORM_64BITS
+			/* test result */
+			buf[0x05] = 0x90;
+			buf[0x06] = 0x84;
+			buf[0x07] = 0xc0;
+
+			/* invert the jump condition code */
+			buf[0x09] = 0x85;
+#else
 			// Move add esp
 			buf[0x09] = buf[0x08];
 			buf[0x08] = buf[0x07];
@@ -127,20 +170,35 @@ namespace Mod::Cond::Reprogrammed
 			
 			mask.SetRange(0x01, 0x0b, 0xff);
 			mask[0x0d] = 0xff;
+#endif
 			
 			return true;
 		}
 		
+		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
+		{
+#ifdef PLATFORM_64BITS
+			buf.SetDword(0x00 + 1, AddrManager::GetAddrOffset("CBasePlayer::IsBot", GetFuncName(), 0x05 + this->GetActualOffset()));
+#endif
+			return true;
+		}
 		static FPtr_IsBot s_CBasePlayer_IsBot;
 	};
 	FPtr_IsBot CPatch_CTFGameMovement_CheckStuck::s_CBasePlayer_IsBot = &CBasePlayer::IsBot;
 	
 	
 	constexpr uint8_t s_Buf_CTFPistol_ScoutPrimary_Push[] = {
+#ifdef PLATFORM_64BITS
+		0x83, 0xbb, 0xac, 0x10, 0x00, 0x00, 0x02,  // +0x0000 cmp     dword ptr [rbx+10ACh], 2
+		0x0f, 0x84, 0x7d, 0x00, 0x00, 0x00,        // +0x0007 jz      loc_BF8EE0
+		0x41, 0x83, 0xff, 0xfe,                    // +0x000d cmp     r15d, 0FFFFFFFEh
+		0x74, 0x0d,                                // +0x0011 jz      short loc_BF8E76
+#else
 		0x83, 0xbb, 0x8c, 0x0e, 0x00, 0x00, 0x02,  // +0x0000 cmp     dword ptr [ebx+0E8Ch], 2
 		0x74, 0x70,                                // +0x0007 jz      short loc_971E40
 		0x83, 0xbd, 0xb4, 0xfe, 0xff, 0xff, 0xfe,  // +0x0009 cmp     [ebp+var_14C], 0FFFFFFFEh
 		0x74, 0x14,                                // +0x0010 jz      short loc_971DED
+#endif
 	};
 	
 	struct CPatch_CTFPistol_ScoutPrimary_Push : public CPatch
@@ -155,10 +213,16 @@ namespace Mod::Cond::Reprogrammed
 		{
 			buf.CopyFrom(s_Buf_CTFPistol_ScoutPrimary_Push);
 			
+#ifdef PLATFORM_64BITS
+			mask.SetRange(0x00 + 2, 4, 0x00);
+			mask.SetRange(0x07 + 2, 4, 0x00);
+			mask.SetRange(0x11 + 1, 1, 0x00);
+#else
 			mask.SetRange(0x00 + 2, 4, 0x00);
 			mask.SetRange(0x07 + 1, 1, 0x00);
 			mask.SetRange(0x09 + 2, 1, 0x00);
 			mask.SetRange(0x10 + 1, 1, 0x00);
+#endif
 			
 			return true;
 		}
@@ -166,8 +230,13 @@ namespace Mod::Cond::Reprogrammed
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			// Change jz to jnz (always jump)
+#ifdef PLATFORM_64BITS
+			buf[0x11] = 0x75;
+			mask[0x11] = 0xff;
+#else
 			buf[0x10] = 0x75;
 			mask[0x10] = 0xff;
+#endif
 			
 			return true;
 		}

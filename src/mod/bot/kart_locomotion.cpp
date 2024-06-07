@@ -6,7 +6,7 @@ namespace Mod::Bot::Kart_Locomotion
 {
 	struct NextBotData
     {
-        int vtable;
+        void *vtable;
         INextBotComponent *m_ComponentList;              // +0x04
         PathFollower *m_CurrentPath;                     // +0x08
         int m_iManagerIndex;                             // +0x0c

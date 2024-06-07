@@ -591,7 +591,7 @@ public:
 			m_pIsPointerModifyingProxy[pCurChild->m_RecursiveProxyIndex] = 
 				IsNonPointerModifyingProxy(pChildProp->GetDataTableProxyFn(), m_pSendProxies) ? 
 					m_pIsPointerModifyingProxy[pNode->m_RecursiveProxyIndex] : pCurChild;
-			m_iBaseOffset[pCurChild->m_RecursiveProxyIndex] = (int)pStructBase;
+			m_iBaseOffset[pCurChild->m_RecursiveProxyIndex] = reinterpret_cast<intptr_t>(pStructBase);
 
 			RecurseAndCallProxies( pCurChild, pNewStructBase );
 		}
@@ -601,7 +601,7 @@ public:
 	CSendTablePrecalc *m_pPropMapStackPrecalc;
 	const CStandardSendProxies *m_pSendProxies;
 	const CSendNode *m_pIsPointerModifyingProxy[MAX_PROXY_RESULTS] {nullptr};
-	int m_iBaseOffset[MAX_PROXY_RESULTS] {0};
+	intptr_t m_iBaseOffset[MAX_PROXY_RESULTS] {0};
 };
 
 class CServerDatatableStack : public CDatatableStack

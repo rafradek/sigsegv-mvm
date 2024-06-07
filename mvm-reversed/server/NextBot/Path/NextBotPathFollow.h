@@ -39,6 +39,7 @@ private:
 	// TODO: do any of these need to be protected, i.e. accessed by ChasePath?
 	const Segment *m_CurrentGoal;   // +0x4754
 	float m_flMinLookAheadDistance; // +0x4758
+	// 64 bit checked
 	PAD(pad_475c, 0x4);
 	CountdownTimer m_ctUnknown1; // +0x4760
 	CountdownTimer m_ctUnknown2; // +0x476c

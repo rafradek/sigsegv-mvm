@@ -37,9 +37,9 @@
 #if defined _LINUX
 
 // TODO
-struct CExtract_C_BaseEntity_m_pMoveParent : public IExtract<ClientHandle<C_BaseEntity> *>
+struct CExtract_C_BaseEntity_m_pMoveParent : public IExtract<int32_t>
 {
-	CExtract_C_BaseEntity_m_pMoveParent() : IExtract<ClientHandle<C_BaseEntity> *>(0) {}
+	CExtract_C_BaseEntity_m_pMoveParent() : IExtract<int32_t>(0) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override { return false; }
 	

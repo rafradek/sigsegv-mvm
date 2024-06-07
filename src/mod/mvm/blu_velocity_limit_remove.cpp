@@ -4,14 +4,16 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 {
     
 	constexpr uint8_t s_Buf_PostThink[] = {
-		// +0000 mov     [esp], ebx
-		// +0001 call    CBaseEntity::GetTeamNumber(void)
-		// +0006
-		// +0009 cmp     eax, 3
-		0x53,
-		0xE8, 0x00, 0x00, 0x00, 0x00,
-		0x83, 0xC4, 0x10,
-		0x83, 0xF8, 0x03
+#ifdef PLATFORM_64BITS
+		0xe8, 0x32, 0x41, 0xb7, 0xff,        // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xf8, 0x03,                    // +0x0005 cmp     eax, 3
+		0x0f, 0x85, 0xd0, 0xfe, 0xff, 0xff,  // +0x0008 jnz     loc_11DF4A7
+#else
+		0xe8, 0x1d, 0x6d, 0xba, 0xff,        // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xc4, 0x10,                    // +0x0005 add     esp, 10h
+		0x83, 0xf8, 0x03,                    // +0x0008 cmp     eax, 3
+		0x0f, 0x85, 0xc3, 0xfe, 0xff, 0xff,  // +0x000b jnz     loc_F1DCA2
+#endif
 	};
 	
 	struct CPatch_CTFPlayer_PostThink : public CPatch
@@ -26,26 +28,35 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 		{
 			buf.CopyFrom(s_Buf_PostThink);
 			
-			buf.SetDword(0x01 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
-			
-			/* allow any 3-bit source register code */
-			mask[0x00 + 1] = 0b11000111;
-
-			mask[0x06 + 1] = 0x00;
-			
+#ifdef PLATFORM_64BITS
 			mask.SetDword(0x01 + 1, 0x00000000);
+			mask.SetDword(0x08 + 2, 0x00000000);
+#else
+			buf.SetDword(0x00 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
+			mask[0x05 + 2] = 0x00;
 			
+			mask.SetDword(0x0b + 1, 0x00000000);
+#endif
+
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* replace 'TF_TEAM_BLUE'*/
+#ifdef PLATFORM_64BITS
+			buf[0x05 + 0] = 0x83;
+			buf[0x05 + 1] = 0xF8;
+			buf[0x05 + 2] = 0xFF;
+			
+			mask.SetRange(0x05, 3, 0xff);
+#else
 			buf[0x09 + 0] = 0x83;
 			buf[0x09 + 1] = 0xF8;
 			buf[0x09 + 2] = 0xFF;
 			
 			mask.SetRange(0x09, 3, 0xff);
+#endif
 			
 			return true;
 		}

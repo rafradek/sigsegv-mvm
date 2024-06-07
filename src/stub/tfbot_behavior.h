@@ -31,7 +31,11 @@ private:
 	ChasePath      m_ChasePath;       // +0x4808
 	CountdownTimer m_ctRecomputePath; // +0x9008
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotAttack, 0xaea0);
+#else
 SIZE_CHECK(CTFBotAttack, 0x9014);
+#endif
 
 
 class CTFBotSeekAndDestroy : public ActionStub<CTFBot>
@@ -49,7 +53,11 @@ private:
 	CountdownTimer m_ctUnknown1;       // +0x4810
 	CountdownTimer m_ctActionDuration; // +0x481c
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotSeekAndDestroy, 0x5790);
+#else
 SIZE_CHECK(CTFBotSeekAndDestroy, 0x4828);
+#endif
 
 
 class CTFBotFetchFlag : public ActionStub<CTFBot>
@@ -69,7 +77,11 @@ private:
 #if defined _MSC_VER
 SIZE_CHECK(CTFBotFetchFlag, 0x4818);
 #else
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotFetchFlag, 0x5770);
+#else
 SIZE_CHECK(CTFBotFetchFlag, 0x4814);
+#endif
 #endif
 
 
@@ -86,7 +98,11 @@ private:
 	CountdownTimer  m_ctRecomputePath; // +0x4808
 	Action<CTFBot> *m_DoneAction;      // +0x4814
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotPushToCapturePoint, 0x5778);
+#else
 SIZE_CHECK(CTFBotPushToCapturePoint, 0x4818);
+#endif
 
 
 class CTFBotMedicHeal : public ActionStub<CTFBot>
@@ -107,12 +123,16 @@ private:
 	CHandle<CTFPlayer> m_hPatient;           // +0x484c
 	Vector             m_vecPatientPosition; // +0x4850
 	CountdownTimer     m_ctUnknown3;         // +0x485c
-	uint32_t           m_Dword4868;          // +0x4868
+	void              *m_Dword4868;          // +0x4868
 	CountdownTimer     m_ctUnknown4;         // +0x486c
 	PathFollower       m_PathFollower;       // +0x4878
 	Vector             m_vecFollowPosition;  // +0x904c
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotMedicHeal, 0xaef8);
+#else
 SIZE_CHECK(CTFBotMedicHeal, 0x9058);
+#endif
 
 
 class CTFBotSniperLurk : public ActionStub<CTFBot>
@@ -138,8 +158,11 @@ private:
 	CUtlVector<CTFBotHint *> m_Hints;           // +0x4844
 	CHandle<CTFBotHint>      m_hHint;           // +0x4858
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotSniperLurk, 0x57d8);
+#else
 SIZE_CHECK(CTFBotSniperLurk, 0x485c);
-
+#endif
 
 class CTFBotMedicRetreat : public ActionStub<CTFBot>
 {
@@ -153,7 +176,11 @@ private:
 	PathFollower   m_PathFollower;      // +0x0034
 	CountdownTimer m_ctLookForPatients; // +0x4808
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotMedicRetreat, 0x5770);
+#else
 SIZE_CHECK(CTFBotMedicRetreat, 0x4814);
+#endif
 
 
 class CTFBotSpyInfiltrate : public ActionStub<CTFBot>
@@ -172,7 +199,11 @@ private:
 	CountdownTimer m_ctWait;           // +0x4824
 	bool           m_bCloaked;         // +0x4830
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotSpyInfiltrate, 0x57a0);
+#else
 SIZE_CHECK(CTFBotSpyInfiltrate, 0x4834); // +0x4831
+#endif
 
 
 class CTFBotEngineerBuild : public ActionStub<CTFBot>
@@ -183,7 +214,11 @@ public:
 protected:
 	CTFBotEngineerBuild() = default;
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotEngineerBuild, 0x0068);
+#else
 SIZE_CHECK(CTFBotEngineerBuild, 0x0034);
+#endif
 
 
 class CTFBotDead : public ActionStub<CTFBot>
@@ -197,7 +232,11 @@ protected:
 private:
 	IntervalTimer m_itDeathEpoch; // +0x0034
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotDead, 0x0068);
+#else
 SIZE_CHECK(CTFBotDead, 0x0038);
+#endif
 
 
 class CTFBotUseItem : public ActionStub<CTFBot>
@@ -209,7 +248,11 @@ public: // accessed by Debug:UseItem_Broken and AI:Improved_UseItem mods
 	CHandle<CTFWeaponBase> m_hItem;          // +0x0034
 	CountdownTimer         m_ctInitialDelay; // +0x0038
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotUseItem, 0x0078);
+#else
 SIZE_CHECK(CTFBotUseItem, 0x0044);
+#endif
 
 
 class CTFBotMissionSuicideBomber : public ActionStub<CTFBot>
@@ -233,7 +276,11 @@ public: // accessed by Debug:Suicide_Bomber mod
 	int                  m_nConsecutivePathFailures; // +0x4840
 	Vector               m_vecDetonatePos;           // +0x4844
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotMissionSuicideBomber, 0x57b8);
+#else
 SIZE_CHECK(CTFBotMissionSuicideBomber, 0x4850);
+#endif
 
 
 class CTFBotMainAction : public ActionStub<CTFBot>

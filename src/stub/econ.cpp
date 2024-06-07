@@ -13,17 +13,27 @@ using const_char_ptr = const char *;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_perteamvisuals_t_m_Sounds[] = {
+#ifdef PLATFORM_64BITS
+	0x48, 0x8b, 0x90, 0x18, 0x01, 0x00, 0x00,        // +0x0000 mov     rdx, [rax+m_Visuals]
+	0x48, 0x85, 0xd2,                                // +0x0007 test    rdx, rdx
+	0x74, 0x26,                                      // +0x000a jz      short loc_B999F8
+	0x41, 0x83, 0xfd, NUM_SHOOT_SOUND_TYPES-1,       // +0x000c cmp     r13d, NUM_SHOOT_SOUND_TYPES
+	0x77, 0x20,                                      // +0x0010 ja      short loc_B999F8
+	0x49, 0x63, 0xc5,                                // +0x0012 movsxd  rax, r13d
+	0x48, 0x8b, 0x84, 0xc2, 0xc0, 0x01, 0x00, 0x00,  // +0x0015 mov     rax, [rdx+rax*8+m_Sounds]
+#else
 	0x8b, 0x88, 0x00, 0x00, 0x00, 0x00,       // +0000  mov ecx,[eax+m_Visuals]
 	0x85, 0xc9,                               // +0006  test ecx,ecx
 	0x74, 0x00,                               // +0008  jz +0x??
 	0x83, 0xff, NUM_SHOOT_SOUND_TYPES-1,      // +000A  cmp edi,NUM_SHOOT_SOUND_TYPES
 	0x77, 0x00,                               // +000D  ja +0x??
 	0x8b, 0x84, 0xb9, 0x00, 0x00, 0x00, 0x00, // +000F  mov eax,[ecx+edi*4+m_Sounds]
+#endif
 };
 
-struct CExtract_perteamvisuals_t_m_Sounds : public IExtract<const_char_ptr (*)[NUM_SHOOT_SOUND_TYPES]>
+struct CExtract_perteamvisuals_t_m_Sounds : public IExtract<int32_t>
 {
-	CExtract_perteamvisuals_t_m_Sounds() : IExtract<const_char_ptr (*)[NUM_SHOOT_SOUND_TYPES]>(sizeof(s_Buf_perteamvisuals_t_m_Sounds)) {}
+	CExtract_perteamvisuals_t_m_Sounds() : IExtract<int32_t>(sizeof(s_Buf_perteamvisuals_t_m_Sounds)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
@@ -36,11 +46,17 @@ struct CExtract_perteamvisuals_t_m_Sounds : public IExtract<const_char_ptr (*)[N
 			return false;
 		}
 		
+#ifdef PLATFORM_64BITS	
+		buf.SetDword(0x00 + 3, (uint32_t)off_CEconItemDefinition_m_Visuals);
+		mask[0x0a + 1] = 0x00;
+		mask[0x10 + 1] = 0x00;
+		mask.SetDword(0x15 + 4, ~0x000003ff);
+#else
 		buf.SetDword(0x00 + 2, (uint32_t)off_CEconItemDefinition_m_Visuals);
-		
 		mask[0x08 + 1] = 0x00;
 		mask[0x0d + 1] = 0x00;
 		mask.SetDword(0x0f + 3, ~0x000003ff);
+#endif
 		
 		return true;
 	}
@@ -48,7 +64,11 @@ struct CExtract_perteamvisuals_t_m_Sounds : public IExtract<const_char_ptr (*)[N
 	virtual const char *GetFuncName() const override   { return "CTFWeaponBase::GetShootSound"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0100; } // @ +0x0056
+#ifdef PLATFORM_64BITS	
+	virtual uint32_t GetExtractOffset() const override { return 0x0015 + 4; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x000f + 3; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -63,21 +83,30 @@ using perteamvisuals_t_ptr = perteamvisuals_t *;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CEconItemDefinition_m_Visuals[] = {
+#ifdef PLATFORM_64BITS
+	0x48, 0xc7, 0x84, 0xc1, 0x18, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0000 mov     qword ptr [rcx+rax*8+118h], 0
+	0x48, 0x8d, 0x0d, 0x7b, 0xeb, 0x0d, 0x01,                                // +0x000c lea     rcx, g_TeamVisualSections
+#else
 	0xc7, 0x84, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [esi+eax*4+m_Visuals],0x00000000
 	0x8b, 0x04, 0x85, 0x00, 0x00, 0x00, 0x00,                         // +000B  mov eax,g_TeamVisualSections[eax*4]
+#endif
 };
 
-struct CExtract_CEconItemDefinition_m_Visuals : public IExtract<perteamvisuals_t_ptr (*)[NUM_VISUALS_BLOCKS]>
+struct CExtract_CEconItemDefinition_m_Visuals : public IExtract<int32_t>
 {
-	CExtract_CEconItemDefinition_m_Visuals() : IExtract<perteamvisuals_t_ptr (*)[NUM_VISUALS_BLOCKS]>(sizeof(s_Buf_CEconItemDefinition_m_Visuals)) {}
+	CExtract_CEconItemDefinition_m_Visuals() : IExtract<int32_t>(sizeof(s_Buf_CEconItemDefinition_m_Visuals)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CEconItemDefinition_m_Visuals);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetDword(0x0c + 3, 0x0);
+		mask.SetDword(0x00 + 4, ~0x000003ff);
+#else
 		buf.SetDword(0x0b + 3, (uint32_t)&g_TeamVisualSections.GetRef());
-		
 		mask.SetDword(0x00 + 3, ~0x000003ff);
+#endif
 		
 		return true;
 	}
@@ -85,7 +114,12 @@ struct CExtract_CEconItemDefinition_m_Visuals : public IExtract<perteamvisuals_t
 	virtual const char *GetFuncName() const override   { return "CEconItemDefinition::BInitVisualBlockFromKV"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0100; } // @ +0x0057
+	
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 4; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 3; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -98,22 +132,41 @@ using CExtract_CEconItemDefinition_m_Visuals = IExtractStub;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CEconItemDefinition_EquipRegionMasks[] = {
+#ifdef PLATFORM_64BITS
+	0xe8, 0x8a, 0xbe, 0xfe, 0xff,                    // +0x0000 call    _ZNK15CEconItemSchema27GetEquipRegionBitMaskByNameEPKc; CEconItemSchema::GetEquipRegionBitMaskByName(char const*)
+	0x49, 0x83, 0xc6, 0x01,                          // +0x0005 add     r14, 1
+	0x44, 0x39, 0xb5, 0xd0, 0xfe, 0xff, 0xff,        // +0x0009 cmp     dword ptr [rbp+var_130], r14d
+	0x66, 0x0f, 0x6e, 0xc8,                          // +0x0010 movd    xmm1, eax
+	0xf3, 0x0f, 0x7e, 0x83, 0x0c, 0x02, 0x00, 0x00,  // +0x0014 movq    xmm0, qword ptr [rbx+20Ch]
+	0x66, 0x0f, 0x6e, 0x95, 0xa0, 0xfe, 0xff, 0xff,  // +0x001c movd    xmm2, dword ptr [rbp+var_160]
+	0x66, 0x0f, 0x62, 0xca,                          // +0x0024 punpckldq xmm1, xmm2
+	0x66, 0x0f, 0xeb, 0xc1,                          // +0x0028 por     xmm0, xmm1
+	0x66, 0x0f, 0xd6, 0x83, 0x0c, 0x02, 0x00, 0x00,  // +0x002c movq    qword ptr [rbx+m_nEquipRegionBitMask], xmm0
+#else
 	0xe8, 0x00, 0x00, 0x00, 0x00,       // +0000  call CEconItemSchema::GetEquipRegionBitMaskByName
 	0x09, 0x86, 0x00, 0x00, 0x00, 0x00, // +0005  or [esi+m_nEquipRegionBitMask],eax
 	0x83, 0xC4, 0x10,                   // +000B
 	0x83, 0xc7, 0x01,                   // +000E  add edi,1
 	0x8b, 0x85, 0x00, 0x00, 0x00, 0x00, // +0011  mov eax,[ebp+0xXXXXXXXX]
 	0x09, 0x86, 0x00, 0x00, 0x00, 0x00, // +0017  or [ebx+m_nEquipRegionMask],eax
+#endif
 };
 
-struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<unsigned int *>
+struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<int32_t>
 {
-	CExtract_CEconItemDefinition_EquipRegionMasks() : IExtract<unsigned int *>(sizeof(s_Buf_CEconItemDefinition_EquipRegionMasks)) {}
+	CExtract_CEconItemDefinition_EquipRegionMasks() : IExtract<int32_t>(sizeof(s_Buf_CEconItemDefinition_EquipRegionMasks)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CEconItemDefinition_EquipRegionMasks);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetDword(0x0000 + 1, 0x00000000);
+		mask.SetDword(0x0009 + 3, 0x00000000);
+		mask.SetDword(0x0014 + 4, 0x00000000);
+		mask.SetDword(0x001c + 4, 0x00000000);
+		mask.SetDword(0x002c + 4, 0x00000000);
+#else
 		mask.SetDword(0x0000 + 1, 0x00000000);
 		mask.SetDword(0x0005 + 2, 0x00000000);
 		mask[0x000b] = 0x00;
@@ -121,6 +174,7 @@ struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<unsigned 
 		mask[0x000b+2] = 0x00;
 		mask.SetDword(0x0011 + 2, 0x00000000);
 		mask.SetDword(0x0017 + 2, 0x00000000);
+#endif
 		
 		return true;
 	}
@@ -132,7 +186,11 @@ struct CExtract_CEconItemDefinition_EquipRegionMasks : public IExtract<unsigned 
 
 struct CExtract_CEconItemDefinition_m_nEquipRegionBitMask : public CExtract_CEconItemDefinition_EquipRegionMasks
 {
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0014 + 4; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0005 + 2; }
+#endif
 };
 
 struct CExtract_CEconItemDefinition_m_nEquipRegionMask : public CExtract_CEconItemDefinition_EquipRegionMasks
@@ -168,16 +226,20 @@ StaticFuncThunk<float, float, const char *, const CBaseEntity *, CUtlVector<CBas
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CAttributeManager, m_hOuter, CEconEntity);
 IMPL_SENDPROP(int, CAttributeManager, m_iReapplyProvisionParity, CEconEntity);
-IMPL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Receivers, m_iReapplyProvisionParity, -sizeof(CUtlVector<CHandle<CBaseEntity>>));
-IMPL_RELATIVE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Providers, m_iReapplyProvisionParity, -sizeof(CUtlVector<CHandle<CBaseEntity>>) * 2);
-IMPL_RELATIVE(CUtlVector<cached_attribute_t>, CAttributeManager, m_CachedResults, m_hOuter, +16);
+IMPL_REL_BEFORE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Receivers, m_iReapplyProvisionParity, 0);
+IMPL_REL_BEFORE(CUtlVector<CHandle<CBaseEntity>>, CAttributeManager, m_Providers, m_iReapplyProvisionParity, 0, CUtlVector<CHandle<CBaseEntity>>);
+IMPL_REL_AFTER(CUtlVector<cached_attribute_t>, CAttributeManager, m_CachedResults, m_hOuter, bool, int, int);
 
 IMPL_EXTRACT(const char *[NUM_SHOOT_SOUND_TYPES], perteamvisuals_t, m_Sounds, new CExtract_perteamvisuals_t_m_Sounds());
 
 
 IMPL_EXTRACT(perteamvisuals_t *[NUM_VISUALS_BLOCKS], CEconItemDefinition, m_Visuals,             new CExtract_CEconItemDefinition_m_Visuals());
 IMPL_EXTRACT(unsigned int,                           CEconItemDefinition, m_nEquipRegionBitMask, new CExtract_CEconItemDefinition_m_nEquipRegionBitMask());
+#ifdef PLATFORM_64BITS
+IMPL_REL_AFTER(unsigned int,                          CEconItemDefinition, m_nEquipRegionMask, m_nEquipRegionBitMask);
+#else
 IMPL_EXTRACT(unsigned int,                           CEconItemDefinition, m_nEquipRegionMask,    new CExtract_CEconItemDefinition_m_nEquipRegionMask());
+#endif
 
 
 MemberFuncThunk<const CTFItemDefinition *, int, int> CTFItemDefinition::ft_GetLoadoutSlot("CTFItemDefinition::GetLoadoutSlot");

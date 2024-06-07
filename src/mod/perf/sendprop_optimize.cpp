@@ -1849,9 +1849,9 @@ namespace Mod::Perf::SendProp_Optimize
                     if (dataTableIndex < sendTable->m_pPrecalc->m_nDataTableProxies) {
                         serverClassCache->prop_propproxy_first[dataTableIndex] = iToProp;
                     }
-                    if ((int)pmStack.GetCurStructBase() != 0) {
+                    if ((intptr_t)pmStack.GetCurStructBase() != 0) {
 
-                        int offset = pProp->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
+                        int offset = pProp->GetOffset() + (intptr_t)pmStack.GetCurStructBase() - 1;
                         
                         int elementCount = 1;
                         int elementStride = 0;
@@ -1860,11 +1860,11 @@ namespace Mod::Perf::SendProp_Optimize
                         auto arrayProp = pProp;
                         if ( pProp->GetType() == DPT_Array )
                         {
-                            offset = pProp->GetArrayProp()->GetOffset() + (int)pmStack.GetCurStructBase() - 1;
+                            offset = pProp->GetArrayProp()->GetOffset() + (intptr_t)pmStack.GetCurStructBase() - 1;
                             elementCount = pProp->m_nElements;
                             elementStride = pProp->m_ElementStride;
                             pProp = pProp->GetArrayProp();
-                            offsetToUse = (int)pmStack.GetCurStructBase() - 1;
+                            offsetToUse = (intptr_t)pmStack.GetCurStructBase() - 1;
                         }
 
                         serverClassCache->prop_offsets[propIdToUse] = offsetToUse;

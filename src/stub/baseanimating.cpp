@@ -21,8 +21,8 @@ IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceFinished);
 IMPL_DATAMAP(bool,   CBaseAnimating, m_bSequenceLoops);
 IMPL_DATAMAP(float,  CBaseAnimating, m_flGroundSpeed);
 
-IMPL_RELATIVE   (DataCacheHandle_t, CBaseAnimating, m_boneCacheHandle, m_hLightingOriginRelative, sizeof(string_t) * 2);
-IMPL_RELATIVE   (unsigned short, CBaseAnimating, m_fBoneCacheFlags, m_hLightingOriginRelative, sizeof(string_t) * 2 + sizeof(DataCacheHandle_t));
+IMPL_REL_AFTER(DataCacheHandle_t, CBaseAnimating, m_boneCacheHandle, m_hLightingOriginRelative, string_t, string_t);
+IMPL_REL_AFTER(unsigned short, CBaseAnimating, m_fBoneCacheFlags, m_hLightingOriginRelative, string_t, string_t, DataCacheHandle_t);
 
 MemberFuncThunk<CBaseAnimating *, void, float, float>              CBaseAnimating::ft_SetModelScale       ("CBaseAnimating::SetModelScale");
 MemberFuncThunk<CBaseAnimating *, void, float, bool>               CBaseAnimating::ft_DrawServerHitboxes  ("CBaseAnimating::DrawServerHitboxes");

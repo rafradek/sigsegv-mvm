@@ -16,6 +16,9 @@ public:
 	static void Load();
 	
 	static void *GetAddr(const char *name);
+	
+	static intptr_t GetAddrOffset(const char *dest, const char *base, intptr_t extraOffset);
+
 	static const char *ReverseLookup(const void *ptr);
 	
 	static void CC_ListAddrs(const CCommand& cmd);

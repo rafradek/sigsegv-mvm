@@ -6,12 +6,16 @@
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CBasePlayer_SetVCollisionState[] = {
+#ifdef PLATFORM_64BITS
+	0x89, 0x8f, 0xc4, 0x0e, 0x00, 0x00,  // +0x0000 mov [rdi+0EC4h], ecx
+#else
 	0x89, 0x83, 0x8c, 0x0b, 0x00, 0x00, // +0000  mov [ebx+0xVVVVVVVV],eax
+#endif
 };
 
-struct CExtract_CBasePlayer_SetVCollisionState : public IExtract<int *>
+struct CExtract_CBasePlayer_SetVCollisionState : public IExtract<int32_t>
 {
-	using T = int *;
+	using T = int32_t;
 	
 	CExtract_CBasePlayer_SetVCollisionState() : IExtract<T>(sizeof(s_Buf_CBasePlayer_SetVCollisionState)) {}
 	
@@ -110,7 +114,6 @@ IMPL_DATAMAP(int,          CBasePlayer, m_afButtonLast);
 IMPL_DATAMAP(float,        CBasePlayer, m_flStepSoundTime);
 IMPL_DATAMAP(float,        CBasePlayer, m_fLerpTime);
 IMPL_DATAMAP(bool,         CBasePlayer, m_bLagCompensation);
-IMPL_RELATIVE(CUserCmd *,  CBasePlayer, m_pCurrentCommand, m_flStepSoundTime, -sizeof(QAngle) - sizeof(int) - sizeof(uintptr_t));
 
 IMPL_EXTRACT(int,          CBasePlayer, m_vphysicsCollisionState, new CExtract_CBasePlayer_SetVCollisionState());
 
@@ -126,6 +129,9 @@ IMPL_SENDPROP(CHandle<CBaseEntity>,               CBasePlayer, m_hObserverTarget
 IMPL_SENDPROP(CPlayerState,                       CBasePlayer, pl,              CBasePlayer);
 IMPL_SENDPROP(int,                                CBasePlayer, m_iDefaultFOV,   CBasePlayer);
 IMPL_SENDPROP(int,                                CBasePlayer, m_iFOV,          CBasePlayer);
+IMPL_SENDPROP(CHandle<CBaseViewModel>[MAX_VIEWMODELS], CBasePlayer, m_hViewModel,    CBasePlayer);
+
+IMPL_REL_AFTER(CUserCmd *,                  CBasePlayer, m_pCurrentCommand, m_hViewModel, CUserCmd, CUserCmd*);
 
 MemberFuncThunk<CBasePlayer *, void, Vector *, Vector *, Vector *> CBasePlayer::ft_EyeVectors    ("CBasePlayer::EyeVectors");
 MemberFuncThunk<CBasePlayer *, bool, CSteamID *>                   CBasePlayer::ft_GetSteamID    ("CBasePlayer::GetSteamID");

@@ -80,7 +80,7 @@ public:
 	
 	void TraceHull(const Vector& start, const Vector& end, const Vector& mins, const Vector& maxs, unsigned int mask, ITraceFilter *filter, CGameTrace *trace);
 	
-protected:
+public:
 	Vector m_vecMotion;         // +0x14
 	Vector m_vecGroundMotion;   // +0x20
 	float m_flSpeed;            // +0x2c

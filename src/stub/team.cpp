@@ -10,7 +10,7 @@ MemberFuncThunk<      CTeam *, void, CBasePlayer *> CTeam::ft_AddPlayer    ("CTe
 MemberFuncThunk<      CTeam *, void, CBasePlayer *> CTeam::ft_RemovePlayer ("CTeam::RemovePlayer");
 
 IMPL_SENDPROP(char[32], CTeam, m_szTeamname, CTeam);
-IMPL_RELATIVE(CUtlVector<CBasePlayer *>, CTeam, m_aPlayers, m_szTeamname, -sizeof(CUtlVector<CBasePlayer *>));
+IMPL_REL_BEFORE(CUtlVector<CBasePlayer *>, CTeam, m_aPlayers, m_szTeamname, 0);
 
 #ifdef SE_IS_TF2
 MemberFuncThunk<CTFTeam *, int, int>           CTFTeam::ft_GetNumObjects("CTFTeam::GetNumObjects");

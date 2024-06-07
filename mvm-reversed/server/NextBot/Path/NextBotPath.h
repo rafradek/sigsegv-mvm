@@ -75,8 +75,15 @@ public:
 		Vector m_vecSegStart;     // +0x00 (Segment::m_vecStart)
 		Vector m_vecSegDirection; // +0x0c (Segment::m_vecDirection)
 		// 18 float: Segment+30
-		PAD(pad1, 0x4);
+		float pad1;
 		Segment *m_pSegment;      // +0x1c
+	};
+
+	struct AdjInfo
+	{
+		CNavArea *area;
+		CNavLadder *ladder;
+		int pad;		
 	};
 	
 	Path();
@@ -150,5 +157,6 @@ protected:
 	#define UNKNOWN_PTR void*
 	#define PAD(n, x) char n[x]
 	
-	PAD(pad1, 0x304);
+	AdjInfo m_adjInfoVector[64];
+	int m_adjInfoIndex;
 };

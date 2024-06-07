@@ -1054,8 +1054,8 @@ namespace Mod::Util::Client_Cmds
 			auto rtti_has_attributes = RTTI::GetRTTI<IHasAttributes>();
 			auto vtable_tf_player = RTTI::GetVTable<CTFPlayer>();
 
-			DevMsg("rtti tf player %d %d, dereferenced player %d, dereferenced player -4 %d, dereferenced player +4 %d\n", vtable_tf_player, rtti_tf_player, *(int *)player, *((int *)player-1),*((int *)player+1));
-			DevMsg("dereferenced player vtable %d, dereferenced player vtable -4 %d, dereferenced player vtable +4 %d\n", **((int**)player), (int) *(*((rtti_t***)player)-1),*(*((int**)player)+1));
+			DevMsg("rtti tf player %zx %zx, dereferenced player %zx, dereferenced player -4 %zx, dereferenced player +4 %zx\n", vtable_tf_player, rtti_tf_player, *(uintptr_t *)player, *((uintptr_t *)player-1),*((uintptr_t *)player+1));
+			DevMsg("dereferenced player vtable %zx, dereferenced player vtable -4 %zx, dereferenced player vtable +4 %zx\n", **((uintptr_t**)player), (uintptr_t) *(*((rtti_t***)player)-1),*(*((uintptr_t**)player)+1));
 			
 			timer.Start();
 			for(int i = 0; i < times; i++) {
@@ -1245,7 +1245,7 @@ namespace Mod::Util::Client_Cmds
 			pthread_setspecific(index, (const void *)8878);
 			timer.Start();
 			for(int i = 0; i < times; i++) {
-				int a = (int) pthread_getspecific(index);
+				void *a = pthread_getspecific(index);
 			}
 			timer.End();
 			displaystr += CFmtStr("threadlocalmine time: %.9f\n", timer.GetDuration().GetSeconds());
@@ -1574,7 +1574,7 @@ namespace Mod::Util::Client_Cmds
 			type = args[1];
 		}
 		
-		CPropVehicleDriveable *vehicle = reinterpret_cast<CPropVehicle *>(CreateEntityByName("prop_vehicle_driveable"));
+		CPropVehicleDriveable *vehicle = reinterpret_cast<CPropVehicleDriveable *>(CreateEntityByName("prop_vehicle_driveable"));
 		if (vehicle != nullptr) {
 			DevMsg("Vehicle spawned\n");
 			vehicle->SetAbsOrigin(player->GetAbsOrigin() + Vector(0,0,100));
@@ -1675,14 +1675,13 @@ namespace Mod::Util::Client_Cmds
         for(int i{1}; i < args.ArgC(); ++i){
             auto cvar_str{std::make_unique<char[]>(std::strlen(args[i]) + 1)};
             std::strcpy(cvar_str.get(), args[i]);
-            CConVarOverride_Flags cvar{cvar_str.get(), FCVAR_NONE, FCVAR_CHEAT};
-            if(!cvar.IsValid()){
+            auto[it, inserted] = cvar_overrides.emplace(cvar_str.get(), FCVAR_NONE, FCVAR_CHEAT);
+            if(!it->IsValid()){
                 ModCommandResponse(
                         "[sig_nocheat] Unknown cvar %s\n", args[i]);
                 continue;
             }
-            auto[it, inserted]{cvar_overrides.insert(std::move(cvar))};
-            const bool removed{it->Toggle()};
+            const bool removed{const_cast<CConVarOverride_Flags &>(*it).Toggle()};
             if(removed) 
                 ModCommandResponse("[sig_nocheat] Toggled %s (on)\n", args[i]);
             else

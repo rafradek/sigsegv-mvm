@@ -402,13 +402,13 @@ void CModManager::CC_ListMods(const CCommand& cmd)
 	constexpr auto h_d_failed = "D:Fail";
 	constexpr auto h_d_active = "D:Act";
 	
-	size_t l_cat      = strlen(h_cat);
-	size_t l_name     = strlen(h_name);
-	size_t l_status   = strlen(h_status);
-	size_t l_patches  = strlen(h_patches);
-	size_t l_d_total  = strlen(h_d_total);
-	size_t l_d_failed = strlen(h_d_failed);
-	size_t l_d_active = strlen(h_d_active);
+	int l_cat      = strlen(h_cat);
+	int l_name     = strlen(h_name);
+	int l_status   = strlen(h_status);
+	int l_patches  = strlen(h_patches);
+	int l_d_total  = strlen(h_d_total);
+	int l_d_failed = strlen(h_d_failed);
+	int l_d_active = strlen(h_d_active);
 	
 	for (auto mod : AutoList<IMod>::List()) {
 		std::string fullname(mod->GetName());
@@ -466,13 +466,13 @@ void CModManager::CC_ListMods(const CCommand& cmd)
 		
 		mods.insert(info);
 		
-		l_cat      = Max(l_cat,      info.cat.length());
-		l_name     = Max(l_name,     info.name.length());
-		l_status   = Max(l_status,   info.status.length());
-		l_patches  = Max(l_patches,  info.patches.length());
-		l_d_total  = Max(l_d_total,  info.d_total.length());
-		l_d_failed = Max(l_d_failed, info.d_failed.length());
-		l_d_active = Max(l_d_active, info.d_active.length());
+		l_cat      = Max(l_cat,      (int)info.cat.length());
+		l_name     = Max(l_name,     (int)info.name.length());
+		l_status   = Max(l_status,   (int)info.status.length());
+		l_patches  = Max(l_patches,  (int)info.patches.length());
+		l_d_total  = Max(l_d_total,  (int)info.d_total.length());
+		l_d_failed = Max(l_d_failed, (int)info.d_failed.length());
+		l_d_active = Max(l_d_active, (int)info.d_active.length());
 	}
 	
 	MAT_SINGLE_THREAD_BLOCK {

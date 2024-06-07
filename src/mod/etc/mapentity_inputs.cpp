@@ -309,7 +309,7 @@ namespace Mod::Etc::Mapentity_Additions
             if (!this->GetCustomVariableBool<"rotationonly">()) {
                 this->SetAbsVelocity(vec3_origin);
                 if (this->GetMoveType() == MOVETYPE_FLY) {
-                    this->SetMoveType(data->m_nOldMoveType);
+                    this->SetMoveType((MoveType_t)data->m_nOldMoveType);
                 }
             }
             if (data->m_bDeleteWithParent) {
@@ -372,7 +372,7 @@ namespace Mod::Etc::Mapentity_Additions
         if (this->m_hParent != nullptr && parent == nullptr && !this->m_pMe->GetCustomVariableBool<"rotationonly">()) {
             this->m_pMe->SetAbsVelocity(vec3_origin);
             if (this->m_pMe->GetMoveType() == MOVETYPE_FLY) {
-                this->m_pMe->SetMoveType(this->m_nOldMoveType);
+                this->m_pMe->SetMoveType((MoveType_t)this->m_nOldMoveType);
             }
         }
         this->m_bParentSet = parent != nullptr;
@@ -820,9 +820,8 @@ namespace Mod::Etc::Mapentity_Additions
             CWave *wave = g_pPopulationManager->GetCurrentWave();
             for (auto waveSpawn : wave->m_WaveSpawns) {
                 if (!NamesMatch(Value.String(), waveSpawn->m_name.Get())) continue;
-                if (waveSpawn->extra == nullptr) continue;
 
-                waveSpawn->extra->m_bPaused = true;
+                waveSpawn->m_bPaused = true;
             }
         }},
         {"ResumeWavespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
@@ -831,9 +830,8 @@ namespace Mod::Etc::Mapentity_Additions
             CWave *wave = g_pPopulationManager->GetCurrentWave();
             for (auto waveSpawn : wave->m_WaveSpawns) {
                 if (!NamesMatch(Value.String(), waveSpawn->m_name.Get())) continue;
-                if (waveSpawn->extra == nullptr) continue;
 
-                waveSpawn->extra->m_bPaused = false;
+                waveSpawn->m_bPaused = false;
             }
         }},
         {"ReduceFromWavespawn$"sv, true, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
@@ -2405,7 +2403,7 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"SetSolid"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             Value.Convert(FIELD_INTEGER);
-            ent->CollisionProp()->SetSolid(Value.Int());
+            ent->CollisionProp()->SetSolid((SolidType_t)Value.Int());
         }}
     });
     

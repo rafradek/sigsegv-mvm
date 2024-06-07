@@ -46,6 +46,22 @@ template<typename T> class Action;
 #include "../mvm-reversed/server/NextBot/NextBotManager.h"
 
 
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CKnownEntity,               0x0040); // 0x002d
+SIZE_CHECK(INextBotEventResponder,     0x0008);
+SIZE_CHECK(IContextualQuery,           0x0008);
+SIZE_CHECK(INextBotComponent,          0x0028);
+SIZE_CHECK(IIntention,                 0x0030);
+SIZE_CHECK(IBody,                      0x0028);
+SIZE_CHECK(ILocomotion,                0x0070);
+SIZE_CHECK(IVision,                    0x00e0);
+SIZE_CHECK(INextBot,                   0x0090);
+SIZE_CHECK(Behavior<CTFBot>,           0x0070);
+SIZE_CHECK(Action<CTFBot>,             0x0068); // 0x0032
+SIZE_CHECK(ActionResult<CTFBot>,       0x0018);
+SIZE_CHECK(EventDesiredResult<CTFBot>, 0x0020);
+SIZE_CHECK(NextBotManager,             0x0070);
+#else
 SIZE_CHECK(CKnownEntity,               0x0030); // 0x002d
 SIZE_CHECK(INextBotEventResponder,     0x0004);
 SIZE_CHECK(IContextualQuery,           0x0004);
@@ -60,6 +76,7 @@ SIZE_CHECK(Action<CTFBot>,             0x0034); // 0x0032
 SIZE_CHECK(ActionResult<CTFBot>,       0x000c);
 SIZE_CHECK(EventDesiredResult<CTFBot>, 0x0010);
 SIZE_CHECK(NextBotManager,             0x0050);
+#endif
 
 
 #warning REMOVE THIS CRAP PLEASE
@@ -452,16 +469,16 @@ protected:
 	{
 		ptrdiff_t offset = base_off<U, V>();
 		
-		uint32_t vt_ptr;
+		uintptr_t vt_ptr;
 		if (offset == 0x0000) {
 			/* main vtable @ +0x0000 */
-			vt_ptr = (uint32_t)RTTI::GetVTable<V>();
+			vt_ptr = (uintptr_t)RTTI::GetVTable<V>();
 		} else {
 			/* an additional vtable located past +0x0000, e.g. IContextualQuery @ +0x0004 */
 			vt_ptr = FindAdditionalVTable<U>(offset);
 		}
 		
-		*(uint32_t *)((uintptr_t)this + offset) = vt_ptr;
+		*(uintptr_t *)((uintptr_t)this + offset) = vt_ptr;
 	}
 	
 	/* overwrite multiple vtable ptrs in one concise call! */
@@ -482,10 +499,14 @@ private:
 		ptrdiff_t base_neg_off;
 		const rtti_t *derived_tinfo;
 	};
+	#ifdef PLATFORM_64BITS
+	static_assert(sizeof(VTPreamble) == 0x10);
+	#else
 	static_assert(sizeof(VTPreamble) == 0x8);
+	#endif
 	
 	template<typename U>
-	static uint32_t FindAdditionalVTable(ptrdiff_t offset)
+	static uintptr_t FindAdditionalVTable(ptrdiff_t offset)
 	{
 		VTPreamble preamble{ -offset, RTTI::GetRTTI<U>() };
 		
@@ -508,7 +529,7 @@ private:
 		
 		assert(scan.ExactlyOneMatch());
 		
-		return ((uint32_t)scan.FirstMatch() + sizeof(VTPreamble));
+		return ((uintptr_t)scan.FirstMatch() + sizeof(VTPreamble));
 	}
 };
 

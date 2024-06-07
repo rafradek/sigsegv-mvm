@@ -105,6 +105,11 @@ void *AddrManager::GetAddr(const char *name)
 	return addr->GetAddr();
 }
 
+intptr_t AddrManager::GetAddrOffset(const char *dest, const char *base, intptr_t extraOffset)
+{
+	return (intptr_t) GetAddr(dest) - (intptr_t) GetAddr(base) - extraOffset;
+}
+
 const char *AddrManager::ReverseLookup(const void *ptr)
 {
 	auto [begin, end] = s_ReverseAddrs.equal_range(ptr);

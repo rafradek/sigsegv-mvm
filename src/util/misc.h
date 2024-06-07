@@ -988,17 +988,10 @@ static const char *nexttoken(char *token, size_t nMaxTokenLen, const char *str, 
 	return(++str);
 }
 
-#ifndef CSGO_SEPARETE_
 template <size_t maxLenInChars> inline const char *nexttoken( OUT_Z_ARRAY char (&pToken)[maxLenInChars], const char *str, char sep)
 {
 	return nexttoken( pToken, maxLenInChars, str, sep );
 }
-#else
-template <size_t maxLenInChars> inline const char *nexttoken(char (&pToken)[maxLenInChars], const char *str, char sep)
-{
-	return nexttoken( pToken, maxLenInChars, str, sep );
-}
-#endif
 
 class EntityMatrix : public VMatrix
 {

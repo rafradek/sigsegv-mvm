@@ -227,6 +227,7 @@ public:
 		DifficultyType m_iSkill;                   // +0x04
 		WeaponRestriction m_nWeaponRestrict;       // +0x08
 		MissionType m_nMission;                    // +0x0c
+		// 64 bit checked
 		uint32_t pad_10; // TODO: 0x10
 		AttributeType m_nBotAttrs;                 // +0x14
 		float m_flVisionRange;                     // +0x18
@@ -235,7 +236,11 @@ public:
 		CUtlVector<static_attrib_t> m_CharAttrs;   // +0x44
 		CUtlStringList m_Tags;                     // +0x58
 	};
+#ifdef PLATFORM_64BITS
+	SIZE_CHECK(EventChangeAttributes_t, 0xa0);
+#else
 	SIZE_CHECK(EventChangeAttributes_t, 0x6c);
+#endif
 	
 #ifdef ADD_EXTATTR
 	/* custom */

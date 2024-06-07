@@ -50,17 +50,17 @@ public:
 	int				m_nDeltaTick;
 	int				m_nStringTableAckTick;
 	int				m_nSignonTick;
-	void * m_pLastSnapshot;
+	void * m_pLastSnapshot; //0x0dc
 	int pad;
 
-	CFrameSnapshot	*m_pBaseline;
-	int				m_nBaselineUpdateTick;
-	CBitVec<MAX_EDICTS>	m_BaselinesSent;
-	int				m_nBaselineUsed;
+	CFrameSnapshot	*m_pBaseline; //0x0e0
+	int				m_nBaselineUpdateTick; // 0x0e4
+	CBitVec<MAX_EDICTS>	m_BaselinesSent; //0x0e8
+	int				m_nBaselineUsed; // 0x1e8
 
-	int				m_nForceWaitForTick;
+	int				m_nForceWaitForTick; // 0x1ec
 	
-	bool			m_bFakePlayer;
+	bool			m_bFakePlayer; // 0x1f0
 private:
 	static MemberVFuncThunk<CBaseClient *, void>                 vt_UpdateSendState;
 	static MemberVFuncThunk<CBaseClient *, void, CClientFrame *> vt_SendSnapshot;

@@ -4,6 +4,13 @@
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFBot_m_nMission[] = {
+#ifdef PLATFORM_64BITS
+	0x8b, 0x87, 0xfc, 0x2e, 0x00, 0x00,  // +0x0000 mov     eax, [rdi+2EFCh]
+	0x84, 0xd2,                          // +0x0006 test    dl, dl
+	0x89, 0xb7, 0xfc, 0x2e, 0x00, 0x00,  // +0x0008 mov     [rdi+2EFCh], esi
+	0x89, 0x87, 0x00, 0x2f, 0x00, 0x00,  // +0x000e mov     [rdi+2F00h], eax
+	0x74, 0x2e,                          // +0x0014 jz      short loc_103CCD1
+#else
 	0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
 	0x53,                               // +0003  push ebx
@@ -12,18 +19,26 @@ static constexpr uint8_t s_Buf_CTFBot_m_nMission[] = {
 	0x8b, 0x45, 0x0c,                   // +000A  mov eax,DWORD PTR [ebp+0xc]
 	0x80, 0x7d, 0x10, 0x00,             // +000D  cmp BYTE PTR [ebp+0x10],0x0
 	0x8b, 0x93, 0x00, 0x00, 0x00, 0x00, // +0011  mov edx,DWORD PTR [ebx+0xVVVVVVVV]
+#endif
 };
 
-struct CExtract_CTFBot_m_nMission : public IExtract<CTFBot::MissionType *>
+struct CExtract_CTFBot_m_nMission : public IExtract<uint32_t>
 {
-	CExtract_CTFBot_m_nMission() : IExtract<CTFBot::MissionType *>(sizeof(s_Buf_CTFBot_m_nMission)) {}
+	CExtract_CTFBot_m_nMission() : IExtract<uint32_t>(sizeof(s_Buf_CTFBot_m_nMission)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CTFBot_m_nMission);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 4, 0x00);
+		mask.SetRange(0x08 + 2, 4, 0x00);
+		mask.SetRange(0x0e + 2, 4, 0x00);
+		mask[0x15] = 0x00;
+#else
 		mask.SetRange(0x04 + 2, 1, 0x00);
 		mask.SetRange(0x11 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -31,7 +46,11 @@ struct CExtract_CTFBot_m_nMission : public IExtract<CTFBot::MissionType *>
 	virtual const char *GetFuncName() const override   { return "CTFBot::SetMission"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0200; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0011 + 2; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -42,9 +61,9 @@ static constexpr uint8_t s_Buf_CTFBot_m_nMission[] = {
 	0x68, 0x00, 0x00, 0x00, 0x00,             // +0009  push offset "mission_sentry_buster"
 };
 
-struct CExtract_CTFBot_m_nMission : public IExtract<CTFBot::MissionType *>
+struct CExtract_CTFBot_m_nMission : public IExtract<uint32_t>
 {
-	using T = CTFBot::MissionType *;
+	using T = uint32_t;
 	
 	CExtract_CTFBot_m_nMission() : IExtract<T>(sizeof(s_Buf_CTFBot_m_nMission)) {}
 	
@@ -74,6 +93,9 @@ struct CExtract_CTFBot_m_nMission : public IExtract<CTFBot::MissionType *>
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFBot_m_Tags[] = {
+#ifdef PLATFORM_64BITS
+	0xc7, 0x87, 0xd0, 0x2e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // +0x0000 mov     dword ptr [rdi+2ED0h], 0
+#else
 	/*0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
 	0x53,                               // +0003  push ebx
@@ -83,12 +105,13 @@ static constexpr uint8_t s_Buf_CTFBot_m_Tags[] = {
 	0x89, 0xE5, 
 	0x8B, 0x45, 0x08,
 	0xC7, 0x80, 0x90, 0x26, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-
+#endif
 };
 
-struct CExtract_CTFBot_m_Tags : public IExtract<CUtlVector<CFmtStr> *>
+
+struct CExtract_CTFBot_m_Tags : public IExtract<int32_t>
 {
-	using T = CUtlVector<CFmtStr> *;
+	using T = int32_t;
 	
 	CExtract_CTFBot_m_Tags() : IExtract<T>(sizeof(s_Buf_CTFBot_m_Tags)) {}
 	
@@ -96,17 +119,24 @@ struct CExtract_CTFBot_m_Tags : public IExtract<CUtlVector<CFmtStr> *>
 	{
 		buf.CopyFrom(s_Buf_CTFBot_m_Tags);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x06 + 2, 4, 0x00);
-		
+#endif
 		return true;
 	}
 	
 	virtual const char *GetFuncName() const override   { return "CTFBot::ClearTags"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0006 + 2; }
+#endif
 	
-	virtual T AdjustValue(T val) const { return reinterpret_cast<T>((uintptr_t)val - 0xc); }
+	virtual T AdjustValue(T val) const { return reinterpret_cast<T>((int32_t)val - (int32_t)sizeof(CUtlMemory<int>)); }
 };
 
 #elif defined _WINDOWS
@@ -119,15 +149,21 @@ using CExtract_CTFBot_m_Tags = IExtractStub;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFBot_m_nBotAttrs[] = {
+#ifdef PLATFORM_64BITS
+	0x48, 0x83, 0xbb, 0x78, 0x2f, 0x00, 0x00, 0x00,              // +0x0000 cmp     qword ptr [rbx+2F78h], 0
+	0xc7, 0x83, 0x00, 0x2f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0008 mov     dword ptr [rbx+2F00h], 0
+	0xc7, 0x83, 0xac, 0x2d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0012 mov     dword ptr [rbx+2DACh], 0
+#else
 	0xc7, 0x83, 0xb8, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0000  mov dword ptr [ebx+m_nMission],0x00000000
 	0x8B, 0x83, 0xE4, 0x28, 0x00, 0x00,                         // +000A  mov eax, [ebx+??]
 	0xc7, 0x83, 0xd0, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +0010  mov dword ptr [ebx+m_nBotAttrs],0x00000000
 	0x85, 0xC0,                                                  // +001A  test eax, eax
+#endif
 };
 
-struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
+struct CExtract_CTFBot_m_nBotAttrs : public IExtract<uint32_t>
 {
-	using T = CTFBot::AttributeType *;
+	using T = uint32_t;
 	
 	CExtract_CTFBot_m_nBotAttrs() : IExtract<T>(sizeof(s_Buf_CTFBot_m_nBotAttrs)) {}
 	
@@ -135,9 +171,15 @@ struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
 	{
 		buf.CopyFrom(s_Buf_CTFBot_m_nBotAttrs);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 4, 0x00);
+		mask.SetRange(0x08 + 2, 4, 0x00);
+		mask.SetRange(0x12 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x00 + 2, 4, 0x00);
 		mask.SetRange(0x0A + 2, 4, 0x00);
 		mask.SetRange(0x10 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -145,7 +187,11 @@ struct CExtract_CTFBot_m_nBotAttrs : public IExtract<CTFBot::AttributeType *>
 	virtual const char *GetFuncName() const override   { return "CTFBot::ChangeTeam"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0080; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0012 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0010 + 2; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -203,8 +249,8 @@ IMPL_EXTRACT(CTFBot::MissionType,   CTFBot, m_nMission,  new CExtract_CTFBot_m_n
 IMPL_EXTRACT(CUtlVector<CFmtStr>,   CTFBot, m_Tags,      new CExtract_CTFBot_m_Tags());
 //#endif
 IMPL_EXTRACT(CTFBot::AttributeType, CTFBot, m_nBotAttrs, new CExtract_CTFBot_m_nBotAttrs());
-IMPL_RELATIVE(CTFBot::WeaponRestriction, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, -0x04);
-IMPL_RELATIVE(CHandle<CBaseEntity>, CTFBot, m_enemySentry,    m_nBotAttrs, 0x20);
+IMPL_REL_BEFORE(CTFBot::WeaponRestriction, CTFBot, m_iWeaponRestrictionFlags,    m_nBotAttrs, 0);
+IMPL_REL_AFTER(CHandle<CBaseEntity>, CTFBot, m_enemySentry,    m_nBotAttrs, int, void *, EHANDLE, EHANDLE, EHANDLE, void *, bool);
 #endif
 
 MemberFuncThunk<const CTFBot *, ILocomotion *                            > CTFBot::ft_GetLocomotionInterface      ("CTFBot::GetLocomotionInterface");

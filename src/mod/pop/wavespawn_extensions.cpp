@@ -517,6 +517,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 	struct WaveSpawnData
 	{
+		CUtlVector<CWaveSpawnPopulator *> m_waitForAllDeadList;
+		CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
+
 		std::vector<std::string> start_spawn_message;
 		std::vector<std::string> first_spawn_message;
 		std::vector<std::string> last_spawn_message;
@@ -524,10 +527,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		bool hidden = false;
 
 		CWaveSpawnPopulator::InternalStateType state;
-		bool hadSpawnState = false;
 	};
 	
-	std::map<CWaveSpawnPopulator *, WaveSpawnData> wavespawns;
+	std::unordered_map<CWaveSpawnPopulator *, WaveSpawnData> wavespawns;
 	
 
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_dtor0)
@@ -536,10 +538,6 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor0\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
-		
-		if (wavespawn->extra != nullptr) {
-			delete wavespawn->extra;
-		}
 
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor0)();
 	}
@@ -550,10 +548,6 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
-
-		if (wavespawn->extra != nullptr) {
-			delete wavespawn->extra;
-		}
 
 		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor2)();
 	}
@@ -573,16 +567,17 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 			if (wavespawn == nullptr) continue;
 
-			if (createData) {
-				wavespawn->extra = new CWaveSpawnExtra();
-			}
+			if (wavespawn->m_waitForAllSpawned.IsEmpty() || wavespawn->m_waitForAllDead.IsEmpty())  continue;
 
+			wavespawn->m_bHasWaitForAll = true;
+			auto &waveSpawnData = wavespawns[wavespawn];
+			
 			if (!wavespawn->m_waitForAllSpawned.IsEmpty()) {
 				char *name = wavespawn->m_waitForAllSpawned.GetForModify();
 				for (int j = 0; j < waveSpawnCount; j++) {
 					auto wavespawnwait = wave->m_WaveSpawns[j];
 					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
-						wavespawn->extra->m_waitForAllSpawnedList.AddToHead(wavespawnwait);
+						waveSpawnData.m_waitForAllSpawnedList.AddToHead(wavespawnwait);
 					}
 				}
 				wavespawn->m_waitForAllSpawned = "";
@@ -593,7 +588,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				for (int j = 0; j < waveSpawnCount; j++) {
 					auto wavespawnwait = wave->m_WaveSpawns[j];
 					if (wavespawnwait && !Q_stricmp(wavespawnwait->m_name.Get(), name)) {
-						wavespawn->extra->m_waitForAllDeadList.AddToHead(wavespawnwait);
+						waveSpawnData.m_waitForAllDeadList.AddToHead(wavespawnwait);
 					}
 				}
 				wavespawn->m_waitForAllDead = "";
@@ -614,30 +609,29 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	}
 
 	void StateChanged(CWaveSpawnPopulator *wavespawn, CWaveSpawnPopulator::InternalStateType state) {
-		auto &data = wavespawns[wavespawn];
-		data.state = state;
+		auto data = wavespawns.find(wavespawn);
 		switch (state) {
 			case CWaveSpawnPopulator::PRE_SPAWN_DELAY:
-				DisplayMessages(data.start_spawn_message);
+				if (data != wavespawns.end()) DisplayMessages(data->second.start_spawn_message);
 				break;
 			case CWaveSpawnPopulator::SPAWNING:
-				DisplayMessages(data.first_spawn_message);
-				data.hadSpawnState = true;
+				if (data != wavespawns.end()) DisplayMessages(data->second.first_spawn_message);
+				wavespawn->m_bHadSpawnState = true;
 				break;
 			case CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD:
-				if (data.hadSpawnState) {
-					if (wavespawn->extra->m_bHasTFBotSpawner)
+				if (wavespawn->m_bHadSpawnState) {
+					if (wavespawn->m_bHasTFBotSpawner)
 						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
 					wavespawn->m_myReservedSlotCount = 0;
-					DisplayMessages(data.last_spawn_message);
+					if (data != wavespawns.end()) DisplayMessages(data->second.last_spawn_message);
 				}
 				break;
 			case CWaveSpawnPopulator::DONE:
-				if (data.hadSpawnState) {
-					if (wavespawn->extra->m_bHasTFBotSpawner)
+				if (wavespawn->m_bHadSpawnState) {
+					if (wavespawn->m_bHasTFBotSpawner)
 						CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
 					wavespawn->m_myReservedSlotCount = 0;
-					DisplayMessages(data.done_message);
+					if (data != wavespawns.end()) DisplayMessages(data->second.done_message);
 				}
 				break;
 		}
@@ -653,15 +647,15 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		int preSlots = slots;
 		bool slotsRestore = false;
 
-		if (wavespawn->extra != nullptr) {
-			auto extra = wavespawn->extra;
-			for (int i = 0; i < extra->m_waitForAllSpawnedList.Count(); i++) {
-				if (extra->m_waitForAllSpawnedList[i]->m_state <= CWaveSpawnPopulator::SPAWNING) {
+		if (wavespawn->m_bHasWaitForAll) {
+			auto &wavespawnData = wavespawns[wavespawn];
+			for (int i = 0; i < wavespawnData.m_waitForAllSpawnedList.Count(); i++) {
+				if (wavespawnData.m_waitForAllSpawnedList[i]->m_state <= CWaveSpawnPopulator::SPAWNING) {
 					return;
 				}
 			}
-			for (int i = 0; i < extra->m_waitForAllDeadList.Count(); i++) {
-				if (extra->m_waitForAllDeadList[i]->m_state != CWaveSpawnPopulator::DONE) {
+			for (int i = 0; i < wavespawnData.m_waitForAllDeadList.Count(); i++) {
+				if (wavespawnData.m_waitForAllDeadList[i]->m_state != CWaveSpawnPopulator::DONE) {
 					return;
 				}
 			}
@@ -669,13 +663,13 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (wavespawn->m_state != CWaveSpawnPopulator::DONE)
 			allWaiting = false;
 
-		if (wavespawn->extra != nullptr && wavespawn->extra->m_bPaused) {
-			if (wavespawn->extra->m_bHasTFBotSpawner && wavespawns[wavespawn].hadSpawnState)
+		if (wavespawn->m_bPaused) {
+			if (wavespawn->m_bHasTFBotSpawner && wavespawn->m_bHadSpawnState)
 				CWaveSpawnPopulator::m_reservedPlayerSlotCount -= wavespawn->m_myReservedSlotCount;
 			wavespawn->m_myReservedSlotCount = 0;
 			return;
 		}
-		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING && !wavespawn->extra->m_bHasTFBotSpawner) {
+		if (wavespawn->m_state == CWaveSpawnPopulator::SPAWNING && !wavespawn->m_bHasTFBotSpawner) {
 			slots = -9999;
 			slotsRestore = true;
 		}
@@ -751,7 +745,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	}
 
 	bool last_wavespawn_hidden = false;
-	CWaveSpawnExtra *currentWaveSpawnExtra = nullptr;
+	CWaveSpawnPopulator *currentWaveSpawn = nullptr;
 
 	void DoRandomChoiceShuffle(CRandomChoiceSpawner *spawner, int totalCount) {
 		spawner->m_Indexes.SetCount(totalCount);
@@ -770,17 +764,22 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		}
 	}
 
+	CRandomChoiceSpawner *spawnerToShuffle = nullptr;
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
+		currentWaveSpawn = wavespawn;
 		last_wavespawn_hidden = false;
 
 		// Change default total currency from -1 to 0;
 		if (wavespawn->m_totalCurrency == -1)
 			wavespawn->m_totalCurrency = 0;
 
-		wavespawn->extra = new CWaveSpawnExtra();
-		currentWaveSpawnExtra = wavespawn->extra;
+		spawnerToShuffle = nullptr;
+		wavespawn->m_bHasWaitForAll = false;
+		wavespawn->m_bPaused = false;
+		wavespawn->m_bHasTFBotSpawner = false;
+		wavespawn->m_bHadSpawnState = false;
 		
 		// make a temporary copy of the KV subtree for this populator
 		// the reason for this: `kv_orig` *might* be a ptr to a shared template KV subtree
@@ -811,7 +810,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				hidden = true;
 			}
 			else if ( FStrEq(name, "StartDisabled")) {
-				currentWaveSpawnExtra->m_bPaused = true;
+				wavespawn->m_bPaused = true;
 			}
 			else {
 				del = false;
@@ -850,11 +849,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			wave_parsing->m_iEnemyCount -= wavespawn->m_totalCount;
 		}
 
-		auto randomChoice = wavespawn->extra->randomChoiceShuffleSet;
-		if (randomChoice != nullptr) {
-			DoRandomChoiceShuffle(randomChoice, wavespawn->m_totalCount);
+		if (spawnerToShuffle != nullptr) {
+			DoRandomChoiceShuffle(spawnerToShuffle, wavespawn->m_totalCount);
 		}
-		currentWaveSpawnExtra = nullptr;
+		currentWaveSpawn = nullptr;
 		
 		return result;
 	}
@@ -873,7 +871,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		auto result = DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
 		if (sig_pop_wavespawn_spawnbot_stall_fix.GetBool() && result == SPAWN_LOCATION_NOT_FOUND && updatingWaveSpawn != nullptr) {
 			
-			if (updatingWaveSpawn != nullptr && updatingWaveSpawn->extra->m_bHasTFBotSpawner)
+			if (updatingWaveSpawn != nullptr && updatingWaveSpawn->m_bHasTFBotSpawner)
 				CWaveSpawnPopulator::m_reservedPlayerSlotCount -= updatingWaveSpawn->m_myReservedSlotCount;
 			updatingWaveSpawn->m_myReservedSlotCount = 0;
 		}
@@ -1223,8 +1221,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 		auto result = DETOUR_MEMBER_CALL(CRandomChoiceSpawner_Parse)(kv);
 		if (result && shuffle) {
-			if (currentWaveSpawnExtra != nullptr) {
-				currentWaveSpawnExtra->randomChoiceShuffleSet = random;
+			if (currentWaveSpawn != nullptr) {
+				spawnerToShuffle = random;
 			}
 			else {
 				DoRandomChoiceShuffle(random, 100);
@@ -1337,7 +1335,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 	struct NextBotData
     {
-        int vtable;
+        void *vtable;
         INextBotComponent *m_ComponentList;              // +0x04
         PathFollower *m_CurrentPath;                     // +0x08
         int m_iManagerIndex;                             // +0x0c
@@ -1461,15 +1459,6 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		virtual void OnDisable() override
 		{
 			auto wave = g_pPopulationManager != nullptr ? g_pPopulationManager->GetCurrentWave() : nullptr;
-			if (wave != nullptr) {
-				int waveSpawnCount = wave->m_WaveSpawns.Count();
-				for (int i = 0; i < waveSpawnCount; i++) {
-					auto wavespawn = wave->m_WaveSpawns[i];
-
-					if (wavespawn == nullptr) continue;
-					delete wavespawn->extra;
-				}
-			}
 			wavespawns.clear();
 		}
 		

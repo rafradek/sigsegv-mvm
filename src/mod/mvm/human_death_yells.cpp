@@ -7,6 +7,14 @@
 namespace Mod::MvM::Human_Death_Yells
 {
 	constexpr uint8_t s_Buf_CTFPlayer_DeathSound[] = {
+#ifdef PLATFORM_64BITS
+		0x41, 0x80, 0xbc, 0x24, 0x1c, 0x29, 0x00, 0x00, 0x00,  // +0x0000 cmp     byte ptr [r12+291Ch], 0
+		0x0f, 0x85, 0x0d, 0xff, 0xff, 0xff,                    // +0x0009 jnz     loc_11B4CDF
+		0x48, 0x8d, 0x35, 0x94, 0x3c, 0x31, 0x00,              // +0x000f lea     rsi, aMvmPlayerdied; "MVM.PlayerDied"
+		0x31, 0xd2,                                            // +0x0016 xor     edx, edx
+		0x66, 0x0f, 0xef, 0xc0,                                // +0x0018 pxor    xmm0, xmm0
+		0xeb, 0x8d,                                            // +0x001c jmp     short loc_11B4D6E
+#else
 		0x80, 0xbb, 0x24, 0x24, 0x00, 0x00, 0x00,  // +0x0000 cmp     byte ptr [ebx+2424h], 0
 		0x0f, 0x85, 0x0f, 0xff, 0xff, 0xff,        // +0x0007 jnz     loc_EF3B78
 		0x6a, 0x00,                                // +0x000d push    0
@@ -14,6 +22,7 @@ namespace Mod::MvM::Human_Death_Yells
 		0x68, 0xbe, 0xb1, 0x21, 0x01,              // +0x0011 push    121B1BEh; "MVM.PlayerDied"
 		0x53,                                      // +0x0016 push    ebx
 		0xe8, 0x18, 0x32, 0x8e, 0xff,              // +0x0017 call    _ZN11CBaseEntity9EmitSoundEPKcfPf; CBaseEntity::EmitSound(char const*,float,float *)
+#endif
 	};
 
 	struct CPatch_CTFPlayer_DeathSound : public CPatch
@@ -28,10 +37,17 @@ namespace Mod::MvM::Human_Death_Yells
 		{
 			buf.CopyFrom(s_Buf_CTFPlayer_DeathSound);
 
+#ifdef PLATFORM_64BITS
+			mask.SetRange(0x00 + 4, 4, 0x00);
+			mask.SetRange(0x09 + 2, 4, 0x00);
+			mask.SetRange(0x0f + 3, 4, 0x00);
+			mask.SetRange(0x1c + 1, 1, 0x00);
+#else
 			mask.SetRange(0x00 + 2, 4, 0x00);
 			mask.SetRange(0x07 + 2, 4, 0x00);
 			mask.SetRange(0x11 + 1, 4, 0x00);
 			mask.SetRange(0x17 + 1, 4, 0x00);
+#endif
 			
 			return true;
 		}
@@ -41,11 +57,19 @@ namespace Mod::MvM::Human_Death_Yells
 			// Avoid going into the branch playing mvm sound
 
 			/* make the conditional jump unconditional */
+#ifdef PLATFORM_64BITS
+			buf[0x09] = 0x90;
+			buf[0x0a] = 0xe9;
+			
+			mask[0x09] = 0xFF;
+			mask[0x0a] = 0xFF;
+#else
 			buf[0x07] = 0x90;
 			buf[0x08] = 0xe9;
 			
 			mask[0x07] = 0xFF;
 			mask[0x08] = 0xFF;
+#endif
 			return true;
 		}
 	};

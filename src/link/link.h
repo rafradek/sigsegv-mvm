@@ -464,8 +464,8 @@ public:
 	{
 		auto rtti = RTTI::GetRTTI(this->m_pszName);
 		if (rtti == nullptr) {
-			static_assert((SIZE % 4) == 0);
-			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
+			static_assert((SIZE % sizeof(intptr_t)) == 0);
+			std::fill_n((intptr_t *)m_pDest, SIZE / sizeof(intptr_t), 0xABAD1DEA);
 			
 			Warning("TypeInfoThunk::Link FAIL \"%s\": can't find RTTI\n", this->m_pszName);
 			return false;
@@ -496,8 +496,8 @@ public:
 	{
 		auto vt = RTTI::GetVTable(this->m_pszName);
 		if (vt == nullptr) {
-			static_assert((SIZE % 4) == 0);
-			std::fill_n((uint32_t *)m_pDest, SIZE / 4, 0xABAD1DEA);
+			static_assert((SIZE % sizeof(intptr_t)) == 0);
+			std::fill_n((intptr_t *)m_pDest, SIZE / sizeof(intptr_t), 0xABAD1DEA);
 			
 			Warning("VTableThunk::Link FAIL \"%s\": can't find vtable\n", this->m_pszName);
 			return false;
@@ -551,7 +551,7 @@ public:
 	}
 	
 	bool IsValid() const       { return (this->GetVTableIndex() != -1); }
-	operator ptrdiff_t() const { return (this->GetVTableIndex() * 4); }
+	operator ptrdiff_t() const { return (this->GetVTableIndex() * sizeof(ptrdiff_t)); }
 };
 
 

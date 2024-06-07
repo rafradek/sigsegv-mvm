@@ -10,9 +10,15 @@
 namespace Mod::MvM::Dominations
 {
 	constexpr uint8_t s_Buf[] = {
+#ifdef PLATFORM_64BITS
+		0x80, 0xbb, 0x1e, 0x0d, 0x00, 0x00, 0x00,  // +0x0000 cmp     byte ptr [rbx+0D1Eh], 0
+		0x49, 0x89, 0xc0,                          // +0x0007 mov     r8, rax
+		0x75, 0xd3,                                // +0x000a jnz     short loc_ACEB86
+#else
 		0x80, 0xbe, 0x72, 0x09, 0x00, 0x00, 0x00, // +0000  cmp byte ptr [esi+m_bPlayingMannVsMachine],0x0
 		0x89, 0xc2,                               // +0007  mov edx,eax
 		0x75, 0xcc,                               // +0009  jnz -0x34
+#endif
 	};
 	
 	struct CPatch_CTFGameRules_CalcDominationAndRevenge : public CPatch
@@ -32,7 +38,11 @@ namespace Mod::MvM::Dominations
 			
 			buf.SetDword(0x00 + 2, (uint32_t)off_CTFGameRules_m_bPlayingMannVsMachine);
 			
+#ifdef PLATFORM_64BITS
+			mask[0x0a + 1] = 0x00;
+#else
 			mask[0x09 + 1] = 0x00;
+#endif
 			
 			return true;
 		}
@@ -40,8 +50,13 @@ namespace Mod::MvM::Dominations
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* NOP out the conditional jump for MvM mode */
+#ifdef PLATFORM_64BITS
+			buf .SetRange(0x0a, 2, 0x90);
+			mask.SetRange(0x0a, 2, 0xff);
+#else
 			buf .SetRange(0x09, 2, 0x90);
 			mask.SetRange(0x09, 2, 0xff);
+#endif
 			
 			return true;
 		}

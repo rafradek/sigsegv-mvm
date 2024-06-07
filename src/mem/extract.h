@@ -15,7 +15,7 @@ public:
 	virtual uint32_t GetFuncOffMin() const = 0;
 	virtual uint32_t GetFuncOffMax() const = 0;
 	virtual uint32_t GetExtractOffset() const = 0;
-	virtual int ExtractPtrAsInt() const = 0;
+	virtual intptr_t ExtractPtrAsInt() const = 0;
 	
 	bool Init();
 	bool Check();
@@ -59,7 +59,7 @@ protected:
 	IExtract(int len) :
 		IExtractBase(len) {}
 	
-	virtual int ExtractPtrAsInt() const override;
+	virtual intptr_t ExtractPtrAsInt() const override;
 	
 	virtual size_t GetSize() const override { return sizeof(T); }
 };
@@ -77,10 +77,10 @@ T IExtract<T>::Extract() const
 
 
 template<typename T>
-int IExtract<T>::ExtractPtrAsInt() const
+intptr_t IExtract<T>::ExtractPtrAsInt() const
 {
-	if constexpr (std::is_pointer_v<T>) {
-		return (int)this->Extract();
+	if constexpr (std::is_pointer_v<T> || std::is_integral_v<T>) {
+		return (intptr_t)this->Extract();
 	} else {
 		assert(false);
 		return 0;

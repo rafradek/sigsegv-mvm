@@ -229,6 +229,7 @@ public:
 	DECL_DATAMAP(bool,          m_bLagCompensation);
 	DECL_SENDPROP(int,          m_iDefaultFOV);
 	DECL_SENDPROP(int,          m_iFOV);
+	DECL_SENDPROP(CHandle<CBaseViewModel>[MAX_VIEWMODELS], m_hViewModel);
 	
 	
 private:

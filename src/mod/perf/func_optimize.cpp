@@ -126,13 +126,20 @@ namespace Mod::Perf::Func_Optimize
 	};
     
     constexpr uint8_t s_Buf_CTFPlayer_GetEquippedWearableForLoadoutSlot[] = {
+#ifdef PLATFORM_64BITS
+        0x48, 0x8d, 0x15, 0x49, 0xd3, 0xdb, 0x00,  // +0x0000 lea     rdx, _ZTI11CTFWearable; lpdtype
+        0x31, 0xc9,                                // +0x0007 xor     ecx, ecx; s2d
+        0x48, 0x8d, 0x35, 0x68, 0xb3, 0xd9, 0x00,  // +0x0009 lea     rsi, _ZTI13CEconWearable; lpstype
+        0xe8, 0xb3, 0x37, 0xb9, 0xff,              // +0x0010 call    ___dynamic_cast
+#else
         0x6A, 0x00, // 0
         0x68, 0xBC, 0x08, 0x21, 0x01, // 2
         0x68, 0xB8, 0x11, 0x1E, 0x01, // 7
         0x50, // C
         0xE8, 0x5D, 0x0D, 0x0C, 0x00 // d
+#endif
 	};
-	struct CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot: public CPatch
+	struct CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot : public CPatch
 	{
 		CPatch_CTFPlayer_GetEquippedWearableForLoadoutSlot() : CPatch(sizeof(s_Buf_CTFPlayer_GetEquippedWearableForLoadoutSlot)) {}
 		
@@ -144,25 +151,42 @@ namespace Mod::Perf::Func_Optimize
 		{
 			buf.CopyFrom(s_Buf_CTFPlayer_GetEquippedWearableForLoadoutSlot);
 			
+#ifdef PLATFORM_64BITS
+			mask.SetDword(0x00 + 3, 0);
+			mask.SetDword(0x07 + 1, 0);
+			mask.SetDword(0x09 + 3, 0);
+			mask.SetDword(0x10 + 1, 0);
+#else
 			mask.SetDword(0x02 + 1, 0);
 			mask.SetDword(0x07 + 1, 0);
 			mask.SetDword(0x0d + 1, 0);
-			
+#endif
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+#ifdef PLATFORM_64BITS
+            // change to mov rax, rdi , nop
+			buf[0x10] = 0x48;
+            buf[0x11] = 0x89;
+            buf[0x12] = 0xf8;
+            buf[0x13] = 0x90;
+            buf[0x14] = 0x90;
+			mask.SetRange(0x10, 5, 0xFF);
+#else
 			buf.SetRange(0x0d, 5, 0x90);
 			mask.SetRange(0x0d, 5, 0xFF);
+#endif
 			
 			return true;
 		}
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
+#ifndef PLATFORM_64BITS
 			buf.SetRange(0x0d, 5, 0x90);
-			
+#endif
 			return true;
 		}
 	};

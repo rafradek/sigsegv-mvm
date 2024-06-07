@@ -12,6 +12,10 @@ MemberFuncThunk<const CFuncNavCost *, bool, const char *> CFuncNavCost::ft_HasTa
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CNavArea_m_funcNavCostVector[] = {
+#ifdef PLATFORM_64BITS
+	0x81, 0x67, 0x64, 0xff, 0xff, 0xff, 0xdf,                    // +0x0000 and     dword ptr [rdi+64h], 0DFFFFFFFh
+	0xc7, 0x87, 0xf8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0007 mov     dword ptr [rdi+1F8h], 0
+#else
 	0x55,                                                       // +0000  push ebp
 	0x89, 0xe5,                                                 // +0001  mov ebp,esp
 	0x8b, 0x45, 0x08,                                           // +0003  mov eax,[ebp+this]
@@ -19,11 +23,12 @@ static constexpr uint8_t s_Buf_CNavArea_m_funcNavCostVector[] = {
 	0xc7, 0x80, 0x58, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +000D  mov dword ptr [eax+0xVVVVVVVV],0x00000000
 	0x5d,                                                       // +0017  pop ebp
 	0xc3,                                                       // +0018  ret
+#endif
 };
 
-struct CExtract_CNavArea_m_funcNavCostVector : public IExtract<CUtlVector<CHandle<CFuncNavCost>> *>
+struct CExtract_CNavArea_m_funcNavCostVector : public IExtract<int32_t>
 {
-	using T = CUtlVector<CHandle<CFuncNavCost>> *;
+	using T = int32_t;
 	
 	CExtract_CNavArea_m_funcNavCostVector() : IExtract<T>(sizeof(s_Buf_CNavArea_m_funcNavCostVector)) {}
 	
@@ -31,17 +36,25 @@ struct CExtract_CNavArea_m_funcNavCostVector : public IExtract<CUtlVector<CHandl
 	{
 		buf.CopyFrom(s_Buf_CNavArea_m_funcNavCostVector);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 1, 0x00);
+		mask.SetRange(0x07 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x06 + 2, 1, 0x00);
 		mask.SetRange(0x0d + 2, 4, 0x00);
-		
+#endif
 		return true;
 	}
 	
 	virtual const char *GetFuncName() const override   { return "CNavArea::ClearAllNavCostEntities"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0007 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x000d + 2; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val - 0x0c); }
+#endif
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((int32_t)val - (int32_t)sizeof(CUtlMemory<int>)); }
 };
 
 #elif defined _WINDOWS
@@ -59,6 +72,18 @@ using CExtract_CNavArea_m_funcNavCostVector = IExtractStub;
 // CNavArea::ComputeVisibility
 
 static constexpr uint8_t s_Buf_CNavArea_m_center[] = {
+#ifdef PLATFORM_64BITS
+	0xf3, 0x0f, 0x10, 0x47, 0x30,  // +0x0000 movss   xmm0, dword ptr [rdi+30h]
+	0xf3, 0x0f, 0x58, 0x06,        // +0x0005 addss   xmm0, dword ptr [rsi]
+	0xf3, 0x0f, 0x11, 0x47, 0x30,  // +0x0009 movss   dword ptr [rdi+30h], xmm0
+	0xf3, 0x0f, 0x10, 0x47, 0x34,  // +0x000e movss   xmm0, dword ptr [rdi+34h]
+	0xf3, 0x0f, 0x58, 0x46, 0x04,  // +0x0013 addss   xmm0, dword ptr [rsi+4]
+	0xf3, 0x0f, 0x11, 0x47, 0x34,  // +0x0018 movss   dword ptr [rdi+34h], xmm0
+	0xf3, 0x0f, 0x10, 0x47, 0x38,  // +0x001d movss   xmm0, dword ptr [rdi+38h]
+	0xf3, 0x0f, 0x58, 0x46, 0x08,  // +0x0022 addss   xmm0, dword ptr [rsi+8]
+	0xf3, 0x0f, 0x11, 0x47, 0x38,  // +0x0027 movss   dword ptr [rdi+38h], xmm0
+	0xc3,                          // +0x002c retn
+#else
 	0xf3, 0x0f, 0x10, 0x40, 0x2c, // +0000  movss xmm0,dword ptr [eax+m_center.x]
 	0xf3, 0x0f, 0x58, 0x02,       // +0005  addss xmm0,dword ptr [edx.x]
 	0xf3, 0x0f, 0x11, 0x40, 0x2c, // +0009  movss dword ptr [eax+m_center.x],xmm0
@@ -70,11 +95,12 @@ static constexpr uint8_t s_Buf_CNavArea_m_center[] = {
 	0xf3, 0x0f, 0x11, 0x40, 0x34, // +0027  movss dword ptr [eax+m_center.z],xmm0
 	0x5d,                         // +002C  pop ebp
 	0xc3,                         // +002D  ret
+#endif
 };
 
-struct CExtract_CNavArea_m_center : public IExtract<Vector *>
+struct CExtract_CNavArea_m_center : public IExtract<int8_t>
 {
-	using T = Vector *;
+	using T = int8_t;
 	
 	CExtract_CNavArea_m_center() : IExtract<T>(sizeof(s_Buf_CNavArea_m_center)) {}
 	
@@ -93,10 +119,14 @@ struct CExtract_CNavArea_m_center : public IExtract<Vector *>
 	}
 	
 	virtual const char *GetFuncName() const override   { return "CNavArea::Shift"; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetFuncOffMin() const override    { return 0x0058; }
+	virtual uint32_t GetFuncOffMax() const override    { return 0x0058; }
+#else
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0061; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0061; }
+#endif
 	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 4; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val & 0x000000ff); }
 };
 
 #elif defined _WINDOWS
@@ -109,18 +139,23 @@ using CExtract_CNavArea_m_center = IExtractStub;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CNavArea_m_attributeFlags[] = {
+#ifdef PLATFORM_64BITS
+	0x81, 0x67, 0x64, 0xff, 0xff, 0xff, 0xdf,                    // +0x0000 and     dword ptr [rdi+64h], 0DFFFFFFFh
+	0xc7, 0x87, 0xf8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0007 mov     dword ptr [rdi+1F8h], 0
+#else
 	0x55,                                                       // +0000  push ebp
 	0x89, 0xe5,                                                 // +0001  mov ebp,esp
 	0x8b, 0x45, 0x08,                                           // +0003  mov eax,[ebp+this]
-	0x81, 0x60, 0x54, 0xff, 0xff, 0xff, 0xdf,                   // +0006  and dword ptr [eax+0xVVVVVVVV],0xdfffffff
-	0xc7, 0x80, 0x58, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +000D  mov dword ptr [eax+0x????????],0x00000000
+	0x81, 0x60, 0x54, 0xff, 0xff, 0xff, 0xdf,                   // +0006  and dword ptr [eax+0x????????],0xdfffffff
+	0xc7, 0x80, 0x58, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // +000D  mov dword ptr [eax+0xVVVVVVVV],0x00000000
 	0x5d,                                                       // +0017  pop ebp
 	0xc3,                                                       // +0018  ret
+#endif
 };
 
-struct CExtract_CNavArea_m_attributeFlags : public IExtract<int *>
+struct CExtract_CNavArea_m_attributeFlags : public IExtract<uint8_t>
 {
-	using T = int *;
+	using T = uint8_t;
 	
 	CExtract_CNavArea_m_attributeFlags() : IExtract<T>(sizeof(s_Buf_CNavArea_m_attributeFlags)) {}
 	
@@ -128,8 +163,13 @@ struct CExtract_CNavArea_m_attributeFlags : public IExtract<int *>
 	{
 		buf.CopyFrom(s_Buf_CNavArea_m_attributeFlags);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 1, 0x00);
+		mask.SetRange(0x07 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x06 + 2, 1, 0x00);
 		mask.SetRange(0x0d + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -137,8 +177,11 @@ struct CExtract_CNavArea_m_attributeFlags : public IExtract<int *>
 	virtual const char *GetFuncName() const override   { return "CNavArea::ClearAllNavCostEntities"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0006 + 2; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val & 0x000000ff); }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -151,6 +194,15 @@ using CExtract_CNavArea_m_attributeFlags = IExtractStub;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CNavArea_m_costSoFar[] = {
+#ifdef PLATFORM_64BITS
+	0xf3, 0x0f, 0x59, 0xd2,              // +0x0000 mulss   xmm2, xmm2
+	0xf3, 0x0f, 0x59, 0xc0,              // +0x0004 mulss   xmm0, xmm0
+	0xf3, 0x0f, 0x58, 0xca,              // +0x0008 addss   xmm1, xmm2
+	0xf3, 0x0f, 0x58, 0xc1,              // +0x000c addss   xmm0, xmm1
+	0xf3, 0x0f, 0x51, 0xc0,              // +0x0010 sqrtss  xmm0, xmm0
+	0xf3, 0x0f, 0x58, 0x43, 0x48,        // +0x0014 addss   xmm0, dword ptr [rbx+48h]
+	0xf3, 0x41, 0x0f, 0x11, 0x45, 0x48,  // +0x0019 movss   dword ptr [r13+48h], xmm0
+#else
 	0xf3, 0x0f, 0x59, 0xd2,       // +0000  mulss xmm2,xmm2
 	0xf3, 0x0f, 0x59, 0xc9,       // +0004  mulss xmm1,xmm1
 	0xf3, 0x0f, 0x58, 0xc2,       // +0008  addss xmm0,xmm2
@@ -158,11 +210,12 @@ static constexpr uint8_t s_Buf_CNavArea_m_costSoFar[] = {
 	0xf3, 0x0f, 0x51, 0xc0,       // +0010  sqrtss xmm0,xmm0
 	0xf3, 0x0f, 0x58, 0x42, 0x44, // +0014  addss xmm0,dword ptr [edx+0xVVVVVVVV]
 	0xf3, 0x0f, 0x11, 0x46, 0x44, // +0019  movss dword ptr [ebx+0xVVVVVVVV],xmm0
+#endif
 };
 
-struct CExtract_CNavArea_m_costSoFar : public IExtract<float *>
+struct CExtract_CNavArea_m_costSoFar : public IExtract<int8_t>
 {
-	using T = float *;
+	using T = int8_t;
 	
 	CExtract_CNavArea_m_costSoFar() : IExtract<T>(sizeof(s_Buf_CNavArea_m_costSoFar)) {}
 	
@@ -180,7 +233,6 @@ struct CExtract_CNavArea_m_costSoFar : public IExtract<float *>
 	virtual uint32_t GetFuncOffMin() const override    { return 0x00a0; } // @ 0x00ea
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0100; }
 	virtual uint32_t GetExtractOffset() const override { return 0x0014 + 4; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val & 0x000000ff); }
 };
 
 #elif defined _WINDOWS
@@ -204,6 +256,10 @@ using CExtract_CNavArea_m_costSoFar = IExtractStub;
 //   GetBombInfo
 
 static constexpr uint8_t s_Buf_CTFNavArea_m_nAttributes[] = {
+#ifdef PLATFORM_64BITS
+	0xf7, 0x87, 0x9c, 0x02, 0x00, 0x00, 0x07, 0x00, 0x00, 0x06,  // +0x0000 test    dword ptr [rdi+29Ch], 6000007h
+	0x0f, 0x94, 0xc0,                                            // +0x000a setz    al
+#else
 	0x55,                                                       // +0000  push ebp
 	0x89, 0xe5,                                                 // +0001  mov ebp,esp
 	0x8b, 0x45, 0x08,                                           // +0003  mov eax,[ebp+this]
@@ -211,17 +267,22 @@ static constexpr uint8_t s_Buf_CTFNavArea_m_nAttributes[] = {
 	0xf7, 0x80, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x00, 0x06, // +0007  test DWORD PTR [eax+0xVVVVVVVV],0x06000007
 	0x0f, 0x94, 0xc0,                                           // +0011  setz al
 	0xc3,                                                       // +0014  ret
+#endif
 };
 
-struct CExtract_CTFNavArea_m_nAttributes : public IExtract<TFNavAttributeType *>
+struct CExtract_CTFNavArea_m_nAttributes : public IExtract<uint32_t>
 {
-	CExtract_CTFNavArea_m_nAttributes() : IExtract<TFNavAttributeType *>(sizeof(s_Buf_CTFNavArea_m_nAttributes)) {}
+	CExtract_CTFNavArea_m_nAttributes() : IExtract<uint32_t>(sizeof(s_Buf_CTFNavArea_m_nAttributes)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CTFNavArea_m_nAttributes);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x07 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -229,7 +290,11 @@ struct CExtract_CTFNavArea_m_nAttributes : public IExtract<TFNavAttributeType *>
 	virtual const char *GetFuncName() const override   { return "CTFNavArea::IsValidForWanderingPopulation"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0030; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0007 + 2; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -265,20 +330,29 @@ struct CExtract_CTFNavArea_m_nAttributes : public IExtract<TFNavAttributeType *>
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFNavArea_m_IncursionDistances[] = {
+#ifdef PLATFORM_64BITS
+	0x48, 0x63, 0xc6,                                      // +0x0000 movsxd  rax, esi
+	0xf3, 0x0f, 0x10, 0x84, 0x87, 0x08, 0x02, 0x00, 0x00,  // +0x0003 movss   xmm0, dword ptr [rdi+rax*4+208h]
+#else
 	0x8b, 0x45, 0x08,                                     // +0000  mov eax,[ebp+this]
 	0x8b, 0x7d, 0x0c,                                     // +0003  mov edi,[ebp+arg_4]
 	0xf3, 0x0f, 0x10, 0x84, 0xb8, 0x60, 0x01, 0x00, 0x00, // +0006  movss xmm0,dword ptr [eax+edi*4+0xVVVVVVVV]
+#endif
 };
 
-struct CExtract_CTFNavArea_m_IncursionDistances : public IExtract<float (*)[4]>
+struct CExtract_CTFNavArea_m_IncursionDistances : public IExtract<uint32_t>
 {
-	CExtract_CTFNavArea_m_IncursionDistances() : IExtract<float (*)[4]>(sizeof(s_Buf_CTFNavArea_m_IncursionDistances)) {}
+	CExtract_CTFNavArea_m_IncursionDistances() : IExtract<uint32_t>(sizeof(s_Buf_CTFNavArea_m_IncursionDistances)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CTFNavArea_m_IncursionDistances);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x03 + 5, 4, 0x00);
+#else
 		mask.SetRange(0x06 + 5, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -286,7 +360,11 @@ struct CExtract_CTFNavArea_m_IncursionDistances : public IExtract<float (*)[4]>
 	virtual const char *GetFuncName() const override   { return "CTFNavArea::GetNextIncursionArea"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0030; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 5; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0006 + 5; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -299,21 +377,29 @@ using CExtract_CTFNavArea_m_IncursionDistances = IExtractStub;
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CNavArea_m_potentiallyVisibleAreas[] = {
+#ifdef PLATFORM_64BITS
+	0xc7, 0x87, 0xd0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0000 mov     dword ptr [rdi+1D0h], 0
+#else
 	0x8B, 0x45, 0x08,
 	0xC7, 0x80, 0x3C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+#endif
 };
 
-struct CExtract_CNavArea_m_potentiallyVisibleAreas : public IExtract<CUtlVectorConservative<AreaBindInfo> *>
+struct CExtract_CNavArea_m_potentiallyVisibleAreas : public IExtract<uint32_t>
 {
-	using T = CUtlVectorConservative<AreaBindInfo> *;
+	using T = uint32_t;
 
-	CExtract_CNavArea_m_potentiallyVisibleAreas() : IExtract<CUtlVectorConservative<AreaBindInfo> *>(sizeof(s_Buf_CNavArea_m_potentiallyVisibleAreas)) {}
+	CExtract_CNavArea_m_potentiallyVisibleAreas() : IExtract<uint32_t>(sizeof(s_Buf_CNavArea_m_potentiallyVisibleAreas)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CNavArea_m_potentiallyVisibleAreas);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 4, 0x00);
+#else
 		mask.SetRange(0x03 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -321,8 +407,12 @@ struct CExtract_CNavArea_m_potentiallyVisibleAreas : public IExtract<CUtlVectorC
 	virtual const char *GetFuncName() const override   { return "CNavArea::ResetPotentiallyVisibleAreas"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0030; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 2; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val - 0x08); }
+#endif
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uint32_t)val - (int32_t)sizeof(CUtlMemoryConservative<int>)); }
 };
 
 #elif defined _WINDOWS
@@ -335,12 +425,12 @@ using CExtract_CNavArea_m_potentiallyVisibleAreas = IExtractStub;
 IMPL_EXTRACT  (CUtlVector<CHandle<CFuncNavCost>>, CNavArea, m_funcNavCostVector, new CExtract_CNavArea_m_funcNavCostVector());
 IMPL_EXTRACT  (Vector,                            CNavArea, m_center,            new CExtract_CNavArea_m_center());
 IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags_a,  new CExtract_CNavArea_m_attributeFlags());
-IMPL_RELATIVE (uint32,                            CNavArea, m_nVisTestCounter,   m_funcNavCostVector, -sizeof(uint32));
-IMPL_RELATIVE (CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, (116 - 80));
+IMPL_REL_BEFORE(uint32,                           CNavArea, m_nVisTestCounter,   m_funcNavCostVector, 0);
+IMPL_REL_AFTER(CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, CUtlVector<int>, CUtlVectorConservative<int>, CUtlVector<int>, unsigned int);
 IMPL_REL_AFTER(int,                               CNavArea, m_parentHow,         m_parent);
 //IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
 IMPL_EXTRACT  (CUtlVectorConservative<AreaBindInfo>, CNavArea, m_potentiallyVisibleAreas, new CExtract_CNavArea_m_potentiallyVisibleAreas());
-IMPL_RELATIVE (AreaBindInfo,                      CNavArea, m_inheritVisibilityFrom, m_potentiallyVisibleAreas, -sizeof(AreaBindInfo));
+IMPL_REL_BEFORE(AreaBindInfo,                     CNavArea, m_inheritVisibilityFrom, m_potentiallyVisibleAreas, 0);
 
 MemberFuncThunk <const CNavArea *, void, Extent *>                               CNavArea::ft_GetExtent                            ("CNavArea::GetExtent");
 MemberFuncThunk <const CNavArea *, void, const Vector *, Vector *>               CNavArea::ft_GetClosestPointOnArea                ("CNavArea::GetClosestPointOnArea");
@@ -366,7 +456,7 @@ GlobalThunk<uint32>     CNavArea::s_nCurrVisTestCounter("CNavArea::s_nCurrVisTes
 #ifdef SE_IS_TF2
 IMPL_EXTRACT (TFNavAttributeType, CTFNavArea, m_nAttributes,        new CExtract_CTFNavArea_m_nAttributes());
 IMPL_EXTRACT (float[4],           CTFNavArea, m_IncursionDistances, new CExtract_CTFNavArea_m_IncursionDistances());
-IMPL_RELATIVE(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes, sizeof(TFNavAttributeType));
+IMPL_REL_AFTER(CUtlVector<CHandle<CBaseCombatCharacter>>[4], CTFNavArea, m_potentiallyVisibleActor, m_nAttributes);
 
 MemberFuncThunk<const CTFNavArea *, float>           CTFNavArea::ft_GetCombatIntensity("CTFNavArea::GetCombatIntensity");
 MemberFuncThunk<      CTFNavArea *, void, CBaseCombatCharacter *> CTFNavArea::ft_AddPotentiallyVisibleActor("CTFNavArea::AddPotentiallyVisibleActor");

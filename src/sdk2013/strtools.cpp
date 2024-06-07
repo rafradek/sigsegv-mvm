@@ -1,4 +1,3 @@
-#ifndef CSGO_SEPARETE_
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: String Tools
@@ -2985,4 +2984,3 @@ bool BGetLocalFormattedTime( time_t timeVal, char *pchTime, int cubTime )
 {
 	return BGetLocalFormattedDateAndTime( timeVal, NULL, 0, pchTime, cubTime );
 }
-#endif

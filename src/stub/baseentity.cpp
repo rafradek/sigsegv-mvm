@@ -47,8 +47,8 @@ IMPL_DATAMAP(CBaseEntityOutput,      CBaseEntity, m_OnUser4);
 IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
 IMPL_DATAMAP(void (CBaseEntity::*)(CBaseEntity *), CBaseEntity, m_pfnTouch);
 IMPL_DATAMAP(int,                    CBaseEntity, m_iInitialTeamNum);
-IMPL_RELATIVE(ExtraEntityData *,     CBaseEntity, m_extraEntityData, m_debugOverlays, 0x04);
-IMPL_RELATIVE(IHasAttributes *,      CBaseEntity, m_pAttributes, m_iMaxHealth, -0x0c);
+IMPL_REL_AFTER(ExtraEntityData *, CBaseEntity, m_extraEntityData, m_debugOverlays);
+IMPL_REL_BEFORE(IHasAttributes *, CBaseEntity, m_pAttributes, m_iMaxHealth, 0, string_t, void *, void *);
 IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_iParentAttachment,  CBaseEntity);
@@ -78,7 +78,7 @@ IMPL_SENDPROP(color32,              CBaseEntity, m_clrRender,            CBaseEn
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecVelocity,          CBaseGrenade);
 IMPL_SENDPROP(Vector,               CBaseEntity, m_vecOrigin,            CBaseEntity);
 IMPL_SENDPROP(QAngle,               CBaseEntity, m_angRotation,          CBaseEntity);
-IMPL_RELATIVE(CBaseHandle,          CBaseEntity, m_RefEHandle, m_angRotation, sizeof(QAngle));
+IMPL_REL_AFTER(CBaseHandle,   CBaseEntity, m_RefEHandle, m_angRotation, );
 IMPL_SENDPROP(int,                  CBaseEntity, m_fEffects,             CBaseEntity);
 
 MemberFuncThunk<      CBaseEntity *, void                                                   > CBaseEntity::ft_Remove                     ("CBaseEntity::Remove");
@@ -243,7 +243,7 @@ bool CCollisionProperty::IsPointInBounds( const Vector &vecWorldPt ) const
 
 const char *variant_t::ToString( void ) const
 {
-	COMPILE_TIME_ASSERT( sizeof(string_t) == sizeof(int) );
+	COMPILE_TIME_ASSERT( sizeof(string_t) == sizeof(const char *) );
 
 	static char szBuf[512];
 

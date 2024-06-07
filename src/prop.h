@@ -65,8 +65,8 @@ public:
 	State GetState() const { return this->m_State; }
 	
 protected:
-	IProp(const char *obj, const char *mem) :
-		m_pszObjName(obj), m_pszMemName(mem) {}
+	IProp(const char *obj, const char *mem, size_t *offsetDest = nullptr) :
+		m_pszObjName(obj), m_pszMemName(mem), m_OffsetDest(offsetDest) {}
 	
 	virtual bool CalcOffset(int& off) const = 0;
 	
@@ -77,6 +77,7 @@ private:
 	const char *m_pszMemName;
 	State m_State = State::INITIAL;
 	int m_Offset = -1;
+	size_t *m_OffsetDest;
 };
 
 inline int IProp::GetOffsetAssert()
@@ -110,6 +111,9 @@ inline void IProp::DoCalcOffset()
 	if (this->m_State == State::INITIAL) {
 		if (this->CalcOffset(this->m_Offset)) {
 			this->m_State = State::OK;
+			if (m_OffsetDest != nullptr) {
+				*m_OffsetDest += this->m_Offset;
+			}
 		} else {
 			this->m_State = State::FAIL;
 		}
@@ -120,8 +124,8 @@ inline void IProp::DoCalcOffset()
 class CProp_SendProp final : public IProp
 {
 public:
-	CProp_SendProp(const char *obj, const char *mem, const char *sv_class, void (*sc_func)(void *, void *), const char *remote_name = nullptr) :
-		IProp(obj, mem), m_pszServerClass(sv_class), m_pStateChangedFunc(sc_func), m_pszRemoteName(remote_name) {}
+	CProp_SendProp(const char *obj, const char *mem, size_t *offsetDest, const char *sv_class, void (*sc_func)(void *, void *), const char *remote_name = nullptr) :
+		IProp(obj, mem, offsetDest), m_pszServerClass(sv_class), m_pStateChangedFunc(sc_func), m_pszRemoteName(remote_name) {}
 	
 	virtual const char *GetKind() const override { return "SENDPROP"; }
 	
@@ -147,8 +151,8 @@ private:
 class CProp_DataMap final : public IProp
 {
 public:
-	CProp_DataMap(const char *obj, const char *mem) :
-		IProp(obj, mem) {}
+	CProp_DataMap(const char *obj, const char *mem, size_t *offsetDest) :
+		IProp(obj, mem, offsetDest) {}
 	
 	virtual const char *GetKind() const override { return "DATAMAP"; }
 	
@@ -164,11 +168,11 @@ class CProp_Extract final : public IProp
 {
 public:
 	/* TODO: ideally we want to guarantee that the extractor's type is a ptr to the prop's type */
-	CProp_Extract(const char *obj, const char *mem, IExtractBase *extractor) :
-		IProp(obj, mem), m_Extractor(extractor) {}
+	CProp_Extract(const char *obj, const char *mem, size_t *offsetDest, IExtractBase *extractor) :
+		IProp(obj, mem, offsetDest), m_Extractor(extractor) {}
 	
-	CProp_Extract(const char *obj, const char *mem, IExtractStub *stub) :
-		IProp(obj, mem), m_Extractor(nullptr) {}
+	CProp_Extract(const char *obj, const char *mem, size_t *offsetDest, IExtractStub *stub) :
+		IProp(obj, mem, offsetDest), m_Extractor(nullptr) {}
 	
 	virtual ~CProp_Extract();
 	
@@ -180,6 +184,17 @@ private:
 	IExtractBase *m_Extractor;
 };
 
+template <typename ... Types>
+inline std::vector<size_t> GetTypeSizes(size_t additional)
+{
+	return { additional, (sizeof(Types))... };
+}
+
+template <typename ... Types>
+inline std::vector<size_t> GetTypeAligns(size_t additional)
+{
+	return { additional, (alignof(Types))... };
+}
 
 class CProp_Relative final : public IProp
 {
@@ -191,8 +206,8 @@ public:
 		REL_BEFORE,
 	};
 	
-	CProp_Relative(const char *obj, const char *mem, size_t my_size, size_t relprop_size, IProp *relprop, RelativeMethod method, int align, int diff = 0) :
-		IProp(obj, mem), m_RelProp(relprop), m_Method(method), m_iAlign(align), m_iDiff(diff)
+	CProp_Relative(const char *obj, const char *mem, size_t *offsetDest, size_t my_size, size_t relprop_size, IProp *relprop, RelativeMethod method, int align, int diff = 0) :
+		IProp(obj, mem, offsetDest), m_RelProp(relprop), m_Method(method), m_iAlign(align), m_iDiff(diff)
 	{
 		switch (method) {
 		default:
@@ -201,7 +216,15 @@ public:
 		case REL_BEFORE: this->m_iDiff = -diff -      my_size; break;
 		}
 	}
-	
+
+	CProp_Relative(const char *obj, const char *mem, size_t *offsetDest, size_t my_size, size_t my_align, IProp *relprop, RelativeMethod method, int align, int diff, std::vector<size_t> typeSizes, std::vector<size_t> typeAligns) :
+		IProp(obj, mem, offsetDest), m_RelProp(relprop), m_Method(method), m_iAlign(align), m_iDiff(diff) {
+			m_TypeSizes = typeSizes;
+			m_TypeAligns = typeAligns;
+			m_TypeSizes.push_back(my_size);
+			m_TypeAligns.push_back(my_align);
+		}
+
 	virtual const char *GetKind() const override { return "RELATIVE"; }
 	
 private:
@@ -211,11 +234,12 @@ private:
 	RelativeMethod m_Method;
 	int m_iAlign;
 	int m_iDiff;
+	std::vector<size_t> m_TypeSizes;
+	std::vector<size_t> m_TypeAligns;
 };
 
-
-#define T_PARAMS typename IPROP, IPROP *PROP, const size_t *ADJUST, bool NET, bool RW
-#define T_ARGS            IPROP,        PROP,               ADJUST,      NET,      RW
+#define T_PARAMS typename IPROP, IPROP *PROP, const size_t *ADJUST, size_t *OFFSET, bool NET, bool RW
+#define T_ARGS            IPROP,        PROP,               ADJUST,         OFFSET,      NET,      RW
 
 
 template<typename T, T_PARAMS>
@@ -393,8 +417,8 @@ protected:
 	Ptr_t   GetPtr  () const { return reinterpret_cast<Ptr_t  >(this->GetInstanceVarAddr()); }
 	
 private:
-	inline uintptr_t GetInstanceBaseAddr() const { return (reinterpret_cast<uintptr_t>(this) - *ADJUST); }
-	inline uintptr_t GetInstanceVarAddr() const  { return ( this->GetInstanceBaseAddr() + PROP->GetOffsetDirect()); }
+	inline uintptr_t GetInstanceBaseAddr() const { return ( reinterpret_cast<uintptr_t>(this) - *ADJUST); }
+	inline uintptr_t GetInstanceVarAddr() const  { return ( reinterpret_cast<uintptr_t>(this) + *OFFSET); }
 	
 	inline ptrdiff_t GetCachedVarOffset() const
 	{
@@ -441,9 +465,11 @@ struct CPropAccessor<CHandle<U>, T_ARGS> final : public CPropAccessorHandle<U, T
 #define DECL_PROP(TYPE, PROPNAME, VARIANT, NET, RW) \
 	using _type_##PROPNAME = TYPE; \
 	static constexpr size_t _sizeof_##PROPNAME = sizeof(TYPE); \
+	static constexpr size_t _alignof_##PROPNAME = alignof(TYPE); \
 	static CProp_##VARIANT s_prop_##PROPNAME; \
 	static const size_t _adj_##PROPNAME; \
-	using _type_accessor_##PROPNAME = CPropAccessor<TYPE, CProp_##VARIANT, &s_prop_##PROPNAME, &_adj_##PROPNAME, NET, RW>; \
+	static size_t _offset_##PROPNAME; \
+	using _type_accessor_##PROPNAME = CPropAccessor<TYPE, CProp_##VARIANT, &s_prop_##PROPNAME, &_adj_##PROPNAME, &_offset_##PROPNAME, NET, RW>; \
 	_type_accessor_##PROPNAME PROPNAME; \
 	CHECK_ACCESSOR(_type_accessor_##PROPNAME)
 
@@ -464,28 +490,35 @@ static void CallNetworkStateChanged(void *obj, void *var)
 // for IMPL_SENDPROP, add an additional argument for the "remote name" (e.g. in CBaseEntity, m_MoveType's remote name is "movetype")
 #define IMPL_SENDPROP(TYPE, CLASSNAME, PROPNAME, SVCLASS, ...) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_SendProp CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, #SVCLASS, &CallNetworkStateChanged<CLASSNAME>, ##__VA_ARGS__)
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_SendProp CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, #SVCLASS, &CallNetworkStateChanged<CLASSNAME>, ##__VA_ARGS__)
 #define IMPL_DATAMAP(TYPE, CLASSNAME, PROPNAME) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_DataMap CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME)
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_DataMap CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME)
 #define IMPL_EXTRACT(TYPE, CLASSNAME, PROPNAME, EXTRACTOR) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Extract CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, EXTRACTOR)
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Extract CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, EXTRACTOR)
 #define IMPL_RELATIVE(TYPE, CLASSNAME, PROPNAME, RELPROP, DIFF) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_MANUAL, 0, DIFF)
-#define IMPL_REL_AFTER(TYPE, CLASSNAME, PROPNAME, RELPROP, ...) \
-	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, 0, ##__VA_ARGS__)
-#define IMPL_REL_BEFORE(TYPE, CLASSNAME, PROPNAME, RELPROP, ...) \
-	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_BEFORE, 0, ##__VA_ARGS__)
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_MANUAL, CLASSNAME::_alignof_##PROPNAME, DIFF)
 #define IMPL_REL_AFTER_ALIGN(TYPE, CLASSNAME, PROPNAME, RELPROP, ALIGN, ...) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, ALIGN, ##__VA_ARGS__)
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, ALIGN, ##__VA_ARGS__)
 #define IMPL_REL_BEFORE_ALIGN(TYPE, CLASSNAME, PROPNAME, RELPROP, ALIGN, ...) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_BEFORE, ALIGN, ##__VA_ARGS__)
-
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_BEFORE, ALIGN, ##__VA_ARGS__)
+#define IMPL_REL_AFTER(TYPE, CLASSNAME, PROPNAME, RELPROP, ...) \
+	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, CLASSNAME::_alignof_##PROPNAME, 0, GetTypeSizes< __VA_ARGS__ >(CLASSNAME::_sizeof_##RELPROP), GetTypeAligns< __VA_ARGS__ >(CLASSNAME::_alignof_##RELPROP))
+#define IMPL_REL_BEFORE(TYPE, CLASSNAME, PROPNAME, RELPROP, DIFF, ...) \
+	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
+	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_alignof_##PROPNAME, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_BEFORE, CLASSNAME::_alignof_##PROPNAME, DIFF, GetTypeSizes< __VA_ARGS__ >(CLASSNAME::_sizeof_##RELPROP), GetTypeAligns< __VA_ARGS__ >(CLASSNAME::_alignof_##RELPROP))
 
 #endif

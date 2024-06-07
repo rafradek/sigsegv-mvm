@@ -27,11 +27,17 @@ enum NavDirType : int32_t;
 #include "../mvm-reversed/server/NextBot/Path/NextBotChasePath.h"
 
 
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(Path,         0x5668);
+SIZE_CHECK(PathFollower, 0x56F8);
+SIZE_CHECK(ChasePath,    0x5730);
+SIZE_CHECK(IPathCost,    0x0008);
+#else
 SIZE_CHECK(Path,         0x4754);
 SIZE_CHECK(PathFollower, 0x47d4);
 SIZE_CHECK(ChasePath,    0x4800);
 SIZE_CHECK(IPathCost,    0x0004);
-
+#endif
 
 /* from game/server/nav_pathfind.h */
 enum RouteType : int32_t
@@ -59,7 +65,11 @@ private:
 	float m_flDeathDropHeight;                // +0x14
 	CUtlVector<CBaseObject *> m_EnemyObjects; // +0x18
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CTFBotPathCost, 0x40);
+#else
 SIZE_CHECK(CTFBotPathCost, 0x2c);
+#endif
 
 
 class CZombiePathCost : public IPathCost
@@ -73,7 +83,6 @@ public:
 private:
 	CZombie *m_Actor;                          // +0x04
 };
-SIZE_CHECK(CTFBotPathCost, 0x2c);
 
 #warning REMOVE ME / MOVE ME ELSEWHERE!
 inline CTFBotPathCost::~CTFBotPathCost() {}

@@ -37,7 +37,7 @@ namespace Mod::Etc::Allow_Civilian_Class
 		
 		virtual const char *GetFuncName() const override { return "CTFPlayer::HandleCommand_JoinClass"; }
 		virtual uint32_t GetFuncOffMin() const override  { return 0x0400; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x0800; } // @ 0x072a
+		virtual uint32_t GetFuncOffMax() const override  { return 0x0950; } // @ 0x072a
 	};
 
     bool disabling = false;

@@ -115,7 +115,7 @@ public:
 	DECL_RELATIVE(int, m_iMaxAmmoShells);
 	DECL_SENDPROP(int, m_iAmmoRockets);
 	DECL_RELATIVE(int, m_iMaxAmmoRockets);
-    DECL_RELATIVE(unsigned int, m_nShieldLevel);
+    DECL_SENDPROP(unsigned int, m_nShieldLevel);
 	DECL_SENDPROP(int, m_iState);
 	DECL_RELATIVE(int, m_flSentryRange);
 	DECL_SENDPROP(int, m_bPlayerControlled);

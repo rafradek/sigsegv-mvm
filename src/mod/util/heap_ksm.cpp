@@ -9,7 +9,7 @@ namespace Mod::Util::Heap_KSM
 {
 	void ModifyKSM(bool enable)
 	{
-		static uint32_t PAGE_SIZE = getpagesize();
+		static size_t PAGE_SIZE = getpagesize();
 		
 		auto f = std::unique_ptr<FILE, decltype(&fclose)>(fopen("/proc/self/maps", "r"), &fclose);
 		if (f == nullptr) {
@@ -19,8 +19,8 @@ namespace Mod::Util::Heap_KSM
 		
 		char buf[4096];
 		while (fgets(buf, sizeof(buf), f.get()) != nullptr) {
-			uint32_t start = 0x00000000;
-			uint32_t end   = 0x00000000;
+			size_t start = 0x00000000;
+			size_t end   = 0x00000000;
 			char p_read    = ' ';
 			char p_write   = ' ';
 			char p_exec    = ' ';
@@ -66,7 +66,7 @@ namespace Mod::Util::Heap_KSM
 			auto map_addr = (void *)start;
 			auto map_len  = (size_t)(end - start);
 			
-			Msg("madvise(0x%08x, 0x%08x, MADV_%sMERGEABLE)\n", (uint32_t)map_addr, (uint32_t)map_len, (enable ? "" : "UN"));
+			Msg("madvise(0x%08zx, 0x%08zx, MADV_%sMERGEABLE)\n", map_addr, map_len, (enable ? "" : "UN"));
 			if (madvise(map_addr, map_len, (enable ? MADV_MERGEABLE : MADV_UNMERGEABLE)) < 0) {
 				Msg("madvise failed: %s\n", strerror(errno));
 //				continue;

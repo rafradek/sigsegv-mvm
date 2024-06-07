@@ -7,9 +7,16 @@
 namespace Mod::MvM::Gib_Improvements
 {
 	constexpr uint8_t s_Buf[] = {
+#ifdef PLATFORM_64BITS
+		0x48, 0x8d, 0x05, 0xb9, 0x10, 0x9b, 0x00,  // +0x0000 lea     rax, g_pGameRules
+		0x48, 0x8b, 0x00,                          // +0x0007 mov     rax, [rax]
+		0x80, 0xb8, 0x1e, 0x0d, 0x00, 0x00, 0x00,  // +0x000a cmp     byte ptr [rax+0D1Eh], 0
+		0x0f, 0x85, 0x39, 0x01, 0x00, 0x00,        // +0x0011 jnz     loc_11B6258
+#else
 		0xa1, 0x5c, 0x6c, 0x70, 0x01,             // +0000  mov eax,ds:g_pGameRules
 		0x80, 0xb8, 0x7a, 0x09, 0x00, 0x00, 0x00, // +0005  cmp byte ptr [eax+m_bPlayingMannVsMachine],0x0
 		0x0F, 0x85, 0x26, 0x01, 0x00, 0x00        // +000C  jnz +0xXX
+#endif
 	};
 	
 	struct CPatch_CTFPlayer_ShouldGib : public CPatch
@@ -23,26 +30,37 @@ namespace Mod::MvM::Gib_Improvements
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf);
-			
-			void *addr__g_pGameRules = AddrManager::GetAddr("g_pGameRules");
-			if (addr__g_pGameRules == nullptr) return false;
-			
+
 			int off__CTFGameRules_m_bPlayingMannVsMachine;
 			if (!Prop::FindOffset(off__CTFGameRules_m_bPlayingMannVsMachine, "CTFGameRules", "m_bPlayingMannVsMachine")) return false;
+
+#ifdef PLATFORM_64BITS
+			buf.SetDword(0x0a + 2, (uint32_t)off__CTFGameRules_m_bPlayingMannVsMachine);
+
+			mask.SetRange(0x00 + 3, 4, 0x00);
+			mask.SetRange(0x11 + 2, 4, 0x00);
+#else
+			void *addr__g_pGameRules = AddrManager::GetAddr("g_pGameRules");
+			if (addr__g_pGameRules == nullptr) return false;
 			
 			buf.SetDword(0x00 + 1, (uint32_t)addr__g_pGameRules);
 			buf.SetDword(0x05 + 2, (uint32_t)off__CTFGameRules_m_bPlayingMannVsMachine);
 			
 			mask.SetRange(0x0c + 2, 4, 0x00);
-			
+#endif
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* NOP out the conditional jump for MvM mode */
+#ifdef PLATFORM_64BITS
+			buf .SetRange(0x11, 6, 0x90);
+			mask.SetRange(0x11, 6, 0xff);
+#else
 			buf .SetRange(0x0c, 6, 0x90);
 			mask.SetRange(0x0c, 6, 0xff);
+#endif
 			
 			return true;
 		}

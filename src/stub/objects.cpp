@@ -4,29 +4,42 @@
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CObjectSentrygun_FireRocket[] = {
-
+#ifdef PLATFORM_64BITS
+	0x48, 0x8d, 0x05, 0x91, 0xf9, 0xaa, 0x00,        // +0x0000 lea     rax, gpGlobals
+	0xf3, 0x0f, 0x10, 0x87, 0xc0, 0x0d, 0x00, 0x00,  // +0x0007 movss   xmm0, dword ptr [rdi+0DC0h]
+	0x48, 0x8b, 0x00,                                // +0x000f mov     rax, [rax]
+	0x0f, 0x2f, 0x40, 0x0c,                          // +0x0012 comiss  xmm0, dword ptr [rax+0Ch]
+#else
     0x81, 0xEC, 0x9C, 0x01, 0x00, 0x00,             // +0000
     0x8B, 0x5D, 0x08,                               // +0006
     0xA1, 0x30, 0x5F, 0x79, 0x01,                   // +0009
     0xF3, 0x0F, 0x10, 0x83, 0x08, 0x0B, 0x00, 0x00, // +000E
     0x0F, 0x2F, 0x40, 0x0C                          // +0016
+#endif
 };
 
-struct CExtract_CObjectSentrygun_FireRocket : public IExtract<float *>
+struct CExtract_CObjectSentrygun_FireRocket : public IExtract<uint32_t>
 {
-	using T = float *;
+	using T = uint32_t;
 	
 	CExtract_CObjectSentrygun_FireRocket() : IExtract<T>(sizeof(s_Buf_CObjectSentrygun_FireRocket)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CObjectSentrygun_FireRocket);
+
+#ifdef PLATFORM_64BITS
+		buf.SetDword(0x00 + 3, (uint32_t)AddrManager::GetAddrOffset("gpGlobals", "CObjectSentrygun::FireRocket", 0x07));
 		
+		mask.SetRange(0x07 + 4, 4, 0x00);
+		mask.SetRange(0x12 + 3, 1, 0x00);
+#else
 		buf.SetDword(0x09 + 1, (uint32_t)AddrManager::GetAddr("gpGlobals"));
 		
 		mask.SetRange(0x00 + 2, 4, 0x00);
 		mask.SetRange(0x0e + 4, 4, 0x00);
 		mask.SetRange(0x16 + 3, 1, 0x00);
+#endif
 		
 		return true;
 	}
@@ -34,7 +47,11 @@ struct CExtract_CObjectSentrygun_FireRocket : public IExtract<float *>
 	virtual const char *GetFuncName() const override   { return "CObjectSentrygun::FireRocket"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0060; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x007 + 4; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x00E + 4; }
+#endif
 };
 
 #elif defined _WINDOWS
@@ -60,22 +77,22 @@ IMPL_SENDPROP(bool,               CBaseObject, m_bCarried, CBaseObject);
 IMPL_SENDPROP(bool,               CBaseObject, m_bCarryDeploy, CBaseObject);
 IMPL_SENDPROP(int,                CBaseObject, m_iKills, CObjectSentrygun);
 IMPL_SENDPROP(Vector,             CBaseObject, m_vecBuildMaxs, CBaseObject);
-IMPL_RELATIVE(Vector,             CBaseObject, m_vecBuildOrigin, m_vecBuildMaxs, -sizeof(Vector) * 2);
-IMPL_RELATIVE(int,                CBaseObject, m_iBuiltOnPoint, m_hBuiltOnEntity, sizeof(CHandle<CBaseEntity>));
+IMPL_REL_BEFORE(Vector,           CBaseObject, m_vecBuildOrigin, m_vecBuildMaxs, 0, Vector);
+IMPL_REL_AFTER(int,               CBaseObject, m_iBuiltOnPoint, m_hBuiltOnEntity);
 
 IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoShells,     CObjectSentrygun);
-IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoShells,  m_iAmmoShells, 4);
+IMPL_REL_AFTER(int,  CObjectSentrygun, m_iMaxAmmoShells,  m_iAmmoShells);
 IMPL_SENDPROP(int,  CObjectSentrygun, m_iAmmoRockets,    CObjectSentrygun);
-IMPL_RELATIVE(int,  CObjectSentrygun, m_iMaxAmmoRockets, m_iAmmoRockets, 4);
-IMPL_RELATIVE(unsigned int, CObjectSentrygun, m_nShieldLevel, m_iAmmoRockets, 44);
+IMPL_REL_AFTER(int,  CObjectSentrygun, m_iMaxAmmoRockets, m_iAmmoRockets);
+IMPL_SENDPROP(unsigned int, CObjectSentrygun, m_nShieldLevel, CObjectSentrygun);
 IMPL_EXTRACT(float, CObjectSentrygun, m_flNextRocketFire, new CExtract_CObjectSentrygun_FireRocket());
 IMPL_SENDPROP(int, CObjectSentrygun, m_bPlayerControlled, CObjectSentrygun);
-IMPL_RELATIVE(int, CObjectSentrygun, m_flSentryRange, m_bPlayerControlled, -sizeof(float));
+IMPL_REL_BEFORE(int, CObjectSentrygun, m_flSentryRange, m_bPlayerControlled, 0);
 IMPL_SENDPROP(int, CObjectSentrygun, m_iState, CObjectSentrygun);
-IMPL_RELATIVE(float, CObjectSentrygun, m_flNextAttack, m_iState, sizeof(int));
-IMPL_RELATIVE(float, CObjectSentrygun, m_flFireRate, m_iState, sizeof(float) + sizeof(int));
+IMPL_REL_AFTER(float, CObjectSentrygun, m_flNextAttack, m_iState);
+IMPL_REL_AFTER(float, CObjectSentrygun, m_flFireRate, m_flNextAttack);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CObjectSentrygun, m_hEnemy, CObjectSentrygun);
-IMPL_RELATIVE(float, CObjectSentrygun, m_flNextRocketAttack, m_hEnemy, -sizeof(float));
+IMPL_REL_BEFORE(float, CObjectSentrygun, m_flNextRocketAttack, m_hEnemy, 0);
 
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetHealth        ("CBaseObject::SetHealth");
 MemberFuncThunk<CBaseObject *, void, float> CBaseObject::ft_SetPlasmaDisabled("CBaseObject::SetPlasmaDisabled");

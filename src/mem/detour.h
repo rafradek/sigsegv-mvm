@@ -268,6 +268,8 @@ private:
 	std::vector<ITrace *> m_Traces;
 	
 	bool m_bJumpInstalled = false;
+	bool m_bJumpIsRelative = false;
+	size_t m_zJumpSize = 0;
 	
 	std::vector<uint8_t> m_OriginalPrologue;     // backup of the original unmodified function prologue
 	std::vector<uint8_t> m_TrueOriginalPrologue; // FOR VALIDATION: copy of the original unmodified function prologue, done at extension start only

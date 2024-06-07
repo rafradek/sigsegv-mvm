@@ -6,11 +6,18 @@
 namespace Mod::Bot::RunFast
 {
 	constexpr uint8_t s_Buf_Verify[] = {
+#ifdef PLATFORM_64BITS
+		0xe8, 0x1e, 0x11, 0xfe, 0xff,                    // +0x0000 call    _ZN4Path7ComputeI14CTFBotPathCostEEbP8INextBotRK6VectorRT_fb; Path::Compute<CTFBotPathCost>(INextBot *,Vector const&,CTFBotPathCost &,float,bool)
+		0xf3, 0x0f, 0x10, 0x0d, 0xb2, 0x73, 0x48, 0x00,  // +0x0005 movss   xmm1, cs:dword_148A3DC
+		0xf3, 0x0f, 0x10, 0x05, 0xb6, 0x73, 0x48, 0x00,  // +0x000d movss   xmm0, cs:dword_148A3E8
+		0xe8, 0x19, 0x44, 0x6c, 0xff,                    // +0x0015 call    _RandomFloat
+#else
 		0xE8, 0xFA, 0x16, 0xFE, 0xFF, // +0000  call Path::Compute<CTFBotPathCost>
 		0x83, 0xC4, 0x18,             // +0005  add esp, 18h
 		0x68, 0x00, 0x00, 0x00, 0x40, // +0008  push 2.0f
 		0x68, 0x00, 0x00, 0x80, 0x3F, // +000D  push 1.0f
 		0xe8, 0xdc, 0xd8, 0xae, 0x00, // +0012  call RandomFloat
+#endif
 	};
 	
 	struct CPatch_CTFBotPushToCapturePoint_Update : public CPatch
@@ -25,18 +32,29 @@ namespace Mod::Bot::RunFast
 		{
 			buf.CopyFrom(s_Buf_Verify);
 			
+#ifdef PLATFORM_64BITS
+			mask.SetRange(0x00 + 1, 4, 0x00);
+			mask.SetRange(0x05 + 4, 4, 0x00);
+			mask.SetRange(0x0d + 4, 4, 0x00);
+			mask.SetRange(0x15 + 1, 4, 0x00);
+#else
 			mask.SetRange(0x00 + 1, 4, 0x00);
 			mask.SetRange(0x05 + 2, 1, 0x00);
 			mask.SetRange(0x12 + 1, 4, 0x00);
+#endif
 			
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+#ifdef PLATFORM_64BITS
+			buf.SetRange(0x15, 5, 0x90);
+			mask.SetRange(0x15, 5, 0xff);
+#else
 			buf.SetRange(0x12, 5, 0x90);
-			
 			mask.SetRange(0x12, 5, 0xff);
+#endif
 			
 			return true;
 		}
@@ -44,7 +62,7 @@ namespace Mod::Bot::RunFast
 	
 	struct NextBotData
     {
-        int vtable;
+        void *vtable;
         INextBotComponent *m_ComponentList;              // +0x04
         PathFollower *m_CurrentPath;                     // +0x08
         int m_iManagerIndex;                             // +0x0c

@@ -17,6 +17,8 @@ int GetSMTargets(CBasePlayer *caller, const char *pattern, std::vector<CBasePlay
 	cell_t targets[ABSOLUTE_PLAYER_LIMIT];
 	cmd_target_info_t target_info;
 	target_info.admin = ENTINDEX(caller);
+	Msg("Caller is %d %d %d %d %d %d\n", ENTINDEX(caller), ENTINDEX_NATIVE(caller), (intptr_t)caller->NetworkProp() - (intptr_t)caller, (intptr_t)&(caller->NetworkProp()->m_pPev) - (intptr_t)caller, (intptr_t)&(caller->NetworkProp()->m_pPev->m_EdictIndex) - (intptr_t)&(*caller->NetworkProp()->m_pPev), *(short *)((uint8_t *)(caller->NetworkProp()->m_pPev) + 6));
+	Msg("bruh is %d %d %d\n", ENTINDEX(caller), ENTINDEX_NATIVE(caller), (intptr_t)caller->NetworkProp() - (intptr_t)caller);
 	target_info.pattern = pattern;
 	target_info.targets = targets;
 	target_info.max_targets = gpGlobals->maxClients;

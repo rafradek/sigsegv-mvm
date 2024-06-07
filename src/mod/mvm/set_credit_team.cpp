@@ -53,10 +53,16 @@ namespace Mod::MvM::Set_Credit_Team
 	
 	
 	constexpr uint8_t s_Buf_CTFPowerup_ValidTouch[] = {
+#ifdef PLATFORM_64BITS
+		0xe8, 0xf8, 0x6f, 0xb5, 0xff,  // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xf8, 0x03,              // +0x0005 cmp     eax, 3
+		0x0f, 0x95, 0xc0,              // +0x0008 setnz   al
+#else
 		0xe8, 0xff, 0x9d, 0xb8, 0xff,  // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
 		0x83, 0xc4, 0x10,              // +0x0005 add     esp, 10h
 		0x83, 0xf8, 0x03,              // +0x0008 cmp     eax, 3
 		0x0f, 0x95, 0xc0,              // +0x000b setnz   al
+#endif
 	};
 	
 	struct CPatch_CTFPowerup_ValidTouch : public CPatch
@@ -64,21 +70,34 @@ namespace Mod::MvM::Set_Credit_Team
 		CPatch_CTFPowerup_ValidTouch() : CPatch(sizeof(s_Buf_CTFPowerup_ValidTouch)) {}
 		
 		virtual const char *GetFuncName() const override { return "CTFPowerup::ValidTouch"; }
-		virtual uint32_t GetFuncOffMin() const override  { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override  { return 0x00d0; } // @ +0x00a8
+		virtual uint32_t GetFuncOffMin() const override  { return 0x0060; }
+		virtual uint32_t GetFuncOffMax() const override  { return 0x00f0; } // @ +0x00a8
 		
 		virtual bool GetVerifyInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			buf.CopyFrom(s_Buf_CTFPowerup_ValidTouch);
-			
+
+#ifdef PLATFORM_64BITS
+			mask.SetDword(0x00 + 1, 0x00000000);
+#else
 			mask.SetDword(0x00 + 1, 0x00000000);
 			mask.SetRange(0x05 + 2, 1, 0x00);
-			
+#endif
 			return true;
 		}
 		
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
+#ifdef PLATFORM_64BITS
+			/* for now, replace the comparison operand with TEAM_INVALID */
+			buf[0x05 + 2] = (uint8_t)TEAM_INVALID;
+			
+			/* reverse setnz to setz*/
+			buf[0x08 + 1] = 0x94;
+			
+			mask[0x05 + 2] = 0xff;
+			mask[0x08 + 1] = 0xff;
+#else
 			/* for now, replace the comparison operand with TEAM_INVALID */
 			buf[0x08 + 2] = (uint8_t)TEAM_INVALID;
 			
@@ -87,6 +106,7 @@ namespace Mod::MvM::Set_Credit_Team
 			
 			mask[0x08 + 2] = 0xff;
 			mask[0x0b + 1] = 0xff;
+#endif
 			
 			return true;
 		}
@@ -94,7 +114,11 @@ namespace Mod::MvM::Set_Credit_Team
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
 			/* set the comparison operand to the actual user-requested teamnum */
+#ifdef PLATFORM_64BITS
+			buf[0x05 + 2] = (uint8_t)GetCreditTeamNum();
+#else
 			buf[0x08 + 2] = (uint8_t)GetCreditTeamNum();
+#endif
 			
 			return true;
 		}
@@ -102,10 +126,16 @@ namespace Mod::MvM::Set_Credit_Team
 	
 	
 	constexpr uint8_t s_Buf_RadiusCurrencyCollectionCheck[] = {
+#ifdef PLATFORM_64BITS
+		0x48, 0x8b, 0xbf, 0xc0, 0x01, 0x00, 0x00,  // +0x0000 mov     rdi, [rdi+1C0h]; this
+		0xe8, 0xd0, 0xfc, 0x21, 0x00,              // +0x0007 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xf8, 0x02,                          // +0x000c cmp     eax, 2
+#else
 		0xff, 0xb0, 0x8c, 0x01, 0x00, 0x00,  // +0x0000 push    dword ptr [eax+18Ch]
 		0xe8, 0xb9, 0x2d, 0x21, 0x00,        // +0x0006 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
 		0x83, 0xc4, 0x10,                    // +0x000b add     esp, 10h
 		0x83, 0xf8, 0x02,                    // +0x000e cmp     eax, 2
+#endif
 	};
 	
 	struct CPatch_RadiusCurrencyCollectionCheck : public CPatch
@@ -122,6 +152,14 @@ namespace Mod::MvM::Set_Credit_Team
 			
 			int off_CTFPlayerShared_m_pOuter;
 			if (!Prop::FindOffset(off_CTFPlayerShared_m_pOuter, "CTFPlayerShared", "m_pOuter")) return false;
+#ifdef PLATFORM_64BITS
+			buf.SetDword(0x00 + 3, off_CTFPlayerShared_m_pOuter);
+			
+			/* allow any 3-bit source or destination register code */
+			mask[0x00 + 2] = 0b11000000;
+			
+			mask.SetDword(0x07 + 1, 0x00000000);
+#else
 			buf.SetDword(0x00 + 2, off_CTFPlayerShared_m_pOuter);
 			
 			/* allow any 3-bit source or destination register code */
@@ -129,6 +167,7 @@ namespace Mod::MvM::Set_Credit_Team
 			
 			mask.SetDword(0x06 + 1, 0x00000000);
 			mask.SetRange(0x0b + 2, 1 , 0x00);
+#endif
 			
 			return true;
 		}
@@ -136,9 +175,15 @@ namespace Mod::MvM::Set_Credit_Team
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* for now, replace the comparison operand with TEAM_INVALID */
+#ifdef PLATFORM_64BITS
+			buf[0x0c + 2] = (uint8_t)TEAM_INVALID;
+			
+			mask[0x0c + 2] = 0xff;
+#else
 			buf[0x0e + 2] = (uint8_t)TEAM_INVALID;
 			
 			mask[0x0e + 2] = 0xff;
+#endif
 			
 			return true;
 		}
@@ -146,7 +191,11 @@ namespace Mod::MvM::Set_Credit_Team
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
 			/* set the comparison operand to the actual user-requested teamnum */
+#ifdef PLATFORM_64BITS
+			buf[0x0c + 2] = (uint8_t)GetCreditTeamNum();
+#else
 			buf[0x0e + 2] = (uint8_t)GetCreditTeamNum();
+#endif
 			
 			return true;
 		}
@@ -154,11 +203,20 @@ namespace Mod::MvM::Set_Credit_Team
 	
 	
 	constexpr uint8_t s_Buf_CTFGameRules_DistributeCurrencyAmount[] = {
+#ifdef PLATFORM_64BITS
+		0x31, 0xc9,                    // +0x0000 xor     ecx, ecx
+		0x31, 0xd2,                    // +0x0002 xor     edx, edx
+		0xbe, 0x02, 0x00, 0x00, 0x00,  // +0x0004 mov     esi, 2
+		0x48, 0x89, 0xc7,              // +0x0009 mov     rdi, rax
+		0x48, 0x89, 0x45, 0xa8,        // +0x000c mov     [rbp+var_58], rax
+		0xe8, 0x2e, 0xf8, 0x01, 0x00,  // +0x0010 call    _Z14CollectPlayersI9CTFPlayerEiP10CUtlVectorIPT_10CUtlMemoryIS3_iEEibb; CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *,CUtlMemory<CTFPlayer *,int>> *,int,bool,bool)
+#else
 		0x6a, 0x00,                    // +0x0000 push    0
 		0x6a, 0x00,                    // +0x0002 push    0
 		0x6a, 0x02,                    // +0x0004 push    2
 		0x50,                          // +0x0006 push    eax
 		0xe8,  // +0x0007 call    _Z14CollectPlayersI9CTFPlayerEiP10CUtlVectorIPT_10CUtlMemoryIS3_iEEibb; CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *,CUtlMemory<CTFPlayer *,int>> *,int,bool,bool)
+#endif
 	};
 	
 	struct CPatch_CTFGameRules_DistributeCurrencyAmount : public CPatch
@@ -179,26 +237,39 @@ namespace Mod::MvM::Set_Credit_Team
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 			/* for now, replace the teamnum argument with TEAM_INVALID */
+#ifdef PLATFORM_64BITS
+			buf.SetDword(0x04 + 1, TEAM_INVALID);
+			
+			mask.SetRange(0x04 + 1, 4, 0xFF);
+#else
 			buf[0x04 + 1] = TEAM_INVALID;
 			
 			mask[0x04 + 1] = 0xFF;
-			
+#endif
 			return true;
 		}
 		
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
+#ifdef PLATFORM_64BITS
+			buf.SetDword(0x04 + 1, GetCreditTeamNum());
+#else
 			/* set the teamnum argument to the actual user-requested teamnum */
 			buf[0x04 + 1] = GetCreditTeamNum();
-			
+#endif
 			return true;
 		}
 	};
 	
 	
 	constexpr uint8_t s_Buf_CPopulationManager_OnCurrencyCollected[] = {
+#ifdef PLATFORM_64BITS
+		0xbe, 0x02, 0x00, 0x00, 0x00,  // +0x0000 mov     esi, 2
+		0x4c, 0x89, 0xff,              // +0x0005 mov     rdi, r15
+#else
 		0xba, 0x02, 0x00, 0x00, 0x00,              // +0x0000 mov     edx, 2
 		0x89, 0xf8,                                // +0x0005 mov     eax, edi
+#endif
 	};
 	
 	struct CPatch_CPopulationManager_OnCurrencyCollected : public CPatch

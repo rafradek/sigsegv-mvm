@@ -11,10 +11,10 @@ bool IsClient() {
 
 void ListProps(bool fail_only)
 {
-	size_t len_obj = 0;
+	int len_obj = 0;
 //	size_t len_mem = 0;
 	for (auto prop : AutoList<IProp>::List()) {
-		len_obj = Max(len_obj, strlen(prop->GetObjectName()));
+		len_obj = Max(len_obj, (int) strlen(prop->GetObjectName()));
 //		len_mem = Max(len_mem, strlen(prop->GetMemberName()));
 	}
 	
@@ -381,24 +381,50 @@ bool CProp_Relative::CalcOffset(int& off) const
 		return false;
 	}
 	
-	off = base_off + this->m_iDiff;
-	
-	if (this->m_iAlign != 0) {
-		int rem;
-		switch (this->m_Method) {
-		case REL_MANUAL:
-			assert(false); // not supported
-			break;
-		case REL_AFTER:
-			rem = (off % this->m_iAlign);
-			if (rem != 0) off += (this->m_iAlign - rem);
-			break;
-		case REL_BEFORE:
-			rem = (off % this->m_iAlign);
-			if (rem != 0) off -= rem;
-			break;
+	off = base_off;
+
+	if (this->m_Method == REL_AFTER) {
+		for (int i = 1; i < this->m_TypeSizes.size(); i++) {
+			auto size = this->m_TypeSizes[i-1];
+			auto align = this->m_TypeAligns[i];
+			off += size;
+			off = ( ( off + align - 1 ) & ~( align - 1 ) );
 		}
 	}
+	
+	if (this->m_Method == REL_BEFORE) {
+		for (int i = 1; i < this->m_TypeSizes.size(); i++) {
+			auto size = this->m_TypeSizes[i];
+			auto align = this->m_TypeAligns[i];
+			off -= size;
+			off = (off & ~( align - 1 ) );
+		}
+	}
+	off += this->m_iDiff;
+	
+	// if (this->m_iAlign > 1) {
+	// 	int rem;
+	// 	switch (this->m_Method) {
+	// 	case REL_MANUAL:
+	// 		if (this->m_iDiff > 0) {
+	// 			rem = (off % this->m_iAlign);
+	// 			if (rem != 0) off += (this->m_iAlign - rem);
+	// 		}
+	// 		else {
+	// 			rem = (off % this->m_iAlign);
+	// 			if (rem != 0) off -= rem;
+	// 		}
+	// 		break;
+	// 	case REL_AFTER:
+	// 		rem = (off % this->m_iAlign);
+	// 		if (rem != 0) off += (this->m_iAlign - rem);
+	// 		break;
+	// 	case REL_BEFORE:
+	// 		rem = (off % this->m_iAlign);
+	// 		if (rem != 0) off -= rem;
+	// 		break;
+	// 	}
+	// }
 	
 	return true;
 }

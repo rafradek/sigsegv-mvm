@@ -27,8 +27,6 @@
  * or <http://www.sourcemod.net/license.php>.
  */
 
-// WARNING: VERY HEAVILY MODIFIED FROM ORIGINAL SOURCEMOD CODE!
-
 #include "MemoryUtils.h"
 #ifdef PLATFORM_LINUX
 #include <fcntl.h>
@@ -69,7 +67,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	
 #elif defined PLATFORM_LINUX
 
-#ifdef PLATFORM_X86
+#ifndef PLATFORM_64BITS
 	typedef Elf32_Ehdr ElfHeader;
 	typedef Elf32_Shdr ElfSHeader;
 	typedef Elf32_Sym ElfSymbol;
@@ -81,18 +79,24 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	#define ELF_SYM_TYPE ELF64_ST_TYPE
 #endif
 
-	struct link_map *dlmap = (struct link_map *)handle;
+	struct link_map *dlmap;
 	struct stat dlstat;
 	int dlfile;
 	uintptr_t map_base;
 	ElfHeader *file_hdr;
-	ElfSHeader *sections, *shstrtab_hdr, *symtab_hdr = nullptr, *strtab_hdr = nullptr;
+	ElfSHeader *sections, *shstrtab_hdr, *symtab_hdr, *strtab_hdr;
 	ElfSymbol *symtab;
 	const char *shstrtab, *strtab;
 	uint16_t section_count;
 	uint32_t symbol_count;
 	LibSymbolTable *libtable;
-	SymbolTable *table = nullptr;
+	SymbolTable *table;
+	Symbol *symbol_entry;
+
+	dlmap = (struct link_map *)handle;
+	symtab_hdr = NULL;
+	strtab_hdr = NULL;
+	table = NULL;
 	
 	/* See if we already have a symbol table for this library */
 	for (LibSymbolTable& libtable2 : m_SymTables)
@@ -179,7 +183,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	void *sym_addr = nullptr;
 
 	/* Iterate symbol table starting from the position we were at last time */
-	for (size_t i = libtable->last_pos; i < symbol_count; i++)
+	for (uint32_t i = libtable->last_pos; i < symbol_count; i++)
 	{
 		ElfSymbol &sym = symtab[i];
 		unsigned char sym_type = ELF_SYM_TYPE(sym.st_info);
@@ -206,7 +210,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 
 #elif defined PLATFORM_APPLE
 
-#ifdef PLATFORM_X86
+#ifndef PLATFORM_64BITS
 	typedef struct mach_header MachHeader;
 	typedef struct segment_command MachSegment;
 	typedef struct nlist MachSymbol;
@@ -221,18 +225,25 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	typedef struct load_command MachLoadCmd;
 	typedef struct symtab_command MachSymHeader;
 
-	uintptr_t dlbase = 0, linkedit_addr;
-	uint32_t image_count = m_ImageList->infoArrayCount;
+	uintptr_t dlbase, linkedit_addr;
+	uint32_t image_count;
 	MachHeader *file_hdr;
 	MachLoadCmd *loadcmds;
-	MachSegment *linkedit_hdr = nullptr;
-	MachSymHeader *symtab_hdr = nullptr;
+	MachSegment *linkedit_hdr;
+	MachSymHeader *symtab_hdr;
 	MachSymbol *symtab;
 	const char *strtab;
 	uint32_t loadcmd_count;
 	uint32_t symbol_count;
 	LibSymbolTable *libtable;
-	SymbolTable *table = nullptr;
+	SymbolTable *table;
+	Symbol *symbol_entry;
+	
+	dlbase = 0;
+	image_count = m_ImageList->infoArrayCount;
+	linkedit_hdr = NULL;
+	symtab_hdr = NULL;
+	table = NULL;
 	
 	/* Loop through mach-o images in process.
 	 * We can skip index 0 since that is just the executable.
@@ -256,32 +267,39 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	if (!dlbase)
 	{
 		/* Uh oh, we couldn't find a matching handle */
-		return nullptr;
+		return false;
 	}
+
+	/* Add this this library into the cache */
+	GetLibraryInfo((void *)dlbase);
 	
 	/* See if we already have a symbol table for this library */
-	for (LibSymbolTable& libtable2 : m_SymTables)
+	for (size_t i = 0; i < m_SymTables.size(); i++)
 	{
-		if (libtable2.lib_base == dlbase)
+		libtable = m_SymTables[i];
+		if (libtable->lib_base == dlbase)
 		{
-			libtable = &libtable2;
-			table = &libtable2.table;
+			table = &libtable->table;
 			break;
 		}
 	}
 	
 	/* If we don't have a symbol table for this library, then create one */
-	if (table == nullptr)
+	if (table == NULL)
 	{
-		libtable = &(m_SymTables.emplace_back(dlbase));
+		libtable = new LibSymbolTable();
+		libtable->table.Initialize();
+		libtable->lib_base = dlbase;
+		libtable->last_pos = 0;
 		table = &libtable->table;
+		m_SymTables.push_back(libtable);
 	}
 	
 	/* See if the symbol is already cached in our table */
-	auto it = table->find(symbol);
-	if (it != table->end())
+	symbol_entry = table->FindSymbol(symbol, strlen(symbol));
+	if (symbol_entry != NULL)
 	{
-		return (*it).second;
+		return symbol_entry->address;
 	}
 	
 	/* If symbol isn't in our table, then we have to locate it in memory */
@@ -321,7 +339,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	if (!linkedit_hdr || !symtab_hdr || !symtab_hdr->symoff || !symtab_hdr->stroff)
 	{
 		/* Uh oh, no symbol table */
-		return nullptr;
+		return NULL;
 	}
 
 	linkedit_addr = dlbase + linkedit_hdr->vmaddr;
@@ -329,14 +347,13 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	strtab = (const char *)(linkedit_addr + symtab_hdr->stroff - linkedit_hdr->fileoff);
 	symbol_count = symtab_hdr->nsyms;
 	
-	void *sym_addr = nullptr;
-	
 	/* Iterate symbol table starting from the position we were at last time */
-	for (size_t i = libtable->last_pos; i < symbol_count; i++)
+	for (uint32_t i = libtable->last_pos; i < symbol_count; i++)
 	{
 		MachSymbol &sym = symtab[i];
 		/* Ignore the prepended underscore on all symbols, so +1 here */
 		const char *sym_name = strtab + sym.n_un.n_strx + 1;
+		Symbol *cur_sym;
 		
 		/* Skip symbols that are undefined */
 		if (sym.n_sect == NO_SECT)
@@ -345,16 +362,16 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		}
 		
 		/* Caching symbols as we go along */
-		table->emplace(sym_name, (void *)(dlbase + sym.n_value));
+		cur_sym = table->InternSymbol(sym_name, strlen(sym_name), (void *)(dlbase + sym.n_value));
 		if (strcmp(symbol, sym_name) == 0)
 		{
-			sym_addr = (void *)(dlbase + sym.n_value);
+			symbol_entry = cur_sym;
 			libtable->last_pos = ++i;
 			break;
 		}
 	}
 	
-	return sym_addr;
+	return symbol_entry ? symbol_entry->address : NULL;
 
 #endif
 }
@@ -363,17 +380,19 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 {
 	uintptr_t baseAddr;
 
-	if (libPtr == nullptr)
+	if (libPtr == NULL)
 	{
 		return false;
 	}
 
 #ifdef PLATFORM_WINDOWS
 
-#ifdef PLATFORM_X86
+#ifndef PLATFORM_64BITS
 	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_I386;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
 #else
 	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_AMD64;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
 #endif
 
 	MEMORY_BASIC_INFORMATION info;
@@ -396,7 +415,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	opt = &pe->OptionalHeader;
 
 	/* Check PE magic and signature */
-	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != PE_NT_OPTIONAL_HDR_MAGIC)
 	{
 		return false;
 	}
@@ -418,19 +437,16 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #elif defined PLATFORM_LINUX
 
-
-#ifdef PLATFORM_X86
+#ifndef PLATFORM_64BITS
 	typedef Elf32_Ehdr ElfHeader;
 	typedef Elf32_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS32;
 	const uint16_t ELF_MACHINE = EM_386;
-	DevMsg("32 bit\n");
 #else
 	typedef Elf64_Ehdr ElfHeader;
 	typedef Elf64_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS64;
 	const uint16_t ELF_MACHINE = EM_X86_64;
-	DevMsg("64 bit\n");
 #endif
 
 	Dl_info info;
@@ -506,7 +522,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #elif defined PLATFORM_APPLE
 
-#ifdef PLATFORM_X86
+#ifndef PLATFORM_64BITS
 	typedef struct mach_header MachHeader;
 	typedef struct segment_command MachSegment;
 	const uint32_t MACH_MAGIC = MH_MAGIC;
@@ -646,13 +662,8 @@ void MemoryUtils::ForEachSymbol(void *handle, const std::function<bool(const Sym
 	}
 }
 
-/* TODO: maybe update ForEachSection for SourceMod's 64-bit compatibility changes (20161009..20180405) */
-#ifndef PLATFORM_X86
-#error
-#endif
-
 #if defined PLATFORM_LINUX
-void MemoryUtils::ForEachSection(void *handle, const std::function<void(const Elf32_Shdr *, const char *)>& functor)
+void MemoryUtils::ForEachSection(void *handle, const std::function<void(const ElfSHeader *, const char *)>& functor)
 {
 	auto dlmap = (struct link_map *)handle;
 	
@@ -663,7 +674,7 @@ void MemoryUtils::ForEachSection(void *handle, const std::function<void(const El
 		return;
 	}
 	
-	auto ehdr = (Elf32_Ehdr *)mmap(nullptr, dlstat.st_size, PROT_READ, MAP_PRIVATE, dlfile, 0);
+	auto ehdr = (ElfHeader *)mmap(nullptr, dlstat.st_size, PROT_READ, MAP_PRIVATE, dlfile, 0);
 	if (ehdr == MAP_FAILED) {
 		close(dlfile);
 		return;
@@ -676,13 +687,13 @@ void MemoryUtils::ForEachSection(void *handle, const std::function<void(const El
 		return;
 	}
 	
-	auto shdrs = (Elf32_Shdr *)((uintptr_t)ehdr + ehdr->e_shoff);
+	auto shdrs = (ElfSHeader *)((uintptr_t)ehdr + ehdr->e_shoff);
 	uint16_t n_shdrs = ehdr->e_shnum;
 	
 	auto shstrtab = (const char *)((uintptr_t)ehdr + shdrs[ehdr->e_shstrndx].sh_offset);
 	
 	for (uint16_t i = 0; i < n_shdrs; ++i) {
-		Elf32_Shdr *shdr = shdrs + i;
+		ElfSHeader *shdr = shdrs + i;
 		
 		if (shdr->sh_type == SHT_NULL) continue;
 		

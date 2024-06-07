@@ -138,7 +138,12 @@ struct static_attrib_t
 	unsigned short m_iAttrIndex;    // +0x00
 	attribute_data_union_t m_Value; // +0x04 / +0x08
 };
+
+#ifdef PLATFORM_64BITS
+static_assert(sizeof(static_attrib_t) == 0x10);
+#else
 static_assert(sizeof(static_attrib_t) == 0x8);
+#endif
 
 typedef unsigned short attrib_definition_index_t;
 typedef unsigned short	item_definition_index_t;
@@ -214,7 +219,11 @@ struct attr_type_t
 	CUtlConstString m_strName;
 	ISchemaAttributeType *m_pType;
 };
+#ifdef PLATFORM_64BITS
+static_assert(sizeof(attr_type_t) == 0x10);
+#else
 static_assert(sizeof(attr_type_t) == 0x8);
+#endif
 
 bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str);
 
@@ -241,7 +250,7 @@ public:
 	CAttributeManager *GetManager() { return this->m_pManager; }
 	
 private:
-	int vtable;
+	void *vtable;
 	CUtlVector<CEconItemAttribute> m_Attributes; // TODO: should be a netvar!
 	CAttributeManager *m_pManager;
 	
@@ -257,7 +266,11 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_NotifyManagerOfAttributeValueChanges  { "CAttributeList::NotifyManagerOfAttributeValueChanges"   };
 
 };
+#ifdef PLATFORM_64BITS
+static_assert(sizeof(CAttributeList) == 0x30);
+#else
 static_assert(sizeof(CAttributeList) == 0x1c);
+#endif
 
 // static inline StaticFuncThunk<bool, const CAttributeList *, const CEconItemAttributeDefinition *, float *>    ft_FindAttribute_CAttributeList { "FindAttribute_UnsafeBitwiseCast<uint, float, CAttributeList>" };
 
@@ -314,7 +327,11 @@ private:
 	}
 	
 	DECL_EXTRACT(unsigned int, m_nEquipRegionBitMask);
+#ifdef PLATFORM_64BITS
+	DECL_RELATIVE(unsigned int, m_nEquipRegionMask);
+#else
 	DECL_EXTRACT(unsigned int, m_nEquipRegionMask);
+#endif
 
 	static MemberFuncThunk<CEconItemDefinition *, bool, KeyValues *, CUtlVector<CUtlString> *> ft_BInitFromKV;
 	static MemberFuncThunk<const CEconItemDefinition *, void, IEconItemAttributeIterator *>    ft_IterateAttributes;
@@ -448,6 +465,7 @@ private:
 	KeyValues *m_pKV;                       // +0x00
 	unsigned short m_iIndex;                // +0x04
 	ISchemaAttributeType *m_pAttributeType; // +0x08
+	// Padding seems correct for 64 bits
 	bool		m_bHidden;
 	bool		m_pad1;
 	bool		m_bStoredAsInteger;
@@ -487,11 +505,11 @@ public:
 	{
 		ft_ctor(this); 
 		m_iAttributeDefinitionIndex = iAttributeIndex; 
-		m_iRawValue32.m_Float = flValue;
+		m_iRawValue32 = flValue;
 	}
 	
-	attribute_data_union_t *GetValuePtr() { return &this->m_iRawValue32; }
-	attribute_data_union_t GetValue() { return this->m_iRawValue32; }
+	attribute_data_union_t *GetValuePtr() { return (attribute_data_union_t *) &this->m_iRawValue32; }
+	attribute_data_union_t GetValue() { return *(attribute_data_union_t *) &this->m_iRawValue32; }
 	
 	CEconItemAttributeDefinition *GetStaticData() const { return ft_GetStaticData(this); }
 
@@ -504,10 +522,14 @@ private:
 	
 	void *__pad00;
 	attrib_definition_index_t m_iAttributeDefinitionIndex;
-	attribute_data_union_t m_iRawValue32;
+	float m_iRawValue32;
 	int m_nRefundableCurrency;
 };
+#ifdef PLATFORM_64BITS
+static_assert(sizeof(CEconItemAttribute) == 0x18);
+#else
 static_assert(sizeof(CEconItemAttribute) == 0x10);
+#endif
 
 
 class CAttributeContainer : public CAttributeManager
@@ -629,7 +651,7 @@ public:
 
 	CEconItemView *GetItemByPosition(int position, int *index) { return ft_GetItemByPosition(this, position, index); }
 	
-	int vtable;
+	void *vtable;
 	CSteamID m_OwnerId;
 private:
 	static MemberVFuncThunk<      CPlayerInventory *, void, bool> vt_DumpInventoryToConsole;
@@ -726,12 +748,12 @@ public:
 
 private:
 	template < typename TAnyOtherType >
-	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TAnyOtherType& value )
+	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TAnyOtherType& value ) const
 	{
 		return true;
 	}
 
-	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TActualTypeInMemory& value )
+	bool OnIterateAttributeValueTyped( const CEconItemAttributeDefinition *pAttrDef, const TActualTypeInMemory& value ) const
 	{
 
 		if ( m_pAttrDef == pAttrDef )
@@ -752,8 +774,8 @@ private:
 
 private:
 	const CEconItemAttributeDefinition *m_pAttrDef;
-	TTreatAsThisType *m_outpValue;
-	bool m_bFound;
+	mutable TTreatAsThisType *m_outpValue;
+	mutable bool m_bFound;
 };
 
 

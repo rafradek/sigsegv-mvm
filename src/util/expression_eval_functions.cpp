@@ -607,12 +607,12 @@ void FunctionSubstring(const char *function, Evaluation::Params &params, int par
     if (params[1].Int() >= 0 && params[1].Int() + length <= len) {
         char *buf;
         if (length >= 0) {
-            buf = alloca(params[2].Int() + 1);
+            buf = (char *)alloca(params[2].Int() + 1);
             strncpy(buf, str + params[1].Int(), params[2].Int());
             buf[length] = '\0';
         }
         else {
-            buf = alloca(len + 1 - params[1].Int());
+            buf = (char *)alloca(len + 1 - params[1].Int());
             strcpy(buf, str + params[1].Int());
         }
         result.SetString(AllocPooledString(buf));

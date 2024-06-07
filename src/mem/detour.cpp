@@ -38,30 +38,133 @@ static unsigned int UD86_num_operands(struct ud *ud)
 	return 4;
 }
 
+CON_COMMAND(sig_test_udis, "") {
+	std::vector<uint8_t> bytes;
+	int value;
 
-/* detect instruction: '(jmp|call) <rel_imm32>' */
-static bool UD86_insn_is_jmpcall_rel_imm32(struct ud *ud, uint8_t *opcode_byte = nullptr, int32_t *rel_offset = nullptr)
+	for (int i = 1; i < args.ArgC(); i++) {
+		value = strtol( args[i], nullptr, 16);
+		bytes.push_back(value);
+	}
+
+	if (bytes.empty()) return;
+	
+	ud_t ud;
+	ud_init(&ud);
+#ifdef PLATFORM_64BITS
+	ud_set_mode(&ud, 64);
+#else
+	ud_set_mode(&ud, 32);
+#endif
+	ud_set_pc(&ud, (uint64_t)bytes.data());
+	ud_set_input_buffer(&ud, bytes.data(), 0x100);
+
+	int len = ud_decode(&ud);
+	if (len == 0) {
+		Msg("Error decoding\n");
+	}
+
+	auto mnemonic = ud_insn_mnemonic(&ud);
+	Msg("Instr %s %d | length %d offset %d ptr %p opr count %d\n", ud_insn_asm(&ud), ud_insn_mnemonic(&ud), ud_insn_len(&ud), ud_insn_off(&ud), ud_insn_ptr(&ud), UD86_num_operands(&ud));
+	for (int i = 0; i < UD86_num_operands(&ud); i++) {
+		const auto *op0 = ud_insn_opr(&ud, i);
+		Msg("op %d type %d size %d lval %llx base %d index %d access %d\n", i, op0->type, op0->size, op0->lval.uqword, op0->base, op0->index, op0->access);
+	}
+}
+
+/* fix [rip + disp32] operands*/
+static bool UD86_insn_fix_disp32(struct ud *ud, const uint8_t *func = nullptr, uint8_t *dest = nullptr)
 {
 	auto mnemonic = ud_insn_mnemonic(ud);
-	if (mnemonic != UD_Ijmp && mnemonic != UD_Icall) return false;
+	if (ud_insn_opr(ud, 0) == nullptr) return false;
 	
-	if (ud_insn_len(ud) != 5)       return false;
+	//Msg("Instr %s %d | length %d offset %d ptr %p opr count %d\n", ud_insn_asm(ud), ud_insn_mnemonic(ud), ud_insn_len(ud), ud_insn_off(ud), ud_insn_ptr(ud), UD86_num_operands(ud));
+	//if (ud_insn_len(ud) != 5)       return false;
+	//if (UD86_num_operands(ud) != 1) return false;
+
+	int32_t writeOffset = -1;
+	uint64_t dispValue = -1ULL;
+	int memArgs = 0;
+	int immArgSize = 0;
+	
+	for (unsigned int i = 0; i < UD86_num_operands(ud); i++) {
+		auto op = ud_insn_opr(ud, i);
+		if (op->type == UD_OP_MEM && op->base == UD_R_RIP) {
+			dispValue = op->lval.uqword;
+			memArgs++;
+		}
+		if (op->type == UD_OP_IMM) {
+			immArgSize = op->size / 8;
+		}
+	}
+	if (immArgSize > 0) {
+		Msg("Instr %s %d | length %d offset %d ptr %p opr count %d\n", ud_insn_asm(ud), ud_insn_mnemonic(ud), ud_insn_len(ud), ud_insn_off(ud), ud_insn_ptr(ud), UD86_num_operands(ud));
+		for (int i = 0; i < UD86_num_operands(ud); i++) {
+			const auto *op0 = ud_insn_opr(ud, i);
+			Msg("op %d type %d size %d lval %llx base %d index %d access %d\n", i, op0->type, op0->size, op0->lval.uqword, op0->base, op0->index, op0->access);
+		}
+	}
+	writeOffset = ud_insn_len(ud) - 4 - immArgSize;
+	
+	if (memArgs != 1 || writeOffset == -1 || dispValue == -1ULL || (dispValue & 0xFFFFFFFF) != dispValue) return false;
+
+
+	if (dest == nullptr || func == nullptr) return true;
+
+	int32_t diff = (intptr_t)(dest) - (intptr_t)func;
+
+	memcpy(dest, (uint8_t *)ud_insn_off(ud), ud_insn_len(ud));
+
+	*(int32_t *)(dest + writeOffset) -= diff;
+	Msg("Prev bytes: %d Post bytes: %d offset %d\n", *(int32_t *)(ud_insn_off(ud)+writeOffset) + ud_insn_off(ud), *(int32_t *)(dest+writeOffset) + dest, diff);
+	
+	return true;
+}
+
+/* fix instruction: '(jmp|call) <rel_imm32>' */
+static bool UD86_insn_fix_jmpcall_rel_imm32(struct ud *ud, size_t &newLength, const uint8_t *func = nullptr, uint8_t *dest = nullptr)
+{
+	auto mnemonic = ud_insn_mnemonic(ud);
+	// if (mnemonic != UD_Ijmp && mnemonic != UD_Icall ) return false;
+	
+	// if (ud_insn_len(ud) != 5)       return false;
 	if (UD86_num_operands(ud) != 1) return false;
 	
+	newLength = ud_insn_len(ud);
+
 	const auto *op0 = ud_insn_opr(ud, 0);
 	if (op0->type != UD_OP_JIMM) return false;
-	if (op0->size != 32)         return false;
-	
-	/* optional parameter: write out the main opcode byte */
-	if (opcode_byte != nullptr) {
-		*opcode_byte = ud_insn_ptr(ud)[0];
+
+	if (func == nullptr || dest == nullptr) return true;
+
+	memcpy(dest, (uint8_t *)ud_insn_off(ud), ud_insn_len(ud));
+
+	if (op0->size != 32) {
+		// Convert jumps from 8 bit to 32 bit address
+		if (mnemonic == UD_Ijmp) {
+			dest[0] = OPCODE_JMP_REL_IMM32;
+			dest[2] = 0;
+			dest[3] = 0;
+			dest[4] = 0;
+
+			newLength = 5;
+		}
+		else {
+			dest[5] = 0;
+			dest[4] = 0;
+			dest[3] = 0;
+			dest[2] = dest[1];
+			dest[1] = (dest[0] & 0x0F) | 0x80;
+			dest[0] = OPCODE_JCC_REL_IMM32;
+			newLength = 6;
+		}
 	}
-	
-	/* optional parameter: write out the relative jmp/call offset */
-	if (rel_offset != nullptr) {
-		*rel_offset = op0->lval.sdword;
-	}
-	
+	int32_t writeOffset = newLength - 4;
+
+	int32_t diff = (intptr_t)(dest + (newLength - ud_insn_len(ud))) - (intptr_t)func;
+
+	*(int32_t *)(dest + writeOffset) -= diff;
+
 	return true;
 }
 
@@ -80,7 +183,7 @@ static bool UD86_insn_is_call_rel_imm32(struct ud *ud, const uint8_t **call_targ
 	
 	/* optional parameter: write out the call destination address */
 	if (call_target != nullptr) {
-		*call_target = (const uint8_t *)(ud_insn_off(ud) + ud_insn_len(ud) + op0->lval.udword);
+		*call_target = (const uint8_t *)(ud_insn_off(ud) + ud_insn_len(ud) + op0->lval.sdword);
 	}
 	
 	return true;
@@ -145,7 +248,11 @@ static bool UD86_insn_is_call_to_get_pc_thunk(struct ud *ud, Reg *dest_reg = nul
 	
 	ud_t ux;
 	ud_init(&ux);
+#ifdef PLATFORM_64BITS
+	ud_set_mode(&ux, 64);
+#else
 	ud_set_mode(&ux, 32);
+#endif
 	ud_set_pc(&ux, (uint64_t)call_target);
 	ud_set_input_buffer(&ux, call_target, 0x100);
 	
@@ -164,7 +271,11 @@ static size_t Trampoline_CalcNumBytesToCopy(size_t len_min, const uint8_t *func)
 {
 	ud_t ud;
 	ud_init(&ud);
+#ifdef PLATFORM_64BITS
+	ud_set_mode(&ud, 64);
+#else
 	ud_set_mode(&ud, 32);
+#endif
 	ud_set_pc(&ud, (uint64_t)func);
 	ud_set_input_buffer(&ud, func, 0x100);
 	
@@ -172,6 +283,9 @@ static size_t Trampoline_CalcNumBytesToCopy(size_t len_min, const uint8_t *func)
 	while (len_actual < len_min) {
 		size_t len_decoded = ud_decode(&ud);
 		assert(len_decoded != 0);
+
+		// They typically determine end of function
+		if (ud_insn_mnemonic(&ud) == UD_Inop || ud_insn_mnemonic(&ud) == UD_Iint3) break;
 		len_actual += len_decoded;
 	}
 	return len_actual;
@@ -184,7 +298,11 @@ static size_t Trampoline_CopyAndFixUpFuncBytes(size_t len_min, const uint8_t *fu
 	
 	ud_t ud;
 	ud_init(&ud);
+#ifdef PLATFORM_64BITS
+	ud_set_mode(&ud, 64);
+#else
 	ud_set_mode(&ud, 32);
+#endif
 	ud_set_pc(&ud, (uint64_t)func);
 	ud_set_input_buffer(&ud, func, 0x100);
 	
@@ -192,7 +310,9 @@ static size_t Trampoline_CopyAndFixUpFuncBytes(size_t len_min, const uint8_t *fu
 	while (len_actual < len_min) {
 		size_t len_decoded = ud_decode(&ud);
 		assert(len_decoded != 0);
-		len_actual += len_decoded;
+
+		// They typically determine end of function
+		if (ud_insn_mnemonic(&ud) == UD_Inop || ud_insn_mnemonic(&ud) == UD_Iint3) break;
 		
 		/* detect calls to __i686.get_pc_thunk.(ax|cx|dx|bx);
 		 * convert them into direct-register-load operations */
@@ -202,21 +322,60 @@ static size_t Trampoline_CopyAndFixUpFuncBytes(size_t len_min, const uint8_t *fu
 			MovRegImm32(dest, reg, pc_value).Write();
 		} else {
 			/* fixup jmp and call relative offsets */
-			uint8_t opcode_byte;
-			int32_t rel_offset;
-			if (UD86_insn_is_jmpcall_rel_imm32(&ud, &opcode_byte, &rel_offset)) {
-				rel_offset += (trampoline - func);
-				*dest = opcode_byte;
-				*reinterpret_cast<int32_t *>(dest + 1) = rel_offset;
+			if (UD86_insn_fix_jmpcall_rel_imm32(&ud, len_decoded, func + len_actual, dest)) {
+			} 
+			else if (UD86_insn_fix_disp32(&ud, func + len_actual, dest)) {
+				
 			} else {
 				memcpy(dest, (uint8_t *)ud_insn_off(&ud), len_decoded);
 			}
 		}
 		
+		len_actual += len_decoded;
 		dest += len_decoded;
 	}
 	return len_actual;
 }
+
+static bool Jump_ShouldUseRelativeJump(intptr_t from, intptr_t target)
+{
+#ifndef PLATFORM_64BITS
+	return true;
+#endif
+	auto offset = (intptr_t)target - ((intptr_t)from + (intptr_t)JmpRelImm32::Size());
+	return offset < INT_MAX && offset > INT_MIN;
+}
+
+static size_t Jump_CalculateSize(intptr_t from, intptr_t target)
+{
+	auto size = Jump_ShouldUseRelativeJump(from, target) ? JmpRelImm32::Size() : JmpIndirectMem32::Size() + sizeof(intptr_t);
+	Msg("calculated size %d\n", size);
+	return size;
+}
+
+static void Jump_WriteJump(uint8_t *from, uintptr_t target, size_t padSize)
+{
+	if (Jump_ShouldUseRelativeJump((intptr_t) from, (intptr_t) target)) {
+		auto jmp = JmpRelImm32(from, target);
+		if (padSize > 0) 
+			jmp.WritePadded(padSize);
+		else 
+			jmp.Write();
+		Msg("WriteRelative\n");
+	}
+	else {
+		auto pointerAddress = (uintptr_t)from + JmpIndirectMem32::Size();
+		auto jmp = JmpIndirectMem32(from, pointerAddress - ((uintptr_t)from + JmpIndirectMem32::Size()));
+		if (padSize > 0) 
+			jmp.WritePadded(padSize);
+		else 
+			jmp.Write();
+		
+		Msg("WriteAbsolute %x\n", (uint8_t) ModRM{ RM_DISP32, OP_FF_JMP_RM32, MOD_INDIRECT });
+		*(uintptr_t *)pointerAddress = target;
+	}
+}
+
 #warning ALL OF THIS NEEDS TESTING!
 
 
@@ -531,7 +690,7 @@ void CFuncVProf::TracePost()
 	}
 }
 
-constexpr bool s_bGameHasOptimizedVirtuals = SOURCE_ENGINE == SE_TF2;
+constexpr bool s_bGameHasOptimizedVirtuals = false;// = SOURCE_ENGINE == SE_TF2;
 
 CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	m_pFunc(reinterpret_cast<uint8_t *>(func_ptr))
@@ -716,34 +875,38 @@ void CDetouredFunc::DestroyWrapper()
 #endif
 }
 
-
 void CDetouredFunc::CreateTrampoline()
 {
 	TRACE("[this: %08x]", (uintptr_t)this);
-	
-	size_t len_prologue = Trampoline_CalcNumBytesToCopy(JmpRelImm32::Size(), this->m_pFunc);
+
+	size_t len_prologue = Trampoline_CalcNumBytesToCopy(this->m_zJumpSize, this->m_pFunc);
 	TRACE_MSG("len_prologue = %zu\n", len_prologue);
-	assert(len_prologue >= JmpRelImm32::Size());
+
+	size_t len_trampoline_alloc = len_prologue + 3 + (IsPlatform64Bits() ? JmpIndirectMem32::Size() + sizeof(uintptr_t) : JmpRelImm32::Size());
 	
-	size_t len_trampoline = len_prologue + JmpRelImm32::Size();
-	TRACE_MSG("len_trampoline = %zu\n", len_trampoline);
-	
-	this->m_pTrampoline = TheExecMemManager()->AllocTrampoline(len_trampoline);
+	this->m_pTrampoline = TheExecMemManager()->AllocTrampoline(len_trampoline_alloc);
 	TRACE_MSG("trampoline @ %08x\n", (uintptr_t)this->m_pTrampoline);
 	
+	bool jumpInTrampolineRelative = Jump_ShouldUseRelativeJump((intptr_t)this->m_pTrampoline + len_prologue, (intptr_t)this->m_pFunc + len_prologue);
+	size_t jumpInTrampolineSize = Jump_CalculateSize((intptr_t)this->m_pTrampoline + len_prologue, (intptr_t)this->m_pFunc + len_prologue);
+
 	assert(this->m_OriginalPrologue.empty());
 	this->m_OriginalPrologue.resize(len_prologue);
 	memcpy(this->m_OriginalPrologue.data(), this->m_pFunc, len_prologue);
-	
+	size_t len_trampoline;
 	{
-		MemProtModifier_RX_RWX(this->m_pTrampoline, len_trampoline);
-		assert(Trampoline_CopyAndFixUpFuncBytes(JmpRelImm32::Size(), this->m_pFunc, this->m_pTrampoline) == len_prologue);
-		JmpRelImm32(this->m_pTrampoline + len_prologue, (uint32_t)this->m_pFunc + len_prologue).Write();
+		MemProtModifier_RX_RWX(this->m_pTrampoline, len_trampoline_alloc);
+		len_trampoline = Trampoline_CopyAndFixUpFuncBytes(len_prologue, this->m_pFunc, this->m_pTrampoline);
+		Msg("len trampoline %zu alloc %zu jumps %zu prologue %zu\n", len_trampoline, len_trampoline_alloc, jumpInTrampolineSize, len_prologue);
+		TRACE_MSG("len_trampoline = %zu\n", len_trampoline);
+
+		assert(len_trampoline >= len_prologue && len_trampoline + jumpInTrampolineSize <= len_trampoline_alloc);
+		Jump_WriteJump(this->m_pTrampoline + len_trampoline, (uintptr_t)this->m_pFunc + len_prologue, 0);
 	}
 	
 	assert(this->m_TrampolineCheck.empty());
-	this->m_TrampolineCheck.resize(len_trampoline);
-	memcpy(this->m_TrampolineCheck.data(), this->m_pTrampoline, len_trampoline);
+	this->m_TrampolineCheck.resize(len_trampoline + jumpInTrampolineSize);
+	memcpy(this->m_TrampolineCheck.data(), this->m_pTrampoline, len_trampoline + jumpInTrampolineSize);
 }
 
 void CDetouredFunc::DestroyTrampoline()
@@ -780,11 +943,12 @@ void CDetouredFunc::Reconfigure()
 	void *jump_to = nullptr;
 	
 	if (!this->m_Detours.empty()) {
-
-		this->CreateTrampoline();
+		Msg("Installing detour %s\n", AddrManager::ReverseLookup(this->m_pFunc));
 		CDetour *first = this->m_Detours.front();
 		CDetour *last  = this->m_Detours.back();
-		
+		this->m_bJumpIsRelative = Jump_ShouldUseRelativeJump((intptr_t)this->m_pFunc, (intptr_t)first->m_pCallback);
+		this->m_zJumpSize = Jump_CalculateSize((intptr_t)this->m_pFunc, (intptr_t)first->m_pCallback);
+		this->CreateTrampoline();
 		TRACE_MSG("detour[\"%s\"].inner [%08x] -> trampoline [%08x]\n",
 			last->GetName(), (uintptr_t)last->m_pInner, (uintptr_t)this->m_pTrampoline);
 		*last->m_pInner = this->m_pTrampoline;
@@ -858,7 +1022,8 @@ void CDetouredFunc::InstallJump(void *target)
 	
 	{
 		MemProtModifier_RX_RWX(this->m_pFunc, this->m_OriginalPrologue.size());
-		JmpRelImm32(this->m_pFunc, (uint32_t)target).WritePadded(this->m_OriginalPrologue.size());
+		
+		Jump_WriteJump(this->m_pFunc, (uintptr_t)target, this->m_OriginalPrologue.size() > this->m_zJumpSize ? this->m_OriginalPrologue.size() : 0);
 	}
 	
 	this->m_CurrentPrologue.resize(this->m_OriginalPrologue.size());
@@ -892,7 +1057,7 @@ void CDetouredFunc::UninstallJump()
 	
 	// Check if some extension had overriden our jump, but not when the game is in shutdown/restart state as it does not matter by then
 	int state = g_HostState.GetRef().m_currentState;
-	if (!this->ValidateCurrentPrologue() && (state == 6 || state == 7)) {
+	if (!this->ValidateCurrentPrologue() && !(state == 6 || state == 7)) {
 		const char *func_name = AddrManager::ReverseLookup(this->m_pFunc);
 		if (func_name == nullptr) func_name = "???";
 		

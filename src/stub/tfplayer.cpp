@@ -11,6 +11,10 @@
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CTFPlayerShared_m_pOuter[] = {
+#ifdef PLATFORM_64BITS
+	0x48, 0x8b, 0xbf, 0xc0, 0x01, 0x00, 0x00,  // +0x0000 mov     rdi, [rdi+1C0h]; this
+	0xe9,                                      // +0x0007 jmp     _ZNK20CBaseCombatCharacter15GetActiveWeaponEv; CBaseCombatCharacter::GetActiveWeapon(void)
+#else
 	0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
 	0x8b, 0x45, 0x08,                   // +0003  mov eax,[ebp+this]
@@ -18,17 +22,22 @@ static constexpr uint8_t s_Buf_CTFPlayerShared_m_pOuter[] = {
 	0x89, 0x45, 0x08,                   // +000C  mov [ebp+this],eax
 	0x5d,                               // +000F  pop ebp
 	0xe9,                               // +0010  jmp CBaseCombatCharacter::GetActiveWeapon
+#endif
 };
 
-struct CExtract_CTFPlayerShared_m_pOuter : public IExtract<CTFPlayer **>
+struct CExtract_CTFPlayerShared_m_pOuter : public IExtract<uint32_t>
 {
-	CExtract_CTFPlayerShared_m_pOuter() : IExtract<CTFPlayer **>(sizeof(s_Buf_CTFPlayerShared_m_pOuter)) {}
+	CExtract_CTFPlayerShared_m_pOuter() : IExtract<uint32_t>(sizeof(s_Buf_CTFPlayerShared_m_pOuter)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CTFPlayerShared_m_pOuter);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 3, 4, 0x00);
+#else
 		mask.SetRange(0x06 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -36,11 +45,27 @@ struct CExtract_CTFPlayerShared_m_pOuter : public IExtract<CTFPlayer **>
 	virtual const char *GetFuncName() const override   { return "CTFPlayerShared::GetActiveTFWeapon"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 3; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0006 + 2; }
+#endif
 };
 
 
 static constexpr uint8_t s_Buf_CTFPlayer_m_bFeigningDeath[] = {
+#ifdef PLATFORM_64BITS
+	0xc6, 0x83, 0x1c, 0x29, 0x00, 0x00, 0x01,  // +0x0000 mov     byte ptr [rbx+m_bFeigningDeath], 1
+	0xe8, 0x23, 0xfb, 0xff, 0xff,              // +0x0007 call    _ZN9CTFPlayer10FeignDeathERK15CTakeDamageInfob; CTFPlayer::FeignDeath(CTakeDamageInfo const&,bool)
+	0x31, 0xd2,                                // +0x000c xor     edx, edx
+	0xbe, 0x0d, 0x00, 0x00, 0x00,              // +0x000e mov     esi, 0Dh
+	0x4c, 0x89, 0xef,                          // +0x0013 mov     rdi, r13; this
+	0x48, 0x8d, 0x05, 0x52, 0x14, 0x9d, 0x00,  // +0x0016 lea     rax, tf_feign_death_duration
+	0x48, 0x8b, 0x40, 0x38,                    // +0x001d mov     rax, [rax+38h]
+	0xf3, 0x0f, 0x10, 0x40, 0x54,              // +0x0021 movss   xmm0, dword ptr [rax+54h]
+	0xe8, 0x74, 0x10, 0x96, 0xff,              // +0x0026 call    _ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity; CTFPlayerShared::AddCond(ETFCond,float,CBaseEntity *)
+	0xc6, 0x83, 0x1c, 0x29, 0x00, 0x00, 0x00,  // +0x002b mov     byte ptr [rbx+m_bFeigningDeath], 0
+#else
 	0x8b, 0x45, 0x0c,                               // +0000  mov eax,[ebp+arg_dmginfo]
 	0xc6, 0x83, 0x00, 0x00, 0x00, 0x00, 0x01,       // +0003  mov byte ptr [ebx+m_bFeigningDeath],1
 	0x89, 0x1c, 0x24,                               // +000A  mov [esp],ebx
@@ -54,19 +79,31 @@ static constexpr uint8_t s_Buf_CTFPlayer_m_bFeigningDeath[] = {
 	0xf3, 0x0f, 0x11, 0x44, 0x24, 0x08,             // +0033  movss dword ptr [esp+8],xmm0
 	0xe8, 0x00, 0x00, 0x00, 0x00,                   // +0039  call CTFPlayerShared::AddCond
 	0xc6, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00,       // +003E  mov byte ptr [ebx+m_bFeigningDeath],0
+#endif
 };
 
-struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<bool *>
+struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<uint32_t>
 {
 	static constexpr ptrdiff_t off__ConVar__m_pParent = 0x001c;
 	static constexpr ptrdiff_t off__ConVar__m_fValue  = 0x002c;
 	
-	CExtract_CTFPlayer_m_bFeigningDeath() : IExtract<bool *>(sizeof(s_Buf_CTFPlayer_m_bFeigningDeath)) {}
+	CExtract_CTFPlayer_m_bFeigningDeath() : IExtract<uint32_t>(sizeof(s_Buf_CTFPlayer_m_bFeigningDeath)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CTFPlayer_m_bFeigningDeath);
 		
+#ifdef PLATFORM_64BITS
+		buf.SetDword(0x0e + 1, TF_COND_FEIGN_DEATH);
+		
+		mask.SetRange(0x00 + 2, 4, 0x00);
+		mask.SetRange(0x07 + 1, 4, 0x00);
+		mask.SetRange(0x16 + 3, 4, 0x00);
+		mask.SetRange(0x1d + 3, 1, 0x00);
+		mask.SetRange(0x21 + 4, 1, 0x00);
+		mask.SetRange(0x26 + 1, 4, 0x00);
+		mask.SetRange(0x2b + 2, 4, 0x00);
+#else
 		uintptr_t addr__tf_feign_death_duration = GetAddrOfConVar__tf_feign_death_duration();
 		if (addr__tf_feign_death_duration == 0) return false;
 		
@@ -78,6 +115,7 @@ struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<bool *>
 		mask.SetRange(0x11 + 1, 4, 0x00);
 		mask.SetRange(0x39 + 1, 4, 0x00);
 		mask.SetRange(0x3e + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -85,7 +123,11 @@ struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<bool *>
 	virtual const char *GetFuncName() const override   { return "CTFPlayer::SpyDeadRingerDeath"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0120; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 2; }
+#endif
 	
 	static uintptr_t GetAddrOfConVar__tf_feign_death_duration()
 	{
@@ -98,15 +140,21 @@ struct CExtract_CTFPlayer_m_bFeigningDeath : public IExtract<bool *>
 };
 
 static constexpr uint8_t s_Buf_CTFPlayerShared_m_ConditionData[] = {
+#ifdef PLATFORM_64BITS
+	0x49, 0x8b, 0x54, 0x24, 0x10,  // +0x0000 mov     rdx, [r12+10h]
+	0x48, 0x8d, 0x04, 0x5b,        // +0x0005 lea     rax, [rbx+rbx*2]
+	0x5b,                          // +0x0009 pop     rbx
+#else
 	0x8B, 0x56, 0x08,
 	0x8D, 0x04, 0x9B,
 	0x8D, 0x04, 0x82,
 	0xF3, 0x0F, 0x10, 0x40, 0x08,
+#endif
 };
 
-struct CExtract_CTFPlayerShared_m_ConditionData : public IExtract<CUtlVector<condition_source_t>*>
+struct CExtract_CTFPlayerShared_m_ConditionData : public IExtract<uint8_t>
 {
-	using T = CUtlVector<condition_source_t>*;
+	using T = uint8_t;
 
 	CExtract_CTFPlayerShared_m_ConditionData() : IExtract<T>(sizeof(s_Buf_CTFPlayerShared_m_ConditionData)) {}
 	
@@ -114,17 +162,23 @@ struct CExtract_CTFPlayerShared_m_ConditionData : public IExtract<CUtlVector<con
 	{
 		buf.CopyFrom(s_Buf_CTFPlayerShared_m_ConditionData);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 4, 1, 0x00);
+#else
 		mask.SetRange(0x00 + 2, 1, 0x00);
 		mask.SetRange(0x09 + 4, 1, 0x00);
+#endif
 		return true;
 	}
 	
 	virtual const char *GetFuncName() const override   { return "CTFPlayerShared::GetConditionDuration"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0060; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 4; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
-
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val & 0x000000ff); }
+#endif
 };
 
 
@@ -166,21 +220,21 @@ IMPL_SENDPROP(CTFConditionList,     CTFPlayerShared, m_ConditionList,  CTFPlayer
 IMPL_SENDPROP(bool,        CTFPlayerShared, m_bLastDisguisedAsOwnTeam, CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nDisguiseTeam,           CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nDesiredDisguiseTeam,    CTFPlayer);
-IMPL_RELATIVE(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hBurnWeapon, m_bLastDisguisedAsOwnTeam, +10);
-IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameBurnTime, m_bLastDisguisedAsOwnTeam, +14);
-IMPL_RELATIVE(float,       CTFPlayerShared, m_flFlameRemoveTime, m_bLastDisguisedAsOwnTeam, +18);
+IMPL_REL_AFTER(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hBurnWeapon, m_bLastDisguisedAsOwnTeam, EHANDLE, EHANDLE);
+IMPL_REL_AFTER(float,       CTFPlayerShared, m_flFlameBurnTime, m_bLastDisguisedAsOwnTeam, EHANDLE, EHANDLE, int);
+IMPL_REL_AFTER(float,       CTFPlayerShared, m_flFlameRemoveTime, m_bLastDisguisedAsOwnTeam, EHANDLE, EHANDLE, int, float);
 IMPL_SENDPROP(float,       CTFPlayerShared, m_flInvisChangeCompleteTime,CTFPlayer);
-IMPL_RELATIVE(bool,        CTFPlayerShared, m_bMotionCloak, m_flInvisChangeCompleteTime, +16);
+IMPL_REL_AFTER(bool,        CTFPlayerShared, m_bMotionCloak, m_flInvisChangeCompleteTime, float, float, float);
 IMPL_EXTRACT (CTFPlayer *, CTFPlayerShared, m_pOuter,                  new CExtract_CTFPlayerShared_m_pOuter());
 IMPL_EXTRACT (CUtlVector<condition_source_t>, CTFPlayerShared, m_ConditionData, new CExtract_CTFPlayerShared_m_ConditionData());
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iTauntIndex,   CTFPlayer);
-IMPL_RELATIVE(CUtlVector<bleed_struct_t>, CTFPlayerShared, m_BleedInfo, m_iTauntIndex, -sizeof(CUtlVector<bleed_struct_t>));
+IMPL_REL_BEFORE(CUtlVector<bleed_struct_t>, CTFPlayerShared, m_BleedInfo, m_iTauntIndex, 0);
 IMPL_SENDPROP(CHandle<CTFWeaponBase>, CTFPlayerShared, m_hDisguiseWeapon,CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iDecapitations,            CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_iRevengeCrits,             CTFPlayer);
 IMPL_SENDPROP(float[10],   CTFPlayerShared, m_flItemChargeMeter,         CTFPlayer);
 IMPL_SENDPROP(int,         CTFPlayerShared, m_nHalloweenBombHeadStage,   CTFPlayer);
-IMPL_RELATIVE(CUtlVector<healers_t>, CTFPlayerShared, m_aHealers, m_nHalloweenBombHeadStage, sizeof(int) + sizeof(uintptr_t));
+IMPL_REL_AFTER(CUtlVector<healers_t>, CTFPlayerShared, m_aHealers, m_nHalloweenBombHeadStage, uintptr_t);
 
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, float, CBaseEntity * > CTFPlayerShared::ft_AddCond                   ("CTFPlayerShared::AddCond");
 MemberFuncThunk<      CTFPlayerShared *, void, ETFCond, bool                 > CTFPlayerShared::ft_RemoveCond                ("CTFPlayerShared::RemoveCond");
@@ -208,16 +262,17 @@ MemberFuncThunk<      CTFPlayerShared *, void                                > C
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime,    CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_iSpawnCounter,          CTFPlayer);
-IMPL_RELATIVE(CTFPlayerAnimState *, CTFPlayer, m_PlayerAnimState,        m_hItem, -0x18); // 20170116a
+IMPL_REL_BEFORE(CTFPlayerAnimState *,CTFPlayer, m_PlayerAnimState,        m_hItem, 0, bool, bool, bool, bool, float, float, float, EHANDLE, int); // 20170116a
 //IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
-IMPL_RELATIVE(bool,                 CTFPlayer, m_bFeigningDeath,         m_bArenaSpectator, -0x14);
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntAttackTime, m_iSpawnCounter, -32);
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntInhaleTime, m_iSpawnCounter, -28);
-IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntAttack, m_iSpawnCounter, -24);
-IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntAttackCount, m_iSpawnCounter, -20);
-IMPL_RELATIVE(int,                  CTFPlayer, m_iTauntRPSResult, m_iSpawnCounter, -16);
-IMPL_RELATIVE(int,                  CTFPlayer, m_iPreTauntWeaponSlot, m_iSpawnCounter, -12);
-IMPL_RELATIVE(int,                  CTFPlayer, m_iPreTauntFOV, m_iSpawnCounter, -8);
+IMPL_REL_BEFORE(bool,               CTFPlayer, m_bFeigningDeath,         m_bArenaSpectator, -3, Vector, EHANDLE);
+IMPL_REL_BEFORE(float,              CTFPlayer, m_flTauntAttackTime, m_flTauntInhaleTime, 0);
+IMPL_REL_BEFORE(float,              CTFPlayer, m_flTauntInhaleTime, m_iTauntAttack, 0);
+IMPL_REL_BEFORE(int,                CTFPlayer, m_iTauntAttack, m_iTauntAttackCount, 0);
+IMPL_REL_BEFORE(int,                CTFPlayer, m_iTauntAttackCount, m_iTauntRPSResult, 0);
+IMPL_REL_BEFORE(int,                CTFPlayer, m_iTauntRPSResult, m_iPreTauntWeaponSlot, 0);
+IMPL_REL_BEFORE(int,                CTFPlayer, m_iPreTauntWeaponSlot, m_iPreTauntFOV, 0);
+IMPL_REL_BEFORE(int,                CTFPlayer, m_iPreTauntFOV, m_iSpawnCounter, 0, float);
+
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bArenaSpectator,        CTFPlayer);
 IMPL_SENDPROP(CTFPlayerClass,       CTFPlayer, m_PlayerClass,            CTFPlayer);
 IMPL_SENDPROP(CHandle<CTFItem>,     CTFPlayer, m_hItem,                  CTFPlayer);
@@ -231,21 +286,21 @@ IMPL_SENDPROP(short,                CTFPlayer, m_iTauntItemDefIndex  ,   CTFPlay
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_nForcedSkin         ,   CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bMatchSafeToLeave   ,   CTFPlayer);
-IMPL_RELATIVE(CWaveSpawnPopulator *,CTFPlayer, m_pWaveSpawnPopulator, m_bMatchSafeToLeave, sizeof(int));
-IMPL_RELATIVE(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_bMatchSafeToLeave, +12);
-IMPL_RELATIVE(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_bMatchSafeToLeave, +16);
+IMPL_REL_AFTER(CWaveSpawnPopulator *,CTFPlayer, m_pWaveSpawnPopulator, m_bMatchSafeToLeave);
+IMPL_REL_AFTER(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_pWaveSpawnPopulator, float);
+IMPL_REL_AFTER(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_nCanPurchaseUpgradesCount);
 IMPL_SENDPROP(float,                CTFPlayer, m_flVehicleReverseTime, CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flTauntYaw, CTFPlayer);
-IMPL_RELATIVE(bool,                 CTFPlayer, m_bTauntForceMoveForward, m_flVehicleReverseTime, sizeof(float));
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntForceMoveForwardSpeed, m_flVehicleReverseTime, sizeof(float) * 2);
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntMoveAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 3);
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnSpeed, m_flVehicleReverseTime, sizeof(float) * 4);
-IMPL_RELATIVE(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_flVehicleReverseTime, sizeof(float) * 5);
+IMPL_REL_AFTER(bool,                 CTFPlayer, m_bTauntForceMoveForward, m_flVehicleReverseTime);
+IMPL_REL_AFTER(float,                CTFPlayer, m_flTauntForceMoveForwardSpeed, m_bTauntForceMoveForward);
+IMPL_REL_AFTER(float,                CTFPlayer, m_flTauntMoveAccelerationTime, m_flTauntForceMoveForwardSpeed);
+IMPL_REL_AFTER(float,                CTFPlayer, m_flTauntTurnSpeed, m_flTauntMoveAccelerationTime);
+IMPL_REL_AFTER(float,                CTFPlayer, m_flTauntTurnAccelerationTime, m_flTauntTurnSpeed);
 // You could extract offset from CTFPlayer::PlayTauntRemapInputScene alternatively
-IMPL_RELATIVE(CEconItemView,        CTFPlayer, m_TauntEconItemView, m_flVehicleReverseTime, sizeof(float) * 7 + sizeof(EHANDLE) + sizeof(EHANDLE) + sizeof(bool) * 4 + sizeof(float) + sizeof(CUtlString) + sizeof(float) + sizeof(CUtlString));
+IMPL_REL_AFTER(CEconItemView,        CTFPlayer, m_TauntEconItemView, m_flTauntTurnAccelerationTime, float, EHANDLE, EHANDLE, bool, bool, bool, float, CUtlString, float, CUtlString);
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFPlayer, m_hRagdoll,               CTFPlayer);
 IMPL_SENDPROP(int,                  CTFPlayer, m_iCampaignMedals,        CTFPlayer);
-IMPL_RELATIVE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, - sizeof(CUtlVector<CHandle<CTFWeaponBase>>));
+IMPL_REL_BEFORE(CUtlVector<CHandle<CTFWeaponBase>>, CTFPlayer,  m_hDisguiseWeaponList, m_iCampaignMedals, 0);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_bUseBossHealthBar,      CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flHeadScale,            CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flTorsoScale,           CTFPlayer);
@@ -254,7 +309,8 @@ IMPL_SENDPROP(int,                  CTFPlayer, m_iPlayerSkinOverride,    CTFPlay
 
 void NetworkStateChanged_CTFPlayer_m_angEyeAngles(void *obj, void *var) { reinterpret_cast<CTFPlayer *>(obj)->NetworkStateChanged(var); } \
 const size_t CTFPlayer::_adj_m_angEyeAngles = offsetof(CTFPlayer, m_angEyeAngles);
-CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", "CTFPlayer", &CallNetworkStateChanged<CTFPlayer>);
+size_t CTFPlayer::_offset_m_angEyeAngles = -offsetof(CTFPlayer, m_angEyeAngles);
+CProp_SendProp CTFPlayer::s_prop_m_angEyeAngles("CTFPlayer", "m_angEyeAngles[0]", &CTFPlayer::_offset_m_angEyeAngles, "CTFPlayer", &CallNetworkStateChanged<CTFPlayer>);
 
 MemberFuncThunk<      CTFPlayer *, void, int, bool                 > CTFPlayer::ft_ForceChangeTeam                  ("CTFPlayer::ForceChangeTeam");
 MemberFuncThunk<      CTFPlayer *, void, CCommand&                 > CTFPlayer::ft_ClientCommand                    ("CTFPlayer::ClientCommand");

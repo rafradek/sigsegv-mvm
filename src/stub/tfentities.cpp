@@ -13,9 +13,9 @@ static constexpr uint8_t s_Buf_CTeamControlPointMaster_m_ControlPoints[] = {
 	0x0f, 0xb7, 0x98, 0x7a, 0x03, 0x00, 0x00, // +000B  movzx ebx,word ptr [eax+0xVVVVVVVV]
 };
 
-struct CExtract_CTeamControlPointMaster_m_ControlPoints : public IExtract<CUtlMap<int, CTeamControlPoint *> *>
+struct CExtract_CTeamControlPointMaster_m_ControlPoints : public IExtract<uint32_t>
 {
-	using T = CUtlMap<int, CTeamControlPoint *> *;
+	using T = uint32_t;
 	
 	CExtract_CTeamControlPointMaster_m_ControlPoints() : IExtract<T>(sizeof(s_Buf_CTeamControlPointMaster_m_ControlPoints)) {}
 	
@@ -32,7 +32,7 @@ struct CExtract_CTeamControlPointMaster_m_ControlPoints : public IExtract<CUtlMa
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
 	virtual uint32_t GetExtractOffset() const override { return 0x000b + 3; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val - 0x12); }
+	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uint32_t)val - 0x12); }
 };
 
 #elif defined _WINDOWS
@@ -47,7 +47,7 @@ MemberFuncThunk<CTFDroppedWeapon *, void, CTFPlayer *, CTFWeaponBase *, bool, bo
 
 IMPL_SENDPROP(CEconItemView, CTFDroppedWeapon, m_Item,   CTFDroppedWeapon);
 IMPL_SENDPROP(float, CTFDroppedWeapon, m_flChargeLevel, CTFDroppedWeapon);
-IMPL_RELATIVE(int, CTFDroppedWeapon, m_nAmmo, m_flChargeLevel, 0x0c);
+IMPL_REL_AFTER(int, CTFDroppedWeapon, m_nAmmo, m_flChargeLevel, EHANDLE, int);
 
 IMPL_SENDPROP(int,                CTFPowerupBottle, m_usNumCharges, CTFPowerupBottle);
 
@@ -75,7 +75,7 @@ MemberVFuncThunk<CEconWearable *, int>                 CEconWearable::vt_GetSkin
 
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFWearable, m_hWeaponAssociatedWith, CTFWearable);
 IMPL_SENDPROP(bool, CTFWearable, m_bDisguiseWearable, CTFWearable);
-IMPL_RELATIVE(bool, CTFWearable, m_bAlwaysAllow, m_bDisguiseWearable, -sizeof(uintptr_t) * 2);
+IMPL_REL_BEFORE(bool, CTFWearable, m_bAlwaysAllow, m_bDisguiseWearable, -sizeof(uintptr_t) + 1, uintptr_t);
 
 MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_DoSpecialAction ( "CTFWearableDemoShield::DoSpecialAction");
 MemberFuncThunk<CTFWearableDemoShield *, void, CTFPlayer *> CTFWearableDemoShield::ft_EndSpecialAction( "CTFWearableDemoShield::EndSpecialAction");
@@ -107,16 +107,16 @@ MemberFuncThunk<CUpgrades *, attrib_definition_index_t,  CTFPlayer*, CEconItemVi
 GlobalThunk<CHandle<CUpgrades>> g_hUpgradeEntity("g_hUpgradeEntity");
 
 
-IMPL_REL_BEFORE(CUtlStringList, CFilterTFBotHasTag, m_TagList, m_iszTags);
+IMPL_REL_BEFORE(CUtlStringList, CFilterTFBotHasTag, m_TagList, m_iszTags, 0);
 IMPL_DATAMAP   (string_t,       CFilterTFBotHasTag, m_iszTags);
 IMPL_DATAMAP   (bool,           CFilterTFBotHasTag, m_bRequireAllTags);
 IMPL_DATAMAP   (bool,           CFilterTFBotHasTag, m_bNegated);
 
 
-IMPL_REL_BEFORE(bool, CCurrencyPack, m_bTouched,     m_bPulled);      // 20151007a
-IMPL_REL_BEFORE(bool, CCurrencyPack, m_bPulled,      m_bDistributed); // 20151007a
+IMPL_REL_BEFORE(bool, CCurrencyPack, m_bTouched,     m_bPulled, 0);      // 20151007a
+IMPL_REL_BEFORE(bool, CCurrencyPack, m_bPulled,      m_bDistributed, 0); // 20151007a
 IMPL_SENDPROP  (bool, CCurrencyPack, m_bDistributed, CCurrencyPack);
-IMPL_RELATIVE  (int,  CCurrencyPack, m_nAmount, m_bTouched, -sizeof(CountdownTimer) - sizeof(int) - sizeof(uint32) - sizeof(int));
+IMPL_REL_BEFORE(int,  CCurrencyPack, m_nAmount, m_bTouched, 0, CountdownTimer, int, uint32);
 
 MemberVFuncThunk<const CCurrencyPack *, bool> CCurrencyPack::vt_AffectedByRadiusCollection(TypeName<CCurrencyPack>(), "CCurrencyPack::AffectedByRadiusCollection");
 
@@ -164,7 +164,7 @@ IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsFireParticles);
 IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsFireSound);
 IMPL_DATAMAP (string_t, CTFPointWeaponMimic, m_pzsModelOverride);
 IMPL_DATAMAP (int, CTFPointWeaponMimic, m_nWeaponType);
-IMPL_RELATIVE(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits, 0x04);
+IMPL_REL_AFTER(CUtlVector<CHandle<CTFGrenadePipebombProjectile>>, CTFPointWeaponMimic, m_Pipebombs, m_bCrits);
 
 MemberFuncThunk<const CTFPointWeaponMimic *, QAngle> CTFPointWeaponMimic::ft_GetFiringAngles("CTFPointWeaponMimic::GetFiringAngles");
 MemberFuncThunk<CTFPointWeaponMimic *, void> CTFPointWeaponMimic::ft_Fire("CTFPointWeaponMimic::Fire");

@@ -16,7 +16,7 @@
 
 /* we haven't actually calculated what the max hypothetical size of a trampoline might need to be,
  * so we've set a reasonably generous size here and will always check that it is not exceeded */
-constexpr size_t CHUNK_SIZE_TRAMPOLINE = 0x20;
+constexpr size_t CHUNK_SIZE_TRAMPOLINE = IsPlatform64Bits() ? 0x40 : 0x20;
 
 /* we know the size of the wrapper function with certainty and can verify that this is big enough */
 constexpr size_t CHUNK_SIZE_WRAPPER = 0x80;
@@ -39,9 +39,9 @@ public:
 	void Free(const uint8_t *chunk_ptr);
 	
 private:
-	static_assert(IsMultipleOf(BLOCK_SIZE,      4096U));
-	static_assert(IsMultipleOf(CHUNK_SIZE,         4U));
-	static_assert(IsMultipleOf(BLOCK_SIZE, CHUNK_SIZE));
+	static_assert(IsMultipleOf(BLOCK_SIZE, (size_t)4096));
+	static_assert(IsMultipleOf(CHUNK_SIZE,    (size_t)4));
+	static_assert(IsMultipleOf(BLOCK_SIZE,   CHUNK_SIZE));
 	
 	static constexpr size_t CHUNKS_PER_BLOCK = (BLOCK_SIZE / CHUNK_SIZE);
 	
@@ -243,7 +243,11 @@ void ExecMemBlockAllocator<BLOCK_SIZE, CHUNK_SIZE>::Block::Map()
 	this->m_Base = reinterpret_cast<uint8_t *>(VirtualAlloc(nullptr, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ));
 	assert(this->m_Base != nullptr);
 #else
+#ifdef PLATFORM_64BITS
 	this->m_Base = reinterpret_cast<uint8_t *>(mmap(nullptr, BLOCK_SIZE, PROT_READ | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
+#else
+	this->m_Base = reinterpret_cast<uint8_t *>(mmap(nullptr, BLOCK_SIZE, PROT_READ | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0));
+#endif
 	assert(this->m_Base != MAP_FAILED);
 #endif
 }

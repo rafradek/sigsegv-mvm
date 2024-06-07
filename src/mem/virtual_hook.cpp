@@ -189,7 +189,7 @@ void CVirtualHookInherit::DoEnable()
         auto origfunc = *this->m_pFuncPtr;
         for (auto &[name, vtable] : RTTI::GetAllVTable()) {
             void *result = *this->m_pFuncPtr;
-            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const std::type_info **)this->m_pVTable-1), &result)) {
+            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const __cxxabiv1::__class_type_info **)this->m_pVTable-1), &result)) {
                 CVirtualHookFunc::Find(this->m_pFuncPtr, (void *) *vtable).AddVirtualHook(this);
             }
         }
@@ -204,7 +204,7 @@ void CVirtualHookInherit::DoDisable()
         auto origfunc = *this->m_pFuncPtr;
         for (auto &[name, vtable] : RTTI::GetAllVTable()) {
             void *result = *this->m_pFuncPtr;
-            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const std::type_info **)this->m_pVTable-1), &result)) {
+            if (vtable[this->m_iOffset] == origfunc && static_cast<const std::type_info *>(*(vtable-1))->__do_upcast(*((const __cxxabiv1::__class_type_info **)this->m_pVTable-1), &result)) {
                 CVirtualHookFunc::Find(this->m_pFuncPtr, (void *) *vtable).RemoveVirtualHook(this);
             }
         }
@@ -308,8 +308,8 @@ void CVirtualHookFunc::UnloadAll()
     if (this->m_bHooked) {
         // Check if some extension had overriden our hook, but not when the game is in shutdown/restart state as it does not matter by then
         int state = g_HostState.GetRef().m_currentState;
-        if (this->m_pFuncFirst != *this->m_pFuncPtr && (state == 6 || state == 7)) {
-            ConColorMsg(Color(0xff, 0x20, 0x20), "[Sigsegv-MvM] Some plugin/extension had hooked a virtual %s after this extension. It should be unloaded first (but it wasn't) before this extension. This can cause issues\n", this->m_szName.c_str());
+        if (this->m_pFuncFirst != *this->m_pFuncPtr && !(state == 6 || state == 7)) {
+            ConColorMsg(Color(0xff, 0x20, 0x20), "[Sigsegv-MvM] Some plugin/extension had hooked a virtual %s after this extension. Those hooks are now removed as well.\n You can prevent this issue by unloading conflicting plugins before this extension\n", this->m_szName.c_str());
         }
         this->m_bHooked = false;
         MemProtModifier_RX_RWX(this->m_pFuncPtr, sizeof(void **));

@@ -19,7 +19,10 @@ bool IExtractBase::Init()
 	this->m_iFuncOffMin = this->GetFuncOffMin();
 	this->m_iFuncOffMax = this->GetFuncOffMax();
 	this->m_iExtractOffset = this->GetExtractOffset();
-	
+	if (this->m_iExtractOffset + this->GetSize() > (unsigned int)this->m_iLength) {
+		Msg("IExtract::Init: FAIL: \"%s\": this->m_iExtractOffset + this->GetSize() < this->m_iLength\n", this->GetFuncName());
+	}
+
 	assert(this->m_iExtractOffset + this->GetSize() <= (unsigned int)this->m_iLength);
 	
 	this->m_MaskExtract.SetAll(0xff);

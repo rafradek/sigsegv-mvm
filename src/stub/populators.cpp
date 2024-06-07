@@ -4,6 +4,15 @@
 #if defined _LINUX
 
 static constexpr uint8_t s_Buf_CPopulationManager_m_RespecPoints[] = {
+#ifdef PLATFORM_64BITS
+	0x55,                                      // +0x0000 push    rbp
+	0x48, 0x89, 0xe5,                          // +0x0001 mov     rbp, rsp
+	0x41, 0x54,                                // +0x0004 push    r12
+	0x49, 0x89, 0xfc,                          // +0x0006 mov     r12, rdi
+	0x48, 0x81, 0xc7, 0xc0, 0x08, 0x00, 0x00,  // +0x0009 add     rdi, 8C0h
+	0x48, 0x83, 0xec, 0x08,                    // +0x0010 sub     rsp, 8
+	0xe8, 0x17, 0x3a, 0x00, 0x00,              // +0x0014 call    CUtlRBTree<...>::RemoveAll
+#else
 	0x55,                               // +0000  push ebp
 	0x89, 0xe5,                         // +0001  mov ebp,esp
 	0x53,                               // +0003  push ebx
@@ -12,11 +21,12 @@ static constexpr uint8_t s_Buf_CPopulationManager_m_RespecPoints[] = {
 	0x8d, 0x83, 0xe4, 0x06, 0x00, 0x00, // +000A  lea eax,[ebx+0xVVVVVVVV]
 	0x50,                               // +0010  push eax
 	0xe8, 0xe6, 0x64, 0x00, 0x00,       // +0011  call CUtlRBTree<...>::RemoveAll
+#endif
 };
 
-struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationManager::SteamIDMap *>
+struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<int32_t>
 {
-	using T = CPopulationManager::SteamIDMap *;
+	using T = int32_t;
 	
 	CExtract_CPopulationManager_m_RespecPoints() : IExtract<T>(sizeof(s_Buf_CPopulationManager_m_RespecPoints)) {}
 	
@@ -24,9 +34,15 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationM
 	{
 		buf.CopyFrom(s_Buf_CPopulationManager_m_RespecPoints);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x09 + 3, 4, 0x00);
+		mask.SetRange(0x10 + 3, 1, 0x00);
+		mask.SetRange(0x14 + 1, 4, 0x00);
+#else
 		mask.SetRange(0x04 + 2, 1, 0x00);
 		mask.SetRange(0x0a + 2, 4, 0x00);
 		mask.SetRange(0x11 + 1, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -34,20 +50,29 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<CPopulationM
 	virtual const char *GetFuncName() const override   { return "CPopulationManager::ResetRespecPoints"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0009 + 3; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x000a + 2; }
-	virtual T AdjustValue(T val) const override        { return reinterpret_cast<T>((uintptr_t)val); }
+#endif
 };
 
 
 static constexpr uint8_t s_Buf_CPopulationManager_m_bAllocatedBots[] = {
+#ifdef PLATFORM_64BITS
+	0x80, 0xbf, 0x01, 0x07, 0x00, 0x00, 0x00,  // +0x0000 cmp     byte ptr [rdi+701h], 0
+	0x74, 0x07,                                // +0x0007 jz      short loc_112CAB0
+	0xc3,                                      // +0x0009 retn
+#else
 	0x8b, 0x75, 0x08,                         // +0000  mov esi,[ebp+this]
 	0x80, 0xbe, 0x00, 0x00, 0x00, 0x00, 0x00, // +0003  cmp byte ptr [esi+0xVVVVVVVV],0
 	0x74, 0x00,                               // +000A  jz +0x??
+#endif
 };
 
-struct CExtract_CPopulationManager_m_bAllocatedBots : public IExtract<bool *>
+struct CExtract_CPopulationManager_m_bAllocatedBots : public IExtract<uint32_t>
 {
-	using T = bool *;
+	using T = uint32_t;
 	
 	CExtract_CPopulationManager_m_bAllocatedBots() : IExtract<T>(sizeof(s_Buf_CPopulationManager_m_bAllocatedBots)) {}
 	
@@ -55,8 +80,13 @@ struct CExtract_CPopulationManager_m_bAllocatedBots : public IExtract<bool *>
 	{
 		buf.CopyFrom(s_Buf_CPopulationManager_m_bAllocatedBots);
 		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 2, 2, 0x00);
+		mask.SetRange(0x07 + 1, 1, 0x00);
+#else
 		mask.SetRange(0x03 + 2, 2, 0x00);
 		mask.SetRange(0x0a + 1, 1, 0x00);
+#endif
 		
 		return true;
 	}
@@ -64,25 +94,38 @@ struct CExtract_CPopulationManager_m_bAllocatedBots : public IExtract<bool *>
 	virtual const char *GetFuncName() const override   { return "CPopulationManager::AllocateBots"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0010; } // @ +0x0006
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 2; }
+#endif
 };
 
 static constexpr uint8_t s_Buf_CPopulationManager_m_pTemplates[] = {
+#ifdef PLATFORM_64BITS
+	0xe8, 0x6d, 0x0a, 0x16, 0x00,                                            // +0x0000 call    _ZN9KeyValues10deleteThisEv; KeyValues::deleteThis(void)
+	0x49, 0xc7, 0x84, 0x24, 0xf8, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +0x0005 mov     qword ptr [r12+6F8h], 0
+#else
 	0x8B, 0x83, 0x90, 0x05, 0x00, 0x00,
 	0x85, 0xC0,                            
+#endif
 };
 
-struct CExtract_CPopulationManager_m_pTemplates : public IExtract<KeyValues **>
+struct CExtract_CPopulationManager_m_pTemplates : public IExtract<uint32_t>
 {
-	using T = KeyValues **;
+	using T = uint32_t;
 	
 	CExtract_CPopulationManager_m_pTemplates() : IExtract<T>(sizeof(s_Buf_CPopulationManager_m_pTemplates)) {}
 	
 	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
 	{
 		buf.CopyFrom(s_Buf_CPopulationManager_m_pTemplates);
-		
+#ifdef PLATFORM_64BITS
+		mask.SetRange(0x00 + 1, 4, 0x00);
+		mask.SetRange(0x05 + 4, 4, 0x00);
+#else
 		mask.SetRange(0x00 + 2, 4, 0x00);
+#endif
 		
 		return true;
 	}
@@ -90,7 +133,11 @@ struct CExtract_CPopulationManager_m_pTemplates : public IExtract<KeyValues **>
 	virtual const char *GetFuncName() const override   { return "CPopulationManager::~CPopulationManager [D2]"; }
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x00FF; }
+#ifdef PLATFORM_64BITS
+	virtual uint32_t GetExtractOffset() const override { return 0x0005 + 2; }
+#else
 	virtual uint32_t GetExtractOffset() const override { return 0x0000 + 2; }
+#endif
 };
 
 /*static constexpr uint8_t s_Buf_CWave_m_waveSpawnVector[] = {
@@ -154,8 +201,8 @@ StaticFuncThunk<void, CUtlVector<CUtlString> &> CPopulationManager::ft_FindDefau
 
 IMPL_EXTRACT(CPopulationManager::SteamIDMap, CPopulationManager, m_RespecPoints,   new CExtract_CPopulationManager_m_RespecPoints());
 IMPL_EXTRACT(bool,                           CPopulationManager, m_bAllocatedBots, new CExtract_CPopulationManager_m_bAllocatedBots());
-IMPL_RELATIVE(KeyValues *,                   CPopulationManager, m_pTemplates,     m_bAllocatedBots, -sizeof(bool) - sizeof(uintptr_t));
-IMPL_RELATIVE(int,                           CPopulationManager, m_nStartingCurrency, m_pTemplates, +12);
+IMPL_REL_BEFORE(KeyValues *,                   CPopulationManager, m_pTemplates, m_bAllocatedBots, 0, bool);
+IMPL_REL_AFTER(int,                           CPopulationManager, m_nStartingCurrency, m_bAllocatedBots, bool, EHANDLE);
 
 
 GlobalThunk<CPopulationManager *> g_pPopulationManager("g_pPopulationManager");

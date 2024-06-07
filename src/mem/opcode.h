@@ -2,6 +2,12 @@
 #define _INCLUDE_SIGSEGV_MEM_OPCODE_H_
 
 
+enum REX : uint8_t
+{
+	REX_W        = 0x48,
+};
+static_assert(sizeof(REX) == 1);
+
 enum OpCode : uint8_t
 {
 	OPCODE_PUSH_IMM32        = 0x68,
@@ -10,6 +16,8 @@ enum OpCode : uint8_t
 	OPCODE_INT3              = 0xcc,
 	OPCODE_CALL_REL_IMM32    = 0xe8,
 	OPCODE_JMP_REL_IMM32     = 0xe9,
+	OPCODE_JMP_REL_IMM8      = 0xeb,
+	OPCODE_JCC_REL_IMM32     = 0x0f,
 	OPCODE_FF                = 0xff, // opcode ext in modrm.reg
 };
 static_assert(sizeof(OpCode) == 1);
@@ -77,24 +85,21 @@ enum Scale : uint8_t
 static_assert(sizeof(Scale) <= 1);
 
 
-// TODO: turn these struct members back into enum types once the GCC devs get their heads out of their asses
-// ("warning: ‘ModRM::mod’ is too small to hold all values of ‘enum Mod’" etc bullshit)
 struct ModRM
 {
-	uint8_t mod : 2;
-	uint8_t reg : 3;
-	uint8_t rm  : 3;
+	RM rm  : 3;
+	Reg reg : 3;
+	Mod mod : 2;
 	
 	operator uint8_t() const { return *reinterpret_cast<const uint8_t *>(this); }
 };
 static_assert(sizeof(ModRM) == 1);
 
-// TODO: turn these back into enum types, see above
 struct SIB
 {
-	uint8_t scale : 2;
 	uint8_t index : 3;
 	uint8_t base  : 3;
+	Scale scale : 2;
 	
 	operator uint8_t() const { return *reinterpret_cast<const uint8_t *>(this); }
 };
@@ -162,26 +167,26 @@ class CallRelImm32 : public X86InstrSized<5>
 {
 public:
 	/* rel: basis for the relative offset; usually equal to where the instruction will go, but not always */
-	CallRelImm32(uint8_t *where, uint32_t target, const uint8_t *rel) : X86InstrSized(where)
+	CallRelImm32(uint8_t *where, uintptr_t target, const uint8_t *rel) : X86InstrSized(where)
 	{
 		this->m_Buf[0] = OPCODE_CALL_REL_IMM32;
-		*reinterpret_cast<uint32_t *>(this->m_Buf + 1) = (target - ((uintptr_t)rel + Size()));
+		*reinterpret_cast<int32_t *>(this->m_Buf + 1) = (int32_t)((intptr_t)target - ((intptr_t)rel + (intptr_t)Size()));
 	}
 	/* rel = where */
-	CallRelImm32(uint8_t *where, uint32_t target) : CallRelImm32(where, target, where) {}
+	CallRelImm32(uint8_t *where, uintptr_t target) : CallRelImm32(where, target, where) {}
 };
 
 class JmpRelImm32 : public X86InstrSized<5>
 {
 public:
 	/* rel: basis for the relative offset; usually equal to where the instruction will go, but not always */
-	JmpRelImm32(uint8_t *where, uint32_t target, const uint8_t *rel) : X86InstrSized(where)
+	JmpRelImm32(uint8_t *where, uintptr_t target, const uint8_t *rel) : X86InstrSized(where)
 	{
 		this->m_Buf[0] = OPCODE_JMP_REL_IMM32;
-		*reinterpret_cast<uint32_t *>(this->m_Buf + 1) = (target - ((uintptr_t)rel + Size()));
+		*reinterpret_cast<int32_t *>(this->m_Buf + 1) = (int32_t)((intptr_t)target - ((intptr_t)rel + (intptr_t)Size()));
 	}
 	/* rel = where */
-	JmpRelImm32(uint8_t *where, uint32_t target) : JmpRelImm32(where, target, where) {}
+	JmpRelImm32(uint8_t *where, uintptr_t target) : JmpRelImm32(where, target, where) {}
 };
 
 class CallIndirectMem32 : public X86InstrSized<6>
@@ -190,7 +195,18 @@ public:
 	CallIndirectMem32(uint8_t *where, uint32_t target) : X86InstrSized(where)
 	{
 		this->m_Buf[0] = OPCODE_FF;
-		this->m_Buf[1] = ModRM{ MOD_INDIRECT, OP_FF_CALL_RM32, RM_DISP32 };
+		this->m_Buf[1] = ModRM{ RM_DISP32, OP_FF_CALL_RM32, MOD_INDIRECT };
+		*reinterpret_cast<uint32_t *>(this->m_Buf + 2) = target;
+	}
+};
+
+class JmpIndirectMem32 : public X86InstrSized<6>
+{
+public:
+	JmpIndirectMem32(uint8_t *where, uint32_t target) : X86InstrSized(where)
+	{
+		this->m_Buf[0] = OPCODE_FF;
+		this->m_Buf[1] = ModRM{ RM_DISP32, OP_FF_JMP_RM32, MOD_INDIRECT };
 		*reinterpret_cast<uint32_t *>(this->m_Buf + 2) = target;
 	}
 };

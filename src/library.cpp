@@ -111,7 +111,7 @@ void LibMgr::FindInfo(Library lib)
 	LibInfo lib_info((uintptr_t)dlinfo.baseAddress, (uintptr_t)dlinfo.memorySize);
 	
 #if defined _LINUX
-	g_MemUtils.ForEachSection(s_LibHandles[lib], [&](const Elf32_Shdr *shdr, const char *name){
+	g_MemUtils.ForEachSection(s_LibHandles[lib], [&](const ElfSHeader *shdr, const char *name){
 		SegInfo seg_info(shdr->sh_addr, shdr->sh_size);
 		seg_info.m_LibBaseAddr = lib_info.BaseAddr();
 		
@@ -152,9 +152,9 @@ void LibMgr::FindInfo(Library lib)
 	auto result = s_LibInfos.insert(std::make_pair(lib, lib_info));
 	assert(result.second);
 	
-	DevMsg("Library %-34s [ %08x %08x ]\n", libnames.at(lib), lib_info.AddrBegin(), lib_info.AddrEnd());
+	DevMsg("Library %-34s [ %08zx %08zx ]\n", libnames.at(lib), lib_info.AddrBegin(), lib_info.AddrEnd());
 	for (const auto& pair : lib_info.m_SegmentsByName) {
-		DevMsg("  %-40s [ %08x %08x ]\n", pair.first.c_str(), pair.second.AddrBegin(), pair.second.AddrEnd());
+		DevMsg("  %-40s [ %08zx %08zx ]\n", pair.first.c_str(), pair.second.AddrBegin(), pair.second.AddrEnd());
 	}
 }
 

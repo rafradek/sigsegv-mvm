@@ -351,7 +351,7 @@ namespace Mod::MvM::Robot_Limit
 	{
 		if (populator_parse != nullptr && Mod::Pop::WaveSpawn_Extensions::IsEnabled()) {
 			// Unused variable, now used to tell if the wavespawn contains a tfbot spawner
-			populator_parse->extra->m_bHasTFBotSpawner = true;
+			populator_parse->m_bHasTFBotSpawner = true;
 		}
 		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
 	}

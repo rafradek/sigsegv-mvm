@@ -102,7 +102,7 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTDynamicCast (
 #endif
 
 /* use EAX/EDX/ECX register calling convention in GCC build ONLY */
-#if defined __GNUC__ && !defined __clang__
+#if defined __GNUC__ && !defined __clang__ && !defined PLATFORM_64BITS
 #define __gcc_regcall [[gnu::regparm(3)]] [[gnu::sseregparm]]
 #else
 #define __gcc_regcall
@@ -192,8 +192,8 @@ int GetVIdxOfMemberFunc(MemberPtrType<C, RET, PARAMS...> ptr)
 	
 	u.fptr = ptr;
 	
-	assert((uintptr_t)u.guts.ptr % 4 == 1);
-	return ((int)u.guts.ptr - 1) / 4;
+	assert((uintptr_t)u.guts.ptr % sizeof(void *) == 1);
+	return ((intptr_t)u.guts.ptr - 1) / sizeof(void *);
 }
 template<class C, typename RET, typename... PARAMS>
 int GetVIdxOfMemberFunc(MemberPtrTypeVa<C, RET, PARAMS...> ptr)

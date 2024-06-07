@@ -24,9 +24,12 @@ SIZE_CHECK(CMannVsMachineUpgrades, 0x15c);
 class CMannVsMachineUpgradeManager;
 extern GlobalThunk<CMannVsMachineUpgradeManager> g_MannVsMachineUpgrades;
 
-class CMannVsMachineUpgradeManager
+class CMannVsMachineUpgradeManager : public CAutoGameSystem
 {
 public:
+	virtual void LevelInitPostEntity();
+	virtual void LevelShutdownPostEntity();
+
 	static CUtlVector<CMannVsMachineUpgrades>& Upgrades()
 	{
 		CMannVsMachineUpgradeManager& instance = g_MannVsMachineUpgrades;
@@ -34,11 +37,14 @@ public:
 	}
 	
 private:
-	uint8_t pad_00[0x0c];
 	CUtlVector<CMannVsMachineUpgrades> m_Upgrades;
 	CUtlMap<const char *, int> m_UpgradeMap;
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CMannVsMachineUpgradeManager, 0x60);
+#else
 SIZE_CHECK(CMannVsMachineUpgradeManager, 0x3c);
+#endif
 
 extern StaticFuncThunk<attrib_definition_index_t, const CMannVsMachineUpgrades&, CTFPlayer *, CEconItemView *, int, bool> ft_ApplyUpgrade_Default;
 extern StaticFuncThunk<int, CTFPlayer *, int, int, int&, bool&> ft_GetUpgradeStepData;

@@ -4530,7 +4530,7 @@ namespace Mod::Attr::Custom_Attributes
 			bool removeAttrs = false;
 			for (int i = 0; i < 4; i++) {
 				
-				int addcond = (condOverride >> (i * 8)) & 255;
+				ETFCond addcond = (ETFCond) ((condOverride >> (i * 8)) & 255);
 				//DevMsg("add cond post %d\n", addcond);
 				if (addcond != 0) {
 					if (player->m_Shared->InCond(addcond)) {
@@ -7575,10 +7575,10 @@ namespace Mod::Attr::Custom_Attributes
 			auto kv = builder->GetItem()->GetStaticData()->GetKeyValues()->FindKey("used_by_classes");
 			if (kv != nullptr && kv->FindKey("spy") != nullptr) {
 				if (act == CAI_BaseNPC::GetActivityID("ACT_VM_IDLE")) {
-					act = CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_IDLE");
+					act = (Activity) CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_IDLE");
 				}
 				if (act == CAI_BaseNPC::GetActivityID("ACT_VM_DRAW")) {
-					act = CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_DRAW");
+					act = (Activity) CAI_BaseNPC::GetActivityID("ACT_ENGINEER_BLD_VM_DRAW");
 				}
 			}
 		}
@@ -7742,7 +7742,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		static int activityAttack = CAI_BaseNPC::GetActivityID("ACT_VM_PRIMARYATTACK");
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal(activityAttack));
+		weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal((Activity) activityAttack));
 	};
 
 	bool idealActivitySet = false;
@@ -7767,7 +7767,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 				// To fix attack animation not playing, enforce idle animation for a tick before switching to attack
 				if (idealActivitySet) {
-					weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal(activityIdle));
+					weapon->SetIdealActivity(weapon->TranslateViewmodelHandActivityInternal((Activity) activityIdle));
 					THINK_FUNC_SET(weapon, SetActivityThink, gpGlobals->curtime);
 					idealActivitySet = false;
 				}
@@ -7784,7 +7784,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		static int activityAttack = CAI_BaseNPC::GetActivityID("ACT_VM_PRIMARYATTACK");
-		if (rc_AltFireAttack && weapon->m_IdealActivity == act && act == weapon->TranslateViewmodelHandActivityInternal(activityAttack)) {
+		if (rc_AltFireAttack && weapon->m_IdealActivity == act && act == weapon->TranslateViewmodelHandActivityInternal((Activity) activityAttack)) {
 			idealActivitySet = true;
 		}
 		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetIdealActivity)(act);
@@ -9863,7 +9863,7 @@ namespace Mod::Attr::Custom_Attributes
 
 					auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
 					particles->m_iszEffectName = preferredParticle;
-					particles->m_hControlPointEnts.Get()[0] = particlesAttach;
+					particles->m_hControlPointEnts.SetIndex(particlesAttach, 0);
 					particles->m_bStartActive = true;
 					DispatchSpawn(particles);
 					particles->Activate();

@@ -136,7 +136,7 @@ private:
 class CServerNetworkProperty : public IServerNetworkable
 {
 public:
-	int vtable;
+	void *vtable;
 	void MarkPVSInformationDirty()
 	{
 		if (this->GetEdict() != nullptr) {
@@ -632,19 +632,8 @@ inline int ENTINDEX_NATIVE(CBaseEntity *entity)
 
 inline edict_t *INDEXENT(int iEdictNum)
 {
-#ifndef CSGO_SEPARETE_
 	auto edict = g_pWorldEdict + iEdictNum;
 	return !edict->IsFree() ? edict : nullptr;
-#else
-	if ( gpGlobals->pEdicts )
-	{
-		edict_t *pEdict = gpGlobals->pEdicts + iEdictNum;
-		if ( pEdict->IsFree() )
-			return nullptr;
-		return pEdict;
-	}
-	return nullptr;
-#endif
 }
 
 inline bool FNullEnt(const edict_t *pent)

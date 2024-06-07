@@ -67,7 +67,7 @@ void SendConVarValue(int playernum, const char *convar, const char *value)
 	}
 }
 
-void EntityMatrix::InitFromEntity( CBaseEntity *pEntity, int iAttachment=0 )
+void EntityMatrix::InitFromEntity(CBaseEntity *pEntity, int iAttachment)
 {
 		
 	if ( !pEntity )
@@ -95,7 +95,7 @@ void EntityMatrix::InitFromEntity( CBaseEntity *pEntity, int iAttachment=0 )
 	((VMatrix *)this)->SetupMatrixOrgAngles( pEntity->GetAbsOrigin(), pEntity->GetAbsAngles() );
 }
 
-void EntityMatrix::InitFromEntityLocal( CBaseEntity *entity )
+void EntityMatrix::InitFromEntityLocal(CBaseEntity *entity)
 {
 	if ( !entity || !entity->edict() )
 	{

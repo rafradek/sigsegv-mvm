@@ -16,6 +16,9 @@ public:
 	
 	uint32_t GetDword(size_t idx) const;
 	void SetDword(size_t idx, uint32_t val);
+
+	uint64_t GetQword(size_t idx) const;
+	void SetQword(size_t idx, uint64_t val);
 	
 	float GetFloat(size_t idx) const;
 	void SetFloat(size_t idx, float val);
@@ -87,6 +90,19 @@ inline void ByteBuf::SetDword(size_t idx, uint32_t val)
 }
 
 
+inline uint64_t ByteBuf::GetQword(size_t idx) const
+{
+	assert(idx >= 0 && idx + sizeof(uint32_t) <= this->m_iSize);
+	return *reinterpret_cast<uint32_t *>(this->m_Buf + idx);
+}
+
+inline void ByteBuf::SetQword(size_t idx, uint64_t val)
+{
+	assert(idx >= 0 && idx + sizeof(uint64_t) <= this->m_iSize);
+	*reinterpret_cast<uint64_t *>(this->m_Buf + idx) = val;
+}
+
+
 inline float ByteBuf::GetFloat(size_t idx) const
 {
 	assert(idx >= 0 && idx + sizeof(float) <= this->m_iSize);
@@ -126,7 +142,7 @@ inline void ByteBuf::Dump() const
 	
 	DevMsg("   %*s__00_01_02_03__04_05_06_07__08_09_0A_0B__0C_0D_0E_0F__\n", addr_digits, "");
 	for (size_t i = 0; i < this->GetSize(); i += bytes_per_line) {
-		std::string line = (const char *) CFmtStrN<16>("+0x%0*X", addr_digits, i);
+		std::string line = (const char *) CFmtStrN<16>("+0x%0*zX", addr_digits, i);
 		
 		for (size_t j = i; j < this->GetSize() && j < i + bytes_per_line; ++j) {
 			line += (const char *) CFmtStrN<16>("%*s%02X", ((j % bytes_per_group == 0) ? 2 : 1), "", this->m_Buf[j]);

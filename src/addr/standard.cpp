@@ -74,7 +74,8 @@ bool IAddr_DataDescMap::FindAddrWin(uintptr_t& addr) const
 	for (auto match : scan1.Matches()) {
 		GetDataDescMap gddm;
 		gddm.buf[0x00] = 0xb8; // mov eax,[????????]
-		*(uint32_t *)(&gddm.buf[0x01]) = (uint32_t)match - offsetof(datamap_t, dataClassName);
+		// For x64 windows it should have been corrected because its wrong right now
+		*(uintptr_t *)(&gddm.buf[0x01]) = (uintptr_t)match - offsetof(datamap_t, dataClassName);
 		gddm.buf[0x05] = 0xc3; // ret
 		
 		scanners.emplace_back(CLibSegBounds(this->GetLibrary(), Segment::TEXT), gddm);

@@ -298,7 +298,7 @@ class ExtensionConfig(object):
 #   cxx.cxxflags += ['-Wno-non-virtual-dtor']
     cxx.cxxflags += ['-fvisibility-inlines-hidden']
     cxx.cxxflags += ['-Wno-invalid-offsetof']
-    cxx.cxxflags += ['-fpermissive']
+#   cxx.cxxflags += ['-fpermissive']
     cxx.cxxflags += ['-fno-stack-protector']
     cxx.cxxflags += ['-Wno-overloaded-virtual']
 #   cxx.cxxflags += ['-ferror-limit=100']
@@ -613,7 +613,7 @@ builder.autoversion = builder.AddCommand(
 builder.autoversionx64 = builder.AddCommand(
   inputs  = builder.ALWAYS_DIRTY,
   outputs = [ 'versionx64.o' ],
-  argv    = [ 'g++', os.path.join(builder.currentSourcePath,"src/version.cpp"), '-c', '-m64', '-include', os.path.join(builder.currentSourcePath,"src/version.h"), '-o', 'versionx64.o'],
+  argv    = [ 'g++', os.path.join(builder.currentSourcePath,"src/version.cpp"), '-c', '-m64', '-fPIC', '-include', os.path.join(builder.currentSourcePath,"src/version.h"), '-o', 'versionx64.o'],
 )
 
 if builder.options.build_all:

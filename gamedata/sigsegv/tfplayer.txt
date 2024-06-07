@@ -49,6 +49,7 @@
 				{
 					type   "func ebpprologue unistr"
 					sym    "_ZN9CTFPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
+					sym64  "_ZN9CTFPlayer21SpeakConceptIfAllowedEiPKcPcmP16IRecipientFilter"
 					unistr "disguiseclass:%s"
 				}
 				"CTFPlayer::TFPlayerThink"

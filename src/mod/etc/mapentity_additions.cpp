@@ -573,7 +573,7 @@ namespace Mod::Etc::Mapentity_Additions
                         realname += 1;
                         while (true) {
                             pStartEntity = functor(pStartEntity, realname); 
-                            if (pStartEntity != nullptr && !pStartEntity->GetAbsOrigin().WithinAABox(min, max)) {
+                            if (pStartEntity != nullptr && !((Vector &)pStartEntity->GetAbsOrigin()).WithinAABox(min, max)) {
                                 continue;
                             }
                             else {
@@ -1088,7 +1088,7 @@ namespace Mod::Etc::Mapentity_Additions
                     center = ent->GetAbsOrigin();
                 }
 
-                return pEntity->GetAbsOrigin().WithinAABox(min + center, max + center);
+                return ((Vector &)pEntity->GetAbsOrigin()).WithinAABox(min + center, max + center);
             }
             if (classname == filter_itemname_class && pEntity != nullptr) {
                 const char *type = filter->GetCustomVariable<"type">("ItemName");
@@ -1654,7 +1654,7 @@ namespace Mod::Etc::Mapentity_Additions
         const char *findthis = FindCaseSensitive(name, "$$=");
         if (findthis != nullptr) {
             char c;
-            newname = alloca(strlen(name)+1);
+            newname = (char *)alloca(strlen(name)+1);
             strcpy(newname, name);
             int scope = 0;
             char *change = newname + (findthis - name);

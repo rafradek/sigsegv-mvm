@@ -108,7 +108,14 @@ public:
 	CSpawnLocation m_where;
 	int m_totalCount;
 	int m_remainingCount;
-	CWaveSpawnExtra *extra;  // int m_nClassCounts;
+	// int m_nClassCounts;
+	// Use unused m_nClassCounts for something else
+	bool m_bPaused;
+	bool m_bHasTFBotSpawner;
+	bool m_bHasWaitForAll;
+	bool m_bHadSpawnState;
+	//
+	
 	int m_maxActive;						
 	int m_spawnCount;						
 	float m_waitBeforeStarting;
@@ -167,16 +174,6 @@ private:
 };
 
 class CRandomChoiceSpawner;
-
-class CWaveSpawnExtra
-{
-public:
-	bool m_bPaused = false;
-	bool m_bHasTFBotSpawner = false;
-	CUtlVector<CWaveSpawnPopulator *> m_waitForAllDeadList;
-	CUtlVector<CWaveSpawnPopulator *> m_waitForAllSpawnedList;
-	CRandomChoiceSpawner *randomChoiceShuffleSet = nullptr;
-};
 
 struct WaveClassCount_t
 {

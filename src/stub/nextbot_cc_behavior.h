@@ -42,14 +42,22 @@ public:
 	int                  m_iHealth;        // +0x484c
 	bool                 m_bOtherKilled;   // +0x4850
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CEyeballBossIdle, 0x57c8); // 0x4851
+#else
 SIZE_CHECK(CEyeballBossIdle, 0x4854); // 0x4851
+#endif
 
 class CEyeballBossDead : public Action<CEyeballBoss>
 {
 public:
 	CountdownTimer m_ctDelay; // +0x0034
 };
+#ifdef PLATFORM_64BITS
+SIZE_CHECK(CEyeballBossDead, 0x0078); // 0x0040
+#else
 SIZE_CHECK(CEyeballBossDead, 0x0040); // 0x0040
+#endif
 
 
 #endif

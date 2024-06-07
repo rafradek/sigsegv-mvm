@@ -253,6 +253,7 @@
 				{
 					type   "func knownvtidx"
 					sym    "_ZN12CStdMemAlloc5AllocEj"
+					sym64  "_ZN12CStdMemAlloc5AllocEm"
 					vtable ".?AVCStdMemAlloc@@"
 					idx    "0x01"
 					lib    "tier0"
@@ -1869,10 +1870,9 @@
 				{
 					type "sym"
 					sym  "_ZL12_SpewMessage10SpewType_tPKciPK5ColorS1_Pc"
+					sym64 "_ZL12_SpewMessage10SpewType_tPKciPK5ColorS1_P13__va_list_tag"
 					lib  "tier0"
 				}
-				
-				
 				
 				"CanScatterGunKnockBack"
 				{
@@ -4236,6 +4236,7 @@
 					type "sym"
 					lib "dedicated"
 					sym  "_Z28findFileInDirCaseInsensitivePKcPcj"
+					sym64  "_Z28findFileInDirCaseInsensitivePKcPcm"
 				}
 				"CWeaponMedigun::RemoveHealingTarget"
 				{
@@ -4798,6 +4799,7 @@
 				{
 					type "sym"
 					sym  "_ZThn20_N17CQuestItemTracker13FireGameEventEP10IGameEvent"
+					sym64 "_ZThn32_N17CQuestItemTracker13FireGameEventEP10IGameEvent"
 				}
 				"CMultiplayRules::HaveAllPlayersSpeakConceptIfAllowed"
 				{
@@ -5637,14 +5639,21 @@
 				}
 				"CBaseMultiplayerPlayer::SpeakConceptIfAllowed"
 				{
-					type "sym"
-					sym  "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
+					type  "sym"
+					sym   "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcjP16IRecipientFilter"
+					sym64 "_ZN22CBaseMultiplayerPlayer21SpeakConceptIfAllowedEiPKcPcmP16IRecipientFilter"
 				}
 
 				"UTIL_PlayerBulletTrace"
 				{
 					type "sym"
 					sym  "_ZL22UTIL_PlayerBulletTraceRK6VectorS1_S1_jP12ITraceFilterP10CGameTrace_constprop_737"
+				}
+				// For some reason putting it into addrs_group below crashes on 64 bit
+				"CBaseEntity::SetOwnerEntity"
+				{
+					type "sym"
+					sym  "_ZN11CBaseEntity14SetOwnerEntityEPS_"
 				}
 			}
 			"addrs_group"
@@ -5677,7 +5686,6 @@
 				"CBaseEntity::EyePosition" "_ZN11CBaseEntity11EyePositionEv"
 				"CBaseEntity::KeyValue" "_ZN11CBaseEntity8KeyValueEPKcS1_"
 				"CBaseEntity::GetKeyValue" "_ZN11CBaseEntity11GetKeyValueEPKcPci"
-				"CBaseEntity::SetOwnerEntity" "_ZN11CBaseEntity14SetOwnerEntityEPS_"
 				"CBaseEntity::SetAbsOrigin" "_ZN11CBaseEntity12SetAbsOriginERK6Vector"
 				"CBaseEntity::SetAbsAngles" "_ZN11CBaseEntity12SetAbsAnglesERK6QAngle"
 				"CBaseEntity::SetAbsVelocity" "_ZN11CBaseEntity14SetAbsVelocityERK6Vector"

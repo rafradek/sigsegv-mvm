@@ -28,7 +28,7 @@ Download a package (optimize-only, no-mvm, or full) from releases and extract it
 
 # How to build
 
-This extension requires gcc 13 to build. For TF2, special modified hl2sdk-tf2 is used from https://github.com/TF2-DMB/hl2sdk-tf2
+This extension requires gcc 13 to build. For TF2, special modified hl2sdk-tf2 is used from https://github.com/rafradek/hl2sdk-tf2
 
 Ubuntu 20.04 docker image with gcc 13 and other dependencies already installed (skip to step 3): rafradek/ubuntu2004dev:latest 
 
@@ -42,7 +42,7 @@ apt update
 
 2. Install packages:
 ```
-autoconf libtool pip nasm libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
+autoconf libtool pip nasm libiberty-dev libiberty-dev:i386 libelf-dev:i386 libboost-dev:i386 libbsd-dev:i386 libunwind-dev:i386 lib32z1-dev libc6-dev-i386 linux-libc-dev:i386 g++-multilib
 ```
 
 3. Clone Sourcemod, Metamod, SDK repositories, and AMBuild
@@ -52,7 +52,7 @@ mkdir -p alliedmodders
 cd alliedmodders
 git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
 git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
-git clone https://github.com/TF2-DMB/hl2sdk-tf2.git --depth 1 hl2sdk-tf2
+git clone https://github.com/rafradek/hl2sdk-tf2 --depth 1 hl2sdk-tf2
 git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
 git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
 git clone https://github.com/alliedmodders/ambuild --depth 1
@@ -72,8 +72,12 @@ git submodule init
 git submodule update --depth 1
 cd libs/udis86
 ./autogen.sh
-./configure
-make
+./configure --enable-static=yes
+make CFLAGS="-m32" LDFLAGS="-m32"
+mv libudis86/.libs/libudis86.a ../libudis86.a
+make clean
+make CFLAGS="-fPIC"
+mv libudis86/.libs/libudis86.a ../libudis86x64.a
 cd ../..
 ```
 
@@ -86,6 +90,10 @@ rm lua-*.tar.gz
 mv lua-* lua
 cd lua
 make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+mv src/liblua.a ../liblua.a
+make clean
+make MYCFLAGS="-fPIC"
+mv src/liblua.a ../libluax64.a
 cd ../..
 ```
 
