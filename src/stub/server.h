@@ -47,11 +47,11 @@ public:
 
 	INetChannel		*m_NetChannel;
 	int				m_nSignonState;
+	int             pad;
 	int				m_nDeltaTick;
 	int				m_nStringTableAckTick;
 	int				m_nSignonTick;
 	void * m_pLastSnapshot; //0x0dc
-	int pad;
 
 	CFrameSnapshot	*m_pBaseline; //0x0e0
 	int				m_nBaselineUpdateTick; // 0x0e4
@@ -89,17 +89,24 @@ public:
 	int GetNumEdicts() {return *(int *)((uintptr_t)(this) + 0x1E4);}
 };
 
+class CClientFrameManager 
+{
+public:
+    int CountClientFrames()                { return ft_CountClientFrames(this); }
+    void RemoveOldestFrame()               {        ft_RemoveOldestFrame(this); }
+
+private:
+    static MemberFuncThunk<CClientFrameManager *, int>                 ft_CountClientFrames;
+    static MemberFuncThunk<CClientFrameManager *, void>                ft_RemoveOldestFrame;
+};
+
 class CHLTVServer : public IGameEventListener2, public CBaseServer
 {
 public:
     void StartMaster(CBaseClient *client)  {        ft_StartMaster(this, client); }
-    int CountClientFrames()                { return ft_CountClientFrames(this); }
-    void RemoveOldestFrame()               {        ft_RemoveOldestFrame(this); }
     
 private:
     static MemberFuncThunk<CHLTVServer *, void, CBaseClient *> ft_StartMaster;
-    static MemberFuncThunk<CHLTVServer *, int>                 ft_CountClientFrames;
-    static MemberFuncThunk<CHLTVServer *, void>                ft_RemoveOldestFrame;
 };
 
 class CGameClient : public CBaseClient

@@ -4,10 +4,10 @@
 GlobalThunk<CHLTVServer *> hltv("hltv");
 GlobalThunk<CHostState>	g_HostState("g_HostState");
 
-MemberFuncThunk<CHLTVServer *, void, CBaseClient *> CHLTVServer::ft_StartMaster("CHLTVServer::StartMaster");
-MemberFuncThunk<CHLTVServer *, int> CHLTVServer::ft_CountClientFrames("CClientFrameManager::CountClientFrames");
-MemberFuncThunk<CHLTVServer *, void> CHLTVServer::ft_RemoveOldestFrame("CClientFrameManager::RemoveOldestFrame");
+MemberFuncThunk<CClientFrameManager *, int> CClientFrameManager::ft_CountClientFrames("CClientFrameManager::CountClientFrames");
+MemberFuncThunk<CClientFrameManager *, void> CClientFrameManager::ft_RemoveOldestFrame("CClientFrameManager::RemoveOldestFrame");
 
+MemberFuncThunk<CHLTVServer *, void, CBaseClient *> CHLTVServer::ft_StartMaster("CHLTVServer::StartMaster");
 
 MemberFuncThunk<CBaseServer *, CBaseClient *, const char *> CBaseServer::ft_CreateFakeClient("CBaseServer::CreateFakeClient");
 

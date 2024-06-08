@@ -85,12 +85,13 @@ namespace Mod::Perf::HLTV_Optimize
         if (hasplayer && hltvclient != nullptr) {
             if (hltvServerEmpty) {
                 int tickcount = 32.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
-                int framec = hltvserver->CountClientFrames() - 2;
-                for (int i = 0; i < framec; i++)
-                    hltvserver->RemoveOldestFrame();
+                int framec = rtti_scast<CClientFrameManager *>(hltvserver)->CountClientFrames() - 2;
+                for (int i = 0; i < framec; i++) {
+                    rtti_scast<CClientFrameManager *>(hltvserver)->RemoveOldestFrame();
+                }
                 //DevMsg("SendNow %d\n", gpGlobals->tickcount % tickcount == 0/*reinterpret_cast<CGameClient *>(hltvclient)->ShouldSendMessages()*/);
-                if (gpGlobals->tickcount % tickcount != 0)
-                    return;
+                //if (gpGlobals->tickcount % tickcount != 0)
+                //    return;
             }
         }
 
@@ -105,9 +106,9 @@ namespace Mod::Perf::HLTV_Optimize
             static ConVarRef delay("tv_delay");
             int tickcount = 1.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
             if (delay.GetFloat() <= 0) {
-                int framec = hltvserver->CountClientFrames() - 2;
+                int framec = rtti_scast<CClientFrameManager *>(hltvserver)->CountClientFrames() - 2;
                 for (int i = 0; i < framec; i++)
-                    hltvserver->RemoveOldestFrame();
+                    rtti_scast<CClientFrameManager *>(hltvserver)->RemoveOldestFrame();
             }
             //DevMsg("SendNow %d\n", gpGlobals->tickcount % tickcount == 0/*reinterpret_cast<CGameClient *>(hltvclient)->ShouldSendMessages()*/);
             // if (gpGlobals->tickcount % tickcount != 0)

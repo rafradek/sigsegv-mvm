@@ -154,7 +154,11 @@ struct carea_t
 class CCollisionBSPData
 {
 public:
+#ifdef PLATFORM_64BITS
+    uint8_t pad[0x2C0];
+#else
     uint8_t pad[0x224];
+#endif
     int numareas;
     carea_t *map_areas;
 };
@@ -195,16 +199,21 @@ REPLACE_FUNC_MEMBER(void, CBaseEntity_SetTransmit, CCheckTransmitInfo *pInfo, bo
     pInfo->m_pTransmitEdict->Set(index);
 
     if (transmitAlways) {
-        (*ourfunc1)(netProp, bAlways);
+        SetTransmitAlways(netProp, bAlways);
     }
     if (parentIndex >= MAX_EDICTS || pInfo->m_pTransmitEdict->Get(parentIndex)) return;
-    (*ourfunc2)(parentIndex, pInfo, bAlways);
+    CBaseEntity *parent = (CBaseEntity *)(g_pWorldEdict+parentIndex)->GetUnknown();
+
+    // Force our aiment and move parent to be sent.
+    if (parent != nullptr) {
+        parent->SetTransmit(pInfo, bAlways);
+    }
 }
 
 
 IChangeInfoAccessor *world_accessor = nullptr;
 CEdictChangeInfo *world_change_info = nullptr;
-CSharedEdictChangeInfo *g_SharedEdictChangeInfo;
+CSharedEdictChangeInfo *g_SharedEdictChangeInfo = nullptr;
 
 REPLACE_FUNC_MEMBER(IChangeInfoAccessor *, CBaseEdict_GetChangeAccessor)
 {
@@ -2027,8 +2036,10 @@ namespace Mod::Perf::SendProp_Optimize
 		virtual void LevelInitPostEntity() override
 		{
             world_edict = INDEXENT(0);
+            auto world_accessor2 = engine->GetChangeAccessor(world_edict);
             world_accessor = static_cast<CVEngineServer *>(engine)->GetChangeAccessorStatic(world_edict);
             world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
+            Msg("Set world change info %p %p %p %p\n", world_change_info, world_accessor, world_accessor2, world_edict);
             
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             ConVarRef sv_parallel_sendsnapshot("sv_parallel_sendsnapshot");

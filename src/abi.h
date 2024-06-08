@@ -124,6 +124,11 @@ template<class C, typename RET, typename... PARAMS> using MemberPtrTypeConst = R
 template<class C, typename RET, typename... PARAMS> using MemberPtrTypeVa      = RET (C::*)(PARAMS..., ...);
 template<class C, typename RET, typename... PARAMS> using MemberPtrTypeVaConst = RET (C::*)(PARAMS..., ...) const;
 
+#if defined __GNUC__ && !defined __clang__ && !defined PLATFORM_64BITS
+template<class C, typename RET, typename... PARAMS> using MemberPtrTypeRegcall      = RET (C::*)(PARAMS...) __gcc_regcall;
+template<class C, typename RET, typename... PARAMS> using MemberPtrTypeConstRegcall = RET (C::*)(PARAMS...) const __gcc_regcall;
+#endif
+
 #if defined __clang__
 
 #error TODO
@@ -183,7 +188,13 @@ inline void *GetAddrOfMemberFunc(MemberPtrTypeVaConst<C, RET, PARAMS...> ptr)
 {
 	return GetAddrOfMemberFunc(reinterpret_cast<MemberPtrType<C, RET, PARAMS...>>(ptr));
 }
-
+#if defined __GNUC__ && !defined __clang__ && !defined PLATFORM_64BITS
+template<class C, typename RET, typename... PARAMS>
+inline void *GetAddrOfMemberFunc(MemberPtrTypeRegcall<C, RET, PARAMS...> ptr)
+{
+	return GetAddrOfMemberFunc(reinterpret_cast<MemberPtrType<C, RET, PARAMS...>>(ptr));
+}
+#endif
 
 template<class C, typename RET, typename... PARAMS>
 int GetVIdxOfMemberFunc(MemberPtrType<C, RET, PARAMS...> ptr)

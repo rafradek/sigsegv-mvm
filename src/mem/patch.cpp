@@ -1,3 +1,4 @@
+#include "mem/func_copy.h"
 #include "mem/patch.h"
 #include "mem/scan.h"
 #include "mem/protect.h"
@@ -189,4 +190,14 @@ void *CPatch::GetActualLocation() const
 //	if (!this->m_bFoundOffset) return nullptr;
 	assert(this->m_bFoundOffset);
 	return (void *)((uintptr_t)this->m_pFuncAddr + this->m_iFuncOffActual);
+}
+
+bool CFuncReplace::GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const
+{
+	size_t sizeCopied = CopyAndFixUpFuncBytes(this->m_zFuncSize, this->GetLength(), (uint8_t *) m_pFunc, (uint8_t *) this->GetFuncAddr(), buf.MPtr(), false);
+	if (sizeCopied == 0) {
+		ConColorMsg(Color(255, 60, 60), "Func Replace: \"%s\": copied function size larger than buffer\n", this->GetFuncName());
+	}
+	mask.SetRange(0, sizeCopied, 0xff);
+	return true;
 }
