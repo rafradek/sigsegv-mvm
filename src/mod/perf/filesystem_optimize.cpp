@@ -18,7 +18,7 @@ namespace Mod::Perf::Filesystem_Optimize
 		V_strlower(output + base_path_len);
 		struct stat stats;
 		return stat(output, &stats) == 0;
-		//return DETOUR_STATIC_CALL(findFileInDirCaseInsensitive)(file, output, bufSize);
+		//return DETOUR_STATIC_CALL(file, output, bufSize);
 	}
 	
 	

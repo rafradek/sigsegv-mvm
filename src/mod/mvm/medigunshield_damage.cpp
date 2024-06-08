@@ -72,7 +72,7 @@ namespace Mod::MvM::MedigunShield_Damage
 	
 	DETOUR_DECL_STATIC(CTFMedigunShield *, CTFMedigunShield_Create, CTFPlayer *player)
 	{
-		CTFMedigunShield *shield = DETOUR_STATIC_CALL(CTFMedigunShield_Create)(player);
+		CTFMedigunShield *shield = DETOUR_STATIC_CALL(player);
 		float damage = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, damage, mult_dmg_vs_players);
 		if (damage > 0.0f) {

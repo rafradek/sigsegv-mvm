@@ -20,7 +20,7 @@ namespace Mod::Visualize::Dispenser_Radius
 	
 	DETOUR_DECL_MEMBER(void, CObjectDispenser_DispenseThink)
 	{
-		DETOUR_MEMBER_CALL(CObjectDispenser_DispenseThink)();
+		DETOUR_MEMBER_CALL();
 		
 		static int i = 0;
 		if (i++ % 10 != 0) {

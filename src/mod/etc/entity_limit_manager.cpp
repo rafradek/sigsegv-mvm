@@ -36,7 +36,7 @@ namespace Mod::Etc::Entity_Limit_Manager
 	{
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+		DETOUR_MEMBER_CALL();
 		// Remove unused offhand viewmodel for other classes than spy
 		if (sig_etc_entity_limit_manager_viewmodel.GetBool() && !player->IsPlayerClass(TF_CLASS_SPY) && player->GetViewModel(1) != nullptr) {
 			player->GetViewModel(1)->Remove();
@@ -46,7 +46,7 @@ namespace Mod::Etc::Entity_Limit_Manager
     DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
-        DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+        DETOUR_MEMBER_CALL(owner);
 		// Restore unused offhand viewmodel for other classes than spy
 
 		auto playerOwner = ToTFPlayer(owner);
@@ -65,7 +65,7 @@ namespace Mod::Etc::Entity_Limit_Manager
                 player->CreateViewModel(1);
             }
         }
-        DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetViewModelIndex)(index);
+        DETOUR_MEMBER_CALL(index);
     }
     
     RefCount rc_CTFPlayer_UpdateExpression;
@@ -73,7 +73,7 @@ namespace Mod::Etc::Entity_Limit_Manager
 	{
         auto player = reinterpret_cast<CTFPlayer *>(this);
         SCOPED_INCREMENT_IF(rc_CTFPlayer_UpdateExpression, sig_etc_entity_limit_manager_remove_expressions.GetBool() && player->IsBot());
-        DETOUR_MEMBER_CALL(CTFPlayer_UpdateExpression)();
+        DETOUR_MEMBER_CALL();
     }
 
     CTFPlayer *disguise_weapon_player = nullptr;
@@ -82,7 +82,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         auto shared = reinterpret_cast<CTFPlayerShared *>(this);
         disguise_weapon_player = shared->GetOuter();
         EHANDLE prevDisguiseWeapon = shared->m_hDisguiseWeapon.Get();
-        DETOUR_MEMBER_CALL(CTFPlayerShared_DetermineDisguiseWeapon)(forcePrimary);
+        DETOUR_MEMBER_CALL(forcePrimary);
         if (prevDisguiseWeapon != shared->m_hDisguiseWeapon && prevDisguiseWeapon != nullptr) {
             prevDisguiseWeapon->Remove();
         }
@@ -93,14 +93,14 @@ namespace Mod::Etc::Entity_Limit_Manager
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_DetermineDisguiseWearables)
 	{
         disguise_wearables_player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
-        DETOUR_MEMBER_CALL(CTFPlayerShared_DetermineDisguiseWearables)();
+        DETOUR_MEMBER_CALL();
         disguise_wearables_player = nullptr;
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_CreateDisguiseWeaponList, CTFPlayer *target)
 	{   
         disguise_weapon_player = reinterpret_cast<CTFPlayer *>(this);
-        DETOUR_MEMBER_CALL(CTFPlayer_CreateDisguiseWeaponList)(target);
+        DETOUR_MEMBER_CALL(target);
         disguise_weapon_player = nullptr;
     }
 
@@ -120,7 +120,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         if (rc_CTFPlayer_UpdateExpression) return 10;
         
         //auto oldSceneEnt = *phSceneEnt;
-        auto ret = DETOUR_STATIC_CALL(InstancedScriptedScene)(pActor, pszScene, phSceneEnt, flPostDelay, bIsBackground, response, bMultiplayer, filter);
+        auto ret = DETOUR_STATIC_CALL(pActor, pszScene, phSceneEnt, flPostDelay, bIsBackground, response, bMultiplayer, filter);
         //if (remove_this_scene_entity != nullptr) {
         //    remove_this_scene_entity->Remove();
         //    *phSceneEnt = oldSceneEnt;
@@ -373,7 +373,7 @@ namespace Mod::Etc::Entity_Limit_Manager
                 edict->freetime = 0;
             }
         }
-		return DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+		return DETOUR_STATIC_CALL(className, iForceEdictIndex);
 	}
 
     DETOUR_DECL_STATIC(void , Physics_SimulateEntity, CBaseEntity * entity) 
@@ -383,7 +383,7 @@ namespace Mod::Etc::Entity_Limit_Manager
             return;
         }
         simulated_entity = entity; 
-        DETOUR_STATIC_CALL(Physics_SimulateEntity)(entity);
+        DETOUR_STATIC_CALL(entity);
         simulated_entity = nullptr;
     }
 
@@ -432,7 +432,7 @@ namespace Mod::Etc::Entity_Limit_Manager
     DETOUR_DECL_MEMBER(IServerNetworkable *, CEntityFactory_CPathTrack_Create, const char *classname)
 	{
         SCOPED_INCREMENT_IF(rc_ServerOnly, cvar_path_track_is_server_entity.GetBool());
-        return DETOUR_MEMBER_CALL(CEntityFactory_CPathTrack_Create)(classname);
+        return DETOUR_MEMBER_CALL(classname);
     }
 
 
@@ -473,7 +473,7 @@ namespace Mod::Etc::Entity_Limit_Manager
             placeholder->SetAbsAngles(parent->GetAbsAngles());
             parent = placeholder;
         }
-        DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(parent, iAttachment);
+        DETOUR_MEMBER_CALL(parent, iAttachment);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseAnimating_SetLightingOrigin, CBaseEntity *entity)
@@ -491,12 +491,12 @@ namespace Mod::Etc::Entity_Limit_Manager
             THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
             entity = placeholder;
         }
-        DETOUR_MEMBER_CALL(CBaseAnimating_SetLightingOrigin)(entity);
+        DETOUR_MEMBER_CALL(entity);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_CBaseEntity, bool serverOnly)
 	{
-        DETOUR_MEMBER_CALL(CBaseEntity_CBaseEntity)(rc_ServerOnly || serverOnly);
+        DETOUR_MEMBER_CALL(rc_ServerOnly || serverOnly);
         if (rc_ServerOnly) {
             auto entity = reinterpret_cast<CBaseEntity *>(this);
             entity->AddEFlags(65536); //EFL_FORCE_ALLOW_MOVEPARENT
@@ -514,7 +514,7 @@ namespace Mod::Etc::Entity_Limit_Manager
     DETOUR_DECL_MEMBER(IServerNetworkable *, name, const char *classname) \
 	{\
         SCOPED_INCREMENT(rc_ServerOnly);\
-        return DETOUR_MEMBER_CALL(name)(classname);\
+        return DETOUR_MEMBER_CALL(classname);\
     }\
 
     MAKE_ENTITY_SERVERSIDE(CEntityFactory_CTFBotHintSentrygun_Create);

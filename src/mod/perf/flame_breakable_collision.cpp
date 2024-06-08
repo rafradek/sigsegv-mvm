@@ -9,7 +9,7 @@ namespace Mod::Perf::Flame_Breakable_Collision
 	DETOUR_DECL_MEMBER(void, CTFFlameEntity_FlameThink)
 	{
 		SCOPED_INCREMENT(rc_CTFFlameEntity_FlameThink);
-		DETOUR_MEMBER_CALL(CTFFlameEntity_FlameThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName, IEntityFindFilter *filter)
@@ -18,7 +18,7 @@ namespace Mod::Perf::Flame_Breakable_Collision
 			return nullptr;
 		}
 		
-		return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName, filter);
+		return DETOUR_MEMBER_CALL(pStartEntity, szName, filter);
 	}
 	
 	

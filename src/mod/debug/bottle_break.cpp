@@ -209,7 +209,7 @@ namespace Mod::Debug::Bottle_Break
 	
 //	DETOUR_DECL_MEMBER(bool, CEconItemDefinition_BInitFromKV, KeyValues *kv, CUtlVector<CUtlString> *errors)
 //	{
-//		auto result = DETOUR_MEMBER_CALL(CEconItemDefinition_BInitFromKV)(kv, errors);
+//		auto result = DETOUR_MEMBER_CALL(kv, errors);
 //		
 //		if (result) {
 //			short index = reinterpret_cast<CEconItemDefinition *>(this)->m_iItemDefIndex;

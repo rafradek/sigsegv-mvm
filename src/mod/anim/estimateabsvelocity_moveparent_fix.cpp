@@ -9,7 +9,7 @@ namespace Mod::Anim::EstimateAbsVelocity_MoveParent_Fix
 	{
 		auto ent = reinterpret_cast<C_BaseEntity *>(this);
 		
-		DETOUR_MEMBER_CALL(C_BaseEntity_EstimateAbsVelocity)(vel);
+		DETOUR_MEMBER_CALL(vel);
 		
 		CBaseEntity *ent_sv = UTIL_EntityByIndex(ent->entindex());
 		if (ent_sv != nullptr) {

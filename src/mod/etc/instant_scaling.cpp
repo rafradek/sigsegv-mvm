@@ -9,7 +9,7 @@ namespace Mod::Etc::Instant_Scaling
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_TFPlayerThink)();
+		DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (cvar_scalespeed.GetFloat() != 1.0f && TFGameRules()->IsMannVsMachineMode()) {
 			player->m_flHeadScale = Approach(player->GetDesiredHeadScale(), player->m_flHeadScale, (cvar_scalespeed.GetFloat()-1) * gpGlobals->frametime);

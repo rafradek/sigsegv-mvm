@@ -26,7 +26,7 @@ namespace Mod::Util::Serialize_Spew
 			// LibMgr::WhichLibAtAddr(func ptr addr), if any
 		}
 		
-		DETOUR_STATIC_CALL(SpewOutputFunc)(func);
+		DETOUR_STATIC_CALL(func);
 	}
 	
 	

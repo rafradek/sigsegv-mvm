@@ -43,7 +43,7 @@ namespace Mod::Debug::Client_Desync
 			
 		}
 		
-		DETOUR_MEMBER_CALL(C_TFPlayer_OnPreDataChanged)(updateType);
+		DETOUR_MEMBER_CALL(updateType);
 	}
 	
 	DETOUR_DECL_MEMBER(void, C_TFPlayer_OnDataChanged, DataUpdateType_t updateType)
@@ -57,7 +57,7 @@ namespace Mod::Debug::Client_Desync
 				Plat_FloatTime(), player->entindex(), n_changed, DataUpdateType_ToString(updateType));
 		}
 		
-		DETOUR_MEMBER_CALL(C_TFPlayer_OnDataChanged)(updateType);
+		DETOUR_MEMBER_CALL(updateType);
 	}
 	
 	

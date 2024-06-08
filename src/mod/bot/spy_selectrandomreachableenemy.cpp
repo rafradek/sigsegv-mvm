@@ -39,7 +39,7 @@ namespace Mod::Bot::Spy_SelectRandomReachableEnemy
 	DETOUR_DECL_MEMBER(CTFPlayer *, CTFBot_SelectRandomReachableEnemy)
 	{
 		bot = reinterpret_cast<CTFBot *>(this);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_SelectRandomReachableEnemy)();
+		auto result = DETOUR_MEMBER_CALL();
 		bot = nullptr;
 
 		return result;
@@ -52,7 +52,7 @@ namespace Mod::Bot::Spy_SelectRandomReachableEnemy
 		CTFPlayer *player = action->m_chasePlayer;
 		if (player != nullptr && actor->GetVisionInterface()->IsIgnored(player))
 			action->m_chasePlayer = nullptr;
-		auto result = DETOUR_MEMBER_CALL(CTFBotAttackFlagDefenders_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		return result;
 	}
 
@@ -60,7 +60,7 @@ namespace Mod::Bot::Spy_SelectRandomReachableEnemy
 	{
 		if (bot != nullptr) {
 			CUtlVector<CTFPlayer *> tempVector;
-			DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(&tempVector, team, isAlive, shouldAppend);
+			DETOUR_STATIC_CALL(&tempVector, team, isAlive, shouldAppend);
 			
 			for (auto player : tempVector) {
 				if (!bot->GetVisionInterface()->IsIgnored(player))
@@ -69,7 +69,7 @@ namespace Mod::Bot::Spy_SelectRandomReachableEnemy
 
 			return playerVector->Count();
 		}
-		return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);
+		return DETOUR_STATIC_CALL(playerVector, team, isAlive, shouldAppend);
 	}
 
 	// ISSUE: the callers of SelectRandomReachableEnemy may hang onto the enemy

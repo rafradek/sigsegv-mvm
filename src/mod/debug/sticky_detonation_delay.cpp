@@ -15,7 +15,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_DoClassSpecialSkill)();
+		auto result = DETOUR_MEMBER_CALL();
 		
 		ClientMsgAll("[%8.3f] CTFPlayer[#%d]::DoClassSpecialSkill() = %s\n",
 			gpGlobals->curtime, ENTINDEX(player), (result ? "TRUE" : "FALSE"));
@@ -31,7 +31,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 		ClientMsgAll("[%8.3f] CTFGrenadeLauncher[#%d]::SecondaryAttack()\n",
 			gpGlobals->curtime, ENTINDEX(weapon));
 		
-		DETOUR_MEMBER_CALL(CTFGrenadeLauncher_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPipebombLauncher_SecondaryAttack)
@@ -41,7 +41,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 		ClientMsgAll("[%8.3f] CTFPipebombLauncher[#%d]::SecondaryAttack()\n",
 			gpGlobals->curtime, ENTINDEX(weapon));
 		
-		DETOUR_MEMBER_CALL(CTFPipebombLauncher_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_SecondaryAttack)
@@ -51,7 +51,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 		ClientMsgAll("[%8.3f] CTFWeaponBaseMelee[#%d]::SecondaryAttack()\n",
 			gpGlobals->curtime, ENTINDEX(weapon));
 		
-		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -61,7 +61,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_CanAttack)(flags);
+		auto result = DETOUR_MEMBER_CALL(flags);
 		
 		ClientMsgAll("[%8.3f] CTFPlayer[#%d]::CanAttack(%08x) = %s\n",
 			gpGlobals->curtime, ENTINDEX(player), flags, (result ? "TRUE" : "FALSE"));
@@ -76,7 +76,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_CanPerformSecondaryAttack)();
+		auto result = DETOUR_MEMBER_CALL();
 		
 		ClientMsgAll("[%8.3f] CTFWeaponBase[#%d '%s']::CanPerformSecondaryAttack() = %s\n",
 			gpGlobals->curtime, ENTINDEX(weapon), weapon->GetClassname(), (result ? "TRUE" : "FALSE"));
@@ -126,7 +126,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemPostFrame)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemBusyFrame)
@@ -150,7 +150,7 @@ namespace Mod::Debug::Sticky_Detonation_Delay
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	

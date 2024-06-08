@@ -31,7 +31,7 @@ namespace Mod::Util::Entity_Overlays
 		DevMsg("SetDebugBits([pPlayer: #%d] [name: \"%s\"] [bit: %08x]\n",
 			ENTINDEX(pPlayer), name, bit);
 		
-		DETOUR_STATIC_CALL(SetDebugBits)(pPlayer, name, bit);
+		DETOUR_STATIC_CALL(pPlayer, name, bit);
 	}
 	
 	
@@ -46,7 +46,7 @@ namespace Mod::Util::Entity_Overlays
 	
 	DETOUR_DECL_STATIC(CBaseEntity *, GetNextCommandEntity, CBasePlayer *pPlayer, const char *name, CBaseEntity *ent)
 	{
-		auto result = DETOUR_STATIC_CALL(GetNextCommandEntity)(pPlayer, name, ent);
+		auto result = DETOUR_STATIC_CALL(pPlayer, name, ent);
 		
 		char str_ent   [0x1000];
 		char str_result[0x1000];

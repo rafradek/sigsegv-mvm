@@ -21,13 +21,13 @@ namespace Mod::Debug::VProf_Record
 	DETOUR_DECL_MEMBER(void, CVProfRecorder_Record_WriteTimings_R, CVProfNode *pIn)
 	{
 		CVProfRecorder::DumpNode("record   ", pIn);
-		DETOUR_MEMBER_CALL(CVProfRecorder_Record_WriteTimings_R)(pIn);
+		DETOUR_MEMBER_CALL(pIn);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CVProfNode_MarkFrame)
 	{
 		CVProfRecorder::DumpNode("mark PRE ", reinterpret_cast<CVProfNode *>(this));
-		DETOUR_MEMBER_CALL(CVProfNode_MarkFrame)();
+		DETOUR_MEMBER_CALL();
 		CVProfRecorder::DumpNode("mark POST", reinterpret_cast<CVProfNode *>(this));
 	}
 	
@@ -38,8 +38,8 @@ namespace Mod::Debug::VProf_Record
 	}
 	DETOUR_DECL_STATIC(void, VProfRecord_StartOrStop)
 	{
-		DETOUR_STATIC_CALL(VProfRecord_StartOrStop)();
-		DETOUR_STATIC_CALL(VProfRecord_Snapshot)();
+		DETOUR_STATIC_CALL();
+		DETOUR_STATIC_CALL();
 	}
 	
 	

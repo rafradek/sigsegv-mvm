@@ -11,7 +11,7 @@ namespace Mod::MvM::Spectator_Vote_Fix
         if (sv_vote_allow_spectators.GetBool() && player != nullptr && player->GetTeamNumber() <= TEAM_SPECTATOR) {
             return 3;
         }
-		auto result = DETOUR_MEMBER_CALL(CVoteController_TryCastVote)(index, issue);
+		auto result = DETOUR_MEMBER_CALL(index, issue);
         return result;
 	}
 

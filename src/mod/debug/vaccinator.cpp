@@ -8,7 +8,7 @@ namespace Mod::Debug::Vaccinator
 	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, CheckMedicResist, ETFCond iCondUber, ETFCond iCondPassive, CTFPlayer *pPlayer, float& f1, bool bCrit, float& f2)
 	{
 		// TODO
-		return DETOUR_STATIC_CALL(CheckMedicResist)(iCondUber, iCondPassive, pPlayer, f1, bCrit, f2);
+		return DETOUR_STATIC_CALL(iCondUber, iCondPassive, pPlayer, f1, bCrit, f2);
 	}
 	
 	

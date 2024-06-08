@@ -25,7 +25,7 @@ namespace Mod::Attr::Undocumented
 			return cvar_force_distribute_currency_on_death.GetFloat();
 		}
 		
-		return DETOUR_STATIC_CALL(CAttributeManager_ApplyAttributeFloatWrapper)(val, ent, name, vec);
+		return DETOUR_STATIC_CALL(val, ent, name, vec);
 	}
 	
 	

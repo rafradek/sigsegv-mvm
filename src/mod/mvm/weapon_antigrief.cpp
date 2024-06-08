@@ -33,7 +33,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_Explode, CGameTrace *tr, CBaseEntity *ent)
 	{
 		SCOPED_INCREMENT(rc_ScorchShot);
-		DETOUR_MEMBER_CALL(CTFProjectile_Flare_Explode)(tr, ent);
+		DETOUR_MEMBER_CALL(tr, ent);
 	}
 	
 	
@@ -41,21 +41,21 @@ namespace Mod::MvM::Weapon_AntiGrief
 	DETOUR_DECL_MEMBER(void, CTFGrenadePipebombProjectile_PipebombTouch, CBaseEntity *ent)
 	{
 		SCOPED_INCREMENT(rc_LooseCannon);
-		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(ent);
+		DETOUR_MEMBER_CALL(ent);
 	}
 	
 	RefCount rc_ShortStop;
 	DETOUR_DECL_MEMBER(void, CTFPistol_ScoutPrimary_Push)
 	{
 		SCOPED_INCREMENT(rc_ShortStop);
-		DETOUR_MEMBER_CALL(CTFPistol_ScoutPrimary_Push)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_ForceANature1;
 	DETOUR_DECL_MEMBER(void, CTFScatterGun_ApplyPostHitEffects, const CTakeDamageInfo& info, CTFPlayer *victim)
 	{
 		SCOPED_INCREMENT_IF(rc_ForceANature1, BotIsAGiant(victim));
-		DETOUR_MEMBER_CALL(CTFScatterGun_ApplyPostHitEffects)(info, victim);
+		DETOUR_MEMBER_CALL(info, victim);
 	}
 	RefCount rc_ForceANature2;
 	RefCount rc_AirborneRage;
@@ -66,7 +66,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 		SCOPED_INCREMENT_IF(rc_ForceANature2, BotIsAGiant(player));
 		SCOPED_INCREMENT_IF(rc_AirborneRage, cvar_airborne_rage.GetBool() && BotIsAGiant(player) && !(player->GetFlags() & FL_ONGROUND) && info.GetAttacker() != player);
 			
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyPushFromDamage)(info, vec);
+		DETOUR_MEMBER_CALL(info, vec);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
@@ -75,11 +75,11 @@ namespace Mod::MvM::Weapon_AntiGrief
 
 		if (rc_AirborneRage) {
 			Vector v2 = *v1 * 0.33f;
-			DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(&v2);
+			DETOUR_MEMBER_CALL(&v2);
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
+		DETOUR_MEMBER_CALL(v1);
 	}
 	
 	
@@ -91,7 +91,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			}
 		}
 		
-		return DETOUR_STATIC_CALL(CanScatterGunKnockBack)(scattergun, damage, distsqr);
+		return DETOUR_STATIC_CALL(scattergun, damage, distsqr);
 	}
 	
 	RefCount rc_StunOnHit;
@@ -100,7 +100,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 	{
 		SCOPED_INCREMENT(rc_StunOnHit);
 		weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		DETOUR_MEMBER_CALL(ent, player, info);
 	}
 	static inline bool ShouldBlock_ScorchShot()  { return (cvar_scorchshot .GetBool() && rc_ScorchShot  > 0); }
 	static inline bool ShouldBlock_LooseCannon() { return (cvar_loosecannon.GetBool() && rc_LooseCannon > 0); }
@@ -132,7 +132,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
+		DETOUR_MEMBER_CALL(impulse, inflictor);
 	}
 
 	RefCount rc_StunBall;
@@ -144,7 +144,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 		auto player = ToTFPlayer(other);
 		SCOPED_INCREMENT_IF(rc_StunBall, (cvar_stunball.GetBool() || stun > 1) && player != nullptr && !(BotIsAGiant(player) || (player->IsBot() && player->HasTheFlag())));
 		
-		DETOUR_MEMBER_CALL(CTFStunBall_ApplyBallImpactEffectOnVictim)(other);
+		DETOUR_MEMBER_CALL(other);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
@@ -163,7 +163,7 @@ namespace Mod::MvM::Weapon_AntiGrief
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 	
 	class CMod : public IMod

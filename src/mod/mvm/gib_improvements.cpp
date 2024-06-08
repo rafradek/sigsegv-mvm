@@ -99,7 +99,7 @@ namespace Mod::MvM::Gib_Improvements
 	DETOUR_DECL_MEMBER(void, CTFSniperRifle_ExplosiveHeadShot, CTFPlayer *pAttacker, CTFPlayer *pVictim)
 	{
 		SCOPED_INCREMENT(rc_CTFSniperRifle_ExplosiveHeadShot);
-		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(pAttacker, pVictim);
+		DETOUR_MEMBER_CALL(pAttacker, pVictim);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
@@ -115,7 +115,7 @@ namespace Mod::MvM::Gib_Improvements
 			eh_victims.insert(shared->GetOuter());
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 	
 	
@@ -156,7 +156,7 @@ namespace Mod::MvM::Gib_Improvements
 		if (eh_tick == gpGlobals->tickcount && eh_victims.count(player) != 0) {
 			return true;
 		}
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_ShouldGib)(info);
+		bool ret = DETOUR_MEMBER_CALL(info);
 		DevMsg("damage info %d %d\n", ret, info.GetDamageType());
 		return ret;
 	}
@@ -189,7 +189,7 @@ namespace Mod::MvM::Gib_Improvements
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
+		return DETOUR_MEMBER_CALL(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
 	}
 	
 	

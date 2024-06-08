@@ -80,7 +80,7 @@ namespace Mod::Debug::Sound_Leak
 		LOGMEM("[%12.7f] BEGIN S_Play\n", Plat_FloatTime());
 		{
 			SCOPED_INCREMENT(rc_S_Play);
-			DETOUR_STATIC_CALL(S_Play)(pszName, flush);
+			DETOUR_STATIC_CALL(pszName, flush);
 		}
 		LOGMEM("[%12.7f] END   S_Play\n\n", Plat_FloatTime());
 	}
@@ -93,7 +93,7 @@ namespace Mod::Debug::Sound_Leak
 		std::lock_guard<std::mutex> lock(m_Alloc);
 		SCOPED_INCREMENT(rc_Alloc);
 		
-		auto result = DETOUR_MEMBER_CALL(IMemAlloc_Alloc)(nSize);
+		auto result = DETOUR_MEMBER_CALL(nSize);
 		
 		if (mem_tracking && rc_Alloc <= 1 && nSize >= (size_t)cvar_minimum.GetInt()) {
 			if (mems.find(result) == mems.end()) {
@@ -118,7 +118,7 @@ namespace Mod::Debug::Sound_Leak
 		std::lock_guard<std::mutex> lock(m_Realloc);
 		SCOPED_INCREMENT(rc_Realloc);
 		
-		auto result = DETOUR_MEMBER_CALL(IMemAlloc_Realloc)(pMem, nSize);
+		auto result = DETOUR_MEMBER_CALL(pMem, nSize);
 		
 		if (mem_tracking && rc_Realloc <= 1 && nSize >= (size_t)cvar_minimum.GetInt()) {
 			auto it = mems.find(pMem);
@@ -166,7 +166,7 @@ namespace Mod::Debug::Sound_Leak
 		//	}
 		}
 		
-		DETOUR_MEMBER_CALL(IMemAlloc_Free)(pMem);
+		DETOUR_MEMBER_CALL(pMem);
 	}
 	
 	
@@ -179,7 +179,7 @@ namespace Mod::Debug::Sound_Leak
 		
 		++num_CAudioMixerWaveMP3;
 		LOGMEM("+++ CAudioMixerWaveMP3 @ 0x%08x [total: %d]\n", (uintptr_t)this, num_CAudioMixerWaveMP3);
-		DETOUR_MEMBER_CALL(CAudioMixerWaveMP3_ctor)(i1);
+		DETOUR_MEMBER_CALL(i1);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CAudioMixerWaveMP3_dtor, uint32_t i1)
@@ -188,7 +188,7 @@ namespace Mod::Debug::Sound_Leak
 		
 		--num_CAudioMixerWaveMP3;
 		LOGMEM("--- CAudioMixerWaveMP3 @ 0x%08x [total: %d]\n", (uintptr_t)this, num_CAudioMixerWaveMP3);
-		DETOUR_MEMBER_CALL(CAudioMixerWaveMP3_dtor)(i1);
+		DETOUR_MEMBER_CALL(i1);
 	}
 	
 	
@@ -201,7 +201,7 @@ namespace Mod::Debug::Sound_Leak
 		
 		++num_CWaveDataStreamAsync;
 		LOGMEM("+++ CWaveDataStreamAsync @ 0x%08x [total: %d]\n", (uintptr_t)this, num_CWaveDataStreamAsync);
-		DETOUR_MEMBER_CALL(CWaveDataStreamAsync_ctor)(r1, p1, s1, i1, i2, p2, i3);
+		DETOUR_MEMBER_CALL(r1, p1, s1, i1, i2, p2, i3);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CWaveDataStreamAsync_dtor, uint32_t i1)
@@ -210,7 +210,7 @@ namespace Mod::Debug::Sound_Leak
 		
 		--num_CWaveDataStreamAsync;
 		LOGMEM("--- CWaveDataStreamAsync @ 0x%08x [total: %d]\n", (uintptr_t)this, num_CWaveDataStreamAsync);
-		DETOUR_MEMBER_CALL(CWaveDataStreamAsync_dtor)(i1);
+		DETOUR_MEMBER_CALL(i1);
 	}
 	
 	

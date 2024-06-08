@@ -5,7 +5,7 @@ namespace Mod::Debug::Flamethrower_Impulse_101
 {
 	DETOUR_DECL_MEMBER(const char *, C_TFFlameThrower_FullCritChargedEffectName)
 	{
-		auto result = DETOUR_MEMBER_CALL(C_TFFlameThrower_FullCritChargedEffectName)();
+		auto result = DETOUR_MEMBER_CALL();
 		
 		NDebugOverlay::Clear();
 		NDebugOverlay::ScreenText(0.05f, 0.05f, CFmtStr("C_TFFlameThrower::FullCritChargedEffectName (this = 0x%08x)",

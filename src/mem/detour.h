@@ -299,15 +299,17 @@ private:
 	
 	static inline std::map<void *, CDetouredFunc> s_FuncMap;
 };
-
-
-#define DETOUR_MEMBER_CALL(name) (this->*Actual)
-#define DETOUR_STATIC_CALL(name) (Actual_##name)
+#define DETOUR_MEMBER_CALL(...) (Actual)(this, ## __VA_ARGS__)
+#define DETOUR_STATIC_CALL(...) (Actual)(__VA_ARGS__)
 
 #define __DETOUR_DECL_STATIC(prefix, name, ...) \
-	CDetour *detour_##name = nullptr; \
-	prefix (*Actual_##name)(__VA_ARGS__) = nullptr; \
-	prefix Detour_##name(__VA_ARGS__)
+namespace detour_ns_##name {\
+	prefix Detour(__VA_ARGS__); \
+	prefix (*Actual)(__VA_ARGS__) = nullptr; \
+}\
+	CDetour *detour_##name= nullptr; \
+	prefix detour_ns_##name::Detour(__VA_ARGS__)
+
 #define DETOUR_DECL_STATIC(ret, name, ...) \
 	__DETOUR_DECL_STATIC(static ret, name, ##__VA_ARGS__)
 #define DETOUR_DECL_STATIC_CALL_CONVENTION(cc, ret, name, ...) \
@@ -318,10 +320,10 @@ private:
 	{ \
 	public: \
 		ret callback(__VA_ARGS__); \
-		static ret (Detour_##name::* Actual)(__VA_ARGS__); \
+		static ret (*Actual)(Detour_##name *, ## __VA_ARGS__); \
 	}; \
 	static CDetour *detour_##name = nullptr; \
-	ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	ret (* Detour_##name::Actual)(Detour_##name *, ## __VA_ARGS__) = nullptr; \
 	ret Detour_##name::callback(__VA_ARGS__)
 
 
@@ -330,17 +332,17 @@ private:
 	{ \
 	public: \
 		cc ret callback(__VA_ARGS__); \
-		cc static ret (Detour_##name::* Actual)(__VA_ARGS__); \
+		cc static ret (*Actual)(Detour_##name *, ## __VA_ARGS__); \
 	}; \
 	static CDetour *detour_##name = nullptr; \
-	cc ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	cc ret (* Detour_##name::Actual)(Detour_##name *, ## __VA_ARGS__) = nullptr; \
 	cc ret Detour_##name::callback(__VA_ARGS__)
 
 #define GET_MEMBER_CALLBACK(name) GetAddrOfMemberFunc(&Detour_##name::callback)
 #define GET_MEMBER_INNERPTR(name) reinterpret_cast<void **>(&Detour_##name::Actual)
 
-#define GET_STATIC_CALLBACK(name) reinterpret_cast<void *>(&Detour_##name)
-#define GET_STATIC_INNERPTR(name) reinterpret_cast<void **>(&Actual_##name)
+#define GET_STATIC_CALLBACK(name) reinterpret_cast<void *>(&detour_ns_##name::Detour)
+#define GET_STATIC_INNERPTR(name) reinterpret_cast<void **>(&detour_ns_##name::Actual)
 
 
 // TODO: have an "exclusive" version of CDetour, which is identical, but when it's enabled/disabled,

@@ -539,7 +539,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor0\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
 
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_dtor2)
@@ -549,7 +549,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
 		wavespawns.erase(wavespawn);
 
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	void DisplayMessages(std::vector<std::string> &messages ) {
@@ -601,7 +601,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	{
 		auto wave = wave_parsing = reinterpret_cast<CWave *>(this);
 		
-		auto ret = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+		auto ret = DETOUR_MEMBER_CALL(kv);
 		wave_parsing = nullptr;
 		
 		SetWaveSpawnWait(wave, false);
@@ -676,7 +676,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 		auto statePre = wavespawn->m_state;
 		updatingWaveSpawn = wavespawn;
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+		DETOUR_MEMBER_CALL();
 		// CWaveSpawnPopulator::SetState got partially inlined (for other states than done and wait for dead), need to manually check for changes
 		if (statePre != wavespawn->m_state && wavespawn->m_state != CWaveSpawnPopulator::DONE && wavespawn->m_state != CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD) {
 			StateChanged(wavespawn, wavespawn->m_state);
@@ -698,7 +698,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		
 	//	DevMsg("CWaveSpawnPopulator %08x: dtor2\n", (uintptr_t)wavespawn);
 		
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_SetState)(state);
+		DETOUR_MEMBER_CALL(state);
 	}
 
 	DETOUR_DECL_STATIC(IPopulationSpawner *, IPopulationSpawner_ParseSpawner, IPopulator *populator, KeyValues *data)
@@ -739,7 +739,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			return spawner;
 		}
 
-		auto result = DETOUR_STATIC_CALL(IPopulationSpawner_ParseSpawner)(populator, data);
+		auto result = DETOUR_STATIC_CALL(populator, data);
 
 		return result;
 	}
@@ -833,7 +833,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			subkey->deleteThis();
 		}
 		
-		bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv);
+		bool result = DETOUR_MEMBER_CALL(kv);
 		
 		// delete the temporary copy of the KV subtree
 		kv->deleteThis();
@@ -860,7 +860,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(void, CWave_AddClassType, string_t icon, int count, unsigned int flags)
 	{
 		if (last_wavespawn_hidden && wave_parsing != nullptr) return;
-		DETOUR_MEMBER_CALL(CWave_AddClassType)(icon, count, flags);
+		DETOUR_MEMBER_CALL(icon, count, flags);
 	}
 
 	ConVar sig_pop_wavespawn_spawnbot_stall_fix("sig_pop_wavespawn_spawnbot_stall_fix", "0", FCVAR_GAMEDLL, "Mod: Fix wavespawn reserving slots even when spawnbot is disabled");
@@ -868,7 +868,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(int, CSpawnLocation_FindSpawnLocation, Vector& vSpawnPosition)
 	{
 		
-		auto result = DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
+		auto result = DETOUR_MEMBER_CALL(vSpawnPosition);
 		if (sig_pop_wavespawn_spawnbot_stall_fix.GetBool() && result == SPAWN_LOCATION_NOT_FOUND && updatingWaveSpawn != nullptr) {
 			
 			if (updatingWaveSpawn != nullptr && updatingWaveSpawn->m_bHasTFBotSpawner)
@@ -983,7 +983,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
 		allWaiting = true;
-		DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
+		DETOUR_MEMBER_CALL();
 		if (wave->IsDoneWithNonSupportWaves()) {
 			RemoveAllWaveEntities(true, false);
 		}
@@ -1013,7 +1013,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	/* block attempts by MONOCULUS to switch to CEyeballBossTeleport */
 	DETOUR_DECL_MEMBER(ActionResult<CEyeballBoss>, CEyeballBossIdle_Update, CEyeballBoss *actor, float dt)
 	{
-		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		
 		if (result.transition == ActionTransition::CHANGE_TO && strcmp(result.reason, "Moving...") == 0) {
 			if (TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr) {
@@ -1035,7 +1035,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		SCOPED_INCREMENT_IF(rc_CEyeballBossDead_Update__and_is_from_spawner,
 			(TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr));
 		
-		return DETOUR_MEMBER_CALL(CEyeballBossDead_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	/* prevent MONOCULUS's death from spawning a teleport vortex */
@@ -1045,7 +1045,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CBaseEntity_Create)(szName, vecOrigin, vecAngles, pOwner);
+		return DETOUR_STATIC_CALL(szName, vecOrigin, vecAngles, pOwner);
 	}
 
 	/* set MONOCULUS's lifetime from the spawner parameter instead of from the global convars */
@@ -1053,7 +1053,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	{
 		auto me = reinterpret_cast<CEyeballBossIdle *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_OnStart)(actor, action);
+		auto result = DETOUR_MEMBER_CALL(actor, action);
 		
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			auto *info = GetBossInfo(actor);
@@ -1079,19 +1079,19 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(float, CZombieLocomotion_GetRunSpeed)
 	{
 		float speed = GetSpeed(reinterpret_cast<ILocomotion *>(this));
-		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL(CZombieLocomotion_GetRunSpeed)();
+		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CHeadlessHatmanLocomotion_GetRunSpeed)
 	{
 		float speed = GetSpeed(reinterpret_cast<ILocomotion *>(this));
-		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL(CHeadlessHatmanLocomotion_GetRunSpeed)();
+		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CMerasmusLocomotion_GetRunSpeed)
 	{
 		float speed = GetSpeed(reinterpret_cast<ILocomotion *>(this));
-		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL(CMerasmusLocomotion_GetRunSpeed)();
+		return speed != FLT_MAX ? speed : DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CEyeballBossLocomotion_Approach, const Vector &goal, float goalweight)
@@ -1104,7 +1104,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			old_speed = tf_eyeball_boss_acceleration.GetFloat();
 			tf_eyeball_boss_acceleration.SetValue(speed);
 		}
-		DETOUR_MEMBER_CALL(CEyeballBossLocomotion_Approach)(goal, goalweight);
+		DETOUR_MEMBER_CALL(goal, goalweight);
 		if (speed != FLT_MAX) {
 			tf_eyeball_boss_acceleration.SetValue(old_speed);
 		}
@@ -1112,14 +1112,14 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 	DETOUR_DECL_MEMBER(float, NextBotGroundLocomotion_GetMaxAcceleration)
 	{
-		float default_speed = DETOUR_MEMBER_CALL(NextBotGroundLocomotion_GetMaxAcceleration)();
+		float default_speed = DETOUR_MEMBER_CALL();
 		float speed = GetSpeed(reinterpret_cast<ILocomotion *>(this));
 		return speed != FLT_MAX ? Max(speed * 4, default_speed) : default_speed;
 	}
 
 	DETOUR_DECL_MEMBER(float, NextBotGroundLocomotion_GetMaxDeceleration)
 	{
-		float default_speed = DETOUR_MEMBER_CALL(NextBotGroundLocomotion_GetMaxDeceleration)();
+		float default_speed = DETOUR_MEMBER_CALL();
 		float speed = GetSpeed(reinterpret_cast<ILocomotion *>(this));
 		return speed != FLT_MAX ? Max(speed * 4, default_speed) : default_speed;
 	}
@@ -1127,7 +1127,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(int, CZombie_OnTakeDamage_Alive, const CTakeDamageInfo& info)
 	{
 		
-		int dmg = DETOUR_MEMBER_CALL(CZombie_OnTakeDamage_Alive)(info);
+		int dmg = DETOUR_MEMBER_CALL(info);
 		auto zombie = reinterpret_cast<CZombie *>(this);
 		if (dmg > 0) {
 			IGameEvent *event = gameeventmanager->CreateEvent("npc_hurt");
@@ -1176,7 +1176,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_Parse, KeyValues *kv_orig)
@@ -1219,7 +1219,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			subkey->deleteThis();
 		}
 
-		auto result = DETOUR_MEMBER_CALL(CRandomChoiceSpawner_Parse)(kv);
+		auto result = DETOUR_MEMBER_CALL(kv);
 		if (result && shuffle) {
 			if (currentWaveSpawn != nullptr) {
 				spawnerToShuffle = random;
@@ -1330,7 +1330,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			DeleteNPC(inst, spawner);
 			it = bot_npc_spawners.erase(it);
 		}
-		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+		DETOUR_MEMBER_CALL(success);
 	}
 
 	struct NextBotData
@@ -1349,7 +1349,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		if (data != nullptr && data->fast_update) {
 			reinterpret_cast<NextBotData *>(actor->MyNextBotPointer())->m_bScheduledForNextTick = true;
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}*/
 
 	/*DETOUR_DECL_MEMBER(bool, NextBotManager_ShouldUpdate, INextBot *bot)
@@ -1362,38 +1362,38 @@ namespace Mod::Pop::WaveSpawn_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(NextBotManager_ShouldUpdate)(bot);
+		return DETOUR_MEMBER_CALL(bot);
 	}*/
 	
 	DETOUR_DECL_MEMBER(string_t, CRandomChoiceSpawner_GetClassIcon, int index)
 	{
 		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
 		if (spawner->m_SubSpawners.IsEmpty()) return NULL_STRING;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetClassIcon)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_IsMiniBoss, int index)
 	{
 		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
 		if (spawner->m_SubSpawners.IsEmpty()) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_IsMiniBoss)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
 	{
 		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
 		if (spawner->m_SubSpawners.IsEmpty()) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_HasAttribute)(attr, index);
+		return DETOUR_MEMBER_CALL(attr, index);
 	}
 	DETOUR_DECL_MEMBER(int, CRandomChoiceSpawner_GetClass, int index)
 	{
 		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
 		if (spawner->m_SubSpawners.IsEmpty()) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetClass)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(int, CRandomChoiceSpawner_GetHealth, int index)
 	{
 		auto spawner = reinterpret_cast<CRandomChoiceSpawner *>(this);
 		if (spawner->m_SubSpawners.IsEmpty()) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetHealth)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	
 	class CMod : public IMod, public IModCallbackListener, IFrameUpdatePostEntityThinkListener

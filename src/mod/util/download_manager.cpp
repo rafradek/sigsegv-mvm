@@ -935,7 +935,7 @@ namespace Mod::Util::Download_Manager
 	
 	DETOUR_DECL_MEMBER(void, CServerGameDLL_ServerActivate, edict_t *pEdictList, int edictList, int clientMax)
 	{
-		DETOUR_MEMBER_CALL(CServerGameDLL_ServerActivate)(pEdictList, edictList, clientMax);
+		DETOUR_MEMBER_CALL(pEdictList, edictList, clientMax);
 		
 		server_activated = true;
 		LoadDownloadsFile();
@@ -958,7 +958,7 @@ namespace Mod::Util::Download_Manager
 		V_strlower(output + base_path_len);
 		struct stat stats;
 		return stat(output, &stats) == 0;
-		//return DETOUR_STATIC_CALL(findFileInDirCaseInsensitive)(file, output, bufSize);
+		//return DETOUR_STATIC_CALL(file, output, bufSize);
 	}
 	
 	int inotify_fd = -1;

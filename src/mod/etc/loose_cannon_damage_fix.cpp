@@ -12,7 +12,7 @@ namespace Mod::Etc::Loose_Cannon_Damage_Fix
 	{
 		SCOPED_INCREMENT(rc_CTFGrenadePipebombProjectile_PipebombTouch);
 		pGrenade = reinterpret_cast<CTFGrenadePipebombProjectile *>(this);
-		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 		pGrenade = nullptr;
 	}
 	
@@ -42,7 +42,7 @@ namespace Mod::Etc::Loose_Cannon_Damage_Fix
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 //	DETOUR_DECL_MEMBER(void, CBaseGrenade_SetDamage, float flDamage)
@@ -50,7 +50,7 @@ namespace Mod::Etc::Loose_Cannon_Damage_Fix
 //		auto grenade = reinterpret_cast<CBaseGrenade *>(this);
 //		
 //		float flBefore = grenade->GetDamage();
-//		DETOUR_MEMBER_CALL(CBaseGrenade_SetDamage)(flDamage);
+//		DETOUR_MEMBER_CALL(flDamage);
 //		float flAfter = grenade->GetDamage();
 //		
 //		DevMsg("CBaseGrenade::SetDamage: [%.1f --> %.1f]\n", flBefore, flAfter);

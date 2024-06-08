@@ -130,14 +130,14 @@ namespace Mod::Debug::Building_Status
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 	
 	
 	/* make TFBots actually notice teleporters in MvM mode */
 	DETOUR_DECL_MEMBER(void, CTFBotVision_CollectPotentiallyVisibleEntities, CUtlVector<CBaseEntity *> *ents)
 	{
-		DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
+		DETOUR_MEMBER_CALL(ents);
 		
 		ForEachEntity([&](CBaseEntity *ent){
 			auto tele = rtti_cast<CObjectTeleporter *>(ent);

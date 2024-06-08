@@ -11,7 +11,7 @@ namespace Mod::Sound::Unused_Sapper
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
 	{
 		SCOPED_INCREMENT(rc_CObjectSapper_ApplyRoboSapperEffects);
-		return DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects)(target, duration);
+		return DETOUR_MEMBER_CALL(target, duration);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_SpeakConceptIfAllowed, int iConcept, const char *modifiers, char *pszOutResponseChosen, size_t bufsize, IRecipientFilter *filter)
@@ -20,7 +20,7 @@ namespace Mod::Sound::Unused_Sapper
 			iConcept = MP_CONCEPT_MVM_SAPPED_ROBOT;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+		return DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
 	}
 	
 	

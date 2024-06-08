@@ -115,7 +115,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	{
 		auto proj = reinterpret_cast<CBaseProjectile *>(this);
 		CBaseEntity *original = proj->GetOriginalLauncher();
-		DETOUR_MEMBER_CALL(CBaseProjectile_SetLauncher)(launcher);
+		DETOUR_MEMBER_CALL(launcher);
 		
 		if (launcher != nullptr && original == nullptr) {
 			auto weapon = static_cast<CTFWeaponBaseGun *>(launcher->MyCombatWeaponPointer());
@@ -190,7 +190,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 			val = MOVETYPE_CUSTOM;
 		}
 
-		DETOUR_MEMBER_CALL(CBaseEntity_SetMoveType)(val, collide);
+		DETOUR_MEMBER_CALL(val, collide);
 
 		//if (setmovetype_energyring) {
 		//	reinterpret_cast<CTFProjectile_EnergyRing>(this)->SetMoveType(MOVETYPE_CUSTOM);
@@ -201,7 +201,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	
 	/*DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
+		DETOUR_MEMBER_CALL();
 		if (setmovetype_rocket) {
 			reinterpret_cast<CTFProjectile_Rocket_Spawn>(this)->SetMoveType(MOVETYPE_CUSTOM);
 			setmovetype_energyring = false;
@@ -211,7 +211,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 
 	/*DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
 		if (ent->GetLauncher() != nullptr) {
@@ -360,7 +360,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	{
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
 		if (!PerformCustomPhysics(ent, pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity)) {
-			return DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
+			return DETOUR_MEMBER_CALL(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
 		}
 	}
 
@@ -368,7 +368,7 @@ namespace Mod::Etc::Heat_Seeking_Rockets
 	{
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
 		if (!PerformCustomPhysics(ent, pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity)) {
-			return DETOUR_MEMBER_CALL(CTFProjectile_Flare_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
+			return DETOUR_MEMBER_CALL(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
 		}
 	}
 	

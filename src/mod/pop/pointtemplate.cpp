@@ -673,7 +673,7 @@ namespace Mod::Pop::PointTemplate
 	DETOUR_DECL_MEMBER(void, CUpgrades_Spawn)
 	{
 		CUpgrades *prev = g_hUpgradeEntity.GetRef();
-		DETOUR_MEMBER_CALL(CUpgrades_Spawn)();
+		DETOUR_MEMBER_CALL();
 
 		if (prev != nullptr && !prev->IsMarkedForDeletion()) {
 			g_hUpgradeEntity.GetRef() = prev;
@@ -697,14 +697,14 @@ namespace Mod::Pop::PointTemplate
 	{
 		OnDestroyUpgrades(reinterpret_cast<CUpgrades *>(this));
 
-		DETOUR_MEMBER_CALL(CUpgrades_D2)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_D0)
 	{
 		OnDestroyUpgrades(reinterpret_cast<CUpgrades *>(this));
 
-		DETOUR_MEMBER_CALL(CUpgrades_D0)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	
@@ -749,7 +749,7 @@ namespace Mod::Pop::PointTemplate
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseEntity_UpdateOnRemove)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	CBaseEntity *templateTargetEntity = nullptr;
@@ -825,28 +825,28 @@ namespace Mod::Pop::PointTemplate
 	{
 		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
 		if (!SpawnOurTemplate(me,me->GetAbsOrigin(),me->GetAbsAngles())){
-			DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawn)(inputdata);
+			DETOUR_MEMBER_CALL(inputdata);
 		}
 	}
 	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_InputForceSpawnAtEntityOrigin, inputdata_t &inputdata)
 	{
 		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
 		templateTargetEntity = servertools->FindEntityByName( NULL, STRING(inputdata.value.StringID()), me, inputdata.pActivator, inputdata.pCaller );
-		DETOUR_MEMBER_CALL(CEnvEntityMaker_InputForceSpawnAtEntityOrigin)(inputdata);
+		DETOUR_MEMBER_CALL(inputdata);
 		templateTargetEntity = nullptr;
 	}
 	DETOUR_DECL_MEMBER(void, CEnvEntityMaker_SpawnEntity, Vector vector, QAngle angles)
 	{
 		auto me = reinterpret_cast<CEnvEntityMaker *>(this);
 		if (!SpawnOurTemplate(me,vector,angles)){
-			DETOUR_MEMBER_CALL(CEnvEntityMaker_SpawnEntity)(vector,angles);
+			DETOUR_MEMBER_CALL(vector,angles);
 		}
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseEntity_SetParent, CBaseEntity *pParentEntity, int iAttachment)
 	{
 		auto me = reinterpret_cast<CBaseEntity *>(this);
-		DETOUR_MEMBER_CALL(CBaseEntity_SetParent)(pParentEntity,iAttachment);
+		DETOUR_MEMBER_CALL(pParentEntity,iAttachment);
 		if (me->GetSolid() == SOLID_BBOX && me->GetBaseAnimating() == nullptr && strcmp(STRING(me->GetModelName()), TEMPLATE_BRUSH_MODEL) == 0) {
 			me->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
 		}
@@ -855,10 +855,10 @@ namespace Mod::Pop::PointTemplate
 	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolid, SolidType_t solid)
 	{
 		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
-		if (me == nullptr || WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolid)(solid); return; }
+		if (me == nullptr || WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(solid); return; }
 
 		auto solidpre = TriggerCollideable(me);
-		DETOUR_MEMBER_CALL(CCollisionProperty_SetSolid)(solid);
+		DETOUR_MEMBER_CALL(solid);
 		auto solidnow = TriggerCollideable(me);
 		if (!solidpre && solidnow) {
 			for (auto mod : WholeMapTriggerModule::List()) {
@@ -906,7 +906,7 @@ namespace Mod::Pop::PointTemplate
 
 	DETOUR_DECL_MEMBER(void, CBaseEntity_SetModel, const char *model)
 	{
-		DETOUR_MEMBER_CALL(CBaseEntity_SetModel)(model);
+		DETOUR_MEMBER_CALL(model);
 		CheckSetWholeMapTrigger(reinterpret_cast<CBaseEntity *>(this));
 	}
 
@@ -916,14 +916,14 @@ namespace Mod::Pop::PointTemplate
 	DETOUR_DECL_MEMBER(void, CCollisionProperty_SetSolidFlags, int flags)
 	{
 		CBaseEntity *me = reinterpret_cast<CBaseEntity *>(reinterpret_cast<CCollisionProperty *>(this)->GetEntityHandle());
-		if (me == nullptr) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
+		if (me == nullptr) { DETOUR_MEMBER_CALL(flags); return; }
 		
-		if (!cvar_whole_map_trigger_all.GetBool() && WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags); return; }
+		if (!cvar_whole_map_trigger_all.GetBool() && WholeMapTriggerModule::List().empty()) { DETOUR_MEMBER_CALL(flags); return; }
 
 		SCOPED_INCREMENT(rc_CCollisionProperty_SetSolidFlags);
 		auto solidpre = TriggerCollideable(me);
 		auto triggerpre = me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER);
-		DETOUR_MEMBER_CALL(CCollisionProperty_SetSolidFlags)(flags);
+		DETOUR_MEMBER_CALL(flags);
 		//Msg("entity %s %d %d %d\n", me->GetClassname(), me->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER), me->CollisionProp()->IsSolidFlagSet(FSOLID_NOT_SOLID), TriggerCollideable(me));
 		auto solidnow = TriggerCollideable(me);
 		if (!solidpre && solidnow) {
@@ -981,7 +981,7 @@ namespace Mod::Pop::PointTemplate
 		SCOPED_INCREMENT(rc_CTFPlayer_Event_Killed);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		for (auto mod : WholeMapTriggerModule::List()) {
 			if (mod->entity->CollisionProp()->IsSolidFlagSet(FSOLID_TRIGGER)) {
 				mod->entity->EndTouch(player);

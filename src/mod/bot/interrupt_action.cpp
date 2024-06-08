@@ -328,7 +328,7 @@ namespace Mod::Common::Interrupt_Action
 			return EventDesiredResult<CTFBot>::SuspendFor(CreateInterruptAction(actor, cmd), "Executing interrupt task");
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnCommandString)(actor, cmd);
+		return DETOUR_MEMBER_CALL(actor, cmd);
 	}
 
     class CMod : public IMod

@@ -11,7 +11,7 @@ namespace Mod::Etc::Server_Allow_Wait_Command
 	DETOUR_DECL_MEMBER(bool, CCommandBuffer_AddText, const char *pText, int nTickDelay )
 	{
 		reinterpret_cast<CCommandBuffer *>(this)->SetWaitEnabled(true);
-		return DETOUR_MEMBER_CALL(CCommandBuffer_AddText)(pText, nTickDelay);
+		return DETOUR_MEMBER_CALL(pText, nTickDelay);
 	}
 
     class CMod : public IMod

@@ -82,7 +82,7 @@ namespace Mod::Common::Commands
 			}
             if (*p != '!' && *p != '/')
 			{
-                DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
+                DETOUR_STATIC_CALL(edict, args, team);
                 return;
 			}
             p++;
@@ -114,7 +114,7 @@ namespace Mod::Common::Commands
                 return;
             }
 		}
-		DETOUR_STATIC_CALL(Host_Say)(edict, args, team);
+		DETOUR_STATIC_CALL(edict, args, team);
 	}
 
     DETOUR_DECL_MEMBER(bool, CBasePlayer_ClientCommand, const CCommand& args)
@@ -138,12 +138,12 @@ namespace Mod::Common::Commands
             }
 		}
 		
-		return DETOUR_MEMBER_CALL(CBasePlayer_ClientCommand)(args);
+		return DETOUR_MEMBER_CALL(args);
 	}
 
     DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
 	{
-        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        DETOUR_MEMBER_CALL(edict, playername);
         ClientMsg((CBasePlayer *)GetContainingEntity(edict), "rafradek's srcds performance optimizer loaded\n");
     }
 

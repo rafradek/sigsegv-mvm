@@ -330,7 +330,7 @@ namespace Mod::AI::NPC_Nextbot
 	
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
 	{
-		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
+		DETOUR_MEMBER_CALL(player);
 		if (reinterpret_cast<CLagCompensationManager *>(this) != &g_LagCompensationManager.GetRef()) return;
 
 		VPROF_BUDGET_FLAGS( "FinishNPCLagCompensation", VPROF_BUDGETGROUP_OTHER_NETWORKING, BUDGETFLAG_CLIENT|BUDGETFLAG_SERVER );
@@ -463,7 +463,7 @@ namespace Mod::AI::NPC_Nextbot
 
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
 	{
-		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+		DETOUR_MEMBER_CALL(player, cmd);
 		if (reinterpret_cast<CLagCompensationManager *>(this) != &g_LagCompensationManager.GetRef()) return;
 
         if (cmd == nullptr) return;
@@ -645,7 +645,7 @@ namespace Mod::AI::NPC_Nextbot
 
     DETOUR_DECL_MEMBER(void, NextBotCombatCharacter_Spawn)
 	{
-		DETOUR_MEMBER_CALL(NextBotCombatCharacter_Spawn)();
+		DETOUR_MEMBER_CALL();
         auto entity = reinterpret_cast<NextBotCombatCharacter *>(this);
         if (!FStrEq(entity->GetClassname(), "$bot_npc")) {
             entity->GetOrCreateEntityModule<LagCompensationModule>("lagcomp");

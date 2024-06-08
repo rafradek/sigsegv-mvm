@@ -15,7 +15,7 @@ namespace Mod::Canteen::Share_Recall_Canteen
 	int canteen_specialist;
 	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
-		auto result = DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+		auto result = DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 		
 		if (rc_CTFPowerupBottle_ReapplyProvision > 0 && !got_attr && value == 0 && V_stricmp(attr, "canteen_specialist") == 0) {
 			canteen_specialist = result;
@@ -38,7 +38,7 @@ namespace Mod::Canteen::Share_Recall_Canteen
 			got_cond = true;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 	
 	
@@ -63,7 +63,7 @@ namespace Mod::Canteen::Share_Recall_Canteen
 		got_cond = false;
 		
 		++rc_CTFPowerupBottle_ReapplyProvision;
-		DETOUR_MEMBER_CALL(CTFPowerupBottle_ReapplyProvision)();
+		DETOUR_MEMBER_CALL();
 		--rc_CTFPowerupBottle_ReapplyProvision;
 		
 		if (!got_attr || !got_cond)  return;

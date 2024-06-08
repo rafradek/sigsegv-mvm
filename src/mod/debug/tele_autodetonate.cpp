@@ -22,12 +22,12 @@ namespace Mod::Debug::Tele_AutoDetonate
 		NDebugOverlay::Clear();
 		
 		SCOPED_INCREMENT(rc_CObjectTeleporter_RecieveTeleportingPlayer);
-		DETOUR_MEMBER_CALL(CObjectTeleporter_RecieveTeleportingPlayer)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 	
 	DETOUR_DECL_MEMBER(void, ISpatialPartition_EnumerateElementsInBox, SpatialPartitionListMask_t listMask, const Vector& mins, const Vector& maxs, bool coarseTest, IPartitionEnumerator *pIterator)
 	{
-		DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInBox)(listMask, mins, maxs, coarseTest, pIterator);
+		DETOUR_MEMBER_CALL(listMask, mins, maxs, coarseTest, pIterator);
 		
 		if (rc_CObjectTeleporter_RecieveTeleportingPlayer > 0) {
 			NDebugOverlay::Box(mins, vec3_origin, maxs - mins, 0xff, 0xff, 0xff, 0x10, 3600.0f);

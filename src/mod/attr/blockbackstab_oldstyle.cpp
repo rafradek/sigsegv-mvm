@@ -33,7 +33,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 		SCOPED_INCREMENT(rc_CTFPlayer_CheckBlockBackstab);
 		the_ent = nullptr;
 		
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CheckBlockBackstab)(attacker);
+		bool ret = DETOUR_MEMBER_CALL(attacker);
 		
 	//	{
 	//		ConColorMsg(Color(0xff, 0xff, 0x00), "> CTFPlayer::CheckBlockBackstab: ret %d\n", (int)ret);
@@ -86,7 +86,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 	
 	DETOUR_DECL_MEMBER(float, CAttributeManager_ApplyAttributeFloatWrapper, float val, CBaseEntity *ent, string_t name, CUtlVector<CBaseEntity *> *vec)
 	{
-		float ret = DETOUR_MEMBER_CALL(CAttributeManager_ApplyAttributeFloatWrapper)(val, ent, name, vec);
+		float ret = DETOUR_MEMBER_CALL(val, ent, name, vec);
 		
 	//	ConColorMsg(Color(0x00, 0xff, 0xff), "  > CAttributeManager::ApplyAttributeFloatWrapper(%.1f, #%d, \"%s\", 0x%08X)\n",
 	//		val, ENTINDEX(ent), STRING(name), (uintptr_t)vec);
@@ -115,7 +115,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 //				nEffects, ENTINDEX(the_ent), (the_ent != nullptr ? the_ent->GetClassname() : ""));
 //		}
 //		
-//		DETOUR_MEMBER_CALL(CBaseEntity_AddEffects)(nEffects);
+//		DETOUR_MEMBER_CALL(nEffects);
 //	}
 	
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_SetItemChargeMeter, loadout_positions_t slot, float value)
@@ -133,7 +133,7 @@ namespace Mod::Attr::BlockBackstab_OldStyle
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_SetItemChargeMeter)(slot, value);
+		DETOUR_MEMBER_CALL(slot, value);
 	}
 	
 	

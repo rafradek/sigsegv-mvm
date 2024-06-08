@@ -6,7 +6,7 @@ namespace Mod::Debug::Revive_Fast
 {
 	DETOUR_DECL_MEMBER(CTFReviveMarker *, CTFReviveMarker_Create)
 	{
-		CTFReviveMarker *marker = DETOUR_MEMBER_CALL(CTFReviveMarker_Create)();
+		CTFReviveMarker *marker = DETOUR_MEMBER_CALL();
 		
 		if (marker != nullptr) {
 			DevMsg("[%8.3f] CTFReviveMarker::Create\n"
@@ -28,12 +28,12 @@ namespace Mod::Debug::Revive_Fast
 				gpGlobals->curtime, amount, marker->GetHealth(), marker->GetMaxHealth());
 		}
 		
-		DETOUR_MEMBER_CALL(CTFReviveMarker_AddMarkerHealth)(amount);
+		DETOUR_MEMBER_CALL(amount);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFReviveMarker_ReviveThink)
 	{
-		DETOUR_MEMBER_CALL(CTFReviveMarker_ReviveThink)();
+		DETOUR_MEMBER_CALL();
 		
 		auto marker = reinterpret_cast<CTFReviveMarker *>(this);
 		if (marker != nullptr) {

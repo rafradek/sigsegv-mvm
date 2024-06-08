@@ -22,7 +22,7 @@ namespace Mod::Visualize::Explosive_Headshot
 	DETOUR_DECL_MEMBER(void, CTFSniperRifle_ExplosiveHeadShot, CTFPlayer *player1, CTFPlayer *player2)
 	{
 		SCOPED_INCREMENT(rc_CTFSniperRifle_ExplosiveHeadShot);
-		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
+		DETOUR_MEMBER_CALL(player1, player2);
 	}
 	
 	/* UTIL_EntitiesInSphere forwards call to partition->EnumerateElementsInSphere */
@@ -42,7 +42,7 @@ namespace Mod::Visualize::Explosive_Headshot
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
+		return DETOUR_MEMBER_CALL(listMask, origin, radius, coarseTest, pIterator);
 	}
 	
 	

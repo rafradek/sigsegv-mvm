@@ -18,7 +18,7 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
         SCOPED_INCREMENT(rc_CBaseServer_CreateFakeClient);
         SCOPED_INCREMENT_IF(rc_CBaseServer_CreateFakeClient_HLTV, tv_name.GetString() == name);
         
-		return DETOUR_MEMBER_CALL(CBaseServer_CreateFakeClient)(name);
+		return DETOUR_MEMBER_CALL(name);
 	}
 
     inline int GetHLTVSlot()
@@ -47,7 +47,7 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
 
                 // Create clients to fill all slots
                 while (server->GetClientCount() != server->GetMaxClients()) {
-                    CBaseClient *lastClient = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+                    CBaseClient *lastClient = DETOUR_MEMBER_CALL(adr);
                     if (lastClient != nullptr) {
                         clientList.push_back(lastClient);
                         lastClient->m_bFakePlayer = true;
@@ -83,7 +83,7 @@ namespace Mod::Bot::Bot_Player_Slot_Reorder
 
             return nullptr;
         }
-		auto client = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+		auto client = DETOUR_MEMBER_CALL(adr);
         if (client != nullptr) {
             if (!rc_CBaseServer_CreateFakeClient_HLTV && client->GetPlayerSlot() == gpGlobals->maxClients - 1 && tv_enable.GetBool()) {
                 return nullptr;

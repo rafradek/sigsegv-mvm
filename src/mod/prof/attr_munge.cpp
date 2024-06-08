@@ -91,78 +91,78 @@ namespace Mod::Prof::Attr_Munge
 	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
 		VPROF_BUDGET("CAttributeManager::AttribHookValue", "Attributes");
-		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+		return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 	}
 	
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
 		VPROF_BUDGET("CAttributeManager::AttribHookValue", "Attributes");
-		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_float)(value, attr, ent, vec, b1);
+		return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 	}
 	
 	
 	DETOUR_DECL_STATIC(void, GlobalAttrModifier_TFHalloweenAttribHookMunger, const char *in, CUtlConstStringBase<char> *out)
 	{
 		VPROF_BUDGET("GlobalAttrModifier_TFHalloweenAttribHookMunger", "Mungers");
-		DETOUR_STATIC_CALL(GlobalAttrModifier_TFHalloweenAttribHookMunger)(in, out);
+		DETOUR_STATIC_CALL(in, out);
 	}
 	
 	DETOUR_DECL_STATIC(void, GlobalAttrModifier_MvMAttribHookMunger, const char *in, CUtlConstStringBase<char> *out)
 	{
 		VPROF_BUDGET("GlobalAttrModifier_MvMAttribHookMunger", "Mungers");
-		DETOUR_STATIC_CALL(GlobalAttrModifier_MvMAttribHookMunger)(in, out);
+		DETOUR_STATIC_CALL(in, out);
 	}
 	
 	
 	DETOUR_DECL_STATIC(int, V_vsnprintfRet, char *pDest, int maxLenInCharacters, const char *pFormat, va_list params, bool *pbTruncated)
 	{
 		VPROF_BUDGET("V_vsnprintfRet", "Strings");
-		return DETOUR_STATIC_CALL(V_vsnprintfRet)(pDest, maxLenInCharacters, pFormat, params, pbTruncated);
+		return DETOUR_STATIC_CALL(pDest, maxLenInCharacters, pFormat, params, pbTruncated);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CUtlConstStringBase_char_Set, const char *pValue)
 	{
 		VPROF_BUDGET("CUtlConstStringBase<char>::Set", "Strings");
-		DETOUR_MEMBER_CALL(CUtlConstStringBase_char_Set)(pValue);
+		DETOUR_MEMBER_CALL(pValue);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void *, IMemAlloc_Alloc, size_t nSize)
 	{
 		VPROF_BUDGET("IMemAlloc::Alloc", "Memory");
-		return DETOUR_MEMBER_CALL(IMemAlloc_Alloc)(nSize);
+		return DETOUR_MEMBER_CALL(nSize);
 	}
 	
 	DETOUR_DECL_MEMBER(void *, IMemAlloc_Realloc, void *pMem, size_t nSize)
 	{
 		VPROF_BUDGET("IMemAlloc::Realloc", "Memory");
-		return DETOUR_MEMBER_CALL(IMemAlloc_Realloc)(pMem, nSize);
+		return DETOUR_MEMBER_CALL(pMem, nSize);
 	}
 	
 	DETOUR_DECL_MEMBER(void, IMemAlloc_Free, void *pMem)
 	{
 		VPROF_BUDGET("IMemAlloc::Free", "Memory");
-		DETOUR_MEMBER_CALL(IMemAlloc_Free)(pMem);
+		DETOUR_MEMBER_CALL(pMem);
 	}
 	
 	
 	DETOUR_DECL_STATIC(char *, d_strdup, const char *s)
 	{
 		VPROF_BUDGET("strdup", "glibc");
-		return DETOUR_STATIC_CALL(d_strdup)(s);
+		return DETOUR_STATIC_CALL(s);
 	}
 	
 	DETOUR_DECL_STATIC(void *, d_malloc, size_t size)
 	{
 		VPROF_BUDGET("malloc", "glibc");
-		return DETOUR_STATIC_CALL(d_malloc)(size);
+		return DETOUR_STATIC_CALL(size);
 	}
 	
 	DETOUR_DECL_STATIC(void, d_free, void *ptr)
 	{
 		VPROF_BUDGET("free", "glibc");
-		DETOUR_STATIC_CALL(d_free)(ptr);
+		DETOUR_STATIC_CALL(ptr);
 	}
 	
 	

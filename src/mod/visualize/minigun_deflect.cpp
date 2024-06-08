@@ -34,13 +34,13 @@ namespace Mod::Visualize::Minigun_Deflect
 	DETOUR_DECL_MEMBER(void, CTFMinigun_AttackEnemyProjectiles)
 	{
 		SCOPED_INCREMENT(rc_CTFMinigun_AttackProjectiles);
-		DETOUR_MEMBER_CALL(CTFMinigun_AttackEnemyProjectiles)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	bool is_MiniBoss;
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsMiniBoss)
 	{
-		bool result = DETOUR_MEMBER_CALL(CTFPlayer_IsMiniBoss)();
+		bool result = DETOUR_MEMBER_CALL();
 		is_MiniBoss = result;
 		return result;
 	}
@@ -76,12 +76,12 @@ namespace Mod::Visualize::Minigun_Deflect
 				cvar_duration.GetFloat());
 		}
 		
-		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
+		return DETOUR_MEMBER_CALL(listMask, origin, radius, coarseTest, pIterator);
 	}
 	
 	DETOUR_DECL_STATIC(float, CalcDistanceToLineSegment, const Vector& P, const Vector& vLineA, const Vector& vLineB, float *t)
 	{
-		float dist = DETOUR_STATIC_CALL(CalcDistanceToLineSegment)(P, vLineA, vLineB, t);
+		float dist = DETOUR_STATIC_CALL(P, vLineA, vLineB, t);
 		
 		if (rc_CTFMinigun_AttackProjectiles > 0) {
 			float radius = (is_MiniBoss ? 56.0f : 38.0f);

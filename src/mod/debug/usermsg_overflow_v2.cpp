@@ -77,7 +77,7 @@ namespace Mod::Debug::UserMsg_Overflow_v2
 	//	bf_write& m_StreamReliable = CNetChan_GetReliableStream(chan);
 		
 		int bits_before = chan->GetNumBitsWritten(true);
-		auto result = DETOUR_MEMBER_CALL(CNetChan_SendNetMsg)(msg, bForceReliable, bVoice);
+		auto result = DETOUR_MEMBER_CALL(msg, bForceReliable, bVoice);
 		int bits_after = chan->GetNumBitsWritten(true);
 		
 		int bits_delta = (bits_after - bits_before);
@@ -97,7 +97,7 @@ namespace Mod::Debug::UserMsg_Overflow_v2
 	
 	DETOUR_DECL_MEMBER(float, CTFPlayer_PlayTauntRemapInputScene)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_PlayTauntRemapInputScene)();
+		auto result = DETOUR_MEMBER_CALL();
 		DevMsg("CTFPlayer::PlayTauntRemapInputScene returns %f\n", result);
 		return result;
 	}
@@ -107,7 +107,7 @@ namespace Mod::Debug::UserMsg_Overflow_v2
 	{
 		DevMsg("[TICK %7d] CBaseFlex::AddSceneEvent [type: %s] [name: %s]\n", gpGlobals->tickcount,
 			CChoreoEvent::NameForType(event->GetType()), event->GetName());
-		DETOUR_MEMBER_CALL(CBaseFlex_AddSceneEvent)(scene, event, pTarget);
+		DETOUR_MEMBER_CALL(scene, event, pTarget);
 	}
 	
 	

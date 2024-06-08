@@ -49,7 +49,7 @@ namespace Mod::Etc::Allow_Civilian_Class
         }
 
         bool prevClassCivilian = player->m_Shared->m_iDesiredPlayerClass == TF_CLASS_CIVILIAN || player->GetPlayerClass()->GetClassIndex() == TF_CLASS_CIVILIAN;
-        DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+        DETOUR_MEMBER_CALL(pClassName, b1);
 
         if (player->m_Shared->m_iDesiredPlayerClass == TF_CLASS_CIVILIAN) {
             auto mod = player->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::FakePropModule>("fakeprop");
@@ -65,7 +65,7 @@ namespace Mod::Etc::Allow_Civilian_Class
     
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayerInventory_GetItemInLoadout, int pclass, int slot)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFPlayerInventory_GetItemInLoadout)(pclass, slot);
+		auto result = DETOUR_MEMBER_CALL(pclass, slot);
         if (pclass == TF_CLASS_CIVILIAN && result == nullptr) {
             return TFInventoryManager()->GetBaseItemForClass(TF_CLASS_CIVILIAN, 999);
         } 
@@ -89,7 +89,7 @@ namespace Mod::Etc::Allow_Civilian_Class
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 
 	class CMod : public IMod

@@ -204,12 +204,12 @@ namespace Mod::Util::ConFilter
 	//	return [&](const char *fmt, ...){
 	//		va_list va;
 	//		va_start(va, fmt);
-	//		SpewRetval_t ret = DETOUR_STATIC_CALL(D__SpewMessage)(spewType, pGroupName, nLevel, pColor, pMsgFormat, va);
+	//		SpewRetval_t ret = DETOUR_STATIC_CALL(spewType, pGroupName, nLevel, pColor, pMsgFormat, va);
 	//		va_end(va);
 	//		return ret;
 	//	}("%s", s_Line);
 		
-		return DETOUR_STATIC_CALL(D__SpewMessage)(spewType, pGroupName, nLevel, pColor, pMsgFormat, args);
+		return DETOUR_STATIC_CALL(spewType, pGroupName, nLevel, pColor, pMsgFormat, args);
 	}
 		
 	

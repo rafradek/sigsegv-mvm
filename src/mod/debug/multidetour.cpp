@@ -13,8 +13,8 @@ namespace Mod::Debug::MultiDetour
 	DETOUR_DECL_STATIC(int, D1)
 	{
 		DevMsg("Detour1 PRE\n");
-	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL(D1));
-		auto result = DETOUR_STATIC_CALL(D1)();
+	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL);
+		auto result = DETOUR_STATIC_CALL();
 		DevMsg("Detour1 POST (%d)\n", result);
 		return result;
 	}
@@ -22,8 +22,8 @@ namespace Mod::Debug::MultiDetour
 	DETOUR_DECL_STATIC(int, D2)
 	{
 		DevMsg("Detour2 PRE\n");
-	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL(D2));
-		auto result = DETOUR_STATIC_CALL(D2)();
+	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL);
+		auto result = DETOUR_STATIC_CALL();
 		DevMsg("Detour2 POST (%d)\n", result);
 		return result;
 	}
@@ -31,8 +31,8 @@ namespace Mod::Debug::MultiDetour
 	DETOUR_DECL_STATIC(int, D3)
 	{
 		DevMsg("Detour3 PRE\n");
-	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL(D3));
-		auto result = DETOUR_STATIC_CALL(D3)();
+	//	DevMsg("Trampoline: %08x\n", (uintptr_t)DETOUR_STATIC_CALL);
+		auto result = DETOUR_STATIC_CALL();
 		DevMsg("Detour3 POST (%d)\n", result);
 		return result;
 	}

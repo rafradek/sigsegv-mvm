@@ -27,14 +27,14 @@ namespace Mod::MvM::RoboSapper_Override
 			radius = cvar_radius.GetInt();
 		}
 		
-		DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapper)(target, duration, radius);
+		DETOUR_MEMBER_CALL(target, duration, radius);
 	}
 	
 	RefCount rc_CObjectSapper_ApplyRoboSapperEffects;
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectSapper_ApplyRoboSapperEffects, CTFPlayer *target, float duration)
 	{
 		SCOPED_INCREMENT(rc_CObjectSapper_ApplyRoboSapperEffects);
-		return DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects)(target, duration);
+		return DETOUR_MEMBER_CALL(target, duration);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_StunPlayer, float duration, float slowdown, int flags, CTFPlayer *attacker)
@@ -51,7 +51,7 @@ namespace Mod::MvM::RoboSapper_Override
 			slowdown = cvar_stun_amount.GetFloat();
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 	
 	

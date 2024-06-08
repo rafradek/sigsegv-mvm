@@ -12,7 +12,7 @@ namespace Mod::Robot::No_Canteens
 	
 	DETOUR_DECL_MEMBER(CEconItemView *, CTFPlayer_GetLoadoutItem, int pclass, int slot, bool b1)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_GetLoadoutItem)(pclass, slot, b1);
+		auto result = DETOUR_MEMBER_CALL(pclass, slot, b1);
 		
 		if (TFGameRules()->IsMannVsMachineMode() && result->GetItemDefIndex() == DEFIDX_CANTEEN_DEFAULT) {
 			auto player = reinterpret_cast<CTFPlayer *>(this);

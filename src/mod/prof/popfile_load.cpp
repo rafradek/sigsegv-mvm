@@ -21,7 +21,7 @@ namespace Mod::Prof::Popfile_Load
 		float t1 = Plat_FloatTime();
 		{
 			VPROF_CUSTOM("tf_mvm_popfile");
-			DETOUR_STATIC_CALL(tf_mvm_popfile)(args);
+			DETOUR_STATIC_CALL(args);
 		}
 		float t2 = Plat_FloatTime();
 		float dt = (t2 - t1);
@@ -40,7 +40,7 @@ namespace Mod::Prof::Popfile_Load
 			DevMsg("\n> CSmokeStack #%d: CBaseEntity::ParseMapData\n", ENTINDEX(ent));
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_ParseMapData)(mapData);
+		DETOUR_MEMBER_CALL(mapData);
 	}
 	
 	RefCount rc_CSmokeStack_KeyValue;
@@ -52,12 +52,12 @@ namespace Mod::Prof::Popfile_Load
 		
 		DevMsg("  > KeyValue \"%s\" \"%s\"\n", szKeyName, szValue);
 		
-		return DETOUR_MEMBER_CALL(CSmokeStack_KeyValue)(szKeyName, szValue);
+		return DETOUR_MEMBER_CALL(szKeyName, szValue);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CBaseFileSystem_FileExists, const char *pFileName, const char *pPathID)
 	{
-		auto result = DETOUR_MEMBER_CALL(CBaseFileSystem_FileExists)(pFileName, pPathID);
+		auto result = DETOUR_MEMBER_CALL(pFileName, pPathID);
 		
 		if (rc_CSmokeStack_KeyValue > 0) {
 			DevMsg("    > FileExists \"%s\" \"%s\"  --> %s\n", pFileName, pPathID, (result ? "TRUE" : "FALSE"));

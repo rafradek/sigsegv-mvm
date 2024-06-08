@@ -16,7 +16,7 @@ namespace Mod::Visualize::Damage_Force
 			NDebugOverlay::VertArrow(vecCenter, vecCenter + vecForce, 5.0f, 0xff, 0x00, 0x00, 0xff, true, 1.0f);
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	

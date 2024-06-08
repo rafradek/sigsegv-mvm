@@ -30,7 +30,7 @@ namespace Mod::Etc::RateLimit_Exclude
 			if (V_stricmp(pszCommand, str.c_str()) == 0) return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseMultiplayerPlayer_ShouldRunRateLimitedCommand)(pszCommand);
+		return DETOUR_MEMBER_CALL(pszCommand);
 	}
 	
 	

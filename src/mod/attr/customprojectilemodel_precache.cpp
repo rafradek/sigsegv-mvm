@@ -12,7 +12,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_GetCustomProjectileModel, CAttribute_String *attr_str)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_GetCustomProjectileModel)(attr_str);
+		DETOUR_MEMBER_CALL(attr_str);
 		
 		const char *model_path = nullptr;
 		CopyStringAttributeValueToCharPointerOutput(attr_str, &model_path);
@@ -48,7 +48,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	class CTFWeaponInfo;
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFJar_CreateJarProjectile, Vector const& vec, QAngle const& ang, Vector const& vec2, Vector const& vec3, CBaseCombatCharacter* thrower, CTFWeaponInfo const& info)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFJar_CreateJarProjectile)(vec, ang, vec2, vec3, thrower, info);
+		auto proj = DETOUR_MEMBER_CALL(vec, ang, vec2, vec3, thrower, info);
 		if (proj != nullptr) {
 			SetCustomProjectileModel(reinterpret_cast<CTFWeaponBaseGun *>(this),proj);
 		}
@@ -56,7 +56,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	}
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFJarMilk_CreateJarProjectile, Vector const& vec, QAngle const& ang, Vector const& vec2, Vector const& vec3, CBaseCombatCharacter* thrower, CTFWeaponInfo const& info)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFJarMilk_CreateJarProjectile)(vec, ang, vec2, vec3, thrower, info);
+		auto proj = DETOUR_MEMBER_CALL(vec, ang, vec2, vec3, thrower, info);
 		if (proj != nullptr) {
 			SetCustomProjectileModel(reinterpret_cast<CTFWeaponBaseGun *>(this),proj);
 		}
@@ -64,7 +64,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	}
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFJarGas_CreateJarProjectile, Vector const& vec, QAngle const& ang, Vector const& vec2, Vector const& vec3, CBaseCombatCharacter* thrower, CTFWeaponInfo const& info)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFJarGas_CreateJarProjectile)(vec, ang, vec2, vec3, thrower, info);
+		auto proj = DETOUR_MEMBER_CALL(vec, ang, vec2, vec3, thrower, info);
 		if (proj != nullptr) {
 			SetCustomProjectileModel(reinterpret_cast<CTFWeaponBaseGun *>(this),proj);
 		}
@@ -72,7 +72,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	}
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFCleaver_CreateJarProjectile, Vector const& vec, QAngle const& ang, Vector const& vec2, Vector const& vec3, CBaseCombatCharacter* thrower, CTFWeaponInfo const& info)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFCleaver_CreateJarProjectile)(vec, ang, vec2, vec3, thrower, info);
+		auto proj = DETOUR_MEMBER_CALL(vec, ang, vec2, vec3, thrower, info);
 		if (proj != nullptr) {
 			SetCustomProjectileModel(reinterpret_cast<CTFWeaponBaseGun *>(this),proj);
 		}
@@ -83,7 +83,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	{
 		auto proj = reinterpret_cast<CBaseProjectile *>(this);
 		CBaseEntity *original = proj->GetOriginalLauncher();
-		DETOUR_MEMBER_CALL(CBaseProjectile_SetLauncher)(launcher);
+		DETOUR_MEMBER_CALL(launcher);
 		if (original == nullptr && launcher != nullptr && launcher->MyCombatWeaponPointer() != nullptr) {
 			SetCustomProjectileModel(launcher->MyCombatWeaponPointer(),proj);
 		}
@@ -91,7 +91,7 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 	
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+		auto proj = DETOUR_MEMBER_CALL(player);
 		if (proj != nullptr) {
 			auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
 			SetCustomProjectileModel(weapon,proj);

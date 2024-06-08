@@ -27,7 +27,7 @@ namespace Mod::Debug::EnergyRing_Knockback
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+		return DETOUR_MEMBER_CALL(info, pVictim, b1);
 	}
 	
 	

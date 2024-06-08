@@ -19,7 +19,7 @@ namespace Mod::Pop::KV_Conditional
 	
 	DETOUR_DECL_STATIC(bool, EvaluateConditional, const char *str)
 	{
-		bool result = DETOUR_STATIC_CALL(EvaluateConditional)(str);
+		bool result = DETOUR_STATIC_CALL(str);
 		
 		if (*str == '[') ++str;
 		bool bNot = (*str == '!');

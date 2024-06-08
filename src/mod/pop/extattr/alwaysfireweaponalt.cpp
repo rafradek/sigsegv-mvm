@@ -15,7 +15,7 @@ namespace Mod::Pop::ExtAttr::AlwaysFireWeaponAlt
 			actor->PressAltFireButton();
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
+		DETOUR_MEMBER_CALL(actor);
 	}
 	
 	

@@ -197,7 +197,7 @@ namespace Mod::Debug::Suicide_Bomber
 		auto me = reinterpret_cast<CTFBotMissionSuicideBomber *>(this);
 		
 		DevMsg("\n[OnStart] <== %s\n", (action != nullptr ? action->GetName() : "NULL"));
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnStart)(actor, action);
+		auto result = DETOUR_MEMBER_CALL(actor, action);
 		
 		if (me != nullptr && actor != nullptr) {
 			DrawOverlays(me, actor);
@@ -215,7 +215,7 @@ namespace Mod::Debug::Suicide_Bomber
 		SCOPED_INCREMENT(rc_CTFBotMissionSuicideBomber_Update);
 		
 		DevMsg("\n[Update]\n");
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		
 		if (me != nullptr && actor != nullptr) {
 			DrawOverlays(me, actor);
@@ -229,14 +229,14 @@ namespace Mod::Debug::Suicide_Bomber
 //	DETOUR_DECL_MEMBER(void, CTFBotMissionSuicideBomber_OnEnd, CTFBot *actor, Action<CTFBot> *action)
 //	{
 //		DevMsg("\n[OnEnd] ==> %s\n", (action != nullptr ? action->GetName() : "NULL"));
-//		DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnEnd)(actor, action);
+//		DETOUR_MEMBER_CALL(actor, action);
 //	}
 	
 	
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMissionSuicideBomber_OnStuck, CTFBot *actor)
 	{
 		DevMsg("\n[OnStuck]\n");
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnStuck)(actor);
+		auto result = DETOUR_MEMBER_CALL(actor);
 		
 		DevMsg("  result: %s\n", ActionResult_ToString(result));
 		return result;
@@ -245,7 +245,7 @@ namespace Mod::Debug::Suicide_Bomber
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMissionSuicideBomber_OnKilled, CTFBot *actor, const CTakeDamageInfo& info)
 	{
 		DevMsg("\n[OnKilled]\n");
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnKilled)(actor, info);
+		auto result = DETOUR_MEMBER_CALL(actor, info);
 		
 		DevMsg("  result: %s\n", ActionResult_ToString(result));
 		return result;
@@ -257,19 +257,19 @@ namespace Mod::Debug::Suicide_Bomber
 		DevMsg("  StartDetonate(reached_goal:%s lost_all_health:%s)\n",
 			(reached_goal ? "YES" : "NO"),
 			(lost_all_health ? "YES" : "NO"));
-		DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_StartDetonate)(actor, reached_goal, lost_all_health);
+		DETOUR_MEMBER_CALL(actor, reached_goal, lost_all_health);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBotMissionSuicideBomber_Detonate, CTFBot *actor)
 	{
 		DevMsg("  Detonate()\n");
-		DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Detonate)(actor);
+		DETOUR_MEMBER_CALL(actor);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(bool, Path_Compute_vec_CTFBotPathCost, INextBot *nextbot, const Vector& vec, CTFBotPathCost& cost_func, float maxPathLength, bool b1)
 	{
-		auto result = DETOUR_MEMBER_CALL(Path_Compute_vec_CTFBotPathCost)(nextbot, vec, cost_func, maxPathLength, b1);
+		auto result = DETOUR_MEMBER_CALL(nextbot, vec, cost_func, maxPathLength, b1);
 		
 		if (rc_CTFBotMissionSuicideBomber_Update > 0) {
 			DevMsg("  Path::Compute: %s\n", (result ? "SUCCESS" : "FAIL"));

@@ -49,12 +49,12 @@ namespace Mod::Debug::ShortCircuit_RubberBand
 	{
 //		lagcomp_currentplayer = player;
 		ClientMsgAllTick("- lagcompensation->StartLagCompensation\n");
-		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+		DETOUR_MEMBER_CALL(player, cmd);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
 	{
-		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
+		DETOUR_MEMBER_CALL(player);
 		ClientMsgAllTick("- lagcompensation->FinishLagCompensation\n");
 //		lagcomp_currentplayer = nullptr;
 	}
@@ -66,7 +66,7 @@ namespace Mod::Debug::ShortCircuit_RubberBand
 	DETOUR_DECL_MEMBER(bool, CTFMechanicalArm_ShockAttack)
 	{
 		ClientMsgAllTick("CTFMechanicalArm::ShockAttack BEGIN\n");
-		auto result = DETOUR_MEMBER_CALL(CTFMechanicalArm_ShockAttack)();
+		auto result = DETOUR_MEMBER_CALL();
 		ClientMsgAllTick("CTFMechanicalArm::ShockAttack END\n");
 		
 		if (lagcompensation->IsCurrentlyDoingLagCompensation()) {

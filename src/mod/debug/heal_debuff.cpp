@@ -13,7 +13,7 @@ namespace Mod::Debug::Heal_Debuff
 			BACKTRACE();
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(cond);
+		return DETOUR_MEMBER_CALL(cond);
 	}
 	
 	

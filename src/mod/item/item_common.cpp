@@ -472,7 +472,7 @@ namespace Mod::Item::Common
         if (view->m_iEntityLevel == 414918 && view->m_iItemDefinitionIndex == 0) {
             view->m_iItemDefinitionIndex = view->m_iEntityQuality;
         }
-        auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetSkin)(team, viewmodel);
+        auto ret = DETOUR_MEMBER_CALL(team, viewmodel);
         if (view->m_iEntityLevel == 414918) {
             view->m_iItemDefinitionIndex = 0;
         }
@@ -486,7 +486,7 @@ namespace Mod::Item::Common
         if (view->m_iEntityLevel == 414918 && view->m_iItemDefinitionIndex == 0) {
             view->m_iItemDefinitionIndex = view->m_iEntityQuality;
         }
-        auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetPlayerDisplayModel)(playerclass, team);
+        auto ret = DETOUR_MEMBER_CALL(playerclass, team);
         if (view->m_iEntityLevel == 414918) {
             view->m_iItemDefinitionIndex = 0;
         }

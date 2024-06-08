@@ -10,7 +10,7 @@ namespace Mod::MvM::GoBackInTime
 	{
 		SCOPED_INCREMENT(rc_CTFSniperRifle_ExplosiveHeadShot);
 
-		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
+		DETOUR_MEMBER_CALL(player1, player2);
 	}
 
 	RefCount rc_CTFPlayerShared_OnRemovePhase;
@@ -18,7 +18,7 @@ namespace Mod::MvM::GoBackInTime
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_OnRemovePhase);
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnRemovePhase)();
+		DETOUR_MEMBER_CALL();
 	}
 
 
@@ -28,7 +28,7 @@ namespace Mod::MvM::GoBackInTime
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_MakeBleed, CTFPlayer *attacker, CTFWeaponBase *weapon, float bleedTime, int bleeddmg, bool perm, int val)
@@ -43,7 +43,7 @@ namespace Mod::MvM::GoBackInTime
 
 			DevMsg("Damage after: %d\n",bleeddmg);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_MakeBleed)(attacker, weapon, bleedTime, bleeddmg, perm, val);
+		DETOUR_MEMBER_CALL(attacker, weapon, bleedTime, bleeddmg, perm, val);
 	}
 	
 	DETOUR_DECL_STATIC(CTFReviveMarker *, CTFReviveMarker_Create, CTFPlayer *player)

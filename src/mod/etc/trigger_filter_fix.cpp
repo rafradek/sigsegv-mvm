@@ -13,7 +13,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 			return;// false;
 		}
 
-        DETOUR_MEMBER_CALL(CBaseTrigger_InputStartTouch)(data);
+        DETOUR_MEMBER_CALL(data);
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseTrigger_InputEndTouch, inputdata_t &data)
@@ -24,7 +24,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 			return;// false;
 		}
 
-        DETOUR_MEMBER_CALL(CBaseTrigger_InputEndTouch)(data);
+        DETOUR_MEMBER_CALL(data);
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseFilter_InputTestActivator, inputdata_t &data)
@@ -35,7 +35,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 			return;
 		}
 
-        DETOUR_MEMBER_CALL(CBaseFilter_InputTestActivator)(data);
+        DETOUR_MEMBER_CALL(data);
 	}
 
 	DETOUR_DECL_MEMBER(void, CGameUI_Deactivate, CBaseEntity *pActivator)
@@ -48,7 +48,7 @@ namespace Mod::Etc::Trigger_Filter_Fix
 			pActivator = UTIL_EntityByIndex(0);
 		}
 
-        DETOUR_MEMBER_CALL(CGameUI_Deactivate)(pActivator);
+        DETOUR_MEMBER_CALL(pActivator);
 	}
 
     class CMod : public IMod

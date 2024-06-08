@@ -146,7 +146,7 @@ namespace Mod::Debug::Tele_Sapper
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(Action_CTFBot_OnCommandString)(actor, cmd);
+		return DETOUR_MEMBER_CALL(actor, cmd);
 	}
 	
 	
@@ -161,7 +161,7 @@ namespace Mod::Debug::Tele_Sapper
 			return *CBaseObject_m_bHasSapper(reinterpret_cast<CBaseObject *>(this));
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseObject_HasSapper)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -178,7 +178,7 @@ namespace Mod::Debug::Tele_Sapper
 		
 		DevMsg("CBaseObject::SetPlasmaDisabled(#%d, %.1f)\n", ENTINDEX(obj), duration);
 		
-		DETOUR_MEMBER_CALL(CBaseObject_SetPlasmaDisabled)(duration);
+		DETOUR_MEMBER_CALL(duration);
 	}
 	
 	

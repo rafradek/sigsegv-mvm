@@ -44,7 +44,7 @@ namespace Mod::Visualize::Airblast_Vectors
 	float attr__airblast_vertical_pushback_scale = -1.0f;
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
-		auto result = DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_float)(value, attr, ent, vec, b1);
+		auto result = DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 		
 		if (strcmp(attr, "airblast_pushback_scale") == 0) {
 			attr__airblast_pushback_scale = result;
@@ -60,7 +60,7 @@ namespace Mod::Visualize::Airblast_Vectors
 	{
 		NDebugOverlay::Clear();
 		
-		auto result = DETOUR_MEMBER_CALL(CTFFlameThrower_DeflectPlayer)(pVictim, pPyro, vecEyeFwd, vecBoxCenter, vecBoxSize);
+		auto result = DETOUR_MEMBER_CALL(pVictim, pPyro, vecEyeFwd, vecBoxCenter, vecBoxSize);
 		
 		Vector vecDeltaWSC = (pVictim->WorldSpaceCenter() - pPyro->WorldSpaceCenter());
 		
@@ -102,7 +102,7 @@ namespace Mod::Visualize::Airblast_Vectors
 	{
 		DevMsg("ApplyGenericPushbackImpulse: %6.1f [ %+7.1f %+7.1f %+7.1f ]\n",
 			impulse.Length(), impulse.x, impulse.y, impulse.z);
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
+		DETOUR_MEMBER_CALL(impulse, inflictor);
 	}
 	
 	

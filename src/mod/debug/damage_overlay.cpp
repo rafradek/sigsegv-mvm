@@ -22,7 +22,7 @@ namespace Mod::Debug::Damage_Overlay
 	{
 		pre_dmg = info.GetDamage();
 		
-		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	DETOUR_DECL_MEMBER(int, CBaseEntity_TakeDamage, const CTakeDamageInfo& inputInfo)
@@ -32,7 +32,7 @@ namespace Mod::Debug::Damage_Overlay
 		pre_hp   = ent->GetHealth();
 		post_dmg = 0.0f;
 		
-		auto result = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(inputInfo);
+		auto result = DETOUR_MEMBER_CALL(inputInfo);
 		
 		post_hp = ent->GetHealth();
 		

@@ -79,7 +79,7 @@ namespace Mod::MvM::Upgrade_Disallow
 
 			}
 		}
-		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+		DETOUR_MEMBER_CALL(player, itemslot, upgradeslot, sell, free, b3);
 		
 	}
 	
@@ -114,7 +114,7 @@ namespace Mod::MvM::Upgrade_Disallow
 			}
 		}
 
-		auto result = DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
+		auto result = DETOUR_STATIC_CALL(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
 		return result;
 	}
 

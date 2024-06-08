@@ -16,7 +16,7 @@ namespace Mod::Bot::Kill_Before_ForceSpec
 				ENTINDEX(bot), bot->GetTeamNumber(), bot->GetHealth(), (bot->IsAlive() ? "true" : "false"));
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	
@@ -40,7 +40,7 @@ namespace Mod::Bot::Kill_Before_ForceSpec
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ForceChangeTeam)(iTeamNum, b1);
+		DETOUR_MEMBER_CALL(iTeamNum, b1);
 	}
 	
 	
@@ -57,7 +57,7 @@ namespace Mod::Bot::Kill_Before_ForceSpec
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_ChangeTeam)(iTeamNum, bAutoTeam, bSilent, b3);
+		DETOUR_MEMBER_CALL(iTeamNum, bAutoTeam, bSilent, b3);
 	}
 	
 	

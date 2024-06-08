@@ -221,7 +221,7 @@ namespace Mod::AI::RocketJump
 		
 		m_itUnderground->Reset();
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	
@@ -231,7 +231,7 @@ namespace Mod::AI::RocketJump
 	{
 		dmginfo = &info;
 		SCOPED_INCREMENT(rc_CTFPlayer_ApplyPushFromDamage);
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyPushFromDamage)(info, vec);
+		DETOUR_MEMBER_CALL(info, vec);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector& impulse)
@@ -265,7 +265,7 @@ namespace Mod::AI::RocketJump
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(impulse);
+		DETOUR_MEMBER_CALL(impulse);
 	}
 	
 	

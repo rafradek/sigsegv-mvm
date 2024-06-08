@@ -203,7 +203,7 @@ namespace Mod::Debug::UseItem_Broken
 		ClientMsgAll(" \n[%8.3f] CTFBotUseItem::OnStart(#%d)\n", gpGlobals->curtime, ENTINDEX(actor));
 		
 		SCOPED_INCREMENT(rc_CTFBotUseItem_OnStart);
-		auto result = DETOUR_MEMBER_CALL(CTFBotUseItem_OnStart)(actor, action);
+		auto result = DETOUR_MEMBER_CALL(actor, action);
 		ClientMsgAll("%*sItem's m_flNextPrimaryAttack @ %.3f\n", 13, " ", (float)useitem->m_hItem->m_flNextPrimaryAttack);
 		ClientMsgAll("%*sInitial delay timer set to %.3f sec duration; will elapse @ %.3f\n", 13, " ", useitem->m_ctInitialDelay.GetCountdownDuration(), gpGlobals->curtime + useitem->m_ctInitialDelay.GetRemainingTime());
 		ClientMsgAll("%*s%s\n", 13, " ", ActionResult_ToString(result));
@@ -232,7 +232,7 @@ namespace Mod::Debug::UseItem_Broken
 		}
 		
 		SCOPED_INCREMENT(rc_CTFBotUseItem_Update);
-		auto result = DETOUR_MEMBER_CALL(CTFBotUseItem_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		ClientMsgAll("%*s%s\n", 13, " ", ActionResult_ToString(result));
 		return result;
 	}
@@ -243,7 +243,7 @@ namespace Mod::Debug::UseItem_Broken
 		ClientMsgAll(" \n[%8.3f] CTFBotUseItem::OnEnd(#%d)\n", gpGlobals->curtime, ENTINDEX(actor));
 		
 		SCOPED_INCREMENT(rc_CTFBotUseItem_OnEnd);
-		DETOUR_MEMBER_CALL(CTFBotUseItem_OnEnd)(actor, action);
+		DETOUR_MEMBER_CALL(actor, action);
 		
 		ClientMsgAll(" \n================================================================================\n");
 	}
@@ -257,7 +257,7 @@ namespace Mod::Debug::UseItem_Broken
 		constexpr int OFF_m_RequiredWeapons = 0x25c4;
 		auto m_RequiredWeapons = reinterpret_cast<CUtlStack<CHandle<CTFWeaponBase>> *>((uintptr_t)bot + OFF_m_RequiredWeapons);
 		
-		DETOUR_MEMBER_CALL(CTFBot_PushRequiredWeapon)(weapon);
+		DETOUR_MEMBER_CALL(weapon);
 		if (rc_CTFBotUseItem_OnStart > 0) {
 			ClientMsgAll("%*sCTFBot::PushRequiredWeapon: stack:", 13, " ");
 			FOR_EACH_VEC((*m_RequiredWeapons), i) {
@@ -280,7 +280,7 @@ namespace Mod::Debug::UseItem_Broken
 		constexpr int OFF_m_RequiredWeapons = 0x25c4;
 		auto m_RequiredWeapons = reinterpret_cast<CUtlStack<CHandle<CTFWeaponBase>> *>((uintptr_t)bot + OFF_m_RequiredWeapons);
 		
-		DETOUR_MEMBER_CALL(CTFBot_PopRequiredWeapon)();
+		DETOUR_MEMBER_CALL();
 		if (rc_CTFBotUseItem_OnEnd > 0) {
 			ClientMsgAll("%*sCTFBot::PopRequiredWeapon: stack:", 13, " ");
 			FOR_EACH_VEC((*m_RequiredWeapons), i) {
@@ -301,7 +301,7 @@ namespace Mod::Debug::UseItem_Broken
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		const char *before = (bot->GetActiveTFWeapon() != nullptr ? WeaponID_ToString(bot->GetActiveTFWeapon()->GetWeaponID()) : "nullptr");
-		auto result = DETOUR_MEMBER_CALL(CTFBot_EquipRequiredWeapon)();
+		auto result = DETOUR_MEMBER_CALL();
 		const char *after  = (bot->GetActiveTFWeapon() != nullptr ? WeaponID_ToString(bot->GetActiveTFWeapon()->GetWeaponID()) : "nullptr");
 		
 		if (strcmp(before, after) != 0) {

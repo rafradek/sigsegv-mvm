@@ -11,7 +11,7 @@ namespace Mod::Attr::HealOnKill_Overheal_Melee
 		auto melee = rtti_cast<CTFWeaponBaseMelee *>(info.GetWeapon());
 		if (melee != nullptr) ++rc_MeleeHoK;
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_OnKilledOther_Effects)(other, info);
+		DETOUR_MEMBER_CALL(other, info);
 		
 		if (melee != nullptr) --rc_MeleeHoK;
 	}
@@ -22,7 +22,7 @@ namespace Mod::Attr::HealOnKill_Overheal_Melee
 			bitsDamageType |= DMG_IGNORE_MAXHEALTH;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_TakeHealth)(flHealth, bitsDamageType);
+		return DETOUR_MEMBER_CALL(flHealth, bitsDamageType);
 	}
 	
 	

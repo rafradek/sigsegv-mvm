@@ -229,6 +229,10 @@ bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_d
 
 class CEconItemAttribute;
 
+#ifdef PLATFORM_64BITS
+extern CAttribute_String *last_parsed_string_attribute_value;
+#endif
+
 class CAttributeList
 {
 public:

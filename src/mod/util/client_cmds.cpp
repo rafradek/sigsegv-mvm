@@ -1784,7 +1784,7 @@ namespace Mod::Util::Client_Cmds
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 		}
 		
-		auto result = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
+		auto result = DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
 		
 		if (allow_create_dropped_weapon) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(is_mvm_mode);
@@ -1801,7 +1801,7 @@ namespace Mod::Util::Client_Cmds
 
 	DETOUR_DECL_STATIC(void, Host_CheckDumpMemoryStats)
 	{
-		DETOUR_STATIC_CALL(Host_CheckDumpMemoryStats)();
+		DETOUR_STATIC_CALL();
 		timespentEnd.Sample();
 		timespent.m_Int64 += timespentEnd.m_Int64 - timespentStart.m_Int64;
         if (floor(gpGlobals->curtime) != floor(prevTime) ) {
@@ -1816,7 +1816,7 @@ namespace Mod::Util::Client_Cmds
 	DETOUR_DECL_MEMBER(void, CMapReslistGenerator_RunFrame)
 	{
 		timespentStart.Sample();
-		DETOUR_MEMBER_CALL(CMapReslistGenerator_RunFrame)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	class CMod : public IMod, IFrameUpdatePostEntityThinkListener

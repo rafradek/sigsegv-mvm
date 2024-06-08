@@ -76,7 +76,7 @@ namespace Mod::AI::NPC_Nextbot
     
     VHOOK_DECL(void, MyNextbotLocomotion_Reset)
     {
-        VHOOK_CALL(MyNextbotLocomotion_Reset)();
+        VHOOK_CALL();
         auto loco = reinterpret_cast<NextBotGroundLocomotion *>(this);
         auto entity = loco->GetBot()->GetEntity();
         MyNextbotModule *mod = entity->GetEntityModule<MyNextbotModule>("mynextbotmodule");
@@ -120,7 +120,7 @@ namespace Mod::AI::NPC_Nextbot
                 
                 auto preAccumWeights = loco->m_accumApproachWeights;
                 auto preAccumVectors = loco->m_accumApproachVectors;
-                VHOOK_CALL(MyNextbotLocomotion_Update)();
+                VHOOK_CALL();
                 
                 loco->m_accumApproachWeights = preAccumWeights;
                 loco->m_accumApproachVectors = preAccumVectors;
@@ -138,7 +138,7 @@ namespace Mod::AI::NPC_Nextbot
 
     VHOOK_DECL(void, MyNextbotLocomotion_Approach, const Vector &vec, float weight)
     {
-        VHOOK_CALL(MyNextbotLocomotion_Approach)(vec, weight);
+        VHOOK_CALL(vec, weight);
         TE_BeamPointsForDebug(vec, vec + Vector(0,0,100), 1.0f, 255, 255, 0);
     }
 

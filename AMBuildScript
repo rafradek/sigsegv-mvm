@@ -291,7 +291,7 @@ class ExtensionConfig(object):
     ############################################################################
     # C++ COMPILER #############################################################
     ############################################################################
-    cxx.cxxflags += ['-std=c++2a']
+    cxx.cxxflags += ['-std=gnu++2a']
 #   cxx.cxxflags += ['-fno-exceptions']
     cxx.cxxflags += ['-fexceptions'] # !!!
 #   cxx.cxxflags += ['-fno-threadsafe-statics']

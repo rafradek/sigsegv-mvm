@@ -20,7 +20,7 @@ namespace Mod::Etc::Crash_Fixes
 	
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPipebombLauncher_FireProjectile, CTFPlayer *player)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFPipebombLauncher_FireProjectile)(player);
+		auto proj = DETOUR_MEMBER_CALL(player);
 		auto weapon = reinterpret_cast<CTFPipebombLauncher *>(this);
 		if (rtti_cast<CTFGrenadePipebombProjectile *>(proj) == nullptr) {
 			weapon->m_Pipebombs->RemoveAll();
@@ -33,7 +33,7 @@ namespace Mod::Etc::Crash_Fixes
 	{
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
 		CBaseEntity::PrecacheModel(STRING(entity->GetModelName()));
-		DETOUR_MEMBER_CALL(CFuncIllusionary_Spawn)();
+		DETOUR_MEMBER_CALL();
 	}	
     StaticFuncThunk<CBaseEntity*> ft_GetCurrentSkyCamera("GetCurrentSkyCamera");
 
@@ -43,7 +43,7 @@ namespace Mod::Etc::Crash_Fixes
             pl->m_Local->m_skybox3darea = 255;
             return;
         }
-		DETOUR_STATIC_CALL(ClientData_Update)(pl);
+		DETOUR_STATIC_CALL(pl);
 	}	
 
     class CMod : public IMod

@@ -194,7 +194,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		DevMsg("CMissionPopulator::Parse: this = %08x\n", (uintptr_t)this);
 		
 		SCOPED_INCREMENT(rc_CMissionPopulator_Parse);
-		return DETOUR_MEMBER_CALL(CMissionPopulator_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CSpawnLocation_Parse, KeyValues *kv)
@@ -215,13 +215,13 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CSpawnLocation_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CMissionPopulator_Update)
 	{
-		DETOUR_MEMBER_CALL(CMissionPopulator_Update)();
+		DETOUR_MEMBER_CALL();
 		
 		CMissionPopulator *realthis = reinterpret_cast<CMissionPopulator *>(this);
 		
@@ -247,7 +247,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 			return new CTFBotChaseStickies();
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_DesiredScenarioAndClassAction)(actor);
+		return DETOUR_MEMBER_CALL(actor);
 	}
 	
 	
@@ -264,7 +264,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 			return !FStrEq(ent->GetClassname(), "tf_projectile_pipe_remote");
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 	
 //	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsVisibleEntityNoticed, CBaseEntity *ent)
@@ -280,7 +280,7 @@ namespace Mod::Pop::ExtAttr::TargetStickies
 		bool targetsStickies = static_cast<CTFBot *>(reinterpret_cast<IVision *>(this)->GetBot()->GetEntity())->ExtAttr()[CTFBot::ExtendedAttr::TARGET_STICKIES];
 
 		if (!targetsStickies)
-			DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
+			DETOUR_MEMBER_CALL(ents);
 		
 		auto &list = IBaseProjectileAutoList::AutoList();
 		int list_count = list.Count();

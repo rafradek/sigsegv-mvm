@@ -78,7 +78,7 @@ namespace Mod::MvM::YER_Unnerf
 	//Yer nerf: -20% damage vs giants
 	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage)
 	{
-		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
+		float ret = DETOUR_MEMBER_CALL(pTarget, piDamageType, piCustomDamage);
 		if (*piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss()) {
 			auto knife = reinterpret_cast<CTFKnife *>(this);
 

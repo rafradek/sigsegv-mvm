@@ -207,7 +207,7 @@ namespace Mod::Util::Overlay_Send
 		filter = new CReliableBroadcastRecipientFilter();
 		
 		SCOPED_INCREMENT(rc_IServerGameDLL_GameFrame);
-		DETOUR_MEMBER_CALL(IServerGameDLL_GameFrame)(simulating);
+		DETOUR_MEMBER_CALL(simulating);
 		
 		/* post-frame */
 		// TODO: report stats (bits/sec average based on timer)
@@ -1099,7 +1099,7 @@ namespace Mod::Util::Overlay_Send
 	}
 	DETOUR_DECL_STATIC(void, clear_debug_overlays, const CCommand& args)
 	{
-		DETOUR_STATIC_CALL(clear_debug_overlays)(args);
+		DETOUR_STATIC_CALL(args);
 		
 		Send_Clear();
 	}
@@ -1129,14 +1129,14 @@ namespace Mod::Util::Overlay_Send
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PhysicsSimulate)
 	{
 		SCOPED_INCREMENT(rc_NextBotPlayer_PhysicsSimulate);
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PhysicsSimulate)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_NextBotPlayer_Update;
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_Update)
 	{
 		SCOPED_INCREMENT(rc_NextBotPlayer_Update);
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_Update)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_STATIC(void, ConColorMsg, const Color& clr, const char *pMsg, ...)
@@ -1152,7 +1152,7 @@ namespace Mod::Util::Overlay_Send
 		V_vsprintf_safe(buf, pMsg, args);
 		va_end(args);
 		
-		DETOUR_STATIC_CALL(ConColorMsg)(clr, "%s", buf);
+		DETOUR_STATIC_CALL(clr, "%s", buf);
 	}
 	
 	
@@ -1160,7 +1160,7 @@ namespace Mod::Util::Overlay_Send
 	DETOUR_DECL_STATIC(void, DrawAllDebugOverlays)
 	{
 		SCOPED_INCREMENT(rc_DrawAllDebugOverlays);
-		DETOUR_STATIC_CALL(DrawAllDebugOverlays)();
+		DETOUR_STATIC_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(bool, IVEngineServer_IsDedicatedServer)
@@ -1169,7 +1169,7 @@ namespace Mod::Util::Overlay_Send
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(IVEngineServer_IsDedicatedServer)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	

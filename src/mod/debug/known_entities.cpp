@@ -724,7 +724,7 @@ namespace Mod::Debug::Known_Entities
 	
 	DETOUR_DECL_MEMBER(void, INextBot_Update)
 	{
-		DETOUR_MEMBER_CALL(INextBot_Update)();
+		DETOUR_MEMBER_CALL();
 		
 		INextBot *selected = TheNextBots().GetSelectedBot();
 		if (thebot != selected) {
@@ -745,7 +745,7 @@ namespace Mod::Debug::Known_Entities
 	
 	DETOUR_DECL_MEMBER(void, IVision_Update)
 	{
-		DETOUR_MEMBER_CALL(IVision_Update)();
+		DETOUR_MEMBER_CALL();
 		
 		INextBot *nextbot = reinterpret_cast<IVision *>(this)->GetBot();
 		if (nextbot != nullptr && nextbot == thebot) {
@@ -767,7 +767,7 @@ namespace Mod::Debug::Known_Entities
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(IVision_AddKnownEntity)(ent);
+		DETOUR_MEMBER_CALL(ent);
 	}
 	
 	DETOUR_DECL_MEMBER(void, IVision_ForgetEntity, CBaseEntity *ent)
@@ -783,7 +783,7 @@ namespace Mod::Debug::Known_Entities
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(IVision_ForgetEntity)(ent);
+		DETOUR_MEMBER_CALL(ent);
 	}
 	
 	DETOUR_DECL_MEMBER(void, IVision_ForgetAllKnownEntities)
@@ -797,7 +797,7 @@ namespace Mod::Debug::Known_Entities
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(IVision_ForgetAllKnownEntities)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -805,7 +805,7 @@ namespace Mod::Debug::Known_Entities
 	{
 		// caller: CTFBotVision::IsVisibleEntityNoticed
 		
-		return DETOUR_MEMBER_CALL(CTFBot_IsSuspectedSpy)(spy);
+		return DETOUR_MEMBER_CALL(spy);
 	}
 	DETOUR_DECL_MEMBER(void, CTFBot_SuspectSpy, CTFPlayer *spy)
 	{
@@ -818,7 +818,7 @@ namespace Mod::Debug::Known_Entities
 		
 		// caller: CTFBot::Touch, while stealthed/disguised (MvM)
 		
-		DETOUR_MEMBER_CALL(CTFBot_SuspectSpy)(spy);
+		DETOUR_MEMBER_CALL(spy);
 	}
 	DETOUR_DECL_MEMBER(void, CTFBot_StopSuspectingSpy, CTFPlayer *spy)
 	{
@@ -829,7 +829,7 @@ namespace Mod::Debug::Known_Entities
 				ENTINDEX(bot), ENTINDEX(spy), (spy != nullptr ? spy->GetPlayerName() : "nullptr"));
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_StopSuspectingSpy)(spy);
+		DETOUR_MEMBER_CALL(spy);
 	}
 	
 	
@@ -838,7 +838,7 @@ namespace Mod::Debug::Known_Entities
 		// caller: CTFBotVision::IsIgnored
 		// caller: CTFBotVision::IsVisibleEntityNoticed
 		
-		return DETOUR_MEMBER_CALL(CTFBot_IsKnownSpy)(spy);
+		return DETOUR_MEMBER_CALL(spy);
 	}
 	DETOUR_DECL_MEMBER(void, CTFBot_RealizeSpy, CTFPlayer *spy)
 	{
@@ -854,7 +854,7 @@ namespace Mod::Debug::Known_Entities
 		// caller: CTFBotVision::IsVisibleEntityNoticed, while disguising
 		// caller: CTFBotVision::IsVisibleEntityNoticed, if burning/jarated/stealthblink/bleeding
 		
-		DETOUR_MEMBER_CALL(CTFBot_RealizeSpy)(spy);
+		DETOUR_MEMBER_CALL(spy);
 	}
 	DETOUR_DECL_MEMBER(void, CTFBot_ForgetSpy, CTFPlayer *spy)
 	{
@@ -869,21 +869,21 @@ namespace Mod::Debug::Known_Entities
 		// caller: CTFBotVision::IsVisibleEntityNoticed, if >75% stealthed
 		// caller: CTFBotVision::Update, if not visible recently and disguising
 		
-		DETOUR_MEMBER_CALL(CTFBot_ForgetSpy)(spy);
+		DETOUR_MEMBER_CALL(spy);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_SuspectedSpyInfo_t_Suspect)
 	{
-		DETOUR_MEMBER_CALL(CTFBot_SuspectedSpyInfo_t_Suspect)();
+		DETOUR_MEMBER_CALL();
 	}
 	DETOUR_DECL_MEMBER(bool, CTFBot_SuspectedSpyInfo_t_IsCurrentlySuspected)
 	{
-		return DETOUR_MEMBER_CALL(CTFBot_SuspectedSpyInfo_t_IsCurrentlySuspected)();
+		return DETOUR_MEMBER_CALL();
 	}
 	DETOUR_DECL_MEMBER(bool, CTFBot_SuspectedSpyInfo_t_TestForRealizing)
 	{
-		return DETOUR_MEMBER_CALL(CTFBot_SuspectedSpyInfo_t_TestForRealizing)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -918,7 +918,7 @@ namespace Mod::Debug::Known_Entities
 		//	}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_DelayedThreatNotice)(ent, delay);
+		DETOUR_MEMBER_CALL(ent, delay);
 	}
 	
 	
@@ -945,7 +945,7 @@ namespace Mod::Debug::Known_Entities
 				ENTINDEX(bot), ENTINDEX(who), str_who, ENTINDEX(weapon), str_weapon);
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_OnWeaponFired)(who, weapon);
+		DETOUR_MEMBER_CALL(who, weapon);
 	}
 	
 	
@@ -956,7 +956,7 @@ namespace Mod::Debug::Known_Entities
 	//			ENTINDEX(actor), ENTINDEX(info.GetAttacker()), info.GetDamageType());
 	//	}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnInjured)(actor, info);
+		return DETOUR_MEMBER_CALL(actor, info);
 	}
 	
 	

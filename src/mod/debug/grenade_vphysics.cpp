@@ -177,7 +177,7 @@ namespace Mod::Debug::Grenade_VPhysics
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
 		TRACE("[this: #%d \"%s\"] [solidType: %d] [nSolidFlags: %08x] [pSolid: %08x]",
 			ENTINDEX(ent), ent->GetClassname(), solidType, nSolidFlags, (uintptr_t)pSolid);
-		auto result = DETOUR_MEMBER_CALL(CBaseEntity_VPhysicsInitNormal)(solidType, nSolidFlags, createAsleep, pSolid);
+		auto result = DETOUR_MEMBER_CALL(solidType, nSolidFlags, createAsleep, pSolid);
 		TRACE_EXIT("[result: %08x]", (uintptr_t)result);
 		return result;
 	}
@@ -186,7 +186,7 @@ namespace Mod::Debug::Grenade_VPhysics
 	{
 		TRACE("[pEntity: #%d \"%s\"] [modelIndex: %d] [pSolid: %08x]",
 			ENTINDEX(pEntity), pEntity->GetClassname(), modelIndex, (uintptr_t)pSolid);
-		auto result = DETOUR_STATIC_CALL(PhysModelCreate)(pEntity, modelIndex, origin, angles, pSolid);
+		auto result = DETOUR_STATIC_CALL(pEntity, modelIndex, origin, angles, pSolid);
 		TRACE_EXIT("[result: %08x]", (uintptr_t)result);
 		return result;
 	}
@@ -214,7 +214,7 @@ namespace Mod::Debug::Grenade_VPhysics
 			return value * 100;
 		}
 		
-		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+		return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 	}
 	
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
@@ -232,7 +232,7 @@ namespace Mod::Debug::Grenade_VPhysics
 			return value * 0.0f;
 		}
 		
-		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_float)(value, attr, ent, vec, b1);
+		return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 	}
 	
 	
@@ -266,7 +266,7 @@ namespace Mod::Debug::Grenade_VPhysics
 			}
 		}
 		
-		return DETOUR_STATIC_CALL(CBaseEntity_CreateNoSpawn)(szName, vecOrigin, ref_angles, pOwner);
+		return DETOUR_STATIC_CALL(szName, vecOrigin, ref_angles, pOwner);
 	}
 	
 	

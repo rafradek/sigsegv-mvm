@@ -256,13 +256,13 @@ namespace Mod::Visualize::Taunt_Attacks
 		taunt_player = reinterpret_cast<CTFPlayer *>(this);
 		
 		SCOPED_INCREMENT(rc_CTFPlayer_DoTauntAttack);
-		DETOUR_MEMBER_CALL(CTFPlayer_DoTauntAttack)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 		
 		if (rc_CTFPlayer_DoTauntAttack > 0 &&
 			((ray.m_Delta.Length() > 127.9f && ray.m_Delta.Length() < 128.1f) ||
@@ -400,7 +400,7 @@ namespace Mod::Visualize::Taunt_Attacks
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInBox)(listMask, mins, maxs, coarseTest, pIterator);
+		DETOUR_MEMBER_CALL(listMask, mins, maxs, coarseTest, pIterator);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CEntitySphereQuery_ctor, const Vector& center, float radius, int flagMask)
@@ -420,7 +420,7 @@ namespace Mod::Visualize::Taunt_Attacks
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CEntitySphereQuery_ctor)(center, radius, flagMask);
+		DETOUR_MEMBER_CALL(center, radius, flagMask);
 	}
 	
 	

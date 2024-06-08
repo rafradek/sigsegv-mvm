@@ -56,7 +56,7 @@ namespace Mod::Etc::ExtraEntityData
 {
     DETOUR_DECL_MEMBER(void, CBaseEntity_CBaseEntity, bool flag)
 	{
-        DETOUR_MEMBER_CALL(CBaseEntity_CBaseEntity)(flag);
+        DETOUR_MEMBER_CALL(flag);
         /*auto entity = reinterpret_cast<CBaseEntity *>(this);
         if (entity->IsPlayer()) {
             entity->m_extraEntityData = new ExtraEntityDataPlayer(entity);
@@ -74,7 +74,7 @@ namespace Mod::Etc::ExtraEntityData
         //     delete entity->m_extraEntityData;
         //     entity->m_extraEntityData = nullptr;
         // }
-        DETOUR_MEMBER_CALL(CBaseEntity_D2)();
+        DETOUR_MEMBER_CALL();
     }
 
     class CMod : public IMod

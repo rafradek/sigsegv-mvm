@@ -75,12 +75,12 @@ namespace Mod::Util::DebugOverlay_Font_v3
 	DETOUR_DECL_MEMBER(bool, ISurface_SetFontGlyphSet, vgui::HFont font, const char *windowsFontName, int tall, int weight, int blur, int scanlines, int flags)
 	{
 		SCOPED_INCREMENT_IF(rc_ISurface_SetFontGlyphSet, font == hFont);
-		return DETOUR_MEMBER_CALL(ISurface_SetFontGlyphSet)(font, windowsFontName, tall, weight, blur, scanlines, flags);
+		return DETOUR_MEMBER_CALL(font, windowsFontName, tall, weight, blur, scanlines, flags);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CWin32Font_Create, const char *windowsFontName, int tall, int weight, int blur, int scanlines, int flags)
 	{
-		auto result = DETOUR_MEMBER_CALL(CWin32Font_Create)(windowsFontName, tall, weight, blur, scanlines, flags);
+		auto result = DETOUR_MEMBER_CALL(windowsFontName, tall, weight, blur, scanlines, flags);
 		
 		if (result && rc_ISurface_SetFontGlyphSet > 0) {
 			auto font = reinterpret_cast<CWin32Font *>(this);
@@ -138,7 +138,7 @@ namespace Mod::Util::DebugOverlay_Font_v3
 	DETOUR_DECL_MEMBER(bool, CWin32Font_Create, const char *windowsFontName, int tall, int weight, int blur, int scanlines, int flags)
 	{
 		if (rc_CFontManager_SetFontGlyphSet <= 0) {
-			return DETOUR_MEMBER_CALL(CWin32Font_Create)(windowsFontName, tall, weight, blur, scanlines, flags);
+			return DETOUR_MEMBER_CALL(windowsFontName, tall, weight, blur, scanlines, flags);
 		}
 		
 		auto font = reinterpret_cast<CWin32Font *>(this);
@@ -232,7 +232,7 @@ namespace Mod::Util::DebugOverlay_Font_v3
 	{
 		SCOPED_INCREMENT_IF(rc_CFontTextureCache_GetTextureForChars, font == hFont);
 		
-		return DETOUR_MEMBER_CALL(CFontTextureCache_GetTextureForChars)(font, type, wch, textureID, texCoords, numChars);
+		return DETOUR_MEMBER_CALL(font, type, wch, textureID, texCoords, numChars);
 	}
 	
 	DETOUR_DECL_STATIC(void, ApplyOutlineToTexture, int rgbaWide, int rgbaTall, unsigned char *rgba, int iOutlineSize)
@@ -243,7 +243,7 @@ namespace Mod::Util::DebugOverlay_Font_v3
 			return;
 		}
 		
-		DETOUR_STATIC_CALL(ApplyOutlineToTexture)(rgbaWide, rgbaTall, rgba, iOutlineSize);
+		DETOUR_STATIC_CALL(rgbaWide, rgbaTall, rgba, iOutlineSize);
 	}
 	
 	
@@ -251,17 +251,17 @@ namespace Mod::Util::DebugOverlay_Font_v3
 	DETOUR_DECL_MEMBER(void, CDebugOverlay_Paint)
 	{
 		SCOPED_INCREMENT(rc_CDebugOverlay_Paint);
-		DETOUR_MEMBER_CALL(CDebugOverlay_Paint)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(int, CMatSystemSurface_DrawColoredText, vgui::HFont font, int x, int y, int r, int g, int b, int a, const char *fmt, va_list argptr)
 	{
 		if (rc_CDebugOverlay_Paint > 0) {
 			UpdateDebugOverlayFont();
-			return DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(hFont, x, y, 0x00, 0x00, 0x00, 0xff, fmt, argptr);
+			return DETOUR_MEMBER_CALL(hFont, x, y, 0x00, 0x00, 0x00, 0xff, fmt, argptr);
 		}
 		
-		return DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(font, x, y, r, g, b, a, fmt, argptr);
+		return DETOUR_MEMBER_CALL(font, x, y, r, g, b, a, fmt, argptr);
 	}
 	
 	

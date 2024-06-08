@@ -9,7 +9,7 @@ namespace Mod::Sound::Tele_Activate
 		auto hint = reinterpret_cast<CTFBotHintEngineerNest *>(this);
 		
 		bool active_pre = hint->m_bHasActiveTeleporter;
-		DETOUR_MEMBER_CALL(CTFBotHintEngineerNest_HintTeleporterThink)();
+		DETOUR_MEMBER_CALL();
 		bool active_post = hint->m_bHasActiveTeleporter;
 		
 		if (!active_pre && active_post) {

@@ -22,7 +22,7 @@ namespace Mod::AI::Focus_One_Player
 		CTFPlayer *player = ToTFPlayer(ent);
 		if (player != nullptr && IsTheTarget(player)) {
 			return false;
-		//	return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		//	return DETOUR_MEMBER_CALL(ent);
 		}
 		
 		return true;

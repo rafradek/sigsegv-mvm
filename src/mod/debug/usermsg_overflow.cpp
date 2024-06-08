@@ -36,7 +36,7 @@ namespace Mod::Debug::UserMsg_Overflow
 			DevMsg("  len  %d\n", usermsg->m_nLength);
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseServer_BroadcastMessage1)(msg, onlyActive, reliable);
+		DETOUR_MEMBER_CALL(msg, onlyActive, reliable);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseServer_BroadcastMessage2, INetMessage& msg, IRecipientFilter& filter)
@@ -53,14 +53,14 @@ namespace Mod::Debug::UserMsg_Overflow
 			DevMsg("  m_DataOut.GetNumBitsWritten() = %d\n", usermsg->m_DataOut.GetNumBitsWritten());
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseServer_BroadcastMessage2)(msg, filter);
+		DETOUR_MEMBER_CALL(msg, filter);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(bool, SVC_UserMessage_WriteToBuffer, bf_write& buffer)
 	{
 		int bits_before = buffer.GetNumBitsWritten();
-		auto result = DETOUR_MEMBER_CALL(SVC_UserMessage_WriteToBuffer)(buffer);
+		auto result = DETOUR_MEMBER_CALL(buffer);
 		int bits_after = buffer.GetNumBitsWritten();
 		
 		auto usermsg = reinterpret_cast<SVC_UserMessage *>(this);
@@ -75,7 +75,7 @@ namespace Mod::Debug::UserMsg_Overflow
 	DETOUR_DECL_MEMBER(bool, SVC_UserMessage_ReadFromBuffer, bf_read& buffer)
 	{
 		int bits_before = buffer.GetNumBitsRead() - 6;
-		auto result = DETOUR_MEMBER_CALL(SVC_UserMessage_ReadFromBuffer)(buffer);
+		auto result = DETOUR_MEMBER_CALL(buffer);
 		int bits_after = buffer.GetNumBitsRead();
 		
 		auto usermsg = reinterpret_cast<SVC_UserMessage *>(this);
@@ -91,14 +91,14 @@ namespace Mod::Debug::UserMsg_Overflow
 	{
 		DevMsg("UserMessage %s\n",name);
 		//BACKTRACE();
-		DETOUR_STATIC_CALL(UserMessageBegin)(filter,name);
+		DETOUR_STATIC_CALL(filter,name);
 	}
 
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_SendUpgradesToPlayer, CTFPlayer *player, CUtlVector<CUpgradeInfo> *upgrades)
 	{
 		DevMsg("CMannVsMachineStats::SendUpgradesToPlayer BEGIN\n");
 		BACKTRACE();
-		DETOUR_MEMBER_CALL(CMannVsMachineStats_SendUpgradesToPlayer)(player, upgrades);
+		DETOUR_MEMBER_CALL(player, upgrades);
 		DevMsg("CMannVsMachineStats::SendUpgradesToPlayer END\n");
 	}
 	

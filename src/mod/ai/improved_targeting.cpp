@@ -83,7 +83,7 @@ namespace Mod::AI::Improved_Targeting
 		else if (threat2nonsentrybuilding && !threat1nonsentrybuilding) {
 			return threat1;
 		}
-		auto ret = DETOUR_MEMBER_CALL(CTFBotMainAction_SelectMoreDangerousThreat)(nextbot, them, threat1, threat2);
+		auto ret = DETOUR_MEMBER_CALL(nextbot, them, threat1, threat2);
 
 		thread_bot_caller = nullptr;
 
@@ -103,7 +103,7 @@ namespace Mod::AI::Improved_Targeting
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_GetHealerOfThreat)(threat);
+		return DETOUR_MEMBER_CALL(threat);
 	}
 
 	bool callingfromhere = false;
@@ -173,7 +173,7 @@ namespace Mod::AI::Improved_Targeting
 			}
 			Vector move = trace->endpos - actor->GetAbsOrigin();
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnContact)(actor, ent, trace);
+		return DETOUR_MEMBER_CALL(actor, ent, trace);
 	}
 
 	RefCount rc_CTFBot_Touch;
@@ -181,7 +181,7 @@ namespace Mod::AI::Improved_Targeting
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		SCOPED_INCREMENT_IF(rc_CTFBot_Touch, cvar_anti_spy_touch.GetBool());
-		DETOUR_MEMBER_CALL(CTFBot_Touch)(ent);
+		DETOUR_MEMBER_CALL(ent);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBot_SuspectSpy, CTFPlayer *spy)
@@ -189,7 +189,7 @@ namespace Mod::AI::Improved_Targeting
 		if (rc_CTFBot_Touch && !callingfromhere) 
 			return;
 		
-		DETOUR_MEMBER_CALL(CTFBot_SuspectSpy)(spy);
+		DETOUR_MEMBER_CALL(spy);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBot_IsExplosiveProjectileWeapon, CTFWeaponBase *weapon)
@@ -202,12 +202,12 @@ namespace Mod::AI::Improved_Targeting
 			}
 		}
 
-		return DETOUR_MEMBER_CALL(CTFBot_IsExplosiveProjectileWeapon)(weapon);
+		return DETOUR_MEMBER_CALL(weapon);
 	}
 	
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMedicHeal_Update, CTFBot *me, float interval)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBotMedicHeal_Update)(me, interval);
+		auto result = DETOUR_MEMBER_CALL(me, interval);
 		auto medigun = rtti_cast<CWeaponMedigun *>(me->GetActiveTFWeapon());
 		auto medigunHasTarget = medigun != nullptr && medigun->GetHealTarget() == reinterpret_cast<CTFBotMedicHeal *>(this)->GetPatient();
 		if (medigun && medigunHasTarget && me->ExtAttr()[CTFBot::ExtendedAttr::MEDIC_LOOK_AT_THREATS]) {

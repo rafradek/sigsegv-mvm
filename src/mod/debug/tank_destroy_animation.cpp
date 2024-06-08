@@ -13,17 +13,17 @@ namespace Mod::Debug::Tank_Destroy_Animation
 	DETOUR_DECL_MEMBER(void, CTFTankDestruction_Spawn)
 	{
 		SCOPED_INCREMENT(rc_CTFTankDestruction_Spawn);
-		DETOUR_MEMBER_CALL(CTFTankDestruction_Spawn)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
 	DETOUR_DECL_MEMBER(int, CBaseAnimating_LookupSequence, const char *label)
 	{
 		if (rc_CTFTankDestruction_Spawn > 0) {
-			return DETOUR_MEMBER_CALL(CBaseAnimating_LookupSequence)(cvar_override.GetString());
+			return DETOUR_MEMBER_CALL(cvar_override.GetString());
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseAnimating_LookupSequence)(label);
+		return DETOUR_MEMBER_CALL(label);
 	}
 	
 	

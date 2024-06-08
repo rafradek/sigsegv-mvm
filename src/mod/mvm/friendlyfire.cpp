@@ -33,7 +33,7 @@ namespace Mod::MvM::FriendlyFire
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_FPlayerCanTakeDamage)(pPlayer, pAttacker, info);
+		return DETOUR_MEMBER_CALL(pPlayer, pAttacker, info);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_WantsLagCompensationOnEntity, const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
@@ -45,7 +45,7 @@ namespace Mod::MvM::FriendlyFire
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_WantsLagCompensationOnEntity)(pPlayer, pCmd, pEntityTransmitBits);
+		return DETOUR_MEMBER_CALL(pPlayer, pCmd, pEntityTransmitBits);
 	}
 	
 	

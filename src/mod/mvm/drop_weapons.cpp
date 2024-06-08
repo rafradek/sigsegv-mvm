@@ -15,7 +15,7 @@ namespace Mod::MvM::Drop_Weapons
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldDropAmmoPack)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CTFPlayer_DropAmmoPack;
@@ -25,7 +25,7 @@ namespace Mod::MvM::Drop_Weapons
 		SCOPED_INCREMENT(rc_CTFPlayer_DropAmmoPack);
 		drop_player = reinterpret_cast<CTFPlayer *>(this);
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_DropAmmoPack)(info, b1, b2);
+		DETOUR_MEMBER_CALL(info, b1, b2);
 		
 		drop_player = nullptr;
 	}
@@ -36,17 +36,17 @@ namespace Mod::MvM::Drop_Weapons
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CTFAmmoPack_Create)(vecOrigin, vecAngles, pOwner, pszModelName);
+		return DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pszModelName);
 	}
 	
 	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner, const char *pszModelName, const CEconItemView *pItemView)
 	{
 		if (!TFGameRules()->IsMannVsMachineMode()) {
-			return DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
+			return DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
 		}
 		
 		TFGameRules()->Set_m_bPlayingMannVsMachine(false);
-		CTFDroppedWeapon *pDroppedWeapon = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
+		CTFDroppedWeapon *pDroppedWeapon = DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pszModelName, pItemView);
 		TFGameRules()->Set_m_bPlayingMannVsMachine(true);
 		return pDroppedWeapon;
 	}

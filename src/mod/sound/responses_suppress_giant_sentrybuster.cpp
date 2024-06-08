@@ -8,7 +8,7 @@ namespace Mod::Sound::Suppress_Giant_SentryBuster
 	DETOUR_DECL_MEMBER(bool, CMissionPopulator_UpdateMissionDestroySentries)
 	{
 		SCOPED_INCREMENT(rc_CMissionPopulator_UpdateMissionDestroySentries);
-		return DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_SpeakConceptIfAllowed, int iConcept, const char *modifiers, char *pszOutResponseChosen, size_t bufsize, IRecipientFilter *filter)
@@ -17,7 +17,7 @@ namespace Mod::Sound::Suppress_Giant_SentryBuster
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+		return DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
 	}
 	
 	

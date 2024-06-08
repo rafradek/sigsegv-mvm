@@ -157,7 +157,7 @@ namespace Mod::Util::Notify_Send
 			msg->WriteString(buf.get());
 		MSG_END();
 		
-		DETOUR_STATIC_CALL(Con_NPrintf)(idx, "%s", buf.get());
+		DETOUR_STATIC_CALL(idx, "%s", buf.get());
 	}
 	
 	DETOUR_DECL_MEMBER(void, IVEngineServer_Con_NPrintf, int pos, const char *fmt, ...)
@@ -175,7 +175,7 @@ namespace Mod::Util::Notify_Send
 			msg->WriteString(buf.get());
 		MSG_END();
 		
-		DETOUR_MEMBER_CALL(IVEngineServer_Con_NPrintf)(pos, "%s", buf.get());
+		DETOUR_MEMBER_CALL(pos, "%s", buf.get());
 	}
 	
 	DETOUR_DECL_MEMBER(void, IVEngineServer_Con_NXPrintf, const struct con_nprint_s *info, const char *fmt, ...)
@@ -198,7 +198,7 @@ namespace Mod::Util::Notify_Send
 			msg->WriteString  (buf.get());
 		MSG_END();
 		
-		DETOUR_MEMBER_CALL(IVEngineServer_Con_NXPrintf)(info, "%s", buf.get());
+		DETOUR_MEMBER_CALL(info, "%s", buf.get());
 	}
 	
 	

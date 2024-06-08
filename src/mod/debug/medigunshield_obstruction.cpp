@@ -69,7 +69,7 @@ namespace Mod::Debug::MedigunShield_Obstruction
 	//	NDebugOverlay::EntityTextAtPosition(end, 1, "end", 0.1f, 0xff, 0x00, 0x00, 0xff);
 		
 		SCOPED_INCREMENT(rc_ILocomotion_TraceHull);
-		DETOUR_MEMBER_CALL(ILocomotion_TraceHull)(start, end, mins, maxs, mask, filter, trace);
+		DETOUR_MEMBER_CALL(start, end, mins, maxs, mask, filter, trace);
 	}
 	
 	
@@ -77,7 +77,7 @@ namespace Mod::Debug::MedigunShield_Obstruction
 		"Override NextBotTraversableTraceFilter::ShouldHitEntity");
 	DETOUR_DECL_MEMBER(bool, NextBotTraversableTraceFilter_ShouldHitEntity, IHandleEntity *pEntity, int contentsMask)
 	{
-		auto result = DETOUR_MEMBER_CALL(NextBotTraversableTraceFilter_ShouldHitEntity)(pEntity, contentsMask);
+		auto result = DETOUR_MEMBER_CALL(pEntity, contentsMask);
 		
 		if (rc_ILocomotion_TraceHull > 0) {
 			auto shield = rtti_cast<CTFMedigunShield *>(pEntity);
@@ -102,7 +102,7 @@ namespace Mod::Debug::MedigunShield_Obstruction
 		"Override CTFBotLocomotion::IsEntityTraversable");
 	DETOUR_DECL_MEMBER(bool, CTFBotLocomotion_IsEntityTraversable, CBaseEntity *ent, ILocomotion::TraverseWhenType ttype)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBotLocomotion_IsEntityTraversable)(ent, ttype);
+		auto result = DETOUR_MEMBER_CALL(ent, ttype);
 		
 		auto shield = rtti_cast<CTFMedigunShield *>(ent);
 		if (shield != nullptr) {

@@ -744,7 +744,7 @@ namespace Mod::Perf::SendProp_Optimize
     RefCount rc_CHLTVClient_SendSnapshot;
     DETOUR_DECL_MEMBER(void, CHLTVClient_SendSnapshot, CClientFrame *frame) {
         SCOPED_INCREMENT(rc_CHLTVClient_SendSnapshot);
-        DETOUR_MEMBER_CALL(CHLTVClient_SendSnapshot)(frame);
+        DETOUR_MEMBER_CALL(frame);
     }
     DETOUR_DECL_STATIC(void, SendTable_WritePropList,
         const SendTable *pTable,
@@ -763,7 +763,7 @@ namespace Mod::Perf::SendProp_Optimize
                 return;
             }
             if (prop_write_offset[objectID].empty()) {
-                DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+                DETOUR_STATIC_CALL(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
                 return;
             }
             CDeltaBitsWriter deltaBitsWriter( pOut );
@@ -787,7 +787,7 @@ namespace Mod::Perf::SendProp_Optimize
                 
             return;
         }
-        DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+        DETOUR_STATIC_CALL(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
     }
 
     DETOUR_DECL_STATIC(int, SendTable_CullPropsFromProxies,
@@ -977,7 +977,7 @@ namespace Mod::Perf::SendProp_Optimize
         //     //timer2.End();
         //     //DevMsg("Timer encode other %s %.9f\n", GetContainingEntity(edict)->GetClassname() ,timer2.GetDuration().GetSeconds());
         // }
-        //DETOUR_MEMBER_CALL(CParallelProcessor_PackWork_t_Run)(work_do.data(), work_do.size(), maxthreads, pool);
+        //DETOUR_MEMBER_CALL(work_do.data(), work_do.size(), maxthreads, pool);
         //DevMsg("duration for %d %f\n", maxthreads, timer.GetDuration().GetSeconds());
     }
 
@@ -996,7 +996,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         if (rc_SV_ComputeClientPacks) return;
 
-        DETOUR_MEMBER_CALL(CGameClient_SetupPackInfo)(snapshot);
+        DETOUR_MEMBER_CALL(snapshot);
     }
 
 
@@ -1004,7 +1004,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         if (rc_SV_ComputeClientPacks) return;
 
-        DETOUR_MEMBER_CALL(CGameClient_SetupPrevPackInfo)();
+        DETOUR_MEMBER_CALL();
     }
 
     uint16_t *areasConnected = nullptr;
@@ -1198,7 +1198,7 @@ namespace Mod::Perf::SendProp_Optimize
                 continue;
             }
         }
-        //return DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(pInfo, pEdictIndices, nEdicts);
+        //return DETOUR_MEMBER_CALL(pInfo, pEdictIndices, nEdicts);
 
     }
 
@@ -1213,7 +1213,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (areasConnected != nullptr) {
             return areasConnected[area1] == areasConnected[area2];
         }
-        return DETOUR_MEMBER_CALL(CServerGameEnts_CheckTransmit)(area1, area2);
+        return DETOUR_MEMBER_CALL(area1, area2);
     }
 
     DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  CGameClient **clients, CFrameSnapshot *snapshot)
@@ -1239,7 +1239,7 @@ namespace Mod::Perf::SendProp_Optimize
         }
         firstTransmit = true;
         if (!IsParallel()) {
-            DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+            DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 
             if (firstPack && packinfoOffset != 0) {
                 firstPack = false;
@@ -1346,7 +1346,7 @@ namespace Mod::Perf::SendProp_Optimize
         packWorkFinished.wait(false);
 
         SCOPED_INCREMENT(rc_SV_ComputeClientPacks);
-        DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+        DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 
         for (int i = 0; i < clientCount; i++) {
             CGameClient *client = clients[i];
@@ -1392,19 +1392,19 @@ namespace Mod::Perf::SendProp_Optimize
             return;
         }
 
-        DETOUR_MEMBER_CALL(CParallelProcessor_CGameClient_Run)(clients, items, maxthreads, pool);
+        DETOUR_MEMBER_CALL(clients, items, maxthreads, pool);
     }
 
 #ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayer_AddObject, CBaseObject *object)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
+        DETOUR_MEMBER_CALL(object);
         reinterpret_cast<CTFPlayer *>(this)->NetworkStateChanged();
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveObject, CBaseObject *object)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayer_RemoveObject)(object);
+        DETOUR_MEMBER_CALL(object);
         reinterpret_cast<CTFPlayer *>(this)->NetworkStateChanged();
     }
 
@@ -1414,7 +1414,7 @@ namespace Mod::Perf::SendProp_Optimize
         if (pProvider != shared->GetConditionProvider(nCond))
             reinterpret_cast<CTFPlayer *>(shared->GetOuter())->NetworkStateChanged();
             
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 #endif
 
@@ -1422,7 +1422,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         
         int oldFlags = pOwner->edict()->m_fStateFlags;
-        DETOUR_MEMBER_CALL(CAnimationLayer_StudioFrameAdvance)(flInterval, pOwner);
+        DETOUR_MEMBER_CALL(flInterval, pOwner);
         if (pOwner->IsPlayer()) pOwner->edict()->m_fStateFlags = oldFlags | (pOwner->edict()->m_fStateFlags & ~(FL_FULL_EDICT_CHANGED));
     }
 
@@ -1434,7 +1434,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
         int oldFlags = flags;
-        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_FastRemoveLayer)(layer);
+        DETOUR_MEMBER_CALL(layer);
         if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
@@ -1442,7 +1442,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{;
         auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
         int oldFlags = flags;
-        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_StudioFrameAdvance)();
+        DETOUR_MEMBER_CALL();
         if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
@@ -1450,7 +1450,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         auto &flags = reinterpret_cast<CBaseAnimatingOverlay *>(this)->edict()->m_fStateFlags;
         int oldFlags = flags;
-        DETOUR_MEMBER_CALL(CBaseAnimatingOverlay_SetLayerCycle)(layer, cycle);
+        DETOUR_MEMBER_CALL(layer, cycle);
         if (reinterpret_cast<CBaseAnimatingOverlay *>(this)->IsPlayer()) flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
@@ -1459,7 +1459,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
         int oldFlags = flags;
-        DETOUR_MEMBER_CALL(CMultiPlayerAnimState_AddToGestureSlot)(iGestureSlot, iGestureActivity, bAutoKill);
+        DETOUR_MEMBER_CALL(iGestureSlot, iGestureActivity, bAutoKill);
         flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 
@@ -1467,7 +1467,7 @@ namespace Mod::Perf::SendProp_Optimize
 	{
         auto &flags = reinterpret_cast<CMultiPlayerAnimState *>(this)->m_pPlayer->edict()->m_fStateFlags;
         int oldFlags = flags;
-        DETOUR_MEMBER_CALL(CMultiPlayerAnimState_RestartGesture)(iGestureSlot, iGestureActivity, bAutoKill);
+        DETOUR_MEMBER_CALL(iGestureSlot, iGestureActivity, bAutoKill);
         flags = oldFlags | (flags & ~(FL_FULL_EDICT_CHANGED));
     }
 #endif
@@ -1481,12 +1481,12 @@ namespace Mod::Perf::SendProp_Optimize
             prop_value_old[edict->m_EdictIndex].clear();
             entity_frame_bit_size[edict->m_EdictIndex] = 0;
         }
-        DETOUR_MEMBER_CALL(CBaseEntity_D2)();
+        DETOUR_MEMBER_CALL();
     }
 
     /*DETOUR_DECL_MEMBER(int, SendTable_WriteAllDeltaProps, int iTick, int *iOutProps, int nMaxOutProps)
 	{
-		int result = DETOUR_MEMBER_CALL(SendTable_WriteAllDeltaProps)(iTick, iOutProps, nMaxOutProps);
+		int result = DETOUR_MEMBER_CALL(iTick, iOutProps, nMaxOutProps);
         if (result == -1)
             result = 0
         return result;
@@ -1505,7 +1505,7 @@ namespace Mod::Perf::SendProp_Optimize
         SCOPED_INCREMENT_IF(rc_SendTable_WriteAllDeltaProps, nObjectID != -1);
         //if (nObjectID != -1)
         //    DevMsg("F %s\n", pTable->GetName());
-        return DETOUR_STATIC_CALL(SendTable_WriteAllDeltaProps)(pTable, pFromData, nFromDataBits, pToData, nToDataBits, nObjectID, pBufOut);
+        return DETOUR_STATIC_CALL(pTable, pFromData, nFromDataBits, pToData, nToDataBits, nObjectID, pBufOut);
     }
 
     DETOUR_DECL_STATIC(IChangeFrameList*, AllocChangeFrameList, int nProperties, int iCurTick)
@@ -1518,7 +1518,7 @@ namespace Mod::Perf::SendProp_Optimize
 #ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
     {
-        DETOUR_MEMBER_CALL(CPopulationManager_SetPopulationFilename)(filename);
+        DETOUR_MEMBER_CALL(filename);
         // Original function uses MAKE_STRING to set file name, which is bad
         if (TFObjectiveResource() != nullptr) {
             TFObjectiveResource()->m_iszMvMPopfileName = AllocPooledString(filename);
@@ -1569,14 +1569,14 @@ namespace Mod::Perf::SendProp_Optimize
     DETOUR_DECL_MEMBER(void, CBasePlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CBasePlayer *>(this);
-		DETOUR_MEMBER_CALL(CBasePlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
         THINK_FUNC_SET(player,SetVisibleStateDelay, gpGlobals->curtime + 0.5f);
 	}
     
     DETOUR_DECL_MEMBER(void, CTFWeaponBase_OnActiveStateChanged, int oldState)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
-		DETOUR_MEMBER_CALL(CTFWeaponBase_OnActiveStateChanged)(oldState);
+		DETOUR_MEMBER_CALL(oldState);
         int state = weapon->m_iState;
         if (state == WEAPON_IS_ACTIVE) {
             weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
@@ -1590,7 +1590,7 @@ namespace Mod::Perf::SendProp_Optimize
     DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_OnActiveStateChanged, int oldState)
 	{
 		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_OnActiveStateChanged)(oldState);
+		DETOUR_MEMBER_CALL(oldState);
         int state = weapon->m_iState;
         if (state == WEAPON_IS_ACTIVE) {
             weapon->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
@@ -1608,7 +1608,7 @@ namespace Mod::Perf::SendProp_Optimize
     DETOUR_DECL_MEMBER(void, CBasePlayer_Spawn)
 	{
 		auto player = reinterpret_cast<CBasePlayer *>(this);
-		DETOUR_MEMBER_CALL(CBasePlayer_Spawn)();
+		DETOUR_MEMBER_CALL();
         player->edict()->m_fStateFlags &= ~FL_EDICT_DONTSEND;
 #ifdef SE_IS_TF2
         for (int i = 0; i < player->GetNumWearables(); i++) {

@@ -179,7 +179,7 @@ namespace Mod::Util::VProf_Remote
 		DevMsg("  this = %08x\n", (uintptr_t)this);
 		DevMsg("  cmd  = \"%s\"\n", cmd);
 		
-		DETOUR_MEMBER_CALL(CRConClient_SendCmd)(cmd);
+		DETOUR_MEMBER_CALL(cmd);
 	}
 	
 	
@@ -233,7 +233,7 @@ namespace Mod::Util::VProf_Remote_Test
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CServerRemoteAccess_SendVProfData)(listenerID, bGroupData, data, len);
+		DETOUR_MEMBER_CALL(listenerID, bGroupData, data, len);
 	}
 	
 	

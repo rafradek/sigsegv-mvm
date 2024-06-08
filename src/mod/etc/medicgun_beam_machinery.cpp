@@ -8,7 +8,7 @@ namespace Mod::Etc::Medicgun_Beam_Machinery
 	{
 		if (pTarget->IsBaseObject()) return true;
 		
-		return DETOUR_MEMBER_CALL(CWeaponMedigun_AllowedToHealTarget)(pTarget);
+		return DETOUR_MEMBER_CALL(pTarget);
 	}
 	
 	

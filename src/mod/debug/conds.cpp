@@ -12,7 +12,7 @@ namespace Mod::Debug::Conds
 		
 		ClientMsgAll("[CondDebug] #%d \"%s\" +++ %d %s\n", ENTINDEX(player), player->GetPlayerName(), (int)cond, GetTFConditionName(cond));
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionAdded)(cond);
+		DETOUR_MEMBER_CALL(cond);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionRemoved, ETFCond cond)
@@ -22,7 +22,7 @@ namespace Mod::Debug::Conds
 		
 		ClientMsgAll("[CondDebug] #%d \"%s\" --- %d %s\n", ENTINDEX(player), player->GetPlayerName(), (int)cond, GetTFConditionName(cond));
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionRemoved)(cond);
+		DETOUR_MEMBER_CALL(cond);
 	}
 	
 	

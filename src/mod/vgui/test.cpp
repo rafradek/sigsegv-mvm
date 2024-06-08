@@ -61,7 +61,7 @@ namespace Mod::VGUI::Test
 			Warning("[CLIENT] Got SVC_CmdKeyValues, but the KeyValues ptr is nullptr!\n");
 		}
 		
-		return DETOUR_MEMBER_CALL(SVC_CmdKeyValues_Process)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	

@@ -9,7 +9,7 @@ namespace Mod::Debug::Func_Nav_Cost_Tags
 	{
 		auto func = reinterpret_cast<CFuncNavCost *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CFuncNavCost_IsApplicableTo)(who);
+		auto result = DETOUR_MEMBER_CALL(who);
 		
 		Msg("\nCFuncNavCost::IsApplicableTo: %s #%d \"%s\"\n",
 			func->GetClassname(), ENTINDEX(func), STRING(func->GetEntityName()));

@@ -194,7 +194,7 @@ namespace Mod::Perf::Func_Optimize
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_GetCarryingRuneType)
 	{
 		return reinterpret_cast<CTFPlayerShared *>(this)->GetCarryingRuneType();
-		//return DETOUR_MEMBER_CALL(CTFPlayerShared_GetCarryingRuneType)();
+		//return DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(void, CTFPlayerShared_ConditionGameRulesThink)
@@ -218,12 +218,12 @@ namespace Mod::Perf::Func_Optimize
                 }
             }
         }
-		DETOUR_MEMBER_CALL(CTFPlayerShared_ConditionGameRulesThink)();
+		DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(bool, CTFConditionList_Add, ETFCond cond, float duration, CTFPlayer *player, CBaseEntity *provider)
 	{
-		bool success = DETOUR_MEMBER_CALL(CTFConditionList_Add)(cond, duration, player, provider);
+		bool success = DETOUR_MEMBER_CALL(cond, duration, player, provider);
         if (success) {
             player->m_Shared->GetCondData().AddCondBit(cond);
         }
@@ -232,7 +232,7 @@ namespace Mod::Perf::Func_Optimize
 
     DETOUR_DECL_MEMBER(bool, CTFConditionList_Remove, ETFCond cond, bool ignore)
 	{
-		bool success = DETOUR_MEMBER_CALL(CTFConditionList_Remove)(cond, ignore);
+		bool success = DETOUR_MEMBER_CALL(cond, ignore);
         if (success) {
             auto outer = (CTFPlayerShared *)((char *)this - CTFPlayerShared::s_prop_m_ConditionList.GetOffsetDirect());
             outer->GetCondData().RemoveCondBit(cond);
@@ -257,7 +257,7 @@ namespace Mod::Perf::Func_Optimize
     uintptr_t GEconItemSchema_addr = 0;
     DETOUR_DECL_STATIC(CEconItemSchema *, GEconItemSchema)
 	{
-		schema = DETOUR_STATIC_CALL(GEconItemSchema)();
+		schema = DETOUR_STATIC_CALL();
         auto addr = (uint8_t*)__builtin_return_address(0);
         OptimizeGetSchema(schema, addr, GEconItemSchema_addr);
         // Msg("addr %d %d %d\n", *(addr2-1), AddrManager::GetAddr("GEconItemSchema"), *(addr2-1) + LibMgr::GetInfo(Library::SERVER).GetSeg(Segment::TEXT).AddrBegin());
@@ -276,7 +276,7 @@ namespace Mod::Perf::Func_Optimize
     uintptr_t GetItemSchema_addr = 0;
     DETOUR_DECL_STATIC(CEconItemSchema *, GetItemSchema)
 	{
-		schema = DETOUR_STATIC_CALL(GetItemSchema)();
+		schema = DETOUR_STATIC_CALL();
         auto addr = (uint8_t*)__builtin_return_address(0);
         OptimizeGetSchema(schema, addr, GetItemSchema_addr);
         return schema;
@@ -291,7 +291,7 @@ namespace Mod::Perf::Func_Optimize
     bool useOrig = false;
     DETOUR_DECL_MEMBER(void, CBasePlayer_EquipWearable, CEconWearable *wearable)
 	{
-		DETOUR_MEMBER_CALL(CBasePlayer_EquipWearable)(wearable);
+		DETOUR_MEMBER_CALL(wearable);
         auto item = wearable->GetItem() ;
         if (item == nullptr) return;
 
@@ -310,7 +310,7 @@ namespace Mod::Perf::Func_Optimize
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_Weapon_Equip, CBaseCombatWeapon *weapon)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_Weapon_Equip)(weapon);
+		DETOUR_MEMBER_CALL(weapon);
         auto item = weapon->GetItem() ;
         if (item == nullptr) return;
 
@@ -330,7 +330,7 @@ namespace Mod::Perf::Func_Optimize
 
     DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GetEntityForLoadoutSlot, int slot)
 	{
-        if (useOrig) return DETOUR_MEMBER_CALL(CTFPlayer_GetEntityForLoadoutSlot)(slot);
+        if (useOrig) return DETOUR_MEMBER_CALL(slot);
         
         auto player = reinterpret_cast<CTFPlayer *>(this);
         auto data = GetExtraPlayerData(player, false);
@@ -338,7 +338,7 @@ namespace Mod::Perf::Func_Optimize
             auto handle = data->quickItemInLoadoutSlot[slot];
             auto ent = handle.Get();
             if (handle.IsValid() && (ent == nullptr || ent->GetOwnerEntity() != player)) {
-                ent = static_cast<CEconEntity *>(DETOUR_MEMBER_CALL(CTFPlayer_GetEntityForLoadoutSlot)(slot));
+                ent = static_cast<CEconEntity *>(DETOUR_MEMBER_CALL(slot));
                 data->quickItemInLoadoutSlot[slot] = ent;
             }
             return ent;
@@ -364,7 +364,7 @@ namespace Mod::Perf::Func_Optimize
         if (index != -1 && !IsDynamicModelIndex(index)) {
             return index;
         }
-        return DETOUR_STATIC_CALL(CBaseEntity_PrecacheModel)(model);
+        return DETOUR_STATIC_CALL(model);
     }
 
     class CModelLoader {};
@@ -376,11 +376,11 @@ namespace Mod::Perf::Func_Optimize
         if (index != -1) {
             return index;
         }
-        auto ret = DETOUR_MEMBER_CALL(CModelInfoServer_RegisterDynamicModel)(model, isClient);
+        auto ret = DETOUR_MEMBER_CALL(model, isClient);
         CModelLoader_FlushDynamicModels(modelloader.GetRef());
         return ret;
         //return CBaseEntity::PrecacheModel(model);
-        // if (useOrig) return DETOUR_MEMBER_CALL(CModelInfoServer_RegisterDynamicModel)(model, isClient);
+        // if (useOrig) return DETOUR_MEMBER_CALL(model, isClient);
         
         // auto player = reinterpret_cast<CTFPlayer *>(this);
         // auto data = GetExtraPlayerData(player, false);
@@ -388,7 +388,7 @@ namespace Mod::Perf::Func_Optimize
         //     auto handle = data->quickItemInLoadoutSlot[slot];
         //     auto ent = handle.Get();
         //     if (handle.IsValid() && (ent == nullptr || ent->GetOwnerEntity() != player)) {
-        //         ent = static_cast<CEconEntity *>(DETOUR_MEMBER_CALL(CTFPlayer_GetEntityForLoadoutSlot)(slot));
+        //         ent = static_cast<CEconEntity *>(DETOUR_MEMBER_CALL(slot));
         //         data->quickItemInLoadoutSlot[slot] = ent;
         //     }
         //     return ent;
@@ -398,19 +398,19 @@ namespace Mod::Perf::Func_Optimize
     DETOUR_DECL_MEMBER(void, CMDLCache_BeginLock)
 	{
         AVERAGE_TIME(begin);
-        DETOUR_MEMBER_CALL(CMDLCache_BeginLock)();
+        DETOUR_MEMBER_CALL();
     }
     DETOUR_DECL_MEMBER(void, CMDLCache_EndLock)
 	{
         AVERAGE_TIME(end);
-        DETOUR_MEMBER_CALL(CMDLCache_EndLock)();
+        DETOUR_MEMBER_CALL();
         
     }
     
 #ifdef SE_IS_TF2
     DETOUR_DECL_STATIC(void, CTFPlayer_PrecacheMvM)
 	{
-        DETOUR_STATIC_CALL(CTFPlayer_PrecacheMvM)();
+        DETOUR_STATIC_CALL();
         for (int i = 1; i < TF_CLASS_COUNT; i++) {
             auto hatDef = GetItemSchema()->GetItemDefinitionByName(g_szRomePromoItems_Hat[i]);
             auto hatModel = hatDef != nullptr ? hatDef->GetKeyValues()->GetString("model_player") : nullptr;
@@ -437,7 +437,7 @@ namespace Mod::Perf::Func_Optimize
 		bool ret;
         {
             //AVERAGE_TIME2(SpeakConcept);
-            ret = DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+            ret = DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
         }
         return ret;
 	}
@@ -464,7 +464,7 @@ namespace Mod::Perf::Func_Optimize
             // MemProtModifier_RX_RWX((void *)(caller-5), 5);
             // memcpy((void *)(caller-5), buf.CPtr(), 5);
         //}
-		return DETOUR_MEMBER_CALL(CThreadLocalBase_Get)();
+		return DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(void, CTFBot_AvoidPlayers, CUserCmd *cmd)
@@ -473,7 +473,7 @@ namespace Mod::Perf::Func_Optimize
 		if ((bot->entindex() + gpGlobals->tickcount) % 8 == 0) {
             float forwardPre = cmd->forwardmove;
             float sidePre = cmd->sidemove;
-            DETOUR_MEMBER_CALL(CTFBot_AvoidPlayers)(cmd);
+            DETOUR_MEMBER_CALL(cmd);
             auto data = GetExtraBotData(bot);
             data->lastForwardMove = cmd->forwardmove - forwardPre;
             data->lastSideMove = cmd->sidemove - sidePre;
@@ -558,7 +558,7 @@ namespace Mod::Perf::Func_Optimize
 		item_name = item;
 		bot_additem = reinterpret_cast<CTFBot *>(this);
 		bot_classnum = bot_additem->GetPlayerClass()->GetClassIndex();
-		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
+		DETOUR_MEMBER_CALL(item);
 	}
 
     DETOUR_DECL_MEMBER(void *, CItemGeneration_GenerateRandomItem, void *criteria, const Vector &vec, const QAngle &ang, const char *name)
@@ -577,7 +577,7 @@ namespace Mod::Perf::Func_Optimize
                 return ItemGeneration()->SpawnItem(item_def->m_iItemDefIndex,vec, ang, 6, 9999, item_def->GetItemClass());
             }
         }
-        return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
+        return DETOUR_MEMBER_CALL(criteria,vec,ang, name);
     }
 	std::unordered_map<std::string, CEconItemAttributeDefinition *> attributeCache;
 
@@ -591,7 +591,7 @@ namespace Mod::Perf::Func_Optimize
         if (find != attributeCache.end()) {
             return find->second;
         }
-		auto attr = DETOUR_MEMBER_CALL(CEconItemSchema_GetAttributeDefinitionByName)(name);
+		auto attr = DETOUR_MEMBER_CALL(name);
         attributeCache[str] = attr;
         return attr;
     }
@@ -599,12 +599,12 @@ namespace Mod::Perf::Func_Optimize
     DETOUR_DECL_MEMBER(void, CEconItemSchema_Reset)
 	{
         attributeCache.clear();
-        DETOUR_MEMBER_CALL(CEconItemSchema_Reset)();
+        DETOUR_MEMBER_CALL();
     }
 
     DETOUR_DECL_MEMBER(bool, CEconItemSchema_BInitAttributes, KeyValues *kv, CUtlVector<CUtlString> *errors)
 	{
-        auto ret = DETOUR_MEMBER_CALL(CEconItemSchema_BInitAttributes)(kv, errors);
+        auto ret = DETOUR_MEMBER_CALL(kv, errors);
         attributeCache.clear();
         return ret;
     }
@@ -642,7 +642,7 @@ namespace Mod::Perf::Func_Optimize
             restorebot = true;
         }
 		int preMaxPlayers = gpGlobals->maxClients;
-		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+		DETOUR_MEMBER_CALL(player, cmd);
         if (restorebot) {
             player->m_fFlags |= FL_FAKECLIENT;
             restorebot = false;
@@ -654,13 +654,13 @@ namespace Mod::Perf::Func_Optimize
         if (restorebot) {
             Msg("Backtracking amount %f\n", gpGlobals->curtime - flTargetTime);
         }
-		DETOUR_MEMBER_CALL(CLagCompensationManager_BacktrackPlayer)(player, flTargetTime);
+		DETOUR_MEMBER_CALL(player, flTargetTime);
     }
 
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_FinishLagCompensation, CBasePlayer *player)
 	{
 		int preMaxPlayers = gpGlobals->maxClients;
-		DETOUR_MEMBER_CALL(CLagCompensationManager_FinishLagCompensation)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 
 

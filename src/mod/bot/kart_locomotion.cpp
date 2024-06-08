@@ -36,7 +36,7 @@ namespace Mod::Bot::Kart_Locomotion
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBotMainAction_Dodge)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	/* don't strafe and jump around when stuck */
@@ -46,7 +46,7 @@ namespace Mod::Bot::Kart_Locomotion
 			return EventDesiredResult<CTFBot>::Continue();
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnStuck)(actor);
+		return DETOUR_MEMBER_CALL(actor);
 	}
 	
 	
@@ -56,7 +56,7 @@ namespace Mod::Bot::Kart_Locomotion
 		auto loco = reinterpret_cast<ILocomotion *>(this);
 		CTFBot *bot = ToTFBot(loco->GetBot()->GetEntity());
 		
-		DETOUR_MEMBER_CALL(PlayerLocomotion_Approach)(dst, f1);
+		DETOUR_MEMBER_CALL(dst, f1);
 		
 		if (bot != nullptr && bot->m_Shared->InCond(TF_COND_HALLOWEEN_KART)) {
 

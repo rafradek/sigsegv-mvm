@@ -280,7 +280,7 @@ namespace Mod::MvM::Robot_Limit
 	{
 		SCOPED_INCREMENT(rc_JumpToWave);
 		//DevMsg("[%8.3f] JumpToWaveRobotlimit\n", gpGlobals->curtime);
-		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
+		DETOUR_MEMBER_CALL(wave, f1);
 		
 
 		THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
@@ -290,7 +290,7 @@ namespace Mod::MvM::Robot_Limit
 	DETOUR_DECL_MEMBER(void, CPopulationManager_WaveEnd, bool b1)
 	{
 		//DevMsg("[%8.3f] WaveEnd\n", gpGlobals->curtime);
-		DETOUR_MEMBER_CALL(CPopulationManager_WaveEnd)(b1);
+		DETOUR_MEMBER_CALL(b1);
 
 		CUtlVector<CTFPlayer *> mvm_bots;
 		CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
@@ -299,7 +299,7 @@ namespace Mod::MvM::Robot_Limit
 	
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
 	{
-		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+		DETOUR_MEMBER_CALL(success);
 		if (!success && rc_JumpToWave == 0) {
 			//DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
 			CUtlVector<CTFPlayer *> mvm_bots;
@@ -310,7 +310,7 @@ namespace Mod::MvM::Robot_Limit
 
 	DETOUR_DECL_MEMBER(ActionResult< CTFBot >, CTFBotDead_Update, CTFBot *bot, float interval)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBotDead_Update)(bot,interval);
+		auto result = DETOUR_MEMBER_CALL(bot,interval);
 		if (result.transition == ActionTransition::DONE) {
 			CUtlVector<CTFPlayer *> mvm_bots;
 			CollectMvMBots(&mvm_bots, cvar_fix_red.GetBool());
@@ -323,7 +323,7 @@ namespace Mod::MvM::Robot_Limit
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_StartCurrentWave)
 	{
-		DETOUR_MEMBER_CALL(CPopulationManager_StartCurrentWave)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CGameServer_SetHibernating, bool hibernate)
@@ -334,14 +334,14 @@ namespace Mod::MvM::Robot_Limit
 				THINK_FUNC_SET(g_pPopulationManager, SpawnBots, gpGlobals->curtime + 0.12f);
 		}
 		hibernated = hibernate;
-		DETOUR_MEMBER_CALL(CGameServer_SetHibernating)(hibernate);
+		DETOUR_MEMBER_CALL(hibernate);
 	}
 
 	CWaveSpawnPopulator *populator_parse = nullptr;
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv_orig)
 	{
 		populator_parse = reinterpret_cast<CWaveSpawnPopulator *>(this);
-		bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv_orig);
+		bool result = DETOUR_MEMBER_CALL(kv_orig);
 		populator_parse = nullptr;
 		
 		return result;
@@ -353,7 +353,7 @@ namespace Mod::MvM::Robot_Limit
 			// Unused variable, now used to tell if the wavespawn contains a tfbot spawner
 			populator_parse->m_bHasTFBotSpawner = true;
 		}
-		return DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
+		return DETOUR_MEMBER_CALL(kv_orig);
 	}
 
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
@@ -365,7 +365,7 @@ namespace Mod::MvM::Robot_Limit
 			offset = - (GetMvMInvaderLimit() - 22);
 		}
 		slots += offset;
-		DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Update)();
+		DETOUR_MEMBER_CALL();
 		slots -= offset;
 	}
 

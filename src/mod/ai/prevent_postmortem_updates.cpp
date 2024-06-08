@@ -13,7 +13,7 @@ namespace Mod::AI::Prevent_Postmortem_Updates
 			return EventDesiredResult<CTFBot>::ChangeTo(CTFBotDead::New(), "I died!");
 		}
 		
-		return DETOUR_MEMBER_CALL(Action_CTFBot_OnKilled)(actor, info);
+		return DETOUR_MEMBER_CALL(actor, info);
 	}
 	
 	

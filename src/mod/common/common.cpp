@@ -49,7 +49,7 @@ namespace Mod::Common::Common
 			}
 		}
 
-		bool ignored = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		bool ignored = DETOUR_MEMBER_CALL(ent);
 
 		if (restoreTeam != -1) {
 			player->m_Shared->m_nDisguiseTeam = restoreTeam;
@@ -75,7 +75,7 @@ namespace Mod::Common::Common
 			return entityme->GetTeamNumber() != entityhit->GetTeamNumber() || !entityhit->IsPlayer();
 		}
 
-		bool result = DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
+		bool result = DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 
 		if (result) {
 
@@ -106,7 +106,7 @@ namespace Mod::Common::Common
 
     DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, bool, PassServerEntityFilter, IHandleEntity *ent1, IHandleEntity *ent2)
 	{
-        auto ret = DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
+        auto ret = DETOUR_STATIC_CALL(ent1, ent2);
         {
             if (ret) {
                 auto entity1 = EntityFromEntityHandle(ent1);

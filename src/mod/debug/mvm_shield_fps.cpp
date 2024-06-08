@@ -127,7 +127,7 @@ namespace Debug_MvM_Shield_FPS
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 	
 	

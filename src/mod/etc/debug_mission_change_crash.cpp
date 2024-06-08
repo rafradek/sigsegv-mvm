@@ -48,7 +48,7 @@ namespace Mod::Etc::Debug_Mission_Change_Crash
 			Msg("[CBaseEntity::SetNextThink(index)] ENTER: vtptr == nullptr (ent @ 0x%08x, ent #%d, ctx %d, next @ %.3f, reltime %.3f)\n", (uintptr_t)ent, GetEntityIndexOfPtr(ent), nContextIndex, thinkTime, thinkTime - gpGlobals->curtime);
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_SetNextThink_index)(nContextIndex, thinkTime);
+		DETOUR_MEMBER_CALL(nContextIndex, thinkTime);
 		
 		if (ent == nullptr || *reinterpret_cast<void **>(ent) == nullptr) {
 			BACKTRACE();
@@ -71,7 +71,7 @@ namespace Mod::Etc::Debug_Mission_Change_Crash
 			BACKTRACE();
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_SetNextThink_name)(nextThinkTime, szContext);
+		DETOUR_MEMBER_CALL(nextThinkTime, szContext);
 		
 		if (ent == nullptr || *reinterpret_cast<void **>(ent) == nullptr) {
 			BACKTRACE();

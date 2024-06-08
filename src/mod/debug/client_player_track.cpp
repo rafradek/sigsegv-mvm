@@ -49,7 +49,7 @@ namespace Mod::Client::Player_Track
 		
 		TrackPlayers();
 		
-		DETOUR_MEMBER_CALL(CViewRender_Render)(rect);
+		DETOUR_MEMBER_CALL(rect);
 	}
 	
 	

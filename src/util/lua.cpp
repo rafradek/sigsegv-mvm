@@ -4178,7 +4178,7 @@ namespace Util::Lua
     DETOUR_DECL_MEMBER(void, CBaseEntity_Activate)
 	{
         auto entity = reinterpret_cast<CBaseEntity *>(this);
-        DETOUR_MEMBER_CALL(CBaseEntity_Activate)();
+        DETOUR_MEMBER_CALL();
         auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr) {
             mod->FireCallback(ON_ACTIVATE);
@@ -4187,7 +4187,7 @@ namespace Util::Lua
 
 	DETOUR_DECL_STATIC(int, DispatchSpawn, CBaseEntity *entity, bool flag)
 	{
-        auto result = DETOUR_STATIC_CALL(DispatchSpawn)(entity, flag);
+        auto result = DETOUR_STATIC_CALL(entity, flag);
         if (entity != nullptr) {
             auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
             if (mod != nullptr && !entity->IsPlayer()) {
@@ -4199,7 +4199,7 @@ namespace Util::Lua
 
 	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
 	{
-		auto entity = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+		auto entity = DETOUR_STATIC_CALL(className, iForceEdictIndex);
         if (entity != nullptr && !entity_create_callbacks.empty()) {
             for(auto &callback : entity_create_callbacks) {
                 if (entity->GetClassnameString() == callback.classname || (callback.wildcard && NamesMatch(STRING(callback.classname), entity->GetClassnameString()))) {
@@ -4250,7 +4250,7 @@ namespace Util::Lua
             mod->lastTakeDamage = infooverride;
         }
 
-		damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(infooverride);
+		damage = DETOUR_MEMBER_CALL(infooverride);
 
         if (mod != nullptr&& !mod->callbacks[ON_DAMAGE_RECEIVED_POST].empty()) {
             auto &callbackList = mod->callbacks[ON_DAMAGE_RECEIVED_POST];
@@ -4274,7 +4274,7 @@ namespace Util::Lua
     DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, const CTakeDamageInfo& info)
 	{
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
-		auto ret = DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+		auto ret = DETOUR_MEMBER_CALL(info);
 
         auto mod = entity->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr) {
@@ -4303,7 +4303,7 @@ namespace Util::Lua
                 return true;
             }
         }
-        return DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
+        return DETOUR_MEMBER_CALL(szInputName, pActivator, pCaller, Value, outputID);
     }
 
 
@@ -4344,12 +4344,12 @@ namespace Util::Lua
                 return;
             }
         }
-        return DETOUR_MEMBER_CALL(CBaseEntityOutput_FireOutput)(Value, pActivator, pCaller, fDelay);
+        return DETOUR_MEMBER_CALL(Value, pActivator, pCaller, fDelay);
     }
 
 	DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
 	{
-        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        DETOUR_MEMBER_CALL(edict, playername);
         for(auto state : LuaState::List()) {
             LEntityAlloc(state->GetState(), GetContainingEntity(edict));
             state->CallGlobalCallback("OnPlayerConnected", 1, 0);
@@ -4359,7 +4359,7 @@ namespace Util::Lua
     DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
         auto player = reinterpret_cast<CTFPlayer *>(this);
-        DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
         for(auto state : LuaState::List()) {
             LEntityAlloc(state->GetState(), player);
             state->CallGlobalCallback("OnPlayerDisconnected", 1, 0);
@@ -4370,7 +4370,7 @@ namespace Util::Lua
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayer*>(this);
         int prebuttons = player->m_nButtons;
-		DETOUR_MEMBER_CALL(CBasePlayer_PlayerRunCommand)(cmd, moveHelper);
+		DETOUR_MEMBER_CALL(cmd, moveHelper);
         if (prebuttons != cmd->buttons) {
             auto mod = player->GetEntityModule<LuaEntityModule>("luaentity");
             if (mod != nullptr) {
@@ -4426,11 +4426,11 @@ namespace Util::Lua
                 lua_settop(l, 0);
             }
             if(overriden) {
-                DETOUR_MEMBER_CALL(CBaseEntity_Event_Killed)(infooverride);
+                DETOUR_MEMBER_CALL(infooverride);
                 return;
             }
         }
-		DETOUR_MEMBER_CALL(CBaseEntity_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
     DETOUR_DECL_MEMBER(void, CBaseCombatCharacter_Event_Killed, CTakeDamageInfo &info)
@@ -4461,16 +4461,16 @@ namespace Util::Lua
                 lua_settop(l, 0);
             }
             if(overriden) {
-                DETOUR_MEMBER_CALL(CBaseCombatCharacter_Event_Killed)(infooverride);
+                DETOUR_MEMBER_CALL(infooverride);
                 return;
             }
         }
-		DETOUR_MEMBER_CALL(CBaseCombatCharacter_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+		DETOUR_MEMBER_CALL();
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this); 
         auto mod = player->GetEntityModule<LuaEntityModule>("luaentity");
         if (mod != nullptr) {
@@ -4501,7 +4501,7 @@ namespace Util::Lua
 		auto entity = reinterpret_cast<CBaseCombatWeapon *>(this);
         if (!CheckDeploy(ON_EQUIP_ITEM, owner, entity)) return;
         
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+		DETOUR_MEMBER_CALL(owner);
 	}
 
     DETOUR_DECL_MEMBER(void, CTFWearable_Equip, CBasePlayer *owner)
@@ -4509,7 +4509,7 @@ namespace Util::Lua
 		auto entity = reinterpret_cast<CTFWearable *>(this);
         if (!CheckDeploy(ON_EQUIP_ITEM, owner, entity)) return;
         
-		DETOUR_MEMBER_CALL(CTFWearable_Equip)(owner);
+		DETOUR_MEMBER_CALL(owner);
 	}
 
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
@@ -4527,7 +4527,7 @@ namespace Util::Lua
             mod->FireCallback(ON_DEPLOY_WEAPON, &func, 1, &funcReturn, 1);
             if (!give) return false;
         }
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		return DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster, CBaseCombatWeapon *newWeapon)
@@ -4548,7 +4548,7 @@ namespace Util::Lua
             if (!give) return false;
         }
 		
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)(newWeapon);
+		return DETOUR_MEMBER_CALL(newWeapon);
 	}
 
     class PlayerLoadoutUpdatedListener : public IBitBufUserMessageListener
@@ -4633,7 +4633,7 @@ namespace Util::Lua
                 return result;
             }
         }
-        return DETOUR_STATIC_CALL(PassServerEntityFilter)(ent1, ent2);
+        return DETOUR_STATIC_CALL(ent1, ent2);
     }
 
     DETOUR_DECL_MEMBER(int, CCollisionEvent_ShouldCollide, IPhysicsObject *pObj0, IPhysicsObject *pObj1, void *pGameData0, void *pGameData1)
@@ -4648,7 +4648,7 @@ namespace Util::Lua
                 return result;
             }
         }
-        return DETOUR_MEMBER_CALL(CCollisionEvent_ShouldCollide)(pObj0, pObj1, pGameData0, pGameData1);
+        return DETOUR_MEMBER_CALL(pObj0, pObj1, pGameData0, pGameData1);
     }
 
     bool DoTouchCallback(CallbackType type, CBaseEntity *entity, CBaseEntity *other)
@@ -4673,7 +4673,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_START_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBaseEntity_StartTouch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_EndTouch, CBaseEntity *other)
@@ -4681,7 +4681,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_END_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBaseEntity_EndTouch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseTrigger_StartTouch, CBaseEntity *other)
@@ -4689,7 +4689,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_START_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBaseTrigger_StartTouch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseTrigger_EndTouch, CBaseEntity *other)
@@ -4697,7 +4697,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_END_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBaseTrigger_EndTouch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
 
     DETOUR_DECL_MEMBER(void, CBaseEntity_Touch, CBaseEntity *other)
@@ -4705,7 +4705,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
 
     DETOUR_DECL_MEMBER(void, CBasePlayer_Touch, CBaseEntity *other)
@@ -4713,7 +4713,7 @@ namespace Util::Lua
         CBaseEntity *entity = reinterpret_cast<CBaseEntity *>(this);
         if (!DoTouchCallback(ON_TOUCH, entity, other)) return; 
         
-        return DETOUR_MEMBER_CALL(CBasePlayer_Touch)(other);
+        return DETOUR_MEMBER_CALL(other);
     }
     
     class CGameEvent : public IGameEvent
@@ -4782,7 +4782,7 @@ namespace Util::Lua
             }
         } 
 		
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 
     DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
@@ -4802,7 +4802,7 @@ namespace Util::Lua
         if (action == ACTION_CONTINUE) {
             
             SCOPED_INCREMENT(rc_CTFWeaponBaseGun_FireProjectile);
-            DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+            DETOUR_MEMBER_CALL();
         }
  		
         if (mod != nullptr) {
@@ -4831,7 +4831,7 @@ namespace Util::Lua
         CBaseAnimating *proj = nullptr;
         if (action == ACTION_CONTINUE) {
             SCOPED_INCREMENT(rc_CTFWeaponBaseGun_FireProjectile);
-            proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+            proj = DETOUR_MEMBER_CALL(player);
         }
 
         if (action == ACTION_HANDLED) {
@@ -4862,7 +4862,7 @@ namespace Util::Lua
 
     DETOUR_DECL_MEMBER(void, CPlayerMove_StartCommand, CBasePlayer *player, CUserCmd *ucmd)
 	{
-		DETOUR_MEMBER_CALL(CPlayerMove_StartCommand)(player, ucmd);
+		DETOUR_MEMBER_CALL(player, ucmd);
         auto mod = player->GetEntityModule<PlayerUserCmdModule>("playerusercmd");
         if (mod != nullptr) {
             mod->lastPlayerUserCmd = *ucmd;
@@ -4943,7 +4943,7 @@ namespace Util::Lua
                 }
             }
         } 
-        DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter, delay, pSender, pST, classID);
+        DETOUR_MEMBER_CALL(filter, delay, pSender, pST, classID);
 	}
 
     class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener

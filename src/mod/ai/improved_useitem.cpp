@@ -211,7 +211,7 @@ namespace Mod::AI::Improved_UseItem
 		
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
-		CTFBotUseItem *result = reinterpret_cast<CTFBotUseItem *>(DETOUR_MEMBER_CALL(CTFBot_OpportunisticallyUseWeaponAbilities)());
+		CTFBotUseItem *result = reinterpret_cast<CTFBotUseItem *>(DETOUR_MEMBER_CALL());
 		if (result != nullptr) {
 			CTFWeaponBase *item = result->m_hItem;
 			
@@ -318,7 +318,7 @@ namespace Mod::AI::Improved_UseItem
 		if (item_noisemaker != nullptr) {
 			return item_noisemaker;
 		}
-		return DETOUR_MEMBER_CALL(CPlayerInventory_GetInventoryItemByItemID)(param1, itemid);
+		return DETOUR_MEMBER_CALL(param1, itemid);
 	}
 	std::vector<bool> stack_m_bPlayingMannVsMachine;
 	void Quirk_MvM_Pre()
@@ -344,7 +344,7 @@ namespace Mod::AI::Improved_UseItem
 		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
 		TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 
-		auto result = DETOUR_MEMBER_CALL(CTFBot_EquipLongRangeWeapon)();
+		auto result = DETOUR_MEMBER_CALL();
 
 		TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
 		//Quirk_MvM_Post();

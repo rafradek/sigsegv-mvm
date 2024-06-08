@@ -78,14 +78,14 @@ namespace Mod::MvM::Human_Death_Yells
 	DETOUR_DECL_MEMBER(void, CTFPlayer_SpyDeadRingerDeath, const CTakeDamageInfo& info)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_SpyDeadRingerDeath);
-		DETOUR_MEMBER_CALL(CTFPlayer_SpyDeadRingerDeath)(info);
+		DETOUR_MEMBER_CALL(info);
 	
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+		DETOUR_MEMBER_CALL(info);
 		
 		/* these checks are essentially in reverse order */
 		if (TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() != TF_TEAM_BLUE && !rc_CTFPlayer_SpyDeadRingerDeath) {

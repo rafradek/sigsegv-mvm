@@ -10,7 +10,7 @@ namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
 	DETOUR_DECL_MEMBER(void, CPointPopulatorInterface_InputChangeBotAttributes, inputdata_t& inputdata)
 	{
 		SCOPED_INCREMENT(rc_CPointPopulatorInterface_InputChangeBotAttributes);
-		DETOUR_MEMBER_CALL(CPointPopulatorInterface_InputChangeBotAttributes)(inputdata);
+		DETOUR_MEMBER_CALL(inputdata);
 	}
 	
 	DETOUR_DECL_MEMBER(CTFBot::EventChangeAttributes_t *, CTFBot_GetEventChangeAttributes, const char *name)
@@ -23,7 +23,7 @@ namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
 			PrintToChatAll("Invalid changebotattributes name");
 			return nullptr;
 		}
-		return DETOUR_MEMBER_CALL(CTFBot_GetEventChangeAttributes)(name);
+		return DETOUR_MEMBER_CALL(name);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_AddEventChangeAttributes, CTFBot::EventChangeAttributes_t * ecattr)
@@ -33,7 +33,7 @@ namespace Mod::MvM::ChangeBotAttributes_Crash_Fix
 			return;
 		}
 
-	 	DETOUR_MEMBER_CALL(CTFBot_AddEventChangeAttributes)(ecattr);
+	 	DETOUR_MEMBER_CALL(ecattr);
 	}
 
 	class CMod : public IMod

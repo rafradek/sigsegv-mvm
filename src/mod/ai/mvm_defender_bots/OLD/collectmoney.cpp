@@ -216,7 +216,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		DETOUR_DECL_MEMBER(void, IVision_UpdateKnownEntities)
 		{
 			SCOPED_INCREMENT(rc_IVision_UpdateKnownEntities);
-			DETOUR_MEMBER_CALL(IVision_UpdateKnownEntities)();
+			DETOUR_MEMBER_CALL();
 		}
 		
 		DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
@@ -227,13 +227,13 @@ namespace Mod::AI::MvM_Defender_Bots
 				}
 			}
 			
-			return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+			return DETOUR_MEMBER_CALL(ent);
 		}
 		
 		
 		DETOUR_DECL_MEMBER(void, CTFBotVision_CollectPotentiallyVisibleEntities, CUtlVector<CBaseEntity *> *ents)
 		{
-			DETOUR_MEMBER_CALL(CTFBotVision_CollectPotentiallyVisibleEntities)(ents);
+			DETOUR_MEMBER_CALL(ents);
 			
 			IVision *vision = reinterpret_cast<IVision *>(this);
 			
@@ -255,7 +255,7 @@ namespace Mod::AI::MvM_Defender_Bots
 //				return ActionResult<CTFBot>::SuspendFor(new CTFBotCollectMoney(), "Collecting money.");
 //			}
 //			
-//			return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_Update)(actor, dt);
+//			return DETOUR_MEMBER_CALL(actor, dt);
 //		}
 		
 		

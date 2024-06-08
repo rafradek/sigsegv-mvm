@@ -23,13 +23,13 @@ namespace Mod::Debug::Deflect_Angle_v2
 	{
 		deflect_ent = ent;
 		SCOPED_INCREMENT(rc_CTFWeaponBase_DeflectEntity);
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_DeflectEntity)(ent, player, v1);
+		return DETOUR_MEMBER_CALL(ent, player, v1);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 		
 		if (rc_CTFWeaponBase_DeflectEntity > 0 && fMask == 0x200400b) {
 		//	NDebugOverlay::Line(pTrace->startpos, pTrace->endpos, 0x00, 0xff, 0x00, false, 2.0f);
@@ -108,7 +108,7 @@ namespace Mod::Debug::Deflect_Angle_v2
 			if (pEntity->IsPlayer()) return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTraceFilterDeflection_ShouldHitEntity)(pHandleEntity, contentsMask);
+		return DETOUR_MEMBER_CALL(pHandleEntity, contentsMask);
 	}
 	
 	

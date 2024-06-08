@@ -10,7 +10,7 @@ namespace Mod::Robot::Standable_Heads
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
 	{
 		SCOPED_INCREMENT(rc_TFPlayerThink);
-		DETOUR_MEMBER_CALL(CTFPlayer_TFPlayerThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyAbsVelocityImpulse, const Vector *v1)
@@ -24,7 +24,7 @@ namespace Mod::Robot::Standable_Heads
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
+		DETOUR_MEMBER_CALL(v1);
 	}
 	
 	

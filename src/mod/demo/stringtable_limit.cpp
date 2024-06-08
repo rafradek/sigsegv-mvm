@@ -29,35 +29,35 @@ namespace Mod::Demo::StringTable_Limit
 	DETOUR_DECL_MEMBER(netpacket_t *, CDemoPlayer_ReadPacket)
 	{
 		SCOPED_INCREMENT(rc_CDemoPlayer_ReadPacket);
-		return DETOUR_MEMBER_CALL(CDemoPlayer_ReadPacket)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CHLTVServer_ReadCompeleteDemoFile;
 	DETOUR_DECL_MEMBER(void, CHLTVServer_ReadCompeleteDemoFile)
 	{
 		SCOPED_INCREMENT(rc_CHLTVServer_ReadCompeleteDemoFile);
-		DETOUR_MEMBER_CALL(CHLTVServer_ReadCompeleteDemoFile)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CDemoRecorder_RecordStringTables;
 	DETOUR_DECL_MEMBER(void, CDemoRecorder_RecordStringTables)
 	{
 		SCOPED_INCREMENT(rc_CDemoRecorder_RecordStringTables);
-		DETOUR_MEMBER_CALL(CDemoRecorder_RecordStringTables)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CHLTVDemoRecorder_RecordStringTables;
 	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_RecordStringTables)
 	{
 		SCOPED_INCREMENT(rc_CHLTVDemoRecorder_RecordStringTables);
-		DETOUR_MEMBER_CALL(CHLTVDemoRecorder_RecordStringTables)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CReplayDemoRecorder_RecordStringTables;
 	DETOUR_DECL_MEMBER(void, CReplayDemoRecorder_RecordStringTables)
 	{
 		SCOPED_INCREMENT(rc_CReplayDemoRecorder_RecordStringTables);
-		DETOUR_MEMBER_CALL(CReplayDemoRecorder_RecordStringTables)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -79,7 +79,7 @@ namespace Mod::Demo::StringTable_Limit
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CStdMemAlloc_Alloc)(nSize);
+		return DETOUR_MEMBER_CALL(nSize);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CUtlBuffer_EnsureCapacity, int num)
@@ -91,7 +91,7 @@ namespace Mod::Demo::StringTable_Limit
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CUtlBuffer_EnsureCapacity)(num);
+		DETOUR_MEMBER_CALL(num);
 	}
 	
 	DETOUR_DECL_MEMBER(void, bf_read_ctor, const char *pDebugName, const void *pData, int nBytes, int nBits)
@@ -106,7 +106,7 @@ namespace Mod::Demo::StringTable_Limit
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(bf_read_ctor)(pDebugName, pData, nBytes, nBits);
+		DETOUR_MEMBER_CALL(pDebugName, pData, nBytes, nBits);
 	}
 	
 	DETOUR_DECL_MEMBER(void, bf_write_ctor, void *pData, int nBytes, int nMaxBits)
@@ -124,7 +124,7 @@ namespace Mod::Demo::StringTable_Limit
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(bf_write_ctor)(pData, nBytes, nMaxBits);
+		DETOUR_MEMBER_CALL(pData, nBytes, nMaxBits);
 	}
 	
 	

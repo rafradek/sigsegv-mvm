@@ -200,7 +200,7 @@ namespace Mod::Pop::Nested_Complex_Spawners
 	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
 	{
 		++rc_CWave_Parse_actual;
-		auto result = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+		auto result = DETOUR_MEMBER_CALL(kv);
 		--rc_CWave_Parse_actual;
 		
 		if (result) {
@@ -215,39 +215,39 @@ namespace Mod::Pop::Nested_Complex_Spawners
 	DETOUR_DECL_MEMBER(void, CWave_AddClassType, string_t icon, int count, unsigned int flags)
 	{
 		if (rc_CWave_Parse_actual > 0) return;
-		DETOUR_MEMBER_CALL(CWave_AddClassType)(icon, count, flags);
+		DETOUR_MEMBER_CALL(icon, count, flags);
 	}
 	
 	DETOUR_DECL_MEMBER(string_t, CSquadSpawner_GetClassIcon, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return NULL_STRING;
-		return DETOUR_MEMBER_CALL(CSquadSpawner_GetClassIcon)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CSquadSpawner_IsMiniBoss, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return false;
-		return DETOUR_MEMBER_CALL(CSquadSpawner_IsMiniBoss)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CSquadSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return false;
-		return DETOUR_MEMBER_CALL(CSquadSpawner_HasAttribute)(attr, index);
+		return DETOUR_MEMBER_CALL(attr, index);
 	}
 	
 	DETOUR_DECL_MEMBER(string_t, CRandomChoiceSpawner_GetClassIcon, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return NULL_STRING;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_GetClassIcon)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_IsMiniBoss, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_IsMiniBoss)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
 	{
 		if (rc_CWave_Parse_actual > 0) return false;
-		return DETOUR_MEMBER_CALL(CRandomChoiceSpawner_HasAttribute)(attr, index);
+		return DETOUR_MEMBER_CALL(attr, index);
 	}
 	
 	

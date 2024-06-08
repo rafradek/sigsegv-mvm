@@ -103,7 +103,7 @@ namespace Mod::MvM::Red_Robot_Eye_Glow
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		DETOUR_MEMBER_CALL(iTeamNum, b1, b2, b3);
 
 		if (iTeamNum == TF_TEAM_RED || (iTeamNum == TEAM_SPECTATOR && player->IsAlive())) {
             const char *modelname = player->GetPlayerClass()->GetCustomModel();
@@ -119,19 +119,19 @@ namespace Mod::MvM::Red_Robot_Eye_Glow
         auto player = shared->GetOuter();
         DeployModel(player, s1);
 
-		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
+		DETOUR_MEMBER_CALL(s1, b1);
 	}
 
     DETOUR_DECL_MEMBER(void, CTFBot_OnEventChangeAttributes, void *ecattr)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
         DeployModel(player, player->GetPlayerClass()->GetCustomModel());
-		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
+		DETOUR_MEMBER_CALL(ecattr);
     }
 
     DETOUR_DECL_MEMBER(void, CTFGameRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
 	{
-		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
+		DETOUR_MEMBER_CALL(pVictim, info);
 
 		if (pVictim->GetCustomVariableFloat<"CustomEyeGlow">()) {
             StopParticleEffects(pVictim);

@@ -28,7 +28,7 @@ namespace Mod::Etc::Player_Bullet_Bounding_Fix
 			}
 			
 		});
-		DETOUR_STATIC_CALL(FX_FireBullets)(pWpn, iPlayer, vecOrigin, vecAngles, iWeapon, iMode, iSeed, flSpread, flDamage, bCritical);
+		DETOUR_STATIC_CALL(pWpn, iPlayer, vecOrigin, vecAngles, iWeapon, iMode, iSeed, flSpread, flDamage, bCritical);
 		
 		for (CBasePlayer *playerl : player_vec) {
             playerl->CollisionProp()->SetSurroundingBoundsType(USE_SPECIFIED_BOUNDS, &VEC_HULL_MIN, &VEC_HULL_MAX);

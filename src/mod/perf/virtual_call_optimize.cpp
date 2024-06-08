@@ -695,7 +695,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
     }
     DETOUR_DECL_MEMBER(void *, CBaseEntity_GetNetworkable)
 	{
-        void *result = DETOUR_MEMBER_CALL(CBaseEntity_GetNetworkable)();
+        void *result = DETOUR_MEMBER_CALL();
         auto addr = (uint8_t*)__builtin_return_address(0);
         if (addr[-3] == 0xFF && addr[-1] == 0x14) {
             static const uintptr_t offset = (uintptr_t) result - (uintptr_t)this;
@@ -705,7 +705,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
     }
     DETOUR_DECL_MEMBER(void *, CBaseEntity_GetCollideable)
 	{
-        void *result = DETOUR_MEMBER_CALL(CBaseEntity_GetCollideable)();
+        void *result = DETOUR_MEMBER_CALL();
         auto addr = (uint8_t*)__builtin_return_address(0);
         if (addr[-3] == 0xFF && addr[-1] == 0x10) {
             static const uintptr_t offset = (uintptr_t) result - (uintptr_t)this;
@@ -715,7 +715,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
     }
     DETOUR_DECL_MEMBER(void *, CBaseEntity_GetRefEHandle)
 	{
-        void *result = DETOUR_MEMBER_CALL(CBaseEntity_GetRefEHandle)();
+        void *result = DETOUR_MEMBER_CALL();
         auto addr = (uint8_t*)__builtin_return_address(0);
         if (addr[-3] == 0xFF && addr[-1] == 0x0c) {
             static const uintptr_t offset = (uintptr_t) result - (uintptr_t)this;
@@ -731,7 +731,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
         if (addr[-3] == 0xFF && addr[-1] == 0x08) {
             OptimizeVirtual(addr, 0x08, 0, 0x0C);
         }
-        return DETOUR_MEMBER_CALL(CServerNetworkProperty_GetEdict)();
+        return DETOUR_MEMBER_CALL();
     }
     DETOUR_DECL_MEMBER(void *, CServerNetworkProperty_GetEntityHandle)
 	{
@@ -740,12 +740,12 @@ namespace Mod::Perf::Virtual_Call_Optimize
         if (addr[-3] == 0xFF && addr[-1] == 0x00) {
             OptimizeVirtual(addr, 0x00, 0, 0x08);
         }
-        return DETOUR_MEMBER_CALL(CServerNetworkProperty_GetEntityHandle)();
+        return DETOUR_MEMBER_CALL();
     }
     DETOUR_DECL_MEMBER(void *, CServerNetworkProperty_GetServerClass)
 	{
         //Not optimizable
-        return DETOUR_MEMBER_CALL(CServerNetworkProperty_GetServerClass)();
+        return DETOUR_MEMBER_CALL();
     }
     DETOUR_DECL_MEMBER(void *, CServerNetworkProperty_GetBaseEntity)
 	{
@@ -753,7 +753,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
         if (addr[-3] == 0xFF && addr[-1] == 0x1c) {
             OptimizeVirtual(addr, 0x1c, 0, 0x08);
         }
-        return DETOUR_MEMBER_CALL(CServerNetworkProperty_GetBaseEntity)();
+        return DETOUR_MEMBER_CALL();
     }
     CProp_DataMap prop_classname("CBaseEntity", "m_iClassname", nullptr);
     DETOUR_DECL_MEMBER(void *, CServerNetworkProperty_GetClassName)
@@ -762,12 +762,12 @@ namespace Mod::Perf::Virtual_Call_Optimize
         if (addr[-3] == 0xFF && addr[-1] == 0x0c) {
             OptimizeVirtual(addr, 0x0c, 0, 0x08, prop_classname.GetOffsetDirect());
         }
-        return DETOUR_MEMBER_CALL(CServerNetworkProperty_GetClassName)();
+        return DETOUR_MEMBER_CALL();
     }
     DETOUR_DECL_MEMBER(void *, CServerNetworkProperty_GetPVSInfo)
 	{
         
-        void *result = DETOUR_MEMBER_CALL(CServerNetworkProperty_GetPVSInfo)();
+        void *result = DETOUR_MEMBER_CALL();
         
         auto addr = (uint8_t*)__builtin_return_address(0);
         if (addr[-3] == 0xFF && addr[-1] == 0x20) {
@@ -785,26 +785,26 @@ namespace Mod::Perf::Virtual_Call_Optimize
         if (addr[-3] == 0xFF && addr[-1] == 0x1c) {
             OptimizeVirtual(addr, 0x1C, 0, prop_model_index.GetOffsetDirect(), INT_MIN, DEREF_SHORT);
         }
-        return DETOUR_MEMBER_CALL(CBaseEntity_GetModelIndex)();
+        return DETOUR_MEMBER_CALL();
     }
     
     DETOUR_DECL_MEMBER(void *, CCollisionProperty_GetEntityHandle)
 	{
         OptimizeVirtual((uint8_t*)__builtin_return_address(0), 0x00, 0, 0x04);
-        void *result = DETOUR_MEMBER_CALL(CCollisionProperty_GetEntityHandle)();
+        void *result = DETOUR_MEMBER_CALL();
         return result;
     }
 
     DETOUR_DECL_MEMBER(int, CCollisionProperty_GetSolid)
 	{
         OptimizeVirtual((uint8_t*)__builtin_return_address(0), 0x34, 0, 0x41, INT_MIN, DEREF_BYTE);
-        return DETOUR_MEMBER_CALL(CCollisionProperty_GetSolid)();
+        return DETOUR_MEMBER_CALL();
     }
 
     DETOUR_DECL_MEMBER(int, CCollisionProperty_GetSolidFlags)
 	{
         OptimizeVirtual((uint8_t*)__builtin_return_address(0), 0x38, 0, 0x3c, INT_MIN, DEREF_SHORT);
-        return DETOUR_MEMBER_CALL(CCollisionProperty_GetSolidFlags)();
+        return DETOUR_MEMBER_CALL();
     }
 
 

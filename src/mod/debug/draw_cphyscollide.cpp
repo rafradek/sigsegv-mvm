@@ -87,7 +87,7 @@ namespace Mod::Debug::Draw_CPhysCollide
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(C_BaseAnimating_DrawModel)(flags);
+		return DETOUR_MEMBER_CALL(flags);
 	}
 	
 	
@@ -98,7 +98,7 @@ namespace Mod::Debug::Draw_CPhysCollide
 #if 0
 	DETOUR_DECL_MEMBER(void, C_BaseAnimating_DoInternalDrawModel, ClientModelRenderInfo_t *pInfo, DrawModelState_t *pState, matrix3x4_t *pBoneToWorldArray)
 	{
-		DETOUR_MEMBER_CALL(C_BaseAnimating_DoInternalDrawModel)(pInfo, pState, pBoneToWorldArray);
+		DETOUR_MEMBER_CALL(pInfo, pState, pBoneToWorldArray);
 		
 		
 	}
@@ -111,7 +111,7 @@ namespace Mod::Debug::Draw_CPhysCollide
 		DevMsg("C_BaseEntity::VPhysicsUpdate [this: %08x]\n",
 			(uintptr_t)this);
 		
-		DETOUR_MEMBER_CALL(C_BaseEntity_VPhysicsUpdate)(pPhysics);
+		DETOUR_MEMBER_CALL(pPhysics);
 		
 		const CPhysCollide *pCollide = pPhysics->GetCollide();
 		if (pCollide != nullptr) {

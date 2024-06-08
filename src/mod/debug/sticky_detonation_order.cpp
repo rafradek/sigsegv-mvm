@@ -27,7 +27,7 @@ namespace Mod::Debug::Sticky_Detonation_Order
 		ClientMsgAllIndent("CBaseEntity::TakeDamage\n");
 		
 		++indent;
-		auto result = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(inputInfo);
+		auto result = DETOUR_MEMBER_CALL(inputInfo);
 		--indent;
 		
 		return result;
@@ -39,7 +39,7 @@ namespace Mod::Debug::Sticky_Detonation_Order
 		ClientMsgAllIndent("BEGIN CTFWeaponBaseGrenadeProj::Explode\n");
 		
 		++indent;
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
+		DETOUR_MEMBER_CALL(pTrace, bitsDamageType);
 		--indent;
 		
 		ClientMsgAllIndent("END   CTFWeaponBaseGrenadeProj::Explode\n");
@@ -52,7 +52,7 @@ namespace Mod::Debug::Sticky_Detonation_Order
 			(bFizzle ? "true" : "false"));
 		
 		++indent;
-		auto result = DETOUR_MEMBER_CALL(CTFPipebombLauncher_DetonateRemotePipebombs)(bFizzle);
+		auto result = DETOUR_MEMBER_CALL(bFizzle);
 		--indent;
 		
 		ClientMsgAllIndent("END   CTFPipebombLauncher::DetonateRemotePipebombs [%s]\n",

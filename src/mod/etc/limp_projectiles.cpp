@@ -14,7 +14,7 @@ namespace Mod::Etc::Limp_Projectiles
 			velocity.x, velocity.y, velocity.z);
 		
 		Vector vel_mod(velocity.x, 0.0f, velocity.z);
-		return DETOUR_STATIC_CALL(CTFGrenadePipebombProjectile_Create)(position, angles, vel_mod, angVelocity, pOwner, weaponInfo, i1, f1);
+		return DETOUR_STATIC_CALL(position, angles, vel_mod, angVelocity, pOwner, weaponInfo, i1, f1);
 	}
 	
 	

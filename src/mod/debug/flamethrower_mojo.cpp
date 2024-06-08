@@ -207,7 +207,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 	
 	DETOUR_DECL_MEMBER(Vector, CTFFlameThrower_GetFlameOriginPos)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFFlameThrower_GetFlameOriginPos)();
+		auto result = DETOUR_MEMBER_CALL();
 		
 	//	DevMsg("[CTFFlameThrower::GetFlameOriginPos]  [%+6.1f %+6.1f %+6.1f]\n",
 	//		result.x, result.y, result.z);
@@ -222,7 +222,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 		
 		SCOPED_INCREMENT(rc_CTFFlameEntity_Create);
 		
-		auto result = DETOUR_STATIC_CALL(CTFFlameEntity_Create)(origin, angles, owner, f1, i1, f2, b1, b2);
+		auto result = DETOUR_STATIC_CALL(origin, angles, owner, f1, i1, f2, b1, b2);
 		
 		if (result != nullptr) {
 		//	DevMsg("[CTFFlameEntity::Create]  [%+6.1f %+6.1f %+6.1f]\n",
@@ -248,7 +248,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 	
 	DETOUR_DECL_MEMBER(void, CTFFlameEntity_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFFlameEntity_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 	//	BACKTRACE();
 		
@@ -317,7 +317,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 		//	DevMsg("[CTFFlameEntity::RemoveFlame]  [%+6.1f %+6.1f %+6.1f]\n",
 		//		flame->GetAbsOrigin().x, flame->GetAbsOrigin().y, flame->GetAbsOrigin().z);
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_RemoveFlame)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -345,7 +345,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 			int num_thinks = info.num_thinks++;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_FlameThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -355,7 +355,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 	
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
 	{
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 		
 		if (cvar_show_traces.GetBool() && rc_CTFFlameEntity_FlameThink > 0 && rc_CTFFlameEntity_OnCollide <= 0 && fMask == MASK_SOLID) {
 			auto m_pPassEnt = *reinterpret_cast<IHandleEntity **>((uintptr_t)pTraceFilter + 0x4);
@@ -401,7 +401,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 			NDebugOverlay::EntityTextAtPosition(flame->WorldSpaceCenter(), -2, "HIT", 0.10f, info.col_lt.r(), info.col_lt.g(), info.col_lt.b(), 0xff);
 		}
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_OnCollide)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 	
 	
@@ -417,13 +417,13 @@ namespace Mod::Debug::Flamethrower_Mojo
 		NDebugOverlay::VertArrow(vecArrowTop, vecArrowBottom, 1.0f, 0xff, 0xff, 0xff, 0x00, true, 1.00f);
 		NDebugOverlay::EntityBounds(proj, 0xff, 0xff, 0xff, 0x10, 1.00f);
 		
-		DETOUR_MEMBER_CALL(CBaseProjectile_CollideWithTeammatesThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
 	DETOUR_DECL_STATIC(int, D_RandomInt, int iMinVal, int iMaxVal)
 	{
-		auto result = DETOUR_STATIC_CALL(D_RandomInt)(iMinVal, iMaxVal);
+		auto result = DETOUR_STATIC_CALL(iMinVal, iMaxVal);
 		
 		if (rc_CTFFlameEntity_Create > 0) {
 			DevMsg("RandomInt(%d, %d) = %d\n", iMinVal, iMaxVal, result);
@@ -451,48 +451,48 @@ namespace Mod::Debug::Flamethrower_Mojo
 	DETOUR_DECL_MEMBER(void, IServerGameDLL_GameFrame, bool simulating)
 	{
 		TRACE("@%.3f", gpGlobals->curtime);
-		DETOUR_MEMBER_CALL(IServerGameDLL_GameFrame)(simulating);
+		DETOUR_MEMBER_CALL(simulating);
 	}
 	
 	DETOUR_DECL_STATIC(void, Physics_RunThinkFunctions, bool simulating)
 	{
 		TRACE("@%.3f", gpGlobals->curtime);
-		DETOUR_STATIC_CALL(Physics_RunThinkFunctions)(simulating);
+		DETOUR_STATIC_CALL(simulating);
 	}
 	
 	DETOUR_DECL_STATIC(void, Physics_SimulateEntity, CBaseEntity *pEntity)
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(pEntity);
 		TRACE_IF(flame != nullptr, "@%.3f #%d", gpGlobals->curtime, ENTINDEX(flame));
-		DETOUR_STATIC_CALL(Physics_SimulateEntity)(pEntity);
+		DETOUR_STATIC_CALL(pEntity);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseEntity_PhysicsSimulate)
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(reinterpret_cast<CBaseEntity *>(this));
 		TRACE_IF(flame != nullptr, "@%.3f #%d", gpGlobals->curtime, ENTINDEX(flame));
-		DETOUR_MEMBER_CALL(CBaseEntity_PhysicsSimulate)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseEntity_PhysicsNoclip)
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(reinterpret_cast<CBaseEntity *>(this));
 		TRACE_IF(flame != nullptr, "@%.3f #%d", gpGlobals->curtime, ENTINDEX(flame));
-		DETOUR_MEMBER_CALL(CBaseEntity_PhysicsNoclip)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseEntity_PhysicsRunThink, thinkmethods_t thinkMethod)
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(reinterpret_cast<CBaseEntity *>(this));
 		TRACE_IF(flame != nullptr, "@%.3f #%d [thinkMethod: %d]", gpGlobals->curtime, ENTINDEX(flame), (int)thinkMethod);
-		DETOUR_MEMBER_CALL(CBaseEntity_PhysicsRunThink)(thinkMethod);
+		DETOUR_MEMBER_CALL(thinkMethod);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CBaseEntity_PhysicsRunSpecificThink, int nContextIndex, BASEPTR thinkFunc)
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(reinterpret_cast<CBaseEntity *>(this));
 		TRACE_IF(flame != nullptr, "@%.3f #%d [nContextIndex: %d] [thinkFunc: %08x]", gpGlobals->curtime, ENTINDEX(flame), nContextIndex, *reinterpret_cast<uintptr_t *>(&thinkFunc));
-		auto result = DETOUR_MEMBER_CALL(CBaseEntity_PhysicsRunSpecificThink)(nContextIndex, thinkFunc);
+		auto result = DETOUR_MEMBER_CALL(nContextIndex, thinkFunc);
 		TRACE_EXIT("%s", (result ? "TRUE" : "FALSE"));
 		return result;
 	}
@@ -501,7 +501,7 @@ namespace Mod::Debug::Flamethrower_Mojo
 	{
 		auto flame = rtti_cast<CTFFlameEntity *>(reinterpret_cast<CBaseEntity *>(this));
 		TRACE_IF(flame != nullptr, "@%.3f #%d [thinkFunc: %08x]", gpGlobals->curtime, ENTINDEX(flame), *reinterpret_cast<uintptr_t *>(&thinkFunc));
-		DETOUR_MEMBER_CALL(CBaseEntity_PhysicsDispatchThink)(thinkFunc);
+		DETOUR_MEMBER_CALL(thinkFunc);
 	}
 	
 	////////////////////////////////////////////////////////////////////////////

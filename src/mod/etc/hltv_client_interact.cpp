@@ -12,7 +12,7 @@ namespace Mod::Etc::HLTV_Client_Interact
         auto client = reinterpret_cast<CHLTVClient *>(this);
         CCommand args;
         if (!args.Tokenize(cmd)) {
-            return DETOUR_MEMBER_CALL(CHLTVClient_ExecuteStringCommand)(cmd);
+            return DETOUR_MEMBER_CALL(cmd);
         }
 
         if (FStrEq(args[0], "say")) {
@@ -36,7 +36,7 @@ namespace Mod::Etc::HLTV_Client_Interact
             return true;
         }
 
-		return DETOUR_MEMBER_CALL(CHLTVClient_ExecuteStringCommand)(cmd);
+		return DETOUR_MEMBER_CALL(cmd);
 	}
 
     ConVar sig_etc_hltv_notify_clients("sig_etc_hltv_notify_clients", "1", FCVAR_NOTIFY,
@@ -59,7 +59,7 @@ namespace Mod::Etc::HLTV_Client_Interact
     DETOUR_DECL_MEMBER(IClient *, CHLTVServer_ConnectClient, netadr_t &adr, int protocol, int challenge, int clientChallenge, int authProtocol, 
 									 const char *name, const char *password, const char *hashedCDkey, int cdKeyLen)
 	{
-        auto client = DETOUR_MEMBER_CALL(CHLTVServer_ConnectClient)(adr, protocol, challenge, clientChallenge, authProtocol, name, password, hashedCDkey, cdKeyLen);
+        auto client = DETOUR_MEMBER_CALL(adr, protocol, challenge, clientChallenge, authProtocol, name, password, hashedCDkey, cdKeyLen);
         
         return client;
     }
@@ -70,14 +70,14 @@ namespace Mod::Etc::HLTV_Client_Interact
         if (sig_etc_hltv_notify_clients.GetBool() && client->m_nSignonState >= 5) {
             PrintToChatAll(CFmtStr("Source TV spectator %s disconnected", client->GetClientName()));
         }
-        DETOUR_MEMBER_CALL(CHLTVClient_Disconnect)(reason);
+        VHOOK_CALL(reason);
     }
 
 
     VHOOK_DECL(void, CBaseClient_ActivatePlayer)
 	{
         auto client = reinterpret_cast<CHLTVClient *>(this);
-        DETOUR_MEMBER_CALL(CBaseClient_ActivatePlayer)();
+        VHOOK_CALL();
         timersys->CreateTimer(&timer_connect, 3.0f, client, 0);
         if (sig_etc_hltv_notify_clients.GetBool()) {
             PrintToChatAll(CFmtStr("Source TV spectator %s joined", client->GetClientName()));

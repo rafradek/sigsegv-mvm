@@ -89,7 +89,7 @@ namespace Mod::Perf::Squad_Escort_Optimize
         
         auto action = reinterpret_cast<CTFBotEscortSquadLeader *>(this);
 
-        auto result = DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_Update)(actor, dt);
+        auto result = DETOUR_MEMBER_CALL(actor, dt);
 
         if (!updatecall) {
             if (result.transition == ActionTransition::CONTINUE)
@@ -122,14 +122,14 @@ namespace Mod::Perf::Squad_Escort_Optimize
 	{
         auto ai = reinterpret_cast<CTFBotEscortSquadLeader *>(this);
         OnDestroy(ai);
-        DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_dtor0)();
+        DETOUR_MEMBER_CALL();
     }
 
     DETOUR_DECL_MEMBER(void, CTFBotEscortSquadLeader_dtor2)
 	{
         auto ai = reinterpret_cast<CTFBotEscortSquadLeader *>(this);
         OnDestroy(ai);
-        DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_dtor2)();
+        DETOUR_MEMBER_CALL();
     }
 
 	class CMod : public IMod, public IModCallbackListener

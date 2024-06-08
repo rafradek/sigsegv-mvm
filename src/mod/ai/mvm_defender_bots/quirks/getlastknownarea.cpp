@@ -20,7 +20,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBot_GetLastKnownArea)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	

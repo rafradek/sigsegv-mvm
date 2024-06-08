@@ -101,7 +101,7 @@ namespace Mod::Visualize::Flamethrower
 	
 	DETOUR_DECL_STATIC(CTFFlameEntity *, CTFFlameEntity_Create, const Vector& origin, const QAngle& angles, CBaseEntity *owner, float f1, int i1, float f2, bool b1, bool b2)
 	{
-		auto result = DETOUR_STATIC_CALL(CTFFlameEntity_Create)(origin, angles, owner, f1, i1, f2, b1, b2);
+		auto result = DETOUR_STATIC_CALL(origin, angles, owner, f1, i1, f2, b1, b2);
 		
 		if (result != nullptr) {
 			flames.emplace(std::make_pair(result, result));
@@ -145,7 +145,7 @@ namespace Mod::Visualize::Flamethrower
 		//	DevMsg("[CTFFlameEntity::RemoveFlame]  [%+6.1f %+6.1f %+6.1f]\n",
 		//		flame->GetAbsOrigin().x, flame->GetAbsOrigin().y, flame->GetAbsOrigin().z);
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_RemoveFlame)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -161,7 +161,7 @@ namespace Mod::Visualize::Flamethrower
 			int num_thinks = info.num_thinks++;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_FlameThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -178,7 +178,7 @@ namespace Mod::Visualize::Flamethrower
 		//	NDebugOverlay::EntityTextAtPosition(flame->WorldSpaceCenter(), -2, "HIT", 0.10f, info.col_lt.r(), info.col_lt.g(), info.col_lt.b(), 0xff);
 		}
 		
-		DETOUR_MEMBER_CALL(CTFFlameEntity_OnCollide)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 	
 	

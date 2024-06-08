@@ -779,7 +779,7 @@ namespace Mod::AI::NPC_Nextbot
 
     VHOOK_DECL(void, MyNextbotBody_Reset)
     {
-        VHOOK_CALL(MyNextbotBody_Reset)();
+        VHOOK_CALL();
         auto body = reinterpret_cast<CBotNPCBody *>(this);
         auto entity = body->GetBot()->GetEntity();
         MyNextbotModule *mod = entity->GetEntityModule<MyNextbotModule>("mynextbotmodule");
@@ -983,7 +983,7 @@ namespace Mod::AI::NPC_Nextbot
         auto body = reinterpret_cast<CBotNPCBody *>(this);
         auto mod = GetNextbotModuleBody(body);
         mod->m_pEntity->AddGesture(TranslateActivity(body, mod->m_pEntity, mod, ACT_MP_JUMP_LAND));
-        VHOOK_CALL(MyNextbotBody_OnLandOnGround)(ground);
+        VHOOK_CALL(ground);
     }
     
     VHOOK_DECL(bool, MyNextbotBody_IsHeadAimingOnTarget)

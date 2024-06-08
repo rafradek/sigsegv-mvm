@@ -170,7 +170,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CanAirDash)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (!ret) {
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			if (!player->IsPlayerClass(TF_CLASS_SCOUT)) {
@@ -185,7 +185,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CWeaponMedigun_AllowedToHealTarget, CBaseEntity *target)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CWeaponMedigun_AllowedToHealTarget)(target);
+		bool ret = DETOUR_MEMBER_CALL(target);
 		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
 		auto owner = medigun->GetOwnerEntity();
 
@@ -261,7 +261,7 @@ namespace Mod::Attr::Custom_Attributes
 			medigun->SetCustomVariable("healingnonplayer", Variant(false));
 		}
 
-		DETOUR_MEMBER_CALL(CWeaponMedigun_HealTargetThink)();
+		DETOUR_MEMBER_CALL();
 		if (healobject != nullptr && healobject->IsBaseObject() && healobject->GetHealth() < healobject->GetMaxHealth() && healobject->GetTeamNumber() == owner->GetTeamNumber()) {
 			int can_heal = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( medigun, can_heal, medic_machinery_beam );
@@ -675,7 +675,7 @@ namespace Mod::Attr::Custom_Attributes
 			SpawnCustomProjectile(projectilename, weapon, weapon->GetTFPlayerOwner(), false);
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFJar_TossJarThink)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_AltFireAttack;
@@ -789,7 +789,7 @@ namespace Mod::Attr::Custom_Attributes
 
 			}
 			else {
-				proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+				proj = DETOUR_MEMBER_CALL(player);
 			}
 			player->SetLocalOrigin(player->GetLocalOrigin() - originOffset);
 			player->pl->v_angle -= angleOffset; 
@@ -965,13 +965,13 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
 	{
 		if (fire_projectile_multi)
-			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
+			DETOUR_MEMBER_CALL(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
 		if (fire_projectile_multi)
-			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
+			DETOUR_MEMBER_CALL(player);
 	}
 
 	THINK_FUNC_DECL(RelightBowArrow)
@@ -989,7 +989,7 @@ namespace Mod::Attr::Custom_Attributes
 			bow->m_bArrowAlight = true;
 		}
 
-		DETOUR_MEMBER_CALL(CTFCompoundBow_LaunchGrenade)();
+		DETOUR_MEMBER_CALL();
 
 		int attib_arrow_mastery = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( bow, attib_arrow_mastery, arrow_mastery );
@@ -1030,7 +1030,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	VHOOK_DECL(bool, CTFCompoundBow_Deploy)
 	{
-		auto result = VHOOK_CALL(CTFCompoundBow_Deploy)();
+		auto result = VHOOK_CALL();
 		
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		int arrowIgnite = 0;
@@ -1043,7 +1043,7 @@ namespace Mod::Attr::Custom_Attributes
 	RefCount rc_stop_our_team_deflect;
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Swing, CTFPlayer *player)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Swing)(player);
+		DETOUR_MEMBER_CALL(player);
 		auto weapon = reinterpret_cast<CTFWeaponBaseMelee*>(this);
 		float smacktime = weapon->m_flSmackTime;
 		float time = gpGlobals->curtime;
@@ -1070,7 +1070,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(int, CBaseObject_OnTakeDamage, CTakeDamageInfo &info)
 	{
-		int damage = DETOUR_MEMBER_CALL(CBaseObject_OnTakeDamage)(info);
+		int damage = DETOUR_MEMBER_CALL(info);
 		auto weapon = info.GetWeapon();
 		if (weapon != nullptr) {
 			auto tfweapon = ToBaseCombatWeapon(weapon);
@@ -1100,7 +1100,7 @@ namespace Mod::Attr::Custom_Attributes
 			is_ice = false;
 			
 		killer_weapon = info.GetWeapon();
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		
 		int destroyBuildingsOnDeath = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, destroyBuildingsOnDeath, destroy_buildings_on_death);
@@ -1127,7 +1127,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		bIce |= is_ice;
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_CreateRagdollEntity)(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
+		DETOUR_MEMBER_CALL(bShouldGib, bBurning, bUberDrop, bOnGround, bYER, bGold, bIce, bAsh, iCustom, bClassic);
 	}
 
 	void GetExplosionParticle(CTFPlayer *player, CTFWeaponBase *weapon, int &particle, int &particleDirectHit) {
@@ -1167,7 +1167,7 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use = 0;
 		particle_to_use_direct_hit = 0;
 		GetExplosionParticle(stickbomb->GetTFPlayerOwner(), stickbomb,particle_to_use, particle_to_use_direct_hit);
-		DETOUR_MEMBER_CALL(CTFStickBomb_Smack)();
+		DETOUR_MEMBER_CALL();
 		stickbomb = nullptr;
 		particle_to_use_direct_hit = 0;
 		particle_to_use = 0;
@@ -1203,7 +1203,7 @@ namespace Mod::Attr::Custom_Attributes
 			//info.m_DmgInfo->SetDamageType(info.m_DmgInfo->GetDamageType() & (~DMG_USEDISTANCEMOD));
 			if (minicrit) {
 				stickbomb->GetTFPlayerOwner()->m_Shared->AddCond(TF_COND_NOHEALINGDAMAGEBUFF, 99.0f);
-				DETOUR_MEMBER_CALL(CTFGameRules_RadiusDamage)(info);
+				DETOUR_MEMBER_CALL(info);
 				stickbomb->GetTFPlayerOwner()->m_Shared->RemoveCond(TF_COND_NOHEALINGDAMAGEBUFF);
 				return;
 			}
@@ -1246,14 +1246,14 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-		DETOUR_MEMBER_CALL(CTFGameRules_RadiusDamage)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
 	CBasePlayer *process_movement_player = nullptr;
 	DETOUR_DECL_MEMBER(void, CTFGameMovement_ProcessMovement, CBasePlayer *player, void *data)
 	{
 		process_movement_player = player;
-		DETOUR_MEMBER_CALL(CTFGameMovement_ProcessMovement)(player, data);
+		DETOUR_MEMBER_CALL(player, data);
 		process_movement_player = nullptr;
 	}
 
@@ -1267,7 +1267,7 @@ namespace Mod::Attr::Custom_Attributes
 				restoreDucking = true;
 			}
 		}
-		bool ret = DETOUR_MEMBER_CALL(CTFGameMovement_CheckJumpButton)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (restoreDucking) {
 			process_movement_player->m_fFlags |= FL_DUCKING;
 		}
@@ -1551,7 +1551,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (modelname != nullptr) {
 			return modelname;
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponInvis_GetViewModel)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	void UpdateCustomModel(CTFPlayer *owner, CEconEntity *entity, CAttributeList &attrlist) {
 		
@@ -1623,7 +1623,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_UpdateHands)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBase_UpdateHands)();
+		DETOUR_MEMBER_CALL();
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		GET_STRING_ATTRIBUTE(weapon, custom_view_model, viewmodel);
 		
@@ -1636,7 +1636,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CEconEntity_UpdateModelToClass)
 	{
-		DETOUR_MEMBER_CALL(CEconEntity_UpdateModelToClass)();
+		DETOUR_MEMBER_CALL();
 		auto entity = reinterpret_cast<CEconEntity *>(this);
 
 		auto owner = ToTFPlayer(entity->GetOwnerEntity());
@@ -1647,7 +1647,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_Equip, CBaseCombatCharacter *owner)
 	{
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_Equip)(owner);
+		DETOUR_MEMBER_CALL(owner);
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 
 		GET_STRING_ATTRIBUTE_NO_CACHE(ent, attachment_name, attachmentname);
@@ -1696,7 +1696,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		ExplosionCustomSet(proj);
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
+		DETOUR_MEMBER_CALL(pTrace, bitsDamageType);
 		particle_to_use = 0;
 		particle_to_use_direct_hit = 0;
 	}
@@ -1722,7 +1722,7 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use_direct_hit = 0;
 		ExplosionCustomSet(proj);
 		hit_explode_direct = pOther;
-		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
+		DETOUR_MEMBER_CALL(pTrace, pOther);
 		hit_explode_direct = nullptr;
 
 		particle_to_use = 0;
@@ -1734,7 +1734,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto proj = reinterpret_cast<CTFProjectile_EnergyBall *>(this);
 		ExplosionCustomSet(proj);
 		hit_explode_direct = pOther;
-		DETOUR_MEMBER_CALL(CTFProjectile_EnergyBall_Explode)(pTrace, pOther);
+		DETOUR_MEMBER_CALL(pTrace, pOther);
 		hit_explode_direct = nullptr;
 	}
 
@@ -1750,7 +1750,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (particle_to_use == -1) return;
 
-		DETOUR_STATIC_CALL(TE_TFExplosion)(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
+		DETOUR_STATIC_CALL(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
 	}
 	RefCount rc_CTFPlayer_TraceAttack;
 
@@ -1763,8 +1763,8 @@ namespace Mod::Attr::Custom_Attributes
 
 			int weaponid = weapon->GetWeaponID();
 			// Allow SPECIAL1 sound for Cow Mangler and SPECIAL3 sound for short circuit
-			if (index == SPECIAL1 && weaponid != TF_WEAPON_PARTICLE_CANNON) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
-			if (index == SPECIAL3 && weaponid != TF_WEAPON_MECHANICAL_ARM) return DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			if (index == SPECIAL1 && weaponid != TF_WEAPON_PARTICLE_CANNON) return DETOUR_MEMBER_CALL(index, soundtime);
+			if (index == SPECIAL3 && weaponid != TF_WEAPON_MECHANICAL_ARM) return DETOUR_MEMBER_CALL(index, soundtime);
 
 			int attr_name = -1;
 
@@ -1800,7 +1800,7 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 		}
 		auto oldOwner = weapon->GetOwner();
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+		DETOUR_MEMBER_CALL(index, soundtime);
 		weapon_sound_override = nullptr;
 	}
 
@@ -1810,14 +1810,14 @@ namespace Mod::Attr::Custom_Attributes
 			//reinterpret_cast<CRecipientFilter &>(filter).AddRecipient(weapon_sound_override_owner);
 			sound = weapon_sound_override;
 		}
-		DETOUR_STATIC_CALL(CBaseEntity_EmitSound)(filter, iEntIndex, sound, pOrigin, start, duration);
+		DETOUR_STATIC_CALL(filter, iEntIndex, sound, pOrigin, start, duration);
 	}
 
 	RefCount rc_CTFWeaponFlameBall_FireProjectile;
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponFlameBall_FireProjectile, CTFPlayer *player)
 	{
 		SCOPED_INCREMENT(rc_CTFWeaponFlameBall_FireProjectile);
-		return DETOUR_MEMBER_CALL(CTFWeaponFlameBall_FireProjectile)(player);
+		return DETOUR_MEMBER_CALL(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound_member, const char *sound, float start, float duration)
@@ -1830,7 +1830,7 @@ namespace Mod::Attr::Custom_Attributes
 				sound = soundfiring;
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseEntity_EmitSound_member)(sound, start, duration);
+		DETOUR_MEMBER_CALL(sound, start, duration);
 	}
 
 	int fire_bullet_num_shot = 0;
@@ -1845,7 +1845,7 @@ namespace Mod::Attr::Custom_Attributes
 				info.m_flDistance = rangeLimit;
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+		DETOUR_MEMBER_CALL(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
 		fire_bullet_num_shot++;
 	}
 
@@ -1853,7 +1853,7 @@ namespace Mod::Attr::Custom_Attributes
 					 int iWeapon, int iMode, int iSeed, float flSpread, float flDamage, bool bCritical)
 	{
 		fire_bullet_num_shot = 0;
-		DETOUR_STATIC_CALL(FX_FireBullets)(pWpn, iPlayer, vecOrigin, vecAngles, iWeapon, iMode, iSeed, flSpread, flDamage, bCritical);
+		DETOUR_STATIC_CALL(pWpn, iPlayer, vecOrigin, vecAngles, iWeapon, iMode, iSeed, flSpread, flDamage, bCritical);
 		fire_bullet_num_shot = 0;
 	}
 	
@@ -1907,7 +1907,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (arrow->m_bPenetrate && ToTFPlayer(ent) != nullptr && ToTFPlayer(ent)->m_Shared->IsInvulnerable() && ent->GetTeamNumber() == arrow->GetTeamNumber()) {
 			return true;
 		}
-		auto ret = DETOUR_MEMBER_CALL(CTFProjectile_Arrow_StrikeTarget)(bbox, ent);
+		auto ret = DETOUR_MEMBER_CALL(bbox, ent);
 		if (!ret && bounce_speed_target == 0) {
 			float bounce_speed = 0;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), bounce_speed, grenade_bounce_speed);
@@ -1998,7 +1998,7 @@ namespace Mod::Attr::Custom_Attributes
 					TFGameRules()->RadiusDamage( radiusinfo );
 					weapon->SetAbsOrigin(origpos);
 					hit_explode_direct = nullptr;
-					DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info2, vecDir, ptr, pAccumulator);
+					DETOUR_MEMBER_CALL(info2, vecDir, ptr, pAccumulator);
 					return;
 				}
 			}
@@ -2008,19 +2008,19 @@ namespace Mod::Attr::Custom_Attributes
 				
 				minicrit = (info.GetDamageType() & DMG_RADIUS_MAX) != 0;
 				stickbomb->GetTFPlayerOwner()->m_Shared->AddCond(TF_COND_NOHEALINGDAMAGEBUFF, 99.0f);
-				DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
+				DETOUR_MEMBER_CALL(info, vecDir, ptr, pAccumulator);
 				stickbomb->GetTFPlayerOwner()->m_Shared->RemoveCond(TF_COND_NOHEALINGDAMAGEBUFF);
 				DevMsg("mini crit set: %d\n",minicrit);
 				return;
 			}
 		}
 
-		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(useinfomod ? infomod : info, vecDir, ptr, pAccumulator);
+		DETOUR_MEMBER_CALL(useinfomod ? infomod : info, vecDir, ptr, pAccumulator);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CRecipientFilter_IgnorePredictionCull)
 	{
-		return force_send_client || DETOUR_MEMBER_CALL(CRecipientFilter_IgnorePredictionCull)();
+		return force_send_client || DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFCompoundBow_GetProjectileSpeed)
@@ -2028,7 +2028,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		float speed = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
-		speed *= DETOUR_MEMBER_CALL(CTFCompoundBow_GetProjectileSpeed)();
+		speed *= DETOUR_MEMBER_CALL();
 		return speed;
 	}
 
@@ -2039,12 +2039,12 @@ namespace Mod::Attr::Custom_Attributes
 		if (proj->GetOriginalLauncher() != nullptr) {
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetOriginalLauncher(), speed, mult_projectile_speed);
 		}
-		return speed * DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_GetInitialVelocity)();
+		return speed * DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFWeaponBaseGun_FireEnergyBall, CTFPlayer *player, bool ring)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireEnergyBall)(player, ring);
+		auto proj = DETOUR_MEMBER_CALL(player, ring);
 		if (ring && proj != nullptr) {
 			auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
 			Vector vel = proj->GetAbsVelocity();
@@ -2060,7 +2060,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFWeaponBase *>(this);
 		float speed = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
-		return speed * DETOUR_MEMBER_CALL(CTFCrossbow_GetProjectileSpeed)();
+		return speed * DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFGrapplingHook_GetProjectileSpeed)
@@ -2068,7 +2068,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFWeaponBase *>(this);
 		float speed = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
-		return speed * DETOUR_MEMBER_CALL(CTFGrapplingHook_GetProjectileSpeed)();
+		return speed * DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFShotgunBuildingRescue_GetProjectileSpeed)
@@ -2076,7 +2076,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bow = reinterpret_cast<CTFWeaponBase *>(this);
 		float speed = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(bow, speed, mult_projectile_speed);
-		return speed * DETOUR_MEMBER_CALL(CTFShotgunBuildingRescue_GetProjectileSpeed)();
+		return speed * DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFWeaponBaseGun_GetProjectileSpeed)
@@ -2164,27 +2164,27 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(int, CTFWeaponBase_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFWeaponBase_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 	DETOUR_DECL_MEMBER(int, CTFSniperRifle_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSniperRifle_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 	DETOUR_DECL_MEMBER(int, CTFSniperRifleClassic_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSniperRifleClassic_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 	DETOUR_DECL_MEMBER(int, CTFSMG_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFSMG_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 	DETOUR_DECL_MEMBER(int, CTFRevolver_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFRevolver_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 	DETOUR_DECL_MEMBER(int, CTFPistol_ScoutSecondary_GetDamageType)
 	{
-		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL(CTFPistol_ScoutSecondary_GetDamageType)());
+		return GetDamageType(reinterpret_cast<CTFWeaponBase *>(this), DETOUR_MEMBER_CALL());
 	}
 
 	bool CanHeadshot(CBaseProjectile *projectile) {
@@ -2200,22 +2200,22 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_HealingBolt_CanHeadshot)
 	{
-		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL(CTFProjectile_HealingBolt_CanHeadshot)();
+		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_EnergyRing_CanHeadshot)
 	{
-		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_CanHeadshot)();
+		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_GrapplingHook_CanHeadshot)
 	{
-		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL(CTFProjectile_GrapplingHook_CanHeadshot)();
+		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_EnergyBall_CanHeadshot)
 	{
-		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL(CTFProjectile_EnergyBall_CanHeadshot)();
+		return CanHeadshot(reinterpret_cast<CBaseProjectile *>(this)) || DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_CanHeadshot)
@@ -2233,7 +2233,7 @@ namespace Mod::Attr::Custom_Attributes
 				return false;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CanHeadshot)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(int, CBaseCombatCharacter_OnTakeDamage, const CTakeDamageInfo& info)
@@ -2246,11 +2246,11 @@ namespace Mod::Attr::Custom_Attributes
 				if (dmg_mult != 1.0f) {
 					CTakeDamageInfo newinfo = info;
 					newinfo.SetDamage(newinfo.GetDamage() * dmg_mult);
-					return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(newinfo);
+					return DETOUR_MEMBER_CALL(newinfo);
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 	float GetDamageMult(CBaseProjectile *proj)
@@ -2643,7 +2643,7 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetDamage(info.GetDamage() * dmg_mult);
 		}
 
-		int ret = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+		int ret = DETOUR_MEMBER_CALL(info, pVictim, b1);
 
 		// ApplyOnHit for non players and vs buildings
 		if ((info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer() || pVictim->IsBaseObject()) && weapon != nullptr) {
@@ -2692,7 +2692,7 @@ namespace Mod::Attr::Custom_Attributes
 		bool firing = minigun->m_iWeaponState == CTFMinigun::AC_STATE_FIRING;
 		if (firing)
 			minigun->m_iWeaponState = CTFMinigun::AC_STATE_SPINNING;
-		bool ret = DETOUR_MEMBER_CALL(CTFMinigun_CanHolster)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (firing)
 			minigun->m_iWeaponState = CTFMinigun::AC_STATE_FIRING;
 			
@@ -2703,11 +2703,11 @@ namespace Mod::Attr::Custom_Attributes
 		int cannotApply = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(target, cannotApply, cannot_be_sapped);
 		if (!cannotApply)
-			DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects)(target, duration);
+			DETOUR_MEMBER_CALL(target, duration);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CObjectSapper_IsParentValid) {
-		bool ret = DETOUR_MEMBER_CALL(CObjectSapper_IsParentValid)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (ret) {
 			CTFPlayer * player = ToTFPlayer(reinterpret_cast<CBaseObject *>(this)->GetBuiltOnEntity());
 			if (player != nullptr) {
@@ -2722,7 +2722,7 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsAllowedToTaunt) {
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_IsAllowedToTaunt)();
+		bool ret = DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
 		if (ret) {
@@ -2761,7 +2761,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		VHOOK_CALL(CUpgrades_StartTouch)(pOther);
+		VHOOK_CALL(pOther);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CUpgrades_UpgradeTouch, CBaseEntity *pOther)
@@ -2778,7 +2778,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CUpgrades_UpgradeTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_EndTouch, CBaseEntity *pOther)
@@ -2799,7 +2799,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CUpgrades_EndTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 
 	class WeaponModule : public EntityModule
@@ -2947,7 +2947,7 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CObjectSentrygun_FireRocket);
 
 		sentry_gun_rocket = nullptr;
-		bool ret = DETOUR_MEMBER_CALL(CObjectSentrygun_FireRocket)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (ret) {
 			auto sentrygun = reinterpret_cast<CObjectSentrygun *>(this);
 			CTFPlayer *owner = sentrygun->GetBuilder();
@@ -2967,7 +2967,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CBaseObject_CanBeUpgraded, CTFPlayer *player)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CBaseObject_CanBeUpgraded)(player);
+		bool ret = DETOUR_MEMBER_CALL(player);
 		if (ret) {
 			auto obj = reinterpret_cast<CBaseObject *>(this);
 			CTFPlayer *owner = obj->GetBuilder();
@@ -2992,14 +2992,14 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseObject_StartUpgrading)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_SentryThink)
 	{
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
-		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
+		DETOUR_MEMBER_CALL();
 		if (owner != nullptr) {
 			int rapidTick = 0;
 			if (GetBuildingAttributeInt<"rapidfire">(obj, "sentry_rapid_fire", false) != 0) {
@@ -3026,7 +3026,7 @@ namespace Mod::Attr::Custom_Attributes
 	}
 	DETOUR_DECL_MEMBER(void, CBaseObject_StartBuilding, CBaseEntity *builder)
 	{
-		DETOUR_MEMBER_CALL(CBaseObject_StartBuilding)(builder);
+		DETOUR_MEMBER_CALL(builder);
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
 		if (owner != nullptr) {
@@ -3036,7 +3036,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CBaseObject_StartPlacement, CTFPlayer *builder)
 	{
-		DETOUR_MEMBER_CALL(CBaseObject_StartPlacement)(builder);
+		DETOUR_MEMBER_CALL(builder);
 		auto obj = reinterpret_cast<CBaseObject *>(this);
 		if (builder != nullptr) {
 			SetBuildingStuff(obj, builder);
@@ -3050,7 +3050,7 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 
 		Vector prepos = player->GetAbsOrigin();
-		DETOUR_MEMBER_CALL(CObjectTeleporter_RecieveTeleportingPlayer)(player);
+		DETOUR_MEMBER_CALL(player);
 		Vector postpos = player->GetAbsOrigin();
 		if (tele->GetModelScale() != 1.0f && prepos != postpos) {
 			postpos.z = tele->WorldSpaceCenter().z + tele->CollisionProp()->OBBMaxs().z + 1.0f;
@@ -3074,14 +3074,14 @@ namespace Mod::Attr::Custom_Attributes
 				return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_FPlayerCanTakeDamage)(pPlayer, pAttacker, info);
+		return DETOUR_MEMBER_CALL(pPlayer, pAttacker, info);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_WantsLagCompensationOnEntity, const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_WantsLagCompensationOnEntity)(pPlayer, pCmd, pEntityTransmitBits);
+		auto result = DETOUR_MEMBER_CALL(pPlayer, pCmd, pEntityTransmitBits);
 		
 		if (!result && player->GetTeamNumber() == pPlayer->GetTeamNumber()) {
 			int friendly = HasAllowFriendlyFire(player->GetActiveWeapon(), player);
@@ -3106,7 +3106,7 @@ namespace Mod::Attr::Custom_Attributes
 			slowdown *= stun;
 		}
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 
 	struct gamevcollisionevent_t : public vcollisionevent_t
@@ -3129,7 +3129,7 @@ namespace Mod::Attr::Custom_Attributes
 			pEvent->pEntities[!index] = grenade_proj;
 		}
 
-		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_VPhysicsCollision)(index, pEvent);
+		DETOUR_MEMBER_CALL(index, pEvent);
 
 		if (no_stick != 0) {
 			pEvent->pEntities[!index] = hit_ent;
@@ -3185,7 +3185,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		hit_explode_direct = ent;
 		
-		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_PipebombTouch)(ent);
+		DETOUR_MEMBER_CALL(ent);
 		hit_explode_direct = nullptr;
 	}
 
@@ -3198,14 +3198,14 @@ namespace Mod::Attr::Custom_Attributes
 				return true;
 		}
 
-		return DETOUR_STATIC_CALL(PropDynamic_CollidesWithGrenades)(ent);
+		return DETOUR_STATIC_CALL(ent);
 	}
 	
 	RefCount rc_CTFPlayer_RegenThink;
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RegenThink)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_RegenThink);
-		DETOUR_MEMBER_CALL(CTFPlayer_RegenThink)();
+		DETOUR_MEMBER_CALL();
 		
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 
@@ -3224,7 +3224,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
 	{
 		player_taking_damage = reinterpret_cast<CTFPlayer *>(this);
-		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		int damage = DETOUR_MEMBER_CALL(info);
 		player_taking_damage = nullptr;
 
 		//Non sniper rifle explosive headshot
@@ -3256,7 +3256,7 @@ namespace Mod::Attr::Custom_Attributes
 			return true;
 		}
 
-		return DETOUR_MEMBER_CALL(CSchemaAttributeType_Default_ConvertStringToEconAttributeValue)(pAttrDef, pszValue, out_pValue, floatforce);
+		return DETOUR_MEMBER_CALL(pAttrDef, pszValue, out_pValue, floatforce);
 	}
 
 	DETOUR_DECL_MEMBER(bool, static_attrib_t_BInitFromKV_SingleLine, const char *context, KeyValues *attribute, CUtlVector<CUtlString> *errors, bool b)
@@ -3265,7 +3265,7 @@ namespace Mod::Attr::Custom_Attributes
 			attribute->SetName(attribute->GetName() + strlen("SET BONUS: "));
 		}
 
-		return DETOUR_MEMBER_CALL(static_attrib_t_BInitFromKV_SingleLine)(context, attribute, errors, b);
+		return DETOUR_MEMBER_CALL(context, attribute, errors, b);
 	}
 
 	std::vector<CHandle<CTFPlayer>> displacePlayers;
@@ -3304,7 +3304,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-		return DETOUR_MEMBER_CALL(CTraceFilterObject_ShouldHitEntity)(pServerEntity, contentsMask);
+		return DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_CancelTaunt)
@@ -3314,7 +3314,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (iCancelTaunt != 0) {
 			return;
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_CancelTaunt)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsAllowedToInitiateTauntWithPartner, CEconItemView *pEconItemView, char *pszErrorMessage, int cubErrorMessage)
@@ -3324,7 +3324,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (iAllowTaunt != 0) {
 			return true;
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_IsAllowedToInitiateTauntWithPartner)( pEconItemView, pszErrorMessage, cubErrorMessage);
+		return DETOUR_MEMBER_CALL( pEconItemView, pszErrorMessage, cubErrorMessage);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_DeflectEntity, CBaseEntity *pTarget, CTFPlayer *pOwner, Vector &vecForward, Vector &vecCenter, Vector &vecSize)
@@ -3346,7 +3346,7 @@ namespace Mod::Attr::Custom_Attributes
 				return true;
 			}
 		}
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_DeflectEntity)(pTarget, pOwner, vecForward, vecCenter, vecSize);
+		auto result = DETOUR_MEMBER_CALL(pTarget, pOwner, vecForward, vecCenter, vecSize);
 		if (result) {
 			int deflectKeepTeam = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER ( weapon, deflectKeepTeam, reflect_keep_team );
@@ -3414,7 +3414,7 @@ namespace Mod::Attr::Custom_Attributes
 					return str;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+		return DETOUR_MEMBER_CALL(info, pVictim, iWeaponID);
 	}
 
 	class PlayerTouchModule : public EntityModule
@@ -3430,7 +3430,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (toucher == nullptr || player == nullptr) return;
 
-		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
+		DETOUR_MEMBER_CALL(toucher);
 
 		if (toucher->GetTeamNumber() == player->GetTeamNumber()) return;
 
@@ -3495,7 +3495,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, refund);
+		DETOUR_MEMBER_CALL(player, itemslot, upgradeslot, sell, free, refund);
 		
 		if (!refund) {
 			InspectAttributes(player, player , true, itemslot);
@@ -3526,7 +3526,7 @@ namespace Mod::Attr::Custom_Attributes
 			no_upgrade = attr != nullptr && attr->GetValuePtr()->m_Float > 0.0f;
 		}
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_ReapplyItemUpgrades, no_upgrade);
-		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
+		DETOUR_MEMBER_CALL(item_view);
 	}
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, unsigned short, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
@@ -3536,7 +3536,7 @@ namespace Mod::Attr::Custom_Attributes
 			return INVALID_ATTRIB_DEF_INDEX;
 		}
 
-        return DETOUR_MEMBER_CALL(CUpgrades_ApplyUpgradeToItem)(player, item, upgrade, cost, downgrade, fresh);
+        return DETOUR_MEMBER_CALL(player, item, upgrade, cost, downgrade, fresh);
     }
 
 	bool IsDeflectable(CBaseProjectile *proj) {
@@ -3555,35 +3555,35 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto ent = reinterpret_cast<CTFProjectile_Rocket *>(this);
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_Rocket_IsDeflectable)() && IsDeflectable(ent);
+		return DETOUR_MEMBER_CALL() && IsDeflectable(ent);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_IsDeflectable)
 	{
 		auto ent = reinterpret_cast<CTFProjectile_Arrow *>(this);
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_Arrow_IsDeflectable)() && IsDeflectable(ent);
+		return DETOUR_MEMBER_CALL() && IsDeflectable(ent);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_Flare_IsDeflectable)
 	{
 		auto ent = reinterpret_cast<CTFProjectile_Flare *>(this);
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_Flare_IsDeflectable)() && IsDeflectable(ent);
+		return DETOUR_MEMBER_CALL() && IsDeflectable(ent);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_EnergyBall_IsDeflectable)
 	{
 		auto ent = reinterpret_cast<CTFProjectile_EnergyBall *>(this);
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyBall_IsDeflectable)() && IsDeflectable(ent);
+		return DETOUR_MEMBER_CALL() && IsDeflectable(ent);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFGrenadePipebombProjectile_IsDeflectable)
 	{
 		auto ent = reinterpret_cast<CTFGrenadePipebombProjectile *>(this);
 
-		return DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_IsDeflectable)() && IsDeflectable(ent);
+		return DETOUR_MEMBER_CALL() && IsDeflectable(ent);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFGrenadePipebombProjectile_OnTakeDamage, CTakeDamageInfo &info)
@@ -3592,7 +3592,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (!IsDeflectable(ent)) {
 			return 0;
 		}
-		return DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	// Stop short circuit from deflecting the projectile
 	
@@ -3600,7 +3600,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFProjectile_MechanicalArmOrb_CheckForProjectiles)
 	{
 		SCOPED_INCREMENT(rc_CTFProjectile_MechanicalArmOrb_CheckForProjectiles);
-		DETOUR_MEMBER_CALL(CTFProjectile_MechanicalArmOrb_CheckForProjectiles)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFProjectile_Arrow_ArrowTouch;
@@ -3625,12 +3625,12 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}*/
 
-		return DETOUR_MEMBER_CALL(CBaseEntity_InSameTeam)(other);
+		return DETOUR_MEMBER_CALL(other);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnAddBalloonHead)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayerShared_OnAddBalloonHead)();
+        DETOUR_MEMBER_CALL();
 		CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 
 		float gravity = 0.0f;
@@ -3642,7 +3642,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		DETOUR_MEMBER_CALL(ent, player, info);
 		if (ent != nullptr)
 			ApplyOnHitAttributes(reinterpret_cast<CTFWeaponBase *>(this), ent, player, info);
 	}
@@ -3653,7 +3653,7 @@ namespace Mod::Attr::Custom_Attributes
 		//DevMsg("sentry deploy %d %d\n", sentry->m_bCarryDeploy + 0, sentry->m_bCarried + 0);
 		if (sentry->m_bCarried)
 			return;
-		DETOUR_MEMBER_CALL(CObjectSentrygun_MakeScaledBuilding)(player);
+		DETOUR_MEMBER_CALL(player);
 		
 	}
 
@@ -3672,7 +3672,7 @@ namespace Mod::Attr::Custom_Attributes
 			tele->m_iTeleportType = 1;
 			restore = true;
 		}
-		DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterTouch)(player);
+		DETOUR_MEMBER_CALL(player);
 		if (restore) {
 			tele->m_iTeleportType = 2;
 		}
@@ -3682,14 +3682,14 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto weapon = reinterpret_cast<CWeaponMedigun *>(this);
 		
-		float range = DETOUR_MEMBER_CALL(CWeaponMedigun_GetTargetRange)();
+		float range = DETOUR_MEMBER_CALL();
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, range, mult_medigun_range);
 		return range;
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport, CTFPlayer *bot)
 	{
-		bool result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport)(bot);
+		bool result = DETOUR_MEMBER_CALL(bot);
 		if (result) {
 			int iCannotTeleport = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, iCannotTeleport, cannot_be_teleported);
@@ -3725,7 +3725,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 
 		SCOPED_INCREMENT(rc_CTFProjectile_Arrow_ArrowTouch);
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_ArrowTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 
 		if (pOther->IsAlive() && pOther->GetTeamNumber() != arrow->GetTeamNumber() && pOther->MyCombatCharacterPointer() != nullptr) {
 			float snapRadius = 0;
@@ -3810,7 +3810,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_CreateTrail)
 	{
 		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CreateTrail)();
+		DETOUR_MEMBER_CALL();
 		THINK_FUNC_SET(arrow, UpdateArrowTrail, gpGlobals->curtime+0.01f);
 	}
 
@@ -3821,7 +3821,7 @@ namespace Mod::Attr::Custom_Attributes
 			return 0;
 		int healthpre = ent->GetHealth();
 		//DevMsg("Applytoentity damage %f %d\n", info->m_DmgInfo->GetDamage(), ent->CollisionProp()->IsPointInBounds(info->m_vecOrigin));
-		auto result = DETOUR_MEMBER_CALL(CTFRadiusDamageInfo_ApplyToEntity)(ent);
+		auto result = DETOUR_MEMBER_CALL(ent);
 		if (ent->GetHealth() != healthpre) {
 			hit_entities_explosive++;
 		}
@@ -3840,7 +3840,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto flamemgr = reinterpret_cast<CBaseEntity *>(this);
 
-		bool ret = DETOUR_MEMBER_CALL(CTFFlameManager_BCanBurnEntityThisFrame)(entity);
+		bool ret = DETOUR_MEMBER_CALL(entity);
 		if (ret) {
 			int iMaxAoe = GetFastAttributeInt(flamemgr->GetOwnerEntity(), 0, MAX_AOE_TARGETS);
 			if (iMaxAoe != 0) {
@@ -3866,12 +3866,12 @@ namespace Mod::Attr::Custom_Attributes
 		auto arrow = reinterpret_cast<CBaseProjectile *>(this);
 
 		if (pOther == nullptr) {
-			DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
+			DETOUR_MEMBER_CALL(pOther);
 			return;
 		}
 
 		int health_pre = pOther->GetHealth();
-		DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
 			int &counter = arrow->GetOrCreateEntityModule<PenetrationNumberModule>("penetrationnumber")->penetrationCount;
@@ -3890,13 +3890,13 @@ namespace Mod::Attr::Custom_Attributes
 		auto arrow = reinterpret_cast<CBaseProjectile *>(this);
 
 		if (pOther == nullptr) {
-			DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
+			DETOUR_MEMBER_CALL(pOther);
 			return;
 		}
 
 		int health_pre = pOther->GetHealth();
 		bison_projectile_touch = pOther->GetTeamNumber() == arrow->GetTeamNumber() && gpGlobals->tickcount % 2 == 0;
-		DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);	
+		DETOUR_MEMBER_CALL(pOther);	
 		bison_projectile_touch = false;
 		
 		if (pOther != arrow && health_pre != pOther->GetHealth()) {
@@ -3916,7 +3916,7 @@ namespace Mod::Attr::Custom_Attributes
 			bison_projectile_touch = false;
 			return false;
 		}
-		return DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ShouldPenetrate)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayerShared_CanRecieveMedigunChargeEffect, int eType)
@@ -3928,7 +3928,7 @@ namespace Mod::Attr::Custom_Attributes
 			return false;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFPlayerShared_CanRecieveMedigunChargeEffect)(eType);
+		return DETOUR_MEMBER_CALL(eType);
 	} 
 
 	RefCount rc_CWeaponMedigun_StartHealingTarget;
@@ -3967,7 +3967,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto mod = player->GetEntityModule<AddCondAttributeImmunity>("addcondimmunity");
 		if (mod != nullptr && std::find(mod->conds.begin(), mod->conds.end(), (int) nCond) != mod->conds.end()) return;
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond2)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
@@ -3985,14 +3985,14 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (rc_CTFPlayerShared_AddCond)
         {
-			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 
 			if (aoe_in_sphere_max_hit_count != 0 && ++aoe_in_sphere_hit_count > aoe_in_sphere_max_hit_count) {
 				return;
 			}
 
 			// If one condition was added due to another condition, ignore it
-			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+			if (rc_CTFPlayerShared_AddCondIn > 1) return DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			addcond_overridden = false;
@@ -4008,7 +4008,7 @@ namespace Mod::Attr::Custom_Attributes
 					//DevMsg("add cond post %d\n", addcond);
 					if (addcond != 0) {
 						addcond_overridden = true;
-						DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)((ETFCond) addcond, flDuration, pProvider);
+						DETOUR_MEMBER_CALL((ETFCond) addcond, flDuration, pProvider);
 						
 					}
 				}
@@ -4042,7 +4042,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			if (iCondOverride != 0) return;
         }
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_RemoveCond, ETFCond nCond, bool bool1)
@@ -4051,7 +4051,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		if (rc_CTFPlayerShared_RemoveCond)
         {
-			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+			if (addcond_specific_cond != TF_COND_INVALID && addcond_specific_cond != nCond) return DETOUR_MEMBER_CALL(nCond, bool1);
 
 			auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 			CTFPlayer *player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
@@ -4065,7 +4065,7 @@ namespace Mod::Attr::Custom_Attributes
 					int addcond = (iCondOverride >> (i * 8)) & 255;
 					if (addcond != 0) {
 						nCond = (ETFCond) addcond;
-						DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+						DETOUR_MEMBER_CALL(nCond, bool1);
 						addcond_overridden = true;
 					}
 				}
@@ -4095,14 +4095,14 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			if (iCondOverride != 0) return;
         }
-		DETOUR_MEMBER_CALL(CTFPlayerShared_RemoveCond)(nCond, bool1);
+		DETOUR_MEMBER_CALL(nCond, bool1);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayerShared_InCond, ETFCond nCond)
 	{
 		return false;
 		// if (rc_CTFPlayerShared_InCond) {
-		// 	if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
+		// 	if (rc_CTFPlayerShared_AddCondWatch && nCond != TF_COND_STEALTHED) return DETOUR_MEMBER_CALL(nCond);
 
 		// 	auto attribProvider = addcond_provider_item != nullptr ? addcond_provider_item : addcond_provider;
 		// 	int iCondOverride = 0;
@@ -4114,13 +4114,13 @@ namespace Mod::Attr::Custom_Attributes
 		// 			int addcond = (iCondOverride >> (i * 8)) & 255;
 		// 			if (addcond != 0) {
 		// 				nCond = (ETFCond) addcond;
-		// 				if (DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond)) return true;
+		// 				if (DETOUR_MEMBER_CALL(nCond)) return true;
 		// 			}
 		// 		}
 		// 		return false;
 		// 	}
 		// }
-		// return DETOUR_MEMBER_CALL(CTFPlayerShared_InCond)(nCond);
+		// return DETOUR_MEMBER_CALL(nCond);
 	}
 
 	RefCount rc_ReplaceCond;
@@ -4186,7 +4186,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 		addcond_specific_cond = TF_COND_STEALTHED;
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponInvis_ActivateInvisibilityWatch)();
+		auto result = DETOUR_MEMBER_CALL();
 		addcond_specific_cond = TF_COND_INVALID;
 		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 		if (result && iCondOverride != 0) {
@@ -4216,7 +4216,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		ReplaceCond(*me, TF_COND_STEALTHED);
 		addcond_specific_cond = TF_COND_STEALTHED;
-		DETOUR_MEMBER_CALL(CTFPlayerShared_FadeInvis)(mult);
+		DETOUR_MEMBER_CALL(mult);
 		addcond_specific_cond = TF_COND_INVALID;
 		ReplaceBackCond(*me, TF_COND_STEALTHED);
 	}
@@ -4240,7 +4240,7 @@ namespace Mod::Attr::Custom_Attributes
 			ReplaceCond(*me, TF_COND_STEALTHED);
 		}
 		addcond_specific_cond = TF_COND_STEALTHED;
-		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateCloakMeter)();
+		DETOUR_MEMBER_CALL();
 		addcond_specific_cond = TF_COND_INVALID;
 		if (isSpy) {
 			ReplaceBackCond(*me, TF_COND_STEALTHED);
@@ -4255,7 +4255,7 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider_item = wep;
 		
 		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
-		DETOUR_MEMBER_CALL(CTFWeaponInvis_CleanupInvisibilityWatch)();
+		DETOUR_MEMBER_CALL();
 		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_STEALTHED);
 	}
 	
@@ -4267,7 +4267,7 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider = me;
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(me, LOADOUT_POSITION_PDA2);
 		ReplaceCond(me->m_Shared.Get(), TF_COND_STEALTHED);
-		DETOUR_MEMBER_CALL(CTFPlayer_SpyDeadRingerDeath)(info);
+		DETOUR_MEMBER_CALL(info);
 		ReplaceBackCond(me->m_Shared.Get(), TF_COND_STEALTHED);
 	}
 	
@@ -4280,7 +4280,7 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetEconEntityAtLoadoutSlot(player, LOADOUT_POSITION_PRIMARY), primaryHasRage, set_buff_type); 
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(player, primaryHasRage != 0 ? LOADOUT_POSITION_PRIMARY : LOADOUT_POSITION_SECONDARY);
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_PulseRageBuff)(rage);
+		DETOUR_MEMBER_CALL(rage);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DoTauntAttack)
@@ -4300,7 +4300,7 @@ namespace Mod::Attr::Custom_Attributes
 			player->m_Shared->m_nPlayerCond |= 1 << TF_COND_TAUNTING;
 		}
 
-		DETOUR_MEMBER_CALL(CTFPlayer_DoTauntAttack)();
+		DETOUR_MEMBER_CALL();
 
 		if (removeTauntAfter) {
 			player->m_Shared->m_nPlayerCond &= ~(1 << TF_COND_TAUNTING);
@@ -4327,7 +4327,7 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 		}
 
-		DETOUR_MEMBER_CALL(CTFPlayer_ClearTauntAttack)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	#define WEAPON_USE_DETOUR \
@@ -4352,7 +4352,7 @@ namespace Mod::Attr::Custom_Attributes
 			ReplaceCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
 		}
 		addcond_specific_cond = TF_COND_SODAPOPPER_HYPE;
-		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateEnergyDrinkMeter)();
+		DETOUR_MEMBER_CALL();
 		addcond_specific_cond = TF_COND_INVALID;
 		if (addcond_provider_item != nullptr) {
 			ReplaceBackCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
@@ -4368,7 +4368,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (addcond_provider_item != nullptr) {
 			ReplaceCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_SetScoutHypeMeter)(meter);
+		DETOUR_MEMBER_CALL(meter);
 		if (addcond_provider_item != nullptr) {
 			ReplaceBackCond(*reinterpret_cast<CTFPlayerShared *>(this), TF_COND_SODAPOPPER_HYPE);
 		}
@@ -4379,7 +4379,7 @@ namespace Mod::Attr::Custom_Attributes
 		WEAPON_USE_DETOUR
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
 		ReplaceCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_SODAPOPPER_HYPE);
-		DETOUR_MEMBER_CALL(CTFSodaPopper_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 		ReplaceBackCond(wep->GetTFPlayerOwner()->m_Shared.Get(), TF_COND_SODAPOPPER_HYPE);
 	}
 
@@ -4407,14 +4407,14 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-		DETOUR_STATIC_CALL(JarExplode)(iEntIndex, pAttacker, pOriginalWeapon, pWeapon, vContactPoint, iTeam, flRadius, cond, flDuration, pszImpactEffect, text2);
+		DETOUR_STATIC_CALL(iEntIndex, pAttacker, pOriginalWeapon, pWeapon, vContactPoint, iTeam, flRadius, cond, flDuration, pszImpactEffect, text2);
 		aoe_in_sphere_max_hit_count = 0;
 	}
 	DETOUR_DECL_MEMBER(void, CTFGasManager_OnCollide, CBaseEntity *entity, int id )
 	{
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		addcond_provider_item = addcond_provider = reinterpret_cast<CBaseEntity *>(this)->GetOwnerEntity();
-		DETOUR_MEMBER_CALL(CTFGasManager_OnCollide)(entity, id);
+		DETOUR_MEMBER_CALL(entity, id);
 	}
 
 	struct MedigunEffects_t
@@ -4473,7 +4473,7 @@ namespace Mod::Attr::Custom_Attributes
 			effects.eCondition = (ETFCond) (iCondOverride & 255);
 			effects.eWearingOffCondition = (ETFCond) GetNumberOfTFConds();
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_SetChargeEffect)(iCharge, bState, bInstant, effects, flWearOffTime, pProvider);
+		DETOUR_MEMBER_CALL(iCharge, bState, bInstant, effects, flWearOffTime, pProvider);
 		if (iCondOverride != 0) {
 			effects.eCondition = old_cond;
 			effects.eWearingOffCondition = old_wearing_cond;
@@ -4485,7 +4485,7 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CTFPlayerShared_AddCond);
 		addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		addcond_provider_item = GetEconEntityAtLoadoutSlot(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter(), LOADOUT_POSITION_MELEE);
-		DETOUR_MEMBER_CALL(CTFPlayerShared_PulseMedicRadiusHeal)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	GlobalThunk<MedigunEffects_t[]> g_MedigunEffects("g_MedigunEffects");
@@ -4523,7 +4523,7 @@ namespace Mod::Attr::Custom_Attributes
 			effect.eWearingOffCondition = (ETFCond) GetNumberOfTFConds();
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_TestAndExpireChargeEffect)(type);
+		DETOUR_MEMBER_CALL(type);
 		if (mod != nullptr && mod->condOverride[type] != -1) {
 			auto weapon = rtti_cast<CWeaponMedigun *>(mod->condOverrideProvider[type].Get());
 			auto condOverride = mod->condOverride[type];
@@ -4557,7 +4557,7 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
 		addcond_provider = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
 		addcond_provider_item = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter()->GetActiveWeapon();
-		DETOUR_MEMBER_CALL(CTFPlayerShared_SetRevengeCrits)(crits);
+		DETOUR_MEMBER_CALL(crits);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWearableDemoShield_DoCharge, CTFPlayer *player)
@@ -4566,7 +4566,7 @@ namespace Mod::Attr::Custom_Attributes
 		addcond_provider = player;
 		addcond_provider_item = reinterpret_cast<CTFWearableDemoShield *>(this);
 		addcond_overridden = false;
-		DETOUR_MEMBER_CALL(CTFWearableDemoShield_DoCharge)(player);
+		DETOUR_MEMBER_CALL(player);
 		if (addcond_overridden) {
 			player->m_Shared->m_flChargeMeter = 0;
 		}
@@ -4581,49 +4581,49 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
 		
 		SCOPED_INCREMENT_IF(rc_stop_stun, iCondOverride != 0);
-		DETOUR_MEMBER_CALL(CObjectSapper_ApplyRoboSapperEffects_Last)(target, duration);
+		DETOUR_MEMBER_CALL(target, duration);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(weapon);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFShotgun_Revenge_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(weapon);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFRevolver_Holster, CBaseCombatWeapon *weapon)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFRevolver_Holster)(weapon);
+		return DETOUR_MEMBER_CALL(weapon);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFFlareGun_Revenge_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFFlareGun_Revenge_Deploy)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFShotgun_Revenge_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFShotgun_Revenge_Deploy)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFRevolver_Deploy)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFRevolver_Deploy)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFChargedSMG_SecondaryAttack)
 	{
 		WEAPON_USE_DETOUR
-		return DETOUR_MEMBER_CALL(CTFChargedSMG_SecondaryAttack)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_AllowOverheal;
@@ -4691,12 +4691,12 @@ namespace Mod::Attr::Custom_Attributes
 
 		SCOPED_INCREMENT_IF(rc_AllowOverheal, overheal_allow != 0);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_OnKilledOther_Effects)(other, info);
+		DETOUR_MEMBER_CALL(other, info);
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFPlayer_TeamFortress_CalculateMaxSpeed, bool flag)
 	{
-		float ret = DETOUR_MEMBER_CALL(CTFPlayer_TeamFortress_CalculateMaxSpeed)(flag);
+		float ret = DETOUR_MEMBER_CALL(flag);
 
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->HasTheFlag())
@@ -4721,7 +4721,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		aoe_in_sphere_max_hit_count = GetFastAttributeInt(reinterpret_cast<CBaseEntity *>(this), 0, MAX_AOE_TARGETS);
 		aoe_in_sphere_hit_count = 0;
-		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
+		DETOUR_MEMBER_CALL(player1, player2);
 		aoe_in_sphere_max_hit_count = 0;
 	}
 	
@@ -4743,7 +4743,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (multDmg != 1.0f) {
 			bleeddmg = (bleeddmg * multDmg);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_MakeBleed)(attacker, weapon, bleedTime, bleeddmg, perm, val);
+		DETOUR_MEMBER_CALL(attacker, weapon, bleedTime, bleeddmg, perm, val);
 	}
 
 	void RemoveOnActiveAttributes(CEconEntity *weapon, const char *attributes)
@@ -4861,7 +4861,7 @@ namespace Mod::Attr::Custom_Attributes
 			info.SetWeapon(sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA));
 		}
 
-		int damage = DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+		int damage = DETOUR_MEMBER_CALL(info);
 
 		CBaseProjectile *proj;
 		if (entity->m_takedamage == DAMAGE_YES && entity->GetCustomVariableBool<"takesdamage">() && (proj = rtti_cast<CBaseProjectile *>(entity)) != nullptr) {
@@ -4932,7 +4932,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (sentry != nullptr && sentry->GetBuilder() != nullptr && info.GetWeapon() == sentry->GetBuilder()->GetEntityForLoadoutSlot(LOADOUT_POSITION_PDA)) {
 			infoc.SetWeapon(nullptr);
 		}
-		DETOUR_MEMBER_CALL(CTFGameRules_DeathNotice)(pVictim, infoc, eventName);
+		DETOUR_MEMBER_CALL(pVictim, infoc, eventName);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_GetMaxBuffedHealth, bool flag1, bool flag2)
@@ -4942,7 +4942,7 @@ namespace Mod::Attr::Custom_Attributes
 		float value = old_value;
 		value *= GetFastAttributeFloat(reinterpret_cast<CTFPlayerShared *>(this)->GetOuter(), 1.0f, MULT_MAX_OVERHEAL_SELF);
 		
-		auto ret = DETOUR_MEMBER_CALL(CTFPlayerShared_GetMaxBuffedHealth)(flag1, flag2);
+		auto ret = DETOUR_MEMBER_CALL(flag1, flag2);
 
 		if (value != old_value)
 			tf_max_health_boost.SetValue(old_value);
@@ -4955,21 +4955,21 @@ namespace Mod::Attr::Custom_Attributes
 			bitsDamageType |= DMG_IGNORE_MAXHEALTH;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_TakeHealth)(flHealth, bitsDamageType);
+		return DETOUR_MEMBER_CALL(flHealth, bitsDamageType);
 	}
 
 	CObjectDispenser *dispenser_provider = nullptr;
 	DETOUR_DECL_MEMBER(bool, CObjectDispenser_DispenseAmmo, CTFPlayer *player)
 	{
 		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
-		return DETOUR_MEMBER_CALL(CObjectDispenser_DispenseAmmo)(player);
+		return DETOUR_MEMBER_CALL(player);
 		dispenser_provider = nullptr;
 	}
 
 	DETOUR_DECL_MEMBER(int, CObjectDispenser_DispenseMetal, CTFPlayer *player)
 	{
 		dispenser_provider = reinterpret_cast<CObjectDispenser *>(this);
-		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_DispenseMetal)(player);
+		auto ret = DETOUR_MEMBER_CALL(player);
 		dispenser_provider = nullptr;
 		return ret;
 	}
@@ -4983,7 +4983,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (dispenser_provider != nullptr && type != TF_AMMO_METAL) {
 			amount *= GetBuildingAttributeFloat<"ratemult">(dispenser_provider, "mult_dispenser_rate", true);
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_GiveAmmo)(amount, type, sound, source);
+		return DETOUR_MEMBER_CALL(amount, type, sound, source);
 	}
 	
 	struct StickInfo
@@ -5023,7 +5023,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			
 		}
-		DETOUR_MEMBER_CALL(CTFGrenadePipebombProjectile_StickybombTouch)(other);
+		DETOUR_MEMBER_CALL(other);
 	}
 	
 	
@@ -5037,7 +5037,7 @@ namespace Mod::Attr::Custom_Attributes
 				moneymaker = ToTFPlayer(killer_weapon->GetOwnerEntity());
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_DropCurrencyPack)(pack, amount, forcedistribute, moneymaker);
+		DETOUR_MEMBER_CALL(pack, amount, forcedistribute, moneymaker);
 
 	}
 	
@@ -5056,7 +5056,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-		return DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn)(player);
+		return DETOUR_MEMBER_CALL(player);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGainInstantSpawn)
@@ -5070,7 +5070,7 @@ namespace Mod::Attr::Custom_Attributes
 				return false;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGainInstantSpawn)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToSpawn)
@@ -5084,12 +5084,12 @@ namespace Mod::Attr::Custom_Attributes
 				return false;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToSpawn)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
-		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
+		DETOUR_MEMBER_CALL(player);
 		for (size_t i = 0; i < stick_info.size(); ) {
 			auto &entry = stick_info[i];
 			if (entry.sticked == player && entry.sticky != nullptr) {
@@ -5134,7 +5134,7 @@ namespace Mod::Attr::Custom_Attributes
 				minigun->EmitSound(str);
 			}
 		}
-        DETOUR_MEMBER_CALL(CTFMinigun_WindDown)();
+        DETOUR_MEMBER_CALL();
     }
 	
 	DETOUR_DECL_MEMBER(void, CTFMinigun_WindUp)
@@ -5147,7 +5147,7 @@ namespace Mod::Attr::Custom_Attributes
 				minigun->EmitSound(str);
 			}
 		}
-        DETOUR_MEMBER_CALL(CTFMinigun_WindUp)();
+        DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DropAmmoPack, const CTakeDamageInfo& info, bool b1, bool b2)
@@ -5166,7 +5166,7 @@ namespace Mod::Attr::Custom_Attributes
 					dropped->InitDroppedWeapon(player, static_cast<CTFWeaponBase *>(weapon), info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == player->GetTeamNumber(), false);
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_DropAmmoPack)(info, b1, b2);
+		DETOUR_MEMBER_CALL(info, b1, b2);
 	}
 
 	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, CTFPlayer *pOwner, const Vector& vecOrigin, const QAngle& vecAngles, const char *pszModelName, const CEconItemView *pItemView)
@@ -5178,7 +5178,7 @@ namespace Mod::Attr::Custom_Attributes
 				pszModelName = model;
 			}
 		}
-		auto wep = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
+		auto wep = DETOUR_STATIC_CALL(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
 		if (wep != nullptr && StringStartsWith(pItemView->GetItemDefinition()->GetItemClass(""), "tf_weapon_medigun")) {
 			wep->m_nBody = 1;
 		}
@@ -5194,7 +5194,7 @@ namespace Mod::Attr::Custom_Attributes
 		int noRegenerate = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, noRegenerate, no_resupply);
 		if (!noRegenerate) {
-			DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+			DETOUR_MEMBER_CALL(ammo);
 		}
 	}
 	bool CTFPlayer_ItemsMatch_Func(bool ret, CTFPlayer *player, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity) {
@@ -5222,7 +5222,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFPlayer_ItemsMatch, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity)
 	{
-		return CTFPlayer_ItemsMatch_Func(DETOUR_MEMBER_CALL(CTFPlayer_ItemsMatch)(pCurWeaponItem, pNewWeaponItem, pWpnEntity), reinterpret_cast<CTFPlayer *>(this), pCurWeaponItem, pNewWeaponItem, pWpnEntity);
+		return CTFPlayer_ItemsMatch_Func(DETOUR_MEMBER_CALL(pCurWeaponItem, pNewWeaponItem, pWpnEntity), reinterpret_cast<CTFPlayer *>(this), pCurWeaponItem, pNewWeaponItem, pWpnEntity);
 	}
 
 	THINK_FUNC_DECL(MinigunClearSounds)
@@ -5269,7 +5269,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFMinigun_SetWeaponState)(state);
+		DETOUR_MEMBER_CALL(state);
 	}
 	
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFFlameThrower_SetWeaponState, int state)
@@ -5288,14 +5288,14 @@ namespace Mod::Attr::Custom_Attributes
 				THINK_FUNC_SET(flamethrower, FlameThrowerClearSounds, gpGlobals->curtime);
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFFlameThrower_SetWeaponState)(state);
+		DETOUR_MEMBER_CALL(state);
 	}
 
 	
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_FadeOut, int time)
 	{
 		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_FadeOut)(time);
+		DETOUR_MEMBER_CALL(time);
 		float remove = 0;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), remove, arrow_hit_kill_time);
 		if (remove != 0) {
@@ -5315,7 +5315,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_CheckSkyboxImpact)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_BreakArrow)
@@ -5329,14 +5329,14 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(arrow->GetOriginalLauncher(), target_bounce_speed, arrow_target_bounce_speed);
 		if (target_bounce_speed != 0) return;
 
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_BreakArrow)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayerShared_CalculateObjectCost, CTFPlayer *builder, int object)
 	{
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 
-		int result = DETOUR_MEMBER_CALL(CTFPlayerShared_CalculateObjectCost)(builder, object);
+		int result = DETOUR_MEMBER_CALL(builder, object);
 
 		if (object == OBJ_SENTRYGUN) {
 			float sentry_cost = 1.0f;
@@ -5359,7 +5359,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(ETFDmgCustom, CTFWeaponBase_GetPenetrateType)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_GetPenetrateType)();
+		auto result = DETOUR_MEMBER_CALL();
 
 		if (result == TF_DMG_CUSTOM_NONE) {
 			int penetrate = 0;
@@ -5384,7 +5384,7 @@ namespace Mod::Attr::Custom_Attributes
 			return 0.0f;
 		}
 
-		return DETOUR_MEMBER_CALL(CBaseProjectile_GetCollideWithTeammatesDelay)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
@@ -5395,13 +5395,13 @@ namespace Mod::Attr::Custom_Attributes
 			player->m_Local->m_flStepSize = GetFastAttributeFloat(player, stepsize.GetFloat(), MULT_STEP_HEIGHT);
 		}
 
-		DETOUR_MEMBER_CALL(CTFPlayer_TFPlayerThink)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(unsigned int, CTFGameMovement_PlayerSolidMask, bool brushonly)
 	{
 		CBasePlayer *player = reinterpret_cast<CGameMovement *>(this)->player;
-		unsigned int mask = DETOUR_MEMBER_CALL(CTFGameMovement_PlayerSolidMask)(brushonly);
+		unsigned int mask = DETOUR_MEMBER_CALL(brushonly);
 		if (GetFastAttributeInt(player, 0, IGNORE_PLAYER_CLIP) != 0)
 			mask &= ~CONTENTS_PLAYERCLIP;
 
@@ -5419,13 +5419,13 @@ namespace Mod::Attr::Custom_Attributes
 				 ){
 			cmd->buttons &= ~IN_JUMP;
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+		DETOUR_MEMBER_CALL(cmd, moveHelper);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFGameMovement_PreventBunnyJumping)
 	{
 		if(GetFastAttributeInt(reinterpret_cast<CGameMovement *>(this)->player, 0, ALLOW_BUNNY_HOP) == 0){
-			DETOUR_MEMBER_CALL(CTFGameMovement_PreventBunnyJumping)();
+			DETOUR_MEMBER_CALL();
 		}
 	}
 
@@ -5441,7 +5441,7 @@ namespace Mod::Attr::Custom_Attributes
 			weapon->m_bReloadsSingly = false;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Reload)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Holster)
@@ -5473,7 +5473,7 @@ namespace Mod::Attr::Custom_Attributes
 			RemoveOnActiveAttributes(weapon, attributes);
 		}
 		weapon->GetOrCreateEntityModule<WeaponModule>("weapon")->consecutiveShotsScore = 0.0f;
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+		auto result = DETOUR_MEMBER_CALL();
 		if (GetFastAttributeInt(weapon, 0, PASSIVE_RELOAD) != 0) {
 			weapon->m_bInReload = true;
 		}
@@ -5494,7 +5494,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemHolsterFrame)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemHolsterFrame)();
+		DETOUR_MEMBER_CALL();
 		
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		if (weapon->GetMaxClip1() != -1 && GetFastAttributeInt(weapon, 0, PASSIVE_RELOAD) != 0) {
@@ -5512,7 +5512,7 @@ namespace Mod::Attr::Custom_Attributes
 				projectile->StopSound(sound);
 			}
 		}
-        DETOUR_MEMBER_CALL(CBaseProjectile_D2)();
+        DETOUR_MEMBER_CALL();
     }
 
 	std::map<CHandle<CTFWeaponBaseGun>, float> applyGunDelay;
@@ -5528,7 +5528,7 @@ namespace Mod::Attr::Custom_Attributes
 		//	g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
 		//}
 
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_PrimaryAttack)();
+		DETOUR_MEMBER_CALL();
 		if (weapon->m_flNextPrimaryAttack > gpGlobals->curtime) {
 			float attackTime = weapon->m_flNextPrimaryAttack - gpGlobals->curtime;
 			mod->consecutiveShotsScore += (weapon->m_flNextPrimaryAttack - gpGlobals->curtime);
@@ -5609,7 +5609,7 @@ namespace Mod::Attr::Custom_Attributes
 				it++;
 			}
 		}
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 		if (!applyGunDelay.empty()) {
 			for (auto it = applyGunDelay.begin(); it != applyGunDelay.end(); it++) {
 				it->first->m_flNextPrimaryAttack = it->first->GetOrCreateEntityModule<WeaponModule>("weapon")->attackTimeSave;
@@ -5643,7 +5643,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 		int fov = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, fov, fov_override);
@@ -5659,7 +5659,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(QAngle, CTFWeaponBase_GetSpreadAngles)
 	{
-		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_GetSpreadAngles)();
+		auto ret = DETOUR_MEMBER_CALL();
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		auto eye = weapon->GetOwner()->EyeAngles();
 		if (eye != ret) {
@@ -5689,6 +5689,18 @@ namespace Mod::Attr::Custom_Attributes
 	CTFPlayer *GetPlayerOwnerOfAttributeList(CAttributeList *list, bool ifProviding = true);
 
 	bool attribute_manager_no_clear_cache;
+	
+#ifdef PLATFORM_64BITS
+	DETOUR_DECL_MEMBER(bool, CSchemaAttributeType_String_BConvertStringToEconAttributeValue,const CEconItemAttributeDefinition *pAttrDef, const char *pszValue, attribute_data_union_t *out_pValue, bool compat)
+	{
+		auto ret = DETOUR_MEMBER_CALL(pAttrDef, pszValue, out_pValue, compat);
+		Msg("Convert string %p %p\n", out_pValue, out_pValue == nullptr ? nullptr : out_pValue->m_String);
+		if (out_pValue != nullptr)
+			last_parsed_string_attribute_value = out_pValue->m_String;
+		return ret;
+	}
+#endif
+
 	DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeValue, const CEconItemAttributeDefinition *pAttrDef, float flValue)
 	{	
 		if (pAttrDef == nullptr) return;
@@ -5706,6 +5718,19 @@ namespace Mod::Attr::Custom_Attributes
 		AttributeChangeType changeType = AttributeChangeType::UPDATE;
 		attribute_data_union_t oldValue;
 
+		attribute_data_union_t newValue;
+#if 0
+		if (!pAttrDef->IsType<CSchemaAttributeType_String>()) {
+			newValue.m_Float = flValue;
+		}
+		else{
+			Msg("try to add ptr %zu %zu\n", flValue, last_parsed_string_attribute_value);
+			newValue.m_String = last_parsed_string_attribute_value;
+		}
+#else
+		newValue.m_Float = flValue;
+#endif
+
 		bool found = false;
 		for (int i = 0; i < countpre; i++) {
 			CEconItemAttribute &pAttribute = attrs[i];
@@ -5716,7 +5741,7 @@ namespace Mod::Attr::Custom_Attributes
 				oldValue = pAttribute.GetValue();
 				found = true;
 				if (memcmp(&oldValue.m_Float, &flValue, sizeof(float)) != 0) {
-					pAttribute.GetValuePtr()->m_Float = flValue;
+					*pAttribute.GetValuePtr() = newValue;
 					list->NotifyManagerOfAttributeValueChanges();
 					changeType = AttributeChangeType::UPDATE;
 				}
@@ -5730,13 +5755,13 @@ namespace Mod::Attr::Custom_Attributes
 		if (!found) {
 			changeType = AttributeChangeType::ADD;
 			auto attribute = CEconItemAttribute::Create(pAttrDef->GetIndex());
-			attribute->GetValuePtr()->m_Float = flValue;
+			*attribute->GetValuePtr() = newValue;
 			attrs.AddToTail(*attribute);
 			CEconItemAttribute::Destroy(attribute);
 			list->NotifyManagerOfAttributeValueChanges();
 		}
 
-		// DETOUR_MEMBER_CALL(CAttributeList_SetRuntimeAttributeValue)(pAttrDef, flValue);
+		// DETOUR_MEMBER_CALL(pAttrDef, flValue);
 		// Move around attributes so that the custom attributes appear at the end of the list
 		if (pAttrDef != nullptr && countpre != attrs.Count() && attrs.Count() > 20 && (pAttrDef->GetIndex() < 4200 || pAttrDef->GetIndex() > 5000)) {
 			int count = attrs.Count();
@@ -5759,8 +5784,6 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		
 		if (changeType != AttributeChangeType::NONE) {
-			attribute_data_union_t newValue;
-			newValue.m_Float = flValue;
 			OnAttributeChanged(list, pAttrDef, oldValue, newValue, changeType);
 		}
 	}
@@ -5780,7 +5803,7 @@ namespace Mod::Attr::Custom_Attributes
 			changeType = AttributeChangeType::REMOVE;
 		}
 
-		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttribute)(pAttrDef);
+		DETOUR_MEMBER_CALL(pAttrDef);
 
 		if (changeType != AttributeChangeType::NONE) {
 			attribute_data_union_t newValue;
@@ -5801,7 +5824,7 @@ namespace Mod::Attr::Custom_Attributes
 			pAttrDef = attrs[index].GetStaticData();
 		}
 
-		DETOUR_MEMBER_CALL(CAttributeList_RemoveAttributeByIndex)(index);
+		DETOUR_MEMBER_CALL(index);
 
 		if (pAttrDef != nullptr) {
 			changeType = AttributeChangeType::REMOVE;
@@ -5821,7 +5844,7 @@ namespace Mod::Attr::Custom_Attributes
 			oldValue = attr->GetValue();
 		}
 
-		DETOUR_MEMBER_CALL(CAttributeList_AddAttribute)(attr);
+		DETOUR_MEMBER_CALL(attr);
 
 		if (oldValue.m_UInt != attr->GetValue().m_UInt) {
 			changeType = AttributeChangeType::ADD;
@@ -5832,7 +5855,6 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CAttributeList_DestroyAllAttributes)
 	{
 		auto list = reinterpret_cast<CAttributeList *>(this);
-
 		auto &attrs = list->Attributes();
 		if (attrs.Count()) {
 			for (int i = attrs.Count() - 1; i >= 0; i--) {
@@ -5851,13 +5873,12 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CAttributeList_NotifyManagerOfAttributeValueChanges)
 	{
 		auto list = reinterpret_cast<CAttributeList *>(this);
-		DETOUR_MEMBER_CALL(CAttributeList_NotifyManagerOfAttributeValueChanges)();
+		DETOUR_MEMBER_CALL();
 	}
-	
 
 	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage)
 	{
-		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
+		float ret = DETOUR_MEMBER_CALL(pTarget, piDamageType, piCustomDamage);
 		auto knife = reinterpret_cast<CTFKnife *>(this);
 
 		if (*piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && knife->GetTFPlayerOwner() != nullptr && !knife->GetTFPlayerOwner()->IsBot() && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss() ) {
@@ -5908,7 +5929,7 @@ namespace Mod::Attr::Custom_Attributes
 			medigun->SetCustomVariable("healingnonplayer", Variant(false));
 		}
 	
-        DETOUR_MEMBER_CALL(CWeaponMedigun_RemoveHealingTarget)(flag);
+        DETOUR_MEMBER_CALL(flag);
     }
 
 	void AddMedigunAttributes(CAttributeList *target, const char *attribs)
@@ -5971,7 +5992,7 @@ namespace Mod::Attr::Custom_Attributes
 		SCOPED_INCREMENT_IF(rc_CWeaponMedigun_StartHealingTarget_Drain, drain != 0);
 		startHealingTargetHealer = owner;
 		startHealingTarget = targete;
-        DETOUR_MEMBER_CALL(CWeaponMedigun_StartHealingTarget)(targete);
+        DETOUR_MEMBER_CALL(targete);
 		startHealingTarget = nullptr;
 		startHealingTargetHealer = nullptr;
     }
@@ -5985,7 +6006,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (iWeaponMod == 1)
 		{
 			while(true) {
-				if (DETOUR_MEMBER_CALL(CTFWeaponBase_Energy_Recharge)()) {
+				if (DETOUR_MEMBER_CALL()) {
 					break;
 				}
 			}
@@ -5993,7 +6014,7 @@ namespace Mod::Attr::Custom_Attributes
 			//return true;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Energy_Recharge)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CBasePlayer_ItemPostFrame)
@@ -6077,7 +6098,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		
 
-		DETOUR_MEMBER_CALL(CBasePlayer_ItemPostFrame)();
+		DETOUR_MEMBER_CALL();
 		if (weapon != nullptr) {
 			OnWeaponUpdate(weapon);
 			// if ((player->m_nButtons & IN_ATTACK2) && GetFastAttributeFloat(weapon, 0, ALT_FIRE_ATTACK) != 0) {
@@ -6118,7 +6139,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto weapon = reinterpret_cast<CWeaponMedigun *>(this);
 
-		auto healRate = DETOUR_MEMBER_CALL(CWeaponMedigun_GetHealRate)();
+		auto healRate = DETOUR_MEMBER_CALL();
 		if (rtti_cast<CTFReviveMarker *>(weapon->GetHealTarget()) != nullptr) {
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, healRate, revive_rate);
 		}
@@ -6129,7 +6150,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
+		DETOUR_MEMBER_CALL(index, taunt_concept);
 
 		if (player->m_flTauntAttackTime > gpGlobals->curtime) {
 			float attackDelayMult = 1.0f;
@@ -6146,7 +6167,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 
-		delay = DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyFireDelay)(delay);
+		delay = DETOUR_MEMBER_CALL(delay);
 
 		if (weapon->IsMeleeWeapon()) {
 			float flReducedHealthBonus = 1.0f;
@@ -6171,7 +6192,7 @@ namespace Mod::Attr::Custom_Attributes
 			return false;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFPlayer_ApplyPunchImpulseX)(amount);
+		return DETOUR_MEMBER_CALL(amount);
 	}
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_ForceRespawn)
@@ -6193,13 +6214,13 @@ namespace Mod::Attr::Custom_Attributes
 				TE_TFParticleEffect(filter, 0.0f, "player_sparkles_blue", tele_pos, vec3_angle);
 			}
 		}
-        return DETOUR_MEMBER_CALL(CTFPlayer_ForceRespawn)();
+        return DETOUR_MEMBER_CALL();
     }
 
 	void Misfire(CTFWeaponBaseGun *weapon)
 	{
 		weapon->CalcIsAttackCritical();
-		//DETOUR_MEMBER_CALL(CTFWeaponBase_Misfire)();
+		//DETOUR_MEMBER_CALL();
 
 		CTFPlayer *player = weapon->GetTFPlayerOwner();
 		if (!player) return;
@@ -6221,7 +6242,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CheckReloadMisfire)
 	{
-		bool result = DETOUR_MEMBER_CALL(CTFWeaponBase_CheckReloadMisfire)();
+		bool result = DETOUR_MEMBER_CALL();
 
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		int canOverload = 0;
@@ -6238,7 +6259,7 @@ namespace Mod::Attr::Custom_Attributes
 
     DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FindTarget)
     {
-        bool ret{DETOUR_MEMBER_CALL(CObjectSentrygun_FindTarget)()};
+        bool ret{DETOUR_MEMBER_CALL()};
         auto sentry{reinterpret_cast<CObjectSentrygun*>(this)};
         CTFPlayer* builder{sentry->GetBuilder()};
         if(builder){
@@ -6264,7 +6285,7 @@ namespace Mod::Attr::Custom_Attributes
 		CTFPlayer *player = ToTFPlayer(reinterpret_cast<CGameMovement *>(this)->player);
 		//if ((player->GetFlags() & FL_ONGROUND) || (reinterpret_cast<CGameMovement *>(this)->GetMoveData()->m_nOldButtons & IN_JUMP)) return;
 		//ClientMsg(player, "redepl\n");
-        DETOUR_MEMBER_CALL(CTFGameMovement_ToggleParachute)();
+        DETOUR_MEMBER_CALL();
 		if (player->m_Shared->InCond(TF_COND_PARACHUTE_DEPLOYED)) {
 			int parachuteRedeploy = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(player, parachuteRedeploy, parachute_redeploy);
@@ -6284,7 +6305,7 @@ namespace Mod::Attr::Custom_Attributes
 		float preSpeedUp = movement->GetMoveData()->m_flUpMove;
 		
 		
-        DETOUR_MEMBER_CALL(CTFGameMovement_HandleDuckingSpeedCrop)();
+        DETOUR_MEMBER_CALL();
 		if (preSpeedFw != movement->GetMoveData()->m_flForwardMove || preSpeedSide != movement->GetMoveData()->m_flSideMove || preSpeedUp != movement->GetMoveData()->m_flUpMove) {
 			float mult = GetFastAttributeFloat(player, 1, MULT_DUCK_SPEED);
 			movement->GetMoveData()->m_flForwardMove *= mult;
@@ -6298,7 +6319,7 @@ namespace Mod::Attr::Custom_Attributes
     {
 		SCOPED_INCREMENT(rc_ProvidingAttributes);
 		auto manager = reinterpret_cast<CAttributeManager *>(this);
-        DETOUR_MEMBER_CALL(CAttributeManager_ProvideTo)(entity);
+        DETOUR_MEMBER_CALL(entity);
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
 		if (item != nullptr) {
 			auto &attrs = item->GetItem()->GetAttributeList().Attributes(); 
@@ -6316,7 +6337,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(void, CAttributeManager_StopProvidingTo, CBaseEntity *entity)
     {
 		SCOPED_INCREMENT(rc_ProvidingAttributes);
-        DETOUR_MEMBER_CALL(CAttributeManager_StopProvidingTo)(entity); 
+        DETOUR_MEMBER_CALL(entity); 
 		auto manager = reinterpret_cast<CAttributeManager *>(this);
 		auto item = rtti_cast<CEconEntity *>(manager->m_hOuter.Get().Get());
 		if (item != nullptr) {
@@ -6337,7 +6358,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleAnimEvent, animevent_t *pEvent)
     {
-		DETOUR_MEMBER_CALL(CTFPlayer_HandleAnimEvent)(pEvent);
+		DETOUR_MEMBER_CALL(pEvent);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if ((pEvent->event == AE_WPN_HIDE || pEvent->event == AE_WPN_UNHIDE) && player->GetActiveTFWeapon() != nullptr) {
 			GET_STRING_ATTRIBUTE(player->GetActiveTFWeapon(), custom_item_model, model);
@@ -6381,13 +6402,13 @@ namespace Mod::Attr::Custom_Attributes
 
 			return vResult;
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_GetParticleColor)(color);
+		return DETOUR_MEMBER_CALL(color);
 	}
 
 	DETOUR_DECL_STATIC(CTFProjectile_EnergyRing *, CTFProjectile_EnergyRing_Create, CTFWeaponBaseGun *pLauncher, const Vector &vecOrigin, const QAngle& vecAngles, float fSpeed, float fGravity, 
 			CBaseEntity *pOwner, CBaseEntity *pScorer, Vector vColor1, Vector vColor2, bool bCritical)
     {
-		auto ring = DETOUR_STATIC_CALL(CTFProjectile_EnergyRing_Create)(pLauncher, vecOrigin, vecAngles, fSpeed, fGravity, pOwner, pScorer, vColor1, vColor2, bCritical);
+		auto ring = DETOUR_STATIC_CALL(pLauncher, vecOrigin, vecAngles, fSpeed, fGravity, pOwner, pScorer, vColor1, vColor2, bCritical);
 		if (ring != nullptr && pLauncher != nullptr) {
 			int particleColor = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pLauncher, particleColor, particle_color_rgb);
@@ -6426,7 +6447,7 @@ namespace Mod::Attr::Custom_Attributes
     {
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		bool good = weapon->m_flNextPrimaryAttack <= gpGlobals->curtime;
-		DETOUR_MEMBER_CALL(CTFBat_Wood_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 		if (good && weapon->m_flNextPrimaryAttack > gpGlobals->curtime) {
 			float fireRateMult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, fireRateMult, mult_postfiredelay);
@@ -6442,7 +6463,7 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(pPlayer, ignore, ignored_by_enemy_sentries);
 		if (ignore != 0) return false;
 
-		return DETOUR_MEMBER_CALL(CObjectSentrygun_ValidTargetPlayer)(pPlayer, vecStart, vecEnd);
+		return DETOUR_MEMBER_CALL(pPlayer, vecStart, vecEnd);
 	}
 
 	ConVar sig_attr_burn_time_faster_burn("sig_attr_burn_time_faster_burn", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL, 
@@ -6477,7 +6498,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_Burn)(igniter, weapon, duration);
+		DETOUR_MEMBER_CALL(igniter, weapon, duration);
 		if (weapon != nullptr && remainingFlameTime != shared->m_flFlameRemoveTime) {
 			float mult = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mult, mult_afterburn_delay);
@@ -6507,7 +6528,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		float nextFlameTime = shared->m_flFlameBurnTime;
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_ConditionGameRulesThink)();
+		DETOUR_MEMBER_CALL();
 
 		auto &bleedVec = shared->m_BleedInfo.Get();
 		FOR_EACH_VEC(bleedVec, i) {
@@ -6589,7 +6610,7 @@ namespace Mod::Attr::Custom_Attributes
 				});
 			}
 		}
-		DETOUR_MEMBER_CALL(CGameMovement_CheckFalling)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CCurrencyPack_MyTouch, CBasePlayer *player)
@@ -6598,7 +6619,7 @@ namespace Mod::Attr::Custom_Attributes
 		
 		int nCurHealth = player->GetHealth();
 		int nMaxHealth = player->GetMaxHealth();
-		bool ret = DETOUR_MEMBER_CALL(CCurrencyPack_MyTouch)(player);
+		bool ret = DETOUR_MEMBER_CALL(player);
 		if (ret) {
 			float health = 0;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, health, health_from_credits);
@@ -6629,23 +6650,23 @@ namespace Mod::Attr::Custom_Attributes
 			CRecipientFilter filter2;
 			filter2.CopyFrom(filter);
 			filter2.AddRecipient(playerAnimSender);
-			DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter2, delay, pSender, pST, classID);
+			DETOUR_MEMBER_CALL(filter2, delay, pSender, pST, classID);
 			return;
 		}
-		DETOUR_MEMBER_CALL(CVEngineServer_PlaybackTempEntity)(filter, delay, pSender, pST, classID);
+		DETOUR_MEMBER_CALL(filter, delay, pSender, pST, classID);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TraceAttack, const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, void *pAccumulator)
 	{
 		SCOPED_INCREMENT(rc_CTFPlayer_TraceAttack);
-		DETOUR_MEMBER_CALL(CTFPlayer_TraceAttack)(info, vecDir, ptr, pAccumulator);
+		DETOUR_MEMBER_CALL(info, vecDir, ptr, pAccumulator);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_IsPassiveWeapon)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
 		return GetFastAttributeInt(weapon, 0, IS_PASSIVE_WEAPON) != 0;
-		//return DETOUR_MEMBER_CALL(CTFWeaponBase_IsPassiveWeapon)();
+		//return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(int, CBaseCombatWeapon_GetMaxClip1)
@@ -6656,14 +6677,14 @@ namespace Mod::Attr::Custom_Attributes
 			return clipAttr;
 		}
 		return weapon->GetWpnData().iMaxClip1;
-		//return DETOUR_MEMBER_CALL(CTFWeaponBase_IsPassiveWeapon)();
+		//return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFWeaponBase_AutoFiresFullClip)
 	{
 		auto weapon = reinterpret_cast<CBaseCombatWeapon *>(this);
 		return GetFastAttributeInt(weapon, 0, AUTO_FIRES_FULL_CLIP) != 0;
-		//return DETOUR_MEMBER_CALL(CTFWeaponBase_IsPassiveWeapon)();
+		//return DETOUR_MEMBER_CALL();
 	}
 
 
@@ -6675,7 +6696,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (burn_duration != 0.0f) {
 			return 7.5f;
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_GetAfterburnRateOnHit)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBotVision_IsIgnored, CBaseEntity *ent)
@@ -6689,7 +6710,7 @@ namespace Mod::Attr::Custom_Attributes
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_SendWeaponAnim, int activity)
@@ -6700,7 +6721,7 @@ namespace Mod::Attr::Custom_Attributes
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SendWeaponAnim)(activity);
+		return DETOUR_MEMBER_CALL(activity);
 	}
 	
     DETOUR_DECL_MEMBER(bool, CTFPlayer_CanDisguise)
@@ -6711,7 +6732,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (alwaysAllowDisguise != 0) {
 			return true;
 		}
-        return DETOUR_MEMBER_CALL(CTFPlayer_CanDisguise)();
+        return DETOUR_MEMBER_CALL();
     }
 	
     DETOUR_DECL_MEMBER(bool, CTFPlayer_CanGoInvisible, bool flagcheck)
@@ -6722,7 +6743,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (alwaysAllowCloak != 0) {
 			return true;
 		}
-        return DETOUR_MEMBER_CALL(CTFPlayer_CanGoInvisible)(flagcheck);
+        return DETOUR_MEMBER_CALL(flagcheck);
     }
 	
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectTeleporter_PlayerCanBeTeleported, CTFPlayer *player)
@@ -6732,14 +6753,14 @@ namespace Mod::Attr::Custom_Attributes
 		if (alwaysAllowTeleport != 0) {
 			return true;
 		}
-        return DETOUR_MEMBER_CALL(CObjectTeleporter_PlayerCanBeTeleported)(player);
+        return DETOUR_MEMBER_CALL(player);
     }
 	
     DETOUR_DECL_MEMBER(bool, CSpellPickup_ItemCanBeTouchedByPlayer, CBasePlayer *player)
 	{
 		int cannotPickup = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotPickup, cannot_pickup_spells);
-        return DETOUR_MEMBER_CALL(CSpellPickup_ItemCanBeTouchedByPlayer)(player);
+        return DETOUR_MEMBER_CALL(player);
     }
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj);
 
@@ -6757,7 +6778,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+		DETOUR_MEMBER_CALL(explode);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
@@ -6770,7 +6791,7 @@ namespace Mod::Attr::Custom_Attributes
 				ChangeBuildingProperties(player, obj);
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
 	class SentryWeaponModule : public EntityModule
@@ -6833,7 +6854,7 @@ namespace Mod::Attr::Custom_Attributes
 				return nullptr;
 			}
 		}
-		auto ret = DETOUR_STATIC_CALL(CTFProjectile_SentryRocket_Create)(vecOrigin, vecAngles, pOwner, pScorer);
+		auto ret = DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pScorer);
 		sentry_gun_rocket = ret;
 		return ret;
 	}
@@ -6842,17 +6863,17 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayer_AddObject, CBaseObject *object)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayer_AddObject)(object);
+        DETOUR_MEMBER_CALL(object);
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveObject, CBaseObject *object)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayer_RemoveObject)(object);
+        DETOUR_MEMBER_CALL(object);
     }
 
     DETOUR_DECL_MEMBER(float, CObjectDispenser_GetHealRate)
 	{
-        auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetHealRate)();
+        auto ret = DETOUR_MEMBER_CALL();
 		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
 		ret *= GetBuildingAttributeFloat<"ratemult">(dispenser, "mult_dispenser_rate", true);
 		return ret;
@@ -6867,7 +6888,7 @@ namespace Mod::Attr::Custom_Attributes
 			teleporter->m_iTeleportType = 1;
 			restore = true;
 		}
-        DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterThink)();
+        DETOUR_MEMBER_CALL();
 		if (prestate == 3 && teleporter->m_iState == 6) {
 			float rechargeDurationPre = teleporter->m_flCurrentRechargeDuration;
 			float rate = GetBuildingAttributeFloat<"rechargeratemult">(teleporter, "mult_teleporter_recharge_rate", true);
@@ -6884,7 +6905,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 		CTFPlayer *owner = obj->GetBuilder();
 
-		DETOUR_MEMBER_CALL(CObjectSentrygun_StartUpgrading)();
+		DETOUR_MEMBER_CALL();
 		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
 		if (!obj->m_bCarryDeploy) {
 			obj->m_iAmmoShells = obj->m_iMaxAmmoShells;
@@ -6896,7 +6917,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 
-		DETOUR_MEMBER_CALL(CObjectSentrygun_Spawn)();
+		DETOUR_MEMBER_CALL();
 		obj->m_iMaxAmmoShells *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
 		obj->m_iMaxAmmoRockets *= GetBuildingAttributeFloat<"ammomult">(obj, "mvm_sentry_ammo", true);
 		obj->m_iMaxAmmoRockets *= GetBuildingAttributeFloat<"rocketammomult">(obj, "mult_sentry_rocket_ammo", false);
@@ -6908,7 +6929,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto obj = reinterpret_cast<CObjectTeleporter *>(this);
 
-		DETOUR_MEMBER_CALL(CObjectTeleporter_TeleporterSend)(player);
+		DETOUR_MEMBER_CALL(player);
 		if (player != nullptr && obj->GetCustomVariableInt<"speedboost">() != 0) {
 			player->m_Shared->AddCond(TF_COND_SPEED_BOOST, 4.0f);
 		}
@@ -6927,12 +6948,12 @@ namespace Mod::Attr::Custom_Attributes
 			return;
 		}
 		info.m_flDamage *= GetBuildingAttributeFloat<"damagemult">(obj, "mult_engy_sentry_damage", true);
-		VHOOK_CALL(CObjectSentrygun_FireBullets)(info);
+		VHOOK_CALL(info);
 	}
 
 	DETOUR_DECL_MEMBER(float, CObjectDispenser_GetDispenserRadius)
 	{
-		auto ret = DETOUR_MEMBER_CALL(CObjectDispenser_GetDispenserRadius)();
+		auto ret = DETOUR_MEMBER_CALL();
 		auto dispenser = reinterpret_cast<CObjectDispenser *>(this);
 		ret *= GetBuildingAttributeFloat<"radiusmult">(dispenser, "mult_dispenser_radius", true);
 		return ret;
@@ -6942,7 +6963,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
 		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range", true);
-		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryRotate)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_Attack)
@@ -6950,7 +6971,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
 		sentry->m_flSentryRange *= GetBuildingAttributeFloat<"rangemult">(sentry, "mult_sentry_range", true);
 		float nextAttackPre = sentry->m_flNextAttack;
-		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
+		DETOUR_MEMBER_CALL();
 		if (nextAttackPre < sentry->m_flNextAttack) {
 			float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate", true);
 			sentry->m_flFireRate *= rate;
@@ -6965,7 +6986,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto sentry = reinterpret_cast<CObjectSentrygun *>(this);
 		float nextAttackPre = sentry->m_flNextAttack;
 		float nextAttackRocket = sentry->m_flNextRocketAttack;
-		DETOUR_MEMBER_CALL(CObjectSentrygun_FoundTarget)(entity, vecSoundCenter, noSound);
+		DETOUR_MEMBER_CALL(entity, vecSoundCenter, noSound);
 		float rate = GetBuildingAttributeFloat<"fireratemult">(sentry, "mult_sentry_firerate", false);
 		if (rate > 1) {
 			sentry->m_flNextAttack = nextAttackPre;
@@ -7034,7 +7055,7 @@ namespace Mod::Attr::Custom_Attributes
 			model = newModel.c_str();
 			CBaseEntity::PrecacheModel(model);
 		}
-		DETOUR_MEMBER_CALL(CObjectSentrygun_SetModel)(model);
+		DETOUR_MEMBER_CALL(model);
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectTeleporter_SetModel, const char *model)
@@ -7071,7 +7092,7 @@ namespace Mod::Attr::Custom_Attributes
 			model = newModel.c_str();
 			CBaseEntity::PrecacheModel(model);
 		}
-		DETOUR_MEMBER_CALL(CObjectTeleporter_SetModel)(model);
+		DETOUR_MEMBER_CALL(model);
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectDispenser_SetModel, const char *model)
@@ -7133,7 +7154,7 @@ namespace Mod::Attr::Custom_Attributes
 			model = newModel.c_str();
 			CBaseEntity::PrecacheModel(model);
 		}
-		DETOUR_MEMBER_CALL(CObjectDispenser_SetModel)(model);
+		DETOUR_MEMBER_CALL(model);
 	}
 
 
@@ -7148,7 +7169,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (modrocket != nullptr && modrocket->weapon != nullptr) {
 			modrocket->weapon->Remove();
 		}
-		VHOOK_CALL(CObjectSentrygun_UpdateOnRemove)();
+		VHOOK_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CObjectSentrygun_EmitSentrySound, const char *sound)
@@ -7166,7 +7187,7 @@ namespace Mod::Attr::Custom_Attributes
 				return;
 			}
 		}
-		DETOUR_MEMBER_CALL(CObjectSentrygun_EmitSentrySound)(sound);
+		DETOUR_MEMBER_CALL(sound);
 	}
 
 	bool OverrideGib(CTFPlayer *player, const CTakeDamageInfo& info, bool &result)
@@ -7208,7 +7229,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		bool result = false;
 		if (OverrideGib(bot, info, result)) return result;
-		return DETOUR_MEMBER_CALL(CTFBot_ShouldGib)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ShouldGib, const CTakeDamageInfo& info)
@@ -7216,7 +7237,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		bool result = false;
 		if (OverrideGib(player, info, result)) return result;
-		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldGib)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	std::string sapperModelName;
@@ -7241,7 +7262,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(CObjectSapper_GetSapperModelName)(nModel, pchModelName);
+		return DETOUR_MEMBER_CALL(nModel, pchModelName);
 	}
 	
 	DETOUR_DECL_MEMBER(const char *, CObjectSapper_GetSapperSoundName)
@@ -7256,14 +7277,14 @@ namespace Mod::Attr::Custom_Attributes
 				return sound;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CObjectSapper_GetSapperSoundName)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(const char *, CObjectSapper_UpdateOnRemove)
 	{
 		auto sapper = reinterpret_cast<CObjectSapper *>(this);
 		sapper->StopSound(sapper->GetCustomVariable<"customsound">(""));
-		return DETOUR_MEMBER_CALL(CObjectSapper_UpdateOnRemove)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CBaseObject_FindSnapToBuildPos;
@@ -7294,7 +7315,7 @@ namespace Mod::Attr::Custom_Attributes
 			return found;
 		}
 		SCOPED_INCREMENT_IF(rc_CBaseObject_FindSnapToBuildPos, ally != 0);
-		return DETOUR_MEMBER_CALL(CBaseObject_FindSnapToBuildPos)(pObjectOverride);
+		return DETOUR_MEMBER_CALL(pObjectOverride);
 	}
 
 	DETOUR_DECL_MEMBER(CTFTeam *, CTFPlayer_GetOpposingTFTeam)
@@ -7303,7 +7324,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_CBaseObject_FindSnapToBuildPos) {
 			return TFTeamMgr()->GetTeam(me->GetTeamNumber());
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetOpposingTFTeam)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CObjectSapper_IsValidRoboSapperTarget, CTFPlayer *player)
@@ -7314,7 +7335,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (ally) {
 			return player->GetTeamNumber() == builder->GetTeamNumber() && player->IsAlive();
 		}
-		return DETOUR_MEMBER_CALL(CObjectSapper_IsValidRoboSapperTarget)(player);
+		return DETOUR_MEMBER_CALL(player);
 	}
 
 #define DETOUR_DECL_MEMBER_PROJ_DAMAGE_MULT(className) \
@@ -7322,7 +7343,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(float, className##_GetDamage) \
 	{ \
 		auto me = reinterpret_cast<CBaseProjectile *>(this); \
-		return DETOUR_MEMBER_CALL(className##_GetDamage)() * GetDamageMult(me); \
+		return DETOUR_MEMBER_CALL() * GetDamageMult(me); \
 	} \
 	
 	DETOUR_DECL_MEMBER_PROJ_DAMAGE_MULT(CTFProjectile_Cleaver);
@@ -7335,7 +7356,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
         auto loco = reinterpret_cast<ILocomotion *>(this);
 		if (loco->GetBot()->GetEntity()->GetMoveType() == MOVETYPE_NOCLIP) return true;
-        return VHOOK_CALL(PlayerLocomotion_IsOnGround)(args);
+        return VHOOK_CALL(args);
     }
 
 	DETOUR_DECL_MEMBER(void, CGameMovement_FullNoClipMove, float speed, float accel)
@@ -7350,7 +7371,7 @@ namespace Mod::Attr::Custom_Attributes
 				speed = noclip / 300;
 			}
 		}
-        DETOUR_MEMBER_CALL(CGameMovement_FullNoClipMove)(speed, accel);
+        DETOUR_MEMBER_CALL(speed, accel);
     }
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerMove_SetupMove, CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move)
@@ -7368,7 +7389,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-        DETOUR_MEMBER_CALL(CTFPlayerMove_SetupMove)(player, ucmd, pHelper, move);
+        DETOUR_MEMBER_CALL(player, ucmd, pHelper, move);
 		
 		if (restoreCond) {
 			auto tfplayer = ToTFPlayer(player);
@@ -7381,7 +7402,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
 		GET_STRING_ATTRIBUTE(wep, add_attributes_when_active, attributes);
 		AddOnActiveAttributes(wep, attributes);
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	bool CanSapBuilding(CBaseObject *obj) {
@@ -7399,7 +7420,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-		return DETOUR_MEMBER_CALL(CBaseObject_FindNearestBuildPoint)(pEntity, pBuilder, flNearestPoint, vecNearestBuildPoint, bIgnoreChecks);
+		return DETOUR_MEMBER_CALL(pEntity, pBuilder, flNearestPoint, vecNearestBuildPoint, bIgnoreChecks);
 	}
 
 	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
@@ -7408,7 +7429,7 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(bot, cannotUpgrade, cannot_upgrade_bomb);
 		if (cannotUpgrade) return false;
 
-        return DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+        return DETOUR_MEMBER_CALL(bot);
 	}
 
 	IForward *viewmodels_enabled_forward;
@@ -7442,7 +7463,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CServerGameClients_ClientPutInServer, edict_t *edict, const char *playername)
 	{
-        DETOUR_MEMBER_CALL(CServerGameClients_ClientPutInServer)(edict, playername);
+        DETOUR_MEMBER_CALL(edict, playername);
 		char path[512];
 		auto player = ((CTFPlayer*) edict->GetUnknown());
 		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
@@ -7502,7 +7523,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (ammoValueChange != 0) {
 			GetPlayerClassData(classIndex == -1 ? player->GetPlayerClass()->GetClassIndex() : classIndex)->m_aAmmoMax[ammoIndex] += ammoValueChange;
 		}
-		auto ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxAmmo)(ammoIndex, classIndex);
+		auto ret = DETOUR_MEMBER_CALL(ammoIndex, classIndex);
 		if (ammoValueChange != 0) {
 			GetPlayerClassData(classIndex == -1 ? player->GetPlayerClass()->GetClassIndex() : classIndex)->m_aAmmoMax[ammoIndex] -= ammoValueChange;
 		}
@@ -7511,7 +7532,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBuilder_StartPlacement)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBuilder_StartPlacement)();
+		DETOUR_MEMBER_CALL();
 		auto builder = reinterpret_cast<CTFWeaponBuilder *>(this);
 
 		string_t attrTest = NULL_STRING;
@@ -7543,7 +7564,7 @@ namespace Mod::Attr::Custom_Attributes
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBuilder_StopPlacement)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBuilder_StopPlacement)();
+		DETOUR_MEMBER_CALL();
 		auto builder = reinterpret_cast<CTFWeaponBuilder *>(this);
 
 		if (builder->GetCustomVariableBool<"custombuildingviewmodel">()) {
@@ -7563,7 +7584,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	VHOOK_DECL(Activity, CTFWeaponBuilder_TranslateViewmodelHandActivityInternal, Activity base)
 	{
-		auto ret = VHOOK_CALL(CTFWeaponBuilder_TranslateViewmodelHandActivityInternal)(base);
+		auto ret = VHOOK_CALL(base);
 		//Msg("Base %s Res %s\n", CAI_BaseNPC::GetActivityName(base), CAI_BaseNPC::GetActivityName(ret));
 		return ret;
 	}
@@ -7582,28 +7603,28 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-		auto ret = VHOOK_CALL(CTFWeaponBuilder_SendWeaponAnim)(act);
+		auto ret = VHOOK_CALL(act);
 		return ret;
 	}
 	
 	
 	DETOUR_DECL_MEMBER(int, CEconItemView_GetAnimationSlot)
 	{
-		auto ret = DETOUR_MEMBER_CALL(CEconItemView_GetAnimationSlot)();
+		auto ret = DETOUR_MEMBER_CALL();
 		//Msg("Slot %d\n", ret);
 		return ret;
 	}
 	
 	DETOUR_DECL_MEMBER(int, CTFWeaponBase_GetViewModelWeaponRole)
 	{
-		auto ret = DETOUR_MEMBER_CALL(CTFWeaponBase_GetViewModelWeaponRole)();
+		auto ret = DETOUR_MEMBER_CALL();
 		//Msg("SlotRole %d\n", ret);
 		return ret;
 	}
 	
 	DETOUR_DECL_MEMBER(Activity, CEconItemDefinition_GetActivityOverride, int team, Activity base)
 	{
-		auto ret = DETOUR_MEMBER_CALL(CEconItemDefinition_GetActivityOverride)(team, base);
+		auto ret = DETOUR_MEMBER_CALL(team, base);
 		//Msg("ActivityOverride %d %d\n", base, ret);
 		return ret;
 	}
@@ -7613,7 +7634,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto flame = reinterpret_cast<CBaseEntity *>(this);
 		SCOPED_INCREMENT_IF(rc_CTFFlameManager_OnCollide, flame->GetOwnerEntity() != nullptr && HasAllowFriendlyFire(flame->GetOwnerEntity(), flame->GetOwnerEntity()->GetOwnerEntity()));
 
-		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
+		DETOUR_MEMBER_CALL(entity, value);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_Heal, CBaseEntity *pHealer, float flAmount, float flOverhealBonus, float flOverhealDecayMult, bool bDispenserHeal, CTFPlayer *pHealScorer)
@@ -7633,7 +7654,7 @@ namespace Mod::Attr::Custom_Attributes
 				mod->maxOverheal = flOverhealBonus;
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_Heal)(pHealer, flAmount, flOverhealBonus, flOverhealDecayMult, bDispenserHeal, pHealScorer);
+		DETOUR_MEMBER_CALL(pHealer, flAmount, flOverhealBonus, flOverhealDecayMult, bDispenserHeal, pHealScorer);
 	}
 
 	DETOUR_DECL_MEMBER(void, CWeaponMedigun_SecondaryAttack)
@@ -7649,7 +7670,7 @@ namespace Mod::Attr::Custom_Attributes
 				medigun->SetHealTarget(nullptr);
 			}
 		}
-		DETOUR_MEMBER_CALL(CWeaponMedigun_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 		if (healRestore != nullptr) {
 			medigun->SetHealTarget(healRestore);
 		}
@@ -7668,7 +7689,7 @@ namespace Mod::Attr::Custom_Attributes
 				medigun->SetHealTarget(nullptr);
 			}
 		}
-		DETOUR_MEMBER_CALL(CWeaponMedigun_CycleResistType)();
+		DETOUR_MEMBER_CALL();
 		if (healRestore != nullptr) {
 			medigun->SetHealTarget(healRestore);
 		}
@@ -7678,7 +7699,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		auto medigun = reinterpret_cast<CWeaponMedigun *>(this);
 		auto owner = medigun->GetTFPlayerOwner();
-		auto result = DETOUR_MEMBER_CALL(CWeaponMedigun_FindAndHealTargets)();
+		auto result = DETOUR_MEMBER_CALL();
 		auto target = ToTFPlayer(medigun->GetHealTarget());
 		if (result && owner != nullptr && target != nullptr && target->GetTeamNumber() == owner->GetTeamNumber()) {
 			float drain = 0;
@@ -7719,7 +7740,7 @@ namespace Mod::Attr::Custom_Attributes
 		GET_STRING_ATTRIBUTE(weapon, fire_input_on_attack, input);
 		FireInputAttribute(input, nullptr, Variant(), nullptr, player, weapon, -1.0f);
 		ApplyPunch(player, weapon);
- 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+ 		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(const char *, CTFPlayer_GetSceneSoundToken)
@@ -7735,7 +7756,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (robotVoice != 0) {
 			return "MVM_";
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetSceneSoundToken)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	THINK_FUNC_DECL(SetActivityThink)
@@ -7777,7 +7798,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemPostFrame)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CBaseCombatWeapon_SetIdealActivity, Activity act)
@@ -7787,7 +7808,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_AltFireAttack && weapon->m_IdealActivity == act && act == weapon->TranslateViewmodelHandActivityInternal((Activity) activityAttack)) {
 			idealActivitySet = true;
 		}
-		return DETOUR_MEMBER_CALL(CBaseCombatWeapon_SetIdealActivity)(act);
+		return DETOUR_MEMBER_CALL(act);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ItemBusyFrame)
@@ -7803,7 +7824,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ItemBusyFrame)();
+		DETOUR_MEMBER_CALL();
 
 		if (restore) {
 			player->m_nButtons &= ~(IN_ATTACK);
@@ -7818,7 +7839,7 @@ namespace Mod::Attr::Custom_Attributes
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CTFReviveMarker_Create)(player);
+		return DETOUR_STATIC_CALL(player);
 	}
 
 	DETOUR_DECL_STATIC(void, TE_PlayerAnimEvent, CBasePlayer *player, int anim, int data)
@@ -7826,7 +7847,7 @@ namespace Mod::Attr::Custom_Attributes
 		if (rc_AltFireAttack) {
 			playerAnimSender = player;
 		}
-		DETOUR_STATIC_CALL(TE_PlayerAnimEvent)(player, anim, data);
+		DETOUR_STATIC_CALL(player, anim, data);
 		playerAnimSender = nullptr;
 	}
 	
@@ -7855,7 +7876,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_Touch)(other);
+		DETOUR_MEMBER_CALL(other);
 
 		if (weaponAltFire != nullptr) {
 			auto mod = weaponAltFire->GetEntityModule<AltFireAttributesModule>("altfireattrs");
@@ -7902,7 +7923,7 @@ namespace Mod::Attr::Custom_Attributes
 				}
 			}
 		}
-        DETOUR_MEMBER_CALL(CCollisionEvent_PostCollision)(event);
+        DETOUR_MEMBER_CALL(event);
 
 		if (weaponAltFire != nullptr) {
 			auto mod = weaponAltFire->GetEntityModule<AltFireAttributesModule>("altfireattrs");
@@ -7933,7 +7954,7 @@ namespace Mod::Attr::Custom_Attributes
 			}
 		}
 
-        return DETOUR_MEMBER_CALL(CBaseCombatWeapon_HasPrimaryAmmo)();
+        return DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayStepSound, Vector& vecOrigin, surfacedata_t *psurface, float fvol, bool force)
@@ -7944,14 +7965,14 @@ namespace Mod::Attr::Custom_Attributes
 			player->EmitSound(sound);
 		}
 		
-		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+		DETOUR_MEMBER_CALL(vecOrigin, psurface, fvol, force);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_OnTauntSucceeded, const char* pszSceneName, int iTauntIndex, int iTauntConcept)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_OnTauntSucceeded)(pszSceneName, iTauntIndex, iTauntConcept);
+		DETOUR_MEMBER_CALL(pszSceneName, iTauntIndex, iTauntConcept);
 		GET_STRING_ATTRIBUTE(player, fire_input_on_taunt, input);
 		FireInputAttribute(input, nullptr, Variant(AllocPooledString(pszSceneName)), nullptr, player, player, -1.0f);
 	}
@@ -7962,7 +7983,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto player = move->player;
 
 		displacePlayers.clear();
-		DETOUR_MEMBER_CALL(CGameMovement_PlayerMove)();
+		DETOUR_MEMBER_CALL();
 		if (displacePlayers.empty()) return;
 
 		for (auto &toucherH : displacePlayers) {
@@ -8090,7 +8111,7 @@ namespace Mod::Attr::Custom_Attributes
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(pTFPlayer, cannotApply, cannot_be_sapped);
 		if (cannotApply)
 			return false;
-		return DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
+		return DETOUR_MEMBER_CALL(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_Destroy)
@@ -8099,7 +8120,7 @@ namespace Mod::Attr::Custom_Attributes
 		int explode = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(rocket->GetOriginalLauncher(), explode, projectile_explode_on_destroy);
 		if (explode == 3 && takeDamageAttacker != nullptr && takeDamageAttacker->GetTeamNumber() != (rocket->GetOwnerEntity() != nullptr ? rocket->GetOwnerEntity() : rocket)->GetTeamNumber()) {
-			DETOUR_MEMBER_CALL(CTFBaseRocket_Destroy)();
+			DETOUR_MEMBER_CALL();
 			return;
 		}
 		if (explode == 2 && takeDamageAttacker != nullptr) {
@@ -8113,7 +8134,7 @@ namespace Mod::Attr::Custom_Attributes
 			rocket->Explode(&tr, GetContainingEntity(INDEXENT(0)));
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFBaseRocket_Destroy)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGrenadeProj_Destroy)
@@ -8122,7 +8143,7 @@ namespace Mod::Attr::Custom_Attributes
 		int explode = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(rocket->GetOriginalLauncher(), explode, projectile_explode_on_destroy);
 		if (explode == 3 && (takeDamageAttacker == nullptr || takeDamageAttacker->GetTeamNumber() != (rocket->GetThrower() != nullptr ? rocket->GetThrower() : rocket)->GetTeamNumber())) {
-			DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Destroy)();
+			DETOUR_MEMBER_CALL();
 			return;
 		}
 		if (explode == 2 && takeDamageAttacker != nullptr) {
@@ -8136,7 +8157,7 @@ namespace Mod::Attr::Custom_Attributes
 			rocket->Explode(&tr, rocket->GetDamageType());
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Destroy)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_CanHolster)
@@ -8151,14 +8172,14 @@ namespace Mod::Attr::Custom_Attributes
 
 			if (!hasFullClip && holdFire == 2) return false;
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_CanHolster)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	bool flareCritBefore = false;
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_Explode, CGameTrace *tr, CBaseEntity *ent)
 	{
 		flareCritBefore = reinterpret_cast<CTFProjectile_Flare *>(this)->m_bCritical; 
-		DETOUR_MEMBER_CALL(CTFProjectile_Flare_Explode)(tr, ent);
+		DETOUR_MEMBER_CALL(tr, ent);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFProjectile_Flare_GetDamageType)
@@ -8171,7 +8192,7 @@ namespace Mod::Attr::Custom_Attributes
 				flare->m_bCritical = false;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFProjectile_Flare_GetDamageType)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	// inline int GetMaxHealthForBuffing(CTFPlayer *player) {
@@ -8463,7 +8484,7 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		InspectAttributes(target, player, false);
 
-		DETOUR_MEMBER_CALL(CTFPlayer_InspectButtonPressed)();
+		DETOUR_MEMBER_CALL();
 
 	}
 
@@ -8488,13 +8509,13 @@ namespace Mod::Attr::Custom_Attributes
 			respawnTimesForId[player->GetSteamID()] = player->GetDeathTime() + respawntime;
 		}
 
-        DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
-        DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
+        DETOUR_MEMBER_CALL();
 
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
@@ -8512,7 +8533,7 @@ namespace Mod::Attr::Custom_Attributes
     DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
 	{
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
-        DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
         RemoveAttributeManager(entity);
     }
 
@@ -8521,7 +8542,7 @@ namespace Mod::Attr::Custom_Attributes
 		Msg("should\n");
 		return false;
 
-		return VHOOK_CALL(CBaseProjectile_ShouldCollide)(collisionGroup, contentsMask);
+		return VHOOK_CALL(collisionGroup, contentsMask);
 	}
 
 	/*void OnAttributesChange(CAttributeManager *mgr)
@@ -8543,13 +8564,13 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CAttributeManager_OnAttributeValuesChanged)
 	{
-        DETOUR_MEMBER_CALL(CAttributeManager_OnAttributeValuesChanged)();
+        DETOUR_MEMBER_CALL();
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 		OnAttributesChange(mgr);
 	}
 	DETOUR_DECL_MEMBER(void, CAttributeContainer_OnAttributeValuesChanged)
 	{
-        DETOUR_MEMBER_CALL(CAttributeContainer_OnAttributeValuesChanged)();
+        DETOUR_MEMBER_CALL();
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 		OnAttributesChange(mgr);
 	}
@@ -8559,7 +8580,7 @@ namespace Mod::Attr::Custom_Attributes
 		auto mgr = reinterpret_cast<CAttributeManager *>(this);
 		auto player = ToTFPlayer(mgr->m_hOuter);
 		if (player != nullptr) {
-			DETOUR_MEMBER_CALL(CAttributeContainerPlayer_OnAttributeValuesChanged)();
+			DETOUR_MEMBER_CALL();
 			/*auto &rec = mgr->m_Providers.Get();
 			FOR_EACH_VEC(rec, i) {
 				//Msg("Receiver %s\n", ent->GetClassname());
@@ -9371,11 +9392,15 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetSpreadAngles, "CTFWeaponBase::GetSpreadAngles");
 
+// #ifdef PLATFORM_64BITS
+// 			// SetRuntimeAttributeValue supports only 4 byte attributes, and on 64 bits, strings are 8 byte
+// 			MOD_ADD_DETOUR_MEMBER(CSchemaAttributeType_String_BConvertStringToEconAttributeValue, "CSchemaAttributeType_String::BConvertStringToEconAttributeValue");
+// #endif
 			MOD_ADD_DETOUR_MEMBER(CAttributeList_SetRuntimeAttributeValue, "CAttributeList::SetRuntimeAttributeValue");
 			MOD_ADD_DETOUR_MEMBER(CAttributeList_RemoveAttribute, "CAttributeList::RemoveAttribute");
 			MOD_ADD_DETOUR_MEMBER(CAttributeList_RemoveAttributeByIndex, "CAttributeList::RemoveAttributeByIndex");
 			MOD_ADD_DETOUR_MEMBER(CAttributeList_AddAttribute, "CAttributeList::AddAttribute");
-			MOD_ADD_DETOUR_MEMBER(CAttributeList_DestroyAllAttributes, "CAttributeList::DestroyAllAttributes");
+ 			MOD_ADD_DETOUR_MEMBER(CAttributeList_DestroyAllAttributes, "CAttributeList::DestroyAllAttributes");
 
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_RemoveHealingTarget, "CWeaponMedigun::RemoveHealingTarget");
 			MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_StartHealingTarget, "CWeaponMedigun::StartHealingTarget");

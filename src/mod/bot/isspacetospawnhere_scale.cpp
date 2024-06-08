@@ -53,7 +53,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 	
 		SCOPED_INCREMENT_IF(rc_CTFBotSpawner_Spawn, the_bot_scale != 1.0f && cvar_botspawnfix.GetBool());
 		
-		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		return DETOUR_MEMBER_CALL(where, ents);
 	}
 	
 	
@@ -66,7 +66,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		the_spy_scale = spy->GetModelScale();
 		
 		SCOPED_INCREMENT_IF(rc_TeleportNearVictim, the_spy_scale != 1.0f);
-		return DETOUR_STATIC_CALL(TeleportNearVictim)(spy, victim, dist);
+		return DETOUR_STATIC_CALL(spy, victim, dist);
 	}
 	
 	
@@ -78,7 +78,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		the_pos = &pos;
 		
 		if (cvar_debug.GetBool()) DevMsg("\nIsSpaceToSpawnHere BEGIN @ %.7f\n", Plat_FloatTime());
-		auto result = DETOUR_STATIC_CALL(IsSpaceToSpawnHere)(pos);
+		auto result = DETOUR_STATIC_CALL(pos);
 		if (cvar_debug.GetBool()) DevMsg("IsSpaceToSpawnHere END   @ %.7f\n\n", Plat_FloatTime());
 		return result;
 	}
@@ -99,7 +99,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 
 		bool isbotmvm = player->IsBot() && TFGameRules()->IsMannVsMachineMode();
 
-		int result = DETOUR_MEMBER_CALL(CTFGameMovement_CheckStuck)();
+		int result = DETOUR_MEMBER_CALL();
 
 		if (isbotmvm)
 			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
@@ -185,7 +185,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 		
 		old_scale_map[player] = player->GetModelScale();
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnAddHalloweenTiny)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
@@ -224,7 +224,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 					NDebugOverlay::Box(*the_pos, vecMins, vecMaxs, 0xff, 0xff, 0xff, 0x40, 10.0f);
 				}
 				
-				DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray_alt, fMask, pTraceFilter, pTrace);
+				DETOUR_MEMBER_CALL(ray_alt, fMask, pTraceFilter, pTrace);
 				return;
 			}
 			
@@ -259,13 +259,13 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 					NDebugOverlay::Box(*the_pos, vecMins, vecMaxs, 0xff, 0xff, 0xff, 0x40, 10.0f);
 				}
 				
-				DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray_alt, fMask, pTraceFilter, pTrace);
+				DETOUR_MEMBER_CALL(ray_alt, fMask, pTraceFilter, pTrace);
 				return;
 			}
 		}
 
 		if (stuck_player != nullptr) {
-			DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+			DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 
 			//Hit world entity, teleporting player away if possible
 			if (pTrace->startsolid && (pTrace->m_pEnt == nullptr || ENTINDEX(pTrace->m_pEnt) == 0)) {
@@ -287,7 +287,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 					ray_alt.m_Start = ray.m_Start + vTest[i];
 					
 					trace_t trace_alt;
-					DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray_alt, fMask, pTraceFilter, &trace_alt);
+					DETOUR_MEMBER_CALL(ray_alt, fMask, pTraceFilter, &trace_alt);
 
 					if ( !(trace_alt.startsolid && (trace_alt.m_pEnt == nullptr || ENTINDEX(trace_alt.m_pEnt) == 0)) )
 					{
@@ -312,7 +312,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 			return;
 		}
 
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 
 		if (isbotmvm)
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);

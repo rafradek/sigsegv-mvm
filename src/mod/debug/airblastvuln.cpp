@@ -16,7 +16,7 @@ namespace Mod::Debug::AirblastVuln
 	
 	DETOUR_DECL_STATIC(float, CAttributeManager_AttribHookValue_float, float value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
-		auto result = DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_float)(value, attr, ent, vec, b1);
+		auto result = DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 		
 		CTFBot *bot = ToTFBot(const_cast<CBaseEntity *>(ent));
 		if (bot != nullptr && bot->IsMiniBoss()) {
@@ -73,7 +73,7 @@ namespace Mod::Debug::AirblastVuln
 		Vector vBefore;
 		player->GetVelocity(&vBefore, nullptr);
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
+		DETOUR_MEMBER_CALL(impulse, inflictor);
 		
 		Vector vAfter;
 		player->GetVelocity(&vAfter, nullptr);

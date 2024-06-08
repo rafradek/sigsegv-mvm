@@ -514,7 +514,7 @@ namespace Mod::Util::JumboFrames
 			length,
 			(bUseCompression ? "true" : "false"));
 		
-		return DETOUR_STATIC_CALL(NET_SendPacket)(chan, sock, to, data, length, pVoicePayload, bUseCompression);
+		return DETOUR_STATIC_CALL(chan, sock, to, data, length, pVoicePayload, bUseCompression);
 	}
 	
 	DETOUR_DECL_STATIC(int, NET_SendLong, INetChannel *chan, int sock, SOCKET s, const char *buf, int len, const struct sockaddr *to, int tolen, int nMaxRoutableSize)
@@ -525,7 +525,7 @@ namespace Mod::Util::JumboFrames
 			len,
 			nMaxRoutableSize);
 		
-		return DETOUR_STATIC_CALL(NET_SendLong)(chan, sock, s, buf, len, to, tolen, nMaxRoutableSize);
+		return DETOUR_STATIC_CALL(chan, sock, s, buf, len, to, tolen, nMaxRoutableSize);
 	}
 	
 	DETOUR_DECL_STATIC(int, NET_SendTo, bool verbose, SOCKET s, const char *buf, int len, const struct sockaddr *to, int tolen, int iGameDataLength)
@@ -534,14 +534,14 @@ namespace Mod::Util::JumboFrames
 			len,
 			iGameDataLength);
 		
-		return DETOUR_STATIC_CALL(NET_SendTo)(verbose, s, buf, len, to, tolen, iGameDataLength);
+		return DETOUR_STATIC_CALL(verbose, s, buf, len, to, tolen, iGameDataLength);
 	}
 	
 	DETOUR_DECL_MEMBER(int, CNetChan_GetMaxRoutablePayloadSize)
 	{
 		static ConVarRef net_maxroutable("net_maxroutable");
 		
-		//auto result = DETOUR_MEMBER_CALL(CNetChan_GetMaxRoutablePayloadSize)();
+		//auto result = DETOUR_MEMBER_CALL();
 		auto result = net_maxroutable.GetInt();
 		
 		TRACE("%d", result);

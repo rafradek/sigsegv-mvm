@@ -50,7 +50,7 @@ namespace Mod::MvM::Weapon_Balancing
 			}
 		}
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_StunPlayer)(duration, slowdown, flags, attacker);
+		DETOUR_MEMBER_CALL(duration, slowdown, flags, attacker);
 	}
 	
 	CTFSniperRifle *sniperrifle = nullptr;
@@ -63,7 +63,7 @@ namespace Mod::MvM::Weapon_Balancing
 		if (!WeaponID_IsSniperRifle(sniperrifle->GetWeaponID()))
 			sniperrifle = nullptr;
 
-		DETOUR_MEMBER_CALL(CTFSniperRifle_ExplosiveHeadShot)(player1, player2);
+		DETOUR_MEMBER_CALL(player1, player2);
 	}
 	
 	/* UTIL_EntitiesInSphere forwards call to partition->EnumerateElementsInSphere */
@@ -79,10 +79,10 @@ namespace Mod::MvM::Weapon_Balancing
 			radius_eh = radius*(0.75f+chargedmg*0.3f);
 			origin_eh = &origin;
 			
-			return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius_eh, coarseTest, pIterator);
+			return DETOUR_MEMBER_CALL(listMask, origin, radius_eh, coarseTest, pIterator);
 		}
 		
-		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
+		return DETOUR_MEMBER_CALL(listMask, origin, radius, coarseTest, pIterator);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_MakeBleed, CTFPlayer *attacker, CTFWeaponBase *weapon, float bleedTime, int bleeddmg, bool perm, int val)
@@ -110,14 +110,14 @@ namespace Mod::MvM::Weapon_Balancing
 
 			DevMsg("Damage after: %f %f %d\n",radius_eh,distance, bleeddmg);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_MakeBleed)(attacker, weapon, bleedTime, bleeddmg, perm, val);
+		DETOUR_MEMBER_CALL(attacker, weapon, bleedTime, bleeddmg, perm, val);
 	}
 
 	//std::map<CHandle<CBaseEntity>, int> backstab_count;
 	DETOUR_DECL_MEMBER(float, CTFKnife_GetMeleeDamage, CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage)
 	{
 
-		float ret = DETOUR_MEMBER_CALL(CTFKnife_GetMeleeDamage)(pTarget, piDamageType, piCustomDamage);
+		float ret = DETOUR_MEMBER_CALL(pTarget, piDamageType, piCustomDamage);
 		auto knife = reinterpret_cast<CTFKnife *>(this);
 
 		if (cvar_backstab_nerf.GetBool() && *piCustomDamage == TF_DMG_CUSTOM_BACKSTAB && !knife->GetTFPlayerOwner()->IsBot() && pTarget->IsPlayer() && ToTFPlayer(pTarget)->IsMiniBoss() ) {
@@ -148,7 +148,7 @@ namespace Mod::MvM::Weapon_Balancing
             else
                 flDuration += 0.5f;
         }
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 
 	RefCount rc_CTFWeaponBase_ApplyOnHitAttributes;
@@ -178,14 +178,14 @@ namespace Mod::MvM::Weapon_Balancing
                 }
             }
         }
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		DETOUR_MEMBER_CALL(ent, player, info);
 		victim_onhit = nullptr;
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBaseRocket_CheckForStunOnImpact, CTFPlayer* pTarget)
 	{
         SCOPED_INCREMENT_IF(rc_CTFBaseRocket_CheckForStunOnImpact, cvar_beggar_stun_nerf.GetBool());
-		DETOUR_MEMBER_CALL(CTFBaseRocket_CheckForStunOnImpact)(pTarget);
+		DETOUR_MEMBER_CALL(pTarget);
 	}
 
 	RefCount rc_HandleRageGain;
@@ -193,7 +193,7 @@ namespace Mod::MvM::Weapon_Balancing
 	{
 		SCOPED_INCREMENT_IF(rc_HandleRageGain, (0x10 /*kRageBuffFlag_OnHeal*/ & iRequiredBuffFlags) && !pPlayer->IsBot() && pPlayer->IsPlayerClass( TF_CLASS_MEDIC ) && 
 			(cvar_heal_rage_from_upgrades_ratio.GetFloat() != 1.0f || cvar_heal_rage_ratio.GetFloat() != -1.0f));
-		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+		DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ModifyRage, float delta)
@@ -216,7 +216,7 @@ namespace Mod::MvM::Weapon_Balancing
 			delta = (delta / bonus) * (1.0f + ((bonus - 1.0f) * cvar_heal_rage_from_upgrades_ratio.GetFloat())) * cvar_heal_rage_ratio.GetFloat();
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_ModifyRage)(delta);
+		DETOUR_MEMBER_CALL(delta);
 	}
 	
 
@@ -227,7 +227,7 @@ namespace Mod::MvM::Weapon_Balancing
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( victim_onhit, ragescale, rage_giving_scale );
 			val *= ragescale;
 		}
-		DETOUR_MEMBER_CALL(CWeaponMedigun_AddCharge)(val);
+		DETOUR_MEMBER_CALL(val);
 	}
 
 	class CMod : public IMod //, public IModCallbackListener

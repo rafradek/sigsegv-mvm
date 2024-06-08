@@ -11,7 +11,7 @@ namespace Mod::MvM::No_Halloween_Souls
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFGameRules_DropHalloweenSoulPack)(i1, vec1, ent1, i2);
+		DETOUR_MEMBER_CALL(i1, vec1, ent1, i2);
 	}
 	
 	

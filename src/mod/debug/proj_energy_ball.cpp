@@ -165,7 +165,7 @@ namespace Mod::Debug::Proj_Energy_Ball
 		radiusinfo = &info;
 		
 		SCOPED_INCREMENT(rc_CTFGameRules_RadiusDamage);
-		DETOUR_MEMBER_CALL(CTFGameRules_RadiusDamage)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 	
 	ConVar cvar_spheretext("sig_visualize_blast_radius_spheretext", "1", FCVAR_NOTIFY,
@@ -249,14 +249,14 @@ namespace Mod::Debug::Proj_Energy_Ball
 			//NDebugOverlay::EntityTextAtPosition(radiusinfo->m_vecOrigin, 1, buf, cvar_duration_sphere.GetFloat(), 0xff, 0xff, 0xff, 0xff);
 		}
 		
-		DETOUR_MEMBER_CALL(CEntitySphereQuery_ctor)(center, radius, flagMask);
+		DETOUR_MEMBER_CALL(center, radius, flagMask);
 	}
 	
 	RefCount rc_CTFRadiusDamageInfo_ApplyToEntity;
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, int, CTFRadiusDamageInfo_ApplyToEntity, CBaseEntity *ent)
 	{
 		if (rc_CTFGameRules_RadiusDamage > 0) ++rc_CTFRadiusDamageInfo_ApplyToEntity;
-		auto result = DETOUR_MEMBER_CALL(CTFRadiusDamageInfo_ApplyToEntity)(ent);
+		auto result = DETOUR_MEMBER_CALL(ent);
 		if (rc_CTFGameRules_RadiusDamage > 0) --rc_CTFRadiusDamageInfo_ApplyToEntity;
 		return result;
 	}
@@ -316,7 +316,7 @@ namespace Mod::Debug::Proj_Energy_Ball
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 #endif
 	

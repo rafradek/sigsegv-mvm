@@ -17,7 +17,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_Smack )
 	{
 		SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_Smack);
- 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+ 		DETOUR_MEMBER_CALL();
 	}
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBaseMelee_DoSwingTraceInternal, CGameTrace& tr, bool cleave_attack, CUtlVector<CGameTrace> *traces)
 	{
@@ -57,12 +57,12 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			attacker = weapon->GetTFPlayerOwner();
 			//is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
 			SCOPED_INCREMENT(rc_CTFWeaponBaseMelee_DoSwingTraceInternal);
-			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+			result = DETOUR_MEMBER_CALL(tr, cleave_attack, traces);
 			if (tr.m_pEnt != nullptr && tr.m_pEnt->GetTeamNumber() == attacker->GetTeamNumber()) {
 				CGameTrace newtrace;
 
 				enemy_attack_pass = true;
-				bool newresult = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(newtrace, cleave_attack, traces);
+				bool newresult = DETOUR_MEMBER_CALL(newtrace, cleave_attack, traces);
 				enemy_attack_pass = false;
 
 				if(newtrace.m_pEnt != nullptr && newtrace.m_pEnt->GetTeamNumber() != attacker->GetTeamNumber()) {
@@ -73,7 +73,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			//is_whip = false;
 		}
 		else {
-			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+			result = DETOUR_MEMBER_CALL(tr, cleave_attack, traces);
 		}
 
 		if (cleave_attack) {
@@ -93,13 +93,13 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			is_whip = (CAttributeManager::AttribHookValue<int>(0, "speed_buff_ally", weapon) > 0);
 			
 			
-			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+			result = DETOUR_MEMBER_CALL(tr, cleave_attack, traces);
 			
 			melee   = nullptr;
 			owner   = nullptr;
 			is_whip = false;
 		} else {
-			result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(tr, cleave_attack, traces);
+			result = DETOUR_MEMBER_CALL(tr, cleave_attack, traces);
 		}*/
 		
 		return result;
@@ -109,16 +109,16 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 	{
 		if (trace.m_pEnt == nullptr)
 			return false;
- 		return DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_OnSwingHit)(trace);
+ 		return DETOUR_MEMBER_CALL(trace);
 	}
 
 	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
 	{
 		if (rc_CTFWeaponBaseMelee_Smack > 0 && V_stricmp(attr, "melee_cleave_attack") == 0) {
-			value = DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, "projectile_penetration", ent, vec, b1);
+			value = DETOUR_STATIC_CALL(value, "projectile_penetration", ent, vec, b1);
 		}
 		
-		return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+		return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
@@ -128,7 +128,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			if (entity->IsPlayer() && entity->GetTeamNumber() == attacker->GetTeamNumber())
 				return false;
 		}
-		return DETOUR_MEMBER_CALL(CTraceFilterIgnoreFriendlyCombatItems_ShouldHitEntity)(pServerEntity, contentsMask);
+		return DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 			
 	}
 
@@ -137,7 +137,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 	DETOUR_DECL_STATIC(void, FindHullIntersection, const Vector& vecSrc, trace_t& tr, const Vector& mins, const Vector& maxs, CBaseEntity *pEntity)
 	{
 		SCOPED_INCREMENT(rc_FindHullIntersection);
-		DETOUR_STATIC_CALL(FindHullIntersection)(vecSrc, tr, mins, maxs, pEntity);
+		DETOUR_STATIC_CALL(vecSrc, tr, mins, maxs, pEntity);
 	}
 	
 	
@@ -164,7 +164,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 			#warning TODO
 		}
 		
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 	}
 	*/
 	

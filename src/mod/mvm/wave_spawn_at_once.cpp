@@ -13,7 +13,7 @@ namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		waveNum = 0;
-		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		bool ret = DETOUR_MEMBER_CALL();
 		auto manager = reinterpret_cast<CPopulationManager *>(this);
 		int red, blu, spectators, robots;
 		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
@@ -25,11 +25,11 @@ namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
 		waveNum++;
-		return DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv)
 	{
-        bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv);
+        bool result = DETOUR_MEMBER_CALL(kv);
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
 		wavespawn->m_waitForAllDead = "";
 		wavespawn->m_waitForAllSpawned = "";
@@ -43,7 +43,7 @@ namespace Mod::MvM::Sub_Wave_Spawn_At_Once
 	DETOUR_DECL_MEMBER(bool, CMissionPopulator_Parse, KeyValues *kv)
 	{
 		kv->SetInt("InitialCooldown", 0);
-		return DETOUR_MEMBER_CALL(CMissionPopulator_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 
 	class CMod : public IMod
@@ -81,7 +81,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 	{
 		SCOPED_INCREMENT(rc_CPopulationManager_Parse);
 		waveNum = 0;
-		auto ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		auto ret = DETOUR_MEMBER_CALL();
 		int red, blu, spectators, robots;
 		Mod::MvM::Player_Limit::GetSlotCounts(red, blu, spectators, robots);
 		sig_mvm_robot_limit_override.Set(Max(sig_mvm_robot_limit_override.GetOriginalValue(), Min(gpGlobals->maxClients - red - blu - 1, Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit() * waveNum )));
@@ -93,7 +93,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_IsValidPopfile, CUtlString name)
 	{
 		SCOPED_INCREMENT(rc_CPopulationManager_IsValidPopfile);
-		return DETOUR_MEMBER_CALL(CPopulationManager_IsValidPopfile)(name);
+		return DETOUR_MEMBER_CALL(name);
 	}
 
 	RefCount rc_Parse_Popfile;
@@ -142,7 +142,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 		
 		++rc_KeyValues_LoadFromFile;
 		
-		auto result = DETOUR_MEMBER_CALL(KeyValues_LoadFromFile)(filesystem, resourceName, pathID, refreshCache);
+		auto result = DETOUR_MEMBER_CALL(filesystem, resourceName, pathID, refreshCache);
 		--rc_KeyValues_LoadFromFile;
 		
 		if (result && rc_CPopulationManager_Parse > 0 && rc_KeyValues_LoadFromFile == 0 && rc_CPopulationManager_IsValidPopfile == 0 && rc_Parse_Popfile == 0) {
@@ -158,11 +158,11 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
 		waveNum++;
-		return DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv)
 	{
-        bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv);
+        bool result = DETOUR_MEMBER_CALL(kv);
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
 		if (waveNum == 1) {
 			g_pPopulationManager->m_nStartingCurrency += wavespawn->m_totalCurrency;
@@ -173,7 +173,7 @@ namespace Mod::MvM::Wave_Spawn_At_Once
 	DETOUR_DECL_MEMBER(bool, CMissionPopulator_Parse, KeyValues *kv)
 	{
 		kv->SetInt("BeginAtWave", 1);
-		return DETOUR_MEMBER_CALL(CMissionPopulator_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 
 	class CMod : public IMod

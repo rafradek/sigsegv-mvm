@@ -170,7 +170,7 @@ namespace Mod::AI::EngieBot_Wrangler
 	DETOUR_DECL_MEMBER(void, CTFLaserPointer_CreateLaserDot)
 	{
 		laser_dot = nullptr;
-		DETOUR_MEMBER_CALL(CTFLaserPointer_CreateLaserDot)();
+		DETOUR_MEMBER_CALL();
 		if (laser_dot != nullptr && laser_dot->GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->IsMannVsMachineMode()) {
 			laser_dot->SetTeamNumber(TF_TEAM_RED);
 		}
@@ -178,7 +178,7 @@ namespace Mod::AI::EngieBot_Wrangler
 	
 	DETOUR_DECL_STATIC(CBaseEntity *, CLaserDot_Create, Vector &origin, CBaseEntity *owner, bool visibleDot)
 	{
-		return laser_dot = DETOUR_STATIC_CALL(CLaserDot_Create)(origin, owner, visibleDot);
+		return laser_dot = DETOUR_STATIC_CALL(origin, owner, visibleDot);
 	}
 
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, Action_CTFBot_OnCommandString, CTFBot *actor, const char *cmd)
@@ -194,7 +194,7 @@ namespace Mod::AI::EngieBot_Wrangler
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(Action_CTFBot_OnCommandString)(actor, cmd);
+		return DETOUR_MEMBER_CALL(actor, cmd);
 	}
 	DETOUR_DECL_MEMBER(ActionResult< CTFBot >, CTFBotMvMEngineerIdle_Update, CTFBot *actor, float interval)
 	{
@@ -203,7 +203,7 @@ namespace Mod::AI::EngieBot_Wrangler
 		if (CTFBotMvMEngineerDisableAutopilot::IsPossible(actor) && actor->GetVisionInterface()->GetPrimaryKnownThreat(false) != nullptr) {
 			return ActionResult< CTFBot >::SuspendFor(new CTFBotMvMEngineerDisableAutopilot(), "This thing ain't on autopilot, son!");
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_Update)(actor, interval);
+		return DETOUR_MEMBER_CALL(actor, interval);
 	}
 
 	class CMod : public IMod

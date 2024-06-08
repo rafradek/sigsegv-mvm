@@ -86,7 +86,7 @@ namespace Mod::MvM::Gamemode_Converter
         foundMvmGame = IsMvMMapCheck(pMapData);
 
         if (foundMvmGame) {
-            DETOUR_STATIC_CALL(MapEntity_ParseAllEntities)(pMapData, pFilter, bActivateEntities);
+            DETOUR_STATIC_CALL(pMapData, pFilter, bActivateEntities);
             return;
         }
 
@@ -601,14 +601,14 @@ namespace Mod::MvM::Gamemode_Converter
         WriteEntityString(entitiesStr, parsedEntities);
 
         CTFPlayer::PrecacheMvM();
-        DETOUR_STATIC_CALL(MapEntity_ParseAllEntities)(entitiesStr.c_str(), pFilter, bActivateEntities);
+        DETOUR_STATIC_CALL(entitiesStr.c_str(), pFilter, bActivateEntities);
 	}
 
     CountdownTimerInline generateMeshTimer;
     bool generateMesh = false;
 	DETOUR_DECL_MEMBER(int, CNavMesh_Load)
 	{
-        auto value = DETOUR_MEMBER_CALL(CNavMesh_Load)();
+        auto value = DETOUR_MEMBER_CALL();
         // Generate nav mesh if missing
         if (value == 1) {
             generateMesh = true;
@@ -619,7 +619,7 @@ namespace Mod::MvM::Gamemode_Converter
 
     DETOUR_DECL_STATIC(void, CPopulationManager_FindDefaultPopulationFileShortNames, CUtlVector<CUtlString> &vec)
 	{
-		DETOUR_STATIC_CALL(CPopulationManager_FindDefaultPopulationFileShortNames)(vec);
+		DETOUR_STATIC_CALL(vec);
 
         if (foundMvmGame) return;
 

@@ -11,7 +11,7 @@ namespace Mod::AI::WrapAssassin_AltFire
 	{
 	//	DevMsg("CTFBot::OpportunisticallyUseWeaponAbilities BEGIN\n");
 		SCOPED_INCREMENT(rc_CTFBot_OpportunisticallyUseWeaponAbilities);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_OpportunisticallyUseWeaponAbilities)();
+		auto result = DETOUR_MEMBER_CALL();
 	//	DevMsg("CTFBot::OpportunisticallyUseWeaponAbilities END\n");
 		return result;
 	}
@@ -24,7 +24,7 @@ namespace Mod::AI::WrapAssassin_AltFire
 		}
 		
 	//	DevMsg("  CTFBat_Giftwrap::GetWeaponID PASSTHRU\n");
-		return DETOUR_MEMBER_CALL(CTFBat_Giftwrap_GetWeaponID)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	

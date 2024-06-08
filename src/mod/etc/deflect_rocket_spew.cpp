@@ -35,7 +35,7 @@ namespace Mod::Etc::Deflect_Rocket_Spew
 			bDud = false;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBaseRocket_Destroy)(bGlow, bDud);
+		DETOUR_MEMBER_CALL(bGlow, bDud);
 	}
 	
 	

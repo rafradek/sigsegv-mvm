@@ -24,7 +24,7 @@ namespace Mod::Pop::Mission_Extensions
 	//	DevMsg("CMissionPopulator %08x: dtor0\n", (uintptr_t)mission);
 		missions.erase(mission);
 		
-		DETOUR_MEMBER_CALL(CMissionPopulator_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CMissionPopulator_dtor2)
@@ -34,7 +34,7 @@ namespace Mod::Pop::Mission_Extensions
 	//	DevMsg("CMissionPopulator %08x: dtor2\n", (uintptr_t)mission);
 		missions.erase(mission);
 		
-		DETOUR_MEMBER_CALL(CMissionPopulator_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -73,7 +73,7 @@ namespace Mod::Pop::Mission_Extensions
 			subkey->deleteThis();
 		}
 		
-		return DETOUR_MEMBER_CALL(CMissionPopulator_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 	
 	
@@ -101,7 +101,7 @@ namespace Mod::Pop::Mission_Extensions
 		SCOPED_INCREMENT(rc_CMissionPopulator_UpdateMissionDestroySentries);
 		current_mission = mission;
 
-		auto ret = DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)();
+		auto ret = DETOUR_MEMBER_CALL();
 
 		for (auto obj : sentriesToRestoreTeam) {
 			obj->SetTeamNumber(obj->GetTeamNumber() == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
@@ -126,7 +126,7 @@ namespace Mod::Pop::Mission_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
+		DETOUR_MEMBER_CALL(s1, b1);
 	}
 
 	

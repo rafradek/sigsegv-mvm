@@ -214,7 +214,7 @@ namespace Mod::Perf::Attributes_Optimize
             return value;
         
         if (vec != nullptr || !b1){
-            return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_float)(value, attr, ent, vec, b1);
+            return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
         }
 
         return GetAttribValue(value, attr, const_cast<CBaseEntity *>(ent), false);
@@ -226,7 +226,7 @@ namespace Mod::Perf::Attributes_Optimize
             return value;
         
         if (vec != nullptr || !b1) {
-            return DETOUR_STATIC_CALL(CAttributeManager_AttribHookValue_int)(value, attr, ent, vec, b1);
+            return DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
         }
 
         return RoundFloatToInt(GetAttribValue(static_cast<float>(value), attr, const_cast<CBaseEntity *>(ent), true));
@@ -237,12 +237,12 @@ namespace Mod::Perf::Attributes_Optimize
 	{
         callsapply++;
 		
-		return DETOUR_MEMBER_CALL(CAttributeManager_ApplyAttributeFloatWrapper)(val, ent, name, vec);
+		return DETOUR_MEMBER_CALL(val, ent, name, vec);
 	}
 
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CAttributeManager_ClearCache)
 	{
-        DETOUR_MEMBER_CALL(CAttributeManager_ClearCache)();
+        DETOUR_MEMBER_CALL();
         auto mgr = reinterpret_cast<CAttributeManager *>(this);
 
         if (mgr->m_hOuter != nullptr) {
@@ -267,13 +267,13 @@ namespace Mod::Perf::Attributes_Optimize
 
     DETOUR_DECL_MEMBER(void, CEconEntity_UpdateOnRemove)
 	{
-        DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_UpdateOnRemove)
 	{
-        DETOUR_MEMBER_CALL(CTFPlayer_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
         RemoveAttributeManager(reinterpret_cast<CBaseEntity *>(this));
     }
     

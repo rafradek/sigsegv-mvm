@@ -38,7 +38,7 @@ namespace Mod::Debug::Parachute_Warp
 		BACKTRACE();
 		
 		SCOPED_INCREMENT(rc_INextBot_Update);
-		DETOUR_MEMBER_CALL(INextBot_Update)();
+		DETOUR_MEMBER_CALL();
 		
 		TRACE_EXIT("%s", PrintAbsOrigin(bot));
 	}
@@ -49,7 +49,7 @@ namespace Mod::Debug::Parachute_Warp
 		auto bot = rtti_cast<CTFBot *>(loco->GetBot());
 		
 		TRACE("%s", PrintAbsOrigin(bot));
-		DETOUR_MEMBER_CALL(PlayerLocomotion_Update)();
+		DETOUR_MEMBER_CALL();
 		TRACE_EXIT("%s", PrintAbsOrigin(bot));
 	}
 	
@@ -59,7 +59,7 @@ namespace Mod::Debug::Parachute_Warp
 		auto bot = rtti_cast<CTFBot *>(body->GetBot());
 		
 		TRACE("%s", PrintAbsOrigin(bot));
-		DETOUR_MEMBER_CALL(IBody_Update)();
+		DETOUR_MEMBER_CALL();
 		TRACE_EXIT("%s", PrintAbsOrigin(bot));
 	}
 	
@@ -69,7 +69,7 @@ namespace Mod::Debug::Parachute_Warp
 		auto bot = rtti_cast<CTFBot *>(intent->GetBot());
 		
 		TRACE("%s", PrintAbsOrigin(bot));
-		DETOUR_MEMBER_CALL(CTFBot_CTFBotIntention_Update)();
+		DETOUR_MEMBER_CALL();
 		TRACE_EXIT("%s", PrintAbsOrigin(bot));
 	}
 	
@@ -79,7 +79,7 @@ namespace Mod::Debug::Parachute_Warp
 		auto bot = rtti_cast<CTFBot *>(vision->GetBot());
 		
 		TRACE("%s", PrintAbsOrigin(bot));
-		DETOUR_MEMBER_CALL(CTFBotVision_Update)();
+		DETOUR_MEMBER_CALL();
 		TRACE_EXIT("%s", PrintAbsOrigin(bot));
 	}
 	
@@ -90,7 +90,7 @@ namespace Mod::Debug::Parachute_Warp
 		SCOPED_INCREMENT(rc_CTFBotMainAction_Update);
 		
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -98,7 +98,7 @@ namespace Mod::Debug::Parachute_Warp
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotTacticalMonitor_Update, CTFBot *actor, float dt)
 	{
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -106,7 +106,7 @@ namespace Mod::Debug::Parachute_Warp
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotScenarioMonitor_Update, CTFBot *actor, float dt)
 	{
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -114,7 +114,7 @@ namespace Mod::Debug::Parachute_Warp
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotFetchFlag_Update, CTFBot *actor, float dt)
 	{
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotFetchFlag_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -122,7 +122,7 @@ namespace Mod::Debug::Parachute_Warp
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotAttackFlagDefenders_Update, CTFBot *actor, float dt)
 	{
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotAttackFlagDefenders_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -130,7 +130,7 @@ namespace Mod::Debug::Parachute_Warp
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotDeliverFlag_Update, CTFBot *actor, float dt)
 	{
 		TRACE("%s", PrintAbsOrigin(actor));
-		auto result = DETOUR_MEMBER_CALL(CTFBotDeliverFlag_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		TRACE_EXIT("%s", PrintAbsOrigin(actor));
 		return result;
 	}
@@ -144,7 +144,7 @@ namespace Mod::Debug::Parachute_Warp
 			BACKTRACE();
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_SetAbsOrigin)(absOrigin);
+		DETOUR_MEMBER_CALL(absOrigin);
 	}
 	
 	

@@ -61,7 +61,7 @@ namespace Mod::Pop::ExtAttr::Parse
 		}
 		
 		//DevMsg("  Passing through to actual ParseDynamicAttributes\n");
-		return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
+		return DETOUR_STATIC_CALL(ecattr, kv);
 	}
 	
 	
@@ -75,7 +75,7 @@ namespace Mod::Pop::ExtAttr::Parse
 				bot->ExtAttrForModify() = *ext;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
+		DETOUR_MEMBER_CALL(ecattr);
 	}
 	
 	

@@ -40,7 +40,7 @@ namespace Mod::Perf::Medigun_Shield_Damage_Events
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 	
 	

@@ -33,7 +33,7 @@ namespace Mod::MvM::ChangeClass_AnyTime
 //		DevMsg("- IsMannVsMachineMode: %s\n", (TFGameRules()->IsMannVsMachineMode() ? "true" : "false"));
 //		DevMsg("- GetTeamNumber: %d\n", player->GetTeamNumber());
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+		DETOUR_MEMBER_CALL(pClassName, b1);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsReadyToPlay)
@@ -45,7 +45,7 @@ namespace Mod::MvM::ChangeClass_AnyTime
 			return false;
 		}
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_IsReadyToPlay)();
+		auto result = DETOUR_MEMBER_CALL();
 //		DevMsg("- passthru: return %s\n", (result ? "true" : "false"));
 		return result;
 	}

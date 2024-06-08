@@ -560,7 +560,7 @@ namespace Mod::Etc::SendProp_Override_Extension
                 }
             }
         }
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 		for (auto &plCallback : callbacks) {
             if (plCallback.isPerClient) {
                 if (plCallback.valueSet) {

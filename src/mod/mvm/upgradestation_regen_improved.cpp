@@ -13,7 +13,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CUpgrades_PlayerPurchasingUpgrade, CTFPlayer *player, int slot, int tier, bool sell, bool free, bool b3)
 	{
 		SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
-		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, slot, tier, sell, free, b3);
+		DETOUR_MEMBER_CALL(player, slot, tier, sell, free, b3);
 		
 	}
 	
@@ -60,7 +60,7 @@ namespace Mod::MvM::UpgradeStation_Regen_Improved
 				return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	

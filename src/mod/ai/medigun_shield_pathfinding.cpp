@@ -12,7 +12,7 @@ namespace Mod::Perf::Medigun_Shield_Pathfinding_ShouldHitEntity
 {
 	DETOUR_DECL_MEMBER(bool, NextBotTraversableTraceFilter_ShouldHitEntity, IHandleEntity *pEntity, int contentsMask)
 	{
-		auto result = DETOUR_MEMBER_CALL(NextBotTraversableTraceFilter_ShouldHitEntity)(pEntity, contentsMask);
+		auto result = DETOUR_MEMBER_CALL(pEntity, contentsMask);
 		
 		if (result) {
 			CBaseEntity *ent = EntityFromEntityHandle(pEntity);
@@ -47,7 +47,7 @@ namespace Mod::Perf::Medigun_Shield_Pathfinding_IsEntityTraversable
 {
 	DETOUR_DECL_MEMBER(bool, CTFBotLocomotion_IsEntityTraversable, CBaseEntity *ent, ILocomotion::TraverseWhenType ttype)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBotLocomotion_IsEntityTraversable)(ent, ttype);
+		auto result = DETOUR_MEMBER_CALL(ent, ttype);
 		if (!result && !ent->IsPlayer()) {
 			return ent->IsCombatItem();
 		}

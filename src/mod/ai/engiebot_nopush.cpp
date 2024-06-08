@@ -12,7 +12,7 @@ namespace Mod::AI::EngieBot_NoPush
 	{
 		SCOPED_INCREMENT(rc_TeleSpawn_Update);
 		pusher_engineer = actor;
-		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerTeleportSpawn_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	RefCount rc_BuildSentry_Update;
@@ -20,7 +20,7 @@ namespace Mod::AI::EngieBot_NoPush
 	{
 		SCOPED_INCREMENT(rc_BuildSentry_Update);
 		pusher_engineer = actor;
-		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildSentryGun_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	RefCount rc_BuildTele_Update;
@@ -28,7 +28,7 @@ namespace Mod::AI::EngieBot_NoPush
 	{
 		SCOPED_INCREMENT(rc_BuildTele_Update);
 		pusher_engineer = actor;
-		return DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 
 	ConVar cvar_reducerange("sig_ai_engiebot_pushrange", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
@@ -41,7 +41,7 @@ namespace Mod::AI::EngieBot_NoPush
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_ApplyAbsVelocityImpulse)(v1);
+		DETOUR_MEMBER_CALL(v1);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFGameRules_PushAllPlayersAway, const Vector& vFromThisPoint, float flRange, float flForce, int nTeam, CUtlVector< CTFPlayer* > *pPushedPlayers)
@@ -55,7 +55,7 @@ namespace Mod::AI::EngieBot_NoPush
 
 		}
 		
-		DETOUR_MEMBER_CALL(CTFGameRules_PushAllPlayersAway)(vFromThisPoint, flRange, flForce, nTeam, pPushedPlayers);
+		DETOUR_MEMBER_CALL(vFromThisPoint, flRange, flForce, nTeam, pPushedPlayers);
 	}
 
 	class CMod : public IMod

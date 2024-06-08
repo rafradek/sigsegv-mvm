@@ -359,7 +359,7 @@ namespace Mod::Pop::TFBot_Extensions
 	//	DevMsg("CTFBotSpawner %08x: dtor0, clearing data\n", (uintptr_t)spawner);
 		RemoveSpawner(spawner);
 		
-		DETOUR_MEMBER_CALL(CTFBotSpawner_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBotSpawner_dtor2)
@@ -369,7 +369,7 @@ namespace Mod::Pop::TFBot_Extensions
 	//	DevMsg("CTFBotSpawner %08x: dtor2, clearing data\n", (uintptr_t)spawner);
 		RemoveSpawner(spawner);
 		
-		DETOUR_MEMBER_CALL(CTFBotSpawner_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -440,7 +440,7 @@ namespace Mod::Pop::TFBot_Extensions
 	//	DevMsg("CTFBot %08x: dtor0, clearing data\n", (uintptr_t)bot);
 		ClearDataForBot(bot);
 		
-		DETOUR_MEMBER_CALL(CTFBot_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_dtor2)
@@ -450,7 +450,7 @@ namespace Mod::Pop::TFBot_Extensions
 	//	DevMsg("CTFBot %08x: dtor2, clearing data\n", (uintptr_t)bot);
 		ClearDataForBot(bot);
 		
-		DETOUR_MEMBER_CALL(CTFBot_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	THINK_FUNC_DECL(HideBossBar)
@@ -474,7 +474,7 @@ namespace Mod::Pop::TFBot_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_StateEnter)(nState);
+		DETOUR_MEMBER_CALL(nState);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_StateLeave)
@@ -515,7 +515,7 @@ namespace Mod::Pop::TFBot_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_StateLeave)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	void Parse_Action(SpawnerData &data, const char *value)
@@ -715,7 +715,7 @@ namespace Mod::Pop::TFBot_Extensions
 			subkey->deleteThis();
 		}
 		
-		bool result = DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv);
+		bool result = DETOUR_MEMBER_CALL(kv);
 		
 		// delete the temporary copy of the KV subtree
 		kv->deleteThis();
@@ -748,7 +748,7 @@ namespace Mod::Pop::TFBot_Extensions
 	// {
 	// 	DevMsg("Fired eventbef");
 	// 	DevMsg("Fired event");
-	// 	DETOUR_STATIC_CALL(FireEvent)(info, name);
+	// 	DETOUR_STATIC_CALL(info, name);
 	// }
 	void TeleportToHint(CTFBot *actor,bool force) {
 		if (!force && actor->IsPlayerClass(TF_CLASS_ENGINEER))
@@ -956,7 +956,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		if (FindTeleporter(STRING(spawnEnt->GetEntityName()), vSpawnPosition, true)) return SPAWN_LOCATION_TELEPORTER;
 		
-		return DETOUR_STATIC_CALL(DoTeleporterOverride)(spawnEnt, vSpawnPosition, bClosestPointOnNav);
+		return DETOUR_STATIC_CALL(spawnEnt, vSpawnPosition, bClosestPointOnNav);
 	}
 
 	ConVar sig_pop_extra_bots_reserved_slots("sig_pop_extra_bots_reserved_slots", "8", FCVAR_NOTIFY | FCVAR_GAMEDLL, "Reserve this many regual slots for giants/preferred bots when extra player slots is enabled");
@@ -1012,7 +1012,7 @@ namespace Mod::Pop::TFBot_Extensions
 				vec[i] = swap;
 			}
 		}
-		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		auto result = DETOUR_MEMBER_CALL(where, ents);
 		if (result && it != spawners.end()) {
 			OnBotSpawn(spawner,ents, (*it).second);
 		}
@@ -1039,7 +1039,7 @@ namespace Mod::Pop::TFBot_Extensions
 			g_pPopulationManager->PauseSpawning();
 		paused_wave_time = gpGlobals->tickcount;
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ClientConnected)(pEntity, pszName, pszAddress, reject, maxrejectlen);
+		return DETOUR_MEMBER_CALL(pEntity, pszName, pszAddress, reject, maxrejectlen);
 	}
 
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotScenarioMonitor_InitialContainedAction, CTFBot *actor)
@@ -1052,7 +1052,7 @@ namespace Mod::Pop::TFBot_Extensions
 				actor->GetPlayerClass()->SetClassIndex(TF_CLASS_MEDIC);
 			}
 		}
-		auto *action = DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_InitialContainedAction)(actor);
+		auto *action = DETOUR_MEMBER_CALL(actor);
 		if (restoreClass != -1) {
 			actor->GetPlayerClass()->SetClassIndex(restoreClass);
 		}
@@ -1118,7 +1118,7 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 		//if (actor->m_nBotAttrs & CTFBot::AttributeType::ATTR_TELEPORT_TO_HINT)
 		//	TeleportToHint(actor,data != nullptr && data->action != ACTION_Default);
-		Action<CTFBot> *action = DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_DesiredScenarioAndClassAction)(actor);
+		Action<CTFBot> *action = DETOUR_MEMBER_CALL(actor);
 
 		/*if (data != nullptr && action != nullptr && data->action == ACTION_DestroySentries) {
 			DevMsg("CTFBotSpawner: got bomber \n");
@@ -1162,7 +1162,7 @@ namespace Mod::Pop::TFBot_Extensions
 			return EventDesiredResult<CTFBot>::SuspendFor(reinterpret_cast<CTFBotTacticalMonitor *>(action)->InitialContainedActionTactical(actor), "Switch to a different action");
 		}
 		
-		return VHOOK_CALL(CTFBotScenarioMonitor_OnCommandString)(actor, cmd);
+		return VHOOK_CALL(actor, cmd);
 	}
 	
 
@@ -1174,14 +1174,14 @@ namespace Mod::Pop::TFBot_Extensions
 
 		if (data != nullptr && data->action != ACTION_Default) return;
 
-		DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_AvoidBumpingEnemies)(actor);
+		DETOUR_MEMBER_CALL(actor);
 	}
 
 	RefCount rc_CTFBotScenarioMonitor_Update;
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotScenarioMonitor_Update, CTFBot *actor, float dt)
 	{
 		SCOPED_INCREMENT(rc_CTFBotScenarioMonitor_Update);
-		return DETOUR_MEMBER_CALL(CTFBotScenarioMonitor_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	RefCount rc_CTFBot_GetFlagToFetch;
@@ -1216,7 +1216,7 @@ namespace Mod::Pop::TFBot_Extensions
 		if (IsEngineer) {
 			bot->GetPlayerClass()->SetClassIndex(TF_CLASS_SOLDIER);
 		}
-		auto result = DETOUR_MEMBER_CALL(CTFBot_GetFlagToFetch)();
+		auto result = DETOUR_MEMBER_CALL();
 		if (IsEngineer) {
 			bot->GetPlayerClass()->SetClassIndex(TF_CLASS_ENGINEER);
 		}
@@ -1239,7 +1239,7 @@ namespace Mod::Pop::TFBot_Extensions
 	//		return false;
 	//	}
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_IsPlayerClass)(iClass);
+		auto result = DETOUR_MEMBER_CALL(iClass);
 		
 		if (rc_CTFBot_GetFlagToFetch > 0 && result && iClass == TF_CLASS_ENGINEER) {
 			auto data = GetDataForBot(player);
@@ -1264,7 +1264,7 @@ namespace Mod::Pop::TFBot_Extensions
 		auto me = reinterpret_cast<CTFBotMissionSuicideBomber *>(this);
 		DevMsg("executed suicide bomber%d %d\n",me->m_bDetReachedGoal, me->m_bDetonating );
 		
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_OnStart)(actor, action);
+		auto result = DETOUR_MEMBER_CALL(actor, action);
 		if (me->m_hTarget == nullptr && targets_sentrybuster.find(actor) != targets_sentrybuster.end()){
 			CBaseEntity *target = targets_sentrybuster[actor];
 			me->m_hTarget = target;
@@ -1314,7 +1314,7 @@ namespace Mod::Pop::TFBot_Extensions
 			me->m_nConsecutivePathFailures = 0;
 		//DevMsg("\n[Update]\n");
 		//DevMsg("reached goal %d,detonating %d,failures %d, %d %f %f\n",me->m_bDetReachedGoal, me->m_bDetonating ,me->m_nConsecutivePathFailures,ENTINDEX(me->m_hTarget), me->m_vecDetonatePos.x, me->m_vecTargetPos.x);
-		auto result = DETOUR_MEMBER_CALL(CTFBotMissionSuicideBomber_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		
 		return result;
 	}
@@ -1337,7 +1337,7 @@ namespace Mod::Pop::TFBot_Extensions
 			return nullptr;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBot_GetFlagCaptureZone)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	bool IsRangeLessThan( CBaseEntity *bot, const Vector &pos, float range)
@@ -1359,7 +1359,7 @@ namespace Mod::Pop::TFBot_Extensions
 		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
 
 		if (!mannvsmachine)  {
-			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			DETOUR_MEMBER_CALL(threat);
 			return;
 		}
 
@@ -1387,7 +1387,7 @@ namespace Mod::Pop::TFBot_Extensions
 		}
 
 		if (!set)
-			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			DETOUR_MEMBER_CALL(threat);
 	}
 	
 //	// TEST! REMOVE ME!
@@ -1418,7 +1418,7 @@ namespace Mod::Pop::TFBot_Extensions
 		SCOPED_INCREMENT(rc_CTFBot_ShouldFireCompressionBlast);
 
 		if (!TFGameRules()->IsMannVsMachineMode() || !improved_airblast.GetBool())
-			return DETOUR_MEMBER_CALL(CTFBot_ShouldFireCompressionBlast)();
+			return DETOUR_MEMBER_CALL();
 
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
@@ -1522,7 +1522,7 @@ namespace Mod::Pop::TFBot_Extensions
 			bot_shouldfirecompressionblast_difficulty = data->difficulty;
 			//DevMsg("skill %d\n", bot_shouldfirecompressionblast_difficulty);
 		}
-		bool ret = DETOUR_MEMBER_CALL(CTFBot_ShouldFireCompressionBlast)();
+		bool ret = DETOUR_MEMBER_CALL();
 		bot_shouldfirecompressionblast = nullptr;
 
 		return ret;*/
@@ -1536,16 +1536,16 @@ namespace Mod::Pop::TFBot_Extensions
 				DevMsg("Unsee\n");
 				return false;
 			}
-			bool ret = DETOUR_MEMBER_CALL(IVision_IsLineOfSightClear)(corrected);
+			bool ret = DETOUR_MEMBER_CALL(corrected);
 			DevMsg("Can Reflect: %d \n", ret);
 			return ret;
 		}
-		return DETOUR_MEMBER_CALL(IVision_IsLineOfSightClear)(pos);
+		return DETOUR_MEMBER_CALL(pos);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseProjectile_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CBaseProjectile_Spawn)();
+		DETOUR_MEMBER_CALL();
 		auto projectile = reinterpret_cast<CBaseEntity *>(this);
 		//DevMsg("SetBlockLos\n");
 	}
@@ -1553,7 +1553,7 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(void, ISpatialPartition_EnumerateElementsInSphere, SpatialPartitionListMask_t listMask, const Vector& origin, float radius, bool coarseTest, IPartitionEnumerator *pIterator)
 	{
 		DevMsg("Radius: %f %f %f %f\n", radius, origin.x, origin.y, origin.z);
-		DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInSphere)(listMask, origin, radius, coarseTest, pIterator);
+		DETOUR_MEMBER_CALL(listMask, origin, radius, coarseTest, pIterator);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBot_IsBarrageAndReloadWeapon, CTFWeaponBase *gun)
@@ -1563,7 +1563,7 @@ namespace Mod::Pop::TFBot_Extensions
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(gun, fire_when_full, auto_fires_full_clip);
 			return fire_when_full == 0;
 		}
-		return DETOUR_MEMBER_CALL(CTFBot_IsBarrageAndReloadWeapon)(gun);
+		return DETOUR_MEMBER_CALL(gun);
 	}
 
 	bool rc_CTFBotMainAction_Update = false;
@@ -1575,7 +1575,7 @@ namespace Mod::Pop::TFBot_Extensions
 			rc_CTFBotMainAction_Update = true;
 			actor->SetTeamNumber(TF_TEAM_BLUE);
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	ConVar sig_no_bot_partner_taunt("sig_no_bot_partner_taunt", "1", FCVAR_NONE, "Disable bots answering to partner taunts");
@@ -1590,7 +1590,7 @@ namespace Mod::Pop::TFBot_Extensions
 		if (sig_no_bot_partner_taunt.GetBool() && player->IsBot())
 			return nullptr;
 
-		return DETOUR_MEMBER_CALL(CTFPlayer_FindPartnerTauntInitiator)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFBotEscortFlagCarrier_Update;
@@ -1598,7 +1598,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		auto data = GetDataForBot(actor);
 		SCOPED_INCREMENT_IF(rc_CTFBotEscortFlagCarrier_Update, data != nullptr && data->action == ACTION_EscortFlag);
-		return DETOUR_MEMBER_CALL(CTFBotEscortFlagCarrier_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 
 	RefCount rc_CTFBotAttackFlagDefenders_Update;
@@ -1606,7 +1606,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		auto data = GetDataForBot(actor);
 		SCOPED_INCREMENT_IF(rc_CTFBotAttackFlagDefenders_Update, data != nullptr && data->action == ACTION_EscortFlag);
-		return DETOUR_MEMBER_CALL(CTFBotAttackFlagDefenders_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 
 	DETOUR_DECL_STATIC(int, GetBotEscortCount, int team)
@@ -1614,7 +1614,7 @@ namespace Mod::Pop::TFBot_Extensions
 		if (rc_CTFBotEscortFlagCarrier_Update > 0 || rc_CTFBotAttackFlagDefenders_Update > 0)
 			return 0;
 
-		return DETOUR_STATIC_CALL(GetBotEscortCount)(team);
+		return DETOUR_STATIC_CALL(team);
 	}
 
 	bool is_this_map_ignoring_cannot_pickup = false;
@@ -1625,26 +1625,26 @@ namespace Mod::Pop::TFBot_Extensions
 		int cannotPickupInteligence = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(actor, cannotPickupInteligence, cannot_pick_up_intelligence);
 		SCOPED_INCREMENT_IF(rc_CTFBotFetchFlag_Update, cannotPickupInteligence > 0 && !is_this_map_ignoring_cannot_pickup);
-		return DETOUR_MEMBER_CALL(CTFBotFetchFlag_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 
 	DETOUR_DECL_MEMBER(void, CCaptureFlag_PickUp, CTFPlayer *player, bool invisible)
 	{
 		if (rc_CTFBotFetchFlag_Update)
 			return;
-		DETOUR_MEMBER_CALL(CCaptureFlag_PickUp)(player, invisible);
+		DETOUR_MEMBER_CALL(player, invisible);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		ClearAllData();
-		return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanMoveDuringTaunt)
 	{
 		//CBaseClient *client = reinterpret_cast<CBaseClient *>(this);
-		bool result = DETOUR_MEMBER_CALL(CTFPlayer_CanMoveDuringTaunt)();
+		bool result = DETOUR_MEMBER_CALL();
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 		bool movetaunt = player->m_bAllowMoveDuringTaunt;
 		float movespeed = player->m_flCurrentTauntMoveSpeed;
@@ -1657,7 +1657,7 @@ namespace Mod::Pop::TFBot_Extensions
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ParseSharedTauntDataFromEconItemView, CEconItemView *item)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_ParseSharedTauntDataFromEconItemView)(item);
+		DETOUR_MEMBER_CALL(item);
 
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->IsBot()) {
@@ -1674,7 +1674,7 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(bool, CRandomChoiceSpawner_Parse, KeyValues *kv)
 	{
 		spawner_failed = false;
-		auto result = DETOUR_MEMBER_CALL(CRandomChoiceSpawner_Parse)(kv);
+		auto result = DETOUR_MEMBER_CALL(kv);
 		if (spawner_failed) 
 			return false;
 		return result;
@@ -1682,7 +1682,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 	DETOUR_DECL_STATIC(IPopulationSpawner *, IPopulationSpawner_ParseSpawner, IPopulator *populator, KeyValues *data)
 	{
-		auto result = DETOUR_STATIC_CALL(IPopulationSpawner_ParseSpawner)(populator, data);
+		auto result = DETOUR_STATIC_CALL(populator, data);
 
 		spawner_failed |= result == nullptr;
 
@@ -1692,7 +1692,7 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(void, CTFBotDeliverFlag_OnEnd, CTFBot *me, Action< CTFBot > *nextAction)
 	{
 		CTFBot::AttributeType has_attr = me->m_nBotAttrs;
-		DETOUR_MEMBER_CALL(CTFBotDeliverFlag_OnEnd)(me, nextAction);
+		DETOUR_MEMBER_CALL(me, nextAction);
 		static auto tf_mvm_bot_allow_flag_carrier_to_fight = ConVarRef("tf_mvm_bot_allow_flag_carrier_to_fight");
 		if (tf_mvm_bot_allow_flag_carrier_to_fight.IsValid() && tf_mvm_bot_allow_flag_carrier_to_fight.GetBool()) {
 			me->m_nBotAttrs = has_attr;
@@ -1713,7 +1713,7 @@ namespace Mod::Pop::TFBot_Extensions
 	// 		DevMsg(" nextaction: %s", nextaction->GetName());
 	// 	}
 	// 	DevMsg("\n");
-	// 	DETOUR_MEMBER_CALL(Action_CTFBot_InvokeOnEnd)(actor, behavior, nextaction);
+	// 	DETOUR_MEMBER_CALL(actor, behavior, nextaction);
 	// }
 
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, Action_CTFBot_OnKilled, CTFBot *actor, const CTakeDamageInfo& info)
@@ -1721,7 +1721,7 @@ namespace Mod::Pop::TFBot_Extensions
 		auto action = reinterpret_cast<Action<CTFBot> *>(this);
 		DevMsg("OnKilled %s %s\n", actor->GetPlayerName(), action->GetName());
 		
-		return DETOUR_MEMBER_CALL(Action_CTFBot_OnKilled)(actor, info);
+		return DETOUR_MEMBER_CALL(actor, info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBotEscortSquadLeader_OnEnd, CTFBot *actor, Action<CTFBot> *nextaction)
@@ -1732,7 +1732,7 @@ namespace Mod::Pop::TFBot_Extensions
 			action->m_actionToDoAfterSquadDisbands = nullptr;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBotEscortSquadLeader_OnEnd)(actor, nextaction);
+		DETOUR_MEMBER_CALL(actor, nextaction);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CSquadSpawner_Parse, KeyValues *kv_orig)
@@ -1777,7 +1777,7 @@ namespace Mod::Pop::TFBot_Extensions
 			subkey->deleteThis();
 		}
 
-		auto result = DETOUR_MEMBER_CALL(CSquadSpawner_Parse)(kv_orig);
+		auto result = DETOUR_MEMBER_CALL(kv_orig);
 
 		for (auto bot_spawner : spawner->m_SubSpawners) {
 			auto find = spawners.find(static_cast<CTFBotSpawner *>(bot_spawner));
@@ -1794,7 +1794,7 @@ namespace Mod::Pop::TFBot_Extensions
     DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotTacticalMonitor_Update, CTFBot *actor, float dt)
 	{
         bot_tactical_monitor = actor;
-		auto result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
         bot_tactical_monitor = nullptr;
 		return result;
 	}
@@ -1806,13 +1806,13 @@ namespace Mod::Pop::TFBot_Extensions
             if (data != nullptr && data->no_wait_for_formation)
                 return false;
         }
-        return DETOUR_MEMBER_CALL(CTFBotSquad_ShouldSquadLeaderWaitForFormation)();
+        return DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(bool, CSquadSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		auto spawner = reinterpret_cast<CSquadSpawner *>(this);
-		auto result = DETOUR_MEMBER_CALL(CSquadSpawner_Spawn)(where, ents);
+		auto result = DETOUR_MEMBER_CALL(where, ents);
 		if (result) {
             for (int i = 0; i < ents->Count(); i++) {
                 CTFBot *bot = ToTFBot(ents->Element(i));
@@ -1832,7 +1832,7 @@ namespace Mod::Pop::TFBot_Extensions
         if (spawners[current_spawner].no_idle_sound)
 			return;
 
-		DETOUR_MEMBER_CALL(CTFBot_StartIdleSound)();
+		DETOUR_MEMBER_CALL();
 	}
 
 
@@ -1840,7 +1840,7 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Regenerate, bool ammo)
 	{
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_Regenerate,TFGameRules()->IsMannVsMachineMode() && reinterpret_cast<CTFPlayer *>(this)->IsBot());
-		DETOUR_MEMBER_CALL(CTFPlayer_Regenerate)(ammo);
+		DETOUR_MEMBER_CALL(ammo);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_GiveDefaultItems)
@@ -1848,7 +1848,7 @@ namespace Mod::Pop::TFBot_Extensions
 		if (rc_CTFPlayer_Regenerate)
 			return;
 
-		DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(int, CSpawnLocation_FindSpawnLocation, Vector& vSpawnPosition)
@@ -1861,7 +1861,7 @@ namespace Mod::Pop::TFBot_Extensions
 			}
 		}
 
-		return DETOUR_MEMBER_CALL(CSpawnLocation_FindSpawnLocation)(vSpawnPosition);
+		return DETOUR_MEMBER_CALL(vSpawnPosition);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CBaseCombatCharacter_Weapon_Detach, CBaseCombatWeapon *weapon)
@@ -1869,14 +1869,14 @@ namespace Mod::Pop::TFBot_Extensions
 		if (weapon == nullptr)
 			return false;
 
-		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
+		return DETOUR_MEMBER_CALL(weapon);
 	}
 
 	RefCount rc_CBasePlayer_ChangeTeam;
 	DETOUR_DECL_MEMBER(void, CBasePlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CBasePlayer_ChangeTeam)(iTeamNum, b1, b2, b3);
+		DETOUR_MEMBER_CALL(iTeamNum, b1, b2, b3);
 		SCOPED_INCREMENT(rc_CBasePlayer_ChangeTeam);
 	}
 
@@ -1886,7 +1886,7 @@ namespace Mod::Pop::TFBot_Extensions
 		// Msg("FireGameEvent\n");
 		// if (rc_CBasePlayer_ChangeTeam) return;
 
-		// DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent)(event);
+		// DETOUR_MEMBER_CALL(event);
 	}
 	DETOUR_DECL_MEMBER(void, CQuestItemTracker_FireGameEvent_NonVirtual, IGameEvent* event)
 	{
@@ -1894,7 +1894,7 @@ namespace Mod::Pop::TFBot_Extensions
 		//Msg("FireGameEvent\n");
 		// if (rc_CBasePlayer_ChangeTeam) return;
 
-		// DETOUR_MEMBER_CALL(CQuestItemTracker_FireGameEvent_NonVirtual)(event);
+		// DETOUR_MEMBER_CALL(event);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CBasePlayer_GetSteamID, CSteamID *pID)
@@ -1902,7 +1902,7 @@ namespace Mod::Pop::TFBot_Extensions
 		auto ptr = reinterpret_cast<CBasePlayer *>(this);
 		if (ptr == nullptr) return false;
 		
-		return DETOUR_MEMBER_CALL(CBasePlayer_GetSteamID)(pID);
+		return DETOUR_MEMBER_CALL(pID);
 	}
 
 	RefCount rc_IVision_IsAbleToSee;
@@ -1920,7 +1920,7 @@ namespace Mod::Pop::TFBot_Extensions
 		vision_subject = subject;
 		auto entity = reinterpret_cast<IVision *>(this)->GetBot()->GetEntity();
 		vision_entity_melee = entity->GetActiveWeapon() != nullptr && entity->GetActiveWeapon()->IsMeleeWeapon();
-		bool ret = DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
+		bool ret = DETOUR_MEMBER_CALL(subject,checkFOV, visibleSpot);
 		vision_subject = nullptr;
 		vision_entity_melee = false;
 
@@ -1953,7 +1953,7 @@ namespace Mod::Pop::TFBot_Extensions
 		if (rc_IVision_IsAbleToSee && vision_subject != nullptr && !vision_entity_melee && vision_subject->IsPlayer() && ToTFPlayer(vision_subject)->IsRealPlayer()) {
 			return true;
 		}
-		bool ret = DETOUR_MEMBER_CALL(CNavArea_IsPotentiallyVisible)(area);
+		bool ret = DETOUR_MEMBER_CALL(area);
 		if (!ret && rc_IVision_IsAbleToSee && !vision_entity_melee && vision_subject != nullptr && !IsOnNav(vision_subject, 20, 4)) {
 			return true;
 		}
@@ -1962,7 +1962,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 	// DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotMainAction_SelectCloserThreat, CTFBot *me, const CKnownEntity *threat1, const CKnownEntity *threat2)
 	// {
-	// 	auto closer = DETOUR_MEMBER_CALL(CTFBotMainAction_SelectCloserThreat)(me, threat1, threat2);
+	// 	auto closer = DETOUR_MEMBER_CALL(me, threat1, threat2);
 	// 	if (me->GetActiveTFWeapon() != nullptr && me->GetActiveTFWeapon()->IsMeleeWeapon()) {
 	// 		float meleeRange = 48 * me->GetModelScale();
 	// 		float maxZ = me->EyePosition().z - me->GetAbsOrigin().z + meleeRange;
@@ -1995,7 +1995,7 @@ namespace Mod::Pop::TFBot_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ShouldDropAmmoPack)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	RefCount rc_CTFPlayer_DropAmmoPack;
@@ -2003,7 +2003,7 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		
 		SCOPED_INCREMENT(rc_CTFPlayer_DropAmmoPack);
-		DETOUR_MEMBER_CALL(CTFPlayer_DropAmmoPack)(info, b1, b2);
+		DETOUR_MEMBER_CALL(info, b1, b2);
 	}
 	
 	DETOUR_DECL_STATIC(CTFAmmoPack *, CTFAmmoPack_Create, const Vector& vecOrigin, const QAngle& vecAngles, CBaseEntity *pOwner, const char *pszModelName)
@@ -2015,7 +2015,7 @@ namespace Mod::Pop::TFBot_Extensions
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CTFAmmoPack_Create)(vecOrigin, vecAngles, pOwner, pszModelName);
+		return DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pszModelName);
 	}
 	
 	DETOUR_DECL_STATIC(CTFDroppedWeapon *, CTFDroppedWeapon_Create, CTFPlayer *pOwner, const Vector& vecOrigin, const QAngle& vecAngles, const char *pszModelName, const CEconItemView *pItemView)
@@ -2033,7 +2033,7 @@ namespace Mod::Pop::TFBot_Extensions
 
 		TFGameRules()->Set_m_bPlayingMannVsMachine(is_mvm_mode && !(data != nullptr && data->drop_weapon) && !(dropped_weapon_val != 0.0f));
 		
-		auto result = DETOUR_STATIC_CALL(CTFDroppedWeapon_Create)(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
+		auto result = DETOUR_STATIC_CALL(pOwner, vecOrigin, vecAngles, pszModelName, pItemView);
 		
 		if (result != nullptr) {
 			CAttributeList &list = result->m_Item->GetAttributeList();
@@ -2061,7 +2061,7 @@ namespace Mod::Pop::TFBot_Extensions
 			auto mod = me->GetOrCreateEntityModule<TeleporterModule>("teleportwhere");
 			mod->teleportWhere.insert(szValue);
 		}
-        return VHOOK_CALL(CObjectTeleporter_KeyValue)(szKeyName, szValue);
+        return VHOOK_CALL(szKeyName, szValue);
     }
 	
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CBaseObject_FindBuildPointOnPlayer, CTFPlayer *pTFPlayer, CBasePlayer *pBuilder, float &flNearestPoint, Vector &vecNearestBuildPoint)
@@ -2070,7 +2070,7 @@ namespace Mod::Pop::TFBot_Extensions
 		CBaseEntity *oldBuildOnEntity = object->GetBuiltOnEntity();
 		float oldNearestPoint = flNearestPoint;
 		Vector oldNearestBuildPoint = vecNearestBuildPoint;
-		auto result = DETOUR_MEMBER_CALL(CBaseObject_FindBuildPointOnPlayer)(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
+		auto result = DETOUR_MEMBER_CALL(pTFPlayer, pBuilder, flNearestPoint, vecNearestBuildPoint);
 		if (result && oldBuildOnEntity != nullptr && oldNearestPoint != 9999) {
 			Vector forward;
 			AngleVectors(pBuilder->EyeAngles(), &forward);
@@ -2087,7 +2087,7 @@ namespace Mod::Pop::TFBot_Extensions
 	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
 	{
         SCOPED_INCREMENT(rc_CTFBotDeliverFlag_UpgradeOverTime);
-		auto result = DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+		auto result = DETOUR_MEMBER_CALL(bot);
 
         return result;
 	}
@@ -2096,14 +2096,14 @@ namespace Mod::Pop::TFBot_Extensions
 	{
         if (rc_CTFBotDeliverFlag_UpgradeOverTime && nCond == TF_COND_CRITBOOSTED) nCond = TF_COND_CRITBOOSTED_USER_BUFF;
 
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
     }
 
 	int current_ai_team_num = -1;
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_Update)
 	{
 		current_ai_team_num = reinterpret_cast<CTFBot *>(this)->GetTeamNumber();
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_Update)();
+		DETOUR_MEMBER_CALL();
 		current_ai_team_num = -1;
 	}
 
@@ -2114,14 +2114,14 @@ namespace Mod::Pop::TFBot_Extensions
 		
 		if (entity != nullptr && entity->IsCombatItem() && current_ai_team_num == entity->GetTeamNumber()) return false;
 		
-		return DETOUR_STATIC_CALL(IgnoreActorsTraceFilterFunction)(entity, contents);
+		return DETOUR_STATIC_CALL(entity, contents);
     }
 
 	DETOUR_DECL_MEMBER(void, CTFBot_Spawn)
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		bot->m_pWaveSpawnPopulator = nullptr;
-		DETOUR_MEMBER_CALL(CTFBot_Spawn)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveOwnedProjectiles)
@@ -2149,7 +2149,7 @@ namespace Mod::Pop::TFBot_Extensions
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveOwnedProjectiles)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
@@ -2160,7 +2160,7 @@ namespace Mod::Pop::TFBot_Extensions
 			if (sappedNotStunned)
 				target->m_Shared->GetCondData().RemoveCondBit(TF_COND_SAPPED);
 		}
-		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
+		bool ret = DETOUR_MEMBER_CALL(target);
 
 		if (sappedNotStunned) {
 			target->m_Shared->GetCondData().AddCondBit(TF_COND_SAPPED);
@@ -2182,7 +2182,7 @@ namespace Mod::Pop::TFBot_Extensions
 			cmd->mousedx = 0;
 			cmd->mousedy = 0;
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_PlayerRunCommand)(cmd, moveHelper);
+		DETOUR_MEMBER_CALL(cmd, moveHelper);
 	}
 	
 	DETOUR_DECL_MEMBER(void, PlayerBody_Upkeep)
@@ -2191,7 +2191,7 @@ namespace Mod::Pop::TFBot_Extensions
 		auto player = static_cast<CTFPlayer *>(body->GetBot()->GetEntity());
 		if (player->m_Shared->InCond(TF_COND_FREEZE_INPUT)) return;
 		if (!player->m_bAllowMoveDuringTaunt && player->m_Shared->InCond(TF_COND_TAUNTING)) return;
-		DETOUR_MEMBER_CALL(PlayerBody_Upkeep)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	class TeleportEffectModule : public EntityModule, public AutoList<TeleportEffectModule>
@@ -2225,7 +2225,7 @@ namespace Mod::Pop::TFBot_Extensions
 			particles->AddEntityModule("tpeffects", new TeleportEffectModule(particles));
 			player->SetCustomVariable("tpparticles", Variant((CBaseEntity *)particles));
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionAdded)(cond);
+		DETOUR_MEMBER_CALL(cond);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_OnConditionRemoved, ETFCond cond)
@@ -2237,7 +2237,7 @@ namespace Mod::Pop::TFBot_Extensions
 				value.Entity()->Remove();
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnConditionRemoved)(cond);
+		DETOUR_MEMBER_CALL(cond);
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener

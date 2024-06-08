@@ -9,7 +9,7 @@ namespace Mod::Sound::Unused_Credits
 	DETOUR_DECL_MEMBER(bool, CCurrencyPack_MyTouch, CBasePlayer *pPlayer)
 	{
 		SCOPED_INCREMENT(rc_CCurrencyPack_MyTouch);
-		return DETOUR_MEMBER_CALL(CCurrencyPack_MyTouch)(pPlayer);
+		return DETOUR_MEMBER_CALL(pPlayer);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_SpeakConceptIfAllowed, int iConcept, const char *modifiers, char *pszOutResponseChosen, size_t bufsize, IRecipientFilter *filter)
@@ -38,7 +38,7 @@ namespace Mod::Sound::Unused_Credits
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+		return DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
 	}
 	
 	

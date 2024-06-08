@@ -33,7 +33,7 @@ namespace Prof_MvM_Shield_Events
 		}
 		
 		VPROF_CUSTOM(name);
-		auto result = DETOUR_MEMBER_CALL(IGameEventManager2_FireEventClientSide)(event);
+		auto result = DETOUR_MEMBER_CALL(event);
 		
 		if (cvar_trace.GetBool()) {
 			DevMsg("EXIT  IGameEventManager2::FireEventClientSide\n");
@@ -54,7 +54,7 @@ namespace Prof_MvM_Shield_Events
 		}
 		
 		VPROF_CUSTOM(name);
-		DETOUR_MEMBER_CALL(CDamageAccountPanel_FireGameEvent)(event);
+		DETOUR_MEMBER_CALL(event);
 		
 		if (cvar_trace.GetBool()) {
 			DevMsg("EXIT  CDamageAccountPanel::FireGameEvent\n");
@@ -69,7 +69,7 @@ namespace Prof_MvM_Shield_Events
 		}
 		
 		VPROF_CUSTOM("CDamageAccountPanel::DisplayDamageFeedback");
-		DETOUR_MEMBER_CALL(CDamageAccountPanel_DisplayDamageFeedback)(pPlayer, pVictim, iDamageAmount, iHealth, bCrit);
+		DETOUR_MEMBER_CALL(pPlayer, pVictim, iDamageAmount, iHealth, bCrit);
 		
 		if (cvar_trace.GetBool()) {
 			DevMsg("EXIT  CDamageAccountPanel::DisplayDamageFeedback\n");
@@ -84,7 +84,7 @@ namespace Prof_MvM_Shield_Events
 		const char *name = CFmtStr("vgui::AnimationController::StartAnimationSequence(\"%s\")", sequenceName);
 		
 		VPROF_CUSTOM(name);
-		return DETOUR_MEMBER_CALL(vgui_AnimationController_StartAnimationSequence)(pWithinParent, sequenceName);
+		return DETOUR_MEMBER_CALL(pWithinParent, sequenceName);
 	}
 #endif
 	
@@ -97,7 +97,7 @@ namespace Prof_MvM_Shield_Events
 		}
 		
 		VPROF_CUSTOM(name);
-		auto result = DETOUR_MEMBER_CALL(vgui_AnimationController_StartAnimationSequence)(sequenceName);
+		auto result = DETOUR_MEMBER_CALL(sequenceName);
 		
 		if (cvar_trace.GetBool()) {
 			DevMsg("EXIT  vgui::AnimationController::StartAnimationSequence(\"%s\")\n", sequenceName);

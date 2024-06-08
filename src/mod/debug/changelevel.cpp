@@ -34,7 +34,7 @@ namespace Mod::Debug::ChangeLevel
 	
 	DETOUR_DECL_MEMBER(bool, CChangeLevelIssue_CanCallVote, int i1, const char *s1, int& fail, int& i2)
 	{
-		auto result = DETOUR_MEMBER_CALL(CChangeLevelIssue_CanCallVote)(i1, s1, fail, i2);
+		auto result = DETOUR_MEMBER_CALL(i1, s1, fail, i2);
 		DevMsg("[CChangeLevelIssue::CanCallVote: %s] [i1:%d] [s1:\"%s\"] [fail:%d] [i2:%d]\n",
 			(result ? "YES" : " NO"), i1, s1, fail, i2);
 		return result;
@@ -44,19 +44,19 @@ namespace Mod::Debug::ChangeLevel
 	{
 		DevMsg("[CChangeLevelIssue::ExecuteCommand] [@ 0x5c: \"%s\"]\n",
 			(const char *)((uintptr_t)this + 0x5c));
-		DETOUR_MEMBER_CALL(CChangeLevelIssue_ExecuteCommand)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CVEngineServer_ChangeLevel, const char *s1, const char *s2)
 	{
 		DevMsg("[CVEngineServer::ChangeLevel] [s1:\"%s\"] [s2:\"%s\"]\n", s1, s2);
-		DETOUR_MEMBER_CALL(CVEngineServer_ChangeLevel)(s1, s2);
+		DETOUR_MEMBER_CALL(s1, s2);
 	}
 	
 	DETOUR_DECL_STATIC(void, Host_Changelevel_f, const CCommand& args)
 	{
 		DevMsg("[Host_Changelevel_f] [%s]\n", args.GetCommandString());
-		DETOUR_STATIC_CALL(Host_Changelevel_f)(args);
+		DETOUR_STATIC_CALL(args);
 	}
 	
 	

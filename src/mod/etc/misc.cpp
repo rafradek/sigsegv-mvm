@@ -26,7 +26,7 @@ namespace Mod::Etc::Misc
 			return false;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFProjectile_Rocket_IsDeflectable)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	bool AllowHit(CBaseEntity *proj, CBaseEntity *other)
@@ -50,7 +50,7 @@ namespace Mod::Etc::Misc
 		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
 		
 		if (AllowHit(arrow, pOther))
-			DETOUR_MEMBER_CALL(CTFProjectile_Arrow_ArrowTouch)(pOther);
+			DETOUR_MEMBER_CALL(pOther);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyRing_ProjectileTouch, CBaseEntity *pOther)
@@ -58,7 +58,7 @@ namespace Mod::Etc::Misc
 		auto proj = reinterpret_cast<CTFProjectile_EnergyRing *>(this);
 		
 		if (AllowHit(proj, pOther))
-			DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
+			DETOUR_MEMBER_CALL(pOther);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_BallOfFire_RocketTouch, CBaseEntity *pOther)
@@ -66,7 +66,7 @@ namespace Mod::Etc::Misc
 		auto arrow = reinterpret_cast<CBaseEntity *>(this);
 		
 		if (AllowHit(arrow, pOther))
-			DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_RocketTouch)(pOther);
+			DETOUR_MEMBER_CALL(pOther);
 	}
 
 	RefCount rc_DoNotOverrideSmoke;
@@ -85,7 +85,7 @@ namespace Mod::Etc::Misc
 		}
 		auto playerOwner = ToTFPlayer(owner);
 		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, playerOwner != nullptr && FindCaseInsensitive(playerOwner->GetPlayerName(), "smoke") != nullptr);
-		DETOUR_MEMBER_CALL(CTFBaseRocket_Explode)(pTrace, pOther);
+		DETOUR_MEMBER_CALL(pTrace, pOther);
 		sentry_attacker_rocket = nullptr;
 	}
 
@@ -95,7 +95,7 @@ namespace Mod::Etc::Misc
 			info.m_DmgInfo->SetAttacker(sentry_attacker_rocket);
 			sentry_attacker_rocket = nullptr;
 		}
-		DETOUR_MEMBER_CALL(CTFGameRules_RadiusDamage)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 	
 	RefCount rc_SendProxy_PlayerObjectList;
@@ -115,13 +115,13 @@ namespace Mod::Etc::Misc
 				}
 			}
 		}
-		DETOUR_STATIC_CALL(SendProxy_PlayerObjectList)(pProp, pStruct, pData, pOut, iElement, objectID);
+		DETOUR_STATIC_CALL(pProp, pStruct, pData, pOut, iElement, objectID);
 	}
 
 	RefCount rc_SendProxyArrayLength_PlayerObjects;
 	DETOUR_DECL_STATIC(int, SendProxyArrayLength_PlayerObjects, const void *pStruct, int objectID)
 	{
-		int count = DETOUR_STATIC_CALL(SendProxyArrayLength_PlayerObjects)(pStruct, objectID);
+		int count = DETOUR_STATIC_CALL(pStruct, objectID);
 		CTFPlayer *player = (CTFPlayer *)(pStruct);
 		bool firstminisentry = true;
 		for (int i = 0; i < count; i++) {
@@ -163,12 +163,12 @@ namespace Mod::Etc::Misc
 				player->GetObject(minanimtimeid)->DetonateObject();
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_StartBuildingObjectOfType)(type, mode);
+		DETOUR_MEMBER_CALL(type, mode);
 	}
 
 	DETOUR_DECL_MEMBER(void, CCaptureFlag_Drop, CTFPlayer *pPlayer, bool bVisible, bool bThrown, bool bMessage)
 	{
-		DETOUR_MEMBER_CALL(CCaptureFlag_Drop)(pPlayer, bVisible, bThrown, bMessage);
+		DETOUR_MEMBER_CALL(pPlayer, bVisible, bThrown, bMessage);
 		auto flag = reinterpret_cast<CCaptureFlag *>(this);
 		if ( TFGameRules()->IsMannVsMachineMode() )
 		{
@@ -193,12 +193,12 @@ namespace Mod::Etc::Misc
 		if (weapon != nullptr) {
 			weapon->RemoveEffects(EF_NODRAW);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_OnRemoveStunned)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllWeapons)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllWeapons)();
+		DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		player->ClearDisguiseWeaponList();
 		if (player->m_Shared->m_hDisguiseWeapon != nullptr) {
@@ -212,13 +212,13 @@ namespace Mod::Etc::Misc
         if (collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT) {
             return false;
         }
-        return VHOOK_CALL(CZombie_ShouldCollide)(collisionGroup,contentsMask );
+        return VHOOK_CALL(collisionGroup,contentsMask );
     }
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
         if (player->m_hObserverTarget != nullptr && !player->IsBot()) {
 			ForEachEntityByClassname("ambient_generic", [&](CBaseEntity *pEnt){
 				auto ambient = static_cast<CAmbientGeneric *>(pEnt);
@@ -334,7 +334,7 @@ namespace Mod::Etc::Misc
 				closedir(dir);
 			}
 		}
-		DETOUR_STATIC_CALL(Script_StringToFile)(filename, string);
+		DETOUR_STATIC_CALL(filename, string);
 	}
 
 	class CMod_ScriptSaveLimit : public IMod
@@ -359,7 +359,7 @@ namespace Mod::Etc::Misc
 		auto proj = reinterpret_cast<CTFWeaponBaseGrenadeProj *>(this);
 		auto thrower = ToTFPlayer(proj->GetThrower());
 		SCOPED_INCREMENT_IF(rc_DoNotOverrideSmoke, thrower != nullptr && FindCaseInsensitive(thrower->GetPlayerName(), "smoke") != nullptr);
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGrenadeProj_Explode)(pTrace, bitsDamageType);
+		DETOUR_MEMBER_CALL(pTrace, bitsDamageType);
 	}
 
 	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
@@ -367,7 +367,7 @@ namespace Mod::Etc::Misc
 		if (!rc_DoNotOverrideSmoke && strcmp(name, "fluidSmokeExpl_ring_mvm") == 0) {
 			name = "hightower_explosion";
 		}
-		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
+		DETOUR_STATIC_CALL(name, vec, ang, entity);
 	}
 
 	class CMod_SentryBusterParticleChange : public IMod
@@ -405,7 +405,7 @@ namespace Mod::Etc::Misc
 				g_pMonsterResource->m_iBossHealthPercentageByte = (int) (healthPercentage * 255.0f);
 			}
 		}
-		return DETOUR_MEMBER_CALL(CHeadlessHatman_OnTakeDamage_Alive)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CHeadlessHatman_Spawn)
@@ -416,7 +416,7 @@ namespace Mod::Etc::Misc
 		{
 			g_pMonsterResource->m_iBossHealthPercentageByte = 255;
 		}
-		DETOUR_MEMBER_CALL(CHeadlessHatman_Spawn)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CHeadlessHatman_D2)
@@ -426,7 +426,7 @@ namespace Mod::Etc::Misc
 		{
 			g_pMonsterResource->m_iBossHealthPercentageByte = 0;
 		}
-		DETOUR_MEMBER_CALL(CHeadlessHatman_D2)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	class CMod_HHHHealthBar : public IMod

@@ -30,7 +30,7 @@ namespace Mod::Debug::Melee_Trace
 			return weapon->DoSwingTraceInternal(trace, bCleaveAttack, pTraces);
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(trace, bCleaveAttack, pTraces);
+		return DETOUR_MEMBER_CALL(trace, bCleaveAttack, pTraces);
 	}
 	
 	

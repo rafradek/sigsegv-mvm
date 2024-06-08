@@ -23,7 +23,7 @@ namespace Mod::Visualize::Airblast_Box
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBase_DeflectProjectiles)
 	{
 		SCOPED_INCREMENT(rc_CTFWeaponBase_DeflectProjectiles);
-		return DETOUR_MEMBER_CALL(CTFWeaponBase_DeflectProjectiles)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	/* UTIL_EntitiesInBox forwards call to partition->EnumerateElementsInBox */
@@ -44,7 +44,7 @@ namespace Mod::Visualize::Airblast_Box
 				cvar_duration.GetFloat());
 		}
 		
-		return DETOUR_MEMBER_CALL(ISpatialPartition_EnumerateElementsInBox)(listMask, mins, maxs, coarseTest, pIterator);
+		return DETOUR_MEMBER_CALL(listMask, mins, maxs, coarseTest, pIterator);
 	}
 	
 	

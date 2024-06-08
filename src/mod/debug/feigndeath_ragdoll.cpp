@@ -9,12 +9,12 @@ namespace Mod::Debug::FeignDeath_Ragdoll
 	DETOUR_DECL_MEMBER(void, CTFPlayer_CreateFeignDeathRagdoll, const CTakeDamageInfo& info, bool b1, bool b2, bool b3)
 	{
 		SCOPED_INCREMENT(rc_CreateFeignDeathRagdoll);
-		DETOUR_MEMBER_CALL(CTFPlayer_CreateFeignDeathRagdoll)(info, b1, b2, b3);
+		DETOUR_MEMBER_CALL(info, b1, b2, b3);
 	}
 	
 	DETOUR_DECL_STATIC(CBaseEntity *, CreateEntityByName, const char *className, int iForceEdictIndex)
 	{
-		auto result = DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+		auto result = DETOUR_STATIC_CALL(className, iForceEdictIndex);
 		
 		if (rc_CreateFeignDeathRagdoll > 0 && strcmp(className, "tf_ragdoll") == 0 && result != nullptr) {
 			auto ragdoll = reinterpret_cast<CTFRagdoll *>(result);

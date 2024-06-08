@@ -30,7 +30,7 @@ namespace Mod::Debug::Override_Step_Sound
 	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayStepSound, Vector& vecOrigin, surfacedata_t *psurface, float fvol, bool force)
 	{
 		SCOPED_INCREMENT(rc_PlayStepSound);
-		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+		DETOUR_MEMBER_CALL(vecOrigin, psurface, fvol, force);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CRecipientFilter_RemoveRecipientsByPVS, const Vector& origin)
@@ -39,7 +39,7 @@ namespace Mod::Debug::Override_Step_Sound
 			return;
 		}
 		
-		DETOUR_MEMBER_CALL(CRecipientFilter_RemoveRecipientsByPVS)(origin);
+		DETOUR_MEMBER_CALL(origin);
 	}
 	
 	

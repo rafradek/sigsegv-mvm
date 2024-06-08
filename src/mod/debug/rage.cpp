@@ -20,7 +20,7 @@ namespace Mod::Debug::Rage
 		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
 		
 		float rage_pre  = shared->m_flRageMeter;
-		DETOUR_MEMBER_CALL(CTFPlayerShared_ModifyRage)(delta);
+		DETOUR_MEMBER_CALL(delta);
 		float rage_post = shared->m_flRageMeter;
 		
 		CTFPlayer *player = shared->GetOuter();

@@ -24,7 +24,7 @@ namespace Mod::Credits::Better_Radius_Collection
 	{
 		/* don't mess with CBonusPack stuff in other game modes */
 		if (!TFGameRules()->IsMannVsMachineMode()) {
-			DETOUR_MEMBER_CALL(CTFPlayerShared_RadiusCurrencyCollectionCheck)();
+			DETOUR_MEMBER_CALL();
 			return;
 		}
 		

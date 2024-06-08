@@ -19,7 +19,7 @@ namespace Mod::MvM::Robot_Multiplier
     CValueOverride_ConVar<int> sig_mvm_robot_limit_override("sig_mvm_robot_limit_override");
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		bool ret = DETOUR_MEMBER_CALL();
 		auto manager = reinterpret_cast<CPopulationManager *>(this);
 		manager->m_nStartingCurrency = manager->m_nStartingCurrency * (manager->m_nStartingCurrency < 3000 ? sig_mvm_robot_multiplier_currency_start.GetFloat() : sig_mvm_robot_multiplier_currency.GetFloat());
 		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
@@ -30,7 +30,7 @@ namespace Mod::MvM::Robot_Multiplier
 
 	DETOUR_DECL_MEMBER(bool, CWaveSpawnPopulator_Parse, KeyValues *kv)
 	{
-        bool result = DETOUR_MEMBER_CALL(CWaveSpawnPopulator_Parse)(kv);
+        bool result = DETOUR_MEMBER_CALL(kv);
 		auto wavespawn = reinterpret_cast<CWaveSpawnPopulator *>(this);
 		int realMult = cvar_enable.GetInt() * 22 / Mod::Pop::PopMgr_Extensions::GetMaxRobotLimit();
 
@@ -64,7 +64,7 @@ namespace Mod::MvM::Robot_Multiplier
 	{
 		auto spawner = reinterpret_cast<CTankSpawner *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
+		auto result = DETOUR_MEMBER_CALL(where, ents);
 		
 		if (result && ents != nullptr && !ents->IsEmpty()) {
 			auto tank = rtti_cast<CTFTankBoss *>(ents->Tail().Get());
@@ -90,7 +90,7 @@ namespace Mod::MvM::Robot_Multiplier
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CMissionPopulator_Parse)(kv);
+		return DETOUR_MEMBER_CALL(kv);
 	}
 
 	class CMod : public IMod

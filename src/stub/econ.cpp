@@ -408,6 +408,8 @@ CInventoryManager *InventoryManager() { return ft_InventoryManager(); }
 static StaticFuncThunk<CTFInventoryManager *> ft_TFInventoryManager("TFInventoryManager");
 CTFInventoryManager *TFInventoryManager() { return ft_TFInventoryManager(); }
 
+CAttribute_String *last_parsed_string_attribute_value = nullptr;
+
 bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_def, attribute_data_union_t &value, const std::string &value_str)
 {
 	//Pool of previously added string values
@@ -418,6 +420,10 @@ bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_d
 		auto entry = attribute_string_values.find(value_str);
 		if (entry != attribute_string_values.end()) {
 			value = entry->second;
+#ifdef PLATFORM_64BITS
+			last_parsed_string_attribute_value = entry->second.m_String;
+			Msg("set that parsed %p %p\n", last_parsed_string_attribute_value, entry->second.m_Float);
+#endif
 			return true;
 		}
 	}

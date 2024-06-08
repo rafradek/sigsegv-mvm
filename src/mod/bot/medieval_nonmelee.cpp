@@ -79,7 +79,7 @@ namespace Mod::Bot::Medieval_NonMelee
 			TFGameRules()->Set_m_bPlayingMedieval(false);
 		}
 
-		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
+		DETOUR_MEMBER_CALL(ecattr);
 		
 		if (TFGameRules()->IsMannVsMachineMode() && player->IsBot()) {
 			TFGameRules()->Set_m_bPlayingMedieval(medieval);

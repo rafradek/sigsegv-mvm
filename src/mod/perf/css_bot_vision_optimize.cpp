@@ -38,7 +38,7 @@ namespace Mod::Perf::CSS_Bot_Vision_Optimize
 
     DETOUR_DECL_MEMBER(Vector *, CCSBot_GetPartPosition, CBasePlayer *player, int partType)
     {
-        if (!rc_CCSBot_IsVisible) return DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+        if (!rc_CCSBot_IsVisible) return DETOUR_MEMBER_CALL(player,partType);
         
         switch (partType) {
             case GUT: return &gut_pos;
@@ -58,7 +58,7 @@ namespace Mod::Perf::CSS_Bot_Vision_Optimize
         //     case 16: partTypeIndex = 4; break;
         // }
         // if (gpGlobals->tickcount > mod->boneOffsetsTick[partTypeIndex] + 6) {
-        //     auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+        //     auto vec = DETOUR_MEMBER_CALL(player,partType);
         //     mod->boneOffsets[partTypeIndex] = *vec - player->GetAbsOrigin(); 
         //     //mod->boneAngleStored[partTypeIndex] = player->GetAbsAngles(); 
         //     mod->boneOffsetsTick[partTypeIndex] = gpGlobals->tickcount;
@@ -70,11 +70,11 @@ namespace Mod::Perf::CSS_Bot_Vision_Optimize
         //     //Vector boneOffsetResult;
         //     //VectorRotate(boneOffset, player->GetAbsAngles() - mod->boneAngleStored[partTypeIndex], boneOffsetResult);
         //     *bonePosCalculated = player->GetAbsOrigin() + boneOffset;
-        //     //auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+        //     //auto vec = DETOUR_MEMBER_CALL(player,partType);
         //     //Msg("Diff %f %f %f\n", vec->x - bonePosCalculated->x, vec->y - bonePosCalculated->y, vec->z - bonePosCalculated->z);
         //     return bonePosCalculated;
         // }
-        //auto vec = DETOUR_MEMBER_CALL(CCSBot_GetPartPosition)(player,partType);
+        //auto vec = DETOUR_MEMBER_CALL(player,partType);
         //Msg("Part %d offset %f %f %f\n", partType, vec->x - player->GetAbsOrigin().x, vec->y - player->GetAbsOrigin().y, vec->z - player->GetAbsOrigin().z);
         //return vec;
     }
@@ -85,7 +85,7 @@ namespace Mod::Perf::CSS_Bot_Vision_Optimize
         engine->ResetPVS(m_PVS, m_nPVSSize);
         auto me = reinterpret_cast<CBasePlayer *>(this);
         engine->AddOriginToPVS(me->EyePosition());
-        return DETOUR_MEMBER_CALL(CSBot_FindMostDangerousThreat)();
+        return DETOUR_MEMBER_CALL();
     }
 
     DETOUR_DECL_MEMBER(bool, CCSBot_IsVisible, CBasePlayer *player, bool testFov, unsigned char *visParts)
@@ -149,7 +149,7 @@ namespace Mod::Perf::CSS_Bot_Vision_Optimize
         //         return false;
         //     }
         // }
-        auto ret = DETOUR_MEMBER_CALL(CCSBot_IsVisible)(player,testFov,visParts);
+        auto ret = DETOUR_MEMBER_CALL(player,testFov,visParts);
         // static int last_tick = 0;
         // static int visible_potentially = 0;
         // static int visible_potentially_not = 0;

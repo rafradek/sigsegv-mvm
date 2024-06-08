@@ -15,14 +15,14 @@ namespace Mod::Robot::Building_Stomp
 	{
 		SCOPED_INCREMENT(rc_CTFBotMainAction_OnContact);
 		bot_contact = actor;
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnContact)(actor, ent, trace);
+		return DETOUR_MEMBER_CALL(actor, ent, trace);
 	}
 	
 	DETOUR_DECL_MEMBER(EventDesiredResult<CTFBot>, CTFBotMainAction_OnStuck, CTFBot *actor)
 	{
 		SCOPED_INCREMENT(rc_CTFBotMainAction_OnStuck);
 		bot_stuck = actor;
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnStuck)(actor);
+		return DETOUR_MEMBER_CALL(actor);
 	}
 	
 	
@@ -79,7 +79,7 @@ namespace Mod::Robot::Building_Stomp
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 	
 	

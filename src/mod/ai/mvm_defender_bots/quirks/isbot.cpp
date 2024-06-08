@@ -21,7 +21,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		}
 		
 		return true;
-	//	return DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_IsBot)();
+	//	return DETOUR_MEMBER_CALL();
 	}
 	
 	

@@ -328,7 +328,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	//	DevMsg("CTFBot %08x: dtor0, clearing data\n", (uintptr_t)bot);
 		ClearDataForBot(bot, DESTRUCT);
 		
-		DETOUR_MEMBER_CALL(CTFBot_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_dtor2)
@@ -338,7 +338,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	//	DevMsg("CTFBot %08x: dtor2, clearing data\n", (uintptr_t)bot);
 		ClearDataForBot(bot, DESTRUCT);
 		
-		DETOUR_MEMBER_CALL(CTFBot_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -353,7 +353,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_StateEnter)(nState);
+		DETOUR_MEMBER_CALL(nState);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_StateLeave)
@@ -368,7 +368,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_StateLeave)();
+		DETOUR_MEMBER_CALL();
 	}
 
 
@@ -417,7 +417,7 @@ namespace Mod::Pop::ECAttr_Extensions
 
 		spawner_ecattr.clear();
 
-		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Parse)(kv_orig);
+		auto result = DETOUR_MEMBER_CALL(kv_orig);
 
 		CTFBot::EventChangeAttributes_t *default_ecattr = nullptr;
 		for (int i = 0; i < spawner->m_ECAttrs.Count(); i++) {
@@ -764,7 +764,7 @@ namespace Mod::Pop::ECAttr_Extensions
 					if (&ecattr != &last_spawner->m_ECAttrs[i] && FStrEq(last_spawner->m_ECAttrs[i].m_strName.Get(), ecattr.m_strName.Get())) {
 						
 						parse_dynamic_index = i + 1;
-						bool result = Detour_ParseDynamicAttributes(current_spawner->m_ECAttrs[i], kv);
+						bool result = detour_ns_ParseDynamicAttributes::Detour(current_spawner->m_ECAttrs[i], kv);
 
 						parse_dynamic_index = 0;
 						return result;
@@ -787,7 +787,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			for (int i = 0; i < current_spawner->m_ECAttrs.Count(); i++) {
 				parse_dynamic_index = i + 1;
 				
-				if (!Detour_ParseDynamicAttributes(current_spawner->m_ECAttrs[i], kv)){
+				if (!detour_ns_ParseDynamicAttributes::Detour(current_spawner->m_ECAttrs[i], kv)){
 					parse_dynamic_index = 0;
 					return false;
 				}
@@ -950,7 +950,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			return true;
 
 		if (!cvar_creators_custom_item.GetBool())
-			return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
+			return DETOUR_STATIC_CALL(ecattr, kv);
 
 		//DevMsg("ParseDynamicAttributesTFBot: \"%s\" \"%s\"\n", kv->GetName(), kv->GetString());
 		
@@ -1042,13 +1042,13 @@ namespace Mod::Pop::ECAttr_Extensions
 			//DevMsg("put event changed attributes data %s %d %d\n",item_name.c_str(), attribs.size(), &ecattr);
 		}
 		//DevMsg("  Passing through to actual ParseDynamicAttributes\n");
-		return DETOUR_STATIC_CALL(ParseDynamicAttributes)(ecattr, kv);
+		return DETOUR_STATIC_CALL(ecattr, kv);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		ClearAllData();
-		return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_ParseEventChangeAttributes, KeyValues *data)
@@ -1062,7 +1062,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		default_ecattr = &reinterpret_cast<CTFBotSpawner *>(this)->m_DefaultAttrs;
 		last_ecattr = nullptr;
 		last_spawner = reinterpret_cast<CTFBotSpawner *>(this);
-		bool result = DETOUR_MEMBER_CALL(CTFBotSpawner_ParseEventChangeAttributes)(data);
+		bool result = DETOUR_MEMBER_CALL(data);
 		default_ecattr = nullptr;
 
 		return result;
@@ -1396,7 +1396,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	{
 		SCOPED_INCREMENT(rc_CTFBotSpawner_Spawn);
 		auto spawner = reinterpret_cast<CTFBotSpawner *>(this);
-		auto result = DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		auto result = DETOUR_MEMBER_CALL(where, ents);
 
 		// Delay execution of the first event change attributes
 		if (result) {
@@ -1484,7 +1484,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			bot->EquipBestWeaponForThreat(nullptr);
 		}
 
-		DETOUR_MEMBER_CALL(CTFBot_OnEventChangeAttributes)(ecattr);
+		DETOUR_MEMBER_CALL(ecattr);
 
 
 		if (!rc_CTFBotSpawner_Spawn)
@@ -1518,7 +1518,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
 	{
-		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		int slot = DETOUR_MEMBER_CALL(classIndex);
 		return !rc_CTFBot_OnEventChangeAttributes ? slot : LoadoutSlotReplace(slot, reinterpret_cast<CTFItemDefinition *>(this), classIndex);
 	}
 	
@@ -1582,7 +1582,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 
 				else
-					ret = DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
+					ret = DETOUR_MEMBER_CALL(criteria,vec,ang, name);
 			}
 			else {
 				if (item_def->m_iItemDefIndex >= 30143 && item_def->m_iItemDefIndex <= 30161 && bot_additem != nullptr && bot_additem->entindex() > MAX_PLAYERS) {
@@ -1596,12 +1596,12 @@ namespace Mod::Pop::ECAttr_Extensions
 
 			return ret;
 		}
-		return DETOUR_MEMBER_CALL(CItemGeneration_GenerateRandomItem)(criteria,vec,ang, name);
+		return DETOUR_MEMBER_CALL(criteria,vec,ang, name);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFBot_EquipRequiredWeapon)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBot_EquipRequiredWeapon)();
+		auto result = DETOUR_MEMBER_CALL();
 		if (!result)
 		{
 			auto bot = reinterpret_cast<CTFBot *>(this);
@@ -1622,21 +1622,21 @@ namespace Mod::Pop::ECAttr_Extensions
 	DETOUR_DECL_MEMBER(CEconItemDefinition *, CEconItemSchema_GetItemDefinitionByName, const char *name)
 	{
 		name = Mod::Pop::PopMgr_Extensions::GetCustomWeaponNameOverride(name);
-		return DETOUR_MEMBER_CALL(CEconItemSchema_GetItemDefinitionByName)(name);
+		return DETOUR_MEMBER_CALL(name);
 	}
 
 	DETOUR_DECL_MEMBER(CEconItemDefinition *, CEconItemSchema_GetItemDefinitionByName2, const char *name)
 	{
 		name = Mod::Pop::PopMgr_Extensions::GetCustomWeaponNameOverride(name);
-		return DETOUR_MEMBER_CALL(CEconItemSchema_GetItemDefinitionByName)(name);
+		return DETOUR_MEMBER_CALL(name);
 	}
 	// DETOUR_DECL_MEMBER(void *, CSchemaFieldHandle_CEconItemDefinition, const char* name) {
 	// 	DevMsg("CShemaItemDefHandle 1 %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
-	// 	return DETOUR_MEMBER_CALL(CSchemaFieldHandle_CEconItemDefinition)(name);
+	// 	return DETOUR_MEMBER_CALL(name);
 	// }
 	// DETOUR_DECL_MEMBER(void *, CSchemaFieldHandle_CEconItemDefinition2, const char* name) {
 	// 	DevMsg("CShemaItemDefHandle 2 %s %d\n",name, rc_CTFBot_OnEventChangeAttributes);
-	// 	return DETOUR_MEMBER_CALL(CSchemaFieldHandle_CEconItemDefinition2)(name);
+	// 	return DETOUR_MEMBER_CALL(name);
 	// }
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_AddItem, const char *item)
@@ -1646,7 +1646,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		item_name = item;
 		bot_additem = reinterpret_cast<CTFBot *>(this);
 		bot_classnum = bot_additem->GetPlayerClass()->GetClassIndex();
-		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
+		DETOUR_MEMBER_CALL(item);
 	}
 
 	bool ShouldRocketJump(CTFBot *bot, EventChangeAttributesData *data, bool release_fire) {
@@ -1695,7 +1695,7 @@ namespace Mod::Pop::ECAttr_Extensions
 						aim = subject->EyePosition();
 				}
 				else 
-					aim = DETOUR_MEMBER_CALL(CTFBotMainAction_SelectTargetPoint)(nextbot,subject);
+					aim = DETOUR_MEMBER_CALL(nextbot,subject);
 				
 				aim += data->aim_offset;
 
@@ -1722,7 +1722,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				return aim;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_SelectTargetPoint)(nextbot,subject);
+		return DETOUR_MEMBER_CALL(nextbot,subject);
 	}
 
 	ConVar cvar_head_tracking_interval("sig_head_tracking_interval_multiplier", "1", FCVAR_GAMEDLL,	
@@ -1740,7 +1740,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			return data->tracking_interval;
 		}
 		else
-			return DETOUR_MEMBER_CALL(CTFBotBody_GetHeadAimTrackingInterval)() * mult;
+			return DETOUR_MEMBER_CALL() * mult;
 
 		
 	}
@@ -1765,7 +1765,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data != nullptr && data->tracking_interval >= 0.f && data->tracking_interval < 0.05f)
 			return 10000.0f;
 		else
-			return VHOOK_CALL(PlayerBody_GetMaxHeadAngularVelocity)();
+			return VHOOK_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_FireWeaponAtEnemy, CTFBot *actor)
@@ -1803,7 +1803,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
+		DETOUR_MEMBER_CALL(actor);
 		if (data != nullptr && data->rocket_jump_type > 0 && weapon != nullptr && !weapon->IsMeleeWeapon()) {
 			const CKnownEntity *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
 			if (weapon != nullptr && (data->rocket_jump_type == 1 || weapon->m_iClip1 >= weapon->GetMaxClip1()) && threat != nullptr && threat->GetEntity() != nullptr && actor->IsLineOfFireClear( threat->GetEntity()->EyePosition() )/*&& ShouldRocketJump(actor, weapon, data, true)*//*weapon != nullptr*/) {
@@ -1864,9 +1864,9 @@ namespace Mod::Pop::ECAttr_Extensions
 	eEntityByName, const char *className, int iForceEdictIndex)
 	{
 		if (rc_CTFBot_AddItem > 0) {
-			return DETOUR_STATIC_CALL(CreateEntityByName)(TranslateWeaponEntForClass_improved(className,bot_classnum), iForceEdictIndex);
+			return DETOUR_STATIC_CALL(TranslateWeaponEntForClass_improved(className,bot_classnum), iForceEdictIndex);
 		}
-		return DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+		return DETOUR_STATIC_CALL(className, iForceEdictIndex);
 	}*/
 
 	bool IsRangeGreaterThan( CBaseEntity *bot, const Vector &pos, float range)
@@ -1882,7 +1882,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		bool mannvsmachine = TFGameRules()->IsMannVsMachineMode();
 
 		if (!mannvsmachine || threat == nullptr || threat->GetEntity() == nullptr)  {
-			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			DETOUR_MEMBER_CALL(threat);
 			return;
 		}
 
@@ -1926,7 +1926,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (use_best_weapon)
 				TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 
-			DETOUR_MEMBER_CALL(CTFBot_EquipBestWeaponForThreat)(threat);
+			DETOUR_MEMBER_CALL(threat);
 
 			if (use_best_weapon)
 				TFGameRules()->Set_m_bPlayingMannVsMachine(mannvsmachine);
@@ -1973,7 +1973,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_SelectMoreDangerousThreatInternal)(nextbot, them, threat1, threat2);
+		return DETOUR_MEMBER_CALL(nextbot, them, threat1, threat2);
 	}
 
 	DETOUR_DECL_MEMBER(bool,CTFBotDeliverFlag_UpgradeOverTime, CTFBot *bot)
@@ -1982,7 +1982,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data != nullptr && data->no_bomb_upgrade) {
 			return false;
 		}
-		return DETOUR_MEMBER_CALL(CTFBotDeliverFlag_UpgradeOverTime)(bot);
+		return DETOUR_MEMBER_CALL(bot);
 	}
 
 	
@@ -1999,7 +1999,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_PainSound)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DeathSound, const CTakeDamageInfo& info)
@@ -2015,7 +2015,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_DeathSound)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 
 	void UpdateAlwaysGlow()
@@ -2098,11 +2098,11 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+		return DETOUR_MEMBER_CALL(info, pVictim, b1);
 	}
 	DETOUR_DECL_MEMBER(CTFProjectile_Rocket *, CTFWeaponBaseGun_FireRocket, CTFPlayer *player, int i1)
 	{
-		auto proj = DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireRocket)(player, i1);
+		auto proj = DETOUR_MEMBER_CALL(player, i1);
 		
 		if (proj != nullptr) {
 			auto data = GetDataForBot(proj->GetOwnerEntity());
@@ -2127,7 +2127,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	
 	DETOUR_DECL_MEMBER(void, CTFWeaponBase_ApplyOnHitAttributes, CBaseEntity *ent, CTFPlayer *player, const CTakeDamageInfo& info)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBase_ApplyOnHitAttributes)(ent, player, info);
+		DETOUR_MEMBER_CALL(ent, player, info);
 		
 		CTFPlayer *victim = ToTFPlayer(ent);
 		CTFBot *attacker  = ToTFBot(player);
@@ -2145,7 +2145,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Rocket_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFProjectile_Rocket_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 		auto rocket = reinterpret_cast<CTFProjectile_Rocket *>(this);
 		
@@ -2181,9 +2181,9 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (player->IsBot() && HasRobotHumanVoice(player)) {
 			return "";
 		}
-		//const char *token=DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+		//const char *token=DETOUR_MEMBER_CALL();
 		//DevMsg("CTFPlayer::GetSceneSoundToken %s\n", token);
-		return DETOUR_MEMBER_CALL( CTFPlayer_GetSceneSoundToken)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 //	std::string GetStrForEntity(CBaseEntity *ent)
@@ -2276,7 +2276,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			hr = &mod->data;
 		} 
 		if (hr == nullptr || !hr->enable) {
-			DETOUR_MEMBER_CALL(CBaseEntity_PerformCustomPhysics)(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
+			DETOUR_MEMBER_CALL(pNewPosition, pNewVelocity, pNewAngles, pNewAngVelocity);
 			return;
 		}
 		
@@ -2384,13 +2384,13 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (data != nullptr) {
 				bool stopproj;
 				bool smacked = false;
-				TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ smacked = true; DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)(); return nullptr; });
+				TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ smacked = true; DETOUR_MEMBER_CALL(); return nullptr; });
 				if (stopproj || smacked) {
 					return;
 				}
 			}
 		}
- 		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_Smack)();
+ 		DETOUR_MEMBER_CALL();
 
 	}
 	
@@ -2402,7 +2402,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (data != nullptr) {
 				bool stopproj = false;
 				auto weapon = reinterpret_cast<CTFWeaponBaseGun*>(this);
-				auto proj = TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ return DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player); });
+				auto proj = TemplateShootSpawn(data->shoot_templ, player, weapon, stopproj, [&](){ return DETOUR_MEMBER_CALL(player); });
 				if (proj != nullptr) {
 					return proj;
 				}
@@ -2423,7 +2423,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFWeaponBaseGun_FireProjectile)(player);
+		return DETOUR_MEMBER_CALL(player);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
@@ -2439,7 +2439,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+		DETOUR_MEMBER_CALL(index, soundtime);
 	}
 
 	struct NextBotData
@@ -2468,7 +2468,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			if (grapplingHook != nullptr)
 				UTIL_Remove(grapplingHook->m_hProjectile);
 		}
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBot_AvoidPlayers, void *cmd)
@@ -2478,37 +2478,37 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (data != nullptr && data->no_pushaway) {
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFBot_AvoidPlayers)(cmd);
+		DETOUR_MEMBER_CALL(cmd);
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHandScaleSpeed)
 	{
 		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
 		if (data != nullptr) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)() * data->scale_speed;
+			return DETOUR_MEMBER_CALL() * data->scale_speed;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetHandScaleSpeed)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetHeadScaleSpeed)
 	{
 		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
 		if (data != nullptr) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)() * data->scale_speed;
+			return DETOUR_MEMBER_CALL() * data->scale_speed;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetHeadScaleSpeed)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(float, CTFPlayer_GetTorsoScaleSpeed)
 	{
 		auto data = GetDataForBot(reinterpret_cast<CTFPlayer *>(this));
 		if (data != nullptr) {
-			return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)() * data->scale_speed;
+			return DETOUR_MEMBER_CALL() * data->scale_speed;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_GetTorsoScaleSpeed)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFBotLocomotion_Update;
@@ -2516,21 +2516,21 @@ namespace Mod::Pop::ECAttr_Extensions
 	{
 		auto data = GetDataForBot(reinterpret_cast<ILocomotion *>(this)->GetBot()->GetEntity());
 		SCOPED_INCREMENT_IF(rc_CTFBotLocomotion_Update, data != nullptr && data->no_crouch_button_release);
-		DETOUR_MEMBER_CALL(CTFBotLocomotion_Update)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_PressCrouchButton, float time)
 	{
 		if (rc_CTFBotLocomotion_Update)
 			return;
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PressCrouchButton)(time);
+		DETOUR_MEMBER_CALL(time);
 	}
 
 	DETOUR_DECL_MEMBER(void, NextBotPlayer_CTFPlayer_ReleaseCrouchButton)
 	{
 		if (rc_CTFBotLocomotion_Update)
 			return;
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_ReleaseCrouchButton)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFGameRules_PlayerKilled;
@@ -2540,7 +2540,7 @@ namespace Mod::Pop::ECAttr_Extensions
 	//	DevMsg("CTFGameRules::PlayerKilled\n");
 		killed = pVictim;
 		SCOPED_INCREMENT(rc_CTFGameRules_PlayerKilled);
-		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
+		DETOUR_MEMBER_CALL(pVictim, info);
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			auto *data = GetDataForBot(killed);
 			if (data != nullptr && (data->spell_drop)) {
@@ -2571,7 +2571,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				player->EmitSound(data->override_step_sound.c_str());
 			}
 		}
-		DETOUR_MEMBER_CALL(CBasePlayer_PlayStepSound)(vecOrigin, psurface, fvol, force);
+		DETOUR_MEMBER_CALL(vecOrigin, psurface, fvol, force);
 	}
 
 	RefCount rc_CTFPlayer_OnTakeDamage_Alive;
@@ -2581,7 +2581,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		
 		CTFPlayer *player = reinterpret_cast<CTFPlayer *>(this);
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_OnTakeDamage_Alive, HasRobotBlood(player));
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage_Alive)(info);
+		auto result = DETOUR_MEMBER_CALL(info);
 		if (was_bleed) {
 			Vector vDamagePos = info.GetDamagePosition();
 
@@ -2610,7 +2610,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_Event_Killed, HasRobotBlood(player));
 		ResetHumanAnimations(ToTFBot(player), GetDataForBot(player));
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 	}
 	
 	DETOUR_DECL_STATIC(void, DispatchParticleEffect, char const *name, Vector vec, QAngle ang, CBaseEntity *entity)
@@ -2619,7 +2619,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			was_bleed = true;
 			return;
 		}
-		DETOUR_STATIC_CALL(DispatchParticleEffect)(name, vec, ang, entity);
+		DETOUR_STATIC_CALL(name, vec, ang, entity);
 	}
 
 	DETOUR_DECL_STATIC(void, TE_TFParticleEffect, IRecipientFilter& recipement, float value, char const* name, Vector vector, QAngle angles, CBaseEntity* entity, ParticleAttachment_t attach)
@@ -2627,7 +2627,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (rc_CTFPlayer_Event_Killed && strcmp(name, "bot_death") == 0) {
 			return;
 		}
-		DETOUR_STATIC_CALL(TE_TFParticleEffect)(recipement, value, name, vector, angles, entity, attach);
+		DETOUR_STATIC_CALL(recipement, value, name, vector, angles, entity, attach);
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFBot_GetDesiredAttackRange)
@@ -2641,14 +2641,14 @@ namespace Mod::Pop::ECAttr_Extensions
 			}
 		}
 
-		auto result = DETOUR_MEMBER_CALL(CTFBot_GetDesiredAttackRange)();
+		auto result = DETOUR_MEMBER_CALL();
 
 		return result;
 	}
 
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotAttack_Update, CTFBot *me, float interval)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFBotAttack_Update)(me, interval);
+		auto result = DETOUR_MEMBER_CALL(me, interval);
 
 		if (!TFGameRules()->IsMannVsMachineMode()) return result;
 		auto *data = GetDataForBot(me);
@@ -2730,7 +2730,7 @@ namespace Mod::Pop::ECAttr_Extensions
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 	
 	RefCount rc_IVision_IsAbleToSee;
@@ -2739,7 +2739,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (rc_IVision_IsAbleToSee) {
 			return true;
 		}
-		return DETOUR_MEMBER_CALL(CNavArea_IsPotentiallyVisible)(area);
+		return DETOUR_MEMBER_CALL(area);
 	}
 
 	DETOUR_DECL_MEMBER(bool, IVision_IsAbleToSee, CBaseEntity *subject, int checkFOV, Vector *visibleSpot)
@@ -2759,7 +2759,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		}
 
 		SCOPED_INCREMENT_IF(rc_IVision_IsAbleToSee, wallhack);
-		return DETOUR_MEMBER_CALL(IVision_IsAbleToSee)(subject,checkFOV, visibleSpot);
+		return DETOUR_MEMBER_CALL(subject,checkFOV, visibleSpot);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, IVision_IsLineOfSightClearToEntity, CBaseEntity *subject, Vector *visibleSpot)
@@ -2767,7 +2767,7 @@ namespace Mod::Pop::ECAttr_Extensions
 		if (rc_IVision_IsAbleToSee) {
 			return true;
 		}
-		return DETOUR_MEMBER_CALL(IVision_IsLineOfSightClearToEntity)(subject, visibleSpot);
+		return DETOUR_MEMBER_CALL(subject, visibleSpot);
 	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener

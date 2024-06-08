@@ -11,7 +11,7 @@ namespace Mod::MvM::Allow_Vote_Mid_Wave
 			restoreRound = true;
 			TFGameRules()->State_SetDirect(GR_STATE_BETWEEN_RNDS);
 		}
-		auto result = DETOUR_MEMBER_CALL(CKickIssue_RequestCallVote)(var1, var2, fail, var4);
+		auto result = DETOUR_MEMBER_CALL(var1, var2, fail, var4);
 		if (restoreRound) {
 			TFGameRules()->State_SetDirect(GR_STATE_RND_RUNNING);
 		}

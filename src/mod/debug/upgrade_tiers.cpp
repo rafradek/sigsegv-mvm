@@ -25,7 +25,7 @@ namespace Mod::Debug::Upgrade_Tiers
 	{
 		
 		
-		auto result = DETOUR_STATIC_CALL(GetUpgradeStepData)(player, slot, tier, count, b1);
+		auto result = DETOUR_STATIC_CALL(player, slot, tier, count, b1);
 		
 		
 		

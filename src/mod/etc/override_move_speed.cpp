@@ -98,7 +98,7 @@ namespace Mod::Etc::Override_Move_Speed
 			CMoveData_Set_MaxSpeed(pMove, cvar_limit.GetFloat());
 		}
 		
-		DETOUR_MEMBER_CALL(CTFGameMovement_ProcessMovement)(pBasePlayer, pMove);
+		DETOUR_MEMBER_CALL(pBasePlayer, pMove);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFGameMovement_ProcessMovement_client, CBasePlayer *pBasePlayer, CMoveData *pMove)
@@ -107,7 +107,7 @@ namespace Mod::Etc::Override_Move_Speed
 			CMoveData_Set_MaxSpeed(pMove, cvar_limit.GetFloat());
 		}
 		
-		DETOUR_MEMBER_CALL(CTFGameMovement_ProcessMovement_client)(pBasePlayer, pMove);
+		DETOUR_MEMBER_CALL(pBasePlayer, pMove);
 	}
 	
 	

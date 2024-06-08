@@ -928,7 +928,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	{
 		/* it's important to let the call happen, because pPlayer->m_nCurrency
 		 * is set to its proper value in the call (stupid, but whatever) */
-		auto iResult = DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
+		auto iResult = DETOUR_MEMBER_CALL(pPlayer, iWantedTeam, b1);
 		
 		// debug message for the "sometimes bots don't get put on TEAM_SPECTATOR properly at wave end" situation
 		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->IsBot() && iResult != iWantedTeam) {
@@ -974,14 +974,14 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CTFReviveMarker_Create)(player);
+		return DETOUR_STATIC_CALL(player);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_OnNavAreaChanged, CNavArea *enteredArea, CNavArea *leftArea)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_OnNavAreaChanged)(enteredArea, leftArea);
+		DETOUR_MEMBER_CALL(enteredArea, leftArea);
 		
 		if (IsMvMBlueHuman(player) &&
 			(enteredArea == nullptr ||  static_cast<CTFNavArea *>(enteredArea)->HasTFAttributes(BLUE_SPAWN_ROOM)) &&
@@ -999,7 +999,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFGameRules_ClientCommandKeyValues)(pEntity, pKeyValues);
+		DETOUR_MEMBER_CALL(pEntity, pKeyValues);
 	}
 	
 	
@@ -1011,7 +1011,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_IsAllowedToPickUpFlag)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CCaptureZone_ShimTouch, CBaseEntity *pOther)
@@ -1064,13 +1064,13 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			//player->m_Shared->StunPlayer(1.0f, 1.0f, TF_STUNFLAGS_CONTROL | TF_STUNFLAGS_CONTROL, nullptr);
 		}();
 		
-		DETOUR_MEMBER_CALL(CCaptureZone_ShimTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 	
 	
 //	DETOUR_DECL_MEMBER(void, CPlayerMove_StartCommand, CBasePlayer *player, CUserCmd *ucmd)
 //	{
-//		DETOUR_MEMBER_CALL(CPlayerMove_StartCommand)(player, ucmd);
+//		DETOUR_MEMBER_CALL(player, ucmd);
 //		
 //		DevMsg("CPlayerMove::StartCommand(#%d): buttons = %08x\n", ENTINDEX(player), ucmd->buttons);
 //		
@@ -1089,7 +1089,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	{
 		SCOPED_INCREMENT_IF(rc_CTFGameRules_FireGameEvent__teamplay_round_start,
 			(event != nullptr && strcmp(event->GetName(), "teamplay_round_start") == 0));
-		DETOUR_MEMBER_CALL(CTFGameRules_FireGameEvent)(event);
+		DETOUR_MEMBER_CALL(event);
 	}
 	
 	DETOUR_DECL_STATIC(int, CollectPlayers_CTFPlayer, CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
@@ -1099,7 +1099,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			return CollectPlayers_RedAndBlue_IsBot(playerVector, team, isAlive, shouldAppend);
 		}
 		
-		return DETOUR_STATIC_CALL(CollectPlayers_CTFPlayer)(playerVector, team, isAlive, shouldAppend);
+		return DETOUR_STATIC_CALL(playerVector, team, isAlive, shouldAppend);
 	}
 	
 	
@@ -1117,7 +1117,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		SCOPED_INCREMENT(rc_CTFPlayerShared_RadiusSpyScan);
 		radius_spy_scan_teamnum = player->GetTeamNumber();
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_RadiusSpyScan)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	__gcc_regcall static int CollectPlayers_RadiusSpyScan(CUtlVector<CTFPlayer *> *playerVector, int team, bool isAlive, bool shouldAppend)
@@ -1135,7 +1135,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
-		DETOUR_MEMBER_CALL(CTFBot_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			// ========= MANN VS MACHINE MODE ROUND STATE TRANSITIONS ==========
@@ -1184,7 +1184,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_PlayerReadyStatus_ShouldStartCountdown)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFGameRules_PlayerReadyStatus_ShouldStartCountdown)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			bool notReadyPlayerBlue = false;
 			bool notReadyPlayerRed = false;
@@ -1211,7 +1211,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 
 	DETOUR_DECL_MEMBER(int, CTFBaseBoss_OnTakeDamage, CTakeDamageInfo &info)
 	{
-		float damage = DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
+		float damage = DETOUR_MEMBER_CALL(info);
 		if (info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == reinterpret_cast<CBaseEntity *>(this)->GetTeamNumber())
 			return 0;
 		return damage;
@@ -1230,7 +1230,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAmmo, int count, const char *name)
@@ -1240,7 +1240,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 
 		if (change)
 			player->SetTeamNumber(TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAmmo)(count, name);
+		DETOUR_MEMBER_CALL(count, name);
 
 		if (change)
 			player->SetTeamNumber(TF_TEAM_BLUE);
@@ -1259,7 +1259,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		sentryRocketAmmoCurrent = obj->m_iAmmoRockets;
 		bool stopammo = TFGameRules()->IsMannVsMachineMode() && !cvar_infinite_ammo.GetBool() && IsMvMBlueHuman(owner);
 
-		DETOUR_MEMBER_CALL(CObjectSentrygun_SentryThink)();
+		DETOUR_MEMBER_CALL();
 
 		if (stopammo) {
 			obj->m_iMaxAmmoShells = maxAmmo;
@@ -1273,7 +1273,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	{
 		auto obj = reinterpret_cast<CObjectSentrygun *>(this);
 
-		DETOUR_MEMBER_CALL(CObjectSentrygun_Attack)();
+		DETOUR_MEMBER_CALL();
 		sentryAmmoCurrent = obj->m_iAmmoShells;
 		sentryRocketAmmoCurrent = obj->m_iAmmoRockets;
 	}
@@ -1287,7 +1287,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		if (changedteam)
 			obj->SetTeamNumber(TF_TEAM_RED);
 
-		bool ret = DETOUR_MEMBER_CALL(CBaseObject_ShouldQuickBuild)();
+		bool ret = DETOUR_MEMBER_CALL();
 
 		if (changedteam)
 			obj->SetTeamNumber(TF_TEAM_BLUE);
@@ -1304,7 +1304,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		if (changedteam)
 			obj->SetTeamNumber(TF_TEAM_RED);
 
-		DETOUR_MEMBER_CALL(CObjectTeleporter_DeterminePlaybackRate)();
+		DETOUR_MEMBER_CALL();
 		if (obj->m_iState == 1) {
 			StopParticleEffects(obj);
 		}
@@ -1315,14 +1315,14 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_ShouldRespawnQuickly, CTFPlayer *player)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFGameRules_ShouldRespawnQuickly)(player);
+		bool ret = DETOUR_MEMBER_CALL(player);
 		ret |= TFGameRules()->IsMannVsMachineMode() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_SCOUT && !player->IsBot();
 		return ret;
 	}
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CTFKnife_CanPerformBackstabAgainstTarget, CTFPlayer *target )
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFKnife_CanPerformBackstabAgainstTarget)(target);
+		bool ret = DETOUR_MEMBER_CALL(target);
 
 		if ( !ret && TFGameRules() && TFGameRules()->IsMannVsMachineMode() && target->GetTeamNumber() == TF_TEAM_RED )
 		{
@@ -1388,7 +1388,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
-		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
+		DETOUR_MEMBER_CALL(player);
 		bool bluhuman = IsMvMBlueHuman(player);
 		CTFPlayer *playerbot = ToTFBot(player);
 		if ((bluhuman && cvar_teleport.GetBool()) || cvar_teleport_player.GetBool()) {
@@ -1405,7 +1405,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Touch, CBaseEntity *toucher)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_Touch)(toucher);
+		DETOUR_MEMBER_CALL(toucher);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->IsMiniBoss() && toucher->IsBaseObject()) {
 			CBaseObject *obj = ToBaseObject(toucher);
@@ -1436,7 +1436,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 				}
 			});
 		}
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 		
 		if (cvar_no_footsteps.GetBool()) {
 			ForEachTFPlayer([&](CTFPlayer *player) {
@@ -1457,12 +1457,12 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		if (IsMvMBlueHuman(reinterpret_cast<CTFSniperRifle *>(this)->GetTFPlayerOwner())) {
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFSniperRifle_CreateSniperDot)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_STATIC(CBaseEntity *, CSniperDot_Create, Vector &origin, CBaseEntity *owner, bool visibleDot)
 	{
-		return laser_dot = DETOUR_STATIC_CALL(CSniperDot_Create)(origin, owner, visibleDot);
+		return laser_dot = DETOUR_STATIC_CALL(origin, owner, visibleDot);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_RemoveAllOwnedEntitiesFromWorld, bool explode)
@@ -1472,7 +1472,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		if (blueHuman) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_RemoveAllOwnedEntitiesFromWorld)(explode);
+		DETOUR_MEMBER_CALL(explode);
 		if (blueHuman) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
 		}
@@ -1550,14 +1550,14 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			event->SetInt("winning_team", teamnum == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED);
 		}
 		
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 
 	RefCount rc_CTFBot_Event_Killed;
 	DETOUR_DECL_MEMBER(void, CTFBot_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto bot = reinterpret_cast<CTFBot *>(this);
-		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		
 		extern ConVar cvar_force;
 		if (cvar_force.GetBool() && bot->GetTeamNumber() == TF_TEAM_RED) {
@@ -1637,7 +1637,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			TFGameRules()->Set_m_bPlayingMannVsMachine(false);
 		}
 		
-		bool ret = DETOUR_MEMBER_CALL(CVoteController_IsValidVoter)();
+		bool ret = DETOUR_MEMBER_CALL();
 
 		if (blueHuman) {
 			TFGameRules()->Set_m_bPlayingMannVsMachine(true);
@@ -1652,14 +1652,14 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 	//	DevMsg("CTFGameRules::PlayerKilled\n");
 		killed = IsMvMBlueHuman(ToTFPlayer(info.GetAttacker())) && pVictim->GetTeamNumber() == TF_TEAM_RED ? pVictim : nullptr;
 		team_change_back = false;
-		DETOUR_MEMBER_CALL(CTFGameRules_PlayerKilled)(pVictim, info);
+		DETOUR_MEMBER_CALL(pVictim, info);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTeamplayRules_PlayerKilled, CBasePlayer *pVictim, const CTakeDamageInfo& info)
 	{
 		if (killed != nullptr && team_change_back) 
 			killed->SetTeamNumber(TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTeamplayRules_PlayerKilled)(pVictim, info);
+		DETOUR_MEMBER_CALL(pVictim, info);
 		killed = nullptr;
 	}
 	
@@ -1671,7 +1671,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 			team_change_back = true;
 		}
 
-        return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)(info);
+        return DETOUR_STATIC_CALL(info);
     }
 
 	DETOUR_DECL_MEMBER(void, CMultiplayRules_HaveAllPlayersSpeakConceptIfAllowed, int iConcept, int iTeam /* = TEAM_UNASSIGNED */, const char *modifiers)
@@ -1679,7 +1679,7 @@ constexpr uintptr_t s_CallOff_CollectPlayers_RadiusSpyScan = 0x2c;
 		if (iConcept == TF_TEAM_RED) {
 			iTeam = TF_TEAM_BLUE;
 		}
-		DETOUR_MEMBER_CALL(CMultiplayRules_HaveAllPlayersSpeakConceptIfAllowed)(iConcept, iTeam, modifiers);
+		DETOUR_MEMBER_CALL(iConcept, iTeam, modifiers);
 	}
 	
 	void CallbackScoreboard(CBaseEntity *entity, int clientIndex, DVariant &value, int callbackIndex, SendProp *prop, uintptr_t data) {

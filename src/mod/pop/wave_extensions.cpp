@@ -195,7 +195,7 @@ namespace Mod::Pop::Wave_Extensions
 		WaveCleanup(wave);
 		waves.erase(wave);
 		
-		DETOUR_MEMBER_CALL(CWave_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CWave_dtor2)
@@ -205,7 +205,7 @@ namespace Mod::Pop::Wave_Extensions
 //		DevMsg("CWave %08x: dtor2\n", (uintptr_t)wave);
 		waves.erase(wave);
 		
-		DETOUR_MEMBER_CALL(CWave_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -479,7 +479,7 @@ namespace Mod::Pop::Wave_Extensions
 	DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
 		waves_vec.clear();
-        return DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+        return DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(bool, CWave_Parse, KeyValues *kv)
@@ -546,7 +546,7 @@ namespace Mod::Pop::Wave_Extensions
 			subkey->deleteThis();
 		}
 		
-		auto ret = DETOUR_MEMBER_CALL(CWave_Parse)(kv);
+		auto ret = DETOUR_MEMBER_CALL(kv);
 		
 		return ret;
 	}
@@ -781,7 +781,7 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		bool show_wave_expl = !player->IsBot() && player->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED;
-		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinClass)(pClassName, b1);
+		DETOUR_MEMBER_CALL(pClassName, b1);
 		if (show_wave_expl && TFGameRules()->IsMannVsMachineMode())
 			THINK_FUNC_SET(player, DelayExplaination, gpGlobals->curtime + 2.0f);
 	}
@@ -829,7 +829,7 @@ namespace Mod::Pop::Wave_Extensions
 		DevMsg("[%8.3f] JumpToWave\n", gpGlobals->curtime);
 
 		rc_JumpToWave++;
-		DETOUR_MEMBER_CALL(CPopulationManager_JumpToWave)(wave, f1);
+		DETOUR_MEMBER_CALL(wave, f1);
 		rc_JumpToWave--;
 
 		OnWaveBegin(false);
@@ -841,13 +841,13 @@ namespace Mod::Pop::Wave_Extensions
 		CWave *wave = g_pPopulationManager->GetCurrentWave();
 		if (wave != nullptr)
 			WaveCleanup(wave);
-		DETOUR_MEMBER_CALL(CPopulationManager_WaveEnd)(b1);
+		DETOUR_MEMBER_CALL(b1);
 		OnWaveBegin(true);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CMannVsMachineStats_RoundEvent_WaveEnd, bool success)
 	{
-		DETOUR_MEMBER_CALL(CMannVsMachineStats_RoundEvent_WaveEnd)(success);
+		DETOUR_MEMBER_CALL(success);
 		if (!success && rc_JumpToWave == 0) {
 			//DevMsg("[%8.3f] RoundEvent_WaveEnd\n", gpGlobals->curtime);
 			OnWaveBegin(false);
@@ -992,7 +992,7 @@ namespace Mod::Pop::Wave_Extensions
 		
 		auto it = waves.find(wave);
 		if (it == waves.end()) {
-			DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
+			DETOUR_MEMBER_CALL();
 			return;
 		}
 		WaveData& data = (*it).second;
@@ -1077,7 +1077,7 @@ namespace Mod::Pop::Wave_Extensions
 
 		// ^^^^   PRE-DETOUR ===================================================
 		
-		DETOUR_MEMBER_CALL(CWave_ActiveWaveUpdate)();
+		DETOUR_MEMBER_CALL();
 		
 		// vvvv  POST-DETOUR ===================================================
 		
@@ -1110,7 +1110,7 @@ namespace Mod::Pop::Wave_Extensions
 	
 	DETOUR_DECL_MEMBER(bool, CWave_IsDoneWithNonSupportWaves)
 	{
-		bool done = DETOUR_MEMBER_CALL(CWave_IsDoneWithNonSupportWaves)();
+		bool done = DETOUR_MEMBER_CALL();
 		
 		auto wave = reinterpret_cast<CWave *>(this);
 		
@@ -1199,7 +1199,7 @@ namespace Mod::Pop::Wave_Extensions
 			StopSoundLoop();
 		}
 		
-		DETOUR_MEMBER_CALL(CTeamplayRoundBasedRules_State_Enter)(newState);
+		DETOUR_MEMBER_CALL(newState);
 	}
 	
 	BossInfo *GetBossInfo(CBaseEntity *entity)
@@ -1217,7 +1217,7 @@ namespace Mod::Pop::Wave_Extensions
 	/* block attempts by MONOCULUS to switch to CEyeballBossTeleport */
 	DETOUR_DECL_MEMBER(ActionResult<CEyeballBoss>, CEyeballBossIdle_Update, CEyeballBoss *actor, float dt)
 	{
-		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		
 		if (result.transition == ActionTransition::CHANGE_TO && strcmp(result.reason, "Moving...") == 0) {
 			if (TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr) {
@@ -1239,7 +1239,7 @@ namespace Mod::Pop::Wave_Extensions
 		SCOPED_INCREMENT_IF(rc_CEyeballBossDead_Update__and_is_from_spawner,
 			(TFGameRules()->IsMannVsMachineMode() && GetBossInfo(actor) != nullptr));
 		
-		return DETOUR_MEMBER_CALL(CEyeballBossDead_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	/* prevent MONOCULUS's death from spawning a teleport vortex */
@@ -1249,7 +1249,7 @@ namespace Mod::Pop::Wave_Extensions
 			return nullptr;
 		}
 		
-		return DETOUR_STATIC_CALL(CBaseEntity_Create)(szName, vecOrigin, vecAngles, pOwner);
+		return DETOUR_STATIC_CALL(szName, vecOrigin, vecAngles, pOwner);
 	}
 
 	/* set MONOCULUS's lifetime from the spawner parameter instead of from the global convars */
@@ -1257,7 +1257,7 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		auto me = reinterpret_cast<CEyeballBossIdle *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CEyeballBossIdle_OnStart)(actor, action);
+		auto result = DETOUR_MEMBER_CALL(actor, action);
 		
 		if (TFGameRules()->IsMannVsMachineMode()) {
 			auto *info = GetBossInfo(actor);
@@ -1271,7 +1271,7 @@ namespace Mod::Pop::Wave_Extensions
 
 	DETOUR_DECL_MEMBER(void, CUpgrades_GrantOrRemoveAllUpgrades, CTFPlayer * player, bool remove, bool refund)
 	{
-		DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
+		DETOUR_MEMBER_CALL(player, remove, refund);
 		
 		WaveData *data = GetCurrentWaveData();
 		if (data == nullptr) return;
@@ -1301,7 +1301,7 @@ namespace Mod::Pop::Wave_Extensions
 				}
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_ReapplyItemUpgrades)(item_view);
+		DETOUR_MEMBER_CALL(item_view);
 	}
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
@@ -1319,7 +1319,7 @@ namespace Mod::Pop::Wave_Extensions
 				TFObjectiveResource()->m_nMannVsMachineMaxWaveCount = data->custom_max_wave_number;
 			}
 		}
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 		if (wave_number != INT_MIN) {
 			TFObjectiveResource()->m_nMannVsMachineWaveCount = wave_number;
 		}

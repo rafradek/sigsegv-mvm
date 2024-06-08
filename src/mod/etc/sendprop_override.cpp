@@ -161,7 +161,7 @@ namespace Mod::Etc::SendProp_Override
             WriteOverride(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
 			return;
         }
-		DETOUR_STATIC_CALL(SendTable_WritePropList)(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
+		DETOUR_STATIC_CALL(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
     }
     
     int CheckOverridePropIndex(int *pDeltaProps, int nDeltaProps, const int objectID)
@@ -211,7 +211,7 @@ namespace Mod::Etc::SendProp_Override
 	const int objectID
 	)
     {
-		int count = DETOUR_STATIC_CALL(SendTable_CalcDelta)(pTable, pFromState, nFromBits, pToState, nToBits, pDeltaProps, nMaxDeltaProps, objectID);
+		int count = DETOUR_STATIC_CALL(pTable, pFromState, nFromBits, pToState, nToBits, pDeltaProps, nMaxDeltaProps, objectID);
         if (client_num != 0 && objectID >= 0 && objectID < 2048 && entityHasOverride[objectID]) {
             return CheckOverridePropIndex(pDeltaProps, count, objectID);
         }
@@ -242,7 +242,7 @@ namespace Mod::Etc::SendProp_Override
     {
 		client_num = client->m_nEntityIndex;
         
-        DETOUR_MEMBER_CALL(CBaseServer_WriteDeltaEntities)(client, to, from, pBuf);
+        DETOUR_MEMBER_CALL(client, to, from, pBuf);
         client_num = 0;
     }
 
@@ -278,7 +278,7 @@ namespace Mod::Etc::SendProp_Override
             writeInfo = u;
             u->m_pOldPack = nullptr;
         }
-        DETOUR_STATIC_CALL(SV_DetermineUpdateType)(u);
+        DETOUR_STATIC_CALL(u);
         if (hasOverride) {
             u->m_pOldPack = preOldPack;
             writeInfo = nullptr;
@@ -288,7 +288,7 @@ namespace Mod::Etc::SendProp_Override
 	DETOUR_DECL_MEMBER(int, PackedEntity_GetPropsChangedAfterTick, int tick, int *iOutProps, int nMaxOutProps)
     {
         auto pack = reinterpret_cast<PackedEntity *>(this);
-        auto result = DETOUR_MEMBER_CALL(PackedEntity_GetPropsChangedAfterTick)(tick, iOutProps, nMaxOutProps);
+        auto result = DETOUR_MEMBER_CALL(tick, iOutProps, nMaxOutProps);
         if (entityHasOverride[pack->m_nEntityIndex] && writeInfo != nullptr) {
             writeInfo->m_pOldPack = preOldPack;
             return CheckOverridePropIndex(iOutProps, result, pack->m_nEntityIndex);
@@ -298,7 +298,7 @@ namespace Mod::Etc::SendProp_Override
 
     DETOUR_DECL_MEMBER(void, CGameServer_SendClientMessages, bool sendSnapshots)
 	{
-		DETOUR_MEMBER_CALL(CGameServer_SendClientMessages)(sendSnapshots);
+		DETOUR_MEMBER_CALL(sendSnapshots);
         for (auto mod : AutoList<SendpropOverrideModule>::List()) {
             for (auto it = mod->propOverrides.begin(); it != mod->propOverrides.end();) {
                 auto &overr = *it;

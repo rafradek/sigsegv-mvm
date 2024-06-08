@@ -100,7 +100,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				dmgInfo->SetDamageType(dmgtype);
 			}
 		}
-        VHOOK_CALL(CBaseEntity_ModifyFireBulletsDamage)(dmgInfo);
+        VHOOK_CALL(dmgInfo);
 	}
 
 	CVirtualHook bulletDamageHook(TypeName<CBaseEntity>(), "CBaseEntity::ModifyFireBulletsDamage", GET_VHOOK_CALLBACK(CBaseEntity_ModifyFireBulletsDamage), GET_VHOOK_INNERPTR(CBaseEntity_ModifyFireBulletsDamage));
@@ -268,7 +268,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			MimicFire(mimic);
 		}
 		else {
-			DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Fire)();
+			DETOUR_MEMBER_CALL();
 		}
 	}
 
@@ -294,7 +294,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (scorer != nullptr) {
 			pScorer = scorer;
 		}
-        projectile = DETOUR_STATIC_CALL(CTFProjectile_Rocket_Create)(pLauncher, vecOrigin, vecAngles, pOwner, pScorer);
+        projectile = DETOUR_STATIC_CALL(pLauncher, vecOrigin, vecAngles, pOwner, pScorer);
         return projectile;
 	}
 
@@ -303,7 +303,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (scorer != nullptr) {
 			pScorer = scorer;
 		}
-        projectile = DETOUR_STATIC_CALL(CTFProjectile_Arrow_Create)(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);
+        projectile = DETOUR_STATIC_CALL(vecOrigin, vecAngles, fSpeed, fGravity, projectileType, pOwner, pScorer);
         return reinterpret_cast<CTFProjectile_Arrow *>(projectile);
 	}
 	
@@ -313,7 +313,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 			grenade = true;
 			pOwner = scorer;
 		}
-        projectile = DETOUR_STATIC_CALL(CBaseEntity_CreateNoSpawn)(szName, vecOrigin, vecAngles, pOwner);
+        projectile = DETOUR_STATIC_CALL(szName, vecOrigin, vecAngles, pOwner);
         return projectile;
 	}
 
@@ -337,19 +337,19 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 	{
 		OnRemove(reinterpret_cast<CTFPointWeaponMimic *>(this));
 		
-        DETOUR_MEMBER_CALL(CTFPointWeaponMimic_dtor0)();
+        DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_dtor2)
 	{
 		OnRemove(reinterpret_cast<CTFPointWeaponMimic *>(this));
 		
-        DETOUR_MEMBER_CALL(CTFPointWeaponMimic_dtor2)();
+        DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPointWeaponMimic_Spawn)
 	{
-        DETOUR_MEMBER_CALL(CTFPointWeaponMimic_Spawn)();
+        DETOUR_MEMBER_CALL();
 		auto mimic = reinterpret_cast<CTFPointWeaponMimic *>(this);
 		
 		int spawnflags = mimic->m_spawnflags;
@@ -386,7 +386,7 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 				return killIcon;
 			}
 		}
-		auto result = DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+		auto result = DETOUR_MEMBER_CALL(info, pVictim, iWeaponID);
 		//Msg("Killicon %s\n", result);
 		return result;
 	}
@@ -401,13 +401,13 @@ namespace Mod::Etc::Weapon_Mimic_Teamnum
 		if (dmgtype != -1) {
 			return dmgtype;
 		}
-		return DETOUR_MEMBER_CALL(CTFBaseProjectile_GetDamageType)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		CBaseEntity *observer = player->m_hObserverTarget;
 		if (info.GetInflictor() != nullptr) {
 			if (rtti_cast<CTFPointWeaponMimic *>(info.GetInflictor()) != nullptr) {

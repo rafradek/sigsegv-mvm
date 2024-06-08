@@ -94,7 +94,7 @@ namespace Mod::Perf::HLTV_Optimize
             }
         }
 
-		DETOUR_MEMBER_CALL(CHLTVServer_RunFrame)();
+		DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(void, CHLTVServer_UpdateTick)
@@ -113,7 +113,7 @@ namespace Mod::Perf::HLTV_Optimize
             // if (gpGlobals->tickcount % tickcount != 0)
             //    return;
         }
-		DETOUR_MEMBER_CALL(CHLTVServer_UpdateTick)();
+		DETOUR_MEMBER_CALL();
     }
 
     int last_restore_tick = -1;
@@ -125,7 +125,7 @@ namespace Mod::Perf::HLTV_Optimize
             //return;
         
         //TIME_SCOPE2(RESTORE);
-        DETOUR_MEMBER_CALL(CHLTVServer_RestoreTick)(time);
+        DETOUR_MEMBER_CALL(time);
         last_restore_tick = time;
     }
 
@@ -150,13 +150,13 @@ namespace Mod::Perf::HLTV_Optimize
             }
         }
         if (hasChanges/*tick == 0 || (last_change > last_restore_tick && last_change <= tick)*/) {
-            DETOUR_MEMBER_CALL(CNetworkStringTable_RestoreTick)(tick);
+            DETOUR_MEMBER_CALL(tick);
         }
     }
     
     DETOUR_DECL_MEMBER(void, CNetworkStringTable_UpdateMirrorTable, int tick)
     {
-        DETOUR_MEMBER_CALL(CNetworkStringTable_UpdateMirrorTable)(tick);
+        DETOUR_MEMBER_CALL(tick);
         auto table = reinterpret_cast<CNetworkStringTable *>(this);
 
         if (table->m_pMirrorTable != nullptr) {
@@ -171,7 +171,7 @@ namespace Mod::Perf::HLTV_Optimize
 		if (player->GetTeamNumber() <= TEAM_SPECTATOR && !player->IsAlive() && gpGlobals->curtime - player->GetDeathTime() > 1.0f && gpGlobals->tickcount % 64 != 0)
 			return;
             
-		DETOUR_MEMBER_CALL(NextBotPlayer_CTFPlayer_PhysicsSimulate)();
+		DETOUR_MEMBER_CALL();
 	}
 #endif
 
@@ -183,12 +183,12 @@ namespace Mod::Perf::HLTV_Optimize
 			return;
         }
             
-		DETOUR_MEMBER_CALL(CBasePlayer_PhysicsSimulate)();
+		DETOUR_MEMBER_CALL();
 	}
 
     DETOUR_DECL_MEMBER(CBaseClient *, CBaseServer_GetFreeClient, netadr_t &adr)
 	{
-        auto result = DETOUR_MEMBER_CALL(CBaseServer_GetFreeClient)(adr);
+        auto result = DETOUR_MEMBER_CALL(adr);
         if (create_hltv_bot == -1 && result != nullptr) {
             create_hltv_bot = result->m_nClientSlot + 1;
         }
@@ -201,32 +201,32 @@ namespace Mod::Perf::HLTV_Optimize
         auto player = reinterpret_cast<CPlayer *>(this);
         auto edict = ft_CPlayer_GetEdict(player);
         auto cbaseplayer = reinterpret_cast<CBasePlayer *>(edict->GetUnknown());
-        auto result = DETOUR_MEMBER_CALL(CPlayer_IsSourceTV)();
+        auto result = DETOUR_MEMBER_CALL();
         return result || (cbaseplayer != nullptr && (create_hltv_bot == edict->m_EdictIndex || cbaseplayer->IsHLTV()));
     }
 
 	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_RecordStringTables)
 	{
         recording = true;
-        DETOUR_MEMBER_CALL(CHLTVDemoRecorder_RecordStringTables)();
+        DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CHLTVDemoRecorder_StopRecording_clone)
 	{
         recording = false;
-        DETOUR_MEMBER_CALL(CHLTVDemoRecorder_StopRecording_clone)();
+        DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(void, CHLTVDemoRecorder_StopRecording)
 	{
         recording = false;
-        DETOUR_MEMBER_CALL(CHLTVDemoRecorder_StopRecording)();
+        DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(bool, CGameClient_ShouldSendMessages)
 	{
         auto client = reinterpret_cast<CGameClient *>(this);
-        if (!client->m_bIsHLTV) return DETOUR_MEMBER_CALL(CGameClient_ShouldSendMessages)();
+        if (!client->m_bIsHLTV) return DETOUR_MEMBER_CALL();
         static ConVarRef tv_snapshotrate("tv_snapshotrate");
         float restore = FLT_MIN;
         if (hltvServerEmpty && !recording) {
@@ -237,7 +237,7 @@ namespace Mod::Perf::HLTV_Optimize
             restore = tv_snapshotrate.GetFloat();
             tv_snapshotrate.SetValue(cvar_rate_between_rounds.GetFloat());
         }
-        auto result = DETOUR_MEMBER_CALL(CGameClient_ShouldSendMessages)();
+        auto result = DETOUR_MEMBER_CALL();
         if (restore != FLT_MIN) {
             tv_snapshotrate.SetValue(restore);
         }

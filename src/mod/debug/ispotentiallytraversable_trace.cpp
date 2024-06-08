@@ -66,7 +66,7 @@ namespace Mod::Debug::IsPotentiallyTraversable_Trace
 	{
 		SCOPED_INCREMENT(rc_ILocomotion_IsPotentiallyTraversable);
 		loco = reinterpret_cast<ILocomotion *>(this);
-		return DETOUR_MEMBER_CALL(ILocomotion_IsPotentiallyTraversable)(from, to, when, pFraction);
+		return DETOUR_MEMBER_CALL(from, to, when, pFraction);
 	}
 	
 	DETOUR_DECL_MEMBER(void, IEngineTrace_TraceRay, const Ray_t& ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace)
@@ -88,7 +88,7 @@ namespace Mod::Debug::IsPotentiallyTraversable_Trace
 			DevMsg("\n");
 		}
 		
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 	}
 	
 	

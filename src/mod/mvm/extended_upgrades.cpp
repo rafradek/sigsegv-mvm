@@ -1332,14 +1332,14 @@ namespace Mod::MvM::Extended_Upgrades
     DETOUR_DECL_MEMBER(bool, CPopulationManager_Parse)
 	{
         ClearUpgrades();
-        auto ret = DETOUR_MEMBER_CALL(CPopulationManager_Parse)();
+        auto ret = DETOUR_MEMBER_CALL();
         
         return ret;
     }
 
     DETOUR_DECL_MEMBER(void, CMannVsMachineUpgradeManager_LoadUpgradesFileFromPath, const char *path)
 	{
-        DETOUR_MEMBER_CALL(CMannVsMachineUpgradeManager_LoadUpgradesFileFromPath)(path);
+        DETOUR_MEMBER_CALL(path);
         AddUpgradesToGameList();
     }
 
@@ -1350,7 +1350,7 @@ namespace Mod::MvM::Extended_Upgrades
             return player_is_downgrading || from_buy_upgrade;
         }
 
-        return DETOUR_MEMBER_CALL(CTFGameRules_CanUpgradeWithAttrib)(player, slot, defindex, upgrade);
+        return DETOUR_MEMBER_CALL(player, slot, defindex, upgrade);
     }
 
     DETOUR_DECL_MEMBER(int, CTFGameRules_GetCostForUpgrade, CMannVsMachineUpgrades* upgrade, int slot, int classindex, CTFPlayer *player)
@@ -1358,12 +1358,12 @@ namespace Mod::MvM::Extended_Upgrades
         if (upgrade != nullptr && upgrade->m_iQuality == 9500)
             return upgrade->m_nCost;
 
-        return DETOUR_MEMBER_CALL(CTFGameRules_GetCostForUpgrade)(upgrade, slot, classindex, player);
+        return DETOUR_MEMBER_CALL(upgrade, slot, classindex, player);
     }
 
     DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, unsigned short, CUpgrades_ApplyUpgradeToItem, CTFPlayer* player, CEconItemView *item, int upgrade, int cost, bool downgrade, bool fresh)
 	{
-        attrib_definition_index_t result = DETOUR_MEMBER_CALL(CUpgrades_ApplyUpgradeToItem)(player, item, upgrade, cost, downgrade, fresh);
+        attrib_definition_index_t result = DETOUR_MEMBER_CALL(player, item, upgrade, cost, downgrade, fresh);
         upgrade_success = result != INVALID_ATTRIB_DEF_INDEX;
 
         DevMsg("ApplyUpgradeToItem %d %d %d %d\n", upgrade_success, upgrade, cost, downgrade);
@@ -1395,7 +1395,7 @@ namespace Mod::MvM::Extended_Upgrades
     DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
 	{
 		CTFItemDefinition *item_def = reinterpret_cast<CTFItemDefinition *>(this);
-		int slot = DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		int slot = DETOUR_MEMBER_CALL(classIndex);
 		if (rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot && item_def->m_iItemDefIndex != 0 && slot == -1 && classIndex != TF_CLASS_UNDEFINED) {
         	slot = item_def->GetLoadoutSlot(TF_CLASS_UNDEFINED);
         }
@@ -1406,12 +1406,12 @@ namespace Mod::MvM::Extended_Upgrades
 	{
         SCOPED_INCREMENT(rc_CUpgrades_PlayerPurchasingUpgrade);
         player_is_downgrading = sell;
-		DETOUR_MEMBER_CALL(CUpgrades_PlayerPurchasingUpgrade)(player, itemslot, upgradeslot, sell, free, b3);
+		DETOUR_MEMBER_CALL(player, itemslot, upgradeslot, sell, free, b3);
 	}
 
 	DETOUR_DECL_MEMBER(void, CPopulationManager_RestoreCheckpoint)
 	{
-		DETOUR_MEMBER_CALL(CPopulationManager_RestoreCheckpoint)();
+		DETOUR_MEMBER_CALL();
 
 		bought_upgrades_v2 = bought_upgrades_v2_checkpoint;
 		ForEachTFPlayer([](CTFPlayer *player) {
@@ -1449,7 +1449,7 @@ namespace Mod::MvM::Extended_Upgrades
 
     DETOUR_DECL_MEMBER(void, CPopulationManager_SetCheckpoint, int wave)
 	{
-		DETOUR_MEMBER_CALL(CPopulationManager_SetCheckpoint)(wave);
+		DETOUR_MEMBER_CALL(wave);
         bought_upgrades_v2_checkpoint = bought_upgrades_v2;
 	}
 
@@ -1457,7 +1457,7 @@ namespace Mod::MvM::Extended_Upgrades
 	{
         bought_upgrades_v2_checkpoint.clear();
         bought_upgrades_v2.clear();
-		DETOUR_MEMBER_CALL(CPopulationManager_ResetMap)();
+		DETOUR_MEMBER_CALL();
 	}
 
     RefCount rc_CUpgrades_GrantOrRemoveAllUpgrades;
@@ -1533,14 +1533,14 @@ namespace Mod::MvM::Extended_Upgrades
             }
             bought_upgrades_v2.clear();
         }
-        DETOUR_MEMBER_CALL(CUpgrades_GrantOrRemoveAllUpgrades)(player, remove, refund);
+        DETOUR_MEMBER_CALL(player, remove, refund);
     }
 
     RefCount rc_GetUpgradeStepData;
     DETOUR_DECL_STATIC(CEconItemView *, CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot, CTFPlayer *player, int slot, CEconEntity **entity)
 	{
         SCOPED_INCREMENT(rc_CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot);
-        auto result = DETOUR_STATIC_CALL(CTFPlayerSharedUtils_GetEconItemViewByLoadoutSlot)(player, slot, entity);
+        auto result = DETOUR_STATIC_CALL(player, slot, entity);
         if (rc_GetUpgradeStepData && entity != nullptr && rtti_cast<CTFPowerupBottle *>(*entity) != nullptr) {
             *entity = nullptr;
         }
@@ -1574,7 +1574,7 @@ namespace Mod::MvM::Extended_Upgrades
                 }
             }
         }
-		auto result = DETOUR_STATIC_CALL(GetUpgradeStepData)(player, slot, upgrade, cur_step, over_cap);
+		auto result = DETOUR_STATIC_CALL(player, slot, upgrade, cur_step, over_cap);
         // To reduce refund execution time, only count steps that are bought for the item
         if (rc_CUpgrades_GrantOrRemoveAllUpgrades && result > cur_step) {
             return cur_step;
@@ -1612,14 +1612,14 @@ namespace Mod::MvM::Extended_Upgrades
             }
             return INVALID_ATTRIB_DEF_INDEX;
         }
-        return DETOUR_STATIC_CALL(ApplyUpgrade_Default)(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
+        return DETOUR_STATIC_CALL(upgrade, pTFPlayer, pEconItemView, nCost, bDowngrade);
     }
     DETOUR_DECL_MEMBER(void, CTFPlayer_GiveDefaultItems)
 	{
 		if (rc_CUpgrades_PlayerPurchasingUpgrade > 0 && buying_upgrade) {
             return;
         }
-        DETOUR_MEMBER_CALL(CTFPlayer_GiveDefaultItems)();
+        DETOUR_MEMBER_CALL();
     }
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener

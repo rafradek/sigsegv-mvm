@@ -40,14 +40,14 @@ namespace Mod::Visualize::Melee_Range
 		got_ray = true;
 		memcpy(&saved_ray, &ray, sizeof(ray));
 		
-		DETOUR_MEMBER_CALL(IEngineTrace_TraceRay)(ray, fMask, pTraceFilter, pTrace);
+		DETOUR_MEMBER_CALL(ray, fMask, pTraceFilter, pTrace);
 	}
 #endif
 	
 	
 	DETOUR_DECL_MEMBER(bool, CTFWeaponBaseMelee_DoSwingTraceInternal, CGameTrace *pTrace, bool cleave_attack, CUtlVector<CGameTrace> *v1)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_DoSwingTraceInternal)(pTrace, cleave_attack, v1);
+		auto result = DETOUR_MEMBER_CALL(pTrace, cleave_attack, v1);
 		
 		auto melee = reinterpret_cast<CTFWeaponBaseMelee *>(this);
 		CTFPlayer *owner = ToTFPlayer(melee->GetOwner());

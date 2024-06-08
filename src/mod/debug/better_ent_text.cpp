@@ -24,7 +24,7 @@ namespace Mod::Debug::Better_Ent_Text
 	{
 		auto ent = reinterpret_cast<CBaseEntity *>(this);
 		
-		int line = DETOUR_MEMBER_CALL(CBaseEntity_DrawDebugTextOverlays)();
+		int line = DETOUR_MEMBER_CALL();
 		
 		if ((ent->m_debugOverlays & OVERLAY_TEXT_BIT) != 0) {
 			ent->EntityText(line++, CFmtStr("Team: %d %s", ent->GetTeamNumber(), GetTeamNameString(ent->GetTeamNumber())), 0.0f, 0xff, 0xff, 0xff, 0xff);

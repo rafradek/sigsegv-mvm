@@ -155,7 +155,7 @@ namespace Mod::Debug::CTFBotProx
 	DETOUR_DECL_STATIC(string_t, AllocPooledString, const char *pszValue)
 	{
 		ConColorMsg(Color(0xff, 0xff, 0x00, 0xff), "AllocPooledString(%s)\n", pszValue);
-		return DETOUR_STATIC_CALL(AllocPooledString)(pszValue);
+		return DETOUR_STATIC_CALL(pszValue);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBotProxy_C1)
@@ -166,7 +166,7 @@ namespace Mod::Debug::CTFBotProx
 		ConColorMsg(Color(0x00, 0xff, 0xff, 0xff), "CTFBotProxy constructed @ 0x%08x (diff: 0x%08x)\n", (uintptr_t)this, diff);
 		prev = (uintptr_t)this;
 		
-		DETOUR_MEMBER_CALL(CTFBotProxy_C1)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -180,14 +180,14 @@ namespace Mod::Debug::CTFBotProx
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(IServerGameDLL_LevelInit)(pMapName, pMapEntities, pOldLevel, pLandmarkName, loadGame, background);
+		return DETOUR_MEMBER_CALL(pMapName, pMapEntities, pOldLevel, pLandmarkName, loadGame, background);
 	}
 	
 	DETOUR_DECL_STATIC(void, MapEntity_ParseAllEntities, const char *pMapData, IMapEntityFilter *pFilter, bool bActivateEntities)
 	{
 		printf("MapEntity_ParseAllEntities: %s\n", MakeEscapedVersion(pMapData));
 		
-		DETOUR_STATIC_CALL(MapEntity_ParseAllEntities)(pMapData, pFilter, bActivateEntities);
+		DETOUR_STATIC_CALL(pMapData, pFilter, bActivateEntities);
 	}
 	
 	DETOUR_DECL_STATIC(const char *, MapEntity_ParseEntity, CBaseEntity *&pEntity, const char *pEntData, IMapEntityFilter *pFilter)
@@ -195,12 +195,12 @@ namespace Mod::Debug::CTFBotProx
 		printf("MapEntity_ParseEntity: %s\n", MakeEscapedVersion(pEntData));
 	//	PrintLineBrokenEscapedVersion(pEntData);
 		
-		return DETOUR_STATIC_CALL(MapEntity_ParseEntity)(pEntity, pEntData, pFilter);
+		return DETOUR_STATIC_CALL(pEntity, pEntData, pFilter);
 	}
 	
 	DETOUR_DECL_STATIC(const char *, MapEntity_ParseToken, const char *data, char *newToken)
 	{
-		auto result = DETOUR_STATIC_CALL(MapEntity_ParseToken)(data, newToken);
+		auto result = DETOUR_STATIC_CALL(data, newToken);
 		
 		int len1 = result - data;
 		int len2 = strlen(newToken);
@@ -224,7 +224,7 @@ namespace Mod::Debug::CTFBotProx
 			(pe->m_pActivator != nullptr ? STRING(pe->m_pActivator->GetEntityName()) : "none"),
 			(pe->m_pCaller    != nullptr ? STRING(pe->m_pCaller   ->GetEntityName()) : "none"));
 		
-		DETOUR_MEMBER_CALL(CEventQueue_AddEvent)(pe);
+		DETOUR_MEMBER_CALL(pe);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CEventQueue_ServiceEvents)
@@ -248,7 +248,7 @@ namespace Mod::Debug::CTFBotProx
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CEventQueue_ServiceEvents)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	

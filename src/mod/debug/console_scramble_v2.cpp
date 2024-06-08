@@ -13,7 +13,7 @@ namespace Mod::Debug::Console_Scramble_v2
 			fflush(f);
 		}
 		
-		auto result = DETOUR_STATIC_CALL(Sys_SpewFunc)(spewType, pMsg);
+		auto result = DETOUR_STATIC_CALL(spewType, pMsg);
 		
 		if (f != nullptr) {
 			fprintf(f, "%04X   << Sys_SpewFunc [%12.7f] [Tick %5d] [SpewFunc %08x] \"%s\"\n", ThreadGetCurrentId(), Plat_FloatTime(), gpGlobals->tickcount, (uintptr_t)GetSpewOutputFunc(), pMsg);
@@ -39,7 +39,7 @@ namespace Mod::Debug::Console_Scramble_v2
 			fflush(f);
 		}
 		
-		DETOUR_STATIC_CALL(ConColorMsg)(clr, "%s", buf);
+		DETOUR_STATIC_CALL(clr, "%s", buf);
 		
 		if (f != nullptr) {
 			fprintf(f, "%04X <<   ConColorMsg  [%12.7f] [Tick %5d] [SpewFunc %08x] \"%s\"\n", ThreadGetCurrentId(), Plat_FloatTime(), gpGlobals->tickcount, (uintptr_t)GetSpewOutputFunc(), buf);

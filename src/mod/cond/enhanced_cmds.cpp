@@ -58,7 +58,7 @@ namespace Mod::Cond::Enhanced_Cmds
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
+		return DETOUR_MEMBER_CALL(args);
 	}
 	
 	

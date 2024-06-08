@@ -243,7 +243,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		TRACE();
 		
 		hint_sg = hint;
-		DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildSentryGun_ctor)(hint);
+		DETOUR_MEMBER_CALL(hint);
 	}
 	
 	CTFBotHintTeleporterExit *hint_te = nullptr;
@@ -252,7 +252,7 @@ namespace Mod::AI::EngieBot_Dispensers
 		TRACE();
 		
 		hint_te = hint;
-		DETOUR_MEMBER_CALL(CTFBotMvMEngineerBuildTeleportExit_ctor)(hint);
+		DETOUR_MEMBER_CALL(hint);
 	}
 	
 	std::unordered_map<Action<CTFBot> *, IHotplugAction<CTFBot> *> build_actions;
@@ -264,7 +264,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			delete build_actions[action];
 			build_actions.erase(action);
 		}
-		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor1)
@@ -274,7 +274,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			delete build_actions[action];
 			build_actions.erase(action);
 		}
-		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor1)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBotMvMEngineerIdle_dtor2)
@@ -284,7 +284,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			delete build_actions[action];
 			build_actions.erase(action);
 		}
-		DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFBotMvMEngineerIdle_Update;
@@ -325,7 +325,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			}
 		}
 
-		auto result = DETOUR_MEMBER_CALL(CTFBotMvMEngineerIdle_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		
 		if (result.transition == ActionTransition::SUSPEND_FOR && result.action != nullptr) {
 			if (strcmp(result.action->GetName(), "MvMEngineerBuildSentryGun") == 0 && hint_sg != nullptr) {
@@ -374,7 +374,7 @@ namespace Mod::AI::EngieBot_Dispensers
 			return obj->EyeAngles();
 		}
 		
-		return VHOOK_CALL(CObjectDispenser_GetAvailableMetal)();
+		return VHOOK_CALL();
 	}
 	
 	
@@ -384,13 +384,13 @@ namespace Mod::AI::EngieBot_Dispensers
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+		return DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CTFBotHintEngineerNest_HintTeleporterThink)
 	{
-		DETOUR_MEMBER_CALL(CTFBotHintEngineerNest_HintTeleporterThink)();
+		DETOUR_MEMBER_CALL();
 		
 		auto nest = reinterpret_cast<CTFBotHintEngineerNest *>(this);
 		nest->m_bHasActiveTeleporter = true;

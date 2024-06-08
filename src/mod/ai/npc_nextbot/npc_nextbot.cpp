@@ -25,7 +25,7 @@ namespace Mod::AI::NPC_Nextbot
     
     // VHOOK_DECL(void, CBaseEntity_GetServerClass, int team)
     // {
-    //     VHOOK_CALL(CBotNPCArcher_ChangeTeam)(team);
+    //     VHOOK_CALL(team);
     //     auto me = reinterpret_cast<CBotNPCArcher *>(this);
     //     if (team == TF_TEAM_RED) {
     //         me->m_nSkin = 0;
@@ -217,7 +217,7 @@ namespace Mod::AI::NPC_Nextbot
 
 	DETOUR_DECL_MEMBER(void, CBotNPCArcher_CBotNPCArcher)
 	{
-		DETOUR_MEMBER_CALL(CBotNPCArcher_CBotNPCArcher)();
+		DETOUR_MEMBER_CALL();
         auto bot = reinterpret_cast<CBotNPCArcher *>(this);
         if (create_my_nextbot) {
             bot->SetCollisionGroup(COLLISION_GROUP_PLAYER_MOVEMENT);
@@ -237,7 +237,7 @@ namespace Mod::AI::NPC_Nextbot
         auto bot = reinterpret_cast<CBotNPCArcher *>(this);
         auto preHealth = bot->GetHealth();
         auto preMaxHealth = bot->GetMaxHealth();
-		DETOUR_MEMBER_CALL(CBotNPCArcher_Spawn)();
+		DETOUR_MEMBER_CALL();
         if (FStrEq(bot->GetClassname(), "$bot_npc")) {
             if (bot->m_bow != nullptr) {
                 bot->m_bow.Get()->Remove();
@@ -265,7 +265,7 @@ namespace Mod::AI::NPC_Nextbot
 
 	DETOUR_DECL_MEMBER(void, CBotNPCArcherIntention_CBotNPCArcherIntention, CBotNPCArcher *zombie)
 	{
-		DETOUR_MEMBER_CALL(CBotNPCArcherIntention_CBotNPCArcherIntention)(zombie);
+		DETOUR_MEMBER_CALL(zombie);
         if (create_my_nextbot) {
             auto intention = reinterpret_cast<CBotNPCArcherIntention *>(this);
             intention->m_behavior->SetAction(new CMyNextbotMainAction());
@@ -274,7 +274,7 @@ namespace Mod::AI::NPC_Nextbot
 
 	DETOUR_DECL_MEMBER(void, CBotNPCArcherIntention_Reset)
 	{
-		DETOUR_MEMBER_CALL(CBotNPCArcherIntention_Reset)();
+		DETOUR_MEMBER_CALL();
         auto intention = reinterpret_cast<CBotNPCArcherIntention *>(this);
         if (intention->GetBot()->GetEntity()->GetEntityModule<MyNextbotModule>("mynextbotmodule") != nullptr) {
             intention->m_behavior->SetAction(new CMyNextbotMainAction());
@@ -283,7 +283,7 @@ namespace Mod::AI::NPC_Nextbot
 
 	DETOUR_DECL_MEMBER(bool, CTraceFilterIgnorePlayers_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTraceFilterIgnorePlayers_ShouldHitEntity)(pServerEntity, contentsMask);
+		auto result = DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
         if (result) {
             auto entity = EntityFromEntityHandle(pServerEntity);
             if (entity != nullptr && PStr<"$bot_npc">() == entity->GetClassname()) return false;
@@ -297,13 +297,13 @@ namespace Mod::AI::NPC_Nextbot
 		if (current_kill_icon != nullptr) {
 			return current_kill_icon;
 		}
-		auto result = DETOUR_MEMBER_CALL(CTFGameRules_GetKillingWeaponName)(info, pVictim, iWeaponID);
+		auto result = DETOUR_MEMBER_CALL(info, pVictim, iWeaponID);
 		return result;
 	}
     
 	DETOUR_DECL_MEMBER(void, NextBotGroundLocomotion_ApplyAccumulatedApproach)
 	{
-        DETOUR_MEMBER_CALL(NextBotGroundLocomotion_ApplyAccumulatedApproach)();
+        DETOUR_MEMBER_CALL();
         auto loco = reinterpret_cast<NextBotGroundLocomotion *>(this);
         Msg("apply %f %f\n", loco->m_moveVector.x, loco->m_moveVector.y);
     }
@@ -346,7 +346,7 @@ namespace Mod::AI::NPC_Nextbot
             }
         }
 
-        return VHOOK_CALL(CBotNPCArcher_OnTakeDamage)(info);
+        return VHOOK_CALL(info);
     }
 
     VHOOK_DECL(int, CBotNPCArcher_OnTakeDamage_Alive, const CTakeDamageInfo& rawInfo)
@@ -359,7 +359,7 @@ namespace Mod::AI::NPC_Nextbot
         CTFGameRules::DamageModifyExtras_t outParams;
 		info.SetDamage( TFGameRules()->ApplyOnDamageAliveModifyRules( info, ent, outParams ) );
 
-		int dmg = VHOOK_CALL(CBotNPCArcher_OnTakeDamage_Alive)(info);
+		int dmg = VHOOK_CALL(info);
         
 		if (preHealth - ent->GetHealth() > 0) {
 			IGameEvent *event = gameeventmanager->CreateEvent("npc_hurt");
@@ -434,7 +434,7 @@ namespace Mod::AI::NPC_Nextbot
     {
         //Msg("Main Upkeep\n");
         auto nextbot = reinterpret_cast<INextBot *>(this);
-        VHOOK_CALL(CBotNPCArcher_Upkeep)();
+        VHOOK_CALL();
     }
 
     
@@ -446,7 +446,7 @@ namespace Mod::AI::NPC_Nextbot
         auto mod = nextbot->GetEntity()->GetEntityModule<MyNextbotModule>("mynextbotmodule");
         mod->Update();
         if (!mod->m_bFreeze) {
-            VHOOK_CALL(CBotNPCArcher_Update)();
+            VHOOK_CALL();
         }
         SetCurrentNextbot(nullptr);
     }
@@ -478,13 +478,13 @@ namespace Mod::AI::NPC_Nextbot
             }
             // Don't collide with other non teamed
         }
-        return VHOOK_CALL(CBotNPCArcher_ShouldCollide)(collisionGroup,contentsMask );
+        return VHOOK_CALL(collisionGroup,contentsMask );
     }
 
     
     VHOOK_DECL(void, CBotNPCArcher_ChangeTeam, int team)
     {
-        VHOOK_CALL(CBotNPCArcher_ChangeTeam)(team);
+        VHOOK_CALL(team);
         auto me = reinterpret_cast<CBotNPCArcher *>(this);
         bool zombie = GetNextbotModule(me)->m_bIsZombie;
         if (team == TF_TEAM_RED) {
@@ -511,7 +511,7 @@ namespace Mod::AI::NPC_Nextbot
 	    {
             info_modified.AddDamageType(DMG_CRITICAL);
         }
-        return VHOOK_CALL(CBotNPCArcher_TraceAttack)(info_modified,vecDir, ptr, pAccumulator );
+        return VHOOK_CALL(info_modified,vecDir, ptr, pAccumulator );
     }
     
     VHOOK_DECL(const QAngle &, CBotNPCArcher_EyeAngles)
@@ -521,7 +521,7 @@ namespace Mod::AI::NPC_Nextbot
 
     VHOOK_DECL(void, CBotNPCArcher_RefreshCollisionBounds)
     {
-        VHOOK_CALL(CBotNPCArcher_RefreshCollisionBounds)();
+        VHOOK_CALL();
         auto me = reinterpret_cast<CBotNPCArcher *>(this);
         GetNextbotModule(me)->SetEyeOffset();
     }
@@ -592,7 +592,7 @@ namespace Mod::AI::NPC_Nextbot
 	// 		}
 	// 	}
 		
-	// 	return DETOUR_MEMBER_CALL(CTraceFilterSimple_ShouldHitEntity)(pServerEntity, contentsMask);
+	// 	return DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 	// }
 
     template<FixedString lit>

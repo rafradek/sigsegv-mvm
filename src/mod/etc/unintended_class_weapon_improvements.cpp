@@ -161,7 +161,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerClassShared_SetCustomModel)(s1, b1);
+		DETOUR_MEMBER_CALL(s1, b1);
 	}
 
 	bool OnUnequipUnintendedClassWeapon(CTFPlayer *owner, CTFWeaponBase *weapon, UnintendedClassViewmodelOverride *mod) 
@@ -199,7 +199,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
     DETOUR_DECL_MEMBER(void, CTFWeaponBase_UpdateHands)
 	{
-		DETOUR_MEMBER_CALL(CTFWeaponBase_UpdateHands)();
+		DETOUR_MEMBER_CALL();
 		
 		auto ent = reinterpret_cast<CBaseCombatWeapon *>(this);
 		auto weapon = rtti_cast<CTFWeaponBase *>(ent);
@@ -317,14 +317,14 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 #ifndef NO_MVM
 		Mod::Pop::PopMgr_Extensions::DisableLoadoutSlotReplace(false);
 #endif
-		DETOUR_MEMBER_CALL(CTFWearable_Equip)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 
     DETOUR_DECL_MEMBER(bool, CTFWeaponBase_Deploy)
 	{
 		auto wep = reinterpret_cast<CTFWeaponBase *>(this);
 		auto mod = wep->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-		auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Deploy)();
+		auto result = DETOUR_MEMBER_CALL();
 		
 		if (result && mod != nullptr && wep->GetTFPlayerOwner() != nullptr) {
 			OnEquipUnintendedClassWeapon(wep->GetTFPlayerOwner(), wep, mod);
@@ -337,7 +337,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto weapon = reinterpret_cast<CTFWeaponBase *>(this);
         
 		auto mod = weapon->GetEntityModule<UnintendedClassViewmodelOverride>("unintendedclassweapon");
-        auto result = DETOUR_MEMBER_CALL(CTFWeaponBase_Holster)();
+        auto result = DETOUR_MEMBER_CALL();
 		
 		if (result && mod != nullptr && weapon->GetTFPlayerOwner() != nullptr) {
 			OnUnequipUnintendedClassWeapon(weapon->GetTFPlayerOwner(), weapon, mod);
@@ -356,7 +356,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (player != nullptr && ammoMod) {
 			mult = player->GetMaxAmmo(weapon->m_iPrimaryAmmoType) != 0 ? (float)player->GetAmmoCount(weapon->m_iPrimaryAmmoType) / (float)player->GetMaxAmmo(weapon->m_iPrimaryAmmoType) : 0.0f;
 		}
-		auto result = DETOUR_MEMBER_CALL(CBaseCombatCharacter_Weapon_Detach)(weapon);
+		auto result = DETOUR_MEMBER_CALL(weapon);
 		if (ammoMod != nullptr) {
 			weapon->RemoveEntityModule("playermaxammo");
 
@@ -377,13 +377,13 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (mod != nullptr && weapon != nullptr && mod->owner != nullptr) {
 			OnUnequipUnintendedClassWeapon(mod->owner, weapon, mod);
 		}
-        DETOUR_MEMBER_CALL(CEconEntity_UpdateOnRemove)();
+        DETOUR_MEMBER_CALL();
     }
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_Taunt, taunts_t index, int taunt_concept)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
+		DETOUR_MEMBER_CALL(index, taunt_concept);
         int playerClass = player->GetPlayerClass()->GetClassIndex();
         if (!player->m_Shared->InCond(TF_COND_TAUNTING) && player->GetActiveTFWeapon() != nullptr && player->GetActiveTFWeapon()->GetItem() != nullptr && player->GetActiveTFWeapon()->GetItem()->GetItemDefinition()->GetLoadoutSlot(playerClass) == -1) {
             int validClass = -1;
@@ -396,7 +396,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
             if (validClass != -1) {
                 auto oldClass = player->GetPlayerClass()->GetClassIndex();
                 player->GetPlayerClass()->SetClassIndex(validClass);
-                DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
+                DETOUR_MEMBER_CALL(index, taunt_concept);
                 player->GetPlayerClass()->SetClassIndex(oldClass);
             }
             // for (int i = 0; i < 48; i++) {
@@ -405,7 +405,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
             //         auto oldActiveWeapon = player->GetActiveTFWeapon();
             //         player->SetActiveWeapon(weapon);
             //         Msg("This\n");
-		    //         DETOUR_MEMBER_CALL(CTFPlayer_Taunt)(index, taunt_concept);
+		    //         DETOUR_MEMBER_CALL(index, taunt_concept);
             //         player->SetActiveWeapon(oldActiveWeapon);
             //         break;
             //     }
@@ -430,7 +430,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseMelee_SecondaryAttack)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseMelee *>(this);
-		DETOUR_MEMBER_CALL(CTFWeaponBaseMelee_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 		auto owner = weapon->GetTFPlayerOwner();
 		if (owner != nullptr && owner->m_Shared->InCond(TF_COND_STEALTHED)) {
 			owner->DoClassSpecialSkill();
@@ -441,7 +441,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_DoClassSpecialSkill)();
+		auto result = DETOUR_MEMBER_CALL();
 
 		if (!player->IsAlive())
 			return result;
@@ -476,7 +476,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto playerClass = player->GetOuter()->GetPlayerClass();
 		int classPre = playerClass->GetClassIndex();
 		playerClass->SetClassIndex(TF_CLASS_DEMOMAN);
-		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateChargeMeter)();
+		DETOUR_MEMBER_CALL();
 		playerClass->SetClassIndex(classPre);
 	}
 
@@ -484,12 +484,12 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CTFPlayer_EndClassSpecialSkill)();
+		auto result = DETOUR_MEMBER_CALL();
 
 		if (result && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
 			int classPre = player->GetPlayerClass()->GetClassIndex();
 			player->GetPlayerClass()->SetClassIndex(TF_CLASS_DEMOMAN);
-			result = DETOUR_MEMBER_CALL(CTFPlayer_EndClassSpecialSkill)();
+			result = DETOUR_MEMBER_CALL();
 			player->GetPlayerClass()->SetClassIndex(classPre);
 		}
 		return result;
@@ -505,7 +505,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			player->GetPlayerClass()->SetClassIndex(TF_CLASS_DEMOMAN);
 		}
 
-		float ret = DETOUR_MEMBER_CALL(CTFPlayer_TeamFortress_CalculateMaxSpeed)(flag);
+		float ret = DETOUR_MEMBER_CALL(flag);
 		
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_SCOUT && player->Weapon_OwnsThisID(TF_WEAPON_PEP_BRAWLER_BLASTER)) {
 			ret *= RemapValClamped( player->m_Shared->m_flHypeMeter, 0.0f, 100.0f, 1.0f, 1.45f );
@@ -526,7 +526,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxHealthForBuffing)
 	{
-		int ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxHealthForBuffing)();
+		int ret = DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_DEMOMAN) {
 			auto sword = rtti_cast<CTFSword *>(player->GetEntityForLoadoutSlot(LOADOUT_POSITION_MELEE));
@@ -540,7 +540,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	DETOUR_DECL_MEMBER(void, CTFMinigun_SecondaryAttack)
 	{
 		auto player = reinterpret_cast<CTFMinigun *>(this)->GetTFPlayerOwner();
-		DETOUR_MEMBER_CALL(CTFMinigun_SecondaryAttack)();
+		DETOUR_MEMBER_CALL();
 		ActivateShield(player);	
 	}
 
@@ -548,7 +548,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	{
 		auto player = reinterpret_cast<CTFWeaponBaseMelee *>(this)->GetTFPlayerOwner();
 		if (!ActivateShield(player)) {
-			DETOUR_MEMBER_CALL(CTFFists_SecondaryAttack)();
+			DETOUR_MEMBER_CALL();
 		}
 	}
 
@@ -562,7 +562,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				break;
 			}
 		}
-		DETOUR_MEMBER_CALL(CTFFists_Punch)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_STATIC(bool, ClassCanBuild, int classIndex, int type)
@@ -574,7 +574,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	{
 		if ((type < 0 || type >= OBJ_LAST) && type != 255)
 			return;
-		DETOUR_MEMBER_CALL(CTFWeaponBuilder_SetSubType)(type);
+		DETOUR_MEMBER_CALL(type);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ManageBuilderWeapons, TFPlayerClassData_t *pData)
@@ -585,7 +585,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		if (classIndex != TF_CLASS_ENGINEER && classIndex != TF_CLASS_SPY)
 			return;
 
-		DETOUR_MEMBER_CALL(CTFPlayer_ManageBuilderWeapons)(pData);
+		DETOUR_MEMBER_CALL(pData);
 	}
 
 	THINK_FUNC_DECL(SetTypeToSapper)
@@ -623,12 +623,12 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 	}
 	VHOOK_DECL(void, CTFWeaponBuilder_Equip, CBaseCombatCharacter *owner)
 	{
-		VHOOK_CALL(CTFWeaponBuilder_Equip)(owner);
+		VHOOK_CALL(owner);
 		THINK_FUNC_SET(reinterpret_cast<CTFWeaponBuilder *>(this), SetBuildableObjectTypes, gpGlobals->curtime);
 	}
 	VHOOK_DECL(void, CTFWeaponSapper_Equip, CBaseCombatCharacter *owner)
 	{
-		VHOOK_CALL(CTFWeaponSapper_Equip)(owner);
+		VHOOK_CALL(owner);
 		THINK_FUNC_SET(reinterpret_cast<CTFWeaponSapper *>(this), SetBuildableObjectTypes, gpGlobals->curtime);
 	}
 
@@ -672,7 +672,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_ClientCommand)(args);
+		return DETOUR_MEMBER_CALL(args);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFItemDefinition_GetLoadoutSlot, int classIndex)
@@ -680,13 +680,13 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		auto item_def = reinterpret_cast<CTFItemDefinition *>(this);
 		if (classIndex == TF_CLASS_UNDEFINED && StringStartsWith(item_def->GetItemClass(), "tf_weapon_revolver")) return LOADOUT_POSITION_PRIMARY;
 
-		return DETOUR_MEMBER_CALL(CTFItemDefinition_GetLoadoutSlot)(classIndex);
+		return DETOUR_MEMBER_CALL(classIndex);
 	}
 
 	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
 	{
 		if (pPlayer == nullptr) {
-			DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale); 
+			DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale); 
 			return;
 		}
 
@@ -720,7 +720,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				restoreClass = classIndex;
 			}
 		}
-		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+		DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
 		if (restoreClass != -1) {
 			pPlayer->GetPlayerClass()->SetClassIndex(restoreClass);
 		}
@@ -735,7 +735,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			restoreClass = player->GetPlayerClass()->GetClassIndex();
 			player->GetPlayerClass()->SetClassIndex(TF_CLASS_SCOUT);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayerShared_UpdateEnergyDrinkMeter)();
+		DETOUR_MEMBER_CALL();
 		if (restoreClass != -1) {
 			player->GetPlayerClass()->SetClassIndex(restoreClass);
 		}
@@ -765,12 +765,12 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				}
 			}
 		}
-		return DETOUR_MEMBER_CALL(IGameEventManager2_FireEvent)(event, bDontBroadcast);
+		return DETOUR_MEMBER_CALL(event, bDontBroadcast);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_CanAirDash)
 	{
-		bool ret = DETOUR_MEMBER_CALL(CTFPlayer_CanAirDash)();
+		bool ret = DETOUR_MEMBER_CALL();
 		if (!ret) {
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			if (!player->IsPlayerClass(TF_CLASS_SCOUT) && player->m_Shared->InCond(TF_COND_SODAPOPPER_HYPE)) {
@@ -782,7 +782,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, CTakeDamageInfo &info)
 	{
-		int damage = DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		int damage = DETOUR_MEMBER_CALL(info);
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		if (player->GetPlayerClass()->GetClassIndex() != TF_CLASS_SCOUT)
 		{
@@ -817,7 +817,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				}
 			}
 		}
-		auto ret = DETOUR_MEMBER_CALL(CTFPlayer_GetMaxAmmo)(ammoIndex, classIndex);
+		auto ret = DETOUR_MEMBER_CALL(ammoIndex, classIndex);
 		if (restore) {
 			GetPlayerClassData(classIndex > 0 ? classIndex : player->GetPlayerClass()->GetClassIndex())->m_aAmmoMax[ammoIndex] = valueRestore;
 		}

@@ -12,7 +12,7 @@ namespace Mod::Sound::Suppress_MedicBot_Shield
 			return false;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFPlayer_SpeakConceptIfAllowed)(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
+		return DETOUR_MEMBER_CALL(iConcept, modifiers, pszOutResponseChosen, bufsize, filter);
 	}
 	
 	

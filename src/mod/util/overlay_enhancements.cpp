@@ -177,7 +177,7 @@ namespace Mod::Util::Overlay_Enhancements
 	DETOUR_DECL_MEMBER(void, CDebugOverlay_Paint)
 	{
 		SCOPED_INCREMENT(rc_CDebugOverlay_Paint);
-		DETOUR_MEMBER_CALL(CDebugOverlay_Paint)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	
@@ -202,7 +202,7 @@ namespace Mod::Util::Overlay_Enhancements
 			va_end(va);
 		}
 		
-		return DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(font, x, y, r, g, b, a, fmt, argptr);
+		return DETOUR_MEMBER_CALL(font, x, y, r, g, b, a, fmt, argptr);
 	}
 	
 	
@@ -400,7 +400,7 @@ namespace Mod::Util::Overlay_Enhancements
 			}
 		}
 		
-		DETOUR_STATIC_CALL(CDebugOverlay_DrawOverlay)(pOverlay);
+		DETOUR_STATIC_CALL(pOverlay);
 	}
 	
 	

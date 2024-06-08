@@ -30,7 +30,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(CTFPlayer *, CTFBotMedicHeal_SelectPatient, CTFBot *actor, CTFPlayer *player)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotMedicHeal_SelectPatient)(actor, player);
+		auto result = DETOUR_MEMBER_CALL(actor, player);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -38,7 +38,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(Action<CTFBot> *, CTFBotEngineerBuild_InitialContainedAction, CTFBot *actor)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotEngineerBuild_InitialContainedAction)(actor);
+		auto result = DETOUR_MEMBER_CALL(actor);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -46,7 +46,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_STATIC(bool, CTFBotGetAmmo_IsPossible, CTFBot *actor)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_STATIC_CALL(CTFBotGetAmmo_IsPossible)(actor);
+		auto result = DETOUR_STATIC_CALL(actor);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -54,7 +54,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_STATIC(bool, CTFBotGetHealth_IsPossible, CTFBot *actor)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_STATIC_CALL(CTFBotGetHealth_IsPossible)(actor);
+		auto result = DETOUR_STATIC_CALL(actor);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -62,7 +62,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(const CKnownEntity *, CTFBotSniperLurk_SelectMoreDangerousThreat, const INextBot *nextbot, const CBaseCombatCharacter *them, const CKnownEntity *threat1, const CKnownEntity *threat2)
 	{
 		Quirk_MvM_Pre(nextbot->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotSniperLurk_SelectMoreDangerousThreat)(nextbot, them, threat1, threat2);
+		auto result = DETOUR_MEMBER_CALL(nextbot, them, threat1, threat2);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -72,7 +72,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto vision = reinterpret_cast<IVision *>(this);
 		
 		Quirk_MvM_Pre(vision->GetBot()->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBotVision_Update)();
+		DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 	}
 	
@@ -81,7 +81,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto vision = reinterpret_cast<IVision *>(this);
 		
 		Quirk_MvM_Pre(vision->GetBot()->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		auto result = DETOUR_MEMBER_CALL(ent);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -91,7 +91,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto vision = reinterpret_cast<IVision *>(this);
 		
 		Quirk_MvM_Pre(vision->GetBot()->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotVision_IsVisibleEntityNoticed)(ent);
+		auto result = DETOUR_MEMBER_CALL(ent);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -101,7 +101,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto loco = reinterpret_cast<ILocomotion *>(this);
 		
 		Quirk_MvM_Pre(loco->GetBot()->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBotLocomotion_Approach)(v1, f1);
+		DETOUR_MEMBER_CALL(v1, f1);
 		Quirk_MvM_Post();
 	}
 	
@@ -110,7 +110,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto body = reinterpret_cast<IBody *>(this);
 		
 		Quirk_MvM_Pre(body->GetBot()->GetEntity()->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotBody_GetHeadAimTrackingInterval)();
+		auto result = DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -120,7 +120,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBot_Touch)(ent);
+		DETOUR_MEMBER_CALL(ent);
 		Quirk_MvM_Post();
 	}
 	
@@ -129,7 +129,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_ShouldFireCompressionBlast)();
+		auto result = DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -139,7 +139,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_EquipLongRangeWeapon)();
+		auto result = DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -149,7 +149,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_GetDesiredAttackRange)();
+		auto result = DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -159,7 +159,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBot_AvoidPlayers)(usercmd);
+		DETOUR_MEMBER_CALL(usercmd);
 		Quirk_MvM_Post();
 	}
 	
@@ -168,14 +168,14 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBot_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		Quirk_MvM_Post();
 	}
 	
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMainAction_OnStuck, CTFBot *actor)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotMainAction_OnStuck)(actor);
+		auto result = DETOUR_MEMBER_CALL(actor);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -183,7 +183,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMedicHeal_Update, CTFBot *actor, float dt)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotMedicHeal_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -191,7 +191,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotTacticalMonitor_Update, CTFBot *actor, float dt)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -199,7 +199,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(void, CTFBotMainAction_FireWeaponAtEnemy, CTFBot *actor)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		DETOUR_MEMBER_CALL(CTFBotMainAction_FireWeaponAtEnemy)(actor);
+		DETOUR_MEMBER_CALL(actor);
 		Quirk_MvM_Post();
 	}
 	
@@ -208,7 +208,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		
 		Quirk_MvM_Pre(bot->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBot_GetFlagToFetch)();
+		auto result = DETOUR_MEMBER_CALL();
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -237,7 +237,7 @@ namespace Mod::AI::MvM_Defender_Bots
 		}
 		
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotMainAction_SelectMoreDangerousThreatInternal)(nextbot, them, threat1, threat2);
+		auto result = DETOUR_MEMBER_CALL(nextbot, them, threat1, threat2);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -245,7 +245,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotSpyAttack_Update, CTFBot *actor, float dt)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotSpyAttack_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		Quirk_MvM_Post();
 		return result;
 	}
@@ -253,7 +253,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotStickybombSentrygun_Update, CTFBot *actor, float dt)
 	{
 		Quirk_MvM_Pre(actor->GetTeamNumber() == TF_TEAM_RED);
-		auto result = DETOUR_MEMBER_CALL(CTFBotStickybombSentrygun_Update)(actor, dt);
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
 		Quirk_MvM_Post();
 		return result;
 	}

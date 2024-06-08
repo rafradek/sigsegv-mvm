@@ -10,7 +10,7 @@ namespace Mod::MvM::PlayerAttributeOverride
 	DETOUR_DECL_MEMBER(CBaseEntity *, CTFPlayer_GiveNamedItem, const char *classname, int i1, const CEconItemView *item_view, bool b1)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-        CBaseEntity *entity = DETOUR_MEMBER_CALL(CTFPlayer_GiveNamedItem)(classname, i1, item_view, b1);
+        CBaseEntity *entity = DETOUR_MEMBER_CALL(classname, i1, item_view, b1);
 		if (entity != nullptr && TFGameRules()->IsMannVsMachineMode() && player->GetTeamNumber() == TF_TEAM_RED) {
             
         }

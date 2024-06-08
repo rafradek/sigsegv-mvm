@@ -43,14 +43,14 @@ namespace Mod::Util::DebugOverlay_Font
 	DETOUR_DECL_MEMBER(void, CDebugOverlay_Paint)
 	{
 		SCOPED_INCREMENT(rc_CDebugOverlay_Paint);
-		DETOUR_MEMBER_CALL(CDebugOverlay_Paint)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(int, CMatSystemSurface_DrawColoredText, vgui::HFont font, int x, int y, int r, int g, int b, int a, const char *fmt, va_list argptr)
 	{
 		MaybeOverrideFont(&font);
 		
-		return DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(font, x, y, r, g, b, a, fmt, argptr);
+		return DETOUR_MEMBER_CALL(font, x, y, r, g, b, a, fmt, argptr);
 	}
 	
 	

@@ -103,7 +103,7 @@ namespace Mod::Visualize::Jar_Radius
 			break;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFProjectile_Jar_Explode)(trace, i1);
+		DETOUR_MEMBER_CALL(trace, i1);
 		
 		is_jarate = false;
 		is_milk   = false;
@@ -127,7 +127,7 @@ namespace Mod::Visualize::Jar_Radius
 			NDebugOverlay::Sphere(center, vec3_angle, radius, 0xff, 0xff, 0xff, 0x20, false, cvar_duration_sphere.GetFloat());
 		}
 		
-		return DETOUR_STATIC_CALL(UTIL_EntitiesInSphere)(center, radius, pEnum);
+		return DETOUR_STATIC_CALL(center, radius, pEnum);
 	}
 	
 	
@@ -161,7 +161,7 @@ namespace Mod::Visualize::Jar_Radius
 			NDebugOverlay::EntityText(ENTINDEX(player), 2, CFmtStrN<64>("%.1f sec", duration), cvar_duration_player.GetFloat(), 0xff, 0xff, 0xff, 0xff);
 		}
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(cond, duration, provider);
+		DETOUR_MEMBER_CALL(cond, duration, provider);
 	}
 	
 	

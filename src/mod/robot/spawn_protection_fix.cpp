@@ -9,7 +9,7 @@ namespace Mod::Robot::Spawn_Protection_Fix
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotMainAction_Update, CTFBot *actor, float dt)
 	{
 		SCOPED_INCREMENT(rc_CTFBotMainAction_Update);
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
@@ -28,7 +28,7 @@ namespace Mod::Robot::Spawn_Protection_Fix
 	//	DevMsg("[SpawnProtect] rc == %d; nCond == %d; flDuration %c= 0.5f; pProvider %c= nullptr\n",
 	//		rc_CTFBotMainAction_Update, (int)nCond, (flDuration == 0.5f ? '=' : '!'), (pProvider == nullptr ? '=' : '!'));
 		
-		DETOUR_MEMBER_CALL(CTFPlayerShared_AddCond)(nCond, flDuration, pProvider);
+		DETOUR_MEMBER_CALL(nCond, flDuration, pProvider);
 	}
 	
 	

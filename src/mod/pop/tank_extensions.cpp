@@ -93,7 +93,7 @@ namespace Mod::Pop::Tank_Extensions
 		
 		spawners.erase(spawner);
 		
-		DETOUR_MEMBER_CALL(CTankSpawner_dtor0)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTankSpawner_dtor2)
@@ -104,7 +104,7 @@ namespace Mod::Pop::Tank_Extensions
 
 		spawners.erase(spawner);
 		
-		DETOUR_MEMBER_CALL(CTankSpawner_dtor2)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	void Parse_Model(KeyValues *kv, SpawnerData &spawner) {
@@ -366,7 +366,7 @@ namespace Mod::Pop::Tank_Extensions
 			subkey->deleteThis();
 		}
 
-		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Parse)(kv);
+		auto result = DETOUR_MEMBER_CALL(kv);
 
 		if (loaded_from_template) {
 			kv->deleteThis();
@@ -458,7 +458,7 @@ namespace Mod::Pop::Tank_Extensions
 		SCOPED_INCREMENT(rc_CTankSpawner_Spawn);
 		current_spawner = spawner;
 		
-		auto result = DETOUR_MEMBER_CALL(CTankSpawner_Spawn)(where, ents);
+		auto result = DETOUR_MEMBER_CALL(where, ents);
 		
 
 		if (result && ents != nullptr && !ents->IsEmpty()) {
@@ -568,7 +568,7 @@ namespace Mod::Pop::Tank_Extensions
 		}
 		
 		SCOPED_INCREMENT(rc_CTFTankBoss_TankBossThink);
-		DETOUR_MEMBER_CALL(CTFTankBoss_TankBossThink)();
+		DETOUR_MEMBER_CALL();
 
 		if (data != nullptr && data->immobile) {
 			tank->SetAbsOrigin(vec);
@@ -606,8 +606,8 @@ namespace Mod::Pop::Tank_Extensions
 
 				if (ent == tank) {
 					if ((data->force_romevision && index == VISION_MODE_ROME) || (sig_no_romevision_cosmetics.GetBool() && index == VISION_MODE_NONE)) {
-						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_NONE, nValue);
-						DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_ROME, nValue);
+						DETOUR_MEMBER_CALL(VISION_MODE_NONE, nValue);
+						DETOUR_MEMBER_CALL(VISION_MODE_ROME, nValue);
 					}
 					set = true;
 				}
@@ -627,8 +627,8 @@ namespace Mod::Pop::Tank_Extensions
 						health_threshold -= health_per_model;
 					}
 					DevMsg("Health stage %d %d\n", data->custom_model[health_stage], health_stage);
-					DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_NONE, data->custom_model[health_stage]);
-					DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(VISION_MODE_ROME, data->custom_model[health_stage]);
+					DETOUR_MEMBER_CALL(VISION_MODE_NONE, data->custom_model[health_stage]);
+					DETOUR_MEMBER_CALL(VISION_MODE_ROME, data->custom_model[health_stage]);
 					set = true;
 				}
 			//	if (ent->GetMoveParent() == tank && ent->ClassMatches("prop_dynamic")) {
@@ -640,7 +640,7 @@ namespace Mod::Pop::Tank_Extensions
 				return;
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_SetModelIndexOverride)(index, nValue);
+		DETOUR_MEMBER_CALL(index, nValue);
 	}
 	
 	
@@ -662,7 +662,7 @@ namespace Mod::Pop::Tank_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CBaseAnimating_LookupAttachment)(szName);
+		return DETOUR_MEMBER_CALL(szName);
 	}
 	
 	VHOOK_DECL(float, CTFBaseBossLocomotion_GetGravity)
@@ -672,7 +672,7 @@ namespace Mod::Pop::Tank_Extensions
 				return thinking_tank_data->gravity;
 			}
 		}
-		return VHOOK_CALL(CTFBaseBossLocomotion_GetGravity)();
+		return VHOOK_CALL();
 	}
 	
 	VHOOK_DECL(bool, CTFBaseBossLocomotion_IsOnGround)
@@ -682,7 +682,7 @@ namespace Mod::Pop::Tank_Extensions
 				return true;
 			}
 		}
-		return VHOOK_CALL(CTFBaseBossLocomotion_IsOnGround)();
+		return VHOOK_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(float, CTFBaseBossLocomotion_GetStepHeight)
@@ -692,7 +692,7 @@ namespace Mod::Pop::Tank_Extensions
 				return 0.0f;
 			}
 		}
-		return DETOUR_MEMBER_CALL(CTFBaseBossLocomotion_GetStepHeight)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, NextBotGroundLocomotion_Update)
@@ -722,7 +722,7 @@ namespace Mod::Pop::Tank_Extensions
 				prev_posz += move.z * loco->GetRunSpeed() * loco->GetUpdateInterval();
 			}
 		}
-		DETOUR_MEMBER_CALL(NextBotGroundLocomotion_Update)();
+		DETOUR_MEMBER_CALL();
 		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr) {
 			
 			if (thinking_tank_data->gravity == 0.0f && thinking_tank_data->gravity_set)
@@ -759,7 +759,7 @@ namespace Mod::Pop::Tank_Extensions
 			tf_base_boss_max_turn_rate.Set(data->max_turn_rate);
 		}
 	
-		DETOUR_MEMBER_CALL(CTFBaseBossLocomotion_FaceTowards)(vec);
+		DETOUR_MEMBER_CALL(vec);
 
 		tf_base_boss_max_turn_rate.Reset();
 	}
@@ -775,7 +775,7 @@ namespace Mod::Pop::Tank_Extensions
 			return data->icon;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTankSpawner_GetClassIcon)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 
 	int restOfCurrency = -1;
@@ -796,7 +796,7 @@ namespace Mod::Pop::Tank_Extensions
 		restOfCurrency = MIN(1500, currency);
 		SCOPED_INCREMENT(rc_CTFTankBoss_Event_Killed);
 		
-		DETOUR_MEMBER_CALL(CTFTankBoss_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		restOfCurrency = -1;
 	}
 
@@ -811,7 +811,7 @@ namespace Mod::Pop::Tank_Extensions
 			return data->is_miniboss;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTankSpawner_IsMiniBoss)(index);
+		return DETOUR_MEMBER_CALL(index);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, IPopulationSpawner_HasAttribute, CTFBot::AttributeType attr, int index)
@@ -827,7 +827,7 @@ namespace Mod::Pop::Tank_Extensions
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(IPopulationSpawner_HasAttribute)(attr, index);
+		return DETOUR_MEMBER_CALL(attr, index);
 	}
 
 	RefCount rc_CTFTankBoss_UpdatePingSound;
@@ -836,7 +836,7 @@ namespace Mod::Pop::Tank_Extensions
 	{
 		SCOPED_INCREMENT(rc_CTFTankBoss_UpdatePingSound);
 		
-		DETOUR_MEMBER_CALL(CTFTankBoss_UpdatePingSound)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	RefCount rc_CTFTankBoss_Spawn;
@@ -844,7 +844,7 @@ namespace Mod::Pop::Tank_Extensions
 	{
 		SCOPED_INCREMENT(rc_CTFTankBoss_Spawn);
 		
-		DETOUR_MEMBER_CALL(CTFTankBoss_Spawn)();
+		DETOUR_MEMBER_CALL();
 
 	}
 
@@ -861,7 +861,7 @@ namespace Mod::Pop::Tank_Extensions
 					sound = data->sound_start.c_str();
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseEntity_EmitSound)(sound, start, duration);
+		DETOUR_MEMBER_CALL(sound, start, duration);
 	}
 
 	DETOUR_DECL_STATIC(void, CBaseEntity_EmitSound2, IRecipientFilter& filter, int iEntIndex, const char *sound, const Vector *pOrigin, float start, float *duration )
@@ -874,7 +874,7 @@ namespace Mod::Pop::Tank_Extensions
 					sound = data->sound_engine_loop.c_str();
 			}
 		}
-		DETOUR_STATIC_CALL(CBaseEntity_EmitSound2)(filter, iEntIndex, sound, pOrigin, start, duration);
+		DETOUR_STATIC_CALL(filter, iEntIndex, sound, pOrigin, start, duration);
 	}
 
 	RefCount rc_CTFTankBoss_Explode;
@@ -886,12 +886,12 @@ namespace Mod::Pop::Tank_Extensions
 				return nullptr;
 			}
 		}
-		return DETOUR_STATIC_CALL(CreateEntityByName)(className, iForceEdictIndex);
+		return DETOUR_STATIC_CALL(className, iForceEdictIndex);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFTankDestruction_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFTankDestruction_Spawn)();
+		DETOUR_MEMBER_CALL();
 		auto destruction = reinterpret_cast<CBaseAnimating *>(this);
 		if (thinking_tank_data != nullptr && thinking_tank_data->model_destruction != -1) {
 			for (int i = 0; i < MAX_VISION_MODES; ++i) {
@@ -913,7 +913,7 @@ namespace Mod::Pop::Tank_Extensions
 		}
 
 		++rc_CTFTankBoss_Explode;
-		DETOUR_MEMBER_CALL(CTFTankBoss_Explode)();
+		DETOUR_MEMBER_CALL();
 		--rc_CTFTankBoss_Explode;
 
 		if (thinking_tank_data != nullptr) {
@@ -944,13 +944,13 @@ namespace Mod::Pop::Tank_Extensions
 			}
 		}
 
-		DETOUR_MEMBER_CALL(CTFTankBoss_UpdateOnRemove)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	CBaseEntity *entityOnFireCollide;
 	DETOUR_DECL_MEMBER(float, CTFFlameManager_GetFlameDamageScale, void * point, CTFPlayer * player)
 	{
-		float ret = DETOUR_MEMBER_CALL(CTFFlameManager_GetFlameDamageScale)(point, player);
+		float ret = DETOUR_MEMBER_CALL(point, player);
 		bool istank = entityOnFireCollide != nullptr && strcmp(entityOnFireCollide->GetClassname(),"tank_boss") == 0;
 		if (istank) {
 			ret+=0.04f;
@@ -966,7 +966,7 @@ namespace Mod::Pop::Tank_Extensions
 	DETOUR_DECL_MEMBER(void, CTFFlameManager_OnCollide, CBaseEntity* entity, int value)
 	{
 		entityOnFireCollide = entity;
-		DETOUR_MEMBER_CALL(CTFFlameManager_OnCollide)(entity, value);
+		DETOUR_MEMBER_CALL(entity, value);
 		entityOnFireCollide = nullptr;
 	}
 
@@ -977,7 +977,7 @@ namespace Mod::Pop::Tank_Extensions
 		auto tank = reinterpret_cast<CTFBaseBoss *>(this);
 		SCOPED_INCREMENT(rc_CTFBaseBoss_OnTakeDamage);
 		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_OnTakeDamage_SameTeam, info.GetAttacker() != nullptr && info.GetAttacker()->GetTeamNumber() == tank->GetTeamNumber());
-		return DETOUR_MEMBER_CALL(CTFBaseBoss_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 	class CTakeDamageInfoTF2 : public CTakeDamageInfo
@@ -988,7 +988,7 @@ namespace Mod::Pop::Tank_Extensions
 
 	DETOUR_DECL_MEMBER(int, CTFGameRules_ApplyOnDamageModifyRules, CTakeDamageInfo& info, CBaseEntity *pVictim, bool b1)
 	{
-		int result = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+		int result = DETOUR_MEMBER_CALL(info, pVictim, b1);
 		if (rc_CTFBaseBoss_OnTakeDamage) {
 			auto tank = reinterpret_cast<CTFTankBoss *>(pVictim);
 			SpawnerData *data = FindSpawnerDataForTank(tank);
@@ -1009,7 +1009,7 @@ namespace Mod::Pop::Tank_Extensions
 		if (data != nullptr && data->trigger_destroy_fix) {
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFBaseBoss_Touch)(toucher);
+		DETOUR_MEMBER_CALL(toucher);
 	}
 
 	RefCount rc_CTFBaseBoss_ResolvePlayerCollision;
@@ -1017,7 +1017,7 @@ namespace Mod::Pop::Tank_Extensions
 	{
 		SpawnerData *data = FindSpawnerDataForBoss(reinterpret_cast<CTFBaseBoss *>(this));
 		SCOPED_INCREMENT_IF(rc_CTFBaseBoss_ResolvePlayerCollision, data != nullptr && data->no_crush_damage);
-		DETOUR_MEMBER_CALL(CTFBaseBoss_ResolvePlayerCollision)(toucher);
+		DETOUR_MEMBER_CALL(toucher);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFPlayer_OnTakeDamage, const CTakeDamageInfo& info)
@@ -1026,7 +1026,7 @@ namespace Mod::Pop::Tank_Extensions
 		if (rc_CTFBaseBoss_ResolvePlayerCollision || (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr&& thinking_tank_data->no_crush_damage) ) {
 			return 0;
 		}
-		return DETOUR_MEMBER_CALL(CTFPlayer_OnTakeDamage)(info);
+		return DETOUR_MEMBER_CALL(info);
 	}
 
 	DETOUR_DECL_MEMBER(uint, CTFTankBossBody_GetSolidMask)
@@ -1035,7 +1035,7 @@ namespace Mod::Pop::Tank_Extensions
 		if (data != nullptr && data->solid_to_brushes) {
 			return CONTENTS_SOLID | CONTENTS_WINDOW | CONTENTS_MOVEABLE;
 		}
-		return DETOUR_MEMBER_CALL(CTFTankBossBody_GetSolidMask)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_STATIC(void, UTIL_ScreenShake, const Vector &center, float amplitude, float frequency, float duration, float radius, int eCommand, bool bAirShake)
@@ -1043,19 +1043,19 @@ namespace Mod::Pop::Tank_Extensions
 		if (rc_CTFTankBoss_TankBossThink && thinking_tank_data != nullptr && thinking_tank_data->no_screen_shake) {
 			return;
 		}
-		return DETOUR_STATIC_CALL(UTIL_ScreenShake)(center, amplitude, frequency, duration, radius, eCommand, bAirShake);
+		return DETOUR_STATIC_CALL(center, amplitude, frequency, duration, radius, eCommand, bAirShake);
 	}
 
 	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
 	{
 		if (rc_CTFBaseBoss_OnTakeDamage_SameTeam) return;
-		DETOUR_STATIC_CALL(HandleRageGain)(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+		DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
 	}
 
 	DETOUR_DECL_MEMBER(int, CTFTankBoss_GetCurrencyValue)
 	{
 		if (rc_CTFTankBoss_Event_Killed && restOfCurrency != -1) return restOfCurrency;
-		auto result = DETOUR_MEMBER_CALL(CTFTankBoss_GetCurrencyValue)();
+		auto result = DETOUR_MEMBER_CALL();
 		return result;
 	}
 

@@ -6,13 +6,13 @@ namespace Mod::Prof::Flame_Breakable_Collision
 	DETOUR_DECL_MEMBER(void, CTFFlameEntity_FlameThink)
 	{
 		VPROF_BUDGET("CTFFlameEntity::FlameThink", "sigsegv");
-		DETOUR_MEMBER_CALL(CTFFlameEntity_FlameThink)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(CBaseEntity *, CGlobalEntityList_FindEntityByClassname, CBaseEntity *pStartEntity, const char *szName, IEntityFindFilter *filter)
 	{
 		VPROF_BUDGET("CGlobalEntityList::FindEntityByClassname", "sigsegv");
-		return DETOUR_MEMBER_CALL(CGlobalEntityList_FindEntityByClassname)(pStartEntity, szName, filter);
+		return DETOUR_MEMBER_CALL(pStartEntity, szName, filter);
 	}
 	
 	

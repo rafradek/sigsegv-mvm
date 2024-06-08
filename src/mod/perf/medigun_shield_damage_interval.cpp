@@ -29,7 +29,7 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 						CTakeDamageInfo newInfo = inputInfo;
 						newInfo.ScaleDamage(interval);
 						
-						return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(newInfo);
+						return DETOUR_MEMBER_CALL(newInfo);
 					} else {
 						return 0;
 					}
@@ -38,7 +38,7 @@ namespace Mod::Perf::Medigun_Shield_Damage_Interval
 		}
 		
 		
-		return DETOUR_MEMBER_CALL(CBaseEntity_TakeDamage)(inputInfo);
+		return DETOUR_MEMBER_CALL(inputInfo);
 	}
 
 	class CMod : public IMod

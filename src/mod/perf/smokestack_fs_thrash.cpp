@@ -25,7 +25,7 @@ namespace Mod::Perf::SmokeStack_FS_Thrash
 			return true;
 		}
 		
-		return DETOUR_MEMBER_CALL(CSmokeStack_KeyValue)(szKeyName, szValue);
+		return DETOUR_MEMBER_CALL(szKeyName, szValue);
 	}
 	
 	

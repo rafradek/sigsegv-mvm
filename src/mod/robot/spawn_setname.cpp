@@ -8,7 +8,7 @@ namespace Mod::Robot::Spawn_SetName
 	RefCount rc_CTFBotSpawner_Spawn;
 	DETOUR_DECL_MEMBER(int, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
-		return DETOUR_MEMBER_CALL(CTFBotSpawner_Spawn)(where, ents);
+		return DETOUR_MEMBER_CALL(where, ents);
 	}
 	
 	DETOUR_DECL_MEMBER(void, IVEngineServer_SetFakeClientConVarValue, edict_t *pEntity, const char *cvar, const char *value)
@@ -21,7 +21,7 @@ namespace Mod::Robot::Spawn_SetName
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(IVEngineServer_SetFakeClientConVarValue)(pEntity, cvar, value);
+		DETOUR_MEMBER_CALL(pEntity, cvar, value);
 	}
 	
 	

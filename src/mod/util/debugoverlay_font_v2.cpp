@@ -148,7 +148,7 @@ namespace Mod::Util::DebugOverlay_Font_v2
 		SCOPED_INCREMENT_IF(rc_CFontTextureCache_GetTextureForChars_FG, font == hFontFG);
 		SCOPED_INCREMENT_IF(rc_CFontTextureCache_GetTextureForChars_BG, font == hFontBG);
 		
-		return DETOUR_MEMBER_CALL(CFontTextureCache_GetTextureForChars)(font, type, wch, textureID, texCoords, numChars);
+		return DETOUR_MEMBER_CALL(font, type, wch, textureID, texCoords, numChars);
 	}
 	
 //	DETOUR_DECL_STATIC(void, ApplyOutlineToTexture, int rgbaWide, int rgbaTall, unsigned char *rgba, int iOutlineSize)
@@ -290,7 +290,7 @@ namespace Mod::Util::DebugOverlay_Font_v2
 			return;
 		}
 		
-		DETOUR_STATIC_CALL(ApplyGaussianBlurToTexture)(rgbaWide, rgbaTall, rgba, iBlur);
+		DETOUR_STATIC_CALL(rgbaWide, rgbaTall, rgba, iBlur);
 		
 	#if 0
 		if (rc_CFontTextureCache_GetTextureForChars_BG > 0) {
@@ -326,7 +326,7 @@ namespace Mod::Util::DebugOverlay_Font_v2
 	DETOUR_DECL_MEMBER(void, CDebugOverlay_Paint)
 	{
 		SCOPED_INCREMENT(rc_CDebugOverlay_Paint);
-		DETOUR_MEMBER_CALL(CDebugOverlay_Paint)();
+		DETOUR_MEMBER_CALL();
 	}
 	
 	DETOUR_DECL_MEMBER(int, CMatSystemSurface_DrawColoredText, vgui::HFont font, int x, int y, int r, int g, int b, int a, const char *fmt, va_list argptr)
@@ -339,13 +339,13 @@ namespace Mod::Util::DebugOverlay_Font_v2
 			int bg_b = Clamp((int)std::strtol(cvar_bg_color_b.GetString(), nullptr, 0), 0x00, 0xff);
 			int bg_a = Clamp((int)std::strtol(cvar_bg_color_a.GetString(), nullptr, 0), 0x00, 0xff);
 			
-			int rBG = DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(hFontBG, x, y, bg_r, bg_g, bg_b, bg_a, fmt, argptr);
-			int rFG = DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(hFontFG, x, y,    r,     g,   b,    a, fmt, argptr);
+			int rBG = DETOUR_MEMBER_CALL(hFontBG, x, y, bg_r, bg_g, bg_b, bg_a, fmt, argptr);
+			int rFG = DETOUR_MEMBER_CALL(hFontFG, x, y,    r,     g,   b,    a, fmt, argptr);
 			
 			return std::max(rBG, rFG);
 		}
 		
-		return DETOUR_MEMBER_CALL(CMatSystemSurface_DrawColoredText)(font, x, y, r, g, b, a, fmt, argptr);
+		return DETOUR_MEMBER_CALL(font, x, y, r, g, b, a, fmt, argptr);
 	}
 	
 	

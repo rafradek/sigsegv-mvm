@@ -33,7 +33,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			return new CTFBotMvMDefender();
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_InitialContainedAction)(actor);
+		return DETOUR_MEMBER_CALL(actor);
 	}
 	
 	
@@ -47,13 +47,13 @@ namespace Mod::AI::MvM_Defender_Bots
 			return FLT_MAX;
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBot_GetTimeLeftToCapture)();
+		return DETOUR_MEMBER_CALL();
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_HandleCommand_JoinTeam, const char *team)
 	{
-		DETOUR_MEMBER_CALL(CTFPlayer_HandleCommand_JoinTeam)(team);
+		DETOUR_MEMBER_CALL(team);
 		
 		auto player = reinterpret_cast<CTFPlayer *>(this);
 		
@@ -125,7 +125,7 @@ namespace Mod::AI::MvM_Defender_Bots
 			return ActionResult<CTFBot>::SuspendFor(new CTFBotCollectMoney(), "Collecting money.");
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnCommandString)(actor, cmd);
+		return DETOUR_MEMBER_CALL(actor, cmd);
 	}
 	
 	
@@ -168,7 +168,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFBot_Spawn)();
+		DETOUR_MEMBER_CALL();
 		
 		auto bot = reinterpret_cast<CTFBot *>(this);
 		if (bot->GetTeamNumber() == TF_TEAM_RED) {
@@ -211,7 +211,7 @@ namespace Mod::AI::MvM_Defender_Bots
 	//	NDebugOverlay::EntityText(ENTINDEX(tank), 3, CFmtStrN<256>("m_NodeDists[i]:    %.0f", (*m_NodeDists)[*m_iCurrentNode]),
 	//		gpGlobals->interval_per_tick, 0xff, 0xff, 0xff, 0xff);
 		
-		DETOUR_MEMBER_CALL(CTFTankBoss_TankBossThink)();
+		DETOUR_MEMBER_CALL();
 	}
 #endif
 	

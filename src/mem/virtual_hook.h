@@ -179,7 +179,7 @@ private:
 	std::string m_szName;
 };
 
-#define VHOOK_CALL(name) (this->*Actual)
+#define VHOOK_CALL(...) (Actual)(this, ## __VA_ARGS__)
 
 // For per object virtual hooks
 #define VHOOK_CALL_OBJSPEC(name, ...) (this->*MakePtrToMemberFunc<Vhook_##name, __VA_ARGS__>((*((void ***)this)-5)[vhook_##name->GetOffset()]))
@@ -189,10 +189,10 @@ private:
 	{ \
 	public: \
 		ret callback(__VA_ARGS__); \
-		static ret (Vhook_##name::* Actual)(__VA_ARGS__); \
+		static ret (*Actual)(Vhook_##name *, ##__VA_ARGS__); \
 	}; \
 	static CVirtualHook *vhook_##name = nullptr; \
-	ret (Vhook_##name::* Vhook_##name::Actual)(__VA_ARGS__) = nullptr; \
+	ret (* Vhook_##name::Actual)(Vhook_##name *, ##__VA_ARGS__) = nullptr; \
 	ret Vhook_##name::callback(__VA_ARGS__)
 
 #define GET_VHOOK_CALLBACK(name) GetAddrOfMemberFunc(&Vhook_##name::callback)

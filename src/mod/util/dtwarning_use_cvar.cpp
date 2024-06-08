@@ -16,7 +16,7 @@ namespace Mod::Util::DTWarning_Use_CVar
 		V_vsprintf_safe(msg, pInMessage, va);
 		va_end(va);
 		
-		DETOUR_STATIC_CALL(DataTable_Warning)("%s", msg);
+		DETOUR_STATIC_CALL("%s", msg);
 	}
 	
 	

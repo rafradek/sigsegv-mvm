@@ -42,7 +42,7 @@ namespace Mod::Debug::Penetration
 		DevMsg("  has_pen = %s\n", (has_pen ? "true" : "false"));
 		
 		SCOPED_INCREMENT(rc_CTFPlayer_FireBullet);
-		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+		DETOUR_MEMBER_CALL(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
 		
 		DevMsg("CTFPlayer::FireBullet END\n");
 	}
@@ -53,7 +53,7 @@ namespace Mod::Debug::Penetration
 		DevMsg("  IEngineTrace::EnumerateEntities BEGIN\n");
 		
 		SCOPED_INCREMENT(rc_IEngineTrace_EnumerateEntities);
-		DETOUR_MEMBER_CALL(IEngineTrace_EnumerateEntities_ray)(ray, triggers, pEnumerator);
+		DETOUR_MEMBER_CALL(ray, triggers, pEnumerator);
 		
 		auto pen = reinterpret_cast<CBulletPenetrateEnum *>(pEnumerator);
 		FOR_EACH_VEC(pen->vec, i) {
@@ -72,7 +72,7 @@ namespace Mod::Debug::Penetration
 		
 		int count_before = pen->vec.Count();
 		
-		bool result = DETOUR_MEMBER_CALL(CBulletPenetrateEnum_EnumEntity)(pHandleEntity);
+		bool result = DETOUR_MEMBER_CALL(pHandleEntity);
 		
 		if (rc_CTFPlayer_FireBullet > 0 && rc_IEngineTrace_EnumerateEntities > 0) {
 			bool was_added = (pen->vec.Count() != count_before);
@@ -99,7 +99,7 @@ namespace Mod::Debug::Penetration
 				ENTINDEX(ent), info.GetPlayerPenetrationCount());
 		}
 		
-		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
+		DETOUR_MEMBER_CALL(info, vecDir, ptr, pAccumulator);
 	}
 	
 	

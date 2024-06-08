@@ -162,31 +162,31 @@ namespace Mod::Common::Weapon_Shoot
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFGameRules_FPlayerCanTakeDamage)(pPlayer, pAttacker, info);
+		return DETOUR_MEMBER_CALL(pPlayer, pAttacker, info);
 	}
 	
 	DETOUR_DECL_STATIC(CTFWeaponBase *, GetKilleaterWeaponFromDamageInfo, CTakeDamageInfo &info)
 	{
 		if (info.GetWeapon() != nullptr && info.GetWeapon()->MyCombatWeaponPointer() != nullptr && info.GetWeapon()->MyCombatWeaponPointer()->GetOwner() == nullptr) return nullptr;
-		return DETOUR_STATIC_CALL(GetKilleaterWeaponFromDamageInfo)( info);
+		return DETOUR_STATIC_CALL( info);
 	}
 
 	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent_Batched, void *pEconInterface, class CTFPlayer *pOwner, class CTFPlayer *pVictim, int eEventType, int nIncrementValue)
 	{
 		if (pOwner == nullptr) return;
-		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent_Batched)(pEconInterface, pOwner, pVictim, eEventType, nIncrementValue);
+		DETOUR_STATIC_CALL(pEconInterface, pOwner, pVictim, eEventType, nIncrementValue);
 	}
 
 	DETOUR_DECL_STATIC(void, EconItemInterface_OnOwnerKillEaterEvent, void *pEconEntity, CTFPlayer *pOwner, CTFPlayer *pVictim, int eEventType, int nIncrementValue)
 	{
 		if (pOwner == nullptr) return;
-		DETOUR_STATIC_CALL(EconItemInterface_OnOwnerKillEaterEvent)(pEconEntity, pOwner, pVictim, eEventType, nIncrementValue);
+		DETOUR_STATIC_CALL(pEconEntity, pOwner, pVictim, eEventType, nIncrementValue);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Event_Killed, const CTakeDamageInfo& info)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		DETOUR_MEMBER_CALL(CTFPlayer_Event_Killed)(info);
+		DETOUR_MEMBER_CALL(info);
 		CBaseEntity *observer = player->m_hObserverTarget;
 		if (info.GetInflictor() != nullptr) {
             variant_t var;
@@ -206,7 +206,7 @@ namespace Mod::Common::Weapon_Shoot
 		if (info.GetWeapon() != nullptr && info.GetWeapon()->GetCustomVariableBool<"istempowner">()) {
 			infoc.SetAttacker(info.GetInflictor());
 		}
-		DETOUR_MEMBER_CALL(CTFGameRules_DeathNotice)(pVictim, infoc, eventName);
+		DETOUR_MEMBER_CALL(pVictim, infoc, eventName);
 	}
 
 	class CDmgAccumulator;
@@ -223,34 +223,34 @@ namespace Mod::Common::Weapon_Shoot
 				info.SetInflictor(shooting_weapon);
 			}
 		}
-		DETOUR_MEMBER_CALL(CBaseEntity_DispatchTraceAttack)(info, vecDir, ptr, pAccumulator);
+		DETOUR_MEMBER_CALL(info, vecDir, ptr, pAccumulator);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_RemoveProjectileAmmo, CTFPlayer *player)
 	{
 		if (rc_FireWeapon_RemoveAmmo) return;
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_RemoveProjectileAmmo)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
 		if (rc_FireWeapon) return;
 
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_DoFireEffects)
 	{
 		if (rc_FireWeapon) return;
 
-		DETOUR_MEMBER_CALL(CTFWeaponBaseGun_DoFireEffects)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DoAnimationEvent, PlayerAnimEvent_t event, int data)
 	{
 		if (rc_FireWeapon) return;
 
-		DETOUR_MEMBER_CALL(CTFPlayer_DoAnimationEvent)(event, data);
+		DETOUR_MEMBER_CALL(event, data);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_SendDeathNotice)
@@ -258,7 +258,7 @@ namespace Mod::Common::Weapon_Shoot
 		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
 		if (flare->GetOwnerEntity() != nullptr && ToTFPlayer(flare->GetOwnerEntity()) == nullptr) return;
 
-		DETOUR_MEMBER_CALL(CTFProjectile_Flare_SendDeathNotice)();
+		DETOUR_MEMBER_CALL();
 	}
 
 	DETOUR_DECL_MEMBER(void, CBaseCombatWeapon_WeaponSound, int index, float soundtime) 
@@ -270,11 +270,11 @@ namespace Mod::Common::Weapon_Shoot
 			auto me = reinterpret_cast<CBaseCombatWeapon *>(this);
 			auto oldOwner = me->GetOwner();
 			me->SetOwner(nullptr);
-			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			DETOUR_MEMBER_CALL(index, soundtime);
 			me->SetOwner(oldOwner);
 		}
 		else {
-			DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+			DETOUR_MEMBER_CALL(index, soundtime);
 		}
 	}
 
@@ -297,7 +297,7 @@ namespace Mod::Common::Weapon_Shoot
 			info.SetDamage(info.GetDamage() * 3);
 		}
 
-        auto result = DETOUR_MEMBER_CALL(CTFGameRules_ApplyOnDamageModifyRules)(info, pVictim, b1);
+        auto result = DETOUR_MEMBER_CALL(info, pVictim, b1);
 
 		if (info.GetAttacker() == nullptr || !info.GetAttacker()->IsPlayer()) {
 			auto playerVictim = ToTFPlayer(pVictim);
@@ -329,7 +329,7 @@ namespace Mod::Common::Weapon_Shoot
 	// 		Msg("Trace do %d %d\n", filter, simpleFilter);
 	// 	}
 
-    //     return DETOUR_STATIC_CALL(UTIL_PlayerBulletTrace)(vec1, vec2, vec3, val1, filter, trace);
+    //     return DETOUR_STATIC_CALL(vec1, vec2, vec3, val1, filter, trace);
     // }
 
 	DETOUR_DECL_MEMBER(void, CTraceFilterSimple_CTraceFilterSimple, const IHandleEntity *passentity, int collisionGroup, ShouldHitFunc_t pExtraShouldHitCheckFn)
@@ -338,7 +338,7 @@ namespace Mod::Common::Weapon_Shoot
 			passentity = shooting_shooter;
 		}
 
-        return DETOUR_MEMBER_CALL(CTraceFilterSimple_CTraceFilterSimple)(passentity, collisionGroup, pExtraShouldHitCheckFn);
+        return DETOUR_MEMBER_CALL(passentity, collisionGroup, pExtraShouldHitCheckFn);
     }
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_BallOfFire_Burn, CBaseEntity *entity)
@@ -348,14 +348,14 @@ namespace Mod::Common::Weapon_Shoot
 		if ((owner == nullptr || !owner->IsPlayer())) {
 			reinterpret_cast<CTFProjectile_BallOfFire *>(this)->m_bLandedBonusDamage = true;
 		}
-        DETOUR_MEMBER_CALL(CTFProjectile_BallOfFire_Burn)(entity);
+        DETOUR_MEMBER_CALL(entity);
     }
 
 	DETOUR_DECL_STATIC(void, TE_FireBullets, int iPlayerIndex, const Vector &vOrigin, const QAngle &vAngles, 
 					 int iWeaponID, int	iMode, int iSeed, float flSpread, bool bCritical)
 	{
 		if (rc_FireWeapon) return;
-        DETOUR_STATIC_CALL(TE_FireBullets)(iPlayerIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread, bCritical);
+        DETOUR_STATIC_CALL(iPlayerIndex, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread, bCritical);
 	}
 
 	int customDamageTypeBullet = 0;
@@ -377,7 +377,7 @@ namespace Mod::Common::Weapon_Shoot
 		SCOPED_INCREMENT_IF(rc_FireWeaponDoTrace, doTrace);
 
 		
-		DETOUR_MEMBER_CALL(CTFPlayer_FireBullet)(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+		DETOUR_MEMBER_CALL(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_MaybeDrawRailgunBeam, IRecipientFilter *filter, CTFWeaponBase *weapon, const Vector &vStartPos, const Vector &vEndPos)
@@ -389,14 +389,14 @@ namespace Mod::Common::Weapon_Shoot
 			auto tracerName = reinterpret_cast<CTFPlayer *>(this)->GetTracerType();
 			DispatchParticleEffect(isCritTrace ? CFmtStr("%s_crit", tracerName).Get() : tracerName, PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
 		}
-		DETOUR_MEMBER_CALL(CTFPlayer_MaybeDrawRailgunBeam)(filter, weapon, vStartPos, vEndPos);
+		DETOUR_MEMBER_CALL(filter, weapon, vStartPos, vEndPos);
 	}
 
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
 	{
 		if (cmd == nullptr) return;
 
-		DETOUR_MEMBER_CALL(CLagCompensationManager_StartLagCompensation)(player, cmd);
+		DETOUR_MEMBER_CALL(player, cmd);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Flare_Explode_Air, trace_t *pTrace, int bitsDamageType, bool bSelfOnly)
@@ -404,7 +404,7 @@ namespace Mod::Common::Weapon_Shoot
 		auto flare = reinterpret_cast<CTFProjectile_Flare *>(this);
 		if (ToTFPlayer(flare->GetOwnerEntity()) == nullptr)
 			flare->SetOwnerEntity(nullptr);
-		DETOUR_MEMBER_CALL(CTFProjectile_Flare_Explode_Air)(pTrace, bitsDamageType, bSelfOnly);
+		DETOUR_MEMBER_CALL(pTrace, bitsDamageType, bSelfOnly);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFBall_Ornament_Explode, trace_t *pTrace, int bitsDamageType)
@@ -423,7 +423,7 @@ namespace Mod::Common::Weapon_Shoot
 			proj->Remove();
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFBall_Ornament_Explode)(pTrace, bitsDamageType);
+		DETOUR_MEMBER_CALL(pTrace, bitsDamageType);
 	}
 
     class CMod : public IMod

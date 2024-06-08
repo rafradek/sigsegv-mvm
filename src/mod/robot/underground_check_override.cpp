@@ -77,7 +77,7 @@ namespace Mod::Robot::Underground_Check_Override
 		auto m_itUnderground = reinterpret_cast<IntervalTimer *>((uintptr_t)this + off_CTFBotMainAction_m_itUnderground);
 		m_itUnderground->Invalidate();
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	

@@ -15,7 +15,7 @@ namespace Mod::Debug::NoKnockback
 	DETOUR_DECL_MEMBER(void, CTFPlayer_ApplyGenericPushbackImpulse, const Vector& impulse, CTFPlayer * inflictor)
 	{
 		if (!cvar_airblast.GetBool()) {
-			DETOUR_MEMBER_CALL(CTFPlayer_ApplyGenericPushbackImpulse)(impulse, inflictor);
+			DETOUR_MEMBER_CALL(impulse, inflictor);
 		}
 	}
 	

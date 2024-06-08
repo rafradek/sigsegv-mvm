@@ -96,7 +96,7 @@ namespace Mod::Bot::RunFast
 			reinterpret_cast<NextBotData *>(actor->MyNextBotPointer())->m_bScheduledForNextTick = true;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	ConVar cvar_jump("sig_bot_runfast_allowjump", "0", FCVAR_GAMEDLL,
@@ -106,7 +106,7 @@ namespace Mod::Bot::RunFast
 	{
 		/* don't let bots try to jump without autojump, it just slows them down */
 		if ( rc_CTFBotMainAction_Update || cvar_jump.GetBool() || reinterpret_cast<ILocomotion *>(this)->GetRunSpeed() < 350.0f)
-			DETOUR_MEMBER_CALL(PlayerLocomotion_Jump)();
+			DETOUR_MEMBER_CALL();
 	}
 	
 	class CMod : public IMod

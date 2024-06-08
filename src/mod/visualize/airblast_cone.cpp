@@ -148,7 +148,7 @@ namespace Mod::Visualize::Airblast_Cone
 			deflected[player] = false;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFFlameThrower_FireAirBlast)(i1);
+		DETOUR_MEMBER_CALL(i1);
 		
 		if (cvar_clear.GetBool()) {
 			NDebugOverlay::Clear();
@@ -173,7 +173,7 @@ namespace Mod::Visualize::Airblast_Cone
 	
 	DETOUR_DECL_MEMBER(bool, CTFFlameThrower_DeflectPlayer, CTFPlayer *pVictim, CTFPlayer *pPyro, const Vector& vecEyeFwd, const Vector& vecBoxCenter, const Vector& vecBoxSize)
 	{
-		auto result = DETOUR_MEMBER_CALL(CTFFlameThrower_DeflectPlayer)(pVictim, pPyro, vecEyeFwd, vecBoxCenter, vecBoxSize);
+		auto result = DETOUR_MEMBER_CALL(pVictim, pPyro, vecEyeFwd, vecBoxCenter, vecBoxSize);
 		
 		if (result) {
 			auto it = deflected.find(pVictim);

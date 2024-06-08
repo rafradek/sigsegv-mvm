@@ -14,7 +14,7 @@ namespace Mod::Etc::Suppress_NB_Event_Messages
 			return SPEW_CONTINUE;
 		}
 		
-		return DETOUR_STATIC_CALL(D__SpewMessage)(spewType, pGroupName, nLevel, pColor, pMsgFormat, args);
+		return DETOUR_STATIC_CALL(spewType, pGroupName, nLevel, pColor, pMsgFormat, args);
 	}
 	
 	

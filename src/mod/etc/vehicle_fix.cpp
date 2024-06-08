@@ -96,7 +96,7 @@ namespace Mod::Util::Vehicle_Fix
 				vehicle->m_nVehicleType = 8;
 			}
 		}
-		DETOUR_MEMBER_CALL(CPropVehicleDriveable_Spawn)();
+		DETOUR_MEMBER_CALL();
 		vehicle->SetCollisionGroup(COLLISION_GROUP_PLAYER_MOVEMENT);
 		THINK_FUNC_SET(vehicle, CarThink, gpGlobals->curtime + 0.01);
 	}
@@ -114,7 +114,7 @@ namespace Mod::Util::Vehicle_Fix
 				serverVehicle->SetupMove(player, ucmd, pHelper, move);
 			}
 		}
-		DETOUR_MEMBER_CALL(CPlayerMove_SetupMove)(player, ucmd, pHelper, move);
+		DETOUR_MEMBER_CALL(player, ucmd, pHelper, move);
 	}
 
 	DETOUR_DECL_MEMBER(int, CBaseServerVehicle_GetExitAnimToUse, Vector *vec, bool far)
@@ -126,7 +126,7 @@ namespace Mod::Util::Vehicle_Fix
 	{
 		if (pActivator != nullptr && pActivator == reinterpret_cast<CPropVehicleDriveable *>(this)->m_hPlayer) return;
 		
-		DETOUR_MEMBER_CALL(CPropVehicleDriveable_Use)(pActivator, pCaller, useType, value);
+		DETOUR_MEMBER_CALL(pActivator, pCaller, useType, value);
 	}
 
 	DETOUR_DECL_MEMBER(VoiceCommandMenuItem_t *, CMultiplayRules_VoiceCommand, CBasePlayer* player, int menu, int item)
@@ -152,7 +152,7 @@ namespace Mod::Util::Vehicle_Fix
 
 			
 		}
-		return DETOUR_MEMBER_CALL(CMultiplayRules_VoiceCommand)(player, menu, item);
+		return DETOUR_MEMBER_CALL(player, menu, item);
 	}
 
 	
@@ -162,7 +162,7 @@ namespace Mod::Util::Vehicle_Fix
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CBasePlayer_GetInVehicle, CBaseServerVehicle *vehicle, int mode)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		auto ret = DETOUR_MEMBER_CALL(CBasePlayer_GetInVehicle)(vehicle, mode);
+		auto ret = DETOUR_MEMBER_CALL(vehicle, mode);
 		if (ret) {
 			if (player->m_hVehicle != nullptr) {
 				player->m_Local->m_bDrawViewmodel = player->m_hVehicle->GetCustomVariableFloat<"allowweapons">();
@@ -209,7 +209,7 @@ namespace Mod::Util::Vehicle_Fix
 				player->GetActiveTFWeapon()->SetEffects(player->GetActiveTFWeapon()->GetEffects() & ~(EF_NODRAW));
 			}
         }
-		DETOUR_MEMBER_CALL(CBasePlayer_LeaveVehicle)(pos, angles);
+		DETOUR_MEMBER_CALL(pos, angles);
 		
 		player->m_Local->m_bDrawViewmodel = true;
 		static ConVarRef predict("sv_client_predict");
@@ -219,7 +219,7 @@ namespace Mod::Util::Vehicle_Fix
 	VHOOK_DECL(unsigned int, CPropVehicleDriveable_PhysicsSolidMaskForEntity)
 	{
 		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
-		auto mask = VHOOK_CALL(CBaseEntity_PhysicsSolidMaskForEntity)() | CONTENTS_PLAYERCLIP;
+		auto mask = VHOOK_CALL() | CONTENTS_PLAYERCLIP;
 		if (vehicle->GetTeamNumber() == TF_TEAM_BLUE)
 			mask |= CONTENTS_REDTEAM;
 		else if (vehicle->GetTeamNumber() == TF_TEAM_RED)
@@ -244,7 +244,7 @@ namespace Mod::Util::Vehicle_Fix
 			info2.SetDamage(info2.GetDamage() * vehicle->GetCustomVariableFloat<"passbulletdamage">(1.0f));
 			return vehicle->m_hPlayer->TakeDamage(info2);
 		}
-		return VHOOK_CALL(CPropVehicleDriveable_OnTakeDamage)(info);
+		return VHOOK_CALL(info);
 
 	}
 
@@ -254,7 +254,7 @@ namespace Mod::Util::Vehicle_Fix
 		if (vehicle->m_hPlayer != nullptr) {
 			vehicle->m_hPlayer->LeaveVehicle();
 		}
-		return VHOOK_CALL(CPropVehicleDriveable_UpdateOnRemove)();
+		return VHOOK_CALL();
 	}
 
     DETOUR_DECL_MEMBER(void, CTFPlayer_ForceRespawn)
@@ -263,7 +263,7 @@ namespace Mod::Util::Vehicle_Fix
         if (player->m_hVehicle != nullptr) {
             player->LeaveVehicle();
         }
-        return DETOUR_MEMBER_CALL(CTFPlayer_ForceRespawn)();
+        return DETOUR_MEMBER_CALL();
     }
 
 	DETOUR_DECL_MEMBER(bool, CBaseServerVehicle_IsPassengerVisible, int role)
@@ -281,7 +281,7 @@ namespace Mod::Util::Vehicle_Fix
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_UpdatePunchAngles, CTFPlayer *player)
 	{
 		if (player->m_hVehicle == nullptr)
-			DETOUR_MEMBER_CALL(CTFWeaponBaseGun_UpdatePunchAngles)(player);
+			DETOUR_MEMBER_CALL(player);
 	}
 
 	// Prevent driver's rockets from colliding with the vehicle 
@@ -294,13 +294,13 @@ namespace Mod::Util::Vehicle_Fix
 	}
 	DETOUR_DECL_MEMBER(void, CTFBaseProjectile_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFBaseProjectile_Spawn)();
+		DETOUR_MEMBER_CALL();
 		SetOwnerToVehicle(reinterpret_cast<CBaseProjectile *>(this));
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFProjectile_Arrow_Spawn)
 	{
-		DETOUR_MEMBER_CALL(CTFProjectile_Arrow_Spawn)();
+		DETOUR_MEMBER_CALL();
 		SetOwnerToVehicle(reinterpret_cast<CBaseProjectile *>(this));
 	}
 
@@ -320,14 +320,14 @@ namespace Mod::Util::Vehicle_Fix
 			//DevMsg("Angles %f %f %f %f\n", angles.x, player->m_hVehicle->GetAbsAngles().x, player->m_hVehicle->GetAbsAngles().y, player->m_hVehicle->GetAbsAngles().z);
 			//angles.x += player->m_hVehicle->GetAbsAngles().z + 0.5;
 		}
-		return DETOUR_MEMBER_CALL(CBasePlayer_EyeAngles)();
+		return DETOUR_MEMBER_CALL();
 	}
 
 	/*DETOUR_DECL_MEMBER(unsigned int, CTFBaseProjectile_PhysicsSolidMaskForEntity)
 	{
 		auto owner = ToTFPlayer(reinterpret_cast<CTFBaseProjectile *>(this)->GetOwnerEntity());
 		if (owner != nullptr && owner->m_hVehicle != nullptr) {
-			return DETOUR_MEMBER_CALL(CTFBaseProjectile_PhysicsSolidMaskForEntity)() | CON;
+			return DETOUR_MEMBER_CALL() | CON;
 		}
     }*/
 	
@@ -339,7 +339,7 @@ namespace Mod::Util::Vehicle_Fix
 		if (player != nullptr && player->m_hVehicle != nullptr) {
 			g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
 		}
-		DETOUR_MEMBER_CALL(CTFWeaponBase_PrimaryAttack)();
+		DETOUR_MEMBER_CALL();
 		g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldHost;
 	}
 	
@@ -365,13 +365,13 @@ namespace Mod::Util::Vehicle_Fix
 			}
 		}
 		//info2.SetDamageType(info2.GetDamageType() | DMG_PHYSGUN);
-		DETOUR_MEMBER_CALL(CPropVehicleDriveable_TraceAttack)(info2, vecDir, ptr, pAccumulator);
+		DETOUR_MEMBER_CALL(info2, vecDir, ptr, pAccumulator);
 
 	}
 
 	DETOUR_DECL_MEMBER(void, CPropVehicleDriveable_DriveVehicle, float flFrameTime, CUserCmd *ucmd, int iButtonsDown, int iButtonsReleased)
 	{
-		DETOUR_MEMBER_CALL(CPropVehicleDriveable_DriveVehicle)(flFrameTime, ucmd, iButtonsDown, iButtonsReleased);
+		DETOUR_MEMBER_CALL(flFrameTime, ucmd, iButtonsDown, iButtonsReleased);
 		auto vehicle = reinterpret_cast<CPropVehicleDriveable *>(this);
 		variant_t variant;
 		if (iButtonsReleased & IN_ATTACK) {
@@ -422,7 +422,7 @@ namespace Mod::Util::Vehicle_Fix
 
 	DETOUR_DECL_STATIC(float, CalculatePhysicsImpactDamage, int index, gamevcollisionevent_t *pEvent, void *table, float energyScale, bool allowStaticDamage, int &damageTypeOut, bool bDamageFromHeldObjects)
 	{
-		auto damage = DETOUR_STATIC_CALL(CalculatePhysicsImpactDamage)(index, pEvent, table, energyScale, allowStaticDamage, damageTypeOut, bDamageFromHeldObjects);
+		auto damage = DETOUR_STATIC_CALL(index, pEvent, table, energyScale, allowStaticDamage, damageTypeOut, bDamageFromHeldObjects);
 		if (pEvent->pEntities[0] != nullptr) {
 			damage *= pEvent->pEntities[0]->GetCustomVariableFloat<"impactdamagemult">(1.0f);
 		}
@@ -439,7 +439,7 @@ namespace Mod::Util::Vehicle_Fix
 		if (character->IsPlayer()/* && character->VPhysicsGetObject() != nullptr && !character->VPhysicsGetObject()->IsMoveable()*/) {
 			return 0;
 		}
-		return DETOUR_MEMBER_CALL(CBaseCombatCharacter_CalculatePhysicsStressDamage)(stress, obj);
+		return DETOUR_MEMBER_CALL(stress, obj);
 	}
 
 	THINK_FUNC_DECL(ApplyImmobile)
@@ -452,7 +452,7 @@ namespace Mod::Util::Vehicle_Fix
 	DETOUR_DECL_MEMBER(void, CTFGameRules_OnPlayerSpawned, CTFPlayer *player)
 	{
 		THINK_FUNC_SET(player, ApplyImmobile, gpGlobals->curtime+0.01f);
-		DETOUR_MEMBER_CALL(CTFGameRules_OnPlayerSpawned)(player);
+		DETOUR_MEMBER_CALL(player);
 	}
 
 	DETOUR_DECL_STATIC(void, SV_ComputeClientPacks, int clientCount,  void **clients, void *snapshot)
@@ -467,7 +467,7 @@ namespace Mod::Util::Vehicle_Fix
 
 			}
 		}); 
-		DETOUR_STATIC_CALL(SV_ComputeClientPacks)(clientCount, clients, snapshot);
+		DETOUR_STATIC_CALL(clientCount, clients, snapshot);
 		ForEachTFPlayer([](CTFPlayer *player) {
 			if (player->m_hVehicle != nullptr && player->m_hVehicle->GetCustomVariableFloat<"playermodellookforward">(1.0f)) {
 				QAngle ang = player->m_angEyeAngles;
@@ -486,7 +486,7 @@ namespace Mod::Util::Vehicle_Fix
 		if (owner != nullptr && owner->m_hVehicle != nullptr) {
 			g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = nullptr;
 		}
-		DETOUR_MEMBER_CALL(CBaseCombatWeapon_WeaponSound)(index, soundtime);
+		DETOUR_MEMBER_CALL(index, soundtime);
 		g_RecipientFilterPredictionSystem.GetRef().m_pSuppressHost = oldHost;
 	}
 
@@ -495,7 +495,7 @@ namespace Mod::Util::Vehicle_Fix
 		if (rtti_cast<CPropVehicleDriveable *>(pOther) != nullptr) {
 			return;
 		}
-		DETOUR_MEMBER_CALL(CTFProjectile_EnergyRing_ProjectileTouch)(pOther);
+		DETOUR_MEMBER_CALL(pOther);
 	}
 
 	VHOOK_DECL(bool, CPropVehicleDriveable_IsCombatItem)

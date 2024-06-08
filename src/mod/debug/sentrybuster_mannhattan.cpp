@@ -15,7 +15,7 @@ namespace Mod::Debug::SentryBuster_Mannhattan
 		messages.clear();
 		
 		SCOPED_INCREMENT(rc_CTFBotTacticalMonitor_OnNavAreaChanged);
-		auto result = DETOUR_MEMBER_CALL(CTFBotTacticalMonitor_OnNavAreaChanged)(actor, area1, area2);
+		auto result = DETOUR_MEMBER_CALL(actor, area1, area2);
 		
 		if (result.transition == ActionTransition::SUSPEND_FOR) {
 			DevMsg("CTFBotTacticalMonitor::OnNavAreaChanged\n");
@@ -32,7 +32,7 @@ namespace Mod::Debug::SentryBuster_Mannhattan
 	{
 		auto trigger = reinterpret_cast<CBaseTrigger *>(this);
 		
-		auto result = DETOUR_MEMBER_CALL(CBaseTrigger_PassesTriggerFilters)(pOther);
+		auto result = DETOUR_MEMBER_CALL(pOther);
 		
 		if (rc_CTFBotTacticalMonitor_OnNavAreaChanged > 0) {
 			

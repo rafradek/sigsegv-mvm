@@ -12,7 +12,7 @@ namespace Mod::Pop::EventPopfile_Improvements
 	DETOUR_DECL_MEMBER(int, CMissionPopulator_UpdateMissionDestroySentries, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
 		SCOPED_INCREMENT(rc_CMissionPopulator_UpdateMissionDestroySentries);
-		return DETOUR_MEMBER_CALL(CMissionPopulator_UpdateMissionDestroySentries)(where, ents);
+		return DETOUR_MEMBER_CALL(where, ents);
 	}
 	
 	DETOUR_DECL_MEMBER(void, CTFBot_AddItem, const char *item)
@@ -21,13 +21,13 @@ namespace Mod::Pop::EventPopfile_Improvements
 				return;
 		}
 		
-		DETOUR_MEMBER_CALL(CTFBot_AddItem)(item);
+		DETOUR_MEMBER_CALL(item);
 	}
 	
 	
 	DETOUR_DECL_MEMBER(void, CPopulationManager_UpdateObjectiveResource)
 	{
-		DETOUR_MEMBER_CALL(CPopulationManager_UpdateObjectiveResource)();
+		DETOUR_MEMBER_CALL();
 		
 		// ConVarRef tf_forced_holiday("tf_forced_holiday");
 		// if (TFObjectiveResource()->m_nMvMEventPopfileType != 0u) {
@@ -44,7 +44,7 @@ namespace Mod::Pop::EventPopfile_Improvements
 			return true;
 		}
 		
-		return DETOUR_STATIC_CALL(UTIL_IsHolidayActive)(holiday);
+		return DETOUR_STATIC_CALL(holiday);
 	}
 	
 	

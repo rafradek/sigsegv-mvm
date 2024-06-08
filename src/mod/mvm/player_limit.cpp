@@ -197,7 +197,7 @@ namespace Mod::MvM::Player_Limit
             }
         }
 		
-		bool ret = DETOUR_MEMBER_CALL(CTFGameRules_ClientConnected)(pEntity, pszName, pszAddress, reject, maxrejectlen);
+		bool ret = DETOUR_MEMBER_CALL(pEntity, pszName, pszAddress, reject, maxrejectlen);
         
         if (gamerules->IsMannVsMachineMode()) {
             // Fix Source TV client counting as real player
@@ -245,7 +245,7 @@ namespace Mod::MvM::Player_Limit
 
 		/* it's important to let the call happen, because pPlayer->m_nCurrency
 		 * is set to its proper value in the call (stupid, but whatever) */
-		auto iResult = DETOUR_MEMBER_CALL(CTFGameRules_GetTeamAssignmentOverride)(pPlayer, iWantedTeam, b1);
+		auto iResult = DETOUR_MEMBER_CALL(pPlayer, iWantedTeam, b1);
 		
 		return iResult;
 	}
@@ -257,7 +257,7 @@ namespace Mod::MvM::Player_Limit
 
 		static CValueOverride_ConVar<int> tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
 		tf_mvm_defenders_team_size.Set(red + blu);
-		DETOUR_MEMBER_CALL(CTFGCServerSystem_PreClientUpdate)();
+		DETOUR_MEMBER_CALL();
 		tf_mvm_defenders_team_size.Reset();
 	}
 

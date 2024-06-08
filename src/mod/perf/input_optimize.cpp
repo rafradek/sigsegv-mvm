@@ -22,7 +22,7 @@ namespace Mod::Perf::Input_Optimize
     {
         CFastTimer timer;
         timer.Start();
-        DETOUR_MEMBER_CALL(CEventQueue_ServiceEvents)();
+        DETOUR_MEMBER_CALL();
         timer.End();
         DevMsg("serviceevents %.9f\n", timer.GetDuration().GetSeconds());
     }
@@ -32,7 +32,7 @@ namespace Mod::Perf::Input_Optimize
     DETOUR_DECL_MEMBER(void, CBaseEntityOutput_FireOutput, variant_t Value, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
     {
         static ConVarRef developer("developer");
-            //DETOUR_MEMBER_CALL(CBaseEntityOutput_FireOutput)(Value, pActivator, pCaller, fDelay);
+            //DETOUR_MEMBER_CALL(Value, pActivator, pCaller, fDelay);
         CBaseEntityOutput *output = reinterpret_cast<CBaseEntityOutput *>(this);
         //
         // Iterate through all eventactions and fire them off.
@@ -111,7 +111,7 @@ namespace Mod::Perf::Input_Optimize
             }
         }
     
-        //DETOUR_MEMBER_CALL(CBaseEntityOutput_FireOutput)(Value, pActivator, pCaller, fDelay);
+        //DETOUR_MEMBER_CALL(Value, pActivator, pCaller, fDelay);
     }
 
     DETOUR_DECL_MEMBER(bool, CBaseEntity_AcceptInput, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID)
@@ -119,7 +119,7 @@ namespace Mod::Perf::Input_Optimize
         static ConVarRef developer("developer");
         // loop through the data description list, restoring each data desc block
         //if (!cvar_real_enable.GetBool()) {
-            //auto ret = DETOUR_MEMBER_CALL(CBaseEntity_AcceptInput)(szInputName, pActivator, pCaller, Value, outputID);
+            //auto ret = DETOUR_MEMBER_CALL(szInputName, pActivator, pCaller, Value, outputID);
             //DevMsg("timeacceptinput %.9f\n", timer.GetDuration().GetSeconds());
             //return ret;
         //}

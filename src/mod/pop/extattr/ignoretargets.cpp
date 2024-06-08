@@ -26,7 +26,7 @@ namespace Mod::Pop::ExtAttr::IgnoreTargets
 			return true;
 		}
 
-		return DETOUR_MEMBER_CALL(CTFBotVision_IsIgnored)(ent);
+		return DETOUR_MEMBER_CALL(ent);
 	}
 	
 	

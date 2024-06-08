@@ -27,12 +27,12 @@ namespace Mod::AI::NPC_Nextbot
         }
         // Increase vision cooldown, for performace
         mod->m_VisionScanTime.Start(RandomFloat(0.8f, 1.2f));
-        VHOOK_CALL(MyNextbotVision_Update)();
+        VHOOK_CALL();
     }
 
     VHOOK_DECL(void, MyNextbotVision_CollectPotentiallyVisibleEntities, CUtlVector<CBaseEntity *> *visible)
     {
-        VHOOK_CALL(MyNextbotVision_CollectPotentiallyVisibleEntities)(visible);
+        VHOOK_CALL(visible);
         for (int i = 0; i < IBaseObjectAutoList::AutoList().Count(); ++i) {
             auto obj = rtti_scast<CBaseObject *>(IBaseObjectAutoList::AutoList()[i]);
             if (obj != nullptr && !obj->m_bPlacing && !obj->m_bCarried) {
@@ -89,7 +89,7 @@ namespace Mod::AI::NPC_Nextbot
         if (subjectCombat != nullptr && IsOnNav(subjectCombat, 20, 4) && IsOnNav(entity, 20, 4) && entity->GetLastKnownArea() != nullptr && entity->GetLastKnownArea()->IsCompletelyVisible(subjectCombat->GetLastKnownArea())) {
             return true;
         }
-        return VHOOK_CALL(MyNextbotVision_IsAbleToSee)(subject, checkFOV, visibleSpot);
+        return VHOOK_CALL(subject, checkFOV, visibleSpot);
     }
 
     void LoadVisionHooks(void **vtable) {

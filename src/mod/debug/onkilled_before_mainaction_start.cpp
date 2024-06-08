@@ -68,7 +68,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_OnStart)(actor, action);
+		return DETOUR_MEMBER_CALL(actor, action);
 	}
 	
 	ConVar cvar_fix_update("sig_debug_onkilled_before_mainaction_start_fix_update", "0", FCVAR_NOTIFY,
@@ -89,7 +89,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotMainAction_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	
@@ -107,7 +107,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			}
 		}
 		
-		return DETOUR_MEMBER_CALL(Action_CTFBot_OnKilled)(actor, info);
+		return DETOUR_MEMBER_CALL(actor, info);
 	}
 #endif
 	
@@ -124,7 +124,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			DevMsg("\n\n\n");
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotFetchFlag_OnStart)(actor, action);
+		return DETOUR_MEMBER_CALL(actor, action);
 	}
 	
 	DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotFetchFlag_Update, CTFBot *actor, float dt)
@@ -139,7 +139,7 @@ namespace Mod::Debug::OnKilled_Before_MainAction_Start
 			DevMsg("\n\n\n");
 		}
 		
-		return DETOUR_MEMBER_CALL(CTFBotFetchFlag_Update)(actor, dt);
+		return DETOUR_MEMBER_CALL(actor, dt);
 	}
 	
 	

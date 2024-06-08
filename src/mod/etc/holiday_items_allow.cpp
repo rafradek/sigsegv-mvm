@@ -11,7 +11,7 @@ namespace Mod::Etc::Holiday_Items_Allow
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_ItemIsAllowed, CEconItemView *item_view)
 	{
 		SCOPED_INCREMENT_IF(rc_CTFPlayer_ItemIsAllowed, item_view != nullptr && item_view->GetStaticData() != nullptr && item_view->GetStaticData()->GetKeyValues() != nullptr && FStrEq(item_view->GetStaticData()->GetKeyValues()->GetString("equip_region"), "zombie_body"));
-		return DETOUR_MEMBER_CALL(CTFPlayer_ItemIsAllowed)(item_view);
+		return DETOUR_MEMBER_CALL(item_view);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CEconItemDefinition_BInitFromKV, KeyValues *kv, CUtlVector<CUtlString> *errors)
@@ -23,12 +23,12 @@ namespace Mod::Etc::Holiday_Items_Allow
 			kv->RemoveSubKey(holiday);
 			holiday->deleteThis();
 		}
-		return DETOUR_MEMBER_CALL(CEconItemDefinition_BInitFromKV)(kv, errors);
+		return DETOUR_MEMBER_CALL(kv, errors);
 	}
 
 	DETOUR_DECL_STATIC(int, UTIL_GetHolidayForString, const char *str)
 	{
-		return rc_CTFPlayer_ItemIsAllowed ? DETOUR_STATIC_CALL(UTIL_GetHolidayForString)(str) : kHoliday_None;
+		return rc_CTFPlayer_ItemIsAllowed ? DETOUR_STATIC_CALL(str) : kHoliday_None;
 	}
 	
 	class CMod : public IMod
