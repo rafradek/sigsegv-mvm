@@ -40,7 +40,7 @@ jobs:
         cd alliedmodders
         git clone --recursive https://github.com/alliedmodders/sourcemod --depth 1 -b 1.11-dev
         git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b sdk2013 hl2sdk-sdk2013
-        git clone https://github.com/rafradek/hl2sdk-tf2 --depth 1 hl2sdk-tf2
+        git clone https://github.com/rafradek/hl2sdk-tf2 --depth 1 -b tf2-fixcpudef hl2sdk-tf2
         git clone https://github.com/alliedmodders/hl2sdk --depth 1 -b css hl2sdk-css
         git clone https://github.com/alliedmodders/metamod-source --depth 1 -b 1.11-dev
         popd

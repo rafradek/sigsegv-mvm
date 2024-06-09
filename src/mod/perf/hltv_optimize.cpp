@@ -90,8 +90,8 @@ namespace Mod::Perf::HLTV_Optimize
                     rtti_scast<CClientFrameManager *>(hltvserver)->RemoveOldestFrame();
                 }
                 //DevMsg("SendNow %d\n", gpGlobals->tickcount % tickcount == 0/*reinterpret_cast<CGameClient *>(hltvclient)->ShouldSendMessages()*/);
-                //if (gpGlobals->tickcount % tickcount != 0)
-                //    return;
+                if (gpGlobals->tickcount % tickcount != 0)
+                    return;
             }
         }
 

@@ -234,7 +234,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 #ifdef PLATFORM_64BITS
-            buf.SetDword(0xc, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
+            buf.SetQword(0xc, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #else
             buf.SetDword(0xe + 2, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #endif
@@ -246,7 +246,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
 #ifdef PLATFORM_64BITS
-            buf.SetDword(0xc, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
+            buf.SetQword(0xc, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #else
             buf.SetDword(0xe + 2, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #endif
@@ -316,7 +316,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
 		virtual bool GetPatchInfo(ByteBuf& buf, ByteBuf& mask) const override
 		{
 #ifdef PLATFORM_64BITS
-            buf.SetDword(0x9, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
+            buf.SetQword(0x9, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #else
             buf.SetDword(0xb + 2, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #endif
@@ -328,7 +328,7 @@ namespace Mod::Perf::Virtual_Call_Optimize
 		virtual bool AdjustPatchInfo(ByteBuf& buf) const override
 		{
 #ifdef PLATFORM_64BITS
-            buf.SetDword(0x9, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
+            buf.SetQword(0x9, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #else
             buf.SetDword(0xb + 2, (uintptr_t)RTTI::GetVTable("11CStaticProp"));
 #endif

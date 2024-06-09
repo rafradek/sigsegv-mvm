@@ -15,7 +15,7 @@
 #include <regex>
 
 
-#if !(PLATFORM_64BITS)
+#if !(defined(__i386__) || defined(_M_IX86) || defined(__x86_64__) )
 #error Architecture must be IA32/64
 #endif
 
