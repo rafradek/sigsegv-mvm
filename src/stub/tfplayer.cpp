@@ -262,7 +262,7 @@ MemberFuncThunk<      CTFPlayerShared *, void                                > C
 IMPL_SENDPROP(CTFPlayerShared,      CTFPlayer, m_Shared,                 CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flMvMLastDamageTime,    CTFPlayer);
 IMPL_SENDPROP(bool,                 CTFPlayer, m_iSpawnCounter,          CTFPlayer);
-IMPL_REL_BEFORE(CTFPlayerAnimState *,CTFPlayer, m_PlayerAnimState,        m_hItem, 0, bool, bool, bool, bool, float, float, float, EHANDLE, int); // 20170116a
+IMPL_REL_BEFORE(CTFPlayerAnimState *,CTFPlayer, m_PlayerAnimState,        m_hItem, 0, bool, bool, bool, bool, float, float, EHANDLE, int); // 20170116a
 //IMPL_EXTRACT (bool,                 CTFPlayer, m_bFeigningDeath,         new CExtract_CTFPlayer_m_bFeigningDeath());
 IMPL_REL_BEFORE(bool,               CTFPlayer, m_bFeigningDeath,         m_bArenaSpectator, -3, Vector, EHANDLE);
 IMPL_REL_BEFORE(float,              CTFPlayer, m_flTauntAttackTime, m_flTauntInhaleTime, 0);

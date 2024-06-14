@@ -299,22 +299,28 @@ private:
 	
 	static inline std::map<void *, CDetouredFunc> s_FuncMap;
 };
+#if !defined(_WINDOWS) || defined(PLATFORM_64BITS)
 #define DETOUR_MEMBER_CALL(...) (Actual)(this, ## __VA_ARGS__)
+#else
+#define DETOUR_MEMBER_CALL(...) (this->*Actual)(__VA_ARGS__)
+#endif
 #define DETOUR_STATIC_CALL(...) (Actual)(__VA_ARGS__)
 
 #define __DETOUR_DECL_STATIC(prefix, name, ...) \
 namespace detour_ns_##name {\
-	prefix Detour(__VA_ARGS__); \
+	prefix Detour_##name(__VA_ARGS__); \
 	prefix (*Actual)(__VA_ARGS__) = nullptr; \
 }\
 	CDetour *detour_##name= nullptr; \
-	prefix detour_ns_##name::Detour(__VA_ARGS__)
+	prefix detour_ns_##name::Detour_##name(__VA_ARGS__)
 
 #define DETOUR_DECL_STATIC(ret, name, ...) \
 	__DETOUR_DECL_STATIC(static ret, name, ##__VA_ARGS__)
 #define DETOUR_DECL_STATIC_CALL_CONVENTION(cc, ret, name, ...) \
 	__DETOUR_DECL_STATIC(cc static ret, name, ##__VA_ARGS__)
 
+#if !defined(_WINDOWS) || defined(PLATFORM_64BITS)
+// Call original function as a static function with this argument, avoids fat pointer conversion
 #define DETOUR_DECL_MEMBER(ret, name, ...) \
 	class Detour_##name \
 	{ \
@@ -337,11 +343,36 @@ namespace detour_ns_##name {\
 	static CDetour *detour_##name = nullptr; \
 	cc ret (* Detour_##name::Actual)(Detour_##name *, ## __VA_ARGS__) = nullptr; \
 	cc ret Detour_##name::callback(__VA_ARGS__)
+#else
+// Call original function as a member function
+#define DETOUR_DECL_MEMBER(ret, name, ...) \
+	class Detour_##name \
+	{ \
+	public: \
+		ret callback(__VA_ARGS__); \
+		static ret (Detour_##name::* Actual)(__VA_ARGS__); \
+	}; \
+	static CDetour *detour_##name = nullptr; \
+	ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	ret Detour_##name::callback(__VA_ARGS__)
+
+
+#define DETOUR_DECL_MEMBER_CALL_CONVENTION(cc ,ret, name, ...) \
+	class Detour_##name \
+	{ \
+	public: \
+		cc ret callback(__VA_ARGS__); \
+		cc static ret (Detour_##name::* Actual)(__VA_ARGS__); \
+	}; \
+	static CDetour *detour_##name = nullptr; \
+	cc ret (Detour_##name::* Detour_##name::Actual)(__VA_ARGS__) = nullptr; \
+	cc ret Detour_##name::callback(__VA_ARGS__)
+#endif
 
 #define GET_MEMBER_CALLBACK(name) GetAddrOfMemberFunc(&Detour_##name::callback)
 #define GET_MEMBER_INNERPTR(name) reinterpret_cast<void **>(&Detour_##name::Actual)
 
-#define GET_STATIC_CALLBACK(name) reinterpret_cast<void *>(&detour_ns_##name::Detour)
+#define GET_STATIC_CALLBACK(name) reinterpret_cast<void *>(&detour_ns_##name::Detour_##name)
 #define GET_STATIC_INNERPTR(name) reinterpret_cast<void **>(&detour_ns_##name::Actual)
 
 

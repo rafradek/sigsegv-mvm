@@ -515,7 +515,7 @@ static void CallNetworkStateChanged(void *obj, void *var)
 #define IMPL_REL_AFTER(TYPE, CLASSNAME, PROPNAME, RELPROP, ...) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
 	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \
-	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_sizeof_##RELPROP, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, CLASSNAME::_alignof_##PROPNAME, 0, GetTypeSizes< __VA_ARGS__ >(CLASSNAME::_sizeof_##RELPROP), GetTypeAligns< __VA_ARGS__ >(CLASSNAME::_alignof_##RELPROP))
+	CProp_Relative CLASSNAME::s_prop_##PROPNAME(#CLASSNAME, #PROPNAME, &CLASSNAME::_offset_##PROPNAME, CLASSNAME::_sizeof_##PROPNAME, CLASSNAME::_alignof_##PROPNAME, &CLASSNAME::s_prop_##RELPROP, CProp_Relative::REL_AFTER, CLASSNAME::_alignof_##PROPNAME, 0, GetTypeSizes< __VA_ARGS__ >(CLASSNAME::_sizeof_##RELPROP), GetTypeAligns< __VA_ARGS__ >(CLASSNAME::_alignof_##RELPROP))
 #define IMPL_REL_BEFORE(TYPE, CLASSNAME, PROPNAME, RELPROP, DIFF, ...) \
 	const size_t CLASSNAME::_adj_##PROPNAME = offsetof(CLASSNAME, PROPNAME); \
 	size_t CLASSNAME::_offset_##PROPNAME = -CLASSNAME::_adj_##PROPNAME; \

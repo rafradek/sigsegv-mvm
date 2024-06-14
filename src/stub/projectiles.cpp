@@ -139,6 +139,8 @@ IMPL_REL_BEFORE(CUtlVector<int>, CTFProjectile_Arrow, m_HitEntities, m_flTimeIni
 IMPL_REL_BEFORE(EHANDLE, CTFProjectile_Arrow, m_pTrail, m_bCritical, 0, bool, bool);
 IMPL_REL_AFTER(bool, CTFProjectile_Arrow, m_bPenetrate, m_bCritical);
 IMPL_SENDPROP(bool, CTFProjectile_Arrow, m_bArrowAlight, CTFProjectile_Arrow);
+IMPL_SENDPROP(int, CTFProjectile_Arrow, m_iProjectileType, CTFProjectile_Arrow);
+IMPL_REL_AFTER(int, CTFProjectile_Arrow, m_iWeaponId, m_iProjectileType);
 
 MemberFuncThunk<CTFProjectile_Arrow *, void, CBaseEntity *> CTFProjectile_Arrow::ft_SetScorer("CTFProjectile_Arrow::SetScorer");
 
@@ -149,7 +151,7 @@ StaticFuncThunk<CTFProjectile_Arrow *,const Vector &, const QAngle &, const floa
 
 
 IMPL_SENDPROP(Vector, CTFProjectile_BallOfFire, m_vecInitialVelocity, CTFProjectile_BallOfFire);
-IMPL_REL_AFTER(bool, CTFProjectile_BallOfFire, m_bLandedBonusDamage, m_vecInitialVelocity, Vector, bool, bool, bool);
+IMPL_REL_AFTER(bool, CTFProjectile_BallOfFire, m_bLandedBonusDamage, m_vecInitialVelocity, bool, bool, bool);
 
 
 IMPL_SENDPROP(int,    CTFWeaponBaseGrenadeProj, m_iDeflected,       CTFWeaponBaseGrenadeProj);

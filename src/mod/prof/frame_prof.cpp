@@ -21,19 +21,19 @@ namespace Mod::Prof::Frame_Prof
 	int maxsizevoice= 0;
 	DETOUR_DECL_STATIC(void, _Host_RunFrame, float dt)
 	{
-        CTimeAdder timer(&timespent);
+        //CTimeAdder timer(&timespent);
 		DETOUR_STATIC_CALL(dt);
-        timer.End();
-        if (floor(gpGlobals->curtime/5) != floor(prevTime) ) {
-            Msg("Frame time: %f\n", timespent.GetSeconds()/5);
-            timespent.Init();
-            prevTime = gpGlobals->curtime/5;
-        }
-		//Msg("ones: %d %d %d %d\n", bytesPrev, bytesPrevReliable, bytesPrevVoice, prevOverflow);
-		bytesPrevReliable = 0;
-		bytesPrev = 0;
-		bytesPrevVoice = 0;
-		prevOverflow = false;
+        // timer.End();
+        // if (floor(gpGlobals->curtime/5) != floor(prevTime) ) {
+        //     Msg("Frame time: %f\n", timespent.GetSeconds()/5);
+        //     timespent.Init();
+        //     prevTime = gpGlobals->curtime/5;
+        // }
+		// //Msg("ones: %d %d %d %d\n", bytesPrev, bytesPrevReliable, bytesPrevVoice, prevOverflow);
+		// bytesPrevReliable = 0;
+		// bytesPrev = 0;
+		// bytesPrevVoice = 0;
+		// prevOverflow = false;
 	}
 	
 	DETOUR_DECL_STATIC(void, Host_CheckDumpMemoryStats)

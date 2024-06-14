@@ -764,7 +764,7 @@ namespace Mod::Pop::ECAttr_Extensions
 					if (&ecattr != &last_spawner->m_ECAttrs[i] && FStrEq(last_spawner->m_ECAttrs[i].m_strName.Get(), ecattr.m_strName.Get())) {
 						
 						parse_dynamic_index = i + 1;
-						bool result = detour_ns_ParseDynamicAttributes::Detour(current_spawner->m_ECAttrs[i], kv);
+						bool result = detour_ns_ParseDynamicAttributes::Detour_ParseDynamicAttributes(current_spawner->m_ECAttrs[i], kv);
 
 						parse_dynamic_index = 0;
 						return result;
@@ -787,7 +787,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			for (int i = 0; i < current_spawner->m_ECAttrs.Count(); i++) {
 				parse_dynamic_index = i + 1;
 				
-				if (!detour_ns_ParseDynamicAttributes::Detour(current_spawner->m_ECAttrs[i], kv)){
+				if (!detour_ns_ParseDynamicAttributes::Detour_ParseDynamicAttributes(current_spawner->m_ECAttrs[i], kv)){
 					parse_dynamic_index = 0;
 					return false;
 				}

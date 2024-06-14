@@ -1907,6 +1907,10 @@ namespace Mod::Attr::Custom_Attributes
 		if (arrow->m_bPenetrate && ToTFPlayer(ent) != nullptr && ToTFPlayer(ent)->m_Shared->IsInvulnerable() && ent->GetTeamNumber() == arrow->GetTeamNumber()) {
 			return true;
 		}
+		// Lazy crash fix to m_iWeaponId becoming garbage value somewhere
+		if (arrow->m_iWeaponId < 0 || arrow->m_iWeaponId > TF_WEAPON_COUNT+64) {
+			arrow->m_iWeaponId = TF_WEAPON_COMPOUND_BOW;
+		}
 		auto ret = DETOUR_MEMBER_CALL(bbox, ent);
 		if (!ret && bounce_speed_target == 0) {
 			float bounce_speed = 0;

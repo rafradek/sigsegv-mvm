@@ -426,7 +426,7 @@ IMPL_EXTRACT  (CUtlVector<CHandle<CFuncNavCost>>, CNavArea, m_funcNavCostVector,
 IMPL_EXTRACT  (Vector,                            CNavArea, m_center,            new CExtract_CNavArea_m_center());
 IMPL_EXTRACT  (int,                               CNavArea, m_attributeFlags_a,  new CExtract_CNavArea_m_attributeFlags());
 IMPL_REL_BEFORE(uint32,                           CNavArea, m_nVisTestCounter,   m_funcNavCostVector, 0);
-IMPL_REL_AFTER(CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, CUtlVector<int>, CUtlVectorConservative<int>, CUtlVector<int>, unsigned int);
+IMPL_REL_AFTER(CNavArea *,                        CNavArea, m_parent,            m_attributeFlags_a, CUtlVectorUltraConservative<int>[4], CUtlVectorUltraConservative<int>[2], CUtlVectorUltraConservative<int>, unsigned int);
 IMPL_REL_AFTER(int,                               CNavArea, m_parentHow,         m_parent);
 //IMPL_EXTRACT  (float,                             CNavArea, m_costSoFar,         new CExtract_CNavArea_m_costSoFar());
 IMPL_EXTRACT  (CUtlVectorConservative<AreaBindInfo>, CNavArea, m_potentiallyVisibleAreas, new CExtract_CNavArea_m_potentiallyVisibleAreas());

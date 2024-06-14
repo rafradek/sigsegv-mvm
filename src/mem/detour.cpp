@@ -48,8 +48,6 @@ static size_t Trampoline_CalcNumBytesToCopy(size_t len_min, const uint8_t *func)
 		size_t len_decoded = ud_decode(&ud);
 		assert(len_decoded != 0);
 
-		// They typically determine end of function
-		if (ud_insn_mnemonic(&ud) == UD_Inop || ud_insn_mnemonic(&ud) == UD_Iint3) break;
 		len_actual += len_decoded;
 	}
 	return len_actual;
@@ -597,7 +595,7 @@ void CDetouredFunc::CreateTrampoline()
 	size_t len_prologue = Trampoline_CalcNumBytesToCopy(this->m_zJumpSize, this->m_pFunc);
 	TRACE_MSG("len_prologue = %zu\n", len_prologue);
 
-	size_t len_trampoline_alloc = len_prologue + 3 + (IsPlatform64Bits() ? JmpIndirectMem32::Size() + sizeof(uintptr_t) : JmpRelImm32::Size());
+	size_t len_trampoline_alloc = len_prologue + 4 + (IsPlatform64Bits() ? JmpIndirectMem32::Size() + sizeof(uintptr_t) : JmpRelImm32::Size());
 	
 	this->m_pTrampoline = TheExecMemManager()->AllocTrampoline(len_trampoline_alloc);
 	TRACE_MSG("trampoline @ %08x\n", (uintptr_t)this->m_pTrampoline);
@@ -612,10 +610,10 @@ void CDetouredFunc::CreateTrampoline()
 	{
 		MemProtModifier_RX_RWX(this->m_pTrampoline, len_trampoline_alloc);
 		len_trampoline = CopyAndFixUpFuncBytes(len_prologue, this->m_pFunc, this->m_pTrampoline);
-		Msg("trampoline addr %p len trampoline %zu alloc %zu jumps %zu prologue %zu\n", this->m_pTrampoline, len_trampoline, len_trampoline_alloc, jumpInTrampolineSize, len_prologue);
+		//Msg("trampoline addr %p len trampoline %zu alloc %zu jumps %zu prologue %zu\n", this->m_pTrampoline, len_trampoline, len_trampoline_alloc, jumpInTrampolineSize, len_prologue);
 		TRACE_MSG("len_trampoline = %zu\n", len_trampoline);
 
-		assert(len_trampoline >= len_prologue && len_trampoline + jumpInTrampolineSize <= len_trampoline_alloc);
+		assert(len_trampoline + jumpInTrampolineSize <= len_trampoline_alloc);
 		Jump_WriteJump(this->m_pTrampoline + len_trampoline, (uintptr_t)this->m_pFunc + len_prologue, 0);
 	}
 	assert(this->m_TrampolineCheck.empty());
@@ -657,7 +655,7 @@ void CDetouredFunc::Reconfigure()
 	void *jump_to = nullptr;
 	
 	if (!this->m_Detours.empty()) {
-		Msg("Installing detour %s\n", AddrManager::ReverseLookup(this->m_pFunc));
+		//Msg("Installing detour %s\n", AddrManager::ReverseLookup(this->m_pFunc));
 		CDetour *first = this->m_Detours.front();
 		CDetour *last  = this->m_Detours.back();
 		this->m_bJumpIsRelative = Jump_ShouldUseRelativeJump((intptr_t)this->m_pFunc, (intptr_t)first->m_pCallback);

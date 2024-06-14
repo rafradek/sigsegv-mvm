@@ -64,6 +64,7 @@
 				"CPopulationManager::UnpauseSpawning"                             "_ZN18CPopulationManager15UnpauseSpawningEv"
 				"CPopulationManager::StartCurrentWave"                            "_ZN18CPopulationManager16StartCurrentWaveEv"
 				"CPopulationManager::IsInEndlessWaves"                            "_ZN18CPopulationManager16IsInEndlessWavesEv"
+				"CPopulationManager::GetPopulationFilename"                       "_ZN18CPopulationManager21GetPopulationFilenameEv"
 				"CPopulationManager::SetPopulationFilename"                       "_ZN18CPopulationManager21SetPopulationFilenameEPKc"
 				"CPopulationManager::GetPlayerCurrencySpent"                      "_ZN18CPopulationManager22GetPlayerCurrencySpentEP9CTFPlayer"
 				"CPopulationManager::FindOrAddPlayerUpgradeHistory"               "_ZN18CPopulationManager29FindOrAddPlayerUpgradeHistoryE8CSteamID"

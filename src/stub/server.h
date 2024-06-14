@@ -199,6 +199,14 @@ public:
 	CUtlDict< IEntityFactory *, unsigned short > m_Factories;
 };
 
+class CNetChan : public INetChannel
+{
+public:
+    bool IsFileInWaitingList(const char *filename) { return ft_IsFileInWaitingList(this, filename); }
+private:
+	static MemberFuncThunk<CNetChan *, bool, const char *> ft_IsFileInWaitingList;
+};
+
 
 extern GlobalThunk<CHLTVServer *> hltv;
 

@@ -157,7 +157,7 @@ namespace Mod::Etc::SendProp_Override
 	int nCheckProps
 	)
     {
-        if (objectID >= 0 && objectID < 2048 && entityHasOverride[objectID]) {
+        if (objectID >= 0 && objectID < MAX_EDICTS && entityHasOverride[objectID]) {
             WriteOverride(pTable, pState, nBits, pOut, objectID, pCheckProps, nCheckProps);
 			return;
         }

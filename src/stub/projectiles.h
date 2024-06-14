@@ -155,6 +155,8 @@ public:
 	DECL_RELATIVE(EHANDLE, m_pTrail);
 	DECL_RELATIVE(bool, m_bPenetrate);
 	DECL_SENDPROP(bool, m_bArrowAlight);
+	DECL_SENDPROP(int, m_iProjectileType);
+	DECL_RELATIVE(int, m_iWeaponId);
 	
 
 	void SetScorer(CBaseEntity *scorer) { ft_SetScorer(this, scorer); }

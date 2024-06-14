@@ -131,7 +131,7 @@ IMPL_SENDPROP(int,                                CBasePlayer, m_iDefaultFOV,   
 IMPL_SENDPROP(int,                                CBasePlayer, m_iFOV,          CBasePlayer);
 IMPL_SENDPROP(CHandle<CBaseViewModel>[MAX_VIEWMODELS], CBasePlayer, m_hViewModel,    CBasePlayer);
 
-IMPL_REL_AFTER(CUserCmd *,                  CBasePlayer, m_pCurrentCommand, m_hViewModel, CUserCmd, CUserCmd*);
+IMPL_REL_AFTER(CUserCmd *,                  CBasePlayer, m_pCurrentCommand, m_hViewModel, CUserCmd);
 
 MemberFuncThunk<CBasePlayer *, void, Vector *, Vector *, Vector *> CBasePlayer::ft_EyeVectors    ("CBasePlayer::EyeVectors");
 MemberFuncThunk<CBasePlayer *, bool, CSteamID *>                   CBasePlayer::ft_GetSteamID    ("CBasePlayer::GetSteamID");

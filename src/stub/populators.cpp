@@ -190,6 +190,7 @@ MemberFuncThunk<CPopulationManager *, void>              CPopulationManager::ft_
 MemberFuncThunk<CPopulationManager *, bool>              CPopulationManager::ft_IsInEndlessWaves("CPopulationManager::IsInEndlessWaves");
 MemberFuncThunk<CPopulationManager *, void, CTFPlayer *> CPopulationManager::ft_RemovePlayerAndItemUpgradesFromHistory      ("CPopulationManager::RemovePlayerAndItemUpgradesFromHistory");
 MemberFuncThunk<CPopulationManager *, CUtlVector< CUpgradeInfo > *, CTFPlayer *>              CPopulationManager::ft_GetPlayerUpgradeHistory ("CPopulationManager::GetPlayerUpgradeHistory");
+MemberFuncThunk<CPopulationManager *, const char*>       CPopulationManager::ft_GetPopulationFilename("CPopulationManager::GetPopulationFilename");
 MemberFuncThunk<CPopulationManager *, void, const char*> CPopulationManager::ft_SetPopulationFilename("CPopulationManager::SetPopulationFilename");
 MemberFuncThunk<CPopulationManager *, int, CTFPlayer *>  CPopulationManager::ft_GetPlayerCurrencySpent("CPopulationManager::GetPlayerCurrencySpent");
 MemberFuncThunk<CPopulationManager *, void, int, float>  CPopulationManager::ft_JumpToWave("CPopulationManager::JumpToWave");

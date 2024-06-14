@@ -3029,7 +3029,17 @@
 					type "sym"
 					sym  "_ZL22UTIL_PlayerBulletTraceRK6VectorS1_S1_jP12ITraceFilterP10CGameTrace_constprop_737"
 				}
-				
+				"CSchemaAttributeType_String::BConvertStringToEconAttributeValue"
+				{
+					type "sym"
+					sym  "_ZNK27CSchemaAttributeType_String34BConvertStringToEconAttributeValueEPK28CEconItemAttributeDefinitionPKcP22attribute_data_union_tb"
+				}
+				"CNetChan::IsFileInWaitingList"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN8CNetChan19IsFileInWaitingListEPKc"
+				}
 				"CStdMemAlloc::Alloc"
 				{
 					type   "func knownvtidx"
@@ -3039,6 +3049,21 @@
 					idx    "0x01"
 					lib    "tier0"
 				}
+
+				"CServerPlugin::OnQueryCvarValueFinished"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN13CServerPlugin24OnQueryCvarValueFinishedEiP7edict_t21EQueryCvarValueStatusPKcS4_"
+				}
+
+				"SendCvarValueQueryToClient"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z26SendCvarValueQueryToClientP7IClientPKcb"
+				}
+				
 			}
 			"addrs_group"
 			{

@@ -48,7 +48,7 @@ IMPL_DATAMAP(bool,                   CBaseEntity, m_takedamage);
 IMPL_DATAMAP(void (CBaseEntity::*)(CBaseEntity *), CBaseEntity, m_pfnTouch);
 IMPL_DATAMAP(int,                    CBaseEntity, m_iInitialTeamNum);
 IMPL_REL_AFTER(ExtraEntityData *, CBaseEntity, m_extraEntityData, m_debugOverlays);
-IMPL_REL_BEFORE(IHasAttributes *, CBaseEntity, m_pAttributes, m_iMaxHealth, 0, string_t, void *, void *);
+IMPL_REL_BEFORE(IHasAttributes *, CBaseEntity, m_pAttributes, m_iMaxHealth, 0, string_t, void *);
 IMPL_DATAMAP(unsigned char,          CBaseEntity, m_nWaterLevel);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_nRenderFX,   CBaseEntity);
 IMPL_SENDPROP(unsigned char,          CBaseEntity, m_iParentAttachment,  CBaseEntity);

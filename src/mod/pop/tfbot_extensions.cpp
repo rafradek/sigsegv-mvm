@@ -2131,6 +2131,7 @@ namespace Mod::Pop::TFBot_Extensions
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
 				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
 				auto world = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
+				world->SetTeamNumber(proj->GetTeamNumber());
 				if (rtti_cast<CBaseGrenade *>(proj) != nullptr && rtti_cast<CBaseGrenade *>(proj)->GetThrower() == player) {
 					rtti_cast<CBaseGrenade *>(proj)->SetThrower(world);
 				}

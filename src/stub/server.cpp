@@ -25,3 +25,5 @@ MemberFuncThunk<CGameClient *, CClientFrame *>         CGameClient::ft_GetSendFr
 
 MemberFuncThunk<CNetworkStringTable *, void, int>              CNetworkStringTable::ft_UpdateMirrorTable("CNetworkStringTable::UpdateMirrorTable");
 MemberFuncThunk<CNetworkStringTable *, void>                   CNetworkStringTable::ft_DeleteAllStrings("CNetworkStringTable::DeleteAllStrings");
+
+MemberFuncThunk<CNetChan *, bool, const char *> CNetChan::ft_IsFileInWaitingList("CNetChan::IsFileInWaitingList");

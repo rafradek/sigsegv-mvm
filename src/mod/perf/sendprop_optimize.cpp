@@ -179,16 +179,6 @@ NOINLINE void SetTransmitAlways(CServerNetworkProperty *netProp, bool bAlways) {
 
 auto ourfunc1 = &SetTransmitAlways;
 
-NOINLINE void SetTransmitParent(int parentIndex, CCheckTransmitInfo *pInfo, bool bAlways) {
-    CBaseEntity *parent = (CBaseEntity *)(g_pWorldEdict+parentIndex)->GetUnknown();
-
-    // Force our aiment and move parent to be sent.
-    if (parent != nullptr) {
-        parent->SetTransmit(pInfo, bAlways);
-    }
-}
-auto ourfunc2 = &SetTransmitParent;
-
 REPLACE_FUNC_MEMBER(void, CBaseEntity_SetTransmit, CCheckTransmitInfo *pInfo, bool bAlways)
 {
     auto entity = reinterpret_cast<CBaseEntity *>(this);
@@ -1139,6 +1129,7 @@ namespace Mod::Perf::SendProp_Optimize
                     auto hParent = networkable->m_hParent.Get();
                     if (hParent == nullptr) break;
                     edict = hParent->edict();
+                    if (edict->m_fStateFlags & FL_EDICT_ALWAYS) break;
                     index = hParent->entindex();
                     if (addedToList.test(index)) break;
                     list.push_back(index);
@@ -2039,7 +2030,6 @@ namespace Mod::Perf::SendProp_Optimize
             auto world_accessor2 = engine->GetChangeAccessor(world_edict);
             world_accessor = static_cast<CVEngineServer *>(engine)->GetChangeAccessorStatic(world_edict);
             world_change_info = &g_SharedEdictChangeInfo->m_ChangeInfos[0];
-            Msg("Set world change info %p %p %p %p\n", world_change_info, world_accessor, world_accessor2, world_edict);
             
             ConVarRef sv_parallel_packentities("sv_parallel_packentities");
             ConVarRef sv_parallel_sendsnapshot("sv_parallel_sendsnapshot");
