@@ -1,5 +1,5 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
-import os, sys
+import os, sys, copy, json
 
 class SDK(object):
   def __init__(self, sdk, ext, aDef, name, platform, dir, dll_dir):
@@ -129,6 +129,13 @@ class ExtensionConfig(object):
     SdkHelpers.sdk_filter = self.shouldIncludeSdk
     SdkHelpers.find_sdk_path = self.findSdkPath
     SdkHelpers.findSdks(builder, self.all_targets, sdk_list)
+
+    if 'css' in SdkHelpers.sdks and 'sdk2013' in SdkHelpers.sdks:
+      with open(os.path.join(builder.sourcePath, 'css.json'), 'rt') as fp:
+        sdk = json.load(fp)
+        builder.AddConfigureFile(os.path.join(builder.sourcePath, 'css.json'))
+        SdkHelpers.sdks['css'] = sdk
+        SdkHelpers.sdks['css']['path'] = SdkHelpers.sdks['sdk2013']['path']
 
     self.sdks = SdkHelpers.sdks
     self.sdk_manifests = SdkHelpers.sdk_manifests

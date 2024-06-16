@@ -71,7 +71,7 @@ namespace Mod::Util::Download_Manager
 	void ResetVoteMapList();
 
 	static void ReloadConfigIfModEnabled();
-	void GenerateLateDownloadablesCurrentMission(time_t timestamp = 0);
+	void GenerateLateDownloadablesCurrentMission();
 
 	bool server_activated = false;
 	ConVar cvar_resource_file("sig_util_download_manager_resource_file", "tf_mvm_missioncycle.res", FCVAR_NONE, "Download Manager: Mission cycle file to write to. If set to empty string, vote list is not automatically updated",
@@ -251,6 +251,7 @@ namespace Mod::Util::Download_Manager
 	std::vector<std::string> late_dl_from_all_maps_files;
 
 	std::unordered_map<std::string, std::vector<std::string>> late_dl_files_per_mission;
+	std::unordered_map<uint64_t, std::unordered_set<std::string>> late_dl_download_history;
 	
 	struct LateDownloadInfo
 	{
@@ -265,6 +266,26 @@ namespace Mod::Util::Download_Manager
 	};
 	LateDownloadInfo download_infos[MAX_PLAYERS + 1];
 
+	void StopLateFilesToDownloadForPlayer(int player) {
+		
+		auto *netchan = static_cast<CNetChan *>(engine->GetPlayerNetInfo(player));
+		if (netchan == nullptr) return;
+
+		auto &info = download_infos[player];
+		if (!info.lateDlEnabled || !info.active) return;
+
+		for (auto &file : info.filesToDownload) {
+			info.filesQueried.erase(file);
+			if (file.starts_with("materials/hud/leaderboard_class_")) {
+				auto find = info.iconsDownloading.find(file.substr(strlen("materials/hud/leaderboard_class_"), file.size() - 4 - strlen("materials/hud/leaderboard_class_")));
+				if (find != info.iconsDownloading.end()) {
+					info.iconsDownloading.erase(find);
+				}
+			}
+		}
+		info.filesToDownload.clear();
+	}
+
 	void AddLateFilesToDownloadForPlayer(int player, const std::vector<std::string> &files) {
 		
 		auto *netchan = static_cast<CNetChan *>(engine->GetPlayerNetInfo(player));
@@ -274,16 +295,15 @@ namespace Mod::Util::Download_Manager
 		if (!info.lateDlEnabled) return;
 
 		for (auto &file : files) {
-			info.active = true;
+			if (late_dl_download_history[((CBaseClient *) sv->GetClient(player - 1))->m_SteamID.ConvertToUint64()].contains(file)) continue;
+
 			auto [it, inserted] = info.filesQueried.insert(file);
 			if (inserted) {
+				info.active = true;
 				info.filesToDownload.push_back(file);
 				
-				auto iconFileFind = file.find("leaderboard_class_");
-				if (iconFileFind != std::string::npos) {
-					iconFileFind += strlen("leaderboard_class_");
-					auto name = file.substr(iconFileFind, file.size() - 4 - iconFileFind);
-					info.iconsDownloading.insert(name);
+				if (file.starts_with("materials/hud/leaderboard_class_")) {
+					info.iconsDownloading.insert(file.substr(strlen("materials/hud/leaderboard_class_"), file.size() - 4 - strlen("materials/hud/leaderboard_class_")));
 				}
 			}
 		}
@@ -336,11 +356,15 @@ namespace Mod::Util::Download_Manager
 						missingfilemention = true;
 						ClientMsg(mission_owner, "File missing: %s\n", value.c_str());
 					}
-					WatchMissingFile(pathfull);
+					WatchMissingFile(value);
 				}
 			}
 
 			files_add_present.insert(value);
+
+			if (custom && (loadIconsForLateDl || loadOtherForLateDl)) {
+				if (filesystem->FileExists(value.c_str(), "vpks")) return;
+			}
 				
 			if (custom) {
 				if (StringEndsWith(value.c_str(),".vmt", false)){
@@ -349,7 +373,6 @@ namespace Mod::Util::Download_Manager
 					if (kvroot != nullptr) {
 						kv = kv->GetFirstSubKey();
 						if (kv != nullptr) {
-							//PrintToServer("loaded %s",name);
 							do {
 								if (kv->GetDataType() == KeyValues::TYPE_STRING){
 									const char *name = kv->GetName();
@@ -359,7 +382,6 @@ namespace Mod::Util::Download_Manager
 									if (strchr(texturename, '/') != nullptr || strchr(texturename, '\\') != nullptr || StringEndsWith(texturename, ".vtf", false)) {
 										char texturepath[256];
 										snprintf(texturepath, 256, "materials/%s%s",texturename, !StringEndsWith(texturename, ".vtf", false) ? ".vtf" : "");
-										//PrintToServer("found texturename %s",texturepath);
 										AddFileIfCustom(texturepath);
 									}
 								}
@@ -474,31 +496,19 @@ namespace Mod::Util::Download_Manager
 						const char *name = kv->GetName();
 						//Msg("%s %s\n", name, kv->GetString());
 						if ((loadIconsForLateDl || !cvar_late_download.GetBool()) && FStrEq(name, "ClassIcon")) {
-							const char *value = kv->GetString();
-							char fmt[200];
-							snprintf(fmt,200,"%s%s%s","materials/hud/leaderboard_class_",value,".vmt");
-							AddFileIfCustom(fmt);
+							AddFileIfCustom(fmt::format("{}{}{}", "materials/hud/leaderboard_class_",kv->GetString(),".vmt"));
 						}
 						else if (loadIconsForLateDl && !loadOtherForLateDl) {
 
 						}
 						else if(FStrEq(name, "CustomUpgradesFile")) {
-							const char *value = kv->GetString();
-							char fmt[200];
-							snprintf(fmt,200,"%s%s","scripts/items/",value);
-							AddFileIfCustom(fmt);
+							AddFileIfCustom(fmt::format("{}{}","scripts/items/",kv->GetString()));
 						}
 						else if(StringEndsWith(name, "Decal", false)) {
-							const char *value = kv->GetString();
-							char fmt[200];
-							snprintf(fmt,200,"%s%s",value,".vmt");
-
-							AddFileIfCustom(fmt);
+							AddFileIfCustom(fmt::format("{}{}",kv->GetString(),".vmt"));
 						}
 						else if(StringEndsWith(name,"Generic", false)){
-							const char *value = kv->GetString();
-
-							AddFileIfCustom(value);
+							AddFileIfCustom(kv->GetString());
 						}
 						else if(StringEndsWith(name,"Model", false) || FStrEq(name,"HandModelOverride")){
 							const char *value = kv->GetString();
@@ -536,9 +546,7 @@ namespace Mod::Util::Download_Manager
 							}
 							
 							if (StringEndsWith(value,".mp3") || StringEndsWith(value,".wav") ) {
-								char fmt[200];
-								snprintf(fmt,200,"%s%s","sound/", value);
-								AddFileIfCustom(fmt);
+								AddFileIfCustom(fmt::format("{}{}","sound/", value));
 							}
 						}
 					}
@@ -603,81 +611,107 @@ namespace Mod::Util::Download_Manager
 	{
 		return cvar_late_download.GetBool() && filename.find("leaderboard_class_") != std::string::npos;
 	}
+	
+	CustomFileScanner late_dl_all_missions_scanner;
+	DIR *late_dl_all_missions_dir = nullptr;
+	dirent *late_dl_all_missions_ent = nullptr;
+
+	bool late_dl_all_missions_generate_progress = false;
+	void GenerateLateDownloadablesAllMissionsEnd()
+	{
+		closedir(late_dl_all_missions_dir);
+		late_dl_all_missions_dir = nullptr;
+		late_dl_all_missions_generate_progress = false;
+		// Icons get extra weight so they are downloaded later
+		for (auto &entry : late_dl_all_missions_scanner.files_add) {
+			if (entry.name.starts_with("materials/hud/leaderboard_class_")) {
+				entry.size += 95000;
+			}
+		}
+		std::sort(late_dl_all_missions_scanner.files_add.begin(), late_dl_all_missions_scanner.files_add.end(), [](auto &entry1, auto &entry2){
+			return entry1.size < entry2.size;
+		});
+		static ConVarRef net_maxfilesize("net_maxfilesize");
+		size_t sizeLimit = (size_t) Min(net_maxfilesize.GetInt() * 1024 * 1024, cvar_late_download_size_limit.GetInt() * 1024);
+		for (auto &entry : late_dl_all_missions_scanner.files_add) {
+			if (entry.size > sizeLimit) continue;
+			late_dl_from_all_maps_files.push_back(entry.name);
+		}
+		// If late dl list is empty, populate it already with stuff
+		if (late_dl_files.empty() && !late_dl_from_all_maps_files.empty()) {
+			late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
+				AddLateFilesToDownloadForPlayer(i, late_dl_files);
+			}
+		}
+
+	}
+
+	bool GenerateLateDownloadablesAllMissionsUpdate()
+	{
+		char respath[512];
+
+		const char *map = STRING(gpGlobals->mapname);
+
+		int amount = 8;
+		while ((late_dl_all_missions_ent = readdir(late_dl_all_missions_dir)) != nullptr) {
+			if (!StringStartsWith(late_dl_all_missions_ent->d_name, map) && StringStartsWith(late_dl_all_missions_ent->d_name, "mvm_") && StringEndsWith(late_dl_all_missions_ent->d_name, ".pop")) {
+				snprintf(respath, sizeof(respath), "%s%s", "scripts/population/",late_dl_all_missions_ent->d_name);
+				KeyValues *kv = new KeyValues("kv");
+				kv->UsesConditionals(false);
+				if (kv->LoadFromFile(filesystem, respath)) {
+					late_dl_all_missions_scanner.KeyValueBrowse(kv);
+				}
+				kv->deleteThis();
+				if (--amount <= 0) break;
+			}
+		}
+		if (late_dl_all_missions_ent == nullptr) {
+			GenerateLateDownloadablesAllMissionsEnd();
+		}
+		return late_dl_all_missions_ent != nullptr;
+	}
 
 	void GenerateLateDownloadablesAllMissions()
 	{
 		if (!cvar_late_download.GetBool() || !cvar_late_download_other_maps.GetBool()) return;
 
-		TIME_SCOPE2(GenerateLateDownloadablesAllMissions);
-
 		late_dl_from_all_maps_files.clear();
 
-		CustomFileScanner scanner;
-		scanner.readSize = true;
-		scanner.loadIconsForLateDl = true;
-		scanner.loadOtherForLateDl = true;
+		late_dl_all_missions_scanner = CustomFileScanner();
+		late_dl_all_missions_scanner.readSize = true;
+		late_dl_all_missions_scanner.loadIconsForLateDl = true;
+		late_dl_all_missions_scanner.loadOtherForLateDl = true;
 
 		char poppath[256];
 		snprintf(poppath, sizeof(poppath), "%s/%s/scripts/population", game_path, cvar_downloadpath.GetString());
-		char filepath[512];
-		char respath[512];
-		DIR *dir;
-		dirent *ent;
-		const char *map = STRING(gpGlobals->mapname);
-
-		if ((dir = opendir(poppath)) != nullptr) {
-			while ((ent = readdir(dir)) != nullptr) {
-				if (!StringStartsWith(ent->d_name, map) && StringStartsWith(ent->d_name, "mvm_") && StringEndsWith(ent->d_name, ".pop")) {
-					snprintf(filepath, sizeof(filepath), "%s/%s", poppath, ent->d_name);
-
-					snprintf(respath, sizeof(respath), "%s%s", "scripts/population/",ent->d_name);
-					Msg("Detect for mission %s\n", respath);
-					KeyValues *kv = new KeyValues("kv");
-					kv->UsesConditionals(false);
-					if (kv->LoadFromFile(filesystem, respath)) {
-						scanner.KeyValueBrowse(kv);
-					}
-					kv->deleteThis();
-				}
-			}
-			closedir(dir);
-		}
 		
-		std::sort(scanner.files_add.begin(), scanner.files_add.end(), [](auto &entry1, auto &entry2){
-			return entry1.size < entry2.size;
-		});
-		static ConVarRef net_maxfilesize("net_maxfilesize");
-		size_t sizeLimit = (size_t) Min(net_maxfilesize.GetInt() * 1024 * 1024, cvar_late_download_size_limit.GetInt() * 1024);
-		for (auto &entry : scanner.files_add) {
-			if (entry.size > sizeLimit) continue;
-			late_dl_from_all_maps_files.push_back(entry.name);
+		if (late_dl_all_missions_dir != nullptr) {
+			closedir(late_dl_all_missions_dir);
+		}
+		late_dl_all_missions_dir = opendir(poppath);
+		if (late_dl_all_missions_dir != nullptr) {
+			late_dl_all_missions_generate_progress = true;
 		}
 	}
 
-	void GenerateLateDownloadablesCurrentMission(time_t timestamp)
+	void GenerateLateDownloadablesCurrentMission()
 	{
 		late_dl_files.clear();
 		if (!cvar_late_download.GetBool()) return;
-		TIME_SCOPE2(GenerateLateDownloadablesCurrentMission);
 
 		const char *currentMission = g_pPopulationManager != nullptr ? g_pPopulationManager->GetPopulationFilename() : nullptr;
-		if (currentMission == nullptr) return;
-
-		CustomFileScanner scanner;
-		scanner.loadIconsForLateDl = true;
-
-		KeyValues *kv = new KeyValues("kv");
-		kv->UsesConditionals(false);
-		if (kv->LoadFromFile(filesystem, currentMission)) {
-			scanner.KeyValueBrowse(kv);
-		}
-		kv->deleteThis();
-		for (auto &entry : scanner.files_add) {
-			late_dl_files.push_back(entry.name);
+		if (currentMission != nullptr) {
+			auto iconsMission = late_dl_files_per_mission.find(currentMission);
+			if (iconsMission != late_dl_files_per_mission.end()) {
+				for (auto &icon : iconsMission->second) {
+					late_dl_files.push_back(icon);
+				}
+			}
 		}
 
 		for (auto &entry : late_dl_files_per_mission) {
-			if (entry.first != currentMission) {
+			if (currentMission == nullptr || entry.first != currentMission) {
 				for (auto &icon : entry.second) {
 					late_dl_files.push_back(icon);
 				}
@@ -687,6 +721,8 @@ namespace Mod::Util::Download_Manager
 		late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
 		if (!late_dl_files.empty()) {
 			for (int i = 1; i <= gpGlobals->maxClients; i++) {
+				// Re-prioritize downloads
+				StopLateFilesToDownloadForPlayer(i);
 				AddLateFilesToDownloadForPlayer(i, late_dl_files);
 			}
 		}
@@ -774,10 +810,8 @@ namespace Mod::Util::Download_Manager
 
 		bool saved_lock = engine->LockNetworkStringTables(false);
 
-		Msg("ehh %d\n", scanner.files_add.size());
 		for (auto &entry : scanner.files_add) {
 			downloadables->AddString(true, entry.name.c_str());
-			Msg("normal dl add %s\n", entry.name.c_str());
 		}
 		engine->LockNetworkStringTables(saved_lock);
 		timer.End();
@@ -1125,10 +1159,12 @@ namespace Mod::Util::Download_Manager
 		DETOUR_MEMBER_CALL(pEdictList, edictList, clientMax);
 		
 		server_activated = true;
+		late_dl_files.clear();
 		LoadDownloadsFile();
 		GenerateDownloadables();
 		ResetVoteMapList();
 		GenerateLateDownloadablesAllMissions();
+		GenerateLateDownloadablesCurrentMission();
 	}
 
 	DETOUR_DECL_STATIC(bool, findFileInDirCaseInsensitive, const char *file, char* output, size_t bufSize)
@@ -1246,7 +1282,13 @@ namespace Mod::Util::Download_Manager
 	void WatchMissingFile(std::string &path)
 	{
 		if (inotify_fd >= 0) {
-			std::string pathDir = path.substr(0,path.rfind('/'));
+			std::string fullPath = game_path;
+			fullPath += "/";
+			fullPath += cvar_downloadpath.GetString();
+			fullPath += "/";
+			fullPath += path;
+
+			std::string pathDir = fullPath.substr(0,fullPath.rfind('/'));
 
 			auto find = missing_files_dirs.find(pathDir);
 			missing_files.emplace(find != missing_files_dirs.end() ? find->second : inotify_add_watch(inotify_fd, pathDir.c_str(), IN_CREATE | IN_MOVED_TO), path);
@@ -1377,7 +1419,6 @@ namespace Mod::Util::Download_Manager
 		bool LateDownloadUpdate() {
 			if (!cvar_late_download.GetBool()) return false;
 
-			AVERAGE_TIME(LateDownloadUpdate)
 			static uint transferId = RandomInt(0, UINT_MAX);
 			bool hasIconDownloads = false;
 			int maxclients = gpGlobals->maxClients;
@@ -1400,19 +1441,21 @@ namespace Mod::Util::Download_Manager
 						info.lateDlChecked = true;
 					}
 				}
+				if (info.filesDownloading.empty() && !info.filesToDownload.empty() && UTIL_PlayerByIndex(i) != nullptr) {
+					ClientMsg(UTIL_PlayerByIndex(i), "Started late download of %d files\n", info.filesToDownload.size());
+				}
 
 				RemoveIf(info.filesDownloading, [&](auto &filename){
 					bool waiting = netchan->IsFileInWaitingList(filename.c_str());
 					if (!waiting) {
-						if (UTIL_PlayerByIndex(i) != nullptr) {
-							ClientMsg(UTIL_PlayerByIndex(i), "(%d/%d) File downloaded: %s\n", info.filesQueried.size() - (info.filesDownloading.size() + info.filesToDownload.size()) + 1, info.filesQueried.size(), filename.c_str());
+						int curFileIndex = info.filesQueried.size() - (info.filesDownloading.size() + info.filesToDownload.size()) + 1;
+						if (curFileIndex % 100 == 0 && UTIL_PlayerByIndex(i) != nullptr) {
+							ClientMsg(UTIL_PlayerByIndex(i), "(%d/%d) File downloaded: %s\n", curFileIndex, info.filesQueried.size(), filename.c_str());
 						}
+						late_dl_download_history[((CBaseClient *) sv->GetClient(i - 1))->m_SteamID.ConvertToUint64()].insert(filename);
 						
-						auto iconFileFind = filename.find("leaderboard_class_");
-						if (iconFileFind != std::string::npos) {
-							iconFileFind += strlen("leaderboard_class_");
-							auto name = filename.substr(iconFileFind, filename.size() - 4 - iconFileFind);
-							auto find = info.iconsDownloading.find(name);
+						if (filename.starts_with("materials/hud/leaderboard_class_")) {
+							auto find = info.iconsDownloading.find(filename.substr(strlen("materials/hud/leaderboard_class_"), filename.size() - 4 - strlen("materials/hud/leaderboard_class_")));
 							if (find != info.iconsDownloading.end()) {
 								info.iconsDownloading.erase(find);
 							}
@@ -1420,8 +1463,7 @@ namespace Mod::Util::Download_Manager
 					}
 					return !waiting;
 				});
-				if (!info.filesToDownload.empty() && info.filesDownloading.size() < 3) {
-					TIME_SCOPE2(SendFile);
+				if (!info.filesToDownload.empty() && info.filesDownloading.size() < 2) {
 					auto &filename = info.filesToDownload.front();
 					if (netchan->SendFile(filename.c_str(), transferId++)) {
 						info.filesDownloading.push_back(filename);
@@ -1430,11 +1472,8 @@ namespace Mod::Util::Download_Manager
 						if (UTIL_PlayerByIndex(i) != nullptr) {
 							ClientMsg(UTIL_PlayerByIndex(i), "Fail downloading file %s\n", filename.c_str());
 						}
-						auto iconFileFind = filename.find("leaderboard_class_");
-						if (iconFileFind != std::string::npos) {
-							iconFileFind += strlen("leaderboard_class_");
-							auto name = filename.substr(iconFileFind, filename.size() - 4 - iconFileFind);
-							auto find = info.iconsDownloading.find(name);
+						if (filename.starts_with("materials/hud/leaderboard_class_")) {
+							auto find = info.iconsDownloading.find(filename.substr(strlen("materials/hud/leaderboard_class_"), filename.size() - 4 - strlen("materials/hud/leaderboard_class_")));
 							if (find != info.iconsDownloading.end()) {
 								info.iconsDownloading.erase(find);
 							}
@@ -1443,6 +1482,9 @@ namespace Mod::Util::Download_Manager
 					info.filesToDownload.pop_front();
 				}
 				if (info.filesDownloading.empty() && info.filesToDownload.empty()) {
+					if (UTIL_PlayerByIndex(i) != nullptr) {
+						ClientMsg(UTIL_PlayerByIndex(i), "%d files downloaded\n", info.filesQueried.size());
+					}
 					info.iconsDownloading.clear();
 					info.active = false;
 				}
@@ -1571,8 +1613,11 @@ namespace Mod::Util::Download_Manager
 					propOverrideIds[i] = 0;
 				}
 			}
-		}
 
+			if (late_dl_all_missions_generate_progress) {
+				late_dl_all_missions_generate_progress = GenerateLateDownloadablesAllMissionsUpdate();
+			}
+		}
 		unsigned int mvm_count_prop_index = 0;
 		unsigned int mvm_count_prop_index2 = 0;
 		SendTable *mvm_count_table = nullptr;
@@ -1593,6 +1638,8 @@ namespace Mod::Util::Download_Manager
 			LoadDownloadsFile();
 			GenerateDownloadables();
 			ResetVoteMapList();
+			GenerateLateDownloadablesAllMissions();
+			GenerateLateDownloadablesCurrentMission();
 		}
 	}
 

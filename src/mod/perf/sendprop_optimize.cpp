@@ -171,7 +171,7 @@ NOINLINE void SetTransmitAlways(CServerNetworkProperty *netProp, bool bAlways) {
     if ( bAlways || (parentIndex < MAX_EDICTS)) {
         transmitAlways->Set(edict->m_EdictIndex);
     }
-    else if (edict != nullptr && edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
+    else if (edict->m_fStateFlags & FL_EDICT_DIRTY_PVS_INFORMATION) {
         edict->m_fStateFlags &= ~FL_EDICT_DIRTY_PVS_INFORMATION;
         engine->BuildEntityClusterList(edict, &(netProp->m_PVSInfo));
     }
@@ -183,14 +183,16 @@ REPLACE_FUNC_MEMBER(void, CBaseEntity_SetTransmit, CCheckTransmitInfo *pInfo, bo
 {
     auto entity = reinterpret_cast<CBaseEntity *>(this);
     CServerNetworkProperty *netProp = entity->NetworkProp();
-    int index = netProp->entindex();
-    int parentIndex = netProp->m_hParent.GetEntryIndex();
+    auto edict = netProp->m_pPev;
+    if (edict == nullptr) return;
 
-    pInfo->m_pTransmitEdict->Set(index);
+    pInfo->m_pTransmitEdict->Set(edict->m_EdictIndex);
 
     if (transmitAlways) {
         SetTransmitAlways(netProp, bAlways);
     }
+
+    int parentIndex = netProp->m_hParent.GetEntryIndex();
     if (parentIndex >= MAX_EDICTS || pInfo->m_pTransmitEdict->Get(parentIndex)) return;
     CBaseEntity *parent = (CBaseEntity *)(g_pWorldEdict+parentIndex)->GetUnknown();
 

@@ -61,6 +61,7 @@ CopyFiles('gamedata/sigsegv', 'addons/sourcemod/gamedata/sigsegv',
     'custom_attributes.txt',
     'datamaps.txt',
     'debugoverlay.txt',
+    'entities.txt',
     'globals.txt',
     'misc.txt',
     'nav.txt',
@@ -137,7 +138,7 @@ l4dlinks = [
 for cxx_task in Extension.extensions:
   src = os.path.join('..', cxx_task.binary.path)
   # binary marked as using 'other' engine is the "default engine"
-  name = os.path.basename(cxx_task.binary.path).replace(".2.other", "")
+  name = os.path.basename(cxx_task.binary.path).replace(".2.sdk2013", "")
 
   dst = ''
   if cxx_task.target.arch == 'x86_64':

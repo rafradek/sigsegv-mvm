@@ -35,7 +35,7 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 			buf.SetDword(0x00 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
 			mask[0x05 + 2] = 0x00;
 			
-			mask.SetDword(0x0b + 1, 0x00000000);
+			mask.SetDword(0x0b + 2, 0x00000000);
 #endif
 
 			return true;
@@ -51,11 +51,11 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 			
 			mask.SetRange(0x05, 3, 0xff);
 #else
-			buf[0x09 + 0] = 0x83;
-			buf[0x09 + 1] = 0xF8;
-			buf[0x09 + 2] = 0xFF;
+			buf[0x08 + 0] = 0x83;
+			buf[0x08 + 1] = 0xF8;
+			buf[0x08 + 2] = 0xFF;
 			
-			mask.SetRange(0x09, 3, 0xff);
+			mask.SetRange(0x08, 3, 0xff);
 #endif
 			
 			return true;
