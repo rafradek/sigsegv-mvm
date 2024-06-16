@@ -7482,37 +7482,6 @@ namespace Mod::Attr::Custom_Attributes
 		players_viewmodel_informed_about_disallowed[edict->m_EdictIndex] = true;
     }
 
-	ModCommandClient sig_defaulthands("sig_defaulthands", [](CCommandPlayer *player, const CCommand& args){
-		players_informed_about_viewmodel[player->entindex()] = true;
-		auto &disallowed = players_viewmodel_disallowed[player->entindex()];
-		disallowed = !disallowed;
-
-		char path[512];
-		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
-		if (disallowed) {
-			auto file = fopen(path, "w");
-			if (file) {
-				fclose(file);
-			}
-			ForEachTFPlayerEconEntity(player, [](CEconEntity *ent){
-				if (ent->MyCombatWeaponPointer() != nullptr) {
-					ent->MyCombatWeaponPointer()->SetCustomViewModel("");
-					ent->MyCombatWeaponPointer()->m_iViewModelIndex = CBaseEntity::PrecacheModel(ent->MyCombatWeaponPointer()->GetViewModel());
-					ent->MyCombatWeaponPointer()->SetModel(ent->MyCombatWeaponPointer()->GetViewModel());
-				}
-			});
-		}
-		else {
-			remove(path);
-		}
-
-		players_viewmodel_informed_about_disallowed[player->entindex()] = true;
-		viewmodels_toggle_forward->PushCell(player->entindex());
-		viewmodels_toggle_forward->PushCell(disallowed);
-		viewmodels_toggle_forward->Execute();
-		PrintToChat(disallowed ? "Disabled custom hand models\n" : "Enabled custom hand models. Change class to apply changes\n", player);
-	});
-
 	DETOUR_DECL_MEMBER(int, CTFPlayer_GetMaxAmmo, int ammoIndex, int classIndex)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -9950,7 +9919,37 @@ namespace Mod::Attr::Custom_Attributes
 		virtual std::vector<std::string> GetRequiredMods() { return {"Common:Weapon_Shoot", "Item:Item_Common"};}
 	};
 	CMod s_Mod;
-	
+
+	ModCommandClient sig_defaulthands("sig_defaulthands", [](CCommandPlayer *player, const CCommand& args){
+		players_informed_about_viewmodel[player->entindex()] = true;
+		auto &disallowed = players_viewmodel_disallowed[player->entindex()];
+		disallowed = !disallowed;
+
+		char path[512];
+		snprintf(path, 512, "%s%llu", disallowed_viewmodel_path.c_str(), player->GetSteamID().ConvertToUint64());
+		if (disallowed) {
+			auto file = fopen(path, "w");
+			if (file) {
+				fclose(file);
+			}
+			ForEachTFPlayerEconEntity(player, [](CEconEntity *ent){
+				if (ent->MyCombatWeaponPointer() != nullptr) {
+					ent->MyCombatWeaponPointer()->SetCustomViewModel("");
+					ent->MyCombatWeaponPointer()->m_iViewModelIndex = CBaseEntity::PrecacheModel(ent->MyCombatWeaponPointer()->GetViewModel());
+					ent->MyCombatWeaponPointer()->SetModel(ent->MyCombatWeaponPointer()->GetViewModel());
+				}
+			});
+		}
+		else {
+			remove(path);
+		}
+
+		players_viewmodel_informed_about_disallowed[player->entindex()] = true;
+		viewmodels_toggle_forward->PushCell(player->entindex());
+		viewmodels_toggle_forward->PushCell(disallowed);
+		viewmodels_toggle_forward->Execute();
+		PrintToChat(disallowed ? "Disabled custom hand models\n" : "Enabled custom hand models. Change class to apply changes\n", player);
+	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_attr_custom", "0", FCVAR_NOTIFY,
 		"Mod: enable custom attributes",

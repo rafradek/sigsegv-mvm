@@ -10,6 +10,7 @@
 #include "util/clientmsg.h"
 #include "util/iterate.h"
 #include "mod/etc/sendprop_override.h"
+#include "mod/common/commands.h"
 
 #include <regex>
 //#include <filesystem>
@@ -248,6 +249,7 @@ namespace Mod::Util::Download_Manager
 	std::unordered_map<std::string, int> missing_files_dirs;
 	
 	std::vector<std::string> late_dl_files;
+	int late_dl_files_current_mission_count = 0;
 	std::vector<std::string> late_dl_from_all_maps_files;
 
 	std::unordered_map<std::string, std::vector<std::string>> late_dl_files_per_mission;
@@ -259,6 +261,8 @@ namespace Mod::Util::Download_Manager
 		bool lateDlChecked = false;
 		bool lateDlEnabled = true;
 		bool lateDlUploadInfoSend = false;
+		bool lateDlCurMissionOnlyInformed = false;
+		bool lateDlCurMissionOnly = false;
 		std::unordered_set<std::string> filesQueried;
 		std::deque<std::string> filesToDownload;
 		std::vector<std::string> filesDownloading;
@@ -267,6 +271,8 @@ namespace Mod::Util::Download_Manager
 	LateDownloadInfo download_infos[MAX_PLAYERS + 1];
 
 	void StopLateFilesToDownloadForPlayer(int player) {
+		
+		if (player > (int)ARRAYSIZE(download_infos)) return;
 		
 		auto *netchan = static_cast<CNetChan *>(engine->GetPlayerNetInfo(player));
 		if (netchan == nullptr) return;
@@ -286,15 +292,20 @@ namespace Mod::Util::Download_Manager
 		info.filesToDownload.clear();
 	}
 
-	void AddLateFilesToDownloadForPlayer(int player, const std::vector<std::string> &files) {
+	void AddLateFilesToDownloadForPlayer(int player, const std::vector<std::string> &files, int curMissionFilesCount = 0) {
 		
+		if (player > (int)ARRAYSIZE(download_infos)) return;
+
 		auto *netchan = static_cast<CNetChan *>(engine->GetPlayerNetInfo(player));
 		if (netchan == nullptr) return;
 
 		auto &info = download_infos[player];
 		if (!info.lateDlEnabled) return;
 
+		int i = 0;
 		for (auto &file : files) {
+			if (i++ >= curMissionFilesCount && info.lateDlCurMissionOnly) return;
+
 			if (late_dl_download_history[((CBaseClient *) sv->GetClient(player - 1))->m_SteamID.ConvertToUint64()].contains(file)) continue;
 
 			auto [it, inserted] = info.filesQueried.insert(file);
@@ -641,7 +652,7 @@ namespace Mod::Util::Download_Manager
 		if (late_dl_files.empty() && !late_dl_from_all_maps_files.empty()) {
 			late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
 			for (int i = 1; i <= gpGlobals->maxClients; i++) {
-				AddLateFilesToDownloadForPlayer(i, late_dl_files);
+				AddLateFilesToDownloadForPlayer(i, late_dl_files, 0);
 			}
 		}
 
@@ -709,6 +720,7 @@ namespace Mod::Util::Download_Manager
 				}
 			}
 		}
+		late_dl_files_current_mission_count = late_dl_files.size();
 
 		for (auto &entry : late_dl_files_per_mission) {
 			if (currentMission == nullptr || entry.first != currentMission) {
@@ -723,7 +735,7 @@ namespace Mod::Util::Download_Manager
 			for (int i = 1; i <= gpGlobals->maxClients; i++) {
 				// Re-prioritize downloads
 				StopLateFilesToDownloadForPlayer(i);
-				AddLateFilesToDownloadForPlayer(i, late_dl_files);
+				AddLateFilesToDownloadForPlayer(i, late_dl_files, late_dl_files_current_mission_count);
 			}
 		}
 	}
@@ -1160,6 +1172,7 @@ namespace Mod::Util::Download_Manager
 		
 		server_activated = true;
 		late_dl_files.clear();
+		late_dl_files_current_mission_count = 0;
 		LoadDownloadsFile();
 		GenerateDownloadables();
 		ResetVoteMapList();
@@ -1186,16 +1199,24 @@ namespace Mod::Util::Download_Manager
 
 	int paused_wave_time = -1;
 
+	std::string latedl_curmission_only_path;
+
 	StaticFuncThunk<int, IClient *, const char *, bool> ft_SendCvarValueQueryToClient("SendCvarValueQueryToClient");
 	
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_ClientConnected, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 	{
 		auto gamerules = reinterpret_cast<CTFGameRules *>(this);
-		download_infos[ENTINDEX(pEntity)] = LateDownloadInfo();
+		auto &info = download_infos[ENTINDEX(pEntity)];
+		info = LateDownloadInfo();
 		
 		std::vector<std::string> icons;
 
-		AddLateFilesToDownloadForPlayer(ENTINDEX(pEntity), late_dl_files);
+		char path[512];
+		snprintf(path, 512, "%s%llu", latedl_curmission_only_path.c_str(), ((CBaseClient *) sv->GetClient(ENTINDEX(pEntity) - 1))->m_SteamID.ConvertToUint64());
+        info.lateDlCurMissionOnly = access(path, F_OK) == 0;
+        info.lateDlCurMissionOnlyInformed = info.lateDlCurMissionOnly;
+
+		AddLateFilesToDownloadForPlayer(ENTINDEX(pEntity), late_dl_files, late_dl_files_current_mission_count);
 
 		return DETOUR_MEMBER_CALL(pEntity, pszName, pszAddress, reject, maxrejectlen);
 	}
@@ -1294,6 +1315,7 @@ namespace Mod::Util::Download_Manager
 			missing_files.emplace(find != missing_files_dirs.end() ? find->second : inotify_add_watch(inotify_fd, pathDir.c_str(), IN_CREATE | IN_MOVED_TO), path);
 		}
 	}
+
 	GlobalThunk<SendTable> DT_TFObjectiveResource_g_SendTable("DT_TFObjectiveResource::g_SendTable");
 
 	class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
@@ -1344,6 +1366,11 @@ namespace Mod::Util::Download_Manager
 					}
 				}
 			}
+
+			char path_sm[PLATFORM_MAX_PATH];
+        	g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/latedl_curmission_only/");
+			latedl_curmission_only_path = path_sm;
+			mkdir(path_sm, 0766);
 
 			return true;
 		}
@@ -1449,6 +1476,10 @@ namespace Mod::Util::Download_Manager
 					bool waiting = netchan->IsFileInWaitingList(filename.c_str());
 					if (!waiting) {
 						int curFileIndex = info.filesQueried.size() - (info.filesDownloading.size() + info.filesToDownload.size()) + 1;
+						if (curFileIndex > 50 && !info.lateDlCurMissionOnlyInformed && !info.lateDlCurMissionOnly && UTIL_PlayerByIndex(i) != nullptr) {
+							info.lateDlCurMissionOnlyInformed = true;
+							ClientMsg(UTIL_PlayerByIndex(i), "Too many download messages? Type sig_latedl_current_mission_download_only in console\n");
+						}
 						if (curFileIndex % 100 == 0 && UTIL_PlayerByIndex(i) != nullptr) {
 							ClientMsg(UTIL_PlayerByIndex(i), "(%d/%d) File downloaded: %s\n", curFileIndex, info.filesQueried.size(), filename.c_str());
 						}
@@ -1563,7 +1594,7 @@ namespace Mod::Util::Download_Manager
 										// Always late download if the file was previously missing
 										late_dl_files.push_back(realFileName);
 										for (int i = 1; i <= gpGlobals->maxClients; i++) {
-											AddLateFilesToDownloadForPlayer(i, {realFileName});
+											AddLateFilesToDownloadForPlayer(i, {realFileName}, 1);
 										}
 										if (!ShouldLateDownload(realFileName)) {
 											INetworkStringTable *downloadables = networkstringtable->FindTable("downloadables");
@@ -1734,6 +1765,29 @@ namespace Mod::Util::Download_Manager
 		}
 	}
 	
+	ModCommandClient sig_latedl_current_mission_download_only("sig_latedl_current_mission_download_only", [](CCommandPlayer *player, const CCommand& args){
+		auto &info = download_infos[player->entindex()];
+		info.lateDlCurMissionOnlyInformed = true;
+		auto &disallowed = info.lateDlCurMissionOnly;
+		disallowed = !disallowed;
+
+		char path[512];
+		snprintf(path, 512, "%s%llu", latedl_curmission_only_path.c_str(), player->GetSteamID().ConvertToUint64());
+		if (disallowed) {
+			auto file = fopen(path, "w");
+			if (file) {
+				fclose(file);
+			}
+		}
+		else {
+			remove(path);
+		}
+		StopLateFilesToDownloadForPlayer(player->entindex());
+		AddLateFilesToDownloadForPlayer(player->entindex(), late_dl_files, late_dl_files_current_mission_count);
+
+		ClientMsg(player, disallowed ? "Only downloading icons from the current mission\n" : "Downloading icons from all missions\n");
+	}, &s_Mod);
+
 	ConVar cvar_mission_owner("sig_util_download_manager_mission_owner", "0", FCVAR_NONE, "Mission owner id");
 
 	ConVar cvar_downloadpath("sig_util_download_manager_path", "download", FCVAR_NOTIFY,
