@@ -430,6 +430,11 @@
 					type "sym"
 					sym  "_ZNK21CTFBotTacticalMonitor31ShouldOpportunisticallyTeleportEP6CTFBot"
 				}
+				"CTFBotTacticalMonitor::FindNearbyTeleporter"
+				{
+					type "sym"
+					sym  "_ZN21CTFBotTacticalMonitor20FindNearbyTeleporterEP6CTFBot"
+				}
 				"CTFBotMainAction::GetHealerOfThreat"
 				{
 					type "sym"

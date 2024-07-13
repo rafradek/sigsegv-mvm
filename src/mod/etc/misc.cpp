@@ -68,6 +68,24 @@ namespace Mod::Etc::Misc
 		if (AllowHit(arrow, pOther))
 			DETOUR_MEMBER_CALL(pOther);
 	}
+	
+	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_StrikeTarget, mstudiobbox_t *bbox, CBaseEntity *ent)
+	{
+		auto result = DETOUR_MEMBER_CALL(bbox, ent);
+		
+		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
+
+		// Do not break penetration arrows when hitting ubered target
+		if (arrow->m_bPenetrate && ToTFPlayer(ent) != nullptr && ToTFPlayer(ent)->m_Shared->IsInvulnerable()) {
+			return true;
+		}
+
+		// Lazy crash fix to m_iWeaponId becoming garbage value somewhere
+		if (arrow->m_iWeaponId < 0 || arrow->m_iWeaponId > TF_WEAPON_COUNT+64) {
+			arrow->m_iWeaponId = TF_WEAPON_COMPOUND_BOW;
+		}
+		return result;
+	}
 
 	RefCount rc_DoNotOverrideSmoke;
 	CBaseEntity *sentry_attacker_rocket = nullptr;
@@ -247,6 +265,7 @@ namespace Mod::Etc::Misc
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_ArrowTouch, "CTFProjectile_Arrow::ArrowTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_EnergyRing_ProjectileTouch, "CTFProjectile_EnergyRing::ProjectileTouch");
 			MOD_ADD_DETOUR_MEMBER(CTFProjectile_BallOfFire_RocketTouch, "CTFProjectile_BallOfFire::RocketTouch");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_Arrow_StrikeTarget, "CTFProjectile_Arrow::StrikeTarget");
 
 			// Allow to construct disposable sentries by destroying the oldest ones
 			MOD_ADD_DETOUR_STATIC(SendProxy_PlayerObjectList,    "SendProxy_PlayerObjectList");

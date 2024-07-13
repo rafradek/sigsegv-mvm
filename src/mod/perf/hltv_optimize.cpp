@@ -106,7 +106,7 @@ namespace Mod::Perf::HLTV_Optimize
             static ConVarRef delay("tv_delay");
             int tickcount = 1.0f / (snapshotrate.GetFloat() * gpGlobals->interval_per_tick);
             if (delay.GetFloat() <= 0) {
-                int framec = rtti_scast<CClientFrameManager *>(hltvserver)->CountClientFrames() - 2;
+                int framec = rtti_scast<CClientFrameManager *>(hltvserver)->CountClientFrames() - (1/gpGlobals->interval_per_tick) * 1.5f;
                 for (int i = 0; i < framec; i++)
                     rtti_scast<CClientFrameManager *>(hltvserver)->RemoveOldestFrame();
             }
@@ -234,7 +234,7 @@ namespace Mod::Perf::HLTV_Optimize
             restore = tv_snapshotrate.GetFloat();
             tv_snapshotrate.SetValue(1.0f);
         }
-        else if (TeamplayRoundBasedRules()->State_Get() == GR_STATE_RND_RUNNING && hltvServerEmpty) {
+        else if (TeamplayRoundBasedRules()->State_Get() != GR_STATE_RND_RUNNING && hltvServerEmpty) {
             restore = tv_snapshotrate.GetFloat();
             tv_snapshotrate.SetValue(cvar_rate_between_rounds.GetFloat());
         }

@@ -29,13 +29,13 @@ namespace Mod::Perf::Squad_Escort_Optimize
         IIntention *m_IntentionInterface;                // +0x44
         IVision *m_VisionInterface;                      // +0x48
         CUtlVector<void *> m_DebugLines; // +0x4c
-        int off;
+        void *off;
         int inputButtons;
         int prevInputButtons;
 
     };
 
-    std::map<CTFBot *, CTFBotEscortSquadLeader *> update_mark;
+    std::unordered_map<CTFBot *, CTFBotEscortSquadLeader *> update_mark;
     
     bool updatecall = false;
 

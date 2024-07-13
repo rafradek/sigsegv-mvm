@@ -944,6 +944,8 @@ namespace Mod::Pop::TFBot_Extensions
 						//DevMsg("Is active %d %d %d\n", weapon == player->GetActiveWeapon(), weapon->GetEffects(), weapon->GetRenderMode());
 					}
 				}*/
+			
+				ResolvePlayerStuck(bot, bot->GetModelScale(), 1.6f, true);
 			}
 		}
 		

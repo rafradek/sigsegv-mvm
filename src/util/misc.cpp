@@ -3,6 +3,9 @@
 #include "stub/baseanimating.h"
 #include "stub/baseplayer.h"
 #include "stub/usermessages_sv.h"
+#include "stub/trace.h"
+#include "stub/gamerules.h"
+#include <gamemovement.h>
 
 template<typename LINE_FUNC>
 static void HexDump_Internal(LINE_FUNC&& line_func, const void *ptr, size_t len, bool absolute)
@@ -190,5 +193,63 @@ void FireEyeTrace(trace_t &tr, CBaseEntity *entity, float range, int mask, int c
 	Vector end, forward;
 	AngleVectors(entity->EyeAngles(), &forward);
 	VectorMA(start, range, forward, end);
-	UTIL_TraceLine(start, end, MASK_SOLID | CONTENTS_DEBRIS, entity, COLLISION_GROUP_NONE, &tr);
+	UTIL_TraceLine(start, end, mask, entity, COLLISION_GROUP_NONE, &tr);
+}
+
+class CGameMovement2 : public CGameMovement
+{
+public:
+	virtual CBaseHandle		TestPlayerPosition( const Vector& pos, int collisionGroup, trace_t& pm );
+};
+
+bool ResolvePlayerStuck(CBasePlayer *player, float oldScale, float maxMove, bool enemyOnly) {
+	auto movement = (CGameMovement2 *)g_pGameMovement;
+
+	const Vector& vOrigin = player->GetAbsOrigin();
+	const QAngle& qAngle = player->GetAbsAngles();
+	const Vector& vHullMins = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MIN : VEC_HULL_MIN) * player->GetModelScale();
+	const Vector& vHullMaxs = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MAX : VEC_HULL_MAX) * player->GetModelScale();
+
+	trace_t result;
+	
+	CBasePlayer *prevMovementPlayer = movement->player;
+	movement->player = player;
+	auto handleHit = movement->TestPlayerPosition(vOrigin, COLLISION_GROUP_PLAYER_MOVEMENT, result);
+	// am I stuck? try to resolve it
+	if (result.DidHit() && !(enemyOnly && (result.DidHitWorld() || result.m_pEnt == nullptr || result.m_pEnt->MyCombatCharacterPointer() == nullptr || result.m_pEnt->GetTeamNumber() == player->GetTeamNumber())))
+	{
+		float flPlayerHeight = vHullMaxs.z - vHullMins.z;
+		float flPlayerWidth = vHullMaxs.x - vHullMins.x;
+		float flExtraHeight = 10;
+		float flSpaceMove = oldScale * flPlayerWidth * maxMove;
+
+		static Vector vTest[] =
+		{
+			Vector( flSpaceMove * 0.5f, flSpaceMove * 0.5f, flExtraHeight ),
+			Vector( -flSpaceMove * 0.5f, -flSpaceMove * 0.5f, flExtraHeight ),
+			Vector( -flSpaceMove * 0.5f, flSpaceMove * 0.5f, flExtraHeight ),
+			Vector( flSpaceMove * 0.5f, -flSpaceMove * 0.5f, flExtraHeight ),
+			Vector( flSpaceMove, 0, flExtraHeight ),
+			Vector( -flSpaceMove, 0, flExtraHeight ),
+			Vector( 0, flSpaceMove, flExtraHeight ),
+			Vector( 0, -flSpaceMove, flExtraHeight ),
+			Vector( 0, 0, flPlayerHeight * 0.5 + flExtraHeight ),
+			Vector( 0, 0, -flPlayerHeight - flExtraHeight )
+		};
+		for ( int i=0; i<ARRAYSIZE( vTest ); ++i )
+		{
+			Vector vTestPos = vOrigin + vTest[i];
+			handleHit = movement->TestPlayerPosition(vTestPos, COLLISION_GROUP_PLAYER_MOVEMENT, result);
+			if (!result.DidHit() && !(enemyOnly && (result.DidHitWorld() || result.m_pEnt == nullptr || result.m_pEnt->MyCombatCharacterPointer() == nullptr || result.m_pEnt->GetTeamNumber() == player->GetTeamNumber())))
+			{
+				player->Teleport(&vTestPos, &qAngle, NULL);
+				movement->player = prevMovementPlayer;
+				return true;
+			}
+		}
+		movement->player = prevMovementPlayer;
+		return false;
+	}
+	movement->player = prevMovementPlayer;
+	return true;
 }

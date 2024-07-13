@@ -88,8 +88,8 @@ namespace Mod::Etc::Mapentity_Additions
     void FireFormatInput(CLogicCase *entity, CBaseEntity *activator, CBaseEntity *caller)
     {
         std::string fmtstr = STRING(entity->m_nCase[15]);
-        unsigned int pos = 0;
-        unsigned int index = 1;
+        size_t pos = 0;
+        size_t index = 1;
         while ((pos = fmtstr.find('%', pos)) != std::string::npos ) {
             if (pos != fmtstr.size() - 1 && fmtstr[pos + 1] == '%') {
                 fmtstr.erase(pos, 1);

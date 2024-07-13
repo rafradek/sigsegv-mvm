@@ -1139,9 +1139,9 @@ namespace Mod::MvM::Extended_Upgrades
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
 
         if (slot == -1)
-            menu->SetDefaultTitle("Player Upgrades");
+            menu->SetDefaultTitle(TranslateText(player, "Player upgrades"));
         else {
-            menu->SetDefaultTitle(CFmtStr("Upgrades for %s", GetItemNameForDisplay(item->GetItem())));
+            menu->SetDefaultTitle(TranslateText(player, "Item upgrades", 1, GetItemNameForDisplay(item->GetItem())));
         }
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXITBACK);
 
@@ -1231,7 +1231,7 @@ namespace Mod::MvM::Extended_Upgrades
         }
 
         if(!Mod::Pop::PopMgr_Extensions::ExtendedUpgradesNoUndo()){
-            ItemDrawInfo info1("Undo upgrades");
+            ItemDrawInfo info1(TranslateText(player, "Undo upgrades"));
             menu->AppendItem("1000", info1);
         }
         /*if (upgrades.size() == 1) {
@@ -1270,7 +1270,7 @@ namespace Mod::MvM::Extended_Upgrades
         SelectUpgradeWeaponHandler *handler = new SelectUpgradeWeaponHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Extended Upgrades Menu");
+        menu->SetDefaultTitle(TranslateText(player, "Extended upgrades menu"));
         menu->SetMenuOptionFlags(0);
 
         ItemDrawInfo info1("Player Upgrades", WeaponHasValidUpgrades(nullptr, player) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
@@ -1300,12 +1300,12 @@ namespace Mod::MvM::Extended_Upgrades
         }
 
         static ConVarRef tf_mvm_respec_enabled("tf_mvm_respec_enabled");
-        ItemDrawInfo info2("Refund Upgrades", tf_mvm_respec_enabled.GetBool() ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+        ItemDrawInfo info2(TranslateText(player, "Refund upgrades"), tf_mvm_respec_enabled.GetBool() ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
         menu->AppendItem("refund", info2);
 
         if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex())) {
             
-            ItemDrawInfo info3("Extra loadout items", ITEMDRAW_DEFAULT);
+            ItemDrawInfo info3(TranslateText(player, "Extra loadout items"), ITEMDRAW_DEFAULT);
             menu->AppendItem("extra", info3);
         }
 

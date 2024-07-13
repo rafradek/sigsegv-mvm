@@ -13,6 +13,7 @@ MemberFuncThunk<CBaseServer *, CBaseClient *, const char *> CBaseServer::ft_Crea
 
 MemberVFuncThunk<CBaseServer *, float>                  CBaseServer::vt_GetCPUUsage    (TypeName<CBaseServer>(), "CBaseServer::GetCPUUsage");
 MemberVFuncThunk<CBaseServer *, void, int>              CBaseServer::vt_UserInfoChanged(TypeName<CBaseServer>(), "CBaseServer::UserInfoChanged");
+MemberVFuncThunk<CBaseServer *, void, const netadr_t &, int, const char *> CBaseServer::vt_RejectConnection(TypeName<CBaseServer>(), "CBaseServer::RejectConnection");
 
 MemberVFuncThunk<CBaseClient *, void>                 CBaseClient::vt_UpdateSendState(TypeName<CBaseClient>(), "CBaseClient::UpdateSendState");
 MemberVFuncThunk<CBaseClient *, void, CClientFrame *> CBaseClient::vt_SendSnapshot(TypeName<CBaseClient>(), "CBaseClient::SendSnapshot");
@@ -26,4 +27,5 @@ MemberFuncThunk<CGameClient *, CClientFrame *>         CGameClient::ft_GetSendFr
 MemberFuncThunk<CNetworkStringTable *, void, int>              CNetworkStringTable::ft_UpdateMirrorTable("CNetworkStringTable::UpdateMirrorTable");
 MemberFuncThunk<CNetworkStringTable *, void>                   CNetworkStringTable::ft_DeleteAllStrings("CNetworkStringTable::DeleteAllStrings");
 
-MemberFuncThunk<CNetChan *, bool, const char *> CNetChan::ft_IsFileInWaitingList("CNetChan::IsFileInWaitingList");
+MemberFuncThunk<CNetChan *, bool, const char *> CNetChan::ft_IsFileInWaitingList    ("CNetChan::IsFileInWaitingList");
+MemberFuncThunk<CNetChan *, void, bool>         CNetChan::ft_SetFileTransmissionMode("CNetChan::SetFileTransmissionMode");

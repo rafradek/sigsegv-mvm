@@ -30,6 +30,7 @@
 #include "mod/common/commands.h"
 #include "mod/common/text_hud.h"
 #include "mod/attr/custom_attributes.h"
+#include "CommandBuffer.h"
 
 // WARN_IGNORE__REORDER()
 // #include <../server/vote_controller.h>
@@ -175,7 +176,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				TFGameRules()->SetCustomUpgradesFile(convalue.c_str());
 				if (force && last_custom_upgrades != convalue) {
 					received_message_tick = true;
-					PrintToChatAll("\x07""ffb200This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)");
+					PrintToChatAllSM(2, "%s%t\n","\x07""ffb200", "Custom upgrades notify");
 				}
 				last_custom_upgrades = convalue;
 			}
@@ -2699,10 +2700,33 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(player);
 	}
 	
-	DETOUR_DECL_MEMBER(bool, CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport, CTFBot *bot)
+	DETOUR_DECL_MEMBER(void, CCommandBuffer_Compact)
 	{
-		return DETOUR_MEMBER_CALL(bot) && cvar_use_teleport.GetBool() && !bot->HasItem();
+		auto buffer = reinterpret_cast<CCommandBuffer *>(this);
+		Msg("bufsize %d %d %d\n", buffer->m_nArgSBufferSize, buffer->m_Commands.Count(), gpGlobals->tickcount);
+		for (auto &el : buffer->m_Commands) {
+			Msg("tick %d, firstarg %d, size %d\n", el.m_nTick, el.m_nFirstArgS, el.m_nBufferSize);
+		}
+		Msg("%s\n", buffer->m_pArgSBuffer);
+
+		DETOUR_MEMBER_CALL();
 	}
+	
+	DETOUR_DECL_MEMBER(CObjectTeleporter *, CTFBotTacticalMonitor_FindNearbyTeleporter, CTFBot *bot)
+	{
+		if (!cvar_use_teleport.GetBool() || bot->HasItem()) return nullptr;
+
+		return DETOUR_MEMBER_CALL(bot);
+	}
+	
+    DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, bool, CObjectTeleporter_PlayerCanBeTeleported, CTFPlayer *player)
+	{
+		auto tp = reinterpret_cast<CObjectTeleporter *>(this);
+		if (player->IsBot() && tp->GetBuilder() != nullptr && !tp->GetBuilder()->IsBot()) {
+			return DETOUR_MEMBER_CALL(player) && cvar_use_teleport.GetBool() && !player->HasItem();
+		}
+        return DETOUR_MEMBER_CALL(player);
+    }
 
 	// CBaseAnimating * TemplateShootSpawn(CTFPlayer *player, CTFWeaponBase *weapon, bool &stopproj, std::function<CBaseAnimating *()> origShootFunc)
 	// {
@@ -3635,25 +3659,25 @@ namespace Mod::Pop::PopMgr_Extensions
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		DevMsg("Mission Menu\n");
-        menu->SetDefaultTitle("Mission info menu");
+        menu->SetDefaultTitle(TranslateText(player, "Mission info menu"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		if (!state.m_bNoMissionInfo) {
 			auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
 			if (explanation != nullptr && !explanation->empty()) {
-				ItemDrawInfo info1("Mission Description", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Mission description"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("description", info1);
 			}
 			if (!state.m_ItemWhitelist.empty()) {
-				ItemDrawInfo info1("Item Whitelist", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Item whitelist"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("whitelist", info1);
 			}
 			if (!state.m_ItemBlacklist.empty()) {
-				ItemDrawInfo info1("Item Blacklist", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Item blacklist"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("blacklist", info1);
 			}
 			if (!state.m_ItemAttributes.empty()) {
-				ItemDrawInfo info1("Item Attributes", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Item attributes"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("itemattributes", info1);
 			}
 			bool player_empty = state.m_PlayerAttributes.empty();
@@ -3664,52 +3688,54 @@ namespace Mod::Pop::PopMgr_Extensions
 				}
 			}
 			if (!player_empty) {
-				ItemDrawInfo info1("Player Attributes", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Player attributes"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("playerattributes", info1);
 			}
 			if (!state.m_DisallowedUpgrades.empty()) {
-				ItemDrawInfo info1("Disallowed Upgrades", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Disallowed upgrades"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("disallowedupgrades", info1);
 			}
 			if (!state.m_ItemReplace.empty()) {
-				ItemDrawInfo info1("Item Replacement", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Item replacement"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("itemreplace", info1);
 			}
 			if (!state.m_ExtraLoadoutItems.empty()) {
-				ItemDrawInfo info1("Extra Loadout Items", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Extra loadout items"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("extraloadoutitems", info1);
 			}
 			if (state.m_ForceItems.parsed) {
-				ItemDrawInfo info1("Forced Items", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Forced items"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("forceditems", info1);
 			}
 			if (state.m_bSniperAllowHeadshots) {
-				ItemDrawInfo info1("Sniper bots can headshot", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "Sniper bots can headshot"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_bSniperHideLasers) {
-				ItemDrawInfo info1("No laser on Sniper bots", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "No laser on Sniper bots"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (!state.m_RespecEnabled.Get()) {
-				ItemDrawInfo info1("Upgrade refunding disabled", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "Upgrade refunding disabled"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_RespecLimit.Get() != 0) {
 				static ConVarRef tf_mvm_respec_credit_goal("tf_mvm_respec_credit_goal");
-				ItemDrawInfo info1(CFmtStr("Collect %d credits to earn an upgrade refund, up to %d times", tf_mvm_respec_credit_goal.GetInt(), state.m_RespecLimit.Get()), ITEMDRAW_DISABLED);
+				int creditGoal = tf_mvm_respec_credit_goal.GetInt();
+				int respecLimit = state.m_RespecLimit.Get();
+				ItemDrawInfo info1(TranslateText(player, "Collect credits upgrade refund", 2, &creditGoal, &respecLimit), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_ImprovedAirblast.Get()) {
-				ItemDrawInfo info1("Pyro bots can airblast grenades and arrows", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "Pyro bots can airblast grenades and arrows"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_SandmanStuns.Get()) {
-				ItemDrawInfo info1("Sandman balls can stun enemy targets", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "Sandman balls can stun enemy targets"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			if (state.m_bNoReanimators) {
-				ItemDrawInfo info1("No reanimators", ITEMDRAW_DISABLED);
+				ItemDrawInfo info1(TranslateText(player, "No reanimators"), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
 			
@@ -3720,7 +3746,7 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info1);
         }
 		else if (menu->GetItemCount() == 0) {
-            ItemDrawInfo info1("No custom mission information available", ITEMDRAW_DISABLED);
+            ItemDrawInfo info1(TranslateText(player, "No custom mission information available"), ITEMDRAW_DISABLED);
             menu->AppendItem(" ", info1);
             ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info2);
@@ -3729,12 +3755,17 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->Display(ENTINDEX(player), 10);
 	}
 	
+	template<std::size_t N>
+	void aaa(){
+
+	}
+
 	void DisplayWhitelistInfo(CTFPlayer *player)
 	{
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Whitelisted Items");
+        menu->SetDefaultTitle(TranslateText(player, "Whitelisted items"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemWhitelist) {
@@ -3751,7 +3782,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Blacklisted Items");
+        menu->SetDefaultTitle(TranslateText(player, "Blacklisted items"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemBlacklist) {
@@ -3768,7 +3799,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Item Replacement");
+        menu->SetDefaultTitle(TranslateText(player, "Item replacement"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemReplace) {
@@ -3787,7 +3818,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Description");
+        menu->SetDefaultTitle(TranslateText(player, "Description"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		auto res = TFObjectiveResource();
@@ -3823,7 +3854,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectMissionInfoHandler *handler = new SelectMissionInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Disallowed Upgrades");
+        menu->SetDefaultTitle(TranslateText(player, "Disallowed upgrades"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_DisallowedUpgrades) {
@@ -3848,7 +3879,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectItemAttributeHandler *handler = new SelectItemAttributeHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Item Attributes");
+        menu->SetDefaultTitle(TranslateText(player, "Item attributes"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		int i = 0;
@@ -3868,7 +3899,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectItemAttributeListHandler *handler = new SelectItemAttributeListHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(CFmtStr("%s Attributes", state.m_ItemAttributes[id].entry->GetInfo()));
+        menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, state.m_ItemAttributes[id].entry->GetInfo()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		if (id < (int)state.m_ItemAttributes.size()) {
@@ -3896,18 +3927,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectPlayerAttributeHandler *handler = new SelectPlayerAttributeHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Player Attributes");
+        menu->SetDefaultTitle(TranslateText(player, "Player attributes"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		if (!state.m_PlayerAttributes.empty())
 		{
-			ItemDrawInfo info1("All player classes", ITEMDRAW_DEFAULT);
+			ItemDrawInfo info1(TranslateText(player, "All player classes"), ITEMDRAW_DEFAULT);
 			menu->AppendItem("0", info1);
 		}
 
 		for (int i = 0; i < TF_CLASS_COUNT; i++) {
 			if (!state.m_PlayerAttributesClass[i].empty()) {
-				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, TranslateText(player, g_aPlayerClassNames_NonLocalized[i])), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -3922,10 +3953,10 @@ namespace Mod::Pop::PopMgr_Extensions
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
 		if (id == 0) {
-			menu->SetDefaultTitle("All Class Attributes");
+			menu->SetDefaultTitle(TranslateText(player, "All class attributes"));
 		}
 		else {
-        	menu->SetDefaultTitle(CFmtStr("%s Attributes", g_aPlayerClassNames_NonLocalized[id]));
+        	menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
 		}
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
@@ -3955,7 +3986,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectForcedItemsClassInfoHandler *handler = new SelectForcedItemsClassInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Forced items");
+        menu->SetDefaultTitle(TranslateText(player, "Forced items"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		bool has_class[TF_CLASS_COUNT] = {0};
@@ -3989,7 +4020,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectForcedItemsInfoHandler *handler = new SelectForcedItemsInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(CFmtStr("Forced items (%s)", g_aPlayerClassNames_NonLocalized[id]));
+        menu->SetDefaultTitle(TranslateText(player, "Forced items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (auto &items_class : {state.m_ForceItems.items, state.m_ForceItems.items_no_remove}) {
@@ -4012,7 +4043,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsClassInfoHandler *handler = new SelectExtraLoadoutItemsClassInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Extra loadout items");
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		bool has_class[TF_CLASS_COUNT] = {0};
@@ -4045,7 +4076,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsInfoHandler *handler = new SelectExtraLoadoutItemsInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[id]));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
@@ -4103,7 +4134,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsClassHandler *handler = new SelectExtraLoadoutItemsClassHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle("Extra loadout items");
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items"));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		bool has_class[TF_CLASS_COUNT] = {0};
@@ -4158,7 +4189,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(CFmtStr("Extra loadout items (%s)", g_aPlayerClassNames_NonLocalized[class_index]));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[class_index])).c_str()));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		int wave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
@@ -6999,7 +7030,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTeamplayRoundBasedRules_GetMinTimeWhenPlayerMaySpawn, "CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn");
 
 			// Bots use player teleporters
-			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_ShouldOpportunisticallyTeleport,                  "CTFBotTacticalMonitor::ShouldOpportunisticallyTeleport");
+			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_FindNearbyTeleporter,    "CTFBotTacticalMonitor::FindNearbyTeleporter");
+			//MOD_ADD_DETOUR_MEMBER(CCommandBuffer_Compact,                  "CCommandBuffer::Compact");
+			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported,                  "CObjectTeleporter::PlayerCanBeTeleported");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseGun_FireProjectile,        "CTFWeaponBaseGun::FireProjectile");
 			MOD_ADD_DETOUR_MEMBER(CPopulationManager_JumpToWave,        "CPopulationManager::JumpToWave");
 			MOD_ADD_DETOUR_MEMBER(CTFWearable_Equip,        "CTFWearable::Equip");
@@ -7238,9 +7271,13 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 
-		virtual void LevelShutdownPostEntity() override
+		virtual void LevelShutdownPreEntity() override
 		{
 			state.Reset(false);
+		}
+
+		virtual void LevelShutdownPostEntity() override
+		{
 			state.m_PlayerUpgradeSend.clear();
 			
 			for (int i = 0; i < TF_CLASS_COUNT; i++)

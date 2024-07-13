@@ -34,6 +34,9 @@ private:
 
 	IdentityToken_t *identity;
 };
+
+extern IPhraseCollection *phrases;
+extern IPhraseFile *phrasesFile;
 extern CExtSigsegv g_Ext;
 
 

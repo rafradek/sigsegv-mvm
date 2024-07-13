@@ -15,10 +15,10 @@ void StrLowerASCII(char *str);
 class CaseInsensitiveLess
 {
 public:
-    bool operator()(const std::string lhs, const std::string rhs) const
-    {
-        return stricmp(lhs.c_str(), rhs.c_str()) < 0;
-    }
+	bool operator()(const std::string lhs, const std::string rhs) const
+	{
+		return stricmp(lhs.c_str(), rhs.c_str()) < 0;
+	}
 };
 
 class CaseInsensitiveCompare 
@@ -194,12 +194,12 @@ inline bool StringStartsWith(const char *string, const char *prefix, bool case_s
 #define AVERAGE_TIME(name) \
 	static int tickLast_##name = 0; \
 	static int counter_##name = 0; \
-    static CCycleCount cycle_##name; \
+	static CCycleCount cycle_##name; \
 	counter_##name++;\
 	static thread_local int scope_##name = 0; \
 	if (tickLast_##name + 66 < gpGlobals->tickcount || tickLast_##name > gpGlobals->tickcount ) {\
 		Msg( #name "calls: %d total: %.9fs avg: %.9fs\n", counter_##name, cycle_##name.GetSeconds(), cycle_##name.GetSeconds()/counter_##name );\
-        cycle_##name.Init(); \
+		cycle_##name.Init(); \
 		counter_##name = 0;\
 		tickLast_##name = gpGlobals->tickcount;\
 	}\
@@ -432,41 +432,41 @@ struct VStricmpLess
 
 static const char * ParseToInt(const char *str, int &value) 
 {
-    value=0;
+	value=0;
 	const char *startPos = str;
-    char c = *str;
-    bool neg = false;
+	char c = *str;
+	bool neg = false;
 	bool hasNum = false;
 	// Skip whitespace
 	while (c == ' ' || (c >= '\t' && c <= '\r')) {
 		c = *(++str);
 	}
 	// negative / positive
-    if (c == '-') {
-        c = *(++str);
-        neg = true;
-    }
-    else if (c == '+') {
-        c = *(++str);
-    }
+	if (c == '-') {
+		c = *(++str);
+		neg = true;
+	}
+	else if (c == '+') {
+		c = *(++str);
+	}
 	// parse digits
-    while (true) {
-        if (c >= '0' && c <= '9') {
-            value = value * 10 + c - '0';
+	while (true) {
+		if (c >= '0' && c <= '9') {
+			value = value * 10 + c - '0';
 			hasNum = true;
 		}
-        else {
-            break;
+		else {
+			break;
 		}
 		c = *(++str);
-    }
-    if (neg) {
-        value *= -1;
-    }
+	}
+	if (neg) {
+		value *= -1;
+	}
 	if (!hasNum) {
 		return startPos;
 	}
-    return str;
+	return str;
 }
 
 static int ParseToInt(const char *str)
@@ -478,56 +478,56 @@ static int ParseToInt(const char *str)
 
 static const char * ParseToFloat(const char *str, float &value) 
 {
-    value=0.0f;
+	value=0.0f;
 	const char *startPos = str;
-    char c = *str;
-    bool neg = false;
+	char c = *str;
+	bool neg = false;
 	bool hasNum = false;
-    bool parseDecimal = false;
+	bool parseDecimal = false;
 	bool parseExponential = false;
-    float mult = 1.0f;
+	float mult = 1.0f;
 
 	// Skip whitespace
 	while (c == ' ' || (c >= '\t' && c <= '\r')) {
 		c = *(++str);
 	}
 	// negative / positive
-    if (c == '-') {
-        c = *(++str);
-        neg = true;
-    }
-    else if (c == '+') {
-        c = *(++str);
-    }
+	if (c == '-') {
+		c = *(++str);
+		neg = true;
+	}
+	else if (c == '+') {
+		c = *(++str);
+	}
 	// Parse digits
-    while (true) {
-        if (c >= '0' && c <= '9') {
+	while (true) {
+		if (c >= '0' && c <= '9') {
 			hasNum = true;
-            if (parseDecimal) {
-                mult *= 0.1f;
-                value = value + (float)(c - '0') * mult;
-            }
-            else {
-                value = value * 10.0f + (float)( c - '0');
-            }
-        }
-        else if (c == '.') {
-            parseDecimal = true;
+			if (parseDecimal) {
+				mult *= 0.1f;
+				value = value + (float)(c - '0') * mult;
+			}
+			else {
+				value = value * 10.0f + (float)( c - '0');
+			}
 		}
-        else if (hasNum && c == 'e') {
+		else if (c == '.') {
+			parseDecimal = true;
+		}
+		else if (hasNum && c == 'e') {
 			// Exponential mode
-            parseExponential = true;
+			parseExponential = true;
 			c = *(++str);
 			break;
 		}
-        else {
-            break;
+		else {
+			break;
 		}
 		c = *(++str);
-    }
-    if (neg) {
-        value *= -1.0f;
-    }
+	}
+	if (neg) {
+		value *= -1.0f;
+	}
 	// Parse exponential
 	if (parseExponential) {
 		int valExp = 0;
@@ -539,8 +539,8 @@ static const char * ParseToFloat(const char *str, float &value)
 		else if (*str == '+') {
 			str++;
 		}
-    	while (true) {
-        	if (c >= '0' && c <= '9') {
+		while (true) {
+			if (c >= '0' && c <= '9') {
 				valExp = valExp * 10 + ( c - '0');
 			}
 			else {
@@ -562,7 +562,7 @@ static const char * ParseToFloat(const char *str, float &value)
 	if (!hasNum) {
 		return startPos;
 	}
-    return str;
+	return str;
 }
 
 static float ParseToFloat(const char *str)
@@ -753,27 +753,27 @@ inline bool UTIL_StringToAnglesAlt(QAngle &base, const char* string)
 
 inline bool ParseNumberOrVectorFromString(const char *str, variant_t &value)
 {
-    float val;
-    int valint;
-    Vector vec;
-    if (UTIL_StringToVectorAlt(vec, str)) {
-        //Msg("Parse vector\n");
-        value.SetVector3D(vec);
-        return true;
-    }
-    // Parse as int
-    else if (*ParseToInt(str, valint) == '\0') {
-       // Msg("Parse float\n");
-        value.SetInt(valint);
-        return true;
-    }
-    // Parse as float
-    else if (ParseToFloat(str, val) != str) {
-       // Msg("Parse float\n");
-        value.SetFloat(val);
-        return true;
-    }
-    return false;
+	float val;
+	int valint;
+	Vector vec;
+	if (UTIL_StringToVectorAlt(vec, str)) {
+		//Msg("Parse vector\n");
+		value.SetVector3D(vec);
+		return true;
+	}
+	// Parse as int
+	else if (*ParseToInt(str, valint) == '\0') {
+	   // Msg("Parse float\n");
+		value.SetInt(valint);
+		return true;
+	}
+	// Parse as float
+	else if (ParseToFloat(str, val) != str) {
+	   // Msg("Parse float\n");
+		value.SetFloat(val);
+		return true;
+	}
+	return false;
 }
 
 inline const char *FindCaseInsensitive(const char *string, const char* needle)
@@ -932,6 +932,19 @@ inline void Iterate(Container &container, Func f)
 			return;
 		}
 	}
+}
+
+inline int StringReplaceAll(std::string& str, const std::string& from, const std::string& to) {
+	if(from.empty())
+		return 0;
+	size_t startPos = 0;
+	int counter = 0;
+	while((startPos = str.find(from, startPos)) != std::string::npos) {
+		str.replace(startPos, from.length(), to);
+		startPos += to.length();
+		counter++;
+	}
+	return counter;
 }
 
 template<int SIZE_BUF = FMTSTR_STD_LEN, typename... ARGS>
@@ -1136,4 +1149,12 @@ private:
 	float m_timestamp;
 	float Now( void ) const {return gpGlobals->curtime; }
 };
+
+/** 
+ * Resolve player stuck
+ * @param oldScale if the player scale changed and now the player may be stuck, the scale of the player before it changed. Otherwise just use GetModelScale()
+ * @param maxMove how much, relative to player size, the player can be moved. 1 - can move entire player width
+ * @return true if the player was not stuck or was unstucked properly, false if cannot unstuck
+ */
+bool ResolvePlayerStuck(CBasePlayer *player, float oldScale = 1.0f, float maxMove = 1.0f, bool enemyOnly = false);
 #endif

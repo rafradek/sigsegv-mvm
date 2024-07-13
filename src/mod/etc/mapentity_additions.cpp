@@ -1926,7 +1926,6 @@ namespace Mod::Etc::Mapentity_Additions
 	GlobalThunk<CHandle<CBaseEntity>> s_lastTeleporter("s_lastTeleporter");
     DETOUR_DECL_STATIC(void, OnBotTeleported, CTFBot *player)
     {
-        Msg("AA %d %d\n", s_lastTeleporter.GetRef(), player);
         if (s_lastTeleporter.GetRef() == nullptr) {
             s_lastTeleporter.GetRef() = player;
         }
@@ -1944,9 +1943,9 @@ namespace Mod::Etc::Mapentity_Additions
     }
 
     CBaseEntity *sentry_gun_rocket = nullptr;
-    DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
+    DETOUR_DECL_STATIC(CTFBaseRocket *, CTFBaseRocket_Create, CBaseEntity *launcher, const char *classname, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner)
 	{
-		auto ret = DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pScorer);
+		auto ret = DETOUR_STATIC_CALL(launcher, classname, vecOrigin, vecAngles, pOwner);
 		sentry_gun_rocket = ret;
 		return ret;
 	}
@@ -2377,7 +2376,7 @@ namespace Mod::Etc::Mapentity_Additions
 			MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_RecieveTeleportingPlayer, "CObjectTeleporter::RecieveTeleportingPlayer");
 			MOD_ADD_DETOUR_STATIC(OnBotTeleported, "OnBotTeleported");
 			MOD_ADD_VHOOK(CObjectSentrygun_FireBullets, TypeName<CObjectSentrygun>(), "CBaseEntity::FireBullets");
-			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
+			MOD_ADD_DETOUR_STATIC(CTFBaseRocket_Create, "CTFBaseRocket::Create");
 			MOD_ADD_DETOUR_MEMBER(CObjectSentrygun_FireRocket, "CObjectSentrygun::FireRocket");
 
             // Extra MvM bomb flag functionality

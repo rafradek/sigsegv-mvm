@@ -1820,7 +1820,7 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(player);
 	}
 
-	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound_member, const char *sound, float start, float duration)
+	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound_member, const char *sound, float start, float *duration)
 	{
 		auto entity = reinterpret_cast<CBaseEntity *>(this);
 		if (rc_CTFWeaponFlameBall_FireProjectile && (FStrEq(sound, "Weapon_DragonsFury.Single") || FStrEq(sound, "Weapon_DragonsFury.SingleCrit"))) {
@@ -1890,10 +1890,10 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(bool, CTFProjectile_Arrow_StrikeTarget, mstudiobbox_t *bbox, CBaseEntity *ent)
 	{
-		int can_headshot = 0;
+		int no_headshot = 0;
 		auto arrow = reinterpret_cast<CTFProjectile_Arrow *>(this);
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), can_headshot, cannot_be_headshot);
-		if (can_headshot != 0 && bbox->group == HITGROUP_HEAD) {
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(arrow->GetOriginalLauncher(), no_headshot, cannot_be_headshot);
+		if (no_headshot != 0 && bbox->group == HITGROUP_HEAD) {
 			bbox->group = HITGROUP_CHEST;
 		}
 		
@@ -1903,14 +1903,6 @@ namespace Mod::Attr::Custom_Attributes
 			BounceArrow(arrow, bounce_speed_target);
 		}
 
-		// Do not break penetration arrows when hitting friendly ubered target
-		if (arrow->m_bPenetrate && ToTFPlayer(ent) != nullptr && ToTFPlayer(ent)->m_Shared->IsInvulnerable() && ent->GetTeamNumber() == arrow->GetTeamNumber()) {
-			return true;
-		}
-		// Lazy crash fix to m_iWeaponId becoming garbage value somewhere
-		if (arrow->m_iWeaponId < 0 || arrow->m_iWeaponId > TF_WEAPON_COUNT+64) {
-			arrow->m_iWeaponId = TF_WEAPON_COMPOUND_BOW;
-		}
 		auto ret = DETOUR_MEMBER_CALL(bbox, ent);
 		if (!ret && bounce_speed_target == 0) {
 			float bounce_speed = 0;
@@ -2944,7 +2936,7 @@ namespace Mod::Attr::Custom_Attributes
 		return str;
 	}
 
-	CTFProjectile_SentryRocket *sentry_gun_rocket = nullptr;
+	CTFBaseRocket *sentry_gun_rocket = nullptr;
 	RefCount rc_CObjectSentrygun_FireRocket;
 	DETOUR_DECL_MEMBER(bool, CObjectSentrygun_FireRocket)
 	{
@@ -5929,6 +5921,12 @@ namespace Mod::Attr::Custom_Attributes
 			}
 			attackModule->lastTarget = nullptr;
 		}
+
+		if (medigun->GetCustomVariableBool<"healingnonplayer">() && medigun->GetHealTarget() == nullptr) {
+			medigun->SetHealTarget(nullptr);
+			medigun->SetCustomVariable("healingnonplayer", Variant(false));
+		}
+
 		if (medigun->GetCustomVariableBool<"healingnonplayer">()) {
 			medigun->SetCustomVariable("healingnonplayer", Variant(false));
 		}
@@ -6846,20 +6844,24 @@ namespace Mod::Attr::Custom_Attributes
 		return projectile;
 	}
 
-	DETOUR_DECL_STATIC(CTFProjectile_SentryRocket *, CTFProjectile_SentryRocket_Create, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner, CBaseEntity *pScorer)
+	// Must use CTFBaseRocket::Create because CTFProjectile_SentryRocket::Create is inlined in x64
+	RefCount rc_CTFBaseRocket_Create;
+	DETOUR_DECL_STATIC(CTFBaseRocket *, CTFBaseRocket_Create, CBaseEntity *launcher, const char *classname, const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner)
 	{
-		auto player = ToTFPlayer(pScorer);
+		SCOPED_INCREMENT(rc_CTFBaseRocket_Create);
 		auto object = ToBaseObject(pOwner);
-		if (rc_CObjectSentrygun_FireRocket && object != nullptr) {
+		bool isSentryRocket = rc_CObjectSentrygun_FireRocket && object != nullptr && rc_CTFBaseRocket_Create <= 1;
+		if (isSentryRocket) {
 			auto weaponName = GetBuildingAttributeString<"rocketweapon", "sentry_rocket_weapon">(object);
 			if (weaponName[0] != '\0') {
+				auto player = object->GetBuilder();
 				auto proj = ShootSentryWeaponProjectile(object, player, weaponName, "weaponrocket", vecOrigin, vecAngles);
         		pOwner->FireCustomOutput<"onshootweaponrocket">(proj != nullptr ? proj : pOwner, pOwner, Variant());
 				return nullptr;
 			}
 		}
-		auto ret = DETOUR_STATIC_CALL(vecOrigin, vecAngles, pOwner, pScorer);
-		sentry_gun_rocket = ret;
+		auto ret = DETOUR_STATIC_CALL(launcher, classname, vecOrigin, vecAngles, pOwner);
+		sentry_gun_rocket = isSentryRocket ? ret : nullptr;
 		return ret;
 	}
 
@@ -7445,7 +7447,7 @@ namespace Mod::Attr::Custom_Attributes
 	bool IsCustomViewmodelAllowed(CTFPlayer *player) {
 		if (players_viewmodel_disallowed[player->entindex()]) {
 			if (!players_viewmodel_informed_about_disallowed[player->entindex()]) {
-				PrintToChat("Custom hand models disabled. Type !defaulthands to enable\n", player);
+				PrintToChatSM(player, 1, "%t\n", "Custom hand models disabled");
 				players_viewmodel_informed_about_disallowed[player->entindex()] = true;
 			}
 			return false;
@@ -7460,7 +7462,7 @@ namespace Mod::Attr::Custom_Attributes
 			fclose(file);
 		}
 
-		PrintToChat("This mission uses custom hand models. If you see error instead of hands, enable downloads, get the asset pack, or type !defaulthands\n", player);
+		PrintToChatSM(player, 1, "%t\n", "Custom hand models notify");
 
 		return true;
 	}
@@ -8518,6 +8520,25 @@ namespace Mod::Attr::Custom_Attributes
 		return VHOOK_CALL(collisionGroup, contentsMask);
 	}
 
+#ifdef PLATFORM_64BITS
+    DETOUR_DECL_MEMBER(void, CEconItemAttributeIterator_ApplyAttributeString_OnIterateAttributeValue, const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String& value)
+	{
+		const char *pstr = "";
+		auto pvalue = (CAttribute_String *)(((uintptr_t)&value) & 0xFFFFFFFF);
+        return DETOUR_MEMBER_CALL(pAttrDef, *pvalue);
+    }
+#endif
+
+	RefCount rc_HandleRageGain;
+	DETOUR_DECL_STATIC(void, HandleRageGain, CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale)
+	{
+		if (pPlayer != nullptr) {
+			float rageScale = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, rageScale,rage_receive_scale);
+			flDamage *= rageScale;
+		}
+		DETOUR_STATIC_CALL(pPlayer, iRequiredBuffFlags, flDamage, fInverseRageGainScale);
+	}
 	/*void OnAttributesChange(CAttributeManager *mgr)
 	{
 		CBaseEntity *outer = mgr->m_hOuter;
@@ -9420,7 +9441,7 @@ namespace Mod::Attr::Custom_Attributes
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_CanGoInvisible, "CTFPlayer::CanGoInvisible");
             MOD_ADD_DETOUR_MEMBER(CObjectTeleporter_PlayerCanBeTeleported, "CObjectTeleporter::PlayerCanBeTeleported [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveAllOwnedEntitiesFromWorld, "CTFPlayer::RemoveAllOwnedEntitiesFromWorld");
-			MOD_ADD_DETOUR_STATIC(CTFProjectile_SentryRocket_Create, "CTFProjectile_SentryRocket::Create");
+			MOD_ADD_DETOUR_STATIC(CTFBaseRocket_Create, "CTFBaseRocket::Create");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_AddObject, "CTFPlayer::AddObject [clone]");
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_RemoveObject, "CTFPlayer::RemoveObject");
             MOD_ADD_DETOUR_MEMBER(CObjectDispenser_GetHealRate, "CObjectDispenser::GetHealRate");
@@ -9498,6 +9519,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponFlameBall_FireProjectile, "CTFWeaponFlameBall::FireProjectile");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldGainInstantSpawn, "CTFPlayer::ShouldGainInstantSpawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
+			MOD_ADD_DETOUR_STATIC(HandleRageGain, "HandleRageGain");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -9562,6 +9584,11 @@ namespace Mod::Attr::Custom_Attributes
 		//	Fix set dmgtype ignite
 			//MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetInitialAfterburnDuration, "CTFWeaponBase::GetInitialAfterburnDuration");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_GetAfterburnRateOnHit, "CTFWeaponBase::GetAfterburnRateOnHit");
+
+		//	Fix reading string attribute on 64 bit
+#ifdef PLATFORM_64BITS
+			MOD_ADD_DETOUR_MEMBER(CEconItemAttributeIterator_ApplyAttributeString_OnIterateAttributeValue, "CEconItemAttributeIterator_ApplyAttributeString::OnIterateAttributeValue");
+#endif
 
 		//  Fast attribute cache
 			MOD_ADD_DETOUR_MEMBER(CAttributeManager_ClearCache,            "CAttributeManager::ClearCache [clone]");
@@ -9948,7 +9975,7 @@ namespace Mod::Attr::Custom_Attributes
 		viewmodels_toggle_forward->PushCell(player->entindex());
 		viewmodels_toggle_forward->PushCell(disallowed);
 		viewmodels_toggle_forward->Execute();
-		PrintToChat(disallowed ? "Disabled custom hand models\n" : "Enabled custom hand models. Change class to apply changes\n", player);
+		ModCommandResponse("%s\n", TranslateText(player, disallowed ? "Custom hand models disabled apply" : "Custom hand models enabled apply"));
 	}, &s_Mod);
 	
 	ConVar cvar_enable("sig_attr_custom", "0", FCVAR_NOTIFY,

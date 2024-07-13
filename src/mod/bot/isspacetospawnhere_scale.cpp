@@ -138,41 +138,7 @@ namespace Mod::Bot::IsSpaceToSpawnHere_Scale
 
 		player->SetModelScale(old_scale);
 
-		const Vector& vOrigin = player->GetAbsOrigin();
-		const QAngle& qAngle = player->GetAbsAngles();
-		const Vector& vHullMins = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MIN : VEC_HULL_MIN) * player->GetModelScale();
-		const Vector& vHullMaxs = (player->GetFlags() & FL_DUCKING ? VEC_DUCK_HULL_MAX : VEC_HULL_MAX) * player->GetModelScale();
-
-		trace_t result;
-		CTraceFilterIgnoreTeammates filter(player, COLLISION_GROUP_NONE);
-		UTIL_TraceHull(vOrigin, vOrigin, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result);
-		// am I stuck? try to resolve it
-		if ( result.DidHit() )
-		{
-			float flPlayerHeight = vHullMaxs.z - vHullMins.z;
-			float flExtraHeight = 10;
-			float flSpaceMove = old_scale * 24;
-
-			static Vector vTest[] =
-			{
-				Vector( flSpaceMove, flSpaceMove, flExtraHeight ),
-				Vector( -flSpaceMove, -flSpaceMove, flExtraHeight ),
-				Vector( -flSpaceMove, flSpaceMove, flExtraHeight ),
-				Vector( flSpaceMove, -flSpaceMove, flExtraHeight ),
-				Vector( 0, 0, flPlayerHeight * 0.5 + flExtraHeight ),
-				Vector( 0, 0, -flPlayerHeight - flExtraHeight )
-			};
-			for ( int i=0; i<ARRAYSIZE( vTest ); ++i )
-			{
-				Vector vTestPos = vOrigin + vTest[i];
-				UTIL_TraceHull(vTestPos, vTestPos, vHullMins, vHullMaxs, MASK_PLAYERSOLID, &filter, &result);
-				if (!result.DidHit())
-				{
-					player->Teleport(&vTestPos, &qAngle, NULL);
-					return;
-				}
-			}
-
+		if (!ResolvePlayerStuck(player, old_scale, 0.8f, false)) {
 			player->CommitSuicide( false, true );
 		}
 	}

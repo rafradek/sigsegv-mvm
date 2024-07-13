@@ -13,6 +13,7 @@ folder_list = [
 #  'addons/sourcemod/scripting/include',
   'addons/sourcemod/gamedata',
   'addons/sourcemod/gamedata/sigsegv',
+  'addons/sourcemod/translations',
 #  'addons/sourcemod/configs',
   'cfg',
 ]
@@ -114,6 +115,13 @@ if not Extension.optimize_mods_only:
       'library.lua'
     ]
   )
+
+# Translation files
+CopyFiles('translations', 'addons/sourcemod/translations',
+  [
+    'sigsegv.phrases.txt'
+  ]
+)
 
 if Extension.optimize_mods_only:
   builder.AddCopy('cfg/sigsegv_convars_optimize_only.cfg', 'cfg/sigsegv_convars.cfg')

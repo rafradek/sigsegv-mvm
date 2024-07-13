@@ -3063,6 +3063,59 @@
 					type "sym"
 					sym  "_Z26SendCvarValueQueryToClientP7IClientPKcb"
 				}
+
+				"CBaseServer::RejectConnection"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer16RejectConnectionERK8netadr_siPKc"
+				}
+
+				"CBaseServer::CheckProtocol"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer13CheckProtocolER8netadr_sii"
+				}
+
+				"CServerPlugin::ClientSettingsChanged"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN13CServerPlugin21ClientSettingsChangedEP7edict_t"
+				}
+				"CGameRules::IsConnectedUserInfoChangeAllowed"
+				{
+					type "sym"
+					sym  "_ZN10CGameRules32IsConnectedUserInfoChangeAllowedEP11CBasePlayer"
+				}
+
+				"CNetChan::SetFileTransmissionMode"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN8CNetChan23SetFileTransmissionModeEb"
+				}
+
+				"CSteam3Server::OnLogonSuccess"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN13CSteam3Server14OnLogonSuccessEP23SteamServersConnected_t"
+				}
+
+				"CCommandBuffer::Compact"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CCommandBuffer7CompactEv"
+				}
+
+				"CEconItemAttributeIterator_ApplyAttributeString::OnIterateAttributeValue"
+				{
+					type "sym"
+					sym  "_ZN47CEconItemAttributeIterator_ApplyAttributeString23OnIterateAttributeValueEPK28CEconItemAttributeDefinitionRK17CAttribute_String"
+				}
 				
 			}
 			"addrs_group"

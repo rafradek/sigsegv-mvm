@@ -1149,7 +1149,10 @@ namespace Util::Lua
             }
         }
         else if (type != LUA_TUSERDATA && type != LUA_TLIGHTUSERDATA) {
-            variant.SetString(AllocPooledString(lua_tostring(l,index)));
+            auto str = lua_tostring(l,index);
+            if (str != nullptr) {
+                variant.SetString(AllocPooledString(str));
+            }
         }
         else if (luaL_testudata(l, index, "vector")) {
             variant.SetVector3D(*(Vector*)lua_touserdata(l, index));
@@ -5021,7 +5024,7 @@ namespace Util::Lua
                 script_exec_time_tick_max = script_exec_time_tick;
             }
             script_exec_time_tick = 0.0;
-            if (gpGlobals->tickcount % 66 == 0) {
+            if (gpGlobals->tickcount % (int)(1 / gpGlobals->interval_per_tick) == 0) {
                 char output[256];
                 snprintf(output, sizeof(output), "Lua script execution time: [avg: %.9fs (%d%%)| max: %.9fs (%d%%)]\n", script_exec_time / 66, (int)(script_exec_time * 100), script_exec_time_tick_max, (int)((script_exec_time_tick_max / 0.015) * 100));
                 for (int i = 1; i < MAX_PLAYERS + 1; i++) {

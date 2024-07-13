@@ -1,0 +1,378 @@
+"Phrases"
+{
+	"Custom hand models disabled"
+	{
+		"en"		"Custom hand models disabled. Type !defaulthands to enable."
+	}
+	"Custom hand models disabled apply"
+	{
+		"en"		"Disabled custom hand models"
+	}
+	"Custom hand models enabled apply"
+	{
+		"en"		"Enabled custom hand models. Change class to apply changes"
+	}
+	"Custom hand models notify"
+	{
+		"en"		"This mission uses custom hand models. If you see error instead of hands, enable downloads, get the asset pack, or type !defaulthands"
+	}
+
+	"Missing files"
+	{
+		"en"		"Some files are missing on the server, check console for details"
+	}
+
+	"Late DL sv_allowupload notify"
+	{
+		"en"		"Set sv_allowupload 1 and reconnect to download custom icons"
+	}
+	
+	"Source TV spectator disconnected"
+	{
+		"#format"	"{1:s}"
+		"en"		"Source TV spectator {1} disconnected"
+	}
+	
+	"Source TV spectator joined"
+	{
+		"#format"	"{1:s}"
+		"en"		"Source TV spectator {1} joined"
+	}
+	
+	"sig_tvspectators"
+	{
+		"en"		"Spectators:"
+	}
+	
+	"Custom upgrades notify"
+	{
+		"en"		"This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)"
+	}
+	
+	"Player upgrades"
+	{
+		"en"		"Player Upgrades"
+	}
+	
+	"Undo upgrades"
+	{
+		"en"		"Undo upgrades"
+	}
+	
+	"Refund upgrades"
+	{
+		"en"		"Refund Upgrades"
+	}
+	
+	"Item upgrades"
+	{
+		"#format"	"{1:s}"
+		"en"		"Upgrades for {1}"
+	}
+	
+	"Extended upgrades menu"
+	{
+		"en"		"Extended Upgrades Menu"
+	}
+	
+	"Mission description"
+	{
+		"en"		"Mission Description"
+	}
+	
+	"Mission info menu"
+	{
+		"en"		"Mission info menu"
+	}
+	
+	"Item whitelist"
+	{
+		"en"		"Item Whitelist"
+	}
+	
+	"Whitelisted items"
+	{
+		"en"		"Whitelisted Items"
+	}
+	
+	"Item blacklist"
+	{
+		"en"		"Item Blacklist"
+	}
+	
+	"Blacklisted items"
+	{
+		"en"		"Blacklisted Items"
+	}
+	
+	"Item replacement"
+	{
+		"en"		"Item Replacement"
+	}
+	
+	"Description"
+	{
+		"en"		"Description"
+	}
+	
+	"Disallowed upgrades"
+	{
+		"en"		"Disallowed Upgrades"
+	}
+	
+	"Item attributes"
+	{
+		"en"		"Item Attributes"
+	}
+	
+	"Item attributes format"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} Attributes"
+	}
+	
+	"Player attributes"
+	{
+		"en"		"Player Attributes"
+	}
+	
+	"All class attributes"
+	{
+		"en"		"All class attributes"
+	}
+	
+	"Forced items"
+	{
+		"en"		"Forced Items"
+	}
+	
+	"Forced items class"
+	{
+		"#format"	"{1:s}"
+		"en"		"Forced Items ({1})"
+	}
+	
+	"Extra loadout items"
+	{
+		"en"		"Extra Loadout Items"
+	}
+	
+	"Extra loadout items class"
+	{
+		"#format"	"{1:s}"
+		"en"		"Extra loadout items ({1})"
+	}
+	
+	"Sniper bots can headshot"
+	{
+		"en"		"Sniper bots can headshot"
+	}
+	
+	"No laser on Sniper bots"
+	{
+		"en"		"No laser on Sniper bots"
+	}
+	
+	"Upgrade refunding disabled"
+	{
+		"en"		"Upgrade refunding disabled"
+	}
+	
+	"Collect credits upgrade refund"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"Collect {1} credits to earn an upgrade refund, up to {2} times"
+	}
+	
+	"Pyro bots can airblast grenades and arrows"
+	{
+		"en"		"Pyro bots can airblast grenades and arrows"
+	}
+	
+	"Sandman balls can stun enemy targets"
+	{
+		"en"		"Sandman balls can stun enemy targets"
+	}
+	
+	"No reanimators"
+	{
+		"en"		"No reanimators"
+	}
+	
+	"No custom mission information available"
+	{
+		"en"		"No custom mission information available"
+	}
+
+	"All player classes"
+	{
+		"en"		"All player classes"
+	}
+
+	"Undefined"
+	{
+		"en"	"Undefined"
+	}
+
+	"Scout"
+	{
+		"en" "Scout"
+	}
+
+	"Sniper"
+	{
+		"en" "Sniper"
+	}
+
+	"Soldier"
+	{
+		"en" "Soldier"
+	}
+
+	"Demoman"
+	{
+		"en" "Demoman"
+	}
+
+	"Medic"
+	{
+		"en" "Medic"
+	}
+
+	"Heavy"
+	{
+		"en" "Heavy"
+	}
+
+	"Pyro"
+	{
+		"en" "Pyro"
+	}
+
+	"Spy"
+	{
+		"en" "Spy"
+	}
+
+	"Engineer"
+	{
+		"en" "Engineer"
+	}
+
+	"Civilian"
+	{
+		"en" "Civilian"
+	}
+
+	"Random"
+	{
+		"en" "Random"
+	}
+
+	"Primary"
+	{
+		"en" "Primary"
+	}
+
+	"Secondary"
+	{
+		"en" "Secondary"
+	}
+
+	"Melee"
+	{
+		"en" "Melee"
+	}
+
+	"Utility"
+	{
+		"en" "Utility"
+	}
+
+	"Building"
+	{
+		"en" "Building"
+	}
+
+	"PDA"
+	{
+		"en" "PDA"
+	}
+
+	"PDA 2"
+	{
+		"en" "PDA 2"
+	}
+
+	"Head"
+	{
+		"en" "Head"
+	}
+
+	"Misc"
+	{
+		"en" "Misc"
+	}
+
+	"Action"
+	{
+		"en" "Action"
+	}
+
+	"Misc 2"
+	{
+		"en" "Misc 2"
+	}
+
+	"Taunt 1"
+	{
+		"en" "Taunt 1"
+	}
+
+	"Taunt 2"
+	{
+		"en" "Taunt 2"
+	}
+
+	"Taunt 3"
+	{
+		"en" "Taunt 3"
+	}
+
+	"Taunt 4"
+	{
+		"en" "Taunt 4"
+	}
+
+	"Taunt 5"
+	{
+		"en" "Taunt 5"
+	}
+
+	"Taunt 6"
+	{
+		"en" "Taunt 6"
+	}
+
+	"Taunt 7"
+	{
+		"en" "Taunt 7"
+	}
+
+	"Taunt 8"
+	{
+		"en" "Taunt 8"
+	}
+
+	"Weapon type:"
+	{
+		"#format"	"{1:s}"
+		"en" "Weapon type: {1}"
+	}
+
+	"Item type:"
+	{
+		"#format"	"{1:s}"
+		"en" "Item type: {1}"
+	}
+}

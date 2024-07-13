@@ -848,7 +848,7 @@ namespace Mod::Pop::Tank_Extensions
 
 	}
 
-	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound, const char *sound, float start, float duration)
+	DETOUR_DECL_MEMBER(void, CBaseEntity_EmitSound, const char *sound, float start, float *duration)
 	{
 		if (rc_CTFTankBoss_UpdatePingSound || rc_CTFTankBoss_TankBossThink || rc_CTankSpawner_Spawn) {
 			SpawnerData *data = rc_CTankSpawner_Spawn ? &(spawners[current_spawner]) : thinking_tank_data;

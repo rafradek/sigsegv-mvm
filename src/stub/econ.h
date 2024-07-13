@@ -147,7 +147,12 @@ static_assert(sizeof(static_attrib_t) == 0x8);
 
 typedef unsigned short attrib_definition_index_t;
 typedef unsigned short	item_definition_index_t;
+#ifdef PLATFORM_64BITS
+typedef uint64_t attrib_value_t;
+#else
 typedef uint32_t attrib_value_t;
+#endif
+
 const attrib_definition_index_t INVALID_ATTRIB_DEF_INDEX = ((attrib_definition_index_t)-1);
 const item_definition_index_t INVALID_ITEM_DEF_INDEX = ((item_definition_index_t)-1);
 
@@ -165,7 +170,7 @@ class IEconItemAttributeIterator
 public:
 	virtual ~IEconItemAttributeIterator() = default;
 	
-	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const = 0;
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, attrib_value_t                           value) const = 0;
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, float                                    value) const = 0;
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const uint64&                            value) const = 0;
 	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String&                 value) const = 0;
@@ -202,7 +207,7 @@ public:
 
 template<typename T> class CSchemaAttributeTypeBase : public ISchemaAttributeTypeBase<T> {};
 
-class CSchemaAttributeType_Default : public CSchemaAttributeTypeBase<unsigned int> {};
+class CSchemaAttributeType_Default : public CSchemaAttributeTypeBase<attrib_value_t> {};
 class CSchemaAttributeType_Float   : public CSchemaAttributeTypeBase<float>        {};
 class CSchemaAttributeType_UInt64  : public CSchemaAttributeTypeBase<uint64>       {};
 

@@ -29,12 +29,12 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 			buf.CopyFrom(s_Buf_PostThink);
 			
 #ifdef PLATFORM_64BITS
-			mask.SetDword(0x01 + 1, 0x00000000);
+			mask.SetDword(0x00 + 1, 0x00000000);
 			mask.SetDword(0x08 + 2, 0x00000000);
 #else
-			buf.SetDword(0x00 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
+			//buf.SetDword(0x00 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
 			mask[0x05 + 2] = 0x00;
-			
+			mask.SetDword(0x00 + 1, 0x00000000);
 			mask.SetDword(0x0b + 2, 0x00000000);
 #endif
 

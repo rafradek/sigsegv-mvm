@@ -3718,4 +3718,15 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
+    "4692"
+    {
+        "name"	"rage receive scale"
+        "attribute_class"	"rage_receive_scale"
+        "description_string"	"(+-)%p% rage gain"
+        "description_format"	"value_is_percentage"
+        "hidden"	"0"
+        "effect_type"	"positive"
+        "stored_as_integer"	"0"
+    }
+    
 }

@@ -5,6 +5,12 @@
 
 void CBaseEntity::AddCustomOutput(const char *key, const char *value)
 {
+    const char *commaStr = strchr(value, 27);
+    if (commaStr == nullptr) {
+        commaStr = strchr(value, 44);
+    }
+    if (commaStr == nullptr || *commaStr == '\0') return;
+
     std::string namestr = key;
     boost::algorithm::to_lower(namestr);
 
@@ -19,9 +25,16 @@ void CBaseEntity::AddCustomOutput(const char *key, const char *value)
         }
     }
     if (!found) {
-        CustomOutput output {AllocPooledString(namestr.c_str())};
+        Msg("c0\n");
+        string_t str = AllocPooledString(namestr.c_str());
+        Msg("Output key %s, value %s\n", STRING(str), value);
+
+        list.emplace_back();
+        Msg("c1\n");
+        auto &output = list.back();
+        output.key = str;
         output.output.ParseEventAction(value);
-        list.push_back(output);
+        Msg("c2\n");
     }
 }
 

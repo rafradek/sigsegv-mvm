@@ -594,6 +594,8 @@
 				"CTFBaseRocket::GetWeaponID" "_ZNK13CTFBaseRocket11GetWeaponIDEv"
 				"CTFBaseRocket::GetRadius" "_ZN13CTFBaseRocket9GetRadiusEv"
 				"CTFBaseRocket::Destroy" "_ZN13CTFBaseRocket7DestroyEbb"
+				"CTFBaseRocket::Create" "_ZN13CTFBaseRocket6CreateEP11CBaseEntityPKcRK6VectorRK6QAngleS1_"
+				
 				
 				"CTFProjectile_Flare::Explode_Air" "_ZN19CTFProjectile_Flare11Explode_AirEP10CGameTraceib"
 				"CTFProjectile_Flare::GetDamageType" "_ZN19CTFProjectile_Flare13GetDamageTypeEv"

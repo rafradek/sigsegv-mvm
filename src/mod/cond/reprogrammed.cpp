@@ -474,7 +474,7 @@ namespace Mod::Cond::Reprogrammed
 			DispatchParticleEffect("sapper_sentry1_fx", PATTACH_POINT_FOLLOW, player, "head");
 		}
 		
-		
+		ResolvePlayerStuck(player, player->GetModelScale(), 1.6f, true);
 	}
 
 	std::vector<CHandle<CTFPlayer>> bots_killed;
@@ -567,7 +567,7 @@ namespace Mod::Cond::Reprogrammed
 		}
 		
 		
-		
+		ResolvePlayerStuck(player, player->GetModelScale(), 1.6f, true);
 	}
 	
 	class NeutralSwitch : public CBaseEntity 
@@ -590,6 +590,8 @@ namespace Mod::Cond::Reprogrammed
 		} else {
 			DevMsg("  currently on teamnum %d; not calling ForceChangeTeam\n", player->GetTeamNumber());
 		}
+
+		ResolvePlayerStuck(player, player->GetModelScale(), 1.6f, true);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_Spawn)
@@ -628,6 +630,7 @@ namespace Mod::Cond::Reprogrammed
 		if (bot != nullptr) {
 			bot->GetVisionInterface()->ForgetAllKnownEntities();
 		}
+		ResolvePlayerStuck(player, player->GetModelScale(), 1.6f, true);
 	}
 
 	void OnAddMVMBotRadiowave(CTFPlayer *player)
@@ -1020,24 +1023,30 @@ namespace Mod::Cond::Reprogrammed
 	CDetour *detour_isbot = nullptr;
 	DETOUR_DECL_MEMBER(bool, CTFBotSpawner_Spawn, const Vector& where, CUtlVector<CHandle<CBaseEntity>> *ents)
 	{
-		std::vector<CBasePlayer *> spec_players;
-		CTeam *team_spec = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
+		std::vector<CHandle<CTFPlayer>> spec_players;
+		CTFTeam *team_spec = TFTeamMgr()->GetTeam(TEAM_SPECTATOR);
 		for (int i = 0; i < team_spec->GetNumPlayers(); i++) {
 			CBasePlayer *bot = team_spec->GetPlayer(i);
-		//ForEachPlayer([&](CBasePlayer *bot) {
 			if (bot != nullptr && bot->IsBot() && bot->IsAlive()) {
 				
-				spec_players.push_back(bot);
+				spec_players.push_back(bot->GetRefEHandle());
+				team_spec->m_aPlayers->FindAndRemove(bot);
+				i--;
+				if (team_spec->m_hLeader == bot) {
+					team_spec->m_hLeader = nullptr;
+				}
 			}
-		}
-		for (CBasePlayer *bot : spec_players) {
-			team_spec->RemovePlayerNonVirtual(bot);
 		}
 
 		bool result = DETOUR_MEMBER_CALL(where, ents);
-		
-		for (CBasePlayer *bot : spec_players) {
-			team_spec->AddPlayerNonVirtual(bot);
+
+		for (auto bot : spec_players) {
+			if (bot != nullptr && !bot->IsMarkedForDeletion() && bot->GetTeamNumber() == TEAM_SPECTATOR) {
+				
+				if (team_spec->m_aPlayers->Find(bot) == -1) {
+					team_spec->AddPlayerNonVirtual(bot);
+				}
+			}
 		}
 
 		return result;

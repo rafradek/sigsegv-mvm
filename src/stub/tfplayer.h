@@ -555,6 +555,8 @@ public:
 	DECL_SENDPROP   (QAngle,     m_angEyeAngles);
 	DECL_SENDPROP   (bool,       m_bMatchSafeToLeave);
 	DECL_RELATIVE   (CWaveSpawnPopulator *, m_pWaveSpawnPopulator);
+	DECL_SENDPROP   (bool,       m_bIsReadyToHighFive);
+	DECL_SENDPROP   (int,        m_nForceTauntCam);
 	DECL_SENDPROP   (float,      m_flTauntYaw);
 	DECL_RELATIVE   (int,        m_nCanPurchaseUpgradesCount);
 	DECL_RELATIVE   (CUtlVector<CUpgradeInfo>, m_RefundableUpgrades);

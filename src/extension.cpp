@@ -70,6 +70,7 @@ IClientEntityList *cl_entitylist = nullptr;
 IEngineTool *enginetools  = nullptr;
 IServerTools *servertools = nullptr;
 IClientTools *clienttools = nullptr;
+IGameMovement *g_pGameMovement = nullptr;
 
 IVProfExport *vprofexport = nullptr;
 
@@ -78,6 +79,9 @@ IDedicatedExports *dedicated = nullptr;
 IMDLCache *mdlcache = nullptr;
 
 IClientMode *g_pClientMode = nullptr;
+
+IPhraseCollection *phrases = nullptr;
+IPhraseFile *phrasesFile = nullptr;
 
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -116,6 +120,9 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	ConVar_Restore::Load();
 	ConVar_Restore::OnExtLoad();
 
+	phrases = translator->CreatePhraseCollection();
+	phrasesFile = phrases->AddPhraseFile("sigsegv.phrases");
+
 	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("Sigsegv"), this);
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
@@ -152,6 +159,9 @@ void CExtSigsegv::SDK_OnUnload()
 #endif
 
 	UnloadAllCustomThinkFunc();
+	if (phrases != nullptr) {
+		phrases->Destroy();
+	}
 }
 
 void CExtSigsegv::SDK_OnAllLoaded()
@@ -206,6 +216,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	GET_IFACE_REQUIRED(Server, playerinfomanager, INTERFACEVERSION_PLAYERINFOMANAGER);
 	GET_IFACE_REQUIRED(Server, botmanager,        INTERFACEVERSION_PLAYERBOTMANAGER);
 	GET_IFACE_REQUIRED(Server, servertools,       VSERVERTOOLS_INTERFACE_VERSION);
+	GET_IFACE_REQUIRED(Server, g_pGameMovement,   INTERFACENAME_GAMEMOVEMENT);
 	
 	GET_IFACE_REQUIRED(VPhysics, physics,       VPHYSICS_INTERFACE_VERSION);
 	GET_IFACE_REQUIRED(VPhysics, physcollision, VPHYSICS_COLLISION_INTERFACE_VERSION);

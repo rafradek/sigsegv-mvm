@@ -10,6 +10,7 @@ namespace Mod::Prof::Frame_Prof
     CCycleCount timespent2;
     CCycleCount timespent2Start;
     CCycleCount timespent2End;
+    double highestTime;
     float prevTime = 0.0f;
     float prevTime2 = 0.0f;
 	int bytesPrevReliable = 0;
@@ -41,6 +42,7 @@ namespace Mod::Prof::Frame_Prof
 		DETOUR_STATIC_CALL();
 		timespent2End.Sample();
 		timespent2.m_Int64 += timespent2End.m_Int64 - timespent2Start.m_Int64;
+		highestTime = Max((timespent2End.GetSeconds() - timespent2Start.GetSeconds()), highestTime);
 		static struct rusage s_lastUsage;
 		struct rusage currentUsage;
         if (floor(gpGlobals->curtime/5) != floor(prevTime2) ) {
@@ -53,7 +55,8 @@ namespace Mod::Prof::Frame_Prof
 				s_lastUsage = currentUsage;
 				cpu_usage = flTimeDiff;
 			}
-            Msg("Frame time: %fs CPU usage: %.1f%\n", timespent2.GetSeconds()/5, cpu_usage/5*100);
+            Msg("Frame time: %fs (%f max) CPU usage: %.1f%\n", timespent2.GetSeconds()/5, highestTime, cpu_usage/5*100);
+			highestTime = 0.0f;
             timespent2.Init();
             prevTime2 = gpGlobals->curtime/5;
         }

@@ -112,10 +112,12 @@ public:
 	
 	const CViewVectors *GetViewVectors() const;
 	bool ShouldCollide(int collisionGroup0, int collisionGroup1) { NULL_RET(true); return vt_ShouldCollide (this, collisionGroup0, collisionGroup1); }
+	bool IsConnectedUserInfoChangeAllowed(CBasePlayer *player) { NULL_RET(true); return vt_IsConnectedUserInfoChangeAllowed (this, player); }
 	
 private:
 	static MemberVFuncThunk<const CGameRules *, const CViewVectors *> vt_GetViewVectors;
 	static MemberVFuncThunk<      CGameRules *, bool, int, int>       vt_ShouldCollide;
+	static MemberVFuncThunk<      CGameRules *, bool, CBasePlayer *>  vt_IsConnectedUserInfoChangeAllowed;
 };
 
 class CMultiplayRules : public CGameRules

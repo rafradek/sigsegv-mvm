@@ -290,6 +290,8 @@ IMPL_REL_AFTER(CWaveSpawnPopulator *,CTFPlayer, m_pWaveSpawnPopulator, m_bMatchS
 IMPL_REL_AFTER(int,                  CTFPlayer, m_nCanPurchaseUpgradesCount, m_pWaveSpawnPopulator, float);
 IMPL_REL_AFTER(CUtlVector<CUpgradeInfo>, CTFPlayer, m_RefundableUpgrades, m_nCanPurchaseUpgradesCount);
 IMPL_SENDPROP(float,                CTFPlayer, m_flVehicleReverseTime, CTFPlayer);
+IMPL_SENDPROP(bool,                 CTFPlayer, m_bIsReadyToHighFive,   CTFPlayer);
+IMPL_SENDPROP(int,                  CTFPlayer, m_nForceTauntCam,       CTFPlayer);
 IMPL_SENDPROP(float,                CTFPlayer, m_flTauntYaw, CTFPlayer);
 IMPL_REL_AFTER(bool,                 CTFPlayer, m_bTauntForceMoveForward, m_flVehicleReverseTime);
 IMPL_REL_AFTER(float,                CTFPlayer, m_flTauntForceMoveForwardSpeed, m_bTauntForceMoveForward);

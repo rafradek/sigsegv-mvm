@@ -648,14 +648,10 @@ namespace Mod::Util::Download_Manager
 			if (entry.size > sizeLimit) continue;
 			late_dl_from_all_maps_files.push_back(entry.name);
 		}
-		// If late dl list is empty, populate it already with stuff
-		if (late_dl_files.empty() && !late_dl_from_all_maps_files.empty()) {
-			late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
-			for (int i = 1; i <= gpGlobals->maxClients; i++) {
-				AddLateFilesToDownloadForPlayer(i, late_dl_files, 0);
-			}
-		}
 
+		if (!late_dl_from_all_maps_files.empty()) {
+			GenerateLateDownloadablesCurrentMission();
+		}
 	}
 
 	bool GenerateLateDownloadablesAllMissionsUpdate()
@@ -730,7 +726,9 @@ namespace Mod::Util::Download_Manager
 			}
 		}
 
-		late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
+		if (cvar_late_download_other_maps.GetBool()) {
+			late_dl_files.insert(late_dl_files.end(), late_dl_from_all_maps_files.begin(), late_dl_from_all_maps_files.end());
+		}
 		if (!late_dl_files.empty()) {
 			for (int i = 1; i <= gpGlobals->maxClients; i++) {
 				// Re-prioritize downloads
@@ -816,7 +814,7 @@ namespace Mod::Util::Download_Manager
 			scanner.AddFileIfCustom(StringStartsWith(upgradeFile, "download/") ? upgradeFile + strlen("download/") : upgradeFile);
 
 		if (scanner.missingfilemention && admin != nullptr) {
-			PrintToChat("Some files are missing on the server, check console for details\n", admin);
+			PrintToChatSM(admin, 1, "%t\n", "Missing files");
 		}
 		popfiles_to_forced_update.clear();
 
@@ -1254,8 +1252,9 @@ namespace Mod::Util::Download_Manager
 			auto &info = download_infos[player->entindex()];
 			
 			if (!info.lateDlEnabled && !info.lateDlUploadInfoSend) {
-				PrintToChat("Set sv_allowupload 1 and reconnect to download custom icons\n", player);
-				ClientMsg(player, "Set sv_allowupload 1 and reconnect to download custom icons\n");
+				auto text = FormatTextForPlayerSM(player, 1, "%t\n", "Late DL sv_allowupload notify");
+				PrintToChat(text, player);
+				ClientMsg(player, "%s", text);
 				info.lateDlUploadInfoSend = true;
 			}
 		}
@@ -1456,11 +1455,15 @@ namespace Mod::Util::Download_Manager
 
 				if (!info.lateDlEnabled) continue;
 
-				CNetChan *netchan = static_cast<CNetChan *>(engine->GetPlayerNetInfo(i));
+				auto client = (CBaseClient *) sv->GetClient(i - 1);
+				CNetChan *netchan = client != nullptr ? static_cast<CNetChan *>(client->GetNetChannel()) : nullptr;
+
 				if (netchan == nullptr) {
 					info = LateDownloadInfo();
 					continue;
 				}
+
+				if (client->m_nSignonState <= 2) continue;
 
 				if (!info.lateDlChecked) {
 					auto val = ft_SendCvarValueQueryToClient(sv->GetClient(i - 1), "sv_allowupload", true);
@@ -1518,6 +1521,10 @@ namespace Mod::Util::Download_Manager
 					}
 					info.iconsDownloading.clear();
 					info.active = false;
+					//netchan->SetFileTransmissionMode(UTIL_PlayerByIndex(i) != nullptr);
+				}
+				else {
+					//netchan->SetFileTransmissionMode(UTIL_PlayerByIndex(i) != nullptr && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING);
 				}
 				if (!info.iconsDownloading.empty()) {
 					hasIconDownloads = true;
@@ -1735,9 +1742,11 @@ namespace Mod::Util::Download_Manager
 			filesystem->RemoveSearchPath(oldFullPath.c_str(), "mod");
 			filesystem->RemoveSearchPath(oldFullPath.c_str(), "custom");
 			
-			AddPathToTail(cvar_kvpath.GetString(), "game");
-			AddPathToTail(cvar_kvpath.GetString(), "mod");
-			AddPathToTail(cvar_kvpath.GetString(), "custom");
+			if (strlen(cvar_custom_search_path.GetString()) > 0) {
+				AddPathToTail(cvar_custom_search_path.GetString(), "game");
+				AddPathToTail(cvar_custom_search_path.GetString(), "mod");
+				AddPathToTail(cvar_custom_search_path.GetString(), "custom");
+			}
 			
 		});
 
@@ -1764,6 +1773,11 @@ namespace Mod::Util::Download_Manager
 			ResetVoteMapList();
 		}
 	}
+	ModCommandClient sig_latedl_download("sig_latedl_download", [](CCommandPlayer *player, const CCommand& args){
+
+		StopLateFilesToDownloadForPlayer(player->entindex());
+		AddLateFilesToDownloadForPlayer(player->entindex(), late_dl_files, late_dl_files_current_mission_count);
+	}, &s_Mod);
 	
 	ModCommandClient sig_latedl_current_mission_download_only("sig_latedl_current_mission_download_only", [](CCommandPlayer *player, const CCommand& args){
 		auto &info = download_infos[player->entindex()];

@@ -75,18 +75,29 @@ public:
 	
 	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
 	void     UserInfoChanged(int slot) { vt_UserInfoChanged(this, slot); }
+	void     RejectConnection(const netadr_t &addr, int challenge, const char *reason) { vt_RejectConnection(this, addr, challenge, reason); }
+
+#ifdef PLATFORM_64BITS
+    int &GetMaxClientsRef() { Error("Put correct GetMaxClientsRef offset\n"); return *(int *)((uintptr_t)(this) + 0x14C); }
+#else
     int &GetMaxClientsRef() {return *(int *)((uintptr_t)(this) + 0x14C);}
+#endif
 private:
     static MemberFuncThunk<CBaseServer *, CBaseClient *, const char *>              ft_CreateFakeClient;
 	
-	static MemberVFuncThunk<CBaseServer *, float>              vt_GetCPUUsage;
-	static MemberVFuncThunk<CBaseServer *, void, int>          vt_UserInfoChanged;
+	static MemberVFuncThunk<CBaseServer *, float>                                     vt_GetCPUUsage;
+	static MemberVFuncThunk<CBaseServer *, void, int>                                 vt_UserInfoChanged;
+	static MemberVFuncThunk<CBaseServer *, void, const netadr_t &, int, const char *> vt_RejectConnection;
 };
 
 class CGameServer : public CBaseServer
 {
 public:
+#ifdef PLATFORM_64BITS
+	int GetNumEdicts() {return *(int *)((uintptr_t)(this) + 0x218);}
+#else
 	int GetNumEdicts() {return *(int *)((uintptr_t)(this) + 0x1E4);}
+#endif
 };
 
 class CClientFrameManager 
@@ -202,9 +213,11 @@ public:
 class CNetChan : public INetChannel
 {
 public:
-    bool IsFileInWaitingList(const char *filename) { return ft_IsFileInWaitingList(this, filename); }
+    bool IsFileInWaitingList(const char *filename)  { return ft_IsFileInWaitingList(this, filename); }
+    void SetFileTransmissionMode(bool isBackground) {        ft_SetFileTransmissionMode(this, isBackground); }
 private:
 	static MemberFuncThunk<CNetChan *, bool, const char *> ft_IsFileInWaitingList;
+	static MemberFuncThunk<CNetChan *, void, bool> ft_SetFileTransmissionMode;
 };
 
 

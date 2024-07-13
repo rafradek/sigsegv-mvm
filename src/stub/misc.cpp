@@ -1,5 +1,6 @@
 #include "stub/misc.h"
 #include "util/misc.h"
+#include "util/scope.h"
 
 
 /* duplicate definition is fine; fixes linker errors */
@@ -60,16 +61,6 @@ int CStudioHdr::GetNumPoseParameters() const { return ft_CStudioHdr_GetNumPosePa
 
 static MemberFuncThunk<CStudioHdr *, const mstudioposeparamdesc_t&, int> ft_CStudioHdr_pPoseParameter("CStudioHdr::pPoseParameter");
 const mstudioposeparamdesc_t& CStudioHdr::pPoseParameter(int i) { return ft_CStudioHdr_pPoseParameter(this, i); }
-
-
-static StaticFuncThunk<string_t, const char *> ft_AllocPooledString("AllocPooledString");
-string_t AllocPooledString(const char *pszValue) { return ft_AllocPooledString(pszValue); }
-
-static StaticFuncThunk<string_t, const char *> ft_AllocPooledString_StaticConstantStringPointer("AllocPooledString_StaticConstantStringPointer");
-string_t AllocPooledString_StaticConstantStringPointer(const char *pszGlobalConstValue) { return ft_AllocPooledString_StaticConstantStringPointer(pszGlobalConstValue); }
-
-static StaticFuncThunk<string_t, const char *> ft_FindPooledString("FindPooledString");
-string_t FindPooledString(const char *pszValue) { return ft_FindPooledString(pszValue); }
 
 static StaticFuncThunk<IGameSystem *> ft_GameStringSystem("GameStringSystem");
 IGameSystem *GameStringSystem() { return ft_GameStringSystem(); }
@@ -309,6 +300,61 @@ void PrintToChat(const char *str, CBasePlayer *player)
 	msg->WriteString(str);
 	
 	engine->MessageEnd();
+}
+
+const char *FormatTextForPlayerSM_VA(CBasePlayer *player, int paramCount, const char *fmt, va_list arglist, const char *param0 = nullptr)
+{
+	static char buf[1024];
+	void *params[MAX_TRANSLATE_PARAMS];
+	params[0] = (void *)param0;
+	for (int i = param0 == nullptr ? 0 : 1; i < paramCount; i++) {
+		params[i] = va_arg(arglist, void *);
+	}
+	int oldClient = translator->SetGlobalTarget(ENTINDEX(player));
+	size_t size = 0;
+	bool success = phrases->FormatString(buf, sizeof(buf), fmt, params,paramCount, &size, nullptr);
+	translator->SetGlobalTarget(oldClient);
+	if (!success) return fmt;
+	return buf;
+}
+
+const char *FormatTextForPlayerSM(CBasePlayer *player, int paramCount, const char *fmt, ...)
+{
+    va_list arglist;
+	va_start(arglist, fmt);
+	auto value = FormatTextForPlayerSM_VA(player, paramCount, fmt, arglist);
+	va_end(arglist);
+	return value;
+}
+
+void PrintToChatAllSM(int paramCount, const char *fmt,...)
+{
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		auto player = UTIL_PlayerByIndex(i);
+		if (player != nullptr && !player->IsBot()) {
+			va_list arglist;
+			va_start(arglist, fmt);
+			PrintToChat(FormatTextForPlayerSM_VA(player,paramCount, fmt, arglist), player);
+			va_end(arglist);
+		}
+	}
+}
+
+void PrintToChatSM(CBasePlayer *player, int paramCount, const char *fmt,...)
+{
+	va_list arglist;
+	va_start(arglist, fmt);
+	PrintToChat(FormatTextForPlayerSM_VA(player,paramCount, fmt,arglist), player);
+	va_end(arglist);
+}
+
+const char *TranslateText(CBasePlayer *player, const char *name, int paramCount, ...)
+{
+	va_list arglist;
+	va_start(arglist, paramCount);
+	auto value = FormatTextForPlayerSM_VA(player,paramCount + 1, "%t",arglist, name);
+	va_end(arglist);
+	return value;
 }
 
 MemberFuncThunk<CSoundEmitterSystemBase *, bool, const char *, KeyValues *, CSoundParametersInternal &> CSoundEmitterSystemBase::ft_InitSoundInternalParameter("CSoundEmitterSystemBase::InitSoundInternalParameters");

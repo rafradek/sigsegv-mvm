@@ -610,7 +610,7 @@ namespace Mod::MvM::Gamemode_Converter
 	{
         auto value = DETOUR_MEMBER_CALL();
         // Generate nav mesh if missing
-        if (value == 1) {
+        if (value == 1 && !StringStartsWith(STRING(gpGlobals->mapname), "mvm")) {
             generateMesh = true;
             generateMeshTimer.Start(1.0f);
         }

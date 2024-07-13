@@ -274,6 +274,6 @@ protected:
 #define MOD_ADD_REPLACE_FUNC_MEMBER(patch, addr) \
 	this->AddPatch(new CFuncReplace(__stop_##patch - __start_##patch, GetAddrOfMemberFunc(&FuncReplaceClass_##patch::callback), addr));
 #define MOD_ADD_REPLACE_FUNC_STATIC(patch, addr) \
-	this->AddPatch(new CFuncReplace(__stop_##patch - __start_##patch, &FuncReplace_##patch, addr));
+	this->AddPatch(new CFuncReplace(__stop_##patch - __start_##patch, (void *)&FuncReplace_##patch, addr));
 
 #endif

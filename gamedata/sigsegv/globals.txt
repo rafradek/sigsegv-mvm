@@ -139,6 +139,7 @@
 
 				"CBaseEntity::m_pPredictionPlayer" "_ZN11CBaseEntity19m_pPredictionPlayerE"
 				"g_pScriptVM" "g_pScriptVM"
+				"g_GameStringPool" "_ZL16g_GameStringPool"
 				
 			}
 			
@@ -161,6 +162,7 @@
 				"VTable for CStaticProp" "_ZTV11CStaticProp"
 				"g_BSPData" "g_BSPData"
 				"g_HostState" "_ZL11g_HostState"
+				"s_Steam3Server" "_ZL14s_Steam3Server"
 			}
 		}
 	}

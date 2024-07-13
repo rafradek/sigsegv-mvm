@@ -1520,34 +1520,14 @@ namespace Mod::Util::Client_Cmds
 
 					ModCommandResponse("Item %s:\n", view->GetItemDefinition()->GetName());
 
-					class Wrapper : public IEconItemAttributeIterator
-					{
-					public:
+					ForEachItemAttribute(view, [&](auto pAttrDef, auto value){
+						ModCommandResponse("%s = %f (%d) (%.17en)\n", pAttrDef->GetName(), value.m_Float, value.m_UInt, value.m_Float);
+						return true;
+					}, [&](auto pAttrDef, auto value){
+						ModCommandResponse("%s = %s\n", pAttrDef->GetName(), value);
+						return true;
+					});
 
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
-						{
-							attribute_data_union_t valueu;
-							valueu.m_UInt = value;
-							ModCommandResponse("%s = %f (%d) (%.17en)\n", pAttrDef->GetName(), valueu.m_Float, valueu.m_UInt, valueu.m_Float);
-							return true;
-						}
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, float                                    value) const { return true; }
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const uint64&                            value) const { return true; }
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String&                 value) const
-						{
-							const char *pstr;
-							CopyStringAttributeValueToCharPointerOutput(&value, &pstr);
-							ModCommandResponse("%s = %s\n", pAttrDef->GetName(), pstr);
-							return true;
-						}
-
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_DynamicRecipeComponent& value) const { return true; }
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_ItemSlotCriteria&       value) const { return true; }
-						virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, const CAttribute_WorldItemPlacement&     value) const { return true; }
-					};
-
-					Wrapper wrapper;
-					view->IterateAttributes(&wrapper);
 					ModCommandResponse("\n");
 				}
 			});

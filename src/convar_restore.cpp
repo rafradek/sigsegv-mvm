@@ -1,6 +1,7 @@
 #include "convar_restore.h"
 #include "mem/detour.h"
 #include <boost/tokenizer.hpp>
+#include "CommandBuffer.h"
 
 class CEmptyConVar : public ConVar {};
 
@@ -114,41 +115,61 @@ namespace ConVar_Restore
 	
 	void Load()
 	{
-	//	DevMsg("ConVar_Restore::Load\n");
+		CCommandBuffer buf;
 		
-		engine->ServerCommand("exec sigsegv_convars.cfg\n");
-		engine->ServerExecute();
-		
-		// auto kv = new KeyValues("SigsegvConVars");
-		// kv->UsesEscapeSequences(true);
-		
-		// if (kv->LoadFromFile(filesystem, "cfg/sigsegv_convars.cfg")) {
-		// 	FOR_EACH_VALUE(kv, subkey) {
-		// 		const char *name  = subkey->GetName();
-		// 		const char *value = subkey->GetString();
+		CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );
+		if (filesystem->ReadFile("cfg/sigsegv_convars.cfg", "GAME", file)) {
+			char line[1024];
+			while(file.GetBytesRemaining() > 0) {
+				file.EatWhiteSpace();
+				file.GetLine(line, sizeof(line));
+				char name[256];
+				CUtlBuffer linebuf(line, sizeof(line), CUtlBuffer::TEXT_BUFFER | CUtlBuffer::READ_ONLY);
+				int read = linebuf.ParseToken(CCommand::DefaultBreakSet(), name, sizeof(name));
+				if (read == -1) continue;
+				linebuf.EatWhiteSpace();
+
+				bool inQuote = false;
+				int lenc = 0;
+				int len = 0;
+				char *value = line + linebuf.TellGet();
+				for (char *pline = value; *pline != '\0'; pline++) {
+					char c = *pline;
+					if (c == '"') {
+						inQuote = !inQuote;
+					}
+					if (c == '/' && !inQuote && pline[1] == '/') {
+						break;
+					}
+					lenc++;
+					if (!isspace(c)) len = lenc;
+				}
+				if (*value == '"') {
+					value++;
+					len--;
+					if (value[len-1] == '"') {
+						len--;
+					}
+				}
+				value[len] = '\0';
+				ConCommandBase *base = icvar->FindCommandBase(name);
+				if (base == nullptr) {
+					Warning("ConVar_Restore::Load: ConVar \"%s\" doesn't exist\n", name);
+					continue;
+				}
+				if (base->IsCommand()) {
+					Warning("ConVar_Restore::Load: ConVar \"%s\" is actually a ConCommand\n", name);
+					continue;
+				}
+				if (base->IsFlagSet(FCVAR_NEVER_AS_STRING)) {
+					Warning("ConVar_Restore::Load: ConVar \"%s\" has unsupported flag FCVAR_NEVER_AS_STRING\n", name);
+					continue;
+				}
 				
-		// 		ConCommandBase *base = icvar->FindCommandBase(name);
-		// 		if (base == nullptr) {
-		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" doesn't exist\n", name);
-		// 			continue;
-		// 		}
-		// 		if (base->IsCommand()) {
-		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" is actually a ConCommand\n", name);
-		// 			continue;
-		// 		}
-		// 		if (base->IsFlagSet(FCVAR_NEVER_AS_STRING)) {
-		// 			Warning("ConVar_Restore::Load: ConVar \"%s\" has unsupported flag FCVAR_NEVER_AS_STRING\n", name);
-		// 			continue;
-		// 		}
-				
-		// 		auto var = static_cast<ConVar *>(base);
-		// 		var->SetValue(value);
-		// 	}
-		// } else {
-		// 	Warning("ConVar_Restore::Load: Could not load KeyValues from \"cfg/sigsegv_convars.cfg\".\n");
-		// }
-		
-		// kv->deleteThis();
+				auto var = static_cast<ConVar *>(base);
+				var->SetValue(value);
+			}
+		}
 	}
 
 	void Reset()

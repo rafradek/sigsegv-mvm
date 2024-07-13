@@ -141,6 +141,8 @@ namespace SourceMod {
 
 class IClientMode;
 
+class IGameMovement;
+
 
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
@@ -191,6 +193,7 @@ extern IClientEntityList *cl_entitylist;
 extern IEngineTool *enginetools;
 extern IServerTools *servertools;
 extern IClientTools *clienttools;
+extern IGameMovement *g_pGameMovement;
 
 extern IVProfExport *vprofexport;
 
@@ -515,6 +518,7 @@ WARN_RESTORE()
 #include <icliententity.h>
 #include <icliententitylist.h>
 #include <gamestringpool.h>
+#include <igamemovement.h>
 
 #define DECLARE_PREDICTABLE()
 #include <collisionproperty.h>

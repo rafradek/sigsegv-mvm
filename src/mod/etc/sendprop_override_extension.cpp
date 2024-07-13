@@ -698,7 +698,11 @@ namespace Mod::Etc::SendProp_Override_Extension
 
         virtual bool EnableByDefault() override { 
             char path_sm[PLATFORM_MAX_PATH];
+#ifdef PLATFORM_64BITS
+            g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"extensions/x64/proxysend.ext*");
+#else
             g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"extensions/proxysend.ext*");
+#endif
 		    FileFindHandle_t fileH;
             for (const char *fileName = filesystem->FindFirstEx(path_sm, "GAME", &fileH);
 							fileName != nullptr; fileName = filesystem->FindNext(fileH)) {
@@ -706,7 +710,11 @@ namespace Mod::Etc::SendProp_Override_Extension
                 return true;
 			}
 		    filesystem->FindClose(fileH);
+#ifdef PLATFORM_64BITS
+            g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"extensions/x64/sendproxy.ext*");
+#else
             g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"extensions/sendproxy.ext*");
+#endif
             for (const char *fileName = filesystem->FindFirstEx(path_sm, "GAME", &fileH);
 							fileName != nullptr; fileName = filesystem->FindNext(fileH)) {
 		        filesystem->FindClose(fileH);

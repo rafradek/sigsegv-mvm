@@ -3681,3 +3681,6 @@ WaveSchedule
 
 // Disable crit on burning players for flares
 // "flare no crit burning" 1
+
+// Scale for damage being received
+// "rage receive scale" 2

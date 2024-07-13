@@ -135,9 +135,11 @@ if not Extension.optimize_mods_only:
     'src/mod/demo/stringtable_limit.cpp',
     
     'src/mod/etc/allow_civilian_class.cpp',
+    'src/mod/etc/crash_fixes.cpp',
     'src/mod/etc/crayairblast_convar_nocheat.cpp',
 #   'src/mod/etc/debug_mission_change_crash.cpp',
     'src/mod/etc/deflect_rocket_spew.cpp',
+    'src/mod/etc/detector.cpp',
     'src/mod/etc/heat_seeking_rockets.cpp',
     'src/mod/etc/hltv_client_interact.cpp',
     'src/mod/etc/holiday_items_allow.cpp',

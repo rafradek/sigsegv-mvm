@@ -139,7 +139,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         int entityCount = engine->GetEntityCount();
         // Check if there is a useable free edict. If not, try to find a recently freed edict and make it useable
         bool success = false;
-        if (reinterpret_cast<CGameServer *>(sv)->GetNumEdicts() > 2044) {
+        if (reinterpret_cast<CGameServer *>(sv)->GetNumEdicts() > MAX_EDICTS - 6) {
             //CFastTimer timer;
             //timer.Start();
             int iBit = -1;
@@ -186,7 +186,7 @@ namespace Mod::Etc::Entity_Limit_Manager
                 }
             }
         }
-        if (!success && entityCount > 2044) {
+        if (!success && entityCount > MAX_EDICTS - 6) {
             // Remove scripted scene first
             bool notifyDelete = false;
             CBaseEntity *entityToDelete = nullptr;
@@ -364,7 +364,7 @@ namespace Mod::Etc::Entity_Limit_Manager
                 }
                 // Need to do this to allow the entity to be reused immediately
                 int oldRemoveImmediate = s_RemoveImmediateSemaphore.GetRef();
-                if (engine->GetEntityCount() == 2048 && s_RemoveImmediateSemaphore.GetRef() > 0) {
+                if (engine->GetEntityCount() == MAX_EDICTS && s_RemoveImmediateSemaphore.GetRef() > 0) {
                     s_RemoveImmediateSemaphore.GetRef() = 0;
                     removed_entities_immediate.insert(entityToDelete);
                 }

@@ -422,7 +422,6 @@ bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_d
 			value = entry->second;
 #ifdef PLATFORM_64BITS
 			last_parsed_string_attribute_value = entry->second.m_String;
-			Msg("set that parsed %p %p\n", last_parsed_string_attribute_value, entry->second.m_Float);
 #endif
 			return true;
 		}
@@ -432,9 +431,6 @@ bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_d
 	if (!type->BConvertStringToEconAttributeValue(attr_def, value_str.c_str(), &value, true)) {
 		type->UnloadEconAttributeValue(&value);
 		return false;
-	}
-	if (isString) {
-		attribute_string_values[value_str] = value;
 	}
 
 	return true;
@@ -515,7 +511,7 @@ public:
 	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onNormal, std::function<bool (const CEconItemAttributeDefinition *, const char*)> onString) : onNormal(onNormal), onString(onString), singleCallback(false) {}
 	AttributeIteratorWrapper(std::function<bool (const CEconItemAttributeDefinition *, attribute_data_union_t)> onAttrib) : onNormal(onAttrib), singleCallback(true) {}
 
-	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, unsigned int                             value) const
+	virtual bool OnIterateAttributeValue(const CEconItemAttributeDefinition *pAttrDef, attrib_value_t                            value) const
 	{
 		attribute_data_union_t valueu;
 		valueu.m_UInt = value;
