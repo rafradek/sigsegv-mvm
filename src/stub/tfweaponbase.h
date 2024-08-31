@@ -209,6 +209,11 @@ public:
 
 class CTFRocketLauncher : public CTFWeaponBaseGun {};
 class CTFRocketLauncher_AirStrike : public CTFRocketLauncher {};
+class CTFParticleCannon : public CTFRocketLauncher 
+{
+public:
+	DECL_SENDPROP(float, m_flChargeBeginTime);
+};
 
 class CTFGrapplingHook : public CTFRocketLauncher 
 {

@@ -96,7 +96,7 @@ namespace Mod::MvM::Robot_Multiplier
 	class CMod : public IMod
 	{
 	public:
-		CMod() : IMod("MvM:Sapper_Allow_Multiple_Active")
+		CMod() : IMod("MvM:Robot_Multiplier")
 		{
 			MOD_ADD_DETOUR_MEMBER(CWaveSpawnPopulator_Parse,      "CWaveSpawnPopulator::Parse");
 			MOD_ADD_DETOUR_MEMBER(CTankSpawner_Spawn,      "CTankSpawner::Spawn");

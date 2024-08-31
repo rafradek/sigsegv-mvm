@@ -209,7 +209,7 @@ namespace Mod::MvM::Set_Credit_Team
 		0xbe, 0x02, 0x00, 0x00, 0x00,  // +0x0004 mov     esi, 2
 		0x48, 0x89, 0xc7,              // +0x0009 mov     rdi, rax
 		0x48, 0x89, 0x45, 0xa8,        // +0x000c mov     [rbp+var_58], rax
-		0xe8, 0x2e, 0xf8, 0x01, 0x00,  // +0x0010 call    _Z14CollectPlayersI9CTFPlayerEiP10CUtlVectorIPT_10CUtlMemoryIS3_iEEibb; CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *,CUtlMemory<CTFPlayer *,int>> *,int,bool,bool)
+		0xe8,  // +0x0010 call    _Z14CollectPlayersI9CTFPlayerEiP10CUtlVectorIPT_10CUtlMemoryIS3_iEEibb; CollectPlayers<CTFPlayer>(CUtlVector<CTFPlayer *,CUtlMemory<CTFPlayer *,int>> *,int,bool,bool)
 #else
 		0x6a, 0x00,                    // +0x0000 push    0
 		0x6a, 0x00,                    // +0x0002 push    0

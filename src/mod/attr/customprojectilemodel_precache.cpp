@@ -12,30 +12,23 @@ namespace Mod::Attr::CustomProjectileModel_Precache
 
 	DETOUR_DECL_MEMBER(void, CTFWeaponBaseGun_GetCustomProjectileModel, CAttribute_String *attr_str)
 	{
-		DETOUR_MEMBER_CALL(attr_str);
-		
-		const char *model_path = nullptr;
-		CopyStringAttributeValueToCharPointerOutput(attr_str, &model_path);
-		if (model_path != nullptr && *model_path != '\x00') {
-			CBaseEntity::PrecacheModel(model_path);
-		}
+
 	}
 	
 	void SetCustomProjectileModel(CBaseCombatWeapon *weapon, CBaseAnimating *proj){
 		CAttributeList &attrlist = weapon->GetItem()->GetAttributeList();
-		static int attr_def = GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->GetIndex();
-		auto attr = attrlist.GetAttributeByID(attr_def);
-		if (attr != nullptr) {
-			const char *modelname = nullptr;
-			//GetItemSchema()->GetAttributeDefinitionByName("custom projectile model")->ConvertValueToString(*(attr->GetValuePtr()),modelname,255);
-			CopyStringAttributeValueToCharPointerOutput(attr->GetValuePtr()->m_String, &modelname);
+		const char *modelname = weapon->GetAttributeManager()->ApplyAttributeStringWrapper(NULL_STRING, weapon, PStrT<"custom_projectile_model">()).ToCStr();
+		if (modelname != nullptr && modelname[0] != '\0' && STRING(proj->GetModelName()) != modelname) {
+			CBaseEntity::PrecacheModel(modelname);
 			proj->SetModel(modelname);
 			// DevMsg("Setting custom projectile model to %s \n",modelname);
 		}
+
 		float modelscale = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, modelscale, mult_projectile_scale);
 		if (modelscale != 1.0f)
 			proj->SetModelScale(modelscale);
+
 		float collscale = 0.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( weapon, collscale, custom_projectile_size);
 		if (collscale != 0.0f) {

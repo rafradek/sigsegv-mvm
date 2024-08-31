@@ -29,7 +29,7 @@ namespace Mod::Bot::Medieval_NonMelee
 		
 #if defined _LINUX
 		virtual uint32_t GetFuncOffMin() const override { return 0x0000; }
-		virtual uint32_t GetFuncOffMax() const override { return 0x0100; } // @ 0x00b0
+		virtual uint32_t GetFuncOffMax() const override { return 0x0120; } // @ 0x00b0
 #elif defined _WINDOWS
 		virtual uint32_t GetFuncOffMin() const override { return 0x0000; }
 		virtual uint32_t GetFuncOffMax() const override { return 0x00c0; } // @ 0x0071
@@ -40,11 +40,13 @@ namespace Mod::Bot::Medieval_NonMelee
 			buf.CopyFrom(s_Buf);
 			
 			int off_CTFGameRules_m_bPlayingMedieval;
+
 			if (!Prop::FindOffset(off_CTFGameRules_m_bPlayingMedieval, "CTFGameRules", "m_bPlayingMedieval")) return false;
 			
 #ifdef PLATFORM_64BITS
 			buf.SetDword(0x0a + 3, (uint32_t)off_CTFGameRules_m_bPlayingMedieval);
 			
+			mask.SetRange(0x00 + 3, 4, 0x00);
 			mask.SetRange(0x03 + 1, 4, 0x00);
 			mask.SetRange(0x13 + 1, 1, 0x00);
 #else

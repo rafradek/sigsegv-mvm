@@ -37,6 +37,11 @@
 					sym  "_ZN14NextBotManager12ShouldUpdateEP8INextBot"
 				}
 				
+				"NextBotManager::OnWeaponFired"
+				{
+					type "sym"
+					sym  "_ZN14NextBotManager13OnWeaponFiredEP20CBaseCombatCharacterP17CBaseCombatWeapon"
+				}
 			}
 		}
 	}

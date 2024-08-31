@@ -768,7 +768,7 @@ namespace Mod::Util::Download_Manager
 
 		auto admin = GetMissionOwner();
 		mission_owner = admin;
-		const char *currentMission = (admin != nullptr && TFObjectiveResource() != nullptr) ? STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()) : nullptr;
+		const char *currentMission = (admin != nullptr && g_pPopulationManager != nullptr) ? g_pPopulationManager->GetPopulationFilename() : nullptr;
 
 		if ((dir = opendir(poppath)) != nullptr) {
 			while ((ent = readdir(dir)) != nullptr) {
@@ -1204,17 +1204,20 @@ namespace Mod::Util::Download_Manager
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_ClientConnected, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 	{
 		auto gamerules = reinterpret_cast<CTFGameRules *>(this);
-		auto &info = download_infos[ENTINDEX(pEntity)];
-		info = LateDownloadInfo();
-		
-		std::vector<std::string> icons;
+		auto client = ((CBaseClient *) sv->GetClient(ENTINDEX(pEntity) - 1));
+		if (!client->IsFakeClient()) {
+			auto &info = download_infos[ENTINDEX(pEntity)];
+			info = LateDownloadInfo();
+			
+			std::vector<std::string> icons;
 
-		char path[512];
-		snprintf(path, 512, "%s%llu", latedl_curmission_only_path.c_str(), ((CBaseClient *) sv->GetClient(ENTINDEX(pEntity) - 1))->m_SteamID.ConvertToUint64());
-        info.lateDlCurMissionOnly = access(path, F_OK) == 0;
-        info.lateDlCurMissionOnlyInformed = info.lateDlCurMissionOnly;
+			char path[512];
+			snprintf(path, 512, "%s%llu", latedl_curmission_only_path.c_str(), client->m_SteamID.ConvertToUint64());
+			info.lateDlCurMissionOnly = access(path, F_OK) == 0;
+			info.lateDlCurMissionOnlyInformed = info.lateDlCurMissionOnly;
 
-		AddLateFilesToDownloadForPlayer(ENTINDEX(pEntity), late_dl_files, late_dl_files_current_mission_count);
+			AddLateFilesToDownloadForPlayer(ENTINDEX(pEntity), late_dl_files, late_dl_files_current_mission_count);
+		}
 
 		return DETOUR_MEMBER_CALL(pEntity, pszName, pszAddress, reject, maxrejectlen);
 	}
@@ -1447,7 +1450,7 @@ namespace Mod::Util::Download_Manager
 
 			static uint transferId = RandomInt(0, UINT_MAX);
 			bool hasIconDownloads = false;
-			int maxclients = gpGlobals->maxClients;
+			int maxclients = Min(gpGlobals->maxClients, (int)ARRAYSIZE(download_infos) - 1);
 			for (int i = 1; i <= maxclients; i++) {
 				auto &info = download_infos[i];
 				
@@ -1546,7 +1549,7 @@ namespace Mod::Util::Download_Manager
 		
 		virtual void LevelShutdownPostEntity() override
 		{
-			for (int i = 0; i < gpGlobals->maxClients; i++) {
+			for (int i = 0; i < ARRAYSIZE(download_infos); i++) {
 				download_infos[i] = LateDownloadInfo();
 			}
 		}
@@ -1737,11 +1740,14 @@ namespace Mod::Util::Download_Manager
 	ConVar cvar_custom_search_path("sig_util_download_manager_custom_search_path_tail", "", FCVAR_NOTIFY,
 		"Utility: optional additional search path",
 		[](IConVar *pConVar, const char *pOldValue, float fOldValue) {
-			std::string oldFullPath = fmt::format("{}/{}", game_path, pOldValue);
-			filesystem->RemoveSearchPath(oldFullPath.c_str(), "game");
-			filesystem->RemoveSearchPath(oldFullPath.c_str(), "mod");
-			filesystem->RemoveSearchPath(oldFullPath.c_str(), "custom");
 			
+			if (pOldValue != nullptr && pOldValue[0] != '\0') {
+				std::string oldFullPath = fmt::format("{}/{}", game_path, pOldValue);
+				filesystem->RemoveSearchPath(oldFullPath.c_str(), "game");
+				filesystem->RemoveSearchPath(oldFullPath.c_str(), "mod");
+				filesystem->RemoveSearchPath(oldFullPath.c_str(), "custom");
+			}
+
 			if (strlen(cvar_custom_search_path.GetString()) > 0) {
 				AddPathToTail(cvar_custom_search_path.GetString(), "game");
 				AddPathToTail(cvar_custom_search_path.GetString(), "mod");

@@ -720,6 +720,11 @@ namespace Mod::Attr::Custom_Attributes
 		int num_shots = attr_projectile_count;
 		if (attr_fire_all_at_once != 0) {
 			attr_projectile_count *= (weapon->IsEnergyWeapon() ? (weapon->Energy_GetMaxEnergy() / weapon->Energy_GetShotCost()) : weapon->m_iClip1);
+
+			auto pcannon = rtti_cast<CTFParticleCannon *>(weapon);
+			if (pcannon != nullptr && pcannon->m_flChargeBeginTime > 0) {
+				attr_projectile_count = num_shots;
+			}
 		}
 
 		int patternNoRollback = 0;
@@ -1728,14 +1733,26 @@ namespace Mod::Attr::Custom_Attributes
 		particle_to_use = 0;
 		particle_to_use_direct_hit = 0;
 	}
-	
+
+	RefCount rc_CTFProjectile_EnergyBall_Explode;
 	DETOUR_DECL_MEMBER(void, CTFProjectile_EnergyBall_Explode, trace_t *pTrace, CBaseEntity *pOther)
 	{
+		SCOPED_INCREMENT(rc_CTFProjectile_EnergyBall_Explode);
 		auto proj = reinterpret_cast<CTFProjectile_EnergyBall *>(this);
+		if (proj->GetCustomVariableFloat<"explodetime">() != 0.0f && !proj->GetCustomVariableBool<"explodedelaynow">()) {
+			
+			if (proj->GetNextThink("DelayExplodeRocket") <= 0)
+				THINK_FUNC_SET(proj, DelayExplodeRocket, gpGlobals->curtime + proj->GetCustomVariableFloat<"explodetime">());
+			return;
+		} 
+		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 		ExplosionCustomSet(proj);
 		hit_explode_direct = pOther;
 		DETOUR_MEMBER_CALL(pTrace, pOther);
 		hit_explode_direct = nullptr;
+		particle_to_use = 0;
+		particle_to_use_direct_hit = 0;
 	}
 
 	DETOUR_DECL_STATIC(void, TE_TFExplosion, IRecipientFilter &filter, float flDelay, const Vector &vecOrigin, const Vector &vecNormal, int iWeaponID, int nEntIndex, int nDefID, int nSound, int iCustomParticle)
@@ -1751,6 +1768,20 @@ namespace Mod::Attr::Custom_Attributes
 		if (particle_to_use == -1) return;
 
 		DETOUR_STATIC_CALL(filter, flDelay, vecOrigin, vecNormal, iWeaponID, nEntIndex, nDefID, nSound, iCustomParticle);
+	}
+
+	DETOUR_DECL_STATIC(void, TE_TFParticleEffect, IRecipientFilter& recipement, float value, char const* name, Vector vector, Vector normal, QAngle angles, CBaseEntity* entity)
+	{
+		if (rc_CTFProjectile_EnergyBall_Explode && StringStartsWith(name, "drg_cow")) {
+			if (particle_to_use_direct_hit != 0 && hit_explode_direct != nullptr && hit_explode_direct->MyCombatCharacterPointer() != nullptr) {
+				name = GetParticleSystemNameFromIndex(particle_to_use_direct_hit);
+			}
+			else if (particle_to_use) {
+				name = GetParticleSystemNameFromIndex(particle_to_use);
+			}
+		}
+		
+		DETOUR_STATIC_CALL(recipement, value, name, vector, normal, angles, entity);
 	}
 	RefCount rc_CTFPlayer_TraceAttack;
 
@@ -2720,7 +2751,7 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsAllowedToTaunt) {
 		bool ret = DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-
+		Msg("Is this called\n");
 		if (ret) {
 
 			int cannotTaunt = 0;
@@ -3274,6 +3305,7 @@ namespace Mod::Attr::Custom_Attributes
         CBaseEntity *entityme = reinterpret_cast<CBaseEntity *>(const_cast<IHandleEntity *>(filter->GetPassEntity()));
 		CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
 		if (entityhit == nullptr) return true;
+		if (entityme == nullptr) return DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 
 		bool entityhit_player = entityhit->IsPlayer();
 
@@ -3303,14 +3335,17 @@ namespace Mod::Attr::Custom_Attributes
 		return DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 	}
 
-	DETOUR_DECL_MEMBER(void, CTFPlayer_CancelTaunt)
+	RefCount rc_CTFPlayer_TFPlayerThink;
+	DETOUR_DECL_MEMBER(void, CTFPlayer_StopTaunt, bool var1)
 	{
-		int iCancelTaunt = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER ( reinterpret_cast<CTFPlayer *>(this), iCancelTaunt, always_allow_taunt );
-		if (iCancelTaunt != 0) {
-			return;
+		if (rc_CTFPlayer_TFPlayerThink && var1) {
+			int iCancelTaunt = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER ( reinterpret_cast<CTFPlayer *>(this), iCancelTaunt, always_allow_taunt );
+			if (iCancelTaunt != 0) {
+				return;
+			}
 		}
-		return DETOUR_MEMBER_CALL();
+		return DETOUR_MEMBER_CALL(var1);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsAllowedToInitiateTauntWithPartner, CEconItemView *pEconItemView, char *pszErrorMessage, int cubErrorMessage)
@@ -4887,6 +4922,10 @@ namespace Mod::Attr::Custom_Attributes
 
 		//Fire input on hit
 		if (econEntity != nullptr && info.GetAttacker() != nullptr && econEntity->GetItem() != nullptr) {
+			if (entity->IsPlayer() && entity->GetTeamNumber() == info.GetAttacker()->GetTeamNumber()) {
+				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit_ally, input_ally);
+				FireInputAttribute(input_ally, nullptr, Variant(damage), info.GetInflictor(), info.GetAttacker(), entity, 0.0f);
+			}
 			{
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit, input);
 				GET_STRING_ATTRIBUTE(econEntity, fire_input_on_hit_name_restrict, filter);
@@ -4900,6 +4939,7 @@ namespace Mod::Attr::Custom_Attributes
 
 				FireInputAttribute(input, filter, Variant(damage), info.GetInflictor(), info.GetAttacker(), entity, 0.0f);
 			}
+			
 		}
 
 		if (weaponAltFire != nullptr) {
@@ -5194,9 +5234,9 @@ namespace Mod::Attr::Custom_Attributes
 		}
 	}
 	bool CTFPlayer_ItemsMatch_Func(bool ret, CTFPlayer *player, CEconItemView *pCurWeaponItem, CEconItemView *pNewWeaponItem, CTFWeaponBase *pWpnEntity) {
-		if (pCurWeaponItem != nullptr && pNewWeaponItem != nullptr) {
-			DevMsg("itemsmatch %lld %lld %d %s %s %d %d\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem), pCurWeaponItem->m_iItemDefinitionIndex.Get(), pNewWeaponItem->m_iItemDefinitionIndex.Get());
-		}
+		//if (pCurWeaponItem != nullptr && pNewWeaponItem != nullptr) {
+		//	DevMsg("itemsmatch %lld %lld %d %s %s %d %d\n", pCurWeaponItem->m_iItemID + 0LL, pNewWeaponItem->m_iItemID + 0LL, ret, GetItemNameForDisplay(pCurWeaponItem), GetItemNameForDisplay(pNewWeaponItem), pCurWeaponItem->m_iItemDefinitionIndex.Get(), pNewWeaponItem->m_iItemDefinitionIndex.Get());
+		//}
 		if (!ret && rc_CTFPlayer_Regenerate) {
 			if (pWpnEntity != nullptr) {
 				int stay = 0;
@@ -5385,6 +5425,7 @@ namespace Mod::Attr::Custom_Attributes
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_TFPlayerThink)
 	{
+		SCOPED_INCREMENT(rc_CTFPlayer_TFPlayerThink);
 		if (gpGlobals->tickcount % 8 == 6) {
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			static ConVarRef stepsize("sv_stepsize");
@@ -5690,9 +5731,9 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CSchemaAttributeType_String_BConvertStringToEconAttributeValue,const CEconItemAttributeDefinition *pAttrDef, const char *pszValue, attribute_data_union_t *out_pValue, bool compat)
 	{
 		auto ret = DETOUR_MEMBER_CALL(pAttrDef, pszValue, out_pValue, compat);
-		Msg("Convert string %p %p\n", out_pValue, out_pValue == nullptr ? nullptr : out_pValue->m_String);
-		if (out_pValue != nullptr)
+		if (out_pValue != nullptr) {
 			last_parsed_string_attribute_value = out_pValue->m_String;
+		}
 		return ret;
 	}
 #endif
@@ -8274,7 +8315,7 @@ namespace Mod::Attr::Custom_Attributes
 		int slot = 0;//reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
 		if (display_stock && (item_def == nullptr || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
-			std::string str = item_def != nullptr ? std::string(CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def))) : "\nCharacter Attributes:\n\n"s;
+			std::string str = item_def != nullptr ? std::string(CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def, player))) : "\nCharacter Attributes:\n\n"s;
 			if (attribute_info_vec.back().size() + str.size() > 252) {
 				attribute_info_vec.push_back(str);
 			}
@@ -8290,19 +8331,19 @@ namespace Mod::Attr::Custom_Attributes
 				continue;
 
 			std::string format_str;
-			if (!FormatAttributeString(format_str, attr.GetStaticData(), *attr.GetValuePtr()))
+			if (!FormatAttributeString(format_str, attr.GetStaticData(), *attr.GetValuePtr(), player))
 				continue;
 
 			// break lines
-			int space_pos = 0;
-			int last_space_pos = 0;
-			int find_newline_pos = 0;
-			while((unsigned) space_pos < format_str.size()) {
+			size_t space_pos = 0;
+			size_t last_space_pos = 0;
+			size_t find_newline_pos = 0;
+			while(space_pos < format_str.size()) {
 				space_pos = format_str.find(" ", space_pos);
-				if (space_pos == -1) {
+				if (space_pos == std::string::npos) {
 					space_pos = format_str.size();
 				}
-				if (space_pos - find_newline_pos > 28 /*25*/) {
+				if (space_pos - find_newline_pos > 28 /*25*/ && last_space_pos > 0) {
 					format_str.insert(last_space_pos - 1, "\n");
 					space_pos++;
 					find_newline_pos = last_space_pos;
@@ -8312,20 +8353,20 @@ namespace Mod::Attr::Custom_Attributes
 			}
 
 			// replace \n with newline
-			int newline_pos;
-			while((newline_pos = format_str.find("\\n")) != -1) {
+			size_t newline_pos;
+			while((newline_pos = format_str.find("\\n")) != std::string::npos) {
 				format_str.replace(newline_pos, 2, "\n");
 			} 
 
 			// Replace percent symbols as HintKeyText parses them as keys
-			int percent_pos;
-			while((percent_pos = format_str.find("%")) != -1) {
-				format_str.replace(percent_pos, 1, "℅");
+			size_t percent_pos;
+			while((percent_pos = format_str.find("%")) != std::string::npos) {
+				format_str.replace(percent_pos, 1, "％");
 			} 
 
 			if (!added_item_name) {
 				if (item_def != nullptr)
-					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def)));
+					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def, player)));
 				else
 					format_str.insert(0, "\nCharacter Attributes:\n\n");
 
@@ -8521,12 +8562,19 @@ namespace Mod::Attr::Custom_Attributes
 	}
 
 #ifdef PLATFORM_64BITS
-    DETOUR_DECL_MEMBER(void, CEconItemAttributeIterator_ApplyAttributeString_OnIterateAttributeValue, const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String& value)
+    DETOUR_DECL_MEMBER(bool, CEconItemAttributeIterator_ApplyAttributeString_OnIterateAttributeValue, const CEconItemAttributeDefinition *pAttrDef, const CAttribute_String& value)
 	{
 		const char *pstr = "";
 		auto pvalue = (CAttribute_String *)(((uintptr_t)&value) & 0xFFFFFFFF);
         return DETOUR_MEMBER_CALL(pAttrDef, *pvalue);
     }
+    DETOUR_DECL_MEMBER(void, CAttributeList_SetRuntimeAttributeRefundableCurrency, CEconItemAttributeDefinition *pAttrDef, int value)
+	{
+		// Do not write to m_nRefundableCurrency in case it is read as upper 32 bits for string attribute value
+		if (pAttrDef->IsType<CSchemaAttributeType_String>()) return;
+        return DETOUR_MEMBER_CALL(pAttrDef, value);
+    }
+	
 #endif
 
 	RefCount rc_HandleRageGain;
@@ -8612,7 +8660,7 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		for (int i = 0; i < 30000; i++) {
 			auto attr = GetItemSchema()->GetAttributeDefinition(i);
-			if (attr != nullptr && strcmp(attr->GetAttributeClass(""), attribute_class) == 0) {
+			if (attr != nullptr && attr->GetAttributeClass() != nullptr && strcmp(attr->GetAttributeClass(), attribute_class) == 0) {
 				attribute_callbacks.push_back({i, callback});
 			}
 		}
@@ -9295,7 +9343,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_STATIC(PropDynamic_CollidesWithGrenades, "PropDynamic_CollidesWithGrenades");
 			MOD_ADD_DETOUR_MEMBER(CTraceFilterObject_ShouldHitEntity, "CTraceFilterObject::ShouldHitEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_RegenThink, "CTFPlayer::RegenThink");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayer_CancelTaunt, "CTFPlayer::CancelTaunt");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StopTaunt, "CTFPlayer::StopTaunt");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsAllowedToInitiateTauntWithPartner, "CTFPlayer::IsAllowedToInitiateTauntWithPartner");
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_DeflectEntity, "CTFWeaponBase::DeflectEntity");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetKillingWeaponName, "CTFGameRules::GetKillingWeaponName");
@@ -9520,6 +9568,7 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldGainInstantSpawn, "CTFPlayer::ShouldGainInstantSpawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
 			MOD_ADD_DETOUR_STATIC(HandleRageGain, "HandleRageGain");
+			MOD_ADD_DETOUR_STATIC(TE_TFParticleEffect, "TE_TFParticleEffect [No attachment]");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			
@@ -9588,6 +9637,7 @@ namespace Mod::Attr::Custom_Attributes
 		//	Fix reading string attribute on 64 bit
 #ifdef PLATFORM_64BITS
 			MOD_ADD_DETOUR_MEMBER(CEconItemAttributeIterator_ApplyAttributeString_OnIterateAttributeValue, "CEconItemAttributeIterator_ApplyAttributeString::OnIterateAttributeValue");
+			MOD_ADD_DETOUR_MEMBER(CAttributeList_SetRuntimeAttributeRefundableCurrency, "CAttributeList::SetRuntimeAttributeRefundableCurrency");
 #endif
 
 		//  Fast attribute cache
@@ -9693,7 +9743,7 @@ namespace Mod::Attr::Custom_Attributes
 
 		virtual void OnEnable() override
 		{
-			LoadItemNames();
+			
 		}
 
 		virtual void FrameUpdatePostEntityThink() override

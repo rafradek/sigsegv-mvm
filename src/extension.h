@@ -37,6 +37,9 @@ private:
 
 extern IPhraseCollection *phrases;
 extern IPhraseFile *phrasesFile;
+extern IPhraseCollection *phrasesAttribs;
+extern IPhraseFile *phrasesAttribsFile;
+
 extern CExtSigsegv g_Ext;
 
 

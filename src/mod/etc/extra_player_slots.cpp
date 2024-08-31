@@ -92,7 +92,7 @@ namespace Mod::Etc::Extra_Player_Slots
 
     inline bool ExtraSlotsEnabled()
     {
-        return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS;
+        return sig_etc_extra_player_slots_count.GetInt() > DEFAULT_MAX_PLAYERS && (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool());
     }
 
     bool ExtraSlotsEnabledForBots()
@@ -291,6 +291,7 @@ namespace Mod::Etc::Extra_Player_Slots
             for (int i = 1; i < (preMaxPlayers + DEFAULT_MAX_PLAYERS - 1) / DEFAULT_MAX_PLAYERS; i++) {
                 int slotsCopy = Min(preMaxPlayers - i * DEFAULT_MAX_PLAYERS, DEFAULT_MAX_PLAYERS);
                 memcpy(world_edict+1, world_edict+1 + DEFAULT_MAX_PLAYERS * i, sizeof(edict_t) * slotsCopy);
+                gpGlobals->maxClients = slotsCopy;
                 (Detour_CLagCompensationManager_FrameUpdatePostEntityThink::Actual)(reinterpret_cast<Detour_CLagCompensationManager_FrameUpdatePostEntityThink *>(lag_compensation_copies[i - 1]));
             }
             memcpy(world_edict+1, originalEdicts, sizeof(edict_t) * DEFAULT_MAX_PLAYERS);
@@ -1569,7 +1570,7 @@ namespace Mod::Etc::Extra_Player_Slots
                 //tv_enable.SetValue(tv_enabled);
             }
             else {
-                if (ExtraSlotsEnabled() && (gpGlobals->maxClients >= DEFAULT_MAX_PLAYERS - 1 && gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
+                if (ExtraSlotsEnabled() && (gpGlobals->maxClients < sig_etc_extra_player_slots_count.GetInt())) {
                     // Kick old HLTV client
                     int clientCount = sv->GetClientCount();
                     for ( int i=0 ; i < clientCount ; i++ )

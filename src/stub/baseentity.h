@@ -246,6 +246,8 @@ public:
 	template<FixedString lit>
 	QAngle GetCustomVariableAngle(const QAngle &defValue = vec3_angle);
 	template<FixedString lit>
+	CBaseEntity *GetCustomVariableEntity(CBaseEntity *defValue = nullptr);
+	template<FixedString lit>
 	bool GetCustomVariableVariant(variant_t &value);
 	bool GetCustomVariableByText(const char *key, variant_t &value);
 	bool SetCustomVariable(const char *key, const variant_t &value, bool create = true, bool find = true);

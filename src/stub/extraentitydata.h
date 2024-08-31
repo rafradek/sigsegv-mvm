@@ -49,7 +49,7 @@ class ExtraEntityData
 public:
     ExtraEntityData(CBaseEntity *entity) {}
 
-    ~ExtraEntityData() {
+    virtual ~ExtraEntityData() {
         for (auto module : modules) {
             delete module.second;
         }
@@ -121,6 +121,8 @@ class ExtraEntityDataCombatCharacter : public ExtraEntityDataWithAttributes
 {
 public:
     ExtraEntityDataCombatCharacter(CBaseEntity *entity) : ExtraEntityDataWithAttributes(entity) {}
+
+    float lastShootTime = 0.0f;
 };
 
 class ExtraEntityDataCombatWeapon : public ExtraEntityDataEconEntity
@@ -164,12 +166,12 @@ class ExtraEntityDataProjectile : public ExtraEntityData
 public:
     ExtraEntityDataProjectile(CBaseEntity *entity) : ExtraEntityData(entity) {}
     
-    ~ExtraEntityDataProjectile() {
+    virtual ~ExtraEntityDataProjectile() {
         if (homing != nullptr) {
             delete homing;
         }
     }
-    HomingRockets *homing;
+    HomingRockets *homing = nullptr;
 };
 
 class ExtraEntityDataPlayer : public ExtraEntityDataCombatCharacter
@@ -242,6 +244,9 @@ inline ExtraEntityDataWithAttributes *GetExtraEntityDataWithAttributes(CBaseEnti
         else if (entity->IsWearable()) {
             data = entity->m_extraEntityData = new ExtraEntityDataWithAttributes(entity);
         }
+        else if (entity->IsCombatCharacter()) {
+            data = entity->m_extraEntityData = new ExtraEntityDataCombatCharacter(entity);
+        }
     }
     return static_cast<ExtraEntityDataWithAttributes *>(data);
 }
@@ -303,6 +308,14 @@ inline ExtraEntityDataWeaponSpawner *GetExtraWeaponSpawnerData(CBaseEntity *enti
     return static_cast<ExtraEntityDataWeaponSpawner *>(data);
 }
 #endif
+
+inline ExtraEntityDataCombatCharacter *GetExtraCombatCharacterData(CBaseCombatCharacter *entity, bool create = true) {
+    ExtraEntityData *data = entity->m_extraEntityData;
+    if (create && entity->m_extraEntityData == nullptr) {
+        data = entity->m_extraEntityData = GetExtraEntityDataWithAttributes(entity, true);
+    }
+    return static_cast<ExtraEntityDataCombatCharacter *>(data);
+}
 
 template< typename DataClass, typename EntityClass>
 inline DataClass *GetExtraData(EntityClass *entity, bool create = true) {
@@ -538,6 +551,24 @@ inline bool CBaseEntity::GetCustomVariableVariant(variant_t &value)
     return false;
 }
 
+template<FixedString lit>
+inline CBaseEntity *CBaseEntity::GetCustomVariableEntity(CBaseEntity *defValue)
+{
+   auto data = this->GetExtraEntityData();
+    if (data != nullptr) {
+        auto &attrs = data->GetCustomVariables();
+        if (!attrs.empty()) {
+            static PooledString pooled(lit);
+            for (auto &var : attrs) {
+                if (var.key == pooled) {
+                    if (var.value.FieldType() != FIELD_EHANDLE) var.value.Convert(FIELD_EHANDLE);
+                    return var.value.Entity();
+                }
+            }
+        }
+    }
+    return defValue;
+}
 
 inline bool CBaseEntity::GetCustomVariableByText(const char *key, variant_t &value)
 {

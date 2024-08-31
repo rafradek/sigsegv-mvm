@@ -1213,6 +1213,11 @@
 					type "sym"
 					sym  "_Z26TE_TFParticleEffectComplexR16IRecipientFilterfPKc6Vector6QAngleP31te_tf_particle_effects_colors_tP38te_tf_particle_effects_control_point_tP11CBaseEntity20ParticleAttachment_tS3_"
 				}
+				"TE_TFParticleEffect [No attachment]"
+				{
+					type "sym"
+					sym  "_Z19TE_TFParticleEffectR16IRecipientFilterfPKc6VectorS3_6QAngleP11CBaseEntity"
+				}
 				
 				"DoTeleporterOverride"
 				{
@@ -3115,6 +3120,40 @@
 				{
 					type "sym"
 					sym  "_ZN47CEconItemAttributeIterator_ApplyAttributeString23OnIterateAttributeValueEPK28CEconItemAttributeDefinitionRK17CAttribute_String"
+				}
+
+				"CAttributeIterator_GetTypedAttributeValue::OnIterateAttributeValue"
+				{
+					type "sym"
+					sym  "_ZN41CAttributeIterator_GetTypedAttributeValueI17CAttribute_StringS0_E23OnIterateAttributeValueEPK28CEconItemAttributeDefinitionRKS0_"
+				}
+
+				"COM_CompressBuffer_LZSS"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z23COM_CompressBuffer_LZSSPKvjPjj"
+				}
+
+				"COM_CompressBuffer_Snappy"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z25COM_CompressBuffer_SnappyPKvjPjj"
+				}
+
+				"COM_BufferToBufferDecompress"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z28COM_BufferToBufferDecompressPvPjPKvj"
+				}
+
+				"COM_GetUncompressedSize"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z23COM_GetUncompressedSizePKvj"
 				}
 				
 			}

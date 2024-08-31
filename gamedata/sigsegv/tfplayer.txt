@@ -1100,6 +1100,11 @@
 					type "sym"
 					sym  "_ZN9CTFPlayer16OnTauntSucceededEPKcii"
 				}
+				"CTFPlayer::StopTaunt"
+				{
+					type "sym"
+					sym  "_ZN9CTFPlayer9StopTauntEb"
+				}
 				
 			//	"GetTFConditionName"
 			//	{
@@ -1137,6 +1142,7 @@
 				"CTFPlayerShared::OnRemoveTeleported" "_ZN15CTFPlayerShared18OnRemoveTeleportedEv"
 				"CTFPlayerShared::RemoveAllCond" "_ZN15CTFPlayerShared13RemoveAllCondEv"
 				"CTFPlayerShared::RecalculatePlayerBodygroups" "_ZN15CTFPlayerShared27RecalculatePlayerBodygroupsEv"
+				"CTFPlayerShared::ConditionThink" "_ZN15CTFPlayerShared14ConditionThinkEv"
 			}
 		}
 	}

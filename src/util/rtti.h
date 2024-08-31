@@ -115,12 +115,12 @@ inline TO rtti_cast(const FROM ptr)
 	for (int i = 0; i < c; i++) {
 		auto &pair = dynamic_cast_cache[i];
 		if (pair.first == vtable) {
-			return pair.second != INT_MAX ? reinterpret_cast<TO>((uintptr_t)result + (uintptr_t)pair.second) : nullptr;
+			return pair.second != UINTPTR_MAX ? reinterpret_cast<TO>((uintptr_t)result + (uintptr_t)pair.second) : nullptr;
 		}
 	}
 	if (!static_cast<const std::type_info *>(rtti_from)->__do_upcast(rtti_to, &result))
 		result = abi::__dynamic_cast(result, rtti_from, rtti_to, -1);
-	dynamic_cast_cache.push_back({vtable, result != nullptr ? (uintptr_t)result - (uintptr_t)ptr : INT_MAX});
+	dynamic_cast_cache.push_back({vtable, result != nullptr ? (uintptr_t)result - (uintptr_t)ptr : UINTPTR_MAX});
 
 #elif defined _MSC_VER
 	/* MSVC's __RTDynamicCast will happily do runtime up-casts and down-casts */

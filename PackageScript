@@ -119,7 +119,8 @@ if not Extension.optimize_mods_only:
 # Translation files
 CopyFiles('translations', 'addons/sourcemod/translations',
   [
-    'sigsegv.phrases.txt'
+    'sigsegv.phrases.txt',
+    'sigsegvattributes.phrases.txt'
   ]
 )
 

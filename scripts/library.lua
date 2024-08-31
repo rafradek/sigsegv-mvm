@@ -199,8 +199,9 @@ function CEntity:GetAllAttributeValues(checkDefinition) end
 function CEntity:GetItemName() end
 
 --Returns item name displayed in game
+---@param player? Optional player entity for localized item name
 ---@return string name Item name displayed in game
-function CEntity:GetItemNameForDisplay() end
+function CEntity:GetItemNameForDisplay(player) end
 
 --Returns a table containing all player items
 ---@return table items Table containing all items
@@ -520,14 +521,16 @@ function ents.FindAllByClass(classname) end
 --Finds all entities in a box
 ---@param mins Vector Starting box coordinates
 ---@param maxs Vector Ending box coordinates
+---@param classname ?string Optional classname filter
 ---@return table entities All entities that matched the criteria
-function ents.FindInBox(mins, maxs) end
+function ents.FindInBox(mins, maxs, classname) end
 
 --Finds all entities in a sphere
 ---@param center Vector Sphere center coordinates
 ---@param radius number Sphere radius
+---@param classname ?string Optional classname filter
 ---@return table entities All entities that matched the criteria
-function ents.FindInSphere(center, radius) end
+function ents.FindInSphere(center, radius, classname) end
 
 --Returns first entity
 ---@return Entity first First entity in the list
@@ -655,6 +658,20 @@ function util.GetAttributeDefinitionNameByIndex(id) end
 ---@param name number attribute definition name
 ---@return number|nil id Id of the attribute with specified name or nil if not found
 function util.GetAttributeDefinitionIndexByName(name) end
+
+--Returns display string of given item definition name or index
+---@param name number|string item definition name or index
+---@param player? Entity Optional player entity for localization
+---@return string|nil name Display name for an item or nil if definiton name or index is not valid
+function util.GetItemNameForDisplay(name, player) end
+
+--Returns formatted attribute string for display, optionally with localization
+---@param name number|string Attribute name or index
+---@param value number|string Attribute value
+---@param player? Entity Optional player entity for localization
+---@param short? boolean `= false`. Displays attribute in shorter format (as in upgrade menu), when supported
+---@return string|nil str Formatted attribute string for display or nil if attribute name or index is not valid
+function util.FormatItemAttributeDisplayString(name, value, player, short) end
 
 --Check if lag compensation is active. Lag compensation allows traces fired from player eyes to be more accurate with what the player can see
 ---@return boolean

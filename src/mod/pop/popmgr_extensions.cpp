@@ -1657,7 +1657,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					if (itemnum < (int) state.m_ExtraLoadoutItems.size()) {
 						auto &extraitem = state.m_ExtraLoadoutItems[itemnum];
 						if (extraitem.item != nullptr && (extraitem.class_index == pclass || extraitem.class_index == 0) && extraitem.loadout_slot == slot) {
-							DevMsg("GiveItem %d %s\n", slot, GetItemNameForDisplay(extraitem.item));
+							// DevMsg("GiveItem %d %s\n", slot, GetItemNameForDisplay(extraitem.item, player));
 							if (rc_CTFPlayer_GiveDefaultItems)
 								is_item_replacement.insert(extraitem.item->GetItemDefinition());
 							item_view_replacement = extraitem.item;
@@ -2086,7 +2086,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		
 		if (rc_CTFGameRules_ctor <= 0 && newState == GR_STATE_BETWEEN_RNDS && IsMannVsMachineMode()) {
-			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized of mission %s\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get(), STRING(TFObjectiveResource()->m_iszMvMPopfileName.Get()));
+			ConColorMsg(Color(0xff, 0x00, 0x00, 0xff), "Wave #%d initialized of mission %s\n", TFObjectiveResource()->m_nMannVsMachineWaveCount.Get(), g_pPopulationManager->GetPopulationFilename());
 			if (state.m_ScriptManager != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
 				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
@@ -2333,7 +2333,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		DevMsg("Pass send\n");
 
 		if (state.m_ExtraLoadoutItemsNotify)
-			PrintToChat("\x07""7fd4ffThis mission allows you to equip custom items. Type !missionitems in chat to see available items for your class\n",player);
+			PrintToChatSM(player, 1, "\x07""7fd4ff%t\n", "This mission allows you to equip custom items. Type !missionitems in chat to see available items for your class");
 
 		//auto explanation = Mod::Pop::Wave_Extensions::GetWaveExplanation(0);
 		
@@ -2363,7 +2363,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			state.m_SandmanStuns.Get() ||
 			state.m_bNoReanimators
 		)) { 
-			PrintToChat("\x07""7fd4ffType !missioninfo in chat to check custom mission information\n",player);
+			PrintToChatSM(player, 1,"\x07""7fd4ff%t\n","Type !missioninfo in chat to check custom mission information");
 		}
 	}
 
@@ -3140,7 +3140,7 @@ namespace Mod::Pop::PopMgr_Extensions
 							for(auto &entry : entry.entries) {
 								if (entry->Matches(item->GetClassname(), item->GetItem())) {
 									foundMatch = true;
-									incompatibleItem = GetItemNameForDisplay(item->GetItem());
+									incompatibleItem = GetItemNameForDisplay(item->GetItem(), player);
 									return false;
 								}
 							}
@@ -3769,7 +3769,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemWhitelist) {
-			const char *str = entry->GetInfo();
+			const char *str = entry->GetInfo(player);
 			ItemDrawInfo info1(str, ITEMDRAW_DISABLED);
 			menu->AppendItem("attr", info1);
 		}
@@ -3786,7 +3786,7 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemBlacklist) {
-			const char *str = entry->GetInfo();
+			const char *str = entry->GetInfo(player);
 			ItemDrawInfo info1(str, ITEMDRAW_DISABLED);
 			menu->AppendItem("attr", info1);
 		}
@@ -3803,8 +3803,8 @@ namespace Mod::Pop::PopMgr_Extensions
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (const auto& entry : state.m_ItemReplace) {
-			const char *from_str = entry.entry->GetInfo();
-			const char *to_str = entry.name.c_str();
+			const char *from_str = entry.entry->GetInfo(player);
+			const char *to_str = GetItemNameForDisplay(entry.item, player);
 			ItemDrawInfo info1(CFmtStr("%s -> %s", from_str, to_str), ITEMDRAW_DISABLED);
 			menu->AppendItem("attr", info1);
 		}
@@ -3884,7 +3884,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		int i = 0;
 		for (const auto& entry : state.m_ItemAttributes) {
-			const char *str = entry.entry->GetInfo();
+			const char *str = entry.entry->GetInfo(player);
 			ItemDrawInfo info1(str, ITEMDRAW_DEFAULT);
 			std::string num = std::to_string(i);
 			menu->AppendItem(num.c_str(), info1);
@@ -3899,7 +3899,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectItemAttributeListHandler *handler = new SelectItemAttributeListHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, state.m_ItemAttributes[id].entry->GetInfo()));
+        menu->SetDefaultTitle(TranslateText(player, "Item attributes format", 1, state.m_ItemAttributes[id].entry->GetInfo(player)));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		if (id < (int)state.m_ItemAttributes.size()) {
@@ -3910,7 +3910,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				attr_def->GetType()->InitializeNewEconAttributeValue(&value);
 				if (attr_def->GetType()->BConvertStringToEconAttributeValue(attr_def, entry.second.c_str(), &value, true)) {
 					std::string str;
-					if (FormatAttributeString(str, attr_def, value)) {
+					if (FormatAttributeString(str, attr_def, value, player)) {
 						ItemDrawInfo info1(str.c_str(), ITEMDRAW_DISABLED);
 						menu->AppendItem("", info1);
 					}
@@ -3938,7 +3938,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		for (int i = 0; i < TF_CLASS_COUNT; i++) {
 			if (!state.m_PlayerAttributesClass[i].empty()) {
-				ItemDrawInfo info1(TranslateText(player, TranslateText(player, g_aPlayerClassNames_NonLocalized[i])), ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, g_aPlayerClassNames_NonLocalized[i]), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -3972,7 +3972,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			attribute_data_union_t value;
 			value.m_Float = entry.second;
 			std::string str;
-			if (FormatAttributeString(str, GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str()), value)) {
+			if (FormatAttributeString(str, GetItemSchema()->GetAttributeDefinitionByName(entry.first.c_str()), value, player)) {
 				ItemDrawInfo info1(str.c_str(), ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
@@ -4006,7 +4006,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		for (int i = 1; i < TF_CLASS_COUNT; i++) {
 			if (has_class[i]) {
-				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, g_aPlayerClassNames_NonLocalized[i]), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -4062,7 +4062,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 		for (int i = 1; i < TF_CLASS_COUNT; i++) {
 			if (has_class[i]) {
-				ItemDrawInfo info1(g_aPlayerClassNames_NonLocalized[i], ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, g_aPlayerClassNames_NonLocalized[i]), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -4076,7 +4076,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsInfoHandler *handler = new SelectExtraLoadoutItemsInfoHandler(player);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[id])).c_str()));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[id])));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		for (size_t i = 0; i < state.m_ExtraLoadoutItems.size(); i++) {
@@ -4084,7 +4084,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 			if (id == item.class_index || item.class_index == 0) {
 				char buf[256];
-				snprintf(buf, sizeof(buf), "%s: %s", loadoutStrings[item.loadout_slot], item.name.c_str());
+				snprintf(buf, sizeof(buf), "%s: %s", TranslateText(player, loadoutStrings[item.loadout_slot]), GetItemNameForDisplay(item.item, player));
 				ItemDrawInfo info1(buf, ITEMDRAW_DISABLED);
 				menu->AppendItem("", info1);
 			}
@@ -4171,7 +4171,7 @@ namespace Mod::Pop::PopMgr_Extensions
             menu->AppendItem(" ", info1);
         }
 		else if (menu->GetItemCount() == 0) {
-            ItemDrawInfo info1(hasHidden ? "No extra loadout items currently available" : "No extra loadout items available", ITEMDRAW_DISABLED);
+            ItemDrawInfo info1(TranslateText(player, hasHidden ? "No extra loadout items currently available" : "No extra loadout items available"), ITEMDRAW_DISABLED);
             menu->AppendItem(" ", info1);
             ItemDrawInfo info2(" ", ITEMDRAW_NOTEXT);
             menu->AppendItem(" ", info2);
@@ -4189,7 +4189,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		SelectExtraLoadoutItemsHandler *handler = new SelectExtraLoadoutItemsHandler(player, autoHide);
         IBaseMenu *menu = menus->GetDefaultStyle()->CreateMenu(handler, g_Ext.GetIdentity());
         
-        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, std::string(TranslateText(player, g_aPlayerClassNames_NonLocalized[class_index])).c_str()));
+        menu->SetDefaultTitle(TranslateText(player, "Extra loadout items class", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[class_index])));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		int wave = TFObjectiveResource()->m_nMannVsMachineWaveCount;
@@ -4210,9 +4210,7 @@ namespace Mod::Pop::PopMgr_Extensions
 					snprintf(cost, sizeof(cost), "($%d)", item.cost);
 				}
 
-				char buf[256];
-				snprintf(buf, sizeof(buf), "%s: %s %s %s", loadoutStrings[item.loadout_slot], item.name.c_str(), cost, selected ? "(selected)" : "");
-				ItemDrawInfo info1(buf, ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(FormatTextForPlayerSM(player, 4, "%t: %s %s %t", loadoutStrings[item.loadout_slot], GetItemNameForDisplay(item.item, player), cost, selected ? "(selected)" : ""), ITEMDRAW_DEFAULT);
 				std::string num = std::to_string(i);
 				menu->AppendItem(num.c_str(), info1);
 			}
@@ -4242,7 +4240,7 @@ namespace Mod::Pop::PopMgr_Extensions
         
 		auto &item = state.m_ExtraLoadoutItems[itemId];
 
-        menu->SetDefaultTitle(CFmtStr("%s", GetItemNameForDisplay(item.item)));
+        menu->SetDefaultTitle(CFmtStr("%s", GetItemNameForDisplay(item.item, player)));
         menu->SetMenuOptionFlags(MENUFLAG_BUTTON_EXIT);
 
 		auto &attrs = item.item->GetAttributeList().Attributes();
@@ -4250,7 +4248,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto &attr = attrs[i];
 
 			std::string format_str;
-			if (!FormatAttributeString(format_str, attr.GetStaticData(), *attr.GetValuePtr()))
+			if (!FormatAttributeString(format_str, attr.GetStaticData(), *attr.GetValuePtr(), player))
 				continue;
 			ItemDrawInfo info1(format_str.c_str(), ITEMDRAW_DISABLED);
             menu->AppendItem(" ", info1);
@@ -4260,25 +4258,25 @@ namespace Mod::Pop::PopMgr_Extensions
 		player->GetSteamID(&steamid);
 		if (!state.m_BoughtLoadoutItems[steamid].count(itemId)) {
 			char buf[256];
-			snprintf(buf, sizeof(buf), "Buy ($%d)", item.cost);
+			snprintf(buf, sizeof(buf), "%s ($%d)", TranslateText(player, "Buy"), item.cost);
 			ItemDrawInfo info1(buf, player->GetCurrency() >= item.cost ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
 			menu->AppendItem("Buy", info1);
 		}
 
 		if (state.m_BoughtLoadoutItems[steamid].count(itemId)) {
 			if (state.m_SelectedLoadoutItems[steamid].count(itemId)) {
-				ItemDrawInfo info1("Unequip", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Unequip"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("Unequip", info1);
 			}
 			else {
-				ItemDrawInfo info1("Equip", ITEMDRAW_DEFAULT);
+				ItemDrawInfo info1(TranslateText(player, "Equip"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("Equip", info1);
 			}
 
 			if (item.allow_refund) {
 				char buf[256];
-				snprintf(buf, sizeof(buf), "Sell ($%d)", item.cost);
-				ItemDrawInfo info2("Sell", ITEMDRAW_DEFAULT);
+				snprintf(buf, sizeof(buf), "%s ($%d)", TranslateText(player, "Sell"), item.cost);
+				ItemDrawInfo info2(TranslateText(player, "Sell"), ITEMDRAW_DEFAULT);
 				menu->AppendItem("Sell", info2);
 			}
 		}
@@ -5130,6 +5128,36 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		return result;
+	}
+
+	IForward *set_mission_filename_forward;
+	DETOUR_DECL_MEMBER(void, CPopulationManager_SetPopulationFilename, const char *filename)
+    {
+        DETOUR_MEMBER_CALL(filename);
+		cell_t result = 0;
+		set_mission_filename_forward->PushString(filename);
+		set_mission_filename_forward->Execute(&result);
+    }
+
+	DETOUR_DECL_MEMBER(void, CTFGCServerSystem_PreClientUpdate)
+	{
+		static ConVarRef mp_allowspectators("mp_allowspectators");
+		// Spectators allowed? Increase reported max players for each connecting player so that players may still join without console command
+		int connectingPlayers = 0;
+		if (mp_allowspectators.GetBool()) {
+			int clCount = sv->GetClientCount();
+			for(int i = 0; i < clCount; i++) {
+				IClient *cl = sv->GetClient(i);
+				if (cl->IsConnected() && !cl->IsActive()) {
+					connectingPlayers++;
+				}
+			}
+		}
+
+		static CValueOverride_ConVar<int> tf_mvm_defenders_team_size("tf_mvm_defenders_team_size");
+		tf_mvm_defenders_team_size.Set(tf_mvm_defenders_team_size.Get() + connectingPlayers);
+		DETOUR_MEMBER_CALL();
+		tf_mvm_defenders_team_size.Reset();
 	}
 
 	DETOUR_DECL_MEMBER(bool, CSpawnLocation_Parse, KeyValues *kv)
@@ -6192,9 +6220,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		});
 
-		string_t popfileName = TFObjectiveResource()->m_iszMvMPopfileName;
-		if (state.m_LastMissionName != STRING(popfileName)) {
-			state.m_LastMissionName = STRING(popfileName);
+		const char *popfileName = g_pPopulationManager->GetPopulationFilename();
+		if (state.m_LastMissionName != popfileName) {
+			state.m_LastMissionName = popfileName;
 		}
 		
 	//	if ( state.m_iRedTeamMaxPlayers > 0) {
@@ -7126,7 +7154,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFInventoryManager_GetBaseItemForClass, "CTFInventoryManager::GetBaseItemForClass");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_GetBonusRoundTime, "CTFGameRules::GetBonusRoundTime");
 			MOD_ADD_DETOUR_MEMBER(CBaseFileSystem_LoadKeyValues, "CBaseFileSystem::LoadKeyValues");
-			
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_SetPopulationFilename, "CPopulationManager::SetPopulationFilename");
+			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFGCServerSystem_PreClientUpdate, "CTFGCServerSystem::PreClientUpdate", LOW);
 			
 			
 			// Remove banned missions from the list
@@ -7147,16 +7176,22 @@ namespace Mod::Pop::PopMgr_Extensions
 			//int value = team_size_extract.Extract();
 			//DevMsg("Team Size Extract %d\n", value);
 		}
+
+		virtual bool OnLoad() override
+		{
+			set_mission_filename_forward = forwards->CreateForward("SIG_OnSetMissionFilename", ET_Hook, 1, NULL, Param_String);
+			return true;
+		}
 		
 		virtual void OnUnload() override
 		{
+			forwards->ReleaseForward(set_mission_filename_forward);
 			state.Reset(false);
 		}
 		
 		virtual void OnEnable() override
 		{
 			usermsgs->HookUserMessage2(usermsgs->GetMessageIndex("PlayerLoadoutUpdated"), &player_loadout_updated_listener);
-			LoadItemNames();
 		}
 
 		virtual void OnDisable() override
@@ -7458,6 +7493,9 @@ namespace Mod::Pop::PopMgr_Extensions
 				});
 			}
 		}
+		
+		virtual std::vector<std::string> GetRequiredMods() { return {"Item:Item_Common"};}
+
 	private:
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};

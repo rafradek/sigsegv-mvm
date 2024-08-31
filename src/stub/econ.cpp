@@ -432,6 +432,9 @@ bool LoadAttributeDataUnionFromString(const CEconItemAttributeDefinition *attr_d
 		type->UnloadEconAttributeValue(&value);
 		return false;
 	}
+	if (isString) {
+		attribute_string_values[value_str] = value;
+	}
 
 	return true;
 }

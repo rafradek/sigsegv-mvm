@@ -225,6 +225,7 @@ public:
 	void SetRestartRoundTime(float time)       { NULL_RET(); this->m_flRestartRoundTime    = time; }
 	
 	DECL_SENDPROP(int[MAX_PLAYERS + 1],         m_ePlayerWantsRematch);
+	DECL_SENDPROP(bool, m_bPowerupMode);
 private:
 	DECL_SENDPROP(bool,           m_bPlayingMedieval);
 	DECL_SENDPROP(bool,           m_bPlayingMannVsMachine);

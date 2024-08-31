@@ -638,7 +638,6 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		return;
 	}
 
-	bool allWaiting = true;
 	CWaveSpawnPopulator *updatingWaveSpawn = nullptr;
 	DETOUR_DECL_MEMBER(void, CWaveSpawnPopulator_Update)
 	{
@@ -660,8 +659,7 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				}
 			}
 		}
-		if (wavespawn->m_state != CWaveSpawnPopulator::DONE)
-			allWaiting = false;
+		wavespawn->m_pParent->m_isEveryContainedWaveSpawnDone &= wavespawn->m_state == CWaveSpawnPopulator::DONE;
 
 		if (wavespawn->m_bPaused) {
 			if (wavespawn->m_bHasTFBotSpawner && wavespawn->m_bHadSpawnState)
@@ -677,6 +675,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		auto statePre = wavespawn->m_state;
 		updatingWaveSpawn = wavespawn;
 		DETOUR_MEMBER_CALL();
+
+		wavespawn->m_pParent->m_isEveryContainedWaveSpawnDone &= wavespawn->m_state == CWaveSpawnPopulator::DONE;
+
 		// CWaveSpawnPopulator::SetState got partially inlined (for other states than done and wait for dead), need to manually check for changes
 		if (statePre != wavespawn->m_state && wavespawn->m_state != CWaveSpawnPopulator::DONE && wavespawn->m_state != CWaveSpawnPopulator::WAIT_FOR_ALL_DEAD) {
 			StateChanged(wavespawn, wavespawn->m_state);
@@ -982,13 +983,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 	DETOUR_DECL_MEMBER(void, CWave_ActiveWaveUpdate)
 	{
 		auto wave = reinterpret_cast<CWave *>(this);
-		allWaiting = true;
 		DETOUR_MEMBER_CALL();
 		if (wave->IsDoneWithNonSupportWaves()) {
 			RemoveAllWaveEntities(true, false);
-		}
-		if (allWaiting) {
-			wave->m_isEveryContainedWaveSpawnDone = true;
 		}
 	}
 

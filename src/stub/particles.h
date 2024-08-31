@@ -111,6 +111,8 @@ inline void TE_BeamPoints(IRecipientFilter& filter, float delay,
 
 void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
 
+void TE_BBoxForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
+
 #ifdef SE_IS_TF2
 
 static StaticFuncThunk<void, IRecipientFilter&, float, const Vector &, const Vector &, int, int, int, int, int> ft_TE_TFExplosion("TE_TFExplosion");

@@ -1,0 +1,1411 @@
+"Phrases"
+{
+	"parachute disabled"
+	{
+		"en" "Parachute disabled"
+		"pl" "Spadochron wyłączony"
+	}
+	"fires milk bolt"
+	{
+		"en" "Alt-Fire: Shoots Mad Milk infused bolt"
+		"pl" "Alt-Atak: Wystrzeliwuje bełt nasączony Wściekłym Mlekiem"
+	}
+	"force distribute currency on death"
+	{
+		"en" "Force distribute currency on death"
+	}
+	"airblast dashes"
+	{
+		"en" "Airblast dashes the user instead of enemies"
+		"pl" "Sprężone powietrze odpycha noszącego zamiast wrogów"
+	}
+	"melee cleave attack"
+	{
+		"en" "Cleave attack: Hits all enemies in range"
+		"pl" "Przecinający atak: Udeża wszystkich wrogów w zasięgu"
+	}
+	"extra damage on hit penalty"
+	{
+		"en" "Firing the weapon reduces charge by %d"
+		"pl" "Strzelanie z broni zmiejsza ładunek o %d"
+	}
+	"extra damage on hit"
+	{
+		"en" "On Hit: Gain %d charges. Each charge increases damage by 1%"
+		"pl" "Przy trafieniu: Zyskujesz %d ładunków. Każdy ładunek zwiększa obrażenia o 1%"
+	}
+	"mod teleporter speed boost"
+	{
+		"en" "Players exiting teleporters gain 4 second speed buff"
+		"pl" "Gracze wychodzący z teleportu zyskują 4 sekundy przyspieszenia"
+	}
+	"set turn to ice"
+	{
+		"en" "Victim player becomes ice statue"
+		"pl" "Zabity przeciwnik zamienia się w lód"
+	}
+	"can breathe under water"
+	{
+		"en" "Wearer can breathe underwater"
+		"pl" "Noszący może oddychać pod wodą"
+	}
+	"cannot swim"
+	{
+		"en" "Wearer cannot swim"
+		"pl" "Noszący nie może pływać"
+	}
+	"swimming mastery"
+	{
+		"en" "25% increased swimming speed"
+		"pl" "25% zwiększona prędkość pływania"
+	}
+	"ability doubletap teleport"
+	{
+		"en" "melee cleave attack"
+	}
+	"mod ignore resists absorbs"
+	{
+		"en" "melee cleave attack"
+	}
+	"scoreboard minigame"
+	{
+		"en" "melee cleave attack"
+	}
+	"wet immunity"
+	{
+		"en" "Wearer is wet immune"
+		"pl" "Noszący nie może przemoknąć"
+	}
+	"ability master sniper"
+	{
+		"en" "Sniper Master: Reduces zoom time and increases charge rate"
+		"pl" "Mistrzowski Snajper: Zmniejsza czas przybliżenia i zwiększa prędkość ładowania"
+	}
+	"last shot crits"
+	{
+		"en" "Last shot in the clip is critical"
+		"pl" "Ostatni strzał w magazynku jest krytyczny"
+	}
+	"keep disguise on attack"
+	{
+		"en" "Keep disguise when attacking"
+		"pl" "Pozostań przebrany podczas atakowania"
+	}
+	"add give health to teammate on hit"
+	{
+		"en" "On Hit Teammate: Heal the ally at the cost of your own health"
+		"pl" "Przy uderzeniu sojusznika: Ulecz go na koszt twojego zdrowia"
+	}
+	"airblast functionality flags"
+	{
+		"en" "melee cleave attack"
+	}
+	"reverse airblast"
+	{
+		"en" "Airblast pushes enemies towards the Pyro"
+		"pl" "Sprężone powietrze przyciąga przeciwników do Pyro"
+	}
+	"mod minigun can holster while spinning"
+	{
+		"en" "Can holster while spinning"
+		"pl" "Może zostać schowana podczas obrotu lufy"
+	}
+	"sapper deploy time"
+	{
+		"en" "(+-)%d sec sapper deploy time"
+		"pl" "(+-)%d sek czasu wyjęcia sapera"
+	}
+	"kill combo fire rate boost"
+	{
+		"en" "On Kill: (+-)%p% fire rate Stacks up to 3 times. Killing different class clears the combo"
+		"pl" "Po zabiciu: (+-)%p% szybkostrzelności. Nakłada się do 3 razy. Zabicie innej klasy niż poprzednio odnawia kombo"
+	}
+	"mult dispenser rate"
+	{
+		"en" "(+-)%p% dispenser health, ammo and metal resupply rate"
+		"pl" "(+-)%p% produkcji zdrowia, amunicji i metalu w zasobniku"
+	}
+	"mvm sentry ammo"
+	{
+		"en" "(+-)%p% sentry ammo capacity"
+		"pl" "(+-)%p% pojemności amuncji działka"
+	}
+	"build small sentries"
+	{
+		"en" "Builds small sentries"
+		"pl" "Buduje małe działka"
+	}
+	"mult teleporter recharge rate"
+	{
+		"en" "(+-)%p% teleporter recharge time"
+		"pl" "(+-)%p% czasu odnowienia teleportera"
+	}
+	"disguise as dispenser on crouch"
+	{
+		"en" "Duck to disguise as dispenser"
+		"pl" "Kucnij by przebrać się jako zasobnik"
+	}
+	"ubercharge transfer"
+	{
+		"en" "On Hit Medic: Transfer %d% of your used uber to enemy medic"
+		"pl" "Po Trafieniu Medyka: Prześlij %d% twojego Übera przeciwnikowi"
+	}
+	"teleport instead of die"
+	{
+		"en" "On Death: %p% chance of being immediately revived at spawn with 1 health"
+		"pl" "Po Śmierci: %p% szansy na natychmiastowe ożywienie na spawnie z 1 pkt. zdrowia"
+	}
+	"mod projectile heat seek power"
+	{
+		"en" "Homing projectiles"
+		"pl" "Pociski namierzające"
+	}
+	"mult dmg vs same class"
+	{
+		"en" "(+-)%p% damage vs the same class"
+		"pl" "(+-)%p% obrażeń przeciwko tej samej klasie"
+	}
+	"uber on damage taken"
+	{
+		"en" "On Damage Taken: %p% chance of gaining invicibility for 3 seconds"
+		"pl" "Po Otrzymaniu Obrażeń: %p% szansy na niezniszczalność przez 3 sekundy"
+	}
+	"mult dmgtaken from melee"
+	{
+		"en" "(+-)%p% damage taken from melee"
+		"pl"  "(+-)%p% obrażeń otrzymach w zwarciu"
+	}
+	"mult crit when health is below percent"
+	{
+		"en" "The wearer is crit boosted when below %p% health"
+		"pl"  "Noszący zadaje krytyki gdy jego zdrowie jest poniżej %p%"
+	}
+	"penetration damage penalty"
+	{
+		"en" "(+-)%p% damage dealt to penetrated enemies"
+		"pl"  "(+-)%p% obrażeń zadanych zpenetrowanym przeciwnikom"
+	}
+	"firing forward pull"
+	{
+		"en" "The wearer is pushed forward when firing the flamethrower"
+		"pl" "Noszący jest ciągnięty do przodu gdy atakuje miotaczem ognia"
+	}
+	"mod soldier buff range"
+	{
+		"en" "(+-)%p% banner buff range"
+		"pl" "(+-)%p% zasięgu działania sztandaru"
+	}
+	"mult rocketjump deploy time"
+	{
+		"en" "(+-)%p% deploy time when rocket jumping"
+		"pl" "(+-)%p% czasu wyjmowania podczas rakietowego skoku"
+	}
+	"aoe heal chance"
+	{
+		"en" "On Hit: Chance of healing teammates by 24 in radius"
+		"pl" "Po Trafieniu: Szansa na leczenie sojuszników o 24 pkt. w promieniu"
+	}
+	"crits on damage"
+	{
+		"en" "On Hit: Chance of gaining crit boost for 3 seconds"
+		"pl" "Po Trafieniu: Szansa na otrzymanie krytyków przez 3 sekundy"
+	}
+	"stun on damage"
+	{
+		"en" "On Hit: Chance of stunning enemies for 3 seconds"
+		"pl" "Po Trafieniu: Szansa na ogłuszenie wrogów przez 3 sekundy"
+	}
+	"aoe blast on damage"
+	{
+		"en" "On Hit: Chance of blast that causes bleed and stuns enemies"
+		"pl" "Po Trafieniu: Szansa na wybuch ogłuszający przeciwników i powodujący krwawienie"
+	}
+	"ubercharge ammo"
+	{
+		"en" "Use %d% ubercharge as ammo"
+		"pl" "Używa %d% Übera jako amunicji"
+	}
+	"mul nonrocketjump attackrate"
+	{
+		"en" "(+-)%p% fire rate when not rocket jumping"
+		"pl" "(+-)%p% szybkostrzelności bez rakietowych skoków"
+	}
+	"mult dmg with reduced health"
+	{
+		"en" "Damage increases as health decreases, up to (+-)%p%"
+		"pl" "Obrażenia zwiększają się przy zmniejszonym zdrowiu, do (+-)%p%"
+	}
+	"mult airblast primary refire time"
+	{
+		"en" "melee cleave attack"
+	}
+	"mod flamethrower spinup time"
+	{
+		"en" "%d seconds flamethrower spin up time"
+		"pl" "%d sekund rozkręcania miotacza ognia"
+	}
+	"mult airblast cone scale"
+	{
+		"en" "(+-)%p% airblast player pushback cone size"
+		"pl" "(+-)%p% rozmiaru stożka sprzężonego powietrza przy odrzucaniu graczy"
+	}
+	"mult sniper charge per sec with enemy under crosshair"
+	{
+		"en" "(+-)%p% charge rate with enemy under crosshair"
+		"pl" "(+-)%p% szybkości ładowania z wrogiem na celowniku"
+	}
+	"sniper beep with enemy under crosshair"
+	{
+		"en" "melee cleave attack"
+	}
+	"mod projectile heat aim error"
+	{
+		"en" "melee cleave attack"
+	}
+	"arrow mastery"
+	{
+		"en" "Arrow Mastery: Shoots %d additional arrows on each side"
+		"pl" "Mistrzostwo Strzał: Strzela %d dodatkowych strzał po obu stronach"
+	}
+	"medic machinery beam"
+	{
+		"en" "Can heal buildings at 10% rate per point (%d Points)"
+		"pl" "Może leczyć budynki z mocą 10% za każdy punkt (%d Punktów)"
+	}
+	"mult smack time"
+	{
+		"en" "(+-)%p% melee smack time"
+		"pl" "(+-)%p% czasu uderzenia wręcz"
+	}
+	"disable buildings on hit"
+	{
+		"en" "On Hit Building: disable building for %d seconds"
+		"pl" "Przy Trafieniu Konstrukcji: Wyłącz ją na %d sekund"
+	}
+	"regenerate stickbomb"
+	{
+		"en" "Regenerates caber on use"
+		"en" "Odnawia pal po użyciu"
+	}
+	"custom jump particle"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom weapon fire sound"
+	{
+		"en" "melee cleave attack"
+	}
+	"explosive bullets"
+	{
+		"en" "Fires explosive bullets"
+		"en" "Strzela wybuchowymi pociskami"
+	}
+	"mult projectile scale"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult projectile count"
+	{
+		"en" "Shoots (+-)%p% projectiles at once"
+		"pl" "Strzela (+-)%p% pociskami na raz"
+	}
+	"projectile trail particle"
+	{
+		"en" "melee cleave attack"
+	}
+	"explosion particle"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom projectile size"
+	{
+		"en" "melee cleave attack"
+	}
+	"radius sleeper"
+	{
+		"en" "Covers nearby enemies in jarate"
+		"pl" "Moczy pobliskiw wrogów w Sikwondzie"
+	}
+	"can headshot"
+	{
+		"en" "Weapon can headshot"
+		"en" "Broń może krytycznie trafiać w głowę"
+	}
+	"no damage falloff"
+	{
+		"en" "No damage falloff or rampup"
+		"pl" "Obrażenia niezależne od odległości"
+	}
+	"force damage falloff"
+	{
+		"en" "Has damage rampup and falloff"
+		"pl" "Obrażenia zależne od odległości"
+	}
+	"no reduced damage rampup"
+	{
+		"en" "melee cleave attack"
+	}
+	"reduced damage rampup"
+	{
+		"en" "melee cleave attack"
+	}
+	"dont count damage towards crit rate"
+	{
+		"en" "melee cleave attack"
+	}
+	"cannot be sapped"
+	{
+		"en" "Cannot be sapped"
+		"pl" "Nie można zostać trafiony saperem"
+	}
+	"item color rgb"
+	{
+		"en" "melee cleave attack"
+	}
+	"is invisible"
+	{
+		"en" "melee cleave attack"
+	}
+	"cannot taunt"
+	{
+		"en" "Cannot taunt"
+		"pl" "Nie można drwić"
+	}
+	"projectile acceleration"
+	{
+		"en" "melee cleave attack"
+	}
+	"is miniboss"
+	{
+		"en" "melee cleave attack"
+	}
+	"model scale"
+	{
+		"en" "melee cleave attack"
+	}
+	"cannot upgrade"
+	{
+		"en" "Cannot upgrade"
+		"pl" "Ulepszanie zabronione"
+	}
+	"min respawn time"
+	{
+		"en" "melee cleave attack"
+	}
+	"always crit"
+	{
+		"en" "Always deals critical damage"
+		"pl" "Zawsze zadaje krytyczne obrażenia"
+	}
+	"mult firerocket rate"
+	{
+		"en" "(+-)%p% sentry rocket fire rate"
+		"pl" "(+-)%p% szybkostrzelności rakiet działka"
+	}
+	"building max level"
+	{
+		"en" "Buildings upgrade only to level %d"
+		"pl" "Konstrukcje ulepszalne tylko do poziomu %d"
+	}
+	"sentry rapid fire"
+	{
+		"en" "melee cleave attack"
+	}
+	"building color rgb"
+	{
+		"en" "melee cleave attack"
+	}
+	"building scale"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult stun resistance"
+	{
+		"en" "(+-)%p% wearer stun duration"
+		"pl" "(+-)%p% czasu ogłuszenia dla noszącego"
+	}
+	"allow friendly fire"
+	{
+		"en" "Can deal friendly fire damage"
+		"pl" "Sojuszniczy ogień dozwolony"
+	}
+	"receive friendly fire"
+	{
+		"en" "Wearer can receive friendly fire damage"
+		"pl" "Noszący otrzymuje obrażenia od sojuszniczego ognia"
+	}
+	"cannot headshot"
+	{
+		"en" "Cannot headshot"
+		"pl" "Broń nie może krytycznie strzelać w głowę"
+	}
+	"mult crit dmg"
+	{
+		"en" "(+-)%p% critical damage"
+		"pl" "(+-)%p% obrażeń krytycznych"
+	}
+	"cannot be headshot"
+	{
+		"en" "Cannot be headshot"
+		"pl" "Odporność na trafienia kryt. w głowę"
+	}
+	"attachment name"
+	{
+		"en" "melee cleave attack"
+	}
+	"attachment offset"
+	{
+		"en" "melee cleave attack"
+	}
+	"attachment angles"
+	{
+		"en" "melee cleave attack"
+	}
+	"attachment scale"
+	{
+		"en" "melee cleave attack"
+	}
+	"mod projectile heat aim time"
+	{
+		"en" "melee cleave attack"
+	}
+	"projectile gravity"
+	{
+		"en" "melee cleave attack"
+	}
+	"projectile acceleration time"
+	{
+		"en" "melee cleave attack"
+	}
+	"grenade explode on impact"
+	{
+		"en" "Grenade explodes on impact"
+		"pl" "Granat wybucha przy kontakcie"
+	}
+	"cloak blink time penalty"
+	{
+		"en" "#Attrib_CloakBlinkTimePenalty"
+	}
+	"quiet unstealth"
+	{
+		"en" "#Attrib_QuietUnstealth"
+	}
+	"dmg from sentry reduced"
+	{
+		"en" "#Attrib_DmgFromSentryReduced"
+	}
+	"no death from headshots"
+	{
+		"en" "#Attrib_NoDeathFromHeadshots"
+	}
+	"custom taunt particle attr"
+	{
+		"en" "#Attrib_TauntParticles"
+	}
+	"calling card on kill"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"projectile lifetime"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"not solid to players"
+	{
+		"en" "Becomes non solid to players"
+		"pl" "Niematerialny dla innych graczy"
+	}
+	"is suicide counter"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"always allow taunt"
+	{
+		"en" "Always allow taunting"
+		"pl" "Drwiny zawsze dozwolone"
+	}
+	"mult reflect velocity"
+	{
+		"en" "(+-)%p% reflected projectile velocity"
+		"pl" "(+-)%p% szybkości odbitego pocisku"
+	}
+	"custom kill icon"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"cannot be upgraded"
+	{
+		"en" "Weapon cannot be upgraded"
+		"pl" "Broń nie może być ulepszona"
+	}
+	"is dropped weapon"
+	{
+		"en" "melee cleave attack"
+	}
+	"mod projectile heat follow crosshair"
+	{
+		"en" "Homing projectile follows crosshair"
+		"pl" "Pociski podążają za kursorem"
+	}
+	"projectile no deflect"
+	{
+		"en" "Cannot be deflected"
+		"pl" "Nie może zostać odbity"
+	}
+	"projectile acceleration start time"
+	{
+		"en" "melee cleave attack"
+	}
+	"player gravity ballon head"
+	{
+		"en" "melee cleave attack"
+	}
+	"is force item"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult dmg vs giants"
+	{
+		"en" "(+-)%p% damage vs giants"
+		"pl" "(+-)%p% obrażeń przeciwko gigantom"
+	}
+	"mult dmg vs npc"
+	{
+		"en" "(+-)%p% damage vs npc"
+		"pl" "(+-)%p% obrażeń przeciwko npc"
+	}
+	"mult dmg vs tanks"
+	{
+		"en" "(+-)%p% damage vs tanks"
+		"pl" "(+-)%p% obrażeń przeciwko czołgom"
+	}
+	"custom hit sound"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"custom impact sound"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"custom weapon reload sound"
+	{
+		"en" "#Attrib_CallingCardOnKill"
+	}
+	"no explosion particles"
+	{
+		"en" "melee cleave attack"
+	}
+	"override projectile type extra"
+	{
+		"en" "melee cleave attack"
+	}
+	"dmg current health"
+	{
+		"en" "On Hit: %p% of enemy current health is applied as damage"
+		"pl" "Po Trafieniu: Zadaje dodatkowe obr. równe %p% zdrowia przeciwnika"
+	}
+	"dmg max health"
+	{
+		"en" "On Hit: %p% of enemy max health is applied as damage"
+		"pl" "Po Trafieniu: Zadaje dodatkowe obr. równe %p% maks. zdrowia przeciwnika"
+	}
+	"dmg missing health"
+	{
+		"en" "On Hit: %p% of enemy missing health is applied as damage"
+		"pl" "Po Trafieniu: Zadaje dodatkowe obr. równe %p% brakującego zdrowia przeciwnika"
+	}
+	"cannot be teleported"
+	{
+		"en" "Cannot be teleported"
+		"pl" "Teleportacja zabroniona"
+	}
+	"mult medigun range"
+	{
+		"en" "(+-)%p% medigun range"
+		"pl" "(+-)%p% Zasięgu mediguna"
+	}
+	"projectile penetration limit"
+	{
+		"en" "Penetrate up to %d enemies"
+		"pl" "Przebij do %d wrogów na raz"
+	}
+	"max aoe targets"
+	{
+		"en" "Applies damage up to %d enemies"
+		"pl" "Zadaje obrażenia do %d wrógów na raz"
+	}
+	"add cond on hit"
+	{
+		"en" "melee cleave attack"
+	}
+	"add cond on hit duration"
+	{
+		"en" "melee cleave attack"
+	}
+	"remove cond on hit"
+	{
+		"en" "melee cleave attack"
+	}
+	"add damage type"
+	{
+		"en" "melee cleave attack"
+	}
+	"remove damage type"
+	{
+		"en" "melee cleave attack"
+	}
+	"special damage type"
+	{
+		"en" "melee cleave attack"
+	}
+	"dmg taken mult from special damage type 1"
+	{
+		"en" "melee cleave attack"
+	}
+	"dmg taken mult from special damage type 2"
+	{
+		"en" "melee cleave attack"
+	}
+	"dmg taken mult from special damage type 3"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult effect duration"
+	{
+		"en" "(+-)%p% effect duration"
+		"pl" "(+-)%p% czasu działania"
+	}
+	"effect cond override"
+	{
+		"en" "melee cleave attack"
+	}
+	"self add cond on hit"
+	{
+		"en" "melee cleave attack"
+	}
+	"self add cond on hit duration"
+	{
+		"en" "melee cleave attack"
+	}
+	"add cond on kill"
+	{
+		"en" "melee cleave attack"
+	}
+	"add cond on kill duration"
+	{
+		"en" "melee cleave attack"
+	}
+	"special item description"
+	{
+		"en" "%d"
+	}
+	"mult flag carrier move speed"
+	{
+		"en" "(+-)%p% flag carrier move speed"
+		"pl" "(+-)%p% prędkości ruchu noszącego flagę"
+	}
+	"overheal from heal on kill"
+	{
+		"en" "Overheal from heal on kill"
+		"pl" "Nadleczenie po zabiciu"
+	}
+	"fire input on hit"
+	{
+		"en" "%d"
+	}
+	"fire input on hit name restrict"
+	{
+		"en" "%d"
+	}
+	"mult max overheal self"
+	{
+		"en" "(+-)%p% max overheal on self"
+		"pl" "(+-)%p% maks. nadleczenia na sobie"
+	}
+	"grenade bounce speed"
+	{
+		"en" "Grenades bounce off walls"
+		"pl" "Granaty odbijają się od ścian"
+	}
+	"grenade bounce damage"
+	{
+		"en" "Grenades can explode on direct hit after bouncing off walls, dealing (+-)%p% damage"
+		"pl" "Granaty wybuchają kontaktowo po odbiciu się od ściany, zadając (+-)%p% damage"
+	}
+	"projectile gravity native"
+	{
+		"en" "(+-)%p% damage"
+	}
+	"grenade no drag"
+	{
+		"en" "No drag on projectiles"
+		"pl" "Brak oporu powietrza na pociskach"
+	}
+	"stickybomb stick to enemies"
+	{
+		"en" "Stickbombs stick to enemies"
+		"pl" "Bomby przyklejają się do wrogów"
+	}
+	"stickybomb no stick"
+	{
+		"en" "Stickbombs don't stick"
+		"pl" "Bomby nie przyklejają się"
+	}
+	"collect currency on kill"
+	{
+		"en" "Automatically collects currency from destroyed robots"
+		"pl" "Automatycznie zbiera pieniądze od zniszczonych robotów"
+	}
+	"override step sound string"
+	{
+		"en" "melee cleave attack"
+	}
+	"stomp player force"
+	{
+		"en" "Touched enemy players are knocked back"
+	}
+	"stomp player damage"
+	{
+		"en" "Deals %d damage to touched enemies"
+	}
+	"reflect keep team"
+	{
+		"en" "Reflected projectiles keep their original team"
+	}
+	"custom wind up sound"
+	{
+		"en" "%d"
+	}
+	"custom wind down sound"
+	{
+		"en" "%d"
+	}
+	"reflect magnet"
+	{
+		"en" "Reflects projectiles towards pyro"
+	}
+	"custom minigun spin sound"
+	{
+		"en" "%d"
+	}
+	"mod dispenser cost"
+	{
+		"en" "(+-)%p% dispenser cost"
+	}
+	"mod sentry cost"
+	{
+		"en" "(+-)%p% sentry cost"
+	}
+	"add cond when active"
+	{
+		"en" "melee cleave attack"
+	}
+	"penetrate teammates"
+	{
+		"en" "melee cleave attack"
+	}
+	"stomp building damage"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult debuff duration"
+	{
+		"en" "(+-)%p% received debuff duration"
+	}
+	"custom weapon name"
+	{
+		"en" "melee cleave attack"
+	}
+	"mult step height"
+	{
+		"en" "(+-)%p% step height"
+	}
+	"allow bunny hop"
+	{
+		"en" "Can bunny hop"
+	}
+	"fire input on kill"
+	{
+		"en" "%d"
+	}
+	"fire input on kill name restrict"
+	{
+		"en" "%d"
+	}
+	"fire full clip at once"
+	{
+		"en" "Fires full clip at once"
+	}
+	"reload full clip at once"
+	{
+		"en" "Reloads full clip at once"
+	}
+	"projectile sound"
+	{
+		"en" "%d"
+	}
+	"burst fire count"
+	{
+		"en" "Fires %d rounds in burst"
+	}
+	"burst fire rate mult"
+	{
+		"en" "(+-)%p% fire rate in burst"
+	}
+	"continous accuracy mult"
+	{
+		"en" "(+-)%p% accurate over time"
+	}
+	"continous accuracy time"
+	{
+		"en" "Up to (+-)%p% accurate over time"
+	}
+	"continous accuracy time recovery"
+	{
+		"en" "Up to (+-)%p% accurate over time"
+	}
+	"duck accuracy mult"
+	{
+		"en" "(+-)%p% accurate when crouching"
+	}
+	"move accuracy mult"
+	{
+		"en" "(+-)%p% accurate when moving"
+	}
+	"force fire full clip"
+	{
+		"en" "Fires full clip automatically"
+	}
+	"is extra loadout item"
+	{
+		"en" "Fires full clip automatically"
+	}
+	"special item description 2"
+	{
+		"en" "%d"
+	}
+	"special item description 3"
+	{
+		"en" "%d"
+	}
+	"special item description 4"
+	{
+		"en" "%d"
+	}
+	"allowed build types"
+	{
+		"en" "Allowed build types"
+	}
+	"max bullet range"
+	{
+		"en" "%d range"
+	}
+	"effect add attributes"
+	{
+		"en" "%d"
+	}
+	"medigun passive attributes"
+	{
+		"en" "%d"
+	}
+	"medigun passive attributes owner"
+	{
+		"en" "%d"
+	}
+	"bullet spread additive"
+	{
+		"en" "%d range"
+	}
+	"mod projectile heat no predict target speed"
+	{
+		"en" "%d range"
+	}
+	"mult dmg vs airborne"
+	{
+		"en" "(+-)%p% damage vs players launched by explosions"
+	}
+	"revive rate"
+	{
+		"en" "(+-)%p% revive rate"
+	}
+	"taunt attack after end"
+	{
+		"en" "Taunt attack may happen even after the taunt ended"
+	}
+	"taunt attack time mult"
+	{
+		"en" "(+-)%p% taunt attack time"
+	}
+	"projectile spread angle mult"
+	{
+		"en" "(+-)%p% projectile spread angle"
+	}
+	"damage returns as health"
+	{
+		"en" "(+-)%p% damage dealt is returned as health"
+	}
+	"no resupply"
+	{
+		"en" "Cannot resupply"
+	}
+	"no damage view flinch"
+	{
+		"en" "No view flinch when taking damage"
+	}
+	"mult dmg friendly fire"
+	{
+		"en" "Allies receive (+-)%p% damage"
+	}
+	"disable wrangler shield"
+	{
+		"en" "No wrangler shield"
+	}
+	"parachute redeploy"
+	{
+		"en" "Parachute redeploying is allowed"
+	}
+	"mult duck speed"
+	{
+		"en" "(+-)%p% move speed while crouching"
+	}
+	"particle color rgb"
+	{
+		"en" "(+-)%p% move speed while crouching"
+	}
+	"particle color rainbow"
+	{
+		"en" "(+-)%p% move speed while crouching"
+	}
+	"ignored by enemy sentries"
+	{
+		"en" "Ignored by enemy senties"
+	}
+	"melee airblast"
+	{
+		"en" "Attack reflects projectiles"
+	}
+	"passive reload"
+	{
+		"en" "Weapon is automatically reloaded when not active"
+	}
+	"kb fall min velocity"
+	{
+		"en" "On fall, all enemies nearby are knocked back"
+	}
+	"kb fall radius"
+	{
+		"en" "On fall, all enemies nearby are knocked back"
+	}
+	"kb fall stun time"
+	{
+		"en" "On fall, all enemies nearby are knocked back"
+	}
+	"kb fall force"
+	{
+		"en" "On fall, all enemies nearby are knocked back"
+	}
+	"kb fall damage"
+	{
+		"en" "On fall, all enemies nearby are knocked back"
+	}
+	"melee grants protection"
+	{
+		"en" "Attacking with this weapon gives you resistance to incoming damage for a brief period of time"
+	}
+	"arrow snap to next target radius"
+	{
+		"en" "Projectiles snap to the next nearest target after being hit"
+	}
+	"arrow snap to next target angle"
+	{
+		"en" "Projectiles snap to the next nearest target after being hit"
+	}
+	"mult credit collect range"
+	{
+		"en" "(+-)%p% credit collection range"
+	}
+	"health from credits"
+	{
+		"en" "(+-)%d health gained from credits"
+	}
+	"mult bleeding delay"
+	{
+		"en" "(+-)%p% bleeding damage delay"
+	}
+	"mult bleeding dmg"
+	{
+		"en" "(+-)%p% bleeding damage"
+	}
+	"grenade bounce speed xy"
+	{
+		"en" "(+-)%p% xy bounce speed"
+	}
+	"not solid"
+	{
+		"en" "Player is not solid"
+	}
+	"dmg taken from self reduced"
+	{
+		"en" "(+-)%p% damage taken from self"
+	}
+	"ignored by bots"
+	{
+		"en" "Ignored by bots"
+	}
+	"custom weapon id"
+	{
+		"en" "Custom weapon id"
+	}
+	"add attributes on hit"
+	{
+		"en" "Attribute on hit"
+	}
+	"add attributes on kill"
+	{
+		"en" "Attribute on kill"
+	}
+	"self add attributes on hit"
+	{
+		"en" "Attribute on hit"
+	}
+	"mod projectile heat aim start time"
+	{
+		"en" "melee cleave attack"
+	}
+	"move speed as health decreases"
+	{
+		"en" "Up to (+-)%p% move speed as health decreases"
+	}
+	"no self effect"
+	{
+		"en" "Cannot ignite or cause bleeding to the wielder"
+	}
+	"reset arrow hits on bounce"
+	{
+		"en" "Hits targets for another time after bounce"
+	}
+	"arrow target bounce speed"
+	{
+		"en" "Projectiles bounce off hit targets"
+	}
+	"cannot pickup spells"
+	{
+		"en" "Cannot pickup spells"
+	}
+	"mult max health"
+	{
+		"en" "(+-)%p% Max health"
+	}
+	"add spread"
+	{
+		"en" "(+-)%d bullet spread"
+	}
+	"always allow disguise"
+	{
+		"en" "always allow disguising"
+	}
+	"always allow cloak"
+	{
+		"en" "always allow cloaking"
+	}
+	"always allow teleport"
+	{
+		"en" "always allow teleporting"
+	}
+	"destroy buildings on death"
+	{
+		"en" "Owned buildings are destroyed on death"
+	}
+	"sentry bullet weapon"
+	{
+		"en" "Sentry bullet weapon"
+	}
+	"sentry rocket weapon"
+	{
+		"en" "Sentry rocket weapon"
+	}
+	"mult sentry rocket ammo"
+	{
+		"en" "(+-)%p% sentry rocket ammo capacity"
+	}
+	"midair accuracy mult"
+	{
+		"en" "(+-)%p% accurate when midair"
+	}
+	"add damage per target"
+	{
+		"en" "(+-)%p% damage for every target hit by explosion"
+	}
+	"projectile detonate time"
+	{
+		"en" "Projectiles self detonate in %d seconds after being fired"
+	}
+	"mult afterburn delay"
+	{
+		"en" "(+-)%p% afterburn damage delay"
+	}
+	"custom view model"
+	{
+		"en" "custom view model"
+	}
+	"mult dmg while midair"
+	{
+		"en" "(+-)%p% damage while midair"
+	}
+	"medigun keep charged effect"
+	{
+		"en" "(+-)%p% damage while midair"
+	}
+	"ignores other projectiles"
+	{
+		"en" "(+-)%p% damage while midair"
+	}
+	"weapon always gib"
+	{
+		"en" "Always gibs enemies"
+	}
+	"weapon never gib"
+	{
+		"en" "Never gibs enemies"
+	}
+	"always gib"
+	{
+		"en" "Always gib"
+	}
+	"never gib"
+	{
+		"en" "Never gib"
+	}
+	"sapper sap allies"
+	{
+		"en" "Place on ally players instead of enemies"
+	}
+	"no clip"
+	{
+		"en" "Place on allies"
+	}
+	"arrow ignite"
+	{
+		"en" "Arrows are always lit"
+	}
+	"use original class weapon animations"
+	{
+		"en" "Arrows are always lit"
+	}
+	"mult dmg before distance"
+	{
+		"en" "Deals up to (+-)%p% damage, the closer to the target"
+	}
+	"mult_item_meter_charge_rate 2"
+	{
+		"en" "(+-)%p% recharge rate"
+	}
+	"clip size upgrade atomic 2"
+	{
+		"en" "(+-)%d clip size"
+	}
+	"charge recharge rate increased 2"
+	{
+		"en" "(+-)%p% recharge rate"
+	}
+	"mult sentry rocket projectile speed"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"max ammo primary mult"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"max ammo secondary mult"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"minigun full movement"
+	{
+		"en" "Can move while ducking when shooting"
+	}
+	"use original class player animations"
+	{
+		"en" "Arrows are always lit"
+	}
+	"add attributes when active"
+	{
+		"en" "Arrows are always lit"
+	}
+	"mult explosion radius direct hit"
+	{
+		"en" "(+-)%p% explosion radius on direct hit"
+	}
+	"buildings cannot be sapped"
+	{
+		"en" "Buildings cannot be sapped"
+	}
+	"mult dmg direct hit"
+	{
+		"en" "(+-)%p% damage on direct hit"
+	}
+	"cannot upgrade bomb"
+	{
+		"en" "Cannot upgrade the bomb as a carrier"
+	}
+	"max ammo primary additive"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"max ammo secondary additive"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"sentry toolbox model"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"dispenser toolbox model"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"teleporter toolbox model"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun attack enemy"
+	{
+		"en" "Can attack enemies, dealing damage equal to %p% heal rate"
+	}
+	"medigun self drain"
+	{
+		"en" "Drain health equal to %p% heal rate from the user when healing"
+	}
+	"fire input on attack"
+	{
+		"en" "%d"
+	}
+	"stun on hit"
+	{
+		"en" "On Hit: Stun target for %d seconds"
+	}
+	"stun on hit no giants"
+	{
+		"en" "Cannot stun giants"
+	}
+	"stun on hit type"
+	{
+		"en" "Cannot stun giants"
+	}
+	"stun on hit slow"
+	{
+		"en" "Stun slows players by %p%"
+	}
+	"medigun attack enemy heal mult"
+	{
+		"en" "%p% of damage dealt is returned as health"
+	}
+	"medigun particle"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle enemy"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle release"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle spark"
+	{
+		"en" "(+-)%p% sentry rocket projectile speed"
+	}
+	"effect immunity"
+	{
+		"en" "Immune to effects applied by allies and enemies"
+	}
+	"no revive"
+	{
+		"en" "No reanimator on death"
+	}
+	"fire input on effect"
+	{
+		"en" "No reanimator on death"
+	}
+	"additional step sound"
+	{
+		"en" "No reanimator on death"
+	}
+	"fov override"
+	{
+		"en" "No reanimator on death"
+	}
+	"hud overlay"
+	{
+		"en" "No reanimator on death"
+	}
+	"fire input on taunt"
+	{
+		"en" "No reanimator on death"
+	}
+	"displace touched enemies"
+	{
+		"en" "Push away enemies"
+	}
+	"addcond immunity"
+	{
+		"en" "Push away enemies"
+	}
+	"attribute immunity"
+	{
+		"en" "Push away enemies"
+	}
+	"hold fire until full reload"
+	{
+		"en" "Hold fire until full reload"
+	}
+	"noclip projectiles"
+	{
+		"en" "Projectiles penetrate walls"
+	}
+	"projectile explode time"
+	{
+		"en" "Explodes after %ds delay"
+	}
+	"custom item model attachment"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model attachment 2"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model attachment 3"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model attachment viewmodel"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model attachment viewmodel 2"
+	{
+		"en" "melee cleave attack"
+	}
+	"custom item model attachment viewmodel 3"
+	{
+		"en" "melee cleave attack"
+	}
+	"flare no crit burning"
+	{
+		"en" "Flares do not critically hit burning enemies"
+	}
+	"rage receive scale"
+	{
+		"en" "(+-)%p% rage gain"
+	}
+	"fire input on hit ally"
+	{
+		"en" "%d"
+	}
+}

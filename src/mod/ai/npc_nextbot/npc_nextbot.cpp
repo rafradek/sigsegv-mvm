@@ -694,7 +694,7 @@ namespace Mod::AI::NPC_Nextbot
             }
 
             this->m_pEntity->SetModel(model);
-            if (this->m_bUsePlayerBounds = this->m_pEntity->GetCustomVariableBool<"useplayercollisionbounds">()) {
+            if (this->m_bUsePlayerBounds = this->m_pEntity->GetCustomVariableBool<"useplayercollisionbounds">(modelOverride == nullptr)) {
                 UTIL_SetSize(this->m_pEntity, &VEC_HULL_MIN, &VEC_HULL_MAX);
             }
             this->SetEyeOffset();

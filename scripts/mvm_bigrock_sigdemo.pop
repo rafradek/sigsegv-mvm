@@ -509,7 +509,7 @@ WaveSchedule
 		}
 		upgrade
 		{
-			Name "+25 max health" // Name of the upgrade displayed on the menu
+			// Name "+25 max health" // Custom name of the upgrade displayed on the menu. If absent, uses the attribute localized name instead
 			Attribute "max health additive bonus" // The attribute name
 			Cap 200 // Maximum amount of the attribute
 			Increment 25 // Attribute increment value per level
@@ -530,7 +530,6 @@ WaveSchedule
 		}
 		upgrade
 		{
-			Name "-25% damage penalty"
 			Attribute "damage penalty"
 			Cap 0.5
 			Increment -0.25
@@ -1486,6 +1485,7 @@ WaveSchedule
 				RingOfFire 15 [$SIGSEGV] //Enable Ring of Fire from Huo Long Heater. Value is damage done by the ring
 				PreferClass Sniper // Prefer those classes over other
 				PreferClass Spy
+				PreferTeam Spectator // Prefer targets of those teams: Red, Blue, Spectator, Unassigned or a number
 			}
 		}
 		WaveSpawn
@@ -3684,3 +3684,6 @@ WaveSchedule
 
 // Scale for damage being received
 // "rage receive scale" 2
+
+// Fire input on hit allied players. May require allow friendly fire to work. The player is the activator. The format is <target>^<input>^<param>. If omitted, default param is damage received. !projectile is the projectile entity
+// "fire input on hit ally" "!self^SetHealth^0"

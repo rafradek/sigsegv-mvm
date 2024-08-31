@@ -436,7 +436,7 @@ public:
 	CTFPlayerClass *GetPlayerClass()             { return &m_PlayerClass; }
 	const CTFPlayerClass *GetPlayerClass() const { return &m_PlayerClass; }
 	
-	bool IsPlayerClass(int iClass) const;
+	bool IsPlayerClass(int iClass) { return this->GetPlayerClass()->IsClass(iClass); }
 	int StateGet() const        { return this->m_Shared->GetState(); }
 	bool HasItem() const        { return this->m_hItem != nullptr; }
 	CTFItem *GetItem() const    { return this->m_hItem; }

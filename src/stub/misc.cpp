@@ -350,6 +350,15 @@ void PrintToChatSM(CBasePlayer *player, int paramCount, const char *fmt,...)
 
 const char *TranslateText(CBasePlayer *player, const char *name, int paramCount, ...)
 {
+	if (paramCount == 0) {
+		Translation buf;
+		if (phrasesFile->GetTranslation(name, translator->GetClientLanguage(ENTINDEX(player)), &buf) != Trans_Okay) {
+			if (phrasesFile->GetTranslation(name, translator->GetServerLanguage(), &buf) != Trans_Okay) {
+				return name;
+			}
+		}
+		return buf.szPhrase; 
+	}
 	va_list arglist;
 	va_start(arglist, paramCount);
 	auto value = FormatTextForPlayerSM_VA(player,paramCount + 1, "%t",arglist, name);

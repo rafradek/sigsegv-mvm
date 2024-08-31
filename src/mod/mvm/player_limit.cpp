@@ -320,7 +320,7 @@ namespace Mod::MvM::Player_Limit
 						}
 					});
 				}
-				allowspectators.Set(spectators < sig_mvm_spectator_max_players.GetInt());
+				allowspectators.Set(allowspectators.GetOriginalValue() && spectators < sig_mvm_spectator_max_players.GetInt());
 			}
         }
 	};

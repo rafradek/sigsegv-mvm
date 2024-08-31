@@ -403,7 +403,7 @@ void CFuncVProf::TracePost()
 	}
 }
 
-constexpr bool s_bGameHasOptimizedVirtuals = false;// = SOURCE_ENGINE == SE_TF2;
+constexpr bool s_bGameHasOptimizedVirtuals = SOURCE_ENGINE == SE_TF2;
 
 CDetouredFunc::CDetouredFunc(void *func_ptr) :
 	m_pFunc(reinterpret_cast<uint8_t *>(func_ptr))

@@ -129,7 +129,7 @@ namespace Mod::Cond::Reprogrammed
 			buf.CopyFrom(s_Buf_CheckStuck);
 
 #ifdef PLATFORM_64BITS
-			mask.SetRange(0x01 + 1, 4, 0x00);
+			mask.SetRange(0x00 + 1, 4, 0x00);
 			mask.SetRange(0x08 + 2, 4, 0x00);
 #else
 			mask.SetRange(0x01 + 1, 4, 0x00);
@@ -410,6 +410,11 @@ namespace Mod::Cond::Reprogrammed
 	{
 		DevMsg("OnAddReprogrammed(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
 		
+		// Check if already applied
+		if (player->GetCustomVariableBool<"reprogrammedcond">()) return;
+
+		player->SetCustomVariable<"reprogrammedcond">(Variant(true));
+
 		if (!cvar_hellmet.GetBool()) {
 			player->m_Shared->StunPlayer(5.0f, 0.65f, TF_STUNFLAG_NOSOUNDOREFFECT | TF_STUNFLAG_SLOWDOWN, nullptr);
 		}
@@ -486,10 +491,14 @@ namespace Mod::Cond::Reprogrammed
 			player->SetNextThink(gpGlobals->curtime + 0.01f, "SetPlayerResourceTeamRed");
 		}
 	}
- 
+
 	void OnRemoveReprogrammed(CTFPlayer *player)
 	{
+		if (!player->GetCustomVariable<"reprogrammedcond">()) return;
+
 		DevMsg("OnRemoveReprogrammed(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
+		
+		player->SetCustomVariable<"reprogrammedcond">(Variant(false));
 		
 		/* added this check to prevent problems */
 		if (player->IsBot()) {
@@ -584,6 +593,11 @@ namespace Mod::Cond::Reprogrammed
 		
 		DevMsg("OnAddReprogrammedNeutral(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
 		
+		// Check if already applied
+		if (player->GetCustomVariableBool<"reprogrammedneutralcond">()) return;
+
+		player->SetCustomVariable<"reprogrammedneutralcond">(Variant(true));
+
 		if (player->GetTeamNumber() != TEAM_SPECTATOR) {
 			DevMsg("  currently on TF_TEAM_BLUE: calling ForceChangeTeam(TF_TEAM_RED)\n");
 			player->ChangeTeamBase(TEAM_SPECTATOR, false, true, false);
@@ -607,8 +621,11 @@ namespace Mod::Cond::Reprogrammed
 
 	void OnRemoveReprogrammedNeutral(CTFPlayer *player)
 	{
+		if (!player->GetCustomVariable<"reprogrammedneutralcond">()) return;
 		DevMsg("OnRemoveReprogrammedNeutral(#%d \"%s\")\n", ENTINDEX(player), player->GetPlayerName());
 		
+		player->SetCustomVariable<"reprogrammedneutralcond">(Variant(false));
+
 		if (!player->IsAlive()) {
 			player->SetCustomVariable<"KilledAsNeutral">(Variant(true));
 		}
@@ -1073,7 +1090,7 @@ namespace Mod::Cond::Reprogrammed
         // Always a player so ok to cast directly
         CBaseEntity *entityme = reinterpret_cast<CBaseEntity *>(const_cast<IHandleEntity *>(filter->GetPassEntity()));
 		
-		if (entityme->GetTeamNumber() == TEAM_SPECTATOR) {
+		if (entityme != nullptr && entityme->GetTeamNumber() == TEAM_SPECTATOR) {
 			CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
 			if (entityhit != nullptr && entityhit->IsPlayer()) {
 				if (entityme->GetTeamNumber() == entityhit->GetTeamNumber()) {
@@ -1380,6 +1397,21 @@ namespace Mod::Cond::Reprogrammed
 		}
 		DETOUR_MEMBER_CALL();
 	}
+	
+	
+	DETOUR_DECL_MEMBER(void, CTFPlayer_ChangeTeam, int iTeamNum, bool b1, bool b2, bool b3)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		// Remove reprogrammed cond before changing team, apply back if team not changed
+		OnRemoveReprogrammed(player);
+		OnRemoveReprogrammedNeutral(player);
+		int preTeam = player->GetTeamNumber();
+		DETOUR_MEMBER_CALL(iTeamNum, b1, b2, b3);
+		if (preTeam == player->GetTeamNumber()) {
+			OnRemoveReprogrammed(player);
+			OnRemoveReprogrammedNeutral(player);
+		}
+	}
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -1474,6 +1506,7 @@ namespace Mod::Cond::Reprogrammed
 			
 			// Fix spectator team bots death sound
             MOD_ADD_DETOUR_MEMBER(CTFPlayer_DeathSound, "CTFPlayer::DeathSound");
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ChangeTeam,                 "CTFPlayer::ChangeTeam");
 
 			// Fix spectator team shortstop push
 			// TF2 update inlined collectplayers here, using patch instead

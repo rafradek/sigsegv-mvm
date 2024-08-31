@@ -2,18 +2,29 @@
 #define _INCLUDE_SIGSEGV_MOD_ITEM_ITEM_COMMON_H_
 
 #include "stub/strings.h"
+#include "stub/misc.h"
 
 const char *GetItemName(const CEconItemView *view);
 const char *GetItemName(const CEconItemView *view, bool &is_custom);
-const char *GetItemNameForDisplay(int item_defid);
-const char *GetItemNameForDisplay(const CEconItemView *view);
-const char *GetAttributeName(int attributeIndex);
-void LoadItemNames();
-bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value, bool shortDescription = false);
+const char *GetItemNameForDisplay(int item_defid, CTFPlayer *player = nullptr);
+const char *GetItemNameForDisplay(const CEconItemView *view, CTFPlayer *player = nullptr);
+const char *GetAttributeName(int attributeIndex, CTFPlayer *player = nullptr);
+void LoadItemNames(uint langNum);
+bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *attr_def, attribute_data_union_t value, CTFPlayer *player = nullptr, bool shortDescription = false);
 
-extern std::map<int, std::string> g_Itemnames;
-extern std::map<int, std::string> g_Attribnames;
-extern std::map<int, std::string> g_AttribnamesShort;
+class ItemDefLanguage
+{
+public:
+    bool m_bInitialized = false;
+    bool m_bLoaded = false;
+    std::string m_Name;
+    std::unordered_map<int, std::string> m_Itemnames;
+    std::unordered_map<int, std::string> m_Attribnames;
+    std::unordered_map<int, std::string> m_AttribnamesShort;
+};
+
+extern std::vector<ItemDefLanguage> g_ItemLanguages;
+extern ItemDefLanguage *g_ItemDefaultLanguage;
 
 static const char *loadoutStrings[] = 
 {
@@ -87,12 +98,21 @@ static int GetSlotFromString(const char *string) {
     return slot;
 }
 
+inline ItemDefLanguage *GetItemLanguage(CTFPlayer *player) {
+    uint langNum = player == nullptr ? translator->GetServerLanguage() : translator->GetClientLanguage(player->entindex());
+    auto lang = &g_ItemLanguages[langNum];
+    if (!lang->m_bLoaded) {
+        LoadItemNames(langNum);
+    }
+    return lang;
+}
+
 class ItemListEntry
 {
 public:
     virtual ~ItemListEntry() = default;
     virtual bool Matches(const char *classname, const CEconItemView *item_view) const = 0;
-    virtual const char *GetInfo() const = 0;
+    virtual const char *GetInfo(CTFPlayer *player) const = 0;
 };
 
 class ItemListEntry_Classname : public ItemListEntry
@@ -120,15 +140,17 @@ public:
             return FStrEq(this->m_strClassname.c_str(), classname);
     }
     
-    virtual const char *GetInfo() const override
+    virtual const char *GetInfo(CTFPlayer *player) const override
     {
-        static char buf[64];
+        static char buf[128];
+        auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strClassname.c_str());
         if (strnicmp(m_strClassname.c_str(), "tf_weapon_", strlen("tf_weapon_")) == 0) {
-            snprintf(buf, sizeof(buf), "Weapon type: %s", m_strClassname.c_str() + strlen("tf_weapon_"));
+            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t", "Weapon type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str() + strlen("tf_weapon_")));
         }
         else {
-            snprintf(buf, sizeof(buf), "Item type: %s", m_strClassname.c_str());
+            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t", "Item type:", item_def != nullptr ? GetItemNameForDisplay(item_def->m_iItemDefIndex, player) : m_strClassname.c_str()));
         }
+        V_StrSubst(buf,"_", " ", buf, 128);
         
         return buf;
     }
@@ -162,15 +184,12 @@ public:
         return !is_custom && AreItemsSimilar(item_view, m_bCanCompareByLogName, m_strBaseName, m_strLogName, m_strBaseClassMelee, classname, m_iBaseDefIndex);
     }
 
-    virtual const char *GetInfo() const override
+    virtual const char *GetInfo(CTFPlayer *player) const override
     {
         auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strName.c_str());
         
         if (item_def != nullptr) {
-            auto find = g_Itemnames.find(item_def->m_iItemDefIndex);
-            if (find != g_Itemnames.end()) {
-                return find->second.c_str();
-            }
+            return GetItemNameForDisplay(item_def->m_iItemDefIndex, player);
         }
         return m_strName.c_str();
     }
@@ -197,15 +216,12 @@ public:
         return FStrEq(this->m_strName.c_str(), GetItemName(item_view)); 
     }
 
-    virtual const char *GetInfo() const override
+    virtual const char *GetInfo(CTFPlayer *player) const override
     {
         auto item_def = GetItemSchema()->GetItemDefinitionByName(m_strName.c_str());
         
         if (item_def != nullptr) {
-            auto find = g_Itemnames.find(item_def->m_iItemDefIndex);
-            if (find != g_Itemnames.end()) {
-                return find->second.c_str();
-            }
+            return GetItemNameForDisplay(item_def->m_iItemDefIndex, player);
         }
         return m_strName.c_str();
     }
@@ -225,10 +241,10 @@ public:
         return (this->m_iDefIndex == item_view->GetItemDefIndex());
     }
     
-    virtual const char *GetInfo() const override
+    virtual const char *GetInfo(CTFPlayer *player) const override
     {
         static char buf[6];
-        const char *name = GetItemNameForDisplay(m_iDefIndex);
+        const char *name = GetItemNameForDisplay(m_iDefIndex, player);
         if (name != nullptr) {
             return name;
         }
@@ -251,11 +267,11 @@ public:
         return (this->m_iSlot == item_view->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED));
     }
     
-    virtual const char *GetInfo() const override
+    virtual const char *GetInfo(CTFPlayer *player) const override
     {
         static char buf[64];
         if (m_iSlot >= 0) {
-            snprintf(buf, sizeof(buf), "Weapon in slot: %s", g_szLoadoutStrings[m_iSlot]);
+            strcpy(buf, FormatTextForPlayerSM(player, 2, "%t %t", "Weapon in slot:", loadoutStrings[m_iSlot]));
         }
         else {
             return "Null";

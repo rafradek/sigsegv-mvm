@@ -82,6 +82,8 @@ IClientMode *g_pClientMode = nullptr;
 
 IPhraseCollection *phrases = nullptr;
 IPhraseFile *phrasesFile = nullptr;
+IPhraseCollection *phrasesAttribs = nullptr;
+IPhraseFile *phrasesAttribsFile = nullptr;
 
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -122,6 +124,9 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	phrases = translator->CreatePhraseCollection();
 	phrasesFile = phrases->AddPhraseFile("sigsegv.phrases");
+
+	phrasesAttribs = translator->CreatePhraseCollection();
+	phrasesAttribsFile = phrases->AddPhraseFile("sigsegvattributes.phrases");
 
 	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("Sigsegv"), this);
 //	for (int i = 0; i < 255; ++i) {

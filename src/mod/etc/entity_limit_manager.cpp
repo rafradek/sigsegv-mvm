@@ -139,7 +139,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         int entityCount = engine->GetEntityCount();
         // Check if there is a useable free edict. If not, try to find a recently freed edict and make it useable
         bool success = false;
-        if (reinterpret_cast<CGameServer *>(sv)->GetNumEdicts() > MAX_EDICTS - 6) {
+        if (reinterpret_cast<CGameServer *>(sv)->GetNumEdicts() == MAX_EDICTS) {
             //CFastTimer timer;
             //timer.Start();
             int iBit = -1;
@@ -172,31 +172,38 @@ namespace Mod::Etc::Entity_Limit_Manager
             }
             // Try to find a marked for deletion entity and clear it
             if (!success) {
-                if (g_DeleteList.GetRef().Count() > 0) {
+                for (int i = 0; i < g_DeleteList.GetRef().Count(); i++) {
+                    auto networkable = g_DeleteList.GetRef()[i];
+                    if (simulated_entity == networkable->GetBaseEntity()) continue;
 
                     g_bDisableEhandleAccess.GetRef() = true;
-                    auto edict = g_DeleteList.GetRef()[0]->GetEdict();
-                    g_DeleteList.GetRef()[0]->Release();
-                    g_DeleteList.GetRef().Remove(0);
+                    auto edict = networkable->GetEdict();
+                    removed_entities_immediate.insert(networkable->GetBaseEntity());
+                    networkable->Release();
+                    g_DeleteList.GetRef().Remove(i);
                     g_bDisableEhandleAccess.GetRef() = false;
                     if (edict != nullptr) {
                         edict->freetime = 0;
                     }
                     success = true;
+                    break;
                 }
             }
         }
-        if (!success && entityCount > MAX_EDICTS - 6) {
+        if (entityCount > MAX_EDICTS - 6) {
             // Remove scripted scene first
             bool notifyDelete = false;
             CBaseEntity *entityToDelete = nullptr;
             auto scriptedScene = servertools->FindEntityByClassname(nullptr, "instanced_scripted_scene");
-            if (scriptedScene != nullptr) {
+            if (scriptedScene != nullptr && simulated_entity != scriptedScene) {
                 entityToDelete = scriptedScene;
             }
             // Entities marked as disposable
-            if (entityToDelete == nullptr && !AutoList<DisposableEntityModule>::List().empty() && !AutoList<DisposableEntityModule>::List()[0]->me->IsMarkedForDeletion()) {
-                entityToDelete = AutoList<DisposableEntityModule>::List()[0]->me;
+            if (entityToDelete == nullptr && !AutoList<DisposableEntityModule>::List().empty()){
+                auto entity = AutoList<DisposableEntityModule>::List()[0]->me;
+                if (!entity->IsMarkedForDeletion() && simulated_entity != entity) {
+                    entityToDelete = entity;
+                }
             }
             if (entityToDelete == nullptr) {
                 // Delete trails
@@ -364,7 +371,7 @@ namespace Mod::Etc::Entity_Limit_Manager
                 }
                 // Need to do this to allow the entity to be reused immediately
                 int oldRemoveImmediate = s_RemoveImmediateSemaphore.GetRef();
-                if (engine->GetEntityCount() == MAX_EDICTS && s_RemoveImmediateSemaphore.GetRef() > 0) {
+                if (entityCount == MAX_EDICTS && s_RemoveImmediateSemaphore.GetRef() > 0) {
                     s_RemoveImmediateSemaphore.GetRef() = 0;
                     removed_entities_immediate.insert(entityToDelete);
                 }
@@ -444,8 +451,7 @@ namespace Mod::Etc::Entity_Limit_Manager
         this->GetCustomVariableVariant<"placeholdermove">(val);
         auto move = val.Entity().Get();
         auto animating = entity != nullptr ? entity->GetBaseAnimating() : nullptr;
-        this->GetCustomVariableVariant<"placeholderlight">(val);
-        bool light = val.Bool();
+        bool light = this->GetCustomVariableBool<"placeholderlight">();
 
         if (move == nullptr || entity == nullptr || ((light && (animating == nullptr || animating->m_hLightingOrigin != this)) || (!light && entity->GetMoveParent() != this ))) {
             this->Remove();
@@ -463,11 +469,11 @@ namespace Mod::Etc::Entity_Limit_Manager
             auto placeholder = CreateEntityByName("point_teleport");
             variant_t val;
             val.SetEntity(entity);
-            placeholder->SetCustomVariable("placeholderorig", val);
+            placeholder->SetCustomVariable<"placeholderorig">(Variant(entity));
             val.SetEntity(parent);
-            placeholder->SetCustomVariable("placeholdermove", val);
+            placeholder->SetCustomVariable<"placeholdermove">(Variant(parent));
             val.SetBool(true);
-            placeholder->SetCustomVariable("placeholderparent", val);
+            placeholder->SetCustomVariable<"placeholderparent">(Variant(true));
             THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
             placeholder->SetAbsOrigin(parent->GetAbsOrigin());
             placeholder->SetAbsAngles(parent->GetAbsAngles());
@@ -481,13 +487,9 @@ namespace Mod::Etc::Entity_Limit_Manager
         CBaseAnimating *animating = reinterpret_cast<CBaseAnimating *>(this);
         if (entity != nullptr && entity->edict() == nullptr) {
             auto placeholder = CreateEntityByName("point_teleport");
-            variant_t val;
-            val.SetEntity(animating);
-            placeholder->SetCustomVariable("placeholderorig", val);
-            val.SetEntity(entity);
-            placeholder->SetCustomVariable("placeholdermove", val);
-            val.SetBool(true);
-            placeholder->SetCustomVariable("placeholderlight", val);
+            placeholder->SetCustomVariable<"placeholderorig">(Variant((CBaseEntity *)animating));
+            placeholder->SetCustomVariable<"placeholdermove">(Variant(entity));
+            placeholder->SetCustomVariable<"placeholderlight">(Variant(true));
             THINK_FUNC_SET(placeholder, PlaceholderThink, gpGlobals->curtime+0.01f);
             entity = placeholder;
         }

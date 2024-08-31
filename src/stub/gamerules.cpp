@@ -42,6 +42,7 @@ MemberVFuncThunk<CTeamplayRoundBasedRules *, float, int, CBasePlayer *>   CTeamp
 
 #ifdef SE_IS_TF2
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMedieval,      CTFGameRulesProxy);
+IMPL_SENDPROP(bool,           CTFGameRules, m_bPowerupMode,          CTFGameRulesProxy);
 IMPL_SENDPROP(bool,           CTFGameRules, m_bPlayingMannVsMachine, CTFGameRulesProxy);
 IMPL_SENDPROP(char[MAX_PATH], CTFGameRules, m_pszCustomUpgradesFile, CTFGameRulesProxy);
 IMPL_SENDPROP(float,           CTFGameRules, m_flRestartRoundTime, CTFGameRulesProxy);

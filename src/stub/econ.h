@@ -249,7 +249,7 @@ public:
 	void RemoveAttributeByIndex(int index)                             {        ft_RemoveAttributeByIndex(this, index); }
 	void DestroyAllAttributes()                                        {        ft_DestroyAllAttributes  (this); }
 	void SetRuntimeAttributeValue(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeValue  (this, pAttrDef, value); }
-	void SetRuntimeAttributeRefundableCurrency(CEconItemAttributeDefinition *pAttrDef, float value) {        ft_SetRuntimeAttributeRefundableCurrency  (this, pAttrDef, value); }
+	void SetRuntimeAttributeRefundableCurrency(CEconItemAttributeDefinition *pAttrDef, int value) {        ft_SetRuntimeAttributeRefundableCurrency  (this, pAttrDef, value); }
 	void NotifyManagerOfAttributeValueChanges()                        {        ft_NotifyManagerOfAttributeValueChanges  (this); }
 
 	CUtlVector<CEconItemAttribute>& Attributes() { return this->m_Attributes; }
@@ -271,7 +271,7 @@ private:
 	static inline MemberFuncThunk<      CAttributeList *, void, int>                                  ft_RemoveAttributeByIndex{ "CAttributeList::RemoveAttributeByIndex" };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_DestroyAllAttributes  { "CAttributeList::DestroyAllAttributes"   };
 	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeValue  { "CAttributeList::SetRuntimeAttributeValue"   };
-	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, float>ft_SetRuntimeAttributeRefundableCurrency  { "CAttributeList::SetRuntimeAttributeRefundableCurrency"   };
+	static inline MemberFuncThunk<      CAttributeList *, void, CEconItemAttributeDefinition *, int>  ft_SetRuntimeAttributeRefundableCurrency  { "CAttributeList::SetRuntimeAttributeRefundableCurrency"   };
 	static inline MemberFuncThunk<      CAttributeList *, void>                                       ft_NotifyManagerOfAttributeValueChanges  { "CAttributeList::NotifyManagerOfAttributeValueChanges"   };
 
 };
@@ -445,9 +445,11 @@ public:
 	unsigned short GetIndex() const       { return this->m_iIndex; }
 	ISchemaAttributeType *GetType() const { return this->m_pAttributeType; }
 	bool IsStoredAsInteger () const       { return this->m_bStoredAsInteger; }
-	
-	const char *GetName             (const char *fallback = nullptr) const { return this->GetKVString("name",               fallback); }
-	const char *GetAttributeClass   (const char *fallback = nullptr) const { return this->GetKVString("attribute_class",    fallback); }
+	bool IsHidden () const       { return this->m_bHidden; }
+
+	const char *GetName()             const { return this->m_pszDefinitionName; }
+	const char *GetDescription()      const { return this->m_pszDescriptionString; }
+	const char *GetAttributeClass()   const { return this->m_pszAttributeClass; }
 	int GetDescriptionFormat() const { return m_iDescriptionFormat; }
 	bool IsMultiplicative() const { return m_iDescriptionFormat == ATTDESCFORM_VALUE_IS_PERCENTAGE || m_iDescriptionFormat == ATTDESCFORM_VALUE_IS_INVERTED_PERCENTAGE; }
 	float GetDefaultValue() const { return IsMultiplicative() ? 1.0f : 0.0f; }
@@ -455,8 +457,6 @@ public:
 	
 	template<typename T> bool IsType() const { return (dynamic_cast<T *>(this->GetType()) != nullptr); }
 	
-	/* do all the libstrcompat junk automatically;
-	 * and handle "stored_as_integer" properly when BConvertStringToEconAttributeValue was called with b1 = true */
 	void ConvertValueToString(const attribute_data_union_t& value, char *buf, size_t buf_len);
 	
 private:
@@ -485,6 +485,10 @@ private:
 	int m_pad6;
 	int m_pad7;
 	int m_iDescriptionFormat;
+	const char *m_pszDescriptionString;
+	const char *m_pszArmoryDesc;
+	const char *m_pszDefinitionName;
+	const char *m_pszAttributeClass;
 	// ...
 };
 

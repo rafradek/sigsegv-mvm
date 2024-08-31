@@ -469,15 +469,39 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return result;
 	}
 
-	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateChargeMeter)
+	DETOUR_DECL_MEMBER(void, CTFPlayerShared_ConditionThink)
 	{
-		auto player = reinterpret_cast<CTFPlayerShared *>(this);
-
-		auto playerClass = player->GetOuter()->GetPlayerClass();
-		int classPre = playerClass->GetClassIndex();
-		playerClass->SetClassIndex(TF_CLASS_DEMOMAN);
+		auto shared = reinterpret_cast<CTFPlayerShared *>(this);
+		auto player = reinterpret_cast<CTFPlayerShared *>(this)->GetOuter();
+		if (!player->IsPlayerClass(TF_CLASS_DEMOMAN)) {
+			static ConVarRef tf_demoman_charge_drain_time("tf_demoman_charge_drain_time");
+			static ConVarRef tf_demoman_charge_regen_rate("tf_demoman_charge_regen_rate");
+			if (shared->InCond(TF_COND_SHIELD_CHARGE)) {
+				float flChargeDrainTime = tf_demoman_charge_drain_time.GetFloat();
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flChargeDrainTime, mod_charge_time);
+				float flChargeDrainMod = 100.f / flChargeDrainTime;
+				shared->m_flChargeMeter -= gpGlobals->frametime * flChargeDrainMod;
+				if (shared->m_flChargeMeter <= 0) {
+					shared->m_flChargeMeter = 0;
+					shared->RemoveCond(TF_COND_SHIELD_CHARGE);
+				}
+			}
+			else if (shared->m_flChargeMeter < 100.f) {
+				float flChargeRegenMod = tf_demoman_charge_regen_rate.GetFloat();
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(player, flChargeRegenMod, charge_recharge_rate);
+				if ( TFGameRules() && TFGameRules()->m_bPowerupMode && shared->GetCarryingRuneType() == 8 /*RUNE_KNOCKOUT*/) {
+					flChargeRegenMod *= 0.2f;
+				}
+				
+				flChargeRegenMod = Max( flChargeRegenMod, 1.f );
+				shared->m_flChargeMeter += gpGlobals->frametime * flChargeRegenMod;
+				if ( shared->m_flChargeMeter > 100.f )
+				{
+					shared->m_flChargeMeter = 100.f;
+				}
+			}
+		}
 		DETOUR_MEMBER_CALL();
-		playerClass->SetClassIndex(classPre);
 	}
 
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_EndClassSpecialSkill)
@@ -830,7 +854,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 		return ret;
 	}
 	
-    ConVar sig_etc_unintended_class_weapon_display_meters("sig_etc_unintended_class_weapon_display_meters", "1", FCVAR_NOTIFY,
+    ConVar sig_etc_unintended_class_weapon_display_meters("sig_etc_unintended_class_weapon_display_meters", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Mod: display meters for unintended player class weapons");
 
     class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
@@ -848,7 +872,6 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 
 			// Allow non demos to use shields and benefit from eyelander heads
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_DoClassSpecialSkill, "CTFPlayer::DoClassSpecialSkill");
-			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_UpdateChargeMeter, "CTFPlayerShared::UpdateChargeMeter [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_EndClassSpecialSkill, "CTFPlayer::EndClassSpecialSkill");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_TeamFortress_CalculateMaxSpeed, "CTFPlayer::TeamFortress_CalculateMaxSpeed");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_GetMaxHealthForBuffing, "CTFPlayer::GetMaxHealthForBuffing");
@@ -891,8 +914,8 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 			MOD_ADD_DETOUR_MEMBER(CBaseCombatCharacter_Weapon_Detach, "CBaseCombatCharacter::Weapon_Detach");
 
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponBaseMelee_SecondaryAttack, "CTFWeaponBaseMelee::SecondaryAttack");
-			
-			
+
+			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_ConditionThink, "CTFPlayerShared::ConditionThink");
         }
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled() && sig_etc_unintended_class_weapon_display_meters.GetBool(); }
@@ -917,7 +940,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 					auto weapon = rtti_cast<CTFWeaponBase *>(item);
 					if (weapon == nullptr) {
 						if (classIndex != TF_CLASS_DEMOMAN && rtti_cast<CTFWearableDemoShield *>(item) != nullptr) {
-							message += fmt::format("Charge: {:.0f}%\n", player->m_Shared->m_flChargeMeter.Get());
+							message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Charge"), player->m_Shared->m_flChargeMeter.Get());
 						}
 					}
 					auto weaponid = 0;
@@ -925,35 +948,35 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						const char *itemClass = item->GetClassname();
 						weaponid = weapon->GetWeaponID();
 						if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_PIPEBOMBLAUNCHER) {
-							message += fmt::format("Stickies: {}\n", rtti_cast<CTFPipebombLauncher *>(item)->m_iPipebombCount.Get());
+							message += fmt::format("{}: {}\n", TranslateText(player, "Stickies"), rtti_cast<CTFPipebombLauncher *>(item)->m_iPipebombCount.Get());
 						}
 						else if (classIndex != TF_CLASS_MEDIC && weaponid == TF_WEAPON_MEDIGUN) {
-							message += fmt::format("Ubercharge: {}%\n", (int)(rtti_cast<CWeaponMedigun *>(item)->GetCharge() * 100));
+							message += fmt::format("{}: {}%\n", TranslateText(player, "Ubercharge"), (int)(rtti_cast<CWeaponMedigun *>(item)->GetCharge() * 100));
 							int generate = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, generate, generate_rage_on_heal);
 							if (generate != 0) {
-								message += fmt::format("Shield: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Shield"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAMETHROWER) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
 							if (buff != 0) {
-								message += fmt::format("MMMPH: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "MMMPH"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_BUFF_ITEM) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, set_buff_type);
 							if (buff != 4 && buff != 0) {
-								message += fmt::format("Rage: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_HEAVYWEAPONS && weaponid == TF_WEAPON_MINIGUN) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, generate_rage_on_dmg);
 							if (buff != 0) {
-								message += fmt::format("Rage: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Rage"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						// else if (classIndex != TF_CLASS_SCOUT && weaponid == TF_WEAPON_LUNCHBOX) {
@@ -963,50 +986,50 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						// 	message += fmt::format("Drink: {:.0f}%\n", player->m_Shared->m_flEnergyDrinkMeter.Get());
 						// }
 						else if (classIndex != TF_CLASS_SCOUT && (weaponid == TF_WEAPON_SODA_POPPER || weaponid == TF_WEAPON_PEP_BRAWLER_BLASTER)) {
-							message += fmt::format("Hype: {:.0f}%\n", round(player->m_Shared->m_flHypeMeter.Get()));
+							message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Hype"), round(player->m_Shared->m_flHypeMeter.Get()));
 						}
 						else if (classIndex != TF_CLASS_SOLDIER && weaponid == TF_WEAPON_ROCKETLAUNCHER && rtti_cast<CTFRocketLauncher_AirStrike *>(weapon) != nullptr) {
-							message += fmt::format("Kills: {}\n", player->m_Shared->m_iDecapitations.Get());
+							message += fmt::format("{}: {}\n", TranslateText(player, "Kills"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_DEMOMAN && weaponid == TF_WEAPON_SWORD && rtti_cast<CTFSword *>(weapon) != nullptr) {
-							message += fmt::format("Heads: {}\n", player->m_Shared->m_iDecapitations.Get());
+							message += fmt::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE_DECAP) {
-							message += fmt::format("Heads: {}\n", player->m_Shared->m_iDecapitations.Get());
+							message += fmt::format("{}: {}\n", TranslateText(player, "Heads"), player->m_Shared->m_iDecapitations.Get());
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_SNIPERRIFLE) {
 							float buff = 0;
 							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, set_buff_type);
 							if (buff != 0) {
-								message += fmt::format("Focus: {:.0f}%\n", player->m_Shared->m_flRageMeter.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Focus"), player->m_Shared->m_flRageMeter.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SNIPER && weaponid == TF_WEAPON_CHARGED_SMG) {
 							float buff = 0;
 							CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, buff, minicrit_boost_charge_rate);
 							if (buff != 0) {
-								message += fmt::format("Crikey: {:.0f}%\n", rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
+								message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Crikey"), rtti_cast<CTFChargedSMG *>(item)->m_flMinicritCharge.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_ENGINEER && weaponid == TF_WEAPON_SENTRY_REVENGE) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, sentry_killed_revenge);
 							if (buff != 0) {
-								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 						}
 						else if ((classIndex != TF_CLASS_PYRO && weaponid == TF_WEAPON_FLAREGUN_REVENGE)) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, buff, extinguish_revenge);
 							if (buff != 0) {
-								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 						}
 						else if (classIndex != TF_CLASS_SPY && weaponid == TF_WEAPON_REVOLVER) {
 							int buff = 0;
 							CALL_ATTRIB_HOOK_INT_ON_OTHER(item, buff, sapper_kills_collect_crits);
 							if (buff != 0) {
-								message += fmt::format("Crits: {}\n", player->m_Shared->m_iRevengeCrits.Get());
+								message += fmt::format("{}: {}\n", TranslateText(player, "Crits"), player->m_Shared->m_iRevengeCrits.Get());
 							}
 							
 						}
@@ -1021,10 +1044,10 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 							if (regen != 0.0f) {
 								float progress = weapon->GetEffectBarProgress();
 								if (progress <= 1) {
-									message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(weapon->GetEffectBarProgress() * 100));
+									message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(weapon->GetEffectBarProgress() * 100));
 								}
 								else {
-									message += fmt::format("{}: -%\n", GetItemNameForDisplay(item->GetItem()));
+									message += fmt::format("{}: -%\n", GetItemNameForDisplay(item->GetItem(), player));
 								}
 							}
 						}
@@ -1034,7 +1057,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 						int type = 0;
 						CALL_ATTRIB_HOOK_INT_ON_OTHER(item, type, item_meter_charge_type);
 						if (type != 0) {
-							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem()), round(player->m_Shared->m_flItemChargeMeter[item->GetItem()->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED)]));
+							message += fmt::format("{}: {:.0f}%\n", GetItemNameForDisplay(item->GetItem(), player), round(player->m_Shared->m_flItemChargeMeter[item->GetItem()->GetItemDefinition()->GetLoadoutSlot(TF_CLASS_UNDEFINED)]));
 						}
 					}
 				});
@@ -1042,7 +1065,7 @@ namespace Mod::Etc::Unintended_Class_Weapon_Improvements
 				auto activeWeapon = player->GetActiveTFWeapon();
 				if (activeWeapon != nullptr) {
 					if (activeWeapon->IsEnergyWeapon() && activeWeapon->GetItem()->GetItemDefinition()->GetLoadoutSlot(classIndex) == -1) {
-						message += fmt::format("Energy: {:.0f}%\n", round(activeWeapon->m_flEnergy / activeWeapon->Energy_GetMaxEnergy() * 100));
+						message += fmt::format("{}: {:.0f}%\n", TranslateText(player, "Energy"), round(activeWeapon->m_flEnergy / activeWeapon->Energy_GetMaxEnergy() * 100));
 					}
 				}
 				

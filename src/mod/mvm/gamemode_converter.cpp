@@ -690,6 +690,17 @@ namespace Mod::MvM::Gamemode_Converter
                 }
             }
 		}
+
+		virtual void LevelShutdownPostEntity() override
+		{
+            if (generatingMesh) {
+                std::string oldPath {CFmtStr("maps/%s.nav", STRING(gpGlobals->mapname))};
+                static ConVarRef sig_util_download_manager_path("sig_util_download_manager_path");
+                std::string newPath {CFmtStr("%s/maps/%s.nav",sig_util_download_manager_path.GetString(), STRING(gpGlobals->mapname))};
+                filesystem->RenameFile(oldPath.c_str(), newPath.c_str(), "mod_write");
+            }
+			generatingMesh = false;
+		}
 	};
 	CMod s_Mod;
 	

@@ -116,6 +116,9 @@ MemberVFuncThunk<CTFWeaponBaseGun *, int >              CTFWeaponBaseGun::vt_Get
 IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrapplingHook, m_hProjectile, CTFGrapplingHook);
 
 
+IMPL_SENDPROP(float, CTFParticleCannon, m_flChargeBeginTime, CTFParticleCannon);
+
+
 //MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");
 MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeMaxTime(  TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeMaxTime");

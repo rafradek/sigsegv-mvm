@@ -390,15 +390,6 @@ IMPL_SENDPROP(float, CTFRagdoll, m_flTorsoScale, CTFRagdoll);
 IMPL_SENDPROP(float, CTFRagdoll, m_flHandScale,  CTFRagdoll);
 
 
-bool CTFPlayer::IsPlayerClass(int iClass) const
-{
-	const CTFPlayerClass *pClass = this->GetPlayerClass();
-	if (pClass == nullptr) return false;
-	
-	return pClass->IsClass(iClass);
-}
-
-
 CTFWeaponBase *CTFPlayer::GetActiveTFWeapon() const
 {
 	// The game implementation just statically casts the weapon so

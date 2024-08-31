@@ -663,6 +663,20 @@ namespace Mod::Perf::Func_Optimize
 		DETOUR_MEMBER_CALL(player);
 	}
 
+    DETOUR_DECL_MEMBER(void, NextBotManager_OnWeaponFired, CBaseCombatCharacter *whoFired, CBaseCombatWeapon *weapon)
+	{
+        if (whoFired != nullptr) {
+            // Do not trigger onweaponfired too often
+            auto data = GetExtraCombatCharacterData(whoFired);
+            if (gpGlobals->curtime - data->lastShootTime >= 0.6f) {
+                return;
+            }
+            data->lastShootTime = gpGlobals->curtime;
+        }
+
+		DETOUR_MEMBER_CALL(whoFired, weapon);
+	}
+
 
     class CMod : public IMod, public IModCallbackListener
 	{
@@ -730,6 +744,8 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_Reset, "CEconItemSchema::Reset");
             MOD_ADD_DETOUR_MEMBER(CEconItemSchema_BInitAttributes, "CEconItemSchema::BInitAttributes");
 #endif
+            // Reduce the amount of onweaponfired being fired
+            MOD_ADD_DETOUR_MEMBER(NextBotManager_OnWeaponFired, "NextBotManager::OnWeaponFired");
             // Optimize lag compensation by reusing previous bone caches
             // Not enough difference in performance
             // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");

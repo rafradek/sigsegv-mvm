@@ -389,6 +389,10 @@ namespace Mod::Common::Weapon_Shoot
 			auto tracerName = reinterpret_cast<CTFPlayer *>(this)->GetTracerType();
 			DispatchParticleEffect(isCritTrace ? CFmtStr("%s_crit", tracerName).Get() : tracerName, PATTACH_ABSORIGIN, nullptr, nullptr, vStartPos, true, vec3_origin, vec3_origin, false, false, &cp, nullptr);
 		}
+		CBroadcastRecipientFilter filter2;
+		if (rc_FireWeapon) {
+			filter = &filter2;
+		}
 		DETOUR_MEMBER_CALL(filter, weapon, vStartPos, vEndPos);
 	}
 

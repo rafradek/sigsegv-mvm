@@ -71,13 +71,13 @@ namespace Mod::Common::Common
         CBaseEntity *entityhit = EntityFromEntityHandle(pServerEntity);
 		if (entityhit == nullptr) return true;
 
-        if (entityme->GetTeamNumber() == TEAM_SPECTATOR) {
+        if (entityme != nullptr && entityme->GetTeamNumber() == TEAM_SPECTATOR) {
 			return entityme->GetTeamNumber() != entityhit->GetTeamNumber() || !entityhit->IsPlayer();
 		}
 
 		bool result = DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
 
-		if (result) {
+		if (result && entityme != nullptr) {
 
 			bool entityme_player = entityme->IsPlayer();
 			bool entityhit_player = entityhit->IsPlayer();

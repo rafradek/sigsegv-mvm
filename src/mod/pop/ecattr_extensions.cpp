@@ -195,6 +195,8 @@ namespace Mod::Pop::ECAttr_Extensions
 		float grappleRange = 200;
 		bool removeGrappleClose = false;
 		bool noGrappleWalls = false;
+
+		int prefer_team = -1;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -930,6 +932,13 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.removeGrappleClose = kv->GetBool();
 		} else if (FStrEq(name, "NoGrappleWalls")) {
 			data.noGrappleWalls = kv->GetBool();
+		} else if (FStrEq(name, "PreferTeam")) {
+			data.prefer_team = kv->GetInt();
+			for (size_t i = 0; i < ARRAYSIZE(g_aTeamNames); i++) {
+				if (StringStartsWith(g_aTeamNames[i], kv->GetString())) {
+					data.prefer_team = i;
+				}
+			}
 		} else {
 			found = false;
 		}
@@ -1946,6 +1955,18 @@ namespace Mod::Pop::ECAttr_Extensions
 				/* do the exact same thing as the game code does when the bot has WeaponRestrictions MeleeOnly */
 				if (data->use_melee_threat_prioritization) {
 					return action->SelectCloserThreat(actor, threat1, threat2);
+				}
+				if (data->prefer_team != -1 && threat1 != nullptr && threat2 != nullptr) {
+					auto ent1 = threat1->GetEntity();
+					auto ent2 = threat2->GetEntity();
+					if (ent1 != nullptr && ent2 != nullptr && ent1->GetTeamNumber() != ent2->GetTeamNumber()) {
+						if (ent1->GetTeamNumber() == data->prefer_team) {
+							return threat1;
+						}
+						else if (ent2->GetTeamNumber() == data->prefer_team) {
+							return threat2;
+						}
+					}
 				}
 				if (!data->preferred_classes.empty() && threat1 != nullptr && threat2 != nullptr) {
 					auto player1 = ToTFPlayer(threat1->GetEntity());

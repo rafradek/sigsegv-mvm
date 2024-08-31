@@ -25,16 +25,12 @@ void CBaseEntity::AddCustomOutput(const char *key, const char *value)
         }
     }
     if (!found) {
-        Msg("c0\n");
         string_t str = AllocPooledString(namestr.c_str());
-        Msg("Output key %s, value %s\n", STRING(str), value);
 
         list.emplace_back();
-        Msg("c1\n");
         auto &output = list.back();
         output.key = str;
         output.output.ParseEventAction(value);
-        Msg("c2\n");
     }
 }
 

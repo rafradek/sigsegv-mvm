@@ -1713,7 +1713,7 @@
     {
         "name"	"mult max overheal self"
         "attribute_class"	"mult_max_ovelheal_self"
-        "description_string"	"overheal from heal on kill"
+        "description_string"	"(+-)%p% max overheal on self"
         "description_format"	"value_is_percentage"
         "hidden"	"0"
         "effect_type"	"positive"
@@ -3728,5 +3728,14 @@
         "effect_type"	"positive"
         "stored_as_integer"	"0"
     }
-    
+    "4693"
+    {
+        "name"	"fire input on hit ally"
+        "attribute_class"	"fire_input_on_hit_ally"
+        "attribute_type"    "string"
+        "description_string"	"%d"
+        "description_format"	"value_is_additive"
+        "hidden"	"1"
+        "effect_type"	"positive"
+    }
 }

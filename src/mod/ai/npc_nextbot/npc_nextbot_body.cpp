@@ -914,7 +914,7 @@ namespace Mod::AI::NPC_Nextbot
     {
         auto mod = GetNextbotModuleBody(reinterpret_cast<CBotNPCBody *>(this));
         auto prop = mod->m_pEntity->CollisionProp();
-        return prop->OBBMaxs().x - prop->OBBMins().x;
+        return Max(prop->OBBMaxs().x - prop->OBBMins().x, prop->OBBMaxs().y - prop->OBBMins().y);
     }
 
     VHOOK_DECL(float, MyNextbotBody_GetHullHeight)

@@ -26,6 +26,7 @@
 #include "mod/etc/mapentity_additions.h"
 #include "mod/etc/entity_limit_manager.h"
 #include "mod/mvm/player_limit.h"
+#include "util/value_override.h"
 
 static StaticFuncThunk<bool, CTFBot *, CTFPlayer *, int> ft_TeleportNearVictim  ("TeleportNearVictim");
 
@@ -175,12 +176,11 @@ namespace Mod::Pop::TFBot_Extensions
 			if (this->m_Attack != nullptr) {
 				delete this->m_Attack;
 			}
-			DevMsg("Remove mobber\n");
 		}
 		
 		virtual void OnEnd(CTFBot *actor, Action<CTFBot> *action) override
 		{
-			DevMsg("On end mobber\n");
+			actor->SetCustomVariable<"ispassiveaction">(Variant(false));
 		}
 
 		virtual const char *GetName() const override { return "Passive"; }
@@ -190,6 +190,8 @@ namespace Mod::Pop::TFBot_Extensions
 			this->m_PathFollower.SetMinLookAheadDistance(actor->GetDesiredPathLookAheadRange());
 			
 			this->m_hTarget = nullptr;
+
+			actor->SetCustomVariable<"ispassiveaction">(Variant(true));
 			
 			return this->m_Attack->OnStart(actor, action);
 		}
@@ -2132,23 +2134,25 @@ namespace Mod::Pop::TFBot_Extensions
 			auto player = reinterpret_cast<CTFPlayer *>(this);
 			for (int i = 0; i < IBaseProjectileAutoList::AutoList().Count(); ++i) {
 				auto proj = rtti_scast<CBaseProjectile *>(IBaseProjectileAutoList::AutoList()[i]);
-				auto world = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
-				world->SetTeamNumber(proj->GetTeamNumber());
+				auto team = TFTeamMgr()->GetTeam(proj->GetTeamNumber());
+				if (team == nullptr) {
+					team = TFTeamMgr()->GetTeam(TEAM_UNASSIGNED);
+				}
 				if (rtti_cast<CBaseGrenade *>(proj) != nullptr && rtti_cast<CBaseGrenade *>(proj)->GetThrower() == player) {
-					rtti_cast<CBaseGrenade *>(proj)->SetThrower(world);
+					rtti_cast<CBaseGrenade *>(proj)->SetThrower(team);
 				}
 				if (proj->GetOwnerEntity() == player) {
-					proj->SetOwnerEntity(world);
+					proj->SetOwnerEntity(team);
 					if (rtti_cast<CTFProjectile_Rocket *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(world);
+						rtti_cast<CTFProjectile_Rocket *>(proj)->SetScorer(team);
 					else if (rtti_cast<CTFBaseProjectile *>(proj) != nullptr)
-						rtti_cast<CTFBaseProjectile *>(proj)->SetScorer(world);
+						rtti_cast<CTFBaseProjectile *>(proj)->SetScorer(team);
 					else if (rtti_cast<CTFProjectile_Arrow *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Arrow *>(proj)->SetScorer(world);
+						rtti_cast<CTFProjectile_Arrow *>(proj)->SetScorer(team);
 					else if (rtti_cast<CTFProjectile_Flare *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(world);
+						rtti_cast<CTFProjectile_Flare *>(proj)->SetScorer(team);
 					else if (rtti_cast<CTFProjectile_EnergyBall *>(proj) != nullptr)
-						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(world);
+						rtti_cast<CTFProjectile_EnergyBall *>(proj)->SetScorer(team);
 				}
 			}
 		}
@@ -2216,17 +2220,20 @@ namespace Mod::Pop::TFBot_Extensions
 				ent->Remove();
 				ent->RemoveEntityModule("tpeffects");
 			}
-			auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
-			particles->m_iszEffectName = player->GetTeamNumber() != TF_TEAM_RED ? PStrT<"bot_recent_teleport_blue">() : PStrT<"player_recent_teleport_red">();
-			particles->m_bStartActive = true;
-			DispatchSpawn(particles);
-			particles->Activate();
-			particles->SetParent(player, -1);
-			particles->SetLocalOrigin(vec3_origin);
-			particles->SetLocalAngles(vec3_angle);
-			Mod::Etc::Entity_Limit_Manager::MarkEntityAsDisposable(particles);
-			particles->AddEntityModule("tpeffects", new TeleportEffectModule(particles));
-			player->SetCustomVariable("tpparticles", Variant((CBaseEntity *)particles));
+			Msg("Add Cond %d\n", player->entindex());
+			if (player->GetCustomVariableEntity<"tpparticles">() == nullptr) {
+				auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
+				particles->m_iszEffectName = player->GetTeamNumber() != TF_TEAM_RED ? PStrT<"bot_recent_teleport_blue">() : PStrT<"player_recent_teleport_red">();
+				particles->m_bStartActive = true;
+				DispatchSpawn(particles);
+				particles->Activate();
+				particles->SetParent(player, -1);
+				particles->SetLocalOrigin(vec3_origin);
+				particles->SetLocalAngles(vec3_angle);
+				Mod::Etc::Entity_Limit_Manager::MarkEntityAsDisposable(particles);
+				particles->AddEntityModule("tpeffects", new TeleportEffectModule(particles));
+				player->SetCustomVariable<"tpparticles">(Variant((CBaseEntity *)particles));
+			}
 		}
 		DETOUR_MEMBER_CALL(cond);
 	}
@@ -2235,13 +2242,31 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayerShared*>(this)->GetOuter();
 		if (cond == TF_COND_TELEPORTED && player->IsBot() && TFGameRules()->IsMannVsMachineMode()) {
+			Msg("Remove Cond %d\n", player->entindex());
 			variant_t value;
 			if (player->GetCustomVariableVariant<"tpparticles">(value) && value.Entity() != nullptr) {
-				value.Entity()->Remove();
+				auto particles = static_cast<CParticleSystem *>(value.Entity().Get());
+				particles->Remove();
 			}
 		}
 		DETOUR_MEMBER_CALL(cond);
 	}
+	
+	DETOUR_DECL_MEMBER(void, CTFBot_OnWeaponFired, CBaseCombatCharacter *who, CBaseCombatWeapon *weapon)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+
+		static CValueOverride_ConVar<int> tf_bot_notice_gunfire_range("tf_bot_notice_gunfire_range");
+		static CValueOverride_ConVar<int> tf_bot_notice_quiet_gunfire_range("tf_bot_notice_quiet_gunfire_range");
+		if (bot->GetCustomVariableBool<"ispassiveaction">()) {
+			tf_bot_notice_gunfire_range.Set(Min(250, tf_bot_notice_gunfire_range.Get()));
+			tf_bot_notice_quiet_gunfire_range.Set(Min(125, tf_bot_notice_quiet_gunfire_range.Get()));
+		}
+		DETOUR_MEMBER_CALL(who, weapon);
+		tf_bot_notice_gunfire_range.Reset();
+		tf_bot_notice_quiet_gunfire_range.Reset();
+	}
+	
 
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
@@ -2396,6 +2421,10 @@ namespace Mod::Pop::TFBot_Extensions
 			// Add teleporter dust on bots
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionAdded, "CTFPlayerShared::OnConditionAdded");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionRemoved, "CTFPlayerShared::OnConditionRemoved");
+
+			// Reduce hearing range for passive action bots
+			MOD_ADD_DETOUR_MEMBER(CTFBot_OnWeaponFired, "CTFBot::OnWeaponFired");
+			
 			//MOD_ADD_DETOUR_MEMBER(CTFBot_AddItem,        "CTFBot::AddItem");
 			//MOD_ADD_DETOUR_MEMBER(CItemGeneration_GenerateRandomItem,        "CItemGeneration::GenerateRandomItem");
 			// TEST! REMOVE ME!

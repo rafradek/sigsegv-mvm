@@ -56,21 +56,35 @@ namespace Mod::AI::NPC_Nextbot
         Vector delta = entity->GetAbsOrigin() - vWantedPos;
         //Msg("Lag comp restore pos %f %f %f\n", delta.x, delta.y, delta.z);
         CTraceFilterSimple filter(entity, entity->GetCollisionGroup());
-        Vector mins = entity->CollisionProp()->OBBMins();
-        Vector maxs = entity->CollisionProp()->OBBMaxs();
-        mins.z = Min(mins.z + 6.0f, maxs.z);
+        Vector mins;
+        Vector maxs;
+
+        auto bot = entity->MyNextBotPointer();
+        if (bot != nullptr) {
+            auto body = bot->GetBodyInterface();
+            auto loco = bot->GetLocomotionInterface();
+            mins = body->GetHullMins();
+            maxs = body->GetHullMaxs();
+            if (loco->IsOnGround()) {
+                mins += loco->GetStepHeight();
+            }
+            mins.z = Min(maxs.z - 2.0f, mins.z);
+        }
+        else {
+            Vector mins = entity->CollisionProp()->OBBMins();
+            Vector maxs = entity->CollisionProp()->OBBMaxs();
+        }
+
 		UTIL_TraceHull(vWantedPos, vWantedPos, mins, maxs, solidMask, &filter, &tr);
         //Msg("ToGroundDiff %f\n", vWantedPos.z - tr.endpos.z);
          //UTIL_TraceEntity( entity, vWantedPos+ Vector(0,0,1.0f), vWantedPos+ Vector(0,0,1.0f), solidMask, entity, entity->GetCollisionGroup(), &tr );
 		if ( tr.startsolid || tr.allsolid )
 		{
-            if (tr.m_pEnt != nullptr) {
-                Msg("Lag comp restore fail %s\n", tr.m_pEnt->GetClassname());
-            }
 			UTIL_TraceEntity( entity, entity->GetLocalOrigin(), vWantedPos, solidMask, entity, entity->GetCollisionGroup(), &tr );
 			if ( tr.startsolid || tr.allsolid )
 			{
-
+                // The entity was always stuck. Assume it was intentionally like this
+			    entity->SetLocalOrigin(vWantedPos);
 			}
 			else
 			{
@@ -84,7 +98,6 @@ namespace Mod::AI::NPC_Nextbot
 		{
 			// Cool, the player can go back to whence he came.
 			entity->SetLocalOrigin(tr.endpos);
-            Msg("Lag comp restore success %f %f %f\n", delta.x, delta.y, delta.z);
 		}
 	}
 
@@ -345,7 +358,6 @@ namespace Mod::AI::NPC_Nextbot
 		for (LagCompensatedEntity *lagcompent : AutoList<LagCompensatedEntity>::List()) {
             auto entity = lagcompent->entity;
 			
-            Msg("Lag comp restore %d\n", lagcompent->restore);
 			if (!lagcompent->restore) continue;
 
 			LagRecord *restore = &lagcompent->restoreData;

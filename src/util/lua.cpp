@@ -1384,6 +1384,7 @@ namespace Util::Lua
     {
         auto entity = LEntityGetNonNull(l, 1);
         CEconEntity *econEntity = rtti_cast<CEconEntity *>(entity);
+        CTFPlayer *player = ToTFPlayer(LEntityGetOptional(l, 2));
         if (econEntity == nullptr) {
             luaL_error(l, "Entity is not an item");
             lua_pushnil(l);
@@ -1394,7 +1395,7 @@ namespace Util::Lua
             lua_pushstring(l, "");
             return 1;
         }
-        lua_pushstring(l, GetItemNameForDisplay(item));
+        lua_pushstring(l, GetItemNameForDisplay(item, player));
         return 1;
     }
 
@@ -2640,7 +2641,7 @@ namespace Util::Lua
         // that passes the test.
         virtual IterationRetval_t EnumElement( IHandleEntity *pHandleEntity ) {
             CBaseEntity *pEntity = static_cast<IServerUnknown *>(pHandleEntity)->GetBaseEntity();
-            if ( pEntity )
+            if ( pEntity && (classname == NULL_STRING || classname == pEntity->GetClassnameString()) )
             {
                 LEntityAlloc(l, pEntity);
                 lua_rawseti (l, -2, idx);
@@ -2650,14 +2651,19 @@ namespace Util::Lua
         }
         lua_State *l;
         int idx = 1;
+        string_t classname = NULL_STRING;
     };
 
     int LFindAllEntityInBox(lua_State *l)
     {
         auto min = LVectorGetCheck(l, 1);
         auto max = LVectorGetCheck(l, 2);
+        auto classname = luaL_optstring(l, 3, nullptr);
 
         CLuaEnumerator iter = CLuaEnumerator(l);
+        if (classname != nullptr) {
+            iter.classname = AllocPooledString(classname); 
+        }
 
         lua_newtable(l);
 		partition->EnumerateElementsInBox(PARTITION_ENGINE_NON_STATIC_EDICTS, *min, *max, false, &iter);
@@ -2668,8 +2674,12 @@ namespace Util::Lua
     {
         auto center = LVectorGetCheck(l, 1);
         auto radius = luaL_checknumber(l, 2);
+        auto classname = luaL_optstring(l, 3, nullptr);
 
         CLuaEnumerator iter = CLuaEnumerator(l);
+        if (classname != nullptr) {
+            iter.classname = AllocPooledString(classname); 
+        }
 
         lua_newtable(l);
 		partition->EnumerateElementsInSphere(PARTITION_ENGINE_NON_STATIC_EDICTS, *center, radius, false, &iter);
@@ -2983,6 +2993,48 @@ namespace Util::Lua
         return 1;
     }
 
+    int LUtilGetItemNameForDisplay(lua_State *l)
+    {
+        CEconItemDefinition *def;
+        if (lua_isnumber(l, 1)) {
+            def = GetItemSchema()->GetItemDefinition(luaL_checkinteger(l,1));
+        }
+        else {
+            def = GetItemSchema()->GetItemDefinitionByName(luaL_checkstring(l,1));
+        }
+        auto player = ToTFPlayer(LEntityGetOptional(l,2));
+        
+        if (def != nullptr)
+            lua_pushstring(l, GetItemNameForDisplay(def->m_iItemDefIndex, player));
+        else
+            lua_pushnil(l);
+        return 1;
+    }
+
+    int LUtilFormatItemAttributeDisplayString(lua_State *l)
+    {
+        CEconItemAttributeDefinition *def;
+        if (lua_isnumber(l, 1)) {
+            def = GetItemSchema()->GetAttributeDefinition(luaL_checkinteger(l,1));
+        }
+        else {
+            def = cur_state->GetAttributeDefinitionByNameCached(luaL_checkstring(l,1));
+        }
+        auto player = ToTFPlayer(LEntityGetOptional(l,3));
+        auto shortDesc = lua_toboolean(l,4);
+        attribute_data_union_t value;
+        auto str = LOptToString(l,2);
+        LoadAttributeDataUnionFromString(def, value, str);
+        std::string name;
+        if (FormatAttributeString(name, def, value, player, shortDesc)) {
+            lua_pushstring(l, name.c_str());
+        }
+        else {
+            lua_pushnil(l);
+        }
+        return 1;
+    }
+
     int LUtilIsLagCompensationActive(lua_State *l)
     {
         lua_pushboolean(l,lagcompensation->IsCurrentlyDoingLagCompensation());
@@ -3214,12 +3266,12 @@ namespace Util::Lua
     const char *blacklisted_convars[] = {
         "sv_password",
         "sv_hostname",
-        "sv_rcon"
+        "sv_rcon",
+        "sv_allow_point_servercommand"
     };
 
     const char *blacklisted_convars_prefix[] = {
         "sm_",
-        "sig_",
         "rcon",
     };
 
@@ -3564,6 +3616,8 @@ namespace Util::Lua
         {"GetItemDefinitionIndexByName", LUtilGetItemDefinitionIndexByName},
         {"GetAttributeDefinitionNameByIndex", LUtilGetAttributeDefinitionNameByIndex},
         {"GetAttributeDefinitionIndexByName", LUtilGetAttributeDefinitionIndexByName},
+        {"GetItemNameForDisplay", LUtilGetItemNameForDisplay},
+        {"FormatItemAttributeDisplayString", LUtilFormatItemAttributeDisplayString},
         {"IsLagCompensationActive", LUtilIsLagCompensationActive},
         {"StartLagCompensation", LUtilStartLagCompensation},
         {"FinishLagCompensation", LUtilFinishLagCompensation},
@@ -5052,6 +5106,8 @@ namespace Util::Lua
                 }
             }
 		}
+        
+		virtual std::vector<std::string> GetRequiredMods() { return {"Item:Item_Common"};}
         
 		PlayerLoadoutUpdatedListener player_loadout_updated_listener;
 	};
