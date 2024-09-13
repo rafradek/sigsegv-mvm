@@ -158,6 +158,8 @@ public:
     float acceleration_start    = 0.0f;
     float gravity               = 0.0f;
     bool homed_in               = false;
+    bool returning              = false;
+    int return_to_sender        = 0;
     QAngle homed_in_angle;
 };
 

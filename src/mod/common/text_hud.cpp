@@ -72,8 +72,8 @@ namespace Mod::Common::Text_Hud
                 auto player = UTIL_PlayerByIndex(pFilter->GetRecipientIndex(i));
                 if (player != nullptr) {
                     auto mod = player->GetOrCreateEntityModule<HudTextDisplayModule>("huddisplaymodule");
-                    mod->fadeoutTime[channel] = gpGlobals->curtime + fadein + holdtime + fadeout;
-                    mod->internalId[channel] = 0;
+                    mod->fadeoutTime[channel % 6] = gpGlobals->curtime + fadein + holdtime + fadeout;
+                    mod->internalId[channel % 6] = 0;
                 }
             }
 		}

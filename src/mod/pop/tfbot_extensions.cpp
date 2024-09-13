@@ -2220,7 +2220,6 @@ namespace Mod::Pop::TFBot_Extensions
 				ent->Remove();
 				ent->RemoveEntityModule("tpeffects");
 			}
-			Msg("Add Cond %d\n", player->entindex());
 			if (player->GetCustomVariableEntity<"tpparticles">() == nullptr) {
 				auto particles = static_cast<CParticleSystem *>(CreateEntityByName("info_particle_system"));
 				particles->m_iszEffectName = player->GetTeamNumber() != TF_TEAM_RED ? PStrT<"bot_recent_teleport_blue">() : PStrT<"player_recent_teleport_red">();
@@ -2242,7 +2241,6 @@ namespace Mod::Pop::TFBot_Extensions
 	{
 		CTFPlayer* player = reinterpret_cast<CTFPlayerShared*>(this)->GetOuter();
 		if (cond == TF_COND_TELEPORTED && player->IsBot() && TFGameRules()->IsMannVsMachineMode()) {
-			Msg("Remove Cond %d\n", player->entindex());
 			variant_t value;
 			if (player->GetCustomVariableVariant<"tpparticles">(value) && value.Entity() != nullptr) {
 				auto particles = static_cast<CParticleSystem *>(value.Entity().Get());

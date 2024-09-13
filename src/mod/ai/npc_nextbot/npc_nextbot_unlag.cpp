@@ -66,7 +66,7 @@ namespace Mod::AI::NPC_Nextbot
             mins = body->GetHullMins();
             maxs = body->GetHullMaxs();
             if (loco->IsOnGround()) {
-                mins += loco->GetStepHeight();
+                mins.z += loco->GetStepHeight();
             }
             mins.z = Min(maxs.z - 2.0f, mins.z);
         }
@@ -118,7 +118,7 @@ namespace Mod::AI::NPC_Nextbot
         if ( track->Count() <= 0 )
             return;
 
-        int curr = track->Head();
+        intp curr = track->Head();
 
         LagRecord *prevRecord = NULL;
         LagRecord *record = NULL;
@@ -590,7 +590,7 @@ namespace Mod::AI::NPC_Nextbot
                 Assert( track->Count() < 1000 ); // insanity check
 
                 // remove tail records that are too old
-                int tailIndex = track->Tail();
+                intp tailIndex = track->Tail();
                 while ( track->IsValidIndex( tailIndex ) )
                 {
                     LagRecord &tail = track->Element( tailIndex );

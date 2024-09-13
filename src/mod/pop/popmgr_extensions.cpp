@@ -2700,18 +2700,6 @@ namespace Mod::Pop::PopMgr_Extensions
 		return DETOUR_MEMBER_CALL(player);
 	}
 	
-	DETOUR_DECL_MEMBER(void, CCommandBuffer_Compact)
-	{
-		auto buffer = reinterpret_cast<CCommandBuffer *>(this);
-		Msg("bufsize %d %d %d\n", buffer->m_nArgSBufferSize, buffer->m_Commands.Count(), gpGlobals->tickcount);
-		for (auto &el : buffer->m_Commands) {
-			Msg("tick %d, firstarg %d, size %d\n", el.m_nTick, el.m_nFirstArgS, el.m_nBufferSize);
-		}
-		Msg("%s\n", buffer->m_pArgSBuffer);
-
-		DETOUR_MEMBER_CALL();
-	}
-	
 	DETOUR_DECL_MEMBER(CObjectTeleporter *, CTFBotTacticalMonitor_FindNearbyTeleporter, CTFBot *bot)
 	{
 		if (!cvar_use_teleport.GetBool() || bot->HasItem()) return nullptr;
@@ -4779,17 +4767,19 @@ namespace Mod::Pop::PopMgr_Extensions
 				player->GetSteamID(&steamid);
 				state.m_BoughtLoadoutItems[steamid].insert(i);
 
-				auto &set = state.m_SelectedLoadoutItems[steamid];
-				for (auto it = set.begin(); it != set.end(); ) {
-					auto &item_compare = state.m_ExtraLoadoutItems[*it];
-					if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
-						it = set.erase(it);
+				if (equipNow) {
+					auto &set = state.m_SelectedLoadoutItems[steamid];
+					for (auto it = set.begin(); it != set.end(); ) {
+						auto &item_compare = state.m_ExtraLoadoutItems[*it];
+						if ((item_compare.class_index == item.class_index || item_compare.class_index == 0) && item_compare.loadout_slot == item.loadout_slot) {
+							it = set.erase(it);
+						}
+						else {
+							it++;
+						}
 					}
-					else {
-						it++;
-					}
+					set.insert(i);
 				}
-				set.insert(i);
 				if (equipNow && (item.class_index == 0 || item.class_index == player->GetPlayerClass()->GetClassIndex())) {
 					GiveItemByName(player, name.c_str());
 				}

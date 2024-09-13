@@ -1486,6 +1486,8 @@ WaveSchedule
 				PreferClass Sniper // Prefer those classes over other
 				PreferClass Spy
 				PreferTeam Spectator // Prefer targets of those teams: Red, Blue, Spectator, Unassigned or a number
+				KeepAwayRadius 300 // Keep away distance from target
+				KeepAway All // Keep away from those players: All, Enemies, Allies, Target, "Enemies except target", "All except target", "Allies except target" (Default: Enemies)
 			}
 		}
 		WaveSpawn

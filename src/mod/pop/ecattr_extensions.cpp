@@ -88,6 +88,17 @@ namespace Mod::Pop::ECAttr_Extensions
 		AIM_FEET
 	};
 
+	enum KeepAwayTarget
+	{
+		ALL,
+		TARGET,
+		ENEMIES,
+		ALLIES,
+		NON_TARGET,
+		NON_TARGET_ENEMIES,
+		NON_TARGET_ALLIES
+	};
+
 	class EventChangeAttributesData
 	{
 	public:
@@ -197,6 +208,9 @@ namespace Mod::Pop::ECAttr_Extensions
 		bool noGrappleWalls = false;
 
 		int prefer_team = -1;
+
+		float keep_away_radius = 0;
+		KeepAwayTarget keep_away_target = ENEMIES;
 	};
 
 	/* maps ECAttr instances -> extra data instances */
@@ -932,6 +946,31 @@ namespace Mod::Pop::ECAttr_Extensions
 			data.removeGrappleClose = kv->GetBool();
 		} else if (FStrEq(name, "NoGrappleWalls")) {
 			data.noGrappleWalls = kv->GetBool();
+		} else if (FStrEq(name, "KeepAwayRadius")) {
+			data.keep_away_radius = kv->GetFloat();
+		} else if (FStrEq(name, "KeepAway")) {
+			const char *target = kv->GetString();
+			if (FStrEq(target, "All")) {
+				data.keep_away_target = ALL;
+			}
+			else if (FStrEq(target, "Enemies")) {
+				data.keep_away_target = ENEMIES;
+			}
+			else if (FStrEq(target, "Target")) {
+				data.keep_away_target = TARGET;
+			}
+			else if (FStrEq(target, "Allies")) {
+				data.keep_away_target = ALLIES;
+			}
+			else if (FStrEq(target, "Enemies except target")) {
+				data.keep_away_target = NON_TARGET_ENEMIES;
+			}
+			else if (FStrEq(target, "All except target")) {
+				data.keep_away_target = NON_TARGET;
+			}
+			else if (FStrEq(target, "Allies except target")) {
+				data.keep_away_target = NON_TARGET_ALLIES;
+			}
 		} else if (FStrEq(name, "PreferTeam")) {
 			data.prefer_team = kv->GetInt();
 			for (size_t i = 0; i < ARRAYSIZE(g_aTeamNames); i++) {
@@ -1719,14 +1758,16 @@ namespace Mod::Pop::ECAttr_Extensions
 							speed = data->projectile_speed_cache[weapon];
 						}
 					}
-					auto distance = nextbot->GetRangeTo(subject->GetAbsOrigin());
+					if (speed != 0.0f) {
+						auto distance = nextbot->GetRangeTo(subject->GetAbsOrigin());
 
-					float time_to_travel = distance / speed;
+						float time_to_travel = distance / speed;
 
-					Vector target_pos = aim + time_to_travel * subject->GetAbsVelocity();
+						Vector target_pos = aim + time_to_travel * subject->GetAbsVelocity();
 
-					if (bot->GetVisionInterface()->IsAbleToSee( target_pos, IVision::FieldOfViewCheckType::DISREGARD_FOV))
-						aim = target_pos;
+						if (bot->GetVisionInterface()->IsAbleToSee( target_pos, IVision::FieldOfViewCheckType::DISREGARD_FOV))
+							aim = target_pos;
+					}
 				}
 				return aim;
 			}
@@ -2791,6 +2832,63 @@ namespace Mod::Pop::ECAttr_Extensions
 		return DETOUR_MEMBER_CALL(subject, visibleSpot);
 	}
 
+	
+    DETOUR_DECL_MEMBER(ActionResult<CTFBot>, CTFBotTacticalMonitor_Update, CTFBot *actor, float dt)
+	{
+		auto result = DETOUR_MEMBER_CALL(actor, dt);
+		
+		if (actor->HasItem()) return result;
+
+		auto *data = GetDataForBot(actor);
+		if (data != nullptr && data->keep_away_radius > 0.0f) {
+			CTFPlayer *target = nullptr;
+			float closest_dist = data->keep_away_radius *data->keep_away_radius;
+			auto *threat = actor->GetVisionInterface()->GetPrimaryKnownThreat(false);
+			auto *threatPlayer = threat != nullptr ? ToTFPlayer(threat->GetEntity()) : nullptr;
+			auto targetType = data->keep_away_target;
+			ForEachTFPlayer([&](CTFPlayer *player){
+				bool isTarget = player == threatPlayer;
+				bool isAlly = player->GetTeamNumber() == actor->GetTeamNumber();
+				if (player->IsAlive() && 
+					!(isTarget && (targetType == NON_TARGET || targetType == NON_TARGET_ENEMIES || targetType == NON_TARGET_ALLIES)) && 
+					!(!isTarget && targetType == TARGET) &&
+					!(isAlly && (targetType == ENEMIES || targetType == NON_TARGET_ENEMIES)) &&
+					!(!isAlly && (targetType == ALLIES || targetType == NON_TARGET_ALLIES))) {
+
+						if (player->m_Shared->IsStealthed() || player->m_Shared->InCond(TF_COND_DISGUISED)) {
+							return;
+						}
+						float dist = player->GetAbsOrigin().DistToSqr(actor->GetAbsOrigin());
+						if (dist < closest_dist) {
+							closest_dist = dist;
+							target = player;
+						}
+				}
+			});
+			if (target != nullptr) {
+				actor->ReleaseForwardButton();
+				actor->ReleaseLeftButton();
+				actor->ReleaseRightButton();
+				actor->ReleaseBackwardButton();
+
+				Vector away = actor->GetAbsOrigin() - target->GetAbsOrigin();
+
+				actor->GetLocomotionInterface()->Approach(actor->GetLocomotionInterface()->GetFeet() + away, 1.0f);
+			}
+		}
+		return result;
+	}
+	
+
+	DETOUR_DECL_MEMBER(void, CTFBotTacticalMonitor_AvoidBumpingEnemies, CTFBot *actor)
+	{
+		auto data = GetDataForBot(actor);
+
+		if (data != nullptr && data->keep_away_radius > 0.0f) return;
+
+		DETOUR_MEMBER_CALL(actor);
+	}
+
 	class CMod : public IMod, public IModCallbackListener, public IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -2867,6 +2965,7 @@ namespace Mod::Pop::ECAttr_Extensions
 			MOD_ADD_DETOUR_MEMBER(IVision_IsAbleToSee, "IVision::IsAbleToSee2");
 			MOD_ADD_DETOUR_MEMBER(CNavArea_IsPotentiallyVisible, "CNavArea::IsPotentiallyVisible");
 			MOD_ADD_DETOUR_MEMBER(IVision_IsLineOfSightClearToEntity, "IVision::IsLineOfSightClearToEntity");
+			MOD_ADD_DETOUR_MEMBER(CTFBotTacticalMonitor_Update, "CTFBotTacticalMonitor::Update");
 			
 			
 		}

@@ -11,28 +11,16 @@ namespace Mod::Canteen::Share_Recall_Canteen
 	RefCount rc_CTFPowerupBottle_ReapplyProvision;
 	
 	
-	bool got_attr;
-	int canteen_specialist;
-	DETOUR_DECL_STATIC(int, CAttributeManager_AttribHookValue_int, int value, const char *attr, const CBaseEntity *ent, CUtlVector<CBaseEntity *> *vec, bool b1)
-	{
-		auto result = DETOUR_STATIC_CALL(value, attr, ent, vec, b1);
-		
-		if (rc_CTFPowerupBottle_ReapplyProvision > 0 && !got_attr && value == 0 && V_stricmp(attr, "canteen_specialist") == 0) {
-			canteen_specialist = result;
-			
-			got_attr = true;
-		}
-		
-		return result;
-	}
-	
 	bool got_cond;
 	ETFCond cond;
 	float duration;
+	CTFPlayer *patient = nullptr;
+	int canteen_specialist = 0;
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_AddCond, ETFCond nCond, float flDuration, CBaseEntity *pProvider)
 	{
 		if (rc_CTFPowerupBottle_ReapplyProvision > 0 && !got_cond && nCond == TF_COND_SPEED_BOOST) {
 			cond     = nCond;
+			flDuration += canteen_specialist;
 			duration = flDuration;
 			
 			got_cond = true;
@@ -51,7 +39,11 @@ namespace Mod::Canteen::Share_Recall_Canteen
 		auto canteen = reinterpret_cast<CTFPowerupBottle *>(this);
 		CTFPlayer *medic = ToTFPlayer(canteen->GetOwnerEntity());
 		
-		CTFPlayer *patient = nullptr;
+		patient = nullptr;
+		canteen_specialist = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(medic, canteen_specialist, canteen_specialist);
+		int iRecall = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(canteen, iRecall, recall);
 		if (medic != nullptr) {
 			auto medigun = rtti_cast<CWeaponMedigun *>(medic->GetActiveWeapon());
 			if (medigun != nullptr) {
@@ -59,20 +51,19 @@ namespace Mod::Canteen::Share_Recall_Canteen
 			}
 		}
 		
-		got_attr = false;
 		got_cond = false;
-		
 		++rc_CTFPowerupBottle_ReapplyProvision;
 		DETOUR_MEMBER_CALL();
 		--rc_CTFPowerupBottle_ReapplyProvision;
 		
-		if (!got_attr || !got_cond)  return;
+		if (!got_cond) return;
 		if (canteen_specialist <= 0) return;
+		if (iRecall <= 0) return;
 		if (medic == nullptr)        return;
 		if (patient == nullptr)      return;
 		
 		patient->ForceRespawn();
-		patient->m_Shared->AddCond(cond, duration);
+		patient->m_Shared->AddCond(TF_COND_SPEED_BOOST, duration, medic);
 		
 		IGameEvent *event = gameeventmanager->CreateEvent("mvm_medic_powerup_shared");
 		if (event != nullptr) {
@@ -87,7 +78,6 @@ namespace Mod::Canteen::Share_Recall_Canteen
 	public:
 		CMod() : IMod("Canteen:Share_Recall_Canteen")
 		{
-			MOD_ADD_DETOUR_STATIC(CAttributeManager_AttribHookValue_int, "CAttributeManager::AttribHookValue<int>");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_AddCond,               "CTFPlayerShared::AddCond");
 			MOD_ADD_DETOUR_MEMBER(CTFPowerupBottle_ReapplyProvision,     "CTFPowerupBottle::ReapplyProvision");
 		}

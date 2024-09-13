@@ -2751,7 +2751,6 @@ namespace Mod::Attr::Custom_Attributes
 	DETOUR_DECL_MEMBER(bool, CTFPlayer_IsAllowedToTaunt) {
 		bool ret = DETOUR_MEMBER_CALL();
 		auto player = reinterpret_cast<CTFPlayer *>(this);
-		Msg("Is this called\n");
 		if (ret) {
 
 			int cannotTaunt = 0;
@@ -3625,6 +3624,32 @@ namespace Mod::Attr::Custom_Attributes
 		}
 		return DETOUR_MEMBER_CALL(info);
 	}
+
+	RefCount rc_CTFGrenadePipebombProjectile_DetonateStickies;
+	DETOUR_DECL_MEMBER(void, CTFGrenadePipebombProjectile_DetonateStickies)
+	{
+		SCOPED_INCREMENT(rc_CTFGrenadePipebombProjectile_DetonateStickies);
+		return DETOUR_MEMBER_CALL();
+	}
+
+    DETOUR_DECL_STATIC(int, UTIL_EntitiesInSphere, const Vector& center, float radius, CFlaggedEntitiesEnum *pEnum)
+	{
+		if (!rc_CTFGrenadePipebombProjectile_DetonateStickies) return DETOUR_STATIC_CALL(center, radius, pEnum);
+
+		auto result = DETOUR_STATIC_CALL(center, radius, pEnum);
+		auto list = pEnum->GetList();
+		for (auto i = 0; i < pEnum->GetCount(); i++) {
+			auto ent = rtti_cast<CBaseProjectile *>(list[i]);
+			if (ent != nullptr && !IsDeflectable(ent)) {
+				for (auto j = i + 1; j < pEnum->GetCount(); j++) {
+					list[j-1] = list[j];
+				}
+				result--;
+			}
+		}
+        return result;
+	}
+	
 	// Stop short circuit from deflecting the projectile
 	
 	RefCount rc_CTFProjectile_MechanicalArmOrb_CheckForProjectiles;
@@ -4095,6 +4120,7 @@ namespace Mod::Attr::Custom_Attributes
 				for (int i = 0; i < 4; i++) {
 					int addcond = (iCondOverride >> (i * 8)) & 255;
 					if (addcond != 0) {
+						raise(SIGTRAP);
 						nCond = (ETFCond) addcond;
 						DETOUR_MEMBER_CALL(nCond, bool1);
 						addcond_overridden = true;
@@ -4234,22 +4260,29 @@ namespace Mod::Attr::Custom_Attributes
 	RefCount rc_CTFWeaponInvis_CleanupInvisibilityWatch;
 	DETOUR_DECL_MEMBER(void, CTFPlayerShared_FadeInvis, float mult)
 	{
-		SCOPED_INCREMENT(rc_CTFPlayerShared_RemoveCond);
-		SCOPED_INCREMENT(rc_CTFPlayerShared_InCond);
 		auto me = reinterpret_cast<CTFPlayerShared *>(this);
 		addcond_provider = me->GetOuter();
 		if (!rc_CTFWeaponInvis_CleanupInvisibilityWatch)
 			addcond_provider_item = GetEconEntityAtLoadoutSlot(me->GetOuter(), LOADOUT_POSITION_PDA2);
-		int iCondOverride = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
-		if (iCondOverride) {
-			me->GetOuter()->HolsterOffHandWeapon();
+		
+		bool shouldFadeOverride = addcond_provider_item != nullptr;
+
+		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_RemoveCond, shouldFadeOverride);
+		SCOPED_INCREMENT_IF(rc_CTFPlayerShared_InCond, shouldFadeOverride);
+		if (shouldFadeOverride) {
+			int iCondOverride = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(addcond_provider_item, iCondOverride, effect_cond_override);
+			if (iCondOverride) {
+				me->GetOuter()->HolsterOffHandWeapon();
+			}
+			ReplaceCond(*me, TF_COND_STEALTHED);
+			addcond_specific_cond = TF_COND_STEALTHED;
 		}
-		ReplaceCond(*me, TF_COND_STEALTHED);
-		addcond_specific_cond = TF_COND_STEALTHED;
 		DETOUR_MEMBER_CALL(mult);
-		addcond_specific_cond = TF_COND_INVALID;
-		ReplaceBackCond(*me, TF_COND_STEALTHED);
+		if (shouldFadeOverride) {
+			addcond_specific_cond = TF_COND_INVALID;
+			ReplaceBackCond(*me, TF_COND_STEALTHED);
+		}
 	}
 
 	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFPlayerShared_UpdateCloakMeter)
@@ -9567,8 +9600,11 @@ namespace Mod::Attr::Custom_Attributes
 			MOD_ADD_DETOUR_MEMBER(CTFWeaponFlameBall_FireProjectile, "CTFWeaponFlameBall::FireProjectile");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_ShouldGainInstantSpawn, "CTFPlayer::ShouldGainInstantSpawn");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_IsReadyToSpawn, "CTFPlayer::IsReadyToSpawn");
+			MOD_ADD_DETOUR_MEMBER(CTFProjectile_MechanicalArmOrb_CheckForProjectiles, "CTFProjectile_MechanicalArmOrb::CheckForProjectiles");
 			MOD_ADD_DETOUR_STATIC(HandleRageGain, "HandleRageGain");
 			MOD_ADD_DETOUR_STATIC(TE_TFParticleEffect, "TE_TFParticleEffect [No attachment]");
+			MOD_ADD_DETOUR_STATIC(UTIL_EntitiesInSphere, "UTIL_EntitiesInSphere");
+			MOD_ADD_DETOUR_MEMBER(CTFGrenadePipebombProjectile_DetonateStickies, "CTFGrenadePipebombProjectile::DetonateStickies");
 			
             //MOD_ADD_VHOOK_INHERIT(CBaseProjectile_ShouldCollide, TypeName<CBaseProjectile>(), "CBaseEntity::ShouldCollide");
 			

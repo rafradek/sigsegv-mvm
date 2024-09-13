@@ -895,6 +895,7 @@
 				"CTFGrenadePipebombProjectile::PipebombTouch" "_ZN28CTFGrenadePipebombProjectile13PipebombTouchEP11CBaseEntity"
 				"CTFGrenadePipebombProjectile::SetPipebombMode" "_ZN28CTFGrenadePipebombProjectile15SetPipebombModeEi"
 				"CTFGrenadePipebombProjectile::StickybombTouch" "_ZN28CTFGrenadePipebombProjectile15StickybombTouchEP11CBaseEntity"
+				"CTFGrenadePipebombProjectile::DetonateStickies" "_ZN28CTFGrenadePipebombProjectile16DetonateStickiesEv"
 				"CTFGrenadePipebombProjectile::VPhysicsCollision" "_ZN28CTFGrenadePipebombProjectile17VPhysicsCollisionEiP21gamevcollisionevent_t"
 				"CTFJar::CreateJarProjectile" "_ZN6CTFJar19CreateJarProjectileERK6VectorRK6QAngleS2_S2_P20CBaseCombatCharacterRK13CTFWeaponInfo"
 				"CTFJar::FireJar" "_ZN6CTFJar7FireJarEP9CTFPlayer"

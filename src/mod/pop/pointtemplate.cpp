@@ -311,6 +311,7 @@ std::shared_ptr<PointTemplateInstance> PointTemplate::SpawnTemplate(CBaseEntity 
 		}
 		box.entity->CollisionProp()->SetCollisionBounds(min, max);
 		box.entity->AddEffects(32); //DONT RENDER
+		box.entity->SetRenderMode(kRenderNone); //DONT RENDER
 		if (box.entity->GetMoveParent() != nullptr) {
 			box.entity->CollisionProp()->AddSolidFlags(FSOLID_ROOT_PARENT_ALIGNED);
 		}
