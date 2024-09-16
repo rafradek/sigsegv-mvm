@@ -996,7 +996,7 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"ForceRespawn"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             CTFPlayer *player = ToTFPlayer(ent);
-            if (player != nullptr) {
+            if (player != nullptr && !player->IsBot()) {
                 if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
                     player->ForceRespawn();
                 }
@@ -1007,7 +1007,7 @@ namespace Mod::Etc::Mapentity_Additions
         }},
         {"ForceRespawnDead"sv, false, [](CBaseEntity *ent, const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t &Value){
             CTFPlayer *player = ToTFPlayer(ent);
-            if (player != nullptr && !player->IsAlive()) {
+            if (player != nullptr && !player->IsBot() && !player->IsAlive()) {
                 if (player->GetTeamNumber() >= TF_TEAM_RED && player->GetPlayerClass() != nullptr && player->GetPlayerClass()->GetClassIndex() != TF_CLASS_UNDEFINED) {
                     player->ForceRespawn();
                 }
