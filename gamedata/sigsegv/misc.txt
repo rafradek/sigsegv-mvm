@@ -3155,6 +3155,20 @@
 					type "sym"
 					sym  "_Z23COM_GetUncompressedSizePKvj"
 				}
+
+				"CBaseServer::CheckPassword"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer13CheckPasswordER8netadr_sPKcS3_"
+				}
+
+				"CBaseServer::ConnectClient"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer13ConnectClientER8netadr_siiiiPKcS3_S3_i"
+				}
 				
 			}
 			"addrs_group"
@@ -3258,6 +3272,11 @@
 				"ClientData_Update" "_Z17ClientData_UpdateP11CBasePlayer"
 
 				"GetCurrentSkyCamera" "_Z19GetCurrentSkyCamerav"
+				
+				"VScriptServerInit" "_Z17VScriptServerInitv"
+				"VScriptRunScript" "_Z16VScriptRunScriptPKcP9HSCRIPT__b"
+				"CServerGameDLL::GetServerBrowserMapOverride" "_ZN14CServerGameDLL27GetServerBrowserMapOverrideEv"
+				
 			}
 			
 			"addrs_group"

@@ -1043,6 +1043,7 @@
 				"CTFWeaponBaseMelee::SecondaryAttack" "_ZN18CTFWeaponBaseMelee15SecondaryAttackEv"
 				"CTFWeaponBaseMelee::Smack" "_ZN18CTFWeaponBaseMelee5SmackEv"
 				"CTFWeaponBaseMelee::Swing" "_ZN18CTFWeaponBaseMelee5SwingEP9CTFPlayer"
+				"CTFWrench::Smack" "_ZN9CTFWrench5SmackEv"
 				"CTFWeaponBuilder::CanDeploy" "_ZN16CTFWeaponBuilder9CanDeployEv"
 				"CTFWeaponBuilder::GetViewModel" "_ZNK16CTFWeaponBuilder12GetViewModelEi"
 				"CTFWeaponBuilder::SetSubType" "_ZN16CTFWeaponBuilder10SetSubTypeEi"

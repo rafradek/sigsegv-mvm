@@ -408,6 +408,10 @@ namespace Mod::Pop::WaveSpawn_Extensions
 					m_fLifetime = Max(0.0f, subkey->GetFloat());
 				} else if (FStrEq(name, "Speed")) {
 					m_fSpeed = Max(0.0f, subkey->GetFloat());
+				} else if (FStrEq(name, "FireInput")) {
+					m_OnSpawnInputs.push_back(Parse_InputInfoTemplate(subkey));
+				} else if (FStrEq(name, "FireInputKilled")) {
+					m_OnKillInputs.push_back(Parse_InputInfoTemplate(subkey));
 				} else if (FStrEq(name, "DamageMultiplier")) {
 					m_fDmgMult = subkey->GetFloat();
 				} else if (FStrEq(name, "Origin")) {
@@ -484,6 +488,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 				it1->SpawnTemplate(boss);
 			}
 
+			TriggerList(boss, m_OnSpawnInputs, nullptr);
+
 			ents->AddToTail(boss);
 			boss_spawners[boss] = this;
 
@@ -499,6 +505,9 @@ namespace Mod::Pop::WaveSpawn_Extensions
 		float m_fSpeed = FLT_MAX;
 		float m_fDmgMult = 1.0f;
 		bool m_bFastUpdate = false;
+
+		std::vector<InputInfoTemplate> m_OnSpawnInputs;
+		std::vector<InputInfoTemplate> m_OnKillInputs;
 
 	private:
 		bool m_bIsMiniBoss = true;
@@ -1279,6 +1288,8 @@ namespace Mod::Pop::WaveSpawn_Extensions
 
 		if (spawner == nullptr)
 			return;
+
+		TriggerList(boss, spawner->m_OnKillInputs, nullptr);
 
 		auto populator = spawner->m_Populator;
 		if (populator != nullptr) {

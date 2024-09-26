@@ -35,7 +35,7 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		if (cleave_attack) {
 			ForEachEntity([&](CBaseEntity *ent){
 				int flags = ent->m_fFlags;
-				if ((flags & FL_NPC || ent->IsCombatCharacter()) && !(flags & FL_OBJECT || flags & FL_CLIENT)) {
+				if (((flags & FL_NPC) || ent->IsCombatCharacter() || (flags & FL_GRENADE)) && !(flags & FL_OBJECT || flags & FL_CLIENT)) {
 					ent->m_fFlags |= FL_OBJECT;
 					altered_flags.push_back(ent);
 				}
@@ -74,6 +74,31 @@ namespace Mod::Etc::Melee_Ignore_Teammates
 		}
 		else {
 			result = DETOUR_MEMBER_CALL(tr, cleave_attack, traces);
+			// Check if there is a wall between us and the target, and if entity is alive
+			if (traces != nullptr) {
+				auto &tracesRef = *traces;
+				FOR_EACH_VEC_BACK(tracesRef, i) {
+					auto &trace = tracesRef[i];
+					CBaseEntity *entity = trace.m_pEnt;
+					if (entity != nullptr) {
+						if (!entity->IsAlive()) {
+							traces->Remove(i);
+							continue;
+						}
+
+						trace_t t;
+						CTraceFilterNoNPCsOrPlayer f(nullptr, COLLISION_GROUP_NONE);
+						UTIL_TraceLine(trace.startpos, trace.endpos + (trace.endpos - trace.startpos), MASK_SOLID_BRUSHONLY, &f, &t);
+						if (t.DidHit()) {
+							UTIL_TraceLine(trace.startpos, entity->WorldSpaceCenter(), MASK_SOLID_BRUSHONLY, &f, &t);
+						}
+						if (t.DidHit()) {
+							traces->Remove(i);
+							continue;
+						}
+					}
+				}
+			}
 		}
 
 		if (cleave_attack) {

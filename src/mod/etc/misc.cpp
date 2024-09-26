@@ -249,6 +249,23 @@ namespace Mod::Etc::Misc
         }
 	}
 
+	RefCount rc_CTFWrench_Smack;
+	DETOUR_DECL_MEMBER(void, CTFWrench_Smack)
+	{
+		SCOPED_INCREMENT(rc_CTFWrench_Smack);
+		DETOUR_MEMBER_CALL();
+	}
+
+	DETOUR_DECL_MEMBER(bool, CTraceFilterIgnorePlayers_ShouldHitEntity, IHandleEntity *pServerEntity, int contentsMask)
+	{
+		auto result = DETOUR_MEMBER_CALL(pServerEntity, contentsMask);
+        if (result && rc_CTFWrench_Smack) {
+            auto entity = EntityFromEntityHandle(pServerEntity);
+            if (entity != nullptr && entity->IsCombatItem()) return false;
+        }
+        return result;
+    }
+
     class CMod : public IMod
 	{
 	public:
@@ -286,6 +303,10 @@ namespace Mod::Etc::Misc
 
 			// No deathcam if music is playing
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Event_Killed, "CTFPlayer::Event_Killed");
+
+			// Shields do not block building repair now
+			MOD_ADD_DETOUR_MEMBER(CTraceFilterIgnorePlayers_ShouldHitEntity, "CTraceFilterIgnorePlayers::ShouldHitEntity");
+			MOD_ADD_DETOUR_MEMBER(CTFWrench_Smack, "CTFWrench::Smack");
 		}
 	};
 	CMod s_Mod;

@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build-and-package:
@@ -103,6 +106,7 @@ jobs:
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
+      if: github.event_name != 'pull_request'
       with:
         files: build/release/*.zip
         token: ${{ secrets.GITHUB_TOKEN }}

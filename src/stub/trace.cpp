@@ -188,3 +188,10 @@ bool CGameTrace::DidHitNonWorldEntity() const
 {
 	return m_pEnt != NULL && !DidHitWorld();
 }
+bool CTraceFilterNoNPCsOrPlayer::ShouldHitEntity(IHandleEntity *pHandleEntity, int contentsMask){
+	CBaseEntity *pEntity = EntityFromEntityHandle( pHandleEntity );
+
+	if (pEntity->GetFlags() & (FL_CLIENT | FL_OBJECT | FL_NPC | FL_GRENADE)) return false;
+
+	return CTraceFilterSimple::ShouldHitEntity(pHandleEntity, contentsMask);
+}

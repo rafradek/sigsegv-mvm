@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2008, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -104,41 +104,29 @@ S_API HSteamUser SteamGameServer_GetHSteamUser();
 class CSteamGameServerAPIContext
 {
 public:
-	CSteamGameServerAPIContext();
-	void Clear();
+	CSteamGameServerAPIContext() { Clear(); }
+	inline void Clear() { memset( this, 0, sizeof(*this) ); }
+	inline bool Init(); // NOTE: This is defined in steam_gameserver.h, to avoid this file having to include everything
 
-	bool Init();
-
-	ISteamGameServer *SteamGameServer() { return m_pSteamGameServer; }
-	ISteamUtils *SteamGameServerUtils() { return m_pSteamGameServerUtils; }
-	ISteamNetworking *SteamGameServerNetworking() { return m_pSteamGameServerNetworking; }
-	ISteamGameServerStats *SteamGameServerStats() { return m_pSteamGameServerStats; }
-	ISteamHTTP *SteamHTTP() { return m_pSteamHTTP; }
-	ISteamUGC *SteamUGC() { return m_pSteamUGC; }
+	ISteamClient *SteamClient() const					{ return m_pSteamClient; }
+	ISteamGameServer *SteamGameServer() const			{ return m_pSteamGameServer; }
+	ISteamUtils *SteamGameServerUtils() const			{ return m_pSteamGameServerUtils; }
+	ISteamNetworking *SteamGameServerNetworking() const	{ return m_pSteamGameServerNetworking; }
+	ISteamGameServerStats *SteamGameServerStats() const	{ return m_pSteamGameServerStats; }
+	ISteamHTTP *SteamHTTP() const						{ return m_pSteamHTTP; }
+	ISteamInventory *SteamInventory() const				{ return m_pSteamInventory; }
+	ISteamUGC *SteamUGC() const							{ return m_pSteamUGC; }
 
 private:
+	ISteamClient				*m_pSteamClient;
 	ISteamGameServer			*m_pSteamGameServer;
 	ISteamUtils					*m_pSteamGameServerUtils;
 	ISteamNetworking			*m_pSteamGameServerNetworking;
 	ISteamGameServerStats		*m_pSteamGameServerStats;
 	ISteamHTTP					*m_pSteamHTTP;
+	ISteamInventory				*m_pSteamInventory;
 	ISteamUGC					*m_pSteamUGC;
 };
-
-inline CSteamGameServerAPIContext::CSteamGameServerAPIContext()
-{
-	Clear();
-}
-
-inline void CSteamGameServerAPIContext::Clear()
-{
-	m_pSteamGameServer = NULL;
-	m_pSteamGameServerUtils = NULL;
-	m_pSteamGameServerNetworking = NULL;
-	m_pSteamGameServerStats = NULL;
-	m_pSteamHTTP = NULL;
-	m_pSteamUGC = NULL;
-}
 
 S_API ISteamClient *g_pSteamClientGameServer;
 // This function must be inlined so the module using steam_api.dll gets the version names they want.

@@ -4120,7 +4120,6 @@ namespace Mod::Attr::Custom_Attributes
 				for (int i = 0; i < 4; i++) {
 					int addcond = (iCondOverride >> (i * 8)) & 255;
 					if (addcond != 0) {
-						raise(SIGTRAP);
 						nCond = (ETFCond) addcond;
 						DETOUR_MEMBER_CALL(nCond, bool1);
 						addcond_overridden = true;

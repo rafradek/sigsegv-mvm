@@ -77,6 +77,13 @@ namespace Mod::Pop::ExtAttr::Parse
 		
 		DETOUR_MEMBER_CALL(ecattr);
 	}
+
+	DETOUR_DECL_MEMBER(void, CTFBot_Spawn)
+	{
+		auto bot = reinterpret_cast<CTFBot *>(this);
+		bot->ExtAttrForModify().Zero();
+		DETOUR_MEMBER_CALL();
+	}
 	
 	
 	class CMod : public IMod, IModCallbackListener
@@ -86,6 +93,7 @@ namespace Mod::Pop::ExtAttr::Parse
 		{
 			MOD_ADD_DETOUR_STATIC(ParseDynamicAttributes,         "ParseDynamicAttributes");
 			MOD_ADD_DETOUR_MEMBER(CTFBot_OnEventChangeAttributes, "CTFBot::OnEventChangeAttributes");
+			MOD_ADD_DETOUR_MEMBER(CTFBot_Spawn, "CTFBot::Spawn");
 		}
 
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

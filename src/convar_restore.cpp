@@ -17,7 +17,16 @@ namespace ConVar_Restore
 	std::list<ConVar *>     s_ConVars;
 	std::list<ConCommand *> s_ConCmds;
 	
-	
+	const char *GetConfigFileName()
+	{
+		int param = CommandLine()->FindParm("-sig_config_file");
+		if (param == 0) {
+			return "cfg/sigsegv_convars.cfg";
+		}
+		else {
+			return CommandLine()->GetParm(param + 1);
+		}
+	}
 	void Register(ConCommandBase *pCommand)
 	{
 		/* ignore s_EmptyConVar */
@@ -97,7 +106,7 @@ namespace ConVar_Restore
 
 		//file.PutChar('}');
 		if (!filesystem->WriteFile(path,"GAME", file)) {
-			Warning("ConVar_Restore::Save: Could not save Ke27020yValues to \"cfg/sigsegv_convars.cfg\".\n");
+			Warning("ConVar_Restore::Save: Could not save KeyValues to \"%s\".\n", path);
 		}
 		
 		//kv->deleteThis();
@@ -105,12 +114,12 @@ namespace ConVar_Restore
 
 	void Save()
 	{
-		SaveActual(false, "cfg/sigsegv_convars.cfg");
+		SaveActual(false, GetConfigFileName());
 	}
 
 	void SaveNonDefault()
 	{
-		SaveActual(true, "cfg/sigsegv_convars.cfg");
+		SaveActual(true, GetConfigFileName());
 	}
 	
 	void Load()
@@ -118,7 +127,7 @@ namespace ConVar_Restore
 		CCommandBuffer buf;
 		
 		CUtlBuffer file( 0, 0, CUtlBuffer::TEXT_BUFFER );
-		if (filesystem->ReadFile("cfg/sigsegv_convars.cfg", "GAME", file)) {
+		if (filesystem->ReadFile(GetConfigFileName(), "GAME", file)) {
 			char line[1024];
 			while(file.GetBytesRemaining() > 0) {
 				file.EatWhiteSpace();
@@ -193,6 +202,6 @@ namespace ConVar_Restore
 	void OnExtUnload()
 	{
 		if (cvar_autosave.GetBool())
-			SaveActual(false, "cfg/sigsegv_convars.cfg");
+			SaveActual(false, GetConfigFileName());
 	}
 }

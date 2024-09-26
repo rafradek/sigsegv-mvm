@@ -93,7 +93,11 @@
         "cfenv": "cpp",
         "valarray": "cpp",
         "filesystem": "cpp",
-        "*.cfg": "c"
+        "*.cfg": "c",
+        "text_encoding": "cpp",
+        "hash_map": "cpp",
+        "expected": "cpp",
+        "ranges": "cpp"
     },
     "Lua.runtime.fileEncoding": "utf8",
     "Lua.diagnostics.disable": [

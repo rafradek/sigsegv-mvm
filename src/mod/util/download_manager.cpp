@@ -1716,6 +1716,7 @@ namespace Mod::Util::Download_Manager
 				missing_files_all.insert(value.second);
 			}
 		}
+		filesystem->FindClose(mapHandle);
 		
 		
 		for (auto &value : missing_files_all) {
