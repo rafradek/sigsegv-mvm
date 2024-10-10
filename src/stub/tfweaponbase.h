@@ -27,6 +27,7 @@ public:
 	bool IsSilentKiller() { return ft_IsSilentKiller(this); }
 	float Energy_GetMaxEnergy() { return ft_Energy_GetMaxEnergy(this); }
 	void CalcIsAttackCritical() { ft_CalcIsAttackCritical(this); }
+	bool CalcIsAttackCriticalPoll(bool checkRandom);
 	CTFWeaponInfo const& GetTFWpnData() const { return ft_GetTFWeaponData(this); }
 	void StartEffectBarRegen()   { ft_StartEffectBarRegen(this); }
 	bool DeflectProjectiles()    { return ft_DeflectProjectiles(this); }
@@ -57,6 +58,11 @@ public:
 	DECL_SENDPROP(bool,  m_bDisguiseWeapon);
 	DECL_SENDPROP(int,   m_iReloadMode);
 	DECL_RELATIVE(bool,  m_bCurrentAttackIsCrit);
+	DECL_RELATIVE(bool,  m_bCurrentCritIsRandom);
+	DECL_SENDPROP(float, m_flLastCritCheckTime);
+	DECL_RELATIVE(float, m_flCritTime);
+	DECL_RELATIVE(int,   m_iLastCritCheckFrame);
+	
 
 	
 private:

@@ -74,6 +74,10 @@ IMPL_SENDPROP(float               , CTFWeaponBase, m_flReloadPriorNextFire,   CT
 IMPL_SENDPROP(int,                  CTFWeaponBase, m_bDisguiseWeapon,         CTFWeaponBase);
 IMPL_SENDPROP(int,                  CTFWeaponBase, m_iReloadMode,             CTFWeaponBase);
 IMPL_REL_AFTER(bool               , CTFWeaponBase, m_bCurrentAttackIsCrit, m_flReloadPriorNextFire, void *, bool, bool);
+IMPL_REL_AFTER(bool               , CTFWeaponBase, m_bCurrentCritIsRandom, m_bCurrentAttackIsCrit);
+IMPL_SENDPROP(float,                CTFWeaponBase, m_flLastCritCheckTime,     CTFWeaponBase);
+IMPL_REL_BEFORE(float,              CTFWeaponBase, m_flCritTime, m_flLastCritCheckTime, 0);
+IMPL_REL_AFTER(int,                 CTFWeaponBase, m_iLastCritCheckFrame, m_flLastCritCheckTime);
 
 MemberFuncThunk<CTFWeaponBase *, bool> CTFWeaponBase::ft_IsSilentKiller("CTFWeaponBase::IsSilentKiller");
 MemberFuncThunk<const CTFWeaponBase *, CTFPlayer *> CTFWeaponBase::ft_GetTFPlayerOwner("CTFWeaponBase::GetTFPlayerOwner");
@@ -203,6 +207,31 @@ int GetWeaponId(const char *name) { return ft_GetWeaponId(name); }
 
 static StaticFuncThunk<const char *, int> ft_WeaponIdToAlias("WeaponIdToAlias");
 const char *WeaponIdToAlias(int weapon_id) { return ft_WeaponIdToAlias(weapon_id); }
+
+
+bool CTFWeaponBase::CalcIsAttackCriticalPoll(bool checkRandom) {
+	bool oldIsCritical = this->m_bCurrentAttackIsCrit;
+	bool oldIsCriticalRandom = this->m_bCurrentCritIsRandom;
+
+	float oldCritBucket = this->m_flCritTokenBucket;
+	int oldCritChecks = this->m_nCritChecks;
+	int oldCritSeedRequests = this->m_nCritSeedRequests;
+	float oldLastCritCheckTime = this->m_flLastCritCheckTime;
+	float oldCritTime = this->m_flCritTime;
+	int oldLastCritCheckFrame = this->m_iLastCritCheckFrame;
+	this->CalcIsAttackCritical();
+	
+	bool isCrit = checkRandom ? m_bCurrentCritIsRandom : m_bCurrentAttackIsCrit;
+	this->m_flCritTokenBucket = oldCritBucket;
+	this->m_nCritChecks = oldCritChecks;
+	this->m_nCritSeedRequests = oldCritSeedRequests;
+	this->m_bCurrentAttackIsCrit = oldIsCritical;
+	this->m_bCurrentCritIsRandom = oldIsCriticalRandom;
+	this->m_flLastCritCheckTime = oldLastCritCheckTime;
+	this->m_flCritTime = oldCritTime;
+	this->m_iLastCritCheckFrame = oldLastCritCheckFrame;
+	return isCrit;
+}
 
 float CalculateProjectileSpeed(CTFWeaponBaseGun *weapon) {
 	if (weapon == nullptr)

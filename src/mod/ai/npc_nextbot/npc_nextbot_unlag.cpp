@@ -20,6 +20,7 @@
 #include "stub/usermessages_sv.h"
 #include "stub/particles.h"
 #include "stub/lagcompensation.h"
+#include "collisionutils.h"
 
 #define LAG_COMPENSATION_EPS_SQR ( 0.1f * 0.1f )
 // Allow 4 units of error ( about 1 / 8 bbox width )
@@ -34,6 +35,11 @@ float g_flFractionScale = 0.95;
 #define LC_ANGLES_CHANGED	(1<<9)
 #define LC_SIZE_CHANGED		(1<<10)
 #define LC_ANIMATION_CHANGED (1<<11)
+
+namespace Mod::Perf::Func_Optimize
+{
+    extern float coneOfAttack;
+}
 
 namespace Mod::AI::NPC_Nextbot
 {
@@ -443,33 +449,38 @@ namespace Mod::AI::NPC_Nextbot
 	{
 		if (pEntityTransmitBits && !pEntityTransmitBits->Get(entity->entindex())) return false;
 
-		const Vector &vMyOrigin = player->GetAbsOrigin();
-		const Vector &vHisOrigin = entity->GetAbsOrigin();
+		Vector start = player->EyePosition();
+        const Vector &ourPos = player->GetAbsOrigin();
+        Vector forward;
+        AngleVectors(pCmd->viewangles, &forward);
+        
+        auto cprop = this->entity->CollisionProp(); 
+        const Vector &entityPos = this->entity->GetAbsOrigin();
+        const Vector &velocity = this->entity->GetAbsVelocity();
+        float backTime = (gpGlobals->tickcount - pCmd->tick_count + 1) * gpGlobals->interval_per_tick + player->m_fLerpTime;
+        const float speed = Max(fabs(velocity.x), fabs(velocity.y))* 1.4f;
+        Vector range(speed, speed, Max(50.0f, fabs(velocity.z) * 2.0f));
+        range *= backTime;
+        range.x += 25.0f;
+        range.y += 25.0f;
+        float cone = Mod::Perf::Func_Optimize::coneOfAttack != -1 ? Mod::Perf::Func_Optimize::coneOfAttack : 0.15f;
+        if (cone > 0.0f) {
+            float dist = (entityPos - ourPos).Length();
+            range += Vector(dist * cone, dist * cone, dist * cone);
+        }
 
-		float maxDistance = 1.5 * entity->GetAbsVelocity().Length() * sv_maxunlag->GetFloat();
+        if (IsBoxIntersectingRay(entityPos+cprop->OBBMins() - range, entityPos+cprop->OBBMaxs() + range, start, forward * 8192, 0.0f)) {
+            return true;
+        }
 
-		// If the player is within this distance, lag compensate them in case they're running past us.
-		if ( vHisOrigin.DistTo( vMyOrigin ) < maxDistance )
-			return true;
-
-		// If their origin is not within a 45 degree cone in front of us, no need to lag compensate.
-		Vector vForward;
-		AngleVectors( pCmd->viewangles, &vForward );
-
-		Vector vDiff = vHisOrigin - vMyOrigin;
-		VectorNormalize( vDiff );
-
-		float flCosAngle = 0.707107f;	// 45 degree angle
-		if ( vForward.Dot( vDiff ) < flCosAngle ) return false;
-
-		return true;
+		return false;
 	}
 
 	bool MyNextbotModule::WantsLagCompensation(CBasePlayer *player, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
 	{
-		if (!LagCompensatedEntity::WantsLagCompensation(player, pCmd, pEntityTransmitBits)) return false;
+        if (!this->m_bAllowTakeFriendlyFire && this->m_pEntity->GetTeamNumber() == player->GetTeamNumber()) return false;
 
-		return this->m_bAllowTakeFriendlyFire || this->m_pEntity->GetTeamNumber() != player->GetTeamNumber();
+		return LagCompensatedEntity::WantsLagCompensation(player, pCmd, pEntityTransmitBits);
 	}
     // Called during player movement to set up/restore after lag compensation
 
@@ -479,6 +490,8 @@ namespace Mod::AI::NPC_Nextbot
 		if (reinterpret_cast<CLagCompensationManager *>(this) != &g_LagCompensationManager.GetRef()) return;
 
         if (cmd == nullptr) return;
+
+        if (AutoList<LagCompensatedEntity>::List().empty()) return;
         //DONT LAG COMP AGAIN THIS FRAME IF THERES ALREADY ONE IN PROGRESS
         //IF YOU'RE HITTING THIS THEN IT MEANS THERES A CODE BUG
         if (currentPlayer)

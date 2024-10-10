@@ -1,0 +1,1463 @@
+"Phrases"
+{
+	"parachute disabled"
+	{
+ 	 	"zho" 	"禁用降落傘"
+	}
+	"fires milk bolt"
+	{
+ 	 	"zho" 	"特殊開火：發射牛奶針管"
+	}
+	"force distribute currency on death"
+	{
+ 	 	"zho" 	"強制死亡掉落金錢"
+	}
+	"airblast dashes"
+	{
+ 	 	"zho" 	"氣爆把玩家向前推"
+	}
+	"melee cleave attack"
+	{
+ 	 	"zho" 	"攻擊範圍內所有敵人"
+	}
+	"extra damage on hit penalty"
+	{
+ 	 	"zho" 	"擊中後：下次傷害降低%d"
+	}
+	"extra damage on hit"
+	{
+ 	 	"zho" 	"擊中後：可獲得%d次加成，每次提升傷害1%"
+	}
+	"mod teleporter speed boost"
+	{
+ 	 	"zho" 	"傳送時：加速4秒"
+	}
+	"set turn to ice"
+	{
+ 	 	"zho" 	"受害者變成冰雕"
+	}
+	"can breathe under water"
+	{
+ 	 	"zho" 	"可在水下呼吸"
+	}
+	"cannot swim"
+	{
+ 	 	"zho" 	"無法遊泳"
+	}
+	"swimming mastery"
+	{
+ 	 	"zho" 	"+25%遊泳速度"
+	}
+	"ability doubletap teleport"
+	{
+ 	 	"zho" 	"雙擊移動鍵可傳送至傳送器"
+	}
+	"mod ignore resists absorbs"
+	{
+ 	 	"zho" 	"無視傷害抗性"
+	}
+	"scoreboard minigame"
+	{
+ 	 	"zho" 	"殺敵獲得更多分死亡失去更多分"
+	}
+	"wet immunity"
+	{
+ 	 	"zho" 	"無視液體效果"
+	}
+	"ability master sniper"
+	{
+ 	 	"zho" 	"狙擊大師：減少瞄準時間增加充能速率"
+	}
+	"last shot crits"
+	{
+ 	 	"zho" 	"彈匣最後1發子彈造成暴擊傷害"
+	}
+	"keep disguise on attack"
+	{
+ 	 	"zho" 	"攻擊時保持偽裝"
+	}
+	"add give health to teammate on hit"
+	{
+ 	 	"zho" 	"擊中隊友時：消耗自身血量並等量治療隊友"
+	}
+	"airblast functionality flags"
+	{
+ 	 	"zho" 	"氣爆效果類型"
+	}
+	"reverse airblast"
+	{
+ 	 	"zho" 	"氣爆將敵人推向玩家"
+	}
+	"mod minigun can holster while spinning"
+	{
+ 	 	"zho" 	"槍管高速旋轉時：仍可收起武器"
+	}
+	"sapper deploy time"
+	{
+ 	 	"zho" 	"(+-)%d秒電子工兵充能時間"
+	}
+	"kill combo fire rate boost"
+	{
+ 	 	"zho" 	"擊殺時：(+-)%p%提升3次開火速度，殺死不同兵種時清零"
+	}
+	"mult dispenser rate"
+	{
+ 	 	"zho" 	"(+-)%p%補給器補給效率"
+	}
+	"mvm sentry ammo"
+	{
+ 	 	"zho" 	"(+-)%p%步哨槍彈藥容量"
+	}
+	"build small sentries"
+	{
+ 	 	"zho" 	"建造小型步哨槍"
+	}
+	"mult teleporter recharge rate"
+	{
+ 	 	"zho" 	"(+-)%p%傳送器充能時間"
+	}
+	"disguise as dispenser on crouch"
+	{
+ 	 	"zho" 	"下蹲時：偽裝成補給器"
+	}
+	"ubercharge transfer"
+	{
+ 	 	"zho" 	"作為醫生擊中時：向擊中者傳輸你消耗能量的%d%"
+	}
+	"teleport instead of die"
+	{
+ 	 	"zho" 	"死亡時：%p%概率被以1HP的狀態瞬間覆活"
+	}
+	"mod projectile heat seek power"
+	{
+ 	 	"zho" 	"智能彈藥"
+	}
+	//"mod projectile heat aim error"
+	//{
+ 	// 	"zho" 	"智能彈藥"
+	//}
+	"mult dmg vs same class"
+	{
+ 	 	"zho" 	"(+-)%p%對同兵種敵人的傷害"
+	}
+	"uber on damage taken"
+	{
+ 	 	"zho" 	"受到傷害時：%p%概率獲得3秒無敵"
+	}
+	"mult dmgtaken from melee"
+	{
+ 	 	"zho" 	"(+-)%p%受到的近戰傷害"
+	}
+	"mult crit when health is below percent"
+	{
+ 	 	"zho" 	"血量低於%p%時獲得暴擊加成"
+	}
+	"penetration damage penalty"
+	{
+ 	 	"zho" 	"(+-)%p%穿透傷害"
+	}
+	"firing forward pull"
+	{
+ 	 	"zho" 	"開火時：會被向前推"
+	}
+	"mod soldier buff range"
+	{
+ 	 	"zho" 	"(+-)%p%增益作用範圍"
+	}
+	"mult rocketjump deploy time"
+	{
+ 	 	"zho" 	"火箭跳躍時：(+-)%p%部署速度"
+	}
+	"aoe heal chance"
+	{
+ 	 	"zho" 	"擊中時：概率治療範圍內的隊友24HP"
+	}
+	"crits on damage"
+	{
+ 	 	"zho" 	"擊中時：概率獲得3秒暴擊加成"
+	}
+	"stun on damage"
+	{
+ 	 	"zho" 	"擊中時：概率擊暈敵人3秒"
+	}
+	"aoe blast on damage"
+	{
+ 	 	"zho" 	"擊中時：概率產生爆炸造成流血和擊暈"
+	}
+	"ubercharge ammo"
+	{
+ 	 	"zho" 	"轉化%d%Ubercharge能量為彈藥"
+	}
+	"mul nonrocketjump attackrate"
+	{
+ 	 	"zho" 	"火箭跳躍時：(+-)%p%開火速度"
+	}
+	"mult dmg with reduced health"
+	{
+ 	 	"zho" 	"受傷時：攻擊力增強最高可達(+-)%p%"
+	}
+	"mult airblast primary refire time"
+	{
+ 	 	"zho" 	"氣爆後重新噴火速度"
+	}
+	"mod flamethrower spinup time"
+	{
+ 	 	"zho" 	"%d秒噴火器預熱時間"
+	}
+	"mult airblast cone scale"
+	{
+ 	 	"zho" 	"(+-)%p%氣爆作用範圍"
+	}
+	"mult sniper charge per sec with enemy under crosshair"
+	{
+ 	 	"zho" 	"(+-)%p%瞄準敵人時充能速率"
+	}
+	"sniper beep with enemy under crosshair"
+	{
+ 	 	"zho" 	"瞄準敵人時：播放提示音"
+	}
+	"arrow mastery"
+	{
+ 	 	"zho" 	"弓箭大師：+%d額外發射弓箭"
+	}
+	"medic machinery beam"
+	{
+ 	 	"zho" 	"以%d0%的效率修覆建築物"
+	}
+	"mult smack time"
+	{
+ 	 	"zho" 	"(+-)%p%武器揮舞速度"
+	}
+	"disable buildings on hit"
+	{
+ 	 	"zho" 	"擊中建築物時：癱瘓建築物%d秒"
+	}
+	"regenerate stickbomb"
+	{
+ 	 	"zho" 	"使用後自動補給"
+	}
+	"custom jump particle"
+	{
+ 	 	"zho" 	"自定義火箭跳躍粒子"
+	}
+	"custom item model"
+	{
+ 	 	"zho" 	"自定義物品模型"
+	}
+	"custom weapon fire sound"
+	{
+ 	 	"zho" 	"自定義武器開火音效"
+	}
+	"explosive bullets"
+	{
+ 	 	"zho" 	"發射高爆彈藥"
+	}
+	"mult projectile scale"
+	{
+ 	 	"zho" 	"飛行物大小"
+	}
+	"mult projectile count"
+	{
+ 	 	"zho" 	"(+-)%p%同時發射數量"
+	}
+	"projectile trail particle"
+	{
+ 	 	"zho" 	"飛行物軌跡粒子"
+	}
+	"explosion particle"
+	{
+ 	 	"zho" 	"爆炸粒子效果"
+	}
+	"custom projectile size"
+	{
+ 	 	"zho" 	"自定義飛行物大小"
+	}
+	"radius sleeper"
+	{
+ 	 	"zho" 	"對附近敵人潑尿"
+	}
+	"can headshot"
+	{
+ 	 	"zho" 	"可以爆頭"
+	}
+	"no damage falloff"
+	{
+ 	 	"zho" 	"禁止傷害下降或提升"
+	}
+	"force damage falloff"
+	{
+ 	 	"zho" 	"強制傷害下降和提升"
+	}
+	"no reduced damage rampup"
+	{
+ 	 	"zho" 	"+50%傷害"
+	}
+	"reduced damage rampup"
+	{
+ 	 	"zho" 	"+20%傷害"
+	}
+	"dont count damage towards crit rate"
+	{
+ 	 	"zho" 	"不將傷害計入暴擊率"
+	}
+	"cannot be sapped"
+	{
+ 	 	"zho" 	"不會被電子工兵影響"
+	}
+	"item color rgb"
+	{
+ 	 	"zho" 	"物品顏色"
+	}
+	"is invisible"
+	{
+ 	 	"zho" 	"是否可見"
+	}
+	"cannot taunt"
+	{
+ 	 	"zho" 	"無法使用嘲諷"
+	}
+	"projectile acceleration"
+	{
+ 	 	"zho" 	"飛行物加速"
+	}
+	"is miniboss"
+	{
+ 	 	"zho" 	"迷你頭目"
+	}
+	"model scale"
+	{
+ 	 	"zho" 	"模型大小"
+	}
+	"cannot upgrade"
+	{
+ 	 	"zho" 	"無法升級"
+	}
+	"min respawn time"
+	{
+ 	 	"zho" 	"最小重生時間"
+	}
+	"always crit"
+	{
+ 	 	"zho" 	"一定產生暴擊傷害"
+	}
+	"mult firerocket rate"
+	{
+ 	 	"zho" 	"(+-)%p%步哨槍火箭彈開火速度"
+	}
+	"building max level"
+	{
+ 	 	"zho" 	"建築物最高為%d級"
+	}
+	"sentry rapid fire"
+	{
+ 	 	"zho" 	"步哨槍快速開火"
+	}
+	"building color rgb"
+	{
+ 	 	"zho" 	"建築物顏色"
+	}
+	"building scale"
+	{
+ 	 	"zho" 	"建築物大小"
+	}
+	"mult stun resistance"
+	{
+ 	 	"zho" 	"(+-)%p%擊暈抗性"
+	}
+	"allow friendly fire"
+	{
+ 	 	"zho" 	"會造成隊友傷害"
+	}
+	"receive friendly fire"
+	{
+ 	 	"zho" 	"會受到隊友傷害"
+	}
+	"cannot headshot"
+	{
+ 	 	"zho" 	"無法爆頭"
+	}
+	"mult crit dmg"
+	{
+ 	 	"zho" 	"(+-)%p%暴擊傷害"
+	}
+	"cannot be headshot"
+	{
+ 	 	"zho" 	"無法被爆頭"
+	}
+	"attachment name"
+	{
+ 	 	"zho" 	"額外穿戴物名"
+	}
+	"attachment offset"
+	{
+ 	 	"zho" 	"額外穿戴物坐標"
+	}
+	"attachment angles"
+	{
+ 	 	"zho" 	"額外穿戴物角度"
+	}
+	"attachment scale"
+	{
+ 	 	"zho" 	"額外穿戴物大小"
+	}
+	"mod projectile heat aim time"
+	{
+ 	 	"zho" 	"飛行物熱瞄準時間"
+	}
+	"projectile gravity"
+	{
+ 	 	"zho" 	"飛行物重力"
+	}
+	"projectile acceleration time"
+	{
+ 	 	"zho" 	"飛行物加速時間"
+	}
+	"grenade explode on impact"
+	{
+ 	 	"zho" 	"榴彈在接觸時爆炸"
+	}
+	"cloak blink time penalty"
+	{
+ 	 	"zho" 	"#Attrib_CloakBlinkTimePenalty"
+	}
+	"quiet unstealth"
+	{
+ 	 	"zho" 	"#Attrib_QuietUnstealth"
+	}
+	"dmg from sentry reduced"
+	{
+ 	 	"zho" 	"#Attrib_DmgFromSentryReduced"
+	}
+	"no death from headshots"
+	{
+ 	 	"zho" 	"#Attrib_NoDeathFromHeadshots"
+	}
+	"custom taunt particle attr"
+	{
+ 	 	"zho" 	"#Attrib_TauntParticles"
+	}
+	"calling card on kill"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"projectile lifetime"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"not solid to players"
+	{
+ 	 	"zho" 	"可以穿過玩家"
+	}
+	"is suicide counter"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"always allow taunt"
+	{
+ 	 	"zho" 	"始終允許使用嘲諷"
+	}
+	"mult reflect velocity"
+	{
+ 	 	"zho" 	"(+-)%p%反彈彈藥速度"
+	}
+	"custom kill icon"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"cannot be upgraded"
+	{
+ 	 	"zho" 	"武器無法升級"
+	}
+	"is dropped weapon"
+	{
+ 	 	"zho" 	"屬於掉落武器"
+	}
+	"mod projectile heat follow crosshair"
+	{
+ 	 	"zho" 	"準星制導彈藥"
+	}
+	"projectile no deflect"
+	{
+ 	 	"zho" 	"彈藥無法被反彈"
+	}
+	"projectile acceleration start time"
+	{
+ 	 	"zho" 	"飛行物加速開始時間"
+	}
+	"player gravity ballon head"
+	{
+ 	 	"zho" 	"玩家重力輕快頭"
+	}
+	"is force item"
+	{
+ 	 	"zho" 	"強制裝備物品"
+	}
+	"mult dmg vs giants"
+	{
+ 	 	"zho" 	"(+-)%p%對大機器人傷害"
+	}
+	"mult dmg vs npc"
+	{
+ 	 	"zho" 	"(+-)%p%對NPC傷害"
+	}
+	"mult dmg vs tanks"
+	{
+ 	 	"zho" 	"(+-)%p%對載具傷害"
+	}
+	"custom hit sound"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"custom impact sound"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"custom weapon reload sound"
+	{
+ 	 	"zho" 	"#Attrib_CallingCardOnKill"
+	}
+	"no explosion particles"
+	{
+ 	 	"zho" 	"無爆炸粒子效果"
+	}
+	"override projectile type extra"
+	{
+ 	 	"zho" 	"覆寫飛行物類型"
+	}
+	"dmg current health"
+	{
+ 	 	"zho" 	"擊中時：敵人當前生命值的%p%被轉化為傷害"
+	}
+	"dmg max health"
+	{
+ 	 	"zho" 	"擊中時：敵人最大生命值的%p%被轉化為傷害"
+	}
+	"dmg missing health"
+	{
+ 	 	"zho" 	"擊中時：敵人損失生命值的%p%被轉化為傷害"
+	}
+	"cannot be teleported"
+	{
+ 	 	"zho" 	"無法被傳送"
+	}
+	"mult medigun range"
+	{
+ 	 	"zho" 	"(+-)%p%醫療槍範圍"
+	}
+	"projectile penetration limit"
+	{
+ 	 	"zho" 	"子彈能穿透%d個敵人"
+	}
+	"max aoe targets"
+	{
+ 	 	"zho" 	"對3名敵人造成傷害"
+	}
+	"add cond on hit"
+	{
+ 	 	"zho" 	"擊中時增加cond"
+	}
+	"add cond on hit duration"
+	{
+ 	 	"zho" 	"擊中過程中增加cond"
+	}
+	"remove cond on hit"
+	{
+ 	 	"zho" 	"擊中時移除cond"
+	}
+	"add damage type"
+	{
+ 	 	"zho" 	"增加傷害種類"
+	}
+	"remove damage type"
+	{
+ 	 	"zho" 	"移除傷害種類"
+	}
+	"special damage type"
+	{
+ 	 	"zho" 	"特殊傷害種類"
+	}
+	"dmg taken mult from special damage type 1"
+	{
+ 	 	"zho" 	"受到1類傷害的作用倍率"
+	}
+	"dmg taken mult from special damage type 2"
+	{
+ 	 	"zho" 	"受到2類傷害的作用倍率"
+	}
+	"dmg taken mult from special damage type 3"
+	{
+ 	 	"zho" 	"受到3類傷害的作用倍率"
+	}
+	"mult effect duration"
+	{
+ 	 	"zho" 	"(+-)%p%效果持續時間"
+	}
+	"effect cond override"
+	{
+ 	 	"zho" 	"效果cond覆寫"
+	}
+	"self add cond on hit"
+	{
+ 	 	"zho" 	"擊中時對自己增加cond"
+	}
+	"self add cond on hit duration"
+	{
+ 	 	"zho" 	"擊中過程中對自己增加cond"
+	}
+	"add cond on kill"
+	{
+ 	 	"zho" 	"擊殺時增加cond"
+	}
+	"add cond on kill duration"
+	{
+ 	 	"zho" 	"擊殺過程中增加cond"
+	}
+	"special item description"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"mult flag carrier move speed"
+	{
+ 	 	"zho" 	"(+-)%p%炸彈攜帶者移動速度"
+	}
+	"overheal from heal on kill"
+	{
+ 	 	"zho" 	"擊殺時：獲得額外生命值"
+	}
+	"fire input on hit"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"fire input on hit name restrict"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"mult max overheal self"
+	{
+ 	 	"zho" 	"獲得更多超量治療量"
+	}
+	"grenade bounce speed"
+	{
+ 	 	"zho" 	"榴彈能在墻上反彈"
+	}
+	"grenade bounce damage"
+	{
+ 	 	"zho" 	"榴彈在墻上反彈後仍能在直接命中時爆炸，造成(+-)%p%傷害"
+	}
+	"projectile gravity native"
+	{
+ 	 	"zho" 	"(+-)%p%傷害"
+	}
+	"grenade no drag"
+	{
+ 	 	"zho" 	"彈藥不會被減速"
+	}
+	"stickybomb stick to enemies"
+	{
+ 	 	"zho" 	"粘雷會粘在敵人身上"
+	}
+	"stickybomb no stick"
+	{
+ 	 	"zho" 	"粘雷不粘"
+	}
+	"collect currency on kill"
+	{
+ 	 	"zho" 	"自動收集金錢"
+	}
+	"override step sound string"
+	{
+ 	 	"zho" 	"覆寫腳步聲"
+	}
+	"stomp player force"
+	{
+ 	 	"zho" 	"擊退碰到的敵方玩家"
+	}
+	"stomp player damage"
+	{
+ 	 	"zho" 	"對碰到的敵人造成%d傷害"
+	}
+	"reflect keep team"
+	{
+ 	 	"zho" 	"被反彈的彈藥不會改變隊伍"
+	}
+	"custom wind up sound"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"custom wind down sound"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"reflect magnet"
+	{
+ 	 	"zho" 	"反射彈藥射向噴火兵"
+	}
+	"stay after regenerate"
+	{
+ 	 	"zho" 	"保持到恢覆後"
+	}
+	"custom minigun spin sound"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"stomp player time"
+	{
+ 	 	"zho" 	"對踩到的敵人造成傷害的時長"
+	}
+	"arrow hit kill time"
+	{
+ 	 	"zho" 	"弓箭擊中擊殺時間"
+	}
+	"mod dispenser cost"
+	{
+ 	 	"zho" 	"(+-)%p%補給器成本"
+	}
+	"mod sentry cost"
+	{
+ 	 	"zho" 	"(+-)%p%步哨槍成本"
+	}
+	//"add cond when active"
+	//{
+ 	// 	"zho" 	"增加 cond"
+	//}
+	"penetrate teammates"
+	{
+ 	 	"zho" 	"穿透隊友"
+	}
+	"stomp building damage"
+	{
+ 	 	"zho" 	"踩建築物傷害"
+	}
+	"mult debuff duration"
+	{
+ 	 	"zho" 	"(+-)%p%受到的減益持續時間"
+	}
+	"custom weapon name"
+	{
+ 	 	"zho" 	"自定義武器名"
+	}
+	"add cond when active"
+	{
+ 	 	"zho" 	"激活時增加cond"
+	}
+	"mult step height"
+	{
+ 	 	"zho" 	"(+-)%p%步伐高度"
+	}
+	"ignore player clip"
+	{
+ 	 	"zho" 	"無視玩家阻擋"
+	}
+	"allow bunny hop"
+	{
+ 	 	"zho" 	"可以連跳"
+	}
+	"fire input on kill"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"fire input on kill name restrict"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"fire full clip at once"
+	{
+ 	 	"zho" 	"一次發射整個彈匣"
+	}
+	"reload full clip at once"
+	{
+ 	 	"zho" 	"一次裝填整個彈匣"
+	}
+	"projectile sound"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"burst fire count"
+	{
+ 	 	"zho" 	"爆炸開火發射%d發彈藥"
+	}
+	"burst fire rate mult"
+	{
+ 	 	"zho" 	"(+-)%p%爆炸開火開火速度"
+	}
+	"continous accuracy mult"
+	{
+ 	 	"zho" 	"(+-)%p%精準度提升持續時間"
+	}
+	"continous accuracy time"
+	{
+ 	 	"zho" 	"(+-)%p%精準度提升持續時間"
+	}
+	"continous accuracy time recovery"
+	{
+ 	 	"zho" 	"(+-)%p%精準度提升持續時間"
+	}
+	"duck accuracy mult"
+	{
+ 	 	"zho" 	"(+-)%p%蹲伏時精準度"
+	}
+	"move accuracy mult"
+	{
+ 	 	"zho" 	"(+-)%p%移動時精準度"
+	}
+	"force fire full clip"
+	{
+ 	 	"zho" 	"發射將清空彈匣"
+	}
+	"is extra loadout item"
+	{
+ 	 	"zho" 	"特殊武器裝備"
+	}
+	"special item description 2"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"special item description 3"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"special item description 4"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"allowed build types"
+	{
+ 	 	"zho" 	"允許建築物種類"
+	}
+	"max bullet range"
+	{
+ 	 	"zho" 	"%d射程"
+	}
+	"effect add attributes"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"medigun passive attributes"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"medigun passive attributes owner"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"bullet spread additive"
+	{
+ 	 	"zho" 	"%d擴散範圍"
+	}
+	"mod projectile heat no predict target speed"
+	{
+ 	 	"zho" 	"%d速度"
+	}
+	"mult dmg vs airborne"
+	{
+ 	 	"zho" 	"(+-)%p%對空中目標的傷害"
+	}
+	"revive rate"
+	{
+ 	 	"zho" 	"(+-)%p%覆活速率"
+	}
+	"taunt attack after end"
+	{
+ 	 	"zho" 	"嘲諷攻擊有時會在嘲諷結束後施放"
+	}
+	"taunt attack time mult"
+	{
+ 	 	"zho" 	"(+-)%p%嘲諷攻擊時間"
+	}
+	"projectile spread angle mult"
+	{
+ 	 	"zho" 	"(+-)%p%彈道分布角度"
+	}
+	"damage returns as health"
+	{
+ 	 	"zho" 	"(+-)%p%造成的傷害轉化為生命值"
+	}
+	"no resupply"
+	{
+ 	 	"zho" 	"無法補給"
+	}
+	"no damage view flinch"
+	{
+ 	 	"zho" 	"受到傷害時視角不變"
+	}
+	"mult dmg friendly fire"
+	{
+ 	 	"zho" 	"(+-)%p%隊友傷害"
+	}
+	"disable wrangler shield"
+	{
+ 	 	"zho" 	"遙控手柄不給予護盾"
+	}
+	"parachute redeploy"
+	{
+ 	 	"zho" 	"允許使用降落傘"
+	}
+	"mult duck speed"
+	{
+ 	 	"zho" 	"(+-)%p%蹲伏時移動速度"
+	}
+	"particle color rgb"
+	{
+ 	 	"zho" 	"粒子顏色"
+	}
+	"particle color rainbow"
+	{
+ 	 	"zho" 	"粒子彩虹色"
+	}
+	"ignored by enemy sentries"
+	{
+ 	 	"zho" 	"被敵方步哨槍無視"
+	}
+	"melee airblast"
+	{
+ 	 	"zho" 	"揮砍反彈彈藥"
+	}
+	"passive reload"
+	{
+ 	 	"zho" 	"置於背包時：自動裝填"
+	}
+	"kb fall min velocity"
+	{
+ 	 	"zho" 	"下落時：眩暈附近所有敵人的下落速度"
+	}
+	"kb fall radius"
+	{
+ 	 	"zho" 	"下落時：眩暈附近所有敵人的範圍"
+	}
+	"kb fall stun time"
+	{
+ 	 	"zho" 	"下落時：眩暈附近所有敵人的持續時間"
+	}
+	"kb fall force"
+	{
+ 	 	"zho" 	"下落時：眩暈附近所有敵人的作用力"
+	}
+	"kb fall damage"
+	{
+ 	 	"zho" 	"下落時：眩暈附近所有敵人的傷害"
+	}
+	"melee grants protection"
+	{
+ 	 	"zho" 	"揮砍時：提供短暫的傷害抗性"
+	}
+	"arrow snap to next target radius"
+	{
+ 	 	"zho" 	"彈藥命中後折射向下一個最近的敵人的範圍"
+	}
+	"arrow snap to next target angle"
+	{
+ 	 	"zho" 	"彈藥命中後折射向下一個最近的敵人的角度"
+	}
+	"mult credit collect range"
+	{
+ 	 	"zho" 	"(+-)%p%金錢收集範圍"
+	}
+	"health from credits"
+	{
+ 	 	"zho" 	"(+-)%d拾取金錢恢覆生命值"
+	}
+	"mult bleeding delay"
+	{
+ 	 	"zho" 	"(+-)%p%流血傷害延遲"
+	}
+	"mult bleeding dmg"
+	{
+ 	 	"zho" 	"(+-)%p%流血傷害"
+	}
+	"grenade bounce speed xy"
+	{
+ 	 	"zho" 	"(+-)%p%榴彈彈跳速度"
+	}
+	"not solid"
+	{
+ 	 	"zho" 	"玩家不是實體"
+	}
+	"dmg taken from self reduced"
+	{
+ 	 	"zho" 	"(+-)%p%自殘傷害"
+	}
+	"ignored by bots"
+	{
+ 	 	"zho" 	"被機器人無視"
+	}
+	"custom weapon id"
+	{
+ 	 	"zho" 	"自定義武器ID"
+	}
+	"add attributes on hit"
+	{
+ 	 	"zho" 	"命中時：增加屬性"
+	}
+	"add attributes on kill"
+	{
+ 	 	"zho" 	"擊殺時：增加屬性"
+	}
+	"self add attributes on hit"
+	{
+ 	 	"zho" 	"命中時：自我增加屬性"
+	}
+	"mod projectile heat aim start time"
+	{
+ 	 	"zho" 	"紅外制導啟動時間"
+	}
+	"move speed as health decreases"
+	{
+ 	 	"zho" 	"隨著生命值下降最多(+-)%p%移動速度"
+	}
+	"no self effect"
+	{
+ 	 	"zho" 	"不會燃燒或流血"
+	}
+	"reset arrow hits on bounce"
+	{
+ 	 	"zho" 	"弓箭再次反彈時間"
+	}
+	"arrow target bounce speed"
+	{
+ 	 	"zho" 	"弓箭反彈速度"
+	}
+	"cannot pickup spells"
+	{
+ 	 	"zho" 	"無法撿起魔法書頁"
+	}
+	"mult max health"
+	{
+ 	 	"zho" 	"(+-)%p%最大生命值"
+	}
+	"add spread"
+	{
+ 	 	"zho" 	"(+-)%d彈道分布"
+	}
+	"always allow disguise"
+	{
+ 	 	"zho" 	"始終允許偽裝"
+	}
+	"always allow cloak"
+	{
+ 	 	"zho" 	"始終允許隱身"
+	}
+	"always allow teleport"
+	{
+ 	 	"zho" 	"始終允許傳送"
+	}
+	"destroy buildings on death"
+	{
+ 	 	"zho" 	"死亡時：摧毀所屬建築物"
+	}
+	"sentry bullet weapon"
+	{
+ 	 	"zho" 	"步哨子彈武器"
+	}
+	"sentry rocket weapon"
+	{
+ 	 	"zho" 	"步哨火箭武器"
+	}
+	//"custom sentry model"
+	//{
+ 	// 	"zho" 	"自定義步哨槍模型"
+	//}
+	//"custom dispenser model"
+	//{
+ 	// 	"zho" 	"自定義補給器模型"
+	//}
+	//"custom teleporter model"
+	//{
+ 	// 	"zho" 	"自定義傳送器模型"
+	//}
+	"mult sentry rocket ammo"
+	{
+ 	 	"zho" 	"(+-)%p%步哨槍火箭彈藥"
+	}
+	"midair accuracy mult"
+	{
+ 	 	"zho" 	"(+-)%p%空中精準度"
+	}
+	"add damage per target"
+	{
+ 	 	"zho" 	"同時命中多個目標時：(+-)%p%傷害/個"
+	}
+	"projectile detonate time"
+	{
+ 	 	"zho" 	"開火後：彈藥在%d秒後自爆"
+	}
+	"mult afterburn delay"
+	{
+ 	 	"zho" 	"(+-)%p%燃燒傷害延遲"
+	}
+	"custom view model"
+	{
+ 	 	"zho" 	"custom view model"
+	}
+	"mult dmg while midair"
+	{
+ 	 	"zho" 	"滯空時：(+-)%p%傷害"
+	}
+	//"hidden string attribute 1"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"hidden string attribute 2"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"hidden string attribute 3"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"hidden string attribute 4"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"medigun keep charged effect"
+	{
+ 	 	"zho" 	""
+	}
+	"ignores other projectiles"
+	{
+ 	 	"zho" 	"(+-)%p% damage while midair"
+	}
+	"weapon always gib"
+	{
+ 	 	"zho" 	"武器總會撕碎敵人"
+	}
+	"weapon never gib"
+	{
+ 	 	"zho" 	"武器不會撕碎敵人"
+	}
+	"always gib"
+	{
+ 	 	"zho" 	"Always gib"
+	}
+	"never gib"
+	{
+ 	 	"zho" 	"Never gib"
+	}
+	"sapper sap allies"
+	{
+ 	 	"zho" 	"只能對友軍使用"
+	}
+	//"custom sapper model"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"custom sapper sound"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"no clip"
+	{
+ 	 	"zho" 	"Place on allies"
+	}
+	"arrow ignite"
+	{
+ 	 	"zho" 	"弓箭自帶點燃效果"
+	}
+	"use original class weapon animations"
+	{
+ 	 	"zho" 	"Arrows are always lit"
+	}
+	"mult dmg before distance"
+	{
+ 	 	"zho" 	"近距離交戰時：最高(+-)%p%傷害"
+	}
+	//"mult dmg before distance specify"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"mult_item_meter_charge_rate 2"
+	{
+ 	 	"zho" 	"(+-)%p%充能速率"
+	}
+	"clip size upgrade atomic 2"
+	{
+ 	 	"zho" 	"(+-)%d彈匣容量"
+	}
+	"charge recharge rate increased 2"
+	{
+ 	 	"zho" 	"(+-)%p%充能速率"
+	}
+	"mult sentry rocket projectile speed"
+	{
+ 	 	"zho" 	"(+-)%p%火箭飛行速度"
+	}
+	"max ammo primary mult"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"max ammo secondary mult"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"minigun full movement"
+	{
+ 	 	"zho" 	"開火時：允許邊蹲伏邊移動"
+	}
+	"use original class player animations"
+	{
+ 	 	"zho" 	"Arrows are always lit"
+	}
+	//"crit on cond"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"minicrit on cond"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"add attributes when active"
+	{
+ 	 	"zho" 	"箭矢永遠燃燒"
+	}
+	//"radial cond"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"mult explosion radius direct hit"
+	{
+ 	 	"zho" 	"直接命中時：(+-)%p%爆炸範圍"
+	}
+	"buildings cannot be sapped"
+	{
+ 	 	"zho" 	"電子工兵失效"
+	}
+	"mult dmg direct hit"
+	{
+ 	 	"zho" 	"直接命中時：(+-)%p%傷害"
+	}
+	//"explosion particle on direct hit"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"cannot upgrade bomb"
+	{
+ 	 	"zho" 	"無法獲得炸彈增益"
+	}
+	"max ammo primary additive"
+	{
+ 	 	"zho" 	"(+-)%p%主武器彈藥量"
+	}
+	"max ammo secondary additive"
+	{
+ 	 	"zho" 	"(+-)%p%副武器彈藥量"
+	}
+	"sentry toolbox model"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"dispenser toolbox model"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"teleporter toolbox model"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun attack enemy"
+	{
+ 	 	"zho" 	"以治療速率的%p%攻擊敵人"
+	}
+	"medigun self drain"
+	{
+ 	 	"zho" 	"治療時：以治療速率的%p%消耗生命值"
+	}
+	"fire input on attack"
+	{
+ 	 	"zho" 	"%d"
+	}
+	"stun on hit"
+	{
+ 	 	"zho" 	"擊中時：擊暈敵方%d秒"
+	}
+	"stun on hit no giants"
+	{
+ 	 	"zho" 	"無法擊暈大機器人"
+	}
+	"stun on hit type"
+	{
+ 	 	"zho" 	"Cannot stun giants"
+	}
+	"stun on hit slow"
+	{
+ 	 	"zho" 	"擊中時：敵方減速%p%"
+	}
+	"medigun attack enemy heal mult"
+	{
+ 	 	"zho" 	"%p%傷害吸血"
+	}
+	"medigun particle"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle enemy"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle release"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle spark"
+	{
+ 	 	"zho" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"effect immunity"
+	{
+ 	 	"zho" 	"無視敵我施加效果"
+	}
+	//"use human voice"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"use robot voice"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"alt fire attack"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"alt fire attributes"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"no revive"
+	{
+ 	 	"zho" 	"死後無法人工覆活"
+	}
+	"fire input on effect"
+	{
+ 	 	"zho" 	"No reanimator on death"
+	}
+	"additional step sound"
+	{
+ 	 	"zho" 	"No reanimator on death"
+	}
+	"fov override"
+	{
+ 	 	"zho" 	"No reanimator on death"
+	}
+	"hud overlay"
+	{
+ 	 	"zho" 	"No reanimator on death"
+	}
+	"fire input on taunt"
+	{
+ 	 	"zho" 	"No reanimator on death"
+	}
+	"displace touched enemies"
+	{
+ 	 	"zho" 	"推開接觸的敵人"
+	}
+	"addcond immunity"
+	{
+ 	 	"zho" 	"Push away enemies"
+	}
+	"attribute immunity"
+	{
+ 	 	"zho" 	"Push away enemies"
+	}
+	"hold fire until full reload"
+	{
+ 	 	"zho" 	"采用爆炸開火模式"
+	}
+	//"projectile hit radius"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"noclip projectiles"
+	{
+ 	 	"zho" 	"彈藥可穿墻"
+	}
+	//"projectile health"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"projectile take damage type"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"projectile take damage time"
+	//{
+ 	// 	"zho" 	""
+	//}
+	//"projectile explode on destroy"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"projectile explode time"
+	{
+ 	 	"zho" 	"%d秒後爆炸"
+	}
+	"shoot view punch angle"
+	{
+ 	 	"zho" 	"武器有垂直後坐力"
+	}
+	"shoot view punch angle random"
+	{
+ 	 	"zho" 	"武器有水平後坐力"
+	}
+	"custom item model attachment"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	"custom item model attachment 2"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	"custom item model attachment 3"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	//"custom weapon deploy sound"
+	//{
+ 	// 	"zho" 	""
+	//}
+	"custom item model attachment viewmodel"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	"custom item model attachment viewmodel 2"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	"custom item model attachment viewmodel 3"
+	{
+ 	 	"zho" 	"melee cleave attack"
+	}
+	"flare no crit burning"
+	{
+ 	 	"zho" 	"無法爆擊燃燒敵人"
+	}
+	"rage receive scale"
+	{
+		"zho" "(+-)%p%充能獲取量"
+	}
+	"fire input on hit ally"
+	{
+		"zho" "%d"
+	}
+	"spread angle pattern"
+	{
+ 	 	"zho" 	""
+	}
+	"spread offset pattern"
+	{
+ 	 	"zho" 	""
+	}
+	"proj attribute pattern"
+	{
+ 	 	"zho" 	""
+	}
+	"shoot pattern reset time"
+	{
+ 	 	"zho" 	""
+	}
+	"shoot pattern no rollback"
+	{
+ 	 	"zho" 	""
+	}
+	"custom damage type override"
+	{
+ 	 	"zho" 	""
+	}
+}

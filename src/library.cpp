@@ -19,6 +19,7 @@ static std::map<Library, const char *> libnames{
 	{ Library::VPHYSICS,           "vphysics"           },
 	{ Library::VSTDLIB,            "vstdlib"            },
 	{ Library::SOURCEMODCORE,      "sourcemodcore"      },
+	{ Library::VSCRIPT,            "vscript"            },
 };
 
 static std::map<Segment, const char *> segnames{
@@ -341,7 +342,7 @@ CON_COMMAND(sig_list_signatures, "") {
 	for (auto &[lib, libname] : libnames) {
 		LibMgr::ForEachSym(lib, [&](const Symbol& sym){
 			if (std::regex_match(sym.name, filter, std::regex_constants::match_any)) {
-				Msg("Match: %s\n", sym.name.c_str());
+				Msg("Match: %s | %s\n", sym.name.c_str(), libname);
 			}
 			return true;
 		});

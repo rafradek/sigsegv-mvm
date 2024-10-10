@@ -6,6 +6,7 @@
 #include "stub/upgrades.h"
 #include "stub/gamerules.h"
 #include "mod/mvm/extended_upgrades.h"
+#include "stub/misc.h"
 
 namespace Mod::MvM::Upgrade_Disallow
 {
@@ -52,15 +53,15 @@ namespace Mod::MvM::Upgrade_Disallow
 				const char *upgradename = upgrade->GetUpgradeAttributeName(upgradeslot);
 				
 				if (!cvar_explode_on_ignite.GetBool() && strcmp(upgradename,"explode_on_ignite") == 0){
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "Explode on ignite is not allowed on this server");
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Explode on ignite is not allowed on this server"));
 					return;
 				}
 				else if (!cvar_medigun_shield.GetBool() && strcmp(upgradename,"generate rage on heal") == 0){
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "Projectile shield is not allowed on this server");
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Projectile shield is not allowed on this server"));
 					return;
 				}
 				else if (!cvar_burn_time.GetBool() && strcmp(upgradename,"weapon burn time increased") == 0){
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "Burn time bonus upgrade is broken. Buy another upgrade");
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Burn time bonus upgrade is broken. Buy another upgrade"));
 					return;
 				}
 				else if (strcmp(upgradename,"engy sentry fire rate increased") == 0 &&
@@ -71,7 +72,7 @@ namespace Mod::MvM::Upgrade_Disallow
 					
 					DevMsg("upgrade %f\n",upgrade);
 					if (upgrade >= 0.79f && upgrade <= 0.81f) {
-						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "3rd sentry fire rate bonus upgrade is broken. Buy another upgrade");
+						gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "3rd sentry fire rate bonus upgrade is broken. Buy another upgrade"));
 						return;
 					}
 					

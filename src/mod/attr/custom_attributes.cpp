@@ -2798,7 +2798,7 @@ namespace Mod::Attr::Custom_Attributes
 				int cannotUpgrade = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
 				if (cannotUpgrade) {
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "The Upgrade Station is disabled!"));
 					return;
 				}
 			}
@@ -2815,7 +2815,7 @@ namespace Mod::Attr::Custom_Attributes
 				int cannotUpgrade = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER(player,cannotUpgrade,cannot_upgrade);
 				if (cannotUpgrade) {
-					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled!");
+					gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "The Upgrade Station is disabled!"));
 #ifndef NO_MVM
 					if (Mod::Pop::PopMgr_Extensions::HasExtraLoadoutItems(player->GetPlayerClass()->GetClassIndex())) {
         				CancelClientMenu(player);
@@ -3518,7 +3518,7 @@ namespace Mod::Attr::Custom_Attributes
 					CALL_ATTRIB_HOOK_INT_ON_OTHER ( entity, iCannotUpgrade, cannot_be_upgraded );
 					if (iCannotUpgrade > 0) {
 						if (!sell) {
-							gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "This weapon is not upgradeable");
+							gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "This weapon is not upgradeable"));
 						}
 						return;
 					}
@@ -5411,7 +5411,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, sentry_cost, mod_sentry_cost);
 			result *= sentry_cost;
 			if (sentry_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
-				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, CFmtStr("You need %d metal to build a sentry gun", result));
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a sentry gun", 1, &result));
 			}
 		}
 		else if (object == OBJ_DISPENSER) {
@@ -5419,7 +5419,7 @@ namespace Mod::Attr::Custom_Attributes
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(builder, dispenser_cost, mod_dispenser_cost);
 			result *= dispenser_cost;
 			if (dispenser_cost > 1.0f && result > builder->GetAmmoCount( TF_AMMO_METAL )) {
-				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, CFmtStr("You need %d metal to build a dispenser", result));
+				gamehelpers->TextMsg(ENTINDEX(builder), TEXTMSG_DEST_CENTER, TranslateText(builder, "You need metal to build a dispenser", 1, &result));
 			}
 		}
 		return result;
@@ -8347,7 +8347,7 @@ namespace Mod::Attr::Custom_Attributes
 		int slot = 0;//reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
 		if (display_stock && (item_def == nullptr || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
-			std::string str = item_def != nullptr ? std::string(CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def, player))) : "\nCharacter Attributes:\n\n"s;
+			std::string str = std::string(CFmtStr("\n%s:\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
 			if (attribute_info_vec.back().size() + str.size() > 252) {
 				attribute_info_vec.push_back(str);
 			}
@@ -8397,10 +8397,7 @@ namespace Mod::Attr::Custom_Attributes
 			} 
 
 			if (!added_item_name) {
-				if (item_def != nullptr)
-					format_str.insert(0, CFmtStr("\n%s:\n\n", GetItemNameForDisplay(item_def, player)));
-				else
-					format_str.insert(0, "\nCharacter Attributes:\n\n");
+				format_str.insert(0, CFmtStr("\n%s:\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
 
 				added_item_name = true;
 			}
@@ -8454,26 +8451,26 @@ namespace Mod::Attr::Custom_Attributes
 
 		bool display_stock_item = display_stock || (view != nullptr && view->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
 		if (slot == -1) {
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), player, nullptr, display_stock);
 			
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock_item);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), player, view, display_stock_item);
 		}
 		else {
 			if (view != nullptr)
-				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), target, view, display_stock_item);
+				DisplayAttributes(indexstr, attribute_info_vec, view->GetAttributeList().Attributes(), player, view, display_stock_item);
 
-			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), target, nullptr, display_stock);
+			DisplayAttributes(indexstr, attribute_info_vec, target->GetAttributeList()->Attributes(), player, nullptr, display_stock);
 		}
 
 		ForEachTFPlayerEconEntity(target, [&](CEconEntity *entity){
 			if (entity->GetItem() != nullptr && entity->GetItem() != view && entity->GetItem()->GetStaticData()->m_iItemDefIndex != 0) {
-				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), target, entity->GetItem(), display_stock || entity->GetItem()->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
+				DisplayAttributes(indexstr, attribute_info_vec, entity->GetItem()->GetAttributeList().Attributes(), player, entity->GetItem(), display_stock || entity->GetItem()->GetStaticData()->GetLoadoutSlot(target->GetPlayerClass()->GetClassIndex()) == -1);
 			}
 		});
 
 		if (player != target && !attribute_info_vec.empty()) {
-			attribute_info_vec.insert(attribute_info_vec.begin(), fmt::format("Inspecting {}\n", target->GetPlayerName()));
+			attribute_info_vec.insert(attribute_info_vec.begin(), TranslateText(player, "Inspecting player", 1, target->GetPlayerName()));
 		}
 		
 		/*hudtextparms_t textparms;

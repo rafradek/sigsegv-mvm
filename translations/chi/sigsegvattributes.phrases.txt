@@ -1,0 +1,1463 @@
+"Phrases"
+{
+	"parachute disabled"
+	{
+ 	 	"chi" 	"禁用降落伞"
+	}
+	"fires milk bolt"
+	{
+ 	 	"chi" 	"特殊开火：发射牛奶针管"
+	}
+	"force distribute currency on death"
+	{
+ 	 	"chi" 	"强制死亡掉落金钱"
+	}
+	"airblast dashes"
+	{
+ 	 	"chi" 	"气爆把玩家向前推"
+	}
+	"melee cleave attack"
+	{
+ 	 	"chi" 	"攻击范围内所有敌人"
+	}
+	"extra damage on hit penalty"
+	{
+ 	 	"chi" 	"击中后：下次伤害降低%d"
+	}
+	"extra damage on hit"
+	{
+ 	 	"chi" 	"击中后：可获得%d次加成，每次提升伤害1%"
+	}
+	"mod teleporter speed boost"
+	{
+ 	 	"chi" 	"传送时：加速4秒"
+	}
+	"set turn to ice"
+	{
+ 	 	"chi" 	"受害者变成冰雕"
+	}
+	"can breathe under water"
+	{
+ 	 	"chi" 	"可在水下呼吸"
+	}
+	"cannot swim"
+	{
+ 	 	"chi" 	"无法游泳"
+	}
+	"swimming mastery"
+	{
+ 	 	"chi" 	"+25%游泳速度"
+	}
+	"ability doubletap teleport"
+	{
+ 	 	"chi" 	"双击移动键可传送至传送器"
+	}
+	"mod ignore resists absorbs"
+	{
+ 	 	"chi" 	"无视伤害抗性"
+	}
+	"scoreboard minigame"
+	{
+ 	 	"chi" 	"杀敌获得更多分，死亡失去更多分"
+	}
+	"wet immunity"
+	{
+ 	 	"chi" 	"无视液体效果"
+	}
+	"ability master sniper"
+	{
+ 	 	"chi" 	"狙击大师：减少瞄准时间，增加充能速率"
+	}
+	"last shot crits"
+	{
+ 	 	"chi" 	"弹匣最后1发子弹造成暴击伤害"
+	}
+	"keep disguise on attack"
+	{
+ 	 	"chi" 	"攻击时保持伪装"
+	}
+	"add give health to teammate on hit"
+	{
+ 	 	"chi" 	"击中队友时：消耗自身血量并等量治疗队友"
+	}
+	"airblast functionality flags"
+	{
+ 	 	"chi" 	"气爆效果类型"
+	}
+	"reverse airblast"
+	{
+ 	 	"chi" 	"气爆将敌人推向玩家"
+	}
+	"mod minigun can holster while spinning"
+	{
+ 	 	"chi" 	"枪管高速旋转时：仍可收起武器"
+	}
+	"sapper deploy time"
+	{
+ 	 	"chi" 	"(+-)%d秒电子工兵充能时间"
+	}
+	"kill combo fire rate boost"
+	{
+ 	 	"chi" 	"击杀时：(+-)%p%提升3次开火速度，杀死不同兵种时清零"
+	}
+	"mult dispenser rate"
+	{
+ 	 	"chi" 	"(+-)%p%补给器补给效率"
+	}
+	"mvm sentry ammo"
+	{
+ 	 	"chi" 	"(+-)%p%步哨枪弹药容量"
+	}
+	"build small sentries"
+	{
+ 	 	"chi" 	"建造小型步哨枪"
+	}
+	"mult teleporter recharge rate"
+	{
+ 	 	"chi" 	"(+-)%p%传送器充能时间"
+	}
+	"disguise as dispenser on crouch"
+	{
+ 	 	"chi" 	"下蹲时：伪装成补给器"
+	}
+	"ubercharge transfer"
+	{
+ 	 	"chi" 	"作为医生击中时：向击中者传输你消耗能量的%d%"
+	}
+	"teleport instead of die"
+	{
+ 	 	"chi" 	"死亡时：%p%概率被以一滴血的状态瞬间复活"
+	}
+	"mod projectile heat seek power"
+	{
+ 	 	"chi" 	"智能弹药"
+	}
+	//"mod projectile heat aim error"
+	//{
+ 	// 	"chi" 	"智能弹药"
+	//}
+	"mult dmg vs same class"
+	{
+ 	 	"chi" 	"(+-)%p%对同兵种敌人的伤害"
+	}
+	"uber on damage taken"
+	{
+ 	 	"chi" 	"受到伤害时：%p%概率获得3秒无敌"
+	}
+	"mult dmgtaken from melee"
+	{
+ 	 	"chi" 	"(+-)%p%受到的近战伤害"
+	}
+	"mult crit when health is below percent"
+	{
+ 	 	"chi" 	"血量低于%p%时获得暴击加成"
+	}
+	"penetration damage penalty"
+	{
+ 	 	"chi" 	"(+-)%p%穿透伤害"
+	}
+	"firing forward pull"
+	{
+ 	 	"chi" 	"开火时：会被向前推"
+	}
+	"mod soldier buff range"
+	{
+ 	 	"chi" 	"(+-)%p%增益作用范围"
+	}
+	"mult rocketjump deploy time"
+	{
+ 	 	"chi" 	"火箭跳跃时：(+-)%p%部署速度"
+	}
+	"aoe heal chance"
+	{
+ 	 	"chi" 	"击中时：概率治疗范围内的队友24生命值"
+	}
+	"crits on damage"
+	{
+ 	 	"chi" 	"击中时：概率获得3秒暴击加成"
+	}
+	"stun on damage"
+	{
+ 	 	"chi" 	"击中时：概率击晕敌人3秒"
+	}
+	"aoe blast on damage"
+	{
+ 	 	"chi" 	"击中时：概率产生爆炸 造成流血和击晕"
+	}
+	"ubercharge ammo"
+	{
+ 	 	"chi" 	"转化%d%Ubercharge能量为弹药"
+	}
+	"mul nonrocketjump attackrate"
+	{
+ 	 	"chi" 	"火箭跳跃时：(+-)%p%开火速度"
+	}
+	"mult dmg with reduced health"
+	{
+ 	 	"chi" 	"受伤时：攻击力增强最高可达(+-)%p%"
+	}
+	"mult airblast primary refire time"
+	{
+ 	 	"chi" 	"气爆后重新喷火速度"
+	}
+	"mod flamethrower spinup time"
+	{
+ 	 	"chi" 	"%d 秒喷火器预热时间"
+	}
+	"mult airblast cone scale"
+	{
+ 	 	"chi" 	"(+-)%p%气爆作用范围"
+	}
+	"mult sniper charge per sec with enemy under crosshair"
+	{
+ 	 	"chi" 	"瞄准敌人时：(+-)%p%充能速率"
+	}
+	"sniper beep with enemy under crosshair"
+	{
+ 	 	"chi" 	"瞄准敌人时：播放提示音"
+	}
+	"arrow mastery"
+	{
+ 	 	"chi" 	"弓箭大师：+%d箭矢分裂"
+	}
+	"medic machinery beam"
+	{
+ 	 	"chi" 	"以%d0%的效率修复建筑物"
+	}
+	"mult smack time"
+	{
+ 	 	"chi" 	"(+-)%p%武器挥舞速度"
+	}
+	"disable buildings on hit"
+	{
+ 	 	"chi" 	"击中建筑物时：瘫痪建筑物%d秒"
+	}
+	"regenerate stickbomb"
+	{
+ 	 	"chi" 	"使用后自动补给"
+	}
+	"custom jump particle"
+	{
+ 	 	"chi" 	"自定义火箭跳跃粒子"
+	}
+	"custom item model"
+	{
+ 	 	"chi" 	"自定义物品模型"
+	}
+	"custom weapon fire sound"
+	{
+ 	 	"chi" 	"自定义武器开火音效"
+	}
+	"explosive bullets"
+	{
+ 	 	"chi" 	"发射高爆弹药"
+	}
+	"mult projectile scale"
+	{
+ 	 	"chi" 	"飞行物大小"
+	}
+	"mult projectile count"
+	{
+ 	 	"chi" 	"(+-)%p%同时发射数量"
+	}
+	"projectile trail particle"
+	{
+ 	 	"chi" 	"飞行物轨迹粒子"
+	}
+	"explosion particle"
+	{
+ 	 	"chi" 	"爆炸粒子效果"
+	}
+	"custom projectile size"
+	{
+ 	 	"chi" 	"自定义飞行物大小"
+	}
+	"radius sleeper"
+	{
+ 	 	"chi" 	"对附近敌人泼尿"
+	}
+	"can headshot"
+	{
+ 	 	"chi" 	"可以爆头"
+	}
+	"no damage falloff"
+	{
+ 	 	"chi" 	"禁止伤害下降或提升"
+	}
+	"force damage falloff"
+	{
+ 	 	"chi" 	"强制伤害下降和提升"
+	}
+	"no reduced damage rampup"
+	{
+ 	 	"chi" 	"+50%伤害"
+	}
+	"reduced damage rampup"
+	{
+ 	 	"chi" 	"+20%伤害"
+	}
+	"dont count damage towards crit rate"
+	{
+ 	 	"chi" 	"不将伤害计入暴击率"
+	}
+	"cannot be sapped"
+	{
+ 	 	"chi" 	"不会被电子工兵影响"
+	}
+	"item color rgb"
+	{
+ 	 	"chi" 	"物品颜色"
+	}
+	"is invisible"
+	{
+ 	 	"chi" 	"是否可见"
+	}
+	"cannot taunt"
+	{
+ 	 	"chi" 	"无法使用嘲讽"
+	}
+	"projectile acceleration"
+	{
+ 	 	"chi" 	"飞行物加速"
+	}
+	"is miniboss"
+	{
+ 	 	"chi" 	"迷你头目"
+	}
+	"model scale"
+	{
+ 	 	"chi" 	"模型大小"
+	}
+	"cannot upgrade"
+	{
+ 	 	"chi" 	"无法升级"
+	}
+	"min respawn time"
+	{
+ 	 	"chi" 	"最小重生时间"
+	}
+	"always crit"
+	{
+ 	 	"chi" 	"一定产生暴击伤害"
+	}
+	"mult firerocket rate"
+	{
+ 	 	"chi" 	"(+-)%p%步哨枪火箭弹开火速度"
+	}
+	"building max level"
+	{
+ 	 	"chi" 	"建筑物最高为%d级"
+	}
+	"sentry rapid fire"
+	{
+ 	 	"chi" 	"步哨枪快速开火"
+	}
+	"building color rgb"
+	{
+ 	 	"chi" 	"建筑物颜色"
+	}
+	"building scale"
+	{
+ 	 	"chi" 	"建筑物大小"
+	}
+	"mult stun resistance"
+	{
+ 	 	"chi" 	"(+-)%p%击晕抗性"
+	}
+	"allow friendly fire"
+	{
+ 	 	"chi" 	"会造成队友伤害"
+	}
+	"receive friendly fire"
+	{
+ 	 	"chi" 	"会受到队友伤害"
+	}
+	"cannot headshot"
+	{
+ 	 	"chi" 	"无法爆头"
+	}
+	"mult crit dmg"
+	{
+ 	 	"chi" 	"(+-)%p%暴击伤害"
+	}
+	"cannot be headshot"
+	{
+ 	 	"chi" 	"无法被爆头"
+	}
+	"attachment name"
+	{
+ 	 	"chi" 	"额外穿戴物名"
+	}
+	"attachment offset"
+	{
+ 	 	"chi" 	"额外穿戴物坐标"
+	}
+	"attachment angles"
+	{
+ 	 	"chi" 	"额外穿戴物角度"
+	}
+	"attachment scale"
+	{
+ 	 	"chi" 	"额外穿戴物大小"
+	}
+	"mod projectile heat aim time"
+	{
+ 	 	"chi" 	"飞行物热瞄准时间"
+	}
+	"projectile gravity"
+	{
+ 	 	"chi" 	"飞行物重力"
+	}
+	"projectile acceleration time"
+	{
+ 	 	"chi" 	"飞行物加速时间"
+	}
+	"grenade explode on impact"
+	{
+ 	 	"chi" 	"榴弹在接触时爆炸"
+	}
+	"cloak blink time penalty"
+	{
+ 	 	"chi" 	"#Attrib_CloakBlinkTimePenalty"
+	}
+	"quiet unstealth"
+	{
+ 	 	"chi" 	"#Attrib_QuietUnstealth"
+	}
+	"dmg from sentry reduced"
+	{
+ 	 	"chi" 	"#Attrib_DmgFromSentryReduced"
+	}
+	"no death from headshots"
+	{
+ 	 	"chi" 	"#Attrib_NoDeathFromHeadshots"
+	}
+	"custom taunt particle attr"
+	{
+ 	 	"chi" 	"#Attrib_TauntParticles"
+	}
+	"calling card on kill"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"projectile lifetime"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"not solid to players"
+	{
+ 	 	"chi" 	"可以穿过玩家"
+	}
+	"is suicide counter"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"always allow taunt"
+	{
+ 	 	"chi" 	"始终允许使用嘲讽"
+	}
+	"mult reflect velocity"
+	{
+ 	 	"chi" 	"(+-)%p%反弹弹药速度"
+	}
+	"custom kill icon"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"cannot be upgraded"
+	{
+ 	 	"chi" 	"武器无法升级"
+	}
+	"is dropped weapon"
+	{
+ 	 	"chi" 	"属于掉落武器"
+	}
+	"mod projectile heat follow crosshair"
+	{
+ 	 	"chi" 	"准星制导弹药"
+	}
+	"projectile no deflect"
+	{
+ 	 	"chi" 	"弹药无法被反弹"
+	}
+	"projectile acceleration start time"
+	{
+ 	 	"chi" 	"飞行物加速开始时间"
+	}
+	"player gravity ballon head"
+	{
+ 	 	"chi" 	"玩家重力轻快头"
+	}
+	"is force item"
+	{
+ 	 	"chi" 	"强制装备物品"
+	}
+	"mult dmg vs giants"
+	{
+ 	 	"chi" 	"(+-)%p%对大机器人伤害"
+	}
+	"mult dmg vs npc"
+	{
+ 	 	"chi" 	"(+-)%p%对NPC伤害"
+	}
+	"mult dmg vs tanks"
+	{
+ 	 	"chi" 	"(+-)%p%对载具伤害"
+	}
+	"custom hit sound"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"custom impact sound"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"custom weapon reload sound"
+	{
+ 	 	"chi" 	"#Attrib_CallingCardOnKill"
+	}
+	"no explosion particles"
+	{
+ 	 	"chi" 	"无爆炸粒子效果"
+	}
+	"override projectile type extra"
+	{
+ 	 	"chi" 	"覆写飞行物类型"
+	}
+	"dmg current health"
+	{
+ 	 	"chi" 	"击中时：敌人当前生命值的%p%被转化为伤害"
+	}
+	"dmg max health"
+	{
+ 	 	"chi" 	"击中时：敌人最大生命值的%p%被转化为伤害"
+	}
+	"dmg missing health"
+	{
+ 	 	"chi" 	"击中时：敌人损失生命值的%p%被转化为伤害"
+	}
+	"cannot be teleported"
+	{
+ 	 	"chi" 	"无法被传送"
+	}
+	"mult medigun range"
+	{
+ 	 	"chi" 	"(+-)%p%医疗枪范围"
+	}
+	"projectile penetration limit"
+	{
+ 	 	"chi" 	"子弹能穿透%d个敌人"
+	}
+	"max aoe targets"
+	{
+ 	 	"chi" 	"对3名敌人造成伤害"
+	}
+	"add cond on hit"
+	{
+ 	 	"chi" 	"击中时增加cond"
+	}
+	"add cond on hit duration"
+	{
+ 	 	"chi" 	"击中过程中增加cond"
+	}
+	"remove cond on hit"
+	{
+ 	 	"chi" 	"击中时移除cond"
+	}
+	"add damage type"
+	{
+ 	 	"chi" 	"增加伤害种类"
+	}
+	"remove damage type"
+	{
+ 	 	"chi" 	"移除伤害种类"
+	}
+	"special damage type"
+	{
+ 	 	"chi" 	"特殊伤害种类"
+	}
+	"dmg taken mult from special damage type 1"
+	{
+ 	 	"chi" 	"受到1类伤害的作用倍率"
+	}
+	"dmg taken mult from special damage type 2"
+	{
+ 	 	"chi" 	"受到2类伤害的作用倍率"
+	}
+	"dmg taken mult from special damage type 3"
+	{
+ 	 	"chi" 	"受到3类伤害的作用倍率"
+	}
+	"mult effect duration"
+	{
+ 	 	"chi" 	"(+-)%p%效果持续时间"
+	}
+	"effect cond override"
+	{
+ 	 	"chi" 	"效果cond覆写"
+	}
+	"self add cond on hit"
+	{
+ 	 	"chi" 	"击中时对自己增加cond"
+	}
+	"self add cond on hit duration"
+	{
+ 	 	"chi" 	"击中过程中对自己增加cond"
+	}
+	"add cond on kill"
+	{
+ 	 	"chi" 	"击杀时增加cond"
+	}
+	"add cond on kill duration"
+	{
+ 	 	"chi" 	"击杀过程中增加cond"
+	}
+	"special item description"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"mult flag carrier move speed"
+	{
+ 	 	"chi" 	"(+-)%p%炸弹携带者移动速度"
+	}
+	"overheal from heal on kill"
+	{
+ 	 	"chi" 	"击杀时：获得额外生命值"
+	}
+	"fire input on hit"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"fire input on hit name restrict"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"mult max overheal self"
+	{
+ 	 	"chi" 	"获得更多超量治疗量"
+	}
+	"grenade bounce speed"
+	{
+ 	 	"chi" 	"榴弹能在墙上反弹"
+	}
+	"grenade bounce damage"
+	{
+ 	 	"chi" 	"榴弹在墙上反弹后仍能在直接命中时爆炸，造成(+-)%p%伤害"
+	}
+	"projectile gravity native"
+	{
+ 	 	"chi" 	"(+-)%p%伤害"
+	}
+	"grenade no drag"
+	{
+ 	 	"chi" 	"弹药不会被减速"
+	}
+	"stickybomb stick to enemies"
+	{
+ 	 	"chi" 	"粘雷会粘在敌人身上"
+	}
+	"stickybomb no stick"
+	{
+ 	 	"chi" 	"粘雷不粘"
+	}
+	"collect currency on kill"
+	{
+ 	 	"chi" 	"自动收集金钱"
+	}
+	"override step sound string"
+	{
+ 	 	"chi" 	"覆写脚步声"
+	}
+	"stomp player force"
+	{
+ 	 	"chi" 	"击退碰到的敌方玩家"
+	}
+	"stomp player damage"
+	{
+ 	 	"chi" 	"对碰到的敌人造成%d伤害"
+	}
+	"reflect keep team"
+	{
+ 	 	"chi" 	"被反弹的弹药不会改变队伍"
+	}
+	"custom wind up sound"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"custom wind down sound"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"reflect magnet"
+	{
+ 	 	"chi" 	"反射弹药射向喷火兵"
+	}
+	"stay after regenerate"
+	{
+ 	 	"chi" 	"保持到恢复后"
+	}
+	"custom minigun spin sound"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"stomp player time"
+	{
+ 	 	"chi" 	"对踩到的敌人造成伤害的时长"
+	}
+	"arrow hit kill time"
+	{
+ 	 	"chi" 	"弓箭击中击杀时间"
+	}
+	"mod dispenser cost"
+	{
+ 	 	"chi" 	"(+-)%p%补给器成本"
+	}
+	"mod sentry cost"
+	{
+ 	 	"chi" 	"(+-)%p%步哨枪成本"
+	}
+	//"add cond when active"
+	//{
+ 	// 	"chi" 	"增加 cond"
+	//}
+	"penetrate teammates"
+	{
+ 	 	"chi" 	"穿透队友"
+	}
+	"stomp building damage"
+	{
+ 	 	"chi" 	"踩建筑物伤害"
+	}
+	"mult debuff duration"
+	{
+ 	 	"chi" 	"(+-)%p%受到减益的持续时间"
+	}
+	"custom weapon name"
+	{
+ 	 	"chi" 	"自定义武器名"
+	}
+	"add cond when active"
+	{
+ 	 	"chi" 	"激活时增加cond"
+	}
+	"mult step height"
+	{
+ 	 	"chi" 	"(+-)%p%步伐高度"
+	}
+	"ignore player clip"
+	{
+ 	 	"chi" 	"无视玩家阻挡"
+	}
+	"allow bunny hop"
+	{
+ 	 	"chi" 	"可以连跳"
+	}
+	"fire input on kill"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"fire input on kill name restrict"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"fire full clip at once"
+	{
+ 	 	"chi" 	"一次发射整个弹匣"
+	}
+	"reload full clip at once"
+	{
+ 	 	"chi" 	"一次装填整个弹匣"
+	}
+	"projectile sound"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"burst fire count"
+	{
+ 	 	"chi" 	"爆炸开火发射%d发弹药"
+	}
+	"burst fire rate mult"
+	{
+ 	 	"chi" 	"(+-)%p%爆炸开火开火速度"
+	}
+	"continous accuracy mult"
+	{
+ 	 	"chi" 	"(+-)%p%精准度提升持续时间"
+	}
+	"continous accuracy time"
+	{
+ 	 	"chi" 	"(+-)%p%精准度提升持续时间"
+	}
+	"continous accuracy time recovery"
+	{
+ 	 	"chi" 	"(+-)%p%精准度提升持续时间"
+	}
+	"duck accuracy mult"
+	{
+ 	 	"chi" 	"(+-)%p%蹲伏时精准度"
+	}
+	"move accuracy mult"
+	{
+ 	 	"chi" 	"(+-)%p%移动时精准度"
+	}
+	"force fire full clip"
+	{
+ 	 	"chi" 	"发射将清空弹匣"
+	}
+	"is extra loadout item"
+	{
+ 	 	"chi" 	"特殊武器装备"
+	}
+	"special item description 2"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"special item description 3"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"special item description 4"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"allowed build types"
+	{
+ 	 	"chi" 	"允许建筑物种类"
+	}
+	"max bullet range"
+	{
+ 	 	"chi" 	"%d射程"
+	}
+	"effect add attributes"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"medigun passive attributes"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"medigun passive attributes owner"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"bullet spread additive"
+	{
+ 	 	"chi" 	"%d扩散范围"
+	}
+	"mod projectile heat no predict target speed"
+	{
+ 	 	"chi" 	"%d速度"
+	}
+	"mult dmg vs airborne"
+	{
+ 	 	"chi" 	"(+-)%p%对空中目标的伤害"
+	}
+	"revive rate"
+	{
+ 	 	"chi" 	"(+-)%p%复活速率"
+	}
+	"taunt attack after end"
+	{
+ 	 	"chi" 	"嘲讽攻击有时会在嘲讽结束后施放"
+	}
+	"taunt attack time mult"
+	{
+ 	 	"chi" 	"(+-)%p%嘲讽攻击时间"
+	}
+	"projectile spread angle mult"
+	{
+ 	 	"chi" 	"(+-)%p%弹道分布角度"
+	}
+	"damage returns as health"
+	{
+ 	 	"chi" 	"(+-)%p%造成的伤害转化为生命值"
+	}
+	"no resupply"
+	{
+ 	 	"chi" 	"无法补给"
+	}
+	"no damage view flinch"
+	{
+ 	 	"chi" 	"受到伤害时视角不变"
+	}
+	"mult dmg friendly fire"
+	{
+ 	 	"chi" 	"(+-)%p%队友伤害"
+	}
+	"disable wrangler shield"
+	{
+ 	 	"chi" 	"遥控手柄不给予护盾"
+	}
+	"parachute redeploy"
+	{
+ 	 	"chi" 	"允许使用降落伞"
+	}
+	"mult duck speed"
+	{
+ 	 	"chi" 	"(+-)%p%蹲伏时移动速度"
+	}
+	"particle color rgb"
+	{
+ 	 	"chi" 	"粒子颜色"
+	}
+	"particle color rainbow"
+	{
+ 	 	"chi" 	"粒子彩虹色"
+	}
+	"ignored by enemy sentries"
+	{
+ 	 	"chi" 	"被敌方步哨枪无视"
+	}
+	"melee airblast"
+	{
+ 	 	"chi" 	"挥砍反弹弹药"
+	}
+	"passive reload"
+	{
+ 	 	"chi" 	"置于背包时：自动装填"
+	}
+	"kb fall min velocity"
+	{
+ 	 	"chi" 	"下落时：眩晕附近所有敌人的下落速度"
+	}
+	"kb fall radius"
+	{
+ 	 	"chi" 	"下落时：眩晕附近所有敌人的范围"
+	}
+	"kb fall stun time"
+	{
+ 	 	"chi" 	"下落时：眩晕附近所有敌人的持续时间"
+	}
+	"kb fall force"
+	{
+ 	 	"chi" 	"下落时：眩晕附近所有敌人的作用力"
+	}
+	"kb fall damage"
+	{
+ 	 	"chi" 	"下落时：眩晕附近所有敌人的伤害"
+	}
+	"melee grants protection"
+	{
+ 	 	"chi" 	"挥砍时：提供短暂的伤害抗性"
+	}
+	"arrow snap to next target radius"
+	{
+ 	 	"chi" 	"弹药命中后折射向下一个最近的敌人的范围"
+	}
+	"arrow snap to next target angle"
+	{
+ 	 	"chi" 	"弹药命中后折射向下一个最近的敌人的角度"
+	}
+	"mult credit collect range"
+	{
+ 	 	"chi" 	"(+-)%p%金钱收集范围"
+	}
+	"health from credits"
+	{
+ 	 	"chi" 	"(+-)%d拾取金钱恢复生命值"
+	}
+	"mult bleeding delay"
+	{
+ 	 	"chi" 	"(+-)%p%流血伤害延迟"
+	}
+	"mult bleeding dmg"
+	{
+ 	 	"chi" 	"(+-)%p%流血伤害"
+	}
+	"grenade bounce speed xy"
+	{
+ 	 	"chi" 	"(+-)%p%榴弹弹跳速度"
+	}
+	"not solid"
+	{
+ 	 	"chi" 	"玩家不是实体"
+	}
+	"dmg taken from self reduced"
+	{
+ 	 	"chi" 	"(+-)%p%自残伤害"
+	}
+	"ignored by bots"
+	{
+ 	 	"chi" 	"被机器人无视"
+	}
+	"custom weapon id"
+	{
+ 	 	"chi" 	"自定义武器ID"
+	}
+	"add attributes on hit"
+	{
+ 	 	"chi" 	"命中时：增加属性"
+	}
+	"add attributes on kill"
+	{
+ 	 	"chi" 	"击杀时：增加属性"
+	}
+	"self add attributes on hit"
+	{
+ 	 	"chi" 	"命中时：自我增加属性"
+	}
+	"mod projectile heat aim start time"
+	{
+ 	 	"chi" 	"红外制导启动时间"
+	}
+	"move speed as health decreases"
+	{
+ 	 	"chi" 	"随着生命值下降最多(+-)%p%移动速度"
+	}
+	"no self effect"
+	{
+ 	 	"chi" 	"不会燃烧或流血"
+	}
+	"reset arrow hits on bounce"
+	{
+ 	 	"chi" 	"弓箭再次反弹时间"
+	}
+	"arrow target bounce speed"
+	{
+ 	 	"chi" 	"弓箭反弹速度"
+	}
+	"cannot pickup spells"
+	{
+ 	 	"chi" 	"无法捡起魔法书页"
+	}
+	"mult max health"
+	{
+ 	 	"chi" 	"(+-)%p% 最大生命值"
+	}
+	"add spread"
+	{
+ 	 	"chi" 	"(+-)%d 弹道分布"
+	}
+	"always allow disguise"
+	{
+ 	 	"chi" 	"始终允许伪装"
+	}
+	"always allow cloak"
+	{
+ 	 	"chi" 	"始终允许隐身"
+	}
+	"always allow teleport"
+	{
+ 	 	"chi" 	"始终允许传送"
+	}
+	"destroy buildings on death"
+	{
+ 	 	"chi" 	"死亡时：摧毁所属建筑物"
+	}
+	"sentry bullet weapon"
+	{
+ 	 	"chi" 	"步哨子弹武器"
+	}
+	"sentry rocket weapon"
+	{
+ 	 	"chi" 	"步哨火箭武器"
+	}
+	//"custom sentry model"
+	//{
+ 	// 	"chi" 	"自定义步哨枪模型"
+	//}
+	//"custom dispenser model"
+	//{
+ 	// 	"chi" 	"自定义补给器模型"
+	//}
+	//"custom teleporter model"
+	//{
+ 	// 	"chi" 	"自定义传送器模型"
+	//}
+	"mult sentry rocket ammo"
+	{
+ 	 	"chi" 	"(+-)%p%步哨枪火箭弹药"
+	}
+	"midair accuracy mult"
+	{
+ 	 	"chi" 	"(+-)%p%空中精准度"
+	}
+	"add damage per target"
+	{
+ 	 	"chi" 	"同时命中多个目标时：(+-)%p%伤害/个"
+	}
+	"projectile detonate time"
+	{
+ 	 	"chi" 	"开火后：弹药在%d秒后自爆"
+	}
+	"mult afterburn delay"
+	{
+ 	 	"chi" 	"(+-)%p%燃烧伤害延迟"
+	}
+	"custom view model"
+	{
+ 	 	"chi" 	"custom view model"
+	}
+	"mult dmg while midair"
+	{
+ 	 	"chi" 	"滞空时：(+-)%p%伤害"
+	}
+	//"hidden string attribute 1"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"hidden string attribute 2"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"hidden string attribute 3"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"hidden string attribute 4"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"medigun keep charged effect"
+	{
+ 	 	"chi" 	""
+	}
+	"ignores other projectiles"
+	{
+ 	 	"chi" 	"(+-)%p% damage while midair"
+	}
+	"weapon always gib"
+	{
+ 	 	"chi" 	"武器总会撕碎敌人"
+	}
+	"weapon never gib"
+	{
+ 	 	"chi" 	"武器不会撕碎敌人"
+	}
+	"always gib"
+	{
+ 	 	"chi" 	"Always gib"
+	}
+	"never gib"
+	{
+ 	 	"chi" 	"Never gib"
+	}
+	"sapper sap allies"
+	{
+ 	 	"chi" 	"只能对友军使用"
+	}
+	//"custom sapper model"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"custom sapper sound"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"no clip"
+	{
+ 	 	"chi" 	"Place on allies"
+	}
+	"arrow ignite"
+	{
+ 	 	"chi" 	"弓箭自带点燃效果"
+	}
+	"use original class weapon animations"
+	{
+ 	 	"chi" 	"Arrows are always lit"
+	}
+	"mult dmg before distance"
+	{
+ 	 	"chi" 	"近距离交战时：最高(+-)%p%伤害"
+	}
+	//"mult dmg before distance specify"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"mult_item_meter_charge_rate 2"
+	{
+ 	 	"chi" 	"(+-)%p%充能速率"
+	}
+	"clip size upgrade atomic 2"
+	{
+ 	 	"chi" 	"(+-)%d弹匣容量"
+	}
+	"charge recharge rate increased 2"
+	{
+ 	 	"chi" 	"(+-)%p%充能速率"
+	}
+	"mult sentry rocket projectile speed"
+	{
+ 	 	"chi" 	"(+-)%p%火箭飞行速度"
+	}
+	"max ammo primary mult"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"max ammo secondary mult"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"minigun full movement"
+	{
+ 	 	"chi" 	"开火时：允许边蹲伏边移动"
+	}
+	"use original class player animations"
+	{
+ 	 	"chi" 	"Arrows are always lit"
+	}
+	//"crit on cond"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"minicrit on cond"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"add attributes when active"
+	{
+ 	 	"chi" 	"箭矢永远燃烧"
+	}
+	//"radial cond"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"mult explosion radius direct hit"
+	{
+ 	 	"chi" 	"直接命中时：(+-)%p% 爆炸范围"
+	}
+	"buildings cannot be sapped"
+	{
+ 	 	"chi" 	"电子工兵失效"
+	}
+	"mult dmg direct hit"
+	{
+ 	 	"chi" 	"直接命中时：(+-)%p% 伤害"
+	}
+	//"explosion particle on direct hit"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"cannot upgrade bomb"
+	{
+ 	 	"chi" 	"无法获得炸弹增益"
+	}
+	"max ammo primary additive"
+	{
+ 	 	"chi" 	"(+-)%p%主武器弹药量"
+	}
+	"max ammo secondary additive"
+	{
+ 	 	"chi" 	"(+-)%p%副武器弹药量"
+	}
+	"sentry toolbox model"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"dispenser toolbox model"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"teleporter toolbox model"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun attack enemy"
+	{
+ 	 	"chi" 	"以治疗速率的%p%攻击敌人"
+	}
+	"medigun self drain"
+	{
+ 	 	"chi" 	"治疗时：以治疗速率的%p%消耗生命值"
+	}
+	"fire input on attack"
+	{
+ 	 	"chi" 	"%d"
+	}
+	"stun on hit"
+	{
+ 	 	"chi" 	"击中时：击晕敌方%d秒"
+	}
+	"stun on hit no giants"
+	{
+ 	 	"chi" 	"无法击晕大机器人"
+	}
+	"stun on hit type"
+	{
+ 	 	"chi" 	"Cannot stun giants"
+	}
+	"stun on hit slow"
+	{
+ 	 	"chi" 	"击中时：敌方减速%p%"
+	}
+	"medigun attack enemy heal mult"
+	{
+ 	 	"chi" 	"%p%伤害吸取生命值"
+	}
+	"medigun particle"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle enemy"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle release"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"medigun particle spark"
+	{
+ 	 	"chi" 	"(+-)%p% sentry rocket projectile speed"
+	}
+	"effect immunity"
+	{
+ 	 	"chi" 	"无视敌我施加效果"
+	}
+	//"use human voice"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"use robot voice"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"alt fire attack"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"alt fire attributes"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"no revive"
+	{
+ 	 	"chi" 	"死后无法人工复活"
+	}
+	"fire input on effect"
+	{
+ 	 	"chi" 	"No reanimator on death"
+	}
+	"additional step sound"
+	{
+ 	 	"chi" 	"No reanimator on death"
+	}
+	"fov override"
+	{
+ 	 	"chi" 	"No reanimator on death"
+	}
+	"hud overlay"
+	{
+ 	 	"chi" 	"No reanimator on death"
+	}
+	"fire input on taunt"
+	{
+ 	 	"chi" 	"No reanimator on death"
+	}
+	"displace touched enemies"
+	{
+ 	 	"chi" 	"推开接触的敌人"
+	}
+	"addcond immunity"
+	{
+ 	 	"chi" 	"Push away enemies"
+	}
+	"attribute immunity"
+	{
+ 	 	"chi" 	"Push away enemies"
+	}
+	"hold fire until full reload"
+	{
+ 	 	"chi" 	"采用爆炸开火模式"
+	}
+	//"projectile hit radius"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"noclip projectiles"
+	{
+ 	 	"chi" 	"弹药可穿墙"
+	}
+	//"projectile health"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"projectile take damage type"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"projectile take damage time"
+	//{
+ 	// 	"chi" 	""
+	//}
+	//"projectile explode on destroy"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"projectile explode time"
+	{
+ 	 	"chi" 	"%d秒后爆炸"
+	}
+	"shoot view punch angle"
+	{
+ 	 	"chi" 	"武器有垂直后坐力"
+	}
+	"shoot view punch angle random"
+	{
+ 	 	"chi" 	"武器有水平后坐力"
+	}
+	"custom item model attachment"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	"custom item model attachment 2"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	"custom item model attachment 3"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	//"custom weapon deploy sound"
+	//{
+ 	// 	"chi" 	""
+	//}
+	"custom item model attachment viewmodel"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	"custom item model attachment viewmodel 2"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	"custom item model attachment viewmodel 3"
+	{
+ 	 	"chi" 	"melee cleave attack"
+	}
+	"flare no crit burning"
+	{
+ 	 	"chi" 	"无法爆击燃烧敌人"
+	}
+	"rage receive scale"
+	{
+		"chi" "(+-)%p%充能获取量"
+	}
+	"fire input on hit ally"
+	{
+		"chi" "%d"
+	}
+	"spread angle pattern"
+	{
+ 	 	"chi" 	""
+	}
+	"spread offset pattern"
+	{
+ 	 	"chi" 	""
+	}
+	"proj attribute pattern"
+	{
+ 	 	"chi" 	""
+	}
+	"shoot pattern reset time"
+	{
+ 	 	"chi" 	""
+	}
+	"shoot pattern no rollback"
+	{
+ 	 	"chi" 	""
+	}
+	"custom damage type override"
+	{
+ 	 	"chi" 	""
+	}
+}

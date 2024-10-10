@@ -11,6 +11,7 @@
 #include "util/iterate.h"
 #include "mod/etc/sendprop_override.h"
 #include "mod/common/commands.h"
+#include "mod/pop/popmgr_extensions.h"
 
 #include <regex>
 //#include <filesystem>
@@ -59,7 +60,6 @@ Manual KV file format:
 }
 
 */
-
 
 namespace Mod::Util::Download_Manager
 {
@@ -891,10 +891,15 @@ namespace Mod::Util::Download_Manager
 		}
 	}
 
+	KeyValues *kvBannedMissions = nullptr;
+	bool hasRestrictedPopfiles = false;
+	std::vector<std::string> popfilesRestricted;
 	void AddMapToVoteList(const char *mapName, KeyValues *kv, int &files, std::string &maplistStr)
 	{
 		std::string mapNameStr(mapName, strlen(mapName) - 4);
 		if (banned_maps.count(mapNameStr)) return;
+
+		if (hasRestrictedPopfiles && !Mod::Pop::PopMgr_Extensions::CheckRestricts(mapNameStr.c_str(), popfilesRestricted, kvBannedMissions)) return;
 
 		files++;
 
@@ -915,6 +920,11 @@ namespace Mod::Util::Download_Manager
 		CFastTimer timer1;
 		timer1.Start();
 		KeyValues *kv = new KeyValues(cvar_resource_file.GetString());
+
+		kvBannedMissions = Mod::Pop::PopMgr_Extensions::LoadBannedMissionsFile();
+		popfilesRestricted.clear();
+		hasRestrictedPopfiles = Mod::Pop::PopMgr_Extensions::GetPopfiles(popfilesRestricted);
+
 		//FileToKeyValues(kv,pathres);
 
 		kv->SetInt("categories",1);
@@ -951,6 +961,10 @@ namespace Mod::Util::Download_Manager
 		CFastTimer timer3;
 		timer3.Start();
 
+		if (kvBannedMissions != nullptr) {
+			kvBannedMissions->deleteThis();
+			kvBannedMissions = nullptr;
+		}
 		
 		kvcat->SetInt("count", files);
 		kv->SaveToFile(filesystem, cvar_resource_file.GetString());

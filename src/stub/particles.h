@@ -109,9 +109,9 @@ inline void TE_BeamPoints(IRecipientFilter& filter, float delay,
 	ft_TE_BeamPoints(filter, delay, start, end, modelindex, haloindex, startframe, framerate, life, width, endWidth, fadeLength, amplitude, r, g, b, a, speed);
 }
 
-void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
+void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f, CBasePlayer *target = nullptr);
 
-void TE_BBoxForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f);
+void TE_BBoxForDebug(const Vector &start, const Vector &end, float life, int r = 255, int g = 255, int b = 255, int a = 255, float width = 4.0f, CBasePlayer *target = nullptr);
 
 #ifdef SE_IS_TF2
 

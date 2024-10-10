@@ -113,3 +113,4 @@ DEF_GET_FACTORY(VGUI,               "vgui2");
 DEF_GET_FACTORY(VGUIMatSurface,     "vguimatsurface");
 DEF_GET_FACTORY(Dedicated,          "dedicated");
 DEF_GET_FACTORY(DataCache,          "datacache");
+DEF_GET_FACTORY(VScriptManager,     "vscript");

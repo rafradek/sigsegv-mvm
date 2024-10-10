@@ -352,7 +352,7 @@ public:
 	void SetLocalOrigin(const Vector &vec)                                                                                  {        ft_SetLocalOrigin                (this, vec); }
 	void SetLocalAngles(const QAngle &ang)                                                                                  {        ft_SetLocalAngles                (this, ang); }
 	
-	Vector EyePosition()                                                                                                    { return vt_EyePosition                   (this); }
+	Vector EyePosition() const                                                                                              { return vt_EyePosition                   (this); }
 	const QAngle& EyeAngles()                                                                                               { return vt_EyeAngles                     (this); }
 	void SetOwnerEntity(CBaseEntity *pOwner)                                                                                {        vt_SetOwnerEntity                (this, pOwner); }
 	void Spawn()                                                                                                            {        vt_Spawn                         (this); }
@@ -531,7 +531,7 @@ private:
 	static MemberFuncThunk<      CBaseEntity *, void, const QAngle &>                                    ft_SetLocalAngles;
 	
 	
-	static MemberVFuncThunk<      CBaseEntity *, Vector>                                                           vt_EyePosition;
+	static MemberVFuncThunk<const CBaseEntity *, Vector>                                                           vt_EyePosition;
 	static MemberVFuncThunk<      CBaseEntity *, const QAngle&>                                                    vt_EyeAngles;
 	static MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *>                                              vt_SetOwnerEntity;
 	static MemberVFuncThunk<      CBaseEntity *, void>                                                             vt_Spawn;

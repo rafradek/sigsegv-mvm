@@ -1,0 +1,430 @@
+"Phrases"
+{
+	"Weapon in slot:"
+	{
+		"chi"		"武器槽位: "
+	}
+	"This mission allows you to equip custom items. Type !missionitems in chat to see available items for your class"
+	{
+		"chi"		"本任务允许你装备特殊武器，输入 !missionitems 查看可用武器。"
+	}
+	"Type !missioninfo in chat to check custom mission information"
+	{
+		"chi"		"本任务有特殊规则，输入 !missioninfo 查看特殊规则。"
+	}
+	"Custom hand models disabled"
+	{
+		"chi"		"已禁用自定义人物手臂模型，输入 !defaulthands 启用。"
+	}
+	"Custom hand models disabled apply"
+	{
+		"chi"		"已禁用自定义人物手臂模型"
+	}
+	"Custom hand models enabled apply"
+	{
+		"chi"		"已启用自定义人物手臂模型，切换兵种以应用效果。"
+	}
+	"Custom hand models notify"
+	{
+		"chi"		"本任务启用自定义人物手臂模型，如果发现模型缺失(ERROR)，请获取资源包或输入 !defaulthands 关闭该功能。"
+	}
+	"Missing files"
+	{
+		"chi"		"发现文件缺失错误"
+	}
+	"Late DL sv_allowupload notify"
+	{
+		"chi"		"请在控制台输入 sv_allowupload 1 以下载特殊兵种图标。"
+	}
+	"Source TV spectator disconnected"
+	{
+		"#format"	"{1:s}"
+		"chi"		"观察者 {1} 已断开连接"
+	}
+	"Source TV spectator joined"
+	{
+		"#format"	"{1:s}"
+		"chi"		"观察者 {1} 已加入游戏"
+	}
+	"sig_tvspectators"
+	{
+		"chi"		"观察者："
+	}
+	"Tier is closed"
+	{
+		"#format"	"{1:d}"
+		"chi"		"最高为 {1} 级"
+	}
+	"Buy more upgrades"
+	{
+		"#format"	"{1:d},{2:d}"
+		"chi"		"购买 {1} 个升级（{2} 级）以解锁"
+	}
+	"Available from wave"
+	{
+		"#format"	"{1:d}"
+		"chi"		"从第 {1} 波起可用"
+	}
+	"Available up to wave"
+	{
+		"#format"	"{1:d}"
+		"chi"		"从第 {1} 波起停用"
+	}
+	"Requires upgrade"
+	{
+		"#format"	"{1:s},{2:d}"
+		"chi"		"需要将 {1} 升至 {2}"
+	}
+	"Incompatible upgrade"
+	{
+		"#format"	"{1:s}"
+		"chi"		"与 {1} 升级互斥"
+	}
+	"Custom upgrades notify"
+	{
+		"chi"		"本任务使用自定义商店文件，请开启服务器定制内容下载功能（允许所有来自服务器的定制内容或不下载定制声音）"
+	}
+	"Player upgrades"
+	{
+		"chi"		"玩家升级"
+	}
+	"Undo upgrades"
+	{
+		"chi"		"取消升级并退款"
+	}
+	"No extra loadout items currently available"
+	{
+		"chi"		"本任务无特殊武器装备"
+	}
+	"No extra loadout items available"
+	{
+		"chi"		"本任务无特殊武器装备"
+	}
+	"Buy"
+	{
+		"chi"		"购买"
+	}
+	"Equip"
+	{
+		"chi"		"装备"
+	}
+	"Unequip"
+	{
+		"chi"		"解除装备"
+	}
+	"Sell"
+	{
+		"chi"		"出售"
+	}
+	"Refund upgrades"
+	{
+		"chi" "取消升级并退款"
+	}
+	"Upgrades"
+	{
+		"chi" "升级花费"
+	}
+	"Item upgrades"
+	{
+		"#format"	"{1:s}"
+		"chi"		"升级 {1}"
+	}
+	"Extended upgrades menu"
+	{
+		"chi" "附加升级菜单"
+	}
+	"Mission description"
+	{
+		"chi"		"任务信息"
+	}
+	"Mission info menu"
+	{
+		"chi"		"任务菜单"
+	}
+	"Item whitelist"
+	{
+		"chi"		"装备白名单"
+	}
+	"Whitelisted items"
+	{
+		"chi"		"装备白名单"
+	}
+	"Item blacklist"
+	{
+		"chi"		"装备黑名单"
+	}
+	"Blacklisted items"
+	{
+		"chi"		"装备黑名单"
+	}
+	"Item replacement"
+	{
+		"chi"		"装备替换"
+	}
+	"Description"
+	{
+		"chi"		"信息"
+	}
+	"Disallowed upgrades"
+	{
+		"chi"		"禁用升级"
+	}
+	"Item attributes"
+	{
+		"chi"		"装备属性"
+	}
+	"Item attributes format"
+	{
+		"#format"	"{1:s}"
+		"chi"		"{1} 属性"
+	}
+	"Player attributes"
+	{
+		"chi"		"人物属性"
+	}
+	"All class attributes"
+	{
+		"chi"		"兵种共有属性"
+	}
+	"Forced items"
+	{
+		"chi"		"强制装备"
+	}
+	"(selected)"
+	{
+		"chi"		"(装备)"
+	}
+	"Forced items class"
+	{
+		"#format"	"{1:s}"
+		"chi"		"强制装备 ({1})"
+	}
+	"Extra loadout items"
+	{
+		"chi"		"特殊武器装备"
+	}
+	"Extra loadout items class"
+	{
+		"#format"	"{1:s}"
+		"chi"		"特殊武器装备 ({1})"
+	}
+	"Sniper bots can headshot"
+	{
+		"chi"		"狙击手机器人可以爆头"
+	}
+	"No laser on Sniper bots"
+	{
+		"chi"		"狙击手机器人没有激光瞄准提示"
+	}
+	"Upgrade refunding disabled"
+	{
+		"chi"		"禁用取消升级"
+	}
+	"Collect credits upgrade refund"
+	{
+		"#format"	"{1:d},{2:d}"
+		"chi"		"拾取 {1} 元以获得取消升级次数，最高累计 {2} 次"
+	}
+	"Pyro bots can airblast grenades and arrows"
+	{
+		"chi"		"火焰兵机器人可以反弹榴弹和弓箭"
+	}
+	"Sandman balls can stun enemy targets"
+	{
+		"chi"		"睡魔的球可以击晕敌人"
+	}
+	"No reanimators"
+	{
+		"chi"		"医生无法复活队友"
+	}
+	"No custom mission information available"
+	{
+		"chi"		"本任务无特殊规则"
+	}
+	"All player classes"
+	{
+		"chi" "所有兵种"
+	}
+	"Primary"
+	{
+		"chi" "主武器"
+	}
+	"Secondary"
+	{
+		"chi" "副武器"
+	}
+	"Melee"
+	{
+		"chi" "近战武器"
+	}
+	"Utility"
+	{
+		"chi" "工具"
+	}
+	"Building"
+	{
+		"chi" "建筑物"
+	}
+	"PDA"
+	{
+		"chi" "主PDA"
+	}
+	"PDA 2"
+	{
+		"chi" "副PDA"
+	}
+	"Head"
+	{
+		"chi" "饰品 1"
+	}
+	"Misc"
+	{
+		"chi" "饰品 2"
+	}
+	"Action"
+	{
+		"chi" "动作"
+	}
+	"Misc 2"
+	{
+		"chi" "饰品 3"
+	}
+	"Taunt 1"
+	{
+		"chi" "嘲讽 1"
+	}
+	"Taunt 2"
+	{
+		"chi" "嘲讽 2"
+	}
+	"Taunt 3"
+	{
+		"chi" "嘲讽 3"
+	}
+	"Taunt 4"
+	{
+		"chi" "嘲讽 4"
+	}
+	"Taunt 5"
+	{
+		"chi" "嘲讽 5"
+	}
+	"Taunt 6"
+	{
+		"chi" "嘲讽 6"
+	}
+	"Taunt 7"
+	{
+		"chi" "嘲讽 7"
+	}
+	"Taunt 8"
+	{
+		"chi" "嘲讽 8"
+	}
+	"Undefined"
+	{
+		"chi" "未定义"
+	}
+	"Scout"
+	{
+		"chi" "侦察兵"
+	}
+	"Sniper"
+	{
+		"chi" "狙击手"
+	}
+	"Soldier"
+	{
+		"chi" "士兵"
+	}
+	"Demoman"
+	{
+		"chi" "爆破手"
+	}
+	"Medic"
+	{
+		"chi" "医生"
+	}
+	"Heavy"
+	{
+		"chi" "机枪手"
+	}
+	"Pyro"
+	{
+		"chi" "火焰兵"
+	}
+	"Spy"
+	{
+		"chi" "间谍"
+	}
+	"Engineer"
+	{
+		"chi" "工程师"
+	}
+	"Civilian"
+	{
+		"chi" "市民"
+	}
+	"Weapon type:"
+	{
+		"#format"	"{1:s}"
+		"chi" "武器类型：{1}"
+	}
+	"Item type:"
+	{
+		"#format"	"{1:s}"
+		"chi" "物品类型：{1}"
+	}
+	"Crits"
+	{
+		"chi" "爆击"
+	}
+	"Charge"
+	{
+		"chi" "冲锋"
+	}
+	"Hype"
+	{
+		"chi" "跳跃能量"
+	}
+	"Kills"
+	{
+		"chi" "杀敌数"
+	}
+	"MMMPH"
+	{
+		"chi" "呜唔"
+	}
+	"Rage"
+	{
+		"chi" "怒气"
+	}
+	"Energy"
+	{
+		"chi" "能量"
+	}
+	"Crikey"
+	{
+		"chi" "爆击能量"
+	}
+	"Focus"
+	{
+		"chi" "专注"
+	}
+	"Shield"
+	{
+		"chi" "防护盾"
+	}
+	"Ubercharge"
+	{
+		"chi" "UberCharge"
+	}
+	"Stickies"
+	{
+		"chi" "黏性炸弹"
+	}
+	""
+	{
+		"chi" ""
+	}
+}

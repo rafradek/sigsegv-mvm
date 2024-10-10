@@ -58,6 +58,10 @@ public:
 	DECL_SENDPROP(int,   m_iSecondaryAmmoType);
 #ifdef SE_IS_TF2
 	DECL_SENDPROP(short,   m_nCustomViewmodelModelIndex);
+
+	DECL_RELATIVE(float,   m_flCritTokenBucket);
+	DECL_RELATIVE(int,   m_nCritChecks);
+	DECL_RELATIVE(int,   m_nCritSeedRequests);
 #endif
 	DECL_SENDPROP(int,   m_iClip1);
 	DECL_SENDPROP(int,   m_iClip2);

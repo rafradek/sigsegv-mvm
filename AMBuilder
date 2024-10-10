@@ -165,6 +165,7 @@ if not Extension.optimize_mods_only:
     'src/mod/etc/target_changegravity_improved.cpp',
     'src/mod/etc/vehicle_fix.cpp',
     'src/mod/etc/weapon_mimic_teamnum.cpp',
+    'src/mod/etc/workshop_map_fix.cpp',
     'src/mod/etc/trigger_filter_fix.cpp',
     'src/mod/etc/spectator_vote_fix.cpp',
     'src/mod/etc/unintended_class_weapon_improvements.cpp',
@@ -503,6 +504,8 @@ for sdk_name in Extension.sdks:
 
     if builder.options.optimize_mods_only:
       binary.compiler.defines += ['OPTIMIZE_MODS_ONLY']
+
+      binary.sources += ['/fdf']
 
     ## build libstrcompat
     #if builder.target.platform == 'linux':

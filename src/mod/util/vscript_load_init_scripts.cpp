@@ -27,7 +27,6 @@ namespace Mod::Util::VScript_Load_Init_Scripts
 			if (filesystem->ReadFile("scripts/vscripts/serverinit.nut", "mod", buf)) {
 				auto script = g_pScriptVM->CompileScript(buf.String(), "serverinit.nut");
 				g_pScriptVM->Run(script, false);
-				g_pScriptVM->ReleaseScript(script);
 			}
 			
             //DETOUR_STATIC_CALL("serverinit", caller, flag);

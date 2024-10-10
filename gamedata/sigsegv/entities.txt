@@ -573,6 +573,7 @@
 				"CWeaponMedigun::CycleResistType" "_ZN14CWeaponMedigun15CycleResistTypeEv"
 				"CWeaponMedigun::FindAndHealTargets" "_ZN14CWeaponMedigun18FindAndHealTargetsEv"
 				"CWeaponMedigun::Deploy" "_ZN14CWeaponMedigun6DeployEv"
+				"CWeaponMedigun::PrimaryAttack" "_ZN14CWeaponMedigun13PrimaryAttackEv"
 
 				"CTFWeaponFlameBall::FireProjectile" "_ZN18CTFWeaponFlameBall14FireProjectileEP9CTFPlayer"
 				
@@ -884,6 +885,7 @@
 				"CTFFlameThrower::GetDeflectionRadius" "_ZNK15CTFFlameThrower19GetDeflectionRadiusEv"
 				"CTFFlameThrower::GetFlameOriginPos" "_ZN15CTFFlameThrower17GetFlameOriginPosEv"
 				"CTFFlameThrower::GetMuzzlePosHelper" "_ZN15CTFFlameThrower18GetMuzzlePosHelperEb"
+				"CTFFlameThrower::PrimaryAttack" "_ZN15CTFFlameThrower13PrimaryAttackEv"
 				"CTFFlareGun_Revenge::Deploy" "_ZN19CTFFlareGun_Revenge6DeployEv"
 				"CTFFlareGun_Revenge::Holster" "_ZN19CTFFlareGun_Revenge7HolsterEP17CBaseCombatWeapon"
 				"CTFGasManager::OnCollide" "_ZN13CTFGasManager9OnCollideEP11CBaseEntityi"

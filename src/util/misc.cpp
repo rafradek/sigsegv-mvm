@@ -253,3 +253,24 @@ bool ResolvePlayerStuck(CBasePlayer *player, float oldScale, float maxMove, bool
 	movement->player = prevMovementPlayer;
 	return true;
 }
+
+string_t currentMapNameFull;
+string_t currentMapNameNoWorkshop;
+string_t GetCurrentMapNoWorkshop() {
+	string_t mapname = gpGlobals->mapname;
+	if (mapname == NULL_STRING) return NULL_STRING;
+	
+	currentMapNameFull = mapname;
+	const char *afterPrefix = StringAfterPrefixCaseSensitive(STRING(mapname), "workshop/");
+	if (afterPrefix != nullptr) {
+		const char *suffix = strstr(afterPrefix, ".ugc");
+		if (afterPrefix != nullptr && suffix != nullptr) {
+			std::string s(afterPrefix, suffix - afterPrefix);
+			currentMapNameNoWorkshop = AllocPooledString(s.c_str());
+			return currentMapNameNoWorkshop;
+		}
+	}
+	currentMapNameNoWorkshop = mapname;
+	
+	return currentMapNameNoWorkshop;
+}

@@ -18,6 +18,7 @@
 #endif
 #include "version.h"
 #include "convar_restore.h"
+#include "vscript/ivscript.h"
 //#include "entity.h"
 
 CExtSigsegv g_Ext;
@@ -85,6 +86,9 @@ IPhraseFile *phrasesFile = nullptr;
 IPhraseCollection *phrasesAttribs = nullptr;
 IPhraseFile *phrasesAttribsFile = nullptr;
 
+IScriptManager *scriptManager = nullptr;
+
+extern int laserSprite;
 bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 #ifndef OPTIMIZE_MODS_ONLY
@@ -129,6 +133,8 @@ bool CExtSigsegv::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	phrasesAttribsFile = phrases->AddPhraseFile("sigsegvattributes.phrases");
 
 	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("Sigsegv"), this);
+	
+	laserSprite = CBaseEntity::PrecacheModel("materials/sprites/laser.vmt");
 //	for (int i = 0; i < 255; ++i) {
 //		ConColorMsg(Color(0xff, i, 0x00), "%02x%02x%02x\n", 0xff, i, 0x00);
 //	}
@@ -229,6 +235,10 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	
 	GET_IFACE_OPTIONAL(Engine, debugoverlay, VDEBUG_OVERLAY_INTERFACE_VERSION);
 	GET_IFACE_OPTIONAL(Engine, enginetools,  VENGINETOOL_INTERFACE_VERSION);
+
+	if (VScriptManagerFactory() != nullptr) {
+		GET_IFACE_OPTIONAL(VScriptManager, scriptManager,  VSCRIPT_INTERFACE_VERSION);
+	}
 	
 	if (SoundEmitterSystemFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(SoundEmitterSystem, soundemitterbase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
@@ -291,6 +301,7 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	LibMgr::SetPtr(Library::VGUI,               VGUIFactory());
 	LibMgr::SetPtr(Library::VPHYSICS,           VPhysicsFactory());
 	LibMgr::SetPtr(Library::VSTDLIB,            icvar);
+	LibMgr::SetPtr(Library::VSCRIPT,            VScriptManagerFactory());
 	
 	return true;
 }
@@ -321,6 +332,7 @@ void CExtSigsegv::LevelInitPreEntity()
 void CExtSigsegv::LevelInitPostEntity()
 {
 	g_pWorldEdict = engine->PEntityOfEntIndex(0);
+	laserSprite = CBaseEntity::PrecacheModel("materials/sprites/laser.vmt");
 }
 
 void CExtSigsegv::LoadSoundOverrides()

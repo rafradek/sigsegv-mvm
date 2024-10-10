@@ -1154,7 +1154,13 @@ private:
  * Resolve player stuck
  * @param oldScale if the player scale changed and now the player may be stuck, the scale of the player before it changed. Otherwise just use GetModelScale()
  * @param maxMove how much, relative to player size, the player can be moved. 1 - can move entire player width
+ * @param enemyOnly only unstuck from enemies, not from the world
  * @return true if the player was not stuck or was unstucked properly, false if cannot unstuck
  */
 bool ResolvePlayerStuck(CBasePlayer *player, float oldScale = 1.0f, float maxMove = 1.0f, bool enemyOnly = false);
+
+/** 
+ * Get current map name, excluding the workshop/ prefix and .ugc suffix
+ */
+string_t GetCurrentMapNoWorkshop();
 #endif

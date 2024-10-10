@@ -114,7 +114,7 @@ MemberFuncThunk<      CBaseEntity *, void, const Vector &                       
 MemberFuncThunk<      CBaseEntity *, void, const Vector &                                   > CBaseEntity::ft_SetLocalOrigin             ("CBaseEntity::SetLocalOrigin");
 MemberFuncThunk<      CBaseEntity *, void, const QAngle &                                   > CBaseEntity::ft_SetLocalAngles             ("CBaseEntity::SetLocalAngles");
 
-MemberVFuncThunk<      CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
+MemberVFuncThunk<const CBaseEntity *, Vector                                                          > CBaseEntity::vt_EyePosition                   (TypeName<CBaseEntity>(), "CBaseEntity::EyePosition");
 MemberVFuncThunk<      CBaseEntity *, const QAngle&                                                   > CBaseEntity::vt_EyeAngles                     (TypeName<CBaseEntity>(), "CBaseEntity::EyeAngles");
 MemberVFuncThunk<      CBaseEntity *, void, CBaseEntity *                                             > CBaseEntity::vt_SetOwnerEntity                (TypeName<CBaseEntity>(), "CBaseEntity::SetOwnerEntity");
 MemberVFuncThunk<      CBaseEntity *, void                                                            > CBaseEntity::vt_Spawn                         (TypeName<CBaseEntity>(), "CBaseEntity::Spawn");

@@ -14,6 +14,8 @@ folder_list = [
   'addons/sourcemod/gamedata',
   'addons/sourcemod/gamedata/sigsegv',
   'addons/sourcemod/translations',
+  'addons/sourcemod/translations/zho',
+  'addons/sourcemod/translations/chi',
 #  'addons/sourcemod/configs',
   'cfg',
 ]
@@ -118,6 +120,18 @@ if not Extension.optimize_mods_only:
 
 # Translation files
 CopyFiles('translations', 'addons/sourcemod/translations',
+  [
+    'sigsegv.phrases.txt',
+    'sigsegvattributes.phrases.txt'
+  ]
+)
+CopyFiles('translations/zho', 'addons/sourcemod/translations/zho',
+  [
+    'sigsegv.phrases.txt',
+    'sigsegvattributes.phrases.txt'
+  ]
+)
+CopyFiles('translations/chi', 'addons/sourcemod/translations/chi',
   [
     'sigsegv.phrases.txt',
     'sigsegvattributes.phrases.txt'

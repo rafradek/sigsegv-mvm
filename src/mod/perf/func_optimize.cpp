@@ -22,6 +22,9 @@
 #include "stub/trace.h"
 #include "util/iterate.h"
 #include "../mvm-reversed/server/NextBot/NextBotKnownEntity.h"
+#include "collisionutils.h"
+#include "collisionutils.cpp"
+#include "stub/particles.h"
 
 #ifdef SE_IS_TF2
 REPLACE_FUNC_MEMBER(bool, CTFPlayerShared_InCond, int index) {
@@ -634,15 +637,17 @@ namespace Mod::Perf::Func_Optimize
 		"Mod: Optimize common calls");
 
     bool restorebot = false;
+    float coneOfAttack = -1.0f;
 	DETOUR_DECL_MEMBER(void, CLagCompensationManager_StartLagCompensation, CBasePlayer *player, CUserCmd *cmd)
 	{
         if (player->IsBot() && sig_perf_lagcomp_bench.GetBool()) {
             player->m_fFlags &= ~FL_FAKECLIENT;
-            player->m_fLerpTime = player->entindex() * 0.015f;
+            player->m_fLerpTime = fmodf(player->entindex() * 0.015f, 0.9f);
             restorebot = true;
         }
 		int preMaxPlayers = gpGlobals->maxClients;
 		DETOUR_MEMBER_CALL(player, cmd);
+        coneOfAttack = -1.0f;
         if (restorebot) {
             player->m_fFlags |= FL_FAKECLIENT;
             restorebot = false;
@@ -677,6 +682,60 @@ namespace Mod::Perf::Func_Optimize
 		DETOUR_MEMBER_CALL(whoFired, weapon);
 	}
 
+    DETOUR_DECL_MEMBER(bool, CTFPlayer_WantsLagCompensationOnEntity, const CBasePlayer *target, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+		auto result = DETOUR_MEMBER_CALL(target, pCmd, pEntityTransmitBits);
+		if (result && coneOfAttack != -1.0f) {
+            Vector start = player->EyePosition();
+            const Vector &ourPos = player->GetAbsOrigin();
+            Vector forward;
+            AngleVectors(pCmd->viewangles, &forward);
+            
+            auto cprop = target->CollisionProp(); 
+            const Vector &entityPos = target->GetAbsOrigin();
+            const Vector &velocity = target->GetAbsVelocity();
+            float backTime = (gpGlobals->tickcount - pCmd->tick_count + 1) * gpGlobals->interval_per_tick + player->m_fLerpTime;
+            const float speed = Max(target->MaxSpeed(), Max(fabs(velocity.x), fabs(velocity.y))* 1.4f);
+            Vector range(speed, speed, Max(50.0f, fabs(velocity.z) * 2.0f));
+            range *= backTime;
+            range.x += 25.0f;
+            range.y += 25.0f;
+            float cone = coneOfAttack != -1.0f ? coneOfAttack : 0.15f;
+            if (cone > 0.0f) {
+                float dist = (entityPos - ourPos).Length();
+                range += Vector(dist * cone, dist * cone, dist * cone);
+            }
+
+            if (IsBoxIntersectingRay(entityPos+cprop->OBBMins() - range, entityPos+cprop->OBBMaxs() + range, start, forward * 8192, 0.0f)) {
+                return true;
+            }
+            return false;
+        }
+        return result;
+	}
+
+    DETOUR_DECL_STATIC(void, FX_FireBullets, CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, const QAngle &vecAngles,
+					 int iWeapon, int iMode, int iSeed, float flSpread, float flDamage, bool bCritical)
+	{
+        coneOfAttack = flSpread;
+		DETOUR_STATIC_CALL(pWpn, iPlayer, vecOrigin, vecAngles, iWeapon, iMode, iSeed, flSpread, flDamage, bCritical);
+        coneOfAttack = -1.0f;
+	}
+
+    DETOUR_DECL_MEMBER(void, CTFFlameThrower_PrimaryAttack)
+	{
+        coneOfAttack = 0;
+		DETOUR_MEMBER_CALL();
+        coneOfAttack = -1.0f;
+	}
+
+    DETOUR_DECL_MEMBER(void, CWeaponMedigun_PrimaryAttack)
+	{
+        coneOfAttack = 0;
+		DETOUR_MEMBER_CALL();
+        coneOfAttack = -1.0f;
+	}
 
     class CMod : public IMod, public IModCallbackListener
 	{
@@ -748,8 +807,17 @@ namespace Mod::Perf::Func_Optimize
             MOD_ADD_DETOUR_MEMBER(NextBotManager_OnWeaponFired, "NextBotManager::OnWeaponFired");
             // Optimize lag compensation by reusing previous bone caches
             // Not enough difference in performance
+            
             // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_StartLagCompensation, "CLagCompensationManager::StartLagCompensation");
-            // MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
+
+#ifdef SE_IS_TF2
+            // Better culling for WantsLagCompensationOnEntity
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_WantsLagCompensationOnEntity, "CTFPlayer::WantsLagCompensationOnEntity");
+            MOD_ADD_DETOUR_STATIC(FX_FireBullets, "FX_FireBullets");
+            MOD_ADD_DETOUR_MEMBER(CTFFlameThrower_PrimaryAttack, "CTFFlameThrower::PrimaryAttack");
+            MOD_ADD_DETOUR_MEMBER(CWeaponMedigun_PrimaryAttack, "CWeaponMedigun::PrimaryAttack");
+#endif
+            //MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
             
             
 		}

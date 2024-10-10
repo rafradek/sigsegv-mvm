@@ -375,6 +375,120 @@
 		"pl"		"Właściwości Klasy"
 	}
 	
+	"Character attributes:"
+	{
+		"en"		"Character Attributes:"
+		"pl"		"Właściwości Klasy:"
+	}
+	
+	"The Upgrade Station is disabled!"
+	{
+		"en"		"The Upgrade Station is disabled!"
+		"pl"		"Stacja ulepszeń jest wyłączona!"
+	}
+	
+	"This weapon is not upgradeable"
+	{
+		"en"		"This weapon is not upgradeable"
+		"pl"		"Ta broń nie może być ulepszona"
+	}
+	
+	"You need metal to build a sentry gun"
+	{
+		"#format"	"{1:d}"
+		"en"		"You need {1} metal to build a sentry gun"
+		"pl"		"Potrzebujesz {1} metalu by zbudować działko"
+	}
+	
+	"You need metal to build a dispenser"
+	{
+		"#format"	"{1:d}"
+		"en"		"You need {1} metal to build a dispenser"
+		"pl"		"Potrzebujesz {1} metalu by zbudować zasobnik"
+	}
+	
+	"Explode on ignite is not allowed on this server"
+	{
+		"en"		"Explode on ignite is not allowed on this server"
+		"pl"		"Wybuch po podpaleniu nie jest dozwolony na tym serwerze"
+	}
+	
+	"Projectile shield is not allowed on this server"
+	{
+		"en"		"Projectile shield is not allowed on this server"
+		"pl"		"Tarcza przeciw pociskom nie jest dozwolona na tym serwerze"
+	}
+	
+	"Burn time bonus upgrade is broken. Buy another upgrade"
+	{
+		"en"		"Burn time bonus upgrade is broken. Buy another upgrade"
+		"pl"		"Ulepszenie czasu podpalenia nie działa. Kup coś innego"
+	}
+	
+	"3rd sentry fire rate bonus upgrade is broken. Buy another upgrade"
+	{
+		"en"		"3rd sentry fire rate bonus upgrade is broken. Buy another upgrade"
+		"pl"		"Trzecie ulepszenie szybkostrzelności działka nie działa. Kup coś innego"
+	}
+	
+	"The Upgrade Station is disabled for this mission!"
+	{
+		"en"		"The Upgrade Station is disabled for this mission!"
+		"pl"		"Stacja ulepszeń jest wyłączona w tej misji!"
+	}
+	
+	"Only class is allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"en"		"Only {1} class is allowed in this mission"
+		"pl"		"Tylko {1} jest dozwolony w tej misji"
+	}
+	
+	"Exceeded the class limit in this mission"
+	{
+		"#format"	"{1:s}"
+		"en"		"Exceeded the {1} class limit in this mission"
+		"pl"		"Przekroczono limit klasy: {1} w tej misji"
+	}
+	
+	"is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} is not allowed in this mission"
+		"pl"		"{1} nie jest dozwolony w tej misji"
+	}
+	
+	"upgrade is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} upgrade is not allowed in this mission"
+		"pl"		"Ulepszenie {1} nie jest dozwolone w tej misji"
+	}
+	
+	"You cannot buy upgrades for this weapon in this mission"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"en"		"You cannot buy {1}{2} upgrades for this weapon in this mission\n{3}{4}"
+		"pl"		"Nie możesz kupić {1}ulepszeń {2} dla tej broni w tej misji\n{3}{4}"
+	}
+	
+	"more "
+	{
+		"en"		"more "
+		"pl"		"więcej "
+	}
+	
+	" blocks this upgrade"
+	{
+		"en"		" blocks this upgrade"
+		"pl"		" blokuje to ulepszenie"
+	}
+	"It is possible that a parsing error had occured. Check console for details"
+	{
+		"en"		"It is possible that a parsing error had occured. Check console for details"
+		"pl"		"Możliwe że zdarzył się błąd podczas wczytywania. Sprawdź konsolę po więcej informacji"
+	}
+	
 	"All class attributes"
 	{
 		"en"		"All class attributes"
@@ -504,6 +618,13 @@
 	{
 		"en"		"No custom mission information available"
 		"pl"		"Brak specjalnych informacji o misji"
+	}
+	
+	"Inspecting player"
+	{
+		"#format"	"{1:s}"
+		"en"		"Inspecting {1}"
+		"pl"		"Doglądasz {1}"
 	}
 
 	"All player classes"

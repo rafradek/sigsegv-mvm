@@ -779,7 +779,7 @@ namespace Mod::MvM::Extended_Upgrades
             int player_class = player->GetPlayerClass()->GetClassIndex();
             int cur_step;
             bool over_cap;
-            int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), upgrade->mvm_upgrade_index, cur_step, over_cap);
+            int max_step = GetUpgradeStepData(player, upgrade->playerUpgrade || item == nullptr ? -1 : GetLoadoutSlotForItem(item->GetItem()->GetItemDefinition(), player_class), upgrade->mvm_upgrade_index, cur_step, over_cap);
             return cur_step;
         }
     }
@@ -847,20 +847,61 @@ namespace Mod::MvM::Extended_Upgrades
 
         for (auto entry : upgrade->required_upgrades) {
             UpgradeInfo *child = upgrades_ref[entry.first];
-            if (child != nullptr && GetCurrentUpgradeLevel(child, item, player) < entry.second) {
-                std::string childName = GetUpgradeNameTranslated(player, child);
-                reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
-                return false;
+            if (child != nullptr) {
+                // Required upgrade is an item upgrade and we are a player upgrade, then require at least one item with given upgrade
+                if (upgrade->playerUpgrade && !child->playerUpgrade) {
+                    for (loadout_positions_t slot : {
+                    LOADOUT_POSITION_PRIMARY,
+                    LOADOUT_POSITION_SECONDARY,
+                    LOADOUT_POSITION_MELEE,
+                    LOADOUT_POSITION_BUILDING,
+                    LOADOUT_POSITION_PDA,
+                    LOADOUT_POSITION_ACTION,
+                    }) {
+                        CEconEntity *item_require = GetEconEntityAtLoadoutSlot(player, (int)slot);
+                        if (item_require != nullptr && item_require->GetItem() != nullptr && GetCurrentUpgradeLevel(child, item_require, player) < entry.second) {
+                            std::string childName = GetUpgradeNameTranslated(player, child);
+                            reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
+                            return false;
+                        }
+                    }
+                }
+                else if (GetCurrentUpgradeLevel(child, item, player) < entry.second) {
+                    std::string childName = GetUpgradeNameTranslated(player, child);
+                    reason = TranslateText(player, "Requires upgrade", 2, childName.c_str(), &entry.second);
+                    return false;
+                }
             }
         }
 
         for (auto entry : upgrade->disallowed_upgrades) {
             UpgradeInfo *child = upgrades_ref[entry.first];
             DevMsg("disallowed upgrade %s %d\n",entry.first.c_str(), child != nullptr);
-            if (child != nullptr && GetCurrentUpgradeLevel(child, item, player) >= entry.second) {
-                std::string childName = GetUpgradeNameTranslated(player, child);
-                reason = TranslateText(player, "Incompatible upgrade", 1, childName.c_str());
-                return false;
+            // Disallowed upgrade is an item upgrade and we are a player upgrade, then disallow with at least one item with given upgrade
+            if (child != nullptr) {
+                if (upgrade->playerUpgrade && !child->playerUpgrade) {
+                    for (loadout_positions_t slot : {
+                    LOADOUT_POSITION_PRIMARY,
+                    LOADOUT_POSITION_SECONDARY,
+                    LOADOUT_POSITION_MELEE,
+                    LOADOUT_POSITION_BUILDING,
+                    LOADOUT_POSITION_PDA,
+                    LOADOUT_POSITION_ACTION,
+                    }) {
+                        CEconEntity *item_disallow = GetEconEntityAtLoadoutSlot(player, (int)slot);
+                        if (item_disallow != nullptr && item_disallow->GetItem() != nullptr && 
+                        GetCurrentUpgradeLevel(child, item_disallow, player) >= entry.second) {
+                            std::string childName = GetUpgradeNameTranslated(player, child);
+                            reason = TranslateText(player, "Incompatible upgrade", 1, childName.c_str());
+                            return false;
+                        }
+                    }
+                }
+                else if (GetCurrentUpgradeLevel(child, item, player) >= entry.second) {
+                    std::string childName = GetUpgradeNameTranslated(player, child);
+                    reason = TranslateText(player, "Incompatible upgrade", 1, childName.c_str());
+                    return false;
+                }
             }
         }
 
@@ -869,6 +910,21 @@ namespace Mod::MvM::Extended_Upgrades
             for (auto &entry : upgrade->required_upgrades_option) {
                 UpgradeInfo *child = upgrades_ref[entry.first];
                 if (child != nullptr) {
+                    if (upgrade->playerUpgrade && !child->playerUpgrade) {
+                        for (loadout_positions_t slot : {
+                        LOADOUT_POSITION_PRIMARY,
+                        LOADOUT_POSITION_SECONDARY,
+                        LOADOUT_POSITION_MELEE,
+                        LOADOUT_POSITION_BUILDING,
+                        LOADOUT_POSITION_PDA,
+                        LOADOUT_POSITION_ACTION,
+                        }) {
+                            CEconEntity *item_require = GetEconEntityAtLoadoutSlot(player, (int)slot);
+                            if (item_require != nullptr && item_require->GetItem() != nullptr && GetCurrentUpgradeLevel(child, item_require, player) >= entry.second) {
+                                found = true;
+                            }
+                        }
+                    }
                     if (GetCurrentUpgradeLevel(child, item, player) >= entry.second) {
                         found = true;
                     }

@@ -132,13 +132,20 @@ void DispatchParticleEffect( const char *pszParticleName, ParticleAttachment_t i
 	}
 }
 
+int laserSprite;
 
-void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r, int g, int b, int a, float width) {
-	CBroadcastRecipientFilter filter;
-	TE_BeamPoints(filter, 0.0f, &start, &end, CBaseEntity::PrecacheModel("materials/sprites/laser.vmt"), 0, 0, 0, life, width, width, 7, 0.0, r, g, b, a, 0);
+void TE_BeamPointsForDebug(const Vector &start, const Vector &end, float life, int r, int g, int b, int a, float width, CBasePlayer *target) {
+	CRecipientFilter filter;
+	if (target != nullptr) {
+		filter.AddRecipient(target);
+	}
+	else {
+		filter.AddAllPlayers();
+	}
+	TE_BeamPoints(filter, 0.0f, &start, &end, laserSprite, 0, 0, 0, life, width, width, 7, 0.0, r, g, b, a, 0);
 }
 
-void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, int g, int b, int a, float width) {
+void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, int g, int b, int a, float width, CBasePlayer *target) {
 	Vector pos1;
 	Vector pos2;
 	pos1[0] = mins[0];
@@ -147,15 +154,15 @@ void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, 
 	pos2[0] = maxs[0];
 	pos2[1] = mins[1];
 	pos2[2] = mins[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = mins[0];
 	pos2[1] = maxs[1];
 	pos2[2] = mins[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = mins[0];
 	pos2[1] = mins[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 
 	pos1[0] = maxs[0];
 	pos1[1] = maxs[1];
@@ -163,15 +170,15 @@ void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, 
 	pos2[0] = maxs[0];
 	pos2[1] = maxs[1];
 	pos2[2] = mins[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = mins[0];
 	pos2[1] = maxs[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = maxs[0];
 	pos2[1] = mins[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	
 	pos1[0] = mins[0];
 	pos1[1] = mins[1];
@@ -179,11 +186,11 @@ void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, 
 	pos2[0] = maxs[0];
 	pos2[1] = mins[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = mins[0];
 	pos2[1] = maxs[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	
 	pos1[0] = maxs[0];
 	pos1[1] = maxs[1];
@@ -191,11 +198,11 @@ void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, 
 	pos2[0] = mins[0];
 	pos2[1] = maxs[1];
 	pos2[2] = mins[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos2[0] = maxs[0];
 	pos2[1] = mins[1];
 	pos2[2] = mins[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	
 	pos1[0] = maxs[0];
 	pos1[1] = mins[1];
@@ -203,12 +210,12 @@ void TE_BBoxForDebug(const Vector &mins, const Vector &maxs, float life, int r, 
 	pos2[0] = maxs[0];
 	pos2[1] = mins[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 	pos1[0] = mins[0];
 	pos1[1] = maxs[1];
 	pos1[2] = mins[2];
 	pos2[0] = mins[0];
 	pos2[1] = maxs[1];
 	pos2[2] = maxs[2];
-	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width);
+	TE_BeamPointsForDebug(pos1, pos2, life, r, g, b, a, width, target);
 }

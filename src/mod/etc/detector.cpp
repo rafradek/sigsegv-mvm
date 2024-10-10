@@ -10,8 +10,13 @@
 #include "mod/etc/mapentity_additions.h"
 #include "util/iterate.h"
 #include "mod/common/commands.h"
-#include <fmt/format.h>
+#include "stub/particles.h"
+#include "collisionutils.h"
 
+namespace Mod::Perf::Func_Optimize
+{
+    extern float coneOfAttack;
+}
 
 namespace Mod::Etc::Detector
 {	
@@ -37,7 +42,7 @@ namespace Mod::Etc::Detector
         {"cl_thirdperson", {0, 0}},
         {"r_portalsopenall", {0, 0}},
         {"host_timescale", {1,1}},
-        {"cl_interp", {0.001f, 0.5f}},
+        {"cl_interp", {0.0f, 0.5f}},
         // cheat cvars
         {"rijin_load", {FLT_MAX, FLT_MIN}},
         {"setcvar", {FLT_MAX, FLT_MIN}},
@@ -60,24 +65,49 @@ namespace Mod::Etc::Detector
         return RoundFloatToInt(time / gpGlobals->interval_per_tick);
     }
 
+    ConVar *developer;
+
     ConVar cvar_bckt_tolerance("sig_etc_detector_bckt_tolerance", "0", FCVAR_NOTIFY, "Tolerance");
 
     int backtrack_ticks;
     float last_server_lag_time = 0.0f;
     int last_server_lag_tick = 0;
 
-    void Notify(const std::string &shortReason, const std::string &description, CTFPlayer *player, IClient *client) {
+	IForward *notify_forward;
+
+    union ForwardData
+    {
+        cell_t cell;
+        float fl;
+    };
+    ConVar sig_etc_detector_print_demo("sig_etc_detector_print_demo", "0", FCVAR_NOTIFY, "Print detections to demos");
+
+    void Notify(const std::string &shortReason, const std::string &description, const std::string &params, int tick, const std::vector<ForwardData> &data, CTFPlayer *player, IClient *client) {
         if (client == nullptr || client->IsFakeClient()) return;
-        Msg("%s - %s\n", shortReason.c_str(), description.c_str());
-        if (player != nullptr) {
-            ClientMsg(player, "%s - %s\n", shortReason.c_str(), description.c_str());
+        if (developer->GetBool()) {
+            Msg("%s - %s - %s\n", shortReason.c_str(), description.c_str(), params.c_str());
+            if (player != nullptr) {
+                ClientMsg(player, "%s - %s - %s\n", shortReason.c_str(), description.c_str(), params.c_str());
+            }
         }
+        cell_t result = 0;
+        if (tick == -1) {
+            tick = gpGlobals->tickcount;
+        }
+        notify_forward->PushCell(player != nullptr ? player->entindex() : client->GetPlayerSlot() + 1);
+        notify_forward->PushString(shortReason.c_str());
+        notify_forward->PushString(description.c_str());
+        notify_forward->PushString(params.c_str());
+        notify_forward->PushCell(tick);
+        notify_forward->PushArray(data.capacity() > 0 ? (cell_t *)data.data() : &result, data.size(), 0);
+        notify_forward->PushCell(data.size());
+        notify_forward->Execute(&result);
     }
-    void Notify(const std::string &shortReason, const std::string &description, CTFPlayer *player) {
-        Notify(shortReason, description, player, player != nullptr ? sv->GetClient(player->entindex()) : nullptr);
+    void Notify(const std::string &shortReason, const std::string &description, const std::string &params, CTFPlayer *player, int tick = -1, const std::vector<ForwardData> &data = {}) {
+        Notify(shortReason, description, params, tick, data, player, player != nullptr ? sv->GetClient(player->entindex() - 1) : nullptr);
     }
-    void Notify(const std::string &shortReason, const std::string &description, IClient *client) {
-        Notify(shortReason, description, ToTFPlayer(UTIL_PlayerByIndex(client->GetPlayerSlot()+1)), client);
+    void Notify(const std::string &shortReason, const std::string &description, const std::string &params, IClient *client, int tick = -1, const std::vector<ForwardData> &data = {}) {
+        Notify(shortReason, description, params, tick, data, ToTFPlayer(UTIL_PlayerByIndex(client->GetPlayerSlot()+1)), client);
     }
 
     bool HasThirdPersonCamera(CTFPlayer *player) {
@@ -90,7 +120,9 @@ namespace Mod::Etc::Detector
             conds.InCond(TF_COND_HALLOWEEN_KART) || 
             conds.InCond(TF_COND_MELEE_ONLY) || 
             conds.InCond(TF_COND_SWIMMING_CURSE) ||
+            player->GetObserverMode() != OBS_MODE_NONE ||
             player->m_nForceTauntCam ||
+            player->m_hViewEntity != nullptr ||
             player->m_bIsReadyToHighFive;
     }
 
@@ -105,12 +137,20 @@ namespace Mod::Etc::Detector
         bool aimEnemyPlayer = false;
         bool aimAtHead = false;
         bool hadForcedAngles = false;
+        bool calculatedAim = false;
+        bool damagedEnemy = false;
+        bool firedWeapon = false;
         float aimDistanceHead = 0.0f;
         float aimDistanceTorso = 0.0f;
         float aimDistanceCenter = 0.0f;
         float speedOurEnemy = 0.0f;
+        float dotVelocityPlayerRelative = 0.0f;
+        Vector enemyPos = vec3_origin;
+        Vector playerPos = vec3_origin;
+        int serverTick = 0;
     };
 
+    RefCount rc_CLagCompensationManager_FinishLagCompensation;
     class DetectorPlayerModule : public EntityModule
 	{
 	public:
@@ -169,47 +209,188 @@ namespace Mod::Etc::Detector
             return abs((prevTickcount + 1) - tickcount) <= cvar_bckt_tolerance.GetInt();
         }
 
-        void PostRunCommand(CUserCmd &origCmd, CUserCmd* cmd, IMoveHelper* moveHelper) {
-            AVERAGE_TIME(PostRunCommand)
-            //ClientMsg(player, "Srv tick: %d | Cl tick: %d | cmdnum %d\n", gpGlobals->tickcount, cmd->tick_count, cmd->command_number);
-            //Msg("Srv tick: %d | Cl tick: %d | cmdnum %d\n", gpGlobals->tickcount, cmd->tick_count, cmd->command_number);
-            lagcompensation->StartLagCompensation(player, cmd);
-            trace_t trace;
-            FireEyeTrace(trace, player, 8192, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, COLLISION_GROUP_PLAYER);
-            lagcompensation->FinishLagCompensation(player);
+        void CalculateCmdAimTarget(CUserCmd &origCmd, UserCmdInfo &info) {
+            info.calculatedAim = true;
+            bool hasPotentialTargets = false;
+            Vector start = player->EyePosition();
+            Vector ourPos = player->GetAbsOrigin();
+            Vector forward, end;
+            AngleVectors(origCmd.viewangles, &forward);
+            {
+                float backTime = (gpGlobals->tickcount - origCmd.tick_count) * gpGlobals->interval_per_tick + player->m_fLerpTime;
 
-            UserCmdInfo info;
+                for (int i = 1; i <= gpGlobals->maxClients; i++) {
+                    auto entity = static_cast<CTFPlayer *>(UTIL_EntityByIndex(i));
+                    if (entity != nullptr && entity->GetTeamNumber() != player->GetTeamNumber() && entity->IsAlive()) {
+                        const Vector &entityPos = entity->GetAbsOrigin();
+                        const Vector &velocity = entity->GetAbsVelocity();
+                        const float speed = Max(entity->MaxSpeed(), Max(fabs(velocity.x), fabs(velocity.y))* 1.4f);
+                        //float closeRange = Max(entity->MaxSpeed(), entity->GetAbsVelocity().Length()) * backTime;
+                        Vector range(speed, speed, Max(50.0f, fabs(velocity.z) * 2.0f));
+                        range *= backTime;
+                        range.x += 15.0f;
+                        range.y += 15.0f;
+
+                        auto cprop = entity->CollisionProp(); 
+                        if (IsBoxIntersectingRay(entityPos+cprop->OBBMins() - range, entityPos+cprop->OBBMaxs() + range, start, forward * 8192, 0.0f)) {
+                            hasPotentialTargets = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!hasPotentialTargets) return;
+
+            CFastTimer timer;
+            timer.Start();
+            Mod::Perf::Func_Optimize::coneOfAttack = 0.0f;
+            lagcompensation->StartLagCompensation(player, &origCmd);
+            trace_t trace;
+            
+            VectorMA(start, 8192, forward, end);
+            UTIL_TraceLine(start, end, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, player , COLLISION_GROUP_NONE, &trace);
+
+            //TE_BeamPointsForDebug(trace.startpos, trace.endpos, 5.0f, 0, 0, 255, 255, 12.0f, player);
+            //FireEyeTrace(trace, player, 8192, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, COLLISION_GROUP_PLAYER);
+            {
+                SCOPED_INCREMENT(rc_CLagCompensationManager_FinishLagCompensation);
+                lagcompensation->FinishLagCompensation(player);
+            }
+
             info.aimEnemyPlayer = trace.DidHit() && trace.m_pEnt != nullptr && trace.m_pEnt->IsPlayer() && trace.m_pEnt->GetTeamNumber() != player->GetTeamNumber();
             info.aimAtHead = info.aimEnemyPlayer && trace.hitgroup == HITGROUP_HEAD;
             if (info.aimEnemyPlayer) {
                 auto aimPlayer = ToTFPlayer(trace.m_pEnt);
-                int boneHead = aimPlayer->LookupBone("bip_head");
-                int boneTorso = aimPlayer->LookupBone("bip_pelvis");
+                if (aimPlayer->GetModelIndex() != boneIndexCachedModel) {
+                    boneIndexCachedModel = aimPlayer->GetModelIndex();
+                    boneIndexHead = aimPlayer->LookupBone("bip_head");
+                    boneIndexPelvis = aimPlayer->LookupBone("bip_pelvis");
+                }
+                
                 QAngle ang;
                 Vector vec;
                 info.aimDistanceCenter = LineDistanceToPoint(trace.startpos, trace.endpos, aimPlayer->WorldSpaceCenter());
-                if (boneHead != -1) {
-                    aimPlayer->GetBonePosition(boneHead, vec, ang);
+                if (boneIndexHead != -1) {
+                    aimPlayer->GetBonePosition(boneIndexHead, vec, ang);
                     info.aimDistanceHead = LineDistanceToPoint(trace.startpos, trace.endpos, vec);
                 }
                 else {
                     info.aimDistanceHead = info.aimDistanceCenter;
                 }
-                if (boneTorso != -1) {
-                    aimPlayer->GetBonePosition(boneTorso, vec, ang);
+                if (boneIndexPelvis != -1) {
+                    aimPlayer->GetBonePosition(boneIndexPelvis, vec, ang);
                     info.aimDistanceTorso = LineDistanceToPoint(trace.startpos, trace.endpos, vec);
                 }
                 else {
                     info.aimDistanceTorso = info.aimDistanceCenter;
                 }
-                info.speedOurEnemy = (player->GetAbsVelocity() - aimPlayer->GetAbsVelocity()).Length();
-                ClientMsg(player, "Aim dists: %f %f %f %d %f\n",info.aimDistanceCenter, info.aimDistanceHead, info.aimDistanceTorso, info.aimAtHead, info.speedOurEnemy);
+                vec = (player->GetAbsVelocity() - aimPlayer->GetAbsVelocity());
+                info.speedOurEnemy = vec.Length();
+                info.dotVelocityPlayerRelative = info.speedOurEnemy == 0 ? 0 : (vec / info.speedOurEnemy).Dot((aimPlayer->GetAbsOrigin() - player->GetAbsOrigin()).Normalized());
+                
+                if (developer->GetInt() > 1) {
+                    ClientMsg(player, "Aim dists: %f %f %f %d %f %f\n",info.aimDistanceCenter, info.aimDistanceHead, info.aimDistanceTorso, info.aimAtHead, info.speedOurEnemy, info.dotVelocityPlayerRelative);
+                }
+                info.enemyPos = aimPlayer->GetAbsOrigin();
             }
+            timer.End();
+            frameBudget -= timer.GetDuration().GetSeconds();
+        }
+
+        UserCmdInfo *PostRunCommand(CUserCmd &origCmd, CUserCmd* cmd, IMoveHelper* moveHelper) {
+            //ClientMsg(player, "Srv tick: %d | Cl tick: %d | cmdnum %d\n", gpGlobals->tickcount, cmd->tick_count, cmd->command_number);
+            //Msg("Srv tick: %d | Cl tick: %d | cmdnum %d\n", gpGlobals->tickcount, cmd->tick_count, cmd->command_number);
+            if (!player->IsAlive()) {
+                return nullptr;
+            }
+            auto infoptr = std::make_shared<UserCmdInfo>();
+            UserCmdInfo &info = *infoptr;
+            info.serverTick = gpGlobals->tickcount;
+            info.playerPos = player->EyePosition();
+
+            if (frameBudget > 0) {
+                CalculateCmdAimTarget(origCmd, info);
+            }
+            else {
+                //Msg("out of budget budget %d\n", frameBudget, cmdHistory.size());
+            }
+
             info.cmd = origCmd;
             info.hadForcedAngles = MayHaveInvalidAngles();
-            cmdHistory.push_back(info);
-            if (cmdHistory.size() > 80) {
+
+            cmdHistory.push_back(infoptr);
+            auto sortedInsertPos = cmdHistorySorted.end();
+            for(; sortedInsertPos != cmdHistorySorted.begin(); sortedInsertPos--) {
+                auto &val = *(sortedInsertPos-1);
+                if (val->cmd.tick_count < origCmd.tick_count) {
+                    break;
+                }
+            }
+            cmdHistorySorted.insert(sortedInsertPos, infoptr);
+            if (cmdHistory.size() > 110) {
+                cmdHistorySorted.erase(std::find(cmdHistorySorted.begin(), cmdHistorySorted.end(), *cmdHistory.begin()));
                 cmdHistory.erase(cmdHistory.begin());
+            }
+            return &info;
+        }
+        void AddTest(CUserCmd *cmd) {
+            if (critTest) {
+                if (player->GetActiveTFWeapon() != nullptr && !player->GetActiveTFWeapon()->CalcIsAttackCriticalPoll(false)) {
+                    cmd->buttons &= ~IN_ATTACK;
+                    player->m_nButtons &= ~IN_ATTACK;
+                }
+            }
+            if (snapTest) {
+                snapTest = false;
+                ForEachTFPlayer([this, cmd](CTFPlayer *target){
+                    if (target->IsAlive() && target->GetTeamNumber() != player->GetTeamNumber()) {
+                        Vector delta = target->GetAbsOrigin() - player->GetAbsOrigin();
+                
+                        QAngle angToTarget;
+                        VectorAngles(delta, angToTarget);
+                        cmd->viewangles = angToTarget;
+                        cmd->buttons |= IN_ATTACK;
+                        player->m_nButtons |= IN_ATTACK;
+                    }
+                });
+            }
+
+            if (triggerTest) {
+                
+                Mod::Perf::Func_Optimize::coneOfAttack = 0.0f;
+                lagcompensation->StartLagCompensation(player, cmd);
+                trace_t trace;
+
+                Vector start = player->EyePosition();
+                Vector end, forward;
+                AngleVectors(cmd->viewangles, &forward);
+                VectorMA(start, 8192, forward, end);
+                UTIL_TraceLine(start, end, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, player , COLLISION_GROUP_PLAYER, &trace);
+                lagcompensation->FinishLagCompensation(player);
+                if (trace.DidHit() && trace.m_pEnt != nullptr && trace.m_pEnt->IsPlayer() && trace.m_pEnt->GetTeamNumber() != player->GetTeamNumber()) {
+                    cmd->buttons |= IN_ATTACK;
+                    player->m_nButtons |= IN_ATTACK;
+                    //TE_BeamPointsForDebug(trace.startpos, trace.endpos, 5.0f, 255, 0, 0, 255, 3.0f, player);
+                }
+            }
+
+            if (lockTest) {
+                Mod::Perf::Func_Optimize::coneOfAttack = 1.0f;
+                lagcompensation->StartLagCompensation(player, cmd);
+                ForEachTFPlayer([this, cmd](CTFPlayer *target){
+                        if (target->IsAlive() && target->GetTeamNumber() != player->GetTeamNumber()) {
+                            Vector pos;
+                            QAngle angToTarget;
+                            target->GetBonePosition(target->LookupBone("bip_head"), pos, angToTarget);
+                            Vector delta = pos - player->EyePosition();
+                            VectorAngles(delta, angToTarget);
+                            cmd->viewangles = angToTarget;
+                            return false;
+                        }
+                        return true;
+                    }
+                );
+                lagcompensation->FinishLagCompensation(player);
             }
         }
 
@@ -223,42 +404,19 @@ namespace Mod::Etc::Detector
                 highestCmdNum = cmd->command_number;
                 return;
             }
+            //ClientMsg(player,"%d %d (%d %d)\n", cmd->tick_count, cmd->command_number, cmd->tick_count - baselineCmdTick, cmd->command_number - baselineCmdNum);
 
             highestCmdTick = Max(highestCmdTick, cmd->tick_count);
             highestCmdNum = Max(highestCmdNum, cmd->command_number);
 
             if (cmd->tick_count - baselineCmdTick != cmd->command_number - baselineCmdNum) {
-                Notify("Invalid usercmd", fmt::format("Usercmd command number mismatch {} with tick count {}", cmd->command_number - baselineCmdNum, cmd->tick_count - baselineCmdTick), player);
+                Notify("Invalid usercmd", "Usercmd command number mismatch", std::format("command number delta={},tick count delta={}", cmd->command_number - baselineCmdNum, cmd->tick_count - baselineCmdTick), player);
                 baselineCmdTick = cmd->tick_count;
                 baselineCmdNum = cmd->command_number;
             }
 
             if (cmd->tick_count > gpGlobals->tickcount) {
-                Notify("Invalid usercmd", fmt::format("Usercmd tick count {} higher than server tick count {}", cmd->tick_count, gpGlobals->tickcount), player);
-            }
-
-            if (snapTest) {
-                snapTest = false;
-                ForEachTFPlayer([this, cmd](CTFPlayer *target){
-                    if (target->IsAlive() && target->GetTeamNumber() != player->GetTeamNumber()) {
-                        Vector delta = target->GetAbsOrigin() - player->GetAbsOrigin();
-                
-                        QAngle angToTarget;
-                        VectorAngles(delta, angToTarget);
-                        cmd->viewangles = angToTarget;
-                    }
-                });
-            }
-
-            if (triggerTest) {
-                
-                lagcompensation->StartLagCompensation(player, cmd);
-                trace_t trace;
-                FireEyeTrace(trace, player, 8192, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, COLLISION_GROUP_PLAYER);
-                lagcompensation->FinishLagCompensation(player);
-                if (trace.DidHit() && trace.m_pEnt != nullptr && trace.m_pEnt->IsPlayer() && trace.m_pEnt->GetTeamNumber() != player->GetTeamNumber()) {
-                    cmd->buttons |= IN_ATTACK;
-                }
+                Notify("Invalid usercmd", "Usercmd tick count higher than server tick count", std::format("usercmd tick count={},server tick count={}", cmd->tick_count, gpGlobals->tickcount), player);
             }
         }
 
@@ -267,145 +425,242 @@ namespace Mod::Etc::Detector
         }
 
         void CheckAngles(CUserCmd* cmd) {
-            if (MayHaveInvalidAngles()) return;
+            if (MayHaveInvalidAngles() || !player->IsAlive()) return;
 
             if (abs(cmd->viewangles[PITCH]) > 89.0001f || abs(cmd->viewangles[ROLL]) > 50.0001f) {
-                Notify("Invalid angles", fmt::format("Player had angles in invalid range {} {} {}", cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z), player);
+                Notify("Invalid angles", "Player had angles in invalid range",std::format("angles={} {} {}", cmd->viewangles.x, cmd->viewangles.y, cmd->viewangles.z), player);
             }
         }
         
         void AnalizeCmds() {
             constexpr int frameCheckCount = 16;
+            constexpr int cmdCheckDelay = 80;
+
             if (cmdHistory.size() < frameCheckCount) return;
 
-            auto historySorted = cmdHistory;
-            std::sort(historySorted.begin(), historySorted.end(), [](auto &info1, auto &info2){
-                return info1.cmd.tick_count < info2.cmd.tick_count;
-            });
+            if (gpGlobals->tickcount - cmdHistory[0]->serverTick < cmdCheckDelay) return;
 
-            for (int i = 0; i < frameCheckCount; i++) {
-                if (historySorted[i].hadForcedAngles) return;
-            }
+            while (gpGlobals->tickcount - cmdHistory[0]->serverTick >= cmdCheckDelay && cmdHistory.size() >= frameCheckCount) {
+                auto &cmd0 = *cmdHistorySorted[0];
+                auto &cmd1 = *cmdHistorySorted[1];
+                auto &cmd2 = *cmdHistorySorted[2];
+                cmdHistory.erase(std::find(cmdHistory.begin(), cmdHistory.end(), cmdHistorySorted[0]));
 
-            if (historySorted[0].cmd.command_number > historySorted[1].cmd.command_number && historySorted[0].cmd.tick_count < historySorted[1].cmd.tick_count) {
-                Notify("Invalid usercmd", fmt::format("Usercmd command number {} from tick {} higher than a command number {} from next tick {}", historySorted[0].cmd.command_number, historySorted[0].cmd.tick_count, historySorted[1].cmd.command_number, historySorted[1].cmd.tick_count), player);
-            }
-
-            if (historySorted[0].cmd.command_number == historySorted[1].cmd.command_number && historySorted[0].cmd.tick_count == historySorted[1].cmd.tick_count && historySorted[0].cmd.viewangles != historySorted[1].cmd.viewangles && historySorted[0].cmd.buttons != historySorted[1].cmd.buttons) {
-                Notify("Invalid usercmd", fmt::format("Usercmd duplicated command number {} and tick count {}, but with different data", historySorted[0].cmd.command_number, historySorted[0].cmd.tick_count), player);
-            }
-
-            bool triggerBotStartCheck = false;
-            bool triggerBotHeadStartCheck = false;
-            bool triggerBotEndCheck = false;
-            bool triggerBotHeadEndCheck = false;
-            if (!historySorted[0].aimAtHead && historySorted[1].aimAtHead && !(historySorted[0].cmd.buttons & IN_ATTACK) && (historySorted[1].cmd.buttons & IN_ATTACK)) {
-                triggerBotHeadStartCheck = true;
-            }
-            else if (!historySorted[0].aimEnemyPlayer && historySorted[1].aimEnemyPlayer && !(historySorted[0].cmd.buttons & IN_ATTACK) && (historySorted[1].cmd.buttons & IN_ATTACK)) {
-                triggerBotStartCheck = true;
-            }
-
-            if (historySorted[1].aimAtHead && !historySorted[2].aimAtHead && (historySorted[1].cmd.buttons & IN_ATTACK) && !(historySorted[2].cmd.buttons & IN_ATTACK)) {
-                triggerBotHeadEndCheck = true;
-            }
-            else if (historySorted[1].aimEnemyPlayer && !historySorted[2].aimEnemyPlayer && (historySorted[1].cmd.buttons & IN_ATTACK) && !(historySorted[2].cmd.buttons & IN_ATTACK)) {
-                triggerBotEndCheck = true;
-            }
-            if ((triggerBotStartCheck || triggerBotHeadStartCheck) && (triggerBotEndCheck || triggerBotHeadEndCheck)) {
-                Notify("Triggerbot start+end", fmt::format("Player pressed attack button same tick as they aimed at enemy target, then unpressed it next tick as target was dead. Did the player aim at the head specifically: {}", triggerBotHeadStartCheck), player);
-            }
-            else if ((triggerBotStartCheck || triggerBotHeadStartCheck) && !(triggerBotEndCheck || triggerBotHeadEndCheck)) {
-                Notify("Triggerbot start", fmt::format("Player pressed attack button same tick as they aimed at enemy target. Did the player aim at the head specifically: {}", triggerBotHeadStartCheck), player);
-            }
-            else if (!(triggerBotStartCheck || triggerBotHeadStartCheck) && (triggerBotEndCheck || triggerBotHeadEndCheck)) {
-                Notify("Triggerbot end", fmt::format("Player unpressed attack button same tick as they stopped aiming at enemy target or the target was dead. Did the player aim at the head specifically: {}", triggerBotHeadEndCheck), player);
-            }
-            auto ang0 = historySorted[0].cmd.viewangles;
-            auto ang1 = historySorted[1].cmd.viewangles;
-            auto ang2 = historySorted[2].cmd.viewangles;
-            float delta01 = abs(AngleDiff(ang0.x, ang1.x)) + abs(AngleDiff(ang0.y, ang1.y));
-            float delta12 = abs(AngleDiff(ang1.x, ang2.x)) + abs(AngleDiff(ang1.y, ang2.y));
-            float delta02 = abs(AngleDiff(ang0.x, ang2.x)) + abs(AngleDiff(ang0.y, ang2.y));
-
-            if (!historySorted[0].aimEnemyPlayer && historySorted[1].aimEnemyPlayer && !historySorted[2].aimEnemyPlayer && !(historySorted[0].cmd.buttons & IN_ATTACK) && (historySorted[1].cmd.buttons & IN_ATTACK)) {
-                if (delta01 > 10.0f && delta12 > 10.0f && delta02 < 2.0f) {
-                    Notify("Silent aim", fmt::format("Player snapped aim in one tick to an enemy player, attacked, then reverted back to previous aim angles. aim delta 01 = {}, delta 12 = {}, delta 02 = {}. Did the player aim at the head specifically: {}", delta01, delta12, delta02, historySorted[1].aimAtHead), player);
-                }
-            }
-            ClientMsg(player, "buttons %d %d %d %d\n", historySorted[0].cmd.buttons, historySorted[1].cmd.buttons, historySorted[0].aimEnemyPlayer, historySorted[1].aimEnemyPlayer);
-            int framesAiming = 0;
-            float minDistanceDiffTotal = 0;
-            bool aimedAtHead = false;
-            bool aimedAtTorso = false;
-            float angMoveTotalNonAimed = 0;
-            int nonAimedTickCount = 0;
-            Vector aimDeltaVecNonAimedTotal = vec3_origin;
-            Vector aimDeltaVecAimed = vec3_origin;
-            float maxAngDeltaWhenAimingAtEnemy = 0;
-
-            for (int i = 0; i < frameCheckCount - 1; i++) {
-                auto &cmd0 = historySorted[i];
-                auto &cmd1 = historySorted[i+1];
-                float angDelta = abs(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x)) + abs(AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y));
-                if (cmd1.aimEnemyPlayer && !cmd0.aimEnemyPlayer) {
-                    if (angDelta > maxAngDeltaWhenAimingAtEnemy) {
-                        maxAngDeltaWhenAimingAtEnemy = angDelta;
-                        aimDeltaVecAimed = Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0);
+                bool skip = false;
+                for (int i = 0; i < frameCheckCount; i++) {
+                    if (cmdHistorySorted[i]->hadForcedAngles) {
+                        skip = true;
+                        break;
                     }
                 }
-                else {
-                    angMoveTotalNonAimed += angDelta;
-                    aimDeltaVecNonAimedTotal += Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0);
-                    nonAimedTickCount++;
+                if (skip) {
+                    cmdHistorySorted.erase(cmdHistorySorted.begin());
+                    return;
                 }
-                if (cmd0.cmd.viewangles != cmd1.cmd.viewangles && cmd1.aimEnemyPlayer && cmd1.speedOurEnemy > 50.0f) {
-                    framesAiming++;
-                    float minDist0 = Min(cmd0.aimDistanceHead, Min(cmd0.aimDistanceTorso, cmd0.aimDistanceCenter));
-                    float minDist1 = Min(cmd1.aimDistanceHead, Min(cmd1.aimDistanceTorso, cmd1.aimDistanceCenter));
-                    if (cmd1.aimAtHead) {
-                        aimedAtHead = true;
+
+                int measuredClientCmds = 0;
+                int measuredCommandNumbers = 0;
+
+                int unorder = 0;
+                int latencyTotal = 0;
+                int latencyMax = 0;
+                std::shared_ptr<UserCmdInfo> prevptr;
+                for (auto &info : cmdHistorySorted) {
+                    if (prevptr) {
+                        if (info->cmd.command_number != prevptr->cmd.command_number + 1 || info->cmd.tick_count != prevptr->cmd.tick_count + 1) {
+                            unorder++;
+                        }
+                    }
+                    latencyTotal += info->serverTick - info->cmd.tick_count;
+                    latencyMax = Max(latencyMax, Max(info->serverTick - info->cmd.tick_count, 0));
+                    prevptr = info;
+                }
+                int latencyAvg = latencyTotal/cmdHistorySorted.size();
+
+
+                if (cmd0.cmd.command_number > cmd1.cmd.command_number && cmd0.cmd.tick_count < cmd1.cmd.tick_count) {
+                    Notify("Invalid usercmd", "Usercmd command number from previous tick higher than a command number from next tick", std::format("previous command number={},previous tick={},next command number={},next tick={},cmd unorder={},cmd latency avg/max={}/{}", cmd0.cmd.command_number, cmd0.cmd.tick_count, cmd1.cmd.command_number, cmd1.cmd.tick_count, unorder, latencyAvg, latencyMax), player, cmd0.serverTick);
+                }
+
+                if (cmd0.cmd.command_number == cmd1.cmd.command_number && cmd0.cmd.tick_count == cmd1.cmd.tick_count && cmd0.cmd.viewangles != cmd1.cmd.viewangles && cmd0.cmd.buttons != cmd1.cmd.buttons) {
+                    Notify("Invalid usercmd", "Usercmd duplicated command number and tick count, but with different data", std::format("command number={},tick count={},cmd unorder={},cmd latency avg/max={}/{}", cmd0.cmd.command_number, cmd0.cmd.tick_count, unorder, latencyAvg, latencyMax), player, cmd0.serverTick);
+                }
+
+                bool displayBoxHead = false;
+                UserCmdInfo *traceCmd = nullptr;
+                Vector boxColor = Vector(255,255,255);
+                Vector traceColor = Vector(255,255,255);
+
+                bool triggerBotStartCheck = false;
+                bool triggerBotHeadStartCheck = false;
+                bool triggerBotEndCheck = false;
+                bool triggerBotHeadEndCheck = false;
+                if (!cmd0.aimAtHead && cmd1.aimAtHead && !(cmd0.cmd.buttons & IN_ATTACK) && (cmd1.cmd.buttons & IN_ATTACK)) {
+                    triggerBotHeadStartCheck = true;
+                }
+                else if (!cmd0.aimEnemyPlayer && cmd1.aimEnemyPlayer && !(cmd0.cmd.buttons & IN_ATTACK) && (cmd1.cmd.buttons & IN_ATTACK)) {
+                    triggerBotStartCheck = true;
+                }
+
+                if (cmd1.aimAtHead && !cmd2.aimAtHead && (cmd1.cmd.buttons & IN_ATTACK) && !(cmd2.cmd.buttons & IN_ATTACK)) {
+                    triggerBotHeadEndCheck = true;
+                }
+                else if (cmd1.aimEnemyPlayer && !cmd2.aimEnemyPlayer && (cmd1.cmd.buttons & IN_ATTACK) && !(cmd2.cmd.buttons & IN_ATTACK)) {
+                    triggerBotEndCheck = true;
+                }
+                if ((triggerBotStartCheck || triggerBotHeadStartCheck) && (triggerBotEndCheck || triggerBotHeadEndCheck)) {
+                    displayBoxHead = triggerBotHeadStartCheck;
+                    boxColor = traceColor = Vector(255, 0, 0);
+                    traceCmd = &cmd1;
+                    Notify("Triggerbot start+end", "Player pressed attack button same tick as they aimed at enemy target, then unpressed it next tick as target was dead", std::format("aimed at head={},fired={},damaged={},cmd unorder={},cmd latency avg/max/shot={}/{}/{}", triggerBotHeadStartCheck, cmd1.firedWeapon, cmd1.damagedEnemy, unorder, latencyAvg, latencyMax, Max(cmd1.serverTick - cmd1.cmd.tick_count,0)), player, cmd1.serverTick);
+                }
+                else if ((triggerBotStartCheck || triggerBotHeadStartCheck) && !(triggerBotEndCheck || triggerBotHeadEndCheck)) {
+                    displayBoxHead = triggerBotHeadStartCheck;
+                    boxColor = traceColor = Vector(255, 128, 0);
+                    traceCmd = &cmd1;
+                    Notify("Triggerbot start", "Player pressed attack button same tick as they aimed at enemy target", std::format("aimed at head={},fired={},damaged={},cmd unorder={},cmd latency avg/max/shot={}/{}/{}", triggerBotHeadStartCheck, cmd1.firedWeapon, cmd1.damagedEnemy, unorder, latencyAvg, latencyMax, Max(cmd1.serverTick - cmd1.cmd.tick_count,0)), player, cmd1.serverTick);
+                }
+                else if (!(triggerBotStartCheck || triggerBotHeadStartCheck) && (triggerBotEndCheck || triggerBotHeadEndCheck)) {
+                    displayBoxHead = triggerBotHeadEndCheck;
+                    boxColor = traceColor = Vector(255, 192, 0);
+                    traceCmd = &cmd1;
+                    Notify("Triggerbot end", "Player unpressed attack button same tick as they stopped aiming at enemy target or the target was dead", std::format("aimed at head={},fired={},damaged={},cmd unorder={},cmd latency avg/max/shot={}/{}/{}", triggerBotHeadEndCheck, cmd1.firedWeapon, cmd1.damagedEnemy, unorder, latencyAvg, latencyMax, Max(cmd1.serverTick - cmd1.cmd.tick_count,0)), player, cmd1.serverTick);
+                }
+                auto ang0 = cmd0.cmd.viewangles;
+                auto ang1 = cmd1.cmd.viewangles;
+                auto ang2 = cmd2.cmd.viewangles;
+                float delta01 = abs(AngleDiff(ang0.x, ang1.x)) + abs(AngleDiff(ang0.y, ang1.y));
+                float delta12 = abs(AngleDiff(ang1.x, ang2.x)) + abs(AngleDiff(ang1.y, ang2.y));
+                float delta02 = abs(AngleDiff(ang0.x, ang2.x)) + abs(AngleDiff(ang0.y, ang2.y));
+
+                if (!cmd0.aimEnemyPlayer && cmd1.aimEnemyPlayer && !cmd2.aimEnemyPlayer && !(cmd0.cmd.buttons & IN_ATTACK) && (cmd1.cmd.buttons & IN_ATTACK)) {
+                    if (delta01 > 10.0f && delta12 > 10.0f && delta02 < 2.0f) {
+                        displayBoxHead = cmd1.aimAtHead;
+                        boxColor = traceColor = Vector(255, 255, 0);
+                        traceCmd = &cmd1;
+                        Notify("Silent aim", "Player snapped aim in one tick to an enemy player, attacked, then reverted back to previous aim angles", std::format("aimed at head={},fired={},damaged={},aim delta 01={:.3},delta 12={:.3},delta 02={:.3},cmd unorder={},cmd latency avg/max/shot={}/{}/{}", cmd1.aimAtHead, cmd1.firedWeapon, cmd1.damagedEnemy, delta01, delta12, delta02, unorder, latencyAvg, latencyMax, Max(cmd1.serverTick - cmd1.cmd.tick_count,0)), player, cmd1.serverTick);
+                    }
+                }
+                //if (developer->GetBool()) {
+                //    ClientMsg(player, "buttons %d %d %d %d\n", cmd0.cmd.buttons, cmd1.cmd.buttons, cmd0.aimEnemyPlayer, cmd1.aimEnemyPlayer);
+                //}
+                int framesAiming = 0;
+                float minDistanceDiffTotal = 0;
+                bool aimedAtHead = false;
+                bool aimedAtTorso = false;
+                float angMoveTotalNonAimed = 0;
+                int nonAimedTickCount = 0;
+                Vector aimDeltaVecNonAimedTotal = vec3_origin;
+                Vector aimDeltaVecAimed = vec3_origin;
+                UserCmdInfo *aimPlayerCmd = nullptr; 
+                float maxAngDeltaWhenAimingAtEnemy = 0;
+
+                float totalVelocityPlayerRelativeToEnemyDot = 0;
+
+                for (int i = 0; i < frameCheckCount - 1; i++) {
+                    auto &cmd0 = *cmdHistorySorted[i];
+                    auto &cmd1 = *cmdHistorySorted[i+1];
+                    float angDelta = abs(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x)) + abs(AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y));
+                    if (cmd1.aimEnemyPlayer && !cmd0.aimEnemyPlayer) {
+                        if (angDelta > maxAngDeltaWhenAimingAtEnemy) {
+                            maxAngDeltaWhenAimingAtEnemy = angDelta;
+                            aimDeltaVecAimed = Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0);
+                        }
                     }
                     else {
-                        aimedAtTorso = true;
+                        angMoveTotalNonAimed += angDelta;
+                        aimDeltaVecNonAimedTotal += Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0);
+                        nonAimedTickCount++;
                     }
-                    minDistanceDiffTotal += abs(minDist0 - minDist1);
-                }
-            }
-            Vector aimDeltaVec01 = Vector(AngleDiff(historySorted[0].cmd.viewangles.x, historySorted[1].cmd.viewangles.x), AngleDiff(historySorted[0].cmd.viewangles.y, historySorted[1].cmd.viewangles.y), 0).Normalized();
-            Vector aimDeltaVec12 = Vector(AngleDiff(historySorted[1].cmd.viewangles.x, historySorted[2].cmd.viewangles.x), AngleDiff(historySorted[1].cmd.viewangles.y, historySorted[2].cmd.viewangles.y), 0).Normalized();
-            
-           // ClientMsg(player, "aim delta dot %f %f\n", RAD2DEG(acos(DotProductAbs(aimDeltaVec01, aimDeltaVec12))), delta01);
-            if (!historySorted[0].aimEnemyPlayer && !historySorted[1].aimEnemyPlayer && historySorted[2].aimEnemyPlayer) {
-                // Look at sharp turns with fast speed
-                if (delta12 > 10.0f) {
-                    Vector aimDeltaVec01 = Vector(AngleDiff(historySorted[0].cmd.viewangles.x, historySorted[1].cmd.viewangles.x), AngleDiff(historySorted[0].cmd.viewangles.y, historySorted[1].cmd.viewangles.y), 0).Normalized();
-                    Vector aimDeltaVec12 = Vector(AngleDiff(historySorted[1].cmd.viewangles.x, historySorted[2].cmd.viewangles.x), AngleDiff(historySorted[1].cmd.viewangles.y, historySorted[2].cmd.viewangles.y), 0).Normalized();
-                    if (delta01 < 1.0f || delta12 / delta01 > 10 || DotProductAbs(aimDeltaVec01, aimDeltaVec12) < 0.7) { // 45 degress
-                        Notify("Aim snap", fmt::format("Player snapped aim to an enemy player with {} times above average angular velocity. Avg delta: {}. Aim snap delta: {}. Did the player aim at the head specifically: {}", maxAngDeltaWhenAimingAtEnemy / (angMoveTotalNonAimed / (frameCheckCount - 1)), angMoveTotalNonAimed / (frameCheckCount - 1), delta01, maxAngDeltaWhenAimingAtEnemy, historySorted[2].aimAtHead), player);
+                    if (cmd0.cmd.viewangles != cmd1.cmd.viewangles && cmd1.aimEnemyPlayer && cmd1.speedOurEnemy > 50.0f && abs(cmd1.dotVelocityPlayerRelative) < 0.99f) {
+                        framesAiming++;
+                        totalVelocityPlayerRelativeToEnemyDot += abs(cmd1.dotVelocityPlayerRelative);
+                        float minDist0 = Min(cmd0.aimDistanceHead, Min(cmd0.aimDistanceTorso, cmd0.aimDistanceCenter));
+                        float minDist1 = Min(cmd1.aimDistanceHead, Min(cmd1.aimDistanceTorso, cmd1.aimDistanceCenter));
+                        if (cmd1.aimAtHead) {
+                            aimedAtHead = true;
+                        }
+                        else {
+                            aimedAtTorso = true;
+                        }
+                        aimPlayerCmd = &cmd1;
+                        minDistanceDiffTotal += abs(minDist0 - minDist1);
                     }
                 }
-            }
-            aimDeltaVecAimed.NormalizeInPlace();
-            aimDeltaVecNonAimedTotal.NormalizeInPlace();
-            //ClientMsg(player, "%f %f | %f %f | %f\n", aimDeltaVecAimed.x, aimDeltaVecAimed.y, aimDeltaVecNonAimedTotal.x, aimDeltaVecNonAimedTotal.y, RAD2DEG(acos(DotProductAbs(aimDeltaVecAimed, aimDeltaVecNonAimedTotal))));
-            //ClientMsg(player, "aim angle delta: %f, avg: %f, cur %f, dot %f | avg aim dist: %f %d | \n", maxAngDeltaWhenAimingAtEnemy, angMoveTotalNonAimed / (frameCheckCount - 1), delta01, DotProduct(aimDeltaVecAimed.Normalized(), aimDeltaVecNonAimedTotal.Normalized()), minDistanceDiffTotal / framesAiming, framesAiming);
-            if (framesAiming > frameCheckCount / 4) {
-                //ClientMsg(player, "avg aim %f %d\n", minDistanceDiffTotal / framesAiming, framesAiming);
-                if (minDistanceDiffTotal / framesAiming < 0.05f) {
-                    Notify("Aim lock", fmt::format("Player locked aim to head: {} torso: {}. Average distance to head/torso bone: {}", aimedAtHead, aimedAtTorso, minDistanceDiffTotal / framesAiming), player);
+                if (developer->GetInt() > 1){
+                    Vector aimDeltaVec01 = Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0).Normalized();
+                    Vector aimDeltaVec12 = Vector(AngleDiff(cmd1.cmd.viewangles.x, cmd2.cmd.viewangles.x), AngleDiff(cmd1.cmd.viewangles.y, cmd2.cmd.viewangles.y), 0).Normalized();
+                    //ClientMsg(player, "aim delta dot %f %f %f %f %d %d %d %d\n", RAD2DEG(acos(DotProductAbs(aimDeltaVec01, aimDeltaVec12))), delta01, delta12, delta02, cmd0.aimEnemyPlayer, cmd1.aimEnemyPlayer, cmd2.aimEnemyPlayer, cmd1.cmd.buttons & IN_ATTACK);
                 }
+                
+                if (!cmd0.aimEnemyPlayer && !cmd1.aimEnemyPlayer && cmd2.aimEnemyPlayer) {
+                    // Look at sharp turns with fast speed
+                    if (delta12 > 10.0f) {
+                        Vector aimDeltaVec01 = Vector(AngleDiff(cmd0.cmd.viewangles.x, cmd1.cmd.viewangles.x), AngleDiff(cmd0.cmd.viewangles.y, cmd1.cmd.viewangles.y), 0).Normalized();
+                        Vector aimDeltaVec12 = Vector(AngleDiff(cmd1.cmd.viewangles.x, cmd2.cmd.viewangles.x), AngleDiff(cmd1.cmd.viewangles.y, cmd2.cmd.viewangles.y), 0).Normalized();
+                        if (delta01 < 1.0f || delta12 / delta01 > 10 || DotProductAbs(aimDeltaVec01, aimDeltaVec12) < 0.7) { // 45 degress
+                            displayBoxHead = cmd2.aimAtHead;
+                            boxColor = traceColor = Vector(0, 0, 255);
+                            traceCmd = &cmd2;
+                            Notify("Aim snap", "Player snapped aim to an enemy player with many times above average angular velocity", std::format("aimed at head={},fired={},damaged={},avg delta={:.3},aim snap delta={:.3},cmd unorder={},cmd latency avg/max/shot={}/{}/{}", cmd2.firedWeapon, cmd2.damagedEnemy, cmd2.aimAtHead, maxAngDeltaWhenAimingAtEnemy / (angMoveTotalNonAimed / (frameCheckCount - 1)), angMoveTotalNonAimed / (frameCheckCount - 1), unorder, latencyAvg, latencyMax, (float)Max(cmd2.serverTick - cmd2.cmd.tick_count,0)), player, cmd2.serverTick);
+                        }
+                    }
+                }
+                aimDeltaVecAimed.NormalizeInPlace();
+                aimDeltaVecNonAimedTotal.NormalizeInPlace();
+                //ClientMsg(player, "%f %f | %f %f | %f\n", aimDeltaVecAimed.x, aimDeltaVecAimed.y, aimDeltaVecNonAimedTotal.x, aimDeltaVecNonAimedTotal.y, RAD2DEG(acos(DotProductAbs(aimDeltaVecAimed, aimDeltaVecNonAimedTotal))));
+                //ClientMsg(player, "aim angle delta: %f, avg: %f, cur %f, dot %f | avg aim dist: %f %d | \n", maxAngDeltaWhenAimingAtEnemy, angMoveTotalNonAimed / (frameCheckCount - 1), delta01, DotProduct(aimDeltaVecAimed.Normalized(), aimDeltaVecNonAimedTotal.Normalized()), minDistanceDiffTotal / framesAiming, framesAiming);
+                if (framesAiming > frameCheckCount / 4) {
+                    //ClientMsg(player, "avg aim %f %d\n", minDistanceDiffTotal / framesAiming, framesAiming);
+                    if (minDistanceDiffTotal / framesAiming < 0.045f) {
+                        if (aimPlayerCmd != nullptr) {
+                            displayBoxHead = aimedAtHead;
+                            boxColor = traceColor = Vector(0, 255, 255);
+                            traceCmd = aimPlayerCmd;
+                        }
+                        Notify("Aim lock", "Player locked aim to head or torso", std::format("aimed at head={},aimed at torso={},avg distance to head/torso bone={:.3},angle to enemy movement={:.3},cmd unorder={},cmd latency avg/max={}/{}", aimedAtHead, aimedAtTorso, minDistanceDiffTotal / framesAiming, RAD2DEG(acos(totalVelocityPlayerRelativeToEnemyDot / framesAiming)), unorder, latencyAvg, latencyMax), player, cmd0.serverTick);
+                    }
+                }
+
+                if (traceCmd != nullptr) {
+                    CBasePlayer *sourceTVClient = nullptr;
+                    ForEachPlayer([&](CBasePlayer *pl) {
+                        if (pl->IsHLTV()) {
+                            sourceTVClient = pl;
+                        }
+                    });
+                    if (sourceTVClient != nullptr && sig_etc_detector_print_demo.GetBool()) {
+                        lagcompensation->StartLagCompensation(player, &traceCmd->cmd);
+                        trace_t trace;
+                        Vector start = traceCmd->playerPos;
+                        Vector end, forward;
+                        AngleVectors(traceCmd->cmd.viewangles, &forward);
+                        VectorMA(start, 8192, forward, end);
+                        UTIL_TraceLine(start, end, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, player , COLLISION_GROUP_NONE, &trace);
+                        
+                        TE_BeamPointsForDebug(traceCmd->playerPos, end, 5.0f, traceColor.x, traceColor.y, traceColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
+                        if (traceCmd->enemyPos != vec3_origin) {
+                            TE_BBoxForDebug(traceCmd->enemyPos + VEC_HULL_MIN, traceCmd->enemyPos + VEC_HULL_MAX, 5.0f, boxColor.x, boxColor.y, boxColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
+                        }
+                        lagcompensation->FinishLagCompensation(player);
+                    }
+                }
+                cmdHistorySorted.erase(cmdHistorySorted.begin());
             }
         }
 
         void Reset() {
             cmdHistory.clear();
+            cmdHistorySorted.clear();
             baselineCmdTick = 0;
             baselineCmdNum = 0;
             highestCmdTick = 0;
             highestCmdNum = 0;
         }
 
+        void RefreshFrameBudget() {
+            frameBudget = 0.01f;
+        }
 		int prevTickcount = 0;
         int diffTickcount = 0;
         int tmpTickcount = 0;
@@ -421,7 +676,8 @@ namespace Mod::Etc::Detector
         
         CTFPlayer *player;
 
-        std::vector<UserCmdInfo> cmdHistory;
+        std::vector<std::shared_ptr<UserCmdInfo>> cmdHistory;
+        std::vector<std::shared_ptr<UserCmdInfo>> cmdHistorySorted;
 
         int baselineCmdTick = 0;
         int baselineCmdNum = 0;
@@ -432,7 +688,66 @@ namespace Mod::Etc::Detector
 
         bool snapTest = false;
         bool triggerTest = false;
+        bool lockTest = false;
+        bool critTest = false;
+
+        int boneIndexCachedModel = 0;
+        int boneIndexHead = 0;
+        int boneIndexPelvis = 0;
+        float frameBudget = 0.1f;
 	}; 
+
+    // Stop expensive traces that are unnecesary when doing lag compensation here
+
+	DETOUR_DECL_STATIC(void, UTIL_TraceEntity, CBaseEntity *pEntity, const Vector &vecAbsStart, const Vector &vecAbsEnd, 
+					  unsigned int mask, const IHandleEntity *pIgnore, int nCollisionGroup, trace_t *ptr)
+	{
+        if (rc_CLagCompensationManager_FinishLagCompensation) {
+            ptr->startsolid = false;
+            ptr->allsolid = false;
+            ptr->endpos = vecAbsStart;
+            return;
+        }
+		DETOUR_STATIC_CALL(pEntity, vecAbsStart, vecAbsEnd, mask, pIgnore, nCollisionGroup, ptr);
+	}
+
+	DETOUR_DECL_STATIC(void, UTIL_SetOrigin, CBaseEntity *pEntity, const Vector &origin, bool touchTriggers)
+	{
+        if (rc_CLagCompensationManager_FinishLagCompensation) {
+            touchTriggers = false;
+        }
+		DETOUR_STATIC_CALL(pEntity, origin, touchTriggers);
+	}
+
+
+
+	DETOUR_DECL_MEMBER(void, CTFPlayer_FireBullet, CTFWeaponBase *weapon, FireBulletsInfo_t& info, bool bDoEffects, int nDamageType, int nCustomDamageType)
+	{
+		DETOUR_MEMBER_CALL(weapon, info, bDoEffects, nDamageType, nCustomDamageType);
+
+        //TE_BeamPointsForDebug(info.m_vecSrc, info.m_vecSrc + info.m_vecDirShooting.Normalized() * 8192, 5.0f, 0, 255, 0, 255, 3, reinterpret_cast<CTFPlayer *>(this));
+	}
+
+    CUserCmd *currCmd = nullptr;
+    CUserCmd *currCmdPre = nullptr;
+    IMoveHelper *currMoveHelper = nullptr;
+    DetectorPlayerModule *currMod = nullptr;
+    // Detecting is done in postthink as it is the time when the player is already moved by client cmd and just about to shoot
+	DETOUR_DECL_MEMBER(void, CTFPlayer_PostThink)
+	{
+		auto player = reinterpret_cast<CTFPlayer *>(this);
+        UserCmdInfo *info = nullptr;
+        if (currCmd != nullptr) {
+            auto mod = currMod;
+            mod->AddTest(currCmdPre);
+            info = mod->PostRunCommand(*currCmdPre, currCmd, currMoveHelper);
+        }
+        DETOUR_MEMBER_CALL();
+        if (info != nullptr) {
+            info->damagedEnemy = currMod->lastDamagedPlayerTick == gpGlobals->tickcount;
+            info->firedWeapon = currMod->lastShootTick == gpGlobals->tickcount;
+        }
+    }
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
 	{
@@ -448,6 +763,7 @@ namespace Mod::Etc::Detector
             DETOUR_MEMBER_CALL(cmd, moveHelper);
             return;
         }
+        CUserCmd cmdPre = *cmd;
         mod->ValidateCmd(cmd);
         if (player->pl->fixangle != FIXANGLE_NONE || player->GetMoveParent() != nullptr) {
             mod->timeTeleport = gpGlobals->curtime;
@@ -458,11 +774,21 @@ namespace Mod::Etc::Detector
 
         cmd->tick_count = mod->CorrectTickcount(cmd->tick_count);
 
-        CUserCmd cmdPre = *cmd;
+        currCmd = cmd;
+        currCmdPre = &cmdPre;
+        currMoveHelper = moveHelper;
+        currMod = mod;
         DETOUR_MEMBER_CALL(cmd, moveHelper);
+        currCmd = nullptr;
+        currCmdPre = nullptr;
 
-        mod->PostRunCommand(cmdPre, cmd, moveHelper);
 	}
+
+
+	DETOUR_DECL_MEMBER(void, CBasePlayer_PlayerRunCommand, CUserCmd* cmd, IMoveHelper* moveHelper)
+	{
+
+    }
 
 	DETOUR_DECL_MEMBER(void, CBaseEntity_Teleport, const Vector *pos, const QAngle *angle, const Vector *vel)
 	{
@@ -504,7 +830,7 @@ namespace Mod::Etc::Detector
 	StaticFuncThunk<int, IClient *, const char *, bool> ft_SendCvarValueQueryToClient("SendCvarValueQueryToClient");
 	THINK_FUNC_DECL(CheckClientCVars) {
         
-        TIME_SCOPE2(CheckClientCVars);
+        //TIME_SCOPE2(CheckClientCVars);
         auto player = reinterpret_cast<CTFPlayer *>(this);
         auto client = sv->GetClient(player->entindex() - 1);
         for (auto &entry : client_cvar_check_map) {
@@ -530,7 +856,7 @@ namespace Mod::Etc::Detector
 
         if (!(info.GetDamageType() & DMG_IGNITE) && info.GetDamageCustom() != TF_DMG_CUSTOM_BURNING && info.GetDamageCustom() != TF_DMG_CUSTOM_BURNING_FLARE) {
 
-            auto mod = player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
+            auto mod = attacker->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
             mod->lastDamagedPlayerTick = gpGlobals->tickcount;
             mod->lastDamagedPlayerWeaponName = info.GetWeapon()->GetClassnameString();
         }
@@ -541,7 +867,7 @@ namespace Mod::Etc::Detector
 					 int iWeaponID, int	iMode, int iSeed, float flSpread, bool bCritical)
 	{
         auto player = UTIL_PlayerByIndex(iPlayerIndex);
-        if (player != nullptr) {
+        if (player != nullptr && player->IsRealPlayer()) {
             auto mod = player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
             mod->lastShootTick = gpGlobals->tickcount;
         }
@@ -572,7 +898,6 @@ namespace Mod::Etc::Detector
 
     DETOUR_DECL_MEMBER(void, CTFGameRules_FireGameEvent, IGameEvent *event)
 	{
-        auto client = reinterpret_cast<CBaseClient *>(this);
         if (event->GetName() == nullptr) { 
             DETOUR_MEMBER_CALL(event); 
             return;
@@ -585,7 +910,7 @@ namespace Mod::Etc::Detector
 
             int achieveId = event->GetInt("achievement");
             if (achieveId > 2805 || achieveId < 127) {
-                Notify("Invalid achievement ID", fmt::format("Player achieved invalid achievement with ID {}", index), sv->GetClient(index - 1));
+                Notify("Invalid achievement ID", "Player achieved invalid achievement", std::format("ID={}", achieveId), sv->GetClient(index - 1));
             }
         }
     }
@@ -607,17 +932,17 @@ namespace Mod::Etc::Detector
             if (player == nullptr) return;
             if (bounds.min > bounds.max) {
                 if (eStatus == eQueryCvarValueStatus_ValueIntact) {
-                    Notify("Client CVar check - cheat cvar detected", fmt::format("Found cvar value for cheat cvar {}", pCvarName), player);
+                    Notify("Client CVar check - cheat cvar detected", "Found cvar value for cheat cvar", std::format("cvar={}", pCvarName), player);
                 }
                 return;
             }
             else if ((eStatus != eQueryCvarValueStatus_ValueIntact || pCvarValue == nullptr)) {
-                Notify("Client CVar check - failure", fmt::format("Cannot check value of cvar {}", pCvarName), player);
+                Notify("Client CVar check - failure", "Cannot check value of cvar", std::format("cvar={}", pCvarName), player);
             }
             else {
                 float cvarValue = strtof(pCvarValue, nullptr);
                 if ((cvarValue < bounds.min || cvarValue > bounds.max) && (bounds.cvar == nullptr || bounds.cvar->GetFloat() != cvarValue)) {
-                    Notify("Client CVar check - oob", fmt::format("Client cvar {} = {} is out of bounds ({}-{})", pCvarName, cvarValue, bounds.min, bounds.max), player);
+                    Notify("Client CVar check - oob", "Client cvar is out of bounds", std::format("cvar={},value={},bounds={}-{},reported by=query", pCvarName, cvarValue, bounds.min, bounds.max), player);
                 }
             }
         }
@@ -633,7 +958,7 @@ namespace Mod::Etc::Detector
         if (player != nullptr) {
 			const char *p = args.ArgS();
             if(strchr(p,'\n') != nullptr || strchr(p,'\r') != nullptr) {
-                Notify("Newline in chat", "Found a newline / carriage return character in chat message", player);
+                Notify("Newline in chat", "Found a newline / carriage return character in chat message", std::format("char={} {}",strchr(p,'\n') != nullptr ? "newline" : "", strchr(p,'\r') != nullptr ? "carriage return" : ""), player);
                 return;
             }
 		}
@@ -644,7 +969,7 @@ namespace Mod::Etc::Detector
 	{
         auto client = (CGameClient *)sv->GetClient(edict->m_EdictIndex - 1);
         if (!client->IsFakeClient() && client->m_ConVars != nullptr) {
-            TIME_SCOPE2(ClientSettingsChanged);
+            //TIME_SCOPE2(ClientSettingsChanged);
             int cl_cmdrate_v = client->m_ConVars->GetInt("cl_cmdrate");
             int cl_updaterate_v = client->m_ConVars->GetInt("cl_updaterate");
             int rate_v = client->m_ConVars->GetInt("rate");
@@ -657,7 +982,7 @@ namespace Mod::Etc::Detector
                     float value = subkey->GetFloat();
                     auto &bounds = find->second;
                     if (value < bounds.min || value > bounds.max) {
-                        Notify("Clenit CVar check - oob", fmt::format("Client cvar {} = {} is out of bounds ({}-{})", subkey->GetName(), value, bounds.min, bounds.max), client);
+                        Notify("Client CVar check - oob", "Client cvar is out of bounds", std::format("cvar={},value={},bounds={}-{},reported by=kv", subkey->GetName(), value, bounds.min, bounds.max), client);
                     }
                 }
             }
@@ -689,8 +1014,8 @@ namespace Mod::Etc::Detector
                 if (!canChangeNetworkCvar) {
                     for (auto &cvarName : client_cvar_connect_vars) {
                         auto find = mod->connectClientCvarPrevValues.find(cvarName);
-                        if (find != mod->connectClientCvarPrevValues.end() && find->second != client->m_ConVars->GetFloat(cvarName.c_str())) {
-                            Notify("Client CVar check - change while alive", fmt::format("Client cvar {} changed from {} to {} while player was alive", cvarName, find->second, client->m_ConVars->GetFloat(cvarName.c_str())), client);
+                        if (find != mod->connectClientCvarPrevValues.end() && abs(find->second - client->m_ConVars->GetFloat(cvarName.c_str())) > 0.001) {
+                            Notify("Client CVar check - change while alive", "Restricted client cvar changed while player was alive", std::format("cvar={},from={},to={}", cvarName, find->second, client->m_ConVars->GetFloat(cvarName.c_str())), client);
                         }
                     }
                 }
@@ -717,7 +1042,7 @@ namespace Mod::Etc::Detector
             boost::algorithm::erase_all(newNameFixed, "\xE2\x80\x8E");
             if (newNameFixed.size() != strlen(newName)) {
 		        DETOUR_MEMBER_CALL(newNameFixed.c_str());
-                Notify("Invalid Player Name", "Found a newline / carriage return character in player name", client);
+                Notify("Invalid Player Name", "Found a newline / carriage return character in player name","", client);
             }
         }
 		DETOUR_MEMBER_CALL(newName);
@@ -726,15 +1051,35 @@ namespace Mod::Etc::Detector
     DETOUR_DECL_MEMBER(void, CTFGameRules_ClientCommandKeyValues, edict_t *pEntity, KeyValues *pKeyValues)
 	{
         auto client = (CGameClient *)sv->GetClient(pEntity->m_EdictIndex - 1);
-		if (!client->IsFakeClient() && FStrEq(pKeyValues->GetName(), "AchievementEarned")) {
-            auto id = pKeyValues->GetInt("achievementID");
-            if (id > 2805 || id < 127) {
-                Notify("Invalid achievement ID", fmt::format("Player achieved invalid achievement with ID {}", id), client);
+        if (!client->IsFakeClient()) {
+            if (FStrEq(pKeyValues->GetName(), "AchievementEarned")) {
+                auto id = pKeyValues->GetInt("achievementID");
+                if (id > 2805 || id < 127) {
+                    Notify("Invalid achievement ID", "Player achieved invalid achievement", std::format("ID={}", id), client);
+                }
             }
-		}
+            if (FStrEq(pKeyValues->GetName(), "MVM_Revive_Response")) {
+                auto accepted = pKeyValues->GetBool("accepted");
+                if (accepted) {
+                    Notify("Invalid Revive Response", "Player tried to hack instant revive himself", "", client);
+                    return;
+                }
+            }
+        }
 
 		DETOUR_MEMBER_CALL(pEntity, pKeyValues);
 	}
+
+    DETOUR_DECL_MEMBER(void, CTFGameStats_Event_PlayerFiredWeapon, CTFPlayer *pPlayer, bool bCritical)
+	{
+		DETOUR_MEMBER_CALL(pPlayer, bCritical);
+        if (pPlayer->IsRealPlayer()) {
+            auto mod = pPlayer->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
+            mod->lastShootTick = gpGlobals->tickcount;
+        }
+	}
+
+    
 
     ConVar sig_etc_detector_srv_choke("sig_etc_detector_srv_choke", "0", FCVAR_NOTIFY, "Choke srv");
 	ConCommand ccmd_save("sig_etc_detector_sleep", [](const CCommand &args){
@@ -746,6 +1091,10 @@ namespace Mod::Etc::Detector
 	public:
 		CMod() : IMod("Etc:Detector")
 		{
+			MOD_ADD_DETOUR_STATIC(UTIL_TraceEntity, "UTIL_TraceEntity [IHandleEntity]");
+			MOD_ADD_DETOUR_STATIC(UTIL_SetOrigin, "UTIL_SetOrigin");
+
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PostThink, "CTFPlayer::PostThink");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_PlayerRunCommand, "CTFPlayer::PlayerRunCommand", HIGHEST);
 			MOD_ADD_DETOUR_MEMBER(CBaseEntity_Teleport, "CBaseEntity::Teleport");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_Spawn, "CTFPlayer::Spawn");
@@ -753,20 +1102,30 @@ namespace Mod::Etc::Detector
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_CheckProtocol, "CBaseServer::CheckProtocol");
 			MOD_ADD_DETOUR_MEMBER(CServerGameClients_ClientPutInServer, "CServerGameClients::ClientPutInServer");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_OnTakeDamage_Alive, "CTFPlayer::OnTakeDamage_Alive");
-			MOD_ADD_DETOUR_STATIC(TE_FireBullets, "TE_FireBullets");
+			//MOD_ADD_DETOUR_STATIC(TE_FireBullets, "TE_FireBullets");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionAdded, "CTFPlayerShared::OnConditionAdded");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayerShared_OnConditionRemoved, "CTFPlayerShared::OnConditionRemoved");
 			MOD_ADD_DETOUR_MEMBER(CServerPlugin_OnQueryCvarValueFinished, "CServerPlugin::OnQueryCvarValueFinished");
 			MOD_ADD_DETOUR_MEMBER(CBaseClient_SetName, "CBaseClient::SetName");
 			MOD_ADD_DETOUR_MEMBER(CServerPlugin_ClientSettingsChanged, "CServerPlugin::ClientSettingsChanged");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_ClientCommandKeyValues, "CTFGameRules::ClientCommandKeyValues");
+
+			MOD_ADD_DETOUR_MEMBER(CTFPlayer_FireBullet, "CTFPlayer::FireBullet");
+			MOD_ADD_DETOUR_MEMBER(CTFGameStats_Event_PlayerFiredWeapon, "CTFGameStats::Event_PlayerFiredWeapon");
 		}
 
         virtual bool OnLoad() override
 		{
+            developer = icvar->FindVar("developer");
+			notify_forward = forwards->CreateForward("SIG_DetectNotify", ET_Hook, 7, NULL, Param_Cell, Param_String, Param_String, Param_String, Param_Cell, Param_Array, Param_Cell);
             backtrack_ticks = TimeToTicks(0.2);
             return true;
         }
+		
+		virtual void OnUnload() override
+		{
+			forwards->ReleaseForward(notify_forward);
+		}
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
 
@@ -791,7 +1150,8 @@ namespace Mod::Etc::Detector
                 last_server_lag_tick = gpGlobals->tickcount;
                 lastLagTime.Sample();
                 lastLagTickcount = gpGlobals->tickcount;
-                Msg("server lagged\n");
+
+                DevMsg("server lagged\n");
             }
 
 
@@ -812,10 +1172,14 @@ namespace Mod::Etc::Detector
             //Msg("Time since last tick %f %f\n", updateTimeDelta.GetSeconds(), gpGlobals->frametime );
 
             if (gpGlobals->curtime - last_server_lag_time > 2.0f) {
-                AVERAGE_TIME(AnalizeCmds);
+                //AVERAGE_TIME(AnalizeCmds);
                 ForEachTFPlayer([](CTFPlayer *player){
                     if (!player->IsRealPlayer()) return;
-                    player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->AnalizeCmds();
+                    auto mod = player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
+                    mod->AnalizeCmds();
+                    if ((gpGlobals->tickcount + player->entindex() * 9) % 66 == 0) {
+                        mod->RefreshFrameBudget();
+                    }
                 });
             }
             if (sig_etc_detector_srv_choke.GetInt() > 0 && sleepTimer.IsElapsed()) {
@@ -834,6 +1198,14 @@ namespace Mod::Etc::Detector
 
     ModCommandClientAdmin sig_trigger("sig_trigger", [](CCommandPlayer *player, const CCommand &args){
         player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->triggerTest = !player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->triggerTest;
+    });
+
+    ModCommandClientAdmin sig_lock("sig_lock", [](CCommandPlayer *player, const CCommand &args){
+        player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->lockTest = !player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->lockTest;
+    });
+
+    ModCommandClientAdmin sig_crit("sig_crit", [](CCommandPlayer *player, const CCommand &args){
+        player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->critTest = !player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl")->critTest;
     });
 
     ConVar cvar_enable("sig_etc_detector", "0", FCVAR_NOTIFY,

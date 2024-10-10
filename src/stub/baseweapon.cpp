@@ -8,6 +8,10 @@ IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iPrimaryAmmoTy
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iSecondaryAmmoType,    CBaseCombatWeapon);
 #ifdef SE_IS_TF2
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_nCustomViewmodelModelIndex, CBaseCombatWeapon);
+
+IMPL_REL_BEFORE(float,                       CBaseCombatWeapon, m_flCritTokenBucket, m_nCritChecks, 0);
+IMPL_REL_BEFORE(int,                         CBaseCombatWeapon, m_nCritChecks, m_nCritSeedRequests, 0);
+IMPL_REL_BEFORE(int,                         CBaseCombatWeapon, m_nCritSeedRequests, m_nViewModelIndex, 0);
 #endif
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iClip1,                CBaseCombatWeapon);
 IMPL_SENDPROP(int,                           CBaseCombatWeapon, m_iClip2,                CBaseCombatWeapon);

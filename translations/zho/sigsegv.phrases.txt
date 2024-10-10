@@ -1,0 +1,430 @@
+"Phrases"
+{
+	"Weapon in slot:"
+	{
+		"zho"		"武器槽位: "
+	}
+	"This mission allows you to equip custom items. Type !missionitems in chat to see available items for your class"
+	{
+		"zho"		"本任務允許你裝備特殊武器，輸入 !missionitems 查看可用武器。"
+	}
+	"Type !missioninfo in chat to check custom mission information"
+	{
+		"zho"		"本任務有特殊規則，輸入 !missioninfo 查看特殊規則。"
+	}
+	"Custom hand models disabled"
+	{
+		"zho"		"已禁用自定義人物手臂模型，輸入 !defaulthands 啟用。"
+	}
+	"Custom hand models disabled apply"
+	{
+		"zho"		"已禁用自定義人物手臂模型"
+	}
+	"Custom hand models enabled apply"
+	{
+		"zho"		"已啟用自定義人物手臂模型，切換兵種以應用效果。"
+	}
+	"Custom hand models notify"
+	{
+		"zho"		"本任務啟用自定義人物手臂模型，如果發現模型缺失(ERROR)，請獲取資源包或輸入 !defaulthands 關閉該功能。"
+	}
+	"Missing files"
+	{
+		"zho"		"發現文件缺失錯誤"
+	}
+	"Late DL sv_allowupload notify"
+	{
+		"zho"		"請在控制台輸入 sv_allowupload 1 以下載特殊兵種圖標。"
+	}
+	"Source TV spectator disconnected"
+	{
+		"#format"	"{1:s}"
+		"zho"		"觀察者 {1} 已斷開連接"
+	}
+	"Source TV spectator joined"
+	{
+		"#format"	"{1:s}"
+		"zho"		"觀察者 {1} 已加入遊戲"
+	}
+	"sig_tvspectators"
+	{
+		"zho"		"觀察者: "
+	}
+	"Tier is closed"
+	{
+		"#format"	"{1:d}"
+		"zho"		"最高為 {1} 級"
+	}
+	"Buy more upgrades"
+	{
+		"#format"	"{1:d},{2:d}"
+		"zho"		"購買 {1} 個升級（{2} 級）以解鎖"
+	}
+	"Available from wave"
+	{
+		"#format"	"{1:d}"
+		"zho"		"從第 {1} 波起可用"
+	}
+	"Available up to wave"
+	{
+		"#format"	"{1:d}"
+		"zho"		"從第 {1} 波起停用"
+	}
+	"Requires upgrade"
+	{
+		"#format"	"{1:s},{2:d}"
+		"zho"		"需要將 {1} 升至 {2}"
+	}
+	"Incompatible upgrade"
+	{
+		"#format"	"{1:s}"
+		"zho"		"與 {1} 升級互斥"
+	}
+	"Custom upgrades notify"
+	{
+		"zho"		"本任務使用自定義商店文件，請開啟服務器定制內容下載功能（允許所有來自服務器的定制內容或不下載定制聲音）"
+	}
+	"Player upgrades"
+	{
+		"zho"		"玩家升級"
+	}
+	"Undo upgrades"
+	{
+		"zho"		"取消升級並退款"
+	}
+	"No extra loadout items currently available"
+	{
+		"zho"		"本任務無特殊武器裝備"
+	}
+	"No extra loadout items available"
+	{
+		"zho"		"本任務無特殊武器裝備"
+	}
+	"Buy"
+	{
+		"zho"		"購買"
+	}
+	"Equip"
+	{
+		"zho"		"裝備"
+	}
+	"Unequip"
+	{
+		"zho"		"解除裝備"
+	}
+	"Sell"
+	{
+		"zho"		"出售"
+	}
+	"Refund upgrades"
+	{
+		"zho" "取消升級並退款"
+	}
+	"Upgrades"
+	{
+		"zho" "升級花費"
+	}
+	"Item upgrades"
+	{
+		"#format"	"{1:s}"
+		"zho"		"升級 {1}"
+	}
+	"Extended upgrades menu"
+	{
+		"zho" "附加升級菜單"
+	}
+	"Mission description"
+	{
+		"zho"		"任務信息"
+	}
+	"Mission info menu"
+	{
+		"zho"		"任務菜單"
+	}
+	"Item whitelist"
+	{
+		"zho"		"裝備白名單"
+	}
+	"Whitelisted items"
+	{
+		"zho"		"裝備白名單"
+	}
+	"Item blacklist"
+	{
+		"zho"		"裝備黑名單"
+	}
+	"Blacklisted items"
+	{
+		"zho"		"裝備黑名單"
+	}
+	"Item replacement"
+	{
+		"zho"		"裝備替換"
+	}
+	"Description"
+	{
+		"zho"		"信息"
+	}
+	"Disallowed upgrades"
+	{
+		"zho"		"禁用升級"
+	}
+	"Item attributes"
+	{
+		"zho"		"裝備屬性"
+	}
+	"Item attributes format"
+	{
+		"#format"	"{1:s}"
+		"zho"		"{1} 屬性"
+	}
+	"Player attributes"
+	{
+		"zho"		"人物屬性"
+	}
+	"All class attributes"
+	{
+		"zho"		"兵種共有屬性"
+	}
+	"Forced items"
+	{
+		"zho"		"強制裝備"
+	}
+	"(selected)"
+	{
+		"zho"		"(裝備)"
+	}
+	"Forced items class"
+	{
+		"#format"	"{1:s}"
+		"zho"		"強制裝備 ({1})"
+	}
+	"Extra loadout items"
+	{
+		"zho"		"特殊武器裝備"
+	}
+	"Extra loadout items class"
+	{
+		"#format"	"{1:s}"
+		"zho"		"特殊武器裝備 ({1})"
+	}
+	"Sniper bots can headshot"
+	{
+		"zho"		"狙擊手機器人可以爆頭"
+	}
+	"No laser on Sniper bots"
+	{
+		"zho"		"狙擊手機器人沒有激光瞄準提示"
+	}
+	"Upgrade refunding disabled"
+	{
+		"zho"		"禁用取消升級"
+	}
+	"Collect credits upgrade refund"
+	{
+		"#format"	"{1:d},{2:d}"
+		"zho"		"拾取 {1} 元以獲得取消升級次數，最高累計 {2} 次"
+	}
+	"Pyro bots can airblast grenades and arrows"
+	{
+		"zho"		"火焰兵機器人可以反彈榴彈和弓箭"
+	}
+	"Sandman balls can stun enemy targets"
+	{
+		"zho"		"睡魔的球可以擊暈敵人"
+	}
+	"No reanimators"
+	{
+		"zho"		"醫生無法覆活隊友"
+	}
+	"No custom mission information available"
+	{
+		"zho"		"本任務無特殊規則"
+	}
+	"All player classes"
+	{
+		"zho" "所有兵種"
+	}
+	"Primary"
+	{
+		"zho" "主武器"
+	}
+	"Secondary"
+	{
+		"zho" "副武器"
+	}
+	"Melee"
+	{
+		"zho" "近戰武器"
+	}
+	"Utility"
+	{
+		"zho" "工具"
+	}
+	"Building"
+	{
+		"zho" "建築物"
+	}
+	"PDA"
+	{
+		"zho" "主PDA"
+	}
+	"PDA 2"
+	{
+		"zho" "副PDA"
+	}
+	"Head"
+	{
+		"zho" "飾品 1"
+	}
+	"Misc"
+	{
+		"zho" "飾品 2"
+	}
+	"Action"
+	{
+		"zho" "動作"
+	}
+	"Misc 2"
+	{
+		"zho" "飾品 3"
+	}
+	"Taunt 1"
+	{
+		"zho" "嘲諷 1"
+	}
+	"Taunt 2"
+	{
+		"zho" "嘲諷 2"
+	}
+	"Taunt 3"
+	{
+		"zho" "嘲諷 3"
+	}
+	"Taunt 4"
+	{
+		"zho" "嘲諷 4"
+	}
+	"Taunt 5"
+	{
+		"zho" "嘲諷 5"
+	}
+	"Taunt 6"
+	{
+		"zho" "嘲諷 6"
+	}
+	"Taunt 7"
+	{
+		"zho" "嘲諷 7"
+	}
+	"Taunt 8"
+	{
+		"zho" "嘲諷 8"
+	}
+	"Undefined"
+	{
+		"zho" "未定義"
+	}
+	"Scout"
+	{
+		"zho" "偵察兵"
+	}
+	"Sniper"
+	{
+		"zho" "狙擊手"
+	}
+	"Soldier"
+	{
+		"zho" "士兵"
+	}
+	"Demoman"
+	{
+		"zho" "爆破手"
+	}
+	"Medic"
+	{
+		"zho" "醫生"
+	}
+	"Heavy"
+	{
+		"zho" "機槍手"
+	}
+	"Pyro"
+	{
+		"zho" "火焰兵"
+	}
+	"Spy"
+	{
+		"zho" "間諜"
+	}
+	"Engineer"
+	{
+		"zho" "工程師"
+	}
+	"Civilian"
+	{
+		"zho" "市民"
+	}
+	"Weapon type:"
+	{
+		"#format"	"{1:s}"
+		"zho" "武器類型: {1}"
+	}
+	"Item type:"
+	{
+		"#format"	"{1:s}"
+		"zho" "物品類型: {1}"
+	}
+	"Crits"
+	{
+		"zho" "爆擊"
+	}
+	"Charge"
+	{
+		"zho" "沖鋒"
+	}
+	"Hype"
+	{
+		"zho" "跳躍能量"
+	}
+	"Kills"
+	{
+		"zho" "殺敵數"
+	}
+	"MMMPH"
+	{
+		"zho" "嗚唔"
+	}
+	"Rage"
+	{
+		"zho" "怒氣"
+	}
+	"Energy"
+	{
+		"zho" "能量"
+	}
+	"Crikey"
+	{
+		"zho" "爆擊能量"
+	}
+	"Focus"
+	{
+		"zho" "專注"
+	}
+	"Shield"
+	{
+		"zho" "防護盾"
+	}
+	"Ubercharge"
+	{
+		"zho" "UberCharge"
+	}
+	"Stickies"
+	{
+		"zho" "黏性炸彈"
+	}
+	""
+	{
+		"zho" ""
+	}
+}

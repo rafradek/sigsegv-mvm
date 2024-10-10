@@ -16,6 +16,7 @@ CreateInterfaceFn VGUIFactory();
 CreateInterfaceFn VGUIMatSurfaceFactory();
 CreateInterfaceFn DedicatedFactory();
 CreateInterfaceFn DataCacheFactory();
+CreateInterfaceFn VScriptManagerFactory();
 
 
 #endif

@@ -19,6 +19,7 @@ enum class Library : int
 	VPHYSICS,
 	VSTDLIB,
 	SOURCEMODCORE,
+	VSCRIPT,
 };
 
 

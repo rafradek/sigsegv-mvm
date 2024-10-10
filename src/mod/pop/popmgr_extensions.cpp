@@ -31,6 +31,7 @@
 #include "mod/common/text_hud.h"
 #include "mod/attr/custom_attributes.h"
 #include "CommandBuffer.h"
+#include <regex>
 
 // WARN_IGNORE__REORDER()
 // #include <../server/vote_controller.h>
@@ -108,28 +109,37 @@ namespace Mod::Pop::PopMgr_Extensions
 	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Bots should be send to spectator immediately after dying");
 
+	void ResetVoteList() {
+		std::string poplistStr;
+		CUtlVector<CUtlString> vec;	
+		CPopulationManager::FindDefaultPopulationFileShortNames(vec);
+		FOR_EACH_VEC(vec, i)
+		{
+			poplistStr += vec[i];
+			poplistStr += '\n';
+		}
+		bool saved_lock = engine->LockNetworkStringTables(false);
+		INetworkStringTable *strtablepoplist = networkstringtable->FindTable("ServerPopFiles");
+		if (strtablepoplist != nullptr) {
+			if (strtablepoplist->GetNumStrings() == 0 && !poplistStr.empty()) {
+				strtablepoplist->AddString(true, "ServerPopFiles", poplistStr.size() + 1, poplistStr.c_str());
+			}
+			if (strtablepoplist->GetNumStrings() > 0) {
+				strtablepoplist->SetStringUserData(0, poplistStr.size() + 1, poplistStr.c_str());
+			}
+		}
+		engine->LockNetworkStringTables(saved_lock);
+	}
 	ConVar cvar_banned_missions_file("sig_banned_missions_file", "banned_missions.txt", FCVAR_NOTIFY,
 		"Location of a file containing banned missions list", 
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
-			std::string poplistStr;
-			CUtlVector<CUtlString> vec;	
-			CPopulationManager::FindDefaultPopulationFileShortNames(vec);
-			FOR_EACH_VEC(vec, i)
-			{
-				poplistStr += vec[i];
-				poplistStr += '\n';
-			}
-			bool saved_lock = engine->LockNetworkStringTables(false);
-			INetworkStringTable *strtablepoplist = networkstringtable->FindTable("ServerPopFiles");
-			if (strtablepoplist != nullptr) {
-				if (strtablepoplist->GetNumStrings() == 0 && !poplistStr.empty()) {
-					strtablepoplist->AddString(true, "ServerPopFiles", poplistStr.size() + 1, poplistStr.c_str());
-				}
-				if (strtablepoplist->GetNumStrings() > 0) {
-					strtablepoplist->SetStringUserData(0, poplistStr.size() + 1, poplistStr.c_str());
-				}
-			}
-			engine->LockNetworkStringTables(saved_lock);
+			ResetVoteList();
+		});
+
+	ConVar cvar_mission_location_only("sig_only_read_missions_from_directory", "", FCVAR_NOTIFY,
+		"Only read missions from specified directory relative to tf/. Also removes maps with no available missions from voting", 
+		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
+			ResetVoteList();
 		});
 
     bool IsMannVsMachineMode(){
@@ -1338,7 +1348,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		bool was_in_upgrade = player != nullptr && player->m_Shared->m_bInUpgradeZone;
 
 		if (state.m_bDisableUpgradeStations && player != nullptr && IsMannVsMachineMode()) {
-			gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, "The Upgrade Station is disabled for this mission!");
+			gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "The Upgrade Station is disabled for this mission!"));
 			return;
 		}
 		DETOUR_MEMBER_CALL(pOther);
@@ -2159,7 +2169,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			CONVAR_SCOPE_VALUE(tf_mvm_endless_force_on, 1);
 			
 			if (state.m_bSingleClassAllowed != -1) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s %s %s", "Only",g_aRawPlayerClassNames[state.m_bSingleClassAllowed],"class is allowed in this mission"));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "Only class is allowed in this mission", 1, TranslateText(player, g_aPlayerClassNames_NonLocalized[state.m_bSingleClassAllowed])));
 
 				player->HandleCommand_JoinClass(g_aRawPlayerClassNames[state.m_bSingleClassAllowed]);
 
@@ -2171,7 +2181,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				filter.AddRecipient(player);
 				CBaseEntity::EmitSound(filter, ENTINDEX(player), sound);
 
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, state.m_DisallowedClasses[plclass] > 0 ? CFmtStr("%s %s %s", "Exceeded the",classname,"class limit in this mission") : CFmtStr("%s %s", classname,"is not allowed in this mission"));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, state.m_DisallowedClasses[plclass] > 0 ? "Exceeded the class limit in this mission" : "is not allowed in this mission", 1, classname));
 
 				if (do_switch) {
 					for (int i=1; i < TF_CLASS_COUNT; i++){
@@ -3096,11 +3106,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		{
 			if (strtol(str.c_str(), nullptr, 0) == upgradeslot + 1)
 			{	
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", 1, upgradename));
 				return false;
 			}
 			else if (FStrEq(upgradename, str.c_str())) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("%s upgrade is not allowed in this mission", upgradename));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "upgrade is not allowed in this mission", 1, upgradename));
 				return false;
 			}
 		}
@@ -3172,8 +3182,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 			
 			if (foundMatch) {
-				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, CFmtStr("You cannot buy %s%s upgrades for this weapon in this mission\n%s%s", entry.max != 0 ? "more ": "", upgradename, 
-				incompatibleItem.c_str(), !incompatibleItem.empty() ? " blocks this upgrade" : ""));
+				gamehelpers->TextMsg(ENTINDEX(player), TEXTMSG_DEST_CENTER, TranslateText(player, "You cannot buy upgrades for this weapon in this mission", 4, entry.max != 0 ? TranslateText(player,"more ") : "", upgradename, incompatibleItem.c_str(), !incompatibleItem.empty() ? TranslateText(player," blocks this upgrade") : ""));
 				return false;
 			}
 		}
@@ -4544,19 +4553,136 @@ namespace Mod::Pop::PopMgr_Extensions
 		return ret;
 	}
 
-	DETOUR_DECL_STATIC(void, CPopulationManager_FindDefaultPopulationFileShortNames, CUtlVector<CUtlString> &vec)
+	const char *game_path;
+	bool GetPopfiles(std::vector<std::string> &popfiles)
 	{
-		DETOUR_STATIC_CALL(vec);
-		
+		if (cvar_mission_location_only.GetString()[0] == '\0') return false;
+
+		DIR *dir;
+		dirent *ent;
+		char poppath[MAX_PATH];
+		snprintf(poppath, sizeof(poppath), "%s/%s", game_path, cvar_mission_location_only.GetString());
+
+		if ((dir = opendir(poppath)) != nullptr) {
+			while ((ent = readdir(dir)) != nullptr) {
+				char *fileName = ent->d_name;
+				if (StringStartsWith(fileName, "mvm_") && StringEndsWith(fileName, ".pop")) {
+					V_StripExtension(fileName, fileName, sizeof(fileName));
+					popfiles.push_back(fileName);
+				}
+			}
+			closedir(dir);
+		}
+		return true;
+	}
+
+	KeyValues *LoadBannedMissionsFile()
+	{
 		KeyValues *kv = new KeyValues("kv");
-		if (kv->LoadFromFile(filesystem, cvar_banned_missions_file.GetString())) {
+		if (!kv->LoadFromFile(filesystem, cvar_banned_missions_file.GetString())) {
+			kv->deleteThis();
+			kv = nullptr;
+		}
+		return kv;
+	}
+
+	bool CheckRestricts(const char *map, const std::vector<std::string> &popfiles, KeyValues *kv)
+	{
+		std::vector<std::string> thisMapPopfiles;
+		auto maplen = strlen(map);
+		
+		for (auto &popfile : popfiles) {
+			if (popfile.starts_with(map)) {
+				thisMapPopfiles.push_back(popfile[maplen] == '_' ? popfile.substr(maplen + 1) : "default");
+			}
+		}
+		if (thisMapPopfiles.empty()) return false;
+		if (kv != nullptr) {
 			FOR_EACH_SUBKEY(kv, kv_mission) {
-				if (stricmp(kv_mission->GetName(), STRING(gpGlobals->mapname)) == 0) {
-					vec.FindAndRemove(kv_mission->GetString());
+				auto name = kv_mission->GetName();
+				if (name[0] == '*' || stricmp(name, map) == 0) {
+					if (kv_mission->GetString()[0] != '|') {
+						std::remove(thisMapPopfiles.begin(), thisMapPopfiles.end(), kv_mission->GetString());
+					}
+					else {
+						auto filter = std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript);
+						for (auto it = thisMapPopfiles.end() - 1; it != thisMapPopfiles.begin()-1; it--) {
+							if (std::regex_match(*it, filter, std::regex_constants::match_any)) {
+								thisMapPopfiles.erase(it);
+							}
+						}
+					}
 				}
 			}
 		}
-		kv->deleteThis();
+		return !thisMapPopfiles.empty();
+	}
+
+	DETOUR_DECL_STATIC(void, CPopulationManager_FindDefaultPopulationFileShortNames, CUtlVector<CUtlString> &vec)
+	{
+		std::vector<std::string> bannedMissions;
+		std::vector<std::regex> bannedMissionsRegex;
+
+		auto map = STRING(gpGlobals->mapname);
+		KeyValues *kv = LoadBannedMissionsFile();
+		if (kv != nullptr) {
+			FOR_EACH_SUBKEY(kv, kv_mission) {
+				auto name = kv_mission->GetName();
+				if (name[0] == '*' || stricmp(name, map) == 0) {
+					if (kv_mission->GetString()[0] != '|') {
+						bannedMissions.push_back(kv_mission->GetString());
+					}
+					else {
+						bannedMissionsRegex.push_back(std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript));
+					}
+				}
+			}
+			kv->deleteThis();
+		}
+
+		// Custom popfile collection logic
+		if (cvar_mission_location_only.GetString()[0] != '\0') {
+			DIR *dir;
+			dirent *ent;
+
+			char poppath[MAX_PATH];
+			snprintf(poppath, sizeof(poppath), "%s/%s", game_path, cvar_mission_location_only.GetString());
+
+			if ((dir = opendir(poppath)) != nullptr) {
+				while ((ent = readdir(dir)) != nullptr) {
+					char *fileName = ent->d_name;
+					const char *pchPopPostfix = StringAfterPrefix(fileName, map);
+					if (pchPopPostfix && StringEndsWith(fileName, ".pop")) {
+						char szShortName[MAX_PATH] = { 0 };
+						V_strncpy(szShortName, ((pchPopPostfix[0] == '_') ? (pchPopPostfix + 1) : "normal"), sizeof(szShortName));
+						V_StripExtension(szShortName, szShortName, sizeof(szShortName));
+
+						if (vec.Find(szShortName) == vec.InvalidIndex()) {
+							vec.AddToTail(szShortName);
+						}
+					}
+				}
+				closedir(dir);
+			}
+		}
+		else {
+			DETOUR_STATIC_CALL(vec);
+		}
+		
+		if (!bannedMissionsRegex.empty()) {
+			FOR_EACH_VEC_BACK(vec, i) {
+				for (auto &regex : bannedMissionsRegex) {
+					if (std::regex_match(vec[i].Get(), regex, std::regex_constants::match_any)) {
+						vec.Remove(i);
+						break;
+					}
+				}
+			}
+		}
+		
+		for (auto &mission : bannedMissions) {
+			vec.FindAndRemove(mission.c_str());
+		}
 	}
 
 	float vote_tf_mvm_popfile_time = 0.0f;
@@ -6263,7 +6389,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			SpewOutputFunc(LocalSpewOutputFunc);
 
 		if (parse_warning) {
-			PrintToChatAll("\x07""ffb2b2""It is possible that a parsing error had occured. Check console for details\n");
+			PrintToChatAllSM(1,"\x07""ffb2b2""%t\n","It is possible that a parsing error had occured. Check console for details");
 		}
 		
 		pop_parse_successful = ret;
@@ -7169,6 +7295,7 @@ namespace Mod::Pop::PopMgr_Extensions
 
 		virtual bool OnLoad() override
 		{
+			game_path = g_SMAPI->GetBaseDir();
 			set_mission_filename_forward = forwards->CreateForward("SIG_OnSetMissionFilename", ET_Hook, 1, NULL, Param_String);
 			return true;
 		}

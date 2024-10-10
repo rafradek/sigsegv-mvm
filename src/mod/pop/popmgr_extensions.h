@@ -27,5 +27,9 @@ namespace Mod::Pop::PopMgr_Extensions {
 	void SaveStateInfoBetweenMissions();
 	void RestoreStateInfoBetweenMissions();
 	void DisableLoadoutSlotReplace(bool disable);
+
+	bool GetPopfiles(std::vector<std::string> &popfiles);
+	KeyValues *LoadBannedMissionsFile();
+	bool CheckRestricts(const char *map, const std::vector<std::string> &popfiles, KeyValues *kv);
 }
 #endif

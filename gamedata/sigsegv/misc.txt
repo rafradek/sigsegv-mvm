@@ -3169,7 +3169,89 @@
 					type "sym"
 					sym  "_ZN11CBaseServer13ConnectClientER8netadr_siiiiPKcS3_S3_i"
 				}
-				
+
+				"CTFGameStats::Event_PlayerFiredWeapon"
+				{
+					type "sym"
+					sym  "_ZN12CTFGameStats23Event_PlayerFiredWeaponEP9CTFPlayerb"
+				}
+
+				"Msg [vscript]"
+				{
+					lib "vscript"
+					type "sym"
+					sym  "Msg"
+				}
+
+				"Msg"
+				{
+					lib "tier0"
+					type "sym"
+					sym  "Msg"
+				}
+
+				"SQVM::Call"
+				{
+					lib "vscript"
+					type "sym"
+					sym64  "_ZN4SQVM4CallER11SQObjectPtrxxS1_y"
+					sym  "_ZN4SQVM4CallER11SQObjectPtriiS1_j"
+				}
+
+				"CTestScriptMgr::CheckPoint"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CTestScriptMgr10CheckPointEPKc"
+				}
+
+				"TFMapsWorkshop"
+				{
+					type "sym"
+					sym  "_Z14TFMapsWorkshopv"
+				}
+				"CTFMapsWorkshop::GetMapName"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop10GetMapNameEyR10CUtlString"
+				}
+				"CTFMapsWorkshop::FindOrCreateMapByNames"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop21FindOrCreateMapByNameEPKc"
+				}
+				"CTFWorkshopMap::GetLocalFile"
+				{
+					type "sym"
+					sym  "_ZN14CTFWorkshopMap12GetLocalFileER10CUtlString"
+				}
+				"CTFWorkshopMap::OnUGCItemInstalled"
+				{
+					type "sym"
+					sym  "_ZN14CTFWorkshopMap18OnUGCItemInstalledEP15ItemInstalled_t"
+				}
+				"CTFMapsWorkshop::AddMap"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop6AddMapEy"
+				}
+				"CTFMapsWorkshop::Steam_OnUGCItemInstalled"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop24Steam_OnUGCItemInstalledEP15ItemInstalled_t"
+				}
+				"CDownloadListGenerator::OnResourcePrecachedFullPath"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN22CDownloadListGenerator27OnResourcePrecachedFullPathEPcPKc"
+				}
+				"CVEngineServer::FindMap"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN14CVEngineServer7FindMapEPci"
+				}
 			}
 			"addrs_group"
 			{
@@ -3248,6 +3330,7 @@
 				"IgnoreActorsTraceFilterFunction" "_Z31IgnoreActorsTraceFilterFunctionP13IHandleEntityi"
 				"CKickIssue::RequestCallVote" "_ZN10CKickIssue15RequestCallVoteEiPKcR20vote_create_failed_tRi"
 
+				"UTIL_SetOrigin" "_Z14UTIL_SetOriginP11CBaseEntityRK6Vectorb"
 				"UTIL_TraceEntity [IHandleEntity]" "_Z16UTIL_TraceEntityP11CBaseEntityRK6VectorS3_jPK13IHandleEntityiP10CGameTrace"
 
 				"CEconItemSchema::Reset" "_ZN15CEconItemSchema5ResetEv"
