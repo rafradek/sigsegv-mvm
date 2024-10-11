@@ -11,10 +11,9 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 	{
 		auto bow = reinterpret_cast<CTFCompoundBow *>(this);
 		
-		if (ToTFPlayer(bow->GetOwner())->IsBot())
+		if (!ToTFPlayer(bow->GetOwner())->IsBot())
 			return DETOUR_MEMBER_CALL();
 
-		float flBaseDamage;
 		float flChargeDamage;
 		
 		{
@@ -26,23 +25,7 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 			flChargeDamage = flBaseClassProjectileDamage;
 		}
 		
-		float flDamageMult  = flChargeDamage / 70.0f;
-		flBaseDamage = flDamageMult * 50.0f;
-		
-		float flChargeRatio = Min(1.0f, bow->GetCurrentCharge() / bow->GetChargeMaxTime());
-		flChargeDamage *= flChargeRatio;
-		
-		float flTotalDamage = flBaseDamage + flChargeDamage;
-		
-	//	DevMsg("------------------------------------------------------------\n");
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flBaseClassProjectileDamage = %5.1f\n", flBaseClassProjectileDamage);
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flDamageMult                = %5.2f\n", flDamageMult);
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flBaseDamage                = %5.1f\n", flBaseDamage);
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flChargeRatio               = %5.2f\n", flChargeRatio);
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flChargeDamage              = %5.1f\n", flChargeDamage);
-	//	DevMsg("[CTFCompoundBow::GetProjectileDamage] flTotalDamage               = %5.1f\n", flTotalDamage);
-		
-		return flTotalDamage;
+		return 50 + flChargeDamage;
 	}
 	
 	DETOUR_DECL_MEMBER(float, CTFWeaponBaseGun_GetProjectileDamage)
@@ -86,7 +69,7 @@ namespace Mod::Etc::Huntsman_Damage_Fix
 	
 	
 	ConVar cvar_enable("sig_etc_huntsman_damage_fix", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
-		"Mod: fix the bug causing Huntsman base damage to be unaffected by multiplier attributes",
+		"Mod: restore pre fix bot huntsman damage",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());
 		});
