@@ -187,7 +187,7 @@ WaveSchedule
 	// Fixes                //
 	//////////////////////////
 	FixSetCustomModelInput 1 [$SIGSEGV] //Fixes lack of player animations after firing setcustommodel input on player. TF2 update added SetCustomModelWithClassAnimations which uses animations automatically
-	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Fix huntsman damage bonus upgrade so it is applied correctly. Does not affect huntsman bots (default: 0)
+	FixHuntsmanDamageBonus 1 [$SIGSEGV] // Set to 1 to use old damage calculation for huntsman robots (default: 1)
 	FixWavespawnReserveSlotsOnDisabledSpawnbot 0 [$SIGSEGV] // Fix wavespawn reserving slots even when spawnbot is disabled (default: 0)
 
 

@@ -98,7 +98,7 @@
 	}
 	"kill combo fire rate boost"
 	{
- 	 	"chi" 	"击杀时：(+-)%p%提升3次开火速度，杀死不同兵种时清零"
+ 	 	"chi" 	"击杀时：(+-)%p%提升开火速度(最高3次，杀死不同兵种时清零)"
 	}
 	"mult dispenser rate"
 	{
@@ -126,7 +126,7 @@
 	}
 	"teleport instead of die"
 	{
- 	 	"chi" 	"死亡时：%p%概率被以一滴血的状态瞬间复活"
+ 	 	"chi" 	"死亡时：%p%概率被以1滴血的状态瞬间复活"
 	}
 	"mod projectile heat seek power"
 	{
@@ -150,7 +150,7 @@
 	}
 	"mult crit when health is below percent"
 	{
- 	 	"chi" 	"血量低于%p%时获得暴击加成"
+ 	 	"chi" 	"血量低于%p%时：获得暴击加成"
 	}
 	"penetration damage penalty"
 	{
@@ -182,7 +182,7 @@
 	}
 	"aoe blast on damage"
 	{
- 	 	"chi" 	"击中时：概率产生爆炸 造成流血和击晕"
+ 	 	"chi" 	"击中时：概率产生爆炸造成流血和击晕"
 	}
 	"ubercharge ammo"
 	{
@@ -1214,7 +1214,7 @@
 	//}
 	"mult explosion radius direct hit"
 	{
- 	 	"chi" 	"直接命中时：(+-)%p% 爆炸范围"
+ 	 	"chi" 	"直接命中时：(+-)%p%爆炸范围"
 	}
 	"buildings cannot be sapped"
 	{
@@ -1222,7 +1222,7 @@
 	}
 	"mult dmg direct hit"
 	{
- 	 	"chi" 	"直接命中时：(+-)%p% 伤害"
+ 	 	"chi" 	"直接命中时：(+-)%p%伤害"
 	}
 	//"explosion particle on direct hit"
 	//{

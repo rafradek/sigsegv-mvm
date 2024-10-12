@@ -68,7 +68,7 @@
 	"Available up to wave"
 	{
 		"#format"	"{1:d}"
-		"zho"		"從第 {1} 波起停用"
+		"zho"		"從第 {1} 波起禁用"
 	}
 	"Requires upgrade"
 	{
@@ -182,6 +182,85 @@
 	{
 		"zho"		"人物屬性"
 	}
+	"Character attributes:"
+	{
+		"zho"		"人物属性："
+	}	
+	"The Upgrade Station is disabled!"
+	{
+		"zho"		"升級站已禁用！"
+	}	
+	"This weapon is not upgradeable"
+	{
+		"zho"		"此武器無法升級"
+	}	
+	"You need metal to build a sentry gun"
+	{
+		"#format"	"{1:d}"
+		"zho"		"建造步哨槍需要 {1} 金屬"
+	}	
+	"You need metal to build a dispenser"
+	{
+		"#format"	"{1:d}"
+		"zho"		"建造補給器需要 {1} 金屬"
+	}	
+	"Explode on ignite is not allowed on this server"
+	{
+		"zho"		"點燃時爆炸已禁用"
+	}	
+	"Projectile shield is not allowed on this server"
+	{
+		"zho"		"能量護盾已禁用"
+	}	
+	"Burn time bonus upgrade is broken. Buy another upgrade"
+	{
+		"zho"		"燃燒時間升級失效，請購買其他升級"
+	}	
+	"3rd sentry fire rate bonus upgrade is broken. Buy another upgrade"
+	{
+		"zho"		"第三級步哨槍射速升級失效，請購買其他升級"
+	}	
+	"The Upgrade Station is disabled for this mission!"
+	{
+		"zho"		"升級站已禁用！"
+	}	
+	"Only class is allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"zho"		"僅 {1} 被允許參加本任務"
+	}	
+	"Exceeded the class limit in this mission"
+	{
+		"#format"	"{1:s}"
+		"zho"		"超過對 {1} 的人員數量限制"
+	}	
+	"is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"zho"		"{1} 被禁止參加本任務"
+	}	
+	"upgrade is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"zho"		"{1} 升級在本任務中被禁用"
+	}	
+	"You cannot buy upgrades for this weapon in this mission"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"zho"		"你不能 {1}{2} 升級\n{3}{4}"
+	}
+	"more "
+	{
+		"zho"		"買"
+	}
+	" blocks this upgrade"
+	{
+		"zho"		"阻止了此升級"
+	}
+	"It is possible that a parsing error had occured. Check console for details"
+	{
+		"zho"		"已解析錯誤訊息，請查看控制台"
+	}
 	"All class attributes"
 	{
 		"zho"		"兵種共有屬性"
@@ -240,6 +319,11 @@
 	"No custom mission information available"
 	{
 		"zho"		"本任務無特殊規則"
+	}
+	"Inspecting player"
+	{
+		"#format"	"{1:s}"
+		"zho"		"正在旁觀 {1}"
 	}
 	"All player classes"
 	{

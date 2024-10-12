@@ -98,7 +98,7 @@
 	}
 	"kill combo fire rate boost"
 	{
- 	 	"zho" 	"擊殺時：(+-)%p%提升3次開火速度，殺死不同兵種時清零"
+ 	 	"zho" 	"擊殺時：(+-)%p%提升開火速度(最高3次，殺死不同兵種時清零)"
 	}
 	"mult dispenser rate"
 	{
@@ -150,7 +150,7 @@
 	}
 	"mult crit when health is below percent"
 	{
- 	 	"zho" 	"血量低於%p%時獲得暴擊加成"
+ 	 	"zho" 	"血量低於%p%時：獲得暴擊加成"
 	}
 	"penetration damage penalty"
 	{

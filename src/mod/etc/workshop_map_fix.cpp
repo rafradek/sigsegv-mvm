@@ -59,7 +59,7 @@ namespace Mod::Etc::Workshop_Map_Fix
 	ConVar sig_mvm_workshop_map_fix_remove_old_links("sig_etc_workshop_map_fix_fix_remove_old_links", "1", FCVAR_NOTIFY,
 		"Remove workshop links from install location than are not currently added");
 
-	void ScanWorkshopMaps() {
+	void RemoveOldLinks() {
 		std::error_code er;
 		if (sig_mvm_workshop_map_fix_remove_old_links.GetBool()) {
 			for (auto &entry : std::filesystem::directory_iterator(std::format("{}/{}", game_path, sig_mvm_workshop_map_fix_install_location.GetString()), er)) {
@@ -68,6 +68,9 @@ namespace Mod::Etc::Workshop_Map_Fix
 				}
 			}
 		}
+	}
+	void ScanWorkshopMaps() {
+		std::error_code er;
 		for (auto id : scanMapList) {
 			std::filesystem::path mapPath = std::format("{}/{}",ugcPath.c_str(),id);
 			if (std::filesystem::is_directory(mapPath, er)) {
@@ -137,6 +140,25 @@ namespace Mod::Etc::Workshop_Map_Fix
 		}
         DETOUR_MEMBER_CALL(path);
     }
+
+    DETOUR_DECL_MEMBER(void, CTFMapsWorkshop_PrepareLevelResources, char *mapName, int mapNameLen, char *mapFile, int mapFileLen)
+	{
+		char newMapName[256] = "";
+		char newMapFile[MAX_PATH] = "";
+		ScanWorkshopMaps();
+		// trick the server into updating the workshop map with non workshop map name
+		if (mapNameToWorkshopName.contains(mapName)) {
+			auto &str = mapNameToWorkshopName[mapName];
+			strncpy(newMapName, str.c_str(), sizeof(newMapName));
+			strncpy(newMapFile, mapFile, sizeof(newMapFile));
+			mapName = newMapName;
+			mapNameLen = sizeof(newMapName);
+			mapFile = newMapFile;
+			mapFileLen = sizeof(newMapFile);
+		}
+		DETOUR_MEMBER_CALL(mapName, mapNameLen, mapFile, mapFileLen);
+    }
+
 	class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
 	{
 	public:
@@ -148,8 +170,7 @@ namespace Mod::Etc::Workshop_Map_Fix
 			MOD_ADD_DETOUR_MEMBER(CBaseServer_FillServerInfo, "CBaseServer::FillServerInfo");
 			MOD_ADD_DETOUR_MEMBER(CDownloadListGenerator_OnResourcePrecachedFullPath, "CDownloadListGenerator::OnResourcePrecachedFullPath");
 			MOD_ADD_DETOUR_MEMBER(CVEngineServer_FindMap, "CVEngineServer::FindMap");
-			
-
+			MOD_ADD_DETOUR_MEMBER(CTFMapsWorkshop_PrepareLevelResources, "CTFMapsWorkshop::PrepareLevelResources");
 		}
 		
 		virtual void OnEnable() override
@@ -177,8 +198,9 @@ namespace Mod::Etc::Workshop_Map_Fix
 			ScanWorkshopMaps();
 		}
 
+		CountdownTimerInline removeOldLinksTimer;
 		virtual void LevelInitPreEntity() {
-			ScanWorkshopMaps();
+			removeOldLinksTimer.Start(1.0f);
 		}
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -188,6 +210,9 @@ namespace Mod::Etc::Workshop_Map_Fix
 			if (scheduleScan) {
 				scheduleScan = false;
 				ScanWorkshopMaps();
+			}
+			if (removeOldLinksTimer.HasStarted() && removeOldLinksTimer.IsElapsed()) {
+				RemoveOldLinks();
 			}
 		}
 	};

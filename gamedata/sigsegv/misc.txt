@@ -3240,6 +3240,12 @@
 					type "sym"
 					sym  "_ZN15CTFMapsWorkshop24Steam_OnUGCItemInstalledEP15ItemInstalled_t"
 				}
+				"CTFMapsWorkshop::PrepareLevelResources"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop21PrepareLevelResourcesEPcjS0_j"
+					sym64 "_ZN15CTFMapsWorkshop21PrepareLevelResourcesEPcmS0_m"
+				}
 				"CDownloadListGenerator::OnResourcePrecachedFullPath"
 				{
 					lib "engine"
@@ -3252,6 +3258,12 @@
 					type "sym"
 					sym  "_ZN14CVEngineServer7FindMapEPci"
 				}
+				"CTFMapsWorkshop::Refresh"
+				{
+					type "sym"
+					sym  "_ZN15CTFMapsWorkshop7RefreshEv"
+				}
+				
 			}
 			"addrs_group"
 			{

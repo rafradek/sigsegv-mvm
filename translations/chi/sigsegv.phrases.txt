@@ -182,6 +182,85 @@
 	{
 		"chi"		"人物属性"
 	}
+	"Character attributes:"
+	{
+		"chi"		"人物属性："
+	}	
+	"The Upgrade Station is disabled!"
+	{
+		"chi"		"升级站已禁用！"
+	}	
+	"This weapon is not upgradeable"
+	{
+		"chi"		"此武器无法升级"
+	}	
+	"You need metal to build a sentry gun"
+	{
+		"#format"	"{1:d}"
+		"chi"		"建造步哨枪需要 {1} 金属"
+	}	
+	"You need metal to build a dispenser"
+	{
+		"#format"	"{1:d}"
+		"chi"		"建造补给器需要 {1} 金属"
+	}	
+	"Explode on ignite is not allowed on this server"
+	{
+		"chi"		"点燃时爆炸已被禁用"
+	}	
+	"Projectile shield is not allowed on this server"
+	{
+		"chi"		"能量护盾已被禁用"
+	}	
+	"Burn time bonus upgrade is broken. Buy another upgrade"
+	{
+		"chi"		"燃烧时间升级失效，请购买其他升级"
+	}	
+	"3rd sentry fire rate bonus upgrade is broken. Buy another upgrade"
+	{
+		"chi"		"第三级步哨枪射速升级失效，请购买其他升级"
+	}	
+	"The Upgrade Station is disabled for this mission!"
+	{
+		"chi"		"升级站已禁用！"
+	}	
+	"Only class is allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"chi"		"仅 {1} 被允许参加本任务"
+	}	
+	"Exceeded the class limit in this mission"
+	{
+		"#format"	"{1:s}"
+		"chi"		"超过对 {1} 的人员数量限制"
+	}	
+	"is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"chi"		"{1} 被禁止参加本任务"
+	}	
+	"upgrade is not allowed in this mission"
+	{
+		"#format"	"{1:s}"
+		"chi"		"{1} 升级在本任务中被禁用"
+	}	
+	"You cannot buy upgrades for this weapon in this mission"
+	{
+		"#format"	"{1:s},{2:s},{3:s},{4:s}"
+		"chi"		"你不能 {1}{2} 升级\n{3}{4}"
+	}
+	"more "
+	{
+		"chi"		"买"
+	}
+	" blocks this upgrade"
+	{
+		"chi"		"阻止了此升级"
+	}
+	"It is possible that a parsing error had occured. Check console for details"
+	{
+		"chi"		"已解析错误信息，请查看控制台"
+	}
 	"All class attributes"
 	{
 		"chi"		"兵种共有属性"
@@ -240,6 +319,11 @@
 	"No custom mission information available"
 	{
 		"chi"		"本任务无特殊规则"
+	}
+	"Inspecting player"
+	{
+		"#format"	"{1:s}"
+		"chi"		"正在观察 {1}"
 	}
 	"All player classes"
 	{
