@@ -892,6 +892,17 @@ inline bool RemoveFirstElement(Container &container, UnaryPredicate p)
 	return false;
 }
 
+template<class Container, class Value>
+inline bool FindAndErase(Container &container, Value &value)
+{
+	auto it = container.find(value);
+	if (it != container.end()) {
+		container.erase(it);
+		return true;
+	}
+	return false;
+}
+
 template<class Container, class UnaryPredicate>
 inline void RemoveIf(Container &container, UnaryPredicate p)
 {
@@ -1163,4 +1174,14 @@ bool ResolvePlayerStuck(CBasePlayer *player, float oldScale = 1.0f, float maxMov
  * Get current map name, excluding the workshop/ prefix and .ugc suffix
  */
 string_t GetCurrentMapNoWorkshop();
+
+/** 
+ * Get a map name with no version string
+ */
+std::string GetMapNameNoVersion(const std::string &name);
+
+/** 
+ * Returns true if the mission is for map. Returns true if the mission does not contain map version too
+ */
+bool IsMissionForMap(const char *mission, const char *map);
 #endif

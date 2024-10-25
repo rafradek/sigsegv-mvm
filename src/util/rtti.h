@@ -6,7 +6,7 @@
 #include "util/demangle.h"
 
 #if defined __clang__
-#error TODO
+typedef abi::__class_type_info rtti_t;
 #elif defined __GNUC__
 typedef abi::__class_type_info rtti_t;
 #elif defined _MSC_VER
@@ -15,7 +15,7 @@ typedef _TypeDescriptor rtti_t;
 
 
 #if defined __clang__
-#error TODO
+#define TYPEID_RAW_NAME(typeinfo) typeinfo.name()
 #elif defined __GNUC__
 #define TYPEID_RAW_NAME(typeinfo) typeinfo.name()
 #elif defined _MSC_VER
@@ -106,7 +106,7 @@ inline TO rtti_cast(const FROM ptr)
 		assert(rtti_to   != nullptr);
 	}
 
-#if defined __GNUC__
+#if defined __GNUC__ || defined __clang__
 	void *result = (void *)ptr;
 	static std::vector<std::pair<void *, uintptr_t>> dynamic_cast_cache;
 	void *vtable = *((void**)result);
@@ -145,7 +145,7 @@ inline TO rtti_scast(const FROM ptr)
 	static bool initialized = false;
 	static const rtti_t *rtti_from;
 	static const rtti_t *rtti_to;
-#if defined __GNUC__
+#if defined __GNUC__ || defined __clang__
 	static uintptr_t upcast_offset = 0;
 #endif
 
@@ -157,7 +157,7 @@ inline TO rtti_scast(const FROM ptr)
 		assert(rtti_from != nullptr);
 		assert(rtti_to   != nullptr);
 	
-#if defined __GNUC__
+#if defined __GNUC__ || defined __clang__
 	/* GCC's __dynamic_cast is grumpy and won't do up-casts at runtime, so we
 	 * have to manually take care of up-casting ourselves */
 	 	
@@ -172,7 +172,7 @@ inline TO rtti_scast(const FROM ptr)
 #endif
 	}
 
-#if defined __GNUC__
+#if defined __GNUC__ || defined __clang__
 	void *result = (void *)ptr;
 	result = (void *) ((uintptr_t)result + upcast_offset);
 

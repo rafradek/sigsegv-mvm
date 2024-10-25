@@ -29,6 +29,8 @@
 #endif
 #include "util/trace.h"
 
+char registerPushCaller[] {0xE8, 0x00, 0x00, 0x00, 0x00, 0xC3};
+intptr_t registerPushCallAddrOffset = 0x1;
 
 /* analogous to asm.c copy_bytes() when dest == nullptr */
 static size_t Trampoline_CalcNumBytesToCopy(size_t len_min, const uint8_t *func)

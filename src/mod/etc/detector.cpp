@@ -74,6 +74,7 @@ namespace Mod::Etc::Detector
     int last_server_lag_tick = 0;
 
 	IForward *notify_forward;
+	IForward *should_draw_forward;
 
     union ForwardData
     {
@@ -630,19 +631,29 @@ namespace Mod::Etc::Detector
                         }
                     });
                     if (sourceTVClient != nullptr && sig_etc_detector_print_demo.GetBool()) {
-                        lagcompensation->StartLagCompensation(player, &traceCmd->cmd);
-                        trace_t trace;
-                        Vector start = traceCmd->playerPos;
-                        Vector end, forward;
-                        AngleVectors(traceCmd->cmd.viewangles, &forward);
-                        VectorMA(start, 8192, forward, end);
-                        UTIL_TraceLine(start, end, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, player , COLLISION_GROUP_NONE, &trace);
                         
-                        TE_BeamPointsForDebug(traceCmd->playerPos, end, 5.0f, traceColor.x, traceColor.y, traceColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
-                        if (traceCmd->enemyPos != vec3_origin) {
-                            TE_BBoxForDebug(traceCmd->enemyPos + VEC_HULL_MIN, traceCmd->enemyPos + VEC_HULL_MAX, 5.0f, boxColor.x, boxColor.y, boxColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
+                        cell_t result = true;
+                        should_draw_forward->PushCell(player->entindex());
+                        should_draw_forward->PushCell(traceCmd->firedWeapon);
+                        should_draw_forward->PushCell(traceCmd->damagedEnemy);
+                        should_draw_forward->PushCell(traceCmd->aimAtHead);
+                        should_draw_forward->Execute(&result);
+                        if (result) {
+
+                            lagcompensation->StartLagCompensation(player, &traceCmd->cmd);
+                            trace_t trace;
+                            Vector start = traceCmd->playerPos;
+                            Vector end, forward;
+                            AngleVectors(traceCmd->cmd.viewangles, &forward);
+                            VectorMA(start, 8192, forward, end);
+                            UTIL_TraceLine(start, end, CONTENTS_HITBOX|CONTENTS_MONSTER|CONTENTS_SOLID, player , COLLISION_GROUP_NONE, &trace);
+                            
+                            TE_BeamPointsForDebug(traceCmd->playerPos, end, 5.0f, traceColor.x, traceColor.y, traceColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
+                            if (traceCmd->enemyPos != vec3_origin) {
+                                TE_BBoxForDebug(traceCmd->enemyPos + VEC_HULL_MIN, traceCmd->enemyPos + VEC_HULL_MAX, 5.0f, boxColor.x, boxColor.y, boxColor.z, 255, displayBoxHead ? 6 : 3, sourceTVClient);
+                            }
+                            lagcompensation->FinishLagCompensation(player);
                         }
-                        lagcompensation->FinishLagCompensation(player);
                     }
                 }
                 cmdHistorySorted.erase(cmdHistorySorted.begin());
@@ -695,6 +706,8 @@ namespace Mod::Etc::Detector
         int boneIndexHead = 0;
         int boneIndexPelvis = 0;
         float frameBudget = 0.1f;
+
+        int lastTickAbleToChangeCvar = 0;
 	}; 
 
     // Stop expensive traces that are unnecesary when doing lag compensation here
@@ -1009,13 +1022,12 @@ namespace Mod::Etc::Detector
 
             auto player = (CTFPlayer *)GetContainingEntity(edict);
             if (player != nullptr) {
-                bool canChangeNetworkCvar = TFGameRules()->IsConnectedUserInfoChangeAllowed(player);
                 auto mod = player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
-                if (!canChangeNetworkCvar) {
+                if (gpGlobals->curtime - mod->lastTickAbleToChangeCvar > 60) {
                     for (auto &cvarName : client_cvar_connect_vars) {
                         auto find = mod->connectClientCvarPrevValues.find(cvarName);
                         if (find != mod->connectClientCvarPrevValues.end() && abs(find->second - client->m_ConVars->GetFloat(cvarName.c_str())) > 0.001) {
-                            Notify("Client CVar check - change while alive", "Restricted client cvar changed while player was alive", std::format("cvar={},from={},to={}", cvarName, find->second, client->m_ConVars->GetFloat(cvarName.c_str())), client);
+                            Notify("Client CVar check - change while alive", "Restricted client cvar changed while player was alive", std::format("cvar={},from={},to={},ticks since allowed={}", cvarName, find->second, client->m_ConVars->GetFloat(cvarName.c_str()), gpGlobals->curtime - mod->lastTickAbleToChangeCvar), client);
                         }
                     }
                 }
@@ -1051,7 +1063,7 @@ namespace Mod::Etc::Detector
     DETOUR_DECL_MEMBER(void, CTFGameRules_ClientCommandKeyValues, edict_t *pEntity, KeyValues *pKeyValues)
 	{
         auto client = (CGameClient *)sv->GetClient(pEntity->m_EdictIndex - 1);
-        if (!client->IsFakeClient()) {
+        if (!client->IsFakeClient() && pKeyValues != nullptr) {
             if (FStrEq(pKeyValues->GetName(), "AchievementEarned")) {
                 auto id = pKeyValues->GetInt("achievementID");
                 if (id > 2805 || id < 127) {
@@ -1118,6 +1130,7 @@ namespace Mod::Etc::Detector
 		{
             developer = icvar->FindVar("developer");
 			notify_forward = forwards->CreateForward("SIG_DetectNotify", ET_Hook, 7, NULL, Param_Cell, Param_String, Param_String, Param_String, Param_Cell, Param_Array, Param_Cell);
+			should_draw_forward = forwards->CreateForward("SIG_ShouldDrawDetections", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
             backtrack_ticks = TimeToTicks(0.2);
             return true;
         }
@@ -1125,6 +1138,7 @@ namespace Mod::Etc::Detector
 		virtual void OnUnload() override
 		{
 			forwards->ReleaseForward(notify_forward);
+			forwards->ReleaseForward(should_draw_forward);
 		}
 		
 		virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }
@@ -1177,6 +1191,9 @@ namespace Mod::Etc::Detector
                     if (!player->IsRealPlayer()) return;
                     auto mod = player->GetOrCreateEntityModule<DetectorPlayerModule>("detectorpl");
                     mod->AnalizeCmds();
+                    if (TFGameRules()->IsConnectedUserInfoChangeAllowed(player)) {
+                        mod->lastTickAbleToChangeCvar = gpGlobals->tickcount;
+                    }
                     if ((gpGlobals->tickcount + player->entindex() * 9) % 66 == 0) {
                         mod->RefreshFrameBudget();
                     }

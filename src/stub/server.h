@@ -215,9 +215,13 @@ class CNetChan : public INetChannel
 public:
     bool IsFileInWaitingList(const char *filename)  { return ft_IsFileInWaitingList(this, filename); }
     void SetFileTransmissionMode(bool isBackground) {        ft_SetFileTransmissionMode(this, isBackground); }
+
+	static bool IsValidFileForTransfer(const char *filename) { return ft_IsValidFileForTransfer(filename); } 
 private:
 	static MemberFuncThunk<CNetChan *, bool, const char *> ft_IsFileInWaitingList;
 	static MemberFuncThunk<CNetChan *, void, bool> ft_SetFileTransmissionMode;
+
+	static StaticFuncThunk<bool, const char*> ft_IsValidFileForTransfer;
 };
 
 

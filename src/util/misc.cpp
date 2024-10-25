@@ -274,3 +274,42 @@ string_t GetCurrentMapNoWorkshop() {
 	
 	return currentMapNameNoWorkshop;
 }
+
+std::string GetMapNameNoVersion(const std::string &name) {
+	size_t prefixEnd = name.find('_');
+	size_t versionStart = name.rfind('_');
+
+	// There must be at least two underscores
+	if (versionStart != prefixEnd) {
+		bool hasNum = false;
+		for (auto t = versionStart + 1; t < name.size(); t++) {
+			if (V_isdigit(name[t])) {
+				hasNum = true;
+				break;
+			}
+		}
+		if (hasNum) {
+			return name.substr(0, versionStart);
+		}
+	}
+	return name;
+}
+
+bool IsMissionForMap(const char *mission, const char *map) {
+	if (StringHasPrefix(mission, map)) return true;
+	const char *mapVersion = V_strrchr(map, '_');
+	if (mapVersion == nullptr || V_strncmp(map, mission, mapVersion - map) != 0) return false;
+
+	// Popfiles that have mathing map but version is different
+	const char *missionAfterMap = mission + (mapVersion - map);
+	if (*missionAfterMap == '_') missionAfterMap++;
+	
+	bool foundMapVersion = false;
+	for (const char *c = missionAfterMap; *c != '\0' && *c != '_'; c++) {
+		if (V_isdigit(*c)) {
+			foundMapVersion = true;
+			break;
+		}
+	}
+	return !foundMapVersion;
+}

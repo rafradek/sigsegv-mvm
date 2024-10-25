@@ -89,7 +89,6 @@ protected:
 	// FIXME: Change m_ppMemBlob into a growable array?
 public:
 	void			*m_pHeadOfFreeList;
-private:
 	int				m_PeakAlloc;
 	unsigned short	m_nAlignment;
 	unsigned short	m_NumBlobs;

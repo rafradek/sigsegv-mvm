@@ -504,7 +504,7 @@ public:
 		}
 		
 #if defined __clang__
-		#error TODO
+		ptrdiff_t adj = -offsetof(vtable, vfptrs);
 #elif defined __GNUC__
 		ptrdiff_t adj = -offsetof(vtable, vfptrs);
 #elif defined _MSC_VER

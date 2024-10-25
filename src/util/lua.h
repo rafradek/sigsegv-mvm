@@ -1,11 +1,9 @@
 #ifndef _INCLUDE_SIGSEGV_UTIL_LUA_H_
 #define _INCLUDE_SIGSEGV_UTIL_LUA_H_
 
-extern "C" {
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-}
 
 namespace Util::Lua
 {

@@ -111,11 +111,11 @@ namespace Mod::Etc::Extra_Player_Slots
 		if (sig_etc_extra_player_slots_allow_bots.GetBool() || sig_etc_extra_player_slots_allow_players.GetBool()) return true;
 
 		FileFindHandle_t missionHandle;
-		char poppathfind[256];
-		snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
-		for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
+		for (const char *missionName = filesystem->FindFirstEx("scripts/population/*.pop", "GAME", &missionHandle);
 						missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
 			
+			if (!StringHasPrefix(missionName, map)) continue;
+
 			char poppath[256];
 			snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
 			KeyValues *kv = new KeyValues("kv");
@@ -134,20 +134,6 @@ namespace Mod::Etc::Extra_Player_Slots
             kv->deleteThis();
 		}
 		filesystem->FindClose(missionHandle);
-    
-        snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s.pop", map);
-        KeyValues *kv = new KeyValues("kv");
-        kv->UsesConditionals(false);
-        if (kv->LoadFromFile(filesystem, poppathfind)) {
-            FOR_EACH_SUBKEY(kv, subkey) {
-
-                if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
-                    kv->deleteThis();
-                    return true;
-                }
-            }
-        }
-        kv->deleteThis();
 
         return false;
 	}

@@ -4799,6 +4799,7 @@ namespace Util::Lua
             auto cevent = reinterpret_cast<CGameEvent *>(event);
             for (auto &callback : event_callbacks) {
                 if (callback.name == event->GetName()) {
+                    std::unordered_map<std::string, KeyValues::types_t> types;
                     auto l = callback.state->GetState();
                     lua_newtable(l);
                     lua_rawgeti(l, LUA_REGISTRYINDEX, event_meta);
@@ -4807,13 +4808,13 @@ namespace Util::Lua
                     lua_pushvalue(l,-2);
                     FOR_EACH_SUBKEY(cevent->m_pDataKeys, subkey) {
                         float num;
-                        const char *str = subkey->GetString();
-                        if (StringToFloatStrictAndSpend(str, num)) {
-                            lua_pushnumber(l, num);
+                        auto type = subkey->GetDataType();
+                        switch(type) {
+                            case KeyValues::TYPE_INT: lua_pushnumber(l, subkey->GetInt()); break;
+                            case KeyValues::TYPE_FLOAT: lua_pushnumber(l, subkey->GetFloat()); break;
+                            default: lua_pushstring(l, subkey->GetString());
                         }
-                        else {
-                            lua_pushstring(l, subkey->GetString());
-                        }
+                        types[subkey->GetName()] = subkey->GetDataType();
                         lua_setfield(l, -2, subkey->GetName());
                     }
                     int err = callback.state->Call(1, 1);
@@ -4824,7 +4825,12 @@ namespace Util::Lua
                             lua_pushnil(l);
                             while (lua_next(l, -2)) {
                                 lua_pushvalue(l, -2);
-                                event->SetString(LOptToString(l, -1, ""), LOptToString(l, -2, ""));
+                                auto name = LOptToString(l, -1, "");
+                                event->SetString(name, LOptToString(l, -2, ""));
+                                switch(types[name]) {
+                                    case KeyValues::TYPE_INT: event->SetInt(name, atoi(event->GetString(name))); break;
+                                    case KeyValues::TYPE_FLOAT: event->SetFloat(name, atof(event->GetString(name))); break;
+                                }
                                 lua_pop(l, 2);
                             }
                         }

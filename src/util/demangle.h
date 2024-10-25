@@ -4,9 +4,7 @@
 
 inline bool DemangleName(const char *mangled, std::string& result)
 {
-#if defined __clang__
-	#error TODO
-#elif defined __GNUC__
+#if defined __clang__ || defined __GNUC__
 	constexpr int options = DMGL_GNU_V3 | DMGL_TYPES | DMGL_ANSI | DMGL_PARAMS;
 	char *demangled = cplus_demangle(mangled, options);
 	
@@ -27,9 +25,7 @@ inline bool DemangleName(const char *mangled, std::string& result)
 
 inline bool DemangleTypeName(const char *mangled, std::string& result)
 {
-#if defined __clang__
-	#error TODO
-#elif defined __GNUC__
+#if defined __clang__ || defined __GNUC__
 	char *prefixed = new char[strlen(mangled) + 1 + 4];
 	strcpy(prefixed, "_ZTS");
 	strcat(prefixed, mangled);
@@ -63,9 +59,7 @@ inline const char *DemangleTypeName(const std::type_info& typeinfo)
 {
 	const char *mangled = typeinfo.name();
 	
-#if defined __clang__
-	#error TODO
-#elif defined __GNUC__
+#if defined __clang__ || defined __GNUC__
 	std::string demangled;
 	if (DemangleTypeName(mangled, demangled)) {
 		extern string_t AllocPooledString(const char *pszValue);

@@ -21,6 +21,8 @@ constexpr size_t CHUNK_SIZE_TRAMPOLINE = IsPlatform64Bits() ? 0x40 : 0x20;
 /* we know the size of the wrapper function with certainty and can verify that this is big enough */
 constexpr size_t CHUNK_SIZE_WRAPPER = 0x80;
 
+constexpr size_t CHUNK_SIZE_DETOUR_WRAPPER = 0x40;
+
 
 #define TRACE_ExecMemBlockAllocator(func, ...) TRACE(TR_FNAME("ExecMemBlockAllocator<0x%zX,0x%zX>::" #func, BLOCK_SIZE, CHUNK_SIZE), ##__VA_ARGS__)
 template<size_t BLOCK_SIZE, size_t CHUNK_SIZE>
@@ -312,14 +314,19 @@ public:
 	[[nodiscard]] virtual uint8_t *AllocWrapper() override;
 	virtual void FreeWrapper(const uint8_t *ptr) override;
 	
+	[[nodiscard]] virtual uint8_t *AllocDetourWrapper() override;
+	virtual void FreeDetourWrapper(const uint8_t *ptr) override;
+	
 private:
 	static inline std::atomic_flag s_SingleInstance = ATOMIC_FLAG_INIT;
 	
-	size_t m_nAllocsTrampoline = 0;
-	size_t m_nAllocsWrapper    = 0;
+	size_t m_nAllocsTrampoline    = 0;
+	size_t m_nAllocsWrapper       = 0;
+	size_t m_nAllocsDetourWrapper = 0;
 	
-	ExecMemBlockAllocator<4096, CHUNK_SIZE_TRAMPOLINE> m_AllocatorTrampoline;
-	ExecMemBlockAllocator<4096, CHUNK_SIZE_WRAPPER>    m_AllocatorWrapper;
+	ExecMemBlockAllocator<4096, CHUNK_SIZE_TRAMPOLINE>     m_AllocatorTrampoline;
+	ExecMemBlockAllocator<4096, CHUNK_SIZE_WRAPPER>        m_AllocatorWrapper;
+	ExecMemBlockAllocator<4096, CHUNK_SIZE_DETOUR_WRAPPER> m_AllocatorDetourWrapper;
 };
 
 
@@ -370,8 +377,9 @@ CExecMemManager::~CExecMemManager()
 	TRACE_CExecMemManager(~CExecMemManager, "[m_nAllocsTrampoline: %zu] [m_nAllocsWrapper: %zu]", this->m_nAllocsTrampoline, this->m_nAllocsWrapper);
 	
 	/* leak check! */
-	assert(this->m_nAllocsTrampoline == 0);
-	assert(this->m_nAllocsWrapper    == 0);
+	assert(this->m_nAllocsTrampoline    == 0);
+	assert(this->m_nAllocsWrapper       == 0);
+	assert(this->m_nAllocsDetourWrapper == 0);
 	
 	s_SingleInstance.clear();
 }
@@ -423,4 +431,26 @@ void CExecMemManager::FreeWrapper(const uint8_t *ptr)
 	--this->m_nAllocsWrapper;
 	
 	this->m_AllocatorWrapper.Free(ptr);
+}
+
+[[nodiscard]] uint8_t *CExecMemManager::AllocDetourWrapper()
+{
+	TRACE_CExecMemManager(AllocWrapper, "[CHUNK_SIZE_DETOUR_WRAPPER: %zu]", CHUNK_SIZE_DETOUR_WRAPPER);
+	
+	++this->m_nAllocsDetourWrapper;
+	
+	uint8_t *chunk_ptr = this->m_AllocatorDetourWrapper.Alloc();
+	assert(chunk_ptr != nullptr);
+	
+	return chunk_ptr;
+}
+
+void CExecMemManager::FreeDetourWrapper(const uint8_t *ptr)
+{
+	TRACE_CExecMemManager(FreeWrapper, "[ptr: 0x%08x] [m_nAllocsDetourWrapper: %zu]", (uintptr_t)ptr, this->m_nAllocsDetourWrapper);
+	
+	assert(this->m_nAllocsDetourWrapper > 0);
+	--this->m_nAllocsDetourWrapper;
+	
+	this->m_AllocatorDetourWrapper.Free(ptr);
 }

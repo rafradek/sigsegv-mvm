@@ -261,7 +261,7 @@ void Evaluation::ExecuteFunction(EvaluationFunc *func)
     if (def->paramCount > func->params.size()) {
         ClientMsgAll("Script Error: Function %s called with %d parameters, need %d:", def->name.c_str(), func->params.size(), def->paramCount);
         for (size_t i = 0; i < def->paramCount; i++) {
-            ClientMsgAll(", %s", def->paramNames[i]);
+            ClientMsgAll(", %s", def->paramNames[i].c_str());
         }
         ClientMsgAll("\n");
         return;

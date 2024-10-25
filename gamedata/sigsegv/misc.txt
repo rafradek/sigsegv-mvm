@@ -3263,6 +3263,32 @@
 					type "sym"
 					sym  "_ZN15CTFMapsWorkshop7RefreshEv"
 				}
+				"CGameClient::FileDenied"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZThn4_N11CGameClient10FileDeniedEPKcj"
+					sym64  "_ZThn8_N11CGameClient10FileDeniedEPKcj"
+				}
+				"CGameClient::FileReceived"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZThn4_N11CGameClient12FileReceivedEPKcj"
+					sym64  "_ZThn8_N11CGameClient12FileReceivedEPKcj"
+				}
+				"CNetChan::HandleUpload"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN8CNetChan12HandleUploadEPNS_15dataFragments_sEP18INetChannelHandler"
+				}
+				"CNetChan::IsValidFileForTransfer"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN8CNetChan22IsValidFileForTransferEPKc"
+				}
 				
 			}
 			"addrs_group"

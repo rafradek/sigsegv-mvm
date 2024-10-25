@@ -254,7 +254,7 @@ void FunctionToStringPadding(const char *function, Evaluation::Params &params, i
     else {
         snprintf(fmt, 32, CFmtStr("%%0%d.f", params[1].Int()), params[0].Float());
     }
-    result.SetString(AllocPooledString(CFmtStr(fmt,params[0])));
+    result.SetString(AllocPooledString(CFmtStr(fmt,params[0].Float())));
 }
 
 void FunctionToVector(const char *function, Evaluation::Params &params, int param_count, variant_t& result)

@@ -43,6 +43,9 @@ namespace Mod::Etc::Workshop_Map_Fix
 {
 	std::unordered_set<uint64_t> scanMapList;
 	std::unordered_map<std::string, std::string> mapNameToWorkshopName;
+	std::unordered_map<uint64_t, std::string> mapIdToMapName;
+	std::unordered_map<std::string, uint64_t> mapNameToId;
+	std::unordered_map<std::string, std::string> mapNoVersionNameToFullName;
 
 	const char *game_path;
 
@@ -60,33 +63,125 @@ namespace Mod::Etc::Workshop_Map_Fix
 		"Remove workshop links from install location than are not currently added");
 
 	void RemoveOldLinks() {
-		std::error_code er;
-		if (sig_mvm_workshop_map_fix_remove_old_links.GetBool()) {
-			for (auto &entry : std::filesystem::directory_iterator(std::format("{}/{}", game_path, sig_mvm_workshop_map_fix_install_location.GetString()), er)) {
-				if (entry.is_symlink() && !scanMapList.contains(atoll(std::filesystem::read_symlink(entry.path(), er).parent_path().stem().c_str())) && std::filesystem::equivalent(std::filesystem::read_symlink(entry.path(), er).parent_path().parent_path(), ugcPath, er)) {
-					std::filesystem::remove(entry.path(), er);
-				}
-			}
-		}
-	}
-	void ScanWorkshopMaps() {
-		std::error_code er;
-		for (auto id : scanMapList) {
-			std::filesystem::path mapPath = std::format("{}/{}",ugcPath.c_str(),id);
-			if (std::filesystem::is_directory(mapPath, er)) {
-				for (auto &entry2 : std::filesystem::directory_iterator(mapPath, er)) {
-					if (entry2.is_regular_file()) {
-						
-						mapNameToWorkshopName[entry2.path().filename().stem()] = std::format("workshop/{}.ugc{}",entry2.path().filename().stem().c_str(), id);
-						std::filesystem::path mapLinkFrom = std::format("{}/{}/{}", game_path, sig_mvm_workshop_map_fix_install_location.GetString(), entry2.path().filename().c_str());
-						bool alreadyExists = std::filesystem::equivalent(std::filesystem::read_symlink(mapLinkFrom, er), entry2.path(), er);
-						if (!alreadyExists) {
-							std::filesystem::remove(mapLinkFrom, er);
-							std::filesystem::create_symlink(entry2,mapLinkFrom, er);
+		try {
+			std::error_code er;
+			if (sig_mvm_workshop_map_fix_remove_old_links.GetBool()) {
+				for (auto &entry : std::filesystem::directory_iterator(std::format("{}/{}", game_path, sig_mvm_workshop_map_fix_install_location.GetString()), er)) {
+					if (entry.is_symlink()) {
+						auto dest = std::filesystem::read_symlink(entry.path(), er);
+						if ((!scanMapList.contains(atoll(dest.parent_path().stem().c_str())) || mapIdToMapName[atoll(dest.parent_path().stem().c_str())] != dest.stem()) && std::filesystem::equivalent(dest.parent_path().parent_path(), ugcPath, er)) {
+							std::filesystem::remove(entry.path(), er);
 						}
 					}
 				}
 			}
+		} catch (...) {
+
+		}
+	}
+	IForward *workshop_map_name;
+
+	void ScanWorkshopMaps() {
+		std::error_code er;
+		try {
+			std::vector<std::pair<std::string, std::string>> mapNames;
+			for (auto id : scanMapList) {
+				std::filesystem::path mapPath = std::format("{}/{}",ugcPath.c_str(),id);
+				if (std::filesystem::is_directory(mapPath, er)) {
+					for (auto &entry2 : std::filesystem::directory_iterator(mapPath, er)) {
+						if (entry2.is_regular_file()) {
+							auto mapName = entry2.path().filename().stem();
+							auto mapNameNoVersion = GetMapNameNoVersion(mapName);
+							mapNames.push_back({mapName, mapNameNoVersion});
+							mapNameToWorkshopName[mapName] = std::format("workshop/{}.ugc{}",mapName.c_str(), id);
+							mapNoVersionNameToFullName[mapNameNoVersion] = mapName;
+							mapIdToMapName[id] = mapName;
+							mapNameToId[mapName] = id;
+							std::filesystem::path mapLinkFrom = std::format("{}/{}/{}", game_path, sig_mvm_workshop_map_fix_install_location.GetString(), entry2.path().filename().c_str());
+							
+							if (!std::filesystem::exists(mapLinkFrom,er) || !std::filesystem::equivalent(mapLinkFrom, std::filesystem::canonical(entry2,er), er)) {
+								std::filesystem::remove(mapLinkFrom, er);
+								std::filesystem::create_symlink(std::filesystem::canonical(entry2,er),mapLinkFrom, er);
+								std::string idstr = std::to_string(id);
+								workshop_map_name->PushString(idstr.c_str());
+								workshop_map_name->PushString(mapName.c_str());
+								workshop_map_name->Execute();
+							}
+						}
+					}
+				}
+			}
+			if (mapNames.empty()) return;
+
+			// Create links for population files that have a version mismatch
+			char paths[2048];
+			filesystem->GetSearchPath_safe("GAME", false, paths);
+			const auto v {vi::split_str(paths, ";")};
+			std::vector<std::string> maps;
+			for (auto &dirPath : v) {
+				if (!dirPath.ends_with('/')) continue;
+				for (auto &entry : std::filesystem::directory_iterator(std::string(dirPath)+"maps", er)) {
+					if (entry.is_directory(er)) continue;
+
+					if (entry.path().extension() != ".bsp") continue;
+					
+					maps.push_back(entry.path().stem());
+				}
+			}
+
+			for (auto &dirPath : v) {
+				if (!dirPath.ends_with('/')) continue;
+
+				for (auto &entry : std::filesystem::directory_iterator(std::string(dirPath)+"scripts/population", er)) {
+					for (auto &[mapName, mapNameNoVersion] : mapNames) {
+						if (entry.is_directory(er)) continue;
+
+						if (entry.is_symlink(er)) {
+							if (!entry.exists(er)) {
+								std::filesystem::remove(entry.path(), er);
+							}
+							continue;
+						}
+
+						auto missionName = entry.path().filename();
+						auto missionNameAfterMap = StringAfterPrefix(missionName.c_str(), mapNameNoVersion.c_str());
+						if (missionNameAfterMap != nullptr) {
+							
+							bool foundOtherMapsHaveThisPrefix = false;
+							for (auto &map : maps) {
+								if (map != mapName && StringHasPrefix(missionName.c_str(), map.c_str())) {
+									foundOtherMapsHaveThisPrefix = true;
+									break;
+								}
+							}
+							if (foundOtherMapsHaveThisPrefix) {
+								continue;
+							}
+
+							const char *missionNameVersionLess = missionNameAfterMap;
+							if (*missionNameVersionLess == '_') missionNameVersionLess++;
+							bool foundVersion = false;
+
+							while(*missionNameVersionLess != '_' && *missionNameVersionLess != '\0') {
+								if (V_isdigit(*missionNameVersionLess)) {
+									foundVersion = true;
+								}
+								missionNameVersionLess++;
+							}
+							if (foundVersion) missionNameAfterMap = missionNameVersionLess;
+
+							std::string pathFullNewMap = entry.path().parent_path() / (mapName + missionNameAfterMap);
+							if (std::filesystem::is_symlink(pathFullNewMap,er)) {
+								std::filesystem::remove(pathFullNewMap, er);
+							}
+							std::filesystem::create_symlink(missionName, pathFullNewMap, er);
+						}
+					}
+				}
+			}
+		}
+		catch (...) {
+
 		}
 	}
 	
@@ -132,13 +227,13 @@ namespace Mod::Etc::Workshop_Map_Fix
 		}
     }
 
-    DETOUR_DECL_MEMBER(void, CDownloadListGenerator_OnResourcePrecachedFullPath, const char *path)
+    DETOUR_DECL_MEMBER(void, CDownloadListGenerator_OnResourcePrecachedFullPath, const char *path, const char *relativeFileName)
 	{
 		// Remove workshop map from download list
 		if (mapNameToWorkshopName.contains(STRING(gpGlobals->mapname)) && std::string(path).ends_with(std::format("maps/{}.bsp",STRING(gpGlobals->mapname)))) {
 			return;
 		}
-        DETOUR_MEMBER_CALL(path);
+        DETOUR_MEMBER_CALL(path, relativeFileName);
     }
 
     DETOUR_DECL_MEMBER(void, CTFMapsWorkshop_PrepareLevelResources, char *mapName, int mapNameLen, char *mapFile, int mapFileLen)
@@ -147,16 +242,55 @@ namespace Mod::Etc::Workshop_Map_Fix
 		char newMapFile[MAX_PATH] = "";
 		ScanWorkshopMaps();
 		// trick the server into updating the workshop map with non workshop map name
-		if (mapNameToWorkshopName.contains(mapName)) {
+		auto mapNameNoVersion = GetMapNameNoVersion(mapName);
+		char maybeMap[1024];
+		strncpy(maybeMap, mapNameNoVersion.c_str(), sizeof(maybeMap));
+		bool hasDirectWorkshopMatch = mapNameToWorkshopName.contains(mapName);
+		if (hasDirectWorkshopMatch || (mapNoVersionNameToFullName.contains(mapNameNoVersion) && engine->FindMap(maybeMap, sizeof(maybeMap)) != IVEngineServer::eFindMap_Found)) {
+			if (!hasDirectWorkshopMatch) {
+				strncpy(mapName, mapNoVersionNameToFullName[mapNameNoVersion].c_str(), mapNameLen);
+			}
 			auto &str = mapNameToWorkshopName[mapName];
+			auto id = mapNameToId[mapName];
 			strncpy(newMapName, str.c_str(), sizeof(newMapName));
 			strncpy(newMapFile, mapFile, sizeof(newMapFile));
-			mapName = newMapName;
-			mapNameLen = sizeof(newMapName);
-			mapFile = newMapFile;
-			mapFileLen = sizeof(newMapFile);
+			DETOUR_MEMBER_CALL(newMapName, sizeof(newMapName), newMapFile, sizeof(newMapFile));
+			// the version might have updated, rename the map file to new version in case
+			ScanWorkshopMaps();
+			if (mapIdToMapName[id] != mapName) {
+				strncpy(mapName, mapIdToMapName[id].c_str(), mapNameLen);
+				snprintf(mapFile, mapFileLen, "maps/%s.bsp", mapIdToMapName[id].c_str());
+			}
+			return;
 		}
 		DETOUR_MEMBER_CALL(mapName, mapNameLen, mapFile, mapFileLen);
+    }
+
+	DETOUR_DECL_MEMBER(int, CNavMesh_Load)
+	{
+        auto value = DETOUR_MEMBER_CALL();
+        // Find nav mesh with a different version map if not found
+		auto mapNameNoVersion = GetMapNameNoVersion(STRING(gpGlobals->mapname));
+        if (value == 1 && mapNoVersionNameToFullName.contains(mapNameNoVersion)) {
+			string_t oldMap = gpGlobals->mapname;
+			if(filesystem->FileExists(std::format("maps/{}.nav", mapNameNoVersion).c_str(), "GAME")) {
+				gpGlobals->mapname = MAKE_STRING(mapNameNoVersion.c_str());
+				value = DETOUR_MEMBER_CALL();
+			}
+			else {
+				FileFindHandle_t mapHandle;
+				for (const char *mapName = filesystem->FindFirstEx("maps/*.nav", "GAME", &mapHandle);
+								mapName != nullptr; mapName = filesystem->FindNext(mapHandle)) {
+					if (StringHasPrefix(mapName,mapNameNoVersion.c_str())) {
+						gpGlobals->mapname = MAKE_STRING(mapNameNoVersion.c_str());
+						value = DETOUR_MEMBER_CALL();
+						break;
+					}
+				}
+			}
+			gpGlobals->mapname = oldMap;
+        }
+        return value;
     }
 
 	class CMod : public IMod, IModCallbackListener, IFrameUpdatePostEntityThinkListener
@@ -171,6 +305,7 @@ namespace Mod::Etc::Workshop_Map_Fix
 			MOD_ADD_DETOUR_MEMBER(CDownloadListGenerator_OnResourcePrecachedFullPath, "CDownloadListGenerator::OnResourcePrecachedFullPath");
 			MOD_ADD_DETOUR_MEMBER(CVEngineServer_FindMap, "CVEngineServer::FindMap");
 			MOD_ADD_DETOUR_MEMBER(CTFMapsWorkshop_PrepareLevelResources, "CTFMapsWorkshop::PrepareLevelResources");
+			MOD_ADD_DETOUR_MEMBER(CNavMesh_Load, "CNavMesh::Load");
 		}
 		
 		virtual void OnEnable() override
@@ -180,6 +315,7 @@ namespace Mod::Etc::Workshop_Map_Fix
 
 		virtual bool OnLoad() override
 		{
+			workshop_map_name = forwards->CreateForward("SIG_OnAddWorkshopMapLink", ET_Hook, 2, NULL, Param_String, Param_String);
 			game_path = g_SMAPI->GetBaseDir();
 			int param = CommandLine()->FindParm("-ugcpath");
 			char path[MAX_PATH];
@@ -192,6 +328,11 @@ namespace Mod::Etc::Workshop_Map_Fix
 			}
 			ugcPath = path;
 			return true;
+		}
+
+		virtual void OnUnload() override
+		{
+			forwards->ReleaseForward(workshop_map_name);
 		}
 
 		virtual void LevelShutdownPreEntity() {

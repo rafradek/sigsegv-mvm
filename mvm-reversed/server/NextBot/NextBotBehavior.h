@@ -374,6 +374,8 @@ public:
 	virtual bool IsAbleToBlockMovementOf(const INextBot *nextbot) const;
 	
 	T *GetActor() const;
+
+	void DeleteThis();
 	
 protected:
 	Behavior<T> *GetBehavior() const;

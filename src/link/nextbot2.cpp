@@ -67,8 +67,10 @@ THUNK_VTABLE(16IContextualQuery, 0x40);
 THUNK_TYPEINFO_SINGLE(8INextBot);
 THUNK_VTABLE(8INextBot, 0x200);
 
+#ifndef __clang__
 THUNK_TYPEINFO_SINGLE(9ChasePath);
 THUNK_VTABLE(9ChasePath, 0x200);
+#endif
 
 #elif defined _MSC_VER
 

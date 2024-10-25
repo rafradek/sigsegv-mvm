@@ -109,7 +109,7 @@ namespace Mod::Common::Commands
                     (*func)(player, newArgs);
                 }
                 else {
-                    ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first);
+                    ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first.c_str());
                 }
                 return;
             }
@@ -132,7 +132,7 @@ namespace Mod::Common::Commands
                     (*func)(player, args);
                 }
                 else {
-                    ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first);
+                    ClientMsg(player, "[%s] You are not authorized to use this command because you are not a SourceMod admin. Sorry.\n", (*it).first.c_str());
                 }
                 return true;
             }

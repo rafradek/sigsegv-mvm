@@ -89,10 +89,10 @@ tar -xf lua-*.tar.gz
 rm lua-*.tar.gz
 mv lua-* lua
 cd lua
-make MYCFLAGS='-m32' MYLDFLAGS='-m32'
+make CC=g++ MYCFLAGS='-m32' MYLDFLAGS='-m32'
 mv src/liblua.a ../liblua.a
 make clean
-make MYCFLAGS="-fPIC"
+make CC=g++ MYCFLAGS="-fPIC"
 mv src/liblua.a ../libluax64.a
 cd ../..
 ```

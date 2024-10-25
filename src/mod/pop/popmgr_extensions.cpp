@@ -50,6 +50,11 @@ enum SpawnResult
 	SPAWN_TELEPORT = 2,
 };
 
+namespace Mod::Util::Download_Manager
+{
+	void ResetVoteMapList();
+}
+
 namespace Mod::Pop::Wave_Extensions
 {
 	std::vector<std::string> *GetWaveExplanation(int wave);
@@ -109,6 +114,9 @@ namespace Mod::Pop::PopMgr_Extensions
 	ConVar cvar_send_bots_to_spectator_immediately("sig_send_bots_to_spectator_immediately", "0", FCVAR_NOTIFY | FCVAR_GAMEDLL,
 		"Bots should be send to spectator immediately after dying");
 
+	ConVar sig_mvm_blu_players_sound_fixup("sig_mvm_blu_players_sound_fixup", "1", FCVAR_NOTIFY | FCVAR_GAMEDLL,
+		"Fixup blu players sounds so they use human sounds unless set otherwise. Set to 0 if it conflicts with other plugins");
+
 	void ResetVoteList() {
 		std::string poplistStr;
 		CUtlVector<CUtlString> vec;	
@@ -134,12 +142,14 @@ namespace Mod::Pop::PopMgr_Extensions
 		"Location of a file containing banned missions list", 
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ResetVoteList();
+			Mod::Util::Download_Manager::ResetVoteMapList();
 		});
 
 	ConVar cvar_mission_location_only("sig_only_read_missions_from_directory", "", FCVAR_NOTIFY,
 		"Only read missions from specified directory relative to tf/. Also removes maps with no available missions from voting", 
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			ResetVoteList();
+			Mod::Util::Download_Manager::ResetVoteMapList();
 		});
 
     bool IsMannVsMachineMode(){
@@ -540,6 +550,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			m_bNPCLagCompensation             ("sig_ai_lag_compensation_npc"),
 			m_FixBotSpawningStalls            ("sig_pop_wavespawn_spawnbot_stall_fix"),
 			m_ExtraBotsReservedSlots          ("sig_pop_extra_bots_reserved_slots"),
+			m_FixupBluSounds                  ("sig_mvm_blu_players_sound_fixup"),
 			
 
 			m_CustomUpgradesFile              ("sig_mvm_custom_upgrades_file")
@@ -654,6 +665,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			this->m_AllowCivilian.Reset(pre);
 			this->m_bNPCLagCompensation.Reset(pre);
 			this->m_FixBotSpawningStalls.Reset(pre);
+			this->m_FixupBluSounds.Reset(pre);
 			
 			this->m_CustomUpgradesFile.Reset(pre);
 			this->m_TextPrintSpeed.Reset(pre);
@@ -977,6 +989,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		CValueOverridePopfile_ConVar<bool> m_bNPCLagCompensation;
 		CValueOverridePopfile_ConVar<bool> m_FixBotSpawningStalls;
 		CValueOverridePopfile_ConVar<bool> m_ExtraBotsReservedSlots;
+		CValueOverridePopfile_ConVar<bool> m_FixupBluSounds;
 		
 		//CValueOverride_CustomUpgradesFile m_CustomUpgradesFile;
 		CValueOverridePopfile_ConVar<std::string> m_CustomUpgradesFile;
@@ -1228,11 +1241,11 @@ namespace Mod::Pop::PopMgr_Extensions
 		}
 
 		if (ShouldDropSpellPickup(killed)) {
-			TFGameRules()->DropSpellPickup(killed->GetAbsOrigin(), 0);
+			TFGameRules()->DropSpellPickup(killed->GetAbsOrigin(), state.m_bGiantsDropRareSpells && ToTFPlayer(pVictim)->IsMiniBoss() ? 1 : 0);
 		}
 	}
 	
-	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFGameRules_DropSpellPickup, const Vector& where, int tier)
+	DETOUR_DECL_STATIC_CALL_CONVENTION(__gcc_regcall, void, CTFGameRules_DropSpellPickup, float x, float y, float z, int tier)
 	{
 	//	DevMsg("CTFGameRules::DropSpellPickup\n");
 		
@@ -1247,7 +1260,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			}
 		}
 		
-		DETOUR_MEMBER_CALL(where, tier);
+		DETOUR_STATIC_CALL(x, y, z, tier);
 	}
 	
 	DETOUR_DECL_MEMBER(bool, CTFGameRules_IsUsingSpells)
@@ -2551,7 +2564,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			return "MVM.BotStep";
 		}
 		const char *sound = DETOUR_MEMBER_CALL(pszBaseStepSoundName);
-		if( (FStrEq("MVM.BotStep", sound) && (!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE && !state.m_bBluPlayersRobots)) || cvar_bots_are_humans.GetBool()) {
+		if( (FStrEq("MVM.BotStep", sound) && (!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE && !state.m_bBluPlayersRobots && sig_mvm_blu_players_sound_fixup.GetBool())) || cvar_bots_are_humans.GetBool()) {
 			return pszBaseStepSoundName;
 		}
 		return sound;
@@ -2563,7 +2576,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				(state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE))) {
 			return "MVM_";
 		}
-		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE)) {
+		else if((!player->IsBot() && player->GetTeamNumber() == TF_TEAM_BLUE && sig_mvm_blu_players_sound_fixup.GetBool())) {
 			return "";
 		}
 		//const char *token=DETOUR_MEMBER_CALL();
@@ -2579,7 +2592,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (state.m_bRedPlayersRobots && teamnum == TF_TEAM_RED) {
 				player->SetTeamNumber(TF_TEAM_BLUE);
 			}
-			else if (!state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE) {
+			else if (!state.m_bBluPlayersRobots && player->GetTeamNumber() == TF_TEAM_BLUE && sig_mvm_blu_players_sound_fixup.GetBool()) {
 				player->SetTeamNumber(TF_TEAM_RED);
 			}
 			DETOUR_MEMBER_CALL(info);
@@ -4567,8 +4580,9 @@ namespace Mod::Pop::PopMgr_Extensions
 			while ((ent = readdir(dir)) != nullptr) {
 				char *fileName = ent->d_name;
 				if (StringStartsWith(fileName, "mvm_") && StringEndsWith(fileName, ".pop")) {
-					V_StripExtension(fileName, fileName, sizeof(fileName));
-					popfiles.push_back(fileName);
+					char fileNameNoExt[MAX_PATH];
+					V_StripExtension(fileName, fileNameNoExt, sizeof(fileNameNoExt));
+					popfiles.push_back(fileNameNoExt);
 				}
 			}
 			closedir(dir);
@@ -4591,6 +4605,7 @@ namespace Mod::Pop::PopMgr_Extensions
 		std::vector<std::string> thisMapPopfiles;
 		auto maplen = strlen(map);
 		
+		auto mapNoVersion = GetMapNameNoVersion(map);
 		for (auto &popfile : popfiles) {
 			if (popfile.starts_with(map)) {
 				thisMapPopfiles.push_back(popfile[maplen] == '_' ? popfile.substr(maplen + 1) : "default");
@@ -4600,9 +4615,9 @@ namespace Mod::Pop::PopMgr_Extensions
 		if (kv != nullptr) {
 			FOR_EACH_SUBKEY(kv, kv_mission) {
 				auto name = kv_mission->GetName();
-				if (name[0] == '*' || stricmp(name, map) == 0) {
+				if (name[0] == '*' || FStrEq(name, map) || (name[strlen(name)-1] == '*' && V_strncmp(name, map, strlen(name)-1))) {
 					if (kv_mission->GetString()[0] != '|') {
-						std::remove(thisMapPopfiles.begin(), thisMapPopfiles.end(), kv_mission->GetString());
+						thisMapPopfiles.erase(std::remove(thisMapPopfiles.begin(), thisMapPopfiles.end(), kv_mission->GetString()), thisMapPopfiles.end());
 					}
 					else {
 						auto filter = std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript);
@@ -4692,17 +4707,18 @@ namespace Mod::Pop::PopMgr_Extensions
 		DETOUR_MEMBER_CALL();
 	}
 
-	DETOUR_DECL_STATIC(void, tf_mvm_popfile, const CCommand& args)
+	DETOUR_DECL_MEMBER(bool, CPopulationManager_FindPopulationFileByShortName, const char *missionName, CUtlString &outFullPath)
 	{
-
-		if (vote_tf_mvm_popfile_time + 10 > gpGlobals->curtime && vote_tf_mvm_popfile_time <= gpGlobals->curtime && args.ArgC() > 1) {
+		// No voting for missions that are not on the list
+		if (vote_tf_mvm_popfile_time + 10 > gpGlobals->curtime && vote_tf_mvm_popfile_time <= gpGlobals->curtime) {
 			CUtlVector<CUtlString> vec;
 			CPopulationManager::FindDefaultPopulationFileShortNames(vec);
-			if (vec.Find(args[1]) == -1 && !(FStrEq(args[1], STRING(gpGlobals->mapname)) && vec.Find("normal") != -1)) {
-				return;
+			if (vec.Find(missionName) == -1 && !(FStrEq(missionName, STRING(gpGlobals->mapname)) && vec.Find("normal") != -1)) {
+				return false;
 			}
 		}
-		DETOUR_STATIC_CALL(args);
+
+		return DETOUR_MEMBER_CALL(missionName, outFullPath);
 	}
 
 	DETOUR_DECL_MEMBER(void, CTFPlayer_DropCurrencyPack, int pack, int amount, bool forcedistribute, CTFPlayer *moneymaker )
@@ -4956,7 +4972,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto player = ToTFBot(ents->Tail());
 			if (player != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-				Util::Lua::LEntityAlloc(scriptManager->GetState(), player);
+				::Util::Lua::LEntityAlloc(scriptManager->GetState(), player);
 				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
 				lua_newtable(scriptManager->GetState());
 				int idx = 1;
@@ -4978,7 +4994,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			auto entity = ents->Tail();
 			if (entity != nullptr) {
 				auto scriptManager = state.m_ScriptManager->GetOrCreateEntityModule<Mod::Etc::Mapentity_Additions::ScriptModule>("script");
-				Util::Lua::LEntityAlloc(scriptManager->GetState(), entity);
+				::Util::Lua::LEntityAlloc(scriptManager->GetState(), entity);
 				lua_pushinteger(scriptManager->GetState(), TFObjectiveResource()->m_nMannVsMachineWaveCount);
 				scriptManager->CallGlobalCallback("OnWaveSpawnTank", 2, 0);
 			}
@@ -5042,7 +5058,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				int isint = 0;
 				int result = lua_tointegerx(scriptManager->GetState(), -2, &isint);
 				if (result != -1 && isint) {
-                    auto vec = Util::Lua::LVectorGetNoCheckNoInline(scriptManager->GetState(), -1);
+                    auto vec = ::Util::Lua::LVectorGetNoCheckNoInline(scriptManager->GetState(), -1);
 					if (vec != nullptr) {
 						vSpawnPosition = *vec;
 					}
@@ -6638,6 +6654,7 @@ namespace Mod::Pop::PopMgr_Extensions
 				state.m_BluHumanInfiniteCloak.Set(subkey->GetBool());
 			} else if (FStrEq(name, "BluPlayersAreRobots")) {
 				state.m_bBluPlayersRobots = subkey->GetBool();
+				state.m_FixupBluSounds.Set(true);
 			} else if (FStrEq(name, "RedPlayersAreRobots")) {
 				state.m_bRedPlayersRobots = subkey->GetBool();
 			} else if (FStrEq(name, "FixSetCustomModelInput")) {
@@ -7111,7 +7128,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_PlayerRunCommand,					 "CTFPlayer::PlayerRunCommand");
 			MOD_ADD_DETOUR_MEMBER(CTFGameMovement_PreventBunnyJumping,			 "CTFGameMovement::PreventBunnyJumping");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_PlayerKilled,                     "CTFGameRules::PlayerKilled");
-			MOD_ADD_DETOUR_MEMBER(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup [clone]");
+			//MOD_ADD_DETOUR_STATIC(CTFGameRules_DropSpellPickup,                  "CTFGameRules::DropSpellPickup [clone]");
 			MOD_ADD_DETOUR_MEMBER(CTFGameRules_IsUsingSpells,                    "CTFGameRules::IsUsingSpells");
 			MOD_ADD_DETOUR_MEMBER_PRIORITY(CTFPlayer_ReapplyItemUpgrades,        "CTFPlayer::ReapplyItemUpgrades", LOWEST);
 			MOD_ADD_DETOUR_STATIC(CTFReviveMarker_Create,                        "CTFReviveMarker::Create");
@@ -7276,8 +7293,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			
 			// Remove banned missions from the list
 			MOD_ADD_DETOUR_STATIC(CPopulationManager_FindDefaultPopulationFileShortNames, "CPopulationManager::FindDefaultPopulationFileShortNames");
+			MOD_ADD_DETOUR_MEMBER(CPopulationManager_FindPopulationFileByShortName, "CPopulationManager::FindPopulationFileByShortName");
 			MOD_ADD_DETOUR_MEMBER(CMannVsMachineChangeChallengeIssue_ExecuteCommand, "CMannVsMachineChangeChallengeIssue::ExecuteCommand");
-			MOD_ADD_DETOUR_STATIC(tf_mvm_popfile, "tf_mvm_popfile");
 
 			//MOD_ADD_DETOUR_MEMBER(CPopulationManager_Spawn,             "CPopulationManager::Spawn");
 			//MOD_ADD_DETOUR_MEMBER(CTFBaseRocket_SetDamage, "CTFBaseRocket::SetDamage");
@@ -7328,11 +7345,10 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (gpGlobals->maxClients >= MAX_PLAYERS) return true;
 
 			FileFindHandle_t missionHandle;
-			char poppathfind[256];
-			snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s_*.pop", map);
-			for (const char *missionName = filesystem->FindFirstEx(poppathfind, "GAME", &missionHandle);
+			for (const char *missionName = filesystem->FindFirstEx("scripts/population/*.pop", "GAME", &missionHandle);
 							missionName != nullptr; missionName = filesystem->FindNext(missionHandle)) {
-				
+				if (!StringHasPrefix(missionName, map)) continue;
+
 				char poppath[256];
 				snprintf(poppath, sizeof(poppath), "%s%s","scripts/population/", missionName);
 				KeyValues *kv = new KeyValues("kv");
@@ -7350,19 +7366,6 @@ namespace Mod::Pop::PopMgr_Extensions
 				kv->deleteThis();
 			}
 			filesystem->FindClose(missionHandle);
-			snprintf(poppathfind, sizeof(poppathfind), "scripts/population/%s.pop", map);
-			KeyValues *kv = new KeyValues("kv");
-			kv->UsesConditionals(false);
-			if (kv->LoadFromFile(filesystem, poppathfind)) {
-				FOR_EACH_SUBKEY(kv, subkey) {
-
-					if (FStrEq(subkey->GetName(), "AllowBotExtraSlots") && subkey->GetBool() ) {
-						kv->deleteThis();
-						return true;
-					}
-				}
-			}
-			kv->deleteThis();
 
 			return false;
 		}

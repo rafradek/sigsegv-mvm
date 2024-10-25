@@ -1484,7 +1484,7 @@ int _V_UCS2ToUTF8( const ucs2 *pUCS2, char *pUTF8, int cubDestSizeInBytes )
 	// under win32 wchar_t == ucs2, sigh
 	int cchResult = WideCharToMultiByte( CP_UTF8, 0, pUCS2, -1, pUTF8, cubDestSizeInBytes, NULL, NULL );
 #elif defined(POSIX)
-	iconv_t conv_t = iconv_open( "UTF-8", "UCS-2LE" );
+	iconv_t conv_t = iconv_open( "UTF-8", "UTF-16LE" );
 	size_t cchResult = -1;
 
 	// pUCS2 will be null-terminated so use that to work out the input

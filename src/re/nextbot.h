@@ -351,6 +351,7 @@ template<class Actor> extern MemberFuncThunk<      Action<Actor> *, AR,         
 template<class Actor> extern MemberFuncThunk<const Action<Actor> *, char *,           char[256], const Action<Actor> *>                             ft_Action_BuildDecoratedName;
 //template<class Actor> extern MemberFuncThunk<const Action<Actor> *, char *>                                                                          ft_Action_DebugString;
 template<class Actor> extern MemberFuncThunk<const Action<Actor> *, void>                                                                            ft_Action_PrintStateToConsole;
+template<class Actor> extern MemberFuncThunk<const Action<Actor> *, void>                                                                            ft_Action_DeleteThis;
 
 /* Action<CTFBot> */
 template<class Actor> INextBotEventResponder *Action<Actor>::FirstContainedResponder() const                                                                    { return ft_Action_INER_FirstContainedResponder       <Actor>(this);                           }
@@ -448,8 +449,9 @@ template<class Actor> ActionResult<Actor> Action<Actor>::InvokeOnResume(Actor *a
 template<class Actor> char *Action<Actor>::BuildDecoratedName(char buf[256], const Action<Actor> *action) const                                                { return ft_Action_BuildDecoratedName                 <Actor>(this, buf, action);              }
 template<class Actor> char *Action<Actor>::DebugString() const                                                                                                  { return "Actor"; }
 template<class Actor> void Action<Actor>::PrintStateToConsole() const                                                                                           {        ft_Action_PrintStateToConsole                <Actor>(this);                           }
+template<class Actor> void Action<Actor>::DeleteThis()                                                                                                        {        ft_Action_DeleteThis                        <Actor>(this);                           }
 
-#if defined __GNUC__ && !defined __clang__
+#if defined __GNUC__ || defined __clang__
 
 /* ActionStub: provides a base for interoperating with real Action<T> objects in the game */
 template<typename T>

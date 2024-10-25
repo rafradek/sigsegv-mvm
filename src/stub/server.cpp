@@ -29,3 +29,4 @@ MemberFuncThunk<CNetworkStringTable *, void>                   CNetworkStringTab
 
 MemberFuncThunk<CNetChan *, bool, const char *> CNetChan::ft_IsFileInWaitingList    ("CNetChan::IsFileInWaitingList");
 MemberFuncThunk<CNetChan *, void, bool>         CNetChan::ft_SetFileTransmissionMode("CNetChan::SetFileTransmissionMode");
+StaticFuncThunk<bool, const char*>              CNetChan::ft_IsValidFileForTransfer ("CNetChan::IsValidFileForTransfer");

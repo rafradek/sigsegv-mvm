@@ -6835,6 +6835,9 @@ namespace Mod::Attr::Custom_Attributes
 	{
 		int cannotPickup = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(player, cannotPickup, cannot_pickup_spells);
+		if (cannotPickup != 0) {
+			return false;
+		}
         return DETOUR_MEMBER_CALL(player);
     }
 	void ChangeBuildingProperties(CTFPlayer *player, CBaseObject *obj);

@@ -1107,13 +1107,10 @@ namespace Mod::Pop::Wave_Extensions
 			SelectLoopSound(data);
 		}
 	}
-	
-	DETOUR_DECL_MEMBER(bool, CWave_IsDoneWithNonSupportWaves)
-	{
-		bool done = DETOUR_MEMBER_CALL();
-		
-		auto wave = reinterpret_cast<CWave *>(this);
-		
+
+	bool IsDoneWithNonSupport(CWave *wave) {
+
+		bool done = true;
 		auto it = waves.find(wave);
 		if (it != waves.end()) {
 			WaveData& data = (*it).second;
@@ -1149,6 +1146,12 @@ namespace Mod::Pop::Wave_Extensions
 		}
 		
 		return done;
+	}
+	
+	DETOUR_DECL_MEMBER(bool, CWave_IsDoneWithNonSupportWaves)
+	{
+		REG_WRAPPER_ALL
+		return DETOUR_MEMBER_CALL() && IsDoneWithNonSupport(reinterpret_cast<CWave *>(this));
 	}
 	CWave *last_wave;
 	DETOUR_DECL_MEMBER(void, CTeamplayRoundBasedRules_State_Enter, gamerules_roundstate_t newState)

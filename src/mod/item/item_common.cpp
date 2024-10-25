@@ -12,22 +12,6 @@ std::vector<ItemDefLanguage> g_ItemLanguages;
 // game language name -> sourcemod language name
 // First language is default language
 std::vector<std::pair<std::string, std::string>> g_LangFileName {
-    // {"english","en"},
-    // {"brazilian","pt"},
-    // {"portuguese","pt_p"},
-    // {"bulgarian","bg"},
-    // {"czech","cze"},
-    // {"danish","da"},
-    // {"finnish","fi"},
-    // {"german","de"},
-    // {"greek","el"},
-    // {"hungarian","hu"},
-    // {"italian","it"},
-    // {"japanese","jp"},
-    // {"korean","ko"},
-    // {"latam","es"},
-    // {"norwegian","no"},
-    // {"polish","pl"}
 
     {"english","english"},
     {"brazilian","brazilian"},

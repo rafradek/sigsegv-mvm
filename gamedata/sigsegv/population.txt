@@ -68,6 +68,7 @@
 				"CPopulationManager::SetPopulationFilename"                       "_ZN18CPopulationManager21SetPopulationFilenameEPKc"
 				"CPopulationManager::GetPlayerCurrencySpent"                      "_ZN18CPopulationManager22GetPlayerCurrencySpentEP9CTFPlayer"
 				"CPopulationManager::FindOrAddPlayerUpgradeHistory"               "_ZN18CPopulationManager29FindOrAddPlayerUpgradeHistoryE8CSteamID"
+				"CPopulationManager::FindPopulationFileByShortName"               "_ZN18CPopulationManager29FindPopulationFileByShortNameEPKcR10CUtlString"
 				
 				
 				"CMissionPopulator::~CMissionPopulator [D0]"      "_ZN17CMissionPopulatorD0Ev"

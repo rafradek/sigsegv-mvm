@@ -3,7 +3,7 @@
 
 
 #if defined __clang__
-#error TODO
+#include <cxxabi.h>
 #elif defined __GNUC__
 #include <cxxabi.h>
 #elif defined _MSC_VER
@@ -129,11 +129,7 @@ template<class C, typename RET, typename... PARAMS> using MemberPtrTypeRegcall  
 template<class C, typename RET, typename... PARAMS> using MemberPtrTypeConstRegcall = RET (C::*)(PARAMS...) const __gcc_regcall;
 #endif
 
-#if defined __clang__
-
-#error TODO
-
-#elif defined __GNUC__
+#if defined __clang__ || defined __GNUC__
 
 template<class C, typename RET, typename... PARAMS>
 union MemberPtrUnion

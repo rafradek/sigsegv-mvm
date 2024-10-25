@@ -160,7 +160,7 @@ namespace Mod::Etc::Mapentity_Additions
         entity->AddCustomOutput(namestr.c_str(), value);
         variant_t variant;
         variant.SetString(AllocPooledString(value));
-        SetEntityVariable(entity, ANY, namestr, variant, 0, -1);
+        SetEntityVariable(entity, VARIABLE, namestr, variant, 0, -1);
 
         if (FStrEq(name, "modules")) {
             std::string str(value);

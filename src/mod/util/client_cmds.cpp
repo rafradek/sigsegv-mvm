@@ -748,7 +748,7 @@ namespace Mod::Util::Client_Cmds
 
 			ModCommandResponse("Missing bones on class %d\n", i);
 			for (auto &string : bones) {
-				ModCommandResponse("%s\n", string);
+				ModCommandResponse("%s\n", string.c_str());
 			}
 		}
 		//engine->ServerCommand(CFmtStr("ce_mvm_equip_itemname %d \"%s\"\n", ENTINDEX(player), args[1]));
@@ -1708,12 +1708,12 @@ namespace Mod::Util::Client_Cmds
 		Evaluation::GetFunctionInfoStrings(functions);
 		for (auto &function : functions) {
 			if (buf.size() + function.size() > 1000) {
-				ModCommandResponse("%s", buf);
+				ModCommandResponse("%s", buf.c_str());
 				buf.clear();
 			}
 			buf += function;
 		}
-		ModCommandResponse("%s", buf);
+		ModCommandResponse("%s", buf.c_str());
 	}
 
 	void CC_Expression_Vars(CTFPlayer* player, const CCommand& args)
@@ -1723,12 +1723,12 @@ namespace Mod::Util::Client_Cmds
 		Evaluation::GetVariableStrings(vars);
 		for (auto &var : vars) {
 			if (buf.size() + var.size() > 1000) {
-				ModCommandResponse("%s", buf);
+				ModCommandResponse("%s", buf.c_str());
 				buf.clear();
 			}
 			buf += var;
 		}
-		ModCommandResponse("%s", buf);
+		ModCommandResponse("%s", buf.c_str());
 	}
 
 	int cpu_show_player[MAX_PLAYERS + 1] {};

@@ -299,6 +299,45 @@ private:
 	
 	static inline std::map<void *, CDetouredFunc> s_FuncMap;
 };
+
+// x64 srcds uses an optimization which allows callee registers to be reused after function call if the compiler can detect they are not being used. This makes many detours potentially unsafe without wrapping callee registers first
+class RegWrapper {
+public:
+	RegWrapper() {
+        asm("push %rdi\n"
+            "push %rsi\n"
+            "push %rdx\n"
+            "push %rcx\n"
+            "push %r8\n"
+            "push %r9\n");
+    }
+    ~RegWrapper() {
+        asm("pop %r9\n"
+            "pop %r8\n"
+            "pop %rcx\n"
+            "pop %rdx\n"
+            "pop %rsi\n"
+            "pop %rdi\n");
+    }
+};
+class RegWrapper_rsi {
+public:
+	RegWrapper_rsi() {
+        asm("push %rsi\n");
+    }
+    ~RegWrapper_rsi() {
+        asm("pop %rsi\n");
+    }
+};
+
+#ifdef PLATFORM_64BITS
+#define REG_WRAPPER(reg) RegWrapper_##reg _regwrapper_##reg;
+#define REG_WRAPPER_ALL RegWrapper _regwrapper;
+#else
+#define REG_WRAPPER(reg)
+#define REG_WRAPPER_ALL
+#endif
+
 #if !defined(_WINDOWS) || defined(PLATFORM_64BITS)
 #define DETOUR_MEMBER_CALL(...) (Actual)(this, ## __VA_ARGS__)
 #else
