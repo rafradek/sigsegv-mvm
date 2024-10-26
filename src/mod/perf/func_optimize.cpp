@@ -682,6 +682,7 @@ namespace Mod::Perf::Func_Optimize
 		DETOUR_MEMBER_CALL(whoFired, weapon);
 	}
 
+#ifdef SE_IS_TF2
     DETOUR_DECL_MEMBER(bool, CTFPlayer_WantsLagCompensationOnEntity, const CBasePlayer *target, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits)
 	{
 		auto player = reinterpret_cast<CTFPlayer *>(this);
@@ -736,6 +737,7 @@ namespace Mod::Perf::Func_Optimize
 		DETOUR_MEMBER_CALL();
         coneOfAttack = -1.0f;
 	}
+#endif
 
     class CMod : public IMod, public IModCallbackListener
 	{

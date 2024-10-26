@@ -18,7 +18,9 @@
 #endif
 #include "version.h"
 #include "convar_restore.h"
+#ifdef SE_IS_TF2
 #include "vscript/ivscript.h"
+#endif
 //#include "entity.h"
 
 CExtSigsegv g_Ext;
@@ -236,9 +238,11 @@ bool CExtSigsegv::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength
 	GET_IFACE_OPTIONAL(Engine, debugoverlay, VDEBUG_OVERLAY_INTERFACE_VERSION);
 	GET_IFACE_OPTIONAL(Engine, enginetools,  VENGINETOOL_INTERFACE_VERSION);
 
+#ifdef VSCRIPT_INTERFACE_VERSION
 	if (VScriptManagerFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(VScriptManager, scriptManager,  VSCRIPT_INTERFACE_VERSION);
 	}
+#endif
 	
 	if (SoundEmitterSystemFactory() != nullptr) {
 		GET_IFACE_OPTIONAL(SoundEmitterSystem, soundemitterbase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);

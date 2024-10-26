@@ -505,8 +505,6 @@ for sdk_name in Extension.sdks:
     if builder.options.optimize_mods_only:
       binary.compiler.defines += ['OPTIMIZE_MODS_ONLY']
 
-      binary.sources += ['/fdf']
-
     ## build libstrcompat
     #if builder.target.platform == 'linux':
     #  _, libstrcompat = builder.AddCommand(

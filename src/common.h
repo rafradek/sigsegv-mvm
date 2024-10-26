@@ -135,6 +135,8 @@ class IDedicatedExports;
 
 class IMDLCache;
 
+class IScriptManager;
+
 namespace SourceMod {
 	class IExtensionManager;
 }
