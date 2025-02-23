@@ -9,10 +9,10 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 		0x83, 0xf8, 0x03,                    // +0x0005 cmp     eax, 3
 		0x0f, 0x85, 0xd0, 0xfe, 0xff, 0xff,  // +0x0008 jnz     loc_11DF4A7
 #else
-		0xe8, 0x1d, 0x6d, 0xba, 0xff,        // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
-		0x83, 0xc4, 0x10,                    // +0x0005 add     esp, 10h
-		0x83, 0xf8, 0x03,                    // +0x0008 cmp     eax, 3
-		0x0f, 0x85, 0xc3, 0xfe, 0xff, 0xff,  // +0x000b jnz     loc_F1DCA2
+		0xe8, 0x8d, 0x05, 0x94, 0xff,  // +0x0000 call    _ZNK11CBaseEntity13GetTeamNumberEv; CBaseEntity::GetTeamNumber(void)
+		0x83, 0xc4, 0x10,              // +0x0005 add     esp, 10h
+		0x83, 0xf8, 0x03,              // +0x0008 cmp     eax, 3
+		0x75, 0x9b,                    // +0x000b jnz     short loc_CEAB46
 #endif
 	};
 	
@@ -35,7 +35,7 @@ namespace Mod::MvM::Blu_Velocity_Limit_Remove
 			//buf.SetDword(0x00 +1, (uint32_t)AddrManager::GetAddr("CBaseEntity::GetTeamNumber"));
 			mask[0x05 + 2] = 0x00;
 			mask.SetDword(0x00 + 1, 0x00000000);
-			mask.SetDword(0x0b + 2, 0x00000000);
+			mask[0x0b + 1] = 0x00;
 #endif
 
 			return true;

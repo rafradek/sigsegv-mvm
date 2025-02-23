@@ -108,8 +108,8 @@
 				
 				"CTFFlameThrower::SetWeaponState"
 				{
-					type "sym regex"
-					sym  "_ZN15CTFFlameThrower14SetWeaponStateEi\\.part\\..*"
+					type "sym"
+					sym  "_ZN15CTFFlameThrower14SetWeaponStateEi"
 				}
 				
 				"CBaseAnimating::GetBoneTransform"

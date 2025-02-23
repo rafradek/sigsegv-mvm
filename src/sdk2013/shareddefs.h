@@ -11,8 +11,6 @@
 #pragma once
 #endif
 
-#define _SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H 1
-
 #define TICK_INTERVAL			(gpGlobals->interval_per_tick)
 
 

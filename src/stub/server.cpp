@@ -10,6 +10,7 @@ MemberFuncThunk<CClientFrameManager *, void> CClientFrameManager::ft_RemoveOldes
 MemberFuncThunk<CHLTVServer *, void, CBaseClient *> CHLTVServer::ft_StartMaster("CHLTVServer::StartMaster");
 
 MemberFuncThunk<CBaseServer *, CBaseClient *, const char *> CBaseServer::ft_CreateFakeClient("CBaseServer::CreateFakeClient");
+MemberFuncThunk<CBaseServer *, void>                   CBaseServer::ft_RunFrame("CBaseServer::RunFrame");
 
 MemberVFuncThunk<CBaseServer *, float>                  CBaseServer::vt_GetCPUUsage    (TypeName<CBaseServer>(), "CBaseServer::GetCPUUsage");
 MemberVFuncThunk<CBaseServer *, void, int>              CBaseServer::vt_UserInfoChanged(TypeName<CBaseServer>(), "CBaseServer::UserInfoChanged");

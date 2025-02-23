@@ -4616,16 +4616,24 @@ namespace Mod::Pop::PopMgr_Extensions
 			FOR_EACH_SUBKEY(kv, kv_mission) {
 				auto name = kv_mission->GetName();
 				if (name[0] == '*' || FStrEq(name, map) || (name[strlen(name)-1] == '*' && V_strncmp(name, map, strlen(name)-1))) {
-					if (kv_mission->GetString()[0] != '|') {
-						thisMapPopfiles.erase(std::remove(thisMapPopfiles.begin(), thisMapPopfiles.end(), kv_mission->GetString()), thisMapPopfiles.end());
-					}
-					else {
+					if (kv_mission->GetString()[0] == '-' ) {
 						auto filter = std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript);
 						for (auto it = thisMapPopfiles.end() - 1; it != thisMapPopfiles.begin()-1; it--) {
 							if (std::regex_match(*it, filter, std::regex_constants::match_any)) {
 								thisMapPopfiles.erase(it);
 							}
 						}
+					}
+					else if (kv_mission->GetString()[0] == '+') {
+						auto filter = std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript);
+						for (auto it = thisMapPopfiles.end() - 1; it != thisMapPopfiles.begin()-1; it--) {
+							if (!std::regex_match(*it, filter, std::regex_constants::match_any)) {
+								thisMapPopfiles.erase(it);
+							}
+						}
+					}
+					else {
+						thisMapPopfiles.erase(std::remove(thisMapPopfiles.begin(), thisMapPopfiles.end(), kv_mission->GetString()), thisMapPopfiles.end());
 					}
 				}
 			}
@@ -4637,6 +4645,7 @@ namespace Mod::Pop::PopMgr_Extensions
 	{
 		std::vector<std::string> bannedMissions;
 		std::vector<std::regex> bannedMissionsRegex;
+		std::vector<std::regex> bannedMissionsRegexInclude;
 
 		auto map = STRING(gpGlobals->mapname);
 		KeyValues *kv = LoadBannedMissionsFile();
@@ -4644,11 +4653,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			FOR_EACH_SUBKEY(kv, kv_mission) {
 				auto name = kv_mission->GetName();
 				if (name[0] == '*' || stricmp(name, map) == 0) {
-					if (kv_mission->GetString()[0] != '|') {
-						bannedMissions.push_back(kv_mission->GetString());
+					if (kv_mission->GetString()[0] == '-') {
+						bannedMissionsRegex.push_back(std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript));
+					}
+					else if (kv_mission->GetString()[0] == '+') {
+						bannedMissionsRegexInclude.push_back(std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript));
 					}
 					else {
-						bannedMissionsRegex.push_back(std::regex(kv_mission->GetString()+1, std::regex_constants::ECMAScript));
+						bannedMissions.push_back(kv_mission->GetString());
 					}
 				}
 			}
@@ -4684,8 +4696,14 @@ namespace Mod::Pop::PopMgr_Extensions
 			DETOUR_STATIC_CALL(vec);
 		}
 		
-		if (!bannedMissionsRegex.empty()) {
+		if (!bannedMissionsRegex.empty() || !bannedMissionsRegexInclude.empty()) {
 			FOR_EACH_VEC_BACK(vec, i) {
+				for (auto &regex : bannedMissionsRegexInclude) {
+					if (!std::regex_match(vec[i].Get(), regex, std::regex_constants::match_any)) {
+						vec.Remove(i);
+						break;
+					}
+				}
 				for (auto &regex : bannedMissionsRegex) {
 					if (std::regex_match(vec[i].Get(), regex, std::regex_constants::match_any)) {
 						vec.Remove(i);

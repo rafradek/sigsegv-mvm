@@ -353,6 +353,7 @@ namespace Mod::Etc::Workshop_Map_Fix
 				ScanWorkshopMaps();
 			}
 			if (removeOldLinksTimer.HasStarted() && removeOldLinksTimer.IsElapsed()) {
+				removeOldLinksTimer.Invalidate();
 				RemoveOldLinks();
 			}
 		}

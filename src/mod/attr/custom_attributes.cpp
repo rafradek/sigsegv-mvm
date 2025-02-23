@@ -5340,7 +5340,7 @@ namespace Mod::Attr::Custom_Attributes
 		DETOUR_MEMBER_CALL(state);
 	}
 	
-	DETOUR_DECL_MEMBER_CALL_CONVENTION(__gcc_regcall, void, CTFFlameThrower_SetWeaponState, int state)
+	DETOUR_DECL_MEMBER(void, CTFFlameThrower_SetWeaponState, int state)
 	{
 		auto flamethrower = reinterpret_cast<CTFFlameThrower *>(this);
 		if (state != flamethrower->m_iWeaponState) {

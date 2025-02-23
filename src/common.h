@@ -76,6 +76,9 @@
 	#define WARN_IGNORE__CLASS_MEMACCESS()
 #endif
 
+#if defined SE_IS_TF2 || defined SE_IS_CSS || defined SE_IS_SDK2013
+	#define SE_IS_SDK2013_BASED
+#endif
 
 class IVEngineServer;
 class IServerGameDLL;
@@ -382,11 +385,7 @@ WARN_RESTORE()
 WARN_IGNORE__SIGN_COMPARE()
 #include <utlbuffer.h>
 WARN_RESTORE()
-#ifdef SE_IS_TF2
-#include "sdk2013/shareddefs.h"
-#else
 #include <shareddefs.h>
-#endif
 #include <icvar.h>
 #include "sdk2013/convar.h"
 
@@ -416,11 +415,7 @@ WARN_RESTORE()
 #include <usercmd.h>
 #include <npcevent.h>
 #include <bitbuf.h>
-#ifdef SE_IS_TF2
-#include "sdk2013/eiface.h"
-#else
 #include <eiface.h>
-#endif
 #include "sdk2013/imaterialsystem_V081.h"
 #include <materialsystem/imaterial.h>
 #include <toolframework/itoolentity.h>
@@ -430,11 +425,7 @@ WARN_RESTORE()
 #include <ai_activity.h>
 #include <igameevents.h>
 #include <inetmessage.h>
-#ifdef SE_IS_TF2
-#include "sdk2013/inetchannel.h"
-#else
 #include <inetchannel.h>
-#endif
 #include <irecipientfilter.h>
 //#include <usermessages.h>
 #include <cdll_int.h>
@@ -544,7 +535,6 @@ WARN_RESTORE()
 #endif
 
 #ifdef SE_IS_TF2
-static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_SHAREDDEFS_H);
 #else
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_PLATFORM_H);
 static_assert(_SIGSEGV_SDK2013_OVERRIDE__PUBLIC_TIER0_COMMONMACROS_H);

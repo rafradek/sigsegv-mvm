@@ -72,6 +72,7 @@ class CBaseServer : public IServer
 {
 public:
     CBaseClient *CreateFakeClient(const char *name) { return ft_CreateFakeClient(this, name); }
+	void     RunFrame() { ft_RunFrame(this); }
 	
 	float    GetCPUUsage() { return vt_GetCPUUsage(this); }
 	void     UserInfoChanged(int slot) { vt_UserInfoChanged(this, slot); }
@@ -84,6 +85,7 @@ public:
 #endif
 private:
     static MemberFuncThunk<CBaseServer *, CBaseClient *, const char *>              ft_CreateFakeClient;
+	static MemberFuncThunk<CBaseServer *, void>                                     ft_RunFrame;
 	
 	static MemberVFuncThunk<CBaseServer *, float>                                     vt_GetCPUUsage;
 	static MemberVFuncThunk<CBaseServer *, void, int>                                 vt_UserInfoChanged;

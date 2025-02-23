@@ -3289,7 +3289,18 @@
 					type "sym"
 					sym  "_ZN8CNetChan22IsValidFileForTransferEPKc"
 				}
-				
+				"SV_Frame"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_Z8SV_Frameb"
+				}
+				"CBaseServer::RunFrame"
+				{
+					lib "engine"
+					type "sym"
+					sym  "_ZN11CBaseServer8RunFrameEv"
+				}
 			}
 			"addrs_group"
 			{

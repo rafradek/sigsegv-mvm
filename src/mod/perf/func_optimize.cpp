@@ -1,3 +1,4 @@
+
 #include "mod.h"
 #include "util/scope.h"
 #include "util/clientmsg.h"
@@ -821,7 +822,7 @@ namespace Mod::Perf::Func_Optimize
 #endif
             //MOD_ADD_DETOUR_MEMBER(CLagCompensationManager_BacktrackPlayer, "CLagCompensationManager::BacktrackPlayer");
             
-            
+
 		}
 
         virtual bool ShouldReceiveCallbacks() const override { return this->IsEnabled(); }

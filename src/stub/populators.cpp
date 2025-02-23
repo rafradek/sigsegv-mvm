@@ -7,20 +7,24 @@ static constexpr uint8_t s_Buf_CPopulationManager_m_RespecPoints[] = {
 #ifdef PLATFORM_64BITS
 	0x55,                                      // +0x0000 push    rbp
 	0x48, 0x89, 0xe5,                          // +0x0001 mov     rbp, rsp
-	0x41, 0x54,                                // +0x0004 push    r12
-	0x49, 0x89, 0xfc,                          // +0x0006 mov     r12, rdi
-	0x48, 0x81, 0xc7, 0xc0, 0x08, 0x00, 0x00,  // +0x0009 add     rdi, 8C0h
-	0x48, 0x83, 0xec, 0x08,                    // +0x0010 sub     rsp, 8
-	0xe8, 0x17, 0x3a, 0x00, 0x00,              // +0x0014 call    CUtlRBTree<...>::RemoveAll
+	0x41, 0x55,                                // +0x0004 push    r13
+	0x41, 0x54,                                // +0x0006 push    r12
+	0x53,                                      // +0x0008 push    rbx
+	0x48, 0x89, 0xfb,                          // +0x0009 mov     rbx, rdi
+	0x48, 0x81, 0xc7, 0xc0, 0x08, 0x00, 0x00,  // +0x000c add     rdi, 8C0h
+	0x48, 0x83, 0xec, 0x08,                    // +0x0013 sub     rsp, 8
+	0xe8, 0x04, 0x3a, 0x00, 0x00,              // +0x0017 call    CUtlRBTree<...>::RemoveAll
 #else
-	0x55,                               // +0000  push ebp
-	0x89, 0xe5,                         // +0001  mov ebp,esp
-	0x53,                               // +0003  push ebx
-	0x83, 0xec, 0x3c,                   // +0004  sub esp,0x3c
-	0x8b, 0x5d, 0x08,                   // +0007  mov ebx,[ebp+this]
-	0x8d, 0x83, 0xe4, 0x06, 0x00, 0x00, // +000A  lea eax,[ebx+0xVVVVVVVV]
-	0x50,                               // +0010  push eax
-	0xe8, 0xe6, 0x64, 0x00, 0x00,       // +0011  call CUtlRBTree<...>::RemoveAll
+	0x55,                                // +0x0000 push    ebp
+	0x89, 0xe5,                          // +0x0001 mov     ebp, esp
+	0x57,                                // +0x0003 push    edi
+	0x56,                                // +0x0004 push    esi
+	0x53,                                // +0x0005 push    ebx
+	0x83, 0xec, 0x18,                    // +0x0006 sub     esp, 18h
+	0x8b, 0x5d, 0x08,                    // +0x0009 mov     ebx, [ebp+this]
+	0x8d, 0x83, 0x14, 0x07, 0x00, 0x00,  // +0x000c lea     eax, [ebx+714h]
+	0x50,                                // +0x0012 push    eax
+	0xe8, 0x38, 0x38, 0x00, 0x00,        // +0x0013 call    CUtlRBTree<...>::RemoveAll
 #endif
 };
 
@@ -35,13 +39,13 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<int32_t>
 		buf.CopyFrom(s_Buf_CPopulationManager_m_RespecPoints);
 		
 #ifdef PLATFORM_64BITS
-		mask.SetRange(0x09 + 3, 4, 0x00);
-		mask.SetRange(0x10 + 3, 1, 0x00);
-		mask.SetRange(0x14 + 1, 4, 0x00);
+		mask.SetRange(0x0c + 3, 4, 0x00);
+		mask.SetRange(0x13 + 3, 1, 0x00);
+		mask.SetRange(0x17 + 1, 4, 0x00);
 #else
-		mask.SetRange(0x04 + 2, 1, 0x00);
-		mask.SetRange(0x0a + 2, 4, 0x00);
-		mask.SetRange(0x11 + 1, 4, 0x00);
+		mask.SetRange(0x06 + 2, 1, 0x00);
+		mask.SetRange(0x0c + 2, 4, 0x00);
+		mask.SetRange(0x13 + 1, 4, 0x00);
 #endif
 		
 		return true;
@@ -51,9 +55,9 @@ struct CExtract_CPopulationManager_m_RespecPoints : public IExtract<int32_t>
 	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
 	virtual uint32_t GetFuncOffMax() const override    { return 0x0000; }
 #ifdef PLATFORM_64BITS
-	virtual uint32_t GetExtractOffset() const override { return 0x0009 + 3; }
+	virtual uint32_t GetExtractOffset() const override { return 0x000c + 3; }
 #else
-	virtual uint32_t GetExtractOffset() const override { return 0x000a + 2; }
+	virtual uint32_t GetExtractOffset() const override { return 0x000c + 2; }
 #endif
 };
 
