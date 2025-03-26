@@ -26,6 +26,7 @@ WaveSchedule
 	AllowBombBuffsForPlayerCarriers 1 [$SIGSEGV] // Allow bomb buffs for player bomb carriers (default: 0)
 	AllowCivilianClass 1 [$SIGSEGV] // Allow selection of civilian class via random class or join_class civilian command. 2 to require join_class civilian (default: 0)
 	LoseTime 5 [$SIGSEGV] // How long the lose duration is in seconds (default: 5)
+	PlayerMiniBossMinRespawnTime 30 [$SIGSEGV] // Minimum respawn time for players with "is miniboss" attribute. -1 for default respawn times (default: -1)
 
 	//////////////////////////
 	// Credits options      //
