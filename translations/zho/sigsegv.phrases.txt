@@ -80,6 +80,10 @@
 		"#format"	"{1:s}"
 		"zho"		"與 {1} 升級互斥"
 	}
+	"This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)"
+	{
+		"zho"		"本任務使用自定義商店文件，請開啟服務器定制內容下載功能（允許所有來自服務器的定制內容或不下載定制聲音）"
+	}
 	"Custom upgrades notify"
 	{
 		"zho"		"本任務使用自定義商店文件，請開啟服務器定制內容下載功能（允許所有來自服務器的定制內容或不下載定制聲音）"
@@ -182,9 +186,9 @@
 	{
 		"zho"		"人物屬性"
 	}
-	"Character attributes:"
+	"Character Attributes:"
 	{
-		"zho"		"人物属性："
+		"zho"		"人物屬性"
 	}	
 	"The Upgrade Station is disabled!"
 	{

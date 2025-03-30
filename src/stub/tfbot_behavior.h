@@ -32,9 +32,9 @@ private:
 	CountdownTimer m_ctRecomputePath; // +0x9008
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotAttack, 0xaea0);
+SIZE_CHECK(CTFBotAttack, 0xaeb0);
 #else
-SIZE_CHECK(CTFBotAttack, 0x9014);
+SIZE_CHECK(CTFBotAttack, 0x901c);
 #endif
 
 
@@ -54,9 +54,9 @@ private:
 	CountdownTimer m_ctActionDuration; // +0x481c
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotSeekAndDestroy, 0x5790);
+SIZE_CHECK(CTFBotSeekAndDestroy, 0x5798);
 #else
-SIZE_CHECK(CTFBotSeekAndDestroy, 0x4828);
+SIZE_CHECK(CTFBotSeekAndDestroy, 0x482c);
 #endif
 
 
@@ -78,9 +78,9 @@ private:
 SIZE_CHECK(CTFBotFetchFlag, 0x4818);
 #else
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotFetchFlag, 0x5770);
+SIZE_CHECK(CTFBotFetchFlag, 0x5778);
 #else
-SIZE_CHECK(CTFBotFetchFlag, 0x4814);
+SIZE_CHECK(CTFBotFetchFlag, 0x4818);
 #endif
 #endif
 
@@ -99,9 +99,9 @@ private:
 	Action<CTFBot> *m_DoneAction;      // +0x4814
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotPushToCapturePoint, 0x5778);
+SIZE_CHECK(CTFBotPushToCapturePoint, 0x5780);
 #else
-SIZE_CHECK(CTFBotPushToCapturePoint, 0x4818);
+SIZE_CHECK(CTFBotPushToCapturePoint, 0x481c);
 #endif
 
 
@@ -129,9 +129,9 @@ private:
 	Vector             m_vecFollowPosition;  // +0x904c
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotMedicHeal, 0xaef8);
+SIZE_CHECK(CTFBotMedicHeal, 0xaf08);
 #else
-SIZE_CHECK(CTFBotMedicHeal, 0x9058);
+SIZE_CHECK(CTFBotMedicHeal, 0x9060);
 #endif
 
 
@@ -159,9 +159,9 @@ private:
 	CHandle<CTFBotHint>      m_hHint;           // +0x4858
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotSniperLurk, 0x57d8);
+SIZE_CHECK(CTFBotSniperLurk, 0x57e0);
 #else
-SIZE_CHECK(CTFBotSniperLurk, 0x485c);
+SIZE_CHECK(CTFBotSniperLurk, 0x4860);
 #endif
 
 class CTFBotMedicRetreat : public ActionStub<CTFBot>
@@ -177,9 +177,9 @@ private:
 	CountdownTimer m_ctLookForPatients; // +0x4808
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotMedicRetreat, 0x5770);
+SIZE_CHECK(CTFBotMedicRetreat, 0x5778);
 #else
-SIZE_CHECK(CTFBotMedicRetreat, 0x4814);
+SIZE_CHECK(CTFBotMedicRetreat, 0x4818);
 #endif
 
 
@@ -200,9 +200,9 @@ private:
 	bool           m_bCloaked;         // +0x4830
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotSpyInfiltrate, 0x57a0);
+SIZE_CHECK(CTFBotSpyInfiltrate, 0x57a8);
 #else
-SIZE_CHECK(CTFBotSpyInfiltrate, 0x4834); // +0x4831
+SIZE_CHECK(CTFBotSpyInfiltrate, 0x4838); // +0x4831
 #endif
 
 
@@ -277,9 +277,9 @@ public: // accessed by Debug:Suicide_Bomber mod
 	Vector               m_vecDetonatePos;           // +0x4844
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CTFBotMissionSuicideBomber, 0x57b8);
+SIZE_CHECK(CTFBotMissionSuicideBomber, 0x57c0);
 #else
-SIZE_CHECK(CTFBotMissionSuicideBomber, 0x4850);
+SIZE_CHECK(CTFBotMissionSuicideBomber, 0x4854);
 #endif
 
 

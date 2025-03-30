@@ -285,7 +285,7 @@
 	"regenerate stickbomb"
 	{
 		"en" "Regenerates caber on use"
-		"en" "Odnawia pal po użyciu"
+		"pl" "Odnawia pal po użyciu"
 	}
 	"custom jump particle"
 	{
@@ -302,7 +302,7 @@
 	"explosive bullets"
 	{
 		"en" "Fires explosive bullets"
-		"en" "Strzela wybuchowymi pociskami"
+		"pl" "Strzela wybuchowymi pociskami"
 	}
 	"mult projectile scale"
 	{
@@ -311,7 +311,7 @@
 	"mult projectile count"
 	{
 		"en" "Shoots (+-)%p% projectiles at once"
-		"pl" "Strzela (+-)%p% pociskami na raz"
+		"pl" "Strzela (+-)%p% pocisków na raz"
 	}
 	"projectile trail particle"
 	{
@@ -333,7 +333,7 @@
 	"can headshot"
 	{
 		"en" "Weapon can headshot"
-		"en" "Broń może krytycznie trafiać w głowę"
+		"pl" "Broń może krytycznie trafiać w głowę"
 	}
 	"no damage falloff"
 	{

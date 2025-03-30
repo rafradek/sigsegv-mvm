@@ -4,6 +4,7 @@
 #include "util/iterate.h"
 #include "mod/ai/npc_nextbot/npc_nextbot.h"
 #include "util/entity.h"
+#include "util/clientmsg.h"
 
 template <class Actor>
 ActionResult<Actor> CTFBotMoveTo<Actor>::OnStart(Actor *actor, Action<Actor> *action)
@@ -70,6 +71,7 @@ ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
                 CZombiePathCost cost_func((CZombie *) actor);
                 this->m_ChasePath.Update(nextbot, this->m_hTarget, cost_func, nullptr);
             }
+            this->m_ChasePath.ShortenFailTimer(0.5f);
         }
         else if (this->m_ctRecomputePath.IsElapsed()) {
             this->m_ctRecomputePath.Start(RandomFloat(1.0f, 3.0f));
@@ -88,6 +90,7 @@ ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
         }
     }
     else {
+        this->m_ChasePath.Invalidate();
         this->m_PathFollower.Invalidate();
     }
     if (!m_bDone) {
@@ -108,7 +111,7 @@ ActionResult<Actor> CTFBotMoveTo<Actor>::Update(Actor *actor, float dt)
         if (this->m_strOnDoneAttributes != "") {
             change_attributes_delay[actor] = this->m_strOnDoneAttributes;
             THINK_FUNC_SET(actor, ChangeAttributes, gpGlobals->curtime);
-        }
+    }
         if (this->m_strName != "") {
             variant_t variant;
             variant.SetString(AllocPooledString(this->m_strName.c_str()));

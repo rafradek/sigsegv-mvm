@@ -500,6 +500,7 @@ public:
 
 	void CheckInstantLoadoutRespawn()                              { ft_CheckInstantLoadoutRespawn  (this); }
 	void ForceRegenerateAndRespawn()                               { ft_ForceRegenerateAndRespawn  (this); }
+	void ForceRegenerateAndRespawnReset();
 	
 	void ApplyGenericPushbackImpulse(Vector &vec, CTFPlayer *inflictor) { ft_ApplyGenericPushbackImpulse (this, vec, inflictor); }
 	bool CanAirDash() const				    					        { return ft_CanAirDash (this); }

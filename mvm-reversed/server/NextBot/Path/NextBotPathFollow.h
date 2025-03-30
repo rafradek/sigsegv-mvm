@@ -41,9 +41,10 @@ private:
 	float m_flMinLookAheadDistance; // +0x4758
 	// 64 bit checked
 	PAD(pad_475c, 0x4);
-	CountdownTimer m_ctUnknown1; // +0x4760
-	CountdownTimer m_ctUnknown2; // +0x476c
-	CHandle<CBaseEntity> m_hHindrance; // +0x4778
+	void *ptr;
+	CountdownTimer m_ctUnknown1; // +0x4764
+	CountdownTimer m_ctUnknown2; // +0x4770
+	CHandle<CBaseEntity> m_hHindrance; // +0x477C
 	// 477c byte 0
 	// 4780 Vector
 	// 478c Vector
@@ -53,6 +54,6 @@ private:
 	// 47b4 byte
 	// 47b8 Vector
 	// 47c4 Vector
-	// 47d0 float 25.0f
-	PAD(pad_477c, 0x58);
+	// 47d4 float 25.0f
+	PAD(pad_4780, 0x58);
 };

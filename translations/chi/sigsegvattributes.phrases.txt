@@ -154,7 +154,7 @@
 	}
 	"penetration damage penalty"
 	{
- 	 	"chi" 	"(+-)%p%穿透伤害"
+ 	 	"chi" 	"穿透敌人后：(+-)%p%伤害"
 	}
 	"firing forward pull"
 	{
@@ -282,11 +282,11 @@
 	}
 	"no damage falloff"
 	{
- 	 	"chi" 	"禁止伤害下降或提升"
+ 	 	"chi" 	"伤害不受距离影响"
 	}
 	"force damage falloff"
 	{
- 	 	"chi" 	"强制伤害下降和提升"
+ 	 	"chi" 	"伤害受距离影响"
 	}
 	"no reduced damage rampup"
 	{

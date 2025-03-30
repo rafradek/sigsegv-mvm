@@ -79,6 +79,7 @@ sourceFiles += [
   'src/mod/perf/attributes_optimize.cpp',
   'src/mod/perf/css_bot_vision_optimize.cpp',
   'src/mod/perf/filesystem_optimize.cpp',
+  'src/mod/perf/idle_optimize.cpp',
   'src/mod/perf/input_optimize.cpp',
   'src/mod/perf/hltv_optimize.cpp',
   'src/mod/perf/flame_breakable_collision.cpp',

@@ -571,7 +571,7 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
                         snprintf(val_buf, sizeof(val_buf), "%d", display_value/100);
                     }
                     else {
-                        snprintf(val_buf, sizeof(val_buf), "%d.%.2g", display_value/100, (float) (abs(display_value) % 100) / 100.0f);
+                        snprintf(val_buf, sizeof(val_buf), "%d.%d", display_value/100, abs(display_value) % 100 / (display_value % 10 == 0 ? 10 : 1));
                     }
                 }
                 string.replace(val_pos, 3, val_buf);
@@ -632,7 +632,7 @@ bool FormatAttributeString(std::string &string, CEconItemAttributeDefinition *at
                         snprintf(val_buf, sizeof(val_buf), "%d", display_value/100);
                     }
                     else {
-                        snprintf(val_buf, sizeof(val_buf), "%d.%.2g", display_value/100, (float) (abs(display_value) % 100) / 100.0f);
+                        snprintf(val_buf, sizeof(val_buf), "%d.%d", display_value/100, abs(display_value) % 100 / (display_value % 10 == 0 ? 10 : 1));
                     }
                 }
             }
@@ -743,6 +743,23 @@ CON_COMMAND(sig_gen_rand, "")
     g_pSM->BuildPath(Path_SM,path_sm,sizeof(path_sm),"data/sig_gen.nut");
     filesystem->WriteFile(path_sm, "GAME", file);
 }
+std::vector<int> g_ItemDefForSkinNum;
+void LoadItemDefsForSkinIndex() 
+{
+    TIME_SCOPE2(f);
+    CEconItemView *view = CEconItemView::Create();
+    for(int i = 0; i < UINT16_MAX; i++) {
+        view->Init(i);
+        int skin = view->GetSkin(TF_TEAM_RED, false);
+        if (skin != -1 && (g_ItemDefForSkinNum.size() <= skin || g_ItemDefForSkinNum[skin] == 0) && skin == view->GetSkin(TF_TEAM_BLUE, false)) {
+            if (g_ItemDefForSkinNum.size() <= skin) {
+                g_ItemDefForSkinNum.resize(skin+1);
+            }
+            g_ItemDefForSkinNum[skin] = i;
+        }
+    }
+    CEconItemView::Destroy(view);
+}
 
 namespace Mod::Item::Common
 {   
@@ -775,7 +792,6 @@ namespace Mod::Item::Common
         return ret;
     }
 
-
     class CMod : public IMod
     {
     public:
@@ -791,6 +807,8 @@ namespace Mod::Item::Common
                 g_ItemLanguages.resize(translator->GetLanguageCount() * 2 + 1);
             }
             LoadItemNames(translator->GetServerLanguage());
+            LoadItemDefsForSkinIndex();
+            
         }
     };
     CMod s_Mod;

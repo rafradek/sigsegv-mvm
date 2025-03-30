@@ -48,6 +48,7 @@ public:
 	void SetSubType(int type)                              {        vt_SetSubType (this, type); }
 	void CheckReload()                                     {        vt_CheckReload (this); }
 	Activity ActivityOverride(Activity base, bool *required){return vt_ActivityOverride (this, base, required); }
+	void Lower()                                           {        vt_Lower(this); }
 	
 	
 	DECL_SENDPROP(float, m_flNextPrimaryAttack);
@@ -104,6 +105,7 @@ private:
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    vt_SetSubType;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_CheckReload;
 	static MemberVFuncThunk<      CBaseCombatWeapon *, Activity, Activity, bool *>   vt_ActivityOverride;
+	static MemberVFuncThunk<      CBaseCombatWeapon *, void>                         vt_Lower;
 	
 };
 

@@ -41,11 +41,15 @@ public:
 	CBaseEntity *GetThrower() const { return ft_GetThrower(this); }
 	void SetThrower(CBaseEntity *entity) { ft_SetThrower(this, entity); }
 
+	float GetDamageRadius() const { return vt_GetDamageRadius(this); }
+
 	DECL_SENDPROP(float, m_DmgRadius);
 
 private:
 	static MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> ft_GetThrower;
 	static MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> ft_SetThrower;
+
+	static MemberVFuncThunk<const CBaseGrenade *, float> vt_GetDamageRadius;
 };
 
 #ifdef SE_IS_TF2
@@ -73,6 +77,7 @@ public:
 	CBaseEntity *GetLauncher() const { return this->m_hLauncher; }
 
 	void Explode( trace_t *pTrace, CBaseEntity *pOther ) {        vt_Explode(this, pTrace, pOther); }
+	float GetRadius() const                              { return vt_GetRadius(this); }
 	int GetWeaponID() const                              { return vt_GetWeaponID(this); }
 
 	CBasePlayer *GetOwnerPlayer() const { return ft_GetOwnerPlayer(this); }
@@ -84,6 +89,7 @@ private:
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
 	
 	static MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> vt_Explode;
+	static MemberVFuncThunk<const CTFBaseRocket *, float>                    vt_GetRadius;
 	static MemberVFuncThunk<const CTFBaseRocket *, int>                      vt_GetWeaponID;
 
 	static MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> ft_GetOwnerPlayer;

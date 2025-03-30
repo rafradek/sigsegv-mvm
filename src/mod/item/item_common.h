@@ -26,6 +26,8 @@ public:
 extern std::vector<ItemDefLanguage> g_ItemLanguages;
 extern ItemDefLanguage *g_ItemDefaultLanguage;
 
+extern std::vector<int> g_ItemDefForSkinNum;
+
 static const char *loadoutStrings[] = 
 {
     // Weapons & Equipment

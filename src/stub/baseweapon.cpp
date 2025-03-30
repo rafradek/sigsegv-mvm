@@ -52,6 +52,7 @@ MemberVFuncThunk<      CBaseCombatWeapon *, int>                          CBaseC
 MemberVFuncThunk<      CBaseCombatWeapon *, void, int>                    CBaseCombatWeapon::vt_SetSubType(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::SetSubType");
 MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_CheckReload(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::CheckReload");
 MemberVFuncThunk<      CBaseCombatWeapon *, Activity, Activity, bool *>   CBaseCombatWeapon::vt_ActivityOverride(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::ActivityOverride");
+MemberVFuncThunk<      CBaseCombatWeapon *, void>                         CBaseCombatWeapon::vt_Lower(TypeName<CBaseCombatWeapon>(), "CBaseCombatWeapon::Lower");
 
 IMPL_SENDPROP(int,                        CBaseViewModel, m_nViewModelIndex, CBaseViewModel);
 IMPL_SENDPROP(CHandle<CBaseEntity>,       CBaseViewModel, m_hOwner,          CBaseViewModel);

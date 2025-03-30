@@ -29,13 +29,13 @@ enum NavDirType : int32_t;
 
 #ifdef PLATFORM_64BITS
 SIZE_CHECK(Path,         0x5668);
-SIZE_CHECK(PathFollower, 0x56F8);
-SIZE_CHECK(ChasePath,    0x5730);
+SIZE_CHECK(PathFollower, 0x5700);
+SIZE_CHECK(ChasePath,    0x5738);
 SIZE_CHECK(IPathCost,    0x0008);
 #else
 SIZE_CHECK(Path,         0x4754);
-SIZE_CHECK(PathFollower, 0x47d4);
-SIZE_CHECK(ChasePath,    0x4800);
+SIZE_CHECK(PathFollower, 0x47d8);
+SIZE_CHECK(ChasePath,    0x4804);
 SIZE_CHECK(IPathCost,    0x0004);
 #endif
 

@@ -154,7 +154,7 @@
 	}
 	"penetration damage penalty"
 	{
- 	 	"zho" 	"(+-)%p%穿透傷害"
+ 	 	"zho" 	"穿透敌人后：(+-)%p%傷害"
 	}
 	"firing forward pull"
 	{
@@ -282,11 +282,11 @@
 	}
 	"no damage falloff"
 	{
- 	 	"zho" 	"禁止傷害下降或提升"
+ 	 	"zho" 	"傷害不受距離影響"
 	}
 	"force damage falloff"
 	{
- 	 	"zho" 	"強制傷害下降和提升"
+ 	 	"zho" 	"傷害受到距離影響"
 	}
 	"no reduced damage rampup"
 	{

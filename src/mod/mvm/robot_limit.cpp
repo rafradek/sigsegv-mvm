@@ -100,7 +100,7 @@ namespace Mod::MvM::Robot_Limit
 		int maxAllowedSlot = GetMaxAllowedSlot();
 		for (int i = 0; i < mvm_bots.Count(); i++) {
 			if (ENTINDEX(mvm_bots[i]) > MAX_PLAYERS && ENTINDEX(mvm_bots[i]) > maxAllowedSlot) {
-				engine->ServerCommand(CFmtStr("kickid %d kick bot over the maximum allowed slot\n", mvm_bots[i]->GetUserID()));
+				engine->ServerCommand(CFmtStr("kickid %d kick bot over the maximum allowed slot [bot slot: %d, max slot: %d]\n", mvm_bots[i]->GetUserID(), ENTINDEX(mvm_bots[i]), maxAllowedSlot));
 				mvm_bots.Remove(i);
 				i--;
 			}

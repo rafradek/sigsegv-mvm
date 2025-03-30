@@ -80,6 +80,10 @@
 		"#format"	"{1:s}"
 		"chi"		"与 {1} 升级互斥"
 	}
+	"This server uses custom upgrades. Make sure you have enabled downloads in options (Download all files or Don't download sound files)"
+	{
+		"chi"		"本任务使用自定义商店文件，请开启服务器定制内容下载功能（允许所有来自服务器的定制内容或不下载定制声音）"
+	}
 	"Custom upgrades notify"
 	{
 		"chi"		"本任务使用自定义商店文件，请开启服务器定制内容下载功能（允许所有来自服务器的定制内容或不下载定制声音）"
@@ -182,9 +186,9 @@
 	{
 		"chi"		"人物属性"
 	}
-	"Character attributes:"
+	"Character Attributes:"
 	{
-		"chi"		"人物属性："
+		"chi"		"人物属性"
 	}	
 	"The Upgrade Station is disabled!"
 	{

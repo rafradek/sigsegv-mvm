@@ -3531,7 +3531,8 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (this->player->IsAlive())
 			{
 				if (PointInRespawnRoom(this->player, this->player->WorldSpaceCenter(), false)) {
-					player->ForceRegenerateAndRespawn();
+					player->ForceRegenerateAndRespawnReset();
+					
 				}
 				else if (state.m_bExtraLoadoutItemsAllowEquipOutsideSpawn) {
 					player->GiveDefaultItemsNoAmmo();
@@ -3629,7 +3630,7 @@ namespace Mod::Pop::PopMgr_Extensions
 			if (regenerate && this->player->IsAlive())
 			{
 				if (PointInRespawnRoom(this->player, this->player->WorldSpaceCenter(), false)) {
-					player->ForceRegenerateAndRespawn();
+					player->ForceRegenerateAndRespawnReset();
 				}
 				else if (state.m_bExtraLoadoutItemsAllowEquipOutsideSpawn) {
 					player->GiveDefaultItemsNoAmmo();

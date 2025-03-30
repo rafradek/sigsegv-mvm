@@ -43,9 +43,9 @@ public:
 	bool                 m_bOtherKilled;   // +0x4850
 };
 #ifdef PLATFORM_64BITS
-SIZE_CHECK(CEyeballBossIdle, 0x57c8); // 0x4851
+SIZE_CHECK(CEyeballBossIdle, 0x57d0); // 0x4851
 #else
-SIZE_CHECK(CEyeballBossIdle, 0x4854); // 0x4851
+SIZE_CHECK(CEyeballBossIdle, 0x4858); // 0x4851
 #endif
 
 class CEyeballBossDead : public Action<CEyeballBoss>

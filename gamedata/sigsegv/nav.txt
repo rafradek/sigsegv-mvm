@@ -234,6 +234,16 @@
 					sym  "_ZN30ISearchSurroundingAreasFunctor20IterateAdjacentAreasEP8CNavAreaS1_f"
 				}
 				
+				"Path::Compute<CTFBotPathCost> [ent]"
+				{
+					type "sym"
+					sym  "_ZN4Path7ComputeI14CTFBotPathCostEEbP8INextBotP20CBaseCombatCharacterRT_fb"
+				}
+				"Path::Compute<CTFBotPathCost> [vec]"
+				{
+					type "sym"
+					sym  "_ZN4Path7ComputeI14CTFBotPathCostEEbP8INextBotRK6VectorRT_fbb"
+				}
 			}
 		}
 	}

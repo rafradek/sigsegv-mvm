@@ -146,7 +146,7 @@ namespace Mod::Pop::Wave_Extensions
 				}
 			});
 			if (respawn) {
-				player->ForceRegenerateAndRespawn();
+				player->ForceRegenerateAndRespawnReset();
 			}
 
 		});

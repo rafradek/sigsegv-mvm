@@ -634,6 +634,25 @@ CEconEntity *CTFPlayer::GetEconEntityById(int id)
 	return value;
 }
 
+void CTFPlayer::ForceRegenerateAndRespawnReset()
+{
+	CTFWeaponBase *weapon = this->GetActiveTFWeapon();
+	if (weapon != nullptr) {
+		// Some weapons need to be manually reset before regenerating
+		if (this->m_Shared->InCond(TF_COND_AIMING)) {
+			if (rtti_cast<CTFMinigun *>(weapon) != nullptr || WeaponID_IsSniperRifle(weapon->GetWeaponID())) {
+				weapon->WeaponReset();
+			}
+		}
+
+		CWeaponMedigun *medigun = rtti_cast<CWeaponMedigun*>(weapon);
+		if (medigun != nullptr) {
+			medigun->Lower();
+		}
+	}
+	this->ForceRegenerateAndRespawn();
+}
+
 void CTFPlayer::GiveDefaultItemsNoAmmo()
 {
 	float ammoFraction[TF_AMMO_COUNT];

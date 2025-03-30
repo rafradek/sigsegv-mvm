@@ -366,6 +366,7 @@ namespace Mod::AI::NPC_Nextbot
             if (known->IsVisibleRecently()) {
                 CZombiePathCost cost_func((CZombie *) actor);
                 m_chasePath.Update(nextBot, target, cost_func, nullptr);
+                m_chasePath.ShortenFailTimer(0.5f);
             }
             else {
                 auto &lastKnownPosition = *known->GetLastKnownPosition();

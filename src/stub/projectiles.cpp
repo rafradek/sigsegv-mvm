@@ -103,6 +103,8 @@ IMPL_SENDPROP(float, CBaseGrenade, m_DmgRadius, CBaseGrenade);
 MemberFuncThunk<const CBaseGrenade *, CBaseEntity *> CBaseGrenade::ft_GetThrower("CBaseGrenade::GetThrower");
 MemberFuncThunk<CBaseGrenade *, void, CBaseEntity *> CBaseGrenade::ft_SetThrower("CBaseGrenade::SetThrower");
 
+MemberVFuncThunk<const CBaseGrenade *, float> CBaseGrenade::vt_GetDamageRadius(TypeName<CBaseGrenade>(), "CBaseGrenade::GetDamageRadius");
+
 #ifdef SE_IS_TF2
 MemberVFuncThunk<CTFBaseProjectile *, void, float> CTFBaseProjectile::vt_SetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::SetDamage");
 MemberVFuncThunk<CTFBaseProjectile *, float> CTFBaseProjectile::vt_GetDamage(TypeName<CTFBaseProjectile>(), "CTFBaseProjectile::GetDamage");
@@ -115,6 +117,7 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFBaseRocket, m_hLauncher,        CTFBaseRo
 
 MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> CTFBaseRocket::vt_Explode    (TypeName<CTFBaseRocket>(), "CTFBaseRocket::Explode");
 MemberVFuncThunk<const CTFBaseRocket *, int>                      CTFBaseRocket::vt_GetWeaponID(TypeName<CTFBaseRocket>(), "CTFBaseRocket::GetWeaponID");
+MemberVFuncThunk<const CTFBaseRocket *, float>                    CTFBaseRocket::vt_GetRadius  (TypeName<CTFBaseRocket>(), "CTFBaseRocket::GetRadius");
 
 MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> CTFBaseRocket::ft_GetOwnerPlayer("CTFBaseRocket::GetOwnerPlayer");
 

@@ -46,6 +46,7 @@ public:
 	float GetEffectBarProgress()             { return vt_GetEffectBarProgress(this); }
 	void ApplyOnHitAttributes(CBaseEntity *pVictimBaseEntity, CTFPlayer *pAttacker, const CTakeDamageInfo &info) { return vt_ApplyOnHitAttributes(this, pVictimBaseEntity, pAttacker, info); }
 	int GetSkin()                            { return vt_GetSkin(this); }
+	void WeaponReset()                       {        vt_WeaponReset(this); }
 	
 
 	DECL_SENDPROP(float,                m_flLastFireTime);
@@ -88,6 +89,7 @@ private:
 	static MemberVFuncThunk<CTFWeaponBase *, float> vt_GetEffectBarProgress;
 	static MemberVFuncThunk<CTFWeaponBase *, void, CBaseEntity *, CTFPlayer *, const CTakeDamageInfo &> vt_ApplyOnHitAttributes;
 	static MemberVFuncThunk<CTFWeaponBase *, int> vt_GetSkin;
+	static MemberVFuncThunk<CTFWeaponBase *, void> vt_WeaponReset;
 };
 
 class CTFWeaponBaseGun : public CTFWeaponBase {

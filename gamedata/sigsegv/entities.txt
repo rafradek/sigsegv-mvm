@@ -467,6 +467,7 @@
 				"CBaseCombatWeapon::Equip" "_ZN17CBaseCombatWeapon5EquipEP20CBaseCombatCharacter"
 				"CBaseCombatWeapon::Drop" "_ZN17CBaseCombatWeapon4DropERK6Vector"
 				"CBaseCombatWeapon::HasAmmo" "_ZN17CBaseCombatWeapon7HasAmmoEv"
+				"CBaseCombatWeapon::Lower" "_ZN17CBaseCombatWeapon5LowerEv"
 				"CBaseCombatWeapon::GetViewModel" "_ZNK17CBaseCombatWeapon12GetViewModelEi"
 				"CBaseCombatWeapon::GetWorldModel" "_ZNK17CBaseCombatWeapon13GetWorldModelEv"
 				"CBaseCombatWeapon::WeaponSound" "_ZN17CBaseCombatWeapon11WeaponSoundE13WeaponSound_tf"
@@ -539,6 +540,7 @@
 				"CTFWeaponBase::OnActiveStateChanged" "_ZN13CTFWeaponBase20OnActiveStateChangedEi"
 				"CTFWeaponBase::CanHolster" "_ZNK13CTFWeaponBase10CanHolsterEv"
 				"CTFWeaponBase::GetSkin" "_ZN13CTFWeaponBase7GetSkinEv"
+				"CTFWeaponBase::WeaponReset" "_ZN13CTFWeaponBase11WeaponResetEv"
 				
 
 				"CTFWeaponBaseGun::DoFireEffects"        "_ZN16CTFWeaponBaseGun13DoFireEffectsEv"
@@ -653,6 +655,7 @@
 				"CBaseGrenade::GetThrower" "_ZN12CBaseGrenade10GetThrowerEv"
 				"CBaseGrenade::SetDamage" "_ZN12CBaseGrenade9SetDamageEf"
 				"CBaseGrenade::SetThrower" "_ZN12CBaseGrenade10SetThrowerEP20CBaseCombatCharacter"
+				"CBaseGrenade::GetDamageRadius" "_ZN12CBaseGrenade15GetDamageRadiusEv"
 				"CBaseMultiplayerPlayer::ShouldRunRateLimitedCommand [str]" "_ZN22CBaseMultiplayerPlayer27ShouldRunRateLimitedCommandEPKc"
 				"CBaseObject::CanBeUpgraded" "_ZN11CBaseObject13CanBeUpgradedEP9CTFPlayer"
 				"CBaseObject::DetonateObject" "_ZN11CBaseObject14DetonateObjectEv"

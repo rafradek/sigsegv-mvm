@@ -55,7 +55,7 @@ namespace Mod::Attr::Custom_Attributes
 	GlobalThunk<void *> g_pFullFileSystem("g_pFullFileSystem");
 	GlobalThunk<IPredictionSystem> g_RecipientFilterPredictionSystem("g_RecipientFilterPredictionSystem");
 
-	float *fast_attribute_cache[2048] {};
+	float *fast_attribute_cache[MAX_EDICTS] {};
 
 	CBaseEntity *last_fast_attrib_entity = nullptr;
 	float *CreateNewAttributeCache(CBaseEntity *entity) {
@@ -218,6 +218,27 @@ namespace Mod::Attr::Custom_Attributes
 		float lastAttackTime;
 		float maxOverheal = 1.5f;
 
+	};
+
+	class ProjectileAttributesModule : public EntityModule
+	{
+	public:
+		ProjectileAttributesModule(CBaseEntity *entity) : EntityModule(entity) {}
+
+		float aoeDamage = 0.0f;
+		float aoeDamageRadius = 0.0f;
+		float aoeDamageTime = 0.0f;
+		int aoeDamageHitLimit = 0;
+		std::unordered_map<CBaseEntity *, int> aoeDamageHitCount;
+		int maxAoeTargets = 0;
+		float aoeKnockback = 0.0f;
+		float aoeKnockbackRadius = 0.0f;
+		float aoeKnockbackTime = 0.0f;
+		float aoeKnockbackUp = 0.0f;
+		float aoeKnockbackSide = 0.0f;
+		float aoeKnockbackForward = 0.0f;
+		int aoeKnockbackHitLimit = 0;
+		std::unordered_map<CBaseEntity *, int> aoeKnockbackHitCount;
 	};
 
 	DETOUR_DECL_MEMBER(void, CWeaponMedigun_HealTargetThink)
@@ -630,13 +651,134 @@ namespace Mod::Attr::Custom_Attributes
 		Ray_t ray;
 		ray.Init( this->GetAbsOrigin() - this->GetAbsVelocity() * gpGlobals->frametime, this->GetAbsOrigin(), Vector(-size,-size,-size), Vector(size,size,size) );
 		CBaseEntity *ents[256];
-		int count = UTIL_EntitiesAlongRay(ents, sizeof(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
+		int count = UTIL_EntitiesAlongRay(ents, ARRAYSIZE(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
 		for (int i = 0; i < count; ++i) {
 
 			if (ents[i] == this || ents[i] == this->GetOwnerEntity() || ents[i]->m_takedamage != DAMAGE_YES || !ents[i]->CollisionProp()->IsSolid()) continue;
 			this->Touch(ents[i]);
 		}
 		this->SetNextThink(gpGlobals->curtime+0.001f, "ProjectileHitRadius");
+	};
+
+	THINK_FUNC_DECL(ProjectileDamageRadius) {
+		auto mod = this->GetEntityModule<ProjectileAttributesModule>("projattrs");
+		float size = mod->aoeDamageRadius;
+		float damage = mod->aoeDamage;
+		int maxAoeTargets = mod->maxAoeTargets == 0 ? 256 : mod->maxAoeTargets;
+		float sizeSq = size * size;
+		CBaseProjectile *proj = reinterpret_cast<CBaseProjectile *>(this);
+		Ray_t ray;
+		ray.Init( this->GetAbsOrigin() - this->GetAbsVelocity() * gpGlobals->frametime, this->GetAbsOrigin(), Vector(-size,-size,-size), Vector(size,size,size) );
+		CBaseEntity *ents[256];
+		int count = UTIL_EntitiesAlongRay(ents, ARRAYSIZE(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
+		for (int i = 0; i < count; ++i) {
+			if (ents[i] == this || ents[i] == this->GetOwnerEntity() || ents[i]->GetTeamNumber() == this->GetTeamNumber() || ents[i]->m_takedamage != DAMAGE_YES || !ents[i]->CollisionProp()->IsSolid()) continue;
+
+			if (mod->aoeDamageHitLimit > 0 && mod->aoeDamageHitCount[ents[i]] > mod->aoeDamageHitLimit) continue;
+
+			Vector vecPos;
+			ents[i]->CollisionProp()->CalcNearestPoint(this->GetAbsOrigin(), &vecPos);
+			if ((this->GetAbsOrigin() - vecPos).LengthSqr() > sizeSq) continue;
+
+			ents[i]->TakeDamage(CTakeDamageInfo(this, this->GetOwnerEntity(), proj->GetOriginalLauncher(), vec3_origin, this->GetAbsOrigin(), damage, DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE));
+			if (mod->aoeDamageHitLimit > 0) {
+				mod->aoeDamageHitCount[ents[i]]++;
+			}
+
+			if (maxAoeTargets-- <= 0) break;
+		}
+		this->SetNextThink(gpGlobals->curtime + mod->aoeDamageTime, "ProjectileDamageRadius");
+	};
+
+	THINK_FUNC_DECL(ProjectileKnockbackRadius) {
+		auto mod = this->GetEntityModule<ProjectileAttributesModule>("projattrs");
+		float size = mod->aoeKnockbackRadius;
+		float damage = mod->aoeKnockback;
+		int maxAoeTargets = mod->maxAoeTargets == 0 ? 256 : mod->maxAoeTargets;
+		float sizeSq = size * size;
+		CBaseProjectile *proj = reinterpret_cast<CBaseProjectile *>(this);
+		Ray_t ray;
+		ray.Init( this->GetAbsOrigin() - this->GetAbsVelocity() * gpGlobals->frametime, this->GetAbsOrigin(), Vector(-size,-size,-size), Vector(size,size,size) );
+		CBaseEntity *ents[256];
+		int count = UTIL_EntitiesAlongRay(ents, ARRAYSIZE(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
+		Vector vecFront = proj->GetAbsVelocity().Normalized();
+		for (int i = 0; i < count; ++i) {
+			if (ents[i] == this || ents[i] == this->GetOwnerEntity() || ents[i]->GetTeamNumber() == this->GetTeamNumber() || ents[i]->m_takedamage != DAMAGE_YES || !ents[i]->CollisionProp()->IsSolid()) continue;
+
+			if (mod->aoeKnockbackHitLimit > 0 && mod->aoeKnockbackHitCount[ents[i]] > mod->aoeKnockbackHitLimit) continue;
+
+			Vector vecPos;
+			ents[i]->CollisionProp()->CalcNearestPoint(this->GetAbsOrigin(), &vecPos);
+			if ((this->GetAbsOrigin() - vecPos).LengthSqr() > sizeSq) continue;
+			
+			Vector direction = (ents[i]->WorldSpaceCenter() - this->GetAbsOrigin()).Normalized();
+
+			Vector vecForce = direction * damage + vecFront * mod->aoeKnockbackForward;
+			vecForce.z += mod->aoeKnockbackUp;
+
+			if (mod->aoeKnockbackSide > 0) {
+				Vector cross = vecFront.Cross(direction);
+				Vector right = vecFront.Cross(Vector(0,0,1)).Normalized();
+				vecForce += right * mod->aoeKnockbackSide * (cross.z > 0 ? -1 : 1);
+			}
+
+			auto playerHit = ToTFPlayer(ents[i]);
+
+			if (playerHit != nullptr) {
+				playerHit->ApplyGenericPushbackImpulse(vecForce, ToTFPlayer(this->GetOwnerEntity()));
+			}
+			else {
+				ents[i]->ApplyAbsVelocityImpulse(vecForce);
+			}
+			
+			if (mod->aoeKnockbackHitLimit > 0) {
+				mod->aoeKnockbackHitCount[ents[i]]++;
+			}
+
+			if (maxAoeTargets-- <= 0) break;
+		}
+		this->SetNextThink(gpGlobals->curtime + mod->aoeKnockbackTime, "ProjectileKnockbackRadius");
+	};
+
+	THINK_FUNC_DECL(ProximityBomb) {
+		auto rocket = rtti_cast<CTFBaseRocket *>(reinterpret_cast<CBaseEntity *>(this));
+		auto grenade = rocket != nullptr ? nullptr : rtti_cast<CTFWeaponBaseGrenadeProj *>(reinterpret_cast<CBaseEntity *>(this));
+		if (rocket == nullptr && grenade == nullptr) return;
+
+		float size = this->GetCustomVariableFloat<"proximitybombradius">();
+		if (rocket != nullptr) {
+			size *= rocket->GetRadius();
+		}
+		else {
+			size *= grenade->m_DmgRadius;
+		}
+		float sizeSq = size * size;
+		Ray_t ray;
+		ray.Init( this->GetAbsOrigin() - this->GetAbsVelocity() * gpGlobals->frametime, this->GetAbsOrigin(), Vector(-size,-size,-size), Vector(size,size,size) );
+		CBaseEntity *ents[256];
+		int count = UTIL_EntitiesAlongRay(ents, ARRAYSIZE(ents), ray, FL_CLIENT | FL_OBJECT | FL_NPC);
+		for (int i = 0; i < count; ++i) {
+			auto ent = ents[i];
+			if (ent == this || ent == this->GetOwnerEntity() || ent->GetTeamNumber() == this->GetTeamNumber() || ent->m_takedamage != DAMAGE_YES || !ent->CollisionProp()->IsSolid()) continue;
+			if (ent->MyCombatCharacterPointer() == nullptr) continue;
+			if (ToTFPlayer(ent) != nullptr && (ToTFPlayer(ent)->m_Shared->IsStealthed() || ToTFPlayer(ent)->m_Shared->InCond(TF_COND_DISGUISED))) continue;
+
+			Vector vecPos;
+			ent->CollisionProp()->CalcNearestPoint(this->GetAbsOrigin(), &vecPos);
+			if ((this->GetAbsOrigin() - vecPos).LengthSqr() > sizeSq) continue;
+
+			trace_t tr;
+			Vector vecSpot = this->GetAbsOrigin();
+			UTIL_TraceLine(vecSpot, vecSpot + Vector (0, 0, -32), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, &tr);
+			if (rocket != nullptr) {
+				rocket->Explode(&tr, GetWorldEntity());
+			}
+			else {
+				grenade->Explode(&tr, grenade->GetDamageType());
+			}
+			return;
+		}
+		this->SetNextThink(gpGlobals->curtime+0.001f, "ProximityBomb");
 	};
 
 
@@ -707,6 +849,7 @@ namespace Mod::Attr::Custom_Attributes
 	};
 
 
+
 	DETOUR_DECL_MEMBER(CBaseAnimating *, CTFWeaponBaseGun_FireProjectile, CTFPlayer *player)
 	{
 		auto weapon = reinterpret_cast<CTFWeaponBaseGun *>(this);
@@ -752,6 +895,7 @@ namespace Mod::Attr::Custom_Attributes
 				auto spreadMod = weapon->GetOrCreateEntityModule<AttackPatternModule>("attackpattern");
 				if (gpGlobals->curtime > spreadMod->resetPatternTime) {
 					spreadMod->shootNum = 0;
+					spreadMod->resetPatternTime = gpGlobals->curtime;
 				}
 
 				if (spreadPattern != nullptr) {
@@ -833,6 +977,45 @@ namespace Mod::Attr::Custom_Attributes
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, explodeTime, projectile_explode_time);
 				if (explodeTime != 0) {
 					proj->SetCustomVariable("explodetime", Variant(explodeTime));
+				}
+
+				float aoeDamage = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aoeDamage, projectile_radius_damage);
+				float aoeKnockbackRadius = 0;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aoeKnockbackRadius, projectile_radius_knockback_radius);
+
+				if (aoeDamage != 0 || aoeKnockbackRadius != 0) {
+					auto mod = proj->GetOrCreateEntityModule<ProjectileAttributesModule>("projattrs");
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, mod->maxAoeTargets, max_aoe_targets);
+					if (aoeDamage != 0) {
+
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, aoeDamage, mult_dmg);
+						mod->aoeDamage = aoeDamage;
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeDamageTime, projectile_radius_damage_time);
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeDamageRadius, projectile_radius_damage_radius);
+						CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, mod->aoeDamageHitLimit, projectile_radius_damage_hit_limit);
+						THINK_FUNC_SET(proj, ProjectileDamageRadius, gpGlobals->curtime);
+					}
+
+					if (aoeKnockbackRadius != 0) {
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeKnockback, projectile_radius_knockback);
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeKnockbackUp, projectile_radius_knockback_up);
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeKnockbackSide, projectile_radius_knockback_side);
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeKnockbackForward, projectile_radius_knockback_forward);
+					
+						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, mod->aoeKnockbackTime, projectile_radius_knockback_time);
+						mod->aoeKnockbackRadius = aoeKnockbackRadius;
+						CALL_ATTRIB_HOOK_INT_ON_OTHER(weapon, mod->aoeKnockbackHitLimit, projectile_radius_knockback_hit_limit);
+						THINK_FUNC_SET(proj, ProjectileKnockbackRadius, gpGlobals->curtime);
+					}
+				}
+				
+
+				float proximityBombRadius = 0.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(weapon, proximityBombRadius, proximity_bomb);
+				if (proximityBombRadius != 0 && (rtti_cast<CTFWeaponBaseGrenadeProj *>(proj) != nullptr || rtti_cast<CTFBaseRocket *>(proj) != nullptr)) {
+					proj->SetCustomVariable("proximitybombradius", Variant(proximityBombRadius));
+					THINK_FUNC_SET(proj, ProximityBomb, gpGlobals->curtime);
 				}
 
 				float health = 0.0f;
@@ -1244,6 +1427,8 @@ namespace Mod::Attr::Custom_Attributes
 				if (target == info.m_DmgInfo->GetAttacker()) continue;
 				if (target->m_takedamage == DAMAGE_NO) continue;
 				if (target->GetTeamNumber() == info.m_DmgInfo->GetAttacker()->GetTeamNumber() ) continue;
+				if (!target->IsCombatCharacter()) continue;
+
 				Vector closestPoint;
 				target->CollisionProp()->CalcNearestPoint(info.m_vecOrigin, &closestPoint);
 				if ((info.m_vecOrigin - closestPoint).LengthSqr() > info.m_flRadius * info.m_flRadius ) continue;
@@ -3878,6 +4063,25 @@ namespace Mod::Attr::Custom_Attributes
 		int healthpre = ent->GetHealth();
 		//DevMsg("Applytoentity damage %f %d\n", info->m_DmgInfo->GetDamage(), ent->CollisionProp()->IsPointInBounds(info->m_vecOrigin));
 		auto result = DETOUR_MEMBER_CALL(ent);
+		CTFBaseRocket *rocket = rtti_cast<CTFBaseRocket *>(ent);
+		CTFWeaponBaseGrenadeProj *grenade = rtti_cast<CTFWeaponBaseGrenadeProj *>(ent);
+		CTFBaseProjectile *proj = rocket != nullptr ? (CTFBaseProjectile *)rocket : (CTFBaseProjectile *)grenade;
+
+		if (proj != nullptr) {
+			float detTime = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(proj->GetOriginalLauncher(), detTime, chain_explosion);
+			if (detTime != 0) {
+				trace_t tr;
+				Vector vecSpot = proj->GetAbsOrigin();
+				UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -32), MASK_SHOT_HULL, proj, COLLISION_GROUP_NONE, &tr);
+				if (rocket != nullptr) {
+					rocket->Explode(&tr, GetWorldEntity());
+				}
+				else {
+					grenade->Explode(&tr, proj->GetDamageType());
+				}
+			}
+		}
 		if (ent->GetHealth() != healthpre) {
 			hit_entities_explosive++;
 		}
@@ -8350,7 +8554,7 @@ namespace Mod::Attr::Custom_Attributes
 		int slot = 0;//reinterpret_cast<CTFItemDefinition *>(GetItemSchema()->GetItemDefinition(item_def))->GetLoadoutSlot(player->GetPlayerClass()->GetClassIndex());
 		if (display_stock && (item_def == nullptr || slot < LOADOUT_POSITION_PDA2 || slot == LOADOUT_POSITION_ACTION) ) {
 			added_item_name = true;
-			std::string str = std::string(CFmtStr("\n%s:\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
+			std::string str = std::string(CFmtStr("\n%s\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
 			if (attribute_info_vec.back().size() + str.size() > 252) {
 				attribute_info_vec.push_back(str);
 			}
@@ -8400,7 +8604,7 @@ namespace Mod::Attr::Custom_Attributes
 			} 
 
 			if (!added_item_name) {
-				format_str.insert(0, CFmtStr("\n%s:\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
+				format_str.insert(0, CFmtStr("\n%s\n\n", item_def != nullptr ? GetItemNameForDisplay(item_def, player) : TranslateText(player, "Character Attributes:")));
 
 				added_item_name = true;
 			}
