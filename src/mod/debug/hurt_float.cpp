@@ -7,7 +7,7 @@
 namespace Mod::Debug::Hurt_Float
 {
 	template<typename... ARGS>
-	void FancyMsg(float x, float y, const char *fmt, ARGS... args)
+	void FancyMsg(float x, float y, const char *fmt, ARGS&&... args)
 	{
 		CFmtStr str(fmt, std::forward<ARGS>(args)...);
 		NDebugOverlay::ScreenText(x, y, str.Get(), 0xff, 0xff, 0xff, 0xff, 3600.0f);

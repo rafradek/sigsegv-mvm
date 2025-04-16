@@ -1,4 +1,5 @@
 #include "mod.h"
+#include "stub/baseentity.h"
 #include "util/misc.h"
 #include "util/rtti.h"
 #include "util/iterate.h"

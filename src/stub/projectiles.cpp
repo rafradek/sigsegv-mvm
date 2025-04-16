@@ -157,9 +157,19 @@ IMPL_SENDPROP(Vector, CTFProjectile_BallOfFire, m_vecInitialVelocity, CTFProject
 IMPL_REL_AFTER(bool, CTFProjectile_BallOfFire, m_bLandedBonusDamage, m_vecInitialVelocity, bool, bool, bool);
 
 
-IMPL_SENDPROP(int,    CTFWeaponBaseGrenadeProj, m_iDeflected,       CTFWeaponBaseGrenadeProj);
-IMPL_SENDPROP(bool,   CTFWeaponBaseGrenadeProj, m_bCritical,        CTFWeaponBaseGrenadeProj);
-IMPL_SENDPROP(Vector, CTFWeaponBaseGrenadeProj, m_vInitialVelocity, CTFWeaponBaseGrenadeProj);
+IMPL_SENDPROP(bool, CTFProjectile_Flare, m_bCritical, CTFProjectile_Flare);
+
+
+IMPL_EXTRACT (float, CTFProjectile_Arrow, m_flTimeInit,      new CExtract_CTFProjectile_Arrow_ArrowTouch());
+IMPL_SENDPROP(bool,  CTFProjectile_Arrow, m_bArrowAlight,    CTFProjectile_Arrow);
+IMPL_SENDPROP(bool,  CTFProjectile_Arrow, m_bCritical,       CTFProjectile_Arrow);
+IMPL_SENDPROP(int,   CTFProjectile_Arrow, m_iProjectileType, CTFProjectile_Arrow);
+
+
+IMPL_SENDPROP(Vector,               CTFWeaponBaseGrenadeProj, m_vInitialVelocity, CTFWeaponBaseGrenadeProj);
+IMPL_SENDPROP(int,                  CTFWeaponBaseGrenadeProj, m_iDeflected,       CTFWeaponBaseGrenadeProj);
+IMPL_SENDPROP(CHandle<CBaseEntity>, CTFWeaponBaseGrenadeProj, m_hDeflectOwner,    CTFWeaponBaseGrenadeProj);
+IMPL_SENDPROP(bool,                 CTFWeaponBaseGrenadeProj, m_bCritical,        CTFWeaponBaseGrenadeProj);
 
 MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, const Vector &, const Vector &, CBaseCombatCharacter *, const CTFWeaponInfo &> CTFWeaponBaseGrenadeProj::ft_InitGrenade("CTFWeaponBaseGrenadeProj::InitGrenade");
 
@@ -189,3 +199,80 @@ StaticFuncThunk<CTFProjectile_JarGas *,const Vector &, const QAngle &, const Vec
 #endif
 
 GlobalThunk<CUtlVector<IBaseProjectileAutoList *>> IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList("IBaseProjectileAutoList::m_IBaseProjectileAutoListAutoList");
+
+
+#if 0
+
+enum
+{
+	TF_AMMO_DUMMY     = 0,
+	TF_AMMO_PRIMARY   = 1,
+	TF_AMMO_SECONDARY = 2,
+	TF_AMMO_METAL     = 3,
+	TF_AMMO_GRENADES1 = 4,
+	TF_AMMO_GRENADES2 = 5,
+	TF_AMMO_GRENADES3 = 6,
+	
+	TF_AMMO_COUNT,
+};
+
+const char *GetAmmoName(int)
+
+
+// from game/shared/imovehelper.h... do we just include that? should we?
+enum
+{
+	WL_NotInWater=0,
+	WL_Feet,
+	WL_Waist,
+	WL_Eyes
+};
+
+
+// from game/shared/weapon_parse.h... do we include that already??
+enum WeaponSound_t
+{
+	EMPTY           =  0,
+	SINGLE          =  1,
+	SINGLE_NPC      =  2,
+	WPN_DOUBLE      =  3,
+	DOUBLE_NPC      =  4,
+	BURST           =  5,
+	RELOAD          =  6,
+	RELOAD_NPC      =  7,
+	MELEE_MISS      =  8,
+	MELEE_HIT       =  9,
+	MELEE_HIT_WORLD = 10,
+	SPECIAL1        = 11,
+	SPECIAL2        = 12,
+	SPECIAL3        = 13,
+	TAUNT           = 14,
+	DEPLOY          = 15,
+	
+	NUM_SHOOT_SOUND_TYPES,
+};
+
+
+// from game/shared/shareddefs.h... do we include that already??
+enum PLAYER_ANIM
+{
+	PLAYER_IDLE,
+	PLAYER_WALK,
+	PLAYER_JUMP,
+	PLAYER_SUPERJUMP,
+	PLAYER_DIE,
+	PLAYER_ATTACK1,
+	PLAYER_IN_VEHICLE,
+
+	// TF Player animations
+	PLAYER_RELOAD,
+	PLAYER_START_AIMING,
+	PLAYER_LEAVE_AIMING,
+};
+
+
+// enum Collision_Group_t
+// from public/const.h
+
+
+#endif

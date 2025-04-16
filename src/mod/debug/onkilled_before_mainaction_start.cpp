@@ -4,9 +4,6 @@
 #include "stub/tfentities.h"
 
 
-//class CTFBotTacticalMonitor : public Action<CTFBot> {};
-
-
 // please remove PleaseRemoveThis as a friend in mvm-reversed NextBotBehavior.h line 398
 class PleaseRemoveThis
 {

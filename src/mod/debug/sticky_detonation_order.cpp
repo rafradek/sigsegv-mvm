@@ -8,7 +8,7 @@ namespace Mod::Debug::Sticky_Detonation_Order
 	int indent = 0;
 	
 	template<typename... ARGS>
-	void ClientMsgAllIndent(const char *fmt, ARGS... args)
+	void ClientMsgAllIndent(const char *fmt, ARGS&&... args)
 	{
 		size_t fmt2_len = strlen(fmt) + (2 * indent) + 1;
 		char *fmt2 = new char[fmt2_len];

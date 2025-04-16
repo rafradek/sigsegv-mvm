@@ -1,10 +1,7 @@
 #include "mod.h"
 #include "stub/objects.h"
-#include "stub/tfbot.h"
+#include "stub/tfbot_behavior.h"
 #include "re/nextbot.h"
-
-
-class CTFBotMainAction : public Action<CTFBot> {};
 
 
 namespace Mod::Debug::Tele_Sapper

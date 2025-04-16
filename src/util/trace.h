@@ -135,7 +135,11 @@ private:
 };
 
 
-#if defined __GNUC__
+#if defined __clang__
+
+#error TODO
+
+#elif defined __GNUC__
 
 inline std::string GetTheActualFunctionName(const std::string& func, const std::string& pretty)
 {
@@ -153,7 +157,7 @@ inline std::string GetTheActualFunctionName(const std::string& func, const std::
 
 #define TRACE_FUNC_NAME GetTheActualFunctionName(__FUNCTION__, __PRETTY_FUNCTION__)
 
-#else
+#elif defined _MSC_VER
 
 /* my god, MSVC actually did something right here */
 #define TRACE_FUNC_NAME __FUNCTION__

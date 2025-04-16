@@ -1,7 +1,5 @@
 #include "mod.h"
-#include "re/nextbot.h"
-#include "re/path.h"
-#include "stub/tfbot.h"
+#include "stub/tfbot_behavior.h"
 #include "util/scope.h"
 
 
@@ -12,22 +10,6 @@
 
 namespace Mod::Debug::Suicide_Bomber
 {
-	struct CTFBotMissionSuicideBomber : public Action<CTFBot>
-	{
-		CHandle<CBaseEntity> m_hTarget;
-		Vector m_vecTargetPos;
-		PathFollower m_PathFollower;
-		CountdownTimer m_ctRecomputePath;
-		CountdownTimer m_ctPlaySound;
-		CountdownTimer m_ctDetonation;
-		bool m_bDetonating;
-		bool m_bDetReachedGoal;
-		bool m_bDetLostAllHealth;
-		int m_nConsecutivePathFailures;
-		Vector m_vecDetonatePos;
-	};
-	
-	
 	const char *ActionResult_ToString(const ActionResult<CTFBot>& result)
 	{
 		static char buf[1024];

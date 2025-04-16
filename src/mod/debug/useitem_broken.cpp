@@ -1,6 +1,5 @@
 #include "mod.h"
-#include "re/nextbot.h"
-#include "stub/tfbot.h"
+#include "stub/tfbot_behavior.h"
 #include "util/scope.h"
 #include "util/trace.h"
 #include "util/backtrace.h"
@@ -8,15 +7,6 @@
 #include "util/clientmsg.h"
 
 #include <tier1/utlstack.h>
-
-
-//#include "../mvm-reversed/server/tf/bot/behavior/tf_bot_use_item.h"
-class CTFBotUseItem : public Action<CTFBot>
-{
-public:
-	CHandle<CTFWeaponBase> m_hItem;
-	CountdownTimer m_ctInitialDelay;
-};
 
 
 namespace Mod::Debug::UseItem_Broken

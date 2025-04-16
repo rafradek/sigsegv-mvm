@@ -7,6 +7,55 @@
 }
 
 
+#if defined _LINUX
+
+static constexpr uint8_t s_Buf_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime[] = {
+	0x8d, 0x1c, 0x90,                               // +0000  lea ebx,[eax+edx*4]
+	0x0f, 0x2f, 0x83, 0x98, 0x02, 0x00, 0x00,       // +0003  comiss xmm0,dword ptr [ebx+m_flOriginalTeamRespawnWaveTime]
+	0x76, 0x0d,                                     // +000A  jbe +0xXX
+	0xf3, 0x0f, 0x10, 0x45, 0x10,                   // +000C  movss xmm0,dword ptr [ebp+0x10]
+	0xf3, 0x0f, 0x11, 0x83, 0x98, 0x02, 0x00, 0x00, // +0011  movss dword ptr [ebx+m_flOriginalTeamRespawnWaveTime],xmm0
+};
+
+struct CExtract_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime : public IExtract<float (*)[MAX_TEAMS]>
+{
+	using T = float (*)[MAX_TEAMS];
+	
+	CExtract_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime() : IExtract<T>(sizeof(s_Buf_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime)) {}
+	
+	virtual bool GetExtractInfo(ByteBuf& buf, ByteBuf& mask) const override
+	{
+		buf.CopyFrom(s_Buf_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime);
+		
+		mask.SetRange(0x03 + 3, 2, 0x00);
+		mask.SetRange(0x0a + 1, 1, 0x00);
+		mask.SetRange(0x11 + 4, 2, 0x00);
+		
+		return true;
+	}
+	
+	virtual const char *GetFuncName() const override   { return "CTeamplayRoundBasedRules::SetTeamRespawnWaveTime"; }
+	virtual uint32_t GetFuncOffMin() const override    { return 0x0000; }
+	virtual uint32_t GetFuncOffMax() const override    { return 0x0030; } // @ 0x0016
+	virtual uint32_t GetExtractOffset() const override { return 0x0003 + 3; } // also: 0x0011 + 4
+	
+	/* we have two places where our desired offset pops up in the snippet, so ensure that they match */
+	virtual bool Validate(const uint8_t *ptr) const override
+	{
+		uint32_t off1 = *(uint32_t *)(ptr + 0x03 + 3);
+		uint32_t off2 = *(uint32_t *)(ptr + 0x11 + 4);
+		
+		return (off1 == off2);
+	}
+};
+
+#elif defined _WINDOWS
+
+using CExtract_CTeamplayRoundBasedRules_SetTeamRespawnWaveTime = IExtractStub;
+
+#endif
+
+
 GlobalThunk<CGameRulesProxy *> CGameRulesProxy::s_pGameRulesProxy("CGameRulesProxy::s_pGameRulesProxy");
 
 

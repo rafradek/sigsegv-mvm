@@ -116,6 +116,11 @@ static MemberFuncThunk<const CTFBotPathCost *, float, CNavArea *, CNavArea *, co
 /* CZombiePathCost */
 static MemberFuncThunk<const CZombiePathCost *, float, CNavArea *, CNavArea *, const CNavLadder *, const CFuncElevator *, float> ft_CZombiePathCost_op_func("CZombiePathCost::operator()");
 
+/* ChasePath */
+
+/* CTFBotPathCost */
+static MemberFuncThunk<const CTFBotPathCost *, float, CNavArea *, CNavArea *, const CNavLadder *, const CFuncElevator *, float> ft_CTFBotPathCost_op_func("CTFBotPathCost::operator()");
+
 /* Behavior<CTFBot> */
 static MemberFuncThunk<const Behavior<CTFBot> *, INER *> ft_Behavior_FirstContainedResponder("Behavior<CTFBot>::FirstContainedResponder");
 

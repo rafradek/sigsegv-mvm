@@ -26,10 +26,10 @@ size_t FirehoseRecv::Recv(size_t len, uint8_t *dst, bool peek)
 		
 		actual = std::min(len, this->m_Data.size());
 		
-#ifndef _MSC_VER
-		std::copy_n(this->m_Data.begin(), actual, dst);
-#else // avoid C4996
+#if defined _MSC_VER // avoid C4996
 		std::copy_n(this->m_Data.begin(), actual, stdext::make_unchecked_array_iterator(dst));
+#else
+		std::copy_n(this->m_Data.begin(), actual, dst);
 #endif
 		if (!peek) {
 			this->m_Data.erase(this->m_Data.begin(), this->m_Data.begin() + actual);

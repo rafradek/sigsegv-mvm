@@ -1,4 +1,5 @@
 #include "stub/econ.h"
+#include "mem/extract.h"
 #include "addr/addr.h"
 #include "stub/strings.h"
 #include "util/misc.h"

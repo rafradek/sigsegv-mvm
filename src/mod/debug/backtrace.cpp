@@ -1,4 +1,5 @@
 #include "mod.h"
+#include "util/misc.h"
 
 
 namespace Mod::Debug::Backtrace
@@ -17,12 +18,16 @@ namespace Mod::Debug::Backtrace
 		
 		void ListBacktraces()
 		{
+			int idx   = 0;
+			int width = NumDigits(this->m_Backtraces.size() - 1);
+			
+			Msg("Installed backtrace hooks: [%zu total]\n", this->m_Backtraces.size());
 			for (auto& backtrace : this->m_Backtraces) {
-				Msg("%s\n", backtrace->GetName());
+				Msg("[%*d] 0x%08x %s\n", width, idx++, (uintptr_t)backtrace->GetFuncPtr(), backtrace->GetName());
 			}
 		}
 		
-		void AddBacktrace(const char *lib, const char *pattern)
+		bool AddBacktrace(const char *lib, const char *pattern)
 		{
 			auto backtrace = new CFuncBacktrace(LibMgr::Lib_FromString(lib), pattern);
 			if (backtrace->Load()) {
@@ -30,7 +35,20 @@ namespace Mod::Debug::Backtrace
 				this->m_Backtraces.emplace_back(backtrace);
 			} else {
 				delete backtrace;
+				return false;
 			}
+			return true;
+		}
+		
+		bool DelBacktrace(int idx)
+		{
+			if (idx < 0 || (size_t)idx >= this->m_Backtraces.size()) return false;
+			
+			auto it = std::next(this->m_Backtraces.begin(), idx);
+			(*it)->Unload();
+			this->m_Backtraces.erase(it);
+			
+			return true;
 		}
 		
 		void ClearBacktraces()
@@ -47,20 +65,32 @@ namespace Mod::Debug::Backtrace
 	CMod s_Mod;
 	
 	
-	CON_COMMAND(sig_debug_backtrace_list, "")
+	CON_COMMAND(sig_debug_backtrace_list, "Debug: backtrace hooks: list installed backtraces")
 	{
 		s_Mod.ListBacktraces();
 	}
 	
-	CON_COMMAND(sig_debug_backtrace_add, "")
+	CON_COMMAND(sig_debug_backtrace_add, "Debug: backtrace hooks: install backtrace [args: <lib> <sym_regex>]")
 	{
-		DevMsg("Add backtrace: lib '%s' pattern '%s'\n", args[1], args[2]);
-		s_Mod.AddBacktrace(args[1], args[2]);
+		if (args.ArgC() != 3) return;
+		
+		Msg("[Backtrace Add] Lib '%s', pattern '%s'\n", args[1], args[2]);
+		bool success = s_Mod.AddBacktrace(args[1], args[2]);
+		Msg("[Backtrace Add] %s.\n", (success ? "Success" : "Failure"));
 	}
 	
-	CON_COMMAND(sig_debug_backtrace_clear, "")
+	CON_COMMAND(sig_debug_backtrace_del, "Debug: backtrace hooks: uninstall backtrace [args: <bt_num>]")
 	{
-		DevMsg("Clear backtraces\n");
+		if (args.ArgC() != 2) return;
+		
+		Msg("[Backtrace Del] Number %d\n", V_atoi(args[1]));
+		bool success = s_Mod.DelBacktrace(V_atoi(args[1]));
+		Msg("[Backtrace Del] %s.\n", (success ? "Success" : "Failure"));
+	}
+	
+	CON_COMMAND(sig_debug_backtrace_clear, "Debug: backtrace hooks: uninstall all backtraces")
+	{
+		Msg("[Backtrace Clear] Uninstalling all backtrace hooks.\n");
 		s_Mod.ClearBacktraces();
 	}
 }

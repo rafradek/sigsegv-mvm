@@ -24,7 +24,7 @@ namespace Mod::Debug::ShortCircuit_RubberBand
 	int last_tick = -1;
 	
 	template<typename... ARGS>
-	void ClientMsgAllTick(const char *fmt, ARGS... args)
+	void ClientMsgAllTick(const char *fmt, ARGS&&... args)
 	{
 		if (!cvar_spew.GetBool()) return;
 		

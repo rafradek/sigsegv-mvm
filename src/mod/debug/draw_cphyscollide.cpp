@@ -27,14 +27,16 @@ namespace Mod::Debug::Draw_CPhysCollide
 	// 
 	
 	
-#if defined _MSC_VER
-	constexpr int VIDX_GetAbsOrigin          = 0x00a;
-	constexpr int VIDX_GetAbsAngles          = 0x00b;
-	constexpr int VIDX_VPhysicsGetObjectList = 0x03a;
-#else
+#if defined __clang__
+	#error TODO
+#elif defined __GNUC__
 	constexpr int VIDX_GetAbsOrigin          = 0x00b;
 	constexpr int VIDX_GetAbsAngles          = 0x00c;
 	constexpr int VIDX_VPhysicsGetObjectList = 0x05e;
+#elif defined _MSC_VER
+	constexpr int VIDX_GetAbsOrigin          = 0x00a;
+	constexpr int VIDX_GetAbsAngles          = 0x00b;
+	constexpr int VIDX_VPhysicsGetObjectList = 0x03a;
 #endif
 	
 	

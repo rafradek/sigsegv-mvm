@@ -441,8 +441,8 @@ WARN_RESTORE()
 #include <SoundEmitterSystem/isoundemittersystembase.h>
 #include <IEngineSound.h>
 #include <igamesystem.h>
-#include <vphysics_interface.h>
 WARN_IGNORE__CLASS_MEMACCESS()
+#include <vphysics_interface.h>
 #include <studio.h>
 WARN_RESTORE()
 WARN_IGNORE__REORDER()

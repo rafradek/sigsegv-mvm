@@ -10,7 +10,7 @@
 
 namespace Mod::Pop::ExtAttr::TargetStickies
 {
-	class CTFBotChaseStickies : public Action<CTFBot>
+	class CTFBotChaseStickies : public IHotplugAction<CTFBot>
 	{
 	public:
 		CTFBotChaseStickies()
