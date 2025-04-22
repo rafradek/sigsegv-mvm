@@ -8,8 +8,6 @@
 #include "stub/gamerules.h"
 #include "stub/tf_objective_resource.h"
 #include "stub/tfplayer.h"
-#include "stub/nextbot_cc.h"
-#include "stub/nextbot_cc_behavior.h"
 #include "stub/team.h"
 #include "util/scope.h"
 #include "util/iterate.h"
@@ -73,6 +71,7 @@ namespace Mod::Pop::Wave_Extensions
 		CHandle<CHalloweenBaseBoss> boss;
 	};
 	
+
 	struct WaveData
 	{
 		std::vector<std::string>   explanation;
@@ -238,8 +237,6 @@ namespace Mod::Pop::Wave_Extensions
 	{
 		SentryGunInfo info;
 		
-		bool got_position = false;
-		
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
 			
@@ -291,14 +288,13 @@ namespace Mod::Pop::Wave_Extensions
 					}
 				}
 				info.use_hint = false;
-				got_position = true;
 			} else {
 				Warning("Unknown key \'%s\' in SentryGun block.\n", name);
 			}
 		}
 		
 		bool fail = false;
-		if ((info.use_hint && info.hints.empty()) || (!info.use_hint && !got_position)) {
+		if (info.use_hint && info.hints.empty()) {
 			Warning("Missing HintName key or Position block in SentryGun block.\n");
 			fail = true;
 		}
@@ -315,8 +311,6 @@ namespace Mod::Pop::Wave_Extensions
 	void Parse_HalloweenBoss(CWave *wave, KeyValues *kv)
 	{
 		BossInfo info;
-		
-		bool got_position = false;
 		
 		FOR_EACH_SUBKEY(kv, subkey) {
 			const char *name = subkey->GetName();
@@ -359,25 +353,15 @@ namespace Mod::Pop::Wave_Extensions
 						Warning("Unknown key \'%s\' in HalloweenBoss Position sub-block.\n", name);
 					}
 				}
-				got_position = true;
 			} else {
 				Warning("Unknown key \'%s\' in HalloweenBoss block.\n", name);
 			}
 		}
 		
 		bool fail = false;
-		if (!got_position) {
-			Warning("Missing Position block in HalloweenBoss block.\n");
-			fail = true;
-		}
 		if (info.type == CHalloweenBaseBoss::INVALID) {
 			Warning("Missing BossType key in HalloweenBoss block.\n");
 			fail = true;
-		}
-		if (info.type != CHalloweenBaseBoss::EYEBALL_BOSS && info.lifetime != FLT_MAX) {
-			Warning("Only HalloweenBoss blocks of type MONOCULUS may specify a Lifetime value.\n");
-			/* eh... non-fatal warning, I guess */
-		//	fail = true;
 		}
 		if (info.teamnum != TF_TEAM_HALLOWEEN_BOSS) {
 			if (info.type == CHalloweenBaseBoss::EYEBALL_BOSS) {
@@ -516,8 +500,6 @@ namespace Mod::Pop::Wave_Extensions
 				Parse_SentryGun(wave, subkey);
 			} else if (FStrEq(name, "HalloweenBoss")) {
 				Parse_HalloweenBoss(wave, subkey);
-			} else if (FStrEq(name, "Skeleton")) {
-				Parse_Skeleton(wave, subkey);
 			} else if (FStrEq(name, "SoundLoop")) {
 				Parse_SoundLoop(wave, subkey);
 			} else if (FStrEq(name, "PlayerAttributes")) {
@@ -917,6 +899,8 @@ namespace Mod::Pop::Wave_Extensions
 	
 	void SpawnSentryGuns(SentryGunInfo& info)
 	{
+		info.spawned = true;
+		
 		if (info.use_hint && info.hints.empty()) {
 			Warning("SpawnSentryGuns: info.hints.empty()\n");
 			return;
@@ -929,10 +913,6 @@ namespace Mod::Pop::Wave_Extensions
 			}
 		} else {
 			info.sentry = SpawnSentryGun(info.origin, info.angles, info.teamnum, info.level, info.is_mini, info.health, info.skin, info.bodygroup);
-		}
-		
-		if (info.sentry != nullptr) {
-			info.spawned = true;
 		}
 	}
 	
@@ -965,19 +945,6 @@ namespace Mod::Pop::Wave_Extensions
 		}
 		
 		info.boss = boss;
-		info.spawned = true;
-	}
-	
-	
-	static void SpawnSkeleton(SkeletonInfo& info)
-	{
-		CZombie *skeleton = CZombie::SpawnAtPos(info.origin, info.lifetime, info.teamnum, nullptr, info.type);
-		if (skeleton == nullptr) {
-			Warning("SpawnSkeleton: CZombie::SpawnAtPos(type %d, teamnum %d) failed\n", info.type, info.teamnum);
-			return;
-		}
-		
-		info.spawned = true;
 	}
 	
 	std::string soundloop_active;
@@ -1175,16 +1142,6 @@ namespace Mod::Pop::Wave_Extensions
 					TFGameRules()->SetWinningTeam(TF_TEAM_RED, WINREASON_OPPONENTS_DEAD, true, false);
 					done = false;
 				}
-			}
-		}
-		
-		/* don't let the wave end until all skeletons have been killed */
-		for (int i = 0; i < IZombieAutoList::AutoList().Count(); ++i) {
-			auto skeleton = rtti_cast<CZombie *>(IZombieAutoList::AutoList()[i]);
-			if (skeleton == nullptr) continue;
-			
-			if (skeleton->IsAlive()) {
-				return false;
 			}
 		}
 		

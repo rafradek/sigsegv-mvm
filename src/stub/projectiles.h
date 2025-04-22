@@ -10,6 +10,7 @@ class CBaseProjectile : public CBaseAnimating
 {
 public:
 	CBaseEntity *GetOriginalLauncher() const { return this->m_hOriginalLauncher; }
+
 	int GetProjectileType() const            { return vt_GetProjectileType(this); }
 #ifdef SE_IS_TF2
 	bool IsDestroyable(bool flag) const            { return vt_IsDestroyable(this, flag); }
@@ -81,9 +82,10 @@ public:
 
 	CBasePlayer *GetOwnerPlayer() const { return ft_GetOwnerPlayer(this); }
 	
+	DECL_SENDPROP(Vector, m_vInitialVelocity);
+	DECL_SENDPROP(int,    m_iDeflected);
+	
 private:
-	DECL_SENDPROP(Vector,               m_vInitialVelocity);
-	DECL_SENDPROP(int,                  m_iDeflected);
 	DECL_SENDPROP(CHandle<CBaseEntity>, m_hLauncher);
 	
 	static MemberVFuncThunk<CTFBaseRocket *, void, trace_t *, CBaseEntity *> vt_Explode;
@@ -93,6 +95,7 @@ private:
 	static MemberFuncThunk<const CTFBaseRocket *, CBasePlayer *> ft_GetOwnerPlayer;
 };
 
+class CTFFlameRocket : public CTFBaseRocket {};
 
 class CTFProjectile_Syringe : public CTFBaseProjectile {};
 
@@ -173,15 +176,14 @@ private:
 	//static MemberFuncThunk<CTFProjectile_Arrow *, void, bool> ft_SetPenetrate;
 };
 
+class CTFProjectile_HealingBolt : public CTFProjectile_Arrow {};
+class CTFProjectile_GrapplingHook : public CTFProjectile_Arrow {};
 
 class CTFWeaponInfo;
 
 class CTFWeaponBaseGrenadeProj : public CBaseGrenade
 {
 public:
-	bool IsCritical() const          { return this->m_bCritical; }
-	void SetCritical(bool bCritical) { this->m_bCritical = bCritical; }
-	
 	int GetWeaponID() const { return vt_GetWeaponID(this); }
 
 	void SetDetonateTimerLength(float time) const { ft_SetDetonateTimerLength(this, time); }
@@ -194,18 +196,12 @@ public:
 	DECL_SENDPROP(Vector, m_vInitialVelocity);
 	
 private:
-	DECL_SENDPROP(Vector,               m_vInitialVelocity);
-	DECL_SENDPROP(int,                  m_iDeflected);
-	DECL_SENDPROP(CHandle<CBaseEntity>, m_hDeflectOwner);
-	DECL_SENDPROP(bool,                 m_bCritical);
-	
 	static MemberVFuncThunk<const CTFWeaponBaseGrenadeProj *, int> vt_GetWeaponID;
 
 	static MemberFuncThunk<const CTFWeaponBaseGrenadeProj *, void, float> ft_SetDetonateTimerLength;
 	static MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, trace_t *, int> ft_Explode;
 	static MemberFuncThunk<CTFWeaponBaseGrenadeProj *, void, const Vector &, const Vector &, CBaseCombatCharacter *, const CTFWeaponInfo &> ft_InitGrenade;
 };
-
 
 class CTFGrenadePipebombProjectile : public CTFWeaponBaseGrenadeProj
 {

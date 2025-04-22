@@ -144,8 +144,6 @@ extern "C"
 	
 	[[noreturn]] void __real___assert_fail(const char *__assertion, const char *__file, unsigned int __line, const char *__function);
 	
-	// TODO: would be very nice if we could redirect stdout and stderr to console
-	// (so that stuff like the actual assertion failure messages, malloc error messages, etc end up in console.log)
 	[[noreturn]] void __wrap___assert_fail(const char *__assertion, const char *__file, unsigned int __line, const char *__function)
 	{
 		BACKTRACE();

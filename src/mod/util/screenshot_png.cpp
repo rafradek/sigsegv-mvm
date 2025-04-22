@@ -4,18 +4,6 @@
 
 namespace Mod::Util::Screenshot_PNG
 {
-	// TODO: email TF Team and tell them to just make upstream TF2 write screenshots as PNG's
-	// - currently: 'jpeg' cmd does JPEG; 'screenshot' cmd does TGA
-	// - current code flow:
-	//   screenshot concmd calls CL_TakeScreenshot; jpeg concmd calls CL_TakeJpeg
-	//   CL_TakeScreenshot/CL_TakeJpeg set vars for CL_TakeSnapshotAndSwap
-	//   CL_TakeSnapshotAndSwap determines filename and what func to call based on cl_takejpeg var
-	//   CL_TakeSnapshotAndSwap calls into videomode->TakeSnapshot(TGA|JPEG)
-	//   CVideoMode_Common::TakeSnapshot(TGA|JPEG) does the actual business itself
-	// - tell Valve that they can utilize existing code already being used by client & gameui
-	//   - ImgUtl_SavePNGBitmapToBuffer, etc.
-	
-	
 	// detour CL_TakeSnapshotAndSwap
 	// - not strictly necessary actually
 	
@@ -33,14 +21,14 @@ namespace Mod::Util::Screenshot_PNG
 	
 	DETOUR_DECL_MEMBER(void, CVideoMode_Common_TakeSnapshotTGA, const char *pFilename)
 	{
-#if defined __GNUC__
+#if defined __GNUC
 		#warning TODO
 #endif
 	}
 	
 	DETOUR_DECL_STATIC(bool, TGAWriter_WriteToBuffer, unsigned char *pImageData, CUtlBuffer& buffer, int width, int height, ImageFormat srcFormat, ImageFormat dstFormat)
 	{
-#if defined __GNUC__
+#if defined __GNUC
 		#warning TODO
 #endif
 			return false;

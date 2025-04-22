@@ -1,5 +1,4 @@
 #include "mod.h"
-#include "stub/baseentity.h"
 #include "stub/misc.h"
 #include "soundchars.h"
 #include "stub/tf_objective_resource.h"

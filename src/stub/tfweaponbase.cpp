@@ -124,17 +124,10 @@ IMPL_SENDPROP(CHandle<CBaseEntity>, CTFGrapplingHook, m_hProjectile, CTFGrapplin
 IMPL_SENDPROP(float, CTFParticleCannon, m_flChargeBeginTime, CTFParticleCannon);
 
 
-MemberFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::ft_UpdatePunchAngles("CTFWeaponBaseGun::UpdatePunchAngles");
-
-MemberVFuncThunk<CTFWeaponBaseGun *, void, CTFPlayer *> CTFWeaponBaseGun::vt_RemoveProjectileAmmo(TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::RemoveProjectileAmmo");
-MemberVFuncThunk<CTFWeaponBaseGun *, void>              CTFWeaponBaseGun::vt_DoFireEffects       (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::DoFireEffects");
-MemberVFuncThunk<CTFWeaponBaseGun *, bool>              CTFWeaponBaseGun::vt_ShouldPlayFireAnim  (TypeName<CTFWeaponBaseGun>(), "CTFWeaponBaseGun::ShouldPlayFireAnim");
-
-
-//MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge         (TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
+//MemberVFuncThunk<CTFCompoundBow *, bool>  CTFCompoundBow::vt_CanCharge(         TypeName<CTFCompoundBow>(), "CTFCompoundBow::CanCharge");
 //MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeBeginTime(TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeBeginTime");
-MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeMaxTime    (TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeMaxTime");
-MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetCurrentCharge    (TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetCurrentCharge");
+MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetChargeMaxTime(  TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetChargeMaxTime");
+MemberVFuncThunk<CTFCompoundBow *, float> CTFCompoundBow::vt_GetCurrentCharge(  TypeName<CTFCompoundBow>(), "CTFCompoundBow::GetCurrentCharge");
 
 IMPL_SENDPROP(bool, CTFCompoundBow, m_bArrowAlight, CTFCompoundBow);
 

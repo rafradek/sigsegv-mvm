@@ -1975,7 +1975,9 @@ namespace Mod::Util::Client_Cmds
 	ClientCmdsCommand sig_wtest("sig_wtest", CC_WTest, &s_Mod);
 	ModCommandDebug sig_cpu_usage("sig_cpu_usage", CC_Cpu_Usage, &s_Mod);
 	
-	ConVar cvar_enable("sig_util_client_cmds", "0", FCVAR_NOTIFY,
+	/* by way of incredibly annoying persistent requests from Hell-met,
+	 * I've acquiesced and made this mod convar non-notifying (sigh) */
+	ConVar cvar_enable("sig_util_client_cmds", "0", /*FCVAR_NOTIFY*/FCVAR_NONE,
 		"Utility: enable client cheat commands",
 		[](IConVar *pConVar, const char *pOldValue, float flOldValue){
 			s_Mod.Toggle(static_cast<ConVar *>(pConVar)->GetBool());

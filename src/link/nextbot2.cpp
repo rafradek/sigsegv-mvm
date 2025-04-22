@@ -3,16 +3,8 @@
 #include "abi.h"
 
 
-#if defined __clang__
+#if defined __GNUC__
 
-
-#error TODO
-
-
-#elif defined __GNUC__
-
-
-#warning TODO: check ALL addrs here in gamedata files!!!
 class Dummy {};
 
 static MemberFuncThunk<Dummy *, void> ft_PathFollower_ctor_C1("PathFollower::PathFollower [C1]");
@@ -82,7 +74,6 @@ THUNK_VTABLE(9ChasePath, 0x200);
 
 #elif defined _MSC_VER
 
-
 #include "re/nextbot.h"
 #include "re/path.h"
 
@@ -106,7 +97,6 @@ IContextualQuery::~IContextualQuery()             { assert(false); }
 
 // TODO: why didn't we have to hook up the RTTI?
 // will dynamic_cast's be broken?
-
 
 #endif
 #endif

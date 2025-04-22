@@ -585,6 +585,7 @@ private:
 	static MemberVFuncThunk<      CBaseEntity *, void, CCheckTransmitInfo *, bool>                                 vt_SetTransmit;
 	static MemberVFuncThunk<      CBaseEntity *, int, CCheckTransmitInfo *>                                        vt_ShouldTransmit;
 	
+
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_Create;
 	static StaticFuncThunk<CBaseEntity *, const char *, const Vector&, const QAngle&, CBaseEntity *>                        ft_CreateNoSpawn;
 	static StaticFuncThunk<int, const char *, bool>                                                                         ft_PrecacheModel;

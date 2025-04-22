@@ -1,10 +1,15 @@
 #include "stub/tfbot_behavior.h"
-//#include "mem/patch.h"
+#include "mem/patch.h"
+#include "mem/scan.h"
+#include "util/rtti.h"
 
 
-#if defined _MSC_VER || defined __clang__
+#if defined _MSC_VER
 #error
 #endif
+
+
+//template<typename T> Action<T>::~Action() {}
 
 
 #if 0
@@ -94,11 +99,6 @@ CTFBotMedicHeal *CTFBotMedicHeal::New()
 }
 #endif
 
-
-// REMOVE THIS TOO!!!
-#include "util/base_off.h"
-
-#if 1 // this doesn't work and is crashy, so we need an uglier but workable solution instead... sigh
 
 CTFBotMedicRetreat *CTFBotMedicRetreat::New()
 {

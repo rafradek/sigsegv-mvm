@@ -2,7 +2,6 @@
 #include "mod/pop/kv_conditional.h"
 #include "stub/tfentities.h"
 #include "stub/populators.h"
-#include "stub/tf_objective_resource.h"
 #include "stub/strings.h"
 #include "stub/extraentitydata.h"
 #include "stub/misc.h"

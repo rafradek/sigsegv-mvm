@@ -58,7 +58,7 @@ const char *TypeName(T *t, bool demangle = false)
 	}
 }
 
-#undef TYPEID_RAW_NAME
+#undef TYPEID_NAME
 
 
 namespace RTTI
@@ -84,18 +84,9 @@ namespace RTTI
 }
 
 
-/* it'd be nice to use SFINAE up here in the template, but it adds garbage to __PRETTY_FUNCTION__ */
-template<typename TO_PTR, typename FROM_PTR/*,
-	typename = std::enable_if_t<std::is_pointer_v<  TO_PTR>>,
-	typename = std::enable_if_t<std::is_pointer_v<FROM_PTR>>*/>
-inline TO_PTR rtti_dcast(const FROM_PTR ptr)
+template<typename TO, typename FROM>
+inline TO rtti_cast(const FROM ptr)
 {
-	static_assert(std::is_pointer_v<FROM_PTR>, "rtti_dcast: FROM_PTR isn't a pointer type");
-	static_assert(std::is_pointer_v<  TO_PTR>, "rtti_dcast: TO_PTR isn't a pointer type");
-	
-	using FROM = std::remove_pointer_t<FROM_PTR>;
-	using   TO = std::remove_pointer_t<  TO_PTR>;
-	
 	if (ptr == nullptr) {
 		return nullptr;
 	}
@@ -193,61 +184,6 @@ inline TO rtti_scast(const FROM ptr)
 	return reinterpret_cast<TO>(result);
 }
 
-#if RTTI_STATIC_CAST_ENABLE && defined __GNUC__ && !defined __clang__
-
-/* this should be faster than rtti_dcast: we always ASSUME that TO_PTR and FROM_PTR are convertible;
- * and we use typeinfo statically, ONE TIME (on the first rtti_scast of a particular <TO_PTR, FROM_PTR> pair),
- * to determine the ptr diff to use for all future rtti_scast's of that <TO_PTR, FROM_PTR> pair
- * 
- * VERY ROUGHLY SPEAKING,
- * dynamic_cast <==> rtti_dcast (aka rtti_cast)
- *  static_cast <==> rtti_scast
- */
-template<typename TO_PTR, typename FROM_PTR/*,
-	typename = std::enable_if_t<std::is_pointer_v<  TO_PTR>>,
-	typename = std::enable_if_t<std::is_pointer_v<FROM_PTR>>*/>
-inline TO_PTR rtti_scast(const FROM_PTR ptr)
-{
-	static_assert(std::is_pointer_v<FROM_PTR>, "rtti_scast: FROM_PTR isn't a pointer type");
-	static_assert(std::is_pointer_v<  TO_PTR>, "rtti_scast: TO_PTR isn't a pointer type");
-	
-	using FROM = std::remove_pointer_t<FROM_PTR>;
-	using   TO = std::remove_pointer_t<  TO_PTR>;
-	
-	if (ptr == nullptr) {
-		return nullptr;
-	}
-	
-	/* ALTERNATIVE IMPLEMENTATION: ditch all the RTTIStaticCastInfo and RTTIStaticCastRegister stuff, and instead just
-	 * do something like this: (lazily computes the ptr diff on demand, the first time it's needed)
-	 * static ptrdiff_t ptr_diff = []{ ... do the computation right here ... };
-	 */
-	
-	static ptrdiff_t ptr_diff = RTTI::StaticCastInfo<TO_PTR, FROM_PTR>::GetPtrDiff();
-	return reinterpret_cast<TO_PTR>((void *)((uintptr_t)ptr + ptr_diff));
-}
-
-// TODO: actually implement rtti_scast for MSVC
-#else
-
-// stand-in replacement for rtti_scast for !RTTI_STATIC_CAST_ENABLE
-template<typename TO_PTR, typename FROM_PTR>
-inline TO_PTR rtti_scast(const FROM_PTR ptr)
-{
-	if (ptr == nullptr) return nullptr;
-	auto result = rtti_dcast<TO_PTR, FROM_PTR>(ptr);
-	assert(result != nullptr);
-	return result;
-}
-
-#endif
-
-
-/* compat: before rtti_scast was invented, rtti_dcast was just called rtti_cast */
-#define rtti_cast rtti_dcast
-//template<TO_PTR, FROM_PTR> inline TO_PTR rtti_cast(const FROM_PTR ptr) { return rtti_dcast<TO_PTR, FROM_PTR>(ptr); }
-
-
 #if 0
 template<class TO, class FROM>
 inline TO __fastcall jit_cast(const FROM ptr);
@@ -256,9 +192,7 @@ template<class TO, class FROM>
 inline TO __fastcall jit_cast(const FROM ptr)
 {
 	
-#if defined __clang__
-	#error TODO
-#elif defined __GNUC__
+#if defined __GNUC__
 	__asm__ volatile ("nop; nop; nop; nop; nop" : : : "memory");
 	
 	// INITIAL: nop pad
@@ -275,6 +209,8 @@ inline TO __fastcall jit_cast(const FROM ptr)
 	
 	// INITIAL: nop pad
 	// LATER:   compare with nullptr and conditionally do the add/subtract adjustment
+#else
+#error
 #endif
 	
 	return (TO)((uintptr_t)ptr + 0x20);

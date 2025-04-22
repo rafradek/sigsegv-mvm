@@ -90,11 +90,9 @@
       </CallingConvention>
       <DisableSpecificWarnings>4594;5030</DisableSpecificWarnings>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <StringPooling>false</StringPooling>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <IntrinsicFunctions>
-      </IntrinsicFunctions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;legacy_stdio_definitions.lib;dbghelp.lib;ws2_32.lib;..\libs\capstone\msvc\Release\capstone.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -147,11 +145,9 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <DisableSpecificWarnings>4594;5030</DisableSpecificWarnings>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <StringPooling>true</StringPooling>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <IntrinsicFunctions>
-      </IntrinsicFunctions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;legacy_stdio_definitions.lib;dbghelp.lib;ws2_32.lib;..\libs\capstone\msvc\Release\capstone.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -333,7 +329,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\boost.1.71.0.0\build\boost.targets" Condition="Exists('packages\boost.1.71.0.0\build\boost.targets')" />
+    <Import Project="packages\boost.1.66.0.0\build\native\boost.targets" Condition="Exists('packages\boost.1.66.0.0\build\native\boost.targets')" />
   </ImportGroup>
   <ItemGroup>
     <TouchFiles Include="..\src\version.c" />
@@ -348,6 +344,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\boost.1.71.0.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.71.0.0\build\boost.targets'))" />
+    <Error Condition="!Exists('packages\boost.1.66.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.66.0.0\build\native\boost.targets'))" />
   </Target>
 </Project>

@@ -1,5 +1,4 @@
 #include "stub/tfplayer.h"
-#include "mem/extract.h"
 #include "stub/tfweaponbase.h"
 #include "stub/tfentities.h"
 #include "stub/strings.h"
@@ -329,8 +328,6 @@ MemberFuncThunk<      CTFPlayer *, CTFWeaponBase *, int            > CTFPlayer::
 MemberFuncThunk<      CTFPlayer *, CBaseObject *, int, int         > CTFPlayer::ft_GetObjectOfType                  ("CTFPlayer::GetObjectOfType");
 MemberFuncThunk<      CTFPlayer *, int, int, int                   > CTFPlayer::ft_GetMaxAmmo                       ("CTFPlayer::GetMaxAmmo");
 MemberFuncThunk<      CTFPlayer *, CTFWearable *, int              > CTFPlayer::ft_GetEquippedWearableForLoadoutSlot("CTFPlayer::GetEquippedWearableForLoadoutSlot");
-MemberFuncThunk<      CTFPlayer *, void                            > CTFPlayer::ft_RemoveInvisibility               ("CTFPlayer::RemoveInvisibility");
-MemberFuncThunk<      CTFPlayer *, void, PlayerAnimEvent_t, int    > CTFPlayer::ft_DoAnimationEvent                 ("CTFPlayer::DoAnimationEvent");
 MemberFuncThunk<      CTFPlayer *, void, const char *              > CTFPlayer::ft_HandleCommand_JoinTeam           ("CTFPlayer::HandleCommand_JoinTeam");
 MemberFuncThunk<      CTFPlayer *, void, const char *              > CTFPlayer::ft_HandleCommand_JoinTeam_NoMenus   ("CTFPlayer::HandleCommand_JoinTeam_NoMenus");
 MemberFuncThunk<      CTFPlayer *, void, const char *, bool        > CTFPlayer::ft_HandleCommand_JoinClass          ("CTFPlayer::HandleCommand_JoinClass");

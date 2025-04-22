@@ -227,8 +227,6 @@ public:
 
 	virtual const char *GetKind() const override { return "RELATIVE"; }
 	
-	virtual const char *GetKind() const override { return "RELATIVE"; }
-	
 private:
 	virtual bool CalcOffset(int& off) const override;
 	

@@ -1001,17 +1001,6 @@ namespace Mod::Pop::TFBot_Extensions
 					if (data.prefer_normal_slots) {
 						swapSlots = false;
 					}
-					
-					for (const auto& [slot, type] : data.override_projectile_types) {
-						CTFWeaponBaseGun *weapon;
-						if ((weapon = rtti_cast<CTFWeaponBaseGun *>(bot->Weapon_GetSlot(slot))) == nullptr) {
-							DevMsg("CTFBotSpawner %08x: can't find weapon in slot %d for OverrideProjectileType\n",
-								(uintptr_t)spawner, slot);
-							continue;
-						}
-						
-						projectile_type_overrides.emplace(weapon, type);
-					}
 				}
 			}
 		}
@@ -2290,8 +2279,6 @@ namespace Mod::Pop::TFBot_Extensions
 			
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StateEnter, "CTFPlayer::StateEnter");
 			MOD_ADD_DETOUR_MEMBER(CTFPlayer_StateLeave, "CTFPlayer::StateLeave");
-			
-			MOD_ADD_DETOUR_MEMBER(CTFWeaponBase_UpdateOnRemove, "CTFWeaponBase::UpdateOnRemove");
 			
 			MOD_ADD_DETOUR_MEMBER(CTFBotSpawner_Parse, "CTFBotSpawner::Parse");
 			

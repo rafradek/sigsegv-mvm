@@ -27,22 +27,6 @@ private:
 };
 
 
-template<typename T, typename = std::enable_if_t<std::is_base_of_v<IOverride, T>>>
-class COverrideRAII : public T
-{
-public:
-	template<typename... ARGS>
-	COverrideRAII(ARGS&&... args) : T(std::forward<ARGS>(args)...)
-	{
-		this->Enable();
-	}
-	virtual ~COverrideRAII()
-	{
-		this->Disable();
-	}
-};
-
-
 class IConVarOverride : public IOverride
 {
 protected:
@@ -114,66 +98,6 @@ private:
 	int m_nFlagsAdd;
 	int m_nFlagsDel;
 	int m_nFlagsRestore;
-};
-
-
-class CConVarOverride_FloatVal : public IConVarOverride
-{
-public:
-	CConVarOverride_FloatVal(const char *name, float value)
-		: IConVarOverride(name), m_flValue(value) {}
-	CConVarOverride_FloatVal(IConVar *p_icvar, float value)
-		: IConVarOverride(p_icvar), m_flValue(value) {}
-	
-private:
-	virtual void DoEnable() override
-	{
-		if (!this->IsValid()) return;
-		
-		this->m_flValueRestore = CVRef().Ref_FloatVal();
-		
-		CVRef().Ref_FloatVal() = this->m_flValue;
-	}
-	
-	virtual void DoDisable() override
-	{
-		if (!this->IsValid()) return;
-		
-		CVRef().Ref_FloatVal() = this->m_flValueRestore;
-	}
-	
-	float m_flValue;
-	float m_flValueRestore;
-};
-
-
-class CConVarOverride_IntVal : public IConVarOverride
-{
-public:
-	CConVarOverride_IntVal(const char *name, int value)
-		: IConVarOverride(name), m_nValue(value) {}
-	CConVarOverride_IntVal(IConVar *p_icvar, int value)
-		: IConVarOverride(p_icvar), m_nValue(value) {}
-	
-private:
-	virtual void DoEnable() override
-	{
-		if (!this->IsValid()) return;
-		
-		this->m_nValueRestore = CVRef().Ref_IntVal();
-		
-		CVRef().Ref_IntVal() = this->m_nValue;
-	}
-	
-	virtual void DoDisable() override
-	{
-		if (!this->IsValid()) return;
-		
-		CVRef().Ref_IntVal() = this->m_nValueRestore;
-	}
-	
-	int m_nValue;
-	int m_nValueRestore;
 };
 
 

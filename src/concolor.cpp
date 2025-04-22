@@ -29,7 +29,7 @@ namespace ColorSpew
 		
 		const char *TERM = getenv("TERM");
 		
-		if (TERM != nullptr && (strcmp(TERM, "screen") == 0 || strncmp(TERM, "screen.", 7) == 0)) {
+		if (TERM != nullptr && strcmp(TERM, "screen") == 0) {
 			return MODE_SCREEN;
 		}
 		

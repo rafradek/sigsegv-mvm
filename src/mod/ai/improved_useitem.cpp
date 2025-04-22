@@ -12,12 +12,14 @@ namespace Mod::AI::Improved_UseItem
 		"Mod: debug CTFBotUseItemImproved and descendants");
 	
 	
-	// TODO: figure out why the hell this was made to be Action<CTFBot> rather than IHotplugAction<CTFBot>;
-	// ostensibly it should be the latter, however when I make it the latter, the game goes crashy:
-	// the stack trace seems to indicate that an EIP --> garbage situation occurs in the m_DestroyedActions.PurgeAndDeleteElements()
-	// step of Behavior<CTFBot>::Update, under CTFBotMainAction's dtor and CTFBotTacticalMonitor's dtor
-	// (so it's some kind of "our IHotplugAction virtual dtor doesn't interact well with the game code" situation)
-	class CTFBotUseItemImproved : public IHotplugAction<CTFBot>
+	class CTFBotUseItem : public Action<CTFBot>
+	{
+	public:
+		CHandle<CTFWeaponBase> m_hItem;
+	};
+	
+	
+	class CTFBotUseItemImproved : public Action<CTFBot>
 	{
 	public:
 		enum class State : int
@@ -99,10 +101,6 @@ namespace Mod::AI::Improved_UseItem
 			return ActionResult<CTFBot>::Done("Interrupted");
 		}
 		
-	
-	protected:
-		virtual bool IsDone(CTFBot *actor) = 0;
-		
 		static bool IsPossible(CTFBot *actor)
 		{
 			/* the bot cannot actually PressFireButton in these cases */
@@ -112,6 +110,9 @@ namespace Mod::AI::Improved_UseItem
 			
 			return true;
 		}
+		
+	protected:
+		virtual bool IsDone(CTFBot *actor) = 0;
 		
 	private:
 		CHandle<CTFWeaponBase> m_hItem;
@@ -130,18 +131,6 @@ namespace Mod::AI::Improved_UseItem
 			CTFBotUseItemImproved(item) {}
 		
 		virtual const char *GetName() const override { return "UseBuffItem"; }
-		
-		static bool IsPossible(CTFBot *actor)
-		{
-			/* workaround for integer-division bug where, if mult_buff_duration > 10 (technically, if the final adjusted duration > 100 sec),
-			 * then CTFPlayerShared::m_bRageDraining will be true, but CTFPlayerShared::m_flRageMeter will stay at 100.0f indefinitely!
-			 * (basically: CTFBot::OpportunisticallyUseWeaponAbilities only checks CTFBuffItem::IsFull(), i.e. is m_flRageMeter >= 100.0f;
-			 *  what we want is to ALSO check if rage is active via m_bRageDraining, and refuse to use the item if it is currently active) */
-			if (actor->m_Shared->m_flRageMeter < 100.0f) return false;
-			if (actor->m_Shared->m_bRageDraining)        return false;
-			
-			return CTFBotUseItemImproved::IsPossible(actor);
-		}
 		
 	private:
 		virtual bool IsDone(CTFBot *actor) override
@@ -187,8 +176,6 @@ namespace Mod::AI::Improved_UseItem
 			return CTFBotUseItemImproved::OnStart(actor, action);
 		}
 		
-		using CTFBotUseItemImproved::IsPossible;
-		
 	private:
 		virtual bool IsDone(CTFBot *actor) override
 		{
@@ -227,25 +214,24 @@ namespace Mod::AI::Improved_UseItem
 		CTFBotUseItem *result = reinterpret_cast<CTFBotUseItem *>(DETOUR_MEMBER_CALL());
 		if (result != nullptr) {
 			CTFWeaponBase *item = result->m_hItem;
-			if (item != nullptr) {
-				if (item->GetWeaponID() == TF_WEAPON_BUFF_ITEM) {
-					delete result;
-					
-					if (CTFBotUseBuffItem::IsPossible(bot)) {
-						return new CTFBotUseBuffItem(item);
-					} else {
-						return nullptr;
-					}
-				}
+			
+			if (item->GetWeaponID() == TF_WEAPON_BUFF_ITEM) {
+				delete result;
 				
-				if (item->GetWeaponID() == TF_WEAPON_LUNCHBOX) {
-					delete result;
-					
-					if (CTFBotUseLunchBoxItem::IsPossible(bot)) {
-						return new CTFBotUseLunchBoxItem(item);
-					} else {
-						return nullptr;
-					}
+				if (CTFBotUseBuffItem::IsPossible(bot)) {
+					return new CTFBotUseBuffItem(item);
+				} else {
+					return nullptr;
+				}
+			}
+			
+			if (item->GetWeaponID() == TF_WEAPON_LUNCHBOX) {
+				delete result;
+				
+				if (CTFBotUseLunchBoxItem::IsPossible(bot)) {
+					return new CTFBotUseLunchBoxItem(item);
+				} else {
+					return nullptr;
 				}
 			}
 		}
